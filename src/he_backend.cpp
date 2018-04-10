@@ -62,3 +62,8 @@ bool runtime::he::HEBackend::call(const vector<shared_ptr<runtime::TensorView>>&
 {
     throw ngraph_error("Unimplemented");
 }
+
+void runtime::he::HEBackend::remove_compiled_function(const Function& func)
+{
+    throw ngraph_error("Unimplemented");
+}
