@@ -15,6 +15,7 @@
 *******************************************************************************/
 
 #include "he_external_function.hpp"
+
 using namespace std;
 using namespace ngraph;
 
