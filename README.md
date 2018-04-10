@@ -1,6 +1,6 @@
 # HE Transformer for Ngraph
 
-## Building nGraph with HE Transformer
+## Building Ngraph with HE Transformer
 
 ```
 git clone git@github.com:NervanaSystems/ngraph-he.git
