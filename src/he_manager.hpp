@@ -40,8 +40,6 @@ namespace ngraph
 
                 virtual std::shared_ptr<runtime::ExternalFunction>
                     compile(const std::shared_ptr<Function>& fun) override;
-
-                static Factory factory;
             };
         };
     }

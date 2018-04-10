@@ -40,6 +40,11 @@ shared_ptr<runtime::ExternalFunction>
     return make_shared<HEExternalFunction>(fun);
 }
 
-runtime::Manager::Factory runtime::he::HEManager::factory = runtime::Manager::register_factory(
-    "HE",
-    [](const string& name) -> shared_ptr<runtime::Manager> { return make_shared<HEManager>(); });
+bool REGISTER_HE_RUNTIME()
+{
+    runtime::Manager::register_factory("HE",
+                                       [](const string& name) -> shared_ptr<runtime::Manager> {
+                                           return make_shared<runtime::he::HEManager>();
+                                       });
+    return true;
+}

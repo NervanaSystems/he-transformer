@@ -25,7 +25,7 @@ set (HE_SRC
     he_manager.cpp
 )
 
-# These are the paths for ngraph
+# Paths for the upstram ngraph
 message(STATUS "EXTERNAL_NGRAPH_INCLUDE_DIR in parent scope: ${EXTERNAL_NGRAPH_INCLUDE_DIR}")
 message(STATUS "EXTERNAL_NGRAPH_LIB_DIR in parent scope: ${EXTERNAL_NGRAPH_LIB_DIR}")
 
@@ -39,7 +39,7 @@ include_directories(
 add_library(he SHARED ${HE_SRC})
 install(TARGETS he DESTINATION ${NGRAPH_INSTALL_LIB_DIR})
 
-# Installs header
+# Installs header make `make install`
 install(DIRECTORY
     ${CMAKE_CURRENT_SOURCE_DIR}/
     DESTINATION "${NGRAPH_INSTALL_INCLUDE_DIR}"
