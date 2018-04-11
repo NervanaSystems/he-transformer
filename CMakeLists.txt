@@ -43,6 +43,8 @@ include(ExternalProject)
 set(EXTERNAL_INSTALL_DIR ${CMAKE_BINARY_DIR}/external)
 
 include(external/external_gmp.cmake)
+include(external/external_ntl.cmake)
+include(external/external_heaan.cmake)
 
 # HE transformer headers
 set(HE_TRANSFORMER_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
