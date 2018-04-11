@@ -16,13 +16,10 @@ ExternalProject_Add(
     PREFIX ${GMP_PREFIX}
     CONFIGURE_COMMAND echo "config" &&
         cd ${GMP_SOURCE_DIR} &&
-        ls && pwd && ./configure --prefix=${GMP_SOURCE_DIR}
+        ls && pwd && ./configure --prefix=${NGRAPH_HE_INSTALL_DIR}
     UPDATE_COMMAND ""
-    #BUILD_COMMAND make -j$(nproc) -C ${GMP_SOURCE_DIR}
-    BUILD_COMMAND ""
-    #CHECK_COMMAND make check -C ${GMP_SOURCE_DIR}
+    BUILD_COMMAND make -j$(nproc) -C ${GMP_SOURCE_DIR}
     INSTALL_COMMAND make -j$(nproc) install -C ${GMP_SOURCE_DIR}
-    BUILD_ALWAYS 1
 )
 
 install(
