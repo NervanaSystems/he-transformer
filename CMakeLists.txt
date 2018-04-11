@@ -42,8 +42,10 @@ message (STATUS "To Override use: cmake -DNGRAPH_INSTALL_PREFIX=/foo")
 include(ExternalProject)
 set(EXTERNAL_INSTALL_DIR ${CMAKE_BINARY_DIR}/external)
 
-# HE trasformer headers
+include(external/external_gmp.cmake)
+
+# HE transformer headers
 set(HE_TRANSFORMER_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-# HE trasformer source directory
+# HE transformer source directory
 add_subdirectory(src)
