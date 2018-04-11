@@ -16,8 +16,8 @@
 
 include(ExternalProject)
 
-set(HEAAN_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/heaan)
-set(HEAAN_SOURCE_DIR ${HEAAN_PREFIX}/src/heaan)
+set(HEAAN_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ext_heaan)
+set(HEAAN_SOURCE_DIR ${HEAAN_PREFIX}/src/ext_heaan)
 set(CFLAGS "-g -O2 -std=c++11 -pthread -DFHE_THREADS -DFHE_BOOT_THREADS -fmax-errors=2 -fPIC -I${NGRAPH_HE_INSTALL_INCLUDE_DIR}")
 
 ExternalProject_Add(
@@ -29,7 +29,7 @@ ExternalProject_Add(
     CONFIGURE_COMMAND ""
     UPDATE_COMMAND ""
     INSTALL_COMMAND
-    COMMAND cat > CMakeLists.txt
+    COMMAND echo "HETEST" && echo
         "
         set(LIB_NAME heaan)
         project(HEAAN)
@@ -40,9 +40,9 @@ ExternalProject_Add(
         find_library(GMP_LIB gmp)
         target_link_libraries(heaan ${NTL_LIB} ${M_LIB} ${GMP_LIB})
         add_library(heaan STATIC ${SOURCES})
-        "
-    COMMAND mkdir -p ${HEAAN_PREFIX}/build
-    COMMAND cd ${HEAAN_PREFIX}/build
-    BUILD_COMMAND cmake .. && make -j$(nproc)
+        " > ${HEAAN_PREFIX}/CMakeLists.txt
+    #COMMAND mkdir -p ${HEAAN_PREFIX}/build
+    #COMMAND cd ${HEAAN_PREFIX}/build
+    BUILD_COMMAND "" $cmake .. && make -j$(nproc)
     BUILD_ALWAYS 1
 )
