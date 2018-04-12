@@ -22,16 +22,16 @@ ExternalProject_Add(
     INSTALL_COMMAND make -j$(nproc) install -C ${GMP_SOURCE_DIR}
 )
 
-#install(
-#    FILES
-#    ${GMP_INCLUDE_DIR}/gmp.h
-#    DESTINATION
-#    ${NGRAPH_INSTALL_INCLUDE_DIR}
-#)
+install(
+    FILES
+    ${NGRAPH_HE_INSTALL_INCLUDE_DIR}/gmp.h
+    DESTINATION
+    ${NGRAPH_INSTALL_INCLUDE_DIR}
+)
 
-#install(
-#    FILES
-#    ${GMP_LIB_DIR}/libgmp.so
-#    DESTINATION
-#    ${NGRAPH_INSTALL_LIB_DIR}
-#)
+install(
+    FILES
+    ${NGRAPH_HE_INSTALL_LIB_DIR}/libgmp.so
+    DESTINATION
+    ${NGRAPH_INSTALL_LIB_DIR}
+)
