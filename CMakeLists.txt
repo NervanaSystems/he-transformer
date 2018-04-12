@@ -36,15 +36,21 @@ else()
 endif()
 set(NGRAPH_INSTALL_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib")
 set(NGRAPH_INSTALL_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/include")
-message (STATUS "Installation directory: ${CMAKE_INSTALL_PREFIX}")
-message (STATUS "To Override use: cmake -DNGRAPH_INSTALL_PREFIX=/foo")
 
 # External projects (relative to HE transformer)
 include(ExternalProject)
 set(EXTERNAL_INSTALL_DIR ${CMAKE_BINARY_DIR}/external)
 
-# HE trasformer headers
+set(NGRAPH_HE_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/he_install)
+set(NGRAPH_HE_INSTALL_LIB_DIR ${NGRAPH_HE_INSTALL_DIR}/lib)
+set(NGRAPH_HE_INSTALL_INCLUDE_DIR ${NGRAPH_HE_INSTALL_DIR}/include)
+
+include(external/external_gmp.cmake)
+include(external/external_ntl.cmake)
+include(external/external_heaan.cmake)
+
+# HE transformer headers
 set(HE_TRANSFORMER_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-# HE trasformer source directory
+# HE transformer source directory
 add_subdirectory(src)
