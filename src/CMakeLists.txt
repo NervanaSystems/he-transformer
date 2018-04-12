@@ -25,7 +25,7 @@ set (HE_SRC
     he_manager.cpp
 )
 
-# Paths for the upstram ngraph
+# Paths for the upstream ngraph
 message(STATUS "EXTERNAL_NGRAPH_INCLUDE_DIR in parent scope: ${EXTERNAL_NGRAPH_INCLUDE_DIR}")
 message(STATUS "EXTERNAL_NGRAPH_LIB_DIR in parent scope: ${EXTERNAL_NGRAPH_LIB_DIR}")
 
