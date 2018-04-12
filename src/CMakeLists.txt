@@ -37,7 +37,7 @@ include_directories(
 
 # Target library
 add_library(he SHARED ${HE_SRC})
-install(TARGETS he DESTINATION ${NGRAPH_INSTALL_LIB_DIR})
+install(TARGETS he DESTINATION ${NGRAPH_HE_INSTALL_LIB_DIR})
 
 # Installs header make `make install`
 install(DIRECTORY
