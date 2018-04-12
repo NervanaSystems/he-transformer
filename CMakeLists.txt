@@ -50,18 +50,6 @@ include(external/external_heaan.cmake)
 
 # HE transformer headers
 set(HE_TRANSFORMER_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
-#set(HE_TRANSFORMER_LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib)
-
-#ExternalProject_Get_Property(ext_he_transformer source_dir)
-# message( "SOURCE_DIR" ${source_dir})
-message( "PROJECT_SOURCE_DIR " ${PROJECT_SOURCE_DIR})
-message( "CMAKE_CURRENT_SOURCE_DIR " ${CMAKE_CURRENT_SOURCE_DIR})
-message( "HE_TRANSFORMER_LIB_DIR " ${HE_TRANSFORMER_LIB_DIR})
-message( "CMAKE_BINARY_DIR " ${CMAKE_BINARY_DIR})
-message( "CMAKE_CURRENT_BINARY_DIR " ${CMAKE_CURRENT_BINARY_DIR})
-message( "CMAKE_INSTALL_PREFIX " ${CMAKE_INSTALL_PREFIX})
-
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/../../lib/) # TODO: remove hard-coded path
 
 # HE transformer source directory
 add_subdirectory(src)
