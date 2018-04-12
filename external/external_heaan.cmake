@@ -22,7 +22,7 @@ set(HEAAN_SOURCE_DIR ${HEAAN_PREFIX}/src/ext_heaan)
 ExternalProject_Add(
     ext_heaan
     DEPENDS ext_ntl
-    GIT_REPOSITORY https://github.com/fboemer/HEAAN.git
+    GIT_REPOSITORY https://github.com/fboemer/HEAAN-priv.git
     GIT_TAG master
     PREFIX ${HEAAN_PREFIX}
     CMAKE_ARGS

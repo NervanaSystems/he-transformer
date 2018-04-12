@@ -3,10 +3,6 @@ include(ExternalProject)
 set(NTL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ext_ntl)
 set(NTL_SOURCE_DIR ${NTL_PREFIX}/src/ext_ntl)
 
-set(NTL_INCLUDE_DIR ${NTL_PREFIX}/include)
-set(NTL_LIB_DIR ${NTL_PREFIX}/lib )
-set(NTL_LIB_DIR ${NTL_PREFIX}/lib PARENT_SCOPE)
-
 message("Installing ntl at GMP_PREFIX: ${NGRAPH_HE_INSTALL_DIR}")
 message("NTL_PREFIX ${NTL_PREFIX}")
 message("NTL_SOURCE_DIR  ${NTL_SOURCE_DIR}")
@@ -20,5 +16,5 @@ ExternalProject_Add(
     PREFIX ${NTL_PREFIX}
     CONFIGURE_COMMAND cd ${NTL_SOURCE_DIR}/src && ./configure NTL_GMP_LIP=on SHARED=on PREFIX=${NGRAPH_HE_INSTALL_DIR} GMP_PREFIX=${NGRAPH_HE_INSTALL_DIR}
     BUILD_COMMAND make -j$(nproc) -C ${NTL_SOURCE_DIR}/src
-    INSTALL_COMMAND make install -C ${NTL_SOURCE_DIR}/src && cp ${NTL_LIB_DIR}/libntl.so ${NGRAPH_INSTALL_LIB_DIR}
+    INSTALL_COMMAND make install -C ${NTL_SOURCE_DIR}/src
 )
