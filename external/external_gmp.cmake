@@ -2,8 +2,6 @@ include(ExternalProject)
 
 # NTL depends on GMP
 set(GMP_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ext_gmp)
-
-# set(GMP_SOURCE_DIR ${GMP_PREFIX}/src PARENT_SCOPE)
 set(GMP_SOURCE_DIR ${GMP_PREFIX}/src)
 message("GMP_PREFIX " ${GMP_PREFIX})
 message("NGRAPH_HE_INSTALL_DIR " ${NGRAPH_HE_INSTALL_DIR})
