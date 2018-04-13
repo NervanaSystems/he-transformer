@@ -16,20 +16,17 @@
 
 include(ExternalProject)
 
-set(HEAAN_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ext_heaan)
-set(HEAAN_SOURCE_DIR ${HEAAN_PREFIX}/src/ext_heaan)
+# ${CMAKE_CURRENT_BINARY_DIR} is ngraph/build/third-party
+set(SEAL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/seal)
+set(SEAL_SRC_DIR ${SEAL_PREFIX}/src/external_seal/SEAL)
+set(SEAL_TAR_FILE ${CMAKE_CURRENT_SOURCE_DIR}/third-party/SEAL_v2.3.0-4_Linux.tar.gz)
 
 ExternalProject_Add(
-    ext_heaan
-    DEPENDS ext_ntl
-    GIT_REPOSITORY https://github.com/NervanaSystems/HEAAN.git
-    GIT_TAG master
-    PREFIX ${HEAAN_PREFIX}
-    CMAKE_ARGS
-        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-        -DCMAKE_INSTALL_PREFIX=${NGRAPH_HE_INSTALL_DIR}
-        -DNGRAPH_HE_INSTALL_INCLUDE_DIR=${NGRAPH_HE_INSTALL_INCLUDE_DIR}
-        -DNGRAPH_HE_INSTALL_LIB_DIR=${NGRAPH_HE_INSTALL_LIB_DIR}
+    external_seal
+    URL ${SEAL_TAR_FILE}
+    PREFIX ${SEAL_PREFIX}
+    CONFIGURE_COMMAND cd ${SEAL_SRC_DIR} && ./configure --prefix=${NGRAPH_HE_INSTALL_DIR}
+    BUILD_COMMAND make -j$(nproc) -C ${SEAL_SRC_DIR}
+    INSTALL_COMMAND make install -C ${SEAL_SRC_DIR}
+    BUILD_ALWAYS 1
 )
