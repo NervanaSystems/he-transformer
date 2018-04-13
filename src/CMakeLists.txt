@@ -39,7 +39,8 @@ include_directories(
 add_library(he SHARED ${HE_SRC})
 install(TARGETS he DESTINATION ${NGRAPH_HE_INSTALL_LIB_DIR})
 
-add_dependencies(he external_heaan)
+add_dependencies(he ext_heaan)
+add_dependencies(he ext_seal)
 
 # Installs header make `make install`
 install(DIRECTORY
