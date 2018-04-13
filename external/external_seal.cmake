@@ -17,16 +17,23 @@
 include(ExternalProject)
 
 # ${CMAKE_CURRENT_BINARY_DIR} is ngraph/build/third-party
-set(SEAL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/seal)
-set(SEAL_SRC_DIR ${SEAL_PREFIX}/src/external_seal/SEAL)
+set(SEAL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ext_seal)
+set(SEAL_SRC_DIR ${SEAL_PREFIX}/src/ext_seal/SEAL)
 set(SEAL_TAR_FILE ${CMAKE_CURRENT_SOURCE_DIR}/third-party/SEAL_v2.3.0-4_Linux.tar.gz)
 
 ExternalProject_Add(
-    external_seal
+    ext_seal
     URL ${SEAL_TAR_FILE}
     PREFIX ${SEAL_PREFIX}
     CONFIGURE_COMMAND cd ${SEAL_SRC_DIR} && ./configure --prefix=${NGRAPH_HE_INSTALL_DIR}
     BUILD_COMMAND make -j$(nproc) -C ${SEAL_SRC_DIR}
     INSTALL_COMMAND make install -C ${SEAL_SRC_DIR}
-    BUILD_ALWAYS 1
+)
+
+install(
+    DIRECTORY
+    ${NGRAPH_HE_INSTALL_INCLUDE_DIR}/SEAL/
+    DESTINATION
+    ${NGRAPH_INSTALL_INCLUDE_DIR}/SEAL
+    FILES_MATCHING PATTERN "*.h"
 )
