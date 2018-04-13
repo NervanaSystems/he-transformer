@@ -1,4 +1,3 @@
-
 # ******************************************************************************
 # Copyright 2017-2018 Intel Corporation
 #
@@ -20,7 +19,7 @@ include(ExternalProject)
 # ${CMAKE_CURRENT_BINARY_DIR} is ngraph/build/third-party
 set(SEAL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/seal)
 set(SEAL_SRC_DIR ${SEAL_PREFIX}/src/external_seal/SEAL)
-set(SEAL_TAR_FILE ${CMAKE_CURRENT_BINARY_DIR}/../../third-party/SEAL_v2.3.0-4_Linux.tar.gz)
+set(SEAL_TAR_FILE ${CMAKE_CURRENT_SOURCE_DIR}/third-party/SEAL_v2.3.0-4_Linux.tar.gz)
 
 ExternalProject_Add(
     external_seal
