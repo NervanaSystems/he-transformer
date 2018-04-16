@@ -18,7 +18,8 @@
 
 #include <memory>
 
-#include "ngraph/runtime/external_function.hpp"
+#include "ngraph/function.hpp"
+
 
 namespace ngraph
 {
@@ -30,14 +31,14 @@ namespace ngraph
 
         namespace he
         {
-            class HEExternalFunction : public runtime::ExternalFunction
+            class HEExternalFunction : public std::enable_shared_from_this<HEExternalFunction>
             {
             public:
-                HEExternalFunction(const std::shared_ptr<Function>& function,
-                                   bool release_function = false);
+                HEExternalFunction(const std::shared_ptr<Function>& function);
+                ~HEExternalFunction();
                 std::shared_ptr<runtime::CallFrame> make_call_frame();
 
-            protected:
+            private:
                 void compile();
             };
         }

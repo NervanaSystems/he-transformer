@@ -14,30 +14,30 @@
 * limitations under the License.
 *******************************************************************************/
 
-#pragma once
-
-#include <memory>
+#include <stack>
 #include <vector>
 
-#include "ngraph/runtime/manager.hpp"
+#include "ngraph/descriptor/primary_tensor_view.hpp"
+#include "ngraph/runtime/tensor_view.hpp"
 
-namespace ngraph
+using namespace std;
+using namespace ngraph;
+
+runtime::he::HETensorView::HETensorView(const element::Type& element_type, const Shape& shape)
 {
-    class Function;
+}
 
-    namespace runtime
-    {
-        class ExternalFunction;
+runtime::he::HETensorView::~HETensorView()
+{
+}
 
-        namespace he
-        {
-            class HEManager : public Manager
-            {
-            public:
-                virtual std::shared_ptr<Backend> allocate_backend() override;
 
-                virtual std::vector<size_t> get_subdevices() const override;
-            };
-        };
-    }
+void runtime::he::HETensorView::write(const void* p, size_t tensor_offset, size_t n)
+{
+    throw ngraph_error("Not implemented");
+}
+
+void runtime::he::HETensorView::read(void* p, size_t tensor_offset, size_t n) const
+{
+    throw ngraph_error("Not implemented");
 }

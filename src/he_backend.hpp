@@ -19,6 +19,7 @@
 #include <map>
 #include <memory>
 
+#include "ngraph/function.hpp"
 #include "ngraph/runtime/backend.hpp"
 
 namespace ngraph
@@ -35,31 +36,24 @@ namespace ngraph
             class HEBackend : public runtime::Backend
             {
             public:
-                std::shared_ptr<runtime::CallFrame> make_call_frame(
-                    const std::shared_ptr<runtime::ExternalFunction>& external_function) override;
-
-                std::shared_ptr<runtime::TensorView>
-                    make_primary_tensor_view(const element::Type& element_type,
-                                             const Shape& shape) override;
-
-                std::shared_ptr<runtime::TensorView>
-                    make_primary_tensor_view(const element::Type& element_type,
-                                             const Shape& shape,
-                                             void* memory_pointer) override;
+                HEBackend();
+                ~HEBackend();
 
                 std::shared_ptr<runtime::TensorView>
                     create_tensor(const element::Type& element_type, const Shape& shape) override;
 
-                bool compile(const Function& fun) override;
+                std::shared_ptr<ngraph::runtime::TensorView>
+                    create_tensor(const ngraph::element::Type& elment_type,
+                                  const Shape& shape,
+                                  void* memory_pointer) override;
 
-                bool call(const std::vector<std::shared_ptr<runtime::TensorView>>& outputs,
-                          const std::vector<std::shared_ptr<runtime::TensorView>>& inputs) override;
+                bool compile(std::shared_ptr<Function> func) override;
 
-                bool call(const Function& fun,
+                bool call(std::shared_ptr<Function> func,
                           const std::vector<std::shared_ptr<runtime::TensorView>>& outputs,
                           const std::vector<std::shared_ptr<runtime::TensorView>>& inputs) override;
 
-                void remove_compiled_function(const Function& func) override;
+                void remove_compiled_function(std::shared_ptr<Function> func) override;
             };
         }
     }

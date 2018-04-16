@@ -19,8 +19,6 @@
 #include <memory>
 #include <vector>
 
-#include "ngraph/runtime/call_frame.hpp"
-
 namespace ngraph
 {
     class Function;
@@ -28,17 +26,24 @@ namespace ngraph
     namespace runtime
     {
         class TensorView;
+        class ExternalFunction;
 
         namespace he
         {
-            class HECallFrame : public runtime::CallFrame
+            class HECallFrame;
+            class HETensorView;
+
+            // A VM for executing lightly-compiled graph functions
+            class HECallFrame
             {
             public:
-                HECallFrame(std::shared_ptr<Function> func);
+                HECallFrame(const std::shared_ptr<Function>& function);
+
+                /// @brief Invoke the function with values matching the signature of the function.
+                ///
+                /// Tuples will be expanded into their tensor views to build the call frame.
                 void call(const std::vector<std::shared_ptr<runtime::TensorView>>& outputs,
-                          const std::vector<std::shared_ptr<runtime::TensorView>>& inputs) override;
-                void tensor_call(const std::vector<std::shared_ptr<TensorView>>& outputs,
-                                 const std::vector<std::shared_ptr<TensorView>>& inputs) override;
+                          const std::vector<std::shared_ptr<runtime::TensorView>>& inputs);
             };
         }
     }
