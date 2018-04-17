@@ -14,10 +14,10 @@
 # limitations under the License.
 # *****************************************************************************
 
-# HE trasformer headers
+# HE transformer headers
 set(HE_TRANSFORMER_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-# HE trasformer sources
+# HE transformer sources
 set (HE_SRC
     he_backend.cpp
     he_call_frame.cpp
@@ -33,6 +33,7 @@ include_directories(
     SYSTEM
     ${EXTERNAL_NGRAPH_INCLUDE_DIR}
     ${HE_TRANSFORMER_INCLUDE_DIR}
+    ${NGRAPH_HE_INSTALL_INCLUDE_DIR}
 )
 
 # Target library

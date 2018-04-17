@@ -21,6 +21,7 @@
 
 #include "ngraph/function.hpp"
 #include "ngraph/runtime/backend.hpp"
+#include "seal/seal.h"
 
 namespace ngraph
 {
@@ -54,6 +55,9 @@ namespace ngraph
                           const std::vector<std::shared_ptr<runtime::TensorView>>& inputs) override;
 
                 void remove_compiled_function(std::shared_ptr<Function> func) override;
+
+            private:
+                seal::EncryptionParameters parms;
             };
         }
     }
