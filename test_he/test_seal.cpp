@@ -13,3 +13,12 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 *******************************************************************************/
+
+#include "gtest/gtest.h"
+
+TEST(test_he, trivial)
+{
+    int a = 1;
+    int b = 2;
+    EXPECT_EQ(3, a + b);
+}
