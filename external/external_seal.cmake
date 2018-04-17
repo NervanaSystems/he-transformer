@@ -25,7 +25,7 @@ ExternalProject_Add(
     ext_seal
     URL ${SEAL_TAR_FILE}
     PREFIX ${SEAL_PREFIX}
-    CONFIGURE_COMMAND cd ${SEAL_SRC_DIR} && ./configure --prefix=${NGRAPH_HE_INSTALL_DIR}
+    CONFIGURE_COMMAND cd ${SEAL_SRC_DIR} && ./configure CXXFLAGS=-fPIC --prefix=${NGRAPH_HE_INSTALL_DIR}
     BUILD_COMMAND make -j$(nproc) -C ${SEAL_SRC_DIR}
     INSTALL_COMMAND make install -C ${SEAL_SRC_DIR}
         && cp -r ${NGRAPH_HE_INSTALL_INCLUDE_DIR}/SEAL/seal ${NGRAPH_HE_INSTALL_INCLUDE_DIR}
