@@ -15,7 +15,6 @@
 *******************************************************************************/
 
 #include <memory>
-#include <mutex>
 
 #include "he_backend.hpp"
 #include "he_external_function.hpp"
@@ -26,10 +25,7 @@ using namespace std;
 
 shared_ptr<runtime::Backend> runtime::he::HEManager::allocate_backend()
 {
-    static std::once_flag onceFlag;
-    static shared_ptr<runtime::Backend> backend;
-    std::call_once(onceFlag, []() { backend = make_shared<HEBackend>(); });
-    return backend;
+    return make_shared<HEBackend>();
 }
 
 std::vector<size_t> runtime::he::HEManager::get_subdevices() const
