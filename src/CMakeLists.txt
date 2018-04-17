@@ -33,7 +33,6 @@ include_directories(
     SYSTEM
     ${EXTERNAL_NGRAPH_INCLUDE_DIR}
     ${HE_TRANSFORMER_INCLUDE_DIR}
-    ${NGRAPH_HE_INSTALL_INCLUDE_DIR}
 )
 
 # Target library
