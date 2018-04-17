@@ -31,7 +31,6 @@ runtime::he::HETensorView::~HETensorView()
 {
 }
 
-
 void runtime::he::HETensorView::write(const void* p, size_t tensor_offset, size_t n)
 {
     throw ngraph_error("Not implemented");

@@ -37,7 +37,6 @@ std::vector<size_t> runtime::he::HEManager::get_subdevices() const
     throw ngraph_error("unimplemented");
 }
 
-
 bool REGISTER_HE_RUNTIME()
 {
     runtime::Manager::register_factory("HE",

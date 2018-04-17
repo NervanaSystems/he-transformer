@@ -20,7 +20,6 @@
 
 #include "ngraph/function.hpp"
 
-
 namespace ngraph
 {
     class Function;
