@@ -30,14 +30,7 @@ shared_ptr<runtime::Backend> runtime::he::HEManager::allocate_backend()
 
 std::vector<size_t> runtime::he::HEManager::get_subdevices() const
 {
-    vector<size_t> rc;
-    return rc;
-}
-
-shared_ptr<runtime::ExternalFunction>
-    runtime::he::HEManager::compile(const shared_ptr<Function>& fun)
-{
-    return make_shared<HEExternalFunction>(fun);
+    throw ngraph_error("unimplemented");
 }
 
 bool REGISTER_HE_RUNTIME()
