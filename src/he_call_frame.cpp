@@ -20,13 +20,7 @@
 using namespace std;
 using namespace ngraph;
 
-runtime::he::HECallFrame::HECallFrame(shared_ptr<Function> func)
-{
-}
-
-void runtime::he::HECallFrame::tensor_call(
-    const vector<shared_ptr<runtime::TensorView>>& output_tvs,
-    const vector<shared_ptr<runtime::TensorView>>& input_tvs)
+runtime::he::HECallFrame::HECallFrame(const shared_ptr<Function>& func)
 {
     throw ngraph_error("Unimplemented");
 }

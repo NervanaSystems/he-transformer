@@ -15,28 +15,16 @@
 *******************************************************************************/
 
 #include "he_backend.hpp"
-#include "ngraph/runtime/call_frame.hpp"
 
 using namespace ngraph;
 using namespace std;
 
-shared_ptr<runtime::CallFrame> runtime::he::HEBackend::make_call_frame(
-    const shared_ptr<runtime::ExternalFunction>& external_function)
+runtime::he::HEBackend::HEBackend()
 {
-    throw ngraph_error("Unimplemented");
 }
 
-shared_ptr<runtime::TensorView>
-    runtime::he::HEBackend::make_primary_tensor_view(const element::Type& element_type,
-                                                     const Shape& shape)
+runtime::he::HEBackend::~HEBackend()
 {
-    throw ngraph_error("Unimplemented");
-}
-
-shared_ptr<runtime::TensorView> runtime::he::HEBackend::make_primary_tensor_view(
-    const element::Type& element_type, const Shape& shape, void* memory_pointer)
-{
-    throw ngraph_error("Unimplemented");
 }
 
 shared_ptr<runtime::TensorView>
@@ -45,25 +33,25 @@ shared_ptr<runtime::TensorView>
     throw ngraph_error("Unimplemented");
 }
 
-bool runtime::he::HEBackend::compile(const Function& func)
+shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_tensor(
+    const element::Type& element_type, const Shape& shape, void* memory_pointer)
 {
     throw ngraph_error("Unimplemented");
 }
 
-bool runtime::he::HEBackend::call(const Function& fun,
+bool runtime::he::HEBackend::compile(std::shared_ptr<Function> func)
+{
+    throw ngraph_error("Unimplemented");
+}
+
+bool runtime::he::HEBackend::call(std::shared_ptr<Function> func,
                                   const vector<shared_ptr<runtime::TensorView>>& outputs,
                                   const vector<shared_ptr<runtime::TensorView>>& inputs)
 {
     throw ngraph_error("Unimplemented");
 }
 
-bool runtime::he::HEBackend::call(const vector<shared_ptr<runtime::TensorView>>& outputs,
-                                  const vector<shared_ptr<runtime::TensorView>>& inputs)
-{
-    throw ngraph_error("Unimplemented");
-}
-
-void runtime::he::HEBackend::remove_compiled_function(const Function& func)
+void runtime::he::HEBackend::remove_compiled_function(std::shared_ptr<Function> func)
 {
     throw ngraph_error("Unimplemented");
 }

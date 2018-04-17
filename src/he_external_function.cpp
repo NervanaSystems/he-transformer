@@ -19,10 +19,9 @@
 using namespace std;
 using namespace ngraph;
 
-runtime::he::HEExternalFunction::HEExternalFunction(const shared_ptr<Function>& function,
-                                                    bool release_function)
-    : runtime::ExternalFunction(function, release_function)
+runtime::he::HEExternalFunction::HEExternalFunction(const shared_ptr<Function>& function)
 {
+    throw ngraph_error("Unimplemented");
 }
 
 void runtime::he::HEExternalFunction::compile()
