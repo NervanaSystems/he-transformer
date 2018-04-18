@@ -28,13 +28,13 @@ using namespace std;
 runtime::he::HEPlainTensorView::HEPlainTensorView(const ngraph::element::Type& element_type,
                                         const Shape& shape,
                                         void* memory_pointer,
-                                        const HEBackend& he_backend,
+                                        std::shared_ptr<HEBackend> he_backend,
                                         const string& name)
     : runtime::he::HETensorView(std::make_shared<ngraph::descriptor::PrimaryTensorView>(
           std::make_shared<ngraph::TensorViewType>(element_type, shape), name, true, true, false))
     , m_allocated_buffer_pool(nullptr)
     , m_aligned_buffer_pool(nullptr)
-    , m_he_backend(make_shared<HEBackend>(he_backend))
+    , m_he_backend(he_backend)
 {
     m_descriptor->set_tensor_view_layout(
         std::make_shared<ngraph::descriptor::layout::DenseTensorViewLayout>(*m_descriptor));
@@ -60,7 +60,7 @@ runtime::he::HEPlainTensorView::HEPlainTensorView(const ngraph::element::Type& e
 
 runtime::he::HEPlainTensorView::HEPlainTensorView(const ngraph::element::Type& element_type,
                                         const Shape& shape,
-                                        const HEBackend& he_backend,
+                                        std::shared_ptr<HEBackend> he_backend,
                                         const string& name)
     : he::HEPlainTensorView(element_type, shape, nullptr, he_backend, name)
 {

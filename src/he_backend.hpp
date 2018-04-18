@@ -42,6 +42,7 @@ namespace ngraph
             public:
                 HEBackend();
                 HEBackend(seal::SEALContext& context);
+                HEBackend(HEBackend& he_backend) = default;
                 ~HEBackend();
 
                 std::shared_ptr<runtime::TensorView>
@@ -77,7 +78,6 @@ namespace ngraph
                 std::shared_ptr<seal::Encryptor> m_encryptor;
                 std::shared_ptr<seal::Decryptor> m_decryptor;
                 std::shared_ptr<seal::Evaluator> m_evaluator;
-
             };
         }
     }

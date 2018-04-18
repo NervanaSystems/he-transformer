@@ -37,12 +37,12 @@ namespace ngraph
             public:
                 HEPlainTensorView(const element::Type& element_type,
                                   const Shape& shape,
-                                  const HEBackend& he_backend,
+                                  std::shared_ptr<HEBackend> he_backend,
                                   const std::string& name = "external");
                 HEPlainTensorView(const ngraph::element::Type& element_type,
                                   const Shape& shape,
                                   void* memory_pointer,
-                                  const HEBackend& he_backend,
+                                  std::shared_ptr<HEBackend> he_backend,
                                   const std::string& name = "external");
                 virtual ~HEPlainTensorView();
 
