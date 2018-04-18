@@ -15,10 +15,12 @@
 *******************************************************************************/
 
 #include "gtest/gtest.h"
+#include "ngraph/log.hpp"
 
 TEST(test_he, trivial)
 {
     int a = 1;
     int b = 2;
     EXPECT_EQ(3, a + b);
+    NGRAPH_INFO << "Trivial test and linking with libngraph.so was successful.";
 }
