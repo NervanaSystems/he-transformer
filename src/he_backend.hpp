@@ -38,6 +38,7 @@ namespace ngraph
             {
             public:
                 HEBackend();
+                HEBackend(seal::SEALContext& context);
                 ~HEBackend();
 
                 std::shared_ptr<runtime::TensorView>
@@ -57,7 +58,7 @@ namespace ngraph
                 void remove_compiled_function(std::shared_ptr<Function> func) override;
 
             private:
-                seal::EncryptionParameters params;
+                std::shared_ptr<seal::SEALContext> context;
             };
         }
     }

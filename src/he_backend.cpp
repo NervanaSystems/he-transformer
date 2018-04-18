@@ -21,6 +21,16 @@ using namespace std;
 
 runtime::he::HEBackend::HEBackend()
 {
+    seal::EncryptionParameters parms;
+    parms.set_poly_modulus("1x^2048 + 1");
+    parms.set_coeff_modulus(seal::coeff_modulus_128(2048));
+    parms.set_plain_modulus(1 << 8);
+    context = make_shared<seal::SEALContext>(parms);
+}
+
+runtime::he::HEBackend::HEBackend(seal::SEALContext& context_)
+    : context(make_shared<seal::SEALContext>(context_))
+{
 }
 
 runtime::he::HEBackend::~HEBackend()
