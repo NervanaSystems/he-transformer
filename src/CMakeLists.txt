@@ -22,6 +22,7 @@ set (HE_SRC
     he_backend.cpp
     he_call_frame.cpp
     he_external_function.cpp
+    he_tensor_view.cpp
     he_manager.cpp
 )
 

@@ -25,11 +25,25 @@ runtime::he::HEBackend::HEBackend()
     parms.set_poly_modulus("1x^2048 + 1");
     parms.set_coeff_modulus(seal::coeff_modulus_128(2048));
     parms.set_plain_modulus(1 << 8);
-    context = make_shared<seal::SEALContext>(parms);
+    m_context = make_shared<seal::SEALContext>(parms);
+    m_int_encoder = make_shared<seal::IntegerEncoder>(m_context->plain_modulus());
+    m_keygen = make_shared<seal::KeyGenerator>(*m_context);
+    m_public_key = make_shared<seal::PublicKey>(m_keygen->public_key());
+    m_secret_key = make_shared<seal::SecretKey>(m_keygen->secret_key());
+    m_encryptor = make_shared<seal::Encryptor>(*m_context, *m_public_key);
+    m_decryptor = make_shared<seal::Decryptor>(*m_context, *m_secret_key);
+    m_evaluator = make_shared<seal::Evaluator>(*m_context);
 }
 
-runtime::he::HEBackend::HEBackend(seal::SEALContext& context_)
-    : context(make_shared<seal::SEALContext>(context_))
+runtime::he::HEBackend::HEBackend(seal::SEALContext& context)
+    : m_context(make_shared<seal::SEALContext>(context))
+    , m_int_encoder(make_shared<seal::IntegerEncoder>(m_context->plain_modulus()))
+    , m_keygen(make_shared<seal::KeyGenerator>(*m_context))
+    , m_public_key(make_shared<seal::PublicKey>(m_keygen->public_key()))
+    , m_secret_key(make_shared<seal::SecretKey>(m_keygen->secret_key()))
+    , m_encryptor(make_shared<seal::Encryptor>(*m_context, *m_public_key))
+    , m_decryptor(make_shared<seal::Decryptor>(*m_context, *m_secret_key))
+    , m_evaluator(make_shared<seal::Evaluator>(*m_context))
 {
 }
 

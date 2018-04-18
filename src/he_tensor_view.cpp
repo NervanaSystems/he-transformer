@@ -19,13 +19,10 @@
 
 #include "ngraph/descriptor/primary_tensor_view.hpp"
 #include "ngraph/runtime/tensor_view.hpp"
+#include "he_tensor_view.hpp"
 
 using namespace std;
 using namespace ngraph;
-
-runtime::he::HETensorView::HETensorView(const element::Type& element_type, const Shape& shape)
-{
-}
 
 runtime::he::HETensorView::~HETensorView()
 {
@@ -33,10 +30,10 @@ runtime::he::HETensorView::~HETensorView()
 
 void runtime::he::HETensorView::write(const void* p, size_t tensor_offset, size_t n)
 {
-    throw ngraph_error("Not implemented");
+    throw ngraph_error("not implemented");
 }
 
 void runtime::he::HETensorView::read(void* p, size_t tensor_offset, size_t n) const
 {
-    throw ngraph_error("Not implemented");
+    throw ngraph_error("not implemented");
 }

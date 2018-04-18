@@ -33,6 +33,9 @@ namespace ngraph
         {
             class ExternalFunction;
             class HECallFrame;
+            class HETensorView;
+            class HEPlainTensorView;
+            class HECipherTensorView;
 
             class HEBackend : public runtime::Backend
             {
@@ -45,7 +48,7 @@ namespace ngraph
                     create_tensor(const element::Type& element_type, const Shape& shape) override;
 
                 std::shared_ptr<ngraph::runtime::TensorView>
-                    create_tensor(const ngraph::element::Type& elment_type,
+                    create_tensor(const ngraph::element::Type& element_type,
                                   const Shape& shape,
                                   void* memory_pointer) override;
 
@@ -57,8 +60,24 @@ namespace ngraph
 
                 void remove_compiled_function(std::shared_ptr<Function> func) override;
 
+                void encrypt(const HECipherTensorView& output, const HEPlainTensorView& input);
+
+                void decrypt(const HEPlainTensorView& output, const HECipherTensorView& input);
+
+                void encode(const HEPlainTensorView& output, const TensorView& input);
+
+                void decode(const TensorView& output, const HEPlainTensorView& input);
+
             private:
-                std::shared_ptr<seal::SEALContext> context;
+                std::shared_ptr<seal::SEALContext> m_context;
+                std::shared_ptr<seal::IntegerEncoder> m_int_encoder;
+                std::shared_ptr<seal::KeyGenerator> m_keygen;
+                std::shared_ptr<seal::PublicKey> m_public_key;
+                std::shared_ptr<seal::SecretKey> m_secret_key;
+                std::shared_ptr<seal::Encryptor> m_encryptor;
+                std::shared_ptr<seal::Decryptor> m_decryptor;
+                std::shared_ptr<seal::Evaluator> m_evaluator;
+
             };
         }
     }
