@@ -76,6 +76,7 @@ namespace ngraph
             private:
                 std::shared_ptr<seal::SEALContext> m_context;
                 std::shared_ptr<seal::IntegerEncoder> m_int_encoder;
+                std::shared_ptr<seal::FractionalEncoder> m_frac_encoder;
                 std::shared_ptr<seal::KeyGenerator> m_keygen;
                 std::shared_ptr<seal::PublicKey> m_public_key;
                 std::shared_ptr<seal::SecretKey> m_secret_key;

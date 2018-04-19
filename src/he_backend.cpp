@@ -27,6 +27,7 @@ runtime::he::HEBackend::HEBackend()
     parms.set_plain_modulus(1 << 8);
     m_context = make_shared<seal::SEALContext>(parms);
     m_int_encoder = make_shared<seal::IntegerEncoder>(m_context->plain_modulus());
+    m_frac_encoder = make_shared<seal::FractionalEncoder>(m_context->plain_modulus(), m_context->poly_modulus(), 64, 32, 3);
     m_keygen = make_shared<seal::KeyGenerator>(*m_context);
     m_public_key = make_shared<seal::PublicKey>(m_keygen->public_key());
     m_secret_key = make_shared<seal::SecretKey>(m_keygen->secret_key());
@@ -38,6 +39,7 @@ runtime::he::HEBackend::HEBackend()
 runtime::he::HEBackend::HEBackend(seal::SEALContext& context)
     : m_context(make_shared<seal::SEALContext>(context))
     , m_int_encoder(make_shared<seal::IntegerEncoder>(m_context->plain_modulus()))
+    , m_frac_encoder(make_shared<seal::FractionalEncoder>(m_context->plain_modulus(), m_context->poly_modulus(), 64, 32, 3))
     , m_keygen(make_shared<seal::KeyGenerator>(*m_context))
     , m_public_key(make_shared<seal::PublicKey>(m_keygen->public_key()))
     , m_secret_key(make_shared<seal::SecretKey>(m_keygen->secret_key()))
@@ -100,6 +102,14 @@ void runtime::he::HEBackend::encode(seal::Plaintext* output, const void* input, 
     {
         *output = m_int_encoder->encode(*(uint64_t*)input);
     }
+    else if (type_name == "float")
+    {
+        *output = m_frac_encoder->encode(*(float*)input);
+    }
+    else if (type_name == "double")
+    {
+        *output = m_frac_encoder->encode(*(double*)input);
+    }
     else
     {
         throw ngraph_error("Type not supported");
@@ -128,6 +138,16 @@ void runtime::he::HEBackend::decode(void* output, const seal::Plaintext& input, 
     else if (type_name == "uint64_t")
     {
         uint64_t x =  m_int_encoder->decode_int64(input);
+        memcpy(output, &x, type.size());
+    }
+    else if (type_name == "float")
+    {
+        float x = m_frac_encoder->decode(input);
+        memcpy(output, &x, type.size());
+    }
+    else if (type_name == "double")
+    {
+        double x = m_frac_encoder->decode(input);
         memcpy(output, &x, type.size());
     }
     else

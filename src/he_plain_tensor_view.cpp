@@ -42,8 +42,6 @@ runtime::he::HEPlainTensorView::HEPlainTensorView(const ngraph::element::Type& e
     int plaintext_size = sizeof(seal::Plaintext);
     m_buffer_size = m_descriptor->get_tensor_view_layout()->get_size() * plaintext_size; // element_type.size();
 
-    std::cout << "Creating HEPTV with type " << element_type.c_type_string() << " size " << element_type.size() << std::endl;
-
     if (memory_pointer != nullptr)
     {
         m_aligned_buffer_pool = static_cast<char*>(memory_pointer);
@@ -99,7 +97,6 @@ void runtime::he::HEPlainTensorView::write(const void* source, size_t tensor_off
     size_t offset = tensor_offset;
     for(int i = 0; i < n / type.size(); ++i) {
         seal::Plaintext* p = new seal::Plaintext;
-
         m_he_backend->encode(p, (void*)((char*)source + i * type.size()), type);
         memcpy(&target[offset], p, sizeof(seal::Plaintext));
 
@@ -122,8 +119,8 @@ void runtime::he::HEPlainTensorView::read(void* target, size_t tensor_offset, si
     void* x = malloc(type.size());
     for(int i = 0; i < n / type.size(); ++i) {
         seal::Plaintext p = pts[i];
-
         m_he_backend->decode((void*)((char*)target + offset), p, type);
+
         offset += type.size();
     }
 }
