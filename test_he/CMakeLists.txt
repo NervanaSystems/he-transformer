@@ -15,16 +15,13 @@
 # ******************************************************************************
 
 message("$$$$$$$$$$ in test_he.cmake $$$$$$$$$$$")
-# NOTE: This file is included by `ngraph-he/test/CMakeLists.txt` with CMake `include()`.
-#       - We separate this file to minimize changes in the `ngraph` repo.
-#       - So techcally this file belongs to the `ngraph` repo, but not the `he-transformer` repo.
-#       - Variables defined in this file will affect `ngraph-he/test/CMakeLists.txt`.
 
-set (TEST_HE_SRC
-    ${HE_TRANSFORMER_TEST_HE_SOURCE_DIR}/gtest_main.cpp
-    ${HE_TRANSFORMER_TEST_HE_SOURCE_DIR}/test_seal.cpp
+set (SRC
+    gtest_main.cpp
+    test_seal.cpp
 )
 
-add_executable(test-he ${TEST_HE_SRC})
-target_link_libraries(test-he ngraph he libgtest pthread)
+add_executable(test-he ${SRC})
+add_dependencies(test-he ext_gtest ext_seal)
+target_link_libraries(test-he he libgtest seal pthread)
 target_link_libraries(test-he ${CMAKE_DL_LIBS})
