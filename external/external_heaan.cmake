@@ -25,6 +25,7 @@ ExternalProject_Add(
     GIT_REPOSITORY https://github.com/NervanaSystems/HEAAN.git
     GIT_TAG master
     PREFIX ${HEAAN_PREFIX}
+    UPDATE_COMMAND ""
     CMAKE_ARGS
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}

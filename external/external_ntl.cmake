@@ -7,6 +7,7 @@ ExternalProject_Add(
     ext_ntl
     DEPENDS ext_gmp
     DOWNLOAD_COMMAND wget http://www.shoup.net/ntl/ntl-10.5.0.tar.gz
+    UPDATE_COMMAND ""
     COMMAND tar -xzf ntl-10.5.0.tar.gz -C ${NTL_SOURCE_DIR} --strip 1
     COMMAND rm ntl-10.5.0.tar.gz
     PREFIX ${NTL_PREFIX}
