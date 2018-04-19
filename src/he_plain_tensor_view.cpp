@@ -36,12 +36,10 @@ runtime::he::HEPlainTensorView::HEPlainTensorView(const ngraph::element::Type& e
     , m_aligned_buffer_pool(nullptr)
     , m_he_backend(he_backend)
 {
-    std::cout << "Creating plain tensor view" << std::endl;
     m_descriptor->set_tensor_view_layout(
         std::make_shared<ngraph::descriptor::layout::DenseTensorViewLayout>(*m_descriptor));
 
     int plaintext_size = sizeof(seal::Plaintext);
-    std::cout << "plaintet size" << plaintext_size << std::endl;
     m_buffer_size = m_descriptor->get_tensor_view_layout()->get_size() * plaintext_size; // element_type.size();
 
     if (memory_pointer != nullptr)
@@ -59,7 +57,6 @@ runtime::he::HEPlainTensorView::HEPlainTensorView(const ngraph::element::Type& e
             m_aligned_buffer_pool += (alignment - mod);
         }
     }
-    std::cout << "m_buffer_size" << m_buffer_size << std::endl;
 }
 
 runtime::he::HEPlainTensorView::HEPlainTensorView(const ngraph::element::Type& element_type,
@@ -99,53 +96,31 @@ void runtime::he::HEPlainTensorView::write(const void* source, size_t tensor_off
     size_t offset = tensor_offset;
     int plaintext_size = sizeof(seal::Plaintext);
     int* pt = (int*) source;
-    std::cout << "sizeof(pt) " << sizeof(pt) << std::endl;
-    std::cout << "sizeof(pt[0]) " << sizeof(pt[0]) << std::endl;
-    for(int i = 0; i < n/sizeof(int); ++i) {
-        std::cout << "(&target[offset]) " << &target[offset] << std::endl;
+    for(int i = 0; i < n / sizeof(int); ++i) {
         int x = pt[i];
-        std::cout << "x " << x << std::endl;
-        seal::Plaintext p = (m_he_backend->m_int_encoder)->encode(x);
-        std::cout << "p " << p.to_string() << std::endl;
-        memcpy(&target[offset], &p, sizeof(seal::Plaintext));
-
-        seal::Plaintext q;
-
-        memcpy(&q, &target[offset], sizeof(seal::Plaintext));
-        std::cout << "q " << q.to_string() << std::endl;
-
-        offset += sizeof(seal::Plaintext);
+        seal::Plaintext* p = new seal::Plaintext;
+        *p = (m_he_backend->m_int_encoder)->encode(x);
+        memcpy(&target[i * sizeof(seal::Plaintext)], p, sizeof(seal::Plaintext));
     }
 }
 
 void runtime::he::HEPlainTensorView::read(void* target, size_t tensor_offset, size_t n) const
 {
-    std::cout << "reading " << std::endl;
     if (tensor_offset + n/sizeof(int) * sizeof(seal::Plaintext) > m_buffer_size)
     {
         throw out_of_range("read access past end of tensor");
     }
 
-    //const
-
     char* source = (char*)(get_data_ptr());
-    //seal::Plaintext* pts = (seal::Plaintext*) source;
+    seal::Plaintext* pts = (seal::Plaintext*) source;
+    int* target_ptr = (int*) target;
 
     size_t offset = tensor_offset;
     for(int i = 0; i < n / sizeof(int); ++i) {
-        //seal::Plaintext p = pts[i];
-        std::cout << "i " << i << std::endl;
-        seal::Plaintext p;
-        memcpy(&p, &source[offset], sizeof(seal::Plaintext));
-        std::cout << "p " << p.to_string() << std::endl;
-        //int x =  (m_he_backend->m_int_encoder)->decode_int64(p);
-        //std::cout << "x " << x << std::endl;
-        //mempcpy((void*)(target[offset]), &x, sizeof(int));
-
-        offset += sizeof(seal::Plaintext);
+        seal::Plaintext p = pts[i];
+        int x = (m_he_backend->m_int_encoder)->decode_int64(p);
+        mempcpy(target + i * sizeof(int), &x, sizeof(int));
     }
-
-    // memcpy(target, &source[tensor_offset], n);
 }
 
 size_t runtime::he::HEPlainTensorView::get_size() const
