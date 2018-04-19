@@ -70,5 +70,5 @@ TEST(seal_example, basics_i)
 
     // Decode
     int result = encoder.decode_int32(plain_result);
-    cout << "Decoded integer: " << result << endl;
+    EXPECT_EQ(84, result);
 }

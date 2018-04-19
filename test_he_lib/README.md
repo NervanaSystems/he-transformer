@@ -9,5 +9,5 @@ To run `test-he` for HE transformer:
 
 ```
 # In `ngraph-he/build` directory
-./test/test-he
+./test/test-he-lib
 ```

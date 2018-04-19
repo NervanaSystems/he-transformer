@@ -10,5 +10,5 @@ To run `unit-test` for HE transformer:
 
 ```
 # In `ngraph-he/build` directory
-./test/unit-test --gtest_filter="HE.*"
+./test/unit-test --gtest_filter="HE.*" # (The gtest filter is for illustration purpose only.s)
 ```

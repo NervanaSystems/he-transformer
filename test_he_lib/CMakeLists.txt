@@ -26,8 +26,8 @@ include_directories(
 )
 link_directories(${NGRAPH_HE_INSTALL_LIB_DIR})
 
-add_executable(test-he ${SRC})
-add_dependencies(test-he ext_gtest ext_seal)
-set_target_properties(test-he PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${EXTERNAL_NGRAPH_TEST_DIR})
-target_link_libraries(test-he libgtest seal pthread)
-target_link_libraries(test-he ${CMAKE_DL_LIBS})
+add_executable(test-he-lib ${SRC})
+add_dependencies(test-he-lib ext_gtest ext_seal)
+set_target_properties(test-he-lib PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${EXTERNAL_NGRAPH_TEST_DIR})
+target_link_libraries(test-he-lib libgtest seal pthread)
+target_link_libraries(test-he-lib ${CMAKE_DL_LIBS})
