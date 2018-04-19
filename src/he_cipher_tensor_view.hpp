@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <cstring>
+#include "he_tensor_view.hpp"
 #include "ngraph/runtime/tensor_view.hpp"
 #include "ngraph/type/element_type.hpp"
 
@@ -23,36 +25,48 @@ namespace ngraph
 {
     namespace runtime
     {
-        static size_t alignment = 64;
-
         namespace he
         {
+            class HETensorView;
             class HEBackend;
 
-            class HETensorView : public ngraph::runtime::TensorView
+            class HECipherTensorView : public HETensorView
             {
             public:
-                HETensorView(const std::shared_ptr<ngraph::descriptor::TensorView>& descriptor)
-                    : TensorView(descriptor)
-                {
-                }
+                HECipherTensorView(const element::Type& element_type,
+                                   const Shape& shape,
+                                   std::shared_ptr<HEBackend> he_backend,
+                                   const std::string& name = "external");
+                HECipherTensorView(const ngraph::element::Type& element_type,
+                                   const Shape& shape,
+                                   void* memory_pointer,
+                                   std::shared_ptr<HEBackend> he_backend,
+                                   const std::string& name = "external");
+                virtual ~HECipherTensorView();
 
-                virtual ~HETensorView();
+                char* get_data_ptr();
+                const char* get_data_ptr() const;
 
-                /// @brief Write bytes directly into the tensor
+                size_t get_size() const;
+                const element::Type& get_element_type() const;
+
+                /// @brief Write bytes directly into the tensor after encoding and encrypting
                 /// @param p Pointer to source of data
                 /// @param tensor_offset Offset into tensor storage to begin writing. Must be element-aligned.
                 /// @param n Number of bytes to write, must be integral number of elements.
-                void write(const void* p, size_t tensor_offset, size_t n) override;
+                void write(const void* p, size_t tensor_offset, size_t n);
 
-                /// @brief Read bytes directly from the tensor
+                /// @brief Read bytes directly from the tensor after decrypting and decoding
                 /// @param p Pointer to destination for data
                 /// @param tensor_offset Offset into tensor storage to begin reading. Must be element-aligned.
                 /// @param n Number of bytes to read, must be integral number of elements.
-                void read(void* p, size_t tensor_offset, size_t n) const override;
+                void read(void* p, size_t tensor_offset, size_t n) const;
 
             private:
                 std::shared_ptr<HEBackend> m_he_backend;
+                char* m_allocated_buffer_pool;
+                char* m_aligned_buffer_pool;
+                size_t m_buffer_size;
             };
         }
     }
