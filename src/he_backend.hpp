@@ -19,7 +19,6 @@
 #include <map>
 #include <memory>
 
-#include "ngraph/function.hpp"
 #include "ngraph/runtime/backend.hpp"
 #include "seal/seal.h"
 
@@ -31,7 +30,7 @@ namespace ngraph
 
         namespace he
         {
-            class ExternalFunction;
+            class HEExternalFunction;
             class HECallFrame;
             class HETensorView;
             class HEPlainTensorView;
@@ -88,6 +87,18 @@ namespace ngraph
                 std::shared_ptr<seal::Encryptor> m_encryptor;
                 std::shared_ptr<seal::Decryptor> m_decryptor;
                 std::shared_ptr<seal::Evaluator> m_evaluator;
+
+                class FunctionInstance
+                {
+                    public:
+                        std::shared_ptr<HEExternalFunction> m_external_function;
+                        std::shared_ptr<HECallFrame> m_call_frame;
+                        bool m_nan_check_enabled = false;
+                        bool m_performance_counters_enabled = false;
+                };
+
+                std::map<std::shared_ptr<Function>, FunctionInstance> m_function_map;
+
             };
         }
     }

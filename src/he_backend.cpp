@@ -15,6 +15,10 @@
 *******************************************************************************/
 
 #include "he_backend.hpp"
+#include "he_tensor_view.hpp"
+#include "he_cipher_tensor_view.hpp"
+#include "he_external_function.hpp"
+#include "he_call_frame.hpp"
 
 using namespace ngraph;
 using namespace std;
@@ -59,32 +63,55 @@ runtime::he::HEBackend::~HEBackend()
 shared_ptr<runtime::TensorView>
     runtime::he::HEBackend::create_tensor(const element::Type& element_type, const Shape& shape)
 {
-    throw ngraph_error("Not implemented");
-    //auto rc = make_shared<runtime::he::HECipherTensorView>(element_type, shape, "external");
-    //return static_pointer_cast<runtime::TensorView>(rc);
+    std::shared_ptr<HEBackend> he_backend = make_shared<HEBackend>(*this);
+    auto rc = make_shared<runtime::he::HECipherTensorView>(element_type, shape, he_backend, "external");
+    shared_ptr<runtime::he::HETensorView> tv = static_pointer_cast<runtime::he::HETensorView>(rc);
+    return static_pointer_cast<runtime::TensorView>(tv);
 }
 
 shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_tensor(
     const element::Type& element_type, const Shape& shape, void* memory_pointer)
 {
-    throw ngraph_error("Unimplemented");
+    throw ngraph_error("he create_tensor Unimplemented");
 }
 
 bool runtime::he::HEBackend::compile(std::shared_ptr<Function> func)
 {
-    throw ngraph_error("Unimplemented");
+    FunctionInstance& instance = m_function_map[func];
+    if (instance.m_external_function == nullptr)
+    {
+        instance.m_external_function = make_shared<HEExternalFunction>(func);
+        auto cf = instance.m_external_function->make_call_frame();
+        instance.m_call_frame = dynamic_pointer_cast<HECallFrame>(cf);
+        instance.m_call_frame->m_emit_timing = instance.m_performance_counters_enabled;
+        instance.m_call_frame->set_nan_check(instance.m_nan_check_enabled);
+    }
+    return true;
 }
 
 bool runtime::he::HEBackend::call(std::shared_ptr<Function> func,
                                   const vector<shared_ptr<runtime::TensorView>>& outputs,
                                   const vector<shared_ptr<runtime::TensorView>>& inputs)
 {
-    throw ngraph_error("Unimplemented");
+    bool rc = true;
+
+    //validate_call(func, outputs, inputs);
+
+    FunctionInstance& instance = m_function_map[func];
+    if (instance.m_external_function == nullptr)
+    {
+        rc = compile(func);
+    }
+
+    instance.m_call_frame->call(outputs, inputs);
+
+    return rc;
+
 }
 
 void runtime::he::HEBackend::remove_compiled_function(std::shared_ptr<Function> func)
 {
-    throw ngraph_error("Unimplemented");
+    throw ngraph_error("HEBackend remove compile function unimplemented");
 }
 
 void runtime::he::HEBackend::encode(seal::Plaintext* output,

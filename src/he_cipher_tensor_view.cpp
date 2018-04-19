@@ -88,6 +88,7 @@ const char* runtime::he::HECipherTensorView::get_data_ptr() const
 void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_offset, size_t n)
 {
     const element::Type& type = get_element_type();
+    std::cout << " writing type " << type.c_type_string() << std::endl;
     if (tensor_offset + n / type.size() * sizeof(seal::Ciphertext) > m_buffer_size)
     {
         throw out_of_range("write access past end of tensor");
@@ -96,11 +97,16 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
     seal::Plaintext* plain_target = (seal::Plaintext*)target;
 
     size_t offset = tensor_offset;
+
+    int* int_ptr = (int*)target;
+    int x = int_ptr[0];
+    std::cout << "x " << x << std::endl;
     for (int i = 0; i < n / type.size(); ++i)
     {
         seal::Plaintext* p = new seal::Plaintext;
         seal::Ciphertext* c = new seal::Ciphertext;
         m_he_backend->encode(p, (void*)((char*)source + i * type.size()), type);
+        std::cout << "encode to " << p->to_string() << std::endl;
         m_he_backend->encrypt(*c, *p);
         memcpy(&target[offset], c, sizeof(seal::Ciphertext));
 
@@ -111,6 +117,7 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
 void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, size_t n) const
 {
     const element::Type& type = get_element_type();
+    std::cout << "reading type " << type.c_type_string() << std::endl;
     if (tensor_offset + n / type.size() * sizeof(seal::Ciphertext) > m_buffer_size)
     {
         throw out_of_range("read access past end of tensor");
@@ -126,6 +133,7 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
         seal::Ciphertext c = cts[i];
         seal::Plaintext* p = new seal::Plaintext;
         m_he_backend->decrypt(*p, c);
+        std::cout << "decrypt to " << p->to_string() << std::endl;
         m_he_backend->decode((void*)((char*)target + offset), *p, type);
 
         offset += type.size();
