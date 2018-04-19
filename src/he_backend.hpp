@@ -65,13 +65,13 @@ namespace ngraph
 
                 void decrypt(const HEPlainTensorView& output, const HECipherTensorView& input);
 
-                void encode(const HEPlainTensorView& output, const TensorView& input);
+                //void encode(const HEPlainTensorView& output, const TensorView& input);
+                //void decode(const TensorView& output, const HEPlainTensorView& input);
 
-                void decode(const TensorView& output, const HEPlainTensorView& input);
+                void encode(seal::Plaintext* output, const void* input, const ngraph::element::Type& type);
 
-                void decode(int& output, const seal::Plaintext& input);
+                void decode(void* output, const seal::Plaintext& input, const ngraph::element::Type& type);
 
-                void encode(seal::Plaintext* output, const int& input);
 
             private:
                 std::shared_ptr<seal::SEALContext> m_context;

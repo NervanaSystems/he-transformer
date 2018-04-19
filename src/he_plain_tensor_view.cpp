@@ -42,6 +42,8 @@ runtime::he::HEPlainTensorView::HEPlainTensorView(const ngraph::element::Type& e
     int plaintext_size = sizeof(seal::Plaintext);
     m_buffer_size = m_descriptor->get_tensor_view_layout()->get_size() * plaintext_size; // element_type.size();
 
+    std::cout << "Creating HEPTV with type " << element_type.c_type_string() << " size " << element_type.size() << std::endl;
+
     if (memory_pointer != nullptr)
     {
         m_aligned_buffer_pool = static_cast<char*>(memory_pointer);
@@ -87,18 +89,18 @@ const char* runtime::he::HEPlainTensorView::get_data_ptr() const
 
 void runtime::he::HEPlainTensorView::write(const void* source, size_t tensor_offset, size_t n)
 {
-    if (tensor_offset + n/sizeof(int) * sizeof(seal::Plaintext) > m_buffer_size)
+    const element::Type& type = get_element_type();
+    if (tensor_offset + n/type.size() * sizeof(seal::Plaintext) > m_buffer_size)
     {
         throw out_of_range("write access past end of tensor");
     }
     char* target = get_data_ptr();
 
     size_t offset = tensor_offset;
-    int* pt = (int*) source;
-    for(int i = 0; i < n / sizeof(int); ++i) {
-        int x = pt[i];
+    for(int i = 0; i < n / type.size(); ++i) {
         seal::Plaintext* p = new seal::Plaintext;
-        m_he_backend->encode(p, x);
+
+        m_he_backend->encode(p, (void*)((char*)source + i * type.size()), type);
         memcpy(&target[offset], p, sizeof(seal::Plaintext));
 
         offset += sizeof(seal::Plaintext);
@@ -107,7 +109,8 @@ void runtime::he::HEPlainTensorView::write(const void* source, size_t tensor_off
 
 void runtime::he::HEPlainTensorView::read(void* target, size_t tensor_offset, size_t n) const
 {
-    if (tensor_offset + n/sizeof(int) * sizeof(seal::Plaintext) > m_buffer_size)
+    const element::Type& type = get_element_type();
+    if (tensor_offset + n / type.size() * sizeof(seal::Plaintext) > m_buffer_size)
     {
         throw out_of_range("read access past end of tensor");
     }
@@ -116,13 +119,12 @@ void runtime::he::HEPlainTensorView::read(void* target, size_t tensor_offset, si
     seal::Plaintext* pts = (seal::Plaintext*) source;
 
     size_t offset = tensor_offset;
-    int x;
-    for(int i = 0; i < n / sizeof(int); ++i) {
+    void* x = malloc(type.size());
+    for(int i = 0; i < n / type.size(); ++i) {
         seal::Plaintext p = pts[i];
-        m_he_backend->decode(x, p);
-        memcpy((void*)((char*)target + offset), &x, sizeof(int));
 
-        offset += sizeof(int);
+        m_he_backend->decode((void*)((char*)target + offset), p, type);
+        offset += type.size();
     }
 }
 

@@ -80,12 +80,58 @@ void runtime::he::HEBackend::remove_compiled_function(std::shared_ptr<Function> 
     throw ngraph_error("Unimplemented");
 }
 
-void runtime::he::HEBackend::decode(int& output, const seal::Plaintext& input)
+void runtime::he::HEBackend::encode(seal::Plaintext* output, const void* input, const ngraph::element::Type& type)
 {
-    output = m_int_encoder->decode_int64(input);
+    const std::string type_name = type.c_type_string();
+
+    if (type_name == "int32_t")
+    {
+        *output = m_int_encoder->encode(*(int32_t*)input);
+    }
+    else if (type_name == "int64_t")
+    {
+        *output = m_int_encoder->encode(*(int64_t*)input);
+    }
+    else if (type_name == "uint32_t")
+    {
+        *output = m_int_encoder->encode(*(uint32_t*)input);
+    }
+    else if (type_name == "uint64_t")
+    {
+        *output = m_int_encoder->encode(*(uint64_t*)input);
+    }
+    else
+    {
+        throw ngraph_error("Type not supported");
+    }
 }
 
-void runtime::he::HEBackend::encode(seal::Plaintext* output, const int& input)
+void runtime::he::HEBackend::decode(void* output, const seal::Plaintext& input, const ngraph::element::Type& type)
 {
-    *output = m_int_encoder->encode(input);
+    const std::string type_name = type.c_type_string();
+
+    if (type_name == "int32_t")
+    {
+        int32_t x = m_int_encoder->decode_int32(input);
+        memcpy(output, &x, type.size());
+    }
+    else if (type_name == "int64_t")
+    {
+        int64_t x = m_int_encoder->decode_int64(input);
+        memcpy(output, &x, type.size());
+    }
+    else if (type_name == "uint32_t")
+    {
+        uint32_t x =  m_int_encoder->decode_int64(input);
+        memcpy(output, &x, type.size());
+    }
+    else if (type_name == "uint64_t")
+    {
+        uint64_t x =  m_int_encoder->decode_int64(input);
+        memcpy(output, &x, type.size());
+    }
+    else
+    {
+        throw ngraph_error("Type not supported");
+    }
 }
