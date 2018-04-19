@@ -23,6 +23,8 @@ namespace ngraph
 {
     namespace runtime
     {
+        static size_t alignment = 64;
+
         namespace he
         {
             class HEBackend;

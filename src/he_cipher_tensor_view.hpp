@@ -30,19 +30,19 @@ namespace ngraph
             class HETensorView;
             class HEBackend;
 
-            class HEPlainTensorView : public HETensorView
+            class HECipherTensorView : public HETensorView
             {
             public:
-                HEPlainTensorView(const element::Type& element_type,
+                HECipherTensorView(const element::Type& element_type,
                                   const Shape& shape,
                                   std::shared_ptr<HEBackend> he_backend,
                                   const std::string& name = "external");
-                HEPlainTensorView(const ngraph::element::Type& element_type,
+                HECipherTensorView(const ngraph::element::Type& element_type,
                                   const Shape& shape,
                                   void* memory_pointer,
                                   std::shared_ptr<HEBackend> he_backend,
                                   const std::string& name = "external");
-                virtual ~HEPlainTensorView();
+                virtual ~HECipherTensorView();
 
                 char* get_data_ptr();
                 const char* get_data_ptr() const;
@@ -50,13 +50,13 @@ namespace ngraph
                 size_t get_size() const;
                 const element::Type& get_element_type() const;
 
-                /// @brief Write bytes directly into the tensor after encoding
+                /// @brief Write bytes directly into the tensor after encoding and encrypting
                 /// @param p Pointer to source of data
                 /// @param tensor_offset Offset into tensor storage to begin writing. Must be element-aligned.
                 /// @param n Number of bytes to write, must be integral number of elements.
                 void write(const void* p, size_t tensor_offset, size_t n);
 
-                /// @brief Read bytes directly from the tensor after decoding
+                /// @brief Read bytes directly from the tensor after decrypting and decoding
                 /// @param p Pointer to destination for data
                 /// @param tensor_offset Offset into tensor storage to begin reading. Must be element-aligned.
                 /// @param n Number of bytes to read, must be integral number of elements.

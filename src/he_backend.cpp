@@ -155,3 +155,13 @@ void runtime::he::HEBackend::decode(void* output, const seal::Plaintext& input, 
         throw ngraph_error("Type not supported");
     }
 }
+
+void runtime::he::HEBackend::encrypt(seal::Ciphertext& output, seal::Plaintext& input)
+{
+    m_encryptor->encrypt(input, output);
+}
+
+void runtime::he::HEBackend::decrypt(seal::Plaintext& output, seal::Ciphertext& input)
+{
+    m_decryptor->decrypt(input, output);
+}
