@@ -15,7 +15,6 @@
 *******************************************************************************/
 
 #include "gtest/gtest.h"
-#include "ngraph/log.hpp"
 #include "seal/seal.h"
 
 using namespace std;
@@ -25,7 +24,6 @@ TEST(test_he, trivial)
     int a = 1;
     int b = 2;
     EXPECT_EQ(3, a + b);
-    NGRAPH_INFO << "Trivial test and linking with libngraph.so was successful.";
 }
 
 TEST(seal_example, basics_i)
@@ -72,5 +70,5 @@ TEST(seal_example, basics_i)
 
     // Decode
     int result = encoder.decode_int32(plain_result);
-    NGRAPH_INFO << "Decoded integer: " << result;
+    cout << "Decoded integer: " << result << endl;
 }

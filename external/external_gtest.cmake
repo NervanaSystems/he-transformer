@@ -49,7 +49,6 @@ get_filename_component(
     GTEST_INCLUDE_DIR
     "${GTEST_PREFIX}/src/googletest/include"
     ABSOLUTE)
-set(GTEST_INCLUDE_DIR "${GTEST_INCLUDE_DIR}" PARENT_SCOPE)
 
 # Create a libgtest target to be used as a dependency by test programs
 add_library(libgtest IMPORTED STATIC GLOBAL)

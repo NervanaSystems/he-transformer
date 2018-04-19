@@ -14,14 +14,20 @@
 # limitations under the License.
 # ******************************************************************************
 
-message("$$$$$$$$$$ in test_he.cmake $$$$$$$$$$$")
-
 set (SRC
     gtest_main.cpp
     test_seal.cpp
 )
 
+include_directories(
+    SYSTEM
+    ${GTEST_INCLUDE_DIR}
+    ${NGRAPH_HE_INSTALL_INCLUDE_DIR}
+)
+link_directories(${NGRAPH_HE_INSTALL_LIB_DIR})
+
 add_executable(test-he ${SRC})
 add_dependencies(test-he ext_gtest ext_seal)
-target_link_libraries(test-he he libgtest seal pthread)
+set_target_properties(test-he PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${EXTERNAL_NGRAPH_TEST_DIR})
+target_link_libraries(test-he libgtest seal pthread)
 target_link_libraries(test-he ${CMAKE_DL_LIBS})
