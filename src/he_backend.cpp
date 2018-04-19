@@ -79,3 +79,13 @@ void runtime::he::HEBackend::remove_compiled_function(std::shared_ptr<Function> 
 {
     throw ngraph_error("Unimplemented");
 }
+
+void runtime::he::HEBackend::decode(int& output, const seal::Plaintext& input)
+{
+    output = m_int_encoder->decode_int64(input);
+}
+
+void runtime::he::HEBackend::encode(seal::Plaintext* output, const int& input)
+{
+    *output = m_int_encoder->encode(input);
+}

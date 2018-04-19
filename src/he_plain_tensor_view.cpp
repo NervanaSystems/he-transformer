@@ -94,13 +94,14 @@ void runtime::he::HEPlainTensorView::write(const void* source, size_t tensor_off
     char* target = get_data_ptr();
 
     size_t offset = tensor_offset;
-    int plaintext_size = sizeof(seal::Plaintext);
     int* pt = (int*) source;
     for(int i = 0; i < n / sizeof(int); ++i) {
         int x = pt[i];
         seal::Plaintext* p = new seal::Plaintext;
-        *p = (m_he_backend->m_int_encoder)->encode(x);
-        memcpy(&target[i * sizeof(seal::Plaintext)], p, sizeof(seal::Plaintext));
+        m_he_backend->encode(p, x);
+        memcpy(&target[offset], p, sizeof(seal::Plaintext));
+
+        offset += sizeof(seal::Plaintext);
     }
 }
 
@@ -113,13 +114,15 @@ void runtime::he::HEPlainTensorView::read(void* target, size_t tensor_offset, si
 
     char* source = (char*)(get_data_ptr());
     seal::Plaintext* pts = (seal::Plaintext*) source;
-    int* target_ptr = (int*) target;
 
     size_t offset = tensor_offset;
+    int x;
     for(int i = 0; i < n / sizeof(int); ++i) {
         seal::Plaintext p = pts[i];
-        int x = (m_he_backend->m_int_encoder)->decode_int64(p);
-        mempcpy(target + i * sizeof(int), &x, sizeof(int));
+        m_he_backend->decode(x, p);
+        memcpy((void*)((char*)target + offset), &x, sizeof(int));
+
+        offset += sizeof(int);
     }
 }
 
