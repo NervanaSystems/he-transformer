@@ -16,10 +16,10 @@
 
 #pragma once
 
-#include "ngraph/runtime/tensor_view.hpp"
-#include "he_tensor_view.hpp"
-#include "ngraph/type/element_type.hpp"
 #include <cstring>
+#include "he_tensor_view.hpp"
+#include "ngraph/runtime/tensor_view.hpp"
+#include "ngraph/type/element_type.hpp"
 
 namespace ngraph
 {
@@ -34,14 +34,14 @@ namespace ngraph
             {
             public:
                 HECipherTensorView(const element::Type& element_type,
-                                  const Shape& shape,
-                                  std::shared_ptr<HEBackend> he_backend,
-                                  const std::string& name = "external");
+                                   const Shape& shape,
+                                   std::shared_ptr<HEBackend> he_backend,
+                                   const std::string& name = "external");
                 HECipherTensorView(const ngraph::element::Type& element_type,
-                                  const Shape& shape,
-                                  void* memory_pointer,
-                                  std::shared_ptr<HEBackend> he_backend,
-                                  const std::string& name = "external");
+                                   const Shape& shape,
+                                   void* memory_pointer,
+                                   std::shared_ptr<HEBackend> he_backend,
+                                   const std::string& name = "external");
                 virtual ~HECipherTensorView();
 
                 char* get_data_ptr();

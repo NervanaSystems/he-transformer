@@ -17,19 +17,19 @@
 #include <cstring>
 #include <memory>
 
+#include "he_backend.hpp"
+#include "he_plain_tensor_view.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
 #include "ngraph/descriptor/primary_tensor_view.hpp"
-#include "he_plain_tensor_view.hpp"
-#include "he_backend.hpp"
 
 using namespace ngraph;
 using namespace std;
 
 runtime::he::HEPlainTensorView::HEPlainTensorView(const ngraph::element::Type& element_type,
-                                        const Shape& shape,
-                                        void* memory_pointer,
-                                        std::shared_ptr<HEBackend> he_backend,
-                                        const string& name)
+                                                  const Shape& shape,
+                                                  void* memory_pointer,
+                                                  std::shared_ptr<HEBackend> he_backend,
+                                                  const string& name)
     : runtime::he::HETensorView(std::make_shared<ngraph::descriptor::PrimaryTensorView>(
           std::make_shared<ngraph::TensorViewType>(element_type, shape), name, true, true, false))
     , m_allocated_buffer_pool(nullptr)
@@ -60,9 +60,9 @@ runtime::he::HEPlainTensorView::HEPlainTensorView(const ngraph::element::Type& e
 }
 
 runtime::he::HEPlainTensorView::HEPlainTensorView(const ngraph::element::Type& element_type,
-                                        const Shape& shape,
-                                        std::shared_ptr<HEBackend> he_backend,
-                                        const string& name)
+                                                  const Shape& shape,
+                                                  std::shared_ptr<HEBackend> he_backend,
+                                                  const string& name)
     : he::HEPlainTensorView(element_type, shape, nullptr, he_backend, name)
 {
 }
@@ -88,14 +88,15 @@ const char* runtime::he::HEPlainTensorView::get_data_ptr() const
 void runtime::he::HEPlainTensorView::write(const void* source, size_t tensor_offset, size_t n)
 {
     const element::Type& type = get_element_type();
-    if (tensor_offset + n/type.size() * sizeof(seal::Plaintext) > m_buffer_size)
+    if (tensor_offset + n / type.size() * sizeof(seal::Plaintext) > m_buffer_size)
     {
         throw out_of_range("write access past end of tensor");
     }
     char* target = get_data_ptr();
 
     size_t offset = tensor_offset;
-    for(int i = 0; i < n / type.size(); ++i) {
+    for (int i = 0; i < n / type.size(); ++i)
+    {
         seal::Plaintext* p = new seal::Plaintext;
         m_he_backend->encode(p, (void*)((char*)source + i * type.size()), type);
         memcpy(&target[offset], p, sizeof(seal::Plaintext));
@@ -113,11 +114,12 @@ void runtime::he::HEPlainTensorView::read(void* target, size_t tensor_offset, si
     }
 
     char* source = (char*)(get_data_ptr());
-    seal::Plaintext* pts = (seal::Plaintext*) source;
+    seal::Plaintext* pts = (seal::Plaintext*)source;
 
     size_t offset = tensor_offset;
     void* x = malloc(type.size());
-    for(int i = 0; i < n / type.size(); ++i) {
+    for (int i = 0; i < n / type.size(); ++i)
+    {
         seal::Plaintext p = pts[i];
         m_he_backend->decode((void*)((char*)target + offset), p, type);
 

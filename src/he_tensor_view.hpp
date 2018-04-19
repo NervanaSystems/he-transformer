@@ -33,7 +33,7 @@ namespace ngraph
             {
             public:
                 HETensorView(const std::shared_ptr<ngraph::descriptor::TensorView>& descriptor)
-                : TensorView(descriptor)
+                    : TensorView(descriptor)
                 {
                 }
 

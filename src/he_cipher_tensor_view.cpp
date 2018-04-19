@@ -17,19 +17,19 @@
 #include <cstring>
 #include <memory>
 
+#include "he_backend.hpp"
+#include "he_cipher_tensor_view.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
 #include "ngraph/descriptor/primary_tensor_view.hpp"
-#include "he_cipher_tensor_view.hpp"
-#include "he_backend.hpp"
 
 using namespace ngraph;
 using namespace std;
 
 runtime::he::HECipherTensorView::HECipherTensorView(const ngraph::element::Type& element_type,
-                                        const Shape& shape,
-                                        void* memory_pointer,
-                                        std::shared_ptr<HEBackend> he_backend,
-                                        const string& name)
+                                                    const Shape& shape,
+                                                    void* memory_pointer,
+                                                    std::shared_ptr<HEBackend> he_backend,
+                                                    const string& name)
     : runtime::he::HETensorView(std::make_shared<ngraph::descriptor::PrimaryTensorView>(
           std::make_shared<ngraph::TensorViewType>(element_type, shape), name, true, true, false))
     , m_allocated_buffer_pool(nullptr)
@@ -60,9 +60,9 @@ runtime::he::HECipherTensorView::HECipherTensorView(const ngraph::element::Type&
 }
 
 runtime::he::HECipherTensorView::HECipherTensorView(const ngraph::element::Type& element_type,
-                                        const Shape& shape,
-                                        std::shared_ptr<HEBackend> he_backend,
-                                        const string& name)
+                                                    const Shape& shape,
+                                                    std::shared_ptr<HEBackend> he_backend,
+                                                    const string& name)
     : he::HECipherTensorView(element_type, shape, nullptr, he_backend, name)
 {
 }
@@ -88,7 +88,7 @@ const char* runtime::he::HECipherTensorView::get_data_ptr() const
 void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_offset, size_t n)
 {
     const element::Type& type = get_element_type();
-    if (tensor_offset + n/type.size() * sizeof(seal::Ciphertext) > m_buffer_size)
+    if (tensor_offset + n / type.size() * sizeof(seal::Ciphertext) > m_buffer_size)
     {
         throw out_of_range("write access past end of tensor");
     }
@@ -96,7 +96,8 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
     seal::Plaintext* plain_target = (seal::Plaintext*)target;
 
     size_t offset = tensor_offset;
-    for(int i = 0; i < n / type.size(); ++i) {
+    for (int i = 0; i < n / type.size(); ++i)
+    {
         seal::Plaintext* p = new seal::Plaintext;
         seal::Ciphertext* c = new seal::Ciphertext;
         m_he_backend->encode(p, (void*)((char*)source + i * type.size()), type);
@@ -116,11 +117,12 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
     }
 
     char* source = (char*)(get_data_ptr());
-    seal::Ciphertext* cts = (seal::Ciphertext*) source;
+    seal::Ciphertext* cts = (seal::Ciphertext*)source;
 
     size_t offset = tensor_offset;
     void* x = malloc(type.size());
-    for(int i = 0; i < n / type.size(); ++i) {
+    for (int i = 0; i < n / type.size(); ++i)
+    {
         seal::Ciphertext c = cts[i];
         seal::Plaintext* p = new seal::Plaintext;
         m_he_backend->decrypt(*p, c);

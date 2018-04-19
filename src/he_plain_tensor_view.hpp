@@ -16,10 +16,10 @@
 
 #pragma once
 
-#include "ngraph/runtime/tensor_view.hpp"
-#include "he_tensor_view.hpp"
-#include "ngraph/type/element_type.hpp"
 #include <cstring>
+#include "he_tensor_view.hpp"
+#include "ngraph/runtime/tensor_view.hpp"
+#include "ngraph/type/element_type.hpp"
 
 namespace ngraph
 {
