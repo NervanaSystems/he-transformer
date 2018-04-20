@@ -49,9 +49,13 @@ include(external/external_gmp.cmake)
 include(external/external_ntl.cmake)
 include(external/external_heaan.cmake)
 include(external/external_seal.cmake)
+include(external/external_gtest.cmake)
 
 # HE transformer headers
 set(HE_TRANSFORMER_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # HE transformer source directory
 add_subdirectory(src)
+
+# HE library tests
+add_subdirectory(test_he_lib)
