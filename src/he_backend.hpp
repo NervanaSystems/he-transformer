@@ -36,7 +36,8 @@ namespace ngraph
             class HEPlainTensorView;
             class HECipherTensorView;
 
-            class HEBackend : public runtime::Backend
+            class HEBackend : public runtime::Backend,
+                              public std::enable_shared_from_this<HEBackend>
             {
             public:
                 HEBackend();

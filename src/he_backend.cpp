@@ -63,7 +63,7 @@ runtime::he::HEBackend::~HEBackend()
 shared_ptr<runtime::TensorView>
     runtime::he::HEBackend::create_tensor(const element::Type& element_type, const Shape& shape)
 {
-    std::shared_ptr<HEBackend> he_backend = make_shared<HEBackend>(*this);
+    std::shared_ptr<HEBackend> he_backend = shared_from_this();
     auto rc =
         make_shared<runtime::he::HECipherTensorView>(element_type, shape, he_backend, "external");
     shared_ptr<runtime::he::HETensorView> tv = static_pointer_cast<runtime::he::HETensorView>(rc);
@@ -146,9 +146,8 @@ void runtime::he::HEBackend::encode(seal::Plaintext* output,
     }
     else
     {
-        std::stringstream ss;
-        ss << "unsupported element type in encode " << type << " type " << type_name;
-        throw std::runtime_error(ss.str());
+        NGRAPH_INFO << "Unsupported element type in decode " << type_name << std::endl;
+        throw ngraph_error("Unsupported element type");
     }
 }
 
@@ -175,9 +174,8 @@ void runtime::he::HEBackend::decode(void* output,
     }
     else
     {
-        std::stringstream ss;
-        ss << "unsupported element type in decode " << type << " type " << type_name;
-        throw std::runtime_error(ss.str());
+        NGRAPH_INFO << "Unsupported element type in decode " << type_name << std::endl;
+        throw ngraph_error("Unsupported element type");
     }
 }
 
