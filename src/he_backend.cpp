@@ -181,12 +181,12 @@ void runtime::he::HEBackend::decode(void* output,
     }
 }
 
-void runtime::he::HEBackend::encrypt(seal::Ciphertext& output, seal::Plaintext& input)
+void runtime::he::HEBackend::encrypt(seal::Ciphertext& output, const seal::Plaintext& input)
 {
     m_encryptor->encrypt(input, output);
 }
 
-void runtime::he::HEBackend::decrypt(seal::Plaintext& output, seal::Ciphertext& input)
+void runtime::he::HEBackend::decrypt(seal::Plaintext& output, const seal::Ciphertext& input)
 {
     m_decryptor->decrypt(input, output);
 }

@@ -20,6 +20,7 @@
 #include "he_tensor_view.hpp"
 #include "ngraph/runtime/tensor_view.hpp"
 #include "ngraph/type/element_type.hpp"
+#include "seal/seal.h"
 
 namespace ngraph
 {
@@ -44,8 +45,8 @@ namespace ngraph
                                    const std::string& name = "external");
                 virtual ~HECipherTensorView();
 
-                char* get_data_ptr();
-                const char* get_data_ptr() const;
+                seal::Ciphertext* get_data_ptr();
+                const seal::Ciphertext* get_data_ptr() const;
 
                 size_t get_size() const;
                 const element::Type& get_element_type() const;
@@ -65,8 +66,8 @@ namespace ngraph
                 std::shared_ptr<HEBackend> m_he_backend;
 
             private:
-                char* m_allocated_buffer_pool;
-                char* m_aligned_buffer_pool;
+                seal::Ciphertext* m_allocated_buffer_pool;
+                seal::Ciphertext* m_aligned_buffer_pool;
                 size_t m_buffer_size;
             };
         }

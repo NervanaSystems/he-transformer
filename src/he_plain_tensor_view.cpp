@@ -44,12 +44,12 @@ runtime::he::HEPlainTensorView::HEPlainTensorView(const ngraph::element::Type& e
 
     if (memory_pointer != nullptr)
     {
-        m_aligned_buffer_pool = static_cast<char*>(memory_pointer);
+        m_aligned_buffer_pool = static_cast<seal::Plaintext*>(memory_pointer);
     }
     else if (m_buffer_size > 0)
     {
         size_t allocation_size = m_buffer_size + runtime::alignment;
-        m_allocated_buffer_pool = static_cast<char*>(malloc(allocation_size));
+        m_allocated_buffer_pool = static_cast<seal::Plaintext*>(malloc(allocation_size));
         m_aligned_buffer_pool = m_allocated_buffer_pool;
         size_t mod = size_t(m_aligned_buffer_pool) % alignment;
         if (mod != 0)
@@ -75,12 +75,12 @@ runtime::he::HEPlainTensorView::~HEPlainTensorView()
     }
 }
 
-char* runtime::he::HEPlainTensorView::get_data_ptr()
+seal::Plaintext* runtime::he::HEPlainTensorView::get_data_ptr()
 {
     return m_aligned_buffer_pool;
 }
 
-const char* runtime::he::HEPlainTensorView::get_data_ptr() const
+const seal::Plaintext* runtime::he::HEPlainTensorView::get_data_ptr() const
 {
     return m_aligned_buffer_pool;
 }
@@ -92,16 +92,14 @@ void runtime::he::HEPlainTensorView::write(const void* source, size_t tensor_off
     {
         throw out_of_range("write access past end of tensor");
     }
-    char* target = get_data_ptr();
+    seal::Plaintext* target = get_data_ptr();
 
-    size_t offset = tensor_offset;
+    size_t offset = tensor_offset / sizeof(seal::Plaintext);
     for (int i = 0; i < n / type.size(); ++i)
     {
         seal::Plaintext* p = new seal::Plaintext;
         m_he_backend->encode(p, (void*)((char*)source + i * type.size()), type);
-        memcpy(&target[offset], p, sizeof(seal::Plaintext));
-
-        offset += sizeof(seal::Plaintext);
+        memcpy(&target[offset + i], p, sizeof(seal::Plaintext));
     }
 }
 
@@ -113,17 +111,14 @@ void runtime::he::HEPlainTensorView::read(void* target, size_t tensor_offset, si
         throw out_of_range("read access past end of tensor");
     }
 
-    char* source = (char*)(get_data_ptr());
-    seal::Plaintext* pts = (seal::Plaintext*)source;
+    const seal::Plaintext* source = get_data_ptr();
 
-    size_t offset = tensor_offset;
+    size_t offset = tensor_offset / sizeof(seal::Plaintext);
     void* x = malloc(type.size());
     for (int i = 0; i < n / type.size(); ++i)
     {
-        seal::Plaintext p = pts[i];
-        m_he_backend->decode((void*)((char*)target + offset), p, type);
-
-        offset += type.size();
+        seal::Plaintext p = source[offset + i];
+        m_he_backend->decode((void*)((char*)target + i * type.size()), p, type);
     }
 }
 

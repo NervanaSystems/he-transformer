@@ -44,12 +44,12 @@ runtime::he::HECipherTensorView::HECipherTensorView(const ngraph::element::Type&
 
     if (memory_pointer != nullptr)
     {
-        m_aligned_buffer_pool = static_cast<char*>(memory_pointer);
+        m_aligned_buffer_pool = static_cast<seal::Ciphertext*>(memory_pointer);
     }
     else if (m_buffer_size > 0)
     {
         size_t allocation_size = m_buffer_size + runtime::alignment;
-        m_allocated_buffer_pool = static_cast<char*>(malloc(allocation_size));
+        m_allocated_buffer_pool = static_cast<seal::Ciphertext*>(malloc(allocation_size));
         m_aligned_buffer_pool = m_allocated_buffer_pool;
         size_t mod = size_t(m_aligned_buffer_pool) % alignment;
         if (mod != 0)
@@ -75,12 +75,12 @@ runtime::he::HECipherTensorView::~HECipherTensorView()
     }
 }
 
-char* runtime::he::HECipherTensorView::get_data_ptr()
+seal::Ciphertext* runtime::he::HECipherTensorView::get_data_ptr()
 {
     return m_aligned_buffer_pool;
 }
 
-const char* runtime::he::HECipherTensorView::get_data_ptr() const
+const seal::Ciphertext* runtime::he::HECipherTensorView::get_data_ptr() const
 {
     return m_aligned_buffer_pool;
 }
@@ -92,10 +92,9 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
     {
         throw out_of_range("write access past end of tensor");
     }
-    char* target = get_data_ptr();
-    seal::Plaintext* plain_target = (seal::Plaintext*)target;
+    seal::Ciphertext* target = get_data_ptr();
 
-    size_t offset = tensor_offset;
+    size_t offset = tensor_offset / sizeof(seal::Ciphertext);
 
     for (int i = 0; i < n / type.size(); ++i)
     {
@@ -103,9 +102,7 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
         seal::Ciphertext* c = new seal::Ciphertext;
         m_he_backend->encode(p, (void*)((char*)source + i * type.size()), type);
         m_he_backend->encrypt(*c, *p);
-        memcpy(&target[offset], c, sizeof(seal::Ciphertext));
-
-        offset += sizeof(seal::Ciphertext);
+        memcpy(&target[offset + i], c, sizeof(seal::Ciphertext));
     }
 }
 
@@ -116,19 +113,15 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
     {
         throw out_of_range("read access past end of tensor");
     }
+    const seal::Ciphertext* source = get_data_ptr();
 
-    char* source = (char*)(get_data_ptr());
-    seal::Ciphertext* cts = (seal::Ciphertext*)source;
-
-    size_t offset = tensor_offset;
+    size_t offset = tensor_offset / sizeof(seal::Ciphertext);
     for (int i = 0; i < n / type.size(); ++i)
     {
-        seal::Ciphertext c = cts[i];
+        const seal::Ciphertext c = source[i + offset];
         seal::Plaintext* p = new seal::Plaintext;
         m_he_backend->decrypt(*p, c);
-        m_he_backend->decode((void*)((char*)target + offset), *p, type);
-
-        offset += type.size();
+        m_he_backend->decode((void*)((char*)target + i * type.size()), *p, type);
     }
 }
 
