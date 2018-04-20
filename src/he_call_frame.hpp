@@ -20,13 +20,13 @@
 #include <memory>
 #include <vector>
 
+#include "he_cipher_tensor_view.hpp"
+#include "he_tensor_view.hpp"
 #include "ngraph/function.hpp"
 #include "ngraph/graph_util.hpp"
 #include "ngraph/node.hpp"
-#include "ngraph/util.hpp"
 #include "ngraph/type/element_type.hpp"
-#include "he_tensor_view.hpp"
-#include "he_cipher_tensor_view.hpp"
+#include "ngraph/util.hpp"
 
 namespace ngraph
 {
@@ -46,6 +46,7 @@ namespace ngraph
             class HECallFrame
             {
                 friend class HEBackend;
+
             public:
                 HECallFrame(const std::shared_ptr<Function>& function);
 
@@ -65,7 +66,7 @@ namespace ngraph
                 std::unordered_map<const Node*, stopwatch> m_timer_map;
 
                 static void perform_nan_check(const std::vector<std::shared_ptr<he::HETensorView>>&,
-                        const Node* op = nullptr);
+                                              const Node* op = nullptr);
 
                 void call(std::shared_ptr<Function> function,
                           const std::vector<std::shared_ptr<runtime::he::HETensorView>>& output_tvs,
@@ -83,32 +84,32 @@ namespace ngraph
                                     const std::vector<std::shared_ptr<he::HETensorView>>& args,
                                     const std::vector<std::shared_ptr<he::HETensorView>>& out)
                 {
-					if (type == element::f64)
-					{
-						op_engine<BASE, double>(op, args, out);
-					}
-					else if (type == element::i64)
-					{
-						op_engine<BASE, int64_t>(op, args, out);
-					}
-					else if (type == element::u64)
-					{
-						op_engine<BASE, uint64_t>(op, args, out);
-					}
-					else
-					{
-						std::stringstream ss;
-						ss << "unsupported element type " << type << " op " << op.get_name();
-						throw std::runtime_error(ss.str());
-					}
+                    if (type == element::f64)
+                    {
+                        op_engine<BASE, double>(op, args, out);
+                    }
+                    else if (type == element::i64)
+                    {
+                        op_engine<BASE, int64_t>(op, args, out);
+                    }
+                    else if (type == element::u64)
+                    {
+                        op_engine<BASE, uint64_t>(op, args, out);
+                    }
+                    else
+                    {
+                        std::stringstream ss;
+                        ss << "unsupported element type " << type << " op " << op.get_name();
+                        throw std::runtime_error(ss.str());
+                    }
                 }
 
-				template <typename T, typename S>
-				void op_engine(ngraph::Node& node,
-							   const std::vector<std::shared_ptr<he::HETensorView>>& args,
-							   const std::vector<std::shared_ptr<he::HETensorView>>& out)
-				{
-					std::string node_op = node.description();
+                template <typename T, typename S>
+                void op_engine(ngraph::Node& node,
+                               const std::vector<std::shared_ptr<he::HETensorView>>& args,
+                               const std::vector<std::shared_ptr<he::HETensorView>>& out)
+                {
+                    std::string node_op = node.description();
                     std::stringstream ss;
                     ss << "unsupported op " << node_op;
                     throw std::runtime_error(ss.str());

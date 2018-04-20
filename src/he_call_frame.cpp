@@ -14,11 +14,11 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "ngraph/op/result.hpp"
-#include "he_tensor_view.hpp"
-#include "he_cipher_tensor_view.hpp"
 #include "he_call_frame.hpp"
 #include "he_backend.hpp"
+#include "he_cipher_tensor_view.hpp"
+#include "he_tensor_view.hpp"
+#include "ngraph/op/result.hpp"
 
 using namespace std;
 using namespace ngraph;
@@ -30,126 +30,128 @@ runtime::he::HECallFrame::HECallFrame(const shared_ptr<Function>& func)
 {
 }
 
-void runtime::he::HECallFrame::call(
-		std::shared_ptr<Function> function,
-		const vector<shared_ptr<runtime::he::HETensorView>>& output_tvs,
-		const vector<shared_ptr<runtime::he::HETensorView>>& input_tvs)
+void runtime::he::HECallFrame::call(std::shared_ptr<Function> function,
+                                    const vector<shared_ptr<runtime::he::HETensorView>>& output_tvs,
+                                    const vector<shared_ptr<runtime::he::HETensorView>>& input_tvs)
 {
-	if (m_nan_check)
-	{
-		perform_nan_check(input_tvs);
-	}
+    if (m_nan_check)
+    {
+        perform_nan_check(input_tvs);
+    }
     // TODO: see interpreter for how this was originally. Need to generalize to PlaintextCipherTensorViews as well
-	unordered_map<descriptor::TensorView*, shared_ptr<runtime::he::HECipherTensorView>> tensor_map;
-	size_t arg_index = 0;
-	for (shared_ptr<op::Parameter> param : function->get_parameters())
-	{
-		for (size_t i = 0; i < param->get_output_size(); ++i)
-		{
-			descriptor::TensorView* tv = param->get_output_tensor_view(i).get();
+    unordered_map<descriptor::TensorView*, shared_ptr<runtime::he::HECipherTensorView>> tensor_map;
+    size_t arg_index = 0;
+    for (shared_ptr<op::Parameter> param : function->get_parameters())
+    {
+        for (size_t i = 0; i < param->get_output_size(); ++i)
+        {
+            descriptor::TensorView* tv = param->get_output_tensor_view(i).get();
             shared_ptr<runtime::he::HECipherTensorView> hetv =
-                static_pointer_cast<runtime::he::HECipherTensorView>(input_tvs[arg_index+1]);
-			tensor_map.insert({tv, hetv});
-		}
-	}
+                static_pointer_cast<runtime::he::HECipherTensorView>(input_tvs[arg_index + 1]);
+            tensor_map.insert({tv, hetv});
+        }
+    }
 
-	for (size_t i = 0; i < function->get_output_size(); i++)
-	{
-		auto output_op = function->get_output_op(i);
-		if (!std::dynamic_pointer_cast<op::Result>(output_op))
-		{
-			throw ngraph_error("One of function's outputs isn't op::Result");
-		}
-		descriptor::TensorView* tv = function->get_output_op(i)->get_output_tensor_view(0).get();
+    for (size_t i = 0; i < function->get_output_size(); i++)
+    {
+        auto output_op = function->get_output_op(i);
+        if (!std::dynamic_pointer_cast<op::Result>(output_op))
+        {
+            throw ngraph_error("One of function's outputs isn't op::Result");
+        }
+        descriptor::TensorView* tv = function->get_output_op(i)->get_output_tensor_view(0).get();
         shared_ptr<runtime::he::HECipherTensorView> hetv =
             static_pointer_cast<runtime::he::HECipherTensorView>(output_tvs[i]);
-		tensor_map.insert({tv, hetv});
-	}
+        tensor_map.insert({tv, hetv});
+    }
 
-	// Invoke computation
-	for (shared_ptr<Node> op : function->get_ordered_ops())
-	{
-		if (op->description() == "Parameter")
-		{
-			continue;
-		}
+    // Invoke computation
+    for (shared_ptr<Node> op : function->get_ordered_ops())
+    {
+        if (op->description() == "Parameter")
+        {
+            continue;
+        }
 
-		vector<shared_ptr<runtime::he::HETensorView>> inputs;
-		vector<shared_ptr<runtime::he::HETensorView>> outputs;
-		for (const descriptor::Input& input : op->get_inputs())
-		{
-			descriptor::TensorView* tv = input.get_output().get_tensor_view().get();
-			string name = tv->get_tensor().get_name();
-			inputs.push_back(tensor_map.at(tv));
-		}
-		for (size_t i = 0; i < op->get_output_size(); ++i)
-		{
-			descriptor::TensorView* tv = op->get_output_tensor_view(i).get();
-			string name = tv->get_tensor().get_name();
-			shared_ptr<runtime::he::HECipherTensorView> itv;
-			if (!contains_key(tensor_map, tv))
-			{
-				// The output tensor is not in the tensor map so create a new tensor
-				const Shape& shape = op->get_output_shape(i);
-				const element::Type& element_type = op->get_output_element_type(i);
-				string tensor_name = op->get_output_tensor(i).get_name();
-				itv = make_shared<runtime::he::HECipherTensorView>(element_type, shape, std::shared_ptr<HEBackend>(he_backend)); // TODO: include tensor name
-				tensor_map.insert({tv, itv});
-			}
-			else
-			{
-				itv = tensor_map.at(tv);
-			}
-			outputs.push_back(itv);
-		}
+        vector<shared_ptr<runtime::he::HETensorView>> inputs;
+        vector<shared_ptr<runtime::he::HETensorView>> outputs;
+        for (const descriptor::Input& input : op->get_inputs())
+        {
+            descriptor::TensorView* tv = input.get_output().get_tensor_view().get();
+            string name = tv->get_tensor().get_name();
+            inputs.push_back(tensor_map.at(tv));
+        }
+        for (size_t i = 0; i < op->get_output_size(); ++i)
+        {
+            descriptor::TensorView* tv = op->get_output_tensor_view(i).get();
+            string name = tv->get_tensor().get_name();
+            shared_ptr<runtime::he::HECipherTensorView> itv;
+            if (!contains_key(tensor_map, tv))
+            {
+                // The output tensor is not in the tensor map so create a new tensor
+                const Shape& shape = op->get_output_shape(i);
+                const element::Type& element_type = op->get_output_element_type(i);
+                string tensor_name = op->get_output_tensor(i).get_name();
+                itv = make_shared<runtime::he::HECipherTensorView>(
+                    element_type,
+                    shape,
+                    std::shared_ptr<HEBackend>(he_backend)); // TODO: include tensor name
+                tensor_map.insert({tv, itv});
+            }
+            else
+            {
+                itv = tensor_map.at(tv);
+            }
+            outputs.push_back(itv);
+        }
 
-		element::Type base_type;
-		element::Type secondary_type;
-		if (op->get_inputs().empty())
-		{
-			base_type = op->get_element_type();
-		}
-		else
-		{
-			base_type = op->get_inputs().at(0).get_tensor().get_element_type();
-		}
-		secondary_type = op->get_element_type();
+        element::Type base_type;
+        element::Type secondary_type;
+        if (op->get_inputs().empty())
+        {
+            base_type = op->get_element_type();
+        }
+        else
+        {
+            base_type = op->get_inputs().at(0).get_tensor().get_element_type();
+        }
+        secondary_type = op->get_element_type();
 
-		// Some ops have unusual input/output types so handle those special cases here
-		if (op->description() == "Select")
-		{
-			base_type = op->get_inputs().at(1).get_tensor().get_element_type();
-			secondary_type = op->get_inputs().at(0).get_tensor().get_element_type();
-		}
+        // Some ops have unusual input/output types so handle those special cases here
+        if (op->description() == "Select")
+        {
+            base_type = op->get_inputs().at(1).get_tensor().get_element_type();
+            secondary_type = op->get_inputs().at(0).get_tensor().get_element_type();
+        }
 
-		if (m_emit_timing)
-		{
-			m_timer_map[op.get()].start();
-		}
-		generate_calls(base_type, secondary_type, *op, inputs, outputs);
-		if (m_emit_timing)
-		{
-			stopwatch& timer = m_timer_map[op.get()];
-			timer.stop();
-		}
-		if (m_nan_check)
-		{
-			perform_nan_check(outputs, op.get());
-		}
+        if (m_emit_timing)
+        {
+            m_timer_map[op.get()].start();
+        }
+        generate_calls(base_type, secondary_type, *op, inputs, outputs);
+        if (m_emit_timing)
+        {
+            stopwatch& timer = m_timer_map[op.get()];
+            timer.stop();
+        }
+        if (m_nan_check)
+        {
+            perform_nan_check(outputs, op.get());
+        }
 
-		// Delete any obsolete tensors
-		for (const descriptor::Tensor* t : op->liveness_free_list)
-		{
-			for (auto it = tensor_map.begin(); it != tensor_map.end(); ++it)
-			{
-				if (it->second->get_tensor().get_name() == t->get_name())
-				{
-					tensor_map.erase(it);
-					break;
-				}
-			}
-		}
-	}
+        // Delete any obsolete tensors
+        for (const descriptor::Tensor* t : op->liveness_free_list)
+        {
+            for (auto it = tensor_map.begin(); it != tensor_map.end(); ++it)
+            {
+                if (it->second->get_tensor().get_name() == t->get_name())
+                {
+                    tensor_map.erase(it);
+                    break;
+                }
+            }
+        }
+    }
 }
 
 void runtime::he::HECallFrame::generate_calls(
@@ -227,8 +229,8 @@ void runtime::he::HECallFrame::call(const vector<shared_ptr<runtime::TensorView>
     call(m_function, out, args);
 }
 
-void runtime::he::HECallFrame::perform_nan_check(
-    const vector<shared_ptr<he::HETensorView>>& tvs, const Node* op)
+void runtime::he::HECallFrame::perform_nan_check(const vector<shared_ptr<he::HETensorView>>& tvs,
+                                                 const Node* op)
 {
     return;
     /*
@@ -282,4 +284,3 @@ void runtime::he::HECallFrame::set_nan_check(bool value)
 {
     m_nan_check = value;
 }
-

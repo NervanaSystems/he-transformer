@@ -19,7 +19,6 @@
 
 #include "util/test_tools.hpp"
 
-
 TEST(he_transformer, trivial)
 {
     int a = 1;
@@ -36,13 +35,8 @@ TEST(he_transformer, backend_init)
 TEST(he_transformer, tensor_read_write)
 {
     auto backend = runtime::Backend::create("HE");
-
     Shape shape{2, 2};
-
     shared_ptr<runtime::TensorView> a = backend->create_tensor<int64_t>(shape);
-
     copy_data(a, test::NDArray<int64_t, 2>({{1, 2}, {3, 4}}).get_vector());
-
-    EXPECT_EQ(read_vector<int64_t>(a),
-            (test::NDArray<int64_t, 2>({{1, 2}, {3, 4}})).get_vector());
+    EXPECT_EQ(read_vector<int64_t>(a), (test::NDArray<int64_t, 2>({{1, 2}, {3, 4}})).get_vector());
 }

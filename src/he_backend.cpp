@@ -15,10 +15,10 @@
 *******************************************************************************/
 
 #include "he_backend.hpp"
-#include "he_tensor_view.hpp"
+#include "he_call_frame.hpp"
 #include "he_cipher_tensor_view.hpp"
 #include "he_external_function.hpp"
-#include "he_call_frame.hpp"
+#include "he_tensor_view.hpp"
 
 using namespace ngraph;
 using namespace std;
@@ -64,7 +64,8 @@ shared_ptr<runtime::TensorView>
     runtime::he::HEBackend::create_tensor(const element::Type& element_type, const Shape& shape)
 {
     std::shared_ptr<HEBackend> he_backend = make_shared<HEBackend>(*this);
-    auto rc = make_shared<runtime::he::HECipherTensorView>(element_type, shape, he_backend, "external");
+    auto rc =
+        make_shared<runtime::he::HECipherTensorView>(element_type, shape, he_backend, "external");
     shared_ptr<runtime::he::HETensorView> tv = static_pointer_cast<runtime::he::HETensorView>(rc);
     return static_pointer_cast<runtime::TensorView>(tv);
 }
@@ -106,7 +107,6 @@ bool runtime::he::HEBackend::call(std::shared_ptr<Function> func,
     instance.m_call_frame->call(outputs, inputs);
 
     return rc;
-
 }
 
 void runtime::he::HEBackend::remove_compiled_function(std::shared_ptr<Function> func)

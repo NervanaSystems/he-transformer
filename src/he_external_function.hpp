@@ -30,18 +30,18 @@ namespace ngraph
 
             class HEExternalFunction : public std::enable_shared_from_this<HEExternalFunction>
             {
-                public:
-                    HEExternalFunction(const std::shared_ptr<Function>& function,
-                            bool release_function = false);
-                    std::shared_ptr<HECallFrame> make_call_frame();
+            public:
+                HEExternalFunction(const std::shared_ptr<Function>& function,
+                                   bool release_function = false);
+                std::shared_ptr<HECallFrame> make_call_frame();
 
-                protected:
-                    void compile();
-                    void release_function() {m_function = nullptr; }
-                    std::shared_ptr<ngraph::Function> m_function;
-                    bool m_release_function;
-                    bool m_is_compiled;
-                    bool m_timing;
+            protected:
+                void compile();
+                void release_function() { m_function = nullptr; }
+                std::shared_ptr<ngraph::Function> m_function;
+                bool m_release_function;
+                bool m_is_compiled;
+                bool m_timing;
             };
         }
     }

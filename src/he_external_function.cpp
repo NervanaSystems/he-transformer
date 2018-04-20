@@ -14,16 +14,16 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "ngraph/function.hpp"
+#include "he_external_function.hpp"
+#include "he_backend.hpp"
+#include "he_call_frame.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
+#include "ngraph/function.hpp"
 #include "ngraph/pass/assign_layout.hpp"
 #include "ngraph/pass/dump_sorted.hpp"
 #include "ngraph/pass/liveness.hpp"
 #include "ngraph/pass/manager.hpp"
 #include "ngraph/pass/memory_layout.hpp"
-#include "he_backend.hpp"
-#include "he_call_frame.hpp"
-#include "he_external_function.hpp"
 
 using namespace std;
 using namespace ngraph;
