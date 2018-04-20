@@ -41,10 +41,6 @@ set(NGRAPH_INSTALL_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/include")
 include(ExternalProject)
 set(EXTERNAL_INSTALL_DIR ${CMAKE_BINARY_DIR}/external)
 
-# set(NGRAPH_HE_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/he_install)
-# set(NGRAPH_HE_INSTALL_LIB_DIR ${NGRAPH_HE_INSTALL_DIR}/lib)
-# set(NGRAPH_HE_INSTALL_INCLUDE_DIR ${NGRAPH_HE_INSTALL_DIR}/include)
-
 include(external/external_gmp.cmake)
 include(external/external_ntl.cmake)
 include(external/external_heaan.cmake)
