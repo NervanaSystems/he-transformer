@@ -14,23 +14,20 @@
 # limitations under the License.
 # ******************************************************************************
 
-include(ExternalProject)
-
-set(HEAAN_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ext_heaan)
-set(HEAAN_SOURCE_DIR ${HEAAN_PREFIX}/src/ext_heaan)
-
-ExternalProject_Add(
-    ext_heaan
-    DEPENDS ext_ntl
-    GIT_REPOSITORY https://github.com/NervanaSystems/HEAAN.git
-    GIT_TAG master
-    PREFIX ${HEAAN_PREFIX}
-    UPDATE_COMMAND ""
-    CMAKE_ARGS
-        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-        -DCMAKE_INSTALL_PREFIX=${NGRAPH_HE_INSTALL_DIR}
-        -DNGRAPH_HE_INSTALL_INCLUDE_DIR=${NGRAPH_HE_INSTALL_INCLUDE_DIR}
-        -DNGRAPH_HE_INSTALL_LIB_DIR=${NGRAPH_HE_INSTALL_LIB_DIR}
+set (SRC
+    gtest_main.cpp
+    test_seal.cpp
 )
+
+include_directories(
+    SYSTEM
+    ${GTEST_INCLUDE_DIR}
+    ${NGRAPH_HE_INSTALL_INCLUDE_DIR}
+)
+link_directories(${NGRAPH_HE_INSTALL_LIB_DIR})
+
+add_executable(test-he-lib ${SRC})
+add_dependencies(test-he-lib ext_gtest ext_seal)
+set_target_properties(test-he-lib PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${EXTERNAL_NGRAPH_TEST_DIR})
+target_link_libraries(test-he-lib libgtest seal pthread)
+target_link_libraries(test-he-lib ${CMAKE_DL_LIBS})
