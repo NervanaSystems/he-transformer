@@ -170,5 +170,12 @@ void runtime::he::HEBackend::encrypt(seal::Ciphertext& output, const seal::Plain
 
 void runtime::he::HEBackend::decrypt(seal::Plaintext& output, const seal::Ciphertext& input)
 {
+    std::cout << "decrypting " << std::endl;
+    std::cout << "output coeff_count " << output.coeff_count() << std::endl;
+    std::cout << "output capacity " << output.capacity() << std::endl;
+
+    std::cout << "ciphertext " << input.size_capacity() << std::endl;
+
     m_decryptor->decrypt(input, output);
+    std::cout << "decrypted " << std::endl;
 }

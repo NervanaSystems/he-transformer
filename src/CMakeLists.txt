@@ -25,6 +25,7 @@ set (HE_SRC
     he_tensor_view.cpp
     he_cipher_tensor_view.cpp
     he_manager.cpp
+    op/add.cpp
 )
 
 # Paths for the upstream ngraph

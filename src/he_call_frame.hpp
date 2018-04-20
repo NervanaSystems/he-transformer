@@ -27,6 +27,8 @@
 #include "ngraph/node.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "ngraph/util.hpp"
+#include "op/add.hpp"
+#include "op/result.hpp"
 
 namespace ngraph
 {
@@ -58,7 +60,7 @@ namespace ngraph
 
             private:
                 std::shared_ptr<Function> m_function;
-                HEBackend* he_backend;
+                std::shared_ptr<HEBackend> he_backend;
                 std::unordered_map<const Node*, stopwatch> m_timer_map;
 
                 void call(std::shared_ptr<Function> function,
@@ -98,7 +100,25 @@ namespace ngraph
 					{
 						std::string node_op = node.description();
 						std::cout << "node op " << node_op << std::endl;
-						throw ngraph_error("node op unimplemented");
+
+                        if (node_op == "Add")
+                        {
+                            HECipherTensorView* arg0 = dynamic_cast<HECipherTensorView*>(args[0].get());
+                            HECipherTensorView* arg1 = dynamic_cast<HECipherTensorView*>(args[1].get());
+                            HECipherTensorView* out0 = dynamic_cast<HECipherTensorView*>(out[0].get());
+
+                            runtime::he::add(arg0, arg1, out0, out0->get_element_count());
+
+                            std::cout << "Added! OMG! " << std::endl;
+                        }
+                        else if(node_op == "Result")
+                        {
+                            std::cout << "TODO: implement result " << std::endl;
+                        }
+                        else
+                        {
+                            throw ngraph_error("node op " + node_op + " unimplemented");
+                        }
 
 					}
 

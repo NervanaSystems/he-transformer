@@ -58,14 +58,14 @@ TEST(he_transformer, ab)
 	auto backend = runtime::Backend::create("HE");
 
 	// Allocate tensors for arguments a, b, c
-	auto t_a = backend->create_tensor(element::f64, s);
-	auto t_b = backend->create_tensor(element::f64, s);
+	auto t_a = backend->create_tensor(element::i64, s);
+	auto t_b = backend->create_tensor(element::i64, s);
 	// Allocate tensor for the result
-	auto t_result = backend->create_tensor(element::f64, s);
+	auto t_result = backend->create_tensor(element::i64, s);
 
 	// Initialize tensors
-	double v_a[2][3] = {{1, 2, 3}, {4, 5, 6}};
-	double v_b[2][3] = {{7, 8, 9}, {10, 11, 12}};
+	uint64_t v_a[2][3] = {{1, 2, 3}, {4, 5, 6}};
+	uint64_t v_b[2][3] = {{7, 8, 9}, {10, 11, 12}};
 
 	t_a->write(&v_a, 0, sizeof(v_a));
 	t_b->write(&v_b, 0, sizeof(v_b));
@@ -73,10 +73,12 @@ TEST(he_transformer, ab)
 
 	// Invoke the function
 	backend->call(f, {t_result}, {t_a, t_b});
+	std::cout << "called " << std::endl;
 
 	// Get the result
-	double r[2][3];
+	uint64_t r[2][3];
 	t_result->read(&r, 0, sizeof(r));
+    std::cout << "result read " << std::endl;
 
     std::cout << "[" << std::endl;
     for (size_t i = 0; i < s[0]; ++i)
