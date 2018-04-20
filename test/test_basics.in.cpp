@@ -38,5 +38,6 @@ TEST(he_transformer, tensor_read_write)
     Shape shape{2, 3};
     shared_ptr<runtime::TensorView> a = backend->create_tensor<int64_t>(shape);
     copy_data(a, test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector());
-    EXPECT_EQ(read_vector<int64_t>(a), (test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector());
+    EXPECT_EQ(read_vector<int64_t>(a),
+              (test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector());
 }

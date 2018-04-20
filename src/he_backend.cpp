@@ -84,8 +84,6 @@ bool runtime::he::HEBackend::compile(std::shared_ptr<Function> func)
         instance.m_external_function = make_shared<HEExternalFunction>(func);
         auto cf = instance.m_external_function->make_call_frame();
         instance.m_call_frame = dynamic_pointer_cast<HECallFrame>(cf);
-        instance.m_call_frame->m_emit_timing = instance.m_performance_counters_enabled;
-        instance.m_call_frame->set_nan_check(instance.m_nan_check_enabled);
     }
     return true;
 }
@@ -95,8 +93,6 @@ bool runtime::he::HEBackend::call(std::shared_ptr<Function> func,
                                   const vector<shared_ptr<runtime::TensorView>>& inputs)
 {
     bool rc = true;
-
-    //validate_call(func, outputs, inputs);
 
     FunctionInstance& instance = m_function_map[func];
     if (instance.m_external_function == nullptr)
@@ -114,35 +110,23 @@ void runtime::he::HEBackend::remove_compiled_function(std::shared_ptr<Function> 
     throw ngraph_error("HEBackend remove compile function unimplemented");
 }
 
-void runtime::he::HEBackend::encode(seal::Plaintext* output,
+void runtime::he::HEBackend::encode(seal::Plaintext& output,
                                     const void* input,
                                     const ngraph::element::Type& type)
 {
     const std::string type_name = type.c_type_string();
 
-    if (type_name == "int32_t")
+    if (type_name == "int64_t")
     {
-        *output = m_int_encoder->encode(*(int32_t*)input);
-    }
-    else if (type_name == "int64_t")
-    {
-        *output = m_int_encoder->encode(*(int64_t*)input);
-    }
-    else if (type_name == "uint32_t")
-    {
-        *output = m_int_encoder->encode(*(uint32_t*)input);
+        output = m_int_encoder->encode(*(int64_t*)input);
     }
     else if (type_name == "uint64_t")
     {
-        *output = m_int_encoder->encode(*(uint64_t*)input);
-    }
-    else if (type_name == "float")
-    {
-        *output = m_frac_encoder->encode(*(float*)input);
+        output = m_int_encoder->encode(*(uint64_t*)input);
     }
     else if (type_name == "double")
     {
-        *output = m_frac_encoder->encode(*(double*)input);
+        output = m_frac_encoder->encode(*(double*)input);
     }
     else
     {

@@ -23,7 +23,6 @@ set (HE_SRC
     he_call_frame.cpp
     he_external_function.cpp
     he_tensor_view.cpp
-    he_plain_tensor_view.cpp
     he_cipher_tensor_view.cpp
     he_manager.cpp
 )

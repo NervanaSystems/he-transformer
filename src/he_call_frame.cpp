@@ -25,8 +25,6 @@ using namespace ngraph;
 
 runtime::he::HECallFrame::HECallFrame(const shared_ptr<Function>& func)
     : m_function(func)
-    , m_emit_timing(false)
-    , m_nan_check(true)
 {
 }
 
@@ -34,10 +32,6 @@ void runtime::he::HECallFrame::call(std::shared_ptr<Function> function,
                                     const vector<shared_ptr<runtime::he::HETensorView>>& output_tvs,
                                     const vector<shared_ptr<runtime::he::HETensorView>>& input_tvs)
 {
-    if (m_nan_check)
-    {
-        perform_nan_check(input_tvs);
-    }
     // TODO: see interpreter for how this was originally. Need to generalize to PlaintextCipherTensorViews as well
     unordered_map<descriptor::TensorView*, shared_ptr<runtime::he::HECipherTensorView>> tensor_map;
     size_t arg_index = 0;
@@ -124,20 +118,8 @@ void runtime::he::HECallFrame::call(std::shared_ptr<Function> function,
             secondary_type = op->get_inputs().at(0).get_tensor().get_element_type();
         }
 
-        if (m_emit_timing)
-        {
-            m_timer_map[op.get()].start();
-        }
-        generate_calls(base_type, secondary_type, *op, inputs, outputs);
-        if (m_emit_timing)
-        {
-            stopwatch& timer = m_timer_map[op.get()];
-            timer.stop();
-        }
-        if (m_nan_check)
-        {
-            perform_nan_check(outputs, op.get());
-        }
+        // TODO: generate the calls
+        throw ngraph_error("Generating function calls not implemented");
 
         // Delete any obsolete tensors
         for (const descriptor::Tensor* t : op->liveness_free_list)
@@ -151,65 +133,6 @@ void runtime::he::HECallFrame::call(std::shared_ptr<Function> function,
                 }
             }
         }
-    }
-}
-
-void runtime::he::HECallFrame::generate_calls(
-    const element::Type& base_type,
-    const element::Type& secondary_type,
-    ngraph::Node& op,
-    const std::vector<std::shared_ptr<he::HETensorView>>& args,
-    const std::vector<std::shared_ptr<he::HETensorView>>& out)
-{
-    if (base_type == element::boolean)
-    {
-        generate_calls<char>(secondary_type, op, args, out);
-    }
-    else if (base_type == element::f32)
-    {
-        generate_calls<float>(secondary_type, op, args, out);
-    }
-    else if (base_type == element::f64)
-    {
-        generate_calls<double>(secondary_type, op, args, out);
-    }
-    else if (base_type == element::i8)
-    {
-        generate_calls<int8_t>(secondary_type, op, args, out);
-    }
-    else if (base_type == element::i16)
-    {
-        generate_calls<int16_t>(secondary_type, op, args, out);
-    }
-    else if (base_type == element::i32)
-    {
-        generate_calls<int32_t>(secondary_type, op, args, out);
-    }
-    else if (base_type == element::i64)
-    {
-        generate_calls<int64_t>(secondary_type, op, args, out);
-    }
-    else if (base_type == element::u8)
-    {
-        generate_calls<uint8_t>(secondary_type, op, args, out);
-    }
-    else if (base_type == element::u16)
-    {
-        generate_calls<uint16_t>(secondary_type, op, args, out);
-    }
-    else if (base_type == element::u32)
-    {
-        generate_calls<uint32_t>(secondary_type, op, args, out);
-    }
-    else if (base_type == element::u64)
-    {
-        generate_calls<uint64_t>(secondary_type, op, args, out);
-    }
-    else
-    {
-        stringstream ss;
-        ss << "unsupported element type " << base_type << " op " << op.get_name();
-        throw runtime_error(ss.str());
     }
 }
 
@@ -227,60 +150,4 @@ void runtime::he::HECallFrame::call(const vector<shared_ptr<runtime::TensorView>
         out.push_back(static_pointer_cast<runtime::he::HETensorView>(tv));
     }
     call(m_function, out, args);
-}
-
-void runtime::he::HECallFrame::perform_nan_check(const vector<shared_ptr<he::HETensorView>>& tvs,
-                                                 const Node* op)
-{
-    return;
-    /*
-    size_t arg_number = 1;
-    for (shared_ptr<he::HETensorView> tv : tvs)
-    {
-        const element::Type& type = tv->get_tensor().get_element_type();
-        if (type == element::f32)
-        {
-            const float* data = reinterpret_cast<float*>(tv->get_data_ptr());
-            for (size_t i = 0; i < tv->get_element_count(); i++)
-            {
-                if (std::isnan(data[i]))
-                {
-                    if (op)
-                    {
-                        throw runtime_error("nan found in op '" + op->get_name() + "' output");
-                    }
-                    else
-                    {
-                        throw runtime_error("nan found in function's input tensor number " +
-                                            to_string(arg_number));
-                    }
-                }
-            }
-        }
-        else if (type == element::f64)
-        {
-            const double* data = reinterpret_cast<double*>(tv->get_data_ptr());
-            for (size_t i = 0; i < tv->get_element_count(); i++)
-            {
-                if (std::isnan(data[i]))
-                {
-                    if (op)
-                    {
-                        throw runtime_error("nan found in op '" + op->get_name() + "' output");
-                    }
-                    else
-                    {
-                        throw runtime_error("nan found in function's input tensor number " +
-                                            to_string(arg_number));
-                    }
-                }
-            }
-        }
-        arg_number++;
-    } */
-}
-
-void runtime::he::HECallFrame::set_nan_check(bool value)
-{
-    m_nan_check = value;
 }

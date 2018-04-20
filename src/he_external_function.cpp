@@ -35,7 +35,6 @@ runtime::he::HEExternalFunction::HEExternalFunction(const shared_ptr<Function>& 
     : m_function(function)
     , m_release_function(release_function)
     , m_is_compiled(false)
-    , m_timing(false)
 {
 }
 

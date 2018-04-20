@@ -45,8 +45,8 @@ namespace ngraph
                                    const std::string& name = "external");
                 virtual ~HECipherTensorView();
 
-                seal::Ciphertext* get_data_ptr();
-                const seal::Ciphertext* get_data_ptr() const;
+                vector<shared_ptr<seal::Ciphertext>>& get_data_ptr();
+                const vector<shared_ptr<seal::Ciphertext>>& get_data_ptr() const;
 
                 size_t get_size() const;
                 const element::Type& get_element_type() const;
@@ -66,8 +66,7 @@ namespace ngraph
                 std::shared_ptr<HEBackend> m_he_backend;
 
             private:
-                seal::Ciphertext* m_allocated_buffer_pool;
-                seal::Ciphertext* m_aligned_buffer_pool;
+                std::vector<shared_ptr<seal::Ciphertext>> m_allocated_buffer_pool;
                 size_t m_buffer_size;
             };
         }

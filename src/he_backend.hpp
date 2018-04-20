@@ -67,7 +67,7 @@ namespace ngraph
                 //void encode(const HEPlainTensorView& output, const TensorView& input);
                 //void decode(const TensorView& output, const HEPlainTensorView& input);
 
-                void encode(seal::Plaintext* output,
+                void encode(seal::Plaintext& output,
                             const void* input,
                             const ngraph::element::Type& type);
                 void decode(void* output,
@@ -99,8 +99,6 @@ namespace ngraph
                 public:
                     std::shared_ptr<HEExternalFunction> m_external_function;
                     std::shared_ptr<HECallFrame> m_call_frame;
-                    bool m_nan_check_enabled = false;
-                    bool m_performance_counters_enabled = false;
                 };
 
                 std::map<std::shared_ptr<Function>, FunctionInstance> m_function_map;

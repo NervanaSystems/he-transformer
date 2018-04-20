@@ -41,7 +41,6 @@ namespace ngraph
                 std::shared_ptr<ngraph::Function> m_function;
                 bool m_release_function;
                 bool m_is_compiled;
-                bool m_timing;
             };
         }
     }
