@@ -85,49 +85,13 @@ namespace ngraph
                                     const std::vector<std::shared_ptr<he::HETensorView>>& args,
                                     const std::vector<std::shared_ptr<he::HETensorView>>& out)
                 {
-					if (type == element::boolean)
-					{
-						op_engine<BASE, char>(op, args, out);
-					}
-					else if (type == element::f32)
-					{
-						op_engine<BASE, float>(op, args, out);
-					}
-					else if (type == element::f64)
+					if (type == element::f64)
 					{
 						op_engine<BASE, double>(op, args, out);
-					}
-					else if (type == element::i8)
-					{
-						op_engine<BASE, int8_t>(op, args, out);
-					}
-					else if (type == element::i16)
-					{
-						op_engine<BASE, int16_t>(op, args, out);
-					}
-					else if (type == element::i32)
-					{
-						op_engine<BASE, int32_t>(op, args, out);
 					}
 					else if (type == element::i64)
 					{
 						op_engine<BASE, int64_t>(op, args, out);
-					}
-					else if (type == element::u8)
-					{
-						op_engine<BASE, uint8_t>(op, args, out);
-					}
-					else if (type == element::u16)
-					{
-						op_engine<BASE, uint16_t>(op, args, out);
-					}
-					else if (type == element::u32)
-					{
-						op_engine<BASE, uint32_t>(op, args, out);
-					}
-					else if (type == element::u32)
-					{
-						op_engine<BASE, uint32_t>(op, args, out);
 					}
 					else if (type == element::u64)
 					{

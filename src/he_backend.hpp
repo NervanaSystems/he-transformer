@@ -76,6 +76,11 @@ namespace ngraph
                 void encrypt(seal::Ciphertext& output, seal::Plaintext& input);
                 void decrypt(seal::Plaintext& output, seal::Ciphertext& input);
 
+                const inline std::shared_ptr<seal::Evaluator> get_evaluator()
+                {
+                    return m_evaluator;
+                }
+
             private:
                 seal::EncryptionParameters parms;
                 std::shared_ptr<seal::SEALContext> m_context;

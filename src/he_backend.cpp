@@ -146,7 +146,9 @@ void runtime::he::HEBackend::encode(seal::Plaintext* output,
     }
     else
     {
-        throw ngraph_error("Type not supported");
+        std::stringstream ss;
+        ss << "unsupported element type in encode " << type << " op " << op.get_name();
+        throw std::runtime_error(ss.str());
     }
 }
 
@@ -156,29 +158,14 @@ void runtime::he::HEBackend::decode(void* output,
 {
     const std::string type_name = type.c_type_string();
 
-    if (type_name == "int32_t")
-    {
-        int32_t x = m_int_encoder->decode_int32(input);
-        memcpy(output, &x, type.size());
-    }
-    else if (type_name == "int64_t")
+    if (type_name == "int64_t")
     {
         int64_t x = m_int_encoder->decode_int64(input);
-        memcpy(output, &x, type.size());
-    }
-    else if (type_name == "uint32_t")
-    {
-        uint32_t x = m_int_encoder->decode_int64(input);
         memcpy(output, &x, type.size());
     }
     else if (type_name == "uint64_t")
     {
         uint64_t x = m_int_encoder->decode_int64(input);
-        memcpy(output, &x, type.size());
-    }
-    else if (type_name == "float")
-    {
-        float x = m_frac_encoder->decode(input);
         memcpy(output, &x, type.size());
     }
     else if (type_name == "double")
@@ -188,7 +175,9 @@ void runtime::he::HEBackend::decode(void* output,
     }
     else
     {
-        throw ngraph_error("Type not supported");
+        std::stringstream ss;
+        ss << "unsupported element type in decode " << type << " op " << op.get_name();
+        throw std::runtime_error(ss.str());
     }
 }
 
