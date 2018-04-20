@@ -27,108 +27,76 @@ using namespace std;
 
 runtime::he::HECipherTensorView::HECipherTensorView(const ngraph::element::Type& element_type,
                                                     const Shape& shape,
-                                                    void* memory_pointer,
                                                     std::shared_ptr<HEBackend> he_backend,
                                                     const string& name)
     : runtime::he::HETensorView(std::make_shared<ngraph::descriptor::PrimaryTensorView>(
           std::make_shared<ngraph::TensorViewType>(element_type, shape), name, true, true, false))
-    , m_allocated_buffer_pool(nullptr)
-    , m_aligned_buffer_pool(nullptr)
+    , m_allocated_buffer_pool()
     , m_he_backend(he_backend)
 {
     m_descriptor->set_tensor_view_layout(
         std::make_shared<ngraph::descriptor::layout::DenseTensorViewLayout>(*m_descriptor));
 
-    int ciphertext_size = sizeof(seal::Ciphertext);
-    m_buffer_size = m_descriptor->get_tensor_view_layout()->get_size() * ciphertext_size;
+    m_buffer_size = m_descriptor->get_tensor_view_layout()->get_size();
 
-    if (memory_pointer != nullptr)
+    if (m_buffer_size > 0)
     {
-        m_aligned_buffer_pool = static_cast<char*>(memory_pointer);
+        m_allocated_buffer_pool = vector<shared_ptr<seal::Ciphertext>>(m_buffer_size);
     }
-    else if (m_buffer_size > 0)
-    {
-        size_t allocation_size = m_buffer_size + runtime::alignment;
-        m_allocated_buffer_pool = static_cast<char*>(malloc(allocation_size));
-        m_aligned_buffer_pool = m_allocated_buffer_pool;
-        size_t mod = size_t(m_aligned_buffer_pool) % alignment;
-        if (mod != 0)
-        {
-            m_aligned_buffer_pool += (alignment - mod);
-        }
-    }
-}
-
-runtime::he::HECipherTensorView::HECipherTensorView(const ngraph::element::Type& element_type,
-                                                    const Shape& shape,
-                                                    std::shared_ptr<HEBackend> he_backend,
-                                                    const string& name)
-    : he::HECipherTensorView(element_type, shape, nullptr, he_backend, name)
-{
 }
 
 runtime::he::HECipherTensorView::~HECipherTensorView()
 {
-    if (m_allocated_buffer_pool != nullptr)
-    {
-        free(m_allocated_buffer_pool);
-    }
 }
 
-char* runtime::he::HECipherTensorView::get_data_ptr()
+vector<shared_ptr<seal::Ciphertext>>& runtime::he::HECipherTensorView::get_data_ptr()
 {
-    return m_aligned_buffer_pool;
+    return m_allocated_buffer_pool;
 }
 
-const char* runtime::he::HECipherTensorView::get_data_ptr() const
+const vector<shared_ptr<seal::Ciphertext>>& runtime::he::HECipherTensorView::get_data_ptr() const
 {
-    return m_aligned_buffer_pool;
+    return m_allocated_buffer_pool;
 }
 
 void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_offset, size_t n)
 {
     const element::Type& type = get_element_type();
-    if (tensor_offset + n / type.size() * sizeof(seal::Ciphertext) > m_buffer_size)
+    if (tensor_offset / sizeof(seal::Ciphertext) + n / type.size() > m_buffer_size)
     {
         throw out_of_range("write access past end of tensor");
     }
-    char* target = get_data_ptr();
-    seal::Plaintext* plain_target = (seal::Plaintext*)target;
+    vector<shared_ptr<seal::Ciphertext>>& target = get_data_ptr();
 
-    size_t offset = tensor_offset;
+    size_t offset = tensor_offset / sizeof(seal::Ciphertext);
     for (int i = 0; i < n / type.size(); ++i)
     {
-        seal::Plaintext* p = new seal::Plaintext;
-        seal::Ciphertext* c = new seal::Ciphertext;
+        seal::Plaintext p;
+        seal::Ciphertext c;
         m_he_backend->encode(p, (void*)((char*)source + i * type.size()), type);
-        m_he_backend->encrypt(*c, *p);
-        memcpy(&target[offset], c, sizeof(seal::Ciphertext));
+        m_he_backend->encrypt(c, p);
 
-        offset += sizeof(seal::Ciphertext);
+        target[offset + i] = make_shared<seal::Ciphertext>(c);
     }
 }
 
 void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, size_t n) const
 {
     const element::Type& type = get_element_type();
-    if (tensor_offset + n / type.size() * sizeof(seal::Ciphertext) > m_buffer_size)
+    if (tensor_offset / sizeof(seal::Ciphertext) + n / type.size() > m_buffer_size)
     {
         throw out_of_range("read access past end of tensor");
     }
 
-    char* source = (char*)(get_data_ptr());
-    seal::Ciphertext* cts = (seal::Ciphertext*)source;
+    const vector<shared_ptr<seal::Ciphertext>>& source = get_data_ptr();
 
-    size_t offset = tensor_offset;
-    void* x = malloc(type.size());
+    size_t offset = tensor_offset / sizeof(seal::Ciphertext);
     for (int i = 0; i < n / type.size(); ++i)
     {
-        seal::Ciphertext c = cts[i];
-        seal::Plaintext* p = new seal::Plaintext;
-        m_he_backend->decrypt(*p, c);
-        m_he_backend->decode((void*)((char*)target + offset), *p, type);
-
-        offset += type.size();
+        const std::shared_ptr<seal::Ciphertext> c = source[offset + i];
+        seal::Plaintext p;
+        m_he_backend->decrypt(p, *c);
+        m_he_backend->decode((void*)((char*)target + i * type.size()), p, type);
     }
 }
 

@@ -19,7 +19,6 @@
 #include <map>
 #include <memory>
 
-#include "ngraph/function.hpp"
 #include "ngraph/runtime/backend.hpp"
 #include "seal/seal.h"
 
@@ -31,13 +30,14 @@ namespace ngraph
 
         namespace he
         {
-            class ExternalFunction;
+            class HEExternalFunction;
             class HECallFrame;
             class HETensorView;
             class HEPlainTensorView;
             class HECipherTensorView;
 
-            class HEBackend : public runtime::Backend
+            class HEBackend : public runtime::Backend,
+                              public std::enable_shared_from_this<HEBackend>
             {
             public:
                 HEBackend();
@@ -67,15 +67,20 @@ namespace ngraph
                 //void encode(const HEPlainTensorView& output, const TensorView& input);
                 //void decode(const TensorView& output, const HEPlainTensorView& input);
 
-                void encode(seal::Plaintext* output,
+                void encode(seal::Plaintext& output,
                             const void* input,
                             const ngraph::element::Type& type);
                 void decode(void* output,
                             const seal::Plaintext& input,
                             const ngraph::element::Type& type);
 
-                void encrypt(seal::Ciphertext& output, seal::Plaintext& input);
-                void decrypt(seal::Plaintext& output, seal::Ciphertext& input);
+                void encrypt(seal::Ciphertext& output, const seal::Plaintext& input);
+                void decrypt(seal::Plaintext& output, const seal::Ciphertext& input);
+
+                const inline std::shared_ptr<seal::Evaluator> get_evaluator()
+                {
+                    return m_evaluator;
+                }
 
             private:
                 seal::EncryptionParameters parms;
@@ -88,6 +93,15 @@ namespace ngraph
                 std::shared_ptr<seal::Encryptor> m_encryptor;
                 std::shared_ptr<seal::Decryptor> m_decryptor;
                 std::shared_ptr<seal::Evaluator> m_evaluator;
+
+                class FunctionInstance
+                {
+                public:
+                    std::shared_ptr<HEExternalFunction> m_external_function;
+                    std::shared_ptr<HECallFrame> m_call_frame;
+                };
+
+                std::map<std::shared_ptr<Function>, FunctionInstance> m_function_map;
             };
         }
     }

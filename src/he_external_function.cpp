@@ -15,21 +15,54 @@
 *******************************************************************************/
 
 #include "he_external_function.hpp"
+#include "he_backend.hpp"
+#include "he_call_frame.hpp"
+#include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
+#include "ngraph/function.hpp"
+#include "ngraph/pass/assign_layout.hpp"
+#include "ngraph/pass/dump_sorted.hpp"
+#include "ngraph/pass/liveness.hpp"
+#include "ngraph/pass/manager.hpp"
+#include "ngraph/pass/memory_layout.hpp"
 
 using namespace std;
 using namespace ngraph;
 
-runtime::he::HEExternalFunction::HEExternalFunction(const shared_ptr<Function>& function)
+using descriptor::layout::DenseTensorViewLayout;
+
+runtime::he::HEExternalFunction::HEExternalFunction(const shared_ptr<Function>& function,
+                                                    bool release_function)
+    : m_function(function)
+    , m_release_function(release_function)
+    , m_is_compiled(false)
 {
-    throw ngraph_error("Unimplemented");
 }
 
 void runtime::he::HEExternalFunction::compile()
 {
-    throw ngraph_error("Unimplemented");
+    if (m_is_compiled)
+    {
+        return;
+    }
+
+    pass::Manager pass_manager;
+    // For now, just make everyone row-major.
+    pass_manager.register_pass<pass::AssignLayout<DenseTensorViewLayout>>();
+    pass_manager.register_pass<pass::Liveness>();
+    pass_manager.run_passes(m_function);
+
+    m_is_compiled = true;
+    if (m_release_function)
+    {
+        release_function();
+    }
 }
 
-shared_ptr<runtime::CallFrame> runtime::he::HEExternalFunction::make_call_frame()
+shared_ptr<runtime::he::HECallFrame> runtime::he::HEExternalFunction::make_call_frame()
 {
-    throw ngraph_error("Unimplemented");
+    if (!m_is_compiled)
+    {
+        compile();
+    }
+    return make_shared<runtime::he::HECallFrame>(m_function);
 }

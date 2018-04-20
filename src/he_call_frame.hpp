@@ -16,8 +16,17 @@
 
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <vector>
+
+#include "he_cipher_tensor_view.hpp"
+#include "he_tensor_view.hpp"
+#include "ngraph/function.hpp"
+#include "ngraph/graph_util.hpp"
+#include "ngraph/node.hpp"
+#include "ngraph/type/element_type.hpp"
+#include "ngraph/util.hpp"
 
 namespace ngraph
 {
@@ -30,12 +39,14 @@ namespace ngraph
 
         namespace he
         {
-            class HECallFrame;
+            class HEExternalFunction;
             class HETensorView;
 
             // A VM for executing lightly-compiled graph functions
             class HECallFrame
             {
+                friend class HEBackend;
+
             public:
                 HECallFrame(const std::shared_ptr<Function>& function);
 
@@ -44,6 +55,15 @@ namespace ngraph
                 /// Tuples will be expanded into their tensor views to build the call frame.
                 void call(const std::vector<std::shared_ptr<runtime::TensorView>>& outputs,
                           const std::vector<std::shared_ptr<runtime::TensorView>>& inputs);
+
+            private:
+                std::shared_ptr<Function> m_function;
+                HEBackend* he_backend;
+                std::unordered_map<const Node*, stopwatch> m_timer_map;
+
+                void call(std::shared_ptr<Function> function,
+                          const std::vector<std::shared_ptr<runtime::he::HETensorView>>& output_tvs,
+                          const std::vector<std::shared_ptr<runtime::he::HETensorView>>& input_tvs);
             };
         }
     }

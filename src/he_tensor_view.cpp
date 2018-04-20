@@ -30,10 +30,10 @@ runtime::he::HETensorView::~HETensorView()
 
 void runtime::he::HETensorView::write(const void* p, size_t tensor_offset, size_t n)
 {
-    throw ngraph_error("not implemented");
+    throw ngraph_error("HETensorVeiw write not implemented");
 }
 
 void runtime::he::HETensorView::read(void* p, size_t tensor_offset, size_t n) const
 {
-    throw ngraph_error("not implemented");
+    throw ngraph_error("HETensorView read not implemented");
 }
