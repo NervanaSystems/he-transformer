@@ -17,6 +17,9 @@
 #include "gtest/gtest.h"
 #include "ngraph/log.hpp"
 
+#include "util/test_tools.hpp"
+
+
 TEST(he_transformer, trivial)
 {
     int a = 1;
@@ -34,17 +37,12 @@ TEST(he_transformer, tensor_read_write)
 {
     auto backend = runtime::Backend::create("HE");
 
-    Shape s{2, 3};
+    Shape shape{2, 2};
 
-    auto t_a = backend->create_tensor(element::i64, s);
-    /*std::cout << "created tensor " << std::endl;
+    shared_ptr<runtime::TensorView> a = backend->create_tensor<int64_t>(shape);
 
-    int64_t v_a[2][3] = {{1, 2, 3}, {4, 5, 6}};
+    copy_data(a, test::NDArray<int64_t, 2>({{1, 2}, {3, 4}}).get_vector());
 
-    t_a->write(&v_a, 0, sizeof(v_a));
-    int64_t r[2][3] = {{1, 2, 3}, {4, 5, 6}};
-    t_a->read(&r, 0, sizeof(r));
-
-    EXPECT_EQ(r[0][0], 1);
-    EXPECT_EQ(r[0][0], 1); */
+    EXPECT_EQ(read_vector<int64_t>(a),
+            (test::NDArray<int64_t, 2>({{1, 2}, {3, 4}})).get_vector());
 }

@@ -27,8 +27,6 @@
 #include "ngraph/type/element_type.hpp"
 #include "he_tensor_view.hpp"
 #include "he_cipher_tensor_view.hpp"
-#include "op/add.hpp"
-#include "op/result.hpp"
 
 namespace ngraph
 {
@@ -111,32 +109,9 @@ namespace ngraph
 							   const std::vector<std::shared_ptr<he::HETensorView>>& out)
 				{
 					std::string node_op = node.description();
-                    std::cout << "Node op " << node_op << std::endl;
-                    if (node_op == "Add")
-                    {
-                        HECipherTensorView* arg0 = dynamic_cast<HECipherTensorView*>(args[0].get());
-                        HECipherTensorView* arg1 = dynamic_cast<HECipherTensorView*>(args[1].get());
-                        HECipherTensorView* out0 = dynamic_cast<HECipherTensorView*>(out[0].get());
-
-                        runtime::he::add(arg0, arg1, out0, out0->get_element_count());
-
-                        std::cout << "Added! OMG! " << std::endl;
-                    }
-					else if (node_op == "Result")
-					{
-						std::cout << "RESULT TODO " << std::endl;
-
-						/*						ngraph::op::Result* res = dynamic_cast<ngraph::op::Result*>(&node);
-						reference::result(reinterpret_cast<T*>(args[0]->get_data_ptr()),
-								reinterpret_cast<T*>(out[0]->get_data_ptr()),
-								shape_size(res->get_shape())); */
-					}
-                    else
-                    {
-                        std::stringstream ss;
-                        ss << "unsupported op " << node_op;
-                        throw std::runtime_error(ss.str());
-                    }
+                    std::stringstream ss;
+                    ss << "unsupported op " << node_op;
+                    throw std::runtime_error(ss.str());
                 }
             };
         }

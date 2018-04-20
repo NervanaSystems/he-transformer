@@ -30,12 +30,10 @@ runtime::he::HETensorView::~HETensorView()
 
 void runtime::he::HETensorView::write(const void* p, size_t tensor_offset, size_t n)
 {
-    std::cout << "calling dummy write " << std::endl;
-    throw ngraph_error("not implemented");
+    throw ngraph_error("HETensorVeiw write not implemented");
 }
 
 void runtime::he::HETensorView::read(void* p, size_t tensor_offset, size_t n) const
 {
-    std::cout << "calling dummy read " << std::endl;
-    throw ngraph_error("not implemented");
+    throw ngraph_error("HETensorView read not implemented");
 }
