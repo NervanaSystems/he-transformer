@@ -120,6 +120,7 @@ void runtime::he::HECallFrame::call(std::shared_ptr<Function> function,
 
         // TODO: generate the calls
         throw ngraph_error("Generating function calls not implemented");
+        generate_calls(base_type, secondary_type, *op, inputs, outputs);
 
         // Delete any obsolete tensors
         for (const descriptor::Tensor* t : op->liveness_free_list)
@@ -133,6 +134,27 @@ void runtime::he::HECallFrame::call(std::shared_ptr<Function> function,
                 }
             }
         }
+    }
+}
+
+void runtime::he::HECallFrame::generate_calls(
+    const element::Type& base_type,
+    const element::Type& secondary_type,
+    ngraph::Node& op,
+    const std::vector<std::shared_ptr<HETensorView>>& args,
+    const std::vector<std::shared_ptr<HETensorView>>& out)
+{
+    if (base_type == element::i64)
+    {
+        generate_calls<int64_t>(secondary_type, op, args, out);
+    }
+	else if (base_type == element::u64)
+	{
+		generate_calls<uint64_t>(secondary_type, op, args, out);
+	}
+    else if (base_type == element::f64)
+    {
+        generate_calls<double>(secondary_type, op, args, out);
     }
 }
 
