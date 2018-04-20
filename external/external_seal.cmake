@@ -34,11 +34,3 @@ ExternalProject_Add(
         && cp  ${NGRAPH_HE_INSTALL_LIB_DIR}/SEAL/libseal.a ${NGRAPH_HE_INSTALL_LIB_DIR}
         && rm -r ${NGRAPH_HE_INSTALL_LIB_DIR}/SEAL
 )
-
-install(
-    DIRECTORY
-    ${NGRAPH_HE_INSTALL_INCLUDE_DIR}/seal
-    DESTINATION
-    ${NGRAPH_INSTALL_INCLUDE_DIR}
-    FILES_MATCHING PATTERN "*.h"
-)

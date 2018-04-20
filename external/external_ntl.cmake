@@ -14,18 +14,3 @@ ExternalProject_Add(
     BUILD_COMMAND make -j$(nproc) -C ${NTL_SOURCE_DIR}/src
     INSTALL_COMMAND make install -C ${NTL_SOURCE_DIR}/src
 )
-
-install(
-    DIRECTORY
-    ${NGRAPH_HE_INSTALL_INCLUDE_DIR}/NTL/
-    DESTINATION
-    ${NGRAPH_INSTALL_INCLUDE_DIR}/NTL
-    FILES_MATCHING PATTERN "*.h"
-)
-
-install(
-    FILES
-    ${NGRAPH_HE_INSTALL_LIB_DIR}/libntl.so
-    DESTINATION
-    ${NGRAPH_INSTALL_LIB_DIR}
-)
