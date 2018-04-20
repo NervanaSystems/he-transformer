@@ -147,7 +147,7 @@ void runtime::he::HEBackend::encode(seal::Plaintext* output,
     else
     {
         std::stringstream ss;
-        ss << "unsupported element type in encode " << type << " op " << op.get_name();
+        ss << "unsupported element type in encode " << type << " type " << type_name;
         throw std::runtime_error(ss.str());
     }
 }
@@ -176,7 +176,7 @@ void runtime::he::HEBackend::decode(void* output,
     else
     {
         std::stringstream ss;
-        ss << "unsupported element type in decode " << type << " op " << op.get_name();
+        ss << "unsupported element type in decode " << type << " type " << type_name;
         throw std::runtime_error(ss.str());
     }
 }

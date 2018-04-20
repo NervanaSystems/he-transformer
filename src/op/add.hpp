@@ -19,6 +19,7 @@
 #include <cstddef>
 
 #include "he_cipher_tensor_view.hpp"
+#include "he_backend.hpp"
 #include "seal/seal.h"
 
 namespace ngraph
@@ -36,11 +37,11 @@ namespace ngraph
                 size_t offset = 0;
                 for(size_t i = 0; i < count; ++i)
                 {
-                    seal::Ciphertext* arg0 = reinterpret_cast<seal::Ciphertext*>(arg0_dp[offset]);
-                    seal::Ciphertext* arg1 = reinterpret_cast<seal::Ciphertext*>(arg1_dp[offset]);
-                    seal::Ciphertext* out0 = reinterpret_cast<seal::Ciphertext*>(out0_dp[offset]);
+                    seal::Ciphertext* arg0c = reinterpret_cast<seal::Ciphertext*>(arg0_dp[offset]);
+                    seal::Ciphertext* arg1c = reinterpret_cast<seal::Ciphertext*>(arg1_dp[offset]);
+                    seal::Ciphertext* out0c = reinterpret_cast<seal::Ciphertext*>(out0_dp[offset]);
 
-                    arg0->m_he_backend->evaluator->add(*arg0, *arg1, *out0);
+                    (arg0->m_he_backend)->get_evaluator()->add(*arg0c, *arg1c, *out0c);
 
 
                 }
