@@ -63,9 +63,8 @@ namespace ngraph
                 /// @param n Number of bytes to read, must be integral number of elements.
                 void read(void* p, size_t tensor_offset, size_t n) const;
 
-                std::shared_ptr<HEBackend> m_he_backend;
-
             private:
+                std::shared_ptr<HEBackend> m_he_backend;
                 std::vector<shared_ptr<seal::Ciphertext>> m_allocated_buffer_pool;
                 size_t m_buffer_size;
             };
