@@ -49,16 +49,6 @@ runtime::he::HECipherTensorView::~HECipherTensorView()
 {
 }
 
-vector<shared_ptr<seal::Ciphertext>>& runtime::he::HECipherTensorView::get_data_ptr()
-{
-    return m_allocated_buffer_pool;
-}
-
-const vector<shared_ptr<seal::Ciphertext>>& runtime::he::HECipherTensorView::get_data_ptr() const
-{
-    return m_allocated_buffer_pool;
-}
-
 void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_offset, size_t n)
 {
     const element::Type& type = get_element_type();
@@ -66,7 +56,7 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
     {
         throw out_of_range("write access past end of tensor");
     }
-    vector<shared_ptr<seal::Ciphertext>>& target = get_data_ptr();
+    vector<shared_ptr<seal::Ciphertext>>& target = m_allocated_buffer_pool;
 
     size_t offset = tensor_offset / sizeof(seal::Ciphertext);
     for (int i = 0; i < n / type.size(); ++i)
@@ -88,7 +78,7 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
         throw out_of_range("read access past end of tensor");
     }
 
-    const vector<shared_ptr<seal::Ciphertext>>& source = get_data_ptr();
+    const vector<shared_ptr<seal::Ciphertext>>& source = m_allocated_buffer_pool;
 
     size_t offset = tensor_offset / sizeof(seal::Ciphertext);
     for (int i = 0; i < n / type.size(); ++i)

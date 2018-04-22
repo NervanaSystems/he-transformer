@@ -16,7 +16,8 @@
 
 #pragma once
 
-#include <cstring>
+#include <string>
+
 #include "he_tensor_view.hpp"
 #include "ngraph/runtime/tensor_view.hpp"
 #include "ngraph/type/element_type.hpp"
@@ -44,9 +45,6 @@ namespace ngraph
                                    std::shared_ptr<HEBackend> he_backend,
                                    const std::string& name = "external");
                 virtual ~HECipherTensorView();
-
-                vector<shared_ptr<seal::Ciphertext>>& get_data_ptr();
-                const vector<shared_ptr<seal::Ciphertext>>& get_data_ptr() const;
 
                 size_t get_size() const;
                 const element::Type& get_element_type() const;
