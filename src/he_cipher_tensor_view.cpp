@@ -25,17 +25,17 @@
 using namespace ngraph;
 using namespace std;
 
-runtime::he::HECipherTensorView::HECipherTensorView(const ngraph::element::Type& element_type,
+runtime::he::HECipherTensorView::HECipherTensorView(const element::Type& element_type,
                                                     const Shape& shape,
-                                                    std::shared_ptr<HEBackend> he_backend,
+                                                    shared_ptr<HEBackend> he_backend,
                                                     const string& name)
-    : runtime::he::HETensorView(std::make_shared<ngraph::descriptor::PrimaryTensorView>(
-          std::make_shared<ngraph::TensorViewType>(element_type, shape), name, true, true, false))
+    : runtime::he::HETensorView(make_shared<descriptor::PrimaryTensorView>(
+          make_shared<TensorViewType>(element_type, shape), name, true, true, false))
     , m_allocated_buffer_pool()
     , m_he_backend(he_backend)
 {
     m_descriptor->set_tensor_view_layout(
-        std::make_shared<ngraph::descriptor::layout::DenseTensorViewLayout>(*m_descriptor));
+        make_shared<descriptor::layout::DenseTensorViewLayout>(*m_descriptor));
 
     m_buffer_size = m_descriptor->get_tensor_view_layout()->get_size();
 
@@ -93,7 +93,7 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
     size_t offset = tensor_offset / sizeof(seal::Ciphertext);
     for (int i = 0; i < n / type.size(); ++i)
     {
-        const std::shared_ptr<seal::Ciphertext> c = source[offset + i];
+        const shared_ptr<seal::Ciphertext> c = source[offset + i];
         seal::Plaintext p;
         m_he_backend->decrypt(p, *c);
         m_he_backend->decode((void*)((char*)target + i * type.size()), p, type);
