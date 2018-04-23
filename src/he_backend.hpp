@@ -68,7 +68,7 @@ namespace ngraph
 
                 void decrypt(seal::Plaintext& output, const seal::Ciphertext& input);
 
-                const inline std::shared_ptr<seal::Evaluator> get_evaluator()
+                const inline std::shared_ptr<seal::Evaluator> get_evaluator() const
                 {
                     return m_evaluator;
                 }

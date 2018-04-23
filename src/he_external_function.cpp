@@ -31,8 +31,10 @@ using namespace ngraph;
 using descriptor::layout::DenseTensorViewLayout;
 
 runtime::he::HEExternalFunction::HEExternalFunction(const shared_ptr<Function>& function,
+                                                    const shared_ptr<HEBackend>& he_backend,
                                                     bool release_function)
     : m_function(function)
+    , m_he_backend(he_backend)
     , m_release_function(release_function)
     , m_is_compiled(false)
 {
@@ -64,5 +66,5 @@ shared_ptr<runtime::he::HECallFrame> runtime::he::HEExternalFunction::make_call_
     {
         compile();
     }
-    return make_shared<runtime::he::HECallFrame>(m_function);
+    return make_shared<runtime::he::HECallFrame>(m_function, m_he_backend);
 }

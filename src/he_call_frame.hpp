@@ -27,6 +27,9 @@
 #include "ngraph/node.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "ngraph/util.hpp"
+#include "op/add.hpp"
+#include "op/multiply.hpp"
+#include "op/result.hpp"
 
 namespace ngraph
 {
@@ -45,10 +48,9 @@ namespace ngraph
             // A VM for executing lightly-compiled graph functions
             class HECallFrame
             {
-                friend class HEBackend;
-
             public:
-                HECallFrame(const std::shared_ptr<Function>& function);
+                HECallFrame(const std::shared_ptr<Function>& function,
+                            const std::shared_ptr<HEBackend>& he_backend);
 
                 void call(const std::vector<std::shared_ptr<runtime::TensorView>>& outputs,
                           const std::vector<std::shared_ptr<runtime::TensorView>>& inputs);
@@ -56,9 +58,15 @@ namespace ngraph
             private:
                 std::shared_ptr<Function> m_function;
                 std::shared_ptr<HEBackend> m_he_backend;
+
                 void call(std::shared_ptr<Function> function,
                           const std::vector<std::shared_ptr<runtime::he::HETensorView>>& output_tvs,
                           const std::vector<std::shared_ptr<runtime::he::HETensorView>>& input_tvs);
+
+                void generate_calls(const element::Type& type,
+                                    ngraph::Node& node,
+                                    const std::vector<std::shared_ptr<HETensorView>>& args,
+                                    const std::vector<std::shared_ptr<HETensorView>>& out);
             };
         }
     }

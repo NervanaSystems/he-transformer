@@ -59,3 +59,71 @@ TEST(he_transformer, tensor_write_read_2_3)
     EXPECT_EQ(read_vector<int64_t>(a),
               (test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector());
 }
+
+TEST(he_transformer, ab)
+{
+    Shape s{2, 3};
+
+    auto a = std::make_shared<op::Parameter>(element::i64, s);
+    auto b = std::make_shared<op::Parameter>(element::i64, s);
+
+    auto t0 = std::make_shared<op::Add>(a, b);
+
+    // Make the function
+    auto f = std::make_shared<Function>(NodeVector{t0}, op::ParameterVector{a, b});
+
+    // Create the backend
+    auto backend = runtime::Backend::create("HE");
+
+    // Allocate tensors for arguments a, b, c
+    auto t_a = backend->create_tensor(element::i64, s);
+    auto t_b = backend->create_tensor(element::i64, s);
+    // Allocate tensor for the result
+    auto t_result = backend->create_tensor(element::i64, s);
+
+    // Initialize tensors
+    int64_t v_a[2][3] = {{1, 2, 3}, {4, 5, 6}};
+    int64_t v_b[2][3] = {{7, 8, 9}, {10, 11, 12}};
+
+    t_a->write(&v_a, 0, sizeof(v_a));
+    t_b->write(&v_b, 0, sizeof(v_b));
+
+    // Invoke the function
+    backend->call(f, {t_result}, {t_a, t_b});
+
+    EXPECT_EQ(read_vector<int64_t>(t_result),
+              (test::NDArray<int64_t, 2>({{8, 10, 12}, {14, 16, 18}})).get_vector());
+}
+
+TEST(he_transformer, abc)
+{
+    Shape shape{2, 2};
+    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto C = make_shared<op::Parameter>(element::f32, shape);
+    auto f = make_shared<Function>((A + B) * C, op::ParameterVector{A, B, C});
+
+    auto backend = runtime::Backend::create("HE");
+
+    // Create some tensors for input/output
+    shared_ptr<runtime::TensorView> a = backend->create_tensor(element::f32, shape);
+    shared_ptr<runtime::TensorView> b = backend->create_tensor(element::f32, shape);
+    shared_ptr<runtime::TensorView> c = backend->create_tensor(element::f32, shape);
+    shared_ptr<runtime::TensorView> result = backend->create_tensor(element::f32, shape);
+
+    copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
+    copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
+    copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
+
+    backend->call(f, {result}, {a, b, c});
+    EXPECT_EQ(read_vector<float>(result),
+              (test::NDArray<float, 2>({{54, 80}, {110, 144}})).get_vector());
+
+    backend->call(f, {result}, {b, a, c});
+    EXPECT_EQ(read_vector<float>(result),
+              (test::NDArray<float, 2>({{54, 80}, {110, 144}})).get_vector());
+
+    backend->call(f, {result}, {a, c, b});
+    EXPECT_EQ(read_vector<float>(result),
+              (test::NDArray<float, 2>({{50, 72}, {98, 128}})).get_vector());
+}
