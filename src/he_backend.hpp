@@ -61,12 +61,6 @@ namespace ngraph
 
                 void remove_compiled_function(std::shared_ptr<Function> func) override;
 
-                //void encrypt(const HECipherTensorView& output, const HEPlainTensorView& input);
-                //void decrypt(const HEPlainTensorView& output, const HECipherTensorView& input);
-
-                //void encode(const HEPlainTensorView& output, const TensorView& input);
-                //void decode(const TensorView& output, const HEPlainTensorView& input);
-
                 void encode(seal::Plaintext& output,
                             const void* input,
                             const ngraph::element::Type& type);

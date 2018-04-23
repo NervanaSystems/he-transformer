@@ -41,16 +41,6 @@ runtime::he::HECipherTensorView::HECipherTensorView(const element::Type& element
     }
 }
 
-runtime::he::HECipherTensorView::HECipherTensorView(const element::Type& element_type,
-                                                    const Shape& shape,
-                                                    void* memory_pointer,
-                                                    shared_ptr<HEBackend> he_backend,
-                                                    const string& name)
-    : runtime::he::HETensorView(element_type, shape, he_backend)
-{
-    throw ngraph_error("HECipherTensorView with predefined host memory_pointer is not supported");
-}
-
 runtime::he::HECipherTensorView::~HECipherTensorView()
 {
 }
@@ -69,7 +59,7 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
     // Check out-of-range
     if ((tensor_offset + n) / type_byte_size > m_num_elements)
     {
-        throw out_of_range("Write access past end of tensor");
+        throw out_of_range("I/O access past end of tensor");
     }
 
     size_t dst_start_index = tensor_offset / type_byte_size;
@@ -98,7 +88,7 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
     // Check out-of-range
     if ((tensor_offset + n) / type_byte_size > m_num_elements)
     {
-        throw out_of_range("Write access past end of tensor");
+        throw out_of_range("I/O access past end of tensor");
     }
 
     size_t src_start_index = tensor_offset / type_byte_size;
