@@ -28,6 +28,7 @@
 #include "ngraph/type/element_type.hpp"
 #include "ngraph/util.hpp"
 #include "op/add.hpp"
+#include "op/multiply.hpp"
 #include "op/result.hpp"
 
 namespace ngraph
@@ -48,7 +49,8 @@ namespace ngraph
             class HECallFrame
             {
             public:
-                HECallFrame(const std::shared_ptr<Function>& function);
+                HECallFrame(const std::shared_ptr<Function>& function,
+                            const std::shared_ptr<HEBackend>& he_backend);
 
                 void call(const std::vector<std::shared_ptr<runtime::TensorView>>& outputs,
                           const std::vector<std::shared_ptr<runtime::TensorView>>& inputs);
@@ -99,8 +101,19 @@ namespace ngraph
                         HECipherTensorView* arg0 = dynamic_cast<HECipherTensorView*>(args[0].get());
                         HECipherTensorView* arg1 = dynamic_cast<HECipherTensorView*>(args[1].get());
                         HECipherTensorView* out0 = dynamic_cast<HECipherTensorView*>(out[0].get());
+                        HEBackend* he_backend = dynamic_cast<HEBackend*>(m_he_backend.get());
 
-                        runtime::he::add(arg0, arg1, out0, out0->get_element_count());
+                        runtime::he::add(arg0, arg1, out0, he_backend, out0->get_element_count());
+                    }
+                    else if (node_op == "Multiply")
+                    {
+                        HECipherTensorView* arg0 = dynamic_cast<HECipherTensorView*>(args[0].get());
+                        HECipherTensorView* arg1 = dynamic_cast<HECipherTensorView*>(args[1].get());
+                        HECipherTensorView* out0 = dynamic_cast<HECipherTensorView*>(out[0].get());
+                        HEBackend* he_backend = dynamic_cast<HEBackend*>(m_he_backend.get());
+
+                        runtime::he::multiply(
+                            arg0, arg1, out0, he_backend, out0->get_element_count());
                     }
                     else if (node_op == "Result")
                     {
@@ -111,7 +124,7 @@ namespace ngraph
                     }
                     else
                     {
-                        throw ngraph_error("node op " + node_op + " unimplemented");
+                        throw ngraph_error("Node op " + node_op + " unimplemented");
                     }
                 }
             };

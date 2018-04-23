@@ -27,11 +27,13 @@ namespace ngraph
         namespace he
         {
             class HECallFrame;
+            class HEBackend;
 
             class HEExternalFunction : public std::enable_shared_from_this<HEExternalFunction>
             {
             public:
                 HEExternalFunction(const std::shared_ptr<Function>& function,
+                                   const std::shared_ptr<HEBackend>& he_backend,
                                    bool release_function = false);
                 std::shared_ptr<HECallFrame> make_call_frame();
 
@@ -41,6 +43,7 @@ namespace ngraph
                 std::shared_ptr<ngraph::Function> m_function;
                 bool m_release_function;
                 bool m_is_compiled;
+                std::shared_ptr<HEBackend> m_he_backend;
             };
         }
     }

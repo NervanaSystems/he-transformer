@@ -81,7 +81,8 @@ bool runtime::he::HEBackend::compile(shared_ptr<Function> func)
     FunctionInstance& instance = m_function_map[func];
     if (instance.m_external_function == nullptr)
     {
-        instance.m_external_function = make_shared<HEExternalFunction>(func);
+        shared_ptr<HEBackend> he_backend = shared_from_this();
+        instance.m_external_function = make_shared<HEExternalFunction>(func, he_backend);
         auto cf = instance.m_external_function->make_call_frame();
         instance.m_call_frame = dynamic_pointer_cast<HECallFrame>(cf);
     }

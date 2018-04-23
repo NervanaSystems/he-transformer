@@ -14,21 +14,22 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <cstddef>
+#pragma once
 
-#include "add.hpp"
-#include "he_backend.hpp"
 #include "he_cipher_tensor_view.hpp"
+#include "seal/seal.h"
 
-void ngraph::runtime::he::add(const HECipherTensorView* arg0,
-                              const HECipherTensorView* arg1,
-                              HECipherTensorView* out,
-                              const HEBackend* he_backend,
-                              size_t count)
+namespace ngraph
 {
-    for (size_t i = 0; i < count; ++i)
+    namespace runtime
     {
-        he_backend->get_evaluator()->add(
-            arg0->get_element(i), arg1->get_element(i), out->get_element(i));
+        namespace he
+        {
+            void multiply(const HECipherTensorView* arg0,
+                          const HECipherTensorView* arg1,
+                          HECipherTensorView* out,
+                          const HEBackend* he_backend,
+                          size_t count);
+        }
     }
 }

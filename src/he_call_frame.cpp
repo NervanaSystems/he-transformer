@@ -23,8 +23,10 @@
 using namespace std;
 using namespace ngraph;
 
-runtime::he::HECallFrame::HECallFrame(const shared_ptr<Function>& func)
+runtime::he::HECallFrame::HECallFrame(const shared_ptr<Function>& func,
+                                      const shared_ptr<HEBackend>& he_backend)
     : m_function(func)
+    , m_he_backend(he_backend)
 {
 }
 

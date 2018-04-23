@@ -16,19 +16,19 @@
 
 #include <cstddef>
 
-#include "add.hpp"
 #include "he_backend.hpp"
 #include "he_cipher_tensor_view.hpp"
+#include "multiply.hpp"
 
-void ngraph::runtime::he::add(const HECipherTensorView* arg0,
-                              const HECipherTensorView* arg1,
-                              HECipherTensorView* out,
-                              const HEBackend* he_backend,
-                              size_t count)
+void ngraph::runtime::he::multiply(const HECipherTensorView* arg0,
+                                   const HECipherTensorView* arg1,
+                                   HECipherTensorView* out,
+                                   const HEBackend* he_backend,
+                                   size_t count)
 {
     for (size_t i = 0; i < count; ++i)
     {
-        he_backend->get_evaluator()->add(
+        he_backend->get_evaluator()->multiply(
             arg0->get_element(i), arg1->get_element(i), out->get_element(i));
     }
 }
