@@ -38,7 +38,7 @@ namespace ngraph
                                    const Shape& shape,
                                    std::shared_ptr<HEBackend> he_backend,
                                    const std::string& name = "external");
-                HECipherTensorView(const ngraph::element::Type& element_type,
+                HECipherTensorView(const element::Type& element_type,
                                    const Shape& shape,
                                    void* memory_pointer,
                                    std::shared_ptr<HEBackend> he_backend,

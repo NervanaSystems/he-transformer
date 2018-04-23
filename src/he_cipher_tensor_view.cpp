@@ -38,6 +38,16 @@ runtime::he::HECipherTensorView::HECipherTensorView(const element::Type& element
     }
 }
 
+runtime::he::HECipherTensorView::HECipherTensorView(const element::Type& element_type,
+                                                    const Shape& shape,
+                                                    void* memory_pointer,
+                                                    shared_ptr<HEBackend> he_backend,
+                                                    const string& name)
+    : runtime::he::HETensorView(element_type, shape, he_backend)
+{
+    throw ngraph_error("HECipherTensorView with predefined host memory_pointer is not supported");
+}
+
 runtime::he::HECipherTensorView::~HECipherTensorView()
 {
 }
