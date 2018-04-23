@@ -23,8 +23,10 @@
 using namespace std;
 using namespace ngraph;
 
-runtime::he::HECallFrame::HECallFrame(const shared_ptr<Function>& func)
+runtime::he::HECallFrame::HECallFrame(const shared_ptr<Function>& func,
+                                      const shared_ptr<HEBackend>& he_backend)
     : m_function(func)
+    , m_he_backend(he_backend)
 {
 }
 
@@ -41,7 +43,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         {
             descriptor::TensorView* tv = param->get_output_tensor_view(i).get();
             shared_ptr<runtime::he::HECipherTensorView> hetv =
-                static_pointer_cast<runtime::he::HECipherTensorView>(input_tvs[arg_index + 1]);
+                static_pointer_cast<runtime::he::HECipherTensorView>(input_tvs[arg_index++]);
             tensor_map.insert({tv, hetv});
         }
     }
@@ -87,9 +89,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                 const element::Type& element_type = op->get_output_element_type(i);
                 string tensor_name = op->get_output_tensor(i).get_name();
                 itv = make_shared<runtime::he::HECipherTensorView>(
-                    element_type,
-                    shape,
-                    m_he_backend); // TODO: include tensor name
+                    element_type, shape, m_he_backend, name);
                 tensor_map.insert({tv, itv});
             }
             else
@@ -100,7 +100,6 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         }
 
         element::Type base_type;
-        element::Type secondary_type;
         if (op->get_inputs().empty())
         {
             base_type = op->get_element_type();
@@ -109,17 +108,8 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         {
             base_type = op->get_inputs().at(0).get_tensor().get_element_type();
         }
-        secondary_type = op->get_element_type();
 
-        // Some ops have unusual input/output types so handle those special cases here
-        if (op->description() == "Select")
-        {
-            base_type = op->get_inputs().at(1).get_tensor().get_element_type();
-            secondary_type = op->get_inputs().at(0).get_tensor().get_element_type();
-        }
-
-        // TODO: generate the calls
-        throw ngraph_error("Generating function calls not implemented");
+        generate_calls(base_type, *op, inputs, outputs);
 
         // Delete any obsolete tensors
         for (const descriptor::Tensor* t : op->liveness_free_list)
@@ -133,6 +123,53 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                 }
             }
         }
+    }
+}
+
+void runtime::he::HECallFrame::generate_calls(
+    const element::Type& type,
+    ngraph::Node& node,
+    const std::vector<std::shared_ptr<HETensorView>>& args,
+    const std::vector<std::shared_ptr<HETensorView>>& out)
+{
+    std::string node_op = node.description();
+
+    if (node_op == "Add")
+    {
+        shared_ptr<HECipherTensorView> arg0 = dynamic_pointer_cast<HECipherTensorView>(args[0]);
+        shared_ptr<HECipherTensorView> arg1 = dynamic_pointer_cast<HECipherTensorView>(args[1]);
+        shared_ptr<HECipherTensorView> out0 = dynamic_pointer_cast<HECipherTensorView>(out[0]);
+
+        runtime::he::add(arg0->get_elements(),
+                         arg1->get_elements(),
+                         out0->get_elements(),
+                         m_he_backend,
+                         out0->get_element_count());
+    }
+    else if (node_op == "Multiply")
+    {
+        shared_ptr<HECipherTensorView> arg0 = dynamic_pointer_cast<HECipherTensorView>(args[0]);
+        shared_ptr<HECipherTensorView> arg1 = dynamic_pointer_cast<HECipherTensorView>(args[1]);
+        shared_ptr<HECipherTensorView> out0 = dynamic_pointer_cast<HECipherTensorView>(out[0]);
+
+        runtime::he::multiply(arg0->get_elements(),
+                              arg1->get_elements(),
+                              out0->get_elements(),
+                              m_he_backend,
+                              out0->get_element_count());
+    }
+    else if (node_op == "Result")
+    {
+        ngraph::op::Result* res = dynamic_cast<ngraph::op::Result*>(&node);
+        shared_ptr<HECipherTensorView> arg0 = dynamic_pointer_cast<HECipherTensorView>(args[0]);
+        shared_ptr<HECipherTensorView> out0 = dynamic_pointer_cast<HECipherTensorView>(out[0]);
+
+        runtime::he::result(
+            arg0->get_elements(), out0->get_elements(), shape_size(res->get_shape()));
+    }
+    else
+    {
+        throw ngraph_error("Node op " + node_op + " unimplemented");
     }
 }
 

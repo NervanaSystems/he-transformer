@@ -81,7 +81,8 @@ bool runtime::he::HEBackend::compile(shared_ptr<Function> func)
     FunctionInstance& instance = m_function_map[func];
     if (instance.m_external_function == nullptr)
     {
-        instance.m_external_function = make_shared<HEExternalFunction>(func);
+        shared_ptr<HEBackend> he_backend = shared_from_this();
+        instance.m_external_function = make_shared<HEExternalFunction>(func, he_backend);
         auto cf = instance.m_external_function->make_call_frame();
         instance.m_call_frame = dynamic_pointer_cast<HECallFrame>(cf);
     }
@@ -124,14 +125,14 @@ void runtime::he::HEBackend::encode(seal::Plaintext& output,
     {
         output = m_int_encoder->encode(*(uint64_t*)input);
     }
-    else if (type_name == "double")
+    else if (type_name == "float")
     {
-        output = m_frac_encoder->encode(*(double*)input);
+        output = m_frac_encoder->encode(*(float*)input);
     }
     else
     {
-        NGRAPH_INFO << "Unsupported element type in decode " << type_name << endl;
-        throw ngraph_error("Unsupported element type" + type_name);
+        NGRAPH_INFO << "Unsupported element type in encode " << type_name << endl;
+        throw ngraph_error("Unsupported element type " + type_name);
     }
 }
 
@@ -151,15 +152,15 @@ void runtime::he::HEBackend::decode(void* output,
         uint64_t x = m_int_encoder->decode_int64(input);
         memcpy(output, &x, type.size());
     }
-    else if (type_name == "double")
+    else if (type_name == "float")
     {
-        double x = m_frac_encoder->decode(input);
+        float x = m_frac_encoder->decode(input);
         memcpy(output, &x, type.size());
     }
     else
     {
         NGRAPH_INFO << "Unsupported element type in decode " << type_name << endl;
-        throw ngraph_error("Unsupported element type" + type_name);
+        throw ngraph_error("Unsupported element type " + type_name);
     }
 }
 

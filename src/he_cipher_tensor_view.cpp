@@ -45,8 +45,9 @@ runtime::he::HECipherTensorView::~HECipherTensorView()
 {
 }
 
-void runtime::he::HECipherTensorView::check_io_bounds (
-    const void* source, size_t tensor_offset, size_t n) const
+void runtime::he::HECipherTensorView::check_io_bounds(const void* source,
+                                                      size_t tensor_offset,
+                                                      size_t n) const
 {
     const element::Type& type = get_element_type();
     size_t type_byte_size = type.size();
