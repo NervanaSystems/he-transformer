@@ -14,8 +14,8 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <string>
 #include <memory>
+#include <string>
 
 #include "he_backend.hpp"
 #include "he_cipher_tensor_view.hpp"
@@ -34,7 +34,7 @@ runtime::he::HECipherTensorView::HECipherTensorView(const element::Type& element
 
     if (m_buffer_size > 0)
     {
-        m_allocated_buffer_pool = vector<shared_ptr<seal::Ciphertext>>(m_buffer_size);
+        m_cipher_texts = vector<shared_ptr<seal::Ciphertext>>(m_buffer_size);
     }
 }
 
@@ -59,7 +59,7 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
     {
         throw out_of_range("write access past end of tensor");
     }
-    vector<shared_ptr<seal::Ciphertext>>& target = m_allocated_buffer_pool;
+    vector<shared_ptr<seal::Ciphertext>>& target = m_cipher_texts;
 
     size_t offset = tensor_offset / sizeof(seal::Ciphertext);
     for (int i = 0; i < n / type.size(); ++i)
@@ -81,7 +81,7 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
         throw out_of_range("read access past end of tensor");
     }
 
-    const vector<shared_ptr<seal::Ciphertext>>& source = m_allocated_buffer_pool;
+    const vector<shared_ptr<seal::Ciphertext>>& source = m_cipher_texts;
 
     size_t offset = tensor_offset / sizeof(seal::Ciphertext);
     for (int i = 0; i < n / type.size(); ++i)

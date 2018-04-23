@@ -61,7 +61,7 @@ namespace ngraph
                 void read(void* p, size_t tensor_offset, size_t n) const;
 
             private:
-                std::vector<shared_ptr<seal::Ciphertext>> m_allocated_buffer_pool;
+                std::vector<shared_ptr<seal::Ciphertext>> m_cipher_texts;
                 size_t m_buffer_size;
             };
         }
