@@ -131,7 +131,7 @@ void runtime::he::HEBackend::encode(seal::Plaintext& output,
     }
     else
     {
-        NGRAPH_INFO << "Unsupported element type in decode " << type_name << endl;
+        NGRAPH_INFO << "Unsupported element type in encode " << type_name << endl;
         throw ngraph_error("Unsupported element type " + type_name);
     }
 }
