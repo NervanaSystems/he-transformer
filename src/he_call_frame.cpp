@@ -87,9 +87,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                 const element::Type& element_type = op->get_output_element_type(i);
                 string tensor_name = op->get_output_tensor(i).get_name();
                 itv = make_shared<runtime::he::HECipherTensorView>(
-                    element_type,
-                    shape,
-                    m_he_backend); // TODO: include tensor name
+                    element_type, shape, m_he_backend, name);
                 tensor_map.insert({tv, itv});
             }
             else
@@ -135,12 +133,11 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
     }
 }
 
-void runtime::he::HECallFrame::generate_calls(
-    const element::Type& base_type,
-    const element::Type& secondary_type,
-    ngraph::Node& op,
-    const std::vector<std::shared_ptr<HETensorView>>& args,
-    const std::vector<std::shared_ptr<HETensorView>>& out)
+void runtime::he::HECallFrame::generate_calls(const element::Type& base_type,
+                                              const element::Type& secondary_type,
+                                              ngraph::Node& op,
+                                              const vector<shared_ptr<HETensorView>>& args,
+                                              const vector<shared_ptr<HETensorView>>& out)
 {
     if (base_type == element::i64)
     {

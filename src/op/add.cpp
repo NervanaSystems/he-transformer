@@ -25,7 +25,7 @@ void ngraph::runtime::he::add(const HECipherTensorView* arg0,
 {
     for (size_t i = 0; i < count; ++i)
     {
-        arg0->m_he_backend->get_evaluator()->add(
+        arg0->get_backend()->get_evaluator()->add(
             arg0->get_element(i), arg1->get_element(i), out->get_element(i));
     }
 }

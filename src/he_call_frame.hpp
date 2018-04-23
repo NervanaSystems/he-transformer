@@ -47,8 +47,6 @@ namespace ngraph
             // A VM for executing lightly-compiled graph functions
             class HECallFrame
             {
-                friend class HEBackend;
-
             public:
                 HECallFrame(const std::shared_ptr<Function>& function);
 
