@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include <map>
 #include <memory>
+#include <unordered_map>
 
 #include "ngraph/runtime/backend.hpp"
 #include "seal/seal.h"
@@ -48,8 +48,8 @@ namespace ngraph
                 std::shared_ptr<runtime::TensorView>
                     create_tensor(const element::Type& element_type, const Shape& shape) override;
 
-                std::shared_ptr<ngraph::runtime::TensorView>
-                    create_tensor(const ngraph::element::Type& element_type,
+                std::shared_ptr<runtime::TensorView>
+                    create_tensor(const element::Type& element_type,
                                   const Shape& shape,
                                   void* memory_pointer) override;
 
@@ -61,14 +61,11 @@ namespace ngraph
 
                 void remove_compiled_function(std::shared_ptr<Function> func) override;
 
-                void encode(seal::Plaintext& output,
-                            const void* input,
-                            const ngraph::element::Type& type);
-                void decode(void* output,
-                            const seal::Plaintext& input,
-                            const ngraph::element::Type& type);
+                void encode(seal::Plaintext& output, const void* input, const element::Type& type);
+                void decode(void* output, const seal::Plaintext& input, const element::Type& type);
 
                 void encrypt(seal::Ciphertext& output, const seal::Plaintext& input);
+
                 void decrypt(seal::Plaintext& output, const seal::Ciphertext& input);
 
                 const inline std::shared_ptr<seal::Evaluator> get_evaluator()
@@ -95,7 +92,7 @@ namespace ngraph
                     std::shared_ptr<HECallFrame> m_call_frame;
                 };
 
-                std::map<std::shared_ptr<Function>, FunctionInstance> m_function_map;
+                std::unordered_map<std::shared_ptr<Function>, FunctionInstance> m_function_map;
             };
         }
     }
