@@ -75,9 +75,9 @@ namespace ngraph
                                     const std::vector<std::shared_ptr<HETensorView>>& args,
                                     const std::vector<std::shared_ptr<HETensorView>>& out)
                 {
-                    if (type == element::f64)
+                    if (type == element::f32)
                     {
-                        op_engine<BASE, double>(op, args, out);
+                        op_engine<BASE, float>(op, args, out);
                     }
                     else if (type == element::i64)
                     {

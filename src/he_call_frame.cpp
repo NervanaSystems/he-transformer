@@ -149,9 +149,9 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& base_type,
     {
         generate_calls<uint64_t>(secondary_type, op, args, out);
     }
-    else if (base_type == element::f64)
+    else if (base_type == element::f32)
     {
-        generate_calls<double>(secondary_type, op, args, out);
+        generate_calls<float>(secondary_type, op, args, out);
     }
 }
 
