@@ -55,7 +55,7 @@ namespace ngraph
 
             private:
                 std::shared_ptr<Function> m_function;
-                HEBackend* he_backend;
+                std::shared_ptr<HEBackend> m_he_backend;
                 void call(std::shared_ptr<Function> function,
                           const std::vector<std::shared_ptr<runtime::he::HETensorView>>& output_tvs,
                           const std::vector<std::shared_ptr<runtime::he::HETensorView>>& input_tvs);
