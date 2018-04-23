@@ -91,28 +91,15 @@ TEST(he_transformer, ab)
     double v_b[1][1] = {{3.4}};
 	t_a->write(&v_a, 0, sizeof(v_a));
 	t_b->write(&v_b, 0, sizeof(v_b));
-	std::cout << "wrote " << std::endl;
 
 	// Invoke the function
-	backend->call(f, {t_result}, {t_a, t_a});
-	std::cout << "called " << std::endl;
+	backend->call(f, {t_result}, {t_a, t_b});
 
 	// Get the result
 	double r[1][1];
 	t_result->read(&r, 0, sizeof(r));
-    std::cout << "result read " << std::endl;
 
-    std::cout << "[" << std::endl;
-    for (size_t i = 0; i < s[0]; ++i)
-    {
-        std::cout << " [";
-        for (size_t j = 0; j < s[1]; ++j)
-        {
-            std::cout << r[i][j] << ' ';
-        }
-        std::cout << ']' << std::endl;
-    }
-    std::cout << ']' << std::endl;
 
+    EXPECT_EQ(r[0][0], 4.6);
 
 }

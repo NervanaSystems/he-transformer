@@ -101,6 +101,15 @@ namespace ngraph
                         {
                             HECipherTensorView* arg0 = dynamic_cast<HECipherTensorView*>(args[0].get());
                             HECipherTensorView* arg1 = dynamic_cast<HECipherTensorView*>(args[1].get());
+
+							double xx;
+							double yy;
+							arg1->read((void*)&yy, 0, sizeof(double));
+							std::cout << "yy " << yy << std::endl;
+							arg0->read((void*)&xx, 0, sizeof(double));
+							std::cout << "xx " << xx << std::endl;
+
+
                             HECipherTensorView* out0 = dynamic_cast<HECipherTensorView*>(out[0].get());
 
                             runtime::he::add(arg0, arg1, out0, out0->get_element_count());
