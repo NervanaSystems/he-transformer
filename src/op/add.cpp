@@ -14,6 +14,8 @@
 * limitations under the License.
 *******************************************************************************/
 
+#include <cstddef>
+
 #include "add.hpp"
 #include "he_backend.hpp"
 #include "he_cipher_tensor_view.hpp"
