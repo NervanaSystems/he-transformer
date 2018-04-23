@@ -25,10 +25,10 @@ namespace ngraph
     {
         namespace he
         {
-            void multiply(const HECipherTensorView* arg0,
-                          const HECipherTensorView* arg1,
-                          HECipherTensorView* out,
-                          const HEBackend* he_backend,
+            void multiply(const vector<shared_ptr<seal::Ciphertext>>& arg0,
+                          const vector<shared_ptr<seal::Ciphertext>>& arg1,
+                          vector<shared_ptr<seal::Ciphertext>>& out,
+                          shared_ptr<HEBackend> he_backend,
                           size_t count);
         }
     }

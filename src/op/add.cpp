@@ -20,15 +20,16 @@
 #include "he_backend.hpp"
 #include "he_cipher_tensor_view.hpp"
 
-void ngraph::runtime::he::add(const HECipherTensorView* arg0,
-                              const HECipherTensorView* arg1,
-                              HECipherTensorView* out,
-                              const HEBackend* he_backend,
+using namespace std;
+
+void ngraph::runtime::he::add(const vector<shared_ptr<seal::Ciphertext>>& arg0,
+                              const vector<shared_ptr<seal::Ciphertext>>& arg1,
+                              vector<shared_ptr<seal::Ciphertext>>& out,
+                              shared_ptr<HEBackend> he_backend,
                               size_t count)
 {
     for (size_t i = 0; i < count; ++i)
     {
-        he_backend->get_evaluator()->add(
-            arg0->get_element(i), arg1->get_element(i), out->get_element(i));
+        he_backend.get()->get_evaluator()->add(*arg0[i].get(), *arg1[i].get(), *out[i].get());
     }
 }

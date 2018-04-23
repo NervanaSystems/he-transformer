@@ -25,7 +25,9 @@ namespace ngraph
     {
         namespace he
         {
-            void result(const HECipherTensorView* arg, HECipherTensorView* out, size_t count);
+            void result(const vector<shared_ptr<seal::Ciphertext>> arg,
+                        vector<shared_ptr<seal::Ciphertext>>& out,
+                        size_t count);
         }
     }
 }

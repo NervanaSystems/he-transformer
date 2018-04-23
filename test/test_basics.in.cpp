@@ -95,82 +95,35 @@ TEST(he_transformer, ab)
               (test::NDArray<int64_t, 2>({{8, 10, 12}, {14, 16, 18}})).get_vector());
 }
 
-TEST(he_transformer, abc_int64)
+TEST(he_transformer, abc)
 {
-    Shape s{2, 3};
+    Shape shape{2, 2};
+    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto C = make_shared<op::Parameter>(element::f32, shape);
+    auto f = make_shared<Function>((A + B) * C, op::ParameterVector{A, B, C});
 
-    auto a = std::make_shared<op::Parameter>(element::i64, s);
-    auto b = std::make_shared<op::Parameter>(element::i64, s);
-    auto c = std::make_shared<op::Parameter>(element::i64, s);
-
-    auto t0 = std::make_shared<op::Add>(a, b);
-    auto t1 = std::make_shared<op::Multiply>(t0, c);
-
-    // Make the function
-    auto f = std::make_shared<Function>(NodeVector{t1}, op::ParameterVector{a, b, c});
-
-    // Create the backend
     auto backend = runtime::Backend::create("HE");
 
-    // Allocate tensors for arguments a, b, c
-    auto t_a = backend->create_tensor(element::i64, s);
-    auto t_b = backend->create_tensor(element::i64, s);
-    auto t_c = backend->create_tensor(element::i64, s);
-    // Allocate tensor for the result
-    auto t_result = backend->create_tensor(element::i64, s);
+    // Create some tensors for input/output
+    shared_ptr<runtime::TensorView> a = backend->create_tensor(element::f32, shape);
+    shared_ptr<runtime::TensorView> b = backend->create_tensor(element::f32, shape);
+    shared_ptr<runtime::TensorView> c = backend->create_tensor(element::f32, shape);
+    shared_ptr<runtime::TensorView> result = backend->create_tensor(element::f32, shape);
 
-    // Initialize tensors
-    int64_t v_a[2][3] = {{1, 2, 3}, {4, 5, 6}};
-    int64_t v_b[2][3] = {{7, 8, 9}, {10, 11, 12}};
-    int64_t v_c[2][3] = {{1, 0, -1}, {-1, 1, 2}};
+    copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
+    copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
+    copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
 
-    t_a->write(&v_a, 0, sizeof(v_a));
-    t_b->write(&v_b, 0, sizeof(v_b));
-    t_c->write(&v_c, 0, sizeof(v_c));
+    backend->call(f, {result}, {a, b, c});
+    EXPECT_EQ(read_vector<float>(result),
+              (test::NDArray<float, 2>({{54, 80}, {110, 144}})).get_vector());
 
-    // Invoke the function
-    backend->call(f, {t_result}, {t_a, t_b, t_c});
+    backend->call(f, {result}, {b, a, c});
+    EXPECT_EQ(read_vector<float>(result),
+              (test::NDArray<float, 2>({{54, 80}, {110, 144}})).get_vector());
 
-    EXPECT_EQ(read_vector<int64_t>(t_result),
-              (test::NDArray<int64_t, 2>({{8, 0, -12}, {-14, 16, 36}})).get_vector());
-}
-
-TEST(he_transformer, abc_float)
-{
-    Shape s{2, 3};
-
-    auto a = std::make_shared<op::Parameter>(element::f32, s);
-    auto b = std::make_shared<op::Parameter>(element::f32, s);
-    auto c = std::make_shared<op::Parameter>(element::f32, s);
-
-    auto t0 = std::make_shared<op::Add>(a, b);
-    auto t1 = std::make_shared<op::Multiply>(t0, c);
-
-    // Make the function
-    auto f = std::make_shared<Function>(NodeVector{t1}, op::ParameterVector{a, b, c});
-
-    // Create the backend
-    auto backend = runtime::Backend::create("HE");
-
-    // Allocate tensors for arguments a, b, c
-    auto t_a = backend->create_tensor(element::f32, s);
-    auto t_b = backend->create_tensor(element::f32, s);
-    auto t_c = backend->create_tensor(element::f32, s);
-    // Allocate tensor for the result
-    auto t_result = backend->create_tensor(element::f32, s);
-
-    // Initialize tensors
-    float v_a[2][3] = {{1, 2, 3}, {4, 5, 6}};
-    float v_b[2][3] = {{7, 8, 9}, {10, 11, 12}};
-    float v_c[2][3] = {{1, 0, -1}, {-1, 1, 2}};
-
-    t_a->write(&v_a, 0, sizeof(v_a));
-    t_b->write(&v_b, 0, sizeof(v_b));
-    t_c->write(&v_c, 0, sizeof(v_c));
-
-    // Invoke the function
-    backend->call(f, {t_result}, {t_a, t_b, t_c});
-
-    EXPECT_EQ(read_vector<float>(t_result),
-              (test::NDArray<float, 2>({{8, 0, -12}, {-14, 16, 36}})).get_vector());
+    backend->call(f, {result}, {a, c, b});
+    EXPECT_EQ(read_vector<float>(result),
+              (test::NDArray<float, 2>({{50, 72}, {98, 128}})).get_vector());
 }

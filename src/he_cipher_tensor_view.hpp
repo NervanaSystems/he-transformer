@@ -58,10 +58,9 @@ namespace ngraph
 
                 const element::Type& get_element_type() const;
 
-                inline seal::Ciphertext& get_element(size_t i) { return *m_cipher_texts[i]; }
-                inline const seal::Ciphertext& get_element(size_t i) const
+                inline vector<shared_ptr<seal::Ciphertext>>& get_elements()
                 {
-                    return *m_cipher_texts[i];
+                    return m_cipher_texts;
                 }
 
             private:

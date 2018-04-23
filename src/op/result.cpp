@@ -20,12 +20,12 @@
 #include "result.hpp"
 #include "seal/seal.h"
 
-void ngraph::runtime::he::result(const HECipherTensorView* arg,
-                                 HECipherTensorView* out,
+void ngraph::runtime::he::result(const vector<shared_ptr<seal::Ciphertext>> arg,
+                                 vector<shared_ptr<seal::Ciphertext>>& out,
                                  size_t count)
 {
     for (size_t i = 0; i < count; ++i)
     {
-        out->get_element(i) = arg->get_element(i);
+        out[i] = arg[i];
     }
 }
