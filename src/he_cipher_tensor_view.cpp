@@ -30,11 +30,11 @@ runtime::he::HECipherTensorView::HECipherTensorView(const element::Type& element
                                                     const string& name)
     : runtime::he::HETensorView(element_type, shape, he_backend)
 {
-    m_buffer_size = m_descriptor->get_tensor_view_layout()->get_size();
+    m_num_elements = m_descriptor->get_tensor_view_layout()->get_size();
 
-    if (m_buffer_size > 0)
+    if (m_num_elements > 0)
     {
-        m_cipher_texts = vector<shared_ptr<seal::Ciphertext>>(m_buffer_size);
+        m_cipher_texts = vector<shared_ptr<seal::Ciphertext>>(m_num_elements);
     }
 }
 
@@ -55,7 +55,7 @@ runtime::he::HECipherTensorView::~HECipherTensorView()
 void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_offset, size_t n)
 {
     const element::Type& type = get_element_type();
-    if (tensor_offset / sizeof(seal::Ciphertext) + n / type.size() > m_buffer_size)
+    if (tensor_offset / sizeof(seal::Ciphertext) + n / type.size() > m_num_elements)
     {
         throw out_of_range("write access past end of tensor");
     }
@@ -76,7 +76,7 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
 void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, size_t n) const
 {
     const element::Type& type = get_element_type();
-    if (tensor_offset / sizeof(seal::Ciphertext) + n / type.size() > m_buffer_size)
+    if (tensor_offset / sizeof(seal::Ciphertext) + n / type.size() > m_num_elements)
     {
         throw out_of_range("read access past end of tensor");
     }

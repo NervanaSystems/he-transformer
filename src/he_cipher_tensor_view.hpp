@@ -62,7 +62,7 @@ namespace ngraph
 
             private:
                 std::vector<shared_ptr<seal::Ciphertext>> m_cipher_texts;
-                size_t m_buffer_size;
+                size_t m_num_elements;
             };
         }
     }
