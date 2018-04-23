@@ -15,37 +15,15 @@
 *******************************************************************************/
 
 #include "he_cipher_tensor_view.hpp"
-//#include "he_tensor_view.hpp"
 #include "he_backend.hpp"
 #include "add.hpp"
 
 void ngraph::runtime::he::add(const HECipherTensorView* arg0, const HECipherTensorView* arg1, HECipherTensorView* out, size_t count)
 {
-    std::cout << "adding " << count << " element " << std::endl;
-    seal::Plaintext p;
-    seal::Plaintext q;
-    double y;
-    arg0->m_he_backend->decrypt(q, arg1->get_element(0));
-    arg0->m_he_backend->decode((void*)&y, q, element::f64);
-    std::cout << "y " << y << std::endl;
-    double x;
-    arg0->m_he_backend->decrypt(p, arg0->get_element(0));
-    arg0->m_he_backend->decode((void*)&x, p, element::f64);
-    std::cout << "x " << x << std::endl;
-
-
-    double xx;
-    double yy;
-    arg1->read((void*)&yy, 0, sizeof(double));
-    std::cout << "yy " << yy << std::endl;
-    arg0->read((void*)&xx, 0, sizeof(double));
-    std::cout << "xx " << xx << std::endl;
-
     for(size_t i = 0; i < count; ++i)
     {
         arg0->m_he_backend->get_evaluator()->add(arg0->get_element(i), arg1->get_element(i), out->get_element(i));
     }
-    std::cout << "added " << std::endl;
 }
 
 

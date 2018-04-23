@@ -32,29 +32,6 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                                     const vector<shared_ptr<runtime::he::HETensorView>>& output_tvs,
                                     const vector<shared_ptr<runtime::he::HETensorView>>& input_tvs)
 {
-    std::cout << "input tv " << std::endl;
-    double x;
-    seal::Plaintext p;
-    HECipherTensorView* arg0 = dynamic_cast<HECipherTensorView*>(input_tvs[0].get());
-    arg0->m_he_backend->decrypt(p, arg0->get_element(0));
-    arg0->m_he_backend->decode((void*)&x, p, element::f64);
-    std::cout << "x " << x << std::endl;
-
-    double y;
-    seal::Plaintext q;
-    HECipherTensorView* arg1 = dynamic_cast<HECipherTensorView*>(input_tvs[1].get());
-    arg1->m_he_backend->decrypt(q, arg1->get_element(0));
-    arg1->m_he_backend->decode((void*)&y, q, element::f64);
-    std::cout << "y " << y << std::endl;
-
-    double xx;
-    arg0->read((void*)&xx, 0, sizeof(double));
-    std::cout << "xx " << xx << std::endl;
-
-    double yy;
-    arg1->read((void*)&yy, 0, sizeof(double));
-    std::cout << "yy " << yy << std::endl;
-
     // TODO: see interpreter for how this was originally. Need to generalize to PlaintextCipherTensorViews as well
     unordered_map<descriptor::TensorView*, shared_ptr<runtime::he::HECipherTensorView>> tensor_map;
     size_t arg_index = 0;
@@ -96,7 +73,6 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         {
             descriptor::TensorView* tv = input.get_output().get_tensor_view().get();
             string name = tv->get_tensor().get_name();
-            std::cout << "Invoke computation on " << name << std::endl;
             inputs.push_back(tensor_map.at(tv));
         }
         for (size_t i = 0; i < op->get_output_size(); ++i)
@@ -142,15 +118,6 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
             secondary_type = op->get_inputs().at(0).get_tensor().get_element_type();
         }
 
-        std::cout << "about to genreate calls " << std::endl;
-        /*HECipherTensorView* arg00 = dynamic_cast<HECipherTensorView*>(inputs[0].get());
-        HECipherTensorView* arg11 = dynamic_cast<HECipherTensorView*>(inputs[1].get());
-        double xxx;
-        double yyy;
-        arg11->read((void*)&yyy, 0, sizeof(double));
-        std::cout << "yy " << yyy << std::endl;
-        arg00->read((void*)&xxx, 0, sizeof(double));
-        std::cout << "xx " << xxx << std::endl; */
         generate_calls(base_type, secondary_type, *op, inputs, outputs);
 
         // Delete any obsolete tensors
