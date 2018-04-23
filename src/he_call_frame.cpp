@@ -100,7 +100,6 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         }
 
         element::Type base_type;
-        element::Type secondary_type;
         if (op->get_inputs().empty())
         {
             base_type = op->get_element_type();
@@ -109,16 +108,8 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         {
             base_type = op->get_inputs().at(0).get_tensor().get_element_type();
         }
-        secondary_type = op->get_element_type();
 
-        // Some ops have unusual input/output types so handle those special cases here
-        if (op->description() == "Select")
-        {
-            base_type = op->get_inputs().at(1).get_tensor().get_element_type();
-            secondary_type = op->get_inputs().at(0).get_tensor().get_element_type();
-        }
-
-        generate_calls(base_type, secondary_type, *op, inputs, outputs);
+        generate_calls(base_type, *op, inputs, outputs);
 
         // Delete any obsolete tensors
         for (const descriptor::Tensor* t : op->liveness_free_list)
@@ -132,26 +123,6 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                 }
             }
         }
-    }
-}
-
-void runtime::he::HECallFrame::generate_calls(const element::Type& base_type,
-                                              const element::Type& secondary_type,
-                                              ngraph::Node& op,
-                                              const vector<shared_ptr<HETensorView>>& args,
-                                              const vector<shared_ptr<HETensorView>>& out)
-{
-    if (base_type == element::i64)
-    {
-        generate_calls<int64_t>(secondary_type, op, args, out);
-    }
-    else if (base_type == element::u64)
-    {
-        generate_calls<uint64_t>(secondary_type, op, args, out);
-    }
-    else if (base_type == element::f32)
-    {
-        generate_calls<float>(secondary_type, op, args, out);
     }
 }
 

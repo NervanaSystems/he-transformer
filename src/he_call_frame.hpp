@@ -63,36 +63,10 @@ namespace ngraph
                           const std::vector<std::shared_ptr<runtime::he::HETensorView>>& output_tvs,
                           const std::vector<std::shared_ptr<runtime::he::HETensorView>>& input_tvs);
 
-                void generate_calls(const element::Type& base_type,
-                                    const element::Type& secondary_type,
-                                    ngraph::Node& op,
-                                    const std::vector<std::shared_ptr<HETensorView>>& args,
-                                    const std::vector<std::shared_ptr<HETensorView>>& out);
-
-                template <typename BASE>
                 void generate_calls(const element::Type& type,
-                                    ngraph::Node& op,
+                                    ngraph::Node& node,
                                     const std::vector<std::shared_ptr<HETensorView>>& args,
                                     const std::vector<std::shared_ptr<HETensorView>>& out)
-                {
-                    if (type == element::f32)
-                    {
-                        op_engine<BASE, float>(op, args, out);
-                    }
-                    else if (type == element::i64)
-                    {
-                        op_engine<BASE, int64_t>(op, args, out);
-                    }
-                    else if (type == element::u64)
-                    {
-                        op_engine<BASE, uint64_t>(op, args, out);
-                    }
-                }
-
-                template <typename T, typename S>
-                void op_engine(ngraph::Node& node,
-                               const std::vector<std::shared_ptr<HETensorView>>& args,
-                               const std::vector<std::shared_ptr<HETensorView>>& out)
                 {
                     std::string node_op = node.description();
 
