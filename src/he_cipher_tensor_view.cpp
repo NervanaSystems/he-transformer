@@ -14,13 +14,12 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <cstring>
+#include <string>
 #include <memory>
 
 #include "he_backend.hpp"
 #include "he_cipher_tensor_view.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
-#include "ngraph/descriptor/primary_tensor_view.hpp"
 
 using namespace ngraph;
 using namespace std;
@@ -31,9 +30,6 @@ runtime::he::HECipherTensorView::HECipherTensorView(const element::Type& element
                                                     const string& name)
     : runtime::he::HETensorView(element_type, shape, he_backend)
 {
-    m_descriptor->set_tensor_view_layout(
-        make_shared<descriptor::layout::DenseTensorViewLayout>(*m_descriptor));
-
     m_buffer_size = m_descriptor->get_tensor_view_layout()->get_size();
 
     if (m_buffer_size > 0)

@@ -59,7 +59,6 @@ namespace ngraph
             private:
                 std::shared_ptr<Function> m_function;
                 HEBackend* he_backend;
-                std::unordered_map<const Node*, stopwatch> m_timer_map;
 
                 void call(std::shared_ptr<Function> function,
                           const std::vector<std::shared_ptr<runtime::he::HETensorView>>& output_tvs,
