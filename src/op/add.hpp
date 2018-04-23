@@ -26,8 +26,9 @@ namespace ngraph
         namespace he
         {
             void add(const HECipherTensorView* arg0,
-                    const HECipherTensorView* arg1,
-                    HECipherTensorView* out, size_t count);
+                     const HECipherTensorView* arg1,
+                     HECipherTensorView* out,
+                     size_t count);
         }
     }
 }

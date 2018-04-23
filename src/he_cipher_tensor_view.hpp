@@ -58,11 +58,7 @@ namespace ngraph
 
                 const element::Type& get_element_type() const;
 
-                inline seal::Ciphertext& get_element(size_t i)
-                {
-                    return *m_cipher_texts[i];
-                }
-
+                inline seal::Ciphertext& get_element(size_t i) { return *m_cipher_texts[i]; }
                 inline const seal::Ciphertext& get_element(size_t i) const
                 {
                     return *m_cipher_texts[i];

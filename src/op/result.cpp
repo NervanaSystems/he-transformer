@@ -14,13 +14,15 @@
 * limitations under the License.
 *******************************************************************************/
 
+#include "result.hpp"
 #include "he_cipher_tensor_view.hpp"
 #include "seal/seal.h"
-#include "result.hpp"
 
-void ngraph::runtime::he::result(const HECipherTensorView* arg, HECipherTensorView* out, size_t count)
+void ngraph::runtime::he::result(const HECipherTensorView* arg,
+                                 HECipherTensorView* out,
+                                 size_t count)
 {
-    for(size_t i = 0; i < count; ++i)
+    for (size_t i = 0; i < count; ++i)
     {
         out->get_element(i) = arg->get_element(i);
     }
