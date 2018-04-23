@@ -32,7 +32,6 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                                     const vector<shared_ptr<runtime::he::HETensorView>>& output_tvs,
                                     const vector<shared_ptr<runtime::he::HETensorView>>& input_tvs)
 {
-    std::cout << "runtime::he::HECallFrame::call " << std::endl;
     // TODO: see interpreter for how this was originally. Need to generalize to PlaintextCipherTensorViews as well
     unordered_map<descriptor::TensorView*, shared_ptr<runtime::he::HECipherTensorView>> tensor_map;
     size_t arg_index = 0;
@@ -63,7 +62,6 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
     // Invoke computation
     for (shared_ptr<Node> op : function->get_ordered_ops())
     {
-        std::cout << op->description() << std::endl;
         if (op->description() == "Parameter")
         {
             continue;
@@ -75,22 +73,20 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         {
             descriptor::TensorView* tv = input.get_output().get_tensor_view().get();
             string name = tv->get_tensor().get_name();
+            std::cout << "Invoke computation on " << name << std::endl;
             inputs.push_back(tensor_map.at(tv));
         }
         for (size_t i = 0; i < op->get_output_size(); ++i)
         {
-            std::cout << "line 82 " << i << std::endl;
             descriptor::TensorView* tv = op->get_output_tensor_view(i).get();
             string name = tv->get_tensor().get_name();
             shared_ptr<runtime::he::HECipherTensorView> itv;
-            std::cout << "86 " << std::endl;
             if (!contains_key(tensor_map, tv))
             {
                 // The output tensor is not in the tensor map so create a new tensor
                 const Shape& shape = op->get_output_shape(i);
                 const element::Type& element_type = op->get_output_element_type(i);
                 string tensor_name = op->get_output_tensor(i).get_name();
-                std::cout << "name " << tensor_name << std::endl;
                 itv = make_shared<runtime::he::HECipherTensorView>(
                     element_type,
                     shape,
@@ -99,12 +95,10 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
             }
             else
             {
-                std::cout << "102 " << std::endl;
                 itv = tensor_map.at(tv);
             }
             outputs.push_back(itv);
         }
-        std::cout << "line 103 " << std::endl;
 
         element::Type base_type;
         element::Type secondary_type;
@@ -125,10 +119,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
             secondary_type = op->get_inputs().at(0).get_tensor().get_element_type();
         }
 
-        // TODO: generate the calls
-        std::cout << "generating call..." << std::endl;
         generate_calls(base_type, secondary_type, *op, inputs, outputs);
-        std::cout << "call generated " << std::endl;
 
         // Delete any obsolete tensors
         for (const descriptor::Tensor* t : op->liveness_free_list)
@@ -143,7 +134,6 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
             }
         }
     }
-    std::cout << "exiting std::runtime::he::HECallFrame::call" << std::endl;
 }
 
 void runtime::he::HECallFrame::generate_calls(

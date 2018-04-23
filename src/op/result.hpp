@@ -16,23 +16,16 @@
 
 #pragma once
 
-#include <algorithm>
-#include <cmath>
-#include <numeric>
-#include <vector>
-#include "ngraph/shape.hpp"
+#include "he_cipher_tensor_view.hpp"
+#include "seal/seal.h"
 
 namespace ngraph
 {
     namespace runtime
     {
-        namespace reference
+        namespace he
         {
-            template <typename T>
-            void result(const T* arg, T* out, size_t count)
-            {
-                memcpy(out, arg, sizeof(T) * count);
-            }
+            void result(const HECipherTensorView* arg, HECipherTensorView* out, size_t count);
         }
     }
 }

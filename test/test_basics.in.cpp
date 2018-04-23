@@ -62,7 +62,9 @@ TEST(he_transformer, tensor_write_read_2_3)
 
 TEST(he_transformer, ab)
 {
-	Shape s{2, 3};
+	// Shape s{2, 3};
+
+    Shape s{1,1};
 	auto a = std::make_shared<op::Parameter>(element::f64, s);
 	auto b = std::make_shared<op::Parameter>(element::f64, s);
 
@@ -76,25 +78,27 @@ TEST(he_transformer, ab)
 	auto backend = runtime::Backend::create("HE");
 
 	// Allocate tensors for arguments a, b, c
-	auto t_a = backend->create_tensor(element::i64, s);
-	auto t_b = backend->create_tensor(element::i64, s);
+	auto t_a = backend->create_tensor(element::f64, s);
+	auto t_b = backend->create_tensor(element::f64, s);
 	// Allocate tensor for the result
-	auto t_result = backend->create_tensor(element::i64, s);
+	auto t_result = backend->create_tensor(element::f64, s);
 
 	// Initialize tensors
-	uint64_t v_a[2][3] = {{1, 2, 3}, {4, 5, 6}};
-	uint64_t v_b[2][3] = {{7, 8, 9}, {10, 11, 12}};
+	//uint64_t v_a[2][3] = {{1, 2, 3}, {4, 5, 6}};
+	//uint64_t v_b[2][3] = {{7, 8, 9}, {10, 11, 12}};
 
+    double v_a[1][1] = {{1.2}};
+    double v_b[1][1] = {{3.4}};
 	t_a->write(&v_a, 0, sizeof(v_a));
 	t_b->write(&v_b, 0, sizeof(v_b));
 	std::cout << "wrote " << std::endl;
 
 	// Invoke the function
-	backend->call(f, {t_result}, {t_a, t_b});
+	backend->call(f, {t_result}, {t_a, t_a});
 	std::cout << "called " << std::endl;
 
 	// Get the result
-	uint64_t r[2][3];
+	double r[1][1];
 	t_result->read(&r, 0, sizeof(r));
     std::cout << "result read " << std::endl;
 

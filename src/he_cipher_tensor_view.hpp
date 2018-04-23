@@ -58,6 +58,16 @@ namespace ngraph
 
                 const element::Type& get_element_type() const;
 
+                inline seal::Ciphertext& get_element(size_t i)
+                {
+                    return *m_cipher_texts[i];
+                }
+
+                inline const seal::Ciphertext& get_element(size_t i) const
+                {
+                    return *m_cipher_texts[i];
+                }
+
             private:
                 void check_io_bounds(const void* p, size_t tensor_offset, size_t n) const;
                 std::vector<shared_ptr<seal::Ciphertext>> m_cipher_texts;

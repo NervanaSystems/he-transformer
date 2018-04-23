@@ -105,11 +105,14 @@ namespace ngraph
 
                             runtime::he::add(arg0, arg1, out0, out0->get_element_count());
 
-                            std::cout << "Added! OMG! " << std::endl;
+                            std::cout << "Added!" << std::endl;
                         }
                         else if(node_op == "Result")
                         {
-                            std::cout << "TODO: implement result " << std::endl;
+                            ngraph::op::Result* res = dynamic_cast<ngraph::op::Result*>(&node);
+                            runtime::he::result(dynamic_cast<HECipherTensorView*>(args[0].get()),
+                                    dynamic_cast<HECipherTensorView*>(out[0].get()),
+                                    shape_size(res->get_shape()));
                         }
                         else
                         {

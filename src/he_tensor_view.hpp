@@ -26,6 +26,7 @@ namespace ngraph
         namespace he
         {
             class HEBackend;
+            class HECipherTensorView;
 
             class HETensorView : public runtime::TensorView
             {
@@ -48,7 +49,7 @@ namespace ngraph
                 /// @param n Number of bytes to read, must be integral number of elements.
                 virtual void read(void* p, size_t tensor_offset, size_t n) const override;
 
-            protected:
+            //protected:
                 std::shared_ptr<HEBackend> m_he_backend;
             };
         }

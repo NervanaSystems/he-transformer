@@ -14,14 +14,31 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <cstddef>
-
 #include "he_cipher_tensor_view.hpp"
-#include "seal/seal.h"
+//#include "he_tensor_view.hpp"
+#include "he_backend.hpp"
 #include "add.hpp"
 
 void ngraph::runtime::he::add(const HECipherTensorView* arg0, const HECipherTensorView* arg1, HECipherTensorView* out, size_t count)
 {
-    std::cout << "count " << count << std::endl;
+    std::cout << "adding " << count << " element " << std::endl;
+    seal::Plaintext p;
+    seal::Plaintext q;
+    double x;
+    arg0->m_he_backend->decrypt(p, arg0->get_element(0));
+    arg0->m_he_backend->decode((void*)&x, p, element::f64);
+    std::cout << "x " << x << std::endl;
+
+    double y;
+    arg0->m_he_backend->decrypt(q, arg1->get_element(0));
+    arg0->m_he_backend->decode((void*)&y, q, element::f64);
+    std::cout << "y " << x << std::endl;
+
+    for(size_t i = 0; i < count; ++i)
+    {
+        arg0->m_he_backend->get_evaluator()->add(arg0->get_element(i), arg1->get_element(i), out->get_element(i));
+    }
+    std::cout << "added " << std::endl;
 }
+
 
