@@ -27,14 +27,13 @@ namespace ngraph
         {
             class HEBackend;
 
-            class HETensorView : public ngraph::runtime::TensorView
+            class HETensorView : public runtime::TensorView
             {
             public:
-                HETensorView(const std::shared_ptr<ngraph::descriptor::TensorView>& descriptor)
-                    : TensorView(descriptor)
-                {
-                }
-
+                HETensorView(const element::Type& element_type,
+                             const Shape& shape,
+                             const std::shared_ptr<HEBackend>& he_backend,
+                             const std::string& name = "external");
                 virtual ~HETensorView();
 
                 /// @brief Write bytes directly into the tensor
@@ -49,7 +48,7 @@ namespace ngraph
                 /// @param n Number of bytes to read, must be integral number of elements.
                 virtual void read(void* p, size_t tensor_offset, size_t n) const override;
 
-            private:
+            protected:
                 std::shared_ptr<HEBackend> m_he_backend;
             };
         }

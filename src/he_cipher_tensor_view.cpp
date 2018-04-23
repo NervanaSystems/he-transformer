@@ -29,10 +29,7 @@ runtime::he::HECipherTensorView::HECipherTensorView(const element::Type& element
                                                     const Shape& shape,
                                                     shared_ptr<HEBackend> he_backend,
                                                     const string& name)
-    : runtime::he::HETensorView(make_shared<descriptor::PrimaryTensorView>(
-          make_shared<TensorViewType>(element_type, shape), name, true, true, false))
-    , m_allocated_buffer_pool()
-    , m_he_backend(he_backend)
+    : runtime::he::HETensorView(element_type, shape, he_backend)
 {
     m_descriptor->set_tensor_view_layout(
         make_shared<descriptor::layout::DenseTensorViewLayout>(*m_descriptor));

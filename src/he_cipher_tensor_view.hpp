@@ -29,7 +29,6 @@ namespace ngraph
     {
         namespace he
         {
-            class HETensorView;
             class HEBackend;
 
             class HECipherTensorView : public HETensorView
@@ -62,7 +61,6 @@ namespace ngraph
                 void read(void* p, size_t tensor_offset, size_t n) const;
 
             private:
-                std::shared_ptr<HEBackend> m_he_backend;
                 std::vector<shared_ptr<seal::Ciphertext>> m_allocated_buffer_pool;
                 size_t m_buffer_size;
             };
