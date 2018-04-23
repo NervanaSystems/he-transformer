@@ -28,7 +28,7 @@ runtime::he::HECallFrame::HECallFrame(const shared_ptr<Function>& func)
 {
 }
 
-void runtime::he::HECallFrame::call(std::shared_ptr<Function> function,
+void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                                     const vector<shared_ptr<runtime::he::HETensorView>>& output_tvs,
                                     const vector<shared_ptr<runtime::he::HETensorView>>& input_tvs)
 {
@@ -50,7 +50,7 @@ void runtime::he::HECallFrame::call(std::shared_ptr<Function> function,
     for (size_t i = 0; i < function->get_output_size(); i++)
     {
         auto output_op = function->get_output_op(i);
-        if (!std::dynamic_pointer_cast<op::Result>(output_op))
+        if (!dynamic_pointer_cast<op::Result>(output_op))
         {
             throw ngraph_error("One of function's outputs isn't op::Result");
         }
@@ -94,10 +94,7 @@ void runtime::he::HECallFrame::call(std::shared_ptr<Function> function,
                 itv = make_shared<runtime::he::HECipherTensorView>(
                     element_type,
                     shape,
-                    //he_backend,
-                    std::shared_ptr<HEBackend>(he_backend),
-                    tensor_name);
-                std::cout << "97 " << std::endl;
+                    m_he_backend); // TODO: include tensor name
                 tensor_map.insert({tv, itv});
             }
             else

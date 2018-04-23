@@ -28,7 +28,7 @@ shared_ptr<runtime::Backend> runtime::he::HEManager::allocate_backend()
     return make_shared<HEBackend>();
 }
 
-std::vector<size_t> runtime::he::HEManager::get_subdevices() const
+vector<size_t> runtime::he::HEManager::get_subdevices() const
 {
     throw ngraph_error("unimplemented");
 }

@@ -32,11 +32,29 @@ TEST(he_transformer, backend_init)
     EXPECT_EQ(1, 1);
 }
 
-TEST(he_transformer, tensor_read_write)
+TEST(he_transformer, tensor_write_read_scalar)
+{
+    auto backend = runtime::Backend::create("HE");
+    Shape shape{};
+    auto a = backend->create_tensor(element::i64, shape);
+    copy_data(a, vector<int64_t>{5});
+    EXPECT_EQ(read_vector<int64_t>(a), (vector<int64_t>{5}));
+}
+
+TEST(he_transformer, tensor_write_read_2)
+{
+    auto backend = runtime::Backend::create("HE");
+    Shape shape{2};
+    auto a = backend->create_tensor(element::i64, shape);
+    copy_data(a, vector<int64_t>{5, 6});
+    EXPECT_EQ(read_vector<int64_t>(a), (vector<int64_t>{5, 6}));
+}
+
+TEST(he_transformer, tensor_write_read_2_3)
 {
     auto backend = runtime::Backend::create("HE");
     Shape shape{2, 3};
-    shared_ptr<runtime::TensorView> a = backend->create_tensor<int64_t>(shape);
+    auto a = backend->create_tensor(element::i64, shape);
     copy_data(a, test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector());
     EXPECT_EQ(read_vector<int64_t>(a),
               (test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector());

@@ -14,6 +14,8 @@
 * limitations under the License.
 *******************************************************************************/
 
+#include<memory>
+
 #include "gtest/gtest.h"
 #include "seal/seal.h"
 
@@ -71,4 +73,43 @@ TEST(seal_example, basics_i)
     // Decode
     int result = encoder.decode_int32(plain_result);
     EXPECT_EQ(84, result);
+}
+
+TEST(seal_example, shared_ptr_encrypt)
+{
+    using namespace seal;
+
+    // Parameter
+    EncryptionParameters parms;
+    parms.set_poly_modulus("1x^2048 + 1");
+    parms.set_coeff_modulus(coeff_modulus_128(2048));
+    parms.set_plain_modulus(1 << 8);
+
+    // Context: print with print_parameters(context);
+    SEALContext context(parms);
+
+    // Objects from context
+    IntegerEncoder encoder(context.plain_modulus());
+    KeyGenerator keygen(context);
+    PublicKey public_key = keygen.public_key();
+    SecretKey secret_key = keygen.secret_key();
+    Encryptor encryptor(context, public_key);
+    Evaluator evaluator(context);
+    Decryptor decryptor(context, secret_key);
+
+    // Encode
+    int value1 = 5;
+    Plaintext plain = encoder.encode(value1);
+
+    // Encrypt
+    auto encrypted_ptr = make_shared<Ciphertext>();
+    encryptor.encrypt(plain, *encrypted_ptr);
+
+    // Decrypt
+    Plaintext plain_result;
+    decryptor.decrypt(*encrypted_ptr, plain_result);
+
+    // Decode
+    int result = encoder.decode_int32(plain_result);
+    EXPECT_EQ(5, result);
 }

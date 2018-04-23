@@ -14,34 +14,30 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <cstring>
 #include <memory>
+#include <string>
 
 #include "he_backend.hpp"
 #include "he_cipher_tensor_view.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
-#include "ngraph/descriptor/primary_tensor_view.hpp"
 
 using namespace ngraph;
 using namespace std;
 
-runtime::he::HECipherTensorView::HECipherTensorView(const ngraph::element::Type& element_type,
+runtime::he::HECipherTensorView::HECipherTensorView(const element::Type& element_type,
                                                     const Shape& shape,
-                                                    std::shared_ptr<HEBackend> he_backend,
+                                                    shared_ptr<HEBackend> he_backend,
                                                     const string& name)
-    : runtime::he::HETensorView(std::make_shared<ngraph::descriptor::PrimaryTensorView>(
-          std::make_shared<ngraph::TensorViewType>(element_type, shape), name, true, true, false))
-    , m_allocated_buffer_pool()
-    , m_he_backend(he_backend)
+    : runtime::he::HETensorView(element_type, shape, he_backend)
 {
-    m_descriptor->set_tensor_view_layout(
-        std::make_shared<ngraph::descriptor::layout::DenseTensorViewLayout>(*m_descriptor));
-
-    m_buffer_size = m_descriptor->get_tensor_view_layout()->get_size();
-
-    if (m_buffer_size > 0)
+    // get_tensor_view_layout()->get_size() is the number of elements
+    m_num_elements = m_descriptor->get_tensor_view_layout()->get_size();
+    if (m_num_elements > 0)
     {
-        m_allocated_buffer_pool = vector<shared_ptr<seal::Ciphertext>>(m_buffer_size);
+        for (size_t i = 0; i < m_num_elements; ++i)
+        {
+            m_cipher_texts.push_back(make_shared<seal::Ciphertext>());
+        }
     }
 }
 
@@ -49,54 +45,56 @@ runtime::he::HECipherTensorView::~HECipherTensorView()
 {
 }
 
-vector<shared_ptr<seal::Ciphertext>>& runtime::he::HECipherTensorView::get_data_ptr()
+void runtime::he::HECipherTensorView::check_io_bounds (
+    const void* source, size_t tensor_offset, size_t n) const
 {
-    return m_allocated_buffer_pool;
-}
+    const element::Type& type = get_element_type();
+    size_t type_byte_size = type.size();
 
-const vector<shared_ptr<seal::Ciphertext>>& runtime::he::HECipherTensorView::get_data_ptr() const
-{
-    return m_allocated_buffer_pool;
+    // Memory must be byte-aligned to type_byte_size
+    // tensor_offset and n are all in bytes
+    if (tensor_offset % type_byte_size != 0 || n % type_byte_size != 0)
+    {
+        throw ngraph_error("tensor_offset and n must be divisable by type_byte_size.");
+    }
+    // Check out-of-range
+    if ((tensor_offset + n) / type_byte_size > m_num_elements)
+    {
+        throw out_of_range("I/O access past end of tensor");
+    }
 }
 
 void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_offset, size_t n)
 {
+    check_io_bounds(source, tensor_offset, n);
     const element::Type& type = get_element_type();
-    if (tensor_offset / sizeof(seal::Ciphertext) + n / type.size() > m_buffer_size)
+    size_t type_byte_size = type.size();
+    size_t dst_start_index = tensor_offset / type_byte_size;
+    size_t num_elements_to_write = n / type_byte_size;
+    for (size_t i = 0; i < num_elements_to_write; ++i)
     {
-        throw out_of_range("write access past end of tensor");
-    }
-    vector<shared_ptr<seal::Ciphertext>>& target = get_data_ptr();
-
-    size_t offset = tensor_offset / sizeof(seal::Ciphertext);
-    for (int i = 0; i < n / type.size(); ++i)
-    {
+        const void* src_with_offset = (void*)((char*)source + i * type.size());
+        size_t dst_index = dst_start_index + i;
         seal::Plaintext p;
-        seal::Ciphertext c;
-        m_he_backend->encode(p, (void*)((char*)source + i * type.size()), type);
-        m_he_backend->encrypt(c, p);
-
-        target[offset + i] = make_shared<seal::Ciphertext>(c);
+        m_he_backend->encode(p, src_with_offset, type);
+        m_he_backend->encrypt(*(m_cipher_texts[dst_index]), p);
     }
 }
 
 void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, size_t n) const
 {
+    check_io_bounds(target, tensor_offset, n);
     const element::Type& type = get_element_type();
-    if (tensor_offset / sizeof(seal::Ciphertext) + n / type.size() > m_buffer_size)
+    size_t type_byte_size = type.size();
+    size_t src_start_index = tensor_offset / type_byte_size;
+    size_t num_elements_to_read = n / type_byte_size;
+    for (size_t i = 0; i < num_elements_to_read; ++i)
     {
-        throw out_of_range("read access past end of tensor");
-    }
-
-    const vector<shared_ptr<seal::Ciphertext>>& source = get_data_ptr();
-
-    size_t offset = tensor_offset / sizeof(seal::Ciphertext);
-    for (int i = 0; i < n / type.size(); ++i)
-    {
-        const std::shared_ptr<seal::Ciphertext> c = source[offset + i];
+        void* dst_with_offset = (void*)((char*)target + i * type.size());
+        size_t src_index = src_start_index + i;
         seal::Plaintext p;
-        m_he_backend->decrypt(p, *c);
-        m_he_backend->decode((void*)((char*)target + i * type.size()), p, type);
+        m_he_backend->decrypt(p, *(m_cipher_texts[src_index]));
+        m_he_backend->decode(dst_with_offset, p, type);
     }
 }
 

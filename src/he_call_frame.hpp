@@ -52,16 +52,12 @@ namespace ngraph
             public:
                 HECallFrame(const std::shared_ptr<Function>& function);
 
-                /// @brief Invoke the function with values matching the signature of the function.
-                ///
-                /// Tuples will be expanded into their tensor views to build the call frame.
                 void call(const std::vector<std::shared_ptr<runtime::TensorView>>& outputs,
                           const std::vector<std::shared_ptr<runtime::TensorView>>& inputs);
 
             private:
                 std::shared_ptr<Function> m_function;
-                std::shared_ptr<HEBackend> he_backend;
-                std::unordered_map<const Node*, stopwatch> m_timer_map;
+                std::shared_ptr<HEBackend> m_he_backend;
 
                 void call(std::shared_ptr<Function> function,
                           const std::vector<std::shared_ptr<runtime::he::HETensorView>>& output_tvs,

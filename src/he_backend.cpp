@@ -63,7 +63,7 @@ runtime::he::HEBackend::~HEBackend()
 shared_ptr<runtime::TensorView>
     runtime::he::HEBackend::create_tensor(const element::Type& element_type, const Shape& shape)
 {
-    std::shared_ptr<HEBackend> he_backend = shared_from_this();
+    shared_ptr<HEBackend> he_backend = shared_from_this();
     auto rc =
         make_shared<runtime::he::HECipherTensorView>(element_type, shape, he_backend, "external");
     shared_ptr<runtime::he::HETensorView> tv = static_pointer_cast<runtime::he::HETensorView>(rc);
@@ -76,7 +76,7 @@ shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_tensor(
     throw ngraph_error("he create_tensor Unimplemented");
 }
 
-bool runtime::he::HEBackend::compile(std::shared_ptr<Function> func)
+bool runtime::he::HEBackend::compile(shared_ptr<Function> func)
 {
     FunctionInstance& instance = m_function_map[func];
     if (instance.m_external_function == nullptr)
@@ -88,7 +88,7 @@ bool runtime::he::HEBackend::compile(std::shared_ptr<Function> func)
     return true;
 }
 
-bool runtime::he::HEBackend::call(std::shared_ptr<Function> func,
+bool runtime::he::HEBackend::call(shared_ptr<Function> func,
                                   const vector<shared_ptr<runtime::TensorView>>& outputs,
                                   const vector<shared_ptr<runtime::TensorView>>& inputs)
 {
@@ -105,16 +105,16 @@ bool runtime::he::HEBackend::call(std::shared_ptr<Function> func,
     return rc;
 }
 
-void runtime::he::HEBackend::remove_compiled_function(std::shared_ptr<Function> func)
+void runtime::he::HEBackend::remove_compiled_function(shared_ptr<Function> func)
 {
     throw ngraph_error("HEBackend remove compile function unimplemented");
 }
 
 void runtime::he::HEBackend::encode(seal::Plaintext& output,
                                     const void* input,
-                                    const ngraph::element::Type& type)
+                                    const element::Type& type)
 {
-    const std::string type_name = type.c_type_string();
+    const string type_name = type.c_type_string();
 
     if (type_name == "int64_t")
     {
@@ -130,16 +130,16 @@ void runtime::he::HEBackend::encode(seal::Plaintext& output,
     }
     else
     {
-        NGRAPH_INFO << "Unsupported element type in decode " << type_name << std::endl;
+        NGRAPH_INFO << "Unsupported element type in decode " << type_name << endl;
         throw ngraph_error("Unsupported element type" + type_name);
     }
 }
 
 void runtime::he::HEBackend::decode(void* output,
                                     const seal::Plaintext& input,
-                                    const ngraph::element::Type& type)
+                                    const element::Type& type)
 {
-    const std::string type_name = type.c_type_string();
+    const string type_name = type.c_type_string();
 
     if (type_name == "int64_t")
     {
@@ -158,7 +158,7 @@ void runtime::he::HEBackend::decode(void* output,
     }
     else
     {
-        NGRAPH_INFO << "Unsupported element type in decode " << type_name << std::endl;
+        NGRAPH_INFO << "Unsupported element type in decode " << type_name << endl;
         throw ngraph_error("Unsupported element type" + type_name);
     }
 }

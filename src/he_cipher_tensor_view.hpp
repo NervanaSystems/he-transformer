@@ -16,7 +16,8 @@
 
 #pragma once
 
-#include <cstring>
+#include <string>
+
 #include "he_tensor_view.hpp"
 #include "ngraph/runtime/tensor_view.hpp"
 #include "ngraph/type/element_type.hpp"
@@ -28,7 +29,6 @@ namespace ngraph
     {
         namespace he
         {
-            class HETensorView;
             class HEBackend;
 
             class HECipherTensorView : public HETensorView
@@ -38,36 +38,30 @@ namespace ngraph
                                    const Shape& shape,
                                    std::shared_ptr<HEBackend> he_backend,
                                    const std::string& name = "external");
-                HECipherTensorView(const ngraph::element::Type& element_type,
-                                   const Shape& shape,
-                                   void* memory_pointer,
-                                   std::shared_ptr<HEBackend> he_backend,
-                                   const std::string& name = "external");
                 virtual ~HECipherTensorView();
-
-                vector<shared_ptr<seal::Ciphertext>>& get_data_ptr();
-                const vector<shared_ptr<seal::Ciphertext>>& get_data_ptr() const;
-
-                size_t get_size() const;
-                const element::Type& get_element_type() const;
 
                 /// @brief Write bytes directly into the tensor after encoding and encrypting
                 /// @param p Pointer to source of data
-                /// @param tensor_offset Offset into tensor storage to begin writing. Must be element-aligned.
+                /// @param tensor_offset Offset (bytes) into tensor storage to begin writing.
+                ///        Must be element-aligned.
                 /// @param n Number of bytes to write, must be integral number of elements.
                 void write(const void* p, size_t tensor_offset, size_t n);
 
                 /// @brief Read bytes directly from the tensor after decrypting and decoding
                 /// @param p Pointer to destination for data
-                /// @param tensor_offset Offset into tensor storage to begin reading. Must be element-aligned.
+                /// @param tensor_offset Offset (bytes) into tensor storage to begin reading.
+                ///        Must be element-aligned.
                 /// @param n Number of bytes to read, must be integral number of elements.
                 void read(void* p, size_t tensor_offset, size_t n) const;
 
-                std::shared_ptr<HEBackend> m_he_backend;
+                size_t get_size() const;
+
+                const element::Type& get_element_type() const;
 
             private:
-                std::vector<shared_ptr<seal::Ciphertext>> m_allocated_buffer_pool;
-                size_t m_buffer_size;
+                void check_io_bounds(const void* p, size_t tensor_offset, size_t n) const;
+                std::vector<shared_ptr<seal::Ciphertext>> m_cipher_texts;
+                size_t m_num_elements;
             };
         }
     }
