@@ -17,20 +17,20 @@
 #include <vector>
 
 #include "he_backend.hpp"
-#include "kernel/add.hpp"
+#include "kernel/subtract.hpp"
 #include "seal/seal.h"
 
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::add(const vector<shared_ptr<seal::Ciphertext>>& arg0,
-                              const vector<shared_ptr<seal::Ciphertext>>& arg1,
-                              vector<shared_ptr<seal::Ciphertext>>& out,
-                              shared_ptr<HEBackend> he_backend,
-                              size_t count)
+void runtime::he::kernel::subtract(const vector<shared_ptr<seal::Ciphertext>>& arg0,
+                                   const vector<shared_ptr<seal::Ciphertext>>& arg1,
+                                   vector<shared_ptr<seal::Ciphertext>>& out,
+                                   shared_ptr<HEBackend> he_backend,
+                                   size_t count)
 {
     for (size_t i = 0; i < count; ++i)
     {
-        he_backend.get()->get_evaluator()->add(*arg0[i], *arg1[i], *out[i]);
+        he_backend.get()->get_evaluator()->sub(*arg0[i], *arg1[i], *out[i]);
     }
 }
