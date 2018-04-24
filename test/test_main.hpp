@@ -14,35 +14,15 @@
 * limitations under the License.
 *******************************************************************************/
 
-// This is a special test file that contains `*.in.cpp` sources from multiple files
-// On ngraph's main repo, add this file to the unit-test binary source list
+#pragma once
 
-// Gtest
 #include "gtest/gtest.h"
-
-// Ngraph
-#include "ngraph/graph_util.hpp"
-#include "ngraph/log.hpp"
-#include "ngraph/ngraph.hpp"
-
-// Ngraph test
-#include "util/autodiff/numeric_compare.hpp"
-#include "util/ndarray.hpp"
-#include "util/test_tools.hpp"
-
-// HE Backend
 #include "he_backend.hpp"
-#include "test_main.hpp"
 
-// Namespace
-using namespace std;
-using namespace ngraph;
-
-// Common test class
-void TestHEBackend::SetUp()
+class TestHEBackend : public ::testing::Test
 {
-    m_he_backend = static_pointer_cast<runtime::he::HEBackend>(runtime::Backend::create("HE"));
-}
-
-// Source files
-#include "test_basics.in.cpp"
+protected:
+    virtual void SetUp();
+    virtual void TearDown() {}
+    std::shared_ptr<ngraph::runtime::he::HEBackend> m_he_backend;
+};

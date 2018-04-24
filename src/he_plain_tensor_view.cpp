@@ -18,31 +18,31 @@
 #include <string>
 
 #include "he_backend.hpp"
-#include "he_cipher_tensor_view.hpp"
+#include "he_plain_tensor_view.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
 
 using namespace ngraph;
 using namespace std;
 
-runtime::he::HECipherTensorView::HECipherTensorView(const element::Type& element_type,
-                                                    const Shape& shape,
-                                                    shared_ptr<HEBackend> he_backend,
-                                                    const string& name)
+runtime::he::HEPlainTensorView::HEPlainTensorView(const element::Type& element_type,
+                                                  const Shape& shape,
+                                                  shared_ptr<HEBackend> he_backend,
+                                                  const string& name)
     : runtime::he::HETensorView(element_type, shape, he_backend)
 {
     // get_tensor_view_layout()->get_size() is the number of elements
     m_num_elements = m_descriptor->get_tensor_view_layout()->get_size();
     for (size_t i = 0; i < m_num_elements; ++i)
     {
-        m_cipher_texts.push_back(make_shared<seal::Ciphertext>());
+        m_plain_texts.push_back(make_shared<seal::Plaintext>());
     }
 }
 
-runtime::he::HECipherTensorView::~HECipherTensorView()
+runtime::he::HEPlainTensorView::~HEPlainTensorView()
 {
 }
 
-void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_offset, size_t n)
+void runtime::he::HEPlainTensorView::write(const void* source, size_t tensor_offset, size_t n)
 {
     check_io_bounds(source, tensor_offset, n);
     const element::Type& type = get_tensor_view_layout()->get_element_type();
@@ -53,13 +53,11 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
     {
         const void* src_with_offset = (void*)((char*)source + i * type.size());
         size_t dst_index = dst_start_index + i;
-        seal::Plaintext p;
-        m_he_backend->encode(p, src_with_offset, type);
-        m_he_backend->encrypt(*(m_cipher_texts[dst_index]), p);
+        m_he_backend->encode(*(m_plain_texts[dst_index]), src_with_offset, type);
     }
 }
 
-void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, size_t n) const
+void runtime::he::HEPlainTensorView::read(void* target, size_t tensor_offset, size_t n) const
 {
     check_io_bounds(target, tensor_offset, n);
     const element::Type& type = get_tensor_view_layout()->get_element_type();
@@ -70,8 +68,6 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
     {
         void* dst_with_offset = (void*)((char*)target + i * type.size());
         size_t src_index = src_start_index + i;
-        seal::Plaintext p;
-        m_he_backend->decrypt(p, *(m_cipher_texts[src_index]));
-        m_he_backend->decode(dst_with_offset, p, type);
+        m_he_backend->decode(dst_with_offset, *(m_plain_texts[src_index]), type);
     }
 }
