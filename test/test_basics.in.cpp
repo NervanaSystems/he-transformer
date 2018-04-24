@@ -156,3 +156,51 @@ TEST_F(TestHEBackend, abc)
     EXPECT_EQ(read_vector<float>(result),
               (test::NDArray<float, 2>({{50, 72}, {98, 128}})).get_vector());
 }
+
+TEST_F(TestHEBackend, add_precision)
+{
+    Shape s{};
+    auto a = make_shared<op::Parameter>(element::f32, s);
+    auto b = make_shared<op::Parameter>(element::f32, s);
+    auto t = make_shared<op::Add>(a, b);
+    auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+
+    // Create some tensors for input/output
+    auto t_a = m_he_backend->create_tensor(element::f32, s);
+    auto t_b = m_he_backend->create_tensor(element::f32, s);
+    auto t_result = m_he_backend->create_tensor(element::f32, s);
+
+    for (float power = -30; power < 30; ++power)
+    {
+        copy_data(t_a, vector<float>{1 * powf(2, power)});
+        copy_data(t_b, vector<float>{7 * powf(2, power)});
+
+        m_he_backend->call(f, {t_result}, {t_a, t_b});
+        EXPECT_EQ(read_vector<float>(t_result),
+                vector<float>{8 * powf(2, power)});
+    }
+}
+
+TEST_F(TestHEBackend, mult_precision)
+{
+    Shape s{};
+    auto a = make_shared<op::Parameter>(element::f32, s);
+    auto b = make_shared<op::Parameter>(element::f32, s);
+    auto t = make_shared<op::Multiply>(a, b);
+    auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+
+    // Create some tensors for input/output
+    auto t_a = m_he_backend->create_tensor(element::f32, s);
+    auto t_b = m_he_backend->create_tensor(element::f32, s);
+    auto t_result = m_he_backend->create_tensor(element::f32, s);
+
+    for (float power = -10; power < 30; ++power)
+    {
+        copy_data(t_a, vector<float>{2 * powf(2, power)});
+        copy_data(t_b, vector<float>{3 * powf(2, power)});
+
+        m_he_backend->call(f, {t_result}, {t_a, t_b});
+        EXPECT_EQ(read_vector<float>(t_result),
+                vector<float>{6 * powf(2, 2 * power)});
+    }
+}
