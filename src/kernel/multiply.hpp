@@ -33,6 +33,11 @@ namespace ngraph
                               vector<shared_ptr<seal::Ciphertext>>& out,
                               shared_ptr<HEBackend> he_backend,
                               size_t count);
+
+                void multiply(const shared_ptr<seal::Ciphertext>& arg0,
+                        const shared_ptr<seal::Ciphertext>& arg1,
+                        shared_ptr<seal::Ciphertext>& out,
+                        shared_ptr<HEBackend> he_backend);
             }
         }
     }

@@ -59,6 +59,11 @@ namespace ngraph
                     return m_cipher_texts;
                 }
 
+                inline shared_ptr<seal::Ciphertext>& get_element(size_t i)
+                {
+                    return m_cipher_texts[i];
+                }
+
             private:
                 std::vector<shared_ptr<seal::Ciphertext>> m_cipher_texts;
                 size_t m_num_elements;

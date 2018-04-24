@@ -27,6 +27,7 @@ set (HE_SRC
     he_plain_tensor_view.cpp
     he_manager.cpp
     kernel/add.cpp
+    kernel/dot.cpp
     kernel/multiply.cpp
     kernel/result.cpp
     kernel/subtract.cpp

@@ -204,3 +204,23 @@ TEST_F(TestHEBackend, mult_precision)
                 vector<float>{6 * powf(2, 2 * power)});
     }
 }
+
+TEST_F(TestHEBackend, dot1d)
+{
+    Shape shape{1};
+    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto B = make_shared<op::Parameter>(element::f32, shape);
+    Shape shape_r{};
+    auto f = make_shared<Function>(make_shared<op::Dot>(A, B), op::ParameterVector{A, B});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape);
+    copy_data(a, vector<float>{2});
+    auto b = m_he_backend->create_tensor(element::f32, shape);
+    copy_data(b, vector<float>{4});
+    auto result = m_he_backend->create_tensor(element::f32, shape_r);
+
+    m_he_backend->call(f, {result}, {a, b});
+    EXPECT_EQ((vector<float>{170}), read_vector<float>(result));
+}
+

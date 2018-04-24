@@ -20,7 +20,9 @@
 #include "he_call_frame.hpp"
 #include "he_cipher_tensor_view.hpp"
 #include "he_tensor_view.hpp"
+#include "ngraph/op/dot.hpp"
 #include "kernel/add.hpp"
+#include "kernel/dot.hpp"
 #include "kernel/multiply.hpp"
 #include "kernel/result.hpp"
 #include "kernel/subtract.hpp"
@@ -183,6 +185,23 @@ void runtime::he::HECallFrame::generate_calls(
                                       out0->get_elements(),
                                       m_he_backend,
                                       out0->get_element_count());
+    }
+    else if(node_op == "Dot")
+    {
+        ngraph::op::Dot* dot = dynamic_cast<ngraph::op::Dot*>(&node);
+        shared_ptr<HECipherTensorView> arg0 = dynamic_pointer_cast<HECipherTensorView>(args[0]);
+        shared_ptr<HECipherTensorView> arg1 = dynamic_pointer_cast<HECipherTensorView>(args[1]);
+        shared_ptr<HECipherTensorView> out0 = dynamic_pointer_cast<HECipherTensorView>(out[0]);
+
+        runtime::he::kernel::dot(arg0->get_elements(),
+                                arg1->get_elements(),
+                                out0->get_elements(),
+                                arg0->get_shape(),
+                                arg1->get_shape(),
+                                out0->get_shape(),
+                                dot->get_reduction_axes_count(),
+                                type,
+                                m_he_backend);
     }
     else
     {
