@@ -179,10 +179,10 @@ void runtime::he::HECallFrame::generate_calls(
         shared_ptr<HECipherTensorView> out0 = dynamic_pointer_cast<HECipherTensorView>(out[0]);
 
         runtime::he::kernel::subtract(arg0->get_elements(),
-                arg1->get_elements(),
-                out0->get_elements(),
-                m_he_backend,
-                out0->get_element_count());
+                                      arg1->get_elements(),
+                                      out0->get_elements(),
+                                      m_he_backend,
+                                      out0->get_element_count());
     }
     else
     {

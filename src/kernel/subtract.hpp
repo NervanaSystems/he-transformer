@@ -29,10 +29,10 @@ namespace ngraph
             namespace kernel
             {
                 void subtract(const vector<shared_ptr<seal::Ciphertext>>& arg0,
-                         const vector<shared_ptr<seal::Ciphertext>>& arg1,
-                         vector<shared_ptr<seal::Ciphertext>>& out,
-                         shared_ptr<HEBackend> he_backend,
-                         size_t count);
+                              const vector<shared_ptr<seal::Ciphertext>>& arg1,
+                              vector<shared_ptr<seal::Ciphertext>>& out,
+                              shared_ptr<HEBackend> he_backend,
+                              size_t count);
             }
         }
     }

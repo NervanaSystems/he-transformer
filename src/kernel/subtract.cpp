@@ -16,18 +16,18 @@
 
 #include <vector>
 
-#include "seal/seal.h"
-#include "kernel/subtract.hpp"
 #include "he_backend.hpp"
+#include "kernel/subtract.hpp"
+#include "seal/seal.h"
 
 using namespace std;
 using namespace ngraph;
 
 void runtime::he::kernel::subtract(const vector<shared_ptr<seal::Ciphertext>>& arg0,
-                              const vector<shared_ptr<seal::Ciphertext>>& arg1,
-                              vector<shared_ptr<seal::Ciphertext>>& out,
-                              shared_ptr<HEBackend> he_backend,
-                              size_t count)
+                                   const vector<shared_ptr<seal::Ciphertext>>& arg1,
+                                   vector<shared_ptr<seal::Ciphertext>>& out,
+                                   shared_ptr<HEBackend> he_backend,
+                                   size_t count)
 {
     for (size_t i = 0; i < count; ++i)
     {
