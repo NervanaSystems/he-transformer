@@ -16,9 +16,9 @@
 
 #include <vector>
 
-#include "seal/seal.h"
-#include "kernel/multiply.hpp"
 #include "he_backend.hpp"
+#include "kernel/multiply.hpp"
+#include "seal/seal.h"
 
 using namespace std;
 using namespace ngraph;

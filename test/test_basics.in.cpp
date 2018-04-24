@@ -108,6 +108,24 @@ TEST_F(TestHEBackend, ab)
               (test::NDArray<int64_t, 2>({{8, 10, 12}, {14, 16, 18}})).get_vector());
 }
 
+TEST_F(TestHEBackend, subtract)
+{
+    Shape shape{2, 2};
+    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto f = make_shared<Function>(make_shared<op::Subtract>(A, B), op::ParameterVector{A, B});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape);
+    copy_data(a, vector<float>{2, 4, 8, 16});
+    auto b = m_he_backend->create_tensor(element::f32, shape);
+    copy_data(b, vector<float>{1, 2, 4, 8});
+    auto result = m_he_backend->create_tensor(element::f32, shape);
+
+    m_he_backend->call(f, {result}, {a, b});
+    EXPECT_EQ((vector<float>{1, 2, 4, 8}), read_vector<float>(result));
+}
+
 TEST_F(TestHEBackend, abc)
 {
     Shape shape{2, 2};

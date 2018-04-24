@@ -16,8 +16,8 @@
 
 #include <vector>
 
-#include "seal/seal.h"
 #include "kernel/result.hpp"
+#include "seal/seal.h"
 
 using namespace std;
 using namespace ngraph;
