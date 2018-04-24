@@ -95,7 +95,7 @@ TEST_F(TestHEBackend, ab)
     auto t = make_shared<op::Add>(a, b);
     auto f = make_shared<Function>(t, op::ParameterVector{a, b});
 
-    // Allocate tensors for arguments a, b, c
+    // Create some tensors for input/output
     auto t_a = m_he_backend->create_tensor(element::i64, s);
     auto t_b = m_he_backend->create_tensor(element::i64, s);
     auto t_result = m_he_backend->create_tensor(element::i64, s);

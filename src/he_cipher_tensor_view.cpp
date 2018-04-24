@@ -32,12 +32,9 @@ runtime::he::HECipherTensorView::HECipherTensorView(const element::Type& element
 {
     // get_tensor_view_layout()->get_size() is the number of elements
     m_num_elements = m_descriptor->get_tensor_view_layout()->get_size();
-    if (m_num_elements > 0)
+    for (size_t i = 0; i < m_num_elements; ++i)
     {
-        for (size_t i = 0; i < m_num_elements; ++i)
-        {
-            m_cipher_texts.push_back(make_shared<seal::Ciphertext>());
-        }
+        m_cipher_texts.push_back(make_shared<seal::Ciphertext>());
     }
 }
 
