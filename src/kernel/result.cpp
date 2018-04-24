@@ -14,11 +14,10 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <cstddef>
+#include <vector>
 
-#include "he_cipher_tensor_view.hpp"
-#include "kernel/result.hpp"
 #include "seal/seal.h"
+#include "kernel/result.hpp"
 
 using namespace std;
 using namespace ngraph;
