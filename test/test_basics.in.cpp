@@ -207,7 +207,7 @@ TEST_F(TestHEBackend, mult_precision)
 
 TEST_F(TestHEBackend, dot1d)
 {
-    Shape shape{1};
+    Shape shape{4};
     auto A = make_shared<op::Parameter>(element::f32, shape);
     auto B = make_shared<op::Parameter>(element::f32, shape);
     Shape shape_r{};
@@ -215,9 +215,9 @@ TEST_F(TestHEBackend, dot1d)
 
     // Create some tensors for input/output
     auto a = m_he_backend->create_tensor(element::f32, shape);
-    copy_data(a, vector<float>{2});
+    copy_data(a, vector<float>{1, 2, 4, 8});
     auto b = m_he_backend->create_tensor(element::f32, shape);
-    copy_data(b, vector<float>{4});
+    copy_data(b, vector<float>{2, 4, 8, 16});
     auto result = m_he_backend->create_tensor(element::f32, shape_r);
 
     m_he_backend->call(f, {result}, {a, b});

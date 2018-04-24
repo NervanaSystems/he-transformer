@@ -109,13 +109,8 @@ void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<seal::Ciphertext>>
 						arg1_projected_coord.begin(), arg1_projected_coord.end(), arg1_it);
 
 				// Multiply and add to the sum.
-                cout << "Multiplying " << endl;
                 ngraph::runtime::he::kernel::multiply(arg0[arg0_transform.index(arg0_coord)] ,arg1[arg1_transform.index(arg1_coord)], prod, he_backend);
-                //sum = prod;
-                ngraph::runtime::he::kernel::add(prod, sum, sum, he_backend);
-                //cout << "Adding " << endl;
-				//sum += arg0[arg0_transform.index(arg0_coord)] *
-				//	arg1[arg1_transform.index(arg1_coord)];
+                ngraph::runtime::he::kernel::add(sum, prod, sum, he_backend);
 			}
 
 			// Write the sum back.

@@ -83,8 +83,13 @@ shared_ptr<runtime::TensorView>
 
     if (type_name == "float")
     {
-        vector<float> zero{(float)num_elements, 0};
-        cipher_tensor->write((void*)&zero, 0, bytes_to_write);
+        vector<float> zero;
+        for(size_t i = 0; i < num_elements; ++i)
+        {
+            zero.push_back(0);
+        }
+        // {(float)num_elements, 0;
+        cipher_tensor->write((void*)&zero[0], 0, bytes_to_write);
     }
     else if (type_name == "int64_t")
     {
