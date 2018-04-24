@@ -17,10 +17,13 @@
 #include <cstddef>
 
 #include "he_cipher_tensor_view.hpp"
-#include "result.hpp"
+#include "kernel/result.hpp"
 #include "seal/seal.h"
 
-void ngraph::runtime::he::result(const vector<shared_ptr<seal::Ciphertext>> arg,
+using namespace std;
+using namespace ngraph;
+
+void runtime::he::kernel::result(const vector<shared_ptr<seal::Ciphertext>> arg,
                                  vector<shared_ptr<seal::Ciphertext>>& out,
                                  size_t count)
 {
