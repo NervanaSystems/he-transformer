@@ -29,6 +29,7 @@ set (HE_SRC
     kernel/add.cpp
     kernel/multiply.cpp
     kernel/result.cpp
+    kernel/subtract.cpp
 )
 
 # Paths for the upstream ngraph
