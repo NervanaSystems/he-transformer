@@ -18,6 +18,7 @@
 #include "he_call_frame.hpp"
 #include "he_cipher_tensor_view.hpp"
 #include "he_external_function.hpp"
+#include "he_plain_tensor_view.hpp"
 #include "he_tensor_view.hpp"
 
 using namespace ngraph;
@@ -64,10 +65,17 @@ shared_ptr<runtime::TensorView>
     runtime::he::HEBackend::create_tensor(const element::Type& element_type, const Shape& shape)
 {
     shared_ptr<HEBackend> he_backend = shared_from_this();
-    auto rc =
-        make_shared<runtime::he::HECipherTensorView>(element_type, shape, he_backend, "external");
-    shared_ptr<runtime::he::HETensorView> tv = static_pointer_cast<runtime::he::HETensorView>(rc);
-    return static_pointer_cast<runtime::TensorView>(tv);
+    auto rc = make_shared<runtime::he::HECipherTensorView>(element_type, shape, he_backend);
+    return static_pointer_cast<runtime::TensorView>(rc);
+}
+
+shared_ptr<runtime::TensorView>
+    runtime::he::HEBackend::create_plain_tensor(const element::Type& element_type,
+                                                const Shape& shape)
+{
+    shared_ptr<HEBackend> he_backend = shared_from_this();
+    auto rc = make_shared<runtime::he::HEPlainTensorView>(element_type, shape, he_backend);
+    return static_pointer_cast<runtime::TensorView>(rc);
 }
 
 shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_tensor(
@@ -131,8 +139,8 @@ void runtime::he::HEBackend::encode(seal::Plaintext& output,
     }
     else
     {
-        NGRAPH_INFO << "Unsupported element type in encode " << type_name << endl;
-        throw ngraph_error("Unsupported element type " + type_name);
+        NGRAPH_INFO << "Unsupported element type in decode " << type_name << endl;
+        throw ngraph_error("Unsupported element type" + type_name);
     }
 }
 
@@ -160,7 +168,7 @@ void runtime::he::HEBackend::decode(void* output,
     else
     {
         NGRAPH_INFO << "Unsupported element type in decode " << type_name << endl;
-        throw ngraph_error("Unsupported element type " + type_name);
+        throw ngraph_error("Unsupported element type" + type_name);
     }
 }
 
