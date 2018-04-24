@@ -31,6 +31,6 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Ciphertext>>& a
 {
     for (size_t i = 0; i < count; ++i)
     {
-        he_backend.get()->get_evaluator()->multiply(*arg0[i].get(), *arg1[i].get(), *out[i].get());
+        he_backend.get()->get_evaluator()->multiply(*arg0[i], *arg1[i], *out[i]);
     }
 }
