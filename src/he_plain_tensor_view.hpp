@@ -31,14 +31,14 @@ namespace ngraph
         {
             class HEBackend;
 
-            class HECipherTensorView : public HETensorView
+            class HEPlainTensorView : public HETensorView
             {
             public:
-                HECipherTensorView(const element::Type& element_type,
-                                   const Shape& shape,
-                                   std::shared_ptr<HEBackend> he_backend,
-                                   const std::string& name = "external");
-                virtual ~HECipherTensorView();
+                HEPlainTensorView(const element::Type& element_type,
+                                  const Shape& shape,
+                                  std::shared_ptr<HEBackend> he_backend,
+                                  const std::string& name = "external");
+                virtual ~HEPlainTensorView();
 
                 /// @brief Write bytes directly into the tensor after encoding and encrypting
                 /// @param p Pointer to source of data
@@ -54,13 +54,8 @@ namespace ngraph
                 /// @param n Number of bytes to read, must be integral number of elements.
                 void read(void* p, size_t tensor_offset, size_t n) const;
 
-                inline vector<shared_ptr<seal::Ciphertext>>& get_elements()
-                {
-                    return m_cipher_texts;
-                }
-
             private:
-                std::vector<shared_ptr<seal::Ciphertext>> m_cipher_texts;
+                std::vector<shared_ptr<seal::Plaintext>> m_plain_texts;
                 size_t m_num_elements;
             };
         }
