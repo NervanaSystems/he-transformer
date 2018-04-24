@@ -42,6 +42,26 @@ runtime::he::HETensorView::~HETensorView()
 {
 }
 
+void runtime::he::HETensorView::check_io_bounds(const void* source,
+                                                     size_t tensor_offset,
+                                                     size_t n) const
+{
+    const element::Type& type = get_tensor_view_layout()->get_element_type();
+    size_t type_byte_size = type.size();
+
+    // Memory must be byte-aligned to type_byte_size
+    // tensor_offset and n are all in bytes
+    if (tensor_offset % type_byte_size != 0 || n % type_byte_size != 0)
+    {
+        throw ngraph_error("tensor_offset and n must be divisable by type_byte_size.");
+    }
+    // Check out-of-range
+    if ((tensor_offset + n) / type_byte_size > get_element_count())
+    {
+        throw out_of_range("I/O access past end of tensor");
+    }
+}
+
 void runtime::he::HETensorView::write(const void* p, size_t tensor_offset, size_t n)
 {
     throw ngraph_error("HETensorVeiw write not implemented");

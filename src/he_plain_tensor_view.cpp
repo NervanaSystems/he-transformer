@@ -45,30 +45,10 @@ runtime::he::HEPlainTensorView::~HEPlainTensorView()
 {
 }
 
-void runtime::he::HEPlainTensorView::check_io_bounds(const void* source,
-                                                     size_t tensor_offset,
-                                                     size_t n) const
-{
-    const element::Type& type = get_element_type();
-    size_t type_byte_size = type.size();
-
-    // Memory must be byte-aligned to type_byte_size
-    // tensor_offset and n are all in bytes
-    if (tensor_offset % type_byte_size != 0 || n % type_byte_size != 0)
-    {
-        throw ngraph_error("tensor_offset and n must be divisable by type_byte_size.");
-    }
-    // Check out-of-range
-    if ((tensor_offset + n) / type_byte_size > m_num_elements)
-    {
-        throw out_of_range("I/O access past end of tensor");
-    }
-}
-
 void runtime::he::HEPlainTensorView::write(const void* source, size_t tensor_offset, size_t n)
 {
     check_io_bounds(source, tensor_offset, n);
-    const element::Type& type = get_element_type();
+    const element::Type& type = get_tensor_view_layout()->get_element_type();
     size_t type_byte_size = type.size();
     size_t dst_start_index = tensor_offset / type_byte_size;
     size_t num_elements_to_write = n / type_byte_size;
@@ -83,7 +63,7 @@ void runtime::he::HEPlainTensorView::write(const void* source, size_t tensor_off
 void runtime::he::HEPlainTensorView::read(void* target, size_t tensor_offset, size_t n) const
 {
     check_io_bounds(target, tensor_offset, n);
-    const element::Type& type = get_element_type();
+    const element::Type& type = get_tensor_view_layout()->get_element_type();
     size_t type_byte_size = type.size();
     size_t src_start_index = tensor_offset / type_byte_size;
     size_t num_elements_to_read = n / type_byte_size;
@@ -93,14 +73,4 @@ void runtime::he::HEPlainTensorView::read(void* target, size_t tensor_offset, si
         size_t src_index = src_start_index + i;
         m_he_backend->decode(dst_with_offset, *(m_plain_texts[src_index]), type);
     }
-}
-
-size_t runtime::he::HEPlainTensorView::get_size() const
-{
-    return get_tensor_view_layout()->get_size();
-}
-
-const element::Type& runtime::he::HEPlainTensorView::get_element_type() const
-{
-    return get_tensor_view_layout()->get_element_type();
 }

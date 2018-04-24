@@ -49,7 +49,9 @@ namespace ngraph
                 virtual void read(void* p, size_t tensor_offset, size_t n) const override;
 
                 inline std::shared_ptr<HEBackend> get_backend() const { return m_he_backend; }
+
             protected:
+                void check_io_bounds(const void* p, size_t tensor_offset, size_t n) const;
                 std::shared_ptr<HEBackend> m_he_backend;
             };
         }

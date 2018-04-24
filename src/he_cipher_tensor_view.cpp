@@ -45,30 +45,10 @@ runtime::he::HECipherTensorView::~HECipherTensorView()
 {
 }
 
-void runtime::he::HECipherTensorView::check_io_bounds(const void* source,
-                                                      size_t tensor_offset,
-                                                      size_t n) const
-{
-    const element::Type& type = get_element_type();
-    size_t type_byte_size = type.size();
-
-    // Memory must be byte-aligned to type_byte_size
-    // tensor_offset and n are all in bytes
-    if (tensor_offset % type_byte_size != 0 || n % type_byte_size != 0)
-    {
-        throw ngraph_error("tensor_offset and n must be divisable by type_byte_size.");
-    }
-    // Check out-of-range
-    if ((tensor_offset + n) / type_byte_size > m_num_elements)
-    {
-        throw out_of_range("I/O access past end of tensor");
-    }
-}
-
 void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_offset, size_t n)
 {
     check_io_bounds(source, tensor_offset, n);
-    const element::Type& type = get_element_type();
+    const element::Type& type = get_tensor_view_layout()->get_element_type();
     size_t type_byte_size = type.size();
     size_t dst_start_index = tensor_offset / type_byte_size;
     size_t num_elements_to_write = n / type_byte_size;
@@ -85,7 +65,7 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
 void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, size_t n) const
 {
     check_io_bounds(target, tensor_offset, n);
-    const element::Type& type = get_element_type();
+    const element::Type& type = get_tensor_view_layout()->get_element_type();
     size_t type_byte_size = type.size();
     size_t src_start_index = tensor_offset / type_byte_size;
     size_t num_elements_to_read = n / type_byte_size;
@@ -97,14 +77,4 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
         m_he_backend->decrypt(p, *(m_cipher_texts[src_index]));
         m_he_backend->decode(dst_with_offset, p, type);
     }
-}
-
-size_t runtime::he::HECipherTensorView::get_size() const
-{
-    return get_tensor_view_layout()->get_size();
-}
-
-const element::Type& runtime::he::HECipherTensorView::get_element_type() const
-{
-    return get_tensor_view_layout()->get_element_type();
 }
