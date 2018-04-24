@@ -176,8 +176,7 @@ TEST_F(TestHEBackend, add_precision)
         copy_data(t_b, vector<float>{7 * powf(2, power)});
 
         m_he_backend->call(f, {t_result}, {t_a, t_b});
-        EXPECT_EQ(read_vector<float>(t_result),
-                vector<float>{8 * powf(2, power)});
+        EXPECT_EQ(read_vector<float>(t_result), vector<float>{8 * powf(2, power)});
     }
 }
 
@@ -200,8 +199,7 @@ TEST_F(TestHEBackend, mult_precision)
         copy_data(t_b, vector<float>{3 * powf(2, power)});
 
         m_he_backend->call(f, {t_result}, {t_a, t_b});
-        EXPECT_EQ(read_vector<float>(t_result),
-                vector<float>{6 * powf(2, 2 * power)});
+        EXPECT_EQ(read_vector<float>(t_result), vector<float>{6 * powf(2, 2 * power)});
     }
 }
 
@@ -224,3 +222,40 @@ TEST_F(TestHEBackend, dot1d)
     EXPECT_EQ((vector<float>{170}), read_vector<float>(result));
 }
 
+TEST_F(TestHEBackend, dot_matrix_vector)
+{
+    Shape shape_a{4, 4};
+    Shape shape_b{4};
+    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto f = make_shared<Function>(make_shared<op::Dot>(A, B), op::ParameterVector{A, B});
+    Shape shape_r{4};
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape_a);
+    copy_data(a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
+    auto b = m_he_backend->create_tensor(element::f32, shape_b);
+    copy_data(b, vector<float>{17, 18, 19, 20});
+    auto result = m_he_backend->create_tensor(element::f32, shape_r);
+
+    m_he_backend->call(f, {result}, {a, b});
+    EXPECT_EQ((vector<float>{190, 486, 782, 1078}), read_vector<float>(result));
+}
+
+TEST_F(TestHEBackend, dot_scalar_scalar)
+{
+    Shape shape{};
+    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto f = make_shared<Function>(make_shared<op::Dot>(A, B), op::ParameterVector{A, B});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape);
+    copy_data(a, vector<float>{8});
+    auto b = m_he_backend->create_tensor(element::f32, shape);
+    copy_data(b, vector<float>{6});
+    auto result = m_he_backend->create_tensor(element::f32, shape);
+
+    m_he_backend->call(f, {result}, {a, b});
+    EXPECT_EQ((vector<float>{48}), read_vector<float>(result));
+}

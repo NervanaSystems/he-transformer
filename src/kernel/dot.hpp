@@ -30,7 +30,6 @@ namespace ngraph
         {
             class HEBackend;
 
-
             namespace kernel
             {
                 void dot(const vector<shared_ptr<seal::Ciphertext>>& arg0,

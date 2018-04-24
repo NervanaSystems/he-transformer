@@ -43,7 +43,5 @@ void runtime::he::kernel::add(const shared_ptr<seal::Ciphertext>& arg0,
     const vector<shared_ptr<seal::Ciphertext>> arg0vec = {arg0};
     const vector<shared_ptr<seal::Ciphertext>> arg1vec = {arg1};
     vector<shared_ptr<seal::Ciphertext>> outvec = {out};
-    size_t count = 1;
-    add(arg0vec, arg1vec, outvec, he_backend, count);
-    //out = outvec[0];
+    add(arg0vec, arg1vec, outvec, he_backend, 1);
 }

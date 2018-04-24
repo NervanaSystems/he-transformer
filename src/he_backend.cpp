@@ -70,7 +70,8 @@ shared_ptr<runtime::TensorView>
 }
 
 shared_ptr<runtime::TensorView>
-    runtime::he::HEBackend::create_zero_tensor(const element::Type& element_type, const Shape& shape)
+    runtime::he::HEBackend::create_zero_tensor(const element::Type& element_type,
+                                               const Shape& shape)
 {
     shared_ptr<runtime::TensorView> tensor = create_tensor(element_type, shape);
     shared_ptr<runtime::he::HECipherTensorView> cipher_tensor =
@@ -84,22 +85,29 @@ shared_ptr<runtime::TensorView>
     if (type_name == "float")
     {
         vector<float> zero;
-        for(size_t i = 0; i < num_elements; ++i)
+        for (size_t i = 0; i < num_elements; ++i)
         {
             zero.push_back(0);
         }
-        // {(float)num_elements, 0;
         cipher_tensor->write((void*)&zero[0], 0, bytes_to_write);
     }
     else if (type_name == "int64_t")
     {
-        vector<uint64_t> zero{num_elements, 0};
-        cipher_tensor->write((void*)&zero, 0, bytes_to_write);
+        vector<int64_t> zero;
+        for (size_t i = 0; i < num_elements; ++i)
+        {
+            zero.push_back(0);
+        }
+        cipher_tensor->write((void*)&zero[0], 0, bytes_to_write);
     }
     else if (type_name == "uint64_t")
     {
-        vector<uint64_t> zero{num_elements, 0};
-        cipher_tensor->write((void*)&zero, 0, bytes_to_write);
+        vector<uint64_t> zero;
+        for (size_t i = 0; i < num_elements; ++i)
+        {
+            zero.push_back(0);
+        }
+        cipher_tensor->write((void*)&zero[0], 0, bytes_to_write);
     }
 
     return static_pointer_cast<runtime::TensorView>(cipher_tensor);

@@ -36,14 +36,12 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Ciphertext>>& a
 }
 
 void runtime::he::kernel::multiply(const shared_ptr<seal::Ciphertext>& arg0,
-        const shared_ptr<seal::Ciphertext>& arg1,
-        shared_ptr<seal::Ciphertext>& out,
-        shared_ptr<HEBackend> he_backend)
+                                   const shared_ptr<seal::Ciphertext>& arg1,
+                                   shared_ptr<seal::Ciphertext>& out,
+                                   shared_ptr<HEBackend> he_backend)
 {
     const vector<shared_ptr<seal::Ciphertext>> arg0vec = {arg0};
     const vector<shared_ptr<seal::Ciphertext>> arg1vec = {arg1};
     vector<shared_ptr<seal::Ciphertext>> outvec = {out};
-    size_t count = 1;
-    multiply(arg0vec, arg1vec, outvec, he_backend, count);
-    out = outvec[0];
+    multiply(arg0vec, arg1vec, {outvec}, he_backend, 1);
 }
