@@ -16,7 +16,6 @@
 
 #pragma once
 
-#include "he_cipher_tensor_view.hpp"
 #include "seal/seal.h"
 
 namespace ngraph
@@ -25,9 +24,14 @@ namespace ngraph
     {
         namespace he
         {
-            void result(const vector<shared_ptr<seal::Ciphertext>> arg,
-                        vector<shared_ptr<seal::Ciphertext>>& out,
-                        size_t count);
+            class HEBackend;
+
+            namespace kernel
+            {
+                void result(const vector<shared_ptr<seal::Ciphertext>> arg,
+                            vector<shared_ptr<seal::Ciphertext>>& out,
+                            size_t count);
+            }
         }
     }
 }

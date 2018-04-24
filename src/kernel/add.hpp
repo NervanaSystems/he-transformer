@@ -14,22 +14,26 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <cstddef>
+#pragma once
 
-#include "he_backend.hpp"
-#include "he_cipher_tensor_view.hpp"
-#include "multiply.hpp"
+#include "seal/seal.h"
 
-using namespace std;
-
-void ngraph::runtime::he::multiply(const vector<shared_ptr<seal::Ciphertext>>& arg0,
-                                   const vector<shared_ptr<seal::Ciphertext>>& arg1,
-                                   vector<shared_ptr<seal::Ciphertext>>& out,
-                                   shared_ptr<HEBackend> he_backend,
-                                   size_t count)
+namespace ngraph
 {
-    for (size_t i = 0; i < count; ++i)
+    namespace runtime
     {
-        he_backend.get()->get_evaluator()->multiply(*arg0[i].get(), *arg1[i].get(), *out[i].get());
+        namespace he
+        {
+            class HEBackend;
+
+            namespace kernel
+            {
+                void add(const vector<shared_ptr<seal::Ciphertext>>& arg0,
+                         const vector<shared_ptr<seal::Ciphertext>>& arg1,
+                         vector<shared_ptr<seal::Ciphertext>>& out,
+                         shared_ptr<HEBackend> he_backend,
+                         size_t count);
+            }
+        }
     }
 }

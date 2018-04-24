@@ -14,13 +14,15 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <cstddef>
+#include <vector>
 
-#include "he_cipher_tensor_view.hpp"
-#include "result.hpp"
 #include "seal/seal.h"
+#include "kernel/result.hpp"
 
-void ngraph::runtime::he::result(const vector<shared_ptr<seal::Ciphertext>> arg,
+using namespace std;
+using namespace ngraph;
+
+void runtime::he::kernel::result(const vector<shared_ptr<seal::Ciphertext>> arg,
                                  vector<shared_ptr<seal::Ciphertext>>& out,
                                  size_t count)
 {
