@@ -27,9 +27,6 @@
 #include "ngraph/node.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "ngraph/util.hpp"
-#include "op/add.hpp"
-#include "op/multiply.hpp"
-#include "op/result.hpp"
 
 namespace ngraph
 {

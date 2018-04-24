@@ -14,11 +14,15 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "he_call_frame.hpp"
+#include "ngraph/op/result.hpp"
+
 #include "he_backend.hpp"
+#include "he_call_frame.hpp"
 #include "he_cipher_tensor_view.hpp"
 #include "he_tensor_view.hpp"
-#include "ngraph/op/result.hpp"
+#include "kernel/add.hpp"
+#include "kernel/multiply.hpp"
+#include "kernel/result.hpp"
 
 using namespace std;
 using namespace ngraph;
@@ -140,11 +144,11 @@ void runtime::he::HECallFrame::generate_calls(
         shared_ptr<HECipherTensorView> arg1 = dynamic_pointer_cast<HECipherTensorView>(args[1]);
         shared_ptr<HECipherTensorView> out0 = dynamic_pointer_cast<HECipherTensorView>(out[0]);
 
-        runtime::he::add(arg0->get_elements(),
-                         arg1->get_elements(),
-                         out0->get_elements(),
-                         m_he_backend,
-                         out0->get_element_count());
+        runtime::he::kernel::add(arg0->get_elements(),
+                                 arg1->get_elements(),
+                                 out0->get_elements(),
+                                 m_he_backend,
+                                 out0->get_element_count());
     }
     else if (node_op == "Multiply")
     {
@@ -152,11 +156,11 @@ void runtime::he::HECallFrame::generate_calls(
         shared_ptr<HECipherTensorView> arg1 = dynamic_pointer_cast<HECipherTensorView>(args[1]);
         shared_ptr<HECipherTensorView> out0 = dynamic_pointer_cast<HECipherTensorView>(out[0]);
 
-        runtime::he::multiply(arg0->get_elements(),
-                              arg1->get_elements(),
-                              out0->get_elements(),
-                              m_he_backend,
-                              out0->get_element_count());
+        runtime::he::kernel::multiply(arg0->get_elements(),
+                                      arg1->get_elements(),
+                                      out0->get_elements(),
+                                      m_he_backend,
+                                      out0->get_element_count());
     }
     else if (node_op == "Result")
     {
@@ -164,7 +168,7 @@ void runtime::he::HECallFrame::generate_calls(
         shared_ptr<HECipherTensorView> arg0 = dynamic_pointer_cast<HECipherTensorView>(args[0]);
         shared_ptr<HECipherTensorView> out0 = dynamic_pointer_cast<HECipherTensorView>(out[0]);
 
-        runtime::he::result(
+        runtime::he::kernel::result(
             arg0->get_elements(), out0->get_elements(), shape_size(res->get_shape()));
     }
     else
