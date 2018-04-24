@@ -43,8 +43,8 @@ runtime::he::HETensorView::~HETensorView()
 }
 
 void runtime::he::HETensorView::check_io_bounds(const void* source,
-                                                     size_t tensor_offset,
-                                                     size_t n) const
+                                                size_t tensor_offset,
+                                                size_t n) const
 {
     const element::Type& type = get_tensor_view_layout()->get_element_type();
     size_t type_byte_size = type.size();
