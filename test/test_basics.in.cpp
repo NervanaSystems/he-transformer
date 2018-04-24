@@ -90,30 +90,20 @@ TEST_F(TestHEBackend, plain_tv_write_read_2_3)
 TEST_F(TestHEBackend, ab)
 {
     Shape s{2, 3};
-
     auto a = make_shared<op::Parameter>(element::i64, s);
     auto b = make_shared<op::Parameter>(element::i64, s);
-    auto t0 = make_shared<op::Add>(a, b);
-
-    // Make the function
-    auto f = make_shared<Function>(NodeVector{t0}, op::ParameterVector{a, b});
+    auto t = make_shared<op::Add>(a, b);
+    auto f = make_shared<Function>(t, op::ParameterVector{a, b});
 
     // Allocate tensors for arguments a, b, c
     auto t_a = m_he_backend->create_tensor(element::i64, s);
     auto t_b = m_he_backend->create_tensor(element::i64, s);
-    // Allocate tensor for the result
     auto t_result = m_he_backend->create_tensor(element::i64, s);
 
-    // Initialize tensors
-    int64_t v_a[2][3] = {{1, 2, 3}, {4, 5, 6}};
-    int64_t v_b[2][3] = {{7, 8, 9}, {10, 11, 12}};
+    copy_data(t_a, test::NDArray<int64_t, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector());
+    copy_data(t_b, test::NDArray<int64_t, 2>({{7, 8, 9}, {10, 11, 12}}).get_vector());
 
-    t_a->write(&v_a, 0, sizeof(v_a));
-    t_b->write(&v_b, 0, sizeof(v_b));
-
-    // Invoke the function
     m_he_backend->call(f, {t_result}, {t_a, t_b});
-
     EXPECT_EQ(read_vector<int64_t>(t_result),
               (test::NDArray<int64_t, 2>({{8, 10, 12}, {14, 16, 18}})).get_vector());
 }
@@ -127,10 +117,10 @@ TEST_F(TestHEBackend, abc)
     auto f = make_shared<Function>((A + B) * C, op::ParameterVector{A, B, C});
 
     // Create some tensors for input/output
-    shared_ptr<runtime::TensorView> a = m_he_backend->create_tensor(element::f32, shape);
-    shared_ptr<runtime::TensorView> b = m_he_backend->create_tensor(element::f32, shape);
-    shared_ptr<runtime::TensorView> c = m_he_backend->create_tensor(element::f32, shape);
-    shared_ptr<runtime::TensorView> result = m_he_backend->create_tensor(element::f32, shape);
+    auto a = m_he_backend->create_tensor(element::f32, shape);
+    auto b = m_he_backend->create_tensor(element::f32, shape);
+    auto c = m_he_backend->create_tensor(element::f32, shape);
+    auto result = m_he_backend->create_tensor(element::f32, shape);
 
     copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
     copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
