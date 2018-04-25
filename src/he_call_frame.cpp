@@ -142,10 +142,10 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
 void runtime::he::HECallFrame::generate_calls(
     const element::Type& type,
     const shared_ptr<Node>& node,
-    const std::vector<std::shared_ptr<HETensorView>>& args,
-    const std::vector<std::shared_ptr<HETensorView>>& out)
+    const vector<shared_ptr<HETensorView>>& args,
+    const vector<shared_ptr<HETensorView>>& out)
 {
-    std::string node_op = node->description();
+    string node_op = node->description();
 
     if (node_op == "Add")
     {
