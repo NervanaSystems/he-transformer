@@ -108,6 +108,27 @@ TEST_F(TestHEBackend, ab)
               (test::NDArray<int64_t, 2>({{8, 10, 12}, {14, 16, 18}})).get_vector());
 }
 
+TEST_F(TestHEBackend, ab_plain)
+{
+    Shape s{2, 3};
+    auto a = make_shared<op::Parameter>(element::i64, s);
+    auto b = make_shared<op::Parameter>(element::i64, s);
+    auto t = make_shared<op::Add>(a, b);
+    auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+
+    // Create some tensors for input/output
+    auto t_a = m_he_backend->create_tensor(element::i64, s);
+    auto t_b = m_he_backend->create_plain_tensor(element::i64, s);
+    auto t_result = m_he_backend->create_tensor(element::i64, s);
+
+    copy_data(t_a, test::NDArray<int64_t, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector());
+    copy_data(t_b, test::NDArray<int64_t, 2>({{7, 8, 9}, {10, 11, 12}}).get_vector());
+
+    m_he_backend->call(f, {t_result}, {t_a, t_b});
+    EXPECT_EQ(read_vector<int64_t>(t_result),
+              (test::NDArray<int64_t, 2>({{8, 10, 12}, {14, 16, 18}})).get_vector());
+}
+
 TEST_F(TestHEBackend, subtract)
 {
     Shape shape{2, 2};
@@ -138,6 +159,37 @@ TEST_F(TestHEBackend, abc)
     auto a = m_he_backend->create_tensor(element::f32, shape);
     auto b = m_he_backend->create_tensor(element::f32, shape);
     auto c = m_he_backend->create_tensor(element::f32, shape);
+    auto result = m_he_backend->create_tensor(element::f32, shape);
+
+    copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
+    copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
+    copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
+
+    m_he_backend->call(f, {result}, {a, b, c});
+    EXPECT_EQ(read_vector<float>(result),
+              (test::NDArray<float, 2>({{54, 80}, {110, 144}})).get_vector());
+
+    m_he_backend->call(f, {result}, {b, a, c});
+    EXPECT_EQ(read_vector<float>(result),
+              (test::NDArray<float, 2>({{54, 80}, {110, 144}})).get_vector());
+
+    m_he_backend->call(f, {result}, {a, c, b});
+    EXPECT_EQ(read_vector<float>(result),
+              (test::NDArray<float, 2>({{50, 72}, {98, 128}})).get_vector());
+}
+
+TEST_F(TestHEBackend, abc_plain)
+{
+    Shape shape{2, 2};
+    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto C = make_shared<op::Parameter>(element::f32, shape);
+    auto f = make_shared<Function>((A + B) * C, op::ParameterVector{A, B, C});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape);
+    auto b = m_he_backend->create_plain_tensor(element::f32, shape);
+    auto c = m_he_backend->create_plain_tensor(element::f32, shape);
     auto result = m_he_backend->create_tensor(element::f32, shape);
 
     copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
@@ -204,7 +256,8 @@ TEST_F(TestHEBackend, add_int64_precision)
             copy_data(t_b, vector<int64_t>{sign * 7 * (int64_t)pow(2, power)});
 
             m_he_backend->call(f, {t_result}, {t_a, t_b});
-            EXPECT_EQ(read_vector<int64_t>(t_result), vector<int64_t>{sign * 8 * (int64_t)pow(2, power)});
+            EXPECT_EQ(read_vector<int64_t>(t_result),
+                      vector<int64_t>{sign * 8 * (int64_t)pow(2, power)});
         }
     }
 }
@@ -256,7 +309,8 @@ TEST_F(TestHEBackend, mult_int64_precision)
             copy_data(t_b, vector<int64_t>{3 * (int64_t)pow(2, power)});
 
             m_he_backend->call(f, {t_result}, {t_a, t_b});
-            EXPECT_EQ(read_vector<int64_t>(t_result), vector<int64_t>{sign * 6 * (int64_t)pow(2, 2 * power)});
+            EXPECT_EQ(read_vector<int64_t>(t_result),
+                      vector<int64_t>{sign * 6 * (int64_t)pow(2, 2 * power)});
         }
     }
 }

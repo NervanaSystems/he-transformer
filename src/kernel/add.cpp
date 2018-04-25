@@ -45,3 +45,24 @@ void runtime::he::kernel::add(const shared_ptr<seal::Ciphertext>& arg0,
     vector<shared_ptr<seal::Ciphertext>> outvec = {out};
     add(arg0vec, arg1vec, outvec, he_backend, 1);
 }
+
+void runtime::he::kernel::add(const vector<shared_ptr<seal::Ciphertext>>& arg0,
+                              const vector<shared_ptr<seal::Plaintext>>& arg1,
+                              vector<shared_ptr<seal::Ciphertext>>& out,
+                              shared_ptr<HEBackend> he_backend,
+                              size_t count)
+{
+    for (size_t i = 0; i < count; ++i)
+    {
+        he_backend.get()->get_evaluator()->add_plain(*arg0[i], *arg1[i], *out[i]);
+    }
+}
+
+void runtime::he::kernel::add(const vector<shared_ptr<seal::Plaintext>>& arg0,
+                              const vector<shared_ptr<seal::Ciphertext>>& arg1,
+                              vector<shared_ptr<seal::Ciphertext>>& out,
+                              shared_ptr<HEBackend> he_backend,
+                              size_t count)
+{
+    runtime::he::kernel::add(arg1, arg0, out, he_backend, count);
+}
