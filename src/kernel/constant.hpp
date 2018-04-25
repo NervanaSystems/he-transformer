@@ -38,7 +38,7 @@ namespace ngraph
             {
                 void constant(vector<shared_ptr<seal::Ciphertext>>& out,
                               const element::Type& type,
-                              shared_ptr<Node> node,
+                              const void* data_ptr,
                               shared_ptr<HEBackend> he_backend,
                               size_t count);
             }

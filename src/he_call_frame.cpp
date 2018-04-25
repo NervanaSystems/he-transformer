@@ -26,6 +26,7 @@
 #include "kernel/multiply.hpp"
 #include "kernel/result.hpp"
 #include "kernel/subtract.hpp"
+#include "ngraph/op/constant.hpp"
 #include "ngraph/op/dot.hpp"
 
 using namespace std;
@@ -162,8 +163,12 @@ void runtime::he::HECallFrame::generate_calls(
     {
         // TODO: support plaintext for Constant
         shared_ptr<HECipherTensorView> out0 = dynamic_pointer_cast<HECipherTensorView>(out[0]);
-        runtime::he::kernel::constant(
-            out0->get_elements(), type, node, m_he_backend, out0->get_element_count());
+        shared_ptr<op::Constant> constant = static_pointer_cast<op::Constant>(node);
+        runtime::he::kernel::constant(out0->get_elements(),
+                                      type,
+                                      constant->get_data_ptr(),
+                                      m_he_backend,
+                                      out0->get_element_count());
     }
     else if (node_op == "Multiply")
     {
