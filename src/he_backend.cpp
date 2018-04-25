@@ -38,6 +38,9 @@ runtime::he::HEBackend::
     m_keygen = make_shared<seal::KeyGenerator>(*m_context);
     m_public_key = make_shared<seal::PublicKey>(m_keygen->public_key());
     m_secret_key = make_shared<seal::SecretKey>(m_keygen->secret_key());
+    seal::EvaluationKeys ev_key;
+    m_keygen->generate_evaluation_keys(16, ev_key);
+    m_ev_key = make_shared<seal::EvaluationKeys>(ev_key);
     m_encryptor = make_shared<seal::Encryptor>(*m_context, *m_public_key);
     m_decryptor = make_shared<seal::Decryptor>(*m_context, *m_secret_key);
     m_evaluator = make_shared<seal::Evaluator>(*m_context);
@@ -55,6 +58,9 @@ runtime::he::HEBackend::HEBackend(seal::SEALContext& context)
     , m_decryptor(make_shared<seal::Decryptor>(*m_context, *m_secret_key))
     , m_evaluator(make_shared<seal::Evaluator>(*m_context))
 {
+    seal::EvaluationKeys ev_key;
+    m_keygen->generate_evaluation_keys(16, ev_key);
+    m_ev_key = make_shared<seal::EvaluationKeys>(ev_key);
 }
 
 runtime::he::HEBackend::~HEBackend()

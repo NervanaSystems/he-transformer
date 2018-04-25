@@ -29,9 +29,15 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Ciphertext>>& a
                                    shared_ptr<HEBackend> he_backend,
                                    size_t count)
 {
+    shared_ptr<seal::EvaluationKeys> ev_key = he_backend.get()->get_ev_key();
     for (size_t i = 0; i < count; ++i)
     {
+        //cout << endl << "Noise budget " << he_backend.get()->get_decryptor()->invariant_noise_budget(*out[i]) << endl;
         he_backend.get()->get_evaluator()->multiply(*arg0[i], *arg1[i], *out[i]);
+        cout << "Noise budget after multiply " << he_backend.get()->get_decryptor()->invariant_noise_budget(*out[i]) << endl;
+        //he_backend.get()->get_evaluator()->relinearize(*out[i], *ev_key);
+        //cout << "Relinearized" << endl;
+        cout << "Noise budget after relinerized " << he_backend.get()->get_decryptor()->invariant_noise_budget(*out[i]) << endl;
     }
 }
 
