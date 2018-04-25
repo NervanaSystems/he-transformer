@@ -25,7 +25,7 @@
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::constant(vector<shared_ptr<seal::Ciphertext>>& out,
+void runtime::he::kernel::constant(vector<shared_ptr<seal::Plaintext>>& out,
                                    const element::Type& type,
                                    const void* data_ptr,
                                    shared_ptr<HEBackend> he_backend,
@@ -39,8 +39,6 @@ void runtime::he::kernel::constant(vector<shared_ptr<seal::Ciphertext>>& out,
     for (size_t i = 0; i < count; ++i)
     {
         const void* src_with_offset = (void*)((char*)data_ptr + i * type.size());
-        seal::Plaintext p;
-        he_backend->encode(p, src_with_offset, type);
-        he_backend->encrypt(*(out[i]), p);
+        he_backend->encode(*(out[i]), src_with_offset, type);
     }
 }

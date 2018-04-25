@@ -69,6 +69,7 @@ namespace ngraph
                 void remove_compiled_function(std::shared_ptr<Function> func) override;
 
                 void encode(seal::Plaintext& output, const void* input, const element::Type& type);
+
                 void decode(void* output, const seal::Plaintext& input, const element::Type& type);
 
                 void encrypt(seal::Ciphertext& output, const seal::Plaintext& input);

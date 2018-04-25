@@ -20,7 +20,6 @@
 #include <memory>
 #include <vector>
 
-#include "he_cipher_tensor_view.hpp"
 #include "he_tensor_view.hpp"
 #include "ngraph/function.hpp"
 #include "ngraph/graph_util.hpp"
