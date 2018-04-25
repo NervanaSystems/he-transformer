@@ -157,7 +157,7 @@ TEST_F(TestHEBackend, abc)
               (test::NDArray<float, 2>({{50, 72}, {98, 128}})).get_vector());
 }
 
-TEST_F(TestHEBackend, add_precision)
+TEST_F(TestHEBackend, add_float_precision)
 {
     Shape s{};
     auto a = make_shared<op::Parameter>(element::f32, s);
@@ -170,17 +170,46 @@ TEST_F(TestHEBackend, add_precision)
     auto t_b = m_he_backend->create_tensor(element::f32, s);
     auto t_result = m_he_backend->create_tensor(element::f32, s);
 
-    for (float power = -30; power < 30; ++power)
+    for (float sign = -1; sign <= 1; sign += 2)
     {
-        copy_data(t_a, vector<float>{1 * powf(2, power)});
-        copy_data(t_b, vector<float>{7 * powf(2, power)});
+        for (float power = -30; power < 30; ++power)
+        {
+            copy_data(t_a, vector<float>{sign * 1 * powf(2, power)});
+            copy_data(t_b, vector<float>{sign * 7 * powf(2, power)});
 
-        m_he_backend->call(f, {t_result}, {t_a, t_b});
-        EXPECT_EQ(read_vector<float>(t_result), vector<float>{8 * powf(2, power)});
+            m_he_backend->call(f, {t_result}, {t_a, t_b});
+            EXPECT_EQ(read_vector<float>(t_result), vector<float>{sign * 8 * powf(2, power)});
+        }
     }
 }
 
-TEST_F(TestHEBackend, mult_precision)
+TEST_F(TestHEBackend, add_int64_precision)
+{
+    Shape s{};
+    auto a = make_shared<op::Parameter>(element::i64, s);
+    auto b = make_shared<op::Parameter>(element::i64, s);
+    auto t = make_shared<op::Add>(a, b);
+    auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+
+    // Create some tensors for input/output
+    auto t_a = m_he_backend->create_tensor(element::i64, s);
+    auto t_b = m_he_backend->create_tensor(element::i64, s);
+    auto t_result = m_he_backend->create_tensor(element::i64, s);
+
+    for (int64_t sign = -1; sign <= 1; sign += 2)
+    {
+        for (int64_t power = 0; power < 30; ++power)
+        {
+            copy_data(t_a, vector<int64_t>{sign * 1 * (int64_t)pow(2, power)});
+            copy_data(t_b, vector<int64_t>{sign * 7 * (int64_t)pow(2, power)});
+
+            m_he_backend->call(f, {t_result}, {t_a, t_b});
+            EXPECT_EQ(read_vector<int64_t>(t_result), vector<int64_t>{sign * 8 * (int64_t)pow(2, power)});
+        }
+    }
+}
+
+TEST_F(TestHEBackend, mult_float_precision)
 {
     Shape s{};
     auto a = make_shared<op::Parameter>(element::f32, s);
@@ -193,13 +222,42 @@ TEST_F(TestHEBackend, mult_precision)
     auto t_b = m_he_backend->create_tensor(element::f32, s);
     auto t_result = m_he_backend->create_tensor(element::f32, s);
 
-    for (float power = -10; power < 30; ++power)
+    for (float sign = -1; sign <= 1; sign += 2)
     {
-        copy_data(t_a, vector<float>{2 * powf(2, power)});
-        copy_data(t_b, vector<float>{3 * powf(2, power)});
+        for (float power = -14; power < 30; ++power)
+        {
+            copy_data(t_a, vector<float>{sign * 2 * powf(2, power)});
+            copy_data(t_b, vector<float>{3 * powf(2, power)});
 
-        m_he_backend->call(f, {t_result}, {t_a, t_b});
-        EXPECT_EQ(read_vector<float>(t_result), vector<float>{6 * powf(2, 2 * power)});
+            m_he_backend->call(f, {t_result}, {t_a, t_b});
+            EXPECT_EQ(read_vector<float>(t_result), vector<float>{sign * 6 * powf(2, 2 * power)});
+        }
+    }
+}
+
+TEST_F(TestHEBackend, mult_int64_precision)
+{
+    Shape s{};
+    auto a = make_shared<op::Parameter>(element::i64, s);
+    auto b = make_shared<op::Parameter>(element::i64, s);
+    auto t = make_shared<op::Multiply>(a, b);
+    auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+
+    // Create some tensors for input/output
+    auto t_a = m_he_backend->create_tensor(element::i64, s);
+    auto t_b = m_he_backend->create_tensor(element::i64, s);
+    auto t_result = m_he_backend->create_tensor(element::i64, s);
+
+    for (int64_t sign = -1; sign <= 1; sign += 2)
+    {
+        for (int64_t power = 0; power < 30; ++power)
+        {
+            copy_data(t_a, vector<int64_t>{sign * 2 * (int64_t)pow(2, power)});
+            copy_data(t_b, vector<int64_t>{3 * (int64_t)pow(2, power)});
+
+            m_he_backend->call(f, {t_result}, {t_a, t_b});
+            EXPECT_EQ(read_vector<int64_t>(t_result), vector<int64_t>{sign * 6 * (int64_t)pow(2, 2 * power)});
+        }
     }
 }
 
