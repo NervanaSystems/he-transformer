@@ -34,3 +34,14 @@ void runtime::he::kernel::add(const vector<shared_ptr<seal::Ciphertext>>& arg0,
         he_backend.get()->get_evaluator()->add(*arg0[i], *arg1[i], *out[i]);
     }
 }
+
+void runtime::he::kernel::add(const shared_ptr<seal::Ciphertext>& arg0,
+                              const shared_ptr<seal::Ciphertext>& arg1,
+                              shared_ptr<seal::Ciphertext>& out,
+                              shared_ptr<HEBackend> he_backend)
+{
+    const vector<shared_ptr<seal::Ciphertext>> arg0vec = {arg0};
+    const vector<shared_ptr<seal::Ciphertext>> arg1vec = {arg1};
+    vector<shared_ptr<seal::Ciphertext>> outvec = {out};
+    add(arg0vec, arg1vec, outvec, he_backend, 1);
+}

@@ -20,6 +20,10 @@
 
 namespace ngraph
 {
+    namespace element
+    {
+        class Type;
+    }
     namespace runtime
     {
         namespace he
@@ -28,15 +32,14 @@ namespace ngraph
 
             namespace kernel
             {
-                void add(const vector<shared_ptr<seal::Ciphertext>>& arg0,
+                void dot(const vector<shared_ptr<seal::Ciphertext>>& arg0,
                          const vector<shared_ptr<seal::Ciphertext>>& arg1,
                          vector<shared_ptr<seal::Ciphertext>>& out,
-                         shared_ptr<HEBackend> he_backend,
-                         size_t count);
-
-                void add(const shared_ptr<seal::Ciphertext>& arg0,
-                         const shared_ptr<seal::Ciphertext>& arg1,
-                         shared_ptr<seal::Ciphertext>& out,
+                         const Shape& arg0_shape,
+                         const Shape& arg1_shape,
+                         const Shape& out_shape,
+                         size_t reduction_axes_count,
+                         const element::Type& type,
                          shared_ptr<HEBackend> he_backend);
             }
         }
