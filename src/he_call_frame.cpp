@@ -184,29 +184,20 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     }
     else if (node_op == "Constant")
     {
-        shared_ptr<HECipherTensorView> out0_cipher =
-            dynamic_pointer_cast<HECipherTensorView>(out[0]);
-        shared_ptr<HEPlainTensorView> out0_plain = dynamic_pointer_cast<HEPlainTensorView>(out[0]);
+        shared_ptr<HEPlainTensorView> out0 = dynamic_pointer_cast<HEPlainTensorView>(out[0]);
+        shared_ptr<HECipherTensorView> out0_cipher = dynamic_pointer_cast<HECipherTensorView>(out[0]);
 
-        if (out0_cipher != nullptr)
+        cout << "out0_cipher == null? " << (out0_cipher == nullptr) << endl;
+        cout << "out0 == null? " << (out0 == nullptr) << endl;
+
+        if (out0 != nullptr)
         {
             shared_ptr<op::Constant> constant = static_pointer_cast<op::Constant>(node);
-            runtime::he::kernel::constant(out0_cipher->get_elements(),
-                                          type,
-                                          constant->get_data_ptr(),
-                                          m_he_backend,
-                                          out0_cipher->get_element_count());
-        }
-        else if (out0_plain != nullptr)
-        {
-            throw ngraph_error("Constant plaintext not supported");
-
-            /* shared_ptr<op::Constant> constant = static_pointer_cast<op::Constant>(node);
-            runtime::he::kernel::constant(out0_plain->get_elements(),
+            runtime::he::kernel::constant(out0->get_elements(),
                     type,
                     constant->get_data_ptr(),
                     m_he_backend,
-                    out0_plain->get_element_count()); */
+                    out0->get_element_count());
         }
         else
         {

@@ -36,17 +36,11 @@ namespace ngraph
 
             namespace kernel
             {
-                void constant(vector<shared_ptr<seal::Ciphertext>>& out,
-                              const element::Type& type,
-                              const void* data_ptr,
-                              shared_ptr<HEBackend> he_backend,
-                              size_t count);
-
-                /* void constant(vector<shared_ptr<seal::Plaintext>>& out,
+                void constant(vector<shared_ptr<seal::Plaintext>>& out,
                         const element::Type& type,
                         const void* data_ptr,
                         shared_ptr<HEBackend> he_backend,
-                        size_t count); */
+                        size_t count);
             }
         }
     }
