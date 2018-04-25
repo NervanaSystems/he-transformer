@@ -26,30 +26,19 @@ using namespace std;
 using namespace ngraph;
 
 void runtime::he::kernel::constant(vector<shared_ptr<seal::Plaintext>>& out,
-        const element::Type& type,
-        const void* data_ptr,
-        shared_ptr<HEBackend> he_backend,
-        size_t count)
+                                   const element::Type& type,
+                                   const void* data_ptr,
+                                   shared_ptr<HEBackend> he_backend,
+                                   size_t count)
 {
     size_t type_byte_size = type.size();
-    cout << "Creating plain constant " << endl;
     if (out.size() != count)
     {
         throw ngraph_error("out.size() != count for constant op");
     }
-    cout << "count " << count << endl;
     for (size_t i = 0; i < count; ++i)
     {
-        cout << "Creating constant i" << i << endl;
         const void* src_with_offset = (void*)((char*)data_ptr + i * type.size());
-        //seal::Plaintext p;
-        //he_backend->encode(p, src_with_offset, type);
-        //he_backend->encrypt(*(out[i]), p);
         he_backend->encode(*(out[i]), src_with_offset, type);
-
-        int x;
-        he_backend->decode(&x, *(out[i]), type);
-        cout << "encoded/decoded to " << x << endl;
     }
-    cout << "created " << endl;
 }

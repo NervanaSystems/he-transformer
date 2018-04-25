@@ -453,9 +453,8 @@ TEST_F(TestHEBackend, constant)
     auto A = op::Constant::create(element::f32, shape, {0.1, 0.2, 0.3, 0.4});
     auto f = make_shared<Function>(A, op::ParameterVector{});
 
-    auto result = m_he_backend->create_plain_tensor(element::f32, shape);
+    auto result = m_he_backend->create_tensor(element::f32, shape);
     m_he_backend->call(f, {result}, {});
-    cout << "finished test" << endl;
     EXPECT_EQ((vector<float>{0.1, 0.2, 0.3, 0.4}), read_vector<float>(result));
 }
 
