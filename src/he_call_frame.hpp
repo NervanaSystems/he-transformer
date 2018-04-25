@@ -61,7 +61,7 @@ namespace ngraph
                           const std::vector<std::shared_ptr<runtime::he::HETensorView>>& input_tvs);
 
                 void generate_calls(const element::Type& type,
-                                    ngraph::Node& node,
+                                    const std::shared_ptr<Node>& node,
                                     const std::vector<std::shared_ptr<HETensorView>>& args,
                                     const std::vector<std::shared_ptr<HETensorView>>& out);
             };
