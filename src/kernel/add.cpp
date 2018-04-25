@@ -32,6 +32,10 @@ void runtime::he::kernel::add(const vector<shared_ptr<seal::Ciphertext>>& arg0,
     for (size_t i = 0; i < count; ++i)
     {
         he_backend.get()->get_evaluator()->add(*arg0[i], *arg1[i], *out[i]);
+        if (he_backend->noise_budget(out[i]) <= 0)
+        {
+            throw ngraph_error("Noise budget depleted in add");
+        }
     }
 }
 
@@ -55,6 +59,10 @@ void runtime::he::kernel::add(const vector<shared_ptr<seal::Ciphertext>>& arg0,
     for (size_t i = 0; i < count; ++i)
     {
         he_backend.get()->get_evaluator()->add_plain(*arg0[i], *arg1[i], *out[i]);
+        if (he_backend->noise_budget(out[i]) <= 0)
+        {
+            throw ngraph_error("Noise budget depleted in add");
+        }
     }
 }
 

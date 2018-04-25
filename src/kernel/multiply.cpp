@@ -32,12 +32,11 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Ciphertext>>& a
     shared_ptr<seal::EvaluationKeys> ev_key = he_backend.get()->get_ev_key();
     for (size_t i = 0; i < count; ++i)
     {
-        //cout << endl << "Noise budget " << he_backend.get()->get_decryptor()->invariant_noise_budget(*out[i]) << endl;
         he_backend.get()->get_evaluator()->multiply(*arg0[i], *arg1[i], *out[i]);
-        cout << "Noise budget after multiply " << he_backend.get()->get_decryptor()->invariant_noise_budget(*out[i]) << endl;
-        //he_backend.get()->get_evaluator()->relinearize(*out[i], *ev_key);
-        //cout << "Relinearized" << endl;
-        cout << "Noise budget after relinerized " << he_backend.get()->get_decryptor()->invariant_noise_budget(*out[i]) << endl;
+        if (he_backend->noise_budget(out[i]) <= 0)
+        {
+            throw ngraph_error("Noise budget depleted in multiply");
+        }
     }
 }
 
@@ -61,6 +60,10 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Ciphertext>>& a
     for (size_t i = 0; i < count; ++i)
     {
         he_backend.get()->get_evaluator()->multiply_plain(*arg0[i], *arg1[i], *out[i]);
+        if (he_backend->noise_budget(out[i]) <= 0)
+        {
+            throw ngraph_error("Noise budget depleted in multiply");
+        }
     }
 }
 

@@ -196,6 +196,28 @@ TEST_F(TestHEBackend, abc)
               (test::NDArray<float, 2>({{50, 72}, {98, 128}})).get_vector());
 }
 
+// This test should be updated as the backend is able to handle deeper computation
+TEST_F(TestHEBackend, abc_budget)
+{
+    Shape shape{2, 2};
+    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto C = make_shared<op::Parameter>(element::f32, shape);
+    auto f = make_shared<Function>((A * B) * C, op::ParameterVector{A, B, C});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape);
+    auto b = m_he_backend->create_tensor(element::f32, shape);
+    auto c = m_he_backend->create_tensor(element::f32, shape);
+    auto result = m_he_backend->create_tensor(element::f32, shape);
+
+    copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
+    copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
+    copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
+
+    EXPECT_ANY_THROW(m_he_backend->call(f, {result}, {a, b, c}));
+}
+
 TEST_F(TestHEBackend, abc_plain)
 {
     Shape shape{2, 2};
@@ -391,37 +413,6 @@ TEST_F(TestHEBackend, dot_matrix_vector)
     EXPECT_EQ((vector<float>{190, 486, 782, 1078}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, dot_matrix_vector_big)
-{
-    Shape shape_a{100, 4};
-    Shape shape_b{4};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
-    auto f = make_shared<Function>(make_shared<op::Dot>(A, B), op::ParameterVector{A, B});
-    Shape shape_r{4};
-
-    // Create some tensors for input/output
-    auto a = m_he_backend->create_tensor(element::f32, shape_a);
-    vector<float> vec_a;
-    for(int i = 0; i < 400; ++i)
-    {
-        vec_a.push_back(i);
-    }
-    copy_data(a, vec_c);
-    auto b = m_he_backend->create_tensor(element::f32, shape_b);
-    copy_data(b, vector<float>{1, 2, 3, 4});
-    auto result = m_he_backend->create_tensor(element::f32, shape_r);
-
-    vector<float> vec_result;
-    for(int i = 0; i < 100; ++i)
-    {
-        vec_result.push_back(i);
-    }
-
-
-    m_he_backend->call(f, {result}, {a, b});
-    EXPECT_EQ(vec_result, read_vector<float>(result));
-}
 TEST_F(TestHEBackend, dot_matrix_vector_plain)
 {
     Shape shape_a{4, 4};

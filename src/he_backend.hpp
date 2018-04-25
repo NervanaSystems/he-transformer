@@ -91,6 +91,8 @@ namespace ngraph
                     return m_decryptor;
                 }
 
+                int noise_budget(const std::shared_ptr<seal::Ciphertext>& ciphertext);
+
             private:
                 seal::EncryptionParameters parms;
                 std::shared_ptr<seal::SEALContext> m_context;
