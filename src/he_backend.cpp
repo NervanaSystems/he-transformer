@@ -109,6 +109,10 @@ shared_ptr<runtime::TensorView>
         }
         cipher_tensor->write((void*)&zero[0], 0, bytes_to_write);
     }
+    else
+    {
+        throw ngraph_error("Type not supported at create_zero_tensor");
+    }
 
     return static_pointer_cast<runtime::TensorView>(cipher_tensor);
 }
