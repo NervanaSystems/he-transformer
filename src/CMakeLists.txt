@@ -28,6 +28,7 @@ set (HE_SRC
     he_manager.cpp
     kernel/add.cpp
     kernel/dot.cpp
+    kernel/constant.cpp
     kernel/multiply.cpp
     kernel/result.cpp
     kernel/subtract.cpp
