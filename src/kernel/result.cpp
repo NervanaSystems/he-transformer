@@ -31,3 +31,13 @@ void runtime::he::kernel::result(const vector<shared_ptr<seal::Ciphertext>> arg,
         out[i] = arg[i];
     }
 }
+
+void runtime::he::kernel::result(const vector<shared_ptr<seal::Plaintext>> arg,
+        vector<shared_ptr<seal::Plaintext>>& out,
+        size_t count)
+{
+    for (size_t i = 0; i < count; ++i)
+    {
+        out[i] = arg[i];
+    }
+}

@@ -31,6 +31,10 @@ namespace ngraph
                 void result(const vector<shared_ptr<seal::Ciphertext>> arg,
                             vector<shared_ptr<seal::Ciphertext>>& out,
                             size_t count);
+
+                void result(const vector<shared_ptr<seal::Plaintext>> arg,
+                        vector<shared_ptr<seal::Plaintext>>& out,
+                        size_t count);
             }
         }
     }

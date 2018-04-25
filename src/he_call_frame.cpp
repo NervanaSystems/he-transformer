@@ -99,12 +99,26 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                 const Shape& shape = op->get_output_shape(i);
                 const element::Type& element_type = op->get_output_element_type(i);
                 string tensor_name = op->get_output_tensor(i).get_name();
-                auto itv = make_shared<runtime::he::HECipherTensorView>( // TODO: use HETensorView?
-                    element_type,
-                    shape,
-                    m_he_backend,
-                    name);
-                tensor_map.insert({tv, itv});
+                cout << "op->description() " << op->description() << endl;
+                if (op->description() == "Constant")
+                {
+                    cout << "made plain tv " << endl;
+                    auto itv = make_shared<runtime::he::HEPlainTensorView>( // TODO: use HETensorView?
+                            element_type,
+                            shape,
+                            m_he_backend,
+                            name);
+                    tensor_map.insert({tv, itv});
+                }
+                else
+                {
+                    auto itv = make_shared<runtime::he::HECipherTensorView>( // TODO: use HETensorView?
+                        element_type,
+                        shape,
+                        m_he_backend,
+                        name);
+                    tensor_map.insert({tv, itv});
+                }
             }
             outputs.push_back(tensor_map.at(tv));
         }
@@ -120,6 +134,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         }
 
         generate_calls(base_type, op, inputs, outputs);
+        cout << "line 136" << endl;
 
         // Delete any obsolete tensors
         for (const descriptor::Tensor* t : op->liveness_free_list)
@@ -133,6 +148,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                 }
             }
         }
+        cout << "deleted obselete tensors " << endl;
     }
 }
 
@@ -152,6 +168,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         shared_ptr<HEPlainTensorView> arg0_plain = dynamic_pointer_cast<HEPlainTensorView>(args[0]);
         shared_ptr<HEPlainTensorView> arg1_plain = dynamic_pointer_cast<HEPlainTensorView>(args[1]);
         shared_ptr<HECipherTensorView> out0 = dynamic_pointer_cast<HECipherTensorView>(out[0]);
+        cout << "out0 = nullptr? " << (out0 == nullptr) << endl;
 
         if (arg0_cipher != nullptr && arg1_cipher != nullptr)
         {
@@ -185,19 +202,23 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     else if (node_op == "Constant")
     {
         shared_ptr<HEPlainTensorView> out0 = dynamic_pointer_cast<HEPlainTensorView>(out[0]);
-        shared_ptr<HECipherTensorView> out0_cipher = dynamic_pointer_cast<HECipherTensorView>(out[0]);
 
-        cout << "out0_cipher == null? " << (out0_cipher == nullptr) << endl;
         cout << "out0 == null? " << (out0 == nullptr) << endl;
 
         if (out0 != nullptr)
         {
-            shared_ptr<op::Constant> constant = static_pointer_cast<op::Constant>(node);
-            runtime::he::kernel::constant(out0->get_elements(),
+            // shared_ptr<op::Constant> constant = static_pointer_cast<op::Constant>(node);
+            /*runtime::he::kernel::constant(out0->get_elements(),
                     type,
                     constant->get_data_ptr(),
                     m_he_backend,
-                    out0->get_element_count());
+                    out0->get_element_count()); */
+            cout << "Called " << endl;
+
+            /*float x;
+            out0->read(&x, 0, out0->get_element_count());
+            cout << "wrote to x " << endl;
+            cout << "x " << x <<endl; */
         }
         else
         {
@@ -246,11 +267,37 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     else if (node_op == "Result")
     {
         shared_ptr<op::Result> res = dynamic_pointer_cast<op::Result>(node);
-        shared_ptr<HECipherTensorView> arg0 = dynamic_pointer_cast<HECipherTensorView>(args[0]);
-        shared_ptr<HECipherTensorView> out0 = dynamic_pointer_cast<HECipherTensorView>(out[0]);
+        shared_ptr<HECipherTensorView> arg0_cipher = dynamic_pointer_cast<HECipherTensorView>(args[0]);
+        shared_ptr<HEPlainTensorView> arg0_plain = dynamic_pointer_cast<HEPlainTensorView>(args[0]);
+        shared_ptr<HECipherTensorView> out0_cipher = dynamic_pointer_cast<HECipherTensorView>(out[0]);
+        shared_ptr<HEPlainTensorView> out0_plain = dynamic_pointer_cast<HEPlainTensorView>(out[0]);
 
-        runtime::he::kernel::result(
-            arg0->get_elements(), out0->get_elements(), shape_size(res->get_shape()));
+        if (arg0_cipher != nullptr && out0_cipher != nullptr)
+        {
+            runtime::he::kernel::result(
+                    arg0_cipher->get_elements(), out0_cipher->get_elements(), shape_size(res->get_shape()));
+        }
+        else if (arg0_cipher != nullptr && out0_plain != nullptr)
+        {
+            cout << "cp " << endl;
+            runtime::he::kernel::result(
+                    arg0_cipher->get_elements(), out0_plain->get_elements(), shape_size(res->get_shape()));
+        }
+        else if (arg0_plain != nullptr && out0_cipher != nullptr)
+        {
+            cout << "pc " << endl;
+            runtime::he::kernel::result(
+                    arg0_plain->get_elements(), out0_cipher->get_elements(), shape_size(res->get_shape()));
+        }
+        else if (arg0_plain != nullptr && out0_plain != nullptr)
+        {
+            runtime::he::kernel::result(
+                    arg0_plain->get_elements(), out0_plain->get_elements(), shape_size(res->get_shape()));
+        }
+        else
+        {
+            throw ngraph_error("Result types not supported.");
+        }
     }
     else if (node_op == "Subtract")
     {
@@ -339,6 +386,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     {
         throw ngraph_error("Node op " + node_op + " unimplemented");
     }
+    cout << "line 355 " << endl;
 }
 
 void runtime::he::HECallFrame::call(const vector<shared_ptr<runtime::TensorView>>& output_tvs,
@@ -355,4 +403,5 @@ void runtime::he::HECallFrame::call(const vector<shared_ptr<runtime::TensorView>
         out.push_back(static_pointer_cast<runtime::he::HETensorView>(tv));
     }
     call(m_function, out, args);
+    cout << "callled line 380 " << endl;
 }
