@@ -64,5 +64,5 @@ void runtime::he::kernel::add(const vector<shared_ptr<seal::Plaintext>>& arg0,
                               shared_ptr<HEBackend> he_backend,
                               size_t count)
 {
-    runtime::he::kernel::add(arg1, arg0, out, he_backend, count);
+    add(arg1, arg0, out, he_backend, count);
 }

@@ -266,7 +266,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                           out0->get_elements(),
                                           m_he_backend,
                                           out0->get_element_count());
-            cout << "1 " << endl;
         } // TODO: enable (plain, cipher) case
         else
         {
@@ -276,19 +275,54 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     else if (node_op == "Dot")
     {
         shared_ptr<op::Dot> dot = dynamic_pointer_cast<op::Dot>(node);
-        shared_ptr<HECipherTensorView> arg0 = dynamic_pointer_cast<HECipherTensorView>(args[0]);
-        shared_ptr<HECipherTensorView> arg1 = dynamic_pointer_cast<HECipherTensorView>(args[1]);
+        shared_ptr<HECipherTensorView> arg0_cipher =
+            dynamic_pointer_cast<HECipherTensorView>(args[0]);
+        shared_ptr<HECipherTensorView> arg1_cipher =
+            dynamic_pointer_cast<HECipherTensorView>(args[1]);
+        shared_ptr<HEPlainTensorView> arg0_plain = dynamic_pointer_cast<HEPlainTensorView>(args[0]);
+        shared_ptr<HEPlainTensorView> arg1_plain = dynamic_pointer_cast<HEPlainTensorView>(args[1]);
         shared_ptr<HECipherTensorView> out0 = dynamic_pointer_cast<HECipherTensorView>(out[0]);
 
-        runtime::he::kernel::dot(arg0->get_elements(),
-                                 arg1->get_elements(),
-                                 out0->get_elements(),
-                                 arg0->get_shape(),
-                                 arg1->get_shape(),
-                                 out0->get_shape(),
-                                 dot->get_reduction_axes_count(),
-                                 type,
-                                 m_he_backend);
+        if (arg0_cipher != nullptr && arg1_cipher != nullptr)
+        {
+            runtime::he::kernel::dot(arg0_cipher->get_elements(),
+                                     arg1_cipher->get_elements(),
+                                     out0->get_elements(),
+                                     arg0_cipher->get_shape(),
+                                     arg1_cipher->get_shape(),
+                                     out0->get_shape(),
+                                     dot->get_reduction_axes_count(),
+                                     type,
+                                     m_he_backend);
+        }
+        else if (arg0_cipher != nullptr && arg1_plain != nullptr)
+        {
+            runtime::he::kernel::dot(arg0_cipher->get_elements(),
+                                     arg1_plain->get_elements(),
+                                     out0->get_elements(),
+                                     arg0_cipher->get_shape(),
+                                     arg1_plain->get_shape(),
+                                     out0->get_shape(),
+                                     dot->get_reduction_axes_count(),
+                                     type,
+                                     m_he_backend);
+        }
+        else if (arg0_plain != nullptr && arg1_cipher != nullptr)
+        {
+            runtime::he::kernel::dot(arg0_plain->get_elements(),
+                                     arg1_cipher->get_elements(),
+                                     out0->get_elements(),
+                                     arg0_plain->get_shape(),
+                                     arg1_cipher->get_shape(),
+                                     out0->get_shape(),
+                                     dot->get_reduction_axes_count(),
+                                     type,
+                                     m_he_backend);
+        }
+        else
+        {
+            throw ngraph_error("Dot types not supported.");
+        }
     }
     else
     {
