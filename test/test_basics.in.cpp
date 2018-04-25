@@ -147,6 +147,24 @@ TEST_F(TestHEBackend, subtract)
     EXPECT_EQ((vector<float>{1, 2, 4, 8}), read_vector<float>(result));
 }
 
+TEST_F(TestHEBackend, subtract_plain)
+{
+    Shape shape{2, 2};
+    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto f = make_shared<Function>(make_shared<op::Subtract>(A, B), op::ParameterVector{A, B});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape);
+    copy_data(a, vector<float>{2, 4, 8, 16});
+    auto b = m_he_backend->create_plain_tensor(element::f32, shape);
+    copy_data(b, vector<float>{1, 2, 4, 8});
+    auto result = m_he_backend->create_tensor(element::f32, shape);
+
+    m_he_backend->call(f, {result}, {a, b});
+    EXPECT_EQ((vector<float>{1, 2, 4, 8}), read_vector<float>(result));
+}
+
 TEST_F(TestHEBackend, abc)
 {
     Shape shape{2, 2};

@@ -44,9 +44,6 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                                     const vector<shared_ptr<runtime::he::HETensorView>>& output_tvs,
                                     const vector<shared_ptr<runtime::he::HETensorView>>& input_tvs)
 {
-    // TODO: See interpreter for how this was originally
-    //       Need to generalize to PlaintextCipherTensorViews as well
-
     // Every descriptor::tv (inputs/outputs/intermediates) maps to one runtime::tv
     unordered_map<descriptor::TensorView*, shared_ptr<runtime::he::HETensorView>> tensor_map;
 
@@ -57,8 +54,6 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         for (size_t i = 0; i < param->get_output_size(); ++i)
         {
             descriptor::TensorView* tv = param->get_output_tensor_view(i).get();
-            //shared_ptr<runtime::he::HETensorView> hetv = input_tvs[arg_index++];
-            // static_pointer_cast<runtime::he::HECipherTensorView>(input_tvs[arg_index++]);
             tensor_map.insert({tv, input_tvs[arg_index++]});
         }
     }
@@ -72,8 +67,6 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
             throw ngraph_error("One of function's outputs isn't op::Result");
         }
         descriptor::TensorView* tv = function->get_output_op(i)->get_output_tensor_view(0).get();
-        //shared_ptr<runtime::he::HECipherTensorView> hetv =
-        //    static_pointer_cast<runtime::he::HECipherTensorView>(output_tvs[i]);
         tensor_map.insert({tv, output_tvs[i]});
     }
 
@@ -106,8 +99,11 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                 const Shape& shape = op->get_output_shape(i);
                 const element::Type& element_type = op->get_output_element_type(i);
                 string tensor_name = op->get_output_tensor(i).get_name();
-                auto itv = make_shared<runtime::he::HECipherTensorView>(
-                    element_type, shape, m_he_backend, name);
+                auto itv = make_shared<runtime::he::HECipherTensorView>( // TODO: use HETensorView?
+                    element_type,
+                    shape,
+                    m_he_backend,
+                    name);
                 tensor_map.insert({tv, itv});
             }
             outputs.push_back(tensor_map.at(tv));
@@ -247,15 +243,35 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     }
     else if (node_op == "Subtract")
     {
-        shared_ptr<HECipherTensorView> arg0 = dynamic_pointer_cast<HECipherTensorView>(args[0]);
-        shared_ptr<HECipherTensorView> arg1 = dynamic_pointer_cast<HECipherTensorView>(args[1]);
+        shared_ptr<HECipherTensorView> arg0_cipher =
+            dynamic_pointer_cast<HECipherTensorView>(args[0]);
+        shared_ptr<HECipherTensorView> arg1_cipher =
+            dynamic_pointer_cast<HECipherTensorView>(args[1]);
+        shared_ptr<HEPlainTensorView> arg0_plain = dynamic_pointer_cast<HEPlainTensorView>(args[0]);
+        shared_ptr<HEPlainTensorView> arg1_plain = dynamic_pointer_cast<HEPlainTensorView>(args[1]);
         shared_ptr<HECipherTensorView> out0 = dynamic_pointer_cast<HECipherTensorView>(out[0]);
 
-        runtime::he::kernel::subtract(arg0->get_elements(),
-                                      arg1->get_elements(),
-                                      out0->get_elements(),
-                                      m_he_backend,
-                                      out0->get_element_count());
+        if (arg0_cipher != nullptr && arg1_cipher != nullptr)
+        {
+            runtime::he::kernel::subtract(arg0_cipher->get_elements(),
+                                          arg1_cipher->get_elements(),
+                                          out0->get_elements(),
+                                          m_he_backend,
+                                          out0->get_element_count());
+        }
+        else if (arg0_cipher != nullptr && arg1_plain != nullptr)
+        {
+            runtime::he::kernel::subtract(arg0_cipher->get_elements(),
+                                          arg1_plain->get_elements(),
+                                          out0->get_elements(),
+                                          m_he_backend,
+                                          out0->get_element_count());
+            cout << "1 " << endl;
+        } // TODO: enable (plain, cipher) case
+        else
+        {
+            throw ngraph_error("Subtract types not supported.");
+        }
     }
     else if (node_op == "Dot")
     {
