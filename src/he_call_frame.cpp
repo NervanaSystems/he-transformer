@@ -101,22 +101,14 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                 string tensor_name = op->get_output_tensor(i).get_name();
                 if (op->description() == "Constant")
                 {
-                    auto itv =
-                        make_shared<runtime::he::HEPlainTensorView>(
-                            element_type,
-                            shape,
-                            m_he_backend,
-                            name);
+                    auto itv = make_shared<runtime::he::HEPlainTensorView>(
+                        element_type, shape, m_he_backend, name);
                     tensor_map.insert({tv, itv});
                 }
                 else
                 {
-                    auto itv =
-                        make_shared<runtime::he::HECipherTensorView>(
-                            element_type,
-                            shape,
-                            m_he_backend,
-                            name);
+                    auto itv = make_shared<runtime::he::HECipherTensorView>(
+                        element_type, shape, m_he_backend, name);
                     tensor_map.insert({tv, itv});
                 }
             }
@@ -212,6 +204,58 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         else
         {
             throw ngraph_error("Constant type not supported.");
+        }
+    }
+    else if (node_op == "Dot")
+    {
+        shared_ptr<op::Dot> dot = dynamic_pointer_cast<op::Dot>(node);
+        shared_ptr<HECipherTensorView> arg0_cipher =
+            dynamic_pointer_cast<HECipherTensorView>(args[0]);
+        shared_ptr<HECipherTensorView> arg1_cipher =
+            dynamic_pointer_cast<HECipherTensorView>(args[1]);
+        shared_ptr<HEPlainTensorView> arg0_plain = dynamic_pointer_cast<HEPlainTensorView>(args[0]);
+        shared_ptr<HEPlainTensorView> arg1_plain = dynamic_pointer_cast<HEPlainTensorView>(args[1]);
+        shared_ptr<HECipherTensorView> out0 = dynamic_pointer_cast<HECipherTensorView>(out[0]);
+
+        if (arg0_cipher != nullptr && arg1_cipher != nullptr)
+        {
+            runtime::he::kernel::dot(arg0_cipher->get_elements(),
+                                     arg1_cipher->get_elements(),
+                                     out0->get_elements(),
+                                     arg0_cipher->get_shape(),
+                                     arg1_cipher->get_shape(),
+                                     out0->get_shape(),
+                                     dot->get_reduction_axes_count(),
+                                     type,
+                                     m_he_backend);
+        }
+        else if (arg0_cipher != nullptr && arg1_plain != nullptr)
+        {
+            runtime::he::kernel::dot(arg0_cipher->get_elements(),
+                                     arg1_plain->get_elements(),
+                                     out0->get_elements(),
+                                     arg0_cipher->get_shape(),
+                                     arg1_plain->get_shape(),
+                                     out0->get_shape(),
+                                     dot->get_reduction_axes_count(),
+                                     type,
+                                     m_he_backend);
+        }
+        else if (arg0_plain != nullptr && arg1_cipher != nullptr)
+        {
+            runtime::he::kernel::dot(arg0_plain->get_elements(),
+                                     arg1_cipher->get_elements(),
+                                     out0->get_elements(),
+                                     arg0_plain->get_shape(),
+                                     arg1_cipher->get_shape(),
+                                     out0->get_shape(),
+                                     dot->get_reduction_axes_count(),
+                                     type,
+                                     m_he_backend);
+        }
+        else
+        {
+            throw ngraph_error("Dot types not supported.");
         }
     }
     else if (node_op == "Multiply")
@@ -310,58 +354,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         else
         {
             throw ngraph_error("Subtract types not supported.");
-        }
-    }
-    else if (node_op == "Dot")
-    {
-        shared_ptr<op::Dot> dot = dynamic_pointer_cast<op::Dot>(node);
-        shared_ptr<HECipherTensorView> arg0_cipher =
-            dynamic_pointer_cast<HECipherTensorView>(args[0]);
-        shared_ptr<HECipherTensorView> arg1_cipher =
-            dynamic_pointer_cast<HECipherTensorView>(args[1]);
-        shared_ptr<HEPlainTensorView> arg0_plain = dynamic_pointer_cast<HEPlainTensorView>(args[0]);
-        shared_ptr<HEPlainTensorView> arg1_plain = dynamic_pointer_cast<HEPlainTensorView>(args[1]);
-        shared_ptr<HECipherTensorView> out0 = dynamic_pointer_cast<HECipherTensorView>(out[0]);
-
-        if (arg0_cipher != nullptr && arg1_cipher != nullptr)
-        {
-            runtime::he::kernel::dot(arg0_cipher->get_elements(),
-                                     arg1_cipher->get_elements(),
-                                     out0->get_elements(),
-                                     arg0_cipher->get_shape(),
-                                     arg1_cipher->get_shape(),
-                                     out0->get_shape(),
-                                     dot->get_reduction_axes_count(),
-                                     type,
-                                     m_he_backend);
-        }
-        else if (arg0_cipher != nullptr && arg1_plain != nullptr)
-        {
-            runtime::he::kernel::dot(arg0_cipher->get_elements(),
-                                     arg1_plain->get_elements(),
-                                     out0->get_elements(),
-                                     arg0_cipher->get_shape(),
-                                     arg1_plain->get_shape(),
-                                     out0->get_shape(),
-                                     dot->get_reduction_axes_count(),
-                                     type,
-                                     m_he_backend);
-        }
-        else if (arg0_plain != nullptr && arg1_cipher != nullptr)
-        {
-            runtime::he::kernel::dot(arg0_plain->get_elements(),
-                                     arg1_cipher->get_elements(),
-                                     out0->get_elements(),
-                                     arg0_plain->get_shape(),
-                                     arg1_cipher->get_shape(),
-                                     out0->get_shape(),
-                                     dot->get_reduction_axes_count(),
-                                     type,
-                                     m_he_backend);
-        }
-        else
-        {
-            throw ngraph_error("Dot types not supported.");
         }
     }
     else
