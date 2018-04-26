@@ -49,7 +49,8 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
     size_t type_byte_size = type.size();
     size_t dst_start_index = tensor_offset / type_byte_size;
     size_t num_elements_to_write = n / type_byte_size;
-    cout << "writing " << num_elements_to_write << " elements " << endl;
+    if (num_elements_to_write > 10)
+        cout << "writing " << num_elements_to_write << " elements " << endl;
     #pragma omp parallel for
     for (size_t i = 0; i < num_elements_to_write; ++i)
     {

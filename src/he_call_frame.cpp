@@ -125,9 +125,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
             base_type = op->get_inputs().at(0).get_tensor().get_element_type();
         }
 
-        cout << "generating calls " << endl;
         generate_calls(base_type, op, inputs, outputs);
-        cout << "done generating calls " << endl;
 
         // Delete any obsolete tensors
         for (const descriptor::Tensor* t : op->liveness_free_list)
@@ -153,7 +151,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
 
     if (node_op == "Add")
     {
-        cout << "add " << endl;
         shared_ptr<HECipherTensorView> arg0_cipher =
             dynamic_pointer_cast<HECipherTensorView>(args[0]);
         shared_ptr<HECipherTensorView> arg1_cipher =
@@ -193,7 +190,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     }
     else if (node_op == "Constant")
     {
-        cout << "constant " << endl;
         shared_ptr<HEPlainTensorView> out0 = dynamic_pointer_cast<HEPlainTensorView>(out[0]);
 
         if (out0 != nullptr)
@@ -221,9 +217,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         shared_ptr<HEPlainTensorView> arg0_plain = dynamic_pointer_cast<HEPlainTensorView>(args[0]);
         shared_ptr<HEPlainTensorView> arg1_plain = dynamic_pointer_cast<HEPlainTensorView>(args[1]);
         shared_ptr<HECipherTensorView> out0 = dynamic_pointer_cast<HECipherTensorView>(out[0]);
-
-        cout << "dot->get_reduction_axes_count " << dot->get_reduction_axes_count() << endl;
-        cout << "out0 shape " << shape_size(out0->get_shape()) << endl;
 
         if (arg0_cipher != nullptr && arg1_cipher != nullptr)
         {
@@ -268,7 +261,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     }
     else if (node_op == "Multiply")
     {
-        cout << "mult " << endl;
         shared_ptr<HECipherTensorView> arg0_cipher =
             dynamic_pointer_cast<HECipherTensorView>(args[0]);
         shared_ptr<HECipherTensorView> arg1_cipher =
@@ -308,8 +300,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     }
     else if (node_op == "Result")
     {
-        cout << "result " << endl;
-
         shared_ptr<op::Result> res = dynamic_pointer_cast<op::Result>(node);
         shared_ptr<HECipherTensorView> arg0_cipher =
             dynamic_pointer_cast<HECipherTensorView>(args[0]);
@@ -338,8 +328,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     }
     else if (node_op == "Subtract")
     {
-        cout << "subtract " << endl;
-
         shared_ptr<HECipherTensorView> arg0_cipher =
             dynamic_pointer_cast<HECipherTensorView>(args[0]);
         shared_ptr<HECipherTensorView> arg1_cipher =

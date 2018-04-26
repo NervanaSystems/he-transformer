@@ -34,16 +34,6 @@ namespace ngraph
         {
             class HEBackend;
 
-            const Coordinate& get_coordinate(CoordinateTransform c, size_t i)
-            {
-                auto it = c.begin();
-                for(int j = 0; j < i; ++j)
-                {
-                    ++it;
-                }
-                return *it;
-            }
-
             namespace kernel
             {
                 template <typename S, typename T>
@@ -127,33 +117,54 @@ namespace ngraph
                             {
                                 ++size;
                             }
-                            for(size_t i = 0; i < size; ++i)
+                            # pragma omp parallel shared(sum)
                             {
-                                const Coordinate& dot_axis_positions = get_coordinate(dot_axes_transform, i);
+                                shared_ptr<HECipherTensorView> prod_tv =
+                                    static_pointer_cast<HECipherTensorView>(
+                                            he_backend->create_zero_tensor(type, Shape{1}));
+                                shared_ptr<seal::Ciphertext> prod = prod_tv->get_element(0);
 
-                            //for (const Coordinate& dot_axis_positions : dot_axes_transform)
-                            //{
-                                // In order to find the points to multiply together, we need to inject our current
-                                // positions along the dotted axes back into the projected arg0 and arg1 coordinates.
-                                std::copy(
-                                        dot_axis_positions.begin(), dot_axis_positions.end(), arg0_it);
+                                shared_ptr<HECipherTensorView> priv_sum_tv =
+                                    static_pointer_cast<HECipherTensorView>(
+                                            he_backend->create_zero_tensor(type, Shape{1}));
+                                shared_ptr<seal::Ciphertext> priv_sum = priv_sum_tv->get_element(0);
 
-                                auto arg1_it = std::copy(dot_axis_positions.begin(),
-                                        dot_axis_positions.end(),
-                                        arg1_coord.begin());
-                                std::copy(arg1_projected_coord.begin(),
-                                        arg1_projected_coord.end(),
-                                        arg1_it);
+                                #pragma omp for
+                                for(size_t i = 0; i < size; ++i)
+                                {
+                                    auto it = dot_axes_transform.begin(); // TODO: move to random access function
+                                    for(int j = 0; j < i; ++j)
+                                    {
+                                        ++it;
+                                    }
+                                    const Coordinate& dot_axis_positions = *it;
 
-                                // Multiply and add to the sum.
-                                shared_ptr<S> arg0_text = arg0[arg0_transform.index(arg0_coord)];
-                                shared_ptr<T> arg1_text = arg1[arg1_transform.index(arg1_coord)];
-                                ngraph::runtime::he::kernel::multiply(
-                                        arg0_text, arg1_text, prod, he_backend);
-                                ngraph::runtime::he::kernel::add(sum, prod, sum, he_backend);
+                                    // In order to find the points to multiply together, we need to inject our current
+                                    // positions along the dotted axes back into the projected arg0 and arg1 coordinates.
+                                    std::copy(
+                                            dot_axis_positions.begin(), dot_axis_positions.end(), arg0_it);
 
-                            };
+                                    auto arg1_it = std::copy(dot_axis_positions.begin(),
+                                            dot_axis_positions.end(),
+                                            arg1_coord.begin());
+                                    std::copy(arg1_projected_coord.begin(),
+                                            arg1_projected_coord.end(),
+                                            arg1_it);
 
+                                    // Multiply and add to the sum.
+                                    shared_ptr<S> arg0_text = arg0[arg0_transform.index(arg0_coord)];
+                                    shared_ptr<T> arg1_text = arg1[arg1_transform.index(arg1_coord)];
+                                    ngraph::runtime::he::kernel::multiply(
+                                            arg0_text, arg1_text, prod, he_backend);
+                                    ngraph::runtime::he::kernel::add(sum, prod, sum, he_backend);
+
+                                };
+
+                                #pragma omp critical
+                                {
+                                    ngraph::runtime::he::kernel::add(sum, priv_sum, sum, he_backend);
+                                }
+                            }
                             // Write the sum back.
                             out[out_index] = sum;
                         }
