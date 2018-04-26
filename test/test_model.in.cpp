@@ -21,8 +21,4 @@ TEST_F(TestHEBackend, tf_mnist_const)
     const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, "mnist_mlp_const_5_inputs.js");
     const string json_string = file_util::read_file_to_string(json_path);
     shared_ptr<Function> f = ngraph::deserialize(json_string);
-    // auto external = manager->compile(f);
-    // auto backend = manager->allocate_backend();
-    // auto cf = backend->make_call_frame(external);
-    // std::cout << "MNIST is succesfull" << std::endl;
 }
