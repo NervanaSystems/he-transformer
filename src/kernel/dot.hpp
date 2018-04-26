@@ -111,6 +111,7 @@ namespace ngraph
                             auto arg0_it = std::copy(arg0_projected_coord.begin(),
                                                      arg0_projected_coord.end(),
                                                      arg0_coord.begin());
+                            #pragma omp parallel
                             for (const Coordinate& dot_axis_positions : dot_axes_transform)
                             {
                                 // In order to find the points to multiply together, we need to inject our current
@@ -131,6 +132,7 @@ namespace ngraph
                                 ngraph::runtime::he::kernel::multiply(
                                     arg0_text, arg1_text, prod, he_backend);
                                 ngraph::runtime::he::kernel::add(sum, prod, sum, he_backend);
+
                             }
 
                             // Write the sum back.

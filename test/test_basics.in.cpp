@@ -478,3 +478,4 @@ TEST_F(TestHEBackend, constant_abc)
     EXPECT_EQ(read_vector<float>(result),
               (test::NDArray<float, 2>({{54, 80}, {110, 144}})).get_vector());
 }
+

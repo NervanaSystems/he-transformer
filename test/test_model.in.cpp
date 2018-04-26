@@ -18,7 +18,42 @@
 
 TEST_F(TestHEBackend, tf_mnist_const)
 {
+    auto backend = runtime::Backend::create("HE");
     const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, "mnist_mlp_const_5_inputs.js");
     const string json_string = file_util::read_file_to_string(json_path);
-    shared_ptr<Function> f = ngraph::deserialize(json_string);
+    shared_ptr<Function> f = deserialize(json_string);
+
+    auto parameters = f->get_parameters();
+    vector<shared_ptr<runtime::TensorView>> parameter_tvs;
+    for (auto parameter: parameters)
+    {
+        auto& shape = parameter->get_shape();
+        auto& type = parameter->get_element_type();
+        auto parameter_tv = backend->create_tensor(type, shape);
+        cout << "created tensor " << endl;
+        cout << "elements " << shape_size(shape) << endl;
+        copy_data(parameter_tv, vector<float>(shape_size(shape)));
+        cout << "copied " << shape_size(shape) << endl;
+        parameter_tvs.push_back(parameter_tv);
+    }
+
+    auto results = f->get_results();
+    vector<shared_ptr<runtime::TensorView>> result_tvs;
+    int i = 0;
+    cout << "getting result " << results.size() << endl;
+    for (auto result: results)
+    {
+        cout << "result " << i << endl;
+        auto& shape = result->get_shape();
+        auto& type = result->get_element_type();
+        result_tvs.push_back(backend->create_tensor(type, shape));
+
+        ++i;
+    }
+
+    cout << "calling function " << endl;
+    backend->call(f, result_tvs, parameter_tvs);
+
+    EXPECT_EQ(( vector<float>{ 2173, -115, -4823, 12317, 1581, 944, 4236, 13188, 4436, 2140, 1151, 18967, 3295, 659, -21, 1723, 6923, -3925, -3237, -637, -1674, -3530, 7586, -1818, 11578, 569, -11907, -2731, -91, -3363, -1985, 2383, -1781, 8035, 1183, 9776, -4648, 620, 1244, 768, -4997, 1847, -8089, -12449, -11285, -1903, -8727, -1791, -4979, 3849}),
+            read_vector<float>(result_tvs[0]));
 }
