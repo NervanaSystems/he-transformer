@@ -33,10 +33,6 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Ciphertext>>& a
     for (size_t i = 0; i < count; ++i)
     {
         he_backend.get()->get_evaluator()->multiply(*arg0[i], *arg1[i], *out[i]);
-        if (he_backend->noise_budget(out[i]) <= 0)
-        {
-            throw ngraph_error("Noise budget depleted in multiply");
-        }
     }
 }
 
@@ -60,10 +56,6 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Ciphertext>>& a
     for (size_t i = 0; i < count; ++i)
     {
         he_backend.get()->get_evaluator()->multiply_plain(*arg0[i], *arg1[i], *out[i]);
-        if (he_backend->noise_budget(out[i]) <= 0)
-        {
-            throw ngraph_error("Noise budget depleted in multiply");
-        }
     }
 }
 

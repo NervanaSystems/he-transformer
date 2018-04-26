@@ -127,6 +127,23 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
 
         generate_calls(base_type, op, inputs, outputs);
 
+        // Check noise budget
+        for (size_t i = 0; i < outputs.size(); ++i)
+        {
+            shared_ptr<HECipherTensorView> out_i =
+                dynamic_pointer_cast<HECipherTensorView>(outputs[i]);
+            if (out_i != nullptr)
+            {
+                for (shared_ptr<seal::Ciphertext> ciphertext : out_i->get_elements())
+                {
+                    if (m_he_backend->noise_budget(ciphertext) <= 0)
+                    {
+                        throw ngraph_error("Noise budget depleted");
+                    }
+                }
+            }
+        }
+
         // Delete any obsolete tensors
         for (const descriptor::Tensor* t : op->liveness_free_list)
         {
