@@ -23,6 +23,7 @@
 
 namespace ngraph
 {
+
     namespace element
     {
         class Type;
@@ -32,6 +33,16 @@ namespace ngraph
         namespace he
         {
             class HEBackend;
+
+            const Coordinate& get_coordinate(CoordinateTransform c, size_t i)
+            {
+                auto it = c.begin();
+                for(int j = 0; j < i; ++j)
+                {
+                    ++it;
+                }
+                return *it;
+            }
 
             namespace kernel
             {
@@ -111,29 +122,37 @@ namespace ngraph
                             auto arg0_it = std::copy(arg0_projected_coord.begin(),
                                                      arg0_projected_coord.end(),
                                                      arg0_coord.begin());
-                            #pragma omp parallel
+                            size_t size = 0;
                             for (const Coordinate& dot_axis_positions : dot_axes_transform)
                             {
+                                ++size;
+                            }
+                            for(size_t i = 0; i < size; ++i)
+                            {
+                                const Coordinate& dot_axis_positions = get_coordinate(dot_axes_transform, i);
+
+                            //for (const Coordinate& dot_axis_positions : dot_axes_transform)
+                            //{
                                 // In order to find the points to multiply together, we need to inject our current
                                 // positions along the dotted axes back into the projected arg0 and arg1 coordinates.
                                 std::copy(
-                                    dot_axis_positions.begin(), dot_axis_positions.end(), arg0_it);
+                                        dot_axis_positions.begin(), dot_axis_positions.end(), arg0_it);
 
                                 auto arg1_it = std::copy(dot_axis_positions.begin(),
-                                                         dot_axis_positions.end(),
-                                                         arg1_coord.begin());
+                                        dot_axis_positions.end(),
+                                        arg1_coord.begin());
                                 std::copy(arg1_projected_coord.begin(),
-                                          arg1_projected_coord.end(),
-                                          arg1_it);
+                                        arg1_projected_coord.end(),
+                                        arg1_it);
 
                                 // Multiply and add to the sum.
                                 shared_ptr<S> arg0_text = arg0[arg0_transform.index(arg0_coord)];
                                 shared_ptr<T> arg1_text = arg1[arg1_transform.index(arg1_coord)];
                                 ngraph::runtime::he::kernel::multiply(
-                                    arg0_text, arg1_text, prod, he_backend);
+                                        arg0_text, arg1_text, prod, he_backend);
                                 ngraph::runtime::he::kernel::add(sum, prod, sum, he_backend);
 
-                            }
+                            };
 
                             // Write the sum back.
                             out[out_index] = sum;

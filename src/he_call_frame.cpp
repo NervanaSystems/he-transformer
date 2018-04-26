@@ -222,6 +222,9 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         shared_ptr<HEPlainTensorView> arg1_plain = dynamic_pointer_cast<HEPlainTensorView>(args[1]);
         shared_ptr<HECipherTensorView> out0 = dynamic_pointer_cast<HECipherTensorView>(out[0]);
 
+        cout << "dot->get_reduction_axes_count " << dot->get_reduction_axes_count() << endl;
+        cout << "out0 shape " << shape_size(out0->get_shape()) << endl;
+
         if (arg0_cipher != nullptr && arg1_cipher != nullptr)
         {
             runtime::he::kernel::dot(arg0_cipher->get_elements(),
