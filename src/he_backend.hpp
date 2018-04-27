@@ -81,6 +81,18 @@ namespace ngraph
                     return m_evaluator;
                 }
 
+                const inline std::shared_ptr<seal::EvaluationKeys> get_ev_key() const
+                {
+                    return m_ev_key;
+                }
+
+                const inline std::shared_ptr<seal::Decryptor> get_decryptor() const
+                {
+                    return m_decryptor;
+                }
+
+                int noise_budget(const std::shared_ptr<seal::Ciphertext>& ciphertext);
+
             private:
                 seal::EncryptionParameters parms;
                 std::shared_ptr<seal::SEALContext> m_context;
@@ -89,6 +101,7 @@ namespace ngraph
                 std::shared_ptr<seal::KeyGenerator> m_keygen;
                 std::shared_ptr<seal::PublicKey> m_public_key;
                 std::shared_ptr<seal::SecretKey> m_secret_key;
+                std::shared_ptr<seal::EvaluationKeys> m_ev_key;
                 std::shared_ptr<seal::Encryptor> m_encryptor;
                 std::shared_ptr<seal::Decryptor> m_decryptor;
                 std::shared_ptr<seal::Evaluator> m_evaluator;
