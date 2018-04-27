@@ -79,8 +79,34 @@ namespace ngraph
                     // for the dotted axes.
                     CoordinateTransform dot_axes_transform(dot_axis_sizes);
 
+                    size_t outer_size = 0;
                     for (const Coordinate& arg0_projected_coord : arg0_projected_transform)
                     {
+                        outer_size++;
+                    }
+                    cout << "outer size " << outer_size << endl;
+
+                    size_t inner_size = 0;
+                    for (const Coordinate& arg1_projected_coord : arg1_projected_transform)
+                    {
+                        inner_size++;
+                    }
+                    cout << "inner size " << inner_size << endl;
+
+                    #pragma omp parallel for
+                    for(size_t outer = 0; outer < outer_size; ++outer)
+                    {
+                        #pragma omp critical
+                        cout << "outer " << outer << endl;
+                        auto it = arg0_projected_transform.begin();
+                        for(size_t i = 0; i < outer; ++i)
+                        {
+                            ++it;
+                        }
+                        const Coordinate& arg0_projected_coord = *it;
+                    //}
+                    //for (const Coordinate& arg0_projected_coord : arg0_projected_transform)
+                    //{
                         for (const Coordinate& arg1_projected_coord : arg1_projected_transform)
                         {
                             // The output coordinate is just the concatenation of the projected coordinates.
@@ -111,22 +137,22 @@ namespace ngraph
                             {
                                 ++size;
                             }
-                            # pragma omp parallel shared(sum)
+                            // cout << "dot size " << size << endl;
+                            //# pragma omp parallel shared(sum)
                             {
-
                                 shared_ptr<HECipherTensorView> priv_sum_tv =
                                     static_pointer_cast<HECipherTensorView>(
                                             he_backend->create_zero_tensor(type, Shape{1}));
                                 shared_ptr<seal::Ciphertext> priv_sum = priv_sum_tv->get_element(0);
 
+                                //#pragma omp critical
                                 shared_ptr<HEBackend> tmp_he_backend = he_backend;
 
-                                #pragma omp for
+                                //#pragma omp for
                                 for(size_t i = 0; i < size; ++i)
                                 {
-                                    cout << "i " << i << endl;
+                                    //auto ti = dot_axes_transform[i];
                                     auto it = dot_axes_transform.begin(); // TODO: move to random access function
-                                    #pragma omp critical
                                     for(int j = 0; j < i; ++j)
                                     {
                                         ++it;
@@ -174,7 +200,6 @@ namespace ngraph
                                 }
                             }
                             // Write the sum back.
-                            cout << "out index " << out_index << endl;
                             out[out_index] = sum;
                         }
                     }
