@@ -197,6 +197,64 @@ TEST_F(TestHEBackend, abc)
 }
 
 // This test should be updated as the backend is able to handle deeper computation
+TEST_F(TestHEBackend, abcd_budget)
+{
+    Shape shape{2, 2};
+    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto C = make_shared<op::Parameter>(element::f32, shape);
+    auto D = make_shared<op::Parameter>(element::f32, shape);
+    auto f = make_shared<Function>(((A * B) * C) * D, op::ParameterVector{A, B, C, D});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape);
+    auto b = m_he_backend->create_tensor(element::f32, shape);
+    auto c = m_he_backend->create_tensor(element::f32, shape);
+    auto d = m_he_backend->create_tensor(element::f32, shape);
+    auto result = m_he_backend->create_tensor(element::f32, shape);
+
+    copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
+    copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
+    copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
+    copy_data(d, test::NDArray<float, 2>({{13, 14}, {15, 16}}).get_vector());
+
+    //EXPECT_ANY_THROW(m_he_backend->call(f, {result}, {a, b, c, d}));
+    m_he_backend->call(f, {result}, {a, b, c, d});
+    EXPECT_EQ(read_vector<float>(result),
+            (test::NDArray<float, 2>({{585, 1680}, {3465, 6144}})).get_vector());
+}
+
+// This test should be updated as the backend is able to handle deeper computation
+TEST_F(TestHEBackend, abcde_budget)
+{
+    Shape shape{2, 2};
+    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto C = make_shared<op::Parameter>(element::f32, shape);
+    auto D = make_shared<op::Parameter>(element::f32, shape);
+    auto E = make_shared<op::Parameter>(element::f32, shape);
+    auto f = make_shared<Function>((((A * B) * C) * D) * E, op::ParameterVector{A, B, C, D, E});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape);
+    auto b = m_he_backend->create_tensor(element::f32, shape);
+    auto c = m_he_backend->create_tensor(element::f32, shape);
+    auto d = m_he_backend->create_tensor(element::f32, shape);
+    auto e = m_he_backend->create_tensor(element::f32, shape);
+    auto result = m_he_backend->create_tensor(element::f32, shape);
+
+    copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
+    copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
+    copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
+    copy_data(d, test::NDArray<float, 2>({{13, 14}, {15, 16}}).get_vector());
+    copy_data(d, test::NDArray<float, 2>({{17, 18}, {19, 20}}).get_vector());
+
+    EXPECT_ANY_THROW(m_he_backend->call(f, {result}, {a, b, c, d, e}));
+    //m_he_backend->call(f, {result}, {a, b, c, d, e});
+    //EXPECT_EQ(read_vector<float>(result),
+    //        (test::NDArray<float, 2>({{585, 1680}, {3465, 6144}})).get_vector());
+}
+
 TEST_F(TestHEBackend, abc_budget)
 {
     Shape shape{2, 2};
@@ -209,13 +267,16 @@ TEST_F(TestHEBackend, abc_budget)
     auto a = m_he_backend->create_tensor(element::f32, shape);
     auto b = m_he_backend->create_tensor(element::f32, shape);
     auto c = m_he_backend->create_tensor(element::f32, shape);
+    auto d = m_he_backend->create_tensor(element::f32, shape);
     auto result = m_he_backend->create_tensor(element::f32, shape);
 
     copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
     copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
     copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
 
-    EXPECT_ANY_THROW(m_he_backend->call(f, {result}, {a, b, c}));
+    m_he_backend->call(f, {result}, {a, b, c});
+    EXPECT_EQ(read_vector<float>(result),
+            (test::NDArray<float, 2>({{45,120}, {231, 384}})).get_vector());
 }
 
 TEST_F(TestHEBackend, abc_plain)

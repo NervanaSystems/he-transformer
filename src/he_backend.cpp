@@ -28,9 +28,11 @@ runtime::he::HEBackend::
     HEBackend() // TODO: call HEBackend::HEBackend(seal::SEALContext& context) with default parameters
 {
     seal::EncryptionParameters parms;
-    parms.set_poly_modulus("1x^2048 + 1");
-    parms.set_coeff_modulus(seal::coeff_modulus_128(2048));
-    parms.set_plain_modulus(1 << 8);
+
+    parms.set_poly_modulus("1x^4096 + 1"); // Suffices for ((A*B)*C)*D
+    parms.set_coeff_modulus(seal::coeff_modulus_128(4096));
+    parms.set_plain_modulus(1 << 10);
+
     m_context = make_shared<seal::SEALContext>(parms);
     m_int_encoder = make_shared<seal::IntegerEncoder>(m_context->plain_modulus());
     m_frac_encoder = make_shared<seal::FractionalEncoder>(
