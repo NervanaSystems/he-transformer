@@ -141,8 +141,8 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         }
     }
     // Check noise budget
-    cout << "Checking noise budget " << endl;
-    #pragma omp parallel
+    NGRAPH_INFO << "Checking noise budget ";
+#pragma omp parallel
     for (size_t i = 0; i < output_tvs.size(); ++i)
     {
         shared_ptr<HECipherTensorView> out_i =
@@ -158,8 +158,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
             }
         }
     }
-    cout << "Done checking noise budget " << endl;
-
+    NGRAPH_INFO << "Done checking noise budget ";
 }
 
 void runtime::he::HECallFrame::generate_calls(const element::Type& type,
@@ -235,7 +234,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     }
     else if (node_op == "Dot")
     {
-        cout << "dot " << endl;
+        NGRAPH_INFO << "dot ";
         shared_ptr<op::Dot> dot = dynamic_pointer_cast<op::Dot>(node);
 
         if (arg0_cipher != nullptr && arg1_cipher != nullptr)

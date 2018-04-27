@@ -34,17 +34,11 @@ runtime::he::HEBackend::
     parms.set_plain_modulus(14000);
     m_context = make_shared<seal::SEALContext>(parms);
 
-	cout << "/ Encryption parameters:" << endl;
-	cout << "| poly_modulus: " << m_context->poly_modulus().to_string() << endl;
-
-	/*
-	   Print the size of the true (product) coefficient modulus
-	   */
-	cout << "| coeff_modulus size: "
-		<< m_context->total_coeff_modulus().significant_bit_count() << " bits" << endl;
-
-	cout << "| plain_modulus: " << m_context->plain_modulus().value() << endl;
-
+    NGRAPH_INFO << "/ Encryption parameters:";
+    NGRAPH_INFO << "| poly_modulus: " << m_context->poly_modulus().to_string();
+    NGRAPH_INFO << "| coeff_modulus size: "
+                << m_context->total_coeff_modulus().significant_bit_count() << " bits";
+    NGRAPH_INFO << "| plain_modulus: " << m_context->plain_modulus().value();
 
     m_int_encoder = make_shared<seal::IntegerEncoder>(m_context->plain_modulus());
     m_frac_encoder = make_shared<seal::FractionalEncoder>(
@@ -149,7 +143,7 @@ shared_ptr<runtime::TensorView>
 shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_tensor(
     const element::Type& element_type, const Shape& shape, void* memory_pointer)
 {
-    throw ngraph_error("he create_tensor Unimplemented");
+    throw ngraph_error("HE create_tensor unimplemented");
 }
 
 bool runtime::he::HEBackend::compile(shared_ptr<Function> func)

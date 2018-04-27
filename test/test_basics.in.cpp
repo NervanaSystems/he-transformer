@@ -221,7 +221,7 @@ TEST_F(TestHEBackend, abcd_budget)
     //EXPECT_ANY_THROW(m_he_backend->call(f, {result}, {a, b, c, d}));
     m_he_backend->call(f, {result}, {a, b, c, d});
     EXPECT_EQ(read_vector<float>(result),
-            (test::NDArray<float, 2>({{585, 1680}, {3465, 6144}})).get_vector());
+              (test::NDArray<float, 2>({{585, 1680}, {3465, 6144}})).get_vector());
 }
 
 // This test should be updated as the backend is able to handle deeper computation
@@ -276,7 +276,7 @@ TEST_F(TestHEBackend, abc_budget)
 
     m_he_backend->call(f, {result}, {a, b, c});
     EXPECT_EQ(read_vector<float>(result),
-            (test::NDArray<float, 2>({{45,120}, {231, 384}})).get_vector());
+              (test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector());
 }
 
 TEST_F(TestHEBackend, abc_plain)
@@ -561,4 +561,3 @@ TEST_F(TestHEBackend, constant_abc)
     EXPECT_EQ(read_vector<float>(result),
               (test::NDArray<float, 2>({{54, 80}, {110, 144}})).get_vector());
 }
-

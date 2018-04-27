@@ -52,12 +52,10 @@ void runtime::he::kernel::add(const vector<shared_ptr<seal::Ciphertext>>& arg0,
                               shared_ptr<HEBackend> he_backend,
                               size_t count)
 {
-    cout << "adding " << count << " elements " << endl;
     for (size_t i = 0; i < count; ++i)
     {
         he_backend.get()->get_evaluator()->add_plain(*arg0[i], *arg1[i], *out[i]);
     }
-    cout << "done adding " << count << " elements " << endl;
 }
 
 void runtime::he::kernel::add(const vector<shared_ptr<seal::Plaintext>>& arg0,

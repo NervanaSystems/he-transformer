@@ -23,7 +23,6 @@
 
 namespace ngraph
 {
-
     namespace element
     {
         class Type;
@@ -84,15 +83,15 @@ namespace ngraph
                     {
                         outer_size++;
                     }
-                    cout << "outer size " << outer_size << endl;
+                    NGRAPH_INFO << "outer size " << outer_size;
 
                     #pragma omp parallel for
-                    for(size_t outer = 0; outer < outer_size; ++outer)
+                    for (size_t outer = 0; outer < outer_size; ++outer)
                     {
                         #pragma omp critical
-                        cout << "outer " << outer << endl;
-                        auto it = arg0_projected_transform.begin();
-                        for(size_t i = 0; i < outer; ++i)
+                        NGRAPH_INFO << "outer " << outer;
+                        auto it = arg0_projected_transform.begin(); // TODO: move to coordinate transform
+                        for (size_t i = 0; i < outer; ++i)
                         {
                             ++it;
                         }
@@ -100,7 +99,7 @@ namespace ngraph
 
                         shared_ptr<HECipherTensorView> prod_tv =
                             static_pointer_cast<HECipherTensorView>(
-                                    he_backend->create_zero_tensor(type, Shape{1}));
+                                he_backend->create_zero_tensor(type, Shape{1}));
                         shared_ptr<seal::Ciphertext> prod = prod_tv->get_element(0);
 
                         for (const Coordinate& arg1_projected_coord : arg1_projected_transform)
@@ -124,26 +123,26 @@ namespace ngraph
 
                             size_t out_index = output_transform.index(out_coord);
 
-                            for( const Coordinate& dot_axis_positions : dot_axes_transform)
-                            {
-                                // Walk along the dotted axes.
-                                Coordinate arg0_coord(arg0_shape.size());
-                                Coordinate arg1_coord(arg1_shape.size());
-                                auto arg0_it = std::copy(arg0_projected_coord.begin(),
-                                        arg0_projected_coord.end(),
-                                        arg0_coord.begin());
+                            // Walk along the dotted axes.
+                            Coordinate arg0_coord(arg0_shape.size());
+                            Coordinate arg1_coord(arg1_shape.size());
+                            auto arg0_it = std::copy(arg0_projected_coord.begin(),
+                                                     arg0_projected_coord.end(),
+                                                     arg0_coord.begin());
 
+                            for (const Coordinate& dot_axis_positions : dot_axes_transform)
+                            {
                                 // In order to find the points to multiply together, we need to inject our current
                                 // positions along the dotted axes back into the projected arg0 and arg1 coordinates.
                                 std::copy(
-                                        dot_axis_positions.begin(), dot_axis_positions.end(), arg0_it);
+                                    dot_axis_positions.begin(), dot_axis_positions.end(), arg0_it);
 
                                 auto arg1_it = std::copy(dot_axis_positions.begin(),
-                                        dot_axis_positions.end(),
-                                        arg1_coord.begin());
+                                                         dot_axis_positions.end(),
+                                                         arg1_coord.begin());
                                 std::copy(arg1_projected_coord.begin(),
-                                        arg1_projected_coord.end(),
-                                        arg1_it);
+                                          arg1_projected_coord.end(),
+                                          arg1_it);
 
                                 // Multiply and add to the sum.
                                 shared_ptr<S> arg0_text = arg0[arg0_transform.index(arg0_coord)];
@@ -151,13 +150,12 @@ namespace ngraph
 
                                 shared_ptr<HECipherTensorView> prod_tv =
                                     static_pointer_cast<HECipherTensorView>(
-                                            he_backend->create_zero_tensor(type, Shape{1}));
+                                        he_backend->create_zero_tensor(type, Shape{1}));
                                 shared_ptr<seal::Ciphertext> prod = prod_tv->get_element(0);
 
                                 ngraph::runtime::he::kernel::multiply(
-                                        arg0_text, arg1_text, prod, he_backend);
+                                    arg0_text, arg1_text, prod, he_backend);
                                 ngraph::runtime::he::kernel::add(sum, prod, sum, he_backend);
-
                             };
 
                             // Write the sum back.
