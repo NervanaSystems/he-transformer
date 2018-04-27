@@ -29,11 +29,23 @@ runtime::he::HEBackend::
 {
     seal::EncryptionParameters parms;
 
-    parms.set_poly_modulus("1x^4096 + 1"); // Suffices for ((A*B)*C)*D
-    parms.set_coeff_modulus(seal::coeff_modulus_128(4096));
-    parms.set_plain_modulus(1 << 10);
-
+    parms.set_poly_modulus("1x^8192 + 1"); // Suffices for ((A*B)*C)*D
+    parms.set_coeff_modulus(seal::coeff_modulus_128(8192));
+    parms.set_plain_modulus(14000);
     m_context = make_shared<seal::SEALContext>(parms);
+
+	cout << "/ Encryption parameters:" << endl;
+	cout << "| poly_modulus: " << m_context->poly_modulus().to_string() << endl;
+
+	/*
+	   Print the size of the true (product) coefficient modulus
+	   */
+	cout << "| coeff_modulus size: "
+		<< m_context->total_coeff_modulus().significant_bit_count() << " bits" << endl;
+
+	cout << "| plain_modulus: " << m_context->plain_modulus().value() << endl;
+
+
     m_int_encoder = make_shared<seal::IntegerEncoder>(m_context->plain_modulus());
     m_frac_encoder = make_shared<seal::FractionalEncoder>(
         m_context->plain_modulus(), m_context->poly_modulus(), 64, 32, 3);
