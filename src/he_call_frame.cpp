@@ -127,6 +127,23 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
 
         generate_calls(base_type, op, inputs, outputs);
 
+        // Check noise budget
+        for (size_t i = 0; i < outputs.size(); ++i)
+        {
+            shared_ptr<HECipherTensorView> out_i =
+                dynamic_pointer_cast<HECipherTensorView>(outputs[i]);
+            if (out_i != nullptr)
+            {
+                for (shared_ptr<seal::Ciphertext> ciphertext : out_i->get_elements())
+                {
+                    if (m_he_backend->noise_budget(ciphertext) <= 0)
+                    {
+                        throw ngraph_error("Noise budget depleted");
+                    }
+                }
+            }
+        }
+
         // Delete any obsolete tensors
         for (const descriptor::Tensor* t : op->liveness_free_list)
         {
@@ -148,40 +165,49 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                               const vector<shared_ptr<HETensorView>>& out)
 {
     string node_op = node->description();
+    shared_ptr<HECipherTensorView> arg0_cipher = nullptr;
+    shared_ptr<HEPlainTensorView> arg0_plain = nullptr;
+    shared_ptr<HECipherTensorView> arg1_cipher = nullptr;
+    shared_ptr<HEPlainTensorView> arg1_plain = nullptr;
+    shared_ptr<HECipherTensorView> out0_cipher = dynamic_pointer_cast<HECipherTensorView>(out[0]);
+    shared_ptr<HEPlainTensorView> out0_plain = dynamic_pointer_cast<HEPlainTensorView>(out[0]);
+
+    if (args.size() > 0)
+    {
+        arg0_cipher = dynamic_pointer_cast<HECipherTensorView>(args[0]);
+        arg0_plain = dynamic_pointer_cast<HEPlainTensorView>(args[0]);
+    }
+    if (args.size() > 1)
+    {
+        arg1_cipher = dynamic_pointer_cast<HECipherTensorView>(args[1]);
+        arg1_plain = dynamic_pointer_cast<HEPlainTensorView>(args[1]);
+    }
 
     if (node_op == "Add")
     {
-        shared_ptr<HECipherTensorView> arg0_cipher =
-            dynamic_pointer_cast<HECipherTensorView>(args[0]);
-        shared_ptr<HECipherTensorView> arg1_cipher =
-            dynamic_pointer_cast<HECipherTensorView>(args[1]);
-        shared_ptr<HEPlainTensorView> arg0_plain = dynamic_pointer_cast<HEPlainTensorView>(args[0]);
-        shared_ptr<HEPlainTensorView> arg1_plain = dynamic_pointer_cast<HEPlainTensorView>(args[1]);
-        shared_ptr<HECipherTensorView> out0 = dynamic_pointer_cast<HECipherTensorView>(out[0]);
-
         if (arg0_cipher != nullptr && arg1_cipher != nullptr)
         {
             runtime::he::kernel::add(arg0_cipher->get_elements(),
                                      arg1_cipher->get_elements(),
-                                     out0->get_elements(),
+                                     out0_cipher->get_elements(),
                                      m_he_backend,
-                                     out0->get_element_count());
+                                     out0_cipher->get_element_count());
         }
         else if (arg0_cipher != nullptr && arg1_plain != nullptr)
         {
             runtime::he::kernel::add(arg0_cipher->get_elements(),
                                      arg1_plain->get_elements(),
-                                     out0->get_elements(),
+                                     out0_cipher->get_elements(),
                                      m_he_backend,
-                                     out0->get_element_count());
+                                     out0_cipher->get_element_count());
         }
         else if (arg0_plain != nullptr && arg1_cipher != nullptr)
         {
             runtime::he::kernel::add(arg0_plain->get_elements(),
                                      arg1_cipher->get_elements(),
-                                     out0->get_elements(),
+                                     out0_cipher->get_elements(),
                                      m_he_backend,
-                                     out0->get_element_count());
+                                     out0_cipher->get_element_count());
         }
         else
         {
@@ -190,16 +216,14 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     }
     else if (node_op == "Constant")
     {
-        shared_ptr<HEPlainTensorView> out0 = dynamic_pointer_cast<HEPlainTensorView>(out[0]);
-
-        if (out0 != nullptr)
+        if (out0_plain != nullptr)
         {
             shared_ptr<op::Constant> constant = static_pointer_cast<op::Constant>(node);
-            runtime::he::kernel::constant(out0->get_elements(),
+            runtime::he::kernel::constant(out0_plain->get_elements(),
                                           type,
                                           constant->get_data_ptr(),
                                           m_he_backend,
-                                          out0->get_element_count());
+                                          out0_plain->get_element_count());
         }
         else
         {
@@ -209,22 +233,15 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     else if (node_op == "Dot")
     {
         shared_ptr<op::Dot> dot = dynamic_pointer_cast<op::Dot>(node);
-        shared_ptr<HECipherTensorView> arg0_cipher =
-            dynamic_pointer_cast<HECipherTensorView>(args[0]);
-        shared_ptr<HECipherTensorView> arg1_cipher =
-            dynamic_pointer_cast<HECipherTensorView>(args[1]);
-        shared_ptr<HEPlainTensorView> arg0_plain = dynamic_pointer_cast<HEPlainTensorView>(args[0]);
-        shared_ptr<HEPlainTensorView> arg1_plain = dynamic_pointer_cast<HEPlainTensorView>(args[1]);
-        shared_ptr<HECipherTensorView> out0 = dynamic_pointer_cast<HECipherTensorView>(out[0]);
 
         if (arg0_cipher != nullptr && arg1_cipher != nullptr)
         {
             runtime::he::kernel::dot(arg0_cipher->get_elements(),
                                      arg1_cipher->get_elements(),
-                                     out0->get_elements(),
+                                     out0_cipher->get_elements(),
                                      arg0_cipher->get_shape(),
                                      arg1_cipher->get_shape(),
-                                     out0->get_shape(),
+                                     out0_cipher->get_shape(),
                                      dot->get_reduction_axes_count(),
                                      type,
                                      m_he_backend);
@@ -233,10 +250,10 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         {
             runtime::he::kernel::dot(arg0_cipher->get_elements(),
                                      arg1_plain->get_elements(),
-                                     out0->get_elements(),
+                                     out0_cipher->get_elements(),
                                      arg0_cipher->get_shape(),
                                      arg1_plain->get_shape(),
-                                     out0->get_shape(),
+                                     out0_cipher->get_shape(),
                                      dot->get_reduction_axes_count(),
                                      type,
                                      m_he_backend);
@@ -245,10 +262,10 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         {
             runtime::he::kernel::dot(arg0_plain->get_elements(),
                                      arg1_cipher->get_elements(),
-                                     out0->get_elements(),
+                                     out0_cipher->get_elements(),
                                      arg0_plain->get_shape(),
                                      arg1_cipher->get_shape(),
-                                     out0->get_shape(),
+                                     out0_cipher->get_shape(),
                                      dot->get_reduction_axes_count(),
                                      type,
                                      m_he_backend);
@@ -260,37 +277,29 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     }
     else if (node_op == "Multiply")
     {
-        shared_ptr<HECipherTensorView> arg0_cipher =
-            dynamic_pointer_cast<HECipherTensorView>(args[0]);
-        shared_ptr<HECipherTensorView> arg1_cipher =
-            dynamic_pointer_cast<HECipherTensorView>(args[1]);
-        shared_ptr<HEPlainTensorView> arg0_plain = dynamic_pointer_cast<HEPlainTensorView>(args[0]);
-        shared_ptr<HEPlainTensorView> arg1_plain = dynamic_pointer_cast<HEPlainTensorView>(args[1]);
-        shared_ptr<HECipherTensorView> out0 = dynamic_pointer_cast<HECipherTensorView>(out[0]);
-
         if (arg0_cipher != nullptr && arg1_cipher != nullptr)
         {
             runtime::he::kernel::multiply(arg0_cipher->get_elements(),
                                           arg1_cipher->get_elements(),
-                                          out0->get_elements(),
+                                          out0_cipher->get_elements(),
                                           m_he_backend,
-                                          out0->get_element_count());
+                                          out0_cipher->get_element_count());
         }
         else if (arg0_cipher != nullptr && arg1_plain != nullptr)
         {
             runtime::he::kernel::multiply(arg0_cipher->get_elements(),
                                           arg1_plain->get_elements(),
-                                          out0->get_elements(),
+                                          out0_cipher->get_elements(),
                                           m_he_backend,
-                                          out0->get_element_count());
+                                          out0_cipher->get_element_count());
         }
         else if (arg0_plain != nullptr && arg1_cipher != nullptr)
         {
             runtime::he::kernel::multiply(arg0_plain->get_elements(),
                                           arg1_cipher->get_elements(),
-                                          out0->get_elements(),
+                                          out0_cipher->get_elements(),
                                           m_he_backend,
-                                          out0->get_element_count());
+                                          out0_cipher->get_element_count());
         }
         else
         {
@@ -300,12 +309,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     else if (node_op == "Result")
     {
         shared_ptr<op::Result> res = dynamic_pointer_cast<op::Result>(node);
-        shared_ptr<HECipherTensorView> arg0_cipher =
-            dynamic_pointer_cast<HECipherTensorView>(args[0]);
-        shared_ptr<HEPlainTensorView> arg0_plain = dynamic_pointer_cast<HEPlainTensorView>(args[0]);
-        shared_ptr<HECipherTensorView> out0_cipher =
-            dynamic_pointer_cast<HECipherTensorView>(out[0]);
-        shared_ptr<HEPlainTensorView> out0_plain = dynamic_pointer_cast<HEPlainTensorView>(out[0]);
 
         if (arg0_cipher != nullptr && out0_cipher != nullptr)
         {
@@ -327,29 +330,21 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     }
     else if (node_op == "Subtract")
     {
-        shared_ptr<HECipherTensorView> arg0_cipher =
-            dynamic_pointer_cast<HECipherTensorView>(args[0]);
-        shared_ptr<HECipherTensorView> arg1_cipher =
-            dynamic_pointer_cast<HECipherTensorView>(args[1]);
-        shared_ptr<HEPlainTensorView> arg0_plain = dynamic_pointer_cast<HEPlainTensorView>(args[0]);
-        shared_ptr<HEPlainTensorView> arg1_plain = dynamic_pointer_cast<HEPlainTensorView>(args[1]);
-        shared_ptr<HECipherTensorView> out0 = dynamic_pointer_cast<HECipherTensorView>(out[0]);
-
         if (arg0_cipher != nullptr && arg1_cipher != nullptr)
         {
             runtime::he::kernel::subtract(arg0_cipher->get_elements(),
                                           arg1_cipher->get_elements(),
-                                          out0->get_elements(),
+                                          out0_cipher->get_elements(),
                                           m_he_backend,
-                                          out0->get_element_count());
+                                          out0_cipher->get_element_count());
         }
         else if (arg0_cipher != nullptr && arg1_plain != nullptr)
         {
             runtime::he::kernel::subtract(arg0_cipher->get_elements(),
                                           arg1_plain->get_elements(),
-                                          out0->get_elements(),
+                                          out0_cipher->get_elements(),
                                           m_he_backend,
-                                          out0->get_element_count());
+                                          out0_cipher->get_element_count());
         } // TODO: enable (plain, cipher) case
         else
         {
