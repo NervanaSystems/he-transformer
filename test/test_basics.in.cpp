@@ -196,6 +196,28 @@ TEST_F(TestHEBackend, abc)
               (test::NDArray<float, 2>({{50, 72}, {98, 128}})).get_vector());
 }
 
+// This test should be updated as the backend is able to handle deeper computation
+TEST_F(TestHEBackend, abc_budget)
+{
+    Shape shape{2, 2};
+    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto C = make_shared<op::Parameter>(element::f32, shape);
+    auto f = make_shared<Function>((A * B) * C, op::ParameterVector{A, B, C});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape);
+    auto b = m_he_backend->create_tensor(element::f32, shape);
+    auto c = m_he_backend->create_tensor(element::f32, shape);
+    auto result = m_he_backend->create_tensor(element::f32, shape);
+
+    copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
+    copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
+    copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
+
+    EXPECT_ANY_THROW(m_he_backend->call(f, {result}, {a, b, c}));
+}
+
 TEST_F(TestHEBackend, abc_plain)
 {
     Shape shape{2, 2};
