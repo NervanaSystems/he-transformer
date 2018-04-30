@@ -83,13 +83,10 @@ namespace ngraph
                     {
                         outer_size++;
                     }
-                    NGRAPH_INFO << "outer size " << outer_size;
 
                     #pragma omp parallel for
                     for (size_t outer = 0; outer < outer_size; ++outer)
                     {
-                        #pragma omp critical
-                        NGRAPH_INFO << "outer " << outer;
                         auto it = arg0_projected_transform.begin(); // TODO: move to coordinate transform
                         for (size_t i = 0; i < outer; ++i)
                         {

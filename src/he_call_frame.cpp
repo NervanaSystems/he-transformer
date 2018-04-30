@@ -125,6 +125,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
             base_type = op->get_inputs().at(0).get_tensor().get_element_type();
         }
 
+        NGRAPH_INFO << "Op " << op->get_name();
         generate_calls(base_type, op, inputs, outputs);
 
         // Delete any obsolete tensors
