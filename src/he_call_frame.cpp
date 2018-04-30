@@ -22,11 +22,13 @@
 #include "he_plain_tensor_view.hpp"
 #include "he_tensor_view.hpp"
 #include "kernel/add.hpp"
+#include "kernel/broadcast.hpp"
 #include "kernel/constant.hpp"
 #include "kernel/dot.hpp"
 #include "kernel/multiply.hpp"
 #include "kernel/result.hpp"
 #include "kernel/subtract.hpp"
+#include "ngraph/op/broadcast.hpp"
 #include "ngraph/op/constant.hpp"
 #include "ngraph/op/dot.hpp"
 
@@ -125,24 +127,8 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
             base_type = op->get_inputs().at(0).get_tensor().get_element_type();
         }
 
+        NGRAPH_INFO << "Op " << op->get_name();
         generate_calls(base_type, op, inputs, outputs);
-
-        // Check noise budget
-        for (size_t i = 0; i < outputs.size(); ++i)
-        {
-            shared_ptr<HECipherTensorView> out_i =
-                dynamic_pointer_cast<HECipherTensorView>(outputs[i]);
-            if (out_i != nullptr)
-            {
-                for (shared_ptr<seal::Ciphertext> ciphertext : out_i->get_elements())
-                {
-                    if (m_he_backend->noise_budget(ciphertext) <= 0)
-                    {
-                        throw ngraph_error("Noise budget depleted");
-                    }
-                }
-            }
-        }
 
         // Delete any obsolete tensors
         for (const descriptor::Tensor* t : op->liveness_free_list)
@@ -157,6 +143,25 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
             }
         }
     }
+    // Check noise budget
+    NGRAPH_INFO << "Checking noise budget ";
+    #pragma omp parallel for
+    for (size_t i = 0; i < output_tvs.size(); ++i)
+    {
+        shared_ptr<HECipherTensorView> out_i =
+            dynamic_pointer_cast<HECipherTensorView>(output_tvs[i]);
+        if (out_i != nullptr)
+        {
+            for (shared_ptr<seal::Ciphertext> ciphertext : out_i->get_elements())
+            {
+                if (m_he_backend->noise_budget(ciphertext) <= 0)
+                {
+                    throw ngraph_error("Noise budget depleted");
+                }
+            }
+        }
+    }
+    NGRAPH_INFO << "Done checking noise budget ";
 }
 
 void runtime::he::HECallFrame::generate_calls(const element::Type& type,
@@ -232,6 +237,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     }
     else if (node_op == "Dot")
     {
+        NGRAPH_INFO << "dot ";
         shared_ptr<op::Dot> dot = dynamic_pointer_cast<op::Dot>(node);
 
         if (arg0_cipher != nullptr && arg1_cipher != nullptr)
@@ -349,6 +355,27 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         else
         {
             throw ngraph_error("Subtract types not supported.");
+        }
+    }
+    else if (node_op == "Broadcast")
+    {
+        shared_ptr<op::Broadcast> broadcast = dynamic_pointer_cast<op::Broadcast>(node);
+        AxisSet broadcast_axes = broadcast->get_broadcast_axes();
+
+        if (arg0_cipher != nullptr && out0_cipher != nullptr)
+        {
+            Shape in_shape = arg0_cipher->get_shape();
+            Shape out_shape = out0_cipher->get_shape();
+            runtime::he::kernel::broadcast(arg0_cipher->get_elements(),
+                    out0_cipher->get_elements(),
+                    in_shape,
+                    out_shape,
+                    broadcast_axes);
+        }
+        // TODO: enable (plain, cipher) and (plain, plain) cases
+        else
+        {
+            throw ngraph_error("Result types not supported.");
         }
     }
     else
