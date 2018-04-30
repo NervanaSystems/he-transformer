@@ -31,7 +31,7 @@ runtime::he::HEBackend::
 
     parms.set_poly_modulus("1x^8192 + 1"); // Suffices for ((A*B)*C)*D
     parms.set_coeff_modulus(seal::coeff_modulus_128(8192));
-    parms.set_plain_modulus(14000);
+    parms.set_plain_modulus(50000);
     m_context = make_shared<seal::SEALContext>(parms);
 
     NGRAPH_INFO << "/ Encryption parameters:";

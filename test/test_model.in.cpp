@@ -90,7 +90,6 @@ TEST_F(TestHEBackend, tf_mnist_const_1_int)
             read_vector<int64_t>(result_tvs[0]));
 }
 
-// TODO: Need to tune parameters so this test passes
 TEST_F(TestHEBackend, tf_mnist_const_5)
 {
     auto backend = runtime::Backend::create("HE");
