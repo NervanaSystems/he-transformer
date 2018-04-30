@@ -15,27 +15,38 @@
 *******************************************************************************/
 
 #include <vector>
-// #include <cmath>
 
-#include "kernel/broadcast.hpp"
+#include "kernel/reshape.hpp"
+#include "ngraph/axis_vector.hpp"
 #include "ngraph/coordinate_transform.hpp"
 #include "seal/seal.h"
 
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::broadcast(const vector<shared_ptr<seal::Ciphertext>>& arg,
-                                    vector<shared_ptr<seal::Ciphertext>>& out,
-                                    Shape& in_shape,
-                                    Shape& out_shape,
-                                    AxisSet& broadcast_axes)
+void runtime::he::kernel::reshape(const vector<shared_ptr<seal::Ciphertext>>& arg,
+                                  vector<shared_ptr<seal::Ciphertext>>& out,
+                                  const Shape& in_shape,
+                                  const AxisVector& in_axis_order,
+                                  const Shape& out_shape)
 {
-    CoordinateTransform input_transform(in_shape);
+    // Unfortunately we don't yet have a constructor for CoordinateTransform that lets us pass only source_space_shape
+    // and source_axis_order so we have to construct the defaults here.
+    Shape in_start_corner(in_shape.size(), 0); // (0,...0)
+    Strides in_strides(in_shape.size(), 1);    // (1,...,1)
+
+    CoordinateTransform input_transform(
+        in_shape, in_start_corner, in_shape, in_strides, in_axis_order);
+
     CoordinateTransform output_transform(out_shape);
-    for (const Coordinate& output_coord : output_transform)
+    CoordinateTransform::Iterator output_it = output_transform.begin();
+
+    for (const Coordinate& input_coord : input_transform)
     {
-        Coordinate input_coord = project(output_coord, broadcast_axes);
+        const Coordinate& output_coord = *output_it;
 
         out[output_transform.index(output_coord)] = arg[input_transform.index(input_coord)];
+
+        ++output_it;
     }
 }

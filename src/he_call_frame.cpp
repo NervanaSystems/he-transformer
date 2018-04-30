@@ -26,11 +26,13 @@
 #include "kernel/constant.hpp"
 #include "kernel/dot.hpp"
 #include "kernel/multiply.hpp"
+#include "kernel/reshape.hpp"
 #include "kernel/result.hpp"
 #include "kernel/subtract.hpp"
 #include "ngraph/op/broadcast.hpp"
 #include "ngraph/op/constant.hpp"
 #include "ngraph/op/dot.hpp"
+#include "ngraph/op/reshape.hpp"
 
 using namespace std;
 using namespace ngraph;
@@ -145,7 +147,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
     }
     // Check noise budget
     NGRAPH_INFO << "Checking noise budget ";
-    #pragma omp parallel for
+#pragma omp parallel for
     for (size_t i = 0; i < output_tvs.size(); ++i)
     {
         shared_ptr<HECipherTensorView> out_i =
@@ -312,6 +314,23 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
             throw ngraph_error("Multiply types not supported.");
         }
     }
+    else if (node_op == "Reshape")
+    {
+        shared_ptr<op::Reshape> reshape = dynamic_pointer_cast<op::Reshape>(node);
+
+        if (arg0_cipher != nullptr && out0_cipher != nullptr)
+        {
+            runtime::he::kernel::reshape(arg0_cipher->get_elements(),
+                                         out0_cipher->get_elements(),
+                                         arg0_cipher->get_shape(),
+                                         reshape->get_input_order(),
+                                         out0_cipher->get_shape());
+        }
+        else
+        {
+            throw ngraph_error("Reshape types not supported.");
+        }
+    }
     else if (node_op == "Result")
     {
         shared_ptr<op::Result> res = dynamic_pointer_cast<op::Result>(node);
@@ -367,10 +386,10 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
             Shape in_shape = arg0_cipher->get_shape();
             Shape out_shape = out0_cipher->get_shape();
             runtime::he::kernel::broadcast(arg0_cipher->get_elements(),
-                    out0_cipher->get_elements(),
-                    in_shape,
-                    out_shape,
-                    broadcast_axes);
+                                           out0_cipher->get_elements(),
+                                           in_shape,
+                                           out_shape,
+                                           broadcast_axes);
         }
         // TODO: enable (plain, cipher) and (plain, plain) cases
         else

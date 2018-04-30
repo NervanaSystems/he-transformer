@@ -49,7 +49,7 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
     size_t type_byte_size = type.size();
     size_t dst_start_index = tensor_offset / type_byte_size;
     size_t num_elements_to_write = n / type_byte_size;
-    #pragma omp parallel for
+#pragma omp parallel for
     for (size_t i = 0; i < num_elements_to_write; ++i)
     {
         const void* src_with_offset = (void*)((char*)source + i * type.size());
