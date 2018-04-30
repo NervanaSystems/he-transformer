@@ -30,10 +30,10 @@ TEST_F(TestHEBackend, tf_mnist_const_1)
         auto& shape = parameter->get_shape();
         auto& type = parameter->get_element_type();
         auto parameter_tv = backend->create_tensor(type, shape);
-        NGRAPH_INFO << "created tensor " << endl;
-        NGRAPH_INFO << "elements " << shape_size(shape) << endl;
+        NGRAPH_INFO << "created tensor ";
+        NGRAPH_INFO << "elements " << shape_size(shape);
         copy_data(parameter_tv, vector<float>(shape_size(shape)));
-        NGRAPH_INFO << "copied " << shape_size(shape) << endl;
+        NGRAPH_INFO << "copied " << shape_size(shape);
         parameter_tvs.push_back(parameter_tv);
     }
 
@@ -46,7 +46,7 @@ TEST_F(TestHEBackend, tf_mnist_const_1)
         result_tvs.push_back(backend->create_tensor(type, shape));
     }
 
-    NGRAPH_INFO << "calling function " << endl;
+    NGRAPH_INFO << "calling function ";
     backend->call(f, result_tvs, parameter_tvs);
 
     EXPECT_EQ((vector<float>{2173, 944, 1151, 1723, -1674, 569, -1985, 9776, -4997, -1903}),
@@ -68,10 +68,10 @@ TEST_F(TestHEBackend, tf_mnist_const_5)
         auto& shape = parameter->get_shape();
         auto& type = parameter->get_element_type();
         auto parameter_tv = backend->create_tensor(type, shape);
-        NGRAPH_INFO << "created tensor " << endl;
-        NGRAPH_INFO << "elements " << shape_size(shape) << endl;
+        NGRAPH_INFO << "created tensor ";
+        NGRAPH_INFO << "elements " << shape_size(shape);
         copy_data(parameter_tv, vector<float>(shape_size(shape)));
-        NGRAPH_INFO << "copied " << shape_size(shape) << endl;
+        NGRAPH_INFO << "copied " << shape_size(shape);
         parameter_tvs.push_back(parameter_tv);
     }
 
@@ -85,7 +85,7 @@ TEST_F(TestHEBackend, tf_mnist_const_5)
         result_tvs.push_back(backend->create_tensor(type, shape));
     }
 
-    NGRAPH_INFO << "calling function " << endl;
+    NGRAPH_INFO << "calling function ";
     backend->call(f, result_tvs, parameter_tvs);
 
     EXPECT_EQ(

@@ -142,7 +142,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
     }
     // Check noise budget
     NGRAPH_INFO << "Checking noise budget ";
-#pragma omp parallel
+    #pragma omp parallel for
     for (size_t i = 0; i < output_tvs.size(); ++i)
     {
         shared_ptr<HECipherTensorView> out_i =
