@@ -22,11 +22,13 @@
 #include "he_plain_tensor_view.hpp"
 #include "he_tensor_view.hpp"
 #include "kernel/add.hpp"
+#include "kernel/broadcast.hpp"
 #include "kernel/constant.hpp"
 #include "kernel/dot.hpp"
 #include "kernel/multiply.hpp"
 #include "kernel/result.hpp"
 #include "kernel/subtract.hpp"
+#include "ngraph/op/broadcast.hpp"
 #include "ngraph/op/constant.hpp"
 #include "ngraph/op/dot.hpp"
 
@@ -353,6 +355,27 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         else
         {
             throw ngraph_error("Subtract types not supported.");
+        }
+    }
+    else if (node_op == "Broadcast")
+    {
+        shared_ptr<op::Broadcast> broadcast = dynamic_pointer_cast<op::Broadcast>(node);
+        AxisSet broadcast_axes = broadcast->get_broadcast_axes();
+
+        if (arg0_cipher != nullptr && out0_cipher != nullptr)
+        {
+            Shape in_shape = arg0_cipher->get_shape();
+            Shape out_shape = out0_cipher->get_shape();
+            runtime::he::kernel::broadcast(arg0_cipher->get_elements(),
+                    out0_cipher->get_elements(),
+                    in_shape,
+                    out_shape,
+                    broadcast_axes);
+        }
+        // TODO: enable (plain, cipher) and (plain, plain) cases
+        else
+        {
+            throw ngraph_error("Result types not supported.");
         }
     }
     else
