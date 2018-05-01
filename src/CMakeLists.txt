@@ -28,6 +28,7 @@ set (HE_SRC
     he_manager.cpp
     kernel/add.cpp
     kernel/broadcast.cpp
+    kernel/concat.cpp
     kernel/dot.cpp
     kernel/constant.cpp
     kernel/multiply.cpp
