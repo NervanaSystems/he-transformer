@@ -26,12 +26,14 @@
 #include "kernel/constant.hpp"
 #include "kernel/dot.hpp"
 #include "kernel/multiply.hpp"
+#include "kernel/one_hot.hpp"
 #include "kernel/reshape.hpp"
 #include "kernel/result.hpp"
 #include "kernel/subtract.hpp"
 #include "ngraph/op/broadcast.hpp"
 #include "ngraph/op/constant.hpp"
 #include "ngraph/op/dot.hpp"
+#include "ngraph/op/one_hot.hpp"
 #include "ngraph/op/reshape.hpp"
 
 using namespace std;
@@ -312,6 +314,25 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         else
         {
             throw ngraph_error("Multiply types not supported.");
+        }
+    }
+    else if (node_op == "OneHot")
+    {
+        shared_ptr<op::OneHot> oh = dynamic_pointer_cast<op::OneHot>(node);
+
+        if (arg0_cipher != nullptr && out0_cipher != nullptr)
+        {
+            runtime::he::kernel::one_hot(arg0_cipher->get_elements(),
+                    out0_cipher->get_elements(),
+                    arg0_cipher->get_shape(),
+                    out0_cipher->get_shape(),
+                    oh->get_one_hot_axis(),
+                    type,
+                    m_he_backend);
+        }
+        else
+        {
+            throw ngraph_error("OneHot types not supported.");
         }
     }
     else if (node_op == "Reshape")

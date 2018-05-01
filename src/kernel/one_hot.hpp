@@ -21,6 +21,10 @@
 
 namespace ngraph
 {
+    namespace element
+    {
+        class Type;
+    }
     namespace runtime
     {
         namespace he
@@ -29,11 +33,13 @@ namespace ngraph
 
             namespace kernel
             {
-                void broadcast(const vector<shared_ptr<seal::Ciphertext>>& arg0,
+                void one_hot(const vector<shared_ptr<seal::Ciphertext>>& arg,
                                vector<shared_ptr<seal::Ciphertext>>& out,
                                const Shape& in_shape,
                                const Shape& out_shape,
-                               const AxisSet& broadcast_axes);
+                               size_t one_hot_axis,
+                               const element::Type& type,
+                               shared_ptr<HEBackend>& he_backend);
             }
         }
     }

@@ -15,7 +15,6 @@
 *******************************************************************************/
 
 #include <vector>
-// #include <cmath>
 
 #include "kernel/broadcast.hpp"
 #include "ngraph/coordinate_transform.hpp"
@@ -26,9 +25,9 @@ using namespace ngraph;
 
 void runtime::he::kernel::broadcast(const vector<shared_ptr<seal::Ciphertext>>& arg,
                                     vector<shared_ptr<seal::Ciphertext>>& out,
-                                    Shape& in_shape,
-                                    Shape& out_shape,
-                                    AxisSet& broadcast_axes)
+                                    const Shape& in_shape,
+                                    const Shape& out_shape,
+                                    const AxisSet& broadcast_axes)
 {
     CoordinateTransform input_transform(in_shape);
     CoordinateTransform output_transform(out_shape);

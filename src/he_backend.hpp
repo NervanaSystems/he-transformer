@@ -52,6 +52,10 @@ namespace ngraph
 
                 std::shared_ptr<runtime::TensorView>
                     create_zero_tensor(const element::Type& element_type, const Shape& shape);
+                std::shared_ptr<runtime::TensorView>
+                    create_ones_tensor(const element::Type& element_type, const Shape& shape);
+                std::shared_ptr<runtime::TensorView>
+                    create_constant_tensor(const element::Type& element_type, const Shape& shape, size_t element);
 
                 std::shared_ptr<runtime::TensorView>
                     create_tensor(const element::Type& element_type,

@@ -31,6 +31,7 @@ set (HE_SRC
     kernel/dot.cpp
     kernel/constant.cpp
     kernel/multiply.cpp
+    kernel/one_hot.cpp
     kernel/reshape.cpp
     kernel/result.cpp
     kernel/subtract.cpp
