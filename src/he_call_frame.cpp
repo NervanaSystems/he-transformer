@@ -412,10 +412,27 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                            out_shape,
                                            broadcast_axes);
         }
+        else if (arg0_cipher != nullptr && out0_plain != nullptr)
+        {
+            NGRAPH_INFO << "broadcast cipher plain ";
+            throw ngraph_error("Broadcast types not supported.");
+        }
+        else if (arg0_plain != nullptr && out0_cipher != nullptr)
+        {
+            NGRAPH_INFO << "broadcast plain cipher";
+            Shape in_shape = arg0_plain->get_shape();
+            Shape out_shape = out0_cipher->get_shape();
+            runtime::he::kernel::broadcast(arg0_plain->get_elements(),
+                                           out0_cipher->get_elements(),
+                                           in_shape,
+                                           out_shape,
+                                           broadcast_axes,
+                                           m_he_backend);
+        }
         // TODO: enable (plain, cipher) and (plain, plain) cases
         else
         {
-            throw ngraph_error("Result types not supported.");
+            throw ngraph_error("Broadcast types not supported.");
         }
     }
     else

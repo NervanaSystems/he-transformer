@@ -579,6 +579,23 @@ TEST_F(TestHEBackend, broadcast_scalar_vector)
     EXPECT_EQ((vector<float>{6, 6, 6, 6}), read_vector<float>(result));
 }
 
+TEST_F(TestHEBackend, broadcast_scalar_vector_plain)
+{
+    Shape shape_a{};
+    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    Shape shape_r{4};
+    auto f = make_shared<Function>(make_shared<op::Broadcast>(A, shape_r, AxisSet{0}),
+                                   op::ParameterVector{A});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_plain_tensor(element::f32, shape_a);
+    copy_data(a, vector<float>{6});
+    auto result = m_he_backend->create_tensor(element::f32, shape_r);
+
+    m_he_backend->call(f, {result}, {a});
+    EXPECT_EQ((vector<float>{6, 6, 6, 6}), read_vector<float>(result));
+}
+
 TEST_F(TestHEBackend, broadcast_to_non_existent_axis)
 {
     Shape shape_a{};

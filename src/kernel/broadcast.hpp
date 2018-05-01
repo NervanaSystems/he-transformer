@@ -34,6 +34,13 @@ namespace ngraph
                                const Shape& in_shape,
                                const Shape& out_shape,
                                const AxisSet& broadcast_axes);
+
+                void broadcast(const vector<shared_ptr<seal::Plaintext>>& arg0,
+                               vector<shared_ptr<seal::Ciphertext>>& out,
+                               const Shape& in_shape,
+                               const Shape& out_shape,
+                               const AxisSet& broadcast_axes,
+                               shared_ptr<HEBackend> he_backend);
             }
         }
     }

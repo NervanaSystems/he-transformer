@@ -137,7 +137,7 @@ TEST_F(TestHEBackend, tf_mnist_const_5)
 TEST_F(TestHEBackend, tf_ptb_const_1)
 {
     auto backend = runtime::Backend::create("HE");
-    const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, "ptb_rnn_const_1_inputs.js");
+    const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, "ptb_rnn_const_2_2_3.js");
     const string json_string = file_util::read_file_to_string(json_path);
     shared_ptr<Function> f = deserialize(json_string);
 

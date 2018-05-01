@@ -16,6 +16,7 @@
 
 #include <vector>
 
+#include "he_backend.hpp"
 #include "kernel/broadcast.hpp"
 #include "ngraph/coordinate_transform.hpp"
 #include "seal/seal.h"
@@ -36,5 +37,24 @@ void runtime::he::kernel::broadcast(const vector<shared_ptr<seal::Ciphertext>>& 
         Coordinate input_coord = project(output_coord, broadcast_axes);
 
         out[output_transform.index(output_coord)] = arg[input_transform.index(input_coord)];
+    }
+}
+
+void runtime::he::kernel::broadcast(const vector<shared_ptr<seal::Plaintext>>& arg,
+                                    vector<shared_ptr<seal::Ciphertext>>& out,
+                                    const Shape& in_shape,
+                                    const Shape& out_shape,
+                                    const AxisSet& broadcast_axes,
+                                    shared_ptr<HEBackend> he_backend)
+{
+    CoordinateTransform input_transform(in_shape);
+    CoordinateTransform output_transform(out_shape);
+    for (const Coordinate& output_coord : output_transform)
+    {
+        Coordinate input_coord = project(output_coord, broadcast_axes);
+
+        seal::Ciphertext c;
+        he_backend->encrypt(c, *arg[input_transform.index(input_coord)]);
+        out[output_transform.index(output_coord)] = make_shared<seal::Ciphertext>(c);
     }
 }
