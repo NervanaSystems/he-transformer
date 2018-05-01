@@ -29,12 +29,14 @@
 #include "kernel/one_hot.hpp"
 #include "kernel/reshape.hpp"
 #include "kernel/result.hpp"
+#include "kernel/slice.hpp"
 #include "kernel/subtract.hpp"
 #include "ngraph/op/broadcast.hpp"
 #include "ngraph/op/constant.hpp"
 #include "ngraph/op/dot.hpp"
 #include "ngraph/op/one_hot.hpp"
 #include "ngraph/op/reshape.hpp"
+#include "ngraph/op/slice.hpp"
 
 using namespace std;
 using namespace ngraph;
@@ -241,7 +243,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     }
     else if (node_op == "Dot")
     {
-        NGRAPH_INFO << "dot ";
         shared_ptr<op::Dot> dot = dynamic_pointer_cast<op::Dot>(node);
 
         if (arg0_cipher != nullptr && arg1_cipher != nullptr)
@@ -372,6 +373,24 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         else
         {
             throw ngraph_error("Result types not supported.");
+        }
+    }
+    else if (node_op == "Slice")
+    {
+        shared_ptr<op::Slice> slice = dynamic_pointer_cast<op::Slice>(node);
+        if (arg0_cipher != nullptr && out0_cipher != nullptr)
+        {
+            runtime::he::kernel::slice(arg0_cipher->get_elements(),
+                                       out0_cipher->get_elements(),
+                                       arg0_cipher->get_shape(),
+                                       slice->get_lower_bounds(),
+                                       slice->get_upper_bounds(),
+                                       slice->get_strides(),
+                                       out0_cipher->get_shape());
+        }
+        else
+        {
+            throw ngraph_error("Slice types not supported.");
         }
     }
     else if (node_op == "Subtract")

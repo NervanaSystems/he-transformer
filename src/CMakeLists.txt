@@ -34,6 +34,7 @@ set (HE_SRC
     kernel/one_hot.cpp
     kernel/reshape.cpp
     kernel/result.cpp
+    kernel/slice.cpp
     kernel/subtract.cpp
 )
 

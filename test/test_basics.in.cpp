@@ -1294,3 +1294,140 @@ TEST_F(TestHEBackend, one_hot_vector_1_fp_nonint)
         FAIL() << "Expected a std::out_of_range exception";
     }
 }
+
+TEST_F(TestHEBackend, slice_scalar)
+{
+    Shape shape_a{};
+    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    Shape shape_r{};
+    auto r = make_shared<op::Slice>(A, Coordinate{}, Coordinate{});
+    auto f = make_shared<Function>(r, op::ParameterVector{A});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape_a);
+    copy_data(a, vector<float>{312});
+    auto result = m_he_backend->create_tensor(element::f32, shape_r);
+
+    m_he_backend->call(f, {result}, {a});
+    EXPECT_EQ((vector<float>{312}), read_vector<float>(result));
+}
+
+TEST_F(TestHEBackend, slice_matrix)
+{
+    Shape shape_a{4, 4};
+    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    Shape shape_r{3, 2};
+    auto r = make_shared<op::Slice>(A, Coordinate{0, 1}, Coordinate{3, 3});
+    auto f = make_shared<Function>(r, op::ParameterVector{A});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape_a);
+    copy_data(a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
+    auto result = m_he_backend->create_tensor(element::f32, shape_r);
+
+    m_he_backend->call(f, {result}, {a});
+    EXPECT_EQ((vector<float>{2, 3, 6, 7, 10, 11}), read_vector<float>(result));
+}
+
+TEST_F(TestHEBackend, slice_vector)
+{
+    Shape shape_a{16};
+    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    Shape shape_r{12};
+    auto r = make_shared<op::Slice>(A, Coordinate{2}, Coordinate{14});
+    auto f = make_shared<Function>(r, op::ParameterVector{A});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape_a);
+    copy_data(a, vector<float>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15});
+    auto result = m_he_backend->create_tensor(element::f32, shape_r);
+
+    m_he_backend->call(f, {result}, {a});
+    EXPECT_EQ((vector<float>{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}), read_vector<float>(result));
+}
+
+TEST_F(TestHEBackend, slice_matrix_strided)
+{
+    Shape shape_a{4, 4};
+    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    Shape shape_r{2, 2};
+    auto r = make_shared<op::Slice>(A, Coordinate{1, 0}, Coordinate{4, 4}, Strides{2, 3});
+    auto f = make_shared<Function>(r, op::ParameterVector{A});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape_a);
+    copy_data(a, vector<float>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15});
+    auto result = m_he_backend->create_tensor(element::f32, shape_r);
+
+    m_he_backend->call(f, {result}, {a});
+    EXPECT_EQ((vector<float>{4, 7, 12, 15}), read_vector<float>(result));
+}
+
+TEST_F(TestHEBackend, slice_3d)
+{
+    Shape shape_a{4, 4, 4};
+    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    Shape shape_r{2, 2, 2};
+    auto r = make_shared<op::Slice>(A, Coordinate{1, 1, 1}, Coordinate{3, 3, 3});
+    auto f = make_shared<Function>(r, op::ParameterVector{A});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape_a);
+    copy_data(a, vector<float>{0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15,
+
+                               16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+
+                               32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
+
+                               48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63});
+    auto result = m_he_backend->create_tensor(element::f32, shape_r);
+
+    m_he_backend->call(f, {result}, {a});
+    EXPECT_EQ((vector<float>{21, 22, 25, 26, 37, 38, 41, 42}), read_vector<float>(result));
+}
+
+TEST_F(TestHEBackend, slice_3d_strided)
+{
+    Shape shape_a{4, 4, 4};
+    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    Shape shape_r{2, 2, 2};
+    auto r = make_shared<op::Slice>(A, Coordinate{0, 0, 0}, Coordinate{4, 4, 4}, Strides{2, 2, 2});
+    auto f = make_shared<Function>(r, op::ParameterVector{A});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape_a);
+    copy_data(a, vector<float>{0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15,
+
+                               16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+
+                               32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
+
+                               48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63});
+    auto result = m_he_backend->create_tensor(element::f32, shape_r);
+
+    m_he_backend->call(f, {result}, {a});
+    EXPECT_EQ((vector<float>{0, 2, 8, 10, 32, 34, 40, 42}), read_vector<float>(result));
+}
+
+TEST_F(TestHEBackend, slice_3d_strided_different_strides)
+{
+    Shape shape_a{4, 4, 4};
+    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    Shape shape_r{2, 2, 2};
+    auto r = make_shared<op::Slice>(A, Coordinate{0, 0, 0}, Coordinate{4, 4, 4}, Strides{2, 2, 3});
+    auto f = make_shared<Function>(r, op::ParameterVector{A});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape_a);
+    copy_data(a, vector<float>{0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15,
+
+                               16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+
+                               32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
+
+                               48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63});
+    auto result = m_he_backend->create_tensor(element::f32, shape_r);
+
+    m_he_backend->call(f, {result}, {a});
+    EXPECT_EQ((vector<float>{0, 3, 8, 11, 32, 35, 40, 43}), read_vector<float>(result));
+}
