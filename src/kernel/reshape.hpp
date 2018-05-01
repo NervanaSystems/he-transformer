@@ -17,6 +17,7 @@
 #pragma once
 
 #include "seal/seal.h"
+#include "ngraph/coordinate_transform.hpp"
 
 namespace ngraph
 {
