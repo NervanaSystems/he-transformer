@@ -83,9 +83,8 @@ shared_ptr<runtime::TensorView>
     return static_pointer_cast<runtime::TensorView>(rc);
 }
 
-    shared_ptr<runtime::TensorView>
-runtime::he::HEBackend::create_constant_tensor(const element::Type& element_type,
-        const Shape& shape, size_t element)
+shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_constant_tensor(
+    const element::Type& element_type, const Shape& shape, size_t element)
 {
     shared_ptr<runtime::TensorView> tensor = create_tensor(element_type, shape);
     shared_ptr<runtime::he::HECipherTensorView> cipher_tensor =
@@ -139,8 +138,8 @@ shared_ptr<runtime::TensorView>
 }
 
 shared_ptr<runtime::TensorView>
-runtime::he::HEBackend::create_ones_tensor(const element::Type& element_type,
-        const Shape& shape)
+    runtime::he::HEBackend::create_ones_tensor(const element::Type& element_type,
+                                               const Shape& shape)
 {
     return create_constant_tensor(element_type, shape, 1);
 }

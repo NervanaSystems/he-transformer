@@ -56,7 +56,8 @@ TEST_F(TestHEBackend, tf_mnist_const_1)
 TEST_F(TestHEBackend, tf_mnist_const_1_int)
 {
     auto backend = runtime::Backend::create("HE");
-    const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, "mnist_mlp_const_1_inputs_int.js");
+    const string json_path =
+        file_util::path_join(HE_SERIALIZED_ZOO, "mnist_mlp_const_1_inputs_int.js");
     const string json_string = file_util::read_file_to_string(json_path);
     shared_ptr<Function> f = deserialize(json_string);
 
@@ -87,7 +88,7 @@ TEST_F(TestHEBackend, tf_mnist_const_1_int)
     backend->call(f, result_tvs, parameter_tvs);
 
     EXPECT_EQ((vector<int64_t>{2173, 944, 1151, 1723, -1674, 569, -1985, 9776, -4997, -1903}),
-            read_vector<int64_t>(result_tvs[0]));
+              read_vector<int64_t>(result_tvs[0]));
 }
 
 TEST_F(TestHEBackend, tf_mnist_const_5)
@@ -131,4 +132,41 @@ TEST_F(TestHEBackend, tf_mnist_const_5)
                        -1985, 2383,  -1781, 8035,   1183,   9776,  -4648,  620,   1244,  768,
                        -4997, 1847,  -8089, -12449, -11285, -1903, -8727,  -1791, -4979, 3849}),
         read_vector<float>(result_tvs[0]));
+}
+
+TEST_F(TestHEBackend, tf_ptb_const_1)
+{
+    auto backend = runtime::Backend::create("HE");
+    const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, "ptb_rnn_const_1_inputs.js");
+    const string json_string = file_util::read_file_to_string(json_path);
+    shared_ptr<Function> f = deserialize(json_string);
+
+    auto parameters = f->get_parameters();
+    vector<shared_ptr<runtime::TensorView>> parameter_tvs;
+    for (auto parameter : parameters)
+    {
+        auto& shape = parameter->get_shape();
+        auto& type = parameter->get_element_type();
+        auto parameter_tv = backend->create_tensor(type, shape);
+        NGRAPH_INFO << "created tensor ";
+        NGRAPH_INFO << "elements " << shape_size(shape);
+        copy_data(parameter_tv, vector<float>(shape_size(shape)));
+        NGRAPH_INFO << "copied " << shape_size(shape);
+        parameter_tvs.push_back(parameter_tv);
+    }
+
+    auto results = f->get_results();
+    vector<shared_ptr<runtime::TensorView>> result_tvs;
+    for (auto result : results)
+    {
+        auto& shape = result->get_shape();
+        auto& type = result->get_element_type();
+        result_tvs.push_back(backend->create_tensor(type, shape));
+    }
+
+    NGRAPH_INFO << "calling function ";
+    backend->call(f, result_tvs, parameter_tvs);
+
+    EXPECT_EQ((vector<float>{2173, 944, 1151, 1723, -1674, 569, -1985, 9776, -4997, -1903}),
+              read_vector<float>(result_tvs[0]));
 }

@@ -1010,12 +1010,12 @@ TEST_F(TestHEBackend, one_hot_scalar_2_in_3)
 
     // Create some tensors for input/output
     auto a = m_he_backend->create_tensor(element::i64, shape_a);
-    NGRAPH_INFO  << "created tensor, copying";
+    NGRAPH_INFO << "created tensor, copying";
     copy_data(a, vector<int64_t>{2});
     auto result = m_he_backend->create_tensor(element::i64, shape_r);
-    NGRAPH_INFO  << "calling ";
+    NGRAPH_INFO << "calling ";
 
-   m_he_backend->call(f, {result}, {a});
+    m_he_backend->call(f, {result}, {a});
     EXPECT_EQ((vector<int64_t>{0, 0, 1}), read_vector<int64_t>(result));
 }
 
@@ -1032,7 +1032,7 @@ TEST_F(TestHEBackend, one_hot_scalar_1_in_3)
     copy_data(a, vector<int64_t>{1});
     auto result = m_he_backend->create_tensor(element::i64, shape_r);
 
-   m_he_backend->call(f, {result}, {a});
+    m_he_backend->call(f, {result}, {a});
     EXPECT_EQ((vector<int64_t>{0, 1, 0}), read_vector<int64_t>(result));
 }
 
@@ -1049,7 +1049,7 @@ TEST_F(TestHEBackend, one_hot_scalar_0_in_3)
     copy_data(a, vector<int64_t>{0});
     auto result = m_he_backend->create_tensor(element::i64, shape_r);
 
-   m_he_backend->call(f, {result}, {a});
+    m_he_backend->call(f, {result}, {a});
     EXPECT_EQ((vector<int64_t>{1, 0, 0}), read_vector<int64_t>(result));
 }
 
@@ -1068,11 +1068,13 @@ TEST_F(TestHEBackend, one_hot_scalar_fp_nonint_in_3)
 
     try
     {
-       m_he_backend->call(f, {result}, {a});
+        m_he_backend->call(f, {result}, {a});
     }
     catch (const std::exception& e)
     {
-        EXPECT_EQ(e.what(), std::string("One-hot: non-integral value in input or value is out of category range"));
+        EXPECT_EQ(
+            e.what(),
+            std::string("One-hot: non-integral value in input or value is out of category range"));
     }
     catch (...)
     {
@@ -1095,11 +1097,13 @@ TEST_F(TestHEBackend, one_hot_scalar_oob_in_3)
 
     try
     {
-       m_he_backend->call(f, {result}, {a});
+        m_he_backend->call(f, {result}, {a});
     }
     catch (const std::exception& e)
     {
-        EXPECT_EQ(e.what(), std::string("One-hot: non-integral value in input or value is out of category range"));
+        EXPECT_EQ(
+            e.what(),
+            std::string("One-hot: non-integral value in input or value is out of category range"));
     }
     catch (...)
     {
@@ -1120,7 +1124,7 @@ TEST_F(TestHEBackend, one_hot_vector_0)
     copy_data(a, vector<int64_t>{2, 1, 0, 0, 2, 2, 1, 0});
     auto result = m_he_backend->create_tensor(element::i64, shape_r);
 
-   m_he_backend->call(f, {result}, {a});
+    m_he_backend->call(f, {result}, {a});
     EXPECT_EQ(
         (vector<int64_t>{0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0}),
         read_vector<int64_t>(result));
@@ -1139,7 +1143,7 @@ TEST_F(TestHEBackend, one_hot_vector_1)
     copy_data(a, vector<int64_t>{2, 1, 0, 0, 2, 2, 1, 0});
     auto result = m_he_backend->create_tensor(element::i64, shape_r);
 
-   m_he_backend->call(f, {result}, {a});
+    m_he_backend->call(f, {result}, {a});
     EXPECT_EQ(
         (vector<int64_t>{0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0}),
         read_vector<int64_t>(result));
@@ -1160,11 +1164,13 @@ TEST_F(TestHEBackend, one_hot_vector_1_barely_oob)
 
     try
     {
-       m_he_backend->call(f, {result}, {a});
+        m_he_backend->call(f, {result}, {a});
     }
     catch (const std::exception& e)
     {
-        EXPECT_EQ(e.what(), std::string("One-hot: non-integral value in input or value is out of category range"));
+        EXPECT_EQ(
+            e.what(),
+            std::string("One-hot: non-integral value in input or value is out of category range"));
     }
     catch (...)
     {
@@ -1186,11 +1192,13 @@ TEST_F(TestHEBackend, one_hot_vector_1_far_oob)
 
     try
     {
-       m_he_backend->call(f, {result}, {a});
+        m_he_backend->call(f, {result}, {a});
     }
     catch (const std::exception& e)
     {
-        EXPECT_EQ(e.what(), std::string("One-hot: non-integral value in input or value is out of category range"));
+        EXPECT_EQ(
+            e.what(),
+            std::string("One-hot: non-integral value in input or value is out of category range"));
     }
     catch (...)
     {
@@ -1214,7 +1222,7 @@ TEST_F(TestHEBackend, one_hot_matrix_0)
               });
     auto result = m_he_backend->create_tensor(element::i64, shape_r);
 
-   m_he_backend->call(f, {result}, {a});
+    m_he_backend->call(f, {result}, {a});
     EXPECT_EQ((vector<int64_t>{1, 0, 0, 0, 0, 1, 1, 0, 0,
 
                                0, 1, 1, 0, 1, 0, 0, 0, 1,
@@ -1236,7 +1244,7 @@ TEST_F(TestHEBackend, one_hot_vector_1_fp)
     copy_data(a, vector<float>{2, 1, 0, 0, 2, 2, 1, 0});
     auto result = m_he_backend->create_tensor(element::f32, shape_r);
 
-   m_he_backend->call(f, {result}, {a});
+    m_he_backend->call(f, {result}, {a});
     EXPECT_EQ(
         (vector<float>{0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0}),
         read_vector<float>(result));
@@ -1256,11 +1264,13 @@ TEST_F(TestHEBackend, one_hot_vector_1_fp_nonint)
 
     try
     {
-       m_he_backend->call(f, {result}, {a});
+        m_he_backend->call(f, {result}, {a});
     }
     catch (const std::exception& e)
     {
-        EXPECT_EQ(e.what(), std::string("One-hot: non-integral value in input or value is out of category range"));
+        EXPECT_EQ(
+            e.what(),
+            std::string("One-hot: non-integral value in input or value is out of category range"));
     }
     catch (...)
     {

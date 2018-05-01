@@ -323,12 +323,12 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         if (arg0_cipher != nullptr && out0_cipher != nullptr)
         {
             runtime::he::kernel::one_hot(arg0_cipher->get_elements(),
-                    out0_cipher->get_elements(),
-                    arg0_cipher->get_shape(),
-                    out0_cipher->get_shape(),
-                    oh->get_one_hot_axis(),
-                    type,
-                    m_he_backend);
+                                         out0_cipher->get_elements(),
+                                         arg0_cipher->get_shape(),
+                                         out0_cipher->get_shape(),
+                                         oh->get_one_hot_axis(),
+                                         type,
+                                         m_he_backend);
         }
         else
         {
