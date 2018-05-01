@@ -47,3 +47,4 @@ void TestHEBackend::SetUp()
 // Source files
 #include "test_basics.in.cpp"
 #include "test_model.in.cpp"
+#include "test_noise_in.cpp"
