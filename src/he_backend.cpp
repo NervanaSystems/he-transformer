@@ -29,8 +29,11 @@ runtime::he::HEBackend::
 {
     seal::EncryptionParameters parms;
 
-    parms.set_poly_modulus("1x^8192 + 1"); // Suffices for ((A*B)*C)*D
-    parms.set_coeff_modulus(seal::coeff_modulus_128(8192));
+    parms.set_poly_modulus("1x^16384 + 1"); // Suffices for ((A*B)*C)*D
+    parms.set_coeff_modulus(seal::coeff_modulus_128(16384));
+    //parms.set_poly_modulus("1x^1048576 + 1"); // Suffices for ((A*B)*C)*D
+    //parms.set_coeff_modulus(seal::coeff_modulus_128(1048576));
+
     parms.set_plain_modulus(50000);
     m_context = make_shared<seal::SEALContext>(parms);
 

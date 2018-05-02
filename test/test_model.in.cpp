@@ -15,6 +15,8 @@
 *******************************************************************************/
 
 #include "ngraph/file_util.hpp"
+#include <ngraph/pass/manager.hpp>
+#include <ngraph/pass/visualize_tree.hpp>
 
 TEST_F(TestHEBackend, tf_mnist_const_1)
 {
@@ -30,10 +32,8 @@ TEST_F(TestHEBackend, tf_mnist_const_1)
         auto& shape = parameter->get_shape();
         auto& type = parameter->get_element_type();
         auto parameter_tv = backend->create_tensor(type, shape);
-        NGRAPH_INFO << "created tensor ";
-        NGRAPH_INFO << "elements " << shape_size(shape);
+        NGRAPH_INFO << "created tensor of " << shape_size(shape) << " elements";
         copy_data(parameter_tv, vector<float>(shape_size(shape)));
-        NGRAPH_INFO << "copied " << shape_size(shape);
         parameter_tvs.push_back(parameter_tv);
     }
 
@@ -68,10 +68,8 @@ TEST_F(TestHEBackend, tf_mnist_const_1_int)
         auto& shape = parameter->get_shape();
         auto& type = parameter->get_element_type();
         auto parameter_tv = backend->create_tensor(type, shape);
-        NGRAPH_INFO << "created tensor ";
-        NGRAPH_INFO << "elements " << shape_size(shape);
+        NGRAPH_INFO << "created tensor of " << shape_size(shape) << " elements";
         copy_data(parameter_tv, vector<int64_t>(shape_size(shape)));
-        NGRAPH_INFO << "copied " << shape_size(shape);
         parameter_tvs.push_back(parameter_tv);
     }
 
@@ -105,10 +103,8 @@ TEST_F(TestHEBackend, tf_mnist_const_5)
         auto& shape = parameter->get_shape();
         auto& type = parameter->get_element_type();
         auto parameter_tv = backend->create_tensor(type, shape);
-        NGRAPH_INFO << "created tensor ";
-        NGRAPH_INFO << "elements " << shape_size(shape);
+        NGRAPH_INFO << "created tensor of " << shape_size(shape) << " elements";
         copy_data(parameter_tv, vector<float>(shape_size(shape)));
-        NGRAPH_INFO << "copied " << shape_size(shape);
         parameter_tvs.push_back(parameter_tv);
     }
 
@@ -136,10 +132,19 @@ TEST_F(TestHEBackend, tf_mnist_const_5)
 
 TEST_F(TestHEBackend, tf_ptb_const_1)
 {
-    auto backend = runtime::Backend::create("HE");
+    auto backend = runtime::Backend::create("CPU");
     const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, "ptb_rnn_const_2_2_3.js");
     const string json_string = file_util::read_file_to_string(json_path);
     shared_ptr<Function> f = deserialize(json_string);
+
+    // Visualize model
+    auto model_file_name = "ptb_rnn_const_2_2_3" + string(".") +
+                                       pass::VisualizeTree::get_file_ext();
+
+    NGRAPH_INFO << "model file name " << model_file_name ;
+    pass::Manager pass_manager;
+    pass_manager.register_pass<pass::VisualizeTree>(model_file_name);
+    pass_manager.run_passes(f);
 
     auto parameters = f->get_parameters();
     vector<shared_ptr<runtime::TensorView>> parameter_tvs;
@@ -148,10 +153,8 @@ TEST_F(TestHEBackend, tf_ptb_const_1)
         auto& shape = parameter->get_shape();
         auto& type = parameter->get_element_type();
         auto parameter_tv = backend->create_tensor(type, shape);
-        NGRAPH_INFO << "created tensor ";
-        NGRAPH_INFO << "elements " << shape_size(shape);
+        NGRAPH_INFO << "created tensor of " << shape_size(shape) << " elements";
         copy_data(parameter_tv, vector<float>(shape_size(shape)));
-        NGRAPH_INFO << "copied " << shape_size(shape);
         parameter_tvs.push_back(parameter_tv);
     }
 
@@ -169,4 +172,62 @@ TEST_F(TestHEBackend, tf_ptb_const_1)
 
     EXPECT_EQ((vector<float>{2173, 944, 1151, 1723, -1674, 569, -1985, 9776, -4997, -1903}),
               read_vector<float>(result_tvs[0]));
+}
+
+TEST_F(TestHEBackend, tf_mnist_rnn_const)
+{
+    auto backend = runtime::Backend::create("HE");
+    const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, "mnist_rnn_const.js");
+    const string json_string = file_util::read_file_to_string(json_path);
+    shared_ptr<Function> f = deserialize(json_string);
+
+    // Visualize model
+    auto model_file_name = "mnist_rnn_const" + string(".") +
+        pass::VisualizeTree::get_file_ext();
+
+    NGRAPH_INFO << "model file name " << model_file_name ;
+    pass::Manager pass_manager;
+    pass_manager.register_pass<pass::VisualizeTree>(model_file_name);
+    pass_manager.run_passes(f);
+
+    auto parameters = f->get_parameters();
+    vector<shared_ptr<runtime::TensorView>> parameter_tvs;
+    for (auto parameter : parameters)
+    {
+        auto& shape = parameter->get_shape();
+        auto& type = parameter->get_element_type();
+        auto parameter_tv = backend->create_tensor(type, shape);
+        NGRAPH_INFO << "created tensor of " << shape_size(shape) << " elements";
+        copy_data(parameter_tv, vector<float>(shape_size(shape)));
+        parameter_tvs.push_back(parameter_tv);
+    }
+
+    auto results = f->get_results();
+    vector<shared_ptr<runtime::TensorView>> result_tvs;
+    for (auto result : results)
+    {
+        auto& shape = result->get_shape();
+        auto& type = result->get_element_type();
+        result_tvs.push_back(backend->create_tensor(type, shape));
+    }
+
+    NGRAPH_INFO << "calling function ";
+    backend->call(f, result_tvs, parameter_tvs);
+    NGRAPH_INFO << "num results " << result_tvs.size() ;
+
+    auto v = read_vector<float>(result_tvs[0]);
+    NGRAPH_INFO << "v.size() " << v.size();
+
+    for(int i = 0 ; i < v.size()/10; ++i)
+    {
+        cout << "point " << i  << endl;
+        for(int j = 0; j < 10; j++)
+        {
+            cout << v[i*10 + j] << " ";
+        }
+        cout << endl;
+    }
+
+    EXPECT_EQ((vector<float>{2}),
+            read_vector<float>(result_tvs[0]));
 }
