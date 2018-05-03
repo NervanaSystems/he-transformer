@@ -5,10 +5,10 @@
             {
                 "element_type": "float",
                 "inputs": [],
-                "name": "Parameter_2",
+                "name": "Parameter_0",
                 "op": "Parameter",
                 "outputs": [
-                    "Parameter_2_0"
+                    "Parameter_0_0"
                 ],
                 "shape": [
                     784,
@@ -18,36 +18,10 @@
             {
                 "element_type": "float",
                 "inputs": [],
-                "name": "Parameter_1",
-                "op": "Parameter",
-                "outputs": [
-                    "Parameter_1_0"
-                ],
-                "shape": [
-                    10,
-                    100
-                ]
-            },
-            {
-                "element_type": "float",
-                "inputs": [],
-                "name": "Parameter_0",
-                "op": "Parameter",
-                "outputs": [
-                    "Parameter_0_0"
-                ],
-                "shape": [
-                    100,
-                    784
-                ]
-            },
-            {
-                "element_type": "float",
-                "inputs": [],
-                "name": "Constant_7",
+                "name": "Constant_3",
                 "op": "Constant",
                 "outputs": [
-                    "Constant_7_0"
+                    "Constant_3_0"
                 ],
                 "shape": [
                     784,
@@ -3979,10 +3953,10 @@
             {
                 "element_type": "float",
                 "inputs": [],
-                "name": "Constant_5",
+                "name": "Constant_2",
                 "op": "Constant",
                 "outputs": [
-                    "Constant_5_0"
+                    "Constant_2_0"
                 ],
                 "shape": [
                     100,
@@ -82394,10 +82368,10 @@
             {
                 "element_type": "float",
                 "inputs": [],
-                "name": "Constant_3",
+                "name": "Constant_1",
                 "op": "Constant",
                 "outputs": [
-                    "Constant_3_0"
+                    "Constant_1_0"
                 ],
                 "shape": [
                     10,
@@ -83408,30 +83382,8 @@
             },
             {
                 "inputs": [
-                    "Constant_7",
-                    "Parameter_2"
-                ],
-                "name": "Add_8",
-                "op": "Add",
-                "outputs": [
-                    "Add_8_0"
-                ]
-            },
-            {
-                "inputs": [
-                    "Constant_5",
-                    "Parameter_0"
-                ],
-                "name": "Add_6",
-                "op": "Add",
-                "outputs": [
-                    "Add_6_0"
-                ]
-            },
-            {
-                "inputs": [
                     "Constant_3",
-                    "Parameter_1"
+                    "Parameter_0"
                 ],
                 "name": "Add_4",
                 "op": "Add",
@@ -83441,57 +83393,55 @@
             },
             {
                 "inputs": [
-                    "Add_6",
-                    "Add_8"
+                    "Constant_2",
+                    "Add_4"
                 ],
-                "name": "Dot_9",
+                "name": "Dot_5",
                 "op": "Dot",
                 "outputs": [
-                    "Dot_9_0"
+                    "Dot_5_0"
                 ],
                 "reduction_axes_count": 1
             },
             {
                 "inputs": [
-                    "Dot_9",
-                    "Dot_9"
+                    "Dot_5",
+                    "Dot_5"
                 ],
-                "name": "Multiply_10",
+                "name": "Multiply_6",
                 "op": "Multiply",
                 "outputs": [
-                    "Multiply_10_0"
+                    "Multiply_6_0"
                 ]
             },
             {
                 "inputs": [
-                    "Add_4",
-                    "Multiply_10"
+                    "Constant_1",
+                    "Multiply_6"
                 ],
-                "name": "Dot_11",
+                "name": "Dot_7",
                 "op": "Dot",
                 "outputs": [
-                    "Dot_11_0"
+                    "Dot_7_0"
                 ],
                 "reduction_axes_count": 1
             },
             {
                 "inputs": [
-                    "Dot_11"
+                    "Dot_7"
                 ],
-                "name": "Result_14",
+                "name": "Result_10",
                 "op": "Result",
                 "outputs": [
-                    "Result_14_0"
+                    "Result_10_0"
                 ]
             }
         ],
         "parameters": [
-            "Parameter_0",
-            "Parameter_1",
-            "Parameter_2"
+            "Parameter_0"
         ],
         "result": [
-            "Result_14"
+            "Result_10"
         ]
     }
 ]

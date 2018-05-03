@@ -28,10 +28,21 @@ runtime::he::HEBackend::
     HEBackend() // TODO: call HEBackend::HEBackend(seal::SEALContext& context) with default parameters
 {
     seal::EncryptionParameters parms;
-    parms.set_poly_modulus("1x^2048 + 1");
-    parms.set_coeff_modulus(seal::coeff_modulus_128(2048));
-    parms.set_plain_modulus(1 << 8);
+
+    parms.set_poly_modulus("1x^16384 + 1"); // Suffices for ((A*B)*C)*D
+    parms.set_coeff_modulus(seal::coeff_modulus_128(16384));
+    //parms.set_poly_modulus("1x^1048576 + 1"); // Suffices for ((A*B)*C)*D
+    //parms.set_coeff_modulus(seal::coeff_modulus_128(1048576));
+
+    parms.set_plain_modulus(50000);
     m_context = make_shared<seal::SEALContext>(parms);
+
+    NGRAPH_INFO << "/ Encryption parameters:";
+    NGRAPH_INFO << "| poly_modulus: " << m_context->poly_modulus().to_string();
+    NGRAPH_INFO << "| coeff_modulus size: "
+                << m_context->total_coeff_modulus().significant_bit_count() << " bits";
+    NGRAPH_INFO << "| plain_modulus: " << m_context->plain_modulus().value();
+
     m_int_encoder = make_shared<seal::IntegerEncoder>(m_context->plain_modulus());
     m_frac_encoder = make_shared<seal::FractionalEncoder>(
         m_context->plain_modulus(), m_context->poly_modulus(), 64, 32, 3);
@@ -75,10 +86,67 @@ shared_ptr<runtime::TensorView>
     return static_pointer_cast<runtime::TensorView>(rc);
 }
 
+shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_constant_tensor(
+    const element::Type& element_type, const Shape& shape, size_t element)
+{
+    shared_ptr<runtime::TensorView> tensor = create_tensor(element_type, shape);
+    shared_ptr<runtime::he::HECipherTensorView> cipher_tensor =
+        static_pointer_cast<runtime::he::HECipherTensorView>(tensor);
+
+    size_t num_elements = shape_size(shape);
+    size_t bytes_to_write = num_elements * element_type.size();
+
+    const string type_name = element_type.c_type_string();
+
+    if (type_name == "float")
+    {
+        vector<float> elements;
+        for (size_t i = 0; i < num_elements; ++i)
+        {
+            elements.push_back(element);
+        }
+        cipher_tensor->write((void*)&elements[0], 0, bytes_to_write);
+    }
+    else if (type_name == "int64_t")
+    {
+        vector<int64_t> elements;
+        for (size_t i = 0; i < num_elements; ++i)
+        {
+            elements.push_back(element);
+        }
+        cipher_tensor->write((void*)&elements[0], 0, bytes_to_write);
+    }
+    else if (type_name == "uint64_t")
+    {
+        vector<uint64_t> elements;
+        for (size_t i = 0; i < num_elements; ++i)
+        {
+            elements.push_back(element);
+        }
+        cipher_tensor->write((void*)&elements[0], 0, bytes_to_write);
+    }
+    else
+    {
+        throw ngraph_error("Type not supported at create_constant_tensor");
+    }
+
+    return static_pointer_cast<runtime::TensorView>(cipher_tensor);
+}
+
 shared_ptr<runtime::TensorView>
     runtime::he::HEBackend::create_zero_tensor(const element::Type& element_type,
                                                const Shape& shape)
 {
+    return create_constant_tensor(element_type, shape, 0);
+}
+
+shared_ptr<runtime::TensorView>
+    runtime::he::HEBackend::create_ones_tensor(const element::Type& element_type,
+                                               const Shape& shape)
+{
+    return create_constant_tensor(element_type, shape, 1);
+}
+/* {
     shared_ptr<runtime::TensorView> tensor = create_tensor(element_type, shape);
     shared_ptr<runtime::he::HECipherTensorView> cipher_tensor =
         static_pointer_cast<runtime::he::HECipherTensorView>(tensor);
@@ -121,7 +189,7 @@ shared_ptr<runtime::TensorView>
     }
 
     return static_pointer_cast<runtime::TensorView>(cipher_tensor);
-}
+} */
 
 shared_ptr<runtime::TensorView>
     runtime::he::HEBackend::create_plain_tensor(const element::Type& element_type,
@@ -135,7 +203,7 @@ shared_ptr<runtime::TensorView>
 shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_tensor(
     const element::Type& element_type, const Shape& shape, void* memory_pointer)
 {
-    throw ngraph_error("he create_tensor Unimplemented");
+    throw ngraph_error("HE create_tensor unimplemented");
 }
 
 bool runtime::he::HEBackend::compile(shared_ptr<Function> func)
@@ -193,8 +261,8 @@ void runtime::he::HEBackend::encode(seal::Plaintext& output,
     }
     else
     {
-        NGRAPH_INFO << "Unsupported element type in decode " << type_name << endl;
-        throw ngraph_error("Unsupported element type" + type_name);
+        NGRAPH_INFO << "Unsupported element type in decode " << type_name;
+        throw ngraph_error("Unsupported element type " + type_name);
     }
 }
 
@@ -221,8 +289,8 @@ void runtime::he::HEBackend::decode(void* output,
     }
     else
     {
-        NGRAPH_INFO << "Unsupported element type in decode " << type_name << endl;
-        throw ngraph_error("Unsupported element type" + type_name);
+        NGRAPH_INFO << "Unsupported element type in decode " << type_name;
+        throw ngraph_error("Unsupported element type " + type_name);
     }
 }
 
