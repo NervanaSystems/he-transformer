@@ -36,11 +36,11 @@ namespace ngraph
                              const Shape& out_shape);
 
                 void reshape(const vector<shared_ptr<seal::Plaintext>>& arg0,
-                        vector<shared_ptr<seal::Ciphertext>>& out,
-                        const Shape& in_shape,
-                        const AxisVector& in_axis_order,
-                        const Shape& out_shape,
-                        shared_ptr<HEBackend> he_backend);
+                             vector<shared_ptr<seal::Ciphertext>>& out,
+                             const Shape& in_shape,
+                             const AxisVector& in_axis_order,
+                             const Shape& out_shape,
+                             shared_ptr<HEBackend> he_backend);
             }
         }
     }

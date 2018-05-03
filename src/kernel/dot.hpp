@@ -84,7 +84,7 @@ namespace ngraph
                         outer_size++;
                     }
                     NGRAPH_INFO << "Dot outer size " << outer_size;
-// #pragma omp parallel for
+                    // #pragma omp parallel for
                     for (size_t outer = 0; outer < outer_size; ++outer)
                     {
                         auto it =
@@ -106,18 +106,18 @@ namespace ngraph
                             ++inner_size;
                         }
 #pragma omp parallel for
-                        for(size_t inner = 0; inner < inner_size; ++inner)
+                        for (size_t inner = 0; inner < inner_size; ++inner)
                         {
-                            auto inner_it = arg1_projected_transform.begin(); // TODO: move to coord. transform
+                            auto inner_it =
+                                arg1_projected_transform.begin(); // TODO: move to coord. transform
                             for (size_t i = 0; i < inner; ++i)
                             {
                                 ++inner_it;
                             }
                             const Coordinate& arg1_projected_coord = *inner_it;
 
-
-                        //for (const Coordinate& arg1_projected_coord : arg1_projected_transform)
-                        //{
+                            //for (const Coordinate& arg1_projected_coord : arg1_projected_transform)
+                            //{
                             // The output coordinate is just the concatenation of the projected coordinates.
                             Coordinate out_coord(arg0_projected_coord.size() +
                                                  arg1_projected_coord.size());

@@ -362,11 +362,11 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         {
             NGRAPH_INFO << "arg0_plain, out0_cipher"; // TODO next
             runtime::he::kernel::reshape(arg0_plain->get_elements(),
-                    out0_cipher->get_elements(),
-                    arg0_plain->get_shape(),
-                    reshape->get_input_order(),
-                    out0_cipher->get_shape(),
-                    m_he_backend);
+                                         out0_cipher->get_elements(),
+                                         arg0_plain->get_shape(),
+                                         reshape->get_input_order(),
+                                         out0_cipher->get_shape(),
+                                         m_he_backend);
         }
         else if (arg0_plain != nullptr && out0_plain != nullptr)
         {

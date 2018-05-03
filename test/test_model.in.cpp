@@ -14,9 +14,9 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "ngraph/file_util.hpp"
 #include <ngraph/pass/manager.hpp>
 #include <ngraph/pass/visualize_tree.hpp>
+#include "ngraph/file_util.hpp"
 
 TEST_F(TestHEBackend, tf_mnist_const_1)
 {
@@ -138,10 +138,10 @@ TEST_F(TestHEBackend, tf_ptb_const_1)
     shared_ptr<Function> f = deserialize(json_string);
 
     // Visualize model
-    auto model_file_name = "ptb_rnn_const_2_2_3" + string(".") +
-                                       pass::VisualizeTree::get_file_ext();
+    auto model_file_name =
+        "ptb_rnn_const_2_2_3" + string(".") + pass::VisualizeTree::get_file_ext();
 
-    NGRAPH_INFO << "model file name " << model_file_name ;
+    NGRAPH_INFO << "model file name " << model_file_name;
     pass::Manager pass_manager;
     pass_manager.register_pass<pass::VisualizeTree>(model_file_name);
     pass_manager.run_passes(f);
@@ -182,10 +182,10 @@ TEST_F(TestHEBackend, tf_mnist_rnn_const)
     shared_ptr<Function> f = deserialize(json_string);
 
     // Visualize model
-    auto model_file_name = "mnist_rnn_const_batch_5" + string(".") +
-        pass::VisualizeTree::get_file_ext();
+    auto model_file_name =
+        "mnist_rnn_const_batch_5" + string(".") + pass::VisualizeTree::get_file_ext();
 
-    NGRAPH_INFO << "model file name " << model_file_name ;
+    NGRAPH_INFO << "model file name " << model_file_name;
     pass::Manager pass_manager;
     pass_manager.register_pass<pass::VisualizeTree>(model_file_name);
     pass_manager.run_passes(f);
@@ -213,14 +213,16 @@ TEST_F(TestHEBackend, tf_mnist_rnn_const)
 
     NGRAPH_INFO << "calling function ";
     backend->call(f, result_tvs, parameter_tvs);
-    NGRAPH_INFO << "num results " << result_tvs.size() ;
+    NGRAPH_INFO << "num results " << result_tvs.size();
 
     auto result = read_vector<float>(result_tvs[0]); // TODO: clean up
-    auto expect = vector<float>{-7.88143, -5.8131, -3.96331, -1.21652, -18.0735, -8.02312, -30.0687, 13.0319, -2.70154, 0.718744,
-                0.37304, 15.3126, 27.5812, 23.4542, -2.33102, 7.44211, -1.77696, 6.01429, 16.2065, 6.80028,
-                5.75904, 42.5145, -0.780159, 2.56209, 12.7461, 22.2679, 12.6967, 16.0024, 17.6427, 18.5718,
-                29.0376, 14.2316, 11.0897, -9.36387, 3.29604, 5.10122, 8.69652, 1.76425, 2.78079, -2.29045,
-                11.1611, 21.6455, 13.9041, 8.51218, 65.6764, 17.5173, -22.6419, 25.9811, 32.2385, 41.8058};
+    auto expect = vector<float>{
+        -7.88143, -5.8131,  -3.96331, -1.21652, -18.0735,  -8.02312, -30.0687, 13.0319,  -2.70154,
+        0.718744, 0.37304,  15.3126,  27.5812,  23.4542,   -2.33102, 7.44211,  -1.77696, 6.01429,
+        16.2065,  6.80028,  5.75904,  42.5145,  -0.780159, 2.56209,  12.7461,  22.2679,  12.6967,
+        16.0024,  17.6427,  18.5718,  29.0376,  14.2316,   11.0897,  -9.36387, 3.29604,  5.10122,
+        8.69652,  1.76425,  2.78079,  -2.29045, 11.1611,   21.6455,  13.9041,  8.51218,  65.6764,
+        17.5173,  -22.6419, 25.9811,  32.2385,  41.8058};
     for (int i = 0; i < result.size(); ++i)
     {
         EXPECT_NEAR(expect[i], result[i], 0.0001);
