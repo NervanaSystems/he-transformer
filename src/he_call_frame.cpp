@@ -249,6 +249,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
 
         if (arg0_cipher != nullptr && arg1_cipher != nullptr)
         {
+            NGRAPH_INFO << "Dot cipher cipher";
             runtime::he::kernel::dot(arg0_cipher->get_elements(),
                                      arg1_cipher->get_elements(),
                                      out0_cipher->get_elements(),
@@ -261,6 +262,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         }
         else if (arg0_cipher != nullptr && arg1_plain != nullptr)
         {
+            NGRAPH_INFO << "Dot cipher plain";
             runtime::he::kernel::dot(arg0_cipher->get_elements(),
                                      arg1_plain->get_elements(),
                                      out0_cipher->get_elements(),
@@ -273,6 +275,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         }
         else if (arg0_plain != nullptr && arg1_cipher != nullptr)
         {
+            NGRAPH_INFO << "Dot cipher plain";
             runtime::he::kernel::dot(arg0_plain->get_elements(),
                                      arg1_cipher->get_elements(),
                                      out0_cipher->get_elements(),
@@ -441,6 +444,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
 
         if (arg0_cipher != nullptr && out0_cipher != nullptr)
         {
+            NGRAPH_INFO << "Broadcast cipher cipher ";
             Shape in_shape = arg0_cipher->get_shape();
             Shape out_shape = out0_cipher->get_shape();
             runtime::he::kernel::broadcast(arg0_cipher->get_elements(),
@@ -451,6 +455,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         }
         else if (arg0_plain != nullptr && out0_cipher != nullptr)
         {
+            NGRAPH_INFO << "Broadcast plain -> cipher ";
             Shape in_shape = arg0_plain->get_shape();
             Shape out_shape = out0_cipher->get_shape();
             runtime::he::kernel::broadcast(arg0_plain->get_elements(),

@@ -83,8 +83,8 @@ namespace ngraph
                     {
                         outer_size++;
                     }
-
-#pragma omp parallel for
+                    NGRAPH_INFO << "Dot outer size " << outer_size;
+// #pragma omp parallel for
                     for (size_t outer = 0; outer < outer_size; ++outer)
                     {
                         auto it =
@@ -100,8 +100,24 @@ namespace ngraph
                                 he_backend->create_zero_tensor(type, Shape{1}));
                         shared_ptr<seal::Ciphertext> prod = prod_tv->get_element(0);
 
+                        size_t inner_size = 0;
                         for (const Coordinate& arg1_projected_coord : arg1_projected_transform)
                         {
+                            ++inner_size;
+                        }
+#pragma omp parallel for
+                        for(size_t inner = 0; inner < inner_size; ++inner)
+                        {
+                            auto inner_it = arg1_projected_transform.begin(); // TODO: move to coord. transform
+                            for (size_t i = 0; i < inner; ++i)
+                            {
+                                ++inner_it;
+                            }
+                            const Coordinate& arg1_projected_coord = *inner_it;
+
+
+                        //for (const Coordinate& arg1_projected_coord : arg1_projected_transform)
+                        //{
                             // The output coordinate is just the concatenation of the projected coordinates.
                             Coordinate out_coord(arg0_projected_coord.size() +
                                                  arg1_projected_coord.size());

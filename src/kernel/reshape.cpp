@@ -70,14 +70,37 @@ void runtime::he::kernel::reshape(const vector<shared_ptr<seal::Plaintext>>& arg
     CoordinateTransform output_transform(out_shape);
     CoordinateTransform::Iterator output_it = output_transform.begin();
 
-    for (const Coordinate& input_coord : input_transform)
-    {
-        const Coordinate& output_coord = *output_it;
+	size_t it_size = 0;
+	for (const Coordinate& output_it : output_transform)
+	{
+		it_size++;
+	}
+	NGRAPH_INFO << "reshaping size " << it_size;
+
+#pragma omp parallel for
+	for (size_t i = 0; i < it_size; ++i)
+	{
+		#pragma omp critical
+        if (i % 100 == 0)
+            NGRAPH_INFO << i;
+		// TODO: move to coordinate transform
+		auto input_it = input_transform.begin();
+		auto output_it = output_transform.begin();
+		for (size_t j = 0; j < i; ++j)
+		{
+			++input_it;
+			++output_it;
+		}
+		const Coordinate& input_coord = *input_it;
+		const Coordinate& output_coord = *output_it;
+    //for (const Coordinate& input_coord : input_transform)
+    //{
+    //    const Coordinate& output_coord = *output_it;
 
         seal::Ciphertext c;
         he_backend->encrypt(c, *arg[input_transform.index(input_coord)]);
         out[output_transform.index(output_coord)] = make_shared<seal::Ciphertext>(c);
 
-        ++output_it;
+        //++output_it;
     }
 }
