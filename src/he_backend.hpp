@@ -21,6 +21,7 @@
 
 #include "ngraph/runtime/backend.hpp"
 #include "seal/seal.h"
+#include "seal_parameter.hpp"
 
 namespace ngraph
 {
@@ -41,7 +42,7 @@ namespace ngraph
             {
             public:
                 HEBackend();
-                HEBackend(seal::SEALContext& context);
+                HEBackend(const runtime::he::SEALParameter& sp);
                 HEBackend(HEBackend& he_backend) = default;
                 ~HEBackend();
 
