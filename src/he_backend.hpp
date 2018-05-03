@@ -21,6 +21,7 @@
 
 #include "ngraph/runtime/backend.hpp"
 #include "seal/seal.h"
+#include "seal_parameter.hpp"
 
 namespace ngraph
 {
