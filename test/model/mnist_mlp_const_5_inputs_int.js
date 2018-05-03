@@ -3,7 +3,7 @@
         "name": "Function_0",
         "ops": [
             {
-                "element_type": "float",
+                "element_type": "int64_t",
                 "inputs": [],
                 "name": "Parameter_0",
                 "op": "Parameter",
@@ -16,7 +16,7 @@
                 ]
             },
             {
-                "element_type": "float",
+                "element_type": "int64_t",
                 "inputs": [],
                 "name": "Constant_3",
                 "op": "Constant",
@@ -3951,7 +3951,7 @@
                 ]
             },
             {
-                "element_type": "float",
+                "element_type": "int64_t",
                 "inputs": [],
                 "name": "Constant_2",
                 "op": "Constant",
@@ -82366,7 +82366,7 @@
                 ]
             },
             {
-                "element_type": "float",
+                "element_type": "int64_t",
                 "inputs": [],
                 "name": "Constant_1",
                 "op": "Constant",

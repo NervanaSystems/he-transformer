@@ -78,10 +78,46 @@ namespace ngraph
                     // for the dotted axes.
                     CoordinateTransform dot_axes_transform(dot_axis_sizes);
 
+                    size_t outer_size = 0;
                     for (const Coordinate& arg0_projected_coord : arg0_projected_transform)
                     {
+                        outer_size++;
+                    }
+                    NGRAPH_INFO << "Dot outer size " << outer_size;
+                    // #pragma omp parallel for
+                    for (size_t outer = 0; outer < outer_size; ++outer)
+                    {
+                        auto it =
+                            arg0_projected_transform.begin(); // TODO: move to coordinate transform
+                        for (size_t i = 0; i < outer; ++i)
+                        {
+                            ++it;
+                        }
+                        const Coordinate& arg0_projected_coord = *it;
+
+                        shared_ptr<HECipherTensorView> prod_tv =
+                            static_pointer_cast<HECipherTensorView>(
+                                he_backend->create_zero_tensor(type, Shape{1}));
+                        shared_ptr<seal::Ciphertext> prod = prod_tv->get_element(0);
+
+                        size_t inner_size = 0;
                         for (const Coordinate& arg1_projected_coord : arg1_projected_transform)
                         {
+                            ++inner_size;
+                        }
+#pragma omp parallel for
+                        for (size_t inner = 0; inner < inner_size; ++inner)
+                        {
+                            auto inner_it =
+                                arg1_projected_transform.begin(); // TODO: move to coord. transform
+                            for (size_t i = 0; i < inner; ++i)
+                            {
+                                ++inner_it;
+                            }
+                            const Coordinate& arg1_projected_coord = *inner_it;
+
+                            //for (const Coordinate& arg1_projected_coord : arg1_projected_transform)
+                            //{
                             // The output coordinate is just the concatenation of the projected coordinates.
                             Coordinate out_coord(arg0_projected_coord.size() +
                                                  arg1_projected_coord.size());
@@ -98,10 +134,6 @@ namespace ngraph
                                 static_pointer_cast<HECipherTensorView>(
                                     he_backend->create_zero_tensor(type, Shape{1}));
                             shared_ptr<seal::Ciphertext> sum = sum_tv->get_element(0);
-                            shared_ptr<HECipherTensorView> prod_tv =
-                                static_pointer_cast<HECipherTensorView>(
-                                    he_backend->create_zero_tensor(type, Shape{1}));
-                            shared_ptr<seal::Ciphertext> prod = prod_tv->get_element(0);
 
                             size_t out_index = output_transform.index(out_coord);
 
@@ -111,6 +143,7 @@ namespace ngraph
                             auto arg0_it = std::copy(arg0_projected_coord.begin(),
                                                      arg0_projected_coord.end(),
                                                      arg0_coord.begin());
+
                             for (const Coordinate& dot_axis_positions : dot_axes_transform)
                             {
                                 // In order to find the points to multiply together, we need to inject our current
@@ -128,10 +161,16 @@ namespace ngraph
                                 // Multiply and add to the sum.
                                 shared_ptr<S> arg0_text = arg0[arg0_transform.index(arg0_coord)];
                                 shared_ptr<T> arg1_text = arg1[arg1_transform.index(arg1_coord)];
+
+                                shared_ptr<HECipherTensorView> prod_tv =
+                                    static_pointer_cast<HECipherTensorView>(
+                                        he_backend->create_zero_tensor(type, Shape{1}));
+                                shared_ptr<seal::Ciphertext> prod = prod_tv->get_element(0);
+
                                 ngraph::runtime::he::kernel::multiply(
                                     arg0_text, arg1_text, prod, he_backend);
                                 ngraph::runtime::he::kernel::add(sum, prod, sum, he_backend);
-                            }
+                            };
 
                             // Write the sum back.
                             out[out_index] = sum;
