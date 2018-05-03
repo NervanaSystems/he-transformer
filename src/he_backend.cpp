@@ -29,11 +29,9 @@ static void print_seal_context(const seal::SEALContext& context)
     NGRAPH_INFO << endl
                 << "/ Encryption parameters:" << endl
                 << "| poly_modulus: " << context.poly_modulus().to_string() << endl
-
                 // Print the size of the true (product) coefficient modulus
                 << "| coeff_modulus size: " << context.total_coeff_modulus().significant_bit_count()
                 << " bits" << endl
-
                 << "| plain_modulus: " << context.plain_modulus().value() << endl
                 << "\\ noise_standard_deviation: " << context.noise_standard_deviation();
 }
