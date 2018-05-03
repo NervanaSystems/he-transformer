@@ -24,54 +24,42 @@
 using namespace ngraph;
 using namespace std;
 
-runtime::he::HEBackend::
-    HEBackend() // TODO: call HEBackend::HEBackend(seal::SEALContext& context) with default parameters
+runtime::he::HEBackend::HEBackend(): runtime::he::HEBackend(reference_seal_parameter)
 {
-    seal::EncryptionParameters parms;
+}
 
-    parms.set_poly_modulus("1x^16384 + 1"); // Suffices for ((A*B)*C)*D
-    parms.set_coeff_modulus(seal::coeff_modulus_128(16384));
-    //parms.set_poly_modulus("1x^1048576 + 1"); // Suffices for ((A*B)*C)*D
-    //parms.set_coeff_modulus(seal::coeff_modulus_128(1048576));
+runtime::he::HEBackend::HEBackend(const runtime::he::SEALParameter& sp)
+{
+    assert_valid_seal_parameter(sp);
 
-    parms.set_plain_modulus(50000);
-    m_context = make_shared<seal::SEALContext>(parms);
-
+    // Context
+    m_context = make_seal_context(sp);
     NGRAPH_INFO << "/ Encryption parameters:";
     NGRAPH_INFO << "| poly_modulus: " << m_context->poly_modulus().to_string();
     NGRAPH_INFO << "| coeff_modulus size: "
                 << m_context->total_coeff_modulus().significant_bit_count() << " bits";
     NGRAPH_INFO << "| plain_modulus: " << m_context->plain_modulus().value();
 
+    // Encoders
     m_int_encoder = make_shared<seal::IntegerEncoder>(m_context->plain_modulus());
     m_frac_encoder = make_shared<seal::FractionalEncoder>(
-        m_context->plain_modulus(), m_context->poly_modulus(), 64, 32, 3);
+        m_context->plain_modulus(), m_context->poly_modulus(),
+        sp.fractional_encoder_integer_coeff_count,
+        sp.fractional_encoder_fraction_coeff_count,
+        sp.fractional_encoder_base);
+
+    // Keygen, encryptor and decryptor
     m_keygen = make_shared<seal::KeyGenerator>(*m_context);
     m_public_key = make_shared<seal::PublicKey>(m_keygen->public_key());
     m_secret_key = make_shared<seal::SecretKey>(m_keygen->secret_key());
-    seal::EvaluationKeys ev_key;
-    m_keygen->generate_evaluation_keys(16, ev_key);
-    m_ev_key = make_shared<seal::EvaluationKeys>(ev_key);
     m_encryptor = make_shared<seal::Encryptor>(*m_context, *m_public_key);
     m_decryptor = make_shared<seal::Decryptor>(*m_context, *m_secret_key);
-    m_evaluator = make_shared<seal::Evaluator>(*m_context);
-}
 
-runtime::he::HEBackend::HEBackend(seal::SEALContext& context)
-    : m_context(make_shared<seal::SEALContext>(context))
-    , m_int_encoder(make_shared<seal::IntegerEncoder>(m_context->plain_modulus()))
-    , m_frac_encoder(make_shared<seal::FractionalEncoder>(
-          m_context->plain_modulus(), m_context->poly_modulus(), 64, 32, 3))
-    , m_keygen(make_shared<seal::KeyGenerator>(*m_context))
-    , m_public_key(make_shared<seal::PublicKey>(m_keygen->public_key()))
-    , m_secret_key(make_shared<seal::SecretKey>(m_keygen->secret_key()))
-    , m_encryptor(make_shared<seal::Encryptor>(*m_context, *m_public_key))
-    , m_decryptor(make_shared<seal::Decryptor>(*m_context, *m_secret_key))
-    , m_evaluator(make_shared<seal::Evaluator>(*m_context))
-{
+    // Evaluator
     seal::EvaluationKeys ev_key;
-    m_keygen->generate_evaluation_keys(16, ev_key);
+    m_keygen->generate_evaluation_keys(sp.evaluation_decomposition_bit_count, ev_key);
     m_ev_key = make_shared<seal::EvaluationKeys>(ev_key);
+    m_evaluator = make_shared<seal::Evaluator>(*m_context);
 }
 
 runtime::he::HEBackend::~HEBackend()

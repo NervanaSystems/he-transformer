@@ -42,7 +42,7 @@ namespace ngraph
             {
             public:
                 HEBackend();
-                HEBackend(seal::SEALContext& context);
+                HEBackend(const runtime::he::SEALParameter& sp);
                 HEBackend(HEBackend& he_backend) = default;
                 ~HEBackend();
 

@@ -14,12 +14,33 @@
 * limitations under the License.
 *******************************************************************************/
 
+#include "seal/seal.h"
 #include "seal_parameter.hpp"
 #include "ngraph/except.hpp"
 
 using namespace ngraph;
 using namespace std;
 
-void assert_valid_seal_parameter(const runtime::he::SEALParameter& sp)
+void runtime::he::assert_valid_seal_parameter(const runtime::he::SEALParameter& sp)
 {
+}
+
+
+shared_ptr<seal::SEALContext> runtime::he::make_seal_context(const runtime::he::SEALParameter& sp)
+{
+    assert_valid_seal_parameter(sp);
+
+    seal::EncryptionParameters parms;
+    parms.set_poly_modulus("1x^" + to_string(sp.poly_modulus_degree) + " + 1");
+    if (sp.security_level == 128)
+    {
+        parms.set_coeff_modulus(seal::coeff_modulus_128(sp.poly_modulus_degree));
+    } else if (sp.security_level == 192)
+    {
+        parms.set_coeff_modulus(seal::coeff_modulus_192(sp.poly_modulus_degree));
+    } else {
+        throw ngraph_error("security_level must be 128 or 192");
+    }
+    parms.set_plain_modulus(sp.plain_modulus);
+    return make_shared<seal::SEALContext>(parms);
 }

@@ -18,6 +18,8 @@
 
 #include <string>
 
+#include "seal/seal.h"
+
 namespace ngraph
 {
     namespace runtime
@@ -39,12 +41,23 @@ namespace ngraph
                 std::uint64_t fractional_encoder_base;
 
                 // generate_evaluation_keys
-                int decomposition_bit_count;
+                int evaluation_decomposition_bit_count;
             };
 
-            static SEALParameter reference_seal_parameter{16384, 128, 50000, 64, 32, 3, 16};
+            static SEALParameter reference_seal_parameter
+            {
+                16384, // poly_modulus_degree
+                128, // security_level
+                50000, // plain_modulus
+                64, // fractional_encoder_integer_coeff_count
+                32, // fractional_encoder_fraction_coeff_count
+                3, // fractional_encoder_base
+                16 // evaluation_decomposition_bit_count
+            };
 
             void assert_valid_seal_parameter(const SEALParameter& sp);
+
+            std::shared_ptr<seal::SEALContext> make_seal_context(const SEALParameter& sp);
         }
     }
 }
