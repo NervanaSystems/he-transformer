@@ -39,7 +39,7 @@ void runtime::he::assert_valid_seal_parameter(const runtime::he::SEALParameter& 
 
 shared_ptr<seal::SEALContext> runtime::he::make_seal_context(const runtime::he::SEALParameter& sp)
 {
-    assert_valid_seal_parameter(sp);
+    runtime::he::assert_valid_seal_parameter(sp);
 
     seal::EncryptionParameters parms;
     parms.set_poly_modulus("1x^" + to_string(sp.poly_modulus_degree) + " + 1");
