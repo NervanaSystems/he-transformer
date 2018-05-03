@@ -294,7 +294,7 @@ void runtime::he::HEBackend::decrypt(seal::Plaintext& output, const seal::Cipher
     m_decryptor->decrypt(input, output);
 }
 
-int runtime::he::HEBackend::noise_budget(const std::shared_ptr<seal::Ciphertext>& ciphertext)
+int runtime::he::HEBackend::noise_budget(const shared_ptr<seal::Ciphertext>& ciphertext)
 {
     return m_decryptor->invariant_noise_budget(*ciphertext);
 }

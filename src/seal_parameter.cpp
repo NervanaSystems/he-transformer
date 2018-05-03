@@ -25,7 +25,7 @@ using namespace std;
 
 void runtime::he::assert_valid_seal_parameter(const runtime::he::SEALParameter& sp)
 {
-    static unordered_set<std::uint64_t> valid_poly_modulus_degrees{
+    static unordered_set<uint64_t> valid_poly_modulus_degrees{
         1024, 2048, 4096, 8192, 16384, 32768};
     if (valid_poly_modulus_degrees.count(sp.poly_modulus_degree) == 0)
     {
