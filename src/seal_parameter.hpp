@@ -41,6 +41,10 @@ namespace ngraph
                 // generate_evaluation_keys
                 int decomposition_bit_count;
             };
+
+            static SEALParameter reference_seal_parameter{16384, 128, 50000, 64, 32, 3, 16};
+
+            void assert_valid_seal_parameter(const SEALParameter& sp);
         }
     }
 }

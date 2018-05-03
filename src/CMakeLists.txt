@@ -26,6 +26,7 @@ set (HE_SRC
     he_cipher_tensor_view.cpp
     he_plain_tensor_view.cpp
     he_manager.cpp
+    seal_parameter.cpp
     kernel/add.cpp
     kernel/broadcast.cpp
     kernel/concat.cpp
