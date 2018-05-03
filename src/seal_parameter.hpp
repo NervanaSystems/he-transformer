@@ -44,15 +44,14 @@ namespace ngraph
                 int evaluation_decomposition_bit_count;
             };
 
-            static SEALParameter reference_seal_parameter
-            {
+            static SEALParameter reference_seal_parameter{
                 16384, // poly_modulus_degree
-                128, // security_level
+                128,   // security_level
                 50000, // plain_modulus
-                64, // fractional_encoder_integer_coeff_count
-                32, // fractional_encoder_fraction_coeff_count
-                3, // fractional_encoder_base
-                16 // evaluation_decomposition_bit_count
+                64,    // fractional_encoder_integer_coeff_count
+                32,    // fractional_encoder_fraction_coeff_count
+                3,     // fractional_encoder_base
+                16     // evaluation_decomposition_bit_count
             };
 
             void assert_valid_seal_parameter(const SEALParameter& sp);

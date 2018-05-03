@@ -24,7 +24,8 @@
 using namespace ngraph;
 using namespace std;
 
-runtime::he::HEBackend::HEBackend(): runtime::he::HEBackend(reference_seal_parameter)
+runtime::he::HEBackend::HEBackend()
+    : runtime::he::HEBackend(reference_seal_parameter)
 {
 }
 
@@ -42,11 +43,12 @@ runtime::he::HEBackend::HEBackend(const runtime::he::SEALParameter& sp)
 
     // Encoders
     m_int_encoder = make_shared<seal::IntegerEncoder>(m_context->plain_modulus());
-    m_frac_encoder = make_shared<seal::FractionalEncoder>(
-        m_context->plain_modulus(), m_context->poly_modulus(),
-        sp.fractional_encoder_integer_coeff_count,
-        sp.fractional_encoder_fraction_coeff_count,
-        sp.fractional_encoder_base);
+    m_frac_encoder =
+        make_shared<seal::FractionalEncoder>(m_context->plain_modulus(),
+                                             m_context->poly_modulus(),
+                                             sp.fractional_encoder_integer_coeff_count,
+                                             sp.fractional_encoder_fraction_coeff_count,
+                                             sp.fractional_encoder_base);
 
     // Keygen, encryptor and decryptor
     m_keygen = make_shared<seal::KeyGenerator>(*m_context);

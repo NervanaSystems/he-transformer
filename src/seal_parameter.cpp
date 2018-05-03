@@ -14,17 +14,28 @@
 * limitations under the License.
 *******************************************************************************/
 
+#include <unordered_set>
+
+#include "ngraph/except.hpp"
 #include "seal/seal.h"
 #include "seal_parameter.hpp"
-#include "ngraph/except.hpp"
 
 using namespace ngraph;
 using namespace std;
 
 void runtime::he::assert_valid_seal_parameter(const runtime::he::SEALParameter& sp)
 {
+    static unordered_set<std::uint64_t> valid_poly_modulus_degrees{
+        1024, 2048, 4096, 8192, 16384, 32768};
+    if (valid_poly_modulus_degrees.count(sp.poly_modulus_degree) == 0)
+    {
+        throw ngraph_error("sp.poly_modulus_degree must be 1024, 2048, 4096, 8192, 16384, 32768");
+    }
+    if (sp.security_level != 128 && sp.security_level == 192)
+    {
+        throw ngraph_error("sp.security_level must be 128, 192");
+    }
 }
-
 
 shared_ptr<seal::SEALContext> runtime::he::make_seal_context(const runtime::he::SEALParameter& sp)
 {
@@ -35,11 +46,14 @@ shared_ptr<seal::SEALContext> runtime::he::make_seal_context(const runtime::he::
     if (sp.security_level == 128)
     {
         parms.set_coeff_modulus(seal::coeff_modulus_128(sp.poly_modulus_degree));
-    } else if (sp.security_level == 192)
+    }
+    else if (sp.security_level == 192)
     {
         parms.set_coeff_modulus(seal::coeff_modulus_192(sp.poly_modulus_degree));
-    } else {
-        throw ngraph_error("security_level must be 128 or 192");
+    }
+    else
+    {
+        throw ngraph_error("sp.security_level must be 128, 192");
     }
     parms.set_plain_modulus(sp.plain_modulus);
     return make_shared<seal::SEALContext>(parms);
