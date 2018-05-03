@@ -14,6 +14,13 @@
 * limitations under the License.
 *******************************************************************************/
 
+// TODO
+// - [ ] Max depth of Mul
+// - [ ] Max depth of Add
+// - [ ] A * B * C * D vs (A * B) * (C * D)
+// - [ ] FractionalEncoder vs IntergerEncoder, noise
+// - [ ] Refactor noise check
+
 TEST_F(TestHEBackend, noise)
 {
     Shape shape{};

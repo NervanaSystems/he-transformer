@@ -24,6 +24,20 @@
 using namespace ngraph;
 using namespace std;
 
+static void print_seal_context(const seal::SEALContext& context)
+{
+    NGRAPH_INFO << endl
+                << "/ Encryption parameters:" << endl
+                << "| poly_modulus: " << context.poly_modulus().to_string() << endl
+
+                // Print the size of the true (product) coefficient modulus
+                << "| coeff_modulus size: " << context.total_coeff_modulus().significant_bit_count()
+                << " bits" << endl
+
+                << "| plain_modulus: " << context.plain_modulus().value() << endl
+                << "\\ noise_standard_deviation: " << context.noise_standard_deviation();
+}
+
 runtime::he::HEBackend::HEBackend()
     : runtime::he::HEBackend(runtime::he::default_seal_parameter)
 {
@@ -35,11 +49,7 @@ runtime::he::HEBackend::HEBackend(const runtime::he::SEALParameter& sp)
 
     // Context
     m_context = make_seal_context(sp);
-    NGRAPH_INFO << "/ Encryption parameters:";
-    NGRAPH_INFO << "| poly_modulus: " << m_context->poly_modulus().to_string();
-    NGRAPH_INFO << "| coeff_modulus size: "
-                << m_context->total_coeff_modulus().significant_bit_count() << " bits";
-    NGRAPH_INFO << "| plain_modulus: " << m_context->plain_modulus().value();
+    print_seal_context(*m_context);
 
     // Encoders
     m_int_encoder = make_shared<seal::IntegerEncoder>(m_context->plain_modulus());
