@@ -25,13 +25,22 @@ namespace ngraph
     {
         namespace he
         {
+            class HEBackend;
+
             namespace kernel
             {
-                void reshape(const vector<shared_ptr<seal::Ciphertext>>& arg0,
+                void reshape(const vector<shared_ptr<seal::Ciphertext>>& arg,
                              vector<shared_ptr<seal::Ciphertext>>& out,
                              const Shape& in_shape,
                              const AxisVector& in_axis_order,
                              const Shape& out_shape);
+
+                void reshape(const vector<shared_ptr<seal::Plaintext>>& arg0,
+                        vector<shared_ptr<seal::Ciphertext>>& out,
+                        const Shape& in_shape,
+                        const AxisVector& in_axis_order,
+                        const Shape& out_shape,
+                        shared_ptr<HEBackend> he_backend);
             }
         }
     }

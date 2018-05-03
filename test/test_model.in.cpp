@@ -176,7 +176,7 @@ TEST_F(TestHEBackend, tf_ptb_const_1)
 
 TEST_F(TestHEBackend, tf_mnist_rnn_const)
 {
-    auto backend = runtime::Backend::create("CPU");
+    auto backend = runtime::Backend::create("HE");
     const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, "mnist_rnn_const_batch_5.js");
     const string json_string = file_util::read_file_to_string(json_path);
     shared_ptr<Function> f = deserialize(json_string);

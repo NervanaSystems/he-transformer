@@ -775,6 +775,23 @@ TEST_F(TestHEBackend, reshape_t2v_012)
     EXPECT_EQ((vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}), read_vector<float>(result));
 }
 
+TEST_F(TestHEBackend, reshape_t2v_012_plain)
+{
+    Shape shape_a{2, 2, 3};
+    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    Shape shape_r{12};
+    auto r = make_shared<op::Reshape>(A, AxisVector{0, 1, 2}, shape_r);
+    auto f = make_shared<Function>(r, op::ParameterVector{A});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_plain_tensor(element::f32, shape_a);
+    copy_data(a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
+    auto result = m_he_backend->create_tensor(element::f32, shape_r);
+
+    m_he_backend->call(f, {result}, {a});
+    EXPECT_EQ((vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}), read_vector<float>(result));
+}
+
 TEST_F(TestHEBackend, reshape_t2s_012)
 {
     Shape shape_a{1, 1, 1};
