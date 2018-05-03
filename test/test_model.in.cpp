@@ -176,13 +176,13 @@ TEST_F(TestHEBackend, tf_ptb_const_1)
 
 TEST_F(TestHEBackend, tf_mnist_rnn_const)
 {
-    auto backend = runtime::Backend::create("HE");
-    const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, "mnist_rnn_const.js");
+    auto backend = runtime::Backend::create("CPU");
+    const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, "mnist_rnn_const_batch_5.js");
     const string json_string = file_util::read_file_to_string(json_path);
     shared_ptr<Function> f = deserialize(json_string);
 
     // Visualize model
-    auto model_file_name = "mnist_rnn_const" + string(".") +
+    auto model_file_name = "mnist_rnn_const_batch_5" + string(".") +
         pass::VisualizeTree::get_file_ext();
 
     NGRAPH_INFO << "model file name " << model_file_name ;
@@ -215,19 +215,14 @@ TEST_F(TestHEBackend, tf_mnist_rnn_const)
     backend->call(f, result_tvs, parameter_tvs);
     NGRAPH_INFO << "num results " << result_tvs.size() ;
 
-    auto v = read_vector<float>(result_tvs[0]);
-    NGRAPH_INFO << "v.size() " << v.size();
-
-    for(int i = 0 ; i < v.size()/10; ++i)
+    auto result = read_vector<float>(result_tvs[0]); // TODO: clean up
+    auto expect = vector<float>{-7.88143, -5.8131, -3.96331, -1.21652, -18.0735, -8.02312, -30.0687, 13.0319, -2.70154, 0.718744,
+                0.37304, 15.3126, 27.5812, 23.4542, -2.33102, 7.44211, -1.77696, 6.01429, 16.2065, 6.80028,
+                5.75904, 42.5145, -0.780159, 2.56209, 12.7461, 22.2679, 12.6967, 16.0024, 17.6427, 18.5718,
+                29.0376, 14.2316, 11.0897, -9.36387, 3.29604, 5.10122, 8.69652, 1.76425, 2.78079, -2.29045,
+                11.1611, 21.6455, 13.9041, 8.51218, 65.6764, 17.5173, -22.6419, 25.9811, 32.2385, 41.8058};
+    for (int i = 0; i < result.size(); ++i)
     {
-        cout << "point " << i  << endl;
-        for(int j = 0; j < 10; j++)
-        {
-            cout << v[i*10 + j] << " ";
-        }
-        cout << endl;
+        EXPECT_NEAR(expect[i], result[i], 0.0001);
     }
-
-    EXPECT_EQ((vector<float>{2}),
-            read_vector<float>(result_tvs[0]));
 }
