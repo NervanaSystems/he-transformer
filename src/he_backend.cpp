@@ -25,7 +25,7 @@ using namespace ngraph;
 using namespace std;
 
 runtime::he::HEBackend::HEBackend()
-    : runtime::he::HEBackend(reference_seal_parameter)
+    : runtime::he::HEBackend(runtime::he::default_seal_parameter)
 {
 }
 

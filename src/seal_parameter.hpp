@@ -44,7 +44,7 @@ namespace ngraph
                 int evaluation_decomposition_bit_count;
             };
 
-            static SEALParameter reference_seal_parameter{
+            static SEALParameter default_seal_parameter{
                 16384, // poly_modulus_degree
                 128,   // security_level
                 50000, // plain_modulus
