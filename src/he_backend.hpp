@@ -98,6 +98,15 @@ namespace ngraph
                     return m_decryptor;
                 }
 
+                struct plaintext_num
+                {
+                    seal::Plaintext fl_1;
+                    seal::Plaintext fl_n1;
+                    seal::Plaintext int64_t_1;
+                    seal::Plaintext int64_t_n1;
+                };
+
+                const inline plaintext_num& get_plaintext_num() const { return m_plaintext_num; }
                 int noise_budget(const std::shared_ptr<seal::Ciphertext>& ciphertext);
 
             private:
@@ -112,6 +121,7 @@ namespace ngraph
                 std::shared_ptr<seal::Encryptor> m_encryptor;
                 std::shared_ptr<seal::Decryptor> m_decryptor;
                 std::shared_ptr<seal::Evaluator> m_evaluator;
+                plaintext_num m_plaintext_num;
 
                 class FunctionInstance
                 {
