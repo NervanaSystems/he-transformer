@@ -32,10 +32,14 @@
 //     int evaluation_decomposition_bit_count;
 // };
 
+#include "seal_parameter.hpp"
+
 TEST_F(TestHEBackend, noise)
 {
     Shape shape{};
-    auto a = m_he_backend->create_tensor(element::i64, shape);
+    runtime::he::SEALParameter seal_parameter{16384, 128, 50000, 64, 32, 3, 16};
+    auto he_backend = make_shared<runtime::he::HEBackend>();
+    auto a = he_backend->create_tensor(element::i64, shape);
     copy_data(a, vector<int64_t>{5});
     EXPECT_EQ(read_vector<int64_t>(a), (vector<int64_t>{5}));
 }
