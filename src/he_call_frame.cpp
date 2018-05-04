@@ -315,6 +315,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
             runtime::he::kernel::multiply(arg0_cipher->get_elements(),
                                           arg1_cipher->get_elements(),
                                           out0_cipher->get_elements(),
+                                          type,
                                           m_he_backend,
                                           out0_cipher->get_element_count());
         }
@@ -323,6 +324,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
             runtime::he::kernel::multiply(arg0_cipher->get_elements(),
                                           arg1_plain->get_elements(),
                                           out0_cipher->get_elements(),
+                                          type,
                                           m_he_backend,
                                           out0_cipher->get_element_count());
         }
@@ -331,6 +333,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
             runtime::he::kernel::multiply(arg0_plain->get_elements(),
                                           arg1_cipher->get_elements(),
                                           out0_cipher->get_elements(),
+                                          type,
                                           m_he_backend,
                                           out0_cipher->get_element_count());
         }
