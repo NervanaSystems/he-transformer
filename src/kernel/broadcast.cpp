@@ -23,12 +23,13 @@
 
 using namespace std;
 using namespace ngraph;
-
-void runtime::he::kernel::broadcast(const vector<shared_ptr<seal::Ciphertext>>& arg,
-                                    vector<shared_ptr<seal::Ciphertext>>& out,
-                                    const Shape& in_shape,
-                                    const Shape& out_shape,
-                                    const AxisSet& broadcast_axes)
+/*
+template <typename S, typename T>
+void runtime::he::kernel::broadcast(const vector<shared_ptr<S>>& arg,
+            vector<shared_ptr<T>>& out,
+            const Shape& in_shape,
+            const Shape& out_shape,
+            const AxisSet& broadcast_axes)
 {
     CoordinateTransform input_transform(in_shape);
     CoordinateTransform output_transform(out_shape);
@@ -38,6 +39,24 @@ void runtime::he::kernel::broadcast(const vector<shared_ptr<seal::Ciphertext>>& 
 
         out[output_transform.index(output_coord)] = arg[input_transform.index(input_coord)];
     }
+} */
+
+void runtime::he::kernel::broadcast(const vector<shared_ptr<seal::Ciphertext>>& arg,
+                                    vector<shared_ptr<seal::Ciphertext>>& out,
+                                    const Shape& in_shape,
+                                    const Shape& out_shape,
+                                    const AxisSet& broadcast_axes)
+{
+    broadcast<seal::Ciphertext, seal::Ciphertext>(arg, out, in_shape, out_shape, broadcast_axes);
+}
+
+void runtime::he::kernel::broadcast(const vector<shared_ptr<seal::Plaintext>>& arg,
+                                    vector<shared_ptr<seal::Plaintext>>& out,
+                                    const Shape& in_shape,
+                                    const Shape& out_shape,
+                                    const AxisSet& broadcast_axes)
+{
+    broadcast<seal::Plaintext, seal::Plaintext>(arg, out, in_shape, out_shape, broadcast_axes);
 }
 
 void runtime::he::kernel::broadcast(const vector<shared_ptr<seal::Plaintext>>& arg,
