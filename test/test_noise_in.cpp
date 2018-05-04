@@ -21,6 +21,17 @@
 // - [ ] FractionalEncoder vs IntergerEncoder, noise
 // - [ ] Refactor noise check
 
+// struct SEALParameter
+// {
+//     std::uint64_t poly_modulus_degree;
+//     std::uint64_t security_level;
+//     std::uint64_t plain_modulus;
+//     int fractional_encoder_integer_coeff_count;
+//     int fractional_encoder_fraction_coeff_count;
+//     std::uint64_t fractional_encoder_base;
+//     int evaluation_decomposition_bit_count;
+// };
+
 TEST_F(TestHEBackend, noise)
 {
     Shape shape{};
