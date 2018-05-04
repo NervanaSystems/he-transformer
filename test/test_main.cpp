@@ -39,9 +39,12 @@ using namespace std;
 using namespace ngraph;
 
 // Common test class
-void TestHEBackend::SetUp()
+shared_ptr<ngraph::runtime::he::HEBackend> TestHEBackend::m_he_backend =
+    static_pointer_cast<runtime::he::HEBackend>(runtime::Backend::create("HE"));
+
+void TestHEBackend::TearDown()
 {
-    m_he_backend = static_pointer_cast<runtime::he::HEBackend>(runtime::Backend::create("HE"));
+    m_he_backend->clear_function_instance();
 }
 
 // Source files

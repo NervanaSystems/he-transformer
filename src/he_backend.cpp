@@ -230,8 +230,12 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> func,
     }
 
     instance.m_call_frame->call(outputs, inputs);
-
     return rc;
+}
+
+void runtime::he::HEBackend::clear_function_instance()
+{
+    m_function_map.clear();
 }
 
 void runtime::he::HEBackend::remove_compiled_function(shared_ptr<Function> func)

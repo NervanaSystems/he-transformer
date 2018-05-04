@@ -71,6 +71,8 @@ namespace ngraph
                           const std::vector<std::shared_ptr<runtime::TensorView>>& outputs,
                           const std::vector<std::shared_ptr<runtime::TensorView>>& inputs) override;
 
+                void clear_function_instance();
+
                 void remove_compiled_function(std::shared_ptr<Function> func) override;
 
                 void encode(seal::Plaintext& output, const void* input, const element::Type& type);
