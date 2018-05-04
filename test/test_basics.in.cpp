@@ -33,7 +33,7 @@ TEST_F(TestHEBackend, trivial)
 
 TEST_F(TestHEBackend, backend_init)
 {
-    auto m_he_backend = runtime::Backend::create("HE");
+    auto he_backend = runtime::Backend::create("HE");
     EXPECT_EQ(1, 1);
 }
 
