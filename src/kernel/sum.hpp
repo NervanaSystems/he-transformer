@@ -21,15 +21,24 @@
 
 namespace ngraph
 {
+    namespace element
+    {
+        class Type;
+    }
     namespace runtime
     {
         namespace he
         {
+            class HEBackend;
             namespace kernel
             {
                 void sum(const vector<shared_ptr<seal::Ciphertext>>& arg,
                          vector<shared_ptr<seal::Ciphertext>>& out,
-                         const AxisSet& reduction_axes);
+                         const Shape& in_shape,
+                         const Shape& out_shape,
+                         const AxisSet& reduction_axes,
+                         const element::Type& type,
+                         shared_ptr<HEBackend> he_backend);
             }
         }
     }

@@ -30,14 +30,15 @@ set (HE_SRC
     kernel/add.cpp
     kernel/broadcast.cpp
     kernel/concat.cpp
-    kernel/dot.cpp
     kernel/constant.cpp
+    kernel/dot.cpp
     kernel/multiply.cpp
     kernel/one_hot.cpp
     kernel/reshape.cpp
     kernel/result.cpp
     kernel/slice.cpp
     kernel/subtract.cpp
+    kernel/sum.cpp
 )
 
 # Paths for the upstream ngraph
