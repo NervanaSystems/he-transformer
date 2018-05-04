@@ -1689,3 +1689,343 @@ TEST_F(TestHEBackend, concat_5d)
             2061., 2062., 2063., 2064., 2065., 2066., 2067., 2068., 2069., 2070., 2071., 2072.}),
         read_vector<float>(result));
 }
+
+// Trivial case with no summed axes.
+TEST_F(TestHEBackend, sum_trivial)
+{
+    Shape shape{2, 2};
+    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{}), op::ParameterVector{A});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape);
+    copy_data(a, vector<float>{1, 2, 3, 4});
+    auto result = m_he_backend->create_tensor(element::f32, shape);
+
+    m_he_backend->call(f, {result}, {a});
+    EXPECT_EQ((vector<float>{1, 2, 3, 4}), read_vector<float>(result));
+}
+
+// Failure has been reported at 5D for some reason
+TEST_F(TestHEBackend, sum_trivial_5d)
+{
+    Shape shape{2, 2, 2, 2, 2};
+    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{}), op::ParameterVector{A});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape);
+    copy_data(a, vector<float>{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                               1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1});
+    auto result = m_he_backend->create_tensor(element::f32, shape);
+
+    m_he_backend->call(f, {result}, {a});
+    EXPECT_EQ((vector<float>{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}),
+              read_vector<float>(result));
+}
+
+TEST_F(TestHEBackend, sum_to_scalar)
+{
+    Shape shape{2, 2};
+    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{0, 1}), op::ParameterVector{A});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape);
+    copy_data(a, vector<float>{1, 2, 3, 4});
+    auto result = m_he_backend->create_tensor(element::f32, Shape{});
+
+    m_he_backend->call(f, {result}, {a});
+    EXPECT_EQ((vector<float>{10}), read_vector<float>(result));
+
+    // For some reason I'm feeling extra paranoid about making sure reduction doesn't clobber the
+    // input tensors, so let's do this too.
+    EXPECT_EQ((vector<float>{1, 2, 3, 4}), read_vector<float>(a));
+}
+
+TEST_F(TestHEBackend, sum_matrix_columns)
+{
+    Shape shape_a{3, 2};
+    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    Shape shape_rt{2};
+    auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{0}), op::ParameterVector{A});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape_a);
+    copy_data(a, vector<float>{1, 2, 3, 4, 5, 6});
+    auto result = m_he_backend->create_tensor(element::f32, shape_rt);
+
+    m_he_backend->call(f, {result}, {a});
+    EXPECT_EQ((vector<float>{9, 12}), read_vector<float>(result));
+
+    // For some reason I'm feeling extra paranoid about making sure reduction doesn't clobber the
+    // input tensors, so let's do this too.
+    EXPECT_EQ((vector<float>{1, 2, 3, 4, 5, 6}), read_vector<float>(a));
+}
+
+TEST_F(TestHEBackend, sum_matrix_rows)
+{
+    Shape shape_a{3, 2};
+    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    Shape shape_rt{3};
+    auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{1}), op::ParameterVector{A});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape_a);
+    copy_data(a, vector<float>{1, 2, 3, 4, 5, 6});
+    auto result = m_he_backend->create_tensor(element::f32, shape_rt);
+
+    m_he_backend->call(f, {result}, {a});
+    EXPECT_EQ((vector<float>{3, 7, 11}), read_vector<float>(result));
+
+    // For some reason I'm feeling extra paranoid about making sure reduction doesn't clobber the
+    // input tensors, so let's do this too.
+    EXPECT_EQ((vector<float>{1, 2, 3, 4, 5, 6}), read_vector<float>(a));
+}
+
+TEST_F(TestHEBackend, sum_matrix_rows_zero)
+{
+    Shape shape_a{3, 0};
+    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    Shape shape_rt{3};
+    auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{1}), op::ParameterVector{A});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape_a);
+    copy_data(a, vector<float>{});
+    auto result = m_he_backend->create_tensor(element::f32, shape_rt);
+    copy_data(result, vector<float>({3, 3, 3}));
+
+    m_he_backend->call(f, {result}, {a});
+    EXPECT_EQ((vector<float>{0, 0, 0}), read_vector<float>(result));
+
+    // For some reason I'm feeling extra paranoid about making sure reduction doesn't clobber the
+    // input tensors, so let's do this too.
+    EXPECT_EQ((vector<float>{}), read_vector<float>(a));
+}
+
+TEST_F(TestHEBackend, sum_matrix_cols_zero)
+{
+    // Now the reduction (g(x:float32[2,2],y:float32[]) = reduce(x,y,f,axes={})).
+    Shape shape_a{0, 2};
+    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    Shape shape_rt{2};
+    auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{0}), op::ParameterVector{A});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape_a);
+    copy_data(a, vector<float>{});
+    auto result = m_he_backend->create_tensor(element::f32, shape_rt);
+    copy_data(result, vector<float>({3, 3}));
+
+    m_he_backend->call(f, {result}, {a});
+    EXPECT_EQ((vector<float>{0, 0}), read_vector<float>(result));
+
+    // For some reason I'm feeling extra paranoid about making sure reduction doesn't clobber the
+    // input tensors, so let's do this too.
+    EXPECT_EQ((vector<float>{}), read_vector<float>(a));
+}
+
+TEST_F(TestHEBackend, sum_vector_zero)
+{
+    Shape shape_a{0};
+    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    Shape shape_rt{};
+    auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{0}), op::ParameterVector{A});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape_a);
+    copy_data(a, vector<float>{});
+    auto result = m_he_backend->create_tensor(element::f32, shape_rt);
+    copy_data(result, vector<float>({3}));
+
+    m_he_backend->call(f, {result}, {a});
+    EXPECT_EQ((vector<float>{0}), read_vector<float>(result));
+
+    // For some reason I'm feeling extra paranoid about making sure reduction doesn't clobber the
+    // input tensors, so let's do this too.
+    EXPECT_EQ((vector<float>{}), read_vector<float>(a));
+}
+
+TEST_F(TestHEBackend, sum_matrix_to_scalar_zero_by_zero)
+{
+    Shape shape_a{0, 0};
+    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    Shape shape_rt{};
+    auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{0, 1}), op::ParameterVector{A});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape_a);
+    copy_data(a, vector<float>{});
+    auto result = m_he_backend->create_tensor(element::f32, shape_rt);
+    copy_data(result, vector<float>({3}));
+
+    m_he_backend->call(f, {result}, {a});
+    EXPECT_EQ((vector<float>{0}), read_vector<float>(result));
+
+    // For some reason I'm feeling extra paranoid about making sure reduction doesn't clobber the
+    // input tensors, so let's do this too.
+    EXPECT_EQ((vector<float>{}), read_vector<float>(a));
+}
+
+TEST_F(TestHEBackend, sum_3d_to_matrix_most_sig)
+{
+    Shape shape_a{3, 3, 3};
+    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    Shape shape_rt{3, 3};
+    auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{0}), op::ParameterVector{A});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape_a);
+    copy_data(a, vector<float>{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
+                               15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27});
+    auto result = m_he_backend->create_tensor(element::f32, shape_rt);
+
+    m_he_backend->call(f, {result}, {a});
+    EXPECT_EQ((vector<float>{1 + 10 + 19,
+                             2 + 11 + 20,
+                             3 + 12 + 21,
+                             4 + 13 + 22,
+                             5 + 14 + 23,
+                             6 + 15 + 24,
+                             7 + 16 + 25,
+                             8 + 17 + 26,
+                             9 + 18 + 27}),
+              read_vector<float>(result));
+}
+
+TEST_F(TestHEBackend, sum_3d_to_matrix_least_sig)
+{
+    Shape shape_a{3, 3, 3};
+    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    Shape shape_rt{3, 3};
+    auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{2}), op::ParameterVector{A});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape_a);
+    copy_data(a, vector<float>{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
+                               15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27});
+    auto result = m_he_backend->create_tensor(element::f32, shape_rt);
+
+    m_he_backend->call(f, {result}, {a});
+    EXPECT_EQ((vector<float>{1 + 2 + 3,
+                             4 + 5 + 6,
+                             7 + 8 + 9,
+                             10 + 11 + 12,
+                             13 + 14 + 15,
+                             16 + 17 + 18,
+                             19 + 20 + 21,
+                             22 + 23 + 24,
+                             25 + 26 + 27}),
+              read_vector<float>(result));
+}
+TEST_F(TestHEBackend, sum_3d_to_vector)
+{
+    Shape shape_a{3, 3, 3};
+    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    Shape shape_rt{3};
+    auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{0, 1}), op::ParameterVector{A});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape_a);
+    copy_data(a, vector<float>{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
+                               15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27});
+    auto result = m_he_backend->create_tensor(element::f32, shape_rt);
+
+    m_he_backend->call(f, {result}, {a});
+    EXPECT_EQ((vector<float>{1 + 10 + 19 + 4 + 13 + 22 + 7 + 16 + 25,
+                             2 + 11 + 20 + 5 + 14 + 23 + 8 + 17 + 26,
+                             3 + 12 + 21 + 6 + 15 + 24 + 9 + 18 + 27}),
+              read_vector<float>(result));
+}
+
+TEST_F(TestHEBackend, sum_3d_to_scalar)
+{
+    Shape shape_a{3, 3, 3};
+    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    Shape shape_rt{};
+    auto f =
+        make_shared<Function>(make_shared<op::Sum>(A, AxisSet{0, 1, 2}), op::ParameterVector{A});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape_a);
+    copy_data(a, vector<float>{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
+                               15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27});
+    auto result = m_he_backend->create_tensor(element::f32, shape_rt);
+
+    m_he_backend->call(f, {result}, {a});
+    EXPECT_EQ((vector<float>{1 + 10 + 19 + 4 + 13 + 22 + 7 + 16 + 25 + 2 + 11 + 20 + 5 + 14 + 23 +
+                             8 + 17 + 26 + 3 + 12 + 21 + 6 + 15 + 24 + 9 + 18 + 27}),
+              read_vector<float>(result));
+}
+
+TEST_F(TestHEBackend, sum_3d_eliminate_zero_dim)
+{
+    Shape shape_a{3, 0, 2};
+    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    Shape shape_rt{3, 2};
+    auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{1}), op::ParameterVector{A});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape_a);
+    copy_data(a, vector<float>{});
+    auto result = m_he_backend->create_tensor(element::f32, shape_rt);
+
+    // Overwrite the initial result vector to make sure we're not just coincidentally getting the right value.
+    copy_data(result, vector<float>{2112, 2112, 2112, 2112, 2112, 2112});
+
+    m_he_backend->call(f, {result}, {a});
+    EXPECT_EQ((vector<float>{0, 0, 0, 0, 0, 0}), read_vector<float>(result));
+}
+
+TEST_F(TestHEBackend, sum_to_scalar_stable)
+{
+    Shape shape{2, 2};
+    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{0, 1}), op::ParameterVector{A});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape);
+    copy_data(a, vector<float>{1e-6f, -1, 0, 1});
+    auto result = m_he_backend->create_tensor(element::f32, Shape{});
+
+    m_he_backend->call(f, {result}, {a});
+    EXPECT_TRUE(test::all_close(read_vector<float>(result), vector<float>{1e-6f}, 5e-2f));
+    // EXPECT_EQ(vector<float>{1e-6}, read_vector<float>(result));
+}
+
+TEST_F(TestHEBackend, sum_3d_to_vector_stable)
+{
+    Shape shape_a{3, 3, 3};
+    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    Shape shape_rt{3};
+    auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{0, 1}), op::ParameterVector{A});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape_a);
+    copy_data(a, vector<float>{1, 1,  1,  1,  1,  1,  1e-4f, 1e-5f, 1e-6f, 1,  1,  1,  1, 1,
+                               1, -1, -1, -1, -1, -1, -1,    -1,    -1,    -1, -1, -1, -1});
+    auto result = m_he_backend->create_tensor(element::f32, shape_rt);
+
+    m_he_backend->call(f, {result}, {a});
+    EXPECT_TRUE(
+        test::all_close(read_vector<float>(result), vector<float>{1e-4f, 1e-5f, 1e-6f}, 5e-2f));
+}
+
+TEST_F(TestHEBackend, sum_5d_to_scalar)
+{
+    Shape shape_a{3, 3, 3, 3, 3};
+    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    Shape shape_rt{};
+    auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{0, 1, 2, 3, 4}),
+                                   op::ParameterVector{A});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_tensor(element::f32, shape_a);
+    copy_data(a, std::vector<float>(std::pow(3, 5), 1));
+    auto result = m_he_backend->create_tensor(element::f32, shape_rt);
+
+    m_he_backend->call(f, {result}, {a});
+    EXPECT_EQ(std::vector<float>{243.}, read_vector<float>(result));
+}

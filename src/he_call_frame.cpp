@@ -32,6 +32,7 @@
 #include "kernel/result.hpp"
 #include "kernel/slice.hpp"
 #include "kernel/subtract.hpp"
+#include "kernel/sum.hpp"
 #include "ngraph/op/broadcast.hpp"
 #include "ngraph/op/concat.hpp"
 #include "ngraph/op/constant.hpp"
@@ -39,6 +40,7 @@
 #include "ngraph/op/one_hot.hpp"
 #include "ngraph/op/reshape.hpp"
 #include "ngraph/op/slice.hpp"
+#include "ngraph/op/sum.hpp"
 
 using namespace std;
 using namespace ngraph;
@@ -242,6 +244,80 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         else
         {
             throw ngraph_error("Add types not supported.");
+        }
+    }
+    else if (node_op == "Broadcast")
+    {
+        shared_ptr<op::Broadcast> broadcast = dynamic_pointer_cast<op::Broadcast>(node);
+        AxisSet broadcast_axes = broadcast->get_broadcast_axes();
+
+        if (arg0_cipher != nullptr && out0_cipher != nullptr)
+        {
+            NGRAPH_INFO << "Broadcast cipher cipher ";
+            Shape in_shape = arg0_cipher->get_shape();
+            Shape out_shape = out0_cipher->get_shape();
+            runtime::he::kernel::broadcast(arg0_cipher->get_elements(),
+                    out0_cipher->get_elements(),
+                    in_shape,
+                    out_shape,
+                    broadcast_axes);
+        }
+        else if (arg0_plain != nullptr && out0_cipher != nullptr)
+        {
+            NGRAPH_INFO << "Broadcast plain -> cipher ";
+            Shape in_shape = arg0_plain->get_shape();
+            Shape out_shape = out0_cipher->get_shape();
+            runtime::he::kernel::broadcast(arg0_plain->get_elements(),
+                    out0_cipher->get_elements(),
+                    in_shape,
+                    out_shape,
+                    broadcast_axes,
+                    m_he_backend);
+        }
+        else if (arg0_plain != nullptr && out0_plain != nullptr)
+        {
+            NGRAPH_INFO << "Broadcast plain plain";
+            Shape in_shape = arg0_plain->get_shape();
+            Shape out_shape = out0_plain->get_shape();
+            runtime::he::kernel::broadcast(arg0_plain->get_elements(),
+                    out0_plain->get_elements(),
+                    in_shape,
+                    out_shape,
+                    broadcast_axes);
+        }
+        else
+        {
+            throw ngraph_error("Broadcast types not supported.");
+        }
+    }
+    else if (node_op == "Concat")
+    {
+        shared_ptr<op::Concat> concat = dynamic_pointer_cast<op::Concat>(node);
+        if (arg0_cipher != nullptr && out0_cipher != nullptr)
+        {
+            vector<vector<shared_ptr<seal::Ciphertext>>> in_args;
+            vector<Shape> in_shapes;
+            for (shared_ptr<HETensorView> arg : args)
+            {
+                shared_ptr<HECipherTensorView> arg_cipher =
+                    dynamic_pointer_cast<HECipherTensorView>(arg);
+                if (arg_cipher == nullptr)
+                {
+                    throw ngraph_error("Concat type not consistent");
+                }
+                in_args.push_back(arg_cipher->get_elements());
+                in_shapes.push_back(arg_cipher->get_shape());
+
+                runtime::he::kernel::concat(in_args,
+                        out0_cipher->get_elements(),
+                        in_shapes,
+                        out0_cipher->get_shape(),
+                        concat->get_concatenation_axis());
+            }
+        }
+        else
+        {
+            throw ngraph_error("Concat types not supported.");
         }
     }
     else if (node_op == "Constant")
@@ -457,78 +533,32 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
             throw ngraph_error("Subtract types not supported.");
         }
     }
-    else if (node_op == "Broadcast")
+    else if (node_op == "Sum")
     {
-        shared_ptr<op::Broadcast> broadcast = dynamic_pointer_cast<op::Broadcast>(node);
-        AxisSet broadcast_axes = broadcast->get_broadcast_axes();
-
+        shared_ptr<op::Sum> sum = dynamic_pointer_cast<op::Sum>(node);
         if (arg0_cipher != nullptr && out0_cipher != nullptr)
         {
-            NGRAPH_INFO << "Broadcast cipher cipher ";
-            Shape in_shape = arg0_cipher->get_shape();
-            Shape out_shape = out0_cipher->get_shape();
-            runtime::he::kernel::broadcast(arg0_cipher->get_elements(),
-                                           out0_cipher->get_elements(),
-                                           in_shape,
-                                           out_shape,
-                                           broadcast_axes);
-        }
-        else if (arg0_plain != nullptr && out0_cipher != nullptr)
-        {
-            NGRAPH_INFO << "Broadcast plain -> cipher ";
-            Shape in_shape = arg0_plain->get_shape();
-            Shape out_shape = out0_cipher->get_shape();
-            runtime::he::kernel::broadcast(arg0_plain->get_elements(),
-                                           out0_cipher->get_elements(),
-                                           in_shape,
-                                           out_shape,
-                                           broadcast_axes,
-                                           m_he_backend);
+            runtime::he::kernel::sum(arg0_cipher->get_elements(),
+                    out0_cipher->get_elements(),
+                    arg0_cipher->get_shape(),
+                    out0_cipher->get_shape(),
+                    sum->get_reduction_axes(),
+                    type,
+                    m_he_backend);
         }
         else if (arg0_plain != nullptr && out0_plain != nullptr)
         {
-            NGRAPH_INFO << "Broadcast plain plain";
-            Shape in_shape = arg0_plain->get_shape();
-            Shape out_shape = out0_plain->get_shape();
-            runtime::he::kernel::broadcast(arg0_plain->get_elements(),
-                                           out0_plain->get_elements(),
-                                           in_shape,
-                                           out_shape,
-                                           broadcast_axes);
+            NGRAPH_INFO << "sum plain plain" ;
+            throw ngraph_error("Sum types not supported.");
+        }
+        else if (arg0_plain != nullptr && out0_cipher != nullptr)
+        {
+            NGRAPH_INFO << "sum plain -> cipher";
+            throw ngraph_error("Sum types not supported.");
         }
         else
         {
-            throw ngraph_error("Broadcast types not supported.");
-        }
-    }
-    else if (node_op == "Concat")
-    {
-        shared_ptr<op::Concat> concat = dynamic_pointer_cast<op::Concat>(node);
-        if (arg0_cipher != nullptr && out0_cipher != nullptr)
-        {
-            vector<vector<shared_ptr<seal::Ciphertext>>> in_args;
-            vector<Shape> in_shapes;
-            for (shared_ptr<HETensorView> arg : args)
-            {
-                shared_ptr<HECipherTensorView> arg_cipher =
-                    dynamic_pointer_cast<HECipherTensorView>(arg);
-                if (arg_cipher == nullptr)
-                {
-                    throw ngraph_error("Concat type not consistent");
-                }
-                in_args.push_back(arg_cipher->get_elements());
-                in_shapes.push_back(arg_cipher->get_shape());
-
-                runtime::he::kernel::concat(in_args,
-                                            out0_cipher->get_elements(),
-                                            in_shapes,
-                                            out0_cipher->get_shape(),
-                                            concat->get_concatenation_axis());
-            }
-        }
-        else
-        {
-            throw ngraph_error("Concat types not supported.");
+            throw ngraph_error("Sum types not supported.");
         }
     }
     else
