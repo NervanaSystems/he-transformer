@@ -30,7 +30,7 @@ void runtime::he::assert_valid_seal_parameter(const runtime::he::SEALParameter& 
     {
         throw ngraph_error("sp.poly_modulus_degree must be 1024, 2048, 4096, 8192, 16384, 32768");
     }
-    if (sp.security_level != 128 && sp.security_level == 192)
+    if (sp.security_level != 128 && sp.security_level != 192)
     {
         throw ngraph_error("sp.security_level must be 128, 192");
     }
