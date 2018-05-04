@@ -18,8 +18,8 @@
 
 #include "he_backend.hpp"
 #include "kernel/multiply.hpp"
-#include "seal/seal.h"
 #include "ngraph/type/element_type.hpp"
+#include "seal/seal.h"
 
 using namespace std;
 using namespace ngraph;
@@ -74,16 +74,24 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Ciphertext>>& a
         float x_neg = -1;
         he_backend->encode(p_pos, (void*)&x_pos, type);
         he_backend->encode(p_neg, (void*)&x_neg, type);
-    }
+    } // TODO: add support for uint64_t?
 
     for (size_t i = 0; i < count; ++i)
     {
-        if (*arg1[i] == p_pos && (type_name == "int64_t" || type_name == "float" )
+        if (*arg1[i] == p_pos && (type_name == "int64_t" || type_name == "float"))
         {
-            out[i] = arg0[i];
-            NGRAPH_INFO << "Skip mult 1";
+            *out[i] = *arg0[i];
         }
-        he_backend.get()->get_evaluator()->multiply_plain(*arg0[i], *arg1[i], *out[i]);
+        else if (*arg1[i] == p_neg && (type_name == "int64_t" || type_name == "float"))
+        {
+            seal::Ciphertext c = *arg0[i];
+            he_backend.get()->get_evaluator()->negate(c);
+            *out[i] = c;
+        }
+        else
+        {
+            he_backend.get()->get_evaluator()->multiply_plain(*arg0[i], *arg1[i], *out[i]);
+        }
         // he_backend->get_evaluator()->relinearize(*out[i], *(he_backend->get_ev_key()));
     }
 }
@@ -103,8 +111,8 @@ void runtime::he::kernel::multiply(const shared_ptr<seal::Ciphertext>& arg0,
 void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Plaintext>>& arg0,
                                    const vector<shared_ptr<seal::Ciphertext>>& arg1,
                                    vector<shared_ptr<seal::Ciphertext>>& out,
-                                   shared_ptr<HEBackend> he_backend,
                                    const element::Type& type,
+                                   shared_ptr<HEBackend> he_backend,
                                    size_t count)
 {
     multiply(arg1, arg0, out, type, he_backend, count);
