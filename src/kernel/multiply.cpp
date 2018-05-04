@@ -59,40 +59,60 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Ciphertext>>& a
                                    size_t count)
 {
     const string type_name = type.c_type_string();
-    seal::Plaintext p_pos;
-    seal::Plaintext p_neg;
-    if (type_name == "int64_t")
-    {
-        int64_t x_pos = 1;
-        int64_t x_neg = -1;
-        he_backend->encode(p_pos, (void*)&x_pos, type);
-        he_backend->encode(p_neg, (void*)&x_neg, type);
-    }
-    else if (type_name == "float")
-    {
-        float x_pos = 1;
-        float x_neg = -1;
-        he_backend->encode(p_pos, (void*)&x_pos, type);
-        he_backend->encode(p_neg, (void*)&x_neg, type);
-    } // TODO: add support for uint64_t?
 
-    for (size_t i = 0; i < count; ++i)
+    if (type_name == "float")
     {
-        if (*arg1[i] == p_pos && (type_name == "int64_t" || type_name == "float"))
+        for (size_t i = 0; i < count; ++i)
         {
-            *out[i] = *arg0[i];
+            if (*arg1[i] == he_backend->get_plaintext_num().fl_1)
+            {
+                *out[i] = *arg0[i];
+            }
+            else if (*arg1[i] == he_backend->get_plaintext_num().fl_n1)
+            {
+                seal::Ciphertext c = *arg0[i];
+                he_backend.get()->get_evaluator()->negate(c);
+                *out[i] = c;
+            }
+            else
+            {
+                he_backend.get()->get_evaluator()->multiply_plain(*arg0[i], *arg1[i], *out[i]);
+                // he_backend->get_evaluator()->relinearize(*out[i], *(he_backend->get_ev_key()));
+            }
         }
-        else if (*arg1[i] == p_neg && (type_name == "int64_t" || type_name == "float"))
+    }
+    else if (type_name == "int64_t")
+    {
+        for (size_t i = 0; i < count; ++i)
         {
-            seal::Ciphertext c = *arg0[i];
-            he_backend.get()->get_evaluator()->negate(c);
-            *out[i] = c;
+            if (*arg1[i] == he_backend->get_plaintext_num().fl_1)
+            {
+                *out[i] = *arg0[i];
+            }
+            else if (*arg1[i] == he_backend->get_plaintext_num().fl_n1)
+            {
+                seal::Ciphertext c = *arg0[i];
+                he_backend.get()->get_evaluator()->negate(c);
+                *out[i] = c;
+            }
+            else
+            {
+                he_backend.get()->get_evaluator()->multiply_plain(*arg0[i], *arg1[i], *out[i]);
+                // he_backend->get_evaluator()->relinearize(*out[i], *(he_backend->get_ev_key()));
+            }
         }
-        else
+    }
+    else if (type_name == "uint64_t")
+    {
+        for (size_t i = 0; i < count; ++i)
         {
             he_backend.get()->get_evaluator()->multiply_plain(*arg0[i], *arg1[i], *out[i]);
+            // he_backend->get_evaluator()->relinearize(*out[i], *(he_backend->get_ev_key()));
         }
-        // he_backend->get_evaluator()->relinearize(*out[i], *(he_backend->get_ev_key()));
+    }
+    else
+    {
+        throw ngraph_error("Multiply type not supported " + type_name);
     }
 }
 

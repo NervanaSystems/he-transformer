@@ -70,6 +70,12 @@ runtime::he::HEBackend::HEBackend(const runtime::he::SEALParameter& sp)
     m_keygen->generate_evaluation_keys(sp.evaluation_decomposition_bit_count, ev_key);
     m_ev_key = make_shared<seal::EvaluationKeys>(ev_key);
     m_evaluator = make_shared<seal::Evaluator>(*m_context);
+
+    // Plaintext constants
+    m_plaintext_num = plaintext_num{m_frac_encoder->encode(1),
+                                    m_frac_encoder->encode(-1),
+                                    m_int_encoder->encode(1),
+                                    m_int_encoder->encode(-1)};
 }
 
 runtime::he::HEBackend::~HEBackend()
