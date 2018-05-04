@@ -29,8 +29,32 @@ namespace ngraph
 
             namespace kernel
             {
+                template <typename S, typename T>
+                void broadcast(const vector<shared_ptr<S>>& arg,
+                               vector<shared_ptr<T>>& out,
+                               const Shape& in_shape,
+                               const Shape& out_shape,
+                               const AxisSet& broadcast_axes)
+                {
+                    CoordinateTransform input_transform(in_shape);
+                    CoordinateTransform output_transform(out_shape);
+                    for (const Coordinate& output_coord : output_transform)
+                    {
+                        Coordinate input_coord = project(output_coord, broadcast_axes);
+
+                        out[output_transform.index(output_coord)] =
+                            arg[input_transform.index(input_coord)];
+                    }
+                };
+
                 void broadcast(const vector<shared_ptr<seal::Ciphertext>>& arg0,
                                vector<shared_ptr<seal::Ciphertext>>& out,
+                               const Shape& in_shape,
+                               const Shape& out_shape,
+                               const AxisSet& broadcast_axes);
+
+                void broadcast(const vector<shared_ptr<seal::Plaintext>>& arg0,
+                               vector<shared_ptr<seal::Plaintext>>& out,
                                const Shape& in_shape,
                                const Shape& out_shape,
                                const AxisSet& broadcast_axes);
