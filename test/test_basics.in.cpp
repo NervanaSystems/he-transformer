@@ -437,7 +437,7 @@ TEST_F(TestHEBackend, dot1d)
 
 TEST_F(TestHEBackend, dot1d_plain_binary)
 {
-    Shape shape{4};
+    Shape shape{16};
     auto A = make_shared<op::Parameter>(element::f32, shape);
     auto B = make_shared<op::Parameter>(element::f32, shape);
     Shape shape_r{};
@@ -445,13 +445,13 @@ TEST_F(TestHEBackend, dot1d_plain_binary)
 
     // Create some tensors for input/output
     auto a = m_he_backend->create_plain_tensor(element::f32, shape);
-    copy_data(a, vector<float>{1, 1, -1, -1});
+    copy_data(a, vector<float>{1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, -1});
     auto b = m_he_backend->create_tensor(element::f32, shape);
-    copy_data(b, vector<float>{2, 4, 8, 16});
+    copy_data(b, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
     auto result = m_he_backend->create_tensor(element::f32, shape_r);
 
     m_he_backend->call(f, {result}, {a, b});
-    EXPECT_EQ((vector<float>{-18}), read_vector<float>(result));
+    EXPECT_EQ((vector<float>{-64}), read_vector<float>(result));
 }
 
 TEST_F(TestHEBackend, dot1d_plain)
