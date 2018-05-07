@@ -252,7 +252,7 @@ TEST_F(TestHEBackend, abcde_budget)
     m_he_backend->call(f, {result}, {a, b, c, d, e});
 
     EXPECT_EQ(read_vector<float>(result),
-            (test::NDArray<float, 2>({{9945, 30240}, {65835, 122880}})).get_vector());
+              (test::NDArray<float, 2>({{9945, 30240}, {65835, 122880}})).get_vector());
 }
 
 TEST_F(TestHEBackend, abc_budget)
