@@ -17,8 +17,11 @@
 #include <vector>
 
 #include "he_backend.hpp"
-#include "kernel/sum.hpp"
+#include "he_cipher_tensor_view.hpp"
+#include "he_plain_tensor_view.hpp"
 #include "kernel/add.hpp"
+#include "kernel/sum.hpp"
+#include "ngraph/type/element_type.hpp"
 #include "seal/seal.h"
 #include "he_cipher_tensor_view.hpp"
 #include "he_plain_tensor_view.hpp"
@@ -55,8 +58,7 @@ void runtime::he::kernel::sum(const vector<shared_ptr<seal::Ciphertext>>& arg,
 
         shared_ptr<seal::Ciphertext> cipher_out = out[output_transform.index(output_coord)];
 
-        ngraph::runtime::he::kernel::add(cipher_out, arg[input_transform.index(input_coord)], cipher_out, he_backend);
-
-        //out[output_transform.index(output_coord)] += arg[input_transform.index(input_coord)];
+        ngraph::runtime::he::kernel::add(
+            cipher_out, arg[input_transform.index(input_coord)], cipher_out, he_backend);
     }
 }

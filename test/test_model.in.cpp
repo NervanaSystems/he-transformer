@@ -177,13 +177,13 @@ TEST_F(TestHEBackend, tf_experiment_const_1)
 TEST_F(TestHEBackend, tf_mnist_experiment_const)
 {
     auto backend = runtime::Backend::create("HE");
-    const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, "mnist_experiment_const_batch_5.js");
+    string filename = "mnist_experiment_batch2_layer8_skipeven_binary";
+    const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, filename + ".js");
     const string json_string = file_util::read_file_to_string(json_path);
     shared_ptr<Function> f = deserialize(json_string);
 
     // Visualize model
-    auto model_file_name =
-        "mnist_experiment_const_batch_5" + string(".") + pass::VisualizeTree::get_file_ext();
+    auto model_file_name = filename + string(".") + pass::VisualizeTree::get_file_ext();
 
     NGRAPH_INFO << "model file name " << model_file_name;
     pass::Manager pass_manager;

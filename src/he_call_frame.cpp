@@ -169,26 +169,9 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                 }
             }
         }
+        m_he_backend->check_noise_budget(outputs);
     }
-    // Check noise budget
-    NGRAPH_INFO << "Checking noise budget ";
-#pragma omp parallel for
-    for (size_t i = 0; i < output_tvs.size(); ++i)
-    {
-        shared_ptr<HECipherTensorView> out_i =
-            dynamic_pointer_cast<HECipherTensorView>(output_tvs[i]);
-        if (out_i != nullptr)
-        {
-            for (shared_ptr<seal::Ciphertext> ciphertext : out_i->get_elements())
-            {
-                if (m_he_backend->noise_budget(ciphertext) <= 0)
-                {
-                    throw ngraph_error("Noise budget depleted");
-                }
-            }
-        }
-    }
-    NGRAPH_INFO << "Done checking noise budget ";
+    m_he_backend->check_noise_budget(output_tvs);
 }
 
 void runtime::he::HECallFrame::generate_calls(const element::Type& type,
@@ -257,10 +240,10 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
             Shape in_shape = arg0_cipher->get_shape();
             Shape out_shape = out0_cipher->get_shape();
             runtime::he::kernel::broadcast(arg0_cipher->get_elements(),
-                    out0_cipher->get_elements(),
-                    in_shape,
-                    out_shape,
-                    broadcast_axes);
+                                           out0_cipher->get_elements(),
+                                           in_shape,
+                                           out_shape,
+                                           broadcast_axes);
         }
         else if (arg0_plain != nullptr && out0_cipher != nullptr)
         {
@@ -268,11 +251,11 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
             Shape in_shape = arg0_plain->get_shape();
             Shape out_shape = out0_cipher->get_shape();
             runtime::he::kernel::broadcast(arg0_plain->get_elements(),
-                    out0_cipher->get_elements(),
-                    in_shape,
-                    out_shape,
-                    broadcast_axes,
-                    m_he_backend);
+                                           out0_cipher->get_elements(),
+                                           in_shape,
+                                           out_shape,
+                                           broadcast_axes,
+                                           m_he_backend);
         }
         else if (arg0_plain != nullptr && out0_plain != nullptr)
         {
@@ -280,10 +263,10 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
             Shape in_shape = arg0_plain->get_shape();
             Shape out_shape = out0_plain->get_shape();
             runtime::he::kernel::broadcast(arg0_plain->get_elements(),
-                    out0_plain->get_elements(),
-                    in_shape,
-                    out_shape,
-                    broadcast_axes);
+                                           out0_plain->get_elements(),
+                                           in_shape,
+                                           out_shape,
+                                           broadcast_axes);
         }
         else
         {
@@ -309,10 +292,10 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                 in_shapes.push_back(arg_cipher->get_shape());
 
                 runtime::he::kernel::concat(in_args,
-                        out0_cipher->get_elements(),
-                        in_shapes,
-                        out0_cipher->get_shape(),
-                        concat->get_concatenation_axis());
+                                            out0_cipher->get_elements(),
+                                            in_shapes,
+                                            out0_cipher->get_shape(),
+                                            concat->get_concatenation_axis());
             }
         }
         else
@@ -539,16 +522,16 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         if (arg0_cipher != nullptr && out0_cipher != nullptr)
         {
             runtime::he::kernel::sum(arg0_cipher->get_elements(),
-                    out0_cipher->get_elements(),
-                    arg0_cipher->get_shape(),
-                    out0_cipher->get_shape(),
-                    sum->get_reduction_axes(),
-                    type,
-                    m_he_backend);
+                                     out0_cipher->get_elements(),
+                                     arg0_cipher->get_shape(),
+                                     out0_cipher->get_shape(),
+                                     sum->get_reduction_axes(),
+                                     type,
+                                     m_he_backend);
         }
         else if (arg0_plain != nullptr && out0_plain != nullptr)
         {
-            NGRAPH_INFO << "sum plain plain" ;
+            NGRAPH_INFO << "sum plain plain";
             throw ngraph_error("Sum types not supported.");
         }
         else if (arg0_plain != nullptr && out0_cipher != nullptr)
