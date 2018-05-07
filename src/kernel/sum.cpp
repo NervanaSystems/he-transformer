@@ -23,6 +23,9 @@
 #include "kernel/sum.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/seal.h"
+#include "he_cipher_tensor_view.hpp"
+#include "he_plain_tensor_view.hpp"
+#include "ngraph/type/element_type.hpp"
 
 using namespace std;
 using namespace ngraph;
