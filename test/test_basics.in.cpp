@@ -247,12 +247,12 @@ TEST_F(TestHEBackend, abcde_budget)
     copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
     copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
     copy_data(d, test::NDArray<float, 2>({{13, 14}, {15, 16}}).get_vector());
-    copy_data(d, test::NDArray<float, 2>({{17, 18}, {19, 20}}).get_vector());
+    copy_data(e, test::NDArray<float, 2>({{17, 18}, {19, 20}}).get_vector());
 
-    EXPECT_ANY_THROW(m_he_backend->call(f, {result}, {a, b, c, d, e}));
-    //m_he_backend->call(f, {result}, {a, b, c, d, e});
-    //EXPECT_EQ(read_vector<float>(result),
-    //        (test::NDArray<float, 2>({{585, 1680}, {3465, 6144}})).get_vector());
+    m_he_backend->call(f, {result}, {a, b, c, d, e});
+
+    EXPECT_EQ(read_vector<float>(result),
+              (test::NDArray<float, 2>({{9945, 30240}, {65835, 122880}})).get_vector());
 }
 
 TEST_F(TestHEBackend, abc_budget)
