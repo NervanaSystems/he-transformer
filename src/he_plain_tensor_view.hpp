@@ -55,6 +55,11 @@ namespace ngraph
                 void read(void* p, size_t tensor_offset, size_t n) const;
 
                 inline vector<shared_ptr<seal::Plaintext>>& get_elements() { return m_plain_texts; }
+
+				inline shared_ptr<seal::Plaintext>& get_element(size_t i)
+				{
+					return m_plain_texts[i];
+				}
             private:
                 std::vector<shared_ptr<seal::Plaintext>> m_plain_texts;
                 size_t m_num_elements;

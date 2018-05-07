@@ -56,7 +56,5 @@ void runtime::he::kernel::sum(const vector<shared_ptr<seal::Ciphertext>>& arg,
         shared_ptr<seal::Ciphertext> cipher_out = out[output_transform.index(output_coord)];
 
         ngraph::runtime::he::kernel::add(cipher_out, arg[input_transform.index(input_coord)], cipher_out, he_backend);
-
-        //out[output_transform.index(output_coord)] += arg[input_transform.index(input_coord)];
     }
 }

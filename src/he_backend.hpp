@@ -83,6 +83,8 @@ namespace ngraph
 
                 void decrypt(seal::Plaintext& output, const seal::Ciphertext& input);
 
+                void check_noise_budget(const vector<shared_ptr<runtime::he::HETensorView>>& tvs);
+
                 const inline std::shared_ptr<seal::Evaluator> get_evaluator() const
                 {
                     return m_evaluator;

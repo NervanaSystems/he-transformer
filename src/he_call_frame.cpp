@@ -169,26 +169,9 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                 }
             }
         }
+        m_he_backend->check_noise_budget(outputs);
     }
-    // Check noise budget
-    NGRAPH_INFO << "Checking noise budget ";
-#pragma omp parallel for
-    for (size_t i = 0; i < output_tvs.size(); ++i)
-    {
-        shared_ptr<HECipherTensorView> out_i =
-            dynamic_pointer_cast<HECipherTensorView>(output_tvs[i]);
-        if (out_i != nullptr)
-        {
-            for (shared_ptr<seal::Ciphertext> ciphertext : out_i->get_elements())
-            {
-                if (m_he_backend->noise_budget(ciphertext) <= 0)
-                {
-                    throw ngraph_error("Noise budget depleted");
-                }
-            }
-        }
-    }
-    NGRAPH_INFO << "Done checking noise budget ";
+    m_he_backend->check_noise_budget(output_tvs);
 }
 
 void runtime::he::HECallFrame::generate_calls(const element::Type& type,
