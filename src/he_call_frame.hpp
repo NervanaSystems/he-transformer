@@ -26,6 +26,7 @@
 #include "ngraph/node.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "ngraph/util.hpp"
+#include "ngraph/runtime/interpreter/int_call_frame.hpp"
 
 namespace ngraph
 {
