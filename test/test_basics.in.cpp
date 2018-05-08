@@ -317,7 +317,7 @@ TEST_F(TestHEBackend, abc_plain)
               (test::NDArray<float, 2>({{50, 72}, {98, 128}})).get_vector());
 }
 
-TEST_F(TestHEBackend, add_float_precision)
+/* TEST_F(TestHEBackend, add_float_precision)
 {
     Shape s{};
     auto a = make_shared<op::Parameter>(element::f32, s);
@@ -421,7 +421,7 @@ TEST_F(TestHEBackend, mult_int64_precision)
                       vector<int64_t>{sign * 6 * (int64_t)pow(2, 2 * power)});
         }
     }
-}
+} */
 
 TEST_F(TestHEBackend, dot1d)
 {
