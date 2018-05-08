@@ -20,17 +20,13 @@ include(ExternalProject)
 set(SEAL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ext_seal)
 set(SEAL_SRC_DIR ${SEAL_PREFIX}/src/ext_seal/SEAL)
 set(SEAL_TAR_FILE ${CMAKE_CURRENT_SOURCE_DIR}/third-party/SEAL_v2.3.0-4_Linux_debug.tar.gz)
-
-#set(CMAKE_BUILD_TYPE Debug)
 ExternalProject_Add(
     ext_seal
     URL ${SEAL_TAR_FILE}
     PREFIX ${SEAL_PREFIX}
-    #CONFIGURE_COMMAND cd ${SEAL_SRC_DIR} && ./configure CXXFLAGS="-fPIC -DSEAL_DEBUG" --prefix=${NGRAPH_HE_INSTALL_DIR}
-    CONFIGURE_COMMAND cd ${SEAL_SRC_DIR} && ./configure --prefix=${NGRAPH_HE_INSTALL_DIR}
+    CONFIGURE_COMMAND cd ${SEAL_SRC_DIR} && ./configure CXXFLAGS=-fPIC --prefix=${NGRAPH_HE_INSTALL_DIR}
     UPDATE_COMMAND ""
-    BUILD_COMMAND make CXXFLAGS="-fPIC -DSEAL_DEBUG -DHAVE_CONFIG_H -march=native -std=c++11" -j$(nproc) -C ${SEAL_SRC_DIR}
-    #BUILD_COMMAND make CXXFLAGS=-j$(nproc) -C ${SEAL_SRC_DIR}
+    BUILD_COMMAND make -j$(nproc) -C ${SEAL_SRC_DIR}
     INSTALL_COMMAND make install -C ${SEAL_SRC_DIR}
         && cp -r ${NGRAPH_HE_INSTALL_INCLUDE_DIR}/SEAL/seal ${NGRAPH_HE_INSTALL_INCLUDE_DIR}
         && rm -r ${NGRAPH_HE_INSTALL_INCLUDE_DIR}/SEAL
