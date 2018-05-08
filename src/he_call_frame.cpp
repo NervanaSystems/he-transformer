@@ -14,7 +14,15 @@
 * limitations under the License.
 *******************************************************************************/
 
+#include "ngraph/op/broadcast.hpp"
+#include "ngraph/op/concat.hpp"
+#include "ngraph/op/constant.hpp"
+#include "ngraph/op/dot.hpp"
+#include "ngraph/op/one_hot.hpp"
+#include "ngraph/op/reshape.hpp"
 #include "ngraph/op/result.hpp"
+#include "ngraph/op/slice.hpp"
+#include "ngraph/op/sum.hpp"
 
 #include "he_backend.hpp"
 #include "he_call_frame.hpp"
@@ -28,19 +36,12 @@
 #include "kernel/dot.hpp"
 #include "kernel/multiply.hpp"
 #include "kernel/one_hot.hpp"
+#include "kernel/relinearize.hpp"
 #include "kernel/reshape.hpp"
 #include "kernel/result.hpp"
 #include "kernel/slice.hpp"
 #include "kernel/subtract.hpp"
 #include "kernel/sum.hpp"
-#include "ngraph/op/broadcast.hpp"
-#include "ngraph/op/concat.hpp"
-#include "ngraph/op/constant.hpp"
-#include "ngraph/op/dot.hpp"
-#include "ngraph/op/one_hot.hpp"
-#include "ngraph/op/reshape.hpp"
-#include "ngraph/op/slice.hpp"
-#include "ngraph/op/sum.hpp"
 
 using namespace std;
 using namespace ngraph;
@@ -399,6 +400,20 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         else
         {
             throw ngraph_error("Multiply types not supported.");
+        }
+    }
+    else if (node_op == "Relinearize")
+    {
+        if (arg0_cipher != nullptr)
+        {
+            runtime::he::kernel::relinearize(arg0_cipher->get_elements(),
+                                             out0_cipher->get_elements(),
+                                             m_he_backend,
+                                             out0_cipher->get_element_count());
+        }
+        else
+        {
+            throw ngraph_error("Input to Relinearize must be ciphertext");
         }
     }
     else if (node_op == "OneHot")
