@@ -47,9 +47,10 @@ namespace ngraph
             static SEALParameter default_seal_parameter{
                 16384,  // poly_modulus_degree
                 128,    // security_level
-                1000000, // plain_modulus
+                // 10000000000, // plain_modulus
+                1099511627776 , // plain_modulus
                 64,     // fractional_encoder_integer_coeff_count
-                32,     // fractional_encoder_fraction_coeff_count
+                100,     // fractional_encoder_fraction_coeff_count
                 3,      // fractional_encoder_base
                 16      // evaluation_decomposition_bit_count
             };

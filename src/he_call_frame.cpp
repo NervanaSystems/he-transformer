@@ -89,6 +89,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
     // Invoke computation
     for (shared_ptr<Node> op : function->get_ordered_ops())
     {
+        NGRAPH_INFO << "Op " << op->get_name();
         if (op->description() == "Parameter")
         {
             continue;
@@ -157,12 +158,11 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
             base_type = op->get_inputs().at(0).get_tensor().get_element_type();
         }
 
-        NGRAPH_INFO << "Op " << op->get_name();
+        generate_calls(base_type, op, inputs, outputs);
+
         const string op_name = op->description();
         bool cpu_check = op_name != "Slice" && op_name != "Reshape" && op_name != "Broadcast";
-
-        // Check correctness with CPU result
-        generate_calls(base_type, op, inputs, outputs);
+        cpu_check = op_name == "Sum" || op->get_name() == "Reshape_76";
 
         if (cpu_check)
         {
@@ -191,7 +191,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
         const element::Type& type,
         const shared_ptr<Node>& op,
         const vector<shared_ptr<runtime::he::HETensorView>>& inputs,
-        const vector<shared_ptr<runtime::he::HETensorView>> outputs)
+        const vector<shared_ptr<runtime::he::HETensorView>>& outputs)
 {
     runtime::interpreter::INT_CallFrame cpu_call_frame(function);
     std::vector<std::shared_ptr<runtime::HostTensorView>> cpu_inputs;
@@ -236,6 +236,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
     const string type_name = type.c_type_string();
 
     // Compare outputs with CPU outputs
+    bool correct = true;
     for (size_t output_ind = 0; output_ind < outputs.size(); ++output_ind)
     {
         std::shared_ptr<runtime::he::HETensorView> he_out = outputs[output_ind];
@@ -247,21 +248,18 @@ void runtime::he::HECallFrame::check_cpu_calls(
 
         if (type_name == "float")
         {
-            vector<float> cpu_out_vec;
-            vector<float> he_out_vec;
-            for(size_t elem = 0; elem < he_out->get_element_count(); ++elem)
-            {
-                cpu_out_vec.push_back(0);
-                he_out_vec.push_back(0);
-            }
+            size_t element_count = he_out->get_element_count();
+            vector<float> cpu_out_vec(element_count, 0);
+            vector<float> he_out_vec(element_count, 0);
+
             he_out->read(&he_out_vec[0], 0, num_bytes);
             cpu_out->read(&cpu_out_vec[0], 0, num_bytes);
-            for(size_t elem = 0; elem < he_out->get_element_count(); ++elem)
+            for(size_t elem = 0; elem < element_count; ++elem)
             {
                 if (abs(cpu_out_vec[elem] - he_out_vec[elem]) > 0.001)
                 {
                     NGRAPH_INFO << "expect " << cpu_out_vec[elem] << ", actual: " << he_out_vec[elem];
-                    throw ngraph_error("Inaccurate float computation");
+                    correct = false;
                 }
             }
         }
@@ -269,6 +267,25 @@ void runtime::he::HECallFrame::check_cpu_calls(
         {
             throw ngraph_error("CPU checking for type " + type_name + " not enabled");
         }
+    }
+    if (!correct)
+    {
+        NGRAPH_INFO << "Inaccurate float computation. Inputs are: ";
+        for(std::shared_ptr<runtime::HostTensorView> cpu_input : cpu_inputs)
+        {
+            NGRAPH_INFO << "Input";
+            size_t element_count = cpu_input->get_element_count();
+            auto shape = cpu_input->get_shape();
+            size_t num_bytes = type.size() * shape_size(shape);
+            vector<float> cpu_inp_vec(element_count, 0);
+            cpu_input->read(&cpu_inp_vec[0], 0, num_bytes);
+            for(auto elem : cpu_inp_vec)
+            {
+                cout << elem << endl;
+            }
+        }
+
+        throw ngraph_error("Inaccurate float computation");
     }
     NGRAPH_INFO << "HE op matches CPU call";
 }
