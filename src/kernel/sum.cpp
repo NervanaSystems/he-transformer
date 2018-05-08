@@ -16,12 +16,15 @@
 
 #include <vector>
 
+#include "ngraph/type/element_type.hpp"
+
 #include "he_backend.hpp"
 #include "he_cipher_tensor_view.hpp"
+#include "he_cipher_tensor_view.hpp"
+#include "he_plain_tensor_view.hpp"
 #include "he_plain_tensor_view.hpp"
 #include "kernel/add.hpp"
 #include "kernel/sum.hpp"
-#include "ngraph/type/element_type.hpp"
 #include "seal/seal.h"
 
 using namespace std;
