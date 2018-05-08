@@ -78,40 +78,40 @@ namespace ngraph
                     // for the dotted axes.
                     CoordinateTransform dot_axes_transform(dot_axis_sizes);
 
-                    // Get outer_size and inner_size for parallelization
-                    size_t outer_size = 0;
+                    // Get arg0_projected_size and arg1_projected_size for parallelization
+                    size_t arg0_projected_size = 0;
                     for (const Coordinate& arg0_projected_coord : arg0_projected_transform)
                     {
-                        outer_size++;
+                        arg0_projected_size++;
                     }
-                    size_t inner_size = 0;
+                    size_t arg1_projected_size = 0;
                     for (const Coordinate& arg1_projected_coord : arg1_projected_transform)
                     {
-                        inner_size++;
+                        arg1_projected_size++;
                     }
-                    size_t global_size = outer_size * inner_size;
+                    size_t global_projected_size = arg0_projected_size * arg1_projected_size;
 
 #pragma omp parallel for
-                    for (size_t global_idx = 0; global_idx < global_size; ++global_idx)
+                    for (size_t global_idx = 0; global_idx < global_projected_size; ++global_idx)
                     {
                         // Compute outer and inner index
-                        size_t outer_idx = global_idx / inner_size;
-                        size_t inner_idx = global_idx % inner_size;
+                        size_t arg0_projected_idx = global_idx / arg1_projected_size;
+                        size_t arg1_projected_idx = global_idx % arg1_projected_size;
 
                         // TODO: move to coordinate transform, or precompute this and store in a
                         //       matrix
-                        auto outer_it = arg0_projected_transform.begin();
-                        for (size_t i = 0; i < outer_idx; ++i)
+                        auto arg0_projected_it = arg0_projected_transform.begin();
+                        for (size_t i = 0; i < arg0_projected_idx; ++i)
                         {
-                            ++outer_it;
+                            ++arg0_projected_it;
                         }
-                        const Coordinate& arg0_projected_coord = *outer_it;
-                        auto inner_it = arg1_projected_transform.begin();
-                        for (size_t i = 0; i < inner_idx; ++i)
+                        const Coordinate& arg0_projected_coord = *arg0_projected_it;
+                        auto arg1_projected_it = arg1_projected_transform.begin();
+                        for (size_t i = 0; i < arg1_projected_idx; ++i)
                         {
-                            ++inner_it;
+                            ++arg1_projected_it;
                         }
-                        const Coordinate& arg1_projected_coord = *inner_it;
+                        const Coordinate& arg1_projected_coord = *arg1_projected_it;
 
                         // The output coordinate is just the concatenation of the projected coordinates.
                         Coordinate out_coord(arg0_projected_coord.size() +
