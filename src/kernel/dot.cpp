@@ -35,7 +35,7 @@ void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<seal::Ciphertext>>
                                       const element::Type& type,
                                       shared_ptr<HEBackend> he_backend)
 {
-    dot_template<seal::Ciphertext, seal::Ciphertext>(
+    dot_template(
         arg0, arg1, out, arg0_shape, arg1_shape, out_shape, reduction_axes_count, type, he_backend);
 }
 
@@ -49,7 +49,7 @@ void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<seal::Ciphertext>>
                                       const element::Type& type,
                                       shared_ptr<HEBackend> he_backend)
 {
-    dot_template<seal::Ciphertext, seal::Plaintext>(
+    dot_template(
         arg0, arg1, out, arg0_shape, arg1_shape, out_shape, reduction_axes_count, type, he_backend);
 }
 
@@ -63,6 +63,6 @@ void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<seal::Plaintext>>&
                                       const element::Type& type,
                                       shared_ptr<HEBackend> he_backend)
 {
-    dot_template<seal::Plaintext, seal::Ciphertext>(
+    dot_template(
         arg0, arg1, out, arg0_shape, arg1_shape, out_shape, reduction_axes_count, type, he_backend);
 }
