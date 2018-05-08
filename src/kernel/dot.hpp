@@ -92,11 +92,13 @@ namespace ngraph
                     size_t global_projected_size = arg0_projected_size * arg1_projected_size;
 
 #pragma omp parallel for
-                    for (size_t global_idx = 0; global_idx < global_projected_size; ++global_idx)
+                    for (size_t global_projected_idx = 0;
+                         global_projected_idx < global_projected_size;
+                         ++global_projected_idx)
                     {
                         // Compute outer and inner index
-                        size_t arg0_projected_idx = global_idx / arg1_projected_size;
-                        size_t arg1_projected_idx = global_idx % arg1_projected_size;
+                        size_t arg0_projected_idx = global_projected_idx / arg1_projected_size;
+                        size_t arg1_projected_idx = global_projected_idx % arg1_projected_size;
 
                         // TODO: move to coordinate transform, or precompute this and store in a
                         //       matrix
