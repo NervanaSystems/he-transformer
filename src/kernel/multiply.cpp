@@ -31,12 +31,10 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Ciphertext>>& a
                                    shared_ptr<HEBackend> he_backend,
                                    size_t count)
 {
-    shared_ptr<seal::EvaluationKeys> ev_key = he_backend.get()->get_ev_key();
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
     {
         he_backend.get()->get_evaluator()->multiply(*arg0[i], *arg1[i], *out[i]);
-        he_backend->get_evaluator()->relinearize(*out[i], *(he_backend->get_ev_key()));
     }
 }
 
@@ -78,7 +76,6 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Ciphertext>>& a
             else
             {
                 he_backend.get()->get_evaluator()->multiply_plain(*arg0[i], *arg1[i], *out[i]);
-                he_backend->get_evaluator()->relinearize(*out[i], *(he_backend->get_ev_key()));
             }
         }
     }
@@ -100,7 +97,6 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Ciphertext>>& a
             else
             {
                 he_backend.get()->get_evaluator()->multiply_plain(*arg0[i], *arg1[i], *out[i]);
-                he_backend->get_evaluator()->relinearize(*out[i], *(he_backend->get_ev_key()));
             }
         }
     }
@@ -110,7 +106,6 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Ciphertext>>& a
         for (size_t i = 0; i < count; ++i)
         {
             he_backend.get()->get_evaluator()->multiply_plain(*arg0[i], *arg1[i], *out[i]);
-            he_backend->get_evaluator()->relinearize(*out[i], *(he_backend->get_ev_key()));
         }
     }
     else
