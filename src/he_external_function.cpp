@@ -14,9 +14,6 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "he_external_function.hpp"
-#include "he_backend.hpp"
-#include "he_call_frame.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
 #include "ngraph/function.hpp"
 #include "ngraph/pass/assign_layout.hpp"
@@ -24,6 +21,11 @@
 #include "ngraph/pass/liveness.hpp"
 #include "ngraph/pass/manager.hpp"
 #include "ngraph/pass/memory_layout.hpp"
+
+#include "he_backend.hpp"
+#include "he_call_frame.hpp"
+#include "he_external_function.hpp"
+#include "pass/insert_relinearize.hpp"
 
 using namespace std;
 using namespace ngraph;
@@ -47,10 +49,10 @@ void runtime::he::HEExternalFunction::compile()
         return;
     }
 
-    pass::Manager pass_manager;
+    ngraph::pass::Manager pass_manager;
     // For now, just make everyone row-major.
-    pass_manager.register_pass<pass::AssignLayout<DenseTensorViewLayout>>();
-    pass_manager.register_pass<pass::Liveness>();
+    pass_manager.register_pass<ngraph::pass::AssignLayout<DenseTensorViewLayout>>();
+    pass_manager.register_pass<runtime::he::pass::InsertRelinearize>();
     pass_manager.run_passes(m_function);
 
     m_is_compiled = true;

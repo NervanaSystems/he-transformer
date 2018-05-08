@@ -34,11 +34,13 @@ set (HE_SRC
     kernel/dot.cpp
     kernel/multiply.cpp
     kernel/one_hot.cpp
+    kernel/relinearize.cpp
     kernel/reshape.cpp
     kernel/result.cpp
     kernel/slice.cpp
     kernel/subtract.cpp
     kernel/sum.cpp
+    pass/insert_relinearize.cpp
 )
 
 # Paths for the upstream ngraph
