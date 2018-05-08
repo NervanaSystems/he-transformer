@@ -162,94 +162,12 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         bool cpu_check = op_name != "Slice" && op_name != "Reshape" && op_name != "Broadcast";
 
         // Check correctness with CPU result
-        runtime::interpreter::INT_CallFrame cpu_call_frame(function);
-        std::vector<std::shared_ptr<runtime::HostTensorView>> cpu_inputs;
-        std::vector<std::shared_ptr<runtime::HostTensorView>> cpu_outputs;
-        std::vector<std::shared_ptr<runtime::HostTensorView>> result_outputs;
-
-        if (cpu_check)
-        {
-            for (std::shared_ptr<runtime::he::HETensorView> he_tv : inputs)
-            {
-                std::shared_ptr<HECipherTensorView> cipher_tv = dynamic_pointer_cast<runtime::he::HECipherTensorView>(he_tv);
-                std::shared_ptr<HEPlainTensorView> plain_tv = dynamic_pointer_cast<runtime::he::HEPlainTensorView>(he_tv);
-
-                const element::Type& type = he_tv->get_tensor_view_layout()->get_element_type();
-                auto shape = he_tv->get_shape();
-                size_t num_bytes = type.size() * shape_size(shape);
-                shared_ptr<HostTensorView> tv = make_shared<HostTensorView>(type, shape);
-
-                if (cipher_tv != nullptr)
-                {
-                    cipher_tv->read(tv->get_data_ptr(), 0, num_bytes);
-                }
-                else if (plain_tv != nullptr)
-                {
-                    plain_tv->read(tv->get_data_ptr(), 0, num_bytes);
-                }
-                else
-                {
-                    throw ngraph_error("Input neither plain nor cipher tensorview.");
-                }
-                cpu_inputs.push_back(tv);
-            }
-
-            for (std::shared_ptr<runtime::he::HETensorView> he_tv : outputs)
-            {
-                const element::Type& type = he_tv->get_tensor_view_layout()->get_element_type();
-                auto shape = he_tv->get_shape();
-                size_t num_bytes = type.size() * shape_size(shape);
-                shared_ptr<HostTensorView> tv = make_shared<HostTensorView>(type, shape);
-                cpu_outputs.push_back(tv);
-            }
-            NGRAPH_INFO << "Generating CPU calls";
-            cpu_call_frame.generate_calls(base_type, base_type, *op, cpu_inputs, cpu_outputs);
-        }
-
         generate_calls(base_type, op, inputs, outputs);
 
         if (cpu_check)
         {
-            const string type_name = base_type.c_type_string();
-
-            // Compare outputs with CPU outputs
-            for (size_t output_ind = 0; output_ind < outputs.size(); ++output_ind)
-            {
-                std::shared_ptr<runtime::he::HETensorView> he_out = outputs[output_ind];
-                std::shared_ptr<runtime::HostTensorView> cpu_out = cpu_outputs[output_ind];
-
-                const element::Type& type = he_out->get_tensor_view_layout()->get_element_type();
-                auto shape = he_out->get_shape();
-                size_t num_bytes = type.size() * shape_size(shape);
-
-                if (type_name == "float")
-                {
-                    vector<float> cpu_out_vec;
-                    vector<float> he_out_vec;
-                    for(size_t elem = 0; elem < he_out->get_element_count(); ++elem)
-                    {
-                        cpu_out_vec.push_back(0);
-                        he_out_vec.push_back(0);
-                    }
-                    he_out->read(&he_out_vec[0], 0, num_bytes);
-                    cpu_out->read(&cpu_out_vec[0], 0, num_bytes);
-                    for(size_t elem = 0; elem < he_out->get_element_count(); ++elem)
-                    {
-                        if (abs(cpu_out_vec[elem] - he_out_vec[elem]) > 0.001)
-                        {
-                            NGRAPH_INFO << "expect " << cpu_out_vec[elem] << ", actual: " << he_out_vec[elem];
-                            throw ngraph_error("Inaccurate float computation");
-                        }
-                    }
-                }
-                else
-                {
-                    throw ngraph_error("CPU checking for type " + type_name + " not enabled");
-                }
-            }
-            NGRAPH_INFO << "HE op matches CPU call";
+            check_cpu_calls(function, base_type, op, inputs, outputs);
         }
-
 
         // Delete any obsolete tensors
         for (const descriptor::Tensor* t : op->liveness_free_list)
@@ -266,6 +184,93 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         m_he_backend->check_noise_budget(outputs);
     }
     m_he_backend->check_noise_budget(output_tvs);
+}
+
+void runtime::he::HECallFrame::check_cpu_calls(
+        shared_ptr<Function> function,
+        const element::Type& type,
+        const shared_ptr<Node>& op,
+        const vector<shared_ptr<runtime::he::HETensorView>>& inputs,
+        const vector<shared_ptr<runtime::he::HETensorView>> outputs)
+{
+    runtime::interpreter::INT_CallFrame cpu_call_frame(function);
+    std::vector<std::shared_ptr<runtime::HostTensorView>> cpu_inputs;
+    std::vector<std::shared_ptr<runtime::HostTensorView>> cpu_outputs;
+    std::vector<std::shared_ptr<runtime::HostTensorView>> result_outputs;
+
+    for (std::shared_ptr<runtime::he::HETensorView> he_tv : inputs)
+    {
+        std::shared_ptr<HECipherTensorView> cipher_tv = dynamic_pointer_cast<runtime::he::HECipherTensorView>(he_tv);
+        std::shared_ptr<HEPlainTensorView> plain_tv = dynamic_pointer_cast<runtime::he::HEPlainTensorView>(he_tv);
+
+        const element::Type& type = he_tv->get_tensor_view_layout()->get_element_type();
+        auto shape = he_tv->get_shape();
+        size_t num_bytes = type.size() * shape_size(shape);
+        shared_ptr<HostTensorView> tv = make_shared<HostTensorView>(type, shape);
+
+        if (cipher_tv != nullptr)
+        {
+            cipher_tv->read(tv->get_data_ptr(), 0, num_bytes);
+        }
+        else if (plain_tv != nullptr)
+        {
+            plain_tv->read(tv->get_data_ptr(), 0, num_bytes);
+        }
+        else
+        {
+            throw ngraph_error("Input neither plain nor cipher tensorview.");
+        }
+        cpu_inputs.push_back(tv);
+    }
+
+    for (std::shared_ptr<runtime::he::HETensorView> he_tv : outputs)
+    {
+        const element::Type& type = he_tv->get_tensor_view_layout()->get_element_type();
+        auto shape = he_tv->get_shape();
+        size_t num_bytes = type.size() * shape_size(shape);
+        shared_ptr<HostTensorView> tv = make_shared<HostTensorView>(type, shape);
+        cpu_outputs.push_back(tv);
+    }
+    NGRAPH_INFO << "Generating CPU calls";
+    cpu_call_frame.generate_calls(type, type, *op, cpu_inputs, cpu_outputs);
+    const string type_name = type.c_type_string();
+
+    // Compare outputs with CPU outputs
+    for (size_t output_ind = 0; output_ind < outputs.size(); ++output_ind)
+    {
+        std::shared_ptr<runtime::he::HETensorView> he_out = outputs[output_ind];
+        std::shared_ptr<runtime::HostTensorView> cpu_out = cpu_outputs[output_ind];
+
+        const element::Type& type = he_out->get_tensor_view_layout()->get_element_type();
+        auto shape = he_out->get_shape();
+        size_t num_bytes = type.size() * shape_size(shape);
+
+        if (type_name == "float")
+        {
+            vector<float> cpu_out_vec;
+            vector<float> he_out_vec;
+            for(size_t elem = 0; elem < he_out->get_element_count(); ++elem)
+            {
+                cpu_out_vec.push_back(0);
+                he_out_vec.push_back(0);
+            }
+            he_out->read(&he_out_vec[0], 0, num_bytes);
+            cpu_out->read(&cpu_out_vec[0], 0, num_bytes);
+            for(size_t elem = 0; elem < he_out->get_element_count(); ++elem)
+            {
+                if (abs(cpu_out_vec[elem] - he_out_vec[elem]) > 0.001)
+                {
+                    NGRAPH_INFO << "expect " << cpu_out_vec[elem] << ", actual: " << he_out_vec[elem];
+                    throw ngraph_error("Inaccurate float computation");
+                }
+            }
+        }
+        else
+        {
+            throw ngraph_error("CPU checking for type " + type_name + " not enabled");
+        }
+    }
+    NGRAPH_INFO << "HE op matches CPU call";
 }
 
 void runtime::he::HECallFrame::generate_calls(const element::Type& type,
