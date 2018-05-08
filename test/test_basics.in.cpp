@@ -37,6 +37,13 @@ TEST_F(TestHEBackend, backend_init)
     EXPECT_EQ(1, 1);
 }
 
+TEST_F(TestHEBackend, seal_debug)
+{
+#ifndef SEAL_DEBUG
+    EXPECT_EQ(1,2);
+#endif
+}
+
 TEST_F(TestHEBackend, cipher_tv_write_read_scalar)
 {
     Shape shape{};
