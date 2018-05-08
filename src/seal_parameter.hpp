@@ -48,9 +48,12 @@ namespace ngraph
                 16384,  // poly_modulus_degree
                 128,    // security_level
                 // 10000000000, // plain_modulus
-                1099511627776 , // plain_modulus
+                // 1099511627776 , // plain_modulus (1 << 40)
+                //1125899906842624, // (1 << 50)
+                1UL << 52,
+                //4611686018427387904 - 1, // (1 << 62 - 1)
                 64,     // fractional_encoder_integer_coeff_count
-                100,     // fractional_encoder_fraction_coeff_count
+                32,     // fractional_encoder_fraction_coeff_count
                 3,      // fractional_encoder_base
                 16      // evaluation_decomposition_bit_count
             };
