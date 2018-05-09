@@ -69,7 +69,8 @@ namespace ngraph
                                     const element::Type& type,
                                     const shared_ptr<Node>& op,
                                     const vector<shared_ptr<runtime::he::HETensorView>>& inputs,
-                                    const vector<shared_ptr<runtime::he::HETensorView>>& outputs);
+                                    const vector<shared_ptr<runtime::he::HETensorView>>& outputs,
+                                    bool verbose);
             };
         }
     }

@@ -162,11 +162,11 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
 
         const string op_name = op->description();
         bool cpu_check = op_name != "Slice" && op_name != "Reshape" && op_name != "Broadcast";
-        cpu_check = op_name == "Sum" || op->get_name() == "Reshape_76";
+        cpu_check = op_name == "Sum" || op_name == "Add" || op_name == "Dot" || op_name == "Multiply";
 
         if (cpu_check)
         {
-            check_cpu_calls(function, base_type, op, inputs, outputs);
+            check_cpu_calls(function, base_type, op, inputs, outputs, op_name == "Add");
         }
 
         // Delete any obsolete tensors
@@ -191,7 +191,8 @@ void runtime::he::HECallFrame::check_cpu_calls(
         const element::Type& type,
         const shared_ptr<Node>& op,
         const vector<shared_ptr<runtime::he::HETensorView>>& inputs,
-        const vector<shared_ptr<runtime::he::HETensorView>>& outputs)
+        const vector<shared_ptr<runtime::he::HETensorView>>& outputs,
+        bool verbose)
 {
     runtime::interpreter::INT_CallFrame cpu_call_frame(function);
     std::vector<std::shared_ptr<runtime::HostTensorView>> cpu_inputs;
@@ -268,7 +269,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
             throw ngraph_error("CPU checking for type " + type_name + " not enabled");
         }
     }
-    if (!correct)
+    if (!correct || verbose)
     {
         NGRAPH_INFO << "Inaccurate float computation. Inputs are: ";
         for(std::shared_ptr<runtime::HostTensorView> cpu_input : cpu_inputs)
@@ -284,8 +285,22 @@ void runtime::he::HECallFrame::check_cpu_calls(
                 cout << elem << endl;
             }
         }
-
-        throw ngraph_error("Inaccurate float computation");
+        for(std::shared_ptr<runtime::HostTensorView> cpu_output : cpu_outputs)
+        {
+            NGRAPH_INFO << "output";
+            size_t element_count = cpu_output->get_element_count();
+            auto shape = cpu_output->get_shape();
+            size_t num_bytes = type.size() * shape_size(shape);
+            vector<float> cpu_inp_vec(element_count, 0);
+            cpu_output->read(&cpu_inp_vec[0], 0, num_bytes);
+            for(auto elem : cpu_inp_vec)
+            {
+                cout << elem << endl;
+            }
+        }
+        if (!correct) {
+            throw ngraph_error("Inaccurate float computation");
+        }
     }
     NGRAPH_INFO << "HE op matches CPU call";
 }
