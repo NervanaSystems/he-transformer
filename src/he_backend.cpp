@@ -242,8 +242,7 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> func,
                                   const vector<shared_ptr<runtime::TensorView>>& inputs)
 {
     compile(func);
-    auto call_frame = m_function_map.at(func);
-    call_frame->call(outputs, inputs);
+    m_function_map.at(func)->call(outputs, inputs);
     return true;
 }
 
