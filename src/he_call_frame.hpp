@@ -34,11 +34,9 @@ namespace ngraph
     namespace runtime
     {
         class TensorView;
-        class ExternalFunction;
 
         namespace he
         {
-            class HEExternalFunction;
             class HETensorView;
 
             // A VM for executing lightly-compiled graph functions

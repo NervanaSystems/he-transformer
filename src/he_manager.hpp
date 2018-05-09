@@ -27,8 +27,6 @@ namespace ngraph
 
     namespace runtime
     {
-        class ExternalFunction;
-
         namespace he
         {
             class HEManager : public Manager

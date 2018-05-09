@@ -31,7 +31,6 @@ namespace ngraph
 
         namespace he
         {
-            class HEExternalFunction;
             class HECallFrame;
             class HETensorView;
             class HEPlainTensorView;
