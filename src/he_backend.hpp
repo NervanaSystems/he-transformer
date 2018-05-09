@@ -124,14 +124,8 @@ namespace ngraph
                 std::shared_ptr<seal::Evaluator> m_evaluator;
                 plaintext_num m_plaintext_num;
 
-                class FunctionInstance
-                {
-                public:
-                    std::shared_ptr<HECallFrame> m_call_frame;
-                    std::shared_ptr<Function> m_function;
-                };
-
-                std::unordered_map<std::shared_ptr<Function>, FunctionInstance> m_function_map;
+                std::unordered_map<std::shared_ptr<Function>, std::shared_ptr<HECallFrame>>
+                    m_function_map;
             };
         }
     }

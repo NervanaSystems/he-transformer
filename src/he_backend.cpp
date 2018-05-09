@@ -14,10 +14,10 @@
 * limitations under the License.
 *******************************************************************************/
 
+#include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
 #include "ngraph/function.hpp"
 #include "ngraph/pass/assign_layout.hpp"
 #include "ngraph/pass/manager.hpp"
-#include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
 
 #include "he_backend.hpp"
 #include "he_call_frame.hpp"
@@ -217,20 +217,22 @@ shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_tensor(
 
 bool runtime::he::HEBackend::compile(shared_ptr<Function> func)
 {
-    FunctionInstance& instance = m_function_map[func];
-    if (instance.m_call_frame == nullptr)
+    if (m_function_map.count(func) == 0)
     {
         shared_ptr<HEBackend> he_backend = shared_from_this();
-        instance.m_function = clone_function(*func);
+        shared_ptr<Function> cf_func = clone_function(*func);
 
         // Run passes
         ngraph::pass::Manager pass_manager;
-        pass_manager.register_pass<ngraph::pass::AssignLayout<descriptor::layout::DenseTensorViewLayout>>();
+        pass_manager
+            .register_pass<ngraph::pass::AssignLayout<descriptor::layout::DenseTensorViewLayout>>();
         pass_manager.register_pass<runtime::he::pass::InsertRelinearize>();
-        pass_manager.run_passes(instance.m_function);
+        pass_manager.run_passes(cf_func);
 
         // Create call frame
-        instance.m_call_frame = make_shared<HECallFrame>(instance.m_function, he_backend);
+        shared_ptr<HECallFrame> call_frame = make_shared<HECallFrame>(cf_func, he_backend);
+
+        m_function_map.insert({func, call_frame});
     }
     return true;
 }
@@ -239,16 +241,10 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> func,
                                   const vector<shared_ptr<runtime::TensorView>>& outputs,
                                   const vector<shared_ptr<runtime::TensorView>>& inputs)
 {
-    bool rc = true;
-
-    FunctionInstance& instance = m_function_map[func];
-    if (instance.m_call_frame == nullptr)
-    {
-        rc = compile(func);
-    }
-
-    instance.m_call_frame->call(outputs, inputs);
-    return rc;
+    compile(func);
+    auto call_frame = m_function_map.at(func);
+    call_frame->call(outputs, inputs);
+    return true;
 }
 
 void runtime::he::HEBackend::clear_function_instance()
