@@ -128,8 +128,8 @@ namespace ngraph
                 class FunctionInstance
                 {
                 public:
-                    std::shared_ptr<HEExternalFunction> m_external_function;
                     std::shared_ptr<HECallFrame> m_call_frame;
+                    std::shared_ptr<Function> m_function;
                 };
 
                 std::unordered_map<std::shared_ptr<Function>, FunctionInstance> m_function_map;

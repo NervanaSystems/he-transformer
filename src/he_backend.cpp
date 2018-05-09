@@ -14,12 +14,17 @@
 * limitations under the License.
 *******************************************************************************/
 
+#include "ngraph/function.hpp"
+#include "ngraph/pass/assign_layout.hpp"
+#include "ngraph/pass/manager.hpp"
+#include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
+
 #include "he_backend.hpp"
 #include "he_call_frame.hpp"
 #include "he_cipher_tensor_view.hpp"
-#include "he_external_function.hpp"
 #include "he_plain_tensor_view.hpp"
 #include "he_tensor_view.hpp"
+#include "pass/insert_relinearize.hpp"
 
 using namespace ngraph;
 using namespace std;
@@ -213,12 +218,19 @@ shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_tensor(
 bool runtime::he::HEBackend::compile(shared_ptr<Function> func)
 {
     FunctionInstance& instance = m_function_map[func];
-    if (instance.m_external_function == nullptr)
+    if (instance.m_call_frame == nullptr)
     {
         shared_ptr<HEBackend> he_backend = shared_from_this();
-        instance.m_external_function = make_shared<HEExternalFunction>(func, he_backend);
-        auto cf = instance.m_external_function->make_call_frame();
-        instance.m_call_frame = dynamic_pointer_cast<HECallFrame>(cf);
+        instance.m_function = clone_function(*func);
+
+        // Run passes
+        ngraph::pass::Manager pass_manager;
+        pass_manager.register_pass<ngraph::pass::AssignLayout<descriptor::layout::DenseTensorViewLayout>>();
+        pass_manager.register_pass<runtime::he::pass::InsertRelinearize>();
+        pass_manager.run_passes(instance.m_function);
+
+        // Create call frame
+        instance.m_call_frame = make_shared<HECallFrame>(instance.m_function, he_backend);
     }
     return true;
 }
@@ -230,7 +242,7 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> func,
     bool rc = true;
 
     FunctionInstance& instance = m_function_map[func];
-    if (instance.m_external_function == nullptr)
+    if (instance.m_call_frame == nullptr)
     {
         rc = compile(func);
     }
