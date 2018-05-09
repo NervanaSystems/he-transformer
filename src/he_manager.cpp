@@ -17,7 +17,6 @@
 #include <memory>
 
 #include "he_backend.hpp"
-#include "he_external_function.hpp"
 #include "he_manager.hpp"
 
 using namespace ngraph;
