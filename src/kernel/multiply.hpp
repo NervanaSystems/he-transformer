@@ -71,6 +71,19 @@ namespace ngraph
                               shared_ptr<seal::Ciphertext>& out,
                               const element::Type& type,
                               shared_ptr<HEBackend> he_backend);
+
+                void multiply(const vector<shared_ptr<seal::Plaintext>>& arg0,
+                              const vector<shared_ptr<seal::Plaintext>>& arg1,
+                              vector<shared_ptr<seal::Plaintext>>& out,
+                              const element::Type& type,
+                              shared_ptr<HEBackend> he_backend,
+                              size_t count);
+
+                void multiply(const shared_ptr<seal::Plaintext>& arg0,
+                              const shared_ptr<seal::Plaintext>& arg1,
+                              shared_ptr<seal::Plaintext>& out,
+                              const element::Type& type,
+                              shared_ptr<HEBackend> he_backend);
             }
         }
     }

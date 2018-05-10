@@ -20,6 +20,10 @@
 
 namespace ngraph
 {
+    namespace element
+    {
+        class Type;
+    }
     namespace runtime
     {
         namespace he
@@ -50,6 +54,19 @@ namespace ngraph
                          vector<shared_ptr<seal::Ciphertext>>& out,
                          shared_ptr<HEBackend> he_backend,
                          size_t count);
+
+                void add(const vector<shared_ptr<seal::Plaintext>>& arg0,
+                        const vector<shared_ptr<seal::Plaintext>>& arg1,
+                        vector<shared_ptr<seal::Plaintext>>& out,
+                        const element::Type& type,
+                        shared_ptr<HEBackend> he_backend,
+                        size_t count);
+
+                void add(const shared_ptr<seal::Plaintext>& arg0,
+                        const shared_ptr<seal::Plaintext>& arg1,
+                        shared_ptr<seal::Plaintext>& out,
+                        const element::Type& type,
+                        shared_ptr<HEBackend> he_backend);
             }
         }
     }

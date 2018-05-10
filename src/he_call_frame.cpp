@@ -138,6 +138,28 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                         tensor_map.insert({tv, itv});
                     }
                 }
+                else if (op->description() == "Add" || op->description() == "Multiply" ||
+                        op->description() == "Dot")
+                {
+                    shared_ptr<HEPlainTensorView> in0_plain =
+                        dynamic_pointer_cast<HEPlainTensorView>(inputs[0]);
+                    shared_ptr<HEPlainTensorView> in1_plain =
+                        dynamic_pointer_cast<HEPlainTensorView>(inputs[1]);
+                    if ((in0_plain != nullptr) && (in0_plain != nullptr))
+                    {
+                        NGRAPH_INFO << "Op " << op->description() << " out is plaintext";
+                        auto itv = make_shared<runtime::he::HEPlainTensorView>(
+                                element_type, shape, m_he_backend, name);
+                        tensor_map.insert({tv, itv});
+                    }
+                    else
+                    {
+                        auto itv = make_shared<runtime::he::HECipherTensorView>(
+                                element_type, shape, m_he_backend, name);
+                        tensor_map.insert({tv, itv});
+                    }
+                }
+                // TODO: multiply op here!
                 else
                 {
                     auto itv = make_shared<runtime::he::HECipherTensorView>(
@@ -163,6 +185,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         const string op_name = op->description();
         bool cpu_check = op_name != "Slice" && op_name != "Reshape" && op_name != "Broadcast";
         cpu_check = op_name == "Sum" || op_name == "Add" || op_name == "Dot" || op_name == "Multiply";
+        cpu_check = false; // TODO: enable
 
         if (cpu_check)
         {
@@ -355,6 +378,15 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                      m_he_backend,
                                      out0_cipher->get_element_count());
         }
+        else if (arg0_plain != nullptr && arg1_plain != nullptr)
+        {
+            runtime::he::kernel::add(arg0_plain->get_elements(),
+                    arg1_plain->get_elements(),
+                    out0_plain->get_elements(),
+                    type,
+                    m_he_backend,
+                    out0_plain->get_element_count());
+        }
         else
         {
             throw ngraph_error("Add types not supported.");
@@ -493,7 +525,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                      type,
                                      m_he_backend);
         }
-        else
+        else if (arg0_plain != nullptr && arg1_plain != nullptr)
         {
             NGRAPH_INFO << "Dot plain plain";
             runtime::he::kernel::dot(arg0_plain->get_elements(),
@@ -539,6 +571,15 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                           type,
                                           m_he_backend,
                                           out0_cipher->get_element_count());
+        }
+        else if (arg0_plain != nullptr && arg1_plain != nullptr)
+        {
+            runtime::he::kernel::multiply(arg0_plain->get_elements(),
+                    arg1_plain->get_elements(),
+                    out0_plain->get_elements(),
+                    type,
+                    m_he_backend,
+                    out0_plain->get_element_count());
         }
         else
         {
@@ -627,6 +668,12 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                         out0_cipher->get_elements(),
                                         shape_size(res->get_shape()),
                                         m_he_backend);
+        }
+        else if (arg0_plain != nullptr && out0_plain != nullptr)
+        {
+            runtime::he::kernel::result(arg0_plain->get_elements(),
+                    out0_plain->get_elements(),
+                    shape_size(res->get_shape()));
         }
         else
         {
