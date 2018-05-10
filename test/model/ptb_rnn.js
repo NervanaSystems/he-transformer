@@ -5,10 +5,10 @@
             {
                 "element_type": "float",
                 "inputs": [],
-                "name": "Parameter_88",
+                "name": "Parameter_74",
                 "op": "Parameter",
                 "outputs": [
-                    "Parameter_88_0"
+                    "Parameter_74_0"
                 ],
                 "shape": [
                     50
@@ -68,14 +68,14 @@
             {
                 "element_type": "float",
                 "inputs": [],
-                "name": "Parameter_91",
+                "name": "Parameter_77",
                 "op": "Parameter",
                 "outputs": [
-                    "Parameter_91_0"
+                    "Parameter_77_0"
                 ],
                 "shape": [
                     50,
-                    10
+                    8
                 ]
             },
             {
@@ -88,7 +88,7 @@
                 ],
                 "shape": [
                     50,
-                    10
+                    8
                 ]
             },
             {
@@ -110,16 +110,16 @@
                     2
                 ],
                 "inputs": [
-                    "Parameter_88"
+                    "Parameter_74"
                 ],
-                "name": "Broadcast_89",
+                "name": "Broadcast_75",
                 "op": "Broadcast",
                 "outputs": [
-                    "Broadcast_89_0"
+                    "Broadcast_75_0"
                 ],
                 "shape": [
                     50,
-                    10,
+                    8,
                     50
                 ]
             },
@@ -166,14 +166,14 @@
                 "inputs": [
                     "Parameter_0"
                 ],
-                "name": "Reshape_84",
+                "name": "Reshape_70",
                 "op": "Reshape",
                 "output_shape": [
                     50,
                     500
                 ],
                 "outputs": [
-                    "Reshape_84_0"
+                    "Reshape_70_0"
                 ]
             },
             {
@@ -189,7 +189,7 @@
                 "shape": [
                     50,
                     50,
-                    10
+                    8
                 ]
             },
             {
@@ -223,7 +223,7 @@
                 "op": "Reshape",
                 "output_shape": [
                     50,
-                    500
+                    400
                 ],
                 "outputs": [
                     "Reshape_11_0"
@@ -266,7 +266,7 @@
                 "output_shape": [
                     500,
                     50,
-                    10
+                    8
                 ],
                 "outputs": [
                     "Reshape_13_0"
@@ -295,56 +295,6 @@
                     500,
                     50,
                     1
-                ]
-            },
-            {
-                "inputs": [
-                    "Reshape_13"
-                ],
-                "lower_bounds": [
-                    0,
-                    0,
-                    3
-                ],
-                "name": "Slice_35",
-                "op": "Slice",
-                "outputs": [
-                    "Slice_35_0"
-                ],
-                "strides": [
-                    1,
-                    1,
-                    1
-                ],
-                "upper_bounds": [
-                    500,
-                    50,
-                    4
-                ]
-            },
-            {
-                "inputs": [
-                    "Reshape_13"
-                ],
-                "lower_bounds": [
-                    0,
-                    0,
-                    6
-                ],
-                "name": "Slice_56",
-                "op": "Slice",
-                "outputs": [
-                    "Slice_56_0"
-                ],
-                "strides": [
-                    1,
-                    1,
-                    1
-                ],
-                "upper_bounds": [
-                    500,
-                    50,
-                    7
                 ]
             },
             {
@@ -404,6 +354,31 @@
                 "lower_bounds": [
                     0,
                     0,
+                    3
+                ],
+                "name": "Slice_35",
+                "op": "Slice",
+                "outputs": [
+                    "Slice_35_0"
+                ],
+                "strides": [
+                    1,
+                    1,
+                    1
+                ],
+                "upper_bounds": [
+                    500,
+                    50,
+                    4
+                ]
+            },
+            {
+                "inputs": [
+                    "Reshape_13"
+                ],
+                "lower_bounds": [
+                    0,
+                    0,
                     4
                 ],
                 "name": "Slice_42",
@@ -454,6 +429,31 @@
                 "lower_bounds": [
                     0,
                     0,
+                    6
+                ],
+                "name": "Slice_56",
+                "op": "Slice",
+                "outputs": [
+                    "Slice_56_0"
+                ],
+                "strides": [
+                    1,
+                    1,
+                    1
+                ],
+                "upper_bounds": [
+                    500,
+                    50,
+                    7
+                ]
+            },
+            {
+                "inputs": [
+                    "Reshape_13"
+                ],
+                "lower_bounds": [
+                    0,
+                    0,
                     7
                 ],
                 "name": "Slice_63",
@@ -473,56 +473,6 @@
                 ]
             },
             {
-                "inputs": [
-                    "Reshape_13"
-                ],
-                "lower_bounds": [
-                    0,
-                    0,
-                    8
-                ],
-                "name": "Slice_70",
-                "op": "Slice",
-                "outputs": [
-                    "Slice_70_0"
-                ],
-                "strides": [
-                    1,
-                    1,
-                    1
-                ],
-                "upper_bounds": [
-                    500,
-                    50,
-                    9
-                ]
-            },
-            {
-                "inputs": [
-                    "Reshape_13"
-                ],
-                "lower_bounds": [
-                    0,
-                    0,
-                    9
-                ],
-                "name": "Slice_77",
-                "op": "Slice",
-                "outputs": [
-                    "Slice_77_0"
-                ],
-                "strides": [
-                    1,
-                    1,
-                    1
-                ],
-                "upper_bounds": [
-                    500,
-                    50,
-                    10
-                ]
-            },
-            {
                 "input_order": [
                     0,
                     1,
@@ -539,44 +489,6 @@
                 ],
                 "outputs": [
                     "Reshape_15_0"
-                ]
-            },
-            {
-                "input_order": [
-                    0,
-                    1,
-                    2
-                ],
-                "inputs": [
-                    "Slice_35"
-                ],
-                "name": "Reshape_36",
-                "op": "Reshape",
-                "output_shape": [
-                    500,
-                    50
-                ],
-                "outputs": [
-                    "Reshape_36_0"
-                ]
-            },
-            {
-                "input_order": [
-                    0,
-                    1,
-                    2
-                ],
-                "inputs": [
-                    "Slice_56"
-                ],
-                "name": "Reshape_57",
-                "op": "Reshape",
-                "output_shape": [
-                    500,
-                    50
-                ],
-                "outputs": [
-                    "Reshape_57_0"
                 ]
             },
             {
@@ -624,6 +536,25 @@
                     2
                 ],
                 "inputs": [
+                    "Slice_35"
+                ],
+                "name": "Reshape_36",
+                "op": "Reshape",
+                "output_shape": [
+                    500,
+                    50
+                ],
+                "outputs": [
+                    "Reshape_36_0"
+                ]
+            },
+            {
+                "input_order": [
+                    0,
+                    1,
+                    2
+                ],
+                "inputs": [
                     "Slice_42"
                 ],
                 "name": "Reshape_43",
@@ -662,6 +593,25 @@
                     2
                 ],
                 "inputs": [
+                    "Slice_56"
+                ],
+                "name": "Reshape_57",
+                "op": "Reshape",
+                "output_shape": [
+                    500,
+                    50
+                ],
+                "outputs": [
+                    "Reshape_57_0"
+                ]
+            },
+            {
+                "input_order": [
+                    0,
+                    1,
+                    2
+                ],
+                "inputs": [
                     "Slice_63"
                 ],
                 "name": "Reshape_64",
@@ -672,44 +622,6 @@
                 ],
                 "outputs": [
                     "Reshape_64_0"
-                ]
-            },
-            {
-                "input_order": [
-                    0,
-                    1,
-                    2
-                ],
-                "inputs": [
-                    "Slice_70"
-                ],
-                "name": "Reshape_71",
-                "op": "Reshape",
-                "output_shape": [
-                    500,
-                    50
-                ],
-                "outputs": [
-                    "Reshape_71_0"
-                ]
-            },
-            {
-                "input_order": [
-                    0,
-                    1,
-                    2
-                ],
-                "inputs": [
-                    "Slice_77"
-                ],
-                "name": "Reshape_78",
-                "op": "Reshape",
-                "output_shape": [
-                    500,
-                    50
-                ],
-                "outputs": [
-                    "Reshape_78_0"
                 ]
             },
             {
@@ -745,18 +657,6 @@
                 ]
             },
             {
-                "inputs": [
-                    "Parameter_1",
-                    "Tanh_18"
-                ],
-                "name": "Dot_20",
-                "op": "Dot",
-                "outputs": [
-                    "Dot_20_0"
-                ],
-                "reduction_axes_count": 1
-            },
-            {
                 "axes": [
                     1
                 ],
@@ -773,6 +673,18 @@
                     1,
                     50
                 ]
+            },
+            {
+                "inputs": [
+                    "Parameter_1",
+                    "Tanh_18"
+                ],
+                "name": "Dot_20",
+                "op": "Dot",
+                "outputs": [
+                    "Dot_20_0"
+                ],
+                "reduction_axes_count": 1
             },
             {
                 "inputs": [
@@ -1117,6 +1029,18 @@
                 ]
             },
             {
+                "inputs": [
+                    "Parameter_1",
+                    "Tanh_60"
+                ],
+                "name": "Dot_62",
+                "op": "Dot",
+                "outputs": [
+                    "Dot_62_0"
+                ],
+                "reduction_axes_count": 1
+            },
+            {
                 "axes": [
                     1
                 ],
@@ -1133,18 +1057,6 @@
                     1,
                     50
                 ]
-            },
-            {
-                "inputs": [
-                    "Parameter_1",
-                    "Tanh_60"
-                ],
-                "name": "Dot_62",
-                "op": "Dot",
-                "outputs": [
-                    "Dot_62_0"
-                ],
-                "reduction_axes_count": 1
             },
             {
                 "inputs": [
@@ -1197,130 +1109,6 @@
                 ]
             },
             {
-                "inputs": [
-                    "Parameter_1",
-                    "Tanh_67"
-                ],
-                "name": "Dot_69",
-                "op": "Dot",
-                "outputs": [
-                    "Dot_69_0"
-                ],
-                "reduction_axes_count": 1
-            },
-            {
-                "inputs": [
-                    "Dot_69",
-                    "Reshape_71"
-                ],
-                "name": "Add_72",
-                "op": "Add",
-                "outputs": [
-                    "Add_72_0"
-                ]
-            },
-            {
-                "inputs": [
-                    "Add_72",
-                    "Broadcast_6"
-                ],
-                "name": "Add_73",
-                "op": "Add",
-                "outputs": [
-                    "Add_73_0"
-                ]
-            },
-            {
-                "inputs": [
-                    "Add_73"
-                ],
-                "name": "Tanh_74",
-                "op": "Tanh",
-                "outputs": [
-                    "Tanh_74_0"
-                ]
-            },
-            {
-                "axes": [
-                    1
-                ],
-                "inputs": [
-                    "Tanh_74"
-                ],
-                "name": "Broadcast_75",
-                "op": "Broadcast",
-                "outputs": [
-                    "Broadcast_75_0"
-                ],
-                "shape": [
-                    500,
-                    1,
-                    50
-                ]
-            },
-            {
-                "inputs": [
-                    "Parameter_1",
-                    "Tanh_74"
-                ],
-                "name": "Dot_76",
-                "op": "Dot",
-                "outputs": [
-                    "Dot_76_0"
-                ],
-                "reduction_axes_count": 1
-            },
-            {
-                "inputs": [
-                    "Dot_76",
-                    "Reshape_78"
-                ],
-                "name": "Add_79",
-                "op": "Add",
-                "outputs": [
-                    "Add_79_0"
-                ]
-            },
-            {
-                "inputs": [
-                    "Add_79",
-                    "Broadcast_6"
-                ],
-                "name": "Add_80",
-                "op": "Add",
-                "outputs": [
-                    "Add_80_0"
-                ]
-            },
-            {
-                "inputs": [
-                    "Add_80"
-                ],
-                "name": "Tanh_81",
-                "op": "Tanh",
-                "outputs": [
-                    "Tanh_81_0"
-                ]
-            },
-            {
-                "axes": [
-                    1
-                ],
-                "inputs": [
-                    "Tanh_81"
-                ],
-                "name": "Broadcast_82",
-                "op": "Broadcast",
-                "outputs": [
-                    "Broadcast_82_0"
-                ],
-                "shape": [
-                    500,
-                    1,
-                    50
-                ]
-            },
-            {
                 "axis": 1,
                 "inputs": [
                     "Broadcast_19",
@@ -1330,14 +1118,12 @@
                     "Broadcast_47",
                     "Broadcast_54",
                     "Broadcast_61",
-                    "Broadcast_68",
-                    "Broadcast_75",
-                    "Broadcast_82"
+                    "Broadcast_68"
                 ],
-                "name": "Concat_83",
+                "name": "Concat_69",
                 "op": "Concat",
                 "outputs": [
-                    "Concat_83_0"
+                    "Concat_69_0"
                 ]
             },
             {
@@ -1347,27 +1133,27 @@
                     2
                 ],
                 "inputs": [
-                    "Concat_83"
+                    "Concat_69"
                 ],
-                "name": "Reshape_85",
+                "name": "Reshape_71",
                 "op": "Reshape",
                 "output_shape": [
                     500,
-                    500
+                    400
                 ],
                 "outputs": [
-                    "Reshape_85_0"
+                    "Reshape_71_0"
                 ]
             },
             {
                 "inputs": [
-                    "Reshape_84",
-                    "Reshape_85"
+                    "Reshape_70",
+                    "Reshape_71"
                 ],
-                "name": "Dot_86",
+                "name": "Dot_72",
                 "op": "Dot",
                 "outputs": [
-                    "Dot_86_0"
+                    "Dot_72_0"
                 ],
                 "reduction_axes_count": 1
             },
@@ -1377,52 +1163,52 @@
                     1
                 ],
                 "inputs": [
-                    "Dot_86"
+                    "Dot_72"
                 ],
-                "name": "Reshape_87",
+                "name": "Reshape_73",
                 "op": "Reshape",
                 "output_shape": [
                     50,
-                    10,
+                    8,
                     50
                 ],
                 "outputs": [
-                    "Reshape_87_0"
+                    "Reshape_73_0"
                 ]
             },
             {
                 "inputs": [
-                    "Reshape_87",
-                    "Broadcast_89"
+                    "Reshape_73",
+                    "Broadcast_75"
                 ],
-                "name": "Add_90",
+                "name": "Add_76",
                 "op": "Add",
                 "outputs": [
-                    "Add_90_0"
+                    "Add_76_0"
                 ]
             },
             {
                 "inputs": [
-                    "Add_90"
+                    "Add_76"
                 ],
-                "name": "Result_92",
+                "name": "Result_78",
                 "op": "Result",
                 "outputs": [
-                    "Result_92_0"
+                    "Result_78_0"
                 ]
             }
         ],
         "parameters": [
             "Parameter_8",
-            "Parameter_91",
+            "Parameter_77",
             "Parameter_0",
             "Parameter_1",
             "Parameter_5",
             "Parameter_7",
-            "Parameter_88"
+            "Parameter_74"
         ],
         "result": [
-            "Result_92"
+            "Result_78"
         ]
     }
 ]

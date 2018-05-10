@@ -40,10 +40,10 @@ vector<float> read_constant(const string filename)
     {
         res.push_back(atof(constant.c_str()));
     }
-    for(auto elem : res)
+    /* for(auto elem : res)
     {
         NGRAPH_INFO << elem << endl;
-    }
+    } */
 
     return res;
 }

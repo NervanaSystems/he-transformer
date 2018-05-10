@@ -22,7 +22,8 @@
 
 TEST_F(TestHEBackend, tf_ptb)
 {
-    auto backend = runtime::Backend::create("CPU");
+    const string backend_type = "HE";
+    auto backend = runtime::Backend::create(backend_type);
     const string model_name = "ptb_rnn";
     const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, model_name + ".js");
     const string json_string = file_util::read_file_to_string(json_path);
@@ -39,8 +40,8 @@ TEST_F(TestHEBackend, tf_ptb)
     parms["by"] = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "by.save"));
     parms["x"] = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "x.save"));
 
-    const size_t num_hidden = 500;
-    const size_t time_steps = 10;
+    const size_t hidden_size = 500;
+    const size_t time_steps = 8;
     const size_t vocab_size = 50;
 
     // Visualize model
@@ -58,50 +59,72 @@ TEST_F(TestHEBackend, tf_ptb)
         auto& shape = parameter->get_shape();
         auto& type = parameter->get_element_type();
         auto parameter_cipher_tv = backend->create_tensor(type, shape);
-		auto parameter_plain_tv = backend->create_plain_tensor(type, shape);
+        auto parameter_tv = backend->create_tensor(type, shape);
+		auto parameter_plain_tv = m_he_backend->create_plain_tensor(type, shape);
+        bool data_input = false;
 
-		bool data_input = false;
+        string parm;
 
-        if (shape == Shape(hidden_size, hidden_size))
-		{
-			copy_data(parameter_plain_tv, parms["U"]);
-		}
-		else if (shape == Shape(vocab_size, hidden_size))
-		{
-			copy_data(parameter_plain_tv, parms["W"]);
-		}
-		else if (shape == Shape(hidden_size, vocab_size))
-		{
-			copy_data(parameter_plain_tv, parms["Wy"]);
-		}
-		else if (shape == Shape(vocab_size))
-		{
-			copy_data(parameter_plain_tv, parms["by"]);
-		}
-		else if (shape == Shape(hidden_size))
-		{
-			copy_data(parameter_plain_tv, parms["b"]);
-		}
-		else if (shape == Shape(vocab_size, time_steps))
-		{
-			copy_data(parameter_cipher_tv, parms["x"]);
-			data_input = true;
-		}
-		else
-		{
-			throw ngraph_error("Unknown shape");
-		}
+        if (shape == Shape{hidden_size, hidden_size})
+        {
+            parm = "U";
+        }
+        else if (shape == Shape{vocab_size, hidden_size})
+        {
+            parm = "W";
+        }
+        else if (shape == Shape{hidden_size, vocab_size})
+        {
+            parm = "Wy";
+        }
+        else if (shape == Shape{vocab_size})
+        {
+            parm = "by";
+        }
+        else if (shape == Shape{hidden_size})
+        {
+            parm = "b";
+        }
+        else if (shape == Shape{vocab_size, time_steps})
+        {
+            parm = "x";
+        }
+        else
+        {
+            NGRAPH_INFO << shape_size(shape);
+            NGRAPH_INFO << (shape == Shape{time_steps, vocab_size});
+
+            NGRAPH_INFO << "is_scalar " << ngraph::is_scalar(shape);
+            NGRAPH_INFO << "is_vector " << ngraph::is_vector(shape);
+            throw ngraph_error("Unknown shape");
+        }
+
+        if (backend_type == "CPU")
+        {
+            copy_data(parameter_tv, parms[parm]);
+            parameter_tvs.push_back(parameter_tv);
+        }
+        else if (backend_type == "HE")
+        {
+            if (parm == "x")
+            {
+                copy_data(parameter_cipher_tv, parms[parm]);
+                parameter_tvs.push_back(parameter_cipher_tv);
+            }
+            else
+            {
+                NGRAPH_INFO << "Creating plain tv size " << shape_size(shape);
+                copy_data(parameter_plain_tv, parms[parm]);
+                parameter_tvs.push_back(parameter_plain_tv);
+            }
+        }
+        else
+        {
+            NGRAPH_INFO << "Unknown backend type";
+        }
 
         NGRAPH_INFO << "created tensor of " << shape_size(shape) << " elements";
 
-if (data_input)
-{
-
-}
-else {
-	parameter_tvs.push_back(parameter_plain_tv);
-}
-        // copy_data(parameter_tv, vector<float>(shape_size(shape)));
     }
 
     auto results = f->get_results();
@@ -114,9 +137,10 @@ else {
     }
 
     NGRAPH_INFO << "calling function ";
+    NGRAPH_INFO << "parameter_tvs.size " << parameter_tvs.size();
     backend->call(f, result_tvs, parameter_tvs);
 
-    bool verbose = false;
+    bool verbose = true;
     if (verbose)
     {
         cout << "Result" << endl;
