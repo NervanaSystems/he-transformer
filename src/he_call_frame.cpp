@@ -495,6 +495,19 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         }
         else
         {
+            NGRAPH_INFO << "Dot plain plain";
+            runtime::he::kernel::dot(arg0_plain->get_elements(),
+                    arg1_plain->get_elements(),
+                    out0_plain->get_elements(),
+                    arg0_plain->get_shape(),
+                    arg1_plain->get_shape(),
+                    out0_plain->get_shape(),
+                    dot->get_reduction_axes_count(),
+                    type,
+                    m_he_backend);
+        }
+        else
+        {
             throw ngraph_error("Dot types not supported.");
         }
     }

@@ -20,7 +20,7 @@
 #include "loader.hpp"
 #include <unordered_map>
 
-TEST_F(TestHEBackend, tf_ptb_500)
+TEST_F(TestHEBackend, ptb_500)
 {
     const size_t hidden_size = 500;
     const size_t time_steps = 8;
@@ -149,7 +149,7 @@ TEST_F(TestHEBackend, tf_ptb_500)
     }
 }
 
-TEST_F(TestHEBackend, tf_ptb_100)
+TEST_F(TestHEBackend, ptb_100)
 {
     const size_t hidden_size = 100;
     const size_t time_steps = 8;
@@ -158,7 +158,7 @@ TEST_F(TestHEBackend, tf_ptb_100)
 
     const string backend_type = "HE";
     auto backend = runtime::Backend::create(backend_type);
-    const string model_name = "ptb_rnn_100";
+    const string model_name = "ptb_rnn100";
     const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, model_name + ".js");
     const string json_string = file_util::read_file_to_string(json_path);
     shared_ptr<Function> f = deserialize(json_string);
