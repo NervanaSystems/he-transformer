@@ -32,6 +32,7 @@ runtime::he::HECipherTensorView::HECipherTensorView(const element::Type& element
 {
     // get_tensor_view_layout()->get_size() is the number of elements
     m_num_elements = m_descriptor->get_tensor_view_layout()->get_size();
+#pragma omp parallel for
     for (size_t i = 0; i < m_num_elements; ++i)
     {
         m_cipher_texts.push_back(make_shared<seal::Ciphertext>());
@@ -67,6 +68,7 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
     size_t type_byte_size = type.size();
     size_t src_start_index = tensor_offset / type_byte_size;
     size_t num_elements_to_read = n / type_byte_size;
+#pragma omp parallel for
     for (size_t i = 0; i < num_elements_to_read; ++i)
     {
         void* dst_with_offset = (void*)((char*)target + i * type.size());
