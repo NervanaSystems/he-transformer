@@ -186,6 +186,8 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         cpu_check =
             op_name == "Sum" || op_name == "Add" || op_name == "Dot" || op_name == "Multiply";
 
+        cpu_check = false;
+
         if (cpu_check)
         {
             check_cpu_calls(function, base_type, op, inputs, outputs, false);
