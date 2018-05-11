@@ -201,6 +201,16 @@ namespace ngraph
                          size_t reduction_axes_count,
                          const element::Type& type,
                          shared_ptr<HEBackend> he_backend);
+
+                void dot(const vector<shared_ptr<seal::Plaintext>>& arg0,
+                         const vector<shared_ptr<seal::Plaintext>>& arg1,
+                         vector<shared_ptr<seal::Plaintext>>& out,
+                         const Shape& arg0_shape,
+                         const Shape& arg1_shape,
+                         const Shape& out_shape,
+                         size_t reduction_axes_count,
+                         const element::Type& type,
+                         shared_ptr<HEBackend> he_backend);
             }
         }
     }

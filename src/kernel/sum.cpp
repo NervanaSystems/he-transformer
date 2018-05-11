@@ -44,9 +44,11 @@ void runtime::he::kernel::sum(const vector<shared_ptr<seal::Ciphertext>>& arg,
         static_pointer_cast<HECipherTensorView>(he_backend->create_zero_tensor(type, out_shape));
 
     size_t zero_ind = 0;
+    vector<vector<seal::Ciphertext>> output_summands;
     for (const Coordinate& output_coord : output_transform)
     {
         out[output_transform.index(output_coord)] = zero_tv->get_element(zero_ind);
+        output_summands.push_back({});
         ++zero_ind;
     }
 
@@ -55,10 +57,22 @@ void runtime::he::kernel::sum(const vector<shared_ptr<seal::Ciphertext>>& arg,
     for (const Coordinate& input_coord : input_transform)
     {
         Coordinate output_coord = project(input_coord, reduction_axes);
+        size_t output_ind = output_transform.index(output_coord);
 
-        shared_ptr<seal::Ciphertext> cipher_out = out[output_transform.index(output_coord)];
+        shared_ptr<seal::Ciphertext> cipher_out = out[output_ind];
 
-        ngraph::runtime::he::kernel::add(
-            cipher_out, arg[input_transform.index(input_coord)], cipher_out, he_backend);
+        output_summands[output_ind].push_back(*arg[input_transform.index(input_coord)]);
+
+        //ngraph::runtime::he::kernel::add(
+        //    cipher_out, arg[input_transform.index(input_coord)], cipher_out, he_backend);
+    }
+
+    for (const Coordinate& output_coord : output_transform)
+    {
+        size_t output_ind = output_transform.index(output_coord);
+        if (output_summands[output_ind].size() > 0)
+        {
+            he_backend->get_evaluator()->add_many(output_summands[output_ind], *out[output_ind]);
+        }
     }
 }

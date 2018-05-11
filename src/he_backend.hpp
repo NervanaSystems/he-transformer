@@ -58,6 +58,13 @@ namespace ngraph
                     const element::Type& element_type, const Shape& shape, size_t element);
 
                 std::shared_ptr<runtime::TensorView>
+                    create_zero_plain_tensor(const element::Type& element_type, const Shape& shape);
+                std::shared_ptr<runtime::TensorView>
+                    create_ones_plain_tensor(const element::Type& element_type, const Shape& shape);
+                std::shared_ptr<runtime::TensorView> create_constant_plain_tensor(
+                    const element::Type& element_type, const Shape& shape, size_t element);
+
+                std::shared_ptr<runtime::TensorView>
                     create_tensor(const element::Type& element_type,
                                   const Shape& shape,
                                   void* memory_pointer) override;

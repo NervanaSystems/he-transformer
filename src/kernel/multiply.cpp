@@ -144,3 +144,40 @@ void runtime::he::kernel::multiply(const shared_ptr<seal::Plaintext>& arg0,
 {
     multiply(arg1, arg0, out, type, he_backend);
 }
+
+void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Plaintext>>& arg0,
+                                   const vector<shared_ptr<seal::Plaintext>>& arg1,
+                                   vector<shared_ptr<seal::Plaintext>>& out,
+                                   const element::Type& type,
+                                   shared_ptr<HEBackend> he_backend,
+                                   size_t count)
+{
+    const string type_name = type.c_type_string();
+    if (type_name != "float")
+    {
+        throw ngraph_error("Type " + type_name + " not supported");
+    }
+
+#pragma omp parallel for
+    for (size_t i = 0; i < count; ++i)
+    {
+        auto evaluator = he_backend.get()->get_evaluator();
+        float x, y;
+        he_backend->decode(&x, *arg0[i], type);
+        he_backend->decode(&y, *arg1[i], type);
+        float r = x * y;
+        he_backend->encode(*out[i], &r, type);
+    }
+}
+
+void runtime::he::kernel::multiply(const shared_ptr<seal::Plaintext>& arg0,
+                                   const shared_ptr<seal::Plaintext>& arg1,
+                                   shared_ptr<seal::Plaintext>& out,
+                                   const element::Type& type,
+                                   shared_ptr<HEBackend> he_backend)
+{
+    const vector<shared_ptr<seal::Plaintext>> arg0vec = {arg0};
+    const vector<shared_ptr<seal::Plaintext>> arg1vec = {arg1};
+    vector<shared_ptr<seal::Plaintext>> outvec = {out};
+    multiply(arg0vec, arg1vec, {outvec}, type, he_backend, 1);
+}
