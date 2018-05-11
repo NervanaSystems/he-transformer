@@ -136,6 +136,27 @@ TEST_F(TestHEBackend, ab_plain)
               (test::NDArray<int64_t, 2>({{8, 10, 12}, {14, 16, 18}})).get_vector());
 }
 
+TEST_F(TestHEBackend, ab_plain_plain)
+{
+    Shape s{2, 3};
+    auto a = make_shared<op::Parameter>(element::f32, s);
+    auto b = make_shared<op::Parameter>(element::f32, s);
+    auto t = make_shared<op::Add>(a, b);
+    auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+
+    // Create some tensors for input/output
+    auto t_a = m_he_backend->create_plain_tensor(element::f32, s);
+    auto t_b = m_he_backend->create_plain_tensor(element::f32, s);
+    auto t_result = m_he_backend->create_plain_tensor(element::f32, s);
+
+    copy_data(t_a, test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector());
+    copy_data(t_b, test::NDArray<float, 2>({{7, 8, 9}, {10, 11, 12}}).get_vector());
+
+    m_he_backend->call(f, {t_result}, {t_a, t_b});
+    EXPECT_EQ(read_vector<float>(t_result),
+            (test::NDArray<float, 2>({{8, 10, 12}, {14, 16, 18}})).get_vector());
+}
+
 TEST_F(TestHEBackend, subtract)
 {
     Shape shape{2, 2};
@@ -317,6 +338,37 @@ TEST_F(TestHEBackend, abc_plain)
               (test::NDArray<float, 2>({{50, 72}, {98, 128}})).get_vector());
 }
 
+TEST_F(TestHEBackend, abc_plain_plain)
+{
+    Shape shape{2, 2};
+    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto C = make_shared<op::Parameter>(element::f32, shape);
+    auto f = make_shared<Function>((A + B) * C, op::ParameterVector{A, B, C});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_plain_tensor(element::f32, shape);
+    auto b = m_he_backend->create_plain_tensor(element::f32, shape);
+    auto c = m_he_backend->create_plain_tensor(element::f32, shape);
+    auto result = m_he_backend->create_plain_tensor(element::f32, shape);
+
+    copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
+    copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
+    copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
+
+    m_he_backend->call(f, {result}, {a, b, c});
+    EXPECT_EQ(read_vector<float>(result),
+            (test::NDArray<float, 2>({{54, 80}, {110, 144}})).get_vector());
+
+    m_he_backend->call(f, {result}, {b, a, c});
+    EXPECT_EQ(read_vector<float>(result),
+            (test::NDArray<float, 2>({{54, 80}, {110, 144}})).get_vector());
+
+    m_he_backend->call(f, {result}, {a, c, b});
+    EXPECT_EQ(read_vector<float>(result),
+            (test::NDArray<float, 2>({{50, 72}, {98, 128}})).get_vector());
+}
+
 /* TEST_F(TestHEBackend, add_float_precision)
 {
     Shape s{};
@@ -437,6 +489,25 @@ TEST_F(TestHEBackend, dot1d)
     auto b = m_he_backend->create_tensor(element::f32, shape);
     copy_data(b, vector<float>{2, 4, 8, 16});
     auto result = m_he_backend->create_tensor(element::f32, shape_r);
+
+    m_he_backend->call(f, {result}, {a, b});
+    EXPECT_EQ((vector<float>{170}), read_vector<float>(result));
+}
+
+TEST_F(TestHEBackend, dot1d_plain_plain)
+{
+    Shape shape{4};
+    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto B = make_shared<op::Parameter>(element::f32, shape);
+    Shape shape_r{};
+    auto f = make_shared<Function>(make_shared<op::Dot>(A, B), op::ParameterVector{A, B});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_plain_tensor(element::f32, shape);
+    copy_data(a, vector<float>{1, 2, 4, 8});
+    auto b = m_he_backend->create_plain_tensor(element::f32, shape);
+    copy_data(b, vector<float>{2, 4, 8, 16});
+    auto result = m_he_backend->create_plain_tensor(element::f32, shape_r);
 
     m_he_backend->call(f, {result}, {a, b});
     EXPECT_EQ((vector<float>{170}), read_vector<float>(result));
@@ -813,6 +884,23 @@ TEST_F(TestHEBackend, reshape_t2v_012_plain)
     auto a = m_he_backend->create_plain_tensor(element::f32, shape_a);
     copy_data(a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
     auto result = m_he_backend->create_tensor(element::f32, shape_r);
+
+    m_he_backend->call(f, {result}, {a});
+    EXPECT_EQ((vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}), read_vector<float>(result));
+}
+
+TEST_F(TestHEBackend, reshape_t2v_012_plain_plain)
+{
+    Shape shape_a{2, 2, 3};
+    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    Shape shape_r{12};
+    auto r = make_shared<op::Reshape>(A, AxisVector{0, 1, 2}, shape_r);
+    auto f = make_shared<Function>(r, op::ParameterVector{A});
+
+    // Create some tensors for input/output
+    auto a = m_he_backend->create_plain_tensor(element::f32, shape_a);
+    copy_data(a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
+    auto result = m_he_backend->create_plain_tensor(element::f32, shape_r);
 
     m_he_backend->call(f, {result}, {a});
     EXPECT_EQ((vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}), read_vector<float>(result));

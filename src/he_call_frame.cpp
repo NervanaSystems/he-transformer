@@ -121,7 +121,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                         element_type, shape, m_he_backend, name);
                     tensor_map.insert({tv, itv});
                 }
-                else if (op->description() == "Broadcast")
+                else if (op->description() == "Broadcast" || op->description() == "Reshape")
                 {
                     shared_ptr<HEPlainTensorView> in0_plain =
                         dynamic_pointer_cast<HEPlainTensorView>(inputs[0]);
@@ -145,7 +145,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                         dynamic_pointer_cast<HEPlainTensorView>(inputs[0]);
                     shared_ptr<HEPlainTensorView> in1_plain =
                         dynamic_pointer_cast<HEPlainTensorView>(inputs[1]);
-                    if ((in0_plain != nullptr) && (in0_plain != nullptr))
+                    if ((in0_plain != nullptr) && (in1_plain != nullptr))
                     {
                         NGRAPH_INFO << "Op " << op->description() << " out is plaintext";
                         auto itv = make_shared<runtime::he::HEPlainTensorView>(
@@ -159,7 +159,6 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                         tensor_map.insert({tv, itv});
                     }
                 }
-                // TODO: multiply op here!
                 else
                 {
                     auto itv = make_shared<runtime::he::HECipherTensorView>(
@@ -649,7 +648,11 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         else if (arg0_plain != nullptr && out0_plain != nullptr)
         {
             NGRAPH_INFO << "plain plain";
-            throw ngraph_error("Reshape types not supported.");
+            runtime::he::kernel::reshape(arg0_plain->get_elements(),
+                    out0_plain->get_elements(),
+                    arg0_plain->get_shape(),
+                    reshape->get_input_order(),
+                    out0_plain->get_shape());
         }
     }
     else if (node_op == "Result")
