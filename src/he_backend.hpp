@@ -117,6 +117,13 @@ namespace ngraph
                 const inline plaintext_num& get_plaintext_num() const { return m_plaintext_num; }
                 int noise_budget(const std::shared_ptr<seal::Ciphertext>& ciphertext);
 
+                void enable_performance_data(std::shared_ptr<Function> func, bool enable) override;
+                std::vector<PerformanceCounter>
+                    get_performance_data(std::shared_ptr<Function> func) const override;
+
+                void visualize_function_after_pass(const std::shared_ptr<Function>& func,
+                                                   const std::string& file_name);
+
             private:
                 seal::EncryptionParameters parms;
                 std::shared_ptr<seal::SEALContext> m_context;
@@ -130,7 +137,6 @@ namespace ngraph
                 std::shared_ptr<seal::Decryptor> m_decryptor;
                 std::shared_ptr<seal::Evaluator> m_evaluator;
                 plaintext_num m_plaintext_num;
-
                 std::unordered_map<std::shared_ptr<Function>, std::shared_ptr<HECallFrame>>
                     m_function_map;
             };

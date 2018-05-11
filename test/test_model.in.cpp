@@ -14,9 +14,10 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <ngraph/pass/manager.hpp>
-#include <ngraph/pass/visualize_tree.hpp>
 #include <unordered_map>
+
+#include "ngraph/pass/manager.hpp"
+#include "ngraph/pass/visualize_tree.hpp"
 #include "loader.hpp"
 #include "ngraph/file_util.hpp"
 
@@ -172,14 +173,6 @@ TEST_F(TestHEBackend, experiment_100)
     parms["by"] = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "by100.save"));
     parms["x"] = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "x100.save"));
 
-    // Visualize model
-    auto model_file_name = model_name + string(".") + pass::VisualizeTree::get_file_ext();
-
-    NGRAPH_INFO << "model file name " << model_file_name;
-    pass::Manager pass_manager;
-    pass_manager.register_pass<pass::VisualizeTree>(model_file_name);
-    pass_manager.run_passes(f);
-
     auto parameters = f->get_parameters();
     vector<shared_ptr<runtime::TensorView>> parameter_tvs;
     for (auto parameter : parameters)
@@ -260,6 +253,14 @@ TEST_F(TestHEBackend, experiment_100)
 
     NGRAPH_INFO << "calling function ";
     NGRAPH_INFO << "parameter_tvs.size " << parameter_tvs.size();
+
+    // Visualize model
+    if (auto he_backend = dynamic_pointer_cast<runtime::he::HEBackend>(backend))
+    {
+        auto model_file_name = model_name + string(".") + pass::VisualizeTree::get_file_ext();
+        he_backend->visualize_function_after_pass(f, model_file_name);
+    }
+
     backend->call(f, result_tvs, parameter_tvs);
 
     bool verbose = true;

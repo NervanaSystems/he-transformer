@@ -44,6 +44,7 @@
 #include "kernel/sum.hpp"
 #include "ngraph/descriptor/layout/tensor_view_layout.hpp"
 #include "ngraph/runtime/host_tensor_view.hpp"
+#include "ngraph/runtime/performance_counter.hpp"
 #include "ngraph/runtime/tensor_view.hpp"
 
 using namespace std;
@@ -60,6 +61,9 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                                     const vector<shared_ptr<runtime::he::HETensorView>>& output_tvs,
                                     const vector<shared_ptr<runtime::he::HETensorView>>& input_tvs)
 {
+    // TODO: we clear timer at each run for now
+    m_timer_map.clear();
+
     // Every descriptor::tv (inputs/outputs/intermediates) maps to one runtime::tv
     unordered_map<descriptor::TensorView*, shared_ptr<runtime::he::HETensorView>> tensor_map;
 
@@ -89,11 +93,14 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
     // Invoke computation
     for (shared_ptr<Node> op : function->get_ordered_ops())
     {
-        NGRAPH_INFO << "Op " << op->get_name();
+        NGRAPH_INFO << "\033[1;32m"
+                    << "[ " << op->get_name() << " ]"
+                    << "\033[0m";
         if (op->description() == "Parameter")
         {
             continue;
         }
+        m_timer_map[op].start();
 
         // Collect input runtime::tv
         vector<shared_ptr<runtime::he::HETensorView>> inputs;
@@ -203,8 +210,20 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                 }
             }
         }
+
+        // Check noise budget after each op
         m_he_backend->check_noise_budget(outputs);
+
+        // Stop stopwatch and print time
+        // TODO: currently timer is cleared at each run
+        m_timer_map.at(op).stop();
+
+        NGRAPH_INFO << "\033[1;31m" << op->get_name() << " took "
+                    << m_timer_map.at(op).get_seconds() << "s"
+                    << "\033[0m";
     }
+
+    // Check noise budget at for all function outputs
     m_he_backend->check_noise_budget(output_tvs);
 }
 
@@ -789,4 +808,16 @@ void runtime::he::HECallFrame::call(const vector<shared_ptr<runtime::TensorView>
         out.push_back(static_pointer_cast<runtime::he::HETensorView>(tv));
     }
     call(m_function, out, args);
+}
+
+vector<runtime::PerformanceCounter> runtime::he::HECallFrame::get_performance_data() const
+{
+    vector<runtime::PerformanceCounter> rc;
+    for (pair<shared_ptr<Node>, stopwatch> p : m_timer_map)
+    {
+        rc.emplace_back(p.first->get_name().c_str(),
+                        p.second.get_total_microseconds(),
+                        p.second.get_call_count());
+    }
+    return rc;
 }
