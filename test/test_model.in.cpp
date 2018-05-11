@@ -16,10 +16,10 @@
 
 #include <unordered_map>
 
-#include "loader.hpp"
-#include "ngraph/file_util.hpp"
 #include "ngraph/pass/manager.hpp"
 #include "ngraph/pass/visualize_tree.hpp"
+#include "loader.hpp"
+#include "ngraph/file_util.hpp"
 
 TEST_F(TestHEBackend, ptb_500)
 {
@@ -172,14 +172,6 @@ TEST_F(TestHEBackend, ptb_100)
     parms["Wy"] = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "Wy100.save"));
     parms["by"] = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "by100.save"));
     parms["x"] = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "x100.save"));
-
-    // Visualize model
-    auto model_file_name = model_name + string(".") + pass::VisualizeTree::get_file_ext();
-
-    NGRAPH_INFO << "model file name " << model_file_name;
-    pass::Manager pass_manager;
-    pass_manager.register_pass<pass::VisualizeTree>(model_file_name);
-    pass_manager.run_passes(f);
 
     auto parameters = f->get_parameters();
     vector<shared_ptr<runtime::TensorView>> parameter_tvs;
