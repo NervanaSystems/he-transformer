@@ -32,9 +32,11 @@ runtime::he::HEPlainTensorView::HEPlainTensorView(const element::Type& element_t
 {
     // get_tensor_view_layout()->get_size() is the number of elements
     m_num_elements = m_descriptor->get_tensor_view_layout()->get_size();
+    m_plain_texts.resize(m_num_elements);
+#pragma omp parallel for
     for (size_t i = 0; i < m_num_elements; ++i)
     {
-        m_plain_texts.push_back(make_shared<seal::Plaintext>());
+        m_plain_texts[i] = make_shared<seal::Plaintext>();
     }
 }
 
@@ -49,6 +51,7 @@ void runtime::he::HEPlainTensorView::write(const void* source, size_t tensor_off
     size_t type_byte_size = type.size();
     size_t dst_start_index = tensor_offset / type_byte_size;
     size_t num_elements_to_write = n / type_byte_size;
+#pragma omp parallel for
     for (size_t i = 0; i < num_elements_to_write; ++i)
     {
         const void* src_with_offset = (void*)((char*)source + i * type.size());
@@ -64,6 +67,7 @@ void runtime::he::HEPlainTensorView::read(void* target, size_t tensor_offset, si
     size_t type_byte_size = type.size();
     size_t src_start_index = tensor_offset / type_byte_size;
     size_t num_elements_to_read = n / type_byte_size;
+#pragma omp parallel for
     for (size_t i = 0; i < num_elements_to_read; ++i)
     {
         void* dst_with_offset = (void*)((char*)target + i * type.size());

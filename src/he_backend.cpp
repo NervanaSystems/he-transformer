@@ -155,50 +155,6 @@ shared_ptr<runtime::TensorView>
 {
     return create_constant_tensor(element_type, shape, 1);
 }
-/* {
-    shared_ptr<runtime::TensorView> tensor = create_tensor(element_type, shape);
-    shared_ptr<runtime::he::HECipherTensorView> cipher_tensor =
-        static_pointer_cast<runtime::he::HECipherTensorView>(tensor);
-
-    size_t num_elements = shape_size(shape);
-    size_t bytes_to_write = num_elements * element_type.size();
-
-    const string type_name = element_type.c_type_string();
-
-    if (type_name == "float")
-    {
-        vector<float> zero;
-        for (size_t i = 0; i < num_elements; ++i)
-        {
-            zero.push_back(0);
-        }
-        cipher_tensor->write((void*)&zero[0], 0, bytes_to_write);
-    }
-    else if (type_name == "int64_t")
-    {
-        vector<int64_t> zero;
-        for (size_t i = 0; i < num_elements; ++i)
-        {
-            zero.push_back(0);
-        }
-        cipher_tensor->write((void*)&zero[0], 0, bytes_to_write);
-    }
-    else if (type_name == "uint64_t")
-    {
-        vector<uint64_t> zero;
-        for (size_t i = 0; i < num_elements; ++i)
-        {
-            zero.push_back(0);
-        }
-        cipher_tensor->write((void*)&zero[0], 0, bytes_to_write);
-    }
-    else
-    {
-        throw ngraph_error("Type not supported at create_zero_tensor");
-    }
-
-    return static_pointer_cast<runtime::TensorView>(cipher_tensor);
-} */
 
 shared_ptr<runtime::TensorView>
     runtime::he::HEBackend::create_plain_tensor(const element::Type& element_type,
@@ -207,6 +163,67 @@ shared_ptr<runtime::TensorView>
     shared_ptr<HEBackend> he_backend = shared_from_this();
     auto rc = make_shared<runtime::he::HEPlainTensorView>(element_type, shape, he_backend);
     return static_pointer_cast<runtime::TensorView>(rc);
+}
+
+shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_constant_plain_tensor(
+    const element::Type& element_type, const Shape& shape, size_t element)
+{
+    shared_ptr<runtime::TensorView> tensor = create_plain_tensor(element_type, shape);
+    shared_ptr<runtime::he::HEPlainTensorView> plain_tensor =
+        static_pointer_cast<runtime::he::HEPlainTensorView>(tensor);
+
+    size_t num_elements = shape_size(shape);
+    size_t bytes_to_write = num_elements * element_type.size();
+
+    const string type_name = element_type.c_type_string();
+
+    if (type_name == "float")
+    {
+        vector<float> elements;
+        for (size_t i = 0; i < num_elements; ++i)
+        {
+            elements.push_back(element);
+        }
+        plain_tensor->write((void*)&elements[0], 0, bytes_to_write);
+    }
+    else if (type_name == "int64_t")
+    {
+        vector<int64_t> elements;
+        for (size_t i = 0; i < num_elements; ++i)
+        {
+            elements.push_back(element);
+        }
+        plain_tensor->write((void*)&elements[0], 0, bytes_to_write);
+    }
+    else if (type_name == "uint64_t")
+    {
+        vector<uint64_t> elements;
+        for (size_t i = 0; i < num_elements; ++i)
+        {
+            elements.push_back(element);
+        }
+        plain_tensor->write((void*)&elements[0], 0, bytes_to_write);
+    }
+    else
+    {
+        throw ngraph_error("Type not supported at create_constant_plain_tensor");
+    }
+
+    return static_pointer_cast<runtime::TensorView>(plain_tensor);
+}
+
+shared_ptr<runtime::TensorView>
+    runtime::he::HEBackend::create_zero_plain_tensor(const element::Type& element_type,
+                                                     const Shape& shape)
+{
+    return create_constant_plain_tensor(element_type, shape, 0);
+}
+
+shared_ptr<runtime::TensorView>
+    runtime::he::HEBackend::create_ones_plain_tensor(const element::Type& element_type,
+                                                     const Shape& shape)
+{
+    return create_constant_plain_tensor(element_type, shape, 1);
 }
 
 shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_tensor(
@@ -327,25 +344,29 @@ int runtime::he::HEBackend::noise_budget(const shared_ptr<seal::Ciphertext>& cip
 void runtime::he::HEBackend::check_noise_budget(
     const vector<shared_ptr<runtime::he::HETensorView>>& tvs)
 {
-    // Check noise budget
-    NGRAPH_INFO << "Checking noise budget ";
+// Check noise budget
+// NGRAPH_INFO << "Checking noise budget ";
 #pragma omp parallel for
     for (size_t i = 0; i < tvs.size(); ++i)
     {
         shared_ptr<HECipherTensorView> out_i = dynamic_pointer_cast<HECipherTensorView>(tvs[i]);
         if (out_i != nullptr)
         {
+            size_t lowest_budget = 10000;
             for (shared_ptr<seal::Ciphertext> ciphertext : out_i->get_elements())
             {
                 int budget = noise_budget(ciphertext);
-                NGRAPH_INFO << "Noise budget " << budget;
+                if (budget < lowest_budget)
+                {
+                    lowest_budget = budget;
+                }
                 if (budget <= 0)
                 {
                     throw ngraph_error("Noise budget depleted");
-                }
-                break; // TODO: remove
+                } // TODO: break if this is too slow
             }
+            NGRAPH_INFO << "Lowest Noise budget " << lowest_budget;
         }
     }
-    NGRAPH_INFO << "Done checking noise budget ";
+    // NGRAPH_INFO << "Done checking noise budget ";
 }
