@@ -117,6 +117,10 @@ namespace ngraph
                 const inline plaintext_num& get_plaintext_num() const { return m_plaintext_num; }
                 int noise_budget(const std::shared_ptr<seal::Ciphertext>& ciphertext);
 
+                void enable_performance_data(std::shared_ptr<Function> func, bool enable) override;
+                std::vector<PerformanceCounter>
+                    get_performance_data(std::shared_ptr<Function> func) const override;
+
             private:
                 seal::EncryptionParameters parms;
                 std::shared_ptr<seal::SEALContext> m_context;

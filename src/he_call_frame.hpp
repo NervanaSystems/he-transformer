@@ -35,6 +35,7 @@ namespace ngraph
     namespace runtime
     {
         class TensorView;
+        class PerformanceCounter;
 
         namespace he
         {
@@ -49,6 +50,9 @@ namespace ngraph
 
                 void call(const std::vector<std::shared_ptr<runtime::TensorView>>& outputs,
                           const std::vector<std::shared_ptr<runtime::TensorView>>& inputs);
+
+                std::vector<PerformanceCounter> get_performance_data() const;
+
 
             private:
                 std::shared_ptr<Function> m_function;
@@ -69,6 +73,8 @@ namespace ngraph
                                      const vector<shared_ptr<runtime::he::HETensorView>>& inputs,
                                      const vector<shared_ptr<runtime::he::HETensorView>>& outputs,
                                      bool verbose);
+
+                std::unordered_map<shared_ptr<Node>, stopwatch> m_timer_map;
             };
         }
     }

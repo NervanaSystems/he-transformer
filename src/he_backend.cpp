@@ -370,3 +370,14 @@ void runtime::he::HEBackend::check_noise_budget(
     }
     // NGRAPH_INFO << "Done checking noise budget ";
 }
+
+void runtime::he::HEBackend::enable_performance_data(shared_ptr<Function> func, bool enable)
+{
+    // Enabled by default
+}
+
+vector<runtime::PerformanceCounter>
+    runtime::he::HEBackend::get_performance_data(shared_ptr<Function> func) const
+{
+    return m_function_map.at(func)->get_performance_data();
+}

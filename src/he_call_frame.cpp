@@ -45,6 +45,7 @@
 #include "ngraph/descriptor/layout/tensor_view_layout.hpp"
 #include "ngraph/runtime/host_tensor_view.hpp"
 #include "ngraph/runtime/tensor_view.hpp"
+#include "ngraph/runtime/performance_counter.hpp"
 
 using namespace std;
 using namespace ngraph;
@@ -789,4 +790,17 @@ void runtime::he::HECallFrame::call(const vector<shared_ptr<runtime::TensorView>
         out.push_back(static_pointer_cast<runtime::he::HETensorView>(tv));
     }
     call(m_function, out, args);
+}
+
+vector<runtime::PerformanceCounter>
+    runtime::he::HECallFrame::get_performance_data() const
+{
+    vector<runtime::PerformanceCounter> rc;
+    for (pair<shared_ptr<Node>, stopwatch> p : m_timer_map)
+    {
+        rc.emplace_back(p.first->get_name().c_str(),
+                        p.second.get_total_microseconds(),
+                        p.second.get_call_count());
+    }
+    return rc;
 }
