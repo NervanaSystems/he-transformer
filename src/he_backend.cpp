@@ -14,6 +14,8 @@
 * limitations under the License.
 *******************************************************************************/
 
+#include <limits>
+
 #include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
 #include "ngraph/function.hpp"
 #include "ngraph/pass/assign_layout.hpp"
@@ -352,7 +354,7 @@ void runtime::he::HEBackend::check_noise_budget(
         shared_ptr<HECipherTensorView> out_i = dynamic_pointer_cast<HECipherTensorView>(tvs[i]);
         if (out_i != nullptr)
         {
-            size_t lowest_budget = 10000;
+            size_t lowest_budget = numeric_limits<size_t>::max();
             for (shared_ptr<seal::Ciphertext> ciphertext : out_i->get_elements())
             {
                 int budget = noise_budget(ciphertext);

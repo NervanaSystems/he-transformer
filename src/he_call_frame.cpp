@@ -219,7 +219,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         m_timer_map.at(op).stop();
 
         NGRAPH_INFO << "\033[1;31m" << op->get_name()
-                    << " took: " << m_timer_map.at(op).get_seconds() << "s"
+                    << " took " << m_timer_map.at(op).get_seconds() << "s"
                     << "\033[0m";
     }
 
