@@ -338,24 +338,28 @@ void runtime::he::HEBackend::check_noise_budget(
     const vector<shared_ptr<runtime::he::HETensorView>>& tvs)
 {
     // Check noise budget
-    NGRAPH_INFO << "Checking noise budget ";
+    // NGRAPH_INFO << "Checking noise budget ";
 #pragma omp parallel for
     for (size_t i = 0; i < tvs.size(); ++i)
     {
         shared_ptr<HECipherTensorView> out_i = dynamic_pointer_cast<HECipherTensorView>(tvs[i]);
         if (out_i != nullptr)
         {
+            size_t lowest_budget = 10000;
             for (shared_ptr<seal::Ciphertext> ciphertext : out_i->get_elements())
             {
                 int budget = noise_budget(ciphertext);
-                NGRAPH_INFO << "Noise budget " << budget;
+                if (budget < lowest_budget)
+                {
+                    lowest_budget = budget;
+                }
                 if (budget <= 0)
                 {
                     throw ngraph_error("Noise budget depleted");
-                }
-                break; // TODO: remove
+                } // TODO: break if this is too slow
             }
+            NGRAPH_INFO << "Lowest Noise budget " << lowest_budget;
         }
     }
-    NGRAPH_INFO << "Done checking noise budget ";
+    // NGRAPH_INFO << "Done checking noise budget ";
 }

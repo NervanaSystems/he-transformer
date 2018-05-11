@@ -115,12 +115,12 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                 const Shape& shape = op->get_output_shape(i);
                 const element::Type& element_type = op->get_output_element_type(i);
                 string tensor_name = op->get_output_tensor(i).get_name();
-                if (op->description() == "Constant")
+                if (op->description() == "Constant") // Always result in plaintext
                 {
                     auto itv = make_shared<runtime::he::HEPlainTensorView>(
                         element_type, shape, m_he_backend, name);
                     tensor_map.insert({tv, itv});
-                }
+                } // one-input ops that prefer plaintext result
                 else if (op->description() == "Broadcast" || op->description() == "Reshape")
                 {
                     shared_ptr<HEPlainTensorView> in0_plain =
@@ -137,7 +137,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                             element_type, shape, m_he_backend, name);
                         tensor_map.insert({tv, itv});
                     }
-                }
+                } // two-input ops that prefer plaintetx result
                 else if (op->description() == "Add" || op->description() == "Multiply" ||
                         op->description() == "Dot")
                 {
@@ -184,11 +184,10 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         const string op_name = op->description();
         bool cpu_check = op_name != "Slice" && op_name != "Reshape" && op_name != "Broadcast";
         cpu_check = op_name == "Sum" || op_name == "Add" || op_name == "Dot" || op_name == "Multiply";
-        cpu_check = false; // TODO: enable
 
         if (cpu_check)
         {
-            check_cpu_calls(function, base_type, op, inputs, outputs, op_name == "Add");
+            check_cpu_calls(function, base_type, op, inputs, outputs, false);
         }
 
         // Delete any obsolete tensors
@@ -277,6 +276,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
 
             he_out->read(&he_out_vec[0], 0, num_bytes);
             cpu_out->read(&cpu_out_vec[0], 0, num_bytes);
+
             for(size_t elem = 0; elem < element_count; ++elem)
             {
                 if (abs(cpu_out_vec[elem] - he_out_vec[elem]) > 0.001)
@@ -293,7 +293,13 @@ void runtime::he::HECallFrame::check_cpu_calls(
     }
     if (!correct || verbose)
     {
-        NGRAPH_INFO << "Inaccurate float computation. Inputs are: ";
+        if (!verbose)
+        {
+            NGRAPH_INFO << "Inaccurate float computation.";
+        }
+        else {
+            NGRAPH_INFO << "Verbose float computation";
+        }
         for(std::shared_ptr<runtime::HostTensorView> cpu_input : cpu_inputs)
         {
             NGRAPH_INFO << "Input";
@@ -304,8 +310,9 @@ void runtime::he::HECallFrame::check_cpu_calls(
             cpu_input->read(&cpu_inp_vec[0], 0, num_bytes);
             for(auto elem : cpu_inp_vec)
             {
-                cout << elem << endl;
+                cout << elem << " ";
             }
+            cout << endl;
         }
         for(std::shared_ptr<runtime::HostTensorView> cpu_output : cpu_outputs)
         {
@@ -317,8 +324,9 @@ void runtime::he::HECallFrame::check_cpu_calls(
             cpu_output->read(&cpu_inp_vec[0], 0, num_bytes);
             for(auto elem : cpu_inp_vec)
             {
-                cout << elem << endl;
+                cout << elem << " ";
             }
+            cout << endl;
         }
         if (!correct) {
             throw ngraph_error("Inaccurate float computation");
@@ -587,8 +595,9 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     }
     else if (node_op == "Relinearize")
     {
-        if (arg0_cipher != nullptr || out0_cipher != nullptr)
+        if (arg0_cipher != nullptr && out0_cipher != nullptr)
         {
+            NGRAPH_INFO << "Relin? cipher cipehr";
             runtime::he::kernel::relinearize(arg0_cipher->get_elements(),
                                              out0_cipher->get_elements(),
                                              m_he_backend,
@@ -596,7 +605,8 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         }
         else
         {
-            throw ngraph_error("Input to Relinearize must be ciphertext");
+            NGRAPH_INFO << "arg0 is plaintext? " << (arg0_plain != nullptr) << ", out0 is plaintext? " << (out0_plain != nullptr);
+            //throw ngraph_error("Input to Relinearize must be ciphertext");
         }
     }
     else if (node_op == "OneHot")
