@@ -56,17 +56,17 @@ namespace ngraph
                          size_t count);
 
                 void add(const vector<shared_ptr<seal::Plaintext>>& arg0,
-                        const vector<shared_ptr<seal::Plaintext>>& arg1,
-                        vector<shared_ptr<seal::Plaintext>>& out,
-                        const element::Type& type,
-                        shared_ptr<HEBackend> he_backend,
-                        size_t count);
+                         const vector<shared_ptr<seal::Plaintext>>& arg1,
+                         vector<shared_ptr<seal::Plaintext>>& out,
+                         const element::Type& type,
+                         shared_ptr<HEBackend> he_backend,
+                         size_t count);
 
                 void add(const shared_ptr<seal::Plaintext>& arg0,
-                        const shared_ptr<seal::Plaintext>& arg1,
-                        shared_ptr<seal::Plaintext>& out,
-                        const element::Type& type,
-                        shared_ptr<HEBackend> he_backend);
+                         const shared_ptr<seal::Plaintext>& arg1,
+                         shared_ptr<seal::Plaintext>& out,
+                         const element::Type& type,
+                         shared_ptr<HEBackend> he_backend);
             }
         }
     }

@@ -146,11 +146,11 @@ void runtime::he::kernel::multiply(const shared_ptr<seal::Plaintext>& arg0,
 }
 
 void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Plaintext>>& arg0,
-        const vector<shared_ptr<seal::Plaintext>>& arg1,
-        vector<shared_ptr<seal::Plaintext>>& out,
-        const element::Type& type,
-        shared_ptr<HEBackend> he_backend,
-        size_t count)
+                                   const vector<shared_ptr<seal::Plaintext>>& arg1,
+                                   vector<shared_ptr<seal::Plaintext>>& out,
+                                   const element::Type& type,
+                                   shared_ptr<HEBackend> he_backend,
+                                   size_t count)
 {
     const string type_name = type.c_type_string();
     if (type_name != "float")
@@ -171,10 +171,10 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Plaintext>>& ar
 }
 
 void runtime::he::kernel::multiply(const shared_ptr<seal::Plaintext>& arg0,
-        const shared_ptr<seal::Plaintext>& arg1,
-        shared_ptr<seal::Plaintext>& out,
-        const element::Type& type,
-        shared_ptr<HEBackend> he_backend)
+                                   const shared_ptr<seal::Plaintext>& arg1,
+                                   shared_ptr<seal::Plaintext>& out,
+                                   const element::Type& type,
+                                   shared_ptr<HEBackend> he_backend)
 {
     const vector<shared_ptr<seal::Plaintext>> arg0vec = {arg0};
     const vector<shared_ptr<seal::Plaintext>> arg1vec = {arg1};

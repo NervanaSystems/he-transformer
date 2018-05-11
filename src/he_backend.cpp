@@ -161,7 +161,7 @@ shared_ptr<runtime::TensorView>
 }
 
 shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_constant_plain_tensor(
-        const element::Type& element_type, const Shape& shape, size_t element)
+    const element::Type& element_type, const Shape& shape, size_t element)
 {
     shared_ptr<runtime::TensorView> tensor = create_plain_tensor(element_type, shape);
     shared_ptr<runtime::he::HEPlainTensorView> plain_tensor =
@@ -208,15 +208,15 @@ shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_constant_plain_te
 }
 
 shared_ptr<runtime::TensorView>
-runtime::he::HEBackend::create_zero_plain_tensor(const element::Type& element_type,
-        const Shape& shape)
+    runtime::he::HEBackend::create_zero_plain_tensor(const element::Type& element_type,
+                                                     const Shape& shape)
 {
     return create_constant_plain_tensor(element_type, shape, 0);
 }
 
-    shared_ptr<runtime::TensorView>
-runtime::he::HEBackend::create_ones_plain_tensor(const element::Type& element_type,
-        const Shape& shape)
+shared_ptr<runtime::TensorView>
+    runtime::he::HEBackend::create_ones_plain_tensor(const element::Type& element_type,
+                                                     const Shape& shape)
 {
     return create_constant_plain_tensor(element_type, shape, 1);
 }
@@ -337,8 +337,8 @@ int runtime::he::HEBackend::noise_budget(const shared_ptr<seal::Ciphertext>& cip
 void runtime::he::HEBackend::check_noise_budget(
     const vector<shared_ptr<runtime::he::HETensorView>>& tvs)
 {
-    // Check noise budget
-    // NGRAPH_INFO << "Checking noise budget ";
+// Check noise budget
+// NGRAPH_INFO << "Checking noise budget ";
 #pragma omp parallel for
     for (size_t i = 0; i < tvs.size(); ++i)
     {

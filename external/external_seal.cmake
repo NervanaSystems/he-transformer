@@ -20,6 +20,7 @@ include(ExternalProject)
 set(SEAL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ext_seal)
 set(SEAL_SRC_DIR ${SEAL_PREFIX}/src/ext_seal/SEAL)
 set(SEAL_TAR_FILE ${CMAKE_CURRENT_SOURCE_DIR}/third-party/SEAL_v2.3.0-4_Linux_debug.tar.gz)
+
 ExternalProject_Add(
     ext_seal
     URL ${SEAL_TAR_FILE}

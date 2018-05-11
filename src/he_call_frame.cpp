@@ -42,9 +42,9 @@
 #include "kernel/slice.hpp"
 #include "kernel/subtract.hpp"
 #include "kernel/sum.hpp"
+#include "ngraph/descriptor/layout/tensor_view_layout.hpp"
 #include "ngraph/runtime/host_tensor_view.hpp"
 #include "ngraph/runtime/tensor_view.hpp"
-#include "ngraph/descriptor/layout/tensor_view_layout.hpp"
 
 using namespace std;
 using namespace ngraph;
@@ -139,7 +139,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                     }
                 } // two-input ops that prefer plaintetx result
                 else if (op->description() == "Add" || op->description() == "Multiply" ||
-                        op->description() == "Dot")
+                         op->description() == "Dot")
                 {
                     shared_ptr<HEPlainTensorView> in0_plain =
                         dynamic_pointer_cast<HEPlainTensorView>(inputs[0]);
@@ -149,13 +149,13 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                     {
                         NGRAPH_INFO << "Op " << op->description() << " out is plaintext";
                         auto itv = make_shared<runtime::he::HEPlainTensorView>(
-                                element_type, shape, m_he_backend, name);
+                            element_type, shape, m_he_backend, name);
                         tensor_map.insert({tv, itv});
                     }
                     else
                     {
                         auto itv = make_shared<runtime::he::HECipherTensorView>(
-                                element_type, shape, m_he_backend, name);
+                            element_type, shape, m_he_backend, name);
                         tensor_map.insert({tv, itv});
                     }
                 }
@@ -183,7 +183,8 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
 
         const string op_name = op->description();
         bool cpu_check = op_name != "Slice" && op_name != "Reshape" && op_name != "Broadcast";
-        cpu_check = op_name == "Sum" || op_name == "Add" || op_name == "Dot" || op_name == "Multiply";
+        cpu_check =
+            op_name == "Sum" || op_name == "Add" || op_name == "Dot" || op_name == "Multiply";
 
         if (cpu_check)
         {
@@ -208,12 +209,12 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
 }
 
 void runtime::he::HECallFrame::check_cpu_calls(
-        shared_ptr<Function> function,
-        const element::Type& type,
-        const shared_ptr<Node>& op,
-        const vector<shared_ptr<runtime::he::HETensorView>>& inputs,
-        const vector<shared_ptr<runtime::he::HETensorView>>& outputs,
-        bool verbose)
+    shared_ptr<Function> function,
+    const element::Type& type,
+    const shared_ptr<Node>& op,
+    const vector<shared_ptr<runtime::he::HETensorView>>& inputs,
+    const vector<shared_ptr<runtime::he::HETensorView>>& outputs,
+    bool verbose)
 {
     runtime::interpreter::INT_CallFrame cpu_call_frame(function);
     std::vector<std::shared_ptr<runtime::HostTensorView>> cpu_inputs;
@@ -222,8 +223,10 @@ void runtime::he::HECallFrame::check_cpu_calls(
 
     for (std::shared_ptr<runtime::he::HETensorView> he_tv : inputs)
     {
-        std::shared_ptr<HECipherTensorView> cipher_tv = dynamic_pointer_cast<runtime::he::HECipherTensorView>(he_tv);
-        std::shared_ptr<HEPlainTensorView> plain_tv = dynamic_pointer_cast<runtime::he::HEPlainTensorView>(he_tv);
+        std::shared_ptr<HECipherTensorView> cipher_tv =
+            dynamic_pointer_cast<runtime::he::HECipherTensorView>(he_tv);
+        std::shared_ptr<HEPlainTensorView> plain_tv =
+            dynamic_pointer_cast<runtime::he::HEPlainTensorView>(he_tv);
 
         const element::Type& type = he_tv->get_tensor_view_layout()->get_element_type();
         auto shape = he_tv->get_shape();
@@ -277,11 +280,12 @@ void runtime::he::HECallFrame::check_cpu_calls(
             he_out->read(&he_out_vec[0], 0, num_bytes);
             cpu_out->read(&cpu_out_vec[0], 0, num_bytes);
 
-            for(size_t elem = 0; elem < element_count; ++elem)
+            for (size_t elem = 0; elem < element_count; ++elem)
             {
                 if (abs(cpu_out_vec[elem] - he_out_vec[elem]) > 0.001)
                 {
-                    NGRAPH_INFO << "expect " << cpu_out_vec[elem] << ", actual: " << he_out_vec[elem];
+                    NGRAPH_INFO << "expect " << cpu_out_vec[elem]
+                                << ", actual: " << he_out_vec[elem];
                     correct = false;
                 }
             }
@@ -297,10 +301,11 @@ void runtime::he::HECallFrame::check_cpu_calls(
         {
             NGRAPH_INFO << "Inaccurate float computation.";
         }
-        else {
+        else
+        {
             NGRAPH_INFO << "Verbose float computation";
         }
-        for(std::shared_ptr<runtime::HostTensorView> cpu_input : cpu_inputs)
+        for (std::shared_ptr<runtime::HostTensorView> cpu_input : cpu_inputs)
         {
             NGRAPH_INFO << "Input";
             size_t element_count = cpu_input->get_element_count();
@@ -308,13 +313,13 @@ void runtime::he::HECallFrame::check_cpu_calls(
             size_t num_bytes = type.size() * shape_size(shape);
             vector<float> cpu_inp_vec(element_count, 0);
             cpu_input->read(&cpu_inp_vec[0], 0, num_bytes);
-            for(auto elem : cpu_inp_vec)
+            for (auto elem : cpu_inp_vec)
             {
                 cout << elem << " ";
             }
             cout << endl;
         }
-        for(std::shared_ptr<runtime::HostTensorView> cpu_output : cpu_outputs)
+        for (std::shared_ptr<runtime::HostTensorView> cpu_output : cpu_outputs)
         {
             NGRAPH_INFO << "output";
             size_t element_count = cpu_output->get_element_count();
@@ -322,13 +327,14 @@ void runtime::he::HECallFrame::check_cpu_calls(
             size_t num_bytes = type.size() * shape_size(shape);
             vector<float> cpu_inp_vec(element_count, 0);
             cpu_output->read(&cpu_inp_vec[0], 0, num_bytes);
-            for(auto elem : cpu_inp_vec)
+            for (auto elem : cpu_inp_vec)
             {
                 cout << elem << " ";
             }
             cout << endl;
         }
-        if (!correct) {
+        if (!correct)
+        {
             throw ngraph_error("Inaccurate float computation");
         }
     }
@@ -388,11 +394,11 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         else if (arg0_plain != nullptr && arg1_plain != nullptr)
         {
             runtime::he::kernel::add(arg0_plain->get_elements(),
-                    arg1_plain->get_elements(),
-                    out0_plain->get_elements(),
-                    type,
-                    m_he_backend,
-                    out0_plain->get_element_count());
+                                     arg1_plain->get_elements(),
+                                     out0_plain->get_elements(),
+                                     type,
+                                     m_he_backend,
+                                     out0_plain->get_element_count());
         }
         else
         {
@@ -536,14 +542,14 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         {
             NGRAPH_INFO << "Dot plain plain";
             runtime::he::kernel::dot(arg0_plain->get_elements(),
-                    arg1_plain->get_elements(),
-                    out0_plain->get_elements(),
-                    arg0_plain->get_shape(),
-                    arg1_plain->get_shape(),
-                    out0_plain->get_shape(),
-                    dot->get_reduction_axes_count(),
-                    type,
-                    m_he_backend);
+                                     arg1_plain->get_elements(),
+                                     out0_plain->get_elements(),
+                                     arg0_plain->get_shape(),
+                                     arg1_plain->get_shape(),
+                                     out0_plain->get_shape(),
+                                     dot->get_reduction_axes_count(),
+                                     type,
+                                     m_he_backend);
         }
         else
         {
@@ -582,11 +588,11 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         else if (arg0_plain != nullptr && arg1_plain != nullptr)
         {
             runtime::he::kernel::multiply(arg0_plain->get_elements(),
-                    arg1_plain->get_elements(),
-                    out0_plain->get_elements(),
-                    type,
-                    m_he_backend,
-                    out0_plain->get_element_count());
+                                          arg1_plain->get_elements(),
+                                          out0_plain->get_elements(),
+                                          type,
+                                          m_he_backend,
+                                          out0_plain->get_element_count());
         }
         else
         {
@@ -605,7 +611,8 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         }
         else
         {
-            NGRAPH_INFO << "arg0 is plaintext? " << (arg0_plain != nullptr) << ", out0 is plaintext? " << (out0_plain != nullptr);
+            NGRAPH_INFO << "arg0 is plaintext? " << (arg0_plain != nullptr)
+                        << ", out0 is plaintext? " << (out0_plain != nullptr);
             //throw ngraph_error("Input to Relinearize must be ciphertext");
         }
     }
@@ -659,10 +666,10 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         {
             NGRAPH_INFO << "plain plain";
             runtime::he::kernel::reshape(arg0_plain->get_elements(),
-                    out0_plain->get_elements(),
-                    arg0_plain->get_shape(),
-                    reshape->get_input_order(),
-                    out0_plain->get_shape());
+                                         out0_plain->get_elements(),
+                                         arg0_plain->get_shape(),
+                                         reshape->get_input_order(),
+                                         out0_plain->get_shape());
         }
     }
     else if (node_op == "Result")
@@ -685,8 +692,8 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         else if (arg0_plain != nullptr && out0_plain != nullptr)
         {
             runtime::he::kernel::result(arg0_plain->get_elements(),
-                    out0_plain->get_elements(),
-                    shape_size(res->get_shape()));
+                                        out0_plain->get_elements(),
+                                        shape_size(res->get_shape()));
         }
         else
         {

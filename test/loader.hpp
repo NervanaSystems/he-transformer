@@ -14,13 +14,12 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <vector>
 #include <fstream>
-#include <sstream>
 #include <iostream>
-#include <string>
 #include <sstream>
-
+#include <sstream>
+#include <string>
+#include <vector>
 
 using namespace std;
 
@@ -31,9 +30,7 @@ vector<float> read_constant(const string filename)
     istringstream iss(data);
 
     vector<string> constants;
-    copy(istream_iterator<string>(iss),
-            istream_iterator<string>(),
-            back_inserter(constants));
+    copy(istream_iterator<string>(iss), istream_iterator<string>(), back_inserter(constants));
 
     vector<float> res;
     for (const string& constant : constants)
