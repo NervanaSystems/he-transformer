@@ -59,13 +59,10 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<seal::Ciphertext>>& ar
                 he_backend->create_constant_tensor(type, Shape{1}, i));
             seal::Plaintext dec_val;
             seal::Plaintext dec_i;
-            he_backend->decrypt(
-                dec_val,
-                *val); // TODO: We are not allowed to decrypt! Pass in one-hot encoded inputs
-            he_backend->decrypt(
-                dec_i,
-                *(const_tv->get_element(
-                    0))); // TODO: We are not allowed to decrypt! Pass in one-hot encoded inputs
+            // TODO: We are not allowed to decrypt! Pass in one-hot encoded inputs
+            he_backend->decrypt(dec_val, *val);
+            // TODO: We are not allowed to decrypt! Pass in one-hot encoded inputs
+            he_backend->decrypt(dec_i, *(const_tv->get_element(0)));
 
             if (dec_val == dec_i)
             {

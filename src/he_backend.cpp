@@ -14,10 +14,13 @@
 * limitations under the License.
 *******************************************************************************/
 
+#include <limits>
+
 #include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
 #include "ngraph/function.hpp"
 #include "ngraph/pass/assign_layout.hpp"
 #include "ngraph/pass/manager.hpp"
+#include "ngraph/pass/visualize_tree.hpp"
 
 #include "he_backend.hpp"
 #include "he_call_frame.hpp"
@@ -352,7 +355,7 @@ void runtime::he::HEBackend::check_noise_budget(
         shared_ptr<HECipherTensorView> out_i = dynamic_pointer_cast<HECipherTensorView>(tvs[i]);
         if (out_i != nullptr)
         {
-            size_t lowest_budget = 10000;
+            size_t lowest_budget = numeric_limits<size_t>::max();
             for (shared_ptr<seal::Ciphertext> ciphertext : out_i->get_elements())
             {
                 int budget = noise_budget(ciphertext);
@@ -369,4 +372,27 @@ void runtime::he::HEBackend::check_noise_budget(
         }
     }
     // NGRAPH_INFO << "Done checking noise budget ";
+}
+
+void runtime::he::HEBackend::enable_performance_data(shared_ptr<Function> func, bool enable)
+{
+    // Enabled by default
+}
+
+vector<runtime::PerformanceCounter>
+    runtime::he::HEBackend::get_performance_data(shared_ptr<Function> func) const
+{
+    return m_function_map.at(func)->get_performance_data();
+}
+
+void runtime::he::HEBackend::visualize_function_after_pass(const shared_ptr<Function>& func,
+                                                           const string& file_name)
+{
+    compile(func);
+    auto cf = m_function_map.at(func);
+    auto compiled_func = cf->get_compiled_function();
+    NGRAPH_INFO << "Visualize graph to " << file_name;
+    ngraph::pass::Manager pass_manager;
+    pass_manager.register_pass<ngraph::pass::VisualizeTree>(file_name);
+    pass_manager.run_passes(compiled_func);
 }
