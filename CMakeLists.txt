@@ -41,9 +41,9 @@ set(NGRAPH_INSTALL_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/include")
 include(ExternalProject)
 set(EXTERNAL_INSTALL_DIR ${CMAKE_BINARY_DIR}/external)
 
-include(external/external_gmp.cmake)
-include(external/external_ntl.cmake)
-include(external/external_heaan.cmake)
+#include(external/external_gmp.cmake)
+#include(external/external_ntl.cmake)
+#include(external/external_heaan.cmake)
 include(external/external_seal.cmake)
 include(external/external_gtest.cmake)
 
