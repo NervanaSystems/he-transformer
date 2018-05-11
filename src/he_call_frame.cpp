@@ -61,6 +61,9 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                                     const vector<shared_ptr<runtime::he::HETensorView>>& output_tvs,
                                     const vector<shared_ptr<runtime::he::HETensorView>>& input_tvs)
 {
+    // TODO: we clear timer at each run for now
+    m_timer_map.clear();
+
     // Every descriptor::tv (inputs/outputs/intermediates) maps to one runtime::tv
     unordered_map<descriptor::TensorView*, shared_ptr<runtime::he::HETensorView>> tensor_map;
 
@@ -90,11 +93,12 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
     // Invoke computation
     for (shared_ptr<Node> op : function->get_ordered_ops())
     {
-        NGRAPH_INFO << "Op " << op->get_name();
+        NGRAPH_INFO << "[ " << op->get_name() << " ]";
         if (op->description() == "Parameter")
         {
             continue;
         }
+        m_timer_map[op].start();
 
         // Collect input runtime::tv
         vector<shared_ptr<runtime::he::HETensorView>> inputs;
@@ -204,8 +208,15 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                 }
             }
         }
+
+        // Check noise budget after each op
         m_he_backend->check_noise_budget(outputs);
+
+        // Stop stopwatch and print time
+        m_timer_map.at(op).stop();
     }
+
+    // Check noise budget at for all function outputs
     m_he_backend->check_noise_budget(output_tvs);
 }
 
