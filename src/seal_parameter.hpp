@@ -45,7 +45,7 @@ namespace ngraph
             };
 
             static SEALParameter default_seal_parameter{
-                4096,  // poly_modulus_degree
+                16384,  // poly_modulus_degree
                 128,    // security_level
                 // 10000000000, // plain_modulus
                 // 1099511627776 , // plain_modulus (1 << 40)

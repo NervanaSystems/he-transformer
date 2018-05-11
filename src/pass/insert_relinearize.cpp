@@ -25,7 +25,6 @@ using namespace ngraph;
 
 bool runtime::he::pass::InsertRelinearize::run_on_call_graph(const list<shared_ptr<Node>>& nodes)
 {
-    return false; // TODO: remove to enable relinearize op
     for (const shared_ptr<Node>& node : nodes)
     {
         if (auto multiply = dynamic_pointer_cast<op::Multiply>(node))

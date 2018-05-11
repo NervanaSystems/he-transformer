@@ -587,7 +587,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     }
     else if (node_op == "Relinearize")
     {
-        if (arg0_cipher != nullptr)
+        if (arg0_cipher != nullptr || out0_cipher != nullptr)
         {
             runtime::he::kernel::relinearize(arg0_cipher->get_elements(),
                                              out0_cipher->get_elements(),
