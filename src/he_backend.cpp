@@ -20,6 +20,7 @@
 #include "ngraph/function.hpp"
 #include "ngraph/pass/assign_layout.hpp"
 #include "ngraph/pass/manager.hpp"
+#include "ngraph/pass/visualize_tree.hpp"
 
 #include "he_backend.hpp"
 #include "he_call_frame.hpp"
@@ -382,4 +383,16 @@ vector<runtime::PerformanceCounter>
     runtime::he::HEBackend::get_performance_data(shared_ptr<Function> func) const
 {
     return m_function_map.at(func)->get_performance_data();
+}
+
+void runtime::he::HEBackend::visualize_function_after_pass(const shared_ptr<Function>& func,
+                                                           const string& file_name)
+{
+    compile(func);
+    auto cf = m_function_map.at(func);
+    auto compiled_func = cf->get_compiled_function();
+    NGRAPH_INFO << "Visualize graph to " << file_name;
+    ngraph::pass::Manager pass_manager;
+    pass_manager.register_pass<ngraph::pass::VisualizeTree>(file_name);
+    pass_manager.run_passes(compiled_func);
 }
