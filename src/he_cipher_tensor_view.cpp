@@ -37,7 +37,6 @@ runtime::he::HECipherTensorView::HECipherTensorView(const element::Type& element
     for (size_t i = 0; i < m_num_elements; ++i)
     {
         m_cipher_texts[i] = make_shared<seal::Ciphertext>();
-        //m_cipher_texts.push_back(make_shared<seal::Ciphertext>());
     }
 }
 
