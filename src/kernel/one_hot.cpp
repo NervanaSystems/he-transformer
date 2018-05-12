@@ -34,27 +34,34 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<seal::Ciphertext>>& ar
                                   const element::Type& type,
                                   shared_ptr<HEBackend>& he_backend)
 {
-    // Step 1: Zero out the output.
+    // Get 0 and 1 cipher text
+    shared_ptr<HECipherTensorView> zero_tv =
+            static_pointer_cast<HECipherTensorView>(he_backend->create_zero_tensor(type, Shape{1}));
+    shared_ptr<seal::Ciphertext> zero_ciphertext = zero_tv->get_element(0);
+    shared_ptr<HECipherTensorView> one_tv =
+            static_pointer_cast<HECipherTensorView>(he_backend->create_ones_tensor(type, Shape{1}));
+    shared_ptr<seal::Ciphertext> one_ciphertext = one_tv->get_element(0);
+
+    // Step 1: Zero out the output. We can simply copy the shared_ptr pointing to a zero
+    // ciphertext to all output locations.
     CoordinateTransform output_transform(out_shape);
     for (const Coordinate& output_coord : output_transform)
     {
-        shared_ptr<HECipherTensorView> zero_tv =
-            static_pointer_cast<HECipherTensorView>(he_backend->create_zero_tensor(type, Shape{1}));
-
-        out[output_transform.index(output_coord)] = zero_tv->get_element(0);
+        out[output_transform.index(output_coord)] = zero_ciphertext;
     }
 
     // Step 2: Write ones at needed positions, throwing exceptions when invalid conditions
     // are encountered.
     CoordinateTransform input_transform(in_shape);
-
     for (const Coordinate& input_coord : input_transform)
     {
+        NGRAPH_INFO;
         shared_ptr<seal::Ciphertext> val = arg[input_transform.index(input_coord)];
 
         size_t one_hot_pos = out_shape[one_hot_axis] + 1;
         for (size_t i = 0; i < out_shape[one_hot_axis]; ++i)
         {
+            NGRAPH_INFO;
             shared_ptr<HECipherTensorView> const_tv = static_pointer_cast<HECipherTensorView>(
                 he_backend->create_constant_tensor(type, Shape{1}, i));
             seal::Plaintext dec_val;
@@ -77,9 +84,6 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<seal::Ciphertext>>& ar
         }
 
         Coordinate one_hot_coord = inject(input_coord, one_hot_axis, one_hot_pos);
-        shared_ptr<HECipherTensorView> one_tv =
-            static_pointer_cast<HECipherTensorView>(he_backend->create_ones_tensor(type, Shape{1}));
-
-        out[output_transform.index(one_hot_coord)] = one_tv->get_element(0);
+        out[output_transform.index(one_hot_coord)] = one_ciphertext;
     }
 }
