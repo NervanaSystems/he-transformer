@@ -189,9 +189,8 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         generate_calls(base_type, op, inputs, outputs);
 
         const string op_name = op->description();
-        bool cpu_check = op_name != "Slice" && op_name != "Reshape" && op_name != "Broadcast";
-        cpu_check =
-            op_name == "Sum" || op_name == "Add" || op_name == "Dot" || op_name == "Multiply";
+        static unordered_set<string> cpu_check_enabled_ops{"Sum", "Add", "Dot", "Multiply"};
+        bool cpu_check = cpu_check_enabled_ops.count(op_name) != 0;
 
         if (cpu_check)
         {
