@@ -15,6 +15,7 @@
 *******************************************************************************/
 
 #include <vector>
+#include <cmath>
 
 #include "he_backend.hpp"
 #include "he_cipher_tensor_view.hpp"
@@ -55,32 +56,46 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<seal::Ciphertext>>& ar
     CoordinateTransform input_transform(in_shape);
     for (const Coordinate& input_coord : input_transform)
     {
-        NGRAPH_INFO;
         shared_ptr<seal::Ciphertext> val = arg[input_transform.index(input_coord)];
 
-        size_t one_hot_pos = out_shape[one_hot_axis] + 1;
-        for (size_t i = 0; i < out_shape[one_hot_axis]; ++i)
-        {
-            NGRAPH_INFO;
-            shared_ptr<HECipherTensorView> const_tv = static_pointer_cast<HECipherTensorView>(
-                he_backend->create_constant_tensor(type, Shape{1}, i));
-            seal::Plaintext dec_val;
-            seal::Plaintext dec_i;
-            // TODO: We are not allowed to decrypt! Pass in one-hot encoded inputs
-            he_backend->decrypt(dec_val, *val);
-            // TODO: We are not allowed to decrypt! Pass in one-hot encoded inputs
-            he_backend->decrypt(dec_i, *(const_tv->get_element(0)));
+        // TODO: We are not allowed to decrypt! Pass in one-hot encoded inputs
+        seal::Plaintext plain_val;
+        he_backend->decrypt(plain_val, *val);
+        size_t one_hot_pos;
 
-            if (dec_val == dec_i)
-            {
-                one_hot_pos = i;
-                break;
-            }
-        }
-        if (one_hot_pos == out_shape[one_hot_axis] + 1)
+        // TODO: We are not allowed to decrypt and decode
+        const string type_name = type.c_type_string();
+        if (type_name == "int64_t")
         {
-            throw(std::range_error(
-                "One-hot: non-integral value in input or value is out of category range"));
+            int64_t x;
+            he_backend->decode((void*)(&x), plain_val, type);
+            one_hot_pos = static_cast<size_t>(x);
+        }
+        else if (type_name == "uint64_t")
+        {
+            uint64_t x;
+            he_backend->decode((void*)(&x), plain_val, type);
+            one_hot_pos = static_cast<size_t>(x);
+        }
+        else if (type_name == "float")
+        {
+            float x;
+            he_backend->decode((void*)(&x), plain_val, type);
+            if (std::floor(x) < x || std::floor(x) > x)
+            {
+                throw(std::range_error("One-hot: non-integral value in input"));
+            }
+            one_hot_pos = static_cast<size_t>(x);
+        }
+        else
+        {
+            NGRAPH_INFO << "Unsupported element type in decode " << type_name;
+            throw ngraph_error("Unsupported element type " + type_name);
+        }
+
+        if (one_hot_pos >= out_shape[one_hot_axis])
+        {
+            throw(std::range_error("One-hot: value is out of category range"));
         }
 
         Coordinate one_hot_coord = inject(input_coord, one_hot_axis, one_hot_pos);
