@@ -128,15 +128,6 @@ shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_constant_tensor(
         }
         cipher_tensor->write((void*)&elements[0], 0, bytes_to_write);
     }
-    else if (type_name == "uint64_t")
-    {
-        vector<uint64_t> elements;
-        for (size_t i = 0; i < num_elements; ++i)
-        {
-            elements.push_back(element);
-        }
-        cipher_tensor->write((void*)&elements[0], 0, bytes_to_write);
-    }
     else
     {
         throw ngraph_error("Type not supported at create_constant_tensor");
@@ -192,15 +183,6 @@ shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_constant_plain_te
     else if (type_name == "int64_t")
     {
         vector<int64_t> elements;
-        for (size_t i = 0; i < num_elements; ++i)
-        {
-            elements.push_back(element);
-        }
-        plain_tensor->write((void*)&elements[0], 0, bytes_to_write);
-    }
-    else if (type_name == "uint64_t")
-    {
-        vector<uint64_t> elements;
         for (size_t i = 0; i < num_elements; ++i)
         {
             elements.push_back(element);
@@ -286,10 +268,6 @@ void runtime::he::HEBackend::encode(seal::Plaintext& output,
     {
         output = m_int_encoder->encode(*(int64_t*)input);
     }
-    else if (type_name == "uint64_t")
-    {
-        output = m_int_encoder->encode(*(uint64_t*)input);
-    }
     else if (type_name == "float")
     {
         output = m_frac_encoder->encode(*(float*)input);
@@ -310,11 +288,6 @@ void runtime::he::HEBackend::decode(void* output,
     if (type_name == "int64_t")
     {
         int64_t x = m_int_encoder->decode_int64(input);
-        memcpy(output, &x, type.size());
-    }
-    else if (type_name == "uint64_t")
-    {
-        uint64_t x = m_int_encoder->decode_int64(input);
         memcpy(output, &x, type.size());
     }
     else if (type_name == "float")

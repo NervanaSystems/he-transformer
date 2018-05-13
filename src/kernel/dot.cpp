@@ -182,7 +182,7 @@ void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<seal::Plaintext>>&
             auto arg1_text = arg1[arg1_transform.index(arg1_coord)];
 
             shared_ptr<seal::Plaintext> prod = make_shared<seal::Plaintext>(
-            he_backend->get_context()->parms().poly_modulus().coeff_count(), 0, pool);
+                he_backend->get_context()->parms().poly_modulus().coeff_count(), 0, pool);
 
             runtime::he::kernel::scalar_multiply(
                 arg0_text, arg1_text, prod, type, he_backend, pool);

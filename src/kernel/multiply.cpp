@@ -98,14 +98,6 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Ciphertext>>& a
             }
         }
     }
-    else if (type_name == "uint64_t")
-    {
-#pragma omp parallel for
-        for (size_t i = 0; i < count; ++i)
-        {
-            he_backend->get_evaluator()->multiply_plain(*arg0[i], *arg1[i], *out[i]);
-        }
-    }
     else
     {
         throw ngraph_error("Multiply type not supported " + type_name);
@@ -153,10 +145,6 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<seal::Ciphertext>& ar
         {
             he_backend->get_evaluator()->multiply_plain(*arg0, *arg1, *out, pool);
         }
-    }
-    else if (type_name == "uint64_t")
-    {
-        he_backend->get_evaluator()->multiply_plain(*arg0, *arg1, *out, pool);
     }
     else
     {

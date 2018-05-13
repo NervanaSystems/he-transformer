@@ -71,12 +71,6 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<seal::Ciphertext>>& ar
             he_backend->decode((void*)(&x), plain_val, type);
             one_hot_pos = static_cast<size_t>(x);
         }
-        else if (type_name == "uint64_t")
-        {
-            uint64_t x;
-            he_backend->decode((void*)(&x), plain_val, type);
-            one_hot_pos = static_cast<size_t>(x);
-        }
         else if (type_name == "float")
         {
             float x;
