@@ -128,11 +128,14 @@ namespace ngraph
                         std::copy(
                             arg1_projected_coord.begin(), arg1_projected_coord.end(), out_coord_it);
 
-                        // Zero out to start the sum.
-                        auto plain_zero = make_shared<seal::Plaintext>
-                            (he_backend->get_context()->parms().poly_modulus().coeff_count(), 0, pool);
-                        auto sum = make_shared<seal::Ciphertext>
-                            (he_backend->get_context()->parms(), pool);
+                        // Zero out to start the sum. Both FractionalEncoder and IntegerEncoder
+                        // shall produce the same Plaintext 0, so it doesn't matter here.
+                        auto plain_zero = make_shared<seal::Plaintext>(
+                            he_backend->get_context()->parms().poly_modulus().coeff_count(),
+                            0,
+                            pool);
+                        auto sum =
+                            make_shared<seal::Ciphertext>(he_backend->get_context()->parms(), pool);
                         he_backend->get_encryptor()->encrypt(*plain_zero, *sum, pool);
 
                         size_t out_index = output_transform.index(out_coord);
@@ -161,8 +164,8 @@ namespace ngraph
                             auto arg0_text = arg0[arg0_transform.index(arg0_coord)];
                             auto arg1_text = arg1[arg1_transform.index(arg1_coord)];
 
-                            auto prod = make_shared<seal::Ciphertext>
-                                (he_backend->get_context()->parms(), pool);
+                            auto prod = make_shared<seal::Ciphertext>(
+                                he_backend->get_context()->parms(), pool);
 
                             runtime::he::kernel::multiply(
                                 arg0_text, arg1_text, prod, type, he_backend, pool);
