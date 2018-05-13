@@ -167,9 +167,9 @@ namespace ngraph
                             auto prod = make_shared<seal::Ciphertext>(
                                 he_backend->get_context()->parms(), pool);
 
-                            runtime::he::kernel::multiply(
+                            runtime::he::kernel::scalar_multiply(
                                 arg0_text, arg1_text, prod, type, he_backend, pool);
-                            runtime::he::kernel::add(sum, prod, sum, he_backend, pool);
+                            runtime::he::kernel::scalar_add(sum, prod, sum, he_backend, pool);
                         }
 
                         // Write the sum back.

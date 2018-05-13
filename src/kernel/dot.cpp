@@ -185,8 +185,9 @@ void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<seal::Plaintext>>&
                 he_backend->create_zero_plain_tensor(type, Shape{1}));
             shared_ptr<seal::Plaintext> prod = prod_tv->get_element(0);
 
-            runtime::he::kernel::multiply(arg0_text, arg1_text, prod, type, he_backend, pool);
-            runtime::he::kernel::add(sum, prod, sum, type, he_backend, pool);
+            runtime::he::kernel::scalar_multiply(
+                arg0_text, arg1_text, prod, type, he_backend, pool);
+            runtime::he::kernel::scalar_add(sum, prod, sum, type, he_backend, pool);
         }
 
         // Write the sum back.

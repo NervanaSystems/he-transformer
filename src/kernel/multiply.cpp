@@ -38,12 +38,12 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Ciphertext>>& a
     }
 }
 
-void runtime::he::kernel::multiply(const shared_ptr<seal::Ciphertext>& arg0,
-                                   const shared_ptr<seal::Ciphertext>& arg1,
-                                   shared_ptr<seal::Ciphertext>& out,
-                                   const element::Type& type,
-                                   shared_ptr<HEBackend> he_backend,
-                                   const seal::MemoryPoolHandle& pool)
+void runtime::he::kernel::scalar_multiply(const shared_ptr<seal::Ciphertext>& arg0,
+                                          const shared_ptr<seal::Ciphertext>& arg1,
+                                          shared_ptr<seal::Ciphertext>& out,
+                                          const element::Type& type,
+                                          shared_ptr<HEBackend> he_backend,
+                                          const seal::MemoryPoolHandle& pool)
 {
     he_backend->get_evaluator()->multiply(*arg0, *arg1, *out, pool);
 }
@@ -112,12 +112,12 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Ciphertext>>& a
     }
 }
 
-void runtime::he::kernel::multiply(const shared_ptr<seal::Ciphertext>& arg0,
-                                   const shared_ptr<seal::Plaintext>& arg1,
-                                   shared_ptr<seal::Ciphertext>& out,
-                                   const element::Type& type,
-                                   shared_ptr<HEBackend> he_backend,
-                                   const seal::MemoryPoolHandle& pool)
+void runtime::he::kernel::scalar_multiply(const shared_ptr<seal::Ciphertext>& arg0,
+                                          const shared_ptr<seal::Plaintext>& arg1,
+                                          shared_ptr<seal::Ciphertext>& out,
+                                          const element::Type& type,
+                                          shared_ptr<HEBackend> he_backend,
+                                          const seal::MemoryPoolHandle& pool)
 {
     const string type_name = type.c_type_string();
     if (type_name == "float")
@@ -174,14 +174,14 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Plaintext>>& ar
     multiply(arg1, arg0, out, type, he_backend, count);
 }
 
-void runtime::he::kernel::multiply(const shared_ptr<seal::Plaintext>& arg0,
-                                   const shared_ptr<seal::Ciphertext>& arg1,
-                                   shared_ptr<seal::Ciphertext>& out,
-                                   const element::Type& type,
-                                   shared_ptr<HEBackend> he_backend,
-                                   const seal::MemoryPoolHandle& pool)
+void runtime::he::kernel::scalar_multiply(const shared_ptr<seal::Plaintext>& arg0,
+                                          const shared_ptr<seal::Ciphertext>& arg1,
+                                          shared_ptr<seal::Ciphertext>& out,
+                                          const element::Type& type,
+                                          shared_ptr<HEBackend> he_backend,
+                                          const seal::MemoryPoolHandle& pool)
 {
-    multiply(arg1, arg0, out, type, he_backend, pool);
+    scalar_multiply(arg1, arg0, out, type, he_backend, pool);
 }
 
 void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Plaintext>>& arg0,
@@ -209,12 +209,12 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Plaintext>>& ar
     }
 }
 
-void runtime::he::kernel::multiply(const shared_ptr<seal::Plaintext>& arg0,
-                                   const shared_ptr<seal::Plaintext>& arg1,
-                                   shared_ptr<seal::Plaintext>& out,
-                                   const element::Type& type,
-                                   shared_ptr<HEBackend> he_backend,
-                                   const seal::MemoryPoolHandle& pool)
+void runtime::he::kernel::scalar_multiply(const shared_ptr<seal::Plaintext>& arg0,
+                                          const shared_ptr<seal::Plaintext>& arg1,
+                                          shared_ptr<seal::Plaintext>& out,
+                                          const element::Type& type,
+                                          shared_ptr<HEBackend> he_backend,
+                                          const seal::MemoryPoolHandle& pool)
 {
     auto evaluator = he_backend->get_evaluator();
     float x, y;

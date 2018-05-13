@@ -37,15 +37,6 @@ void runtime::he::kernel::add(const vector<shared_ptr<seal::Ciphertext>>& arg0,
     }
 }
 
-void runtime::he::kernel::add(const shared_ptr<seal::Ciphertext>& arg0,
-                              const shared_ptr<seal::Ciphertext>& arg1,
-                              shared_ptr<seal::Ciphertext>& out,
-                              shared_ptr<HEBackend> he_backend,
-                              const seal::MemoryPoolHandle& pool)
-{
-    he_backend->get_evaluator()->add(*arg0, *arg1, *out);
-}
-
 void runtime::he::kernel::add(const vector<shared_ptr<seal::Ciphertext>>& arg0,
                               const vector<shared_ptr<seal::Plaintext>>& arg1,
                               vector<shared_ptr<seal::Ciphertext>>& out,
@@ -92,12 +83,21 @@ void runtime::he::kernel::add(const vector<shared_ptr<seal::Plaintext>>& arg0,
     }
 }
 
-void runtime::he::kernel::add(const shared_ptr<seal::Plaintext>& arg0,
-                              const shared_ptr<seal::Plaintext>& arg1,
-                              shared_ptr<seal::Plaintext>& out,
-                              const element::Type& type,
-                              shared_ptr<HEBackend> he_backend,
-                              const seal::MemoryPoolHandle& pool)
+void runtime::he::kernel::scalar_add(const shared_ptr<seal::Ciphertext>& arg0,
+                                     const shared_ptr<seal::Ciphertext>& arg1,
+                                     shared_ptr<seal::Ciphertext>& out,
+                                     shared_ptr<HEBackend> he_backend,
+                                     const seal::MemoryPoolHandle& pool)
+{
+    he_backend->get_evaluator()->add(*arg0, *arg1, *out);
+}
+
+void runtime::he::kernel::scalar_add(const shared_ptr<seal::Plaintext>& arg0,
+                                     const shared_ptr<seal::Plaintext>& arg1,
+                                     shared_ptr<seal::Plaintext>& out,
+                                     const element::Type& type,
+                                     shared_ptr<HEBackend> he_backend,
+                                     const seal::MemoryPoolHandle& pool)
 {
     auto evaluator = he_backend->get_evaluator();
     float x, y;
