@@ -49,7 +49,7 @@ namespace ngraph
                     create_tensor(const element::Type& element_type, const Shape& shape) override;
 
                 std::shared_ptr<seal::Ciphertext>
-                    create_ciphertext_with_value(float value,
+                    create_valued_ciphertext(float value,
                                                  const element::Type& element_type,
                                                  const seal::MemoryPoolHandle& pool) const;
 

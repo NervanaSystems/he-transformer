@@ -98,7 +98,7 @@ shared_ptr<runtime::TensorView>
     return static_pointer_cast<runtime::TensorView>(rc);
 }
 
-std::shared_ptr<seal::Ciphertext> runtime::he::HEBackend::create_ciphertext_with_value(
+std::shared_ptr<seal::Ciphertext> runtime::he::HEBackend::create_valued_ciphertext(
     float value, const element::Type& element_type, const seal::MemoryPoolHandle& pool) const
 {
     // For Encryptor, we use the memory-pool version
