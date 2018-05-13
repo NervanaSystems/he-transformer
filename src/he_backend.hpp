@@ -89,7 +89,7 @@ namespace ngraph
 
                 void decrypt(seal::Plaintext& output, const seal::Ciphertext& input);
 
-                void check_noise_budget(const vector<shared_ptr<runtime::he::HETensorView>>& tvs);
+                void check_noise_budget(const vector<shared_ptr<runtime::he::HETensorView>>& tvs) const;
 
                 const inline std::shared_ptr<seal::Evaluator> get_evaluator() const
                 {
@@ -115,7 +115,7 @@ namespace ngraph
                 };
 
                 const inline plaintext_num& get_plaintext_num() const { return m_plaintext_num; }
-                int noise_budget(const std::shared_ptr<seal::Ciphertext>& ciphertext);
+                int noise_budget(const std::shared_ptr<seal::Ciphertext>& ciphertext) const;
 
                 void enable_performance_data(std::shared_ptr<Function> func, bool enable) override;
                 std::vector<PerformanceCounter>

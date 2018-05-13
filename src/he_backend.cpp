@@ -339,13 +339,13 @@ void runtime::he::HEBackend::decrypt(seal::Plaintext& output, const seal::Cipher
     m_decryptor->decrypt(input, output);
 }
 
-int runtime::he::HEBackend::noise_budget(const shared_ptr<seal::Ciphertext>& ciphertext)
+int runtime::he::HEBackend::noise_budget(const shared_ptr<seal::Ciphertext>& ciphertext) const
 {
     return m_decryptor->invariant_noise_budget(*ciphertext);
 }
 
 void runtime::he::HEBackend::check_noise_budget(
-    const vector<shared_ptr<runtime::he::HETensorView>>& tvs)
+    const vector<shared_ptr<runtime::he::HETensorView>>& tvs) const
 {
     // Check noise budget
     NGRAPH_INFO << "Checking noise budget ";
@@ -356,6 +356,7 @@ void runtime::he::HEBackend::check_noise_budget(
         if (auto cipher_tv = dynamic_pointer_cast<HECipherTensorView>(tvs[i]))
         {
             size_t lowest_budget = numeric_limits<size_t>::max();
+
 #pragma omp parallel for reduction(min : lowest_budget)
             for (size_t i = 0; i < cipher_tv->get_element_count(); ++i)
             {
