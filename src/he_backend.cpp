@@ -124,8 +124,8 @@ std::shared_ptr<seal::Ciphertext> runtime::he::HEBackend::create_valued_cipherte
     return ciphertext;
 }
 
-std::shared_ptr<seal::Ciphertext> runtime::he::HEBackend::create_empty_ciphertext(
-    const seal::MemoryPoolHandle& pool) const
+std::shared_ptr<seal::Ciphertext>
+    runtime::he::HEBackend::create_empty_ciphertext(const seal::MemoryPoolHandle& pool) const
 {
     return make_shared<seal::Ciphertext>(m_context->parms(), pool);
 }
