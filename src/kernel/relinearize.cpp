@@ -29,7 +29,7 @@ void runtime::he::kernel::relinearize(const vector<shared_ptr<seal::Ciphertext>>
                                       shared_ptr<HEBackend> he_backend,
                                       size_t count)
 {
-    shared_ptr<seal::EvaluationKeys> ev_key = he_backend.get()->get_ev_key();
+    shared_ptr<seal::EvaluationKeys> ev_key = he_backend->get_ev_key();
 
 // It's safe to do inplace relinearize on the input since the un-relinearized result won't be
 // used by other ops. That is, this relinearize op is immediately after a multiply op, and the

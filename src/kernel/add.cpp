@@ -33,7 +33,7 @@ void runtime::he::kernel::add(const vector<shared_ptr<seal::Ciphertext>>& arg0,
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
     {
-        he_backend.get()->get_evaluator()->add(*arg0[i], *arg1[i], *out[i]);
+        he_backend->get_evaluator()->add(*arg0[i], *arg1[i], *out[i]);
     }
 }
 
@@ -43,7 +43,7 @@ void runtime::he::kernel::add(const shared_ptr<seal::Ciphertext>& arg0,
                               shared_ptr<HEBackend> he_backend,
                               const seal::MemoryPoolHandle& pool)
 {
-    he_backend.get()->get_evaluator()->add(*arg0, *arg1, *out);
+    he_backend->get_evaluator()->add(*arg0, *arg1, *out);
 }
 
 void runtime::he::kernel::add(const vector<shared_ptr<seal::Ciphertext>>& arg0,
@@ -55,7 +55,7 @@ void runtime::he::kernel::add(const vector<shared_ptr<seal::Ciphertext>>& arg0,
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
     {
-        he_backend.get()->get_evaluator()->add_plain(*arg0[i], *arg1[i], *out[i]);
+        he_backend->get_evaluator()->add_plain(*arg0[i], *arg1[i], *out[i]);
     }
 }
 
@@ -83,7 +83,7 @@ void runtime::he::kernel::add(const vector<shared_ptr<seal::Plaintext>>& arg0,
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
     {
-        auto evaluator = he_backend.get()->get_evaluator();
+        auto evaluator = he_backend->get_evaluator();
         float x, y;
         he_backend->decode(&x, *arg0[i], type);
         he_backend->decode(&y, *arg1[i], type);
@@ -99,7 +99,7 @@ void runtime::he::kernel::add(const shared_ptr<seal::Plaintext>& arg0,
                               shared_ptr<HEBackend> he_backend,
                               const seal::MemoryPoolHandle& pool)
 {
-    auto evaluator = he_backend.get()->get_evaluator();
+    auto evaluator = he_backend->get_evaluator();
     float x, y;
     he_backend->decode(&x, *arg0, type);
     he_backend->decode(&y, *arg1, type);

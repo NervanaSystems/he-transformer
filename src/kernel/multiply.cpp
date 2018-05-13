@@ -34,7 +34,7 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Ciphertext>>& a
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
     {
-        he_backend.get()->get_evaluator()->multiply(*arg0[i], *arg1[i], *out[i]);
+        he_backend->get_evaluator()->multiply(*arg0[i], *arg1[i], *out[i]);
     }
 }
 
@@ -45,7 +45,7 @@ void runtime::he::kernel::multiply(const shared_ptr<seal::Ciphertext>& arg0,
                                    shared_ptr<HEBackend> he_backend,
                                    const seal::MemoryPoolHandle& pool)
 {
-    he_backend.get()->get_evaluator()->multiply(*arg0, *arg1, *out, pool);
+    he_backend->get_evaluator()->multiply(*arg0, *arg1, *out, pool);
 }
 
 void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Ciphertext>>& arg0,
@@ -68,12 +68,12 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Ciphertext>>& a
             else if (*arg1[i] == he_backend->get_plaintext_num().fl_n1)
             {
                 seal::Ciphertext c = *arg0[i];
-                he_backend.get()->get_evaluator()->negate(c);
+                he_backend->get_evaluator()->negate(c);
                 *out[i] = c;
             }
             else
             {
-                he_backend.get()->get_evaluator()->multiply_plain(*arg0[i], *arg1[i], *out[i]);
+                he_backend->get_evaluator()->multiply_plain(*arg0[i], *arg1[i], *out[i]);
             }
         }
     }
@@ -89,12 +89,12 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Ciphertext>>& a
             else if (*arg1[i] == he_backend->get_plaintext_num().fl_n1)
             {
                 seal::Ciphertext c = *arg0[i];
-                he_backend.get()->get_evaluator()->negate(c);
+                he_backend->get_evaluator()->negate(c);
                 *out[i] = c;
             }
             else
             {
-                he_backend.get()->get_evaluator()->multiply_plain(*arg0[i], *arg1[i], *out[i]);
+                he_backend->get_evaluator()->multiply_plain(*arg0[i], *arg1[i], *out[i]);
             }
         }
     }
@@ -103,7 +103,7 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Ciphertext>>& a
 #pragma omp parallel for
         for (size_t i = 0; i < count; ++i)
         {
-            he_backend.get()->get_evaluator()->multiply_plain(*arg0[i], *arg1[i], *out[i]);
+            he_backend->get_evaluator()->multiply_plain(*arg0[i], *arg1[i], *out[i]);
         }
     }
     else
@@ -129,12 +129,12 @@ void runtime::he::kernel::multiply(const shared_ptr<seal::Ciphertext>& arg0,
         else if (*arg1 == he_backend->get_plaintext_num().fl_n1)
         {
             seal::Ciphertext c = *arg0;
-            he_backend.get()->get_evaluator()->negate(c);
+            he_backend->get_evaluator()->negate(c);
             *out = c;
         }
         else
         {
-            he_backend.get()->get_evaluator()->multiply_plain(*arg0, *arg1, *out, pool);
+            he_backend->get_evaluator()->multiply_plain(*arg0, *arg1, *out, pool);
         }
     }
     else if (type_name == "int64_t")
@@ -146,17 +146,17 @@ void runtime::he::kernel::multiply(const shared_ptr<seal::Ciphertext>& arg0,
         else if (*arg1 == he_backend->get_plaintext_num().fl_n1)
         {
             seal::Ciphertext c = *arg0;
-            he_backend.get()->get_evaluator()->negate(c);
+            he_backend->get_evaluator()->negate(c);
             *out = c;
         }
         else
         {
-            he_backend.get()->get_evaluator()->multiply_plain(*arg0, *arg1, *out, pool);
+            he_backend->get_evaluator()->multiply_plain(*arg0, *arg1, *out, pool);
         }
     }
     else if (type_name == "uint64_t")
     {
-        he_backend.get()->get_evaluator()->multiply_plain(*arg0, *arg1, *out, pool);
+        he_backend->get_evaluator()->multiply_plain(*arg0, *arg1, *out, pool);
     }
     else
     {
@@ -200,7 +200,7 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Plaintext>>& ar
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
     {
-        auto evaluator = he_backend.get()->get_evaluator();
+        auto evaluator = he_backend->get_evaluator();
         float x, y;
         he_backend->decode(&x, *arg0[i], type);
         he_backend->decode(&y, *arg1[i], type);
@@ -216,7 +216,7 @@ void runtime::he::kernel::multiply(const shared_ptr<seal::Plaintext>& arg0,
                                    shared_ptr<HEBackend> he_backend,
                                    const seal::MemoryPoolHandle& pool)
 {
-    auto evaluator = he_backend.get()->get_evaluator();
+    auto evaluator = he_backend->get_evaluator();
     float x, y;
     he_backend->decode(&x, *arg0, type);
     he_backend->decode(&y, *arg1, type);
