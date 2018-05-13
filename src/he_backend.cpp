@@ -360,8 +360,9 @@ void runtime::he::HEBackend::check_noise_budget(
 #pragma omp parallel for reduction(min : lowest_budget)
             for (size_t i = 0; i < cipher_tv->get_element_count(); ++i)
             {
+                seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
                 shared_ptr<seal::Ciphertext>& ciphertext = cipher_tv->get_element(i);
-                int budget = noise_budget(ciphertext);
+                int budget = m_decryptor->invariant_noise_budget(*ciphertext, pool);
                 if (budget < lowest_budget)
                 {
                     lowest_budget = budget;
