@@ -92,6 +92,11 @@ namespace ngraph
                 void check_noise_budget(
                     const vector<shared_ptr<runtime::he::HETensorView>>& tvs) const;
 
+                const inline std::shared_ptr<seal::SEALContext> get_context() const
+                {
+                    return m_context;
+                }
+
                 const inline std::shared_ptr<seal::Evaluator> get_evaluator() const
                 {
                     return m_evaluator;
