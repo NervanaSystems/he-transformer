@@ -47,6 +47,14 @@ namespace ngraph
 
                 std::shared_ptr<runtime::TensorView>
                     create_tensor(const element::Type& element_type, const Shape& shape) override;
+
+                std::shared_ptr<seal::Ciphertext>
+                    create_ciphertext_with_value(const element::Type& element_type, float value,
+                                      const seal::MemoryPoolHandle& pool) const;
+
+                // std::shared_ptr<seal::Plaintext>
+                //     create_plaintext(const element::Type& element_type, float value) const;
+
                 std::shared_ptr<runtime::TensorView>
                     create_plain_tensor(const element::Type& element_type, const Shape& shape);
 
@@ -144,7 +152,6 @@ namespace ngraph
                                                    const std::string& file_name);
 
             private:
-                seal::EncryptionParameters parms;
                 std::shared_ptr<seal::SEALContext> m_context;
                 std::shared_ptr<seal::IntegerEncoder> m_int_encoder;
                 std::shared_ptr<seal::FractionalEncoder> m_frac_encoder;
