@@ -102,6 +102,11 @@ namespace ngraph
                     return m_ev_key;
                 }
 
+                const inline std::shared_ptr<seal::Encryptor> get_encryptor() const
+                {
+                    return m_encryptor;
+                }
+
                 const inline std::shared_ptr<seal::Decryptor> get_decryptor() const
                 {
                     return m_decryptor;
