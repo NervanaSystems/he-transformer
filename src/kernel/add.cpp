@@ -42,10 +42,7 @@ void runtime::he::kernel::add(const shared_ptr<seal::Ciphertext>& arg0,
                               shared_ptr<seal::Ciphertext>& out,
                               shared_ptr<HEBackend> he_backend)
 {
-    const vector<shared_ptr<seal::Ciphertext>> arg0vec = {arg0};
-    const vector<shared_ptr<seal::Ciphertext>> arg1vec = {arg1};
-    vector<shared_ptr<seal::Ciphertext>> outvec = {out};
-    add(arg0vec, arg1vec, outvec, he_backend, 1);
+    he_backend.get()->get_evaluator()->add(*arg0, *arg1, *out);
 }
 
 void runtime::he::kernel::add(const vector<shared_ptr<seal::Ciphertext>>& arg0,
@@ -100,8 +97,10 @@ void runtime::he::kernel::add(const shared_ptr<seal::Plaintext>& arg0,
                               const element::Type& type,
                               shared_ptr<HEBackend> he_backend)
 {
-    const vector<shared_ptr<seal::Plaintext>> arg0vec = {arg0};
-    const vector<shared_ptr<seal::Plaintext>> arg1vec = {arg1};
-    vector<shared_ptr<seal::Plaintext>> outvec = {out};
-    add(arg0vec, arg1vec, outvec, type, he_backend, 1);
+    auto evaluator = he_backend.get()->get_evaluator();
+    float x, y;
+    he_backend->decode(&x, *arg0, type);
+    he_backend->decode(&y, *arg1, type);
+    float r = x + y;
+    he_backend->encode(*out, &r, type);
 }
