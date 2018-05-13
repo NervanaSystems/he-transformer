@@ -154,10 +154,10 @@ void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<seal::Plaintext>>&
             std::copy(arg0_projected_coord.begin(), arg0_projected_coord.end(), out_coord.begin());
         std::copy(arg1_projected_coord.begin(), arg1_projected_coord.end(), out_coord_it);
 
-        // Zero out to start the sum.
-        shared_ptr<HEPlainTensorView> sum_tv = static_pointer_cast<HEPlainTensorView>(
-            he_backend->create_zero_plain_tensor(type, Shape{1}));
-        shared_ptr<seal::Plaintext> sum = sum_tv->get_element(0);
+        // Zero out to start the sum
+        // Both FractionalEncoder and IntegerEncoder shall produce the same Plaintext 0
+        shared_ptr<seal::Plaintext> sum = make_shared<seal::Plaintext>(
+            he_backend->get_context()->parms().poly_modulus().coeff_count(), 0, pool);
 
         size_t out_index = output_transform.index(out_coord);
 
@@ -181,9 +181,8 @@ void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<seal::Plaintext>>&
             auto arg0_text = arg0[arg0_transform.index(arg0_coord)];
             auto arg1_text = arg1[arg1_transform.index(arg1_coord)];
 
-            shared_ptr<HEPlainTensorView> prod_tv = static_pointer_cast<HEPlainTensorView>(
-                he_backend->create_zero_plain_tensor(type, Shape{1}));
-            shared_ptr<seal::Plaintext> prod = prod_tv->get_element(0);
+            shared_ptr<seal::Plaintext> prod = make_shared<seal::Plaintext>(
+            he_backend->get_context()->parms().poly_modulus().coeff_count(), 0, pool);
 
             runtime::he::kernel::scalar_multiply(
                 arg0_text, arg1_text, prod, type, he_backend, pool);
