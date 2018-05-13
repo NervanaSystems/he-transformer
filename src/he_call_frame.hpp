@@ -54,9 +54,14 @@ namespace ngraph
                 std::vector<PerformanceCounter> get_performance_data() const;
 
                 std::shared_ptr<Function> get_compiled_function() const { return m_function; }
+
             private:
                 std::shared_ptr<Function> m_function;
                 std::shared_ptr<HEBackend> m_he_backend;
+
+                bool is_cpu_check_enabled(const shared_ptr<Node>& op) const;
+
+                bool is_noise_check_enabled(const shared_ptr<Node>& op) const;
 
                 void call(std::shared_ptr<Function> function,
                           const std::vector<std::shared_ptr<runtime::he::HETensorView>>& output_tvs,

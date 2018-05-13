@@ -57,6 +57,20 @@ runtime::he::HECallFrame::HECallFrame(const shared_ptr<Function>& func,
 {
 }
 
+bool runtime::he::HECallFrame::is_cpu_check_enabled(const shared_ptr<Node>& op) const
+{
+    static unordered_set<string> cpu_check_enabled_ops{"Sum", "Add", "Dot", "Multiply"};
+    return cpu_check_enabled_ops.count(op->description()) != 0;
+}
+
+bool runtime::he::HECallFrame::is_noise_check_enabled(const shared_ptr<Node>& op) const
+{
+    static unordered_set<string> noise_check_disabled_ops{
+        "Broadcast", "Concat", "OneHot", "Reshape", "Slice"
+    };
+    return noise_check_disabled_ops.count(op->description()) == 0;
+}
+
 void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                                     const vector<shared_ptr<runtime::he::HETensorView>>& output_tvs,
                                     const vector<shared_ptr<runtime::he::HETensorView>>& input_tvs)
@@ -192,9 +206,16 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         static unordered_set<string> cpu_check_enabled_ops{"Sum", "Add", "Dot", "Multiply"};
         bool cpu_check = cpu_check_enabled_ops.count(op_name) != 0;
 
-        if (cpu_check)
+        // Check result with CPU backend
+        if (is_cpu_check_enabled(op))
         {
             check_cpu_calls(function, base_type, op, inputs, outputs, false);
+        }
+
+        // Check noise budget after each op
+        if (is_noise_check_enabled(op))
+        {
+            m_he_backend->check_noise_budget(outputs);
         }
 
         // Delete any obsolete tensors
@@ -209,9 +230,6 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                 }
             }
         }
-
-        // Check noise budget after each op
-        m_he_backend->check_noise_budget(outputs);
 
         // Stop stopwatch and print time
         // TODO: currently timer is cleared at each run
