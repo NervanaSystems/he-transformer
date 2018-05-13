@@ -107,6 +107,16 @@ namespace ngraph
                     return m_decryptor;
                 }
 
+                const inline std::shared_ptr<seal::IntegerEncoder> get_int_encoder() const
+                {
+                    return m_int_encoder;
+                }
+
+                const inline std::shared_ptr<seal::FractionalEncoder> get_frac_encoder() const
+                {
+                    return m_frac_encoder;
+                }
+
                 struct plaintext_num
                 {
                     seal::Plaintext fl_1;
