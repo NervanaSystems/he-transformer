@@ -63,13 +63,6 @@ bool runtime::he::HECallFrame::is_cpu_check_enabled(const shared_ptr<Node>& op) 
     return cpu_check_enabled_ops.count(op->description()) != 0;
 }
 
-bool runtime::he::HECallFrame::is_noise_check_enabled(const shared_ptr<Node>& op) const
-{
-    static unordered_set<string> noise_check_disabled_ops{
-        "Broadcast", "Concat", "OneHot", "Reshape", "Result", "Slice"};
-    return noise_check_disabled_ops.count(op->description()) == 0;
-}
-
 void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                                     const vector<shared_ptr<runtime::he::HETensorView>>& output_tvs,
                                     const vector<shared_ptr<runtime::he::HETensorView>>& input_tvs)
@@ -212,10 +205,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         }
 
         // Check noise budget after each op
-        if (is_noise_check_enabled(op))
-        {
-            m_he_backend->check_noise_budget(outputs);
-        }
+        m_he_backend->check_noise_budget(outputs);
 
         // Delete any obsolete tensors
         for (const descriptor::Tensor* t : op->liveness_free_list)

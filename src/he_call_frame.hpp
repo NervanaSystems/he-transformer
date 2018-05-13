@@ -60,8 +60,6 @@ namespace ngraph
 
                 bool is_cpu_check_enabled(const shared_ptr<Node>& op) const;
 
-                bool is_noise_check_enabled(const shared_ptr<Node>& op) const;
-
                 void call(std::shared_ptr<Function> function,
                           const std::vector<std::shared_ptr<runtime::he::HETensorView>>& output_tvs,
                           const std::vector<std::shared_ptr<runtime::he::HETensorView>>& input_tvs);
