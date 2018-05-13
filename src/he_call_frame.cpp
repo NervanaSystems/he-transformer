@@ -66,8 +66,7 @@ bool runtime::he::HECallFrame::is_cpu_check_enabled(const shared_ptr<Node>& op) 
 bool runtime::he::HECallFrame::is_noise_check_enabled(const shared_ptr<Node>& op) const
 {
     static unordered_set<string> noise_check_disabled_ops{
-        "Broadcast", "Concat", "OneHot", "Reshape", "Result", "Slice"
-    };
+        "Broadcast", "Concat", "OneHot", "Reshape", "Result", "Slice"};
     return noise_check_disabled_ops.count(op->description()) == 0;
 }
 
@@ -534,7 +533,8 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     else if (node_op == "Dot")
     {
         shared_ptr<op::Dot> dot = dynamic_pointer_cast<op::Dot>(node);
-        NGRAPH_INFO << join(args[0]->get_shape(), "x") << " dot " << join(args[1]->get_shape(), "x");
+        NGRAPH_INFO << join(args[0]->get_shape(), "x") << " dot "
+                    << join(args[1]->get_shape(), "x");
 
         if (arg0_cipher != nullptr && arg1_cipher != nullptr)
         {

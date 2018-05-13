@@ -14,8 +14,8 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <vector>
 #include <cmath>
+#include <vector>
 
 #include "he_backend.hpp"
 #include "he_cipher_tensor_view.hpp"
@@ -37,10 +37,10 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<seal::Ciphertext>>& ar
 {
     // Get 0 and 1 cipher text
     shared_ptr<HECipherTensorView> zero_tv =
-            static_pointer_cast<HECipherTensorView>(he_backend->create_zero_tensor(type, Shape{1}));
+        static_pointer_cast<HECipherTensorView>(he_backend->create_zero_tensor(type, Shape{1}));
     shared_ptr<seal::Ciphertext> zero_ciphertext = zero_tv->get_element(0);
     shared_ptr<HECipherTensorView> one_tv =
-            static_pointer_cast<HECipherTensorView>(he_backend->create_ones_tensor(type, Shape{1}));
+        static_pointer_cast<HECipherTensorView>(he_backend->create_ones_tensor(type, Shape{1}));
     shared_ptr<seal::Ciphertext> one_ciphertext = one_tv->get_element(0);
 
     // Step 1: Zero out the output. We can simply copy the shared_ptr pointing to a zero

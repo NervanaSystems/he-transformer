@@ -59,7 +59,7 @@ void runtime::he::HEPlainTensorView::write(const void* source, size_t tensor_off
     }
     else
     {
-        #pragma omp parallel for
+#pragma omp parallel for
         for (size_t i = 0; i < num_elements_to_write; ++i)
         {
             const void* src_with_offset = (void*)((char*)source + i * type.size());
@@ -85,7 +85,7 @@ void runtime::he::HEPlainTensorView::read(void* target, size_t tensor_offset, si
     }
     else
     {
-        #pragma omp parallel for
+#pragma omp parallel for
         for (size_t i = 0; i < num_elements_to_read; ++i)
         {
             void* dst_with_offset = (void*)((char*)target + i * type.size());

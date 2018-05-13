@@ -16,10 +16,10 @@
 
 #include <unordered_map>
 
-#include "ngraph/pass/manager.hpp"
-#include "ngraph/pass/visualize_tree.hpp"
 #include "loader.hpp"
 #include "ngraph/file_util.hpp"
+#include "ngraph/pass/manager.hpp"
+#include "ngraph/pass/visualize_tree.hpp"
 
 TEST_F(TestHEBackend, ptb_500)
 {

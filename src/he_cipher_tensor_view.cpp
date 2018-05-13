@@ -61,7 +61,7 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
     }
     else
     {
-        #pragma omp parallel for
+#pragma omp parallel for
         for (size_t i = 0; i < num_elements_to_write; ++i)
         {
             const void* src_with_offset = (void*)((char*)source + i * type.size());
@@ -83,14 +83,14 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
     if (num_elements_to_read == 1)
     {
         void* dst_with_offset = (void*)((char*)target);
-        size_t src_index = src_start_index ;
+        size_t src_index = src_start_index;
         seal::Plaintext p;
         m_he_backend->decrypt(p, *(m_cipher_texts[src_index]));
         m_he_backend->decode(dst_with_offset, p, type);
     }
     else
     {
-        #pragma omp parallel for
+#pragma omp parallel for
         for (size_t i = 0; i < num_elements_to_read; ++i)
         {
             void* dst_with_offset = (void*)((char*)target + i * type.size());

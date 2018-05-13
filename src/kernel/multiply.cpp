@@ -160,7 +160,6 @@ void runtime::he::kernel::multiply(const shared_ptr<seal::Ciphertext>& arg0,
     {
         throw ngraph_error("Multiply type not supported " + type_name);
     }
-
 }
 
 void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Plaintext>>& arg0,

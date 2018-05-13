@@ -54,7 +54,6 @@ namespace ngraph
                 std::vector<PerformanceCounter> get_performance_data() const;
 
                 std::shared_ptr<Function> get_compiled_function() const { return m_function; }
-
             private:
                 std::shared_ptr<Function> m_function;
                 std::shared_ptr<HEBackend> m_he_backend;
