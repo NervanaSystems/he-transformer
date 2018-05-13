@@ -2210,3 +2210,50 @@ TEST_F(TestHEBackend, sum_100_2)
     m_he_backend->call(f, {result}, {a});
     EXPECT_EQ((vector<float>{943.8259698, 1853.237534}), read_vector<float>(result));
 }
+
+TEST_F(TestHEBackend, create_valued_plaintext)
+{
+    // Fractional
+    {
+        float val = 3.14;
+        element::Type type = element::f32;
+        seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
+        shared_ptr<seal::Plaintext> plaintext =
+            m_he_backend->create_valued_plaintext(val, type, pool);
+        float val_decoded;
+        m_he_backend->decode(&val_decoded, *plaintext, type);
+        EXPECT_EQ(val_decoded, val);
+    }
+
+    // Integer
+    {
+        int64_t val = 1;
+        element::Type type = element::i64;
+        seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
+        shared_ptr<seal::Plaintext> plaintext =
+            m_he_backend->create_valued_plaintext((float)val, type, pool);
+        int64_t val_decoded;
+        m_he_backend->decode(&val_decoded, *plaintext, type);
+        EXPECT_EQ(val_decoded, val);
+    }
+    {
+        int64_t val = 0;
+        element::Type type = element::i64;
+        seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
+        shared_ptr<seal::Plaintext> plaintext =
+            m_he_backend->create_valued_plaintext((float)val, type, pool);
+        int64_t val_decoded;
+        m_he_backend->decode(&val_decoded, *plaintext, type);
+        EXPECT_EQ(val_decoded, val);
+    }
+    {
+        int64_t val = -2;
+        element::Type type = element::i64;
+        seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
+        shared_ptr<seal::Plaintext> plaintext =
+            m_he_backend->create_valued_plaintext((float)val, type, pool);
+        int64_t val_decoded;
+        m_he_backend->decode(&val_decoded, *plaintext, type);
+        EXPECT_EQ(val_decoded, val);
+    }
+}
