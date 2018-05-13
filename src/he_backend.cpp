@@ -103,10 +103,9 @@ std::shared_ptr<seal::Ciphertext> runtime::he::HEBackend::create_valued_cipherte
 {
     // For Encryptor, we use the memory-pool version
     // For encoder, we'll need to initialize the Encoder object with memory-pool, so the default
-    // memory-pool is used here.
+    // non-memory-pool is used here.
     const string type_name = element_type.c_type_string();
-    shared_ptr<seal::Ciphertext> ciphertext =
-        make_shared<seal::Ciphertext>(m_context->parms(), pool);
+    shared_ptr<seal::Ciphertext> ciphertext = create_empty_ciphertext(pool);
     if (type_name == "float")
     {
         seal::Plaintext plaintext = m_frac_encoder->encode(value);
@@ -128,6 +127,42 @@ std::shared_ptr<seal::Ciphertext>
     runtime::he::HEBackend::create_empty_ciphertext(const seal::MemoryPoolHandle& pool) const
 {
     return make_shared<seal::Ciphertext>(m_context->parms(), pool);
+}
+
+std::shared_ptr<seal::Plaintext> runtime::he::HEBackend::create_valued_plaintext(
+    float value, const element::Type& element_type, const seal::MemoryPoolHandle& pool) const
+{
+    // Optimize value == 0 to use memory-pool
+    if (value == 0)
+    {
+        return make_shared<seal::Plaintext>(m_context->parms().poly_modulus().coeff_count(), 0, pool);
+    }
+
+    // For encoder, we'll need to initialize the Encoder object with memory-pool, so the default
+    // non-memory-pool is used here.
+    const string type_name = element_type.c_type_string();
+    std::shared_ptr<seal::Plaintext> plaintext = create_empty_plaintext(pool);
+    if (type_name == "float")
+    {
+        *plaintext = m_frac_encoder->encode(value);
+    }
+    else if (type_name == "int64_t")
+    {
+        *plaintext = m_int_encoder->encode(static_cast<int64_t>(value));
+    }
+    else
+    {
+        throw ngraph_error("Type not supported at create_ciphertext");
+    }
+    return plaintext;
+}
+
+std::shared_ptr<seal::Plaintext>
+    runtime::he::HEBackend::create_empty_plaintext(const seal::MemoryPoolHandle& pool) const
+{
+    // Return a memory-pooled version 0-initialized plaintext
+    // It's fine to return a 0-valued plaintext when requesting for "empty"
+    return make_shared<seal::Plaintext>(m_context->parms().poly_modulus().coeff_count(), 0, pool);
 }
 
 shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_constant_tensor(

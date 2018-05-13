@@ -52,9 +52,15 @@ namespace ngraph
                     create_valued_ciphertext(float value,
                                              const element::Type& element_type,
                                              const seal::MemoryPoolHandle& pool) const;
-
                 std::shared_ptr<seal::Ciphertext>
                     create_empty_ciphertext(const seal::MemoryPoolHandle& pool) const;
+
+                std::shared_ptr<seal::Plaintext>
+                    create_valued_plaintext(float value,
+                                             const element::Type& element_type,
+                                             const seal::MemoryPoolHandle& pool) const;
+                std::shared_ptr<seal::Plaintext>
+                    create_empty_plaintext(const seal::MemoryPoolHandle& pool) const;
 
                 // std::shared_ptr<seal::Plaintext>
                 //     create_plaintext(const element::Type& element_type, float value) const;
