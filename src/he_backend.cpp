@@ -347,17 +347,19 @@ int runtime::he::HEBackend::noise_budget(const shared_ptr<seal::Ciphertext>& cip
 void runtime::he::HEBackend::check_noise_budget(
     const vector<shared_ptr<runtime::he::HETensorView>>& tvs)
 {
-// Check noise budget
-// NGRAPH_INFO << "Checking noise budget ";
-#pragma omp parallel for
+    // Check noise budget
+    NGRAPH_INFO << "Checking noise budget ";
+
+    // Usually tvs.size() is very small (e.g. 1 for most ops), parallel the internal loops
     for (size_t i = 0; i < tvs.size(); ++i)
     {
-        shared_ptr<HECipherTensorView> out_i = dynamic_pointer_cast<HECipherTensorView>(tvs[i]);
-        if (out_i != nullptr)
+        if (auto cipher_tv = dynamic_pointer_cast<HECipherTensorView>(tvs[i]))
         {
             size_t lowest_budget = numeric_limits<size_t>::max();
-            for (shared_ptr<seal::Ciphertext> ciphertext : out_i->get_elements())
+#pragma omp parallel for reduction(min : lowest_budget)
+            for (size_t i = 0; i < cipher_tv->get_element_count(); ++i)
             {
+                shared_ptr<seal::Ciphertext>& ciphertext = cipher_tv->get_element(i);
                 int budget = noise_budget(ciphertext);
                 if (budget < lowest_budget)
                 {
@@ -371,7 +373,7 @@ void runtime::he::HEBackend::check_noise_budget(
             NGRAPH_INFO << "Lowest Noise budget " << lowest_budget;
         }
     }
-    // NGRAPH_INFO << "Done checking noise budget ";
+    NGRAPH_INFO << "Done checking noise budget ";
 }
 
 void runtime::he::HEBackend::enable_performance_data(shared_ptr<Function> func, bool enable)
