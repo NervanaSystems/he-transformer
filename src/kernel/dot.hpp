@@ -206,7 +206,7 @@ void ngraph::runtime::he::kernel::dot_template(const vector<shared_ptr<S>>& arg0
             auto arg0_text = arg0[arg0_transform.index(arg0_coord)];
             auto arg1_text = arg1[arg1_transform.index(arg1_coord)];
 
-            auto prod = make_shared<seal::Ciphertext>(he_backend->get_context()->parms(), pool);
+            auto prod = he_backend->create_empty_ciphertext(pool);
 
             runtime::he::kernel::scalar_multiply(
                 arg0_text, arg1_text, prod, type, he_backend, pool);
