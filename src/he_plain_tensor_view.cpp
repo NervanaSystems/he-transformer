@@ -51,12 +51,21 @@ void runtime::he::HEPlainTensorView::write(const void* source, size_t tensor_off
     size_t type_byte_size = type.size();
     size_t dst_start_index = tensor_offset / type_byte_size;
     size_t num_elements_to_write = n / type_byte_size;
-#pragma omp parallel for
-    for (size_t i = 0; i < num_elements_to_write; ++i)
+    if (num_elements_to_write == 1)
     {
-        const void* src_with_offset = (void*)((char*)source + i * type.size());
-        size_t dst_index = dst_start_index + i;
+        const void* src_with_offset = (void*)((char*)source);
+        size_t dst_index = dst_start_index;
         m_he_backend->encode(*(m_plain_texts[dst_index]), src_with_offset, type);
+    }
+    else
+    {
+        #pragma omp parallel for
+        for (size_t i = 0; i < num_elements_to_write; ++i)
+        {
+            const void* src_with_offset = (void*)((char*)source + i * type.size());
+            size_t dst_index = dst_start_index + i;
+            m_he_backend->encode(*(m_plain_texts[dst_index]), src_with_offset, type);
+        }
     }
 }
 
@@ -67,11 +76,21 @@ void runtime::he::HEPlainTensorView::read(void* target, size_t tensor_offset, si
     size_t type_byte_size = type.size();
     size_t src_start_index = tensor_offset / type_byte_size;
     size_t num_elements_to_read = n / type_byte_size;
-#pragma omp parallel for
-    for (size_t i = 0; i < num_elements_to_read; ++i)
+
+    if (num_elements_to_read == 1)
     {
-        void* dst_with_offset = (void*)((char*)target + i * type.size());
-        size_t src_index = src_start_index + i;
+        void* dst_with_offset = (void*)((char*)target);
+        size_t src_index = src_start_index;
         m_he_backend->decode(dst_with_offset, *(m_plain_texts[src_index]), type);
+    }
+    else
+    {
+        #pragma omp parallel for
+        for (size_t i = 0; i < num_elements_to_read; ++i)
+        {
+            void* dst_with_offset = (void*)((char*)target + i * type.size());
+            size_t src_index = src_start_index + i;
+            m_he_backend->decode(dst_with_offset, *(m_plain_texts[src_index]), type);
+        }
     }
 }
