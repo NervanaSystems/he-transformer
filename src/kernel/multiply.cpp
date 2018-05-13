@@ -44,10 +44,7 @@ void runtime::he::kernel::multiply(const shared_ptr<seal::Ciphertext>& arg0,
                                    const element::Type& type,
                                    shared_ptr<HEBackend> he_backend)
 {
-    const vector<shared_ptr<seal::Ciphertext>> arg0vec = {arg0};
-    const vector<shared_ptr<seal::Ciphertext>> arg1vec = {arg1};
-    vector<shared_ptr<seal::Ciphertext>> outvec = {out};
-    multiply(arg0vec, arg1vec, {outvec}, type, he_backend, 1);
+    he_backend.get()->get_evaluator()->multiply(*arg0, *arg1, *out);
 }
 
 void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Ciphertext>>& arg0,
@@ -120,10 +117,50 @@ void runtime::he::kernel::multiply(const shared_ptr<seal::Ciphertext>& arg0,
                                    const element::Type& type,
                                    shared_ptr<HEBackend> he_backend)
 {
-    const vector<shared_ptr<seal::Ciphertext>> arg0vec = {arg0};
-    const vector<shared_ptr<seal::Plaintext>> arg1vec = {arg1};
-    vector<shared_ptr<seal::Ciphertext>> outvec = {out};
-    multiply(arg0vec, arg1vec, {outvec}, type, he_backend, 1);
+    const string type_name = type.c_type_string();
+    if (type_name == "float")
+    {
+        if (*arg1 == he_backend->get_plaintext_num().fl_1)
+        {
+            *out = *arg0;
+        }
+        else if (*arg1 == he_backend->get_plaintext_num().fl_n1)
+        {
+            seal::Ciphertext c = *arg0;
+            he_backend.get()->get_evaluator()->negate(c);
+            *out = c;
+        }
+        else
+        {
+            he_backend.get()->get_evaluator()->multiply_plain(*arg0, *arg1, *out);
+        }
+    }
+    else if (type_name == "int64_t")
+    {
+        if (*arg1 == he_backend->get_plaintext_num().fl_1)
+        {
+            *out = *arg0;
+        }
+        else if (*arg1 == he_backend->get_plaintext_num().fl_n1)
+        {
+            seal::Ciphertext c = *arg0;
+            he_backend.get()->get_evaluator()->negate(c);
+            *out = c;
+        }
+        else
+        {
+            he_backend.get()->get_evaluator()->multiply_plain(*arg0, *arg1, *out);
+        }
+    }
+    else if (type_name == "uint64_t")
+    {
+        he_backend.get()->get_evaluator()->multiply_plain(*arg0, *arg1, *out);
+    }
+    else
+    {
+        throw ngraph_error("Multiply type not supported " + type_name);
+    }
+
 }
 
 void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Plaintext>>& arg0,
@@ -176,8 +213,10 @@ void runtime::he::kernel::multiply(const shared_ptr<seal::Plaintext>& arg0,
                                    const element::Type& type,
                                    shared_ptr<HEBackend> he_backend)
 {
-    const vector<shared_ptr<seal::Plaintext>> arg0vec = {arg0};
-    const vector<shared_ptr<seal::Plaintext>> arg1vec = {arg1};
-    vector<shared_ptr<seal::Plaintext>> outvec = {out};
-    multiply(arg0vec, arg1vec, {outvec}, type, he_backend, 1);
+    auto evaluator = he_backend.get()->get_evaluator();
+    float x, y;
+    he_backend->decode(&x, *arg0, type);
+    he_backend->decode(&y, *arg1, type);
+    float r = x * y;
+    he_backend->encode(*out, &r, type);
 }
