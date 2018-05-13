@@ -178,7 +178,8 @@ void ngraph::runtime::he::kernel::dot_template(const vector<shared_ptr<S>>& arg0
 
         // Zero out to start the sum
         // Both FractionalEncoder and IntegerEncoder shall produce the same Plaintext 0
-        std::shared_ptr<seal::Ciphertext> sum = he_backend->create_ciphertext_with_value(type, 0, pool);
+        std::shared_ptr<seal::Ciphertext> sum =
+            he_backend->create_ciphertext_with_value(0, type, pool);
         // auto plain_zero = make_shared<seal::Plaintext>(
         //     he_backend->get_context()->parms().poly_modulus().coeff_count(), 0, pool);
         // auto sum = make_shared<seal::Ciphertext>(he_backend->get_context()->parms(), pool);
