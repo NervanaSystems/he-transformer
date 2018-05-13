@@ -96,6 +96,9 @@ namespace ngraph
                          global_projected_idx < global_projected_size;
                          ++global_projected_idx)
                     {
+                        // Init thread-local memory pool for each thread
+                        seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
+
                         // Compute outer and inner index
                         size_t arg0_projected_idx = global_projected_idx / arg1_projected_size;
                         size_t arg1_projected_idx = global_projected_idx % arg1_projected_size;
@@ -163,8 +166,8 @@ namespace ngraph
                             shared_ptr<seal::Ciphertext> prod = prod_tv->get_element(0);
 
                             runtime::he::kernel::multiply(
-                                arg0_text, arg1_text, prod, type, he_backend);
-                            runtime::he::kernel::add(sum, prod, sum, he_backend);
+                                arg0_text, arg1_text, prod, type, he_backend, pool);
+                            runtime::he::kernel::add(sum, prod, sum, he_backend, pool);
                         }
 
                         // Write the sum back.

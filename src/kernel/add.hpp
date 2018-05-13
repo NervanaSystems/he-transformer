@@ -41,7 +41,8 @@ namespace ngraph
                 void add(const shared_ptr<seal::Ciphertext>& arg0,
                          const shared_ptr<seal::Ciphertext>& arg1,
                          shared_ptr<seal::Ciphertext>& out,
-                         shared_ptr<HEBackend> he_backend);
+                         shared_ptr<HEBackend> he_backend,
+                         const seal::MemoryPoolHandle& pool);
 
                 void add(const vector<shared_ptr<seal::Ciphertext>>& arg0,
                          const vector<shared_ptr<seal::Plaintext>>& arg1,
@@ -66,7 +67,8 @@ namespace ngraph
                          const shared_ptr<seal::Plaintext>& arg1,
                          shared_ptr<seal::Plaintext>& out,
                          const element::Type& type,
-                         shared_ptr<HEBackend> he_backend);
+                         shared_ptr<HEBackend> he_backend,
+                         const seal::MemoryPoolHandle& pool);
             }
         }
     }

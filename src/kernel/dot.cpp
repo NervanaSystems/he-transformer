@@ -125,6 +125,9 @@ void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<seal::Plaintext>>&
     for (size_t global_projected_idx = 0; global_projected_idx < global_projected_size;
          ++global_projected_idx)
     {
+        // Init thread-local memory pool for each thread
+        seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
+
         // Compute outer and inner index
         size_t arg0_projected_idx = global_projected_idx / arg1_projected_size;
         size_t arg1_projected_idx = global_projected_idx % arg1_projected_size;
@@ -182,8 +185,8 @@ void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<seal::Plaintext>>&
                 he_backend->create_zero_plain_tensor(type, Shape{1}));
             shared_ptr<seal::Plaintext> prod = prod_tv->get_element(0);
 
-            runtime::he::kernel::multiply(arg0_text, arg1_text, prod, type, he_backend);
-            runtime::he::kernel::add(sum, prod, sum, type, he_backend);
+            runtime::he::kernel::multiply(arg0_text, arg1_text, prod, type, he_backend, pool);
+            runtime::he::kernel::add(sum, prod, sum, type, he_backend, pool);
         }
 
         // Write the sum back.
