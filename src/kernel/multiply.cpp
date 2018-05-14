@@ -34,7 +34,8 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Ciphertext>>& a
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
     {
-        he_backend->get_evaluator()->multiply(*arg0[i], *arg1[i], *out[i]);
+        seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
+        scalar_multiply(arg0[i], arg1[i], out[i], type, he_backend, pool);
     }
 }
 
@@ -55,52 +56,11 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Ciphertext>>& a
                                    shared_ptr<HEBackend> he_backend,
                                    size_t count)
 {
-    const string type_name = type.c_type_string();
-    if (type_name == "float")
-    {
 #pragma omp parallel for
-        for (size_t i = 0; i < count; ++i)
-        {
-            if (*arg1[i] == he_backend->get_plaintext_num().fl_1)
-            {
-                *out[i] = *arg0[i];
-            }
-            else if (*arg1[i] == he_backend->get_plaintext_num().fl_n1)
-            {
-                seal::Ciphertext c = *arg0[i];
-                he_backend->get_evaluator()->negate(c);
-                *out[i] = c;
-            }
-            else
-            {
-                he_backend->get_evaluator()->multiply_plain(*arg0[i], *arg1[i], *out[i]);
-            }
-        }
-    }
-    else if (type_name == "int64_t")
+    for (size_t i = 0; i < count; ++i)
     {
-#pragma omp parallel for
-        for (size_t i = 0; i < count; ++i)
-        {
-            if (*arg1[i] == he_backend->get_plaintext_num().fl_1)
-            {
-                *out[i] = *arg0[i];
-            }
-            else if (*arg1[i] == he_backend->get_plaintext_num().fl_n1)
-            {
-                seal::Ciphertext c = *arg0[i];
-                he_backend->get_evaluator()->negate(c);
-                *out[i] = c;
-            }
-            else
-            {
-                he_backend->get_evaluator()->multiply_plain(*arg0[i], *arg1[i], *out[i]);
-            }
-        }
-    }
-    else
-    {
-        throw ngraph_error("Multiply type not supported " + type_name);
+        seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
+        scalar_multiply(arg0[i], arg1[i], out[i], type, he_backend, pool);
     }
 }
 
