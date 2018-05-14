@@ -98,65 +98,10 @@ shared_ptr<runtime::TensorView>
     return static_pointer_cast<runtime::TensorView>(rc);
 }
 
-shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_constant_tensor(
-    const element::Type& element_type, const Shape& shape, size_t element)
+shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_tensor(
+    const element::Type& element_type, const Shape& shape, void* memory_pointer)
 {
-    shared_ptr<runtime::TensorView> tensor = create_tensor(element_type, shape);
-    shared_ptr<runtime::he::HECipherTensorView> cipher_tensor =
-        static_pointer_cast<runtime::he::HECipherTensorView>(tensor);
-
-    size_t num_elements = shape_size(shape);
-    size_t bytes_to_write = num_elements * element_type.size();
-
-    const string type_name = element_type.c_type_string();
-
-    if (type_name == "float")
-    {
-        vector<float> elements;
-        for (size_t i = 0; i < num_elements; ++i)
-        {
-            elements.push_back(element);
-        }
-        cipher_tensor->write((void*)&elements[0], 0, bytes_to_write);
-    }
-    else if (type_name == "int64_t")
-    {
-        vector<int64_t> elements;
-        for (size_t i = 0; i < num_elements; ++i)
-        {
-            elements.push_back(element);
-        }
-        cipher_tensor->write((void*)&elements[0], 0, bytes_to_write);
-    }
-    else if (type_name == "uint64_t")
-    {
-        vector<uint64_t> elements;
-        for (size_t i = 0; i < num_elements; ++i)
-        {
-            elements.push_back(element);
-        }
-        cipher_tensor->write((void*)&elements[0], 0, bytes_to_write);
-    }
-    else
-    {
-        throw ngraph_error("Type not supported at create_constant_tensor");
-    }
-
-    return static_pointer_cast<runtime::TensorView>(cipher_tensor);
-}
-
-shared_ptr<runtime::TensorView>
-    runtime::he::HEBackend::create_zero_tensor(const element::Type& element_type,
-                                               const Shape& shape)
-{
-    return create_constant_tensor(element_type, shape, 0);
-}
-
-shared_ptr<runtime::TensorView>
-    runtime::he::HEBackend::create_ones_tensor(const element::Type& element_type,
-                                               const Shape& shape)
-{
-    return create_constant_tensor(element_type, shape, 1);
+    throw ngraph_error("HE create_tensor unimplemented");
 }
 
 shared_ptr<runtime::TensorView>
@@ -168,71 +113,154 @@ shared_ptr<runtime::TensorView>
     return static_pointer_cast<runtime::TensorView>(rc);
 }
 
-shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_constant_plain_tensor(
-    const element::Type& element_type, const Shape& shape, size_t element)
+std::shared_ptr<seal::Ciphertext> runtime::he::HEBackend::create_valued_ciphertext(
+    float value, const element::Type& element_type, const seal::MemoryPoolHandle& pool) const
 {
-    shared_ptr<runtime::TensorView> tensor = create_plain_tensor(element_type, shape);
-    shared_ptr<runtime::he::HEPlainTensorView> plain_tensor =
-        static_pointer_cast<runtime::he::HEPlainTensorView>(tensor);
-
-    size_t num_elements = shape_size(shape);
-    size_t bytes_to_write = num_elements * element_type.size();
-
+    // For Encryptor, we use the memory-pool version
+    // For encoder, we'll need to initialize the Encoder object with memory-pool, so the default
+    // non-memory-pool is used here.
     const string type_name = element_type.c_type_string();
-
+    shared_ptr<seal::Ciphertext> ciphertext = create_empty_ciphertext(pool);
     if (type_name == "float")
     {
-        vector<float> elements;
-        for (size_t i = 0; i < num_elements; ++i)
-        {
-            elements.push_back(element);
-        }
-        plain_tensor->write((void*)&elements[0], 0, bytes_to_write);
+        seal::Plaintext plaintext = m_frac_encoder->encode(value);
+        m_encryptor->encrypt(plaintext, *ciphertext, pool);
     }
     else if (type_name == "int64_t")
     {
-        vector<int64_t> elements;
-        for (size_t i = 0; i < num_elements; ++i)
-        {
-            elements.push_back(element);
-        }
-        plain_tensor->write((void*)&elements[0], 0, bytes_to_write);
-    }
-    else if (type_name == "uint64_t")
-    {
-        vector<uint64_t> elements;
-        for (size_t i = 0; i < num_elements; ++i)
-        {
-            elements.push_back(element);
-        }
-        plain_tensor->write((void*)&elements[0], 0, bytes_to_write);
+        seal::Plaintext plaintext = m_int_encoder->encode(static_cast<int64_t>(value));
+        m_encryptor->encrypt(plaintext, *ciphertext, pool);
     }
     else
     {
-        throw ngraph_error("Type not supported at create_constant_plain_tensor");
+        throw ngraph_error("Type not supported at create_ciphertext");
+    }
+    return ciphertext;
+}
+
+std::shared_ptr<seal::Ciphertext>
+    runtime::he::HEBackend::create_empty_ciphertext(const seal::MemoryPoolHandle& pool) const
+{
+    return make_shared<seal::Ciphertext>(m_context->parms(), pool);
+}
+
+std::shared_ptr<seal::Plaintext> runtime::he::HEBackend::create_valued_plaintext(
+    float value, const element::Type& element_type, const seal::MemoryPoolHandle& pool) const
+{
+    // Optimize value == 0 to use memory-pool
+    if (value == 0)
+    {
+        return make_shared<seal::Plaintext>(
+            m_context->parms().poly_modulus().coeff_count(), 0, pool);
     }
 
-    return static_pointer_cast<runtime::TensorView>(plain_tensor);
+    // For encoder, we'll need to initialize the Encoder object with memory-pool, so the default
+    // non-memory-pool is used here.
+    const string type_name = element_type.c_type_string();
+    std::shared_ptr<seal::Plaintext> plaintext = create_empty_plaintext(pool);
+    if (type_name == "float")
+    {
+        *plaintext = m_frac_encoder->encode(value);
+    }
+    else if (type_name == "int64_t")
+    {
+        *plaintext = m_int_encoder->encode(static_cast<int64_t>(value));
+    }
+    else
+    {
+        throw ngraph_error("Type not supported at create_ciphertext");
+    }
+    return plaintext;
 }
 
-shared_ptr<runtime::TensorView>
-    runtime::he::HEBackend::create_zero_plain_tensor(const element::Type& element_type,
-                                                     const Shape& shape)
+std::shared_ptr<seal::Plaintext>
+    runtime::he::HEBackend::create_empty_plaintext(const seal::MemoryPoolHandle& pool) const
 {
-    return create_constant_plain_tensor(element_type, shape, 0);
+    // Return a memory-pooled version 0-initialized plaintext
+    // It's fine to return a 0-valued plaintext when requesting for "empty"
+    return make_shared<seal::Plaintext>(m_context->parms().poly_modulus().coeff_count(), 0, pool);
 }
 
-shared_ptr<runtime::TensorView>
-    runtime::he::HEBackend::create_ones_plain_tensor(const element::Type& element_type,
-                                                     const Shape& shape)
+std::shared_ptr<seal::Ciphertext>
+    runtime::he::HEBackend::create_valued_ciphertext(float value,
+                                                     const element::Type& element_type) const
 {
-    return create_constant_plain_tensor(element_type, shape, 1);
+    const string type_name = element_type.c_type_string();
+    shared_ptr<seal::Ciphertext> ciphertext = create_empty_ciphertext();
+    if (type_name == "float")
+    {
+        seal::Plaintext plaintext = m_frac_encoder->encode(value);
+        m_encryptor->encrypt(plaintext, *ciphertext);
+    }
+    else if (type_name == "int64_t")
+    {
+        seal::Plaintext plaintext = m_int_encoder->encode(static_cast<int64_t>(value));
+        m_encryptor->encrypt(plaintext, *ciphertext);
+    }
+    else
+    {
+        throw ngraph_error("Type not supported at create_ciphertext");
+    }
+    return ciphertext;
 }
 
-shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_tensor(
-    const element::Type& element_type, const Shape& shape, void* memory_pointer)
+std::shared_ptr<seal::Ciphertext> runtime::he::HEBackend::create_empty_ciphertext() const
 {
-    throw ngraph_error("HE create_tensor unimplemented");
+    return make_shared<seal::Ciphertext>(m_context->parms());
+}
+
+std::shared_ptr<seal::Plaintext>
+    runtime::he::HEBackend::create_valued_plaintext(float value,
+                                                    const element::Type& element_type) const
+{
+    const string type_name = element_type.c_type_string();
+    std::shared_ptr<seal::Plaintext> plaintext = create_empty_plaintext();
+    if (type_name == "float")
+    {
+        *plaintext = m_frac_encoder->encode(value);
+    }
+    else if (type_name == "int64_t")
+    {
+        *plaintext = m_int_encoder->encode(static_cast<int64_t>(value));
+    }
+    else
+    {
+        throw ngraph_error("Type not supported at create_ciphertext");
+    }
+    return plaintext;
+}
+
+std::shared_ptr<seal::Plaintext> runtime::he::HEBackend::create_empty_plaintext() const
+{
+    return make_shared<seal::Plaintext>(m_context->parms().poly_modulus().coeff_count(), 0);
+}
+
+shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_valued_tensor(
+    float value, const element::Type& element_type, const Shape& shape)
+{
+    auto tensor = static_pointer_cast<HECipherTensorView>(create_tensor(element_type, shape));
+    vector<shared_ptr<seal::Ciphertext>>& cipher_texts = tensor->get_elements();
+#pragma omp parallel for
+    for (size_t i = 0; i < cipher_texts.size(); ++i)
+    {
+        seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
+        cipher_texts[i] = create_valued_ciphertext(value, element_type, pool);
+    }
+    return tensor;
+}
+
+shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_valued_plain_tensor(
+    float value, const element::Type& element_type, const Shape& shape)
+{
+    auto tensor = static_pointer_cast<HEPlainTensorView>(create_plain_tensor(element_type, shape));
+    vector<shared_ptr<seal::Plaintext>>& plain_texts = tensor->get_elements();
+#pragma omp parallel for
+    for (size_t i = 0; i < plain_texts.size(); ++i)
+    {
+        seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
+        plain_texts[i] = create_valued_plaintext(value, element_type, pool);
+    }
+    return tensor;
 }
 
 bool runtime::he::HEBackend::compile(shared_ptr<Function> func)
@@ -286,10 +314,6 @@ void runtime::he::HEBackend::encode(seal::Plaintext& output,
     {
         output = m_int_encoder->encode(*(int64_t*)input);
     }
-    else if (type_name == "uint64_t")
-    {
-        output = m_int_encoder->encode(*(uint64_t*)input);
-    }
     else if (type_name == "float")
     {
         output = m_frac_encoder->encode(*(float*)input);
@@ -310,11 +334,6 @@ void runtime::he::HEBackend::decode(void* output,
     if (type_name == "int64_t")
     {
         int64_t x = m_int_encoder->decode_int64(input);
-        memcpy(output, &x, type.size());
-    }
-    else if (type_name == "uint64_t")
-    {
-        uint64_t x = m_int_encoder->decode_int64(input);
         memcpy(output, &x, type.size());
     }
     else if (type_name == "float")
@@ -339,26 +358,30 @@ void runtime::he::HEBackend::decrypt(seal::Plaintext& output, const seal::Cipher
     m_decryptor->decrypt(input, output);
 }
 
-int runtime::he::HEBackend::noise_budget(const shared_ptr<seal::Ciphertext>& ciphertext)
+int runtime::he::HEBackend::noise_budget(const shared_ptr<seal::Ciphertext>& ciphertext) const
 {
     return m_decryptor->invariant_noise_budget(*ciphertext);
 }
 
 void runtime::he::HEBackend::check_noise_budget(
-    const vector<shared_ptr<runtime::he::HETensorView>>& tvs)
+    const vector<shared_ptr<runtime::he::HETensorView>>& tvs) const
 {
-// Check noise budget
-// NGRAPH_INFO << "Checking noise budget ";
-#pragma omp parallel for
+    // Check noise budget
+    NGRAPH_INFO << "Checking noise budget ";
+
+    // Usually tvs.size() is very small (e.g. 1 for most ops), parallel the internal loops
     for (size_t i = 0; i < tvs.size(); ++i)
     {
-        shared_ptr<HECipherTensorView> out_i = dynamic_pointer_cast<HECipherTensorView>(tvs[i]);
-        if (out_i != nullptr)
+        if (auto cipher_tv = dynamic_pointer_cast<HECipherTensorView>(tvs[i]))
         {
             size_t lowest_budget = numeric_limits<size_t>::max();
-            for (shared_ptr<seal::Ciphertext> ciphertext : out_i->get_elements())
+
+#pragma omp parallel for reduction(min : lowest_budget)
+            for (size_t i = 0; i < cipher_tv->get_element_count(); ++i)
             {
-                int budget = noise_budget(ciphertext);
+                seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
+                shared_ptr<seal::Ciphertext>& ciphertext = cipher_tv->get_element(i);
+                int budget = m_decryptor->invariant_noise_budget(*ciphertext, pool);
                 if (budget < lowest_budget)
                 {
                     lowest_budget = budget;
@@ -371,7 +394,7 @@ void runtime::he::HEBackend::check_noise_budget(
             NGRAPH_INFO << "Lowest Noise budget " << lowest_budget;
         }
     }
-    // NGRAPH_INFO << "Done checking noise budget ";
+    NGRAPH_INFO << "Done checking noise budget ";
 }
 
 void runtime::he::HEBackend::enable_performance_data(shared_ptr<Function> func, bool enable)

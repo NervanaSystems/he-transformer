@@ -14,6 +14,7 @@
 * limitations under the License.
 *******************************************************************************/
 
+#include <cmath>
 #include <vector>
 
 #include "he_backend.hpp"
@@ -34,52 +35,60 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<seal::Ciphertext>>& ar
                                   const element::Type& type,
                                   shared_ptr<HEBackend>& he_backend)
 {
-    // Step 1: Zero out the output.
+    // Get 0 and 1 cipher text
+    shared_ptr<seal::Ciphertext> zero_ciphertext = he_backend->create_valued_ciphertext(0, type);
+    shared_ptr<seal::Ciphertext> one_ciphertext = he_backend->create_valued_ciphertext(1, type);
+
+    // Step 1: Zero out the output. We can simply copy the shared_ptr pointing to a zero
+    // ciphertext to all output locations.
     CoordinateTransform output_transform(out_shape);
     for (const Coordinate& output_coord : output_transform)
     {
-        shared_ptr<HECipherTensorView> zero_tv =
-            static_pointer_cast<HECipherTensorView>(he_backend->create_zero_tensor(type, Shape{1}));
-
-        out[output_transform.index(output_coord)] = zero_tv->get_element(0);
+        out[output_transform.index(output_coord)] = zero_ciphertext;
     }
 
     // Step 2: Write ones at needed positions, throwing exceptions when invalid conditions
     // are encountered.
     CoordinateTransform input_transform(in_shape);
-
     for (const Coordinate& input_coord : input_transform)
     {
         shared_ptr<seal::Ciphertext> val = arg[input_transform.index(input_coord)];
 
-        size_t one_hot_pos = out_shape[one_hot_axis] + 1;
-        for (size_t i = 0; i < out_shape[one_hot_axis]; ++i)
-        {
-            shared_ptr<HECipherTensorView> const_tv = static_pointer_cast<HECipherTensorView>(
-                he_backend->create_constant_tensor(type, Shape{1}, i));
-            seal::Plaintext dec_val;
-            seal::Plaintext dec_i;
-            // TODO: We are not allowed to decrypt! Pass in one-hot encoded inputs
-            he_backend->decrypt(dec_val, *val);
-            // TODO: We are not allowed to decrypt! Pass in one-hot encoded inputs
-            he_backend->decrypt(dec_i, *(const_tv->get_element(0)));
+        // TODO: We are not allowed to decrypt! Pass in one-hot encoded inputs
+        seal::Plaintext plain_val;
+        he_backend->decrypt(plain_val, *val);
+        size_t one_hot_pos;
 
-            if (dec_val == dec_i)
-            {
-                one_hot_pos = i;
-                break;
-            }
-        }
-        if (one_hot_pos == out_shape[one_hot_axis] + 1)
+        // TODO: We are not allowed to decrypt and decode
+        const string type_name = type.c_type_string();
+        if (type_name == "int64_t")
         {
-            throw(std::range_error(
-                "One-hot: non-integral value in input or value is out of category range"));
+            int64_t x;
+            he_backend->decode((void*)(&x), plain_val, type);
+            one_hot_pos = static_cast<size_t>(x);
+        }
+        else if (type_name == "float")
+        {
+            float x;
+            he_backend->decode((void*)(&x), plain_val, type);
+            if (std::floor(x) < x || std::floor(x) > x)
+            {
+                throw(std::range_error("One-hot: non-integral value in input"));
+            }
+            one_hot_pos = static_cast<size_t>(x);
+        }
+        else
+        {
+            NGRAPH_INFO << "Unsupported element type in decode " << type_name;
+            throw ngraph_error("Unsupported element type " + type_name);
+        }
+
+        if (one_hot_pos >= out_shape[one_hot_axis])
+        {
+            throw(std::range_error("One-hot: value is out of category range"));
         }
 
         Coordinate one_hot_coord = inject(input_coord, one_hot_axis, one_hot_pos);
-        shared_ptr<HECipherTensorView> one_tv =
-            static_pointer_cast<HECipherTensorView>(he_backend->create_ones_tensor(type, Shape{1}));
-
-        out[output_transform.index(one_hot_coord)] = one_tv->get_element(0);
+        out[output_transform.index(one_hot_coord)] = one_ciphertext;
     }
 }

@@ -57,6 +57,13 @@ runtime::he::HECallFrame::HECallFrame(const shared_ptr<Function>& func,
 {
 }
 
+bool runtime::he::HECallFrame::is_cpu_check_enabled(const shared_ptr<Node>& op) const
+{
+    return op->description() != "Relinearize";
+    // static unordered_set<string> cpu_check_enabled_ops{"Sum", "Add", "Dot", "Multiply"};
+    // return cpu_check_enabled_ops.count(op->description()) != 0;
+}
+
 void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                                     const vector<shared_ptr<runtime::he::HETensorView>>& output_tvs,
                                     const vector<shared_ptr<runtime::he::HETensorView>>& input_tvs)
@@ -189,14 +196,15 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         generate_calls(base_type, op, inputs, outputs);
 
         const string op_name = op->description();
-        bool cpu_check = op_name != "Slice" && op_name != "Reshape" && op_name != "Broadcast";
-        cpu_check =
-            op_name == "Sum" || op_name == "Add" || op_name == "Dot" || op_name == "Multiply";
 
-        if (cpu_check)
+        // Check result with CPU backend
+        if (is_cpu_check_enabled(op))
         {
             check_cpu_calls(function, base_type, op, inputs, outputs, false);
         }
+
+        // Check noise budget after each op
+        m_he_backend->check_noise_budget(outputs);
 
         // Delete any obsolete tensors
         for (const descriptor::Tensor* t : op->liveness_free_list)
@@ -210,9 +218,6 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                 }
             }
         }
-
-        // Check noise budget after each op
-        m_he_backend->check_noise_budget(outputs);
 
         // Stop stopwatch and print time
         // TODO: currently timer is cleared at each run
@@ -517,6 +522,8 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     else if (node_op == "Dot")
     {
         shared_ptr<op::Dot> dot = dynamic_pointer_cast<op::Dot>(node);
+        NGRAPH_INFO << join(args[0]->get_shape(), "x") << " dot "
+                    << join(args[1]->get_shape(), "x");
 
         if (arg0_cipher != nullptr && arg1_cipher != nullptr)
         {

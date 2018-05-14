@@ -38,11 +38,6 @@ namespace ngraph
                          shared_ptr<HEBackend> he_backend,
                          size_t count);
 
-                void add(const shared_ptr<seal::Ciphertext>& arg0,
-                         const shared_ptr<seal::Ciphertext>& arg1,
-                         shared_ptr<seal::Ciphertext>& out,
-                         shared_ptr<HEBackend> he_backend);
-
                 void add(const vector<shared_ptr<seal::Ciphertext>>& arg0,
                          const vector<shared_ptr<seal::Plaintext>>& arg1,
                          vector<shared_ptr<seal::Ciphertext>>& out,
@@ -62,11 +57,16 @@ namespace ngraph
                          shared_ptr<HEBackend> he_backend,
                          size_t count);
 
-                void add(const shared_ptr<seal::Plaintext>& arg0,
-                         const shared_ptr<seal::Plaintext>& arg1,
-                         shared_ptr<seal::Plaintext>& out,
-                         const element::Type& type,
-                         shared_ptr<HEBackend> he_backend);
+                void scalar_add(const shared_ptr<seal::Ciphertext>& arg0,
+                                const shared_ptr<seal::Ciphertext>& arg1,
+                                shared_ptr<seal::Ciphertext>& out,
+                                shared_ptr<HEBackend> he_backend);
+
+                void scalar_add(const shared_ptr<seal::Plaintext>& arg0,
+                                const shared_ptr<seal::Plaintext>& arg1,
+                                shared_ptr<seal::Plaintext>& out,
+                                const element::Type& type,
+                                shared_ptr<HEBackend> he_backend);
             }
         }
     }
