@@ -55,7 +55,7 @@ namespace ngraph
                 //4611686018427387904 - 1, // (1 << 62 - 1)
                 100, // fractional_encoder_integer_coeff_count
                 100, // fractional_encoder_fraction_coeff_count
-                3,   // fractional_encoder_base
+                2,   // fractional_encoder_base
                 16   // evaluation_decomposition_bit_count
             };
 
