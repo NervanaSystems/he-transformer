@@ -166,6 +166,60 @@ std::shared_ptr<seal::Plaintext>
     return make_shared<seal::Plaintext>(m_context->parms().poly_modulus().coeff_count(), 0, pool);
 }
 
+std::shared_ptr<seal::Ciphertext> runtime::he::HEBackend::create_valued_ciphertext(
+    float value, const element::Type& element_type) const
+{
+    const string type_name = element_type.c_type_string();
+    shared_ptr<seal::Ciphertext> ciphertext = create_empty_ciphertext();
+    if (type_name == "float")
+    {
+        seal::Plaintext plaintext = m_frac_encoder->encode(value);
+        m_encryptor->encrypt(plaintext, *ciphertext);
+    }
+    else if (type_name == "int64_t")
+    {
+        seal::Plaintext plaintext = m_int_encoder->encode(static_cast<int64_t>(value));
+        m_encryptor->encrypt(plaintext, *ciphertext);
+    }
+    else
+    {
+        throw ngraph_error("Type not supported at create_ciphertext");
+    }
+    return ciphertext;
+}
+
+std::shared_ptr<seal::Ciphertext>
+    runtime::he::HEBackend::create_empty_ciphertext() const
+{
+    return make_shared<seal::Ciphertext>(m_context->parms());
+}
+
+std::shared_ptr<seal::Plaintext> runtime::he::HEBackend::create_valued_plaintext(
+    float value, const element::Type& element_type) const
+{
+    const string type_name = element_type.c_type_string();
+    std::shared_ptr<seal::Plaintext> plaintext = create_empty_plaintext();
+    if (type_name == "float")
+    {
+        *plaintext = m_frac_encoder->encode(value);
+    }
+    else if (type_name == "int64_t")
+    {
+        *plaintext = m_int_encoder->encode(static_cast<int64_t>(value));
+    }
+    else
+    {
+        throw ngraph_error("Type not supported at create_ciphertext");
+    }
+    return plaintext;
+}
+
+std::shared_ptr<seal::Plaintext>
+    runtime::he::HEBackend::create_empty_plaintext() const
+{
+    return make_shared<seal::Plaintext>(m_context->parms().poly_modulus().coeff_count(), 0);
+}
+
 shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_constant_tensor(
     const element::Type& element_type, const Shape& shape, size_t element)
 {
