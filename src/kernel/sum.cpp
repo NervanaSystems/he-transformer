@@ -40,8 +40,8 @@ void runtime::he::kernel::sum(const vector<shared_ptr<seal::Ciphertext>>& arg,
 {
     CoordinateTransform output_transform(out_shape);
 
-    shared_ptr<HECipherTensorView> zero_tv =
-        static_pointer_cast<HECipherTensorView>(he_backend->create_zero_tensor(type, out_shape));
+    shared_ptr<HECipherTensorView> zero_tv = static_pointer_cast<HECipherTensorView>(
+        he_backend->create_valued_tensor(0., type, out_shape));
 
     size_t zero_ind = 0;
     vector<vector<seal::Ciphertext>> output_summands;

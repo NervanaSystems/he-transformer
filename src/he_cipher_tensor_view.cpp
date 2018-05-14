@@ -33,11 +33,9 @@ runtime::he::HECipherTensorView::HECipherTensorView(const element::Type& element
     // get_tensor_view_layout()->get_size() is the number of elements
     m_num_elements = m_descriptor->get_tensor_view_layout()->get_size();
     m_cipher_texts.resize(m_num_elements);
-#pragma omp parallel for
     for (size_t i = 0; i < m_num_elements; ++i)
     {
         m_cipher_texts[i] = make_shared<seal::Ciphertext>();
-        //m_cipher_texts.push_back(make_shared<seal::Ciphertext>());
     }
 }
 
@@ -52,14 +50,26 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
     size_t type_byte_size = type.size();
     size_t dst_start_index = tensor_offset / type_byte_size;
     size_t num_elements_to_write = n / type_byte_size;
-#pragma omp parallel for
-    for (size_t i = 0; i < num_elements_to_write; ++i)
+
+    if (num_elements_to_write == 1)
     {
-        const void* src_with_offset = (void*)((char*)source + i * type.size());
-        size_t dst_index = dst_start_index + i;
+        const void* src_with_offset = (void*)((char*)source);
+        size_t dst_index = dst_start_index;
         seal::Plaintext p;
         m_he_backend->encode(p, src_with_offset, type);
         m_he_backend->encrypt(*(m_cipher_texts[dst_index]), p);
+    }
+    else
+    {
+#pragma omp parallel for
+        for (size_t i = 0; i < num_elements_to_write; ++i)
+        {
+            const void* src_with_offset = (void*)((char*)source + i * type.size());
+            size_t dst_index = dst_start_index + i;
+            seal::Plaintext p;
+            m_he_backend->encode(p, src_with_offset, type);
+            m_he_backend->encrypt(*(m_cipher_texts[dst_index]), p);
+        }
     }
 }
 
@@ -70,13 +80,24 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
     size_t type_byte_size = type.size();
     size_t src_start_index = tensor_offset / type_byte_size;
     size_t num_elements_to_read = n / type_byte_size;
-#pragma omp parallel for
-    for (size_t i = 0; i < num_elements_to_read; ++i)
+    if (num_elements_to_read == 1)
     {
-        void* dst_with_offset = (void*)((char*)target + i * type.size());
-        size_t src_index = src_start_index + i;
+        void* dst_with_offset = (void*)((char*)target);
+        size_t src_index = src_start_index;
         seal::Plaintext p;
         m_he_backend->decrypt(p, *(m_cipher_texts[src_index]));
         m_he_backend->decode(dst_with_offset, p, type);
+    }
+    else
+    {
+#pragma omp parallel for
+        for (size_t i = 0; i < num_elements_to_read; ++i)
+        {
+            void* dst_with_offset = (void*)((char*)target + i * type.size());
+            size_t src_index = src_start_index + i;
+            seal::Plaintext p;
+            m_he_backend->decrypt(p, *(m_cipher_texts[src_index]));
+            m_he_backend->decode(dst_with_offset, p, type);
+        }
     }
 }

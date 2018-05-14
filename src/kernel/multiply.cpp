@@ -34,20 +34,19 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Ciphertext>>& a
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
     {
-        he_backend.get()->get_evaluator()->multiply(*arg0[i], *arg1[i], *out[i]);
+        seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
+        scalar_multiply(arg0[i], arg1[i], out[i], type, he_backend, pool);
     }
 }
 
-void runtime::he::kernel::multiply(const shared_ptr<seal::Ciphertext>& arg0,
-                                   const shared_ptr<seal::Ciphertext>& arg1,
-                                   shared_ptr<seal::Ciphertext>& out,
-                                   const element::Type& type,
-                                   shared_ptr<HEBackend> he_backend)
+void runtime::he::kernel::scalar_multiply(const shared_ptr<seal::Ciphertext>& arg0,
+                                          const shared_ptr<seal::Ciphertext>& arg1,
+                                          shared_ptr<seal::Ciphertext>& out,
+                                          const element::Type& type,
+                                          shared_ptr<HEBackend> he_backend,
+                                          const seal::MemoryPoolHandle& pool)
 {
-    const vector<shared_ptr<seal::Ciphertext>> arg0vec = {arg0};
-    const vector<shared_ptr<seal::Ciphertext>> arg1vec = {arg1};
-    vector<shared_ptr<seal::Ciphertext>> outvec = {out};
-    multiply(arg0vec, arg1vec, {outvec}, type, he_backend, 1);
+    he_backend->get_evaluator()->multiply(*arg0, *arg1, *out, pool);
 }
 
 void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Ciphertext>>& arg0,
@@ -57,73 +56,60 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Ciphertext>>& a
                                    shared_ptr<HEBackend> he_backend,
                                    size_t count)
 {
+#pragma omp parallel for
+    for (size_t i = 0; i < count; ++i)
+    {
+        seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
+        scalar_multiply(arg0[i], arg1[i], out[i], type, he_backend, pool);
+    }
+}
+
+void runtime::he::kernel::scalar_multiply(const shared_ptr<seal::Ciphertext>& arg0,
+                                          const shared_ptr<seal::Plaintext>& arg1,
+                                          shared_ptr<seal::Ciphertext>& out,
+                                          const element::Type& type,
+                                          shared_ptr<HEBackend> he_backend,
+                                          const seal::MemoryPoolHandle& pool)
+{
     const string type_name = type.c_type_string();
     if (type_name == "float")
     {
-#pragma omp parallel for
-        for (size_t i = 0; i < count; ++i)
+        if (*arg1 == he_backend->get_plaintext_num().fl_1)
         {
-            if (*arg1[i] == he_backend->get_plaintext_num().fl_1)
-            {
-                *out[i] = *arg0[i];
-            }
-            else if (*arg1[i] == he_backend->get_plaintext_num().fl_n1)
-            {
-                seal::Ciphertext c = *arg0[i];
-                he_backend.get()->get_evaluator()->negate(c);
-                *out[i] = c;
-            }
-            else
-            {
-                he_backend.get()->get_evaluator()->multiply_plain(*arg0[i], *arg1[i], *out[i]);
-            }
+            *out = *arg0;
+        }
+        else if (*arg1 == he_backend->get_plaintext_num().fl_n1)
+        {
+            seal::Ciphertext c = *arg0;
+            he_backend->get_evaluator()->negate(c);
+            *out = c;
+        }
+        else
+        {
+            he_backend->get_evaluator()->multiply_plain(*arg0, *arg1, *out, pool);
         }
     }
     else if (type_name == "int64_t")
     {
-#pragma omp parallel for
-        for (size_t i = 0; i < count; ++i)
+        if (*arg1 == he_backend->get_plaintext_num().fl_1)
         {
-            if (*arg1[i] == he_backend->get_plaintext_num().fl_1)
-            {
-                *out[i] = *arg0[i];
-            }
-            else if (*arg1[i] == he_backend->get_plaintext_num().fl_n1)
-            {
-                seal::Ciphertext c = *arg0[i];
-                he_backend.get()->get_evaluator()->negate(c);
-                *out[i] = c;
-            }
-            else
-            {
-                he_backend.get()->get_evaluator()->multiply_plain(*arg0[i], *arg1[i], *out[i]);
-            }
+            *out = *arg0;
         }
-    }
-    else if (type_name == "uint64_t")
-    {
-#pragma omp parallel for
-        for (size_t i = 0; i < count; ++i)
+        else if (*arg1 == he_backend->get_plaintext_num().fl_n1)
         {
-            he_backend.get()->get_evaluator()->multiply_plain(*arg0[i], *arg1[i], *out[i]);
+            seal::Ciphertext c = *arg0;
+            he_backend->get_evaluator()->negate(c);
+            *out = c;
+        }
+        else
+        {
+            he_backend->get_evaluator()->multiply_plain(*arg0, *arg1, *out, pool);
         }
     }
     else
     {
         throw ngraph_error("Multiply type not supported " + type_name);
     }
-}
-
-void runtime::he::kernel::multiply(const shared_ptr<seal::Ciphertext>& arg0,
-                                   const shared_ptr<seal::Plaintext>& arg1,
-                                   shared_ptr<seal::Ciphertext>& out,
-                                   const element::Type& type,
-                                   shared_ptr<HEBackend> he_backend)
-{
-    const vector<shared_ptr<seal::Ciphertext>> arg0vec = {arg0};
-    const vector<shared_ptr<seal::Plaintext>> arg1vec = {arg1};
-    vector<shared_ptr<seal::Ciphertext>> outvec = {out};
-    multiply(arg0vec, arg1vec, {outvec}, type, he_backend, 1);
 }
 
 void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Plaintext>>& arg0,
@@ -136,13 +122,14 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Plaintext>>& ar
     multiply(arg1, arg0, out, type, he_backend, count);
 }
 
-void runtime::he::kernel::multiply(const shared_ptr<seal::Plaintext>& arg0,
-                                   const shared_ptr<seal::Ciphertext>& arg1,
-                                   shared_ptr<seal::Ciphertext>& out,
-                                   const element::Type& type,
-                                   shared_ptr<HEBackend> he_backend)
+void runtime::he::kernel::scalar_multiply(const shared_ptr<seal::Plaintext>& arg0,
+                                          const shared_ptr<seal::Ciphertext>& arg1,
+                                          shared_ptr<seal::Ciphertext>& out,
+                                          const element::Type& type,
+                                          shared_ptr<HEBackend> he_backend,
+                                          const seal::MemoryPoolHandle& pool)
 {
-    multiply(arg1, arg0, out, type, he_backend);
+    scalar_multiply(arg1, arg0, out, type, he_backend, pool);
 }
 
 void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Plaintext>>& arg0,
@@ -161,7 +148,7 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Plaintext>>& ar
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
     {
-        auto evaluator = he_backend.get()->get_evaluator();
+        auto evaluator = he_backend->get_evaluator();
         float x, y;
         he_backend->decode(&x, *arg0[i], type);
         he_backend->decode(&y, *arg1[i], type);
@@ -170,14 +157,17 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<seal::Plaintext>>& ar
     }
 }
 
-void runtime::he::kernel::multiply(const shared_ptr<seal::Plaintext>& arg0,
-                                   const shared_ptr<seal::Plaintext>& arg1,
-                                   shared_ptr<seal::Plaintext>& out,
-                                   const element::Type& type,
-                                   shared_ptr<HEBackend> he_backend)
+void runtime::he::kernel::scalar_multiply(const shared_ptr<seal::Plaintext>& arg0,
+                                          const shared_ptr<seal::Plaintext>& arg1,
+                                          shared_ptr<seal::Plaintext>& out,
+                                          const element::Type& type,
+                                          shared_ptr<HEBackend> he_backend,
+                                          const seal::MemoryPoolHandle& pool)
 {
-    const vector<shared_ptr<seal::Plaintext>> arg0vec = {arg0};
-    const vector<shared_ptr<seal::Plaintext>> arg1vec = {arg1};
-    vector<shared_ptr<seal::Plaintext>> outvec = {out};
-    multiply(arg0vec, arg1vec, {outvec}, type, he_backend, 1);
+    auto evaluator = he_backend->get_evaluator();
+    float x, y;
+    he_backend->decode(&x, *arg0, type);
+    he_backend->decode(&y, *arg1, type);
+    float r = x * y;
+    he_backend->encode(*out, &r, type);
 }

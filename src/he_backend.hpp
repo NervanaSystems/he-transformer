@@ -47,29 +47,42 @@ namespace ngraph
 
                 std::shared_ptr<runtime::TensorView>
                     create_tensor(const element::Type& element_type, const Shape& shape) override;
-                std::shared_ptr<runtime::TensorView>
-                    create_plain_tensor(const element::Type& element_type, const Shape& shape);
-
-                std::shared_ptr<runtime::TensorView>
-                    create_zero_tensor(const element::Type& element_type, const Shape& shape);
-                std::shared_ptr<runtime::TensorView>
-                    create_ones_tensor(const element::Type& element_type, const Shape& shape);
-                std::shared_ptr<runtime::TensorView> create_constant_tensor(
-                    const element::Type& element_type, const Shape& shape, size_t element);
-
-                std::shared_ptr<runtime::TensorView>
-                    create_zero_plain_tensor(const element::Type& element_type, const Shape& shape);
-                std::shared_ptr<runtime::TensorView>
-                    create_ones_plain_tensor(const element::Type& element_type, const Shape& shape);
-                std::shared_ptr<runtime::TensorView> create_constant_plain_tensor(
-                    const element::Type& element_type, const Shape& shape, size_t element);
 
                 std::shared_ptr<runtime::TensorView>
                     create_tensor(const element::Type& element_type,
                                   const Shape& shape,
                                   void* memory_pointer) override;
-                std::shared_ptr<runtime::TensorView> create_plain_tensor(
-                    const element::Type& element_type, const Shape& shape, void* memory_pointer);
+
+                std::shared_ptr<runtime::TensorView>
+                    create_plain_tensor(const element::Type& element_type, const Shape& shape);
+
+                // Create scalar text with memory pool
+                std::shared_ptr<seal::Ciphertext>
+                    create_valued_ciphertext(float value,
+                                             const element::Type& element_type,
+                                             const seal::MemoryPoolHandle& pool) const;
+                std::shared_ptr<seal::Ciphertext>
+                    create_empty_ciphertext(const seal::MemoryPoolHandle& pool) const;
+                std::shared_ptr<seal::Plaintext>
+                    create_valued_plaintext(float value,
+                                            const element::Type& element_type,
+                                            const seal::MemoryPoolHandle& pool) const;
+                std::shared_ptr<seal::Plaintext>
+                    create_empty_plaintext(const seal::MemoryPoolHandle& pool) const;
+
+                // Create scalar text without memory pool
+                std::shared_ptr<seal::Ciphertext>
+                    create_valued_ciphertext(float value, const element::Type& element_type) const;
+                std::shared_ptr<seal::Ciphertext> create_empty_ciphertext() const;
+                std::shared_ptr<seal::Plaintext>
+                    create_valued_plaintext(float value, const element::Type& element_type) const;
+                std::shared_ptr<seal::Plaintext> create_empty_plaintext() const;
+
+                // Create TensorView of the same value
+                std::shared_ptr<runtime::TensorView> create_valued_tensor(
+                    float value, const element::Type& element_type, const Shape& shape);
+                std::shared_ptr<runtime::TensorView> create_valued_plain_tensor(
+                    float value, const element::Type& element_type, const Shape& shape);
 
                 bool compile(std::shared_ptr<Function> func) override;
 
@@ -89,7 +102,13 @@ namespace ngraph
 
                 void decrypt(seal::Plaintext& output, const seal::Ciphertext& input);
 
-                void check_noise_budget(const vector<shared_ptr<runtime::he::HETensorView>>& tvs);
+                void check_noise_budget(
+                    const vector<shared_ptr<runtime::he::HETensorView>>& tvs) const;
+
+                const inline std::shared_ptr<seal::SEALContext> get_context() const
+                {
+                    return m_context;
+                }
 
                 const inline std::shared_ptr<seal::Evaluator> get_evaluator() const
                 {
@@ -101,9 +120,24 @@ namespace ngraph
                     return m_ev_key;
                 }
 
+                const inline std::shared_ptr<seal::Encryptor> get_encryptor() const
+                {
+                    return m_encryptor;
+                }
+
                 const inline std::shared_ptr<seal::Decryptor> get_decryptor() const
                 {
                     return m_decryptor;
+                }
+
+                const inline std::shared_ptr<seal::IntegerEncoder> get_int_encoder() const
+                {
+                    return m_int_encoder;
+                }
+
+                const inline std::shared_ptr<seal::FractionalEncoder> get_frac_encoder() const
+                {
+                    return m_frac_encoder;
                 }
 
                 struct plaintext_num
@@ -115,7 +149,7 @@ namespace ngraph
                 };
 
                 const inline plaintext_num& get_plaintext_num() const { return m_plaintext_num; }
-                int noise_budget(const std::shared_ptr<seal::Ciphertext>& ciphertext);
+                int noise_budget(const std::shared_ptr<seal::Ciphertext>& ciphertext) const;
 
                 void enable_performance_data(std::shared_ptr<Function> func, bool enable) override;
                 std::vector<PerformanceCounter>
@@ -125,7 +159,6 @@ namespace ngraph
                                                    const std::string& file_name);
 
             private:
-                seal::EncryptionParameters parms;
                 std::shared_ptr<seal::SEALContext> m_context;
                 std::shared_ptr<seal::IntegerEncoder> m_int_encoder;
                 std::shared_ptr<seal::FractionalEncoder> m_frac_encoder;

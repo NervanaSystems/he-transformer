@@ -31,7 +31,7 @@ void runtime::he::kernel::subtract(const vector<shared_ptr<seal::Ciphertext>>& a
 {
     for (size_t i = 0; i < count; ++i)
     {
-        he_backend.get()->get_evaluator()->sub(*arg0[i], *arg1[i], *out[i]);
+        he_backend->get_evaluator()->sub(*arg0[i], *arg1[i], *out[i]);
     }
 }
 
@@ -43,6 +43,6 @@ void runtime::he::kernel::subtract(const vector<shared_ptr<seal::Ciphertext>>& a
 {
     for (size_t i = 0; i < count; ++i)
     {
-        he_backend.get()->get_evaluator()->sub_plain(*arg0[i], *arg1[i], *out[i]);
+        he_backend->get_evaluator()->sub_plain(*arg0[i], *arg1[i], *out[i]);
     }
 }

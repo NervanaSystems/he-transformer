@@ -58,6 +58,8 @@ namespace ngraph
                 std::shared_ptr<Function> m_function;
                 std::shared_ptr<HEBackend> m_he_backend;
 
+                bool is_cpu_check_enabled(const shared_ptr<Node>& op) const;
+
                 void call(std::shared_ptr<Function> function,
                           const std::vector<std::shared_ptr<runtime::he::HETensorView>>& output_tvs,
                           const std::vector<std::shared_ptr<runtime::he::HETensorView>>& input_tvs);
