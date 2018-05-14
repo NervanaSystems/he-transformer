@@ -60,15 +60,13 @@ namespace ngraph
                 void scalar_add(const shared_ptr<seal::Ciphertext>& arg0,
                                 const shared_ptr<seal::Ciphertext>& arg1,
                                 shared_ptr<seal::Ciphertext>& out,
-                                shared_ptr<HEBackend> he_backend,
-                                const seal::MemoryPoolHandle& pool);
+                                shared_ptr<HEBackend> he_backend);
 
                 void scalar_add(const shared_ptr<seal::Plaintext>& arg0,
                                 const shared_ptr<seal::Plaintext>& arg1,
                                 shared_ptr<seal::Plaintext>& out,
                                 const element::Type& type,
-                                shared_ptr<HEBackend> he_backend,
-                                const seal::MemoryPoolHandle& pool);
+                                shared_ptr<HEBackend> he_backend);
             }
         }
     }

@@ -183,7 +183,7 @@ void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<seal::Plaintext>>&
 
             runtime::he::kernel::scalar_multiply(
                 arg0_text, arg1_text, prod, type, he_backend, pool);
-            runtime::he::kernel::scalar_add(sum, prod, sum, type, he_backend, pool);
+            runtime::he::kernel::scalar_add(sum, prod, sum, type, he_backend);
         }
 
         // Write the sum back.

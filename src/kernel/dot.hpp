@@ -205,7 +205,7 @@ void ngraph::runtime::he::kernel::dot_template(const vector<shared_ptr<S>>& arg0
 
             runtime::he::kernel::scalar_multiply(
                 arg0_text, arg1_text, prod, type, he_backend, pool);
-            runtime::he::kernel::scalar_add(sum, prod, sum, he_backend, pool);
+            runtime::he::kernel::scalar_add(sum, prod, sum, he_backend);
         }
 
         // Write the sum back.
