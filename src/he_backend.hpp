@@ -57,8 +57,8 @@ namespace ngraph
 
                 std::shared_ptr<seal::Plaintext>
                     create_valued_plaintext(float value,
-                                             const element::Type& element_type,
-                                             const seal::MemoryPoolHandle& pool) const;
+                                            const element::Type& element_type,
+                                            const seal::MemoryPoolHandle& pool) const;
                 std::shared_ptr<seal::Plaintext>
                     create_empty_plaintext(const seal::MemoryPoolHandle& pool) const;
 

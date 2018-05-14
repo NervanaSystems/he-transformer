@@ -135,7 +135,8 @@ std::shared_ptr<seal::Plaintext> runtime::he::HEBackend::create_valued_plaintext
     // Optimize value == 0 to use memory-pool
     if (value == 0)
     {
-        return make_shared<seal::Plaintext>(m_context->parms().poly_modulus().coeff_count(), 0, pool);
+        return make_shared<seal::Plaintext>(
+            m_context->parms().poly_modulus().coeff_count(), 0, pool);
     }
 
     // For encoder, we'll need to initialize the Encoder object with memory-pool, so the default
