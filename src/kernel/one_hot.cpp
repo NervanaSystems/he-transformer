@@ -36,12 +36,8 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<seal::Ciphertext>>& ar
                                   shared_ptr<HEBackend>& he_backend)
 {
     // Get 0 and 1 cipher text
-    shared_ptr<HECipherTensorView> zero_tv =
-        static_pointer_cast<HECipherTensorView>(he_backend->create_zero_tensor(type, Shape{1}));
-    shared_ptr<seal::Ciphertext> zero_ciphertext = zero_tv->get_element(0);
-    shared_ptr<HECipherTensorView> one_tv =
-        static_pointer_cast<HECipherTensorView>(he_backend->create_ones_tensor(type, Shape{1}));
-    shared_ptr<seal::Ciphertext> one_ciphertext = one_tv->get_element(0);
+    shared_ptr<seal::Ciphertext> zero_ciphertext = he_backend->create_valued_ciphertext(0, type);
+    shared_ptr<seal::Ciphertext> one_ciphertext = he_backend->create_valued_ciphertext(1, type);
 
     // Step 1: Zero out the output. We can simply copy the shared_ptr pointing to a zero
     // ciphertext to all output locations.
