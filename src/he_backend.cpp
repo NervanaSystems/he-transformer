@@ -98,6 +98,21 @@ shared_ptr<runtime::TensorView>
     return static_pointer_cast<runtime::TensorView>(rc);
 }
 
+shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_tensor(
+    const element::Type& element_type, const Shape& shape, void* memory_pointer)
+{
+    throw ngraph_error("HE create_tensor unimplemented");
+}
+
+shared_ptr<runtime::TensorView>
+    runtime::he::HEBackend::create_plain_tensor(const element::Type& element_type,
+                                                const Shape& shape)
+{
+    shared_ptr<HEBackend> he_backend = shared_from_this();
+    auto rc = make_shared<runtime::he::HEPlainTensorView>(element_type, shape, he_backend);
+    return static_pointer_cast<runtime::TensorView>(rc);
+}
+
 std::shared_ptr<seal::Ciphertext> runtime::he::HEBackend::create_valued_ciphertext(
     float value, const element::Type& element_type, const seal::MemoryPoolHandle& pool) const
 {
@@ -166,8 +181,9 @@ std::shared_ptr<seal::Plaintext>
     return make_shared<seal::Plaintext>(m_context->parms().poly_modulus().coeff_count(), 0, pool);
 }
 
-std::shared_ptr<seal::Ciphertext> runtime::he::HEBackend::create_valued_ciphertext(
-    float value, const element::Type& element_type) const
+std::shared_ptr<seal::Ciphertext>
+    runtime::he::HEBackend::create_valued_ciphertext(float value,
+                                                     const element::Type& element_type) const
 {
     const string type_name = element_type.c_type_string();
     shared_ptr<seal::Ciphertext> ciphertext = create_empty_ciphertext();
@@ -188,14 +204,14 @@ std::shared_ptr<seal::Ciphertext> runtime::he::HEBackend::create_valued_cipherte
     return ciphertext;
 }
 
-std::shared_ptr<seal::Ciphertext>
-    runtime::he::HEBackend::create_empty_ciphertext() const
+std::shared_ptr<seal::Ciphertext> runtime::he::HEBackend::create_empty_ciphertext() const
 {
     return make_shared<seal::Ciphertext>(m_context->parms());
 }
 
-std::shared_ptr<seal::Plaintext> runtime::he::HEBackend::create_valued_plaintext(
-    float value, const element::Type& element_type) const
+std::shared_ptr<seal::Plaintext>
+    runtime::he::HEBackend::create_valued_plaintext(float value,
+                                                    const element::Type& element_type) const
 {
     const string type_name = element_type.c_type_string();
     std::shared_ptr<seal::Plaintext> plaintext = create_empty_plaintext();
@@ -214,129 +230,37 @@ std::shared_ptr<seal::Plaintext> runtime::he::HEBackend::create_valued_plaintext
     return plaintext;
 }
 
-std::shared_ptr<seal::Plaintext>
-    runtime::he::HEBackend::create_empty_plaintext() const
+std::shared_ptr<seal::Plaintext> runtime::he::HEBackend::create_empty_plaintext() const
 {
     return make_shared<seal::Plaintext>(m_context->parms().poly_modulus().coeff_count(), 0);
 }
 
-shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_constant_tensor(
-    const element::Type& element_type, const Shape& shape, size_t element)
+shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_valued_tensor(
+    float value, const element::Type& element_type, const Shape& shape)
 {
-    shared_ptr<runtime::TensorView> tensor = create_tensor(element_type, shape);
-    shared_ptr<runtime::he::HECipherTensorView> cipher_tensor =
-        static_pointer_cast<runtime::he::HECipherTensorView>(tensor);
-
-    size_t num_elements = shape_size(shape);
-    size_t bytes_to_write = num_elements * element_type.size();
-
-    const string type_name = element_type.c_type_string();
-
-    if (type_name == "float")
+    auto tensor = static_pointer_cast<HECipherTensorView>(create_tensor(element_type, shape));
+    vector<shared_ptr<seal::Ciphertext>>& cipher_texts = tensor->get_elements();
+#pragma omp parallel for
+    for (size_t i = 0; i < cipher_texts.size(); ++i)
     {
-        vector<float> elements;
-        for (size_t i = 0; i < num_elements; ++i)
-        {
-            elements.push_back(element);
-        }
-        cipher_tensor->write((void*)&elements[0], 0, bytes_to_write);
+        seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
+        cipher_texts[i] = create_valued_ciphertext(value, element_type, pool);
     }
-    else if (type_name == "int64_t")
+    return tensor;
+}
+
+shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_valued_plain_tensor(
+    float value, const element::Type& element_type, const Shape& shape)
+{
+    auto tensor = static_pointer_cast<HEPlainTensorView>(create_plain_tensor(element_type, shape));
+    vector<shared_ptr<seal::Plaintext>>& plain_texts = tensor->get_elements();
+#pragma omp parallel for
+    for (size_t i = 0; i < plain_texts.size(); ++i)
     {
-        vector<int64_t> elements;
-        for (size_t i = 0; i < num_elements; ++i)
-        {
-            elements.push_back(element);
-        }
-        cipher_tensor->write((void*)&elements[0], 0, bytes_to_write);
+        seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
+        plain_texts[i] = create_valued_plaintext(value, element_type, pool);
     }
-    else
-    {
-        throw ngraph_error("Type not supported at create_constant_tensor");
-    }
-
-    return static_pointer_cast<runtime::TensorView>(cipher_tensor);
-}
-
-shared_ptr<runtime::TensorView>
-    runtime::he::HEBackend::create_zero_tensor(const element::Type& element_type,
-                                               const Shape& shape)
-{
-    return create_constant_tensor(element_type, shape, 0);
-}
-
-shared_ptr<runtime::TensorView>
-    runtime::he::HEBackend::create_ones_tensor(const element::Type& element_type,
-                                               const Shape& shape)
-{
-    return create_constant_tensor(element_type, shape, 1);
-}
-
-shared_ptr<runtime::TensorView>
-    runtime::he::HEBackend::create_plain_tensor(const element::Type& element_type,
-                                                const Shape& shape)
-{
-    shared_ptr<HEBackend> he_backend = shared_from_this();
-    auto rc = make_shared<runtime::he::HEPlainTensorView>(element_type, shape, he_backend);
-    return static_pointer_cast<runtime::TensorView>(rc);
-}
-
-shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_constant_plain_tensor(
-    const element::Type& element_type, const Shape& shape, size_t element)
-{
-    shared_ptr<runtime::TensorView> tensor = create_plain_tensor(element_type, shape);
-    shared_ptr<runtime::he::HEPlainTensorView> plain_tensor =
-        static_pointer_cast<runtime::he::HEPlainTensorView>(tensor);
-
-    size_t num_elements = shape_size(shape);
-    size_t bytes_to_write = num_elements * element_type.size();
-
-    const string type_name = element_type.c_type_string();
-
-    if (type_name == "float")
-    {
-        vector<float> elements;
-        for (size_t i = 0; i < num_elements; ++i)
-        {
-            elements.push_back(element);
-        }
-        plain_tensor->write((void*)&elements[0], 0, bytes_to_write);
-    }
-    else if (type_name == "int64_t")
-    {
-        vector<int64_t> elements;
-        for (size_t i = 0; i < num_elements; ++i)
-        {
-            elements.push_back(element);
-        }
-        plain_tensor->write((void*)&elements[0], 0, bytes_to_write);
-    }
-    else
-    {
-        throw ngraph_error("Type not supported at create_constant_plain_tensor");
-    }
-
-    return static_pointer_cast<runtime::TensorView>(plain_tensor);
-}
-
-shared_ptr<runtime::TensorView>
-    runtime::he::HEBackend::create_zero_plain_tensor(const element::Type& element_type,
-                                                     const Shape& shape)
-{
-    return create_constant_plain_tensor(element_type, shape, 0);
-}
-
-shared_ptr<runtime::TensorView>
-    runtime::he::HEBackend::create_ones_plain_tensor(const element::Type& element_type,
-                                                     const Shape& shape)
-{
-    return create_constant_plain_tensor(element_type, shape, 1);
-}
-
-shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_tensor(
-    const element::Type& element_type, const Shape& shape, void* memory_pointer)
-{
-    throw ngraph_error("HE create_tensor unimplemented");
+    return tensor;
 }
 
 bool runtime::he::HEBackend::compile(shared_ptr<Function> func)

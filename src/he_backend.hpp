@@ -48,6 +48,14 @@ namespace ngraph
                 std::shared_ptr<runtime::TensorView>
                     create_tensor(const element::Type& element_type, const Shape& shape) override;
 
+                std::shared_ptr<runtime::TensorView>
+                    create_tensor(const element::Type& element_type,
+                                  const Shape& shape,
+                                  void* memory_pointer) override;
+
+                std::shared_ptr<runtime::TensorView>
+                    create_plain_tensor(const element::Type& element_type, const Shape& shape);
+
                 // Create scalar text with memory pool
                 std::shared_ptr<seal::Ciphertext>
                     create_valued_ciphertext(float value,
@@ -63,38 +71,18 @@ namespace ngraph
                     create_empty_plaintext(const seal::MemoryPoolHandle& pool) const;
 
                 // Create scalar text without memory pool
-                std::shared_ptr<seal::Ciphertext>create_valued_ciphertext(float value,
-                                        const element::Type& element_type) const;
+                std::shared_ptr<seal::Ciphertext>
+                    create_valued_ciphertext(float value, const element::Type& element_type) const;
                 std::shared_ptr<seal::Ciphertext> create_empty_ciphertext() const;
-                std::shared_ptr<seal::Plaintext> create_valued_plaintext(
-                    float value, const element::Type& element_type) const;
+                std::shared_ptr<seal::Plaintext>
+                    create_valued_plaintext(float value, const element::Type& element_type) const;
                 std::shared_ptr<seal::Plaintext> create_empty_plaintext() const;
 
-
-                // std::shared_ptr<seal::Plaintext>
-                //     create_plaintext(const element::Type& element_type, float value) const;
-
-                std::shared_ptr<runtime::TensorView>
-                    create_plain_tensor(const element::Type& element_type, const Shape& shape);
-
-                std::shared_ptr<runtime::TensorView>
-                    create_zero_tensor(const element::Type& element_type, const Shape& shape);
-                std::shared_ptr<runtime::TensorView>
-                    create_ones_tensor(const element::Type& element_type, const Shape& shape);
-                std::shared_ptr<runtime::TensorView> create_constant_tensor(
-                    const element::Type& element_type, const Shape& shape, size_t element);
-
-                std::shared_ptr<runtime::TensorView>
-                    create_zero_plain_tensor(const element::Type& element_type, const Shape& shape);
-                std::shared_ptr<runtime::TensorView>
-                    create_ones_plain_tensor(const element::Type& element_type, const Shape& shape);
-                std::shared_ptr<runtime::TensorView> create_constant_plain_tensor(
-                    const element::Type& element_type, const Shape& shape, size_t element);
-
-                std::shared_ptr<runtime::TensorView>
-                    create_tensor(const element::Type& element_type,
-                                  const Shape& shape,
-                                  void* memory_pointer) override;
+                // Create TensorView of the same value
+                std::shared_ptr<runtime::TensorView> create_valued_tensor(
+                    float value, const element::Type& element_type, const Shape& shape);
+                std::shared_ptr<runtime::TensorView> create_valued_plain_tensor(
+                    float value, const element::Type& element_type, const Shape& shape);
 
                 bool compile(std::shared_ptr<Function> func) override;
 
