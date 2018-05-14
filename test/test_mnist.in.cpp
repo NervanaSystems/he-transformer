@@ -170,8 +170,7 @@ TEST_F(TestHEBackend, tf_ptb_const_1)
     NGRAPH_INFO << "calling function ";
     backend->call(f, result_tvs, parameter_tvs);
 
-    EXPECT_EQ((vector<float>{2173, 944, 1151, 1723, -1674, 569, -1985, 9776, -4997, -1903}),
-              read_vector<float>(result_tvs[0]));
+    EXPECT_EQ(1,2); // TODO: add expected results
 }
 
 TEST_F(TestHEBackend, tf_mnist_rnn_const)

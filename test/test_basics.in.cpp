@@ -1222,7 +1222,7 @@ TEST_F(TestHEBackend, one_hot_scalar_fp_nonint_in_3)
     {
         EXPECT_EQ(
             e.what(),
-            std::string("One-hot: non-integral value in input or value is out of category range"));
+            std::string("One-hot: non-integral value in input"));
     }
     catch (...)
     {
@@ -1251,7 +1251,7 @@ TEST_F(TestHEBackend, one_hot_scalar_oob_in_3)
     {
         EXPECT_EQ(
             e.what(),
-            std::string("One-hot: non-integral value in input or value is out of category range"));
+            std::string("One-hot: value is out of category range"));
     }
     catch (...)
     {
@@ -1318,7 +1318,7 @@ TEST_F(TestHEBackend, one_hot_vector_1_barely_oob)
     {
         EXPECT_EQ(
             e.what(),
-            std::string("One-hot: non-integral value in input or value is out of category range"));
+            std::string("One-hot: value is out of category range"));
     }
     catch (...)
     {
@@ -1346,7 +1346,7 @@ TEST_F(TestHEBackend, one_hot_vector_1_far_oob)
     {
         EXPECT_EQ(
             e.what(),
-            std::string("One-hot: non-integral value in input or value is out of category range"));
+            std::string("One-hot: value is out of category range"));
     }
     catch (...)
     {
@@ -1418,7 +1418,7 @@ TEST_F(TestHEBackend, one_hot_vector_1_fp_nonint)
     {
         EXPECT_EQ(
             e.what(),
-            std::string("One-hot: non-integral value in input or value is out of category range"));
+            std::string("One-hot: non-integral value in input"));
     }
     catch (...)
     {
