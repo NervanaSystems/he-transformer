@@ -53,3 +53,4 @@ void TestHEBackend::TearDown()
 #include "test_model.in.cpp"
 #include "test_noise.in.cpp"
 #include "test_speed.in.cpp"
+#include "test_overflow.in.cpp"
