@@ -14,17 +14,10 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <assert.h>
-
-#include "ngraph/file_util.hpp"
 #include "ngraph/ngraph.hpp"
-#include "ngraph/pass/manager.hpp"
 #include "ngraph/pass/visualize_tree.hpp"
-#include "util/all_close.hpp"
-#include "util/ndarray.hpp"
 #include "util/test_tools.hpp"
 
-#include "he_backend.hpp"
 #include "test_util.hpp"
 
 using namespace std;
