@@ -144,7 +144,6 @@ public:
                    const std::vector<std::shared_ptr<HostTensorView>>& out,
                    const std::vector<std::shared_ptr<HostTensorView>>& args)
     {
-        NGRAPH_INFO << "op_engine call for op " << node.description();
         std::string node_op = node.description();
         if (node_op == "Abs")
         {
@@ -158,13 +157,6 @@ public:
         }
         else if (node_op == "Add")
         {
-            auto tmp = args[0]->get_data_ptr<T>();
-            NGRAPH_INFO << "got arg0" ;
-            NGRAPH_INFO << "len(args)" << args.size();
-            auto tmp2 = args[1]->get_data_ptr<T>();
-            NGRAPH_INFO << "got arg1" ;
-            auto tmp3 = out[0]->get_data_ptr<T>();
-            NGRAPH_INFO << "got out0" ;
             reference::add<T>(args[0]->get_data_ptr<T>(),
                               args[1]->get_data_ptr<T>(),
                               out[0]->get_data_ptr<T>(),
