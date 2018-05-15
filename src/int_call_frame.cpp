@@ -29,12 +29,12 @@ using namespace ngraph;
 
 using descriptor::layout::DenseTensorViewLayout;
 
-runtime::interpreter::INT_CallFrame::INT_CallFrame(shared_ptr<Function> func)
+runtime::interpreter::INTCallFrame::INTCallFrame(shared_ptr<Function> func)
     : m_function(func)
 {
 }
 
-void runtime::interpreter::INT_CallFrame::generate_calls(
+void runtime::interpreter::INTCallFrame::generate_calls(
     const element::Type& type,
     Node& op,
     const vector<shared_ptr<HostTensorView>>& outputs,

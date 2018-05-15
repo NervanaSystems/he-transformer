@@ -121,18 +121,17 @@ namespace ngraph
     {
         namespace interpreter
         {
-            class INT_CallFrame;
+            class INTCallFrame;
         }
     }
 }
-class ngraph::runtime::interpreter::INT_CallFrame
+class ngraph::runtime::interpreter::INTCallFrame
 {
-
 private:
     std::shared_ptr<Function> m_function;
 
 public:
-    INT_CallFrame(std::shared_ptr<Function> func);
+    INTCallFrame(std::shared_ptr<Function> func);
 
     void generate_calls(const element::Type& type,
                         Node& op,

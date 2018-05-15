@@ -14,21 +14,26 @@
 # limitations under the License.
 # *****************************************************************************
 
-cmake_minimum_required (VERSION 2.8)
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-set(CMAKE_DISABLE_SOURCE_CHANGES ON)
-set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+# To support BUILD_BYPRODUCTS
+cmake_minimum_required (VERSION 3.2)
 
 # Suppress an OS X-specific warning.
 if (POLICY CMP0042)
     cmake_policy(SET CMP0042 OLD)
 endif()
 
-# Global project name
-project (he)
+# These variables are undocumented but useful.
+set(CMAKE_DISABLE_SOURCE_CHANGES ON)
+set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
-# Installation paths
+# CXX flags
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
+# Global project name
+project (he-transformer)
+
+# Installation paths when `make install`
 if (DEFINED NGRAPH_INSTALL_PREFIX)
     set(CMAKE_INSTALL_PREFIX ${NGRAPH_INSTALL_PREFIX})
 else()
@@ -37,21 +42,22 @@ endif()
 set(NGRAPH_INSTALL_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib")
 set(NGRAPH_INSTALL_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/include")
 
-# External projects (relative to HE transformer)
+# HE transformer headers
+set(HE_TRANSFORMER_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+
+# External projects (ngraph, seal)
 include(ExternalProject)
 set(EXTERNAL_INSTALL_DIR ${CMAKE_BINARY_DIR}/external)
-
-#include(external/external_gmp.cmake)
-#include(external/external_ntl.cmake)
-#include(external/external_heaan.cmake)
-include(external/external_seal.cmake)
-include(external/external_gtest.cmake)
-
-# HE transformer headers
-set(HE_TRANSFORMER_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+set(EXTERNAL_INSTALL_LIB_DIR ${EXTERNAL_INSTALL_DIR}/lib)
+set(EXTERNAL_INSTALL_INCLUDE_DIR ${EXTERNAL_INSTALL_DIR}/include)
+include(cmake/openmp.cmake)
+include(cmake/ngraph.cmake)
+include(cmake/gtest.cmake)
+include(cmake/seal.cmake)
+# include(cmake/gmp.cmake)
+# include(cmake/ntl.cmake)
+# include(cmake/heaan.cmake)
 
 # HE transformer source directory
 add_subdirectory(src)
-
-# HE library tests
-add_subdirectory(test_he_lib)
+add_subdirectory(test)
