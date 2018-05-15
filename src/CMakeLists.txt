@@ -24,7 +24,7 @@ set (HE_SRC
     he_tensor_view.cpp
     he_cipher_tensor_view.cpp
     he_plain_tensor_view.cpp
-    he_manager.cpp
+    #he_manager.cpp
     int_call_frame.cpp
     seal_parameter.cpp
     kernel/add.cpp
