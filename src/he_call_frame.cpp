@@ -29,6 +29,7 @@
 #include "he_cipher_tensor_view.hpp"
 #include "he_plain_tensor_view.hpp"
 #include "he_tensor_view.hpp"
+#include "int_call_frame.hpp"
 #include "kernel/add.hpp"
 #include "kernel/broadcast.hpp"
 #include "kernel/concat.hpp"

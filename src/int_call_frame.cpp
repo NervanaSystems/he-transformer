@@ -14,7 +14,7 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "ngraph/runtime/interpreter/int_backend.hpp"
+#include "int_call_frame.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
 #include "ngraph/op/convert.hpp"
 #include "ngraph/op/select.hpp"
