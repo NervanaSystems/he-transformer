@@ -24,7 +24,6 @@
 #include "ngraph/function.hpp"
 #include "ngraph/graph_util.hpp"
 #include "ngraph/node.hpp"
-#include "ngraph/runtime/interpreter/int_call_frame.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "ngraph/util.hpp"
 

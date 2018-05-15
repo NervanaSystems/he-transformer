@@ -480,24 +480,6 @@ public:
             reference::floor<T>(
                 args[0]->get_data_ptr<T>(), out[0]->get_data_ptr<T>(), out[0]->get_element_count());
         }
-        else if (node_op == "FunctionCall")
-        {
-            std::shared_ptr<Function> function = node.get_functions()[0];
-
-            std::vector<std::shared_ptr<runtime::TensorView>> outputs;
-            for (auto tv : out)
-            {
-                outputs.push_back(std::static_pointer_cast<runtime::TensorView>(tv));
-            }
-
-            std::vector<std::shared_ptr<runtime::TensorView>> inputs;
-            for (auto tv : args)
-            {
-                inputs.push_back(std::static_pointer_cast<runtime::TensorView>(tv));
-            }
-
-            call(function, outputs, inputs);
-        }
         else if (node_op == "Greater")
         {
             reference::greater<T>(args[0]->get_data_ptr<T>(),
@@ -663,59 +645,6 @@ public:
                                   out[0]->get_shape(),
                                   product->get_reduction_axes());
         }
-        else if (node_op == "Reduce")
-        {
-            op::Reduce* reduce = dynamic_cast<op::Reduce*>(&node);
-            std::shared_ptr<Function> reduction_function = reduce->get_functions()[0];
-
-            std::function<T(T, T)> f = [this, &node, reduction_function](T x, T y) -> T {
-                auto tx = std::make_shared<HostTensorView>(
-                    node.get_inputs().at(0).get_element_type(), Shape{}, "reduce_temp_x");
-                auto ty = std::make_shared<HostTensorView>(
-                    node.get_inputs().at(1).get_element_type(), Shape{}, "reduce_temp_y");
-                auto tr = std::make_shared<HostTensorView>(
-                    node.get_output_element_type(0), Shape{}, "reduce_temp_r");
-                *(tx->get_data_ptr<T>()) = x;
-                *(ty->get_data_ptr<T>()) = y;
-                call(reduction_function, {tr}, {tx, ty});
-                return *(tr->get_data_ptr<T>());
-            };
-
-            reference::reduce(args[0]->get_data_ptr<T>(),
-                              args[1]->get_data_ptr<T>(),
-                              out[0]->get_data_ptr<T>(),
-                              node.get_inputs().at(0).get_shape(),
-                              node.get_output_shape(0),
-                              reduce->get_reduction_axes(),
-                              f);
-        }
-        else if (node_op == "ReduceWindow")
-        {
-            op::ReduceWindow* reduce_window = dynamic_cast<op::ReduceWindow*>(&node);
-            std::shared_ptr<Function> reduction_function = reduce_window->get_functions()[0];
-
-            std::function<T(T, T)> f = [this, &node, reduction_function](T x, T y) -> T {
-                auto tx = std::make_shared<HostTensorView>(
-                    node.get_inputs().at(0).get_element_type(), Shape{}, "reduce_window_temp_x");
-                auto ty = std::make_shared<HostTensorView>(
-                    node.get_inputs().at(1).get_element_type(), Shape{}, "reduce_window_temp_y");
-                auto tr = std::make_shared<HostTensorView>(
-                    node.get_output_element_type(0), Shape{}, "reduce_window_temp_r");
-                *(tx->get_data_ptr<T>()) = x;
-                *(ty->get_data_ptr<T>()) = y;
-                call(reduction_function, {tr}, {tx, ty});
-                return *(tr->get_data_ptr<T>());
-            };
-
-            reference::reduce_window(args[0]->get_data_ptr<T>(),
-                                     args[1]->get_data_ptr<T>(),
-                                     out[0]->get_data_ptr<T>(),
-                                     node.get_inputs().at(0).get_shape(),
-                                     node.get_output_shape(0),
-                                     f,
-                                     reduce_window->get_window_shape(),
-                                     reduce_window->get_window_movement_strides());
-        }
         else if (node_op == "Relu")
         {
             reference::relu<T>(
@@ -772,54 +701,6 @@ public:
                                  args[2]->get_data_ptr<T>(),
                                  out[0]->get_data_ptr<T>(),
                                  out[0]->get_element_count());
-        }
-        else if (node_op == "SelectAndScatter")
-        {
-            ngraph::op::SelectAndScatter* select_and_scatter =
-                dynamic_cast<ngraph::op::SelectAndScatter*>(&node);
-
-            std::shared_ptr<ngraph::Function> selection_function =
-                select_and_scatter->get_functions()[0];
-            std::function<bool(T, T)> f_selection = [this, &node, selection_function](T x,
-                                                                                      T y) -> bool {
-                auto tx = std::make_shared<runtime::HostTensorView>(
-                    node.get_inputs().at(0).get_element_type(), Shape{}, "selection_temp_x");
-                auto ty = std::make_shared<runtime::HostTensorView>(
-                    node.get_inputs().at(1).get_element_type(), Shape{}, "selection_temp_y");
-                auto tr = std::make_shared<runtime::HostTensorView>(
-                    element::boolean, Shape{}, "selection_temp_r");
-                *(tx->get_data_ptr<T>()) = x;
-                *(ty->get_data_ptr<T>()) = y;
-                call(selection_function, {tr}, {tx, ty});
-                return *(tr->get_data_ptr<char>());
-            };
-
-            std::shared_ptr<ngraph::Function> scatter_function =
-                select_and_scatter->get_functions()[1];
-            std::function<T(T, T)> f_scatter = [this, &node, scatter_function](T x, T y) -> T {
-                auto tx = std::make_shared<runtime::HostTensorView>(
-                    node.get_inputs().at(0).get_element_type(), Shape{}, "scatter_temp_x");
-                auto ty = std::make_shared<runtime::HostTensorView>(
-                    node.get_inputs().at(1).get_element_type(), Shape{}, "scatter_temp_y");
-                auto tr = std::make_shared<runtime::HostTensorView>(
-                    node.get_output_element_type(0), Shape{}, "scatter_temp_r");
-                *(tx->get_data_ptr<T>()) = x;
-                *(ty->get_data_ptr<T>()) = y;
-                call(scatter_function, {tr}, {tx, ty});
-                return *(tr->get_data_ptr<T>());
-            };
-
-            reference::select_and_scatter<T>(args[0]->get_data_ptr<T>(),
-                                             args[1]->get_data_ptr<T>(),
-                                             args[2]->get_data_ptr<T>(),
-                                             out[0]->get_data_ptr<T>(),
-                                             args[0]->get_shape(),
-                                             args[1]->get_shape(),
-                                             out[0]->get_shape(),
-                                             f_selection,
-                                             f_scatter,
-                                             select_and_scatter->get_window_shape(),
-                                             select_and_scatter->get_window_movement_strides());
         }
         else if (node_op == "Sign")
         {
