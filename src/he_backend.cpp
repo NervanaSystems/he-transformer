@@ -34,9 +34,7 @@ using namespace std;
 
 extern "C" bool create_backend()
 {
-    // This is called if compiled by GCC
     runtime::Backend::register_backend("HE", make_shared<runtime::he::HEBackend>());
-
     return true;
 }
 
