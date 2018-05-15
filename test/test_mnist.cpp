@@ -14,10 +14,10 @@
 * limitations under the License.
 *******************************************************************************/
 
+#include "ngraph/file_util.hpp"
 #include "ngraph/ngraph.hpp"
 #include "ngraph/pass/manager.hpp"
 #include "ngraph/pass/visualize_tree.hpp"
-#include "ngraph/file_util.hpp"
 
 #include "util/all_close.hpp"
 #include "util/ndarray.hpp"

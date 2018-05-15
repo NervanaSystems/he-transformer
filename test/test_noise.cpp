@@ -15,12 +15,8 @@
 *******************************************************************************/
 
 #include "ngraph/ngraph.hpp"
-#include "util/all_close.hpp"
-#include "util/ndarray.hpp"
 #include "util/test_tools.hpp"
 
-#include "he_backend.hpp"
-#include "seal_parameter.hpp"
 #include "test_util.hpp"
 
 using namespace std;
