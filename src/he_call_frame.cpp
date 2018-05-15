@@ -286,7 +286,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
         cpu_outputs.push_back(tv);
     }
     NGRAPH_INFO << "Generating CPU calls";
-    cpu_call_frame.generate_calls(type, type, *op, cpu_inputs, cpu_outputs);
+    cpu_call_frame.generate_calls(type, *op, cpu_inputs, cpu_outputs);
     const string type_name = type.c_type_string();
 
     // Compare outputs with CPU outputs
