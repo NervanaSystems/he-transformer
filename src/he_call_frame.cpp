@@ -330,7 +330,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
 
             for (size_t elem = 0; elem < element_count; ++elem)
             {
-                if (cpu_out_vec[elem] != he_out_vec[elem]) // TODO: increase precision
+                if (cpu_out_vec[elem] != he_out_vec[elem])
                 {
                     NGRAPH_INFO << "expect " << cpu_out_vec[elem]
                                 << ", actual: " << he_out_vec[elem];
