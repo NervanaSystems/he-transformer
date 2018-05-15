@@ -14,15 +14,16 @@
 * limitations under the License.
 *******************************************************************************/
 
-#pragma once
+#include "ngraph/runtime/backend.hpp"
 
-#include "gtest/gtest.h"
 #include "he_backend.hpp"
 
-class TestHEBackend : public ::testing::Test
+using namespace std;
+using namespace ngraph;
+
+extern "C" bool create_backend()
 {
-protected:
-    //virtual void SetUp() {}
-    //virtual void TearDown();
-    static std::shared_ptr<ngraph::runtime::he::HEBackend> m_he_backend;
-};
+    // This is called if compiled by GCC. The static_init() only works on clang.
+    runtime::Backend::register_backend("HE", make_shared<runtime::nnp::HEBackend>());
+    return true;
+}

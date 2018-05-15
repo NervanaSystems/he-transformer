@@ -2022,7 +2022,7 @@ TEST_F(TestHEBackend, sum_100_2)
     EXPECT_EQ((vector<float>{943.8259698, 1853.237534}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, create_valued_plaintext)
+/* TEST_F(TestHEBackend, create_valued_plaintext)
 {
     // Fractional
     {
@@ -2067,4 +2067,4 @@ TEST_F(TestHEBackend, create_valued_plaintext)
         m_he_backend->decode(&val_decoded, *plaintext, type);
         EXPECT_EQ(val_decoded, val);
     }
-}
+} */

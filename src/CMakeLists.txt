@@ -19,6 +19,7 @@ set(HE_TRANSFORMER_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 # HE transformer sources
 set (HE_SRC
+    create_backend.cpp
     he_backend.cpp
     he_call_frame.cpp
     he_tensor_view.cpp

@@ -34,23 +34,50 @@
 #include "he_backend.hpp"
 #include "test_main.hpp"
 
+#include <dlfcn.h>
+
 // Namespace
 using namespace std;
 using namespace ngraph;
 
 // Common test class
+// This is a hack that we put around since NNP_TESTER, NNP and NNPI are all in libnnp_backend.so
+// This can be removed, if libnnp_backend.so only contains NNPI
+static void register_he_backend()
+{
+    void* handle = nullptr;
+    string name = "libhe_backend.so";
+    handle = dlopen(name.c_str(), RTLD_NOW | RTLD_GLOBAL);
+    if (handle)
+    {
+        function<void()> create = reinterpret_cast<void (*)()>(dlsym(handle, "create_backend"));
+        if (create)
+        {
+            create();
+        }
+    }
+}
+
+/* void TestHEBackend::TearDown()
+{
+	m_he_backend->clear_function_instance();
+} */
+
+/*int main(int argc, char** argv)
+{
+	register_he_backend();
+	::testing::InitGoogleTest(&argc, argv);
+} */
+
 shared_ptr<ngraph::runtime::he::HEBackend> TestHEBackend::m_he_backend =
     static_pointer_cast<runtime::he::HEBackend>(runtime::Backend::create("HE"));
+// register_he_backend()
 
-void TestHEBackend::TearDown()
-{
-    m_he_backend->clear_function_instance();
-}
 
 // Source files
 #include "test_basics.in.cpp"
-#include "test_mnist.in.cpp"
-#include "test_model.in.cpp"
-#include "test_noise.in.cpp"
-#include "test_speed.in.cpp"
-#include "test_overflow.in.cpp"
+//#include "test_mnist.in.cpp"
+//#include "test_model.in.cpp"
+//#include "test_noise.in.cpp"
+//#include "test_speed.in.cpp"
+//#include "test_overflow.in.cpp"
