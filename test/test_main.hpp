@@ -22,7 +22,7 @@
 class TestHEBackend : public ::testing::Test
 {
 protected:
-    //virtual void SetUp() {}
-    //virtual void TearDown();
+    virtual void SetUp() {}
+    virtual void TearDown();
     static std::shared_ptr<ngraph::runtime::he::HEBackend> m_he_backend;
 };
