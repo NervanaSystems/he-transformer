@@ -26,7 +26,7 @@ if (POLICY CMP0042)
 endif()
 
 # Global project name
-project (he)
+project (he_backend)
 
 # Installation paths
 if (DEFINED NGRAPH_INSTALL_PREFIX)
