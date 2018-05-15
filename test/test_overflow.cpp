@@ -14,7 +14,13 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "seal_parameter.hpp"
+#include "ngraph/ngraph.hpp"
+#include "util/test_tools.hpp"
+
+#include "test_util.hpp"
+
+using namespace std;
+using namespace ngraph;
 
 TEST_F(TestHEBackend, overflow)
 {

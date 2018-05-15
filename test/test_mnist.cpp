@@ -14,9 +14,19 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <ngraph/pass/manager.hpp>
-#include <ngraph/pass/visualize_tree.hpp>
+#include "ngraph/ngraph.hpp"
+#include "ngraph/pass/manager.hpp"
+#include "ngraph/pass/visualize_tree.hpp"
 #include "ngraph/file_util.hpp"
+
+#include "util/all_close.hpp"
+#include "util/ndarray.hpp"
+#include "util/test_tools.hpp"
+
+#include "test_util.hpp"
+
+using namespace std;
+using namespace ngraph;
 
 TEST_F(TestHEBackend, tf_mnist_const_1)
 {
