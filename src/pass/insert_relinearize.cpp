@@ -15,8 +15,8 @@
 *******************************************************************************/
 
 #include "ngraph/graph_util.hpp"
-#include "ngraph/op/multiply.hpp"
 #include "ngraph/op/dot.hpp"
+#include "ngraph/op/multiply.hpp"
 
 #include "op/relinearize.hpp"
 #include "pass/insert_relinearize.hpp"

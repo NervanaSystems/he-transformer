@@ -1,22 +1,34 @@
-# HE Transformer for Ngraph
+# HE Transformer for nGraph
 
-## Building Ngraph with HE Transformer
+## Building HE Transformer with nGraph
 
 ```
-git clone git@github.com:NervanaSystems/ngraph-he.git
-cd ngraph-he
-git checkout he-master # the `master` branch is the upstream ngraph, `he-master` is our master
+# Clone
+git clone https://github.com/NervanaSystems/he-transformer.git
+cd he-transformer
 mkdir build
 cd build
 
-cmake -DNGRAPH_HE_ENABLE=True ..
+# Config
+cmake -DCMAKE_BUILD_TYPE=Debug ..
+
+# Build
 make -j$(nproc)
+
+# nGraph backend unit tests: `HE.*`
+./test/unit-test --gtest_filter="HE.ab"
+
+# HE specific unit tests: `TestHEBackend.*`
+./test/unit-test --gtest_filter="TestHEBackend.ab"
 ```
 
-## Managing `ngraph-he` and `he-transformer` repos
+## How to manage `he-transformer` and `ngraph` repos
 
-- Only need to clone `ngraph-he` manually
-- `he-transformer` repo will be located at
-  `ngraph-he/build/third-party/he_transformer/src/ext_he_transformer`
-- In `he-transformer` repo, we can make changes and do git stuffs independent from `ngraph-he`
-- `ngraph-he`'s build system will pick up changes in the `he-transformer` repo
+- Clone `he-transformer` and build
+- `ngraph` repo will be located at `he-transformer/build/ext_ngraph/src/ext_ngraph`
+- In `ngraph` repo, we can make modifications, and perform git operations
+- In `he-transformer` repo, the build scripts will pick up the changes inside `ngraph` repo
+
+## Code formatting
+
+Please run `maint/apply-code-format.sh` before submitting a PR.

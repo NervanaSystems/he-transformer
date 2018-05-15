@@ -32,6 +32,12 @@
 using namespace ngraph;
 using namespace std;
 
+extern "C" bool create_backend()
+{
+    runtime::Backend::register_backend("HE", make_shared<runtime::he::HEBackend>());
+    return true;
+}
+
 static void print_seal_context(const seal::SEALContext& context)
 {
     NGRAPH_INFO << endl
