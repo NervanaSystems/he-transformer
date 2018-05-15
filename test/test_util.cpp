@@ -14,9 +14,17 @@
 * limitations under the License.
 *******************************************************************************/
 
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <sstream>
+#include <string>
+#include <vector>
+
 #include "ngraph/graph_util.hpp"
 #include "ngraph/log.hpp"
 #include "ngraph/ngraph.hpp"
+#include "ngraph/file_util.hpp"
 
 #include "he_backend.hpp"
 #include "test_util.hpp"
@@ -31,3 +39,19 @@ void TestHEBackend::TearDown()
 
 shared_ptr<ngraph::runtime::he::HEBackend> TestHEBackend::m_he_backend =
     static_pointer_cast<runtime::he::HEBackend>(runtime::Backend::create("HE"));
+
+vector<float> read_constant(const string filename)
+{
+    string data = file_util::read_file_to_string(filename);
+    istringstream iss(data);
+
+    vector<string> constants;
+    copy(istream_iterator<string>(iss), istream_iterator<string>(), back_inserter(constants));
+
+    vector<float> res;
+    for (const string& constant : constants)
+    {
+        res.push_back(atof(constant.c_str()));
+    }
+    return res;
+}

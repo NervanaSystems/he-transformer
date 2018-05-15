@@ -16,6 +16,9 @@
 
 #pragma once
 
+#include <string>
+#include <vector>
+
 #include "gtest/gtest.h"
 #include "he_backend.hpp"
 
@@ -26,3 +29,5 @@ protected:
     virtual void TearDown();
     static std::shared_ptr<ngraph::runtime::he::HEBackend> m_he_backend;
 };
+
+std::vector<float> read_constant(const std::string filename);
