@@ -24,6 +24,6 @@ using namespace ngraph;
 extern "C" bool create_backend()
 {
     // This is called if compiled by GCC. The static_init() only works on clang.
-    runtime::Backend::register_backend("HE", make_shared<runtime::nnp::HEBackend>());
+    runtime::Backend::register_backend("HE", make_shared<runtime::he::HEBackend>());
     return true;
 }

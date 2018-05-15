@@ -40,6 +40,8 @@ void runtime::interpreter::INT_CallFrame::generate_calls(
     const vector<shared_ptr<HostTensorView>>& outputs,
     const vector<shared_ptr<HostTensorView>>& inputs)
 {
+    NGRAPH_INFO << "Generating calls for op " << op.description();
+    NGRAPH_INFO << inputs.size() << " inputs , " << outputs.size() << " outputs";
     if (type == element::boolean)
     {
         op_engine<char>(op, outputs, inputs);

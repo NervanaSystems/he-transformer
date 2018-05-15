@@ -194,14 +194,14 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
             base_type = op->get_inputs().at(0).get_tensor().get_element_type();
         }
 
-        generate_calls(base_type, op, inputs, outputs);
+        generate_calls(base_type, op, outputs, inputs);
 
         const string op_name = op->description();
 
         // Check result with CPU backend
         if (is_cpu_check_enabled(op))
         {
-            check_cpu_calls(function, base_type, op, inputs, outputs, false);
+            check_cpu_calls(function, base_type, op, outputs, inputs, false);
         }
 
         // Check noise budget after each op
@@ -241,8 +241,8 @@ void runtime::he::HECallFrame::check_cpu_calls(
     shared_ptr<Function> function,
     const element::Type& type,
     const shared_ptr<Node>& op,
-    const vector<shared_ptr<runtime::he::HETensorView>>& inputs,
     const vector<shared_ptr<runtime::he::HETensorView>>& outputs,
+    const vector<shared_ptr<runtime::he::HETensorView>>& inputs,
     bool verbose)
 {
     runtime::interpreter::INT_CallFrame cpu_call_frame(function);
@@ -286,7 +286,8 @@ void runtime::he::HECallFrame::check_cpu_calls(
         cpu_outputs.push_back(tv);
     }
     NGRAPH_INFO << "Generating CPU calls";
-    cpu_call_frame.generate_calls(type, *op, cpu_inputs, cpu_outputs);
+    cpu_call_frame.generate_calls(type, *op, cpu_outputs, cpu_inputs);
+    NGRAPH_INFO << "Generated CPU calls";
     const string type_name = type.c_type_string();
 
     // Compare outputs with CPU outputs
@@ -391,8 +392,8 @@ void runtime::he::HECallFrame::check_cpu_calls(
 
 void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                               const shared_ptr<Node>& node,
-                                              const vector<shared_ptr<HETensorView>>& args,
-                                              const vector<shared_ptr<HETensorView>>& out)
+                                              const vector<shared_ptr<HETensorView>>& out,
+                                              const vector<shared_ptr<HETensorView>>& args)
 {
     string node_op = node->description();
     shared_ptr<HECipherTensorView> arg0_cipher = nullptr;
