@@ -16,6 +16,7 @@
 
 #include "ngraph/graph_util.hpp"
 #include "ngraph/op/multiply.hpp"
+#include "ngraph/op/dot.hpp"
 
 #include "op/relinearize.hpp"
 #include "pass/insert_relinearize.hpp"
@@ -28,6 +29,13 @@ bool runtime::he::pass::InsertRelinearize::run_on_call_graph(const list<shared_p
     for (const shared_ptr<Node>& node : nodes)
     {
         if (auto multiply = dynamic_pointer_cast<op::Multiply>(node))
+        {
+            shared_ptr<Node> new_node =
+                node->copy_with_new_args(NodeVector{node->get_argument(0), node->get_argument(1)});
+            new_node = make_shared<op::Relinearize>(new_node);
+            replace_node(multiply, new_node);
+        }
+        else if (auto multiply = dynamic_pointer_cast<op::Dot>(node))
         {
             shared_ptr<Node> new_node =
                 node->copy_with_new_args(NodeVector{node->get_argument(0), node->get_argument(1)});
