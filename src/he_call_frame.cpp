@@ -245,7 +245,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
     const vector<shared_ptr<runtime::he::HETensorView>>& inputs,
     bool verbose)
 {
-    runtime::interpreter::INT_CallFrame cpu_call_frame(function);
+    runtime::interpreter::INTCallFrame cpu_call_frame(function);
     std::vector<std::shared_ptr<runtime::HostTensorView>> cpu_inputs;
     std::vector<std::shared_ptr<runtime::HostTensorView>> cpu_outputs;
     std::vector<std::shared_ptr<runtime::HostTensorView>> result_outputs;
