@@ -21,10 +21,10 @@
 #include <string>
 #include <vector>
 
+#include "ngraph/file_util.hpp"
 #include "ngraph/graph_util.hpp"
 #include "ngraph/log.hpp"
 #include "ngraph/ngraph.hpp"
-#include "ngraph/file_util.hpp"
 
 #include "he_backend.hpp"
 #include "test_util.hpp"
@@ -34,7 +34,7 @@ using namespace ngraph;
 
 void TestHEBackend::TearDown()
 {
-	m_he_backend->clear_function_instance();
+    m_he_backend->clear_function_instance();
 }
 
 shared_ptr<ngraph::runtime::he::HEBackend> TestHEBackend::m_he_backend =

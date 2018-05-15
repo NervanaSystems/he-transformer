@@ -127,7 +127,6 @@ namespace ngraph
 }
 class ngraph::runtime::interpreter::INT_CallFrame
 {
-
 private:
     std::shared_ptr<Function> m_function;
 

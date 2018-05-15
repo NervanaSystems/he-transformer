@@ -48,7 +48,7 @@ TEST_F(TestHEBackend, overflow)
     cout << "result" << endl;
     for (auto elem : res)
     {
-        cout << elem << " " ;
+        cout << elem << " ";
     }
     cout << endl;
     //EXPECT_TRUE(test::all_close(r_data, read_vector<float>(r)));
