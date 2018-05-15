@@ -31,7 +31,7 @@ runtime::he::HETensorView::HETensorView(const element::Type& element_type,
                                         const shared_ptr<HEBackend>& he_backend,
                                         const string& name)
     : runtime::TensorView(make_shared<descriptor::PrimaryTensorView>(
-          make_shared<TensorViewType>(element_type, shape), name, true, true, false))
+          make_shared<TensorViewType>(element_type, shape), name))
     , m_he_backend(he_backend)
 {
     m_descriptor->set_tensor_view_layout(

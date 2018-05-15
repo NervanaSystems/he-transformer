@@ -38,14 +38,14 @@
 using namespace std;
 using namespace ngraph;
 
-// Common test class
-shared_ptr<ngraph::runtime::he::HEBackend> TestHEBackend::m_he_backend =
-    static_pointer_cast<runtime::he::HEBackend>(runtime::Backend::create("HE"));
-
 void TestHEBackend::TearDown()
 {
-    m_he_backend->clear_function_instance();
+	m_he_backend->clear_function_instance();
 }
+
+
+shared_ptr<ngraph::runtime::he::HEBackend> TestHEBackend::m_he_backend =
+    static_pointer_cast<runtime::he::HEBackend>(runtime::Backend::create("HE"));
 
 // Source files
 #include "test_basics.in.cpp"
@@ -53,3 +53,4 @@ void TestHEBackend::TearDown()
 #include "test_model.in.cpp"
 #include "test_noise.in.cpp"
 #include "test_speed.in.cpp"
+#include "test_overflow.in.cpp"
