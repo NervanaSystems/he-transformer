@@ -14,28 +14,17 @@
 * limitations under the License.
 *******************************************************************************/
 
-#pragma once
+#include <chrono>
+#include <iostream>
 
-#include <memory>
-#include <vector>
+#include "gtest/gtest.h"
 
-#include "ngraph/runtime/manager.hpp"
+using namespace std;
 
-namespace ngraph
+int main(int argc, char** argv)
 {
-    class Function;
+    ::testing::InitGoogleTest(&argc, argv);
+    int rc = RUN_ALL_TESTS();
 
-    namespace runtime
-    {
-        namespace he
-        {
-            class HEManager : public Manager
-            {
-            public:
-                virtual std::shared_ptr<Backend> allocate_backend() override;
-
-                virtual std::vector<size_t> get_subdevices() const override;
-            };
-        };
-    }
+    return rc;
 }

@@ -14,20 +14,19 @@
 # limitations under the License.
 # ******************************************************************************
 
-set (SRC
-    gtest_main.cpp
-    test_seal.cpp
-)
+include(ExternalProject)
 
-include_directories(
-    SYSTEM
-    ${GTEST_INCLUDE_DIR}
-    ${NGRAPH_HE_INSTALL_INCLUDE_DIR}
-)
-link_directories(${NGRAPH_HE_INSTALL_LIB_DIR})
+set(NTL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ext_ntl)
+set(NTL_SOURCE_DIR ${NTL_PREFIX}/src/ext_ntl)
 
-add_executable(test-he-lib ${SRC})
-add_dependencies(test-he-lib ext_gtest ext_seal)
-set_target_properties(test-he-lib PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${EXTERNAL_NGRAPH_TEST_DIR})
-target_link_libraries(test-he-lib libgtest seal pthread)
-target_link_libraries(test-he-lib ${CMAKE_DL_LIBS})
+ExternalProject_Add(
+    ext_ntl
+    DEPENDS ext_gmp
+    DOWNLOAD_COMMAND wget http://www.shoup.net/ntl/ntl-10.5.0.tar.gz
+    COMMAND tar -xzf ntl-10.5.0.tar.gz -C ${NTL_SOURCE_DIR} --strip 1
+    COMMAND rm ntl-10.5.0.tar.gz
+    PREFIX ${NTL_PREFIX}
+    CONFIGURE_COMMAND cd ${NTL_SOURCE_DIR}/src && ./configure NTL_GMP_LIP=on SHARED=on PREFIX=${EXTERNAL_INSTALL_DIR} GMP_PREFIX=${EXTERNAL_INSTALL_DIR}
+    BUILD_COMMAND make -j$(nproc) -C ${NTL_SOURCE_DIR}/src
+    INSTALL_COMMAND make install -C ${NTL_SOURCE_DIR}/src
+)

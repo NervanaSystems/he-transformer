@@ -14,12 +14,21 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <unordered_map>
+#include <assert.h>
 
-#include "loader.hpp"
 #include "ngraph/file_util.hpp"
+#include "ngraph/ngraph.hpp"
 #include "ngraph/pass/manager.hpp"
 #include "ngraph/pass/visualize_tree.hpp"
+#include "util/all_close.hpp"
+#include "util/ndarray.hpp"
+#include "util/test_tools.hpp"
+
+#include "he_backend.hpp"
+#include "test_util.hpp"
+
+using namespace std;
+using namespace ngraph;
 
 TEST_F(TestHEBackend, ptb_100)
 {

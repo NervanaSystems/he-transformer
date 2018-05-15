@@ -14,29 +14,20 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <memory>
+#include "ngraph/graph_util.hpp"
+#include "ngraph/log.hpp"
+#include "ngraph/ngraph.hpp"
 
 #include "he_backend.hpp"
-#include "he_manager.hpp"
+#include "test_util.hpp"
 
-using namespace ngraph;
 using namespace std;
+using namespace ngraph;
 
-shared_ptr<runtime::Backend> runtime::he::HEManager::allocate_backend()
+void TestHEBackend::TearDown()
 {
-    return make_shared<HEBackend>();
+	m_he_backend->clear_function_instance();
 }
 
-vector<size_t> runtime::he::HEManager::get_subdevices() const
-{
-    throw ngraph_error("unimplemented");
-}
-
-bool REGISTER_HE_RUNTIME()
-{
-    runtime::Manager::register_factory("HE",
-                                       [](const string& name) -> shared_ptr<runtime::Manager> {
-                                           return make_shared<runtime::he::HEManager>();
-                                       });
-    return true;
-}
+shared_ptr<ngraph::runtime::he::HEBackend> TestHEBackend::m_he_backend =
+    static_pointer_cast<runtime::he::HEBackend>(runtime::Backend::create("HE"));

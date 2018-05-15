@@ -16,21 +16,22 @@
 
 include(ExternalProject)
 
-set(HEAAN_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ext_heaan)
-set(HEAAN_SOURCE_DIR ${HEAAN_PREFIX}/src/ext_heaan)
+# NTL depends on GMP
+set(GMP_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ext_gmp)
+set(GMP_SOURCE_DIR ${GMP_PREFIX}/src)
+message("GMP_PREFIX " ${GMP_PREFIX})
+message("EXTERNAL_INSTALL_DIR " ${EXTERNAL_INSTALL_DIR})
+
+set(GMP_INCLUDE_DIR ${GMP_SOURCE_DIR}/include)
+set(GMP_LIB_DIR ${GMP_SOURCE_DIR}/lib)
 
 ExternalProject_Add(
-    ext_heaan
-    DEPENDS ext_ntl
-    GIT_REPOSITORY https://github.com/NervanaSystems/HEAAN.git
-    GIT_TAG master
-    PREFIX ${HEAAN_PREFIX}
+    ext_gmp
+    DOWNLOAD_COMMAND wget https://ftp.gnu.org/gnu/gmp/gmp-6.1.2.tar.xz && tar xfJ gmp-6.1.2.tar.xz --strip 1
+    PREFIX ${GMP_PREFIX}
+    CONFIGURE_COMMAND
+        cd ${GMP_SOURCE_DIR} && ./configure --prefix=${EXTERNAL_INSTALL_DIR}
     UPDATE_COMMAND ""
-    CMAKE_ARGS
-        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-        -DCMAKE_INSTALL_PREFIX=${NGRAPH_HE_INSTALL_DIR}
-        -DNGRAPH_HE_INSTALL_INCLUDE_DIR=${NGRAPH_HE_INSTALL_INCLUDE_DIR}
-        -DNGRAPH_HE_INSTALL_LIB_DIR=${NGRAPH_HE_INSTALL_LIB_DIR}
+    BUILD_COMMAND make -j$(nproc) -C ${GMP_SOURCE_DIR}
+    INSTALL_COMMAND make -j$(nproc) install -C ${GMP_SOURCE_DIR}
 )

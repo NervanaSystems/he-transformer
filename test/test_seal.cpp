@@ -21,7 +21,7 @@
 
 using namespace std;
 
-TEST(test_he, trivial)
+TEST(seal_example, trivial)
 {
     int a = 1;
     int b = 2;

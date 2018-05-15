@@ -14,43 +14,39 @@
 * limitations under the License.
 *******************************************************************************/
 
-// This is a special test file that contains `*.in.cpp` sources from multiple files
-// On ngraph's main repo, add this file to the unit-test binary source list
+#include <assert.h>
 
-// Gtest
-#include "gtest/gtest.h"
-
-// Ngraph
-#include "ngraph/graph_util.hpp"
-#include "ngraph/log.hpp"
 #include "ngraph/ngraph.hpp"
-
-// Ngraph test
-#include "util/autodiff/numeric_compare.hpp"
+#include "util/all_close.hpp"
 #include "util/ndarray.hpp"
 #include "util/test_tools.hpp"
 
-// HE Backend
 #include "he_backend.hpp"
-#include "test_main.hpp"
+#include "test_util.hpp"
 
-// Namespace
 using namespace std;
 using namespace ngraph;
 
-void TestHEBackend::TearDown()
+TEST_F(TestHEBackend, dot_20)
 {
-	m_he_backend->clear_function_instance();
+    // Shape and raw data
+    Shape shape{20, 20};
+    vector<float> x_data(400, 1.1);
+    vector<float> w_data(400, 1.2);
+    vector<float> r_data(400, 26.4);
+
+    // Graph
+    auto X = make_shared<op::Parameter>(element::f32, shape);
+    auto W = op::Constant::create(element::f32, shape, w_data);
+    auto R = make_shared<op::Dot>(X, W);
+    auto f = make_shared<Function>(R, op::ParameterVector{X});
+
+    // TensorViews
+    auto x = m_he_backend->create_tensor(element::f32, shape);
+    auto r = m_he_backend->create_tensor(element::f32, shape);
+    copy_data(x, x_data);
+
+    // Compute
+    m_he_backend->call(f, {r}, {x});
+    EXPECT_TRUE(test::all_close(r_data, read_vector<float>(r)));
 }
-
-
-shared_ptr<ngraph::runtime::he::HEBackend> TestHEBackend::m_he_backend =
-    static_pointer_cast<runtime::he::HEBackend>(runtime::Backend::create("HE"));
-
-// Source files
-#include "test_basics.in.cpp"
-#include "test_mnist.in.cpp"
-#include "test_model.in.cpp"
-#include "test_noise.in.cpp"
-#include "test_speed.in.cpp"
-#include "test_overflow.in.cpp"
