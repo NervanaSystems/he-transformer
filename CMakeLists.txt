@@ -45,7 +45,7 @@ set(NGRAPH_INSTALL_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/include")
 # HE transformer headers
 set(HE_TRANSFORMER_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-# External projects (ngraph, seal)
+# External projects (ngraph, seal, heaan)
 include(ExternalProject)
 set(EXTERNAL_INSTALL_DIR ${CMAKE_BINARY_DIR}/external)
 set(EXTERNAL_INSTALL_LIB_DIR ${EXTERNAL_INSTALL_DIR}/lib)
@@ -54,9 +54,7 @@ include(cmake/openmp.cmake)
 include(cmake/ngraph.cmake)
 include(cmake/gtest.cmake)
 include(cmake/seal.cmake)
-# include(cmake/gmp.cmake)
-# include(cmake/ntl.cmake)
-# include(cmake/heaan.cmake)
+include(cmake/heaan.cmake)
 
 # HE transformer source directory
 add_subdirectory(src)
