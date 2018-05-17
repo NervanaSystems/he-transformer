@@ -58,7 +58,7 @@ void runtime::he::HESealParameter::assert_valid_seal_parameter()
     }
 }
 
-/* shared_ptr<seal::SEALContext> runtime::he::make_seal_context(const runtime::he::SEALParameter& sp)
+shared_ptr<seal::SEALContext> runtime::he::make_seal_context(const runtime::he::HESealParameter& sp)
 {
     runtime::he::assert_valid_seal_parameter(sp);
 
@@ -78,4 +78,4 @@ void runtime::he::HESealParameter::assert_valid_seal_parameter()
     }
     parms.set_plain_modulus(sp.plain_modulus);
     return make_shared<seal::SEALContext>(parms);
-} */
+}

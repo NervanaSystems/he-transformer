@@ -28,6 +28,8 @@
 #include "he_plain_tensor_view.hpp"
 #include "he_tensor_view.hpp"
 #include "pass/insert_relinearize.hpp"
+#include "he_seal_backend.hpp"
+#include "he_seal_parameter.hpp"
 
 using namespace ngraph;
 using namespace std;
@@ -50,14 +52,14 @@ static void print_seal_context(const seal::SEALContext& context)
                 << "\\ noise_standard_deviation: " << context.noise_standard_deviation();
 }
 
-runtime::he::HEBackend::HEBackend()
-    : runtime::he::HEBackend(runtime::he::default_seal_parameter)
+runtime::he::HESealBackend::HESealBackend()
+    : runtime::he::HEBackend(static_cast<runtime::he::HEParameter>(runtime::he::default_seal_parameter))
 {
 }
 
-runtime::he::HEBackend::HEBackend(const runtime::he::SEALParameter& sp)
+runtime::he::HESealBackend::HESealBackend(const runtime::he::HESealParameter& sp)
 {
-    assert_valid_seal_parameter(sp);
+    // assert_valid_seal_parameter(sp); # TODO: enable
 
     // Context
     m_context = make_seal_context(sp);
