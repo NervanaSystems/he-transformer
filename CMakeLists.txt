@@ -54,9 +54,9 @@ include(cmake/openmp.cmake)
 include(cmake/ngraph.cmake)
 include(cmake/gtest.cmake)
 include(cmake/seal.cmake)
-# include(cmake/gmp.cmake)
-# include(cmake/ntl.cmake)
-# include(cmake/heaan.cmake)
+#include(cmake/gmp.cmake)
+#include(cmake/ntl.cmake)
+include(cmake/heaan.cmake)
 
 # HE transformer source directory
 add_subdirectory(src)

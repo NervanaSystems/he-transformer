@@ -26,9 +26,10 @@ link_directories(
     ${EXTERNAL_INSTALL_LIB_DIR}
 )
 
-set (IE_TEST_SRC
+set (HE_TEST_SRC
     main.cpp
     test_basics.cpp
+    test_heaan.cpp
     test_model.cpp
     test_mnist.cpp
     test_noise.cpp
@@ -56,9 +57,9 @@ add_custom_command(
             -P ${CMAKE_CURRENT_SOURCE_DIR}/configure_test.cmake
 )
 
-set(SRC ${IE_TEST_SRC} ${NGRAPH_TEST_SRC})
+set(SRC ${HE_TEST_SRC} ${NGRAPH_TEST_SRC})
 add_executable(unit-test ${SRC})
 
-target_link_libraries(unit-test he_backend seal ngraph_test_util libgtest pthread)
+target_link_libraries(unit-test he_backend seal heaan ngraph_test_util libgtest pthread)
 
-add_dependencies(unit-test he_backend ext_seal ext_ngraph ext_gtest)
+add_dependencies(unit-test he_backend ext_seal ext_heaan ext_ngraph ext_gtest)

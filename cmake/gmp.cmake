@@ -18,7 +18,7 @@ include(ExternalProject)
 
 # NTL depends on GMP
 set(GMP_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ext_gmp)
-set(GMP_SOURCE_DIR ${GMP_PREFIX}/src)
+set(GMP_SOURCE_DIR ${GMP_PREFIX}/src/ext_gmp)
 message("GMP_PREFIX " ${GMP_PREFIX})
 message("EXTERNAL_INSTALL_DIR " ${EXTERNAL_INSTALL_DIR})
 
@@ -30,7 +30,7 @@ ExternalProject_Add(
     DOWNLOAD_COMMAND wget https://ftp.gnu.org/gnu/gmp/gmp-6.1.2.tar.xz && tar xfJ gmp-6.1.2.tar.xz --strip 1
     PREFIX ${GMP_PREFIX}
     CONFIGURE_COMMAND
-        cd ${GMP_SOURCE_DIR} && ./configure --prefix=${EXTERNAL_INSTALL_DIR}
+    cd ${GMP_SOURCE_DIR} && ./configure --prefix=${GMP_PREFIX}
     UPDATE_COMMAND ""
     BUILD_COMMAND make -j$(nproc) -C ${GMP_SOURCE_DIR}
     INSTALL_COMMAND make -j$(nproc) install -C ${GMP_SOURCE_DIR}
