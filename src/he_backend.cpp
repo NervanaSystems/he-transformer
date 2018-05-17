@@ -61,50 +61,50 @@ shared_ptr<runtime::TensorView>
     throw ngraph_error("HE create_plain_tensor unimplemented");
 }
 
-std::shared_ptr<he::Ciphertext> runtime::he::HEBackend::create_valued_ciphertext(
+std::shared_ptr<he::HECiphertext> runtime::he::HEBackend::create_valued_ciphertext(
     float value, const element::Type& element_type, const he::MemoryPoolHandle& pool) const
 {
     throw ngraph_error("HE create_valued_ciphertextunimplemented");
 }
 
-std::shared_ptr<he::Ciphertext>
+std::shared_ptr<he::HECiphertext>
     runtime::he::HEBackend::create_empty_ciphertext(const he::MemoryPoolHandle& pool) const
 {
     throw ngraph_error("HE create_empty_ciphertext unimplemented");
 }
 
-std::shared_ptr<he::Plaintext> runtime::he::HEBackend::create_valued_plaintext(
+std::shared_ptr<he::HEPlaintext> runtime::he::HEBackend::create_valued_plaintext(
     float value, const element::Type& element_type, const he::MemoryPoolHandle& pool) const
 {
     throw ngraph_error("HE create_valued_plaintext unimplemented");
 }
 
-std::shared_ptr<he::Plaintext>
+std::shared_ptr<he::HEPlaintext>
     runtime::he::HEBackend::create_empty_plaintext(const he::MemoryPoolHandle& pool) const
 {
     throw ngraph_error("HE create_empty_plaintext unimplemented");
 }
 
-std::shared_ptr<he::Ciphertext>
+std::shared_ptr<he::HECiphertext>
     runtime::he::HEBackend::create_valued_ciphertext(float value,
                                                      const element::Type& element_type) const
 {
     throw ngraph_error("HE create_empty_ciphertext unimplemented");
 }
 
-std::shared_ptr<he::Ciphertext> runtime::he::HEBackend::create_empty_ciphertext() const
+std::shared_ptr<he::HECiphertext> runtime::he::HEBackend::create_empty_ciphertext() const
 {
     throw ngraph_error("HE create_empty_ciphertext unimplemented");
 }
 
-std::shared_ptr<he::Plaintext>
+std::shared_ptr<he::HEPlaintext>
     runtime::he::HEBackend::create_valued_plaintext(float value,
                                                     const element::Type& element_type) const
 {
     throw ngraph_error("HE create_valued_plaintext unimplemented");
 }
 
-std::shared_ptr<he::Plaintext> runtime::he::HEBackend::create_empty_plaintext() const
+std::shared_ptr<he::HEPlaintext> runtime::he::HEBackend::create_empty_plaintext() const
 {
     throw ngraph_error("HE create_empty_plaintext unimplemented");
 }
@@ -162,7 +162,7 @@ void runtime::he::HEBackend::remove_compiled_function(shared_ptr<Function> func)
     throw ngraph_error("HEBackend remove compile function unimplemented");
 }
 
-void runtime::he::HEBackend::encode(he::Plaintext& output,
+void runtime::he::HEBackend::encode(he::HEPlaintext& output,
                                     const void* input,
                                     const element::Type& type)
 {
@@ -170,19 +170,19 @@ void runtime::he::HEBackend::encode(he::Plaintext& output,
 }
 
 void runtime::he::HEBackend::decode(void* output,
-                                    const he::Plaintext& input,
+                                    const he::HEPlaintext& input,
                                     const element::Type& type)
 {
     throw ngraph_error("HEBackend decode unimplemented");
 
 }
 
-void runtime::he::HEBackend::encrypt(he::Ciphertext& output, const he::Plaintext& input)
+void runtime::he::HEBackend::encrypt(he::HECiphertext& output, const he::HEPlaintext& input)
 {
     throw ngraph_error("HEBackend encrypt unimplemented");
 }
 
-void runtime::he::HEBackend::decrypt(he::Plaintext& output, const he::Ciphertext& input)
+void runtime::he::HEBackend::decrypt(he::HEPlaintext& output, const he::HECiphertext& input)
 {
     throw ngraph_error("HEBackend decrypt unimplemented");
 }

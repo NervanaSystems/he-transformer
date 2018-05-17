@@ -23,12 +23,14 @@
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/seal.h"
+#include "he_ciphertext.hpp"
+#include "he_plaintext.hpp"
 
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::one_hot(const vector<shared_ptr<seal::Ciphertext>>& arg,
-                                  vector<shared_ptr<seal::Ciphertext>>& out,
+void runtime::he::kernel::one_hot(const vector<shared_ptr<he::HECiphertext>>& arg,
+                                  vector<shared_ptr<he::HECiphertext>>& out,
                                   const Shape& in_shape,
                                   const Shape& out_shape,
                                   size_t one_hot_axis,
@@ -36,8 +38,8 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<seal::Ciphertext>>& ar
                                   shared_ptr<HEBackend>& he_backend)
 {
     // Get 0 and 1 cipher text
-    shared_ptr<seal::Ciphertext> zero_ciphertext = he_backend->create_valued_ciphertext(0, type);
-    shared_ptr<seal::Ciphertext> one_ciphertext = he_backend->create_valued_ciphertext(1, type);
+    shared_ptr<he::Ciphertext> zero_ciphertext = he_backend->create_valued_ciphertext(0, type);
+    shared_ptr<he::Ciphertext> one_ciphertext = he_backend->create_valued_ciphertext(1, type);
 
     // Step 1: Zero out the output. We can simply copy the shared_ptr pointing to a zero
     // ciphertext to all output locations.
@@ -52,10 +54,10 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<seal::Ciphertext>>& ar
     CoordinateTransform input_transform(in_shape);
     for (const Coordinate& input_coord : input_transform)
     {
-        shared_ptr<seal::Ciphertext> val = arg[input_transform.index(input_coord)];
+        shared_ptr<he::HECiphertext> val = arg[input_transform.index(input_coord)];
 
         // TODO: We are not allowed to decrypt! Pass in one-hot encoded inputs
-        seal::Plaintext plain_val;
+        he::Plaintext plain_val;
         he_backend->decrypt(plain_val, *val);
         size_t one_hot_pos;
 

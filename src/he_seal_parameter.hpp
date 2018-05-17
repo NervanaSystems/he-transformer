@@ -60,15 +60,15 @@ namespace ngraph
                 int m_evaluation_decomposition_bit_count;
             };
 
-            /* static HESealParameter default_seal_parameter{
+            static HESealParameter default_seal_parameter{
                 8192,        // poly_modulus_degree
-                128,         // security_level
                 10000000000, // plain_modulus
+                128,         // security_level
                 64,          // fractional_encoder_integer_coeff_count
                 32,          // fractional_encoder_fraction_coeff_count
                 2,           // fractional_encoder_base
                 16           // evaluation_decomposition_bit_count
-            }; */
+            };
 
 
             // std::shared_ptr<seal::SEALContext> make_seal_context(const SEALParameter& sp);

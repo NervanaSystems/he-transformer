@@ -20,6 +20,7 @@
 #include "kernel/add.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/seal.h"
+#include "he_seal_backend.hpp"
 
 using namespace std;
 using namespace ngraph;
@@ -30,10 +31,15 @@ void runtime::he::kernel::add(const vector<shared_ptr<seal::Ciphertext>>& arg0,
                               shared_ptr<HEBackend> he_backend,
                               size_t count)
 {
+    auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(he_backend);
+    if (!he_seal_backend)
+    {
+        throw ngraph_error("HE backend not seal type");
+    }
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
     {
-        he_backend->get_evaluator()->add(*arg0[i], *arg1[i], *out[i]);
+        he_seal_backend->get_evaluator()->add(*arg0[i], *arg1[i], *out[i]);
     }
 }
 
@@ -43,10 +49,15 @@ void runtime::he::kernel::add(const vector<shared_ptr<seal::Ciphertext>>& arg0,
                               shared_ptr<HEBackend> he_backend,
                               size_t count)
 {
+	auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(he_backend);
+	if (!he_seal_backend)
+	{
+		throw ngraph_error("HE backend not seal type");
+	}
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
     {
-        he_backend->get_evaluator()->add_plain(*arg0[i], *arg1[i], *out[i]);
+        he_seal_backend->get_evaluator()->add_plain(*arg0[i], *arg1[i], *out[i]);
     }
 }
 
@@ -66,6 +77,11 @@ void runtime::he::kernel::add(const vector<shared_ptr<seal::Plaintext>>& arg0,
                               shared_ptr<HEBackend> he_backend,
                               size_t count)
 {
+	auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(he_backend);
+	if (!he_seal_backend)
+	{
+		throw ngraph_error("HE backend not seal type");
+	}
     const string type_name = type.c_type_string();
     if (type_name != "float")
     {
@@ -74,7 +90,7 @@ void runtime::he::kernel::add(const vector<shared_ptr<seal::Plaintext>>& arg0,
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
     {
-        auto evaluator = he_backend->get_evaluator();
+        auto evaluator = he_seal_backend->get_evaluator();
         float x, y;
         he_backend->decode(&x, *arg0[i], type);
         he_backend->decode(&y, *arg1[i], type);
@@ -88,7 +104,12 @@ void runtime::he::kernel::scalar_add(const shared_ptr<seal::Ciphertext>& arg0,
                                      shared_ptr<seal::Ciphertext>& out,
                                      shared_ptr<HEBackend> he_backend)
 {
-    he_backend->get_evaluator()->add(*arg0, *arg1, *out);
+	auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(he_backend);
+	if (!he_seal_backend)
+	{
+		throw ngraph_error("HE backend not seal type");
+	}
+    he_seal_backend->get_evaluator()->add(*arg0, *arg1, *out);
 }
 
 void runtime::he::kernel::scalar_add(const shared_ptr<seal::Plaintext>& arg0,
@@ -97,7 +118,6 @@ void runtime::he::kernel::scalar_add(const shared_ptr<seal::Plaintext>& arg0,
                                      const element::Type& type,
                                      shared_ptr<HEBackend> he_backend)
 {
-    auto evaluator = he_backend->get_evaluator();
     float x, y;
     he_backend->decode(&x, *arg0, type);
     he_backend->decode(&y, *arg1, type);

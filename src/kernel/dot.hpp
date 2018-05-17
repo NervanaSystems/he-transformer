@@ -19,6 +19,7 @@
 #include "kernel/add.hpp"
 #include "kernel/multiply.hpp"
 #include "ngraph/coordinate_transform.hpp"
+#include "he_seal_backend.hpp"
 #include "seal/seal.h"
 
 namespace ngraph
@@ -101,6 +102,12 @@ void ngraph::runtime::he::kernel::dot_template(const vector<shared_ptr<S>>& arg0
                                                const element::Type& type,
                                                shared_ptr<HEBackend> he_backend)
 {
+    auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(he_backend);
+    if (!he_seal_backend)
+    {
+        throw ngraph_error("HE backend not seal type");
+    }
+
     // Get the sizes of the dot axes. It's easiest to pull them from arg1 because they're
     // right up front.
     Shape dot_axis_sizes(reduction_axes_count);
@@ -177,7 +184,7 @@ void ngraph::runtime::he::kernel::dot_template(const vector<shared_ptr<S>>& arg0
         std::copy(arg1_projected_coord.begin(), arg1_projected_coord.end(), out_coord_it);
 
         // Zero out to start the sum
-        std::shared_ptr<seal::Ciphertext> sum = he_backend->create_valued_ciphertext(0, type, pool);
+        std::shared_ptr<seal::Ciphertext> sum = he_seal_backend->create_valued_ciphertext(0, type, pool);
 
         size_t out_index = output_transform.index(out_coord);
 
@@ -201,11 +208,11 @@ void ngraph::runtime::he::kernel::dot_template(const vector<shared_ptr<S>>& arg0
             auto arg0_text = arg0[arg0_transform.index(arg0_coord)];
             auto arg1_text = arg1[arg1_transform.index(arg1_coord)];
 
-            auto prod = he_backend->create_empty_ciphertext(pool);
+            auto prod = he_seal_backend->create_empty_ciphertext(pool);
 
             runtime::he::kernel::scalar_multiply(
-                arg0_text, arg1_text, prod, type, he_backend, pool);
-            runtime::he::kernel::scalar_add(sum, prod, sum, he_backend);
+                arg0_text, arg1_text, prod, type, he_seal_backend, pool);
+            runtime::he::kernel::scalar_add(sum, prod, sum, he_seal_backend);
         }
 
         // Write the sum back.

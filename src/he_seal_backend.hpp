@@ -22,6 +22,8 @@
 #include "ngraph/runtime/backend.hpp"
 #include "seal/seal.h"
 #include "seal_parameter.hpp"
+#include "he_backend.hpp"
+#include "he_seal_backend.hpp"
 
 namespace ngraph
 {
@@ -35,14 +37,15 @@ namespace ngraph
             class HETensorView;
             class HEPlainTensorView;
             class HECipherTensorView;
+            class HEBackend;
 
-            class HESealBackend : public runtime::HEBackend,
+            class HESealBackend : public HEBackend
             {
             public:
                 HESealBackend();
                 HESealBackend(const runtime::he::HEParameter& hep);
                 HESealBackend(HESealBackend& he_backend) = default;
-                ~HEBackend();
+                ~HESealBackend();
 
                 std::shared_ptr<runtime::TensorView>
                     create_tensor(const element::Type& element_type, const Shape& shape) override;
@@ -56,26 +59,26 @@ namespace ngraph
                     create_plain_tensor(const element::Type& element_type, const Shape& shape);
 
                 // Create scalar text with memory pool
-                std::shared_ptr<he::Ciphertext>
+                std::shared_ptr<he::HECiphertext>
                     create_valued_ciphertext(float value,
                                              const element::Type& element_type,
                                              const seal::MemoryPoolHandle& pool) const;
-                std::shared_ptr<he::Ciphertext>
+                std::shared_ptr<he::HECiphertext>
                     create_empty_ciphertext(const seal::MemoryPoolHandle& pool) const;
-                std::shared_ptr<he::Plaintext>
+                std::shared_ptr<he::HEPlaintext>
                     create_valued_plaintext(float value,
                                             const element::Type& element_type,
                                             const seal::MemoryPoolHandle& pool) const;
-                std::shared_ptr<he::Plaintext>
+                std::shared_ptr<he::HEPlaintext>
                     create_empty_plaintext(const seal::MemoryPoolHandle& pool) const;
 
                 // Create scalar text without memory pool
-                std::shared_ptr<he::Ciphertext>
+                std::shared_ptr<he::HECiphertext>
                     create_valued_ciphertext(float value, const element::Type& element_type) const;
-                std::shared_ptr<he::Ciphertext> create_empty_ciphertext() const;
-                std::shared_ptr<he::Plaintext>
+                std::shared_ptr<he::HECiphertext> create_empty_ciphertext() const;
+                std::shared_ptr<he::HEPlaintext>
                     create_valued_plaintext(float value, const element::Type& element_type) const;
-                std::shared_ptr<he::Plaintext> create_empty_plaintext() const;
+                std::shared_ptr<he::HEPlaintext> create_empty_plaintext() const;
 
                 // Create TensorView of the same value
                 std::shared_ptr<runtime::TensorView> create_valued_tensor(
@@ -93,13 +96,13 @@ namespace ngraph
 
                 void remove_compiled_function(std::shared_ptr<Function> func) override;
 
-                void encode(he::Plaintext& output, const void* input, const element::Type& type);
+                void encode(he::HEPlaintext& output, const void* input, const element::Type& type);
 
-                void decode(void* output, const he::Plaintext& input, const element::Type& type);
+                void decode(void* output, const he::HEPlaintext& input, const element::Type& type);
 
-                void encrypt(he::Ciphertext& output, const he::Plaintext& input);
+                void encrypt(he::HECiphertext& output, const he::HEPlaintext& input);
 
-                void decrypt(he::Plaintext& output, const he::Ciphertext& input);
+                void decrypt(he::HEPlaintext& output, const he::HECiphertext& input);
 
                 void check_noise_budget(
                     const vector<shared_ptr<runtime::he::HETensorView>>& tvs) const;

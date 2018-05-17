@@ -18,31 +18,42 @@
 
 #include "he_backend.hpp"
 #include "kernel/subtract.hpp"
+#include "he_seal_backend.hpp"
 #include "seal/seal.h"
 
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::subtract(const vector<shared_ptr<seal::Ciphertext>>& arg0,
-                                   const vector<shared_ptr<seal::Ciphertext>>& arg1,
-                                   vector<shared_ptr<seal::Ciphertext>>& out,
+void runtime::he::kernel::subtract(const vector<shared_ptr<he::HECiphertext>>& arg0,
+                                   const vector<shared_ptr<he::HECiphertext>>& arg1,
+                                   vector<shared_ptr<he::HECiphertext>>& out,
                                    shared_ptr<HEBackend> he_backend,
                                    size_t count)
 {
+    auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(he_backend);
+    if (!he_seal_backend)
+    {
+        throw ngraph_error("HE backend not seal type");
+    }
     for (size_t i = 0; i < count; ++i)
     {
-        he_backend->get_evaluator()->sub(*arg0[i], *arg1[i], *out[i]);
+        he_seal_backend->get_evaluator()->sub(*arg0[i], *arg1[i], *out[i]);
     }
 }
 
-void runtime::he::kernel::subtract(const vector<shared_ptr<seal::Ciphertext>>& arg0,
-                                   const vector<shared_ptr<seal::Plaintext>>& arg1,
-                                   vector<shared_ptr<seal::Ciphertext>>& out,
+void runtime::he::kernel::subtract(const vector<shared_ptr<he::HECiphertext>>& arg0,
+                                   const vector<shared_ptr<he::HEPlaintext>>& arg1,
+                                   vector<shared_ptr<he::HECiphertext>>& out,
                                    shared_ptr<HEBackend> he_backend,
                                    size_t count)
 {
+	auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(he_backend);
+	if (!he_seal_backend)
+	{
+		throw ngraph_error("HE backend not seal type");
+	}
     for (size_t i = 0; i < count; ++i)
     {
-        he_backend->get_evaluator()->sub_plain(*arg0[i], *arg1[i], *out[i]);
+        he_seal_backend->get_evaluator()->sub_plain(*arg0[i], *arg1[i], *out[i]);
     }
 }

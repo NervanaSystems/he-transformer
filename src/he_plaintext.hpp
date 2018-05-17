@@ -16,33 +16,19 @@
 
 #pragma once
 
-#include <vector>
-#include "seal/seal.h"
+#include <cstdint>
 
 namespace ngraph
 {
-    class Node;
-
-    namespace element
-    {
-        class Type;
-    }
-
     namespace runtime
     {
         namespace he
         {
-            class HEBackend;
-            class HEPlaintext;
-
-            namespace kernel
+            class HEPlaintext
             {
-                void constant(vector<shared_ptr<he::HEPlaintext>>& out,
-                              const element::Type& type,
-                              const void* data_ptr,
-                              shared_ptr<HEBackend> he_backend,
-                              size_t count);
-            }
+            public:
+                HEPlaintext();
+            };
         }
     }
 }

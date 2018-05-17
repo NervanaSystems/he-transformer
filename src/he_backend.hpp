@@ -21,6 +21,8 @@
 
 #include "ngraph/runtime/backend.hpp"
 #include "he_parameter.hpp"
+#include "he_ciphertext.hpp"
+#include "he_plaintext.hpp"
 
 namespace ngraph
 {
@@ -34,6 +36,7 @@ namespace ngraph
             class HETensorView;
             class HEPlainTensorView;
             class HECipherTensorView;
+            class HECiphertext;
 
             class HEBackend : public runtime::Backend,
                               public std::enable_shared_from_this<HEBackend>
@@ -42,7 +45,7 @@ namespace ngraph
                 HEBackend();
                 HEBackend(const runtime::he::HEParameter& hep);
                 HEBackend(HEBackend& he_backend) = default;
-                ~HEBackend() = virtual;
+                virtual ~HEBackend();
 
                 std::shared_ptr<runtime::TensorView>
                     create_tensor(const element::Type& element_type, const Shape& shape) override;
@@ -56,15 +59,15 @@ namespace ngraph
                     create_plain_tensor(const element::Type& element_type, const Shape& shape);
 
                 // Create scalar text with memory pool
-                std::shared_ptr<he::Ciphertext>
+                std::shared_ptr<he::HECiphertext>
                     create_valued_ciphertext(float value,
-                                             const element::Type& element_type) const;,
-                std::shared_ptr<he::Ciphertext>
+                                             const element::Type& element_type) const;
+                std::shared_ptr<he::HECiphertext>
                     create_empty_ciphertext() const;
-                std::shared_ptr<he::Plaintext>
+                std::shared_ptr<he::HEPlaintext>
                     create_valued_plaintext(float value,
                                             const element::Type& element_type) const;
-                std::shared_ptr<he::Plaintext>
+                std::shared_ptr<he::HEPlaintext>
                     create_empty_plaintext() const;
 
                 // Create TensorView of the same value
@@ -83,16 +86,13 @@ namespace ngraph
 
                 void remove_compiled_function(std::shared_ptr<Function> func) override;
 
-                void encode(he::Plaintext& output, const void* input, const element::Type& type);
+                void encode(he::HEPlaintext& output, const void* input, const element::Type& type);
 
-                void decode(void* output, const he::Plaintext& input, const element::Type& type);
+                void decode(void* output, const he::HEPlaintext& input, const element::Type& type);
 
-                void encrypt(he::Ciphertext& output, const he::Plaintext& input);
+                void encrypt(he::HECiphertext& output, const he::HEPlaintext& input);
 
-                void decrypt(he::Plaintext& output, const he::Ciphertext& input);
-
-                void check_noise_budget(
-                    const vector<shared_ptr<runtime::he::HETensorView>>& tvs) const;
+                void decrypt(he::HEPlaintext& output, const he::HECiphertext& input);
 
                 void enable_performance_data(std::shared_ptr<Function> func, bool enable) override;
                 std::vector<PerformanceCounter>

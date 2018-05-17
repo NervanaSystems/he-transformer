@@ -35,7 +35,7 @@ runtime::he::HECipherTensorView::HECipherTensorView(const element::Type& element
     m_cipher_texts.resize(m_num_elements);
     for (size_t i = 0; i < m_num_elements; ++i)
     {
-        m_cipher_texts[i] = make_shared<seal::Ciphertext>();
+        m_cipher_texts[i] = make_shared<he::HECiphertext>();
     }
 }
 
@@ -55,7 +55,7 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
     {
         const void* src_with_offset = (void*)((char*)source);
         size_t dst_index = dst_start_index;
-        seal::Plaintext p;
+        he::HEPlaintext p;
         m_he_backend->encode(p, src_with_offset, type);
         m_he_backend->encrypt(*(m_cipher_texts[dst_index]), p);
     }
@@ -66,7 +66,7 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
         {
             const void* src_with_offset = (void*)((char*)source + i * type.size());
             size_t dst_index = dst_start_index + i;
-            seal::Plaintext p;
+            he::HEPlaintext p;
             m_he_backend->encode(p, src_with_offset, type);
             m_he_backend->encrypt(*(m_cipher_texts[dst_index]), p);
         }
@@ -84,7 +84,7 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
     {
         void* dst_with_offset = (void*)((char*)target);
         size_t src_index = src_start_index;
-        seal::Plaintext p;
+        he::HEPlaintext p;
         m_he_backend->decrypt(p, *(m_cipher_texts[src_index]));
         m_he_backend->decode(dst_with_offset, p, type);
     }
@@ -95,7 +95,7 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
         {
             void* dst_with_offset = (void*)((char*)target + i * type.size());
             size_t src_index = src_start_index + i;
-            seal::Plaintext p;
+            he::HEPlaintext p;
             m_he_backend->decrypt(p, *(m_cipher_texts[src_index]));
             m_he_backend->decode(dst_with_offset, p, type);
         }

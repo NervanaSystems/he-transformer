@@ -20,12 +20,14 @@
 #include "kernel/result.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/seal.h"
+#include "he_ciphertext.hpp"
+#include "he_plaintext.hpp"
 
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::result(const vector<shared_ptr<seal::Ciphertext>>& arg,
-                                 vector<shared_ptr<seal::Ciphertext>>& out,
+void runtime::he::kernel::result(const vector<shared_ptr<he::HECiphertext>>& arg,
+                                 vector<shared_ptr<he::HECiphertext>>& out,
                                  size_t count)
 {
     for (size_t i = 0; i < count; ++i)
@@ -34,8 +36,8 @@ void runtime::he::kernel::result(const vector<shared_ptr<seal::Ciphertext>>& arg
     }
 }
 
-void runtime::he::kernel::result(const vector<shared_ptr<seal::Plaintext>>& arg,
-                                 vector<shared_ptr<seal::Plaintext>>& out,
+void runtime::he::kernel::result(const vector<shared_ptr<he::HEPlaintext>>& arg,
+                                 vector<shared_ptr<he::HEPlaintext>>& out,
                                  size_t count)
 {
     for (size_t i = 0; i < count; ++i)
@@ -44,8 +46,8 @@ void runtime::he::kernel::result(const vector<shared_ptr<seal::Plaintext>>& arg,
     }
 }
 
-void runtime::he::kernel::result(const vector<shared_ptr<seal::Ciphertext>>& arg,
-                                 vector<shared_ptr<seal::Plaintext>>& out,
+void runtime::he::kernel::result(const vector<shared_ptr<he::HECiphertext>>& arg,
+                                 vector<shared_ptr<he::HEPlaintext>>& out,
                                  size_t count,
                                  const element::Type& element_type,
                                  const shared_ptr<HEBackend>& he_backend)
@@ -53,8 +55,8 @@ void runtime::he::kernel::result(const vector<shared_ptr<seal::Ciphertext>>& arg
     throw ngraph_error("Result plaintext to ciphertext unimplemented");
 }
 
-void runtime::he::kernel::result(const vector<shared_ptr<seal::Plaintext>>& arg,
-                                 vector<shared_ptr<seal::Ciphertext>>& out,
+void runtime::he::kernel::result(const vector<shared_ptr<he::HEPlaintext>>& arg,
+                                 vector<shared_ptr<he::HECiphertext>>& out,
                                  size_t count,
                                  const shared_ptr<HEBackend>& he_backend)
 {

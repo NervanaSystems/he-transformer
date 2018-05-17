@@ -14,31 +14,14 @@
 * limitations under the License.
 *******************************************************************************/
 
+#include <stack>
 #include <vector>
 
-#include "he_backend.hpp"
-#include "kernel/constant.hpp"
-#include "ngraph/node.hpp"
-#include "ngraph/type/element_type.hpp"
-#include "seal/seal.h"
+#include "he_ciphertext.hpp"
 
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::constant(vector<shared_ptr<he::HEPlaintext>>& out,
-                                   const element::Type& type,
-                                   const void* data_ptr,
-                                   shared_ptr<HEBackend> he_backend,
-                                   size_t count)
+runtime::he::HECiphertext::HECiphertext()
 {
-    size_t type_byte_size = type.size();
-    if (out.size() != count)
-    {
-        throw ngraph_error("out.size() != count for constant op");
-    }
-    for (size_t i = 0; i < count; ++i)
-    {
-        const void* src_with_offset = (void*)((char*)data_ptr + i * type.size());
-        he_backend->encode(*(out[i]), src_with_offset, type);
-    }
 }

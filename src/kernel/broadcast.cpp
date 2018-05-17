@@ -20,6 +20,8 @@
 #include "kernel/broadcast.hpp"
 #include "ngraph/coordinate_transform.hpp"
 #include "seal/seal.h"
+#include "he_plaintext.hpp"
+#include "he_ciphertext.hpp"
 
 using namespace std;
 using namespace ngraph;
@@ -41,26 +43,26 @@ void runtime::he::kernel::broadcast(const vector<shared_ptr<S>>& arg,
     }
 } */
 
-void runtime::he::kernel::broadcast(const vector<shared_ptr<seal::Ciphertext>>& arg,
-                                    vector<shared_ptr<seal::Ciphertext>>& out,
+void runtime::he::kernel::broadcast(const vector<shared_ptr<he::HECiphertext>>& arg,
+                                    vector<shared_ptr<he::HECiphertext>>& out,
                                     const Shape& in_shape,
                                     const Shape& out_shape,
                                     const AxisSet& broadcast_axes)
 {
-    broadcast<seal::Ciphertext, seal::Ciphertext>(arg, out, in_shape, out_shape, broadcast_axes);
+    broadcast<he::HECiphertext, he::HECiphertext>(arg, out, in_shape, out_shape, broadcast_axes);
 }
 
-void runtime::he::kernel::broadcast(const vector<shared_ptr<seal::Plaintext>>& arg,
-                                    vector<shared_ptr<seal::Plaintext>>& out,
+void runtime::he::kernel::broadcast(const vector<shared_ptr<he::HEPlaintext>>& arg,
+                                    vector<shared_ptr<he::HEPlaintext>>& out,
                                     const Shape& in_shape,
                                     const Shape& out_shape,
                                     const AxisSet& broadcast_axes)
 {
-    broadcast<seal::Plaintext, seal::Plaintext>(arg, out, in_shape, out_shape, broadcast_axes);
+    broadcast<he::HEPlaintext, he::HEPlaintext>(arg, out, in_shape, out_shape, broadcast_axes);
 }
 
-void runtime::he::kernel::broadcast(const vector<shared_ptr<seal::Plaintext>>& arg,
-                                    vector<shared_ptr<seal::Ciphertext>>& out,
+void runtime::he::kernel::broadcast(const vector<shared_ptr<he::HEPlaintext>>& arg,
+                                    vector<shared_ptr<he::HECiphertext>>& out,
                                     const Shape& in_shape,
                                     const Shape& out_shape,
                                     const AxisSet& broadcast_axes,
@@ -72,8 +74,8 @@ void runtime::he::kernel::broadcast(const vector<shared_ptr<seal::Plaintext>>& a
     {
         Coordinate input_coord = project(output_coord, broadcast_axes);
 
-        seal::Ciphertext c;
+        he::HECiphertext c;
         he_backend->encrypt(c, *arg[input_transform.index(input_coord)]);
-        out[output_transform.index(output_coord)] = make_shared<seal::Ciphertext>(c);
+        out[output_transform.index(output_coord)] = make_shared<he::HECiphertext>(c);
     }
 }

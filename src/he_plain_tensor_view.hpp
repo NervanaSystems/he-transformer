@@ -22,6 +22,7 @@
 #include "ngraph/runtime/tensor_view.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/seal.h"
+#include "he_plaintext.hpp"
 
 namespace ngraph
 {
@@ -30,6 +31,7 @@ namespace ngraph
         namespace he
         {
             class HEBackend;
+            class HEPlaintext;
 
             class HEPlainTensorView : public HETensorView
             {
@@ -54,14 +56,14 @@ namespace ngraph
                 /// @param n Number of bytes to read, must be integral number of elements.
                 void read(void* p, size_t tensor_offset, size_t n) const;
 
-                inline vector<shared_ptr<seal::Plaintext>>& get_elements() { return m_plain_texts; }
-                inline shared_ptr<seal::Plaintext>& get_element(size_t i)
+                inline vector<shared_ptr<he::HEPlaintext>>& get_elements() { return m_plain_texts; }
+                inline shared_ptr<he::HEPlaintext>& get_element(size_t i)
                 {
                     return m_plain_texts[i];
                 }
 
             private:
-                std::vector<shared_ptr<seal::Plaintext>> m_plain_texts;
+                std::vector<shared_ptr<he::HEPlaintext>> m_plain_texts;
                 size_t m_num_elements;
             };
         }
