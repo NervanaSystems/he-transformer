@@ -18,8 +18,11 @@
 set (HE_SRC
     he_backend.cpp
     he_call_frame.cpp
+    he_context.cpp
     he_tensor_view.cpp
     he_cipher_tensor_view.cpp
+    he_seal_parameter.cpp
+    he_parameter.cpp
     he_plain_tensor_view.cpp
     int_call_frame.cpp
     seal_parameter.cpp

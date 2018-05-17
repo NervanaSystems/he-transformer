@@ -37,7 +37,7 @@ ExternalProject_Add(
                -DNGRAPH_UNIT_TEST_ENABLE=FALSE
                -DNGRAPH_TOOLS_ENABLE=FALSE
     BUILD_BYPRODUCTS ${NGRAPH_CMAKE_PREFIX}
-    BUILD_ALWAYS 1
+    #BUILD_ALWAYS 1
 )
 
 ExternalProject_Get_Property(ext_ngraph source_dir)
