@@ -23,6 +23,7 @@
 
 using namespace std;
 using namespace ngraph;
+using namespace heaan;
 
 TEST(heaan_example, trivial)
 {
