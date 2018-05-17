@@ -60,6 +60,6 @@ add_custom_command(
 set(SRC ${HE_TEST_SRC} ${NGRAPH_TEST_SRC})
 add_executable(unit-test ${SRC})
 
-target_link_libraries(unit-test he_backend seal heaan ngraph_test_util libgtest pthread)
+target_link_libraries(unit-test he_backend seal heaan ntl ngraph_test_util libgtest pthread)
 
 add_dependencies(unit-test he_backend ext_seal ext_heaan ext_ngraph ext_gtest)

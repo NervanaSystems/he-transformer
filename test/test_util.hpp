@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <complex>
 #include <string>
 #include <vector>
 
@@ -31,3 +32,20 @@ protected:
 };
 
 std::vector<float> read_constant(const std::string filename);
+
+template <typename T>
+bool all_close(const std::vector<std::complex<T>>& a,
+               const std::vector<std::complex<T>>& b,
+               T atol = static_cast<T>(1e-5))
+{
+    assert(a.size() == b.size());
+    for (size_t i = 0; i < a.size(); ++i)
+    {
+        if ((std::abs(a[i].real() - b[i].real()) > atol) ||
+            std::abs(a[i].imag() - b[i].imag()) > atol)
+        {
+            return false;
+        }
+    }
+    return true;
+}
