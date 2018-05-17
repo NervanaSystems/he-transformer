@@ -39,7 +39,7 @@ namespace ngraph
                 template <typename S, typename T>
                 void dot_template(const vector<shared_ptr<S>>& arg0,
                                   const vector<shared_ptr<T>>& arg1,
-                                  vector<shared_ptr<seal::Ciphertext>>& out,
+                                  vector<shared_ptr<he::HECiphertext>>& out,
                                   const Shape& arg0_shape,
                                   const Shape& arg1_shape,
                                   const Shape& out_shape,
@@ -47,9 +47,9 @@ namespace ngraph
                                   const element::Type& type,
                                   shared_ptr<HEBackend> he_backend);
 
-                void dot(const vector<shared_ptr<seal::Ciphertext>>& arg0,
-                         const vector<shared_ptr<seal::Ciphertext>>& arg1,
-                         vector<shared_ptr<seal::Ciphertext>>& out,
+                void dot(const vector<shared_ptr<he::HECiphertext>>& arg0,
+                         const vector<shared_ptr<he::HECiphertext>>& arg1,
+                         vector<shared_ptr<he::HECiphertext>>& out,
                          const Shape& arg0_shape,
                          const Shape& arg1_shape,
                          const Shape& out_shape,
@@ -57,9 +57,9 @@ namespace ngraph
                          const element::Type& type,
                          shared_ptr<HEBackend> he_backend);
 
-                void dot(const vector<shared_ptr<seal::Ciphertext>>& arg0,
-                         const vector<shared_ptr<seal::Plaintext>>& arg1,
-                         vector<shared_ptr<seal::Ciphertext>>& out,
+                void dot(const vector<shared_ptr<he::HECiphertext>>& arg0,
+                         const vector<shared_ptr<he::HEPlaintext>>& arg1,
+                         vector<shared_ptr<he::HECiphertext>>& out,
                          const Shape& arg0_shape,
                          const Shape& arg1_shape,
                          const Shape& out_shape,
@@ -67,9 +67,9 @@ namespace ngraph
                          const element::Type& type,
                          shared_ptr<HEBackend> he_backend);
 
-                void dot(const vector<shared_ptr<seal::Plaintext>>& arg0,
-                         const vector<shared_ptr<seal::Ciphertext>>& arg1,
-                         vector<shared_ptr<seal::Ciphertext>>& out,
+                void dot(const vector<shared_ptr<he::HEPlaintext>>& arg0,
+                         const vector<shared_ptr<he::HECiphertext>>& arg1,
+                         vector<shared_ptr<he::HECiphertext>>& out,
                          const Shape& arg0_shape,
                          const Shape& arg1_shape,
                          const Shape& out_shape,
@@ -77,9 +77,9 @@ namespace ngraph
                          const element::Type& type,
                          shared_ptr<HEBackend> he_backend);
 
-                void dot(const vector<shared_ptr<seal::Plaintext>>& arg0,
-                         const vector<shared_ptr<seal::Plaintext>>& arg1,
-                         vector<shared_ptr<seal::Plaintext>>& out,
+                void dot(const vector<shared_ptr<he::HEPlaintext>>& arg0,
+                         const vector<shared_ptr<he::HEPlaintext>>& arg1,
+                         vector<shared_ptr<he::HEPlaintext>>& out,
                          const Shape& arg0_shape,
                          const Shape& arg1_shape,
                          const Shape& out_shape,
@@ -94,7 +94,7 @@ namespace ngraph
 template <typename S, typename T>
 void ngraph::runtime::he::kernel::dot_template(const vector<shared_ptr<S>>& arg0,
                                                const vector<shared_ptr<T>>& arg1,
-                                               vector<shared_ptr<seal::Ciphertext>>& out,
+                                               vector<shared_ptr<he::HECiphertext>>& out,
                                                const Shape& arg0_shape,
                                                const Shape& arg1_shape,
                                                const Shape& out_shape,
@@ -184,7 +184,7 @@ void ngraph::runtime::he::kernel::dot_template(const vector<shared_ptr<S>>& arg0
         std::copy(arg1_projected_coord.begin(), arg1_projected_coord.end(), out_coord_it);
 
         // Zero out to start the sum
-        std::shared_ptr<seal::Ciphertext> sum = he_seal_backend->create_valued_ciphertext(0, type, pool);
+        std::shared_ptr<he::HECiphertext> sum = he_seal_backend->create_valued_ciphertext(0, type, pool);
 
         size_t out_index = output_transform.index(out_coord);
 
@@ -211,8 +211,8 @@ void ngraph::runtime::he::kernel::dot_template(const vector<shared_ptr<S>>& arg0
             auto prod = he_seal_backend->create_empty_ciphertext(pool);
 
             runtime::he::kernel::scalar_multiply(
-                arg0_text, arg1_text, prod, type, he_seal_backend, pool);
-            runtime::he::kernel::scalar_add(sum, prod, sum, he_seal_backend);
+                arg0_text, arg1_text, prod, type, he_backend, pool);
+            runtime::he::kernel::scalar_add(sum, prod, sum, he_backend);
         }
 
         // Write the sum back.

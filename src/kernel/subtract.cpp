@@ -37,7 +37,17 @@ void runtime::he::kernel::subtract(const vector<shared_ptr<he::HECiphertext>>& a
     }
     for (size_t i = 0; i < count; ++i)
     {
-        he_seal_backend->get_evaluator()->sub(*arg0[i], *arg1[i], *out[i]);
+        shared_ptr<seal::Ciphertext> arg0i = dynamic_pointer_cast<seal::Ciphertext>(arg0[i]);
+        shared_ptr<seal::Ciphertext> arg1i = dynamic_pointer_cast<seal::Ciphertext>(arg1[i]);
+        shared_ptr<seal::Ciphertext> out0i = dynamic_pointer_cast<seal::Ciphertext>(out0[i]);
+        if (arg0i != nullptr && arg1i != nullptr && out0i != nullptr)
+        {
+            he_seal_backend->get_evaluator()->sub(*arg0[i], *arg1[i], *out[i]);
+        }
+        else
+        {
+            thrown ngraph_error("HE seal backend passed non-seal ciphertexts");
+        }
     }
 }
 

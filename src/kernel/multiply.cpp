@@ -20,6 +20,7 @@
 #include "kernel/multiply.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/seal.h"
+#include "he_seal_backend.hpp"
 
 using namespace std;
 using namespace ngraph;
@@ -44,7 +45,7 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<he::HECiphertext>& ar
                                           shared_ptr<he::HECiphertext>& out,
                                           const element::Type& type,
                                           shared_ptr<HEBackend> he_backend,
-                                          const he::HEMemoryPoolHandle& pool)
+                                          const seal::MemoryPoolHandle& pool)
 {
     auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(he_backend);
     if (!he_seal_backend)

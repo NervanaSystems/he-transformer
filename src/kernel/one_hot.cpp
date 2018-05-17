@@ -38,8 +38,8 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<he::HECiphertext>>& ar
                                   shared_ptr<HEBackend>& he_backend)
 {
     // Get 0 and 1 cipher text
-    shared_ptr<he::Ciphertext> zero_ciphertext = he_backend->create_valued_ciphertext(0, type);
-    shared_ptr<he::Ciphertext> one_ciphertext = he_backend->create_valued_ciphertext(1, type);
+    shared_ptr<he::HECiphertext> zero_ciphertext = he_backend->create_valued_ciphertext(0, type);
+    shared_ptr<he::HECiphertext> one_ciphertext = he_backend->create_valued_ciphertext(1, type);
 
     // Step 1: Zero out the output. We can simply copy the shared_ptr pointing to a zero
     // ciphertext to all output locations.
@@ -57,7 +57,7 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<he::HECiphertext>>& ar
         shared_ptr<he::HECiphertext> val = arg[input_transform.index(input_coord)];
 
         // TODO: We are not allowed to decrypt! Pass in one-hot encoded inputs
-        he::Plaintext plain_val;
+        he::HEPlaintext plain_val;
         he_backend->decrypt(plain_val, *val);
         size_t one_hot_pos;
 

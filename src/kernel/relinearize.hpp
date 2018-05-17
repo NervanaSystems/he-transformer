@@ -29,13 +29,13 @@ namespace ngraph
     {
         namespace he
         {
-            class HEBackend;
+            class HESealBackend;
 
             namespace kernel
             {
                 void relinearize(const vector<shared_ptr<seal::Ciphertext>>& arg,
                                  vector<shared_ptr<seal::Ciphertext>>& out,
-                                 shared_ptr<HEBackend> he_backend,
+                                 shared_ptr<HESealBackend> he_seal_backend,
                                  size_t count);
             }
         }
