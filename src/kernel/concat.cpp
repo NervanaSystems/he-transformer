@@ -19,13 +19,14 @@
 #include "he_backend.hpp"
 #include "kernel/concat.hpp"
 #include "ngraph/coordinate_transform.hpp"
+#include "he_ciphertext.hpp"
 #include "seal/seal.h"
 
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::concat(const vector<vector<shared_ptr<seal::Ciphertext>>>& args,
-                                 vector<shared_ptr<seal::Ciphertext>>& out,
+void runtime::he::kernel::concat(const vector<vector<shared_ptr<he::HECiphertext>>>& args,
+                                 vector<shared_ptr<he::HECiphertext>>& out,
                                  const vector<Shape>& in_shapes,
                                  const Shape& out_shape,
                                  size_t concatenation_axis)

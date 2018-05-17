@@ -94,6 +94,8 @@ namespace ngraph
 
                 void decrypt(he::HEPlaintext& output, const he::HECiphertext& input);
 
+                 void check_noise_budget(const std::vector<std::shared_ptr<runtime::he::HETensorView>>& tvs) const;
+
                 void enable_performance_data(std::shared_ptr<Function> func, bool enable) override;
                 std::vector<PerformanceCounter>
                     get_performance_data(std::shared_ptr<Function> func) const override;

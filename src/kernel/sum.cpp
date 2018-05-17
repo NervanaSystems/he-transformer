@@ -19,10 +19,8 @@
 #include "ngraph/type/element_type.hpp"
 
 #include "he_backend.hpp"
+#include "he_ciphertext.hpp"
 #include "he_cipher_tensor_view.hpp"
-#include "he_cipher_tensor_view.hpp"
-#include "he_plain_tensor_view.hpp"
-#include "he_plain_tensor_view.hpp"
 #include "kernel/add.hpp"
 #include "kernel/sum.hpp"
 #include "seal/seal.h"
@@ -30,8 +28,8 @@
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::sum(const vector<shared_ptr<seal::Ciphertext>>& arg,
-                              vector<shared_ptr<seal::Ciphertext>>& out,
+void runtime::he::kernel::sum(const vector<shared_ptr<he::HECiphertext>>& arg,
+                              vector<shared_ptr<he::HECiphertext>>& out,
                               const Shape& in_shape,
                               const Shape& out_shape,
                               const AxisSet& reduction_axes,
@@ -44,7 +42,7 @@ void runtime::he::kernel::sum(const vector<shared_ptr<seal::Ciphertext>>& arg,
         he_backend->create_valued_tensor(0., type, out_shape));
 
     size_t zero_ind = 0;
-    vector<vector<seal::Ciphertext>> output_summands;
+    vector<vector<he::HECiphertext>> output_summands;
     for (const Coordinate& output_coord : output_transform)
     {
         out[output_transform.index(output_coord)] = zero_tv->get_element(zero_ind);
@@ -59,7 +57,7 @@ void runtime::he::kernel::sum(const vector<shared_ptr<seal::Ciphertext>>& arg,
         Coordinate output_coord = project(input_coord, reduction_axes);
         size_t output_ind = output_transform.index(output_coord);
 
-        shared_ptr<seal::Ciphertext> cipher_out = out[output_ind];
+        shared_ptr<he::HECiphertext> cipher_out = out[output_ind];
 
         output_summands[output_ind].push_back(*arg[input_transform.index(input_coord)]);
 

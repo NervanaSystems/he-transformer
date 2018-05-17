@@ -30,10 +30,11 @@ namespace ngraph
         namespace he
         {
             class HEBackend;
+            class HECiphertext;
             namespace kernel
             {
-                void sum(const vector<shared_ptr<seal::Ciphertext>>& arg,
-                         vector<shared_ptr<seal::Ciphertext>>& out,
+                void sum(const vector<shared_ptr<he::HECiphertext>>& arg,
+                         vector<shared_ptr<he::HECiphertext>>& out,
                          const Shape& in_shape,
                          const Shape& out_shape,
                          const AxisSet& reduction_axes,

@@ -104,9 +104,6 @@ namespace ngraph
 
                 void decrypt(he::HEPlaintext& output, const he::HECiphertext& input);
 
-                void check_noise_budget(
-                    const vector<shared_ptr<runtime::he::HETensorView>>& tvs) const;
-
                 const inline std::shared_ptr<seal::SEALContext> get_context() const
                 {
                     return m_context;

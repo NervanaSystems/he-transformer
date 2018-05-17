@@ -25,9 +25,9 @@
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::add(const vector<shared_ptr<seal::Ciphertext>>& arg0,
-                              const vector<shared_ptr<seal::Ciphertext>>& arg1,
-                              vector<shared_ptr<seal::Ciphertext>>& out,
+void runtime::he::kernel::add(const vector<shared_ptr<he::HECiphertext>>& arg0,
+                              const vector<shared_ptr<he::HECiphertext>>& arg1,
+                              vector<shared_ptr<he::HECiphertext>>& out,
                               shared_ptr<HEBackend> he_backend,
                               size_t count)
 {
@@ -43,9 +43,9 @@ void runtime::he::kernel::add(const vector<shared_ptr<seal::Ciphertext>>& arg0,
     }
 }
 
-void runtime::he::kernel::add(const vector<shared_ptr<seal::Ciphertext>>& arg0,
-                              const vector<shared_ptr<seal::Plaintext>>& arg1,
-                              vector<shared_ptr<seal::Ciphertext>>& out,
+void runtime::he::kernel::add(const vector<shared_ptr<he::HECiphertext>>& arg0,
+                              const vector<shared_ptr<he::HEPlaintext>>& arg1,
+                              vector<shared_ptr<he::HECiphertext>>& out,
                               shared_ptr<HEBackend> he_backend,
                               size_t count)
 {
@@ -61,18 +61,18 @@ void runtime::he::kernel::add(const vector<shared_ptr<seal::Ciphertext>>& arg0,
     }
 }
 
-void runtime::he::kernel::add(const vector<shared_ptr<seal::Plaintext>>& arg0,
-                              const vector<shared_ptr<seal::Ciphertext>>& arg1,
-                              vector<shared_ptr<seal::Ciphertext>>& out,
+void runtime::he::kernel::add(const vector<shared_ptr<he::HEPlaintext>>& arg0,
+                              const vector<shared_ptr<he::HECiphertext>>& arg1,
+                              vector<shared_ptr<he::HECiphertext>>& out,
                               shared_ptr<HEBackend> he_backend,
                               size_t count)
 {
     add(arg1, arg0, out, he_backend, count);
 }
 
-void runtime::he::kernel::add(const vector<shared_ptr<seal::Plaintext>>& arg0,
-                              const vector<shared_ptr<seal::Plaintext>>& arg1,
-                              vector<shared_ptr<seal::Plaintext>>& out,
+void runtime::he::kernel::add(const vector<shared_ptr<he::HEPlaintext>>& arg0,
+                              const vector<shared_ptr<he::HEPlaintext>>& arg1,
+                              vector<shared_ptr<he::HEPlaintext>>& out,
                               const element::Type& type,
                               shared_ptr<HEBackend> he_backend,
                               size_t count)
@@ -99,9 +99,9 @@ void runtime::he::kernel::add(const vector<shared_ptr<seal::Plaintext>>& arg0,
     }
 }
 
-void runtime::he::kernel::scalar_add(const shared_ptr<seal::Ciphertext>& arg0,
-                                     const shared_ptr<seal::Ciphertext>& arg1,
-                                     shared_ptr<seal::Ciphertext>& out,
+void runtime::he::kernel::scalar_add(const shared_ptr<he::HECiphertext>& arg0,
+                                     const shared_ptr<he::HECiphertext>& arg1,
+                                     shared_ptr<he::HECiphertext>& out,
                                      shared_ptr<HEBackend> he_backend)
 {
 	auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(he_backend);
@@ -112,9 +112,9 @@ void runtime::he::kernel::scalar_add(const shared_ptr<seal::Ciphertext>& arg0,
     he_seal_backend->get_evaluator()->add(*arg0, *arg1, *out);
 }
 
-void runtime::he::kernel::scalar_add(const shared_ptr<seal::Plaintext>& arg0,
-                                     const shared_ptr<seal::Plaintext>& arg1,
-                                     shared_ptr<seal::Plaintext>& out,
+void runtime::he::kernel::scalar_add(const shared_ptr<he::HEPlaintext>& arg0,
+                                     const shared_ptr<he::HEPlaintext>& arg1,
+                                     shared_ptr<he::HEPlaintext>& out,
                                      const element::Type& type,
                                      shared_ptr<HEBackend> he_backend)
 {

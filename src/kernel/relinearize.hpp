@@ -17,6 +17,7 @@
 #pragma once
 
 #include "seal/seal.h"
+#include "he_ciphertext.hpp"
 
 namespace ngraph
 {
@@ -30,11 +31,12 @@ namespace ngraph
         namespace he
         {
             class HESealBackend;
+            class HECiphertext;
 
             namespace kernel
             {
-                void relinearize(const vector<shared_ptr<seal::Ciphertext>>& arg,
-                                 vector<shared_ptr<seal::Ciphertext>>& out,
+                void relinearize(const vector<shared_ptr<he::HECiphertext>>& arg,
+                                 vector<shared_ptr<he::HECiphertext>>& out,
                                  shared_ptr<HESealBackend> he_seal_backend,
                                  size_t count);
             }

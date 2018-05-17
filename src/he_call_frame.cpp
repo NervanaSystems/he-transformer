@@ -503,7 +503,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         shared_ptr<op::Concat> concat = dynamic_pointer_cast<op::Concat>(node);
         if (arg0_cipher != nullptr && out0_cipher != nullptr)
         {
-            vector<vector<shared_ptr<seal::Ciphertext>>> in_args;
+            vector<vector<shared_ptr<he::HECiphertext>>> in_args;
             vector<Shape> in_shapes;
             for (shared_ptr<HETensorView> arg : args)
             {
@@ -652,20 +652,28 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     }
     else if (node_op == "Relinearize")
     {
-        if (arg0_cipher != nullptr && out0_cipher != nullptr)
+        if (auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(m_he_backend))
         {
-            NGRAPH_INFO << "Relin? cipher cipehr";
-            runtime::he::kernel::relinearize(arg0_cipher->get_elements(),
-                                             out0_cipher->get_elements(),
-                                             m_he_backend,
-                                             out0_cipher->get_element_count());
+            if (arg0_cipher != nullptr && out0_cipher != nullptr)
+            {
+                NGRAPH_INFO << "Relin? cipher cipehr";
+                runtime::he::kernel::relinearize(arg0_cipher->get_elements(),
+                                                 out0_cipher->get_elements(),
+                                                 he_seal_backend,
+                                                 out0_cipher->get_element_count());
+            }
+            else
+            {
+                NGRAPH_INFO << "arg0 is plaintext? " << (arg0_plain != nullptr)
+                            << ", out0 is plaintext? " << (out0_plain != nullptr);
+                //throw ngraph_error("Input to Relinearize must be ciphertext");
+            }
         }
         else
         {
-            NGRAPH_INFO << "arg0 is plaintext? " << (arg0_plain != nullptr)
-                        << ", out0 is plaintext? " << (out0_plain != nullptr);
-            //throw ngraph_error("Input to Relinearize must be ciphertext");
+            throw ngraph_error("Relinearize backend not seal_he_bakcned");
         }
+
     }
     else if (node_op == "OneHot")
     {

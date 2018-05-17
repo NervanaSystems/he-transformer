@@ -17,6 +17,7 @@
 #pragma once
 
 #include "ngraph/coordinate_transform.hpp"
+#include "he_ciphertext.hpp"
 #include "seal/seal.h"
 
 namespace ngraph
@@ -27,8 +28,8 @@ namespace ngraph
         {
             namespace kernel
             {
-                void concat(const vector<vector<shared_ptr<seal::Ciphertext>>>& args,
-                            vector<shared_ptr<seal::Ciphertext>>& out,
+                void concat(const vector<vector<shared_ptr<he::HECiphertext>>>& args,
+                            vector<shared_ptr<he::HECiphertext>>& out,
                             const std::vector<Shape>& in_shapes,
                             const Shape& out_shape,
                             size_t concatenation_axis);
