@@ -14,8 +14,8 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <ngraph/ngraph.hpp>
 #include "he_parameter.hpp"
+#include <ngraph/ngraph.hpp>
 
 using namespace ngraph;
 using namespace std;

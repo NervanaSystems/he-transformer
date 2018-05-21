@@ -17,8 +17,8 @@
 #pragma once
 
 #include <cstdint>
-#include "seal/seal.h"
 #include "he_plaintext.hpp"
+#include "seal/seal.h"
 
 namespace ngraph
 {

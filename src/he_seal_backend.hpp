@@ -19,11 +19,11 @@
 #include <memory>
 #include <unordered_map>
 
-#include "ngraph/runtime/backend.hpp"
-#include "seal/seal.h"
-#include "he_seal_parameter.hpp"
 #include "he_backend.hpp"
 #include "he_seal_backend.hpp"
+#include "he_seal_parameter.hpp"
+#include "ngraph/runtime/backend.hpp"
+#include "seal/seal.h"
 #include "seal_ciphertext_wrapper.hpp"
 #include "seal_plaintext_wrapper.hpp"
 
@@ -41,7 +41,8 @@ namespace ngraph
             class HECipherTensorView;
             class HEBackend;
 
-            class HESealBackend : public HEBackend, public std::enable_shared_from_this<HESealBackend>
+            class HESealBackend : public HEBackend,
+                                  public std::enable_shared_from_this<HESealBackend>
             {
             public:
                 HESealBackend();
@@ -50,9 +51,10 @@ namespace ngraph
                 HESealBackend(HESealBackend& he_backend) = default;
                 ~HESealBackend();
 
-				void assert_valid_seal_parameter(const std::shared_ptr<runtime::he::HESealParameter> sp);
-				shared_ptr<seal::SEALContext> make_seal_context(const std::shared_ptr<runtime::he::HESealParameter> sp);
-
+                void assert_valid_seal_parameter(
+                    const std::shared_ptr<runtime::he::HESealParameter> sp);
+                shared_ptr<seal::SEALContext>
+                    make_seal_context(const std::shared_ptr<runtime::he::HESealParameter> sp);
 
                 std::shared_ptr<runtime::TensorView>
                     create_tensor(const element::Type& element_type, const Shape& shape) override;
@@ -103,13 +105,19 @@ namespace ngraph
 
                 void remove_compiled_function(std::shared_ptr<Function> func) override;
 
-                void encode(shared_ptr<he::HEPlaintext>& output, const void* input, const element::Type& type);
+                void encode(shared_ptr<he::HEPlaintext>& output,
+                            const void* input,
+                            const element::Type& type);
 
-                void decode(void* output, const std::shared_ptr<he::HEPlaintext> input, const element::Type& type);
+                void decode(void* output,
+                            const std::shared_ptr<he::HEPlaintext> input,
+                            const element::Type& type);
 
-                void encrypt(shared_ptr<he::HECiphertext> output, const std::shared_ptr<he::HEPlaintext> input);
+                void encrypt(shared_ptr<he::HECiphertext> output,
+                             const std::shared_ptr<he::HEPlaintext> input);
 
-                void decrypt(std::shared_ptr<he::HEPlaintext> output, const std::shared_ptr<he::HECiphertext> input);
+                void decrypt(std::shared_ptr<he::HEPlaintext> output,
+                             const std::shared_ptr<he::HECiphertext> input);
 
                 const inline std::shared_ptr<seal::SEALContext> get_context() const
                 {

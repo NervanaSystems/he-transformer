@@ -36,7 +36,6 @@ runtime::he::HEBackend::HEBackend()
 {
     NGRAPH_INFO << "Passing through HEBackend default constructor";
     //throw ngraph_error("HEBackend not implemented");
-
 }
 
 runtime::he::HEBackend::HEBackend(const shared_ptr<runtime::he::HEParameter> hep)
@@ -63,26 +62,26 @@ shared_ptr<runtime::TensorView>
     throw ngraph_error("HE create_plain_tensor unimplemented");
 }
 
-std::shared_ptr<runtime::he::HECiphertext>
+shared_ptr<runtime::he::HECiphertext>
     runtime::he::HEBackend::create_valued_ciphertext(float value,
                                                      const element::Type& element_type) const
 {
     throw ngraph_error("HE create_empty_ciphertext unimplemented");
 }
 
-std::shared_ptr<runtime::he::HECiphertext> runtime::he::HEBackend::create_empty_ciphertext() const
+shared_ptr<runtime::he::HECiphertext> runtime::he::HEBackend::create_empty_ciphertext() const
 {
     throw ngraph_error("HE create_empty_ciphertext unimplemented");
 }
 
-std::shared_ptr<runtime::he::HEPlaintext>
+shared_ptr<runtime::he::HEPlaintext>
     runtime::he::HEBackend::create_valued_plaintext(float value,
                                                     const element::Type& element_type) const
 {
     throw ngraph_error("HE create_valued_plaintext unimplemented");
 }
 
-std::shared_ptr<runtime::he::HEPlaintext> runtime::he::HEBackend::create_empty_plaintext() const
+shared_ptr<runtime::he::HEPlaintext> runtime::he::HEBackend::create_empty_plaintext() const
 {
     throw ngraph_error("HE create_empty_plaintext unimplemented");
 }
@@ -154,19 +153,19 @@ void runtime::he::HEBackend::decode(void* output,
                                     const element::Type& type)
 {
     throw ngraph_error("HEBackend decode unimplemented");
-
 }
 
-void runtime::he::HEBackend::encrypt(shared_ptr<runtime::he::HECiphertext> output, const shared_ptr<runtime::he::HEPlaintext> input)
+void runtime::he::HEBackend::encrypt(shared_ptr<runtime::he::HECiphertext> output,
+                                     const shared_ptr<runtime::he::HEPlaintext> input)
 {
     throw ngraph_error("HEBackend encrypt unimplemented");
 }
 
-void runtime::he::HEBackend::decrypt(runtime::he::HEPlaintext& output, const runtime::he::HECiphertext& input)
+void runtime::he::HEBackend::decrypt(runtime::he::HEPlaintext& output,
+                                     const runtime::he::HECiphertext& input)
 {
     throw ngraph_error("HEBackend decrypt unimplemented");
 }
-
 
 void runtime::he::HEBackend::enable_performance_data(shared_ptr<Function> func, bool enable)
 {

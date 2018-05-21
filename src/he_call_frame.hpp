@@ -68,12 +68,13 @@ namespace ngraph
                                     const std::vector<std::shared_ptr<HETensorView>>& out,
                                     const std::vector<std::shared_ptr<HETensorView>>& args);
 
-                void check_cpu_calls(std::shared_ptr<Function> function,
-                                     const element::Type& type,
-                                     const std::shared_ptr<Node>& op,
-                                     const std::vector<std::shared_ptr<runtime::he::HETensorView>>& outputs,
-                                     const std::vector<std::shared_ptr<runtime::he::HETensorView>>& inputs,
-                                     bool verbose);
+                void check_cpu_calls(
+                    std::shared_ptr<Function> function,
+                    const element::Type& type,
+                    const std::shared_ptr<Node>& op,
+                    const std::vector<std::shared_ptr<runtime::he::HETensorView>>& outputs,
+                    const std::vector<std::shared_ptr<runtime::he::HETensorView>>& inputs,
+                    bool verbose);
 
                 std::unordered_map<std::shared_ptr<Node>, stopwatch> m_timer_map;
             };

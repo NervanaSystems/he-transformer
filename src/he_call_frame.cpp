@@ -244,15 +244,15 @@ void runtime::he::HECallFrame::check_cpu_calls(
     bool verbose)
 {
     runtime::interpreter::INTCallFrame cpu_call_frame(function);
-    std::vector<std::shared_ptr<runtime::HostTensorView>> cpu_inputs;
-    std::vector<std::shared_ptr<runtime::HostTensorView>> cpu_outputs;
-    std::vector<std::shared_ptr<runtime::HostTensorView>> result_outputs;
+    vector<shared_ptr<runtime::HostTensorView>> cpu_inputs;
+    vector<shared_ptr<runtime::HostTensorView>> cpu_outputs;
+    vector<shared_ptr<runtime::HostTensorView>> result_outputs;
 
-    for (std::shared_ptr<runtime::he::HETensorView> he_tv : inputs)
+    for (shared_ptr<runtime::he::HETensorView> he_tv : inputs)
     {
-        std::shared_ptr<HECipherTensorView> cipher_tv =
+        shared_ptr<HECipherTensorView> cipher_tv =
             dynamic_pointer_cast<runtime::he::HECipherTensorView>(he_tv);
-        std::shared_ptr<HEPlainTensorView> plain_tv =
+        shared_ptr<HEPlainTensorView> plain_tv =
             dynamic_pointer_cast<runtime::he::HEPlainTensorView>(he_tv);
 
         const element::Type& type = he_tv->get_tensor_view_layout()->get_element_type();
@@ -275,7 +275,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
         cpu_inputs.push_back(tv);
     }
 
-    for (std::shared_ptr<runtime::he::HETensorView> he_tv : outputs)
+    for (shared_ptr<runtime::he::HETensorView> he_tv : outputs)
     {
         const element::Type& type = he_tv->get_tensor_view_layout()->get_element_type();
         auto shape = he_tv->get_shape();
@@ -292,8 +292,8 @@ void runtime::he::HECallFrame::check_cpu_calls(
     bool correct = true;
     for (size_t output_ind = 0; output_ind < outputs.size(); ++output_ind)
     {
-        std::shared_ptr<runtime::he::HETensorView> he_out = outputs[output_ind];
-        std::shared_ptr<runtime::HostTensorView> cpu_out = cpu_outputs[output_ind];
+        shared_ptr<runtime::he::HETensorView> he_out = outputs[output_ind];
+        shared_ptr<runtime::HostTensorView> cpu_out = cpu_outputs[output_ind];
 
         const element::Type& type = he_out->get_tensor_view_layout()->get_element_type();
         auto shape = he_out->get_shape();
@@ -351,7 +351,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
         {
             NGRAPH_INFO << "Verbose float computation";
         }
-        for (std::shared_ptr<runtime::HostTensorView> cpu_input : cpu_inputs)
+        for (shared_ptr<runtime::HostTensorView> cpu_input : cpu_inputs)
         {
             NGRAPH_INFO << "Input";
             size_t element_count = cpu_input->get_element_count();
@@ -365,7 +365,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
             }
             cout << endl;
         }
-        for (std::shared_ptr<runtime::HostTensorView> cpu_output : cpu_outputs)
+        for (shared_ptr<runtime::HostTensorView> cpu_output : cpu_outputs)
         {
             NGRAPH_INFO << "output";
             size_t element_count = cpu_output->get_element_count();
@@ -663,7 +663,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         {
             throw ngraph_error("Relinearize backend not seal_he_bakcned");
         }
-
     }
     else if (node_op == "OneHot")
     {

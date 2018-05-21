@@ -23,15 +23,15 @@
 #include "ngraph/pass/visualize_tree.hpp"
 
 #include "he_backend.hpp"
-#include "seal_plaintext_wrapper.hpp"
-#include "seal_ciphertext_wrapper.hpp"
 #include "he_call_frame.hpp"
 #include "he_cipher_tensor_view.hpp"
 #include "he_plain_tensor_view.hpp"
-#include "he_tensor_view.hpp"
-#include "pass/insert_relinearize.hpp"
 #include "he_seal_backend.hpp"
 #include "he_seal_parameter.hpp"
+#include "he_tensor_view.hpp"
+#include "pass/insert_relinearize.hpp"
+#include "seal_ciphertext_wrapper.hpp"
+#include "seal_plaintext_wrapper.hpp"
 
 using namespace ngraph;
 using namespace std;
@@ -55,12 +55,14 @@ static void print_seal_context(const seal::SEALContext& context)
 }
 
 runtime::he::HESealBackend::HESealBackend()
-    : runtime::he::HESealBackend(make_shared<runtime::he::HESealParameter>(runtime::he::default_seal_parameter))
+    : runtime::he::HESealBackend(
+          make_shared<runtime::he::HESealParameter>(runtime::he::default_seal_parameter))
 {
 }
 
 runtime::he::HESealBackend::HESealBackend(const shared_ptr<runtime::he::HEParameter> hep)
-    : runtime::he::HESealBackend(make_shared<runtime::he::HESealParameter>(hep->m_poly_modulus, hep->m_plain_modulus))
+    : runtime::he::HESealBackend(
+          make_shared<runtime::he::HESealParameter>(hep->m_poly_modulus, hep->m_plain_modulus))
 {
 }
 
@@ -105,7 +107,8 @@ runtime::he::HESealBackend::~HESealBackend()
 {
 }
 
-void runtime::he::HESealBackend::assert_valid_seal_parameter(const shared_ptr<runtime::he::HESealParameter> sp)
+void runtime::he::HESealBackend::assert_valid_seal_parameter(
+    const shared_ptr<runtime::he::HESealParameter> sp)
 {
     static unordered_set<uint64_t> valid_poly_modulus{1024, 2048, 4096, 8192, 16384, 32768};
     if (valid_poly_modulus.count(sp->m_poly_modulus) == 0)
@@ -118,32 +121,34 @@ void runtime::he::HESealBackend::assert_valid_seal_parameter(const shared_ptr<ru
     }
 }
 
-shared_ptr<seal::SEALContext> runtime::he::HESealBackend::make_seal_context(const shared_ptr<runtime::he::HESealParameter> sp)
+shared_ptr<seal::SEALContext>
+    runtime::he::HESealBackend::make_seal_context(const shared_ptr<runtime::he::HESealParameter> sp)
 {
-     assert_valid_seal_parameter(sp);
+    assert_valid_seal_parameter(sp);
 
-     seal::EncryptionParameters parms;
-     parms.set_poly_modulus("1x^" + to_string(sp->m_poly_modulus) + " + 1");
-     if (sp->m_security_level == 128)
-     {
-         parms.set_coeff_modulus(seal::coeff_modulus_128(sp->m_poly_modulus));
-     }
-     else if (sp->m_security_level == 192)
-     {
-         parms.set_coeff_modulus(seal::coeff_modulus_192(sp->m_poly_modulus));
-     }
-     else
-     {
-         throw ngraph_error("sp.security_level must be 128, 192");
-     }
-     parms.set_plain_modulus(sp->m_plain_modulus);
-     return make_shared<seal::SEALContext>(parms);
+    seal::EncryptionParameters parms;
+    parms.set_poly_modulus("1x^" + to_string(sp->m_poly_modulus) + " + 1");
+    if (sp->m_security_level == 128)
+    {
+        parms.set_coeff_modulus(seal::coeff_modulus_128(sp->m_poly_modulus));
+    }
+    else if (sp->m_security_level == 192)
+    {
+        parms.set_coeff_modulus(seal::coeff_modulus_192(sp->m_poly_modulus));
+    }
+    else
+    {
+        throw ngraph_error("sp.security_level must be 128, 192");
+    }
+    parms.set_plain_modulus(sp->m_plain_modulus);
+    return make_shared<seal::SEALContext>(parms);
 }
 
 shared_ptr<runtime::TensorView>
     runtime::he::HESealBackend::create_tensor(const element::Type& element_type, const Shape& shape)
 {
-    shared_ptr<HESealBackend> he_seal_backend = dynamic_pointer_cast<runtime::he::HESealBackend>(shared_from_this());
+    shared_ptr<HESealBackend> he_seal_backend =
+        dynamic_pointer_cast<runtime::he::HESealBackend>(shared_from_this());
     auto rc = make_shared<runtime::he::HECipherTensorView>(element_type, shape, he_seal_backend);
     return static_pointer_cast<runtime::TensorView>(rc);
 }
@@ -156,9 +161,10 @@ shared_ptr<runtime::TensorView> runtime::he::HESealBackend::create_tensor(
 
 shared_ptr<runtime::TensorView>
     runtime::he::HESealBackend::create_plain_tensor(const element::Type& element_type,
-                                                const Shape& shape)
+                                                    const Shape& shape)
 {
-	shared_ptr<HESealBackend> he_seal_backend = dynamic_pointer_cast<runtime::he::HESealBackend>(shared_from_this());
+    shared_ptr<HESealBackend> he_seal_backend =
+        dynamic_pointer_cast<runtime::he::HESealBackend>(shared_from_this());
     auto rc = make_shared<runtime::he::HEPlainTensorView>(element_type, shape, he_seal_backend);
     return static_pointer_cast<runtime::TensorView>(rc);
 }
@@ -166,7 +172,7 @@ shared_ptr<runtime::TensorView>
 shared_ptr<runtime::he::HECiphertext> runtime::he::HESealBackend::create_valued_ciphertext(
     float value, const element::Type& element_type, const seal::MemoryPoolHandle& pool) const
 {
-	throw ngraph_error("create_valued_ciphertext unimplemented");
+    throw ngraph_error("create_valued_ciphertext unimplemented");
     // For Encryptor, we use the memory-pool version
     // For encoder, we'll need to initialize the Encoder object with memory-pool, so the default
     // non-memory-pool is used here.
@@ -210,7 +216,8 @@ shared_ptr<runtime::he::HEPlaintext> runtime::he::HESealBackend::create_valued_p
     // For encoder, we'll need to initialize the Encoder object with memory-pool, so the default
     // non-memory-pool is used here.
     const string type_name = element_type.c_type_string();
-    auto plaintext = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(create_empty_plaintext());
+    auto plaintext =
+        dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(create_empty_plaintext());
     if (plaintext == nullptr)
     {
         throw ngraph_error("Plaintext is not seal plaintext in create_valued_plaintext");
@@ -242,10 +249,11 @@ shared_ptr<runtime::he::HEPlaintext>
 
 shared_ptr<runtime::he::HECiphertext>
     runtime::he::HESealBackend::create_valued_ciphertext(float value,
-                                                     const element::Type& element_type) const
+                                                         const element::Type& element_type) const
 {
     const string type_name = element_type.c_type_string();
-    auto ciphertext = dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(create_empty_ciphertext());
+    auto ciphertext =
+        dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(create_empty_ciphertext());
     if (ciphertext == nullptr)
     {
         throw ngraph_error("Ciphertext is not seal ciphertext in create_valued_ciphertext");
@@ -274,7 +282,7 @@ shared_ptr<runtime::he::HECiphertext> runtime::he::HESealBackend::create_empty_c
 
 shared_ptr<runtime::he::HEPlaintext>
     runtime::he::HESealBackend::create_valued_plaintext(float value,
-                                                    const element::Type& element_type) const
+                                                        const element::Type& element_type) const
 {
     const string type_name = element_type.c_type_string();
     shared_ptr<runtime::he::HEPlaintext> plaintext = create_empty_plaintext();
@@ -335,7 +343,8 @@ bool runtime::he::HESealBackend::compile(shared_ptr<Function> func)
 {
     if (m_function_map.count(func) == 0)
     {
-        shared_ptr<HESealBackend> he_seal_backend = dynamic_pointer_cast<runtime::he::HESealBackend>(shared_from_this());
+        shared_ptr<HESealBackend> he_seal_backend =
+            dynamic_pointer_cast<runtime::he::HESealBackend>(shared_from_this());
         shared_ptr<Function> cf_func = clone_function(*func);
 
         // Run passes
@@ -354,8 +363,8 @@ bool runtime::he::HESealBackend::compile(shared_ptr<Function> func)
 }
 
 bool runtime::he::HESealBackend::call(shared_ptr<Function> func,
-                                  const vector<shared_ptr<runtime::TensorView>>& outputs,
-                                  const vector<shared_ptr<runtime::TensorView>>& inputs)
+                                      const vector<shared_ptr<runtime::TensorView>>& outputs,
+                                      const vector<shared_ptr<runtime::TensorView>>& inputs)
 {
     compile(func);
     m_function_map.at(func)->call(outputs, inputs);
@@ -373,18 +382,20 @@ void runtime::he::HESealBackend::remove_compiled_function(shared_ptr<Function> f
 }
 
 void runtime::he::HESealBackend::encode(shared_ptr<runtime::he::HEPlaintext>& output,
-                                    const void* input,
-                                    const element::Type& type)
+                                        const void* input,
+                                        const element::Type& type)
 {
     const string type_name = type.c_type_string();
 
     if (type_name == "int64_t")
     {
-        output = make_shared<runtime::he::SealPlaintextWrapper>(m_int_encoder->encode(*(int64_t*)input));
+        output =
+            make_shared<runtime::he::SealPlaintextWrapper>(m_int_encoder->encode(*(int64_t*)input));
     }
     else if (type_name == "float")
     {
-        output = make_shared<runtime::he::SealPlaintextWrapper>(m_frac_encoder->encode(*(float*)input));
+        output =
+            make_shared<runtime::he::SealPlaintextWrapper>(m_frac_encoder->encode(*(float*)input));
     }
     else
     {
@@ -394,14 +405,13 @@ void runtime::he::HESealBackend::encode(shared_ptr<runtime::he::HEPlaintext>& ou
 }
 
 void runtime::he::HESealBackend::decode(void* output,
-                                    const shared_ptr<runtime::he::HEPlaintext> input,
-                                    const element::Type& type)
+                                        const shared_ptr<runtime::he::HEPlaintext> input,
+                                        const element::Type& type)
 {
     const string type_name = type.c_type_string();
 
     if (auto seal_input = dynamic_pointer_cast<SealPlaintextWrapper>(input))
     {
-
         if (type_name == "int64_t")
         {
             int64_t x = m_int_encoder->decode_int64(seal_input->m_plaintext);
@@ -424,7 +434,8 @@ void runtime::he::HESealBackend::decode(void* output,
     }
 }
 
-void runtime::he::HESealBackend::encrypt(shared_ptr<runtime::he::HECiphertext> output, const shared_ptr<runtime::he::HEPlaintext> input)
+void runtime::he::HESealBackend::encrypt(shared_ptr<runtime::he::HECiphertext> output,
+                                         const shared_ptr<runtime::he::HEPlaintext> input)
 {
     auto seal_output = dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(output);
     auto seal_input = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(input);
@@ -438,7 +449,8 @@ void runtime::he::HESealBackend::encrypt(shared_ptr<runtime::he::HECiphertext> o
     }
 }
 
-void runtime::he::HESealBackend::decrypt(shared_ptr<runtime::he::HEPlaintext> output, const shared_ptr<he::HECiphertext> input)
+void runtime::he::HESealBackend::decrypt(shared_ptr<runtime::he::HEPlaintext> output,
+                                         const shared_ptr<he::HECiphertext> input)
 {
     auto seal_output = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(output);
     auto seal_input = dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(input);
@@ -498,7 +510,7 @@ vector<runtime::PerformanceCounter>
 }
 
 void runtime::he::HESealBackend::visualize_function_after_pass(const shared_ptr<Function>& func,
-                                                           const string& file_name)
+                                                               const string& file_name)
 {
     compile(func);
     auto cf = m_function_map.at(func);

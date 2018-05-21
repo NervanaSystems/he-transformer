@@ -23,7 +23,8 @@ namespace ngraph
     {
         namespace he
         {
-            struct HEParameter {
+            struct HEParameter
+            {
                 HEParameter(std::uint64_t poly_modulus, uint64_t plain_modulus);
 
                 std::uint64_t m_poly_modulus;

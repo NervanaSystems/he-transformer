@@ -29,7 +29,6 @@ runtime::he::SealCiphertextWrapper::SealCiphertextWrapper(seal::Ciphertext ciphe
 {
 }
 
-
 runtime::he::SealCiphertextWrapper::~SealCiphertextWrapper()
 {
 }

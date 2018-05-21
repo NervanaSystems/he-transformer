@@ -19,10 +19,10 @@
 #include <memory>
 #include <unordered_map>
 
-#include "ngraph/runtime/backend.hpp"
-#include "he_parameter.hpp"
 #include "he_ciphertext.hpp"
+#include "he_parameter.hpp"
 #include "he_plaintext.hpp"
+#include "ngraph/runtime/backend.hpp"
 
 namespace ngraph
 {
@@ -39,7 +39,7 @@ namespace ngraph
             class HECiphertext;
 
             class HEBackend : public runtime::Backend
-                              // public std::enable_shared_from_this<HEBackend>
+            // public std::enable_shared_from_this<HEBackend>
             {
             public:
                 HEBackend();
@@ -60,15 +60,11 @@ namespace ngraph
 
                 // Create scalar text with memory pool
                 std::shared_ptr<he::HECiphertext>
-                    create_valued_ciphertext(float value,
-                                             const element::Type& element_type) const;
-                std::shared_ptr<he::HECiphertext>
-                    create_empty_ciphertext() const;
+                    create_valued_ciphertext(float value, const element::Type& element_type) const;
+                std::shared_ptr<he::HECiphertext> create_empty_ciphertext() const;
                 std::shared_ptr<he::HEPlaintext>
-                    create_valued_plaintext(float value,
-                                            const element::Type& element_type) const;
-                std::shared_ptr<he::HEPlaintext>
-                    create_empty_plaintext() const;
+                    create_valued_plaintext(float value, const element::Type& element_type) const;
+                std::shared_ptr<he::HEPlaintext> create_empty_plaintext() const;
 
                 // Create TensorView of the same value
                 std::shared_ptr<runtime::TensorView> create_valued_tensor(
@@ -86,11 +82,14 @@ namespace ngraph
 
                 void remove_compiled_function(std::shared_ptr<Function> func) override;
 
-                void encode(std::shared_ptr<he::HEPlaintext> output, const void* input, const element::Type& type);
+                void encode(std::shared_ptr<he::HEPlaintext> output,
+                            const void* input,
+                            const element::Type& type);
 
                 void decode(void* output, const he::HEPlaintext& input, const element::Type& type);
 
-                void encrypt(std::shared_ptr<he::HECiphertext> output, const std::shared_ptr<he::HEPlaintext> input);
+                void encrypt(std::shared_ptr<he::HECiphertext> output,
+                             const std::shared_ptr<he::HEPlaintext> input);
 
                 void decrypt(he::HEPlaintext& output, const he::HECiphertext& input);
 

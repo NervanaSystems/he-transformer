@@ -17,8 +17,8 @@
 #include <vector>
 
 #include "he_backend.hpp"
-#include "kernel/subtract.hpp"
 #include "he_seal_backend.hpp"
+#include "kernel/subtract.hpp"
 #include "seal/seal.h"
 
 using namespace std;
@@ -42,7 +42,8 @@ void runtime::he::kernel::subtract(const vector<shared_ptr<he::HECiphertext>>& a
         auto outi = dynamic_pointer_cast<SealCiphertextWrapper>(out[i]);
         if (arg0i != nullptr && arg1i != nullptr && outi != nullptr)
         {
-            he_seal_backend->get_evaluator()->sub(arg0i->m_ciphertext, arg1i->m_ciphertext, outi->m_ciphertext);
+            he_seal_backend->get_evaluator()->sub(
+                arg0i->m_ciphertext, arg1i->m_ciphertext, outi->m_ciphertext);
         }
         else
         {
@@ -57,16 +58,17 @@ void runtime::he::kernel::subtract(const vector<shared_ptr<he::HECiphertext>>& a
                                    shared_ptr<HEBackend> he_backend,
                                    size_t count)
 {
-	auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(he_backend);
-	if (!he_seal_backend)
-	{
-		throw ngraph_error("HE backend not seal type");
-	}
+    auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(he_backend);
+    if (!he_seal_backend)
+    {
+        throw ngraph_error("HE backend not seal type");
+    }
     for (size_t i = 0; i < count; ++i)
     {
         auto arg0i = dynamic_pointer_cast<SealCiphertextWrapper>(arg0[i]);
         auto arg1i = dynamic_pointer_cast<SealPlaintextWrapper>(arg1[i]);
         auto outi = dynamic_pointer_cast<SealCiphertextWrapper>(out[i]);
-        he_seal_backend->get_evaluator()->sub_plain(arg0i->m_ciphertext, arg1i->m_plaintext, outi->m_ciphertext);
+        he_seal_backend->get_evaluator()->sub_plain(
+            arg0i->m_ciphertext, arg1i->m_plaintext, outi->m_ciphertext);
     }
 }

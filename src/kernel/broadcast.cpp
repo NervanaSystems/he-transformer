@@ -17,11 +17,11 @@
 #include <vector>
 
 #include "he_backend.hpp"
+#include "he_ciphertext.hpp"
+#include "he_plaintext.hpp"
 #include "kernel/broadcast.hpp"
 #include "ngraph/coordinate_transform.hpp"
 #include "seal/seal.h"
-#include "he_plaintext.hpp"
-#include "he_ciphertext.hpp"
 
 using namespace std;
 using namespace ngraph;

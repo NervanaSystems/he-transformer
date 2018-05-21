@@ -16,10 +16,10 @@
 
 #pragma once
 
+#include "he_seal_backend.hpp"
 #include "kernel/add.hpp"
 #include "kernel/multiply.hpp"
 #include "ngraph/coordinate_transform.hpp"
-#include "he_seal_backend.hpp"
 #include "seal/seal.h"
 
 namespace ngraph
@@ -210,8 +210,7 @@ void ngraph::runtime::he::kernel::dot_template(const vector<shared_ptr<S>>& arg0
 
             auto prod = he_seal_backend->create_empty_ciphertext();
 
-            runtime::he::kernel::scalar_multiply(
-                arg0_text, arg1_text, prod, type, he_backend);
+            runtime::he::kernel::scalar_multiply(arg0_text, arg1_text, prod, type, he_backend);
             runtime::he::kernel::scalar_add(sum, prod, sum, he_backend);
         }
 

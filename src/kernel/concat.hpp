@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include "ngraph/coordinate_transform.hpp"
 #include "he_ciphertext.hpp"
+#include "ngraph/coordinate_transform.hpp"
 #include "seal/seal.h"
 
 namespace ngraph

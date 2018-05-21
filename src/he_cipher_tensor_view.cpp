@@ -18,11 +18,11 @@
 #include <string>
 
 #include "he_backend.hpp"
+#include "he_cipher_tensor_view.hpp"
 #include "he_seal_backend.hpp"
+#include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
 #include "seal_ciphertext_wrapper.hpp"
 #include "seal_plaintext_wrapper.hpp"
-#include "he_cipher_tensor_view.hpp"
-#include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
 
 using namespace ngraph;
 using namespace std;

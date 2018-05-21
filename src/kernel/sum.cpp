@@ -19,9 +19,9 @@
 #include "ngraph/type/element_type.hpp"
 
 #include "he_backend.hpp"
-#include "he_seal_backend.hpp"
-#include "he_ciphertext.hpp"
 #include "he_cipher_tensor_view.hpp"
+#include "he_ciphertext.hpp"
+#include "he_seal_backend.hpp"
 #include "kernel/add.hpp"
 #include "kernel/sum.hpp"
 #include "seal/seal.h"

@@ -18,11 +18,11 @@
 
 #include <string>
 
+#include "he_plaintext.hpp"
 #include "he_tensor_view.hpp"
 #include "ngraph/runtime/tensor_view.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/seal.h"
-#include "he_plaintext.hpp"
 
 namespace ngraph
 {

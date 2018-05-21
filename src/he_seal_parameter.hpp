@@ -18,8 +18,8 @@
 
 #include <string>
 
-#include "seal/seal.h"
 #include "he_parameter.hpp"
+#include "seal/seal.h"
 
 namespace ngraph
 {
@@ -31,16 +31,15 @@ namespace ngraph
 
             struct HESealParameter : public HEParameter
             {
-                HESealParameter(std::uint64_t poly_modulus,
-                                std::uint64_t plain_modulus);
+                HESealParameter(std::uint64_t poly_modulus, std::uint64_t plain_modulus);
 
                 HESealParameter(std::uint64_t poly_modulus,
-                               std::uint64_t plain_modulus,
-                               std::uint64_t security_level,
-                               int fractional_encoder_integer_coeff_count,
-                               int fractional_encoder_fraction_coeff_count,
-                               std::uint64_t fractional_encoder_base,
-                               int evaluation_decomposition_bit_count);
+                                std::uint64_t plain_modulus,
+                                std::uint64_t security_level,
+                                int fractional_encoder_integer_coeff_count,
+                                int fractional_encoder_fraction_coeff_count,
+                                std::uint64_t fractional_encoder_base,
+                                int evaluation_decomposition_bit_count);
 
                 void assert_valid_seal_parameter();
 
@@ -61,13 +60,13 @@ namespace ngraph
             };
 
             static HESealParameter default_seal_parameter{
-                2048,        // poly_modulus_degree
+                2048,   // poly_modulus_degree
                 100000, // plain_modulus
-                128,         // security_level
-                64,          // fractional_encoder_integer_coeff_count
-                32,          // fractional_encoder_fraction_coeff_count
-                2,           // fractional_encoder_base
-                16           // evaluation_decomposition_bit_count
+                128,    // security_level
+                64,     // fractional_encoder_integer_coeff_count
+                32,     // fractional_encoder_fraction_coeff_count
+                2,      // fractional_encoder_base
+                16      // evaluation_decomposition_bit_count
             };
         }
     }

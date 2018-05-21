@@ -17,10 +17,10 @@
 #include <vector>
 
 #include "he_backend.hpp"
+#include "he_seal_backend.hpp"
 #include "kernel/multiply.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/seal.h"
-#include "he_seal_backend.hpp"
 
 using namespace std;
 using namespace ngraph;
@@ -53,7 +53,8 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<he::HECiphertext>& ar
     auto arg0_seal = dynamic_pointer_cast<SealCiphertextWrapper>(arg0);
     auto arg1_seal = dynamic_pointer_cast<SealCiphertextWrapper>(arg1);
     auto out_seal = dynamic_pointer_cast<SealCiphertextWrapper>(out);
-    he_seal_backend->get_evaluator()->multiply(arg0_seal->m_ciphertext, arg1_seal->m_ciphertext, out_seal->m_ciphertext);
+    he_seal_backend->get_evaluator()->multiply(
+        arg0_seal->m_ciphertext, arg1_seal->m_ciphertext, out_seal->m_ciphertext);
 }
 
 void runtime::he::kernel::multiply(const vector<shared_ptr<he::HECiphertext>>& arg0,
@@ -63,7 +64,7 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<he::HECiphertext>>& a
                                    shared_ptr<HEBackend> he_backend,
                                    size_t count)
 {
-     #pragma omp parallel for
+#pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
     {
         scalar_multiply(arg0[i], arg1[i], out[i], type, he_backend);
@@ -93,11 +94,13 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<he::HECiphertext>& ar
     const string type_name = type.c_type_string();
     if (type_name == "float")
     {
-        he_seal_backend->get_evaluator()->multiply_plain(arg0_seal->m_ciphertext, arg1_seal->m_plaintext, out_seal->m_ciphertext);
+        he_seal_backend->get_evaluator()->multiply_plain(
+            arg0_seal->m_ciphertext, arg1_seal->m_plaintext, out_seal->m_ciphertext);
     }
     else if (type_name == "int64_t")
     {
-        he_seal_backend->get_evaluator()->multiply_plain(arg0_seal->m_ciphertext, arg1_seal->m_plaintext, out_seal->m_ciphertext);
+        he_seal_backend->get_evaluator()->multiply_plain(
+            arg0_seal->m_ciphertext, arg1_seal->m_plaintext, out_seal->m_ciphertext);
     }
     else
     {

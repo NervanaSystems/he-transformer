@@ -17,9 +17,9 @@
 #include <vector>
 
 #include "he_backend.hpp"
+#include "he_seal_backend.hpp"
 #include "kernel/relinearize.hpp"
 #include "ngraph/type/element_type.hpp"
-#include "he_seal_backend.hpp"
 
 using namespace std;
 using namespace ngraph;
@@ -30,7 +30,7 @@ void runtime::he::kernel::relinearize(const vector<shared_ptr<he::HECiphertext>>
                                       size_t count)
 {
     throw ngraph_error("Relinearize not implemnted");
-    // shared_ptr<seal::EvaluationKeys> ev_key = he_seal_backend->get_ev_key();
+// shared_ptr<seal::EvaluationKeys> ev_key = he_seal_backend->get_ev_key();
 
 // It's safe to do inplace relinearize on the input since the un-relinearized result won't be
 // used by other ops. That is, this relinearize op is immediately after a multiply op, and the

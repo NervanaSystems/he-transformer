@@ -17,9 +17,9 @@
 #include <vector>
 
 #include "he_backend.hpp"
+#include "he_ciphertext.hpp"
 #include "kernel/concat.hpp"
 #include "ngraph/coordinate_transform.hpp"
-#include "he_ciphertext.hpp"
 #include "seal/seal.h"
 
 using namespace std;

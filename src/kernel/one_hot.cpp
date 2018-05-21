@@ -18,14 +18,14 @@
 #include <vector>
 
 #include "he_backend.hpp"
-#include "he_seal_backend.hpp"
 #include "he_cipher_tensor_view.hpp"
+#include "he_ciphertext.hpp"
+#include "he_plaintext.hpp"
+#include "he_seal_backend.hpp"
 #include "kernel/one_hot.hpp"
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/seal.h"
-#include "he_ciphertext.hpp"
-#include "he_plaintext.hpp"
 
 using namespace std;
 using namespace ngraph;
@@ -44,8 +44,10 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<he::HECiphertext>>& ar
         throw ngraph_error("HE backend not seal type");
     }
     // Get 0 and 1 cipher text
-    shared_ptr<he::HECiphertext> zero_ciphertext = he_seal_backend->create_valued_ciphertext(0, type);
-    shared_ptr<he::HECiphertext> one_ciphertext = he_seal_backend->create_valued_ciphertext(1, type);
+    shared_ptr<he::HECiphertext> zero_ciphertext =
+        he_seal_backend->create_valued_ciphertext(0, type);
+    shared_ptr<he::HECiphertext> one_ciphertext =
+        he_seal_backend->create_valued_ciphertext(1, type);
 
     // Step 1: Zero out the output. We can simply copy the shared_ptr pointing to a zero
     // ciphertext to all output locations.
