@@ -306,16 +306,14 @@ shared_ptr<runtime::he::HEPlaintext> runtime::he::HESealBackend::create_empty_pl
 shared_ptr<runtime::TensorView> runtime::he::HESealBackend::create_valued_tensor(
     float value, const element::Type& element_type, const Shape& shape)
 {
-    throw ngraph_error("create_valued_tensor unimplemented in seal");
-    /* auto tensor = static_pointer_cast<HECipherTensorView>(create_tensor(element_type, shape));
-    vector<shared_ptr<seal::Ciphertext>>& cipher_texts = tensor->get_elements();
+    auto tensor = static_pointer_cast<HECipherTensorView>(create_tensor(element_type, shape));
+    vector<shared_ptr<runtime::he::HECiphertext>>& cipher_texts = tensor->get_elements();
 #pragma omp parallel for
     for (size_t i = 0; i < cipher_texts.size(); ++i)
     {
-        seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
-        cipher_texts[i] = create_valued_ciphertext(value, element_type, pool);
+        cipher_texts[i] = create_valued_ciphertext(value, element_type);
     }
-    return tensor; */
+    return tensor;
 }
 
 shared_ptr<runtime::TensorView> runtime::he::HESealBackend::create_valued_plain_tensor(
