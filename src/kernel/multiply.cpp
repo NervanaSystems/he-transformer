@@ -32,27 +32,22 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<he::HECiphertext>>& a
                                    shared_ptr<HEBackend> he_backend,
                                    size_t count)
 {
-#pragma omp parallel for
-    for (size_t i = 0; i < count; ++i)
-    {
-        seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
-        scalar_multiply(arg0[i], arg1[i], out[i], type, he_backend, pool);
-    }
+    throw ngraph_error("Multiply not implemented");
 }
 
 void runtime::he::kernel::scalar_multiply(const shared_ptr<he::HECiphertext>& arg0,
                                           const shared_ptr<he::HECiphertext>& arg1,
                                           shared_ptr<he::HECiphertext>& out,
                                           const element::Type& type,
-                                          shared_ptr<HEBackend> he_backend,
-                                          const seal::MemoryPoolHandle& pool)
+                                          shared_ptr<HEBackend> he_backend)
 {
-    auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(he_backend);
+    throw ngraph_error("Multiply not implemented");
+    /* auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(he_backend);
     if (!he_seal_backend)
     {
         throw ngraph_error("HE backend not seal type");
     }
-    he_seal_backend->get_evaluator()->multiply(*arg0, *arg1, *out, pool);
+    he_seal_backend->get_evaluator()->multiply(*arg0, *arg1, *out); */
 }
 
 void runtime::he::kernel::multiply(const vector<shared_ptr<he::HECiphertext>>& arg0,
@@ -62,22 +57,22 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<he::HECiphertext>>& a
                                    shared_ptr<HEBackend> he_backend,
                                    size_t count)
 {
-#pragma omp parallel for
+    throw ngraph_error("Multiply not implemented");
+    /* #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
     {
-        seal::MemoryPoolHandle pool = he::HEMemoryPoolHandle::New(false);
-        scalar_multiply(arg0[i], arg1[i], out[i], type, he_backend, pool);
-    }
+        scalar_multiply(arg0[i], arg1[i], out[i], type, he_backend);
+    } */
 }
 
 void runtime::he::kernel::scalar_multiply(const shared_ptr<he::HECiphertext>& arg0,
                                           const shared_ptr<he::HEPlaintext>& arg1,
                                           shared_ptr<he::HECiphertext>& out,
                                           const element::Type& type,
-                                          shared_ptr<HEBackend> he_backend,
-                                          const he::HEMemoryPoolHandle& pool)
+                                          shared_ptr<HEBackend> he_backend)
 {
-    const string type_name = type.c_type_string();
+    throw ngraph_error("scalar multiply not implemented");
+    /* const string type_name = type.c_type_string();
     if (type_name == "float")
     {
         if (*arg1 == he_backend->get_plaintext_num().fl_1)
@@ -115,7 +110,7 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<he::HECiphertext>& ar
     else
     {
         throw ngraph_error("Multiply type not supported " + type_name);
-    }
+    } */
 }
 
 void runtime::he::kernel::multiply(const vector<shared_ptr<he::HEPlaintext>>& arg0,
@@ -125,17 +120,18 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<he::HEPlaintext>>& ar
                                    shared_ptr<HEBackend> he_backend,
                                    size_t count)
 {
-    multiply(arg1, arg0, out, type, he_backend, count);
+    throw ngraph_error("Multiply not implemented");
+    // multiply(arg1, arg0, out, type, he_backend, count);
 }
 
 void runtime::he::kernel::scalar_multiply(const shared_ptr<he::HEPlaintext>& arg0,
                                           const shared_ptr<he::HECiphertext>& arg1,
                                           shared_ptr<he::HECiphertext>& out,
                                           const element::Type& type,
-                                          shared_ptr<HEBackend> he_backend,
-                                          const seal::MemoryPoolHandle& pool)
+                                          shared_ptr<HEBackend> he_backend)
 {
-    scalar_multiply(arg1, arg0, out, type, he_backend, pool);
+    throw ngraph_error("scalar Multiply not implemented");
+    // scalar_multiply(arg1, arg0, out, type, he_backend);
 }
 
 void runtime::he::kernel::multiply(const vector<shared_ptr<he::HEPlaintext>>& arg0,
@@ -145,7 +141,8 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<he::HEPlaintext>>& ar
                                    shared_ptr<HEBackend> he_backend,
                                    size_t count)
 {
-    const string type_name = type.c_type_string();
+    throw ngraph_error("Multiply not implemented");
+    /* const string type_name = type.c_type_string();
     if (type_name != "float")
     {
         throw ngraph_error("Type " + type_name + " not supported");
@@ -154,26 +151,24 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<he::HEPlaintext>>& ar
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
     {
-        auto evaluator = he_backend->get_evaluator();
         float x, y;
         he_backend->decode(&x, *arg0[i], type);
         he_backend->decode(&y, *arg1[i], type);
         float r = x * y;
         he_backend->encode(*out[i], &r, type);
-    }
+    } */
 }
 
 void runtime::he::kernel::scalar_multiply(const shared_ptr<he::HEPlaintext>& arg0,
                                           const shared_ptr<he::HEPlaintext>& arg1,
                                           shared_ptr<he::HEPlaintext>& out,
                                           const element::Type& type,
-                                          shared_ptr<HEBackend> he_backend,
-                                          const seal::MemoryPoolHandle& pool)
+                                          shared_ptr<HEBackend> he_backend)
 {
-    auto evaluator = he_backend->get_evaluator();
-    float x, y;
+    throw ngraph_error("scalar Multiply not implemented");
+    /* float x, y;
     he_backend->decode(&x, *arg0, type);
     he_backend->decode(&y, *arg1, type);
     float r = x * y;
-    he_backend->encode(*out, &r, type);
+    he_backend->encode(*out, &r, type); */
 }

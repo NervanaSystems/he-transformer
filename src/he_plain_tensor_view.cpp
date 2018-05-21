@@ -36,7 +36,7 @@ runtime::he::HEPlainTensorView::HEPlainTensorView(const element::Type& element_t
 #pragma omp parallel for
     for (size_t i = 0; i < m_num_elements; ++i)
     {
-        m_plain_texts[i] = make_shared<seal::Plaintext>();
+        m_plain_texts[i] = make_shared<he::HEPlaintext>();
     }
 }
 

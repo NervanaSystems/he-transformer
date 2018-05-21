@@ -155,7 +155,7 @@ void ngraph::runtime::he::kernel::dot_template(const vector<shared_ptr<S>>& arg0
          ++global_projected_idx)
     {
         // Init thread-local memory pool for each thread
-        seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
+        // seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
 
         // Compute outer and inner index
         size_t arg0_projected_idx = global_projected_idx / arg1_projected_size;

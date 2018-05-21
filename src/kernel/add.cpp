@@ -39,7 +39,7 @@ void runtime::he::kernel::add(const vector<shared_ptr<he::HECiphertext>>& arg0,
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
     {
-        he_seal_backend->get_evaluator()->add(*arg0[i], *arg1[i], *out[i]);
+        //he_seal_backend->get_evaluator()->add(*arg0[i], *arg1[i], *out[i]); # TODO: enable
     }
 }
 
@@ -57,7 +57,7 @@ void runtime::he::kernel::add(const vector<shared_ptr<he::HECiphertext>>& arg0,
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
     {
-        he_seal_backend->get_evaluator()->add_plain(*arg0[i], *arg1[i], *out[i]);
+        //he_seal_backend->get_evaluator()->add_plain(*arg0[i], *arg1[i], *out[i]); # TODO: enable
     }
 }
 
@@ -109,7 +109,7 @@ void runtime::he::kernel::scalar_add(const shared_ptr<he::HECiphertext>& arg0,
 	{
 		throw ngraph_error("HE backend not seal type");
 	}
-    he_seal_backend->get_evaluator()->add(*arg0, *arg1, *out);
+    // he_seal_backend->get_evaluator()->add(*arg0, *arg1, *out); # TODO: enable
 }
 
 void runtime::he::kernel::scalar_add(const shared_ptr<he::HEPlaintext>& arg0,

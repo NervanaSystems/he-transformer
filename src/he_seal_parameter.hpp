@@ -69,9 +69,6 @@ namespace ngraph
                 2,           // fractional_encoder_base
                 16           // evaluation_decomposition_bit_count
             };
-
-
-            // std::shared_ptr<seal::SEALContext> make_seal_context(const SEALParameter& sp);
         }
     }
 }

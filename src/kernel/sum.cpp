@@ -70,7 +70,7 @@ void runtime::he::kernel::sum(const vector<shared_ptr<he::HECiphertext>>& arg,
         size_t output_ind = output_transform.index(output_coord);
         if (output_summands[output_ind].size() > 0)
         {
-            he_backend->get_evaluator()->add_many(output_summands[output_ind], *out[output_ind]);
+            // he_backend->get_evaluator()->add_many(output_summands[output_ind], *out[output_ind]); # TODO: enable!
         }
     }
 }

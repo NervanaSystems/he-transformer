@@ -19,8 +19,6 @@
 #include "he_backend.hpp"
 #include "kernel/slice.hpp"
 #include "ngraph/coordinate_transform.hpp"
-#include "he_seal_ciphertext.hpp"
-#include "seal/seal.h"
 
 using namespace std;
 using namespace ngraph;

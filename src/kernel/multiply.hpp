@@ -65,29 +65,25 @@ namespace ngraph
                                      const shared_ptr<he::HECiphertext>& arg1,
                                      shared_ptr<he::HECiphertext>& out,
                                      const element::Type& type,
-                                     shared_ptr<HEBackend> he_backend,
-                                     const seal::MemoryPoolHandle& pool);
+                                     shared_ptr<HEBackend> he_backend);
 
                 void scalar_multiply(const shared_ptr<he::HEPlaintext>& arg0,
                                      const shared_ptr<he::HECiphertext>& arg1,
                                      shared_ptr<he::HECiphertext>& out,
                                      const element::Type& type,
-                                     shared_ptr<HEBackend> he_backend,
-                                     const seal::MemoryPoolHandle& pool);
+                                     shared_ptr<HEBackend> he_backend);
 
                 void scalar_multiply(const shared_ptr<he::HECiphertext>& arg0,
                                      const shared_ptr<he::HEPlaintext>& arg1,
                                      shared_ptr<he::HECiphertext>& out,
                                      const element::Type& type,
-                                     shared_ptr<HEBackend> he_backend,
-                                     const seal::MemoryPoolHandle& pool);
+                                     shared_ptr<HEBackend> he_backend);
 
                 void scalar_multiply(const shared_ptr<he::HEPlaintext>& arg0,
                                      const shared_ptr<he::HEPlaintext>& arg1,
                                      shared_ptr<he::HEPlaintext>& out,
                                      const element::Type& type,
-                                     shared_ptr<HEBackend> he_backend,
-                                     const seal::MemoryPoolHandle& pool);
+                                     shared_ptr<HEBackend> he_backend);
             }
         }
     }
