@@ -163,7 +163,7 @@ shared_ptr<runtime::TensorView>
     return static_pointer_cast<runtime::TensorView>(rc);
 }
 
-std::shared_ptr<runtime::he::HECiphertext> runtime::he::HESealBackend::create_valued_ciphertext(
+shared_ptr<runtime::he::HECiphertext> runtime::he::HESealBackend::create_valued_ciphertext(
     float value, const element::Type& element_type, const seal::MemoryPoolHandle& pool) const
 {
 	throw ngraph_error("create_valued_ciphertext unimplemented");
@@ -190,17 +190,16 @@ std::shared_ptr<runtime::he::HECiphertext> runtime::he::HESealBackend::create_va
     return ciphertext;
 }
 
-std::shared_ptr<runtime::he::HECiphertext>
+shared_ptr<runtime::he::HECiphertext>
     runtime::he::HESealBackend::create_empty_ciphertext(const seal::MemoryPoolHandle& pool) const
 {
     throw ngraph_error("HESealBackend::create_empty_ciphertext unimplemented");
     // return make_shared<he::HECiphertext>(m_context->parms(), pool);
 }
 
-std::shared_ptr<runtime::he::HEPlaintext> runtime::he::HESealBackend::create_valued_plaintext(
+shared_ptr<runtime::he::HEPlaintext> runtime::he::HESealBackend::create_valued_plaintext(
     float value, const element::Type& element_type, const seal::MemoryPoolHandle& pool) const
 {
-	throw ngraph_error("create_valued_plaintext unimplemented");
     // Optimize value == 0 to use memory-pool
     /* if (value == 0)
     {
@@ -210,24 +209,29 @@ std::shared_ptr<runtime::he::HEPlaintext> runtime::he::HESealBackend::create_val
 
     // For encoder, we'll need to initialize the Encoder object with memory-pool, so the default
     // non-memory-pool is used here.
-    /* const string type_name = element_type.c_type_string();
-    std::shared_ptr<runtime::he::HEPlaintext> plaintext = create_empty_plaintext(pool);
+    const string type_name = element_type.c_type_string();
+    auto plaintext = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(create_empty_plaintext());
+    if (plaintext == nullptr)
+    {
+        throw ngraph_error("Plaintext is not seal plaintext in create_valued_plaintext");
+    }
+
     if (type_name == "float")
     {
-        *plaintext = m_frac_encoder->encode(value);
+        plaintext->m_plaintext = m_frac_encoder->encode(value);
     }
     else if (type_name == "int64_t")
     {
-        *plaintext = m_int_encoder->encode(static_cast<int64_t>(value));
+        plaintext->m_plaintext = m_int_encoder->encode(static_cast<int64_t>(value));
     }
     else
     {
-        throw ngraph_error("Type not supported at create_ciphertext");
+        throw ngraph_error("Type not supported at create_plaintext");
     }
-    return plaintext; */
+    return plaintext;
 }
 
-std::shared_ptr<runtime::he::HEPlaintext>
+shared_ptr<runtime::he::HEPlaintext>
     runtime::he::HESealBackend::create_empty_plaintext(const seal::MemoryPoolHandle& pool) const
 {
     throw ngraph_error("HESealBackend::create_empty_plaintext unimplemnented");
@@ -236,62 +240,67 @@ std::shared_ptr<runtime::he::HEPlaintext>
     // return make_shared<runtime::he::HEPlaintext>(m_context->parms().poly_modulus().coeff_count(), 0, pool);
 }
 
-std::shared_ptr<runtime::he::HECiphertext>
+shared_ptr<runtime::he::HECiphertext>
     runtime::he::HESealBackend::create_valued_ciphertext(float value,
                                                      const element::Type& element_type) const
 {
-    throw ngraph_error("create_valued_ciphertext unimplemented in seal");
-    /* const string type_name = element_type.c_type_string();
-    shared_ptr<runtime::he::HECiphertext> ciphertext = create_empty_ciphertext();
+    const string type_name = element_type.c_type_string();
+    auto ciphertext = dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(create_empty_ciphertext());
+    if (ciphertext == nullptr)
+    {
+        throw ngraph_error("Ciphertext is not seal ciphertext in create_valued_ciphertext");
+    }
     if (type_name == "float")
     {
         seal::Plaintext plaintext = m_frac_encoder->encode(value);
-        m_encryptor->encrypt(plaintext, *ciphertext);
+        m_encryptor->encrypt(plaintext, ciphertext->m_ciphertext);
     }
     else if (type_name == "int64_t")
     {
         seal::Plaintext plaintext = m_int_encoder->encode(static_cast<int64_t>(value));
-        m_encryptor->encrypt(plaintext, *ciphertext);
+        m_encryptor->encrypt(plaintext, ciphertext->m_ciphertext);
     }
     else
     {
         throw ngraph_error("Type not supported at create_ciphertext");
     }
-    return ciphertext; */
+    return ciphertext;
 }
 
-std::shared_ptr<runtime::he::HECiphertext> runtime::he::HESealBackend::create_empty_ciphertext() const
+shared_ptr<runtime::he::HECiphertext> runtime::he::HESealBackend::create_empty_ciphertext() const
 {
-    throw ngraph_error("HESealBackend::create_empty_ciphertext unimplemented");
-    // return make_shared<runtime::he::HECiphertext>(m_context->parms());
+    return make_shared<runtime::he::SealCiphertextWrapper>();
 }
 
-std::shared_ptr<runtime::he::HEPlaintext>
+shared_ptr<runtime::he::HEPlaintext>
     runtime::he::HESealBackend::create_valued_plaintext(float value,
                                                     const element::Type& element_type) const
 {
-    throw ngraph_error("create_valued_plaintext unimplemented in seal");
-    /* const string type_name = element_type.c_type_string();
-    std::shared_ptr<runtime::he::HEPlaintext> plaintext = create_empty_plaintext();
+    const string type_name = element_type.c_type_string();
+    shared_ptr<runtime::he::HEPlaintext> plaintext = create_empty_plaintext();
+    auto plaintext_seal = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(plaintext);
+    if (plaintext_seal == nullptr)
+    {
+        NGRAPH_INFO << "plaintext is not seal type in create_valued_plaintext";
+    }
     if (type_name == "float")
     {
-        *plaintext = m_frac_encoder->encode(value);
+        plaintext_seal->m_plaintext = m_frac_encoder->encode(value);
     }
     else if (type_name == "int64_t")
     {
-        *plaintext = m_int_encoder->encode(static_cast<int64_t>(value));
+        plaintext_seal->m_plaintext = m_int_encoder->encode(static_cast<int64_t>(value));
     }
     else
     {
         throw ngraph_error("Type not supported at create_ciphertext");
     }
-    return plaintext; */
+    return plaintext;
 }
 
-std::shared_ptr<runtime::he::HEPlaintext> runtime::he::HESealBackend::create_empty_plaintext() const
+shared_ptr<runtime::he::HEPlaintext> runtime::he::HESealBackend::create_empty_plaintext() const
 {
-    throw ngraph_error("create_empty_plaintext unimplemented in seal");
-    // return make_shared<seal::Plaintext>(m_context->parms().poly_modulus().coeff_count(), 0);
+    return make_shared<SealPlaintextWrapper>();
 }
 
 shared_ptr<runtime::TensorView> runtime::he::HESealBackend::create_valued_tensor(
