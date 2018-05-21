@@ -43,7 +43,7 @@ namespace ngraph
             {
             public:
                 HEBackend();
-                HEBackend(const runtime::he::HEParameter& hep);
+                HEBackend(const std::shared_ptr<runtime::he::HEParameter> hep);
                 HEBackend(HEBackend& he_backend) = default;
                 virtual ~HEBackend();
 
@@ -94,7 +94,7 @@ namespace ngraph
 
                 void decrypt(he::HEPlaintext& output, const he::HECiphertext& input);
 
-                 void check_noise_budget(const std::vector<std::shared_ptr<runtime::he::HETensorView>>& tvs) const;
+                // void check_noise_budget(const std::vector<std::shared_ptr<runtime::he::HETensorView>>& tvs) const;
 
                 void enable_performance_data(std::shared_ptr<Function> func, bool enable) override;
                 std::vector<PerformanceCounter>

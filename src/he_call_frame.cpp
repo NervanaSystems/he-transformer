@@ -208,7 +208,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
 
         if (auto output = dynamic_pointer_cast<HECipherTensorView>(outputs[0]))
         {
-            m_he_backend->check_noise_budget(outputs);
+            // m_he_backend->check_noise_budget(outputs); TODO: enable
         }
 
         // Delete any obsolete tensors
@@ -234,7 +234,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
     }
 
     // Check noise budget at for all function outputs
-    m_he_backend->check_noise_budget(output_tvs);
+    // m_he_backend->check_noise_budget(output_tvs); TODO: enable
 }
 
 void runtime::he::HECallFrame::check_cpu_calls(

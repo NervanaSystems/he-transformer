@@ -19,7 +19,6 @@ set (HE_SRC
     he_backend.cpp
     he_call_frame.cpp
     he_ciphertext.cpp
-    he_context.cpp
     he_plaintext.cpp
     he_seal_backend.cpp
     he_tensor_view.cpp

@@ -37,7 +37,7 @@ runtime::he::HEBackend::HEBackend()
     throw ngraph_error("HEBackend not implemented");
 }
 
-runtime::he::HEBackend::HEBackend(const runtime::he::HEParameter& hep)
+runtime::he::HEBackend::HEBackend(const shared_ptr<runtime::he::HEParameter> hep)
 {
     throw ngraph_error("HEBackend() not implemented");
 }

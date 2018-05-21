@@ -39,13 +39,18 @@ namespace ngraph
             class HECipherTensorView;
             class HEBackend;
 
-            class HESealBackend : public HEBackend
+            class HESealBackend : public HEBackend //, public std::enable_shared_from_this<HESealBackend>
             {
             public:
                 HESealBackend();
-                HESealBackend(const runtime::he::HESealParameter& sp);
+                HESealBackend(const std::shared_ptr<runtime::he::HEParameter> hep);
+                HESealBackend(const std::shared_ptr<runtime::he::HESealParameter> sp);
                 HESealBackend(HESealBackend& he_backend) = default;
                 ~HESealBackend();
+
+				void assert_valid_seal_parameter(const std::shared_ptr<runtime::he::HESealParameter> sp);
+				shared_ptr<seal::SEALContext> make_seal_context(const std::shared_ptr<runtime::he::HESealParameter> sp);
+
 
                 std::shared_ptr<runtime::TensorView>
                     create_tensor(const element::Type& element_type, const Shape& shape) override;
