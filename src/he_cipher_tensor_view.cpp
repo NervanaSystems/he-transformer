@@ -55,7 +55,6 @@ runtime::he::HECipherTensorView::~HECipherTensorView()
 
 void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_offset, size_t n)
 {
-    NGRAPH_INFO << "HECipherTensorView::write";
     check_io_bounds(source, tensor_offset, n);
     const element::Type& type = get_tensor_view_layout()->get_element_type();
     size_t type_byte_size = type.size();
@@ -103,7 +102,6 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
 
 void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, size_t n) const
 {
-    NGRAPH_INFO << "HECipherTensorView::read";
     check_io_bounds(target, tensor_offset, n);
     const element::Type& type = get_tensor_view_layout()->get_element_type();
     size_t type_byte_size = type.size();

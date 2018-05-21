@@ -30,26 +30,25 @@ void runtime::he::kernel::subtract(const vector<shared_ptr<he::HECiphertext>>& a
                                    shared_ptr<HEBackend> he_backend,
                                    size_t count)
 {
-    throw ngraph_error("Subtract not implemented");
-    /* auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(he_backend);
+    auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(he_backend);
     if (!he_seal_backend)
     {
         throw ngraph_error("HE backend not seal type");
     }
     for (size_t i = 0; i < count; ++i)
     {
-        shared_ptr<seal::Ciphertext> arg0i = dynamic_pointer_cast<seal::Ciphertext>(arg0[i]);
-        shared_ptr<seal::Ciphertext> arg1i = dynamic_pointer_cast<seal::Ciphertext>(arg1[i]);
-        shared_ptr<seal::Ciphertext> outi = dynamic_pointer_cast<seal::Ciphertext>(out[i]);
+        auto arg0i = dynamic_pointer_cast<SealCiphertextWrapper>(arg0[i]);
+        auto arg1i = dynamic_pointer_cast<SealCiphertextWrapper>(arg1[i]);
+        auto outi = dynamic_pointer_cast<SealCiphertextWrapper>(out[i]);
         if (arg0i != nullptr && arg1i != nullptr && outi != nullptr)
         {
-            // he_seal_backend->get_evaluator()->sub(*arg0[i], *arg1[i], *out[i]); // TODO: enable
+            he_seal_backend->get_evaluator()->sub(arg0i->m_ciphertext, arg1i->m_ciphertext, outi->m_ciphertext);
         }
         else
         {
             throw ngraph_error("HE seal backend passed non-seal ciphertexts");
         }
-    } */
+    }
 }
 
 void runtime::he::kernel::subtract(const vector<shared_ptr<he::HECiphertext>>& arg0,
@@ -58,14 +57,16 @@ void runtime::he::kernel::subtract(const vector<shared_ptr<he::HECiphertext>>& a
                                    shared_ptr<HEBackend> he_backend,
                                    size_t count)
 {
-    throw ngraph_error("Subtract not implemented");
-	/* auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(he_backend);
+	auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(he_backend);
 	if (!he_seal_backend)
 	{
 		throw ngraph_error("HE backend not seal type");
 	}
     for (size_t i = 0; i < count; ++i)
     {
-        // he_seal_backend->get_evaluator()->sub_plain(*arg0[i], *arg1[i], *out[i]); // TODO: enable
-    } */
+        auto arg0i = dynamic_pointer_cast<SealCiphertextWrapper>(arg0[i]);
+        auto arg1i = dynamic_pointer_cast<SealPlaintextWrapper>(arg1[i]);
+        auto outi = dynamic_pointer_cast<SealCiphertextWrapper>(out[i]);
+        he_seal_backend->get_evaluator()->sub_plain(arg0i->m_ciphertext, arg1i->m_plaintext, outi->m_ciphertext);
+    }
 }

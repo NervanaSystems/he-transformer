@@ -199,10 +199,10 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         const string op_name = op->description();
 
         // Check result with CPU backend
-        if (is_cpu_check_enabled(op))
+        /* if (is_cpu_check_enabled(op))
         {
             check_cpu_calls(function, base_type, op, outputs, inputs, false);
-        }
+        } */ // TODO: enable
 
         // Check noise budget after each op
 

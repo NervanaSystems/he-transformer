@@ -39,7 +39,17 @@ void runtime::he::kernel::add(const vector<shared_ptr<he::HECiphertext>>& arg0,
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
     {
-        //he_seal_backend->get_evaluator()->add(*arg0[i], *arg1[i], *out[i]); # TODO: enable
+        auto arg0i = dynamic_pointer_cast<SealCiphertextWrapper>(arg0[i]);
+        auto arg1i = dynamic_pointer_cast<SealCiphertextWrapper>(arg1[i]);
+        auto outi = dynamic_pointer_cast<SealCiphertextWrapper>(out[i]);
+        if (arg0i != nullptr && arg1i != nullptr && outi != nullptr)
+        {
+            he_seal_backend->get_evaluator()->add(arg0i->m_ciphertext, arg1i->m_ciphertext, outi->m_ciphertext);
+        }
+        else
+        {
+            throw ngraph_error("Add backend is seal, but arguments or outputs are not seal::Ciphertext");
+        }
     }
 }
 
@@ -57,7 +67,17 @@ void runtime::he::kernel::add(const vector<shared_ptr<he::HECiphertext>>& arg0,
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
     {
-        //he_seal_backend->get_evaluator()->add_plain(*arg0[i], *arg1[i], *out[i]); # TODO: enable
+        auto arg0i = dynamic_pointer_cast<SealCiphertextWrapper>(arg0[i]);
+        auto arg1i = dynamic_pointer_cast<SealPlaintextWrapper>(arg1[i]);
+        auto outi = dynamic_pointer_cast<SealCiphertextWrapper>(out[i]);
+        if (arg0i != nullptr && arg1i != nullptr && outi != nullptr)
+        {
+            he_seal_backend->get_evaluator()->add_plain(arg0i->m_ciphertext, arg1i->m_plaintext, outi->m_ciphertext);
+        }
+        else
+        {
+            throw ngraph_error("Add backend is seal, but arguments or outputs are not seal::Ciphertext");
+        }
     }
 }
 
@@ -90,12 +110,11 @@ void runtime::he::kernel::add(const vector<shared_ptr<he::HEPlaintext>>& arg0,
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
     {
-        auto evaluator = he_seal_backend->get_evaluator();
         float x, y;
-        he_backend->decode(&x, *arg0[i], type);
-        he_backend->decode(&y, *arg1[i], type);
+        he_seal_backend->decode(&x, arg0[i], type);
+        he_seal_backend->decode(&y, arg1[i], type);
         float r = x + y;
-        he_backend->encode(out[i], &r, type);
+        he_seal_backend->encode(out[i], &r, type);
     }
 }
 
@@ -109,7 +128,10 @@ void runtime::he::kernel::scalar_add(const shared_ptr<he::HECiphertext>& arg0,
 	{
 		throw ngraph_error("HE backend not seal type");
 	}
-    // he_seal_backend->get_evaluator()->add(*arg0, *arg1, *out); # TODO: enable
+    auto arg0_seal = dynamic_pointer_cast<SealCiphertextWrapper>(arg0);
+    auto arg1_seal = dynamic_pointer_cast<SealCiphertextWrapper>(arg1);
+    auto out_seal = dynamic_pointer_cast<SealCiphertextWrapper>(out);
+    he_seal_backend->get_evaluator()->add(arg0_seal->m_ciphertext, arg1_seal->m_ciphertext, out_seal->m_ciphertext);
 }
 
 void runtime::he::kernel::scalar_add(const shared_ptr<he::HEPlaintext>& arg0,
@@ -118,9 +140,14 @@ void runtime::he::kernel::scalar_add(const shared_ptr<he::HEPlaintext>& arg0,
                                      const element::Type& type,
                                      shared_ptr<HEBackend> he_backend)
 {
+    auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(he_backend);
+    if (!he_seal_backend)
+    {
+        throw ngraph_error("HE backend not seal type");
+    }
     float x, y;
-    he_backend->decode(&x, *arg0, type);
-    he_backend->decode(&y, *arg1, type);
+    he_seal_backend->decode(&x, arg0, type);
+    he_seal_backend->decode(&y, arg1, type);
     float r = x + y;
-    he_backend->encode(out, &r, type);
+    he_seal_backend->encode(out, &r, type);
 }

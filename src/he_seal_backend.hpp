@@ -24,6 +24,8 @@
 #include "he_seal_parameter.hpp"
 #include "he_backend.hpp"
 #include "he_seal_backend.hpp"
+#include "seal_ciphertext_wrapper.hpp"
+#include "seal_plaintext_wrapper.hpp"
 
 namespace ngraph
 {
