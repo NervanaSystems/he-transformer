@@ -29,14 +29,14 @@ link_directories(
 set (HE_TEST_SRC
     main.cpp
     test_basics.cpp
-    test_heaan.cpp
+    #test_heaan.cpp
     # test_model.cpp // TODO: re-enable
-    test_mnist.cpp
-    test_noise.cpp
-    test_overflow.cpp
-    test_seal.cpp
-    test_speed.cpp
-    test_util.cpp
+    #test_mnist.cpp
+    #test_noise.cpp
+    #test_overflow.cpp
+    #test_seal.cpp
+    #test_speed.cpp
+    #test_util.cpp
 )
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHE_SERIALIZED_ZOO=\\\"${CMAKE_CURRENT_SOURCE_DIR}/model\\\"")

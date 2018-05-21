@@ -36,7 +36,7 @@ using namespace std;
 
 extern "C" bool create_backend()
 {
-    runtime::Backend::register_backend("HE", make_shared<runtime::he::HEBackend>());
+    runtime::Backend::register_backend("HE_Seal", make_shared<runtime::he::HESealBackend>());
     return true;
 }
 
