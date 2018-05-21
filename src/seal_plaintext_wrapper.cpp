@@ -14,18 +14,16 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <stack>
-#include <vector>
-
-#include "he_plaintext.hpp"
+#include "seal_plaintext_wrapper.hpp"
 
 using namespace std;
 using namespace ngraph;
 
-runtime::he::HEPlaintext::HEPlaintext()
+runtime::he::SealPlaintextWrapper::SealPlaintextWrapper(seal::Plaintext plain)
+    : m_plaintext(plain)
 {
 }
 
-runtime::he::HEPlaintext::~HEPlaintext()
+runtime::he::SealPlaintextWrapper::~SealPlaintextWrapper()
 {
 }

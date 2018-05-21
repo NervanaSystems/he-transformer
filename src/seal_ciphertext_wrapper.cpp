@@ -14,18 +14,17 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <stack>
-#include <vector>
-
-#include "he_plaintext.hpp"
+#include "seal_ciphertext_wrapper.hpp"
 
 using namespace std;
 using namespace ngraph;
 
-runtime::he::HEPlaintext::HEPlaintext()
+runtime::he::SealCiphertextWrapper::SealCiphertextWrapper(seal::Ciphertext cipher)
+    : m_ciphertext(cipher)
 {
 }
 
-runtime::he::HEPlaintext::~HEPlaintext()
+
+runtime::he::SealCiphertextWrapper::~SealCiphertextWrapper()
 {
 }

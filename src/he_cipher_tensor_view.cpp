@@ -18,6 +18,7 @@
 #include <string>
 
 #include "he_backend.hpp"
+#include "he_seal_backend.hpp"
 #include "he_cipher_tensor_view.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
 
@@ -55,10 +56,17 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
     {
         const void* src_with_offset = (void*)((char*)source);
         size_t dst_index = dst_start_index;
-        he::HEPlaintext p;
+        shared_ptr<he::HEPlaintext> p = make_shared<he::HEPlaintext>();
 
-        m_he_backend->encode(p, src_with_offset, type);
-        m_he_backend->encrypt(*(m_cipher_texts[dst_index]), p);
+        if (auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(m_he_backend))
+        {
+            he_seal_backend->encode(p, src_with_offset, type);
+            he_seal_backend->encrypt(m_cipher_texts[dst_index], p);
+        }
+        else
+        {
+            throw ngraph_error("HECipherTensorView::write, he_backend is not seal!");
+        }
     }
     else
     {
@@ -67,9 +75,10 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
         {
             const void* src_with_offset = (void*)((char*)source + i * type.size());
             size_t dst_index = dst_start_index + i;
-            he::HEPlaintext p;
+            shared_ptr<he::HEPlaintext> p = make_shared<he::HEPlaintext>();
+
             m_he_backend->encode(p, src_with_offset, type);
-            m_he_backend->encrypt(*(m_cipher_texts[dst_index]), p);
+            m_he_backend->encrypt(m_cipher_texts[dst_index], p);
         }
     }
 }

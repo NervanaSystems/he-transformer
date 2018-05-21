@@ -39,6 +39,6 @@ void runtime::he::kernel::constant(vector<shared_ptr<he::HEPlaintext>>& out,
     for (size_t i = 0; i < count; ++i)
     {
         const void* src_with_offset = (void*)((char*)data_ptr + i * type.size());
-        he_backend->encode(*(out[i]), src_with_offset, type);
+        he_backend->encode(out[i], src_with_offset, type);
     }
 }

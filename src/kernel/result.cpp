@@ -62,6 +62,6 @@ void runtime::he::kernel::result(const vector<shared_ptr<he::HEPlaintext>>& arg,
 {
     for (size_t i = 0; i < count; ++i)
     {
-        he_backend->encrypt(*(out[i]), *(arg[i]));
+        he_backend->encrypt(out[i], arg[i]);
     }
 }

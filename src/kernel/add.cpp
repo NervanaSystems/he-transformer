@@ -95,7 +95,7 @@ void runtime::he::kernel::add(const vector<shared_ptr<he::HEPlaintext>>& arg0,
         he_backend->decode(&x, *arg0[i], type);
         he_backend->decode(&y, *arg1[i], type);
         float r = x + y;
-        he_backend->encode(*out[i], &r, type);
+        he_backend->encode(out[i], &r, type);
     }
 }
 
@@ -122,5 +122,5 @@ void runtime::he::kernel::scalar_add(const shared_ptr<he::HEPlaintext>& arg0,
     he_backend->decode(&x, *arg0, type);
     he_backend->decode(&y, *arg1, type);
     float r = x + y;
-    he_backend->encode(*out, &r, type);
+    he_backend->encode(out, &r, type);
 }

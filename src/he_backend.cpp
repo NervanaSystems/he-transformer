@@ -142,7 +142,7 @@ void runtime::he::HEBackend::remove_compiled_function(shared_ptr<Function> func)
     throw ngraph_error("HEBackend remove compile function unimplemented");
 }
 
-void runtime::he::HEBackend::encode(runtime::he::HEPlaintext& output,
+void runtime::he::HEBackend::encode(shared_ptr<runtime::he::HEPlaintext> output,
                                     const void* input,
                                     const element::Type& type)
 {
@@ -157,7 +157,7 @@ void runtime::he::HEBackend::decode(void* output,
 
 }
 
-void runtime::he::HEBackend::encrypt(runtime::he::HECiphertext& output, const runtime::he::HEPlaintext& input)
+void runtime::he::HEBackend::encrypt(shared_ptr<runtime::he::HECiphertext> output, const shared_ptr<runtime::he::HEPlaintext> input)
 {
     throw ngraph_error("HEBackend encrypt unimplemented");
 }

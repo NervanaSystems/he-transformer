@@ -29,6 +29,7 @@ namespace ngraph
             {
             public:
                 HECiphertext();
+                virtual ~HECiphertext();
             };
         }
     }

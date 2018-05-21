@@ -25,3 +25,7 @@ using namespace ngraph;
 runtime::he::HECiphertext::HECiphertext()
 {
 }
+
+runtime::he::HECiphertext::~HECiphertext()
+{
+}

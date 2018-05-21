@@ -23,6 +23,8 @@
 #include "ngraph/pass/visualize_tree.hpp"
 
 #include "he_backend.hpp"
+#include "seal_plaintext_wrapper.hpp"
+#include "seal_ciphertext_wrapper.hpp"
 #include "he_call_frame.hpp"
 #include "he_cipher_tensor_view.hpp"
 #include "he_plain_tensor_view.hpp"
@@ -375,26 +377,25 @@ void runtime::he::HESealBackend::remove_compiled_function(shared_ptr<Function> f
     throw ngraph_error("HESealBackend remove compile function unimplemented");
 }
 
-void runtime::he::HESealBackend::encode(runtime::he::HEPlaintext& output,
+void runtime::he::HESealBackend::encode(shared_ptr<runtime::he::HEPlaintext> output,
                                     const void* input,
                                     const element::Type& type)
 {
-    throw  ngraph_error("HESealBackend::encode unimplemented");
-    /* const string type_name = type.c_type_string();
+    const string type_name = type.c_type_string();
 
     if (type_name == "int64_t")
     {
-        output = m_int_encoder->encode(*(int64_t*)input);
+        output = make_shared<runtime::he::SealPlaintextWrapper>(m_int_encoder->encode(*(int64_t*)input));
     }
     else if (type_name == "float")
     {
-        output = m_frac_encoder->encode(*(float*)input);
+        output = make_shared<runtime::he::SealPlaintextWrapper>(m_frac_encoder->encode(*(float*)input));
     }
     else
     {
         NGRAPH_INFO << "Unsupported element type in decode " << type_name;
         throw ngraph_error("Unsupported element type " + type_name);
-    } */
+    }
 }
 
 void runtime::he::HESealBackend::decode(void* output,
@@ -421,10 +422,19 @@ void runtime::he::HESealBackend::decode(void* output,
     } */
 }
 
-void runtime::he::HESealBackend::encrypt(runtime::he::HECiphertext& output, const runtime::he::HEPlaintext& input)
+void runtime::he::HESealBackend::encrypt(shared_ptr<runtime::he::HECiphertext> output, const shared_ptr<runtime::he::HEPlaintext> input)
 {
-    throw ngraph_error("HESealBackend::encrypt unimplemented");
-    // m_encryptor->encrypt(input, output);
+    // throw ngraph_error("HESealBackend::encrypt unimplemented");
+    auto seal_output = dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(output);
+    auto seal_input = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(input);
+    if (seal_output != nullptr && seal_input != nullptr)
+    {
+        m_encryptor->encrypt(seal_input->m_plaintext, seal_output->m_ciphertext);
+    }
+    else
+    {
+        throw ngraph_error("HESealBackend::encrypt has non-seal ciphertexts");
+    }
 }
 
 void runtime::he::HESealBackend::decrypt(runtime::he::HEPlaintext& output, const he::HECiphertext& input)

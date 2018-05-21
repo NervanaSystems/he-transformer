@@ -74,8 +74,8 @@ void runtime::he::kernel::broadcast(const vector<shared_ptr<he::HEPlaintext>>& a
     {
         Coordinate input_coord = project(output_coord, broadcast_axes);
 
-        he::HECiphertext c;
-        he_backend->encrypt(c, *arg[input_transform.index(input_coord)]);
-        out[output_transform.index(output_coord)] = make_shared<he::HECiphertext>(c);
+        shared_ptr<he::HECiphertext> c = make_shared<he::HECiphertext>();
+        he_backend->encrypt(c, arg[input_transform.index(input_coord)]);
+        out[output_transform.index(output_coord)] = c;
     }
 }

@@ -28,6 +28,7 @@ namespace ngraph
             {
             public:
                 HEPlaintext();
+                virtual ~HEPlaintext();
             };
         }
     }

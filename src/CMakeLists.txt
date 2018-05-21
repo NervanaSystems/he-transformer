@@ -28,6 +28,8 @@ set (HE_SRC
     he_plain_tensor_view.cpp
     int_call_frame.cpp
     seal_parameter.cpp
+    seal_ciphertext_wrapper.cpp
+    seal_plaintext_wrapper.cpp
     kernel/add.cpp
     kernel/broadcast.cpp
     kernel/concat.cpp

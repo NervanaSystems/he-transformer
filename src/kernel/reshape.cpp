@@ -126,9 +126,9 @@ void runtime::he::kernel::reshape(const vector<shared_ptr<he::HEPlaintext>>& arg
         //{
         //    const Coordinate& output_coord = *output_it;
 
-        he::HECiphertext c;
-        he_backend->encrypt(c, *arg[input_transform.index(input_coord)]);
-        out[output_transform.index(output_coord)] = make_shared<he::HECiphertext>(c);
+        shared_ptr<he::HECiphertext> c = make_shared<he::HECiphertext>();
+        he_backend->encrypt(c, arg[input_transform.index(input_coord)]);
+        out[output_transform.index(output_coord)] = c;
 
         //++output_it;
     }

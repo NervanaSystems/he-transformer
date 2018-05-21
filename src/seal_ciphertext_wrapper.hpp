@@ -14,18 +14,27 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <stack>
-#include <vector>
+#pragma once
 
-#include "he_plaintext.hpp"
+#include <cstdint>
+#include "seal/seal.h"
+#include "he_ciphertext.hpp"
 
-using namespace std;
-using namespace ngraph;
-
-runtime::he::HEPlaintext::HEPlaintext()
+namespace ngraph
 {
-}
+    namespace runtime
+    {
+        namespace he
+        {
+            class HECiphertext;
 
-runtime::he::HEPlaintext::~HEPlaintext()
-{
+            struct SealCiphertextWrapper : public HECiphertext
+            {
+                SealCiphertextWrapper(seal::Ciphertext cipher);
+                virtual ~SealCiphertextWrapper();
+
+                seal::Ciphertext m_ciphertext;
+            };
+        }
+    }
 }

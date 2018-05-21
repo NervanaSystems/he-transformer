@@ -55,7 +55,7 @@ void runtime::he::HEPlainTensorView::write(const void* source, size_t tensor_off
     {
         const void* src_with_offset = (void*)((char*)source);
         size_t dst_index = dst_start_index;
-        m_he_backend->encode(*(m_plain_texts[dst_index]), src_with_offset, type);
+        m_he_backend->encode(m_plain_texts[dst_index], src_with_offset, type);
     }
     else
     {
@@ -64,7 +64,7 @@ void runtime::he::HEPlainTensorView::write(const void* source, size_t tensor_off
         {
             const void* src_with_offset = (void*)((char*)source + i * type.size());
             size_t dst_index = dst_start_index + i;
-            m_he_backend->encode(*(m_plain_texts[dst_index]), src_with_offset, type);
+            m_he_backend->encode(m_plain_texts[dst_index], src_with_offset, type);
         }
     }
 }
