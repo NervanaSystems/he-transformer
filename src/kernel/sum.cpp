@@ -52,6 +52,7 @@ void runtime::he::kernel::sum(const vector<shared_ptr<he::HECiphertext>>& arg,
     for (const Coordinate& output_coord : output_transform)
     {
         out[output_transform.index(output_coord)] = zero_tv->get_element(zero_ind);
+        ++zero_ind;
     }
 
     CoordinateTransform input_transform(in_shape);

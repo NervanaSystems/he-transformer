@@ -131,6 +131,11 @@ void runtime::he::kernel::scalar_add(const shared_ptr<he::HECiphertext>& arg0,
     auto arg0_seal = dynamic_pointer_cast<SealCiphertextWrapper>(arg0);
     auto arg1_seal = dynamic_pointer_cast<SealCiphertextWrapper>(arg1);
     auto out_seal = dynamic_pointer_cast<SealCiphertextWrapper>(out);
+
+    if (arg0_seal == nullptr || arg1_seal == nullptr || out_seal == nullptr)
+    {
+        throw ngraph_error("scalar_add receieved seal backend, but non-seal tensors");
+    }
     he_seal_backend->get_evaluator()->add(arg0_seal->m_ciphertext, arg1_seal->m_ciphertext, out_seal->m_ciphertext);
 }
 
