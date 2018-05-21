@@ -38,7 +38,7 @@ runtime::he::HECipherTensorView::HECipherTensorView(const element::Type& element
     m_cipher_texts.resize(m_num_elements);
     for (size_t i = 0; i < m_num_elements; ++i)
     {
-        if (auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(m_he_backend))
+        if (auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(m_he_backend))
         {
             m_cipher_texts[i] = make_shared<he::SealCiphertextWrapper>();
         }
@@ -66,7 +66,7 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
         const void* src_with_offset = (void*)((char*)source);
         size_t dst_index = dst_start_index;
 
-        if (auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(m_he_backend))
+        if (auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(m_he_backend))
         {
             shared_ptr<he::HEPlaintext> p = make_shared<he::SealPlaintextWrapper>();
             he_seal_backend->encode(p, src_with_offset, type);
@@ -86,7 +86,7 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
             size_t dst_index = dst_start_index + i;
             shared_ptr<he::HEPlaintext> p = make_shared<he::HEPlaintext>();
 
-            if (auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(m_he_backend))
+            if (auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(m_he_backend))
             {
                 shared_ptr<he::HEPlaintext> p = make_shared<he::SealPlaintextWrapper>();
                 he_seal_backend->encode(p, src_with_offset, type);
@@ -111,7 +111,7 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
     {
         void* dst_with_offset = (void*)((char*)target);
         size_t src_index = src_start_index;
-        if (auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(m_he_backend))
+        if (auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(m_he_backend))
         {
             shared_ptr<he::HEPlaintext> p = make_shared<he::SealPlaintextWrapper>();
             he_seal_backend->decrypt(p, m_cipher_texts[src_index]);
@@ -129,7 +129,7 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
         {
             void* dst_with_offset = (void*)((char*)target + i * type.size());
             size_t src_index = src_start_index + i;
-            if (auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(m_he_backend))
+            if (auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(m_he_backend))
             {
                 shared_ptr<he::HEPlaintext> p = make_shared<he::SealPlaintextWrapper>();
                 he_seal_backend->decrypt(p, m_cipher_texts[src_index]);

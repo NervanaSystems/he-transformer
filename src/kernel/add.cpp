@@ -31,7 +31,7 @@ void runtime::he::kernel::add(const vector<shared_ptr<he::HECiphertext>>& arg0,
                               shared_ptr<HEBackend> he_backend,
                               size_t count)
 {
-    auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(he_backend);
+    auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(he_backend);
     if (!he_seal_backend)
     {
         throw ngraph_error("HE backend not seal type");
@@ -61,7 +61,7 @@ void runtime::he::kernel::add(const vector<shared_ptr<he::HECiphertext>>& arg0,
                               shared_ptr<HEBackend> he_backend,
                               size_t count)
 {
-    auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(he_backend);
+    auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(he_backend);
     if (!he_seal_backend)
     {
         throw ngraph_error("HE backend not seal type");
@@ -101,7 +101,7 @@ void runtime::he::kernel::add(const vector<shared_ptr<he::HEPlaintext>>& arg0,
                               shared_ptr<HEBackend> he_backend,
                               size_t count)
 {
-    auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(he_backend);
+    auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(he_backend);
     if (!he_seal_backend)
     {
         throw ngraph_error("HE backend not seal type");
@@ -127,7 +127,7 @@ void runtime::he::kernel::scalar_add(const shared_ptr<he::HECiphertext>& arg0,
                                      shared_ptr<he::HECiphertext>& out,
                                      shared_ptr<HEBackend> he_backend)
 {
-    auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(he_backend);
+    auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(he_backend);
     if (!he_seal_backend)
     {
         throw ngraph_error("HE backend not seal type");
@@ -150,7 +150,7 @@ void runtime::he::kernel::scalar_add(const shared_ptr<he::HEPlaintext>& arg0,
                                      const element::Type& type,
                                      shared_ptr<HEBackend> he_backend)
 {
-    auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(he_backend);
+    auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(he_backend);
     if (!he_seal_backend)
     {
         throw ngraph_error("HE backend not seal type");

@@ -45,7 +45,7 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<he::HECiphertext>& ar
                                           const element::Type& type,
                                           shared_ptr<HEBackend> he_backend)
 {
-    auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(he_backend);
+    auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(he_backend);
     if (!he_seal_backend)
     {
         throw ngraph_error("HE backend not seal type");
@@ -77,7 +77,7 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<he::HECiphertext>& ar
                                           const element::Type& type,
                                           shared_ptr<HEBackend> he_backend)
 {
-    auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(he_backend);
+    auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(he_backend);
     if (!he_seal_backend)
     {
         throw ngraph_error("HE backend not seal type");
@@ -140,7 +140,7 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<he::HEPlaintext>>& ar
         throw ngraph_error("Type " + type_name + " not supported");
     }
 
-    auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(he_backend);
+    auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(he_backend);
     if (!he_seal_backend)
     {
         throw ngraph_error("HE backend not seal type");
@@ -169,7 +169,7 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<he::HEPlaintext>& arg
         throw ngraph_error("Type " + type_name + " not supported");
     }
 
-    auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(he_backend);
+    auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(he_backend);
     if (!he_seal_backend)
     {
         throw ngraph_error("HE backend not seal type");

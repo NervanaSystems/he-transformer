@@ -61,7 +61,7 @@ void runtime::he::kernel::result(const vector<shared_ptr<he::HEPlaintext>>& arg,
                                  size_t count,
                                  const shared_ptr<HEBackend>& he_backend)
 {
-    if (auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(he_backend))
+    if (auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(he_backend))
     {
         for (size_t i = 0; i < count; ++i)
         {

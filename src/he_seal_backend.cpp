@@ -38,7 +38,7 @@ using namespace std;
 
 extern "C" bool create_backend()
 {
-    runtime::Backend::register_backend("HE", make_shared<runtime::he::HESealBackend>());
+    runtime::Backend::register_backend("HE", make_shared<runtime::he::he_seal::HESealBackend>());
     return true;
 }
 
@@ -54,19 +54,19 @@ static void print_seal_context(const seal::SEALContext& context)
                 << "\\ noise_standard_deviation: " << context.noise_standard_deviation();
 }
 
-runtime::he::HESealBackend::HESealBackend()
-    : runtime::he::HESealBackend(
+runtime::he::he_seal::HESealBackend::HESealBackend()
+    : runtime::he::he_seal::HESealBackend(
           make_shared<runtime::he::HESealParameter>(runtime::he::default_seal_parameter))
 {
 }
 
-runtime::he::HESealBackend::HESealBackend(const shared_ptr<runtime::he::HEParameter> hep)
-    : runtime::he::HESealBackend(
+runtime::he::he_seal::HESealBackend::HESealBackend(const shared_ptr<runtime::he::HEParameter> hep)
+    : runtime::he::he_seal::HESealBackend(
           make_shared<runtime::he::HESealParameter>(hep->m_poly_modulus, hep->m_plain_modulus))
 {
 }
 
-runtime::he::HESealBackend::HESealBackend(const shared_ptr<runtime::he::HESealParameter> sp)
+runtime::he::he_seal::HESealBackend::HESealBackend(const shared_ptr<runtime::he::HESealParameter> sp)
 {
     assert_valid_seal_parameter(sp);
 
@@ -103,11 +103,11 @@ runtime::he::HESealBackend::HESealBackend(const shared_ptr<runtime::he::HESealPa
                                     m_int_encoder->encode(-1)};
 }
 
-runtime::he::HESealBackend::~HESealBackend()
+runtime::he::he_seal::HESealBackend::~HESealBackend()
 {
 }
 
-void runtime::he::HESealBackend::assert_valid_seal_parameter(
+void runtime::he::he_seal::HESealBackend::assert_valid_seal_parameter(
     const shared_ptr<runtime::he::HESealParameter> sp)
 {
     static unordered_set<uint64_t> valid_poly_modulus{1024, 2048, 4096, 8192, 16384, 32768};
@@ -122,7 +122,7 @@ void runtime::he::HESealBackend::assert_valid_seal_parameter(
 }
 
 shared_ptr<seal::SEALContext>
-    runtime::he::HESealBackend::make_seal_context(const shared_ptr<runtime::he::HESealParameter> sp)
+    runtime::he::he_seal::HESealBackend::make_seal_context(const shared_ptr<runtime::he::HESealParameter> sp)
 {
     assert_valid_seal_parameter(sp);
 
@@ -145,31 +145,31 @@ shared_ptr<seal::SEALContext>
 }
 
 shared_ptr<runtime::TensorView>
-    runtime::he::HESealBackend::create_tensor(const element::Type& element_type, const Shape& shape)
+    runtime::he::he_seal::HESealBackend::create_tensor(const element::Type& element_type, const Shape& shape)
 {
     shared_ptr<HESealBackend> he_seal_backend =
-        dynamic_pointer_cast<runtime::he::HESealBackend>(shared_from_this());
+        dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(shared_from_this());
     auto rc = make_shared<runtime::he::HECipherTensorView>(element_type, shape, he_seal_backend);
     return static_pointer_cast<runtime::TensorView>(rc);
 }
 
-shared_ptr<runtime::TensorView> runtime::he::HESealBackend::create_tensor(
+shared_ptr<runtime::TensorView> runtime::he::he_seal::HESealBackend::create_tensor(
     const element::Type& element_type, const Shape& shape, void* memory_pointer)
 {
     throw ngraph_error("HESeal create_tensor unimplemented");
 }
 
 shared_ptr<runtime::TensorView>
-    runtime::he::HESealBackend::create_plain_tensor(const element::Type& element_type,
+    runtime::he::he_seal::HESealBackend::create_plain_tensor(const element::Type& element_type,
                                                     const Shape& shape)
 {
     shared_ptr<HESealBackend> he_seal_backend =
-        dynamic_pointer_cast<runtime::he::HESealBackend>(shared_from_this());
+        dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(shared_from_this());
     auto rc = make_shared<runtime::he::HEPlainTensorView>(element_type, shape, he_seal_backend);
     return static_pointer_cast<runtime::TensorView>(rc);
 }
 
-shared_ptr<runtime::he::HECiphertext> runtime::he::HESealBackend::create_valued_ciphertext(
+shared_ptr<runtime::he::HECiphertext> runtime::he::he_seal::HESealBackend::create_valued_ciphertext(
     float value, const element::Type& element_type, const seal::MemoryPoolHandle& pool) const
 {
     throw ngraph_error("create_valued_ciphertext unimplemented");
@@ -197,13 +197,13 @@ shared_ptr<runtime::he::HECiphertext> runtime::he::HESealBackend::create_valued_
 }
 
 shared_ptr<runtime::he::HECiphertext>
-    runtime::he::HESealBackend::create_empty_ciphertext(const seal::MemoryPoolHandle& pool) const
+    runtime::he::he_seal::HESealBackend::create_empty_ciphertext(const seal::MemoryPoolHandle& pool) const
 {
     throw ngraph_error("HESealBackend::create_empty_ciphertext unimplemented");
     // return make_shared<he::HECiphertext>(m_context->parms(), pool);
 }
 
-shared_ptr<runtime::he::HEPlaintext> runtime::he::HESealBackend::create_valued_plaintext(
+shared_ptr<runtime::he::HEPlaintext> runtime::he::he_seal::HESealBackend::create_valued_plaintext(
     float value, const element::Type& element_type, const seal::MemoryPoolHandle& pool) const
 {
     // Optimize value == 0 to use memory-pool
@@ -239,7 +239,7 @@ shared_ptr<runtime::he::HEPlaintext> runtime::he::HESealBackend::create_valued_p
 }
 
 shared_ptr<runtime::he::HEPlaintext>
-    runtime::he::HESealBackend::create_empty_plaintext(const seal::MemoryPoolHandle& pool) const
+    runtime::he::he_seal::HESealBackend::create_empty_plaintext(const seal::MemoryPoolHandle& pool) const
 {
     throw ngraph_error("HESealBackend::create_empty_plaintext unimplemnented");
     // Return a memory-pooled version 0-initialized plaintext
@@ -248,7 +248,7 @@ shared_ptr<runtime::he::HEPlaintext>
 }
 
 shared_ptr<runtime::he::HECiphertext>
-    runtime::he::HESealBackend::create_valued_ciphertext(float value,
+    runtime::he::he_seal::HESealBackend::create_valued_ciphertext(float value,
                                                          const element::Type& element_type) const
 {
     const string type_name = element_type.c_type_string();
@@ -275,13 +275,13 @@ shared_ptr<runtime::he::HECiphertext>
     return ciphertext;
 }
 
-shared_ptr<runtime::he::HECiphertext> runtime::he::HESealBackend::create_empty_ciphertext() const
+shared_ptr<runtime::he::HECiphertext> runtime::he::he_seal::HESealBackend::create_empty_ciphertext() const
 {
     return make_shared<runtime::he::SealCiphertextWrapper>();
 }
 
 shared_ptr<runtime::he::HEPlaintext>
-    runtime::he::HESealBackend::create_valued_plaintext(float value,
+    runtime::he::he_seal::HESealBackend::create_valued_plaintext(float value,
                                                         const element::Type& element_type) const
 {
     const string type_name = element_type.c_type_string();
@@ -306,12 +306,12 @@ shared_ptr<runtime::he::HEPlaintext>
     return plaintext;
 }
 
-shared_ptr<runtime::he::HEPlaintext> runtime::he::HESealBackend::create_empty_plaintext() const
+shared_ptr<runtime::he::HEPlaintext> runtime::he::he_seal::HESealBackend::create_empty_plaintext() const
 {
     return make_shared<SealPlaintextWrapper>();
 }
 
-shared_ptr<runtime::TensorView> runtime::he::HESealBackend::create_valued_tensor(
+shared_ptr<runtime::TensorView> runtime::he::he_seal::HESealBackend::create_valued_tensor(
     float value, const element::Type& element_type, const Shape& shape)
 {
     auto tensor = static_pointer_cast<HECipherTensorView>(create_tensor(element_type, shape));
@@ -324,7 +324,7 @@ shared_ptr<runtime::TensorView> runtime::he::HESealBackend::create_valued_tensor
     return tensor;
 }
 
-shared_ptr<runtime::TensorView> runtime::he::HESealBackend::create_valued_plain_tensor(
+shared_ptr<runtime::TensorView> runtime::he::he_seal::HESealBackend::create_valued_plain_tensor(
     float value, const element::Type& element_type, const Shape& shape)
 {
     throw ngraph_error("create_valued_tensor plain unimplemented in seal");
@@ -339,12 +339,12 @@ shared_ptr<runtime::TensorView> runtime::he::HESealBackend::create_valued_plain_
     return tensor; */
 }
 
-bool runtime::he::HESealBackend::compile(shared_ptr<Function> func)
+bool runtime::he::he_seal::HESealBackend::compile(shared_ptr<Function> func)
 {
     if (m_function_map.count(func) == 0)
     {
         shared_ptr<HESealBackend> he_seal_backend =
-            dynamic_pointer_cast<runtime::he::HESealBackend>(shared_from_this());
+            dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(shared_from_this());
         shared_ptr<Function> cf_func = clone_function(*func);
 
         // Run passes
@@ -362,7 +362,7 @@ bool runtime::he::HESealBackend::compile(shared_ptr<Function> func)
     return true;
 }
 
-bool runtime::he::HESealBackend::call(shared_ptr<Function> func,
+bool runtime::he::he_seal::HESealBackend::call(shared_ptr<Function> func,
                                       const vector<shared_ptr<runtime::TensorView>>& outputs,
                                       const vector<shared_ptr<runtime::TensorView>>& inputs)
 {
@@ -371,17 +371,17 @@ bool runtime::he::HESealBackend::call(shared_ptr<Function> func,
     return true;
 }
 
-void runtime::he::HESealBackend::clear_function_instance()
+void runtime::he::he_seal::HESealBackend::clear_function_instance()
 {
     m_function_map.clear();
 }
 
-void runtime::he::HESealBackend::remove_compiled_function(shared_ptr<Function> func)
+void runtime::he::he_seal::HESealBackend::remove_compiled_function(shared_ptr<Function> func)
 {
     throw ngraph_error("HESealBackend remove compile function unimplemented");
 }
 
-void runtime::he::HESealBackend::encode(shared_ptr<runtime::he::HEPlaintext>& output,
+void runtime::he::he_seal::HESealBackend::encode(shared_ptr<runtime::he::HEPlaintext>& output,
                                         const void* input,
                                         const element::Type& type)
 {
@@ -404,7 +404,7 @@ void runtime::he::HESealBackend::encode(shared_ptr<runtime::he::HEPlaintext>& ou
     }
 }
 
-void runtime::he::HESealBackend::decode(void* output,
+void runtime::he::he_seal::HESealBackend::decode(void* output,
                                         const shared_ptr<runtime::he::HEPlaintext> input,
                                         const element::Type& type)
 {
@@ -434,7 +434,7 @@ void runtime::he::HESealBackend::decode(void* output,
     }
 }
 
-void runtime::he::HESealBackend::encrypt(shared_ptr<runtime::he::HECiphertext> output,
+void runtime::he::he_seal::HESealBackend::encrypt(shared_ptr<runtime::he::HECiphertext> output,
                                          const shared_ptr<runtime::he::HEPlaintext> input)
 {
     auto seal_output = dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(output);
@@ -449,7 +449,7 @@ void runtime::he::HESealBackend::encrypt(shared_ptr<runtime::he::HECiphertext> o
     }
 }
 
-void runtime::he::HESealBackend::decrypt(shared_ptr<runtime::he::HEPlaintext> output,
+void runtime::he::he_seal::HESealBackend::decrypt(shared_ptr<runtime::he::HEPlaintext> output,
                                          const shared_ptr<he::HECiphertext> input)
 {
     auto seal_output = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(output);
@@ -457,13 +457,13 @@ void runtime::he::HESealBackend::decrypt(shared_ptr<runtime::he::HEPlaintext> ou
     m_decryptor->decrypt(seal_input->m_ciphertext, seal_output->m_plaintext);
 }
 
-int runtime::he::HESealBackend::noise_budget(const shared_ptr<seal::Ciphertext>& ciphertext) const
+int runtime::he::he_seal::HESealBackend::noise_budget(const shared_ptr<seal::Ciphertext>& ciphertext) const
 {
     throw ngraph_error("HESealBackend::noise_budget unimplemented");
     return m_decryptor->invariant_noise_budget(*ciphertext);
 }
 
-/* void runtime::he::HESealBackend::check_noise_budget(
+/* void runtime::he::he_seal::HESealBackend::check_noise_budget(
     const vector<shared_ptr<runtime::he::HETensorView>>& tvs) const
 {
     throw ngraph_error("HESealBackend::check_noise_budget unimplemented");
@@ -498,18 +498,18 @@ int runtime::he::HESealBackend::noise_budget(const shared_ptr<seal::Ciphertext>&
     NGRAPH_INFO << "Done checking noise budget ";
 } */
 
-void runtime::he::HESealBackend::enable_performance_data(shared_ptr<Function> func, bool enable)
+void runtime::he::he_seal::HESealBackend::enable_performance_data(shared_ptr<Function> func, bool enable)
 {
     // Enabled by default
 }
 
 vector<runtime::PerformanceCounter>
-    runtime::he::HESealBackend::get_performance_data(shared_ptr<Function> func) const
+    runtime::he::he_seal::HESealBackend::get_performance_data(shared_ptr<Function> func) const
 {
     return m_function_map.at(func)->get_performance_data();
 }
 
-void runtime::he::HESealBackend::visualize_function_after_pass(const shared_ptr<Function>& func,
+void runtime::he::he_seal::HESealBackend::visualize_function_after_pass(const shared_ptr<Function>& func,
                                                                const string& file_name)
 {
     compile(func);

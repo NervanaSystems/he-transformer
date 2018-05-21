@@ -38,7 +38,7 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<he::HECiphertext>>& ar
                                   const element::Type& type,
                                   shared_ptr<HEBackend>& he_backend)
 {
-    auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(he_backend);
+    auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(he_backend);
     if (!he_seal_backend)
     {
         throw ngraph_error("HE backend not seal type");

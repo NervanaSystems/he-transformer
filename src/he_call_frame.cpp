@@ -643,7 +643,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     }
     else if (node_op == "Relinearize")
     {
-        if (auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(m_he_backend))
+        if (auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(m_he_backend))
         {
             if (arg0_cipher != nullptr && out0_cipher != nullptr)
             {
