@@ -18,17 +18,15 @@
 set (HE_SRC
     he_backend.cpp
     he_call_frame.cpp
+    he_cipher_tensor_view.cpp
     he_ciphertext.cpp
     he_plaintext.cpp
     he_seal_backend.cpp
-    he_tensor_view.cpp
-    he_cipher_tensor_view.cpp
     he_seal_parameter.cpp
+    he_tensor_view.cpp
     he_parameter.cpp
     he_plain_tensor_view.cpp
     int_call_frame.cpp
-    seal_ciphertext_wrapper.cpp
-    seal_plaintext_wrapper.cpp
     kernel/add.cpp
     kernel/broadcast.cpp
     kernel/concat.cpp
@@ -43,6 +41,8 @@ set (HE_SRC
     kernel/subtract.cpp
     kernel/sum.cpp
     pass/insert_relinearize.cpp
+    seal_ciphertext_wrapper.cpp
+    seal_plaintext_wrapper.cpp
 )
 
 # Paths for the upstream ngraph

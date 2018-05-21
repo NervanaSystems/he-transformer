@@ -34,8 +34,6 @@ using namespace std;
 
 runtime::he::HEBackend::HEBackend()
 {
-    NGRAPH_INFO << "Passing through HEBackend default constructor";
-    //throw ngraph_error("HEBackend not implemented");
 }
 
 runtime::he::HEBackend::HEBackend(const shared_ptr<runtime::he::HEParameter> hep)

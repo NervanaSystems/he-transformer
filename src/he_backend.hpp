@@ -45,7 +45,6 @@ namespace ngraph
                 HEBackend();
                 HEBackend(const std::shared_ptr<runtime::he::HEParameter> hep);
                 HEBackend(HEBackend& he_backend) = default;
-                // virtual ~HEBackend();
 
                 std::shared_ptr<runtime::TensorView>
                     create_tensor(const element::Type& element_type, const Shape& shape) override;
