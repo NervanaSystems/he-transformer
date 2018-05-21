@@ -54,7 +54,7 @@ TEST_F(TestHEBackend, cipher_tv_write_read_scalar)
     copy_data(a, vector<int64_t>{5});
     EXPECT_EQ(read_vector<int64_t>(a), (vector<int64_t>{5}));
 }
-/*
+
 TEST_F(TestHEBackend, cipher_tv_write_read_2)
 {
     Shape shape{2};
@@ -2013,7 +2013,7 @@ TEST_F(TestHEBackend, sum_100_2)
 
     m_he_backend->call(f, {result}, {a});
     EXPECT_EQ((vector<float>{943.8259698, 1853.237534}), read_vector<float>(result));
-} */
+}
 
 /* TEST_F(TestHEBackend, create_valued_plaintext)
 {

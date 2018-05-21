@@ -70,14 +70,12 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
         if (auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(m_he_backend))
         {
             shared_ptr<he::HEPlaintext> p = make_shared<he::SealPlaintextWrapper>();
-            NGRAPH_INFO << "Encoding";
             he_seal_backend->encode(p, src_with_offset, type);
-            NGRAPH_INFO << "Encrypting";
             he_seal_backend->encrypt(m_cipher_texts[dst_index], p);
         }
         else
         {
-            throw ngraph_error("HECipherTensorView::write, he_backend is not seal!");
+            throw ngraph_error("HECipherTensorView::write, he_backend is not seal.");
         }
     }
     else
@@ -89,8 +87,16 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
             size_t dst_index = dst_start_index + i;
             shared_ptr<he::HEPlaintext> p = make_shared<he::HEPlaintext>();
 
-            m_he_backend->encode(p, src_with_offset, type);
-            m_he_backend->encrypt(m_cipher_texts[dst_index], p);
+            if (auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(m_he_backend))
+            {
+                shared_ptr<he::HEPlaintext> p = make_shared<he::SealPlaintextWrapper>();
+                he_seal_backend->encode(p, src_with_offset, type);
+                he_seal_backend->encrypt(m_cipher_texts[dst_index], p);
+            }
+            else
+            {
+                throw ngraph_error("HECipherTensorView::write, he_backend is not seal.");
+            }
         }
     }
 }
@@ -115,7 +121,7 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
         }
         else
         {
-            throw ngraph_error("HECipherTensorView::read he_backend is not seal!");
+            throw ngraph_error("HECipherTensorView::read he_backend is not seal.");
         }
     }
     else
@@ -125,9 +131,16 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
         {
             void* dst_with_offset = (void*)((char*)target + i * type.size());
             size_t src_index = src_start_index + i;
-            he::HEPlaintext p;
-            m_he_backend->decrypt(p, *(m_cipher_texts[src_index]));
-            m_he_backend->decode(dst_with_offset, p, type);
+            if (auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(m_he_backend))
+            {
+                shared_ptr<he::HEPlaintext> p = make_shared<he::SealPlaintextWrapper>();
+                he_seal_backend->decrypt(p, m_cipher_texts[src_index]);
+                he_seal_backend->decode(dst_with_offset, p, type);
+            }
+            else
+            {
+                throw ngraph_error("HECipherTensorView::read he_backend is not seal.");
+            }
         }
     }
 }
