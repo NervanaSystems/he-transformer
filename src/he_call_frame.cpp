@@ -162,7 +162,6 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                         dynamic_pointer_cast<HEPlainTensorView>(inputs[1]);
                     if ((in0_plain != nullptr) && (in1_plain != nullptr))
                     {
-                        NGRAPH_INFO << "Op " << op->description() << " out is plaintext";
                         auto itv = make_shared<runtime::he::HEPlainTensorView>(
                             element_type, shape, m_he_backend, name);
                         tensor_map.insert({tv, itv});
@@ -461,7 +460,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
 
         if (arg0_cipher != nullptr && out0_cipher != nullptr)
         {
-            NGRAPH_INFO << "Broadcast cipher cipher ";
             Shape in_shape = arg0_cipher->get_shape();
             Shape out_shape = out0_cipher->get_shape();
             runtime::he::kernel::broadcast(arg0_cipher->get_elements(),
@@ -472,7 +470,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         }
         else if (arg0_plain != nullptr && out0_cipher != nullptr)
         {
-            NGRAPH_INFO << "Broadcast plain -> cipher ";
             Shape in_shape = arg0_plain->get_shape();
             Shape out_shape = out0_cipher->get_shape();
             runtime::he::kernel::broadcast(arg0_plain->get_elements(),
@@ -484,7 +481,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         }
         else if (arg0_plain != nullptr && out0_plain != nullptr)
         {
-            NGRAPH_INFO << "Broadcast plain plain";
             Shape in_shape = arg0_plain->get_shape();
             Shape out_shape = out0_plain->get_shape();
             runtime::he::kernel::broadcast(arg0_plain->get_elements(),
@@ -552,7 +548,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
 
         if (arg0_cipher != nullptr && arg1_cipher != nullptr)
         {
-            NGRAPH_INFO << "Dot cipher cipher";
             runtime::he::kernel::dot(arg0_cipher->get_elements(),
                                      arg1_cipher->get_elements(),
                                      out0_cipher->get_elements(),
@@ -565,7 +560,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         }
         else if (arg0_cipher != nullptr && arg1_plain != nullptr)
         {
-            NGRAPH_INFO << "Dot cipher plain";
             runtime::he::kernel::dot(arg0_cipher->get_elements(),
                                      arg1_plain->get_elements(),
                                      out0_cipher->get_elements(),
@@ -578,7 +572,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         }
         else if (arg0_plain != nullptr && arg1_cipher != nullptr)
         {
-            NGRAPH_INFO << "Dot cipher plain";
             runtime::he::kernel::dot(arg0_plain->get_elements(),
                                      arg1_cipher->get_elements(),
                                      out0_cipher->get_elements(),
@@ -591,7 +584,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         }
         else if (arg0_plain != nullptr && arg1_plain != nullptr)
         {
-            NGRAPH_INFO << "Dot plain plain";
             runtime::he::kernel::dot(arg0_plain->get_elements(),
                                      arg1_plain->get_elements(),
                                      out0_plain->get_elements(),
@@ -656,7 +648,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         {
             if (arg0_cipher != nullptr && out0_cipher != nullptr)
             {
-                NGRAPH_INFO << "Relin? cipher cipehr";
                 runtime::he::kernel::relinearize(arg0_cipher->get_elements(),
                                                  out0_cipher->get_elements(),
                                                  he_seal_backend,
@@ -664,7 +655,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
             }
             else
             {
-                NGRAPH_INFO << "arg0 is plaintext? " << (arg0_plain != nullptr)
+                NGRAPH_INFO << "Relin arg0 is plaintext? " << (arg0_plain != nullptr)
                             << ", out0 is plaintext? " << (out0_plain != nullptr);
                 //throw ngraph_error("Input to Relinearize must be ciphertext");
             }
@@ -713,7 +704,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         }
         else if (arg0_plain != nullptr && out0_cipher != nullptr)
         {
-            NGRAPH_INFO << "arg0_plain, out0_cipher"; // TODO next
             runtime::he::kernel::reshape(arg0_plain->get_elements(),
                                          out0_cipher->get_elements(),
                                          arg0_plain->get_shape(),
@@ -723,7 +713,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         }
         else if (arg0_plain != nullptr && out0_plain != nullptr)
         {
-            NGRAPH_INFO << "plain plain";
             runtime::he::kernel::reshape(arg0_plain->get_elements(),
                                          out0_plain->get_elements(),
                                          arg0_plain->get_shape(),
