@@ -31,6 +31,7 @@ namespace ngraph
             struct SealPlaintextWrapper : public HEPlaintext
             {
                 SealPlaintextWrapper(seal::Plaintext plain);
+                SealPlaintextWrapper();
                 virtual ~SealPlaintextWrapper();
 
                 seal::Plaintext m_plaintext;

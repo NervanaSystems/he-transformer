@@ -101,13 +101,13 @@ namespace ngraph
 
                 void remove_compiled_function(std::shared_ptr<Function> func) override;
 
-                void encode(shared_ptr<he::HEPlaintext> output, const void* input, const element::Type& type);
+                void encode(shared_ptr<he::HEPlaintext>& output, const void* input, const element::Type& type);
 
-                void decode(void* output, const he::HEPlaintext& input, const element::Type& type);
+                void decode(void* output, const std::shared_ptr<he::HEPlaintext> input, const element::Type& type);
 
                 void encrypt(shared_ptr<he::HECiphertext> output, const std::shared_ptr<he::HEPlaintext> input);
 
-                void decrypt(he::HEPlaintext& output, const he::HECiphertext& input);
+                void decrypt(std::shared_ptr<he::HEPlaintext> output, const std::shared_ptr<he::HECiphertext> input);
 
                 const inline std::shared_ptr<seal::SEALContext> get_context() const
                 {

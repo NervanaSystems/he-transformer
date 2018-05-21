@@ -377,7 +377,7 @@ void runtime::he::HESealBackend::remove_compiled_function(shared_ptr<Function> f
     throw ngraph_error("HESealBackend remove compile function unimplemented");
 }
 
-void runtime::he::HESealBackend::encode(shared_ptr<runtime::he::HEPlaintext> output,
+void runtime::he::HESealBackend::encode(shared_ptr<runtime::he::HEPlaintext>& output,
                                     const void* input,
                                     const element::Type& type)
 {
@@ -385,6 +385,7 @@ void runtime::he::HESealBackend::encode(shared_ptr<runtime::he::HEPlaintext> out
 
     if (type_name == "int64_t")
     {
+        NGRAPH_INFO << "Encoding " << *(int64_t*)input;
         output = make_shared<runtime::he::SealPlaintextWrapper>(m_int_encoder->encode(*(int64_t*)input));
     }
     else if (type_name == "float")
@@ -399,27 +400,35 @@ void runtime::he::HESealBackend::encode(shared_ptr<runtime::he::HEPlaintext> out
 }
 
 void runtime::he::HESealBackend::decode(void* output,
-                                    const runtime::he::HEPlaintext& input,
+                                    const shared_ptr<runtime::he::HEPlaintext> input,
                                     const element::Type& type)
 {
-    throw  ngraph_error("HESealBackend::encode unimplemented");
-    /* const string type_name = type.c_type_string();
+    const string type_name = type.c_type_string();
 
-    if (type_name == "int64_t")
+    if (auto seal_input = dynamic_pointer_cast<SealPlaintextWrapper>(input))
     {
-        int64_t x = m_int_encoder->decode_int64(input);
-        memcpy(output, &x, type.size());
-    }
-    else if (type_name == "float")
-    {
-        float x = m_frac_encoder->decode(input);
-        memcpy(output, &x, type.size());
+
+        if (type_name == "int64_t")
+        {
+            int64_t x = m_int_encoder->decode_int64(seal_input->m_plaintext);
+            NGRAPH_INFO << "Decoded " << x;
+            memcpy(output, &x, type.size());
+        }
+        else if (type_name == "float")
+        {
+            float x = m_frac_encoder->decode(seal_input->m_plaintext);
+            memcpy(output, &x, type.size());
+        }
+        else
+        {
+            NGRAPH_INFO << "Unsupported element type in decode " << type_name;
+            throw ngraph_error("Unsupported element type " + type_name);
+        }
     }
     else
     {
-        NGRAPH_INFO << "Unsupported element type in decode " << type_name;
-        throw ngraph_error("Unsupported element type " + type_name);
-    } */
+        throw ngraph_error("HESealBackend::decode input is not seal plaintext");
+    }
 }
 
 void runtime::he::HESealBackend::encrypt(shared_ptr<runtime::he::HECiphertext> output, const shared_ptr<runtime::he::HEPlaintext> input)
@@ -433,14 +442,16 @@ void runtime::he::HESealBackend::encrypt(shared_ptr<runtime::he::HECiphertext> o
     }
     else
     {
+        NGRAPH_INFO << "seal_output " << (seal_output != nullptr) << ", seal_input" << (seal_input != nullptr) ;
         throw ngraph_error("HESealBackend::encrypt has non-seal ciphertexts");
     }
 }
 
-void runtime::he::HESealBackend::decrypt(runtime::he::HEPlaintext& output, const he::HECiphertext& input)
+void runtime::he::HESealBackend::decrypt(shared_ptr<runtime::he::HEPlaintext> output, const shared_ptr<he::HECiphertext> input)
 {
-    throw ngraph_error("HESealBackend::dencrypt unimplemented");
-    // m_decryptor->decrypt(input, output);
+    auto seal_output = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(output);
+    auto seal_input = dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(input);
+    m_decryptor->decrypt(seal_input->m_ciphertext, seal_output->m_plaintext);
 }
 
 int runtime::he::HESealBackend::noise_budget(const shared_ptr<seal::Ciphertext>& ciphertext) const

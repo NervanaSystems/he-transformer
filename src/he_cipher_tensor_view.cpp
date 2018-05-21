@@ -19,6 +19,8 @@
 
 #include "he_backend.hpp"
 #include "he_seal_backend.hpp"
+#include "seal_ciphertext_wrapper.hpp"
+#include "seal_plaintext_wrapper.hpp"
 #include "he_cipher_tensor_view.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
 
@@ -36,7 +38,14 @@ runtime::he::HECipherTensorView::HECipherTensorView(const element::Type& element
     m_cipher_texts.resize(m_num_elements);
     for (size_t i = 0; i < m_num_elements; ++i)
     {
-        m_cipher_texts[i] = make_shared<he::HECiphertext>();
+        if (auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(m_he_backend))
+        {
+            m_cipher_texts[i] = make_shared<he::SealCiphertextWrapper>();
+        }
+        else
+        {
+            throw ngraph_error("m_he_backend not seal in HECipherTensorView");
+        }
     }
 }
 
@@ -46,6 +55,7 @@ runtime::he::HECipherTensorView::~HECipherTensorView()
 
 void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_offset, size_t n)
 {
+    NGRAPH_INFO << "HECipherTensorView::write";
     check_io_bounds(source, tensor_offset, n);
     const element::Type& type = get_tensor_view_layout()->get_element_type();
     size_t type_byte_size = type.size();
@@ -56,11 +66,13 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
     {
         const void* src_with_offset = (void*)((char*)source);
         size_t dst_index = dst_start_index;
-        shared_ptr<he::HEPlaintext> p = make_shared<he::HEPlaintext>();
 
         if (auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(m_he_backend))
         {
+            shared_ptr<he::HEPlaintext> p = make_shared<he::SealPlaintextWrapper>();
+            NGRAPH_INFO << "Encoding";
             he_seal_backend->encode(p, src_with_offset, type);
+            NGRAPH_INFO << "Encrypting";
             he_seal_backend->encrypt(m_cipher_texts[dst_index], p);
         }
         else
@@ -85,6 +97,7 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
 
 void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, size_t n) const
 {
+    NGRAPH_INFO << "HECipherTensorView::read";
     check_io_bounds(target, tensor_offset, n);
     const element::Type& type = get_tensor_view_layout()->get_element_type();
     size_t type_byte_size = type.size();
@@ -94,9 +107,16 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
     {
         void* dst_with_offset = (void*)((char*)target);
         size_t src_index = src_start_index;
-        he::HEPlaintext p;
-        m_he_backend->decrypt(p, *(m_cipher_texts[src_index]));
-        m_he_backend->decode(dst_with_offset, p, type);
+        if (auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(m_he_backend))
+        {
+            shared_ptr<he::HEPlaintext> p = make_shared<he::SealPlaintextWrapper>();
+            he_seal_backend->decrypt(p, m_cipher_texts[src_index]);
+            he_seal_backend->decode(dst_with_offset, p, type);
+        }
+        else
+        {
+            throw ngraph_error("HECipherTensorView::read he_backend is not seal!");
+        }
     }
     else
     {

@@ -30,6 +30,7 @@ namespace ngraph
 
             struct SealCiphertextWrapper : public HECiphertext
             {
+                SealCiphertextWrapper();
                 SealCiphertextWrapper(seal::Ciphertext cipher);
                 virtual ~SealCiphertextWrapper();
 

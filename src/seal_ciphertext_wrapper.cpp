@@ -19,6 +19,11 @@
 using namespace std;
 using namespace ngraph;
 
+runtime::he::SealCiphertextWrapper::SealCiphertextWrapper()
+    : m_ciphertext(seal::Ciphertext())
+{
+}
+
 runtime::he::SealCiphertextWrapper::SealCiphertextWrapper(seal::Ciphertext cipher)
     : m_ciphertext(cipher)
 {
