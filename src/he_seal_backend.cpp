@@ -36,7 +36,13 @@ using namespace std;
 
 extern "C" bool create_backend()
 {
-    runtime::Backend::register_backend("HE_Seal", make_shared<runtime::he::HESealBackend>());
+    NGRAPH_INFO << "Creating HE seal bakcend";
+    runtime::he::HESealBackend tm2p();
+    NGRAPH_INFO << "Creating HE seal shared";
+    auto tmp = make_shared<runtime::he::HESealBackend>();
+    NGRAPH_INFO << "Made backend. Now registering";
+    runtime::Backend::register_backend("HE", make_shared<runtime::he::HESealBackend>());
+    NGRAPH_INFO << "Done Creating HE seal bakcend";
     return true;
 }
 
@@ -55,17 +61,20 @@ static void print_seal_context(const seal::SEALContext& context)
 runtime::he::HESealBackend::HESealBackend()
     : runtime::he::HESealBackend(make_shared<runtime::he::HESealParameter>(runtime::he::default_seal_parameter))
 {
+    NGRAPH_INFO << "Making default he seal backend";
 }
 
 runtime::he::HESealBackend::HESealBackend(const shared_ptr<runtime::he::HEParameter> hep)
     : runtime::he::HESealBackend(make_shared<runtime::he::HESealParameter>(hep->m_poly_modulus, hep->m_plain_modulus))
 {
+    // NGRAPH_INFO << "Making HESealBackend with hep";
     //shared_ptr<runtime::he::HESealParameter> sp = make_shared<runtime::he::HESealParameter>(hep->m_poly_modulus, hep->m_plain_modulus);
     //runtime::he::HESealBackend(sp);
 }
 
 runtime::he::HESealBackend::HESealBackend(const shared_ptr<runtime::he::HESealParameter> sp)
 {
+    NGRAPH_INFO << "Making HESealBackend with sp";
     assert_valid_seal_parameter(sp);
 
     // Context
