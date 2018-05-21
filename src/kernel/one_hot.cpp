@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "he_backend.hpp"
+#include "he_seal_backend.hpp"
 #include "he_cipher_tensor_view.hpp"
 #include "kernel/one_hot.hpp"
 #include "ngraph/coordinate_transform.hpp"
@@ -37,9 +38,14 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<he::HECiphertext>>& ar
                                   const element::Type& type,
                                   shared_ptr<HEBackend>& he_backend)
 {
+    auto he_seal_backend = dynamic_pointer_cast<HESealBackend>(he_backend);
+    if (!he_seal_backend)
+    {
+        throw ngraph_error("HE backend not seal type");
+    }
     // Get 0 and 1 cipher text
-    shared_ptr<he::HECiphertext> zero_ciphertext = he_backend->create_valued_ciphertext(0, type);
-    shared_ptr<he::HECiphertext> one_ciphertext = he_backend->create_valued_ciphertext(1, type);
+    shared_ptr<he::HECiphertext> zero_ciphertext = he_seal_backend->create_valued_ciphertext(0, type);
+    shared_ptr<he::HECiphertext> one_ciphertext = he_seal_backend->create_valued_ciphertext(1, type);
 
     // Step 1: Zero out the output. We can simply copy the shared_ptr pointing to a zero
     // ciphertext to all output locations.
@@ -57,8 +63,8 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<he::HECiphertext>>& ar
         shared_ptr<he::HECiphertext> val = arg[input_transform.index(input_coord)];
 
         // TODO: We are not allowed to decrypt! Pass in one-hot encoded inputs
-        he::HEPlaintext plain_val;
-        he_backend->decrypt(plain_val, *val);
+        shared_ptr<he::HEPlaintext> plain_val = make_shared<he::SealPlaintextWrapper>();
+        he_seal_backend->decrypt(plain_val, val);
         size_t one_hot_pos;
 
         // TODO: We are not allowed to decrypt and decode
@@ -66,13 +72,13 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<he::HECiphertext>>& ar
         if (type_name == "int64_t")
         {
             int64_t x;
-            he_backend->decode((void*)(&x), plain_val, type);
+            he_seal_backend->decode((void*)(&x), plain_val, type);
             one_hot_pos = static_cast<size_t>(x);
         }
         else if (type_name == "float")
         {
             float x;
-            he_backend->decode((void*)(&x), plain_val, type);
+            he_seal_backend->decode((void*)(&x), plain_val, type);
             if (std::floor(x) < x || std::floor(x) > x)
             {
                 throw(std::range_error("One-hot: non-integral value in input"));
