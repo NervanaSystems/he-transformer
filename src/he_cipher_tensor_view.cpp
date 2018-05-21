@@ -56,6 +56,7 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
         const void* src_with_offset = (void*)((char*)source);
         size_t dst_index = dst_start_index;
         he::HEPlaintext p;
+
         m_he_backend->encode(p, src_with_offset, type);
         m_he_backend->encrypt(*(m_cipher_texts[dst_index]), p);
     }

@@ -152,6 +152,7 @@ shared_ptr<seal::SEALContext> runtime::he::HESealBackend::make_seal_context(cons
 shared_ptr<runtime::TensorView>
     runtime::he::HESealBackend::create_tensor(const element::Type& element_type, const Shape& shape)
 {
+    NGRAPH_INFO << "HESealBackend::create_tensor";
     shared_ptr<HESealBackend> he_seal_backend = dynamic_pointer_cast<runtime::he::HESealBackend>(shared_from_this());
     auto rc = make_shared<runtime::he::HECipherTensorView>(element_type, shape, he_seal_backend);
     return static_pointer_cast<runtime::TensorView>(rc);

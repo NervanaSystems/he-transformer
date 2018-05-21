@@ -39,7 +39,7 @@ TEST_F(TestHEBackend, backend_init)
     auto he_backend = runtime::Backend::create("HE");
     EXPECT_EQ(1, 1);
 }
-/*
+
 TEST_F(TestHEBackend, seal_debug)
 {
 #ifndef SEAL_DEBUG
@@ -54,7 +54,7 @@ TEST_F(TestHEBackend, cipher_tv_write_read_scalar)
     copy_data(a, vector<int64_t>{5});
     EXPECT_EQ(read_vector<int64_t>(a), (vector<int64_t>{5}));
 }
-
+/*
 TEST_F(TestHEBackend, cipher_tv_write_read_2)
 {
     Shape shape{2};

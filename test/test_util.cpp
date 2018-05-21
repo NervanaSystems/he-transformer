@@ -37,8 +37,8 @@ void TestHEBackend::TearDown()
     m_he_backend->clear_function_instance();
 }
 
-shared_ptr<ngraph::runtime::he::HEBackend> TestHEBackend::m_he_backend =
-    static_pointer_cast<runtime::he::HEBackend>(runtime::Backend::create("HE"));
+shared_ptr<ngraph::runtime::he::HESealBackend> TestHEBackend::m_he_backend =
+    static_pointer_cast<runtime::he::HESealBackend>(runtime::Backend::create("HE"));
 
 vector<float> read_constant(const string filename)
 {
