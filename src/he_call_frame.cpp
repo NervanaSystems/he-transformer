@@ -198,17 +198,16 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         const string op_name = op->description();
 
         // Check result with CPU backend
-        /* if (is_cpu_check_enabled(op))
+        if (is_cpu_check_enabled(op))
         {
             check_cpu_calls(function, base_type, op, outputs, inputs, false);
-        } */ // TODO: enable
+        }
 
         // Check noise budget after each op
-
-        if (auto output = dynamic_pointer_cast<HECipherTensorView>(outputs[0]))
+        /* if (auto output = dynamic_pointer_cast<HECipherTensorView>(outputs[0]))
         {
             // m_he_backend->check_noise_budget(outputs); TODO: enable
-        }
+        } */
 
         // Delete any obsolete tensors
         for (const descriptor::Tensor* t : op->liveness_free_list)
