@@ -26,9 +26,9 @@
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/type/element_type.hpp"
 
-void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<seal::Ciphertext>>& arg0,
-                                      const vector<shared_ptr<seal::Ciphertext>>& arg1,
-                                      vector<shared_ptr<seal::Ciphertext>>& out,
+void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<he::HECiphertext>>& arg0,
+                                      const vector<shared_ptr<he::HECiphertext>>& arg1,
+                                      vector<shared_ptr<he::HECiphertext>>& out,
                                       const Shape& arg0_shape,
                                       const Shape& arg1_shape,
                                       const Shape& out_shape,
@@ -40,9 +40,9 @@ void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<seal::Ciphertext>>
         arg0, arg1, out, arg0_shape, arg1_shape, out_shape, reduction_axes_count, type, he_backend);
 }
 
-void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<seal::Ciphertext>>& arg0,
-                                      const vector<shared_ptr<seal::Plaintext>>& arg1,
-                                      vector<shared_ptr<seal::Ciphertext>>& out,
+void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<he::HECiphertext>>& arg0,
+                                      const vector<shared_ptr<he::HEPlaintext>>& arg1,
+                                      vector<shared_ptr<he::HECiphertext>>& out,
                                       const Shape& arg0_shape,
                                       const Shape& arg1_shape,
                                       const Shape& out_shape,
@@ -54,9 +54,9 @@ void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<seal::Ciphertext>>
         arg0, arg1, out, arg0_shape, arg1_shape, out_shape, reduction_axes_count, type, he_backend);
 }
 
-void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<seal::Plaintext>>& arg0,
-                                      const vector<shared_ptr<seal::Ciphertext>>& arg1,
-                                      vector<shared_ptr<seal::Ciphertext>>& out,
+void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<he::HEPlaintext>>& arg0,
+                                      const vector<shared_ptr<he::HECiphertext>>& arg1,
+                                      vector<shared_ptr<he::HECiphertext>>& out,
                                       const Shape& arg0_shape,
                                       const Shape& arg1_shape,
                                       const Shape& out_shape,
@@ -69,9 +69,9 @@ void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<seal::Plaintext>>&
 }
 
 // TODO: merge with template dot
-void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<seal::Plaintext>>& arg0,
-                                      const vector<shared_ptr<seal::Plaintext>>& arg1,
-                                      vector<shared_ptr<seal::Plaintext>>& out,
+void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<he::HEPlaintext>>& arg0,
+                                      const vector<shared_ptr<he::HEPlaintext>>& arg1,
+                                      vector<shared_ptr<he::HEPlaintext>>& out,
                                       const Shape& arg0_shape,
                                       const Shape& arg1_shape,
                                       const Shape& out_shape,
@@ -79,6 +79,11 @@ void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<seal::Plaintext>>&
                                       const element::Type& type,
                                       shared_ptr<HEBackend> he_backend)
 {
+    auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(he_backend);
+    if (!he_seal_backend)
+    {
+        throw ngraph_error("HE backend not seal type");
+    }
     // Get the sizes of the dot axes. It's easiest to pull them from arg1 because they're
     // right up front.
     Shape dot_axis_sizes(reduction_axes_count);
@@ -126,7 +131,7 @@ void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<seal::Plaintext>>&
          ++global_projected_idx)
     {
         // Init thread-local memory pool for each thread
-        seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
+        // seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
 
         // Compute outer and inner index
         size_t arg0_projected_idx = global_projected_idx / arg1_projected_size;
@@ -155,7 +160,8 @@ void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<seal::Plaintext>>&
         std::copy(arg1_projected_coord.begin(), arg1_projected_coord.end(), out_coord_it);
 
         // Zero out to start the sum
-        shared_ptr<seal::Plaintext> sum = he_backend->create_valued_plaintext(0., type, pool);
+        shared_ptr<he::HEPlaintext> sum =
+            he_seal_backend->create_valued_plaintext(0., type); // TODO: enable pool
 
         size_t out_index = output_transform.index(out_coord);
 
@@ -179,10 +185,11 @@ void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<seal::Plaintext>>&
             auto arg0_text = arg0[arg0_transform.index(arg0_coord)];
             auto arg1_text = arg1[arg1_transform.index(arg1_coord)];
 
-            shared_ptr<seal::Plaintext> prod = he_backend->create_empty_plaintext(pool);
+            shared_ptr<he::HEPlaintext> prod =
+                he_seal_backend->create_empty_plaintext(); // TODO: enable pool
 
             runtime::he::kernel::scalar_multiply(
-                arg0_text, arg1_text, prod, type, he_backend, pool);
+                arg0_text, arg1_text, prod, type, he_backend); // TODO: enable pool
             runtime::he::kernel::scalar_add(sum, prod, sum, type, he_backend);
         }
 

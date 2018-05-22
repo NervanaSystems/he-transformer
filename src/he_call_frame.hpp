@@ -57,7 +57,7 @@ namespace ngraph
                 std::shared_ptr<Function> m_function;
                 std::shared_ptr<HEBackend> m_he_backend;
 
-                bool is_cpu_check_enabled(const shared_ptr<Node>& op) const;
+                bool is_cpu_check_enabled(const std::shared_ptr<Node>& op) const;
 
                 void call(std::shared_ptr<Function> function,
                           const std::vector<std::shared_ptr<runtime::he::HETensorView>>& output_tvs,
@@ -68,14 +68,15 @@ namespace ngraph
                                     const std::vector<std::shared_ptr<HETensorView>>& out,
                                     const std::vector<std::shared_ptr<HETensorView>>& args);
 
-                void check_cpu_calls(shared_ptr<Function> function,
-                                     const element::Type& type,
-                                     const shared_ptr<Node>& op,
-                                     const vector<shared_ptr<runtime::he::HETensorView>>& outputs,
-                                     const vector<shared_ptr<runtime::he::HETensorView>>& inputs,
-                                     bool verbose);
+                void check_cpu_calls(
+                    std::shared_ptr<Function> function,
+                    const element::Type& type,
+                    const std::shared_ptr<Node>& op,
+                    const std::vector<std::shared_ptr<runtime::he::HETensorView>>& outputs,
+                    const std::vector<std::shared_ptr<runtime::he::HETensorView>>& inputs,
+                    bool verbose);
 
-                std::unordered_map<shared_ptr<Node>, stopwatch> m_timer_map;
+                std::unordered_map<std::shared_ptr<Node>, stopwatch> m_timer_map;
             };
         }
     }

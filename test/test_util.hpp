@@ -22,13 +22,14 @@
 
 #include "gtest/gtest.h"
 #include "he_backend.hpp"
+#include "he_seal_backend.hpp"
 
 class TestHEBackend : public ::testing::Test
 {
 protected:
     virtual void SetUp() {}
     virtual void TearDown();
-    static std::shared_ptr<ngraph::runtime::he::HEBackend> m_he_backend;
+    static std::shared_ptr<ngraph::runtime::he::he_seal::HESealBackend> m_he_backend;
 };
 
 std::vector<float> read_constant(const std::string filename);

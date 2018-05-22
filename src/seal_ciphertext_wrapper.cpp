@@ -14,33 +14,21 @@
 * limitations under the License.
 *******************************************************************************/
 
-#pragma once
+#include "seal_ciphertext_wrapper.hpp"
 
-#include "ngraph/coordinate_transform.hpp"
-#include "seal/seal.h"
+using namespace std;
+using namespace ngraph;
 
-namespace ngraph
+runtime::he::SealCiphertextWrapper::SealCiphertextWrapper()
+    : m_ciphertext(seal::Ciphertext())
 {
-    namespace element
-    {
-        class Type;
-    }
-    namespace runtime
-    {
-        namespace he
-        {
-            class HEBackend;
-            class HECiphertext;
-            namespace kernel
-            {
-                void sum(const vector<shared_ptr<he::HECiphertext>>& arg,
-                         vector<shared_ptr<he::HECiphertext>>& out,
-                         const Shape& in_shape,
-                         const Shape& out_shape,
-                         const AxisSet& reduction_axes,
-                         const element::Type& type,
-                         shared_ptr<HEBackend> he_backend);
-            }
-        }
-    }
+}
+
+runtime::he::SealCiphertextWrapper::SealCiphertextWrapper(seal::Ciphertext cipher)
+    : m_ciphertext(cipher)
+{
+}
+
+runtime::he::SealCiphertextWrapper::~SealCiphertextWrapper()
+{
 }

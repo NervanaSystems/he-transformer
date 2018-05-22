@@ -47,20 +47,20 @@ namespace ngraph
                     }
                 };
 
-                void broadcast(const vector<shared_ptr<seal::Ciphertext>>& arg0,
-                               vector<shared_ptr<seal::Ciphertext>>& out,
+                void broadcast(const vector<shared_ptr<he::HECiphertext>>& arg0,
+                               vector<shared_ptr<he::HECiphertext>>& out,
                                const Shape& in_shape,
                                const Shape& out_shape,
                                const AxisSet& broadcast_axes);
 
-                void broadcast(const vector<shared_ptr<seal::Plaintext>>& arg0,
-                               vector<shared_ptr<seal::Plaintext>>& out,
+                void broadcast(const vector<shared_ptr<he::HEPlaintext>>& arg0,
+                               vector<shared_ptr<he::HEPlaintext>>& out,
                                const Shape& in_shape,
                                const Shape& out_shape,
                                const AxisSet& broadcast_axes);
 
-                void broadcast(const vector<shared_ptr<seal::Plaintext>>& arg0,
-                               vector<shared_ptr<seal::Ciphertext>>& out,
+                void broadcast(const vector<shared_ptr<he::HEPlaintext>>& arg0,
+                               vector<shared_ptr<he::HECiphertext>>& out,
                                const Shape& in_shape,
                                const Shape& out_shape,
                                const AxisSet& broadcast_axes,

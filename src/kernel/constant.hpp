@@ -33,10 +33,11 @@ namespace ngraph
         namespace he
         {
             class HEBackend;
+            class HEPlaintext;
 
             namespace kernel
             {
-                void constant(vector<shared_ptr<seal::Plaintext>>& out,
+                void constant(vector<shared_ptr<he::HEPlaintext>>& out,
                               const element::Type& type,
                               const void* data_ptr,
                               shared_ptr<HEBackend> he_backend,

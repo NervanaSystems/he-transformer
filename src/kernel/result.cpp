@@ -17,6 +17,9 @@
 #include <vector>
 
 #include "he_backend.hpp"
+#include "he_ciphertext.hpp"
+#include "he_plaintext.hpp"
+#include "he_seal_backend.hpp"
 #include "kernel/result.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/seal.h"
@@ -24,8 +27,8 @@
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::result(const vector<shared_ptr<seal::Ciphertext>>& arg,
-                                 vector<shared_ptr<seal::Ciphertext>>& out,
+void runtime::he::kernel::result(const vector<shared_ptr<he::HECiphertext>>& arg,
+                                 vector<shared_ptr<he::HECiphertext>>& out,
                                  size_t count)
 {
     for (size_t i = 0; i < count; ++i)
@@ -34,8 +37,8 @@ void runtime::he::kernel::result(const vector<shared_ptr<seal::Ciphertext>>& arg
     }
 }
 
-void runtime::he::kernel::result(const vector<shared_ptr<seal::Plaintext>>& arg,
-                                 vector<shared_ptr<seal::Plaintext>>& out,
+void runtime::he::kernel::result(const vector<shared_ptr<he::HEPlaintext>>& arg,
+                                 vector<shared_ptr<he::HEPlaintext>>& out,
                                  size_t count)
 {
     for (size_t i = 0; i < count; ++i)
@@ -44,8 +47,8 @@ void runtime::he::kernel::result(const vector<shared_ptr<seal::Plaintext>>& arg,
     }
 }
 
-void runtime::he::kernel::result(const vector<shared_ptr<seal::Ciphertext>>& arg,
-                                 vector<shared_ptr<seal::Plaintext>>& out,
+void runtime::he::kernel::result(const vector<shared_ptr<he::HECiphertext>>& arg,
+                                 vector<shared_ptr<he::HEPlaintext>>& out,
                                  size_t count,
                                  const element::Type& element_type,
                                  const shared_ptr<HEBackend>& he_backend)
@@ -53,13 +56,20 @@ void runtime::he::kernel::result(const vector<shared_ptr<seal::Ciphertext>>& arg
     throw ngraph_error("Result plaintext to ciphertext unimplemented");
 }
 
-void runtime::he::kernel::result(const vector<shared_ptr<seal::Plaintext>>& arg,
-                                 vector<shared_ptr<seal::Ciphertext>>& out,
+void runtime::he::kernel::result(const vector<shared_ptr<he::HEPlaintext>>& arg,
+                                 vector<shared_ptr<he::HECiphertext>>& out,
                                  size_t count,
                                  const shared_ptr<HEBackend>& he_backend)
 {
-    for (size_t i = 0; i < count; ++i)
+    if (auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(he_backend))
     {
-        he_backend->encrypt(*(out[i]), *(arg[i]));
+        for (size_t i = 0; i < count; ++i)
+        {
+            he_seal_backend->encrypt(out[i], arg[i]);
+        }
+    }
+    else
+    {
+        throw ngraph_error("he_backen not seal in result");
     }
 }

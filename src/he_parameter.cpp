@@ -14,33 +14,14 @@
 * limitations under the License.
 *******************************************************************************/
 
-#pragma once
+#include "he_parameter.hpp"
+#include <ngraph/ngraph.hpp>
 
-#include "ngraph/coordinate_transform.hpp"
-#include "seal/seal.h"
+using namespace ngraph;
+using namespace std;
 
-namespace ngraph
+runtime::he::HEParameter::HEParameter(uint64_t poly_modulus, uint64_t plain_modulus)
+    : m_poly_modulus(poly_modulus)
+    , m_plain_modulus(plain_modulus)
 {
-    namespace element
-    {
-        class Type;
-    }
-    namespace runtime
-    {
-        namespace he
-        {
-            class HEBackend;
-            class HECiphertext;
-            namespace kernel
-            {
-                void sum(const vector<shared_ptr<he::HECiphertext>>& arg,
-                         vector<shared_ptr<he::HECiphertext>>& out,
-                         const Shape& in_shape,
-                         const Shape& out_shape,
-                         const AxisSet& reduction_axes,
-                         const element::Type& type,
-                         shared_ptr<HEBackend> he_backend);
-            }
-        }
-    }
 }

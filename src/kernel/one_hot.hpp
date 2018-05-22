@@ -30,11 +30,12 @@ namespace ngraph
         namespace he
         {
             class HEBackend;
+            class HECiphertext;
 
             namespace kernel
             {
-                void one_hot(const vector<shared_ptr<seal::Ciphertext>>& arg,
-                             vector<shared_ptr<seal::Ciphertext>>& out,
+                void one_hot(const vector<shared_ptr<he::HECiphertext>>& arg,
+                             vector<shared_ptr<he::HECiphertext>>& out,
                              const Shape& in_shape,
                              const Shape& out_shape,
                              size_t one_hot_axis,

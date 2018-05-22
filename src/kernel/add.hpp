@@ -32,39 +32,39 @@ namespace ngraph
 
             namespace kernel
             {
-                void add(const vector<shared_ptr<seal::Ciphertext>>& arg0,
-                         const vector<shared_ptr<seal::Ciphertext>>& arg1,
-                         vector<shared_ptr<seal::Ciphertext>>& out,
+                void add(const vector<shared_ptr<he::HECiphertext>>& arg0,
+                         const vector<shared_ptr<he::HECiphertext>>& arg1,
+                         vector<shared_ptr<he::HECiphertext>>& out,
                          shared_ptr<HEBackend> he_backend,
                          size_t count);
 
-                void add(const vector<shared_ptr<seal::Ciphertext>>& arg0,
-                         const vector<shared_ptr<seal::Plaintext>>& arg1,
-                         vector<shared_ptr<seal::Ciphertext>>& out,
+                void add(const vector<shared_ptr<he::HECiphertext>>& arg0,
+                         const vector<shared_ptr<he::HEPlaintext>>& arg1,
+                         vector<shared_ptr<he::HECiphertext>>& out,
                          shared_ptr<HEBackend> he_backend,
                          size_t count);
 
-                void add(const vector<shared_ptr<seal::Plaintext>>& arg0,
-                         const vector<shared_ptr<seal::Ciphertext>>& arg1,
-                         vector<shared_ptr<seal::Ciphertext>>& out,
+                void add(const vector<shared_ptr<he::HEPlaintext>>& arg0,
+                         const vector<shared_ptr<he::HECiphertext>>& arg1,
+                         vector<shared_ptr<he::HECiphertext>>& out,
                          shared_ptr<HEBackend> he_backend,
                          size_t count);
 
-                void add(const vector<shared_ptr<seal::Plaintext>>& arg0,
-                         const vector<shared_ptr<seal::Plaintext>>& arg1,
-                         vector<shared_ptr<seal::Plaintext>>& out,
+                void add(const vector<shared_ptr<he::HEPlaintext>>& arg0,
+                         const vector<shared_ptr<he::HEPlaintext>>& arg1,
+                         vector<shared_ptr<he::HEPlaintext>>& out,
                          const element::Type& type,
                          shared_ptr<HEBackend> he_backend,
                          size_t count);
 
-                void scalar_add(const shared_ptr<seal::Ciphertext>& arg0,
-                                const shared_ptr<seal::Ciphertext>& arg1,
-                                shared_ptr<seal::Ciphertext>& out,
+                void scalar_add(const shared_ptr<he::HECiphertext>& arg0,
+                                const shared_ptr<he::HECiphertext>& arg1,
+                                shared_ptr<he::HECiphertext>& out,
                                 shared_ptr<HEBackend> he_backend);
 
-                void scalar_add(const shared_ptr<seal::Plaintext>& arg0,
-                                const shared_ptr<seal::Plaintext>& arg1,
-                                shared_ptr<seal::Plaintext>& out,
+                void scalar_add(const shared_ptr<he::HEPlaintext>& arg0,
+                                const shared_ptr<he::HEPlaintext>& arg1,
+                                shared_ptr<he::HEPlaintext>& out,
                                 const element::Type& type,
                                 shared_ptr<HEBackend> he_backend);
             }
