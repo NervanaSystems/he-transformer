@@ -41,6 +41,13 @@ set (HE_TEST_SRC
     test_util.cpp
 )
 
+# This dummy target always triggers re-configure of NNP and NNPI ngraph tests
+# If the source file is not changed, re-compile is not triggered
+add_custom_command(
+    OUTPUT always_build
+    COMMAND cmake -E echo
+)
+
 # Configure test for HE_SEAL
 set (NGRAPH_TEST_HE_SEAL_SRC
     backend_test_HE_SEAL.cpp
@@ -50,11 +57,11 @@ set (NGRAPH_TEST_HE_SEAL_SRC
 get_filename_component(MANIFEST he_seal_disabled_test.manifest ABSOLUTE)
 add_custom_command(
     OUTPUT ${NGRAPH_TEST_HE_SEAL_SRC}
-    DEPENDS ext_ngraph
+    DEPENDS ext_ngraph always_build
     COMMAND ${CMAKE_COMMAND}
             -DNGRAPH_TEST_DIR=${NGRAPH_TEST_DIR}
             -DBACKEND_NAME=HE_SEAL
-            -DTEST_LOOPS=2
+            -DTEST_LOOPS=200
             -DMANIFEST=${MANIFEST}
             -P ${CMAKE_CURRENT_SOURCE_DIR}/configure_test.cmake
 )
@@ -68,11 +75,11 @@ set (NGRAPH_TEST_HE_HEAAN_SRC
 get_filename_component(MANIFEST he_heaan_disabled_test.manifest ABSOLUTE)
 add_custom_command(
     OUTPUT ${NGRAPH_TEST_HE_HEAAN_SRC}
-    DEPENDS ext_ngraph
+    DEPENDS ext_ngraph always_build
     COMMAND ${CMAKE_COMMAND}
     -DNGRAPH_TEST_DIR=${NGRAPH_TEST_DIR}
     -DBACKEND_NAME=HE_HEAAN
-    -DTEST_LOOPS=2
+    -DTEST_LOOPS=200
     -DMANIFEST=${MANIFEST}
     -P ${CMAKE_CURRENT_SOURCE_DIR}/configure_test.cmake
 )

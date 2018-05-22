@@ -59,7 +59,8 @@ namespace ngraph
                         make_seal_context(const std::shared_ptr<runtime::he::HESealParameter> sp);
 
                     std::shared_ptr<runtime::TensorView>
-                        create_tensor(const element::Type& element_type, const Shape& shape) override;
+                        create_tensor(const element::Type& element_type,
+                                      const Shape& shape) override;
 
                     std::shared_ptr<runtime::TensorView>
                         create_tensor(const element::Type& element_type,
@@ -85,10 +86,12 @@ namespace ngraph
 
                     // Create scalar text without memory pool
                     std::shared_ptr<he::HECiphertext>
-                        create_valued_ciphertext(float value, const element::Type& element_type) const;
+                        create_valued_ciphertext(float value,
+                                                 const element::Type& element_type) const;
                     std::shared_ptr<he::HECiphertext> create_empty_ciphertext() const;
                     std::shared_ptr<he::HEPlaintext>
-                        create_valued_plaintext(float value, const element::Type& element_type) const;
+                        create_valued_plaintext(float value,
+                                                const element::Type& element_type) const;
                     std::shared_ptr<he::HEPlaintext> create_empty_plaintext() const;
 
                     // Create TensorView of the same value
@@ -99,9 +102,10 @@ namespace ngraph
 
                     bool compile(std::shared_ptr<Function> func) override;
 
-                    bool call(std::shared_ptr<Function> func,
-                              const std::vector<std::shared_ptr<runtime::TensorView>>& outputs,
-                              const std::vector<std::shared_ptr<runtime::TensorView>>& inputs) override;
+                    bool call(
+                        std::shared_ptr<Function> func,
+                        const std::vector<std::shared_ptr<runtime::TensorView>>& outputs,
+                        const std::vector<std::shared_ptr<runtime::TensorView>>& inputs) override;
 
                     void clear_function_instance();
 
@@ -164,10 +168,14 @@ namespace ngraph
                         seal::Plaintext int64_t_n1;
                     };
 
-                    const inline plaintext_num& get_plaintext_num() const { return m_plaintext_num; }
+                    const inline plaintext_num& get_plaintext_num() const
+                    {
+                        return m_plaintext_num;
+                    }
                     int noise_budget(const std::shared_ptr<seal::Ciphertext>& ciphertext) const;
 
-                    void enable_performance_data(std::shared_ptr<Function> func, bool enable) override;
+                    void enable_performance_data(std::shared_ptr<Function> func,
+                                                 bool enable) override;
                     std::vector<PerformanceCounter>
                         get_performance_data(std::shared_ptr<Function> func) const override;
 

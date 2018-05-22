@@ -34,11 +34,11 @@ using namespace ngraph;
 
 void TestHEBackend::TearDown()
 {
-    m_he_seal_backend->clear_function_instance();
+    //m_he_seal_backend->clear_function_instance();
 }
 
-shared_ptr<ngraph::runtime::he::he_seal::HESealBackend> TestHEBackend::m_he_seal_backend =
-    static_pointer_cast<runtime::he::he_seal::HESealBackend>(runtime::Backend::create("HE_SEAL"));
+//shared_ptr<ngraph::runtime::he::he_seal::HESealBackend> TestHEBackend::m_he_seal_backend =
+//    static_pointer_cast<runtime::he::he_seal::HESealBackend>(runtime::Backend::create("HE"));
 
 vector<float> read_constant(const string filename)
 {

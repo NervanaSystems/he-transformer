@@ -58,7 +58,7 @@ namespace ngraph
             };
 
             static HESealParameter default_seal_parameter{
-                2048,   // poly_modulus
+                4096,   // poly_modulus
                 100000, // plain_modulus
                 128,    // security_level
                 64,     // fractional_encoder_integer_coeff_count

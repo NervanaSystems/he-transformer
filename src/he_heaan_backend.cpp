@@ -25,13 +25,13 @@
 #include "he_backend.hpp"
 #include "he_call_frame.hpp"
 #include "he_cipher_tensor_view.hpp"
-#include "he_plain_tensor_view.hpp"
 #include "he_heaan_backend.hpp"
 #include "he_heaan_parameter.hpp"
+#include "he_plain_tensor_view.hpp"
 #include "he_tensor_view.hpp"
-#include "pass/insert_relinearize.hpp"
 #include "heaan_ciphertext_wrapper.hpp"
 #include "heaan_plaintext_wrapper.hpp"
+#include "pass/insert_relinearize.hpp"
 
 using namespace ngraph;
 using namespace std;
@@ -51,13 +51,15 @@ runtime::he::he_heaan::HEHeaanBackend::HEHeaanBackend()
 {
 }
 
-runtime::he::he_heaan::HEHeaanBackend::HEHeaanBackend(const shared_ptr<runtime::he::HEParameter> hep)
+runtime::he::he_heaan::HEHeaanBackend::HEHeaanBackend(
+    const shared_ptr<runtime::he::HEParameter> hep)
     : runtime::he::he_heaan::HEHeaanBackend(
           make_shared<runtime::he::HEHeaanParameter>(hep->m_poly_modulus, hep->m_plain_modulus))
 {
 }
 
-runtime::he::he_heaan::HEHeaanBackend::HEHeaanBackend(const shared_ptr<runtime::he::HEHeaanParameter> sp)
+runtime::he::he_heaan::HEHeaanBackend::HEHeaanBackend(
+    const shared_ptr<runtime::he::HEHeaanParameter> sp)
 {
     // Context
     m_context = make_shared<heaan::Context>(sp->m_poly_modulus, sp->m_plain_modulus);
@@ -77,7 +79,8 @@ runtime::he::he_heaan::HEHeaanBackend::~HEHeaanBackend()
 }
 
 shared_ptr<runtime::TensorView>
-    runtime::he::he_heaan::HEHeaanBackend::create_tensor(const element::Type& element_type, const Shape& shape)
+    runtime::he::he_heaan::HEHeaanBackend::create_tensor(const element::Type& element_type,
+                                                         const Shape& shape)
 {
     shared_ptr<HEHeaanBackend> he_heaan_backend =
         dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(shared_from_this());
@@ -93,7 +96,7 @@ shared_ptr<runtime::TensorView> runtime::he::he_heaan::HEHeaanBackend::create_te
 
 shared_ptr<runtime::TensorView>
     runtime::he::he_heaan::HEHeaanBackend::create_plain_tensor(const element::Type& element_type,
-                                                    const Shape& shape)
+                                                               const Shape& shape)
 {
     shared_ptr<HEHeaanBackend> he_heaan_backend =
         dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(shared_from_this());
@@ -102,8 +105,8 @@ shared_ptr<runtime::TensorView>
 }
 
 shared_ptr<runtime::he::HECiphertext>
-    runtime::he::he_heaan::HEHeaanBackend::create_valued_ciphertext(float value,
-                                                         const element::Type& element_type) const
+    runtime::he::he_heaan::HEHeaanBackend::create_valued_ciphertext(
+        float value, const element::Type& element_type) const
 {
     throw ngraph_error("HEHeaanBackend::create_valued_ciphertext unimplemented");
     /* const string type_name = element_type.c_type_string();
@@ -130,14 +133,14 @@ shared_ptr<runtime::he::HECiphertext>
     return ciphertext; */
 }
 
-shared_ptr<runtime::he::HECiphertext> runtime::he::he_heaan::HEHeaanBackend::create_empty_ciphertext() const
+shared_ptr<runtime::he::HECiphertext>
+    runtime::he::he_heaan::HEHeaanBackend::create_empty_ciphertext() const
 {
     return make_shared<runtime::he::HeaanCiphertextWrapper>();
 }
 
-shared_ptr<runtime::he::HEPlaintext>
-    runtime::he::he_heaan::HEHeaanBackend::create_valued_plaintext(float value,
-                                                        const element::Type& element_type) const
+shared_ptr<runtime::he::HEPlaintext> runtime::he::he_heaan::HEHeaanBackend::create_valued_plaintext(
+    float value, const element::Type& element_type) const
 {
     throw ngraph_error("HEHeaanBackend::create_valued_plaintext unimplemented");
     /* const string type_name = element_type.c_type_string();
@@ -162,7 +165,8 @@ shared_ptr<runtime::he::HEPlaintext>
     return plaintext; */
 }
 
-shared_ptr<runtime::he::HEPlaintext> runtime::he::he_heaan::HEHeaanBackend::create_empty_plaintext() const
+shared_ptr<runtime::he::HEPlaintext>
+    runtime::he::he_heaan::HEHeaanBackend::create_empty_plaintext() const
 {
     return make_shared<HeaanPlaintextWrapper>();
 }
@@ -218,9 +222,10 @@ bool runtime::he::he_heaan::HEHeaanBackend::compile(shared_ptr<Function> func)
     return true;
 }
 
-bool runtime::he::he_heaan::HEHeaanBackend::call(shared_ptr<Function> func,
-                                      const vector<shared_ptr<runtime::TensorView>>& outputs,
-                                      const vector<shared_ptr<runtime::TensorView>>& inputs)
+bool runtime::he::he_heaan::HEHeaanBackend::call(
+    shared_ptr<Function> func,
+    const vector<shared_ptr<runtime::TensorView>>& outputs,
+    const vector<shared_ptr<runtime::TensorView>>& inputs)
 {
     compile(func);
     m_function_map.at(func)->call(outputs, inputs);
@@ -238,8 +243,8 @@ void runtime::he::he_heaan::HEHeaanBackend::remove_compiled_function(shared_ptr<
 }
 
 void runtime::he::he_heaan::HEHeaanBackend::encode(shared_ptr<runtime::he::HEPlaintext>& output,
-                                        const void* input,
-                                        const element::Type& type)
+                                                   const void* input,
+                                                   const element::Type& type)
 {
     throw ngraph_error("HEHeaanBackend::encode not implemented");
     /* const string type_name = type.c_type_string();
@@ -262,8 +267,8 @@ void runtime::he::he_heaan::HEHeaanBackend::encode(shared_ptr<runtime::he::HEPla
 }
 
 void runtime::he::he_heaan::HEHeaanBackend::decode(void* output,
-                                        const shared_ptr<runtime::he::HEPlaintext> input,
-                                        const element::Type& type)
+                                                   const shared_ptr<runtime::he::HEPlaintext> input,
+                                                   const element::Type& type)
 {
     throw ngraph_error("HEHeaanBackend::decode not implemented");
     /* const string type_name = type.c_type_string();
@@ -292,8 +297,8 @@ void runtime::he::he_heaan::HEHeaanBackend::decode(void* output,
     } */
 }
 
-void runtime::he::he_heaan::HEHeaanBackend::encrypt(shared_ptr<runtime::he::HECiphertext> output,
-                                         const shared_ptr<runtime::he::HEPlaintext> input)
+void runtime::he::he_heaan::HEHeaanBackend::encrypt(
+    shared_ptr<runtime::he::HECiphertext> output, const shared_ptr<runtime::he::HEPlaintext> input)
 {
     throw ngraph_error("HEHeaanBackend::encrypt not implemented");
     /*
@@ -310,7 +315,7 @@ void runtime::he::he_heaan::HEHeaanBackend::encrypt(shared_ptr<runtime::he::HECi
 }
 
 void runtime::he::he_heaan::HEHeaanBackend::decrypt(shared_ptr<runtime::he::HEPlaintext> output,
-                                         const shared_ptr<he::HECiphertext> input)
+                                                    const shared_ptr<he::HECiphertext> input)
 {
     throw ngraph_error("HEHeaanBackend::decrypt not implemented");
     /* auto heaan_output = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(output);
@@ -318,7 +323,8 @@ void runtime::he::he_heaan::HEHeaanBackend::decrypt(shared_ptr<runtime::he::HEPl
     m_decryptor->decrypt(heaan_input->m_ciphertext, heaan_output->m_plaintext); */
 }
 
-void runtime::he::he_heaan::HEHeaanBackend::enable_performance_data(shared_ptr<Function> func, bool enable)
+void runtime::he::he_heaan::HEHeaanBackend::enable_performance_data(shared_ptr<Function> func,
+                                                                    bool enable)
 {
     // Enabled by default
 }
@@ -329,8 +335,8 @@ vector<runtime::PerformanceCounter>
     return m_function_map.at(func)->get_performance_data();
 }
 
-void runtime::he::he_heaan::HEHeaanBackend::visualize_function_after_pass(const shared_ptr<Function>& func,
-                                                               const string& file_name)
+void runtime::he::he_heaan::HEHeaanBackend::visualize_function_after_pass(
+    const shared_ptr<Function>& func, const string& file_name)
 {
     compile(func);
     auto cf = m_function_map.at(func);

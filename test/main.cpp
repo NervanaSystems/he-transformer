@@ -27,7 +27,8 @@ using namespace std;
 // This can be removed, if libhe_backend.so only contains one
 static void register_he_backends()
 {
-    cout << "Registering backends" << endl;;
+    cout << "Registering backends" << endl;
+    ;
     void* handle = nullptr;
     string name = "libhe_backend.so";
     handle = dlopen(name.c_str(), RTLD_NOW | RTLD_GLOBAL);
@@ -43,10 +44,10 @@ static void register_he_backends()
 
 int main(int argc, char** argv)
 {
-    cout << "Registering he bakcends";
-	register_he_backends();
+    cout << "Registering he bakcends" << endl;
+    ;
+    register_he_backends();
     ::testing::InitGoogleTest(&argc, argv);
     int rc = RUN_ALL_TESTS();
-
     return rc;
 }
