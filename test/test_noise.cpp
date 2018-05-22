@@ -43,7 +43,7 @@ using namespace ngraph;
 TEST_F(TestHEBackend, noise)
 {
     Shape shape{};
-    runtime::he::SEALParameter seal_parameter{16384, 128, 50000, 64, 32, 3, 16};
+    // runtime::he::SEALParameter seal_parameter{16384, 128, 50000, 64, 32, 3, 16};
     auto he_backend = make_shared<runtime::he::HEBackend>();
     auto a = he_backend->create_tensor(element::i64, shape);
     copy_data(a, vector<int64_t>{5});

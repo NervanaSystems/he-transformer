@@ -16,31 +16,21 @@
 
 #pragma once
 
-#include "ngraph/coordinate_transform.hpp"
-#include "seal/seal.h"
+#include <cstdint>
+#include "he_parameter.hpp"
 
 namespace ngraph
 {
-    namespace element
-    {
-        class Type;
-    }
     namespace runtime
     {
         namespace he
         {
-            class HEBackend;
-            class HECiphertext;
-            namespace kernel
+            class HECiphertext
             {
-                void sum(const vector<shared_ptr<he::HECiphertext>>& arg,
-                         vector<shared_ptr<he::HECiphertext>>& out,
-                         const Shape& in_shape,
-                         const Shape& out_shape,
-                         const AxisSet& reduction_axes,
-                         const element::Type& type,
-                         shared_ptr<HEBackend> he_backend);
-            }
+            public:
+                HECiphertext();
+                virtual ~HECiphertext();
+            };
         }
     }
 }

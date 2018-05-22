@@ -26,8 +26,8 @@ using namespace std;
 using namespace ngraph;
 
 // TODO: use template
-void runtime::he::kernel::reshape(const vector<shared_ptr<seal::Ciphertext>>& arg,
-                                  vector<shared_ptr<seal::Ciphertext>>& out,
+void runtime::he::kernel::reshape(const vector<shared_ptr<he::HECiphertext>>& arg,
+                                  vector<shared_ptr<he::HECiphertext>>& out,
                                   const Shape& in_shape,
                                   const AxisVector& in_axis_order,
                                   const Shape& out_shape)
@@ -54,8 +54,8 @@ void runtime::he::kernel::reshape(const vector<shared_ptr<seal::Ciphertext>>& ar
 }
 
 // TODO: use template
-void runtime::he::kernel::reshape(const vector<shared_ptr<seal::Plaintext>>& arg,
-                                  vector<shared_ptr<seal::Plaintext>>& out,
+void runtime::he::kernel::reshape(const vector<shared_ptr<he::HEPlaintext>>& arg,
+                                  vector<shared_ptr<he::HEPlaintext>>& out,
                                   const Shape& in_shape,
                                   const AxisVector& in_axis_order,
                                   const Shape& out_shape)
@@ -81,8 +81,8 @@ void runtime::he::kernel::reshape(const vector<shared_ptr<seal::Plaintext>>& arg
     }
 }
 
-void runtime::he::kernel::reshape(const vector<shared_ptr<seal::Plaintext>>& arg,
-                                  vector<shared_ptr<seal::Ciphertext>>& out,
+void runtime::he::kernel::reshape(const vector<shared_ptr<he::HEPlaintext>>& arg,
+                                  vector<shared_ptr<he::HECiphertext>>& out,
                                   const Shape& in_shape,
                                   const AxisVector& in_axis_order,
                                   const Shape& out_shape,
@@ -126,9 +126,9 @@ void runtime::he::kernel::reshape(const vector<shared_ptr<seal::Plaintext>>& arg
         //{
         //    const Coordinate& output_coord = *output_it;
 
-        seal::Ciphertext c;
-        he_backend->encrypt(c, *arg[input_transform.index(input_coord)]);
-        out[output_transform.index(output_coord)] = make_shared<seal::Ciphertext>(c);
+        shared_ptr<he::HECiphertext> c = make_shared<he::HECiphertext>();
+        he_backend->encrypt(c, arg[input_transform.index(input_coord)]);
+        out[output_transform.index(output_coord)] = c;
 
         //++output_it;
     }

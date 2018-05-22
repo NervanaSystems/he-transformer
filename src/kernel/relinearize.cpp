@@ -17,19 +17,20 @@
 #include <vector>
 
 #include "he_backend.hpp"
+#include "he_seal_backend.hpp"
 #include "kernel/relinearize.hpp"
 #include "ngraph/type/element_type.hpp"
-#include "seal/seal.h"
 
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::relinearize(const vector<shared_ptr<seal::Ciphertext>>& arg,
-                                      vector<shared_ptr<seal::Ciphertext>>& out,
-                                      shared_ptr<HEBackend> he_backend,
+void runtime::he::kernel::relinearize(const vector<shared_ptr<he::HECiphertext>>& arg,
+                                      vector<shared_ptr<he::HECiphertext>>& out,
+                                      shared_ptr<he::he_seal::HESealBackend> he_seal_backend,
                                       size_t count)
 {
-    shared_ptr<seal::EvaluationKeys> ev_key = he_backend->get_ev_key();
+    throw ngraph_error("Relinearize not implemnted");
+// shared_ptr<seal::EvaluationKeys> ev_key = he_seal_backend->get_ev_key();
 
 // It's safe to do inplace relinearize on the input since the un-relinearized result won't be
 // used by other ops. That is, this relinearize op is immediately after a multiply op, and the
@@ -37,7 +38,7 @@ void runtime::he::kernel::relinearize(const vector<shared_ptr<seal::Ciphertext>>
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
     {
-        he_backend->get_evaluator()->relinearize(*arg[i], *(he_backend->get_ev_key()));
+        // he_seal_backend->get_evaluator()->relinearize(*arg[i], *(he_seal_backend->get_ev_key())); # TODO: enable
         out[i] = arg[i];
     }
 }

@@ -30,10 +30,10 @@ set (HE_TEST_SRC
     main.cpp
     test_basics.cpp
     test_heaan.cpp
-    test_model.cpp
-    test_mnist.cpp
-    test_noise.cpp
-    test_overflow.cpp
+    #test_model.cpp
+    #test_mnist.cpp
+    #test_noise.cpp
+    #test_overflow.cpp
     test_seal.cpp
     test_speed.cpp
     test_util.cpp

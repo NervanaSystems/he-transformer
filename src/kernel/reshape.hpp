@@ -29,20 +29,20 @@ namespace ngraph
 
             namespace kernel
             {
-                void reshape(const vector<shared_ptr<seal::Ciphertext>>& arg,
-                             vector<shared_ptr<seal::Ciphertext>>& out,
+                void reshape(const vector<shared_ptr<he::HECiphertext>>& arg,
+                             vector<shared_ptr<he::HECiphertext>>& out,
                              const Shape& in_shape,
                              const AxisVector& in_axis_order,
                              const Shape& out_shape);
 
-                void reshape(const vector<shared_ptr<seal::Plaintext>>& arg,
-                             vector<shared_ptr<seal::Plaintext>>& out,
+                void reshape(const vector<shared_ptr<he::HEPlaintext>>& arg,
+                             vector<shared_ptr<he::HEPlaintext>>& out,
                              const Shape& in_shape,
                              const AxisVector& in_axis_order,
                              const Shape& out_shape);
 
-                void reshape(const vector<shared_ptr<seal::Plaintext>>& arg0,
-                             vector<shared_ptr<seal::Ciphertext>>& out,
+                void reshape(const vector<shared_ptr<he::HEPlaintext>>& arg0,
+                             vector<shared_ptr<he::HECiphertext>>& out,
                              const Shape& in_shape,
                              const AxisVector& in_axis_order,
                              const Shape& out_shape,

@@ -25,18 +25,20 @@ namespace ngraph
         namespace he
         {
             class HEBackend;
+            class HECiphertext;
+            class HEPlaintext;
 
             namespace kernel
             {
-                void subtract(const vector<shared_ptr<seal::Ciphertext>>& arg0,
-                              const vector<shared_ptr<seal::Ciphertext>>& arg1,
-                              vector<shared_ptr<seal::Ciphertext>>& out,
+                void subtract(const vector<shared_ptr<he::HECiphertext>>& arg0,
+                              const vector<shared_ptr<he::HECiphertext>>& arg1,
+                              vector<shared_ptr<he::HECiphertext>>& out,
                               shared_ptr<HEBackend> he_backend,
                               size_t count);
 
-                void subtract(const vector<shared_ptr<seal::Ciphertext>>& arg0,
-                              const vector<shared_ptr<seal::Plaintext>>& arg1,
-                              vector<shared_ptr<seal::Ciphertext>>& out,
+                void subtract(const vector<shared_ptr<he::HECiphertext>>& arg0,
+                              const vector<shared_ptr<he::HEPlaintext>>& arg1,
+                              vector<shared_ptr<he::HECiphertext>>& out,
                               shared_ptr<HEBackend> he_backend,
                               size_t count);
             }

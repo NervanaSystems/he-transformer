@@ -26,11 +26,12 @@ namespace ngraph
         namespace he
         {
             class HEBackend;
+            class HECiphertext;
 
             namespace kernel
             {
-                void slice(const vector<shared_ptr<seal::Ciphertext>>& arg,
-                           vector<shared_ptr<seal::Ciphertext>>& out,
+                void slice(const vector<shared_ptr<he::HECiphertext>>& arg,
+                           vector<shared_ptr<he::HECiphertext>>& out,
                            const Shape& arg_shape,
                            const Coordinate& lower_bounds,
                            const Coordinate& upper_bounds,
