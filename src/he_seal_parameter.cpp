@@ -23,19 +23,19 @@
 using namespace ngraph;
 using namespace std;
 
-runtime::he::HESealParameter::HESealParameter(uint64_t poly_modulus_degree, uint64_t plain_modulus)
-    : HEParameter(poly_modulus_degree, plain_modulus)
+runtime::he::HESealParameter::HESealParameter(uint64_t poly_modulus, uint64_t plain_modulus)
+    : HEParameter(poly_modulus, plain_modulus)
 {
 }
 
-runtime::he::HESealParameter::HESealParameter(uint64_t poly_modulus_degree,
+runtime::he::HESealParameter::HESealParameter(uint64_t poly_modulus,
                                               uint64_t plain_modulus,
                                               uint64_t security_level,
                                               int fractional_encoder_integer_coeff_count,
                                               int fractional_encoder_fraction_coeff_count,
                                               uint64_t fractional_encoder_base,
                                               int evaluation_decomposition_bit_count)
-    : HEParameter(poly_modulus_degree, plain_modulus)
+    : HEParameter(poly_modulus, plain_modulus)
     , m_security_level(security_level)
     , m_fractional_encoder_integer_coeff_count(fractional_encoder_integer_coeff_count)
     , m_fractional_encoder_fraction_coeff_count(fractional_encoder_fraction_coeff_count)
