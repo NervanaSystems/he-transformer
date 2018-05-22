@@ -16,12 +16,14 @@
 
 # HE transformer sources
 set (HE_SRC
+    create_backend.cpp
     heaan_ciphertext_wrapper.cpp
     heaan_plaintext_wrapper.cpp
     he_backend.cpp
     he_call_frame.cpp
     he_cipher_tensor_view.cpp
     he_ciphertext.cpp
+    he_heaan_backend.cpp
     he_heaan_parameter.cpp
     he_plaintext.cpp
     he_seal_backend.cpp

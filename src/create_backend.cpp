@@ -14,27 +14,19 @@
 * limitations under the License.
 *******************************************************************************/
 
-#pragma once
+#include "ngraph/runtime/backend.hpp"
 
-#include "he_parameter.hpp"
+#include "he_seal_backend.hpp"
+#include "he_heaan_backend.hpp"
 
-namespace ngraph
+using namespace std;
+using namespace ngraph;
+
+extern "C" bool create_backend()
 {
-    namespace runtime
-    {
-        namespace he
-        {
-            struct HEParameter;
-
-            struct HEHeaanParameter : public HEParameter
-            {
-                HEHeaanParameter(std::uint64_t poly_modulus, std::uint64_t plain_modulus);
-            };
-
-            static HEHeaanParameter default_heaan_parameter{
-                10,   // log_2(poly_modulus)
-                30, // log_2(plain_modulus)
-            };
-        }
-    }
+    runtime::Backend::register_backend("HE_HEAAN", make_shared<runtime::he::he_heaan::HEHeaanBackend>());
+	runtime::Backend::register_backend("HE_SEAL", make_shared<runtime::he::he_seal::HESealBackend>());
+    return true;
 }
+
+
