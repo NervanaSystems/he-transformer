@@ -16,22 +16,7 @@
 
 # HE transformer sources
 set (HE_SRC
-    create_backend.cpp
-    heaan_ciphertext_wrapper.cpp
-    heaan_plaintext_wrapper.cpp
-    he_backend.cpp
-    he_call_frame.cpp
-    he_cipher_tensor_view.cpp
-    he_ciphertext.cpp
-    he_heaan_backend.cpp
-    he_heaan_parameter.cpp
-    he_plaintext.cpp
-    he_seal_backend.cpp
-    he_seal_parameter.cpp
-    he_tensor_view.cpp
-    he_parameter.cpp
-    he_plain_tensor_view.cpp
-    int_call_frame.cpp
+    # kernels
     kernel/add.cpp
     kernel/broadcast.cpp
     kernel/concat.cpp
@@ -45,7 +30,27 @@ set (HE_SRC
     kernel/slice.cpp
     kernel/subtract.cpp
     kernel/sum.cpp
+    # main
+    create_backend.cpp
+    he_backend.cpp
+    he_call_frame.cpp
+    he_cipher_tensor_view.cpp
+    he_ciphertext.cpp
+    he_plaintext.cpp
+    he_tensor_view.cpp
+    he_parameter.cpp
+    he_plain_tensor_view.cpp
+    int_call_frame.cpp
+    # pass
     pass/insert_relinearize.cpp
+    # heaan
+    he_heaan_backend.cpp
+    he_heaan_parameter.cpp
+    heaan_ciphertext_wrapper.cpp
+    heaan_plaintext_wrapper.cpp
+    # seal
+    he_seal_backend.cpp
+    he_seal_parameter.cpp
     seal_ciphertext_wrapper.cpp
     seal_plaintext_wrapper.cpp
 )

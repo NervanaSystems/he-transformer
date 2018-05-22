@@ -24,6 +24,7 @@ using namespace ngraph;
 
 extern "C" bool create_backend()
 {
+    NGRAPH_INFO << "Create_backend";
     runtime::Backend::register_backend("HE_HEAAN", make_shared<runtime::he::he_heaan::HEHeaanBackend>());
 	runtime::Backend::register_backend("HE_SEAL", make_shared<runtime::he::he_seal::HESealBackend>());
     return true;
