@@ -30,7 +30,10 @@ namespace ngraph
     {
         namespace he
         {
-            class he_seal::HESealBackend;
+            namespace he_seal
+            {
+                class HESealBackend;
+            }
             class HECiphertext;
 
             namespace kernel
