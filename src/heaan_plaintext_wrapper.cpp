@@ -22,7 +22,6 @@ using namespace ngraph;
 runtime::he::HeaanPlaintextWrapper::HeaanPlaintextWrapper()
     : m_plaintext(0)
 {
-    cout << "created heann plaintext" << endl;
 }
 
 runtime::he::HeaanPlaintextWrapper::HeaanPlaintextWrapper(double plain)

@@ -92,7 +92,7 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
     }
     else
     {
-// #pragma omp parallel for
+#pragma omp parallel for
         for (size_t i = 0; i < num_elements_to_write; ++i)
         {
             const void* src_with_offset = (void*)((char*)source + i * type.size());
@@ -107,12 +107,9 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
             }
             else if (auto he_heaan_backend = dynamic_pointer_cast<he_heaan::HEHeaanBackend>(m_he_backend))
             {
-// #pragma omp critical
-                {
-                    shared_ptr<he::HEPlaintext> p = make_shared<he::HeaanPlaintextWrapper>();
-                    he_heaan_backend->encode(p, src_with_offset, type);
-                    he_heaan_backend->encrypt(m_cipher_texts[dst_index], p);
-                }
+                shared_ptr<he::HEPlaintext> p = make_shared<he::HeaanPlaintextWrapper>();
+                he_heaan_backend->encode(p, src_with_offset, type);
+                he_heaan_backend->encrypt(m_cipher_texts[dst_index], p);
             }
             else
             {
@@ -152,8 +149,7 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
     }
     else
     {
-        NGRAPH_INFO << "Reading";
-// #pragma omp parallel for
+#pragma omp parallel for
         for (size_t i = 0; i < num_elements_to_read; ++i)
         {
             void* dst_with_offset = (void*)((char*)target + i * type.size());
@@ -167,11 +163,8 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
             else if (auto he_heaan_backend = dynamic_pointer_cast<he_heaan::HEHeaanBackend>(m_he_backend))
             {
                 shared_ptr<he::HEPlaintext> p = make_shared<he::HeaanPlaintextWrapper>();
-   //             #pragma omp critical
-                {
-                    he_heaan_backend->decrypt(p, m_cipher_texts[src_index]);
-                    he_heaan_backend->decode(dst_with_offset, p, type);
-                }
+                he_heaan_backend->decrypt(p, m_cipher_texts[src_index]);
+                he_heaan_backend->decode(dst_with_offset, p, type);
             }
             else
             {

@@ -184,7 +184,7 @@ shared_ptr<runtime::TensorView> runtime::he::he_heaan::HEHeaanBackend::create_va
 {
     auto tensor = static_pointer_cast<HECipherTensorView>(create_tensor(element_type, shape));
     vector<shared_ptr<runtime::he::HECiphertext>>& cipher_texts = tensor->get_elements();
-// #pragma omp parallel for // TODO: enable
+#pragma omp parallel for
     for (size_t i = 0; i < cipher_texts.size(); ++i)
     {
         cipher_texts[i] = create_valued_ciphertext(value, element_type);
@@ -198,7 +198,7 @@ shared_ptr<runtime::TensorView> runtime::he::he_heaan::HEHeaanBackend::create_va
     throw ngraph_error("create_valued_tensor plain unimplemented in heaan");
     /* auto tensor = static_pointer_cast<HEPlainTensorView>(create_plain_tensor(element_type, shape));
     vector<shared_ptr<heaan::Plaintext>>& plain_texts = tensor->get_elements();
-// #pragma omp parallel for
+ #pragma omp parallel for
     for (size_t i = 0; i < plain_texts.size(); ++i)
     {
         heaan::MemoryPoolHandle pool = heaan::MemoryPoolHandle::New(false);
