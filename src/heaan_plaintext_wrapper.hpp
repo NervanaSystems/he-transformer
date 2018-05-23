@@ -31,10 +31,10 @@ namespace ngraph
             struct HeaanPlaintextWrapper : public HEPlaintext
             {
                 HeaanPlaintextWrapper();
-                HeaanPlaintextWrapper(heaan::Plaintext plain);
+                HeaanPlaintextWrapper(double plain);
                 virtual ~HeaanPlaintextWrapper();
 
-                heaan::Plaintext m_plaintext;
+                double m_plaintext;
             };
         }
     }

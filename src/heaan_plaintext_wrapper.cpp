@@ -20,14 +20,12 @@ using namespace std;
 using namespace ngraph;
 
 runtime::he::HeaanPlaintextWrapper::HeaanPlaintextWrapper()
-    : m_plaintext(heaan::Plaintext())
+    : m_plaintext(0)
 {
-    //m_plaintext.logp = 32; // TODO: remove
-    //m_plaintext.logq = 100;
     cout << "created heann plaintext" << endl;
 }
 
-runtime::he::HeaanPlaintextWrapper::HeaanPlaintextWrapper(heaan::Plaintext plain)
+runtime::he::HeaanPlaintextWrapper::HeaanPlaintextWrapper(double plain)
     : m_plaintext(plain)
 {
 }
