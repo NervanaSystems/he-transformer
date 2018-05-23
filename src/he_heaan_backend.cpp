@@ -15,6 +15,7 @@
 *******************************************************************************/
 
 #include <limits>
+#include <math.h>
 
 #include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
 #include "ngraph/function.hpp"
@@ -280,17 +281,17 @@ void runtime::he::he_heaan::HEHeaanBackend::decode(void* output,
     {
         if (type_name == "int64_t")
         {
-            int64_t x = (int64_t)heaan_input->m_plaintext; // TODO: round?
+            int64_t x = std::round(heaan_input->m_plaintext);
             memcpy(output, &x, type.size());
         }
         else if (type_name == "float")
         {
-            float x = (float)heaan_input->m_plaintext; // TODO: round?
+            float x = heaan_input->m_plaintext;
             memcpy(output, &x, type.size());
         }
         else if (type_name == "double")
         {
-            double x = (double)heaan_input->m_plaintext; // TODO: round?
+            double x = (double)heaan_input->m_plaintext;
             memcpy(output, &x, type.size());
         }
         else
@@ -312,9 +313,7 @@ void runtime::he::he_heaan::HEHeaanBackend::encrypt(
     auto heaan_input = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(input);
     if (heaan_output != nullptr && heaan_input != nullptr)
     {
-        NGRAPH_INFO << "Encrypting";
         heaan_output->m_ciphertext = m_scheme->encryptSingle(heaan_input->m_plaintext, m_log_precision, m_context->logQ);
-        NGRAPH_INFO << "Done Encrypting";
     }
     else
     {
@@ -327,7 +326,14 @@ void runtime::he::he_heaan::HEHeaanBackend::decrypt(shared_ptr<runtime::he::HEPl
 {
     auto heaan_output = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(output);
     auto heaan_input = dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(input);
-    heaan_output->m_plaintext = m_scheme->decryptSingle(*m_secret_key, heaan_input->m_ciphertext).real();
+    if (heaan_output != nullptr && heaan_input != nullptr)
+    {
+        heaan_output->m_plaintext = m_scheme->decryptSingle(*m_secret_key, heaan_input->m_ciphertext).real();
+    }
+    else
+    {
+        throw ngraph_error("HEHeaanBackend::decrypt has non-heaan ciphertexts");
+    }
 }
 
 void runtime::he::he_heaan::HEHeaanBackend::enable_performance_data(shared_ptr<Function> func,

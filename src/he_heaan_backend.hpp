@@ -120,6 +120,7 @@ namespace ngraph
                 private:
                     std::unordered_map<std::shared_ptr<Function>, std::shared_ptr<HECallFrame>>
                         m_function_map;
+                public: // TODO: remove
                     std::shared_ptr<heaan::SecretKey> m_secret_key;
 
                     std::shared_ptr<heaan::Context> m_context;

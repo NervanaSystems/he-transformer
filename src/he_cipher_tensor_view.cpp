@@ -107,9 +107,12 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
             }
             else if (auto he_heaan_backend = dynamic_pointer_cast<he_heaan::HEHeaanBackend>(m_he_backend))
             {
-                shared_ptr<he::HEPlaintext> p = make_shared<he::HeaanPlaintextWrapper>();
-                he_heaan_backend->encode(p, src_with_offset, type);
-                he_heaan_backend->encrypt(m_cipher_texts[dst_index], p);
+#pragma omp critical
+                {
+                    shared_ptr<he::HEPlaintext> p = make_shared<he::HeaanPlaintextWrapper>();
+                    he_heaan_backend->encode(p, src_with_offset, type);
+                    he_heaan_backend->encrypt(m_cipher_texts[dst_index], p);
+                }
             }
             else
             {
@@ -149,6 +152,7 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
     }
     else
     {
+        NGRAPH_INFO << "Reading";
 #pragma omp parallel for
         for (size_t i = 0; i < num_elements_to_read; ++i)
         {
@@ -163,7 +167,33 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
             else if (auto he_heaan_backend = dynamic_pointer_cast<he_heaan::HEHeaanBackend>(m_he_backend))
             {
                 shared_ptr<he::HEPlaintext> p = make_shared<he::HeaanPlaintextWrapper>();
-                he_heaan_backend->decrypt(p, m_cipher_texts[src_index]);
+/* #pragma omp critical
+                {
+                } */
+                //he_heaan_backend->decrypt(p, m_cipher_texts[src_index]);
+
+                auto heaan_output = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(p);
+                auto heaan_input = dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(m_cipher_texts[src_index]);
+                if (heaan_output != nullptr && heaan_input != nullptr)
+                {
+                    NGRAPH_INFO << "Decrypting";
+                    auto sc = *(he_heaan_backend->m_secret_key);
+                    auto cip = heaan_input->m_ciphertext;
+                        // heaan_output->m_plaintext = he_heaan_backend->m_scheme->decryptSingle(sc, cip).real();
+                    heaan::Plaintext msg;
+                    // #pragma omp critical
+                    {
+                        msg = he_heaan_backend->m_scheme->decryptMsg(sc, cip);
+                    }
+                    heaan_output->m_plaintext = he_heaan_backend->m_scheme->decodeSingle(msg).real();
+                    NGRAPH_INFO << "Done Decrypting";
+                }
+                else
+                {
+                    throw ngraph_error("HEHeaanBackend::encrypt has non-heaan ciphertexts");
+                }
+
+
                 he_heaan_backend->decode(dst_with_offset, p, type);
             }
             else
