@@ -22,6 +22,8 @@ using namespace ngraph;
 runtime::he::HeaanCiphertextWrapper::HeaanCiphertextWrapper()
     : m_ciphertext(heaan::Ciphertext())
 {
+    //m_ciphertext.logp = 32; // TODO: remove
+    //m_ciphertext.logq = 100;
 }
 
 runtime::he::HeaanCiphertextWrapper::HeaanCiphertextWrapper(heaan::Ciphertext cipher)

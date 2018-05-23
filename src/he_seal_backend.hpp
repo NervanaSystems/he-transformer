@@ -172,6 +172,7 @@ namespace ngraph
                     {
                         return m_plaintext_num;
                     }
+
                     int noise_budget(const std::shared_ptr<seal::Ciphertext>& ciphertext) const;
 
                     void enable_performance_data(std::shared_ptr<Function> func,

@@ -120,8 +120,12 @@ namespace ngraph
                 private:
                     std::unordered_map<std::shared_ptr<Function>, std::shared_ptr<HECallFrame>>
                         m_function_map;
+                    std::shared_ptr<heaan::SecretKey> m_secret_key;
 
                     std::shared_ptr<heaan::Context> m_context;
+                    std::shared_ptr<heaan::Scheme> m_scheme;
+
+                    long m_log_precision; // Bits of precision
                 };
             }
         }

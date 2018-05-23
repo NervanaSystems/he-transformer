@@ -20,9 +20,12 @@
 #include "he_backend.hpp"
 #include "he_cipher_tensor_view.hpp"
 #include "he_seal_backend.hpp"
+#include "he_heaan_backend.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
 #include "seal_ciphertext_wrapper.hpp"
 #include "seal_plaintext_wrapper.hpp"
+#include "heaan_ciphertext_wrapper.hpp"
+#include "heaan_plaintext_wrapper.hpp"
 
 using namespace ngraph;
 using namespace std;
@@ -42,9 +45,13 @@ runtime::he::HECipherTensorView::HECipherTensorView(const element::Type& element
         {
             m_cipher_texts[i] = make_shared<he::SealCiphertextWrapper>();
         }
+        else if (auto he_heaan_backend = dynamic_pointer_cast<he_heaan::HEHeaanBackend>(m_he_backend))
+        {
+            m_cipher_texts[i] = make_shared<he::HeaanCiphertextWrapper>();
+        }
         else
         {
-            throw ngraph_error("m_he_backend not seal in HECipherTensorView");
+            throw ngraph_error("HECipherTensorView::HECipherTensorView(), he_backend is neither seal nor heaan. ");
         }
     }
 }
@@ -72,9 +79,15 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
             he_seal_backend->encode(p, src_with_offset, type);
             he_seal_backend->encrypt(m_cipher_texts[dst_index], p);
         }
+        else if (auto he_heaan_backend = dynamic_pointer_cast<he_heaan::HEHeaanBackend>(m_he_backend))
+        {
+            shared_ptr<he::HEPlaintext> p = make_shared<he::HeaanPlaintextWrapper>();
+            he_heaan_backend->encode(p, src_with_offset, type);
+            he_heaan_backend->encrypt(m_cipher_texts[dst_index], p);
+        }
         else
         {
-            throw ngraph_error("HECipherTensorView::write, he_backend is not seal.");
+            throw ngraph_error("HECipherTensorView::write, he_backend is neither seal nor heaan.");
         }
     }
     else
@@ -92,9 +105,15 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
                 he_seal_backend->encode(p, src_with_offset, type);
                 he_seal_backend->encrypt(m_cipher_texts[dst_index], p);
             }
+            else if (auto he_heaan_backend = dynamic_pointer_cast<he_heaan::HEHeaanBackend>(m_he_backend))
+            {
+                shared_ptr<he::HEPlaintext> p = make_shared<he::HeaanPlaintextWrapper>();
+                he_heaan_backend->encode(p, src_with_offset, type);
+                he_heaan_backend->encrypt(m_cipher_texts[dst_index], p);
+            }
             else
             {
-                throw ngraph_error("HECipherTensorView::write, he_backend is not seal.");
+                throw ngraph_error("HECipherTensorView::write, he_backend is neither seal nor heaan.");
             }
         }
     }

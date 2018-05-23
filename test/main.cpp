@@ -44,8 +44,6 @@ static void register_he_backends()
 
 int main(int argc, char** argv)
 {
-    cout << "Registering he bakcends" << endl;
-    ;
     register_he_backends();
     ::testing::InitGoogleTest(&argc, argv);
     int rc = RUN_ALL_TESTS();

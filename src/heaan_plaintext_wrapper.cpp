@@ -22,6 +22,9 @@ using namespace ngraph;
 runtime::he::HeaanPlaintextWrapper::HeaanPlaintextWrapper()
     : m_plaintext(heaan::Plaintext())
 {
+    //m_plaintext.logp = 32; // TODO: remove
+    //m_plaintext.logq = 100;
+    cout << "created heann plaintext" << endl;
 }
 
 runtime::he::HeaanPlaintextWrapper::HeaanPlaintextWrapper(heaan::Plaintext plain)

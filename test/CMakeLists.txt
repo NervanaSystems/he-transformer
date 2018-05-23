@@ -30,7 +30,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHE_SERIALIZED_ZOO=\\\"${CMAKE_CURRENT_
 
 set (HE_TEST_SRC
     main.cpp
-    #test_basics.cpp
+    test_basics.cpp
     test_heaan.cpp
     #test_model.cpp
     #test_mnist.cpp
@@ -41,7 +41,7 @@ set (HE_TEST_SRC
     test_util.cpp
 )
 
-# This dummy target always triggers re-configure of NNP and NNPI ngraph tests
+# This dummy target always triggers re-configure of HE_HEAAN and HE_SEAL ngraph tests
 # If the source file is not changed, re-compile is not triggered
 add_custom_command(
     OUTPUT always_build

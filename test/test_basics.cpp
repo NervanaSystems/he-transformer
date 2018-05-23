@@ -36,7 +36,8 @@ TEST_F(TestHEBackend, trivial)
 
 TEST_F(TestHEBackend, backend_init)
 {
-    auto he_backend = runtime::Backend::create("HE");
+    auto he_seal_backend = runtime::Backend::create("HE_SEAL");
+    auto he_heaan_backend = runtime::Backend::create("HE_HEAAN");
     EXPECT_EQ(1, 1);
 }
 

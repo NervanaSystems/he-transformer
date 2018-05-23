@@ -65,7 +65,14 @@ runtime::he::he_heaan::HEHeaanBackend::HEHeaanBackend(
     m_context = make_shared<heaan::Context>(sp->m_poly_modulus, sp->m_plain_modulus);
     print_heaan_context(*m_context);
 
-    // Encoders
+    m_log_precision = (long)sp->m_log_precision;
+
+    // Secret Key
+    m_secret_key = make_shared<heaan::SecretKey>(m_context->logN);
+
+    // Scheme
+    m_scheme = make_shared<heaan::Scheme>(*m_secret_key, *m_context);
+
 
     // Keygen, encryptor and decryptor
     // Evaluator
@@ -246,43 +253,93 @@ void runtime::he::he_heaan::HEHeaanBackend::encode(shared_ptr<runtime::he::HEPla
                                                    const void* input,
                                                    const element::Type& type)
 {
-    throw ngraph_error("HEHeaanBackend::encode not implemented");
-    /* const string type_name = type.c_type_string();
+    const string type_name = type.c_type_string();
 
-    if (type_name == "int64_t")
+    if (type_name == "double")
     {
-        output =
-            make_shared<runtime::he::HeaanPlaintextWrapper>(m_int_encoder->encode(*(int64_t*)input));
+        //output =
+        //    make_shared<runtime::he::HeaanPlaintextWrapper>(m_scheme->encodeSingle(*(double*)input, m_logp, m_logq));
     }
-    else if (type_name == "float")
+    else if (type_name == "int64_t")
     {
-        output =
-            make_shared<runtime::he::HeaanPlaintextWrapper>(m_frac_encoder->encode(*(float*)input));
+        NGRAPH_INFO << "Encoding " << (double)*(int64_t*)input;
+        //output =
+        //    make_shared<runtime::he::HeaanPlaintextWrapper>(m_scheme->encodeSingle((double)*(int64_t*)input, m_logp, m_logq));
+
+        NGRAPH_INFO << "m_logq " << m_context->logQ << ", m_logp " << m_log_precision << ", logN " << m_context->logN;
+        auto tmp1 = m_scheme->encryptSingle(5.1, m_log_precision, m_context->logQ);
+        auto tmp2 = m_scheme->decryptSingle(*m_secret_key, tmp1);
+        NGRAPH_INFO << "decodes to " << tmp2.real() << " , " << tmp2.imag() ;
+
+        auto tmp3 = m_scheme->encodeSingle(5.0, m_log_precision, m_context->logQ);
+        NGRAPH_INFO << "Encoded 5.0 to " << tmp3.mx << " isComplex? " << tmp3.isComplex << ", logp " << tmp3.logp
+                    << ", tmp3.logq " << tmp3.logq;
+        auto tmp4 = m_scheme->decodeSingle(tmp3);
+        NGRAPH_INFO << "decodes to " << tmp4.real() << " , " << tmp4.imag() ;
+
+        long logp = m_log_precision;
+        auto rr = to_RR(5.0);
+        NGRAPH_INFO << "rr.x " << rr.x << " rr.e " << rr.e;
+        RR rrr = MakeRR(rr.x, rr.e + logp);
+        NGRAPH_INFO << "rr.x " << rrr.x << " rr.e " << rrr.e << " rrr " << rrr;
+
+        throw ngraph_error("tmp");
+
+        long logq = m_context->logQ;
+        bool isComplex = false;
+        auto q = m_context->qpowvec[logq];
+        auto mx = tmp3.mx;
+        cout << "q " << q << endl;
+        cout << "mx.rep[0] " << mx.rep[0] << endl;
+        auto tmp = mx.rep[0] % q;
+        cout << "NumBit == ? " << (NumBits(tmp) == logq) << "?" << endl;
+        complex<double> res;
+        NGRAPH_INFO << "tmp " << tmp;
+        RR xp = to_RR(tmp);
+        cout << "xp " << xp << endl;
+        cout << "xp " << xp << endl;
+        xp.e -= logp;
+        cout << "xp " << xp << endl;
+        //res.real(heaan::EvaluatorUtils::scaleDownToReal(tmp, logp));
+        //cout << "res.real() " << res.real() << endl;
+
+        throw ngraph_error("tmp");
+
+        /* auto plain = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(output);
+        assert(plain != nullptr);
+        auto tmp = m_scheme->decodeSingle(plain->m_plaintext);
+        NGRAPH_INFO << "decodes to " << tmp.real() << " , " << tmp.imag() ; */
     }
     else
     {
-        NGRAPH_INFO << "Unsupported element type in decode " << type_name;
+        NGRAPH_INFO << "Unsupported element type in encode " << type_name;
         throw ngraph_error("Unsupported element type " + type_name);
-    } */
+    }
 }
 
 void runtime::he::he_heaan::HEHeaanBackend::decode(void* output,
                                                    const shared_ptr<runtime::he::HEPlaintext> input,
                                                    const element::Type& type)
 {
-    throw ngraph_error("HEHeaanBackend::decode not implemented");
-    /* const string type_name = type.c_type_string();
+    const string type_name = type.c_type_string();
 
     if (auto heaan_input = dynamic_pointer_cast<HeaanPlaintextWrapper>(input))
     {
         if (type_name == "int64_t")
         {
-            int64_t x = m_int_encoder->decode_int64(heaan_input->m_plaintext);
+            auto tmp = m_scheme->decodeSingle(heaan_input->m_plaintext);
+            NGRAPH_INFO << "Decoding " << tmp.real() << " , " << tmp.imag();
+            int64_t x = (int64_t)(m_scheme->decodeSingle(heaan_input->m_plaintext)).real();
             memcpy(output, &x, type.size());
         }
         else if (type_name == "float")
         {
-            float x = m_frac_encoder->decode(heaan_input->m_plaintext);
+            float x = (float)(m_scheme->decodeSingle(heaan_input->m_plaintext)).real();
+            memcpy(output, &x, type.size());
+        }
+        else if (type_name == "double")
+        {
+            double x = (double)(m_scheme->decodeSingle(heaan_input->m_plaintext)).real();
             memcpy(output, &x, type.size());
         }
         else
@@ -294,24 +351,24 @@ void runtime::he::he_heaan::HEHeaanBackend::decode(void* output,
     else
     {
         throw ngraph_error("HEHeaanBackend::decode input is not heaan plaintext");
-    } */
+    }
 }
 
 void runtime::he::he_heaan::HEHeaanBackend::encrypt(
     shared_ptr<runtime::he::HECiphertext> output, const shared_ptr<runtime::he::HEPlaintext> input)
 {
-    throw ngraph_error("HEHeaanBackend::encrypt not implemented");
-    /*
     auto heaan_output = dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(output);
     auto heaan_input = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(input);
     if (heaan_output != nullptr && heaan_input != nullptr)
     {
-        m_encryptor->encrypt(heaan_input->m_plaintext, heaan_output->m_ciphertext);
+        NGRAPH_INFO << "Encrypting";
+        heaan_output->m_ciphertext = m_scheme->encryptMsg(heaan_input->m_plaintext);
+        NGRAPH_INFO << "Done Encrypting";
     }
     else
     {
         throw ngraph_error("HEHeaanBackend::encrypt has non-heaan ciphertexts");
-    } */
+    }
 }
 
 void runtime::he::he_heaan::HEHeaanBackend::decrypt(shared_ptr<runtime::he::HEPlaintext> output,
