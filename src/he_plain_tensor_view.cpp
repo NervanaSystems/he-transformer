@@ -37,7 +37,7 @@ runtime::he::HEPlainTensorView::HEPlainTensorView(const element::Type& element_t
     // get_tensor_view_layout()->get_size() is the number of elements
     m_num_elements = m_descriptor->get_tensor_view_layout()->get_size();
     m_plain_texts.resize(m_num_elements);
-#pragma omp parallel for
+// #pragma omp parallel for
     for (size_t i = 0; i < m_num_elements; ++i)
     {
         if (auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(m_he_backend))
@@ -87,7 +87,7 @@ void runtime::he::HEPlainTensorView::write(const void* source, size_t tensor_off
     }
     else
     {
-#pragma omp parallel for
+// #pragma omp parallel for
         for (size_t i = 0; i < num_elements_to_write; ++i)
         {
             const void* src_with_offset = (void*)((char*)source + i * type.size());
@@ -98,7 +98,10 @@ void runtime::he::HEPlainTensorView::write(const void* source, size_t tensor_off
             }
             else if (auto he_heaan_backend = dynamic_pointer_cast<he_heaan::HEHeaanBackend>(m_he_backend))
             {
-                he_heaan_backend->encode(m_plain_texts[dst_index], src_with_offset, type);
+// #pragma omp critical // TODO: why not thread-safe?
+                {
+                    he_heaan_backend->encode(m_plain_texts[dst_index], src_with_offset, type);
+                }
             }
             else
             {
@@ -135,7 +138,7 @@ void runtime::he::HEPlainTensorView::read(void* target, size_t tensor_offset, si
     }
     else
     {
-#pragma omp parallel for
+// #pragma omp parallel for
         for (size_t i = 0; i < num_elements_to_read; ++i)
         {
             void* dst_with_offset = (void*)((char*)target + i * type.size());
@@ -146,7 +149,10 @@ void runtime::he::HEPlainTensorView::read(void* target, size_t tensor_offset, si
             }
             else if (auto he_heaan_backend = dynamic_pointer_cast<he_heaan::HEHeaanBackend>(m_he_backend))
             {
-                he_heaan_backend->decode(dst_with_offset, m_plain_texts[src_index], type);
+// #pragma omp critical // TODO: why not thread-safe?
+                {
+                    he_heaan_backend->decode(dst_with_offset, m_plain_texts[src_index], type);
+                }
             }
             else
             {
