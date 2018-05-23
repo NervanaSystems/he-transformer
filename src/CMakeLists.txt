@@ -30,6 +30,10 @@ set (HE_SRC
     kernel/slice.cpp
     kernel/subtract.cpp
     kernel/sum.cpp
+    # heaan kernels
+    #kernel/heaan/add_heaan.cpp
+    # seal kernels
+    kernel/seal/add_seal.cpp
     # main
     create_backend.cpp
     he_backend.cpp

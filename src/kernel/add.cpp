@@ -19,8 +19,10 @@
 #include "he_backend.hpp"
 #include "he_seal_backend.hpp"
 #include "kernel/add.hpp"
+// #include "kernel/heaan/add_heaan.hpp"
+#include "kernel/seal/add_seal.hpp"
 #include "ngraph/type/element_type.hpp"
-#include "seal/seal.h"
+#include "util.hpp"
 
 using namespace std;
 using namespace ngraph;
@@ -36,22 +38,18 @@ void runtime::he::kernel::add(const vector<shared_ptr<he::HECiphertext>>& arg0,
     {
         throw ngraph_error("HE backend not seal type");
     }
-#pragma omp parallel for
-    for (size_t i = 0; i < count; ++i)
+    vector<shared_ptr<he::SealCiphertextWrapper>> arg0_seal(arg0.size());
+    vector<shared_ptr<he::SealCiphertextWrapper>> arg1_seal(arg1.size());
+    vector<shared_ptr<he::SealCiphertextWrapper>> out_seal(out.size());
+
+    if (runtime::he::cast_vector(arg0_seal, arg0) && runtime::he::cast_vector(arg1_seal, arg1) && runtime::he::cast_vector(out_seal , out))
     {
-        auto arg0i = dynamic_pointer_cast<SealCiphertextWrapper>(arg0[i]);
-        auto arg1i = dynamic_pointer_cast<SealCiphertextWrapper>(arg1[i]);
-        auto outi = dynamic_pointer_cast<SealCiphertextWrapper>(out[i]);
-        if (arg0i != nullptr && arg1i != nullptr && outi != nullptr)
-        {
-            he_seal_backend->get_evaluator()->add(
-                arg0i->m_ciphertext, arg1i->m_ciphertext, outi->m_ciphertext);
-        }
-        else
-        {
-            throw ngraph_error(
-                "Add backend is seal, but arguments or outputs are not seal::Ciphertext");
-        }
+        kernel::seal::add(arg0_seal, arg1_seal, out_seal, he_seal_backend, count);
+    }
+    else
+    {
+        throw ngraph_error(
+                "Add backend is seal, but arguments or outputs are not SealCiphertextWrapper");
     }
 }
 

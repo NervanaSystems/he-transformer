@@ -20,7 +20,6 @@
 #include <unordered_map>
 
 #include "he_backend.hpp"
-#include "he_seal_backend.hpp"
 #include "he_seal_parameter.hpp"
 #include "ngraph/runtime/backend.hpp"
 #include "seal/seal.h"

@@ -17,6 +17,7 @@
 #pragma once
 
 #include "seal/seal.h"
+#include "heaan_ciphertext_wrapper.hpp"
 
 namespace ngraph
 {
