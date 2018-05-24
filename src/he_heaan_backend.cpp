@@ -116,29 +116,12 @@ shared_ptr<runtime::he::HECiphertext>
     runtime::he::he_heaan::HEHeaanBackend::create_valued_ciphertext(
         float value, const element::Type& element_type) const
 {
-    throw ngraph_error("HEHeaanBackend::create_valued_ciphertext unimplemented");
-    /* const string type_name = element_type.c_type_string();
     auto ciphertext =
         dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(create_empty_ciphertext());
-    if (ciphertext == nullptr)
-    {
-        throw ngraph_error("Ciphertext is not heaan ciphertext in create_valued_ciphertext");
-    }
-    if (type_name == "float")
-    {
-        heaan::Plaintext plaintext = m_frac_encoder->encode(value);
-        m_encryptor->encrypt(plaintext, ciphertext->m_ciphertext);
-    }
-    else if (type_name == "int64_t")
-    {
-        heaan::Plaintext plaintext = m_int_encoder->encode(static_cast<int64_t>(value));
-        m_encryptor->encrypt(plaintext, ciphertext->m_ciphertext);
-    }
-    else
-    {
-        throw ngraph_error("Type not supported at create_ciphertext");
-    }
-    return ciphertext; */
+
+    ciphertext->m_ciphertext = m_scheme->encryptSingle((double)value, get_precision(), m_context->logQ);
+
+    return ciphertext;
 }
 
 shared_ptr<runtime::he::HECiphertext>

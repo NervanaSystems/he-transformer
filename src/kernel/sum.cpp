@@ -22,6 +22,7 @@
 #include "he_cipher_tensor_view.hpp"
 #include "he_ciphertext.hpp"
 #include "he_seal_backend.hpp"
+#include "he_heaan_backend.hpp"
 #include "kernel/add.hpp"
 #include "kernel/sum.hpp"
 #include "seal/seal.h"
@@ -38,15 +39,27 @@ void runtime::he::kernel::sum(const vector<shared_ptr<he::HECiphertext>>& arg,
                               shared_ptr<HEBackend> he_backend)
 {
     auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(he_backend);
-    if (!he_seal_backend)
+    auto he_heaan_backend = dynamic_pointer_cast<he_heaan::HEHeaanBackend>(he_backend);
+    if (!he_seal_backend && !he_heaan_backend)
     {
-        throw ngraph_error("HE backend not seal type");
+        throw ngraph_error("Sum he_backend is neither heaan nor seal");
     }
 
     CoordinateTransform output_transform(out_shape);
 
-    shared_ptr<HECipherTensorView> zero_tv = static_pointer_cast<HECipherTensorView>(
-        he_seal_backend->create_valued_tensor(0., type, out_shape));
+    shared_ptr<HECipherTensorView> zero_tv;
+
+    if (he_seal_backend != nullptr)
+    {
+        zero_tv = static_pointer_cast<HECipherTensorView>(
+                    he_seal_backend->create_valued_tensor(0., type, out_shape));
+    }
+    else if (he_heaan_backend != nullptr)
+    {
+        zero_tv = static_pointer_cast<HECipherTensorView>(
+                he_heaan_backend->create_valued_tensor(0., type, out_shape));
+    }
+
 
     size_t zero_ind = 0;
     for (const Coordinate& output_coord : output_transform)
@@ -65,6 +78,7 @@ void runtime::he::kernel::sum(const vector<shared_ptr<he::HECiphertext>>& arg,
         shared_ptr<he::HECiphertext> cipher_out = out[output_ind];
 
         ngraph::runtime::he::kernel::scalar_add(
-            cipher_out, arg[input_transform.index(input_coord)], cipher_out, type, he_backend);
+                cipher_out, arg[input_transform.index(input_coord)], cipher_out, type, he_backend);
+
     }
 }

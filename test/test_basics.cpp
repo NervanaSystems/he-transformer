@@ -1677,7 +1677,7 @@ TEST_F(TestHEBackend, sum_matrix_rows)
     auto result = m_he_backend->create_tensor(element::f32, shape_rt);
 
     m_he_backend->call(f, {result}, {a});
-    EXPECT_EQ((vector<float>{3, 7, 11}), read_vector<float>(result));
+    EXPECT_TRUE(test::all_close(vector<float>{3, 7, 11}, read_vector<float>(result)));
 
     // For some reason I'm feeling extra paranoid about making sure reduction doesn't clobber the
     // input tensors, so let's do this too.
@@ -1698,7 +1698,7 @@ TEST_F(TestHEBackend, sum_matrix_rows_zero)
     copy_data(result, vector<float>({3, 3, 3}));
 
     m_he_backend->call(f, {result}, {a});
-    EXPECT_EQ((vector<float>{0, 0, 0}), read_vector<float>(result));
+    EXPECT_TRUE(test::all_close((vector<float>{0, 0, 0}), read_vector<float>(result)));
 
     // For some reason I'm feeling extra paranoid about making sure reduction doesn't clobber the
     // input tensors, so let's do this too.
@@ -1720,7 +1720,7 @@ TEST_F(TestHEBackend, sum_matrix_cols_zero)
     copy_data(result, vector<float>({3, 3}));
 
     m_he_backend->call(f, {result}, {a});
-    EXPECT_EQ((vector<float>{0, 0}), read_vector<float>(result));
+    EXPECT_TRUE(test::all_close((vector<float>{0, 0}), read_vector<float>(result)));
 
     // For some reason I'm feeling extra paranoid about making sure reduction doesn't clobber the
     // input tensors, so let's do this too.
@@ -1741,7 +1741,7 @@ TEST_F(TestHEBackend, sum_vector_zero)
     copy_data(result, vector<float>({3}));
 
     m_he_backend->call(f, {result}, {a});
-    EXPECT_EQ((vector<float>{0}), read_vector<float>(result));
+    EXPECT_TRUE(test::all_close((vector<float>{0}), read_vector<float>(result)));
 
     // For some reason I'm feeling extra paranoid about making sure reduction doesn't clobber the
     // input tensors, so let's do this too.
@@ -1762,7 +1762,7 @@ TEST_F(TestHEBackend, sum_matrix_to_scalar_zero_by_zero)
     copy_data(result, vector<float>({3}));
 
     m_he_backend->call(f, {result}, {a});
-    EXPECT_EQ((vector<float>{0}), read_vector<float>(result));
+    EXPECT_TRUE(test::all_close((vector<float>{0}), read_vector<float>(result)));
 
     // For some reason I'm feeling extra paranoid about making sure reduction doesn't clobber the
     // input tensors, so let's do this too.
@@ -1876,7 +1876,7 @@ TEST_F(TestHEBackend, sum_3d_eliminate_zero_dim)
     copy_data(result, vector<float>{2112, 2112, 2112, 2112, 2112, 2112});
 
     m_he_backend->call(f, {result}, {a});
-    EXPECT_EQ((vector<float>{0, 0, 0, 0, 0, 0}), read_vector<float>(result));
+    EXPECT_TRUE(test::all_close((vector<float>{0, 0, 0, 0, 0, 0}), read_vector<float>(result)));
 }
 
 TEST_F(TestHEBackend, sum_to_scalar_stable)
