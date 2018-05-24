@@ -114,6 +114,20 @@ namespace ngraph
                         return m_scheme;
                     }
 
+                    const inline std::shared_ptr<heaan::Context> get_context() const
+                    {
+                        return m_context;
+                    }
+
+                    const inline long get_precision() const
+                    {
+                        return m_log_precision;
+                    }
+                    const inline std::shared_ptr<heaan::SecretKey> get_secret_key() const
+                    {
+                        return m_secret_key;
+                    }
+
                     void enable_performance_data(std::shared_ptr<Function> func,
                                                  bool enable) override;
                     std::vector<PerformanceCounter>

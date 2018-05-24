@@ -25,7 +25,10 @@ namespace ngraph
             template <typename S, typename T>
                 bool cast_vector(std::vector<std::shared_ptr<T>>& output, const std::vector<std::shared_ptr<S>>& input)
                 {
-					assert(output.size() == input.size());
+                    if (output.size() != input.size())
+                    {
+                        throw ngraph_error("Output size doesn't match input size in cast_vector");
+                    }
 					for(size_t i = 0; i < input.size(); ++i)
 					{
 						output[i] = dynamic_pointer_cast<T>(input[i]);

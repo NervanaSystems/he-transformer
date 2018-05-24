@@ -32,8 +32,10 @@ set (HE_SRC
     kernel/sum.cpp
     # heaan kernels
     kernel/heaan/add_heaan.cpp
+    kernel/heaan/multiply_heaan.cpp
     # seal kernels
     kernel/seal/add_seal.cpp
+    kernel/seal/multiply_seal.cpp
     # main
     create_backend.cpp
     he_backend.cpp
