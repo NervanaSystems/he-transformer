@@ -1342,7 +1342,7 @@ TEST_F(TestHEBackend, slice_3d_strided)
     auto result = m_he_backend->create_tensor(element::f32, shape_r);
 
     m_he_backend->call(f, {result}, {a});
-    EXPECT_EQ((vector<float>{0, 2, 8, 10, 32, 34, 40, 42}), read_vector<float>(result));
+    EXPECT_TRUE(test::all_close(vector<float>{0, 2, 8, 10, 32, 34, 40, 42}, read_vector<float>(result)));
 }
 
 TEST_F(TestHEBackend, slice_3d_strided_different_strides)
@@ -1365,7 +1365,7 @@ TEST_F(TestHEBackend, slice_3d_strided_different_strides)
     auto result = m_he_backend->create_tensor(element::f32, shape_r);
 
     m_he_backend->call(f, {result}, {a});
-    EXPECT_EQ((vector<float>{0, 3, 8, 11, 32, 35, 40, 43}), read_vector<float>(result));
+    EXPECT_TRUE(test::all_close(vector<float>{0, 3, 8, 11, 32, 35, 40, 43}, read_vector<float>(result)));
 }
 
 TEST_F(TestHEBackend, concat_matrix_colwise)
