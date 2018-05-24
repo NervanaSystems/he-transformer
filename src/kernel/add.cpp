@@ -116,6 +116,7 @@ void runtime::he::kernel::scalar_add(const shared_ptr<he::HECiphertext>& arg0,
         }
         else
         {
+            NGRAPH_INFO << (arg0_heaan == nullptr)<< " " << (arg1_heaan == nullptr)<< " " << (out_heaan == nullptr);
             throw ngraph_error(
                     "Add backend is heaan, but arguments or outputs are not HeaanCiphertextWrapper");
         }
