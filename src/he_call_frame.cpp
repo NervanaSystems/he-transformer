@@ -60,9 +60,9 @@ runtime::he::HECallFrame::HECallFrame(const shared_ptr<Function>& func,
 
 bool runtime::he::HECallFrame::is_cpu_check_enabled(const shared_ptr<Node>& op) const
 {
-    return op->description() != "Relinearize";
-    // static unordered_set<string> cpu_check_enabled_ops{"Sum", "Add", "Dot", "Multiply"};
-    // return cpu_check_enabled_ops.count(op->description()) != 0;
+    // return op->description() != "Relinearize";
+    static unordered_set<string> cpu_check_enabled_ops{"Sum", "Add", "Dot", "Multiply"};
+    return cpu_check_enabled_ops.count(op->description()) != 0;
 }
 
 void runtime::he::HECallFrame::call(shared_ptr<Function> function,

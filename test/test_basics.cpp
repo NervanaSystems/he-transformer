@@ -1200,9 +1200,9 @@ TEST_F(TestHEBackend, one_hot_vector_1_fp)
     auto result = m_he_backend->create_tensor(element::f32, shape_r);
 
     m_he_backend->call(f, {result}, {a});
-    EXPECT_EQ(
-        (vector<float>{0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0}),
-        read_vector<float>(result));
+    EXPECT_TRUE(test::all_close(
+        vector<float>{0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0},
+        read_vector<float>(result)));
 }
 TEST_F(TestHEBackend, one_hot_vector_1_fp_nonint)
 {
