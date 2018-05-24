@@ -36,7 +36,7 @@ namespace ngraph
             static HEHeaanParameter default_heaan_parameter{
                 10, // log_2(poly_modulus)
                 65, // log_2(plain_modulus)
-                5  // log_2(precision)
+                32  // log_2(precision)
             };
         }
     }

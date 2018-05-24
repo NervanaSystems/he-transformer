@@ -264,6 +264,10 @@ void runtime::he::he_heaan::HEHeaanBackend::encode(shared_ptr<runtime::he::HEPla
     {
         output = make_shared<runtime::he::HeaanPlaintextWrapper>((double)*(int64_t*)input);
     }
+    else if (type_name == "float")
+    {
+        output = make_shared<runtime::he::HeaanPlaintextWrapper>((double)*(float*)input);
+    }
     else
     {
         NGRAPH_INFO << "Unsupported element type in encode " << type_name;

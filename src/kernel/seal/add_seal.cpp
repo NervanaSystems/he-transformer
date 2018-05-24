@@ -103,8 +103,9 @@ void runtime::he::kernel::seal::add(const vector<shared_ptr<he::SealPlaintextWra
         he_seal_backend->decode(&x, arg0[i], type);
         he_seal_backend->decode(&y, arg1[i], type);
         float r = x + y;
-        //std::shared_ptr<ngraph::runtime::he::HEPlaintext>& tmp = out[i]; // TODO
-        //he_seal_backend->encode(tmp, &r, type);
+        shared_ptr<he::HEPlaintext> out_he = dynamic_pointer_cast<he::HEPlaintext>(out[i]);
+        he_seal_backend->encode(out_he, &r, type);
+        out[i] = dynamic_pointer_cast<he::SealPlaintextWrapper>(out_he);
     }
 }
 

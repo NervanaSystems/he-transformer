@@ -109,6 +109,11 @@ namespace ngraph
                     void decrypt(std::shared_ptr<he::HEPlaintext> output,
                                  const std::shared_ptr<he::HECiphertext> input);
 
+                    const inline std::shared_ptr<heaan::Scheme> get_scheme() const
+                    {
+                        return m_scheme;
+                    }
+
                     void enable_performance_data(std::shared_ptr<Function> func,
                                                  bool enable) override;
                     std::vector<PerformanceCounter>

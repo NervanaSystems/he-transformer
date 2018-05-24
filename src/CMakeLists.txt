@@ -31,7 +31,7 @@ set (HE_SRC
     kernel/subtract.cpp
     kernel/sum.cpp
     # heaan kernels
-    #kernel/heaan/add_heaan.cpp
+    kernel/heaan/add_heaan.cpp
     # seal kernels
     kernel/seal/add_seal.cpp
     # main
