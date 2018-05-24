@@ -38,34 +38,22 @@ namespace ngraph
             {
                 namespace seal
                 {
-                    void add(const vector<shared_ptr<he::SealCiphertextWrapper>>& arg0,
-                            const vector<shared_ptr<he::SealCiphertextWrapper>>& arg1,
-                            vector<shared_ptr<he::SealCiphertextWrapper>>& out,
-                            shared_ptr<he_seal::HESealBackend> he_seal_backend,
-                            size_t count);
-
-                    void add(const vector<shared_ptr<he::SealCiphertextWrapper>>& arg0,
-                            const vector<shared_ptr<he::SealPlaintextWrapper>>& arg1,
-                            vector<shared_ptr<he::SealCiphertextWrapper>>& out,
-                            shared_ptr<he_seal::HESealBackend> he_seal_backend,
-                            size_t count);
-
-                    void add(const vector<shared_ptr<he::SealPlaintextWrapper>>& arg0,
-                            const vector<shared_ptr<he::SealCiphertextWrapper>>& arg1,
-                            vector<shared_ptr<he::SealCiphertextWrapper>>& out,
-                            shared_ptr<he_seal::HESealBackend> he_seal_backend,
-                            size_t count);
-
-                    void add(const vector<shared_ptr<he::SealPlaintextWrapper>>& arg0,
-                            const vector<shared_ptr<he::SealPlaintextWrapper>>& arg1,
-                            vector<shared_ptr<he::SealPlaintextWrapper>>& out,
-                            const element::Type& type,
-                            shared_ptr<he_seal::HESealBackend> he_seal_backend,
-                            size_t count);
-
                     void scalar_add(const shared_ptr<he::SealCiphertextWrapper>& arg0,
                             const shared_ptr<he::SealCiphertextWrapper>& arg1,
                             shared_ptr<he::SealCiphertextWrapper>& out,
+                            const element::Type& type,
+                            shared_ptr<he_seal::HESealBackend> he_seal_backend);
+
+                    void scalar_add(const shared_ptr<he::SealCiphertextWrapper>& arg0,
+                            const shared_ptr<he::SealPlaintextWrapper>& arg1,
+                            shared_ptr<he::SealCiphertextWrapper>& out,
+                            const element::Type& type,
+                            shared_ptr<he_seal::HESealBackend> he_seal_backend);
+
+                    void scalar_add(const shared_ptr<he::SealPlaintextWrapper>& arg0,
+                            const shared_ptr<he::SealCiphertextWrapper>& arg1,
+                            shared_ptr<he::SealCiphertextWrapper>& out,
+                            const element::Type& type,
                             shared_ptr<he_seal::HESealBackend> he_seal_backend);
 
                     void scalar_add(const shared_ptr<he::SealPlaintextWrapper>& arg0,

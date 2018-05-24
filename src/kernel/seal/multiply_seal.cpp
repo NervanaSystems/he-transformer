@@ -25,20 +25,6 @@
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::seal::multiply(const vector<shared_ptr<he::SealCiphertextWrapper>>& arg0,
-                                   const vector<shared_ptr<he::SealCiphertextWrapper>>& arg1,
-                                   vector<shared_ptr<he::SealCiphertextWrapper>>& out,
-                                   const element::Type& type,
-                                   shared_ptr<he_seal::HESealBackend> he_seal_backend,
-                                   size_t count)
-{
-#pragma omp parallel for
-    for (size_t i = 0; i < count; ++i)
-    {
-        scalar_multiply(arg0[i], arg1[i], out[i], type, he_seal_backend);
-    }
-}
-
 void runtime::he::kernel::seal::scalar_multiply(const shared_ptr<he::SealCiphertextWrapper>& arg0,
                                           const shared_ptr<he::SealCiphertextWrapper>& arg1,
                                           shared_ptr<he::SealCiphertextWrapper>& out,
@@ -47,20 +33,6 @@ void runtime::he::kernel::seal::scalar_multiply(const shared_ptr<he::SealCiphert
 {
     he_seal_backend->get_evaluator()->multiply(
         arg0->m_ciphertext, arg1->m_ciphertext, out->m_ciphertext);
-}
-
-void runtime::he::kernel::seal::multiply(const vector<shared_ptr<he::SealCiphertextWrapper>>& arg0,
-                                   const vector<shared_ptr<he::SealPlaintextWrapper>>& arg1,
-                                   vector<shared_ptr<he::SealCiphertextWrapper>>& out,
-                                   const element::Type& type,
-                                   shared_ptr<he_seal::HESealBackend> he_seal_backend,
-                                   size_t count)
-{
-#pragma omp parallel for
-    for (size_t i = 0; i < count; ++i)
-    {
-        scalar_multiply(arg0[i], arg1[i], out[i], type, he_seal_backend);
-    }
 }
 
 void runtime::he::kernel::seal::scalar_multiply(const shared_ptr<he::SealCiphertextWrapper>& arg0,
@@ -86,16 +58,6 @@ void runtime::he::kernel::seal::scalar_multiply(const shared_ptr<he::SealCiphert
     }
 }
 
-void runtime::he::kernel::seal::multiply(const vector<shared_ptr<he::SealPlaintextWrapper>>& arg0,
-                                   const vector<shared_ptr<he::SealCiphertextWrapper>>& arg1,
-                                   vector<shared_ptr<he::SealCiphertextWrapper>>& out,
-                                   const element::Type& type,
-                                   shared_ptr<he_seal::HESealBackend> he_seal_backend,
-                                   size_t count)
-{
-    multiply(arg1, arg0, out, type, he_seal_backend, count);
-}
-
 void runtime::he::kernel::seal::scalar_multiply(const shared_ptr<he::SealPlaintextWrapper>& arg0,
                                           const shared_ptr<he::SealCiphertextWrapper>& arg1,
                                           shared_ptr<he::SealCiphertextWrapper>& out,
@@ -103,32 +65,6 @@ void runtime::he::kernel::seal::scalar_multiply(const shared_ptr<he::SealPlainte
                                           shared_ptr<he_seal::HESealBackend> he_seal_backend)
 {
     scalar_multiply(arg1, arg0, out, type, he_seal_backend);
-}
-
-void runtime::he::kernel::seal::multiply(const vector<shared_ptr<he::SealPlaintextWrapper>>& arg0,
-                                   const vector<shared_ptr<he::SealPlaintextWrapper>>& arg1,
-                                   vector<shared_ptr<he::SealPlaintextWrapper>>& out,
-                                   const element::Type& type,
-                                   shared_ptr<he_seal::HESealBackend> he_seal_backend,
-                                   size_t count)
-{
-    const string type_name = type.c_type_string();
-    if (type_name != "float")
-    {
-        throw ngraph_error("Type " + type_name + " not supported");
-    }
-
-#pragma omp parallel for
-    for (size_t i = 0; i < count; ++i)
-    {
-        float x, y;
-        he_seal_backend->decode(&x, arg0[i], type);
-        he_seal_backend->decode(&y, arg1[i], type);
-        float r = x * y;
-        shared_ptr<he::HEPlaintext> out_he = dynamic_pointer_cast<he::HEPlaintext>(out[i]);
-        he_seal_backend->encode(out_he, &r, type);
-        out[i] = dynamic_pointer_cast<he::SealPlaintextWrapper>(out_he);
-    }
 }
 
 void runtime::he::kernel::seal::scalar_multiply(const shared_ptr<he::SealPlaintextWrapper>& arg0,

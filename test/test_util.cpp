@@ -43,11 +43,11 @@ void TestHEBackend::TearDown()
 
 void TestHEBackend::SetUp()
 {
-   // m_he_backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(runtime::Backend::create("HE_SEAL"));
-    m_he_backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(runtime::Backend::create("HE_HEAAN"));
+   //m_he_backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(runtime::Backend::create("HE_SEAL"));
+   m_he_backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(runtime::Backend::create("HE_HEAAN"));
 }
 
-// shared_ptr<ngraph::runtime::he::he_seal::HESealBackend> TestHEBackend::m_he_backend = nullptr;
+//shared_ptr<ngraph::runtime::he::he_seal::HESealBackend> TestHEBackend::m_he_backend = nullptr;
 shared_ptr<ngraph::runtime::he::he_heaan::HEHeaanBackend> TestHEBackend::m_he_backend = nullptr;
 
 vector<float> read_constant(const string filename)

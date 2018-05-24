@@ -36,18 +36,21 @@ namespace ngraph
                 void add(const vector<shared_ptr<he::HECiphertext>>& arg0,
                          const vector<shared_ptr<he::HECiphertext>>& arg1,
                          vector<shared_ptr<he::HECiphertext>>& out,
+                         const element::Type& type,
                          shared_ptr<HEBackend> he_backend,
                          size_t count);
 
                 void add(const vector<shared_ptr<he::HECiphertext>>& arg0,
                          const vector<shared_ptr<he::HEPlaintext>>& arg1,
                          vector<shared_ptr<he::HECiphertext>>& out,
+                         const element::Type& type,
                          shared_ptr<HEBackend> he_backend,
                          size_t count);
 
                 void add(const vector<shared_ptr<he::HEPlaintext>>& arg0,
                          const vector<shared_ptr<he::HECiphertext>>& arg1,
                          vector<shared_ptr<he::HECiphertext>>& out,
+                         const element::Type& type,
                          shared_ptr<HEBackend> he_backend,
                          size_t count);
 
@@ -61,7 +64,20 @@ namespace ngraph
                 void scalar_add(const shared_ptr<he::HECiphertext>& arg0,
                                 const shared_ptr<he::HECiphertext>& arg1,
                                 shared_ptr<he::HECiphertext>& out,
+                                const element::Type& type,
                                 shared_ptr<HEBackend> he_backend);
+
+                void scalar_add(const shared_ptr<he::HECiphertext>& arg0,
+                        const shared_ptr<he::HEPlaintext>& arg1,
+                        shared_ptr<he::HECiphertext>& out,
+                        const element::Type& type,
+                        shared_ptr<HEBackend> he_backend);
+
+                void scalar_add(const shared_ptr<he::HEPlaintext>& arg0,
+                        const shared_ptr<he::HECiphertext>& arg1,
+                        shared_ptr<he::HECiphertext>& out,
+                        const element::Type& type,
+                        shared_ptr<HEBackend> he_backend);
 
                 void scalar_add(const shared_ptr<he::HEPlaintext>& arg0,
                                 const shared_ptr<he::HEPlaintext>& arg1,

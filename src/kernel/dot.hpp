@@ -211,7 +211,7 @@ void ngraph::runtime::he::kernel::dot_template(const vector<shared_ptr<S>>& arg0
             auto prod = he_seal_backend->create_empty_ciphertext();
 
             runtime::he::kernel::scalar_multiply(arg0_text, arg1_text, prod, type, he_backend);
-            runtime::he::kernel::scalar_add(sum, prod, sum, he_backend);
+            runtime::he::kernel::scalar_add(sum, prod, sum, type, he_backend);
         }
 
         // Write the sum back.

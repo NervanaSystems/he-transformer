@@ -41,7 +41,7 @@ namespace ngraph
             {
                 namespace heaan
                 {
-                    void multiply(const std::vector<std::shared_ptr<he::HeaanCiphertextWrapper>>& arg0,
+                    /* void multiply(const std::vector<std::shared_ptr<he::HeaanCiphertextWrapper>>& arg0,
                             const std::vector<std::shared_ptr<he::HeaanCiphertextWrapper>>& arg1,
                             std::vector<std::shared_ptr<he::HeaanCiphertextWrapper>>& out,
                             const element::Type& type,
@@ -67,7 +67,7 @@ namespace ngraph
                             std::vector<std::shared_ptr<he::HeaanPlaintextWrapper>>& out,
                             const element::Type& type,
                             std::shared_ptr<he_heaan::HEHeaanBackend> he_heaan_backend,
-                            size_t count);
+                            size_t count); */
 
                     void scalar_multiply(const std::shared_ptr<he::HeaanCiphertextWrapper>& arg0,
                             const std::shared_ptr<he::HeaanCiphertextWrapper>& arg1,

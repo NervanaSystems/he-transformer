@@ -30,7 +30,7 @@ class TestHEBackend : public ::testing::Test
 protected:
     virtual void SetUp();
     virtual void TearDown();
-     //static std::shared_ptr<ngraph::runtime::he::he_seal::HESealBackend> m_he_backend;
+    //static std::shared_ptr<ngraph::runtime::he::he_seal::HESealBackend> m_he_backend;
     static std::shared_ptr<ngraph::runtime::he::he_heaan::HEHeaanBackend> m_he_backend;
 };
 
