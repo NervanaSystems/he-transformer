@@ -17,6 +17,7 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 
 #include "ngraph/coordinate_transform.hpp"
 
@@ -27,6 +28,8 @@ namespace ngraph
         namespace he
         {
             class HEBackend;
+            class HECiphertext;
+            class HEPlaintext;
 
             namespace kernel
             {

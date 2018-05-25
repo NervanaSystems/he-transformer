@@ -14,8 +14,8 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "he_backend.hpp"
 #include "kernel/reshape.hpp"
+#include "he_backend.hpp"
 
 using namespace std;
 using namespace ngraph;

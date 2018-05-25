@@ -85,7 +85,9 @@ namespace ngraph
                             const void* input,
                             const element::Type& type) const;
 
-                void decode(void* output, const he::HEPlaintext& input, const element::Type& type) const;
+                void decode(void* output,
+                            const he::HEPlaintext& input,
+                            const element::Type& type) const;
 
                 void encrypt(std::shared_ptr<he::HECiphertext> output,
                              const std::shared_ptr<he::HEPlaintext> input) const;

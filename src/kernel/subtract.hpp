@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include <vector>
 #include <memory>
+#include <vector>
 
 #include "heaan_ciphertext_wrapper.hpp"
 

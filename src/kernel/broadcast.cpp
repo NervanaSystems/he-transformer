@@ -14,10 +14,10 @@
 * limitations under the License.
 *******************************************************************************/
 
+#include "kernel/broadcast.hpp"
 #include "he_backend.hpp"
 #include "he_ciphertext.hpp"
 #include "he_plaintext.hpp"
-#include "kernel/broadcast.hpp"
 #include "ngraph/coordinate_transform.hpp"
 
 using namespace std;

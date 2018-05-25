@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <memory>
+
 namespace ngraph
 {
     namespace element
@@ -39,29 +41,29 @@ namespace ngraph
             {
                 namespace seal
                 {
-                    void scalar_multiply(const shared_ptr<he::SealCiphertextWrapper>& arg0,
-                                         const shared_ptr<he::SealCiphertextWrapper>& arg1,
-                                         shared_ptr<he::SealCiphertextWrapper>& out,
+                    void scalar_multiply(const std::shared_ptr<he::SealCiphertextWrapper>& arg0,
+                                         const std::shared_ptr<he::SealCiphertextWrapper>& arg1,
+                                         std::shared_ptr<he::SealCiphertextWrapper>& out,
                                          const element::Type& type,
-                                         shared_ptr<he_seal::HESealBackend> he_seal_backend);
+                                         std::shared_ptr<he_seal::HESealBackend> he_seal_backend);
 
-                    void scalar_multiply(const shared_ptr<he::SealPlaintextWrapper>& arg0,
-                                         const shared_ptr<he::SealCiphertextWrapper>& arg1,
-                                         shared_ptr<he::SealCiphertextWrapper>& out,
+                    void scalar_multiply(const std::shared_ptr<he::SealPlaintextWrapper>& arg0,
+                                         const std::shared_ptr<he::SealCiphertextWrapper>& arg1,
+                                         std::shared_ptr<he::SealCiphertextWrapper>& out,
                                          const element::Type& type,
-                                         shared_ptr<he_seal::HESealBackend> he_seal_backend);
+                                         std::shared_ptr<he_seal::HESealBackend> he_seal_backend);
 
-                    void scalar_multiply(const shared_ptr<he::SealCiphertextWrapper>& arg0,
-                                         const shared_ptr<he::SealPlaintextWrapper>& arg1,
-                                         shared_ptr<he::SealCiphertextWrapper>& out,
+                    void scalar_multiply(const std::shared_ptr<he::SealCiphertextWrapper>& arg0,
+                                         const std::shared_ptr<he::SealPlaintextWrapper>& arg1,
+                                         std::shared_ptr<he::SealCiphertextWrapper>& out,
                                          const element::Type& type,
-                                         shared_ptr<he_seal::HESealBackend> he_seal_backend);
+                                         std::shared_ptr<he_seal::HESealBackend> he_seal_backend);
 
-                    void scalar_multiply(const shared_ptr<he::SealPlaintextWrapper>& arg0,
-                                         const shared_ptr<he::SealPlaintextWrapper>& arg1,
-                                         shared_ptr<he::SealPlaintextWrapper>& out,
+                    void scalar_multiply(const std::shared_ptr<he::SealPlaintextWrapper>& arg0,
+                                         const std::shared_ptr<he::SealPlaintextWrapper>& arg1,
+                                         std::shared_ptr<he::SealPlaintextWrapper>& out,
                                          const element::Type& type,
-                                         shared_ptr<he_seal::HESealBackend> he_seal_backend);
+                                         std::shared_ptr<he_seal::HESealBackend> he_seal_backend);
                 }
             }
         }

@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <memory>
+
 namespace ngraph
 {
     namespace element
@@ -27,6 +29,7 @@ namespace ngraph
         namespace he
         {
             class HeaanCiphertextWrapper;
+            class HeaanPlaintextWrapper;
             namespace he_heaan
             {
                 class HEHeaanBackend;

@@ -14,8 +14,8 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "he_heaan_backend.hpp"
 #include "kernel/heaan/multiply_heaan.hpp"
+#include "he_heaan_backend.hpp"
 
 using namespace std;
 using namespace ngraph;

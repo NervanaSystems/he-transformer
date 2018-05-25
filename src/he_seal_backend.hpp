@@ -54,8 +54,8 @@ namespace ngraph
 
                     void assert_valid_seal_parameter(
                         const std::shared_ptr<runtime::he::HESealParameter> sp) const;
-                    shared_ptr<seal::SEALContext>
-                        make_seal_context(const std::shared_ptr<runtime::he::HESealParameter> sp) const;
+                    shared_ptr<seal::SEALContext> make_seal_context(
+                        const std::shared_ptr<runtime::he::HESealParameter> sp) const;
 
                     std::shared_ptr<runtime::TensorView>
                         create_tensor(const element::Type& element_type,

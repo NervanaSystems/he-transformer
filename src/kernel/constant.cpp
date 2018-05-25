@@ -14,9 +14,9 @@
 * limitations under the License.
 *******************************************************************************/
 
+#include "kernel/constant.hpp"
 #include "he_heaan_backend.hpp"
 #include "he_seal_backend.hpp"
-#include "kernel/constant.hpp"
 #include "ngraph/type/element_type.hpp"
 
 using namespace std;

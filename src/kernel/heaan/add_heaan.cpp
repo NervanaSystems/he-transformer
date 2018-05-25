@@ -14,8 +14,10 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "he_heaan_backend.hpp"
 #include "kernel/heaan/add_heaan.hpp"
+#include "he_heaan_backend.hpp"
+#include "heaan_ciphertext_wrapper.hpp"
+#include "heaan_plaintext_wrapper.hpp"
 
 using namespace std;
 using namespace ngraph;

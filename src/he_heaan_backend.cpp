@@ -278,7 +278,8 @@ void runtime::he::he_heaan::HEHeaanBackend::decode(void* output,
 }
 
 void runtime::he::he_heaan::HEHeaanBackend::encrypt(
-    shared_ptr<runtime::he::HECiphertext> output, const shared_ptr<runtime::he::HEPlaintext> input) const
+    shared_ptr<runtime::he::HECiphertext> output,
+    const shared_ptr<runtime::he::HEPlaintext> input) const
 {
     auto heaan_output = dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(output);
     auto heaan_input = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(input);

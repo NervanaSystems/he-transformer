@@ -14,8 +14,8 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <vector>
 #include <memory>
+#include <vector>
 
 #include "he_ciphertext.hpp"
 #include "kernel/concat.hpp"
