@@ -53,9 +53,9 @@ namespace ngraph
                     ~HESealBackend();
 
                     void assert_valid_seal_parameter(
-                        const std::shared_ptr<runtime::he::HESealParameter> sp);
+                        const std::shared_ptr<runtime::he::HESealParameter> sp) const;
                     shared_ptr<seal::SEALContext>
-                        make_seal_context(const std::shared_ptr<runtime::he::HESealParameter> sp);
+                        make_seal_context(const std::shared_ptr<runtime::he::HESealParameter> sp) const;
 
                     std::shared_ptr<runtime::TensorView>
                         create_tensor(const element::Type& element_type,
@@ -112,17 +112,17 @@ namespace ngraph
 
                     void encode(shared_ptr<he::HEPlaintext>& output,
                                 const void* input,
-                                const element::Type& type);
+                                const element::Type& type) const;
 
                     void decode(void* output,
                                 const std::shared_ptr<he::HEPlaintext> input,
-                                const element::Type& type);
+                                const element::Type& type) const;
 
                     void encrypt(shared_ptr<he::HECiphertext> output,
-                                 const std::shared_ptr<he::HEPlaintext> input);
+                                 const std::shared_ptr<he::HEPlaintext> input) const;
 
                     void decrypt(std::shared_ptr<he::HEPlaintext> output,
-                                 const std::shared_ptr<he::HECiphertext> input);
+                                 const std::shared_ptr<he::HECiphertext> input) const;
 
                     const inline std::shared_ptr<seal::SEALContext> get_context() const
                     {

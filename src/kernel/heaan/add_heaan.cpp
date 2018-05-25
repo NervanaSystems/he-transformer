@@ -14,13 +14,8 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <vector>
-
-#include "he_backend.hpp"
 #include "he_heaan_backend.hpp"
-#include "heaan/heaan.hpp"
 #include "kernel/heaan/add_heaan.hpp"
-#include "ngraph/type/element_type.hpp"
 
 using namespace std;
 using namespace ngraph;

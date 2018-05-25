@@ -219,7 +219,7 @@ void runtime::he::he_heaan::HEHeaanBackend::remove_compiled_function(shared_ptr<
 
 void runtime::he::he_heaan::HEHeaanBackend::encode(shared_ptr<runtime::he::HEPlaintext>& output,
                                                    const void* input,
-                                                   const element::Type& type)
+                                                   const element::Type& type) const
 {
     const string type_name = type.c_type_string();
 
@@ -244,7 +244,7 @@ void runtime::he::he_heaan::HEHeaanBackend::encode(shared_ptr<runtime::he::HEPla
 
 void runtime::he::he_heaan::HEHeaanBackend::decode(void* output,
                                                    const shared_ptr<runtime::he::HEPlaintext> input,
-                                                   const element::Type& type)
+                                                   const element::Type& type) const
 {
     const string type_name = type.c_type_string();
 
@@ -252,7 +252,7 @@ void runtime::he::he_heaan::HEHeaanBackend::decode(void* output,
     {
         if (type_name == "int64_t")
         {
-            int64_t x = std::round(heaan_input->m_plaintext);
+            int64_t x = round(heaan_input->m_plaintext);
             memcpy(output, &x, type.size());
         }
         else if (type_name == "float")
@@ -278,7 +278,7 @@ void runtime::he::he_heaan::HEHeaanBackend::decode(void* output,
 }
 
 void runtime::he::he_heaan::HEHeaanBackend::encrypt(
-    shared_ptr<runtime::he::HECiphertext> output, const shared_ptr<runtime::he::HEPlaintext> input)
+    shared_ptr<runtime::he::HECiphertext> output, const shared_ptr<runtime::he::HEPlaintext> input) const
 {
     auto heaan_output = dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(output);
     auto heaan_input = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(input);
@@ -294,7 +294,7 @@ void runtime::he::he_heaan::HEHeaanBackend::encrypt(
 }
 
 void runtime::he::he_heaan::HEHeaanBackend::decrypt(shared_ptr<runtime::he::HEPlaintext> output,
-                                                    const shared_ptr<he::HECiphertext> input)
+                                                    const shared_ptr<he::HECiphertext> input) const
 {
     auto heaan_output = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(output);
     auto heaan_input = dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(input);

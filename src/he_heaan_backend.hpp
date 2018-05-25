@@ -53,9 +53,6 @@ namespace ngraph
                     HEHeaanBackend(HEHeaanBackend& he_backend) = default;
                     ~HEHeaanBackend();
 
-                    std::shared_ptr<heaan::Context>
-                        make_heaan_context(const std::shared_ptr<runtime::he::HEHeaanParameter> sp);
-
                     std::shared_ptr<runtime::TensorView>
                         create_tensor(const element::Type& element_type,
                                       const Shape& shape) override;
@@ -97,17 +94,17 @@ namespace ngraph
 
                     void encode(std::shared_ptr<he::HEPlaintext>& output,
                                 const void* input,
-                                const element::Type& type);
+                                const element::Type& type) const;
 
                     void decode(void* output,
                                 const std::shared_ptr<he::HEPlaintext> input,
-                                const element::Type& type);
+                                const element::Type& type) const;
 
                     void encrypt(std::shared_ptr<he::HECiphertext> output,
-                                 const std::shared_ptr<he::HEPlaintext> input);
+                                 const std::shared_ptr<he::HEPlaintext> input) const;
 
                     void decrypt(std::shared_ptr<he::HEPlaintext> output,
-                                 const std::shared_ptr<he::HECiphertext> input);
+                                 const std::shared_ptr<he::HECiphertext> input) const;
 
                     const inline std::shared_ptr<heaan::Scheme> get_scheme() const
                     {

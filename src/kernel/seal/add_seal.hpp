@@ -16,9 +16,6 @@
 
 #pragma once
 
-#include "he_seal_backend.hpp"
-#include "seal_ciphertext_wrapper.hpp"
-
 namespace ngraph
 {
     namespace element
@@ -29,6 +26,9 @@ namespace ngraph
     {
         namespace he
         {
+            class SealCiphertextWrapper;
+            class SealPlaintextWrapper;
+
             namespace he_seal
             {
                 class HESealBackend;

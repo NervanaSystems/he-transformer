@@ -67,9 +67,9 @@ namespace ngraph
 
                 // Create TensorView of the same value
                 std::shared_ptr<runtime::TensorView> create_valued_tensor(
-                    float value, const element::Type& element_type, const Shape& shape);
+                    float value, const element::Type& element_type, const Shape& shape) const;
                 std::shared_ptr<runtime::TensorView> create_valued_plain_tensor(
-                    float value, const element::Type& element_type, const Shape& shape);
+                    float value, const element::Type& element_type, const Shape& shape) const;
 
                 bool compile(std::shared_ptr<Function> func) override;
 
@@ -83,14 +83,14 @@ namespace ngraph
 
                 void encode(std::shared_ptr<he::HEPlaintext> output,
                             const void* input,
-                            const element::Type& type);
+                            const element::Type& type) const;
 
-                void decode(void* output, const he::HEPlaintext& input, const element::Type& type);
+                void decode(void* output, const he::HEPlaintext& input, const element::Type& type) const;
 
                 void encrypt(std::shared_ptr<he::HECiphertext> output,
-                             const std::shared_ptr<he::HEPlaintext> input);
+                             const std::shared_ptr<he::HEPlaintext> input) const;
 
-                void decrypt(he::HEPlaintext& output, const he::HECiphertext& input);
+                void decrypt(he::HEPlaintext& output, const he::HECiphertext& input) const;
 
                 // void check_noise_budget(const std::vector<std::shared_ptr<runtime::he::HETensorView>>& tvs) const;
 

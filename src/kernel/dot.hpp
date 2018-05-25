@@ -21,7 +21,6 @@
 #include "kernel/add.hpp"
 #include "kernel/multiply.hpp"
 #include "ngraph/coordinate_transform.hpp"
-#include "seal/seal.h"
 
 namespace ngraph
 {

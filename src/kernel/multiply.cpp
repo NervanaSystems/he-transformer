@@ -14,15 +14,12 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <vector>
-
 #include "he_backend.hpp"
 #include "he_seal_backend.hpp"
 #include "kernel/heaan/multiply_heaan.hpp"
 #include "kernel/multiply.hpp"
 #include "kernel/seal/multiply_seal.hpp"
 #include "ngraph/type/element_type.hpp"
-#include "seal/seal.h"
 #include "util.hpp"
 
 using namespace std;

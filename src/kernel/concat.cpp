@@ -15,12 +15,11 @@
 *******************************************************************************/
 
 #include <vector>
+#include <memory>
 
-#include "he_backend.hpp"
 #include "he_ciphertext.hpp"
 #include "kernel/concat.hpp"
 #include "ngraph/coordinate_transform.hpp"
-#include "seal/seal.h"
 
 using namespace std;
 using namespace ngraph;

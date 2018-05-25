@@ -103,7 +103,7 @@ runtime::he::he_seal::HESealBackend::~HESealBackend()
 }
 
 void runtime::he::he_seal::HESealBackend::assert_valid_seal_parameter(
-    const shared_ptr<runtime::he::HESealParameter> sp)
+    const shared_ptr<runtime::he::HESealParameter> sp) const
 {
     static unordered_set<uint64_t> valid_poly_modulus{1024, 2048, 4096, 8192, 16384, 32768};
     if (valid_poly_modulus.count(sp->m_poly_modulus) == 0)
@@ -117,7 +117,7 @@ void runtime::he::he_seal::HESealBackend::assert_valid_seal_parameter(
 }
 
 shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealBackend::make_seal_context(
-    const shared_ptr<runtime::he::HESealParameter> sp)
+    const shared_ptr<runtime::he::HESealParameter> sp) const
 {
     assert_valid_seal_parameter(sp);
 
@@ -380,7 +380,7 @@ void runtime::he::he_seal::HESealBackend::remove_compiled_function(shared_ptr<Fu
 
 void runtime::he::he_seal::HESealBackend::encode(shared_ptr<runtime::he::HEPlaintext>& output,
                                                  const void* input,
-                                                 const element::Type& type)
+                                                 const element::Type& type) const
 {
     const string type_name = type.c_type_string();
 
@@ -403,7 +403,7 @@ void runtime::he::he_seal::HESealBackend::encode(shared_ptr<runtime::he::HEPlain
 
 void runtime::he::he_seal::HESealBackend::decode(void* output,
                                                  const shared_ptr<runtime::he::HEPlaintext> input,
-                                                 const element::Type& type)
+                                                 const element::Type& type) const
 {
     const string type_name = type.c_type_string();
 
@@ -432,7 +432,7 @@ void runtime::he::he_seal::HESealBackend::decode(void* output,
 }
 
 void runtime::he::he_seal::HESealBackend::encrypt(shared_ptr<runtime::he::HECiphertext> output,
-                                                  const shared_ptr<runtime::he::HEPlaintext> input)
+                                                  const shared_ptr<runtime::he::HEPlaintext> input) const
 {
     auto seal_output = dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(output);
     auto seal_input = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(input);
@@ -447,7 +447,7 @@ void runtime::he::he_seal::HESealBackend::encrypt(shared_ptr<runtime::he::HECiph
 }
 
 void runtime::he::he_seal::HESealBackend::decrypt(shared_ptr<runtime::he::HEPlaintext> output,
-                                                  const shared_ptr<he::HECiphertext> input)
+                                                  const shared_ptr<he::HECiphertext> input) const
 {
     auto seal_output = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(output);
     auto seal_input = dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(input);

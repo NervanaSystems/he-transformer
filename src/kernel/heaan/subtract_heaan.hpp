@@ -16,11 +16,6 @@
 
 #pragma once
 
-#include <vector>
-
-#include "he_heaan_backend.hpp"
-#include "heaan_ciphertext_wrapper.hpp"
-
 namespace ngraph
 {
     namespace element
@@ -31,6 +26,8 @@ namespace ngraph
     {
         namespace he
         {
+            class HeaanCiphertextWrapper;
+            class HeaanPlaintextWrapper;
             namespace he_heaan
             {
                 class HEHeaanBackend;

@@ -16,8 +16,9 @@
 
 #pragma once
 
+#include <vector>
+
 #include "ngraph/coordinate_transform.hpp"
-#include "seal/seal.h"
 
 namespace ngraph
 {
@@ -30,8 +31,8 @@ namespace ngraph
             namespace kernel
             {
                 template <typename S, typename T>
-                void broadcast(const vector<shared_ptr<S>>& arg,
-                               vector<shared_ptr<T>>& out,
+                void broadcast(const std::vector<std::shared_ptr<S>>& arg,
+                               std::vector<std::shared_ptr<T>>& out,
                                const Shape& in_shape,
                                const Shape& out_shape,
                                const AxisSet& broadcast_axes)
@@ -47,24 +48,24 @@ namespace ngraph
                     }
                 };
 
-                void broadcast(const vector<shared_ptr<he::HECiphertext>>& arg0,
-                               vector<shared_ptr<he::HECiphertext>>& out,
+                void broadcast(const std::vector<std::shared_ptr<he::HECiphertext>>& arg0,
+                               std::vector<std::shared_ptr<he::HECiphertext>>& out,
                                const Shape& in_shape,
                                const Shape& out_shape,
                                const AxisSet& broadcast_axes);
 
-                void broadcast(const vector<shared_ptr<he::HEPlaintext>>& arg0,
-                               vector<shared_ptr<he::HEPlaintext>>& out,
+                void broadcast(const std::vector<std::shared_ptr<he::HEPlaintext>>& arg0,
+                               std::vector<std::shared_ptr<he::HEPlaintext>>& out,
                                const Shape& in_shape,
                                const Shape& out_shape,
                                const AxisSet& broadcast_axes);
 
-                void broadcast(const vector<shared_ptr<he::HEPlaintext>>& arg0,
-                               vector<shared_ptr<he::HECiphertext>>& out,
+                void broadcast(const std::vector<std::shared_ptr<he::HEPlaintext>>& arg0,
+                               std::vector<std::shared_ptr<he::HECiphertext>>& out,
                                const Shape& in_shape,
                                const Shape& out_shape,
                                const AxisSet& broadcast_axes,
-                               shared_ptr<HEBackend> he_backend);
+                               std::shared_ptr<HEBackend> he_backend);
             }
         }
     }

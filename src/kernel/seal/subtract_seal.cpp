@@ -14,13 +14,8 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <vector>
-
-#include "he_backend.hpp"
 #include "he_seal_backend.hpp"
 #include "kernel/seal/add_seal.hpp"
-#include "ngraph/type/element_type.hpp"
-#include "seal/seal.h"
 
 using namespace std;
 using namespace ngraph;
