@@ -23,7 +23,6 @@
 #include "he_seal_backend.hpp"
 #include "kernel/result.hpp"
 #include "ngraph/type/element_type.hpp"
-#include "seal/seal.h"
 
 using namespace std;
 using namespace ngraph;

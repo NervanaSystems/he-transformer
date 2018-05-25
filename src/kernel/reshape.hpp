@@ -16,8 +16,11 @@
 
 #pragma once
 
+#include <vector>
+#include <memory>
+
+#include "ngraph/axis_vector.hpp"
 #include "ngraph/coordinate_transform.hpp"
-#include "seal/seal.h"
 
 namespace ngraph
 {
@@ -29,24 +32,24 @@ namespace ngraph
 
             namespace kernel
             {
-                void reshape(const vector<shared_ptr<he::HECiphertext>>& arg,
-                             vector<shared_ptr<he::HECiphertext>>& out,
+                void reshape(const std::vector<std::shared_ptr<he::HECiphertext>>& arg,
+                             std::vector<std::shared_ptr<he::HECiphertext>>& out,
                              const Shape& in_shape,
                              const AxisVector& in_axis_order,
                              const Shape& out_shape);
 
-                void reshape(const vector<shared_ptr<he::HEPlaintext>>& arg,
-                             vector<shared_ptr<he::HEPlaintext>>& out,
+                void reshape(const std::vector<std::shared_ptr<he::HEPlaintext>>& arg,
+                             std::vector<std::shared_ptr<he::HEPlaintext>>& out,
                              const Shape& in_shape,
                              const AxisVector& in_axis_order,
                              const Shape& out_shape);
 
-                void reshape(const vector<shared_ptr<he::HEPlaintext>>& arg0,
-                             vector<shared_ptr<he::HECiphertext>>& out,
+                void reshape(const std::vector<std::shared_ptr<he::HEPlaintext>>& arg0,
+                             std::vector<std::shared_ptr<he::HECiphertext>>& out,
                              const Shape& in_shape,
                              const AxisVector& in_axis_order,
                              const Shape& out_shape,
-                             shared_ptr<HEBackend> he_backend);
+                             std::shared_ptr<HEBackend> he_backend);
             }
         }
     }

@@ -22,7 +22,6 @@
 #include "ngraph/pass/manager.hpp"
 #include "ngraph/pass/visualize_tree.hpp"
 
-#include "he_backend.hpp"
 #include "he_call_frame.hpp"
 #include "he_cipher_tensor_view.hpp"
 #include "he_plain_tensor_view.hpp"
@@ -30,8 +29,6 @@
 #include "he_seal_parameter.hpp"
 #include "he_tensor_view.hpp"
 #include "pass/insert_relinearize.hpp"
-#include "seal_ciphertext_wrapper.hpp"
-#include "seal_plaintext_wrapper.hpp"
 
 using namespace ngraph;
 using namespace std;

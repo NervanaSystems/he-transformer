@@ -16,9 +16,8 @@
 
 #pragma once
 
-#include <cstdint>
-#include "he_ciphertext.hpp"
 #include "seal/seal.h"
+#include "he_ciphertext.hpp"
 
 namespace ngraph
 {

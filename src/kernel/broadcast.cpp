@@ -14,34 +14,14 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <vector>
-
 #include "he_backend.hpp"
 #include "he_ciphertext.hpp"
 #include "he_plaintext.hpp"
 #include "kernel/broadcast.hpp"
 #include "ngraph/coordinate_transform.hpp"
-#include "seal/seal.h"
 
 using namespace std;
 using namespace ngraph;
-/*
-template <typename S, typename T>
-void runtime::he::kernel::broadcast(const vector<shared_ptr<S>>& arg,
-            vector<shared_ptr<T>>& out,
-            const Shape& in_shape,
-            const Shape& out_shape,
-            const AxisSet& broadcast_axes)
-{
-    CoordinateTransform input_transform(in_shape);
-    CoordinateTransform output_transform(out_shape);
-    for (const Coordinate& output_coord : output_transform)
-    {
-        Coordinate input_coord = project(output_coord, broadcast_axes);
-
-        out[output_transform.index(output_coord)] = arg[input_transform.index(input_coord)];
-    }
-} */
 
 void runtime::he::kernel::broadcast(const vector<shared_ptr<he::HECiphertext>>& arg,
                                     vector<shared_ptr<he::HECiphertext>>& out,

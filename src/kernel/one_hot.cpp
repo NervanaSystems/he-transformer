@@ -15,7 +15,6 @@
 *******************************************************************************/
 
 #include <cmath>
-#include <vector>
 
 #include "he_backend.hpp"
 #include "he_cipher_tensor_view.hpp"
@@ -26,7 +25,6 @@
 #include "kernel/one_hot.hpp"
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/type/element_type.hpp"
-#include "seal/seal.h"
 
 using namespace std;
 using namespace ngraph;

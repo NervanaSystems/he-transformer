@@ -14,18 +14,12 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <vector>
-
 #include "he_backend.hpp"
 #include "kernel/reshape.hpp"
-#include "ngraph/axis_vector.hpp"
-#include "ngraph/coordinate_transform.hpp"
-#include "seal/seal.h"
 
 using namespace std;
 using namespace ngraph;
 
-// TODO: use template
 void runtime::he::kernel::reshape(const vector<shared_ptr<he::HECiphertext>>& arg,
                                   vector<shared_ptr<he::HECiphertext>>& out,
                                   const Shape& in_shape,
@@ -53,7 +47,6 @@ void runtime::he::kernel::reshape(const vector<shared_ptr<he::HECiphertext>>& ar
     }
 }
 
-// TODO: use template
 void runtime::he::kernel::reshape(const vector<shared_ptr<he::HEPlaintext>>& arg,
                                   vector<shared_ptr<he::HEPlaintext>>& out,
                                   const Shape& in_shape,
@@ -104,14 +97,10 @@ void runtime::he::kernel::reshape(const vector<shared_ptr<he::HEPlaintext>>& arg
     {
         it_size++;
     }
-    NGRAPH_INFO << "reshaping size " << it_size;
 
 #pragma omp parallel for
     for (size_t i = 0; i < it_size; ++i)
     {
-#pragma omp critical
-        if (i % 100 == 0)
-            NGRAPH_INFO << i;
         // TODO: move to coordinate transform
         auto input_it = input_transform.begin();
         auto output_it = output_transform.begin();
@@ -122,14 +111,9 @@ void runtime::he::kernel::reshape(const vector<shared_ptr<he::HEPlaintext>>& arg
         }
         const Coordinate& input_coord = *input_it;
         const Coordinate& output_coord = *output_it;
-        //for (const Coordinate& input_coord : input_transform)
-        //{
-        //    const Coordinate& output_coord = *output_it;
 
         shared_ptr<he::HECiphertext> c = make_shared<he::HECiphertext>();
         he_backend->encrypt(c, arg[input_transform.index(input_coord)]);
         out[output_transform.index(output_coord)] = c;
-
-        //++output_it;
     }
 }

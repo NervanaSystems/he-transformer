@@ -16,8 +16,10 @@
 
 #pragma once
 
+#include <vector>
+#include <memory>
+
 #include "ngraph/coordinate_transform.hpp"
-#include "seal/seal.h"
 
 namespace ngraph
 {
@@ -34,13 +36,13 @@ namespace ngraph
 
             namespace kernel
             {
-                void one_hot(const vector<shared_ptr<he::HECiphertext>>& arg,
-                             vector<shared_ptr<he::HECiphertext>>& out,
+                void one_hot(const std::vector<std::shared_ptr<he::HECiphertext>>& arg,
+                             std::vector<std::shared_ptr<he::HECiphertext>>& out,
                              const Shape& in_shape,
                              const Shape& out_shape,
                              size_t one_hot_axis,
                              const element::Type& type,
-                             shared_ptr<HEBackend>& he_backend);
+                             std::shared_ptr<HEBackend>& he_backend);
             }
         }
     }

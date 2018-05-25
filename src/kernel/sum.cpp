@@ -25,7 +25,6 @@
 #include "he_seal_backend.hpp"
 #include "kernel/add.hpp"
 #include "kernel/sum.hpp"
-#include "seal/seal.h"
 
 using namespace std;
 using namespace ngraph;

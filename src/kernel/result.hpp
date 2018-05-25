@@ -15,8 +15,8 @@
 *******************************************************************************/
 
 #pragma once
-
-#include "seal/seal.h"
+#include <vector>
+#include <memory>
 
 namespace ngraph
 {
@@ -34,28 +34,28 @@ namespace ngraph
 
             namespace kernel
             {
-                void result(const vector<shared_ptr<he::HECiphertext>>& arg,
-                            vector<shared_ptr<he::HECiphertext>>& out,
+                void result(const std::vector<std::shared_ptr<he::HECiphertext>>& arg,
+                            std::vector<std::shared_ptr<he::HECiphertext>>& out,
                             size_t count);
 
-                void result(const vector<shared_ptr<he::HEPlaintext>>& arg,
-                            vector<shared_ptr<he::HEPlaintext>>& out,
+                void result(const std::vector<std::shared_ptr<he::HEPlaintext>>& arg,
+                            std::vector<std::shared_ptr<he::HEPlaintext>>& out,
                             size_t count);
 
-                void result(const vector<shared_ptr<he::HEPlaintext>>& arg,
-                            vector<shared_ptr<he::HEPlaintext>>& out,
+                void result(const std::vector<std::shared_ptr<he::HEPlaintext>>& arg,
+                            std::vector<std::shared_ptr<he::HEPlaintext>>& out,
                             size_t count);
 
-                void result(const vector<shared_ptr<he::HECiphertext>>& arg,
-                            vector<shared_ptr<he::HEPlaintext>>& out,
+                void result(const std::vector<std::shared_ptr<he::HECiphertext>>& arg,
+                            std::vector<std::shared_ptr<he::HEPlaintext>>& out,
                             size_t count,
                             const element::Type& element_type,
-                            const shared_ptr<HEBackend>& he_backend);
+                            const std::shared_ptr<HEBackend>& he_backend);
 
-                void result(const vector<shared_ptr<he::HEPlaintext>>& arg,
-                            vector<shared_ptr<he::HECiphertext>>& out,
+                void result(const std::vector<std::shared_ptr<he::HEPlaintext>>& arg,
+                            std::vector<std::shared_ptr<he::HECiphertext>>& out,
                             size_t count,
-                            const shared_ptr<HEBackend>& he_backend);
+                            const std::shared_ptr<HEBackend>& he_backend);
             }
         }
     }

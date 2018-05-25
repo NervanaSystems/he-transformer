@@ -29,6 +29,7 @@ namespace ngraph
         namespace he
         {
             class HEBackend;
+            class HECiphertext;
 
             class HECipherTensorView : public HETensorView
             {

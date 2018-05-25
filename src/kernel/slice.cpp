@@ -14,11 +14,7 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <vector>
-
-#include "he_backend.hpp"
 #include "kernel/slice.hpp"
-#include "ngraph/coordinate_transform.hpp"
 
 using namespace std;
 using namespace ngraph;
