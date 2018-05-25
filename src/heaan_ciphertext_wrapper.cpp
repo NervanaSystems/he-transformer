@@ -14,35 +14,23 @@
 * limitations under the License.
 *******************************************************************************/
 
-#pragma once
+#include "heaan_ciphertext_wrapper.hpp"
 
-#include "he_ciphertext.hpp"
-#include "seal/seal.h"
+using namespace std;
+using namespace ngraph;
 
-namespace ngraph
+runtime::he::HeaanCiphertextWrapper::HeaanCiphertextWrapper()
+    : m_ciphertext(heaan::Ciphertext())
 {
-    namespace element
-    {
-        class Type;
-    }
+    //m_ciphertext.logp = 32; // TODO: remove
+    //m_ciphertext.logq = 100;
+}
 
-    namespace runtime
-    {
-        namespace he
-        {
-            namespace he_seal
-            {
-                class HESealBackend;
-            }
-            class HECiphertext;
+runtime::he::HeaanCiphertextWrapper::HeaanCiphertextWrapper(heaan::Ciphertext cipher)
+    : m_ciphertext(cipher)
+{
+}
 
-            namespace kernel
-            {
-                void relinearize(const vector<shared_ptr<he::HECiphertext>>& arg,
-                                 vector<shared_ptr<he::HECiphertext>>& out,
-                                 shared_ptr<he_seal::HESealBackend> he_seal_backend,
-                                 size_t count);
-            }
-        }
-    }
+runtime::he::HeaanCiphertextWrapper::~HeaanCiphertextWrapper()
+{
 }

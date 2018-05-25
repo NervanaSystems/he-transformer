@@ -18,6 +18,7 @@
 
 #include "he_backend.hpp"
 #include "he_ciphertext.hpp"
+#include "he_heaan_backend.hpp"
 #include "he_plaintext.hpp"
 #include "he_seal_backend.hpp"
 #include "kernel/result.hpp"
@@ -68,8 +69,15 @@ void runtime::he::kernel::result(const vector<shared_ptr<he::HEPlaintext>>& arg,
             he_seal_backend->encrypt(out[i], arg[i]);
         }
     }
+    else if (auto he_heaan_backend = dynamic_pointer_cast<he_heaan::HEHeaanBackend>(he_backend))
+    {
+        for (size_t i = 0; i < count; ++i)
+        {
+            he_heaan_backend->encrypt(out[i], arg[i]);
+        }
+    }
     else
     {
-        throw ngraph_error("he_backen not seal in result");
+        throw ngraph_error("Result backend is neither heaan nor seal.");
     }
 }

@@ -41,8 +41,6 @@ namespace ngraph
                                 std::uint64_t fractional_encoder_base,
                                 int evaluation_decomposition_bit_count);
 
-                void assert_valid_seal_parameter();
-
                 // SEALContext
                 // Must be 1024, 2048, 4096, 8192, 16384, or 32768, aka n
                 //std::uint64_t poly_modulus_degree;
@@ -60,7 +58,7 @@ namespace ngraph
             };
 
             static HESealParameter default_seal_parameter{
-                2048,   // poly_modulus_degree
+                4096,   // poly_modulus
                 100000, // plain_modulus
                 128,    // security_level
                 64,     // fractional_encoder_integer_coeff_count

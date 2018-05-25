@@ -14,34 +14,31 @@
 * limitations under the License.
 *******************************************************************************/
 
-#pragma once
-
-#include "he_ciphertext.hpp"
-#include "seal/seal.h"
+#include <vector>
 
 namespace ngraph
 {
-    namespace element
-    {
-        class Type;
-    }
-
     namespace runtime
     {
         namespace he
         {
-            namespace he_seal
+            template <typename S, typename T>
+            bool cast_vector(std::vector<std::shared_ptr<T>>& output,
+                             const std::vector<std::shared_ptr<S>>& input)
             {
-                class HESealBackend;
-            }
-            class HECiphertext;
-
-            namespace kernel
-            {
-                void relinearize(const vector<shared_ptr<he::HECiphertext>>& arg,
-                                 vector<shared_ptr<he::HECiphertext>>& out,
-                                 shared_ptr<he_seal::HESealBackend> he_seal_backend,
-                                 size_t count);
+                if (output.size() != input.size())
+                {
+                    throw ngraph_error("Output size doesn't match input size in cast_vector");
+                }
+                for (size_t i = 0; i < input.size(); ++i)
+                {
+                    output[i] = dynamic_pointer_cast<T>(input[i]);
+                    if (output[i] == nullptr)
+                    {
+                        return false;
+                    }
+                }
+                return true;
             }
         }
     }

@@ -16,17 +16,7 @@
 
 # HE transformer sources
 set (HE_SRC
-    he_backend.cpp
-    he_call_frame.cpp
-    he_cipher_tensor_view.cpp
-    he_ciphertext.cpp
-    he_plaintext.cpp
-    he_seal_backend.cpp
-    he_seal_parameter.cpp
-    he_tensor_view.cpp
-    he_parameter.cpp
-    he_plain_tensor_view.cpp
-    int_call_frame.cpp
+    # kernels
     kernel/add.cpp
     kernel/broadcast.cpp
     kernel/concat.cpp
@@ -40,7 +30,35 @@ set (HE_SRC
     kernel/slice.cpp
     kernel/subtract.cpp
     kernel/sum.cpp
+    # heaan kernels
+    kernel/heaan/add_heaan.cpp
+    kernel/heaan/multiply_heaan.cpp
+    kernel/heaan/subtract_heaan.cpp
+    # seal kernels
+    kernel/seal/add_seal.cpp
+    kernel/seal/multiply_seal.cpp
+    kernel/seal/subtract_seal.cpp
+    # main
+    create_backend.cpp
+    he_backend.cpp
+    he_call_frame.cpp
+    he_cipher_tensor_view.cpp
+    he_ciphertext.cpp
+    he_plaintext.cpp
+    he_tensor_view.cpp
+    he_parameter.cpp
+    he_plain_tensor_view.cpp
+    int_call_frame.cpp
+    # pass
     pass/insert_relinearize.cpp
+    # heaan
+    he_heaan_backend.cpp
+    he_heaan_parameter.cpp
+    heaan_ciphertext_wrapper.cpp
+    heaan_plaintext_wrapper.cpp
+    # seal
+    he_seal_backend.cpp
+    he_seal_parameter.cpp
     seal_ciphertext_wrapper.cpp
     seal_plaintext_wrapper.cpp
 )
@@ -62,8 +80,8 @@ link_directories(
 
 # Target library
 add_library(he_backend SHARED ${HE_SRC})
-add_dependencies(he_backend ext_ngraph ext_seal)
-target_link_libraries(he_backend ngraph seal)
+add_dependencies(he_backend ext_ngraph ext_seal ext_heaan)
+target_link_libraries(he_backend ngraph seal heaan)
 
 # Install he-transformer (the HE libraries are installed separately) at `make install`
 # By default, this installs to `~/ngraph_dist`

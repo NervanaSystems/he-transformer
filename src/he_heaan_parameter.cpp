@@ -14,35 +14,15 @@
 * limitations under the License.
 *******************************************************************************/
 
-#pragma once
+#include "he_heaan_parameter.hpp"
 
-#include "he_ciphertext.hpp"
-#include "seal/seal.h"
+using namespace ngraph;
+using namespace std;
 
-namespace ngraph
+runtime::he::HEHeaanParameter::HEHeaanParameter(uint64_t log_poly_modulus,
+                                                uint64_t log_plain_modulus,
+                                                uint64_t log_precision)
+    : HEParameter(log_poly_modulus, log_plain_modulus)
+    , m_log_precision(log_precision)
 {
-    namespace element
-    {
-        class Type;
-    }
-
-    namespace runtime
-    {
-        namespace he
-        {
-            namespace he_seal
-            {
-                class HESealBackend;
-            }
-            class HECiphertext;
-
-            namespace kernel
-            {
-                void relinearize(const vector<shared_ptr<he::HECiphertext>>& arg,
-                                 vector<shared_ptr<he::HECiphertext>>& out,
-                                 shared_ptr<he_seal::HESealBackend> he_seal_backend,
-                                 size_t count);
-            }
-        }
-    }
 }

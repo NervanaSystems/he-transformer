@@ -16,33 +16,26 @@
 
 #pragma once
 
+#include <cstdint>
 #include "he_ciphertext.hpp"
-#include "seal/seal.h"
+#include "heaan/heaan.hpp"
 
 namespace ngraph
 {
-    namespace element
-    {
-        class Type;
-    }
-
     namespace runtime
     {
         namespace he
         {
-            namespace he_seal
-            {
-                class HESealBackend;
-            }
             class HECiphertext;
 
-            namespace kernel
+            struct HeaanCiphertextWrapper : public HECiphertext
             {
-                void relinearize(const vector<shared_ptr<he::HECiphertext>>& arg,
-                                 vector<shared_ptr<he::HECiphertext>>& out,
-                                 shared_ptr<he_seal::HESealBackend> he_seal_backend,
-                                 size_t count);
-            }
+                HeaanCiphertextWrapper();
+                HeaanCiphertextWrapper(heaan::Ciphertext cipher);
+                virtual ~HeaanCiphertextWrapper();
+
+                heaan::Ciphertext m_ciphertext;
+            };
         }
     }
 }

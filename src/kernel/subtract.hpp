@@ -16,31 +16,74 @@
 
 #pragma once
 
+#include "heaan_ciphertext_wrapper.hpp"
 #include "seal/seal.h"
 
 namespace ngraph
 {
+    namespace element
+    {
+        class Type;
+    }
     namespace runtime
     {
         namespace he
         {
             class HEBackend;
-            class HECiphertext;
-            class HEPlaintext;
 
             namespace kernel
             {
                 void subtract(const vector<shared_ptr<he::HECiphertext>>& arg0,
                               const vector<shared_ptr<he::HECiphertext>>& arg1,
                               vector<shared_ptr<he::HECiphertext>>& out,
+                              const element::Type& type,
                               shared_ptr<HEBackend> he_backend,
                               size_t count);
 
                 void subtract(const vector<shared_ptr<he::HECiphertext>>& arg0,
                               const vector<shared_ptr<he::HEPlaintext>>& arg1,
                               vector<shared_ptr<he::HECiphertext>>& out,
+                              const element::Type& type,
                               shared_ptr<HEBackend> he_backend,
                               size_t count);
+
+                void subtract(const vector<shared_ptr<he::HEPlaintext>>& arg0,
+                              const vector<shared_ptr<he::HECiphertext>>& arg1,
+                              vector<shared_ptr<he::HECiphertext>>& out,
+                              const element::Type& type,
+                              shared_ptr<HEBackend> he_backend,
+                              size_t count);
+
+                void subtract(const vector<shared_ptr<he::HEPlaintext>>& arg0,
+                              const vector<shared_ptr<he::HEPlaintext>>& arg1,
+                              vector<shared_ptr<he::HEPlaintext>>& out,
+                              const element::Type& type,
+                              shared_ptr<HEBackend> he_backend,
+                              size_t count);
+
+                void scalar_subtract(const shared_ptr<he::HECiphertext>& arg0,
+                                     const shared_ptr<he::HECiphertext>& arg1,
+                                     shared_ptr<he::HECiphertext>& out,
+                                     const element::Type& type,
+                                     shared_ptr<HEBackend> he_backend);
+
+                void scalar_subtract(const shared_ptr<he::HECiphertext>& arg0,
+                                     const shared_ptr<he::HEPlaintext>& arg1,
+                                     shared_ptr<he::HECiphertext>& out,
+                                     const element::Type& type,
+                                     shared_ptr<HEBackend> he_backend);
+
+                void scalar_subtract(const shared_ptr<he::HEPlaintext>& arg0,
+                                     const shared_ptr<he::HECiphertext>& arg1,
+                                     shared_ptr<he::HECiphertext>& out,
+                                     const element::Type& type,
+                                     shared_ptr<HEBackend> he_backend);
+
+                void scalar_subtract(const shared_ptr<he::HEPlaintext>& arg0,
+                                     const shared_ptr<he::HEPlaintext>& arg1,
+                                     shared_ptr<he::HEPlaintext>& out,
+                                     const element::Type& type,
+                                     shared_ptr<HEBackend> he_backend);
             }
         }
     }

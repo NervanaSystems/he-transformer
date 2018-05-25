@@ -16,33 +16,30 @@
 
 #pragma once
 
-#include "he_ciphertext.hpp"
-#include "seal/seal.h"
+#include "he_parameter.hpp"
 
 namespace ngraph
 {
-    namespace element
-    {
-        class Type;
-    }
-
     namespace runtime
     {
         namespace he
         {
-            namespace he_seal
-            {
-                class HESealBackend;
-            }
-            class HECiphertext;
+            struct HEParameter;
 
-            namespace kernel
+            struct HEHeaanParameter : public HEParameter
             {
-                void relinearize(const vector<shared_ptr<he::HECiphertext>>& arg,
-                                 vector<shared_ptr<he::HECiphertext>>& out,
-                                 shared_ptr<he_seal::HESealBackend> he_seal_backend,
-                                 size_t count);
-            }
+                HEHeaanParameter(std::uint64_t log_poly_modulus,
+                                 std::uint64_t log_plain_modulus,
+                                 std::uint64_t log_precision = 32);
+
+                std::uint64_t m_log_precision;
+            };
+
+            static HEHeaanParameter default_heaan_parameter{
+                11,  // log_2(poly_modulus)
+                150, // log_2(plain_modulus)
+                32   // log_2(precision)
+            };
         }
     }
 }

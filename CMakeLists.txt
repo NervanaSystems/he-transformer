@@ -44,6 +44,7 @@ set(NGRAPH_INSTALL_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/include")
 
 # HE transformer headers
 set(HE_TRANSFORMER_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+set(HE_TRANSFORMER_TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test)
 
 # External projects (ngraph, seal, heaan)
 include(ExternalProject)
