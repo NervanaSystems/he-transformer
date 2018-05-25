@@ -80,8 +80,8 @@ link_directories(
 
 # Target library
 add_library(he_backend SHARED ${HE_SRC})
-add_dependencies(he_backend ext_ngraph ext_seal)
-target_link_libraries(he_backend ngraph seal)
+add_dependencies(he_backend ext_ngraph ext_seal ext_heaan)
+target_link_libraries(he_backend ngraph seal heaan)
 
 # Install he-transformer (the HE libraries are installed separately) at `make install`
 # By default, this installs to `~/ngraph_dist`
