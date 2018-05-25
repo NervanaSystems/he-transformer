@@ -31,9 +31,14 @@ void runtime::he::kernel::heaan::scalar_add(const shared_ptr<he::HeaanCiphertext
                                      const element::Type& type,
                                      shared_ptr<he_heaan::HEHeaanBackend> he_heaan_backend)
 {
-	//out->m_ciphertext = he_heaan_backend->get_scheme()->add(arg1->m_ciphertext, arg0->m_ciphertext);
-	out->m_ciphertext = he_heaan_backend->get_scheme()->add(arg0->m_ciphertext, arg1->m_ciphertext);
-	// TOOD: why doesn't this work?
+    if (out == arg0) // TOOD: Discover why this is needed? (dot.cpp needs this)
+    {
+        out->m_ciphertext = he_heaan_backend->get_scheme()->add(arg1->m_ciphertext, arg0->m_ciphertext);
+    }
+    else
+    {
+        out->m_ciphertext = he_heaan_backend->get_scheme()->add(arg0->m_ciphertext, arg1->m_ciphertext);
+    }
 }
 
 void runtime::he::kernel::heaan::scalar_add(const shared_ptr<he::HeaanPlaintextWrapper>& arg0,
