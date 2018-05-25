@@ -20,9 +20,9 @@
 #include "he_backend.hpp"
 #include "he_cipher_tensor_view.hpp"
 #include "he_ciphertext.hpp"
+#include "he_heaan_backend.hpp"
 #include "he_plaintext.hpp"
 #include "he_seal_backend.hpp"
-#include "he_heaan_backend.hpp"
 #include "kernel/one_hot.hpp"
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/type/element_type.hpp"
@@ -49,7 +49,7 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<he::HECiphertext>>& ar
     shared_ptr<he::HECiphertext> zero_ciphertext;
     shared_ptr<he::HECiphertext> one_ciphertext;
 
-    if(he_seal_backend)
+    if (he_seal_backend)
     {
         zero_ciphertext = he_seal_backend->create_valued_ciphertext(0, type);
         one_ciphertext = he_seal_backend->create_valued_ciphertext(1, type);
@@ -125,7 +125,6 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<he::HECiphertext>>& ar
             NGRAPH_INFO << "Unsupported element type in decode " << type_name;
             throw ngraph_error("Unsupported element type " + type_name);
         }
-
 
         if (one_hot_pos >= out_shape[one_hot_axis])
         {

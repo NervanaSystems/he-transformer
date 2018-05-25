@@ -119,10 +119,7 @@ namespace ngraph
                         return m_context;
                     }
 
-                    const inline long get_precision() const
-                    {
-                        return m_log_precision;
-                    }
+                    const inline long get_precision() const { return m_log_precision; }
                     const inline std::shared_ptr<heaan::SecretKey> get_secret_key() const
                     {
                         return m_secret_key;

@@ -23,24 +23,23 @@ namespace ngraph
         namespace he
         {
             template <typename S, typename T>
-                bool cast_vector(std::vector<std::shared_ptr<T>>& output, const std::vector<std::shared_ptr<S>>& input)
+            bool cast_vector(std::vector<std::shared_ptr<T>>& output,
+                             const std::vector<std::shared_ptr<S>>& input)
+            {
+                if (output.size() != input.size())
                 {
-                    if (output.size() != input.size())
-                    {
-                        throw ngraph_error("Output size doesn't match input size in cast_vector");
-                    }
-					for(size_t i = 0; i < input.size(); ++i)
-					{
-						output[i] = dynamic_pointer_cast<T>(input[i]);
-						if (output[i] == nullptr)
-						{
-							return false;
-						}
-					}
-					return true;
-
+                    throw ngraph_error("Output size doesn't match input size in cast_vector");
                 }
+                for (size_t i = 0; i < input.size(); ++i)
+                {
+                    output[i] = dynamic_pointer_cast<T>(input[i]);
+                    if (output[i] == nullptr)
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
         }
     }
 }
-

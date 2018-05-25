@@ -17,8 +17,8 @@
 #include <vector>
 
 #include "he_backend.hpp"
-#include "he_seal_backend.hpp"
 #include "he_heaan_backend.hpp"
+#include "he_seal_backend.hpp"
 #include "kernel/constant.hpp"
 #include "ngraph/node.hpp"
 #include "ngraph/type/element_type.hpp"
@@ -39,13 +39,12 @@ void runtime::he::kernel::constant(vector<shared_ptr<he::HEPlaintext>>& out,
         throw ngraph_error("out.size() != count for constant op");
     }
 
-    if( auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(he_backend) )
+    if (auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(he_backend))
     {
         for (size_t i = 0; i < count; ++i)
         {
             const void* src_with_offset = (void*)((char*)data_ptr + i * type.size());
             he_seal_backend->encode(out[i], src_with_offset, type);
-
         }
     }
     else if (auto he_heaan_backend = dynamic_pointer_cast<he_heaan::HEHeaanBackend>(he_backend))
@@ -54,7 +53,6 @@ void runtime::he::kernel::constant(vector<shared_ptr<he::HEPlaintext>>& out,
         {
             const void* src_with_offset = (void*)((char*)data_ptr + i * type.size());
             he_heaan_backend->encode(out[i], src_with_offset, type);
-
         }
     }
     else

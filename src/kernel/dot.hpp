@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include "he_seal_backend.hpp"
 #include "he_heaan_backend.hpp"
+#include "he_seal_backend.hpp"
 #include "kernel/add.hpp"
 #include "kernel/multiply.hpp"
 #include "ngraph/coordinate_transform.hpp"
@@ -148,90 +148,90 @@ void ngraph::runtime::he::kernel::dot_template(const vector<shared_ptr<S>>& arg0
     size_t arg1_projected_size = 0;
     for (const Coordinate& arg1_projected_coord : arg1_projected_transform)
     {
-		arg1_projected_size++;
-	}
-	size_t global_projected_size = arg0_projected_size * arg1_projected_size;
+        arg1_projected_size++;
+    }
+    size_t global_projected_size = arg0_projected_size * arg1_projected_size;
 
 #pragma omp parallel for
-	for (size_t global_projected_idx = 0; global_projected_idx < global_projected_size;
-			++global_projected_idx)
-	{
-		// Init thread-local memory pool for each thread
-		// seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
+    for (size_t global_projected_idx = 0; global_projected_idx < global_projected_size;
+         ++global_projected_idx)
+    {
+        // Init thread-local memory pool for each thread
+        // seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
 
-		// Compute outer and inner index
-		size_t arg0_projected_idx = global_projected_idx / arg1_projected_size;
-		size_t arg1_projected_idx = global_projected_idx % arg1_projected_size;
+        // Compute outer and inner index
+        size_t arg0_projected_idx = global_projected_idx / arg1_projected_size;
+        size_t arg1_projected_idx = global_projected_idx % arg1_projected_size;
 
-		// TODO: move to coordinate transform, or precompute this and store in a
-		//       matrix
-		auto arg0_projected_it = arg0_projected_transform.begin();
-		for (size_t i = 0; i < arg0_projected_idx; ++i)
-		{
-			++arg0_projected_it;
-		}
-		const Coordinate& arg0_projected_coord = *arg0_projected_it;
-		auto arg1_projected_it = arg1_projected_transform.begin();
-		for (size_t i = 0; i < arg1_projected_idx; ++i)
-		{
-			++arg1_projected_it;
-		}
-		const Coordinate& arg1_projected_coord = *arg1_projected_it;
+        // TODO: move to coordinate transform, or precompute this and store in a
+        //       matrix
+        auto arg0_projected_it = arg0_projected_transform.begin();
+        for (size_t i = 0; i < arg0_projected_idx; ++i)
+        {
+            ++arg0_projected_it;
+        }
+        const Coordinate& arg0_projected_coord = *arg0_projected_it;
+        auto arg1_projected_it = arg1_projected_transform.begin();
+        for (size_t i = 0; i < arg1_projected_idx; ++i)
+        {
+            ++arg1_projected_it;
+        }
+        const Coordinate& arg1_projected_coord = *arg1_projected_it;
 
-		// The output coordinate is just the concatenation of the projected coordinates.
-		Coordinate out_coord(arg0_projected_coord.size() + arg1_projected_coord.size());
+        // The output coordinate is just the concatenation of the projected coordinates.
+        Coordinate out_coord(arg0_projected_coord.size() + arg1_projected_coord.size());
 
-		auto out_coord_it =
-			std::copy(arg0_projected_coord.begin(), arg0_projected_coord.end(), out_coord.begin());
-		std::copy(arg1_projected_coord.begin(), arg1_projected_coord.end(), out_coord_it);
+        auto out_coord_it =
+            std::copy(arg0_projected_coord.begin(), arg0_projected_coord.end(), out_coord.begin());
+        std::copy(arg1_projected_coord.begin(), arg1_projected_coord.end(), out_coord_it);
 
-		// Zero out to start the sum
-		std::shared_ptr<he::HECiphertext> sum;
-		if (he_seal_backend)
-		{
-			sum = he_seal_backend->create_valued_ciphertext(0, type);
-		}
-		else if (he_heaan_backend)
-		{
-			sum = he_heaan_backend->create_valued_ciphertext(0, type);
-			auto tmp = dynamic_pointer_cast<he::HeaanCiphertextWrapper>(sum);
-			assert(tmp != nullptr);
-		}
+        // Zero out to start the sum
+        std::shared_ptr<he::HECiphertext> sum;
+        if (he_seal_backend)
+        {
+            sum = he_seal_backend->create_valued_ciphertext(0, type);
+        }
+        else if (he_heaan_backend)
+        {
+            sum = he_heaan_backend->create_valued_ciphertext(0, type);
+            auto tmp = dynamic_pointer_cast<he::HeaanCiphertextWrapper>(sum);
+            assert(tmp != nullptr);
+        }
 
-		size_t out_index = output_transform.index(out_coord);
+        size_t out_index = output_transform.index(out_coord);
 
-		// Walk along the dotted axes.
-		Coordinate arg0_coord(arg0_shape.size());
-		Coordinate arg1_coord(arg1_shape.size());
-		auto arg0_it =
-			std::copy(arg0_projected_coord.begin(), arg0_projected_coord.end(), arg0_coord.begin());
+        // Walk along the dotted axes.
+        Coordinate arg0_coord(arg0_shape.size());
+        Coordinate arg1_coord(arg1_shape.size());
+        auto arg0_it =
+            std::copy(arg0_projected_coord.begin(), arg0_projected_coord.end(), arg0_coord.begin());
 
-		for (const Coordinate& dot_axis_positions : dot_axes_transform)
-		{
-			// In order to find the points to multiply together, we need to inject our current
-			// positions along the dotted axes back into the projected arg0 and arg1 coordinates.
-			std::copy(dot_axis_positions.begin(), dot_axis_positions.end(), arg0_it);
+        for (const Coordinate& dot_axis_positions : dot_axes_transform)
+        {
+            // In order to find the points to multiply together, we need to inject our current
+            // positions along the dotted axes back into the projected arg0 and arg1 coordinates.
+            std::copy(dot_axis_positions.begin(), dot_axis_positions.end(), arg0_it);
 
-			auto arg1_it =
-				std::copy(dot_axis_positions.begin(), dot_axis_positions.end(), arg1_coord.begin());
-			std::copy(arg1_projected_coord.begin(), arg1_projected_coord.end(), arg1_it);
+            auto arg1_it =
+                std::copy(dot_axis_positions.begin(), dot_axis_positions.end(), arg1_coord.begin());
+            std::copy(arg1_projected_coord.begin(), arg1_projected_coord.end(), arg1_it);
 
-			// Multiply and add to the sum.
-			auto arg0_text = arg0[arg0_transform.index(arg0_coord)];
-			auto arg1_text = arg1[arg1_transform.index(arg1_coord)];
+            // Multiply and add to the sum.
+            auto arg0_text = arg0[arg0_transform.index(arg0_coord)];
+            auto arg1_text = arg1[arg1_transform.index(arg1_coord)];
 
-			std::shared_ptr<he::HECiphertext> prod;
-			if (he_seal_backend)
-			{
-				prod = he_seal_backend->create_empty_ciphertext();
-			}
-			else if (he_heaan_backend)
-			{
-				prod = he_heaan_backend->create_empty_ciphertext();
-			}
+            std::shared_ptr<he::HECiphertext> prod;
+            if (he_seal_backend)
+            {
+                prod = he_seal_backend->create_empty_ciphertext();
+            }
+            else if (he_heaan_backend)
+            {
+                prod = he_heaan_backend->create_empty_ciphertext();
+            }
 
-			runtime::he::kernel::scalar_multiply(arg0_text, arg1_text, prod, type, he_backend);
-			runtime::he::kernel::scalar_add(sum, prod, sum, type, he_backend);
+            runtime::he::kernel::scalar_multiply(arg0_text, arg1_text, prod, type, he_backend);
+            runtime::he::kernel::scalar_add(sum, prod, sum, type, he_backend);
         }
 
         // Write the sum back.

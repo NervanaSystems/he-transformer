@@ -18,28 +18,29 @@
 
 #include "he_backend.hpp"
 #include "he_heaan_backend.hpp"
+#include "heaan/heaan.hpp"
 #include "kernel/heaan/subtract_heaan.hpp"
 #include "ngraph/type/element_type.hpp"
-#include "heaan/heaan.hpp"
 
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::heaan::scalar_subtract(const shared_ptr<he::HeaanCiphertextWrapper>& arg0,
-                                     const shared_ptr<he::HeaanCiphertextWrapper>& arg1,
-                                     shared_ptr<he::HeaanCiphertextWrapper>& out,
-                                     const element::Type& type,
-                                     shared_ptr<he_heaan::HEHeaanBackend> he_heaan_backend)
+void runtime::he::kernel::heaan::scalar_subtract(
+    const shared_ptr<he::HeaanCiphertextWrapper>& arg0,
+    const shared_ptr<he::HeaanCiphertextWrapper>& arg1,
+    shared_ptr<he::HeaanCiphertextWrapper>& out,
+    const element::Type& type,
+    shared_ptr<he_heaan::HEHeaanBackend> he_heaan_backend)
 {
-    out->m_ciphertext = he_heaan_backend->get_scheme()->sub(
-            arg0->m_ciphertext, arg1->m_ciphertext);
+    out->m_ciphertext = he_heaan_backend->get_scheme()->sub(arg0->m_ciphertext, arg1->m_ciphertext);
 }
 
-void runtime::he::kernel::heaan::scalar_subtract(const shared_ptr<he::HeaanPlaintextWrapper>& arg0,
-                                     const shared_ptr<he::HeaanPlaintextWrapper>& arg1,
-                                     shared_ptr<he::HeaanPlaintextWrapper>& out,
-                                     const element::Type& type,
-                                     shared_ptr<he_heaan::HEHeaanBackend> he_heaan_backend)
+void runtime::he::kernel::heaan::scalar_subtract(
+    const shared_ptr<he::HeaanPlaintextWrapper>& arg0,
+    const shared_ptr<he::HeaanPlaintextWrapper>& arg1,
+    shared_ptr<he::HeaanPlaintextWrapper>& out,
+    const element::Type& type,
+    shared_ptr<he_heaan::HEHeaanBackend> he_heaan_backend)
 {
     float x, y;
     he_heaan_backend->decode(&x, arg0, type);
@@ -50,21 +51,23 @@ void runtime::he::kernel::heaan::scalar_subtract(const shared_ptr<he::HeaanPlain
     out = dynamic_pointer_cast<he::HeaanPlaintextWrapper>(out_he);
 }
 
-void runtime::he::kernel::heaan::scalar_subtract(const shared_ptr<he::HeaanCiphertextWrapper>& arg0,
-        const shared_ptr<he::HeaanPlaintextWrapper>& arg1,
-        shared_ptr<he::HeaanCiphertextWrapper>& out,
-        const element::Type& type,
-        shared_ptr<he_heaan::HEHeaanBackend> he_heaan_backend)
+void runtime::he::kernel::heaan::scalar_subtract(
+    const shared_ptr<he::HeaanCiphertextWrapper>& arg0,
+    const shared_ptr<he::HeaanPlaintextWrapper>& arg1,
+    shared_ptr<he::HeaanCiphertextWrapper>& out,
+    const element::Type& type,
+    shared_ptr<he_heaan::HEHeaanBackend> he_heaan_backend)
 {
-        out->m_ciphertext = he_heaan_backend->get_scheme()->addConst(
-                arg0->m_ciphertext, -arg1->m_plaintext);
+    out->m_ciphertext =
+        he_heaan_backend->get_scheme()->addConst(arg0->m_ciphertext, -arg1->m_plaintext);
 }
 
-void runtime::he::kernel::heaan::scalar_subtract(const shared_ptr<he::HeaanPlaintextWrapper>& arg0,
-        const shared_ptr<he::HeaanCiphertextWrapper>& arg1,
-        shared_ptr<he::HeaanCiphertextWrapper>& out,
-        const element::Type& type,
-        shared_ptr<he_heaan::HEHeaanBackend> he_heaan_backend)
+void runtime::he::kernel::heaan::scalar_subtract(
+    const shared_ptr<he::HeaanPlaintextWrapper>& arg0,
+    const shared_ptr<he::HeaanCiphertextWrapper>& arg1,
+    shared_ptr<he::HeaanCiphertextWrapper>& out,
+    const element::Type& type,
+    shared_ptr<he_heaan::HEHeaanBackend> he_heaan_backend)
 {
     throw ngraph_error("Heaan plaintext - ciphertext not implemented");
 }

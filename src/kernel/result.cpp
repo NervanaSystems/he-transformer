@@ -18,9 +18,9 @@
 
 #include "he_backend.hpp"
 #include "he_ciphertext.hpp"
+#include "he_heaan_backend.hpp"
 #include "he_plaintext.hpp"
 #include "he_seal_backend.hpp"
-#include "he_heaan_backend.hpp"
 #include "kernel/result.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/seal.h"

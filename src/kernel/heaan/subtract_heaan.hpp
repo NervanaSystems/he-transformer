@@ -18,8 +18,8 @@
 
 #include <vector>
 
-#include "heaan_ciphertext_wrapper.hpp"
 #include "he_heaan_backend.hpp"
+#include "heaan_ciphertext_wrapper.hpp"
 
 namespace ngraph
 {
@@ -40,29 +40,33 @@ namespace ngraph
             {
                 namespace heaan
                 {
-                    void scalar_subtract(const std::shared_ptr<he::HeaanCiphertextWrapper>& arg0,
-                            const std::shared_ptr<he::HeaanCiphertextWrapper>& arg1,
-                            std::shared_ptr<he::HeaanCiphertextWrapper>& out,
-                            const element::Type& type,
-                            std::shared_ptr<he_heaan::HEHeaanBackend> he_heaan_backend);
+                    void
+                        scalar_subtract(const std::shared_ptr<he::HeaanCiphertextWrapper>& arg0,
+                                        const std::shared_ptr<he::HeaanCiphertextWrapper>& arg1,
+                                        std::shared_ptr<he::HeaanCiphertextWrapper>& out,
+                                        const element::Type& type,
+                                        std::shared_ptr<he_heaan::HEHeaanBackend> he_heaan_backend);
 
-                    void scalar_subtract(const std::shared_ptr<he::HeaanCiphertextWrapper>& arg0,
-                            const std::shared_ptr<he::HeaanPlaintextWrapper>& arg1,
-                            std::shared_ptr<he::HeaanCiphertextWrapper>& out,
-                            const element::Type& type,
-                            std::shared_ptr<he_heaan::HEHeaanBackend> he_heaan_backend);
+                    void
+                        scalar_subtract(const std::shared_ptr<he::HeaanCiphertextWrapper>& arg0,
+                                        const std::shared_ptr<he::HeaanPlaintextWrapper>& arg1,
+                                        std::shared_ptr<he::HeaanCiphertextWrapper>& out,
+                                        const element::Type& type,
+                                        std::shared_ptr<he_heaan::HEHeaanBackend> he_heaan_backend);
 
-                    void scalar_subtract(const std::shared_ptr<he::HeaanPlaintextWrapper>& arg0,
-                            const std::shared_ptr<he::HeaanCiphertextWrapper>& arg1,
-                            std::shared_ptr<he::HeaanCiphertextWrapper>& out,
-                            const element::Type& type,
-                            std::shared_ptr<he_heaan::HEHeaanBackend> he_heaan_backend);
+                    void
+                        scalar_subtract(const std::shared_ptr<he::HeaanPlaintextWrapper>& arg0,
+                                        const std::shared_ptr<he::HeaanCiphertextWrapper>& arg1,
+                                        std::shared_ptr<he::HeaanCiphertextWrapper>& out,
+                                        const element::Type& type,
+                                        std::shared_ptr<he_heaan::HEHeaanBackend> he_heaan_backend);
 
-                    void scalar_subtract(const std::shared_ptr<he::HeaanPlaintextWrapper>& arg0,
-                            const std::shared_ptr<he::HeaanPlaintextWrapper>& arg1,
-                            std::shared_ptr<he::HeaanPlaintextWrapper>& out,
-                            const element::Type& type,
-                            std::shared_ptr<he_heaan::HEHeaanBackend> he_heaan_backend);
+                    void
+                        scalar_subtract(const std::shared_ptr<he::HeaanPlaintextWrapper>& arg0,
+                                        const std::shared_ptr<he::HeaanPlaintextWrapper>& arg1,
+                                        std::shared_ptr<he::HeaanPlaintextWrapper>& out,
+                                        const element::Type& type,
+                                        std::shared_ptr<he_heaan::HEHeaanBackend> he_heaan_backend);
                 }
             }
         }

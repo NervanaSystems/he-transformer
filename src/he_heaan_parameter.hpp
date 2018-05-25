@@ -28,15 +28,17 @@ namespace ngraph
 
             struct HEHeaanParameter : public HEParameter
             {
-                HEHeaanParameter(std::uint64_t log_poly_modulus, std::uint64_t log_plain_modulus, std::uint64_t log_precision = 32);
+                HEHeaanParameter(std::uint64_t log_poly_modulus,
+                                 std::uint64_t log_plain_modulus,
+                                 std::uint64_t log_precision = 32);
 
                 std::uint64_t m_log_precision;
             };
 
             static HEHeaanParameter default_heaan_parameter{
-                13, // log_2(poly_modulus)
+                13,  // log_2(poly_modulus)
                 150, // log_2(plain_modulus)
-                32  // log_2(precision)
+                32   // log_2(precision)
             };
         }
     }

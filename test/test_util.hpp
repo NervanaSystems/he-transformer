@@ -22,8 +22,8 @@
 
 #include "gtest/gtest.h"
 #include "he_backend.hpp"
-#include "he_seal_backend.hpp"
 #include "he_heaan_backend.hpp"
+#include "he_seal_backend.hpp"
 
 class TestHEBackend : public ::testing::Test
 {

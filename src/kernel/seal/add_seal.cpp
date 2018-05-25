@@ -26,19 +26,20 @@ using namespace std;
 using namespace ngraph;
 
 void runtime::he::kernel::seal::scalar_subtract(const shared_ptr<he::SealCiphertextWrapper>& arg0,
-                                     const shared_ptr<he::SealCiphertextWrapper>& arg1,
-                                     shared_ptr<he::SealCiphertextWrapper>& out,
-                                     const element::Type& type,
-                                     shared_ptr<he_seal::HESealBackend> he_seal_backend)
+                                                const shared_ptr<he::SealCiphertextWrapper>& arg1,
+                                                shared_ptr<he::SealCiphertextWrapper>& out,
+                                                const element::Type& type,
+                                                shared_ptr<he_seal::HESealBackend> he_seal_backend)
 {
-    he_seal_backend->get_evaluator()->sub(arg0->m_ciphertext, arg1->m_ciphertext, out->m_ciphertext);
+    he_seal_backend->get_evaluator()->sub(
+        arg0->m_ciphertext, arg1->m_ciphertext, out->m_ciphertext);
 }
 
 void runtime::he::kernel::seal::scalar_subtract(const shared_ptr<he::SealPlaintextWrapper>& arg0,
-                                     const shared_ptr<he::SealPlaintextWrapper>& arg1,
-                                     shared_ptr<he::SealPlaintextWrapper>& out,
-                                     const element::Type& type,
-                                     shared_ptr<he_seal::HESealBackend> he_seal_backend)
+                                                const shared_ptr<he::SealPlaintextWrapper>& arg1,
+                                                shared_ptr<he::SealPlaintextWrapper>& out,
+                                                const element::Type& type,
+                                                shared_ptr<he_seal::HESealBackend> he_seal_backend)
 {
     const string type_name = type.c_type_string();
     if (type_name != "float")
@@ -56,19 +57,20 @@ void runtime::he::kernel::seal::scalar_subtract(const shared_ptr<he::SealPlainte
 }
 
 void runtime::he::kernel::seal::scalar_subtract(const shared_ptr<he::SealCiphertextWrapper>& arg0,
-        const shared_ptr<he::SealPlaintextWrapper>& arg1,
-        shared_ptr<he::SealCiphertextWrapper>& out,
-        const element::Type& type,
-        shared_ptr<he_seal::HESealBackend> he_seal_backend)
+                                                const shared_ptr<he::SealPlaintextWrapper>& arg1,
+                                                shared_ptr<he::SealCiphertextWrapper>& out,
+                                                const element::Type& type,
+                                                shared_ptr<he_seal::HESealBackend> he_seal_backend)
 {
-    he_seal_backend->get_evaluator()->sub_plain(arg0->m_ciphertext, arg1->m_plaintext, out->m_ciphertext);
+    he_seal_backend->get_evaluator()->sub_plain(
+        arg0->m_ciphertext, arg1->m_plaintext, out->m_ciphertext);
 }
 
 void runtime::he::kernel::seal::scalar_subtract(const shared_ptr<he::SealPlaintextWrapper>& arg0,
-        const shared_ptr<he::SealCiphertextWrapper>& arg1,
-        shared_ptr<he::SealCiphertextWrapper>& out,
-        const element::Type& type,
-        shared_ptr<he_seal::HESealBackend> he_seal_backend)
+                                                const shared_ptr<he::SealCiphertextWrapper>& arg1,
+                                                shared_ptr<he::SealCiphertextWrapper>& out,
+                                                const element::Type& type,
+                                                shared_ptr<he_seal::HESealBackend> he_seal_backend)
 {
     throw ngraph_error("seal Plaintext minus Ciphertext unimplemented");
 }

@@ -19,7 +19,9 @@
 using namespace ngraph;
 using namespace std;
 
-runtime::he::HEHeaanParameter::HEHeaanParameter(uint64_t log_poly_modulus, uint64_t log_plain_modulus, uint64_t log_precision)
+runtime::he::HEHeaanParameter::HEHeaanParameter(uint64_t log_poly_modulus,
+                                                uint64_t log_plain_modulus,
+                                                uint64_t log_precision)
     : HEParameter(log_poly_modulus, log_plain_modulus)
     , m_log_precision(log_precision)
 {

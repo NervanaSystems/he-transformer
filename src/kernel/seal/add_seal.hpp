@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include "seal_ciphertext_wrapper.hpp"
 #include "he_seal_backend.hpp"
+#include "seal_ciphertext_wrapper.hpp"
 
 namespace ngraph
 {
@@ -39,28 +39,28 @@ namespace ngraph
                 namespace seal
                 {
                     void scalar_add(const shared_ptr<he::SealCiphertextWrapper>& arg0,
-                            const shared_ptr<he::SealCiphertextWrapper>& arg1,
-                            shared_ptr<he::SealCiphertextWrapper>& out,
-                            const element::Type& type,
-                            shared_ptr<he_seal::HESealBackend> he_seal_backend);
+                                    const shared_ptr<he::SealCiphertextWrapper>& arg1,
+                                    shared_ptr<he::SealCiphertextWrapper>& out,
+                                    const element::Type& type,
+                                    shared_ptr<he_seal::HESealBackend> he_seal_backend);
 
                     void scalar_add(const shared_ptr<he::SealCiphertextWrapper>& arg0,
-                            const shared_ptr<he::SealPlaintextWrapper>& arg1,
-                            shared_ptr<he::SealCiphertextWrapper>& out,
-                            const element::Type& type,
-                            shared_ptr<he_seal::HESealBackend> he_seal_backend);
+                                    const shared_ptr<he::SealPlaintextWrapper>& arg1,
+                                    shared_ptr<he::SealCiphertextWrapper>& out,
+                                    const element::Type& type,
+                                    shared_ptr<he_seal::HESealBackend> he_seal_backend);
 
                     void scalar_add(const shared_ptr<he::SealPlaintextWrapper>& arg0,
-                            const shared_ptr<he::SealCiphertextWrapper>& arg1,
-                            shared_ptr<he::SealCiphertextWrapper>& out,
-                            const element::Type& type,
-                            shared_ptr<he_seal::HESealBackend> he_seal_backend);
+                                    const shared_ptr<he::SealCiphertextWrapper>& arg1,
+                                    shared_ptr<he::SealCiphertextWrapper>& out,
+                                    const element::Type& type,
+                                    shared_ptr<he_seal::HESealBackend> he_seal_backend);
 
                     void scalar_add(const shared_ptr<he::SealPlaintextWrapper>& arg0,
-                            const shared_ptr<he::SealPlaintextWrapper>& arg1,
-                            shared_ptr<he::SealPlaintextWrapper>& out,
-                            const element::Type& type,
-                            shared_ptr<he_seal::HESealBackend> he_seal_backend);
+                                    const shared_ptr<he::SealPlaintextWrapper>& arg1,
+                                    shared_ptr<he::SealPlaintextWrapper>& out,
+                                    const element::Type& type,
+                                    shared_ptr<he_seal::HESealBackend> he_seal_backend);
                 }
             }
         }

@@ -74,7 +74,6 @@ runtime::he::he_heaan::HEHeaanBackend::HEHeaanBackend(
     // Scheme
     m_scheme = make_shared<heaan::Scheme>(*m_secret_key, *m_context);
 
-
     // Keygen, encryptor and decryptor
     // Evaluator
     // Plaintext constants
@@ -119,7 +118,8 @@ shared_ptr<runtime::he::HECiphertext>
     auto ciphertext =
         dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(create_empty_ciphertext());
 
-    ciphertext->m_ciphertext = m_scheme->encryptSingle((double)value, get_precision(), m_context->logQ);
+    ciphertext->m_ciphertext =
+        m_scheme->encryptSingle((double)value, get_precision(), m_context->logQ);
 
     return ciphertext;
 }
@@ -284,7 +284,8 @@ void runtime::he::he_heaan::HEHeaanBackend::encrypt(
     auto heaan_input = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(input);
     if (heaan_output != nullptr && heaan_input != nullptr)
     {
-        heaan_output->m_ciphertext = m_scheme->encryptSingle(heaan_input->m_plaintext, m_log_precision, m_context->logQ);
+        heaan_output->m_ciphertext =
+            m_scheme->encryptSingle(heaan_input->m_plaintext, m_log_precision, m_context->logQ);
     }
     else
     {
@@ -299,7 +300,8 @@ void runtime::he::he_heaan::HEHeaanBackend::decrypt(shared_ptr<runtime::he::HEPl
     auto heaan_input = dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(input);
     if (heaan_output != nullptr && heaan_input != nullptr)
     {
-        heaan_output->m_plaintext = m_scheme->decryptSingle(*m_secret_key, heaan_input->m_ciphertext).real();
+        heaan_output->m_plaintext =
+            m_scheme->decryptSingle(*m_secret_key, heaan_input->m_ciphertext).real();
     }
     else
     {

@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include "seal/seal.h"
 #include "heaan_ciphertext_wrapper.hpp"
+#include "seal/seal.h"
 
 namespace ngraph
 {
@@ -68,16 +68,16 @@ namespace ngraph
                                 shared_ptr<HEBackend> he_backend);
 
                 void scalar_add(const shared_ptr<he::HECiphertext>& arg0,
-                        const shared_ptr<he::HEPlaintext>& arg1,
-                        shared_ptr<he::HECiphertext>& out,
-                        const element::Type& type,
-                        shared_ptr<HEBackend> he_backend);
+                                const shared_ptr<he::HEPlaintext>& arg1,
+                                shared_ptr<he::HECiphertext>& out,
+                                const element::Type& type,
+                                shared_ptr<HEBackend> he_backend);
 
                 void scalar_add(const shared_ptr<he::HEPlaintext>& arg0,
-                        const shared_ptr<he::HECiphertext>& arg1,
-                        shared_ptr<he::HECiphertext>& out,
-                        const element::Type& type,
-                        shared_ptr<HEBackend> he_backend);
+                                const shared_ptr<he::HECiphertext>& arg1,
+                                shared_ptr<he::HECiphertext>& out,
+                                const element::Type& type,
+                                shared_ptr<HEBackend> he_backend);
 
                 void scalar_add(const shared_ptr<he::HEPlaintext>& arg0,
                                 const shared_ptr<he::HEPlaintext>& arg1,

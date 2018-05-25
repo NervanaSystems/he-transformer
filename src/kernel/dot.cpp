@@ -18,10 +18,10 @@
 #include <utility>
 
 #include "he_backend.hpp"
-#include "he_seal_backend.hpp"
-#include "he_heaan_backend.hpp"
 #include "he_cipher_tensor_view.hpp"
+#include "he_heaan_backend.hpp"
 #include "he_plain_tensor_view.hpp"
+#include "he_seal_backend.hpp"
 #include "kernel/add.hpp"
 #include "kernel/dot.hpp"
 #include "kernel/multiply.hpp"
@@ -195,19 +195,18 @@ void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<he::HEPlaintext>>&
             auto arg0_text = arg0[arg0_transform.index(arg0_coord)];
             auto arg1_text = arg1[arg1_transform.index(arg1_coord)];
 
-			std::shared_ptr<he::HEPlaintext> prod;
+            std::shared_ptr<he::HEPlaintext> prod;
 
-			if (he_seal_backend)
-			{
-				prod = he_seal_backend->create_empty_plaintext();
-			}
-			else if (he_heaan_backend)
-			{
-				prod = he_heaan_backend->create_empty_plaintext();
-			}
+            if (he_seal_backend)
+            {
+                prod = he_seal_backend->create_empty_plaintext();
+            }
+            else if (he_heaan_backend)
+            {
+                prod = he_heaan_backend->create_empty_plaintext();
+            }
 
-            runtime::he::kernel::scalar_multiply(
-                arg0_text, arg1_text, prod, type, he_backend);
+            runtime::he::kernel::scalar_multiply(arg0_text, arg1_text, prod, type, he_backend);
             runtime::he::kernel::scalar_add(sum, prod, sum, type, he_backend);
         }
 
