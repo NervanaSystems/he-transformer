@@ -29,7 +29,7 @@
 #include "he_heaan_backend.hpp"
 #include "he_seal_backend.hpp"
 
-// #include "test_util.hpp"
+// #include "test_util.hpp" // TODO: move to header
 template <typename T>
 bool all_close(const std::vector<std::complex<T>>& a,
                const std::vector<std::complex<T>>& b,
@@ -2227,18 +2227,16 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_100_2)
     EXPECT_EQ((vector<float>{943.8259698, 1853.237534}), read_vector<float>(result));
 }
 
-/* NGRAPH_TEST(${BACKEND_NAME}, create_valued_plaintext)
+NGRAPH_TEST(${BACKEND_NAME}, create_valued_plaintext)
 {
     auto he_backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(runtime::Backend::create("${BACKEND_NAME}"));
     // Fractional
     {
         float val = 3.14;
         element::Type type = element::f32;
-        seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
-        shared_ptr<seal::Plaintext> plaintext =
-            he_backend->create_valued_plaintext(val, type, pool);
+        shared_ptr<runtime::he::HEPlaintext> plaintext = he_backend->create_valued_plaintext(val, type);
         float val_decoded;
-        he_backend->decode(&val_decoded, *plaintext, type);
+        he_backend->decode(&val_decoded, plaintext, type);
         EXPECT_EQ(val_decoded, val);
     }
 
@@ -2246,31 +2244,25 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_100_2)
     {
         int64_t val = 1;
         element::Type type = element::i64;
-        seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
-        shared_ptr<seal::Plaintext> plaintext =
-            he_backend->create_valued_plaintext((float)val, type, pool);
+        shared_ptr<runtime::he::HEPlaintext> plaintext = he_backend->create_valued_plaintext((float)val, type);
         int64_t val_decoded;
-        he_backend->decode(&val_decoded, *plaintext, type);
+        he_backend->decode(&val_decoded, plaintext, type);
         EXPECT_EQ(val_decoded, val);
     }
     {
         int64_t val = 0;
         element::Type type = element::i64;
-        seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
-        shared_ptr<seal::Plaintext> plaintext =
-            he_backend->create_valued_plaintext((float)val, type, pool);
+        shared_ptr<runtime::he::HEPlaintext> plaintext = he_backend->create_valued_plaintext((float)val, type);
         int64_t val_decoded;
-        he_backend->decode(&val_decoded, *plaintext, type);
+        he_backend->decode(&val_decoded, plaintext, type);
         EXPECT_EQ(val_decoded, val);
     }
     {
         int64_t val = -2;
         element::Type type = element::i64;
-        seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
-        shared_ptr<seal::Plaintext> plaintext =
-            he_backend->create_valued_plaintext((float)val, type, pool);
+        shared_ptr<runtime::he::HEPlaintext> plaintext = he_backend->create_valued_plaintext((float)val, type);
         int64_t val_decoded;
-        he_backend->decode(&val_decoded, *plaintext, type);
+        he_backend->decode(&val_decoded, plaintext, type);
         EXPECT_EQ(val_decoded, val);
     }
-} */
+}
