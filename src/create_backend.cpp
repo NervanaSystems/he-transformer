@@ -14,35 +14,20 @@
 * limitations under the License.
 *******************************************************************************/
 
-#pragma once
+#include "ngraph/runtime/backend.hpp"
 
-#include "he_ciphertext.hpp"
-#include "seal/seal.h"
+#include "he_heaan_backend.hpp"
+#include "he_seal_backend.hpp"
 
-namespace ngraph
+using namespace std;
+using namespace ngraph;
+
+extern "C" bool create_backend()
 {
-    namespace element
-    {
-        class Type;
-    }
-
-    namespace runtime
-    {
-        namespace he
-        {
-            namespace he_seal
-            {
-                class HESealBackend;
-            }
-            class HECiphertext;
-
-            namespace kernel
-            {
-                void relinearize(const vector<shared_ptr<he::HECiphertext>>& arg,
-                                 vector<shared_ptr<he::HECiphertext>>& out,
-                                 shared_ptr<he_seal::HESealBackend> he_seal_backend,
-                                 size_t count);
-            }
-        }
-    }
+    NGRAPH_INFO << "Create_backend";
+    runtime::Backend::register_backend("HE_HEAAN",
+                                       make_shared<runtime::he::he_heaan::HEHeaanBackend>());
+    runtime::Backend::register_backend("HE_SEAL",
+                                       make_shared<runtime::he::he_seal::HESealBackend>());
+    return true;
 }

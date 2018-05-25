@@ -19,7 +19,9 @@
 
 #include "he_backend.hpp"
 #include "he_cipher_tensor_view.hpp"
+#include "he_heaan_backend.hpp"
 #include "he_plain_tensor_view.hpp"
+#include "he_seal_backend.hpp"
 #include "kernel/add.hpp"
 #include "kernel/dot.hpp"
 #include "kernel/multiply.hpp"
@@ -80,9 +82,10 @@ void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<he::HEPlaintext>>&
                                       shared_ptr<HEBackend> he_backend)
 {
     auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(he_backend);
-    if (!he_seal_backend)
+    auto he_heaan_backend = dynamic_pointer_cast<he_heaan::HEHeaanBackend>(he_backend);
+    if (!he_seal_backend && !he_heaan_backend)
     {
-        throw ngraph_error("HE backend not seal type");
+        throw ngraph_error("Dot he_backend neither heaan nor seal;");
     }
     // Get the sizes of the dot axes. It's easiest to pull them from arg1 because they're
     // right up front.
@@ -160,8 +163,15 @@ void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<he::HEPlaintext>>&
         std::copy(arg1_projected_coord.begin(), arg1_projected_coord.end(), out_coord_it);
 
         // Zero out to start the sum
-        shared_ptr<he::HEPlaintext> sum =
-            he_seal_backend->create_valued_plaintext(0., type); // TODO: enable pool
+        shared_ptr<he::HEPlaintext> sum;
+        if (he_seal_backend)
+        {
+            sum = he_seal_backend->create_valued_plaintext(0., type); // TODO: enable pool
+        }
+        else if (he_heaan_backend)
+        {
+            sum = he_heaan_backend->create_valued_plaintext(0., type);
+        }
 
         size_t out_index = output_transform.index(out_coord);
 
@@ -185,11 +195,18 @@ void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<he::HEPlaintext>>&
             auto arg0_text = arg0[arg0_transform.index(arg0_coord)];
             auto arg1_text = arg1[arg1_transform.index(arg1_coord)];
 
-            shared_ptr<he::HEPlaintext> prod =
-                he_seal_backend->create_empty_plaintext(); // TODO: enable pool
+            std::shared_ptr<he::HEPlaintext> prod;
 
-            runtime::he::kernel::scalar_multiply(
-                arg0_text, arg1_text, prod, type, he_backend); // TODO: enable pool
+            if (he_seal_backend)
+            {
+                prod = he_seal_backend->create_empty_plaintext();
+            }
+            else if (he_heaan_backend)
+            {
+                prod = he_heaan_backend->create_empty_plaintext();
+            }
+
+            runtime::he::kernel::scalar_multiply(arg0_text, arg1_text, prod, type, he_backend);
             runtime::he::kernel::scalar_add(sum, prod, sum, type, he_backend);
         }
 
