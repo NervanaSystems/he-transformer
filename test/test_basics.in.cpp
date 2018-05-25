@@ -20,6 +20,7 @@
 #include "util/all_close.hpp"
 #include "util/ndarray.hpp"
 #include "util/test_tools.hpp"
+#include "util/test_control.hpp"
 
 #include "he_backend.hpp"
 #include "test_util.hpp"
@@ -27,28 +28,28 @@
 using namespace std;
 using namespace ngraph;
 
-TEST_F(TestHEBackend, trivial)
+NGRAPH_TEST(${BACKEND_NAME}, trivial)
 {
     int a = 1;
     int b = 2;
     EXPECT_EQ(3, a + b);
 }
 
-TEST_F(TestHEBackend, backend_init)
+NGRAPH_TEST(${BACKEND_NAME}, backend_init)
 {
     auto he_seal_backend = runtime::Backend::create("HE_SEAL");
     auto he_heaan_backend = runtime::Backend::create("HE_HEAAN");
     EXPECT_EQ(1, 1);
 }
 
-TEST_F(TestHEBackend, seal_debug)
+NGRAPH_TEST(${BACKEND_NAME}, seal_debug)
 {
 #ifndef SEAL_DEBUG
     EXPECT_EQ(1, 2);
 #endif
 }
 
-TEST_F(TestHEBackend, cipher_tv_write_read_scalar)
+NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_scalar)
 {
     Shape shape{};
     auto a = m_he_backend->create_tensor(element::i64, shape);
@@ -56,7 +57,7 @@ TEST_F(TestHEBackend, cipher_tv_write_read_scalar)
     EXPECT_EQ(read_vector<int64_t>(a), (vector<int64_t>{5}));
 }
 
-TEST_F(TestHEBackend, cipher_tv_write_read_2)
+NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_2)
 {
     Shape shape{2};
     auto a = m_he_backend->create_tensor(element::i64, shape);
@@ -64,7 +65,7 @@ TEST_F(TestHEBackend, cipher_tv_write_read_2)
     EXPECT_EQ(read_vector<int64_t>(a), (vector<int64_t>{5, 6}));
 }
 
-TEST_F(TestHEBackend, cipher_tv_write_read_2_3)
+NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_2_3)
 {
     Shape shape{2, 3};
     auto a = m_he_backend->create_tensor(element::i64, shape);
@@ -73,7 +74,7 @@ TEST_F(TestHEBackend, cipher_tv_write_read_2_3)
               (test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector());
 }
 
-TEST_F(TestHEBackend, plain_tv_write_read_scalar)
+NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_scalar)
 {
     Shape shape{};
     auto a = m_he_backend->create_plain_tensor(element::i64, shape);
@@ -81,7 +82,7 @@ TEST_F(TestHEBackend, plain_tv_write_read_scalar)
     EXPECT_EQ(read_vector<int64_t>(a), (vector<int64_t>{5}));
 }
 
-TEST_F(TestHEBackend, plain_tv_write_read_2)
+NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2)
 {
     Shape shape{2};
     auto a = m_he_backend->create_plain_tensor(element::i64, shape);
@@ -89,7 +90,7 @@ TEST_F(TestHEBackend, plain_tv_write_read_2)
     EXPECT_EQ(read_vector<int64_t>(a), (vector<int64_t>{5, 6}));
 }
 
-TEST_F(TestHEBackend, plain_tv_write_read_2_3)
+NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2_3)
 {
     Shape shape{2, 3};
     auto a = m_he_backend->create_plain_tensor(element::i64, shape);
@@ -98,7 +99,7 @@ TEST_F(TestHEBackend, plain_tv_write_read_2_3)
               (test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector());
 }
 
-TEST_F(TestHEBackend, ab)
+NGRAPH_TEST(${BACKEND_NAME}, ab)
 {
     Shape s{2, 3};
     auto a = make_shared<op::Parameter>(element::i64, s);
@@ -119,7 +120,7 @@ TEST_F(TestHEBackend, ab)
               (test::NDArray<int64_t, 2>({{8, 10, 12}, {14, 16, 18}})).get_vector());
 }
 
-TEST_F(TestHEBackend, ab_plain)
+NGRAPH_TEST(${BACKEND_NAME}, ab_plain)
 {
     Shape s{2, 3};
     auto a = make_shared<op::Parameter>(element::i64, s);
@@ -140,7 +141,7 @@ TEST_F(TestHEBackend, ab_plain)
               (test::NDArray<int64_t, 2>({{8, 10, 12}, {14, 16, 18}})).get_vector());
 }
 
-TEST_F(TestHEBackend, ab_plain_plain)
+NGRAPH_TEST(${BACKEND_NAME}, ab_plain_plain)
 {
     Shape s{2, 3};
     auto a = make_shared<op::Parameter>(element::f32, s);
@@ -161,7 +162,7 @@ TEST_F(TestHEBackend, ab_plain_plain)
               (test::NDArray<float, 2>({{8, 10, 12}, {14, 16, 18}})).get_vector());
 }
 
-TEST_F(TestHEBackend, subtract)
+NGRAPH_TEST(${BACKEND_NAME}, subtract)
 {
     Shape shape{2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -179,7 +180,7 @@ TEST_F(TestHEBackend, subtract)
     EXPECT_EQ((vector<float>{1, 2, 4, 8}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, subtract_plain)
+NGRAPH_TEST(${BACKEND_NAME}, subtract_plain)
 {
     Shape shape{2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -197,7 +198,7 @@ TEST_F(TestHEBackend, subtract_plain)
     EXPECT_EQ((vector<float>{1, 2, 4, 8}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, abc)
+NGRAPH_TEST(${BACKEND_NAME}, abc)
 {
     Shape shape{2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -228,7 +229,7 @@ TEST_F(TestHEBackend, abc)
               (test::NDArray<float, 2>({{50, 72}, {98, 128}})).get_vector());
 }
 
-TEST_F(TestHEBackend, abc_plain)
+NGRAPH_TEST(${BACKEND_NAME}, abc_plain)
 {
     Shape shape{2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -259,7 +260,7 @@ TEST_F(TestHEBackend, abc_plain)
               (test::NDArray<float, 2>({{50, 72}, {98, 128}})).get_vector());
 }
 
-TEST_F(TestHEBackend, abc_plain_plain)
+NGRAPH_TEST(${BACKEND_NAME}, abc_plain_plain)
 {
     Shape shape{2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -290,7 +291,7 @@ TEST_F(TestHEBackend, abc_plain_plain)
               (test::NDArray<float, 2>({{50, 72}, {98, 128}})).get_vector());
 }
 
-TEST_F(TestHEBackend, dot1d)
+NGRAPH_TEST(${BACKEND_NAME}, dot1d)
 {
     Shape shape{4};
     auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -309,7 +310,7 @@ TEST_F(TestHEBackend, dot1d)
     EXPECT_EQ((vector<float>{170}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, dot1d_plain_plain)
+NGRAPH_TEST(${BACKEND_NAME}, dot1d_plain_plain)
 {
     Shape shape{4};
     auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -328,7 +329,7 @@ TEST_F(TestHEBackend, dot1d_plain_plain)
     EXPECT_EQ((vector<float>{170}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, dot1d_plain_binary)
+NGRAPH_TEST(${BACKEND_NAME}, dot1d_plain_binary)
 {
     Shape shape{16};
     auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -347,7 +348,7 @@ TEST_F(TestHEBackend, dot1d_plain_binary)
     EXPECT_EQ((vector<float>{-64}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, dot1d_plain)
+NGRAPH_TEST(${BACKEND_NAME}, dot1d_plain)
 {
     Shape shape{4};
     auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -366,7 +367,7 @@ TEST_F(TestHEBackend, dot1d_plain)
     EXPECT_EQ((vector<float>{170}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, dot_matrix_vector)
+NGRAPH_TEST(${BACKEND_NAME}, dot_matrix_vector)
 {
     Shape shape_a{4, 4};
     Shape shape_b{4};
@@ -386,7 +387,7 @@ TEST_F(TestHEBackend, dot_matrix_vector)
     EXPECT_EQ((vector<float>{190, 486, 782, 1078}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, dot_matrix_vector_plain)
+NGRAPH_TEST(${BACKEND_NAME}, dot_matrix_vector_plain)
 {
     Shape shape_a{4, 4};
     Shape shape_b{4};
@@ -406,7 +407,7 @@ TEST_F(TestHEBackend, dot_matrix_vector_plain)
     EXPECT_EQ((vector<float>{190, 486, 782, 1078}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, dot_scalar_scalar)
+NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_scalar)
 {
     Shape shape{};
     auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -424,7 +425,7 @@ TEST_F(TestHEBackend, dot_scalar_scalar)
     EXPECT_EQ((vector<float>{48}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, dot_scalar_scalar_plain)
+NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_scalar_plain)
 {
     Shape shape{};
     auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -442,7 +443,7 @@ TEST_F(TestHEBackend, dot_scalar_scalar_plain)
     EXPECT_EQ((vector<float>{48}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, constant)
+NGRAPH_TEST(${BACKEND_NAME}, constant)
 {
     Shape shape{2, 2};
     auto A = op::Constant::create(element::f32, shape, {0.1, 0.2, 0.3, 0.4});
@@ -453,7 +454,7 @@ TEST_F(TestHEBackend, constant)
     EXPECT_EQ((vector<float>{0.1, 0.2, 0.3, 0.4}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, constant_abc)
+NGRAPH_TEST(${BACKEND_NAME}, constant_abc)
 {
     Shape shape{2, 2};
     auto A = op::Constant::create(element::f32, shape, {1, 2, 3, 4});
@@ -474,7 +475,7 @@ TEST_F(TestHEBackend, constant_abc)
               (test::NDArray<float, 2>({{54, 80}, {110, 144}})).get_vector());
 }
 
-TEST_F(TestHEBackend, broadcast_scalar_vector)
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_vector)
 {
     Shape shape_a{};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -491,7 +492,7 @@ TEST_F(TestHEBackend, broadcast_scalar_vector)
     EXPECT_EQ((vector<float>{6, 6, 6, 6}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, broadcast_scalar_vector_plain)
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_vector_plain)
 {
     Shape shape_a{};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -508,7 +509,7 @@ TEST_F(TestHEBackend, broadcast_scalar_vector_plain)
     EXPECT_EQ((vector<float>{6, 6, 6, 6}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, broadcast_to_non_existent_axis)
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_to_non_existent_axis)
 {
     Shape shape_a{};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -518,7 +519,7 @@ TEST_F(TestHEBackend, broadcast_to_non_existent_axis)
                  ngraph_error);
 }
 
-TEST_F(TestHEBackend, broadcast_scalar_matrix)
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_matrix)
 {
     Shape shape_a{};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -535,7 +536,7 @@ TEST_F(TestHEBackend, broadcast_scalar_matrix)
     EXPECT_EQ((vector<float>{6, 6, 6, 6}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, broadcast_scalar_tensor)
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor)
 {
     Shape shape_a{};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -552,7 +553,7 @@ TEST_F(TestHEBackend, broadcast_scalar_tensor)
     EXPECT_EQ((vector<float>{6, 6, 6, 6, 6, 6, 6, 6}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, broadcast_trivial)
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_trivial)
 {
     Shape shape{2, 2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -568,7 +569,7 @@ TEST_F(TestHEBackend, broadcast_trivial)
     EXPECT_EQ((vector<float>{2, 4, 6, 8, 16, 32, 64, 128}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, broadcast_vector_colwise)
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_colwise)
 {
     Shape shape_a{3};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -585,7 +586,7 @@ TEST_F(TestHEBackend, broadcast_vector_colwise)
     EXPECT_EQ((vector<float>{1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, broadcast_vector_rowwise)
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_rowwise)
 {
     Shape shape_a{4};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -602,7 +603,7 @@ TEST_F(TestHEBackend, broadcast_vector_rowwise)
     EXPECT_EQ((vector<float>{1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, broadcast_vector_rowwise_int64)
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_rowwise_int64)
 {
     Shape shape_a{4};
     auto A = make_shared<op::Parameter>(element::i64, shape_a);
@@ -619,7 +620,7 @@ TEST_F(TestHEBackend, broadcast_vector_rowwise_int64)
     EXPECT_EQ((vector<int64_t>{1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4}), read_vector<int64_t>(result));
 }
 
-TEST_F(TestHEBackend, broadcast_matrix_0)
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_0)
 {
     Shape shape_a{2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -636,7 +637,7 @@ TEST_F(TestHEBackend, broadcast_matrix_0)
     EXPECT_EQ((vector<float>{1, 2, 3, 4, 1, 2, 3, 4}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, broadcast_matrix_1)
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_1)
 {
     Shape shape_a{2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -653,7 +654,7 @@ TEST_F(TestHEBackend, broadcast_matrix_1)
     EXPECT_EQ((vector<float>{1, 2, 1, 2, 3, 4, 3, 4}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, broadcast_matrix_2)
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_2)
 {
     Shape shape_a{2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -670,7 +671,7 @@ TEST_F(TestHEBackend, broadcast_matrix_2)
     EXPECT_EQ((vector<float>{1, 1, 2, 2, 3, 3, 4, 4}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, reshape_t2v_012)
+NGRAPH_TEST(${BACKEND_NAME}, reshape_t2v_012)
 {
     Shape shape_a{2, 2, 3};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -687,7 +688,7 @@ TEST_F(TestHEBackend, reshape_t2v_012)
     EXPECT_EQ((vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, reshape_t2v_012_plain)
+NGRAPH_TEST(${BACKEND_NAME}, reshape_t2v_012_plain)
 {
     Shape shape_a{2, 2, 3};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -704,7 +705,7 @@ TEST_F(TestHEBackend, reshape_t2v_012_plain)
     EXPECT_EQ((vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, reshape_t2v_012_plain_plain)
+NGRAPH_TEST(${BACKEND_NAME}, reshape_t2v_012_plain_plain)
 {
     Shape shape_a{2, 2, 3};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -721,7 +722,7 @@ TEST_F(TestHEBackend, reshape_t2v_012_plain_plain)
     EXPECT_EQ((vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, reshape_t2s_012)
+NGRAPH_TEST(${BACKEND_NAME}, reshape_t2s_012)
 {
     Shape shape_a{1, 1, 1};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -738,7 +739,7 @@ TEST_F(TestHEBackend, reshape_t2s_012)
     EXPECT_EQ((vector<float>{6}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, reshape_t2s_120)
+NGRAPH_TEST(${BACKEND_NAME}, reshape_t2s_120)
 {
     Shape shape_a{1, 1, 1};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -755,7 +756,7 @@ TEST_F(TestHEBackend, reshape_t2s_120)
     EXPECT_EQ((vector<float>{6}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, reshape_s2t)
+NGRAPH_TEST(${BACKEND_NAME}, reshape_s2t)
 {
     Shape shape_a{};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -772,7 +773,7 @@ TEST_F(TestHEBackend, reshape_s2t)
     EXPECT_EQ((vector<float>{42}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, reshape_v2m_col)
+NGRAPH_TEST(${BACKEND_NAME}, reshape_v2m_col)
 {
     Shape shape_a{3};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -789,7 +790,7 @@ TEST_F(TestHEBackend, reshape_v2m_col)
     EXPECT_EQ((vector<float>{1, 2, 3}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, reshape_v2m_row)
+NGRAPH_TEST(${BACKEND_NAME}, reshape_v2m_row)
 {
     Shape shape_a{3};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -806,7 +807,7 @@ TEST_F(TestHEBackend, reshape_v2m_row)
     EXPECT_EQ((vector<float>{1, 2, 3}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, reshape_v2t_middle)
+NGRAPH_TEST(${BACKEND_NAME}, reshape_v2t_middle)
 {
     Shape shape_a{3};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -823,7 +824,7 @@ TEST_F(TestHEBackend, reshape_v2t_middle)
     EXPECT_EQ((vector<float>{1, 2, 3}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, reshape_m2m_same)
+NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_same)
 {
     Shape shape_a{3, 3};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -840,7 +841,7 @@ TEST_F(TestHEBackend, reshape_m2m_same)
     EXPECT_EQ((vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, reshape_m2m_transpose)
+NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_transpose)
 {
     Shape shape_a{3, 3};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -857,7 +858,7 @@ TEST_F(TestHEBackend, reshape_m2m_transpose)
     EXPECT_EQ((vector<float>{1, 4, 7, 2, 5, 8, 3, 6, 9}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, reshape_m2m_dim_change_transpose)
+NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_dim_change_transpose)
 {
     Shape shape_a{3, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -915,7 +916,7 @@ TEST_F(TestHEBackend, reshape_m2m_dim_change_transpose)
 //         198.,  270.,  206.,  278.,  214.,  286.,  199.,  271.,  207.,
 //         279.,  215.,  287.,  200.,  272.,  208.,  280.,  216.,  288.])
 //
-TEST_F(TestHEBackend, reshape_6d)
+NGRAPH_TEST(${BACKEND_NAME}, reshape_6d)
 {
     vector<float> a_data(2 * 2 * 3 * 3 * 2 * 4);
     for (int i = 0; i < 2 * 2 * 3 * 3 * 2 * 4; i++)
@@ -963,7 +964,7 @@ TEST_F(TestHEBackend, reshape_6d)
         read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, one_hot_scalar_2_in_3)
+NGRAPH_TEST(${BACKEND_NAME}, one_hot_scalar_2_in_3)
 {
     Shape shape_a{};
     auto A = make_shared<op::Parameter>(element::i64, shape_a);
@@ -982,7 +983,7 @@ TEST_F(TestHEBackend, one_hot_scalar_2_in_3)
     EXPECT_EQ((vector<int64_t>{0, 0, 1}), read_vector<int64_t>(result));
 }
 
-TEST_F(TestHEBackend, one_hot_scalar_1_in_3)
+NGRAPH_TEST(${BACKEND_NAME}, one_hot_scalar_1_in_3)
 {
     Shape shape_a{};
     auto A = make_shared<op::Parameter>(element::i64, shape_a);
@@ -999,7 +1000,7 @@ TEST_F(TestHEBackend, one_hot_scalar_1_in_3)
     EXPECT_EQ((vector<int64_t>{0, 1, 0}), read_vector<int64_t>(result));
 }
 
-TEST_F(TestHEBackend, one_hot_scalar_0_in_3)
+NGRAPH_TEST(${BACKEND_NAME}, one_hot_scalar_0_in_3)
 {
     Shape shape_a{};
     auto A = make_shared<op::Parameter>(element::i64, shape_a);
@@ -1016,7 +1017,7 @@ TEST_F(TestHEBackend, one_hot_scalar_0_in_3)
     EXPECT_EQ((vector<int64_t>{1, 0, 0}), read_vector<int64_t>(result));
 }
 
-TEST_F(TestHEBackend, one_hot_scalar_fp_nonint_in_3)
+NGRAPH_TEST(${BACKEND_NAME}, one_hot_scalar_fp_nonint_in_3)
 {
     Shape shape_a{};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1043,7 +1044,7 @@ TEST_F(TestHEBackend, one_hot_scalar_fp_nonint_in_3)
     }
 }
 
-TEST_F(TestHEBackend, one_hot_scalar_oob_in_3)
+NGRAPH_TEST(${BACKEND_NAME}, one_hot_scalar_oob_in_3)
 {
     Shape shape_a{};
     auto A = make_shared<op::Parameter>(element::i64, shape_a);
@@ -1070,7 +1071,7 @@ TEST_F(TestHEBackend, one_hot_scalar_oob_in_3)
     }
 }
 
-TEST_F(TestHEBackend, one_hot_vector_0)
+NGRAPH_TEST(${BACKEND_NAME}, one_hot_vector_0)
 {
     Shape shape_a{8};
     auto A = make_shared<op::Parameter>(element::i64, shape_a);
@@ -1089,7 +1090,7 @@ TEST_F(TestHEBackend, one_hot_vector_0)
         read_vector<int64_t>(result));
 }
 
-TEST_F(TestHEBackend, one_hot_vector_1)
+NGRAPH_TEST(${BACKEND_NAME}, one_hot_vector_1)
 {
     Shape shape_a{8};
     auto A = make_shared<op::Parameter>(element::i64, shape_a);
@@ -1108,7 +1109,7 @@ TEST_F(TestHEBackend, one_hot_vector_1)
         read_vector<int64_t>(result));
 }
 
-TEST_F(TestHEBackend, one_hot_vector_1_barely_oob)
+NGRAPH_TEST(${BACKEND_NAME}, one_hot_vector_1_barely_oob)
 {
     Shape shape_a{8};
     auto A = make_shared<op::Parameter>(element::i64, shape_a);
@@ -1134,7 +1135,7 @@ TEST_F(TestHEBackend, one_hot_vector_1_barely_oob)
         FAIL() << "Expected a std::out_of_range exception";
     }
 }
-TEST_F(TestHEBackend, one_hot_vector_1_far_oob)
+NGRAPH_TEST(${BACKEND_NAME}, one_hot_vector_1_far_oob)
 {
     Shape shape_a{8};
     auto A = make_shared<op::Parameter>(element::i64, shape_a);
@@ -1161,7 +1162,7 @@ TEST_F(TestHEBackend, one_hot_vector_1_far_oob)
     }
 }
 
-TEST_F(TestHEBackend, one_hot_matrix_0)
+NGRAPH_TEST(${BACKEND_NAME}, one_hot_matrix_0)
 {
     Shape shape_a{3, 3};
     auto A = make_shared<op::Parameter>(element::i64, shape_a);
@@ -1186,7 +1187,7 @@ TEST_F(TestHEBackend, one_hot_matrix_0)
               read_vector<int64_t>(result));
 }
 
-TEST_F(TestHEBackend, one_hot_vector_1_fp)
+NGRAPH_TEST(${BACKEND_NAME}, one_hot_vector_1_fp)
 {
     Shape shape_a{8};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1204,7 +1205,7 @@ TEST_F(TestHEBackend, one_hot_vector_1_fp)
         vector<float>{0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0},
         read_vector<float>(result)));
 }
-TEST_F(TestHEBackend, one_hot_vector_1_fp_nonint)
+NGRAPH_TEST(${BACKEND_NAME}, one_hot_vector_1_fp_nonint)
 {
     Shape shape_a{8};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1231,7 +1232,7 @@ TEST_F(TestHEBackend, one_hot_vector_1_fp_nonint)
     }
 }
 
-TEST_F(TestHEBackend, slice_scalar)
+NGRAPH_TEST(${BACKEND_NAME}, slice_scalar)
 {
     Shape shape_a{};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1248,7 +1249,7 @@ TEST_F(TestHEBackend, slice_scalar)
     EXPECT_EQ((vector<float>{312}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, slice_matrix)
+NGRAPH_TEST(${BACKEND_NAME}, slice_matrix)
 {
     Shape shape_a{4, 4};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1265,7 +1266,7 @@ TEST_F(TestHEBackend, slice_matrix)
     EXPECT_EQ((vector<float>{2, 3, 6, 7, 10, 11}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, slice_vector)
+NGRAPH_TEST(${BACKEND_NAME}, slice_vector)
 {
     Shape shape_a{16};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1282,7 +1283,7 @@ TEST_F(TestHEBackend, slice_vector)
     EXPECT_EQ((vector<float>{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, slice_matrix_strided)
+NGRAPH_TEST(${BACKEND_NAME}, slice_matrix_strided)
 {
     Shape shape_a{4, 4};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1299,7 +1300,7 @@ TEST_F(TestHEBackend, slice_matrix_strided)
     EXPECT_EQ((vector<float>{4, 7, 12, 15}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, slice_3d)
+NGRAPH_TEST(${BACKEND_NAME}, slice_3d)
 {
     Shape shape_a{4, 4, 4};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1322,7 +1323,7 @@ TEST_F(TestHEBackend, slice_3d)
     EXPECT_EQ((vector<float>{21, 22, 25, 26, 37, 38, 41, 42}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, slice_3d_strided)
+NGRAPH_TEST(${BACKEND_NAME}, slice_3d_strided)
 {
     Shape shape_a{4, 4, 4};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1345,7 +1346,7 @@ TEST_F(TestHEBackend, slice_3d_strided)
     EXPECT_TRUE(test::all_close(vector<float>{0, 2, 8, 10, 32, 34, 40, 42}, read_vector<float>(result)));
 }
 
-TEST_F(TestHEBackend, slice_3d_strided_different_strides)
+NGRAPH_TEST(${BACKEND_NAME}, slice_3d_strided_different_strides)
 {
     Shape shape_a{4, 4, 4};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1368,7 +1369,7 @@ TEST_F(TestHEBackend, slice_3d_strided_different_strides)
     EXPECT_TRUE(test::all_close(vector<float>{0, 3, 8, 11, 32, 35, 40, 43}, read_vector<float>(result)));
 }
 
-TEST_F(TestHEBackend, concat_matrix_colwise)
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_colwise)
 {
     Shape shape_a{2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1394,7 +1395,7 @@ TEST_F(TestHEBackend, concat_matrix_colwise)
               read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, concat_matrix_rowwise)
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_rowwise)
 {
     Shape shape_a{2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1420,7 +1421,7 @@ TEST_F(TestHEBackend, concat_matrix_rowwise)
               read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, concat_matrix_int64)
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_int64)
 {
     Shape shape_a{2, 2};
     auto A = make_shared<op::Parameter>(element::i64, shape_a);
@@ -1446,7 +1447,7 @@ TEST_F(TestHEBackend, concat_matrix_int64)
               read_vector<int64_t>(result));
 }
 
-TEST_F(TestHEBackend, concat_vector)
+NGRAPH_TEST(${BACKEND_NAME}, concat_vector)
 {
     Shape shape_a{4};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1516,7 +1517,7 @@ TEST_F(TestHEBackend, concat_vector)
 //   1097.  1098.  1099.  1100.  1101.  1102.  1103.  1104.  1105.  1106.
 //   1107.  1108.  2061.  2062.  2063.  2064.  2065.  2066.  2067.  2068.
 //   2069.  2070.  2071.  2072.]
-TEST_F(TestHEBackend, concat_5d)
+NGRAPH_TEST(${BACKEND_NAME}, concat_5d)
 {
     vector<float> a_data(2 * 3 * 4 * 3 * 2);
     for (int i = 0; i < 2 * 3 * 4 * 3 * 2; i++)
@@ -1591,7 +1592,7 @@ TEST_F(TestHEBackend, concat_5d)
 }
 
 // Trivial case with no summed axes.
-TEST_F(TestHEBackend, sum_trivial)
+NGRAPH_TEST(${BACKEND_NAME}, sum_trivial)
 {
     Shape shape{2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -1607,7 +1608,7 @@ TEST_F(TestHEBackend, sum_trivial)
 }
 
 // Failure has been reported at 5D for some reason
-TEST_F(TestHEBackend, sum_trivial_5d)
+NGRAPH_TEST(${BACKEND_NAME}, sum_trivial_5d)
 {
     Shape shape{2, 2, 2, 2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -1625,7 +1626,7 @@ TEST_F(TestHEBackend, sum_trivial_5d)
               read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, sum_to_scalar)
+NGRAPH_TEST(${BACKEND_NAME}, sum_to_scalar)
 {
     Shape shape{2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -1644,7 +1645,7 @@ TEST_F(TestHEBackend, sum_to_scalar)
     EXPECT_EQ((vector<float>{1, 2, 3, 4}), read_vector<float>(a));
 }
 
-TEST_F(TestHEBackend, sum_matrix_columns)
+NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_columns)
 {
     Shape shape_a{3, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1664,7 +1665,7 @@ TEST_F(TestHEBackend, sum_matrix_columns)
     EXPECT_EQ((vector<float>{1, 2, 3, 4, 5, 6}), read_vector<float>(a));
 }
 
-TEST_F(TestHEBackend, sum_matrix_rows)
+NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_rows)
 {
     Shape shape_a{3, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1684,7 +1685,7 @@ TEST_F(TestHEBackend, sum_matrix_rows)
     EXPECT_EQ((vector<float>{1, 2, 3, 4, 5, 6}), read_vector<float>(a));
 }
 
-TEST_F(TestHEBackend, sum_matrix_rows_zero)
+NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_rows_zero)
 {
     Shape shape_a{3, 0};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1705,7 +1706,7 @@ TEST_F(TestHEBackend, sum_matrix_rows_zero)
     EXPECT_EQ((vector<float>{}), read_vector<float>(a));
 }
 
-TEST_F(TestHEBackend, sum_matrix_cols_zero)
+NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_cols_zero)
 {
     // Now the reduction (g(x:float32[2,2],y:float32[]) = reduce(x,y,f,axes={})).
     Shape shape_a{0, 2};
@@ -1727,7 +1728,7 @@ TEST_F(TestHEBackend, sum_matrix_cols_zero)
     EXPECT_EQ((vector<float>{}), read_vector<float>(a));
 }
 
-TEST_F(TestHEBackend, sum_vector_zero)
+NGRAPH_TEST(${BACKEND_NAME}, sum_vector_zero)
 {
     Shape shape_a{0};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1748,7 +1749,7 @@ TEST_F(TestHEBackend, sum_vector_zero)
     EXPECT_EQ((vector<float>{}), read_vector<float>(a));
 }
 
-TEST_F(TestHEBackend, sum_matrix_to_scalar_zero_by_zero)
+NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_to_scalar_zero_by_zero)
 {
     Shape shape_a{0, 0};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1769,7 +1770,7 @@ TEST_F(TestHEBackend, sum_matrix_to_scalar_zero_by_zero)
     EXPECT_EQ((vector<float>{}), read_vector<float>(a));
 }
 
-TEST_F(TestHEBackend, sum_3d_to_matrix_most_sig)
+NGRAPH_TEST(${BACKEND_NAME}, sum_3d_to_matrix_most_sig)
 {
     Shape shape_a{3, 3, 3};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1795,7 +1796,7 @@ TEST_F(TestHEBackend, sum_3d_to_matrix_most_sig)
               read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, sum_3d_to_matrix_least_sig)
+NGRAPH_TEST(${BACKEND_NAME}, sum_3d_to_matrix_least_sig)
 {
     Shape shape_a{3, 3, 3};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1820,7 +1821,7 @@ TEST_F(TestHEBackend, sum_3d_to_matrix_least_sig)
                              25 + 26 + 27}),
               read_vector<float>(result));
 }
-TEST_F(TestHEBackend, sum_3d_to_vector)
+NGRAPH_TEST(${BACKEND_NAME}, sum_3d_to_vector)
 {
     Shape shape_a{3, 3, 3};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1840,7 +1841,7 @@ TEST_F(TestHEBackend, sum_3d_to_vector)
               read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, sum_3d_to_scalar)
+NGRAPH_TEST(${BACKEND_NAME}, sum_3d_to_scalar)
 {
     Shape shape_a{3, 3, 3};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1860,7 +1861,7 @@ TEST_F(TestHEBackend, sum_3d_to_scalar)
               read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, sum_3d_eliminate_zero_dim)
+NGRAPH_TEST(${BACKEND_NAME}, sum_3d_eliminate_zero_dim)
 {
     Shape shape_a{3, 0, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1879,7 +1880,7 @@ TEST_F(TestHEBackend, sum_3d_eliminate_zero_dim)
     EXPECT_TRUE(test::all_close((vector<float>{0, 0, 0, 0, 0, 0}), read_vector<float>(result)));
 }
 
-TEST_F(TestHEBackend, sum_to_scalar_stable)
+NGRAPH_TEST(${BACKEND_NAME}, sum_to_scalar_stable)
 {
     Shape shape{2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -1895,7 +1896,7 @@ TEST_F(TestHEBackend, sum_to_scalar_stable)
     // EXPECT_EQ(vector<float>{1e-6}, read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, sum_3d_to_vector_stable)
+NGRAPH_TEST(${BACKEND_NAME}, sum_3d_to_vector_stable)
 {
     Shape shape_a{3, 3, 3};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1913,7 +1914,7 @@ TEST_F(TestHEBackend, sum_3d_to_vector_stable)
         test::all_close(read_vector<float>(result), vector<float>{1e-4f, 1e-5f, 1e-6f}, 5e-2f));
 }
 
-TEST_F(TestHEBackend, sum_5d_to_scalar)
+NGRAPH_TEST(${BACKEND_NAME}, sum_5d_to_scalar)
 {
     Shape shape_a{3, 3, 3, 3, 3};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1930,7 +1931,7 @@ TEST_F(TestHEBackend, sum_5d_to_scalar)
     EXPECT_EQ(std::vector<float>{243.}, read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, sum_100)
+NGRAPH_TEST(${BACKEND_NAME}, sum_100)
 {
     Shape shape_a{100, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1973,7 +1974,7 @@ TEST_F(TestHEBackend, sum_100)
     EXPECT_EQ((vector<float>{404.2236542, 486.696594}), read_vector<float>(result));
 }
 
-TEST_F(TestHEBackend, sum_100_2)
+NGRAPH_TEST(${BACKEND_NAME}, sum_100_2)
 {
     Shape shape_a{100, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -2016,7 +2017,7 @@ TEST_F(TestHEBackend, sum_100_2)
     EXPECT_EQ((vector<float>{943.8259698, 1853.237534}), read_vector<float>(result));
 }
 
-/* TEST_F(TestHEBackend, create_valued_plaintext)
+/* NGRAPH_TEST(${BACKEND_NAME}, create_valued_plaintext)
 {
     // Fractional
     {

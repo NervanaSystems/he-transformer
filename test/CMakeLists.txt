@@ -30,7 +30,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHE_SERIALIZED_ZOO=\\\"${CMAKE_CURRENT_
 
 set (HE_TEST_SRC
     main.cpp
-    test_basics.cpp
+    #test_basics.cpp
     test_heaan.cpp
     #test_model.cpp
     #test_mnist.cpp
@@ -53,6 +53,7 @@ set (NGRAPH_TEST_HE_SEAL_SRC
     backend_test_HE_SEAL.cpp
     autodiff_HE_SEAL.cpp
     convolution_test_HE_SEAL.cpp
+    # test_basics_HE_SEAL.cpp
 )
 get_filename_component(MANIFEST he_seal_disabled_test.manifest ABSOLUTE)
 add_custom_command(
@@ -61,7 +62,7 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND}
             -DNGRAPH_TEST_DIR=${NGRAPH_TEST_DIR}
             -DBACKEND_NAME=HE_SEAL
-            -DTEST_LOOPS=200
+            -DTEST_LOOPS=2
             -DMANIFEST=${MANIFEST}
             -P ${CMAKE_CURRENT_SOURCE_DIR}/configure_test.cmake
 )
@@ -71,6 +72,7 @@ set (NGRAPH_TEST_HE_HEAAN_SRC
     backend_test_HE_HEAAN.cpp
     autodiff_HE_HEAAN.cpp
     convolution_test_HE_HEAAN.cpp
+    # test_basics_HE_HEAAN.cpp
     )
 get_filename_component(MANIFEST he_heaan_disabled_test.manifest ABSOLUTE)
 add_custom_command(
@@ -79,7 +81,7 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND}
     -DNGRAPH_TEST_DIR=${NGRAPH_TEST_DIR}
     -DBACKEND_NAME=HE_HEAAN
-    -DTEST_LOOPS=200
+    -DTEST_LOOPS=2
     -DMANIFEST=${MANIFEST}
     -P ${CMAKE_CURRENT_SOURCE_DIR}/configure_test.cmake
 )
@@ -89,6 +91,47 @@ set(SRC
     ${HE_TEST_SRC}
     ${NGRAPH_TEST_HE_SEAL_SRC}
     ${NGRAPH_TEST_HE_HEAAN_SRC})
+
+#================================================================================================
+# To auto generate a suite of unit tests for a backend add a line like this
+# set(BACKEND_NAMES ${BACKEND_NAMES} "BACKEND_NAME_GOES_HERE")
+# and replace BACKEND_NAME_GOES_HERE with your backend name.
+# The code for the unit test suite is in test/backend_test.in.cpp
+#================================================================================================
+set(BACKEND_NAMES ${BACKEND_NAMES} "HE_SEAL", "HE_HEAAN")
+message("FABI ${CMAKE_CURRENT_SOURCE_DIR}")
+
+set(UNIT_TEST_CONFIG_LIST "" CACHE INTERNAL "")
+foreach(TEST_CONFIG ${UNIT_TEST_CONFIG_LIST})
+    string(FIND ${TEST_CONFIG} "@" OFFSET)
+    string(SUBSTRING ${TEST_CONFIG} 0 ${OFFSET} BACKEND_NAME)
+    math(EXPR OFFSET ${OFFSET}+1)
+    string(SUBSTRING ${TEST_CONFIG} ${OFFSET} -1 MANIFEST)
+
+    configure_file(backend_test.in.cpp backend_test_${BACKEND_NAME}.cpp)
+    configure_file(convolution_test.in.cpp convolution_test_${BACKEND_NAME}.cpp)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/test_basics.in.cpp test_basics_${BACKEND_NAME}.cpp)
+    set(SRC ${SRC} ${CMAKE_CURRENT_BINARY_DIR}/backend_test_${BACKEND_NAME}.cpp)
+    set(SRC ${SRC} ${CMAKE_CURRENT_BINARY_DIR}/convolution_test_${BACKEND_NAME}.cpp)
+    # set(SRC ${SRC} ${CMAKE_CURRENT_BINARY_DIR}/test_basics_${BACKEND_NAME}.cpp)
+
+    # Some---but not all---autodiff tests go through multiple iterations with
+    # different random seeds. On the CPU backend this is currently very slow
+    # because the autodiff tests recompile with each iteration. That behavior
+    # can be changed, but it's a bit involved, so for the time being we just
+    # reduce the number of test iterations on non-INTERPRETER backends.
+    if(${BACKEND_NAME} MATCHES ^INTERPRETER$)
+        set(TEST_LOOPS 100)
+    else()
+        set(TEST_LOOPS 2)
+    endif()
+
+    configure_file(autodiff.in.cpp autodiff_${BACKEND_NAME}.cpp)
+    set(SRC ${SRC} ${CMAKE_CURRENT_BINARY_DIR}/autodiff_${BACKEND_NAME}.cpp)
+
+    message(STATUS "Adding unit test for backend ${BACKEND_NAME}")
+endforeach()
+
 add_executable(unit-test ${SRC})
 
 target_link_libraries(unit-test he_backend seal heaan ntl ngraph_test_util libgtest pthread dl)
