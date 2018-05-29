@@ -2229,12 +2229,14 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_100_2)
 
 NGRAPH_TEST(${BACKEND_NAME}, create_valued_plaintext)
 {
-    auto he_backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(runtime::Backend::create("${BACKEND_NAME}"));
+    auto he_backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
+        runtime::Backend::create("${BACKEND_NAME}"));
     // Fractional
     {
         float val = 3.14;
         element::Type type = element::f32;
-        shared_ptr<runtime::he::HEPlaintext> plaintext = he_backend->create_valued_plaintext(val, type);
+        shared_ptr<runtime::he::HEPlaintext> plaintext =
+            he_backend->create_valued_plaintext(val, type);
         float val_decoded;
         he_backend->decode(&val_decoded, plaintext, type);
         EXPECT_EQ(val_decoded, val);
@@ -2244,7 +2246,8 @@ NGRAPH_TEST(${BACKEND_NAME}, create_valued_plaintext)
     {
         int64_t val = 1;
         element::Type type = element::i64;
-        shared_ptr<runtime::he::HEPlaintext> plaintext = he_backend->create_valued_plaintext((float)val, type);
+        shared_ptr<runtime::he::HEPlaintext> plaintext =
+            he_backend->create_valued_plaintext((float)val, type);
         int64_t val_decoded;
         he_backend->decode(&val_decoded, plaintext, type);
         EXPECT_EQ(val_decoded, val);
@@ -2252,7 +2255,8 @@ NGRAPH_TEST(${BACKEND_NAME}, create_valued_plaintext)
     {
         int64_t val = 0;
         element::Type type = element::i64;
-        shared_ptr<runtime::he::HEPlaintext> plaintext = he_backend->create_valued_plaintext((float)val, type);
+        shared_ptr<runtime::he::HEPlaintext> plaintext =
+            he_backend->create_valued_plaintext((float)val, type);
         int64_t val_decoded;
         he_backend->decode(&val_decoded, plaintext, type);
         EXPECT_EQ(val_decoded, val);
@@ -2260,7 +2264,8 @@ NGRAPH_TEST(${BACKEND_NAME}, create_valued_plaintext)
     {
         int64_t val = -2;
         element::Type type = element::i64;
-        shared_ptr<runtime::he::HEPlaintext> plaintext = he_backend->create_valued_plaintext((float)val, type);
+        shared_ptr<runtime::he::HEPlaintext> plaintext =
+            he_backend->create_valued_plaintext((float)val, type);
         int64_t val_decoded;
         he_backend->decode(&val_decoded, plaintext, type);
         EXPECT_EQ(val_decoded, val);

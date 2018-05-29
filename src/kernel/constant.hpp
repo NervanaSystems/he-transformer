@@ -16,8 +16,8 @@
 
 #pragma once
 
+#include <memory>
 #include <vector>
-#include "seal/seal.h"
 
 namespace ngraph
 {
@@ -37,10 +37,10 @@ namespace ngraph
 
             namespace kernel
             {
-                void constant(vector<shared_ptr<he::HEPlaintext>>& out,
+                void constant(std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
                               const element::Type& type,
                               const void* data_ptr,
-                              shared_ptr<HEBackend> he_backend,
+                              std::shared_ptr<runtime::he::HEBackend> he_backend,
                               size_t count);
             }
         }

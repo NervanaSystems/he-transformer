@@ -14,25 +14,21 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <vector>
-
+#include "kernel/multiply.hpp"
 #include "he_backend.hpp"
 #include "he_seal_backend.hpp"
 #include "kernel/heaan/multiply_heaan.hpp"
-#include "kernel/multiply.hpp"
 #include "kernel/seal/multiply_seal.hpp"
 #include "ngraph/type/element_type.hpp"
-#include "seal/seal.h"
-#include "util.hpp"
 
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::multiply(const vector<shared_ptr<he::HECiphertext>>& arg0,
-                                   const vector<shared_ptr<he::HECiphertext>>& arg1,
-                                   vector<shared_ptr<he::HECiphertext>>& out,
+void runtime::he::kernel::multiply(const vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
+                                   const vector<shared_ptr<runtime::he::HECiphertext>>& arg1,
+                                   vector<shared_ptr<runtime::he::HECiphertext>>& out,
                                    const element::Type& type,
-                                   shared_ptr<HEBackend> he_backend,
+                                   shared_ptr<runtime::he::HEBackend> he_backend,
                                    size_t count)
 {
 #pragma omp parallel for
@@ -42,25 +38,26 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<he::HECiphertext>>& a
     }
 }
 
-void runtime::he::kernel::scalar_multiply(const shared_ptr<he::HECiphertext>& arg0,
-                                          const shared_ptr<he::HECiphertext>& arg1,
-                                          shared_ptr<he::HECiphertext>& out,
+void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HECiphertext>& arg0,
+                                          const shared_ptr<runtime::he::HECiphertext>& arg1,
+                                          shared_ptr<runtime::he::HECiphertext>& out,
                                           const element::Type& type,
-                                          shared_ptr<HEBackend> he_backend)
+                                          shared_ptr<runtime::he::HEBackend> he_backend)
 {
-    if (auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(he_backend))
+    if (auto he_seal_backend =
+            dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
     {
-        shared_ptr<he::SealCiphertextWrapper> arg0_seal =
-            dynamic_pointer_cast<he::SealCiphertextWrapper>(arg0);
-        shared_ptr<he::SealCiphertextWrapper> arg1_seal =
-            dynamic_pointer_cast<he::SealCiphertextWrapper>(arg1);
-        shared_ptr<he::SealCiphertextWrapper> out_seal =
-            dynamic_pointer_cast<he::SealCiphertextWrapper>(out);
+        shared_ptr<runtime::he::SealCiphertextWrapper> arg0_seal =
+            dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(arg0);
+        shared_ptr<runtime::he::SealCiphertextWrapper> arg1_seal =
+            dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(arg1);
+        shared_ptr<runtime::he::SealCiphertextWrapper> out_seal =
+            dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(out);
 
         if (arg0_seal && arg1_seal && out_seal)
         {
             kernel::seal::scalar_multiply(arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
-            out = dynamic_pointer_cast<he::HECiphertext>(out_seal);
+            out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_seal);
         }
         else
         {
@@ -68,20 +65,21 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<he::HECiphertext>& ar
                 "Multiply backend is seal, but arguments or outputs are not SealCiphertextWrapper");
         }
     }
-    else if (auto he_heaan_backend = dynamic_pointer_cast<he_heaan::HEHeaanBackend>(he_backend))
+    else if (auto he_heaan_backend =
+                 dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
     {
-        shared_ptr<he::HeaanCiphertextWrapper> arg0_heaan =
-            dynamic_pointer_cast<he::HeaanCiphertextWrapper>(arg0);
-        shared_ptr<he::HeaanCiphertextWrapper> arg1_heaan =
-            dynamic_pointer_cast<he::HeaanCiphertextWrapper>(arg1);
-        shared_ptr<he::HeaanCiphertextWrapper> out_heaan =
-            dynamic_pointer_cast<he::HeaanCiphertextWrapper>(out);
+        shared_ptr<runtime::he::HeaanCiphertextWrapper> arg0_heaan =
+            dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(arg0);
+        shared_ptr<runtime::he::HeaanCiphertextWrapper> arg1_heaan =
+            dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(arg1);
+        shared_ptr<runtime::he::HeaanCiphertextWrapper> out_heaan =
+            dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(out);
 
         if (arg0_heaan && arg1_heaan && out_heaan)
         {
             kernel::heaan::scalar_multiply(
                 arg0_heaan, arg1_heaan, out_heaan, type, he_heaan_backend);
-            out = dynamic_pointer_cast<he::HECiphertext>(out_heaan);
+            out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_heaan);
         }
         else
         {
@@ -98,11 +96,11 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<he::HECiphertext>& ar
     }
 }
 
-void runtime::he::kernel::multiply(const vector<shared_ptr<he::HECiphertext>>& arg0,
-                                   const vector<shared_ptr<he::HEPlaintext>>& arg1,
-                                   vector<shared_ptr<he::HECiphertext>>& out,
+void runtime::he::kernel::multiply(const vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
+                                   const vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,
+                                   vector<shared_ptr<runtime::he::HECiphertext>>& out,
                                    const element::Type& type,
-                                   shared_ptr<HEBackend> he_backend,
+                                   shared_ptr<runtime::he::HEBackend> he_backend,
                                    size_t count)
 {
 #pragma omp parallel for
@@ -112,25 +110,26 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<he::HECiphertext>>& a
     }
 }
 
-void runtime::he::kernel::scalar_multiply(const shared_ptr<he::HECiphertext>& arg0,
-                                          const shared_ptr<he::HEPlaintext>& arg1,
-                                          shared_ptr<he::HECiphertext>& out,
+void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HECiphertext>& arg0,
+                                          const shared_ptr<runtime::he::HEPlaintext>& arg1,
+                                          shared_ptr<runtime::he::HECiphertext>& out,
                                           const element::Type& type,
-                                          shared_ptr<HEBackend> he_backend)
+                                          shared_ptr<runtime::he::HEBackend> he_backend)
 {
-    if (auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(he_backend))
+    if (auto he_seal_backend =
+            dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
     {
-        shared_ptr<he::SealCiphertextWrapper> arg0_seal =
-            dynamic_pointer_cast<he::SealCiphertextWrapper>(arg0);
-        shared_ptr<he::SealPlaintextWrapper> arg1_seal =
-            dynamic_pointer_cast<he::SealPlaintextWrapper>(arg1);
-        shared_ptr<he::SealCiphertextWrapper> out_seal =
-            dynamic_pointer_cast<he::SealCiphertextWrapper>(out);
+        shared_ptr<runtime::he::SealCiphertextWrapper> arg0_seal =
+            dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(arg0);
+        shared_ptr<runtime::he::SealPlaintextWrapper> arg1_seal =
+            dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(arg1);
+        shared_ptr<runtime::he::SealCiphertextWrapper> out_seal =
+            dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(out);
 
         if (arg0_seal && arg1_seal && out_seal)
         {
             kernel::seal::scalar_multiply(arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
-            out = dynamic_pointer_cast<he::HECiphertext>(out_seal);
+            out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_seal);
         }
         else
         {
@@ -138,20 +137,21 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<he::HECiphertext>& ar
                 "Multiply backend is seal, but arguments or outputs are not SealCiphertextWrapper");
         }
     }
-    else if (auto he_heaan_backend = dynamic_pointer_cast<he_heaan::HEHeaanBackend>(he_backend))
+    else if (auto he_heaan_backend =
+                 dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
     {
-        shared_ptr<he::HeaanCiphertextWrapper> arg0_heaan =
-            dynamic_pointer_cast<he::HeaanCiphertextWrapper>(arg0);
-        shared_ptr<he::HeaanPlaintextWrapper> arg1_heaan =
-            dynamic_pointer_cast<he::HeaanPlaintextWrapper>(arg1);
-        shared_ptr<he::HeaanCiphertextWrapper> out_heaan =
-            dynamic_pointer_cast<he::HeaanCiphertextWrapper>(out);
+        shared_ptr<runtime::he::HeaanCiphertextWrapper> arg0_heaan =
+            dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(arg0);
+        shared_ptr<runtime::he::HeaanPlaintextWrapper> arg1_heaan =
+            dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(arg1);
+        shared_ptr<runtime::he::HeaanCiphertextWrapper> out_heaan =
+            dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(out);
 
         if (arg0_heaan && arg1_heaan && out_heaan)
         {
             kernel::heaan::scalar_multiply(
                 arg0_heaan, arg1_heaan, out_heaan, type, he_heaan_backend);
-            out = dynamic_pointer_cast<he::HECiphertext>(out_heaan);
+            out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_heaan);
         }
         else
         {
@@ -168,30 +168,30 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<he::HECiphertext>& ar
     }
 }
 
-void runtime::he::kernel::multiply(const vector<shared_ptr<he::HEPlaintext>>& arg0,
-                                   const vector<shared_ptr<he::HECiphertext>>& arg1,
-                                   vector<shared_ptr<he::HECiphertext>>& out,
+void runtime::he::kernel::multiply(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg0,
+                                   const vector<shared_ptr<runtime::he::HECiphertext>>& arg1,
+                                   vector<shared_ptr<runtime::he::HECiphertext>>& out,
                                    const element::Type& type,
-                                   shared_ptr<HEBackend> he_backend,
+                                   shared_ptr<runtime::he::HEBackend> he_backend,
                                    size_t count)
 {
     multiply(arg1, arg0, out, type, he_backend, count);
 }
 
-void runtime::he::kernel::scalar_multiply(const shared_ptr<he::HEPlaintext>& arg0,
-                                          const shared_ptr<he::HECiphertext>& arg1,
-                                          shared_ptr<he::HECiphertext>& out,
+void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HEPlaintext>& arg0,
+                                          const shared_ptr<runtime::he::HECiphertext>& arg1,
+                                          shared_ptr<runtime::he::HECiphertext>& out,
                                           const element::Type& type,
-                                          shared_ptr<HEBackend> he_backend)
+                                          shared_ptr<runtime::he::HEBackend> he_backend)
 {
     scalar_multiply(arg1, arg0, out, type, he_backend);
 }
 
-void runtime::he::kernel::multiply(const vector<shared_ptr<he::HEPlaintext>>& arg0,
-                                   const vector<shared_ptr<he::HEPlaintext>>& arg1,
-                                   vector<shared_ptr<he::HEPlaintext>>& out,
+void runtime::he::kernel::multiply(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg0,
+                                   const vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,
+                                   vector<shared_ptr<runtime::he::HEPlaintext>>& out,
                                    const element::Type& type,
-                                   shared_ptr<HEBackend> he_backend,
+                                   shared_ptr<runtime::he::HEBackend> he_backend,
                                    size_t count)
 {
 #pragma omp parallel for
@@ -201,25 +201,26 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<he::HEPlaintext>>& ar
     }
 }
 
-void runtime::he::kernel::scalar_multiply(const shared_ptr<he::HEPlaintext>& arg0,
-                                          const shared_ptr<he::HEPlaintext>& arg1,
-                                          shared_ptr<he::HEPlaintext>& out,
+void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HEPlaintext>& arg0,
+                                          const shared_ptr<runtime::he::HEPlaintext>& arg1,
+                                          shared_ptr<runtime::he::HEPlaintext>& out,
                                           const element::Type& type,
-                                          shared_ptr<HEBackend> he_backend)
+                                          shared_ptr<runtime::he::HEBackend> he_backend)
 {
-    if (auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(he_backend))
+    if (auto he_seal_backend =
+            dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
     {
-        shared_ptr<he::SealPlaintextWrapper> arg0_seal =
-            dynamic_pointer_cast<he::SealPlaintextWrapper>(arg0);
-        shared_ptr<he::SealPlaintextWrapper> arg1_seal =
-            dynamic_pointer_cast<he::SealPlaintextWrapper>(arg1);
-        shared_ptr<he::SealPlaintextWrapper> out_seal =
-            dynamic_pointer_cast<he::SealPlaintextWrapper>(out);
+        shared_ptr<runtime::he::SealPlaintextWrapper> arg0_seal =
+            dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(arg0);
+        shared_ptr<runtime::he::SealPlaintextWrapper> arg1_seal =
+            dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(arg1);
+        shared_ptr<runtime::he::SealPlaintextWrapper> out_seal =
+            dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(out);
 
         if (arg0_seal && arg1_seal && out_seal)
         {
             kernel::seal::scalar_multiply(arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
-            out = dynamic_pointer_cast<he::HEPlaintext>(out_seal);
+            out = dynamic_pointer_cast<runtime::he::HEPlaintext>(out_seal);
         }
         else
         {
@@ -227,20 +228,21 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<he::HEPlaintext>& arg
                 "Multiply backend is seal, but arguments or outputs are not SealPlaintextWrapper");
         }
     }
-    else if (auto he_heaan_backend = dynamic_pointer_cast<he_heaan::HEHeaanBackend>(he_backend))
+    else if (auto he_heaan_backend =
+                 dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
     {
-        shared_ptr<he::HeaanPlaintextWrapper> arg0_heaan =
-            dynamic_pointer_cast<he::HeaanPlaintextWrapper>(arg0);
-        shared_ptr<he::HeaanPlaintextWrapper> arg1_heaan =
-            dynamic_pointer_cast<he::HeaanPlaintextWrapper>(arg1);
-        shared_ptr<he::HeaanPlaintextWrapper> out_heaan =
-            dynamic_pointer_cast<he::HeaanPlaintextWrapper>(out);
+        shared_ptr<runtime::he::HeaanPlaintextWrapper> arg0_heaan =
+            dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(arg0);
+        shared_ptr<runtime::he::HeaanPlaintextWrapper> arg1_heaan =
+            dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(arg1);
+        shared_ptr<runtime::he::HeaanPlaintextWrapper> out_heaan =
+            dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(out);
 
         if (arg0_heaan && arg1_heaan && out_heaan)
         {
             kernel::heaan::scalar_multiply(
                 arg0_heaan, arg1_heaan, out_heaan, type, he_heaan_backend);
-            out = dynamic_pointer_cast<he::HEPlaintext>(out_heaan);
+            out = dynamic_pointer_cast<runtime::he::HEPlaintext>(out_heaan);
         }
         else
         {

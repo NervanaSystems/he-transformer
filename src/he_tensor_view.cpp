@@ -15,13 +15,11 @@
 *******************************************************************************/
 
 #include <stack>
-#include <vector>
 
 #include "he_backend.hpp"
 #include "he_tensor_view.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
 #include "ngraph/descriptor/primary_tensor_view.hpp"
-#include "ngraph/runtime/tensor_view.hpp"
 
 using namespace std;
 using namespace ngraph;

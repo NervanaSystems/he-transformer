@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include "heaan_ciphertext_wrapper.hpp"
-#include "seal/seal.h"
+#include <memory>
+#include <vector>
 
 namespace ngraph
 {
@@ -33,57 +33,57 @@ namespace ngraph
 
             namespace kernel
             {
-                void add(const vector<shared_ptr<he::HECiphertext>>& arg0,
-                         const vector<shared_ptr<he::HECiphertext>>& arg1,
-                         vector<shared_ptr<he::HECiphertext>>& out,
+                void add(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
+                         const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg1,
+                         std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
                          const element::Type& type,
-                         shared_ptr<HEBackend> he_backend,
+                         std::shared_ptr<runtime::he::HEBackend> he_backend,
                          size_t count);
 
-                void add(const vector<shared_ptr<he::HECiphertext>>& arg0,
-                         const vector<shared_ptr<he::HEPlaintext>>& arg1,
-                         vector<shared_ptr<he::HECiphertext>>& out,
+                void add(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
+                         const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg1,
+                         std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
                          const element::Type& type,
-                         shared_ptr<HEBackend> he_backend,
+                         std::shared_ptr<runtime::he::HEBackend> he_backend,
                          size_t count);
 
-                void add(const vector<shared_ptr<he::HEPlaintext>>& arg0,
-                         const vector<shared_ptr<he::HECiphertext>>& arg1,
-                         vector<shared_ptr<he::HECiphertext>>& out,
+                void add(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg0,
+                         const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg1,
+                         std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
                          const element::Type& type,
-                         shared_ptr<HEBackend> he_backend,
+                         std::shared_ptr<runtime::he::HEBackend> he_backend,
                          size_t count);
 
-                void add(const vector<shared_ptr<he::HEPlaintext>>& arg0,
-                         const vector<shared_ptr<he::HEPlaintext>>& arg1,
-                         vector<shared_ptr<he::HEPlaintext>>& out,
+                void add(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg0,
+                         const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg1,
+                         std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
                          const element::Type& type,
-                         shared_ptr<HEBackend> he_backend,
+                         std::shared_ptr<runtime::he::HEBackend> he_backend,
                          size_t count);
 
-                void scalar_add(const shared_ptr<he::HECiphertext>& arg0,
-                                const shared_ptr<he::HECiphertext>& arg1,
-                                shared_ptr<he::HECiphertext>& out,
+                void scalar_add(const std::shared_ptr<runtime::he::HECiphertext>& arg0,
+                                const std::shared_ptr<runtime::he::HECiphertext>& arg1,
+                                std::shared_ptr<runtime::he::HECiphertext>& out,
                                 const element::Type& type,
-                                shared_ptr<HEBackend> he_backend);
+                                std::shared_ptr<runtime::he::HEBackend> he_backend);
 
-                void scalar_add(const shared_ptr<he::HECiphertext>& arg0,
-                                const shared_ptr<he::HEPlaintext>& arg1,
-                                shared_ptr<he::HECiphertext>& out,
+                void scalar_add(const std::shared_ptr<runtime::he::HECiphertext>& arg0,
+                                const std::shared_ptr<runtime::he::HEPlaintext>& arg1,
+                                std::shared_ptr<runtime::he::HECiphertext>& out,
                                 const element::Type& type,
-                                shared_ptr<HEBackend> he_backend);
+                                std::shared_ptr<runtime::he::HEBackend> he_backend);
 
-                void scalar_add(const shared_ptr<he::HEPlaintext>& arg0,
-                                const shared_ptr<he::HECiphertext>& arg1,
-                                shared_ptr<he::HECiphertext>& out,
+                void scalar_add(const std::shared_ptr<runtime::he::HEPlaintext>& arg0,
+                                const std::shared_ptr<runtime::he::HECiphertext>& arg1,
+                                std::shared_ptr<runtime::he::HECiphertext>& out,
                                 const element::Type& type,
-                                shared_ptr<HEBackend> he_backend);
+                                std::shared_ptr<runtime::he::HEBackend> he_backend);
 
-                void scalar_add(const shared_ptr<he::HEPlaintext>& arg0,
-                                const shared_ptr<he::HEPlaintext>& arg1,
-                                shared_ptr<he::HEPlaintext>& out,
+                void scalar_add(const std::shared_ptr<runtime::he::HEPlaintext>& arg0,
+                                const std::shared_ptr<runtime::he::HEPlaintext>& arg1,
+                                std::shared_ptr<runtime::he::HEPlaintext>& out,
                                 const element::Type& type,
-                                shared_ptr<HEBackend> he_backend);
+                                std::shared_ptr<runtime::he::HEBackend> he_backend);
             }
         }
     }

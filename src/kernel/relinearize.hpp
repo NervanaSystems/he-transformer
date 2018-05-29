@@ -38,9 +38,9 @@ namespace ngraph
 
             namespace kernel
             {
-                void relinearize(const vector<shared_ptr<he::HECiphertext>>& arg,
-                                 vector<shared_ptr<he::HECiphertext>>& out,
-                                 shared_ptr<he_seal::HESealBackend> he_seal_backend,
+                void relinearize(const vector<shared_ptr<runtime::he::HECiphertext>>& arg,
+                                 vector<shared_ptr<runtime::he::HECiphertext>>& out,
+                                 shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend,
                                  size_t count);
             }
         }

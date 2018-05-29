@@ -14,19 +14,18 @@
 * limitations under the License.
 *******************************************************************************/
 
+#include <memory>
 #include <vector>
 
-#include "he_backend.hpp"
 #include "he_ciphertext.hpp"
 #include "kernel/concat.hpp"
 #include "ngraph/coordinate_transform.hpp"
-#include "seal/seal.h"
 
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::concat(const vector<vector<shared_ptr<he::HECiphertext>>>& args,
-                                 vector<shared_ptr<he::HECiphertext>>& out,
+void runtime::he::kernel::concat(const vector<vector<shared_ptr<runtime::he::HECiphertext>>>& args,
+                                 vector<shared_ptr<runtime::he::HECiphertext>>& out,
                                  const vector<Shape>& in_shapes,
                                  const Shape& out_shape,
                                  size_t concatenation_axis)

@@ -501,7 +501,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         shared_ptr<op::Concat> concat = dynamic_pointer_cast<op::Concat>(node);
         if (arg0_cipher != nullptr && out0_cipher != nullptr)
         {
-            vector<vector<shared_ptr<he::HECiphertext>>> in_args;
+            vector<vector<shared_ptr<runtime::he::HECiphertext>>> in_args;
             vector<Shape> in_shapes;
             for (shared_ptr<HETensorView> arg : args)
             {

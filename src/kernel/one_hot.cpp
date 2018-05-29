@@ -15,7 +15,6 @@
 *******************************************************************************/
 
 #include <cmath>
-#include <vector>
 
 #include "he_backend.hpp"
 #include "he_cipher_tensor_view.hpp"
@@ -26,28 +25,27 @@
 #include "kernel/one_hot.hpp"
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/type/element_type.hpp"
-#include "seal/seal.h"
 
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::one_hot(const vector<shared_ptr<he::HECiphertext>>& arg,
-                                  vector<shared_ptr<he::HECiphertext>>& out,
+void runtime::he::kernel::one_hot(const vector<shared_ptr<runtime::he::HECiphertext>>& arg,
+                                  vector<shared_ptr<runtime::he::HECiphertext>>& out,
                                   const Shape& in_shape,
                                   const Shape& out_shape,
                                   size_t one_hot_axis,
                                   const element::Type& type,
-                                  shared_ptr<HEBackend>& he_backend)
+                                  shared_ptr<runtime::he::HEBackend>& he_backend)
 {
-    auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(he_backend);
-    auto he_heaan_backend = dynamic_pointer_cast<he_heaan::HEHeaanBackend>(he_backend);
+    auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend);
+    auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);
     if (!he_seal_backend && !he_heaan_backend)
     {
         throw ngraph_error("One-Hot he_backend neither seal nor heaan");
     }
     // Get 0 and 1 cipher text
-    shared_ptr<he::HECiphertext> zero_ciphertext;
-    shared_ptr<he::HECiphertext> one_ciphertext;
+    shared_ptr<runtime::he::HECiphertext> zero_ciphertext;
+    shared_ptr<runtime::he::HECiphertext> one_ciphertext;
 
     if (he_seal_backend)
     {
@@ -73,18 +71,18 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<he::HECiphertext>>& ar
     CoordinateTransform input_transform(in_shape);
     for (const Coordinate& input_coord : input_transform)
     {
-        shared_ptr<he::HECiphertext> val = arg[input_transform.index(input_coord)];
+        shared_ptr<runtime::he::HECiphertext> val = arg[input_transform.index(input_coord)];
 
         // TODO: We are not allowed to decrypt! Pass in one-hot encoded inputs
-        shared_ptr<he::HEPlaintext> plain_val;
+        shared_ptr<runtime::he::HEPlaintext> plain_val;
         if (he_heaan_backend)
         {
-            plain_val = make_shared<he::HeaanPlaintextWrapper>();
+            plain_val = make_shared<runtime::he::HeaanPlaintextWrapper>();
             he_heaan_backend->decrypt(plain_val, val);
         }
         else if (he_seal_backend)
         {
-            plain_val = make_shared<he::SealPlaintextWrapper>();
+            plain_val = make_shared<runtime::he::SealPlaintextWrapper>();
             he_seal_backend->decrypt(plain_val, val);
         }
         size_t one_hot_pos;
@@ -113,10 +111,10 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<he::HECiphertext>>& ar
             {
                 he_heaan_backend->decode((void*)(&x), plain_val, type);
             }
-            if (std::abs(x - std::round(x)) > 3e-9)
+            if (abs(x - round(x)) > 3e-9)
             {
-                NGRAPH_INFO << std::abs(x - std::floor(x)) << " diff";
-                throw(std::range_error("One-hot: non-integral value in input"));
+                NGRAPH_INFO << abs(x - floor(x)) << " diff";
+                throw(range_error("One-hot: non-integral value in input"));
             }
             one_hot_pos = static_cast<size_t>(x);
         }
@@ -128,7 +126,7 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<he::HECiphertext>>& ar
 
         if (one_hot_pos >= out_shape[one_hot_axis])
         {
-            throw(std::range_error("One-hot: value is out of category range"));
+            throw(range_error("One-hot: value is out of category range"));
         }
 
         Coordinate one_hot_coord = inject(input_coord, one_hot_axis, one_hot_pos);

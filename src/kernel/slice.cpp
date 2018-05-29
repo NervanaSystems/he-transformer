@@ -14,17 +14,13 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <vector>
-
-#include "he_backend.hpp"
 #include "kernel/slice.hpp"
-#include "ngraph/coordinate_transform.hpp"
 
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::slice(const vector<shared_ptr<he::HECiphertext>>& arg,
-                                vector<shared_ptr<he::HECiphertext>>& out,
+void runtime::he::kernel::slice(const vector<shared_ptr<runtime::he::HECiphertext>>& arg,
+                                vector<shared_ptr<runtime::he::HECiphertext>>& out,
                                 const Shape& arg_shape,
                                 const Coordinate& lower_bounds,
                                 const Coordinate& upper_bounds,

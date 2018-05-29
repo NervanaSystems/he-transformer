@@ -16,8 +16,7 @@
 
 #pragma once
 
-#include "he_seal_backend.hpp"
-#include "seal_ciphertext_wrapper.hpp"
+#include <memory>
 
 namespace ngraph
 {
@@ -30,6 +29,9 @@ namespace ngraph
     {
         namespace he
         {
+            class SealCiphertextWrapper;
+            class SealPlaintextWrapper;
+
             namespace he_seal
             {
                 class HESealBackend;
@@ -39,29 +41,33 @@ namespace ngraph
             {
                 namespace seal
                 {
-                    void scalar_multiply(const shared_ptr<he::SealCiphertextWrapper>& arg0,
-                                         const shared_ptr<he::SealCiphertextWrapper>& arg1,
-                                         shared_ptr<he::SealCiphertextWrapper>& out,
-                                         const element::Type& type,
-                                         shared_ptr<he_seal::HESealBackend> he_seal_backend);
+                    void scalar_multiply(
+                        const std::shared_ptr<runtime::he::SealCiphertextWrapper>& arg0,
+                        const std::shared_ptr<runtime::he::SealCiphertextWrapper>& arg1,
+                        std::shared_ptr<runtime::he::SealCiphertextWrapper>& out,
+                        const element::Type& type,
+                        std::shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend);
 
-                    void scalar_multiply(const shared_ptr<he::SealPlaintextWrapper>& arg0,
-                                         const shared_ptr<he::SealCiphertextWrapper>& arg1,
-                                         shared_ptr<he::SealCiphertextWrapper>& out,
-                                         const element::Type& type,
-                                         shared_ptr<he_seal::HESealBackend> he_seal_backend);
+                    void scalar_multiply(
+                        const std::shared_ptr<runtime::he::SealPlaintextWrapper>& arg0,
+                        const std::shared_ptr<runtime::he::SealCiphertextWrapper>& arg1,
+                        std::shared_ptr<runtime::he::SealCiphertextWrapper>& out,
+                        const element::Type& type,
+                        std::shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend);
 
-                    void scalar_multiply(const shared_ptr<he::SealCiphertextWrapper>& arg0,
-                                         const shared_ptr<he::SealPlaintextWrapper>& arg1,
-                                         shared_ptr<he::SealCiphertextWrapper>& out,
-                                         const element::Type& type,
-                                         shared_ptr<he_seal::HESealBackend> he_seal_backend);
+                    void scalar_multiply(
+                        const std::shared_ptr<runtime::he::SealCiphertextWrapper>& arg0,
+                        const std::shared_ptr<runtime::he::SealPlaintextWrapper>& arg1,
+                        std::shared_ptr<runtime::he::SealCiphertextWrapper>& out,
+                        const element::Type& type,
+                        std::shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend);
 
-                    void scalar_multiply(const shared_ptr<he::SealPlaintextWrapper>& arg0,
-                                         const shared_ptr<he::SealPlaintextWrapper>& arg1,
-                                         shared_ptr<he::SealPlaintextWrapper>& out,
-                                         const element::Type& type,
-                                         shared_ptr<he_seal::HESealBackend> he_seal_backend);
+                    void scalar_multiply(
+                        const std::shared_ptr<runtime::he::SealPlaintextWrapper>& arg0,
+                        const std::shared_ptr<runtime::he::SealPlaintextWrapper>& arg1,
+                        std::shared_ptr<runtime::he::SealPlaintextWrapper>& out,
+                        const element::Type& type,
+                        std::shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend);
                 }
             }
         }
