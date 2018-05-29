@@ -58,7 +58,7 @@ namespace ngraph
                          shared_ptr<runtime::he::HEBackend> he_backend);
 
                 void dot(const vector<shared_ptr<he::HECiphertext>>& arg0,
-                         const vector<shared_ptr<he::HEPlaintext>>& arg1,
+                         const vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,
                          vector<shared_ptr<he::HECiphertext>>& out,
                          const Shape& arg0_shape,
                          const Shape& arg1_shape,
@@ -67,7 +67,7 @@ namespace ngraph
                          const element::Type& type,
                          shared_ptr<runtime::he::HEBackend> he_backend);
 
-                void dot(const vector<shared_ptr<he::HEPlaintext>>& arg0,
+                void dot(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg0,
                          const vector<shared_ptr<he::HECiphertext>>& arg1,
                          vector<shared_ptr<he::HECiphertext>>& out,
                          const Shape& arg0_shape,
@@ -77,9 +77,9 @@ namespace ngraph
                          const element::Type& type,
                          shared_ptr<runtime::he::HEBackend> he_backend);
 
-                void dot(const vector<shared_ptr<he::HEPlaintext>>& arg0,
-                         const vector<shared_ptr<he::HEPlaintext>>& arg1,
-                         vector<shared_ptr<he::HEPlaintext>>& out,
+                void dot(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg0,
+                         const vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,
+                         vector<shared_ptr<runtime::he::HEPlaintext>>& out,
                          const Shape& arg0_shape,
                          const Shape& arg1_shape,
                          const Shape& out_shape,

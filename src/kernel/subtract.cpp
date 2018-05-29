@@ -43,7 +43,7 @@ void runtime::he::kernel::subtract(const vector<shared_ptr<he::HECiphertext>>& a
 }
 
 void runtime::he::kernel::subtract(const vector<shared_ptr<he::HECiphertext>>& arg0,
-                                   const vector<shared_ptr<he::HEPlaintext>>& arg1,
+                                   const vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,
                                    vector<shared_ptr<he::HECiphertext>>& out,
                                    const element::Type& type,
                                    shared_ptr<runtime::he::HEBackend> he_backend,
@@ -56,7 +56,7 @@ void runtime::he::kernel::subtract(const vector<shared_ptr<he::HECiphertext>>& a
     }
 }
 
-void runtime::he::kernel::subtract(const vector<shared_ptr<he::HEPlaintext>>& arg0,
+void runtime::he::kernel::subtract(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg0,
                                    const vector<shared_ptr<he::HECiphertext>>& arg1,
                                    vector<shared_ptr<he::HECiphertext>>& out,
                                    const element::Type& type,
@@ -66,9 +66,9 @@ void runtime::he::kernel::subtract(const vector<shared_ptr<he::HEPlaintext>>& ar
     subtract(arg1, arg0, out, type, he_backend, count);
 }
 
-void runtime::he::kernel::subtract(const vector<shared_ptr<he::HEPlaintext>>& arg0,
-                                   const vector<shared_ptr<he::HEPlaintext>>& arg1,
-                                   vector<shared_ptr<he::HEPlaintext>>& out,
+void runtime::he::kernel::subtract(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg0,
+                                   const vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,
+                                   vector<shared_ptr<runtime::he::HEPlaintext>>& out,
                                    const element::Type& type,
                                    shared_ptr<runtime::he::HEBackend> he_backend,
                                    size_t count)
@@ -134,9 +134,9 @@ void runtime::he::kernel::scalar_subtract(const shared_ptr<he::HECiphertext>& ar
     }
 }
 
-void runtime::he::kernel::scalar_subtract(const shared_ptr<he::HEPlaintext>& arg0,
-                                          const shared_ptr<he::HEPlaintext>& arg1,
-                                          shared_ptr<he::HEPlaintext>& out,
+void runtime::he::kernel::scalar_subtract(const shared_ptr<runtime::he::HEPlaintext>& arg0,
+                                          const shared_ptr<runtime::he::HEPlaintext>& arg1,
+                                          shared_ptr<runtime::he::HEPlaintext>& out,
                                           const element::Type& type,
                                           shared_ptr<runtime::he::HEBackend> he_backend)
 {
@@ -152,7 +152,7 @@ void runtime::he::kernel::scalar_subtract(const shared_ptr<he::HEPlaintext>& arg
         if (arg0_seal && arg1_seal && out_seal)
         {
             kernel::seal::scalar_subtract(arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
-            out = dynamic_pointer_cast<he::HEPlaintext>(out_seal);
+            out = dynamic_pointer_cast<runtime::he::HEPlaintext>(out_seal);
         }
         else
         {
@@ -173,7 +173,7 @@ void runtime::he::kernel::scalar_subtract(const shared_ptr<he::HEPlaintext>& arg
         {
             kernel::heaan::scalar_subtract(
                 arg0_heaan, arg1_heaan, out_heaan, type, he_heaan_backend);
-            out = dynamic_pointer_cast<he::HEPlaintext>(out_heaan);
+            out = dynamic_pointer_cast<runtime::he::HEPlaintext>(out_heaan);
         }
         else
         {
@@ -189,7 +189,7 @@ void runtime::he::kernel::scalar_subtract(const shared_ptr<he::HEPlaintext>& arg
 }
 
 void runtime::he::kernel::scalar_subtract(const shared_ptr<he::HECiphertext>& arg0,
-                                          const shared_ptr<he::HEPlaintext>& arg1,
+                                          const shared_ptr<runtime::he::HEPlaintext>& arg1,
                                           shared_ptr<he::HECiphertext>& out,
                                           const element::Type& type,
                                           shared_ptr<runtime::he::HEBackend> he_backend)
@@ -242,7 +242,7 @@ void runtime::he::kernel::scalar_subtract(const shared_ptr<he::HECiphertext>& ar
     }
 }
 
-void runtime::he::kernel::scalar_subtract(const shared_ptr<he::HEPlaintext>& arg0,
+void runtime::he::kernel::scalar_subtract(const shared_ptr<runtime::he::HEPlaintext>& arg0,
                                           const shared_ptr<he::HECiphertext>& arg1,
                                           shared_ptr<he::HECiphertext>& out,
                                           const element::Type& type,

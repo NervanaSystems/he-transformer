@@ -40,13 +40,13 @@ namespace ngraph
                              const AxisVector& in_axis_order,
                              const Shape& out_shape);
 
-                void reshape(const std::vector<std::shared_ptr<he::HEPlaintext>>& arg,
-                             std::vector<std::shared_ptr<he::HEPlaintext>>& out,
+                void reshape(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg,
+                             std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
                              const Shape& in_shape,
                              const AxisVector& in_axis_order,
                              const Shape& out_shape);
 
-                void reshape(const std::vector<std::shared_ptr<he::HEPlaintext>>& arg0,
+                void reshape(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg0,
                              std::vector<std::shared_ptr<he::HECiphertext>>& out,
                              const Shape& in_shape,
                              const AxisVector& in_axis_order,

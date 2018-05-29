@@ -49,8 +49,8 @@ void runtime::he::kernel::reshape(const vector<shared_ptr<HECiphertext>>& arg,
     }
 }
 
-void runtime::he::kernel::reshape(const vector<shared_ptr<he::HEPlaintext>>& arg,
-                                  vector<shared_ptr<he::HEPlaintext>>& out,
+void runtime::he::kernel::reshape(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg,
+                                  vector<shared_ptr<runtime::he::HEPlaintext>>& out,
                                   const Shape& in_shape,
                                   const AxisVector& in_axis_order,
                                   const Shape& out_shape)
@@ -76,7 +76,7 @@ void runtime::he::kernel::reshape(const vector<shared_ptr<he::HEPlaintext>>& arg
     }
 }
 
-void runtime::he::kernel::reshape(const vector<shared_ptr<he::HEPlaintext>>& arg,
+void runtime::he::kernel::reshape(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg,
                                   vector<shared_ptr<he::HECiphertext>>& out,
                                   const Shape& in_shape,
                                   const AxisVector& in_axis_order,
