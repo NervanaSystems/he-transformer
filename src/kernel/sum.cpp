@@ -75,7 +75,7 @@ void runtime::he::kernel::sum(const vector<shared_ptr<runtime::he::HECiphertext>
 
         shared_ptr<runtime::he::HECiphertext> cipher_out = out[output_ind];
 
-        ngraph::runtime::he::kernel::scalar_add(
+        runtime::he::kernel::scalar_add(
             cipher_out, arg[input_transform.index(input_coord)], cipher_out, type, he_backend);
     }
 }

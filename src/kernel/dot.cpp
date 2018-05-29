@@ -28,7 +28,10 @@
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/type/element_type.hpp"
 
-void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
+using namespace std;
+using namespace ngraph;
+
+void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
                                       const vector<shared_ptr<runtime::he::HECiphertext>>& arg1,
                                       vector<shared_ptr<runtime::he::HECiphertext>>& out,
                                       const Shape& arg0_shape,
@@ -42,7 +45,7 @@ void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HECip
         arg0, arg1, out, arg0_shape, arg1_shape, out_shape, reduction_axes_count, type, he_backend);
 }
 
-void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
+void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
                                       const vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,
                                       vector<shared_ptr<runtime::he::HECiphertext>>& out,
                                       const Shape& arg0_shape,
@@ -56,7 +59,7 @@ void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HECip
         arg0, arg1, out, arg0_shape, arg1_shape, out_shape, reduction_axes_count, type, he_backend);
 }
 
-void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg0,
+void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg0,
                                       const vector<shared_ptr<runtime::he::HECiphertext>>& arg1,
                                       vector<shared_ptr<runtime::he::HECiphertext>>& out,
                                       const Shape& arg0_shape,
@@ -71,7 +74,7 @@ void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HEPla
 }
 
 // TODO: merge with template dot
-void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg0,
+void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg0,
                                       const vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,
                                       vector<shared_ptr<runtime::he::HEPlaintext>>& out,
                                       const Shape& arg0_shape,
