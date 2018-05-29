@@ -23,7 +23,6 @@
 #include "kernel/seal/subtract_seal.hpp"
 #include "kernel/subtract.hpp"
 #include "ngraph/type/element_type.hpp"
-#include "util.hpp"
 
 using namespace std;
 using namespace ngraph;

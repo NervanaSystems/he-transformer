@@ -20,7 +20,6 @@
 #include "kernel/heaan/multiply_heaan.hpp"
 #include "kernel/seal/multiply_seal.hpp"
 #include "ngraph/type/element_type.hpp"
-#include "util.hpp"
 
 using namespace std;
 using namespace ngraph;

@@ -66,10 +66,10 @@ namespace ngraph
                         create_plain_tensor(const element::Type& element_type, const Shape& shape);
 
                     // Create scalar text without memory pool
-                    std::shared_ptr<he::HECiphertext>
+                    std::shared_ptr<runtime::he::HECiphertext>
                         create_valued_ciphertext(float value,
                                                  const element::Type& element_type) const;
-                    std::shared_ptr<he::HECiphertext> create_empty_ciphertext() const;
+                    std::shared_ptr<runtime::he::HECiphertext> create_empty_ciphertext() const;
                     std::shared_ptr<he::HEPlaintext>
                         create_valued_plaintext(float value,
                                                 const element::Type& element_type) const;
@@ -100,11 +100,11 @@ namespace ngraph
                                 const std::shared_ptr<he::HEPlaintext> input,
                                 const element::Type& type) const;
 
-                    void encrypt(std::shared_ptr<he::HECiphertext> output,
+                    void encrypt(std::shared_ptr<runtime::he::HECiphertext> output,
                                  const std::shared_ptr<he::HEPlaintext> input) const;
 
                     void decrypt(std::shared_ptr<he::HEPlaintext> output,
-                                 const std::shared_ptr<he::HECiphertext> input) const;
+                                 const std::shared_ptr<runtime::he::HECiphertext> input) const;
 
                     const inline std::shared_ptr<heaan::Scheme> get_scheme() const
                     {

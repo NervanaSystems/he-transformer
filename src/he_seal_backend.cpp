@@ -170,7 +170,7 @@ shared_ptr<runtime::he::HECiphertext> runtime::he::he_seal::HESealBackend::creat
     // For encoder, we'll need to initialize the Encoder object with memory-pool, so the default
     // non-memory-pool is used here.
     const string type_name = element_type.c_type_string();
-    shared_ptr<he::HECiphertext> ciphertext = create_empty_ciphertext(pool);
+    shared_ptr<runtime::he::HECiphertext> ciphertext = create_empty_ciphertext(pool);
 
     /* if (type_name == "float")
     {
@@ -193,7 +193,7 @@ shared_ptr<runtime::he::HECiphertext> runtime::he::he_seal::HESealBackend::creat
     const seal::MemoryPoolHandle& pool) const
 {
     throw ngraph_error("HESealBackend::create_empty_ciphertext unimplemented");
-    // return make_shared<he::HECiphertext>(m_context->parms(), pool);
+    // return make_shared<runtime::he::HECiphertext>(m_context->parms(), pool);
 }
 
 shared_ptr<runtime::he::HEPlaintext> runtime::he::he_seal::HESealBackend::create_valued_plaintext(
@@ -445,7 +445,7 @@ void runtime::he::he_seal::HESealBackend::encrypt(
 }
 
 void runtime::he::he_seal::HESealBackend::decrypt(shared_ptr<runtime::he::HEPlaintext> output,
-                                                  const shared_ptr<he::HECiphertext> input) const
+                                                  const shared_ptr<runtime::he::HECiphertext> input) const
 {
     auto seal_output = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(output);
     auto seal_input = dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(input);

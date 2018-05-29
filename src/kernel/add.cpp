@@ -22,7 +22,6 @@
 #include "kernel/heaan/add_heaan.hpp"
 #include "kernel/seal/add_seal.hpp"
 #include "ngraph/type/element_type.hpp"
-#include "util.hpp"
 
 using namespace std;
 using namespace ngraph;
