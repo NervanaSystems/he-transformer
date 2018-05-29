@@ -111,10 +111,10 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<runtime::he::HECiphert
             {
                 he_heaan_backend->decode((void*)(&x), plain_val, type);
             }
-            if (std::abs(x - std::round(x)) > 3e-9)
+            if (abs(x - round(x)) > 3e-9)
             {
-                NGRAPH_INFO << std::abs(x - std::floor(x)) << " diff";
-                throw(std::range_error("One-hot: non-integral value in input"));
+                NGRAPH_INFO << abs(x - floor(x)) << " diff";
+                throw(range_error("One-hot: non-integral value in input"));
             }
             one_hot_pos = static_cast<size_t>(x);
         }
@@ -126,7 +126,7 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<runtime::he::HECiphert
 
         if (one_hot_pos >= out_shape[one_hot_axis])
         {
-            throw(std::range_error("One-hot: value is out of category range"));
+            throw(range_error("One-hot: value is out of category range"));
         }
 
         Coordinate one_hot_coord = inject(input_coord, one_hot_axis, one_hot_pos);
