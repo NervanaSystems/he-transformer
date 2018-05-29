@@ -23,7 +23,7 @@ using namespace std;
 using namespace ngraph;
 
 void runtime::he::kernel::reshape(const vector<shared_ptr<HECiphertext>>& arg,
-                                  vector<shared_ptr<he::HECiphertext>>& out,
+                                  vector<shared_ptr<runtime::he::HECiphertext>>& out,
                                   const Shape& in_shape,
                                   const AxisVector& in_axis_order,
                                   const Shape& out_shape)
@@ -77,7 +77,7 @@ void runtime::he::kernel::reshape(const vector<shared_ptr<runtime::he::HEPlainte
 }
 
 void runtime::he::kernel::reshape(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg,
-                                  vector<shared_ptr<he::HECiphertext>>& out,
+                                  vector<shared_ptr<runtime::he::HECiphertext>>& out,
                                   const Shape& in_shape,
                                   const AxisVector& in_axis_order,
                                   const Shape& out_shape,
@@ -114,7 +114,7 @@ void runtime::he::kernel::reshape(const vector<shared_ptr<runtime::he::HEPlainte
         const Coordinate& input_coord = *input_it;
         const Coordinate& output_coord = *output_it;
 
-        shared_ptr<he::HECiphertext> c = make_shared<he::HECiphertext>();
+        shared_ptr<runtime::he::HECiphertext> c = make_shared<runtime::he::HECiphertext>();
         he_backend->encrypt(c, arg[input_transform.index(input_coord)]);
         out[output_transform.index(output_coord)] = c;
     }

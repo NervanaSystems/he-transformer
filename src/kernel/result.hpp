@@ -34,8 +34,8 @@ namespace ngraph
 
             namespace kernel
             {
-                void result(const std::vector<std::shared_ptr<he::HECiphertext>>& arg,
-                            std::vector<std::shared_ptr<he::HECiphertext>>& out,
+                void result(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg,
+                            std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
                             size_t count);
 
                 void result(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg,
@@ -46,14 +46,14 @@ namespace ngraph
                             std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
                             size_t count);
 
-                void result(const std::vector<std::shared_ptr<he::HECiphertext>>& arg,
+                void result(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg,
                             std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
                             size_t count,
                             const element::Type& element_type,
                             const std::shared_ptr<runtime::he::HEBackend>& he_backend);
 
                 void result(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg,
-                            std::vector<std::shared_ptr<he::HECiphertext>>& out,
+                            std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
                             size_t count,
                             const std::shared_ptr<runtime::he::HEBackend>& he_backend);
             }

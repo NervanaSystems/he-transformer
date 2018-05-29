@@ -29,8 +29,8 @@
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::sum(const vector<shared_ptr<he::HECiphertext>>& arg,
-                              vector<shared_ptr<he::HECiphertext>>& out,
+void runtime::he::kernel::sum(const vector<shared_ptr<runtime::he::HECiphertext>>& arg,
+                              vector<shared_ptr<runtime::he::HECiphertext>>& out,
                               const Shape& in_shape,
                               const Shape& out_shape,
                               const AxisSet& reduction_axes,
@@ -73,7 +73,7 @@ void runtime::he::kernel::sum(const vector<shared_ptr<he::HECiphertext>>& arg,
         Coordinate output_coord = project(input_coord, reduction_axes);
         size_t output_ind = output_transform.index(output_coord);
 
-        shared_ptr<he::HECiphertext> cipher_out = out[output_ind];
+        shared_ptr<runtime::he::HECiphertext> cipher_out = out[output_ind];
 
         ngraph::runtime::he::kernel::scalar_add(
             cipher_out, arg[input_transform.index(input_coord)], cipher_out, type, he_backend);

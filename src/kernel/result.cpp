@@ -27,8 +27,8 @@
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::result(const vector<shared_ptr<he::HECiphertext>>& arg,
-                                 vector<shared_ptr<he::HECiphertext>>& out,
+void runtime::he::kernel::result(const vector<shared_ptr<runtime::he::HECiphertext>>& arg,
+                                 vector<shared_ptr<runtime::he::HECiphertext>>& out,
                                  size_t count)
 {
     for (size_t i = 0; i < count; ++i)
@@ -47,7 +47,7 @@ void runtime::he::kernel::result(const vector<shared_ptr<runtime::he::HEPlaintex
     }
 }
 
-void runtime::he::kernel::result(const vector<shared_ptr<he::HECiphertext>>& arg,
+void runtime::he::kernel::result(const vector<shared_ptr<runtime::he::HECiphertext>>& arg,
                                  vector<shared_ptr<runtime::he::HEPlaintext>>& out,
                                  size_t count,
                                  const element::Type& element_type,
@@ -57,7 +57,7 @@ void runtime::he::kernel::result(const vector<shared_ptr<he::HECiphertext>>& arg
 }
 
 void runtime::he::kernel::result(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg,
-                                 vector<shared_ptr<he::HECiphertext>>& out,
+                                 vector<shared_ptr<runtime::he::HECiphertext>>& out,
                                  size_t count,
                                  const shared_ptr<runtime::he::HEBackend>& he_backend)
 {

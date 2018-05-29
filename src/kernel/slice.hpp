@@ -31,8 +31,8 @@ namespace ngraph
 
             namespace kernel
             {
-                void slice(const std::vector<std::shared_ptr<he::HECiphertext>>& arg,
-                           std::vector<std::shared_ptr<he::HECiphertext>>& out,
+                void slice(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg,
+                           std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
                            const Shape& arg_shape,
                            const Coordinate& lower_bounds,
                            const Coordinate& upper_bounds,

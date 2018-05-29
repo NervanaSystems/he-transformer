@@ -32,8 +32,8 @@ namespace ngraph
             class HECiphertext;
             namespace kernel
             {
-                void sum(const vector<shared_ptr<he::HECiphertext>>& arg,
-                         vector<shared_ptr<he::HECiphertext>>& out,
+                void sum(const vector<shared_ptr<runtime::he::HECiphertext>>& arg,
+                         vector<shared_ptr<runtime::he::HECiphertext>>& out,
                          const Shape& in_shape,
                          const Shape& out_shape,
                          const AxisSet& reduction_axes,

@@ -39,7 +39,7 @@ namespace ngraph
                 template <typename S, typename T>
                 void dot_template(const vector<shared_ptr<S>>& arg0,
                                   const vector<shared_ptr<T>>& arg1,
-                                  vector<shared_ptr<he::HECiphertext>>& out,
+                                  vector<shared_ptr<runtime::he::HECiphertext>>& out,
                                   const Shape& arg0_shape,
                                   const Shape& arg1_shape,
                                   const Shape& out_shape,
@@ -47,9 +47,9 @@ namespace ngraph
                                   const element::Type& type,
                                   shared_ptr<runtime::he::HEBackend> he_backend);
 
-                void dot(const vector<shared_ptr<he::HECiphertext>>& arg0,
-                         const vector<shared_ptr<he::HECiphertext>>& arg1,
-                         vector<shared_ptr<he::HECiphertext>>& out,
+                void dot(const vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
+                         const vector<shared_ptr<runtime::he::HECiphertext>>& arg1,
+                         vector<shared_ptr<runtime::he::HECiphertext>>& out,
                          const Shape& arg0_shape,
                          const Shape& arg1_shape,
                          const Shape& out_shape,
@@ -57,9 +57,9 @@ namespace ngraph
                          const element::Type& type,
                          shared_ptr<runtime::he::HEBackend> he_backend);
 
-                void dot(const vector<shared_ptr<he::HECiphertext>>& arg0,
+                void dot(const vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
                          const vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,
-                         vector<shared_ptr<he::HECiphertext>>& out,
+                         vector<shared_ptr<runtime::he::HECiphertext>>& out,
                          const Shape& arg0_shape,
                          const Shape& arg1_shape,
                          const Shape& out_shape,
@@ -68,8 +68,8 @@ namespace ngraph
                          shared_ptr<runtime::he::HEBackend> he_backend);
 
                 void dot(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg0,
-                         const vector<shared_ptr<he::HECiphertext>>& arg1,
-                         vector<shared_ptr<he::HECiphertext>>& out,
+                         const vector<shared_ptr<runtime::he::HECiphertext>>& arg1,
+                         vector<shared_ptr<runtime::he::HECiphertext>>& out,
                          const Shape& arg0_shape,
                          const Shape& arg1_shape,
                          const Shape& out_shape,
@@ -94,7 +94,7 @@ namespace ngraph
 template <typename S, typename T>
 void ngraph::runtime::he::kernel::dot_template(const vector<shared_ptr<S>>& arg0,
                                                const vector<shared_ptr<T>>& arg1,
-                                               vector<shared_ptr<he::HECiphertext>>& out,
+                                               vector<shared_ptr<runtime::he::HECiphertext>>& out,
                                                const Shape& arg0_shape,
                                                const Shape& arg1_shape,
                                                const Shape& out_shape,
@@ -185,7 +185,7 @@ void ngraph::runtime::he::kernel::dot_template(const vector<shared_ptr<S>>& arg0
         std::copy(arg1_projected_coord.begin(), arg1_projected_coord.end(), out_coord_it);
 
         // Zero out to start the sum
-        std::shared_ptr<he::HECiphertext> sum;
+        std::shared_ptr<runtime::he::HECiphertext> sum;
         if (he_seal_backend)
         {
             sum = he_seal_backend->create_valued_ciphertext(0, type);
@@ -219,7 +219,7 @@ void ngraph::runtime::he::kernel::dot_template(const vector<shared_ptr<S>>& arg0
             auto arg0_text = arg0[arg0_transform.index(arg0_coord)];
             auto arg1_text = arg1[arg1_transform.index(arg1_coord)];
 
-            std::shared_ptr<he::HECiphertext> prod;
+            std::shared_ptr<runtime::he::HECiphertext> prod;
             if (he_seal_backend)
             {
                 prod = he_seal_backend->create_empty_ciphertext();
