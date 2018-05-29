@@ -51,24 +51,24 @@ namespace ngraph
                     }
                 };
 
-                void broadcast(const std::vector<std::shared_ptr<he::HECiphertext>>& arg0,
-                               std::vector<std::shared_ptr<he::HECiphertext>>& out,
+                void broadcast(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
+                               std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
                                const Shape& in_shape,
                                const Shape& out_shape,
                                const AxisSet& broadcast_axes);
 
-                void broadcast(const std::vector<std::shared_ptr<he::HEPlaintext>>& arg0,
-                               std::vector<std::shared_ptr<he::HEPlaintext>>& out,
+                void broadcast(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg0,
+                               std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
                                const Shape& in_shape,
                                const Shape& out_shape,
                                const AxisSet& broadcast_axes);
 
-                void broadcast(const std::vector<std::shared_ptr<he::HEPlaintext>>& arg0,
-                               std::vector<std::shared_ptr<he::HECiphertext>>& out,
+                void broadcast(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg0,
+                               std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
                                const Shape& in_shape,
                                const Shape& out_shape,
                                const AxisSet& broadcast_axes,
-                               std::shared_ptr<HEBackend> he_backend);
+                               std::shared_ptr<runtime::he::HEBackend> he_backend);
             }
         }
     }

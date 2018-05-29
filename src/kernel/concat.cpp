@@ -24,8 +24,8 @@
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::concat(const vector<vector<shared_ptr<he::HECiphertext>>>& args,
-                                 vector<shared_ptr<he::HECiphertext>>& out,
+void runtime::he::kernel::concat(const vector<vector<shared_ptr<runtime::he::HECiphertext>>>& args,
+                                 vector<shared_ptr<runtime::he::HECiphertext>>& out,
                                  const vector<Shape>& in_shapes,
                                  const Shape& out_shape,
                                  size_t concatenation_axis)

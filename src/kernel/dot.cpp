@@ -28,61 +28,61 @@
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/type/element_type.hpp"
 
-void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<he::HECiphertext>>& arg0,
-                                      const vector<shared_ptr<he::HECiphertext>>& arg1,
-                                      vector<shared_ptr<he::HECiphertext>>& out,
+void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
+                                      const vector<shared_ptr<runtime::he::HECiphertext>>& arg1,
+                                      vector<shared_ptr<runtime::he::HECiphertext>>& out,
                                       const Shape& arg0_shape,
                                       const Shape& arg1_shape,
                                       const Shape& out_shape,
                                       size_t reduction_axes_count,
                                       const element::Type& type,
-                                      shared_ptr<HEBackend> he_backend)
+                                      shared_ptr<runtime::he::HEBackend> he_backend)
 {
     dot_template(
         arg0, arg1, out, arg0_shape, arg1_shape, out_shape, reduction_axes_count, type, he_backend);
 }
 
-void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<he::HECiphertext>>& arg0,
-                                      const vector<shared_ptr<he::HEPlaintext>>& arg1,
-                                      vector<shared_ptr<he::HECiphertext>>& out,
+void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
+                                      const vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,
+                                      vector<shared_ptr<runtime::he::HECiphertext>>& out,
                                       const Shape& arg0_shape,
                                       const Shape& arg1_shape,
                                       const Shape& out_shape,
                                       size_t reduction_axes_count,
                                       const element::Type& type,
-                                      shared_ptr<HEBackend> he_backend)
+                                      shared_ptr<runtime::he::HEBackend> he_backend)
 {
     dot_template(
         arg0, arg1, out, arg0_shape, arg1_shape, out_shape, reduction_axes_count, type, he_backend);
 }
 
-void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<he::HEPlaintext>>& arg0,
-                                      const vector<shared_ptr<he::HECiphertext>>& arg1,
-                                      vector<shared_ptr<he::HECiphertext>>& out,
+void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg0,
+                                      const vector<shared_ptr<runtime::he::HECiphertext>>& arg1,
+                                      vector<shared_ptr<runtime::he::HECiphertext>>& out,
                                       const Shape& arg0_shape,
                                       const Shape& arg1_shape,
                                       const Shape& out_shape,
                                       size_t reduction_axes_count,
                                       const element::Type& type,
-                                      shared_ptr<HEBackend> he_backend)
+                                      shared_ptr<runtime::he::HEBackend> he_backend)
 {
     dot_template(
         arg0, arg1, out, arg0_shape, arg1_shape, out_shape, reduction_axes_count, type, he_backend);
 }
 
 // TODO: merge with template dot
-void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<he::HEPlaintext>>& arg0,
-                                      const vector<shared_ptr<he::HEPlaintext>>& arg1,
-                                      vector<shared_ptr<he::HEPlaintext>>& out,
+void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg0,
+                                      const vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,
+                                      vector<shared_ptr<runtime::he::HEPlaintext>>& out,
                                       const Shape& arg0_shape,
                                       const Shape& arg1_shape,
                                       const Shape& out_shape,
                                       size_t reduction_axes_count,
                                       const element::Type& type,
-                                      shared_ptr<HEBackend> he_backend)
+                                      shared_ptr<runtime::he::HEBackend> he_backend)
 {
-    auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(he_backend);
-    auto he_heaan_backend = dynamic_pointer_cast<he_heaan::HEHeaanBackend>(he_backend);
+    auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend);
+    auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);
     if (!he_seal_backend && !he_heaan_backend)
     {
         throw ngraph_error("Dot he_backend neither heaan nor seal;");
@@ -163,7 +163,7 @@ void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<he::HEPlaintext>>&
         std::copy(arg1_projected_coord.begin(), arg1_projected_coord.end(), out_coord_it);
 
         // Zero out to start the sum
-        shared_ptr<he::HEPlaintext> sum;
+        shared_ptr<runtime::he::HEPlaintext> sum;
         if (he_seal_backend)
         {
             sum = he_seal_backend->create_valued_plaintext(0., type); // TODO: enable pool
@@ -195,7 +195,7 @@ void ngraph::runtime::he::kernel::dot(const vector<shared_ptr<he::HEPlaintext>>&
             auto arg0_text = arg0[arg0_transform.index(arg0_coord)];
             auto arg1_text = arg1[arg1_transform.index(arg1_coord)];
 
-            std::shared_ptr<he::HEPlaintext> prod;
+            std::shared_ptr<runtime::he::HEPlaintext> prod;
 
             if (he_seal_backend)
             {

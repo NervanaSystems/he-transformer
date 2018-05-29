@@ -29,13 +29,13 @@
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::one_hot(const vector<shared_ptr<he::HECiphertext>>& arg,
-                                  vector<shared_ptr<he::HECiphertext>>& out,
+void runtime::he::kernel::one_hot(const vector<shared_ptr<runtime::he::HECiphertext>>& arg,
+                                  vector<shared_ptr<runtime::he::HECiphertext>>& out,
                                   const Shape& in_shape,
                                   const Shape& out_shape,
                                   size_t one_hot_axis,
                                   const element::Type& type,
-                                  shared_ptr<HEBackend>& he_backend)
+                                  shared_ptr<runtime::he::HEBackend>& he_backend)
 {
     auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(he_backend);
     auto he_heaan_backend = dynamic_pointer_cast<he_heaan::HEHeaanBackend>(he_backend);
@@ -44,8 +44,8 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<he::HECiphertext>>& ar
         throw ngraph_error("One-Hot he_backend neither seal nor heaan");
     }
     // Get 0 and 1 cipher text
-    shared_ptr<he::HECiphertext> zero_ciphertext;
-    shared_ptr<he::HECiphertext> one_ciphertext;
+    shared_ptr<runtime::he::HECiphertext> zero_ciphertext;
+    shared_ptr<runtime::he::HECiphertext> one_ciphertext;
 
     if (he_seal_backend)
     {
@@ -71,10 +71,10 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<he::HECiphertext>>& ar
     CoordinateTransform input_transform(in_shape);
     for (const Coordinate& input_coord : input_transform)
     {
-        shared_ptr<he::HECiphertext> val = arg[input_transform.index(input_coord)];
+        shared_ptr<runtime::he::HECiphertext> val = arg[input_transform.index(input_coord)];
 
         // TODO: We are not allowed to decrypt! Pass in one-hot encoded inputs
-        shared_ptr<he::HEPlaintext> plain_val;
+        shared_ptr<runtime::he::HEPlaintext> plain_val;
         if (he_heaan_backend)
         {
             plain_val = make_shared<he::HeaanPlaintextWrapper>();

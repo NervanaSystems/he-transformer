@@ -22,10 +22,10 @@
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::constant(vector<shared_ptr<he::HEPlaintext>>& out,
+void runtime::he::kernel::constant(vector<shared_ptr<runtime::he::HEPlaintext>>& out,
                                    const element::Type& type,
                                    const void* data_ptr,
-                                   shared_ptr<HEBackend> he_backend,
+                                   shared_ptr<runtime::he::HEBackend> he_backend,
                                    size_t count)
 {
     size_t type_byte_size = type.size();
@@ -34,7 +34,7 @@ void runtime::he::kernel::constant(vector<shared_ptr<he::HEPlaintext>>& out,
         throw ngraph_error("out.size() != count for constant op");
     }
 
-    if (auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(he_backend))
+    if (auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
     {
         for (size_t i = 0; i < count; ++i)
         {
@@ -42,7 +42,7 @@ void runtime::he::kernel::constant(vector<shared_ptr<he::HEPlaintext>>& out,
             he_seal_backend->encode(out[i], src_with_offset, type);
         }
     }
-    else if (auto he_heaan_backend = dynamic_pointer_cast<he_heaan::HEHeaanBackend>(he_backend))
+    else if (auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
     {
         for (size_t i = 0; i < count; ++i)
         {

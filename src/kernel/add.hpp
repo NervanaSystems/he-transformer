@@ -33,7 +33,7 @@ namespace ngraph
 
             namespace kernel
             {
-                void add(const std::vector<std::shared_ptr<he::HECiphertext>>& arg0,
+                void add(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
                          const std::vector<std::shared_ptr<he::HECiphertext>>& arg1,
                          std::vector<std::shared_ptr<he::HECiphertext>>& out,
                          const element::Type& type,

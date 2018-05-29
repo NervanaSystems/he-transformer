@@ -45,7 +45,7 @@ namespace ngraph
                                   const Shape& out_shape,
                                   size_t reduction_axes_count,
                                   const element::Type& type,
-                                  shared_ptr<HEBackend> he_backend);
+                                  shared_ptr<runtime::he::HEBackend> he_backend);
 
                 void dot(const vector<shared_ptr<he::HECiphertext>>& arg0,
                          const vector<shared_ptr<he::HECiphertext>>& arg1,
@@ -55,7 +55,7 @@ namespace ngraph
                          const Shape& out_shape,
                          size_t reduction_axes_count,
                          const element::Type& type,
-                         shared_ptr<HEBackend> he_backend);
+                         shared_ptr<runtime::he::HEBackend> he_backend);
 
                 void dot(const vector<shared_ptr<he::HECiphertext>>& arg0,
                          const vector<shared_ptr<he::HEPlaintext>>& arg1,
@@ -65,7 +65,7 @@ namespace ngraph
                          const Shape& out_shape,
                          size_t reduction_axes_count,
                          const element::Type& type,
-                         shared_ptr<HEBackend> he_backend);
+                         shared_ptr<runtime::he::HEBackend> he_backend);
 
                 void dot(const vector<shared_ptr<he::HEPlaintext>>& arg0,
                          const vector<shared_ptr<he::HECiphertext>>& arg1,
@@ -75,7 +75,7 @@ namespace ngraph
                          const Shape& out_shape,
                          size_t reduction_axes_count,
                          const element::Type& type,
-                         shared_ptr<HEBackend> he_backend);
+                         shared_ptr<runtime::he::HEBackend> he_backend);
 
                 void dot(const vector<shared_ptr<he::HEPlaintext>>& arg0,
                          const vector<shared_ptr<he::HEPlaintext>>& arg1,
@@ -85,7 +85,7 @@ namespace ngraph
                          const Shape& out_shape,
                          size_t reduction_axes_count,
                          const element::Type& type,
-                         shared_ptr<HEBackend> he_backend);
+                         shared_ptr<runtime::he::HEBackend> he_backend);
             }
         }
     }
@@ -100,7 +100,7 @@ void ngraph::runtime::he::kernel::dot_template(const vector<shared_ptr<S>>& arg0
                                                const Shape& out_shape,
                                                size_t reduction_axes_count,
                                                const element::Type& type,
-                                               shared_ptr<HEBackend> he_backend)
+                                               shared_ptr<runtime::he::HEBackend> he_backend)
 {
     auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(he_backend);
     auto he_heaan_backend = dynamic_pointer_cast<he_heaan::HEHeaanBackend>(he_backend);
