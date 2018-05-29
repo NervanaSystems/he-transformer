@@ -70,7 +70,7 @@ void runtime::he::kernel::heaan::scalar_multiply(
     he_heaan_backend->decode(&x, arg0, type);
     he_heaan_backend->decode(&y, arg1, type);
     float r = x * y;
-    shared_ptr<he::HEPlaintext> out_he = dynamic_pointer_cast<he::HEPlaintext>(out);
+    shared_ptr<runtime::he::HEPlaintext> out_he = dynamic_pointer_cast<runtime::he::HEPlaintext>(out);
     he_heaan_backend->encode(out_he, &r, type);
     out = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(out_he);
 }

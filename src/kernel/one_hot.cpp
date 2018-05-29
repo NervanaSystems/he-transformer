@@ -77,12 +77,12 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<runtime::he::HECiphert
         shared_ptr<runtime::he::HEPlaintext> plain_val;
         if (he_heaan_backend)
         {
-            plain_val = make_shared<he::HeaanPlaintextWrapper>();
+            plain_val = make_shared<runtime::he::HeaanPlaintextWrapper>();
             he_heaan_backend->decrypt(plain_val, val);
         }
         else if (he_seal_backend)
         {
-            plain_val = make_shared<he::SealPlaintextWrapper>();
+            plain_val = make_shared<runtime::he::SealPlaintextWrapper>();
             he_seal_backend->decrypt(plain_val, val);
         }
         size_t one_hot_pos;

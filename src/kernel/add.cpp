@@ -86,12 +86,12 @@ void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HECiphertext>
 {
     if (auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
     {
-        shared_ptr<he::SealCiphertextWrapper> arg0_seal =
-            dynamic_pointer_cast<he::SealCiphertextWrapper>(arg0);
-        shared_ptr<he::SealCiphertextWrapper> arg1_seal =
-            dynamic_pointer_cast<he::SealCiphertextWrapper>(arg1);
-        shared_ptr<he::SealCiphertextWrapper> out_seal =
-            dynamic_pointer_cast<he::SealCiphertextWrapper>(out);
+        shared_ptr<runtime::he::SealCiphertextWrapper> arg0_seal =
+            dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(arg0);
+        shared_ptr<runtime::he::SealCiphertextWrapper> arg1_seal =
+            dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(arg1);
+        shared_ptr<runtime::he::SealCiphertextWrapper> out_seal =
+            dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(out);
 
         if (arg0_seal && arg1_seal && out_seal)
         {
@@ -106,12 +106,12 @@ void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HECiphertext>
     }
     else if (auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
     {
-        shared_ptr<he::HeaanCiphertextWrapper> arg0_heaan =
-            dynamic_pointer_cast<he::HeaanCiphertextWrapper>(arg0);
-        shared_ptr<he::HeaanCiphertextWrapper> arg1_heaan =
-            dynamic_pointer_cast<he::HeaanCiphertextWrapper>(arg1);
-        shared_ptr<he::HeaanCiphertextWrapper> out_heaan =
-            dynamic_pointer_cast<he::HeaanCiphertextWrapper>(out);
+        shared_ptr<runtime::he::HeaanCiphertextWrapper> arg0_heaan =
+            dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(arg0);
+        shared_ptr<runtime::he::HeaanCiphertextWrapper> arg1_heaan =
+            dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(arg1);
+        shared_ptr<runtime::he::HeaanCiphertextWrapper> out_heaan =
+            dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(out);
 
         if (arg0_heaan && arg1_heaan && out_heaan)
         {
@@ -140,12 +140,12 @@ void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HEPlaintext>&
 {
     if (auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
     {
-        shared_ptr<he::SealPlaintextWrapper> arg0_seal =
-            dynamic_pointer_cast<he::SealPlaintextWrapper>(arg0);
-        shared_ptr<he::SealPlaintextWrapper> arg1_seal =
-            dynamic_pointer_cast<he::SealPlaintextWrapper>(arg1);
-        shared_ptr<he::SealPlaintextWrapper> out_seal =
-            dynamic_pointer_cast<he::SealPlaintextWrapper>(out);
+        shared_ptr<runtime::he::SealPlaintextWrapper> arg0_seal =
+            dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(arg0);
+        shared_ptr<runtime::he::SealPlaintextWrapper> arg1_seal =
+            dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(arg1);
+        shared_ptr<runtime::he::SealPlaintextWrapper> out_seal =
+            dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(out);
 
         if (arg0_seal && arg1_seal && out_seal)
         {
@@ -160,12 +160,12 @@ void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HEPlaintext>&
     }
     else if (auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
     {
-        shared_ptr<he::HeaanPlaintextWrapper> arg0_heaan =
-            dynamic_pointer_cast<he::HeaanPlaintextWrapper>(arg0);
-        shared_ptr<he::HeaanPlaintextWrapper> arg1_heaan =
-            dynamic_pointer_cast<he::HeaanPlaintextWrapper>(arg1);
-        shared_ptr<he::HeaanPlaintextWrapper> out_heaan =
-            dynamic_pointer_cast<he::HeaanPlaintextWrapper>(out);
+        shared_ptr<runtime::he::HeaanPlaintextWrapper> arg0_heaan =
+            dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(arg0);
+        shared_ptr<runtime::he::HeaanPlaintextWrapper> arg1_heaan =
+            dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(arg1);
+        shared_ptr<runtime::he::HeaanPlaintextWrapper> out_heaan =
+            dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(out);
 
         if (arg0_heaan && arg1_heaan && out_heaan)
         {
@@ -192,12 +192,12 @@ void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HECiphertext>
 {
     if (auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
     {
-        shared_ptr<he::SealCiphertextWrapper> arg0_seal =
-            dynamic_pointer_cast<he::SealCiphertextWrapper>(arg0);
-        shared_ptr<he::SealPlaintextWrapper> arg1_seal =
-            dynamic_pointer_cast<he::SealPlaintextWrapper>(arg1);
-        shared_ptr<he::SealCiphertextWrapper> out_seal =
-            dynamic_pointer_cast<he::SealCiphertextWrapper>(out);
+        shared_ptr<runtime::he::SealCiphertextWrapper> arg0_seal =
+            dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(arg0);
+        shared_ptr<runtime::he::SealPlaintextWrapper> arg1_seal =
+            dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(arg1);
+        shared_ptr<runtime::he::SealCiphertextWrapper> out_seal =
+            dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(out);
 
         if (arg0_seal && arg1_seal && out_seal)
         {
@@ -212,12 +212,12 @@ void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HECiphertext>
     }
     else if (auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
     {
-        shared_ptr<he::HeaanCiphertextWrapper> arg0_heaan =
-            dynamic_pointer_cast<he::HeaanCiphertextWrapper>(arg0);
-        shared_ptr<he::HeaanPlaintextWrapper> arg1_heaan =
-            dynamic_pointer_cast<he::HeaanPlaintextWrapper>(arg1);
-        shared_ptr<he::HeaanCiphertextWrapper> out_heaan =
-            dynamic_pointer_cast<he::HeaanCiphertextWrapper>(out);
+        shared_ptr<runtime::he::HeaanCiphertextWrapper> arg0_heaan =
+            dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(arg0);
+        shared_ptr<runtime::he::HeaanPlaintextWrapper> arg1_heaan =
+            dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(arg1);
+        shared_ptr<runtime::he::HeaanCiphertextWrapper> out_heaan =
+            dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(out);
 
         if (arg0_heaan && arg1_heaan && out_heaan)
         {

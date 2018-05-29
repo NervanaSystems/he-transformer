@@ -193,7 +193,7 @@ void ngraph::runtime::he::kernel::dot_template(const vector<shared_ptr<S>>& arg0
         else if (he_heaan_backend)
         {
             sum = he_heaan_backend->create_valued_ciphertext(0, type);
-            auto tmp = dynamic_pointer_cast<he::HeaanCiphertextWrapper>(sum);
+            auto tmp = dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(sum);
             assert(tmp != nullptr);
         }
 

@@ -55,17 +55,17 @@ namespace ngraph
                 /// @param n Number of bytes to read, must be integral number of elements.
                 void read(void* p, size_t tensor_offset, size_t n) const;
 
-                inline std::vector<std::shared_ptr<he::HEPlaintext>>& get_elements()
+                inline std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& get_elements()
                 {
                     return m_plain_texts;
                 }
-                inline std::shared_ptr<he::HEPlaintext>& get_element(size_t i)
+                inline std::shared_ptr<runtime::he::HEPlaintext>& get_element(size_t i)
                 {
                     return m_plain_texts[i];
                 }
 
             private:
-                std::vector<std::shared_ptr<he::HEPlaintext>> m_plain_texts;
+                std::vector<std::shared_ptr<runtime::he::HEPlaintext>> m_plain_texts;
                 size_t m_num_elements;
             };
         }
