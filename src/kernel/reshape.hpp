@@ -51,7 +51,7 @@ namespace ngraph
                              const Shape& in_shape,
                              const AxisVector& in_axis_order,
                              const Shape& out_shape,
-                             std::shared_ptr<HEBackend> he_backend);
+                             std::shared_ptr<runtime::he::HEBackend> he_backend);
             }
         }
     }

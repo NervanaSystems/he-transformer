@@ -42,7 +42,7 @@ namespace ngraph
                              const Shape& out_shape,
                              size_t one_hot_axis,
                              const element::Type& type,
-                             std::shared_ptr<HEBackend>& he_backend);
+                             std::shared_ptr<runtime::he::HEBackend>& he_backend);
             }
         }
     }

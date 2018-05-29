@@ -35,7 +35,7 @@ void runtime::he::kernel::sum(const vector<shared_ptr<he::HECiphertext>>& arg,
                               const Shape& out_shape,
                               const AxisSet& reduction_axes,
                               const element::Type& type,
-                              shared_ptr<HEBackend> he_backend)
+                              shared_ptr<runtime::he::HEBackend> he_backend)
 {
     auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(he_backend);
     auto he_heaan_backend = dynamic_pointer_cast<he_heaan::HEHeaanBackend>(he_backend);

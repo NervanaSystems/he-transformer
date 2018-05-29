@@ -38,7 +38,7 @@ namespace ngraph
                          const Shape& out_shape,
                          const AxisSet& reduction_axes,
                          const element::Type& type,
-                         shared_ptr<HEBackend> he_backend);
+                         shared_ptr<runtime::he::HEBackend> he_backend);
             }
         }
     }
