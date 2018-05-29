@@ -22,11 +22,11 @@
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::heaan::scalar_add(const shared_ptr<he::HeaanCiphertextWrapper>& arg0,
-                                            const shared_ptr<he::HeaanCiphertextWrapper>& arg1,
-                                            shared_ptr<he::HeaanCiphertextWrapper>& out,
+void runtime::he::kernel::heaan::scalar_add(const shared_ptr<runtime::he::HeaanCiphertextWrapper>& arg0,
+                                            const shared_ptr<runtime::he::HeaanCiphertextWrapper>& arg1,
+                                            shared_ptr<runtime::he::HeaanCiphertextWrapper>& out,
                                             const element::Type& type,
-                                            shared_ptr<he_heaan::HEHeaanBackend> he_heaan_backend)
+                                            shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
 {
     if (out == arg0) // TOOD: Discover why this is needed? (dot.cpp needs this)
     {
@@ -40,11 +40,11 @@ void runtime::he::kernel::heaan::scalar_add(const shared_ptr<he::HeaanCiphertext
     }
 }
 
-void runtime::he::kernel::heaan::scalar_add(const shared_ptr<he::HeaanPlaintextWrapper>& arg0,
-                                            const shared_ptr<he::HeaanPlaintextWrapper>& arg1,
-                                            shared_ptr<he::HeaanPlaintextWrapper>& out,
+void runtime::he::kernel::heaan::scalar_add(const shared_ptr<runtime::he::HeaanPlaintextWrapper>& arg0,
+                                            const shared_ptr<runtime::he::HeaanPlaintextWrapper>& arg1,
+                                            shared_ptr<runtime::he::HeaanPlaintextWrapper>& out,
                                             const element::Type& type,
-                                            shared_ptr<he_heaan::HEHeaanBackend> he_heaan_backend)
+                                            shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
 {
     float x, y;
     he_heaan_backend->decode(&x, arg0, type);
@@ -52,24 +52,24 @@ void runtime::he::kernel::heaan::scalar_add(const shared_ptr<he::HeaanPlaintextW
     float r = x + y;
     shared_ptr<he::HEPlaintext> out_he = dynamic_pointer_cast<he::HEPlaintext>(out);
     he_heaan_backend->encode(out_he, &r, type);
-    out = dynamic_pointer_cast<he::HeaanPlaintextWrapper>(out_he);
+    out = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(out_he);
 }
 
-void runtime::he::kernel::heaan::scalar_add(const shared_ptr<he::HeaanCiphertextWrapper>& arg0,
-                                            const shared_ptr<he::HeaanPlaintextWrapper>& arg1,
-                                            shared_ptr<he::HeaanCiphertextWrapper>& out,
+void runtime::he::kernel::heaan::scalar_add(const shared_ptr<runtime::he::HeaanCiphertextWrapper>& arg0,
+                                            const shared_ptr<runtime::he::HeaanPlaintextWrapper>& arg1,
+                                            shared_ptr<runtime::he::HeaanCiphertextWrapper>& out,
                                             const element::Type& type,
-                                            shared_ptr<he_heaan::HEHeaanBackend> he_heaan_backend)
+                                            shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
 {
     out->m_ciphertext =
         he_heaan_backend->get_scheme()->addConst(arg0->m_ciphertext, arg1->m_plaintext);
 }
 
-void runtime::he::kernel::heaan::scalar_add(const shared_ptr<he::HeaanPlaintextWrapper>& arg0,
-                                            const shared_ptr<he::HeaanCiphertextWrapper>& arg1,
-                                            shared_ptr<he::HeaanCiphertextWrapper>& out,
+void runtime::he::kernel::heaan::scalar_add(const shared_ptr<runtime::he::HeaanPlaintextWrapper>& arg0,
+                                            const shared_ptr<runtime::he::HeaanCiphertextWrapper>& arg1,
+                                            shared_ptr<runtime::he::HeaanCiphertextWrapper>& out,
                                             const element::Type& type,
-                                            shared_ptr<he_heaan::HEHeaanBackend> he_heaan_backend)
+                                            shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
 {
     scalar_add(arg1, arg0, out, type, he_heaan_backend);
 }

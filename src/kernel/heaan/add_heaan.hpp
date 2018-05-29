@@ -39,29 +39,29 @@ namespace ngraph
             {
                 namespace heaan
                 {
-                    void scalar_add(const std::shared_ptr<he::HeaanCiphertextWrapper>& arg0,
-                                    const std::shared_ptr<he::HeaanCiphertextWrapper>& arg1,
-                                    std::shared_ptr<he::HeaanCiphertextWrapper>& out,
+                    void scalar_add(const std::shared_ptr<runtime::he::HeaanCiphertextWrapper>& arg0,
+                                    const std::shared_ptr<runtime::he::HeaanCiphertextWrapper>& arg1,
+                                    std::shared_ptr<runtime::he::HeaanCiphertextWrapper>& out,
                                     const element::Type& type,
-                                    std::shared_ptr<he_heaan::HEHeaanBackend> he_heaan_backend);
+                                    std::shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend);
 
-                    void scalar_add(const std::shared_ptr<he::HeaanCiphertextWrapper>& arg0,
-                                    const std::shared_ptr<he::HeaanPlaintextWrapper>& arg1,
-                                    std::shared_ptr<he::HeaanCiphertextWrapper>& out,
+                    void scalar_add(const std::shared_ptr<runtime::he::HeaanCiphertextWrapper>& arg0,
+                                    const std::shared_ptr<runtime::he::HeaanPlaintextWrapper>& arg1,
+                                    std::shared_ptr<runtime::he::HeaanCiphertextWrapper>& out,
                                     const element::Type& type,
-                                    std::shared_ptr<he_heaan::HEHeaanBackend> he_heaan_backend);
+                                    std::shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend);
 
-                    void scalar_add(const std::shared_ptr<he::HeaanPlaintextWrapper>& arg0,
-                                    const std::shared_ptr<he::HeaanCiphertextWrapper>& arg1,
-                                    std::shared_ptr<he::HeaanCiphertextWrapper>& out,
+                    void scalar_add(const std::shared_ptr<runtime::he::HeaanPlaintextWrapper>& arg0,
+                                    const std::shared_ptr<runtime::he::HeaanCiphertextWrapper>& arg1,
+                                    std::shared_ptr<runtime::he::HeaanCiphertextWrapper>& out,
                                     const element::Type& type,
-                                    std::shared_ptr<he_heaan::HEHeaanBackend> he_heaan_backend);
+                                    std::shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend);
 
-                    void scalar_add(const std::shared_ptr<he::HeaanPlaintextWrapper>& arg0,
-                                    const std::shared_ptr<he::HeaanPlaintextWrapper>& arg1,
-                                    std::shared_ptr<he::HeaanPlaintextWrapper>& out,
+                    void scalar_add(const std::shared_ptr<runtime::he::HeaanPlaintextWrapper>& arg0,
+                                    const std::shared_ptr<runtime::he::HeaanPlaintextWrapper>& arg1,
+                                    std::shared_ptr<runtime::he::HeaanPlaintextWrapper>& out,
                                     const element::Type& type,
-                                    std::shared_ptr<he_heaan::HEHeaanBackend> he_heaan_backend);
+                                    std::shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend);
                 }
             }
         }
