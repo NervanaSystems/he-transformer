@@ -16,8 +16,11 @@
 
 #pragma once
 
+#include <memory>
+#include <vector>
+
+#include "ngraph/axis_vector.hpp"
 #include "ngraph/coordinate_transform.hpp"
-#include "seal/seal.h"
 
 namespace ngraph
 {
@@ -26,27 +29,29 @@ namespace ngraph
         namespace he
         {
             class HEBackend;
+            class HECiphertext;
+            class HEPlaintext;
 
             namespace kernel
             {
-                void reshape(const vector<shared_ptr<he::HECiphertext>>& arg,
-                             vector<shared_ptr<he::HECiphertext>>& out,
+                void reshape(const std::vector<std::shared_ptr<HECiphertext>>& arg,
+                             std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
                              const Shape& in_shape,
                              const AxisVector& in_axis_order,
                              const Shape& out_shape);
 
-                void reshape(const vector<shared_ptr<he::HEPlaintext>>& arg,
-                             vector<shared_ptr<he::HEPlaintext>>& out,
+                void reshape(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg,
+                             std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
                              const Shape& in_shape,
                              const AxisVector& in_axis_order,
                              const Shape& out_shape);
 
-                void reshape(const vector<shared_ptr<he::HEPlaintext>>& arg0,
-                             vector<shared_ptr<he::HECiphertext>>& out,
+                void reshape(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg0,
+                             std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
                              const Shape& in_shape,
                              const AxisVector& in_axis_order,
                              const Shape& out_shape,
-                             shared_ptr<HEBackend> he_backend);
+                             std::shared_ptr<runtime::he::HEBackend> he_backend);
             }
         }
     }

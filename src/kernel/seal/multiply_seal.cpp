@@ -14,32 +14,29 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <vector>
-
-#include "he_backend.hpp"
-#include "he_seal_backend.hpp"
 #include "kernel/seal/multiply_seal.hpp"
-#include "ngraph/type/element_type.hpp"
-#include "seal/seal.h"
+#include "he_seal_backend.hpp"
 
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::seal::scalar_multiply(const shared_ptr<he::SealCiphertextWrapper>& arg0,
-                                                const shared_ptr<he::SealCiphertextWrapper>& arg1,
-                                                shared_ptr<he::SealCiphertextWrapper>& out,
-                                                const element::Type& type,
-                                                shared_ptr<he_seal::HESealBackend> he_seal_backend)
+void runtime::he::kernel::seal::scalar_multiply(
+    const shared_ptr<runtime::he::SealCiphertextWrapper>& arg0,
+    const shared_ptr<runtime::he::SealCiphertextWrapper>& arg1,
+    shared_ptr<runtime::he::SealCiphertextWrapper>& out,
+    const element::Type& type,
+    shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend)
 {
     he_seal_backend->get_evaluator()->multiply(
         arg0->m_ciphertext, arg1->m_ciphertext, out->m_ciphertext);
 }
 
-void runtime::he::kernel::seal::scalar_multiply(const shared_ptr<he::SealCiphertextWrapper>& arg0,
-                                                const shared_ptr<he::SealPlaintextWrapper>& arg1,
-                                                shared_ptr<he::SealCiphertextWrapper>& out,
-                                                const element::Type& type,
-                                                shared_ptr<he_seal::HESealBackend> he_seal_backend)
+void runtime::he::kernel::seal::scalar_multiply(
+    const shared_ptr<runtime::he::SealCiphertextWrapper>& arg0,
+    const shared_ptr<runtime::he::SealPlaintextWrapper>& arg1,
+    shared_ptr<runtime::he::SealCiphertextWrapper>& out,
+    const element::Type& type,
+    shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend)
 {
     const string type_name = type.c_type_string();
     if (type_name == "float")
@@ -58,20 +55,22 @@ void runtime::he::kernel::seal::scalar_multiply(const shared_ptr<he::SealCiphert
     }
 }
 
-void runtime::he::kernel::seal::scalar_multiply(const shared_ptr<he::SealPlaintextWrapper>& arg0,
-                                                const shared_ptr<he::SealCiphertextWrapper>& arg1,
-                                                shared_ptr<he::SealCiphertextWrapper>& out,
-                                                const element::Type& type,
-                                                shared_ptr<he_seal::HESealBackend> he_seal_backend)
+void runtime::he::kernel::seal::scalar_multiply(
+    const shared_ptr<runtime::he::SealPlaintextWrapper>& arg0,
+    const shared_ptr<runtime::he::SealCiphertextWrapper>& arg1,
+    shared_ptr<runtime::he::SealCiphertextWrapper>& out,
+    const element::Type& type,
+    shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend)
 {
     scalar_multiply(arg1, arg0, out, type, he_seal_backend);
 }
 
-void runtime::he::kernel::seal::scalar_multiply(const shared_ptr<he::SealPlaintextWrapper>& arg0,
-                                                const shared_ptr<he::SealPlaintextWrapper>& arg1,
-                                                shared_ptr<he::SealPlaintextWrapper>& out,
-                                                const element::Type& type,
-                                                shared_ptr<he_seal::HESealBackend> he_seal_backend)
+void runtime::he::kernel::seal::scalar_multiply(
+    const shared_ptr<runtime::he::SealPlaintextWrapper>& arg0,
+    const shared_ptr<runtime::he::SealPlaintextWrapper>& arg1,
+    shared_ptr<runtime::he::SealPlaintextWrapper>& out,
+    const element::Type& type,
+    shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend)
 {
     const string type_name = type.c_type_string();
     if (type_name != "float")
@@ -83,7 +82,8 @@ void runtime::he::kernel::seal::scalar_multiply(const shared_ptr<he::SealPlainte
     he_seal_backend->decode(&x, arg0, type);
     he_seal_backend->decode(&y, arg1, type);
     float r = x * y;
-    shared_ptr<he::HEPlaintext> out_he = dynamic_pointer_cast<he::HEPlaintext>(out);
+    shared_ptr<runtime::he::HEPlaintext> out_he =
+        dynamic_pointer_cast<runtime::he::HEPlaintext>(out);
     he_seal_backend->encode(out_he, &r, type);
-    out = dynamic_pointer_cast<he::SealPlaintextWrapper>(out_he);
+    out = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(out_he);
 }

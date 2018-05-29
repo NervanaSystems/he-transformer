@@ -25,21 +25,20 @@
 #include "he_seal_backend.hpp"
 #include "kernel/add.hpp"
 #include "kernel/sum.hpp"
-#include "seal/seal.h"
 
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::sum(const vector<shared_ptr<he::HECiphertext>>& arg,
-                              vector<shared_ptr<he::HECiphertext>>& out,
+void runtime::he::kernel::sum(const vector<shared_ptr<runtime::he::HECiphertext>>& arg,
+                              vector<shared_ptr<runtime::he::HECiphertext>>& out,
                               const Shape& in_shape,
                               const Shape& out_shape,
                               const AxisSet& reduction_axes,
                               const element::Type& type,
-                              shared_ptr<HEBackend> he_backend)
+                              shared_ptr<runtime::he::HEBackend> he_backend)
 {
-    auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(he_backend);
-    auto he_heaan_backend = dynamic_pointer_cast<he_heaan::HEHeaanBackend>(he_backend);
+    auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend);
+    auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);
     if (!he_seal_backend && !he_heaan_backend)
     {
         throw ngraph_error("Sum he_backend is neither heaan nor seal");
@@ -74,9 +73,9 @@ void runtime::he::kernel::sum(const vector<shared_ptr<he::HECiphertext>>& arg,
         Coordinate output_coord = project(input_coord, reduction_axes);
         size_t output_ind = output_transform.index(output_coord);
 
-        shared_ptr<he::HECiphertext> cipher_out = out[output_ind];
+        shared_ptr<runtime::he::HECiphertext> cipher_out = out[output_ind];
 
-        ngraph::runtime::he::kernel::scalar_add(
+        runtime::he::kernel::scalar_add(
             cipher_out, arg[input_transform.index(input_coord)], cipher_out, type, he_backend);
     }
 }

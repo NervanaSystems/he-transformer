@@ -18,7 +18,6 @@
 
 #include "he_seal_parameter.hpp"
 #include "ngraph/except.hpp"
-#include "seal/seal.h"
 
 using namespace ngraph;
 using namespace std;

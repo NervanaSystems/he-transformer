@@ -53,9 +53,9 @@ namespace ngraph
                     ~HESealBackend();
 
                     void assert_valid_seal_parameter(
-                        const std::shared_ptr<runtime::he::HESealParameter> sp);
-                    shared_ptr<seal::SEALContext>
-                        make_seal_context(const std::shared_ptr<runtime::he::HESealParameter> sp);
+                        const std::shared_ptr<runtime::he::HESealParameter> sp) const;
+                    shared_ptr<seal::SEALContext> make_seal_context(
+                        const std::shared_ptr<runtime::he::HESealParameter> sp) const;
 
                     std::shared_ptr<runtime::TensorView>
                         create_tensor(const element::Type& element_type,
@@ -70,28 +70,28 @@ namespace ngraph
                         create_plain_tensor(const element::Type& element_type, const Shape& shape);
 
                     // Create scalar text with memory pool
-                    std::shared_ptr<he::HECiphertext>
+                    std::shared_ptr<runtime::he::HECiphertext>
                         create_valued_ciphertext(float value,
                                                  const element::Type& element_type,
                                                  const seal::MemoryPoolHandle& pool) const;
-                    std::shared_ptr<he::HECiphertext>
+                    std::shared_ptr<runtime::he::HECiphertext>
                         create_empty_ciphertext(const seal::MemoryPoolHandle& pool) const;
-                    std::shared_ptr<he::HEPlaintext>
+                    std::shared_ptr<runtime::he::HEPlaintext>
                         create_valued_plaintext(float value,
                                                 const element::Type& element_type,
                                                 const seal::MemoryPoolHandle& pool) const;
-                    std::shared_ptr<he::HEPlaintext>
+                    std::shared_ptr<runtime::he::HEPlaintext>
                         create_empty_plaintext(const seal::MemoryPoolHandle& pool) const;
 
                     // Create scalar text without memory pool
-                    std::shared_ptr<he::HECiphertext>
+                    std::shared_ptr<runtime::he::HECiphertext>
                         create_valued_ciphertext(float value,
                                                  const element::Type& element_type) const;
-                    std::shared_ptr<he::HECiphertext> create_empty_ciphertext() const;
-                    std::shared_ptr<he::HEPlaintext>
+                    std::shared_ptr<runtime::he::HECiphertext> create_empty_ciphertext() const;
+                    std::shared_ptr<runtime::he::HEPlaintext>
                         create_valued_plaintext(float value,
                                                 const element::Type& element_type) const;
-                    std::shared_ptr<he::HEPlaintext> create_empty_plaintext() const;
+                    std::shared_ptr<runtime::he::HEPlaintext> create_empty_plaintext() const;
 
                     // Create TensorView of the same value
                     std::shared_ptr<runtime::TensorView> create_valued_tensor(
@@ -110,19 +110,19 @@ namespace ngraph
 
                     void remove_compiled_function(std::shared_ptr<Function> func) override;
 
-                    void encode(shared_ptr<he::HEPlaintext>& output,
+                    void encode(shared_ptr<runtime::he::HEPlaintext>& output,
                                 const void* input,
-                                const element::Type& type);
+                                const element::Type& type) const;
 
                     void decode(void* output,
-                                const std::shared_ptr<he::HEPlaintext> input,
-                                const element::Type& type);
+                                const std::shared_ptr<runtime::he::HEPlaintext> input,
+                                const element::Type& type) const;
 
-                    void encrypt(shared_ptr<he::HECiphertext> output,
-                                 const std::shared_ptr<he::HEPlaintext> input);
+                    void encrypt(shared_ptr<runtime::he::HECiphertext> output,
+                                 const std::shared_ptr<runtime::he::HEPlaintext> input) const;
 
-                    void decrypt(std::shared_ptr<he::HEPlaintext> output,
-                                 const std::shared_ptr<he::HECiphertext> input);
+                    void decrypt(std::shared_ptr<runtime::he::HEPlaintext> output,
+                                 const std::shared_ptr<runtime::he::HECiphertext> input) const;
 
                     const inline std::shared_ptr<seal::SEALContext> get_context() const
                     {

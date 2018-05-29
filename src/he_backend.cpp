@@ -85,13 +85,13 @@ shared_ptr<runtime::he::HEPlaintext> runtime::he::HEBackend::create_empty_plaint
 }
 
 shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_valued_tensor(
-    float value, const element::Type& element_type, const Shape& shape)
+    float value, const element::Type& element_type, const Shape& shape) const
 {
     throw ngraph_error("HE create_valued_tensor unimplemented");
 }
 
 shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_valued_plain_tensor(
-    float value, const element::Type& element_type, const Shape& shape)
+    float value, const element::Type& element_type, const Shape& shape) const
 {
     throw ngraph_error("HE create_valued_plain_tensor unimplemented");
 }
@@ -141,26 +141,26 @@ void runtime::he::HEBackend::remove_compiled_function(shared_ptr<Function> func)
 
 void runtime::he::HEBackend::encode(shared_ptr<runtime::he::HEPlaintext> output,
                                     const void* input,
-                                    const element::Type& type)
+                                    const element::Type& type) const
 {
     throw ngraph_error("HEBackend encode unimplemented");
 }
 
 void runtime::he::HEBackend::decode(void* output,
                                     const runtime::he::HEPlaintext& input,
-                                    const element::Type& type)
+                                    const element::Type& type) const
 {
     throw ngraph_error("HEBackend decode unimplemented");
 }
 
 void runtime::he::HEBackend::encrypt(shared_ptr<runtime::he::HECiphertext> output,
-                                     const shared_ptr<runtime::he::HEPlaintext> input)
+                                     const shared_ptr<runtime::he::HEPlaintext> input) const
 {
     throw ngraph_error("HEBackend encrypt unimplemented");
 }
 
 void runtime::he::HEBackend::decrypt(runtime::he::HEPlaintext& output,
-                                     const runtime::he::HECiphertext& input)
+                                     const runtime::he::HECiphertext& input) const
 {
     throw ngraph_error("HEBackend decrypt unimplemented");
 }

@@ -42,12 +42,12 @@ runtime::he::HEPlainTensorView::HEPlainTensorView(const element::Type& element_t
     {
         if (auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(m_he_backend))
         {
-            m_plain_texts[i] = make_shared<he::SealPlaintextWrapper>();
+            m_plain_texts[i] = make_shared<runtime::he::SealPlaintextWrapper>();
         }
         else if (auto he_heaan_backend =
                      dynamic_pointer_cast<he_heaan::HEHeaanBackend>(m_he_backend))
         {
-            m_plain_texts[i] = make_shared<he::HeaanPlaintextWrapper>();
+            m_plain_texts[i] = make_shared<runtime::he::HeaanPlaintextWrapper>();
         }
         else
         {

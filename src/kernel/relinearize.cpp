@@ -24,10 +24,11 @@
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::relinearize(const vector<shared_ptr<he::HECiphertext>>& arg,
-                                      vector<shared_ptr<he::HECiphertext>>& out,
-                                      shared_ptr<he::he_seal::HESealBackend> he_seal_backend,
-                                      size_t count)
+void runtime::he::kernel::relinearize(
+    const vector<shared_ptr<runtime::he::HECiphertext>>& arg,
+    vector<shared_ptr<runtime::he::HECiphertext>>& out,
+    shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend,
+    size_t count)
 {
     throw ngraph_error("Relinearize not implemnted");
 // shared_ptr<seal::EvaluationKeys> ev_key = he_seal_backend->get_ev_key();

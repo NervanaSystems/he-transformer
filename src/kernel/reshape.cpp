@@ -14,20 +14,16 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <vector>
-
-#include "he_backend.hpp"
 #include "kernel/reshape.hpp"
-#include "ngraph/axis_vector.hpp"
-#include "ngraph/coordinate_transform.hpp"
-#include "seal/seal.h"
+#include "he_backend.hpp"
+#include "he_ciphertext.hpp"
+#include "he_plaintext.hpp"
 
 using namespace std;
 using namespace ngraph;
 
-// TODO: use template
-void runtime::he::kernel::reshape(const vector<shared_ptr<he::HECiphertext>>& arg,
-                                  vector<shared_ptr<he::HECiphertext>>& out,
+void runtime::he::kernel::reshape(const vector<shared_ptr<HECiphertext>>& arg,
+                                  vector<shared_ptr<runtime::he::HECiphertext>>& out,
                                   const Shape& in_shape,
                                   const AxisVector& in_axis_order,
                                   const Shape& out_shape)
@@ -53,9 +49,8 @@ void runtime::he::kernel::reshape(const vector<shared_ptr<he::HECiphertext>>& ar
     }
 }
 
-// TODO: use template
-void runtime::he::kernel::reshape(const vector<shared_ptr<he::HEPlaintext>>& arg,
-                                  vector<shared_ptr<he::HEPlaintext>>& out,
+void runtime::he::kernel::reshape(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg,
+                                  vector<shared_ptr<runtime::he::HEPlaintext>>& out,
                                   const Shape& in_shape,
                                   const AxisVector& in_axis_order,
                                   const Shape& out_shape)
@@ -81,12 +76,12 @@ void runtime::he::kernel::reshape(const vector<shared_ptr<he::HEPlaintext>>& arg
     }
 }
 
-void runtime::he::kernel::reshape(const vector<shared_ptr<he::HEPlaintext>>& arg,
-                                  vector<shared_ptr<he::HECiphertext>>& out,
+void runtime::he::kernel::reshape(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg,
+                                  vector<shared_ptr<runtime::he::HECiphertext>>& out,
                                   const Shape& in_shape,
                                   const AxisVector& in_axis_order,
                                   const Shape& out_shape,
-                                  shared_ptr<HEBackend> he_backend)
+                                  shared_ptr<runtime::he::HEBackend> he_backend)
 {
     // Unfortunately we don't yet have a constructor for CoordinateTransform that lets us pass only source_space_shape
     // and source_axis_order so we have to construct the defaults here.
@@ -104,14 +99,10 @@ void runtime::he::kernel::reshape(const vector<shared_ptr<he::HEPlaintext>>& arg
     {
         it_size++;
     }
-    NGRAPH_INFO << "reshaping size " << it_size;
 
 #pragma omp parallel for
     for (size_t i = 0; i < it_size; ++i)
     {
-#pragma omp critical
-        if (i % 100 == 0)
-            NGRAPH_INFO << i;
         // TODO: move to coordinate transform
         auto input_it = input_transform.begin();
         auto output_it = output_transform.begin();
@@ -122,14 +113,9 @@ void runtime::he::kernel::reshape(const vector<shared_ptr<he::HEPlaintext>>& arg
         }
         const Coordinate& input_coord = *input_it;
         const Coordinate& output_coord = *output_it;
-        //for (const Coordinate& input_coord : input_transform)
-        //{
-        //    const Coordinate& output_coord = *output_it;
 
-        shared_ptr<he::HECiphertext> c = make_shared<he::HECiphertext>();
+        shared_ptr<runtime::he::HECiphertext> c = make_shared<runtime::he::HECiphertext>();
         he_backend->encrypt(c, arg[input_transform.index(input_coord)]);
         out[output_transform.index(output_coord)] = c;
-
-        //++output_it;
     }
 }
