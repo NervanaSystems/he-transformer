@@ -61,14 +61,16 @@ void runtime::he::kernel::result(const vector<shared_ptr<runtime::he::HEPlaintex
                                  size_t count,
                                  const shared_ptr<runtime::he::HEBackend>& he_backend)
 {
-    if (auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
+    if (auto he_seal_backend =
+            dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
     {
         for (size_t i = 0; i < count; ++i)
         {
             he_seal_backend->encrypt(out[i], arg[i]);
         }
     }
-    else if (auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
+    else if (auto he_heaan_backend =
+                 dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
     {
         for (size_t i = 0; i < count; ++i)
         {

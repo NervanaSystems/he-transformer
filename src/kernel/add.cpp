@@ -84,7 +84,8 @@ void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HECiphertext>
                                      const element::Type& type,
                                      shared_ptr<runtime::he::HEBackend> he_backend)
 {
-    if (auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
+    if (auto he_seal_backend =
+            dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
     {
         shared_ptr<runtime::he::SealCiphertextWrapper> arg0_seal =
             dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(arg0);
@@ -104,7 +105,8 @@ void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HECiphertext>
                 "Add backend is seal, but arguments or outputs are not SealCiphertextWrapper");
         }
     }
-    else if (auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
+    else if (auto he_heaan_backend =
+                 dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
     {
         shared_ptr<runtime::he::HeaanCiphertextWrapper> arg0_heaan =
             dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(arg0);
@@ -138,7 +140,8 @@ void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HEPlaintext>&
                                      const element::Type& type,
                                      shared_ptr<runtime::he::HEBackend> he_backend)
 {
-    if (auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
+    if (auto he_seal_backend =
+            dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
     {
         shared_ptr<runtime::he::SealPlaintextWrapper> arg0_seal =
             dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(arg0);
@@ -158,7 +161,8 @@ void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HEPlaintext>&
                 "Add backend is seal, but arguments or outputs are not SealPlaintextWrapper");
         }
     }
-    else if (auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
+    else if (auto he_heaan_backend =
+                 dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
     {
         shared_ptr<runtime::he::HeaanPlaintextWrapper> arg0_heaan =
             dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(arg0);
@@ -190,7 +194,8 @@ void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HECiphertext>
                                      const element::Type& type,
                                      shared_ptr<runtime::he::HEBackend> he_backend)
 {
-    if (auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
+    if (auto he_seal_backend =
+            dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
     {
         shared_ptr<runtime::he::SealCiphertextWrapper> arg0_seal =
             dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(arg0);
@@ -210,7 +215,8 @@ void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HECiphertext>
                 "Add backend is seal, but arguments or outputs are not SealPlaintextWrapper");
         }
     }
-    else if (auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
+    else if (auto he_heaan_backend =
+                 dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
     {
         shared_ptr<runtime::he::HeaanCiphertextWrapper> arg0_heaan =
             dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(arg0);

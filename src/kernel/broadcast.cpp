@@ -29,7 +29,8 @@ void runtime::he::kernel::broadcast(const vector<shared_ptr<runtime::he::HECiphe
                                     const Shape& out_shape,
                                     const AxisSet& broadcast_axes)
 {
-    broadcast<runtime::he::HECiphertext, runtime::he::HECiphertext>(arg, out, in_shape, out_shape, broadcast_axes);
+    broadcast<runtime::he::HECiphertext, runtime::he::HECiphertext>(
+        arg, out, in_shape, out_shape, broadcast_axes);
 }
 
 void runtime::he::kernel::broadcast(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg,
@@ -38,7 +39,8 @@ void runtime::he::kernel::broadcast(const vector<shared_ptr<runtime::he::HEPlain
                                     const Shape& out_shape,
                                     const AxisSet& broadcast_axes)
 {
-    broadcast<runtime::he::HEPlaintext, runtime::he::HEPlaintext>(arg, out, in_shape, out_shape, broadcast_axes);
+    broadcast<runtime::he::HEPlaintext, runtime::he::HEPlaintext>(
+        arg, out, in_shape, out_shape, broadcast_axes);
 }
 
 void runtime::he::kernel::broadcast(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg,

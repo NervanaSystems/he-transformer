@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include <vector>
 #include <memory>
+#include <vector>
 
 #include "ngraph/coordinate_transform.hpp"
 

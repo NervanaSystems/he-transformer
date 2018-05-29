@@ -32,42 +32,42 @@ using namespace std;
 using namespace ngraph;
 
 void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
-                                      const vector<shared_ptr<runtime::he::HECiphertext>>& arg1,
-                                      vector<shared_ptr<runtime::he::HECiphertext>>& out,
-                                      const Shape& arg0_shape,
-                                      const Shape& arg1_shape,
-                                      const Shape& out_shape,
-                                      size_t reduction_axes_count,
-                                      const element::Type& type,
-                                      shared_ptr<runtime::he::HEBackend> he_backend)
+                              const vector<shared_ptr<runtime::he::HECiphertext>>& arg1,
+                              vector<shared_ptr<runtime::he::HECiphertext>>& out,
+                              const Shape& arg0_shape,
+                              const Shape& arg1_shape,
+                              const Shape& out_shape,
+                              size_t reduction_axes_count,
+                              const element::Type& type,
+                              shared_ptr<runtime::he::HEBackend> he_backend)
 {
     dot_template(
         arg0, arg1, out, arg0_shape, arg1_shape, out_shape, reduction_axes_count, type, he_backend);
 }
 
 void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
-                                      const vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,
-                                      vector<shared_ptr<runtime::he::HECiphertext>>& out,
-                                      const Shape& arg0_shape,
-                                      const Shape& arg1_shape,
-                                      const Shape& out_shape,
-                                      size_t reduction_axes_count,
-                                      const element::Type& type,
-                                      shared_ptr<runtime::he::HEBackend> he_backend)
+                              const vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,
+                              vector<shared_ptr<runtime::he::HECiphertext>>& out,
+                              const Shape& arg0_shape,
+                              const Shape& arg1_shape,
+                              const Shape& out_shape,
+                              size_t reduction_axes_count,
+                              const element::Type& type,
+                              shared_ptr<runtime::he::HEBackend> he_backend)
 {
     dot_template(
         arg0, arg1, out, arg0_shape, arg1_shape, out_shape, reduction_axes_count, type, he_backend);
 }
 
 void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg0,
-                                      const vector<shared_ptr<runtime::he::HECiphertext>>& arg1,
-                                      vector<shared_ptr<runtime::he::HECiphertext>>& out,
-                                      const Shape& arg0_shape,
-                                      const Shape& arg1_shape,
-                                      const Shape& out_shape,
-                                      size_t reduction_axes_count,
-                                      const element::Type& type,
-                                      shared_ptr<runtime::he::HEBackend> he_backend)
+                              const vector<shared_ptr<runtime::he::HECiphertext>>& arg1,
+                              vector<shared_ptr<runtime::he::HECiphertext>>& out,
+                              const Shape& arg0_shape,
+                              const Shape& arg1_shape,
+                              const Shape& out_shape,
+                              size_t reduction_axes_count,
+                              const element::Type& type,
+                              shared_ptr<runtime::he::HEBackend> he_backend)
 {
     dot_template(
         arg0, arg1, out, arg0_shape, arg1_shape, out_shape, reduction_axes_count, type, he_backend);
@@ -75,14 +75,14 @@ void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HEPlaintext>>
 
 // TODO: merge with template dot
 void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg0,
-                                      const vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,
-                                      vector<shared_ptr<runtime::he::HEPlaintext>>& out,
-                                      const Shape& arg0_shape,
-                                      const Shape& arg1_shape,
-                                      const Shape& out_shape,
-                                      size_t reduction_axes_count,
-                                      const element::Type& type,
-                                      shared_ptr<runtime::he::HEBackend> he_backend)
+                              const vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,
+                              vector<shared_ptr<runtime::he::HEPlaintext>>& out,
+                              const Shape& arg0_shape,
+                              const Shape& arg1_shape,
+                              const Shape& out_shape,
+                              size_t reduction_axes_count,
+                              const element::Type& type,
+                              shared_ptr<runtime::he::HEBackend> he_backend)
 {
     auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend);
     auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);
@@ -93,8 +93,7 @@ void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HEPlaintext>>
     // Get the sizes of the dot axes. It's easiest to pull them from arg1 because they're
     // right up front.
     Shape dot_axis_sizes(reduction_axes_count);
-    copy(
-        arg1_shape.begin(), arg1_shape.begin() + reduction_axes_count, dot_axis_sizes.begin());
+    copy(arg1_shape.begin(), arg1_shape.begin() + reduction_axes_count, dot_axis_sizes.begin());
 
     CoordinateTransform arg0_transform(arg0_shape);
     CoordinateTransform arg1_transform(arg1_shape);
@@ -109,8 +108,7 @@ void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HEPlaintext>>
         arg0_shape.begin(), arg0_shape.begin() + arg0_projected_rank, arg0_projected_shape.begin());
 
     Shape arg1_projected_shape(arg1_projected_rank);
-    copy(
-        arg1_shape.begin() + reduction_axes_count, arg1_shape.end(), arg1_projected_shape.begin());
+    copy(arg1_shape.begin() + reduction_axes_count, arg1_shape.end(), arg1_projected_shape.begin());
 
     CoordinateTransform arg0_projected_transform(arg0_projected_shape);
     CoordinateTransform arg1_projected_transform(arg1_projected_shape);

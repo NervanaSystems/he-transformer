@@ -28,7 +28,8 @@ namespace ngraph
             class HECiphertext;
             namespace kernel
             {
-                void concat(const std::vector<std::vector<std::shared_ptr<runtime::he::HECiphertext>>>& args,
+                void concat(const std::vector<
+                                std::vector<std::shared_ptr<runtime::he::HECiphertext>>>& args,
                             std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
                             const std::vector<Shape>& in_shapes,
                             const Shape& out_shape,
