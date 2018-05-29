@@ -33,12 +33,12 @@ set (HE_TEST_SRC
     #test_basics.cpp
     test_heaan.cpp
     #test_model.cpp
-    #test_mnist.cpp
+    test_mnist.cpp
     #test_noise.cpp
     #test_overflow.cpp
     test_seal.cpp
     #test_speed.cpp
-    # test_util.cpp
+    test_util.cpp
 )
 
 # This dummy target always triggers re-configure of HE_HEAAN and HE_SEAL ngraph tests

@@ -19,9 +19,7 @@
 #include <memory>
 #include <unordered_map>
 
-#include "he_ciphertext.hpp"
 #include "he_parameter.hpp"
-#include "he_plaintext.hpp"
 #include "ngraph/runtime/backend.hpp"
 
 namespace ngraph
@@ -37,9 +35,9 @@ namespace ngraph
             class HEPlainTensorView;
             class HECipherTensorView;
             class HECiphertext;
+            class HEPlaintext;
 
             class HEBackend : public runtime::Backend
-            // public std::enable_shared_from_this<HEBackend>
             {
             public:
                 HEBackend();
@@ -57,7 +55,7 @@ namespace ngraph
                 std::shared_ptr<runtime::TensorView>
                     create_plain_tensor(const element::Type& element_type, const Shape& shape);
 
-                // Create scalar text with memory pool
+                // Create scalar text
                 std::shared_ptr<he::HECiphertext>
                     create_valued_ciphertext(float value, const element::Type& element_type) const;
                 std::shared_ptr<he::HECiphertext> create_empty_ciphertext() const;

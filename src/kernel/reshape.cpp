@@ -16,11 +16,13 @@
 
 #include "kernel/reshape.hpp"
 #include "he_backend.hpp"
+#include "he_ciphertext.hpp"
+#include "he_plaintext.hpp"
 
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::reshape(const vector<shared_ptr<he::HECiphertext>>& arg,
+void runtime::he::kernel::reshape(const vector<shared_ptr<HECiphertext>>& arg,
                                   vector<shared_ptr<he::HECiphertext>>& out,
                                   const Shape& in_shape,
                                   const AxisVector& in_axis_order,

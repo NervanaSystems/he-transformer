@@ -34,7 +34,7 @@ namespace ngraph
 
             namespace kernel
             {
-                void reshape(const std::vector<std::shared_ptr<he::HECiphertext>>& arg,
+                void reshape(const std::vector<std::shared_ptr<HECiphertext>>& arg,
                              std::vector<std::shared_ptr<he::HECiphertext>>& out,
                              const Shape& in_shape,
                              const AxisVector& in_axis_order,
