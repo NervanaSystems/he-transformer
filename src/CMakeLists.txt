@@ -21,6 +21,7 @@ set (HE_SRC
     kernel/broadcast.cpp
     kernel/concat.cpp
     kernel/constant.cpp
+    kernel/convolution.cpp
     kernel/dot.cpp
     kernel/multiply.cpp
     kernel/one_hot.cpp

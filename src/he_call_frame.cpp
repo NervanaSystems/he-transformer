@@ -23,6 +23,7 @@
 #include "ngraph/op/result.hpp"
 #include "ngraph/op/slice.hpp"
 #include "ngraph/op/sum.hpp"
+#include "ngraph/op/convolution.hpp"
 
 #include "he_backend.hpp"
 #include "he_call_frame.hpp"
@@ -34,6 +35,7 @@
 #include "kernel/broadcast.hpp"
 #include "kernel/concat.hpp"
 #include "kernel/constant.hpp"
+#include "kernel/convolution.hpp"
 #include "kernel/dot.hpp"
 #include "kernel/multiply.hpp"
 #include "kernel/one_hot.hpp"
@@ -540,6 +542,60 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         else
         {
             throw ngraph_error("Constant type not supported.");
+        }
+    }
+    else if (node_op == "Convolution")
+    {
+        shared_ptr<op::Convolution> c = dynamic_pointer_cast<op::Convolution>(node);
+
+        if (arg0_cipher != nullptr && arg1_cipher != nullptr)
+        {
+            throw ngraph_error("Convolution cipher + cipher not supported");
+        }
+        else if (arg0_cipher != nullptr && arg1_plain != nullptr)
+        {
+            NGRAPH_INFO << "Convolution cipher + plain";
+            runtime::he::kernel::convolution(arg0_cipher->get_elements(),
+                    arg1_plain->get_elements(),
+                    out0_cipher->get_elements(),
+                    arg0_cipher->get_shape(),
+                    arg1_plain->get_shape(),
+                    out0_cipher->get_shape(),
+                    c->get_window_movement_strides(),
+                    c->get_window_dilation_strides(),
+                    c->get_padding_below(),
+                    c->get_padding_above(),
+                    c->get_data_dilation_strides(),
+                    0,
+                    1,
+                    1,
+                    0,
+                    0,
+                    1,
+                    false,
+                    type,
+                    m_he_backend);
+        }
+        else if (arg0_plain != nullptr && arg1_cipher != nullptr)
+        {
+            throw ngraph_error("Convolution plain + cipher not supported");
+            /* runtime::he::kernel::convolution(arg0_plain->get_elements(),
+                    arg1_cipher->get_elements(),
+                    out0_cipher->get_elements(),
+                    arg0_plain->get_shape(),
+                    arg1_cipher->get_shape(),
+                    out0_cipher->get_shape(),
+                    dot->get_reduction_axes_count(),
+                    type,
+                    m_he_backend); */
+        }
+        else if (arg0_plain != nullptr && arg1_plain != nullptr)
+        {
+            throw ngraph_error("Convolution plain + plain not supported");
+        }
+        else
+        {
+            throw ngraph_error("Dot types not supported.");
         }
     }
     else if (node_op == "Dot")

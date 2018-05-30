@@ -2271,3 +2271,123 @@ NGRAPH_TEST(${BACKEND_NAME}, create_valued_plaintext)
         EXPECT_EQ(val_decoded, val);
     }
 }
+
+struct ConvolutionBiasTestData
+{
+    size_t n{0};
+    size_t c{0};
+    size_t filter{0};
+    size_t kernel_size{0};
+    size_t w{0};
+    size_t h{0};
+    shared_ptr<runtime::TensorView> data_val;
+    shared_ptr<runtime::TensorView> weights_val;
+    shared_ptr<runtime::TensorView> bias_val;
+    shared_ptr<runtime::TensorView> result_val;
+    shared_ptr<runtime::TensorView> delta_val;
+    shared_ptr<runtime::TensorView> d_data_val;
+    shared_ptr<runtime::TensorView> d_weights_val;
+    shared_ptr<runtime::TensorView> d_bias_val;
+    vector<float> expected_result_val;
+    vector<float> expected_d_data_val;
+    vector<float> expected_d_weights_val;
+    vector<float> expected_d_bias_val;
+
+    Shape data_shape;
+    Shape weights_shape;
+    Shape bias_shape;
+    Shape result_shape;
+    shared_ptr<op::Parameter> data;
+    shared_ptr<op::Parameter> weights;
+    shared_ptr<op::Parameter> bias;
+    shared_ptr<op::Parameter> delta;
+
+    void n1c1h3w3(shared_ptr<runtime::he::he_heaan::HEHeaanBackend> backend)
+    {
+        n = 1;
+        c = 1;
+        filter = 1;
+        kernel_size = 3;
+        w = 3;
+        h = w;
+
+        data_shape = Shape{n, c, h, w};
+        data = make_shared<op::Parameter>(element::f32, data_shape);
+
+        weights_shape = Shape{filter, c, kernel_size, kernel_size};
+        weights = make_shared<op::Parameter>(element::f32, weights_shape);
+        bias_shape = Shape{filter};
+        bias = make_shared<op::Parameter>(element::f32, bias_shape);
+        result_shape = Shape{n, filter, 1, 1};
+
+        data_val = backend->create_tensor(element::f32, data_shape);
+        copy_data(data_val,
+                  vector<float>{-0.67765152f,
+                                0.10073948f,
+                                0.57595438f,
+                                -0.3469252f,
+                                -0.22134334f,
+                                -1.80471897f,
+                                -0.80642909f,
+                                1.22033095f,
+                                2.23235631f});
+        weights_val = backend->create_plain_tensor(element::f32, weights_shape);
+        copy_data(weights_val,
+                  vector<float>{0.20070229f,
+                                -0.54968649f,
+                                -0.19819015f,
+                                -0.38577855f,
+                                1.37109005f,
+                                -0.23789984f,
+                                0.14867957f,
+                                -0.49851316f,
+                                -0.84815776f});
+        bias_val = backend->create_tensor(element::f32, bias_shape);
+        copy_data(bias_val, vector<float>{0.07811152f});
+
+        result_val = backend->create_tensor(element::f32, result_shape);
+        copy_data(result_val, vector<float>{0});
+
+        /* delta = make_shared<op::Parameter>(element::f32, result_shape);
+        delta_val = backend->create_tensor(element::f32, result_shape);
+        copy_data(delta_val, vector<float>{-2.58936238f});
+
+        d_data_val = backend->create_tensor(element::f32, data_shape);
+        copy_data(d_data_val, vector<float>{0, 0, 0, 0, 0, 0, 0, 0, 0});
+
+        d_weights_val = backend->create_tensor(element::f32, weights_shape);
+        copy_data(d_weights_val, vector<float>{0, 0, 0, 0, 0, 0, 0, 0, 0});
+
+        d_bias_val = backend->create_tensor(element::f32, bias_shape);
+        copy_data(d_bias_val, vector<float>{0}); */
+
+        expected_result_val = vector<float>{-2.66747372f};
+    }
+};
+
+NGRAPH_TEST(${BACKEND_NAME}, conv_fprop_n1c1h3w3)
+{
+	auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
+			runtime::Backend::create("${BACKEND_NAME}"));
+
+    ConvolutionBiasTestData conv_test;
+    conv_test.n1c1h3w3(backend);
+
+    auto convolution = make_shared<op::Convolution>(conv_test.data, conv_test.weights);
+
+    auto f = make_shared<Function>(
+        convolution, op::ParameterVector{conv_test.data, conv_test.weights});
+
+    backend->call(
+        f, {conv_test.result_val}, {conv_test.data_val, conv_test.weights_val});
+    auto result_vec = read_vector<float>(conv_test.result_val);
+
+	for (auto elem: result_vec)
+	{
+		cout << elem << " " ;
+	}
+	cout << endl;
+    EXPECT_TRUE(
+        test::all_close(conv_test.expected_result_val, read_vector<float>(conv_test.result_val)));
+}
+
