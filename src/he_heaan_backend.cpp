@@ -23,15 +23,12 @@
 #include "ngraph/pass/manager.hpp"
 #include "ngraph/pass/visualize_tree.hpp"
 
-#include "he_backend.hpp"
 #include "he_call_frame.hpp"
 #include "he_cipher_tensor_view.hpp"
 #include "he_heaan_backend.hpp"
 #include "he_heaan_parameter.hpp"
 #include "he_plain_tensor_view.hpp"
 #include "he_tensor_view.hpp"
-#include "heaan_ciphertext_wrapper.hpp"
-#include "heaan_plaintext_wrapper.hpp"
 #include "pass/insert_relinearize.hpp"
 
 using namespace ngraph;
@@ -60,13 +57,14 @@ runtime::he::he_heaan::HEHeaanBackend::HEHeaanBackend(
 }
 
 runtime::he::he_heaan::HEHeaanBackend::HEHeaanBackend(
-    const shared_ptr<runtime::he::HEHeaanParameter> sp)
+    const shared_ptr<runtime::he::HEHeaanParameter> hp)
 {
+    assert_valid_heaan_parameter(hp);
     // Context
-    m_context = make_shared<heaan::Context>(sp->m_poly_modulus, sp->m_plain_modulus);
+    m_context = make_shared<heaan::Context>(hp->m_poly_modulus, hp->m_plain_modulus);
     print_heaan_context(*m_context);
 
-    m_log_precision = (long)sp->m_log_precision;
+    m_log_precision = (long)hp->m_log_precision;
 
     // Secret Key
     m_secret_key = make_shared<heaan::SecretKey>(m_context->logN);
@@ -83,6 +81,21 @@ runtime::he::he_heaan::HEHeaanBackend::HEHeaanBackend(
 
 runtime::he::he_heaan::HEHeaanBackend::~HEHeaanBackend()
 {
+}
+
+void runtime::he::he_heaan::HEHeaanBackend::assert_valid_heaan_parameter(
+        const shared_ptr<runtime::he::HEHeaanParameter> hp) const
+{
+
+    static const int base = 2;
+    static const int depth = 10; // TODO: find depth?
+
+    double security = 3.6 * (1 << hp->m_poly_modulus) / (depth + hp->m_plain_modulus) - 110.;
+
+    NGRAPH_INFO << "Security " << security;
+
+    // throw ngraph_error("Tmp");
+
 }
 
 shared_ptr<runtime::TensorView>

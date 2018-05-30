@@ -31,11 +31,127 @@
 using namespace std;
 using namespace ngraph;
 
+TEST_F(TestHEBackend, tf_mnist_deep_1)
+{ // TODO: generalize to multiple backends
+    shared_ptr<runtime::he::he_heaan::HEHeaanBackend> backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>( runtime::Backend::create("HE_HEAAN"));
+    // shared_ptr<runtime::he::he_seal::HESealBackend> backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(runtime::Backend::create("HE_SEAL"));
+    //
+    const string backend_type = "INTERPRETER";
+    // auto backend = runtime::Backend::create("INTERPRETER");
+    NGRAPH_INFO << "Loaded backend";
+    const string filename = "mnist_deep_simplified_batch_2";
+    const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, filename + ".js");
+    const string json_string = file_util::read_file_to_string(json_path);
+    shared_ptr<Function> f = deserialize(json_string);
+
+    // Visualize model
+    auto model_file_name = filename + string(".") + pass::VisualizeTree::get_file_ext();
+
+    unordered_map<string, vector<float>> parms;
+    parms["conv1_b"] = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "weights/conv1_b_conv1:0.txt"));
+    parms["conv1_W"] = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "weights/W_conv1:0.txt"));
+
+    parms["conv2_b"] = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "weights/conv2_b_conv2:0.txt"));
+    parms["conv2_W"] = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "weights/W_conv2:0.txt"));
+
+    parms["fc1_b"] = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "weights/fc1_b_fc1:0.txt"));
+    parms["fc1_W"] = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "weights/W_fc1:0.txt"));
+
+    parms["fc2_b"] = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "weights/fc2_b_fc2:0.txt"));
+    parms["fc2_W"] = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "weights/W_fc2:0.txt"));
+
+    parms["x"] = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "weights/x.txt"));
+
+    unordered_map<string, Shape> parm_shapes;
+    parm_shapes["conv1_W"] = Shape{5, 5, 1, 5};
+    parm_shapes["conv1_b"] = Shape{5};
+    parm_shapes["conv2_W"] = Shape{5, 5, 5, 11};
+    parm_shapes["conv2_b"] = Shape{11};
+    parm_shapes["fc1_W"] = Shape{539, 100};
+    parm_shapes["fc1_b"] = Shape{100};
+    parm_shapes["fc2_W"] = Shape{100, 10};
+    parm_shapes["fc2_b"] = Shape{10};
+    parm_shapes["x"] = Shape{2, 784};
+
+    NGRAPH_INFO << "Deserialized graph";
+    auto parameters = f->get_parameters();
+    vector<shared_ptr<runtime::TensorView>> parameter_tvs;
+    for (auto parameter : parameters)
+    {
+        auto& shape = parameter->get_shape();
+        auto& type = parameter->get_element_type();
+        auto parameter_cipher_tv = backend->create_tensor(type, shape);
+        auto parameter_tv = backend->create_tensor(type, shape);
+        auto parameter_plain_tv = backend->create_plain_tensor(type, shape);
+        bool data_input = false;
+        bool valid_shape = false;
+
+        string parm;
+
+        NGRAPH_INFO << join(shape, "x");
+
+        for (auto const& it : parm_shapes)
+        {
+            if (it.second == shape)
+            {
+                valid_shape = true;
+                parm = it.first;
+                NGRAPH_INFO << "Adding " << parm;
+                if (backend_type == "INTERPRETER")
+                {
+                    copy_data(parameter_tv, parms[parm]);
+                    parameter_tvs.push_back(parameter_tv);
+                }
+                else if (backend_type == "HE_HEAAN")
+                {
+                    if (parm == "x")
+                    {
+                        copy_data(parameter_cipher_tv, parms[parm]);
+                        parameter_tvs.push_back(parameter_cipher_tv);
+                    }
+                    else
+                    {
+                        NGRAPH_INFO << "Creating plain tv size " << shape_size(shape);
+                        copy_data(parameter_plain_tv, parms[parm]);
+                        parameter_tvs.push_back(parameter_plain_tv);
+                    }
+                }
+                else
+                {
+                    throw ngraph_error("Unknown backend type");
+                }
+            }
+        }
+        if (!valid_shape)
+        {
+            NGRAPH_INFO << "Invalid shape" << join(shape, "x");
+            throw ngraph_error("Invalid shape " + shape_size(shape));
+        }
+    }
+
+    auto results = f->get_results();
+    vector<shared_ptr<runtime::TensorView>> result_tvs;
+    for (auto result : results)
+    {
+        auto& shape = result->get_shape();
+        auto& type = result->get_element_type();
+        result_tvs.push_back(backend->create_tensor(type, shape));
+    }
+
+    NGRAPH_INFO << "calling function on " << parameter_tvs.size() << " inputs";
+    backend->call(f, result_tvs, parameter_tvs);
+    NGRAPH_INFO << "called function";
+
+    EXPECT_EQ((vector<float>{
+0.0899273, 0.110965, 0.0533864, 0.0685337, 0.0973437, 0.191139, 0.0625438, 0.0817467, 0.125587, 0.0393772, 0.0550941, 0.105483, 0.0332782, 0.0753735, 0.102445, 0.213246, 0.0803351, 0.0786155, 0.116955, 0.0446246}),
+            read_vector<float>(result_tvs[0]));
+}
+
 TEST_F(TestHEBackend, tf_mnist_const_1)
 { // TODO: generalize to multiple backends
     shared_ptr<runtime::he::he_heaan::HEHeaanBackend> backend =
         dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-            runtime::Backend::create("HE_HEAAN"));
+                runtime::Backend::create("HE_HEAAN"));
     // shared_ptr<runtime::he::he_seal::HESealBackend> backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(runtime::Backend::create("HE_SEAL"));
     NGRAPH_INFO << "Loaded backend";
     const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, "mnist_mlp_const_1_inputs.js");
@@ -69,191 +185,6 @@ TEST_F(TestHEBackend, tf_mnist_const_1)
     backend->call(f, result_tvs, parameter_tvs);
 
     EXPECT_EQ((vector<float>{2173, 944, 1151, 1723, -1674, 569, -1985, 9776, -4997, -1903}),
-              read_vector<float>(result_tvs[0]));
+            read_vector<float>(result_tvs[0]));
 }
 
-TEST_F(TestHEBackend, tf_mnist_const_1_int)
-{
-    auto backend = runtime::Backend::create("HE");
-    const string json_path =
-        file_util::path_join(HE_SERIALIZED_ZOO, "mnist_mlp_const_1_inputs_int.js");
-    const string json_string = file_util::read_file_to_string(json_path);
-    shared_ptr<Function> f = deserialize(json_string);
-
-    auto parameters = f->get_parameters();
-    vector<shared_ptr<runtime::TensorView>> parameter_tvs;
-    for (auto parameter : parameters)
-    {
-        auto& shape = parameter->get_shape();
-        auto& type = parameter->get_element_type();
-        auto parameter_tv = backend->create_tensor(type, shape);
-        NGRAPH_INFO << "created tensor of " << shape_size(shape) << " elements";
-        copy_data(parameter_tv, vector<int64_t>(shape_size(shape)));
-        parameter_tvs.push_back(parameter_tv);
-    }
-
-    auto results = f->get_results();
-    vector<shared_ptr<runtime::TensorView>> result_tvs;
-    for (auto result : results)
-    {
-        auto& shape = result->get_shape();
-        auto& type = result->get_element_type();
-        result_tvs.push_back(backend->create_tensor(type, shape));
-    }
-
-    NGRAPH_INFO << "calling function ";
-    backend->call(f, result_tvs, parameter_tvs);
-
-    EXPECT_EQ((vector<int64_t>{2173, 944, 1151, 1723, -1674, 569, -1985, 9776, -4997, -1903}),
-              read_vector<int64_t>(result_tvs[0]));
-}
-
-TEST_F(TestHEBackend, tf_mnist_const_5)
-{
-    auto backend = runtime::Backend::create("HE");
-    const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, "mnist_mlp_const_5_inputs.js");
-    const string json_string = file_util::read_file_to_string(json_path);
-    shared_ptr<Function> f = deserialize(json_string);
-
-    auto parameters = f->get_parameters();
-    vector<shared_ptr<runtime::TensorView>> parameter_tvs;
-    for (auto parameter : parameters)
-    {
-        auto& shape = parameter->get_shape();
-        auto& type = parameter->get_element_type();
-        auto parameter_tv = backend->create_tensor(type, shape);
-        NGRAPH_INFO << "created tensor of " << shape_size(shape) << " elements";
-        copy_data(parameter_tv, vector<float>(shape_size(shape)));
-        parameter_tvs.push_back(parameter_tv);
-    }
-
-    auto results = f->get_results();
-    vector<shared_ptr<runtime::TensorView>> result_tvs;
-
-    for (auto result : results)
-    {
-        auto& shape = result->get_shape();
-        auto& type = result->get_element_type();
-        result_tvs.push_back(backend->create_tensor(type, shape));
-    }
-
-    NGRAPH_INFO << "calling function ";
-    backend->call(f, result_tvs, parameter_tvs);
-
-    EXPECT_EQ(
-        (vector<float>{2173,  -115,  -4823, 12317,  1581,   944,   4236,   13188, 4436,  2140,
-                       1151,  18967, 3295,  659,    -21,    1723,  6923,   -3925, -3237, -637,
-                       -1674, -3530, 7586,  -1818,  11578,  569,   -11907, -2731, -91,   -3363,
-                       -1985, 2383,  -1781, 8035,   1183,   9776,  -4648,  620,   1244,  768,
-                       -4997, 1847,  -8089, -12449, -11285, -1903, -8727,  -1791, -4979, 3849}),
-        read_vector<float>(result_tvs[0]));
-}
-
-/* TEST_F(TestHEBackend, tf_ptb_const_1)
-{
-    shared_ptr<runtime::he::he_heaan::HEHeaanBackend> backend =
-        dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-                runtime::Backend::create("HE_HEAAN"));
-    //auto backend = runtime::Backend::create("HEAAN");
-    string model_name = "mnist_rnn_batch5_layer8_skipeven_binary";
-    const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, model_name + string(".js"));
-    const string json_string = file_util::read_file_to_string(json_path);
-    shared_ptr<Function> f = deserialize(json_string);
-
-    // Visualize model
-    auto model_file_name =
-        model_name + string(".") + pass::VisualizeTree::get_file_ext();
-
-    NGRAPH_INFO << "model file name " << model_file_name;
-    pass::Manager pass_manager;
-    pass_manager.register_pass<pass::VisualizeTree>(model_file_name);
-    pass_manager.run_passes(f);
-
-    auto parameters = f->get_parameters();
-    vector<shared_ptr<runtime::TensorView>> parameter_tvs;
-    for (auto parameter : parameters)
-    {
-        auto& shape = parameter->get_shape();
-        auto& type = parameter->get_element_type();
-        auto parameter_tv = backend->create_tensor(type, shape);
-        NGRAPH_INFO << "created tensor of " << shape_size(shape) << " elements";
-        copy_data(parameter_tv, vector<float>(shape_size(shape)));
-        parameter_tvs.push_back(parameter_tv);
-    }
-
-    auto results = f->get_results();
-    vector<shared_ptr<runtime::TensorView>> result_tvs;
-    for (auto result : results)
-    {
-        auto& shape = result->get_shape();
-        auto& type = result->get_element_type();
-        result_tvs.push_back(backend->create_tensor(type, shape));
-    }
-
-    NGRAPH_INFO << "calling function ";
-    backend->call(f, result_tvs, parameter_tvs);
-
-    auto res = read_vector<float>(result_tvs[0]);
-
-    for(auto elem : res)
-    {
-        cout << elem << " " ;
-    }
-
-    EXPECT_EQ(1, 2); // TODO: add expected results
-} */
-
-/* TEST_F(TestHEBackend, tf_mnist_rnn_const)
-{
-    auto backend = runtime::Backend::create("HE");
-    string filename = "mnist_rnn_batch2_layer8_skipeven_binary";
-    const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, filename + ".js");
-    const string json_string = file_util::read_file_to_string(json_path);
-    shared_ptr<Function> f = deserialize(json_string);
-
-    // Visualize model
-    auto model_file_name = filename + string(".") + pass::VisualizeTree::get_file_ext();
-
-    NGRAPH_INFO << "model file name " << model_file_name;
-    pass::Manager pass_manager;
-    pass_manager.register_pass<pass::VisualizeTree>(model_file_name);
-    pass_manager.run_passes(f);
-
-    auto parameters = f->get_parameters();
-    vector<shared_ptr<runtime::TensorView>> parameter_tvs;
-    for (auto parameter : parameters)
-    {
-        auto& shape = parameter->get_shape();
-        auto& type = parameter->get_element_type();
-        auto parameter_tv = backend->create_tensor(type, shape);
-        NGRAPH_INFO << "created tensor of " << shape_size(shape) << " elements";
-        copy_data(parameter_tv, vector<float>(shape_size(shape)));
-        parameter_tvs.push_back(parameter_tv);
-    }
-
-    auto results = f->get_results();
-    vector<shared_ptr<runtime::TensorView>> result_tvs;
-    for (auto result : results)
-    {
-        auto& shape = result->get_shape();
-        auto& type = result->get_element_type();
-        result_tvs.push_back(backend->create_tensor(type, shape));
-    }
-
-    NGRAPH_INFO << "calling function ";
-    backend->call(f, result_tvs, parameter_tvs);
-    NGRAPH_INFO << "num results " << result_tvs.size();
-
-    auto result = read_vector<float>(result_tvs[0]); // TODO: clean up
-    auto expect = vector<float>{
-        -7.88143, -5.8131,  -3.96331, -1.21652, -18.0735,  -8.02312, -30.0687, 13.0319,  -2.70154,
-        0.718744, 0.37304,  15.3126,  27.5812,  23.4542,   -2.33102, 7.44211,  -1.77696, 6.01429,
-        16.2065,  6.80028,  5.75904,  42.5145,  -0.780159, 2.56209,  12.7461,  22.2679,  12.6967,
-        16.0024,  17.6427,  18.5718,  29.0376,  14.2316,   11.0897,  -9.36387, 3.29604,  5.10122,
-        8.69652,  1.76425,  2.78079,  -2.29045, 11.1611,   21.6455,  13.9041,  8.51218,  65.6764,
-        17.5173,  -22.6419, 25.9811,  32.2385,  41.8058};
-    for (int i = 0; i < result.size(); ++i)
-    {
-        EXPECT_NEAR(expect[i], result[i], 0.0001);
-    }
-} */
