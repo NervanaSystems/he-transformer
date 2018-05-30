@@ -107,8 +107,10 @@ TEST_F(TestHEBackend, tf_mnist_deep_1)
                 {
                     if (parm == "x")
                     {
+                        NGRAPH_INFO << "Copying x size " << shape_size(shape);
                         copy_data(parameter_cipher_tv, parms[parm]);
                         parameter_tvs.push_back(parameter_cipher_tv);
+                        NGRAPH_INFO << "Copied x";
                     }
                     else
                     {
@@ -150,10 +152,10 @@ TEST_F(TestHEBackend, tf_mnist_deep_1)
 
 TEST_F(TestHEBackend, tf_mnist_const_1)
 { // TODO: generalize to multiple backends
-    shared_ptr<runtime::he::he_heaan::HEHeaanBackend> backend =
+    //shared_ptr<runtime::he::he_heaan::HEHeaanBackend> backend =
         dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
                 runtime::Backend::create("HE_HEAAN"));
-    // shared_ptr<runtime::he::he_seal::HESealBackend> backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(runtime::Backend::create("HE_SEAL"));
+    shared_ptr<runtime::he::he_seal::HESealBackend> backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(runtime::Backend::create("HE_SEAL"));
     NGRAPH_INFO << "Loaded backend";
     const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, "mnist_mlp_const_1_inputs.js");
     const string json_string = file_util::read_file_to_string(json_path);

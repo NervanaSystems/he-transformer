@@ -2638,34 +2638,3 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_padded_3x3_strided_unev
             .get_vector(),
         read_vector<float>(result)));
 }
-
-NGRAPH_TEST(${BACKEND_NAME}, pad_interior_1d)
-{
-    Shape shape_a{6};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
-    Shape shape_b{};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
-    Shape shape_r{16};
-    Shape padding_below{0};
-    Shape padding_above{0};
-    Shape padding_interior{2};
-    auto f = make_shared<Function>(
-        make_shared<op::Pad>(A, B, padding_below, padding_above, padding_interior),
-        op::ParameterVector{A, B});
-
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-
-    // Create some tensors for input/output
-    auto a = backend->create_tensor(element::f32, shape_a);
-    copy_data(a, test::NDArray<float, 1>({1, 2, 3, 4, 5, 6}).get_vector());
-    auto b = backend->create_tensor(element::f32, shape_b);
-    copy_data(b, vector<float>{2112});
-    auto result = backend->create_tensor(element::f32, shape_r);
-
-    backend->call(f, {result}, {a, b});
-    EXPECT_EQ((test::NDArray<float, 1>(
-                   {1, 2112, 2112, 2, 2112, 2112, 3, 2112, 2112, 4, 2112, 2112, 5, 2112, 2112, 6})
-                   .get_vector()),
-              read_vector<float>(result));
-}
-

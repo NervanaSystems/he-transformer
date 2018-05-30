@@ -100,6 +100,8 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
 #pragma omp parallel for
         for (size_t i = 0; i < num_elements_to_write; ++i)
         {
+            if (i % 100 == 0)
+                NGRAPH_INFO << i;
             const void* src_with_offset = (void*)((char*)source + i * type.size());
             size_t dst_index = dst_start_index + i;
             shared_ptr<runtime::he::HEPlaintext> p = make_shared<runtime::he::HEPlaintext>();
@@ -125,6 +127,7 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
                     "HECipherTensorView::write, he_backend is neither seal nor heaan.");
             }
         }
+        NGRAPH_INFO << "Done writing";
     }
 }
 

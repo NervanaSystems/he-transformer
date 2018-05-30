@@ -77,6 +77,7 @@ void runtime::he::kernel::convolution(
     {
         out_transform_size++;
     }
+    NGRAPH_INFO << "out_transform_size " << out_transform_size++;
 #pragma omp parallel for
     for(size_t out_coord_idx = 0; out_coord_idx < out_transform_size; ++out_coord_idx)
     {

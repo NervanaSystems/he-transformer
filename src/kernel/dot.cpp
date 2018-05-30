@@ -134,9 +134,6 @@ void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HEPlaintext>>
     for (size_t global_projected_idx = 0; global_projected_idx < global_projected_size;
          ++global_projected_idx)
     {
-        // Init thread-local memory pool for each thread
-        // seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
-
         // Compute outer and inner index
         size_t arg0_projected_idx = global_projected_idx / arg1_projected_size;
         size_t arg1_projected_idx = global_projected_idx % arg1_projected_size;
@@ -167,7 +164,7 @@ void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HEPlaintext>>
         shared_ptr<runtime::he::HEPlaintext> sum;
         if (he_seal_backend)
         {
-            sum = he_seal_backend->create_valued_plaintext(0., type); // TODO: enable pool
+            sum = he_seal_backend->create_valued_plaintext(0., type);
         }
         else if (he_heaan_backend)
         {
