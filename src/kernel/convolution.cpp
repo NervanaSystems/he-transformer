@@ -52,6 +52,7 @@ void runtime::he::kernel::convolution(
 		const element::Type& type,
 		shared_ptr<runtime::he::HEBackend> he_backend)
 {
+    // TODO: parallelize more effetively
 
 	// Comments throughout assume without loss of generality that:
 	//
@@ -65,14 +66,32 @@ void runtime::he::kernel::convolution(
 	auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);
 	if (!he_seal_backend && !he_heaan_backend)
 	{
-		throw ngraph_error("Dot he_backend neither heaan nor seal;");
+		throw ngraph_error("Convolution he_backend neither heaan nor seal.");
 	}
 
 	// At the outermost level we will walk over every output coordinate O.
 	CoordinateTransform output_transform(out_shape);
 
-	for (Coordinate out_coord : output_transform)
-	{
+    size_t out_transform_size = 0;
+    for (Coordinate out_coord : output_transform)
+    {
+        out_transform_size++;
+    }
+#pragma omp parallel for
+    for(size_t out_coord_idx = 0; out_coord_idx < out_transform_size; ++out_coord_idx)
+    {
+        // TODO: move to coordinate transform
+        auto out_coord_it = output_transform.begin();
+        for (size_t i = 0; i < out_coord_idx; ++i)
+        {
+            ++out_coord_it;
+        }
+
+        const Coordinate out_coord = *out_coord_it;
+
+
+	//for (Coordinate out_coord : output_transform)
+	//{
 		// Our output coordinate O will have the form:
 		//
 		//   (N,chan_out,i_1,...,i_n)
@@ -209,9 +228,19 @@ void runtime::he::kernel::convolution(
 				}
 			}
 
-			shared_ptr<runtime::he::HECiphertext> v = input_batch_transform.has_source_coordinate(input_batch_coord)
+			shared_ptr<runtime::he::HECiphertext> v;
+            if (he_seal_backend)
+            {
+                v = input_batch_transform.has_source_coordinate(input_batch_coord)
 				? arg0[input_batch_transform.index(input_batch_coord)]
-				: he_heaan_backend->create_valued_ciphertext(0., type);;
+				: he_seal_backend->create_valued_ciphertext(0., type);
+            }
+            else if (he_heaan_backend)
+            {
+                v = input_batch_transform.has_source_coordinate(input_batch_coord)
+                    ? arg0[input_batch_transform.index(input_batch_coord)]
+                    : he_heaan_backend->create_valued_ciphertext(0., type);
+            }
 
 			shared_ptr<runtime::he::HECiphertext> prod;
 			if (he_seal_backend)

@@ -32,6 +32,7 @@
 #include "he_tensor_view.hpp"
 #include "int_call_frame.hpp"
 #include "kernel/add.hpp"
+#include "kernel/avg_pool.hpp"
 #include "kernel/broadcast.hpp"
 #include "kernel/concat.hpp"
 #include "kernel/constant.hpp"
@@ -63,7 +64,7 @@ runtime::he::HECallFrame::HECallFrame(const shared_ptr<Function>& func,
 bool runtime::he::HECallFrame::is_cpu_check_enabled(const shared_ptr<Node>& op) const
 {
     // return op->description() != "Relinearize";
-    static unordered_set<string> cpu_check_enabled_ops{"Sum", "Add", "Dot", "Multiply"};
+    static unordered_set<string> cpu_check_enabled_ops{"Sum", "Add", "Dot", "Multiply", "Convolution", "AvgPool"};
     return cpu_check_enabled_ops.count(op->description()) != 0;
 }
 
@@ -437,26 +438,51 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         else if (arg0_plain != nullptr && arg1_cipher != nullptr)
         {
             runtime::he::kernel::add(arg0_plain->get_elements(),
-                                     arg1_cipher->get_elements(),
-                                     out0_cipher->get_elements(),
-                                     type,
-                                     m_he_backend,
-                                     out0_cipher->get_element_count());
+                    arg1_cipher->get_elements(),
+                    out0_cipher->get_elements(),
+                    type,
+                    m_he_backend,
+                    out0_cipher->get_element_count());
         }
         else if (arg0_plain != nullptr && arg1_plain != nullptr)
         {
             runtime::he::kernel::add(arg0_plain->get_elements(),
-                                     arg1_plain->get_elements(),
-                                     out0_plain->get_elements(),
-                                     type,
-                                     m_he_backend,
-                                     out0_plain->get_element_count());
+                    arg1_plain->get_elements(),
+                    out0_plain->get_elements(),
+                    type,
+                    m_he_backend,
+                    out0_plain->get_element_count());
         }
         else
         {
             throw ngraph_error("Add types not supported.");
         }
     }
+    else if (node_op == "AvgPool")
+    {
+        shared_ptr<op::AvgPool> avg_pool = dynamic_pointer_cast<op::AvgPool>(node);
+
+        if (arg0_cipher != nullptr && out0_cipher != nullptr)
+        {
+            NGRAPH_INFO << "AvgPool cipher -> cipher";
+            runtime::he::kernel::avg_pool(arg0_cipher->get_elements(),
+                    out0_cipher->get_elements(),
+                    arg0_cipher->get_shape(),
+                    out0_cipher->get_shape(),
+                    avg_pool->get_window_shape(),
+                    avg_pool->get_window_movement_strides(),
+                    avg_pool->get_padding_below(),
+                    avg_pool->get_padding_above(),
+                    avg_pool->get_include_padding_in_avg_computation(),
+                    type,
+                    m_he_backend);
+        }
+        else
+        {
+            throw ngraph_error("AvgPool types not supported");
+        }
+    }
+
     else if (node_op == "Broadcast")
     {
         shared_ptr<op::Broadcast> broadcast = dynamic_pointer_cast<op::Broadcast>(node);

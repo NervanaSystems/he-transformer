@@ -36,7 +36,8 @@ TEST_F(TestHEBackend, tf_mnist_deep_1)
     shared_ptr<runtime::he::he_heaan::HEHeaanBackend> backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>( runtime::Backend::create("HE_HEAAN"));
     // shared_ptr<runtime::he::he_seal::HESealBackend> backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(runtime::Backend::create("HE_SEAL"));
     //
-    const string backend_type = "INTERPRETER";
+    const string backend_type = "HE_HEAAN";
+    // const string backend_type = "INTERPRETER";
     // auto backend = runtime::Backend::create("INTERPRETER");
     NGRAPH_INFO << "Loaded backend";
     const string filename = "mnist_deep_simplified_batch_2";

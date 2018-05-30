@@ -18,6 +18,7 @@
 set (HE_SRC
     # kernels
     kernel/add.cpp
+    kernel/avg_pool.cpp
     kernel/broadcast.cpp
     kernel/concat.cpp
     kernel/constant.cpp
