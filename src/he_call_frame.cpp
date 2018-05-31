@@ -26,6 +26,7 @@
 #include "ngraph/op/convolution.hpp"
 
 #include "he_backend.hpp"
+#include "he_seal_backend.hpp"
 #include "he_call_frame.hpp"
 #include "he_cipher_tensor_view.hpp"
 #include "he_plain_tensor_view.hpp"
@@ -207,10 +208,13 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         }
 
         // Check noise budget after each op
-        /* if (auto output = dynamic_pointer_cast<HECipherTensorView>(outputs[0]))
+        if (auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(m_he_backend))
         {
-            // m_he_backend->check_noise_budget(outputs); TODO: enable
-        } */
+            if (auto output = dynamic_pointer_cast<runtime::he::HECipherTensorView>(outputs[0]))
+            {
+                he_seal_backend->check_noise_budget(outputs); // TODO: enable
+            }
+        }
 
         // Delete any obsolete tensors
         for (const descriptor::Tensor* t : op->liveness_free_list)

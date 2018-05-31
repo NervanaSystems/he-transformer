@@ -30,6 +30,8 @@
 #include "he_tensor_view.hpp"
 #include "pass/insert_relinearize.hpp"
 
+#include "seal/seal.h"
+
 using namespace ngraph;
 using namespace std;
 
@@ -460,10 +462,9 @@ int runtime::he::he_seal::HESealBackend::noise_budget(
     return m_decryptor->invariant_noise_budget(*ciphertext);
 }
 
-/* void runtime::he::he_seal::HESealBackend::check_noise_budget(
+void runtime::he::he_seal::HESealBackend::check_noise_budget(
     const vector<shared_ptr<runtime::he::HETensorView>>& tvs) const
 {
-    throw ngraph_error("HESealBackend::check_noise_budget unimplemented");
     // Check noise budget
     NGRAPH_INFO << "Checking noise budget ";
 
@@ -478,22 +479,28 @@ int runtime::he::he_seal::HESealBackend::noise_budget(
             for (size_t i = 0; i < cipher_tv->get_element_count(); ++i)
             {
                 seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
-                shared_ptr<seal::Ciphertext>& ciphertext = cipher_tv->get_element(i);
-                int budget = m_decryptor->invariant_noise_budget(*ciphertext, pool);
-                if (budget < lowest_budget)
+                shared_ptr<runtime::he::HECiphertext>& ciphertext = cipher_tv->get_element(i);
+
+                if (auto seal_cipher_wrapper = dynamic_pointer_cast<SealCiphertextWrapper>(ciphertext))
                 {
-                    lowest_budget = budget;
+                    int budget = m_decryptor->invariant_noise_budget(seal_cipher_wrapper->m_ciphertext, pool);
+                    if (budget < lowest_budget)
+                    {
+                        lowest_budget = budget;
+                    }
+                    if (budget <= 0)
+                    {
+                        throw ngraph_error("Noise budget depleted");
+                    } // TODO: break if this is too slow
+
                 }
-                if (budget <= 0)
-                {
-                    throw ngraph_error("Noise budget depleted");
-                } // TODO: break if this is too slow
+
             }
             NGRAPH_INFO << "Lowest Noise budget " << lowest_budget;
         }
     }
     NGRAPH_INFO << "Done checking noise budget ";
-} */
+}
 
 void runtime::he::he_seal::HESealBackend::enable_performance_data(shared_ptr<Function> func,
                                                                   bool enable)

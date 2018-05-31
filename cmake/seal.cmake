@@ -25,7 +25,7 @@ set(SEAL_TAR_FILE https://download.microsoft.com/download/B/3/7/B3720F6B-4F4A-4B
 # TODO: undefine SEAL_THROW_ON_MULTIPLY_PLAIN_BY_ZERO
 message("SEAL...")
 
-set(CXX_FLAGS '-fPIC -DSEAL_DEBUG')
+set(CXX_FLAGS -fPIC)
 
 ExternalProject_Add(
     ext_seal
