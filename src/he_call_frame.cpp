@@ -40,6 +40,7 @@
 #include "kernel/convolution.hpp"
 #include "kernel/dot.hpp"
 #include "kernel/multiply.hpp"
+#include "kernel/negate.hpp"
 #include "kernel/one_hot.hpp"
 #include "kernel/relinearize.hpp"
 #include "kernel/reshape.hpp"
@@ -101,10 +102,11 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         tensor_map.insert({tv, output_tvs[i]});
     }
 
-    // Maps that prefer plaintext output op to number of their input arguments
+    // Maps ops that prefer plaintext output op to number of their input arguments
     unordered_map<string, size_t> ops_prefer_plaintext {
         {"Constant", 0},
         {"Broadcast", 1},
+        {"Negative", 1},
         {"Relinearize", 1},
         {"Reshape", 1},
         {"Add", 2},
@@ -769,6 +771,29 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         else
         {
             throw ngraph_error("Multiply types not supported.");
+        }
+    }
+    else if (node_op == "Negative")
+    {
+        if (arg0_cipher != nullptr && out0_cipher != nullptr)
+        {
+            runtime::he::kernel::negate(arg0_cipher->get_elements(),
+                    out0_cipher->get_elements(),
+                    type,
+                    m_he_backend,
+                    out0_cipher->get_element_count());
+        }
+        else if (arg0_plain != nullptr && out0_plain != nullptr)
+        {
+            runtime::he::kernel::negate(arg0_plain->get_elements(),
+                    out0_plain->get_elements(),
+                    type,
+                    m_he_backend,
+                    out0_plain->get_element_count());
+        }
+        else
+        {
+            throw ngraph_error("Negate types not supported.");
         }
     }
     else if (node_op == "Relinearize")

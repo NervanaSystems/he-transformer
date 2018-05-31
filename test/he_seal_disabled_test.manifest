@@ -198,7 +198,6 @@ min_trivial
 min_trivial_5d
 min_vector_zero
 mkldnn_layouts
-negative
 not
 notequal
 numeric_double_inf

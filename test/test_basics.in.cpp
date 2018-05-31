@@ -2618,3 +2618,38 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_padded_3x3_strided_unev
             .get_vector(),
         read_vector<float>(result)));
 }
+
+NGRAPH_TEST(${BACKEND_NAME}, negative)
+{
+    Shape shape{2, 3};
+    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto f = make_shared<Function>(make_shared<op::Negative>(A), op::ParameterVector{A});
+
+    auto backend = runtime::Backend::create("${BACKEND_NAME}");
+
+    // Create some tensors for input/output
+    auto a = backend->create_tensor(element::f32, shape);
+    copy_data(a, vector<float>{1, -2, 0, -4.75f, 8.75f, -8.75f});
+    auto result = backend->create_tensor(element::f32, shape);
+
+    backend->call(f, {result}, {a});
+    EXPECT_TRUE(test::all_close(vector<float>{-1, 2, 0, 4.75f, -8.75f, 8.75f}, read_vector<float>(result)));
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, negative_plain_plain)
+{
+	Shape shape{2, 3};
+	auto A = make_shared<op::Parameter>(element::f32, shape);
+	auto f = make_shared<Function>(make_shared<op::Negative>(A), op::ParameterVector{A});
+
+	auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
+			runtime::Backend::create("${BACKEND_NAME}"));
+
+	// Create some tensors for input/output
+	auto a = backend->create_plain_tensor(element::f32, shape);
+	copy_data(a, vector<float>{1, -2, 0, -4.75f, 8.75f, -8.75f});
+	auto result = backend->create_plain_tensor(element::f32, shape);
+
+	backend->call(f, {result}, {a});
+	EXPECT_TRUE(test::all_close(vector<float>{-1, 2, 0, 4.75f, -8.75f, 8.75f}, read_vector<float>(result)));
+}
