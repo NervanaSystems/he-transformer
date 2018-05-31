@@ -212,7 +212,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         {
             if (auto output = dynamic_pointer_cast<runtime::he::HECipherTensorView>(outputs[0]))
             {
-                he_seal_backend->check_noise_budget(outputs); // TODO: enable
+                he_seal_backend->check_noise_budget(outputs);
             }
         }
 
@@ -238,7 +238,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                     << "\033[0m";
     }
 
-    // Check noise budget at for all function outputs
+    // Check noise budget at end for all function outputs
     // m_he_backend->check_noise_budget(output_tvs); TODO: enable
 }
 
@@ -317,7 +317,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
 
             for (size_t elem = 0; elem < element_count; ++elem)
             {
-                if (abs(cpu_out_vec[elem] - he_out_vec[elem]) > .01) // TODO: increase precision
+                if (abs(cpu_out_vec[elem] - he_out_vec[elem]) > 1e-3) // TODO: increase precision
                 {
                     NGRAPH_INFO << "expect " << cpu_out_vec[elem]
                                 << ", actual: " << he_out_vec[elem];
