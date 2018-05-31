@@ -30,15 +30,14 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHE_SERIALIZED_ZOO=\\\"${CMAKE_CURRENT_
 
 set (HE_TEST_SRC
     main.cpp
-    #test_basics.cpp
     test_heaan.cpp
     #test_model.cpp
-    test_mnist.cpp
+    #test_mnist.cpp
     #test_noise.cpp
     #test_overflow.cpp
     test_seal.cpp
     #test_speed.cpp
-    test_util.cpp
+    #test_util.cpp
 )
 
 # This dummy target always triggers re-configure of HE_HEAAN and HE_SEAL ngraph tests
@@ -54,6 +53,7 @@ set (NGRAPH_TEST_HE_SEAL_SRC
     autodiff_HE_SEAL.cpp
     convolution_test_HE_SEAL.cpp
     test_basics_HE_SEAL.cpp
+    test_mnist_HE_SEAL.cpp
 )
 get_filename_component(MANIFEST he_seal_disabled_test.manifest ABSOLUTE)
 add_custom_command(
@@ -74,6 +74,7 @@ set (NGRAPH_TEST_HE_HEAAN_SRC
     autodiff_HE_HEAAN.cpp
     convolution_test_HE_HEAAN.cpp
     test_basics_HE_HEAAN.cpp
+    test_mnist_HE_HEAAN.cpp
     )
 get_filename_component(MANIFEST he_heaan_disabled_test.manifest ABSOLUTE)
 add_custom_command(
@@ -93,6 +94,8 @@ set(SRC
     ${HE_TEST_SRC}
     ${NGRAPH_TEST_HE_SEAL_SRC}
     ${NGRAPH_TEST_HE_HEAAN_SRC})
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(unit-test ${SRC})
 

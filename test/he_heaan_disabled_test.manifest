@@ -285,6 +285,7 @@ reverse_3d_nochange
 reverse_sequence_n2c3h4w2
 reverse_sequence_n4c3h2w2
 reverse_sequence_n4d2c3h2w2
+seal_debug
 select
 select_and_scatter_3d_without_overlap
 select_and_scatter_without_overlap

@@ -16,8 +16,6 @@
 
 #include <assert.h>
 #include <complex>
-#include <dlfcn.h>
-#include <functional>
 
 #include "ngraph/ngraph.hpp"
 #include "util/all_close.hpp"
@@ -28,24 +26,6 @@
 #include "he_backend.hpp"
 #include "he_heaan_backend.hpp"
 #include "he_seal_backend.hpp"
-
-// #include "test_util.hpp" // TODO: move to header
-template <typename T>
-bool all_close(const std::vector<std::complex<T>>& a,
-               const std::vector<std::complex<T>>& b,
-               T atol = static_cast<T>(1e-5))
-{
-    assert(a.size() == b.size());
-    for (size_t i = 0; i < a.size(); ++i)
-    {
-        if ((std::abs(a[i].real() - b[i].real()) > atol) ||
-            std::abs(a[i].imag() - b[i].imag()) > atol)
-        {
-            return false;
-        }
-    }
-    return true;
-}
 
 using namespace std;
 using namespace ngraph;
