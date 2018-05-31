@@ -19,13 +19,15 @@ include(ExternalProject)
 # ${CMAKE_CURRENT_BINARY_DIR} is ngraph/build/third-party
 set(SEAL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ext_seal)
 set(SEAL_SRC_DIR ${SEAL_PREFIX}/src/ext_seal/SEAL)
-set(SEAL_TAR_FILE ${CMAKE_CURRENT_SOURCE_DIR}/third-party/SEAL_v2.3.0-4_Linux_debug.tar.gz)
+set(SEAL_TAR_FILE https://download.microsoft.com/download/B/3/7/B3720F6B-4F4A-4B54-9C6C-751EF194CBE7/SEAL_v2.3.0-4_Linux.tar.gz)
+
+set(CXX_FLAGS "-fPIC -DSEAL_DEBUG")
 
 ExternalProject_Add(
     ext_seal
     URL ${SEAL_TAR_FILE}
     PREFIX ${SEAL_PREFIX}
-    CONFIGURE_COMMAND cd ${SEAL_SRC_DIR} && ./configure CXXFLAGS=-fPIC --prefix=${EXTERNAL_INSTALL_DIR}
+    CONFIGURE_COMMAND cd ${SEAL_SRC_DIR} && ./configure CXXFLAGS=${CXX_FLAGS} --prefix=${EXTERNAL_INSTALL_DIR}
     UPDATE_COMMAND ""
     BUILD_COMMAND make -j$(nproc) -C ${SEAL_SRC_DIR}
     INSTALL_COMMAND make install -C ${SEAL_SRC_DIR}

@@ -161,16 +161,21 @@ namespace ngraph
 
                     struct plaintext_num
                     {
+                        seal::Plaintext fl_0;
                         seal::Plaintext fl_1;
                         seal::Plaintext fl_n1;
-                        seal::Plaintext int64_t_1;
-                        seal::Plaintext int64_t_n1;
+                        seal::Plaintext int64_0;
+                        seal::Plaintext int64_1;
+                        seal::Plaintext int64_n1;
                     };
 
                     const inline plaintext_num& get_plaintext_num() const
                     {
                         return m_plaintext_num;
                     }
+
+                    void check_noise_budget(
+                        const vector<shared_ptr<runtime::he::HETensorView>>& tvs) const;
 
                     int noise_budget(const std::shared_ptr<seal::Ciphertext>& ciphertext) const;
 

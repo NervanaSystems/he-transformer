@@ -16,11 +16,10 @@
 
 #pragma once
 
-#include <vector>
 #include <memory>
+#include <vector>
 
-#include "he_ciphertext.hpp"
-#include "seal/seal.h"
+#include "ngraph/coordinate_transform.hpp"
 
 namespace ngraph
 {
@@ -28,30 +27,25 @@ namespace ngraph
     {
         class Type;
     }
-
     namespace runtime
     {
         namespace he
         {
             class HEBackend;
             class HECiphertext;
-            class HEPlaintext;
-
             namespace kernel
             {
-                void relinearize(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg,
-                                 std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
-                                 std::shared_ptr<runtime::he::HEBackend> he_backend,
-                                 size_t count);
-
-                void relinearize(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg,
-                                 std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
-                                 std::shared_ptr<runtime::he::HEBackend> he_backend,
-                                 size_t count);
-
-                void relinearize(const std::shared_ptr<runtime::he::HECiphertext>& arg,
-                                 std::shared_ptr<runtime::he::HECiphertext>& out,
-                                 std::shared_ptr<runtime::he::HEBackend> he_backend);
+                void avg_pool(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg,
+                              std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
+                              const Shape& arg_shape,
+                              const Shape& out_shape,
+                              const Shape& window_shape,
+                              const Strides& window_movement_strides,
+                              const Shape& padding_below,
+                              const Shape& padding_above,
+                              bool include_padding_in_avg_computation,
+                              const element::Type& type,
+                              std::shared_ptr<runtime::he::HEBackend> he_backend);
             }
         }
     }

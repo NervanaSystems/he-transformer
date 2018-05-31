@@ -2,18 +2,6 @@ abs
 acos
 asin
 atan
-avg_pool_1d_1channel_1image
-avg_pool_1d_1channel_2image
-avg_pool_1d_2channel_2image
-avg_pool_2d_1channel_1image_padded
-avg_pool_2d_1channel_1image_strided
-avg_pool_2d_2channel_2image
-avg_pool_2d_2channel_2image_padded
-avg_pool_2d_2channel_2image_padded_3x3
-avg_pool_2d_2channel_2image_padded_3x3_strided
-avg_pool_2d_2channel_2image_padded_3x3_strided_uneven
-avg_pool_2d_2channel_2image_padded_only_above
-avg_pool_2d_2channel_2image_padded_only_below
 backwards_abc
 backwards_abs
 backwards_acos
@@ -210,7 +198,6 @@ min_trivial
 min_trivial_5d
 min_vector_zero
 mkldnn_layouts
-negative
 not
 notequal
 numeric_double_inf

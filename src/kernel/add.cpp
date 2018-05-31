@@ -130,7 +130,7 @@ void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HECiphertext>
     }
     else
     {
-        throw ngraph_error("Add backend is neither heaan nor seal.");
+        throw ngraph_error("Add backend is neither seal nor hean.");
     }
 }
 
@@ -184,7 +184,7 @@ void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HEPlaintext>&
     }
     else
     {
-        throw ngraph_error("Add backend is neither heaan nor seal.");
+        throw ngraph_error("Add backend is neither seal nor hean.");
     }
 }
 
@@ -238,7 +238,7 @@ void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HECiphertext>
     }
     else
     {
-        throw ngraph_error("Add backend is neither heaan nor seal.");
+        throw ngraph_error("Add backend is neither seal nor hean.");
     }
 }
 
