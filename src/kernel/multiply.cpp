@@ -92,7 +92,7 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HECipher
     }
     else
     {
-        throw ngraph_error("Multiply backend is neither heaan nor seal.");
+        throw ngraph_error("Multiply backend is neither seal nor hean.");
     }
 }
 
@@ -164,7 +164,7 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HECipher
     }
     else
     {
-        throw ngraph_error("Multiply backend is neither heaan nor seal.");
+        throw ngraph_error("Multiply backend is neither seal nor hean.");
     }
 }
 
@@ -255,6 +255,6 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HEPlaint
     }
     else
     {
-        throw ngraph_error("Multiply backend is neither heaan nor seal.");
+        throw ngraph_error("Multiply backend is neither seal nor hean.");
     }
 }

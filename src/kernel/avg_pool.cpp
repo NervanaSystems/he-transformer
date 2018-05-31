@@ -47,7 +47,7 @@ void runtime::he::kernel::avg_pool(
 	auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);
 	if (!he_seal_backend && !he_heaan_backend)
 	{
-		throw ngraph_error("Convolution he_backend neither heaan nor seal.");
+		throw ngraph_error("Convolution he_backend neither seal nor hean.");
 	}
 
 	// At the outermost level we will walk over every output coordinate O.
