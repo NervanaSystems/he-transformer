@@ -31,10 +31,16 @@ void runtime::he::kernel::result(const vector<shared_ptr<runtime::he::HECipherte
                                  vector<shared_ptr<runtime::he::HECiphertext>>& out,
                                  size_t count)
 {
+    if (out.size() != arg.size())
+    {
+        NGRAPH_INFO << out.size() << " != " << arg.size() << " in result";
+        throw ngraph_error("Wrong size");
+    }
     for (size_t i = 0; i < count; ++i)
     {
         out[i] = arg[i];
     }
+    NGRAPH_INFO << "Done with result";
 }
 
 void runtime::he::kernel::result(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg,
@@ -79,6 +85,6 @@ void runtime::he::kernel::result(const vector<shared_ptr<runtime::he::HEPlaintex
     }
     else
     {
-        throw ngraph_error("Result backend is neither heaan nor seal.");
+        throw ngraph_error("Result backend is neither seal nor hean.");
     }
 }

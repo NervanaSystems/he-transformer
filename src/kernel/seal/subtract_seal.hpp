@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <memory>
+
 namespace ngraph
 {
     namespace element
@@ -39,32 +41,32 @@ namespace ngraph
                 namespace seal
                 {
                     void scalar_subtract(
-                        const shared_ptr<runtime::he::SealCiphertextWrapper>& arg0,
-                        const shared_ptr<runtime::he::SealCiphertextWrapper>& arg1,
-                        shared_ptr<runtime::he::SealCiphertextWrapper>& out,
+                        const std::shared_ptr<runtime::he::SealCiphertextWrapper>& arg0,
+                        const std::shared_ptr<runtime::he::SealCiphertextWrapper>& arg1,
+                        std::shared_ptr<runtime::he::SealCiphertextWrapper>& out,
                         const element::Type& type,
-                        shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend);
+                        std::shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend);
 
                     void scalar_subtract(
-                        const shared_ptr<runtime::he::SealCiphertextWrapper>& arg0,
-                        const shared_ptr<runtime::he::SealPlaintextWrapper>& arg1,
-                        shared_ptr<runtime::he::SealCiphertextWrapper>& out,
+                        const std::shared_ptr<runtime::he::SealCiphertextWrapper>& arg0,
+                        const std::shared_ptr<runtime::he::SealPlaintextWrapper>& arg1,
+                        std::shared_ptr<runtime::he::SealCiphertextWrapper>& out,
                         const element::Type& type,
-                        shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend);
+                        std::shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend);
 
                     void scalar_subtract(
-                        const shared_ptr<runtime::he::SealPlaintextWrapper>& arg0,
-                        const shared_ptr<runtime::he::SealCiphertextWrapper>& arg1,
-                        shared_ptr<runtime::he::SealCiphertextWrapper>& out,
+                        const std::shared_ptr<runtime::he::SealPlaintextWrapper>& arg0,
+                        const std::shared_ptr<runtime::he::SealCiphertextWrapper>& arg1,
+                        std::shared_ptr<runtime::he::SealCiphertextWrapper>& out,
                         const element::Type& type,
-                        shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend);
+                        std::shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend);
 
                     void scalar_subtract(
-                        const shared_ptr<runtime::he::SealPlaintextWrapper>& arg0,
-                        const shared_ptr<runtime::he::SealPlaintextWrapper>& arg1,
-                        shared_ptr<runtime::he::SealPlaintextWrapper>& out,
+                        const std::shared_ptr<runtime::he::SealPlaintextWrapper>& arg0,
+                        const std::shared_ptr<runtime::he::SealPlaintextWrapper>& arg1,
+                        std::shared_ptr<runtime::he::SealPlaintextWrapper>& out,
                         const element::Type& type,
-                        shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend);
+                        std::shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend);
                 }
             }
         }
