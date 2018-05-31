@@ -17,7 +17,6 @@
 #pragma once
 
 #include <complex>
-#include <assert.h>
 #include <string>
 #include <vector>
 
@@ -27,7 +26,6 @@
 #include "he_heaan_backend.hpp"
 #include "he_seal_backend.hpp"
 #include "ngraph/file_util.hpp"
-
 
 class TestHEBackend : public ::testing::Test
 {
@@ -54,14 +52,11 @@ inline std::vector<float> read_constant(const std::string filename)
     return res;
 }
 
-
-
 template <typename T>
 bool all_close(const std::vector<std::complex<T>>& a,
                const std::vector<std::complex<T>>& b,
                T atol = static_cast<T>(1e-5))
 {
-    // assert(a.size() == b.size());
     for (size_t i = 0; i < a.size(); ++i)
     {
         if ((std::abs(a[i].real() - b[i].real()) > atol) ||

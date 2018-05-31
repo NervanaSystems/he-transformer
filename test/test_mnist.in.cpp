@@ -40,7 +40,7 @@ static string s_manifest = "${MANIFEST}";
 NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_softmax_5)
 {
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-            runtime::Backend::create("${BACKEND_NAME}"));
+        runtime::Backend::create("${BACKEND_NAME}"));
 
     NGRAPH_INFO << "Loaded backend";
     const string filename = "mnist_softmax_batch5";
@@ -58,7 +58,7 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_softmax_5)
     parms["x"] = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "weights/x.txt"));
 
     unordered_map<string, Shape> parm_shapes;
-    parm_shapes["W"] = Shape{784,10};
+    parm_shapes["W"] = Shape{784, 10};
     parm_shapes["b"] = Shape{10};
     parm_shapes["x"] = Shape{5, 784};
 
@@ -120,15 +120,23 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_softmax_5)
     NGRAPH_INFO << "calling function";
     backend->call(f, result_tvs, parameter_tvs);
 
-    EXPECT_TRUE(test::all_close(vector<float>{
-                0.624406, -8.56023, 1.06847, 4.81459, -2.81721, -0.251675, -6.91895, 10.1022, -0.612656, 2.55105, 4.25543, -0.750629, 10.6834, 4.89307, -10.9504, 5.10364, 6.01537, -14.0582, 3.42761, -8.61934, -5.25755, 6.30253, 1.80438, 0.71403, -2.37156, -0.347839, -0.12199, 0.109456, 0.678508, -1.50997, 11.7059, -11.5038, 1.67892, 0.275615, -6.33494, 3.26604, 1.46237, 0.229319, -0.0319397, -0.747563, -1.17459, -6.39749, 0.336039, -2.4198, 6.42819, -1.60604, 0.56934, 1.30156, 0.565424, 2.39734},
-            read_vector<float>(result_tvs[0]), 1e-4f));
+    EXPECT_TRUE(test::all_close(
+        vector<float>{0.624406, -8.56023,  1.06847,  4.81459,    -2.81721,  -0.251675, -6.91895,
+                      10.1022,  -0.612656, 2.55105,  4.25543,    -0.750629, 10.6834,   4.89307,
+                      -10.9504, 5.10364,   6.01537,  -14.0582,   3.42761,   -8.61934,  -5.25755,
+                      6.30253,  1.80438,   0.71403,  -2.37156,   -0.347839, -0.12199,  0.109456,
+                      0.678508, -1.50997,  11.7059,  -11.5038,   1.67892,   0.275615,  -6.33494,
+                      3.26604,  1.46237,   0.229319, -0.0319397, -0.747563, -1.17459,  -6.39749,
+                      0.336039, -2.4198,   6.42819,  -1.60604,   0.56934,   1.30156,   0.565424,
+                      2.39734},
+        read_vector<float>(result_tvs[0]),
+        1e-4f));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_softmax_quantized_1)
 {
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-            runtime::Backend::create("${BACKEND_NAME}"));
+        runtime::Backend::create("${BACKEND_NAME}"));
 
     NGRAPH_INFO << "Loaded backend";
     const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, "mnist_mlp_const_1_inputs.js");
@@ -162,6 +170,5 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_softmax_quantized_1)
     backend->call(f, result_tvs, parameter_tvs);
 
     EXPECT_EQ((vector<float>{2173, 944, 1151, 1723, -1674, 569, -1985, 9776, -4997, -1903}),
-            read_vector<float>(result_tvs[0]));
+              read_vector<float>(result_tvs[0]));
 }
-

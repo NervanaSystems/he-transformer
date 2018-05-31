@@ -220,7 +220,7 @@ NGRAPH_TEST(${BACKEND_NAME}, subtract_plain)
 NGRAPH_TEST(${BACKEND_NAME}, subtract_plain2)
 {
     auto he_backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-            runtime::Backend::create("${BACKEND_NAME}"));
+        runtime::Backend::create("${BACKEND_NAME}"));
     Shape shape{2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape);
     auto B = make_shared<op::Parameter>(element::f32, shape);
@@ -240,7 +240,7 @@ NGRAPH_TEST(${BACKEND_NAME}, subtract_plain2)
 NGRAPH_TEST(${BACKEND_NAME}, subtract_plain_plain)
 {
     auto he_backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-            runtime::Backend::create("${BACKEND_NAME}"));
+        runtime::Backend::create("${BACKEND_NAME}"));
     Shape shape{2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape);
     auto B = make_shared<op::Parameter>(element::f32, shape);
@@ -2380,26 +2380,25 @@ struct ConvolutionBiasTestData
 
 NGRAPH_TEST(${BACKEND_NAME}, conv_fprop_n1c1h3w3)
 {
-	auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-			runtime::Backend::create("${BACKEND_NAME}"));
+    auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
+        runtime::Backend::create("${BACKEND_NAME}"));
 
     ConvolutionBiasTestData conv_test;
     conv_test.n1c1h3w3(backend);
 
     auto convolution = make_shared<op::Convolution>(conv_test.data, conv_test.weights);
 
-    auto f = make_shared<Function>(
-        convolution, op::ParameterVector{conv_test.data, conv_test.weights});
+    auto f =
+        make_shared<Function>(convolution, op::ParameterVector{conv_test.data, conv_test.weights});
 
-    backend->call(
-        f, {conv_test.result_val}, {conv_test.data_val, conv_test.weights_val});
+    backend->call(f, {conv_test.result_val}, {conv_test.data_val, conv_test.weights_val});
     auto result_vec = read_vector<float>(conv_test.result_val);
 
-	for (auto elem: result_vec)
-	{
-		cout << elem << " " ;
-	}
-	cout << endl;
+    for (auto elem : result_vec)
+    {
+        cout << elem << " ";
+    }
+    cout << endl;
     EXPECT_TRUE(
         test::all_close(conv_test.expected_result_val, read_vector<float>(conv_test.result_val)));
 }
@@ -2434,7 +2433,6 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_1channel_1image_padded)
                             .get_vector(),
                         read_vector<float>(result)));
 }
-
 
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_padded)
 {
@@ -2666,23 +2664,25 @@ NGRAPH_TEST(${BACKEND_NAME}, negative)
     auto result = backend->create_tensor(element::f32, shape);
 
     backend->call(f, {result}, {a});
-    EXPECT_TRUE(test::all_close(vector<float>{-1, 2, 0, 4.75f, -8.75f, 8.75f}, read_vector<float>(result)));
+    EXPECT_TRUE(
+        test::all_close(vector<float>{-1, 2, 0, 4.75f, -8.75f, 8.75f}, read_vector<float>(result)));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, negative_plain_plain)
 {
-	Shape shape{2, 3};
-	auto A = make_shared<op::Parameter>(element::f32, shape);
-	auto f = make_shared<Function>(make_shared<op::Negative>(A), op::ParameterVector{A});
+    Shape shape{2, 3};
+    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto f = make_shared<Function>(make_shared<op::Negative>(A), op::ParameterVector{A});
 
-	auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-			runtime::Backend::create("${BACKEND_NAME}"));
+    auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
+        runtime::Backend::create("${BACKEND_NAME}"));
 
-	// Create some tensors for input/output
-	auto a = backend->create_plain_tensor(element::f32, shape);
-	copy_data(a, vector<float>{1, -2, 0, -4.75f, 8.75f, -8.75f});
-	auto result = backend->create_plain_tensor(element::f32, shape);
+    // Create some tensors for input/output
+    auto a = backend->create_plain_tensor(element::f32, shape);
+    copy_data(a, vector<float>{1, -2, 0, -4.75f, 8.75f, -8.75f});
+    auto result = backend->create_plain_tensor(element::f32, shape);
 
-	backend->call(f, {result}, {a});
-	EXPECT_TRUE(test::all_close(vector<float>{-1, 2, 0, 4.75f, -8.75f, 8.75f}, read_vector<float>(result)));
+    backend->call(f, {result}, {a});
+    EXPECT_TRUE(
+        test::all_close(vector<float>{-1, 2, 0, 4.75f, -8.75f, 8.75f}, read_vector<float>(result)));
 }

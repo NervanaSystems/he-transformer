@@ -14,8 +14,8 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "he_seal_backend.hpp"
 #include "kernel/seal/add_seal.hpp"
+#include "he_seal_backend.hpp"
 
 using namespace std;
 using namespace ngraph;

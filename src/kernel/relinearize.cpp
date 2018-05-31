@@ -14,24 +14,23 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "he_backend.hpp"
-#include "he_seal_backend.hpp"
-#include "he_heaan_backend.hpp"
 #include "kernel/relinearize.hpp"
+#include "he_backend.hpp"
+#include "he_heaan_backend.hpp"
+#include "he_seal_backend.hpp"
 #include "ngraph/type/element_type.hpp"
 
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::relinearize(
-    const vector<shared_ptr<runtime::he::HECiphertext>>& arg,
-    vector<shared_ptr<runtime::he::HECiphertext>>& out,
-    shared_ptr<runtime::he::HEBackend> he_backend,
-    size_t count)
+void runtime::he::kernel::relinearize(const vector<shared_ptr<runtime::he::HECiphertext>>& arg,
+                                      vector<shared_ptr<runtime::he::HECiphertext>>& out,
+                                      shared_ptr<runtime::he::HEBackend> he_backend,
+                                      size_t count)
 {
-    // It's safe to do inplace relinearize on the input since the un-relinearized result won't be
-    // used by other ops. That is, this relinearize op is immediately after a multiply op, and the
-    // relinearize op is the only op using the result from the multiply op
+// It's safe to do inplace relinearize on the input since the un-relinearized result won't be
+// used by other ops. That is, this relinearize op is immediately after a multiply op, and the
+// relinearize op is the only op using the result from the multiply op
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
     {
@@ -39,13 +38,12 @@ void runtime::he::kernel::relinearize(
     }
 }
 
-void runtime::he::kernel::relinearize(
-        const vector<shared_ptr<runtime::he::HEPlaintext>>& arg,
-        vector<shared_ptr<runtime::he::HEPlaintext>>& out,
-        shared_ptr<runtime::he::HEBackend> he_backend,
-        size_t count)
+void runtime::he::kernel::relinearize(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg,
+                                      vector<shared_ptr<runtime::he::HEPlaintext>>& out,
+                                      shared_ptr<runtime::he::HEBackend> he_backend,
+                                      size_t count)
 {
-    // Relinearize op doesn't make sense for Plaintexts. Just pass along to the output
+// Relinearize op doesn't make sense for Plaintexts. Just pass along to the output
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
     {
@@ -53,27 +51,29 @@ void runtime::he::kernel::relinearize(
     }
 }
 
-void runtime::he::kernel::relinearize(
-        const shared_ptr<runtime::he::HECiphertext>& arg,
-        shared_ptr<runtime::he::HECiphertext>& out,
-        shared_ptr<runtime::he::HEBackend> he_backend)
+void runtime::he::kernel::relinearize(const shared_ptr<runtime::he::HECiphertext>& arg,
+                                      shared_ptr<runtime::he::HECiphertext>& out,
+                                      shared_ptr<runtime::he::HEBackend> he_backend)
 {
-    if (auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
+    if (auto he_seal_backend =
+            dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
     {
         shared_ptr<runtime::he::SealCiphertextWrapper> arg_seal =
-                         dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(arg);
+            dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(arg);
         if (arg_seal)
         {
-            he_seal_backend->get_evaluator()->relinearize(arg_seal->m_ciphertext, *(he_seal_backend->get_ev_key()));
+            he_seal_backend->get_evaluator()->relinearize(arg_seal->m_ciphertext,
+                                                          *(he_seal_backend->get_ev_key()));
             out = arg;
         }
         else
         {
             throw ngraph_error(
-                    "Relinearize backend is seal, but argument is not SealPlaintextWrapper.");
+                "Relinearize backend is seal, but argument is not SealPlaintextWrapper.");
         }
     }
-    else if (auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
+    else if (auto he_heaan_backend =
+                 dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
     {
         out = arg;
     }
@@ -81,5 +81,4 @@ void runtime::he::kernel::relinearize(
     {
         throw ngraph_error("Relinearize backend is neither seal nor heaan.");
     }
-
 }

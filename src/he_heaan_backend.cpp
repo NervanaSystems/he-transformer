@@ -84,7 +84,7 @@ runtime::he::he_heaan::HEHeaanBackend::~HEHeaanBackend()
 }
 
 void runtime::he::he_heaan::HEHeaanBackend::assert_valid_heaan_parameter(
-        const shared_ptr<runtime::he::HEHeaanParameter> hp) const
+    const shared_ptr<runtime::he::HEHeaanParameter> hp) const
 {
     static const int base = 2;
     static const int depth = 4; // TODO: find depth dynamically for computation

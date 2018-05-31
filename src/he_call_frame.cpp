@@ -17,19 +17,19 @@
 #include "ngraph/op/broadcast.hpp"
 #include "ngraph/op/concat.hpp"
 #include "ngraph/op/constant.hpp"
+#include "ngraph/op/convolution.hpp"
 #include "ngraph/op/dot.hpp"
 #include "ngraph/op/one_hot.hpp"
 #include "ngraph/op/reshape.hpp"
 #include "ngraph/op/result.hpp"
 #include "ngraph/op/slice.hpp"
 #include "ngraph/op/sum.hpp"
-#include "ngraph/op/convolution.hpp"
 
 #include "he_backend.hpp"
-#include "he_seal_backend.hpp"
 #include "he_call_frame.hpp"
 #include "he_cipher_tensor_view.hpp"
 #include "he_plain_tensor_view.hpp"
+#include "he_seal_backend.hpp"
 #include "he_tensor_view.hpp"
 #include "int_call_frame.hpp"
 #include "kernel/add.hpp"
@@ -65,7 +65,8 @@ runtime::he::HECallFrame::HECallFrame(const shared_ptr<Function>& func,
 
 bool runtime::he::HECallFrame::is_cpu_check_enabled(const shared_ptr<Node>& op) const
 {
-    static unordered_set<string> cpu_check_enabled_ops{"Sum", "Add", "Dot", "Multiply", "Convolution", "AvgPool"};
+    static unordered_set<string> cpu_check_enabled_ops{
+        "Sum", "Add", "Dot", "Multiply", "Convolution", "AvgPool"};
     return cpu_check_enabled_ops.count(op->description()) != 0;
 }
 
@@ -103,16 +104,15 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
     }
 
     // Maps ops that prefer plaintext output op to number of their input arguments
-    unordered_map<string, size_t> ops_prefer_plaintext {
-        {"Constant", 0},
-        {"Broadcast", 1},
-        {"Negative", 1},
-        {"Relinearize", 1},
-        {"Reshape", 1},
-        {"Add", 2},
-        {"Dot", 2},
-        {"Multiply", 2},
-        {"Subtract", 2}};
+    unordered_map<string, size_t> ops_prefer_plaintext{{"Constant", 0},
+                                                       {"Broadcast", 1},
+                                                       {"Negative", 1},
+                                                       {"Relinearize", 1},
+                                                       {"Reshape", 1},
+                                                       {"Add", 2},
+                                                       {"Dot", 2},
+                                                       {"Multiply", 2},
+                                                       {"Subtract", 2}};
 
     // Invoke computation
     for (shared_ptr<Node> op : function->get_ordered_ops())
@@ -147,14 +147,15 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                 const element::Type& element_type = op->get_output_element_type(i);
                 string tensor_name = op->get_output_tensor(i).get_name();
 
-                unordered_map<string, size_t>::iterator find_op = ops_prefer_plaintext.find(op->description());
+                unordered_map<string, size_t>::iterator find_op =
+                    ops_prefer_plaintext.find(op->description());
 
                 if (find_op != ops_prefer_plaintext.end())
                 {
                     if (find_op->second == 0)
                     {
                         auto itv = make_shared<runtime::he::HEPlainTensorView>(
-                                element_type, shape, m_he_backend, name);
+                            element_type, shape, m_he_backend, name);
                         tensor_map.insert({tv, itv});
                     }
                     else if (find_op->second == 1)
@@ -164,13 +165,13 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                         if (in0_plain != nullptr)
                         {
                             auto itv = make_shared<runtime::he::HEPlainTensorView>(
-                                    element_type, shape, m_he_backend, name);
+                                element_type, shape, m_he_backend, name);
                             tensor_map.insert({tv, itv});
                         }
                         else
                         {
                             auto itv = make_shared<runtime::he::HECipherTensorView>(
-                                    element_type, shape, m_he_backend, name);
+                                element_type, shape, m_he_backend, name);
                             tensor_map.insert({tv, itv});
                         }
                     }
@@ -183,20 +184,20 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                         if ((in0_plain != nullptr) && (in1_plain != nullptr))
                         {
                             auto itv = make_shared<runtime::he::HEPlainTensorView>(
-                                    element_type, shape, m_he_backend, name);
+                                element_type, shape, m_he_backend, name);
                             tensor_map.insert({tv, itv});
                         }
                         else
                         {
                             auto itv = make_shared<runtime::he::HECipherTensorView>(
-                                    element_type, shape, m_he_backend, name);
+                                element_type, shape, m_he_backend, name);
                             tensor_map.insert({tv, itv});
                         }
                     }
                     else
                     {
                         auto itv = make_shared<runtime::he::HECipherTensorView>(
-                                element_type, shape, m_he_backend, name);
+                            element_type, shape, m_he_backend, name);
                         tensor_map.insert({tv, itv});
                     }
                 }
@@ -231,7 +232,8 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         }
 
         // Check noise budget after each op
-        if (auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(m_he_backend))
+        if (auto he_seal_backend =
+                dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(m_he_backend))
         {
             if (auto output = dynamic_pointer_cast<runtime::he::HECipherTensorView>(outputs[0]))
             {
@@ -465,20 +467,20 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         else if (arg0_plain != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
             runtime::he::kernel::add(arg0_plain->get_elements(),
-                    arg1_cipher->get_elements(),
-                    out0_cipher->get_elements(),
-                    type,
-                    m_he_backend,
-                    out0_cipher->get_element_count());
+                                     arg1_cipher->get_elements(),
+                                     out0_cipher->get_elements(),
+                                     type,
+                                     m_he_backend,
+                                     out0_cipher->get_element_count());
         }
         else if (arg0_plain != nullptr && arg1_plain != nullptr && out0_plain != nullptr)
         {
             runtime::he::kernel::add(arg0_plain->get_elements(),
-                    arg1_plain->get_elements(),
-                    out0_plain->get_elements(),
-                    type,
-                    m_he_backend,
-                    out0_plain->get_element_count());
+                                     arg1_plain->get_elements(),
+                                     out0_plain->get_elements(),
+                                     type,
+                                     m_he_backend,
+                                     out0_plain->get_element_count());
         }
         else
         {
@@ -493,16 +495,16 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         {
             NGRAPH_INFO << "AvgPool cipher -> cipher";
             runtime::he::kernel::avg_pool(arg0_cipher->get_elements(),
-                    out0_cipher->get_elements(),
-                    arg0_cipher->get_shape(),
-                    out0_cipher->get_shape(),
-                    avg_pool->get_window_shape(),
-                    avg_pool->get_window_movement_strides(),
-                    avg_pool->get_padding_below(),
-                    avg_pool->get_padding_above(),
-                    avg_pool->get_include_padding_in_avg_computation(),
-                    type,
-                    m_he_backend);
+                                          out0_cipher->get_elements(),
+                                          arg0_cipher->get_shape(),
+                                          out0_cipher->get_shape(),
+                                          avg_pool->get_window_shape(),
+                                          avg_pool->get_window_movement_strides(),
+                                          avg_pool->get_padding_below(),
+                                          avg_pool->get_padding_above(),
+                                          avg_pool->get_include_padding_in_avg_computation(),
+                                          type,
+                                          m_he_backend);
         }
         else
         {
@@ -606,49 +608,49 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
             NGRAPH_INFO << "Conv ciper + cipher";
             throw ngraph_error("Convolution cipher + Cipher not supported");
             runtime::he::kernel::convolution(arg0_cipher->get_elements(),
-                    arg1_cipher->get_elements(),
-                    out0_cipher->get_elements(),
-                    arg0_cipher->get_shape(),
-                    arg1_cipher->get_shape(),
-                    out0_cipher->get_shape(),
-                    c->get_window_movement_strides(),
-                    c->get_window_dilation_strides(),
-                    c->get_padding_below(),
-                    c->get_padding_above(),
-                    c->get_data_dilation_strides(),
-                    0,
-                    1,
-                    1,
-                    0,
-                    0,
-                    1,
-                    false,
-                    type,
-                    m_he_backend);
+                                             arg1_cipher->get_elements(),
+                                             out0_cipher->get_elements(),
+                                             arg0_cipher->get_shape(),
+                                             arg1_cipher->get_shape(),
+                                             out0_cipher->get_shape(),
+                                             c->get_window_movement_strides(),
+                                             c->get_window_dilation_strides(),
+                                             c->get_padding_below(),
+                                             c->get_padding_above(),
+                                             c->get_data_dilation_strides(),
+                                             0,
+                                             1,
+                                             1,
+                                             0,
+                                             0,
+                                             1,
+                                             false,
+                                             type,
+                                             m_he_backend);
         }
         else if (arg0_cipher != nullptr && arg1_plain != nullptr && out0_cipher != nullptr)
         {
             NGRAPH_INFO << "Convolution cipher + plain";
             runtime::he::kernel::convolution(arg0_cipher->get_elements(),
-                    arg1_plain->get_elements(),
-                    out0_cipher->get_elements(),
-                    arg0_cipher->get_shape(),
-                    arg1_plain->get_shape(),
-                    out0_cipher->get_shape(),
-                    c->get_window_movement_strides(),
-                    c->get_window_dilation_strides(),
-                    c->get_padding_below(),
-                    c->get_padding_above(),
-                    c->get_data_dilation_strides(),
-                    0,
-                    1,
-                    1,
-                    0,
-                    0,
-                    1,
-                    false,
-                    type,
-                    m_he_backend);
+                                             arg1_plain->get_elements(),
+                                             out0_cipher->get_elements(),
+                                             arg0_cipher->get_shape(),
+                                             arg1_plain->get_shape(),
+                                             out0_cipher->get_shape(),
+                                             c->get_window_movement_strides(),
+                                             c->get_window_dilation_strides(),
+                                             c->get_padding_below(),
+                                             c->get_padding_above(),
+                                             c->get_data_dilation_strides(),
+                                             0,
+                                             1,
+                                             1,
+                                             0,
+                                             0,
+                                             1,
+                                             false,
+                                             type,
+                                             m_he_backend);
         }
         else if (arg0_plain != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
@@ -751,7 +753,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                           m_he_backend,
                                           out0_cipher->get_element_count());
         }
-        else if (arg0_plain != nullptr && arg1_cipher != nullptr  && out0_cipher != nullptr)
+        else if (arg0_plain != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
             runtime::he::kernel::multiply(arg0_plain->get_elements(),
                                           arg1_cipher->get_elements(),
@@ -760,7 +762,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                           m_he_backend,
                                           out0_cipher->get_element_count());
         }
-        else if (arg0_plain != nullptr && arg1_plain != nullptr  && out0_plain != nullptr)
+        else if (arg0_plain != nullptr && arg1_plain != nullptr && out0_plain != nullptr)
         {
             runtime::he::kernel::multiply(arg0_plain->get_elements(),
                                           arg1_plain->get_elements(),
@@ -779,18 +781,18 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         if (arg0_cipher != nullptr && out0_cipher != nullptr)
         {
             runtime::he::kernel::negate(arg0_cipher->get_elements(),
-                    out0_cipher->get_elements(),
-                    type,
-                    m_he_backend,
-                    out0_cipher->get_element_count());
+                                        out0_cipher->get_elements(),
+                                        type,
+                                        m_he_backend,
+                                        out0_cipher->get_element_count());
         }
         else if (arg0_plain != nullptr && out0_plain != nullptr)
         {
             runtime::he::kernel::negate(arg0_plain->get_elements(),
-                    out0_plain->get_elements(),
-                    type,
-                    m_he_backend,
-                    out0_plain->get_element_count());
+                                        out0_plain->get_elements(),
+                                        type,
+                                        m_he_backend,
+                                        out0_plain->get_element_count());
         }
         else
         {
@@ -802,9 +804,9 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         if (arg0_cipher != nullptr && out0_cipher != nullptr)
         {
             runtime::he::kernel::relinearize(arg0_cipher->get_elements(),
-                    out0_cipher->get_elements(),
-                    m_he_backend,
-                    out0_cipher->get_element_count());
+                                             out0_cipher->get_elements(),
+                                             m_he_backend,
+                                             out0_cipher->get_element_count());
         }
         // The Relinearize op is currently inserted after every multiply call, even when the
         // op is between plaintexts
@@ -812,9 +814,9 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         else if (arg0_plain != nullptr && out0_plain != nullptr)
         {
             runtime::he::kernel::relinearize(arg0_plain->get_elements(),
-                    out0_plain->get_elements(),
-                    m_he_backend,
-                    out0_plain->get_element_count());
+                                             out0_plain->get_elements(),
+                                             m_he_backend,
+                                             out0_plain->get_element_count());
         }
         else
         {
@@ -958,21 +960,21 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
             auto tmp3 = out0_cipher->get_elements();
             NGRAPH_INFO << "out0 cipher";
             runtime::he::kernel::subtract(arg0_plain->get_elements(),
-                    arg1_cipher->get_elements(),
-                    out0_cipher->get_elements(),
-                    type,
-                    m_he_backend,
-                    out0_cipher->get_element_count());
+                                          arg1_cipher->get_elements(),
+                                          out0_cipher->get_elements(),
+                                          type,
+                                          m_he_backend,
+                                          out0_cipher->get_element_count());
         }
         else if (arg0_plain != nullptr && arg1_plain != nullptr && out0_plain != nullptr)
         {
             NGRAPH_INFO << "Subtract PP";
             runtime::he::kernel::subtract(arg0_plain->get_elements(),
-                    arg1_plain->get_elements(),
-                    out0_plain->get_elements(),
-                    type,
-                    m_he_backend,
-                    out0_plain->get_element_count());
+                                          arg1_plain->get_elements(),
+                                          out0_plain->get_elements(),
+                                          type,
+                                          m_he_backend,
+                                          out0_plain->get_element_count());
         }
         else
         {

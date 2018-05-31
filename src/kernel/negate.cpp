@@ -18,8 +18,8 @@
 
 #include "he_heaan_backend.hpp"
 #include "he_seal_backend.hpp"
-#include "kernel/negate.hpp"
 #include "kernel/heaan/negate_heaan.hpp"
+#include "kernel/negate.hpp"
 #include "kernel/seal/negate_seal.hpp"
 #include "ngraph/type/element_type.hpp"
 
@@ -27,10 +27,10 @@ using namespace std;
 using namespace ngraph;
 
 void runtime::he::kernel::negate(const vector<shared_ptr<runtime::he::HECiphertext>>& arg,
-                              vector<shared_ptr<runtime::he::HECiphertext>>& out,
-                              const element::Type& type,
-                              shared_ptr<runtime::he::HEBackend> he_backend,
-                              size_t count)
+                                 vector<shared_ptr<runtime::he::HECiphertext>>& out,
+                                 const element::Type& type,
+                                 shared_ptr<runtime::he::HEBackend> he_backend,
+                                 size_t count)
 {
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
@@ -40,10 +40,10 @@ void runtime::he::kernel::negate(const vector<shared_ptr<runtime::he::HECipherte
 }
 
 void runtime::he::kernel::negate(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg,
-                              vector<shared_ptr<runtime::he::HEPlaintext>>& out,
-                              const element::Type& type,
-                              shared_ptr<runtime::he::HEBackend> he_backend,
-                              size_t count)
+                                 vector<shared_ptr<runtime::he::HEPlaintext>>& out,
+                                 const element::Type& type,
+                                 shared_ptr<runtime::he::HEBackend> he_backend,
+                                 size_t count)
 {
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
@@ -53,9 +53,9 @@ void runtime::he::kernel::negate(const vector<shared_ptr<runtime::he::HEPlaintex
 }
 
 void runtime::he::kernel::scalar_negate(const shared_ptr<runtime::he::HECiphertext>& arg,
-                                     shared_ptr<runtime::he::HECiphertext>& out,
-                                     const element::Type& type,
-                                     shared_ptr<runtime::he::HEBackend> he_backend)
+                                        shared_ptr<runtime::he::HECiphertext>& out,
+                                        const element::Type& type,
+                                        shared_ptr<runtime::he::HEBackend> he_backend)
 {
     if (auto he_seal_backend =
             dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
@@ -102,9 +102,9 @@ void runtime::he::kernel::scalar_negate(const shared_ptr<runtime::he::HECipherte
 }
 
 void runtime::he::kernel::scalar_negate(const shared_ptr<runtime::he::HEPlaintext>& arg,
-                                     shared_ptr<runtime::he::HEPlaintext>& out,
-                                     const element::Type& type,
-                                     shared_ptr<runtime::he::HEBackend> he_backend)
+                                        shared_ptr<runtime::he::HEPlaintext>& out,
+                                        const element::Type& type,
+                                        shared_ptr<runtime::he::HEBackend> he_backend)
 {
     if (auto he_seal_backend =
             dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))

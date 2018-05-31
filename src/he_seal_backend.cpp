@@ -427,9 +427,11 @@ void runtime::he::he_seal::HESealBackend::check_noise_budget(
                 seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
                 shared_ptr<runtime::he::HECiphertext>& ciphertext = cipher_tv->get_element(i);
 
-                if (auto seal_cipher_wrapper = dynamic_pointer_cast<SealCiphertextWrapper>(ciphertext))
+                if (auto seal_cipher_wrapper =
+                        dynamic_pointer_cast<SealCiphertextWrapper>(ciphertext))
                 {
-                    int budget = m_decryptor->invariant_noise_budget(seal_cipher_wrapper->m_ciphertext, pool);
+                    int budget = m_decryptor->invariant_noise_budget(
+                        seal_cipher_wrapper->m_ciphertext, pool);
                     if (budget <= 0)
                     {
                         NGRAPH_INFO << "Noise budget depleted";
@@ -440,7 +442,6 @@ void runtime::he::he_seal::HESealBackend::check_noise_budget(
                         lowest_budget = budget;
                     }
                 }
-
             }
             NGRAPH_INFO << "Lowest noise budget " << lowest_budget;
         }

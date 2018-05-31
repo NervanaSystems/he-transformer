@@ -53,7 +53,8 @@ namespace ngraph
                     HEHeaanBackend(HEHeaanBackend& he_backend) = default;
                     ~HEHeaanBackend();
 
-                    void assert_valid_heaan_parameter(const std::shared_ptr<runtime::he::HEHeaanParameter> hp) const;
+                    void assert_valid_heaan_parameter(
+                        const std::shared_ptr<runtime::he::HEHeaanParameter> hp) const;
 
                     std::shared_ptr<runtime::TensorView>
                         create_tensor(const element::Type& element_type,

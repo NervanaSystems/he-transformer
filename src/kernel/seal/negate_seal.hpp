@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <memory>
+
 namespace ngraph
 {
     namespace element
@@ -38,17 +40,17 @@ namespace ngraph
             {
                 namespace seal
                 {
-                    void
-                        scalar_negate(const shared_ptr<runtime::he::SealCiphertextWrapper>& arg0,
-                                   shared_ptr<runtime::he::SealCiphertextWrapper>& out,
-                                   const element::Type& type,
-                                   shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend);
+                    void scalar_negate(
+                        const std::shared_ptr<runtime::he::SealCiphertextWrapper>& arg0,
+                        std::shared_ptr<runtime::he::SealCiphertextWrapper>& out,
+                        const element::Type& type,
+                        std::shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend);
 
-                    void
-                        scalar_negate(const shared_ptr<runtime::he::SealPlaintextWrapper>& arg0,
-                                   shared_ptr<runtime::he::SealPlaintextWrapper>& out,
-                                   const element::Type& type,
-                                   shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend);
+                    void scalar_negate(
+                        const std::shared_ptr<runtime::he::SealPlaintextWrapper>& arg0,
+                        std::shared_ptr<runtime::he::SealPlaintextWrapper>& out,
+                        const element::Type& type,
+                        std::shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend);
                 }
             }
         }

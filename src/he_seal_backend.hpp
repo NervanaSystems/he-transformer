@@ -175,7 +175,7 @@ namespace ngraph
                     }
 
                     void check_noise_budget(
-                            const vector<shared_ptr<runtime::he::HETensorView>>& tvs) const;
+                        const vector<shared_ptr<runtime::he::HETensorView>>& tvs) const;
 
                     int noise_budget(const std::shared_ptr<seal::Ciphertext>& ciphertext) const;
 

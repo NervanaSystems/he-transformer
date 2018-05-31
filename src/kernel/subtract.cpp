@@ -276,11 +276,11 @@ void runtime::he::kernel::scalar_subtract(const shared_ptr<runtime::he::HEPlaint
         else
         {
             throw ngraph_error(
-                    "Subtract backend is seal, but arguments or outputs are not SealPlaintextWrapper");
+                "Subtract backend is seal, but arguments or outputs are not SealPlaintextWrapper");
         }
     }
     else if (auto he_heaan_backend =
-            dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
+                 dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
     {
         shared_ptr<runtime::he::HeaanPlaintextWrapper> arg0_heaan =
             dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(arg0);
@@ -292,14 +292,14 @@ void runtime::he::kernel::scalar_subtract(const shared_ptr<runtime::he::HEPlaint
         if (arg0_heaan && arg1_heaan && out_heaan)
         {
             kernel::heaan::scalar_subtract(
-                    arg0_heaan, arg1_heaan, out_heaan, type, he_heaan_backend);
+                arg0_heaan, arg1_heaan, out_heaan, type, he_heaan_backend);
             out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_heaan);
         }
         else
         {
             throw ngraph_error(
-                    "Subtract backend is heaan, but arguments or outputs are not "
-                    "HeaanPlaintextWrapper");
+                "Subtract backend is heaan, but arguments or outputs are not "
+                "HeaanPlaintextWrapper");
         }
     }
     else

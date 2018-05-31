@@ -14,8 +14,8 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "he_seal_backend.hpp"
 #include "kernel/seal/subtract_seal.hpp"
+#include "he_seal_backend.hpp"
 #include "kernel/seal/add_seal.hpp"
 #include "kernel/seal/negate_seal.hpp"
 
@@ -75,5 +75,6 @@ void runtime::he::kernel::seal::scalar_subtract(
     shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend)
 {
     he_seal_backend->get_evaluator()->negate(arg1->m_ciphertext, out->m_ciphertext);
-    he_seal_backend->get_evaluator()->add_plain(out->m_ciphertext, arg0->m_plaintext, out->m_ciphertext);
+    he_seal_backend->get_evaluator()->add_plain(
+        out->m_ciphertext, arg0->m_plaintext, out->m_ciphertext);
 }

@@ -14,8 +14,8 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "he_seal_backend.hpp"
 #include "kernel/seal/negate_seal.hpp"
+#include "he_seal_backend.hpp"
 
 using namespace std;
 using namespace ngraph;
@@ -26,8 +26,7 @@ void runtime::he::kernel::seal::scalar_negate(
     const element::Type& type,
     shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend)
 {
-    he_seal_backend->get_evaluator()->negate(
-        arg0->m_ciphertext, out->m_ciphertext);
+    he_seal_backend->get_evaluator()->negate(arg0->m_ciphertext, out->m_ciphertext);
 }
 
 void runtime::he::kernel::seal::scalar_negate(
