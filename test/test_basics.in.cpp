@@ -195,13 +195,13 @@ NGRAPH_TEST(${BACKEND_NAME}, subtract)
 
     // Create some tensors for input/output
     auto a = he_backend->create_tensor(element::f32, shape);
-    copy_data(a, vector<float>{2, 4, 8, 16});
+    copy_data(a, vector<float>{8, 6, 4, 2});
     auto b = he_backend->create_tensor(element::f32, shape);
-    copy_data(b, vector<float>{1, 2, 4, 8});
+    copy_data(b, vector<float>{1, 2, 3, 4});
     auto result = he_backend->create_tensor(element::f32, shape);
 
     he_backend->call(f, {result}, {a, b});
-    EXPECT_EQ((vector<float>{1, 2, 4, 8}), read_vector<float>(result));
+    EXPECT_EQ((vector<float>{7, 4, 1, -2}), read_vector<float>(result));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, subtract_plain)
@@ -215,13 +215,53 @@ NGRAPH_TEST(${BACKEND_NAME}, subtract_plain)
 
     // Create some tensors for input/output
     auto a = he_backend->create_tensor(element::f32, shape);
-    copy_data(a, vector<float>{2, 4, 8, 16});
+    copy_data(a, vector<float>{8, 6, 4, 2});
     auto b = he_backend->create_plain_tensor(element::f32, shape);
-    copy_data(b, vector<float>{1, 2, 4, 8});
+    copy_data(b, vector<float>{1, 2, 3, 4});
     auto result = he_backend->create_tensor(element::f32, shape);
 
     he_backend->call(f, {result}, {a, b});
-    EXPECT_EQ((vector<float>{1, 2, 4, 8}), read_vector<float>(result));
+    EXPECT_EQ((vector<float>{7, 4, 1, -2}), read_vector<float>(result));
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, subtract_plain2)
+{
+    auto he_backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
+            runtime::Backend::create("${BACKEND_NAME}"));
+    Shape shape{2, 2};
+    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto f = make_shared<Function>(make_shared<op::Subtract>(A, B), op::ParameterVector{A, B});
+
+    // Create some tensors for input/output
+    auto a = he_backend->create_plain_tensor(element::f32, shape);
+    copy_data(a, vector<float>{8, 6, 4, 2});
+    auto b = he_backend->create_tensor(element::f32, shape);
+    copy_data(b, vector<float>{1, 2, 3, 4});
+    auto result = he_backend->create_tensor(element::f32, shape);
+
+    he_backend->call(f, {result}, {a, b});
+    EXPECT_EQ((vector<float>{7, 4, 1, -2}), read_vector<float>(result));
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, subtract_plain_plain)
+{
+    auto he_backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
+            runtime::Backend::create("${BACKEND_NAME}"));
+    Shape shape{2, 2};
+    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto f = make_shared<Function>(make_shared<op::Subtract>(A, B), op::ParameterVector{A, B});
+
+    // Create some tensors for input/output
+    auto a = he_backend->create_plain_tensor(element::f32, shape);
+    copy_data(a, vector<float>{8, 6, 4, 2});
+    auto b = he_backend->create_plain_tensor(element::f32, shape);
+    copy_data(b, vector<float>{1, 2, 3, 4});
+    auto result = he_backend->create_plain_tensor(element::f32, shape);
+
+    he_backend->call(f, {result}, {a, b});
+    EXPECT_EQ((vector<float>{7, 4, 1, -2}), read_vector<float>(result));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, abc)

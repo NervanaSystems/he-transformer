@@ -111,7 +111,8 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         {"Reshape", 1},
         {"Add", 2},
         {"Dot", 2},
-        {"Multiply", 2}};
+        {"Multiply", 2},
+        {"Subtract", 2}};
 
     // Invoke computation
     for (shared_ptr<Node> op : function->get_ordered_ops())
@@ -443,7 +444,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
 
     if (node_op == "Add")
     {
-        if (arg0_cipher != nullptr && arg1_cipher != nullptr)
+        if (arg0_cipher != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
             runtime::he::kernel::add(arg0_cipher->get_elements(),
                                      arg1_cipher->get_elements(),
@@ -452,7 +453,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                      m_he_backend,
                                      out0_cipher->get_element_count());
         }
-        else if (arg0_cipher != nullptr && arg1_plain != nullptr)
+        else if (arg0_cipher != nullptr && arg1_plain != nullptr && out0_cipher != nullptr)
         {
             runtime::he::kernel::add(arg0_cipher->get_elements(),
                                      arg1_plain->get_elements(),
@@ -461,7 +462,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                      m_he_backend,
                                      out0_cipher->get_element_count());
         }
-        else if (arg0_plain != nullptr && arg1_cipher != nullptr)
+        else if (arg0_plain != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
             runtime::he::kernel::add(arg0_plain->get_elements(),
                     arg1_cipher->get_elements(),
@@ -470,7 +471,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                     m_he_backend,
                     out0_cipher->get_element_count());
         }
-        else if (arg0_plain != nullptr && arg1_plain != nullptr)
+        else if (arg0_plain != nullptr && arg1_plain != nullptr && out0_plain != nullptr)
         {
             runtime::he::kernel::add(arg0_plain->get_elements(),
                     arg1_plain->get_elements(),
@@ -625,7 +626,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                     type,
                     m_he_backend);
         }
-        else if (arg0_cipher != nullptr && arg1_plain != nullptr)
+        else if (arg0_cipher != nullptr && arg1_plain != nullptr && out0_cipher != nullptr)
         {
             NGRAPH_INFO << "Convolution cipher + plain";
             runtime::he::kernel::convolution(arg0_cipher->get_elements(),
@@ -649,7 +650,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                     type,
                     m_he_backend);
         }
-        else if (arg0_plain != nullptr && arg1_cipher != nullptr)
+        else if (arg0_plain != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
             throw ngraph_error("Convolution plain + cipher not supported");
             /* runtime::he::kernel::convolution(arg0_plain->get_elements(),
@@ -662,13 +663,13 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                     type,
                     m_he_backend); */
         }
-        else if (arg0_plain != nullptr && arg1_plain != nullptr)
+        else if (arg0_plain != nullptr && arg1_plain != nullptr && out0_plain != nullptr)
         {
             throw ngraph_error("Convolution plain + plain not supported");
         }
         else
         {
-            throw ngraph_error("Dot types not supported.");
+            throw ngraph_error("Convolution types not supported.");
         }
     }
     else if (node_op == "Dot")
@@ -677,7 +678,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         NGRAPH_INFO << join(args[0]->get_shape(), "x") << " dot "
                     << join(args[1]->get_shape(), "x");
 
-        if (arg0_cipher != nullptr && arg1_cipher != nullptr)
+        if (arg0_cipher != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
             runtime::he::kernel::dot(arg0_cipher->get_elements(),
                                      arg1_cipher->get_elements(),
@@ -689,7 +690,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                      type,
                                      m_he_backend);
         }
-        else if (arg0_cipher != nullptr && arg1_plain != nullptr)
+        else if (arg0_cipher != nullptr && arg1_plain != nullptr && out0_cipher != nullptr)
         {
             runtime::he::kernel::dot(arg0_cipher->get_elements(),
                                      arg1_plain->get_elements(),
@@ -701,7 +702,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                      type,
                                      m_he_backend);
         }
-        else if (arg0_plain != nullptr && arg1_cipher != nullptr)
+        else if (arg0_plain != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
             runtime::he::kernel::dot(arg0_plain->get_elements(),
                                      arg1_cipher->get_elements(),
@@ -713,7 +714,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                      type,
                                      m_he_backend);
         }
-        else if (arg0_plain != nullptr && arg1_plain != nullptr)
+        else if (arg0_plain != nullptr && arg1_plain != nullptr && out0_plain != nullptr)
         {
             runtime::he::kernel::dot(arg0_plain->get_elements(),
                                      arg1_plain->get_elements(),
@@ -732,7 +733,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     }
     else if (node_op == "Multiply")
     {
-        if (arg0_cipher != nullptr && arg1_cipher != nullptr)
+        if (arg0_cipher != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
             runtime::he::kernel::multiply(arg0_cipher->get_elements(),
                                           arg1_cipher->get_elements(),
@@ -741,7 +742,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                           m_he_backend,
                                           out0_cipher->get_element_count());
         }
-        else if (arg0_cipher != nullptr && arg1_plain != nullptr)
+        else if (arg0_cipher != nullptr && arg1_plain != nullptr && out0_cipher != nullptr)
         {
             runtime::he::kernel::multiply(arg0_cipher->get_elements(),
                                           arg1_plain->get_elements(),
@@ -750,7 +751,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                           m_he_backend,
                                           out0_cipher->get_element_count());
         }
-        else if (arg0_plain != nullptr && arg1_cipher != nullptr)
+        else if (arg0_plain != nullptr && arg1_cipher != nullptr  && out0_cipher != nullptr)
         {
             runtime::he::kernel::multiply(arg0_plain->get_elements(),
                                           arg1_cipher->get_elements(),
@@ -759,7 +760,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                           m_he_backend,
                                           out0_cipher->get_element_count());
         }
-        else if (arg0_plain != nullptr && arg1_plain != nullptr)
+        else if (arg0_plain != nullptr && arg1_plain != nullptr  && out0_plain != nullptr)
         {
             runtime::he::kernel::multiply(arg0_plain->get_elements(),
                                           arg1_plain->get_elements(),
@@ -873,6 +874,10 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                          reshape->get_input_order(),
                                          out0_plain->get_shape());
         }
+        else
+        {
+            throw ngraph_error("Reshape types not supported.");
+        }
     }
     else if (node_op == "Result")
     {
@@ -923,8 +928,9 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     }
     else if (node_op == "Subtract")
     {
-        if (arg0_cipher != nullptr && arg1_cipher != nullptr)
+        if (arg0_cipher != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
+            NGRAPH_INFO << "Subtract CC";
             runtime::he::kernel::subtract(arg0_cipher->get_elements(),
                                           arg1_cipher->get_elements(),
                                           out0_cipher->get_elements(),
@@ -932,15 +938,42 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                           m_he_backend,
                                           out0_cipher->get_element_count());
         }
-        else if (arg0_cipher != nullptr && arg1_plain != nullptr)
+        else if (arg0_cipher != nullptr && arg1_plain != nullptr && out0_cipher != nullptr)
         {
+            NGRAPH_INFO << "Subtract CP";
             runtime::he::kernel::subtract(arg0_cipher->get_elements(),
                                           arg1_plain->get_elements(),
                                           out0_cipher->get_elements(),
                                           type,
                                           m_he_backend,
                                           out0_cipher->get_element_count());
-        } // TODO: enable (plain, cipher) case
+        }
+        else if (arg0_plain != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
+        {
+            NGRAPH_INFO << "Subtract PC";
+            auto tmp1 = arg0_plain->get_elements();
+            NGRAPH_INFO << "arg0 plain";
+            auto tmp2 = arg1_cipher->get_elements();
+            NGRAPH_INFO << "arg1 cipher";
+            auto tmp3 = out0_cipher->get_elements();
+            NGRAPH_INFO << "out0 cipher";
+            runtime::he::kernel::subtract(arg0_plain->get_elements(),
+                    arg1_cipher->get_elements(),
+                    out0_cipher->get_elements(),
+                    type,
+                    m_he_backend,
+                    out0_cipher->get_element_count());
+        }
+        else if (arg0_plain != nullptr && arg1_plain != nullptr && out0_plain != nullptr)
+        {
+            NGRAPH_INFO << "Subtract PP";
+            runtime::he::kernel::subtract(arg0_plain->get_elements(),
+                    arg1_plain->get_elements(),
+                    out0_plain->get_elements(),
+                    type,
+                    m_he_backend,
+                    out0_plain->get_element_count());
+        }
         else
         {
             throw ngraph_error("Subtract types not supported.");

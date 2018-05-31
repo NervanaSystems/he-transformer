@@ -65,5 +65,6 @@ void runtime::he::kernel::heaan::scalar_subtract(
     const element::Type& type,
     shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
 {
-    throw ngraph_error("Heaan plaintext - ciphertext not implemented");
+    out->m_ciphertext = he_heaan_backend->get_scheme()->negate(arg1->m_ciphertext);
+    out->m_ciphertext = he_heaan_backend->get_scheme()->addConst(out->m_ciphertext, arg0->m_plaintext);
 }
