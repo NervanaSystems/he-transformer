@@ -31,16 +31,16 @@
 using namespace std;
 using namespace ngraph;
 
-TEST_F(TestHEBackend, tf_mnist_deep_1)
+TEST_F(TestHEBackend, tf_mnist_softmax_1)
 { // TODO: generalize to multiple backends
-    shared_ptr<runtime::he::he_heaan::HEHeaanBackend> backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>( runtime::Backend::create("HE_HEAAN"));
+     // shared_ptr<runtime::he::he_heaan::HEHeaanBackend> backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>( runtime::Backend::create("HE_HEAAN"));
     // shared_ptr<runtime::he::he_seal::HESealBackend> backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(runtime::Backend::create("HE_SEAL"));
     //
-    const string backend_type = "HE_HEAAN";
-    // const string backend_type = "INTERPRETER";
-    // auto backend = runtime::Backend::create("INTERPRETER");
+    //const string backend_type = "HE_HEAAN";
+    const string backend_type = "INTERPRETER";
+    auto backend = runtime::Backend::create("INTERPRETER");
     NGRAPH_INFO << "Loaded backend";
-    const string filename = "mnist_deep_simplified_batch_2";
+    const string filename = "mnist_softmax_batch5";
     const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, filename + ".js");
     const string json_string = file_util::read_file_to_string(json_path);
     shared_ptr<Function> f = deserialize(json_string);
@@ -49,30 +49,15 @@ TEST_F(TestHEBackend, tf_mnist_deep_1)
     auto model_file_name = filename + string(".") + pass::VisualizeTree::get_file_ext();
 
     unordered_map<string, vector<float>> parms;
-    parms["conv1_b"] = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "weights/conv1_b_conv1:0.txt"));
-    parms["conv1_W"] = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "weights/W_conv1:0.txt"));
-
-    parms["conv2_b"] = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "weights/conv2_b_conv2:0.txt"));
-    parms["conv2_W"] = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "weights/W_conv2:0.txt"));
-
-    parms["fc1_b"] = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "weights/fc1_b_fc1:0.txt"));
-    parms["fc1_W"] = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "weights/W_fc1:0.txt"));
-
-    parms["fc2_b"] = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "weights/fc2_b_fc2:0.txt"));
-    parms["fc2_W"] = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "weights/W_fc2:0.txt"));
+    parms["b"] = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "weights/b.txt"));
+    parms["W"] = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "weights/W.txt"));
 
     parms["x"] = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "weights/x.txt"));
 
     unordered_map<string, Shape> parm_shapes;
-    parm_shapes["conv1_W"] = Shape{5, 5, 1, 5};
-    parm_shapes["conv1_b"] = Shape{5};
-    parm_shapes["conv2_W"] = Shape{5, 5, 5, 11};
-    parm_shapes["conv2_b"] = Shape{11};
-    parm_shapes["fc1_W"] = Shape{539, 100};
-    parm_shapes["fc1_b"] = Shape{100};
-    parm_shapes["fc2_W"] = Shape{100, 10};
-    parm_shapes["fc2_b"] = Shape{10};
-    parm_shapes["x"] = Shape{2, 784};
+    parm_shapes["W"] = Shape{784,10};
+    parm_shapes["b"] = Shape{10};
+    parm_shapes["x"] = Shape{5, 784};
 
     NGRAPH_INFO << "Deserialized graph";
     auto parameters = f->get_parameters();
@@ -83,7 +68,7 @@ TEST_F(TestHEBackend, tf_mnist_deep_1)
         auto& type = parameter->get_element_type();
         auto parameter_cipher_tv = backend->create_tensor(type, shape);
         auto parameter_tv = backend->create_tensor(type, shape);
-        auto parameter_plain_tv = backend->create_plain_tensor(type, shape);
+        // auto parameter_plain_tv = he_backend->create_plain_tensor(type, shape);
         bool data_input = false;
         bool valid_shape = false;
 
@@ -115,8 +100,8 @@ TEST_F(TestHEBackend, tf_mnist_deep_1)
                     else
                     {
                         NGRAPH_INFO << "Creating plain tv size " << shape_size(shape);
-                        copy_data(parameter_plain_tv, parms[parm]);
-                        parameter_tvs.push_back(parameter_plain_tv);
+                        // copy_data(parameter_plain_tv, parms[parm]);
+                        // parameter_tvs.push_back(parameter_plain_tv);
                     }
                 }
                 else
@@ -145,9 +130,15 @@ TEST_F(TestHEBackend, tf_mnist_deep_1)
     backend->call(f, result_tvs, parameter_tvs);
     NGRAPH_INFO << "called function";
 
-    EXPECT_EQ((vector<float>{
-0.0899273, 0.110965, 0.0533864, 0.0685337, 0.0973437, 0.191139, 0.0625438, 0.0817467, 0.125587, 0.0393772, 0.0550941, 0.105483, 0.0332782, 0.0753735, 0.102445, 0.213246, 0.0803351, 0.0786155, 0.116955, 0.0446246}),
-            read_vector<float>(result_tvs[0]));
+    auto tmp = read_vector<float>(result_tvs[0]);
+    for(auto elem : tmp)
+    {
+        cout << elem << ", ";
+    }
+    cout << endl;
+    EXPECT_TRUE(test::all_close(vector<float>{
+                0.624406, -8.56023, 1.06847, 4.81459, -2.81721, -0.251675, -6.91895, 10.1022, -0.612656, 2.55105, 4.25543, -0.750629, 10.6834, 4.89307, -10.9504, 5.10364, 6.01537, -14.0582, 3.42761, -8.61934, -5.25755, 6.30253, 1.80438, 0.71403, -2.37156, -0.347839, -0.12199, 0.109456, 0.678508, -1.50997, 11.7059, -11.5038, 1.67892, 0.275615, -6.33494, 3.26604, 1.46237, 0.229319, -0.0319397, -0.747563, -1.17459, -6.39749, 0.336039, -2.4198, 6.42819, -1.60604, 0.56934, 1.30156, 0.565424, 2.39734},
+            read_vector<float>(result_tvs[0])));
 }
 
 TEST_F(TestHEBackend, tf_mnist_const_1)

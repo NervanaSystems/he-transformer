@@ -88,14 +88,15 @@ void runtime::he::he_heaan::HEHeaanBackend::assert_valid_heaan_parameter(
 {
 
     static const int base = 2;
-    static const int depth = 10; // TODO: find depth?
+    static const int depth = 4; // TODO: find depth dynamically for computation
 
     double security = 3.6 * (1 << hp->m_poly_modulus) / (depth + hp->m_plain_modulus) - 110.;
 
-    NGRAPH_INFO << "Security " << security;
-
-    // throw ngraph_error("Tmp");
-
+    if (security < 128)
+    {
+        NGRAPH_INFO << "Security " << security << " too small for depth " << depth;
+        // throw ngraph_error("Security inadequate"); // TODO: enable
+    }
 }
 
 shared_ptr<runtime::TensorView>

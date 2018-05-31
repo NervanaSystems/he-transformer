@@ -99,7 +99,7 @@ construct_equality_bool
 convert_float32_bool
 convert_int32_bool
 convert_int32_float32
-convolution_2d_1item
+#convolution_2d_1item
 convolution_2d_1item_1o1i_data_dilated
 convolution_2d_1item_2o1i_data_dilated
 convolution_2d_1item_2o2i_data_dilated

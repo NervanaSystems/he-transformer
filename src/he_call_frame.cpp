@@ -155,7 +155,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                             element_type, shape, m_he_backend, name);
                         tensor_map.insert({tv, itv});
                     }
-                } // two-input ops that prefer plaintetx result
+                } // two-input ops that prefer plaintext result
                 else if (op->description() == "Add" || op->description() == "Multiply" ||
                          op->description() == "Dot")
                 {
@@ -576,7 +576,28 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
 
         if (arg0_cipher != nullptr && arg1_cipher != nullptr)
         {
-            throw ngraph_error("Convolution cipher + cipher not supported");
+            NGRAPH_INFO << "Conv ciper + cipher";
+            throw ngraph_error("Convolution cipher + Cipher not supported");
+            runtime::he::kernel::convolution(arg0_cipher->get_elements(),
+                    arg1_cipher->get_elements(),
+                    out0_cipher->get_elements(),
+                    arg0_cipher->get_shape(),
+                    arg1_cipher->get_shape(),
+                    out0_cipher->get_shape(),
+                    c->get_window_movement_strides(),
+                    c->get_window_dilation_strides(),
+                    c->get_padding_below(),
+                    c->get_padding_above(),
+                    c->get_data_dilation_strides(),
+                    0,
+                    1,
+                    1,
+                    0,
+                    0,
+                    1,
+                    false,
+                    type,
+                    m_he_backend);
         }
         else if (arg0_cipher != nullptr && arg1_plain != nullptr)
         {
@@ -809,6 +830,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
 
         if (arg0_cipher != nullptr && out0_cipher != nullptr)
         {
+            NGRAPH_INFO << "Result cipher to cipher";
             runtime::he::kernel::result(arg0_cipher->get_elements(),
                                         out0_cipher->get_elements(),
                                         shape_size(res->get_shape()));
