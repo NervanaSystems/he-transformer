@@ -91,8 +91,10 @@ runtime::he::he_seal::HESealBackend::HESealBackend(
     m_evaluator = make_shared<seal::Evaluator>(*m_context);
 
     // Plaintext constants
-    m_plaintext_num = plaintext_num{m_frac_encoder->encode(1),
+    m_plaintext_num = plaintext_num{m_frac_encoder->encode(0),
+                                    m_frac_encoder->encode(1),
                                     m_frac_encoder->encode(-1),
+                                    m_int_encoder->encode(0),
                                     m_int_encoder->encode(1),
                                     m_int_encoder->encode(-1)};
 }

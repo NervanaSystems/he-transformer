@@ -37,18 +37,11 @@ using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
-NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_softmax_1)
+NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_softmax_5)
 {
-    EXPECT_EQ(1,1);
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
             runtime::Backend::create("${BACKEND_NAME}"));
-    // TODO: generalize to multiple backends
-     //shared_ptr<runtime::he::he_heaan::HEHeaanBackend> backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>( runtime::Backend::create("HE_HEAAN"));
-    // shared_ptr<runtime::he::he_seal::HESealBackend> backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(runtime::Backend::create("HE_SEAL"));
-    //
-    const string backend_type = "HE_HEAAN";
-    //const string backend_type = "INTERPRETER";
-    //auto backend = runtime::Backend::create("INTERPRETER");
+
     NGRAPH_INFO << "Loaded backend";
     const string filename = "mnist_softmax_batch5";
     const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, filename + ".js");
@@ -93,30 +86,18 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_softmax_1)
                 valid_shape = true;
                 parm = it.first;
                 NGRAPH_INFO << "Adding " << parm;
-                if (backend_type == "INTERPRETER")
+                if (parm == "x")
                 {
-                    copy_data(parameter_tv, parms[parm]);
-                    parameter_tvs.push_back(parameter_tv);
-                }
-                else if (backend_type == "HE_HEAAN")
-                {
-                    if (parm == "x")
-                    {
-                        NGRAPH_INFO << "Copying x size " << shape_size(shape);
-                        copy_data(parameter_cipher_tv, parms[parm]);
-                        parameter_tvs.push_back(parameter_cipher_tv);
-                        NGRAPH_INFO << "Copied x";
-                    }
-                    else
-                    {
-                        NGRAPH_INFO << "Creating plain tv size " << shape_size(shape);
-                        copy_data(parameter_plain_tv, parms[parm]);
-                        parameter_tvs.push_back(parameter_plain_tv);
-                    }
+                    NGRAPH_INFO << "Copying x size " << shape_size(shape);
+                    copy_data(parameter_cipher_tv, parms[parm]);
+                    parameter_tvs.push_back(parameter_cipher_tv);
+                    NGRAPH_INFO << "Copied x";
                 }
                 else
                 {
-                    throw ngraph_error("Unknown backend type");
+                    NGRAPH_INFO << "Creating plain tv size " << shape_size(shape);
+                    copy_data(parameter_plain_tv, parms[parm]);
+                    parameter_tvs.push_back(parameter_plain_tv);
                 }
             }
         }
@@ -136,27 +117,19 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_softmax_1)
         result_tvs.push_back(backend->create_tensor(type, shape));
     }
 
-    NGRAPH_INFO << "calling function on " << parameter_tvs.size() << " inputs";
+    NGRAPH_INFO << "calling function";
     backend->call(f, result_tvs, parameter_tvs);
-    NGRAPH_INFO << "called function";
 
-    auto tmp = read_vector<float>(result_tvs[0]);
-    for(auto elem : tmp)
-    {
-        cout << elem << ", ";
-    }
-    cout << endl;
-    /* EXPECT_TRUE(test::all_close(vector<float>{
+    EXPECT_TRUE(test::all_close(vector<float>{
                 0.624406, -8.56023, 1.06847, 4.81459, -2.81721, -0.251675, -6.91895, 10.1022, -0.612656, 2.55105, 4.25543, -0.750629, 10.6834, 4.89307, -10.9504, 5.10364, 6.01537, -14.0582, 3.42761, -8.61934, -5.25755, 6.30253, 1.80438, 0.71403, -2.37156, -0.347839, -0.12199, 0.109456, 0.678508, -1.50997, 11.7059, -11.5038, 1.67892, 0.275615, -6.33494, 3.26604, 1.46237, 0.229319, -0.0319397, -0.747563, -1.17459, -6.39749, 0.336039, -2.4198, 6.42819, -1.60604, 0.56934, 1.30156, 0.565424, 2.39734},
-            read_vector<float>(result_tvs[0]), 1e-4f)); */
+            read_vector<float>(result_tvs[0]), 1e-4f));
 }
 
-/* TEST_F(TestHEBackend, tf_mnist_const_1)
-{ // TODO: generalize to multiple backends
-    //shared_ptr<runtime::he::he_heaan::HEHeaanBackend> backend =
-        dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-                runtime::Backend::create("HE_HEAAN"));
-    shared_ptr<runtime::he::he_seal::HESealBackend> backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(runtime::Backend::create("HE_SEAL"));
+NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_softmax_quantized_1)
+{
+    auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
+            runtime::Backend::create("${BACKEND_NAME}"));
+
     NGRAPH_INFO << "Loaded backend";
     const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, "mnist_mlp_const_1_inputs.js");
     const string json_string = file_util::read_file_to_string(json_path);
@@ -190,5 +163,5 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_softmax_1)
 
     EXPECT_EQ((vector<float>{2173, 944, 1151, 1723, -1674, 569, -1985, 9776, -4997, -1903}),
             read_vector<float>(result_tvs[0]));
-} */
+}
 

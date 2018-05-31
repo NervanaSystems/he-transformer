@@ -46,13 +46,6 @@ NGRAPH_TEST(${BACKEND_NAME}, backend_init)
     EXPECT_EQ(1, 1);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, seal_debug)
-{
-#ifndef SEAL_DEBUG
-    EXPECT_EQ(1, 2);
-#endif
-}
-
 NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_scalar)
 {
     auto he_backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
