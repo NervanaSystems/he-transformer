@@ -428,18 +428,19 @@ void runtime::he::he_seal::HESealBackend::check_noise_budget(
                 if (auto seal_cipher_wrapper = dynamic_pointer_cast<SealCiphertextWrapper>(ciphertext))
                 {
                     int budget = m_decryptor->invariant_noise_budget(seal_cipher_wrapper->m_ciphertext, pool);
+                    if (budget <= 0)
+                    {
+                        NGRAPH_INFO << "Noise budget depleted";
+                        throw ngraph_error("Noise budget depleted");
+                    }
                     if (budget < lowest_budget)
                     {
                         lowest_budget = budget;
                     }
-                    if (budget <= 0)
-                    {
-                        throw ngraph_error("Noise budget depleted");
-                    }
                 }
 
             }
-            NGRAPH_INFO << "Lowest Noise budget " << lowest_budget;
+            NGRAPH_INFO << "Lowest noise budget " << lowest_budget;
         }
     }
     NGRAPH_INFO << "Done checking noise budget ";
