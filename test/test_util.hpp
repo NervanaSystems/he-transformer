@@ -73,4 +73,4 @@ bool all_close(const std::vector<std::complex<T>>& a,
 
 vector<tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,vector<shared_ptr<ngraph::runtime::TensorView>>>> generate_tensors(
     const vector<tuple<element::Type, Shape>>& output, const vector<tuple<element::Type, Shape>>& input,
-    shared_ptr<ngraph::runtime::he::HEBackend> backend);
+    shared_ptr<ngraph::runtime::Backend> backend);

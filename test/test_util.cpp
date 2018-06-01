@@ -71,7 +71,7 @@ vector<float> read_constant(const string filename)
 
 vector<tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,vector<shared_ptr<ngraph::runtime::TensorView>>>> generate_tensors(
     const vector<tuple<element::Type, Shape>>& output, const vector<tuple<element::Type, Shape>>& input,
-    shared_ptr<ngraph::runtime::he::HEBackend> backend)
+    shared_ptr<ngraph::runtime::Backend> backend)
 {
     using ret_tuple_type = tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,vector<shared_ptr<ngraph::runtime::TensorView>>>;
     auto he_backend = static_pointer_cast<ngraph::runtime::he::he_heaan::HEHeaanBackend>(backend);
@@ -90,6 +90,22 @@ vector<tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,vector<shared_ptr<n
         for (auto elem : input)
         {
             auto input_tensor = he_backend->create_tensor(get<0>(elem), get<1>(elem));
+            argument.push_back(input_tensor);
+        }
+        return make_tuple(result, argument);
+    };
+    auto default_tensor = [&output, &input, &backend] ()
+    {
+        vector<shared_ptr<ngraph::runtime::TensorView>> result;
+        for (auto elem : output)
+        {
+            auto output_tensor = backend->create_tensor(get<0>(elem), get<1>(elem));
+            result.push_back(output_tensor);
+        }
+        vector<shared_ptr<ngraph::runtime::TensorView>> argument;
+        for (auto elem : input)
+        {
+            auto input_tensor = backend->create_tensor(get<0>(elem), get<1>(elem));
             argument.push_back(input_tensor);
         }
         return make_tuple(result, argument);
@@ -145,12 +161,19 @@ vector<tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,vector<shared_ptr<n
         return alternate_cipher(1);
     };
 
-    ret.push_back(cipher_cipher());
-    ret.push_back(plain_plain());
-    if (input.size() >= 2)
+    if (he_backend != nullptr)
     {
-        ret.push_back(plain_cipher_cipher());
-        ret.push_back(cipher_plain_cipher());
+        ret.push_back(cipher_cipher());
+        ret.push_back(plain_plain());
+        if (input.size() >= 2)
+        {
+            ret.push_back(plain_cipher_cipher());
+            ret.push_back(cipher_plain_cipher());
+        }
+    }
+    else
+    {
+        ret.push_back(default_tensor());
     }
 
     return ret;

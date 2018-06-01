@@ -112,8 +112,15 @@ NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2_3)
 
 NGRAPH_TEST(${BACKEND_NAME}, ab)
 {
-    auto he_backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("${BACKEND_NAME}"));
+    auto backend = runtime::Backend::create("${BACKEND_NAME}");
+    if ("${BACKEND_NAME}" == "HE_HEAAN")
+    {
+        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
+    }
+    else if ("${BACKEND_NAME}" == "HE_SEAL")
+    {
+        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
+    }
     Shape shape{2, 3};
     auto a = make_shared<op::Parameter>(element::i64, shape);
     auto b = make_shared<op::Parameter>(element::i64, shape);
@@ -124,7 +131,7 @@ NGRAPH_TEST(${BACKEND_NAME}, ab)
     auto tuple = make_tuple(element::i64, shape);
     auto input_tensors = {tuple, tuple};
     auto output_tensors = {tuple};
-    auto tensors_list = generate_tensors(output_tensors, input_tensors, he_backend);
+    auto tensors_list = generate_tensors(output_tensors, input_tensors, backend);
 
     for (auto tensors : tensors_list)
     {
@@ -138,7 +145,7 @@ NGRAPH_TEST(${BACKEND_NAME}, ab)
         copy_data(t_a, test::NDArray<int64_t, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector());
         copy_data(t_b, test::NDArray<int64_t, 2>({{7, 8, 9}, {10, 11, 12}}).get_vector());
 
-        he_backend->call(f, {t_result}, {t_a, t_b});
+        backend->call(f, {t_result}, {t_a, t_b});
         EXPECT_EQ(read_vector<int64_t>(t_result),
                 (test::NDArray<int64_t, 2>({{8, 10, 12}, {14, 16, 18}})).get_vector());
     }
@@ -469,7 +476,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor)
     }
 }
 
-/* NGRAPH_TEST(${BACKEND_NAME}, broadcast_trivial)
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_trivial)
 {
     auto he_backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
         runtime::Backend::create("${BACKEND_NAME}"));
@@ -2104,7 +2111,7 @@ NGRAPH_TEST(${BACKEND_NAME}, create_valued_plaintext)
         he_backend->decode(&val_decoded, plaintext, type);
         EXPECT_EQ(val_decoded, val);
     }
-} */
+}
 
 struct ConvolutionBiasTestData
 {
@@ -2199,7 +2206,7 @@ struct ConvolutionBiasTestData
     }
 };
 
-/* NGRAPH_TEST(${BACKEND_NAME}, conv_fprop_n1c1h3w3)
+NGRAPH_TEST(${BACKEND_NAME}, conv_fprop_n1c1h3w3)
 {
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
         runtime::Backend::create("${BACKEND_NAME}"));
@@ -2506,4 +2513,4 @@ NGRAPH_TEST(${BACKEND_NAME}, negative_plain_plain)
     backend->call(f, {result}, {a});
     EXPECT_TRUE(
         test::all_close(vector<float>{-1, 2, 0, 4.75f, -8.75f, 8.75f}, read_vector<float>(result)));
-} */
+}
