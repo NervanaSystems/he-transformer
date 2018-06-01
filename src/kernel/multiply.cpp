@@ -83,8 +83,6 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HECipher
         }
         else
         {
-            NGRAPH_INFO << (arg0_heaan == nullptr) << " " << (arg1_heaan == nullptr) << " "
-                        << (out_heaan == nullptr);
             throw ngraph_error(
                 "Multiply backend is heaan, but arguments or outputs are not "
                 "HeaanCiphertextWrapper");
@@ -155,8 +153,6 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HECipher
         }
         else
         {
-            NGRAPH_INFO << (arg0_heaan == nullptr) << " " << (arg1_heaan == nullptr) << " "
-                        << (out_heaan == nullptr);
             throw ngraph_error(
                 "Multiply backend is heaan, but arguments or outputs are not "
                 "HeaanCiphertextWrapper");
@@ -246,8 +242,6 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HEPlaint
         }
         else
         {
-            NGRAPH_INFO << (arg0_heaan == nullptr) << " " << (arg1_heaan == nullptr) << " "
-                        << (out_heaan == nullptr);
             throw ngraph_error(
                 "Multiply backend is heaan, but arguments or outputs are not "
                 "HeaanPlaintextWrapper");

@@ -257,7 +257,6 @@ void runtime::he::kernel::scalar_subtract(const shared_ptr<runtime::he::HEPlaint
                                           const element::Type& type,
                                           shared_ptr<runtime::he::HEBackend> he_backend)
 {
-    NGRAPH_INFO << "scalar_subtract in parent kernel";
     if (auto he_seal_backend =
             dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
     {

@@ -26,6 +26,9 @@
 #include "he_heaan_backend.hpp"
 #include "he_seal_backend.hpp"
 #include "ngraph/file_util.hpp"
+#include "ngraph/type/element_type.hpp"
+
+using namespace ngraph;
 
 class TestHEBackend : public ::testing::Test
 {
@@ -36,8 +39,8 @@ protected:
     static std::shared_ptr<ngraph::runtime::he::he_heaan::HEHeaanBackend> m_he_heaan_backend;
 };
 
-inline std::vector<float> read_constant(const std::string filename)
-{
+std::vector<float> read_constant(const std::string filename);
+/* {
     std::string data = ngraph::file_util::read_file_to_string(filename);
     istringstream iss(data);
 
@@ -50,7 +53,7 @@ inline std::vector<float> read_constant(const std::string filename)
         res.push_back(atof(constant.c_str()));
     }
     return res;
-}
+} */
 
 template <typename T>
 bool all_close(const std::vector<std::complex<T>>& a,
@@ -67,3 +70,7 @@ bool all_close(const std::vector<std::complex<T>>& a,
     }
     return true;
 }
+
+vector<tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,vector<shared_ptr<ngraph::runtime::TensorView>>>> generate_tensors(
+    const vector<tuple<element::Type, Shape>>& output, const vector<tuple<element::Type, Shape>>& input,
+    shared_ptr<ngraph::runtime::he::HEBackend> backend);

@@ -493,7 +493,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
 
         if (arg0_cipher != nullptr && out0_cipher != nullptr)
         {
-            NGRAPH_INFO << "AvgPool cipher -> cipher";
             runtime::he::kernel::avg_pool(arg0_cipher->get_elements(),
                                           out0_cipher->get_elements(),
                                           arg0_cipher->get_shape(),
@@ -887,7 +886,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
 
         if (arg0_cipher != nullptr && out0_cipher != nullptr)
         {
-            NGRAPH_INFO << "Result cipher to cipher";
             runtime::he::kernel::result(arg0_cipher->get_elements(),
                                         out0_cipher->get_elements(),
                                         shape_size(res->get_shape()));
@@ -932,7 +930,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     {
         if (arg0_cipher != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
-            NGRAPH_INFO << "Subtract CC";
             runtime::he::kernel::subtract(arg0_cipher->get_elements(),
                                           arg1_cipher->get_elements(),
                                           out0_cipher->get_elements(),
@@ -942,7 +939,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         }
         else if (arg0_cipher != nullptr && arg1_plain != nullptr && out0_cipher != nullptr)
         {
-            NGRAPH_INFO << "Subtract CP";
             runtime::he::kernel::subtract(arg0_cipher->get_elements(),
                                           arg1_plain->get_elements(),
                                           out0_cipher->get_elements(),
@@ -952,13 +948,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         }
         else if (arg0_plain != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
-            NGRAPH_INFO << "Subtract PC";
-            auto tmp1 = arg0_plain->get_elements();
-            NGRAPH_INFO << "arg0 plain";
-            auto tmp2 = arg1_cipher->get_elements();
-            NGRAPH_INFO << "arg1 cipher";
-            auto tmp3 = out0_cipher->get_elements();
-            NGRAPH_INFO << "out0 cipher";
             runtime::he::kernel::subtract(arg0_plain->get_elements(),
                                           arg1_cipher->get_elements(),
                                           out0_cipher->get_elements(),
@@ -968,7 +957,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         }
         else if (arg0_plain != nullptr && arg1_plain != nullptr && out0_plain != nullptr)
         {
-            NGRAPH_INFO << "Subtract PP";
             runtime::he::kernel::subtract(arg0_plain->get_elements(),
                                           arg1_plain->get_elements(),
                                           out0_plain->get_elements(),
@@ -996,12 +984,10 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         }
         else if (arg0_plain != nullptr && out0_plain != nullptr)
         {
-            NGRAPH_INFO << "sum plain plain";
             throw ngraph_error("Sum types not supported.");
         }
         else if (arg0_plain != nullptr && out0_cipher != nullptr)
         {
-            NGRAPH_INFO << "sum plain -> cipher";
             throw ngraph_error("Sum types not supported.");
         }
         else

@@ -13,10 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ******************************************************************************
-
+message("TEST")
+message("FUNCTION NAME ${FUNCTION_NAME}")
+message("BACKEND_NAME ${BACKEND_NAME}")
+message("FUNCTION_NAME ${FUNCTION_NAME}")
+message("HE_TRANSFORMER_TEST_DIR ${HE_TRANSFORMER_TEST_DIR}")
 #configure_file(${NGRAPH_TEST_DIR}/backend_test.in.cpp backend_test_${BACKEND_NAME}.cpp)
-configure_file(${NGRAPH_TEST_DIR}/autodiff.in.cpp autodiff_${BACKEND_NAME}.cpp)
-configure_file(${NGRAPH_TEST_DIR}/convolution_test.in.cpp convolution_test_${BACKEND_NAME}.cpp)
+# configure_file(${NGRAPH_TEST_DIR}/autodiff.in.cpp autodiff_${BACKEND_NAME}.cpp)
+# configure_file(${NGRAPH_TEST_DIR}/convolution_test.in.cpp convolution_test_${BACKEND_NAME}.cpp)
 # configure_file(${NGRAPH_TEST_DIR}/backend_test.in.cpp backend_test_${BACKEND_NAME}.cpp)
-configure_file(${HE_TRANSFORMER_TEST_DIR}/test_basics.in.cpp test_basics_${BACKEND_NAME}.cpp)
-configure_file(${HE_TRANSFORMER_TEST_DIR}/test_mnist.in.cpp test_mnist_${BACKEND_NAME}.cpp)
+configure_file(${HE_TRANSFORMER_TEST_DIR}/test_basics.in.cpp test_basics_${BACKEND_NAME}${FUNCTION_NAME}.cpp)
+# configure_file(${HE_TRANSFORMER_TEST_DIR}/test_mnist.in.cpp test_mnist_${BACKEND_NAME}.cpp)
