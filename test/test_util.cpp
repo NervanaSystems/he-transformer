@@ -147,7 +147,7 @@ vector<tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,vector<shared_ptr<n
 
     ret.push_back(cipher_cipher());
     ret.push_back(plain_plain());
-    if (input.size() == 2)
+    if (input.size() >= 2)
     {
         ret.push_back(plain_cipher_cipher());
         ret.push_back(cipher_plain_cipher());
