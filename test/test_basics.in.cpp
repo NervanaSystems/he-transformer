@@ -252,32 +252,11 @@ NGRAPH_TEST(${BACKEND_NAME}, dot1d)
     }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, dot1d_plain_binary)
-{
-    auto he_backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("${BACKEND_NAME}"));
-    Shape shape{16};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto B = make_shared<op::Parameter>(element::f32, shape);
-    Shape shape_r{};
-    auto f = make_shared<Function>(make_shared<op::Dot>(A, B), op::ParameterVector{A, B});
-
-    // Create some tensors for input/output
-    auto a = he_backend->create_plain_tensor(element::f32, shape);
-    copy_data(a, vector<float>{1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, -1});
-    auto b = he_backend->create_tensor(element::f32, shape);
-    copy_data(b, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
-    auto result = he_backend->create_tensor(element::f32, shape_r);
-
-    he_backend->call(f, {result}, {a, b});
-    EXPECT_EQ((vector<float>{-64}), read_vector<float>(result));
-}
-
-/*
 NGRAPH_TEST(${BACKEND_NAME}, dot_matrix_vector)
 {
     auto he_backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("${BACKEND_NAME}"));
+            runtime::Backend::create("${BACKEND_NAME}"));
+
     Shape shape_a{4, 4};
     Shape shape_b{4};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -286,36 +265,26 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_matrix_vector)
     Shape shape_r{4};
 
     // Create some tensors for input/output
-    auto a = he_backend->create_tensor(element::f32, shape_a);
-    copy_data(a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
-    auto b = he_backend->create_tensor(element::f32, shape_b);
-    copy_data(b, vector<float>{17, 18, 19, 20});
-    auto result = he_backend->create_tensor(element::f32, shape_r);
+    auto input_tensors = {make_tuple(element::f32, shape_a),
+                          make_tuple(element::f32, shape_b)};
+    auto output_tensors = {make_tuple(element::f32, shape_r)};
+    auto tensors_list = generate_tensors(output_tensors, input_tensors, he_backend);
 
-    he_backend->call(f, {result}, {a, b});
-    EXPECT_EQ((vector<float>{190, 486, 782, 1078}), read_vector<float>(result));
-}
+    for (auto tensors : tensors_list)
+    {
+        auto results = get<0>(tensors);
+        auto inputs = get<1>(tensors);
 
-NGRAPH_TEST(${BACKEND_NAME}, dot_matrix_vector_plain)
-{
-    auto he_backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("${BACKEND_NAME}"));
-    Shape shape_a{4, 4};
-    Shape shape_b{4};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
-    auto f = make_shared<Function>(make_shared<op::Dot>(A, B), op::ParameterVector{A, B});
-    Shape shape_r{4};
+        auto a = inputs[0];
+        auto b = inputs[1];
+        auto result = results[0];
 
-    // Create some tensors for input/output
-    auto a = he_backend->create_plain_tensor(element::f32, shape_a);
-    copy_data(a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
-    auto b = he_backend->create_tensor(element::f32, shape_b);
-    copy_data(b, vector<float>{17, 18, 19, 20});
-    auto result = he_backend->create_tensor(element::f32, shape_r);
+        copy_data(a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
+        copy_data(b, vector<float>{17, 18, 19, 20});
+        he_backend->call(f, {result}, {a, b});
 
-    he_backend->call(f, {result}, {a, b});
-    EXPECT_EQ((vector<float>{190, 486, 782, 1078}), read_vector<float>(result));
+        EXPECT_EQ((vector<float>{190, 486, 782, 1078}), read_vector<float>(result));
+    }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_scalar)
@@ -328,34 +297,27 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_scalar)
     auto f = make_shared<Function>(make_shared<op::Dot>(A, B), op::ParameterVector{A, B});
 
     // Create some tensors for input/output
-    auto a = he_backend->create_tensor(element::f32, shape);
-    copy_data(a, vector<float>{8});
-    auto b = he_backend->create_tensor(element::f32, shape);
-    copy_data(b, vector<float>{6});
-    auto result = he_backend->create_tensor(element::f32, shape);
+    auto tuple = make_tuple(element::f32, shape);
+    auto input_tensors = {tuple, tuple};
+    auto output_tensors = {tuple};
+    auto tensors_list = generate_tensors(output_tensors, input_tensors, he_backend);
 
-    he_backend->call(f, {result}, {a, b});
-    EXPECT_EQ((vector<float>{48}), read_vector<float>(result));
-}
+    for (auto tensors : tensors_list)
+    {
+        auto results = get<0>(tensors);
+        auto inputs = get<1>(tensors);
 
-NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_scalar_plain)
-{
-    auto he_backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("${BACKEND_NAME}"));
-    Shape shape{};
-    auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto B = make_shared<op::Parameter>(element::f32, shape);
-    auto f = make_shared<Function>(make_shared<op::Dot>(A, B), op::ParameterVector{A, B});
+        auto a = inputs[0];
+        auto b = inputs[1];
+        auto result = results[0];
 
-    // Create some tensors for input/output
-    auto a = he_backend->create_plain_tensor(element::f32, shape);
-    copy_data(a, vector<float>{8});
-    auto b = he_backend->create_tensor(element::f32, shape);
-    copy_data(b, vector<float>{6});
-    auto result = he_backend->create_tensor(element::f32, shape);
+        copy_data(a, vector<float>{8});
+        copy_data(b, vector<float>{6});
 
-    he_backend->call(f, {result}, {a, b});
-    EXPECT_EQ((vector<float>{48}), read_vector<float>(result));
+        he_backend->call(f, {result}, {a, b});
+
+        EXPECT_EQ((vector<float>{48}), read_vector<float>(result));
+    }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, constant)
@@ -374,7 +336,7 @@ NGRAPH_TEST(${BACKEND_NAME}, constant)
 NGRAPH_TEST(${BACKEND_NAME}, constant_abc)
 {
     auto he_backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("${BACKEND_NAME}"));
+            runtime::Backend::create("${BACKEND_NAME}"));
     Shape shape{2, 2};
     auto A = op::Constant::create(element::f32, shape, {1, 2, 3, 4});
     auto B = make_shared<op::Parameter>(element::f32, shape);
@@ -382,16 +344,28 @@ NGRAPH_TEST(${BACKEND_NAME}, constant_abc)
     auto f = make_shared<Function>((A + B) * C, op::ParameterVector{B, C});
 
     // Create some tensors for input/output
-    auto b = he_backend->create_tensor(element::f32, shape);
-    auto c = he_backend->create_tensor(element::f32, shape);
-    auto result = he_backend->create_tensor(element::f32, shape);
+    auto tuple = make_tuple(element::f32, shape);
+    auto input_tensors = {tuple, tuple};
+    auto output_tensors = {tuple};
+    auto tensors_list = generate_tensors(output_tensors, input_tensors, he_backend);
 
-    copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
-    copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
+    for (auto tensors : tensors_list)
+    {
+        auto results = get<0>(tensors);
+        auto inputs = get<1>(tensors);
 
-    he_backend->call(f, {result}, {b, c});
-    EXPECT_EQ(read_vector<float>(result),
-              (test::NDArray<float, 2>({{54, 80}, {110, 144}})).get_vector());
+        auto b = inputs[0];
+        auto c = inputs[1];
+        auto result = results[0];
+
+        copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
+        copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
+
+        he_backend->call(f, {result}, {b, c});
+
+        EXPECT_EQ(read_vector<float>(result),
+                (test::NDArray<float, 2>({{54, 80}, {110, 144}})).get_vector());
+    }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_vector)
@@ -405,31 +379,23 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_vector)
                                    op::ParameterVector{A});
 
     // Create some tensors for input/output
-    auto a = he_backend->create_tensor(element::f32, shape_a);
-    copy_data(a, vector<float>{6});
-    auto result = he_backend->create_tensor(element::f32, shape_r);
+    auto input_tensors = {make_tuple(element::f32, shape_a)};
+    auto output_tensors = {make_tuple(element::f32, shape_r)};
+    auto tensors_list = generate_tensors(output_tensors, input_tensors, he_backend);
 
-    he_backend->call(f, {result}, {a});
-    EXPECT_EQ((vector<float>{6, 6, 6, 6}), read_vector<float>(result));
-}
+    for (auto tensors : tensors_list)
+    {
+        auto results = get<0>(tensors);
+        auto inputs = get<1>(tensors);
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_vector_plain)
-{
-    auto he_backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("${BACKEND_NAME}"));
-    Shape shape_a{};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
-    Shape shape_r{4};
-    auto f = make_shared<Function>(make_shared<op::Broadcast>(A, shape_r, AxisSet{0}),
-                                   op::ParameterVector{A});
+        auto a = inputs[0];
+        auto result = results[0];
 
-    // Create some tensors for input/output
-    auto a = he_backend->create_plain_tensor(element::f32, shape_a);
-    copy_data(a, vector<float>{6});
-    auto result = he_backend->create_tensor(element::f32, shape_r);
+        copy_data(a, vector<float>{6});
 
-    he_backend->call(f, {result}, {a});
-    EXPECT_EQ((vector<float>{6, 6, 6, 6}), read_vector<float>(result));
+        he_backend->call(f, {result}, {a});
+        EXPECT_EQ((vector<float>{6, 6, 6, 6}), read_vector<float>(result));
+    }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_to_non_existent_axis)
@@ -453,14 +419,24 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_matrix)
     Shape shape_r{2, 2};
     auto f = make_shared<Function>(make_shared<op::Broadcast>(A, shape_r, AxisSet{0, 1}),
                                    op::ParameterVector{A});
-
     // Create some tensors for input/output
-    auto a = he_backend->create_tensor(element::f32, shape_a);
-    copy_data(a, vector<float>{6});
-    auto result = he_backend->create_tensor(element::f32, shape_r);
+    auto input_tensors = {make_tuple(element::f32, shape_a)};
+    auto output_tensors = {make_tuple(element::f32, shape_r)};
+    auto tensors_list = generate_tensors(output_tensors, input_tensors, he_backend);
 
-    he_backend->call(f, {result}, {a});
-    EXPECT_EQ((vector<float>{6, 6, 6, 6}), read_vector<float>(result));
+    for (auto tensors : tensors_list)
+    {
+        auto results = get<0>(tensors);
+        auto inputs = get<1>(tensors);
+
+        auto a = inputs[0];
+        auto result = results[0];
+
+        copy_data(a, vector<float>{6});
+
+        he_backend->call(f, {result}, {a});
+        EXPECT_EQ((vector<float>{6, 6, 6, 6}), read_vector<float>(result));
+    }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor)
@@ -474,15 +450,26 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor)
                                    op::ParameterVector{A});
 
     // Create some tensors for input/output
-    auto a = he_backend->create_tensor(element::f32, shape_a);
-    copy_data(a, vector<float>{6});
-    auto result = he_backend->create_tensor(element::f32, shape_r);
+    auto input_tensors = {make_tuple(element::f32, shape_a)};
+    auto output_tensors = {make_tuple(element::f32, shape_r)};
+    auto tensors_list = generate_tensors(output_tensors, input_tensors, he_backend);
 
-    he_backend->call(f, {result}, {a});
-    EXPECT_EQ((vector<float>{6, 6, 6, 6, 6, 6, 6, 6}), read_vector<float>(result));
+    for (auto tensors : tensors_list)
+    {
+        auto results = get<0>(tensors);
+        auto inputs = get<1>(tensors);
+
+        auto a = inputs[0];
+        auto result = results[0];
+
+        copy_data(a, vector<float>{6});
+
+        he_backend->call(f, {result}, {a});
+        EXPECT_EQ((vector<float>{6, 6, 6, 6, 6, 6, 6, 6}), read_vector<float>(result));
+    }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_trivial)
+/* NGRAPH_TEST(${BACKEND_NAME}, broadcast_trivial)
 {
     auto he_backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
         runtime::Backend::create("${BACKEND_NAME}"));
