@@ -103,22 +103,6 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         tensor_map.insert({tv, output_tvs[i]});
     }
 
-    // Maps ops that prefer plaintext output op to number of their input arguments
-    unordered_map<string, size_t> ops_prefer_plaintext{{"Constant", 0}, // TODO: all ops prefer plaintext?
-                                                       {"AvgPool", 1},
-                                                       {"Broadcast", 1},
-                                                       {"Concat", 1},
-                                                       {"Negative", 1},
-                                                       {"Relinearize", 1},
-                                                       {"Reshape", 1},
-                                                       {"Slice", 1},
-                                                       {"Sum", 1},
-                                                       {"Add", 2},
-                                                       {"Convolution", 2},
-                                                       {"Dot", 2},
-                                                       {"Multiply", 2},
-                                                       {"Subtract", 2}};
-
     // Invoke computation
     for (shared_ptr<Node> op : function->get_ordered_ops())
     {
@@ -155,61 +139,17 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                 unordered_map<string, size_t>::iterator find_op =
                     ops_prefer_plaintext.find(op->description());
 
-                if (find_op != ops_prefer_plaintext.end())
+                bool plain_out = all_of(inputs.begin(), inputs.end(), [](shared_ptr<runtime::he::HETensorView> input) { return dynamic_pointer_cast<HEPlainTensorView>(input) != nullptr; });
+                if (plain_out)
                 {
-                    if (find_op->second == 0)
-                    {
-                        auto itv = make_shared<runtime::he::HEPlainTensorView>(
+                    auto itv = make_shared<runtime::he::HEPlainTensorView>(
                             element_type, shape, m_he_backend, name);
-                        tensor_map.insert({tv, itv});
-                    }
-                    else if (find_op->second == 1)
-                    {
-                        shared_ptr<HEPlainTensorView> in0_plain =
-                            dynamic_pointer_cast<HEPlainTensorView>(inputs[0]);
-                        if (in0_plain != nullptr)
-                        {
-                            auto itv = make_shared<runtime::he::HEPlainTensorView>(
-                                element_type, shape, m_he_backend, name);
-                            tensor_map.insert({tv, itv});
-                        }
-                        else
-                        {
-                            auto itv = make_shared<runtime::he::HECipherTensorView>(
-                                element_type, shape, m_he_backend, name);
-                            tensor_map.insert({tv, itv});
-                        }
-                    }
-                    else if (find_op->second == 2)
-                    {
-                        shared_ptr<HEPlainTensorView> in0_plain =
-                            dynamic_pointer_cast<HEPlainTensorView>(inputs[0]);
-                        shared_ptr<HEPlainTensorView> in1_plain =
-                            dynamic_pointer_cast<HEPlainTensorView>(inputs[1]);
-                        if ((in0_plain != nullptr) && (in1_plain != nullptr))
-                        {
-                            auto itv = make_shared<runtime::he::HEPlainTensorView>(
-                                element_type, shape, m_he_backend, name);
-                            tensor_map.insert({tv, itv});
-                        }
-                        else
-                        {
-                            auto itv = make_shared<runtime::he::HECipherTensorView>(
-                                element_type, shape, m_he_backend, name);
-                            tensor_map.insert({tv, itv});
-                        }
-                    }
-                    else
-                    {
-                        auto itv = make_shared<runtime::he::HECipherTensorView>(
-                            element_type, shape, m_he_backend, name);
-                        tensor_map.insert({tv, itv});
-                    }
+                    tensor_map.insert({tv, itv});
                 }
                 else
                 {
                     auto itv = make_shared<runtime::he::HECipherTensorView>(
-                        element_type, shape, m_he_backend, name);
+                            element_type, shape, m_he_backend, name);
                     tensor_map.insert({tv, itv});
                 }
             }
