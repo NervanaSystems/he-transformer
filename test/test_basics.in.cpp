@@ -1782,7 +1782,6 @@ NGRAPH_TEST(${BACKEND_NAME}, concat_5d)
         copy_data(c, c_data);
 
         backend->call(f, {result}, {a, b, c});
-        backend->call(f, {result}, {a, b, c});
         EXPECT_EQ(
                 (vector<float>{
                  1.,    2.,    3.,    4.,    5.,    6.,    7.,    8.,    9.,    10.,   11.,   12.,
@@ -1823,15 +1822,22 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_trivial)
 
     Shape shape{2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto f = make_shared<Function>(make_shared<op::Sum>(A, AxisSet{}), op::ParameterVector{A});
+    auto t = make_shared<op::Sum>(A, AxisSet{});
+    auto f = make_shared<Function>(t, op::ParameterVector{A});
+    auto tensors_list = generate_plain_cipher_tensors({t}, {A}, backend);
+    for (auto tensors : tensors_list)
+    {
+        auto results = get<0>(tensors);
+        auto inputs = get<1>(tensors);
 
-    // Create some tensors for input/output
-    auto a = backend->create_tensor(element::f32, shape);
-    copy_data(a, vector<float>{1, 2, 3, 4});
-    auto result = backend->create_tensor(element::f32, shape);
+        auto a = inputs[0];
+        auto result = results[0];
 
-    backend->call(f, {result}, {a});
-    EXPECT_EQ((vector<float>{1, 2, 3, 4}), read_vector<float>(result));
+        copy_data(a, vector<float>{1, 2, 3, 4});
+
+        backend->call(f, {result}, {a});
+        EXPECT_EQ((vector<float>{1, 2, 3, 4}), read_vector<float>(result));
+    }
 }
 
 // Failure has been reported at 5D for some reason

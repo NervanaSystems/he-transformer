@@ -104,13 +104,14 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
     }
 
     // Maps ops that prefer plaintext output op to number of their input arguments
-    unordered_map<string, size_t> ops_prefer_plaintext{{"Constant", 0},
+    unordered_map<string, size_t> ops_prefer_plaintext{{"Constant", 0}, // TODO: all ops prefer plaintext?
                                                        {"Broadcast", 1},
                                                        {"Concat", 1},
                                                        {"Negative", 1},
                                                        {"Relinearize", 1},
                                                        {"Reshape", 1},
                                                        {"Slice", 1},
+                                                       {"Sum", 1},
                                                        {"Add", 2},
                                                        {"Dot", 2},
                                                        {"Multiply", 2},
@@ -1006,11 +1007,13 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         }
         else if (arg0_plain != nullptr && out0_plain != nullptr)
         {
-            throw ngraph_error("Sum types not supported.");
-        }
-        else if (arg0_plain != nullptr && out0_cipher != nullptr)
-        {
-            throw ngraph_error("Sum types not supported.");
+            runtime::he::kernel::sum(arg0_plain->get_elements(),
+                    out0_plain->get_elements(),
+                    arg0_plain->get_shape(),
+                    out0_plain->get_shape(),
+                    sum->get_reduction_axes(),
+                    type,
+                    m_he_backend);
         }
         else
         {

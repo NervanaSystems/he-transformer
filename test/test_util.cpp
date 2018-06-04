@@ -37,9 +37,8 @@ using namespace ngraph;
 
 void TestHEBackend::TearDown()
 {
-    cout << "Tearing down" << endl;
-    // m_he_backend->clear_function_instance(); // TODO: add
-    cout << "Tore down" << endl;
+    m_he_seal_backend->clear_function_instance();
+    m_he_heaan_backend->clear_function_instance();
 }
 
 void TestHEBackend::SetUp()
@@ -157,7 +156,6 @@ vector<tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,vector<shared_ptr<n
     {
         return alternate_cipher(0);
     };
-
     auto cipher_plain_cipher= [&output, &input, &he_backend, &alternate_cipher] ()
     {
         return alternate_cipher(1);
@@ -172,11 +170,13 @@ vector<tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,vector<shared_ptr<n
         }
         if (input.size() >= 2 && !consistent_type)
         {
+            NGRAPH_INFO << "CPP";
             ret.push_back(cipher_plain_cipher());
         }
     }
     else
     {
+        NGRAPH_INFO << "Default";
         ret.push_back(default_tensor());
     }
 

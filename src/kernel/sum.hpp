@@ -30,6 +30,7 @@ namespace ngraph
         {
             class HEBackend;
             class HECiphertext;
+            class HEPlaintext;
             namespace kernel
             {
                 void sum(const vector<shared_ptr<runtime::he::HECiphertext>>& arg,
@@ -39,6 +40,14 @@ namespace ngraph
                          const AxisSet& reduction_axes,
                          const element::Type& type,
                          shared_ptr<runtime::he::HEBackend> he_backend);
+
+                void sum(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg,
+                        vector<shared_ptr<runtime::he::HEPlaintext>>& out,
+                        const Shape& in_shape,
+                        const Shape& out_shape,
+                        const AxisSet& reduction_axes,
+                        const element::Type& type,
+                        shared_ptr<runtime::he::HEBackend> he_backend);
             }
         }
     }
