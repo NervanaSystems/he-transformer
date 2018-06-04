@@ -39,7 +39,7 @@ namespace ngraph
                          const Shape& out_shape,
                          const AxisSet& reduction_axes,
                          const element::Type& type,
-                         shared_ptr<runtime::he::HEBackend> he_backend);
+                         const shared_ptr<runtime::he::HEBackend>& he_backend);
 
                 void sum(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg,
                          vector<shared_ptr<runtime::he::HEPlaintext>>& out,
@@ -47,7 +47,7 @@ namespace ngraph
                          const Shape& out_shape,
                          const AxisSet& reduction_axes,
                          const element::Type& type,
-                         shared_ptr<runtime::he::HEBackend> he_backend);
+                         const shared_ptr<runtime::he::HEBackend>& he_backend);
             }
         }
     }

@@ -49,28 +49,29 @@ void runtime::he::kernel::convolution(const vector<shared_ptr<runtime::he::HECip
                                       size_t output_channel_axis_result,
                                       bool rotate_filter,
                                       const element::Type& type,
-                                      const shared_ptr<runtime::he::HEBackend> he_backend)
+                                      const shared_ptr<runtime::he::HEBackend>& he_backend)
 {
-    convolution_template(arg0,
-                         arg1,
-                         out,
-                         arg0_shape,
-                         arg1_shape,
-                         out_shape,
-                         window_movement_strides,
-                         window_dilation_strides,
-                         padding_below,
-                         padding_above,
-                         data_dilation_strides,
-                         batch_axis_data,
-                         input_channel_axis_data,
-                         input_channel_axis_filters,
-                         output_channel_axis_filters,
-                         batch_axis_result,
-                         output_channel_axis_result,
-                         rotate_filter,
-                         type,
-                         he_backend);
+    convolution_template<runtime::he::HECiphertext, runtime::he::HEPlaintext>(
+        arg0,
+        arg1,
+        out,
+        arg0_shape,
+        arg1_shape,
+        out_shape,
+        window_movement_strides,
+        window_dilation_strides,
+        padding_below,
+        padding_above,
+        data_dilation_strides,
+        batch_axis_data,
+        input_channel_axis_data,
+        input_channel_axis_filters,
+        output_channel_axis_filters,
+        batch_axis_result,
+        output_channel_axis_result,
+        rotate_filter,
+        type,
+        he_backend);
 }
 
 void runtime::he::kernel::convolution(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg0,
@@ -92,7 +93,7 @@ void runtime::he::kernel::convolution(const vector<shared_ptr<runtime::he::HEPla
                                       size_t output_channel_axis_result,
                                       bool rotate_filter,
                                       const element::Type& type,
-                                      const shared_ptr<runtime::he::HEBackend> he_backend)
+                                      const shared_ptr<runtime::he::HEBackend>& he_backend)
 {
     convolution(arg1,
                 arg0,
@@ -135,28 +136,29 @@ void runtime::he::kernel::convolution(const vector<shared_ptr<runtime::he::HECip
                                       size_t output_channel_axis_result,
                                       bool rotate_filter,
                                       const element::Type& type,
-                                      const shared_ptr<runtime::he::HEBackend> he_backend)
+                                      const shared_ptr<runtime::he::HEBackend>& he_backend)
 {
-    convolution_template(arg0,
-                         arg1,
-                         out,
-                         arg0_shape,
-                         arg1_shape,
-                         out_shape,
-                         window_movement_strides,
-                         window_dilation_strides,
-                         padding_below,
-                         padding_above,
-                         data_dilation_strides,
-                         batch_axis_data,
-                         input_channel_axis_data,
-                         input_channel_axis_filters,
-                         output_channel_axis_filters,
-                         batch_axis_result,
-                         output_channel_axis_result,
-                         rotate_filter,
-                         type,
-                         he_backend);
+    convolution_template<runtime::he::HECiphertext, runtime::he::HECiphertext>(
+        arg0,
+        arg1,
+        out,
+        arg0_shape,
+        arg1_shape,
+        out_shape,
+        window_movement_strides,
+        window_dilation_strides,
+        padding_below,
+        padding_above,
+        data_dilation_strides,
+        batch_axis_data,
+        input_channel_axis_data,
+        input_channel_axis_filters,
+        output_channel_axis_filters,
+        batch_axis_result,
+        output_channel_axis_result,
+        rotate_filter,
+        type,
+        he_backend);
 }
 
 // TODO: merge into template?
@@ -180,7 +182,7 @@ void ngraph::runtime::he::kernel::convolution(
     size_t output_channel_axis_result,
     bool rotate_filter,
     const element::Type& type,
-    const shared_ptr<runtime::he::HEBackend> he_backend)
+    const shared_ptr<runtime::he::HEBackend>& he_backend)
 {
     // TODO: parallelize more effetively
 

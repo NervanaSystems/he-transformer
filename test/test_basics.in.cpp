@@ -118,7 +118,7 @@ NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2_3)
 
 NGRAPH_TEST(${BACKEND_NAME}, ab)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
+    auto backend = runtime::Backend::create("${BACKEND_NAME}"); // TODO: move to util cast function
     if ("${BACKEND_NAME}" == "HE_HEAAN")
     {
         backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
@@ -134,9 +134,6 @@ NGRAPH_TEST(${BACKEND_NAME}, ab)
     auto f = make_shared<Function>(t, op::ParameterVector{a, b});
 
     // Create some tensors for input/output
-    auto tuple = make_tuple(element::i64, shape);
-    auto input_tensors = {tuple, tuple};
-    auto output_tensors = {tuple};
     auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
 
     for (auto tensors : tensors_list)
