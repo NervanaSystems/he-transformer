@@ -45,7 +45,7 @@ namespace ngraph
                               const Shape& padding_above,
                               bool include_padding_in_avg_computation,
                               const element::Type& type,
-                              std::shared_ptr<runtime::he::HEBackend> he_backend);
+                              const std::shared_ptr<runtime::he::HEBackend> he_backend);
 
                 void avg_pool(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg,
                         std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
@@ -57,7 +57,7 @@ namespace ngraph
                         const Shape& padding_above,
                         bool include_padding_in_avg_computation,
                         const element::Type& type,
-                        std::shared_ptr<runtime::he::HEBackend> he_backend);
+                        const std::shared_ptr<runtime::he::HEBackend> he_backend);
             }
         }
     }

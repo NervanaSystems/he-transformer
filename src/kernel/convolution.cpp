@@ -49,7 +49,7 @@ void runtime::he::kernel::convolution(const vector<shared_ptr<runtime::he::HECip
                                       size_t output_channel_axis_result,
                                       bool rotate_filter,
                                       const element::Type& type,
-                                      shared_ptr<runtime::he::HEBackend> he_backend)
+                                      const shared_ptr<runtime::he::HEBackend> he_backend)
 {
     convolution_template(arg0,
                          arg1,
@@ -92,7 +92,7 @@ void runtime::he::kernel::convolution(const vector<shared_ptr<runtime::he::HEPla
                                       size_t output_channel_axis_result,
                                       bool rotate_filter,
                                       const element::Type& type,
-                                      shared_ptr<runtime::he::HEBackend> he_backend)
+                                      const shared_ptr<runtime::he::HEBackend> he_backend)
 {
     convolution(arg1,
                 arg0,
@@ -135,7 +135,7 @@ void runtime::he::kernel::convolution(const vector<shared_ptr<runtime::he::HECip
                                       size_t output_channel_axis_result,
                                       bool rotate_filter,
                                       const element::Type& type,
-                                      shared_ptr<runtime::he::HEBackend> he_backend)
+                                      const shared_ptr<runtime::he::HEBackend> he_backend)
 {
     convolution_template(arg0,
                          arg1,
@@ -180,7 +180,7 @@ void ngraph::runtime::he::kernel::convolution(
     size_t output_channel_axis_result,
     bool rotate_filter,
     const element::Type& type,
-    shared_ptr<runtime::he::HEBackend> he_backend)
+    const shared_ptr<runtime::he::HEBackend> he_backend)
 {
     // TODO: parallelize more effetively
 

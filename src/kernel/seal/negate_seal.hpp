@@ -44,13 +44,13 @@ namespace ngraph
                         const std::shared_ptr<runtime::he::SealCiphertextWrapper>& arg0,
                         std::shared_ptr<runtime::he::SealCiphertextWrapper>& out,
                         const element::Type& type,
-                        std::shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend);
+                        const std::shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend);
 
                     void scalar_negate(
                         const std::shared_ptr<runtime::he::SealPlaintextWrapper>& arg0,
                         std::shared_ptr<runtime::he::SealPlaintextWrapper>& out,
                         const element::Type& type,
-                        std::shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend);
+                        const std::shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend);
                 }
             }
         }

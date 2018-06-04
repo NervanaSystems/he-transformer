@@ -40,7 +40,7 @@ void runtime::he::kernel::avg_pool(const vector<shared_ptr<runtime::he::HECipher
                                    const Shape& padding_above,
                                    bool include_padding_in_avg_computation,
                                    const element::Type& type,
-                                   shared_ptr<runtime::he::HEBackend> he_backend)
+                                   const shared_ptr<runtime::he::HEBackend> he_backend)
 {
     auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend);
     auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);
@@ -211,7 +211,7 @@ void runtime::he::kernel::avg_pool(const vector<shared_ptr<runtime::he::HEPlaint
         const Shape& padding_above,
         bool include_padding_in_avg_computation,
         const element::Type& type,
-        shared_ptr<runtime::he::HEBackend> he_backend)
+        const shared_ptr<runtime::he::HEBackend> he_backend)
 {
     auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend);
     auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);

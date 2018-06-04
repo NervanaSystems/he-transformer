@@ -27,7 +27,7 @@ void runtime::he::kernel::heaan::scalar_add(
     const shared_ptr<runtime::he::HeaanCiphertextWrapper>& arg1,
     shared_ptr<runtime::he::HeaanCiphertextWrapper>& out,
     const element::Type& type,
-    shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
+    const shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
 {
     if (out == arg0) // TOOD: Discover why this is needed? (dot.cpp needs this)
     {
@@ -46,7 +46,7 @@ void runtime::he::kernel::heaan::scalar_add(
     const shared_ptr<runtime::he::HeaanPlaintextWrapper>& arg1,
     shared_ptr<runtime::he::HeaanPlaintextWrapper>& out,
     const element::Type& type,
-    shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
+    const shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
 {
     const string type_name = type.c_type_string();
     if (type_name == "float")
@@ -82,7 +82,7 @@ void runtime::he::kernel::heaan::scalar_add(
     const shared_ptr<runtime::he::HeaanPlaintextWrapper>& arg1,
     shared_ptr<runtime::he::HeaanCiphertextWrapper>& out,
     const element::Type& type,
-    shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
+    const shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
 {
     out->m_ciphertext =
         he_heaan_backend->get_scheme()->addConst(arg0->m_ciphertext, arg1->m_plaintext);
@@ -93,7 +93,7 @@ void runtime::he::kernel::heaan::scalar_add(
     const shared_ptr<runtime::he::HeaanCiphertextWrapper>& arg1,
     shared_ptr<runtime::he::HeaanCiphertextWrapper>& out,
     const element::Type& type,
-    shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
+    const shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
 {
     scalar_add(arg1, arg0, out, type, he_heaan_backend);
 }

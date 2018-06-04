@@ -39,7 +39,7 @@ void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HECiphertext>
                               const Shape& out_shape,
                               size_t reduction_axes_count,
                               const element::Type& type,
-                              shared_ptr<runtime::he::HEBackend> he_backend)
+                              const shared_ptr<runtime::he::HEBackend> he_backend)
 {
     dot_template(
         arg0, arg1, out, arg0_shape, arg1_shape, out_shape, reduction_axes_count, type, he_backend);
@@ -53,7 +53,7 @@ void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HECiphertext>
                               const Shape& out_shape,
                               size_t reduction_axes_count,
                               const element::Type& type,
-                              shared_ptr<runtime::he::HEBackend> he_backend)
+                              const shared_ptr<runtime::he::HEBackend> he_backend)
 {
     dot_template(
         arg0, arg1, out, arg0_shape, arg1_shape, out_shape, reduction_axes_count, type, he_backend);
@@ -67,7 +67,7 @@ void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HEPlaintext>>
                               const Shape& out_shape,
                               size_t reduction_axes_count,
                               const element::Type& type,
-                              shared_ptr<runtime::he::HEBackend> he_backend)
+                              const shared_ptr<runtime::he::HEBackend> he_backend)
 {
     dot_template(
         arg0, arg1, out, arg0_shape, arg1_shape, out_shape, reduction_axes_count, type, he_backend);
@@ -82,7 +82,7 @@ void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HEPlaintext>>
                               const Shape& out_shape,
                               size_t reduction_axes_count,
                               const element::Type& type,
-                              shared_ptr<runtime::he::HEBackend> he_backend)
+                              const shared_ptr<runtime::he::HEBackend> he_backend)
 {
     auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend);
     auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);

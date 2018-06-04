@@ -136,9 +136,6 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                 const element::Type& element_type = op->get_output_element_type(i);
                 string tensor_name = op->get_output_tensor(i).get_name();
 
-                unordered_map<string, size_t>::iterator find_op =
-                    ops_prefer_plaintext.find(op->description());
-
                 bool plain_out = all_of(inputs.begin(), inputs.end(), [](shared_ptr<runtime::he::HETensorView> input) { return dynamic_pointer_cast<HEPlainTensorView>(input) != nullptr; });
                 if (plain_out)
                 {
@@ -207,9 +204,6 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                     << m_timer_map.at(op).get_seconds() << "s"
                     << "\033[0m";
     }
-
-    // Check noise budget at end for all function outputs
-    // m_he_backend->check_noise_budget(output_tvs); TODO: enable
 }
 
 void runtime::he::HECallFrame::check_cpu_calls(
@@ -342,7 +336,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
             }
             cout << endl;
         }
-        for (shared_ptr<runtime::HostTensorView> cpu_output : cpu_outputs)
+        for (shared_ptr<runtime::HostTensorView> cpu_output : cpu_outputs) // TODO: combine functions
         {
             NGRAPH_INFO << "output";
             size_t element_count = cpu_output->get_element_count();

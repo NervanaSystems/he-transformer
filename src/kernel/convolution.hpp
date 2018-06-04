@@ -65,7 +65,7 @@ namespace ngraph
                     size_t output_channel_axis_result,
                     bool rotate_filter,
                     const element::Type& type,
-                    std::shared_ptr<runtime::he::HEBackend> he_backend);
+                    const std::shared_ptr<runtime::he::HEBackend> he_backend);
 
                 void
                     convolution(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
@@ -87,7 +87,7 @@ namespace ngraph
                                 size_t output_channel_axis_result,
                                 bool rotate_filter,
                                 const element::Type& type,
-                                std::shared_ptr<runtime::he::HEBackend> he_backend);
+                                const std::shared_ptr<runtime::he::HEBackend> he_backend);
 
                 void
                     convolution(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
@@ -109,7 +109,7 @@ namespace ngraph
                                 size_t output_channel_axis_result,
                                 bool rotate_filter,
                                 const element::Type& type,
-                                std::shared_ptr<runtime::he::HEBackend> he_backend);
+                                const std::shared_ptr<runtime::he::HEBackend> he_backend);
 
                 void
                     convolution(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg0,
@@ -131,7 +131,7 @@ namespace ngraph
                                 size_t output_channel_axis_result,
                                 bool rotate_filter,
                                 const element::Type& type,
-                                std::shared_ptr<runtime::he::HEBackend> he_backend);
+                                const std::shared_ptr<runtime::he::HEBackend> he_backend);
 
                 void
                     convolution(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg0,
@@ -153,7 +153,7 @@ namespace ngraph
                             size_t output_channel_axis_result,
                             bool rotate_filter,
                             const element::Type& type,
-                            std::shared_ptr<runtime::he::HEBackend> he_backend);
+                            const std::shared_ptr<runtime::he::HEBackend> he_backend);
             }
         }
     }

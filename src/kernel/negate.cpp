@@ -29,7 +29,7 @@ using namespace ngraph;
 void runtime::he::kernel::negate(const vector<shared_ptr<runtime::he::HECiphertext>>& arg,
                                  vector<shared_ptr<runtime::he::HECiphertext>>& out,
                                  const element::Type& type,
-                                 shared_ptr<runtime::he::HEBackend> he_backend,
+                                 const shared_ptr<runtime::he::HEBackend> he_backend,
                                  size_t count)
 {
 #pragma omp parallel for
@@ -42,7 +42,7 @@ void runtime::he::kernel::negate(const vector<shared_ptr<runtime::he::HECipherte
 void runtime::he::kernel::negate(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg,
                                  vector<shared_ptr<runtime::he::HEPlaintext>>& out,
                                  const element::Type& type,
-                                 shared_ptr<runtime::he::HEBackend> he_backend,
+                                 const shared_ptr<runtime::he::HEBackend> he_backend,
                                  size_t count)
 {
 #pragma omp parallel for
@@ -55,7 +55,7 @@ void runtime::he::kernel::negate(const vector<shared_ptr<runtime::he::HEPlaintex
 void runtime::he::kernel::scalar_negate(const shared_ptr<runtime::he::HECiphertext>& arg,
                                         shared_ptr<runtime::he::HECiphertext>& out,
                                         const element::Type& type,
-                                        shared_ptr<runtime::he::HEBackend> he_backend)
+                                        const shared_ptr<runtime::he::HEBackend> he_backend)
 {
     if (auto he_seal_backend =
             dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
@@ -104,7 +104,7 @@ void runtime::he::kernel::scalar_negate(const shared_ptr<runtime::he::HECipherte
 void runtime::he::kernel::scalar_negate(const shared_ptr<runtime::he::HEPlaintext>& arg,
                                         shared_ptr<runtime::he::HEPlaintext>& out,
                                         const element::Type& type,
-                                        shared_ptr<runtime::he::HEBackend> he_backend)
+                                        const shared_ptr<runtime::he::HEBackend> he_backend)
 {
     if (auto he_seal_backend =
             dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
