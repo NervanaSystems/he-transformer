@@ -105,6 +105,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
 
     // Maps ops that prefer plaintext output op to number of their input arguments
     unordered_map<string, size_t> ops_prefer_plaintext{{"Constant", 0}, // TODO: all ops prefer plaintext?
+                                                       {"AvgPool", 1},
                                                        {"Broadcast", 1},
                                                        {"Concat", 1},
                                                        {"Negative", 1},
@@ -508,6 +509,20 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                           avg_pool->get_include_padding_in_avg_computation(),
                                           type,
                                           m_he_backend);
+        }
+        else if (arg0_plain != nullptr && out0_plain != nullptr)
+        {
+            runtime::he::kernel::avg_pool(arg0_plain->get_elements(),
+                    out0_plain->get_elements(),
+                    arg0_plain->get_shape(),
+                    out0_plain->get_shape(),
+                    avg_pool->get_window_shape(),
+                    avg_pool->get_window_movement_strides(),
+                    avg_pool->get_padding_below(),
+                    avg_pool->get_padding_above(),
+                    avg_pool->get_include_padding_in_avg_computation(),
+                    type,
+                    m_he_backend);
         }
         else
         {
