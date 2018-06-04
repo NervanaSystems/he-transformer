@@ -72,7 +72,8 @@ vector<float> read_constant(const string filename)
 
 vector<tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,vector<shared_ptr<ngraph::runtime::TensorView>>>> generate_plain_cipher_tensors(
     const vector<shared_ptr<Node>>& output, const vector<shared_ptr<Node>>& input,
-    shared_ptr<ngraph::runtime::Backend> backend)
+    shared_ptr<ngraph::runtime::Backend> backend,
+    bool consistent_type)
 {
     using ret_tuple_type = tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,vector<shared_ptr<ngraph::runtime::TensorView>>>;
     auto he_backend = static_pointer_cast<ngraph::runtime::he::he_heaan::HEHeaanBackend>(backend);
@@ -166,8 +167,10 @@ vector<tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,vector<shared_ptr<n
     {
         ret.push_back(cipher_cipher());
         ret.push_back(plain_plain());
-        ret.push_back(plain_cipher_cipher());
-        if (input.size() >= 2)
+        if (!consistent_type) {
+            ret.push_back(plain_cipher_cipher());
+        }
+        if (input.size() >= 2 && !consistent_type)
         {
             ret.push_back(cipher_plain_cipher());
         }

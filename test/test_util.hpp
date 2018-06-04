@@ -61,4 +61,5 @@ bool all_close(const std::vector<std::complex<T>>& a,
 vector<tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,vector<shared_ptr<ngraph::runtime::TensorView>>>>
     generate_plain_cipher_tensors(
     const vector<shared_ptr<Node>>& output, const vector<shared_ptr<Node>>& input,
-    shared_ptr<ngraph::runtime::Backend> backend);
+    shared_ptr<ngraph::runtime::Backend> backend,
+    const bool consistent_type = false);

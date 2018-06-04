@@ -106,6 +106,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
     // Maps ops that prefer plaintext output op to number of their input arguments
     unordered_map<string, size_t> ops_prefer_plaintext{{"Constant", 0},
                                                        {"Broadcast", 1},
+                                                       {"Concat", 1},
                                                        {"Negative", 1},
                                                        {"Relinearize", 1},
                                                        {"Reshape", 1},
@@ -564,6 +565,28 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                             in_shapes,
                                             out0_cipher->get_shape(),
                                             concat->get_concatenation_axis());
+            }
+        }
+        else if (arg0_plain != nullptr && out0_plain != nullptr)
+        {
+            vector<vector<shared_ptr<runtime::he::HEPlaintext>>> in_args;
+            vector<Shape> in_shapes;
+            for (shared_ptr<HETensorView> arg : args)
+            {
+                shared_ptr<HEPlainTensorView> arg_plain =
+                    dynamic_pointer_cast<HEPlainTensorView>(arg);
+                if (arg_plain == nullptr)
+                {
+                    throw ngraph_error("Concat type not consistent");
+                }
+                in_args.push_back(arg_plain->get_elements());
+                in_shapes.push_back(arg_plain->get_shape());
+
+                runtime::he::kernel::concat(in_args,
+                        out0_plain->get_elements(),
+                        in_shapes,
+                        out0_plain->get_shape(),
+                        concat->get_concatenation_axis());
             }
         }
         else

@@ -30,35 +30,14 @@ void runtime::he::kernel::concat(const vector<vector<shared_ptr<runtime::he::HEC
                                  const Shape& out_shape,
                                  size_t concatenation_axis)
 {
-    // We will copy the inputs to the output one at a time. As we go, we will move out along the
-    // concatenation axis, starting at 0.
-    size_t concatenation_pos = 0;
+    concat<runtime::he::HECiphertext, runtime::he::HECiphertext>(args, out, in_shapes, out_shape, concatenation_axis);
+}
 
-    for (size_t i = 0; i < args.size(); i++)
-    {
-        // The start coordinate for the copy is (0,...,0) except at the concatenation axis.
-        Coordinate out_start_coord(out_shape.size(), 0);
-        out_start_coord[concatenation_axis] = concatenation_pos;
-
-        // The end coordinate for the copy is the same as the output shape except at the
-        // concatenation axis.
-        Coordinate out_end_coord = out_shape;
-        out_end_coord[concatenation_axis] = concatenation_pos + in_shapes[i][concatenation_axis];
-
-        CoordinateTransform input_transform(in_shapes[i]);
-        CoordinateTransform output_chunk_transform(out_shape, out_start_coord, out_end_coord);
-
-        CoordinateTransform::Iterator output_chunk_it = output_chunk_transform.begin();
-
-        for (const Coordinate& input_coord : input_transform)
-        {
-            size_t input_index = input_transform.index(input_coord);
-            size_t output_chunk_index = output_chunk_transform.index(*output_chunk_it);
-            ++output_chunk_it;
-
-            out[output_chunk_index] = args[i][input_index];
-        }
-
-        concatenation_pos += in_shapes[i][concatenation_axis];
-    }
+void runtime::he::kernel::concat(const vector<vector<shared_ptr<runtime::he::HEPlaintext>>>& args,
+        vector<shared_ptr<runtime::he::HEPlaintext>>& out,
+        const vector<Shape>& in_shapes,
+        const Shape& out_shape,
+        size_t concatenation_axis)
+{
+    concat<runtime::he::HEPlaintext, runtime::he::HEPlaintext>(args, out, in_shapes, out_shape, concatenation_axis);
 }
