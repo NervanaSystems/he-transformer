@@ -113,6 +113,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                                                        {"Slice", 1},
                                                        {"Sum", 1},
                                                        {"Add", 2},
+                                                       {"Convolution", 2},
                                                        {"Dot", 2},
                                                        {"Multiply", 2},
                                                        {"Subtract", 2}};
@@ -615,10 +616,8 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     {
         shared_ptr<op::Convolution> c = dynamic_pointer_cast<op::Convolution>(node);
 
-        if (arg0_cipher != nullptr && arg1_cipher != nullptr)
+        if (arg0_cipher != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
-            NGRAPH_INFO << "Conv ciper + cipher";
-            throw ngraph_error("Convolution cipher + Cipher not supported");
             runtime::he::kernel::convolution(arg0_cipher->get_elements(),
                                              arg1_cipher->get_elements(),
                                              out0_cipher->get_elements(),
@@ -642,7 +641,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         }
         else if (arg0_cipher != nullptr && arg1_plain != nullptr && out0_cipher != nullptr)
         {
-            NGRAPH_INFO << "Convolution cipher + plain";
             runtime::he::kernel::convolution(arg0_cipher->get_elements(),
                                              arg1_plain->get_elements(),
                                              out0_cipher->get_elements(),
@@ -666,20 +664,49 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         }
         else if (arg0_plain != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
-            throw ngraph_error("Convolution plain + cipher not supported");
-            /* runtime::he::kernel::convolution(arg0_plain->get_elements(),
+            runtime::he::kernel::convolution(arg0_plain->get_elements(),
                     arg1_cipher->get_elements(),
                     out0_cipher->get_elements(),
                     arg0_plain->get_shape(),
                     arg1_cipher->get_shape(),
                     out0_cipher->get_shape(),
-                    dot->get_reduction_axes_count(),
+                    c->get_window_movement_strides(),
+                    c->get_window_dilation_strides(),
+                    c->get_padding_below(),
+                    c->get_padding_above(),
+                    c->get_data_dilation_strides(),
+                    0,
+                    1,
+                    1,
+                    0,
+                    0,
+                    1,
+                    false,
                     type,
-                    m_he_backend); */
+                    m_he_backend);
         }
         else if (arg0_plain != nullptr && arg1_plain != nullptr && out0_plain != nullptr)
         {
-            throw ngraph_error("Convolution plain + plain not supported");
+            runtime::he::kernel::convolution(arg0_plain->get_elements(),
+                    arg1_plain->get_elements(),
+                    out0_plain->get_elements(),
+                    arg0_plain->get_shape(),
+                    arg1_plain->get_shape(),
+                    out0_plain->get_shape(),
+                    c->get_window_movement_strides(),
+                    c->get_window_dilation_strides(),
+                    c->get_padding_below(),
+                    c->get_padding_above(),
+                    c->get_data_dilation_strides(),
+                    0,
+                    1,
+                    1,
+                    0,
+                    0,
+                    1,
+                    false,
+                    type,
+                    m_he_backend);
         }
         else
         {
