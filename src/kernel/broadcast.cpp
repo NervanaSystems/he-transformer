@@ -48,7 +48,7 @@ void runtime::he::kernel::broadcast(const vector<shared_ptr<runtime::he::HEPlain
                                     const Shape& in_shape,
                                     const Shape& out_shape,
                                     const AxisSet& broadcast_axes,
-                                    shared_ptr<runtime::he::HEBackend> he_backend)
+                                    const shared_ptr<runtime::he::HEBackend> he_backend)
 {
     CoordinateTransform input_transform(in_shape);
     CoordinateTransform output_transform(out_shape);

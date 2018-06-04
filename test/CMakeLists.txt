@@ -66,7 +66,7 @@ get_filename_component(HEAAN_MANIFEST he_heaan_disabled_test.manifest ABSOLUTE)
 get_filename_component(SEAL_MANIFEST he_seal_disabled_test.manifest ABSOLUTE)
 
 add_custom_command(
-    OUTPUT ${NGRAPH_TEST_HE_SEAL}.cpp
+    OUTPUT ${NGRAPH_TEST_HE_SEAL_SRC}
     DEPENDS ext_ngraph always_build
     COMMAND ${CMAKE_COMMAND}
     -DNGRAPH_TEST_DIR=${NGRAPH_TEST_DIR}
@@ -89,13 +89,11 @@ add_custom_command(
     -P ${CMAKE_CURRENT_SOURCE_DIR}/configure_test.cmake
     )
 
-set (SRC ${SRC}
+# Build unit-test binary
+set(SRC
+    ${HE_TEST_SRC}
     ${NGRAPH_TEST_HE_SEAL_SRC}
     ${NGRAPH_TEST_HE_HEAAN_SRC})
-
-# Build unit-test binary
-set(SRC ${SRC}
-    ${HE_TEST_SRC})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 

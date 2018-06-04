@@ -109,6 +109,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                                                        {"Negative", 1},
                                                        {"Relinearize", 1},
                                                        {"Reshape", 1},
+                                                       {"Slice", 1},
                                                        {"Add", 2},
                                                        {"Dot", 2},
                                                        {"Multiply", 2},
@@ -510,7 +511,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
             throw ngraph_error("AvgPool types not supported");
         }
     }
-
     else if (node_op == "Broadcast")
     {
         shared_ptr<op::Broadcast> broadcast = dynamic_pointer_cast<op::Broadcast>(node);
@@ -525,17 +525,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                            in_shape,
                                            out_shape,
                                            broadcast_axes);
-        }
-        else if (arg0_plain != nullptr && out0_cipher != nullptr)
-        {
-            Shape in_shape = arg0_plain->get_shape();
-            Shape out_shape = out0_cipher->get_shape();
-            runtime::he::kernel::broadcast(arg0_plain->get_elements(),
-                                           out0_cipher->get_elements(),
-                                           in_shape,
-                                           out_shape,
-                                           broadcast_axes,
-                                           m_he_backend);
         }
         else if (arg0_plain != nullptr && out0_plain != nullptr)
         {
@@ -920,6 +909,16 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                        slice->get_upper_bounds(),
                                        slice->get_strides(),
                                        out0_cipher->get_shape());
+        }
+        else if (arg0_plain != nullptr && out0_plain != nullptr)
+        {
+            runtime::he::kernel::slice(arg0_plain->get_elements(),
+                    out0_plain->get_elements(),
+                    arg0_plain->get_shape(),
+                    slice->get_lower_bounds(),
+                    slice->get_upper_bounds(),
+                    slice->get_strides(),
+                    out0_plain->get_shape());
         }
         else
         {
