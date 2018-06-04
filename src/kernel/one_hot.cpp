@@ -35,7 +35,7 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<runtime::he::HECiphert
                                   const Shape& out_shape,
                                   size_t one_hot_axis,
                                   const element::Type& type,
-                                  shared_ptr<runtime::he::HEBackend>& he_backend)
+                                  const shared_ptr<runtime::he::HEBackend>& he_backend)
 {
     auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend);
     auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);

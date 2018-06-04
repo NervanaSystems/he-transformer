@@ -25,7 +25,7 @@ using namespace ngraph;
 
 void runtime::he::kernel::relinearize(const vector<shared_ptr<runtime::he::HECiphertext>>& arg,
                                       vector<shared_ptr<runtime::he::HECiphertext>>& out,
-                                      shared_ptr<runtime::he::HEBackend> he_backend,
+                                      const shared_ptr<runtime::he::HEBackend>& he_backend,
                                       size_t count)
 {
 // It's safe to do inplace relinearize on the input since the un-relinearized result won't be
@@ -40,7 +40,7 @@ void runtime::he::kernel::relinearize(const vector<shared_ptr<runtime::he::HECip
 
 void runtime::he::kernel::relinearize(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg,
                                       vector<shared_ptr<runtime::he::HEPlaintext>>& out,
-                                      shared_ptr<runtime::he::HEBackend> he_backend,
+                                      const shared_ptr<runtime::he::HEBackend>& he_backend,
                                       size_t count)
 {
 // Relinearize op doesn't make sense for Plaintexts. Just pass along to the output
@@ -53,7 +53,7 @@ void runtime::he::kernel::relinearize(const vector<shared_ptr<runtime::he::HEPla
 
 void runtime::he::kernel::relinearize(const shared_ptr<runtime::he::HECiphertext>& arg,
                                       shared_ptr<runtime::he::HECiphertext>& out,
-                                      shared_ptr<runtime::he::HEBackend> he_backend)
+                                      const shared_ptr<runtime::he::HEBackend>& he_backend)
 {
     if (auto he_seal_backend =
             dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))

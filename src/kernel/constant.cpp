@@ -25,7 +25,7 @@ using namespace ngraph;
 void runtime::he::kernel::constant(vector<shared_ptr<runtime::he::HEPlaintext>>& out,
                                    const element::Type& type,
                                    const void* data_ptr,
-                                   shared_ptr<runtime::he::HEBackend> he_backend,
+                                   const shared_ptr<runtime::he::HEBackend>& he_backend,
                                    size_t count)
 {
     size_t type_byte_size = type.size();

@@ -26,7 +26,7 @@ void runtime::he::kernel::heaan::scalar_negate(
     const shared_ptr<runtime::he::HeaanCiphertextWrapper>& arg,
     shared_ptr<runtime::he::HeaanCiphertextWrapper>& out,
     const element::Type& type,
-    shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
+    const shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
 {
     out->m_ciphertext = he_heaan_backend->get_scheme()->negate(arg->m_ciphertext);
 }
@@ -35,7 +35,7 @@ void runtime::he::kernel::heaan::scalar_negate(
     const shared_ptr<runtime::he::HeaanPlaintextWrapper>& arg,
     shared_ptr<runtime::he::HeaanPlaintextWrapper>& out,
     const element::Type& type,
-    shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
+    const shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
 {
     float x;
     he_heaan_backend->decode(&x, arg, type);

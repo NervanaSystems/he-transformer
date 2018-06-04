@@ -24,7 +24,7 @@ void runtime::he::kernel::seal::scalar_negate(
     const shared_ptr<runtime::he::SealCiphertextWrapper>& arg0,
     shared_ptr<runtime::he::SealCiphertextWrapper>& out,
     const element::Type& type,
-    shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend)
+    const shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend)
 {
     he_seal_backend->get_evaluator()->negate(arg0->m_ciphertext, out->m_ciphertext);
 }
@@ -33,7 +33,7 @@ void runtime::he::kernel::seal::scalar_negate(
     const shared_ptr<runtime::he::SealPlaintextWrapper>& arg0,
     shared_ptr<runtime::he::SealPlaintextWrapper>& out,
     const element::Type& type,
-    shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend)
+    const shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend)
 {
     const string type_name = type.c_type_string();
     if (type_name != "float")

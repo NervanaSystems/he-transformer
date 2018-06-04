@@ -44,7 +44,7 @@ namespace ngraph
             class HECiphertext;
             namespace kernel
             {
-                template <typename S, typename T>
+                template <typename S, typename T = S>
                 void convolution_template(
                     const std::vector<std::shared_ptr<S>>& arg0,
                     const std::vector<std::shared_ptr<T>>& arg1,
@@ -65,7 +65,7 @@ namespace ngraph
                     size_t output_channel_axis_result,
                     bool rotate_filter,
                     const element::Type& type,
-                    std::shared_ptr<runtime::he::HEBackend> he_backend);
+                    const std::shared_ptr<runtime::he::HEBackend>& he_backend);
 
                 void
                     convolution(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
@@ -87,7 +87,7 @@ namespace ngraph
                                 size_t output_channel_axis_result,
                                 bool rotate_filter,
                                 const element::Type& type,
-                                std::shared_ptr<runtime::he::HEBackend> he_backend);
+                                const std::shared_ptr<runtime::he::HEBackend>& he_backend);
 
                 void
                     convolution(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
@@ -109,7 +109,7 @@ namespace ngraph
                                 size_t output_channel_axis_result,
                                 bool rotate_filter,
                                 const element::Type& type,
-                                std::shared_ptr<runtime::he::HEBackend> he_backend);
+                                const std::shared_ptr<runtime::he::HEBackend>& he_backend);
 
                 void
                     convolution(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg0,
@@ -131,7 +131,28 @@ namespace ngraph
                                 size_t output_channel_axis_result,
                                 bool rotate_filter,
                                 const element::Type& type,
-                                std::shared_ptr<runtime::he::HEBackend> he_backend);
+                                const std::shared_ptr<runtime::he::HEBackend>& he_backend);
+
+                void convolution(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg0,
+                                 const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg1,
+                                 std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
+                                 const Shape& arg0_shape,
+                                 const Shape& arg1_shape,
+                                 const Shape& out_shape,
+                                 const Strides& window_movement_strides,
+                                 const Strides& window_dilation_strides,
+                                 const CoordinateDiff& padding_below,
+                                 const CoordinateDiff& padding_above,
+                                 const Strides& data_dilation_strides,
+                                 size_t batch_axis_data,
+                                 size_t input_channel_axis_data,
+                                 size_t input_channel_axis_filters,
+                                 size_t output_channel_axis_filters,
+                                 size_t batch_axis_result,
+                                 size_t output_channel_axis_result,
+                                 bool rotate_filter,
+                                 const element::Type& type,
+                                 const std::shared_ptr<runtime::he::HEBackend>& he_backend);
             }
         }
     }
@@ -158,7 +179,7 @@ void ngraph::runtime::he::kernel::convolution_template(
     size_t output_channel_axis_result,
     bool rotate_filter,
     const element::Type& type,
-    shared_ptr<runtime::he::HEBackend> he_backend)
+    const shared_ptr<runtime::he::HEBackend>& he_backend)
 {
     // TODO: parallelize more effetively
 

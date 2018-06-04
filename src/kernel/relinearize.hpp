@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include <vector>
 #include <memory>
+#include <vector>
 
 #include "he_ciphertext.hpp"
 #include "seal/seal.h"
@@ -41,17 +41,17 @@ namespace ngraph
             {
                 void relinearize(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg,
                                  std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
-                                 std::shared_ptr<runtime::he::HEBackend> he_backend,
+                                 const std::shared_ptr<runtime::he::HEBackend>& he_backend,
                                  size_t count);
 
                 void relinearize(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg,
                                  std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
-                                 std::shared_ptr<runtime::he::HEBackend> he_backend,
+                                 const std::shared_ptr<runtime::he::HEBackend>& he_backend,
                                  size_t count);
 
                 void relinearize(const std::shared_ptr<runtime::he::HECiphertext>& arg,
                                  std::shared_ptr<runtime::he::HECiphertext>& out,
-                                 std::shared_ptr<runtime::he::HEBackend> he_backend);
+                                 const std::shared_ptr<runtime::he::HEBackend>& he_backend);
             }
         }
     }

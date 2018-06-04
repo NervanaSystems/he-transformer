@@ -31,7 +31,7 @@ void runtime::he::kernel::subtract(const vector<shared_ptr<runtime::he::HECipher
                                    const vector<shared_ptr<runtime::he::HECiphertext>>& arg1,
                                    vector<shared_ptr<runtime::he::HECiphertext>>& out,
                                    const element::Type& type,
-                                   shared_ptr<runtime::he::HEBackend> he_backend,
+                                   const shared_ptr<runtime::he::HEBackend>& he_backend,
                                    size_t count)
 {
 #pragma omp parallel for
@@ -45,7 +45,7 @@ void runtime::he::kernel::subtract(const vector<shared_ptr<runtime::he::HECipher
                                    const vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,
                                    vector<shared_ptr<runtime::he::HECiphertext>>& out,
                                    const element::Type& type,
-                                   shared_ptr<runtime::he::HEBackend> he_backend,
+                                   const shared_ptr<runtime::he::HEBackend>& he_backend,
                                    size_t count)
 {
 #pragma omp parallel for
@@ -59,7 +59,7 @@ void runtime::he::kernel::subtract(const vector<shared_ptr<runtime::he::HEPlaint
                                    const vector<shared_ptr<runtime::he::HECiphertext>>& arg1,
                                    vector<shared_ptr<runtime::he::HECiphertext>>& out,
                                    const element::Type& type,
-                                   shared_ptr<runtime::he::HEBackend> he_backend,
+                                   const shared_ptr<runtime::he::HEBackend>& he_backend,
                                    size_t count)
 {
 #pragma omp parallel for
@@ -73,7 +73,7 @@ void runtime::he::kernel::subtract(const vector<shared_ptr<runtime::he::HEPlaint
                                    const vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,
                                    vector<shared_ptr<runtime::he::HEPlaintext>>& out,
                                    const element::Type& type,
-                                   shared_ptr<runtime::he::HEBackend> he_backend,
+                                   const shared_ptr<runtime::he::HEBackend>& he_backend,
                                    size_t count)
 {
 #pragma omp parallel for
@@ -87,7 +87,7 @@ void runtime::he::kernel::scalar_subtract(const shared_ptr<runtime::he::HECipher
                                           const shared_ptr<runtime::he::HECiphertext>& arg1,
                                           shared_ptr<runtime::he::HECiphertext>& out,
                                           const element::Type& type,
-                                          shared_ptr<runtime::he::HEBackend> he_backend)
+                                          const shared_ptr<runtime::he::HEBackend>& he_backend)
 {
     if (auto he_seal_backend =
             dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
@@ -143,7 +143,7 @@ void runtime::he::kernel::scalar_subtract(const shared_ptr<runtime::he::HEPlaint
                                           const shared_ptr<runtime::he::HEPlaintext>& arg1,
                                           shared_ptr<runtime::he::HEPlaintext>& out,
                                           const element::Type& type,
-                                          shared_ptr<runtime::he::HEBackend> he_backend)
+                                          const shared_ptr<runtime::he::HEBackend>& he_backend)
 {
     if (auto he_seal_backend =
             dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
@@ -199,7 +199,7 @@ void runtime::he::kernel::scalar_subtract(const shared_ptr<runtime::he::HECipher
                                           const shared_ptr<runtime::he::HEPlaintext>& arg1,
                                           shared_ptr<runtime::he::HECiphertext>& out,
                                           const element::Type& type,
-                                          shared_ptr<runtime::he::HEBackend> he_backend)
+                                          const shared_ptr<runtime::he::HEBackend>& he_backend)
 {
     if (auto he_seal_backend =
             dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
@@ -255,9 +255,8 @@ void runtime::he::kernel::scalar_subtract(const shared_ptr<runtime::he::HEPlaint
                                           const shared_ptr<runtime::he::HECiphertext>& arg1,
                                           shared_ptr<runtime::he::HECiphertext>& out,
                                           const element::Type& type,
-                                          shared_ptr<runtime::he::HEBackend> he_backend)
+                                          const shared_ptr<runtime::he::HEBackend>& he_backend)
 {
-    NGRAPH_INFO << "scalar_subtract in parent kernel";
     if (auto he_seal_backend =
             dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
     {

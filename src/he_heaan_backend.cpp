@@ -175,16 +175,14 @@ shared_ptr<runtime::TensorView> runtime::he::he_heaan::HEHeaanBackend::create_va
 shared_ptr<runtime::TensorView> runtime::he::he_heaan::HEHeaanBackend::create_valued_plain_tensor(
     float value, const element::Type& element_type, const Shape& shape)
 {
-    throw ngraph_error("create_valued_tensor plain unimplemented in heaan");
-    /* auto tensor = static_pointer_cast<HEPlainTensorView>(create_plain_tensor(element_type, shape));
-    vector<shared_ptr<heaan::Plaintext>>& plain_texts = tensor->get_elements();
- #pragma omp parallel for
+    auto tensor = static_pointer_cast<HEPlainTensorView>(create_plain_tensor(element_type, shape));
+    vector<shared_ptr<runtime::he::HEPlaintext>>& plain_texts = tensor->get_elements();
+#pragma omp parallel for
     for (size_t i = 0; i < plain_texts.size(); ++i)
     {
-        heaan::MemoryPoolHandle pool = heaan::MemoryPoolHandle::New(false);
-        plain_texts[i] = create_valued_plaintext(value, element_type, pool);
+        plain_texts[i] = create_valued_plaintext(value, element_type);
     }
-    return tensor; */
+    return tensor;
 }
 
 bool runtime::he::he_heaan::HEHeaanBackend::compile(shared_ptr<Function> func)

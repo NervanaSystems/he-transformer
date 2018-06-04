@@ -40,7 +40,7 @@ namespace ngraph
                 void constant(std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
                               const element::Type& type,
                               const void* data_ptr,
-                              std::shared_ptr<runtime::he::HEBackend> he_backend,
+                              const std::shared_ptr<runtime::he::HEBackend>& he_backend,
                               size_t count);
             }
         }
