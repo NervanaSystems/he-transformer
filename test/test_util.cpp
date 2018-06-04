@@ -24,6 +24,7 @@
 #include "ngraph/file_util.hpp"
 #include "ngraph/graph_util.hpp"
 #include "ngraph/log.hpp"
+#include "ngraph/node.hpp"
 #include "ngraph/ngraph.hpp"
 
 #include "he_backend.hpp"
@@ -69,8 +70,8 @@ vector<float> read_constant(const string filename)
     return res;
 }
 
-vector<tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,vector<shared_ptr<ngraph::runtime::TensorView>>>> generate_tensors(
-    const vector<tuple<element::Type, Shape>>& output, const vector<tuple<element::Type, Shape>>& input,
+vector<tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,vector<shared_ptr<ngraph::runtime::TensorView>>>> generate_plain_cipher_tensors(
+    const vector<shared_ptr<Node>>& output, const vector<shared_ptr<Node>>& input,
     shared_ptr<ngraph::runtime::Backend> backend)
 {
     using ret_tuple_type = tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,vector<shared_ptr<ngraph::runtime::TensorView>>>;
@@ -83,13 +84,13 @@ vector<tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,vector<shared_ptr<n
         vector<shared_ptr<ngraph::runtime::TensorView>> result;
         for (auto elem : output)
         {
-            auto output_tensor = he_backend->create_tensor(get<0>(elem), get<1>(elem));
+            auto output_tensor = he_backend->create_tensor(elem->get_element_type(), elem->get_shape());
             result.push_back(output_tensor);
         }
         vector<shared_ptr<ngraph::runtime::TensorView>> argument;
         for (auto elem : input)
         {
-            auto input_tensor = he_backend->create_tensor(get<0>(elem), get<1>(elem));
+            auto input_tensor = he_backend->create_tensor(elem->get_element_type(), elem->get_shape());
             argument.push_back(input_tensor);
         }
         return make_tuple(result, argument);
@@ -99,13 +100,13 @@ vector<tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,vector<shared_ptr<n
         vector<shared_ptr<ngraph::runtime::TensorView>> result;
         for (auto elem : output)
         {
-            auto output_tensor = backend->create_tensor(get<0>(elem), get<1>(elem));
+            auto output_tensor = backend->create_tensor(elem->get_shape(), elem->get_element_type());
             result.push_back(output_tensor);
         }
         vector<shared_ptr<ngraph::runtime::TensorView>> argument;
         for (auto elem : input)
         {
-            auto input_tensor = backend->create_tensor(get<0>(elem), get<1>(elem));
+            auto input_tensor = backend->create_tensor(elem->get_shape(), elem->get_element_type());
             argument.push_back(input_tensor);
         }
         return make_tuple(result, argument);
@@ -115,13 +116,13 @@ vector<tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,vector<shared_ptr<n
         vector<shared_ptr<ngraph::runtime::TensorView>> result;
         for (auto elem : output)
         {
-            auto output_tensor = he_backend->create_plain_tensor(get<0>(elem), get<1>(elem));
+            auto output_tensor = he_backend->create_plain_tensor(elem->get_shape(), elem->get_element_type());
             result.push_back(output_tensor);
         }
         vector<shared_ptr<ngraph::runtime::TensorView>> argument;
         for (auto elem : input)
         {
-            auto input_tensor = he_backend->create_plain_tensor(get<0>(elem), get<1>(elem));
+            auto input_tensor = he_backend->create_plain_tensor(elem->get_shape(), elem->get_element_type());
             argument.push_back(input_tensor);
         }
         return make_tuple(result, argument);
@@ -131,7 +132,7 @@ vector<tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,vector<shared_ptr<n
         vector<shared_ptr<ngraph::runtime::TensorView>> result;
         for (auto elem : output)
         {
-            auto output_tensor = he_backend->create_tensor(get<0>(elem), get<1>(elem));
+            auto output_tensor = he_backend->create_tensor(elem->get_shape(), elem->get_element_type());
             result.push_back(output_tensor);
         }
         vector<shared_ptr<ngraph::runtime::TensorView>> argument;
@@ -140,12 +141,12 @@ vector<tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,vector<shared_ptr<n
             auto elem = input[i];
             if (i % 2 == mod)
             {
-                auto input_tensor = he_backend->create_plain_tensor(get<0>(elem), get<1>(elem));
+                auto input_tensor = he_backend->create_plain_tensor(elem->get_shape(), elem->get_element_type());
                 argument.push_back(input_tensor);
             }
             else
             {
-                auto input_tensor = he_backend->create_tensor(get<0>(elem), get<1>(elem));
+                auto input_tensor = he_backend->create_tensor(elem->get_shape(), elem->get_element_type());
                 argument.push_back(input_tensor);
             }
         }

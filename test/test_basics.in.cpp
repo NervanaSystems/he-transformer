@@ -119,7 +119,7 @@ NGRAPH_TEST(${BACKEND_NAME}, ab)
     }
     else if ("${BACKEND_NAME}" == "HE_SEAL")
     {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
+        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
     }
     Shape shape{2, 3};
     auto a = make_shared<op::Parameter>(element::i64, shape);
@@ -131,7 +131,7 @@ NGRAPH_TEST(${BACKEND_NAME}, ab)
     auto tuple = make_tuple(element::i64, shape);
     auto input_tensors = {tuple, tuple};
     auto output_tensors = {tuple};
-    auto tensors_list = generate_tensors(output_tensors, input_tensors, backend);
+    auto tensors_list = generate_plain_cipher_tensors({t}, {a,b}, backend);
 
     for (auto tensors : tensors_list)
     {
@@ -153,18 +153,23 @@ NGRAPH_TEST(${BACKEND_NAME}, ab)
 
 NGRAPH_TEST(${BACKEND_NAME}, subtract)
 {
-    auto he_backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("${BACKEND_NAME}"));
+    auto backend = runtime::Backend::create("${BACKEND_NAME}");
+    if ("${BACKEND_NAME}" == "HE_HEAAN")
+    {
+        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
+    }
+    else if ("${BACKEND_NAME}" == "HE_SEAL")
+    {
+        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
+    }
     Shape shape{2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape);
     auto B = make_shared<op::Parameter>(element::f32, shape);
-    auto f = make_shared<Function>(make_shared<op::Subtract>(A, B), op::ParameterVector{A, B});
+    auto t = make_shared<op::Subtract>(A, B);
+    auto f = make_shared<Function>(t, op::ParameterVector{A, B});
 
     // Create some tensors for input/output
-    auto tuple = make_tuple(element::f32, shape);
-    auto input_tensors = {tuple, tuple};
-    auto output_tensors = {tuple};
-    auto tensors_list = generate_tensors(output_tensors, input_tensors, he_backend);
+    auto tensors_list = generate_plain_cipher_tensors({t}, {A, B}, backend);
 
     for (auto tensors : tensors_list)
     {
@@ -177,7 +182,7 @@ NGRAPH_TEST(${BACKEND_NAME}, subtract)
 
         copy_data(a, vector<float>{8, 6, 4, 2});
         copy_data(b, vector<float>{1, 2, 3, 4});
-        he_backend->call(f, {result}, {a, b});
+        backend->call(f, {result}, {a, b});
         EXPECT_EQ((vector<float>{7, 4, 1, -2}), read_vector<float>(result));
     }
 }
@@ -193,10 +198,7 @@ NGRAPH_TEST(${BACKEND_NAME}, abc)
     auto f = make_shared<Function>((A + B) * C, op::ParameterVector{A, B, C});
 
     // Create some tensors for input/output
-    auto tuple = make_tuple(element::f32, shape);
-    auto input_tensors = {tuple, tuple, tuple};
-    auto output_tensors = {tuple};
-    auto tensors_list = generate_tensors(output_tensors, input_tensors, he_backend);
+    auto tensors_list = generate_plain_cipher_tensors({t}, {A, B, C}, backend);
 
     for (auto tensors : tensors_list)
     {
@@ -240,7 +242,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot1d)
     auto tuple = make_tuple(element::f32, shape);
     auto input_tensors = {tuple, tuple};
     auto output_tensors = {make_tuple(element::f32, shape_r)};
-    auto tensors_list = generate_tensors(output_tensors, input_tensors, he_backend);
+    auto tensors_list = generate_plain_cipher_tensors(output_tensors, input_tensors, he_backend);
 
     for (auto tensors : tensors_list)
     {
@@ -275,7 +277,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_matrix_vector)
     auto input_tensors = {make_tuple(element::f32, shape_a),
                           make_tuple(element::f32, shape_b)};
     auto output_tensors = {make_tuple(element::f32, shape_r)};
-    auto tensors_list = generate_tensors(output_tensors, input_tensors, he_backend);
+    auto tensors_list = generate_plain_cipher_tensors(output_tensors, input_tensors, he_backend);
 
     for (auto tensors : tensors_list)
     {
@@ -307,7 +309,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_scalar)
     auto tuple = make_tuple(element::f32, shape);
     auto input_tensors = {tuple, tuple};
     auto output_tensors = {tuple};
-    auto tensors_list = generate_tensors(output_tensors, input_tensors, he_backend);
+    auto tensors_list = generate_plain_cipher_tensors(output_tensors, input_tensors, he_backend);
 
     for (auto tensors : tensors_list)
     {
@@ -354,7 +356,7 @@ NGRAPH_TEST(${BACKEND_NAME}, constant_abc)
     auto tuple = make_tuple(element::f32, shape);
     auto input_tensors = {tuple, tuple};
     auto output_tensors = {tuple};
-    auto tensors_list = generate_tensors(output_tensors, input_tensors, he_backend);
+    auto tensors_list = generate_plain_cipher_tensors(output_tensors, input_tensors, he_backend);
 
     for (auto tensors : tensors_list)
     {
@@ -388,7 +390,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_vector)
     // Create some tensors for input/output
     auto input_tensors = {make_tuple(element::f32, shape_a)};
     auto output_tensors = {make_tuple(element::f32, shape_r)};
-    auto tensors_list = generate_tensors(output_tensors, input_tensors, he_backend);
+    auto tensors_list = generate_plain_cipher_tensors(output_tensors, input_tensors, he_backend);
 
     for (auto tensors : tensors_list)
     {
@@ -429,7 +431,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_matrix)
     // Create some tensors for input/output
     auto input_tensors = {make_tuple(element::f32, shape_a)};
     auto output_tensors = {make_tuple(element::f32, shape_r)};
-    auto tensors_list = generate_tensors(output_tensors, input_tensors, he_backend);
+    auto tensors_list = generate_plain_cipher_tensors(output_tensors, input_tensors, he_backend);
 
     for (auto tensors : tensors_list)
     {
@@ -459,7 +461,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor)
     // Create some tensors for input/output
     auto input_tensors = {make_tuple(element::f32, shape_a)};
     auto output_tensors = {make_tuple(element::f32, shape_r)};
-    auto tensors_list = generate_tensors(output_tensors, input_tensors, he_backend);
+    auto tensors_list = generate_plain_cipher_tensors(output_tensors, input_tensors, he_backend);
 
     for (auto tensors : tensors_list)
     {
@@ -484,14 +486,24 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_trivial)
     auto A = make_shared<op::Parameter>(element::f32, shape);
     auto f = make_shared<Function>(make_shared<op::Broadcast>(A, shape, AxisSet{}),
                                    op::ParameterVector{A});
-
     // Create some tensors for input/output
-    auto a = he_backend->create_tensor(element::f32, shape);
-    copy_data(a, vector<float>{2, 4, 6, 8, 16, 32, 64, 128});
-    auto result = he_backend->create_tensor(element::f32, shape);
+    auto input_tensors = {make_tuple(element::f32, shape_a)};
+    auto output_tensors = {make_tuple(element::f32, shape_r)};
+    auto tensors_list = generate_plain_cipher_tensors(output_tensors, input_tensors, he_backend);
 
-    he_backend->call(f, {result}, {a});
-    EXPECT_EQ((vector<float>{2, 4, 6, 8, 16, 32, 64, 128}), read_vector<float>(result));
+    for (auto tensors : tensors_list)
+    {
+        auto results = get<0>(tensors);
+        auto inputs = get<1>(tensors);
+
+        auto a = inputs[0];
+        auto result = results[0];
+
+        copy_data(a, vector<float>{2, 4, 6, 8, 16, 32, 64, 128});
+
+        he_backend->call(f, {result}, {a});
+        EXPECT_EQ((vector<float>{2, 4, 6, 8, 16, 32, 64, 128}), read_vector<float>(result));
+    }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_colwise)

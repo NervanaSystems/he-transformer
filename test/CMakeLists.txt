@@ -31,12 +31,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHE_SERIALIZED_ZOO=\\\"${CMAKE_CURRENT_
 set (HE_TEST_SRC
     main.cpp
     test_heaan.cpp
-    #test_model.cpp
-    #test_mnist.cpp
-    #test_noise.cpp
-    #test_overflow.cpp
+    # test_noise.cpp
     test_seal.cpp
-    #test_speed.cpp
+    # test_speed.cpp
     test_util.cpp
 )
 
@@ -48,14 +45,13 @@ add_custom_command(
 )
 
 # Configure test for HE_SEAL
-set (NGRAPH_TEST_HE_SEAL test_basics_HE_SEAL)
-set (NGRAPH_TEST_HE_SEAL_SRC ${NGRAPH_TEST_HE_SEAL}.cpp)
+set (NGRAPH_TEST_HE_SEAL_SRC
     # backend_test_HE_SEAL.cpp
     # autodiff_HE_SEAL.cpp
     # convolution_test_HE_SEAL.cpp
-    # test_basics_HE_SEAL.cpp
-    # test_mnist_HE_SEAL.cpp
-    # )
+    test_basics_HE_SEAL.cpp
+    test_mnist_HE_SEAL.cpp
+    )
 
 # Configure test for HE_HEAAN
 set (NGRAPH_TEST_HE_HEAAN_SRC
@@ -63,7 +59,7 @@ set (NGRAPH_TEST_HE_HEAAN_SRC
     # autodiff_HE_HEAAN.cpp
     # convolution_test_HE_HEAAN.cpp
     test_basics_HE_HEAAN.cpp
-    # test_mnist_HE_HEAAN.cpp
+    test_mnist_HE_HEAAN.cpp
     )
 
 get_filename_component(HEAAN_MANIFEST he_heaan_disabled_test.manifest ABSOLUTE)
@@ -96,7 +92,6 @@ add_custom_command(
 set (SRC ${SRC}
     ${NGRAPH_TEST_HE_SEAL_SRC}
     ${NGRAPH_TEST_HE_HEAAN_SRC})
-
 
 # Build unit-test binary
 set(SRC ${SRC}

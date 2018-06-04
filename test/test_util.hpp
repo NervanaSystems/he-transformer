@@ -27,6 +27,7 @@
 #include "he_seal_backend.hpp"
 #include "ngraph/file_util.hpp"
 #include "ngraph/type/element_type.hpp"
+#include "ngraph/node.hpp"
 
 using namespace ngraph;
 
@@ -40,20 +41,6 @@ protected:
 };
 
 std::vector<float> read_constant(const std::string filename);
-/* {
-    std::string data = ngraph::file_util::read_file_to_string(filename);
-    istringstream iss(data);
-
-    std::vector<std::string> constants;
-    copy(istream_iterator<string>(iss), istream_iterator<string>(), back_inserter(constants));
-
-    std::vector<float> res;
-    for (const string& constant : constants)
-    {
-        res.push_back(atof(constant.c_str()));
-    }
-    return res;
-} */
 
 template <typename T>
 bool all_close(const std::vector<std::complex<T>>& a,
@@ -71,6 +58,7 @@ bool all_close(const std::vector<std::complex<T>>& a,
     return true;
 }
 
-vector<tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,vector<shared_ptr<ngraph::runtime::TensorView>>>> generate_tensors(
-    const vector<tuple<element::Type, Shape>>& output, const vector<tuple<element::Type, Shape>>& input,
+vector<tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,vector<shared_ptr<ngraph::runtime::TensorView>>>>
+    generate_plain_cipher_tensors(
+    const vector<shared_ptr<Node>>& output, const vector<shared_ptr<Node>>& input,
     shared_ptr<ngraph::runtime::Backend> backend);
