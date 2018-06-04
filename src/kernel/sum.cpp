@@ -22,6 +22,7 @@
 #include "he_cipher_tensor_view.hpp"
 #include "he_ciphertext.hpp"
 #include "he_heaan_backend.hpp"
+#include "he_plain_tensor_view.hpp"
 #include "he_seal_backend.hpp"
 #include "kernel/add.hpp"
 #include "kernel/sum.hpp"
@@ -35,7 +36,7 @@ void runtime::he::kernel::sum(const vector<shared_ptr<runtime::he::HECiphertext>
                               const Shape& out_shape,
                               const AxisSet& reduction_axes,
                               const element::Type& type,
-                              shared_ptr<runtime::he::HEBackend> he_backend)
+                              const shared_ptr<runtime::he::HEBackend>& he_backend)
 {
     auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend);
     auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);
@@ -77,5 +78,59 @@ void runtime::he::kernel::sum(const vector<shared_ptr<runtime::he::HECiphertext>
 
         runtime::he::kernel::scalar_add(
             cipher_out, arg[input_transform.index(input_coord)], cipher_out, type, he_backend);
+    }
+}
+
+void runtime::he::kernel::sum(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg,
+                              vector<shared_ptr<runtime::he::HEPlaintext>>& out,
+                              const Shape& in_shape,
+                              const Shape& out_shape,
+                              const AxisSet& reduction_axes,
+                              const element::Type& type,
+                              const shared_ptr<runtime::he::HEBackend>& he_backend)
+{
+    NGRAPH_INFO << "Sum plain plain";
+    auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend);
+    auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);
+    if (!he_seal_backend && !he_heaan_backend)
+    {
+        throw ngraph_error("Sum backend is neither seal nor hean");
+    }
+
+    CoordinateTransform output_transform(out_shape);
+
+    shared_ptr<HEPlainTensorView> zero_tv;
+
+    if (he_seal_backend != nullptr)
+    {
+        zero_tv = static_pointer_cast<HEPlainTensorView>(
+            he_seal_backend->create_valued_plain_tensor(0., type, out_shape));
+    }
+    else if (he_heaan_backend != nullptr)
+    {
+        zero_tv = static_pointer_cast<HEPlainTensorView>(
+            he_heaan_backend->create_valued_plain_tensor(0., type, out_shape));
+    }
+
+    size_t zero_ind = 0;
+    for (const Coordinate& output_coord : output_transform)
+    {
+        out[output_transform.index(output_coord)] = zero_tv->get_element(zero_ind);
+        ++zero_ind;
+    }
+
+    CoordinateTransform input_transform(in_shape);
+
+    for (const Coordinate& input_coord : input_transform)
+    {
+        Coordinate output_coord = project(input_coord, reduction_axes);
+        size_t output_ind = output_transform.index(output_coord);
+
+        shared_ptr<runtime::he::HEPlaintext> plain_out = out[output_ind];
+
+        runtime::he::kernel::scalar_add(
+            plain_out, arg[input_transform.index(input_coord)], plain_out, type, he_backend);
+
+        out[output_ind] = plain_out;
     }
 }

@@ -25,7 +25,7 @@ void runtime::he::kernel::heaan::scalar_multiply(
     const shared_ptr<runtime::he::HeaanCiphertextWrapper>& arg1,
     shared_ptr<runtime::he::HeaanCiphertextWrapper>& out,
     const element::Type& type,
-    shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
+    const shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
 {
     out->m_ciphertext =
         he_heaan_backend->get_scheme()->mult(arg0->m_ciphertext, arg1->m_ciphertext);
@@ -36,7 +36,7 @@ void runtime::he::kernel::heaan::scalar_multiply(
     const shared_ptr<runtime::he::HeaanPlaintextWrapper>& arg1,
     shared_ptr<runtime::he::HeaanCiphertextWrapper>& out,
     const element::Type& type,
-    shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
+    const shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
 {
     const string type_name = type.c_type_string();
     out->m_ciphertext = he_heaan_backend->get_scheme()->multByConst(
@@ -48,7 +48,7 @@ void runtime::he::kernel::heaan::scalar_multiply(
     const shared_ptr<runtime::he::HeaanCiphertextWrapper>& arg1,
     shared_ptr<runtime::he::HeaanCiphertextWrapper>& out,
     const element::Type& type,
-    shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
+    const shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
 {
     scalar_multiply(arg1, arg0, out, type, he_heaan_backend);
 }
@@ -58,7 +58,7 @@ void runtime::he::kernel::heaan::scalar_multiply(
     const shared_ptr<runtime::he::HeaanPlaintextWrapper>& arg1,
     shared_ptr<runtime::he::HeaanPlaintextWrapper>& out,
     const element::Type& type,
-    shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
+    const shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
 {
     const string type_name = type.c_type_string();
     if (type_name != "float")

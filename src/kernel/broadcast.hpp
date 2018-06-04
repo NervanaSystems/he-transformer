@@ -62,13 +62,6 @@ namespace ngraph
                                const Shape& in_shape,
                                const Shape& out_shape,
                                const AxisSet& broadcast_axes);
-
-                void broadcast(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg0,
-                               std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
-                               const Shape& in_shape,
-                               const Shape& out_shape,
-                               const AxisSet& broadcast_axes,
-                               std::shared_ptr<runtime::he::HEBackend> he_backend);
             }
         }
     }

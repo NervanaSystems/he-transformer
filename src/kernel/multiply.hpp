@@ -40,53 +40,53 @@ namespace ngraph
                               const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg1,
                               std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
                               const element::Type& type,
-                              std::shared_ptr<runtime::he::HEBackend> he_backend,
+                              const std::shared_ptr<runtime::he::HEBackend>& he_backend,
                               size_t count);
 
                 void multiply(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg0,
                               const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg1,
                               std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
                               const element::Type& type,
-                              std::shared_ptr<runtime::he::HEBackend> he_backend,
+                              const std::shared_ptr<runtime::he::HEBackend>& he_backend,
                               size_t count);
 
                 void multiply(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
                               const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg1,
                               std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
                               const element::Type& type,
-                              std::shared_ptr<runtime::he::HEBackend> he_backend,
+                              const std::shared_ptr<runtime::he::HEBackend>& he_backend,
                               size_t count);
 
                 void multiply(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg0,
                               const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg1,
                               std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
                               const element::Type& type,
-                              std::shared_ptr<runtime::he::HEBackend> he_backend,
+                              const std::shared_ptr<runtime::he::HEBackend>& he_backend,
                               size_t count);
 
                 void scalar_multiply(const std::shared_ptr<runtime::he::HECiphertext>& arg0,
                                      const std::shared_ptr<runtime::he::HECiphertext>& arg1,
                                      std::shared_ptr<runtime::he::HECiphertext>& out,
                                      const element::Type& type,
-                                     std::shared_ptr<runtime::he::HEBackend> he_backend);
+                                     const std::shared_ptr<runtime::he::HEBackend>& he_backend);
 
                 void scalar_multiply(const std::shared_ptr<runtime::he::HEPlaintext>& arg0,
                                      const std::shared_ptr<runtime::he::HECiphertext>& arg1,
                                      std::shared_ptr<runtime::he::HECiphertext>& out,
                                      const element::Type& type,
-                                     std::shared_ptr<runtime::he::HEBackend> he_backend);
+                                     const std::shared_ptr<runtime::he::HEBackend>& he_backend);
 
                 void scalar_multiply(const std::shared_ptr<runtime::he::HECiphertext>& arg0,
                                      const std::shared_ptr<runtime::he::HEPlaintext>& arg1,
                                      std::shared_ptr<runtime::he::HECiphertext>& out,
                                      const element::Type& type,
-                                     std::shared_ptr<runtime::he::HEBackend> he_backend);
+                                     const std::shared_ptr<runtime::he::HEBackend>& he_backend);
 
                 void scalar_multiply(const std::shared_ptr<runtime::he::HEPlaintext>& arg0,
                                      const std::shared_ptr<runtime::he::HEPlaintext>& arg1,
                                      std::shared_ptr<runtime::he::HEPlaintext>& out,
                                      const element::Type& type,
-                                     std::shared_ptr<runtime::he::HEBackend> he_backend);
+                                     const std::shared_ptr<runtime::he::HEBackend>& he_backend);
             }
         }
     }

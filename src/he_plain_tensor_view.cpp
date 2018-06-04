@@ -79,7 +79,6 @@ void runtime::he::HEPlainTensorView::write(const void* source, size_t tensor_off
         else if (auto he_heaan_backend =
                      dynamic_pointer_cast<he_heaan::HEHeaanBackend>(m_he_backend))
         {
-            NGRAPH_INFO << "HEPlainTensorView::write calling encode";
             he_heaan_backend->encode(m_plain_texts[dst_index], src_with_offset, type);
         }
         else
