@@ -50,8 +50,8 @@ namespace ngraph
                                  size_t count);
 
                 void relinearize(const std::shared_ptr<runtime::he::HECiphertext>& arg,
-                                 std::shared_ptr<runtime::he::HECiphertext>& out,
-                                 std::shared_ptr<runtime::he::HEBackend> he_backend);
+                        std::shared_ptr<runtime::he::HECiphertext>& out,
+                        std::shared_ptr<runtime::he::HEBackend> he_backend);
             }
         }
     }

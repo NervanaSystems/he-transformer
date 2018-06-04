@@ -908,20 +908,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                          reshape->get_input_order(),
                                          out0_cipher->get_shape());
         }
-        else if (arg0_cipher != nullptr && out0_plain != nullptr)
-        {
-            NGRAPH_INFO << "arg0_cipher, out0_plain";
-            throw ngraph_error("Reshape types not supported.");
-        }
-        else if (arg0_plain != nullptr && out0_cipher != nullptr)
-        {
-            runtime::he::kernel::reshape(arg0_plain->get_elements(),
-                                         out0_cipher->get_elements(),
-                                         arg0_plain->get_shape(),
-                                         reshape->get_input_order(),
-                                         out0_cipher->get_shape(),
-                                         m_he_backend);
-        }
         else if (arg0_plain != nullptr && out0_plain != nullptr)
         {
             runtime::he::kernel::reshape(arg0_plain->get_elements(),

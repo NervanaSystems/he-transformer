@@ -42,22 +42,3 @@ void runtime::he::kernel::broadcast(const vector<shared_ptr<runtime::he::HEPlain
     broadcast<runtime::he::HEPlaintext, runtime::he::HEPlaintext>(
         arg, out, in_shape, out_shape, broadcast_axes);
 }
-
-void runtime::he::kernel::broadcast(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg,
-                                    vector<shared_ptr<runtime::he::HECiphertext>>& out,
-                                    const Shape& in_shape,
-                                    const Shape& out_shape,
-                                    const AxisSet& broadcast_axes,
-                                    const shared_ptr<runtime::he::HEBackend> he_backend)
-{
-    CoordinateTransform input_transform(in_shape);
-    CoordinateTransform output_transform(out_shape);
-    for (const Coordinate& output_coord : output_transform)
-    {
-        Coordinate input_coord = project(output_coord, broadcast_axes);
-
-        shared_ptr<runtime::he::HECiphertext> c = make_shared<runtime::he::HECiphertext>();
-        he_backend->encrypt(c, arg[input_transform.index(input_coord)]);
-        out[output_transform.index(output_coord)] = c;
-    }
-}
