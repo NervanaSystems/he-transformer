@@ -322,33 +322,29 @@ void runtime::he::HECallFrame::check_cpu_calls(
         {
             NGRAPH_INFO << "Verbose float computation";
         }
+
+        auto print_tensor_view = [&type] (shared_ptr<runtime::HostTensorView> tv) -> void
+        {
+            size_t element_count = tv->get_element_count();
+            auto shape = tv->get_shape();
+            size_t num_bytes = type.size() * shape_size(shape);
+            vector<float> tv_vec(element_count, 0);
+            tv->read(&tv_vec[0], 0, num_bytes);
+            for (auto elem : tv_vec)
+            {
+                cout << elem << " ";
+            }
+            cout << endl;
+        };
         for (shared_ptr<runtime::HostTensorView> cpu_input : cpu_inputs)
         {
             NGRAPH_INFO << "Input";
-            size_t element_count = cpu_input->get_element_count();
-            auto shape = cpu_input->get_shape();
-            size_t num_bytes = type.size() * shape_size(shape);
-            vector<float> cpu_inp_vec(element_count, 0);
-            cpu_input->read(&cpu_inp_vec[0], 0, num_bytes);
-            for (auto elem : cpu_inp_vec)
-            {
-                cout << elem << " ";
-            }
-            cout << endl;
+            print_tensor_view(cpu_input);
         }
-        for (shared_ptr<runtime::HostTensorView> cpu_output : cpu_outputs) // TODO: combine functions
+        for (shared_ptr<runtime::HostTensorView> cpu_output : cpu_outputs)
         {
-            NGRAPH_INFO << "output";
-            size_t element_count = cpu_output->get_element_count();
-            auto shape = cpu_output->get_shape();
-            size_t num_bytes = type.size() * shape_size(shape);
-            vector<float> cpu_inp_vec(element_count, 0);
-            cpu_output->read(&cpu_inp_vec[0], 0, num_bytes);
-            for (auto elem : cpu_inp_vec)
-            {
-                cout << elem << " ";
-            }
-            cout << endl;
+            NGRAPH_INFO << "Output";
+            print_tensor_view(cpu_output);
         }
         if (!correct)
         {
