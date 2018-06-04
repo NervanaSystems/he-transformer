@@ -15,9 +15,9 @@
 *******************************************************************************/
 
 #include "kernel/slice.hpp"
-#include "he_plaintext.hpp"
-#include "he_ciphertext.hpp"
 #include "he_backend.hpp"
+#include "he_ciphertext.hpp"
+#include "he_plaintext.hpp"
 
 using namespace std;
 using namespace ngraph;
@@ -30,16 +30,18 @@ void runtime::he::kernel::slice(const vector<shared_ptr<runtime::he::HECiphertex
                                 const Strides& strides,
                                 const Shape& out_shape)
 {
-    slice<runtime::he::HECiphertext, runtime::he::HECiphertext>(arg, out, arg_shape, lower_bounds, upper_bounds, strides, out_shape);
+    slice<runtime::he::HECiphertext, runtime::he::HECiphertext>(
+        arg, out, arg_shape, lower_bounds, upper_bounds, strides, out_shape);
 }
 
 void runtime::he::kernel::slice(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg,
-        vector<shared_ptr<runtime::he::HEPlaintext>>& out,
-        const Shape& arg_shape,
-        const Coordinate& lower_bounds,
-        const Coordinate& upper_bounds,
-        const Strides& strides,
-        const Shape& out_shape)
+                                vector<shared_ptr<runtime::he::HEPlaintext>>& out,
+                                const Shape& arg_shape,
+                                const Coordinate& lower_bounds,
+                                const Coordinate& upper_bounds,
+                                const Strides& strides,
+                                const Shape& out_shape)
 {
-    slice<runtime::he::HEPlaintext, runtime::he::HEPlaintext>(arg, out, arg_shape, lower_bounds, upper_bounds, strides, out_shape);
+    slice<runtime::he::HEPlaintext, runtime::he::HEPlaintext>(
+        arg, out, arg_shape, lower_bounds, upper_bounds, strides, out_shape);
 }

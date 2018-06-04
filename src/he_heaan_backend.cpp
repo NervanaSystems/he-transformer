@@ -177,7 +177,7 @@ shared_ptr<runtime::TensorView> runtime::he::he_heaan::HEHeaanBackend::create_va
 {
     auto tensor = static_pointer_cast<HEPlainTensorView>(create_plain_tensor(element_type, shape));
     vector<shared_ptr<runtime::he::HEPlaintext>>& plain_texts = tensor->get_elements();
- #pragma omp parallel for
+#pragma omp parallel for
     for (size_t i = 0; i < plain_texts.size(); ++i)
     {
         plain_texts[i] = create_valued_plaintext(value, element_type);

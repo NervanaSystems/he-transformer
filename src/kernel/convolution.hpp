@@ -133,27 +133,26 @@ namespace ngraph
                                 const element::Type& type,
                                 const std::shared_ptr<runtime::he::HEBackend> he_backend);
 
-                void
-                    convolution(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg0,
-                            const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg1,
-                            std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
-                            const Shape& arg0_shape,
-                            const Shape& arg1_shape,
-                            const Shape& out_shape,
-                            const Strides& window_movement_strides,
-                            const Strides& window_dilation_strides,
-                            const CoordinateDiff& padding_below,
-                            const CoordinateDiff& padding_above,
-                            const Strides& data_dilation_strides,
-                            size_t batch_axis_data,
-                            size_t input_channel_axis_data,
-                            size_t input_channel_axis_filters,
-                            size_t output_channel_axis_filters,
-                            size_t batch_axis_result,
-                            size_t output_channel_axis_result,
-                            bool rotate_filter,
-                            const element::Type& type,
-                            const std::shared_ptr<runtime::he::HEBackend> he_backend);
+                void convolution(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg0,
+                                 const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg1,
+                                 std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
+                                 const Shape& arg0_shape,
+                                 const Shape& arg1_shape,
+                                 const Shape& out_shape,
+                                 const Strides& window_movement_strides,
+                                 const Strides& window_dilation_strides,
+                                 const CoordinateDiff& padding_below,
+                                 const CoordinateDiff& padding_above,
+                                 const Strides& data_dilation_strides,
+                                 size_t batch_axis_data,
+                                 size_t input_channel_axis_data,
+                                 size_t input_channel_axis_filters,
+                                 size_t output_channel_axis_filters,
+                                 size_t batch_axis_result,
+                                 size_t output_channel_axis_result,
+                                 bool rotate_filter,
+                                 const element::Type& type,
+                                 const std::shared_ptr<runtime::he::HEBackend> he_backend);
             }
         }
     }

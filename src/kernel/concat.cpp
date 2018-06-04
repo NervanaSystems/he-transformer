@@ -30,14 +30,16 @@ void runtime::he::kernel::concat(const vector<vector<shared_ptr<runtime::he::HEC
                                  const Shape& out_shape,
                                  size_t concatenation_axis)
 {
-    concat<runtime::he::HECiphertext, runtime::he::HECiphertext>(args, out, in_shapes, out_shape, concatenation_axis);
+    concat<runtime::he::HECiphertext, runtime::he::HECiphertext>(
+        args, out, in_shapes, out_shape, concatenation_axis);
 }
 
 void runtime::he::kernel::concat(const vector<vector<shared_ptr<runtime::he::HEPlaintext>>>& args,
-        vector<shared_ptr<runtime::he::HEPlaintext>>& out,
-        const vector<Shape>& in_shapes,
-        const Shape& out_shape,
-        size_t concatenation_axis)
+                                 vector<shared_ptr<runtime::he::HEPlaintext>>& out,
+                                 const vector<Shape>& in_shapes,
+                                 const Shape& out_shape,
+                                 size_t concatenation_axis)
 {
-    concat<runtime::he::HEPlaintext, runtime::he::HEPlaintext>(args, out, in_shapes, out_shape, concatenation_axis);
+    concat<runtime::he::HEPlaintext, runtime::he::HEPlaintext>(
+        args, out, in_shapes, out_shape, concatenation_axis);
 }

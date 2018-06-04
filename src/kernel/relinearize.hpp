@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include <vector>
 #include <memory>
+#include <vector>
 
 #include "he_ciphertext.hpp"
 #include "seal/seal.h"
@@ -50,8 +50,8 @@ namespace ngraph
                                  size_t count);
 
                 void relinearize(const std::shared_ptr<runtime::he::HECiphertext>& arg,
-                        std::shared_ptr<runtime::he::HECiphertext>& out,
-                        const std::shared_ptr<runtime::he::HEBackend> he_backend);
+                                 std::shared_ptr<runtime::he::HECiphertext>& out,
+                                 const std::shared_ptr<runtime::he::HEBackend> he_backend);
             }
         }
     }

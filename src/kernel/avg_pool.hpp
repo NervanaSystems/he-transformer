@@ -48,16 +48,16 @@ namespace ngraph
                               const std::shared_ptr<runtime::he::HEBackend> he_backend);
 
                 void avg_pool(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg,
-                        std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
-                        const Shape& arg_shape,
-                        const Shape& out_shape,
-                        const Shape& window_shape,
-                        const Strides& window_movement_strides,
-                        const Shape& padding_below,
-                        const Shape& padding_above,
-                        bool include_padding_in_avg_computation,
-                        const element::Type& type,
-                        const std::shared_ptr<runtime::he::HEBackend> he_backend);
+                              std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
+                              const Shape& arg_shape,
+                              const Shape& out_shape,
+                              const Shape& window_shape,
+                              const Strides& window_movement_strides,
+                              const Shape& padding_below,
+                              const Shape& padding_above,
+                              bool include_padding_in_avg_computation,
+                              const element::Type& type,
+                              const std::shared_ptr<runtime::he::HEBackend> he_backend);
             }
         }
     }

@@ -184,7 +184,6 @@ void runtime::he::kernel::avg_pool(const vector<shared_ptr<runtime::he::HECipher
                 n_elements++;
             }
         }
-        // TODO: use divide op? Or don't divide?
         shared_ptr<runtime::he::HEPlaintext> inv_n_elements;
         if (he_seal_backend)
         {
@@ -202,16 +201,16 @@ void runtime::he::kernel::avg_pool(const vector<shared_ptr<runtime::he::HECipher
 }
 
 void runtime::he::kernel::avg_pool(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg,
-        vector<shared_ptr<runtime::he::HEPlaintext>>& out,
-        const Shape& arg_shape,
-        const Shape& out_shape,
-        const Shape& window_shape,
-        const Strides& window_movement_strides,
-        const Shape& padding_below,
-        const Shape& padding_above,
-        bool include_padding_in_avg_computation,
-        const element::Type& type,
-        const shared_ptr<runtime::he::HEBackend> he_backend)
+                                   vector<shared_ptr<runtime::he::HEPlaintext>>& out,
+                                   const Shape& arg_shape,
+                                   const Shape& out_shape,
+                                   const Shape& window_shape,
+                                   const Strides& window_movement_strides,
+                                   const Shape& padding_below,
+                                   const Shape& padding_above,
+                                   bool include_padding_in_avg_computation,
+                                   const element::Type& type,
+                                   const shared_ptr<runtime::he::HEBackend> he_backend)
 {
     auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend);
     auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);
@@ -299,12 +298,12 @@ void runtime::he::kernel::avg_pool(const vector<shared_ptr<runtime::he::HEPlaint
         }
 
         CoordinateTransform input_batch_transform(arg_shape,
-                input_batch_transform_start,
-                input_batch_transform_end,
-                input_batch_transform_source_strides,
-                input_batch_transform_source_axis_order,
-                input_batch_transform_padding_below,
-                input_batch_transform_padding_above);
+                                                  input_batch_transform_start,
+                                                  input_batch_transform_end,
+                                                  input_batch_transform_source_strides,
+                                                  input_batch_transform_source_axis_order,
+                                                  input_batch_transform_padding_below,
+                                                  input_batch_transform_padding_above);
 
         // As we go, we compute the sum value:
         //
@@ -339,14 +338,14 @@ void runtime::he::kernel::avg_pool(const vector<shared_ptr<runtime::he::HEPlaint
                 if (he_seal_backend)
                 {
                     v = input_batch_transform.has_source_coordinate(input_batch_coord)
-                        ? arg[input_batch_transform.index(input_batch_coord)]
-                        : he_seal_backend->create_valued_plaintext(0., type);
+                            ? arg[input_batch_transform.index(input_batch_coord)]
+                            : he_seal_backend->create_valued_plaintext(0., type);
                 }
                 else if (he_heaan_backend)
                 {
                     v = input_batch_transform.has_source_coordinate(input_batch_coord)
-                        ? arg[input_batch_transform.index(input_batch_coord)]
-                        : he_heaan_backend->create_valued_plaintext(0., type);
+                            ? arg[input_batch_transform.index(input_batch_coord)]
+                            : he_heaan_backend->create_valued_plaintext(0., type);
                 }
 
                 // result += v;

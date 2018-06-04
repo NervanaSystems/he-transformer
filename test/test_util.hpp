@@ -26,8 +26,8 @@
 #include "he_heaan_backend.hpp"
 #include "he_seal_backend.hpp"
 #include "ngraph/file_util.hpp"
-#include "ngraph/type/element_type.hpp"
 #include "ngraph/node.hpp"
+#include "ngraph/type/element_type.hpp"
 
 using namespace ngraph;
 
@@ -58,8 +58,9 @@ bool all_close(const std::vector<std::complex<T>>& a,
     return true;
 }
 
-vector<tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,vector<shared_ptr<ngraph::runtime::TensorView>>>>
-    generate_plain_cipher_tensors(
-    const vector<shared_ptr<Node>>& output, const vector<shared_ptr<Node>>& input,
-    shared_ptr<ngraph::runtime::Backend> backend,
-    const bool consistent_type = false);
+vector<tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,
+             vector<shared_ptr<ngraph::runtime::TensorView>>>>
+    generate_plain_cipher_tensors(const vector<shared_ptr<Node>>& output,
+                                  const vector<shared_ptr<Node>>& input,
+                                  shared_ptr<ngraph::runtime::Backend> backend,
+                                  const bool consistent_type = false);

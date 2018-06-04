@@ -136,17 +136,20 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                 const element::Type& element_type = op->get_output_element_type(i);
                 string tensor_name = op->get_output_tensor(i).get_name();
 
-                bool plain_out = all_of(inputs.begin(), inputs.end(), [](shared_ptr<runtime::he::HETensorView> input) { return dynamic_pointer_cast<HEPlainTensorView>(input) != nullptr; });
+                bool plain_out = all_of(
+                    inputs.begin(), inputs.end(), [](shared_ptr<runtime::he::HETensorView> input) {
+                        return dynamic_pointer_cast<HEPlainTensorView>(input) != nullptr;
+                    });
                 if (plain_out)
                 {
                     auto itv = make_shared<runtime::he::HEPlainTensorView>(
-                            element_type, shape, m_he_backend, name);
+                        element_type, shape, m_he_backend, name);
                     tensor_map.insert({tv, itv});
                 }
                 else
                 {
                     auto itv = make_shared<runtime::he::HECipherTensorView>(
-                            element_type, shape, m_he_backend, name);
+                        element_type, shape, m_he_backend, name);
                     tensor_map.insert({tv, itv});
                 }
             }
@@ -323,8 +326,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
             NGRAPH_INFO << "Verbose float computation";
         }
 
-        auto print_tensor_view = [&type] (shared_ptr<runtime::HostTensorView> tv) -> void
-        {
+        auto print_tensor_view = [&type](shared_ptr<runtime::HostTensorView> tv) -> void {
             size_t element_count = tv->get_element_count();
             auto shape = tv->get_shape();
             size_t num_bytes = type.size() * shape_size(shape);
@@ -443,16 +445,16 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         else if (arg0_plain != nullptr && out0_plain != nullptr)
         {
             runtime::he::kernel::avg_pool(arg0_plain->get_elements(),
-                    out0_plain->get_elements(),
-                    arg0_plain->get_shape(),
-                    out0_plain->get_shape(),
-                    avg_pool->get_window_shape(),
-                    avg_pool->get_window_movement_strides(),
-                    avg_pool->get_padding_below(),
-                    avg_pool->get_padding_above(),
-                    avg_pool->get_include_padding_in_avg_computation(),
-                    type,
-                    m_he_backend);
+                                          out0_plain->get_elements(),
+                                          arg0_plain->get_shape(),
+                                          out0_plain->get_shape(),
+                                          avg_pool->get_window_shape(),
+                                          avg_pool->get_window_movement_strides(),
+                                          avg_pool->get_padding_below(),
+                                          avg_pool->get_padding_above(),
+                                          avg_pool->get_include_padding_in_avg_computation(),
+                                          type,
+                                          m_he_backend);
         }
         else
         {
@@ -530,10 +532,10 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                 in_shapes.push_back(arg_plain->get_shape());
 
                 runtime::he::kernel::concat(in_args,
-                        out0_plain->get_elements(),
-                        in_shapes,
-                        out0_plain->get_shape(),
-                        concat->get_concatenation_axis());
+                                            out0_plain->get_elements(),
+                                            in_shapes,
+                                            out0_plain->get_shape(),
+                                            concat->get_concatenation_axis());
             }
         }
         else
@@ -610,48 +612,48 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         else if (arg0_plain != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
             runtime::he::kernel::convolution(arg0_plain->get_elements(),
-                    arg1_cipher->get_elements(),
-                    out0_cipher->get_elements(),
-                    arg0_plain->get_shape(),
-                    arg1_cipher->get_shape(),
-                    out0_cipher->get_shape(),
-                    c->get_window_movement_strides(),
-                    c->get_window_dilation_strides(),
-                    c->get_padding_below(),
-                    c->get_padding_above(),
-                    c->get_data_dilation_strides(),
-                    0,
-                    1,
-                    1,
-                    0,
-                    0,
-                    1,
-                    false,
-                    type,
-                    m_he_backend);
+                                             arg1_cipher->get_elements(),
+                                             out0_cipher->get_elements(),
+                                             arg0_plain->get_shape(),
+                                             arg1_cipher->get_shape(),
+                                             out0_cipher->get_shape(),
+                                             c->get_window_movement_strides(),
+                                             c->get_window_dilation_strides(),
+                                             c->get_padding_below(),
+                                             c->get_padding_above(),
+                                             c->get_data_dilation_strides(),
+                                             0,
+                                             1,
+                                             1,
+                                             0,
+                                             0,
+                                             1,
+                                             false,
+                                             type,
+                                             m_he_backend);
         }
         else if (arg0_plain != nullptr && arg1_plain != nullptr && out0_plain != nullptr)
         {
             runtime::he::kernel::convolution(arg0_plain->get_elements(),
-                    arg1_plain->get_elements(),
-                    out0_plain->get_elements(),
-                    arg0_plain->get_shape(),
-                    arg1_plain->get_shape(),
-                    out0_plain->get_shape(),
-                    c->get_window_movement_strides(),
-                    c->get_window_dilation_strides(),
-                    c->get_padding_below(),
-                    c->get_padding_above(),
-                    c->get_data_dilation_strides(),
-                    0,
-                    1,
-                    1,
-                    0,
-                    0,
-                    1,
-                    false,
-                    type,
-                    m_he_backend);
+                                             arg1_plain->get_elements(),
+                                             out0_plain->get_elements(),
+                                             arg0_plain->get_shape(),
+                                             arg1_plain->get_shape(),
+                                             out0_plain->get_shape(),
+                                             c->get_window_movement_strides(),
+                                             c->get_window_dilation_strides(),
+                                             c->get_padding_below(),
+                                             c->get_padding_above(),
+                                             c->get_data_dilation_strides(),
+                                             0,
+                                             1,
+                                             1,
+                                             0,
+                                             0,
+                                             1,
+                                             false,
+                                             type,
+                                             m_he_backend);
         }
         else
         {
@@ -895,12 +897,12 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         else if (arg0_plain != nullptr && out0_plain != nullptr)
         {
             runtime::he::kernel::slice(arg0_plain->get_elements(),
-                    out0_plain->get_elements(),
-                    arg0_plain->get_shape(),
-                    slice->get_lower_bounds(),
-                    slice->get_upper_bounds(),
-                    slice->get_strides(),
-                    out0_plain->get_shape());
+                                       out0_plain->get_elements(),
+                                       arg0_plain->get_shape(),
+                                       slice->get_lower_bounds(),
+                                       slice->get_upper_bounds(),
+                                       slice->get_strides(),
+                                       out0_plain->get_shape());
         }
         else
         {
@@ -966,12 +968,12 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         else if (arg0_plain != nullptr && out0_plain != nullptr)
         {
             runtime::he::kernel::sum(arg0_plain->get_elements(),
-                    out0_plain->get_elements(),
-                    arg0_plain->get_shape(),
-                    out0_plain->get_shape(),
-                    sum->get_reduction_axes(),
-                    type,
-                    m_he_backend);
+                                     out0_plain->get_elements(),
+                                     arg0_plain->get_shape(),
+                                     out0_plain->get_shape(),
+                                     sum->get_reduction_axes(),
+                                     type,
+                                     m_he_backend);
         }
         else
         {
