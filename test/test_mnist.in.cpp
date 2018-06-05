@@ -41,6 +41,7 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_5)
 {
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
             runtime::Backend::create("${BACKEND_NAME}"));
+    //auto backend = runtime::Backend::create("INTERPRETER");
 
     NGRAPH_INFO << "Loaded backend";
     const string filename = "mnist_cryptonets_batch5";
@@ -70,7 +71,6 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_5)
         auto& type = parameter->get_element_type();
         auto parameter_cipher_tv = backend->create_tensor(type, shape);
         auto parameter_tv = backend->create_tensor(type, shape);
-        auto parameter_plain_tv = backend->create_plain_tensor(type, shape);
         bool data_input = false;
         bool valid_shape = false;
 
@@ -87,10 +87,8 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_5)
                 NGRAPH_INFO << "Adding " << parm;
                 if (parm == "x")
                 {
-                    NGRAPH_INFO << "Copying x size " << shape_size(shape);
                     copy_data(parameter_cipher_tv, parms[parm]);
                     parameter_tvs.push_back(parameter_cipher_tv);
-                    NGRAPH_INFO << "Copied x";
                 }
             }
         }
@@ -119,6 +117,10 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_5)
         cout << elem << " " ;
     }
     cout << endl;
+
+EXPECT_TRUE(test::all_close(
+				   vector<float>{ 0.299992, -4.04762, 0.647196, 3.71598, -3.80518, 1.47072, -4.65358, 7.88541, 2.05476, 3.228, 8.78182, -6.43103, 19.964, 9.60387, -14.3481, 8.3267, 11.5166, -13.9131, 9.84772, -5.82788, -0.0470186, 1.04767, 0.143309, -0.0701391, -0.0851098, -0.336078, 0.125469, -0.146274, 0.286541, 0.0724289, 20.93, -15.5895, 12.238, 8.23788, -12.9543, 9.64842, 10.8617, -4.46871, 11.5456, 4.47025, 0.414631, -2.59835, 0.993939, 0.567376, 4.02877, -0.560472, 2.5502, -0.486873, 0.331346, 2.3114 },
+				   read_vector<float>(result_tvs[0]), 1e-4f));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_softmax_5)

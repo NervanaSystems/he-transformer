@@ -296,7 +296,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
                     inaccurate_cnt++;
                 }
             }
-            NGRAPH_INFO << "Total of " << inaccurate_cnt << " inaccurate computations";
+            NGRAPH_INFO << inaccurate_cnt << "/" << element_count << " computations are inaccurate.";
         }
         else if (type_name == "int64_t")
         {
