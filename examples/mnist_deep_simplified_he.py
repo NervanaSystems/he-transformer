@@ -93,7 +93,9 @@ def deepnn(x):
     return y_conv
 
 def test_deepnn(x):
-    print("test_deepnn")
+    """Constructs test network for Cryptonets using saved weights.
+       Assumes linear layers have been squashed."""
+
     # Reshape to use within a convolutional neural net.
     # Last dimension is for "features" - there is only one here, since images are
     # grayscale -- it would be 3 for an RGB image, 4 for RGBA, etc.
@@ -119,6 +121,8 @@ def test_deepnn(x):
     return y_conv
 
 def test_deepnn_orig(x):
+    """Constructs training network for Cryptonets using saved weights"""
+
     # Reshape to use within a convolutional neural net.
     # Last dimension is for "features" - there is only one here, since images are
     # grayscale -- it would be 3 for an RGB image, 4 for RGBA, etc.
