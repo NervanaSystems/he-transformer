@@ -282,15 +282,21 @@ void runtime::he::HECallFrame::check_cpu_calls(
             he_out->read(&he_out_vec[0], 0, num_bytes);
             cpu_out->read(&cpu_out_vec[0], 0, num_bytes);
 
+            size_t inaccurate_cnt = 0;
             for (size_t elem = 0; elem < element_count; ++elem)
             {
                 if (abs(cpu_out_vec[elem] - he_out_vec[elem]) > 1e-3) // TODO: increase precision
                 {
-                    NGRAPH_INFO << "expect " << cpu_out_vec[elem]
-                                << ", actual: " << he_out_vec[elem];
+                    if (inaccurate_cnt < 10)
+                    {
+                        NGRAPH_INFO << "expect " << cpu_out_vec[elem]
+                                    << ", actual: " << he_out_vec[elem];
+                    }
                     correct = false;
+                    inaccurate_cnt++;
                 }
             }
+            NGRAPH_INFO << "Total of " << inaccurate_cnt << " inaccurate computations";
         }
         else if (type_name == "int64_t")
         {
@@ -307,6 +313,11 @@ void runtime::he::HECallFrame::check_cpu_calls(
                     NGRAPH_INFO << "expect " << cpu_out_vec[elem]
                                 << ", actual: " << he_out_vec[elem];
                     correct = false;
+                }
+                if (!correct && elem > 10)
+                {
+                    NGRAPH_INFO << "..." << endl;
+                    break;
                 }
             }
         }
@@ -338,7 +349,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
             }
             cout << endl;
         };
-        for (shared_ptr<runtime::HostTensorView> cpu_input : cpu_inputs)
+        /* for (shared_ptr<runtime::HostTensorView> cpu_input : cpu_inputs)
         {
             NGRAPH_INFO << "Input";
             print_tensor_view(cpu_input);
@@ -347,7 +358,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
         {
             NGRAPH_INFO << "Output";
             print_tensor_view(cpu_output);
-        }
+        } */
         if (!correct)
         {
             NGRAPH_INFO << "Inaccurate float computation";
