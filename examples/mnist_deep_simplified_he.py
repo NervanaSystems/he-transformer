@@ -42,38 +42,6 @@ import tensorflow as tf
 
 FLAGS = None
 
-def shallownn(x):
-    # Reshape to use within a convolutional neural net.
-    # Last dimension is for "features" - there is only one here, since images are
-    # grayscale -- it would be 3 for an RGB image, 4 for RGBA, etc.
-    with tf.name_scope('reshape'):
-        x_image = tf.reshape(x, [-1, 28, 28, 1])
-
-    # First convolutional layer - maps one grayscale image to 32 feature maps.
-    with tf.name_scope('conv1'):
-        W_conv1 = weight_variable([5, 5, 1, 32], "W_conv1")
-        b_conv1 = bias_variable([32], "b_conv1")
-        h_conv1 = tf.square(conv2d(x_image, W_conv1) + b_conv1)
-
-    # Fully connected layer 1 -- after 2 round of downsampling, our 28x28 image
-    # is down to 7x7x11 feature maps -- maps this to 100 features.
-    with tf.name_scope('fc1'):
-        W_fc1 = weight_variable([7 * 7 * 11, 100], "W_fc1")
-        b_fc1 = bias_variable([100], "b_fc1")
-
-        h_pool1_flat = tf.reshape(h_conv1, [-1, 7 * 7 * 11])
-        h_fc1 = tf.square(tf.matmul(h_pool1_flat, W_fc1) + b_fc1)
-
-    # Map the 100 features to 10 classes, one for each digit
-    with tf.name_scope('fc2'):
-        W_fc2 = weight_variable([100, 10],"W_fc2")
-        b_fc2 = bias_variable([10], "b_fc2")
-
-       # y_conv = tf.matmul(h_fc1_drop, W_fc2) + b_fc2
-        y_conv = tf.matmul(h_fc1, W_fc2) + b_fc2
-    return y_conv, tf.placeholder(tf.float32)
-
-
 def deepnn(x):
     """deepnn builds the graph for a deep net for classifying digits.
 
@@ -125,6 +93,7 @@ def deepnn(x):
     return y_conv
 
 def test_deepnn(x):
+    print("test_deepnn")
     # Reshape to use within a convolutional neural net.
     # Last dimension is for "features" - there is only one here, since images are
     # grayscale -- it would be 3 for an RGB image, 4 for RGBA, etc.
@@ -133,11 +102,11 @@ def test_deepnn(x):
 
     # First convolutional layer - maps one grayscale image to 5 feature maps of 14x14.
     with tf.name_scope('conv1'):
-        W_conv1 = np.loadtxt('W_conv1.txt', dtype=np.float32).reshape([5,5,1,5])
+        W_conv1 = np.loadtxt('conv1_Variable.txt', dtype=np.float32).reshape([5, 5, 1, 5])
         h_conv1 = tf.square(conv2d(x_image, W_conv1))
 
     with tf.name_scope('squash'):
-        W_squash = np.loadtxt("W_squash.txt", dtype=np.float32).reshape([5*14*14, 100])
+        W_squash = np.loadtxt("W_squash.txt", dtype=np.float32).reshape([5 * 14 * 14, 100])
 
     with tf.name_scope('fc1'):
         h_pool2_flat = tf.reshape(h_conv1, [-1, 5 * 14 * 14])
@@ -145,7 +114,7 @@ def test_deepnn(x):
 
     # Map the 100 features to 10 classes, one for each digit
     with tf.name_scope('fc2'):
-        W_fc2 = np.loadtxt('W_fc2.txt', dtype=np.float32).reshape([100, 10])
+        W_fc2 = np.loadtxt('fc2_Variable.txt', dtype=np.float32).reshape([100, 10])
         y_conv = tf.matmul(h_fc1, W_fc2)
     return y_conv
 
@@ -191,11 +160,6 @@ def conv2d(x, W, name=None):
     """conv2d returns a 2d convolution layer with stride 2."""
     return tf.nn.conv2d(x, W, strides=[1, 2, 2, 1], padding='SAME')
 
-def downscale_mean_pool_2x2(x):
-    """scaled_mean_pool_2x redces feature map size."""
-    return tf.nn.avg_pool(
-            x, ksize=[1, 3, 3, 1], strides=[1, 2, 2, 1], padding='SAME')
-
 def scaled_mean_pool_2x2(x):
     """scaled_mean_pool_2x keeps feature map size."""
     return tf.nn.avg_pool(
@@ -206,12 +170,7 @@ def weight_variable(shape, name):
     initial = tf.get_variable(name, shape)
     return tf.Variable(initial)
 
-def bias_variable(shape, name=None):
-    """bias_variable generates a bias variable of a given shape."""
-    initial = tf.constant(0.1, shape=shape)
-    return tf.Variable(initial, name=name)
-
-def test_mnist_cnn(FLAGS):
+def test_mnist_cnn(FLAGS, network):
     squash_layers()
     # Config
     config = tf.ConfigProto(
@@ -240,15 +199,16 @@ def test_mnist_cnn(FLAGS):
         y_ = tf.placeholder(tf.float32, [None, 10])
 
         # Build the graph for the deep net
-        # y_conv = test_deepnn_orig(x) # TODO
-        y_conv = test_deepnn(x)
+        if network == 'orig':
+            y_conv = test_deepnn_orig(x)
+        else:
+            y_conv = test_deepnn(x)
 
         with tf.name_scope('accuracy'):
             correct_prediction = tf.equal(
                     tf.argmax(y_conv, 1), tf.argmax(y_, 1))
             correct_prediction = tf.cast(correct_prediction, tf.float32)
         accuracy = tf.reduce_mean(correct_prediction)
-        tf.summary.scalar('Training accuracy', accuracy)
 
         with tf.Session(config=config) as sess:
             sess.run(tf.global_variables_initializer())
@@ -261,7 +221,21 @@ def test_mnist_cnn(FLAGS):
                 x: x_test,
                 y_: y_test
                 })
-            print('test accuracy %g' % test_accuracy)
+            print('test accuracy wth ' + network + ': %g' % test_accuracy)
+
+        # Run again to export inference graph on smaller batch size
+        with tf.Session(config=config) as sess:
+            sess.run(tf.global_variables_initializer())
+
+            num_test_images=FLAGS.test_image_count
+            x_test=mnist.test.images[:5]
+            y_test=mnist.test.labels[:5]
+
+            test_accuracy = accuracy.eval(feed_dict={
+                x: x_test,
+                y_: y_test
+                })
+            print('test accuracy wth ' + network + ': %g' % test_accuracy)
 
 
 def train_mnist_cnn(FLAGS):
@@ -284,8 +258,6 @@ def train_mnist_cnn(FLAGS):
     if FLAGS.use_xla_cpu:
         xla_device = '/device:XLA_CPU:0'
 
-    loss_values=[]
-    test_accuracy=None
     with tf.device(xla_device):
         # Create the model
         x = tf.placeholder(tf.float32, [None, 784])
@@ -322,6 +294,7 @@ def train_mnist_cnn(FLAGS):
         with tf.Session(config=config) as sess:
             sess.run(tf.global_variables_initializer())
             train_loops = FLAGS.train_loop_count
+            loss_values = []
             for i in range(train_loops):
                 batch = mnist.train.next_batch(FLAGS.batch_size)
                 if i % 100 == 0:
@@ -351,31 +324,28 @@ def train_mnist_cnn(FLAGS):
                     x_test=mnist.test.images[:num_test_images]
                     y_test=mnist.test.labels[:num_test_images]
 
-                    if i == train_loops - 1:
-                        for var in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES):
-                            orig_weight = (sess.run([var]))[0]
-                            weight = (sess.run([var]))[0].flatten().tolist()
-                            #print(weight)
-                            filename = (str(var).split())[1].replace('/','_').replace("'","").replace(':0','') + '.txt'
-                            print("filename", filename)
-
-                            np.savetxt(str(filename), weight)
-                        np.savetxt("x.txt", x_test)
-
                     test_accuracy = accuracy.eval(feed_dict={
                         x: x_test,
-                        y_: y_test
-                    })
+                        y_: y_test })
                     print('test accuracy %g' % test_accuracy)
-    squash_layers()
 
-    return loss_values,test_accuracy
+                    if i == train_loops - 1:
+                        for var in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES):
+                            weight = (sess.run([var]))[0].flatten().tolist()
+                            filename = (str(var).split())[1].replace('/','_')
+                            filename = filename.replace("'","").replace(':0','') + '.txt'
+                            # Don't save initial variable weights
+                            if filename not in set(['W_conv1.txt', 'W_conv2.txt', 'W_fc1.txt', 'W_fc2.txt']):
+                                print("saving", filename)
+                                np.savetxt(str(filename), weight)
+                        np.savetxt("x_test.txt", x_test)
+
+                        return loss_values,test_accuracy
 
 def squash_layers():
     print("Squashing layers")
 
     tf.reset_default_graph()
-    #with tf.device('CPU'):
 
     # Input from h_conv1 squaring
     x = tf.placeholder(tf.float32, [None, 14, 14, 5])
@@ -404,16 +374,17 @@ def squash_layers():
 
         np.savetxt("W_squash.txt", W)
 
-        x_in = np.random.rand(5, 14, 14, 5)
+        x_in = np.random.rand(100, 14, 14, 5)
         network_out = (sess_.run([pre_square], feed_dict={x : x_in}))[0]
-        linear_out = x_in.reshape(5, 980).dot(W)
+        linear_out = x_in.reshape(100, 980).dot(W)
 
-        assert(np.allclose(linear_out, network_out))
+        assert(np.max(np.abs(linear_out - network_out)) < 1e-5)
     print("Squashed layers")
 
 def main(_):
-    train_mnist_cnn(FLAGS)
-    test_mnist_cnn(FLAGS)
+    #train_mnist_cnn(FLAGS)
+    test_mnist_cnn(FLAGS, 'squash')
+    # test_mnist_cnn(FLAGS, 'orig')
 
 
 if __name__ == '__main__':
