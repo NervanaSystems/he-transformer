@@ -149,7 +149,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                 else
                 {
                     auto itv = make_shared<runtime::he::HECipherTensorView>(
-                        element_type, shape, m_he_backend, name);
+                        element_type, shape, m_he_backend, false, name);
                     tensor_map.insert({tv, itv});
                 }
             }

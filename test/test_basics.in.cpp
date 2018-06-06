@@ -116,6 +116,18 @@ NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2_3)
               (test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector());
 }
 
+NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_batch)
+{
+    auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
+            runtime::Backend::create("${BACKEND_NAME}"));
+
+    Shape shape{2, 3};
+    auto a = backend->create_tensor(element::i64, shape, true);
+    copy_data(a, test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector());
+    EXPECT_EQ(read_vector<int64_t>(a),
+            (test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector());
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, ab)
 {
     auto backend = runtime::Backend::create("${BACKEND_NAME}"); // TODO: move to util cast function

@@ -37,6 +37,7 @@ namespace ngraph
                 HECipherTensorView(const element::Type& element_type,
                                    const Shape& shape,
                                    std::shared_ptr<HEBackend> he_backend,
+                                   const bool batched = false,
                                    const std::string& name = "external");
                 virtual ~HECipherTensorView();
 
@@ -67,6 +68,8 @@ namespace ngraph
             private:
                 std::vector<std::shared_ptr<runtime::he::HECiphertext>> m_cipher_texts;
                 size_t m_num_elements;
+
+                bool m_batched; // If true, batch dimension is first dimension of shape
             };
         }
     }

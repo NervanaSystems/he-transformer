@@ -109,6 +109,16 @@ shared_ptr<runtime::TensorView>
     return static_pointer_cast<runtime::TensorView>(rc);
 }
 
+shared_ptr<runtime::TensorView>
+runtime::he::he_heaan::HEHeaanBackend::create_tensor(const element::Type& element_type,
+        const Shape& shape, const bool batched)
+{
+    shared_ptr<HEHeaanBackend> he_heaan_backend =
+        dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(shared_from_this());
+    auto rc = make_shared<runtime::he::HECipherTensorView>(element_type, shape, he_heaan_backend, batched);
+    return static_pointer_cast<runtime::TensorView>(rc);
+}
+
 shared_ptr<runtime::TensorView> runtime::he::he_heaan::HEHeaanBackend::create_tensor(
     const element::Type& element_type, const Shape& shape, void* memory_pointer)
 {

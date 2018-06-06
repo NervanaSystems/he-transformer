@@ -26,6 +26,7 @@
 #include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
 #include "seal_ciphertext_wrapper.hpp"
 #include "seal_plaintext_wrapper.hpp"
+#include "ngraph/util.hpp"
 
 using namespace ngraph;
 using namespace std;
@@ -33,11 +34,20 @@ using namespace std;
 runtime::he::HECipherTensorView::HECipherTensorView(const element::Type& element_type,
                                                     const Shape& shape,
                                                     shared_ptr<HEBackend> he_backend,
+                                                    const bool batched,
                                                     const string& name)
     : runtime::he::HETensorView(element_type, shape, he_backend)
+    , m_batched(batched)
 {
     // get_tensor_view_layout()->get_size() is the number of elements
     m_num_elements = m_descriptor->get_tensor_view_layout()->get_size();
+    if (batched)
+    {
+        m_num_elements /= shape[0];
+    }
+
+    NGRAPH_INFO << "Creating HECPTV shapte " << join(shape,"x") << " with " << m_num_elements << " elements";;
+
     m_cipher_texts.resize(m_num_elements);
     for (size_t i = 0; i < m_num_elements; ++i)
     {
@@ -56,6 +66,7 @@ runtime::he::HECipherTensorView::HECipherTensorView(const element::Type& element
                 "HECipherTensorView::HECipherTensorView(), he_backend is neither seal nor heaan. ");
         }
     }
+    NGRAPH_INFO << "Created HECPTV";
 }
 
 runtime::he::HECipherTensorView::~HECipherTensorView()
@@ -64,11 +75,13 @@ runtime::he::HECipherTensorView::~HECipherTensorView()
 
 void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_offset, size_t n)
 {
+    NGRAPH_INFO << "Writing HECPTV";
     check_io_bounds(source, tensor_offset, n);
     const element::Type& type = get_tensor_view_layout()->get_element_type();
     size_t type_byte_size = type.size();
     size_t dst_start_index = tensor_offset / type_byte_size;
     size_t num_elements_to_write = n / type_byte_size;
+    NGRAPH_INFO << "Writing " << num_elements_to_write << " elements";
 
     if (num_elements_to_write == 1)
     {
@@ -126,10 +139,12 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
             }
         }
     }
+    NGRAPH_INFO << "Wrote HECPTV";
 }
 
 void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, size_t n) const
 {
+    NGRAPH_INFO << "Reading HECPTV";
     check_io_bounds(target, tensor_offset, n);
     const element::Type& type = get_tensor_view_layout()->get_element_type();
     size_t type_byte_size = type.size();
