@@ -115,11 +115,11 @@ namespace ngraph
                             const element::Type& type,
                             size_t count) const;
 
-                    void scalar_encode(shared_ptr<runtime::he::HEPlaintext>& output,
+                    void encode(shared_ptr<runtime::he::HEPlaintext>& output,
                             const void* input,
                             const element::Type& type) const;
 
-                    void scalar_decode(void* output,
+                    void decode(void* output,
                                 const std::shared_ptr<runtime::he::HEPlaintext> input,
                                 const element::Type& type) const;
 

@@ -328,7 +328,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_matrix_vector)
     }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_scalar)
+NGRAPH_TEST(${BACKEND_NAME}, dot_scalar)
 {
     auto backend = runtime::Backend::create("${BACKEND_NAME}");
     if ("${BACKEND_NAME}" == "HE_HEAAN")
@@ -427,7 +427,7 @@ NGRAPH_TEST(${BACKEND_NAME}, constant_abc)
     }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_vector)
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector)
 {
     auto backend = runtime::Backend::create("${BACKEND_NAME}");
     if ("${BACKEND_NAME}" == "HE_HEAAN")
@@ -481,7 +481,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_to_non_existent_axis)
                  ngraph_error);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_matrix)
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix)
 {
     auto backend = runtime::Backend::create("${BACKEND_NAME}");
     if ("${BACKEND_NAME}" == "HE_HEAAN")
@@ -515,7 +515,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_matrix)
     }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor)
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_tensor)
 {
     auto backend = runtime::Backend::create("${BACKEND_NAME}");
     if ("${BACKEND_NAME}" == "HE_HEAAN")
@@ -1229,7 +1229,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_6d)
     }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, one_hot_scalar_2_in_3)
+NGRAPH_TEST(${BACKEND_NAME}, one_hot_2_in_3)
 {
     auto backend = runtime::Backend::create("${BACKEND_NAME}");
     if ("${BACKEND_NAME}" == "HE_HEAAN")
@@ -1258,7 +1258,7 @@ NGRAPH_TEST(${BACKEND_NAME}, one_hot_scalar_2_in_3)
     EXPECT_EQ((vector<int64_t>{0, 0, 1}), read_vector<int64_t>(result));
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, one_hot_scalar_1_in_3)
+NGRAPH_TEST(${BACKEND_NAME}, one_hot_1_in_3)
 {
     auto backend = runtime::Backend::create("${BACKEND_NAME}");
     if ("${BACKEND_NAME}" == "HE_HEAAN")
@@ -1285,7 +1285,7 @@ NGRAPH_TEST(${BACKEND_NAME}, one_hot_scalar_1_in_3)
     EXPECT_EQ((vector<int64_t>{0, 1, 0}), read_vector<int64_t>(result));
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, one_hot_scalar_0_in_3)
+NGRAPH_TEST(${BACKEND_NAME}, one_hot_0_in_3)
 {
     auto backend = runtime::Backend::create("${BACKEND_NAME}");
     if ("${BACKEND_NAME}" == "HE_HEAAN")
@@ -1312,7 +1312,7 @@ NGRAPH_TEST(${BACKEND_NAME}, one_hot_scalar_0_in_3)
     EXPECT_EQ((vector<int64_t>{1, 0, 0}), read_vector<int64_t>(result));
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, one_hot_scalar_fp_nonint_in_3)
+NGRAPH_TEST(${BACKEND_NAME}, one_hot_fp_nonint_in_3)
 {
     auto backend = runtime::Backend::create("${BACKEND_NAME}");
     if ("${BACKEND_NAME}" == "HE_HEAAN")
@@ -1349,7 +1349,7 @@ NGRAPH_TEST(${BACKEND_NAME}, one_hot_scalar_fp_nonint_in_3)
     }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, one_hot_scalar_oob_in_3)
+NGRAPH_TEST(${BACKEND_NAME}, one_hot_oob_in_3)
 {
     auto backend = runtime::Backend::create("${BACKEND_NAME}");
     if ("${BACKEND_NAME}" == "HE_HEAAN")
@@ -2461,7 +2461,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_vector_zero)
     }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_to_scalar_zero_by_zero)
+NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_to_zero_by_zero)
 {
     auto backend = runtime::Backend::create("${BACKEND_NAME}");
     if ("${BACKEND_NAME}" == "HE_HEAAN")
@@ -2735,9 +2735,9 @@ NGRAPH_TEST(${BACKEND_NAME}, create_valued_plaintext)
         element::Type type = element::f32;
         shared_ptr<runtime::he::HEPlaintext> plaintext =
             backend->create_valued_plaintext(val, type);
-        float val_scalar_decoded;
-        backend->scalar_decode(&val_scalar_decoded, plaintext, type);
-        EXPECT_EQ(val_scalar_decoded, val);
+        float val_decoded;
+        backend->decode(&val_decoded, plaintext, type);
+        EXPECT_EQ(val_decoded, val);
     }
 
     // Integer
@@ -2746,27 +2746,27 @@ NGRAPH_TEST(${BACKEND_NAME}, create_valued_plaintext)
         element::Type type = element::i64;
         shared_ptr<runtime::he::HEPlaintext> plaintext =
             backend->create_valued_plaintext((float)val, type);
-        int64_t val_scalar_decoded;
-        backend->scalar_decode(&val_scalar_decoded, plaintext, type);
-        EXPECT_EQ(val_scalar_decoded, val);
+        int64_t val_decoded;
+        backend->decode(&val_decoded, plaintext, type);
+        EXPECT_EQ(val_decoded, val);
     }
     {
         int64_t val = 0;
         element::Type type = element::i64;
         shared_ptr<runtime::he::HEPlaintext> plaintext =
             backend->create_valued_plaintext((float)val, type);
-        int64_t val_scalar_decoded;
-        backend->scalar_decode(&val_scalar_decoded, plaintext, type);
-        EXPECT_EQ(val_scalar_decoded, val);
+        int64_t val_decoded;
+        backend->decode(&val_decoded, plaintext, type);
+        EXPECT_EQ(val_decoded, val);
     }
     {
         int64_t val = -2;
         element::Type type = element::i64;
         shared_ptr<runtime::he::HEPlaintext> plaintext =
             backend->create_valued_plaintext((float)val, type);
-        int64_t val_scalar_decoded;
-        backend->scalar_decode(&val_scalar_decoded, plaintext, type);
-        EXPECT_EQ(val_scalar_decoded, val);
+        int64_t val_decoded;
+        backend->decode(&val_decoded, plaintext, type);
+        EXPECT_EQ(val_decoded, val);
     }
 }
 

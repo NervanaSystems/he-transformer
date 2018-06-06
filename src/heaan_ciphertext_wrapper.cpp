@@ -21,6 +21,7 @@ using namespace ngraph;
 
 runtime::he::HeaanCiphertextWrapper::HeaanCiphertextWrapper()
     : m_ciphertext(heaan::Ciphertext())
+    , m_count(1)
 {
 }
 

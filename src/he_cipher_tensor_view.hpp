@@ -65,12 +65,14 @@ namespace ngraph
                     return m_cipher_texts[i];
                 }
 
+                inline size_t get_batch_size()
+                {
+                    return m_batched;
+                }
+
             private:
                 std::vector<std::shared_ptr<runtime::he::HECiphertext>> m_cipher_texts;
                 size_t m_num_elements;
-
-                bool m_batched; // If true, batch dimension is first dimension of shape
-                size_t m_batch_size;
             };
         }
     }

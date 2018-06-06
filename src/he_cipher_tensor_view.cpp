@@ -36,22 +36,10 @@ runtime::he::HECipherTensorView::HECipherTensorView(const element::Type& element
                                                     shared_ptr<HEBackend> he_backend,
                                                     const bool batched,
                                                     const string& name)
-    : runtime::he::HETensorView(element_type, shape, he_backend)
-    , m_batched(batched)
+    : runtime::he::HETensorView(element_type, shape, he_backend, batched, name)
 {
     // get_tensor_view_layout()->get_size() is the number of elements
-    m_num_elements = m_descriptor->get_tensor_view_layout()->get_size();
-    if (batched)
-    {
-        m_batch_size = shape.back();
-        m_num_elements /= m_batch_size;
-    }
-    else
-    {
-        m_batch_size = 1;
-    }
-
-    NGRAPH_INFO << "Creating HECPTV shapte " << join(shape,"x") << " with " << m_num_elements << " elements";;
+    m_num_elements = m_descriptor->get_tensor_view_layout()->get_size() / m_batch_size;
 
     m_cipher_texts.resize(m_num_elements);
     for (size_t i = 0; i < m_num_elements; ++i)
@@ -71,7 +59,6 @@ runtime::he::HECipherTensorView::HECipherTensorView(const element::Type& element
                 "HECipherTensorView::HECipherTensorView(), he_backend is neither seal nor heaan. ");
         }
     }
-    NGRAPH_INFO << "Created HECPTV";
 }
 
 runtime::he::HECipherTensorView::~HECipherTensorView()
@@ -80,15 +67,13 @@ runtime::he::HECipherTensorView::~HECipherTensorView()
 
 void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_offset, size_t n)
 {
-    NGRAPH_INFO << "Writing HECPTV";
     check_io_bounds(source, tensor_offset, n);
     const element::Type& type = get_tensor_view_layout()->get_element_type();
     size_t type_byte_size = type.size();
     size_t dst_start_index = tensor_offset / type_byte_size;
     size_t num_elements_to_write = n / (type_byte_size * m_batch_size);
-    NGRAPH_INFO << "Writing " << num_elements_to_write << " elements";
 
-    if (num_elements_to_write == 1) // TODO: anything for batching?
+    if (num_elements_to_write == 1)
     {
         const void* src_with_offset = (void*)((char*)source);
         size_t dst_index = dst_start_index;
@@ -97,7 +82,7 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
         {
             shared_ptr<runtime::he::HEPlaintext> p =
                 make_shared<runtime::he::SealPlaintextWrapper>();
-            he_seal_backend->scalar_encode(p, src_with_offset, type);
+            he_seal_backend->encode(p, src_with_offset, type, m_batch_size);
             he_seal_backend->encrypt(m_cipher_texts[dst_index], p);
         }
         else if (auto he_heaan_backend =
@@ -105,7 +90,7 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
         {
             shared_ptr<runtime::he::HEPlaintext> p =
                 make_shared<runtime::he::HeaanPlaintextWrapper>();
-            he_heaan_backend->scalar_encode(p, src_with_offset, type);
+            he_heaan_backend->encode(p, src_with_offset, type, m_batch_size);
             he_heaan_backend->encrypt(m_cipher_texts[dst_index], p);
         }
         else
@@ -144,18 +129,16 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
             }
         }
     }
-    NGRAPH_INFO << "Wrote HECPTV";
 }
 
 void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, size_t n) const
 {
-    NGRAPH_INFO << "Reading HECPTV";
     check_io_bounds(target, tensor_offset, n);
     const element::Type& type = get_tensor_view_layout()->get_element_type();
     size_t type_byte_size = type.size();
     size_t src_start_index = tensor_offset / type_byte_size;
     size_t num_elements_to_read = n / (type_byte_size * m_batch_size);
-    if (num_elements_to_read == 1) // TODO: anything for batch?
+    if (num_elements_to_read == 1)
     {
         void* dst_with_offset = (void*)((char*)target);
         size_t src_index = src_start_index;

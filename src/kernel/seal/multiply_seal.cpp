@@ -61,7 +61,7 @@ void runtime::he::kernel::seal::scalar_multiply(
             shared_ptr<runtime::he::HEPlaintext> p = he_seal_backend->create_empty_plaintext();
             auto p_seal = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(p);
 
-            he_seal_backend->scalar_encode(p, &zero, type);
+            he_seal_backend->encode(p, &zero, type);
             he_seal_backend->encrypt(c, p);
             auto c_seal = dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(c);
             out = c_seal;
@@ -91,7 +91,7 @@ void runtime::he::kernel::seal::scalar_multiply(
             shared_ptr<runtime::he::HEPlaintext> p = he_seal_backend->create_empty_plaintext();
             auto p_seal = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(p);
 
-            he_seal_backend->scalar_encode(p, &zero, type);
+            he_seal_backend->encode(p, &zero, type);
             he_seal_backend->encrypt(c, p);
             auto c_seal = dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(c);
             out = c_seal;
@@ -132,11 +132,11 @@ void runtime::he::kernel::seal::scalar_multiply(
     }
 
     float x, y;
-    he_seal_backend->scalar_decode(&x, arg0, type);
-    he_seal_backend->scalar_decode(&y, arg1, type);
+    he_seal_backend->decode(&x, arg0, type);
+    he_seal_backend->decode(&y, arg1, type);
     float r = x * y;
     shared_ptr<runtime::he::HEPlaintext> out_he =
         dynamic_pointer_cast<runtime::he::HEPlaintext>(out);
-    he_seal_backend->scalar_encode(out_he, &r, type);
+    he_seal_backend->encode(out_he, &r, type);
     out = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(out_he);
 }

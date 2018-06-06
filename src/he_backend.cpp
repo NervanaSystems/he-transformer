@@ -153,26 +153,12 @@ void runtime::he::HEBackend::encode(shared_ptr<runtime::he::HEPlaintext> output,
     throw ngraph_error("HEBackend encode unimplemented");
 }
 
-void runtime::he::HEBackend::scalar_encode(shared_ptr<runtime::he::HEPlaintext> output,
-        const void* input,
-        const element::Type& type) const
-{
-    throw ngraph_error("HEBackend scalar encode unimplemented");
-}
-
 void runtime::he::HEBackend::decode(void* output,
                                     const runtime::he::HEPlaintext& input,
                                     const element::Type& type,
                                     size_t count) const
 {
     throw ngraph_error("HEBackend decode unimplemented");
-}
-
-void runtime::he::HEBackend::scalar_decode(void* output,
-        const runtime::he::HEPlaintext& input,
-        const element::Type& type) const
-{
-    throw ngraph_error("HEBackend scalar decode unimplemented");
 }
 
 void runtime::he::HEBackend::encrypt(shared_ptr<runtime::he::HECiphertext> output,

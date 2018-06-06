@@ -173,7 +173,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         // Check result with CPU backend
         if (is_cpu_check_enabled(op))
         {
-            check_cpu_calls(function, base_type, op, outputs, inputs, false);
+            check_cpu_calls(function, base_type, op, outputs, inputs, false); // TODO: enable
         }
 
         // Check noise budget after each op
@@ -231,11 +231,12 @@ void runtime::he::HECallFrame::check_cpu_calls(
 
         const element::Type& type = he_tv->get_tensor_view_layout()->get_element_type();
         auto shape = he_tv->get_shape();
-        size_t num_bytes = type.size() * shape_size(shape);
+        size_t num_bytes = type.size() * shape_size(shape) ;
         shared_ptr<HostTensorView> tv = make_shared<HostTensorView>(type, shape);
 
         if (cipher_tv != nullptr)
         {
+            num_bytes *= cipher_tv->get_batch_size();
             cipher_tv->read(tv->get_data_ptr(), 0, num_bytes);
         }
         else if (plain_tv != nullptr)
@@ -253,7 +254,6 @@ void runtime::he::HECallFrame::check_cpu_calls(
     {
         const element::Type& type = he_tv->get_tensor_view_layout()->get_element_type();
         auto shape = he_tv->get_shape();
-        size_t num_bytes = type.size() * shape_size(shape);
         shared_ptr<HostTensorView> tv = make_shared<HostTensorView>(type, shape);
         cpu_outputs.push_back(tv);
     }

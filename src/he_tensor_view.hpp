@@ -33,6 +33,7 @@ namespace ngraph
                 HETensorView(const element::Type& element_type,
                              const Shape& shape,
                              const std::shared_ptr<HEBackend>& he_backend,
+                             bool batched = false,
                              const std::string& name = "external");
                 virtual ~HETensorView();
 
@@ -52,6 +53,9 @@ namespace ngraph
             protected:
                 void check_io_bounds(const void* p, size_t tensor_offset, size_t n) const;
                 std::shared_ptr<HEBackend> m_he_backend;
+
+                bool m_batched;
+                size_t m_batch_size; // If m_batched, corresponds to first shape dimesion. TODO: support more arbitrary baxing dimension
             };
         }
     }

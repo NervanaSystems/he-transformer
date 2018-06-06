@@ -331,7 +331,7 @@ void runtime::he::he_seal::HESealBackend::encode(shared_ptr<runtime::he::HEPlain
     throw ngraph_error("HESealBackend encode not implemented");
 }
 
-void runtime::he::he_seal::HESealBackend::scalar_encode(shared_ptr<runtime::he::HEPlaintext>& output,
+void runtime::he::he_seal::HESealBackend::encode(shared_ptr<runtime::he::HEPlaintext>& output,
         const void* input,
         const element::Type& type) const
 {
@@ -362,7 +362,7 @@ void runtime::he::he_seal::HESealBackend::decode(void* output,
     throw ngraph_error("HESealBackend::decode unimplemented");
 }
 
-void runtime::he::he_seal::HESealBackend::scalar_decode(void* output,
+void runtime::he::he_seal::HESealBackend::decode(void* output,
         const shared_ptr<runtime::he::HEPlaintext> input,
         const element::Type& type) const
 {

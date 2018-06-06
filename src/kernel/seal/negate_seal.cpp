@@ -42,10 +42,10 @@ void runtime::he::kernel::seal::scalar_negate(
     }
 
     float x;
-    he_seal_backend->scalar_decode(&x, arg0, type);
+    he_seal_backend->decode(&x, arg0, type);
     float r = -x;
     shared_ptr<runtime::he::HEPlaintext> out_he =
         dynamic_pointer_cast<runtime::he::HEPlaintext>(out);
-    he_seal_backend->scalar_encode(out_he, &r, type);
+    he_seal_backend->encode(out_he, &r, type);
     out = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(out_he);
 }

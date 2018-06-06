@@ -27,13 +27,23 @@ using namespace ngraph;
 runtime::he::HETensorView::HETensorView(const element::Type& element_type,
                                         const Shape& shape,
                                         const shared_ptr<HEBackend>& he_backend,
+                                        bool batched,
                                         const string& name)
     : runtime::TensorView(make_shared<descriptor::PrimaryTensorView>(
           make_shared<TensorViewType>(element_type, shape), name))
     , m_he_backend(he_backend)
+    , m_batched(batched)
 {
     m_descriptor->set_tensor_view_layout(
         make_shared<descriptor::layout::DenseTensorViewLayout>(*m_descriptor));
+    if (batched)
+    {
+        m_batch_size = shape.back();
+    }
+    else
+    {
+        m_batch_size = 1;
+    }
 }
 
 runtime::he::HETensorView::~HETensorView()
