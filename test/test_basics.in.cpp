@@ -2735,9 +2735,9 @@ NGRAPH_TEST(${BACKEND_NAME}, create_valued_plaintext)
         element::Type type = element::f32;
         shared_ptr<runtime::he::HEPlaintext> plaintext =
             backend->create_valued_plaintext(val, type);
-        float val_decoded;
-        backend->decode(&val_decoded, plaintext, type);
-        EXPECT_EQ(val_decoded, val);
+        float val_scalar_decoded;
+        backend->scalar_decode(&val_scalar_decoded, plaintext, type);
+        EXPECT_EQ(val_scalar_decoded, val);
     }
 
     // Integer
@@ -2746,27 +2746,27 @@ NGRAPH_TEST(${BACKEND_NAME}, create_valued_plaintext)
         element::Type type = element::i64;
         shared_ptr<runtime::he::HEPlaintext> plaintext =
             backend->create_valued_plaintext((float)val, type);
-        int64_t val_decoded;
-        backend->decode(&val_decoded, plaintext, type);
-        EXPECT_EQ(val_decoded, val);
+        int64_t val_scalar_decoded;
+        backend->scalar_decode(&val_scalar_decoded, plaintext, type);
+        EXPECT_EQ(val_scalar_decoded, val);
     }
     {
         int64_t val = 0;
         element::Type type = element::i64;
         shared_ptr<runtime::he::HEPlaintext> plaintext =
             backend->create_valued_plaintext((float)val, type);
-        int64_t val_decoded;
-        backend->decode(&val_decoded, plaintext, type);
-        EXPECT_EQ(val_decoded, val);
+        int64_t val_scalar_decoded;
+        backend->scalar_decode(&val_scalar_decoded, plaintext, type);
+        EXPECT_EQ(val_scalar_decoded, val);
     }
     {
         int64_t val = -2;
         element::Type type = element::i64;
         shared_ptr<runtime::he::HEPlaintext> plaintext =
             backend->create_valued_plaintext((float)val, type);
-        int64_t val_decoded;
-        backend->decode(&val_decoded, plaintext, type);
-        EXPECT_EQ(val_decoded, val);
+        int64_t val_scalar_decoded;
+        backend->scalar_decode(&val_scalar_decoded, plaintext, type);
+        EXPECT_EQ(val_scalar_decoded, val);
     }
 }
 

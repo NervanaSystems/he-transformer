@@ -325,7 +325,15 @@ void runtime::he::he_seal::HESealBackend::remove_compiled_function(shared_ptr<Fu
 
 void runtime::he::he_seal::HESealBackend::encode(shared_ptr<runtime::he::HEPlaintext>& output,
                                                  const void* input,
-                                                 const element::Type& type) const
+                                                 const element::Type& type,
+                                                 size_t count) const
+{
+    throw ngraph_error("HESealBackend encode not implemented");
+}
+
+void runtime::he::he_seal::HESealBackend::scalar_encode(shared_ptr<runtime::he::HEPlaintext>& output,
+        const void* input,
+        const element::Type& type) const
 {
     const string type_name = type.c_type_string();
 
@@ -348,7 +356,15 @@ void runtime::he::he_seal::HESealBackend::encode(shared_ptr<runtime::he::HEPlain
 
 void runtime::he::he_seal::HESealBackend::decode(void* output,
                                                  const shared_ptr<runtime::he::HEPlaintext> input,
-                                                 const element::Type& type) const
+                                                 const element::Type& type,
+                                                 size_t count) const
+{
+    throw ngraph_error("HESealBackend::decode unimplemented");
+}
+
+void runtime::he::he_seal::HESealBackend::scalar_decode(void* output,
+        const shared_ptr<runtime::he::HEPlaintext> input,
+        const element::Type& type) const
 {
     const string type_name = type.c_type_string();
 

@@ -101,11 +101,21 @@ namespace ngraph
 
                     void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
                                 const void* input,
-                                const element::Type& type) const;
+                                const element::Type& type,
+                                size_t count) const;
+
+                    void scalar_encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
+                            const void* input,
+                            const element::Type& type) const;
 
                     void decode(void* output,
                                 const std::shared_ptr<runtime::he::HEPlaintext> input,
-                                const element::Type& type) const;
+                                const element::Type& type,
+                                size_t count) const;
+
+                    void scalar_decode(void* output,
+                            const std::shared_ptr<runtime::he::HEPlaintext> input,
+                            const element::Type& type) const;
 
                     void encrypt(std::shared_ptr<runtime::he::HECiphertext> output,
                                  const std::shared_ptr<runtime::he::HEPlaintext> input) const;

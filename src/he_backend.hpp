@@ -82,13 +82,27 @@ namespace ngraph
 
                 void remove_compiled_function(std::shared_ptr<Function> func) override;
 
+                // Encodes several scalars to a single plaintext
                 void encode(std::shared_ptr<runtime::he::HEPlaintext> output,
                             const void* input,
-                            const element::Type& type) const;
+                            const element::Type& type,
+                            size_t count) const;
 
+                // Encodes single scalar to a plaintext
+                void scalar_encode(std::shared_ptr<runtime::he::HEPlaintext> output,
+                        const void* input,
+                        const element::Type& type) const;
+
+                // Decodes plaintext to several scalars
                 void decode(void* output,
                             const he::HEPlaintext& input,
-                            const element::Type& type) const;
+                            const element::Type& type,
+                            size_t count) const;
+
+                // Decodes plaintext to single scalar
+                void scalar_decode(void* output,
+                        const he::HEPlaintext& input,
+                        const element::Type& type) const;
 
                 void encrypt(std::shared_ptr<runtime::he::HECiphertext> output,
                              const std::shared_ptr<runtime::he::HEPlaintext> input) const;

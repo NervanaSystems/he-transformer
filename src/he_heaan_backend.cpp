@@ -241,7 +241,15 @@ void runtime::he::he_heaan::HEHeaanBackend::remove_compiled_function(shared_ptr<
 
 void runtime::he::he_heaan::HEHeaanBackend::encode(shared_ptr<runtime::he::HEPlaintext>& output,
                                                    const void* input,
-                                                   const element::Type& type) const
+                                                   const element::Type& type,
+                                                   size_t count) const
+{
+    throw ngraph_error("Encode not implemented in HEHeaanBackend");
+}
+
+void runtime::he::he_heaan::HEHeaanBackend::scalar_encode(shared_ptr<runtime::he::HEPlaintext>& output,
+        const void* input,
+        const element::Type& type) const
 {
     const string type_name = type.c_type_string();
 
@@ -266,7 +274,15 @@ void runtime::he::he_heaan::HEHeaanBackend::encode(shared_ptr<runtime::he::HEPla
 
 void runtime::he::he_heaan::HEHeaanBackend::decode(void* output,
                                                    const shared_ptr<runtime::he::HEPlaintext> input,
-                                                   const element::Type& type) const
+                                                   const element::Type& type,
+                                                   size_t count) const
+{
+    throw ngraph_error("HEHeaanBackend::decode not implemented");
+}
+
+void runtime::he::he_heaan::HEHeaanBackend::scalar_decode(void* output,
+        const shared_ptr<runtime::he::HEPlaintext> input,
+        const element::Type& type) const
 {
     const string type_name = type.c_type_string();
 

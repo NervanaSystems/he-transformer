@@ -41,7 +41,7 @@ void runtime::he::kernel::constant(vector<shared_ptr<runtime::he::HEPlaintext>>&
         for (size_t i = 0; i < count; ++i)
         {
             const void* src_with_offset = (void*)((char*)data_ptr + i * type.size());
-            he_seal_backend->encode(out[i], src_with_offset, type);
+            he_seal_backend->scalar_encode(out[i], src_with_offset, type);
         }
     }
     else if (auto he_heaan_backend =
@@ -51,7 +51,7 @@ void runtime::he::kernel::constant(vector<shared_ptr<runtime::he::HEPlaintext>>&
         for (size_t i = 0; i < count; ++i)
         {
             const void* src_with_offset = (void*)((char*)data_ptr + i * type.size());
-            he_heaan_backend->encode(out[i], src_with_offset, type);
+            he_heaan_backend->scalar_encode(out[i], src_with_offset, type);
         }
     }
     else

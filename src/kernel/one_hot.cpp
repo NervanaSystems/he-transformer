@@ -92,11 +92,11 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<runtime::he::HECiphert
             int64_t x;
             if (he_seal_backend)
             {
-                he_seal_backend->decode((void*)(&x), plain_val, type);
+                he_seal_backend->scalar_decode((void*)(&x), plain_val, type);
             }
             else if (he_heaan_backend)
             {
-                he_heaan_backend->decode((void*)(&x), plain_val, type);
+                he_heaan_backend->scalar_decode((void*)(&x), plain_val, type);
             }
             one_hot_pos = static_cast<size_t>(x);
         }
@@ -105,11 +105,11 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<runtime::he::HECiphert
             float x;
             if (he_seal_backend)
             {
-                he_seal_backend->decode((void*)(&x), plain_val, type);
+                he_seal_backend->scalar_decode((void*)(&x), plain_val, type);
             }
             else if (he_heaan_backend)
             {
-                he_heaan_backend->decode((void*)(&x), plain_val, type);
+                he_heaan_backend->scalar_decode((void*)(&x), plain_val, type);
             }
             if (abs(x - round(x)) > 3e-9)
             {
@@ -120,7 +120,7 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<runtime::he::HECiphert
         }
         else
         {
-            NGRAPH_INFO << "Unsupported element type in decode " << type_name;
+            NGRAPH_INFO << "Unsupported element type in scalar_decode " << type_name;
             throw ngraph_error("Unsupported element type " + type_name);
         }
 

@@ -38,10 +38,10 @@ void runtime::he::kernel::heaan::scalar_negate(
     const shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
 {
     float x;
-    he_heaan_backend->decode(&x, arg, type);
+    he_heaan_backend->scalar_decode(&x, arg, type);
     float r = -x;
     shared_ptr<runtime::he::HEPlaintext> out_he =
         dynamic_pointer_cast<runtime::he::HEPlaintext>(out);
-    he_heaan_backend->encode(out_he, &r, type);
+    he_heaan_backend->scalar_encode(out_he, &r, type);
     out = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(out_he);
 }

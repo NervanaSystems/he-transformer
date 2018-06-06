@@ -74,12 +74,12 @@ void runtime::he::HEPlainTensorView::write(const void* source, size_t tensor_off
 
         if (auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(m_he_backend))
         {
-            he_seal_backend->encode(m_plain_texts[dst_index], src_with_offset, type);
+            he_seal_backend->scalar_encode(m_plain_texts[dst_index], src_with_offset, type);
         }
         else if (auto he_heaan_backend =
                      dynamic_pointer_cast<he_heaan::HEHeaanBackend>(m_he_backend))
         {
-            he_heaan_backend->encode(m_plain_texts[dst_index], src_with_offset, type);
+            he_heaan_backend->scalar_encode(m_plain_texts[dst_index], src_with_offset, type);
         }
         else
         {
@@ -95,12 +95,12 @@ void runtime::he::HEPlainTensorView::write(const void* source, size_t tensor_off
             size_t dst_index = dst_start_index + i;
             if (auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(m_he_backend))
             {
-                he_seal_backend->encode(m_plain_texts[dst_index], src_with_offset, type);
+                he_seal_backend->scalar_encode(m_plain_texts[dst_index], src_with_offset, type);
             }
             else if (auto he_heaan_backend =
                          dynamic_pointer_cast<he_heaan::HEHeaanBackend>(m_he_backend))
             {
-                he_heaan_backend->encode(m_plain_texts[dst_index], src_with_offset, type);
+                he_heaan_backend->scalar_encode(m_plain_texts[dst_index], src_with_offset, type);
             }
             else
             {
@@ -125,12 +125,12 @@ void runtime::he::HEPlainTensorView::read(void* target, size_t tensor_offset, si
         size_t src_index = src_start_index;
         if (auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(m_he_backend))
         {
-            he_seal_backend->decode(dst_with_offset, m_plain_texts[src_index], type);
+            he_seal_backend->scalar_decode(dst_with_offset, m_plain_texts[src_index], type);
         }
         else if (auto he_heaan_backend =
                      dynamic_pointer_cast<he_heaan::HEHeaanBackend>(m_he_backend))
         {
-            he_heaan_backend->decode(dst_with_offset, m_plain_texts[src_index], type);
+            he_heaan_backend->scalar_decode(dst_with_offset, m_plain_texts[src_index], type);
         }
         else
         {
@@ -146,12 +146,12 @@ void runtime::he::HEPlainTensorView::read(void* target, size_t tensor_offset, si
             size_t src_index = src_start_index + i;
             if (auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(m_he_backend))
             {
-                he_seal_backend->decode(dst_with_offset, m_plain_texts[src_index], type);
+                he_seal_backend->scalar_decode(dst_with_offset, m_plain_texts[src_index], type);
             }
             else if (auto he_heaan_backend =
                          dynamic_pointer_cast<he_heaan::HEHeaanBackend>(m_he_backend))
             {
-                he_heaan_backend->decode(dst_with_offset, m_plain_texts[src_index], type);
+                he_heaan_backend->scalar_decode(dst_with_offset, m_plain_texts[src_index], type);
             }
             else
             {
