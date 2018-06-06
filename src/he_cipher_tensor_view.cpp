@@ -43,7 +43,12 @@ runtime::he::HECipherTensorView::HECipherTensorView(const element::Type& element
     m_num_elements = m_descriptor->get_tensor_view_layout()->get_size();
     if (batched)
     {
-        m_num_elements /= shape[0];
+        m_batch_size = shape.back();
+        m_num_elements /= m_batch_size;
+    }
+    else
+    {
+        m_batch_size = 1;
     }
 
     NGRAPH_INFO << "Creating HECPTV shapte " << join(shape,"x") << " with " << m_num_elements << " elements";;
@@ -80,10 +85,10 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
     const element::Type& type = get_tensor_view_layout()->get_element_type();
     size_t type_byte_size = type.size();
     size_t dst_start_index = tensor_offset / type_byte_size;
-    size_t num_elements_to_write = n / type_byte_size;
+    size_t num_elements_to_write = n / (type_byte_size * m_batch_size);
     NGRAPH_INFO << "Writing " << num_elements_to_write << " elements";
 
-    if (num_elements_to_write == 1)
+    if (num_elements_to_write == 1) // TODO: anything for batching?
     {
         const void* src_with_offset = (void*)((char*)source);
         size_t dst_index = dst_start_index;
@@ -113,7 +118,7 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
 #pragma omp parallel for
         for (size_t i = 0; i < num_elements_to_write; ++i)
         {
-            const void* src_with_offset = (void*)((char*)source + i * type.size());
+            const void* src_with_offset = (void*)((char*)source + i * type.size() * m_batch_size);
             size_t dst_index = dst_start_index + i;
             shared_ptr<runtime::he::HEPlaintext> p = make_shared<runtime::he::HEPlaintext>();
 
@@ -121,7 +126,7 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
             {
                 shared_ptr<runtime::he::HEPlaintext> p =
                     make_shared<runtime::he::SealPlaintextWrapper>();
-                he_seal_backend->scalar_encode(p, src_with_offset, type);
+                he_seal_backend->encode(p, src_with_offset, type, m_batch_size);
                 he_seal_backend->encrypt(m_cipher_texts[dst_index], p);
             }
             else if (auto he_heaan_backend =
@@ -129,7 +134,7 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
             {
                 shared_ptr<runtime::he::HEPlaintext> p =
                     make_shared<runtime::he::HeaanPlaintextWrapper>();
-                he_heaan_backend->scalar_encode(p, src_with_offset, type);
+                he_heaan_backend->encode(p, src_with_offset, type, m_batch_size);
                 he_heaan_backend->encrypt(m_cipher_texts[dst_index], p);
             }
             else
@@ -149,8 +154,8 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
     const element::Type& type = get_tensor_view_layout()->get_element_type();
     size_t type_byte_size = type.size();
     size_t src_start_index = tensor_offset / type_byte_size;
-    size_t num_elements_to_read = n / type_byte_size;
-    if (num_elements_to_read == 1)
+    size_t num_elements_to_read = n / (type_byte_size * m_batch_size);
+    if (num_elements_to_read == 1) // TODO: anything for batch?
     {
         void* dst_with_offset = (void*)((char*)target);
         size_t src_index = src_start_index;
@@ -159,7 +164,7 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
             shared_ptr<runtime::he::HEPlaintext> p =
                 make_shared<runtime::he::SealPlaintextWrapper>();
             he_seal_backend->decrypt(p, m_cipher_texts[src_index]);
-            he_seal_backend->scalar_decode(dst_with_offset, p, type);
+            he_seal_backend->decode(dst_with_offset, p, type, m_batch_size);
         }
         else if (auto he_heaan_backend =
                      dynamic_pointer_cast<he_heaan::HEHeaanBackend>(m_he_backend))
@@ -167,7 +172,7 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
             shared_ptr<runtime::he::HEPlaintext> p =
                 make_shared<runtime::he::HeaanPlaintextWrapper>();
             he_heaan_backend->decrypt(p, m_cipher_texts[src_index]);
-            he_heaan_backend->scalar_decode(dst_with_offset, p, type);
+            he_heaan_backend->decode(dst_with_offset, p, type, m_batch_size);
         }
         else
         {
@@ -179,14 +184,14 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
 #pragma omp parallel for
         for (size_t i = 0; i < num_elements_to_read; ++i)
         {
-            void* dst_with_offset = (void*)((char*)target + i * type.size());
+            void* dst_with_offset = (void*)((char*)target + i * type.size() * m_batch_size);
             size_t src_index = src_start_index + i;
             if (auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(m_he_backend))
             {
                 shared_ptr<runtime::he::HEPlaintext> p =
                     make_shared<runtime::he::SealPlaintextWrapper>();
                 he_seal_backend->decrypt(p, m_cipher_texts[src_index]);
-                he_seal_backend->scalar_decode(dst_with_offset, p, type);
+                he_seal_backend->decode(dst_with_offset, p, type, m_batch_size);
             }
             else if (auto he_heaan_backend =
                          dynamic_pointer_cast<he_heaan::HEHeaanBackend>(m_he_backend))
@@ -194,7 +199,7 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
                 shared_ptr<runtime::he::HEPlaintext> p =
                     make_shared<runtime::he::HeaanPlaintextWrapper>();
                 he_heaan_backend->decrypt(p, m_cipher_texts[src_index]);
-                he_heaan_backend->scalar_decode(dst_with_offset, p, type);
+                he_heaan_backend->decode(dst_with_offset, p, type, m_batch_size);
             }
             else
             {

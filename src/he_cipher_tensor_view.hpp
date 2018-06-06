@@ -70,6 +70,7 @@ namespace ngraph
                 size_t m_num_elements;
 
                 bool m_batched; // If true, batch dimension is first dimension of shape
+                size_t m_batch_size;
             };
         }
     }

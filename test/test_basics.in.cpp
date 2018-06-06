@@ -121,11 +121,11 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_batch)
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
             runtime::Backend::create("${BACKEND_NAME}"));
 
-    Shape shape{2, 3};
-    auto a = backend->create_tensor(element::i64, shape, true);
-    copy_data(a, test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector());
-    EXPECT_EQ(read_vector<int64_t>(a),
-            (test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector());
+    Shape shape{2, 4};
+    auto a = backend->create_tensor(element::f32, shape, true);
+    copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}, {7, 8}}).get_vector());
+    EXPECT_EQ(read_vector<float>(a),
+            (test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}, {7, 8}})).get_vector());
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, ab)

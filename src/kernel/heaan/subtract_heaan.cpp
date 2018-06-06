@@ -55,7 +55,7 @@ void runtime::he::kernel::heaan::scalar_subtract(
     const shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
 {
     out->m_ciphertext =
-        he_heaan_backend->get_scheme()->addConst(arg0->m_ciphertext, -arg1->m_plaintext);
+        he_heaan_backend->get_scheme()->addConst(arg0->m_ciphertext, -arg1->m_plaintexts[0]);
 }
 
 void runtime::he::kernel::heaan::scalar_subtract(
@@ -67,5 +67,5 @@ void runtime::he::kernel::heaan::scalar_subtract(
 {
     out->m_ciphertext = he_heaan_backend->get_scheme()->negate(arg1->m_ciphertext);
     out->m_ciphertext =
-        he_heaan_backend->get_scheme()->addConst(out->m_ciphertext, arg0->m_plaintext);
+        he_heaan_backend->get_scheme()->addConst(out->m_ciphertext, arg0->m_plaintexts[0]);
 }

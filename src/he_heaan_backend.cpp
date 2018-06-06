@@ -160,7 +160,7 @@ shared_ptr<runtime::he::HEPlaintext> runtime::he::he_heaan::HEHeaanBackend::crea
     auto plaintext =
         dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(create_empty_plaintext());
 
-    plaintext->m_plaintext = value;
+    plaintext->m_plaintexts = {value};
     return plaintext;
 }
 
@@ -244,26 +244,27 @@ void runtime::he::he_heaan::HEHeaanBackend::encode(shared_ptr<runtime::he::HEPla
                                                    const element::Type& type,
                                                    size_t count) const
 {
-    throw ngraph_error("Encode not implemented in HEHeaanBackend");
-}
-
-void runtime::he::he_heaan::HEHeaanBackend::scalar_encode(shared_ptr<runtime::he::HEPlaintext>& output,
-        const void* input,
-        const element::Type& type) const
-{
     const string type_name = type.c_type_string();
+    vector<double> input_dbl(count);
 
     if (type_name == "double")
     {
-        output = make_shared<runtime::he::HeaanPlaintextWrapper>(*(double*)input);
+        throw ngraph_error("Unsupported element type " + type_name);
+        // output = make_shared<runtime::he::HeaanPlaintextWrapper>((double*)input, count);
     }
     else if (type_name == "int64_t")
     {
-        output = make_shared<runtime::he::HeaanPlaintextWrapper>((double)*(int64_t*)input);
+        throw ngraph_error("Unsupported element type " + type_name);
+        // output = make_shared<runtime::he::HeaanPlaintextWrapper>((double*)input, count);
     }
     else if (type_name == "float")
     {
-        output = make_shared<runtime::he::HeaanPlaintextWrapper>((double)*(float*)input);
+        NGRAPH_INFO << "Encodung " << count << " floats";
+        for(size_t i = 0; i < count; ++i)
+        {
+            input_dbl[i] = (double)((float*)input)[i];
+        }
+        output = make_shared<runtime::he::HeaanPlaintextWrapper>(input_dbl);
     }
     else
     {
@@ -272,12 +273,69 @@ void runtime::he::he_heaan::HEHeaanBackend::scalar_encode(shared_ptr<runtime::he
     }
 }
 
+void runtime::he::he_heaan::HEHeaanBackend::scalar_encode(shared_ptr<runtime::he::HEPlaintext>& output,
+        const void* input,
+        const element::Type& type) const
+{
+    throw ngraph_error("scalar encode unimplemented");
+    /* const string type_name = type.c_type_string();
+
+    if (type_name == "double")
+    {
+        output = make_shared<runtime::he::HeaanPlaintextWrapper>((double*)input, 1);
+    }
+    else if (type_name == "int64_t")
+    {
+        output = make_shared<runtime::he::HeaanPlaintextWrapper>((double*)input, 1);
+    }
+    else if (type_name == "float")
+    {
+        output = make_shared<runtime::he::HeaanPlaintextWrapper>((double*)input, 1);
+    }
+    else
+    {
+        NGRAPH_INFO << "Unsupported element type in encode " << type_name;
+        throw ngraph_error("Unsupported element type " + type_name);
+    } */
+}
+
 void runtime::he::he_heaan::HEHeaanBackend::decode(void* output,
                                                    const shared_ptr<runtime::he::HEPlaintext> input,
                                                    const element::Type& type,
-                                                   size_t count) const
+                                                   size_t count) const // TODO: count unnecessary?
 {
-    throw ngraph_error("HEHeaanBackend::decode not implemented");
+    const string type_name = type.c_type_string();
+
+    if (auto heaan_input = dynamic_pointer_cast<HeaanPlaintextWrapper>(input))
+    {
+        if (type_name == "int64_t")
+        {
+            int64_t x = round(heaan_input->m_plaintexts[0]);
+            memcpy(output, &x, type.size());
+        }
+        else if (type_name == "float")
+        {
+            for(size_t i = 0; i < count; ++i)
+            {
+                float x = heaan_input->m_plaintexts[i];
+                memcpy(output + i*type.size(), &x, type.size());
+            }
+        }
+        else if (type_name == "double")
+        {
+            double x = (double)heaan_input->m_plaintexts[0];
+            memcpy(output, &x, type.size());
+        }
+        else
+        {
+            NGRAPH_INFO << "Unsupported element type in decode " << type_name;
+            throw ngraph_error("Unsupported element type " + type_name);
+        }
+    }
+    else
+    {
+        throw ngraph_error("HEHeaanBackend::decode input is not heaan plaintext");
+    }
 }
 
 void runtime::he::he_heaan::HEHeaanBackend::scalar_decode(void* output,
@@ -290,17 +348,17 @@ void runtime::he::he_heaan::HEHeaanBackend::scalar_decode(void* output,
     {
         if (type_name == "int64_t")
         {
-            int64_t x = round(heaan_input->m_plaintext);
+            int64_t x = round(heaan_input->m_plaintexts[0]);
             memcpy(output, &x, type.size());
         }
         else if (type_name == "float")
         {
-            float x = heaan_input->m_plaintext;
+            float x = heaan_input->m_plaintexts[0];
             memcpy(output, &x, type.size());
         }
         else if (type_name == "double")
         {
-            double x = (double)heaan_input->m_plaintext;
+            double x = (double)heaan_input->m_plaintexts[0];
             memcpy(output, &x, type.size());
         }
         else
@@ -323,13 +381,30 @@ void runtime::he::he_heaan::HEHeaanBackend::encrypt(
     auto heaan_input = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(input);
     if (heaan_output != nullptr && heaan_input != nullptr)
     {
-        heaan_output->m_ciphertext =
-            m_scheme->encryptSingle(heaan_input->m_plaintext, m_log_precision, m_context->logQ);
+        NGRAPH_INFO << "HEHeaanBackend Encrypting";
+        if (heaan_input->m_plaintexts.size() == 1)
+        {
+            heaan_output->m_ciphertext =
+                m_scheme->encryptSingle(heaan_input->m_plaintexts[0], m_log_precision, m_context->logQ);
+        }
+        else
+        {
+            NGRAPH_INFO << "Encrypting " << heaan_input->m_plaintexts.size();;
+            for(auto elem : heaan_input->m_plaintexts)
+            {
+                NGRAPH_INFO << elem;
+            }
+
+            heaan_output->m_ciphertext =
+                m_scheme->encrypt(heaan_input->m_plaintexts, m_log_precision, m_context->logQ);
+        }
+        heaan_output->m_count = heaan_input->m_plaintexts.size();
     }
     else
     {
         throw ngraph_error("HEHeaanBackend::encrypt has non-heaan ciphertexts");
     }
+    NGRAPH_INFO << "Done decrypting";
 }
 
 void runtime::he::he_heaan::HEHeaanBackend::decrypt(
@@ -340,8 +415,29 @@ void runtime::he::he_heaan::HEHeaanBackend::decrypt(
     auto heaan_input = dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(input);
     if (heaan_output != nullptr && heaan_input != nullptr)
     {
-        heaan_output->m_plaintext =
-            m_scheme->decryptSingle(*m_secret_key, heaan_input->m_ciphertext).real();
+        if (heaan_input->m_count == 1)
+        {
+            NGRAPH_INFO << "Decrypgin single";
+            heaan_output->m_plaintexts =
+                {m_scheme->decryptSingle(*m_secret_key, heaan_input->m_ciphertext).real()};
+        }
+        else
+        {
+            assert(heaan_input->m_count > 1);
+            NGRAPH_INFO << "Decrypting many";
+            vector<complex<double>> ciphertexts =  m_scheme->decrypt(*m_secret_key, heaan_input->m_ciphertext);
+            NGRAPH_INFO << "Decrypted many";
+            vector<double> real_ciphertexts(heaan_input->m_count);
+            NGRAPH_INFO << "real_ciphertexts.size() " << real_ciphertexts.size() ;
+
+            transform(ciphertexts.begin(), ciphertexts.end(), real_ciphertexts.begin(),
+                    [](complex<double> &n) {return n.real();});
+
+            heaan_output->m_plaintexts = real_ciphertexts;
+
+                //m_scheme->decrypt(*m_secret_key, heaan_input->m_ciphertext).real();
+            NGRAPH_INFO << "Done decrypting many";
+        }
     }
     else
     {

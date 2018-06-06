@@ -15,18 +15,31 @@
 *******************************************************************************/
 
 #include "heaan_plaintext_wrapper.hpp"
+#include "ngraph/except.hpp"
 
 using namespace std;
 using namespace ngraph;
 
 runtime::he::HeaanPlaintextWrapper::HeaanPlaintextWrapper()
-    : m_plaintext(0)
+    : m_plaintexts()
 {
 }
 
-runtime::he::HeaanPlaintextWrapper::HeaanPlaintextWrapper(double plain)
-    : m_plaintext(plain)
+runtime::he::HeaanPlaintextWrapper::HeaanPlaintextWrapper(std::vector<double>& plain)
 {
+    auto is_power_of_2 = [](size_t n) -> bool
+    {
+        return (n & (n - 1)) == 0;
+    };
+
+    if (is_power_of_2(plain.size()))
+    {
+        m_plaintexts = plain;
+    }
+    else
+    {
+        throw ngraph_error("Batching size must be power of two");
+    }
 }
 
 runtime::he::HeaanPlaintextWrapper::~HeaanPlaintextWrapper()
