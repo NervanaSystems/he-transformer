@@ -133,12 +133,13 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
 
 void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, size_t n) const
 {
+    NGRAPH_INFO << "HECPT read";
     check_io_bounds(target, tensor_offset, n);
     const element::Type& type = get_tensor_view_layout()->get_element_type();
     size_t type_byte_size = type.size();
     size_t src_start_index = tensor_offset / type_byte_size;
     size_t num_elements_to_read = n / (type_byte_size * m_batch_size);
-    if (num_elements_to_read == 1)
+    /* if (num_elements_to_read == 1)
     {
         void* dst_with_offset = (void*)((char*)target);
         size_t src_index = src_start_index;
@@ -163,7 +164,7 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
         }
     }
     else
-    {
+    { */
 #pragma omp parallel for
         for (size_t i = 0; i < num_elements_to_read; ++i)
         {
@@ -189,5 +190,5 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
                 throw ngraph_error("HECipherTensorView::read he_backend is not seal.");
             }
         }
-    }
+    // }
 }

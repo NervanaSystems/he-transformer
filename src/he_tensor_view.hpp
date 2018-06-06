@@ -55,7 +55,7 @@ namespace ngraph
                 std::shared_ptr<HEBackend> m_he_backend;
 
                 bool m_batched;
-                size_t m_batch_size; // If m_batched, corresponds to first shape dimesion. TODO: support more arbitrary baxing dimension
+                size_t m_batch_size; // If m_batched, corresponds to first shape dimesion. TODO: support more arbitrary batching dimension
             };
         }
     }

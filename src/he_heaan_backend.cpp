@@ -115,6 +115,12 @@ runtime::he::he_heaan::HEHeaanBackend::create_tensor(const element::Type& elemen
 {
     shared_ptr<HEHeaanBackend> he_heaan_backend =
         dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(shared_from_this());
+
+    /* if (batched)
+    {
+        Shape batched_shape(shape.begin() + 1, shape.end());
+    } */
+
     auto rc = make_shared<runtime::he::HECipherTensorView>(element_type, shape, he_heaan_backend, batched);
     return static_pointer_cast<runtime::TensorView>(rc);
 }

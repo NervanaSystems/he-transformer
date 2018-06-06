@@ -128,6 +128,32 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_batch)
             (test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}, {7, 8}})).get_vector());
 }
 
+NGRAPH_TEST(${BACKEND_NAME}, ab_batch)
+{
+    auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
+            runtime::Backend::create("${BACKEND_NAME}"));
+
+    Shape shape_a{2, 3};
+    Shape shape_b{2, 3};
+    auto a = make_shared<op::Parameter>(element::i64, shape_a);
+    auto b = make_shared<op::Parameter>(element::i64, shape_b);
+    auto t = make_shared<op::Add>(a, b);
+
+    auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+
+    // Create some tensors for input/output
+    auto t_a = backend->create_tensor(element::f32, shape_a, true);
+    auto t_b = backend->create_tensor(element::f32, shape_b);
+    auto t_result = backend->create_tensor(element::f32, shape_a);
+
+    copy_data(t_a, test::NDArray<int64_t, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector());
+    copy_data(t_b, test::NDArray<int64_t, 2>({{7, 8, 9}, {7, 8, 9}}).get_vector());
+
+    backend->call(f, {t_result}, {t_a, t_b});
+    EXPECT_EQ(read_vector<int64_t>(t_result),
+            (test::NDArray<int64_t, 2>({{8, 10, 12}, {11, 13, 15}})).get_vector());
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, ab)
 {
     auto backend = runtime::Backend::create("${BACKEND_NAME}"); // TODO: move to util cast function
