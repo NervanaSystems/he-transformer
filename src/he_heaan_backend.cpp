@@ -38,7 +38,8 @@ static void print_heaan_context(const heaan::Context& context)
 {
     NGRAPH_INFO << endl
                 << "/ Encryption parameters:" << endl
-                << "| poly_modulus: " << "1x^" << context.N << " + 1" << endl
+                << "| poly_modulus: "
+                << "1x^" << context.N << " + 1" << endl
                 << "| coeff_modulus: " << context.logQ << " bits" << endl
                 << "\\ noise_standard_deviation: " << context.sigma;
 }

@@ -43,8 +43,7 @@ import tensorflow as tf
 FLAGS = None
 
 def deepnn(x):
-    """deepnn builds the graph for a deep net for classifying digits.
-
+    """deepnn builds the graph for a deep net for classifying digits based on Cryptonets paper
   Args:
     x: an input tensor with the dimensions (N_examples, 784), where 784 is the
     number of pixels in a standard MNIST image.
@@ -386,7 +385,7 @@ def squash_layers():
     print("Squashed layers")
 
 def main(_):
-    #train_mnist_cnn(FLAGS)
+    train_mnist_cnn(FLAGS)
     test_mnist_cnn(FLAGS, 'squash')
     # test_mnist_cnn(FLAGS, 'orig')
 
@@ -406,7 +405,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--train_loop_count',
         type=int,
-        default=1000,
+        default=100000,
         help='Number of training iterations')
 
     parser.add_argument(
