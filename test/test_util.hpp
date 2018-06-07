@@ -71,7 +71,6 @@ vector<tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,
 template <typename T> // TODO: add to ngraph?
 std::vector<T> generalized_read_vector(std::shared_ptr<ngraph::runtime::TensorView> tv)
 {
-    NGRAPH_INFO << "generalized_read_vector";
     if (ngraph::element::from<T>() != tv->get_tensor_view_layout()->get_element_type())
     {
         throw std::invalid_argument("read_vector type must match TensorView type");
@@ -80,9 +79,7 @@ std::vector<T> generalized_read_vector(std::shared_ptr<ngraph::runtime::TensorVi
     {
         if (cipher_tv->is_batched())
         {
-            cout  << "cipher_tv->is_batched" << endl;
             size_t element_count = ngraph::shape_size(cipher_tv->get_expanded_shape());
-            cout  << "element count" << element_count << endl;
             size_t size = element_count * sizeof(T);
             std::vector<T> rc(element_count);
             tv->read(rc.data(), 0, size);
@@ -95,7 +92,6 @@ std::vector<T> generalized_read_vector(std::shared_ptr<ngraph::runtime::TensorVi
     }
     else
     {
-        NGRAPH_INFO << "generalized_read_vector NOT cipher tv";
         size_t element_count = ngraph::shape_size(tv->get_shape());
         size_t size = element_count * sizeof(T);
         std::vector<T> rc(element_count);

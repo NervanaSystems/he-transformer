@@ -242,7 +242,6 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
                 {
                     float x = *(float*)((char*)dst + j * type.size());
                     NGRAPH_INFO << "x " << x;
-
                 }
             }
             else
@@ -258,5 +257,4 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
             free(dst);
         }
     }
-    NGRAPH_INFO << "read HECPTV";
 }
