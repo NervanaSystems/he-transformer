@@ -37,6 +37,100 @@ using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
+NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_5)
+{
+    auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
+        runtime::Backend::create("${BACKEND_NAME}"));
+    //auto backend = runtime::Backend::create("INTERPRETER");
+
+    NGRAPH_INFO << "Loaded backend";
+    const string filename = "mnist_cryptonets_batch5";
+    const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, filename + ".js");
+    const string json_string = file_util::read_file_to_string(json_path);
+    shared_ptr<Function> f = deserialize(json_string);
+
+    // Visualize model
+    auto model_file_name = filename + string(".") + pass::VisualizeTree::get_file_ext();
+    pass::Manager pass_manager;
+    pass_manager.register_pass<pass::VisualizeTree>(model_file_name);
+    pass_manager.run_passes(f);
+    NGRAPH_INFO << "Saved file " << model_file_name;
+
+    unordered_map<string, vector<float>> parms;
+    parms["x"] = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "weights/x.txt"));
+
+    unordered_map<string, Shape> parm_shapes;
+    parm_shapes["x"] = Shape{5, 784};
+
+    NGRAPH_INFO << "Deserialized graph";
+    auto parameters = f->get_parameters();
+    vector<shared_ptr<runtime::TensorView>> parameter_tvs;
+    for (auto parameter : parameters)
+    {
+        auto& shape = parameter->get_shape();
+        auto& type = parameter->get_element_type();
+        auto parameter_cipher_tv = backend->create_tensor(type, shape);
+        auto parameter_tv = backend->create_tensor(type, shape);
+        bool data_input = false;
+        bool valid_shape = false;
+
+        string parm;
+
+        NGRAPH_INFO << join(shape, "x");
+
+        for (auto const& it : parm_shapes)
+        {
+            if (it.second == shape)
+            {
+                valid_shape = true;
+                parm = it.first;
+                NGRAPH_INFO << "Adding " << parm;
+                if (parm == "x")
+                {
+                    copy_data(parameter_cipher_tv, parms[parm]);
+                    parameter_tvs.push_back(parameter_cipher_tv);
+                }
+            }
+        }
+        if (!valid_shape)
+        {
+            NGRAPH_INFO << "Invalid shape" << join(shape, "x");
+            throw ngraph_error("Invalid shape " + shape_size(shape));
+        }
+    }
+
+    auto results = f->get_results();
+    vector<shared_ptr<runtime::TensorView>> result_tvs;
+    for (auto result : results)
+    {
+        auto& shape = result->get_shape();
+        auto& type = result->get_element_type();
+        result_tvs.push_back(backend->create_tensor(type, shape));
+    }
+
+    NGRAPH_INFO << "calling function";
+    backend->call(f, result_tvs, parameter_tvs);
+
+    auto result = read_vector<float>(result_tvs[0]);
+    for (auto elem : result)
+    {
+        cout << elem << " ";
+    }
+    cout << endl;
+
+    EXPECT_TRUE(test::all_close(
+        vector<float>{0.299992, -4.04762,  0.647196,   3.71598,    -3.80518,  1.47072,   -4.65358,
+                      7.88541,  2.05476,   3.228,      8.78182,    -6.43103,  19.964,    9.60387,
+                      -14.3481, 8.3267,    11.5166,    -13.9131,   9.84772,   -5.82788,  -0.0470186,
+                      1.04767,  0.143309,  -0.0701391, -0.0851098, -0.336078, 0.125469,  -0.146274,
+                      0.286541, 0.0724289, 20.93,      -15.5895,   12.238,    8.23788,   -12.9543,
+                      9.64842,  10.8617,   -4.46871,   11.5456,    4.47025,   0.414631,  -2.59835,
+                      0.993939, 0.567376,  4.02877,    -0.560472,  2.5502,    -0.486873, 0.331346,
+                      2.3114},
+        read_vector<float>(result_tvs[0]),
+        1e-4f));
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_softmax_5)
 {
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(

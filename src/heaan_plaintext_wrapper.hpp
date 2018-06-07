@@ -17,6 +17,8 @@
 #pragma once
 
 #include <cstdint>
+#include <vector>
+
 #include "he_plaintext.hpp"
 #include "heaan/heaan.hpp"
 
@@ -31,10 +33,10 @@ namespace ngraph
             struct HeaanPlaintextWrapper : public HEPlaintext
             {
                 HeaanPlaintextWrapper();
-                HeaanPlaintextWrapper(double plain);
+                HeaanPlaintextWrapper(std::vector<double>& plain);
                 virtual ~HeaanPlaintextWrapper();
 
-                double m_plaintext;
+                std::vector<double> m_plaintexts;
             };
         }
     }

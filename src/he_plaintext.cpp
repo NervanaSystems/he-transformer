@@ -14,12 +14,8 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <stack>
-#include <vector>
-
 #include "he_plaintext.hpp"
 
-using namespace std;
 using namespace ngraph;
 
 runtime::he::HEPlaintext::HEPlaintext()

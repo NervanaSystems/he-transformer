@@ -37,6 +37,7 @@ void runtime::he::kernel::constant(vector<shared_ptr<runtime::he::HEPlaintext>>&
     if (auto he_seal_backend =
             dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
     {
+#pragma omp parallel for
         for (size_t i = 0; i < count; ++i)
         {
             const void* src_with_offset = (void*)((char*)data_ptr + i * type.size());
@@ -46,6 +47,7 @@ void runtime::he::kernel::constant(vector<shared_ptr<runtime::he::HEPlaintext>>&
     else if (auto he_heaan_backend =
                  dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
     {
+#pragma omp parallel for
         for (size_t i = 0; i < count; ++i)
         {
             const void* src_with_offset = (void*)((char*)data_ptr + i * type.size());

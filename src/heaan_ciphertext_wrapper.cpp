@@ -21,11 +21,20 @@ using namespace ngraph;
 
 runtime::he::HeaanCiphertextWrapper::HeaanCiphertextWrapper()
     : m_ciphertext(heaan::Ciphertext())
+    , m_count(1)
 {
 }
 
-runtime::he::HeaanCiphertextWrapper::HeaanCiphertextWrapper(heaan::Ciphertext cipher)
+runtime::he::HeaanCiphertextWrapper::HeaanCiphertextWrapper(const heaan::Ciphertext& cipher,
+                                                            size_t count)
     : m_ciphertext(cipher)
+    , m_count(count)
+{
+}
+
+runtime::he::HeaanCiphertextWrapper::HeaanCiphertextWrapper(size_t count)
+    : m_ciphertext(heaan::Ciphertext())
+    , m_count(count)
 {
 }
 

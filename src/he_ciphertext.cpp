@@ -14,12 +14,8 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <stack>
-#include <vector>
-
 #include "he_ciphertext.hpp"
 
-using namespace std;
 using namespace ngraph;
 
 runtime::he::HECiphertext::HECiphertext()

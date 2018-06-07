@@ -116,6 +116,44 @@ NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2_3)
               (test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector());
 }
 
+NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_batch)
+{
+    auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
+        runtime::Backend::create("${BACKEND_NAME}"));
+
+    Shape shape{2, 3};
+    auto a = backend->create_tensor(element::f32, shape, true);
+    copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector());
+
+    EXPECT_EQ(generalized_read_vector<float>(a),
+              (test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector());
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, ab_batch)
+{
+    auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
+        runtime::Backend::create("${BACKEND_NAME}"));
+
+    Shape shape_a{2};
+    Shape shape_b{2};
+    Shape shape_r{2};
+    auto a = make_shared<op::Parameter>(element::f32, shape_a);
+    auto b = make_shared<op::Parameter>(element::f32, shape_b);
+    auto t = make_shared<op::Add>(a, b);
+
+    auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+
+    // Create some tensors for input/output
+    auto t_a = backend->create_tensor(element::f32, shape_a, true);
+    auto t_b = backend->create_tensor(element::f32, shape_b, true);
+    auto t_result = backend->create_tensor(element::f32, shape_r, true);
+
+    copy_data(t_a, vector<float>{1, 2});
+    copy_data(t_b, vector<float>{3, 4});
+    backend->call(f, {t_result}, {t_a, t_b});
+    EXPECT_EQ((vector<float>{4, 6}), generalized_read_vector<float>(t_result));
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, ab)
 {
     auto backend = runtime::Backend::create("${BACKEND_NAME}"); // TODO: move to util cast function
@@ -147,7 +185,6 @@ NGRAPH_TEST(${BACKEND_NAME}, ab)
 
         copy_data(t_a, test::NDArray<int64_t, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector());
         copy_data(t_b, test::NDArray<int64_t, 2>({{7, 8, 9}, {10, 11, 12}}).get_vector());
-
         backend->call(f, {t_result}, {t_a, t_b});
         EXPECT_EQ(read_vector<int64_t>(t_result),
                   (test::NDArray<int64_t, 2>({{8, 10, 12}, {14, 16, 18}})).get_vector());
@@ -316,7 +353,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_matrix_vector)
     }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_scalar)
+NGRAPH_TEST(${BACKEND_NAME}, dot_scalar)
 {
     auto backend = runtime::Backend::create("${BACKEND_NAME}");
     if ("${BACKEND_NAME}" == "HE_HEAAN")
@@ -415,7 +452,7 @@ NGRAPH_TEST(${BACKEND_NAME}, constant_abc)
     }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_vector)
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector)
 {
     auto backend = runtime::Backend::create("${BACKEND_NAME}");
     if ("${BACKEND_NAME}" == "HE_HEAAN")
@@ -469,7 +506,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_to_non_existent_axis)
                  ngraph_error);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_matrix)
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix)
 {
     auto backend = runtime::Backend::create("${BACKEND_NAME}");
     if ("${BACKEND_NAME}" == "HE_HEAAN")
@@ -503,7 +540,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_matrix)
     }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor)
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_tensor)
 {
     auto backend = runtime::Backend::create("${BACKEND_NAME}");
     if ("${BACKEND_NAME}" == "HE_HEAAN")
@@ -1217,7 +1254,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_6d)
     }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, one_hot_scalar_2_in_3)
+NGRAPH_TEST(${BACKEND_NAME}, one_hot_2_in_3)
 {
     auto backend = runtime::Backend::create("${BACKEND_NAME}");
     if ("${BACKEND_NAME}" == "HE_HEAAN")
@@ -1237,16 +1274,14 @@ NGRAPH_TEST(${BACKEND_NAME}, one_hot_scalar_2_in_3)
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::i64, shape_a);
-    NGRAPH_INFO << "created tensor, copying";
     copy_data(a, vector<int64_t>{2});
     auto result = backend->create_tensor(element::i64, shape_r);
-    NGRAPH_INFO << "calling ";
 
     backend->call(f, {result}, {a});
     EXPECT_EQ((vector<int64_t>{0, 0, 1}), read_vector<int64_t>(result));
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, one_hot_scalar_1_in_3)
+NGRAPH_TEST(${BACKEND_NAME}, one_hot_1_in_3)
 {
     auto backend = runtime::Backend::create("${BACKEND_NAME}");
     if ("${BACKEND_NAME}" == "HE_HEAAN")
@@ -1273,7 +1308,7 @@ NGRAPH_TEST(${BACKEND_NAME}, one_hot_scalar_1_in_3)
     EXPECT_EQ((vector<int64_t>{0, 1, 0}), read_vector<int64_t>(result));
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, one_hot_scalar_0_in_3)
+NGRAPH_TEST(${BACKEND_NAME}, one_hot_0_in_3)
 {
     auto backend = runtime::Backend::create("${BACKEND_NAME}");
     if ("${BACKEND_NAME}" == "HE_HEAAN")
@@ -1300,7 +1335,7 @@ NGRAPH_TEST(${BACKEND_NAME}, one_hot_scalar_0_in_3)
     EXPECT_EQ((vector<int64_t>{1, 0, 0}), read_vector<int64_t>(result));
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, one_hot_scalar_fp_nonint_in_3)
+NGRAPH_TEST(${BACKEND_NAME}, one_hot_fp_nonint_in_3)
 {
     auto backend = runtime::Backend::create("${BACKEND_NAME}");
     if ("${BACKEND_NAME}" == "HE_HEAAN")
@@ -1337,7 +1372,7 @@ NGRAPH_TEST(${BACKEND_NAME}, one_hot_scalar_fp_nonint_in_3)
     }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, one_hot_scalar_oob_in_3)
+NGRAPH_TEST(${BACKEND_NAME}, one_hot_oob_in_3)
 {
     auto backend = runtime::Backend::create("${BACKEND_NAME}");
     if ("${BACKEND_NAME}" == "HE_HEAAN")
@@ -2449,7 +2484,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_vector_zero)
     }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_to_scalar_zero_by_zero)
+NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_to_zero_by_zero)
 {
     auto backend = runtime::Backend::create("${BACKEND_NAME}");
     if ("${BACKEND_NAME}" == "HE_HEAAN")

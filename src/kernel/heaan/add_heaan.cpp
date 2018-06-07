@@ -85,7 +85,7 @@ void runtime::he::kernel::heaan::scalar_add(
     const shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
 {
     out->m_ciphertext =
-        he_heaan_backend->get_scheme()->addConst(arg0->m_ciphertext, arg1->m_plaintext);
+        he_heaan_backend->get_scheme()->addConst(arg0->m_ciphertext, arg1->m_plaintexts[0]);
 }
 
 void runtime::he::kernel::heaan::scalar_add(

@@ -102,8 +102,6 @@ def run_mnist(_):
 
     sess.run(y, feed_dict={x: mnist.test.images[0:5]})
 
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(

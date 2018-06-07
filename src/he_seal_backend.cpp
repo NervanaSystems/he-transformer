@@ -325,6 +325,14 @@ void runtime::he::he_seal::HESealBackend::remove_compiled_function(shared_ptr<Fu
 
 void runtime::he::he_seal::HESealBackend::encode(shared_ptr<runtime::he::HEPlaintext>& output,
                                                  const void* input,
+                                                 const element::Type& type,
+                                                 size_t count) const
+{
+    throw ngraph_error("HESealBackend encode not implemented");
+}
+
+void runtime::he::he_seal::HESealBackend::encode(shared_ptr<runtime::he::HEPlaintext>& output,
+                                                 const void* input,
                                                  const element::Type& type) const
 {
     const string type_name = type.c_type_string();
@@ -344,6 +352,14 @@ void runtime::he::he_seal::HESealBackend::encode(shared_ptr<runtime::he::HEPlain
         NGRAPH_INFO << "Unsupported element type in decode " << type_name;
         throw ngraph_error("Unsupported element type " + type_name);
     }
+}
+
+void runtime::he::he_seal::HESealBackend::decode(void* output,
+                                                 const shared_ptr<runtime::he::HEPlaintext> input,
+                                                 const element::Type& type,
+                                                 size_t count) const
+{
+    throw ngraph_error("HESealBackend::decode unimplemented");
 }
 
 void runtime::he::he_seal::HESealBackend::decode(void* output,

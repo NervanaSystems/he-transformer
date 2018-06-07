@@ -16,8 +16,6 @@
 
 #pragma once
 
-#include <cstdint>
-
 namespace ngraph
 {
     namespace runtime

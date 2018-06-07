@@ -124,6 +124,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         }
 
         // Collect output runtime::tv
+        bool any_batched = false;
         vector<shared_ptr<runtime::he::HETensorView>> outputs;
         for (size_t i = 0; i < op->get_output_size(); ++i)
         {
@@ -148,8 +149,24 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                 }
                 else
                 {
+                    bool batched_out =
+                        any_of(inputs.begin(),
+                               inputs.end(),
+                               [](shared_ptr<runtime::he::HETensorView> input) {
+                                   if (auto input_cipher_tv =
+                                           dynamic_pointer_cast<HECipherTensorView>(input))
+                                   {
+                                       return input_cipher_tv->is_batched();
+                                   }
+                                   else
+                                   {
+                                       return false;
+                                   }
+                               });
+                    any_batched |= batched_out;
+
                     auto itv = make_shared<runtime::he::HECipherTensorView>(
-                        element_type, shape, m_he_backend, name);
+                        element_type, shape, m_he_backend, batched_out, name);
                     tensor_map.insert({tv, itv});
                 }
             }
@@ -171,7 +188,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         const string op_name = op->description();
 
         // Check result with CPU backend
-        if (is_cpu_check_enabled(op))
+        if (is_cpu_check_enabled(op) && !any_batched)
         {
             check_cpu_calls(function, base_type, op, outputs, inputs, false);
         }
@@ -236,6 +253,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
 
         if (cipher_tv != nullptr)
         {
+            num_bytes *= cipher_tv->get_batch_size();
             cipher_tv->read(tv->get_data_ptr(), 0, num_bytes);
         }
         else if (plain_tv != nullptr)
@@ -253,7 +271,6 @@ void runtime::he::HECallFrame::check_cpu_calls(
     {
         const element::Type& type = he_tv->get_tensor_view_layout()->get_element_type();
         auto shape = he_tv->get_shape();
-        size_t num_bytes = type.size() * shape_size(shape);
         shared_ptr<HostTensorView> tv = make_shared<HostTensorView>(type, shape);
         cpu_outputs.push_back(tv);
     }
@@ -282,15 +299,22 @@ void runtime::he::HECallFrame::check_cpu_calls(
             he_out->read(&he_out_vec[0], 0, num_bytes);
             cpu_out->read(&cpu_out_vec[0], 0, num_bytes);
 
+            size_t inaccurate_cnt = 0;
             for (size_t elem = 0; elem < element_count; ++elem)
             {
                 if (abs(cpu_out_vec[elem] - he_out_vec[elem]) > 1e-3) // TODO: increase precision
                 {
-                    NGRAPH_INFO << "expect " << cpu_out_vec[elem]
-                                << ", actual: " << he_out_vec[elem];
+                    if (inaccurate_cnt < 10)
+                    {
+                        NGRAPH_INFO << "expect " << cpu_out_vec[elem]
+                                    << ", actual: " << he_out_vec[elem];
+                    }
                     correct = false;
+                    inaccurate_cnt++;
                 }
             }
+            NGRAPH_INFO << inaccurate_cnt << "/" << element_count
+                        << " computations are inaccurate.";
         }
         else if (type_name == "int64_t")
         {
@@ -307,6 +331,11 @@ void runtime::he::HECallFrame::check_cpu_calls(
                     NGRAPH_INFO << "expect " << cpu_out_vec[elem]
                                 << ", actual: " << he_out_vec[elem];
                     correct = false;
+                }
+                if (!correct && elem > 10)
+                {
+                    NGRAPH_INFO << "..." << endl;
+                    break;
                 }
             }
         }
@@ -338,7 +367,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
             }
             cout << endl;
         };
-        for (shared_ptr<runtime::HostTensorView> cpu_input : cpu_inputs)
+        /* for (shared_ptr<runtime::HostTensorView> cpu_input : cpu_inputs)
         {
             NGRAPH_INFO << "Input";
             print_tensor_view(cpu_input);
@@ -347,7 +376,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
         {
             NGRAPH_INFO << "Output";
             print_tensor_view(cpu_output);
-        }
+        } */
         if (!correct)
         {
             NGRAPH_INFO << "Inaccurate float computation";
@@ -859,9 +888,14 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
 
         if (arg0_cipher != nullptr && out0_cipher != nullptr)
         {
-            runtime::he::kernel::result(arg0_cipher->get_elements(),
-                                        out0_cipher->get_elements(),
-                                        shape_size(res->get_shape()));
+            size_t output_size = shape_size(res->get_shape());
+            if (arg0_cipher->is_batched())
+            {
+                output_size /= arg0_cipher->get_batch_size();
+            }
+            runtime::he::kernel::result(
+                arg0_cipher->get_elements(), out0_cipher->get_elements(), output_size);
+            // shape_size(res->get_shape()));
         }
         else if (arg0_plain != nullptr && out0_cipher != nullptr)
         {
