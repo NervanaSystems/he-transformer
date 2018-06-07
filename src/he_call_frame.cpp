@@ -124,6 +124,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         }
 
         // Collect output runtime::tv
+        bool any_batched = false;
         vector<shared_ptr<runtime::he::HETensorView>> outputs;
         for (size_t i = 0; i < op->get_output_size(); ++i)
         {
@@ -159,6 +160,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                                     return false;
                                 }
                             });
+                    any_batched |= batched_out;
 
                     auto itv = make_shared<runtime::he::HECipherTensorView>(
                         element_type, shape, m_he_backend, batched_out, name);
@@ -183,7 +185,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         const string op_name = op->description();
 
         // Check result with CPU backend
-        if (is_cpu_check_enabled(op))
+        if (is_cpu_check_enabled(op) && !any_batched)
         {
             check_cpu_calls(function, base_type, op, outputs, inputs, false); // TODO: enable
         }
