@@ -25,7 +25,8 @@ runtime::he::HeaanCiphertextWrapper::HeaanCiphertextWrapper()
 {
 }
 
-runtime::he::HeaanCiphertextWrapper::HeaanCiphertextWrapper(const heaan::Ciphertext& cipher, size_t count)
+runtime::he::HeaanCiphertextWrapper::HeaanCiphertextWrapper(const heaan::Ciphertext& cipher,
+                                                            size_t count)
     : m_ciphertext(cipher)
     , m_count(count)
 {

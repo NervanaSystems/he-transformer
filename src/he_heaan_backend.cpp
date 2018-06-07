@@ -109,14 +109,14 @@ shared_ptr<runtime::TensorView>
     return static_pointer_cast<runtime::TensorView>(rc);
 }
 
-shared_ptr<runtime::TensorView>
-runtime::he::he_heaan::HEHeaanBackend::create_tensor(const element::Type& element_type,
-        const Shape& shape, const bool batched)
+shared_ptr<runtime::TensorView> runtime::he::he_heaan::HEHeaanBackend::create_tensor(
+    const element::Type& element_type, const Shape& shape, const bool batched)
 {
     shared_ptr<HEHeaanBackend> he_heaan_backend =
         dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(shared_from_this());
 
-    auto rc = make_shared<runtime::he::HECipherTensorView>(element_type, shape, he_heaan_backend, batched);
+    auto rc = make_shared<runtime::he::HECipherTensorView>(
+        element_type, shape, he_heaan_backend, batched);
     return static_pointer_cast<runtime::TensorView>(rc);
 }
 
@@ -251,7 +251,7 @@ void runtime::he::he_heaan::HEHeaanBackend::encode(shared_ptr<runtime::he::HEPla
     if (type_name == "double")
     {
 #pragma omp parallel for
-        for(size_t i = 0; i < count; ++i)
+        for (size_t i = 0; i < count; ++i)
         {
             input_dbl[i] = (double)((double*)input)[i];
         }
@@ -260,7 +260,7 @@ void runtime::he::he_heaan::HEHeaanBackend::encode(shared_ptr<runtime::he::HEPla
     else if (type_name == "int64_t")
     {
 #pragma omp parallel for
-        for(size_t i = 0; i < count; ++i)
+        for (size_t i = 0; i < count; ++i)
         {
             input_dbl[i] = (double)((int64_t*)input)[i];
         }
@@ -269,7 +269,7 @@ void runtime::he::he_heaan::HEHeaanBackend::encode(shared_ptr<runtime::he::HEPla
     else if (type_name == "float")
     {
 #pragma omp parallel for
-        for(size_t i = 0; i < count; ++i)
+        for (size_t i = 0; i < count; ++i)
         {
             input_dbl[i] = (double)((float*)input)[i];
             NGRAPH_INFO << "Encoding " << input_dbl[i];
@@ -295,28 +295,28 @@ void runtime::he::he_heaan::HEHeaanBackend::decode(void* output,
         if (type_name == "int64_t")
         {
 #pragma omp parallel for
-            for(size_t i = 0; i < count; ++i)
+            for (size_t i = 0; i < count; ++i)
             {
                 int64_t x = round(heaan_input->m_plaintexts[i]);
-                memcpy((char*)output + i*type.size(), &x, type.size());
+                memcpy((char*)output + i * type.size(), &x, type.size());
             }
         }
         else if (type_name == "float")
         {
 #pragma omp parallel for
-            for(size_t i = 0; i < count; ++i)
+            for (size_t i = 0; i < count; ++i)
             {
                 float x = heaan_input->m_plaintexts[i];
-                memcpy((char*)output + i*type.size(), &x, type.size());
+                memcpy((char*)output + i * type.size(), &x, type.size());
             }
         }
         else if (type_name == "double")
         {
 #pragma omp parallel for
-            for(size_t i = 0; i < count; ++i)
+            for (size_t i = 0; i < count; ++i)
             {
                 double x = round(heaan_input->m_plaintexts[i]);
-                memcpy((char*)output + i*type.size(), &x, type.size());
+                memcpy((char*)output + i * type.size(), &x, type.size());
             }
         }
         else
@@ -341,8 +341,8 @@ void runtime::he::he_heaan::HEHeaanBackend::encrypt(
     {
         if (heaan_input->m_plaintexts.size() == 1)
         {
-            heaan_output->m_ciphertext =
-                m_scheme->encryptSingle(heaan_input->m_plaintexts[0], m_log_precision, m_context->logQ);
+            heaan_output->m_ciphertext = m_scheme->encryptSingle(
+                heaan_input->m_plaintexts[0], m_log_precision, m_context->logQ);
         }
         else
         {
@@ -368,16 +368,19 @@ void runtime::he::he_heaan::HEHeaanBackend::decrypt(
         size_t batch_count = heaan_input->m_count;
         if (batch_count == 1)
         {
-            heaan_output->m_plaintexts =
-                {m_scheme->decryptSingle(*m_secret_key, heaan_input->m_ciphertext).real()};
+            heaan_output->m_plaintexts = {
+                m_scheme->decryptSingle(*m_secret_key, heaan_input->m_ciphertext).real()};
         }
         else
         {
-            vector<complex<double>> ciphertexts =  m_scheme->decrypt(*m_secret_key, heaan_input->m_ciphertext);
+            vector<complex<double>> ciphertexts =
+                m_scheme->decrypt(*m_secret_key, heaan_input->m_ciphertext);
             vector<double> real_ciphertexts(batch_count);
 
-            transform(ciphertexts.begin(), ciphertexts.end(), real_ciphertexts.begin(),
-                    [](complex<double> &n) {return n.real();});
+            transform(ciphertexts.begin(),
+                      ciphertexts.end(),
+                      real_ciphertexts.begin(),
+                      [](complex<double>& n) { return n.real(); });
 
             heaan_output->m_plaintexts = real_ciphertexts;
         }

@@ -47,8 +47,8 @@ namespace ngraph
                 std::shared_ptr<runtime::TensorView>
                     create_tensor(const element::Type& element_type, const Shape& shape) override;
 
-                std::shared_ptr<runtime::TensorView>
-                    create_tensor(const element::Type& element_type, const Shape& shape, const bool batched);
+                std::shared_ptr<runtime::TensorView> create_tensor(
+                    const element::Type& element_type, const Shape& shape, const bool batched);
 
                 std::shared_ptr<runtime::TensorView>
                     create_tensor(const element::Type& element_type,

@@ -54,7 +54,9 @@ namespace ngraph
                 /// @param batch_dim Axis along which to batch
                 /// @param batched Whether or not batching is enabled
                 /// @return Shape after batching along batch axis
-                const Shape batch_shape(const Shape& shape, size_t batch_axis = 0, bool batched = false) const;
+                const Shape batch_shape(const Shape& shape,
+                                        size_t batch_axis = 0,
+                                        bool batched = false) const;
 
                 inline std::shared_ptr<HEBackend> get_backend() const { return m_he_backend; }
             protected:
@@ -62,7 +64,8 @@ namespace ngraph
                 std::shared_ptr<HEBackend> m_he_backend;
 
                 bool m_batched;
-                size_t m_batch_size; // If m_batched, corresponds to first shape dimesion. TODO: support more arbitrary batching dimension
+                size_t
+                    m_batch_size; // If m_batched, corresponds to first shape dimesion. TODO: support more arbitrary batching dimension
             };
         }
     }

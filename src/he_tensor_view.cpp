@@ -30,21 +30,18 @@ runtime::he::HETensorView::HETensorView(const element::Type& element_type,
                                         bool batched,
                                         const string& name)
     : runtime::TensorView(make_shared<descriptor::PrimaryTensorView>(
-                make_shared<TensorViewType>(element_type, batch_shape(shape, 0, batched)), name))
+          make_shared<TensorViewType>(element_type, batch_shape(shape, 0, batched)), name))
 {
     m_descriptor->set_tensor_view_layout(
-            make_shared<descriptor::layout::DenseTensorViewLayout>(*m_descriptor));
-	auto is_power_of_2 = [](size_t n) -> bool
-	{
-		return ((n & (n - 1)) == 0) && (n != 0);
-	};
+        make_shared<descriptor::layout::DenseTensorViewLayout>(*m_descriptor));
+    auto is_power_of_2 = [](size_t n) -> bool { return ((n & (n - 1)) == 0) && (n != 0); };
 
-	if (batched)
-	{
-		if (!is_power_of_2(shape[0]))
-		{
-			throw ngraph_error("Batching size must be power of two");
-		}
+    if (batched)
+    {
+        if (!is_power_of_2(shape[0]))
+        {
+            throw ngraph_error("Batching size must be power of two");
+        }
 
         m_batch_size = shape[0];
     }
@@ -60,7 +57,9 @@ runtime::he::HETensorView::~HETensorView()
 {
 }
 
-const Shape runtime::he::HETensorView::batch_shape(const Shape& shape, size_t batch_axis, bool batched) const
+const Shape runtime::he::HETensorView::batch_shape(const Shape& shape,
+                                                   size_t batch_axis,
+                                                   bool batched) const
 {
     if (batched)
     {

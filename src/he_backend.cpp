@@ -47,8 +47,8 @@ shared_ptr<runtime::TensorView>
     throw ngraph_error("HE create_tensor unimplemented");
 }
 
-shared_ptr<runtime::TensorView>
-runtime::he::HEBackend::create_tensor(const element::Type& element_type, const Shape& shape, const bool batched)
+shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_tensor(
+    const element::Type& element_type, const Shape& shape, const bool batched)
 {
     throw ngraph_error("HE create_tensor unimplemented");
 }

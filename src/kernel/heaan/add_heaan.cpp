@@ -36,9 +36,9 @@ void runtime::he::kernel::heaan::scalar_add(
     }
     else
     {
-        vector<double> tmp = {99,99};
-        vector<double> tmp2 = {99,99};
-        vector<double> tmp3 = {99,99};
+        vector<double> tmp = {99, 99};
+        vector<double> tmp2 = {99, 99};
+        vector<double> tmp3 = {99, 99};
         auto p = make_shared<runtime::he::HeaanPlaintextWrapper>(tmp);
         auto p2 = make_shared<runtime::he::HeaanPlaintextWrapper>(tmp2);
         auto p3 = make_shared<runtime::he::HeaanPlaintextWrapper>(tmp3);

@@ -27,10 +27,7 @@ runtime::he::HeaanPlaintextWrapper::HeaanPlaintextWrapper()
 
 runtime::he::HeaanPlaintextWrapper::HeaanPlaintextWrapper(std::vector<double>& plain)
 {
-    auto is_power_of_2 = [](size_t n) -> bool
-    {
-        return (n & (n - 1)) == 0;
-    };
+    auto is_power_of_2 = [](size_t n) -> bool { return (n & (n - 1)) == 0; };
 
     if (is_power_of_2(plain.size()))
     {

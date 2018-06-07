@@ -332,8 +332,8 @@ void runtime::he::he_seal::HESealBackend::encode(shared_ptr<runtime::he::HEPlain
 }
 
 void runtime::he::he_seal::HESealBackend::encode(shared_ptr<runtime::he::HEPlaintext>& output,
-        const void* input,
-        const element::Type& type) const
+                                                 const void* input,
+                                                 const element::Type& type) const
 {
     const string type_name = type.c_type_string();
 
@@ -363,8 +363,8 @@ void runtime::he::he_seal::HESealBackend::decode(void* output,
 }
 
 void runtime::he::he_seal::HESealBackend::decode(void* output,
-        const shared_ptr<runtime::he::HEPlaintext> input,
-        const element::Type& type) const
+                                                 const shared_ptr<runtime::he::HEPlaintext> input,
+                                                 const element::Type& type) const
 {
     const string type_name = type.c_type_string();
 

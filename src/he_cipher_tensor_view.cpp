@@ -24,9 +24,9 @@
 #include "heaan_ciphertext_wrapper.hpp"
 #include "heaan_plaintext_wrapper.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
+#include "ngraph/util.hpp"
 #include "seal_ciphertext_wrapper.hpp"
 #include "seal_plaintext_wrapper.hpp"
-#include "ngraph/util.hpp"
 
 using namespace ngraph;
 using namespace std;
@@ -151,10 +151,11 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
                         throw ngraph_error("Error allocating HE Cipher Tensor View memory");
                     }
 
-                    for(size_t j = 0; j < m_batch_size; ++j)
+                    for (size_t j = 0; j < m_batch_size; ++j)
                     {
                         void* destination = (void*)((char*)batch_src + j * type.size());
-                        const void* src = (void*)((char*)source + type.size() * (i + j * num_elements_to_write));
+                        const void* src =
+                            (void*)((char*)source + type.size() * (i + j * num_elements_to_write));
                         memcpy(destination, src, type.size());
                     }
 
@@ -238,7 +239,7 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
                 NGRAPH_INFO << "decoded to ";
                 he_heaan_backend->decode(dst, p, type, m_batch_size);
 
-                for(auto j = 0; j < m_batch_size; ++ j)
+                for (auto j = 0; j < m_batch_size; ++j)
                 {
                     float x = *(float*)((char*)dst + j * type.size());
                     NGRAPH_INFO << "x " << x;
@@ -248,9 +249,10 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
             {
                 throw ngraph_error("HECipherTensorView::read he_backend is not seal.");
             }
-            for(size_t j = 0; j < m_batch_size; ++j)
+            for (size_t j = 0; j < m_batch_size; ++j)
             {
-                void* dst_with_offset = (void*)((char*)target + type.size() * (i + j * num_elements_to_read));
+                void* dst_with_offset =
+                    (void*)((char*)target + type.size() * (i + j * num_elements_to_read));
                 const void* src = (void*)((char*)dst + j * type.size());
                 memcpy(dst_with_offset, src, type.size());
             }

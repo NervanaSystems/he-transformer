@@ -23,13 +23,13 @@
 #include "gtest/gtest.h"
 
 #include "he_backend.hpp"
+#include "he_cipher_tensor_view.hpp"
 #include "he_heaan_backend.hpp"
 #include "he_seal_backend.hpp"
-#include "he_cipher_tensor_view.hpp"
-#include "ngraph/file_util.hpp"
-#include "ngraph/runtime/tensor_view.hpp"
 #include "ngraph/descriptor/layout/tensor_view_layout.hpp"
+#include "ngraph/file_util.hpp"
 #include "ngraph/node.hpp"
+#include "ngraph/runtime/tensor_view.hpp"
 #include "ngraph/type/element_type.hpp"
 
 using namespace ngraph;

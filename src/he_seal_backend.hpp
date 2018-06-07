@@ -111,22 +111,22 @@ namespace ngraph
                     void remove_compiled_function(std::shared_ptr<Function> func) override;
 
                     void encode(shared_ptr<runtime::he::HEPlaintext>& output,
-                            const void* input,
-                            const element::Type& type,
-                            size_t count) const;
+                                const void* input,
+                                const element::Type& type,
+                                size_t count) const;
 
                     void encode(shared_ptr<runtime::he::HEPlaintext>& output,
-                            const void* input,
-                            const element::Type& type) const;
+                                const void* input,
+                                const element::Type& type) const;
 
                     void decode(void* output,
                                 const std::shared_ptr<runtime::he::HEPlaintext> input,
                                 const element::Type& type) const;
 
                     void decode(void* output,
-                            const std::shared_ptr<runtime::he::HEPlaintext> input,
-                            const element::Type& type,
-                            size_t count) const;
+                                const std::shared_ptr<runtime::he::HEPlaintext> input,
+                                const element::Type& type,
+                                size_t count) const;
 
                     void encrypt(shared_ptr<runtime::he::HECiphertext> output,
                                  const std::shared_ptr<runtime::he::HEPlaintext> input) const;
