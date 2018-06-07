@@ -48,6 +48,12 @@ shared_ptr<runtime::TensorView>
 }
 
 shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_tensor(
+    const element::Type& element_type, const Shape& shape, const bool batched)
+{
+    throw ngraph_error("HE create_tensor unimplemented");
+}
+
+shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_tensor(
     const element::Type& element_type, const Shape& shape, void* memory_pointer)
 {
     throw ngraph_error("HE create_tensor unimplemented");
@@ -141,14 +147,16 @@ void runtime::he::HEBackend::remove_compiled_function(shared_ptr<Function> func)
 
 void runtime::he::HEBackend::encode(shared_ptr<runtime::he::HEPlaintext> output,
                                     const void* input,
-                                    const element::Type& type) const
+                                    const element::Type& type,
+                                    size_t count) const
 {
     throw ngraph_error("HEBackend encode unimplemented");
 }
 
 void runtime::he::HEBackend::decode(void* output,
                                     const runtime::he::HEPlaintext& input,
-                                    const element::Type& type) const
+                                    const element::Type& type,
+                                    size_t count) const
 {
     throw ngraph_error("HEBackend decode unimplemented");
 }

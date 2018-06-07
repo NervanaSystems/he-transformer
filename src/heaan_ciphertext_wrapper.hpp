@@ -31,10 +31,12 @@ namespace ngraph
             struct HeaanCiphertextWrapper : public HECiphertext
             {
                 HeaanCiphertextWrapper();
-                HeaanCiphertextWrapper(heaan::Ciphertext cipher);
+                HeaanCiphertextWrapper(const heaan::Ciphertext& cipher, size_t count);
+                HeaanCiphertextWrapper(size_t count);
                 virtual ~HeaanCiphertextWrapper();
 
                 heaan::Ciphertext m_ciphertext;
+                size_t m_count;
             };
         }
     }

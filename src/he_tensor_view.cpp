@@ -27,17 +27,51 @@ using namespace ngraph;
 runtime::he::HETensorView::HETensorView(const element::Type& element_type,
                                         const Shape& shape,
                                         const shared_ptr<HEBackend>& he_backend,
+                                        bool batched,
                                         const string& name)
     : runtime::TensorView(make_shared<descriptor::PrimaryTensorView>(
-          make_shared<TensorViewType>(element_type, shape), name))
-    , m_he_backend(he_backend)
+          make_shared<TensorViewType>(element_type, batch_shape(shape, 0, batched)), name))
 {
     m_descriptor->set_tensor_view_layout(
         make_shared<descriptor::layout::DenseTensorViewLayout>(*m_descriptor));
+    auto is_power_of_2 = [](size_t n) -> bool { return ((n & (n - 1)) == 0) && (n != 0); };
+
+    if (batched)
+    {
+        if (!is_power_of_2(shape[0]))
+        {
+            throw ngraph_error("Batching size must be power of two");
+        }
+
+        m_batch_size = shape[0];
+    }
+    else
+    {
+        m_batch_size = 1;
+    }
+    m_he_backend = he_backend;
+    m_batched = batched;
 }
 
 runtime::he::HETensorView::~HETensorView()
 {
+}
+
+const Shape runtime::he::HETensorView::batch_shape(const Shape& shape,
+                                                   size_t batch_axis,
+                                                   bool batched) const
+{
+    if (batched)
+    {
+        if (batch_axis != 0)
+        {
+            throw ngraph_error("Batching only supported along axis 0");
+        }
+        Shape ret(shape.begin() + 1, shape.end());
+
+        return ret;
+    }
+    return shape;
 }
 
 void runtime::he::HETensorView::check_io_bounds(const void* source,

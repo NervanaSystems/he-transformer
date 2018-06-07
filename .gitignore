@@ -24,3 +24,5 @@ artransformer.egg-info
 Module.symvers
 modules.order
 .tmp_versions
+examples/*.js
+examples/cpu_codegen/

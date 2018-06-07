@@ -16,9 +16,6 @@
 
 #pragma once
 
-#include <cstdint>
-#include "he_parameter.hpp"
-
 namespace ngraph
 {
     namespace runtime

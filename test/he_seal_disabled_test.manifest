@@ -1,4 +1,5 @@
 abs
+ab_batch
 acos
 asin
 atan
@@ -93,6 +94,7 @@ batch_norm_three_outputs
 batch_norm_three_outputs # Unsupported element type in decode double
 broadcast_vector_rowwise_reversed
 ceiling
+cipher_tv_batch
 computation_reuse
 constant_equality_bool
 construct_equality_bool
@@ -198,6 +200,7 @@ min_trivial
 min_trivial_5d
 min_vector_zero
 mkldnn_layouts
+mnist_cryptonets_5
 not
 notequal
 numeric_double_inf

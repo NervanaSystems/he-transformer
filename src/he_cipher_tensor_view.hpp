@@ -37,8 +37,11 @@ namespace ngraph
                 HECipherTensorView(const element::Type& element_type,
                                    const Shape& shape,
                                    std::shared_ptr<HEBackend> he_backend,
+                                   const bool batched = false,
                                    const std::string& name = "external");
                 virtual ~HECipherTensorView();
+
+                const Shape get_expanded_shape() const;
 
                 /// @brief Write bytes directly into the tensor after encoding and encrypting
                 /// @param p Pointer to source of data
@@ -64,6 +67,8 @@ namespace ngraph
                     return m_cipher_texts[i];
                 }
 
+                inline size_t get_batch_size() { return m_batch_size; }
+                inline bool is_batched() { return m_batched; }
             private:
                 std::vector<std::shared_ptr<runtime::he::HECiphertext>> m_cipher_texts;
                 size_t m_num_elements;

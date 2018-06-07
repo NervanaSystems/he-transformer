@@ -47,6 +47,9 @@ namespace ngraph
                 std::shared_ptr<runtime::TensorView>
                     create_tensor(const element::Type& element_type, const Shape& shape) override;
 
+                std::shared_ptr<runtime::TensorView> create_tensor(
+                    const element::Type& element_type, const Shape& shape, const bool batched);
+
                 std::shared_ptr<runtime::TensorView>
                     create_tensor(const element::Type& element_type,
                                   const Shape& shape,
@@ -79,13 +82,17 @@ namespace ngraph
 
                 void remove_compiled_function(std::shared_ptr<Function> func) override;
 
+                // Encodes scalar(s) to a single plaintext
                 void encode(std::shared_ptr<runtime::he::HEPlaintext> output,
                             const void* input,
-                            const element::Type& type) const;
+                            const element::Type& type,
+                            size_t count = 1) const;
 
+                // Decodes plaintext to scalar(s)
                 void decode(void* output,
                             const he::HEPlaintext& input,
-                            const element::Type& type) const;
+                            const element::Type& type,
+                            size_t count = 1) const;
 
                 void encrypt(std::shared_ptr<runtime::he::HECiphertext> output,
                              const std::shared_ptr<runtime::he::HEPlaintext> input) const;
