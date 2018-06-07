@@ -56,11 +56,7 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_5)
     pass_manager.run_passes(f);
     NGRAPH_INFO << "Saved file " << model_file_name;
 
-    unordered_map<string, vector<float>> parms;
-    parms["x"] = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "weights/x.txt"));
-
-    unordered_map<string, Shape> parm_shapes;
-    parm_shapes["x"] = Shape{5, 784};
+    vector<float> x = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "weights/x.txt"));
 
     NGRAPH_INFO << "Deserialized graph";
     auto parameters = f->get_parameters();
@@ -69,30 +65,17 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_5)
     {
         auto& shape = parameter->get_shape();
         auto& type = parameter->get_element_type();
-        auto parameter_cipher_tv = backend->create_tensor(type, shape);
-        auto parameter_tv = backend->create_tensor(type, shape);
-        bool data_input = false;
-        bool valid_shape = false;
-
-        string parm;
+        auto parameter_cipher_tv = backend->create_tensor(type, shape, true);
 
         NGRAPH_INFO << join(shape, "x");
 
-        for (auto const& it : parm_shapes)
+        if (shape == Shape{5, 784})
         {
-            if (it.second == shape)
-            {
-                valid_shape = true;
-                parm = it.first;
-                NGRAPH_INFO << "Adding " << parm;
-                if (parm == "x")
-                {
-                    copy_data(parameter_cipher_tv, parms[parm]);
-                    parameter_tvs.push_back(parameter_cipher_tv);
-                }
-            }
+            NGRAPH_INFO << "Copying " << shape_size(shape) << " elements";
+            copy_data(parameter_cipher_tv, x);
+            parameter_tvs.push_back(parameter_cipher_tv);
         }
-        if (!valid_shape)
+        else
         {
             NGRAPH_INFO << "Invalid shape" << join(shape, "x");
             throw ngraph_error("Invalid shape " + shape_size(shape));
