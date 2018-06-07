@@ -235,14 +235,7 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
                     make_shared<runtime::he::HeaanPlaintextWrapper>();
                 he_heaan_backend->decrypt(p, m_cipher_texts[src_index]);
 
-                NGRAPH_INFO << "decoded to ";
                 he_heaan_backend->decode(dst, p, type, m_batch_size);
-
-                for (auto j = 0; j < m_batch_size; ++j)
-                {
-                    float x = *(float*)((char*)dst + j * type.size());
-                    NGRAPH_INFO << "x " << x;
-                }
             }
             else
             {

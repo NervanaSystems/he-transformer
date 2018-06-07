@@ -1274,10 +1274,8 @@ NGRAPH_TEST(${BACKEND_NAME}, one_hot_2_in_3)
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::i64, shape_a);
-    NGRAPH_INFO << "created tensor, copying";
     copy_data(a, vector<int64_t>{2});
     auto result = backend->create_tensor(element::i64, shape_r);
-    NGRAPH_INFO << "calling ";
 
     backend->call(f, {result}, {a});
     EXPECT_EQ((vector<int64_t>{0, 0, 1}), read_vector<int64_t>(result));

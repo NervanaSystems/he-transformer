@@ -36,32 +36,8 @@ void runtime::he::kernel::heaan::scalar_add(
     }
     else
     {
-        vector<double> tmp = {99, 99};
-        vector<double> tmp2 = {99, 99};
-        vector<double> tmp3 = {99, 99};
-        auto p = make_shared<runtime::he::HeaanPlaintextWrapper>(tmp);
-        auto p2 = make_shared<runtime::he::HeaanPlaintextWrapper>(tmp2);
-        auto p3 = make_shared<runtime::he::HeaanPlaintextWrapper>(tmp3);
-        NGRAPH_INFO << "Heaan adding ";
-        he_heaan_backend->decrypt(p, arg0);
-        for (auto elem : p->m_plaintexts)
-        {
-            NGRAPH_INFO << elem;
-        }
-        NGRAPH_INFO << "to";
-        he_heaan_backend->decrypt(p2, arg1);
-        for (auto elem : p2->m_plaintexts)
-        {
-            NGRAPH_INFO << elem;
-        }
-        NGRAPH_INFO << ", yielding ";
         out->m_ciphertext =
             he_heaan_backend->get_scheme()->add(arg0->m_ciphertext, arg1->m_ciphertext);
-        he_heaan_backend->decrypt(p3, out);
-        for (auto elem : p3->m_plaintexts)
-        {
-            NGRAPH_INFO << elem;
-        }
     }
 }
 
