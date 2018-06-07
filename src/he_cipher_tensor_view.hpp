@@ -41,6 +41,8 @@ namespace ngraph
                                    const std::string& name = "external");
                 virtual ~HECipherTensorView();
 
+                const Shape get_expanded_shape() const;
+
                 /// @brief Write bytes directly into the tensor after encoding and encrypting
                 /// @param p Pointer to source of data
                 /// @param tensor_offset Offset (bytes) into tensor storage to begin writing.

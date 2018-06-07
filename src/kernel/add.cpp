@@ -33,10 +33,13 @@ void runtime::he::kernel::add(const vector<shared_ptr<runtime::he::HECiphertext>
                               const shared_ptr<runtime::he::HEBackend>& he_backend,
                               size_t count)
 {
+    NGRAPH_INFO << "Adding " << arg0.size() << " + " << arg1.size() << " to size " << out.size();
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
     {
+        NGRAPH_INFO << "Adding i " << i << " of " << count;
         scalar_add(arg0[i], arg1[i], out[i], type, he_backend);
+        NGRAPH_INFO << "Added " << i;
     }
 }
 

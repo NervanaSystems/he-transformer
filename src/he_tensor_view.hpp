@@ -49,6 +49,13 @@ namespace ngraph
                 /// @param n Number of bytes to read, must be integral number of elements.
                 virtual void read(void* p, size_t tensor_offset, size_t n) const override;
 
+                /// @brief Reduces shape along batch axis
+                /// @param shape Input shape to batch
+                /// @param batch_dim Axis along which to batch
+                /// @param batched Whether or not batching is enabled
+                /// @return Shape after batching along batch axis
+                const Shape batch_shape(const Shape& shape, size_t batch_axis = 0, bool batched = false) const;
+
                 inline std::shared_ptr<HEBackend> get_backend() const { return m_he_backend; }
             protected:
                 void check_io_bounds(const void* p, size_t tensor_offset, size_t n) const;

@@ -30,12 +30,12 @@ runtime::he::HETensorView::HETensorView(const element::Type& element_type,
                                         bool batched,
                                         const string& name)
     : runtime::TensorView(make_shared<descriptor::PrimaryTensorView>(
-          make_shared<TensorViewType>(element_type, shape), name))
-    , m_he_backend(he_backend)
-    , m_batched(batched)
+                make_shared<TensorViewType>(element_type, batch_shape(shape, 0, batched)), name))
+    //  : runtime::TensorView(make_shared<descriptor::PrimaryTensorView>(
+    //              make_shared<TensorViewType>(element_type, shape), name))
 {
     m_descriptor->set_tensor_view_layout(
-			make_shared<descriptor::layout::DenseTensorViewLayout>(*m_descriptor));
+            make_shared<descriptor::layout::DenseTensorViewLayout>(*m_descriptor));
 	auto is_power_of_2 = [](size_t n) -> bool
 	{
 		return ((n & (n - 1)) == 0) && (n != 0);
@@ -48,16 +48,35 @@ runtime::he::HETensorView::HETensorView(const element::Type& element_type,
 			throw ngraph_error("Batching size must be power of two");
 		}
 
-        m_batch_size = shape.back();
+        m_batch_size = shape[0];
     }
     else
     {
         m_batch_size = 1;
     }
+    m_he_backend = he_backend;
+    m_batched = batched;
+
+    NGRAPH_INFO << "Shape size " << shape_size(get_shape());
 }
 
 runtime::he::HETensorView::~HETensorView()
 {
+}
+
+const Shape runtime::he::HETensorView::batch_shape(const Shape& shape, size_t batch_axis, bool batched) const
+{
+    if (batched)
+    {
+        if (batch_axis != 0)
+        {
+            throw ngraph_error("Batching only supported along axis 0");
+        }
+        Shape ret(shape.begin() + 1, shape.end());
+
+        return ret;
+    }
+    return shape;
 }
 
 void runtime::he::HETensorView::check_io_bounds(const void* source,
@@ -74,6 +93,10 @@ void runtime::he::HETensorView::check_io_bounds(const void* source,
         throw ngraph_error("tensor_offset and n must be divisible by type_byte_size.");
     }
     // Check out-of-range
+    NGRAPH_INFO << "get_element_count() " << get_element_count();
+    NGRAPH_INFO << "tensor_offset " << tensor_offset;
+    NGRAPH_INFO << "n " << n;
+    NGRAPH_INFO << "type_byte_size " << type_byte_size;
     if ((tensor_offset + n) / type_byte_size > get_element_count())
     {
         throw out_of_range("I/O access past end of tensor");

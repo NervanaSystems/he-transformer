@@ -277,6 +277,7 @@ void runtime::he::he_heaan::HEHeaanBackend::encode(shared_ptr<runtime::he::HEPla
         for(size_t i = 0; i < count; ++i)
         {
             input_dbl[i] = (double)((float*)input)[i];
+            NGRAPH_INFO << "Encoding " << input_dbl[i];
         }
         output = make_shared<runtime::he::HeaanPlaintextWrapper>(input_dbl);
     }

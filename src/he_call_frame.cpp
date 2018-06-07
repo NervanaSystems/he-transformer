@@ -148,6 +148,11 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                 }
                 else
                 {
+                    bool batched_out = any_of(
+                            inputs.begin(), inputs.end(), [](shared_ptr<runtime::he::HETensorView> input) {
+                            return dynamic_pointer_cast<HEPlainTensorView>(input) != nullptr;
+                            });
+
                     auto itv = make_shared<runtime::he::HECipherTensorView>(
                         element_type, shape, m_he_backend, false, name);
                     tensor_map.insert({tv, itv});
@@ -397,6 +402,18 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     {
         if (arg0_cipher != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
+            NGRAPH_INFO << "Add cipher cipher";
+            auto tmp1 = arg0_cipher->get_elements();
+            NGRAPH_INFO << "arg0 ok";
+            tmp1 = arg1_cipher->get_elements();
+            NGRAPH_INFO << "arg1 ok";
+            tmp1 = out0_cipher->get_elements();
+            NGRAPH_INFO << "out0 ok";
+            auto tmp2 = arg0_cipher->get_element_count() / arg0_cipher->get_batch_size();
+            auto tmp3 = out0_cipher->get_element_count() / out0_cipher->get_batch_size();
+            NGRAPH_INFO << "arg0 count " << tmp2;
+            NGRAPH_INFO << "out0 count " << tmp3;
+
             runtime::he::kernel::add(arg0_cipher->get_elements(),
                                      arg1_cipher->get_elements(),
                                      out0_cipher->get_elements(),

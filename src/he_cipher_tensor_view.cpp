@@ -39,7 +39,8 @@ runtime::he::HECipherTensorView::HECipherTensorView(const element::Type& element
     : runtime::he::HETensorView(element_type, shape, he_backend, batched, name)
 {
     // get_tensor_view_layout()->get_size() is the number of elements
-    m_num_elements = m_descriptor->get_tensor_view_layout()->get_size() / m_batch_size;
+    m_num_elements = m_descriptor->get_tensor_view_layout()->get_size(); // / m_batch_size;
+    NGRAPH_INFO << "Creating HECPT with " << m_num_elements << " elements";
 
     m_cipher_texts.resize(m_num_elements);
     for (size_t i = 0; i < m_num_elements; ++i)
@@ -65,13 +66,51 @@ runtime::he::HECipherTensorView::~HECipherTensorView()
 {
 }
 
+const Shape runtime::he::HECipherTensorView::get_expanded_shape() const // TODO: remove?
+{
+    if (m_batched)
+    {
+        Shape expanded_shape = get_shape();
+        if (expanded_shape[0] == 1)
+        {
+            expanded_shape[0] = m_batch_size;
+        }
+        else
+        {
+            expanded_shape.insert(expanded_shape.begin(), m_batch_size);
+        }
+        NGRAPH_INFO << "get_expanded_shape batch size" << m_batch_size;
+        NGRAPH_INFO << "Shape dims";
+        for (auto elem : expanded_shape)
+        {
+            NGRAPH_INFO << elem;
+        }
+        /* NGRAPH_INFO << "is_scalar(get_shape()) " << is_scalar(get_shape());
+        NGRAPH_INFO << "is_vector(get_shape()) " << is_vector(get_shape());
+        NGRAPH_INFO << "Orig Shape dims";
+        for (auto elem : get_shape())
+        {
+            NGRAPH_INFO << elem;
+        } */
+        return expanded_shape;
+    }
+    else
+    {
+        NGRAPH_INFO << "get_expanded_shape NOT batched";
+        return get_shape();
+    }
+}
+
 void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_offset, size_t n)
 {
-    check_io_bounds(source, tensor_offset, n);
+    NGRAPH_INFO << "writing HECPTV, n = " << n;
     const element::Type& type = get_tensor_view_layout()->get_element_type();
     size_t type_byte_size = type.size();
     size_t dst_start_index = tensor_offset / type_byte_size;
     size_t num_elements_to_write = n / (type_byte_size * m_batch_size);
+    NGRAPH_INFO << "num_elements_to_write " << num_elements_to_write;
+    NGRAPH_INFO << "Batch size " << m_batch_size;
+    check_io_bounds(source, tensor_offset, n / m_batch_size);
 
     if (num_elements_to_write == 1)
     {
@@ -104,6 +143,24 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
         for (size_t i = 0; i < num_elements_to_write; ++i)
         {
             const void* src_with_offset = (void*)((char*)source + i * type.size() * m_batch_size);
+
+            size_t allocation_size = type.size() * m_batch_size;
+            NGRAPH_INFO << "Mallocing " << allocation_size;
+            const void* batch_src = malloc(allocation_size);
+            if (!batch_src)
+            {
+                throw ngraph_error("Error allocating HE Cipher Tensor View memory");
+            }
+
+            for(size_t j = 0; j < m_batch_size; ++j)
+            {
+                void* destination = (void*)((char*)batch_src + j * type.size());
+                const void* src = (void*)((char*)source + type.size() * (i + j * num_elements_to_write));
+                memcpy(destination, src, type.size());
+            }
+
+            // const void* encode_src = m_batched ? batch_src : src_with_offset; // TODO: use this?
+
             size_t dst_index = dst_start_index + i;
             shared_ptr<runtime::he::HEPlaintext> p = make_shared<runtime::he::HEPlaintext>();
 
@@ -119,7 +176,15 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
             {
                 shared_ptr<runtime::he::HEPlaintext> p =
                     make_shared<runtime::he::HeaanPlaintextWrapper>();
-                he_heaan_backend->encode(p, src_with_offset, type, m_batch_size);
+                if (m_batched)
+                {
+                    NGRAPH_INFO << "Encoding batch src";
+                    he_heaan_backend->encode(p, batch_src, type, m_batch_size);
+                }
+                else
+                {
+                    he_heaan_backend->encode(p, src_with_offset, type, m_batch_size);
+                }
                 he_heaan_backend->encrypt(m_cipher_texts[dst_index], p);
             }
             else
@@ -127,18 +192,24 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
                 throw ngraph_error(
                     "HECipherTensorView::write, he_backend is neither seal nor heaan.");
             }
+            free((void*)batch_src);
         }
     }
+    NGRAPH_INFO << "wrote HECPTV";
 }
 
 void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, size_t n) const
 {
-    NGRAPH_INFO << "HECPT read";
-    check_io_bounds(target, tensor_offset, n);
+    NGRAPH_INFO << "reading HECPTV";
+    check_io_bounds(target, tensor_offset, n / m_batch_size); // TODO: times batch size?
     const element::Type& type = get_tensor_view_layout()->get_element_type();
     size_t type_byte_size = type.size();
     size_t src_start_index = tensor_offset / type_byte_size;
+    size_t num_elements_per_batch = n / (type_byte_size * m_batch_size);
     size_t num_elements_to_read = n / (type_byte_size * m_batch_size);
+    NGRAPH_INFO << "m_batch_size " << m_batch_size;
+    NGRAPH_INFO << "num_elements_to_read " << num_elements_to_read;
+    NGRAPH_INFO << "num_elements_to_per_batch " << num_elements_per_batch;
     /* if (num_elements_to_read == 1)
     {
         void* dst_with_offset = (void*)((char*)target);
@@ -168,14 +239,24 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
 #pragma omp parallel for
         for (size_t i = 0; i < num_elements_to_read; ++i)
         {
-            void* dst_with_offset = (void*)((char*)target + i * type.size() * m_batch_size);
+            NGRAPH_INFO << "reading element i " << i << " of " << num_elements_to_read;
+            NGRAPH_INFO << "batch size " << m_batch_size;
+
+            // void* dst_with_offset = (void*)((char*)target + i * type.size() * m_batch_size);
+            void* dst = malloc(type.size() * m_batch_size);
+            if (!dst)
+            {
+                throw ngraph_error("Error allocating HE Cipher Tensor View memory");
+            }
+
             size_t src_index = src_start_index + i;
             if (auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(m_he_backend))
             {
                 shared_ptr<runtime::he::HEPlaintext> p =
                     make_shared<runtime::he::SealPlaintextWrapper>();
                 he_seal_backend->decrypt(p, m_cipher_texts[src_index]);
-                he_seal_backend->decode(dst_with_offset, p, type, m_batch_size);
+
+                he_seal_backend->decode(dst, p, type, m_batch_size);
             }
             else if (auto he_heaan_backend =
                          dynamic_pointer_cast<he_heaan::HEHeaanBackend>(m_he_backend))
@@ -183,12 +264,39 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
                 shared_ptr<runtime::he::HEPlaintext> p =
                     make_shared<runtime::he::HeaanPlaintextWrapper>();
                 he_heaan_backend->decrypt(p, m_cipher_texts[src_index]);
-                he_heaan_backend->decode(dst_with_offset, p, type, m_batch_size);
+                auto tmp = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(p);
+                assert(tmp != nullptr);
+                NGRAPH_INFO << "decrypted to ";
+                if (tmp != nullptr)
+                {
+                    for(auto elem : tmp->m_plaintexts)
+                    {
+                        cout << elem << endl;;
+                    }
+                }
+
+                NGRAPH_INFO << "decoded to ";
+                he_heaan_backend->decode(dst, p, type, m_batch_size);
+
+                for(auto j = 0; j < m_batch_size; ++ j)
+                {
+                    float x = *(float*)((char*)dst + j * type.size());
+                    NGRAPH_INFO << "x " << x;
+
+                }
             }
             else
             {
                 throw ngraph_error("HECipherTensorView::read he_backend is not seal.");
             }
+            for(size_t j = 0; j < m_batch_size; ++j)
+            {
+                NGRAPH_INFO << "copying to dest";
+                void* dst_with_offset = (void*)((char*)target + type.size() * (i + j * num_elements_to_read));
+                const void* src = (void*)((char*)dst + j * type.size());
+                memcpy(dst_with_offset, src, type.size());
+            }
+            free(dst);
         }
-    // }
+        NGRAPH_INFO << "read HECPTV";
 }
