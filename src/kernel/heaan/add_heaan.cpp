@@ -48,7 +48,7 @@ void runtime::he::kernel::heaan::scalar_add(
         {
             NGRAPH_INFO << elem;
         }
-        NGRAPH_INFO << "to" << endl;
+        NGRAPH_INFO << "to";
         he_heaan_backend->decrypt(p2, arg1);
         for (auto elem : p2->m_plaintexts)
         {

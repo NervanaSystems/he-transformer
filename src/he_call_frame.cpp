@@ -159,12 +159,6 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                                     return false;
                                 }
                             });
-                    NGRAPH_INFO << "batched out" << batched_out;
-                    NGRAPH_INFO << "out shape";
-                    for(auto elem : shape)
-                    {
-                        NGRAPH_INFO << elem;
-                    }
 
                     auto itv = make_shared<runtime::he::HECipherTensorView>(
                         element_type, shape, m_he_backend, batched_out, name);
@@ -191,7 +185,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         // Check result with CPU backend
         if (is_cpu_check_enabled(op))
         {
-            // check_cpu_calls(function, base_type, op, outputs, inputs, false); // TODO: enable
+            check_cpu_calls(function, base_type, op, outputs, inputs, false); // TODO: enable
         }
 
         // Check noise budget after each op

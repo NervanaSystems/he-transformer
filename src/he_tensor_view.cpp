@@ -31,8 +31,6 @@ runtime::he::HETensorView::HETensorView(const element::Type& element_type,
                                         const string& name)
     : runtime::TensorView(make_shared<descriptor::PrimaryTensorView>(
                 make_shared<TensorViewType>(element_type, batch_shape(shape, 0, batched)), name))
-    //  : runtime::TensorView(make_shared<descriptor::PrimaryTensorView>(
-    //              make_shared<TensorViewType>(element_type, shape), name))
 {
     m_descriptor->set_tensor_view_layout(
             make_shared<descriptor::layout::DenseTensorViewLayout>(*m_descriptor));
@@ -56,8 +54,6 @@ runtime::he::HETensorView::HETensorView(const element::Type& element_type,
     }
     m_he_backend = he_backend;
     m_batched = batched;
-
-    NGRAPH_INFO << "Shape size " << shape_size(get_shape());
 }
 
 runtime::he::HETensorView::~HETensorView()
@@ -93,10 +89,6 @@ void runtime::he::HETensorView::check_io_bounds(const void* source,
         throw ngraph_error("tensor_offset and n must be divisible by type_byte_size.");
     }
     // Check out-of-range
-    NGRAPH_INFO << "get_element_count() " << get_element_count();
-    NGRAPH_INFO << "tensor_offset " << tensor_offset;
-    NGRAPH_INFO << "n " << n;
-    NGRAPH_INFO << "type_byte_size " << type_byte_size;
     if ((tensor_offset + n) / type_byte_size > get_element_count())
     {
         throw out_of_range("I/O access past end of tensor");
