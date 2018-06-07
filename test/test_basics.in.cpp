@@ -185,7 +185,6 @@ NGRAPH_TEST(${BACKEND_NAME}, ab)
 
         copy_data(t_a, test::NDArray<int64_t, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector());
         copy_data(t_b, test::NDArray<int64_t, 2>({{7, 8, 9}, {10, 11, 12}}).get_vector());
-
         backend->call(f, {t_result}, {t_a, t_b});
         EXPECT_EQ(read_vector<int64_t>(t_result),
                   (test::NDArray<int64_t, 2>({{8, 10, 12}, {14, 16, 18}})).get_vector());

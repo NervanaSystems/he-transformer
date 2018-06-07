@@ -106,7 +106,7 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
         {
             shared_ptr<runtime::he::HEPlaintext> p =
                 make_shared<runtime::he::SealPlaintextWrapper>();
-            he_seal_backend->encode(p, src_with_offset, type, m_batch_size);
+            he_seal_backend->encode(p, src_with_offset, type);
             he_seal_backend->encrypt(m_cipher_texts[dst_index], p);
         }
         else if (auto he_heaan_backend =
@@ -134,7 +134,7 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
             {
                 shared_ptr<runtime::he::HEPlaintext> p =
                     make_shared<runtime::he::SealPlaintextWrapper>();
-                he_seal_backend->encode(p, src_with_offset, type, m_batch_size);
+                he_seal_backend->encode(p, src_with_offset, type);
                 he_seal_backend->encrypt(m_cipher_texts[dst_index], p);
             }
             else if (auto he_heaan_backend =
@@ -194,7 +194,7 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
             shared_ptr<runtime::he::HEPlaintext> p =
                 make_shared<runtime::he::SealPlaintextWrapper>();
             he_seal_backend->decrypt(p, m_cipher_texts[src_index]);
-            he_seal_backend->decode(dst_with_offset, p, type, m_batch_size);
+            he_seal_backend->decode(dst_with_offset, p, type);
         }
         else if (auto he_heaan_backend =
                      dynamic_pointer_cast<he_heaan::HEHeaanBackend>(m_he_backend))
@@ -226,8 +226,7 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
                 shared_ptr<runtime::he::HEPlaintext> p =
                     make_shared<runtime::he::SealPlaintextWrapper>();
                 he_seal_backend->decrypt(p, m_cipher_texts[src_index]);
-
-                he_seal_backend->decode(dst, p, type, m_batch_size);
+                he_seal_backend->decode(dst, p, type);
             }
             else if (auto he_heaan_backend =
                          dynamic_pointer_cast<he_heaan::HEHeaanBackend>(m_he_backend))
