@@ -39,9 +39,7 @@ runtime::he::HECipherTensorView::HECipherTensorView(const element::Type& element
     : runtime::he::HETensorView(element_type, shape, he_backend, batched, name)
 {
     // get_tensor_view_layout()->get_size() is the number of elements
-    m_num_elements = m_descriptor->get_tensor_view_layout()->get_size(); // / m_batch_size;
-    NGRAPH_INFO << "Creating HECPT with " << m_num_elements << " elements";
-
+    m_num_elements = m_descriptor->get_tensor_view_layout()->get_size();
     m_cipher_texts.resize(m_num_elements);
     for (size_t i = 0; i < m_num_elements; ++i)
     {
@@ -52,7 +50,7 @@ runtime::he::HECipherTensorView::HECipherTensorView(const element::Type& element
         else if (auto he_heaan_backend =
                      dynamic_pointer_cast<he_heaan::HEHeaanBackend>(m_he_backend))
         {
-            m_cipher_texts[i] = make_shared<runtime::he::HeaanCiphertextWrapper>();
+            m_cipher_texts[i] = make_shared<runtime::he::HeaanCiphertextWrapper>(m_batch_size);
         }
         else
         {
@@ -66,12 +64,16 @@ runtime::he::HECipherTensorView::~HECipherTensorView()
 {
 }
 
-const Shape runtime::he::HECipherTensorView::get_expanded_shape() const // TODO: remove?
+const Shape runtime::he::HECipherTensorView::get_expanded_shape() const
 {
     if (m_batched)
     {
         Shape expanded_shape = get_shape();
-        if (expanded_shape[0] == 1)
+        if (is_scalar(expanded_shape))
+        {
+            return Shape{m_batch_size, 1};
+        }
+        else if (expanded_shape[0] == 1)
         {
             expanded_shape[0] = m_batch_size;
         }
@@ -79,37 +81,20 @@ const Shape runtime::he::HECipherTensorView::get_expanded_shape() const // TODO:
         {
             expanded_shape.insert(expanded_shape.begin(), m_batch_size);
         }
-        NGRAPH_INFO << "get_expanded_shape batch size" << m_batch_size;
-        NGRAPH_INFO << "Shape dims";
-        for (auto elem : expanded_shape)
-        {
-            NGRAPH_INFO << elem;
-        }
-        /* NGRAPH_INFO << "is_scalar(get_shape()) " << is_scalar(get_shape());
-        NGRAPH_INFO << "is_vector(get_shape()) " << is_vector(get_shape());
-        NGRAPH_INFO << "Orig Shape dims";
-        for (auto elem : get_shape())
-        {
-            NGRAPH_INFO << elem;
-        } */
         return expanded_shape;
     }
     else
     {
-        NGRAPH_INFO << "get_expanded_shape NOT batched";
         return get_shape();
     }
 }
 
 void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_offset, size_t n)
 {
-    NGRAPH_INFO << "writing HECPTV, n = " << n;
     const element::Type& type = get_tensor_view_layout()->get_element_type();
     size_t type_byte_size = type.size();
     size_t dst_start_index = tensor_offset / type_byte_size;
     size_t num_elements_to_write = n / (type_byte_size * m_batch_size);
-    NGRAPH_INFO << "num_elements_to_write " << num_elements_to_write;
-    NGRAPH_INFO << "Batch size " << m_batch_size;
     check_io_bounds(source, tensor_offset, n / m_batch_size);
 
     if (num_elements_to_write == 1)
@@ -145,7 +130,6 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
             const void* src_with_offset = (void*)((char*)source + i * type.size() * m_batch_size);
 
             size_t allocation_size = type.size() * m_batch_size;
-            NGRAPH_INFO << "Mallocing " << allocation_size;
             const void* batch_src = malloc(allocation_size);
             if (!batch_src)
             {
@@ -242,7 +226,6 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
             NGRAPH_INFO << "reading element i " << i << " of " << num_elements_to_read;
             NGRAPH_INFO << "batch size " << m_batch_size;
 
-            // void* dst_with_offset = (void*)((char*)target + i * type.size() * m_batch_size);
             void* dst = malloc(type.size() * m_batch_size);
             if (!dst)
             {
@@ -291,7 +274,6 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
             }
             for(size_t j = 0; j < m_batch_size; ++j)
             {
-                NGRAPH_INFO << "copying to dest";
                 void* dst_with_offset = (void*)((char*)target + type.size() * (i + j * num_elements_to_read));
                 const void* src = (void*)((char*)dst + j * type.size());
                 memcpy(dst_with_offset, src, type.size());

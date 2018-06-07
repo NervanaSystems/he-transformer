@@ -33,12 +33,20 @@ void runtime::he::kernel::result(const vector<shared_ptr<runtime::he::HECipherte
 {
     if (out.size() != arg.size())
     {
-        throw ngraph_error("Wrong size");
+        NGRAPH_INFO << "Result output size " << out.size() << " does not match result input size " << arg.size();
+        throw ngraph_error("Wrong size in result");
     }
+    NGRAPH_INFO << "Result output size " << out.size() << ", result input size " << arg.size();
+    out[0];
+    NGRAPH_INFO << "out ok";
+    arg[0];
+    NGRAPH_INFO << "in ok";
+    NGRAPH_INFO << "count " << count;
     for (size_t i = 0; i < count; ++i)
     {
         out[i] = arg[i];
     }
+    NGRAPH_INFO << "Called result";
 }
 
 void runtime::he::kernel::result(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg,

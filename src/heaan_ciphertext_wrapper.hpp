@@ -32,6 +32,7 @@ namespace ngraph
             {
                 HeaanCiphertextWrapper();
                 HeaanCiphertextWrapper(const heaan::Ciphertext& cipher, size_t count);
+                HeaanCiphertextWrapper(size_t count);
                 virtual ~HeaanCiphertextWrapper();
 
                 heaan::Ciphertext m_ciphertext;

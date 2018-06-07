@@ -370,7 +370,8 @@ void runtime::he::he_heaan::HEHeaanBackend::decrypt(
     auto heaan_input = dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(input);
     if (heaan_output != nullptr && heaan_input != nullptr)
     {
-        if (heaan_input->m_count == 1)
+        size_t batch_count = heaan_input->m_count;
+        if (batch_count == 1)
         {
             heaan_output->m_plaintexts =
                 {m_scheme->decryptSingle(*m_secret_key, heaan_input->m_ciphertext).real()};
@@ -378,7 +379,7 @@ void runtime::he::he_heaan::HEHeaanBackend::decrypt(
         else
         {
             vector<complex<double>> ciphertexts =  m_scheme->decrypt(*m_secret_key, heaan_input->m_ciphertext);
-            vector<double> real_ciphertexts(heaan_input->m_count);
+            vector<double> real_ciphertexts(batch_count);
 
             transform(ciphertexts.begin(), ciphertexts.end(), real_ciphertexts.begin(),
                     [](complex<double> &n) {return n.real();});

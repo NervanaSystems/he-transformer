@@ -150,11 +150,24 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                 {
                     bool batched_out = any_of(
                             inputs.begin(), inputs.end(), [](shared_ptr<runtime::he::HETensorView> input) {
-                            return dynamic_pointer_cast<HEPlainTensorView>(input) != nullptr;
+                                if(auto input_cipher_tv = dynamic_pointer_cast<HECipherTensorView>(input))
+                                {
+                                    return input_cipher_tv->is_batched();
+                                }
+                                else
+                                {
+                                    return false;
+                                }
                             });
+                    NGRAPH_INFO << "batched out" << batched_out;
+                    NGRAPH_INFO << "out shape";
+                    for(auto elem : shape)
+                    {
+                        NGRAPH_INFO << elem;
+                    }
 
                     auto itv = make_shared<runtime::he::HECipherTensorView>(
-                        element_type, shape, m_he_backend, false, name);
+                        element_type, shape, m_he_backend, batched_out, name);
                     tensor_map.insert({tv, itv});
                 }
             }
@@ -178,7 +191,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         // Check result with CPU backend
         if (is_cpu_check_enabled(op))
         {
-            check_cpu_calls(function, base_type, op, outputs, inputs, false); // TODO: enable
+            // check_cpu_calls(function, base_type, op, outputs, inputs, false); // TODO: enable
         }
 
         // Check noise budget after each op
@@ -888,9 +901,15 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
 
         if (arg0_cipher != nullptr && out0_cipher != nullptr)
         {
+            size_t output_size = shape_size(res->get_shape());
+            if (arg0_cipher->is_batched())
+            {
+                output_size /= arg0_cipher->get_batch_size();
+            }
             runtime::he::kernel::result(arg0_cipher->get_elements(),
                                         out0_cipher->get_elements(),
-                                        shape_size(res->get_shape()));
+                                        output_size);
+                                        // shape_size(res->get_shape()));
         }
         else if (arg0_plain != nullptr && out0_cipher != nullptr)
         {
