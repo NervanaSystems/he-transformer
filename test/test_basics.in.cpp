@@ -125,14 +125,6 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_batch)
     auto a = backend->create_tensor(element::f32, shape, true);
     copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector());
 
-    cout << "generalized read vector" << endl;
-    auto tmp = generalized_read_vector<float>(a);
-    for (auto elem : tmp)
-    {
-        cout << elem << endl;
-    }
-    return;
-
     EXPECT_EQ(generalized_read_vector<float>(a),
             (test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector());
 }

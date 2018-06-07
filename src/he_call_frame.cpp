@@ -245,7 +245,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
 
         const element::Type& type = he_tv->get_tensor_view_layout()->get_element_type();
         auto shape = he_tv->get_shape();
-        size_t num_bytes = type.size() * shape_size(shape) ;
+        size_t num_bytes = type.size() * shape_size(shape);
         shared_ptr<HostTensorView> tv = make_shared<HostTensorView>(type, shape);
 
         if (cipher_tv != nullptr)
@@ -411,18 +411,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     {
         if (arg0_cipher != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
-            NGRAPH_INFO << "Add cipher cipher";
-            auto tmp1 = arg0_cipher->get_elements();
-            NGRAPH_INFO << "arg0 ok";
-            tmp1 = arg1_cipher->get_elements();
-            NGRAPH_INFO << "arg1 ok";
-            tmp1 = out0_cipher->get_elements();
-            NGRAPH_INFO << "out0 ok";
-            auto tmp2 = arg0_cipher->get_element_count() / arg0_cipher->get_batch_size();
-            auto tmp3 = out0_cipher->get_element_count() / out0_cipher->get_batch_size();
-            NGRAPH_INFO << "arg0 count " << tmp2;
-            NGRAPH_INFO << "out0 count " << tmp3;
-
             runtime::he::kernel::add(arg0_cipher->get_elements(),
                                      arg1_cipher->get_elements(),
                                      out0_cipher->get_elements(),

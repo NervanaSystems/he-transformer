@@ -109,11 +109,6 @@ void ngraph::runtime::he::kernel::dot_template(const vector<shared_ptr<S>>& arg0
         throw ngraph_error("Dot he_backend neither heaan nor seal;");
     }
 
-    NGRAPH_INFO << "Dot template";
-    NGRAPH_INFO << "arg0 " << arg0.size();
-    NGRAPH_INFO << "arg1 " << arg1.size();
-    NGRAPH_INFO << "out " << out.size();
-
     // Get the sizes of the dot axes. It's easiest to pull them from arg1 because they're
     // right up front.
     Shape dot_axis_sizes(reduction_axes_count);
