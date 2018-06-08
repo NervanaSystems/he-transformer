@@ -133,9 +133,9 @@ NGRAPH_TEST(${BACKEND_NAME}, ab_batch)
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
         runtime::Backend::create("${BACKEND_NAME}"));
 
-    Shape shape_a{4,3};
-    Shape shape_b{4,3};
-    Shape shape_r{4,3};
+    Shape shape_a{4, 3};
+    Shape shape_b{4, 3};
+    Shape shape_r{4, 3};
     auto a = make_shared<op::Parameter>(element::f32, shape_a);
     auto b = make_shared<op::Parameter>(element::f32, shape_b);
     auto t = make_shared<op::Add>(a, b);
@@ -150,7 +150,8 @@ NGRAPH_TEST(${BACKEND_NAME}, ab_batch)
     copy_data(t_a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
     copy_data(t_b, vector<float>{13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24});
     backend->call(f, {t_result}, {t_a, t_b});
-    EXPECT_EQ((vector<float>{14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36}), generalized_read_vector<float>(t_result));
+    EXPECT_EQ((vector<float>{14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36}),
+              generalized_read_vector<float>(t_result));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, ab)

@@ -45,7 +45,15 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image)
                                    op::ParameterVector{A, B});
 
     // Create some tensors for input/output
-    auto backend = runtime::Backend::create("${BACKEND_NAME}"); if ("${BACKEND_NAME}" == "HE_HEAAN") {         backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend); } else if                       ("${BACKEND_NAME}" == "HE_SEAL") { backend = static_pointer_cast<runtime::he::he_seal::                        HESealBackend>(backend); }
+    auto backend = runtime::Backend::create("${BACKEND_NAME}");
+    if ("${BACKEND_NAME}" == "HE_HEAAN")
+    {
+        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
+    }
+    else if ("${BACKEND_NAME}" == "HE_SEAL")
+    {
+        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
+    }
     auto a = backend->create_tensor(element::f32, shape_a);
     copy_data(a, vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
                                2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0});
@@ -70,7 +78,15 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_2outputs)
                                    op::ParameterVector{A, B});
 
     // Create some tensors for input/output
-    auto backend = runtime::Backend::create("${BACKEND_NAME}"); if ("${BACKEND_NAME}" == "HE_HEAAN") {         backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend); } else if                       ("${BACKEND_NAME}" == "HE_SEAL") { backend = static_pointer_cast<runtime::he::he_seal::                        HESealBackend>(backend); }
+    auto backend = runtime::Backend::create("${BACKEND_NAME}");
+    if ("${BACKEND_NAME}" == "HE_HEAAN")
+    {
+        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
+    }
+    else if ("${BACKEND_NAME}" == "HE_SEAL")
+    {
+        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
+    }
     auto a = backend->create_tensor(element::f32, shape_a);
     copy_data(a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15});
     auto b = backend->create_tensor(element::f32, shape_b);
@@ -106,7 +122,15 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item)
     auto function = make_graph();
 
     // Create some tensors for input/output
-    auto backend = runtime::Backend::create("${BACKEND_NAME}"); if ("${BACKEND_NAME}" == "HE_HEAAN") {         backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend); } else if                       ("${BACKEND_NAME}" == "HE_SEAL") { backend = static_pointer_cast<runtime::he::he_seal::                        HESealBackend>(backend); }
+    auto backend = runtime::Backend::create("${BACKEND_NAME}");
+    if ("${BACKEND_NAME}" == "HE_HEAAN")
+    {
+        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
+    }
+    else if ("${BACKEND_NAME}" == "HE_SEAL")
+    {
+        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
+    }
     auto a = backend->create_tensor(element::f32, shape_a);
     copy_data(
         a,
@@ -159,7 +183,15 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_1_1x1_1)
     auto function = make_graph();
 
     // Create some tensors for input/output
-    auto backend = runtime::Backend::create("${BACKEND_NAME}"); if ("${BACKEND_NAME}" == "HE_HEAAN") {         backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend); } else if                       ("${BACKEND_NAME}" == "HE_SEAL") { backend = static_pointer_cast<runtime::he::he_seal::                        HESealBackend>(backend); }
+    auto backend = runtime::Backend::create("${BACKEND_NAME}");
+    if ("${BACKEND_NAME}" == "HE_HEAAN")
+    {
+        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
+    }
+    else if ("${BACKEND_NAME}" == "HE_SEAL")
+    {
+        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
+    }
     auto a = backend->create_tensor(element::f32, shape_a);
     copy_data(
         a,
@@ -202,7 +234,15 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5)
     auto function = make_graph();
 
     // Create some tensors for input/output
-    auto backend = runtime::Backend::create("${BACKEND_NAME}"); if ("${BACKEND_NAME}" == "HE_HEAAN") {         backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend); } else if                       ("${BACKEND_NAME}" == "HE_SEAL") { backend = static_pointer_cast<runtime::he::he_seal::                        HESealBackend>(backend); }
+    auto backend = runtime::Backend::create("${BACKEND_NAME}");
+    if ("${BACKEND_NAME}" == "HE_HEAAN")
+    {
+        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
+    }
+    else if ("${BACKEND_NAME}" == "HE_SEAL")
+    {
+        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
+    }
     auto a = backend->create_tensor(element::f32, shape_a);
     copy_data(
         a,
@@ -231,7 +271,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5)
         0.0f, 0.0f, 0.0f,   0.0f,   0.0f,   0.0f,    0.0f,   0.0f,   0.0f, 0.0f, 0.0f, 0.0f};
 
     backend->call(function, {result}, {a, b});
-    EXPECT_TRUE(test::all_close(vector<float>{expected_result}, read_vector<float>(result), 1e-7f, 1e-7f));
+    EXPECT_TRUE(
+        test::all_close(vector<float>{expected_result}, read_vector<float>(result), 1e-7f, 1e-7f));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items)
@@ -256,7 +297,15 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items)
     auto function = make_graph();
 
     // Create some tensors for input/output
-    auto backend = runtime::Backend::create("${BACKEND_NAME}"); if ("${BACKEND_NAME}" == "HE_HEAAN") {         backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend); } else if                       ("${BACKEND_NAME}" == "HE_SEAL") { backend = static_pointer_cast<runtime::he::he_seal::                        HESealBackend>(backend); }
+    auto backend = runtime::Backend::create("${BACKEND_NAME}");
+    if ("${BACKEND_NAME}" == "HE_HEAAN")
+    {
+        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
+    }
+    else if ("${BACKEND_NAME}" == "HE_SEAL")
+    {
+        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
+    }
     auto a = backend->create_tensor(element::f32, shape_a);
     copy_data(a, vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f, -8.f, 5.f,
                                -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,  9.f,  -7.f, 3.f,  0.f,
@@ -296,7 +345,15 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_strided_padded)
     auto function = make_graph();
 
     // Create some tensors for input/output
-    auto backend = runtime::Backend::create("${BACKEND_NAME}"); if ("${BACKEND_NAME}" == "HE_HEAAN") {         backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend); } else if                       ("${BACKEND_NAME}" == "HE_SEAL") { backend = static_pointer_cast<runtime::he::he_seal::                        HESealBackend>(backend); }
+    auto backend = runtime::Backend::create("${BACKEND_NAME}");
+    if ("${BACKEND_NAME}" == "HE_HEAAN")
+    {
+        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
+    }
+    else if ("${BACKEND_NAME}" == "HE_SEAL")
+    {
+        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
+    }
     auto a = backend->create_tensor(element::f32, shape_a);
     copy_data(a, vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f, -8.f, 5.f,
                                -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,  9.f,  -7.f, 3.f,  0.f,
@@ -322,5 +379,6 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_strided_padded)
         0.0f,  0.0f, 0.0f, 0.0f,   0.0f,   0.0f,   0.0f,   0.0f, 0.0f, 0.0f,   0.0f,   0.0f};
 
     backend->call(function, {result}, {a, b});
-    EXPECT_TRUE(test::all_close(vector<float>{expected_result}, read_vector<float>(result), 1e-7f, 1e-7f));
+    EXPECT_TRUE(
+        test::all_close(vector<float>{expected_result}, read_vector<float>(result), 1e-7f, 1e-7f));
 }

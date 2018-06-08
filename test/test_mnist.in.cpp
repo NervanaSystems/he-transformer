@@ -56,7 +56,8 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_5)
     pass_manager.run_passes(f);
     NGRAPH_INFO << "Saved file " << model_file_name;
 
-    vector<float> x = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "weights/x_test_4.txt"));
+    vector<float> x =
+        read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "weights/x_test_4.txt"));
 
     NGRAPH_INFO << "Deserialized graph";
     auto parameters = f->get_parameters();
@@ -110,9 +111,12 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_5)
     cout << endl;
 
     EXPECT_TRUE(test::all_close(
-        vector<float>{
-            -3.94503, -4.5004, 5.37272, 11.0719, -4.29294, -35.4196, -43.7368, 40.5139, 4.8088, 7.6214, -4.29444, 15.1135, 91.2844, -9.49516, -2.64188, -77.2798, 8.05845, 13.7273, 5.86995, -9.33487, -1.48271, 14.8887, -2.3886, -17.146, -1.10124, -11.3262, -2.89965, 3.51735, 1.38818, -2.88939, 56.011, -51.4716, -4.48169, 0.873144, -19.2347, 13.2377, 21.3702, -12.4109, -13.0373, 7.33236
-        },
+        vector<float>{-3.94503, -4.5004,  5.37272,  11.0719,  -4.29294, -35.4196, -43.7368,
+                      40.5139,  4.8088,   7.6214,   -4.29444, 15.1135,  91.2844,  -9.49516,
+                      -2.64188, -77.2798, 8.05845,  13.7273,  5.86995,  -9.33487, -1.48271,
+                      14.8887,  -2.3886,  -17.146,  -1.10124, -11.3262, -2.89965, 3.51735,
+                      1.38818,  -2.88939, 56.011,   -51.4716, -4.48169, 0.873144, -19.2347,
+                      13.2377,  21.3702,  -12.4109, -13.0373, 7.33236},
         generalized_read_vector<float>(result_tvs[0]),
         1e-4f));
 }

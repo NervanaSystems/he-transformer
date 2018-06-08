@@ -65,8 +65,13 @@ runtime::he::HECallFrame::HECallFrame(const shared_ptr<Function>& func,
 
 bool runtime::he::HECallFrame::is_cpu_check_enabled(const shared_ptr<Node>& op) const
 {
-    static unordered_set<string> cpu_check_enabled_ops{
-        "Sum", "Add", "Dot", "Multiply", "Convolution", "AvgPool", "Reshape"}; // TODO: remove "Reshape"
+    static unordered_set<string> cpu_check_enabled_ops{"Sum",
+                                                       "Add",
+                                                       "Dot",
+                                                       "Multiply",
+                                                       "Convolution",
+                                                       "AvgPool",
+                                                       "Reshape"}; // TODO: remove "Reshape"
     return cpu_check_enabled_ops.count(op->description()) != 0;
 }
 
@@ -169,8 +174,8 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                                    }
                                });
                     any_batched |= batched_out;
-                    NGRAPH_INFO << "Op " << op->description() << " is " <<
-                            (any_batched ? "batched" : "unbatched");
+                    NGRAPH_INFO << "Op " << op->description() << " is "
+                                << (any_batched ? "batched" : "unbatched");
 
                     auto otv = make_shared<runtime::he::HECipherTensorView>(
                         element_type, shape, m_he_backend, batched_out, name);
