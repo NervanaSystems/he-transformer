@@ -121,6 +121,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         for (const descriptor::Input& input : op->get_inputs())
         {
             descriptor::TensorView* tv = input.get_output().get_tensor_view().get();
+            NGRAPH_INFO << "Input shape " << join(input.get_shape(), "x");
             inputs.push_back(tensor_map.at(tv));
         }
 
@@ -129,6 +130,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         vector<shared_ptr<runtime::he::HETensorView>> outputs;
         for (size_t i = 0; i < op->get_output_size(); ++i)
         {
+            NGRAPH_INFO << "Output shape " << join(op->get_outputs()[i].get_shape(), "x");
             descriptor::TensorView* tv = op->get_output_tensor_view(i).get();
             string name = tv->get_tensor().get_name();
             if (!contains_key(tensor_map, tv))
@@ -252,26 +254,32 @@ void runtime::he::HECallFrame::check_cpu_calls(
             dynamic_pointer_cast<runtime::he::HEPlainTensorView>(he_tv);
 
         const element::Type& type = he_tv->get_tensor_view_layout()->get_element_type();
-        auto shape = he_tv->get_shape();
-        size_t num_bytes = type.size() * shape_size(shape);
-        shared_ptr<HostTensorView> tv = make_shared<HostTensorView>(type, shape);
-
         if (cipher_tv != nullptr)
         {
-            num_bytes *= cipher_tv->get_batch_size();
+            auto shape = cipher_tv->get_expanded_shape();
+            size_t num_bytes = type.size() * shape_size(shape);
+
+            NGRAPH_INFO << "Input shape " << join(shape, "x");
             NGRAPH_INFO << "Input batch size " << cipher_tv->get_batch_size();
+
+            shared_ptr<HostTensorView> tv = make_shared<HostTensorView>(type, shape);
             cipher_tv->read(tv->get_data_ptr(), 0, num_bytes);
-            NGRAPH_INFO << "Done readinh input";
+            cpu_inputs.push_back(tv);
+
+            NGRAPH_INFO << "Done reading input\n";
         }
         else if (plain_tv != nullptr)
         {
+            auto shape = he_tv->get_shape();
+            size_t num_bytes = type.size() * shape_size(shape);
+            shared_ptr<HostTensorView> tv = make_shared<HostTensorView>(type, shape);
             plain_tv->read(tv->get_data_ptr(), 0, num_bytes);
+            cpu_inputs.push_back(tv);
         }
         else
         {
             throw ngraph_error("Input neither plain nor cipher tensorview.");
         }
-        cpu_inputs.push_back(tv);
     }
 
     for (shared_ptr<runtime::he::HETensorView> he_tv : outputs)
@@ -281,32 +289,38 @@ void runtime::he::HECallFrame::check_cpu_calls(
         shared_ptr<HEPlainTensorView> plain_tv =
             dynamic_pointer_cast<runtime::he::HEPlainTensorView>(he_tv);
 
+        const element::Type& type = he_tv->get_tensor_view_layout()->get_element_type();
+
         if (cipher_tv != nullptr)
         {
-            NGRAPH_INFO << "Output is cipher";
-            //num_bytes *= cipher_tv->get_batch_size();
-            // NGRAPH_INFO << "Output batch size " << cipher_tv->get_batch_size();
-            //cipher_tv->read(tv->get_data_ptr(), 0, num_bytes);
+            auto shape = cipher_tv->get_expanded_shape();
+            size_t num_bytes = type.size() * shape_size(shape);
+
+            NGRAPH_INFO << "Output shape " << join(shape, "x");
+            NGRAPH_INFO << "Output batch size " << cipher_tv->get_batch_size();
+
+            shared_ptr<HostTensorView> tv = make_shared<HostTensorView>(type, shape);
+            cipher_tv->read(tv->get_data_ptr(), 0, num_bytes);
+            cpu_outputs.push_back(tv);
+
+            NGRAPH_INFO << "Done reading output\n";
         }
         else if (plain_tv != nullptr)
         {
-            NGRAPH_INFO << "Output is plain";
-            // plain_tv->read(plain_tv->get_data_ptr(), 0, num_bytes);
+            auto shape = he_tv->get_shape();
+            size_t num_bytes = type.size() * shape_size(shape);
+            shared_ptr<HostTensorView> tv = make_shared<HostTensorView>(type, shape);
+            plain_tv->read(tv->get_data_ptr(), 0, num_bytes);
+            cpu_outputs.push_back(tv);
         }
         else
         {
             throw ngraph_error("Input neither plain nor cipher tensorview.");
         }
-
-
-        const element::Type& type = he_tv->get_tensor_view_layout()->get_element_type();
-        auto shape = he_tv->get_shape();
-        shared_ptr<HostTensorView> tv = make_shared<HostTensorView>(type, shape);
-        cpu_outputs.push_back(tv);
     }
     NGRAPH_INFO << "Generating CPU calls";
     cpu_call_frame.generate_calls(type, *op, cpu_outputs, cpu_inputs);
-    NGRAPH_INFO << "Generated CPU calls";
+    NGRAPH_INFO << "Generated CPU calls\n";
     const string type_name = type.c_type_string();
 
     // Compare outputs with CPU outputs
@@ -317,30 +331,20 @@ void runtime::he::HECallFrame::check_cpu_calls(
         shared_ptr<runtime::HostTensorView> cpu_out = cpu_outputs[output_ind];
 
         const element::Type& type = he_out->get_tensor_view_layout()->get_element_type();
-        auto shape = he_out->get_shape();
+        auto shape = cpu_out->get_shape();
+        NGRAPH_INFO << "Output shape " << join(shape, "x");
         size_t num_bytes = type.size() * shape_size(shape);
 
-        auto cipher_tv = dynamic_pointer_cast<runtime::he::HECipherTensorView>(he_out);
-        if (cipher_tv != nullptr)
-        {
-            NGRAPH_INFO << "Output " << output_ind << " IS cipher";
-            // assert(cipher_tv != nullptr);
-            //NGRAPH_INFO << "multiply bytes by batch size " << cipher_tv->get_batch_size();
-            num_bytes *= 4; //cipher_tv->get_batch_size();
-        }
-        else
-        {
-            NGRAPH_INFO << "Output " << output_ind << " not cipher";
-        }
-        NGRAPH_INFO << "num_bytes " << num_bytes;
-
-        size_t element_count = he_out->get_element_count();
+        size_t element_count = cpu_out->get_element_count();
+        NGRAPH_INFO << "Element count " << element_count;
         if (type_name == "float")
         {
             vector<float> cpu_out_vec(element_count, 0);
             vector<float> he_out_vec(element_count, 0);
 
+            NGRAPH_INFO << "Reading HE result";
             he_out->read(&he_out_vec[0], 0, num_bytes);
+            NGRAPH_INFO << "Reading CPU result";
             cpu_out->read(&cpu_out_vec[0], 0, num_bytes);
 
             size_t inaccurate_cnt = 0;

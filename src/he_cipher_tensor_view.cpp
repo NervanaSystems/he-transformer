@@ -93,9 +93,6 @@ const Shape runtime::he::HECipherTensorView::get_expanded_shape() const
 
 void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_offset, size_t n)
 {
-    NGRAPH_INFO << "HECTV write";
-    NGRAPH_INFO << "n " << n;
-    NGRAPH_INFO << "m_batch_size " << m_batch_size;
     const element::Type& type = get_tensor_view_layout()->get_element_type();
     size_t type_byte_size = type.size();
     size_t dst_start_index = tensor_offset / type_byte_size;
@@ -184,16 +181,12 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
 
 void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, size_t n) const
 {
-    NGRAPH_INFO << "HECTV read";
-    NGRAPH_INFO << "n " << n;
-    NGRAPH_INFO << "m_batch_size " << m_batch_size;
     check_io_bounds(target, tensor_offset, n / m_batch_size);
     const element::Type& type = get_tensor_view_layout()->get_element_type();
     size_t type_byte_size = type.size();
     size_t src_start_index = tensor_offset / type_byte_size;
     size_t num_elements_per_batch = n / (type_byte_size * m_batch_size);
     size_t num_elements_to_read = n / (type_byte_size * m_batch_size);
-    NGRAPH_INFO << "Reading " << num_elements_to_read << " elements";
     if (num_elements_to_read == 1)
     {
         void* dst_with_offset = (void*)((char*)target);
@@ -223,7 +216,6 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
 #pragma omp parallel for
         for (size_t i = 0; i < num_elements_to_read; ++i)
         {
-            NGRAPH_INFO << "Reading element " << i ;
             void* dst = malloc(type.size() * m_batch_size);
             if (!dst)
             {
@@ -257,9 +249,7 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
                 const void* src = (void*)((char*)dst + j * type.size());
                 memcpy(dst_with_offset, src, type.size());
             }
-            NGRAPH_INFO << "Done reading element " << i;
-            // free(dst);
+            free(dst);
         }
-        NGRAPH_INFO << "Done reading elements";
     }
 }
