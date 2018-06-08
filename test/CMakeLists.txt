@@ -46,18 +46,14 @@ add_custom_command(
 
 # Configure test for HE_SEAL
 set (NGRAPH_TEST_HE_SEAL_SRC
-    # backend_test_HE_SEAL.cpp
-    # autodiff_HE_SEAL.cpp
-    # convolution_test_HE_SEAL.cpp
+    test_convolution_HE_SEAL.cpp
     test_basics_HE_SEAL.cpp
     test_mnist_HE_SEAL.cpp
     )
 
 # Configure test for HE_HEAAN
 set (NGRAPH_TEST_HE_HEAAN_SRC
-    # backend_test_HE_HEAAN.cpp
-    # autodiff_HE_HEAAN.cpp
-    # convolution_test_HE_HEAAN.cpp
+    test_convolution_HE_HEAAN.cpp
     test_basics_HE_HEAAN.cpp
     test_mnist_HE_HEAAN.cpp
     )

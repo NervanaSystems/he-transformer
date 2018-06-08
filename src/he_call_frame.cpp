@@ -66,7 +66,7 @@ runtime::he::HECallFrame::HECallFrame(const shared_ptr<Function>& func,
 bool runtime::he::HECallFrame::is_cpu_check_enabled(const shared_ptr<Node>& op) const
 {
     static unordered_set<string> cpu_check_enabled_ops{
-        "Sum", "Add", "Dot", "Multiply", "Convolution", "AvgPool"};
+        "Sum", "Add", "Dot", "Multiply", "Convolution", "AvgPool", "Reshape"}; // TODO: remove "Reshape"
     return cpu_check_enabled_ops.count(op->description()) != 0;
 }
 
@@ -332,19 +332,15 @@ void runtime::he::HECallFrame::check_cpu_calls(
 
         const element::Type& type = he_out->get_tensor_view_layout()->get_element_type();
         auto shape = cpu_out->get_shape();
-        NGRAPH_INFO << "Output shape " << join(shape, "x");
         size_t num_bytes = type.size() * shape_size(shape);
 
         size_t element_count = cpu_out->get_element_count();
-        NGRAPH_INFO << "Element count " << element_count;
         if (type_name == "float")
         {
             vector<float> cpu_out_vec(element_count, 0);
             vector<float> he_out_vec(element_count, 0);
 
-            NGRAPH_INFO << "Reading HE result";
             he_out->read(&he_out_vec[0], 0, num_bytes);
-            NGRAPH_INFO << "Reading CPU result";
             cpu_out->read(&cpu_out_vec[0], 0, num_bytes);
 
             size_t inaccurate_cnt = 0;
@@ -379,11 +375,6 @@ void runtime::he::HECallFrame::check_cpu_calls(
                     NGRAPH_INFO << "expect " << cpu_out_vec[elem]
                                 << ", actual: " << he_out_vec[elem];
                     correct = false;
-                }
-                if (!correct && elem > 10)
-                {
-                    NGRAPH_INFO << "..." << endl;
-                    break;
                 }
             }
         }
@@ -428,7 +419,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
         if (!correct)
         {
             NGRAPH_INFO << "Inaccurate float computation";
-            //throw ngraph_error("Inaccurate float computation");
+            throw ngraph_error("Inaccurate float computation");
         }
     }
     NGRAPH_INFO << "HE op matches CPU call";

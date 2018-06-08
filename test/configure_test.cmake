@@ -14,9 +14,6 @@
 # limitations under the License.
 # ******************************************************************************
 
-#configure_file(${NGRAPH_TEST_DIR}/backend_test.in.cpp backend_test_${BACKEND_NAME}.cpp)
-# configure_file(${NGRAPH_TEST_DIR}/autodiff.in.cpp autodiff_${BACKEND_NAME}.cpp)
-# configure_file(${NGRAPH_TEST_DIR}/convolution_test.in.cpp convolution_test_${BACKEND_NAME}.cpp)
-# configure_file(${NGRAPH_TEST_DIR}/backend_test.in.cpp backend_test_${BACKEND_NAME}.cpp)
+configure_file(${HE_TRANSFORMER_TEST_DIR}/test_convolution.in.cpp test_convolution_${BACKEND_NAME}.cpp)
 configure_file(${HE_TRANSFORMER_TEST_DIR}/test_basics.in.cpp test_basics_${BACKEND_NAME}.cpp)
 configure_file(${HE_TRANSFORMER_TEST_DIR}/test_mnist.in.cpp test_mnist_${BACKEND_NAME}.cpp)

@@ -15,7 +15,6 @@
 *******************************************************************************/
 
 #include <assert.h>
-#include <complex>
 
 #include "ngraph/ngraph.hpp"
 #include "util/all_close.hpp"
