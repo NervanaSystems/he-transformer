@@ -94,6 +94,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
     // Map output descriptor::tv to runtime::tv
     for (size_t i = 0; i < function->get_output_size(); i++)
     {
+        NGRAPH_INFO << "Special case for Result";
         auto output_op = function->get_output_op(i);
         if (!dynamic_pointer_cast<op::Result>(output_op))
         {
@@ -143,12 +144,14 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                     });
                 if (plain_out)
                 {
-                    auto itv = make_shared<runtime::he::HEPlainTensorView>(
+                    NGRAPH_INFO << "Op " << op->description() << " is plain";
+                    auto otv = make_shared<runtime::he::HEPlainTensorView>(
                         element_type, shape, m_he_backend, name);
-                    tensor_map.insert({tv, itv});
+                    tensor_map.insert({tv, otv});
                 }
                 else
                 {
+                    NGRAPH_INFO << "Op " << op->description() << " is cipher";
                     bool batched_out =
                         any_of(inputs.begin(),
                                inputs.end(),
@@ -164,10 +167,12 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                                    }
                                });
                     any_batched |= batched_out;
+                    NGRAPH_INFO << "Op " << op->description() << " is " <<
+                            (any_batched ? "batched" : "unbatched");
 
-                    auto itv = make_shared<runtime::he::HECipherTensorView>(
+                    auto otv = make_shared<runtime::he::HECipherTensorView>(
                         element_type, shape, m_he_backend, batched_out, name);
-                    tensor_map.insert({tv, itv});
+                    tensor_map.insert({tv, otv});
                 }
             }
             outputs.push_back(tensor_map.at(tv));
@@ -188,7 +193,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         const string op_name = op->description();
 
         // Check result with CPU backend
-        if (is_cpu_check_enabled(op) && !any_batched)
+        if (is_cpu_check_enabled(op)) //&& !any_batched)
         {
             check_cpu_calls(function, base_type, op, outputs, inputs, false);
         }
@@ -254,7 +259,9 @@ void runtime::he::HECallFrame::check_cpu_calls(
         if (cipher_tv != nullptr)
         {
             num_bytes *= cipher_tv->get_batch_size();
+            NGRAPH_INFO << "Input batch size " << cipher_tv->get_batch_size();
             cipher_tv->read(tv->get_data_ptr(), 0, num_bytes);
+            NGRAPH_INFO << "Done readinh input";
         }
         else if (plain_tv != nullptr)
         {
@@ -269,6 +276,29 @@ void runtime::he::HECallFrame::check_cpu_calls(
 
     for (shared_ptr<runtime::he::HETensorView> he_tv : outputs)
     {
+        shared_ptr<HECipherTensorView> cipher_tv =
+            dynamic_pointer_cast<runtime::he::HECipherTensorView>(he_tv);
+        shared_ptr<HEPlainTensorView> plain_tv =
+            dynamic_pointer_cast<runtime::he::HEPlainTensorView>(he_tv);
+
+        if (cipher_tv != nullptr)
+        {
+            NGRAPH_INFO << "Output is cipher";
+            //num_bytes *= cipher_tv->get_batch_size();
+            // NGRAPH_INFO << "Output batch size " << cipher_tv->get_batch_size();
+            //cipher_tv->read(tv->get_data_ptr(), 0, num_bytes);
+        }
+        else if (plain_tv != nullptr)
+        {
+            NGRAPH_INFO << "Output is plain";
+            // plain_tv->read(plain_tv->get_data_ptr(), 0, num_bytes);
+        }
+        else
+        {
+            throw ngraph_error("Input neither plain nor cipher tensorview.");
+        }
+
+
         const element::Type& type = he_tv->get_tensor_view_layout()->get_element_type();
         auto shape = he_tv->get_shape();
         shared_ptr<HostTensorView> tv = make_shared<HostTensorView>(type, shape);
@@ -289,6 +319,20 @@ void runtime::he::HECallFrame::check_cpu_calls(
         const element::Type& type = he_out->get_tensor_view_layout()->get_element_type();
         auto shape = he_out->get_shape();
         size_t num_bytes = type.size() * shape_size(shape);
+
+        auto cipher_tv = dynamic_pointer_cast<runtime::he::HECipherTensorView>(he_out);
+        if (cipher_tv != nullptr)
+        {
+            NGRAPH_INFO << "Output " << output_ind << " IS cipher";
+            // assert(cipher_tv != nullptr);
+            //NGRAPH_INFO << "multiply bytes by batch size " << cipher_tv->get_batch_size();
+            num_bytes *= 4; //cipher_tv->get_batch_size();
+        }
+        else
+        {
+            NGRAPH_INFO << "Output " << output_ind << " not cipher";
+        }
+        NGRAPH_INFO << "num_bytes " << num_bytes;
 
         size_t element_count = he_out->get_element_count();
         if (type_name == "float")
@@ -889,13 +933,15 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         if (arg0_cipher != nullptr && out0_cipher != nullptr)
         {
             size_t output_size = shape_size(res->get_shape());
+            NGRAPH_INFO << "Original Result size " << output_size;
             if (arg0_cipher->is_batched())
             {
+                NGRAPH_INFO << "arg0 batch_size " << arg0_cipher->get_batch_size();
                 output_size /= arg0_cipher->get_batch_size();
+                NGRAPH_INFO << "arg0 batched, so we change result size to " << output_size;
             }
             runtime::he::kernel::result(
                 arg0_cipher->get_elements(), out0_cipher->get_elements(), output_size);
-            // shape_size(res->get_shape()));
         }
         else if (arg0_plain != nullptr && out0_cipher != nullptr)
         {

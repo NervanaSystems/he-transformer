@@ -18,6 +18,7 @@
 #include "he_backend.hpp"
 #include "he_ciphertext.hpp"
 #include "he_plaintext.hpp"
+#include "ngraph/util.hpp" // TODO: remove
 
 using namespace std;
 using namespace ngraph;
@@ -28,6 +29,9 @@ void runtime::he::kernel::reshape(const vector<shared_ptr<HECiphertext>>& arg,
                                   const AxisVector& in_axis_order,
                                   const Shape& out_shape)
 {
+    NGRAPH_INFO << "Reshaping from " << join(in_shape, "x") << " to " << join(out_shape, "x");
+    NGRAPH_INFO << "in axis order " << join(in_axis_order, "x");
+
     // Unfortunately we don't yet have a constructor for CoordinateTransform that lets us pass only source_space_shape
     // and source_axis_order so we have to construct the defaults here.
     Shape in_start_corner(in_shape.size(), 0); // (0,...0)

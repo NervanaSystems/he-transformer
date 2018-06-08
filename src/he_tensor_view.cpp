@@ -14,12 +14,13 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <stack>
+// #include <stack>
 
 #include "he_backend.hpp"
 #include "he_tensor_view.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
 #include "ngraph/descriptor/primary_tensor_view.hpp"
+#include "ngraph/util.hpp"
 
 using namespace std;
 using namespace ngraph;
@@ -49,6 +50,7 @@ runtime::he::HETensorView::HETensorView(const element::Type& element_type,
     {
         m_batch_size = 1;
     }
+    NGRAPH_INFO << "Creating HETV with m_batch_size " << m_batch_size;
     m_he_backend = he_backend;
     m_batched = batched;
 }
@@ -67,7 +69,9 @@ const Shape runtime::he::HETensorView::batch_shape(const Shape& shape,
         {
             throw ngraph_error("Batching only supported along axis 0");
         }
-        Shape ret(shape.begin() + 1, shape.end());
+        Shape ret(shape);
+        ret[batch_axis] = 1;
+        NGRAPH_INFO << "Batching shape " << join(shape, "x") << " to " << join(ret, "x");
 
         return ret;
     }
@@ -85,6 +89,9 @@ void runtime::he::HETensorView::check_io_bounds(const void* source,
     // tensor_offset and n are all in bytes
     if (tensor_offset % type_byte_size != 0 || n % type_byte_size != 0)
     {
+        NGRAPH_INFO << "tensor_offset " << tensor_offset;
+        NGRAPH_INFO << "type_byte_size " << type_byte_size;
+        NGRAPH_INFO << "n " << n;
         throw ngraph_error("tensor_offset and n must be divisible by type_byte_size.");
     }
     // Check out-of-range
