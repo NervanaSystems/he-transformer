@@ -231,8 +231,10 @@ def test_mnist_cnn(FLAGS, network):
             sess.run(tf.global_variables_initializer())
 
             num_test_images=FLAGS.test_image_count
-            x_test=mnist.test.images[:5]
-            y_test=mnist.test.labels[:5]
+            x_test=mnist.test.images[:4]
+            y_test=mnist.test.labels[:4]
+
+            np.savetxt("x_test_4.txt", x_test)
 
             test_accuracy = accuracy.eval(feed_dict={
                 x: x_test,
@@ -321,7 +323,6 @@ def train_mnist_cnn(FLAGS):
                 train_writer.add_summary(summary, i)
 
                 if i % 1000 == 999 or i == train_loops - 1:
-                    print( "Training finished. Running test")
 
                     num_test_images=FLAGS.test_image_count
                     x_test=mnist.test.images[:num_test_images]
@@ -333,6 +334,7 @@ def train_mnist_cnn(FLAGS):
                     print('test accuracy %g' % test_accuracy)
 
                     if i == train_loops - 1:
+                        print( "Training finished. Saving variables")
                         for var in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES):
                             weight = (sess.run([var]))[0].flatten().tolist()
                             filename = (str(var).split())[1].replace('/','_')
@@ -341,7 +343,6 @@ def train_mnist_cnn(FLAGS):
                             if filename not in set(['W_conv1.txt', 'W_conv2.txt', 'W_fc1.txt', 'W_fc2.txt']):
                                 print("saving", filename)
                                 np.savetxt(str(filename), weight)
-                        np.savetxt("x_test.txt", x_test)
 
                         return loss_values,test_accuracy
 
@@ -366,7 +367,6 @@ def squash_layers():
     # Fully connected layer 1 -- after 2 round of downsampling, our 28x28 image
     # is down to 7x7x11 feature maps -- maps this to 100 features.
     W_fc1 = np.loadtxt('fc1_Variable.txt', dtype=np.float32).reshape([7 * 7 * 50, 100])
-    # b_fc1 = np.loadtxt('fc1_b_fc1.txt', dtype=np.float32)
     h_pool2_flat = tf.reshape(h_pool2, [-1, 7 * 7 * 50])
     pre_square = tf.matmul(h_pool2_flat, W_fc1)
 
@@ -385,7 +385,7 @@ def squash_layers():
     print("Squashed layers")
 
 def main(_):
-    train_mnist_cnn(FLAGS)
+    #train_mnist_cnn(FLAGS)
     test_mnist_cnn(FLAGS, 'squash')
     # test_mnist_cnn(FLAGS, 'orig')
 

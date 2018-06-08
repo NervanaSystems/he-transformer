@@ -14,12 +14,11 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <stack>
-
-#include "he_backend.hpp"
 #include "he_tensor_view.hpp"
+#include "he_backend.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
 #include "ngraph/descriptor/primary_tensor_view.hpp"
+#include "ngraph/util.hpp"
 
 using namespace std;
 using namespace ngraph;
@@ -67,7 +66,8 @@ const Shape runtime::he::HETensorView::batch_shape(const Shape& shape,
         {
             throw ngraph_error("Batching only supported along axis 0");
         }
-        Shape ret(shape.begin() + 1, shape.end());
+        Shape ret(shape);
+        ret[batch_axis] = 1;
 
         return ret;
     }

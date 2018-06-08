@@ -185,6 +185,7 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
     size_t src_start_index = tensor_offset / type_byte_size;
     size_t num_elements_per_batch = n / (type_byte_size * m_batch_size);
     size_t num_elements_to_read = n / (type_byte_size * m_batch_size);
+
     if (num_elements_to_read == 1)
     {
         void* dst_with_offset = (void*)((char*)target);
@@ -234,7 +235,6 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
                 shared_ptr<runtime::he::HEPlaintext> p =
                     make_shared<runtime::he::HeaanPlaintextWrapper>();
                 he_heaan_backend->decrypt(p, m_cipher_texts[src_index]);
-
                 he_heaan_backend->decode(dst, p, type, m_batch_size);
             }
             else

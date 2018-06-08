@@ -37,14 +37,14 @@ using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
-NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_5)
+NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_4)
 {
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
         runtime::Backend::create("${BACKEND_NAME}"));
     //auto backend = runtime::Backend::create("INTERPRETER");
 
     NGRAPH_INFO << "Loaded backend";
-    const string filename = "mnist_cryptonets_batch5";
+    const string filename = "mnist_cryptonets_batch_4";
     const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, filename + ".js");
     const string json_string = file_util::read_file_to_string(json_path);
     shared_ptr<Function> f = deserialize(json_string);
@@ -56,7 +56,8 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_5)
     pass_manager.run_passes(f);
     NGRAPH_INFO << "Saved file " << model_file_name;
 
-    vector<float> x = read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "weights/x.txt"));
+    vector<float> x =
+        read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "weights/x_test_4.txt"));
 
     NGRAPH_INFO << "Deserialized graph";
     auto parameters = f->get_parameters();
@@ -66,12 +67,14 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_5)
         auto& shape = parameter->get_shape();
         auto& type = parameter->get_element_type();
         auto parameter_cipher_tv = backend->create_tensor(type, shape, true);
+        // auto parameter_cipher_tv = backend->create_tensor(type, shape);
 
         NGRAPH_INFO << join(shape, "x");
 
-        if (shape == Shape{5, 784})
+        if (shape == Shape{4, 784})
         {
             NGRAPH_INFO << "Copying " << shape_size(shape) << " elements";
+            NGRAPH_INFO << "x is " << x.size() << " elements";
             copy_data(parameter_cipher_tv, x);
             parameter_tvs.push_back(parameter_cipher_tv);
         }
@@ -88,29 +91,33 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_5)
     {
         auto& shape = result->get_shape();
         auto& type = result->get_element_type();
-        result_tvs.push_back(backend->create_tensor(type, shape));
+        NGRAPH_INFO << "Creating batched result tensor shape ";
+        for (auto elem : shape)
+        {
+            NGRAPH_INFO << elem;
+        }
+        result_tvs.push_back(backend->create_tensor(type, shape, true));
+        /// result_tvs.push_back(backend->create_tensor(type, shape));
     }
 
     NGRAPH_INFO << "calling function";
     backend->call(f, result_tvs, parameter_tvs);
 
-    auto result = read_vector<float>(result_tvs[0]);
+    auto result = generalized_read_vector<float>(result_tvs[0]);
     for (auto elem : result)
     {
-        cout << elem << " ";
+        cout << elem << ", ";
     }
     cout << endl;
 
     EXPECT_TRUE(test::all_close(
-        vector<float>{0.299992, -4.04762,  0.647196,   3.71598,    -3.80518,  1.47072,   -4.65358,
-                      7.88541,  2.05476,   3.228,      8.78182,    -6.43103,  19.964,    9.60387,
-                      -14.3481, 8.3267,    11.5166,    -13.9131,   9.84772,   -5.82788,  -0.0470186,
-                      1.04767,  0.143309,  -0.0701391, -0.0851098, -0.336078, 0.125469,  -0.146274,
-                      0.286541, 0.0724289, 20.93,      -15.5895,   12.238,    8.23788,   -12.9543,
-                      9.64842,  10.8617,   -4.46871,   11.5456,    4.47025,   0.414631,  -2.59835,
-                      0.993939, 0.567376,  4.02877,    -0.560472,  2.5502,    -0.486873, 0.331346,
-                      2.3114},
-        read_vector<float>(result_tvs[0]),
+        vector<float>{-3.94503, -4.5004,  5.37272,  11.0719,  -4.29294, -35.4196, -43.7368,
+                      40.5139,  4.8088,   7.6214,   -4.29444, 15.1135,  91.2844,  -9.49516,
+                      -2.64188, -77.2798, 8.05845,  13.7273,  5.86995,  -9.33487, -1.48271,
+                      14.8887,  -2.3886,  -17.146,  -1.10124, -11.3262, -2.89965, 3.51735,
+                      1.38818,  -2.88939, 56.011,   -51.4716, -4.48169, 0.873144, -19.2347,
+                      13.2377,  21.3702,  -12.4109, -13.0373, 7.33236},
+        generalized_read_vector<float>(result_tvs[0]),
         1e-4f));
 }
 

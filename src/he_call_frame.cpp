@@ -143,9 +143,9 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                     });
                 if (plain_out)
                 {
-                    auto itv = make_shared<runtime::he::HEPlainTensorView>(
+                    auto otv = make_shared<runtime::he::HEPlainTensorView>(
                         element_type, shape, m_he_backend, name);
-                    tensor_map.insert({tv, itv});
+                    tensor_map.insert({tv, otv});
                 }
                 else
                 {
@@ -165,9 +165,9 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                                });
                     any_batched |= batched_out;
 
-                    auto itv = make_shared<runtime::he::HECipherTensorView>(
+                    auto otv = make_shared<runtime::he::HECipherTensorView>(
                         element_type, shape, m_he_backend, batched_out, name);
-                    tensor_map.insert({tv, itv});
+                    tensor_map.insert({tv, otv});
                 }
             }
             outputs.push_back(tensor_map.at(tv));
@@ -188,7 +188,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         const string op_name = op->description();
 
         // Check result with CPU backend
-        if (is_cpu_check_enabled(op) && !any_batched)
+        if (is_cpu_check_enabled(op)) //&& !any_batched)
         {
             check_cpu_calls(function, base_type, op, outputs, inputs, false);
         }
@@ -247,36 +247,63 @@ void runtime::he::HECallFrame::check_cpu_calls(
             dynamic_pointer_cast<runtime::he::HEPlainTensorView>(he_tv);
 
         const element::Type& type = he_tv->get_tensor_view_layout()->get_element_type();
-        auto shape = he_tv->get_shape();
-        size_t num_bytes = type.size() * shape_size(shape);
-        shared_ptr<HostTensorView> tv = make_shared<HostTensorView>(type, shape);
-
         if (cipher_tv != nullptr)
         {
-            num_bytes *= cipher_tv->get_batch_size();
+            auto shape = cipher_tv->get_expanded_shape();
+            size_t num_bytes = type.size() * shape_size(shape);
+
+            shared_ptr<HostTensorView> tv = make_shared<HostTensorView>(type, shape);
             cipher_tv->read(tv->get_data_ptr(), 0, num_bytes);
+            cpu_inputs.push_back(tv);
         }
         else if (plain_tv != nullptr)
         {
+            auto shape = he_tv->get_shape();
+            size_t num_bytes = type.size() * shape_size(shape);
+            shared_ptr<HostTensorView> tv = make_shared<HostTensorView>(type, shape);
             plain_tv->read(tv->get_data_ptr(), 0, num_bytes);
+            cpu_inputs.push_back(tv);
         }
         else
         {
             throw ngraph_error("Input neither plain nor cipher tensorview.");
         }
-        cpu_inputs.push_back(tv);
     }
 
     for (shared_ptr<runtime::he::HETensorView> he_tv : outputs)
     {
+        shared_ptr<HECipherTensorView> cipher_tv =
+            dynamic_pointer_cast<runtime::he::HECipherTensorView>(he_tv);
+        shared_ptr<HEPlainTensorView> plain_tv =
+            dynamic_pointer_cast<runtime::he::HEPlainTensorView>(he_tv);
+
         const element::Type& type = he_tv->get_tensor_view_layout()->get_element_type();
-        auto shape = he_tv->get_shape();
-        shared_ptr<HostTensorView> tv = make_shared<HostTensorView>(type, shape);
-        cpu_outputs.push_back(tv);
+
+        if (cipher_tv != nullptr)
+        {
+            auto shape = cipher_tv->get_expanded_shape();
+            size_t num_bytes = type.size() * shape_size(shape);
+
+            shared_ptr<HostTensorView> tv = make_shared<HostTensorView>(type, shape);
+            cipher_tv->read(tv->get_data_ptr(), 0, num_bytes);
+            cpu_outputs.push_back(tv);
+        }
+        else if (plain_tv != nullptr)
+        {
+            auto shape = he_tv->get_shape();
+            size_t num_bytes = type.size() * shape_size(shape);
+            shared_ptr<HostTensorView> tv = make_shared<HostTensorView>(type, shape);
+            plain_tv->read(tv->get_data_ptr(), 0, num_bytes);
+            cpu_outputs.push_back(tv);
+        }
+        else
+        {
+            throw ngraph_error("Input neither plain nor cipher tensorview.");
+        }
     }
     NGRAPH_INFO << "Generating CPU calls";
     cpu_call_frame.generate_calls(type, *op, cpu_outputs, cpu_inputs);
-    NGRAPH_INFO << "Generated CPU calls";
+    NGRAPH_INFO << "Generated CPU calls\n";
     const string type_name = type.c_type_string();
 
     // Compare outputs with CPU outputs
@@ -287,10 +314,10 @@ void runtime::he::HECallFrame::check_cpu_calls(
         shared_ptr<runtime::HostTensorView> cpu_out = cpu_outputs[output_ind];
 
         const element::Type& type = he_out->get_tensor_view_layout()->get_element_type();
-        auto shape = he_out->get_shape();
+        auto shape = cpu_out->get_shape();
         size_t num_bytes = type.size() * shape_size(shape);
 
-        size_t element_count = he_out->get_element_count();
+        size_t element_count = cpu_out->get_element_count();
         if (type_name == "float")
         {
             vector<float> cpu_out_vec(element_count, 0);
@@ -331,11 +358,6 @@ void runtime::he::HECallFrame::check_cpu_calls(
                     NGRAPH_INFO << "expect " << cpu_out_vec[elem]
                                 << ", actual: " << he_out_vec[elem];
                     correct = false;
-                }
-                if (!correct && elem > 10)
-                {
-                    NGRAPH_INFO << "..." << endl;
-                    break;
                 }
             }
         }
@@ -380,7 +402,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
         if (!correct)
         {
             NGRAPH_INFO << "Inaccurate float computation";
-            //throw ngraph_error("Inaccurate float computation");
+            throw ngraph_error("Inaccurate float computation");
         }
     }
     NGRAPH_INFO << "HE op matches CPU call";
@@ -895,7 +917,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
             }
             runtime::he::kernel::result(
                 arg0_cipher->get_elements(), out0_cipher->get_elements(), output_size);
-            // shape_size(res->get_shape()));
         }
         else if (arg0_plain != nullptr && out0_cipher != nullptr)
         {
