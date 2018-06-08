@@ -37,7 +37,7 @@ using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
-NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_5)
+NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_4)
 {
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
         runtime::Backend::create("${BACKEND_NAME}"));
