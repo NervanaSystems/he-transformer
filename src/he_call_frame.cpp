@@ -719,6 +719,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
 
         if (arg0_cipher != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
+            NGRAPH_INFO << "Dot cipher cipher => cipher";
             runtime::he::kernel::dot(arg0_cipher->get_elements(),
                                      arg1_cipher->get_elements(),
                                      out0_cipher->get_elements(),
@@ -731,6 +732,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         }
         else if (arg0_cipher != nullptr && arg1_plain != nullptr && out0_cipher != nullptr)
         {
+            NGRAPH_INFO << "Dot cipher plain => cipher";
             runtime::he::kernel::dot(arg0_cipher->get_elements(),
                                      arg1_plain->get_elements(),
                                      out0_cipher->get_elements(),
@@ -743,6 +745,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         }
         else if (arg0_plain != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
+            NGRAPH_INFO << "Dot plain cipher => cipher";
             runtime::he::kernel::dot(arg0_plain->get_elements(),
                                      arg1_cipher->get_elements(),
                                      out0_cipher->get_elements(),
@@ -755,6 +758,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         }
         else if (arg0_plain != nullptr && arg1_plain != nullptr && out0_plain != nullptr)
         {
+            NGRAPH_INFO << "Dot plain plain => cipher";
             runtime::he::kernel::dot(arg0_plain->get_elements(),
                                      arg1_plain->get_elements(),
                                      out0_plain->get_elements(),

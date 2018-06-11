@@ -27,8 +27,10 @@ void runtime::he::kernel::heaan::scalar_multiply(
     const element::Type& type,
     const shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
 {
+    NGRAPH_INFO << "Scalar multiply cipher cipher";
     out->m_ciphertext =
         he_heaan_backend->get_scheme()->mult(arg0->m_ciphertext, arg1->m_ciphertext);
+    //TODO: reScaleByAndEqual?
 }
 
 void runtime::he::kernel::heaan::scalar_multiply(
@@ -39,8 +41,36 @@ void runtime::he::kernel::heaan::scalar_multiply(
     const shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
 {
     const string type_name = type.c_type_string();
+    NGRAPH_INFO << "Scalar multiply cipher plain";
+    NGRAPH_INFO << "arg1->m_plaintexts.size() " << arg1->m_plaintexts.size();
+    vector<double> tmp{arg1->m_plaintexts[0], arg1->m_plaintexts[0]};
+    NGRAPH_INFO << "Plaintext: " << tmp[0] << " " << tmp[1];
+
+    auto tmp1_plain = he_heaan_backend->create_valued_plaintext(99, type);
+    he_heaan_backend->decrypt(tmp1_plain, arg0);
+
+    auto tmp1 = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(tmp1_plain);
+    assert(tmp1 != nullptr);
+
+    NGRAPH_INFO << "arg0[0] " << tmp1->m_plaintexts[0];
+    NGRAPH_INFO << "arg0[1] " << tmp1->m_plaintexts[1];
+
     out->m_ciphertext = he_heaan_backend->get_scheme()->multByConstVec(
-        arg0->m_ciphertext, arg1->m_plaintexts, he_heaan_backend->get_precision());
+        arg0->m_ciphertext, tmp, he_heaan_backend->get_precision());
+
+    NGRAPH_INFO << "precision " << he_heaan_backend->get_precision();
+
+    float val_decoded;
+    auto tmp_plain = he_heaan_backend->create_valued_plaintext(99, type);
+    he_heaan_backend->decrypt(tmp_plain, out);
+
+    auto tmp2 = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(tmp_plain);
+    assert(tmp2 != nullptr);
+
+    NGRAPH_INFO << "result[0] " << tmp2->m_plaintexts[0];
+    NGRAPH_INFO << "result[1] " << tmp2->m_plaintexts[1];
+
+    //TODO: reScaleByAndEqual?
 }
 
 void runtime::he::kernel::heaan::scalar_multiply(

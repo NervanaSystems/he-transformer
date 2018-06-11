@@ -29,6 +29,7 @@ void runtime::he::kernel::heaan::scalar_add(
     const element::Type& type,
     const shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
 {
+    NGRAPH_INFO << "heaan Scalar add Cipher Cipher";
     if (out == arg0) // TOOD: Discover why this is needed? (dot.cpp needs this)
     {
         out->m_ciphertext =
@@ -84,6 +85,7 @@ void runtime::he::kernel::heaan::scalar_add(
     const element::Type& type,
     const shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
 {
+    NGRAPH_INFO << "heaan Scalar add Cipher Plain";
     out->m_ciphertext =
         he_heaan_backend->get_scheme()->addConst(arg0->m_ciphertext, arg1->m_plaintexts[0]);
 }

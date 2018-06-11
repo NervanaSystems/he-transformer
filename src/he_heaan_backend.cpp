@@ -91,6 +91,7 @@ void runtime::he::he_heaan::HEHeaanBackend::assert_valid_heaan_parameter(
     static const int depth = 4; // TODO: find depth dynamically for computation
 
     double security = 3.6 * (1 << hp->m_poly_modulus) / (depth + hp->m_plain_modulus) - 110.;
+    // TODO: check this matches with https://bitbucket.org/malb/lwe-estimator
 
     if (security < 128)
     {
@@ -314,7 +315,7 @@ void runtime::he::he_heaan::HEHeaanBackend::decode(void* output,
 #pragma omp parallel for
             for (size_t i = 0; i < count; ++i)
             {
-                double x = round(heaan_input->m_plaintexts[i]);
+                double x = heaan_input->m_plaintexts[i];
                 memcpy((char*)output + i * type.size(), &x, type.size());
             }
         }

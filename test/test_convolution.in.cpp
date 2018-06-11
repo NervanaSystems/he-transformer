@@ -54,7 +54,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2image_batch)
             2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
             2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0
             });
-    auto b = backend->create_tensor(element::f32, shape_b, true);
+    auto b = backend->create_plain_tensor(element::f32, shape_b);
     copy_data(b, vector<float>{
             0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5
             });

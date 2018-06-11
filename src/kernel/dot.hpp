@@ -108,6 +108,7 @@ void ngraph::runtime::he::kernel::dot_template(const vector<shared_ptr<S>>& arg0
     {
         throw ngraph_error("Dot he_backend neither heaan nor seal;");
     }
+    NGRAPH_INFO << "Dot template";
 
     // Get the sizes of the dot axes. It's easiest to pull them from arg1 because they're
     // right up front.
@@ -155,9 +156,6 @@ void ngraph::runtime::he::kernel::dot_template(const vector<shared_ptr<S>>& arg0
     for (size_t global_projected_idx = 0; global_projected_idx < global_projected_size;
          ++global_projected_idx)
     {
-        // Init thread-local memory pool for each thread
-        // seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
-
         // Compute outer and inner index
         size_t arg0_projected_idx = global_projected_idx / arg1_projected_size;
         size_t arg1_projected_idx = global_projected_idx % arg1_projected_size;
@@ -193,8 +191,6 @@ void ngraph::runtime::he::kernel::dot_template(const vector<shared_ptr<S>>& arg0
         else if (he_heaan_backend)
         {
             sum = he_heaan_backend->create_valued_ciphertext(0, type);
-            auto tmp = dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(sum);
-            assert(tmp != nullptr);
         }
 
         size_t out_index = output_transform.index(out_coord);
