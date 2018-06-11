@@ -21,8 +21,8 @@
 #include <string>
 #include <vector>
 
-#include "ngraph/file_util.hpp"
 #include "ngraph/cpio.hpp"
+#include "ngraph/file_util.hpp"
 #include "ngraph/graph_util.hpp"
 #include "ngraph/log.hpp"
 #include "ngraph/ngraph.hpp"
@@ -76,7 +76,7 @@ float get_accuracy(const vector<float>& pre_sigmoid, const vector<float>& y)
     size_t num_data = pre_sigmoid.size() / 10;
 
     size_t correct = 0;
-    for(size_t i = 0; i < num_data; ++i)
+    for (size_t i = 0; i < num_data; ++i)
     {
         vector<float> sub_vec(pre_sigmoid.begin() + i * 10, pre_sigmoid.begin() + (i + 1) * 10);
         auto minmax = minmax_element(sub_vec.begin(), sub_vec.end());
@@ -96,7 +96,7 @@ vector<float> read_binary_constant(const string filename, size_t num_elements)
     vector<float> values(num_elements);
     infile.open(filename, ios::in | ios::binary);
 
-    infile.read(reinterpret_cast<char*>(&values[0]), num_elements*sizeof(float));
+    infile.read(reinterpret_cast<char*>(&values[0]), num_elements * sizeof(float));
     infile.close();
     return values;
 }
@@ -104,7 +104,7 @@ vector<float> read_binary_constant(const string filename, size_t num_elements)
 void write_binary_constant(const vector<float>& values, const string filename)
 {
     ofstream outfile(filename, ios::out | ios::binary);
-    outfile.write(reinterpret_cast<const char*>(&values[0]), values.size()*sizeof(float));
+    outfile.write(reinterpret_cast<const char*>(&values[0]), values.size() * sizeof(float));
     outfile.close();
 }
 

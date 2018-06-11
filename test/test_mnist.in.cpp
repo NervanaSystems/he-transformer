@@ -122,9 +122,9 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_batch)
     if ("${BACKEND_NAME}" == "INTERPRETER")
     {
         write_binary_constant(
-                result,
-                file_util::path_join(HE_SERIALIZED_ZOO,
-                    "weights/cpu_result_" + to_string(batch_size) + ".bin"));
+            result,
+            file_util::path_join(HE_SERIALIZED_ZOO,
+                                 "weights/cpu_result_" + to_string(batch_size) + ".bin"));
     }
 
     float accuracy = get_accuracy(result, y);
