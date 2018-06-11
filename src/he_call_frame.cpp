@@ -164,6 +164,8 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                                    }
                                });
                     any_batched |= batched_out;
+                    NGRAPH_INFO << "op " << op->description();
+                    NGRAPH_INFO << "Batched out? " << batched_out;
 
                     auto otv = make_shared<runtime::he::HECipherTensorView>(
                         element_type, shape, m_he_backend, batched_out, name);
@@ -716,6 +718,11 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         shared_ptr<op::Dot> dot = dynamic_pointer_cast<op::Dot>(node);
         NGRAPH_INFO << join(args[0]->get_shape(), "x") << " dot "
                     << join(args[1]->get_shape(), "x");
+        size_t batch_size = 1;
+        if (out0_cipher != nullptr)
+        {
+            batch_size = out0_cipher->get_batch_size();
+        }
 
         if (arg0_cipher != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
@@ -728,6 +735,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                      out0_cipher->get_shape(),
                                      dot->get_reduction_axes_count(),
                                      type,
+                                     batch_size,
                                      m_he_backend);
         }
         else if (arg0_cipher != nullptr && arg1_plain != nullptr && out0_cipher != nullptr)
@@ -741,6 +749,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                      out0_cipher->get_shape(),
                                      dot->get_reduction_axes_count(),
                                      type,
+                                     batch_size,
                                      m_he_backend);
         }
         else if (arg0_plain != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
@@ -754,11 +763,12 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                      out0_cipher->get_shape(),
                                      dot->get_reduction_axes_count(),
                                      type,
+                                     batch_size,
                                      m_he_backend);
         }
         else if (arg0_plain != nullptr && arg1_plain != nullptr && out0_plain != nullptr)
         {
-            NGRAPH_INFO << "Dot plain plain => cipher";
+            NGRAPH_INFO << "Dot plain plain => plain";
             runtime::he::kernel::dot(arg0_plain->get_elements(),
                                      arg1_plain->get_elements(),
                                      out0_plain->get_elements(),

@@ -139,21 +139,30 @@ shared_ptr<runtime::TensorView>
 
 shared_ptr<runtime::he::HECiphertext>
     runtime::he::he_heaan::HEHeaanBackend::create_valued_ciphertext(
-        float value, const element::Type& element_type) const
+        float value, const element::Type& element_type, size_t batch_size) const
 {
     auto ciphertext =
-        dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(create_empty_ciphertext());
+        dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(create_empty_ciphertext(batch_size));
 
-    ciphertext->m_ciphertext =
+    if (batch_size == 1)
+    {
+        ciphertext->m_ciphertext =
         m_scheme->encryptSingle((double)value, get_precision(), m_context->logQ);
+    }
+    else
+    {
+        vector<double> values(batch_size, (double)value);
+        ciphertext->m_ciphertext =
+            m_scheme->encrypt(values, get_precision(), m_context->logQ);
+    }
 
     return ciphertext;
 }
 
 shared_ptr<runtime::he::HECiphertext>
-    runtime::he::he_heaan::HEHeaanBackend::create_empty_ciphertext() const
+    runtime::he::he_heaan::HEHeaanBackend::create_empty_ciphertext(size_t batch_size) const
 {
-    return make_shared<runtime::he::HeaanCiphertextWrapper>();
+    return make_shared<runtime::he::HeaanCiphertextWrapper>(batch_size);
 }
 
 shared_ptr<runtime::he::HEPlaintext> runtime::he::he_heaan::HEHeaanBackend::create_valued_plaintext(
@@ -366,6 +375,7 @@ void runtime::he::he_heaan::HEHeaanBackend::decrypt(
     if (heaan_output != nullptr && heaan_input != nullptr)
     {
         size_t batch_count = heaan_input->m_count;
+        NGRAPH_INFO << "decrypting batch count " << batch_count;
         if (batch_count == 1)
         {
             heaan_output->m_plaintexts = {

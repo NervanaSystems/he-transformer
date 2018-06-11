@@ -51,6 +51,7 @@ runtime::he::HECipherTensorView::HECipherTensorView(const element::Type& element
         else if (auto he_heaan_backend =
                      dynamic_pointer_cast<he_heaan::HEHeaanBackend>(m_he_backend))
         {
+            NGRAPH_INFO << "Creating HECTV with batch size " << m_batch_size;
             m_cipher_texts[i] = make_shared<runtime::he::HeaanCiphertextWrapper>(m_batch_size);
         }
         else
