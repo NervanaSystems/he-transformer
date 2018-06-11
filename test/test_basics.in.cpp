@@ -154,6 +154,32 @@ NGRAPH_TEST(${BACKEND_NAME}, ab_batch)
               generalized_read_vector<float>(t_result));
 }
 
+NGRAPH_TEST(${BACKEND_NAME}, ab_batch2)
+{
+    auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
+            runtime::Backend::create("${BACKEND_NAME}"));
+
+    Shape shape_a{2, 3};
+    Shape shape_b{3};
+    Shape shape_r{2, 3};
+    auto a = make_shared<op::Parameter>(element::f32, shape_a);
+    auto b = make_shared<op::Parameter>(element::f32, shape_b);
+    auto t = make_shared<op::Dot>(a, b);
+
+    auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+
+    // Create some tensors for input/output
+    auto t_a = backend->create_tensor(element::f32, shape_a, true);
+    auto t_b = backend->create_tensor(element::f32, shape_b);
+    auto t_result = backend->create_tensor(element::f32, shape_r, true);
+
+    copy_data(t_a, vector<float>{1, 2, 3, 4, 5, 6});
+    copy_data(t_b, vector<float>{1, 2, 3});
+    backend->call(f, {t_result}, {t_a, t_b});
+    EXPECT_EQ((vector<float>{13, 28, 45, 64, 85, 108, 133, 160, 189, 220, 253, 288}),
+            generalized_read_vector<float>(t_result));
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, ab)
 {
     auto backend = runtime::Backend::create("${BACKEND_NAME}"); // TODO: move to util cast function

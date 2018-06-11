@@ -85,11 +85,18 @@ void runtime::he::HETensorView::check_io_bounds(const void* source,
     // tensor_offset and n are all in bytes
     if (tensor_offset % type_byte_size != 0 || n % type_byte_size != 0)
     {
+        NGRAPH_INFO << "tensor_offset " << tensor_offset;
+        NGRAPH_INFO << "type_byte_size " << type_byte_size;
+        NGRAPH_INFO << "n " << n;
         throw ngraph_error("tensor_offset and n must be divisible by type_byte_size.");
     }
     // Check out-of-range
     if ((tensor_offset + n) / type_byte_size > get_element_count())
     {
+        NGRAPH_INFO << "tensor_offset " << tensor_offset;
+        NGRAPH_INFO << "n " << n;
+        NGRAPH_INFO << "type_byte_size " << type_byte_size;
+        NGRAPH_INFO << "get_element_count() " << get_element_count();
         throw out_of_range("I/O access past end of tensor");
     }
 }

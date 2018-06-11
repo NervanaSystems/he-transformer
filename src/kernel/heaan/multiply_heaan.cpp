@@ -39,8 +39,8 @@ void runtime::he::kernel::heaan::scalar_multiply(
     const shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
 {
     const string type_name = type.c_type_string();
-    out->m_ciphertext = he_heaan_backend->get_scheme()->multByConst(
-        arg0->m_ciphertext, arg1->m_plaintexts[0], he_heaan_backend->get_precision());
+    out->m_ciphertext = he_heaan_backend->get_scheme()->multByConstVec(
+        arg0->m_ciphertext, arg1->m_plaintexts, he_heaan_backend->get_precision());
 }
 
 void runtime::he::kernel::heaan::scalar_multiply(

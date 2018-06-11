@@ -22,7 +22,7 @@ set(HEAAN_SOURCE_DIR ${HEAAN_PREFIX}/src/ext_heaan)
 ExternalProject_Add(
     ext_heaan
     GIT_REPOSITORY https://github.com/NervanaSystems/HEAAN.git
-    GIT_TAG master
+    GIT_TAG fboemer/clean-up3
     PREFIX ${HEAAN_PREFIX}
     # UPDATE_COMMAND ""
     CMAKE_ARGS

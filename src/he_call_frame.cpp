@@ -333,7 +333,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
                 {
                     if (inaccurate_cnt < 10)
                     {
-                        NGRAPH_INFO << "expect " << cpu_out_vec[elem]
+                        NGRAPH_INFO << "element " << elem << ": expect " << cpu_out_vec[elem]
                                     << ", actual: " << he_out_vec[elem];
                     }
                     correct = false;
