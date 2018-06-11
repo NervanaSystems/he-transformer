@@ -37,7 +37,7 @@ using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
-NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_1)
+NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_batch)
 {
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
         runtime::Backend::create("${BACKEND_NAME}"));
@@ -80,7 +80,7 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_1)
         auto& shape = parameter->get_shape();
         auto& type = parameter->get_element_type();
         auto parameter_cipher_tv = backend->create_tensor(type, shape, true);
-        // auto parameter_cipher_tv = backend->create_tensor(type, shape);
+        // auto parameter_cipher_tv = backend->create_tensor(type, shape); // Uncomment for INTERPRETER backend
 
         NGRAPH_INFO << join(shape, "x");
 
@@ -110,7 +110,7 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_1)
             NGRAPH_INFO << elem;
         }
 
-        //result_tvs.push_back(backend->create_tensor(type, shape));
+        //result_tvs.push_back(backend->create_tensor(type, shape)); // Uncomment for interpreter backend
         result_tvs.push_back(backend->create_tensor(type, shape, true));
     }
 
@@ -127,8 +127,7 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_1)
                     "weights/cpu_result_" + to_string(batch_size) + ".bin"));
     }
 
-    float accuracy = get_accuracy(cpu_result, y);
-    // float accuracy = get_accuracy(result, y);
+    float accuracy = get_accuracy(result, y);
     NGRAPH_INFO << "Accuracy " << accuracy;
 
     // 1e-3f, 1e-3f works
