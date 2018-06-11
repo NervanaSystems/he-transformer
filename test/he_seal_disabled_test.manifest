@@ -168,7 +168,7 @@ min_trivial
 min_trivial_5d
 min_vector_zero
 mkldnn_layouts
-mnist_cryptonets_5
+mnist_cryptonets_batch_4
 not
 notequal
 numeric_double_inf
