@@ -43,7 +43,7 @@ void runtime::he::kernel::heaan::scalar_multiply(
 
     // Perform multiplication
     out->m_ciphertext = he_heaan_backend->get_scheme()->multByConstVec(
-            arg0->m_ciphertext, arg1->m_plaintexts, he_heaan_backend->get_precision());
+        arg0->m_ciphertext, arg1->m_plaintexts, he_heaan_backend->get_precision());
 
     //TODO: reScaleByAndEqual in relinearize??
 }

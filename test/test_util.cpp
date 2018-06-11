@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "ngraph/file_util.hpp"
+#include "ngraph/cpio.hpp"
 #include "ngraph/graph_util.hpp"
 #include "ngraph/log.hpp"
 #include "ngraph/ngraph.hpp"
@@ -67,6 +68,44 @@ vector<float> read_constant(const string filename)
         res.push_back(atof(constant.c_str()));
     }
     return res;
+}
+
+float get_accuracy(const vector<float>& pre_sigmoid, const vector<float>& y)
+{
+    assert(pre_sigmoid.size() % 10 == 0);
+    size_t num_data = pre_sigmoid.size() / 10;
+
+    size_t correct = 0;
+    for(size_t i = 0; i < num_data; ++i)
+    {
+        auto minmax = minmax_element (pre_sigmoid.begin() + i * 10, pre_sigmoid.end() + (i + 1) * 10);
+        size_t prediction = minmax.first - pre_sigmoid.begin();
+
+        if (y[10 * i + prediction == 1])
+        {
+            correct++;
+        }
+    }
+    return correct / float(num_data);
+
+}
+
+vector<float> read_binary_constant(const string filename, size_t num_elements)
+{
+    ifstream infile;
+    vector<float> values(num_elements);
+    infile.open(filename, ios::in | ios::binary);
+
+    infile.read(reinterpret_cast<char*>(&values[0]), num_elements*sizeof(float));
+    infile.close();
+    return values;
+}
+
+void write_binary_constant(const vector<float>& values, const string filename)
+{
+    ofstream outfile(filename, ios::out | ios::binary);
+    outfile.write(reinterpret_cast<const char*>(&values[0]), values.size()*sizeof(float));
+    outfile.close();
 }
 
 vector<tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,

@@ -141,19 +141,18 @@ shared_ptr<runtime::he::HECiphertext>
     runtime::he::he_heaan::HEHeaanBackend::create_valued_ciphertext(
         float value, const element::Type& element_type, size_t batch_size) const
 {
-    auto ciphertext =
-        dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(create_empty_ciphertext(batch_size));
+    auto ciphertext = dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(
+        create_empty_ciphertext(batch_size));
 
     if (batch_size == 1)
     {
         ciphertext->m_ciphertext =
-        m_scheme->encryptSingle((double)value, get_precision(), m_context->logQ);
+            m_scheme->encryptSingle((double)value, get_precision(), m_context->logQ);
     }
     else
     {
         vector<double> values(batch_size, (double)value);
-        ciphertext->m_ciphertext =
-            m_scheme->encrypt(values, get_precision(), m_context->logQ);
+        ciphertext->m_ciphertext = m_scheme->encrypt(values, get_precision(), m_context->logQ);
     }
 
     return ciphertext;

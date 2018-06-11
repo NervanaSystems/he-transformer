@@ -42,8 +42,16 @@ void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HECiphertext>
                               size_t batch_size,
                               const shared_ptr<runtime::he::HEBackend>& he_backend)
 {
-    dot_template(
-        arg0, arg1, out, arg0_shape, arg1_shape, out_shape, reduction_axes_count, type, batch_size, he_backend);
+    dot_template(arg0,
+                 arg1,
+                 out,
+                 arg0_shape,
+                 arg1_shape,
+                 out_shape,
+                 reduction_axes_count,
+                 type,
+                 batch_size,
+                 he_backend);
 }
 
 void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
@@ -57,8 +65,16 @@ void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HECiphertext>
                               size_t batch_size,
                               const shared_ptr<runtime::he::HEBackend>& he_backend)
 {
-    dot_template(
-        arg0, arg1, out, arg0_shape, arg1_shape, out_shape, reduction_axes_count, type, batch_size, he_backend);
+    dot_template(arg0,
+                 arg1,
+                 out,
+                 arg0_shape,
+                 arg1_shape,
+                 out_shape,
+                 reduction_axes_count,
+                 type,
+                 batch_size,
+                 he_backend);
 }
 
 void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg0,
@@ -72,8 +88,16 @@ void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HEPlaintext>>
                               size_t batch_size,
                               const shared_ptr<runtime::he::HEBackend>& he_backend)
 {
-    dot_template(
-        arg0, arg1, out, arg0_shape, arg1_shape, out_shape, reduction_axes_count, type, batch_size, he_backend);
+    dot_template(arg0,
+                 arg1,
+                 out,
+                 arg0_shape,
+                 arg1_shape,
+                 out_shape,
+                 reduction_axes_count,
+                 type,
+                 batch_size,
+                 he_backend);
 }
 
 // TODO: merge with template dot

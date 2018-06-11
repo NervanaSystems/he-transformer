@@ -41,9 +41,9 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_1)
 {
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
         runtime::Backend::create("${BACKEND_NAME}"));
-    //auto backend = runtime::Backend::create("INTERPRETER");
+    // auto backend = runtime::Backend::create("INTERPRETER");
 
-    size_t batch_size = 4;
+    size_t batch_size = 1024;
 
     NGRAPH_INFO << "Loaded backend";
     const string filename = "mnist_cryptonets_batch_" + to_string(batch_size);
@@ -58,8 +58,19 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_1)
     pass_manager.run_passes(f);
     NGRAPH_INFO << "Saved file " << model_file_name;
 
-    vector<float> x =
-        read_constant(file_util::path_join(HE_SERIALIZED_ZOO, "weights/x_test_" + to_string(batch_size) + ".txt"));
+    vector<float> x = read_binary_constant(
+        file_util::path_join(HE_SERIALIZED_ZOO, "weights/x_test_" + to_string(batch_size) + ".bin"),
+        batch_size * 784);
+    vector<float> y = read_binary_constant(
+        file_util::path_join(HE_SERIALIZED_ZOO, "weights/y_test_" + to_string(batch_size) + ".bin"),
+        batch_size * 10);
+    vector<float> cpu_result = read_binary_constant(
+        file_util::path_join(HE_SERIALIZED_ZOO,
+                             "weights/cpu_result_" + to_string(batch_size) + ".bin"),
+        batch_size * 10);
+    NGRAPH_INFO << "cpu_result size " << cpu_result.size();
+    NGRAPH_INFO << "x size " << x.size();
+    NGRAPH_INFO << "y size " << y.size();
 
     NGRAPH_INFO << "Deserialized graph";
     auto parameters = f->get_parameters();
@@ -69,7 +80,7 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_1)
         auto& shape = parameter->get_shape();
         auto& type = parameter->get_element_type();
         auto parameter_cipher_tv = backend->create_tensor(type, shape, true);
-        // auto parameter_cipher_tv = backend->create_tensor(type, shape);
+        //auto parameter_cipher_tv = backend->create_tensor(type, shape);
 
         NGRAPH_INFO << join(shape, "x");
 
@@ -98,8 +109,9 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_1)
         {
             NGRAPH_INFO << elem;
         }
+
+        // result_tvs.push_back(backend->create_tensor(type, shape));
         result_tvs.push_back(backend->create_tensor(type, shape, true));
-        /// result_tvs.push_back(backend->create_tensor(type, shape));
     }
 
     NGRAPH_INFO << "calling function";
@@ -112,19 +124,19 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_1)
     }
     cout << endl;
 
-    vector<float> result{-3.94503, -4.5004,  5.37272,  11.0719,  -4.29294, -35.4196, -43.7368,
-        40.5139,  4.8088,   7.6214,   -4.29444, 15.1135,  91.2844,  -9.49516,
-        -2.64188, -77.2798, 8.05845,  13.7273,  5.86995,  -9.33487, -1.48271,
-        14.8887,  -2.3886,  -17.146,  -1.10124, -11.3262, -2.89965, 3.51735,
-        1.38818,  -2.88939, 56.011,   -51.4716, -4.48169, 0.873144, -19.2347,
-        13.2377,  21.3702,  -12.4109, -13.0373, 7.33236};
+    if ("${BACKEND_NAME}" == "INTERPRETER")
+    {
+        write_binary_constant(
+                result_tmp,
+                file_util::path_join(HE_SERIALIZED_ZOO,
+                    "weights/cpu_result_" + to_string(batch_size) + ".bin"));
+    }
 
-    assert(result.size() <= batch_size * 10);
-    result.resize(batch_size * 10);
+    auto result = generalized_read_vector<float>(result_tvs[0]);
+    EXPECT_TRUE(test::all_close(cpu_result, result, 1e-3f));
 
-    EXPECT_TRUE(test::all_close(result,
-        generalized_read_vector<float>(result_tvs[0]),
-        1e-4f));
+    float accuracy = get_accuracy(result, y);
+    NGRAPH_INFO << "Accuracy " << accuracy;
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_softmax_5)

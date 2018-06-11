@@ -190,7 +190,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         // Check result with CPU backend
         if (is_cpu_check_enabled(op)) //&& !any_batched)
         {
-            check_cpu_calls(function, base_type, op, outputs, inputs, false);
+            // check_cpu_calls(function, base_type, op, outputs, inputs, false);
         }
 
         // Check noise budget after each op

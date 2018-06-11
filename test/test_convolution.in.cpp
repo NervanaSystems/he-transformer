@@ -42,30 +42,26 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2image_batch)
     auto B = make_shared<op::Parameter>(element::f32, shape_b);
     auto shape_r = Shape{2, 1, 3, 3};
     auto f = make_shared<Function>(make_shared<op::Convolution>(A, B, Strides{1, 1}, Strides{1, 1}),
-            op::ParameterVector{A, B});
+                                   op::ParameterVector{A, B});
 
     // Create some tensors for input/output
-    auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(runtime::Backend::create("${BACKEND_NAME}"));
+    auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
+        runtime::Backend::create("${BACKEND_NAME}"));
 
     auto a = backend->create_tensor(element::f32, shape_a, true);
-    copy_data(a, vector<float>{
-            2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
-            2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
-            2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
-            2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0
-            });
+    copy_data(a, vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                               2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                               2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                               2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0});
     auto b = backend->create_plain_tensor(element::f32, shape_b);
-    copy_data(b, vector<float>{
-            0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5
-            });
+    copy_data(b, vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5});
     auto result = backend->create_tensor(element::f32, shape_r, true);
 
-    vector<float> expected_result{
-        9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9
-    };
+    vector<float> expected_result{9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9};
 
     backend->call(f, {result}, {a, b});
-    EXPECT_TRUE(test::all_close(vector<float>{expected_result}, generalized_read_vector<float>(result)));
+    EXPECT_TRUE(
+        test::all_close(vector<float>{expected_result}, generalized_read_vector<float>(result)));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_batch)
@@ -76,14 +72,15 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_batch)
     auto B = make_shared<op::Parameter>(element::f32, shape_b);
     auto shape_r = Shape{1, 1, 3, 3};
     auto f = make_shared<Function>(make_shared<op::Convolution>(A, B, Strides{1, 1}, Strides{1, 1}),
-            op::ParameterVector{A, B});
+                                   op::ParameterVector{A, B});
 
     // Create some tensors for input/output
-    auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(runtime::Backend::create("${BACKEND_NAME}"));
+    auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
+        runtime::Backend::create("${BACKEND_NAME}"));
 
     auto a = backend->create_tensor(element::f32, shape_a, true);
     copy_data(a, vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
-            2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0});
+                               2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0});
     auto b = backend->create_tensor(element::f32, shape_b);
     copy_data(b, vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5});
     auto result = backend->create_tensor(element::f32, shape_r, true);
@@ -105,7 +102,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image)
                                    op::ParameterVector{A, B});
 
     // Create some tensors for input/output
-    auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(runtime::Backend::create("${BACKEND_NAME}"));
+    auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
+        runtime::Backend::create("${BACKEND_NAME}"));
 
     auto a = backend->create_tensor(element::f32, shape_a);
     copy_data(a, vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,

@@ -231,10 +231,13 @@ def test_mnist_cnn(FLAGS, network):
             sess.run(tf.global_variables_initializer())
 
             num_test_images=FLAGS.test_image_count
-            x_test=mnist.test.images[:2]
-            y_test=mnist.test.labels[:2]
+            x_test=mnist.test.images[:1024]
+            y_test=mnist.test.labels[:1024]
 
-            np.savetxt("x_test_2.txt", x_test)
+            x_test.tofile("x_test_1024.bin")
+            y_test.astype('float32').tofile("y_test_1024.bin") # TODO: use binary?
+            #np.savetxt("x_test_1024.txt", x_test)
+            #np.savetxt("y_test_1024.txt", x_test)
 
             test_accuracy = accuracy.eval(feed_dict={
                 x: x_test,
