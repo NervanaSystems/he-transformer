@@ -41,7 +41,6 @@ runtime::he::HECipherTensorView::HECipherTensorView(const element::Type& element
     // get_tensor_view_layout()->get_size() is the number of elements
     m_num_elements = m_descriptor->get_tensor_view_layout()->get_size();
     m_cipher_texts.resize(m_num_elements);
-    NGRAPH_INFO << "Creating HECTV with " << m_num_elements << " elements";
     for (size_t i = 0; i < m_num_elements; ++i)
     {
         if (auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(m_he_backend))
@@ -51,7 +50,6 @@ runtime::he::HECipherTensorView::HECipherTensorView(const element::Type& element
         else if (auto he_heaan_backend =
                      dynamic_pointer_cast<he_heaan::HEHeaanBackend>(m_he_backend))
         {
-            NGRAPH_INFO << "Creating HECTV with batch size " << m_batch_size;
             m_cipher_texts[i] = make_shared<runtime::he::HeaanCiphertextWrapper>(m_batch_size);
         }
         else
@@ -98,7 +96,6 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
     size_t dst_start_index = tensor_offset / type_byte_size;
     size_t num_elements_to_write = n / (type_byte_size * m_batch_size);
 
-    NGRAPH_INFO << "Writing HECTV with " << num_elements_to_write << " elements to write";
     check_io_bounds(source, tensor_offset, n / m_batch_size);
 
     if (num_elements_to_write == 1)
@@ -188,7 +185,6 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
     size_t src_start_index = tensor_offset / type_byte_size;
     size_t num_elements_per_batch = n / (type_byte_size * m_batch_size);
     size_t num_elements_to_read = n / (type_byte_size * m_batch_size);
-    NGRAPH_INFO << "Reading HECTV with " << num_elements_to_read << " elements to read";
     check_io_bounds(target, tensor_offset, n / m_batch_size);
 
     if (num_elements_to_read == 1)

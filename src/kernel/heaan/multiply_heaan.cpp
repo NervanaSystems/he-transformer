@@ -27,7 +27,6 @@ void runtime::he::kernel::heaan::scalar_multiply(
     const element::Type& type,
     const shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
 {
-    NGRAPH_INFO << "Scalar multiply cipher cipher";
     out->m_ciphertext =
         he_heaan_backend->get_scheme()->mult(arg0->m_ciphertext, arg1->m_ciphertext);
     //TODO: reScaleByAndEqual?
@@ -41,8 +40,6 @@ void runtime::he::kernel::heaan::scalar_multiply(
     const shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
 {
     const string type_name = type.c_type_string();
-    NGRAPH_INFO << "Scalar multiply cipher plain";
-    NGRAPH_INFO << "Scalar multiply out m_count " << out->m_count;
 
     // Perform multiplication
     out->m_ciphertext = he_heaan_backend->get_scheme()->multByConstVec(

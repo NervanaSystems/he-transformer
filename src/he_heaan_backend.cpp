@@ -375,7 +375,6 @@ void runtime::he::he_heaan::HEHeaanBackend::decrypt(
     if (heaan_output != nullptr && heaan_input != nullptr)
     {
         size_t batch_count = heaan_input->m_count;
-        NGRAPH_INFO << "decrypting batch count " << batch_count;
         if (batch_count == 1)
         {
             heaan_output->m_plaintexts = {

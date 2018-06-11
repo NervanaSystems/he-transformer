@@ -43,7 +43,7 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_1)
         runtime::Backend::create("${BACKEND_NAME}"));
     //auto backend = runtime::Backend::create("INTERPRETER");
 
-    size_t batch_size = 2;
+    size_t batch_size = 4;
 
     NGRAPH_INFO << "Loaded backend";
     const string filename = "mnist_cryptonets_batch_" + to_string(batch_size);
@@ -105,24 +105,26 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_1)
     NGRAPH_INFO << "calling function";
     backend->call(f, result_tvs, parameter_tvs);
 
-    auto result = generalized_read_vector<float>(result_tvs[0]);
-    for (auto elem : result)
+    auto result_tmp = generalized_read_vector<float>(result_tvs[0]);
+    for (auto elem : result_tmp)
     {
         cout << elem << ", ";
     }
     cout << endl;
 
-    NGRAPH_INFO << "TODO: enable comparisoon!";
+    vector<float> result{-3.94503, -4.5004,  5.37272,  11.0719,  -4.29294, -35.4196, -43.7368,
+        40.5139,  4.8088,   7.6214,   -4.29444, 15.1135,  91.2844,  -9.49516,
+        -2.64188, -77.2798, 8.05845,  13.7273,  5.86995,  -9.33487, -1.48271,
+        14.8887,  -2.3886,  -17.146,  -1.10124, -11.3262, -2.89965, 3.51735,
+        1.38818,  -2.88939, 56.011,   -51.4716, -4.48169, 0.873144, -19.2347,
+        13.2377,  21.3702,  -12.4109, -13.0373, 7.33236};
 
-    /* EXPECT_TRUE(test::all_close(
-        vector<float>{-3.94503, -4.5004,  5.37272,  11.0719,  -4.29294, -35.4196, -43.7368,
-                      40.5139,  4.8088,   7.6214,   -4.29444, 15.1135,  91.2844,  -9.49516,
-                      -2.64188, -77.2798, 8.05845,  13.7273,  5.86995,  -9.33487, -1.48271,
-                      14.8887,  -2.3886,  -17.146,  -1.10124, -11.3262, -2.89965, 3.51735,
-                      1.38818,  -2.88939, 56.011,   -51.4716, -4.48169, 0.873144, -19.2347,
-                      13.2377,  21.3702,  -12.4109, -13.0373, 7.33236},
+    assert(result.size() <= batch_size * 10);
+    result.resize(batch_size * 10);
+
+    EXPECT_TRUE(test::all_close(result,
         generalized_read_vector<float>(result_tvs[0]),
-        1e-4f)); */
+        1e-4f));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_softmax_5)

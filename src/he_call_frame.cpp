@@ -164,8 +164,6 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                                    }
                                });
                     any_batched |= batched_out;
-                    NGRAPH_INFO << "op " << op->description();
-                    NGRAPH_INFO << "Batched out? " << batched_out;
 
                     auto otv = make_shared<runtime::he::HECipherTensorView>(
                         element_type, shape, m_he_backend, batched_out, name);
