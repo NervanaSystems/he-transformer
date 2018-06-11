@@ -88,7 +88,6 @@ float get_accuracy(const vector<float>& pre_sigmoid, const vector<float>& y)
         }
     }
     return correct / float(num_data);
-
 }
 
 vector<float> read_binary_constant(const string filename, size_t num_elements)
