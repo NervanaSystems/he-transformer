@@ -234,6 +234,9 @@ def test_mnist_cnn(FLAGS, network):
             x_test=mnist.test.images[:1024]
             y_test=mnist.test.labels[:1024]
 
+            y_label = np.argmax(y_test, 1)
+            print('y_label', y_label)
+
             x_test.tofile("x_test_1024.bin")
             y_test.astype('float32').tofile("y_test_1024.bin") # TODO: use binary?
             #np.savetxt("x_test_1024.txt", x_test)

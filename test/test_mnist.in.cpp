@@ -117,26 +117,22 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_1)
     NGRAPH_INFO << "calling function";
     backend->call(f, result_tvs, parameter_tvs);
 
-    auto result_tmp = generalized_read_vector<float>(result_tvs[0]);
-    for (auto elem : result_tmp)
-    {
-        cout << elem << ", ";
-    }
-    cout << endl;
+    auto result = generalized_read_vector<float>(result_tvs[0]);
 
     if ("${BACKEND_NAME}" == "INTERPRETER")
     {
         write_binary_constant(
-                result_tmp,
+                result,
                 file_util::path_join(HE_SERIALIZED_ZOO,
                     "weights/cpu_result_" + to_string(batch_size) + ".bin"));
     }
 
-    auto result = generalized_read_vector<float>(result_tvs[0]);
-    EXPECT_TRUE(test::all_close(cpu_result, result, 1e-3f));
-
+    //float accuracy = get_accuracy(cpu_result, y);
     float accuracy = get_accuracy(result, y);
     NGRAPH_INFO << "Accuracy " << accuracy;
+
+    // 1e-3f, 1e-3f works
+    EXPECT_TRUE(test::all_close(cpu_result, result, 1e-5f, 1e-4f));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_softmax_5)

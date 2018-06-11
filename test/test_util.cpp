@@ -78,10 +78,11 @@ float get_accuracy(const vector<float>& pre_sigmoid, const vector<float>& y)
     size_t correct = 0;
     for(size_t i = 0; i < num_data; ++i)
     {
-        auto minmax = minmax_element (pre_sigmoid.begin() + i * 10, pre_sigmoid.end() + (i + 1) * 10);
-        size_t prediction = minmax.first - pre_sigmoid.begin();
+        vector<float> sub_vec(pre_sigmoid.begin() + i * 10, pre_sigmoid.begin() + (i + 1) * 10);
+        auto minmax = minmax_element(sub_vec.begin(), sub_vec.end());
+        size_t prediction = minmax.second - sub_vec.begin();
 
-        if (y[10 * i + prediction == 1])
+        if (round(y[10 * i + prediction]) == 1)
         {
             correct++;
         }
