@@ -43,7 +43,13 @@ protected:
     static std::shared_ptr<ngraph::runtime::he::he_heaan::HEHeaanBackend> m_he_heaan_backend;
 };
 
+std::vector<float> read_binary_constant(const std::string filename, size_t num_elements);
 std::vector<float> read_constant(const std::string filename);
+
+void write_constant(const std::vector<float>& values, const std::string filename);
+void write_binary_constant(const std::vector<float>& values, const std::string filename);
+
+float get_accuracy(const vector<float>& pre_sigmoid, const vector<float>& y);
 
 template <typename T>
 bool all_close(const std::vector<std::complex<T>>& a,

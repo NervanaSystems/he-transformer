@@ -188,7 +188,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         const string op_name = op->description();
 
         // Check result with CPU backend
-        if (is_cpu_check_enabled(op)) //&& !any_batched)
+        if (is_cpu_check_enabled(op) && !any_batched)
         {
             check_cpu_calls(function, base_type, op, outputs, inputs, false);
         }
@@ -333,7 +333,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
                 {
                     if (inaccurate_cnt < 10)
                     {
-                        NGRAPH_INFO << "expect " << cpu_out_vec[elem]
+                        NGRAPH_INFO << "element " << elem << ": expect " << cpu_out_vec[elem]
                                     << ", actual: " << he_out_vec[elem];
                     }
                     correct = false;
@@ -430,6 +430,12 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     {
         arg1_cipher = dynamic_pointer_cast<HECipherTensorView>(args[1]);
         arg1_plain = dynamic_pointer_cast<HEPlainTensorView>(args[1]);
+    }
+
+    size_t batch_size = 1;
+    if (out0_cipher != nullptr)
+    {
+        batch_size = out0_cipher->get_batch_size();
     }
 
     if (node_op == "Add")
@@ -635,6 +641,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                              1,
                                              false,
                                              type,
+                                             batch_size,
                                              m_he_backend);
         }
         else if (arg0_cipher != nullptr && arg1_plain != nullptr && out0_cipher != nullptr)
@@ -658,6 +665,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                              1,
                                              false,
                                              type,
+                                             batch_size,
                                              m_he_backend);
         }
         else if (arg0_plain != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
@@ -681,6 +689,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                              1,
                                              false,
                                              type,
+                                             batch_size,
                                              m_he_backend);
         }
         else if (arg0_plain != nullptr && arg1_plain != nullptr && out0_plain != nullptr)
@@ -704,6 +713,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                              1,
                                              false,
                                              type,
+                                             batch_size,
                                              m_he_backend);
         }
         else
@@ -719,6 +729,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
 
         if (arg0_cipher != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
+            NGRAPH_INFO << "Dot cipher cipher => cipher";
             runtime::he::kernel::dot(arg0_cipher->get_elements(),
                                      arg1_cipher->get_elements(),
                                      out0_cipher->get_elements(),
@@ -727,10 +738,12 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                      out0_cipher->get_shape(),
                                      dot->get_reduction_axes_count(),
                                      type,
+                                     batch_size,
                                      m_he_backend);
         }
         else if (arg0_cipher != nullptr && arg1_plain != nullptr && out0_cipher != nullptr)
         {
+            NGRAPH_INFO << "Dot cipher plain => cipher";
             runtime::he::kernel::dot(arg0_cipher->get_elements(),
                                      arg1_plain->get_elements(),
                                      out0_cipher->get_elements(),
@@ -739,10 +752,12 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                      out0_cipher->get_shape(),
                                      dot->get_reduction_axes_count(),
                                      type,
+                                     batch_size,
                                      m_he_backend);
         }
         else if (arg0_plain != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
+            NGRAPH_INFO << "Dot plain cipher => cipher";
             runtime::he::kernel::dot(arg0_plain->get_elements(),
                                      arg1_cipher->get_elements(),
                                      out0_cipher->get_elements(),
@@ -751,10 +766,12 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                      out0_cipher->get_shape(),
                                      dot->get_reduction_axes_count(),
                                      type,
+                                     batch_size,
                                      m_he_backend);
         }
         else if (arg0_plain != nullptr && arg1_plain != nullptr && out0_plain != nullptr)
         {
+            NGRAPH_INFO << "Dot plain plain => plain";
             runtime::he::kernel::dot(arg0_plain->get_elements(),
                                      arg1_plain->get_elements(),
                                      out0_plain->get_elements(),

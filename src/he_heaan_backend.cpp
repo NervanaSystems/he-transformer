@@ -91,6 +91,7 @@ void runtime::he::he_heaan::HEHeaanBackend::assert_valid_heaan_parameter(
     static const int depth = 4; // TODO: find depth dynamically for computation
 
     double security = 3.6 * (1 << hp->m_poly_modulus) / (depth + hp->m_plain_modulus) - 110.;
+    // TODO: check this matches with https://bitbucket.org/malb/lwe-estimator
 
     if (security < 128)
     {
@@ -138,21 +139,29 @@ shared_ptr<runtime::TensorView>
 
 shared_ptr<runtime::he::HECiphertext>
     runtime::he::he_heaan::HEHeaanBackend::create_valued_ciphertext(
-        float value, const element::Type& element_type) const
+        float value, const element::Type& element_type, size_t batch_size) const
 {
-    auto ciphertext =
-        dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(create_empty_ciphertext());
+    auto ciphertext = dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(
+        create_empty_ciphertext(batch_size));
 
-    ciphertext->m_ciphertext =
-        m_scheme->encryptSingle((double)value, get_precision(), m_context->logQ);
+    if (batch_size == 1)
+    {
+        ciphertext->m_ciphertext =
+            m_scheme->encryptSingle((double)value, get_precision(), m_context->logQ);
+    }
+    else
+    {
+        vector<double> values(batch_size, (double)value);
+        ciphertext->m_ciphertext = m_scheme->encrypt(values, get_precision(), m_context->logQ);
+    }
 
     return ciphertext;
 }
 
 shared_ptr<runtime::he::HECiphertext>
-    runtime::he::he_heaan::HEHeaanBackend::create_empty_ciphertext() const
+    runtime::he::he_heaan::HEHeaanBackend::create_empty_ciphertext(size_t batch_size) const
 {
-    return make_shared<runtime::he::HeaanCiphertextWrapper>();
+    return make_shared<runtime::he::HeaanCiphertextWrapper>(batch_size);
 }
 
 shared_ptr<runtime::he::HEPlaintext> runtime::he::he_heaan::HEHeaanBackend::create_valued_plaintext(
@@ -314,7 +323,7 @@ void runtime::he::he_heaan::HEHeaanBackend::decode(void* output,
 #pragma omp parallel for
             for (size_t i = 0; i < count; ++i)
             {
-                double x = round(heaan_input->m_plaintexts[i]);
+                double x = heaan_input->m_plaintexts[i];
                 memcpy((char*)output + i * type.size(), &x, type.size());
             }
         }

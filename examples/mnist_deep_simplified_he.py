@@ -230,11 +230,17 @@ def test_mnist_cnn(FLAGS, network):
         with tf.Session(config=config) as sess:
             sess.run(tf.global_variables_initializer())
 
-            num_test_images=FLAGS.test_image_count
-            x_test=mnist.test.images[:4]
-            y_test=mnist.test.labels[:4]
+            batch_size = 4096
 
-            np.savetxt("x_test_4.txt", x_test)
+            num_test_images=FLAGS.test_image_count
+            x_test=mnist.test.images[:batch_size]
+            y_test=mnist.test.labels[:batch_size]
+
+            y_label = np.argmax(y_test, 1)
+
+            x_test.tofile("x_test_" + str(batch_size) + ".bin")
+            y_test.astype('float32').tofile("y_test_" + str(batch_size) + ".bin")
+            y_label.astype('float32').tofile("y_label_" + str(batch_size) + ".bin")
 
             test_accuracy = accuracy.eval(feed_dict={
                 x: x_test,

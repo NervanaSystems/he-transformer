@@ -45,6 +45,7 @@ namespace ngraph
                                   const Shape& out_shape,
                                   size_t reduction_axes_count,
                                   const element::Type& type,
+                                  size_t batch_size,
                                   const shared_ptr<runtime::he::HEBackend>& he_backend);
 
                 void dot(const vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
@@ -55,6 +56,7 @@ namespace ngraph
                          const Shape& out_shape,
                          size_t reduction_axes_count,
                          const element::Type& type,
+                         size_t batch_size,
                          const shared_ptr<runtime::he::HEBackend>& he_backend);
 
                 void dot(const vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
@@ -65,6 +67,7 @@ namespace ngraph
                          const Shape& out_shape,
                          size_t reduction_axes_count,
                          const element::Type& type,
+                         size_t batch_size,
                          const shared_ptr<runtime::he::HEBackend>& he_backend);
 
                 void dot(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg0,
@@ -75,6 +78,7 @@ namespace ngraph
                          const Shape& out_shape,
                          size_t reduction_axes_count,
                          const element::Type& type,
+                         size_t batch_size,
                          const shared_ptr<runtime::he::HEBackend>& he_backend);
 
                 void dot(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg0,
@@ -100,6 +104,7 @@ void ngraph::runtime::he::kernel::dot_template(const vector<shared_ptr<S>>& arg0
                                                const Shape& out_shape,
                                                size_t reduction_axes_count,
                                                const element::Type& type,
+                                               size_t batch_size,
                                                const shared_ptr<runtime::he::HEBackend>& he_backend)
 {
     auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend);
@@ -155,9 +160,6 @@ void ngraph::runtime::he::kernel::dot_template(const vector<shared_ptr<S>>& arg0
     for (size_t global_projected_idx = 0; global_projected_idx < global_projected_size;
          ++global_projected_idx)
     {
-        // Init thread-local memory pool for each thread
-        // seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
-
         // Compute outer and inner index
         size_t arg0_projected_idx = global_projected_idx / arg1_projected_size;
         size_t arg1_projected_idx = global_projected_idx % arg1_projected_size;
@@ -192,9 +194,7 @@ void ngraph::runtime::he::kernel::dot_template(const vector<shared_ptr<S>>& arg0
         }
         else if (he_heaan_backend)
         {
-            sum = he_heaan_backend->create_valued_ciphertext(0, type);
-            auto tmp = dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(sum);
-            assert(tmp != nullptr);
+            sum = he_heaan_backend->create_valued_ciphertext(0, type, batch_size);
         }
 
         size_t out_index = output_transform.index(out_coord);
@@ -226,7 +226,7 @@ void ngraph::runtime::he::kernel::dot_template(const vector<shared_ptr<S>>& arg0
             }
             else if (he_heaan_backend)
             {
-                prod = he_heaan_backend->create_empty_ciphertext();
+                prod = he_heaan_backend->create_empty_ciphertext(batch_size);
             }
 
             runtime::he::kernel::scalar_multiply(arg0_text, arg1_text, prod, type, he_backend);

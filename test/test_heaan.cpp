@@ -71,7 +71,7 @@ TEST(heaan_example, basic)
     Ciphertext multCipher = scheme.mult(cipher1, cipher2);
     scheme.reScaleByAndEqual(multCipher, logp);
 
-    Ciphertext cmultCipher = scheme.multByConstVec(cipher1, cvec, slots, logp);
+    Ciphertext cmultCipher = scheme.multByConstVec(cipher1, cvec, logp);
     scheme.reScaleByAndEqual(cmultCipher, logp);
 
     vector<complex<double>> dvecAdd = scheme.decrypt(secretKey, addCipher);

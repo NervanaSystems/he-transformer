@@ -49,6 +49,7 @@ void runtime::he::kernel::convolution(const vector<shared_ptr<runtime::he::HECip
                                       size_t output_channel_axis_result,
                                       bool rotate_filter,
                                       const element::Type& type,
+                                      size_t batch_size,
                                       const shared_ptr<runtime::he::HEBackend>& he_backend)
 {
     convolution_template<runtime::he::HECiphertext, runtime::he::HEPlaintext>(
@@ -71,6 +72,7 @@ void runtime::he::kernel::convolution(const vector<shared_ptr<runtime::he::HECip
         output_channel_axis_result,
         rotate_filter,
         type,
+        batch_size,
         he_backend);
 }
 
@@ -93,6 +95,7 @@ void runtime::he::kernel::convolution(const vector<shared_ptr<runtime::he::HEPla
                                       size_t output_channel_axis_result,
                                       bool rotate_filter,
                                       const element::Type& type,
+                                      size_t batch_size,
                                       const shared_ptr<runtime::he::HEBackend>& he_backend)
 {
     convolution(arg1,
@@ -114,6 +117,7 @@ void runtime::he::kernel::convolution(const vector<shared_ptr<runtime::he::HEPla
                 output_channel_axis_result,
                 rotate_filter,
                 type,
+                batch_size,
                 he_backend);
 }
 
@@ -136,6 +140,7 @@ void runtime::he::kernel::convolution(const vector<shared_ptr<runtime::he::HECip
                                       size_t output_channel_axis_result,
                                       bool rotate_filter,
                                       const element::Type& type,
+                                      size_t batch_size,
                                       const shared_ptr<runtime::he::HEBackend>& he_backend)
 {
     convolution_template<runtime::he::HECiphertext, runtime::he::HECiphertext>(
@@ -158,6 +163,7 @@ void runtime::he::kernel::convolution(const vector<shared_ptr<runtime::he::HECip
         output_channel_axis_result,
         rotate_filter,
         type,
+        batch_size,
         he_backend);
 }
 
@@ -182,6 +188,7 @@ void ngraph::runtime::he::kernel::convolution(
     size_t output_channel_axis_result,
     bool rotate_filter,
     const element::Type& type,
+    size_t batch_size,
     const shared_ptr<runtime::he::HEBackend>& he_backend)
 {
     // TODO: parallelize more effetively

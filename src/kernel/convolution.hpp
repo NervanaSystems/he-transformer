@@ -65,6 +65,7 @@ namespace ngraph
                     size_t output_channel_axis_result,
                     bool rotate_filter,
                     const element::Type& type,
+                    size_t batch_size,
                     const std::shared_ptr<runtime::he::HEBackend>& he_backend);
 
                 void
@@ -87,6 +88,7 @@ namespace ngraph
                                 size_t output_channel_axis_result,
                                 bool rotate_filter,
                                 const element::Type& type,
+                                size_t batch_size,
                                 const std::shared_ptr<runtime::he::HEBackend>& he_backend);
 
                 void
@@ -109,6 +111,7 @@ namespace ngraph
                                 size_t output_channel_axis_result,
                                 bool rotate_filter,
                                 const element::Type& type,
+                                size_t batch_size,
                                 const std::shared_ptr<runtime::he::HEBackend>& he_backend);
 
                 void
@@ -131,6 +134,7 @@ namespace ngraph
                                 size_t output_channel_axis_result,
                                 bool rotate_filter,
                                 const element::Type& type,
+                                size_t batch_size,
                                 const std::shared_ptr<runtime::he::HEBackend>& he_backend);
 
                 void convolution(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg0,
@@ -152,6 +156,7 @@ namespace ngraph
                                  size_t output_channel_axis_result,
                                  bool rotate_filter,
                                  const element::Type& type,
+                                 size_t batch_size,
                                  const std::shared_ptr<runtime::he::HEBackend>& he_backend);
             }
         }
@@ -179,6 +184,7 @@ void ngraph::runtime::he::kernel::convolution_template(
     size_t output_channel_axis_result,
     bool rotate_filter,
     const element::Type& type,
+    size_t batch_size,
     const shared_ptr<runtime::he::HEBackend>& he_backend)
 {
     // TODO: parallelize more effetively
@@ -331,7 +337,7 @@ void ngraph::runtime::he::kernel::convolution_template(
         }
         else if (he_heaan_backend)
         {
-            result = he_heaan_backend->create_valued_ciphertext(0., type);
+            result = he_heaan_backend->create_valued_ciphertext(0., type, batch_size);
         }
 
         CoordinateTransform::Iterator input_it = input_batch_transform.begin();
@@ -365,7 +371,7 @@ void ngraph::runtime::he::kernel::convolution_template(
             {
                 v = input_batch_transform.has_source_coordinate(input_batch_coord)
                         ? arg0[input_batch_transform.index(input_batch_coord)]
-                        : he_heaan_backend->create_valued_ciphertext(0., type);
+                        : he_heaan_backend->create_valued_ciphertext(0., type, batch_size);
             }
 
             shared_ptr<runtime::he::HECiphertext> prod;
@@ -375,7 +381,7 @@ void ngraph::runtime::he::kernel::convolution_template(
             }
             else if (he_heaan_backend)
             {
-                prod = he_heaan_backend->create_empty_ciphertext();
+                prod = he_heaan_backend->create_empty_ciphertext(batch_size);
             }
 
             // result += v * arg1[filter_transform.index(filter_coord)];
