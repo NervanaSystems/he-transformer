@@ -44,49 +44,9 @@ void runtime::he::kernel::heaan::scalar_multiply(
     NGRAPH_INFO << "Scalar multiply cipher plain";
     NGRAPH_INFO << "Scalar multiply out m_count " << out->m_count;
 
-    // Create {3, 3} vector;
-    // vector<double> tmp{arg1->m_plaintexts[0], arg1->m_plaintexts[0]};
-    vector<double> tmp = {3, 3};
-    NGRAPH_INFO << "Plaintext: " << tmp[0] << " " << tmp[1];
-
-    vector<double> cipher_tmp{1, 2};
-    // auto heaan_cipher = he_heaan_backend->get_scheme()->encrypt(cipher_tmp, he_heaan_backend->get_precision(), 383);
-    auto mult_cipher = he_heaan_backend->get_scheme()->multByConstVec(arg0->m_ciphertext, tmp, he_heaan_backend->get_precision());
-    auto result = he_heaan_backend->get_scheme()->decrypt(*(he_heaan_backend->get_secret_key()), mult_cipher);
-
-    NGRAPH_INFO << "Desired result!!";
-    for(auto elem : result)
-    {
-        NGRAPH_INFO << elem;
-    }
-
-    // Check ciphertext
-    auto tmp1_plain = he_heaan_backend->create_valued_plaintext(99, type);
-    he_heaan_backend->decrypt(tmp1_plain, arg0);
-    auto tmp1 = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(tmp1_plain);
-    assert(tmp1 != nullptr);
-    NGRAPH_INFO << "Ciphertext " << tmp1->m_plaintexts[0] << " " << tmp1->m_plaintexts[1];
-    assert(tmp1->m_plaintexts.size() == 2);
-
     // Perform multiplication
-    auto tmp_out = he_heaan_backend->get_scheme()->multByConstVec(
-            arg0->m_ciphertext, tmp, he_heaan_backend->get_precision());
-    out->m_ciphertext = mult_cipher;
-    //out->m_ciphertext = he_heaan_backend->get_scheme()->multByConstVec(
-    //    arg0->m_ciphertext, tmp, he_heaan_backend->get_precision());
-
-    // he_heaan_backend->get_scheme()->reScaleByAndEqual(out->m_ciphertext, 30);
-
-    // Get result
-    float val_decoded;
-    auto tmp_plain = he_heaan_backend->create_valued_plaintext(99, type);
-    he_heaan_backend->decrypt(tmp_plain, out);
-
-    auto tmp2 = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(tmp_plain);
-    assert(tmp2 != nullptr);
-
-    NGRAPH_INFO << "result[0] " << tmp2->m_plaintexts[0];
-    NGRAPH_INFO << "result[1] " << tmp2->m_plaintexts[1];
+    out->m_ciphertext = he_heaan_backend->get_scheme()->multByConstVec(
+            arg0->m_ciphertext, arg1->m_plaintexts, he_heaan_backend->get_precision());
 
     //TODO: reScaleByAndEqual in relinearize??
 }

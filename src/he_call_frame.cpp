@@ -434,6 +434,12 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         arg1_plain = dynamic_pointer_cast<HEPlainTensorView>(args[1]);
     }
 
+    size_t batch_size = 1;
+    if (out0_cipher != nullptr)
+    {
+        batch_size = out0_cipher->get_batch_size();
+    }
+
     if (node_op == "Add")
     {
         if (arg0_cipher != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
@@ -637,6 +643,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                              1,
                                              false,
                                              type,
+                                             batch_size,
                                              m_he_backend);
         }
         else if (arg0_cipher != nullptr && arg1_plain != nullptr && out0_cipher != nullptr)
@@ -660,6 +667,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                              1,
                                              false,
                                              type,
+                                             batch_size,
                                              m_he_backend);
         }
         else if (arg0_plain != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
@@ -683,6 +691,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                              1,
                                              false,
                                              type,
+                                             batch_size,
                                              m_he_backend);
         }
         else if (arg0_plain != nullptr && arg1_plain != nullptr && out0_plain != nullptr)
@@ -706,6 +715,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                              1,
                                              false,
                                              type,
+                                             batch_size,
                                              m_he_backend);
         }
         else
@@ -718,11 +728,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         shared_ptr<op::Dot> dot = dynamic_pointer_cast<op::Dot>(node);
         NGRAPH_INFO << join(args[0]->get_shape(), "x") << " dot "
                     << join(args[1]->get_shape(), "x");
-        size_t batch_size = 1;
-        if (out0_cipher != nullptr)
-        {
-            batch_size = out0_cipher->get_batch_size();
-        }
 
         if (arg0_cipher != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
