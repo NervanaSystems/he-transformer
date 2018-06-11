@@ -39,9 +39,9 @@ static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_batch)
 {
-    //auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-    //    runtime::Backend::create("${BACKEND_NAME}"));
-    auto backend = runtime::Backend::create("INTERPRETER");
+    auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
+        runtime::Backend::create("${BACKEND_NAME}"));
+    // auto backend = runtime::Backend::create("INTERPRETER");
 
     size_t batch_size = 4096;
 
@@ -79,8 +79,8 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_batch)
     {
         auto& shape = parameter->get_shape();
         auto& type = parameter->get_element_type();
-        // auto parameter_cipher_tv = backend->create_tensor(type, shape, true);
-        auto parameter_cipher_tv = backend->create_tensor(type, shape); // Uncomment for INTERPRETER backend
+        auto parameter_cipher_tv = backend->create_tensor(type, shape, true);
+        // auto parameter_cipher_tv = backend->create_tensor(type, shape); // Uncomment for INTERPRETER backend
 
         NGRAPH_INFO << join(shape, "x");
 
@@ -110,8 +110,8 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_batch)
             NGRAPH_INFO << elem;
         }
 
-        result_tvs.push_back(backend->create_tensor(type, shape)); // Uncomment for interpreter backend
-        // result_tvs.push_back(backend->create_tensor(type, shape, true));
+        // result_tvs.push_back(backend->create_tensor(type, shape)); // Uncomment for interpreter backend
+        result_tvs.push_back(backend->create_tensor(type, shape, true));
     }
 
     NGRAPH_INFO << "calling function";
@@ -119,7 +119,7 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_batch)
 
     auto result = generalized_read_vector<float>(result_tvs[0]);
 
-    if (false) // Set to true to savec result from interpreter backend
+    if (false) // Set to true to save result from interpreter backend
     {
         write_binary_constant(
                 result,
