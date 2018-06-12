@@ -83,7 +83,8 @@ void runtime::he::he_heaan::HEHeaanBackend::assert_valid_heaan_parameter(
     static const int base = 2;
     static const int depth = 4; // TODO: find depth dynamically for computation
 
-    double security = 3.6 * (1 << hp->m_log2_poly_modulus) / (depth + hp->m_log2_plain_modulus) - 110.;
+    double security =
+        3.6 * (1 << hp->m_log2_poly_modulus) / (depth + hp->m_log2_plain_modulus) - 110.;
     // TODO: check this matches with https://bitbucket.org/malb/lwe-estimator
 
     if (security < 128)
@@ -173,7 +174,7 @@ shared_ptr<runtime::he::HEPlaintext>
     return make_shared<HeaanPlaintextWrapper>();
 }
 
-shared_ptr<runtime::TensorView> runtime::he::he_heaan::HEHeaanBackend::create_valued_tensor (
+shared_ptr<runtime::TensorView> runtime::he::he_heaan::HEHeaanBackend::create_valued_tensor(
     float value, const element::Type& element_type, const Shape& shape)
 {
     auto tensor = static_pointer_cast<HECipherTensorView>(create_tensor(element_type, shape));

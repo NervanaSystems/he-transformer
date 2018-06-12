@@ -60,8 +60,10 @@ namespace ngraph
                         create_tensor(const element::Type& element_type,
                                       const Shape& shape) override;
 
-                    std::shared_ptr<runtime::TensorView> create_tensor(
-                        const element::Type& element_type, const Shape& shape, const bool batched) override;
+                    std::shared_ptr<runtime::TensorView>
+                        create_tensor(const element::Type& element_type,
+                                      const Shape& shape,
+                                      const bool batched) override;
 
                     std::shared_ptr<runtime::TensorView>
                         create_tensor(const element::Type& element_type,
@@ -69,7 +71,8 @@ namespace ngraph
                                       void* memory_pointer) override;
 
                     std::shared_ptr<runtime::TensorView>
-                        create_plain_tensor(const element::Type& element_type, const Shape& shape) override;
+                        create_plain_tensor(const element::Type& element_type,
+                                            const Shape& shape) override;
 
                     /// @brief Creates ciphertext of given value
                     /// @param value Scalar which to encrypt
@@ -99,21 +102,26 @@ namespace ngraph
 
                     /// @brief Creates plaintext of unspecified value
                     /// @return Shared pointer to created plaintext
-                    std::shared_ptr<runtime::he::HEPlaintext> create_empty_plaintext() const override;
+                    std::shared_ptr<runtime::he::HEPlaintext>
+                        create_empty_plaintext() const override;
 
                     /// @brief Creates ciphertext TensorView of the same value
                     /// @param value Scalar which to enrypt
                     /// @param element_type Type to encrypt
                     /// @param shape Shape of created TensorView
-                    std::shared_ptr<runtime::TensorView> create_valued_tensor(
-                        float value, const element::Type& element_type, const Shape& shape) override;
+                    std::shared_ptr<runtime::TensorView>
+                        create_valued_tensor(float value,
+                                             const element::Type& element_type,
+                                             const Shape& shape) override;
 
                     // Creates plaintext TensorView of the same value
                     /// @param value Scalar which to encode
                     /// @param element_type Type to encode
                     /// @param shape Shape of created TensorView
-                    std::shared_ptr<runtime::TensorView> create_valued_plain_tensor(
-                        float value, const element::Type& element_type, const Shape& shape) override;
+                    std::shared_ptr<runtime::TensorView>
+                        create_valued_plain_tensor(float value,
+                                                   const element::Type& element_type,
+                                                   const Shape& shape) override;
 
                     /// @brief Encodes bytes to a plaintext polynomial
                     /// @param output Pointer to plaintext to write to

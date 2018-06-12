@@ -67,8 +67,8 @@ namespace ngraph
 
                     std::shared_ptr<runtime::TensorView>
                         create_tensor(const element::Type& element_type,
-                                const Shape& shape,
-                                const bool batched) override;
+                                      const Shape& shape,
+                                      const bool batched) override;
 
                     std::shared_ptr<runtime::TensorView>
                         create_tensor(const element::Type& element_type,
@@ -76,7 +76,8 @@ namespace ngraph
                                       void* memory_pointer) override;
 
                     std::shared_ptr<runtime::TensorView>
-                        create_plain_tensor(const element::Type& element_type, const Shape& shape) override;
+                        create_plain_tensor(const element::Type& element_type,
+                                            const Shape& shape) override;
 
                     // Create scalar text with memory pool
                     std::shared_ptr<runtime::he::HECiphertext>
@@ -98,17 +99,23 @@ namespace ngraph
                                                  const element::Type& element_type,
                                                  size_t batch_size = 1) const override;
 
-                    std::shared_ptr<runtime::he::HECiphertext> create_empty_ciphertext(size_t batch_size = 1) const override;
+                    std::shared_ptr<runtime::he::HECiphertext>
+                        create_empty_ciphertext(size_t batch_size = 1) const override;
                     std::shared_ptr<runtime::he::HEPlaintext>
                         create_valued_plaintext(float value,
                                                 const element::Type& element_type) const override;
-                    std::shared_ptr<runtime::he::HEPlaintext> create_empty_plaintext() const override;
+                    std::shared_ptr<runtime::he::HEPlaintext>
+                        create_empty_plaintext() const override;
 
                     // Create TensorView of the same value
-                    std::shared_ptr<runtime::TensorView> create_valued_tensor(
-                        float value, const element::Type& element_type, const Shape& shape) override;
-                    std::shared_ptr<runtime::TensorView> create_valued_plain_tensor(
-                        float value, const element::Type& element_type, const Shape& shape) override;
+                    std::shared_ptr<runtime::TensorView>
+                        create_valued_tensor(float value,
+                                             const element::Type& element_type,
+                                             const Shape& shape) override;
+                    std::shared_ptr<runtime::TensorView>
+                        create_valued_plain_tensor(float value,
+                                                   const element::Type& element_type,
+                                                   const Shape& shape) override;
 
                     /// @brief Encodes bytes to a plaintext polynomial
                     /// @param output Pointer to plaintext to write to
@@ -133,14 +140,16 @@ namespace ngraph
                     /// @brief Encrypts plaintext polynomial to ciphertext
                     /// @param output Pointer to ciphertext to encrypt to
                     /// @param input Pointer to plaintext to encrypt
-                    void encrypt(shared_ptr<runtime::he::HECiphertext>& output,
-                                 const std::shared_ptr<runtime::he::HEPlaintext> input) const override;
+                    void encrypt(
+                        shared_ptr<runtime::he::HECiphertext>& output,
+                        const std::shared_ptr<runtime::he::HEPlaintext> input) const override;
 
                     /// @brief Decrypts ciphertext to plaintext polynomial
                     /// @param output Pointer to plaintext to decrypt to
                     /// @param input Pointer to ciphertext to decrypt
-                    void decrypt(std::shared_ptr<runtime::he::HEPlaintext>& output,
-                                 const std::shared_ptr<runtime::he::HECiphertext> input) const override;
+                    void decrypt(
+                        std::shared_ptr<runtime::he::HEPlaintext>& output,
+                        const std::shared_ptr<runtime::he::HECiphertext> input) const override;
 
                     const inline std::shared_ptr<seal::SEALContext> get_context() const
                     {

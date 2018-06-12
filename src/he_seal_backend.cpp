@@ -144,10 +144,8 @@ shared_ptr<runtime::TensorView>
     return static_pointer_cast<runtime::TensorView>(rc);
 }
 
-    shared_ptr<runtime::TensorView>
-runtime::he::he_seal::HESealBackend::create_tensor(const element::Type& element_type,
-        const Shape& shape,
-        const bool batched)
+shared_ptr<runtime::TensorView> runtime::he::he_seal::HESealBackend::create_tensor(
+    const element::Type& element_type, const Shape& shape, const bool batched)
 {
     if (batched)
     {

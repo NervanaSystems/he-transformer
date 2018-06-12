@@ -44,7 +44,8 @@ namespace ngraph
                 HEBackend(HEBackend& he_backend) = default;
 
                 virtual std::shared_ptr<runtime::TensorView>
-                    create_tensor(const element::Type& element_type, const Shape& shape) override = 0;
+                    create_tensor(const element::Type& element_type,
+                                  const Shape& shape) override = 0;
 
                 virtual std::shared_ptr<runtime::TensorView> create_tensor(
                     const element::Type& element_type, const Shape& shape, const bool batched) = 0;
@@ -65,24 +66,29 @@ namespace ngraph
                 ///        > 1 indicates batching
                 /// @return Shared pointer to created ciphertext
                 virtual std::shared_ptr<runtime::he::HECiphertext>
-                    create_valued_ciphertext(float value, const element::Type& element_type, size_t batch_size = 1) const = 0;
+                    create_valued_ciphertext(float value,
+                                             const element::Type& element_type,
+                                             size_t batch_size = 1) const = 0;
 
                 /// @brief Creates ciphertextof unspecified value
                 /// @param batch_size Number of elements to encrypt in a
                 ///        > 1 indicates batching
                 /// @return Shared pointer to created ciphertext
-                virtual std::shared_ptr<runtime::he::HECiphertext> create_empty_ciphertext(size_t batch_size = 1) const = 0;
+                virtual std::shared_ptr<runtime::he::HECiphertext>
+                    create_empty_ciphertext(size_t batch_size = 1) const = 0;
 
                 /// @brief Creates plaintext of unspecified value
                 /// @param value Scalar which to encode
                 /// @param element_type Type to encode
                 /// @return Shared pointer to created plaintext
                 virtual std::shared_ptr<runtime::he::HEPlaintext>
-                    create_valued_plaintext(float value, const element::Type& element_type) const = 0;
+                    create_valued_plaintext(float value,
+                                            const element::Type& element_type) const = 0;
 
                 /// @brief Creates plaintext of unspecified value
                 /// @return Shared pointer to created plaintext
-                virtual std::shared_ptr<runtime::he::HEPlaintext> create_empty_plaintext() const = 0;
+                virtual std::shared_ptr<runtime::he::HEPlaintext>
+                    create_empty_plaintext() const = 0;
 
                 /// @brief Creates ciphertext TensorView of the same value
                 /// @param value Scalar which to enrypt
@@ -114,9 +120,9 @@ namespace ngraph
                 /// @param type Type of scalar to encode
                 /// @param count Number of elements to encode, count > 1 indicates batching
                 virtual void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
-                            const void* input,
-                            const element::Type& type,
-                            size_t count = 1) const = 0;
+                                    const void* input,
+                                    const element::Type& type,
+                                    size_t count = 1) const = 0;
 
                 /// @brief Decodes plaintext polynomial to bytes
                 /// @param output Pointer to memory to write to
@@ -124,20 +130,23 @@ namespace ngraph
                 /// @param type Type of scalar to encode
                 /// @param count Number of elements to decode, count > 1 indicates batching
                 virtual void decode(void* output,
-                            const std::shared_ptr<runtime::he::HEPlaintext> input,
-                            const element::Type& type,
-                            size_t count = 1) const = 0;
+                                    const std::shared_ptr<runtime::he::HEPlaintext> input,
+                                    const element::Type& type,
+                                    size_t count = 1) const = 0;
 
                 /// @brief Encrypts plaintext polynomial to ciphertext
                 /// @param output Pointer to ciphertext to encrypt to
                 /// @param input Pointer to plaintext to encrypt
-                virtual void encrypt(std::shared_ptr<runtime::he::HECiphertext>& output,
-                             const std::shared_ptr<runtime::he::HEPlaintext> input) const = 0;
+                virtual void
+                    encrypt(std::shared_ptr<runtime::he::HECiphertext>& output,
+                            const std::shared_ptr<runtime::he::HEPlaintext> input) const = 0;
 
                 /// @brief Decrypts ciphertext to plaintext polynomial
                 /// @param output Pointer to plaintext to decrypt to
                 /// @param input Pointer to ciphertext to decrypt
-                virtual void decrypt(std::shared_ptr<runtime::he::HEPlaintext>& output, const std::shared_ptr<runtime::he::HECiphertext> input) const = 0;
+                virtual void
+                    decrypt(std::shared_ptr<runtime::he::HEPlaintext>& output,
+                            const std::shared_ptr<runtime::he::HECiphertext> input) const = 0;
 
                 void enable_performance_data(std::shared_ptr<Function> func, bool enable) override;
                 std::vector<PerformanceCounter>
