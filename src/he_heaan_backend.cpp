@@ -206,49 +206,6 @@ shared_ptr<runtime::TensorView> runtime::he::he_heaan::HEHeaanBackend::create_va
     return tensor;
 }
 
-/* bool runtime::he::he_heaan::HEHeaanBackend::compile(shared_ptr<Function> func)
-{
-    if (m_function_map.count(func) == 0)
-    {
-        shared_ptr<HEHeaanBackend> he_heaan_backend =
-            dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(shared_from_this());
-        shared_ptr<Function> cf_func = clone_function(*func);
-
-        // Run passes
-        ngraph::pass::Manager pass_manager;
-        pass_manager
-            .register_pass<ngraph::pass::AssignLayout<descriptor::layout::DenseTensorViewLayout>>();
-        pass_manager.register_pass<runtime::he::pass::InsertRelinearize>();
-        pass_manager.run_passes(cf_func);
-
-        // Create call frame
-        shared_ptr<HECallFrame> call_frame = make_shared<HECallFrame>(cf_func, he_heaan_backend);
-
-        m_function_map.insert({func, call_frame});
-    }
-    return true;
-} */
-
-/* bool runtime::he::he_heaan::HEHeaanBackend::call(
-    shared_ptr<Function> func,
-    const vector<shared_ptr<runtime::TensorView>>& outputs,
-    const vector<shared_ptr<runtime::TensorView>>& inputs)
-{
-    compile(func);
-    m_function_map.at(func)->call(outputs, inputs);
-    return true;
-}
-
-void runtime::he::he_heaan::HEHeaanBackend::clear_function_instance()
-{
-    m_function_map.clear();
-}
-
-void runtime::he::he_heaan::HEHeaanBackend::remove_compiled_function(shared_ptr<Function> func)
-{
-    throw ngraph_error("HEHeaanBackend remove compile function unimplemented");
-} */
-
 void runtime::he::he_heaan::HEHeaanBackend::encode(shared_ptr<runtime::he::HEPlaintext>& output,
                                                    const void* input,
                                                    const element::Type& type,
@@ -398,27 +355,3 @@ void runtime::he::he_heaan::HEHeaanBackend::decrypt(
         throw ngraph_error("HEHeaanBackend::decrypt has non-heaan ciphertexts");
     }
 }
-
-void runtime::he::he_heaan::HEHeaanBackend::enable_performance_data(shared_ptr<Function> func,
-                                                                    bool enable)
-{
-    // Enabled by default
-}
-
-/* vector<runtime::PerformanceCounter>
-    runtime::he::he_heaan::HEHeaanBackend::get_performance_data(shared_ptr<Function> func) const
-{
-    return m_function_map.at(func)->get_performance_data();
-} */
-
-/* void runtime::he::he_heaan::HEHeaanBackend::visualize_function_after_pass(
-    const shared_ptr<Function>& func, const string& file_name)
-{
-    compile(func);
-    auto cf = m_function_map.at(func);
-    auto compiled_func = cf->get_compiled_function();
-    NGRAPH_INFO << "Visualize graph to " << file_name;
-    ngraph::pass::Manager pass_manager;
-    pass_manager.register_pass<ngraph::pass::VisualizeTree>(file_name);
-    pass_manager.run_passes(compiled_func);
-} */

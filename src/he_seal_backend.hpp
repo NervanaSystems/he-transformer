@@ -42,8 +42,7 @@ namespace ngraph
 
             namespace he_seal
             {
-                class HESealBackend : public HEBackend // ,
-                     //                 public std::enable_shared_from_this<HESealBackend>
+                class HESealBackend : public HEBackend
                 {
                 public:
                     HESealBackend();
@@ -111,17 +110,6 @@ namespace ngraph
                         float value, const element::Type& element_type, const Shape& shape) override;
                     std::shared_ptr<runtime::TensorView> create_valued_plain_tensor(
                         float value, const element::Type& element_type, const Shape& shape) override;
-
-                    // bool compile(std::shared_ptr<Function> func) override;
-
-                    /* bool call(
-                        std::shared_ptr<Function> func,
-                        const std::vector<std::shared_ptr<runtime::TensorView>>& outputs,
-                        const std::vector<std::shared_ptr<runtime::TensorView>>& inputs) override; */
-
-                    // void clear_function_instance();
-
-                    // void remove_compiled_function(std::shared_ptr<Function> func) override;
 
                     /// @brief Encodes bytes to a plaintext polynomial
                     /// @param output Pointer to plaintext to write to
@@ -216,14 +204,6 @@ namespace ngraph
                     //         decryptable.
                     int noise_budget(const std::shared_ptr<seal::Ciphertext>& ciphertext) const;
 
-                    void enable_performance_data(std::shared_ptr<Function> func,
-                                                 bool enable) override;
-                    //std::vector<PerformanceCounter>
-                     //   get_performance_data(std::shared_ptr<Function> func) const override;
-
-                    // void visualize_function_after_pass(const std::shared_ptr<Function>& func,
-                       //                                const std::string& file_name);
-
                 private:
                     std::shared_ptr<seal::SEALContext> m_context;
                     std::shared_ptr<seal::IntegerEncoder> m_int_encoder;
@@ -236,8 +216,6 @@ namespace ngraph
                     std::shared_ptr<seal::Decryptor> m_decryptor;
                     std::shared_ptr<seal::Evaluator> m_evaluator;
                     plaintext_num m_plaintext_num;
-                    //std::unordered_map<std::shared_ptr<Function>, std::shared_ptr<HECallFrame>>
-                    //    m_function_map;
                 };
             }
         }
