@@ -14,7 +14,6 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "he_call_frame.hpp"
 #include "he_cipher_tensor_view.hpp"
 #include "he_heaan_backend.hpp"
 #include "he_heaan_parameter.hpp"

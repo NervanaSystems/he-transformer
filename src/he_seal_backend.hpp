@@ -17,7 +17,6 @@
 #pragma once
 
 #include <memory>
-#include <unordered_map>
 
 #include "he_backend.hpp"
 #include "he_seal_parameter.hpp"
@@ -30,11 +29,8 @@ namespace ngraph
 {
     namespace runtime
     {
-        class CallFrame;
-
         namespace he
         {
-            class HECallFrame;
             class HETensorView;
             class HEPlainTensorView;
             class HECipherTensorView;
@@ -117,36 +113,19 @@ namespace ngraph
                                                    const element::Type& element_type,
                                                    const Shape& shape) override;
 
-                    /// @brief Encodes bytes to a plaintext polynomial
-                    /// @param output Pointer to plaintext to write to
-                    /// @param input Pointer to memory to encode
-                    /// @param type Type of scalar to encode
-                    /// @param count Number of elements to encode, count > 1 indicates batching
                     void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
                                 const void* input,
                                 const element::Type& type,
                                 size_t count = 1) const override;
-
-                    /// @brief Decodes plaintext polynomial to bytes
-                    /// @param output Pointer to memory to write to
-                    /// @param input Pointer to plaintext to decode
-                    /// @param type Type of scalar to encode
-                    /// @param count Number of elements to decode, count > 1 indicates batching
                     void decode(void* output,
                                 const std::shared_ptr<runtime::he::HEPlaintext> input,
                                 const element::Type& type,
                                 size_t count = 1) const override;
 
-                    /// @brief Encrypts plaintext polynomial to ciphertext
-                    /// @param output Pointer to ciphertext to encrypt to
-                    /// @param input Pointer to plaintext to encrypt
                     void encrypt(
                         shared_ptr<runtime::he::HECiphertext>& output,
                         const std::shared_ptr<runtime::he::HEPlaintext> input) const override;
 
-                    /// @brief Decrypts ciphertext to plaintext polynomial
-                    /// @param output Pointer to plaintext to decrypt to
-                    /// @param input Pointer to ciphertext to decrypt
                     void decrypt(
                         std::shared_ptr<runtime::he::HEPlaintext>& output,
                         const std::shared_ptr<runtime::he::HECiphertext> input) const override;
