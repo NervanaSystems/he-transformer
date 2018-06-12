@@ -63,7 +63,7 @@ namespace ngraph
                                       const Shape& shape) override;
 
                     std::shared_ptr<runtime::TensorView> create_tensor(
-                        const element::Type& element_type, const Shape& shape, const bool batched);
+                        const element::Type& element_type, const Shape& shape, const bool batched) override;
 
                     std::shared_ptr<runtime::TensorView>
                         create_tensor(const element::Type& element_type,
@@ -71,7 +71,7 @@ namespace ngraph
                                       void* memory_pointer) override;
 
                     std::shared_ptr<runtime::TensorView>
-                        create_plain_tensor(const element::Type& element_type, const Shape& shape);
+                        create_plain_tensor(const element::Type& element_type, const Shape& shape) override;
 
                     /// @brief Creates ciphertext of given value
                     /// @param value Scalar which to encrypt
@@ -82,7 +82,7 @@ namespace ngraph
                     std::shared_ptr<runtime::he::HECiphertext>
                         create_valued_ciphertext(float value,
                                                  const element::Type& element_type,
-                                                 size_t batch_size = 1) const;
+                                                 size_t batch_size = 1) const override;
 
                     /// @brief Creates ciphertextof unspecified value
                     /// @param batch_size Number of elements to encrypt in a

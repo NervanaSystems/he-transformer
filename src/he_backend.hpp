@@ -44,11 +44,11 @@ namespace ngraph
                 HEBackend(const std::shared_ptr<runtime::he::HEParameter> hep);
                 HEBackend(HEBackend& he_backend) = default;
 
-                std::shared_ptr<runtime::TensorView>
-                    create_tensor(const element::Type& element_type, const Shape& shape) override;
+                virtual std::shared_ptr<runtime::TensorView>
+                    create_tensor(const element::Type& element_type, const Shape& shape) override = 0;
 
-                std::shared_ptr<runtime::TensorView> create_tensor(
-                    const element::Type& element_type, const Shape& shape, const bool batched);
+                virtual std::shared_ptr<runtime::TensorView> create_tensor(
+                    const element::Type& element_type, const Shape& shape, const bool batched) = 0;
 
                 /// @brief Return a handle for a tensor for given mem on backend device
                 std::shared_ptr<runtime::TensorView>
@@ -56,8 +56,8 @@ namespace ngraph
                                   const Shape& shape,
                                   void* memory_pointer) override;
 
-                std::shared_ptr<runtime::TensorView>
-                    create_plain_tensor(const element::Type& element_type, const Shape& shape);
+                virtual std::shared_ptr<runtime::TensorView>
+                    create_plain_tensor(const element::Type& element_type, const Shape& shape) = 0;
 
                 /// @brief Creates ciphertext of given value
                 /// @param value Scalar which to encrypt
@@ -65,8 +65,8 @@ namespace ngraph
                 /// @param batch_size Number of elements to encrypt
                 ///        > 1 indicates batching
                 /// @return Shared pointer to created ciphertext
-                std::shared_ptr<runtime::he::HECiphertext>
-                    create_valued_ciphertext(float value, const element::Type& element_type) const;
+                virtual std::shared_ptr<runtime::he::HECiphertext>
+                    create_valued_ciphertext(float value, const element::Type& element_type, size_t batch_size = 1) const = 0;
 
                 /// @brief Creates ciphertextof unspecified value
                 /// @param batch_size Number of elements to encrypt in a

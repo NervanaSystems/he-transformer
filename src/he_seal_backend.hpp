@@ -69,11 +69,16 @@ namespace ngraph
 
                     std::shared_ptr<runtime::TensorView>
                         create_tensor(const element::Type& element_type,
+                                const Shape& shape,
+                                const bool batched) override;
+
+                    std::shared_ptr<runtime::TensorView>
+                        create_tensor(const element::Type& element_type,
                                       const Shape& shape,
                                       void* memory_pointer) override;
 
                     std::shared_ptr<runtime::TensorView>
-                        create_plain_tensor(const element::Type& element_type, const Shape& shape);
+                        create_plain_tensor(const element::Type& element_type, const Shape& shape) override;
 
                     // Create scalar text with memory pool
                     std::shared_ptr<runtime::he::HECiphertext>
@@ -92,7 +97,9 @@ namespace ngraph
                     // Create scalar text without memory pool
                     std::shared_ptr<runtime::he::HECiphertext>
                         create_valued_ciphertext(float value,
-                                                 const element::Type& element_type) const;
+                                                 const element::Type& element_type,
+                                                 size_t batch_size = 1) const;
+
                     std::shared_ptr<runtime::he::HECiphertext> create_empty_ciphertext() const;
                     std::shared_ptr<runtime::he::HEPlaintext>
                         create_valued_plaintext(float value,

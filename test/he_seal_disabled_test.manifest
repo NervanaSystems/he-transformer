@@ -104,6 +104,7 @@ convert_float32_bool
 convert_int32_bool
 convert_int32_float32
 convolution_2d_2image_batch
+convolution_2d_1image_batch
 cos
 cosh
 divide

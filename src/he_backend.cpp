@@ -41,17 +41,11 @@ runtime::he::HEBackend::HEBackend(const shared_ptr<runtime::he::HEParameter> hep
     throw ngraph_error("HEBackend() not implemented");
 }
 
-shared_ptr<runtime::TensorView>
-    runtime::he::HEBackend::create_tensor(const element::Type& element_type, const Shape& shape)
-{
-    throw ngraph_error("HE create_tensor unimplemented");
-}
-
-shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_tensor(
+/* shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_tensor(
     const element::Type& element_type, const Shape& shape, const bool batched)
 {
     throw ngraph_error("HE create_tensor unimplemented");
-}
+} */
 
 shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_tensor(
     const element::Type& element_type, const Shape& shape, void* memory_pointer)
@@ -59,19 +53,12 @@ shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_tensor(
     throw ngraph_error("HE create_tensor unimplemented");
 }
 
-shared_ptr<runtime::TensorView>
-    runtime::he::HEBackend::create_plain_tensor(const element::Type& element_type,
-                                                const Shape& shape)
-{
-    throw ngraph_error("HE create_plain_tensor unimplemented");
-}
-
-shared_ptr<runtime::he::HECiphertext>
+/* shared_ptr<runtime::he::HECiphertext>
     runtime::he::HEBackend::create_valued_ciphertext(float value,
                                                      const element::Type& element_type) const
 {
     throw ngraph_error("HE create_empty_ciphertext unimplemented");
-}
+} */
 
 shared_ptr<runtime::he::HECiphertext> runtime::he::HEBackend::create_empty_ciphertext() const
 {
