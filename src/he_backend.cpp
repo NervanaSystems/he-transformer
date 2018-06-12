@@ -60,10 +60,10 @@ shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_tensor(
     throw ngraph_error("HE create_empty_ciphertext unimplemented");
 } */
 
-shared_ptr<runtime::he::HECiphertext> runtime::he::HEBackend::create_empty_ciphertext() const
+/* shared_ptr<runtime::he::HECiphertext> runtime::he::HEBackend::create_empty_ciphertext() const
 {
     throw ngraph_error("HE create_empty_ciphertext unimplemented");
-}
+} */
 
 shared_ptr<runtime::he::HEPlaintext>
     runtime::he::HEBackend::create_valued_plaintext(float value,

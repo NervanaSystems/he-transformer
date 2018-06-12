@@ -237,8 +237,12 @@ shared_ptr<runtime::he::HECiphertext> runtime::he::he_seal::HESealBackend::creat
 }
 
 shared_ptr<runtime::he::HECiphertext>
-    runtime::he::he_seal::HESealBackend::create_empty_ciphertext() const
+    runtime::he::he_seal::HESealBackend::create_empty_ciphertext(size_t batch_size) const
 {
+    if (batch_size != 1)
+    {
+        throw ngraph_error("HESealBackend::create_empty_ciphertext only supports batch size 1");
+    }
     return make_shared<runtime::he::SealCiphertextWrapper>();
 }
 

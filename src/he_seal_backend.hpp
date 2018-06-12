@@ -98,9 +98,9 @@ namespace ngraph
                     std::shared_ptr<runtime::he::HECiphertext>
                         create_valued_ciphertext(float value,
                                                  const element::Type& element_type,
-                                                 size_t batch_size = 1) const;
+                                                 size_t batch_size = 1) const override;
 
-                    std::shared_ptr<runtime::he::HECiphertext> create_empty_ciphertext() const;
+                    std::shared_ptr<runtime::he::HECiphertext> create_empty_ciphertext(size_t batch_size = 1) const override;
                     std::shared_ptr<runtime::he::HEPlaintext>
                         create_valued_plaintext(float value,
                                                 const element::Type& element_type) const;

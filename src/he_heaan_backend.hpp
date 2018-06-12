@@ -89,7 +89,7 @@ namespace ngraph
                     ///        > 1 indicates batching
                     /// @return Shared pointer to created ciphertext
                     std::shared_ptr<runtime::he::HECiphertext>
-                        create_empty_ciphertext(size_t batch_size = 1) const;
+                        create_empty_ciphertext(size_t batch_size = 1) const override;
 
                     /// @brief Creates plaintext of unspecified value
                     /// @param value Scalar which to encode
