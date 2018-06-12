@@ -36,11 +36,6 @@ runtime::he::HEBackend::HEBackend()
 {
 }
 
-runtime::he::HEBackend::HEBackend(const shared_ptr<runtime::he::HEParameter> hep)
-{
-    throw ngraph_error("HEBackend() not implemented");
-}
-
 shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_tensor(
     const element::Type& element_type, const Shape& shape, void* memory_pointer)
 {

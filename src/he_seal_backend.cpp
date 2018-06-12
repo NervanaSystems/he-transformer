@@ -53,12 +53,6 @@ runtime::he::he_seal::HESealBackend::HESealBackend()
 {
 }
 
-runtime::he::he_seal::HESealBackend::HESealBackend(const shared_ptr<runtime::he::HEParameter> hep)
-    : runtime::he::he_seal::HESealBackend(
-          make_shared<runtime::he::HESealParameter>(hep->m_poly_modulus, hep->m_plain_modulus))
-{
-}
-
 runtime::he::he_seal::HESealBackend::HESealBackend(
     const shared_ptr<runtime::he::HESealParameter> sp)
 {

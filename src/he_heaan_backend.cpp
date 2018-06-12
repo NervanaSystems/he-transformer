@@ -51,21 +51,14 @@ runtime::he::he_heaan::HEHeaanBackend::HEHeaanBackend()
 }
 
 runtime::he::he_heaan::HEHeaanBackend::HEHeaanBackend(
-    const shared_ptr<runtime::he::HEParameter> hep)
-    : runtime::he::he_heaan::HEHeaanBackend(
-          make_shared<runtime::he::HEHeaanParameter>(hep->m_poly_modulus, hep->m_plain_modulus))
-{
-}
-
-runtime::he::he_heaan::HEHeaanBackend::HEHeaanBackend(
     const shared_ptr<runtime::he::HEHeaanParameter> hp)
 {
     assert_valid_heaan_parameter(hp);
     // Context
-    m_context = make_shared<heaan::Context>(hp->m_poly_modulus, hp->m_plain_modulus);
+    m_context = make_shared<heaan::Context>(hp->m_log2_poly_modulus, hp->m_log2_plain_modulus);
     print_heaan_context(*m_context);
 
-    m_log_precision = (long)hp->m_log_precision;
+    m_log2_precision = (long)hp->m_log2_precision;
 
     // Secret Key
     m_secret_key = make_shared<heaan::SecretKey>(m_context->logN);
@@ -90,7 +83,7 @@ void runtime::he::he_heaan::HEHeaanBackend::assert_valid_heaan_parameter(
     static const int base = 2;
     static const int depth = 4; // TODO: find depth dynamically for computation
 
-    double security = 3.6 * (1 << hp->m_poly_modulus) / (depth + hp->m_plain_modulus) - 110.;
+    double security = 3.6 * (1 << hp->m_log2_poly_modulus) / (depth + hp->m_log2_plain_modulus) - 110.;
     // TODO: check this matches with https://bitbucket.org/malb/lwe-estimator
 
     if (security < 128)
@@ -307,12 +300,12 @@ void runtime::he::he_heaan::HEHeaanBackend::encrypt(
         if (heaan_input->m_plaintexts.size() == 1)
         {
             heaan_output->m_ciphertext = m_scheme->encryptSingle(
-                heaan_input->m_plaintexts[0], m_log_precision, m_context->logQ);
+                heaan_input->m_plaintexts[0], m_log2_precision, m_context->logQ);
         }
         else
         {
             heaan_output->m_ciphertext =
-                m_scheme->encrypt(heaan_input->m_plaintexts, m_log_precision, m_context->logQ);
+                m_scheme->encrypt(heaan_input->m_plaintexts, m_log2_precision, m_context->logQ);
         }
         heaan_output->m_count = heaan_input->m_plaintexts.size();
     }

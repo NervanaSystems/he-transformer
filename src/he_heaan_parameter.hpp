@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "he_parameter.hpp"
+#include <cstdint>
 
 namespace ngraph
 {
@@ -24,21 +24,17 @@ namespace ngraph
     {
         namespace he
         {
-            struct HEParameter;
-
-            struct HEHeaanParameter : public HEParameter
+            struct HEHeaanParameter
             {
-                HEHeaanParameter(std::uint64_t log_poly_modulus,
-                                 std::uint64_t log_plain_modulus,
-                                 std::uint64_t log_precision = 32);
-
-                std::uint64_t m_log_precision;
+                std::uint64_t m_log2_poly_modulus;
+                std::uint64_t m_log2_plain_modulus;
+                std::uint64_t m_log2_precision;
             };
 
             static HEHeaanParameter default_heaan_parameter{
-                13,  // log_2(poly_modulus)
-                383, // log_2(plain_modulus)
-                32   // log_2(precision)
+                13,  // log2(poly_modulus)
+                383, // log2(plain_modulus)
+                32   // log2(precision)
             };
         }
     }

@@ -16,37 +16,20 @@
 
 #pragma once
 
-#include <string>
-
-#include "he_parameter.hpp"
-#include "seal/seal.h"
-
 namespace ngraph
 {
     namespace runtime
     {
         namespace he
         {
-            struct HEParameter;
-
-            struct HESealParameter : public HEParameter
+            struct HESealParameter
             {
-                HESealParameter(std::uint64_t poly_modulus, std::uint64_t plain_modulus);
-
-                HESealParameter(std::uint64_t poly_modulus,
-                                std::uint64_t plain_modulus,
-                                std::uint64_t security_level,
-                                int fractional_encoder_integer_coeff_count,
-                                int fractional_encoder_fraction_coeff_count,
-                                std::uint64_t fractional_encoder_base,
-                                int evaluation_decomposition_bit_count);
-
                 // SEALContext
                 // Must be 1024, 2048, 4096, 8192, 16384, or 32768, aka n
-                //std::uint64_t poly_modulus_degree;
+                std::uint64_t m_poly_modulus;
+                std::uint64_t m_plain_modulus;
                 // Must be 128 or 192
                 std::uint64_t m_security_level;
-                //std::uint64_t plain_modulus;
 
                 // FractionalEncoder
                 int m_fractional_encoder_integer_coeff_count;

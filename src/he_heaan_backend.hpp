@@ -47,7 +47,6 @@ namespace ngraph
                 {
                 public:
                     HEHeaanBackend();
-                    HEHeaanBackend(const std::shared_ptr<runtime::he::HEParameter> hep);
                     HEHeaanBackend(const std::shared_ptr<runtime::he::HEHeaanParameter> sp);
                     HEHeaanBackend(HEHeaanBackend& he_backend) = default;
                     ~HEHeaanBackend();
@@ -158,7 +157,7 @@ namespace ngraph
                         return m_context;
                     }
 
-                    const inline long get_precision() const { return m_log_precision; }
+                    const inline long get_precision() const { return m_log2_precision; }
                     const inline std::shared_ptr<heaan::SecretKey> get_secret_key() const
                     {
                         return m_secret_key;
@@ -170,7 +169,7 @@ namespace ngraph
                     std::shared_ptr<heaan::Context> m_context;
                     std::shared_ptr<heaan::Scheme> m_scheme;
 
-                    long m_log_precision; // Bits of precision
+                    long m_log2_precision; // Bits of precision
                 };
             }
         }

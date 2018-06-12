@@ -46,7 +46,6 @@ namespace ngraph
                 {
                 public:
                     HESealBackend();
-                    HESealBackend(const std::shared_ptr<runtime::he::HEParameter> hep);
                     HESealBackend(const std::shared_ptr<runtime::he::HESealParameter> sp);
                     HESealBackend(HESealBackend& he_backend) = default;
                     ~HESealBackend();

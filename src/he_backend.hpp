@@ -19,7 +19,6 @@
 #include <memory>
 #include <unordered_map>
 
-#include "he_parameter.hpp"
 #include "ngraph/runtime/backend.hpp"
 
 namespace ngraph
@@ -42,7 +41,6 @@ namespace ngraph
             {
             public:
                 HEBackend();
-                HEBackend(const std::shared_ptr<runtime::he::HEParameter> hep);
                 HEBackend(HEBackend& he_backend) = default;
 
                 virtual std::shared_ptr<runtime::TensorView>
