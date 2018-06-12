@@ -14,22 +14,12 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <limits>
-#include <math.h>
-
-#include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
-#include "ngraph/function.hpp"
-#include "ngraph/pass/assign_layout.hpp"
-#include "ngraph/pass/manager.hpp"
-#include "ngraph/pass/visualize_tree.hpp"
-
 #include "he_call_frame.hpp"
 #include "he_cipher_tensor_view.hpp"
 #include "he_heaan_backend.hpp"
 #include "he_heaan_parameter.hpp"
 #include "he_plain_tensor_view.hpp"
 #include "he_tensor_view.hpp"
-#include "pass/insert_relinearize.hpp"
 
 using namespace ngraph;
 using namespace std;
@@ -66,9 +56,7 @@ runtime::he::he_heaan::HEHeaanBackend::HEHeaanBackend(
     // Scheme
     m_scheme = make_shared<heaan::Scheme>(*m_secret_key, *m_context);
 
-    // Keygen, encryptor and decryptor
-    // Evaluator
-    // Plaintext constants
+    // TODO: add plaintext constants as in SEAL backend
 
     NGRAPH_INFO << "Created Heaan backend";
 }
