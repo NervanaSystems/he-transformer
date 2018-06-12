@@ -52,8 +52,14 @@ namespace ngraph
                     HESealBackend(HESealBackend& he_backend) = default;
                     ~HESealBackend();
 
+                    /// @brief Checks if parameter is valid for SEAL encoding.
+                    //         Throws an error if parameter is not valid.
                     void assert_valid_seal_parameter(
                         const std::shared_ptr<runtime::he::HESealParameter> sp) const;
+
+                    /// @brief Constructs SEAL context from SEAL parameter
+                    /// @param sp SEAL Parameter from which to construct context
+                    /// @return Pointer to constructed context
                     shared_ptr<seal::SEALContext> make_seal_context(
                         const std::shared_ptr<runtime::he::HESealParameter> sp) const;
 
@@ -110,27 +116,35 @@ namespace ngraph
 
                     void remove_compiled_function(std::shared_ptr<Function> func) override;
 
+                    /// @brief Encodes bytes to a plaintext polynomial
+                    /// @param output Pointer to plaintext to write to
+                    /// @param input Pointer to memory to encode
+                    /// @param type Type of scalar to encode
+                    /// @param count Number of elements to encode, count > 1 indicates batching
                     void encode(shared_ptr<runtime::he::HEPlaintext>& output,
                                 const void* input,
                                 const element::Type& type,
-                                size_t count) const;
+                                size_t count = 1) const;
 
-                    void encode(shared_ptr<runtime::he::HEPlaintext>& output,
-                                const void* input,
-                                const element::Type& type) const;
-
-                    void decode(void* output,
-                                const std::shared_ptr<runtime::he::HEPlaintext> input,
-                                const element::Type& type) const;
-
+                    /// @brief Decodes plaintext polynomial to bytes
+                    /// @param output Pointer to memory to write to
+                    /// @param input Pointer to plaintext to decode
+                    /// @param type Type of scalar to encode
+                    /// @param count Number of elements to decode, count > 1 indicates batching
                     void decode(void* output,
                                 const std::shared_ptr<runtime::he::HEPlaintext> input,
                                 const element::Type& type,
-                                size_t count) const;
+                                size_t count = 1) const;
 
+                    /// @brief Encrypts plaintext polynomial to ciphertext
+                    /// @param output Pointer to ciphertext to encrypt to
+                    /// @param input Pointer to plaintext to encrypt
                     void encrypt(shared_ptr<runtime::he::HECiphertext> output,
                                  const std::shared_ptr<runtime::he::HEPlaintext> input) const;
 
+                    /// @brief Decrypts ciphertext to plaintext polynomial
+                    /// @param output Pointer to plaintext to decrypt to
+                    /// @param input Pointer to ciphertext to decrypt
                     void decrypt(std::shared_ptr<runtime::he::HEPlaintext> output,
                                  const std::shared_ptr<runtime::he::HECiphertext> input) const;
 
@@ -184,9 +198,15 @@ namespace ngraph
                         return m_plaintext_num;
                     }
 
+                    /// @brief Checks the noise budget of several tensor views
+                    ///        Throws an error if the noise budget is exhauasted
+                    ///        for any of the tensor views.
                     void check_noise_budget(
                         const vector<shared_ptr<runtime::he::HETensorView>>& tvs) const;
 
+                    /// @brief Returns the remaining noise budget for a ciphertext.
+                    //         A noise budget of <= 0 indicate the ciphertext is no longer
+                    //         decryptable.
                     int noise_budget(const std::shared_ptr<seal::Ciphertext>& ciphertext) const;
 
                     void enable_performance_data(std::shared_ptr<Function> func,

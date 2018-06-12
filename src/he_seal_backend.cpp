@@ -328,13 +328,10 @@ void runtime::he::he_seal::HESealBackend::encode(shared_ptr<runtime::he::HEPlain
                                                  const element::Type& type,
                                                  size_t count) const
 {
-    throw ngraph_error("HESealBackend encode not implemented");
-}
-
-void runtime::he::he_seal::HESealBackend::encode(shared_ptr<runtime::he::HEPlaintext>& output,
-                                                 const void* input,
-                                                 const element::Type& type) const
-{
+    if (count != 1)
+    {
+        throw ngraph_error("Batching not enabled for SEAL in encode");
+    }
     const string type_name = type.c_type_string();
 
     if (type_name == "int64_t")
@@ -359,13 +356,10 @@ void runtime::he::he_seal::HESealBackend::decode(void* output,
                                                  const element::Type& type,
                                                  size_t count) const
 {
-    throw ngraph_error("HESealBackend::decode unimplemented");
-}
-
-void runtime::he::he_seal::HESealBackend::decode(void* output,
-                                                 const shared_ptr<runtime::he::HEPlaintext> input,
-                                                 const element::Type& type) const
-{
+    if (count != 1)
+    {
+        throw ngraph_error("Batching not enabled for SEAL in decode");
+    }
     const string type_name = type.c_type_string();
 
     if (auto seal_input = dynamic_pointer_cast<SealPlaintextWrapper>(input))

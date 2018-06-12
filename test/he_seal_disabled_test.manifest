@@ -171,7 +171,6 @@ min_trivial
 min_trivial_5d
 min_vector_zero
 mkldnn_layouts
-mnist_cryptonets_batch_4
 not
 notequal
 numeric_double_inf
@@ -267,7 +266,7 @@ tan
 tanh
 tensor_constant_with_op
 tensorview_custom_mem
-tf_mnist_cryptonets_vatch
+tf_mnist_cryptonets_batch
 validate_call_input_count # Segfault
 validate_call_input_shape # Segfault
 validate_call_input_type  # Segfault
