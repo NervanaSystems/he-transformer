@@ -42,7 +42,8 @@ namespace ngraph
                     void scalar_relinearize(
                         const std::shared_ptr<runtime::he::HeaanCiphertextWrapper>& arg,
                         std::shared_ptr<runtime::he::HeaanCiphertextWrapper>& out,
-                        const std::shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend);
+                        const std::shared_ptr<runtime::he::he_heaan::HEHeaanBackend>
+                            he_heaan_backend);
                 }
             }
         }

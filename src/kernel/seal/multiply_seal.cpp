@@ -34,8 +34,8 @@ void runtime::he::kernel::seal::scalar_multiply(
     }
     else
     {
-    he_seal_backend->get_evaluator()->multiply(
-        arg0->m_ciphertext, arg1->m_ciphertext, out->m_ciphertext);
+        he_seal_backend->get_evaluator()->multiply(
+            arg0->m_ciphertext, arg1->m_ciphertext, out->m_ciphertext);
     }
 }
 

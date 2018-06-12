@@ -29,8 +29,7 @@ void runtime::he::kernel::heaan::scalar_multiply(
 {
     if (arg0 == arg1)
     {
-        out->m_ciphertext =
-            he_heaan_backend->get_scheme()->square(arg0->m_ciphertext);
+        out->m_ciphertext = he_heaan_backend->get_scheme()->square(arg0->m_ciphertext);
     }
     else
     {

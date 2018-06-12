@@ -18,9 +18,9 @@
 #include "he_backend.hpp"
 #include "he_heaan_backend.hpp"
 #include "he_seal_backend.hpp"
-#include "ngraph/type/element_type.hpp"
-#include "kernel/seal/relinearize_seal.hpp"
 #include "kernel/heaan/relinearize_heaan.hpp"
+#include "kernel/seal/relinearize_seal.hpp"
+#include "ngraph/type/element_type.hpp"
 
 using namespace std;
 using namespace ngraph;
@@ -69,7 +69,7 @@ void runtime::he::kernel::relinearize(const shared_ptr<runtime::he::HECiphertext
         else
         {
             throw ngraph_error(
-                "Relinearize backend is SEAL, but argument or output is not SealPlaintextWrapper.");
+                "Relinearize backend is SEAL, but argument or output is not SealCiphertextWrapper.");
         }
     }
     else if (auto he_heaan_backend =
@@ -88,11 +88,12 @@ void runtime::he::kernel::relinearize(const shared_ptr<runtime::he::HECiphertext
         else
         {
             throw ngraph_error(
-                    "Relinearize backend is HEAAN, but argument or output is not SealPlaintextWrapper.");
+                "Relinearize backend is HEAAN, but argument or output is not "
+                "HeaanCiphertextWrapper.");
         }
     }
     else
     {
-        throw ngraph_error("Relinearize backend is neither SEAL nor heaan.");
+        throw ngraph_error("Relinearize backend is neither SEAL nor HEAAN.");
     }
 }

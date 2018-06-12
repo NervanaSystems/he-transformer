@@ -25,9 +25,10 @@ void runtime::he::kernel::seal::scalar_relinearize(
     shared_ptr<runtime::he::SealCiphertextWrapper>& out,
     const shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend)
 {
-	// It's safe to do inplace relinearize on the input since the un-relinearized result won't be
-	// used by other ops. That is, this relinearize op is immediately after a multiply op, and the
-	// relinearize op is the only op using the result from the multiply op
-    he_seal_backend->get_evaluator()->relinearize(arg->m_ciphertext, *(he_seal_backend->get_ev_key()));
+    // It's safe to do inplace relinearize on the input since the un-relinearized result won't be
+    // used by other ops. That is, this relinearize op is immediately after a multiply op, and the
+    // relinearize op is the only op using the result from the multiply op
+    he_seal_backend->get_evaluator()->relinearize(arg->m_ciphertext,
+                                                  *(he_seal_backend->get_ev_key()));
     out = arg;
 }

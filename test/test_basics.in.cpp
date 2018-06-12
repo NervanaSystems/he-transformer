@@ -271,7 +271,7 @@ NGRAPH_TEST(${BACKEND_NAME}, ab_square)
         copy_data(t_a, test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector());
         backend->call(f, {t_result}, {t_a, t_a});
         EXPECT_EQ(read_vector<float>(t_result),
-                (test::NDArray<float, 2>({{1, 4, 9}, {16, 25, 36}})).get_vector());
+                  (test::NDArray<float, 2>({{1, 4, 9}, {16, 25, 36}})).get_vector());
     }
 }
 
