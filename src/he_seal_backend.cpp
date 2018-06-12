@@ -410,7 +410,7 @@ void runtime::he::he_seal::HESealBackend::decode(void* output,
 }
 
 void runtime::he::he_seal::HESealBackend::encrypt(
-    shared_ptr<runtime::he::HECiphertext> output,
+    shared_ptr<runtime::he::HECiphertext>& output,
     const shared_ptr<runtime::he::HEPlaintext> input) const
 {
     auto seal_output = dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(output);
@@ -426,7 +426,7 @@ void runtime::he::he_seal::HESealBackend::encrypt(
 }
 
 void runtime::he::he_seal::HESealBackend::decrypt(
-    shared_ptr<runtime::he::HEPlaintext> output,
+    shared_ptr<runtime::he::HEPlaintext>& output,
     const shared_ptr<runtime::he::HECiphertext> input) const
 {
     auto seal_output = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(output);

@@ -103,14 +103,14 @@ namespace ngraph
                     std::shared_ptr<runtime::he::HECiphertext> create_empty_ciphertext(size_t batch_size = 1) const override;
                     std::shared_ptr<runtime::he::HEPlaintext>
                         create_valued_plaintext(float value,
-                                                const element::Type& element_type) const;
-                    std::shared_ptr<runtime::he::HEPlaintext> create_empty_plaintext() const;
+                                                const element::Type& element_type) const override;
+                    std::shared_ptr<runtime::he::HEPlaintext> create_empty_plaintext() const override;
 
                     // Create TensorView of the same value
                     std::shared_ptr<runtime::TensorView> create_valued_tensor(
-                        float value, const element::Type& element_type, const Shape& shape);
+                        float value, const element::Type& element_type, const Shape& shape) override;
                     std::shared_ptr<runtime::TensorView> create_valued_plain_tensor(
-                        float value, const element::Type& element_type, const Shape& shape);
+                        float value, const element::Type& element_type, const Shape& shape) override;
 
                     bool compile(std::shared_ptr<Function> func) override;
 
@@ -128,10 +128,10 @@ namespace ngraph
                     /// @param input Pointer to memory to encode
                     /// @param type Type of scalar to encode
                     /// @param count Number of elements to encode, count > 1 indicates batching
-                    void encode(shared_ptr<runtime::he::HEPlaintext>& output,
+                    void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
                                 const void* input,
                                 const element::Type& type,
-                                size_t count = 1) const;
+                                size_t count = 1) const override;
 
                     /// @brief Decodes plaintext polynomial to bytes
                     /// @param output Pointer to memory to write to
@@ -141,19 +141,19 @@ namespace ngraph
                     void decode(void* output,
                                 const std::shared_ptr<runtime::he::HEPlaintext> input,
                                 const element::Type& type,
-                                size_t count = 1) const;
+                                size_t count = 1) const override;
 
                     /// @brief Encrypts plaintext polynomial to ciphertext
                     /// @param output Pointer to ciphertext to encrypt to
                     /// @param input Pointer to plaintext to encrypt
-                    void encrypt(shared_ptr<runtime::he::HECiphertext> output,
-                                 const std::shared_ptr<runtime::he::HEPlaintext> input) const;
+                    void encrypt(shared_ptr<runtime::he::HECiphertext>& output,
+                                 const std::shared_ptr<runtime::he::HEPlaintext> input) const override;
 
                     /// @brief Decrypts ciphertext to plaintext polynomial
                     /// @param output Pointer to plaintext to decrypt to
                     /// @param input Pointer to ciphertext to decrypt
-                    void decrypt(std::shared_ptr<runtime::he::HEPlaintext> output,
-                                 const std::shared_ptr<runtime::he::HECiphertext> input) const;
+                    void decrypt(std::shared_ptr<runtime::he::HEPlaintext>& output,
+                                 const std::shared_ptr<runtime::he::HECiphertext> input) const override;
 
                     const inline std::shared_ptr<seal::SEALContext> get_context() const
                     {

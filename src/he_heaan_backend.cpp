@@ -180,7 +180,7 @@ shared_ptr<runtime::he::HEPlaintext>
     return make_shared<HeaanPlaintextWrapper>();
 }
 
-shared_ptr<runtime::TensorView> runtime::he::he_heaan::HEHeaanBackend::create_valued_tensor(
+shared_ptr<runtime::TensorView> runtime::he::he_heaan::HEHeaanBackend::create_valued_tensor (
     float value, const element::Type& element_type, const Shape& shape)
 {
     auto tensor = static_pointer_cast<HECipherTensorView>(create_tensor(element_type, shape));
@@ -340,7 +340,7 @@ void runtime::he::he_heaan::HEHeaanBackend::decode(void* output,
 }
 
 void runtime::he::he_heaan::HEHeaanBackend::encrypt(
-    shared_ptr<runtime::he::HECiphertext> output,
+    shared_ptr<runtime::he::HECiphertext>& output,
     const shared_ptr<runtime::he::HEPlaintext> input) const
 {
     auto heaan_output = dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(output);
@@ -366,7 +366,7 @@ void runtime::he::he_heaan::HEHeaanBackend::encrypt(
 }
 
 void runtime::he::he_heaan::HEHeaanBackend::decrypt(
-    shared_ptr<runtime::he::HEPlaintext> output,
+    shared_ptr<runtime::he::HEPlaintext>& output,
     const shared_ptr<runtime::he::HECiphertext> input) const
 {
     auto heaan_output = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(output);
