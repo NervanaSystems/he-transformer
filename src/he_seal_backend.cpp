@@ -303,7 +303,7 @@ shared_ptr<runtime::TensorView> runtime::he::he_seal::HESealBackend::create_valu
     return tensor;
 }
 
-bool runtime::he::he_seal::HESealBackend::compile(shared_ptr<Function> func)
+/* bool runtime::he::he_seal::HESealBackend::compile(shared_ptr<Function> func)
 {
     if (m_function_map.count(func) == 0)
     {
@@ -324,9 +324,9 @@ bool runtime::he::he_seal::HESealBackend::compile(shared_ptr<Function> func)
         m_function_map.insert({func, call_frame});
     }
     return true;
-}
+} */
 
-bool runtime::he::he_seal::HESealBackend::call(
+/* bool runtime::he::he_seal::HESealBackend::call(
     shared_ptr<Function> func,
     const vector<shared_ptr<runtime::TensorView>>& outputs,
     const vector<shared_ptr<runtime::TensorView>>& inputs)
@@ -339,12 +339,12 @@ bool runtime::he::he_seal::HESealBackend::call(
 void runtime::he::he_seal::HESealBackend::clear_function_instance()
 {
     m_function_map.clear();
-}
+} */
 
-void runtime::he::he_seal::HESealBackend::remove_compiled_function(shared_ptr<Function> func)
+/* void runtime::he::he_seal::HESealBackend::remove_compiled_function(shared_ptr<Function> func)
 {
     throw ngraph_error("HESealBackend remove compile function unimplemented");
-}
+} */
 
 void runtime::he::he_seal::HESealBackend::encode(shared_ptr<runtime::he::HEPlaintext>& output,
                                                  const void* input,
@@ -488,13 +488,13 @@ void runtime::he::he_seal::HESealBackend::enable_performance_data(shared_ptr<Fun
     // Enabled by default
 }
 
-vector<runtime::PerformanceCounter>
+/* vector<runtime::PerformanceCounter>
     runtime::he::he_seal::HESealBackend::get_performance_data(shared_ptr<Function> func) const
 {
     return m_function_map.at(func)->get_performance_data();
-}
+} */
 
-void runtime::he::he_seal::HESealBackend::visualize_function_after_pass(
+/* void runtime::he::he_seal::HESealBackend::visualize_function_after_pass(
     const shared_ptr<Function>& func, const string& file_name)
 {
     compile(func);
@@ -504,4 +504,4 @@ void runtime::he::he_seal::HESealBackend::visualize_function_after_pass(
     ngraph::pass::Manager pass_manager;
     pass_manager.register_pass<ngraph::pass::VisualizeTree>(file_name);
     pass_manager.run_passes(compiled_func);
-}
+} */

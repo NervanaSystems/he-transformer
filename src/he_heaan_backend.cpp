@@ -206,7 +206,7 @@ shared_ptr<runtime::TensorView> runtime::he::he_heaan::HEHeaanBackend::create_va
     return tensor;
 }
 
-bool runtime::he::he_heaan::HEHeaanBackend::compile(shared_ptr<Function> func)
+/* bool runtime::he::he_heaan::HEHeaanBackend::compile(shared_ptr<Function> func)
 {
     if (m_function_map.count(func) == 0)
     {
@@ -227,9 +227,9 @@ bool runtime::he::he_heaan::HEHeaanBackend::compile(shared_ptr<Function> func)
         m_function_map.insert({func, call_frame});
     }
     return true;
-}
+} */
 
-bool runtime::he::he_heaan::HEHeaanBackend::call(
+/* bool runtime::he::he_heaan::HEHeaanBackend::call(
     shared_ptr<Function> func,
     const vector<shared_ptr<runtime::TensorView>>& outputs,
     const vector<shared_ptr<runtime::TensorView>>& inputs)
@@ -247,7 +247,7 @@ void runtime::he::he_heaan::HEHeaanBackend::clear_function_instance()
 void runtime::he::he_heaan::HEHeaanBackend::remove_compiled_function(shared_ptr<Function> func)
 {
     throw ngraph_error("HEHeaanBackend remove compile function unimplemented");
-}
+} */
 
 void runtime::he::he_heaan::HEHeaanBackend::encode(shared_ptr<runtime::he::HEPlaintext>& output,
                                                    const void* input,
@@ -405,13 +405,13 @@ void runtime::he::he_heaan::HEHeaanBackend::enable_performance_data(shared_ptr<F
     // Enabled by default
 }
 
-vector<runtime::PerformanceCounter>
+/* vector<runtime::PerformanceCounter>
     runtime::he::he_heaan::HEHeaanBackend::get_performance_data(shared_ptr<Function> func) const
 {
     return m_function_map.at(func)->get_performance_data();
-}
+} */
 
-void runtime::he::he_heaan::HEHeaanBackend::visualize_function_after_pass(
+/* void runtime::he::he_heaan::HEHeaanBackend::visualize_function_after_pass(
     const shared_ptr<Function>& func, const string& file_name)
 {
     compile(func);
@@ -421,4 +421,4 @@ void runtime::he::he_heaan::HEHeaanBackend::visualize_function_after_pass(
     ngraph::pass::Manager pass_manager;
     pass_manager.register_pass<ngraph::pass::VisualizeTree>(file_name);
     pass_manager.run_passes(compiled_func);
-}
+} */

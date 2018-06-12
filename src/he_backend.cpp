@@ -91,8 +91,7 @@ shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_tensor(
 
 bool runtime::he::HEBackend::compile(shared_ptr<Function> func)
 {
-    throw ngraph_error("HEBackend::compile unimplemented");
-    /* if (m_function_map.count(func) == 0)
+    if (m_function_map.count(func) == 0)
     {
         shared_ptr<HEBackend> he_backend = shared_from_this();
         shared_ptr<Function> cf_func = clone_function(*func);
@@ -109,17 +108,16 @@ bool runtime::he::HEBackend::compile(shared_ptr<Function> func)
 
         m_function_map.insert({func, call_frame});
     }
-    return true; */
+    return true;
 }
 
 bool runtime::he::HEBackend::call(shared_ptr<Function> func,
                                   const vector<shared_ptr<runtime::TensorView>>& outputs,
                                   const vector<shared_ptr<runtime::TensorView>>& inputs)
 {
-    throw ngraph_error("HEBackend::call unimplemented");
-    /* compile(func);
+    compile(func);
     m_function_map.at(func)->call(outputs, inputs);
-    return true; */
+    return true;
 }
 
 void runtime::he::HEBackend::clear_function_instance()
@@ -129,7 +127,7 @@ void runtime::he::HEBackend::clear_function_instance()
 
 void runtime::he::HEBackend::remove_compiled_function(shared_ptr<Function> func)
 {
-    throw ngraph_error("HEBackend remove compile function unimplemented");
+    m_function_map.erase(func);
 }
 
 /* void runtime::he::HEBackend::encode(shared_ptr<runtime::he::HEPlaintext> output,
