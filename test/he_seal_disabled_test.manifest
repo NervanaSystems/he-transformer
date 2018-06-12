@@ -1,5 +1,7 @@
 abs
 ab_batch
+ab_batch2
+ab_batch3
 acos
 asin
 atan
@@ -101,6 +103,7 @@ construct_equality_bool
 convert_float32_bool
 convert_int32_bool
 convert_int32_float32
+convolution_2d_2image_batch
 cos
 cosh
 divide
@@ -264,6 +267,7 @@ tan
 tanh
 tensor_constant_with_op
 tensorview_custom_mem
+tf_mnist_cryptonets_vatch
 validate_call_input_count # Segfault
 validate_call_input_shape # Segfault
 validate_call_input_type  # Segfault
