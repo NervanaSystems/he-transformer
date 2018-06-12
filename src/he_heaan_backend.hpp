@@ -17,7 +17,6 @@
 #pragma once
 
 #include <memory>
-#include <unordered_map>
 
 #include "he_backend.hpp"
 #include "he_heaan_backend.hpp"
@@ -31,11 +30,8 @@ namespace ngraph
 {
     namespace runtime
     {
-        class CallFrame;
-
         namespace he
         {
-            class HECallFrame;
             class HETensorView;
             class HEPlainTensorView;
             class HECipherTensorView;
@@ -43,16 +39,16 @@ namespace ngraph
 
             namespace he_heaan
             {
-                class HEHeaanBackend : public HEBackend,
-                                       public std::enable_shared_from_this<HEHeaanBackend>
+                class HEHeaanBackend : public HEBackend
                 {
                 public:
                     HEHeaanBackend();
-                    HEHeaanBackend(const std::shared_ptr<runtime::he::HEParameter> hep);
                     HEHeaanBackend(const std::shared_ptr<runtime::he::HEHeaanParameter> sp);
                     HEHeaanBackend(HEHeaanBackend& he_backend) = default;
                     ~HEHeaanBackend();
 
+                    /// @brief Checks if parameter is valid for HEAAN encoding.
+                    ///        Throws an error if parameter is not valid.
                     void assert_valid_heaan_parameter(
                         const std::shared_ptr<runtime::he::HEHeaanParameter> hp) const;
 
@@ -60,8 +56,10 @@ namespace ngraph
                         create_tensor(const element::Type& element_type,
                                       const Shape& shape) override;
 
-                    std::shared_ptr<runtime::TensorView> create_tensor(
-                        const element::Type& element_type, const Shape& shape, const bool batched);
+                    std::shared_ptr<runtime::TensorView>
+                        create_tensor(const element::Type& element_type,
+                                      const Shape& shape,
+                                      const bool batched) override;
 
                     std::shared_ptr<runtime::TensorView>
                         create_tensor(const element::Type& element_type,
@@ -69,52 +67,51 @@ namespace ngraph
                                       void* memory_pointer) override;
 
                     std::shared_ptr<runtime::TensorView>
-                        create_plain_tensor(const element::Type& element_type, const Shape& shape);
+                        create_plain_tensor(const element::Type& element_type,
+                                            const Shape& shape) override;
 
-                    // Create scalar text without memory pool
                     std::shared_ptr<runtime::he::HECiphertext>
                         create_valued_ciphertext(float value,
                                                  const element::Type& element_type,
-                                                 size_t batch_size = 1) const;
+                                                 size_t batch_size = 1) const override;
+
                     std::shared_ptr<runtime::he::HECiphertext>
-                        create_empty_ciphertext(size_t batch_size = 1) const;
+                        create_empty_ciphertext(size_t batch_size = 1) const override;
+
                     std::shared_ptr<runtime::he::HEPlaintext>
                         create_valued_plaintext(float value,
-                                                const element::Type& element_type) const;
-                    std::shared_ptr<runtime::he::HEPlaintext> create_empty_plaintext() const;
+                                                const element::Type& element_type) const override;
 
-                    // Create TensorView of the same value
-                    std::shared_ptr<runtime::TensorView> create_valued_tensor(
-                        float value, const element::Type& element_type, const Shape& shape);
-                    std::shared_ptr<runtime::TensorView> create_valued_plain_tensor(
-                        float value, const element::Type& element_type, const Shape& shape);
+                    std::shared_ptr<runtime::he::HEPlaintext>
+                        create_empty_plaintext() const override;
 
-                    bool compile(std::shared_ptr<Function> func) override;
+                    std::shared_ptr<runtime::TensorView>
+                        create_valued_tensor(float value,
+                                             const element::Type& element_type,
+                                             const Shape& shape) override;
 
-                    bool call(
-                        std::shared_ptr<Function> func,
-                        const std::vector<std::shared_ptr<runtime::TensorView>>& outputs,
-                        const std::vector<std::shared_ptr<runtime::TensorView>>& inputs) override;
-
-                    void clear_function_instance();
-
-                    void remove_compiled_function(std::shared_ptr<Function> func) override;
+                    std::shared_ptr<runtime::TensorView>
+                        create_valued_plain_tensor(float value,
+                                                   const element::Type& element_type,
+                                                   const Shape& shape) override;
 
                     void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
                                 const void* input,
                                 const element::Type& type,
-                                size_t count = 1) const;
+                                size_t count = 1) const override;
 
                     void decode(void* output,
                                 const std::shared_ptr<runtime::he::HEPlaintext> input,
                                 const element::Type& type,
-                                size_t count = 1) const;
+                                size_t count = 1) const override;
 
-                    void encrypt(std::shared_ptr<runtime::he::HECiphertext> output,
-                                 const std::shared_ptr<runtime::he::HEPlaintext> input) const;
+                    void encrypt(
+                        std::shared_ptr<runtime::he::HECiphertext>& output,
+                        const std::shared_ptr<runtime::he::HEPlaintext> input) const override;
 
-                    void decrypt(std::shared_ptr<runtime::he::HEPlaintext> output,
-                                 const std::shared_ptr<runtime::he::HECiphertext> input) const;
+                    void decrypt(
+                        std::shared_ptr<runtime::he::HEPlaintext>& output,
+                        const std::shared_ptr<runtime::he::HECiphertext> input) const override;
 
                     const inline std::shared_ptr<heaan::Scheme> get_scheme() const
                     {
@@ -126,29 +123,19 @@ namespace ngraph
                         return m_context;
                     }
 
-                    const inline long get_precision() const { return m_log_precision; }
+                    const inline long get_precision() const { return m_log2_precision; }
                     const inline std::shared_ptr<heaan::SecretKey> get_secret_key() const
                     {
                         return m_secret_key;
                     }
 
-                    void enable_performance_data(std::shared_ptr<Function> func,
-                                                 bool enable) override;
-                    std::vector<PerformanceCounter>
-                        get_performance_data(std::shared_ptr<Function> func) const override;
-
-                    void visualize_function_after_pass(const std::shared_ptr<Function>& func,
-                                                       const std::string& file_name);
-
                 private:
-                    std::unordered_map<std::shared_ptr<Function>, std::shared_ptr<HECallFrame>>
-                        m_function_map;
                     std::shared_ptr<heaan::SecretKey> m_secret_key;
 
                     std::shared_ptr<heaan::Context> m_context;
                     std::shared_ptr<heaan::Scheme> m_scheme;
 
-                    long m_log_precision; // Bits of precision
+                    long m_log2_precision; // Bits of precision
                 };
             }
         }

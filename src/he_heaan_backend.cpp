@@ -14,22 +14,11 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <limits>
-#include <math.h>
-
-#include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
-#include "ngraph/function.hpp"
-#include "ngraph/pass/assign_layout.hpp"
-#include "ngraph/pass/manager.hpp"
-#include "ngraph/pass/visualize_tree.hpp"
-
-#include "he_call_frame.hpp"
-#include "he_cipher_tensor_view.hpp"
 #include "he_heaan_backend.hpp"
+#include "he_cipher_tensor_view.hpp"
 #include "he_heaan_parameter.hpp"
 #include "he_plain_tensor_view.hpp"
 #include "he_tensor_view.hpp"
-#include "pass/insert_relinearize.hpp"
 
 using namespace ngraph;
 using namespace std;
@@ -51,21 +40,14 @@ runtime::he::he_heaan::HEHeaanBackend::HEHeaanBackend()
 }
 
 runtime::he::he_heaan::HEHeaanBackend::HEHeaanBackend(
-    const shared_ptr<runtime::he::HEParameter> hep)
-    : runtime::he::he_heaan::HEHeaanBackend(
-          make_shared<runtime::he::HEHeaanParameter>(hep->m_poly_modulus, hep->m_plain_modulus))
-{
-}
-
-runtime::he::he_heaan::HEHeaanBackend::HEHeaanBackend(
     const shared_ptr<runtime::he::HEHeaanParameter> hp)
 {
     assert_valid_heaan_parameter(hp);
     // Context
-    m_context = make_shared<heaan::Context>(hp->m_poly_modulus, hp->m_plain_modulus);
+    m_context = make_shared<heaan::Context>(hp->m_log2_poly_modulus, hp->m_log2_plain_modulus);
     print_heaan_context(*m_context);
 
-    m_log_precision = (long)hp->m_log_precision;
+    m_log2_precision = (long)hp->m_log2_precision;
 
     // Secret Key
     m_secret_key = make_shared<heaan::SecretKey>(m_context->logN);
@@ -73,9 +55,7 @@ runtime::he::he_heaan::HEHeaanBackend::HEHeaanBackend(
     // Scheme
     m_scheme = make_shared<heaan::Scheme>(*m_secret_key, *m_context);
 
-    // Keygen, encryptor and decryptor
-    // Evaluator
-    // Plaintext constants
+    // TODO: add plaintext constants as in SEAL backend
 
     NGRAPH_INFO << "Created Heaan backend";
 }
@@ -90,7 +70,8 @@ void runtime::he::he_heaan::HEHeaanBackend::assert_valid_heaan_parameter(
     static const int base = 2;
     static const int depth = 4; // TODO: find depth dynamically for computation
 
-    double security = 3.6 * (1 << hp->m_poly_modulus) / (depth + hp->m_plain_modulus) - 110.;
+    double security =
+        3.6 * (1 << hp->m_log2_poly_modulus) / (depth + hp->m_log2_plain_modulus) - 110.;
     // TODO: check this matches with https://bitbucket.org/malb/lwe-estimator
 
     if (security < 128)
@@ -206,49 +187,6 @@ shared_ptr<runtime::TensorView> runtime::he::he_heaan::HEHeaanBackend::create_va
     return tensor;
 }
 
-bool runtime::he::he_heaan::HEHeaanBackend::compile(shared_ptr<Function> func)
-{
-    if (m_function_map.count(func) == 0)
-    {
-        shared_ptr<HEHeaanBackend> he_heaan_backend =
-            dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(shared_from_this());
-        shared_ptr<Function> cf_func = clone_function(*func);
-
-        // Run passes
-        ngraph::pass::Manager pass_manager;
-        pass_manager
-            .register_pass<ngraph::pass::AssignLayout<descriptor::layout::DenseTensorViewLayout>>();
-        pass_manager.register_pass<runtime::he::pass::InsertRelinearize>();
-        pass_manager.run_passes(cf_func);
-
-        // Create call frame
-        shared_ptr<HECallFrame> call_frame = make_shared<HECallFrame>(cf_func, he_heaan_backend);
-
-        m_function_map.insert({func, call_frame});
-    }
-    return true;
-}
-
-bool runtime::he::he_heaan::HEHeaanBackend::call(
-    shared_ptr<Function> func,
-    const vector<shared_ptr<runtime::TensorView>>& outputs,
-    const vector<shared_ptr<runtime::TensorView>>& inputs)
-{
-    compile(func);
-    m_function_map.at(func)->call(outputs, inputs);
-    return true;
-}
-
-void runtime::he::he_heaan::HEHeaanBackend::clear_function_instance()
-{
-    m_function_map.clear();
-}
-
-void runtime::he::he_heaan::HEHeaanBackend::remove_compiled_function(shared_ptr<Function> func)
-{
-    throw ngraph_error("HEHeaanBackend remove compile function unimplemented");
-}
-
 void runtime::he::he_heaan::HEHeaanBackend::encode(shared_ptr<runtime::he::HEPlaintext>& output,
                                                    const void* input,
                                                    const element::Type& type,
@@ -340,7 +278,7 @@ void runtime::he::he_heaan::HEHeaanBackend::decode(void* output,
 }
 
 void runtime::he::he_heaan::HEHeaanBackend::encrypt(
-    shared_ptr<runtime::he::HECiphertext> output,
+    shared_ptr<runtime::he::HECiphertext>& output,
     const shared_ptr<runtime::he::HEPlaintext> input) const
 {
     auto heaan_output = dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(output);
@@ -350,12 +288,12 @@ void runtime::he::he_heaan::HEHeaanBackend::encrypt(
         if (heaan_input->m_plaintexts.size() == 1)
         {
             heaan_output->m_ciphertext = m_scheme->encryptSingle(
-                heaan_input->m_plaintexts[0], m_log_precision, m_context->logQ);
+                heaan_input->m_plaintexts[0], m_log2_precision, m_context->logQ);
         }
         else
         {
             heaan_output->m_ciphertext =
-                m_scheme->encrypt(heaan_input->m_plaintexts, m_log_precision, m_context->logQ);
+                m_scheme->encrypt(heaan_input->m_plaintexts, m_log2_precision, m_context->logQ);
         }
         heaan_output->m_count = heaan_input->m_plaintexts.size();
     }
@@ -366,7 +304,7 @@ void runtime::he::he_heaan::HEHeaanBackend::encrypt(
 }
 
 void runtime::he::he_heaan::HEHeaanBackend::decrypt(
-    shared_ptr<runtime::he::HEPlaintext> output,
+    shared_ptr<runtime::he::HEPlaintext>& output,
     const shared_ptr<runtime::he::HECiphertext> input) const
 {
     auto heaan_output = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(output);
@@ -397,28 +335,4 @@ void runtime::he::he_heaan::HEHeaanBackend::decrypt(
     {
         throw ngraph_error("HEHeaanBackend::decrypt has non-heaan ciphertexts");
     }
-}
-
-void runtime::he::he_heaan::HEHeaanBackend::enable_performance_data(shared_ptr<Function> func,
-                                                                    bool enable)
-{
-    // Enabled by default
-}
-
-vector<runtime::PerformanceCounter>
-    runtime::he::he_heaan::HEHeaanBackend::get_performance_data(shared_ptr<Function> func) const
-{
-    return m_function_map.at(func)->get_performance_data();
-}
-
-void runtime::he::he_heaan::HEHeaanBackend::visualize_function_after_pass(
-    const shared_ptr<Function>& func, const string& file_name)
-{
-    compile(func);
-    auto cf = m_function_map.at(func);
-    auto compiled_func = cf->get_compiled_function();
-    NGRAPH_INFO << "Visualize graph to " << file_name;
-    ngraph::pass::Manager pass_manager;
-    pass_manager.register_pass<ngraph::pass::VisualizeTree>(file_name);
-    pass_manager.run_passes(compiled_func);
 }

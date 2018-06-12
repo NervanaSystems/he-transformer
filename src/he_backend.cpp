@@ -36,76 +36,15 @@ runtime::he::HEBackend::HEBackend()
 {
 }
 
-runtime::he::HEBackend::HEBackend(const shared_ptr<runtime::he::HEParameter> hep)
-{
-    throw ngraph_error("HEBackend() not implemented");
-}
-
-shared_ptr<runtime::TensorView>
-    runtime::he::HEBackend::create_tensor(const element::Type& element_type, const Shape& shape)
-{
-    throw ngraph_error("HE create_tensor unimplemented");
-}
-
-shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_tensor(
-    const element::Type& element_type, const Shape& shape, const bool batched)
-{
-    throw ngraph_error("HE create_tensor unimplemented");
-}
-
 shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_tensor(
     const element::Type& element_type, const Shape& shape, void* memory_pointer)
 {
     throw ngraph_error("HE create_tensor unimplemented");
 }
 
-shared_ptr<runtime::TensorView>
-    runtime::he::HEBackend::create_plain_tensor(const element::Type& element_type,
-                                                const Shape& shape)
-{
-    throw ngraph_error("HE create_plain_tensor unimplemented");
-}
-
-shared_ptr<runtime::he::HECiphertext>
-    runtime::he::HEBackend::create_valued_ciphertext(float value,
-                                                     const element::Type& element_type) const
-{
-    throw ngraph_error("HE create_empty_ciphertext unimplemented");
-}
-
-shared_ptr<runtime::he::HECiphertext> runtime::he::HEBackend::create_empty_ciphertext() const
-{
-    throw ngraph_error("HE create_empty_ciphertext unimplemented");
-}
-
-shared_ptr<runtime::he::HEPlaintext>
-    runtime::he::HEBackend::create_valued_plaintext(float value,
-                                                    const element::Type& element_type) const
-{
-    throw ngraph_error("HE create_valued_plaintext unimplemented");
-}
-
-shared_ptr<runtime::he::HEPlaintext> runtime::he::HEBackend::create_empty_plaintext() const
-{
-    throw ngraph_error("HE create_empty_plaintext unimplemented");
-}
-
-shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_valued_tensor(
-    float value, const element::Type& element_type, const Shape& shape) const
-{
-    throw ngraph_error("HE create_valued_tensor unimplemented");
-}
-
-shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_valued_plain_tensor(
-    float value, const element::Type& element_type, const Shape& shape) const
-{
-    throw ngraph_error("HE create_valued_plain_tensor unimplemented");
-}
-
 bool runtime::he::HEBackend::compile(shared_ptr<Function> func)
 {
-    throw ngraph_error("HEBackend::compile unimplemented");
-    /* if (m_function_map.count(func) == 0)
+    if (m_function_map.count(func) == 0)
     {
         shared_ptr<HEBackend> he_backend = shared_from_this();
         shared_ptr<Function> cf_func = clone_function(*func);
@@ -122,17 +61,16 @@ bool runtime::he::HEBackend::compile(shared_ptr<Function> func)
 
         m_function_map.insert({func, call_frame});
     }
-    return true; */
+    return true;
 }
 
 bool runtime::he::HEBackend::call(shared_ptr<Function> func,
                                   const vector<shared_ptr<runtime::TensorView>>& outputs,
                                   const vector<shared_ptr<runtime::TensorView>>& inputs)
 {
-    throw ngraph_error("HEBackend::call unimplemented");
-    /* compile(func);
+    compile(func);
     m_function_map.at(func)->call(outputs, inputs);
-    return true; */
+    return true;
 }
 
 void runtime::he::HEBackend::clear_function_instance()
@@ -142,35 +80,7 @@ void runtime::he::HEBackend::clear_function_instance()
 
 void runtime::he::HEBackend::remove_compiled_function(shared_ptr<Function> func)
 {
-    throw ngraph_error("HEBackend remove compile function unimplemented");
-}
-
-void runtime::he::HEBackend::encode(shared_ptr<runtime::he::HEPlaintext> output,
-                                    const void* input,
-                                    const element::Type& type,
-                                    size_t count) const
-{
-    throw ngraph_error("HEBackend encode unimplemented");
-}
-
-void runtime::he::HEBackend::decode(void* output,
-                                    const runtime::he::HEPlaintext& input,
-                                    const element::Type& type,
-                                    size_t count) const
-{
-    throw ngraph_error("HEBackend decode unimplemented");
-}
-
-void runtime::he::HEBackend::encrypt(shared_ptr<runtime::he::HECiphertext> output,
-                                     const shared_ptr<runtime::he::HEPlaintext> input) const
-{
-    throw ngraph_error("HEBackend encrypt unimplemented");
-}
-
-void runtime::he::HEBackend::decrypt(runtime::he::HEPlaintext& output,
-                                     const runtime::he::HECiphertext& input) const
-{
-    throw ngraph_error("HEBackend decrypt unimplemented");
+    m_function_map.erase(func);
 }
 
 void runtime::he::HEBackend::enable_performance_data(shared_ptr<Function> func, bool enable)

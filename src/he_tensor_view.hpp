@@ -58,14 +58,15 @@ namespace ngraph
                                         size_t batch_axis = 0,
                                         bool batched = false) const;
 
+                /// @brief Returns backend
                 inline std::shared_ptr<HEBackend> get_backend() const { return m_he_backend; }
             protected:
                 void check_io_bounds(const void* p, size_t tensor_offset, size_t n) const;
                 std::shared_ptr<HEBackend> m_he_backend;
 
                 bool m_batched;
-                size_t
-                    m_batch_size; // If m_batched, corresponds to first shape dimesion. TODO: support more arbitrary batching dimension
+                // TODO: support more arbitrary batching dimension
+                size_t m_batch_size; // If m_batched, corresponds to first shape dimesion.
             };
         }
     }

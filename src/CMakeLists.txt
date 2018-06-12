@@ -51,19 +51,16 @@ set (HE_SRC
     he_ciphertext.cpp
     he_plaintext.cpp
     he_tensor_view.cpp
-    he_parameter.cpp
     he_plain_tensor_view.cpp
     int_call_frame.cpp
     # pass
     pass/insert_relinearize.cpp
     # heaan
     he_heaan_backend.cpp
-    he_heaan_parameter.cpp
     heaan_ciphertext_wrapper.cpp
     heaan_plaintext_wrapper.cpp
     # seal
     he_seal_backend.cpp
-    he_seal_parameter.cpp
     seal_ciphertext_wrapper.cpp
     seal_plaintext_wrapper.cpp
 )

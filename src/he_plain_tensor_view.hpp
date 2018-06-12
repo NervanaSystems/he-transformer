@@ -59,6 +59,7 @@ namespace ngraph
                 {
                     return m_plain_texts;
                 }
+
                 inline std::shared_ptr<runtime::he::HEPlaintext>& get_element(size_t i)
                 {
                     return m_plain_texts[i];

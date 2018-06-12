@@ -16,19 +16,12 @@
 
 #include <limits>
 
-#include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
-#include "ngraph/function.hpp"
-#include "ngraph/pass/assign_layout.hpp"
-#include "ngraph/pass/manager.hpp"
-#include "ngraph/pass/visualize_tree.hpp"
-
 #include "he_call_frame.hpp"
 #include "he_cipher_tensor_view.hpp"
 #include "he_plain_tensor_view.hpp"
 #include "he_seal_backend.hpp"
 #include "he_seal_parameter.hpp"
 #include "he_tensor_view.hpp"
-#include "pass/insert_relinearize.hpp"
 
 #include "seal/seal.h"
 
@@ -50,12 +43,6 @@ static void print_seal_context(const seal::SEALContext& context)
 runtime::he::he_seal::HESealBackend::HESealBackend()
     : runtime::he::he_seal::HESealBackend(
           make_shared<runtime::he::HESealParameter>(runtime::he::default_seal_parameter))
-{
-}
-
-runtime::he::he_seal::HESealBackend::HESealBackend(const shared_ptr<runtime::he::HEParameter> hep)
-    : runtime::he::he_seal::HESealBackend(
-          make_shared<runtime::he::HESealParameter>(hep->m_poly_modulus, hep->m_plain_modulus))
 {
 }
 
@@ -151,6 +138,19 @@ shared_ptr<runtime::TensorView>
 }
 
 shared_ptr<runtime::TensorView> runtime::he::he_seal::HESealBackend::create_tensor(
+    const element::Type& element_type, const Shape& shape, const bool batched)
+{
+    if (batched)
+    {
+        throw ngraph_error("HESealBackend does not support batched create tensor");
+    }
+    else
+    {
+        create_tensor(element_type, shape);
+    }
+}
+
+shared_ptr<runtime::TensorView> runtime::he::he_seal::HESealBackend::create_tensor(
     const element::Type& element_type, const Shape& shape, void* memory_pointer)
 {
     throw ngraph_error("HESeal create_tensor unimplemented");
@@ -191,8 +191,12 @@ shared_ptr<runtime::he::HEPlaintext> runtime::he::he_seal::HESealBackend::create
 }
 
 shared_ptr<runtime::he::HECiphertext> runtime::he::he_seal::HESealBackend::create_valued_ciphertext(
-    float value, const element::Type& element_type) const
+    float value, const element::Type& element_type, size_t batch_size) const
 {
+    if (batch_size != 1)
+    {
+        throw ngraph_error("HESealBackend::create_valued_ciphertext only supports batch size 1");
+    }
     const string type_name = element_type.c_type_string();
     auto ciphertext =
         dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(create_empty_ciphertext());
@@ -218,8 +222,12 @@ shared_ptr<runtime::he::HECiphertext> runtime::he::he_seal::HESealBackend::creat
 }
 
 shared_ptr<runtime::he::HECiphertext>
-    runtime::he::he_seal::HESealBackend::create_empty_ciphertext() const
+    runtime::he::he_seal::HESealBackend::create_empty_ciphertext(size_t batch_size) const
 {
+    if (batch_size != 1)
+    {
+        throw ngraph_error("HESealBackend::create_empty_ciphertext only supports batch size 1");
+    }
     return make_shared<runtime::he::SealCiphertextWrapper>();
 }
 
@@ -280,61 +288,15 @@ shared_ptr<runtime::TensorView> runtime::he::he_seal::HESealBackend::create_valu
     return tensor;
 }
 
-bool runtime::he::he_seal::HESealBackend::compile(shared_ptr<Function> func)
-{
-    if (m_function_map.count(func) == 0)
-    {
-        shared_ptr<HESealBackend> he_seal_backend =
-            dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(shared_from_this());
-        shared_ptr<Function> cf_func = clone_function(*func);
-
-        // Run passes
-        ngraph::pass::Manager pass_manager;
-        pass_manager
-            .register_pass<ngraph::pass::AssignLayout<descriptor::layout::DenseTensorViewLayout>>();
-        pass_manager.register_pass<runtime::he::pass::InsertRelinearize>();
-        pass_manager.run_passes(cf_func);
-
-        // Create call frame
-        shared_ptr<HECallFrame> call_frame = make_shared<HECallFrame>(cf_func, he_seal_backend);
-
-        m_function_map.insert({func, call_frame});
-    }
-    return true;
-}
-
-bool runtime::he::he_seal::HESealBackend::call(
-    shared_ptr<Function> func,
-    const vector<shared_ptr<runtime::TensorView>>& outputs,
-    const vector<shared_ptr<runtime::TensorView>>& inputs)
-{
-    compile(func);
-    m_function_map.at(func)->call(outputs, inputs);
-    return true;
-}
-
-void runtime::he::he_seal::HESealBackend::clear_function_instance()
-{
-    m_function_map.clear();
-}
-
-void runtime::he::he_seal::HESealBackend::remove_compiled_function(shared_ptr<Function> func)
-{
-    throw ngraph_error("HESealBackend remove compile function unimplemented");
-}
-
 void runtime::he::he_seal::HESealBackend::encode(shared_ptr<runtime::he::HEPlaintext>& output,
                                                  const void* input,
                                                  const element::Type& type,
                                                  size_t count) const
 {
-    throw ngraph_error("HESealBackend encode not implemented");
-}
-
-void runtime::he::he_seal::HESealBackend::encode(shared_ptr<runtime::he::HEPlaintext>& output,
-                                                 const void* input,
-                                                 const element::Type& type) const
-{
+    if (count != 1)
+    {
+        throw ngraph_error("Batching not enabled for SEAL in encode");
+    }
     const string type_name = type.c_type_string();
 
     if (type_name == "int64_t")
@@ -359,13 +321,10 @@ void runtime::he::he_seal::HESealBackend::decode(void* output,
                                                  const element::Type& type,
                                                  size_t count) const
 {
-    throw ngraph_error("HESealBackend::decode unimplemented");
-}
-
-void runtime::he::he_seal::HESealBackend::decode(void* output,
-                                                 const shared_ptr<runtime::he::HEPlaintext> input,
-                                                 const element::Type& type) const
-{
+    if (count != 1)
+    {
+        throw ngraph_error("Batching not enabled for SEAL in decode");
+    }
     const string type_name = type.c_type_string();
 
     if (auto seal_input = dynamic_pointer_cast<SealPlaintextWrapper>(input))
@@ -393,7 +352,7 @@ void runtime::he::he_seal::HESealBackend::decode(void* output,
 }
 
 void runtime::he::he_seal::HESealBackend::encrypt(
-    shared_ptr<runtime::he::HECiphertext> output,
+    shared_ptr<runtime::he::HECiphertext>& output,
     const shared_ptr<runtime::he::HEPlaintext> input) const
 {
     auto seal_output = dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(output);
@@ -409,7 +368,7 @@ void runtime::he::he_seal::HESealBackend::encrypt(
 }
 
 void runtime::he::he_seal::HESealBackend::decrypt(
-    shared_ptr<runtime::he::HEPlaintext> output,
+    shared_ptr<runtime::he::HEPlaintext>& output,
     const shared_ptr<runtime::he::HECiphertext> input) const
 {
     auto seal_output = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(output);
@@ -420,7 +379,6 @@ void runtime::he::he_seal::HESealBackend::decrypt(
 int runtime::he::he_seal::HESealBackend::noise_budget(
     const shared_ptr<seal::Ciphertext>& ciphertext) const
 {
-    throw ngraph_error("HESealBackend::noise_budget unimplemented");
     return m_decryptor->invariant_noise_budget(*ciphertext);
 }
 
@@ -463,28 +421,4 @@ void runtime::he::he_seal::HESealBackend::check_noise_budget(
         }
     }
     NGRAPH_INFO << "Done checking noise budget ";
-}
-
-void runtime::he::he_seal::HESealBackend::enable_performance_data(shared_ptr<Function> func,
-                                                                  bool enable)
-{
-    // Enabled by default
-}
-
-vector<runtime::PerformanceCounter>
-    runtime::he::he_seal::HESealBackend::get_performance_data(shared_ptr<Function> func) const
-{
-    return m_function_map.at(func)->get_performance_data();
-}
-
-void runtime::he::he_seal::HESealBackend::visualize_function_after_pass(
-    const shared_ptr<Function>& func, const string& file_name)
-{
-    compile(func);
-    auto cf = m_function_map.at(func);
-    auto compiled_func = cf->get_compiled_function();
-    NGRAPH_INFO << "Visualize graph to " << file_name;
-    ngraph::pass::Manager pass_manager;
-    pass_manager.register_pass<ngraph::pass::VisualizeTree>(file_name);
-    pass_manager.run_passes(compiled_func);
 }
