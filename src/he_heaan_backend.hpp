@@ -105,11 +105,13 @@ namespace ngraph
                                 const element::Type& type,
                                 size_t count = 1) const override;
 
-                    void encrypt(std::shared_ptr<runtime::he::HECiphertext>& output,
-                                 const std::shared_ptr<runtime::he::HEPlaintext> input) const override;
+                    void encrypt(
+                        std::shared_ptr<runtime::he::HECiphertext>& output,
+                        const std::shared_ptr<runtime::he::HEPlaintext> input) const override;
 
-                    void decrypt(std::shared_ptr<runtime::he::HEPlaintext>& output,
-                                 const std::shared_ptr<runtime::he::HECiphertext> input) const override;
+                    void decrypt(
+                        std::shared_ptr<runtime::he::HEPlaintext>& output,
+                        const std::shared_ptr<runtime::he::HECiphertext> input) const override;
 
                     const inline std::shared_ptr<heaan::Scheme> get_scheme() const
                     {
