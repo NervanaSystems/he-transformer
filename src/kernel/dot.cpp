@@ -115,7 +115,7 @@ void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HEPlaintext>>
     auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);
     if (!he_seal_backend && !he_heaan_backend)
     {
-        throw ngraph_error("Dot he_backend neither seal nor hean;");
+        throw ngraph_error("Dot he_backend neither SEAL nor HEAAN.");
     }
     // Get the sizes of the dot axes. It's easiest to pull them from arg1 because they're
     // right up front.

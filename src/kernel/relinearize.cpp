@@ -19,6 +19,8 @@
 #include "he_heaan_backend.hpp"
 #include "he_seal_backend.hpp"
 #include "ngraph/type/element_type.hpp"
+#include "kernel/seal/relinearize_seal.hpp"
+#include "kernel/heaan/relinearize_heaan.hpp"
 
 using namespace std;
 using namespace ngraph;
@@ -28,9 +30,6 @@ void runtime::he::kernel::relinearize(const vector<shared_ptr<runtime::he::HECip
                                       const shared_ptr<runtime::he::HEBackend>& he_backend,
                                       size_t count)
 {
-// It's safe to do inplace relinearize on the input since the un-relinearized result won't be
-// used by other ops. That is, this relinearize op is immediately after a multiply op, and the
-// relinearize op is the only op using the result from the multiply op
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
     {
@@ -60,25 +59,40 @@ void runtime::he::kernel::relinearize(const shared_ptr<runtime::he::HECiphertext
     {
         shared_ptr<runtime::he::SealCiphertextWrapper> arg_seal =
             dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(arg);
-        if (arg_seal)
+        shared_ptr<runtime::he::SealCiphertextWrapper> out_seal =
+            dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(out);
+        if (arg_seal && out_seal)
         {
-            he_seal_backend->get_evaluator()->relinearize(arg_seal->m_ciphertext,
-                                                          *(he_seal_backend->get_ev_key()));
-            out = arg;
+            kernel::seal::scalar_relinearize(arg_seal, out_seal, he_seal_backend);
+            out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_seal);
         }
         else
         {
             throw ngraph_error(
-                "Relinearize backend is seal, but argument is not SealPlaintextWrapper.");
+                "Relinearize backend is SEAL, but argument or output is not SealPlaintextWrapper.");
         }
     }
     else if (auto he_heaan_backend =
                  dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
     {
-        out = arg;
+        shared_ptr<runtime::he::HeaanCiphertextWrapper> arg_heaan =
+            dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(arg);
+        shared_ptr<runtime::he::HeaanCiphertextWrapper> out_heaan =
+            dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(out);
+
+        if (arg_heaan && out_heaan)
+        {
+            kernel::heaan::scalar_relinearize(arg_heaan, out_heaan, he_heaan_backend);
+            out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_heaan);
+        }
+        else
+        {
+            throw ngraph_error(
+                    "Relinearize backend is HEAAN, but argument or output is not SealPlaintextWrapper.");
+        }
     }
     else
     {
-        throw ngraph_error("Relinearize backend is neither seal nor heaan.");
+        throw ngraph_error("Relinearize backend is neither SEAL nor heaan.");
     }
 }

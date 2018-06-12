@@ -46,7 +46,7 @@ void runtime::he::kernel::avg_pool(const vector<shared_ptr<runtime::he::HECipher
     auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);
     if (!he_seal_backend && !he_heaan_backend)
     {
-        throw ngraph_error("Convolution he_backend neither seal nor hean.");
+        throw ngraph_error("Convolution he_backend neither SEAL nor HEAAN.");
     }
 
     // At the outermost level we will walk over every output coordinate O.
@@ -216,7 +216,7 @@ void runtime::he::kernel::avg_pool(const vector<shared_ptr<runtime::he::HEPlaint
     auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);
     if (!he_seal_backend && !he_heaan_backend)
     {
-        throw ngraph_error("Convolution he_backend neither seal nor hean.");
+        throw ngraph_error("Convolution he_backend neither SEAL nor HEAAN.");
     }
 
     // At the outermost level we will walk over every output coordinate O.

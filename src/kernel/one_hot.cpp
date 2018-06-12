@@ -41,7 +41,7 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<runtime::he::HECiphert
     auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);
     if (!he_seal_backend && !he_heaan_backend)
     {
-        throw ngraph_error("One-Hot he_backend neither seal nor heaan");
+        throw ngraph_error("One-Hot he_backend neither SEAL nor heaan");
     }
     // Get 0 and 1 cipher text
     shared_ptr<runtime::he::HECiphertext> zero_ciphertext;
