@@ -241,6 +241,40 @@ NGRAPH_TEST(${BACKEND_NAME}, ab)
     }
 }
 
+NGRAPH_TEST(${BACKEND_NAME}, ab_square)
+{
+    auto backend = runtime::Backend::create("${BACKEND_NAME}"); // TODO: move to util cast function
+    if ("${BACKEND_NAME}" == "HE_HEAAN")
+    {
+        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
+    }
+    else if ("${BACKEND_NAME}" == "HE_SEAL")
+    {
+        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
+    }
+    Shape shape{2, 3};
+    auto a = make_shared<op::Parameter>(element::f32, shape);
+    auto t = make_shared<op::Multiply>(a, a);
+    auto f = make_shared<Function>(t, op::ParameterVector{a, a});
+
+    // Create some tensors for input/output
+    auto tensors_list = generate_plain_cipher_tensors({t}, {a, a}, backend);
+
+    for (auto tensors : tensors_list)
+    {
+        auto results = get<0>(tensors);
+        auto inputs = get<1>(tensors);
+
+        auto t_a = inputs[0];
+        auto t_result = results[0];
+
+        copy_data(t_a, test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector());
+        backend->call(f, {t_result}, {t_a, t_a});
+        EXPECT_EQ(read_vector<float>(t_result),
+                (test::NDArray<float, 2>({{1, 4, 9}, {16, 25, 36}})).get_vector());
+    }
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, subtract)
 {
     auto backend = runtime::Backend::create("${BACKEND_NAME}");

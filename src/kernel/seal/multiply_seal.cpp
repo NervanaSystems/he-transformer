@@ -28,8 +28,15 @@ void runtime::he::kernel::seal::scalar_multiply(
     const element::Type& type,
     const shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend)
 {
+    if (arg0 == arg1)
+    {
+        he_seal_backend->get_evaluator()->square(arg0->m_ciphertext, out->m_ciphertext);
+    }
+    else
+    {
     he_seal_backend->get_evaluator()->multiply(
         arg0->m_ciphertext, arg1->m_ciphertext, out->m_ciphertext);
+    }
 }
 
 void runtime::he::kernel::seal::scalar_multiply(

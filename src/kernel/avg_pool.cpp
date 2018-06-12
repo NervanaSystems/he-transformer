@@ -354,7 +354,6 @@ void runtime::he::kernel::avg_pool(const vector<shared_ptr<runtime::he::HEPlaint
                 n_elements++;
             }
         }
-        // TODO: use divide op? Or don't divide?
         shared_ptr<runtime::he::HEPlaintext> inv_n_elements;
         if (he_seal_backend)
         {
