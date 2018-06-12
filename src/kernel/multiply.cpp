@@ -62,7 +62,7 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HECipher
         else
         {
             throw ngraph_error(
-                "Multiply backend is seal, but arguments or outputs are not SealCiphertextWrapper");
+                "Multiply backend is SEAL, but arguments or outputs are not SealCiphertextWrapper");
         }
     }
     else if (auto he_heaan_backend =
@@ -84,13 +84,13 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HECipher
         else
         {
             throw ngraph_error(
-                "Multiply backend is heaan, but arguments or outputs are not "
+                "Multiply backend is HEAAN, but arguments or outputs are not "
                 "HeaanCiphertextWrapper");
         }
     }
     else
     {
-        throw ngraph_error("Multiply backend is neither seal nor hean.");
+        throw ngraph_error("Multiply backend is neither SEAL nor HEAAN.");
     }
 }
 
@@ -132,7 +132,7 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HECipher
         else
         {
             throw ngraph_error(
-                "Multiply backend is seal, but arguments or outputs are not SealCiphertextWrapper");
+                "Multiply backend is SEAL, but arguments or outputs are not SealCiphertextWrapper");
         }
     }
     else if (auto he_heaan_backend =
@@ -154,13 +154,13 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HECipher
         else
         {
             throw ngraph_error(
-                "Multiply backend is heaan, but arguments or outputs are not "
+                "Multiply backend is HEAAN, but arguments or outputs are not "
                 "HeaanCiphertextWrapper");
         }
     }
     else
     {
-        throw ngraph_error("Multiply backend is neither seal nor hean.");
+        throw ngraph_error("Multiply backend is neither SEAL nor HEAAN.");
     }
 }
 
@@ -221,7 +221,7 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HEPlaint
         else
         {
             throw ngraph_error(
-                "Multiply backend is seal, but arguments or outputs are not SealPlaintextWrapper");
+                "Multiply backend is SEAL, but arguments or outputs are not SealPlaintextWrapper");
         }
     }
     else if (auto he_heaan_backend =
@@ -243,12 +243,12 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HEPlaint
         else
         {
             throw ngraph_error(
-                "Multiply backend is heaan, but arguments or outputs are not "
+                "Multiply backend is HEAAN, but arguments or outputs are not "
                 "HeaanPlaintextWrapper");
         }
     }
     else
     {
-        throw ngraph_error("Multiply backend is neither seal nor hean.");
+        throw ngraph_error("Multiply backend is neither SEAL nor HEAAN.");
     }
 }

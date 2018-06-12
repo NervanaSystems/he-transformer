@@ -102,7 +102,7 @@ void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HECiphertext>
         else
         {
             throw ngraph_error(
-                "Add backend is seal, but arguments or outputs are not SealCiphertextWrapper");
+                "Add backend is SEAL, but arguments or outputs are not SealCiphertextWrapper");
         }
     }
     else if (auto he_heaan_backend =
@@ -123,12 +123,12 @@ void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HECiphertext>
         else
         {
             throw ngraph_error(
-                "Add backend is heaan, but arguments or outputs are not HeaanCiphertextWrapper");
+                "Add backend is HEAAN, but arguments or outputs are not HeaanCiphertextWrapper");
         }
     }
     else
     {
-        throw ngraph_error("Add backend is neither seal nor hean.");
+        throw ngraph_error("Add backend is neither SEAL nor HEAAN.");
     }
 }
 
@@ -156,7 +156,7 @@ void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HEPlaintext>&
         else
         {
             throw ngraph_error(
-                "Add backend is seal, but arguments or outputs are not SealPlaintextWrapper");
+                "Add backend is SEAL, but arguments or outputs are not SealPlaintextWrapper.:");
         }
     }
     else if (auto he_heaan_backend =
@@ -177,12 +177,12 @@ void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HEPlaintext>&
         else
         {
             throw ngraph_error(
-                "Add backend is heaan, but arguments or outputs are not HeaanPlaintextWrapper");
+                "Add backend is HEAAN, but arguments or outputs are not HeaanPlaintextWrapper.");
         }
     }
     else
     {
-        throw ngraph_error("Add backend is neither seal nor hean.");
+        throw ngraph_error("Add backend is neither SEAL nor HEAAN.");
     }
 }
 
@@ -210,7 +210,7 @@ void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HECiphertext>
         else
         {
             throw ngraph_error(
-                "Add backend is seal, but arguments or outputs are not SealPlaintextWrapper");
+                "Add backend is SEAL, but arguments or outputs are not SealPlaintextWrapper");
         }
     }
     else if (auto he_heaan_backend =
@@ -231,12 +231,12 @@ void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HECiphertext>
         else
         {
             throw ngraph_error(
-                "Add backend is heaan, but arguments or outputs are not HeaanPlaintextWrapper");
+                "Add backend is HEAAN, but arguments or outputs are not HeaanPlaintextWrapper.");
         }
     }
     else
     {
-        throw ngraph_error("Add backend is neither seal nor hean.");
+        throw ngraph_error("Add backend is neither SEAL nor HEAAN.");
     }
 }
 

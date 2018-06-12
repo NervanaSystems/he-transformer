@@ -28,29 +28,22 @@ namespace ngraph
     {
         namespace he
         {
-            class SealCiphertextWrapper;
-            class SealPlaintextWrapper;
+            class HeaanCiphertextWrapper;
 
-            namespace he_seal
+            namespace he_heaan
             {
-                class HESealBackend;
+                class HEHeaanBackend;
             }
 
             namespace kernel
             {
-                namespace seal
+                namespace heaan
                 {
-                    void scalar_negate(
-                        const std::shared_ptr<runtime::he::SealCiphertextWrapper>& arg,
-                        std::shared_ptr<runtime::he::SealCiphertextWrapper>& out,
-                        const element::Type& type,
-                        const std::shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend);
-
-                    void scalar_negate(
-                        const std::shared_ptr<runtime::he::SealPlaintextWrapper>& arg,
-                        std::shared_ptr<runtime::he::SealPlaintextWrapper>& out,
-                        const element::Type& type,
-                        const std::shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend);
+                    void scalar_relinearize(
+                        const std::shared_ptr<runtime::he::HeaanCiphertextWrapper>& arg,
+                        std::shared_ptr<runtime::he::HeaanCiphertextWrapper>& out,
+                        const std::shared_ptr<runtime::he::he_heaan::HEHeaanBackend>
+                            he_heaan_backend);
                 }
             }
         }

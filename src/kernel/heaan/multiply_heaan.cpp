@@ -27,9 +27,15 @@ void runtime::he::kernel::heaan::scalar_multiply(
     const element::Type& type,
     const shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
 {
-    out->m_ciphertext =
-        he_heaan_backend->get_scheme()->mult(arg0->m_ciphertext, arg1->m_ciphertext);
-    //TODO: reScaleByAndEqual?
+    if (arg0 == arg1)
+    {
+        out->m_ciphertext = he_heaan_backend->get_scheme()->square(arg0->m_ciphertext);
+    }
+    else
+    {
+        out->m_ciphertext =
+            he_heaan_backend->get_scheme()->mult(arg0->m_ciphertext, arg1->m_ciphertext);
+    }
 }
 
 void runtime::he::kernel::heaan::scalar_multiply(
@@ -39,13 +45,8 @@ void runtime::he::kernel::heaan::scalar_multiply(
     const element::Type& type,
     const shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
 {
-    const string type_name = type.c_type_string();
-
-    // Perform multiplication
     out->m_ciphertext = he_heaan_backend->get_scheme()->multByConstVec(
         arg0->m_ciphertext, arg1->m_plaintexts, he_heaan_backend->get_precision());
-
-    //TODO: reScaleByAndEqual in relinearize??
 }
 
 void runtime::he::kernel::heaan::scalar_multiply(

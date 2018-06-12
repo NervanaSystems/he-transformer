@@ -51,7 +51,7 @@ runtime::he::HEPlainTensorView::HEPlainTensorView(const element::Type& element_t
         }
         else
         {
-            throw ngraph_error("m_he_backend neither seal nor heaan in HEPlainTensorView");
+            throw ngraph_error("m_he_backend neither SEAL nor heaan in HEPlainTensorView");
         }
     }
 }
@@ -83,7 +83,7 @@ void runtime::he::HEPlainTensorView::write(const void* source, size_t tensor_off
         }
         else
         {
-            throw ngraph_error("HEPlainTensorView::write, he_backend is neither seal nor heaan.");
+            throw ngraph_error("HEPlainTensorView::write, he_backend is neither SEAL nor heaan.");
         }
     }
     else
@@ -105,7 +105,7 @@ void runtime::he::HEPlainTensorView::write(const void* source, size_t tensor_off
             else
             {
                 throw ngraph_error(
-                    "HEPlainTensorView::write, he_backend is neither seal nor heaan.");
+                    "HEPlainTensorView::write, he_backend is neither SEAL nor heaan.");
             }
         }
     }
@@ -134,7 +134,7 @@ void runtime::he::HEPlainTensorView::read(void* target, size_t tensor_offset, si
         }
         else
         {
-            throw ngraph_error("HEPlainTensorView::read, he_backend is neither seal nor heaan.");
+            throw ngraph_error("HEPlainTensorView::read, he_backend is neither SEAL nor heaan.");
         }
     }
     else
@@ -156,7 +156,7 @@ void runtime::he::HEPlainTensorView::read(void* target, size_t tensor_offset, si
             else
             {
                 throw ngraph_error(
-                    "HEPlainTensorView::read, he_backend is neither seal nor heaan.");
+                    "HEPlainTensorView::read, he_backend is neither SEAL nor heaan.");
             }
         }
     }
