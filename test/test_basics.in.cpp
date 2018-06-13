@@ -280,14 +280,39 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_optimized)
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
         runtime::Backend::create("${BACKEND_NAME}"));
 
-    Shape shape_a{3};
-    Shape shape_b{3};
-    Shape shape_r{3};
-    // Float
+    Shape shape{6};
+    auto a = make_shared<op::Parameter>(element::f32, shape);
+    auto b = make_shared<op::Parameter>(element::f32, shape);
+    auto c = make_shared<op::Parameter>(element::f32, shape);
+    auto t = (a * b) + c;
+
+    auto f = make_shared<Function>(t, op::ParameterVector{a, b, c});
+
+    // Create some tensors for input/output
+    auto t_a = backend->create_tensor(element::f32, shape);
+    auto t_b = backend->create_plain_tensor(element::f32, shape);
+    auto t_c = backend->create_tensor(element::f32, shape);
+    auto t_result = backend->create_tensor(element::f32, shape);
+
+    copy_data(t_a, vector<float>{1, -2, 3, -4, 5, -6});
+    copy_data(t_b, vector<float>{-1, -1, 0, 0, 1, 1});
+    copy_data(t_c, vector<float>{0, 0, 1, 0, 0, 0});
+    backend->call(f, {t_result}, {t_a, t_b, t_c});
+    EXPECT_TRUE(test::all_close(vector<float>{-1, 2, 1, 0, 5, -6}, read_vector<float>(t_result)));
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, dot_optimized_small)
+{
+    auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
+            runtime::Backend::create("${BACKEND_NAME}"));
+
+    Shape shape_a{1,3};
+    Shape shape_b{3,1};
+    Shape shape_r{1,1};
     auto a = make_shared<op::Parameter>(element::f32, shape_a);
     auto b = make_shared<op::Parameter>(element::f32, shape_b);
-    auto t = make_shared<op::Multiply>(a, b);
-
+    auto r = make_shared<op::Parameter>(element::f32, shape_r);
+    auto t = make_shared<op::Dot>(a, b);
     auto f = make_shared<Function>(t, op::ParameterVector{a, b});
 
     // Create some tensors for input/output
@@ -296,9 +321,36 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_optimized)
     auto t_result = backend->create_tensor(element::f32, shape_r);
 
     copy_data(t_a, vector<float>{1, 2, 3});
-    copy_data(t_b, vector<float>{-1, 0, 1});
+    copy_data(t_b, vector<float>{0, 1, 0});
     backend->call(f, {t_result}, {t_a, t_b});
-    EXPECT_TRUE(test::all_close(vector<float>{-1, 0, 3}, read_vector<float>(t_result)));
+    EXPECT_TRUE(test::all_close(vector<float>{2}, read_vector<float>(t_result)));
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, dot_optimized)
+{
+    auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
+            runtime::Backend::create("${BACKEND_NAME}"));
+
+    Shape shape_a{2,3};
+    Shape shape_b{3,4};
+    Shape shape_r{2,4};
+    auto a = make_shared<op::Parameter>(element::f32, shape_a);
+    auto b = make_shared<op::Parameter>(element::f32, shape_b);
+    auto r = make_shared<op::Parameter>(element::f32, shape_r);
+    auto t = make_shared<op::Dot>(a, b);
+
+    auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+
+    // Create some tensors for input/output
+    auto t_a = backend->create_tensor(element::f32, shape_a);
+    auto t_b = backend->create_plain_tensor(element::f32, shape_b);
+    auto t_result = backend->create_tensor(element::f32, shape_r);
+
+    copy_data(t_a, vector<float>{1, -2, 3, -4, 5, -6});
+    copy_data(t_b, vector<float>{-1, -1, 0, 0, 1, 1, -1, -1, 0, 0, 1, 1});
+    backend->call(f, {t_result}, {t_a, t_b});
+    EXPECT_TRUE(test::all_close(vector<float>{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                read_vector<float>(t_result)));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, add_zero)

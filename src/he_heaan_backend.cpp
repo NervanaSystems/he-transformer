@@ -62,6 +62,10 @@ runtime::he::he_heaan::HEHeaanBackend::HEHeaanBackend(
     m_plaintext_map["int64_t"][0] = create_valued_plaintext(0, element::i64);
     m_plaintext_map["int64_t"][1] = create_valued_plaintext(1, element::i64);
     m_plaintext_map["int64_t"][-1] = create_valued_plaintext(-1, element::i64);
+
+    // Ciphertext constants
+    m_ciphertext_map["float"][0] = create_valued_ciphertext(0, element::f32);
+    m_ciphertext_map["int64_t"][0] = create_valued_ciphertext(0, element::i64);
 }
 
 runtime::he::he_heaan::HEHeaanBackend::~HEHeaanBackend()
@@ -140,8 +144,24 @@ shared_ptr<runtime::he::HECiphertext>
         vector<double> values(batch_size, (double)value);
         ciphertext->m_ciphertext = m_scheme->encrypt(values, get_precision(), m_context->logQ);
     }
-
     return ciphertext;
+}
+
+shared_ptr<runtime::he::HECiphertext>&
+runtime::he::he_heaan::HEHeaanBackend::get_valued_ciphertext(
+        int64_t value, const element::Type& element_type, size_t batch_size)
+{
+    if (batch_size != 1)
+    {
+        throw ngraph_error("HEHeaanBackend::get_valued_ciphertext supports only Batch size 1");
+    }
+    const string type_name = element_type.c_type_string();
+    if ((m_ciphertext_map.find(type_name) == m_ciphertext_map.end()) ||
+            (m_ciphertext_map[type_name].find(value) == m_ciphertext_map[type_name].end()))
+    {
+        throw ngraph_error("Type or value not stored in m_ciphertext_map");
+    }
+    return m_ciphertext_map[type_name][value];
 }
 
 shared_ptr<runtime::he::HECiphertext>
@@ -165,11 +185,6 @@ shared_ptr<runtime::he::HEPlaintext>
                                                                 const element::Type& element_type)
 {
     const string type_name = element_type.c_type_string();
-    std::unordered_set<int64_t> stored_plaintext_values{-1, 0, 1};
-    if (stored_plaintext_values.find(value) == stored_plaintext_values.end())
-    {
-        throw ngraph_error("Value not stored in stored plaintext values");
-    }
     if ((m_plaintext_map.find(type_name) == m_plaintext_map.end()) ||
         m_plaintext_map[type_name].find(value) == m_plaintext_map[type_name].end())
     {
