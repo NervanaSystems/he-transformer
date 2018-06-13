@@ -21,6 +21,8 @@
 #include "he_seal_backend.hpp"
 #include "kernel/heaan/subtract_heaan.hpp"
 #include "kernel/seal/subtract_seal.hpp"
+#include "kernel/heaan/negate_heaan.hpp"
+#include "kernel/seal/negate_seal.hpp"
 #include "kernel/subtract.hpp"
 #include "ngraph/type/element_type.hpp"
 
@@ -123,7 +125,7 @@ void runtime::he::kernel::scalar_subtract(const shared_ptr<runtime::he::HECipher
         if (arg0_heaan && arg1_heaan && out_heaan)
         {
             kernel::heaan::scalar_subtract(
-                arg0_heaan, arg1_heaan, out_heaan, type, he_heaan_backend);
+                    arg0_heaan, arg1_heaan, out_heaan, type, he_heaan_backend);
             out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_heaan);
         }
         else
@@ -213,8 +215,18 @@ void runtime::he::kernel::scalar_subtract(const shared_ptr<runtime::he::HECipher
 
         if (arg0_seal && arg1_seal && out_seal)
         {
-            kernel::seal::scalar_subtract(arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
-            out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_seal);
+            auto zero = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>
+                (he_seal_backend->get_valued_plaintext(0, type));
+
+            if (arg1_seal->m_plaintext == zero->m_plaintext)
+            {
+                out = arg0;
+            }
+            else {
+                kernel::seal::scalar_subtract(
+                        arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
+                out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_seal);
+            }
         }
         else
         {
@@ -234,9 +246,18 @@ void runtime::he::kernel::scalar_subtract(const shared_ptr<runtime::he::HECipher
 
         if (arg0_heaan && arg1_heaan && out_heaan)
         {
-            kernel::heaan::scalar_subtract(
-                arg0_heaan, arg1_heaan, out_heaan, type, he_heaan_backend);
-            out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_heaan);
+            auto zero = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>
+                (he_heaan_backend->get_valued_plaintext(0, type));
+
+            if (arg1_heaan->m_plaintexts == zero->m_plaintexts)
+            {
+                out = arg0;
+            }
+            else {
+                kernel::heaan::scalar_subtract(
+                        arg0_heaan, arg1_heaan, out_heaan, type, he_heaan_backend);
+                out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_heaan);
+            }
         }
         else
         {
@@ -269,8 +290,19 @@ void runtime::he::kernel::scalar_subtract(const shared_ptr<runtime::he::HEPlaint
 
         if (arg0_seal && arg1_seal && out_seal)
         {
-            kernel::seal::scalar_subtract(arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
-            out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_seal);
+            auto zero = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>
+                (he_seal_backend->get_valued_plaintext(0, type));
+
+            if (arg0_seal->m_plaintext == zero->m_plaintext)
+            {
+                kernel::seal::scalar_negate(arg1_seal, out_seal, type, he_seal_backend);
+                out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_seal);
+            }
+            else {
+                kernel::seal::scalar_subtract(
+                        arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
+                out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_seal);
+            }
         }
         else
         {
@@ -290,9 +322,19 @@ void runtime::he::kernel::scalar_subtract(const shared_ptr<runtime::he::HEPlaint
 
         if (arg0_heaan && arg1_heaan && out_heaan)
         {
-            kernel::heaan::scalar_subtract(
-                arg0_heaan, arg1_heaan, out_heaan, type, he_heaan_backend);
-            out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_heaan);
+            auto zero = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>
+                (he_heaan_backend->get_valued_plaintext(0, type));
+
+            if (arg0_heaan->m_plaintexts == zero->m_plaintexts)
+            {
+                kernel::heaan::scalar_negate(arg1_heaan, out_heaan, type, he_heaan_backend);
+                out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_heaan);
+            }
+            else {
+                kernel::heaan::scalar_subtract(
+                        arg0_heaan, arg1_heaan, out_heaan, type, he_heaan_backend);
+                out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_heaan);
+            }
         }
         else
         {

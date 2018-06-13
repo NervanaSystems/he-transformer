@@ -73,17 +73,8 @@ void runtime::he::kernel::seal::scalar_subtract(
     const element::Type& type,
     const shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend)
 {
-    const string type_name = type.c_type_string();
-    if ((type_name == "float" && arg1->m_plaintext == he_seal_backend->get_plaintext_num().fl_0) ||
-        (type_name == "int64_t" && arg1->m_plaintext == he_seal_backend->get_plaintext_num().int64_0))
-    {
-        out = arg0;
-    }
-    else
-    {
-        he_seal_backend->get_evaluator()->sub_plain(
-                arg0->m_ciphertext, arg1->m_plaintext, out->m_ciphertext);
-    }
+    he_seal_backend->get_evaluator()->sub_plain(
+            arg0->m_ciphertext, arg1->m_plaintext, out->m_ciphertext);
 }
 
 void runtime::he::kernel::seal::scalar_subtract(

@@ -49,65 +49,13 @@ void runtime::he::kernel::seal::scalar_multiply(
     const string type_name = type.c_type_string();
     if (type_name == "float")
     {
-        shared_ptr<runtime::he::HEPlaintext> p = he_seal_backend->create_empty_plaintext();
-
-        if (arg1->m_plaintext == he_seal_backend->get_plaintext_num().fl_1)
-        {
-            out->m_ciphertext = arg0->m_ciphertext;
-        }
-        else if (arg1->m_plaintext == he_seal_backend->get_plaintext_num().fl_n1)
-        {
-            auto c = arg0->m_ciphertext;
-            he_seal_backend->get_evaluator()->negate(c);
-            out->m_ciphertext = c;
-        }
-        else if (arg1->m_plaintext == he_seal_backend->get_plaintext_num().fl_0)
-        {
-            float zero = 0;
-            shared_ptr<runtime::he::HECiphertext> c = he_seal_backend->create_empty_ciphertext();
-            shared_ptr<runtime::he::HEPlaintext> p = he_seal_backend->create_empty_plaintext();
-            auto p_seal = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(p);
-
-            he_seal_backend->encode(p, &zero, type);
-            he_seal_backend->encrypt(c, p);
-            auto c_seal = dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(c);
-            out = c_seal;
-        }
-        else
-        {
-            he_seal_backend->get_evaluator()->multiply_plain(
+        he_seal_backend->get_evaluator()->multiply_plain(
                 arg0->m_ciphertext, arg1->m_plaintext, out->m_ciphertext);
-        }
     }
     else if (type_name == "int64_t")
     {
-        if (arg1->m_plaintext == he_seal_backend->get_plaintext_num().int64_1)
-        {
-            out->m_ciphertext = arg0->m_ciphertext;
-        }
-        else if (arg1->m_plaintext == he_seal_backend->get_plaintext_num().int64_n1)
-        {
-            auto c = arg0->m_ciphertext;
-            he_seal_backend->get_evaluator()->negate(c);
-            out->m_ciphertext = c;
-        }
-        else if (arg1->m_plaintext == he_seal_backend->get_plaintext_num().int64_0)
-        {
-            int zero = 0;
-            shared_ptr<runtime::he::HECiphertext> c = he_seal_backend->create_empty_ciphertext();
-            shared_ptr<runtime::he::HEPlaintext> p = he_seal_backend->create_empty_plaintext();
-            auto p_seal = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(p);
-
-            he_seal_backend->encode(p, &zero, type);
-            he_seal_backend->encrypt(c, p);
-            auto c_seal = dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(c);
-            out = c_seal;
-        }
-        else
-        {
-            he_seal_backend->get_evaluator()->multiply_plain(
+        he_seal_backend->get_evaluator()->multiply_plain(
                 arg0->m_ciphertext, arg1->m_plaintext, out->m_ciphertext);
-        }
     }
     else
     {

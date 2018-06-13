@@ -161,19 +161,16 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HECipher
 
             if (arg1_seal->m_plaintext == one_seal->m_plaintext)
             {
-                NGRAPH_INFO << "Multiply 1";
                 out = arg0;
             }
             else if (arg1_seal->m_plaintext == neg_one_seal->m_plaintext)
             {
-                NGRAPH_INFO << "Multiply -1";
                 kernel::seal::scalar_negate(arg0_seal, out_seal, type, he_seal_backend);
                 out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_seal);
 
             }
             else if (arg1_seal->m_plaintext == zero_seal->m_plaintext)
             {
-                NGRAPH_INFO << "Multiply 0";
                 out = he_seal_backend->create_valued_ciphertext(0, type);
             }
             else
