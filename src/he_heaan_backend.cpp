@@ -132,7 +132,6 @@ shared_ptr<runtime::he::HECiphertext>
 
     if (batch_size == 1)
     {
-        NGRAPH_INFO << "Encrypting single " << (double)value;
         ciphertext->m_ciphertext =
             m_scheme->encryptSingle((double)value, get_precision(), m_context->logQ);
     }

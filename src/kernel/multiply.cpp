@@ -221,7 +221,7 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HECipher
                 kernel::heaan::scalar_negate(arg0_heaan, out_heaan, type, he_heaan_backend);
                 out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_heaan);
             }
-            if (arg1_heaan->m_plaintexts[0] == zero_heaan->m_plaintexts[0])
+            else if (arg1_heaan->m_plaintexts[0] == zero_heaan->m_plaintexts[0])
             {
                 out = he_heaan_backend->create_valued_ciphertext(0, type);
             }
