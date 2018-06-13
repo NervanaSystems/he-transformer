@@ -106,7 +106,7 @@ namespace ngraph
 
                     std::shared_ptr<runtime::he::HEPlaintext>
                         get_valued_plaintext(std::int64_t value,
-                                const element::Type& element_type)override;
+                                             const element::Type& element_type) override;
 
                     std::shared_ptr<runtime::he::HEPlaintext>
                         create_empty_plaintext() const override;

@@ -278,7 +278,7 @@ NGRAPH_TEST(${BACKEND_NAME}, ab_square)
 NGRAPH_TEST(${BACKEND_NAME}, multiply_optimized)
 {
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-            runtime::Backend::create("${BACKEND_NAME}"));
+        runtime::Backend::create("${BACKEND_NAME}"));
 
     Shape shape_a{3};
     Shape shape_b{3};
@@ -298,8 +298,7 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_optimized)
     copy_data(t_a, vector<float>{1, 2, 3});
     copy_data(t_b, vector<float>{-1, 0, 1});
     backend->call(f, {t_result}, {t_a, t_b});
-    EXPECT_TRUE(test::all_close(
-        vector<float>{-1, 0, 3}, read_vector<float>(t_result)));
+    EXPECT_TRUE(test::all_close(vector<float>{-1, 0, 3}, read_vector<float>(t_result)));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, add_zero)

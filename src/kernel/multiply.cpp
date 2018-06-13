@@ -18,8 +18,8 @@
 #include "he_backend.hpp"
 #include "he_seal_backend.hpp"
 #include "kernel/heaan/multiply_heaan.hpp"
-#include "kernel/heaan/square_heaan.hpp"
 #include "kernel/heaan/negate_heaan.hpp"
+#include "kernel/heaan/square_heaan.hpp"
 #include "kernel/seal/multiply_seal.hpp"
 #include "kernel/seal/negate_seal.hpp"
 #include "kernel/seal/square_seal.hpp"
@@ -67,9 +67,10 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HECipher
             }
             else
             {
-                kernel::seal::scalar_multiply(arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
+                kernel::seal::scalar_multiply(
+                    arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
                 he_seal_backend->get_evaluator()->relinearize(out_seal->m_ciphertext,
-                        *(he_seal_backend->get_ev_key()));
+                                                              *(he_seal_backend->get_ev_key()));
                 out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_seal);
             }
         }
@@ -93,15 +94,15 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HECipher
         {
             if (arg0_heaan == arg1_heaan)
             {
-                kernel::heaan::scalar_square(
-                        arg0_heaan, out_heaan, type, he_heaan_backend);
+                kernel::heaan::scalar_square(arg0_heaan, out_heaan, type, he_heaan_backend);
                 out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_heaan);
             }
             else
             {
                 kernel::heaan::scalar_multiply(
-                        arg0_heaan, arg1_heaan, out_heaan, type, he_heaan_backend);
-                he_heaan_backend->get_scheme()->reScaleByAndEqual(out_heaan->m_ciphertext, he_heaan_backend->get_precision());
+                    arg0_heaan, arg1_heaan, out_heaan, type, he_heaan_backend);
+                he_heaan_backend->get_scheme()->reScaleByAndEqual(
+                    out_heaan->m_ciphertext, he_heaan_backend->get_precision());
                 out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_heaan);
             }
         }
@@ -152,9 +153,12 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HECipher
 
         if (arg0_seal && arg1_seal && out_seal)
         {
-            shared_ptr<runtime::he::HEPlaintext> one = he_seal_backend->get_valued_plaintext(1, type);
-            shared_ptr<runtime::he::HEPlaintext> zero = he_seal_backend->get_valued_plaintext(0, type);
-            shared_ptr<runtime::he::HEPlaintext> neg_one = he_seal_backend->get_valued_plaintext(-1, type);
+            shared_ptr<runtime::he::HEPlaintext> one =
+                he_seal_backend->get_valued_plaintext(1, type);
+            shared_ptr<runtime::he::HEPlaintext> zero =
+                he_seal_backend->get_valued_plaintext(0, type);
+            shared_ptr<runtime::he::HEPlaintext> neg_one =
+                he_seal_backend->get_valued_plaintext(-1, type);
             auto one_seal = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(one);
             auto zero_seal = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(zero);
             auto neg_one_seal = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(neg_one);
@@ -167,7 +171,6 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HECipher
             {
                 kernel::seal::scalar_negate(arg0_seal, out_seal, type, he_seal_backend);
                 out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_seal);
-
             }
             else if (arg1_seal->m_plaintext == zero_seal->m_plaintext)
             {
@@ -175,7 +178,8 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HECipher
             }
             else
             {
-                kernel::seal::scalar_multiply(arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
+                kernel::seal::scalar_multiply(
+                    arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
                 // Don't relinearize, since plain multiplications never increase ciphertext size
                 out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_seal);
             }
@@ -198,9 +202,12 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HECipher
 
         if (arg0_heaan && arg1_heaan && out_heaan)
         {
-            shared_ptr<runtime::he::HEPlaintext> one = he_heaan_backend->get_valued_plaintext(1, type);
-            shared_ptr<runtime::he::HEPlaintext> zero = he_heaan_backend->get_valued_plaintext(0, type);
-            shared_ptr<runtime::he::HEPlaintext> neg_one = he_heaan_backend->get_valued_plaintext(-1, type);
+            shared_ptr<runtime::he::HEPlaintext> one =
+                he_heaan_backend->get_valued_plaintext(1, type);
+            shared_ptr<runtime::he::HEPlaintext> zero =
+                he_heaan_backend->get_valued_plaintext(0, type);
+            shared_ptr<runtime::he::HEPlaintext> neg_one =
+                he_heaan_backend->get_valued_plaintext(-1, type);
             auto one_heaan = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(one);
             auto zero_heaan = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(zero);
             auto neg_one_heaan = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(neg_one);
@@ -213,7 +220,6 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HECipher
             {
                 kernel::heaan::scalar_negate(arg0_heaan, out_heaan, type, he_heaan_backend);
                 out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_heaan);
-
             }
             if (arg1_heaan->m_plaintexts[0] == zero_heaan->m_plaintexts[0])
             {
@@ -221,8 +227,10 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HECipher
             }
             else
             {
-                kernel::heaan::scalar_multiply(arg0_heaan, arg1_heaan, out_heaan, type, he_heaan_backend);
-                he_heaan_backend->get_scheme()->reScaleByAndEqual(out_heaan->m_ciphertext, he_heaan_backend->get_precision());
+                kernel::heaan::scalar_multiply(
+                    arg0_heaan, arg1_heaan, out_heaan, type, he_heaan_backend);
+                he_heaan_backend->get_scheme()->reScaleByAndEqual(
+                    out_heaan->m_ciphertext, he_heaan_backend->get_precision());
                 out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_heaan);
             }
         }

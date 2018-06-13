@@ -258,8 +258,9 @@ shared_ptr<runtime::he::HEPlaintext> runtime::he::he_seal::HESealBackend::create
     return plaintext;
 }
 
-shared_ptr<runtime::he::HEPlaintext> runtime::he::he_seal::HESealBackend::get_valued_plaintext(
-        int64_t value, const element::Type& element_type)
+shared_ptr<runtime::he::HEPlaintext>
+    runtime::he::he_seal::HESealBackend::get_valued_plaintext(int64_t value,
+                                                              const element::Type& element_type)
 {
     const string type_name = element_type.c_type_string();
     std::unordered_set<int64_t> stored_plaintext_values{-1, 0, 1};

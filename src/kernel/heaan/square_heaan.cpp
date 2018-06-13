@@ -27,6 +27,5 @@ void runtime::he::kernel::heaan::scalar_square(
     const element::Type& type,
     const shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
 {
-    out->m_ciphertext =
-        he_heaan_backend->get_scheme()->square(arg->m_ciphertext);
+    out->m_ciphertext = he_heaan_backend->get_scheme()->square(arg->m_ciphertext);
 }

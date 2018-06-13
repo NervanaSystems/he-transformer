@@ -55,13 +55,13 @@ runtime::he::he_heaan::HEHeaanBackend::HEHeaanBackend(
     // Scheme
     m_scheme = make_shared<heaan::Scheme>(*m_secret_key, *m_context);
 
-	// Plaintext constants
-	m_plaintext_map["float"][0] = create_valued_plaintext(0, element::f32);
-	m_plaintext_map["float"][1] = create_valued_plaintext(1, element::f32);
-	m_plaintext_map["float"][-1] = create_valued_plaintext(-1, element::f32);
-	m_plaintext_map["int64_t"][0] = create_valued_plaintext(0, element::i64);
-	m_plaintext_map["int64_t"][1] = create_valued_plaintext(1, element::i64);
-	m_plaintext_map["int64_t"][-1] = create_valued_plaintext(-1, element::i64);
+    // Plaintext constants
+    m_plaintext_map["float"][0] = create_valued_plaintext(0, element::f32);
+    m_plaintext_map["float"][1] = create_valued_plaintext(1, element::f32);
+    m_plaintext_map["float"][-1] = create_valued_plaintext(-1, element::f32);
+    m_plaintext_map["int64_t"][0] = create_valued_plaintext(0, element::i64);
+    m_plaintext_map["int64_t"][1] = create_valued_plaintext(1, element::i64);
+    m_plaintext_map["int64_t"][-1] = create_valued_plaintext(-1, element::i64);
 }
 
 runtime::he::he_heaan::HEHeaanBackend::~HEHeaanBackend()
@@ -132,7 +132,7 @@ shared_ptr<runtime::he::HECiphertext>
 
     if (batch_size == 1)
     {
-		NGRAPH_INFO << "Encrypting single " << (double)value;
+        NGRAPH_INFO << "Encrypting single " << (double)value;
         ciphertext->m_ciphertext =
             m_scheme->encryptSingle((double)value, get_precision(), m_context->logQ);
     }
@@ -161,8 +161,9 @@ shared_ptr<runtime::he::HEPlaintext> runtime::he::he_heaan::HEHeaanBackend::crea
     return plaintext;
 }
 
-shared_ptr<runtime::he::HEPlaintext> runtime::he::he_heaan::HEHeaanBackend::get_valued_plaintext(
-        int64_t value, const element::Type& element_type)
+shared_ptr<runtime::he::HEPlaintext>
+    runtime::he::he_heaan::HEHeaanBackend::get_valued_plaintext(int64_t value,
+                                                                const element::Type& element_type)
 {
     const string type_name = element_type.c_type_string();
     std::unordered_set<int64_t> stored_plaintext_values{-1, 0, 1};

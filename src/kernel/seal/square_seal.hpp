@@ -44,8 +44,7 @@ namespace ngraph
                         const std::shared_ptr<runtime::he::SealCiphertextWrapper>& arg,
                         std::shared_ptr<runtime::he::SealCiphertextWrapper>& out,
                         const element::Type& type,
-                        const std::shared_ptr<runtime::he::he_seal::HESealBackend>
-                            he_seal_backend);
+                        const std::shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend);
                 }
             }
         }

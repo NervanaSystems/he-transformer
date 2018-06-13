@@ -50,12 +50,12 @@ void runtime::he::kernel::seal::scalar_multiply(
     if (type_name == "float")
     {
         he_seal_backend->get_evaluator()->multiply_plain(
-                arg0->m_ciphertext, arg1->m_plaintext, out->m_ciphertext);
+            arg0->m_ciphertext, arg1->m_plaintext, out->m_ciphertext);
     }
     else if (type_name == "int64_t")
     {
         he_seal_backend->get_evaluator()->multiply_plain(
-                arg0->m_ciphertext, arg1->m_plaintext, out->m_ciphertext);
+            arg0->m_ciphertext, arg1->m_plaintext, out->m_ciphertext);
     }
     else
     {

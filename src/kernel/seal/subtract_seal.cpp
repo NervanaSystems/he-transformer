@@ -74,7 +74,7 @@ void runtime::he::kernel::seal::scalar_subtract(
     const shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend)
 {
     he_seal_backend->get_evaluator()->sub_plain(
-            arg0->m_ciphertext, arg1->m_plaintext, out->m_ciphertext);
+        arg0->m_ciphertext, arg1->m_plaintext, out->m_ciphertext);
 }
 
 void runtime::he::kernel::seal::scalar_subtract(

@@ -89,7 +89,8 @@ namespace ngraph
                 /// @param value Scalar which to encode
                 /// @param element_type Type to encode
                 /// @return Shared pointer to created plaintext
-                virtual std::shared_ptr<runtime::he::HEPlaintext> get_valued_plaintext(std::int64_t value, const element::Type& element_type) = 0;
+                virtual std::shared_ptr<runtime::he::HEPlaintext>
+                    get_valued_plaintext(std::int64_t value, const element::Type& element_type) = 0;
 
                 /// @brief Creates plaintext of unspecified value
                 /// @return Shared pointer to created plaintext
@@ -115,7 +116,6 @@ namespace ngraph
                 bool call(std::shared_ptr<Function> func,
                           const std::vector<std::shared_ptr<runtime::TensorView>>& outputs,
                           const std::vector<std::shared_ptr<runtime::TensorView>>& inputs) override;
-
 
                 void clear_function_instance();
 
@@ -163,11 +163,15 @@ namespace ngraph
                                                    const std::string& file_name);
 
             private:
-                std::unordered_map<std::shared_ptr<Function>, std::shared_ptr<runtime::he::HECallFrame>>
+                std::unordered_map<std::shared_ptr<Function>,
+                                   std::shared_ptr<runtime::he::HECallFrame>>
                     m_function_map;
 
             protected:
-                std::unordered_map<std::string, std::unordered_map<std::int64_t, std::shared_ptr<runtime::he::HEPlaintext>>> m_plaintext_map;
+                std::unordered_map<
+                    std::string,
+                    std::unordered_map<std::int64_t, std::shared_ptr<runtime::he::HEPlaintext>>>
+                    m_plaintext_map;
             };
         }
     }
