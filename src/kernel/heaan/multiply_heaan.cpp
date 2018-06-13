@@ -27,15 +27,8 @@ void runtime::he::kernel::heaan::scalar_multiply(
     const element::Type& type,
     const shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
 {
-    if (arg0 == arg1)
-    {
-        out->m_ciphertext = he_heaan_backend->get_scheme()->square(arg0->m_ciphertext);
-    }
-    else
-    {
-        out->m_ciphertext =
-            he_heaan_backend->get_scheme()->mult(arg0->m_ciphertext, arg1->m_ciphertext);
-    }
+    out->m_ciphertext =
+        he_heaan_backend->get_scheme()->mult(arg0->m_ciphertext, arg1->m_ciphertext);
 }
 
 void runtime::he::kernel::heaan::scalar_multiply(

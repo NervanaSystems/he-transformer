@@ -154,7 +154,7 @@ NGRAPH_TEST(${BACKEND_NAME}, ab_batch)
               generalized_read_vector<float>(t_result));
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, ab_batch2)
+NGRAPH_TEST(${BACKEND_NAME}, ab_batch_multiply)
 {
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
         runtime::Backend::create("${BACKEND_NAME}"));
@@ -179,7 +179,7 @@ NGRAPH_TEST(${BACKEND_NAME}, ab_batch2)
     EXPECT_EQ((vector<float>{3, 6}), generalized_read_vector<float>(t_result));
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, ab_batch3)
+NGRAPH_TEST(${BACKEND_NAME}, ab_batch_dot)
 {
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
         runtime::Backend::create("${BACKEND_NAME}"));
@@ -275,6 +275,32 @@ NGRAPH_TEST(${BACKEND_NAME}, ab_square)
     }
 }
 
+NGRAPH_TEST(${BACKEND_NAME}, multiply_optimized)
+{
+    auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
+            runtime::Backend::create("${BACKEND_NAME}"));
+
+    Shape shape_a{3};
+    Shape shape_b{3};
+    Shape shape_r{3};
+    // Float
+    auto a = make_shared<op::Parameter>(element::f32, shape_a);
+    auto b = make_shared<op::Parameter>(element::f32, shape_b);
+    auto t = make_shared<op::Multiply>(a, b);
+
+    auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+
+    // Create some tensors for input/output
+    auto t_a = backend->create_tensor(element::f32, shape_a);
+    auto t_b = backend->create_plain_tensor(element::f32, shape_b);
+    auto t_result = backend->create_tensor(element::f32, shape_r);
+
+    copy_data(t_a, vector<float>{1, 2, 3});
+    copy_data(t_b, vector<float>{-1, 0, 1});
+    backend->call(f, {t_result}, {t_a, t_b});
+    EXPECT_EQ((vector<float>{-1, 0, 3}), read_vector<float>(t_result));
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, subtract)
 {
     auto backend = runtime::Backend::create("${BACKEND_NAME}");
@@ -308,6 +334,42 @@ NGRAPH_TEST(${BACKEND_NAME}, subtract)
         copy_data(b, vector<float>{1, 2, 3, 4});
         backend->call(f, {result}, {a, b});
         EXPECT_EQ((vector<float>{7, 4, 1, -2}), read_vector<float>(result));
+    }
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, subtract_zero)
+{
+    auto backend = runtime::Backend::create("${BACKEND_NAME}");
+    if ("${BACKEND_NAME}" == "HE_HEAAN")
+    {
+        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
+    }
+    else if ("${BACKEND_NAME}" == "HE_SEAL")
+    {
+        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
+    }
+    Shape shape{2, 2};
+    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto t = make_shared<op::Subtract>(A, B);
+    auto f = make_shared<Function>(t, op::ParameterVector{A, B});
+
+    // Create some tensors for input/output
+    auto tensors_list = generate_plain_cipher_tensors({t}, {A, B}, backend);
+
+    for (auto tensors : tensors_list)
+    {
+        auto results = get<0>(tensors);
+        auto inputs = get<1>(tensors);
+
+        auto a = inputs[0];
+        auto b = inputs[1];
+        auto result = results[0];
+
+        copy_data(a, vector<float>{1, 2, 3, 4});
+        copy_data(b, vector<float>{0, 0, 0, 0});
+        backend->call(f, {result}, {a, b});
+        EXPECT_EQ((vector<float>{1, 2, 3, 4}), read_vector<float>(result));
     }
 }
 

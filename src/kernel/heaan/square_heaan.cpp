@@ -14,23 +14,19 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "kernel/heaan/relinearize_heaan.hpp"
+#include "kernel/heaan/square_heaan.hpp"
 #include "he_heaan_backend.hpp"
+#include "heaan_ciphertext_wrapper.hpp"
 
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::heaan::scalar_relinearize(
+void runtime::he::kernel::heaan::scalar_square(
     const shared_ptr<runtime::he::HeaanCiphertextWrapper>& arg,
     shared_ptr<runtime::he::HeaanCiphertextWrapper>& out,
+    const element::Type& type,
     const shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
 {
-    // It's safe to do inplace relinearize on the input since the un-relinearized result won't be
-    // used by other ops. That is, this relinearize op is immediately after a multiply op, and the
-    // relinearize op is the only op using the result from the multiply op
-    // HEAAN already performs relinearization after the multiply op, but we additionally need
-    // to rescale.
-    //he_heaan_backend->get_scheme()->reScaleByAndEqual(arg->m_ciphertext,
-    //                                                  he_heaan_backend->get_precision());
-    out->m_ciphertext = arg->m_ciphertext;
+    out->m_ciphertext =
+        he_heaan_backend->get_scheme()->square(arg->m_ciphertext);
 }

@@ -55,9 +55,13 @@ runtime::he::he_heaan::HEHeaanBackend::HEHeaanBackend(
     // Scheme
     m_scheme = make_shared<heaan::Scheme>(*m_secret_key, *m_context);
 
-    // TODO: add plaintext constants as in SEAL backend
-
-    NGRAPH_INFO << "Created Heaan backend";
+	// Plaintext constants
+	m_plaintext_map["float"][0] = create_valued_plaintext(0, element::f32);
+	m_plaintext_map["float"][1] = create_valued_plaintext(1, element::f32);
+	m_plaintext_map["float"][-1] = create_valued_plaintext(-1, element::f32);
+	m_plaintext_map["int64_t"][0] = create_valued_plaintext(0, element::i64);
+	m_plaintext_map["int64_t"][1] = create_valued_plaintext(1, element::i64);
+	m_plaintext_map["int64_t"][-1] = create_valued_plaintext(-1, element::i64);
 }
 
 runtime::he::he_heaan::HEHeaanBackend::~HEHeaanBackend()
@@ -73,6 +77,7 @@ void runtime::he::he_heaan::HEHeaanBackend::assert_valid_heaan_parameter(
     double security =
         3.6 * (1 << hp->m_log2_poly_modulus) / (depth + hp->m_log2_plain_modulus) - 110.;
     // TODO: check this matches with https://bitbucket.org/malb/lwe-estimator
+    // as claimed on slide 1 at https://github.com/kimandrik/HEAAN/blob/master/slide-HEAAN.pdf
 
     if (security < 128)
     {
@@ -127,6 +132,7 @@ shared_ptr<runtime::he::HECiphertext>
 
     if (batch_size == 1)
     {
+		NGRAPH_INFO << "Encrypting single " << (double)value;
         ciphertext->m_ciphertext =
             m_scheme->encryptSingle((double)value, get_precision(), m_context->logQ);
     }
@@ -153,6 +159,23 @@ shared_ptr<runtime::he::HEPlaintext> runtime::he::he_heaan::HEHeaanBackend::crea
 
     plaintext->m_plaintexts = {value};
     return plaintext;
+}
+
+shared_ptr<runtime::he::HEPlaintext> runtime::he::he_heaan::HEHeaanBackend::get_valued_plaintext(
+        int64_t value, const element::Type& element_type)
+{
+    const string type_name = element_type.c_type_string();
+    std::unordered_set<int64_t> stored_plaintext_values{-1, 0, 1};
+    if (stored_plaintext_values.find(value) == stored_plaintext_values.end())
+    {
+        throw ngraph_error("Value not stored in stored plaintext values");
+    }
+    if ((m_plaintext_map.find(type_name) == m_plaintext_map.end()) ||
+        m_plaintext_map[type_name].find(value) == m_plaintext_map[type_name].end())
+    {
+        throw ngraph_error("Type or value not stored in m_plaintext_map");
+    }
+    return m_plaintext_map[type_name][value];
 }
 
 shared_ptr<runtime::he::HEPlaintext>

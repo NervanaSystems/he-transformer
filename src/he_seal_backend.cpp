@@ -78,12 +78,12 @@ runtime::he::he_seal::HESealBackend::HESealBackend(
     m_evaluator = make_shared<seal::Evaluator>(*m_context);
 
     // Plaintext constants
-    m_plaintext_num = plaintext_num{m_frac_encoder->encode(0),
-                                    m_frac_encoder->encode(1),
-                                    m_frac_encoder->encode(-1),
-                                    m_int_encoder->encode(0),
-                                    m_int_encoder->encode(1),
-                                    m_int_encoder->encode(-1)};
+    m_plaintext_map["float"][0] = make_shared<SealPlaintextWrapper>(m_frac_encoder->encode(0));
+    m_plaintext_map["float"][1] = make_shared<SealPlaintextWrapper>(m_frac_encoder->encode(1));
+    m_plaintext_map["float"][-1] = make_shared<SealPlaintextWrapper>(m_frac_encoder->encode(-1));
+    m_plaintext_map["int64_t"][0] = make_shared<SealPlaintextWrapper>(m_int_encoder->encode(0));
+    m_plaintext_map["int64_t"][1] = make_shared<SealPlaintextWrapper>(m_int_encoder->encode(1));
+    m_plaintext_map["int64_t"][-1] = make_shared<SealPlaintextWrapper>(m_int_encoder->encode(-1));
 }
 
 runtime::he::he_seal::HESealBackend::~HESealBackend()
@@ -236,24 +236,43 @@ shared_ptr<runtime::he::HEPlaintext> runtime::he::he_seal::HESealBackend::create
 {
     const string type_name = element_type.c_type_string();
     shared_ptr<runtime::he::HEPlaintext> plaintext = create_empty_plaintext();
-    auto plaintext_seal = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(plaintext);
-    if (plaintext_seal == nullptr)
+    if (auto plaintext_seal = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(plaintext))
     {
-        NGRAPH_INFO << "plaintext is not seal type in create_valued_plaintext";
-    }
-    if (type_name == "float")
-    {
-        plaintext_seal->m_plaintext = m_frac_encoder->encode(value);
-    }
-    else if (type_name == "int64_t")
-    {
-        plaintext_seal->m_plaintext = m_int_encoder->encode(static_cast<int64_t>(value));
+        if (type_name == "float")
+        {
+            plaintext_seal->m_plaintext = m_frac_encoder->encode(value);
+        }
+        else if (type_name == "int64_t")
+        {
+            plaintext_seal->m_plaintext = m_int_encoder->encode(static_cast<int64_t>(value));
+        }
+        else
+        {
+            throw ngraph_error("Type not supported at create_valued_plaintext");
+        }
     }
     else
     {
-        throw ngraph_error("Type not supported at create_ciphertext");
+        NGRAPH_INFO << "Plaintext is not SEAL type in create_valued_plaintext";
     }
     return plaintext;
+}
+
+shared_ptr<runtime::he::HEPlaintext> runtime::he::he_seal::HESealBackend::get_valued_plaintext(
+        int64_t value, const element::Type& element_type)
+{
+    const string type_name = element_type.c_type_string();
+    std::unordered_set<int64_t> stored_plaintext_values{-1, 0, 1};
+    if (stored_plaintext_values.find(value) == stored_plaintext_values.end())
+    {
+        throw ngraph_error("Value not stored in stored plaintext values");
+    }
+    if ((m_plaintext_map.find(type_name) == m_plaintext_map.end()) ||
+        m_plaintext_map[type_name].find(value) == m_plaintext_map[type_name].end())
+    {
+        throw ngraph_error("Type or value not stored in m_plaintext_map");
+    }
+    return m_plaintext_map[type_name][value];
 }
 
 shared_ptr<runtime::he::HEPlaintext>
