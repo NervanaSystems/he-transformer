@@ -68,6 +68,8 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HECipher
             else
             {
                 kernel::seal::scalar_multiply(arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
+                he_seal_backend->get_evaluator()->relinearize(out_seal->m_ciphertext,
+                        *(he_seal_backend->get_ev_key()));
                 out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_seal);
             }
         }
@@ -99,6 +101,7 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HECipher
             {
                 kernel::heaan::scalar_multiply(
                         arg0_heaan, arg1_heaan, out_heaan, type, he_heaan_backend);
+                he_heaan_backend->get_scheme()->reScaleByAndEqual(out_heaan->m_ciphertext, he_heaan_backend->get_precision());
                 out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_heaan);
             }
         }
@@ -176,6 +179,7 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HECipher
             else
             {
                 kernel::seal::scalar_multiply(arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
+                // Don't relinearize, since plain multiplications never increase ciphertext size
                 out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_seal);
             }
         }

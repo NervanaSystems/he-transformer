@@ -42,7 +42,6 @@
 #include "kernel/multiply.hpp"
 #include "kernel/negate.hpp"
 #include "kernel/one_hot.hpp"
-#include "kernel/relinearize.hpp"
 #include "kernel/reshape.hpp"
 #include "kernel/result.hpp"
 #include "kernel/slice.hpp"
@@ -851,30 +850,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         else
         {
             throw ngraph_error("Negate types not supported.");
-        }
-    }
-    else if (node_op == "Relinearize")
-    {
-        if (arg0_cipher != nullptr && out0_cipher != nullptr)
-        {
-            runtime::he::kernel::relinearize(arg0_cipher->get_elements(),
-                                             out0_cipher->get_elements(),
-                                             m_he_backend,
-                                             out0_cipher->get_element_count());
-        }
-        // The Relinearize op is currently inserted after every multiply call, even when the
-        // op is between plaintexts
-        // TODO: fix relinearize op
-        else if (arg0_plain != nullptr && out0_plain != nullptr)
-        {
-            runtime::he::kernel::relinearize(arg0_plain->get_elements(),
-                                             out0_plain->get_elements(),
-                                             m_he_backend,
-                                             out0_plain->get_element_count());
-        }
-        else
-        {
-            throw ngraph_error("Relinearize types not supported");
         }
     }
     else if (node_op == "OneHot")

@@ -27,7 +27,6 @@ set (HE_SRC
     kernel/multiply.cpp
     kernel/negate.cpp
     kernel/one_hot.cpp
-    kernel/relinearize.cpp
     kernel/reshape.cpp
     kernel/result.cpp
     kernel/slice.cpp
@@ -36,7 +35,6 @@ set (HE_SRC
     # heaan kernels
     kernel/heaan/add_heaan.cpp
     kernel/heaan/multiply_heaan.cpp
-    kernel/heaan/relinearize_heaan.cpp
     kernel/heaan/negate_heaan.cpp
     kernel/heaan/square_heaan.cpp
     kernel/heaan/subtract_heaan.cpp
@@ -44,7 +42,6 @@ set (HE_SRC
     kernel/seal/add_seal.cpp
     kernel/seal/multiply_seal.cpp
     kernel/seal/negate_seal.cpp
-    kernel/seal/relinearize_seal.cpp
     kernel/seal/square_seal.cpp
     kernel/seal/subtract_seal.cpp
     # main
@@ -57,8 +54,6 @@ set (HE_SRC
     he_tensor_view.cpp
     he_plain_tensor_view.cpp
     int_call_frame.cpp
-    # pass
-    pass/insert_relinearize.cpp
     # heaan
     he_heaan_backend.cpp
     heaan_ciphertext_wrapper.cpp
