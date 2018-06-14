@@ -260,7 +260,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_1_1x1_1)
                                   -21.0f, 45.0f,  -72.0f, -63.0f, 27.0f,  90.0f,  54.0f,  -18.0f};
 
     backend->call(function, {result}, {a, b});
-    EXPECT_TRUE(test::all_close(vector<float>{expected_result}, read_vector<float>(result)));
+    EXPECT_TRUE(
+        test::all_close(vector<float>{expected_result}, read_vector<float>(result), 1e-7f, 1e-7f));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5)

@@ -82,10 +82,12 @@ namespace ngraph
                                                  const seal::MemoryPoolHandle& pool) const;
                     std::shared_ptr<runtime::he::HECiphertext>
                         create_empty_ciphertext(const seal::MemoryPoolHandle& pool) const;
+
                     std::shared_ptr<runtime::he::HEPlaintext>
                         create_valued_plaintext(float value,
                                                 const element::Type& element_type,
                                                 const seal::MemoryPoolHandle& pool) const;
+
                     std::shared_ptr<runtime::he::HEPlaintext>
                         create_empty_plaintext(const seal::MemoryPoolHandle& pool) const;
 
@@ -97,9 +99,15 @@ namespace ngraph
 
                     std::shared_ptr<runtime::he::HECiphertext>
                         create_empty_ciphertext(size_t batch_size = 1) const override;
+
                     std::shared_ptr<runtime::he::HEPlaintext>
                         create_valued_plaintext(float value,
                                                 const element::Type& element_type) const override;
+
+                    std::shared_ptr<runtime::he::HEPlaintext>
+                        get_valued_plaintext(std::int64_t value,
+                                             const element::Type& element_type) override;
+
                     std::shared_ptr<runtime::he::HEPlaintext>
                         create_empty_plaintext() const override;
 

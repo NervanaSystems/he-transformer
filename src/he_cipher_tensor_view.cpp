@@ -55,7 +55,7 @@ runtime::he::HECipherTensorView::HECipherTensorView(const element::Type& element
         else
         {
             throw ngraph_error(
-                "HECipherTensorView::HECipherTensorView(), he_backend is neither seal nor heaan. ");
+                "HECipherTensorView::HECipherTensorView(), he_backend is neither SEAL nor HEAAN.");
         }
     }
 }
@@ -119,7 +119,7 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
         }
         else
         {
-            throw ngraph_error("HECipherTensorView::write, he_backend is neither seal nor heaan.");
+            throw ngraph_error("HECipherTensorView::write, he_backend is neither SEAL nor HEAAN.");
         }
     }
     else
@@ -171,7 +171,7 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
             else
             {
                 throw ngraph_error(
-                    "HECipherTensorView::write, he_backend is neither seal nor heaan.");
+                    "HECipherTensorView::write, he_backend is neither SEAL nor HEAAN.");
             }
         }
     }
@@ -207,7 +207,7 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
         }
         else
         {
-            throw ngraph_error("HECipherTensorView::read he_backend is neither seal nor heaan.");
+            throw ngraph_error("HECipherTensorView::read he_backend is neither SEAL nor HEAAN.");
         }
     }
     else

@@ -56,6 +56,6 @@ void runtime::he::kernel::constant(vector<shared_ptr<runtime::he::HEPlaintext>>&
     }
     else
     {
-        throw ngraph_error("Constant backend is neither seal nor hean.");
+        throw ngraph_error("Constant backend is neither SEAL nor HEAAN.");
     }
 }

@@ -27,7 +27,6 @@
 #include "he_cipher_tensor_view.hpp"
 #include "he_plain_tensor_view.hpp"
 #include "he_tensor_view.hpp"
-#include "pass/insert_relinearize.hpp"
 
 using namespace ngraph;
 using namespace std;
@@ -49,12 +48,7 @@ bool runtime::he::HEBackend::compile(shared_ptr<Function> func)
         shared_ptr<HEBackend> he_backend = shared_from_this();
         shared_ptr<Function> cf_func = clone_function(*func);
 
-        // Run passes
-        ngraph::pass::Manager pass_manager;
-        pass_manager
-            .register_pass<ngraph::pass::AssignLayout<descriptor::layout::DenseTensorViewLayout>>();
-        pass_manager.register_pass<runtime::he::pass::InsertRelinearize>();
-        pass_manager.run_passes(cf_func);
+        // Run passes, if any
 
         // Create call frame
         shared_ptr<HECallFrame> call_frame = make_shared<HECallFrame>(cf_func, he_backend);

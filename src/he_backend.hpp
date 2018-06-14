@@ -59,7 +59,7 @@ namespace ngraph
                 virtual std::shared_ptr<runtime::TensorView>
                     create_plain_tensor(const element::Type& element_type, const Shape& shape) = 0;
 
-                /// @brief Creates ciphertext of given value
+                /// @brief Creates ciphertext of specified value
                 /// @param value Scalar which to encrypt
                 /// @param element_type Type to encrypt
                 /// @param batch_size Number of elements to encrypt
@@ -77,13 +77,20 @@ namespace ngraph
                 virtual std::shared_ptr<runtime::he::HECiphertext>
                     create_empty_ciphertext(size_t batch_size = 1) const = 0;
 
-                /// @brief Creates plaintext of unspecified value
+                /// @brief Creates plaintext of specified value
                 /// @param value Scalar which to encode
                 /// @param element_type Type to encode
                 /// @return Shared pointer to created plaintext
                 virtual std::shared_ptr<runtime::he::HEPlaintext>
                     create_valued_plaintext(float value,
                                             const element::Type& element_type) const = 0;
+
+                /// @brief Returns plaintext of specified value
+                /// @param value Scalar which to encode
+                /// @param element_type Type to encode
+                /// @return Shared pointer to created plaintext
+                virtual std::shared_ptr<runtime::he::HEPlaintext>
+                    get_valued_plaintext(std::int64_t value, const element::Type& element_type) = 0;
 
                 /// @brief Creates plaintext of unspecified value
                 /// @return Shared pointer to created plaintext
@@ -156,8 +163,20 @@ namespace ngraph
                                                    const std::string& file_name);
 
             private:
-                std::unordered_map<std::shared_ptr<Function>, std::shared_ptr<HECallFrame>>
+                std::unordered_map<std::shared_ptr<Function>,
+                                   std::shared_ptr<runtime::he::HECallFrame>>
                     m_function_map;
+
+            protected:
+                std::unordered_map<
+                    std::string,
+                    std::unordered_map<std::int64_t, std::shared_ptr<runtime::he::HEPlaintext>>>
+                    m_plaintext_map;
+
+                std::unordered_map<
+                    std::string,
+                    std::unordered_map<std::int64_t, std::shared_ptr<runtime::he::HECiphertext>>>
+                    m_ciphertext_map;
             };
         }
     }

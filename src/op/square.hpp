@@ -16,25 +16,26 @@
 
 #pragma once
 
-#include "ngraph/pass/pass.hpp"
+#include "ngraph/op/op.hpp"
+#include "ngraph/op/util/requires_tensor_view_args.hpp"
+#include "ngraph/type/type.hpp"
 
 namespace ngraph
 {
-    class Function;
-
-    namespace runtime
+    namespace op
     {
-        namespace he
+        class Square : public ngraph::op::util::RequiresTensorViewArgs
         {
-            namespace pass
+        public:
+            Square(const std::shared_ptr<Node>& arg)
+                : RequiresTensorViewArgs("Square", {arg})
             {
-                class InsertRelinearize : public ngraph::pass::CallGraphPass
-                {
-                public:
-                    virtual bool
-                        run_on_call_graph(const std::list<std::shared_ptr<Node>>& nodes) override;
-                };
+                set_value_type_checked(get_inputs().at(0).get_element_type(), arg->get_shape());
             }
-        }
+            std::shared_ptr<Node> copy_with_new_args(const NodeVector& new_args) const
+            {
+                throw ngraph_error("Cannot copy this node");
+            }
+        };
     }
 }

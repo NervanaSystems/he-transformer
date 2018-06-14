@@ -18,7 +18,11 @@
 #include "he_backend.hpp"
 #include "he_seal_backend.hpp"
 #include "kernel/heaan/multiply_heaan.hpp"
+#include "kernel/heaan/negate_heaan.hpp"
+#include "kernel/heaan/square_heaan.hpp"
 #include "kernel/seal/multiply_seal.hpp"
+#include "kernel/seal/negate_seal.hpp"
+#include "kernel/seal/square_seal.hpp"
 #include "ngraph/type/element_type.hpp"
 
 using namespace std;
@@ -56,13 +60,24 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HECipher
 
         if (arg0_seal && arg1_seal && out_seal)
         {
-            kernel::seal::scalar_multiply(arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
-            out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_seal);
+            if (arg0_seal == arg1_seal)
+            {
+                kernel::seal::scalar_square(arg0_seal, out_seal, type, he_seal_backend);
+                out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_seal);
+            }
+            else
+            {
+                kernel::seal::scalar_multiply(
+                    arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
+                he_seal_backend->get_evaluator()->relinearize(out_seal->m_ciphertext,
+                                                              *(he_seal_backend->get_ev_key()));
+                out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_seal);
+            }
         }
         else
         {
             throw ngraph_error(
-                "Multiply backend is seal, but arguments or outputs are not SealCiphertextWrapper");
+                "Multiply backend is SEAL, but arguments or outputs are not SealCiphertextWrapper");
         }
     }
     else if (auto he_heaan_backend =
@@ -77,20 +92,30 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HECipher
 
         if (arg0_heaan && arg1_heaan && out_heaan)
         {
-            kernel::heaan::scalar_multiply(
-                arg0_heaan, arg1_heaan, out_heaan, type, he_heaan_backend);
-            out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_heaan);
+            if (arg0_heaan == arg1_heaan)
+            {
+                kernel::heaan::scalar_square(arg0_heaan, out_heaan, type, he_heaan_backend);
+                out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_heaan);
+            }
+            else
+            {
+                kernel::heaan::scalar_multiply(
+                    arg0_heaan, arg1_heaan, out_heaan, type, he_heaan_backend);
+                he_heaan_backend->get_scheme()->reScaleByAndEqual(
+                    out_heaan->m_ciphertext, he_heaan_backend->get_precision());
+                out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_heaan);
+            }
         }
         else
         {
             throw ngraph_error(
-                "Multiply backend is heaan, but arguments or outputs are not "
+                "Multiply backend is HEAAN, but arguments or outputs are not "
                 "HeaanCiphertextWrapper");
         }
     }
     else
     {
-        throw ngraph_error("Multiply backend is neither seal nor hean.");
+        throw ngraph_error("Multiply backend is neither SEAL nor HEAAN.");
     }
 }
 
@@ -114,6 +139,8 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HECipher
                                           const element::Type& type,
                                           const shared_ptr<runtime::he::HEBackend>& he_backend)
 {
+    const string type_name = type.c_type_string();
+
     if (auto he_seal_backend =
             dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
     {
@@ -126,13 +153,41 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HECipher
 
         if (arg0_seal && arg1_seal && out_seal)
         {
-            kernel::seal::scalar_multiply(arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
-            out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_seal);
+            shared_ptr<runtime::he::HEPlaintext> one =
+                he_seal_backend->get_valued_plaintext(1, type);
+            shared_ptr<runtime::he::HEPlaintext> zero =
+                he_seal_backend->get_valued_plaintext(0, type);
+            shared_ptr<runtime::he::HEPlaintext> neg_one =
+                he_seal_backend->get_valued_plaintext(-1, type);
+            auto one_seal = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(one);
+            auto zero_seal = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(zero);
+            auto neg_one_seal = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(neg_one);
+
+            if (arg1_seal->m_plaintext == one_seal->m_plaintext)
+            {
+                out = arg0;
+            }
+            else if (arg1_seal->m_plaintext == neg_one_seal->m_plaintext)
+            {
+                kernel::seal::scalar_negate(arg0_seal, out_seal, type, he_seal_backend);
+                out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_seal);
+            }
+            else if (arg1_seal->m_plaintext == zero_seal->m_plaintext)
+            {
+                out = he_seal_backend->create_valued_ciphertext(0, type);
+            }
+            else
+            {
+                kernel::seal::scalar_multiply(
+                    arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
+                // Don't relinearize, since plain multiplications never increase ciphertext size
+                out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_seal);
+            }
         }
         else
         {
             throw ngraph_error(
-                "Multiply backend is seal, but arguments or outputs are not SealCiphertextWrapper");
+                "Multiply backend is SEAL, but arguments or outputs are not SealCiphertextWrapper");
         }
     }
     else if (auto he_heaan_backend =
@@ -147,20 +202,56 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HECipher
 
         if (arg0_heaan && arg1_heaan && out_heaan)
         {
-            kernel::heaan::scalar_multiply(
-                arg0_heaan, arg1_heaan, out_heaan, type, he_heaan_backend);
-            out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_heaan);
+            /* auto neg_one = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(
+                he_heaan_backend->get_valued_plaintext(-1, type));
+            auto zero = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(
+                he_heaan_backend->get_valued_plaintext(0, type));
+            auto one = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(
+                he_heaan_backend->get_valued_plaintext(1, type));
+
+            if (arg1_heaan->m_plaintexts[0] == one->m_plaintexts[0])
+            {
+                out_heaan = arg0_heaan;
+                out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_heaan);
+            }
+            else if (arg1_heaan->m_plaintexts[0] == neg_one->m_plaintexts[0])
+            {
+                kernel::heaan::scalar_negate(arg0_heaan, out_heaan, type, he_heaan_backend);
+                out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_heaan);
+            }
+            else if (arg1_heaan->m_plaintexts[0] == zero->m_plaintexts[0])
+            {
+                // out = he_heaan_backend->get_valued_ciphertext(0, type);
+                shared_ptr<runtime::he::HECiphertext> out_heaan = he_heaan_backend->create_valued_ciphertext(0, type, 1);
+
+                out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_heaan);
+
+                // out = he_heaan_backend->create_valued_ciphertext(0, type, 1);
+
+                const auto& tmp = neg_one;
+                 std::shared_ptr<ngraph::runtime::he::HEPlaintext> test = tmp;
+                he_heaan_backend->decrypt(test, out);
+                NGRAPH_INFO << "Mult 0 => " << tmp->m_plaintexts[0];
+            }
+            else */
+            {
+                kernel::heaan::scalar_multiply(
+                    arg0_heaan, arg1_heaan, out_heaan, type, he_heaan_backend);
+                he_heaan_backend->get_scheme()->reScaleByAndEqual(
+                    out_heaan->m_ciphertext, he_heaan_backend->get_precision());
+                out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_heaan);
+            }
         }
         else
         {
             throw ngraph_error(
-                "Multiply backend is heaan, but arguments or outputs are not "
+                "Multiply backend is HEAAN, but arguments or outputs are not "
                 "HeaanCiphertextWrapper");
         }
     }
     else
     {
-        throw ngraph_error("Multiply backend is neither seal nor hean.");
+        throw ngraph_error("Multiply backend is neither SEAL nor HEAAN.");
     }
 }
 
@@ -221,7 +312,7 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HEPlaint
         else
         {
             throw ngraph_error(
-                "Multiply backend is seal, but arguments or outputs are not SealPlaintextWrapper");
+                "Multiply backend is SEAL, but arguments or outputs are not SealPlaintextWrapper");
         }
     }
     else if (auto he_heaan_backend =
@@ -243,12 +334,12 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HEPlaint
         else
         {
             throw ngraph_error(
-                "Multiply backend is heaan, but arguments or outputs are not "
+                "Multiply backend is HEAAN, but arguments or outputs are not "
                 "HeaanPlaintextWrapper");
         }
     }
     else
     {
-        throw ngraph_error("Multiply backend is neither seal nor hean.");
+        throw ngraph_error("Multiply backend is neither SEAL nor HEAAN.");
     }
 }

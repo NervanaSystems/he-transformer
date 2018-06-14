@@ -129,7 +129,7 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_batch)
     float accuracy = get_accuracy(result, y);
     NGRAPH_INFO << "Accuracy " << accuracy;
 
-    EXPECT_TRUE(test::all_close(cpu_result, result, 1e-5f, 1e-4f));
+    EXPECT_TRUE(test::all_close(cpu_result, result, 1e-5f, 4e-3f));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_softmax_quantized_1)

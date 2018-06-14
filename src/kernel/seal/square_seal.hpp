@@ -16,26 +16,37 @@
 
 #pragma once
 
-#include "ngraph/op/op.hpp"
-#include "ngraph/op/util/requires_tensor_view_args.hpp"
-#include "ngraph/type/type.hpp"
+#include <memory>
 
 namespace ngraph
 {
-    namespace op
+    namespace element
     {
-        class Relinearize : public ngraph::op::util::RequiresTensorViewArgs
+        class Type;
+    }
+
+    namespace runtime
+    {
+        namespace he
         {
-        public:
-            Relinearize(const std::shared_ptr<Node>& arg)
-                : RequiresTensorViewArgs("Relinearize", {arg})
+            class SealCiphertextWrapper;
+
+            namespace he_seal
             {
-                set_value_type_checked(get_inputs().at(0).get_element_type(), arg->get_shape());
+                class HESealBackend;
             }
-            std::shared_ptr<Node> copy_with_new_args(const NodeVector& new_args) const
+
+            namespace kernel
             {
-                throw ngraph_error("Cannot copy this node");
+                namespace seal
+                {
+                    void scalar_square(
+                        const std::shared_ptr<runtime::he::SealCiphertextWrapper>& arg,
+                        std::shared_ptr<runtime::he::SealCiphertextWrapper>& out,
+                        const element::Type& type,
+                        const std::shared_ptr<runtime::he::he_seal::HESealBackend> he_seal_backend);
+                }
             }
-        };
+        }
     }
 }

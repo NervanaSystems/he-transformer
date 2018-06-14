@@ -42,7 +42,7 @@ void runtime::he::kernel::sum(const vector<shared_ptr<runtime::he::HECiphertext>
     auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);
     if (!he_seal_backend && !he_heaan_backend)
     {
-        throw ngraph_error("Sum backend is neither seal nor hean");
+        throw ngraph_error("Sum backend is neither SEAL nor HEAAN.");
     }
 
     CoordinateTransform output_transform(out_shape);
@@ -93,7 +93,7 @@ void runtime::he::kernel::sum(const vector<shared_ptr<runtime::he::HEPlaintext>>
     auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);
     if (!he_seal_backend && !he_heaan_backend)
     {
-        throw ngraph_error("Sum backend is neither seal nor hean");
+        throw ngraph_error("Sum backend is neither SEAL nor HEAAN.");
     }
 
     CoordinateTransform output_transform(out_shape);

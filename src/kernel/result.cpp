@@ -85,6 +85,6 @@ void runtime::he::kernel::result(const vector<shared_ptr<runtime::he::HEPlaintex
     }
     else
     {
-        throw ngraph_error("Result backend is neither seal nor hean.");
+        throw ngraph_error("Result backend is neither SEAL nor HEAAN.");
     }
 }

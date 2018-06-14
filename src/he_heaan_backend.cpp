@@ -55,9 +55,17 @@ runtime::he::he_heaan::HEHeaanBackend::HEHeaanBackend(
     // Scheme
     m_scheme = make_shared<heaan::Scheme>(*m_secret_key, *m_context);
 
-    // TODO: add plaintext constants as in SEAL backend
+    // Plaintext constants
+    m_plaintext_map["float"][0] = create_valued_plaintext(0, element::f32);
+    m_plaintext_map["float"][1] = create_valued_plaintext(1, element::f32);
+    m_plaintext_map["float"][-1] = create_valued_plaintext(-1, element::f32);
+    m_plaintext_map["int64_t"][0] = create_valued_plaintext(0, element::i64);
+    m_plaintext_map["int64_t"][1] = create_valued_plaintext(1, element::i64);
+    m_plaintext_map["int64_t"][-1] = create_valued_plaintext(-1, element::i64);
 
-    NGRAPH_INFO << "Created Heaan backend";
+    // Ciphertext constants
+    m_ciphertext_map["float"][0] = create_valued_ciphertext(0, element::f32);
+    m_ciphertext_map["int64_t"][0] = create_valued_ciphertext(0, element::i64);
 }
 
 runtime::he::he_heaan::HEHeaanBackend::~HEHeaanBackend()
@@ -73,6 +81,7 @@ void runtime::he::he_heaan::HEHeaanBackend::assert_valid_heaan_parameter(
     double security =
         3.6 * (1 << hp->m_log2_poly_modulus) / (depth + hp->m_log2_plain_modulus) - 110.;
     // TODO: check this matches with https://bitbucket.org/malb/lwe-estimator
+    // as claimed on slide 1 at https://github.com/kimandrik/HEAAN/blob/master/slide-HEAAN.pdf
 
     if (security < 128)
     {
@@ -135,8 +144,23 @@ shared_ptr<runtime::he::HECiphertext>
         vector<double> values(batch_size, (double)value);
         ciphertext->m_ciphertext = m_scheme->encrypt(values, get_precision(), m_context->logQ);
     }
-
     return ciphertext;
+}
+
+shared_ptr<runtime::he::HECiphertext>& runtime::he::he_heaan::HEHeaanBackend::get_valued_ciphertext(
+    int64_t value, const element::Type& element_type, size_t batch_size)
+{
+    if (batch_size != 1)
+    {
+        throw ngraph_error("HEHeaanBackend::get_valued_ciphertext supports only Batch size 1");
+    }
+    const string type_name = element_type.c_type_string();
+    if ((m_ciphertext_map.find(type_name) == m_ciphertext_map.end()) ||
+        (m_ciphertext_map[type_name].find(value) == m_ciphertext_map[type_name].end()))
+    {
+        throw ngraph_error("Type or value not stored in m_ciphertext_map");
+    }
+    return m_ciphertext_map[type_name][value];
 }
 
 shared_ptr<runtime::he::HECiphertext>
@@ -153,6 +177,19 @@ shared_ptr<runtime::he::HEPlaintext> runtime::he::he_heaan::HEHeaanBackend::crea
 
     plaintext->m_plaintexts = {value};
     return plaintext;
+}
+
+shared_ptr<runtime::he::HEPlaintext>
+    runtime::he::he_heaan::HEHeaanBackend::get_valued_plaintext(int64_t value,
+                                                                const element::Type& element_type)
+{
+    const string type_name = element_type.c_type_string();
+    if ((m_plaintext_map.find(type_name) == m_plaintext_map.end()) ||
+        m_plaintext_map[type_name].find(value) == m_plaintext_map[type_name].end())
+    {
+        throw ngraph_error("Type or value not stored in m_plaintext_map");
+    }
+    return m_plaintext_map[type_name][value];
 }
 
 shared_ptr<runtime::he::HEPlaintext>

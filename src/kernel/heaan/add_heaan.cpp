@@ -29,10 +29,11 @@ void runtime::he::kernel::heaan::scalar_add(
     const element::Type& type,
     const shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
 {
-    if (out == arg0) // TOOD: Discover why this is needed? (dot.cpp needs this)
+    if (out == arg0) // TODO: Discover why this is needed? (dot.cpp needs this)
     {
         out->m_ciphertext =
             he_heaan_backend->get_scheme()->add(arg1->m_ciphertext, arg0->m_ciphertext);
+        //he_heaan_backend->get_scheme()->addAndEqual(out->m_ciphertext, arg1->m_ciphertext);
     }
     else
     {
