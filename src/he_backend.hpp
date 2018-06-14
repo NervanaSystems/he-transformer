@@ -176,7 +176,7 @@ namespace ngraph
                 std::unordered_map<
                     std::string,
                     std::unordered_map<std::int64_t, std::shared_ptr<runtime::he::HECiphertext>>>
-                        m_ciphertext_map;
+                    m_ciphertext_map;
             };
         }
     }

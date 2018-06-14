@@ -71,9 +71,9 @@ namespace ngraph
                                             const Shape& shape) override;
 
                     std::shared_ptr<runtime::he::HECiphertext>&
-                       get_valued_ciphertext(std::int64_t value,
-                                const element::Type& element_type,
-                                size_t batch_size = 1);
+                        get_valued_ciphertext(std::int64_t value,
+                                              const element::Type& element_type,
+                                              size_t batch_size = 1);
 
                     std::shared_ptr<runtime::he::HECiphertext>
                         create_valued_ciphertext(float value,

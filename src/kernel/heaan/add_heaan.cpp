@@ -31,7 +31,8 @@ void runtime::he::kernel::heaan::scalar_add(
 {
     if (out == arg0) // TODO: Discover why this is needed? (dot.cpp needs this)
     {
-        out->m_ciphertext = he_heaan_backend->get_scheme()->add(arg1->m_ciphertext, arg0->m_ciphertext);
+        out->m_ciphertext =
+            he_heaan_backend->get_scheme()->add(arg1->m_ciphertext, arg0->m_ciphertext);
         //he_heaan_backend->get_scheme()->addAndEqual(out->m_ciphertext, arg1->m_ciphertext);
     }
     else

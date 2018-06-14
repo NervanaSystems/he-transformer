@@ -147,9 +147,8 @@ shared_ptr<runtime::he::HECiphertext>
     return ciphertext;
 }
 
-shared_ptr<runtime::he::HECiphertext>&
-runtime::he::he_heaan::HEHeaanBackend::get_valued_ciphertext(
-        int64_t value, const element::Type& element_type, size_t batch_size)
+shared_ptr<runtime::he::HECiphertext>& runtime::he::he_heaan::HEHeaanBackend::get_valued_ciphertext(
+    int64_t value, const element::Type& element_type, size_t batch_size)
 {
     if (batch_size != 1)
     {
@@ -157,7 +156,7 @@ runtime::he::he_heaan::HEHeaanBackend::get_valued_ciphertext(
     }
     const string type_name = element_type.c_type_string();
     if ((m_ciphertext_map.find(type_name) == m_ciphertext_map.end()) ||
-            (m_ciphertext_map[type_name].find(value) == m_ciphertext_map[type_name].end()))
+        (m_ciphertext_map[type_name].find(value) == m_ciphertext_map[type_name].end()))
     {
         throw ngraph_error("Type or value not stored in m_ciphertext_map");
     }
