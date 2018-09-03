@@ -418,7 +418,7 @@ void runtime::he::he_seal::HESealBackend::check_noise_budget(
 #pragma omp parallel for reduction(min : lowest_budget)
             for (size_t i = 0; i < cipher_tv->get_element_count(); ++i)
             {
-                seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New(false);
+                seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New();
                 shared_ptr<runtime::he::HECiphertext>& ciphertext = cipher_tv->get_element(i);
 
                 if (auto seal_cipher_wrapper =

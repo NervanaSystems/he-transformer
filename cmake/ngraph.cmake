@@ -17,7 +17,7 @@
 include(ExternalProject)
 
 SET(NGRAPH_CMAKE_GIT_REPOSITORY https://github.com/NervanaSystems/ngraph.git)
-SET(NGRAPH_CMAKE_GIT_TAG master)
+SET(NGRAPH_CMAKE_GIT_TAG v0.4.0)
 
 set(EXTERNAL_NGRAPH_INSTALL_DIR ${EXTERNAL_INSTALL_DIR})
 set(NGRAPH_CMAKE_PREFIX ext_ngraph)
