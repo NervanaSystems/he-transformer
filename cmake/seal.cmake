@@ -19,20 +19,20 @@ include(ExternalProject)
 # ${CMAKE_CURRENT_BINARY_DIR} is ngraph/build/third-party
 set(SEAL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ext_seal)
 set(SEAL_SRC_DIR ${SEAL_PREFIX}/src/ext_seal/SEAL)
-set(SEAL_TAR_FILE https://download.microsoft.com/download/B/3/7/B3720F6B-4F4A-4B54-9C6C-751EF194CBE7/SEAL_v2.3.0-4_Linux.tar.gz)
+set(SEAL_TAR_FILE https://download.microsoft.com/download/B/3/7/B3720F6B-4F4A-4B54-9C6C-751EF194CBE7/SEAL_2.3.1.tar.gz)
 
-set(CXX_FLAGS "-fPIC -DSEAL_DEBUG")
+set(SEAL_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -DSEAL_DEBUG")
 
 ExternalProject_Add(
     ext_seal
     URL ${SEAL_TAR_FILE}
     PREFIX ${SEAL_PREFIX}
-    CONFIGURE_COMMAND cd ${SEAL_SRC_DIR} && ./configure CXXFLAGS=${CXX_FLAGS} --prefix=${EXTERNAL_INSTALL_DIR}
     UPDATE_COMMAND ""
-    BUILD_COMMAND make -j$(nproc) -C ${SEAL_SRC_DIR}
-    INSTALL_COMMAND make install -C ${SEAL_SRC_DIR}
-        && cp -r ${EXTERNAL_INSTALL_INCLUDE_DIR}/SEAL/seal ${EXTERNAL_INSTALL_INCLUDE_DIR}
-        && rm -r ${EXTERNAL_INSTALL_INCLUDE_DIR}/SEAL
-        && cp  ${EXTERNAL_INSTALL_LIB_DIR}/SEAL/libseal.a ${EXTERNAL_INSTALL_LIB_DIR}
-        && rm -r ${EXTERNAL_INSTALL_LIB_DIR}/SEAL
+    CONFIGURE_COMMAND cmake ${SEAL_SRC_DIR}
+                            -DCMAKE_INSTALL_PREFIX=${EXTERNAL_INSTALL_DIR}
+                            -DCMAKE_CXX_FLAGS=${SEAL_CXX_FLAGS}
+                            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                            -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                            -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+    BUILD_ALWAYS 1
 )
