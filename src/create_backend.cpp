@@ -22,12 +22,27 @@
 using namespace std;
 using namespace ngraph;
 
-extern "C" bool create_backend()
+// extern "C" bool create_backend()
+// {
+//     NGRAPH_INFO << "Create_backend";
+//     runtime::Backend::register_backend("HE_HEAAN",
+//                                        make_shared<runtime::he::he_heaan::HEHeaanBackend>());
+//     runtime::Backend::register_backend("HE_SEAL",
+//                                        make_shared<runtime::he::he_seal::HESealBackend>());
+//     return true;
+// }
+
+extern "C" const char* get_ngraph_version_string()
 {
-    NGRAPH_INFO << "Create_backend";
-    runtime::Backend::register_backend("HE_HEAAN",
-                                       make_shared<runtime::he::he_heaan::HEHeaanBackend>());
-    runtime::Backend::register_backend("HE_SEAL",
-                                       make_shared<runtime::he::he_seal::HESealBackend>());
-    return true;
+    return "v0.7.0";
+}
+
+extern "C" runtime::Backend* new_backend(const char* configuration_string)
+{
+    return new runtime::he::he_seal::HESealBackend();
+}
+
+extern "C" void delete_backend(runtime::Backend* backend)
+{
+    delete backend;
 }
