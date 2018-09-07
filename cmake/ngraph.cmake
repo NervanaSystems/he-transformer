@@ -22,7 +22,7 @@ set(NGRAPH_CMAKE_PREFIX ext_ngraph)
 ExternalProject_Add(
     ext_ngraph
     GIT_REPOSITORY https://github.com/NervanaSystems/ngraph.git
-    GIT_TAG v0.7.0
+    GIT_TAG he # based on v0.7.0
     PREFIX ${NGRAPH_CMAKE_PREFIX}
     UPDATE_COMMAND ""
     CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
