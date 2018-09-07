@@ -84,10 +84,10 @@ add_library(he_backend SHARED ${HE_SRC})
 add_dependencies(he_backend ext_ngraph ext_seal ext_heaan)
 target_link_libraries(he_backend ngraph seal heaan ntl)
 
-# set_target_properties(he_backend PROPERTIES
-#     LIBRARY_OUTPUT_DIRECTORY
-#     ${EXTERNAL_NGRAPH_INSTALL_DIR}
-# )
+set_target_properties(he_backend PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY
+    ${EXTERNAL_NGRAPH_INSTALL_DIR}
+)
 
 if (PREBUILD_NGRAPH_LIB_DIR)
     install(TARGETS he_backend DESTINATION ${PREBUILD_NGRAPH_LIB_DIR})
