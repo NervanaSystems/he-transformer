@@ -86,7 +86,7 @@ target_link_libraries(he_backend ngraph seal heaan)
 
 set_target_properties(he_backend PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY
-    ${EXTERNAL_INSTALL_LIB_DIR}
+    ${EXTERNAL_NGRAPH_INSTALL_DIR}
 )
 
 # Install he-transformer (the HE libraries are installed separately) at `make install`

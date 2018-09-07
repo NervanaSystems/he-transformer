@@ -19,12 +19,19 @@ include(ExternalProject)
 set(EXTERNAL_NGRAPH_INSTALL_DIR ${EXTERNAL_INSTALL_DIR})
 set(NGRAPH_CMAKE_PREFIX ext_ngraph)
 
-# PREBUILD_NGRAPH_PATH is used for TF integration
-# After nGraph pip is installed, libngraph.so can be found at
-# python -c "import ngraph; print(ngraph)"
-if (PREBUILD_NGRAPH_PATH)
-    set(NGRAPH_INCLUDE_DIR ${PREBUILD_NGRAPH_PATH}/include)
-    set(NGRAPH_LIB_DIR ${PREBUILD_NGRAPH_PATH}/lib)
+# PREBUILD_NGRAPH_LIB_DIR and PREBUILD_NGRAPH_INCLUDE_DIR is used for TF integration
+# - PREBUILD_NGRAPH_LIB_DIR is inside the python site-pacakges:
+#   To get the path, use `python -c "import ngraph; print(ngraph)"`
+# - PREBUILD_NGRAPH_INCLUDE_DIR is inside ngraph-tf's build directory
+#
+#   example:
+#   cmake .. -DCMAKE_BUILD_TYPE=Debug \
+#            -DPREBUILD_NGRAPH_INCLUDE_DIR=/$HOME/repo/ngraph-tf/build/ngraph/ngraph_dist/include \
+#            -DPREBUILD_NGRAPH_LIB_DIR=/$HOME/repo/venvs/he3/lib/python3.5/site-packages/ngraph
+
+if (PREBUILD_NGRAPH_LIB_DIR)
+    set(NGRAPH_INCLUDE_DIR ${PREBUILD_NGRAPH_INCLUDE_DIR})
+    set(NGRAPH_LIB_DIR ${PREBUILD_NGRAPH_LIB_DIR})
 
     # The only purpose here is to download the tests
     ExternalProject_Add(
