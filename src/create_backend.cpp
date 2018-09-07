@@ -46,7 +46,15 @@ extern "C" const char* get_ngraph_version_string()
 
 extern "C" runtime::Backend* new_backend(const char* configuration_string)
 {
-    shared_ptr<runtime::Backend> he_backend = make_shared<runtime::he::he_seal::HESealBackend>();
+    shared_ptr<runtime::Backend> he_backend;
+    if (string(configuration_string) == "HE_SEAL")
+    {
+        he_backend = make_shared<runtime::he::he_seal::HESealBackend>();
+    }
+    else if (string(configuration_string) == "HE_HEAAN")
+    {
+        he_backend = make_shared<runtime::he::he_heaan::HEHeaanBackend>();
+    }
     s_map_backend_ptr_to_shared_ptr[he_backend.get()] = he_backend;
     return he_backend.get();
 }
