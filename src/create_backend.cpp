@@ -14,6 +14,8 @@
 * limitations under the License.
 *******************************************************************************/
 
+#include <unordered_map>
+
 #include "ngraph/runtime/backend.hpp"
 
 #include "he_heaan_backend.hpp"
@@ -32,6 +34,11 @@ using namespace ngraph;
 //     return true;
 // }
 
+// Hack to avoid weak pointer error
+// TODO: the best solution is to remove all `shared_from_this()` from the code
+static unordered_map<runtime::Backend*, shared_ptr<runtime::Backend>>
+    s_map_backend_ptr_to_shared_ptr;
+
 extern "C" const char* get_ngraph_version_string()
 {
     return "v0.7.0";
@@ -39,10 +46,12 @@ extern "C" const char* get_ngraph_version_string()
 
 extern "C" runtime::Backend* new_backend(const char* configuration_string)
 {
-    return new runtime::he::he_seal::HESealBackend();
+    shared_ptr<runtime::Backend> he_backend = make_shared<runtime::he::he_seal::HESealBackend>();
+    s_map_backend_ptr_to_shared_ptr[he_backend.get()] = he_backend;
+    return he_backend.get();
 }
 
 extern "C" void delete_backend(runtime::Backend* backend)
 {
-    delete backend;
+    s_map_backend_ptr_to_shared_ptr.erase(backend);
 }
