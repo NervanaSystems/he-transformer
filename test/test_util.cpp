@@ -117,7 +117,7 @@ vector<tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,
 {
     using ret_tuple_type = tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,
                                  vector<shared_ptr<ngraph::runtime::TensorView>>>;
-    auto he_backend = static_pointer_cast<ngraph::runtime::he::he_heaan::HEHeaanBackend>(backend);
+    auto he_backend = static_pointer_cast<ngraph::runtime::he::HEBackend>(backend);
 
     vector<tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,
                  vector<shared_ptr<ngraph::runtime::TensorView>>>>
