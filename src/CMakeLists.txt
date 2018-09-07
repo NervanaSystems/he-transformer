@@ -86,7 +86,7 @@ target_link_libraries(he_backend ngraph seal heaan ntl)
 
 set_target_properties(he_backend PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY
-    ${EXTERNAL_NGRAPH_INSTALL_DIR}
+    ${EXTERNAL_NGRAPH_INSTALL_DIR}/lib
 )
 
 if (PREBUILD_NGRAPH_LIB_DIR)
