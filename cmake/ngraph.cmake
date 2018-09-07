@@ -26,8 +26,8 @@ set(NGRAPH_CMAKE_PREFIX ext_ngraph)
 #
 #   example:
 #   cmake .. -DCMAKE_BUILD_TYPE=Debug \
-#            -DPREBUILD_NGRAPH_INCLUDE_DIR=/$HOME/repo/ngraph-tf/build/ngraph/ngraph_dist/include \
-#            -DPREBUILD_NGRAPH_LIB_DIR=/$HOME/repo/venvs/he3/lib/python3.5/site-packages/ngraph
+#            -DPREBUILD_NGRAPH_INCLUDE_DIR=$HOME/repo/ngraph-tf/build/ngraph/ngraph_dist/include \
+#            -DPREBUILD_NGRAPH_LIB_DIR=$HOME/repo/venvs/he3/lib/python3.5/site-packages/ngraph
 
 if (PREBUILD_NGRAPH_LIB_DIR)
     set(NGRAPH_INCLUDE_DIR ${PREBUILD_NGRAPH_INCLUDE_DIR})
