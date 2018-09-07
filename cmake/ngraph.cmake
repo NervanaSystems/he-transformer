@@ -16,16 +16,13 @@
 
 include(ExternalProject)
 
-SET(NGRAPH_CMAKE_GIT_REPOSITORY https://github.com/NervanaSystems/ngraph.git)
-SET(NGRAPH_CMAKE_GIT_TAG v0.4.0)
-
 set(EXTERNAL_NGRAPH_INSTALL_DIR ${EXTERNAL_INSTALL_DIR})
 set(NGRAPH_CMAKE_PREFIX ext_ngraph)
 
 ExternalProject_Add(
     ext_ngraph
-    GIT_REPOSITORY ${NGRAPH_CMAKE_GIT_REPOSITORY}
-    GIT_TAG ${NGRAPH_CMAKE_GIT_TAG}
+    GIT_REPOSITORY https://github.com/NervanaSystems/ngraph.git
+    GIT_TAG v0.7.0
     PREFIX ${NGRAPH_CMAKE_PREFIX}
     UPDATE_COMMAND ""
     CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -37,7 +34,7 @@ ExternalProject_Add(
                -DNGRAPH_UNIT_TEST_ENABLE=FALSE
                -DNGRAPH_TOOLS_ENABLE=FALSE
     BUILD_BYPRODUCTS ${NGRAPH_CMAKE_PREFIX}
-    # BUILD_ALWAYS 1
+    BUILD_ALWAYS 1
 )
 
 ExternalProject_Get_Property(ext_ngraph source_dir)
