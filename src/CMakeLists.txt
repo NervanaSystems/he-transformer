@@ -82,26 +82,36 @@ link_directories(
 # Target library
 add_library(he_backend SHARED ${HE_SRC})
 add_dependencies(he_backend ext_ngraph ext_seal ext_heaan)
-target_link_libraries(he_backend ngraph seal heaan)
+target_link_libraries(he_backend ngraph seal heaan ntl)
 
-set_target_properties(he_backend PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY
-    ${EXTERNAL_INSTALL_LIB_DIR}
-)
+# set_target_properties(he_backend PROPERTIES
+#     LIBRARY_OUTPUT_DIRECTORY
+#     ${EXTERNAL_NGRAPH_INSTALL_DIR}
+# )
 
-# Install he-transformer (the HE libraries are installed separately) at `make install`
-# By default, this installs to `~/ngraph_dist`
-install(TARGETS he_backend DESTINATION ${NGRAPH_INSTALL_LIB_DIR})
-install(DIRECTORY
-    ${CMAKE_CURRENT_SOURCE_DIR}/
-    DESTINATION ${NGRAPH_INSTALL_INCLUDE_DIR}
-    FILES_MATCHING PATTERN "*.hpp"
-)
-install(DIRECTORY
-    ${EXTERNAL_INSTALL_LIB_DIR}/
-    DESTINATION ${NGRAPH_INSTALL_LIB_DIR}
-)
-install(DIRECTORY
-    ${EXTERNAL_INSTALL_INCLUDE_DIR}/
-    DESTINATION ${NGRAPH_INSTALL_INCLUDE_DIR}
-)
+if (PREBUILD_NGRAPH_LIB_DIR)
+    install(TARGETS he_backend DESTINATION ${PREBUILD_NGRAPH_LIB_DIR})
+    install(DIRECTORY
+        ${EXTERNAL_INSTALL_LIB_DIR}/
+        DESTINATION ${PREBUILD_NGRAPH_LIB_DIR}
+    )
+
+else()
+    # Install he-transformer (the HE libraries are installed separately) at `make install`
+    # By default, this installs to `~/ngraph_dist`
+    install(TARGETS he_backend DESTINATION ${NGRAPH_INSTALL_LIB_DIR})
+    install(DIRECTORY
+        ${CMAKE_CURRENT_SOURCE_DIR}/
+        DESTINATION ${NGRAPH_INSTALL_INCLUDE_DIR}
+        FILES_MATCHING PATTERN "*.hpp"
+    )
+    install(DIRECTORY
+        ${EXTERNAL_INSTALL_LIB_DIR}/
+        DESTINATION ${NGRAPH_INSTALL_LIB_DIR}
+    )
+    install(DIRECTORY
+        ${EXTERNAL_INSTALL_INCLUDE_DIR}/
+        DESTINATION ${NGRAPH_INSTALL_INCLUDE_DIR}
+    )
+
+endif()
