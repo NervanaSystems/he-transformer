@@ -89,7 +89,6 @@ set_target_properties(he_backend PROPERTIES
     ${EXTERNAL_INSTALL_LIB_DIR}
 )
 
-
 # Install he-transformer (the HE libraries are installed separately) at `make install`
 # By default, this installs to `~/ngraph_dist`
 install(TARGETS he_backend DESTINATION ${NGRAPH_INSTALL_LIB_DIR})
