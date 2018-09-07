@@ -14,6 +14,8 @@
 * limitations under the License.
 *******************************************************************************/
 
+#include <unordered_map>
+
 #include "ngraph/runtime/backend.hpp"
 
 #include "he_heaan_backend.hpp"
@@ -22,12 +24,42 @@
 using namespace std;
 using namespace ngraph;
 
-extern "C" bool create_backend()
+// extern "C" bool create_backend()
+// {
+//     NGRAPH_INFO << "Create_backend";
+//     runtime::Backend::register_backend("HE_HEAAN",
+//                                        make_shared<runtime::he::he_heaan::HEHeaanBackend>());
+//     runtime::Backend::register_backend("HE_SEAL",
+//                                        make_shared<runtime::he::he_seal::HESealBackend>());
+//     return true;
+// }
+
+// Hack to avoid weak pointer error
+// TODO: the best solution is to remove all `shared_from_this()` from the code
+static unordered_map<runtime::Backend*, shared_ptr<runtime::Backend>>
+    s_map_backend_ptr_to_shared_ptr;
+
+extern "C" const char* get_ngraph_version_string()
 {
-    NGRAPH_INFO << "Create_backend";
-    runtime::Backend::register_backend("HE_HEAAN",
-                                       make_shared<runtime::he::he_heaan::HEHeaanBackend>());
-    runtime::Backend::register_backend("HE_SEAL",
-                                       make_shared<runtime::he::he_seal::HESealBackend>());
-    return true;
+    return "v0.7.0";
+}
+
+extern "C" runtime::Backend* new_backend(const char* configuration_string)
+{
+    shared_ptr<runtime::Backend> he_backend;
+    if (string(configuration_string) == "HE_SEAL")
+    {
+        he_backend = make_shared<runtime::he::he_seal::HESealBackend>();
+    }
+    else if (string(configuration_string) == "HE_HEAAN")
+    {
+        he_backend = make_shared<runtime::he::he_heaan::HEHeaanBackend>();
+    }
+    s_map_backend_ptr_to_shared_ptr[he_backend.get()] = he_backend;
+    return he_backend.get();
+}
+
+extern "C" void delete_backend(runtime::Backend* backend)
+{
+    s_map_backend_ptr_to_shared_ptr.erase(backend);
 }

@@ -17,7 +17,6 @@
 #include "he_tensor_view.hpp"
 #include "he_backend.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
-#include "ngraph/descriptor/primary_tensor_view.hpp"
 #include "ngraph/util.hpp"
 
 using namespace std;
@@ -28,8 +27,7 @@ runtime::he::HETensorView::HETensorView(const element::Type& element_type,
                                         const shared_ptr<HEBackend>& he_backend,
                                         bool batched,
                                         const string& name)
-    : runtime::TensorView(make_shared<descriptor::PrimaryTensorView>(
-          make_shared<TensorViewType>(element_type, batch_shape(shape, 0, batched)), name))
+    : runtime::TensorView(std::make_shared<descriptor::TensorView>(element_type, shape, name))
 {
     m_descriptor->set_tensor_view_layout(
         make_shared<descriptor::layout::DenseTensorViewLayout>(*m_descriptor));
