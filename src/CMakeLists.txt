@@ -82,7 +82,7 @@ link_directories(
 # Target library
 add_library(he_backend SHARED ${HE_SRC})
 add_dependencies(he_backend ext_ngraph ext_seal ext_heaan)
-target_link_libraries(he_backend ngraph seal heaan ntl)
+target_link_libraries(he_backend ngraph seal heaan ntl libjson)
 
 set_target_properties(he_backend PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY
