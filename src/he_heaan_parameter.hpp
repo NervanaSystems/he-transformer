@@ -17,6 +17,18 @@
 #pragma once
 
 #include <cstdint>
+#include <iostream>
+#include <string>
+
+#include "nlohmann/json.hpp"
+
+const static std::string default_heaan_parameter_str = R"(
+    {
+        "log2_poly_modulus": 13,
+        "log2_plain_modulus": 383,
+        "log2_precision": 32
+    }
+)";
 
 namespace ngraph
 {
@@ -24,18 +36,32 @@ namespace ngraph
     {
         namespace he
         {
-            struct HEHeaanParameter
+            class HEHeaanParameter
             {
+            public:
+                HEHeaanParameter(const std::string& s)
+                {
+                    nlohmann::json js = nlohmann::json::parse(s);
+                    m_log2_poly_modulus = js["log2_poly_modulus"];
+                    m_log2_plain_modulus = js["log2_plain_modulus"];
+                    m_log2_precision = js["log2_precision"];
+                }
+                HEHeaanParameter(std::uint64_t log2_poly_modulus,
+                                 std::uint64_t log2_plain_modulus,
+                                 std::uint64_t log2_precision)
+                    : m_log2_poly_modulus(log2_poly_modulus)
+                    , m_log2_plain_modulus(log2_plain_modulus)
+                    , m_log2_precision(log2_precision)
+                {
+                }
+                ~HEHeaanParameter() {}
                 std::uint64_t m_log2_poly_modulus;
                 std::uint64_t m_log2_plain_modulus;
                 std::uint64_t m_log2_precision;
             };
 
-            static HEHeaanParameter default_heaan_parameter{
-                13,  // log2(poly_modulus)
-                383, // log2(plain_modulus)
-                32   // log2(precision)
-            };
+            static HEHeaanParameter default_heaan_parameter =
+                HEHeaanParameter(default_heaan_parameter_str);
         }
     }
 }
