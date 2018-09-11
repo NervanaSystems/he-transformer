@@ -81,7 +81,10 @@ namespace ngraph
                 }
                 catch (const std::exception& e)
                 {
-                    return HEHeaanParameter(13, 383, 32);
+                    return HEHeaanParameter(13,  // m_log2_poly_modulus
+                                            383, // m_log2_plain_modulus
+                                            32   // m_log2_precision
+                                            );
                 }
             }
             static HEHeaanParameter default_heaan_parameter = parse_heaan_config_or_use_default();

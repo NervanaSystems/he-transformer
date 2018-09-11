@@ -16,14 +16,46 @@
 
 #pragma once
 
+#include <cstdint>
+#include <cstdlib>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+
+#include "ngraph/log.hpp"
+#include "nlohmann/json.hpp"
+
 namespace ngraph
 {
     namespace runtime
     {
         namespace he
         {
-            struct HESealParameter
+            class HESealParameter
             {
+            public:
+                HESealParameter(std::uint64_t poly_modulus,
+                                std::uint64_t plain_modulus,
+                                std::uint64_t security_level,
+                                int fractional_encoder_integer_coeff_count,
+                                int fractional_encoder_fraction_coeff_count,
+                                std::uint64_t fractional_encoder_base,
+                                int evaluation_decomposition_bit_count)
+                    : m_poly_modulus(poly_modulus)
+                    , m_plain_modulus(plain_modulus)
+                    , m_security_level(security_level)
+                    , m_fractional_encoder_integer_coeff_count(
+                          fractional_encoder_integer_coeff_count)
+                    , m_fractional_encoder_fraction_coeff_count(
+                          fractional_encoder_fraction_coeff_count)
+                    , m_fractional_encoder_base(fractional_encoder_base)
+                    , m_evaluation_decomposition_bit_count(evaluation_decomposition_bit_count)
+                {
+                }
+
+                ~HESealParameter() {}
                 // SEALContext
                 // Must be 1024, 2048, 4096, 8192, 16384, or 32768, aka n
                 std::uint64_t m_poly_modulus;
