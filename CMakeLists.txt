@@ -56,6 +56,7 @@ include(cmake/ngraph.cmake)
 include(cmake/gtest.cmake)
 include(cmake/seal.cmake)
 include(cmake/heaan.cmake)
+include(cmake/json.cmake)
 
 # HE transformer source directory
 add_subdirectory(src)
