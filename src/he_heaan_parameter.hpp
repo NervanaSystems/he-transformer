@@ -22,20 +22,20 @@
 
 #include "nlohmann/json.hpp"
 
-const static std::string default_heaan_parameter_str = R"(
-    {
-        "log2_poly_modulus": 13,
-        "log2_plain_modulus": 383,
-        "log2_precision": 32
-    }
-)";
-
 namespace ngraph
 {
     namespace runtime
     {
         namespace he
         {
+            const static std::string default_heaan_parameter_str = R"(
+                {
+                    "log2_poly_modulus": 13,
+                    "log2_plain_modulus": 383,
+                    "log2_precision": 32
+                }
+            )";
+
             class HEHeaanParameter
             {
             public:
