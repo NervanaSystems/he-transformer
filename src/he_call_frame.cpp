@@ -48,6 +48,7 @@
 #include "kernel/subtract.hpp"
 #include "kernel/sum.hpp"
 #include "ngraph/descriptor/layout/tensor_view_layout.hpp"
+#include "ngraph/runtime/backend.hpp"
 #include "ngraph/runtime/host_tensor_view.hpp"
 #include "ngraph/runtime/performance_counter.hpp"
 #include "ngraph/runtime/tensor_view.hpp"
