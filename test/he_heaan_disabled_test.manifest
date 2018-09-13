@@ -261,12 +261,12 @@ tan
 tanh
 tensor_constant_with_op
 tensorview_custom_mem
-validate_call_input_count # Segfault
-validate_call_input_shape # Segfault
-validate_call_input_type  # Segfault
-validate_call_output_count # Segfault
-validate_call_output_shape # Segfault
-validate_call_output_type # Segfault
+# validate_call_input_count
+# validate_call_input_shape
+# validate_call_input_type
+# validate_call_output_count
+# validate_call_output_shape
+# validate_call_output_type
 zero_sized_abs
 zero_sized_acos
 zero_sized_add
