@@ -34,7 +34,7 @@ FLAGS = None
 
 
 def main(_):
-    with tf.device('/device:'+FLAGS.select_device+':0'):
+    with tf.device('/device:' + FLAGS.select_device + ':0'):
         run_mnist(_)
 
 
@@ -78,14 +78,19 @@ def run_mnist(_):
         if (i == 1):
             start = time.time()
         batch_xs, batch_ys = mnist.train.next_batch(100)
-        _,loss=sess.run([train_step,cross_entropy], feed_dict={x: batch_xs, y_: batch_ys})
-        print("step= %d loss= %f" % (i,loss))
+        _, loss = sess.run(
+            [train_step, cross_entropy], feed_dict={
+                x: batch_xs,
+                y_: batch_ys
+            })
+        print("step= %d loss= %f" % (i, loss))
 
     end = time.time()
 
     for var in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES):
         weight = (sess.run([var]))[0]
-        filename = (str(var).split())[1].replace('/','_').replace("'","").replace(':0','') + '.txt'
+        filename = (str(var).split())[1].replace('/', '_').replace(
+            "'", "").replace(':0', '') + '.txt'
         np.savetxt(str(filename), weight)
 
     np.savetxt("x.txt", mnist.test.images[0:5])
@@ -93,14 +98,17 @@ def run_mnist(_):
     # Test trained model
     correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-    print("Accuracy: ", sess.run(
-        accuracy, feed_dict={
-            x: mnist.test.images,
-            y_: mnist.test.labels
-        }))
+    print("Accuracy: ",
+          sess.run(
+              accuracy,
+              feed_dict={
+                  x: mnist.test.images,
+                  y_: mnist.test.labels
+              }))
     print("Training time: %f seconds" % (end - start))
 
     sess.run(y, feed_dict={x: mnist.test.images[0:5]})
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -116,10 +124,7 @@ if __name__ == '__main__':
         help='Number of training iterations')
 
     parser.add_argument(
-        '--select_device',
-        type=str,
-        default='NGRAPH',
-        help='Enter the device')
+        '--select_device', type=str, default='NGRAPH', help='Enter the device')
 
     FLAGS, unparsed = parser.parse_known_args()
     tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)

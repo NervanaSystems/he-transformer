@@ -79,7 +79,8 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_batch)
         auto& shape = parameter->get_shape();
         auto& type = parameter->get_element_type();
         auto parameter_cipher_tv = backend->create_tensor(type, shape, true);
-        // auto parameter_cipher_tv = backend->create_tensor(type, shape); // Uncomment for INTERPRETER backend
+        // Uncomment for INTERPRETER backend
+        // auto parameter_cipher_tv = backend->create_tensor(type, shape);
 
         NGRAPH_INFO << join(shape, "x");
 
@@ -109,7 +110,8 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_batch)
             NGRAPH_INFO << elem;
         }
 
-        // result_tvs.push_back(backend->create_tensor(type, shape)); // Uncomment for interpreter backend
+        // Uncomment for interpreter backend
+        // result_tvs.push_back(backend->create_tensor(type, shape));
         result_tvs.push_back(backend->create_tensor(type, shape, true));
     }
 

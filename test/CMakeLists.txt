@@ -49,14 +49,14 @@ set (NGRAPH_TEST_HE_SEAL_SRC
     test_convolution_HE_SEAL.cpp
     test_basics_HE_SEAL.cpp
     test_mnist_HE_SEAL.cpp
-    )
+)
 
 # Configure test for HE_HEAAN
 set (NGRAPH_TEST_HE_HEAAN_SRC
     test_convolution_HE_HEAAN.cpp
     test_basics_HE_HEAAN.cpp
     test_mnist_HE_HEAAN.cpp
-    )
+)
 
 get_filename_component(HEAAN_MANIFEST he_heaan_disabled_test.manifest ABSOLUTE)
 get_filename_component(SEAL_MANIFEST he_seal_disabled_test.manifest ABSOLUTE)
@@ -71,7 +71,7 @@ add_custom_command(
     -DTEST_LOOPS=2
     -DMANIFEST=${SEAL_MANIFEST}
     -P ${CMAKE_CURRENT_SOURCE_DIR}/configure_test.cmake
-    )
+)
 
 add_custom_command(
     OUTPUT ${NGRAPH_TEST_HE_HEAAN_SRC}
@@ -83,7 +83,7 @@ add_custom_command(
     -DTEST_LOOPS=2
     -DMANIFEST=${HEAAN_MANIFEST}
     -P ${CMAKE_CURRENT_SOURCE_DIR}/configure_test.cmake
-    )
+)
 
 # Build unit-test binary
 set(SRC
@@ -95,6 +95,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(unit-test ${SRC})
 
-target_link_libraries(unit-test he_backend seal heaan ntl ngraph_test_util libgtest pthread dl)
+target_link_libraries(unit-test libgtest)
+target_link_libraries(unit-test ngraph_test_util)
+target_link_libraries(unit-test he_backend seal heaan ntl pthread ${CMAKE_DL_LIBS})
 
 add_dependencies(unit-test he_backend ext_seal ext_heaan ext_ngraph ext_gtest)
