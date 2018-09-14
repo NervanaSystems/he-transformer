@@ -45,16 +45,16 @@ FLAGS = None
 
 def deepnn(x):
     """deepnn builds the graph for a deep net for classifying digits based on Cryptonets paper
-  Args:
-    x: an input tensor with the dimensions (N_examples, 784), where 784 is the
-    number of pixels in a standard MNIST image.
+    Args:
+        x: an input tensor with the dimensions (N_examples, 784), where 784 is the
+        number of pixels in a standard MNIST image.
 
-  Returns:
-    A tuple (y, a scalar placeholder). y is a tensor of shape (N_examples, 10), with values
-    equal to the logits of classifying the digit into one of 10 classes (the
-    digits 0-9). The scalar placeholder is meant for the probability of dropout. Since we don't
-    use a dropout layer in this script, this placeholder is of no relavance and acts as a dummy.
-  """
+    Returns:
+        A tuple (y, a scalar placeholder). y is a tensor of shape (N_examples, 10), with values
+        equal to the logits of classifying the digit into one of 10 classes (the
+        digits 0-9). The scalar placeholder is meant for the probability of dropout. Since we don't
+        use a dropout layer in this script, this placeholder is of no relavance and acts as a dummy.
+    """
     # Reshape to use within a convolutional neural net.
     # Last dimension is for "features" - there is only one here, since images are
     # grayscale -- it would be 3 for an RGB image, 4 for RGBA, etc.
