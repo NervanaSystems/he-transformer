@@ -95,6 +95,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(unit-test ${SRC})
 
-target_link_libraries(unit-test he_backend seal heaan ntl ngraph_test_util libgtest pthread dl)
+target_link_libraries(unit-test libgtest)
+target_link_libraries(unit-test ngraph_test_util)
+target_link_libraries(unit-test he_backend seal heaan ntl pthread ${CMAKE_DL_LIBS})
 
 add_dependencies(unit-test he_backend ext_seal ext_heaan ext_ngraph ext_gtest)
