@@ -107,18 +107,6 @@ def deepnn(x):
 
 
 def main(_):
-    # Config
-    config = tf.ConfigProto(
-        allow_soft_placement=True,
-        log_device_placement=False,
-        inter_op_parallelism_threads=1)
-
-    # Note: Additional configuration option to boost performance is to set the
-    # following environment for the run:
-    # OMP_NUM_THREADS=44 KMP_AFFINITY=granularity=fine,scatter
-    # The OMP_NUM_THREADS number should correspond to the number of
-    # cores in the system
-
     # Import data
     mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=True)
 
@@ -144,7 +132,7 @@ def main(_):
         correct_prediction = tf.cast(correct_prediction, tf.float32)
     accuracy = tf.reduce_mean(correct_prediction)
 
-    with tf.Session(config=config) as sess:
+    with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
         loss_values = []
         for i in range(FLAGS.train_loop_count):
