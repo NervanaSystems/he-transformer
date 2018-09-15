@@ -59,8 +59,9 @@ def squash_layers():
     # Second pooling layer.
     h_pool2 = common.avg_pool_3x3_same_size(h_conv2)
 
-    # Fully connected layer 1 -- after 2 round of downsampling, our 28x28 image
-    # is down to 7x7x11 feature maps -- maps this to 100 features.
+    # Fully connected layer 1
+    # Input: N x 5 x 5 x 50
+    # Output: N x 100
     W_fc1 = np.loadtxt(
         'W_fc1.txt', dtype=np.float32).reshape([5 * 5 * 50, 100])
     h_pool2_flat = tf.reshape(h_pool2, [-1, 5 * 5 * 50])
@@ -91,18 +92,20 @@ def test_deepnn(x):
     with tf.name_scope('reshape'):
         x_image = tf.reshape(x, [-1, 28, 28, 1])
 
-    # First conv layer: maps one grayscale image to 5 feature maps of 14x14
+    # First conv layer: maps one grayscale image to 5 feature maps of 13 x 13
     with tf.name_scope('conv1'):
         W_conv1 = np.loadtxt(
             'W_conv1.txt', dtype=np.float32).reshape([5, 5, 1, 5])
-        h_conv1 = tf.square(common.conv2d_stride_2_valid(x_image, W_conv1))
+        h_conv1_no_pad = tf.square(common.conv2d_stride_2_valid(x_image, W_conv1))
+        paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]])
+        h_conv1 = tf.pad(h_conv1_no_pad, paddings)
 
     with tf.name_scope('squash'):
         W_squash = np.loadtxt(
-            "W_squash.txt", dtype=np.float32).reshape([5 * 14 * 14, 100])
+            "W_squash.txt", dtype=np.float32).reshape([5 * 13 * 13, 100])
 
     with tf.name_scope('fc1'):
-        h_pool2_flat = tf.reshape(h_conv1, [-1, 5 * 14 * 14])
+        h_pool2_flat = tf.reshape(h_conv1, [-1, 5 * 13 * 13])
         h_fc1 = tf.square(tf.matmul(h_pool2_flat, W_squash))
 
     # Map the 100 features to 10 classes, one for each digit
@@ -121,15 +124,17 @@ def test_deepnn_orig(x):
     with tf.name_scope('reshape'):
         x_image = tf.reshape(x, [-1, 28, 28, 1])
 
-    # First conv layer - maps one grayscale image to 5 feature maps of 14x14
+    # First conv layer - maps one grayscale image to 5 feature maps of 13 x 13
     with tf.name_scope('conv1'):
         W_conv1 = np.loadtxt(
             'W_conv1.txt', dtype=np.float32).reshape([5, 5, 1, 5])
-        h_conv1 = tf.square(common.conv2d_stride_2_valid(x_image, W_conv1))
+        h_conv1_no_pad = tf.square(common.conv2d_stride_2_valid(x_image, W_conv1))
+        paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]])
+        h_conv1 = tf.pad(h_conv1_no_pad, paddings)
 
     # Pooling layer
     with tf.name_scope('pool1'):
-        h_pool1 = common.avg_pool_3x3_same_size(h_conv1)  # To 5x14x14
+        h_pool1 = common.avg_pool_3x3_same_size(h_conv1)  # To 5 x 13 x 13
 
     # Second convolution
     with tf.name_scope('conv2'):
@@ -141,12 +146,13 @@ def test_deepnn_orig(x):
     with tf.name_scope('pool2'):
         h_pool2 = common.avg_pool_3x3_same_size(h_conv2)
 
-    # Fully connected layer 1 -- after 2 round of downsampling, our 28x28 image
-    # is down to 7x7x11 feature maps -- maps this to 100 features.
+    # Fully connected layer 1
+    # Input: N x 5 x 5 x 50
+    # Output: N x 100
     with tf.name_scope('fc1'):
         W_fc1 = np.loadtxt(
-            'W_fc1.txt', dtype=np.float32).reshape([7 * 7 * 50, 100])
-        h_pool2_flat = tf.reshape(h_pool2, [-1, 7 * 7 * 50])
+            'W_fc1.txt', dtype=np.float32).reshape([5 * 5 * 50, 100])
+        h_pool2_flat = tf.reshape(h_pool2, [-1, 5 * 5 * 50])
         h_fc1 = tf.square(tf.matmul(h_pool2_flat, W_fc1))
 
     # Map the 100 features to 10 classes, one for each digit
@@ -179,37 +185,37 @@ def test_mnist_cnn(FLAGS, network):
         y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
         print(y_conv_val)
 
-    # with tf.name_scope('accuracy'):
-    #     correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
-    #     correct_prediction = tf.cast(correct_prediction, tf.float32)
-    # accuracy = tf.reduce_mean(correct_prediction)
+    with tf.name_scope('accuracy'):
+        correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
+        correct_prediction = tf.cast(correct_prediction, tf.float32)
+    accuracy = tf.reduce_mean(correct_prediction)
 
-    # with tf.Session() as sess:
-    #     sess.run(tf.global_variables_initializer())
+    with tf.Session() as sess:
+        sess.run(tf.global_variables_initializer())
 
-    #     num_test_images = FLAGS.test_image_count
-    #     x_test = mnist.test.images[:num_test_images]
-    #     y_test = mnist.test.labels[:num_test_images]
+        num_test_images = FLAGS.test_image_count
+        x_test = mnist.test.images[:num_test_images]
+        y_test = mnist.test.labels[:num_test_images]
 
-    #     test_accuracy = accuracy.eval(feed_dict={x: x_test, y_: y_test})
-    #     print('test accuracy wth ' + network + ': %g' % test_accuracy)
+        test_accuracy = accuracy.eval(feed_dict={x: x_test, y_: y_test})
+        print('test accuracy wth ' + network + ': %g' % test_accuracy)
 
     # Run again to export inference graph on smaller batch size
-    # with tf.Session() as sess:
-    #     sess.run(tf.global_variables_initializer())
+    with tf.Session() as sess:
+        sess.run(tf.global_variables_initializer())
 
-    #     batch_size = 1
-    #     x_test = mnist.test.images[:batch_size]
-    #     y_test = mnist.test.labels[:batch_size]
+        batch_size = 1
+        x_test = mnist.test.images[:batch_size]
+        y_test = mnist.test.labels[:batch_size]
 
-    #     y_label = np.argmax(y_test, 1)
+        y_label = np.argmax(y_test, 1)
 
-    #     x_test.tofile("x_test_" + str(batch_size) + ".bin")
-    #     y_test.astype('float32').tofile("y_test_" + str(batch_size) + ".bin")
-    #     y_label.astype('float32').tofile("y_label_" + str(batch_size) + ".bin")
+        x_test.tofile("x_test_" + str(batch_size) + ".bin")
+        y_test.astype('float32').tofile("y_test_" + str(batch_size) + ".bin")
+        y_label.astype('float32').tofile("y_label_" + str(batch_size) + ".bin")
 
-    #     test_accuracy = accuracy.eval(feed_dict={x: x_test, y_: y_test})
-    #     print('test accuracy wth ' + network + ': %g' % test_accuracy)
+        test_accuracy = accuracy.eval(feed_dict={x: x_test, y_: y_test})
+        print('subset test accuracy wth ' + network + ': %g' % test_accuracy)
 
 
 def main(_):
@@ -220,10 +226,10 @@ def main(_):
     squash_layers()
 
     # Test using the original graph
-    # test_mnist_cnn(FLAGS, 'orig')
+    test_mnist_cnn(FLAGS, 'orig')
 
     # Test using squashed graph
-    # test_mnist_cnn(FLAGS, 'squash')
+    test_mnist_cnn(FLAGS, 'squash')
 
 
 if __name__ == '__main__':
