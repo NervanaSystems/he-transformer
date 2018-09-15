@@ -44,24 +44,26 @@ FLAGS = None
 
 
 def deepnn(x):
-    """deepnn builds the graph for a deep net for classifying digits based on Cryptonets paper
+    """Builds the graph for classifying digits based on Cryptonets
+
     Args:
-        x: an input tensor with the dimensions (N_examples, 784), where 784 is the
-        number of pixels in a standard MNIST image.
+        x: an input tensor with the dimensions (N_examples, 784), where 784 is
+        the number of pixels in a standard MNIST image.
 
     Returns:
-        A tuple (y, a scalar placeholder). y is a tensor of shape (N_examples, 10), with values
-        equal to the logits of classifying the digit into one of 10 classes (the
-        digits 0-9). The scalar placeholder is meant for the probability of dropout. Since we don't
-        use a dropout layer in this script, this placeholder is of no relavance and acts as a dummy.
+        A tuple (y, a scalar placeholder). y is a tensor of shape
+        (N_examples, 10), with values equal to the logits of classifying the
+        digit into one of 10 classes (the digits 0-9). The scalar placeholder is
+        meant for the probability of dropout. Since we don't use a dropout layer
+        in this script, this placeholder is of no relavance and acts as a dummy.
     """
-    # Reshape to use within a convolutional neural net.
-    # Last dimension is for "features" - there is only one here, since images are
-    # grayscale -- it would be 3 for an RGB image, 4 for RGBA, etc.
+    # Reshape to use within a conv neural net.
+    # Last dimension is for "features" - there is only one here, since images
+    # are grayscale -- it would be 3 for an RGB image, 4 for RGBA, etc.
     with tf.name_scope('reshape'):
         x_image = tf.reshape(x, [-1, 28, 28, 1])
 
-    # First convolutional layer - maps one grayscale image to 5 feature maps of 14x14.
+    # First conv layer - maps one grayscale image to 5 feature maps of 14x14
     with tf.name_scope('conv1'):
         W_conv1 = weight_variable([5, 5, 1, 5], "W_conv1")
         h_conv1 = tf.square(conv2d(x_image, W_conv1))
@@ -103,7 +105,7 @@ def test_deepnn(x):
     with tf.name_scope('reshape'):
         x_image = tf.reshape(x, [-1, 28, 28, 1])
 
-    # First convolutional layer - maps one grayscale image to 5 feature maps of 14x14.
+    # First conv layer: maps one grayscale image to 5 feature maps of 14x14
     with tf.name_scope('conv1'):
         W_conv1 = np.loadtxt(
             'conv1_Variable.txt', dtype=np.float32).reshape([5, 5, 1, 5])
@@ -129,12 +131,12 @@ def test_deepnn_orig(x):
     """Constructs training network for Cryptonets using saved weights"""
 
     # Reshape to use within a convolutional neural net.
-    # Last dimension is for "features" - there is only one here, since images are
-    # grayscale -- it would be 3 for an RGB image, 4 for RGBA, etc.
+    # Last dimension is for "features" - there is only one here, since images
+    # are grayscale -- it would be 3 for an RGB image, 4 for RGBA, etc.
     with tf.name_scope('reshape'):
         x_image = tf.reshape(x, [-1, 28, 28, 1])
 
-    # First convolutional layer - maps one grayscale image to 5 feature maps of 14x14.
+    # First conv layer - maps one grayscale image to 5 feature maps of 14x14
     with tf.name_scope('conv1'):
         W_conv1 = np.loadtxt(
             'conv1_Variable.txt', dtype=np.float32).reshape([5, 5, 1, 5])
@@ -336,7 +338,8 @@ def train_mnist_cnn(FLAGS):
                         y_: batch[1]
                     })
                 loss_values.append(loss)
-                # print('step %d, loss %g, %g sec for training step' % (i, loss, time.time() - t ))
+                # print('step %d, loss %g, %g sec for training step'
+                #       % (i, loss, time.time() - t ))
                 train_writer.add_summary(summary, i)
 
                 if i % 1000 == 999 or i == train_loops - 1:
