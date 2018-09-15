@@ -46,38 +46,38 @@ def squash_layers():
     tf.reset_default_graph()
 
     # Input from h_conv1 squaring
-    x = tf.placeholder(tf.float32, [None, 14, 14, 5])
+    x = tf.placeholder(tf.float32, [None, 13, 13, 5])
 
     # Pooling layer
-    h_pool1 = common.scaled_mean_pool_2x2(x)  # To 5x14x14
+    h_pool1 = common.avg_pool_3x3_same_size(x)  # To N x 13 x 13 x 5
 
     # Second convolution
     W_conv2 = np.loadtxt(
         'W_conv2.txt', dtype=np.float32).reshape([5, 5, 5, 50])
-    h_conv2 = common.conv2d(h_pool1, W_conv2)
+    h_conv2 = common.conv2d_stride_2_valid(h_pool1, W_conv2)
 
     # Second pooling layer.
-    h_pool2 = common.scaled_mean_pool_2x2(h_conv2)
+    h_pool2 = common.avg_pool_3x3_same_size(h_conv2)
 
     # Fully connected layer 1 -- after 2 round of downsampling, our 28x28 image
     # is down to 7x7x11 feature maps -- maps this to 100 features.
     W_fc1 = np.loadtxt(
-        'W_fc1.txt', dtype=np.float32).reshape([7 * 7 * 50, 100])
-    h_pool2_flat = tf.reshape(h_pool2, [-1, 7 * 7 * 50])
+        'W_fc1.txt', dtype=np.float32).reshape([5 * 5 * 50, 100])
+    h_pool2_flat = tf.reshape(h_pool2, [-1, 5 * 5 * 50])
     pre_square = tf.matmul(h_pool2_flat, W_fc1)
 
-    with tf.Session() as sess_:
-        x_in = np.eye(14 * 14 * 5)
-        x_in = x_in.reshape([980, 14, 14, 5])
-        W = (sess_.run([pre_square], feed_dict={x: x_in}))[0]
-
+    with tf.Session() as sess:
+        x_in = np.eye(13 * 13 * 5)
+        x_in = x_in.reshape([13 * 13 * 5, 13, 13, 5])
+        W = (sess.run([pre_square], feed_dict={x: x_in}))[0]
         np.savetxt("W_squash.txt", W)
 
-        x_in = np.random.rand(100, 14, 14, 5)
-        network_out = (sess_.run([pre_square], feed_dict={x: x_in}))[0]
-        linear_out = x_in.reshape(100, 980).dot(W)
-
+        # Sanity check
+        x_in = np.random.rand(100, 13, 13, 5)
+        network_out = (sess.run([pre_square], feed_dict={x: x_in}))[0]
+        linear_out = x_in.reshape(100, 13 * 13 * 5).dot(W)
         assert (np.max(np.abs(linear_out - network_out)) < 1e-5)
+
     print("Squashed layers")
 
 
@@ -95,7 +95,7 @@ def test_deepnn(x):
     with tf.name_scope('conv1'):
         W_conv1 = np.loadtxt(
             'W_conv1.txt', dtype=np.float32).reshape([5, 5, 1, 5])
-        h_conv1 = tf.square(common.conv2d(x_image, W_conv1))
+        h_conv1 = tf.square(common.conv2d_stride_2_valid(x_image, W_conv1))
 
     with tf.name_scope('squash'):
         W_squash = np.loadtxt(
@@ -125,21 +125,21 @@ def test_deepnn_orig(x):
     with tf.name_scope('conv1'):
         W_conv1 = np.loadtxt(
             'W_conv1.txt', dtype=np.float32).reshape([5, 5, 1, 5])
-        h_conv1 = tf.square(common.conv2d(x_image, W_conv1))
+        h_conv1 = tf.square(common.conv2d_stride_2_valid(x_image, W_conv1))
 
     # Pooling layer
     with tf.name_scope('pool1'):
-        h_pool1 = common.scaled_mean_pool_2x2(h_conv1)  # To 5x14x14
+        h_pool1 = common.avg_pool_3x3_same_size(h_conv1)  # To 5x14x14
 
     # Second convolution
     with tf.name_scope('conv2'):
         W_conv2 = np.loadtxt(
             'W_conv2.txt', dtype=np.float32).reshape([5, 5, 5, 50])
-        h_conv2 = common.conv2d(h_pool1, W_conv2)
+        h_conv2 = common.conv2d_stride_2_valid(h_pool1, W_conv2)
 
     # Second pooling layer.
     with tf.name_scope('pool2'):
-        h_pool2 = common.scaled_mean_pool_2x2(h_conv2)
+        h_pool2 = common.avg_pool_3x3_same_size(h_conv2)
 
     # Fully connected layer 1 -- after 2 round of downsampling, our 28x28 image
     # is down to 7x7x11 feature maps -- maps this to 100 features.
@@ -157,8 +157,6 @@ def test_deepnn_orig(x):
 
 
 def test_mnist_cnn(FLAGS, network):
-    import ngraph
-
     # Import data
     mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=True)
 
@@ -225,7 +223,7 @@ def main(_):
     # test_mnist_cnn(FLAGS, 'orig')
 
     # Test using squashed graph
-    test_mnist_cnn(FLAGS, 'squash')
+    # test_mnist_cnn(FLAGS, 'squash')
 
 
 if __name__ == '__main__':
