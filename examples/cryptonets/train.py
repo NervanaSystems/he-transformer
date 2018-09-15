@@ -162,9 +162,8 @@ def main(_):
 
     with tf.Session(config=config) as sess:
         sess.run(tf.global_variables_initializer())
-        train_loops = FLAGS.train_loop_count
         loss_values = []
-        for i in range(train_loops):
+        for i in range(FLAGS.train_loop_count):
             batch = mnist.train.next_batch(FLAGS.batch_size)
             if i % 100 == 0:
                 t = time.time()
@@ -187,11 +186,9 @@ def main(_):
             #       % (i, loss, time.time() - t ))
             train_writer.add_summary(summary, i)
 
-            if i % 1000 == 999 or i == train_loops - 1:
-
-                num_test_images = FLAGS.test_image_count
-                x_test = mnist.test.images[:num_test_images]
-                y_test = mnist.test.labels[:num_test_images]
+            if i % 1000 == 999 or i == FLAGS.train_loop_count - 1:
+                x_test = mnist.test.images[:FLAGS.test_image_count]
+                y_test = mnist.test.labels[:FLAGS.test_image_count]
 
                 test_accuracy = accuracy.eval(feed_dict={
                     x: x_test,
@@ -199,7 +196,7 @@ def main(_):
                 })
                 print('test accuracy %g' % test_accuracy)
 
-                if i == train_loops - 1:
+                if i == FLAGS.train_loop_count - 1:
                     print("Training finished. Saving variables")
                     for var in tf.get_collection(
                             tf.GraphKeys.TRAINABLE_VARIABLES):
@@ -215,7 +212,8 @@ def main(_):
                             print("saving", filename)
                             np.savetxt(str(filename), weight)
 
-                    return loss_values, test_accuracy
+    print("Number of training batches", len(loss_values))
+    print("Final test accuracy", test_accuracy)
 
 
 if __name__ == '__main__':
