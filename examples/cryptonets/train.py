@@ -149,16 +149,6 @@ def main(_):
         correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
         correct_prediction = tf.cast(correct_prediction, tf.float32)
     accuracy = tf.reduce_mean(correct_prediction)
-    tf.summary.scalar('Training accuracy', accuracy)
-    tf.summary.scalar('Loss function', cross_entropy)
-
-    graph_location = "/tmp/" + getpass.getuser(
-    ) + "/tensorboard-logs/mnist-convnet"
-    print('Saving graph to: %s' % graph_location)
-
-    merged = tf.summary.merge_all()
-    train_writer = tf.summary.FileWriter(graph_location)
-    train_writer.add_graph(tf.get_default_graph())
 
     with tf.Session(config=config) as sess:
         sess.run(tf.global_variables_initializer())
@@ -171,20 +161,16 @@ def main(_):
                     x: batch[0],
                     y_: batch[1]
                 })
-                #tf.summary.scalar('Training accuracy', train_accuracy)
                 print('step %d, training accuracy %g, %g sec to evaluate' %
                       (i, train_accuracy, time.time() - t))
             t = time.time()
-            _, summary, loss = sess.run(
-                [train_step, merged, cross_entropy],
+            _, loss = sess.run(
+                [train_step, cross_entropy],
                 feed_dict={
                     x: batch[0],
                     y_: batch[1]
                 })
             loss_values.append(loss)
-            # print('step %d, loss %g, %g sec for training step'
-            #       % (i, loss, time.time() - t ))
-            train_writer.add_summary(summary, i)
 
             if i % 1000 == 999 or i == FLAGS.train_loop_count - 1:
                 x_test = mnist.test.images[:FLAGS.test_image_count]
