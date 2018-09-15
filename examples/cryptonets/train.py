@@ -54,12 +54,6 @@ def scaled_mean_pool_2x2(x):
         x, ksize=[1, 3, 3, 1], strides=[1, 1, 1, 1], padding='SAME')
 
 
-def weight_variable(shape, name):
-    """weight_variable generates a weight variable of a given shape."""
-    initial = tf.get_variable(name, shape)
-    return tf.Variable(initial)
-
-
 def deepnn(x):
     """Builds the graph for classifying digits based on Cryptonets
 
@@ -82,7 +76,7 @@ def deepnn(x):
 
     # First conv layer - maps one grayscale image to 5 feature maps of 14x14
     with tf.name_scope('conv1'):
-        W_conv1 = weight_variable([5, 5, 1, 5], "W_conv1")
+        W_conv1 = tf.get_variable("W_conv1", [5, 5, 1, 5])
         h_conv1 = tf.square(conv2d(x_image, W_conv1))
 
     # Pooling layer
@@ -91,7 +85,7 @@ def deepnn(x):
 
     # Second convolution
     with tf.name_scope('conv2'):
-        W_conv2 = weight_variable([5, 5, 5, 50], "W_conv2")  # To 50x7x7
+        W_conv2 = tf.get_variable("W_conv2", [5, 5, 5, 50])  # To 50x7x7
         h_conv2 = conv2d(h_pool1, W_conv2)
 
     # Second pooling layer.
@@ -101,13 +95,13 @@ def deepnn(x):
     # Fully connected layer 1 -- after 2 round of downsampling, our 28x28 image
     # is down to 7x7x11 feature maps -- maps this to 100 features.
     with tf.name_scope('fc1'):
-        W_fc1 = weight_variable([7 * 7 * 50, 100], "W_fc1")
+        W_fc1 = tf.get_variable("W_fc1", [7 * 7 * 50, 100])
         h_pool2_flat = tf.reshape(h_pool2, [-1, 7 * 7 * 50])
         h_fc1 = tf.square(tf.matmul(h_pool2_flat, W_fc1))
 
     # Map the 100 features to 10 classes, one for each digit
     with tf.name_scope('fc2'):
-        W_fc2 = weight_variable([100, 10], "W_fc2")
+        W_fc2 = tf.get_variable("W_fc2", [100, 10])
         y_conv = tf.matmul(h_fc1, W_fc2)
     return y_conv
 
