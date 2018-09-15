@@ -37,21 +37,10 @@ import numpy as np
 import itertools
 
 from tensorflow.examples.tutorials.mnist import input_data
-
 import tensorflow as tf
+import common
 
 FLAGS = None
-
-
-def conv2d(x, W, name=None):
-    """conv2d returns a 2d convolution layer with stride 2."""
-    return tf.nn.conv2d(x, W, strides=[1, 2, 2, 1], padding='SAME')
-
-
-def scaled_mean_pool_2x2(x):
-    """scaled_mean_pool_2x keeps feature map size."""
-    return tf.nn.avg_pool(
-        x, ksize=[1, 3, 3, 1], strides=[1, 1, 1, 1], padding='SAME')
 
 
 def deepnn(x):
@@ -77,20 +66,20 @@ def deepnn(x):
     # First conv layer - maps one grayscale image to 5 feature maps of 14x14
     with tf.name_scope('conv1'):
         W_conv1 = tf.get_variable("W_conv1", [5, 5, 1, 5])
-        h_conv1 = tf.square(conv2d(x_image, W_conv1))
+        h_conv1 = tf.square(common.conv2d(x_image, W_conv1))
 
     # Pooling layer
     with tf.name_scope('pool1'):
-        h_pool1 = scaled_mean_pool_2x2(h_conv1)  # To 5x14x14
+        h_pool1 = common.scaled_mean_pool_2x2(h_conv1)  # To 5x14x14
 
     # Second convolution
     with tf.name_scope('conv2'):
         W_conv2 = tf.get_variable("W_conv2", [5, 5, 5, 50])  # To 50x7x7
-        h_conv2 = conv2d(h_pool1, W_conv2)
+        h_conv2 = common.conv2d(h_pool1, W_conv2)
 
     # Second pooling layer.
     with tf.name_scope('pool2'):
-        h_pool2 = scaled_mean_pool_2x2(h_conv2)
+        h_pool2 = common.scaled_mean_pool_2x2(h_conv2)
 
     # Fully connected layer 1 -- after 2 round of downsampling, our 28x28 image
     # is down to 7x7x11 feature maps -- maps this to 100 features.
