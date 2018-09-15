@@ -37,8 +37,6 @@ from tensorflow.examples.tutorials.mnist import input_data
 import tensorflow as tf
 import common
 
-import ngraph
-
 FLAGS = None
 
 
@@ -159,6 +157,8 @@ def test_deepnn_orig(x):
 
 
 def test_mnist_cnn(FLAGS, network):
+    import ngraph
+
     # Import data
     mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=True)
 
@@ -174,39 +174,44 @@ def test_mnist_cnn(FLAGS, network):
     else:
         y_conv = test_deepnn(x)
 
-    with tf.name_scope('accuracy'):
-        correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
-        correct_prediction = tf.cast(correct_prediction, tf.float32)
-    accuracy = tf.reduce_mean(correct_prediction)
-
     with tf.Session() as sess:
-        sess.run(tf.global_variables_initializer())
-
-        num_test_images = FLAGS.test_image_count
-        x_test = mnist.test.images[:num_test_images]
-        y_test = mnist.test.labels[:num_test_images]
-
-        test_accuracy = accuracy.eval(feed_dict={x: x_test, y_: y_test})
-        print('test accuracy wth ' + network + ': %g' % test_accuracy)
-
-    # Run again to export inference graph on smaller batch size
-    with tf.Session() as sess:
-        sess.run(tf.global_variables_initializer())
-
-        batch_size = 4096
-
-        num_test_images = FLAGS.test_image_count
+        batch_size = 1
         x_test = mnist.test.images[:batch_size]
         y_test = mnist.test.labels[:batch_size]
+        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
+        print(y_conv_val)
 
-        y_label = np.argmax(y_test, 1)
+    # with tf.name_scope('accuracy'):
+    #     correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
+    #     correct_prediction = tf.cast(correct_prediction, tf.float32)
+    # accuracy = tf.reduce_mean(correct_prediction)
 
-        x_test.tofile("x_test_" + str(batch_size) + ".bin")
-        y_test.astype('float32').tofile("y_test_" + str(batch_size) + ".bin")
-        y_label.astype('float32').tofile("y_label_" + str(batch_size) + ".bin")
+    # with tf.Session() as sess:
+    #     sess.run(tf.global_variables_initializer())
 
-        test_accuracy = accuracy.eval(feed_dict={x: x_test, y_: y_test})
-        print('test accuracy wth ' + network + ': %g' % test_accuracy)
+    #     num_test_images = FLAGS.test_image_count
+    #     x_test = mnist.test.images[:num_test_images]
+    #     y_test = mnist.test.labels[:num_test_images]
+
+    #     test_accuracy = accuracy.eval(feed_dict={x: x_test, y_: y_test})
+    #     print('test accuracy wth ' + network + ': %g' % test_accuracy)
+
+    # Run again to export inference graph on smaller batch size
+    # with tf.Session() as sess:
+    #     sess.run(tf.global_variables_initializer())
+
+    #     batch_size = 1
+    #     x_test = mnist.test.images[:batch_size]
+    #     y_test = mnist.test.labels[:batch_size]
+
+    #     y_label = np.argmax(y_test, 1)
+
+    #     x_test.tofile("x_test_" + str(batch_size) + ".bin")
+    #     y_test.astype('float32').tofile("y_test_" + str(batch_size) + ".bin")
+    #     y_label.astype('float32').tofile("y_label_" + str(batch_size) + ".bin")
+
+    #     test_accuracy = accuracy.eval(feed_dict={x: x_test, y_: y_test})
+    #     print('test accuracy wth ' + network + ': %g' % test_accuracy)
 
 
 def main(_):
@@ -217,7 +222,7 @@ def main(_):
     squash_layers()
 
     # Test using the original graph
-    test_mnist_cnn(FLAGS, 'orig')
+    # test_mnist_cnn(FLAGS, 'orig')
 
     # Test using squashed graph
     test_mnist_cnn(FLAGS, 'squash')
