@@ -109,8 +109,7 @@ def test_deepnn(x):
 
     # Map the 100 features to 10 classes, one for each digit
     with tf.name_scope('fc2'):
-        W_fc2 = np.loadtxt(
-            'W_fc2.txt', dtype=np.float32).reshape([100, 10])
+        W_fc2 = np.loadtxt('W_fc2.txt', dtype=np.float32).reshape([100, 10])
         y_conv = tf.matmul(h_fc1, W_fc2)
     return y_conv
 
@@ -154,8 +153,7 @@ def test_deepnn_orig(x):
 
     # Map the 100 features to 10 classes, one for each digit
     with tf.name_scope('fc2'):
-        W_fc2 = np.loadtxt(
-            'W_fc2.txt', dtype=np.float32).reshape([100, 10])
+        W_fc2 = np.loadtxt('W_fc2.txt', dtype=np.float32).reshape([100, 10])
         y_conv = tf.matmul(h_fc1, W_fc2)
     return y_conv
 
