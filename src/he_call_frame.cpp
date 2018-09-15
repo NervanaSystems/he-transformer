@@ -1028,6 +1028,9 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
             throw ngraph_error("Sum types not supported.");
         }
     }
+    else if (node_op == "Pad")
+    {
+    }
     else
     {
         throw ngraph_error("Node op " + node_op + " unimplemented");

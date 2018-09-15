@@ -27,6 +27,7 @@ set (HE_SRC
     kernel/multiply.cpp
     kernel/negate.cpp
     kernel/one_hot.cpp
+    kernel/pad.cpp
     kernel/reshape.cpp
     kernel/result.cpp
     kernel/slice.cpp
