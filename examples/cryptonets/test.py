@@ -159,8 +159,6 @@ def test_deepnn_orig(x):
 
 
 def test_mnist_cnn(FLAGS, network):
-    squash_layers()
-
     # Import data
     mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=True)
 
@@ -212,8 +210,17 @@ def test_mnist_cnn(FLAGS, network):
 
 
 def main(_):
-    # test_mnist_cnn(FLAGS, 'squash')
+    # Disable mnist dataset deprecation warning
+    tf.logging.set_verbosity(tf.logging.ERROR)
+
+    # Squash layer and write weights
+    squash_layers()
+
+    # Test using the original graph
     test_mnist_cnn(FLAGS, 'orig')
+
+    # Test using squashed graph
+    test_mnist_cnn(FLAGS, 'squash')
 
 
 if __name__ == '__main__':

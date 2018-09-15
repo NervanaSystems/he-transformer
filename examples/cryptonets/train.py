@@ -93,6 +93,9 @@ def deepnn(x):
 
 
 def main(_):
+    # Disable mnist dataset deprecation warning
+    tf.logging.set_verbosity(tf.logging.ERROR)
+
     # Import data
     mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=True)
 
