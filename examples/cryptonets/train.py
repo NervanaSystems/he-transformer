@@ -154,7 +154,7 @@ def main(_):
                 })
             loss_values.append(loss)
 
-            if i % 1000 == 999 or i == FLAGS.train_loop_count - 1:
+            if i % 1000 == 999:
                 x_test = mnist.test.images[:FLAGS.test_image_count]
                 y_test = mnist.test.labels[:FLAGS.test_image_count]
 
@@ -164,24 +164,19 @@ def main(_):
                 })
                 print('test accuracy %g' % test_accuracy)
 
-                if i == FLAGS.train_loop_count - 1:
-                    print("Training finished. Saving variables")
-                    for var in tf.get_collection(
-                            tf.GraphKeys.TRAINABLE_VARIABLES):
-                        weight = (sess.run([var]))[0].flatten().tolist()
-                        filename = (str(var).split())[1].replace('/', '_')
-                        filename = filename.replace("'", "").replace(
-                            ':0', '') + '.txt'
-                        # Don't save initial variable weights
-                        if filename not in set([
-                                'W_conv1.txt', 'W_conv2.txt', 'W_fc1.txt',
-                                'W_fc2.txt'
-                        ]):
-                            print("saving", filename)
-                            np.savetxt(str(filename), weight)
+        print("Training finished. Saving variables")
+        for var in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES):
+            weight = (sess.run([var]))[0].flatten().tolist()
+            filename = (str(var).split())[1].replace('/', '_')
+            filename = filename.replace("'", "").replace(':0', '') + '.txt'
+            # Don't save initial variable weights
+            if filename not in set(
+                ['W_conv1.txt', 'W_conv2.txt', 'W_fc1.txt', 'W_fc2.txt']):
+                print("saving", filename)
+                np.savetxt(str(filename), weight)
 
-    print("Number of training batches", len(loss_values))
-    print("Final test accuracy", test_accuracy)
+        print("Number of training batches", len(loss_values))
+        print("Final test accuracy", test_accuracy)
 
 
 if __name__ == '__main__':
