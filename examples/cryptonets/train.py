@@ -60,32 +60,53 @@ def deepnn(x):
     with tf.name_scope('reshape'):
         x_image = tf.reshape(x, [-1, 28, 28, 1])
 
-    # First conv layer - maps one grayscale image to 5 feature maps of 14x14
+    # First conv layer
+    # CryptoNets's output of the first conv layer has feature map size 13 x 13,
+    # therefore, we manually add paddings.
+    # Input: N x 28 x 28 x 1
+    # Filter: 5 x 5 x 1 x 5
+    # Output: N x 12 x 12 x 5
+    # Output after padding: N x 13 x 13 x 5
     with tf.name_scope('conv1'):
         W_conv1 = tf.get_variable("W_conv1", [5, 5, 1, 5])
-        h_conv1 = tf.square(common.conv2d(x_image, W_conv1))
+        h_conv1_no_pad = tf.square(common.conv2d_stride_2_valid(x_image, W_conv1))
+        paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]])
+        h_conv1 = tf.pad(h_conv1_no_pad, paddings)
 
     # Pooling layer
+    # Input: N x 13 x 13 x 5
+    # Output: N x 13 x 13 x 5
     with tf.name_scope('pool1'):
-        h_pool1 = common.scaled_mean_pool_2x2(h_conv1)  # To 5x14x14
+        h_pool1 = common.avg_pool_3x3_same_size(h_conv1)
 
     # Second convolution
+    # Input: N x 13 x 13 x 5
+    # Filter: 5 x 5 x 5 x 50
+    # Output: N x 5 x 5 x 50
     with tf.name_scope('conv2'):
-        W_conv2 = tf.get_variable("W_conv2", [5, 5, 5, 50])  # To 50x7x7
-        h_conv2 = common.conv2d(h_pool1, W_conv2)
+        W_conv2 = tf.get_variable("W_conv2", [5, 5, 5, 50])
+        h_conv2 = common.conv2d_stride_2_valid(h_pool1, W_conv2)
 
-    # Second pooling layer.
+    # Second pooling layer
+    # Input: N x 5 x 5 x 50
+    # Output: N x 5 x 5 x 50
     with tf.name_scope('pool2'):
-        h_pool2 = common.scaled_mean_pool_2x2(h_conv2)
+        h_pool2 = common.avg_pool_3x3_same_size(h_conv2)
 
-    # Fully connected layer 1 -- after 2 round of downsampling, our 28x28 image
-    # is down to 7x7x11 feature maps -- maps this to 100 features.
+    # Fully connected layer 1
+    # Input: N x 5 x 5 x 50
+    # Input flattened: N x 1250
+    # Weight: 1250 x 100
+    # Output: N x 100
     with tf.name_scope('fc1'):
-        W_fc1 = tf.get_variable("W_fc1", [7 * 7 * 50, 100])
-        h_pool2_flat = tf.reshape(h_pool2, [-1, 7 * 7 * 50])
+        h_pool2_flat = tf.reshape(h_pool2, [-1, 5 * 5 * 50])
+        W_fc1 = tf.get_variable("W_fc1", [5 * 5 * 50, 100])
         h_fc1 = tf.square(tf.matmul(h_pool2_flat, W_fc1))
 
     # Map the 100 features to 10 classes, one for each digit
+    # Input: N x 100
+    # Weight: 100 x 10
+    # Output: N x 10
     with tf.name_scope('fc2'):
         W_fc2 = tf.get_variable("W_fc2", [100, 10])
         y_conv = tf.matmul(h_fc1, W_fc2)
