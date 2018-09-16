@@ -43,6 +43,8 @@ void runtime::he::kernel::pad(
         throw ngraph_error("Padding element must be scalar");
     }
 
+    std::shared_ptr<runtime::he::HECiphertext> pad_val = arg1[0];
+
     Coordinate input_start(arg0_shape.size(), 0); // start at (0,0,...,0)
     Coordinate input_end =
         out_shape; // end at (d'0,d'1,...,d'n), the outer corner of the post-padding shape
@@ -89,7 +91,7 @@ void runtime::he::kernel::pad(
 
         std::shared_ptr<runtime::he::HECiphertext> v =
             input_transform.has_source_coordinate(in_coord) ? arg0[input_transform.index(in_coord)]
-                                                            : arg1[0];
+                                                            : pad_val;
 
         out[output_transform.index(out_coord)] = v;
 
