@@ -25,7 +25,6 @@
 #include <string>
 
 #include "ngraph/log.hpp"
-#include "nlohmann/json.hpp"
 
 namespace ngraph
 {
@@ -49,45 +48,6 @@ namespace ngraph
                 std::uint64_t m_log2_plain_modulus;
                 std::uint64_t m_log2_precision;
             };
-
-            const static HEHeaanParameter parse_heaan_config_or_use_default()
-            {
-                try
-                {
-                    const char* config_path = std::getenv("NGRAPH_HE_HEAAN_CONFIG");
-                    if (config_path != nullptr)
-                    {
-                        // Read file to string
-                        std::ifstream f(config_path);
-                        std::stringstream ss;
-                        ss << f.rdbuf();
-                        std::string s = ss.str();
-
-                        // Parse json
-                        nlohmann::json js = nlohmann::json::parse(s);
-                        std::uint64_t log2_poly_modulus = js["log2_poly_modulus"];
-                        std::uint64_t log2_plain_modulus = js["log2_plain_modulus"];
-                        std::uint64_t log2_precision = js["log2_precision"];
-
-                        NGRAPH_INFO << "Using HEAAN config for parameters: " << config_path;
-                        return HEHeaanParameter(
-                            log2_poly_modulus, log2_plain_modulus, log2_precision);
-                    }
-                    else
-                    {
-                        NGRAPH_INFO << "Using HEAAN default parameters" << config_path;
-                        throw std::runtime_error("config_path is NULL");
-                    }
-                }
-                catch (const std::exception& e)
-                {
-                    return HEHeaanParameter(13,  // m_log2_poly_modulus
-                                            383, // m_log2_plain_modulus
-                                            32   // m_log2_precision
-                                            );
-                }
-            }
-            static HEHeaanParameter default_heaan_parameter = parse_heaan_config_or_use_default();
         }
     }
 }

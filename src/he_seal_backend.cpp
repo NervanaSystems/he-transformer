@@ -28,6 +28,62 @@
 using namespace ngraph;
 using namespace std;
 
+const static runtime::he::HESealParameter parse_seal_config_or_use_default()
+{
+    try
+    {
+        const char* config_path = std::getenv("NGRAPH_HE_SEAL_CONFIG");
+        if (config_path != nullptr)
+        {
+            // Read file to string
+            std::ifstream f(config_path);
+            std::stringstream ss;
+            ss << f.rdbuf();
+            std::string s = ss.str();
+
+            // Parse json
+            nlohmann::json js = nlohmann::json::parse(s);
+            std::uint64_t poly_modulus = js["poly_modulus"];
+            std::uint64_t plain_modulus = js["plain_modulus"];
+            std::uint64_t security_level = js["security_level"];
+            int fractional_encoder_integer_coeff_count =
+                js["fractional_encoder_integer_coeff_count"];
+            int fractional_encoder_fraction_coeff_count =
+                js["fractional_encoder_fraction_coeff_count"];
+            std::uint64_t fractional_encoder_base = js["fractional_encoder_base"];
+            int evaluation_decomposition_bit_count = js["evaluation_decomposition_bit_count"];
+
+            NGRAPH_INFO << "Using SEAL config for parameters: " << config_path;
+            return runtime::he::HESealParameter(poly_modulus,
+                                                plain_modulus,
+                                                security_level,
+                                                fractional_encoder_integer_coeff_count,
+                                                fractional_encoder_fraction_coeff_count,
+                                                fractional_encoder_base,
+                                                evaluation_decomposition_bit_count);
+        }
+        else
+        {
+            NGRAPH_INFO << "Using SEAL default parameters" << config_path;
+            throw std::runtime_error("config_path is NULL");
+        }
+    }
+    catch (const std::exception& e)
+    {
+        return runtime::he::HESealParameter(8192,      // poly_modulus
+                                            2L << 30L, // plain_modulus
+                                            128,       // security_level
+                                            64,        // fractional_encoder_integer_coeff_count
+                                            32,        // fractional_encoder_fraction_coeff_count
+                                            2,         // fractional_encoder_base
+                                            16         // evaluation_decomposition_bit_count
+                                            );
+    }
+}
+
+const static runtime::he::HESealParameter default_seal_parameter =
+    parse_seal_config_or_use_default();
+
 static void print_seal_context(const seal::SEALContext& context)
 {
     NGRAPH_INFO << endl
@@ -42,7 +98,7 @@ static void print_seal_context(const seal::SEALContext& context)
 
 runtime::he::he_seal::HESealBackend::HESealBackend()
     : runtime::he::he_seal::HESealBackend(
-          make_shared<runtime::he::HESealParameter>(runtime::he::default_seal_parameter))
+          make_shared<runtime::he::HESealParameter>(default_seal_parameter))
 {
 }
 
