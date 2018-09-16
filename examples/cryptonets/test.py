@@ -97,7 +97,7 @@ def cryptonets_test_squashed(x):
         W_conv1 = tf.constant(np.loadtxt(
             'W_conv1.txt', dtype=np.float32).reshape([5, 5, 1, 5]))
         h_conv1_no_pad = tf.square(common.conv2d_stride_2_valid(x_image, W_conv1))
-        paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]])
+        paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]], name='pad_const')
         h_conv1 = tf.pad(h_conv1_no_pad, paddings)
 
     with tf.name_scope('squash'):
@@ -129,7 +129,7 @@ def cryptonets_test_original(x):
         W_conv1 = tf.constant(np.loadtxt(
             'W_conv1.txt', dtype=np.float32).reshape([5, 5, 1, 5]))
         h_conv1_no_pad = tf.square(common.conv2d_stride_2_valid(x_image, W_conv1))
-        paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]])
+        paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]], name='pad_const')
         h_conv1 = tf.pad(h_conv1_no_pad, paddings)
 
     # Pooling layer

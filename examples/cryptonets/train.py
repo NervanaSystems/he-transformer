@@ -52,7 +52,7 @@ def cryptonets_train(x):
         (N_examples, 10), with values equal to the logits of classifying the
         digit into one of 10 classes (the digits 0-9). The scalar placeholder is
         meant for the probability of dropout. Since we don't use a dropout layer
-        in this script, this placeholder is of no relavance and acts as a dummy.
+        in this script, this placeholder is of no relevance and acts as a dummy.
     """
     # Reshape to use within a conv neural net.
     # Last dimension is for "features" - there is only one here, since images
@@ -70,7 +70,7 @@ def cryptonets_train(x):
     with tf.name_scope('conv1'):
         W_conv1 = tf.get_variable("W_conv1", [5, 5, 1, 5])
         h_conv1_no_pad = tf.square(common.conv2d_stride_2_valid(x_image, W_conv1))
-        paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]])
+        paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]], name='pad_const')
         h_conv1 = tf.pad(h_conv1_no_pad, paddings)
 
     # Pooling layer
