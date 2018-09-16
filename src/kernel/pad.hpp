@@ -34,11 +34,19 @@ namespace ngraph
             namespace kernel
             {
                 void pad(
-                    // Input tensor, must be ciphertext
                     const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
-                    // Padding value, must be scalar, plaintext
-                    const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg1,
-                    // Output tensor must be ciphertext
+                    const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg1, // scalar
+                    const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
+                    const Shape& arg0_shape,
+                    const Shape& out_shape,
+                    const Shape& padding_below,
+                    const Shape& padding_above,
+                    const Shape& padding_interior,
+                    const std::shared_ptr<runtime::he::HEBackend>& he_backend);
+
+                void pad(
+                    const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
+                    const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg1, // scalar
                     const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
                     const Shape& arg0_shape,
                     const Shape& out_shape,

@@ -20,6 +20,7 @@
 #include "ngraph/op/convolution.hpp"
 #include "ngraph/op/dot.hpp"
 #include "ngraph/op/one_hot.hpp"
+#include "ngraph/op/pad.hpp"
 #include "ngraph/op/reshape.hpp"
 #include "ngraph/op/result.hpp"
 #include "ngraph/op/slice.hpp"
@@ -42,6 +43,7 @@
 #include "kernel/multiply.hpp"
 #include "kernel/negate.hpp"
 #include "kernel/one_hot.hpp"
+#include "kernel/pad.hpp"
 #include "kernel/reshape.hpp"
 #include "kernel/result.hpp"
 #include "kernel/slice.hpp"
@@ -1030,6 +1032,36 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     }
     else if (node_op == "Pad")
     {
+        shared_ptr<op::Pad> pad = dynamic_pointer_cast<op::Pad>(node);
+
+        if (arg0_cipher != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
+        {
+            runtime::he::kernel::pad(arg0_cipher->get_elements(),
+                                     arg1_cipher->get_elements(),
+                                     out0_cipher->get_elements(),
+                                     node->get_inputs().at(0).get_shape(),
+                                     node->get_output_shape(0),
+                                     pad->get_padding_below(),
+                                     pad->get_padding_above(),
+                                     pad->get_padding_interior(),
+                                     m_he_backend);
+        }
+        else if (arg0_cipher != nullptr && arg1_plain != nullptr && out0_cipher != nullptr)
+        {
+            runtime::he::kernel::pad(arg0_cipher->get_elements(),
+                                     arg1_plain->get_elements(),
+                                     out0_cipher->get_elements(),
+                                     node->get_inputs().at(0).get_shape(),
+                                     node->get_output_shape(0),
+                                     pad->get_padding_below(),
+                                     pad->get_padding_above(),
+                                     pad->get_padding_interior(),
+                                     m_he_backend);
+        }
+        else
+        {
+            throw ngraph_error("Pad cipher vs plain types not supported.");
+        }
     }
     else
     {
