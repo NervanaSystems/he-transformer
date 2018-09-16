@@ -4038,7 +4038,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_4d_1x2x2x2)
 
     backend->call_with_validate(f, {result}, {a, b});
     // clang-format off
-    EXPECT_EQ((test::NDArray<float, 4>(
+    EXPECT_TRUE(test::all_close((test::NDArray<float, 4>(
         {
             {
                 {
@@ -4055,7 +4055,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_4d_1x2x2x2)
                 }
             }
         }).get_vector()),
-        read_vector<float>(result));
+        read_vector<float>(result)));
     // clang-format on
 }
 

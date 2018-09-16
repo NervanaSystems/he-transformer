@@ -36,7 +36,7 @@ namespace ngraph
                 void pad(
                     const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
                     const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg1, // scalar
-                    const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
+                    std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
                     const Shape& arg0_shape,
                     const Shape& out_shape,
                     const Shape& padding_below,
@@ -47,7 +47,7 @@ namespace ngraph
                 void pad(
                     const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
                     const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg1, // scalar
-                    const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
+                    std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
                     const Shape& arg0_shape,
                     const Shape& out_shape,
                     const Shape& padding_below,
