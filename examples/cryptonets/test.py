@@ -94,15 +94,15 @@ def test_deepnn(x):
 
     # First conv layer: maps one grayscale image to 5 feature maps of 13 x 13
     with tf.name_scope('conv1'):
-        W_conv1 = np.loadtxt(
-            'W_conv1.txt', dtype=np.float32).reshape([5, 5, 1, 5])
+        W_conv1 = tf.constant(np.loadtxt(
+            'W_conv1.txt', dtype=np.float32).reshape([5, 5, 1, 5]))
         h_conv1_no_pad = tf.square(common.conv2d_stride_2_valid(x_image, W_conv1))
         paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]])
         h_conv1 = tf.pad(h_conv1_no_pad, paddings)
 
     with tf.name_scope('squash'):
-        W_squash = np.loadtxt(
-            "W_squash.txt", dtype=np.float32).reshape([5 * 13 * 13, 100])
+        W_squash = tf.constant(np.loadtxt(
+            "W_squash.txt", dtype=np.float32).reshape([5 * 13 * 13, 100]))
 
     with tf.name_scope('fc1'):
         h_pool2_flat = tf.reshape(h_conv1, [-1, 5 * 13 * 13])
@@ -110,7 +110,7 @@ def test_deepnn(x):
 
     # Map the 100 features to 10 classes, one for each digit
     with tf.name_scope('fc2'):
-        W_fc2 = np.loadtxt('W_fc2.txt', dtype=np.float32).reshape([100, 10])
+        W_fc2 = tf.constant(np.loadtxt('W_fc2.txt', dtype=np.float32).reshape([100, 10]))
         y_conv = tf.matmul(h_fc1, W_fc2)
     return y_conv
 
@@ -126,8 +126,8 @@ def test_deepnn_orig(x):
 
     # First conv layer - maps one grayscale image to 5 feature maps of 13 x 13
     with tf.name_scope('conv1'):
-        W_conv1 = np.loadtxt(
-            'W_conv1.txt', dtype=np.float32).reshape([5, 5, 1, 5])
+        W_conv1 = tf.constant(np.loadtxt(
+            'W_conv1.txt', dtype=np.float32).reshape([5, 5, 1, 5]))
         h_conv1_no_pad = tf.square(common.conv2d_stride_2_valid(x_image, W_conv1))
         paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]])
         h_conv1 = tf.pad(h_conv1_no_pad, paddings)
@@ -138,8 +138,8 @@ def test_deepnn_orig(x):
 
     # Second convolution
     with tf.name_scope('conv2'):
-        W_conv2 = np.loadtxt(
-            'W_conv2.txt', dtype=np.float32).reshape([5, 5, 5, 50])
+        W_conv2 = tf.constant(np.loadtxt(
+            'W_conv2.txt', dtype=np.float32).reshape([5, 5, 5, 50]))
         h_conv2 = common.conv2d_stride_2_valid(h_pool1, W_conv2)
 
     # Second pooling layer.
@@ -150,14 +150,14 @@ def test_deepnn_orig(x):
     # Input: N x 5 x 5 x 50
     # Output: N x 100
     with tf.name_scope('fc1'):
-        W_fc1 = np.loadtxt(
-            'W_fc1.txt', dtype=np.float32).reshape([5 * 5 * 50, 100])
+        W_fc1 = tf.constant(np.loadtxt(
+            'W_fc1.txt', dtype=np.float32).reshape([5 * 5 * 50, 100]))
         h_pool2_flat = tf.reshape(h_pool2, [-1, 5 * 5 * 50])
         h_fc1 = tf.square(tf.matmul(h_pool2_flat, W_fc1))
 
     # Map the 100 features to 10 classes, one for each digit
     with tf.name_scope('fc2'):
-        W_fc2 = np.loadtxt('W_fc2.txt', dtype=np.float32).reshape([100, 10])
+        W_fc2 = tf.constant(np.loadtxt('W_fc2.txt', dtype=np.float32).reshape([100, 10]))
         y_conv = tf.matmul(h_fc1, W_fc2)
     return y_conv
 
