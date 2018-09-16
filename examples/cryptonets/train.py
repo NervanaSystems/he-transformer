@@ -40,7 +40,7 @@ import common
 FLAGS = None
 
 
-def deepnn(x):
+def cryptonets_train(x):
     """Builds the graph for classifying digits based on Cryptonets
 
     Args:
@@ -127,7 +127,7 @@ def main(_):
     y_ = tf.placeholder(tf.float32, [None, 10])
 
     # Build the graph for the deep net
-    y_conv = deepnn(x)
+    y_conv = cryptonets_train(x)
 
     with tf.name_scope('loss'):
         cross_entropy = tf.nn.softmax_cross_entropy_with_logits(

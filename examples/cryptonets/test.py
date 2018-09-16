@@ -82,7 +82,7 @@ def squash_layers():
     print("Squashed layers")
 
 
-def test_deepnn(x):
+def cryptonets_test_squashed(x):
     """Constructs test network for Cryptonets using saved weights.
        Assumes linear layers have been squashed."""
 
@@ -115,7 +115,7 @@ def test_deepnn(x):
     return y_conv
 
 
-def test_deepnn_orig(x):
+def cryptonets_test_original(x):
     """Constructs test network for Cryptonets using saved weights"""
 
     # Reshape to use within a convolutional neural net.
@@ -176,9 +176,9 @@ def test_mnist_cnn(FLAGS, network):
 
     # Build the graph for the deep net
     if network == 'orig':
-        y_conv = test_deepnn_orig(x)
+        y_conv = cryptonets_test_original(x)
     else:
-        y_conv = test_deepnn(x)
+        y_conv = cryptonets_test_squashed(x)
 
     with tf.Session() as sess:
         batch_size = 1
