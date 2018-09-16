@@ -172,15 +172,15 @@ numeric_double_inf
 numeric_double_nan
 numeric_float_inf
 numeric_float_nan
-pad_exterior_1d
-pad_exterior_2d_0x0
-pad_exterior_2d_0x3
-pad_exterior_2d_3x0
-pad_exterior_4d_1x2x2x2
-pad_interior_1d
-pad_interior_exterior_1d
-pad_interior_exterior_2d
-pad_interior_exterior_4d_2x0x3x2
+# pad_exterior_1d
+# pad_exterior_2d_0x0
+# pad_exterior_2d_0x3
+# pad_exterior_2d_3x0
+# pad_exterior_4d_1x2x2x2
+# pad_interior_1d
+# pad_interior_exterior_1d
+# pad_interior_exterior_2d
+# pad_interior_exterior_4d_2x0x3x2
 power
 product_3d_eliminate_zero_dim
 product_3d_to_matrix_least_sig
