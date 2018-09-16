@@ -114,4 +114,41 @@ void runtime::he::kernel::pad(
     {
         throw ngraph_error("Padding element must be scalar");
     }
+
+    std::shared_ptr<runtime::he::HECiphertext> arg1_encrypted;
+
+    if (auto he_seal_backend =
+            dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
+    {
+        std::shared_ptr<runtime::he::HECiphertext> ciphertext =
+            dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(
+                he_seal_backend->create_empty_ciphertext());
+        he_seal_backend->encrypt(ciphertext, arg1[0]);
+        arg1_encrypted = ciphertext;
+    }
+    else if (auto he_heaan_backend =
+                 dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
+    {
+        std::shared_ptr<runtime::he::HECiphertext> ciphertext =
+            dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(
+                he_heaan_backend->create_empty_ciphertext());
+        he_heaan_backend->encrypt(ciphertext, arg1[0]);
+        arg1_encrypted = ciphertext;
+    }
+    else
+    {
+        throw ngraph_error("Result backend is neither SEAL nor HEAAN.");
+    }
+
+    std::vector<std::shared_ptr<runtime::he::HECiphertext>> arg1_encrypted_vector{arg1_encrypted};
+
+    runtime::he::kernel::pad(arg0,
+                             arg1_encrypted_vector,
+                             out,
+                             arg0_shape,
+                             out_shape,
+                             padding_below,
+                             padding_above,
+                             padding_interior,
+                             he_backend);
 }
