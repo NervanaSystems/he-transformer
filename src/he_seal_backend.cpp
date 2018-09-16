@@ -80,7 +80,9 @@ const static runtime::he::HESealParameter parse_seal_config_or_use_default()
                                             );
     }
 }
-static runtime::he::HESealParameter default_seal_parameter = parse_seal_config_or_use_default();
+
+const static runtime::he::HESealParameter default_seal_parameter =
+    parse_seal_config_or_use_default();
 
 static void print_seal_context(const seal::SEALContext& context)
 {

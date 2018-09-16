@@ -63,7 +63,7 @@ const static runtime::he::HEHeaanParameter parse_heaan_config_or_use_default()
     }
 }
 
-static const runtime::he::HEHeaanParameter default_heaan_parameter =
+const static runtime::he::HEHeaanParameter default_heaan_parameter =
     parse_heaan_config_or_use_default();
 
 static void print_heaan_context(const heaan::Context& context)
