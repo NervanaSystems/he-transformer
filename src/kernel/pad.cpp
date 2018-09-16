@@ -18,6 +18,7 @@
 
 #include "ngraph/axis_vector.hpp"
 #include "ngraph/coordinate_transform.hpp"
+#include "ngraph/except.hpp"
 
 #include "he_heaan_backend.hpp"
 #include "he_seal_backend.hpp"
@@ -37,7 +38,9 @@ void runtime::he::kernel::pad(
     const Shape& padding_interior,
     const std::shared_ptr<runtime::he::HEBackend>& he_backend)
 {
-    // TODO: add contents
+    if (arg1.size() != 1) {
+        throw ngraph_error("Padding element must be scalar");
+    }
 }
 
 void runtime::he::kernel::pad(
@@ -51,5 +54,7 @@ void runtime::he::kernel::pad(
     const Shape& padding_interior,
     const std::shared_ptr<runtime::he::HEBackend>& he_backend)
 {
-    // TODO: add contents
+    if (arg1.size() != 1) {
+        throw ngraph_error("Padding element must be scalar");
+    }
 }
