@@ -3746,6 +3746,42 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_interior_1d)
               read_vector<float>(result));
 }
 
+NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_1d)
+{
+    Shape shape_a{6};
+    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    Shape shape_b{};
+    auto B = op::Constant::create(element::f32, shape_b, {2112});
+    Shape shape_r{16};
+    Shape padding_below{0};
+    Shape padding_above{0};
+    Shape padding_interior{2};
+    auto f = make_shared<Function>(
+        make_shared<op::Pad>(A, B, padding_below, padding_above, padding_interior),
+        op::ParameterVector{A});
+
+    auto backend = runtime::Backend::create("${BACKEND_NAME}");
+    if ("${BACKEND_NAME}" == "HE_HEAAN")
+    {
+        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
+    }
+    else if ("${BACKEND_NAME}" == "HE_SEAL")
+    {
+        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
+    }
+
+    // Create some tensors for input/output
+    auto a = backend->create_tensor(element::f32, shape_a);
+    copy_data(a, test::NDArray<float, 1>({1, 2, 3, 4, 5, 6}).get_vector());
+    auto result = backend->create_tensor(element::f32, shape_r);
+
+    backend->call_with_validate(f, {result}, {a});
+    EXPECT_EQ((test::NDArray<float, 1>(
+                   {1, 2112, 2112, 2, 2112, 2112, 3, 2112, 2112, 4, 2112, 2112, 5, 2112, 2112, 6})
+                   .get_vector()),
+              read_vector<float>(result));
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_1d)
 {
     Shape shape_a{6};
