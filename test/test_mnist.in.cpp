@@ -97,6 +97,104 @@ NGRAPH_TEST(${BACKEND_NAME}, cryptonets_batch)
     backend->call(f, result_tvs, parameter_tvs);
 }
 
+NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_batch)
+{
+    auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
+        runtime::Backend::create("${BACKEND_NAME}"));
+    // auto backend = runtime::Backend::create("INTERPRETER");
+
+    size_t batch_size = 4096;
+
+    NGRAPH_INFO << "Loaded backend";
+    const string filename = "mnist_cryptonets_batch_" + to_string(batch_size);
+    const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, filename + ".js");
+    const string json_string = file_util::read_file_to_string(json_path);
+    shared_ptr<Function> f = deserialize(json_string);
+
+    // Visualize model
+    auto model_file_name = filename + string(".") + pass::VisualizeTree::get_file_ext();
+    pass::Manager pass_manager;
+    pass_manager.register_pass<pass::VisualizeTree>(model_file_name);
+    pass_manager.run_passes(f);
+    NGRAPH_INFO << "Saved file " << model_file_name;
+
+    vector<float> x = read_binary_constant(
+        file_util::path_join(HE_SERIALIZED_ZOO, "weights/x_test_" + to_string(batch_size) + ".bin"),
+        batch_size * 784);
+    vector<float> y = read_binary_constant(
+        file_util::path_join(HE_SERIALIZED_ZOO, "weights/y_test_" + to_string(batch_size) + ".bin"),
+        batch_size * 10);
+    vector<float> cpu_result = read_binary_constant(
+        file_util::path_join(HE_SERIALIZED_ZOO,
+                             "weights/cpu_result_" + to_string(batch_size) + ".bin"),
+        batch_size * 10);
+    NGRAPH_INFO << "cpu_result size " << cpu_result.size();
+    NGRAPH_INFO << "x size " << x.size();
+    NGRAPH_INFO << "y size " << y.size();
+
+    NGRAPH_INFO << "Deserialized graph";
+    auto parameters = f->get_parameters();
+    vector<shared_ptr<runtime::TensorView>> parameter_tvs;
+    for (auto parameter : parameters)
+    {
+        auto& shape = parameter->get_shape();
+        auto& type = parameter->get_element_type();
+        auto parameter_cipher_tv = backend->create_tensor(type, shape, true);
+        // Uncomment for INTERPRETER backend
+        // auto parameter_cipher_tv = backend->create_tensor(type, shape);
+
+        NGRAPH_INFO << join(shape, "x");
+
+        if (shape == Shape{batch_size, 784})
+        {
+            NGRAPH_INFO << "Copying " << shape_size(shape) << " elements";
+            NGRAPH_INFO << "x is " << x.size() << " elements";
+            copy_data(parameter_cipher_tv, x);
+            parameter_tvs.push_back(parameter_cipher_tv);
+        }
+        else
+        {
+            NGRAPH_INFO << "Invalid shape" << join(shape, "x");
+            throw ngraph_error("Invalid shape " + shape_size(shape));
+        }
+    }
+
+    auto results = f->get_results();
+    vector<shared_ptr<runtime::TensorView>> result_tvs;
+    for (auto result : results)
+    {
+        auto& shape = result->get_shape();
+        auto& type = result->get_element_type();
+        NGRAPH_INFO << "Creating batched result tensor shape ";
+        for (auto elem : shape)
+        {
+            NGRAPH_INFO << elem;
+        }
+
+        // Uncomment for interpreter backend
+        // result_tvs.push_back(backend->create_tensor(type, shape));
+        result_tvs.push_back(backend->create_tensor(type, shape, true));
+    }
+
+    NGRAPH_INFO << "calling function";
+    backend->call(f, result_tvs, parameter_tvs);
+
+    auto result = generalized_read_vector<float>(result_tvs[0]);
+
+    if (false) // Set to true to save result from interpreter backend
+    {
+        write_binary_constant(
+            result,
+            file_util::path_join(HE_SERIALIZED_ZOO,
+                                 "weights/cpu_result_" + to_string(batch_size) + ".bin"));
+    }
+
+    float accuracy = get_accuracy(result, y);
+    NGRAPH_INFO << "Accuracy " << accuracy;
+
+    EXPECT_TRUE(test::all_close(cpu_result, result, 1e-5f, 4e-3f));
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_softmax_quantized_1)
 {
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
