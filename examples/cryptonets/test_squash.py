@@ -77,58 +77,7 @@ def cryptonets_test_squashed(x):
     return y_conv
 
 
-def cryptonets_test_original(x):
-    """Constructs test network for Cryptonets using saved weights"""
-
-    # Reshape to use within a convolutional neural net.
-    # Last dimension is for "features" - there is only one here, since images
-    # are grayscale -- it would be 3 for an RGB image, 4 for RGBA, etc.
-    with tf.name_scope('reshape'):
-        x_image = tf.reshape(x, [-1, 28, 28, 1])
-
-    # First conv layer - maps one grayscale image to 5 feature maps of 13 x 13
-    with tf.name_scope('conv1'):
-        W_conv1 = tf.constant(
-            np.loadtxt('W_conv1.txt', dtype=np.float32).reshape([5, 5, 1, 5]))
-        h_conv1_no_pad = tf.square(
-            common.conv2d_stride_2_valid(x_image, W_conv1))
-        paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]],
-                               name='pad_const')
-        h_conv1 = tf.pad(h_conv1_no_pad, paddings)
-
-    # Pooling layer
-    with tf.name_scope('pool1'):
-        h_pool1 = common.avg_pool_3x3_same_size(h_conv1)  # To 5 x 13 x 13
-
-    # Second convolution
-    with tf.name_scope('conv2'):
-        W_conv2 = tf.constant(
-            np.loadtxt('W_conv2.txt', dtype=np.float32).reshape([5, 5, 5, 50]))
-        h_conv2 = common.conv2d_stride_2_valid(h_pool1, W_conv2)
-
-    # Second pooling layer.
-    with tf.name_scope('pool2'):
-        h_pool2 = common.avg_pool_3x3_same_size(h_conv2)
-
-    # Fully connected layer 1
-    # Input: N x 5 x 5 x 50
-    # Output: N x 100
-    with tf.name_scope('fc1'):
-        W_fc1 = tf.constant(
-            np.loadtxt('W_fc1.txt',
-                       dtype=np.float32).reshape([5 * 5 * 50, 100]))
-        h_pool2_flat = tf.reshape(h_pool2, [-1, 5 * 5 * 50])
-        h_fc1 = tf.square(tf.matmul(h_pool2_flat, W_fc1))
-
-    # Map the 100 features to 10 classes, one for each digit
-    with tf.name_scope('fc2'):
-        W_fc2 = tf.constant(
-            np.loadtxt('W_fc2.txt', dtype=np.float32).reshape([100, 10]))
-        y_conv = tf.matmul(h_fc1, W_fc2)
-    return y_conv
-
-
-def test_mnist_cnn(FLAGS, network):
+def main(_):
     import ngraph
 
     # Import data
@@ -141,10 +90,7 @@ def test_mnist_cnn(FLAGS, network):
     y_ = tf.placeholder(tf.float32, [None, 10])
 
     # Build the graph for the deep net
-    if network == 'orig':
-        y_conv = cryptonets_test_original(x)
-    else:
-        y_conv = cryptonets_test_squashed(x)
+    y_conv = cryptonets_test_squashed(x)
 
     with tf.Session() as sess:
         batch_size = 1
@@ -152,49 +98,6 @@ def test_mnist_cnn(FLAGS, network):
         y_test = mnist.test.labels[:batch_size]
         y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
         print(y_conv_val)
-
-    # with tf.name_scope('accuracy'):
-    #     correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
-    #     correct_prediction = tf.cast(correct_prediction, tf.float32)
-    # accuracy = tf.reduce_mean(correct_prediction)
-
-    # with tf.Session() as sess:
-    #     sess.run(tf.global_variables_initializer())
-
-    #     num_test_images = FLAGS.test_image_count
-    #     x_test = mnist.test.images[:num_test_images]
-    #     y_test = mnist.test.labels[:num_test_images]
-
-    #     test_accuracy = accuracy.eval(feed_dict={x: x_test, y_: y_test})
-    #     print('test accuracy wth ' + network + ': %g' % test_accuracy)
-
-    # # Run again to export inference graph on smaller batch size
-    # with tf.Session() as sess:
-    #     sess.run(tf.global_variables_initializer())
-
-    #     batch_size = 1
-    #     x_test = mnist.test.images[:batch_size]
-    #     y_test = mnist.test.labels[:batch_size]
-
-    #     y_label = np.argmax(y_test, 1)
-
-    #     x_test.tofile("x_test_" + str(batch_size) + ".bin")
-    #     y_test.astype('float32').tofile("y_test_" + str(batch_size) + ".bin")
-    #     y_label.astype('float32').tofile("y_label_" + str(batch_size) + ".bin")
-
-    #     test_accuracy = accuracy.eval(feed_dict={x: x_test, y_: y_test})
-    #     print('subset test accuracy wth ' + network + ': %g' % test_accuracy)
-
-
-def main(_):
-    # Disable mnist dataset deprecation warning
-    tf.logging.set_verbosity(tf.logging.ERROR)
-
-    # Test using the original graph
-    # test_mnist_cnn(FLAGS, 'orig')
-
-    # Test using squashed graph
-    test_mnist_cnn(FLAGS, 'squash')
 
 
 if __name__ == '__main__':
