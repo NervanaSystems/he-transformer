@@ -14,6 +14,9 @@
 * limitations under the License.
 *******************************************************************************/
 
+#include <iostream>
+#include <string>
+
 #include "ngraph/op/broadcast.hpp"
 #include "ngraph/op/concat.hpp"
 #include "ngraph/op/constant.hpp"
@@ -67,9 +70,30 @@ runtime::he::HECallFrame::HECallFrame(const shared_ptr<Function>& func,
 
 bool runtime::he::HECallFrame::is_cpu_check_enabled(const shared_ptr<Node>& op) const
 {
-    static unordered_set<string> cpu_check_enabled_ops{
-        "Sum", "Add", "Dot", "Multiply", "Convolution", "AvgPool"};
-    return cpu_check_enabled_ops.count(op->description()) != 0;
+    const char* enable_cpu_check_env = std::getenv("NGRAPH_HE_CPU_CHECK");
+    if (enable_cpu_check_env != nullptr)
+    {
+        string enable_cpu_check_str = string(enable_cpu_check_env);
+        if (enable_cpu_check_str == "1" || enable_cpu_check_str == "true" ||
+            enable_cpu_check_str == "True" || enable_cpu_check_str == "TRUE" ||
+            enable_cpu_check_str == "ON")
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    else
+    {
+        std::cout << "false" << std::endl;
+        exit(0);
+        return false;
+    }
+    // static unordered_set<string> cpu_check_enabled_ops{
+    //     "Sum", "Add", "Dot", "Multiply", "Convolution", "AvgPool"};
+    // return cpu_check_enabled_ops.count(op->description()) != 0;
 }
 
 void runtime::he::HECallFrame::call(shared_ptr<Function> function,
