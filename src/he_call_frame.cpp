@@ -87,8 +87,6 @@ bool runtime::he::HECallFrame::is_cpu_check_enabled(const shared_ptr<Node>& op) 
     }
     else
     {
-        std::cout << "false" << std::endl;
-        exit(0);
         return false;
     }
     // static unordered_set<string> cpu_check_enabled_ops{
