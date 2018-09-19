@@ -36,30 +36,34 @@ using namespace ngraph;
 
 // Hack to avoid weak pointer error
 // TODO: the best solution is to remove all `shared_from_this()` from the code
-static unordered_map<runtime::Backend*, shared_ptr<runtime::Backend>>
-    s_map_backend_ptr_to_shared_ptr;
+static unordered_map<string, shared_ptr<runtime::Backend>> s_map_backends;
 
 extern "C" const char* get_ngraph_version_string()
 {
     return "v0.7.0";
 }
 
-extern "C" runtime::Backend* new_backend(const char* configuration_string)
+extern "C" runtime::Backend* new_backend(const char* configuration_chars)
 {
-    shared_ptr<runtime::Backend> he_backend;
-    if (string(configuration_string) == "HE_SEAL")
+    string configuration_string = string(configuration_chars);
+    if (s_map_backends.find(configuration_string) == s_map_backends.end())
     {
-        he_backend = make_shared<runtime::he::he_seal::HESealBackend>();
+        shared_ptr<runtime::Backend> he_backend;
+        if (configuration_string == "HE_SEAL")
+        {
+            he_backend = make_shared<runtime::he::he_seal::HESealBackend>();
+        }
+        else if (configuration_string == "HE_HEAAN")
+        {
+            he_backend = make_shared<runtime::he::he_heaan::HEHeaanBackend>();
+        }
+        s_map_backends[configuration_string] = he_backend;
     }
-    else if (string(configuration_string) == "HE_HEAAN")
-    {
-        he_backend = make_shared<runtime::he::he_heaan::HEHeaanBackend>();
-    }
-    s_map_backend_ptr_to_shared_ptr[he_backend.get()] = he_backend;
-    return he_backend.get();
+
+    return s_map_backends.at(configuration_string).get();
 }
 
 extern "C" void delete_backend(runtime::Backend* backend)
 {
-    s_map_backend_ptr_to_shared_ptr.erase(backend);
+    // s_map_backend_ptr_to_shared_ptr.erase(backend);
 }
