@@ -32,6 +32,8 @@ import getpass
 import time
 import numpy as np
 import itertools
+import os
+import glob
 
 from tensorflow.examples.tutorials.mnist import input_data
 import tensorflow as tf
@@ -93,11 +95,21 @@ def main(_):
     y_conv = cryptonets_test_squashed(x)
 
     with tf.Session() as sess:
-        batch_size = 1
-        x_test = mnist.test.images[:batch_size]
-        y_test = mnist.test.labels[:batch_size]
+        x_test = mnist.test.images[:FLAGS.batch_size]
+        y_test = mnist.test.labels[:FLAGS.batch_size]
         y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
         print(y_conv_val)
+
+    # Rename serialized graph
+    try:
+        serialized_graphs = glob.glob("tf_function_ngraph*.json")
+        if os.environ['NGRAPH_ENABLE_SERIALIZE'] == "1" and len(serialized_graphs) == 1:
+            src_path = serialized_graphs[0]
+            dst_path = "mnist_cryptonets_batch_%s.json" % (FLAGS.batch_size,)
+            print("Moving", src_path, "to", dst_path)
+            os.rename(src_path, dst_path)
+    except:
+        print("Renaming serialized graph not successful")
 
 
 if __name__ == '__main__':
@@ -108,7 +120,7 @@ if __name__ == '__main__':
         default='/tmp/tensorflow/mnist/input_data',
         help='Directory where input data is stored')
     parser.add_argument(
-        '--batch_size', type=int, default=50, help='Batch Size')
+        '--batch_size', type=int, default=1, help='Batch Size')
     parser.add_argument(
         '--test_image_count',
         type=int,
