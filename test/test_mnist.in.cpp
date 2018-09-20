@@ -120,9 +120,64 @@ static void run_cryptonets_benchmark(size_t batch_size)
     NGRAPH_INFO << "sw_decrypt_output: " << sw_decrypt_output.get_milliseconds() << "ms";
 }
 
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_1)
+{
+    run_cryptonets_benchmark(1);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_2)
+{
+    run_cryptonets_benchmark(2);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_4)
+{
+    run_cryptonets_benchmark(4);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_8)
+{
+    run_cryptonets_benchmark(8);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_16)
+{
+    run_cryptonets_benchmark(16);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_32)
+{
+    run_cryptonets_benchmark(32);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_64)
+{
+    run_cryptonets_benchmark(64);
+}
+
 NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_128)
 {
     run_cryptonets_benchmark(128);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_256)
+{
+    run_cryptonets_benchmark(256);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_512)
+{
+    run_cryptonets_benchmark(512);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_1024)
+{
+    run_cryptonets_benchmark(1024);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_2048)
+{
+    run_cryptonets_benchmark(2048);
 }
 
 NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_4096)
