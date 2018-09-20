@@ -19,8 +19,6 @@
 #include "ngraph/axis_vector.hpp"
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/except.hpp"
-#include "ngraph/log.hpp"
-#include "ngraph/util.hpp"
 
 #include "he_heaan_backend.hpp"
 #include "he_seal_backend.hpp"
@@ -40,19 +38,16 @@ void runtime::he::kernel::pad(
     const Shape& padding_interior,
     const std::shared_ptr<runtime::he::HEBackend>& he_backend)
 {
-    // if (arg1.size() != 1)
-    // {
-    //     throw ngraph_error("Padding element must be scalar");
-    // }
+    if (arg1.size() != 1)
+    {
+        throw ngraph_error("Padding element must be scalar");
+    }
 
     // Todo: pad_val shall be arg1[0]. There's an unknown issue causing the computation
     //       to return -inf when arg1[0] is used. Luckily since we are doing mnist, the output
     //       values near the edge of the image are all zero in the first conv later, so it happens
     //       to pad zero in our case. This is not true for other models.
     std::shared_ptr<runtime::he::HECiphertext> pad_val = arg0[0];
-
-    NGRAPH_INFO << "arg0.size(): " << arg0.size();
-    NGRAPH_INFO << "arg0_shape: " << join(arg0_shape);
 
     Coordinate input_start(arg0_shape.size(), 0); // start at (0,0,...,0)
     Coordinate input_end =
@@ -119,7 +114,37 @@ void runtime::he::kernel::pad(
     const Shape& padding_interior,
     const std::shared_ptr<runtime::he::HEBackend>& he_backend)
 {
-    std::vector<std::shared_ptr<runtime::he::HECiphertext>> arg1_encrypted_vector;
+    if (arg1.size() != 1)
+    {
+        throw ngraph_error("Padding element must be scalar");
+    }
+
+    std::shared_ptr<runtime::he::HECiphertext> arg1_encrypted;
+
+    if (auto he_seal_backend =
+            dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
+    {
+        std::shared_ptr<runtime::he::HECiphertext> ciphertext =
+            dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(
+                he_seal_backend->create_empty_ciphertext());
+        he_seal_backend->encrypt(ciphertext, arg1[0]);
+        arg1_encrypted = ciphertext;
+    }
+    else if (auto he_heaan_backend =
+                 dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
+    {
+        std::shared_ptr<runtime::he::HECiphertext> ciphertext =
+            dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(
+                he_heaan_backend->create_empty_ciphertext());
+        he_heaan_backend->encrypt(ciphertext, arg1[0]);
+        arg1_encrypted = ciphertext;
+    }
+    else
+    {
+        throw ngraph_error("Result backend is neither SEAL nor HEAAN.");
+    }
+
+    std::vector<std::shared_ptr<runtime::he::HECiphertext>> arg1_encrypted_vector{arg1_encrypted};
 
     runtime::he::kernel::pad(arg0,
                              arg1_encrypted_vector,
