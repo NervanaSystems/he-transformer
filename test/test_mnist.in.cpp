@@ -47,7 +47,7 @@ static void run_cryptonets_benchmark(size_t batch_size)
     stopwatch sw_load_model;
     sw_load_model.start();
     const string filename = "mnist_cryptonets_batch_" + to_string(batch_size);
-    const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, filename + ".js");
+    const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, filename + ".json");
     const string json_string = file_util::read_file_to_string(json_path);
     shared_ptr<Function> f = deserialize(json_string);
     NGRAPH_INFO << "Deserialize graph";
@@ -118,6 +118,11 @@ static void run_cryptonets_benchmark(size_t batch_size)
     NGRAPH_INFO << "sw_encrypt_input: " << sw_encrypt_input.get_milliseconds() << "ms";
     NGRAPH_INFO << "sw_run_model: " << sw_run_model.get_milliseconds() << "ms";
     NGRAPH_INFO << "sw_decrypt_output: " << sw_decrypt_output.get_milliseconds() << "ms";
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_128)
+{
+    run_cryptonets_benchmark(128);
 }
 
 NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_4096)

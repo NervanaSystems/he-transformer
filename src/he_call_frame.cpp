@@ -1056,13 +1056,35 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     {
         shared_ptr<op::Pad> pad = dynamic_pointer_cast<op::Pad>(node);
 
+        Shape arg0_shape = node->get_inputs().at(0).get_shape();
+        Shape out_shape = node->get_output_shape(0);
+        if (arg0_cipher != nullptr && out0_cipher != nullptr)
+        {
+            NGRAPH_INFO << "arg0_cipher->is_batched(): " << arg0_cipher->is_batched();
+            NGRAPH_INFO << "arg0_cipher->get_batch_size(): " << arg0_cipher->get_batch_size();
+            if (arg0_cipher->is_batched())
+            {
+                arg0_shape[0] = arg0_shape[0] / arg0_cipher->get_batch_size();
+            }
+
+            NGRAPH_INFO << "out0_cipher->is_batched(): " << out0_cipher->is_batched();
+            NGRAPH_INFO << "arg0_cipher->get_batch_size(): " << out0_cipher->get_batch_size();
+            if (out0_cipher->is_batched())
+            {
+                out_shape[0] = out_shape[0] / out0_cipher->get_batch_size();
+            }
+        }
+
+        NGRAPH_INFO << "arg0_shape after batching: " << join(arg0_shape);
+        NGRAPH_INFO << "out_shape after batching: " << join(out_shape);
+
         if (arg0_cipher != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
             runtime::he::kernel::pad(arg0_cipher->get_elements(),
                                      arg1_cipher->get_elements(),
                                      out0_cipher->get_elements(),
-                                     node->get_inputs().at(0).get_shape(),
-                                     node->get_output_shape(0),
+                                     arg0_shape,
+                                     out_shape,
                                      pad->get_padding_below(),
                                      pad->get_padding_above(),
                                      pad->get_padding_interior(),
@@ -1073,8 +1095,8 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
             runtime::he::kernel::pad(arg0_cipher->get_elements(),
                                      arg1_plain->get_elements(),
                                      out0_cipher->get_elements(),
-                                     node->get_inputs().at(0).get_shape(),
-                                     node->get_output_shape(0),
+                                     arg0_shape,
+                                     out_shape,
                                      pad->get_padding_below(),
                                      pad->get_padding_above(),
                                      pad->get_padding_interior(),
