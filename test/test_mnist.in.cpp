@@ -14,6 +14,7 @@
 * limitations under the License.
 *******************************************************************************/
 
+#include <algorithm>
 #include <assert.h>
 
 #include "ngraph/ngraph.hpp"
@@ -37,6 +38,26 @@ using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
+// ys is logits output, or one-hot encoded ground truth
+vector<int> batched_argmax(const vector<float>& ys)
+{
+    if (ys.size() % 10 != 0)
+    {
+        cout << "ys.size() must be a multiple of 10" << endl;
+        exit(1);
+    }
+    vector<int> labels;
+    const float* data = ys.data();
+    size_t idx = 0;
+    while (idx < ys.size())
+    {
+        int label = distance(data + idx, max_element(data + idx, data + idx + 10));
+        labels.push_back(label);
+        idx += 10;
+    }
+    return labels;
+}
+
 static void run_cryptonets_benchmark(size_t batch_size)
 {
     // We only support HEAAN backend for now
@@ -54,6 +75,9 @@ static void run_cryptonets_benchmark(size_t batch_size)
 
     vector<float> x = read_binary_constant(
         file_util::path_join(HE_SERIALIZED_ZOO, "weights/x_test_4096.bin"), batch_size * 784);
+    vector<float> y = read_binary_constant(
+        file_util::path_join(HE_SERIALIZED_ZOO, "weights/y_test_4096.bin"), batch_size * 10);
+
     NGRAPH_INFO << "x size " << x.size();
     NGRAPH_INFO << "Inputs loaded";
     sw_load_model.stop();
@@ -111,6 +135,8 @@ static void run_cryptonets_benchmark(size_t batch_size)
     auto result = generalized_read_vector<float>(result_tvs[0]);
     sw_decrypt_output.stop();
     NGRAPH_INFO << "sw_decrypt_output: " << sw_decrypt_output.get_milliseconds() << "ms";
+    NGRAPH_INFO << "y_predicted: " << join(batched_argmax(result));
+    NGRAPH_INFO << "y_gt: " << join(batched_argmax(y));
 
     // Print results
     NGRAPH_INFO << "[Summary]";
