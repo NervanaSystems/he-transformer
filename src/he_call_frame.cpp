@@ -353,7 +353,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
             size_t inaccurate_cnt = 0;
             for (size_t elem = 0; elem < element_count; ++elem)
             {
-                if (abs(cpu_out_vec[elem] - he_out_vec[elem]) > 1e-3) // TODO: increase precision
+                if (abs(cpu_out_vec[elem] - he_out_vec[elem]) > 1e-2) // TODO: increase precision
                 {
                     if (inaccurate_cnt < 10)
                     {
