@@ -143,7 +143,7 @@ static void run_cryptonets_benchmark(size_t batch_size)
     NGRAPH_INFO << "y_predicted_label: " << join(y_predicted_label);
 
     size_t error_count;
-    for (size_t i = 0; i < y.size(); ++i)
+    for (size_t i = 0; i < y_gt_label.size(); ++i)
     {
         if (y_gt_label[i] != y_predicted_label[i])
         {
