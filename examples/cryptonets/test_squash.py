@@ -34,6 +34,7 @@ import numpy as np
 import itertools
 import os
 import glob
+import time
 
 from tensorflow.examples.tutorials.mnist import input_data
 import tensorflow as tf
@@ -97,8 +98,11 @@ def main(_):
     with tf.Session() as sess:
         x_test = mnist.test.images[:FLAGS.batch_size]
         y_test = mnist.test.labels[:FLAGS.batch_size]
+        start_time = time.time()
         y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
-        print(y_conv_val)
+        elapsed_time = time.time() - start_time
+        print("outputs", y_conv_val)
+        print("total time(s)", elapsed_time)
 
     # Rename serialized graph
     try:
