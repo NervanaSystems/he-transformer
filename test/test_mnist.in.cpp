@@ -68,8 +68,9 @@ NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_no_batch)
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
         runtime::Backend::create("HE_HEAAN"));
 
-    vector<float> x = read_binary_constant(
-        file_util::path_join(HE_SERIALIZED_ZOO, "weights/x_test_4096.bin"), batch_size * 784);
+    // vector<float> x = read_binary_constant(
+    //     file_util::path_join(HE_SERIALIZED_ZOO, "weights/x_test_4096.bin"), batch_size * 784);
+    vector<float> x(batch_size * 784, 0);
     vector<float> y = read_binary_constant(
         file_util::path_join(HE_SERIALIZED_ZOO, "weights/y_test_4096.bin"), batch_size * 10);
 

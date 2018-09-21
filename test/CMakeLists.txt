@@ -100,3 +100,7 @@ target_link_libraries(unit-test ngraph_test_util)
 target_link_libraries(unit-test he_backend seal heaan ntl pthread ${CMAKE_DL_LIBS})
 
 add_dependencies(unit-test he_backend ext_seal ext_heaan ext_ngraph ext_gtest)
+
+
+add_executable(crypto-bench crypto_bench.cpp)
+target_link_libraries(crypto-bench he_backend heaan ntl pthread ${CMAKE_DL_LIBS})
