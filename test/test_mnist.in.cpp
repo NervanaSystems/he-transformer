@@ -135,8 +135,24 @@ static void run_cryptonets_benchmark(size_t batch_size)
     auto result = generalized_read_vector<float>(result_tvs[0]);
     sw_decrypt_output.stop();
     NGRAPH_INFO << "sw_decrypt_output: " << sw_decrypt_output.get_milliseconds() << "ms";
-    NGRAPH_INFO << "y_predicted: " << join(batched_argmax(result));
-    NGRAPH_INFO << "y_gt: " << join(batched_argmax(y));
+
+    // Check prediction vs ground truth
+    vector<int> y_gt_label = batched_argmax(y);
+    vector<int> y_predicted_label = batched_argmax(result);
+    NGRAPH_INFO << "y_gt_label: " << join(y_gt_label);
+    NGRAPH_INFO << "y_predicted_label: " << join(y_predicted_label);
+
+    size_t error_count;
+    for (size_t i = 0; i < y.size(); ++i)
+    {
+        if (y_gt_label[i] != y_predicted_label[i])
+        {
+            NGRAPH_INFO << "index " << i << " y_gt_label != y_predicted_label: " << y_gt_label[i]
+                        << " != " << y_predicted_label[i];
+            error_count++;
+        }
+    }
+    NGRAPH_INFO << "Error rate" << (float)(error_count) / y.size();
 
     // Print results
     NGRAPH_INFO << "[Summary]";
