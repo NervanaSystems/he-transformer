@@ -98,11 +98,60 @@ def main(_):
     with tf.Session() as sess:
         x_test = mnist.test.images[:FLAGS.batch_size]
         y_test = mnist.test.labels[:FLAGS.batch_size]
+        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
+
+        # Start experiments
+
         start_time = time.time()
         y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
         elapsed_time = time.time() - start_time
-        print("outputs", y_conv_val)
         print("total time(s)", elapsed_time)
+
+        start_time = time.time()
+        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
+        elapsed_time = time.time() - start_time
+        print("total time(s)", elapsed_time)
+
+        start_time = time.time()
+        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
+        elapsed_time = time.time() - start_time
+        print("total time(s)", elapsed_time)
+
+        start_time = time.time()
+        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
+        elapsed_time = time.time() - start_time
+        print("total time(s)", elapsed_time)
+
+        start_time = time.time()
+        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
+        elapsed_time = time.time() - start_time
+        print("total time(s)", elapsed_time)
+
+        start_time = time.time()
+        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
+        elapsed_time = time.time() - start_time
+        print("total time(s)", elapsed_time)
+
+        start_time = time.time()
+        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
+        elapsed_time = time.time() - start_time
+        print("total time(s)", elapsed_time)
+
+        start_time = time.time()
+        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
+        elapsed_time = time.time() - start_time
+        print("total time(s)", elapsed_time)
+
+        start_time = time.time()
+        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
+        elapsed_time = time.time() - start_time
+        print("total time(s)", elapsed_time)
+
+        start_time = time.time()
+        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
+        elapsed_time = time.time() - start_time
+        print("total time(s)", elapsed_time)
+
 
     # Rename serialized graph
     try:
