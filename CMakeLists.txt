@@ -44,7 +44,7 @@ endif()
 set(NGRAPH_INSTALL_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib")
 set(NGRAPH_INSTALL_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/include")
 
-# This allows libhe_backend.so to find say libntl.so in the sam edir
+# This allows libhe_backend.so to find say libntl.so in the same dir
 set(CMAKE_INSTALL_RPATH "\$ORIGIN")
 
 # HE transformer headers
