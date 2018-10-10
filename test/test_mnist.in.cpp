@@ -39,7 +39,7 @@ static string s_manifest = "${MANIFEST}";
 NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_batch)
 {
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("${BACKEND_NAME}"));
+        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
     // auto backend = runtime::Backend::create("INTERPRETER");
 
     size_t batch_size = 4096;

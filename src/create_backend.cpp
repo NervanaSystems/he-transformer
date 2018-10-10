@@ -47,11 +47,11 @@ extern "C" const char* get_ngraph_version_string()
 extern "C" runtime::Backend* new_backend(const char* configuration_string)
 {
     shared_ptr<runtime::Backend> he_backend;
-    if (string(configuration_string) == "HE_SEAL")
+    if (string(configuration_string) == "HE:SEAL")
     {
         he_backend = make_shared<runtime::he::he_seal::HESealBackend>();
     }
-    else if (string(configuration_string) == "HE_HEAAN")
+    else if (string(configuration_string) == "HE:HEAAN")
     {
         he_backend = make_shared<runtime::he::he_heaan::HEHeaanBackend>();
     }
