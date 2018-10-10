@@ -45,7 +45,7 @@ make -j$(nproc)
 Please run `maint/apply-code-format.sh` before submitting a PR.
 
 ## Examples
-The `examples` directory contains two deep learning examples which depend on [nGraph-Tensorflow-bridge](https://github.com/NervanaSystems/ngraph-tensorflow-bridge/).
+The `examples` directory contains two deep learning examples which depend on [nGraph-Tensorflow](https://github.com/NervanaSystems/ngraph-tf).
 
  - `mnist_softmax_ngraph.py` is a simple one-hidden layer feedforward neural network, and should be run as `python mnist_softmax_ngraph.py`
   - `mnist_deep_simplified_he.py` is a more complicated convolutional neural network (CNN) which achieves ~99% accuracy. The model is based on [Cryptonets](http://proceedings.mlr.press/v48/gilad-bachrach16.pdf).
