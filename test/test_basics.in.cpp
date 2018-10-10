@@ -42,15 +42,15 @@ NGRAPH_TEST(${BACKEND_NAME}, trivial)
 
 NGRAPH_TEST(${BACKEND_NAME}, backend_init)
 {
-    auto he_seal = runtime::Backend::create("HE_SEAL");
-    auto he_heaan = runtime::Backend::create("HE_HEAAN");
+    auto he_seal = runtime::Backend::create("HE:SEAL");
+    auto he_heaan = runtime::Backend::create("HE:HEAAN");
     EXPECT_EQ(1, 1);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_scalar)
 {
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("${BACKEND_NAME}"));
+        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
     Shape shape{};
     auto a = backend->create_tensor(element::i64, shape);
@@ -61,7 +61,7 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_scalar)
 NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_2)
 {
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("${BACKEND_NAME}"));
+        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
     Shape shape{2};
     auto a = backend->create_tensor(element::i64, shape);
@@ -72,7 +72,7 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_2)
 NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_2_3)
 {
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("${BACKEND_NAME}"));
+        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
     Shape shape{2, 3};
     auto a = backend->create_tensor(element::i64, shape);
@@ -84,7 +84,7 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_2_3)
 NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_scalar)
 {
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("${BACKEND_NAME}"));
+        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
     Shape shape{};
     auto a = backend->create_plain_tensor(element::i64, shape);
@@ -95,7 +95,7 @@ NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_scalar)
 NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2)
 {
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("${BACKEND_NAME}"));
+        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
     Shape shape{2};
     auto a = backend->create_plain_tensor(element::i64, shape);
@@ -106,7 +106,7 @@ NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2)
 NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2_3)
 {
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("${BACKEND_NAME}"));
+        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
     Shape shape{2, 3};
     auto a = backend->create_plain_tensor(element::i64, shape);
@@ -118,7 +118,7 @@ NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2_3)
 NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_batch)
 {
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("${BACKEND_NAME}"));
+        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
     Shape shape{2, 3};
     auto a = backend->create_tensor(element::f32, shape, true);
@@ -131,7 +131,7 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_batch)
 NGRAPH_TEST(${BACKEND_NAME}, ab_batch)
 {
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("${BACKEND_NAME}"));
+        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
     Shape shape_a{4, 3};
     Shape shape_b{4, 3};
@@ -157,7 +157,7 @@ NGRAPH_TEST(${BACKEND_NAME}, ab_batch)
 NGRAPH_TEST(${BACKEND_NAME}, ab_batch_multiply)
 {
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("${BACKEND_NAME}"));
+        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
     Shape shape_a{2, 1};
     Shape shape_b{2, 1};
@@ -182,7 +182,7 @@ NGRAPH_TEST(${BACKEND_NAME}, ab_batch_multiply)
 NGRAPH_TEST(${BACKEND_NAME}, ab_batch_dot)
 {
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("${BACKEND_NAME}"));
+        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
     Shape shape_a{2, 1};
     Shape shape_b{1};
@@ -206,15 +206,8 @@ NGRAPH_TEST(${BACKEND_NAME}, ab_batch_dot)
 
 NGRAPH_TEST(${BACKEND_NAME}, ab)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}"); // TODO: move to util cast function
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+
     Shape shape{2, 3};
     auto a = make_shared<op::Parameter>(element::i64, shape);
     auto b = make_shared<op::Parameter>(element::i64, shape);
@@ -243,15 +236,8 @@ NGRAPH_TEST(${BACKEND_NAME}, ab)
 
 NGRAPH_TEST(${BACKEND_NAME}, ab_square)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}"); // TODO: move to util cast function
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+
     Shape shape{2, 3};
     auto a = make_shared<op::Parameter>(element::f32, shape);
     auto t = make_shared<op::Multiply>(a, a);
@@ -278,7 +264,7 @@ NGRAPH_TEST(${BACKEND_NAME}, ab_square)
 NGRAPH_TEST(${BACKEND_NAME}, multiply_optimized)
 {
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("${BACKEND_NAME}"));
+        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
     Shape shape{6};
     auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -304,7 +290,7 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_optimized)
 NGRAPH_TEST(${BACKEND_NAME}, dot_optimized_small)
 {
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("${BACKEND_NAME}"));
+        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
     Shape shape_a{1, 3};
     Shape shape_b{3, 1};
@@ -329,7 +315,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_optimized_small)
 NGRAPH_TEST(${BACKEND_NAME}, dot_optimized)
 {
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("${BACKEND_NAME}"));
+        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
     Shape shape_a{2, 3};
     Shape shape_b{3, 4};
@@ -354,15 +340,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_optimized)
 
 NGRAPH_TEST(${BACKEND_NAME}, add_zero)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
     Shape shape{2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape);
     auto B = make_shared<op::Parameter>(element::f32, shape);
@@ -390,15 +368,7 @@ NGRAPH_TEST(${BACKEND_NAME}, add_zero)
 
 NGRAPH_TEST(${BACKEND_NAME}, subtract)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
     Shape shape{2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape);
     auto B = make_shared<op::Parameter>(element::f32, shape);
@@ -426,15 +396,7 @@ NGRAPH_TEST(${BACKEND_NAME}, subtract)
 
 NGRAPH_TEST(${BACKEND_NAME}, subtract_from_zero)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
     Shape shape{2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape);
     auto B = make_shared<op::Parameter>(element::f32, shape);
@@ -462,15 +424,7 @@ NGRAPH_TEST(${BACKEND_NAME}, subtract_from_zero)
 
 NGRAPH_TEST(${BACKEND_NAME}, subtract_zero)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
     Shape shape{2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape);
     auto B = make_shared<op::Parameter>(element::f32, shape);
@@ -498,15 +452,7 @@ NGRAPH_TEST(${BACKEND_NAME}, subtract_zero)
 
 NGRAPH_TEST(${BACKEND_NAME}, abc)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
     Shape shape{2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape);
     auto B = make_shared<op::Parameter>(element::f32, shape);
@@ -547,15 +493,7 @@ NGRAPH_TEST(${BACKEND_NAME}, abc)
 
 NGRAPH_TEST(${BACKEND_NAME}, dot1d)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
     Shape shape{4};
     auto A = make_shared<op::Parameter>(element::f32, shape);
     auto B = make_shared<op::Parameter>(element::f32, shape);
@@ -585,15 +523,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot1d)
 
 NGRAPH_TEST(${BACKEND_NAME}, dot_matrix_vector)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{4, 4};
     Shape shape_b{4};
@@ -624,15 +554,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_matrix_vector)
 
 NGRAPH_TEST(${BACKEND_NAME}, dot_scalar)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape{};
     auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -663,15 +585,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_scalar)
 
 NGRAPH_TEST(${BACKEND_NAME}, constant)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
     Shape shape{2, 2};
     auto A = op::Constant::create(element::f32, shape, {0.1, 0.2, 0.3, 0.4});
     auto f = make_shared<Function>(A, op::ParameterVector{});
@@ -683,15 +597,7 @@ NGRAPH_TEST(${BACKEND_NAME}, constant)
 
 NGRAPH_TEST(${BACKEND_NAME}, constant_abc)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
     Shape shape{2, 2};
     auto A = op::Constant::create(element::f32, shape, {1, 2, 3, 4});
     auto B = make_shared<op::Parameter>(element::f32, shape);
@@ -723,15 +629,7 @@ NGRAPH_TEST(${BACKEND_NAME}, constant_abc)
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
     Shape shape_a{};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
     Shape shape_r{4};
@@ -758,15 +656,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector)
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_to_non_existent_axis)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
     Shape shape_a{};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
     Shape shape_r{4};
@@ -777,15 +667,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_to_non_existent_axis)
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
     Shape shape_a{};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
     Shape shape_r{2, 2};
@@ -811,15 +693,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix)
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_tensor)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
     Shape shape_a{};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
     Shape shape_r{2, 2, 2};
@@ -845,15 +719,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_tensor)
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_trivial)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
     Shape shape{2, 2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape);
     auto t = make_shared<op::Broadcast>(A, shape, AxisSet{});
@@ -878,15 +744,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_trivial)
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_colwise)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{3};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -913,15 +771,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_colwise)
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_rowwise)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{4};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -948,15 +798,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_rowwise)
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_rowwise_int64)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{4};
     auto A = make_shared<op::Parameter>(element::i64, shape_a);
@@ -984,15 +826,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_rowwise_int64)
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_0)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1018,15 +852,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_0)
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_1)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1052,15 +878,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_1)
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_2)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1086,15 +904,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_2)
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_t2v_012)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{2, 2, 3};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1121,15 +931,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_t2v_012)
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_t2s_012)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{1, 1, 1};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1155,15 +957,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_t2s_012)
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_t2s_120)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{1, 1, 1};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1189,15 +983,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_t2s_120)
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_s2t)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1223,15 +1009,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_s2t)
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_v2m_col)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{3};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1256,15 +1034,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_v2m_col)
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_v2m_row)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{3};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1289,15 +1059,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_v2m_row)
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_v2t_middle)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{3};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1322,15 +1084,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_v2t_middle)
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_same)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{3, 3};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1355,15 +1109,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_same)
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_transpose)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{3, 3};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1388,15 +1134,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_transpose)
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_dim_change_transpose)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{3, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1462,15 +1200,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_dim_change_transpose)
 //
 NGRAPH_TEST(${BACKEND_NAME}, reshape_6d)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     vector<float> a_data(2 * 2 * 3 * 3 * 2 * 4);
     for (int i = 0; i < 2 * 2 * 3 * 3 * 2 * 4; i++)
@@ -1525,15 +1255,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_6d)
 
 NGRAPH_TEST(${BACKEND_NAME}, one_hot_2_in_3)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{};
     auto A = make_shared<op::Parameter>(element::i64, shape_a);
@@ -1552,15 +1274,7 @@ NGRAPH_TEST(${BACKEND_NAME}, one_hot_2_in_3)
 
 NGRAPH_TEST(${BACKEND_NAME}, one_hot_1_in_3)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{};
     auto A = make_shared<op::Parameter>(element::i64, shape_a);
@@ -1579,15 +1293,7 @@ NGRAPH_TEST(${BACKEND_NAME}, one_hot_1_in_3)
 
 NGRAPH_TEST(${BACKEND_NAME}, one_hot_0_in_3)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{};
     auto A = make_shared<op::Parameter>(element::i64, shape_a);
@@ -1606,15 +1312,7 @@ NGRAPH_TEST(${BACKEND_NAME}, one_hot_0_in_3)
 
 NGRAPH_TEST(${BACKEND_NAME}, one_hot_fp_nonint_in_3)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1643,15 +1341,7 @@ NGRAPH_TEST(${BACKEND_NAME}, one_hot_fp_nonint_in_3)
 
 NGRAPH_TEST(${BACKEND_NAME}, one_hot_oob_in_3)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{};
     auto A = make_shared<op::Parameter>(element::i64, shape_a);
@@ -1680,15 +1370,7 @@ NGRAPH_TEST(${BACKEND_NAME}, one_hot_oob_in_3)
 
 NGRAPH_TEST(${BACKEND_NAME}, one_hot_vector_0)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{8};
     auto A = make_shared<op::Parameter>(element::i64, shape_a);
@@ -1709,15 +1391,7 @@ NGRAPH_TEST(${BACKEND_NAME}, one_hot_vector_0)
 
 NGRAPH_TEST(${BACKEND_NAME}, one_hot_vector_1)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{8};
     auto A = make_shared<op::Parameter>(element::i64, shape_a);
@@ -1738,15 +1412,7 @@ NGRAPH_TEST(${BACKEND_NAME}, one_hot_vector_1)
 
 NGRAPH_TEST(${BACKEND_NAME}, one_hot_vector_1_barely_oob)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{8};
     auto A = make_shared<op::Parameter>(element::i64, shape_a);
@@ -1774,15 +1440,7 @@ NGRAPH_TEST(${BACKEND_NAME}, one_hot_vector_1_barely_oob)
 }
 NGRAPH_TEST(${BACKEND_NAME}, one_hot_vector_1_far_oob)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{8};
     auto A = make_shared<op::Parameter>(element::i64, shape_a);
@@ -1811,15 +1469,7 @@ NGRAPH_TEST(${BACKEND_NAME}, one_hot_vector_1_far_oob)
 
 NGRAPH_TEST(${BACKEND_NAME}, one_hot_matrix_0)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{3, 3};
     auto A = make_shared<op::Parameter>(element::i64, shape_a);
@@ -1846,15 +1496,7 @@ NGRAPH_TEST(${BACKEND_NAME}, one_hot_matrix_0)
 
 NGRAPH_TEST(${BACKEND_NAME}, one_hot_vector_1_fp)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{8};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1874,15 +1516,7 @@ NGRAPH_TEST(${BACKEND_NAME}, one_hot_vector_1_fp)
 }
 NGRAPH_TEST(${BACKEND_NAME}, one_hot_vector_1_fp_nonint)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{8};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1911,15 +1545,7 @@ NGRAPH_TEST(${BACKEND_NAME}, one_hot_vector_1_fp_nonint)
 
 NGRAPH_TEST(${BACKEND_NAME}, slice_scalar)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1944,15 +1570,7 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_scalar)
 
 NGRAPH_TEST(${BACKEND_NAME}, slice_matrix)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{4, 4};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -1977,15 +1595,7 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_matrix)
 
 NGRAPH_TEST(${BACKEND_NAME}, slice_vector)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{16};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -2011,15 +1621,7 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_vector)
 
 NGRAPH_TEST(${BACKEND_NAME}, slice_matrix_strided)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{4, 4};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -2044,15 +1646,7 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_matrix_strided)
 
 NGRAPH_TEST(${BACKEND_NAME}, slice_3d)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{4, 4, 4};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -2080,15 +1674,7 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_3d)
 
 NGRAPH_TEST(${BACKEND_NAME}, slice_3d_strided)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{4, 4, 4};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -2116,15 +1702,7 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_3d_strided)
 
 NGRAPH_TEST(${BACKEND_NAME}, slice_3d_strided_different_strides)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{4, 4, 4};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -2153,15 +1731,7 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_3d_strided_different_strides)
 
 NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_colwise)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -2197,15 +1767,7 @@ NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_colwise)
 
 NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_rowwise)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -2241,15 +1803,7 @@ NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_rowwise)
 
 NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_int64)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{2, 2};
     auto A = make_shared<op::Parameter>(element::i64, shape_a);
@@ -2285,15 +1839,7 @@ NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_int64)
 
 NGRAPH_TEST(${BACKEND_NAME}, concat_vector)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{4};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -2374,15 +1920,7 @@ NGRAPH_TEST(${BACKEND_NAME}, concat_vector)
 //   2069.  2070.  2071.  2072.]
 NGRAPH_TEST(${BACKEND_NAME}, concat_5d)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     vector<float> a_data(2 * 3 * 4 * 3 * 2);
     for (int i = 0; i < 2 * 3 * 4 * 3 * 2; i++)
@@ -2467,15 +2005,7 @@ NGRAPH_TEST(${BACKEND_NAME}, concat_5d)
 // Trivial case with no summed axes.
 NGRAPH_TEST(${BACKEND_NAME}, sum_trivial)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape{2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -2500,15 +2030,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_trivial)
 // Failure has been reported at 5D for some reason
 NGRAPH_TEST(${BACKEND_NAME}, sum_trivial_5d)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape{2, 2, 2, 2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -2535,15 +2057,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_trivial_5d)
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_to_scalar)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape{2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -2570,15 +2084,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_to_scalar)
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_columns)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{3, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -2607,15 +2113,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_columns)
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_rows)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{3, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -2644,15 +2142,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_rows)
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_rows_zero)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{3, 0};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -2681,15 +2171,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_rows_zero)
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_cols_zero)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     // Now the reduction (g(x:float32[2,2],y:float32[]) = reduce(x,y,f,axes={})).
     Shape shape_a{0, 2};
@@ -2718,15 +2200,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_cols_zero)
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_vector_zero)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{0};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -2755,15 +2229,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_vector_zero)
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_to_zero_by_zero)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{0, 0};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -2792,15 +2258,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_to_zero_by_zero)
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_3d_to_matrix_most_sig)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{3, 3, 3};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -2835,15 +2293,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_3d_to_matrix_most_sig)
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_3d_to_matrix_least_sig)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{3, 3, 3};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -2878,15 +2328,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_3d_to_matrix_least_sig)
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_3d_to_vector)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{3, 3, 3};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -2915,15 +2357,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_3d_to_vector)
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_3d_to_scalar)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{3, 3, 3};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -2951,15 +2385,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_3d_to_scalar)
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_3d_eliminate_zero_dim)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{3, 0, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -2985,15 +2411,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_3d_eliminate_zero_dim)
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_5d_to_scalar)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{3, 3, 3, 3, 3};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -3019,7 +2437,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_5d_to_scalar)
 NGRAPH_TEST(${BACKEND_NAME}, create_valued_plaintext)
 {
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("${BACKEND_NAME}"));
+        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
     // Fractional
     {
@@ -3157,7 +2575,7 @@ struct ConvolutionTestData
 NGRAPH_TEST(${BACKEND_NAME}, conv_fprop_n1c1h3w3)
 {
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("${BACKEND_NAME}"));
+        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
     ConvolutionTestData conv_test;
     conv_test.n1c1h3w3(backend);
@@ -3195,15 +2613,7 @@ NGRAPH_TEST(${BACKEND_NAME}, conv_fprop_n1c1h3w3)
 
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_1channel_1image_padded)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape_a{1, 1, 3, 3};
     Shape window_shape{2, 2};
@@ -3240,15 +2650,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_1channel_1image_padded)
 
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_padded)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
     Shape shape_a{2, 1, 3, 3};
     Shape window_shape{2, 2};
     auto window_movement_strides = Strides{1, 1};
@@ -3291,15 +2693,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_padded)
 
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_padded_only_below)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
     Shape shape_a{2, 1, 3, 3};
     Shape window_shape{2, 2};
     auto window_movement_strides = Strides{1, 1};
@@ -3339,15 +2733,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_padded_only_below)
 
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_padded_only_above)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
     Shape shape_a{2, 1, 3, 3};
     Shape window_shape{2, 2};
     auto window_movement_strides = Strides{1, 1};
@@ -3387,15 +2773,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_padded_only_above)
 
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_padded_3x3)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
     Shape shape_a{2, 1, 3, 3};
     Shape window_shape{3, 3};
     auto window_movement_strides = Strides{1, 1};
@@ -3440,15 +2818,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_padded_3x3)
 
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_padded_3x3_strided)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
     Shape shape_a{2, 1, 3, 3};
     Shape window_shape{3, 3};
     auto window_movement_strides = Strides{2, 2};
@@ -3488,15 +2858,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_padded_3x3_strided)
 
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_padded_3x3_strided_uneven)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
     Shape shape_a{2, 1, 3, 3};
     Shape window_shape{3, 3};
     auto window_movement_strides = Strides{2, 3};
@@ -3534,15 +2896,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_padded_3x3_strided_unev
 
 NGRAPH_TEST(${BACKEND_NAME}, negative)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
     Shape shape{2, 3};
     auto A = make_shared<op::Parameter>(element::f32, shape);
     auto t = make_shared<op::Negative>(A);
@@ -3567,15 +2921,7 @@ NGRAPH_TEST(${BACKEND_NAME}, negative)
 
 NGRAPH_TEST(${BACKEND_NAME}, validate_call_input_count)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape{2, 2};
 
@@ -3592,15 +2938,7 @@ NGRAPH_TEST(${BACKEND_NAME}, validate_call_input_count)
 
 NGRAPH_TEST(${BACKEND_NAME}, validate_call_input_type)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape{2, 2};
 
@@ -3617,15 +2955,7 @@ NGRAPH_TEST(${BACKEND_NAME}, validate_call_input_type)
 
 NGRAPH_TEST(${BACKEND_NAME}, validate_call_input_shape)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape{2, 2};
 
@@ -3642,7 +2972,7 @@ NGRAPH_TEST(${BACKEND_NAME}, validate_call_input_shape)
 
 NGRAPH_TEST(${BACKEND_NAME}, validate_call_output_count)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape{2, 2};
 
@@ -3660,15 +2990,7 @@ NGRAPH_TEST(${BACKEND_NAME}, validate_call_output_count)
 
 NGRAPH_TEST(${BACKEND_NAME}, validate_call_output_type)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape{2, 2};
 
@@ -3685,15 +3007,7 @@ NGRAPH_TEST(${BACKEND_NAME}, validate_call_output_type)
 
 NGRAPH_TEST(${BACKEND_NAME}, validate_call_output_shape)
 {
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape{2, 2};
 
@@ -3722,15 +3036,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_interior_1d)
         make_shared<op::Pad>(A, B, padding_below, padding_above, padding_interior),
         op::ParameterVector{A, B});
 
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
@@ -3760,15 +3066,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_1d)
         make_shared<op::Pad>(A, B, padding_below, padding_above, padding_interior),
         op::ParameterVector{A, B});
 
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
@@ -3798,15 +3096,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_interior_exterior_1d)
         make_shared<op::Pad>(A, B, padding_below, padding_above, padding_interior),
         op::ParameterVector{A, B});
 
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
@@ -3837,15 +3127,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_interior_exterior_2d)
         make_shared<op::Pad>(A, B, padding_below, padding_above, padding_interior),
         op::ParameterVector{A, B});
 
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
@@ -3880,15 +3162,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_0x0)
         make_shared<op::Pad>(A, B, padding_below, padding_above, padding_interior),
         op::ParameterVector{A, B});
 
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
@@ -3921,15 +3195,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_0x3)
         make_shared<op::Pad>(A, B, padding_below, padding_above, padding_interior),
         op::ParameterVector{A, B});
 
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
@@ -3962,15 +3228,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_3x0)
         make_shared<op::Pad>(A, B, padding_below, padding_above, padding_interior),
         op::ParameterVector{A, B});
 
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
@@ -4003,15 +3261,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_4d_1x2x2x2)
         make_shared<op::Pad>(A, B, padding_below, padding_above, padding_interior),
         op::ParameterVector{A, B});
 
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
@@ -4078,15 +3328,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_interior_exterior_4d_2x0x3x2)
         make_shared<op::Pad>(A, B, padding_below, padding_above, padding_interior),
         op::ParameterVector{A, B});
 
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
@@ -4115,15 +3357,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_1d)
         make_shared<op::Pad>(A, B, padding_below, padding_above, padding_interior),
         op::ParameterVector{A});
 
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
@@ -4151,15 +3385,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_1d)
         make_shared<op::Pad>(A, B, padding_below, padding_above, padding_interior),
         op::ParameterVector{A});
 
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
@@ -4187,15 +3413,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_exterior_1d)
         make_shared<op::Pad>(A, B, padding_below, padding_above, padding_interior),
         op::ParameterVector{A});
 
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
@@ -4224,15 +3442,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_exterior_2d)
         make_shared<op::Pad>(A, B, padding_below, padding_above, padding_interior),
         op::ParameterVector{A});
 
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
@@ -4265,15 +3475,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_2d_0x0)
         make_shared<op::Pad>(A, B, padding_below, padding_above, padding_interior),
         op::ParameterVector{A});
 
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
@@ -4304,15 +3506,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_2d_0x3)
         make_shared<op::Pad>(A, B, padding_below, padding_above, padding_interior),
         op::ParameterVector{A});
 
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
@@ -4343,15 +3537,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_2d_3x0)
         make_shared<op::Pad>(A, B, padding_below, padding_above, padding_interior),
         op::ParameterVector{A});
 
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
@@ -4382,15 +3568,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_4d_1x2x2x2)
         make_shared<op::Pad>(A, B, padding_below, padding_above, padding_interior),
         op::ParameterVector{A});
 
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
@@ -4454,15 +3632,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_exterior_4d_2x0x3x2)
         make_shared<op::Pad>(A, B, padding_below, padding_above, padding_interior),
         op::ParameterVector{A});
 
-    auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    if ("${BACKEND_NAME}" == "HE_HEAAN")
-    {
-        backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend);
-    }
-    else if ("${BACKEND_NAME}" == "HE_SEAL")
-    {
-        backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(backend);
-    }
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
