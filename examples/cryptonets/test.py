@@ -12,14 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""A simplified deep MNIST classifier using convolutional layers.
-This script has the following changes when compared to mnist_deep.py:
-1. no dropout layer (which disables the rng op)
-2. no truncated normal initialzation(which disables the while op)
 
-See extensive documentation at
-https://www.tensorflow.org/get_started/mnist/pros
-"""
+"""An MNIST classifier based on Cryptonets using convolutional layers. """
 
 from __future__ import absolute_import
 from __future__ import division
@@ -27,8 +21,6 @@ from __future__ import print_function
 
 import argparse
 import sys
-import tempfile
-import getpass
 import time
 import numpy as np
 import itertools
@@ -36,9 +28,9 @@ import itertools
 from tensorflow.examples.tutorials.mnist import input_data
 import tensorflow as tf
 import common
+import ngraph
 
 FLAGS = None
-
 
 def cryptonets_test_squashed(x):
     """Constructs test network for Cryptonets using saved weights.
@@ -129,7 +121,6 @@ def cryptonets_test_original(x):
 
 
 def test_mnist_cnn(FLAGS, network):
-    import ngraph
 
     # Import data
     mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=True)
@@ -147,44 +138,33 @@ def test_mnist_cnn(FLAGS, network):
         y_conv = cryptonets_test_squashed(x)
 
     with tf.Session() as sess:
-        batch_size = 1
-        x_test = mnist.test.images[:batch_size]
-        y_test = mnist.test.labels[:batch_size]
+        x_test = mnist.test.images[:FLAGS.batch_size]
+        y_test = mnist.test.labels[:FLAGS.batch_size]#
         y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
-        print(y_conv_val)
 
-    # with tf.name_scope('accuracy'):
-    #     correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
-    #     correct_prediction = tf.cast(correct_prediction, tf.float32)
-    # accuracy = tf.reduce_mean(correct_prediction)
+    if FLAGS.save_batch or FLAGS.report_accuracy:
+        with tf.Session() as sess:
+            sess.run(tf.global_variables_initializer())
 
-    # with tf.Session() as sess:
-    #     sess.run(tf.global_variables_initializer())
+            x_test_batch = mnist.test.images[:FLAGS.batch_size]
+            y_test_batch = mnist.test.labels[:FLAGS.batch_size]
+            x_test = mnist.test.images
+            y_test = mnist.test.labels
 
-    #     num_test_images = FLAGS.test_image_count
-    #     x_test = mnist.test.images[:num_test_images]
-    #     y_test = mnist.test.labels[:num_test_images]
+            y_label_batch = np.argmax(y_test_batch, 1)
 
-    #     test_accuracy = accuracy.eval(feed_dict={x: x_test, y_: y_test})
-    #     print('test accuracy wth ' + network + ': %g' % test_accuracy)
+            if FLAGS.save_batch:
+                x_test_batch.tofile("x_test_" + str(FLAGS.batch_size) + ".bin")
+                y_label_batch.astype('float32').tofile("y_label_" + str(FLAGS.batch_size) + ".bin")
 
-    # # Run again to export inference graph on smaller batch size
-    # with tf.Session() as sess:
-    #     sess.run(tf.global_variables_initializer())
+            if FLAGS.report_accuracy:
+                with tf.name_scope('accuracy'):
+                    correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
+                    correct_prediction = tf.cast(correct_prediction, tf.float32)
+                accuracy = tf.reduce_mean(correct_prediction)
+                test_accuracy = accuracy.eval(feed_dict={x: x_test, y_: y_test})
 
-    #     batch_size = 1
-    #     x_test = mnist.test.images[:batch_size]
-    #     y_test = mnist.test.labels[:batch_size]
-
-    #     y_label = np.argmax(y_test, 1)
-
-    #     x_test.tofile("x_test_" + str(batch_size) + ".bin")
-    #     y_test.astype('float32').tofile("y_test_" + str(batch_size) + ".bin")
-    #     y_label.astype('float32').tofile("y_label_" + str(batch_size) + ".bin")
-
-    #     test_accuracy = accuracy.eval(feed_dict={x: x_test, y_: y_test})
-    #     print('subset test accuracy wth ' + network + ': %g' % test_accuracy)
-
+                print('test accuracy wth ' + network + ': %g' % test_accuracy)
 
 def main(_):
     # Disable mnist dataset deprecation warning
@@ -196,7 +176,6 @@ def main(_):
     # Test using squashed graph
     test_mnist_cnn(FLAGS, 'squash')
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -205,12 +184,24 @@ if __name__ == '__main__':
         default='/tmp/tensorflow/mnist/input_data',
         help='Directory where input data is stored')
     parser.add_argument(
-        '--batch_size', type=int, default=50, help='Batch Size')
+        '--batch_size', type=int, default=1, help='Batch size')
     parser.add_argument(
         '--test_image_count',
         type=int,
         default=None,
         help="Number of test images to evaluate on")
+    parser.add_argument(
+        '--save_batch',
+        type=bool,
+        default=False,
+        help='Whether or not to save the test image and label.'
+    )
+    parser.add_argument(
+        '--report_accuracy',
+        type=bool,
+        default=False,
+        help='Whether or not to save the compute the test accuracy.'
+    )
 
     FLAGS, unparsed = parser.parse_known_args()
     tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
