@@ -24,12 +24,14 @@ import sys
 import time
 import numpy as np
 import itertools
+import glob
 
 from tensorflow.examples.tutorials.mnist import input_data
 import tensorflow as tf
 import common
 import ngraph
 
+import os
 FLAGS = None
 
 def cryptonets_test_squashed(x):
@@ -138,9 +140,13 @@ def test_mnist_cnn(FLAGS, network):
         y_conv = cryptonets_test_squashed(x)
 
     with tf.Session() as sess:
+        start_time = time.time()        
         x_test = mnist.test.images[:FLAGS.batch_size]
-        y_test = mnist.test.labels[:FLAGS.batch_size]#
-        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
+        y_test = mnist.test.labels[:FLAGS.batch_size]
+        # Run model
+        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test}) 
+        elasped_time = time.time() - start_time
+        print("total time(s)", elasped_time)
 
     if FLAGS.save_batch or FLAGS.report_accuracy:
         with tf.Session() as sess:
@@ -165,6 +171,19 @@ def test_mnist_cnn(FLAGS, network):
                 test_accuracy = accuracy.eval(feed_dict={x: x_test, y_: y_test})
 
                 print('test accuracy wth ' + network + ': %g' % test_accuracy)
+    
+    # Rename serialized graph
+    # try:
+    serialized_graphs = glob.glob("tf_function_ngraph*.json")
+    if os.environ['NGRAPH_ENABLE_SERIALIZE'] == "1" and len(serialized_graphs) == 1:
+        src_path = serialized_graphs[0]
+        dst_path = "mnist_cryptonets_batch_%s.json" % (FLAGS.batch_size,)
+        print("Moving", src_path, "to", dst_path)
+        os.rename(src_path, dst_path)
+    else:
+        print("can't reseralize!")
+    # except:
+    #    print("Renaming serialized graph not successful")
 
 def main(_):
     # Disable mnist dataset deprecation warning
