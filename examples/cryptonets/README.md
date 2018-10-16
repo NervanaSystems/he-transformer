@@ -47,5 +47,3 @@ cd ../../build
 ```
 for `N` a power of two in `{1, 2, 4, 8, ..., 4096}`
 
-
-
