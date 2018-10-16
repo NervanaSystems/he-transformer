@@ -166,24 +166,24 @@ def test_mnist_cnn(FLAGS, network):
             if FLAGS.report_accuracy:
                 with tf.name_scope('accuracy'):
                     correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
-                    correct_prediction = tf.cast(correct_prediction, tf.float32)
+                    corret_prediction = tf.cast(correct_prediction, tf.float32)
                 accuracy = tf.reduce_mean(correct_prediction)
                 test_accuracy = accuracy.eval(feed_dict={x: x_test, y_: y_test})
 
                 print('test accuracy wth ' + network + ': %g' % test_accuracy)
     
     # Rename serialized graph
-    # try:
-    serialized_graphs = glob.glob("tf_function_ngraph*.json")
-    if os.environ['NGRAPH_ENABLE_SERIALIZE'] == "1" and len(serialized_graphs) == 1:
-        src_path = serialized_graphs[0]
-        dst_path = "mnist_cryptonets_batch_%s.json" % (FLAGS.batch_size,)
-        print("Moving", src_path, "to", dst_path)
-        os.rename(src_path, dst_path)
-    else:
-        print("can't reseralize!")
-    # except:
-    #    print("Renaming serialized graph not successful")
+    try:
+        serialized_graphs = glob.glob("tf_function_ngraph*.json")
+        if os.environ.get('NGRAPH_ENABLE_SERIALIZE','') == "1" and len(serialized_graphs) == 1:
+            src_path = serialized_graphs[0]
+            dst_path = "mnist_cryptonets_batch_%s.json" % (FLAGS.batch_size,)
+            print("Moving", src_path, "to", dst_path)
+            os.rename(src_path, dst_path)
+        else:
+            print("can't reseralize!")
+    except:
+        print("Renaming serialized graph not successful")
 
 def main(_):
     # Disable mnist dataset deprecation warning

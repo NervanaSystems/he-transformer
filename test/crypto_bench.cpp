@@ -71,7 +71,7 @@ int main()
 
     // We only support HEAAN backend for now
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("HE_HEAAN"));
+        runtime::Backend::create("HE:HEAAN"));
 
     vector<float> x = read_binary_constant(
         file_util::path_join(HE_SERIALIZED_ZOO, "weights/x_test_4096.bin"), batch_size * 784);
