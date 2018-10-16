@@ -140,11 +140,11 @@ def test_mnist_cnn(FLAGS, network):
         y_conv = cryptonets_test_squashed(x)
 
     with tf.Session() as sess:
-        start_time = time.time()        
+        start_time = time.time()
         x_test = mnist.test.images[:FLAGS.batch_size]
         y_test = mnist.test.labels[:FLAGS.batch_size]
         # Run model
-        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test}) 
+        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
         elasped_time = time.time() - start_time
         print("total time(s)", elasped_time)
 
@@ -166,12 +166,12 @@ def test_mnist_cnn(FLAGS, network):
             if FLAGS.report_accuracy:
                 with tf.name_scope('accuracy'):
                     correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
-                    corret_prediction = tf.cast(correct_prediction, tf.float32)
+                    correct_prediction = tf.cast(correct_prediction, tf.float32)
                 accuracy = tf.reduce_mean(correct_prediction)
                 test_accuracy = accuracy.eval(feed_dict={x: x_test, y_: y_test})
 
                 print('test accuracy wth ' + network + ': %g' % test_accuracy)
-    
+
     # Rename serialized graph
     try:
         serialized_graphs = glob.glob("tf_function_ngraph*.json")

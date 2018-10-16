@@ -83,18 +83,19 @@ std::vector<T> generalized_read_vector(std::shared_ptr<ngraph::runtime::TensorVi
     }
     if (auto cipher_tv = dynamic_pointer_cast<ngraph::runtime::he::HECipherTensorView>(tv))
     {
+        size_t element_count;
         if (cipher_tv->is_batched())
         {
-            size_t element_count = ngraph::shape_size(cipher_tv->get_expanded_shape());
-            size_t size = element_count * sizeof(T);
-            std::vector<T> rc(element_count);
-            tv->read(rc.data(), 0, size);
-            return rc;
+            element_count = ngraph::shape_size(cipher_tv->get_expanded_shape());
         }
         else
         {
-            throw ngraph_error("cipher_tv->is_batched not true?!");
+            element_count = ngraph::shape_size(cipher_tv->get_shape());
         }
+        size_t size = element_count * sizeof(T);
+        std::vector<T> rc(element_count);
+        tv->read(rc.data(), 0, size);
+        return rc;
     }
     else
     {
