@@ -58,74 +58,6 @@ vector<int> batched_argmax(const vector<float>& ys)
     return labels;
 }
 
-NGRAPH_TEST(HE_HEAAN, matmul_direct)
-{
-    // We only support HEAAN backend for now
-    auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("HE:HEAAN"));
-
-    size_t n = 20;
-    Shape shape{n, n};
-    vector<float> c_val(n * n, 2);
-
-    auto p = make_shared<op::Parameter>(element::f32, shape);
-    auto c = op::Constant::create(element::f32, shape, c_val);
-    auto r = make_shared<op::Dot>(p, c);
-    auto f = make_shared<Function>(r, op::ParameterVector{p});
-
-    auto p_tv = backend->create_tensor(element::f32, shape);
-    auto r_tv = backend->create_tensor(element::f32, shape);
-
-    vector<float> p_val(n * n, 3);
-    copy_data(p_tv, p_val);
-
-    backend->call(f, {r_tv}, {p_tv});
-}
-
-NGRAPH_TEST(HE_HEAAN, matmul_benchmark)
-{
-    // We only support HEAAN backend for now
-    auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("HE:HEAAN"));
-
-    size_t n = 20;
-    vector<float> x(n * n, 2);
-
-    // Load graph
-    const string filename = "matmul_" + to_string(n);
-    const string json_path =
-        file_util::path_join(HE_SERIALIZED_ZOO, "../../examples/cryptonets/" + filename + ".json");
-    const string json_string = file_util::read_file_to_string(json_path);
-    shared_ptr<Function> f = deserialize(json_string);
-    NGRAPH_INFO << "Deserialize graph";
-    NGRAPH_INFO << "x size " << x.size();
-
-    // Create input tensorview and copy tensors; create output tensorviews
-    auto parameters = f->get_parameters();
-    vector<shared_ptr<runtime::TensorView>> parameter_tvs;
-    for (auto parameter : parameters)
-    {
-        auto& shape = parameter->get_shape();
-        auto& type = parameter->get_element_type();
-        auto parameter_cipher_tv = backend->create_tensor(type, shape);
-        copy_data(parameter_cipher_tv, x);
-        parameter_tvs.push_back(parameter_cipher_tv);
-    }
-
-    auto results = f->get_results();
-    vector<shared_ptr<runtime::TensorView>> result_tvs;
-    for (auto result : results)
-    {
-        auto& shape = result->get_shape();
-        auto& type = result->get_element_type();
-        NGRAPH_INFO << "Creating output shape: " << join(shape, "x");
-        result_tvs.push_back(backend->create_tensor(type, shape));
-    }
-
-    // Run model
-    backend->call(f, result_tvs, parameter_tvs);
-}
-
 static void run_cryptonets_benchmark(size_t batch_size, bool batched = true)
 {
     if (!batched && batch_size > 1)
@@ -168,7 +100,7 @@ static void run_cryptonets_benchmark(size_t batch_size, bool batched = true)
         auto& shape = parameter->get_shape();
         auto& type = parameter->get_element_type();
 
-        auto parameter_cipher_tv = backend->create_tensor(type, shape, bathed);
+        auto parameter_cipher_tv = backend->create_tensor(type, shape, batched);
 
         NGRAPH_INFO << "Creating input shape: " << join(shape, "x");
 
