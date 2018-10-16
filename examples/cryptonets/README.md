@@ -10,10 +10,12 @@ python train.py
 This trains the network briefly and stores the network weights.
 
 # Test the network
+## Python
 To test the network, run
 ```
-NGRAPH_TF_BACKEND=HE:HEAAN python test.py
+[NGRAHP_HE_HEAAN_CONFIG = heaan_config_1[X].json] NGRAPH_TF_BACKEND=HE:HEAAN python test.py
 ```
+
 This runs inference on the Cryptonets network using the HEAAN backend.
 
 For optimal performance, install Open MP and call the commands with `OMP_NUM_THREADS=$(nproc)$`, i.e.
@@ -31,6 +33,7 @@ This will generate:
 * `x_test_[BATCH_SIZE].bin`, which saves `BATCH_SIZE` inputs from the test data
 * `y_label_[BATCH_SIZE].bin`, the corresponding labels
 
+## C++
 To test the network with the C++ nGraph integration, copy these files to the unit-tests,
 ```
 cp mnist_cryptonets_batch_[BATCH_SIZE].json ../../test/model
@@ -40,5 +43,9 @@ cp y_label_[BATCH_SIZE].bin ../../test/model
 and run the unit test
 ```
 cd ../../build
-./test/unit-test 
+./test/unit-test --gtest_filter="HE_HEAAN.cryptonets_benchmark_N"
 ```
+for `N` a power of two in `{1, 2, 4, 8, ..., 4096}`
+
+
+
