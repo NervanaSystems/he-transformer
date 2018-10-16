@@ -37,7 +37,7 @@ if (PREBUILD_NGRAPH_LIB_DIR)
     ExternalProject_Add(
         ext_ngraph
         GIT_REPOSITORY https://github.com/NervanaSystems/ngraph.git
-        GIT_TAG he # based on v0.7.0
+        GIT_TAG v0.7.0
         PREFIX ${NGRAPH_CMAKE_PREFIX}
         UPDATE_COMMAND ""
         BUILD_COMMAND ""

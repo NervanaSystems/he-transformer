@@ -62,7 +62,8 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> func,
                                   const vector<shared_ptr<runtime::TensorView>>& outputs,
                                   const vector<shared_ptr<runtime::TensorView>>& inputs)
 {
-    validate_call(func, outputs, inputs);
+    // HEAAN may call with batch != 1, so we disabel validate_call here
+    // validate_call(func, outputs, inputs);
     compile(func);
     m_function_map.at(func)->call(outputs, inputs);
     return true;

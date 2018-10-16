@@ -14,11 +14,13 @@
 * limitations under the License.
 *******************************************************************************/
 
+#include <algorithm>
 #include <assert.h>
 
 #include "ngraph/ngraph.hpp"
 #include "ngraph/pass/manager.hpp"
 #include "ngraph/pass/visualize_tree.hpp"
+#include "ngraph/util.hpp"
 
 #include "util/all_close.hpp"
 #include "util/ndarray.hpp"
@@ -36,53 +38,71 @@ using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
-NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_batch)
+// ys is logits output, or one-hot encoded ground truth
+vector<int> batched_argmax(const vector<float>& ys)
 {
+    if (ys.size() % 10 != 0)
+    {
+        cout << "ys.size() must be a multiple of 10" << endl;
+        exit(1);
+    }
+    vector<int> labels;
+    const float* data = ys.data();
+    size_t idx = 0;
+    while (idx < ys.size())
+    {
+        int label = distance(data + idx, max_element(data + idx, data + idx + 10));
+        labels.push_back(label);
+        idx += 10;
+    }
+    return labels;
+}
+
+static void run_cryptonets_benchmark(size_t batch_size, bool batched = true)
+{
+    if (!batched && batch_size > 1)
+    {
+        throw ngraph_error("Non-batched must have batch_size 1");
+    }
+    // We only support HEAAN backend for now
     auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
-    // auto backend = runtime::Backend::create("INTERPRETER");
-
-    size_t batch_size = 4096;
-
-    NGRAPH_INFO << "Loaded backend";
-    const string filename = "mnist_cryptonets_batch_" + to_string(batch_size);
-    const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, filename + ".js");
-    const string json_string = file_util::read_file_to_string(json_path);
-    shared_ptr<Function> f = deserialize(json_string);
-
-    // Visualize model
-    auto model_file_name = filename + string(".") + pass::VisualizeTree::get_file_ext();
-    pass::Manager pass_manager;
-    pass_manager.register_pass<pass::VisualizeTree>(model_file_name);
-    pass_manager.run_passes(f);
-    NGRAPH_INFO << "Saved file " << model_file_name;
+        runtime::Backend::create("HE:HEAAN"));
 
     vector<float> x = read_binary_constant(
-        file_util::path_join(HE_SERIALIZED_ZOO, "weights/x_test_" + to_string(batch_size) + ".bin"),
-        batch_size * 784);
+        file_util::path_join(HE_SERIALIZED_ZOO, "x_test_4096.bin"), batch_size * 784);
     vector<float> y = read_binary_constant(
-        file_util::path_join(HE_SERIALIZED_ZOO, "weights/y_test_" + to_string(batch_size) + ".bin"),
-        batch_size * 10);
-    vector<float> cpu_result = read_binary_constant(
-        file_util::path_join(HE_SERIALIZED_ZOO,
-                             "weights/cpu_result_" + to_string(batch_size) + ".bin"),
-        batch_size * 10);
-    NGRAPH_INFO << "cpu_result size " << cpu_result.size();
-    NGRAPH_INFO << "x size " << x.size();
-    NGRAPH_INFO << "y size " << y.size();
+        file_util::path_join(HE_SERIALIZED_ZOO, "y_test_4096.bin"), batch_size * 10);
 
-    NGRAPH_INFO << "Deserialized graph";
+    // Global stop watch
+    stopwatch sw_global;
+    sw_global.start();
+
+    // Load graph
+    stopwatch sw_load_model;
+    sw_load_model.start();
+    const string filename = "mnist_cryptonets_batch_" + to_string(batch_size);
+    const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, filename + ".json");
+    const string json_string = file_util::read_file_to_string(json_path);
+    shared_ptr<Function> f = deserialize(json_string);
+    NGRAPH_INFO << "Deserialize graph";
+    NGRAPH_INFO << "x size " << x.size();
+    NGRAPH_INFO << "Inputs loaded";
+    sw_load_model.stop();
+    NGRAPH_INFO << "sw_load_model: " << sw_load_model.get_milliseconds() << "ms";
+
+    // Create input tensorview and copy tensors; create output tensorviews
+    stopwatch sw_encrypt_input;
+    sw_encrypt_input.start();
     auto parameters = f->get_parameters();
     vector<shared_ptr<runtime::TensorView>> parameter_tvs;
     for (auto parameter : parameters)
     {
         auto& shape = parameter->get_shape();
         auto& type = parameter->get_element_type();
-        auto parameter_cipher_tv = backend->create_tensor(type, shape, true);
-        // Uncomment for INTERPRETER backend
-        // auto parameter_cipher_tv = backend->create_tensor(type, shape);
 
-        NGRAPH_INFO << join(shape, "x");
+        auto parameter_cipher_tv = backend->create_tensor(type, shape, batched);
+
+        NGRAPH_INFO << "Creating input shape: " << join(shape, "x");
 
         if (shape == Shape{batch_size, 784})
         {
@@ -104,72 +124,124 @@ NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_batch)
     {
         auto& shape = result->get_shape();
         auto& type = result->get_element_type();
-        NGRAPH_INFO << "Creating batched result tensor shape ";
-        for (auto elem : shape)
-        {
-            NGRAPH_INFO << elem;
-        }
+        NGRAPH_INFO << "Creating output shape: " << join(shape, "x");
 
-        // Uncomment for interpreter backend
-        // result_tvs.push_back(backend->create_tensor(type, shape));
-        result_tvs.push_back(backend->create_tensor(type, shape, true));
+        result_tvs.push_back(backend->create_tensor(type, shape, batched));
     }
+    sw_encrypt_input.stop();
+    NGRAPH_INFO << "sw_encrypt_input: " << sw_encrypt_input.get_milliseconds() << "ms";
 
+    // Run model
     NGRAPH_INFO << "calling function";
+    stopwatch sw_run_model;
+    sw_run_model.start();
     backend->call(f, result_tvs, parameter_tvs);
+    sw_run_model.stop();
+    NGRAPH_INFO << "sw_run_model: " << sw_run_model.get_milliseconds() << "ms";
 
+    // Decrypt output
+    stopwatch sw_decrypt_output;
+    sw_decrypt_output.start();
     auto result = generalized_read_vector<float>(result_tvs[0]);
+    sw_decrypt_output.stop();
+    NGRAPH_INFO << "sw_decrypt_output: " << sw_decrypt_output.get_milliseconds() << "ms";
 
-    if (false) // Set to true to save result from interpreter backend
+    // Stop global stop watch
+    sw_global.stop();
+    NGRAPH_INFO << "sw_global: " << sw_global.get_milliseconds() << "ms";
+
+    // Check prediction vs ground truth
+    vector<int> y_gt_label = batched_argmax(y);
+    vector<int> y_predicted_label = batched_argmax(result);
+
+    size_t error_count = 0;
+    for (size_t i = 0; i < y_gt_label.size(); ++i)
     {
-        write_binary_constant(
-            result,
-            file_util::path_join(HE_SERIALIZED_ZOO,
-                                 "weights/cpu_result_" + to_string(batch_size) + ".bin"));
+        if (y_gt_label[i] != y_predicted_label[i])
+        {
+            // NGRAPH_INFO << "index " << i << " y_gt_label != y_predicted_label: " << y_gt_label[i]
+            //             << " != " << y_predicted_label[i];
+            error_count++;
+        }
     }
+    NGRAPH_INFO << "Errror count " << error_count << " of " << batch_size << " elements.";
+    NGRAPH_INFO << "Accuracy: " << 1.f - (float)(error_count) / batch_size;
 
-    float accuracy = get_accuracy(result, y);
-    NGRAPH_INFO << "Accuracy " << accuracy;
-
-    EXPECT_TRUE(test::all_close(cpu_result, result, 1e-5f, 4e-3f));
+    // Print results
+    NGRAPH_INFO << "[Summary]";
+    NGRAPH_INFO << "sw_load_model: " << sw_load_model.get_milliseconds() << "ms";
+    NGRAPH_INFO << "sw_encrypt_input: " << sw_encrypt_input.get_milliseconds() << "ms";
+    NGRAPH_INFO << "sw_run_model: " << sw_run_model.get_milliseconds() << "ms";
+    NGRAPH_INFO << "sw_decrypt_output: " << sw_decrypt_output.get_milliseconds() << "ms";
+    NGRAPH_INFO << "sw_global: " << sw_global.get_milliseconds() << "ms";
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_softmax_quantized_1)
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_no_batch)
 {
-    auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("${BACKEND_NAME}"));
+    run_cryptonets_benchmark(1, false);
+}
 
-    NGRAPH_INFO << "Loaded backend";
-    const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, "mnist_mlp_const_1_inputs.js");
-    const string json_string = file_util::read_file_to_string(json_path);
-    shared_ptr<Function> f = deserialize(json_string);
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_1)
+{
+    run_cryptonets_benchmark(1);
+}
 
-    NGRAPH_INFO << "Deserialized graph";
-    auto parameters = f->get_parameters();
-    vector<shared_ptr<runtime::TensorView>> parameter_tvs;
-    for (auto parameter : parameters)
-    {
-        auto& shape = parameter->get_shape();
-        auto& type = parameter->get_element_type();
-        NGRAPH_INFO << "Creating tensor of " << shape_size(shape) << " elements";
-        auto parameter_tv = backend->create_tensor(type, shape);
-        NGRAPH_INFO << "created tensor of " << shape_size(shape) << " elements";
-        copy_data(parameter_tv, vector<float>(shape_size(shape)));
-        parameter_tvs.push_back(parameter_tv);
-    }
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_2)
+{
+    run_cryptonets_benchmark(2);
+}
 
-    auto results = f->get_results();
-    vector<shared_ptr<runtime::TensorView>> result_tvs;
-    for (auto result : results)
-    {
-        auto& shape = result->get_shape();
-        auto& type = result->get_element_type();
-        result_tvs.push_back(backend->create_tensor(type, shape));
-    }
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_4)
+{
+    run_cryptonets_benchmark(4);
+}
 
-    NGRAPH_INFO << "calling function ";
-    backend->call(f, result_tvs, parameter_tvs);
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_8)
+{
+    run_cryptonets_benchmark(8);
+}
 
-    EXPECT_EQ((vector<float>{2173, 944, 1151, 1723, -1674, 569, -1985, 9776, -4997, -1903}),
-              read_vector<float>(result_tvs[0]));
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_16)
+{
+    run_cryptonets_benchmark(16);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_32)
+{
+    run_cryptonets_benchmark(32);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_64)
+{
+    run_cryptonets_benchmark(64);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_128)
+{
+    run_cryptonets_benchmark(128);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_256)
+{
+    run_cryptonets_benchmark(256);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_512)
+{
+    run_cryptonets_benchmark(512);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_1024)
+{
+    run_cryptonets_benchmark(1024);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_2048)
+{
+    run_cryptonets_benchmark(2048);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_4096)
+{
+    run_cryptonets_benchmark(4096);
 }

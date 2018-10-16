@@ -12,14 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""A simplified deep MNIST classifier using convolutional layers.
-This script has the following changes when compared to mnist_deep.py:
-1. no dropout layer (which disables the rng op)
-2. no truncated normal initialzation(which disables the while op)
 
-See extensive documentation at
-https://www.tensorflow.org/get_started/mnist/pros
-"""
+"""An MNIST classifier based on Cryptonets using convolutional layers. """
 
 from __future__ import absolute_import
 from __future__ import division
@@ -27,8 +21,6 @@ from __future__ import print_function
 
 import argparse
 import sys
-import tempfile
-import getpass
 import time
 import numpy as np
 import itertools
@@ -38,7 +30,6 @@ import tensorflow as tf
 import common
 
 FLAGS = None
-
 
 def squash_layers():
     print("Squashing layers")
@@ -94,9 +85,7 @@ def cryptonets_train(x):
     Returns:
         A tuple (y, a scalar placeholder). y is a tensor of shape
         (N_examples, 10), with values equal to the logits of classifying the
-        digit into one of 10 classes (the digits 0-9). The scalar placeholder is
-        meant for the probability of dropout. Since we don't use a dropout layer
-        in this script, this placeholder is of no relevance and acts as a dummy.
+        digit into one of 10 classes (the digits 0-9).
     """
     # Reshape to use within a conv neural net.
     # Last dimension is for "features" - there is only one here, since images
@@ -199,8 +188,8 @@ def main(_):
                     x: batch[0],
                     y_: batch[1]
                 })
-                print('step %d, training accuracy %g, %g sec to evaluate' %
-                      (i, train_accuracy, time.time() - t))
+                print('step %d, training accuracy %g, %g msec to evaluate' %
+                      (i, train_accuracy, 1000 * (time.time() - t)))
             t = time.time()
             _, loss = sess.run([train_step, cross_entropy],
                                feed_dict={
@@ -219,13 +208,12 @@ def main(_):
                 })
                 print('test accuracy %g' % test_accuracy)
 
-        print("Training finished. Saving variables")
+        print("Training finished. Saving variables.")
         for var in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES):
             weight = (sess.run([var]))[0].flatten().tolist()
             filename = (str(var).split())[1].replace('/', '_')
             filename = filename.replace("'", "").replace(':0', '') + '.txt'
 
-            # TODO: verify that the variable weights are correct
             print("saving", filename)
             np.savetxt(str(filename), weight)
 

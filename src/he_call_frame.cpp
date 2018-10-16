@@ -14,6 +14,9 @@
 * limitations under the License.
 *******************************************************************************/
 
+#include <iostream>
+#include <string>
+
 #include "ngraph/op/broadcast.hpp"
 #include "ngraph/op/concat.hpp"
 #include "ngraph/op/constant.hpp"
@@ -67,9 +70,28 @@ runtime::he::HECallFrame::HECallFrame(const shared_ptr<Function>& func,
 
 bool runtime::he::HECallFrame::is_cpu_check_enabled(const shared_ptr<Node>& op) const
 {
-    static unordered_set<string> cpu_check_enabled_ops{
-        "Sum", "Add", "Dot", "Multiply", "Convolution", "AvgPool"};
-    return cpu_check_enabled_ops.count(op->description()) != 0;
+    const char* enable_cpu_check_env = std::getenv("NGRAPH_HE_CPU_CHECK");
+    if (enable_cpu_check_env != nullptr)
+    {
+        string enable_cpu_check_str = string(enable_cpu_check_env);
+        if (enable_cpu_check_str == "1" || enable_cpu_check_str == "true" ||
+            enable_cpu_check_str == "True" || enable_cpu_check_str == "TRUE" ||
+            enable_cpu_check_str == "ON")
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    else
+    {
+        return false;
+    }
+    // static unordered_set<string> cpu_check_enabled_ops{
+    //     "Sum", "Add", "Dot", "Multiply", "Convolution", "AvgPool"};
+    // return cpu_check_enabled_ops.count(op->description()) != 0;
 }
 
 void runtime::he::HECallFrame::call(shared_ptr<Function> function,
@@ -331,7 +353,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
             size_t inaccurate_cnt = 0;
             for (size_t elem = 0; elem < element_count; ++elem)
             {
-                if (abs(cpu_out_vec[elem] - he_out_vec[elem]) > 1e-3) // TODO: increase precision
+                if (abs(cpu_out_vec[elem] - he_out_vec[elem]) > 1e-2) // TODO: increase precision
                 {
                     if (inaccurate_cnt < 10)
                     {
@@ -1034,13 +1056,35 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     {
         shared_ptr<op::Pad> pad = dynamic_pointer_cast<op::Pad>(node);
 
+        Shape arg0_shape = node->get_inputs().at(0).get_shape();
+        Shape out_shape = node->get_output_shape(0);
+        if (arg0_cipher != nullptr && out0_cipher != nullptr)
+        {
+            NGRAPH_INFO << "arg0_cipher->is_batched(): " << arg0_cipher->is_batched();
+            NGRAPH_INFO << "arg0_cipher->get_batch_size(): " << arg0_cipher->get_batch_size();
+            if (arg0_cipher->is_batched())
+            {
+                arg0_shape[0] = arg0_shape[0] / arg0_cipher->get_batch_size();
+            }
+
+            NGRAPH_INFO << "out0_cipher->is_batched(): " << out0_cipher->is_batched();
+            NGRAPH_INFO << "arg0_cipher->get_batch_size(): " << out0_cipher->get_batch_size();
+            if (out0_cipher->is_batched())
+            {
+                out_shape[0] = out_shape[0] / out0_cipher->get_batch_size();
+            }
+        }
+
+        NGRAPH_INFO << "arg0_shape after batching: " << join(arg0_shape);
+        NGRAPH_INFO << "out_shape after batching: " << join(out_shape);
+
         if (arg0_cipher != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
             runtime::he::kernel::pad(arg0_cipher->get_elements(),
                                      arg1_cipher->get_elements(),
                                      out0_cipher->get_elements(),
-                                     node->get_inputs().at(0).get_shape(),
-                                     node->get_output_shape(0),
+                                     arg0_shape,
+                                     out_shape,
                                      pad->get_padding_below(),
                                      pad->get_padding_above(),
                                      pad->get_padding_interior(),
@@ -1051,8 +1095,8 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
             runtime::he::kernel::pad(arg0_cipher->get_elements(),
                                      arg1_plain->get_elements(),
                                      out0_cipher->get_elements(),
-                                     node->get_inputs().at(0).get_shape(),
-                                     node->get_output_shape(0),
+                                     arg0_shape,
+                                     out_shape,
                                      pad->get_padding_below(),
                                      pad->get_padding_above(),
                                      pad->get_padding_interior(),
