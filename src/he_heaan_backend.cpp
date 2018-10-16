@@ -85,6 +85,11 @@ runtime::he::he_heaan::HEHeaanBackend::HEHeaanBackend()
 runtime::he::he_heaan::HEHeaanBackend::HEHeaanBackend(
     const shared_ptr<runtime::he::HEHeaanParameter> hp)
 {
+    NGRAPH_INFO << "[HEAAN parameter]";
+    NGRAPH_INFO << "hp.m_log2_poly_modulus: " << hp->m_log2_poly_modulus;
+    NGRAPH_INFO << "hp.m_log2_plain_modulus: " << hp->m_log2_plain_modulus;
+    NGRAPH_INFO << "hp.m_log2_precision: " << hp->m_log2_precision;
+
     assert_valid_heaan_parameter(hp);
     // Context
     m_context = make_shared<heaan::Context>(hp->m_log2_poly_modulus, hp->m_log2_plain_modulus);

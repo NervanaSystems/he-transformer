@@ -14,11 +14,13 @@
 * limitations under the License.
 *******************************************************************************/
 
+#include <algorithm>
 #include <assert.h>
 
 #include "ngraph/ngraph.hpp"
 #include "ngraph/pass/manager.hpp"
 #include "ngraph/pass/visualize_tree.hpp"
+#include "ngraph/util.hpp"
 
 #include "util/all_close.hpp"
 #include "util/ndarray.hpp"
@@ -35,6 +37,382 @@ using namespace std;
 using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
+
+// ys is logits output, or one-hot encoded ground truth
+vector<int> batched_argmax(const vector<float>& ys)
+{
+    if (ys.size() % 10 != 0)
+    {
+        cout << "ys.size() must be a multiple of 10" << endl;
+        exit(1);
+    }
+    vector<int> labels;
+    const float* data = ys.data();
+    size_t idx = 0;
+    while (idx < ys.size())
+    {
+        int label = distance(data + idx, max_element(data + idx, data + idx + 10));
+        labels.push_back(label);
+        idx += 10;
+    }
+    return labels;
+}
+
+NGRAPH_TEST(HE_HEAAN, matmul_direct)
+{
+    // We only support HEAAN backend for now
+    auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
+        runtime::Backend::create("HE_HEAAN"));
+
+    size_t n = 20;
+    Shape shape{n, n};
+    vector<float> c_val(n * n, 2);
+
+    auto p = make_shared<op::Parameter>(element::f32, shape);
+    auto c = op::Constant::create(element::f32, shape, c_val);
+    auto r = make_shared<op::Dot>(p, c);
+    auto f = make_shared<Function>(r, op::ParameterVector{p});
+
+    auto p_tv = backend->create_tensor(element::f32, shape);
+    auto r_tv = backend->create_tensor(element::f32, shape);
+
+    vector<float> p_val(n * n, 3);
+    copy_data(p_tv, p_val);
+
+    backend->call(f, {r_tv}, {p_tv});
+}
+
+NGRAPH_TEST(HE_HEAAN, matmul_benchmark)
+{
+    // We only support HEAAN backend for now
+    auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
+        runtime::Backend::create("HE_HEAAN"));
+
+    size_t n = 20;
+    vector<float> x(n * n, 2);
+
+    // Load graph
+    const string filename = "matmul_" + to_string(n);
+    const string json_path =
+        file_util::path_join(HE_SERIALIZED_ZOO, "../../examples/cryptonets/" + filename + ".json");
+    const string json_string = file_util::read_file_to_string(json_path);
+    shared_ptr<Function> f = deserialize(json_string);
+    NGRAPH_INFO << "Deserialize graph";
+    NGRAPH_INFO << "x size " << x.size();
+
+    // Create input tensorview and copy tensors; create output tensorviews
+    auto parameters = f->get_parameters();
+    vector<shared_ptr<runtime::TensorView>> parameter_tvs;
+    for (auto parameter : parameters)
+    {
+        auto& shape = parameter->get_shape();
+        auto& type = parameter->get_element_type();
+        auto parameter_cipher_tv = backend->create_tensor(type, shape);
+        copy_data(parameter_cipher_tv, x);
+        parameter_tvs.push_back(parameter_cipher_tv);
+    }
+
+    auto results = f->get_results();
+    vector<shared_ptr<runtime::TensorView>> result_tvs;
+    for (auto result : results)
+    {
+        auto& shape = result->get_shape();
+        auto& type = result->get_element_type();
+        NGRAPH_INFO << "Creating output shape: " << join(shape, "x");
+        result_tvs.push_back(backend->create_tensor(type, shape));
+    }
+
+    // Run model
+    backend->call(f, result_tvs, parameter_tvs);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_no_batch)
+{
+    // Set batch_size = 1 for data loading
+    // However, we don't create batched tensors
+    size_t batch_size = 1;
+
+    // We only support HEAAN backend for now
+    auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
+        runtime::Backend::create("HE_HEAAN"));
+
+    // vector<float> x = read_binary_constant(
+    //     file_util::path_join(HE_SERIALIZED_ZOO, "weights/x_test_4096.bin"), batch_size * 784);
+    vector<float> x(batch_size * 784, 0);
+    vector<float> y = read_binary_constant(
+        file_util::path_join(HE_SERIALIZED_ZOO, "weights/y_test_4096.bin"), batch_size * 10);
+
+    // Global stop watch
+    stopwatch sw_global;
+    sw_global.start();
+
+    // Load graph
+    stopwatch sw_load_model;
+    sw_load_model.start();
+    const string filename = "mnist_cryptonets_batch_" + to_string(batch_size);
+    const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, filename + ".json");
+    const string json_string = file_util::read_file_to_string(json_path);
+    shared_ptr<Function> f = deserialize(json_string);
+    NGRAPH_INFO << "Deserialize graph";
+    NGRAPH_INFO << "x size " << x.size();
+    NGRAPH_INFO << "Inputs loaded";
+    sw_load_model.stop();
+    NGRAPH_INFO << "sw_load_model: " << sw_load_model.get_milliseconds() << "ms";
+
+    // Create input tensorview and copy tensors; create output tensorviews
+    stopwatch sw_encrypt_input;
+    sw_encrypt_input.start();
+    auto parameters = f->get_parameters();
+    vector<shared_ptr<runtime::TensorView>> parameter_tvs;
+    for (auto parameter : parameters)
+    {
+        auto& shape = parameter->get_shape();
+        auto& type = parameter->get_element_type();
+        auto parameter_cipher_tv = backend->create_tensor(type, shape);
+        NGRAPH_INFO << "Creating input shape: " << join(shape, "x");
+
+        if (shape == Shape{batch_size, 784})
+        {
+            NGRAPH_INFO << "Copying " << shape_size(shape) << " elements";
+            NGRAPH_INFO << "x is " << x.size() << " elements";
+            copy_data(parameter_cipher_tv, x);
+            parameter_tvs.push_back(parameter_cipher_tv);
+        }
+        else
+        {
+            NGRAPH_INFO << "Invalid shape" << join(shape, "x");
+            throw ngraph_error("Invalid shape " + shape_size(shape));
+        }
+    }
+
+    auto results = f->get_results();
+    vector<shared_ptr<runtime::TensorView>> result_tvs;
+    for (auto result : results)
+    {
+        auto& shape = result->get_shape();
+        auto& type = result->get_element_type();
+        NGRAPH_INFO << "Creating output shape: " << join(shape, "x");
+        result_tvs.push_back(backend->create_tensor(type, shape));
+    }
+    sw_encrypt_input.stop();
+    NGRAPH_INFO << "sw_encrypt_input: " << sw_encrypt_input.get_milliseconds() << "ms";
+
+    // Run model
+    NGRAPH_INFO << "calling function";
+    stopwatch sw_run_model;
+    sw_run_model.start();
+    backend->call(f, result_tvs, parameter_tvs);
+    sw_run_model.stop();
+    NGRAPH_INFO << "sw_run_model: " << sw_run_model.get_milliseconds() << "ms";
+
+    // Decrypt output
+    stopwatch sw_decrypt_output;
+    sw_decrypt_output.start();
+    auto result = read_vector<float>(result_tvs[0]);
+    sw_decrypt_output.stop();
+    NGRAPH_INFO << "sw_decrypt_output: " << sw_decrypt_output.get_milliseconds() << "ms";
+
+    // Stop global stop watch
+    sw_global.stop();
+    NGRAPH_INFO << "sw_global: " << sw_global.get_milliseconds() << "ms";
+
+    // Check prediction vs ground truth
+    vector<int> y_gt_label = batched_argmax(y);
+    vector<int> y_predicted_label = batched_argmax(result);
+    size_t error_count;
+    for (size_t i = 0; i < y_gt_label.size(); ++i)
+    {
+        if (y_gt_label[i] != y_predicted_label[i])
+        {
+            // NGRAPH_INFO << "index " << i << " y_gt_label != y_predicted_label: " << y_gt_label[i]
+            //             << " != " << y_predicted_label[i];
+            error_count++;
+        }
+    }
+    NGRAPH_INFO << "Accuracy: " << 1.f - (float)(error_count) / y.size();
+
+    // Print results
+    NGRAPH_INFO << "[Summary]";
+    NGRAPH_INFO << "sw_load_model: " << sw_load_model.get_milliseconds() << "ms";
+    NGRAPH_INFO << "sw_encrypt_input: " << sw_encrypt_input.get_milliseconds() << "ms";
+    NGRAPH_INFO << "sw_run_model: " << sw_run_model.get_milliseconds() << "ms";
+    NGRAPH_INFO << "sw_decrypt_output: " << sw_decrypt_output.get_milliseconds() << "ms";
+    NGRAPH_INFO << "sw_global: " << sw_global.get_milliseconds() << "ms";
+}
+
+static void run_cryptonets_benchmark(size_t batch_size)
+{
+    // We only support HEAAN backend for now
+    auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
+        runtime::Backend::create("HE_HEAAN"));
+
+    vector<float> x = read_binary_constant(
+        file_util::path_join(HE_SERIALIZED_ZOO, "weights/x_test_4096.bin"), batch_size * 784);
+    vector<float> y = read_binary_constant(
+        file_util::path_join(HE_SERIALIZED_ZOO, "weights/y_test_4096.bin"), batch_size * 10);
+
+    // Global stop watch
+    stopwatch sw_global;
+    sw_global.start();
+
+    // Load graph
+    stopwatch sw_load_model;
+    sw_load_model.start();
+    const string filename = "mnist_cryptonets_batch_" + to_string(batch_size);
+    const string json_path = file_util::path_join(HE_SERIALIZED_ZOO, filename + ".json");
+    const string json_string = file_util::read_file_to_string(json_path);
+    shared_ptr<Function> f = deserialize(json_string);
+    NGRAPH_INFO << "Deserialize graph";
+    NGRAPH_INFO << "x size " << x.size();
+    NGRAPH_INFO << "Inputs loaded";
+    sw_load_model.stop();
+    NGRAPH_INFO << "sw_load_model: " << sw_load_model.get_milliseconds() << "ms";
+
+    // Create input tensorview and copy tensors; create output tensorviews
+    stopwatch sw_encrypt_input;
+    sw_encrypt_input.start();
+    auto parameters = f->get_parameters();
+    vector<shared_ptr<runtime::TensorView>> parameter_tvs;
+    for (auto parameter : parameters)
+    {
+        auto& shape = parameter->get_shape();
+        auto& type = parameter->get_element_type();
+        auto parameter_cipher_tv = backend->create_tensor(type, shape, true);
+        NGRAPH_INFO << "Creating input shape: " << join(shape, "x");
+
+        if (shape == Shape{batch_size, 784})
+        {
+            NGRAPH_INFO << "Copying " << shape_size(shape) << " elements";
+            NGRAPH_INFO << "x is " << x.size() << " elements";
+            copy_data(parameter_cipher_tv, x);
+            parameter_tvs.push_back(parameter_cipher_tv);
+        }
+        else
+        {
+            NGRAPH_INFO << "Invalid shape" << join(shape, "x");
+            throw ngraph_error("Invalid shape " + shape_size(shape));
+        }
+    }
+
+    auto results = f->get_results();
+    vector<shared_ptr<runtime::TensorView>> result_tvs;
+    for (auto result : results)
+    {
+        auto& shape = result->get_shape();
+        auto& type = result->get_element_type();
+        NGRAPH_INFO << "Creating output shape: " << join(shape, "x");
+        result_tvs.push_back(backend->create_tensor(type, shape, true));
+    }
+    sw_encrypt_input.stop();
+    NGRAPH_INFO << "sw_encrypt_input: " << sw_encrypt_input.get_milliseconds() << "ms";
+
+    // Run model
+    NGRAPH_INFO << "calling function";
+    stopwatch sw_run_model;
+    sw_run_model.start();
+    backend->call(f, result_tvs, parameter_tvs);
+    sw_run_model.stop();
+    NGRAPH_INFO << "sw_run_model: " << sw_run_model.get_milliseconds() << "ms";
+
+    // Decrypt output
+    stopwatch sw_decrypt_output;
+    sw_decrypt_output.start();
+    auto result = generalized_read_vector<float>(result_tvs[0]);
+    sw_decrypt_output.stop();
+    NGRAPH_INFO << "sw_decrypt_output: " << sw_decrypt_output.get_milliseconds() << "ms";
+
+    // Stop global stop watch
+    sw_global.stop();
+    NGRAPH_INFO << "sw_global: " << sw_global.get_milliseconds() << "ms";
+
+    // Check prediction vs ground truth
+    vector<int> y_gt_label = batched_argmax(y);
+    vector<int> y_predicted_label = batched_argmax(result);
+    size_t error_count;
+    for (size_t i = 0; i < y_gt_label.size(); ++i)
+    {
+        if (y_gt_label[i] != y_predicted_label[i])
+        {
+            // NGRAPH_INFO << "index " << i << " y_gt_label != y_predicted_label: " << y_gt_label[i]
+            //             << " != " << y_predicted_label[i];
+            error_count++;
+        }
+    }
+    NGRAPH_INFO << "Accuracy: " << 1.f - (float)(error_count) / y.size();
+
+    // Print results
+    NGRAPH_INFO << "[Summary]";
+    NGRAPH_INFO << "sw_load_model: " << sw_load_model.get_milliseconds() << "ms";
+    NGRAPH_INFO << "sw_encrypt_input: " << sw_encrypt_input.get_milliseconds() << "ms";
+    NGRAPH_INFO << "sw_run_model: " << sw_run_model.get_milliseconds() << "ms";
+    NGRAPH_INFO << "sw_decrypt_output: " << sw_decrypt_output.get_milliseconds() << "ms";
+    NGRAPH_INFO << "sw_global: " << sw_global.get_milliseconds() << "ms";
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_1)
+{
+    run_cryptonets_benchmark(1);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_2)
+{
+    run_cryptonets_benchmark(2);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_4)
+{
+    run_cryptonets_benchmark(4);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_8)
+{
+    run_cryptonets_benchmark(8);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_16)
+{
+    run_cryptonets_benchmark(16);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_32)
+{
+    run_cryptonets_benchmark(32);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_64)
+{
+    run_cryptonets_benchmark(64);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_128)
+{
+    run_cryptonets_benchmark(128);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_256)
+{
+    run_cryptonets_benchmark(256);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_512)
+{
+    run_cryptonets_benchmark(512);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_1024)
+{
+    run_cryptonets_benchmark(1024);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_2048)
+{
+    run_cryptonets_benchmark(2048);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_4096)
+{
+    run_cryptonets_benchmark(4096);
+}
 
 NGRAPH_TEST(${BACKEND_NAME}, tf_mnist_cryptonets_batch)
 {
