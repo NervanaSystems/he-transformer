@@ -1,5 +1,44 @@
-This example depends on https://github.com/NervanaSystems/ngraph-tensorflow-bridge/
+This example demonstrates the [Cryptonets](https://www.microsoft.com/en-us/research/publication/cryptonets-applying-neural-networks-to-encrypted-data-with-high-throughput-and-accuracy/) network, which achieves ~99% accuracy on MNIST.
 
-After running this, call the unit-test ./test/unit-test/*mnist*
+This example depends on the [ngraph-tensorflow bridge](https://github.com/NervanaSystems/ngraph-tensorflow-bridge/). Make sure the python environment with ng-tf bridge is active, i.e. run `source ~/repos/venvs/he3/bin/activate`.
 
-TODO: expand
+# Train the network
+First, train the network using
+```
+python train.py
+```
+This trains the network briefly and stores the network weights.
+
+# Test the network
+To test the network, run
+```
+NGRAPH_TF_BACKEND=HE:HEAAN python test.py
+```
+This runs inference on the Cryptonets network using the HEAAN backend.
+
+For optimal performance, install Open MP and call the commands with `OMP_NUM_THREADS=$(nproc)$`, i.e.
+```
+OMP_NUM_THREADS=$(nproc)$` NGRAPH_TF_BACKEND=HE:HEAAN python test.py
+```
+
+To export the serialized model for use in C++ integration with nGraph, run
+```
+NGRAPH_ENABLE_SERIALIZE=1 python test.py --save_batch=1 [--batch_size=BATCH_SIZE]
+```
+
+This will generate:
+* `mnist_cryptonets_batch_[BATCH_SIZE].json`, which is the serialized nGraph computation graph.
+* `x_test_[BATCH_SIZE].bin`, which saves `BATCH_SIZE` inputs from the test data
+* `y_label_[BATCH_SIZE].bin`, the corresponding labels
+
+To test the network with the C++ nGraph integration, copy these files to the unit-tests,
+```
+cp mnist_cryptonets_batch_[BATCH_SIZE].json ../../test/model
+cp x_test_[BATCH_SIZE].bin ../../test/model
+cp y_label_[BATCH_SIZE].bin ../../test/model
+```
+and run the unit test
+```
+cd ../../build
+./test/unit-test 
+```
