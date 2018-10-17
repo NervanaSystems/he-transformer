@@ -37,7 +37,7 @@ void runtime::he::kernel::heaan::scalar_add(
     }
     else
     { */
-    if (arg0 == arg1)
+    /*if (arg0 == arg1)
     {
         NGRAPH_INFO << " (arg0 == arg1)";
     }
@@ -49,23 +49,30 @@ void runtime::he::kernel::heaan::scalar_add(
     {
         NGRAPH_INFO << "arg1 == out !";
     }
+     */
     out->m_ciphertext = he_heaan_backend->get_scheme()->add(arg1->m_ciphertext, arg0->m_ciphertext);
 
    auto plain = he_heaan_backend->create_empty_plaintext();
    he_heaan_backend->decrypt(plain, out);
    float plain_val = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(plain)->m_plaintexts[0];
 
-   std::mutex g_pages_mutex;
-
-
-   if (true || plain_val > 1e50 || plain_val < -1e50)
+   if (plain_val > 1e50 || plain_val < -1e50)
    {
-        std::lock_guard<std::mutex> guard(g_pages_mutex);
-        NGRAPH_INFO << "infail -> " << plain_val;
-        print_ciphertext(arg0, he_heaan_backend, "./arg0" + to_string(plain_val));
-        print_ciphertext(arg1, he_heaan_backend, "./arg1" + to_string(plain_val));
-        print_ciphertext(out, he_heaan_backend, "./out" + to_string(plain_val));
-        exit(0);
+       #pragma omp critical
+       {
+            NGRAPH_INFO << "infail -> " << plain_val;
+            print_ciphertext(arg0, he_heaan_backend, "./arg0_" + to_string(plain_val));
+            print_ciphertext(arg1, he_heaan_backend, "./arg1_" + to_string(plain_val));
+            print_ciphertext(out, he_heaan_backend, "./out_" + to_string(plain_val));
+
+            auto secretKey = he_heaan_backend->get_secret_key();
+            std::fstream fs;
+            fs.open("secret_key_cipher.txt", std::fstream::in;
+            fs << secretKey->sx << "\n";
+            fs.close();
+
+            exit(0);
+       }
 
    }
 }

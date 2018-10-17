@@ -132,11 +132,11 @@ void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HECiphertext>
             he_heaan_backend->decrypt(plain_out, out_heaan);
             float plain_out_val = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(plain_out)->m_plaintexts[0];
 
-            NGRAPH_INFO << "Adding (cipher) " << arg0_plain << " + (cipher) " << arg1_plain
-                << " => " << plain_out_val;
 
             if (plain_out_val > 1e50 || plain_out_val < -1e50)
             {
+                NGRAPH_INFO << "Adding (cipher) " << arg0_plain << " + (cipher) " << arg1_plain
+                    << " => " << plain_out_val;
                 NGRAPH_INFO << "plain val " << plain_out_val << " incorrect!";
                 exit(0);
             }

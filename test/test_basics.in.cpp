@@ -3644,3 +3644,200 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_exterior_4d_2x0x3x2)
     backend->call_with_validate(f, {result}, {a});
     EXPECT_EQ(expected, read_vector<float>(result));
 }
+
+#include <sstream>
+#include <iterator>
+#include <iostream>
+#include <vector>
+#include <string>
+#include <sstream>
+#include <iterator>
+#include <iostream>
+#include <fstream>
+#include <string>
+
+
+
+
+NGRAPH_TEST(${BACKEND_NAME}, fabi)
+{
+    using namespace std;
+    auto he_heaan_backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
+        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+
+    hash<string> hasher;
+    size_t ax1_hash, ax2_hash, bx1_hash, bx2_hash;
+
+
+    // Cipher 1
+    auto cipher1 = heaan::Ciphertext();
+    {
+        cipher1.logp = 32;
+        cipher1.logq = 32;
+        cipher1.slots = 1;
+        cipher1.isComplex = false;
+        ZZX ax;
+        ZZX bx;
+
+        std::string line;
+        size_t alen = 0;
+        size_t blen = 0;
+        string ax_str;
+        string bx_str;
+
+        std::ifstream arg0("arg0_inf_cipher.txt");
+        while ( getline (arg0,line) )
+        {
+            std::istringstream buf(line);
+            std::istream_iterator<std::string> beg(buf), end;
+            std::vector<std::string> tokens(beg, end);
+
+            if (tokens[0] == "./arg0_infax")
+            {
+                for (size_t i = 1 ; i < tokens.size(); ++i)
+                {
+                    ax_str += tokens[i];
+                }
+            }
+            else if (tokens[0] == "./arg0_infbx")
+            {
+                for (size_t i = 1 ; i < tokens.size(); ++i)
+                {
+                    bx_str += tokens[i];
+                }
+            }
+        }
+        ax_str.erase(std::remove(ax_str.begin(), ax_str.end(), '['), ax_str.end());
+        ax_str.erase(std::remove(ax_str.begin(), ax_str.end(), ']'), ax_str.end());
+        bx_str.erase(std::remove(bx_str.begin(), bx_str.end(), '['), bx_str.end());
+        bx_str.erase(std::remove(bx_str.begin(), bx_str.end(), ']'), bx_str.end());
+
+        ax.SetLength(ax_str.size());
+        bx.SetLength(bx_str.size());
+        for (size_t i =0; i < ax_str.size(); ++i)
+        {
+            ax[i] = stoi(ax_str.substr(i,1));
+        }
+        cipher1.ax = ax;
+        for (size_t i =0; i < bx_str.size(); ++i)
+        {
+            bx[i] = stoi(bx_str.substr(i,1));
+        }
+        cipher1.bx = bx;
+
+        ax1_hash = hasher(ax_str);
+        bx1_hash = hasher(bx_str);
+
+        NGRAPH_INFO << "ax1_hash " << ax1_hash;
+        NGRAPH_INFO << "bx1_hash " << bx1_hash;
+    }
+    NGRAPH_INFO << "Read cipher 1";
+
+    // Cipher 2
+   auto cipher2 = heaan::Ciphertext();
+   {
+        cipher2.logp = 32;
+        cipher2.logq = 32;
+        cipher2.slots = 1;
+        cipher2.isComplex = false;
+        ZZX ax2;
+        ZZX bx2;
+
+        std::string line;
+        size_t alen = 0;
+        size_t blen = 0;
+        string ax2_str;
+        string bx2_str;
+
+        std::ifstream arg1("arg1_inf_cipher.txt");
+        while ( getline (arg1,line) )
+        {
+            std::istringstream buf(line);
+            std::istream_iterator<std::string> beg(buf), end;
+            std::vector<std::string> tokens(beg, end);
+
+            if (tokens[0] == "./arg1_infax")
+            {
+                for (size_t i = 1 ; i < tokens.size(); ++i)
+                {
+                    ax2_str += tokens[i];
+                }
+            }
+            else if (tokens[0] == "./arg1_infbx")
+            {
+                for (size_t i = 1 ; i < tokens.size(); ++i)
+                {
+                    bx2_str += tokens[i];
+                }
+            }
+        }
+        ax2_str.erase(std::remove(ax2_str.begin(), ax2_str.end(), '['), ax2_str.end());
+        ax2_str.erase(std::remove(ax2_str.begin(), ax2_str.end(), ']'), ax2_str.end());
+        bx2_str.erase(std::remove(bx2_str.begin(), bx2_str.end(), '['), bx2_str.end());
+        bx2_str.erase(std::remove(bx2_str.begin(), bx2_str.end(), ']'), bx2_str.end());
+
+        ax2.SetLength(ax2_str.size());
+        bx2.SetLength(bx2_str.size());
+       // NGRAPH_INFO << "ax_str " << ax_str;
+        //NGRAPH_INFO << "bx_str " << bx_str;
+        for (size_t i =0; i < ax2_str.size(); ++i)
+        {
+            ax2[i] = stoi(ax2_str.substr(i,1));
+        }
+        cipher2.ax = ax2;
+        for (size_t i =0; i < bx2_str.size(); ++i)
+        {
+            bx2[i] = stoi(bx2_str.substr(i,1));
+        }
+        cipher2.bx = bx2;
+
+        ax2_hash = hasher(ax2_str);
+        bx2_hash = hasher(bx2_str);
+
+        NGRAPH_INFO << "ax2_hash " << ax2_hash;
+        NGRAPH_INFO << "bx2_hash " << bx2_hash;
+   }
+    NGRAPH_INFO << "Read cipher 2";
+
+    // Secret Key
+    {
+            auto secretKey = he_heaan_backend->get_secret_key();
+        std::fstream fs;
+        fs.open("secret_key_cipher.txt", std::fstream::in);
+
+        std::ifstream sk("arg1_inf_cipher.txt");
+        std::string line;
+        while ( getline (sk,line) )
+        {
+            line.erase(std::remove(line.begin(), line.end(), '['), line.end());
+            line.erase(std::remove(line.begin(), line.end(), ']'), line.end());
+            line.erase(std::remove(line.begin(), line.end(), ' '), line.end());
+        }
+
+        ZZX sk_zzx;
+        sk_zzx.SetLength(line.size());
+        for (size_t i =0; i < line.size(); ++i)
+        {
+            sk_zzx[i] = stoi(line.substr(i,1));
+        }
+        NGRAPH_INFO << "secret key " << sk_zzx;
+
+
+
+    }
+
+
+
+   auto res = he_heaan_backend->get_scheme()->add(cipher1, cipher2);
+
+   auto secretKey = he_heaan_backend->get_secret_key();
+   NGRAPH_INFO << "secretKey " << secretKey->sx;
+
+   complex<double> dval = he_heaan_backend->get_scheme()->decryptSingle(*secretKey, res);
+
+   complex<double> val1  = he_heaan_backend->get_scheme()->decryptSingle(*secretKey, cipher1);
+   complex<double> val2 = he_heaan_backend->get_scheme()->decryptSingle(*secretKey, cipher2);
+
+   NGRAPH_INFO << val1 << " + " << val2 << " = " << dval;
+
+}
