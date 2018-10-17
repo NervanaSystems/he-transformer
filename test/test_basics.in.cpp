@@ -3672,72 +3672,76 @@ NGRAPH_TEST(${BACKEND_NAME}, fabi)
     // Cipher 1
     auto cipher1 = heaan::Ciphertext();
     {
-        cipher1.logp = 32;
-        cipher1.logq = 32;
         cipher1.slots = 1;
         cipher1.isComplex = false;
-        ZZX ax;
-        ZZX bx;
+        ZZX ax1;
+        ZZX bx1;
 
         std::string line;
-        size_t alen = 0;
-        size_t blen = 0;
-        string ax_str;
-        string bx_str;
+        string ax_str1;
+        string bx_str1;
 
-        std::ifstream arg0("arg0_inf_cipher.txt");
+        std::ifstream arg0("arg0_cipher.txt");
         while ( getline (arg0,line) )
         {
             std::istringstream buf(line);
             std::istream_iterator<std::string> beg(buf), end;
             std::vector<std::string> tokens(beg, end);
 
-            if (tokens[0] == "./arg0_infax")
+            if (tokens[0] == "./arg0ax")
             {
                 for (size_t i = 1 ; i < tokens.size(); ++i)
                 {
-                    ax_str += tokens[i];
+                    ax_str1 += tokens[i];
                 }
             }
-            else if (tokens[0] == "./arg0_infbx")
+            else if (tokens[0] == "./arg0bx")
             {
                 for (size_t i = 1 ; i < tokens.size(); ++i)
                 {
-                    bx_str += tokens[i];
+                    bx_str1 += tokens[i];
                 }
             }
+            else if (tokens[0] == "./arg0logp")
+            {
+                cipher1.logp = stoi(tokens[1]);
+            }
+            else if (tokens[0] == "./arg0logq")
+            {
+                cipher1.logq = stoi(tokens[1]);
+            }
         }
-        ax_str.erase(std::remove(ax_str.begin(), ax_str.end(), '['), ax_str.end());
-        ax_str.erase(std::remove(ax_str.begin(), ax_str.end(), ']'), ax_str.end());
-        bx_str.erase(std::remove(bx_str.begin(), bx_str.end(), '['), bx_str.end());
-        bx_str.erase(std::remove(bx_str.begin(), bx_str.end(), ']'), bx_str.end());
+        ax_str1.erase(std::remove(ax_str1.begin(), ax_str1.end(), '['), ax_str1.end());
+        ax_str1.erase(std::remove(ax_str1.begin(), ax_str1.end(), ']'), ax_str1.end());
+        bx_str1.erase(std::remove(bx_str1.begin(), bx_str1.end(), '['), bx_str1.end());
+        bx_str1.erase(std::remove(bx_str1.begin(), bx_str1.end(), ']'), bx_str1.end());
 
-        ax.SetLength(ax_str.size());
-        bx.SetLength(bx_str.size());
-        for (size_t i =0; i < ax_str.size(); ++i)
+        ax1.SetLength(ax_str1.size());
+        bx1.SetLength(bx_str1.size());
+        for (size_t i =0; i < ax_str1.size(); ++i)
         {
-            ax[i] = stoi(ax_str.substr(i,1));
+            ax1[i] = stoi(ax_str1.substr(i,1));
         }
-        cipher1.ax = ax;
-        for (size_t i =0; i < bx_str.size(); ++i)
+        cipher1.ax = ax1;
+        for (size_t i =0; i < bx_str1.size(); ++i)
         {
-            bx[i] = stoi(bx_str.substr(i,1));
+            bx1[i] = stoi(bx_str1.substr(i,1));
         }
-        cipher1.bx = bx;
+        cipher1.bx = bx1;
 
-        ax1_hash = hasher(ax_str);
-        bx1_hash = hasher(bx_str);
+        ax1_hash = ax_str1.size();
+        bx1_hash = bx_str1.size();
 
         NGRAPH_INFO << "ax1_hash " << ax1_hash;
         NGRAPH_INFO << "bx1_hash " << bx1_hash;
     }
+    NGRAPH_INFO << "cipher1.logp " << cipher1.logp;
+    NGRAPH_INFO << "cipher1.logq " << cipher1.logq;
     NGRAPH_INFO << "Read cipher 1";
 
     // Cipher 2
    auto cipher2 = heaan::Ciphertext();
    {
-        cipher2.logp = 32;
-        cipher2.logq = 32;
         cipher2.slots = 1;
         cipher2.isComplex = false;
         ZZX ax2;
@@ -3749,26 +3753,34 @@ NGRAPH_TEST(${BACKEND_NAME}, fabi)
         string ax2_str;
         string bx2_str;
 
-        std::ifstream arg1("arg1_inf_cipher.txt");
+        std::ifstream arg1("arg1_cipher.txt");
         while ( getline (arg1,line) )
         {
             std::istringstream buf(line);
             std::istream_iterator<std::string> beg(buf), end;
             std::vector<std::string> tokens(beg, end);
 
-            if (tokens[0] == "./arg1_infax")
+            if (tokens[0] == "./arg1ax")
             {
                 for (size_t i = 1 ; i < tokens.size(); ++i)
                 {
                     ax2_str += tokens[i];
                 }
             }
-            else if (tokens[0] == "./arg1_infbx")
+            else if (tokens[0] == "./arg1bx")
             {
                 for (size_t i = 1 ; i < tokens.size(); ++i)
                 {
                     bx2_str += tokens[i];
                 }
+            }
+            else if (tokens[0] == "./arg1logp")
+            {
+                cipher2.logp = stoi(tokens[1]);
+            }
+            else if (tokens[0] == "./arg1logq")
+            {
+                cipher2.logq = stoi(tokens[1]);
             }
         }
         ax2_str.erase(std::remove(ax2_str.begin(), ax2_str.end(), '['), ax2_str.end());
@@ -3791,12 +3803,14 @@ NGRAPH_TEST(${BACKEND_NAME}, fabi)
         }
         cipher2.bx = bx2;
 
-        ax2_hash = hasher(ax2_str);
-        bx2_hash = hasher(bx2_str);
+        ax2_hash = ax2_str.size();
+        bx2_hash = bx2_str.size();
 
         NGRAPH_INFO << "ax2_hash " << ax2_hash;
         NGRAPH_INFO << "bx2_hash " << bx2_hash;
    }
+    NGRAPH_INFO << "cipher2.logp " << cipher2.logp;
+    NGRAPH_INFO << "cipher2.logq " << cipher2.logq;
     NGRAPH_INFO << "Read cipher 2";
 
     // Secret Key
@@ -3812,7 +3826,9 @@ NGRAPH_TEST(${BACKEND_NAME}, fabi)
 
     ZZX sk_zzx;
 
-    std::vector<int> digits;
+    std::vector<long> digits;
+
+    NGRAPH_INFO << "line size " << line.size();
 
 
     for (size_t i =0; i < line.size(); ++i)
@@ -3832,7 +3848,7 @@ NGRAPH_TEST(${BACKEND_NAME}, fabi)
         sk_zzx[i] = digits[i];
     }
 
-    // NGRAPH_INFO << "secret key hash " << hasher(sk_zzx);
+    NGRAPH_INFO << "secret key size " << digits.size();
 
 
 
@@ -3842,7 +3858,7 @@ NGRAPH_TEST(${BACKEND_NAME}, fabi)
 
    secretKey->sx = sk_zzx;
    // NGRAPH_INFO << "secretKey " << secretKey->sx;
-
+    NGRAPH_INFO << "about to decrypt single";
    complex<double> dval = he_heaan_backend->get_scheme()->decryptSingle(*secretKey, res);
    NGRAPH_INFO << "decrypted single";
 

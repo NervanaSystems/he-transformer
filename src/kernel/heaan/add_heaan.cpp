@@ -61,13 +61,13 @@ void runtime::he::kernel::heaan::scalar_add(
        #pragma omp critical
        {
             NGRAPH_INFO << "infail -> " << plain_val;
-            print_ciphertext(arg0, he_heaan_backend, "./arg0_" + to_string(plain_val));
-            print_ciphertext(arg1, he_heaan_backend, "./arg1_" + to_string(plain_val));
-            print_ciphertext(out, he_heaan_backend, "./out_" + to_string(plain_val));
+            print_ciphertext(arg0, he_heaan_backend, "./arg0");
+            print_ciphertext(arg1, he_heaan_backend, "./arg1");
+            print_ciphertext(out, he_heaan_backend, "./out");
 
             auto secretKey = he_heaan_backend->get_secret_key();
             std::fstream fs;
-            fs.open("secret_key_cipher.txt", std::fstream::in);
+            fs.open("secret_key_cipher.txt", std::fstream::out);
             fs << secretKey->sx << "\n";
             fs.close();
 
