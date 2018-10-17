@@ -47,7 +47,7 @@ void runtime::he::kernel::pad(
     //       to return -inf when arg1[0] is used. Luckily since we are doing mnist, the output
     //       values near the edge of the image are all zero in the first conv later, so it happens
     //       to pad zero in our case. This is not true for other models.
-    std::shared_ptr<runtime::he::HECiphertext> pad_val = arg0[0];
+    std::shared_ptr<runtime::he::HECiphertext> pad_val = arg1[0];
 
     Coordinate input_start(arg0_shape.size(), 0); // start at (0,0,...,0)
     Coordinate input_end =

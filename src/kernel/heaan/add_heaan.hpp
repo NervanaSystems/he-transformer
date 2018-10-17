@@ -39,6 +39,10 @@ namespace ngraph
             {
                 namespace heaan
                 {
+                    void print_ciphertext(const std::shared_ptr<runtime::he::HeaanCiphertextWrapper>& out,
+                        const std::shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend,
+                        const std::string& name);
+
                     void
                         scalar_add(const std::shared_ptr<runtime::he::HeaanCiphertextWrapper>& arg0,
                                    const std::shared_ptr<runtime::he::HeaanCiphertextWrapper>& arg1,
