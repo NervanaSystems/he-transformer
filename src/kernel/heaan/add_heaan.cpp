@@ -67,7 +67,7 @@ void runtime::he::kernel::heaan::scalar_add(
 
             auto secretKey = he_heaan_backend->get_secret_key();
             std::fstream fs;
-            fs.open("secret_key_cipher.txt", std::fstream::in;
+            fs.open("secret_key_cipher.txt", std::fstream::in);
             fs << secretKey->sx << "\n";
             fs.close();
 

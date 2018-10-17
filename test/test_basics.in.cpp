@@ -3800,40 +3800,51 @@ NGRAPH_TEST(${BACKEND_NAME}, fabi)
     NGRAPH_INFO << "Read cipher 2";
 
     // Secret Key
+    std::ifstream sk("secret_key_cipher.txt");
+    std::string line;
+    while ( getline (sk,line) )
     {
-            auto secretKey = he_heaan_backend->get_secret_key();
-        std::fstream fs;
-        fs.open("secret_key_cipher.txt", std::fstream::in);
-
-        std::ifstream sk("arg1_inf_cipher.txt");
-        std::string line;
-        while ( getline (sk,line) )
-        {
-            line.erase(std::remove(line.begin(), line.end(), '['), line.end());
-            line.erase(std::remove(line.begin(), line.end(), ']'), line.end());
-            line.erase(std::remove(line.begin(), line.end(), ' '), line.end());
-        }
-
-        ZZX sk_zzx;
-        sk_zzx.SetLength(line.size());
-        for (size_t i =0; i < line.size(); ++i)
-        {
-            sk_zzx[i] = stoi(line.substr(i,1));
-        }
-        NGRAPH_INFO << "secret key " << sk_zzx;
-
-
-
+        line.erase(std::remove(line.begin(), line.end(), '['), line.end());
+        line.erase(std::remove(line.begin(), line.end(), ']'), line.end());
+        line.erase(std::remove(line.begin(), line.end(), ' '), line.end());
+        break;
     }
+
+    ZZX sk_zzx;
+
+    std::vector<int> digits;
+
+
+    for (size_t i =0; i < line.size(); ++i)
+    {
+        if (line.substr(i,1) == "-")
+        {
+            digits.push_back(-1);
+            ++i;
+        }
+        else{
+            digits.push_back(stoi(line.substr(i,1)));
+        }
+    }
+    sk_zzx.SetLength(digits.size());
+    for (size_t i = 0; i < digits.size(); ++i)
+    {
+        sk_zzx[i] = digits[i];
+    }
+
+    // NGRAPH_INFO << "secret key hash " << hasher(sk_zzx);
 
 
 
    auto res = he_heaan_backend->get_scheme()->add(cipher1, cipher2);
 
    auto secretKey = he_heaan_backend->get_secret_key();
-   NGRAPH_INFO << "secretKey " << secretKey->sx;
+
+   secretKey->sx = sk_zzx;
+   // NGRAPH_INFO << "secretKey " << secretKey->sx;
 
    complex<double> dval = he_heaan_backend->get_scheme()->decryptSingle(*secretKey, res);
+   NGRAPH_INFO << "decrypted single";
 
    complex<double> val1  = he_heaan_backend->get_scheme()->decryptSingle(*secretKey, cipher1);
    complex<double> val2 = he_heaan_backend->get_scheme()->decryptSingle(*secretKey, cipher2);
