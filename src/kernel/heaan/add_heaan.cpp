@@ -84,16 +84,16 @@ void runtime::he::kernel::heaan::print_ciphertext(const shared_ptr<runtime::he::
     std::fstream fs;
     fs.open(name + "_cipher.txt", std::fstream::in | std::fstream::out  | std::fstream::app);
     fs << name << " ciphertext" << "\n";
-    fs << name << "logp " <<  out->m_ciphertext.logp << "\n";
-    fs << name << "logq " <<  out->m_ciphertext.logp << "\n";
-    fs << name << "slots " <<  out->m_ciphertext.slots << "\n";
-    fs << name << "isComplex " <<  out->m_ciphertext.isComplex << "\n";
+    fs << "logp " <<  out->m_ciphertext.logp << "\n";
+    fs << "logq " <<  out->m_ciphertext.logp << "\n";
+    fs << "slots " <<  out->m_ciphertext.slots << "\n";
+    fs << "isComplex " <<  out->m_ciphertext.isComplex << "\n";
     auto plain = he_heaan_backend->create_empty_plaintext();
     he_heaan_backend->decrypt(plain, out);
     float plain_val = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(plain)->m_plaintexts[0];
-    fs << name << " plain value " << plain_val << "\n";
-    fs << name << "ax " <<  out->m_ciphertext.ax << "\n";
-    fs << name << "bx " <<  out->m_ciphertext.bx << "\n";
+    fs << " plain value " << plain_val << "\n";
+    fs << "ax " <<  out->m_ciphertext.ax << "\n";
+    fs << "bx " <<  out->m_ciphertext.bx << "\n";
     fs.close();
 
 
