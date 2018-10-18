@@ -261,7 +261,8 @@ void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HECiphertext>
 
             if (arg1_heaan->m_plaintexts == zero->m_plaintexts)
             {
-                out = arg0;
+                NGRAPH_INFO << "zero optimization!";
+                out = std::make_shared<runtime::he::HECiphertext>(*arg0);
             }
             else
             {

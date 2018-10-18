@@ -3792,7 +3792,7 @@ NGRAPH_TEST(${BACKEND_NAME}, fabi)
 
 
 
-    auto res = he_heaan_backend->get_scheme()->add(cipher1, cipher2);
+    auto res = he_heaan_backend->get_scheme()->add(cipher2, cipher1 );
 
     NGRAPH_INFO << "Added ciphertexts";
 

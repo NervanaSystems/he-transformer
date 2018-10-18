@@ -235,14 +235,13 @@ void ngraph::runtime::he::kernel::dot_template(const vector<shared_ptr<S>>& arg0
             plain_val = make_shared<runtime::he::HeaanPlaintextWrapper>();
             he_heaan_backend->decrypt(plain_val, prod);
             float mult_val = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(plain_val)->m_plaintexts[0];
-            NGRAPH_INFO << "Prod after scalar multiply " << mult_val;
+            // NGRAPH_INFO << "Prod after scalar multiply " << mult_val;
             if (mult_val < -1e50 || mult_val > 1e50)
             {
                 NGRAPH_INFO << "Prod failed!";
                 exit(0);
             }
 
-            NGRAPH_INFO << "Dot type: " << type.c_type_string();
 
             std::shared_ptr<runtime::he::HECiphertext> sum_tmp = he_heaan_backend->create_empty_ciphertext(batch_size);
            // dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(sum_tmp)->m_ciphertext =
@@ -258,7 +257,7 @@ void ngraph::runtime::he::kernel::dot_template(const vector<shared_ptr<S>>& arg0
             plain_val2 = make_shared<runtime::he::HeaanPlaintextWrapper>();
             he_heaan_backend->decrypt(plain_val2, sum);
             float add_val = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(plain_val2)->m_plaintexts[0];
-            NGRAPH_INFO << "Sum after scalar add " << add_val;
+            // NGRAPH_INFO << "Sum after scalar add " << add_val;
             if (add_val < -1e50 || add_val > 1e50)
             {
                 NGRAPH_INFO << "Sum failed!";

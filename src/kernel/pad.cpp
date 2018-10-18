@@ -49,6 +49,17 @@ void runtime::he::kernel::pad(
     //       to pad zero in our case. This is not true for other models.
     std::shared_ptr<runtime::he::HECiphertext> pad_val = arg1[0];
 
+    auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);
+    std::shared_ptr<runtime::he::HEPlaintext> plaintext =
+            dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(
+                he_heaan_backend->create_empty_plaintext());
+
+    he_heaan_backend->decrypt(plaintext, pad_val);
+
+    float val=  dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(plaintext)->m_plaintexts[0];
+
+    NGRAPH_INFO << "val " << val;
+
     Coordinate input_start(arg0_shape.size(), 0); // start at (0,0,...,0)
     Coordinate input_end =
         out_shape; // end at (d'0,d'1,...,d'n), the outer corner of the post-padding shape
