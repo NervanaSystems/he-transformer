@@ -3763,9 +3763,30 @@ NGRAPH_TEST(${BACKEND_NAME}, fabi)
 
     heaan::SecretKey secretKey(read_secret_key("secret_key_cipher.txt"));
 
+    ZZ max = cipher1.ax[0];
+    for (auto i = 0; i < 8191; ++i)
+    {
+        if (cipher1.ax[i] > max)
+        {
+            max = cipher1.ax[i];
+        }
+        if (cipher1.bx[i] > max)
+        {
+            max = cipher1.bx[i];
+        }
+        if (cipher2.ax[i] > max)
+        {
+            max = cipher2.ax[i];
+        }
+        if (cipher2.bx[i] > max)
+        {
+            max = cipher2.bx[i];
+        }
 
-    // NGRAPH_INFO << "adding enc key";
-    //he_heaan_backend->get_scheme()->addEncKey(secretKey);
+    }
+    NGRAPH_INFO << "max elem " << max;
+
+
     //auto enc_key = he_heaan_backend->get_scheme()->keyMap[0];
 
     //auto test = he_heaan_backend->get_scheme()->encryptSingle(1.234, 32, 32);
@@ -3775,11 +3796,11 @@ NGRAPH_TEST(${BACKEND_NAME}, fabi)
 
     NGRAPH_INFO << "Decrypting val1";
     complex<double> val1  = he_heaan_backend->get_scheme()->decryptSingle(secretKey, cipher1);
-    NGRAPH_INFO << "val1 " << val1;
+    NGRAPH_INFO << "val1 " << std::setprecision(10) << val1;
 
     NGRAPH_INFO << "Decrypting val2";
     complex<double> val2 = he_heaan_backend->get_scheme()->decryptSingle(secretKey, cipher2);
-    NGRAPH_INFO << "val2 " << val2;
+    NGRAPH_INFO << "val2 " << std::setprecision(10) << val2;
 
     /* cipher1.logp = 64;
     cipher1.logq = 64;
@@ -3788,11 +3809,11 @@ NGRAPH_TEST(${BACKEND_NAME}, fabi)
 
     NGRAPH_INFO << "Decrypting cipher_out";
     complex<double> out_val = he_heaan_backend->get_scheme()->decryptSingle(secretKey, cipher_out);
-    NGRAPH_INFO << "out_val " << out_val;
+    NGRAPH_INFO << "out_val " << std::setprecision(10) << out_val;
 
 
 
-    auto res = he_heaan_backend->get_scheme()->add(cipher2, cipher1 );
+    auto res = he_heaan_backend->get_scheme()->add(cipher1, cipher2 );
 
     NGRAPH_INFO << "Added ciphertexts";
 
@@ -3802,6 +3823,6 @@ NGRAPH_TEST(${BACKEND_NAME}, fabi)
     NGRAPH_INFO << "decrypted single";
 
 
-    NGRAPH_INFO << val1 << " + " << val2 << " = " << dval;
+    NGRAPH_INFO << std::setprecision(10) << val1 << " + " << val2 << " = " << dval;
 
 }

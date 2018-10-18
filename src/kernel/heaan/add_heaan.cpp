@@ -56,6 +56,12 @@ void runtime::he::kernel::heaan::scalar_add(
    he_heaan_backend->decrypt(plain, out);
    float plain_val = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(plain)->m_plaintexts[0];
 
+   /*if (arg1->m_ciphertext.logp != arg0->m_ciphertext.logp)
+   {
+       NGRAPH_INFO << "arg1 logp " << arg1->m_ciphertext.logp;
+       NGRAPH_INFO << "arg0 logp " << arg0->m_ciphertext.logp;
+   }*/
+
    if (plain_val > 1e50 || plain_val < -1e50)
    {
        #pragma omp critical

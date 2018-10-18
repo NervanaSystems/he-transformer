@@ -43,22 +43,9 @@ void runtime::he::kernel::pad(
         throw ngraph_error("Padding element must be scalar");
     }
 
-    // Todo: pad_val shall be arg1[0]. There's an unknown issue causing the computation
-    //       to return -inf when arg1[0] is used. Luckily since we are doing mnist, the output
-    //       values near the edge of the image are all zero in the first conv later, so it happens
-    //       to pad zero in our case. This is not true for other models.
+    NGRAPH_INFO << "pad cipher ciper";
+
     std::shared_ptr<runtime::he::HECiphertext> pad_val = arg1[0];
-
-    auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);
-    std::shared_ptr<runtime::he::HEPlaintext> plaintext =
-            dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(
-                he_heaan_backend->create_empty_plaintext());
-
-    he_heaan_backend->decrypt(plaintext, pad_val);
-
-    float val=  dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(plaintext)->m_plaintexts[0];
-
-    NGRAPH_INFO << "val " << val;
 
     Coordinate input_start(arg0_shape.size(), 0); // start at (0,0,...,0)
     Coordinate input_end =
@@ -144,11 +131,23 @@ void runtime::he::kernel::pad(
     else if (auto he_heaan_backend =
                  dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
     {
-        std::shared_ptr<runtime::he::HECiphertext> ciphertext =
-            dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(
-                he_heaan_backend->create_empty_ciphertext());
-        he_heaan_backend->encrypt(ciphertext, arg1[0]);
-        arg1_encrypted = ciphertext;
+        if (arg0.size() == 0)
+        {
+            std::shared_ptr<runtime::he::HECiphertext> ciphertext =
+                dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(
+                    he_heaan_backend->create_empty_ciphertext());
+            he_heaan_backend->encrypt(ciphertext, arg1[0]);
+            arg1_encrypted = ciphertext;        }
+        else
+        {
+            // Ensure arg0 and arg1 has the same precision and logq.
+            heaan::Ciphertext arg0_heaan = dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(arg0[0])->m_ciphertext;
+            heaan::Ciphertext ciphertext = he_heaan_backend->get_scheme()->encryptSingle(
+                    dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(arg1[0])->m_plaintexts[0],
+                    arg0_heaan.logp,
+                    arg0_heaan.logq);
+            arg1_encrypted = make_shared<runtime::he::HeaanCiphertextWrapper>(ciphertext, 1);
+        }
     }
     else
     {
