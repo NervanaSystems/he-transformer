@@ -43,7 +43,12 @@ cp y_label_[BATCH_SIZE].bin ../../test/model
 and run the unit test
 ```
 cd ../../build
-./test/unit-test --gtest_filter="HE_HEAAN.cryptonets_benchmark_N"
+./test/unit-test --gtest_filter="HE_HEAAN.cryptonets_benchmark_heaan_N"
 ```
 for `N` a power of two in `{1, 2, 4, 8, ..., 4096}`
+
+For optimal performance, run with
+```
+NGRAPH_HE_HEAAN_CONFIG=model/config_13.json ./test/unit-test --gtest_filter="HE_HEAAN.cryptonets_benchmark_heaan_N"
+```
 

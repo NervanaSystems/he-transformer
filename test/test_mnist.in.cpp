@@ -58,15 +58,15 @@ vector<int> batched_argmax(const vector<float>& ys)
     return labels;
 }
 
-static void run_cryptonets_benchmark(size_t batch_size, bool batched = true)
+static void run_cryptonets_benchmark(string backend_name, size_t batch_size, bool batched = true)
 {
     if (!batched && batch_size > 1)
     {
         throw ngraph_error("Non-batched must have batch_size 1");
     }
-    // We only support HEAAN backend for now
-    auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("HE:HEAAN"));
+    // We only support HEAAN/INTERPRETER backend for now
+    auto backend = runtime::Backend::create(backend_name); //interpreter ? runtime::Backend::create(backend_name)
+                              // : static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>( runtime::Backend::create("HE:HEAAN"));
 
     vector<float> x = read_binary_constant(
         file_util::path_join(HE_SERIALIZED_ZOO, "x_test_4096.bin"), batch_size * 784);
@@ -100,7 +100,9 @@ static void run_cryptonets_benchmark(size_t batch_size, bool batched = true)
         auto& shape = parameter->get_shape();
         auto& type = parameter->get_element_type();
 
-        auto parameter_cipher_tv = backend->create_tensor(type, shape, batched);
+
+        auto parameter_cipher_tv = (backend_name == "INTERPRETER") ? backend->create_tensor(type, shape)
+                                               : static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend)->create_tensor(type, shape, batched);
 
         NGRAPH_INFO << "Creating input shape: " << join(shape, "x");
 
@@ -126,7 +128,14 @@ static void run_cryptonets_benchmark(size_t batch_size, bool batched = true)
         auto& type = result->get_element_type();
         NGRAPH_INFO << "Creating output shape: " << join(shape, "x");
 
-        result_tvs.push_back(backend->create_tensor(type, shape, batched));
+        if (backend_name == "HE:HEAAN")
+        {
+           result_tvs.push_back(static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend)->create_tensor(type, shape, batched));
+        }
+        else
+        {
+           result_tvs.push_back(backend->create_tensor(type, shape));
+        }
     }
     sw_encrypt_input.stop();
     NGRAPH_INFO << "sw_encrypt_input: " << sw_encrypt_input.get_milliseconds() << "ms";
@@ -164,7 +173,7 @@ static void run_cryptonets_benchmark(size_t batch_size, bool batched = true)
             error_count++;
         }
     }
-    NGRAPH_INFO << "Errror count " << error_count << " of " << batch_size << " elements.";
+    NGRAPH_INFO << "Error count " << error_count << " of " << batch_size << " elements.";
     NGRAPH_INFO << "Accuracy: " << 1.f - (float)(error_count) / batch_size;
 
     // Print results
@@ -176,72 +185,137 @@ static void run_cryptonets_benchmark(size_t batch_size, bool batched = true)
     NGRAPH_INFO << "sw_global: " << sw_global.get_milliseconds() << "ms";
 }
 
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_interpreter_1)
+{
+    run_cryptonets_benchmark("INTERPRETER", 1);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_interpreter_2)
+{
+    run_cryptonets_benchmark("INTERPRETER", 2);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_interpreter_4)
+{
+    run_cryptonets_benchmark("INTERPRETER", 4);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_interpreter_8)
+{
+    run_cryptonets_benchmark("INTERPRETER", 8);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_interpreter_16)
+{
+    run_cryptonets_benchmark("INTERPRETER", 16);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_interpreter_32)
+{
+    run_cryptonets_benchmark("INTERPRETER", 32);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_interpreter_64)
+{
+    run_cryptonets_benchmark("INTERPRETER", 64);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_interpreter_128)
+{
+    run_cryptonets_benchmark("INTERPRETER", 128);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_interpreter_256)
+{
+    run_cryptonets_benchmark("INTERPRETER", 256);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_interpreter_512)
+{
+    run_cryptonets_benchmark("INTERPRETER", 512);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_interpreter_1024)
+{
+    run_cryptonets_benchmark("INTERPRETER", 1024);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_interpreter_2048)
+{
+    run_cryptonets_benchmark("INTERPRETER", 2048);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_interpreter_4096)
+{
+    run_cryptonets_benchmark("INTERPRETER", 4096);
+}
+
 NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_no_batch)
 {
-    run_cryptonets_benchmark(1, false);
+    run_cryptonets_benchmark("HE:HEAAN", 1, false);
 }
 
-NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_1)
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_heaan_1)
 {
-    run_cryptonets_benchmark(1);
+    run_cryptonets_benchmark("HE:HEAAN", 1);
 }
 
-NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_2)
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_heaan_2)
 {
-    run_cryptonets_benchmark(2);
+    run_cryptonets_benchmark("HE:HEAAN", 2);
 }
 
-NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_4)
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_heaan_4)
 {
-    run_cryptonets_benchmark(4);
+    run_cryptonets_benchmark("HE:HEAAN", 4);
 }
 
-NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_8)
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_heaan_8)
 {
-    run_cryptonets_benchmark(8);
+    run_cryptonets_benchmark("HE:HEAAN", 8);
 }
 
-NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_16)
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_heaan_16)
 {
-    run_cryptonets_benchmark(16);
+    run_cryptonets_benchmark("HE:HEAAN", 16);
 }
 
-NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_32)
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_heaan_32)
 {
-    run_cryptonets_benchmark(32);
+    run_cryptonets_benchmark("HE:HEAAN", 32);
 }
 
-NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_64)
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_heaan_64)
 {
-    run_cryptonets_benchmark(64);
+    run_cryptonets_benchmark("HE:HEAAN", 64);
 }
 
-NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_128)
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_heaan_128)
 {
-    run_cryptonets_benchmark(128);
+    run_cryptonets_benchmark("HE:HEAAN", 128);
 }
 
-NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_256)
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_heaan_256)
 {
-    run_cryptonets_benchmark(256);
+    run_cryptonets_benchmark("HE:HEAAN", 256);
 }
 
-NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_512)
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_heaan_512)
 {
-    run_cryptonets_benchmark(512);
+    run_cryptonets_benchmark("HE:HEAAN", 512);
 }
 
-NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_1024)
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_heaan_1024)
 {
-    run_cryptonets_benchmark(1024);
+    run_cryptonets_benchmark("HE:HEAAN", 1024);
 }
 
-NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_2048)
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_heaan_2048)
 {
-    run_cryptonets_benchmark(2048);
+    run_cryptonets_benchmark("HE:HEAAN", 2048);
 }
 
-NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_4096)
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_heaan_4096)
 {
-    run_cryptonets_benchmark(4096);
+    run_cryptonets_benchmark("HE:HEAAN", 4096);
 }

@@ -230,7 +230,12 @@ void ngraph::runtime::he::kernel::dot_template(const vector<shared_ptr<S>>& arg0
             }
 
             runtime::he::kernel::scalar_multiply(arg0_text, arg1_text, prod, type, he_backend);
-            runtime::he::kernel::scalar_add(sum, prod, sum, type, he_backend);
+
+            std::shared_ptr<runtime::he::HECiphertext> sum_tmp = he_heaan_backend->create_empty_ciphertext(batch_size);
+            runtime::he::kernel::scalar_add(sum, prod, sum_tmp, type, he_backend);
+            dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(sum)->m_ciphertext =
+                dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(sum_tmp)->m_ciphertext;
+
         }
 
         // Write the sum back.
