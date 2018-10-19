@@ -33,21 +33,21 @@ namespace ngraph
             class HEPlaintext;
             namespace kernel
             {
-                void sum(const vector<shared_ptr<runtime::he::HECiphertext>>& arg,
-                         vector<shared_ptr<runtime::he::HECiphertext>>& out,
+                void sum(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg,
+                         std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
                          const Shape& in_shape,
                          const Shape& out_shape,
                          const AxisSet& reduction_axes,
                          const element::Type& type,
-                         const shared_ptr<runtime::he::HEBackend>& he_backend);
+                         const std::shared_ptr<runtime::he::HEBackend>& he_backend);
 
-                void sum(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg,
-                         vector<shared_ptr<runtime::he::HEPlaintext>>& out,
+                void sum(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg,
+                         std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
                          const Shape& in_shape,
                          const Shape& out_shape,
                          const AxisSet& reduction_axes,
                          const element::Type& type,
-                         const shared_ptr<runtime::he::HEBackend>& he_backend);
+                         const std::shared_ptr<runtime::he::HEBackend>& he_backend);
             }
         }
     }

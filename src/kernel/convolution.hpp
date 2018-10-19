@@ -165,9 +165,9 @@ namespace ngraph
 
 template <typename S, typename T>
 void ngraph::runtime::he::kernel::convolution_template(
-    const std::vector<shared_ptr<S>>& arg0,
-    const std::vector<shared_ptr<T>>& arg1,
-    std::vector<shared_ptr<runtime::he::HECiphertext>>& out,
+    const std::vector<std::shared_ptr<S>>& arg0,
+    const std::vector<std::shared_ptr<T>>& arg1,
+    std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
     const Shape& arg0_shape,
     const Shape& arg1_shape,
     const Shape& out_shape,
@@ -185,7 +185,7 @@ void ngraph::runtime::he::kernel::convolution_template(
     bool rotate_filter,
     const element::Type& type,
     size_t batch_size,
-    const shared_ptr<runtime::he::HEBackend>& he_backend)
+    const std::shared_ptr<runtime::he::HEBackend>& he_backend)
 {
     // TODO: parallelize more effetively
 
@@ -197,8 +197,8 @@ void ngraph::runtime::he::kernel::convolution_template(
     // * output channel axis for output data is 1
     // * rotate_filter is false
 
-    auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend);
-    auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);
+    auto he_seal_backend = std::dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend);
+    auto he_heaan_backend = std::dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);
     if (!he_seal_backend && !he_heaan_backend)
     {
         throw ngraph_error("Convolution he_backend neither heaan nor seal.");
@@ -330,7 +330,7 @@ void ngraph::runtime::he::kernel::convolution_template(
         //   output[O] += arg0[I] * arg1[F].
 
         // T result = 0;
-        shared_ptr<runtime::he::HECiphertext> result;
+        std::shared_ptr<runtime::he::HECiphertext> result;
         if (he_seal_backend)
         {
             result = he_seal_backend->create_valued_ciphertext(0., type);
@@ -360,7 +360,7 @@ void ngraph::runtime::he::kernel::convolution_template(
                 }
             }
 
-            shared_ptr<runtime::he::HECiphertext> v;
+            std::shared_ptr<runtime::he::HECiphertext> v;
             if (he_seal_backend)
             {
                 v = input_batch_transform.has_source_coordinate(input_batch_coord)
@@ -374,7 +374,7 @@ void ngraph::runtime::he::kernel::convolution_template(
                         : he_heaan_backend->create_valued_ciphertext(0., type, batch_size);
             }
 
-            shared_ptr<runtime::he::HECiphertext> prod;
+            std::shared_ptr<runtime::he::HECiphertext> prod;
             if (he_seal_backend)
             {
                 prod = he_seal_backend->create_empty_ciphertext();

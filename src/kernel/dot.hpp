@@ -37,78 +37,78 @@ namespace ngraph
             namespace kernel
             {
                 template <typename S, typename T>
-                void dot_template(const vector<shared_ptr<S>>& arg0,
-                                  const vector<shared_ptr<T>>& arg1,
-                                  vector<shared_ptr<runtime::he::HECiphertext>>& out,
+                void dot_template(const std::vector<std::shared_ptr<S>>& arg0,
+                                  const std::vector<std::shared_ptr<T>>& arg1,
+                                  std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
                                   const Shape& arg0_shape,
                                   const Shape& arg1_shape,
                                   const Shape& out_shape,
                                   size_t reduction_axes_count,
                                   const element::Type& type,
                                   size_t batch_size,
-                                  const shared_ptr<runtime::he::HEBackend>& he_backend);
+                                  const std::shared_ptr<runtime::he::HEBackend>& he_backend);
 
-                void dot(const vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
-                         const vector<shared_ptr<runtime::he::HECiphertext>>& arg1,
-                         vector<shared_ptr<runtime::he::HECiphertext>>& out,
+                void dot(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
+                         const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg1,
+                         std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
                          const Shape& arg0_shape,
                          const Shape& arg1_shape,
                          const Shape& out_shape,
                          size_t reduction_axes_count,
                          const element::Type& type,
                          size_t batch_size,
-                         const shared_ptr<runtime::he::HEBackend>& he_backend);
+                         const std::shared_ptr<runtime::he::HEBackend>& he_backend);
 
-                void dot(const vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
-                         const vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,
-                         vector<shared_ptr<runtime::he::HECiphertext>>& out,
+                void dot(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
+                         const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg1,
+                         std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
                          const Shape& arg0_shape,
                          const Shape& arg1_shape,
                          const Shape& out_shape,
                          size_t reduction_axes_count,
                          const element::Type& type,
                          size_t batch_size,
-                         const shared_ptr<runtime::he::HEBackend>& he_backend);
+                         const std::shared_ptr<runtime::he::HEBackend>& he_backend);
 
-                void dot(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg0,
-                         const vector<shared_ptr<runtime::he::HECiphertext>>& arg1,
-                         vector<shared_ptr<runtime::he::HECiphertext>>& out,
+                void dot(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg0,
+                         const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg1,
+                         std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
                          const Shape& arg0_shape,
                          const Shape& arg1_shape,
                          const Shape& out_shape,
                          size_t reduction_axes_count,
                          const element::Type& type,
                          size_t batch_size,
-                         const shared_ptr<runtime::he::HEBackend>& he_backend);
+                         const std::shared_ptr<runtime::he::HEBackend>& he_backend);
 
-                void dot(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg0,
-                         const vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,
-                         vector<shared_ptr<runtime::he::HEPlaintext>>& out,
+                void dot(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg0,
+                         const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg1,
+                         std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
                          const Shape& arg0_shape,
                          const Shape& arg1_shape,
                          const Shape& out_shape,
                          size_t reduction_axes_count,
                          const element::Type& type,
-                         const shared_ptr<runtime::he::HEBackend>& he_backend);
+                         const std::shared_ptr<runtime::he::HEBackend>& he_backend);
             }
         }
     }
 }
 
 template <typename S, typename T>
-void ngraph::runtime::he::kernel::dot_template(const vector<shared_ptr<S>>& arg0,
-                                               const vector<shared_ptr<T>>& arg1,
-                                               vector<shared_ptr<runtime::he::HECiphertext>>& out,
+void ngraph::runtime::he::kernel::dot_template(const std::vector<std::shared_ptr<S>>& arg0,
+                                               const std::vector<std::shared_ptr<T>>& arg1,
+                                               std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
                                                const Shape& arg0_shape,
                                                const Shape& arg1_shape,
                                                const Shape& out_shape,
                                                size_t reduction_axes_count,
                                                const element::Type& type,
                                                size_t batch_size,
-                                               const shared_ptr<runtime::he::HEBackend>& he_backend)
+                                               const std::shared_ptr<runtime::he::HEBackend>& he_backend)
 {
-    auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend);
-    auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);
+    auto he_seal_backend = std::dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend);
+    auto he_heaan_backend = std::dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);
     if (!he_seal_backend && !he_heaan_backend)
     {
         throw ngraph_error("Dot he_backend neither heaan nor seal;");
