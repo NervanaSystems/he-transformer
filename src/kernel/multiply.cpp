@@ -40,20 +40,6 @@ void runtime::he::kernel::multiply(const vector<shared_ptr<runtime::he::HECipher
     {
         scalar_multiply(arg0[i], arg1[i], out[i], type, he_backend);
     }
-
-    if( auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
-    {
-
-
-        NGRAPH_INFO << "Multiply output";
-        for (auto elem : out)
-        {
-            std::shared_ptr<runtime::he::HEPlaintext> plain_val;
-            plain_val = make_shared<runtime::he::HeaanPlaintextWrapper>();
-            he_heaan_backend->decrypt(plain_val, elem);
-            NGRAPH_INFO << dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(plain_val)->m_plaintexts[0];
-        }
-    }
 }
 
 void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HECiphertext>& arg0,
@@ -251,7 +237,6 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HECipher
             {
                 kernel::heaan::scalar_multiply(
                     arg0_heaan, arg1_heaan, out_heaan, type, he_heaan_backend);
-
                 he_heaan_backend->get_scheme()->reScaleByAndEqual(
                     out_heaan->m_ciphertext, he_heaan_backend->get_precision());
                 out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_heaan);

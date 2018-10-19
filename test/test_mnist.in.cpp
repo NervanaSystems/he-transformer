@@ -125,7 +125,6 @@ static void run_cryptonets_benchmark(string backend_name, size_t batch_size, boo
     for (auto result : results)
     {
         auto& shape = result->get_shape();
-        NGRAPH_INFO << "result shape " << shape;
         auto& type = result->get_element_type();
         NGRAPH_INFO << "Creating output shape: " << join(shape, "x");
 
