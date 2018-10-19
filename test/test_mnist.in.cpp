@@ -208,6 +208,11 @@ NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_interpreter_1)
     run_cryptonets_benchmark(1, false, true);
 }
 
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_interpreter_2)
+{
+    run_cryptonets_benchmark(2, true, true);
+}
+
 NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_2)
 {
     run_cryptonets_benchmark(2);

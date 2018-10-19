@@ -1089,6 +1089,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                      pad->get_padding_below(),
                                      pad->get_padding_above(),
                                      pad->get_padding_interior(),
+                                     batch_size,
                                      m_he_backend);
         }
         else if (arg0_cipher != nullptr && arg1_plain != nullptr && out0_cipher != nullptr)
@@ -1102,6 +1103,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                      pad->get_padding_below(),
                                      pad->get_padding_above(),
                                      pad->get_padding_interior(),
+                                     batch_size,
                                      m_he_backend);
             NGRAPH_INFO << "Done padding";
         }

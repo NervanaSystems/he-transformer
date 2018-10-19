@@ -42,6 +42,7 @@ namespace ngraph
                     const Shape& padding_below,
                     const Shape& padding_above,
                     const Shape& padding_interior,
+                    size_t batch_size,
                     const std::shared_ptr<runtime::he::HEBackend>& he_backend);
 
                 void pad(
@@ -53,6 +54,7 @@ namespace ngraph
                     const Shape& padding_below,
                     const Shape& padding_above,
                     const Shape& padding_interior,
+                    size_t batch_size,
                     const std::shared_ptr<runtime::he::HEBackend>& he_backend);
             }
         }
