@@ -117,29 +117,8 @@ void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HECiphertext>
 
         if (arg0_heaan && arg1_heaan && out_heaan)
         {
-            std::shared_ptr<runtime::he::HEPlaintext> plain0_val = make_shared<runtime::he::HeaanPlaintextWrapper>();
-            he_heaan_backend->decrypt(plain0_val, arg0_heaan);
-            float arg0_plain = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(plain0_val)->m_plaintexts[0];
-
-            std::shared_ptr<runtime::he::HEPlaintext> plain1_val = make_shared<runtime::he::HeaanPlaintextWrapper>();
-            he_heaan_backend->decrypt(plain1_val, arg1_heaan);
-            float arg1_plain = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(plain1_val)->m_plaintexts[0];
-
             kernel::heaan::scalar_add(arg0_heaan, arg1_heaan, out_heaan, type, he_heaan_backend);
             out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_heaan);
-
-            std::shared_ptr<runtime::he::HEPlaintext> plain_out = make_shared<runtime::he::HeaanPlaintextWrapper>();
-            he_heaan_backend->decrypt(plain_out, out_heaan);
-            float plain_out_val = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(plain_out)->m_plaintexts[0];
-
-
-            if (plain_out_val > 1e50 || plain_out_val < -1e50)
-            {
-                NGRAPH_INFO << "Adding (cipher) " << arg0_plain << " + (cipher) " << arg1_plain
-                    << " => " << plain_out_val;
-                NGRAPH_INFO << "plain val " << plain_out_val << " incorrect!";
-                exit(0);
-            }
         }
         else
         {
@@ -261,8 +240,7 @@ void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HECiphertext>
 
             if (arg1_heaan->m_plaintexts == zero->m_plaintexts)
             {
-                NGRAPH_INFO << "zero optimization!";
-                out = std::make_shared<runtime::he::HECiphertext>(*arg0);
+                out = arg0;
             }
             else
             {

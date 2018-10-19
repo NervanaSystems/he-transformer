@@ -18,7 +18,6 @@
 #include "he_heaan_backend.hpp"
 #include "heaan_ciphertext_wrapper.hpp"
 #include "heaan_plaintext_wrapper.hpp"
-#include <fstream>
 
 using namespace std;
 using namespace ngraph;
@@ -30,79 +29,8 @@ void runtime::he::kernel::heaan::scalar_add(
     const element::Type& type,
     const shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend)
 {
-    /*if (out == arg0) // TODO: Discover why this is needed? (dot.cpp needs this)
-    {
-        out->m_ciphertext = he_heaan_backend->get_scheme()->add(arg1->m_ciphertext, arg0->m_ciphertext);
-        //he_heaan_backend->get_scheme()->addAndEqual(out->m_ciphertext, arg1->m_ciphertext);
-    }
-    else
-    { */
-    /*if (arg0 == arg1)
-    {
-        NGRAPH_INFO << " (arg0 == arg1)";
-    }
-    if (arg0 == out)
-    {
-        NGRAPH_INFO << " (arg0 == out)";
-    }
-    if (arg1 == out)
-    {
-        NGRAPH_INFO << "arg1 == out !";
-    }
-     */
-    out->m_ciphertext = he_heaan_backend->get_scheme()->add(arg1->m_ciphertext, arg0->m_ciphertext);
-
-   auto plain = he_heaan_backend->create_empty_plaintext();
-   he_heaan_backend->decrypt(plain, out);
-   float plain_val = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(plain)->m_plaintexts[0];
-
-   /*if (arg1->m_ciphertext.logp != arg0->m_ciphertext.logp)
-   {
-       NGRAPH_INFO << "arg1 logp " << arg1->m_ciphertext.logp;
-       NGRAPH_INFO << "arg0 logp " << arg0->m_ciphertext.logp;
-   }*/
-
-   if (plain_val > 1e50 || plain_val < -1e50)
-   {
-       #pragma omp critical
-       {
-            NGRAPH_INFO << "infail -> " << plain_val;
-            print_ciphertext(arg0, he_heaan_backend, "./arg0");
-            print_ciphertext(arg1, he_heaan_backend, "./arg1");
-            print_ciphertext(out, he_heaan_backend, "./out");
-
-            auto secretKey = he_heaan_backend->get_secret_key();
-            std::fstream fs;
-            fs.open("secret_key_cipher.txt", std::fstream::out);
-            fs << secretKey->sx << "\n";
-            fs.close();
-
-            exit(0);
-       }
-
-   }
-}
-
-void runtime::he::kernel::heaan::print_ciphertext(const shared_ptr<runtime::he::HeaanCiphertextWrapper>& out,
-    const shared_ptr<runtime::he::he_heaan::HEHeaanBackend> he_heaan_backend,
-    const std::string& name)
-{
-    std::fstream fs;
-    fs.open(name + "_cipher.txt", std::fstream::in | std::fstream::out  | std::fstream::app);
-    fs << name << " ciphertext" << "\n";
-    fs << "logp " <<  out->m_ciphertext.logp << "\n";
-    fs << "logq " <<  out->m_ciphertext.logp << "\n";
-    fs << "slots " <<  out->m_ciphertext.slots << "\n";
-    fs << "isComplex " <<  out->m_ciphertext.isComplex << "\n";
-    auto plain = he_heaan_backend->create_empty_plaintext();
-    he_heaan_backend->decrypt(plain, out);
-    float plain_val = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(plain)->m_plaintexts[0];
-    fs << " plain value " << plain_val << "\n";
-    fs << "ax " <<  out->m_ciphertext.ax << "\n";
-    fs << "bx " <<  out->m_ciphertext.bx << "\n";
-    fs.close();
-
-
+    out->m_ciphertext =
+        he_heaan_backend->get_scheme()->add(arg1->m_ciphertext, arg0->m_ciphertext);
 }
 
 void runtime::he::kernel::heaan::scalar_add(
