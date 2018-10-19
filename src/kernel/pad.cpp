@@ -95,13 +95,10 @@ void runtime::he::kernel::pad(
         std::shared_ptr<runtime::he::HECiphertext> v =
             input_transform.has_source_coordinate(in_coord) ? arg0[input_transform.index(in_coord)]
                                                             : pad_val;
-        NGRAPH_INFO << "Set to pad val";
-
         out[output_transform.index(out_coord)] = v;
 
         ++output_it;
     }
-    NGRAPH_INFO << "Done padding";
 }
 
 void runtime::he::kernel::pad(
