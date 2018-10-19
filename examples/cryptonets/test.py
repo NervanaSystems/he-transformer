@@ -148,7 +148,6 @@ def test_mnist_cnn(FLAGS, network):
         y_test = mnist.test.labels[:FLAGS.batch_size]
         # Run model
         y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
-
         elasped_time = time.time() - start_time
         print("total time(s)", elasped_time)
 

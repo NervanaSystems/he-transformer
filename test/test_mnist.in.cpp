@@ -256,67 +256,67 @@ NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_no_batch)
     run_cryptonets_benchmark("HE:HEAAN", 1, false);
 }
 
-NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_1)
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_heaan_1)
 {
     run_cryptonets_benchmark("HE:HEAAN", 1);
 }
 
-NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_2)
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_heaan_2)
 {
     run_cryptonets_benchmark("HE:HEAAN", 2);
 }
 
-NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_4)
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_heaan_4)
 {
     run_cryptonets_benchmark("HE:HEAAN", 4);
 }
 
-NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_8)
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_heaan_8)
 {
     run_cryptonets_benchmark("HE:HEAAN", 8);
 }
 
-NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_16)
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_heaan_16)
 {
     run_cryptonets_benchmark("HE:HEAAN", 16);
 }
 
-NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_32)
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_heaan_32)
 {
     run_cryptonets_benchmark("HE:HEAAN", 32);
 }
 
-NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_64)
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_heaan_64)
 {
     run_cryptonets_benchmark("HE:HEAAN", 64);
 }
 
-NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_128)
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_heaan_128)
 {
     run_cryptonets_benchmark("HE:HEAAN", 128);
 }
 
-NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_256)
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_heaan_256)
 {
     run_cryptonets_benchmark("HE:HEAAN", 256);
 }
 
-NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_512)
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_heaan_512)
 {
     run_cryptonets_benchmark("HE:HEAAN", 512);
 }
 
-NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_1024)
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_heaan_1024)
 {
     run_cryptonets_benchmark("HE:HEAAN", 1024);
 }
 
-NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_2048)
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_heaan_2048)
 {
     run_cryptonets_benchmark("HE:HEAAN", 2048);
 }
 
-NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_4096)
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_heaan_4096)
 {
     run_cryptonets_benchmark("HE:HEAAN", 4096);
 }

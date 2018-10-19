@@ -138,9 +138,10 @@ namespace ngraph
                         return m_secret_key;
                     }
 
-                    std::shared_ptr<heaan::SecretKey> m_secret_key; // TODO: make private!
+
 
                 private:
+                    std::shared_ptr<heaan::SecretKey> m_secret_key;
                     std::shared_ptr<heaan::Context> m_context;
                     std::shared_ptr<heaan::Scheme> m_scheme;
 

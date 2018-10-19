@@ -1080,7 +1080,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
 
         if (arg0_cipher != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
-            NGRAPH_INFO << "pad cipher";
             runtime::he::kernel::pad(arg0_cipher->get_elements(),
                                      arg1_cipher->get_elements(),
                                      out0_cipher->get_elements(),
@@ -1094,7 +1093,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         }
         else if (arg0_cipher != nullptr && arg1_plain != nullptr && out0_cipher != nullptr)
         {
-            NGRAPH_INFO << "pad cipher plain";
             runtime::he::kernel::pad(arg0_cipher->get_elements(),
                                      arg1_plain->get_elements(),
                                      out0_cipher->get_elements(),
@@ -1105,7 +1103,6 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                      pad->get_padding_interior(),
                                      batch_size,
                                      m_he_backend);
-            NGRAPH_INFO << "Done padding";
         }
         else
         {
