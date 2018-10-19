@@ -61,13 +61,16 @@ def cryptonets_test_squashed(x):
 
     with tf.name_scope('fc1'):
         h_pool2_flat = tf.reshape(h_conv1, [-1, 5 * 13 * 13])
-        h_fc1 = tf.square(tf.matmul(h_pool2_flat, W_squash))
+        h_fc1 = tf.matmul(h_pool2_flat, W_squash)
+        h_fc1 = tf.Print(h_fc1, [h_fc1], summarize=200,  message="After dot\n")
+        h_fc1 = tf.square(h_fc1)
 
     # Map the 100 features to 10 classes, one for each digit
     with tf.name_scope('fc2'):
         W_fc2 = tf.constant(
             np.loadtxt('W_fc2.txt', dtype=np.float32).reshape([100, 10]))
         y_conv = tf.matmul(h_fc1, W_fc2)
+        y_conv = tf.Print(y_conv, [y_conv], summarize=100, message="Result\n")
     return y_conv
 
 
@@ -145,6 +148,8 @@ def test_mnist_cnn(FLAGS, network):
         y_test = mnist.test.labels[:FLAGS.batch_size]
         # Run model
         y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
+
+        print("y_output", y_conv_val)
         elasped_time = time.time() - start_time
         print("total time(s)", elasped_time)
 

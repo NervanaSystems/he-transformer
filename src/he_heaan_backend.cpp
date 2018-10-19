@@ -57,7 +57,7 @@ const static runtime::he::HEHeaanParameter parse_heaan_config_or_use_default()
     catch (const std::exception& e)
     {
         return runtime::he::HEHeaanParameter(13,  // m_log2_poly_modulus
-                                             383, // m_log2_plain_modulus
+                                             155, // m_log2_plain_modulus
                                              32   // m_log2_precision
                                              );
     }

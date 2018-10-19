@@ -58,15 +58,15 @@ vector<int> batched_argmax(const vector<float>& ys)
     return labels;
 }
 
-static void run_cryptonets_benchmark(size_t batch_size, bool batched = true)
+static void run_cryptonets_benchmark(size_t batch_size, bool batched = true, bool interpreter = false)
 {
     if (!batched && batch_size > 1)
     {
         throw ngraph_error("Non-batched must have batch_size 1");
     }
     // We only support HEAAN backend for now
-    auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("HE:HEAAN"));
+    auto backend = interpreter ? runtime::Backend::create("Interpreter")
+                               : static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>( runtime::Backend::create("HE:HEAAN"));
 
     vector<float> x = read_binary_constant(
         file_util::path_join(HE_SERIALIZED_ZOO, "x_test_4096.bin"), batch_size * 784);
@@ -100,7 +100,9 @@ static void run_cryptonets_benchmark(size_t batch_size, bool batched = true)
         auto& shape = parameter->get_shape();
         auto& type = parameter->get_element_type();
 
-        auto parameter_cipher_tv = backend->create_tensor(type, shape, batched);
+
+        auto parameter_cipher_tv = interpreter ? backend->create_tensor(type, shape)
+                                               : static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend)->create_tensor(type, shape, batched);
 
         NGRAPH_INFO << "Creating input shape: " << join(shape, "x");
 
@@ -123,10 +125,18 @@ static void run_cryptonets_benchmark(size_t batch_size, bool batched = true)
     for (auto result : results)
     {
         auto& shape = result->get_shape();
+        NGRAPH_INFO << "result shape " << shape;
         auto& type = result->get_element_type();
         NGRAPH_INFO << "Creating output shape: " << join(shape, "x");
 
-        result_tvs.push_back(backend->create_tensor(type, shape, batched));
+        if (interpreter)
+        {
+           result_tvs.push_back(backend->create_tensor(type, shape));
+        }
+        else
+        {
+             result_tvs.push_back(static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(backend)->create_tensor(type, shape, batched));
+        }
     }
     sw_encrypt_input.stop();
     NGRAPH_INFO << "sw_encrypt_input: " << sw_encrypt_input.get_milliseconds() << "ms";
@@ -153,6 +163,13 @@ static void run_cryptonets_benchmark(size_t batch_size, bool batched = true)
     // Check prediction vs ground truth
     vector<int> y_gt_label = batched_argmax(y);
     vector<int> y_predicted_label = batched_argmax(result);
+
+    NGRAPH_INFO << "result size " << result.size();
+    for (auto elem : result)
+    {
+        NGRAPH_INFO << elem;
+    }
+
 
     size_t error_count = 0;
     for (size_t i = 0; i < y_gt_label.size(); ++i)
@@ -184,6 +201,11 @@ NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_no_batch)
 NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_1)
 {
     run_cryptonets_benchmark(1);
+}
+
+NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_interpreter_1)
+{
+    run_cryptonets_benchmark(1, false, true);
 }
 
 NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_2)
