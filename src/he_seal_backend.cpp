@@ -70,8 +70,8 @@ const static runtime::he::HESealParameter parse_seal_config_or_use_default()
     }
     catch (const std::exception& e)
     {
-        return runtime::he::HESealParameter(8192,      // poly_modulus
-                                            2L << 30L, // plain_modulus
+        return runtime::he::HESealParameter(2048,      // poly_modulus
+                                            1 << 8, // plain_modulus
                                             128,       // security_level
                                             64,        // fractional_encoder_integer_coeff_count
                                             32,        // fractional_encoder_fraction_coeff_count
@@ -106,10 +106,13 @@ runtime::he::he_seal::HESealBackend::HESealBackend()
 runtime::he::he_seal::HESealBackend::HESealBackend(
     const shared_ptr<runtime::he::HESealParameter> sp)
 {
+    NGRAPH_INFO << "Checking sp";
     assert_valid_seal_parameter(sp);
 
     // Context
+    NGRAPH_INFO << "Making seal context";
     m_context = make_seal_context(sp);
+    NGRAPH_INFO << "Made seal context";
     auto m_context_data = m_context->context_data();
     print_seal_context(*m_context);
 
@@ -169,7 +172,13 @@ shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealBackend::make_seal_con
     assert_valid_seal_parameter(sp);
 
     seal::EncryptionParameters parms(seal::scheme_type::BFV);
+    NGRAPH_INFO << "Making BFV parms";
+
+    NGRAPH_INFO << "Setting poly mod degree to " << sp->m_poly_modulus;
+
     parms.set_poly_modulus_degree(sp->m_poly_modulus);
+
+    NGRAPH_INFO << "Setting coeff mod to security level " << sp->m_security_level;
     if (sp->m_security_level == 128)
     {
         parms.set_coeff_modulus(seal::coeff_modulus_128(sp->m_poly_modulus));
@@ -182,9 +191,17 @@ shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealBackend::make_seal_con
     {
         throw ngraph_error("sp.security_level must be 128, 192");
     }
+
+    NGRAPH_INFO << "Setting plain mod to " << sp->m_plain_modulus;
     parms.set_plain_modulus(sp->m_plain_modulus);
 
-    return seal::SEALContext::Create(parms);
+    NGRAPH_INFO << "Creating context";
+
+    auto tmp =seal::SEALContext::Create(parms);
+
+    NGRAPH_INFO << "Returning context";
+
+    return tmp;
 }
 
 shared_ptr<runtime::TensorView>

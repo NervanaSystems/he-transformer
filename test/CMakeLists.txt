@@ -45,7 +45,7 @@ add_custom_command(
 # Configure test for HE_SEAL
 set (NGRAPH_TEST_HE_SEAL_SRC
     test_convolution_HE_SEAL.cpp
-    # test_basics_HE_SEAL.cpp
+    test_basics_HE_SEAL.cpp
     # test_mnist_HE_SEAL.cpp # Disabled since SEAL does not support batching for float
 )
 

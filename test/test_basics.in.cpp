@@ -43,6 +43,7 @@ NGRAPH_TEST(${BACKEND_NAME}, trivial)
 NGRAPH_TEST(${BACKEND_NAME}, backend_init)
 {
     auto he_seal = runtime::Backend::create("HE:SEAL");
+    NGRAPH_INFO << "Created seal backend";
     auto he_heaan = runtime::Backend::create("HE:HEAAN");
     EXPECT_EQ(1, 1);
 }
