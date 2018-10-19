@@ -258,65 +258,65 @@ NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_no_batch)
 
 NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_1)
 {
-    run_cryptonets_benchmark("HE_HEAAN", 1);
+    run_cryptonets_benchmark("HE:HEAAN", 1);
 }
 
 NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_2)
 {
-    run_cryptonets_benchmark("HE_HEAAN", 2);
+    run_cryptonets_benchmark("HE:HEAAN", 2);
 }
 
 NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_4)
 {
-    run_cryptonets_benchmark("HE_HEAAN", 4);
+    run_cryptonets_benchmark("HE:HEAAN", 4);
 }
 
 NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_8)
 {
-    run_cryptonets_benchmark("HE_HEAAN", 8);
+    run_cryptonets_benchmark("HE:HEAAN", 8);
 }
 
 NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_16)
 {
-    run_cryptonets_benchmark("HE_HEAAN", 16);
+    run_cryptonets_benchmark("HE:HEAAN", 16);
 }
 
 NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_32)
 {
-    run_cryptonets_benchmark("HE_HEAAN", 32);
+    run_cryptonets_benchmark("HE:HEAAN", 32);
 }
 
 NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_64)
 {
-    run_cryptonets_benchmark("HE_HEAAN", 64);
+    run_cryptonets_benchmark("HE:HEAAN", 64);
 }
 
 NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_128)
 {
-    run_cryptonets_benchmark("HE_HEAAN", 128);
+    run_cryptonets_benchmark("HE:HEAAN", 128);
 }
 
 NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_256)
 {
-    run_cryptonets_benchmark("HE_HEAAN", 256);
+    run_cryptonets_benchmark("HE:HEAAN", 256);
 }
 
 NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_512)
 {
-    run_cryptonets_benchmark("HE_HEAAN", 512);
+    run_cryptonets_benchmark("HE:HEAAN", 512);
 }
 
 NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_1024)
 {
-    run_cryptonets_benchmark("HE_HEAAN", 1024);
+    run_cryptonets_benchmark("HE:HEAAN", 1024);
 }
 
 NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_2048)
 {
-    run_cryptonets_benchmark("HE_HEAAN", 2048);
+    run_cryptonets_benchmark("HE:HEAAN", 2048);
 }
 
 NGRAPH_TEST(HE_HEAAN, cryptonets_benchmark_4096)
 {
-    run_cryptonets_benchmark("HE_HEAAN", 4096);
+    run_cryptonets_benchmark("HE:HEAAN", 4096);
 }
