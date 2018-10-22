@@ -22,10 +22,10 @@ set (HE_SRC
     # create_backend.cpp
     he_backend.cpp
     he_call_frame.cpp
-    #he_cipher_tensor.cpp
-    #he_ciphertext.cpp
-    #he_plaintext.cpp
-    #he_tensor.cpp
+    he_cipher_tensor.cpp
+    he_ciphertext.cpp
+    he_plaintext.cpp
+    he_tensor.cpp
 )
 
 # Paths for the upstream ngraph

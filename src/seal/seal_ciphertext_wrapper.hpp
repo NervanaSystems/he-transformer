@@ -27,14 +27,17 @@ namespace ngraph
         {
             class HECiphertext;
 
-            struct SealCiphertextWrapper : public HECiphertext
+            namespace he_seal
             {
-                SealCiphertextWrapper();
-                SealCiphertextWrapper(seal::Ciphertext cipher);
-                virtual ~SealCiphertextWrapper();
+                struct SealCiphertextWrapper : public HECiphertext
+                {
+                    SealCiphertextWrapper();
+                    SealCiphertextWrapper(seal::Ciphertext cipher);
+                    virtual ~SealCiphertextWrapper();
 
-                seal::Ciphertext m_ciphertext;
-            };
+                    seal::Ciphertext m_ciphertext;
+                };
+            }
         }
     }
 }

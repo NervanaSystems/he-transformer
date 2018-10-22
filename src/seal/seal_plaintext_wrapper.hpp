@@ -16,7 +16,6 @@
 
 #pragma once
 
-#include <cstdint>
 #include "he_plaintext.hpp"
 #include "seal/seal.h"
 
@@ -28,14 +27,17 @@ namespace ngraph
         {
             class HEPlaintext;
 
-            struct SealPlaintextWrapper : public HEPlaintext
+            namespace he_seal
             {
-                SealPlaintextWrapper(seal::Plaintext plain);
-                SealPlaintextWrapper();
-                virtual ~SealPlaintextWrapper();
+                struct SealPlaintextWrapper : public HEPlaintext
+                {
+                    SealPlaintextWrapper(seal::Plaintext plain);
+                    SealPlaintextWrapper();
+                    virtual ~SealPlaintextWrapper();
 
-                seal::Plaintext m_plaintext;
-            };
+                    seal::Plaintext m_plaintext;
+                };
+            }
         }
     }
 }

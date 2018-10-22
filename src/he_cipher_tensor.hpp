@@ -31,6 +31,11 @@ namespace ngraph
             class HEBackend;
             class HECiphertext;
 
+            namespace he_seal
+            {
+                class HESealBackend;
+            }
+
             class HECipherTensor : public HETensor
             {
             public:
