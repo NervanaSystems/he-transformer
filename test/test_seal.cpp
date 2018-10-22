@@ -28,7 +28,62 @@ TEST(seal_example, trivial)
     EXPECT_EQ(3, a + b);
 }
 
-TEST(seal_example, basics_i)
+TEST(seal_example, seal_ckks_basics_i)
+{
+    using namespace seal;
+
+    EncryptionParameters parms(scheme_type::CKKS);
+    parms.set_poly_modulus_degree(8192);
+    parms.set_coeff_modulus(coeff_modulus_128(8192));
+
+    auto context = SEALContext::Create(parms);
+    print_parameters(context);
+
+    KeyGenerator keygen(context);
+    auto public_key = keygen.public_key();
+    auto secret_key = keygen.secret_key();
+    auto relin_keys = keygen.relin_keys(60);
+
+    Encryptor encryptor(context, public_key);
+    Evaluator evaluator(context);
+    Decryptor decryptor(context, secret_key);
+
+    CKKSEncoder encoder(context);
+    size_t slot_count = encoder.slot_count();
+    cout << "Number of slots: " << slot_count << endl;
+
+    vector<double> input{ 0.0, 1.1, 2.2, 3.3 };
+
+    Plaintext plain;
+    double scale = pow(2.0, 60);
+    encoder.encode(input, scale, plain);
+
+    Ciphertext encrypted;
+    encryptor.encrypt(plain, encrypted);
+
+    evaluator.square_inplace(encrypted);
+    evaluator.relinearize_inplace(encrypted, relin_keys);
+    decryptor.decrypt(encrypted, plain);
+    encoder.decode(plain, input);
+
+    evaluator.mod_switch_to_next_inplace(encrypted);
+
+    decryptor.decrypt(encrypted, plain);
+
+    encoder.decode(plain, input);
+
+
+    encrypted.scale() *= 3;
+    decryptor.decrypt(encrypted, plain);
+    encoder.decode(plain, input);
+
+
+
+
+
+}
+
+TEST(seal_example, seal_bfv_basics_i)
 {
     using namespace seal;
 
@@ -43,8 +98,6 @@ TEST(seal_example, basics_i)
 
     // Context: print with print_parameters(context);
     auto context = SEALContext::Create(parms);
-
-    return;
 
     // Objects from context
     std::cout << "Creating encoder" << std::endl;
@@ -85,7 +138,7 @@ TEST(seal_example, basics_i)
     EXPECT_EQ(84, result);
 }
 
-TEST(seal_example, shared_ptr_encrypt)
+TEST(seal_example, seal_bfv_shared_ptr_encrypt)
 {
     using namespace seal;
 
