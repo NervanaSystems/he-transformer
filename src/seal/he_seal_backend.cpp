@@ -201,31 +201,13 @@ shared_ptr<runtime::Tensor>
     return static_pointer_cast<runtime::Tensor>(rc);
 }
 
-shared_ptr<runtime::he::HECiphertext> runtime::he::he_seal::HESealBackend::create_valued_ciphertext(
-    float value, const element::Type& element_type, const seal::MemoryPoolHandle& pool) const
+/* shared_ptr<runtime::he::HECiphertext> runtime::he::he_seal::HESealBackend::create_valued_ciphertext(
+    const float value, const element::Type& element_type, const size_t batch_size) const
 {
     throw ngraph_error("create_valued_ciphertext unimplemented");
-}
+} */
 
-shared_ptr<runtime::he::HECiphertext> runtime::he::he_seal::HESealBackend::create_empty_ciphertext(
-    const seal::MemoryPoolHandle& pool) const
-{
-    throw ngraph_error("HESealBackend::create_empty_ciphertext unimplemented");
-}
-
-shared_ptr<runtime::he::HEPlaintext> runtime::he::he_seal::HESealBackend::create_valued_plaintext(
-    float value, const element::Type& element_type, const seal::MemoryPoolHandle& pool) const
-{
-    throw ngraph_error("HESealBackend::create_empty_plainttext unimplemented");
-}
-
-shared_ptr<runtime::he::HEPlaintext> runtime::he::he_seal::HESealBackend::create_empty_plaintext(
-    const seal::MemoryPoolHandle& pool) const
-{
-    throw ngraph_error("HESealBackend::create_empty_plaintext unimplemnented");
-}
-
-shared_ptr<runtime::he::HECiphertext> runtime::he::he_seal::HESealBackend::create_valued_ciphertext(
+/* shared_ptr<runtime::he::HECiphertext> runtime::he::he_seal::HESealBackend::create_valued_ciphertext(
     float value, const element::Type& element_type, size_t batch_size) const
 {
     if (batch_size != 1)
@@ -254,7 +236,7 @@ shared_ptr<runtime::he::HECiphertext> runtime::he::he_seal::HESealBackend::creat
         throw ngraph_error("Type not supported at create_ciphertext");
     }
     return ciphertext;
-}
+} */
 
 shared_ptr<runtime::he::HECiphertext>
     runtime::he::he_seal::HESealBackend::create_empty_ciphertext(size_t batch_size) const
@@ -263,10 +245,10 @@ shared_ptr<runtime::he::HECiphertext>
     {
         throw ngraph_error("HESealBackend::create_empty_ciphertext only supports batch size 1");
     }
-    return make_shared<runtime::he::SealCiphertextWrapper>();
+    return make_shared<runtime::he::he_seal::SealCiphertextWrapper>();
 }
 
-shared_ptr<runtime::he::HEPlaintext> runtime::he::he_seal::HESealBackend::create_valued_plaintext(
+/* shared_ptr<runtime::he::HEPlaintext> runtime::he::he_seal::HESealBackend::create_valued_plaintext(
     float value, const element::Type& element_type) const
 {
     const string type_name = element_type.c_type_string();
@@ -309,7 +291,7 @@ shared_ptr<runtime::he::HEPlaintext>
         throw ngraph_error("Type or value not stored in m_plaintext_map");
     }
     return m_plaintext_map[type_name][value];
-}
+ } */
 
 shared_ptr<runtime::he::HEPlaintext>
     runtime::he::he_seal::HESealBackend::create_empty_plaintext() const
@@ -317,7 +299,7 @@ shared_ptr<runtime::he::HEPlaintext>
     return make_shared<SealPlaintextWrapper>();
 }
 
-shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealBackend::create_valued_tensor(
+/* shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealBackend::create_valued_tensor(
     float value, const element::Type& element_type, const Shape& shape)
 {
     auto tensor = static_pointer_cast<HECipherTensor>(create_tensor(element_type, shape));
@@ -341,77 +323,14 @@ shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealBackend::create_valued_p
         plain_texts[i] = create_valued_plaintext(value, element_type);
     }
     return tensor;
-}
-
-void runtime::he::he_seal::HESealBackend::encode(shared_ptr<runtime::he::HEPlaintext>& output,
-                                                 const void* input,
-                                                 const element::Type& type,
-                                                 size_t count) const
-{
-    if (count != 1)
-    {
-        throw ngraph_error("Batching not enabled for SEAL in encode");
-    }
-    const string type_name = type.c_type_string();
-
-    if (type_name == "int64_t")
-    {
-        output =
-            make_shared<runtime::he::SealPlaintextWrapper>(m_int_encoder->encode(*(int64_t*)input));
-    }
-    else if (type_name == "float")
-    {
-        output =
-            make_shared<runtime::he::SealPlaintextWrapper>(m_frac_encoder->encode(*(float*)input));
-    }
-    else
-    {
-        NGRAPH_INFO << "Unsupported element type in decode " << type_name;
-        throw ngraph_error("Unsupported element type " + type_name);
-    }
-}
-
-void runtime::he::he_seal::HESealBackend::decode(void* output,
-                                                 const shared_ptr<runtime::he::HEPlaintext> input,
-                                                 const element::Type& type,
-                                                 size_t count) const
-{
-    if (count != 1)
-    {
-        throw ngraph_error("Batching not enabled for SEAL in decode");
-    }
-    const string type_name = type.c_type_string();
-
-    if (auto seal_input = dynamic_pointer_cast<SealPlaintextWrapper>(input))
-    {
-        if (type_name == "int64_t")
-        {
-            int64_t x = m_int_encoder->decode_int64(seal_input->m_plaintext);
-            memcpy(output, &x, type.size());
-        }
-        else if (type_name == "float")
-        {
-            float x = m_frac_encoder->decode(seal_input->m_plaintext);
-            memcpy(output, &x, type.size());
-        }
-        else
-        {
-            NGRAPH_INFO << "Unsupported element type in decode " << type_name;
-            throw ngraph_error("Unsupported element type " + type_name);
-        }
-    }
-    else
-    {
-        throw ngraph_error("HESealBackend::decode input is not seal plaintext");
-    }
-}
+} */
 
 void runtime::he::he_seal::HESealBackend::encrypt(
     shared_ptr<runtime::he::HECiphertext>& output,
     const shared_ptr<runtime::he::HEPlaintext> input) const
 {
-    auto seal_output = dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(output);
-    auto seal_input = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(input);
+    auto seal_output = dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(output);
+    auto seal_input = dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(input);
     if (seal_output != nullptr && seal_input != nullptr)
     {
         m_encryptor->encrypt(seal_input->m_plaintext, seal_output->m_ciphertext);
@@ -426,54 +345,7 @@ void runtime::he::he_seal::HESealBackend::decrypt(
     shared_ptr<runtime::he::HEPlaintext>& output,
     const shared_ptr<runtime::he::HECiphertext> input) const
 {
-    auto seal_output = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(output);
-    auto seal_input = dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(input);
+    auto seal_output = dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(output);
+    auto seal_input = dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(input);
     m_decryptor->decrypt(seal_input->m_ciphertext, seal_output->m_plaintext);
-}
-
-int runtime::he::he_seal::HESealBackend::noise_budget(
-    const shared_ptr<seal::Ciphertext>& ciphertext) const
-{
-    return m_decryptor->invariant_noise_budget(*ciphertext);
-}
-
-void runtime::he::he_seal::HESealBackend::check_noise_budget(
-    const vector<shared_ptr<runtime::he::HETensor>>& tvs) const
-{
-    // Check noise budget
-    NGRAPH_INFO << "Checking noise budget ";
-
-    // Usually tvs.size() is very small (e.g. 1 for most ops), parallel the internal loops
-    for (size_t i = 0; i < tvs.size(); ++i)
-    {
-        if (auto cipher_tv = dynamic_pointer_cast<HECipherTensor>(tvs[i]))
-        {
-            size_t lowest_budget = numeric_limits<size_t>::max();
-
-#pragma omp parallel for reduction(min : lowest_budget)
-            for (size_t i = 0; i < cipher_tv->get_element_count(); ++i)
-            {
-                seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New();
-                shared_ptr<runtime::he::HECiphertext>& ciphertext = cipher_tv->get_element(i);
-
-                if (auto seal_cipher_wrapper =
-                        dynamic_pointer_cast<SealCiphertextWrapper>(ciphertext))
-                {
-                    int budget = m_decryptor->invariant_noise_budget(
-                        seal_cipher_wrapper->m_ciphertext, pool);
-                    if (budget <= 0)
-                    {
-                        NGRAPH_INFO << "Noise budget depleted";
-                        throw ngraph_error("Noise budget depleted");
-                    }
-                    if (budget < lowest_budget)
-                    {
-                        lowest_budget = budget;
-                    }
-                }
-            }
-            NGRAPH_INFO << "Lowest noise budget " << lowest_budget;
-        }
-    }
-    NGRAPH_INFO << "Done checking noise budget ";
 }
