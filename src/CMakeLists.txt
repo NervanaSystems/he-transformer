@@ -18,6 +18,7 @@
 set (HE_SRC
     # kernels
     # seal kernels
+    seal/he_seal_backend.cpp
     # main
     # create_backend.cpp
     he_backend.cpp

@@ -24,6 +24,8 @@
 #include "seal/seal_plaintext_wrapper.hpp"
 #include "ngraph/runtime/backend.hpp"
 
+#include "seal/seal.h"
+
 namespace ngraph
 {
     namespace runtime
@@ -42,10 +44,14 @@ namespace ngraph
                 public:
                     HESealBackend();
                     HESealBackend(const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp);
+                    ~HESealBackend();
 
-                    /// @brief Checks if parameter is valid for HEAAN encoding.
+                    std::shared_ptr<seal::SEALContext> make_seal_context(
+                        const std::shared_ptr<runtime::he::he_seal::HESealParameter> sp) const;
+
+                    /// @brief Checks if parameter is valid for encoding.
                     ///        Throws an error if parameter is not valid.
-                    virtual void assert_valid__parameter(
+                    virtual void assert_valid_parameter(
                         const std::shared_ptr<runtime::he::he_seal::HESealParameter> hp) const = 0;
 
                     std::shared_ptr<runtime::Tensor>
@@ -128,9 +134,20 @@ namespace ngraph
                         return m_secret_key;
                     }
 
+                    const inline std::shared_ptr<seal::RelinKeys> get_relin_key() const
+                    {
+                        return m_relin_key;
+                    }
+
                 private:
                     std::shared_ptr<seal::SecretKey> m_secret_key;
+                    std::shared_ptr<seal::PublicKey> m_public_key;
+                    std::shared_ptr<seal::RelinKeys> m_relin_key;
+                    std::shared_ptr<seal::Encryptor> m_encryptor;
+                    std::shared_ptr<seal::Decryptor> m_decryptor;
                     std::shared_ptr<seal::SEALContext> m_context;
+                    std::shared_ptr<seal::Evaluator> m_evaluator;
+                    std::shared_ptr<seal::KeyGenerator> m_keygen;
                 };
             }
         }
