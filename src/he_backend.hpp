@@ -70,7 +70,7 @@ namespace ngraph
                                              const element::Type& element_type,
                                              size_t batch_size = 1) const = 0;
 
-                /// @brief Creates ciphertextof unspecified value
+                /// @brief Creates ciphertext of unspecified value
                 /// @param batch_size Number of elements to encrypt in a
                 ///        > 1 indicates batching
                 /// @return Shared pointer to created ciphertext

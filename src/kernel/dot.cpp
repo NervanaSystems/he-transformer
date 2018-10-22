@@ -189,14 +189,15 @@ void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HEPlaintext>>
 
         // Zero out to start the sum
         shared_ptr<runtime::he::HEPlaintext> sum;
-        if (he_seal_backend)
+        sum = he_backend->create_valued_plaintext(0, type);
+        /* if (he_seal_backend)
         {
             sum = he_seal_backend->create_valued_plaintext(0., type);
         }
         else if (he_heaan_backend)
         {
             sum = he_heaan_backend->create_valued_plaintext(0., type);
-        }
+        } */
 
         size_t out_index = output_transform.index(out_coord);
 

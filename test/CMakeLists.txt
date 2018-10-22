@@ -67,7 +67,7 @@ add_custom_command(
     -DHE_TRANSFORMER_TEST_DIR=${HE_TRANSFORMER_TEST_DIR}
     -DBACKEND_REGISTERED_NAME=HE:SEAL
     -DBACKEND_NAME=HE_SEAL
-    -DTEST_LOOPS=2
+    -DTEST_LOOPS=1
     -DMANIFEST=${SEAL_MANIFEST}
     -P ${CMAKE_CURRENT_SOURCE_DIR}/configure_test.cmake
 )
@@ -80,7 +80,7 @@ add_custom_command(
     -DHE_TRANSFORMER_TEST_DIR=${HE_TRANSFORMER_TEST_DIR}
     -DBACKEND_REGISTERED_NAME=HE:HEAAN
     -DBACKEND_NAME=HE_HEAAN
-    -DTEST_LOOPS=2
+    -DTEST_LOOPS=1
     -DMANIFEST=${HEAAN_MANIFEST}
     -P ${CMAKE_CURRENT_SOURCE_DIR}/configure_test.cmake
 )
@@ -97,6 +97,6 @@ add_executable(unit-test ${SRC})
 
 target_link_libraries(unit-test libgtest)
 target_link_libraries(unit-test ngraph_test_util)
-target_link_libraries(unit-test he_backend seal heaan ntl pthread ${CMAKE_DL_LIBS})
+target_link_libraries(unit-test he_backend seal pthread ${CMAKE_DL_LIBS})
 
-add_dependencies(unit-test he_backend ext_seal ext_heaan ext_ngraph ext_gtest)
+add_dependencies(unit-test he_backend ext_seal ext_ngraph ext_gtest)

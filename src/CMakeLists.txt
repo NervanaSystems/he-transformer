@@ -33,18 +33,18 @@ set (HE_SRC
     kernel/slice.cpp
     kernel/subtract.cpp
     kernel/sum.cpp
-    # heaan kernels
-    kernel/heaan/add_heaan.cpp
-    kernel/heaan/multiply_heaan.cpp
-    kernel/heaan/negate_heaan.cpp
-    kernel/heaan/square_heaan.cpp
-    kernel/heaan/subtract_heaan.cpp
+    # CKKS kernels
+    # kernel/ckks/add_ckks.cpp
+    # kernel/ckks/multiply_ckks.cpp
+    # kernel/ckks/negate_ckks.cpp
+    # kernel/ckks/square_ckks.cpp
+    # kernel/ckks/subtract_ckks.cpp
     # seal kernels
-    kernel/seal/add_seal.cpp
-    kernel/seal/multiply_seal.cpp
-    kernel/seal/negate_seal.cpp
-    kernel/seal/square_seal.cpp
-    kernel/seal/subtract_seal.cpp
+    kernel/bfv/add_bfv.cpp
+    kernel/bfv/multiply_bfv.cpp
+    kernel/bfv/negate_bfv.cpp
+    kernel/bfv/square_bfv.cpp
+    kernel/bfv/subtract_bfv.cpp
     # main
     create_backend.cpp
     he_backend.cpp
@@ -55,12 +55,11 @@ set (HE_SRC
     he_tensor_view.cpp
     he_plain_tensor_view.cpp
     int_call_frame.cpp
-    # heaan
-    he_heaan_backend.cpp
-    heaan_ciphertext_wrapper.cpp
-    heaan_plaintext_wrapper.cpp
-    # seal
-    he_seal_backend.cpp
+    # CKKS
+    he_ckks_backend.cpp
+    # BFV
+    he_bfv_backend.cpp
+    # SEAL
     seal_ciphertext_wrapper.cpp
     seal_plaintext_wrapper.cpp
 )
@@ -84,8 +83,8 @@ message("Linking directories: ${NGRAPH_LIB_DIR}, ${EXTERNAL_INSTALL_LIB_DIR}")
 
 # Target library
 add_library(he_backend SHARED ${HE_SRC})
-add_dependencies(he_backend ext_ngraph ext_seal ext_heaan)
-target_link_libraries(he_backend ngraph seal heaan ntl libjson)
+add_dependencies(he_backend ext_ngraph ext_seal)
+target_link_libraries(he_backend ngraph seal libjson)
 
 set_target_properties(he_backend PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY

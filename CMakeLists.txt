@@ -31,7 +31,6 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z -std=gnu++1z")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0")
 
-
 # Global project name
 project (he-transformer)
 
@@ -60,7 +59,6 @@ include(cmake/openmp.cmake)
 include(cmake/ngraph.cmake)
 include(cmake/gtest.cmake)
 include(cmake/seal.cmake)
-include(cmake/heaan.cmake)
 include(cmake/json.cmake)
 
 # HE transformer source directory
