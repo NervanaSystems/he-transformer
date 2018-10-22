@@ -14,25 +14,25 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "he_tensor_view.hpp"
+#include "he_tensor.hpp"
 #include "he_backend.hpp"
-#include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
+#include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
 #include "ngraph/descriptor/tensor.hpp"
 #include "ngraph/util.hpp"
 
 using namespace std;
 using namespace ngraph;
 
-runtime::he::HETensorView::HETensorView(const element::Type& element_type,
+runtime::he::HETensor::HETensor(const element::Type& element_type,
                                         const Shape& shape,
                                         const shared_ptr<HEBackend>& he_backend,
                                         bool batched,
                                         const string& name)
-    : runtime::TensorView(
+    : runtime::Tensor(
           std::make_shared<descriptor::Tensor>(element_type, batch_shape(shape, 0, batched), name))
 {
-    m_descriptor->set_tensor_view_layout(
-        make_shared<descriptor::layout::DenseTensorViewLayout>(*m_descriptor));
+    m_descriptor->set_tensor_layout(
+        make_shared<descriptor::layout::DenseTensorLayout>(*m_descriptor));
     auto is_power_of_2 = [](size_t n) -> bool { return ((n & (n - 1)) == 0) && (n != 0); };
 
     if (batched)
@@ -52,11 +52,11 @@ runtime::he::HETensorView::HETensorView(const element::Type& element_type,
     m_batched = batched;
 }
 
-runtime::he::HETensorView::~HETensorView()
+runtime::he::HETensor::~HETensor()
 {
 }
 
-const Shape runtime::he::HETensorView::batch_shape(const Shape& shape,
+const Shape runtime::he::HETensor::batch_shape(const Shape& shape,
                                                    size_t batch_axis,
                                                    bool batched) const
 {
@@ -74,11 +74,11 @@ const Shape runtime::he::HETensorView::batch_shape(const Shape& shape,
     return shape;
 }
 
-void runtime::he::HETensorView::check_io_bounds(const void* source,
+void runtime::he::HETensor::check_io_bounds(const void* source,
                                                 size_t tensor_offset,
                                                 size_t n) const
 {
-    const element::Type& type = get_tensor_view_layout()->get_element_type();
+    const element::Type& type = get_tensor_layout()->get_element_type();
     size_t type_byte_size = type.size();
 
     // Memory must be byte-aligned to type_byte_size
@@ -94,12 +94,12 @@ void runtime::he::HETensorView::check_io_bounds(const void* source,
     }
 }
 
-void runtime::he::HETensorView::write(const void* p, size_t tensor_offset, size_t n)
+void runtime::he::HETensor::write(const void* p, size_t tensor_offset, size_t n)
 {
-    throw ngraph_error("HETensorView write not implemented");
+    throw ngraph_error("HETensor write not implemented");
 }
 
-void runtime::he::HETensorView::read(void* p, size_t tensor_offset, size_t n) const
+void runtime::he::HETensor::read(void* p, size_t tensor_offset, size_t n) const
 {
-    throw ngraph_error("HETensorView read not implemented");
+    throw ngraph_error("HETensor read not implemented");
 }

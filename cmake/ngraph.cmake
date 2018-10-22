@@ -37,7 +37,7 @@ if (PREBUILD_NGRAPH_LIB_DIR)
     ExternalProject_Add(
         ext_ngraph
         GIT_REPOSITORY https://github.com/NervanaSystems/ngraph.git
-        GIT_TAG v0.7.0
+        GIT_TAG v0.9.0
         PREFIX ${NGRAPH_CMAKE_PREFIX}
         UPDATE_COMMAND ""
         BUILD_COMMAND ""
@@ -51,7 +51,7 @@ else()
     ExternalProject_Add(
         ext_ngraph
         GIT_REPOSITORY https://github.com/NervanaSystems/ngraph.git
-        GIT_TAG v0.7.0
+        GIT_TAG v0.9.0
         PREFIX ${NGRAPH_CMAKE_PREFIX}
         UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

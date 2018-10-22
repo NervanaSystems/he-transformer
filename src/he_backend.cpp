@@ -16,7 +16,7 @@
 
 #include <limits>
 
-#include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
+#include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
 #include "ngraph/function.hpp"
 #include "ngraph/pass/assign_layout.hpp"
 #include "ngraph/pass/manager.hpp"
@@ -24,9 +24,9 @@
 
 #include "he_backend.hpp"
 #include "he_call_frame.hpp"
-#include "he_cipher_tensor_view.hpp"
-#include "he_plain_tensor_view.hpp"
-#include "he_tensor_view.hpp"
+#include "he_cipher_tensor.hpp"
+#include "he_plain_tensor.hpp"
+#include "he_tensor.hpp"
 
 using namespace ngraph;
 using namespace std;
@@ -35,7 +35,7 @@ runtime::he::HEBackend::HEBackend()
 {
 }
 
-shared_ptr<runtime::TensorView> runtime::he::HEBackend::create_tensor(
+shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(
     const element::Type& element_type, const Shape& shape, void* memory_pointer)
 {
     throw ngraph_error("HE create_tensor unimplemented");
@@ -59,8 +59,8 @@ bool runtime::he::HEBackend::compile(shared_ptr<Function> func)
 }
 
 bool runtime::he::HEBackend::call(shared_ptr<Function> func,
-                                  const vector<shared_ptr<runtime::TensorView>>& outputs,
-                                  const vector<shared_ptr<runtime::TensorView>>& inputs)
+                                  const vector<shared_ptr<runtime::Tensor>>& outputs,
+                                  const vector<shared_ptr<runtime::Tensor>>& inputs)
 {
     // HEAAN may call with batch != 1, so we disabel validate_call here
     // validate_call(func, outputs, inputs);
@@ -88,16 +88,4 @@ vector<runtime::PerformanceCounter>
     runtime::he::HEBackend::get_performance_data(shared_ptr<Function> func) const
 {
     return m_function_map.at(func)->get_performance_data();
-}
-
-void runtime::he::HEBackend::visualize_function_after_pass(const shared_ptr<Function>& func,
-                                                           const string& file_name)
-{
-    compile(func);
-    auto cf = m_function_map.at(func);
-    auto compiled_func = cf->get_compiled_function();
-    NGRAPH_INFO << "Visualize graph to " << file_name;
-    ngraph::pass::Manager pass_manager;
-    pass_manager.register_pass<ngraph::pass::VisualizeTree>(file_name);
-    pass_manager.run_passes(compiled_func);
 }

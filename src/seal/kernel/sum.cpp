@@ -19,10 +19,10 @@
 #include "ngraph/type/element_type.hpp"
 
 #include "he_backend.hpp"
-#include "he_cipher_tensor_view.hpp"
+#include "he_cipher_tensor.hpp"
 #include "he_ciphertext.hpp"
 #include "he_ckks_backend.hpp"
-#include "he_plain_tensor_view.hpp"
+#include "he_plain_tensor.hpp"
 #include "he_seal_backend.hpp"
 #include "kernel/add.hpp"
 #include "kernel/sum.hpp"
@@ -47,16 +47,16 @@ void runtime::he::kernel::sum(const vector<shared_ptr<runtime::he::HECiphertext>
 
     CoordinateTransform output_transform(out_shape);
 
-    shared_ptr<HECipherTensorView> zero_tv;
+    shared_ptr<HECipherTensor> zero_tv;
 
     if (he_seal_backend != nullptr)
     {
-        zero_tv = static_pointer_cast<HECipherTensorView>(
+        zero_tv = static_pointer_cast<HECipherTensor>(
             he_seal_backend->create_valued_tensor(0., type, out_shape));
     }
     else if (he_ckks_backend != nullptr)
     {
-        zero_tv = static_pointer_cast<HECipherTensorView>(
+        zero_tv = static_pointer_cast<HECipherTensor>(
             he_ckks_backend->create_valued_tensor(0., type, out_shape));
     }
 
@@ -98,16 +98,16 @@ void runtime::he::kernel::sum(const vector<shared_ptr<runtime::he::HEPlaintext>>
 
     CoordinateTransform output_transform(out_shape);
 
-    shared_ptr<HEPlainTensorView> zero_tv;
+    shared_ptr<HEPlainTensor> zero_tv;
 
     if (he_seal_backend != nullptr)
     {
-        zero_tv = static_pointer_cast<HEPlainTensorView>(
+        zero_tv = static_pointer_cast<HEPlainTensor>(
             he_seal_backend->create_valued_plain_tensor(0., type, out_shape));
     }
     else if (he_ckks_backend != nullptr)
     {
-        zero_tv = static_pointer_cast<HEPlainTensorView>(
+        zero_tv = static_pointer_cast<HEPlainTensor>(
             he_ckks_backend->create_valued_plain_tensor(0., type, out_shape));
     }
 

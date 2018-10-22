@@ -25,14 +25,12 @@ namespace ngraph
 {
     namespace runtime
     {
-        class CallFrame;
-
         namespace he
         {
             class HECallFrame;
-            class HETensorView;
-            class HEPlainTensorView;
-            class HECipherTensorView;
+            class HETensor;
+            class HEPlainTensor;
+            class HECipherTensor;
             class HECiphertext;
             class HEPlaintext;
 
@@ -43,20 +41,20 @@ namespace ngraph
                 HEBackend();
                 HEBackend(HEBackend& he_backend) = default;
 
-                virtual std::shared_ptr<runtime::TensorView>
+                virtual std::shared_ptr<runtime::Tensor>
                     create_tensor(const element::Type& element_type,
                                   const Shape& shape) override = 0;
 
-                virtual std::shared_ptr<runtime::TensorView> create_tensor(
+                virtual std::shared_ptr<runtime::Tensor> create_tensor(
                     const element::Type& element_type, const Shape& shape, const bool batched) = 0;
 
                 /// @brief Return a handle for a tensor for given mem on backend device
-                std::shared_ptr<runtime::TensorView>
+                std::shared_ptr<runtime::Tensor>
                     create_tensor(const element::Type& element_type,
                                   const Shape& shape,
                                   void* memory_pointer) override;
 
-                virtual std::shared_ptr<runtime::TensorView>
+                virtual std::shared_ptr<runtime::Tensor>
                     create_plain_tensor(const element::Type& element_type, const Shape& shape) = 0;
 
                 /// @brief Creates ciphertext of specified value
@@ -97,25 +95,25 @@ namespace ngraph
                 virtual std::shared_ptr<runtime::he::HEPlaintext>
                     create_empty_plaintext() const = 0;
 
-                /// @brief Creates ciphertext TensorView of the same value
+                /// @brief Creates ciphertext Tensor of the same value
                 /// @param value Scalar which to enrypt
                 /// @param element_type Type to encrypt
-                /// @param shape Shape of created TensorView
-                virtual std::shared_ptr<runtime::TensorView> create_valued_tensor(
+                /// @param shape Shape of created Tensor
+                virtual std::shared_ptr<runtime::Tensor> create_valued_tensor(
                     float value, const element::Type& element_type, const Shape& shape) = 0;
 
-                // Creates plaintext TensorView of the same value
+                // Creates plaintext Tensor of the same value
                 /// @param value Scalar which to encode
                 /// @param element_type Type to encode
-                /// @param shape Shape of created TensorView
-                virtual std::shared_ptr<runtime::TensorView> create_valued_plain_tensor(
+                /// @param shape Shape of created Tensor
+                virtual std::shared_ptr<runtime::Tensor> create_valued_plain_tensor(
                     float value, const element::Type& element_type, const Shape& shape) = 0;
 
                 bool compile(std::shared_ptr<Function> func) override;
 
                 bool call(std::shared_ptr<Function> func,
-                          const std::vector<std::shared_ptr<runtime::TensorView>>& outputs,
-                          const std::vector<std::shared_ptr<runtime::TensorView>>& inputs) override;
+                          const std::vector<std::shared_ptr<runtime::Tensor>>& outputs,
+                          const std::vector<std::shared_ptr<runtime::Tensor>>& inputs) override;
 
                 void clear_function_instance();
 
@@ -158,9 +156,6 @@ namespace ngraph
                 void enable_performance_data(std::shared_ptr<Function> func, bool enable) override;
                 std::vector<PerformanceCounter>
                     get_performance_data(std::shared_ptr<Function> func) const override;
-
-                void visualize_function_after_pass(const std::shared_ptr<Function>& func,
-                                                   const std::string& file_name);
 
             private:
                 std::unordered_map<std::shared_ptr<Function>,

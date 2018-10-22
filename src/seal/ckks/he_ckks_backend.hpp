@@ -31,9 +31,9 @@ namespace ngraph
     {
         namespace he
         {
-            class HETensorView;
-            class HEPlainTensorView;
-            class HECipherTensorView;
+            class HETensor;
+            class HEPlainTensor;
+            class HECipherTensor;
             class HEBackend;
 
             namespace he_ckks
@@ -51,21 +51,21 @@ namespace ngraph
                     void assert_valid_ckks_parameter(
                         const std::shared_ptr<runtime::he::HEHeaanParameter> hp) const;
 
-                    std::shared_ptr<runtime::TensorView>
+                    std::shared_ptr<runtime::Tensor>
                         create_tensor(const element::Type& element_type,
                                       const Shape& shape) override;
 
-                    std::shared_ptr<runtime::TensorView>
+                    std::shared_ptr<runtime::Tensor>
                         create_tensor(const element::Type& element_type,
                                       const Shape& shape,
                                       const bool batched) override;
 
-                    std::shared_ptr<runtime::TensorView>
+                    std::shared_ptr<runtime::Tensor>
                         create_tensor(const element::Type& element_type,
                                       const Shape& shape,
                                       void* memory_pointer) override;
 
-                    std::shared_ptr<runtime::TensorView>
+                    std::shared_ptr<runtime::Tensor>
                         create_plain_tensor(const element::Type& element_type,
                                             const Shape& shape) override;
 
@@ -93,12 +93,12 @@ namespace ngraph
                     std::shared_ptr<runtime::he::HEPlaintext>
                         create_empty_plaintext() const override;
 
-                    std::shared_ptr<runtime::TensorView>
+                    std::shared_ptr<runtime::Tensor>
                         create_valued_tensor(float value,
                                              const element::Type& element_type,
                                              const Shape& shape) override;
 
-                    std::shared_ptr<runtime::TensorView>
+                    std::shared_ptr<runtime::Tensor>
                         create_valued_plain_tensor(float value,
                                                    const element::Type& element_type,
                                                    const Shape& shape) override;

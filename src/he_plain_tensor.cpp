@@ -19,23 +19,23 @@
 
 #include "he_backend.hpp"
 #include "he_ckks_backend.hpp"
-#include "he_plain_tensor_view.hpp"
+#include "he_plain_tensor.hpp"
 #include "he_seal_backend.hpp"
 #include "ckks_plaintext_wrapper.hpp"
-#include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
+#include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
 #include "seal_plaintext_wrapper.hpp"
 
 using namespace ngraph;
 using namespace std;
 
-runtime::he::HEPlainTensorView::HEPlainTensorView(const element::Type& element_type,
+runtime::he::HEPlainTensor::HEPlainTensor(const element::Type& element_type,
                                                   const Shape& shape,
                                                   shared_ptr<HEBackend> he_backend,
                                                   const string& name)
-    : runtime::he::HETensorView(element_type, shape, he_backend)
+    : runtime::he::HETensor(element_type, shape, he_backend)
 {
-    // get_tensor_view_layout()->get_size() is the number of elements
-    m_num_elements = m_descriptor->get_tensor_view_layout()->get_size();
+    // get_tensor_layout()->get_size() is the number of elements
+    m_num_elements = m_descriptor->get_tensor_layout()->get_size();
     m_plain_texts.resize(m_num_elements);
 #pragma omp parallel for
     for (size_t i = 0; i < m_num_elements; ++i)
@@ -51,19 +51,19 @@ runtime::he::HEPlainTensorView::HEPlainTensorView(const element::Type& element_t
         }
         else
         {
-            throw ngraph_error("m_he_backend neither SEAL nor HEAAN in HEPlainTensorView");
+            throw ngraph_error("m_he_backend neither SEAL nor HEAAN in HEPlainTensor");
         }
     }
 }
 
-runtime::he::HEPlainTensorView::~HEPlainTensorView()
+runtime::he::HEPlainTensor::~HEPlainTensor()
 {
 }
 
-void runtime::he::HEPlainTensorView::write(const void* source, size_t tensor_offset, size_t n)
+void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset, size_t n)
 {
     check_io_bounds(source, tensor_offset, n);
-    const element::Type& type = get_tensor_view_layout()->get_element_type();
+    const element::Type& type = get_tensor_layout()->get_element_type();
     size_t type_byte_size = type.size();
     size_t dst_start_index = tensor_offset / type_byte_size;
     size_t num_elements_to_write = n / type_byte_size;
@@ -83,7 +83,7 @@ void runtime::he::HEPlainTensorView::write(const void* source, size_t tensor_off
         }
         else
         {
-            throw ngraph_error("HEPlainTensorView::write, he_backend is neither SEAL nor HEAAN.");
+            throw ngraph_error("HEPlainTensor::write, he_backend is neither SEAL nor HEAAN.");
         }
     }
     else
@@ -105,16 +105,16 @@ void runtime::he::HEPlainTensorView::write(const void* source, size_t tensor_off
             else
             {
                 throw ngraph_error(
-                    "HEPlainTensorView::write, he_backend is neither SEAL nor HEAAN.");
+                    "HEPlainTensor::write, he_backend is neither SEAL nor HEAAN.");
             }
         }
     }
 }
 
-void runtime::he::HEPlainTensorView::read(void* target, size_t tensor_offset, size_t n) const
+void runtime::he::HEPlainTensor::read(void* target, size_t tensor_offset, size_t n) const
 {
     check_io_bounds(target, tensor_offset, n);
-    const element::Type& type = get_tensor_view_layout()->get_element_type();
+    const element::Type& type = get_tensor_layout()->get_element_type();
     size_t type_byte_size = type.size();
     size_t src_start_index = tensor_offset / type_byte_size;
     size_t num_elements_to_read = n / type_byte_size;
@@ -134,7 +134,7 @@ void runtime::he::HEPlainTensorView::read(void* target, size_t tensor_offset, si
         }
         else
         {
-            throw ngraph_error("HEPlainTensorView::read, he_backend is neither SEAL nor HEAAN.");
+            throw ngraph_error("HEPlainTensor::read, he_backend is neither SEAL nor HEAAN.");
         }
     }
     else
@@ -156,7 +156,7 @@ void runtime::he::HEPlainTensorView::read(void* target, size_t tensor_offset, si
             else
             {
                 throw ngraph_error(
-                    "HEPlainTensorView::read, he_backend is neither SEAL nor HEAAN.");
+                    "HEPlainTensor::read, he_backend is neither SEAL nor HEAAN.");
             }
         }
     }

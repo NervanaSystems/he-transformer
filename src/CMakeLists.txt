@@ -17,51 +17,15 @@
 # HE transformer sources
 set (HE_SRC
     # kernels
-    kernel/add.cpp
-    #kernel/avg_pool.cpp
-    #kernel/broadcast.cpp
-    #kernel/concat.cpp
-    #kernel/constant.cpp
-    #kernel/convolution.cpp
-    #kernel/dot.cpp
-    #kernel/multiply.cpp
-    #kernel/negate.cpp
-    #kernel/one_hot.cpp
-    #kernel/pad.cpp
-    #kernel/reshape.cpp
-    #kernel/result.cpp
-    #kernel/slice.cpp
-    #kernel/subtract.cpp
-    #kernel/sum.cpp
-    # CKKS kernels
-    # kernel/ckks/add_ckks.cpp
-    # kernel/ckks/multiply_ckks.cpp
-    # kernel/ckks/negate_ckks.cpp
-    # kernel/ckks/square_ckks.cpp
-    # kernel/ckks/subtract_ckks.cpp
     # seal kernels
-    kernel/bfv/add_bfv.cpp
-    kernel/bfv/multiply_bfv.cpp
-    kernel/bfv/negate_bfv.cpp
-    kernel/bfv/square_bfv.cpp
-    kernel/bfv/subtract_bfv.cpp
     # main
-    create_backend.cpp
+    # create_backend.cpp
     he_backend.cpp
-    he_call_frame.cpp
-    he_cipher_tensor_view.cpp
-    he_ciphertext.cpp
-    he_plaintext.cpp
-    he_tensor_view.cpp
-    he_plain_tensor_view.cpp
-    int_call_frame.cpp
-    # CKKS
-    he_ckks_backend.cpp
-    # BFV
-    he_bfv_backend.cpp
-    # SEAL
-    seal_ciphertext_wrapper.cpp
-    seal_plaintext_wrapper.cpp
+    #he_call_frame.cpp
+    #he_cipher_tensor.cpp
+    #he_ciphertext.cpp
+    #he_plaintext.cpp
+    #he_tensor.cpp
 )
 
 # Paths for the upstream ngraph

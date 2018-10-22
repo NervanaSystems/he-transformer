@@ -20,7 +20,7 @@
 #include <memory>
 #include <vector>
 
-#include "he_tensor_view.hpp"
+#include "he_tensor.hpp"
 #include "ngraph/function.hpp"
 #include "ngraph/graph_util.hpp"
 #include "ngraph/node.hpp"
@@ -33,12 +33,12 @@ namespace ngraph
 
     namespace runtime
     {
-        class TensorView;
+        class Tensor;
         class PerformanceCounter;
 
         namespace he
         {
-            class HETensorView;
+            class HETensor;
 
             // A VM for executing lightly-compiled graph functions
             class HECallFrame
@@ -47,8 +47,8 @@ namespace ngraph
                 HECallFrame(const std::shared_ptr<Function>& function,
                             const std::shared_ptr<HEBackend>& he_backend);
 
-                void call(const std::vector<std::shared_ptr<runtime::TensorView>>& outputs,
-                          const std::vector<std::shared_ptr<runtime::TensorView>>& inputs);
+                void call(const std::vector<std::shared_ptr<runtime::Tensor>>& outputs,
+                          const std::vector<std::shared_ptr<runtime::Tensor>>& inputs);
 
                 std::vector<PerformanceCounter> get_performance_data() const;
 
@@ -60,20 +60,20 @@ namespace ngraph
                 bool is_cpu_check_enabled(const std::shared_ptr<Node>& op) const;
 
                 void call(std::shared_ptr<Function> function,
-                          const std::vector<std::shared_ptr<runtime::he::HETensorView>>& output_tvs,
-                          const std::vector<std::shared_ptr<runtime::he::HETensorView>>& input_tvs);
+                          const std::vector<std::shared_ptr<runtime::he::HETensor>>& output_tvs,
+                          const std::vector<std::shared_ptr<runtime::he::HETensor>>& input_tvs);
 
                 void generate_calls(const element::Type& type,
                                     const std::shared_ptr<Node>& node,
-                                    const std::vector<std::shared_ptr<HETensorView>>& out,
-                                    const std::vector<std::shared_ptr<HETensorView>>& args);
+                                    const std::vector<std::shared_ptr<HETensor>>& out,
+                                    const std::vector<std::shared_ptr<HETensor>>& args);
 
                 void check_cpu_calls(
                     std::shared_ptr<Function> function,
                     const element::Type& type,
                     const std::shared_ptr<Node>& op,
-                    const std::vector<std::shared_ptr<runtime::he::HETensorView>>& outputs,
-                    const std::vector<std::shared_ptr<runtime::he::HETensorView>>& inputs,
+                    const std::vector<std::shared_ptr<runtime::he::HETensor>>& outputs,
+                    const std::vector<std::shared_ptr<runtime::he::HETensor>>& inputs,
                     bool verbose);
 
                 std::unordered_map<std::shared_ptr<Node>, stopwatch> m_timer_map;

@@ -19,7 +19,7 @@
 #include "ngraph/type/element_type.hpp"
 
 #include "he_backend.hpp"
-#include "he_cipher_tensor_view.hpp"
+#include "he_cipher_tensor.hpp"
 #include "he_ciphertext.hpp"
 #include "he_ckks_backend.hpp"
 #include "he_seal_backend.hpp"

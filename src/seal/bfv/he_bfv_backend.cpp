@@ -17,11 +17,11 @@
 #include <limits>
 
 #include "he_call_frame.hpp"
-#include "he_cipher_tensor_view.hpp"
-#include "he_plain_tensor_view.hpp"
+#include "he_cipher_tensor.hpp"
+#include "he_plain_tensor.hpp"
 #include "he_seal_backend.hpp"
 #include "he_seal_parameter.hpp"
-#include "he_tensor_view.hpp"
+#include "he_tensor.hpp"
 
 #include "seal/seal.h"
 
@@ -204,17 +204,17 @@ shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealBackend::make_seal_con
     return tmp;
 }
 
-shared_ptr<runtime::TensorView>
+shared_ptr<runtime::Tensor>
     runtime::he::he_seal::HESealBackend::create_tensor(const element::Type& element_type,
                                                        const Shape& shape)
 {
     shared_ptr<HESealBackend> he_seal_backend =
         dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(shared_from_this());
-    auto rc = make_shared<runtime::he::HECipherTensorView>(element_type, shape, he_seal_backend);
-    return static_pointer_cast<runtime::TensorView>(rc);
+    auto rc = make_shared<runtime::he::HECipherTensor>(element_type, shape, he_seal_backend);
+    return static_pointer_cast<runtime::Tensor>(rc);
 }
 
-shared_ptr<runtime::TensorView> runtime::he::he_seal::HESealBackend::create_tensor(
+shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealBackend::create_tensor(
     const element::Type& element_type, const Shape& shape, const bool batched)
 {
     if (batched)
@@ -227,20 +227,20 @@ shared_ptr<runtime::TensorView> runtime::he::he_seal::HESealBackend::create_tens
     }
 }
 
-shared_ptr<runtime::TensorView> runtime::he::he_seal::HESealBackend::create_tensor(
+shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealBackend::create_tensor(
     const element::Type& element_type, const Shape& shape, void* memory_pointer)
 {
     throw ngraph_error("HESeal create_tensor unimplemented");
 }
 
-shared_ptr<runtime::TensorView>
+shared_ptr<runtime::Tensor>
     runtime::he::he_seal::HESealBackend::create_plain_tensor(const element::Type& element_type,
                                                              const Shape& shape)
 {
     shared_ptr<HESealBackend> he_seal_backend =
         dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(shared_from_this());
-    auto rc = make_shared<runtime::he::HEPlainTensorView>(element_type, shape, he_seal_backend);
-    return static_pointer_cast<runtime::TensorView>(rc);
+    auto rc = make_shared<runtime::he::HEPlainTensor>(element_type, shape, he_seal_backend);
+    return static_pointer_cast<runtime::Tensor>(rc);
 }
 
 shared_ptr<runtime::he::HECiphertext> runtime::he::he_seal::HESealBackend::create_valued_ciphertext(
@@ -359,10 +359,10 @@ shared_ptr<runtime::he::HEPlaintext>
     return make_shared<SealPlaintextWrapper>();
 }
 
-shared_ptr<runtime::TensorView> runtime::he::he_seal::HESealBackend::create_valued_tensor(
+shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealBackend::create_valued_tensor(
     float value, const element::Type& element_type, const Shape& shape)
 {
-    auto tensor = static_pointer_cast<HECipherTensorView>(create_tensor(element_type, shape));
+    auto tensor = static_pointer_cast<HECipherTensor>(create_tensor(element_type, shape));
     vector<shared_ptr<runtime::he::HECiphertext>>& cipher_texts = tensor->get_elements();
 #pragma omp parallel for
     for (size_t i = 0; i < cipher_texts.size(); ++i)
@@ -372,10 +372,10 @@ shared_ptr<runtime::TensorView> runtime::he::he_seal::HESealBackend::create_valu
     return tensor;
 }
 
-shared_ptr<runtime::TensorView> runtime::he::he_seal::HESealBackend::create_valued_plain_tensor(
+shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealBackend::create_valued_plain_tensor(
     float value, const element::Type& element_type, const Shape& shape)
 {
-    auto tensor = static_pointer_cast<HEPlainTensorView>(create_plain_tensor(element_type, shape));
+    auto tensor = static_pointer_cast<HEPlainTensor>(create_plain_tensor(element_type, shape));
     vector<shared_ptr<runtime::he::HEPlaintext>>& plain_texts = tensor->get_elements();
 #pragma omp parallel for
     for (size_t i = 0; i < plain_texts.size(); ++i)
@@ -480,7 +480,7 @@ int runtime::he::he_seal::HESealBackend::noise_budget(
 }
 
 void runtime::he::he_seal::HESealBackend::check_noise_budget(
-    const vector<shared_ptr<runtime::he::HETensorView>>& tvs) const
+    const vector<shared_ptr<runtime::he::HETensor>>& tvs) const
 {
     // Check noise budget
     NGRAPH_INFO << "Checking noise budget ";
@@ -488,7 +488,7 @@ void runtime::he::he_seal::HESealBackend::check_noise_budget(
     // Usually tvs.size() is very small (e.g. 1 for most ops), parallel the internal loops
     for (size_t i = 0; i < tvs.size(); ++i)
     {
-        if (auto cipher_tv = dynamic_pointer_cast<HECipherTensorView>(tvs[i]))
+        if (auto cipher_tv = dynamic_pointer_cast<HECipherTensor>(tvs[i]))
         {
             size_t lowest_budget = numeric_limits<size_t>::max();
 

@@ -16,11 +16,11 @@
 
 #include "nlohmann/json.hpp"
 
-#include "he_cipher_tensor_view.hpp"
+#include "he_cipher_tensor.hpp"
 #include "he_ckks_backend.hpp"
 #include "he_ckks_parameter.hpp"
-#include "he_plain_tensor_view.hpp"
-#include "he_tensor_view.hpp"
+#include "he_plain_tensor.hpp"
+#include "he_tensor.hpp"
 
 using namespace ngraph;
 using namespace std;
@@ -138,41 +138,41 @@ void runtime::he::he_ckks::HEHeaanBackend::assert_valid_ckks_parameter(
     }
 }
 
-shared_ptr<runtime::TensorView>
+shared_ptr<runtime::Tensor>
     runtime::he::he_ckks::HEHeaanBackend::create_tensor(const element::Type& element_type,
                                                          const Shape& shape)
 {
     shared_ptr<HEHeaanBackend> he_ckks_backend =
         dynamic_pointer_cast<runtime::he::he_ckks::HEHeaanBackend>(shared_from_this());
-    auto rc = make_shared<runtime::he::HECipherTensorView>(element_type, shape, he_ckks_backend);
-    return static_pointer_cast<runtime::TensorView>(rc);
+    auto rc = make_shared<runtime::he::HECipherTensor>(element_type, shape, he_ckks_backend);
+    return static_pointer_cast<runtime::Tensor>(rc);
 }
 
-shared_ptr<runtime::TensorView> runtime::he::he_ckks::HEHeaanBackend::create_tensor(
+shared_ptr<runtime::Tensor> runtime::he::he_ckks::HEHeaanBackend::create_tensor(
     const element::Type& element_type, const Shape& shape, const bool batched)
 {
     shared_ptr<HEHeaanBackend> he_ckks_backend =
         dynamic_pointer_cast<runtime::he::he_ckks::HEHeaanBackend>(shared_from_this());
 
-    auto rc = make_shared<runtime::he::HECipherTensorView>(
+    auto rc = make_shared<runtime::he::HECipherTensor>(
         element_type, shape, he_ckks_backend, batched);
-    return static_pointer_cast<runtime::TensorView>(rc);
+    return static_pointer_cast<runtime::Tensor>(rc);
 }
 
-shared_ptr<runtime::TensorView> runtime::he::he_ckks::HEHeaanBackend::create_tensor(
+shared_ptr<runtime::Tensor> runtime::he::he_ckks::HEHeaanBackend::create_tensor(
     const element::Type& element_type, const Shape& shape, void* memory_pointer)
 {
     throw ngraph_error("HEHeaan create_tensor unimplemented");
 }
 
-shared_ptr<runtime::TensorView>
+shared_ptr<runtime::Tensor>
     runtime::he::he_ckks::HEHeaanBackend::create_plain_tensor(const element::Type& element_type,
                                                                const Shape& shape)
 {
     shared_ptr<HEHeaanBackend> he_ckks_backend =
         dynamic_pointer_cast<runtime::he::he_ckks::HEHeaanBackend>(shared_from_this());
-    auto rc = make_shared<runtime::he::HEPlainTensorView>(element_type, shape, he_ckks_backend);
-    return static_pointer_cast<runtime::TensorView>(rc);
+    auto rc = make_shared<runtime::he::HEPlainTensor>(element_type, shape, he_ckks_backend);
+    return static_pointer_cast<runtime::Tensor>(rc);
 }
 
 shared_ptr<runtime::he::HECiphertext>
@@ -246,10 +246,10 @@ shared_ptr<runtime::he::HEPlaintext>
     return make_shared<HeaanPlaintextWrapper>();
 }
 
-shared_ptr<runtime::TensorView> runtime::he::he_ckks::HEHeaanBackend::create_valued_tensor(
+shared_ptr<runtime::Tensor> runtime::he::he_ckks::HEHeaanBackend::create_valued_tensor(
     float value, const element::Type& element_type, const Shape& shape)
 {
-    auto tensor = static_pointer_cast<HECipherTensorView>(create_tensor(element_type, shape));
+    auto tensor = static_pointer_cast<HECipherTensor>(create_tensor(element_type, shape));
     vector<shared_ptr<runtime::he::HECiphertext>>& cipher_texts = tensor->get_elements();
 #pragma omp parallel for
     for (size_t i = 0; i < cipher_texts.size(); ++i)
@@ -259,10 +259,10 @@ shared_ptr<runtime::TensorView> runtime::he::he_ckks::HEHeaanBackend::create_val
     return tensor;
 }
 
-shared_ptr<runtime::TensorView> runtime::he::he_ckks::HEHeaanBackend::create_valued_plain_tensor(
+shared_ptr<runtime::Tensor> runtime::he::he_ckks::HEHeaanBackend::create_valued_plain_tensor(
     float value, const element::Type& element_type, const Shape& shape)
 {
-    auto tensor = static_pointer_cast<HEPlainTensorView>(create_plain_tensor(element_type, shape));
+    auto tensor = static_pointer_cast<HEPlainTensor>(create_plain_tensor(element_type, shape));
     vector<shared_ptr<runtime::he::HEPlaintext>>& plain_texts = tensor->get_elements();
 #pragma omp parallel for
     for (size_t i = 0; i < plain_texts.size(); ++i)

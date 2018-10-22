@@ -31,10 +31,10 @@
 
 #include "he_backend.hpp"
 #include "he_call_frame.hpp"
-#include "he_cipher_tensor_view.hpp"
-#include "he_plain_tensor_view.hpp"
+#include "he_cipher_tensor.hpp"
+#include "he_plain_tensor.hpp"
 #include "he_seal_backend.hpp"
-#include "he_tensor_view.hpp"
+#include "he_tensor.hpp"
 #include "int_call_frame.hpp"
 #include "kernel/add.hpp"
 #include "kernel/avg_pool.hpp"
@@ -52,11 +52,11 @@
 #include "kernel/slice.hpp"
 #include "kernel/subtract.hpp"
 #include "kernel/sum.hpp"
-#include "ngraph/descriptor/layout/tensor_view_layout.hpp"
+#include "ngraph/descriptor/layout/tensor_layout.hpp"
 #include "ngraph/runtime/backend.hpp"
-#include "ngraph/runtime/host_tensor_view.hpp"
+#include "ngraph/runtime/host_tensor.hpp"
 #include "ngraph/runtime/performance_counter.hpp"
-#include "ngraph/runtime/tensor_view.hpp"
+#include "ngraph/runtime/tensor.hpp"
 
 using namespace std;
 using namespace ngraph;
@@ -95,14 +95,14 @@ bool runtime::he::HECallFrame::is_cpu_check_enabled(const shared_ptr<Node>& op) 
 }
 
 void runtime::he::HECallFrame::call(shared_ptr<Function> function,
-                                    const vector<shared_ptr<runtime::he::HETensorView>>& output_tvs,
-                                    const vector<shared_ptr<runtime::he::HETensorView>>& input_tvs)
+                                    const vector<shared_ptr<runtime::he::HETensor>>& output_tvs,
+                                    const vector<shared_ptr<runtime::he::HETensor>>& input_tvs)
 {
     // TODO: we clear timer at each run for now
     m_timer_map.clear();
 
     // Every descriptor::tv (inputs/outputs/intermediates) maps to one runtime::tv
-    unordered_map<descriptor::TensorView*, shared_ptr<runtime::he::HETensorView>> tensor_map;
+    unordered_map<descriptor::Tensor*, shared_ptr<runtime::he::HETensor>> tensor_map;
 
     // Map inuput descriptor::tv to runtime::tv
     size_t arg_index = 0;
@@ -110,7 +110,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
     {
         for (size_t i = 0; i < param->get_output_size(); ++i)
         {
-            descriptor::TensorView* tv = param->get_output_tensor_view(i).get();
+            descriptor::Tensor* tv = param->get_output_tensor(i).get();
             tensor_map.insert({tv, input_tvs[arg_index++]});
         }
     }
@@ -123,7 +123,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         {
             throw ngraph_error("One of function's outputs isn't op::Result");
         }
-        descriptor::TensorView* tv = function->get_output_op(i)->get_output_tensor_view(0).get();
+        descriptor::Tensor* tv = function->get_output_op(i)->get_output_tensor(0).get();
         tensor_map.insert({tv, output_tvs[i]});
     }
 
@@ -140,19 +140,19 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         m_timer_map[op].start();
 
         // Collect input runtime::tv
-        vector<shared_ptr<runtime::he::HETensorView>> inputs;
+        vector<shared_ptr<runtime::he::HETensor>> inputs;
         for (const descriptor::Input& input : op->get_inputs())
         {
-            descriptor::TensorView* tv = input.get_output().get_tensor_view().get();
+            descriptor::Tensor* tv = input.get_output().get_tensor().get();
             inputs.push_back(tensor_map.at(tv));
         }
 
         // Collect output runtime::tv
         bool any_batched = false;
-        vector<shared_ptr<runtime::he::HETensorView>> outputs;
+        vector<shared_ptr<runtime::he::HETensor>> outputs;
         for (size_t i = 0; i < op->get_output_size(); ++i)
         {
-            descriptor::TensorView* tv = op->get_output_tensor_view(i).get();
+            descriptor::Tensor* tv = op->get_output_tensor(i).get();
             string name = tv->get_tensor().get_name();
             if (!contains_key(tensor_map, tv))
             {
@@ -162,12 +162,12 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                 string tensor_name = op->get_output_tensor(i).get_name();
 
                 bool plain_out = all_of(
-                    inputs.begin(), inputs.end(), [](shared_ptr<runtime::he::HETensorView> input) {
-                        return dynamic_pointer_cast<HEPlainTensorView>(input) != nullptr;
+                    inputs.begin(), inputs.end(), [](shared_ptr<runtime::he::HETensor> input) {
+                        return dynamic_pointer_cast<HEPlainTensor>(input) != nullptr;
                     });
                 if (plain_out)
                 {
-                    auto otv = make_shared<runtime::he::HEPlainTensorView>(
+                    auto otv = make_shared<runtime::he::HEPlainTensor>(
                         element_type, shape, m_he_backend, name);
                     tensor_map.insert({tv, otv});
                 }
@@ -176,9 +176,9 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                     bool batched_out =
                         any_of(inputs.begin(),
                                inputs.end(),
-                               [](shared_ptr<runtime::he::HETensorView> input) {
+                               [](shared_ptr<runtime::he::HETensor> input) {
                                    if (auto input_cipher_tv =
-                                           dynamic_pointer_cast<HECipherTensorView>(input))
+                                           dynamic_pointer_cast<HECipherTensor>(input))
                                    {
                                        return input_cipher_tv->is_batched();
                                    }
@@ -189,7 +189,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                                });
                     any_batched |= batched_out;
 
-                    auto otv = make_shared<runtime::he::HECipherTensorView>(
+                    auto otv = make_shared<runtime::he::HECipherTensor>(
                         element_type, shape, m_he_backend, batched_out, name);
                     tensor_map.insert({tv, otv});
                 }
@@ -221,7 +221,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         if (auto he_seal_backend =
                 dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(m_he_backend))
         {
-            if (auto output = dynamic_pointer_cast<runtime::he::HECipherTensorView>(outputs[0]))
+            if (auto output = dynamic_pointer_cast<runtime::he::HECipherTensor>(outputs[0]))
             {
                 he_seal_backend->check_noise_budget(outputs);
             }
@@ -254,29 +254,29 @@ void runtime::he::HECallFrame::check_cpu_calls(
     shared_ptr<Function> function,
     const element::Type& type,
     const shared_ptr<Node>& op,
-    const vector<shared_ptr<runtime::he::HETensorView>>& outputs,
-    const vector<shared_ptr<runtime::he::HETensorView>>& inputs,
+    const vector<shared_ptr<runtime::he::HETensor>>& outputs,
+    const vector<shared_ptr<runtime::he::HETensor>>& inputs,
     bool verbose)
 {
     runtime::interpreter::INTCallFrame cpu_call_frame(function);
-    vector<shared_ptr<runtime::HostTensorView>> cpu_inputs;
-    vector<shared_ptr<runtime::HostTensorView>> cpu_outputs;
-    vector<shared_ptr<runtime::HostTensorView>> result_outputs;
+    vector<shared_ptr<runtime::HostTensor>> cpu_inputs;
+    vector<shared_ptr<runtime::HostTensor>> cpu_outputs;
+    vector<shared_ptr<runtime::HostTensor>> result_outputs;
 
-    for (shared_ptr<runtime::he::HETensorView> he_tv : inputs)
+    for (shared_ptr<runtime::he::HETensor> he_tv : inputs)
     {
-        shared_ptr<HECipherTensorView> cipher_tv =
-            dynamic_pointer_cast<runtime::he::HECipherTensorView>(he_tv);
-        shared_ptr<HEPlainTensorView> plain_tv =
-            dynamic_pointer_cast<runtime::he::HEPlainTensorView>(he_tv);
+        shared_ptr<HECipherTensor> cipher_tv =
+            dynamic_pointer_cast<runtime::he::HECipherTensor>(he_tv);
+        shared_ptr<HEPlainTensor> plain_tv =
+            dynamic_pointer_cast<runtime::he::HEPlainTensor>(he_tv);
 
-        const element::Type& type = he_tv->get_tensor_view_layout()->get_element_type();
+        const element::Type& type = he_tv->get_tensor_layout()->get_element_type();
         if (cipher_tv != nullptr)
         {
             auto shape = cipher_tv->get_expanded_shape();
             size_t num_bytes = type.size() * shape_size(shape);
 
-            shared_ptr<HostTensorView> tv = make_shared<HostTensorView>(type, shape);
+            shared_ptr<HostTensor> tv = make_shared<HostTensor>(type, shape);
             cipher_tv->read(tv->get_data_ptr(), 0, num_bytes);
             cpu_inputs.push_back(tv);
         }
@@ -284,7 +284,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
         {
             auto shape = he_tv->get_shape();
             size_t num_bytes = type.size() * shape_size(shape);
-            shared_ptr<HostTensorView> tv = make_shared<HostTensorView>(type, shape);
+            shared_ptr<HostTensor> tv = make_shared<HostTensor>(type, shape);
             plain_tv->read(tv->get_data_ptr(), 0, num_bytes);
             cpu_inputs.push_back(tv);
         }
@@ -294,21 +294,21 @@ void runtime::he::HECallFrame::check_cpu_calls(
         }
     }
 
-    for (shared_ptr<runtime::he::HETensorView> he_tv : outputs)
+    for (shared_ptr<runtime::he::HETensor> he_tv : outputs)
     {
-        shared_ptr<HECipherTensorView> cipher_tv =
-            dynamic_pointer_cast<runtime::he::HECipherTensorView>(he_tv);
-        shared_ptr<HEPlainTensorView> plain_tv =
-            dynamic_pointer_cast<runtime::he::HEPlainTensorView>(he_tv);
+        shared_ptr<HECipherTensor> cipher_tv =
+            dynamic_pointer_cast<runtime::he::HECipherTensor>(he_tv);
+        shared_ptr<HEPlainTensor> plain_tv =
+            dynamic_pointer_cast<runtime::he::HEPlainTensor>(he_tv);
 
-        const element::Type& type = he_tv->get_tensor_view_layout()->get_element_type();
+        const element::Type& type = he_tv->get_tensor_layout()->get_element_type();
 
         if (cipher_tv != nullptr)
         {
             auto shape = cipher_tv->get_expanded_shape();
             size_t num_bytes = type.size() * shape_size(shape);
 
-            shared_ptr<HostTensorView> tv = make_shared<HostTensorView>(type, shape);
+            shared_ptr<HostTensor> tv = make_shared<HostTensor>(type, shape);
             cipher_tv->read(tv->get_data_ptr(), 0, num_bytes);
             cpu_outputs.push_back(tv);
         }
@@ -316,7 +316,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
         {
             auto shape = he_tv->get_shape();
             size_t num_bytes = type.size() * shape_size(shape);
-            shared_ptr<HostTensorView> tv = make_shared<HostTensorView>(type, shape);
+            shared_ptr<HostTensor> tv = make_shared<HostTensor>(type, shape);
             plain_tv->read(tv->get_data_ptr(), 0, num_bytes);
             cpu_outputs.push_back(tv);
         }
@@ -334,10 +334,10 @@ void runtime::he::HECallFrame::check_cpu_calls(
     bool correct = true;
     for (size_t output_ind = 0; output_ind < outputs.size(); ++output_ind)
     {
-        shared_ptr<runtime::he::HETensorView> he_out = outputs[output_ind];
-        shared_ptr<runtime::HostTensorView> cpu_out = cpu_outputs[output_ind];
+        shared_ptr<runtime::he::HETensor> he_out = outputs[output_ind];
+        shared_ptr<runtime::HostTensor> cpu_out = cpu_outputs[output_ind];
 
-        const element::Type& type = he_out->get_tensor_view_layout()->get_element_type();
+        const element::Type& type = he_out->get_tensor_layout()->get_element_type();
         auto shape = cpu_out->get_shape();
         size_t num_bytes = type.size() * shape_size(shape);
 
@@ -401,7 +401,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
             NGRAPH_INFO << "Verbose float computation";
         }
 
-        auto print_tensor_view = [&type](shared_ptr<runtime::HostTensorView> tv) -> void {
+        auto print_tensor = [&type](shared_ptr<runtime::HostTensor> tv) -> void {
             size_t element_count = tv->get_element_count();
             auto shape = tv->get_shape();
             size_t num_bytes = type.size() * shape_size(shape);
@@ -413,15 +413,15 @@ void runtime::he::HECallFrame::check_cpu_calls(
             }
             cout << endl;
         };
-        /* for (shared_ptr<runtime::HostTensorView> cpu_input : cpu_inputs)
+        /* for (shared_ptr<runtime::HostTensor> cpu_input : cpu_inputs)
         {
             NGRAPH_INFO << "Input";
-            print_tensor_view(cpu_input);
+            print_tensor(cpu_input);
         }
-        for (shared_ptr<runtime::HostTensorView> cpu_output : cpu_outputs)
+        for (shared_ptr<runtime::HostTensor> cpu_output : cpu_outputs)
         {
             NGRAPH_INFO << "Output";
-            print_tensor_view(cpu_output);
+            print_tensor(cpu_output);
         } */
         if (!correct)
         {
@@ -434,26 +434,26 @@ void runtime::he::HECallFrame::check_cpu_calls(
 
 void runtime::he::HECallFrame::generate_calls(const element::Type& type,
                                               const shared_ptr<Node>& node,
-                                              const vector<shared_ptr<HETensorView>>& out,
-                                              const vector<shared_ptr<HETensorView>>& args)
+                                              const vector<shared_ptr<HETensor>>& out,
+                                              const vector<shared_ptr<HETensor>>& args)
 {
     string node_op = node->description();
-    shared_ptr<HECipherTensorView> arg0_cipher = nullptr;
-    shared_ptr<HEPlainTensorView> arg0_plain = nullptr;
-    shared_ptr<HECipherTensorView> arg1_cipher = nullptr;
-    shared_ptr<HEPlainTensorView> arg1_plain = nullptr;
-    shared_ptr<HECipherTensorView> out0_cipher = dynamic_pointer_cast<HECipherTensorView>(out[0]);
-    shared_ptr<HEPlainTensorView> out0_plain = dynamic_pointer_cast<HEPlainTensorView>(out[0]);
+    shared_ptr<HECipherTensor> arg0_cipher = nullptr;
+    shared_ptr<HEPlainTensor> arg0_plain = nullptr;
+    shared_ptr<HECipherTensor> arg1_cipher = nullptr;
+    shared_ptr<HEPlainTensor> arg1_plain = nullptr;
+    shared_ptr<HECipherTensor> out0_cipher = dynamic_pointer_cast<HECipherTensor>(out[0]);
+    shared_ptr<HEPlainTensor> out0_plain = dynamic_pointer_cast<HEPlainTensor>(out[0]);
 
     if (args.size() > 0)
     {
-        arg0_cipher = dynamic_pointer_cast<HECipherTensorView>(args[0]);
-        arg0_plain = dynamic_pointer_cast<HEPlainTensorView>(args[0]);
+        arg0_cipher = dynamic_pointer_cast<HECipherTensor>(args[0]);
+        arg0_plain = dynamic_pointer_cast<HEPlainTensor>(args[0]);
     }
     if (args.size() > 1)
     {
-        arg1_cipher = dynamic_pointer_cast<HECipherTensorView>(args[1]);
-        arg1_plain = dynamic_pointer_cast<HEPlainTensorView>(args[1]);
+        arg1_cipher = dynamic_pointer_cast<HECipherTensor>(args[1]);
+        arg1_plain = dynamic_pointer_cast<HEPlainTensor>(args[1]);
     }
 
     size_t batch_size = 1;
@@ -579,10 +579,10 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         {
             vector<vector<shared_ptr<runtime::he::HECiphertext>>> in_args;
             vector<Shape> in_shapes;
-            for (shared_ptr<HETensorView> arg : args)
+            for (shared_ptr<HETensor> arg : args)
             {
-                shared_ptr<HECipherTensorView> arg_cipher =
-                    dynamic_pointer_cast<HECipherTensorView>(arg);
+                shared_ptr<HECipherTensor> arg_cipher =
+                    dynamic_pointer_cast<HECipherTensor>(arg);
                 if (arg_cipher == nullptr)
                 {
                     throw ngraph_error("Concat type not consistent");
@@ -601,10 +601,10 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         {
             vector<vector<shared_ptr<runtime::he::HEPlaintext>>> in_args;
             vector<Shape> in_shapes;
-            for (shared_ptr<HETensorView> arg : args)
+            for (shared_ptr<HETensor> arg : args)
             {
-                shared_ptr<HEPlainTensorView> arg_plain =
-                    dynamic_pointer_cast<HEPlainTensorView>(arg);
+                shared_ptr<HEPlainTensor> arg_plain =
+                    dynamic_pointer_cast<HEPlainTensor>(arg);
                 if (arg_plain == nullptr)
                 {
                     throw ngraph_error("Concat type not consistent");
@@ -1115,18 +1115,18 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
     }
 }
 
-void runtime::he::HECallFrame::call(const vector<shared_ptr<runtime::TensorView>>& output_tvs,
-                                    const vector<shared_ptr<runtime::TensorView>>& input_tvs)
+void runtime::he::HECallFrame::call(const vector<shared_ptr<runtime::Tensor>>& output_tvs,
+                                    const vector<shared_ptr<runtime::Tensor>>& input_tvs)
 {
-    vector<shared_ptr<runtime::he::HETensorView>> args;
-    vector<shared_ptr<runtime::he::HETensorView>> out;
+    vector<shared_ptr<runtime::he::HETensor>> args;
+    vector<shared_ptr<runtime::he::HETensor>> out;
     for (auto tv : input_tvs)
     {
-        args.push_back(static_pointer_cast<runtime::he::HETensorView>(tv));
+        args.push_back(static_pointer_cast<runtime::he::HETensor>(tv));
     }
     for (auto tv : output_tvs)
     {
-        out.push_back(static_pointer_cast<runtime::he::HETensorView>(tv));
+        out.push_back(static_pointer_cast<runtime::he::HETensor>(tv));
     }
     call(m_function, out, args);
 }

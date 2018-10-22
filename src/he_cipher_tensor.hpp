@@ -18,8 +18,8 @@
 
 #include <string>
 
-#include "he_tensor_view.hpp"
-#include "ngraph/runtime/tensor_view.hpp"
+#include "he_tensor.hpp"
+#include "ngraph/runtime/tensor.hpp"
 #include "ngraph/type/element_type.hpp"
 
 namespace ngraph
@@ -31,15 +31,15 @@ namespace ngraph
             class HEBackend;
             class HECiphertext;
 
-            class HECipherTensorView : public HETensorView
+            class HECipherTensor : public HETensor
             {
             public:
-                HECipherTensorView(const element::Type& element_type,
+                HECipherTensor(const element::Type& element_type,
                                    const Shape& shape,
                                    std::shared_ptr<HEBackend> he_backend,
                                    const bool batched = false,
                                    const std::string& name = "external");
-                virtual ~HECipherTensorView();
+                virtual ~HECipherTensor();
 
                 const Shape get_expanded_shape() const;
 

@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "ngraph/runtime/tensor_view.hpp"
+#include "ngraph/runtime/tensor.hpp"
 #include "ngraph/type/element_type.hpp"
 
 namespace ngraph
@@ -27,15 +27,15 @@ namespace ngraph
         {
             class HEBackend;
 
-            class HETensorView : public runtime::TensorView
+            class HETensor : public runtime::Tensor
             {
             public:
-                HETensorView(const element::Type& element_type,
+                HETensor(const element::Type& element_type,
                              const Shape& shape,
                              const std::shared_ptr<HEBackend>& he_backend,
                              bool batched = false,
                              const std::string& name = "external");
-                virtual ~HETensorView();
+                virtual ~HETensor();
 
                 /// @brief Write bytes directly into the tensor
                 /// @param p Pointer to source of data

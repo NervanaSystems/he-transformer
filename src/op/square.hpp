@@ -17,18 +17,18 @@
 #pragma once
 
 #include "ngraph/op/op.hpp"
-#include "ngraph/op/util/requires_tensor_view_args.hpp"
+#include "ngraph/op/util/requires_tensor_args.hpp"
 #include "ngraph/type/type.hpp"
 
 namespace ngraph
 {
     namespace op
     {
-        class Square : public ngraph::op::util::RequiresTensorViewArgs
+        class Square : public ngraph::op::util::RequiresTensorArgs
         {
         public:
             Square(const std::shared_ptr<Node>& arg)
-                : RequiresTensorViewArgs("Square", {arg})
+                : RequiresTensorArgs("Square", {arg})
             {
                 set_value_type_checked(get_inputs().at(0).get_element_type(), arg->get_shape());
             }

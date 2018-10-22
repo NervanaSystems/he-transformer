@@ -20,7 +20,7 @@
 #include <vector>
 
 #include "he_plaintext.hpp"
-#include "he_tensor_view.hpp"
+#include "he_tensor.hpp"
 #include "ngraph/type/element_type.hpp"
 
 namespace ngraph
@@ -32,14 +32,14 @@ namespace ngraph
             class HEBackend;
             class HEPlaintext;
 
-            class HEPlainTensorView : public HETensorView
+            class HEPlainTensor : public HETensor
             {
             public:
-                HEPlainTensorView(const element::Type& element_type,
+                HEPlainTensor(const element::Type& element_type,
                                   const Shape& shape,
                                   std::shared_ptr<HEBackend> he_backend,
                                   const std::string& name = "external");
-                virtual ~HEPlainTensorView();
+                virtual ~HEPlainTensor();
 
                 /// @brief Write bytes directly into the tensor after encoding
                 /// @param p Pointer to source of data
