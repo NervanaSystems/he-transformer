@@ -70,8 +70,8 @@ const static runtime::he::HESealParameter parse_seal_config_or_use_default()
     }
     catch (const std::exception& e)
     {
-        return runtime::he::HESealParameter(8192,      // poly_modulus
-                                            2L << 30L, // plain_modulus
+        return runtime::he::HESealParameter(2048,      // poly_modulus
+                                            1 << 8, // plain_modulus
                                             128,       // security_level
                                             64,        // fractional_encoder_integer_coeff_count
                                             32,        // fractional_encoder_fraction_coeff_count
@@ -86,14 +86,15 @@ const static runtime::he::HESealParameter default_seal_parameter =
 
 static void print_seal_context(const seal::SEALContext& context)
 {
+    auto context_data = context.context_data();
     NGRAPH_INFO << endl
                 << "/ Encryption parameters:" << endl
-                << "| poly_modulus: " << context.poly_modulus().to_string() << endl
+                << "| poly_modulus: " << context_data->parms().poly_modulus_degree() << endl
                 // Print the size of the true (product) coefficient modulus
-                << "| coeff_modulus size: " << context.total_coeff_modulus().significant_bit_count()
+                << "| coeff_modulus size: " << context_data->total_coeff_modulus().significant_bit_count()
                 << " bits" << endl
-                << "| plain_modulus: " << context.plain_modulus().value() << endl
-                << "\\ noise_standard_deviation: " << context.noise_standard_deviation();
+                << "| plain_modulus: " << context_data->parms().plain_modulus().value() << endl
+                << "\\ noise_standard_deviation: " << context_data->parms().noise_standard_deviation();
 }
 
 runtime::he::he_seal::HESealBackend::HESealBackend()
@@ -105,33 +106,38 @@ runtime::he::he_seal::HESealBackend::HESealBackend()
 runtime::he::he_seal::HESealBackend::HESealBackend(
     const shared_ptr<runtime::he::HESealParameter> sp)
 {
+    NGRAPH_INFO << "Checking sp";
     assert_valid_seal_parameter(sp);
 
     // Context
+    NGRAPH_INFO << "Making seal context";
     m_context = make_seal_context(sp);
+    NGRAPH_INFO << "Made seal context";
+    auto m_context_data = m_context->context_data();
     print_seal_context(*m_context);
 
     // Encoders
-    m_int_encoder = make_shared<seal::IntegerEncoder>(m_context->plain_modulus());
+    auto poly_modulus = m_context_data->parms().plain_modulus().value();
+    auto plain_modulus = m_context_data->parms().plain_modulus().value();
+
+    m_int_encoder = make_shared<seal::IntegerEncoder>(plain_modulus);
     m_frac_encoder =
-        make_shared<seal::FractionalEncoder>(m_context->plain_modulus(),
-                                             m_context->poly_modulus(),
+        make_shared<seal::FractionalEncoder>(plain_modulus,
+                                             poly_modulus,
                                              sp->m_fractional_encoder_integer_coeff_count,
                                              sp->m_fractional_encoder_fraction_coeff_count,
                                              sp->m_fractional_encoder_base);
 
     // Keygen, encryptor and decryptor
-    m_keygen = make_shared<seal::KeyGenerator>(*m_context);
+    m_keygen = make_shared<seal::KeyGenerator>(m_context);
+    m_relin_key = make_shared<seal::RelinKeys>(m_keygen->relin_keys(16));
     m_public_key = make_shared<seal::PublicKey>(m_keygen->public_key());
     m_secret_key = make_shared<seal::SecretKey>(m_keygen->secret_key());
-    m_encryptor = make_shared<seal::Encryptor>(*m_context, *m_public_key);
-    m_decryptor = make_shared<seal::Decryptor>(*m_context, *m_secret_key);
+    m_encryptor = make_shared<seal::Encryptor>(m_context, *m_public_key);
+    m_decryptor = make_shared<seal::Decryptor>(m_context, *m_secret_key);
 
     // Evaluator
-    seal::EvaluationKeys ev_key;
-    m_keygen->generate_evaluation_keys(sp->m_evaluation_decomposition_bit_count, ev_key);
-    m_ev_key = make_shared<seal::EvaluationKeys>(ev_key);
-    m_evaluator = make_shared<seal::Evaluator>(*m_context);
+    m_evaluator = make_shared<seal::Evaluator>(m_context);
 
     // Plaintext constants
     m_plaintext_map["float"][0] = make_shared<SealPlaintextWrapper>(m_frac_encoder->encode(0));
@@ -165,8 +171,14 @@ shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealBackend::make_seal_con
 {
     assert_valid_seal_parameter(sp);
 
-    seal::EncryptionParameters parms;
-    parms.set_poly_modulus("1x^" + to_string(sp->m_poly_modulus) + " + 1");
+    seal::EncryptionParameters parms(seal::scheme_type::BFV);
+    NGRAPH_INFO << "Making BFV parms";
+
+    NGRAPH_INFO << "Setting poly mod degree to " << sp->m_poly_modulus;
+
+    parms.set_poly_modulus_degree(sp->m_poly_modulus);
+
+    NGRAPH_INFO << "Setting coeff mod to security level " << sp->m_security_level;
     if (sp->m_security_level == 128)
     {
         parms.set_coeff_modulus(seal::coeff_modulus_128(sp->m_poly_modulus));
@@ -179,8 +191,17 @@ shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealBackend::make_seal_con
     {
         throw ngraph_error("sp.security_level must be 128, 192");
     }
+
+    NGRAPH_INFO << "Setting plain mod to " << sp->m_plain_modulus;
     parms.set_plain_modulus(sp->m_plain_modulus);
-    return make_shared<seal::SEALContext>(parms);
+
+    NGRAPH_INFO << "Creating context";
+
+    auto tmp =seal::SEALContext::Create(parms);
+
+    NGRAPH_INFO << "Returning context";
+
+    return tmp;
 }
 
 shared_ptr<runtime::TensorView>

@@ -68,7 +68,7 @@ namespace ngraph
                 int m_fractional_encoder_fraction_coeff_count;
                 std::uint64_t m_fractional_encoder_base;
 
-                // generate_evaluation_keys
+                // Used to generate relin keys
                 int m_evaluation_decomposition_bit_count;
             };
         }

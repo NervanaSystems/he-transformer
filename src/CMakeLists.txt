@@ -80,6 +80,8 @@ link_directories(
     ${EXTERNAL_INSTALL_LIB_DIR}
 )
 
+message("Linking directories: ${NGRAPH_LIB_DIR}, ${EXTERNAL_INSTALL_LIB_DIR}")
+
 # Target library
 add_library(he_backend SHARED ${HE_SRC})
 add_dependencies(he_backend ext_ngraph ext_seal ext_heaan)

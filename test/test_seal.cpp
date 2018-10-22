@@ -33,16 +33,22 @@ TEST(seal_example, basics_i)
     using namespace seal;
 
     // Parameter
-    EncryptionParameters parms;
-    parms.set_poly_modulus("1x^2048 + 1");
+    std::cout << "Creating params" << std::endl;
+    EncryptionParameters parms(seal::scheme_type::BFV);
+    std::cout << "Created params" << std::endl;
+    parms.set_poly_modulus_degree(2048);
     parms.set_coeff_modulus(coeff_modulus_128(2048));
     parms.set_plain_modulus(1 << 8);
+    std::cout << "Creating context" << std::endl;
 
     // Context: print with print_parameters(context);
-    SEALContext context(parms);
+    auto context = SEALContext::Create(parms);
+
+    return;
 
     // Objects from context
-    IntegerEncoder encoder(context.plain_modulus());
+    std::cout << "Creating encoder" << std::endl;
+    IntegerEncoder encoder(parms.plain_modulus());
     KeyGenerator keygen(context);
     PublicKey public_key = keygen.public_key();
     SecretKey secret_key = keygen.secret_key();
@@ -51,6 +57,8 @@ TEST(seal_example, basics_i)
     Decryptor decryptor(context, secret_key);
 
     // Encode
+    std::cout << "Encoding" << std::endl;
+
     int value1 = 5;
     Plaintext plain1 = encoder.encode(value1);
     int value2 = -7;
@@ -58,13 +66,15 @@ TEST(seal_example, basics_i)
 
     // Encrypt
     Ciphertext encrypted1, encrypted2;
+    std::cout << "Encrypting" << std::endl;
+
     encryptor.encrypt(plain1, encrypted1);
     encryptor.encrypt(plain2, encrypted2);
 
-    // Compute
-    evaluator.negate(encrypted1);
-    evaluator.add(encrypted1, encrypted2);
-    evaluator.multiply(encrypted1, encrypted2);
+    // Compute. In-place add and multiply will over-write encrypted1
+    evaluator.negate_inplace(encrypted1);
+    evaluator.add_inplace(encrypted1, encrypted2);
+    evaluator.multiply_inplace(encrypted1, encrypted2);
 
     // Decrypt
     Plaintext plain_result;
@@ -80,16 +90,16 @@ TEST(seal_example, shared_ptr_encrypt)
     using namespace seal;
 
     // Parameter
-    EncryptionParameters parms;
-    parms.set_poly_modulus("1x^2048 + 1");
+    EncryptionParameters parms(seal::scheme_type::BFV);
+    parms.set_poly_modulus_degree(2048);
     parms.set_coeff_modulus(coeff_modulus_128(2048));
     parms.set_plain_modulus(1 << 8);
 
     // Context: print with print_parameters(context);
-    SEALContext context(parms);
+    auto context = SEALContext::Create(parms);
 
     // Objects from context
-    IntegerEncoder encoder(context.plain_modulus());
+    IntegerEncoder encoder(parms.plain_modulus());
     KeyGenerator keygen(context);
     PublicKey public_key = keygen.public_key();
     SecretKey secret_key = keygen.secret_key();
@@ -103,7 +113,10 @@ TEST(seal_example, shared_ptr_encrypt)
 
     // Encrypt
     auto encrypted_ptr = make_shared<Ciphertext>();
+    std::cout << "Encrypting" << std::endl;
     encryptor.encrypt(plain, *encrypted_ptr);
+
+    std::cout << "Encrypted" << std::endl;
 
     // Decrypt
     Plaintext plain_result;

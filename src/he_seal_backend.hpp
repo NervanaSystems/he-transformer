@@ -54,7 +54,7 @@ namespace ngraph
                     /// @brief Constructs SEAL context from SEAL parameter
                     /// @param sp SEAL Parameter from which to construct context
                     /// @return Pointer to constructed context
-                    shared_ptr<seal::SEALContext> make_seal_context(
+                    std::shared_ptr<seal::SEALContext> make_seal_context(
                         const std::shared_ptr<runtime::he::HESealParameter> sp) const;
 
                     std::shared_ptr<runtime::TensorView>
@@ -131,7 +131,7 @@ namespace ngraph
                                 size_t count = 1) const override;
 
                     void encrypt(
-                        shared_ptr<runtime::he::HECiphertext>& output,
+                        std::shared_ptr<runtime::he::HECiphertext>& output,
                         const std::shared_ptr<runtime::he::HEPlaintext> input) const override;
 
                     void decrypt(
@@ -146,11 +146,6 @@ namespace ngraph
                     const inline std::shared_ptr<seal::Evaluator> get_evaluator() const
                     {
                         return m_evaluator;
-                    }
-
-                    const inline std::shared_ptr<seal::EvaluationKeys> get_ev_key() const
-                    {
-                        return m_ev_key;
                     }
 
                     const inline std::shared_ptr<seal::Encryptor> get_encryptor() const
@@ -173,6 +168,11 @@ namespace ngraph
                         return m_frac_encoder;
                     }
 
+                    const inline std::shared_ptr<seal::RelinKeys> get_relin_key() const
+                    {
+                        return m_relin_key;
+                    }
+
                     struct plaintext_num
                     {
                         seal::Plaintext fl_0;
@@ -192,7 +192,7 @@ namespace ngraph
                     ///        Throws an error if the noise budget is exhauasted
                     ///        for any of the tensor views.
                     void check_noise_budget(
-                        const vector<shared_ptr<runtime::he::HETensorView>>& tvs) const;
+                        const std::vector<std::shared_ptr<runtime::he::HETensorView>>& tvs) const;
 
                     /// @brief Returns the remaining noise budget for a ciphertext.
                     //         A noise budget of <= 0 indicate the ciphertext is no longer
@@ -206,10 +206,10 @@ namespace ngraph
                     std::shared_ptr<seal::KeyGenerator> m_keygen;
                     std::shared_ptr<seal::PublicKey> m_public_key;
                     std::shared_ptr<seal::SecretKey> m_secret_key;
-                    std::shared_ptr<seal::EvaluationKeys> m_ev_key;
                     std::shared_ptr<seal::Encryptor> m_encryptor;
                     std::shared_ptr<seal::Decryptor> m_decryptor;
                     std::shared_ptr<seal::Evaluator> m_evaluator;
+                    std::shared_ptr<seal::RelinKeys> m_relin_key;
                     plaintext_num m_plaintext_num;
                 };
             }

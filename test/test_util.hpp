@@ -49,7 +49,7 @@ std::vector<float> read_constant(const std::string filename);
 void write_constant(const std::vector<float>& values, const std::string filename);
 void write_binary_constant(const std::vector<float>& values, const std::string filename);
 
-float get_accuracy(const vector<float>& pre_sigmoid, const vector<float>& y);
+float get_accuracy(const std::vector<float>& pre_sigmoid, const std::vector<float>& y);
 
 template <typename T>
 bool all_close(const std::vector<std::complex<T>>& a,
@@ -67,11 +67,11 @@ bool all_close(const std::vector<std::complex<T>>& a,
     return true;
 }
 
-vector<tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,
-             vector<shared_ptr<ngraph::runtime::TensorView>>>>
-    generate_plain_cipher_tensors(const vector<shared_ptr<Node>>& output,
-                                  const vector<shared_ptr<Node>>& input,
-                                  shared_ptr<ngraph::runtime::Backend> backend,
+std::vector<std::tuple<std::vector<std::shared_ptr<ngraph::runtime::TensorView>>,
+             std::vector<std::shared_ptr<ngraph::runtime::TensorView>>>>
+    generate_plain_cipher_tensors(const std::vector<std::shared_ptr<Node>>& output,
+                                  const std::vector<std::shared_ptr<Node>>& input,
+                                  std::shared_ptr<ngraph::runtime::Backend> backend,
                                   const bool consistent_type = false);
 
 template <typename T> // TODO: add to ngraph?
@@ -81,7 +81,7 @@ std::vector<T> generalized_read_vector(std::shared_ptr<ngraph::runtime::TensorVi
     {
         throw std::invalid_argument("read_vector type must match TensorView type");
     }
-    if (auto cipher_tv = dynamic_pointer_cast<ngraph::runtime::he::HECipherTensorView>(tv))
+    if (auto cipher_tv = std::dynamic_pointer_cast<ngraph::runtime::he::HECipherTensorView>(tv))
     {
         size_t element_count;
         if (cipher_tv->is_batched())

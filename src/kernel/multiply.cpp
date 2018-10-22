@@ -69,8 +69,8 @@ void runtime::he::kernel::scalar_multiply(const shared_ptr<runtime::he::HECipher
             {
                 kernel::seal::scalar_multiply(
                     arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
-                he_seal_backend->get_evaluator()->relinearize(out_seal->m_ciphertext,
-                                                              *(he_seal_backend->get_ev_key()));
+                he_seal_backend->get_evaluator()->relinearize_inplace(out_seal->m_ciphertext,
+                                                              *(he_seal_backend->get_relin_key()));
                 out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_seal);
             }
         }
