@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "he_heaan_backend.hpp"
+#include "he_ckks_backend.hpp"
 #include "he_seal_backend.hpp"
 #include "kernel/add.hpp"
 #include "kernel/multiply.hpp"
@@ -108,10 +108,10 @@ void ngraph::runtime::he::kernel::dot_template(const std::vector<std::shared_ptr
                                                const std::shared_ptr<runtime::he::HEBackend>& he_backend)
 {
     auto he_seal_backend = std::dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend);
-    auto he_heaan_backend = std::dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);
-    if (!he_seal_backend && !he_heaan_backend)
+    auto he_ckks_backend = std::dynamic_pointer_cast<runtime::he::he_ckks::HEHeaanBackend>(he_backend);
+    if (!he_seal_backend && !he_ckks_backend)
     {
-        throw ngraph_error("Dot he_backend neither heaan nor seal;");
+        throw ngraph_error("Dot he_backend neither ckks nor seal;");
     }
 
     // Get the sizes of the dot axes. It's easiest to pull them from arg1 because they're
@@ -192,9 +192,9 @@ void ngraph::runtime::he::kernel::dot_template(const std::vector<std::shared_ptr
         {
             sum = he_seal_backend->create_valued_ciphertext(0, type);
         }
-        else if (he_heaan_backend)
+        else if (he_ckks_backend)
         {
-            sum = he_heaan_backend->create_valued_ciphertext(0, type, batch_size);
+            sum = he_ckks_backend->create_valued_ciphertext(0, type, batch_size);
         }
 
         size_t out_index = output_transform.index(out_coord);
@@ -224,14 +224,14 @@ void ngraph::runtime::he::kernel::dot_template(const std::vector<std::shared_ptr
             {
                 prod = he_seal_backend->create_empty_ciphertext();
             }
-            else if (he_heaan_backend)
+            else if (he_ckks_backend)
             {
-                prod = he_heaan_backend->create_empty_ciphertext(batch_size);
+                prod = he_ckks_backend->create_empty_ciphertext(batch_size);
             }
 
             runtime::he::kernel::scalar_multiply(arg0_text, arg1_text, prod, type, he_backend);
 
-            std::shared_ptr<runtime::he::HECiphertext> sum_tmp = he_heaan_backend->create_empty_ciphertext(batch_size);
+            std::shared_ptr<runtime::he::HECiphertext> sum_tmp = he_ckks_backend->create_empty_ciphertext(batch_size);
             runtime::he::kernel::scalar_add(sum, prod, sum_tmp, type, he_backend);
             dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(sum)->m_ciphertext =
                 dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(sum_tmp)->m_ciphertext;

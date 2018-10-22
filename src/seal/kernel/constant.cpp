@@ -15,7 +15,7 @@
 *******************************************************************************/
 
 #include "kernel/constant.hpp"
-#include "he_heaan_backend.hpp"
+#include "he_ckks_backend.hpp"
 #include "he_seal_backend.hpp"
 #include "ngraph/type/element_type.hpp"
 
@@ -44,14 +44,14 @@ void runtime::he::kernel::constant(vector<shared_ptr<runtime::he::HEPlaintext>>&
             he_seal_backend->encode(out[i], src_with_offset, type);
         }
     }
-    else if (auto he_heaan_backend =
-                 dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
+    else if (auto he_ckks_backend =
+                 dynamic_pointer_cast<runtime::he::he_ckks::HEHeaanBackend>(he_backend))
     {
 #pragma omp parallel for
         for (size_t i = 0; i < count; ++i)
         {
             const void* src_with_offset = (void*)((char*)data_ptr + i * type.size());
-            he_heaan_backend->encode(out[i], src_with_offset, type);
+            he_ckks_backend->encode(out[i], src_with_offset, type);
         }
     }
     else

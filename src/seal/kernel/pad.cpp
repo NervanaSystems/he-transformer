@@ -20,7 +20,7 @@
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/except.hpp"
 
-#include "he_heaan_backend.hpp"
+#include "he_ckks_backend.hpp"
 #include "he_seal_backend.hpp"
 #include "kernel/pad.hpp"
 
@@ -129,30 +129,30 @@ void runtime::he::kernel::pad(
         he_seal_backend->encrypt(ciphertext, arg1[0]);
         arg1_encrypted = ciphertext;
     }
-    else if (auto he_heaan_backend =
-                 dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
+    else if (auto he_ckks_backend =
+                 dynamic_pointer_cast<runtime::he::he_ckks::HEHeaanBackend>(he_backend))
     {
         if (arg0.size() == 0)
         {
             std::shared_ptr<runtime::he::HECiphertext> ciphertext =
                 dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(
-                    he_heaan_backend->create_empty_ciphertext());
-            he_heaan_backend->encrypt(ciphertext, arg1[0]);
+                    he_ckks_backend->create_empty_ciphertext());
+            he_ckks_backend->encrypt(ciphertext, arg1[0]);
             arg1_encrypted = ciphertext;
         }
         else // Ensure arg0 and arg1 has the same precision and logq.
         {
             // TODO: move into he_backend
-            auto arg0_heaan = dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(arg0[0]);
+            auto arg0_ckks = dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(arg0[0]);
 
             if (batch_size == 1)
             {
-                heaan::Ciphertext ciphertext = he_heaan_backend->get_scheme()->encryptSingle(
+                ckks::Ciphertext ciphertext = he_ckks_backend->get_scheme()->encryptSingle(
                                     dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(arg1[0])->m_plaintexts[0],
-                                    arg0_heaan->m_ciphertext.logp,
-                                    arg0_heaan->m_ciphertext.logq);
-                NGRAPH_INFO << "Padding with zeros size " << arg0_heaan->m_count;
-                arg1_encrypted = make_shared<runtime::he::HeaanCiphertextWrapper>(ciphertext, arg0_heaan->m_count);
+                                    arg0_ckks->m_ciphertext.logp,
+                                    arg0_ckks->m_ciphertext.logq);
+                NGRAPH_INFO << "Padding with zeros size " << arg0_ckks->m_count;
+                arg1_encrypted = make_shared<runtime::he::HeaanCiphertextWrapper>(ciphertext, arg0_ckks->m_count);
             }
             else
             {
@@ -167,10 +167,10 @@ void runtime::he::kernel::pad(
                     NGRAPH_INFO << "elem " << elem;
                 }
 
-               heaan::Ciphertext ciphertext = he_heaan_backend->get_scheme()->encrypt(
+               ckks::Ciphertext ciphertext = he_ckks_backend->get_scheme()->encrypt(
                     plaintexts,
-                    arg0_heaan->m_ciphertext.logp,
-                    arg0_heaan->m_ciphertext.logq);
+                    arg0_ckks->m_ciphertext.logp,
+                    arg0_ckks->m_ciphertext.logq);
 
                 arg1_encrypted = make_shared<runtime::he::HeaanCiphertextWrapper>(ciphertext, batch_size);
             }

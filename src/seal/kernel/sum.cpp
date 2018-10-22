@@ -21,7 +21,7 @@
 #include "he_backend.hpp"
 #include "he_cipher_tensor_view.hpp"
 #include "he_ciphertext.hpp"
-#include "he_heaan_backend.hpp"
+#include "he_ckks_backend.hpp"
 #include "he_plain_tensor_view.hpp"
 #include "he_seal_backend.hpp"
 #include "kernel/add.hpp"
@@ -39,8 +39,8 @@ void runtime::he::kernel::sum(const vector<shared_ptr<runtime::he::HECiphertext>
                               const shared_ptr<runtime::he::HEBackend>& he_backend)
 {
     auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend);
-    auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);
-    if (!he_seal_backend && !he_heaan_backend)
+    auto he_ckks_backend = dynamic_pointer_cast<runtime::he::he_ckks::HEHeaanBackend>(he_backend);
+    if (!he_seal_backend && !he_ckks_backend)
     {
         throw ngraph_error("Sum backend is neither SEAL nor HEAAN.");
     }
@@ -54,10 +54,10 @@ void runtime::he::kernel::sum(const vector<shared_ptr<runtime::he::HECiphertext>
         zero_tv = static_pointer_cast<HECipherTensorView>(
             he_seal_backend->create_valued_tensor(0., type, out_shape));
     }
-    else if (he_heaan_backend != nullptr)
+    else if (he_ckks_backend != nullptr)
     {
         zero_tv = static_pointer_cast<HECipherTensorView>(
-            he_heaan_backend->create_valued_tensor(0., type, out_shape));
+            he_ckks_backend->create_valued_tensor(0., type, out_shape));
     }
 
     size_t zero_ind = 0;
@@ -90,8 +90,8 @@ void runtime::he::kernel::sum(const vector<shared_ptr<runtime::he::HEPlaintext>>
                               const shared_ptr<runtime::he::HEBackend>& he_backend)
 {
     auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend);
-    auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);
-    if (!he_seal_backend && !he_heaan_backend)
+    auto he_ckks_backend = dynamic_pointer_cast<runtime::he::he_ckks::HEHeaanBackend>(he_backend);
+    if (!he_seal_backend && !he_ckks_backend)
     {
         throw ngraph_error("Sum backend is neither SEAL nor HEAAN.");
     }
@@ -105,10 +105,10 @@ void runtime::he::kernel::sum(const vector<shared_ptr<runtime::he::HEPlaintext>>
         zero_tv = static_pointer_cast<HEPlainTensorView>(
             he_seal_backend->create_valued_plain_tensor(0., type, out_shape));
     }
-    else if (he_heaan_backend != nullptr)
+    else if (he_ckks_backend != nullptr)
     {
         zero_tv = static_pointer_cast<HEPlainTensorView>(
-            he_heaan_backend->create_valued_plain_tensor(0., type, out_shape));
+            he_ckks_backend->create_valued_plain_tensor(0., type, out_shape));
     }
 
     size_t zero_ind = 0;

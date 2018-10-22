@@ -21,7 +21,7 @@
 #include "he_backend.hpp"
 #include "he_cipher_tensor_view.hpp"
 #include "he_ciphertext.hpp"
-#include "he_heaan_backend.hpp"
+#include "he_ckks_backend.hpp"
 #include "he_seal_backend.hpp"
 #include "kernel/add.hpp"
 #include "kernel/avg_pool.hpp"
@@ -43,8 +43,8 @@ void runtime::he::kernel::avg_pool(const vector<shared_ptr<runtime::he::HECipher
                                    const shared_ptr<runtime::he::HEBackend>& he_backend)
 {
     auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend);
-    auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);
-    if (!he_seal_backend && !he_heaan_backend)
+    auto he_ckks_backend = dynamic_pointer_cast<runtime::he::he_ckks::HEHeaanBackend>(he_backend);
+    if (!he_seal_backend && !he_ckks_backend)
     {
         throw ngraph_error("Convolution he_backend neither SEAL nor HEAAN.");
     }
@@ -149,9 +149,9 @@ void runtime::he::kernel::avg_pool(const vector<shared_ptr<runtime::he::HECipher
         {
             result = he_seal_backend->create_valued_ciphertext(0., type);
         }
-        else if (he_heaan_backend)
+        else if (he_ckks_backend)
         {
-            result = he_heaan_backend->create_valued_ciphertext(0., type);
+            result = he_ckks_backend->create_valued_ciphertext(0., type);
         }
         size_t n_elements = 0;
 
@@ -171,11 +171,11 @@ void runtime::he::kernel::avg_pool(const vector<shared_ptr<runtime::he::HECipher
                             ? arg[input_batch_transform.index(input_batch_coord)]
                             : he_seal_backend->create_valued_ciphertext(0., type);
                 }
-                else if (he_heaan_backend)
+                else if (he_ckks_backend)
                 {
                     v = input_batch_transform.has_source_coordinate(input_batch_coord)
                             ? arg[input_batch_transform.index(input_batch_coord)]
-                            : he_heaan_backend->create_valued_ciphertext(0., type);
+                            : he_ckks_backend->create_valued_ciphertext(0., type);
                 }
 
                 // result += v;
@@ -189,9 +189,9 @@ void runtime::he::kernel::avg_pool(const vector<shared_ptr<runtime::he::HECipher
         {
             inv_n_elements = he_seal_backend->create_valued_plaintext(1. / n_elements, type);
         }
-        else if (he_heaan_backend)
+        else if (he_ckks_backend)
         {
-            inv_n_elements = he_heaan_backend->create_valued_plaintext(1. / n_elements, type);
+            inv_n_elements = he_ckks_backend->create_valued_plaintext(1. / n_elements, type);
         }
 
         runtime::he::kernel::scalar_multiply(result, inv_n_elements, result, type, he_backend);
@@ -213,8 +213,8 @@ void runtime::he::kernel::avg_pool(const vector<shared_ptr<runtime::he::HEPlaint
                                    const shared_ptr<runtime::he::HEBackend>& he_backend)
 {
     auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend);
-    auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);
-    if (!he_seal_backend && !he_heaan_backend)
+    auto he_ckks_backend = dynamic_pointer_cast<runtime::he::he_ckks::HEHeaanBackend>(he_backend);
+    if (!he_seal_backend && !he_ckks_backend)
     {
         throw ngraph_error("Convolution he_backend neither SEAL nor HEAAN.");
     }
@@ -319,9 +319,9 @@ void runtime::he::kernel::avg_pool(const vector<shared_ptr<runtime::he::HEPlaint
         {
             result = he_seal_backend->create_valued_plaintext(0., type);
         }
-        else if (he_heaan_backend)
+        else if (he_ckks_backend)
         {
-            result = he_heaan_backend->create_valued_plaintext(0., type);
+            result = he_ckks_backend->create_valued_plaintext(0., type);
         }
         size_t n_elements = 0;
 
@@ -341,11 +341,11 @@ void runtime::he::kernel::avg_pool(const vector<shared_ptr<runtime::he::HEPlaint
                             ? arg[input_batch_transform.index(input_batch_coord)]
                             : he_seal_backend->create_valued_plaintext(0., type);
                 }
-                else if (he_heaan_backend)
+                else if (he_ckks_backend)
                 {
                     v = input_batch_transform.has_source_coordinate(input_batch_coord)
                             ? arg[input_batch_transform.index(input_batch_coord)]
-                            : he_heaan_backend->create_valued_plaintext(0., type);
+                            : he_ckks_backend->create_valued_plaintext(0., type);
                 }
 
                 // result += v;
@@ -359,9 +359,9 @@ void runtime::he::kernel::avg_pool(const vector<shared_ptr<runtime::he::HEPlaint
         {
             inv_n_elements = he_seal_backend->create_valued_plaintext(1. / n_elements, type);
         }
-        else if (he_heaan_backend)
+        else if (he_ckks_backend)
         {
-            inv_n_elements = he_heaan_backend->create_valued_plaintext(1. / n_elements, type);
+            inv_n_elements = he_ckks_backend->create_valued_plaintext(1. / n_elements, type);
         }
 
         runtime::he::kernel::scalar_multiply(result, inv_n_elements, result, type, he_backend);

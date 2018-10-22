@@ -19,7 +19,7 @@
 #include "he_backend.hpp"
 #include "he_cipher_tensor_view.hpp"
 #include "he_ciphertext.hpp"
-#include "he_heaan_backend.hpp"
+#include "he_ckks_backend.hpp"
 #include "he_plaintext.hpp"
 #include "he_seal_backend.hpp"
 #include "kernel/one_hot.hpp"
@@ -38,10 +38,10 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<runtime::he::HECiphert
                                   const shared_ptr<runtime::he::HEBackend>& he_backend)
 {
     auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend);
-    auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);
-    if (!he_seal_backend && !he_heaan_backend)
+    auto he_ckks_backend = dynamic_pointer_cast<runtime::he::he_ckks::HEHeaanBackend>(he_backend);
+    if (!he_seal_backend && !he_ckks_backend)
     {
-        throw ngraph_error("One-Hot he_backend neither SEAL nor heaan");
+        throw ngraph_error("One-Hot he_backend neither SEAL nor ckks");
     }
     // Get 0 and 1 cipher text
     shared_ptr<runtime::he::HECiphertext> zero_ciphertext;
@@ -52,10 +52,10 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<runtime::he::HECiphert
         zero_ciphertext = he_seal_backend->create_valued_ciphertext(0, type);
         one_ciphertext = he_seal_backend->create_valued_ciphertext(1, type);
     }
-    else if (he_heaan_backend)
+    else if (he_ckks_backend)
     {
-        zero_ciphertext = he_heaan_backend->create_valued_ciphertext(0, type);
-        one_ciphertext = he_heaan_backend->create_valued_ciphertext(1, type);
+        zero_ciphertext = he_ckks_backend->create_valued_ciphertext(0, type);
+        one_ciphertext = he_ckks_backend->create_valued_ciphertext(1, type);
     }
 
     // Step 1: Zero out the output. We can simply copy the shared_ptr pointing to a zero
@@ -75,10 +75,10 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<runtime::he::HECiphert
 
         // TODO: We are not allowed to decrypt! Pass in one-hot encoded inputs
         shared_ptr<runtime::he::HEPlaintext> plain_val;
-        if (he_heaan_backend)
+        if (he_ckks_backend)
         {
             plain_val = make_shared<runtime::he::HeaanPlaintextWrapper>();
-            he_heaan_backend->decrypt(plain_val, val);
+            he_ckks_backend->decrypt(plain_val, val);
         }
         else if (he_seal_backend)
         {
@@ -94,9 +94,9 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<runtime::he::HECiphert
             {
                 he_seal_backend->decode((void*)(&x), plain_val, type);
             }
-            else if (he_heaan_backend)
+            else if (he_ckks_backend)
             {
-                he_heaan_backend->decode((void*)(&x), plain_val, type);
+                he_ckks_backend->decode((void*)(&x), plain_val, type);
             }
             one_hot_pos = static_cast<size_t>(x);
         }
@@ -107,9 +107,9 @@ void runtime::he::kernel::one_hot(const vector<shared_ptr<runtime::he::HECiphert
             {
                 he_seal_backend->decode((void*)(&x), plain_val, type);
             }
-            else if (he_heaan_backend)
+            else if (he_ckks_backend)
             {
-                he_heaan_backend->decode((void*)(&x), plain_val, type);
+                he_ckks_backend->decode((void*)(&x), plain_val, type);
             }
             if (abs(x - round(x)) > 3e-9)
             {

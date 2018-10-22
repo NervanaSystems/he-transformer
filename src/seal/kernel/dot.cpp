@@ -19,7 +19,7 @@
 
 #include "he_backend.hpp"
 #include "he_cipher_tensor_view.hpp"
-#include "he_heaan_backend.hpp"
+#include "he_ckks_backend.hpp"
 #include "he_plain_tensor_view.hpp"
 #include "he_seal_backend.hpp"
 #include "kernel/add.hpp"
@@ -112,8 +112,8 @@ void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HEPlaintext>>
                               const shared_ptr<runtime::he::HEBackend>& he_backend)
 {
     auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend);
-    auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);
-    if (!he_seal_backend && !he_heaan_backend)
+    auto he_ckks_backend = dynamic_pointer_cast<runtime::he::he_ckks::HEHeaanBackend>(he_backend);
+    if (!he_seal_backend && !he_ckks_backend)
     {
         throw ngraph_error("Dot he_backend neither SEAL nor HEAAN.");
     }
@@ -194,9 +194,9 @@ void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HEPlaintext>>
         {
             sum = he_seal_backend->create_valued_plaintext(0., type);
         }
-        else if (he_heaan_backend)
+        else if (he_ckks_backend)
         {
-            sum = he_heaan_backend->create_valued_plaintext(0., type);
+            sum = he_ckks_backend->create_valued_plaintext(0., type);
         } */
 
         size_t out_index = output_transform.index(out_coord);
@@ -227,9 +227,9 @@ void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HEPlaintext>>
             {
                 prod = he_seal_backend->create_empty_plaintext();
             }
-            else if (he_heaan_backend)
+            else if (he_ckks_backend)
             {
-                prod = he_heaan_backend->create_empty_plaintext();
+                prod = he_ckks_backend->create_empty_plaintext();
             }
 
             runtime::he::kernel::scalar_multiply(arg0_text, arg1_text, prod, type, he_backend);

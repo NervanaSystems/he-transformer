@@ -19,11 +19,10 @@
 #include <memory>
 
 #include "he_backend.hpp"
-#include "he_heaan_backend.hpp"
-#include "he_heaan_parameter.hpp"
-#include "heaan/heaan.hpp"
-#include "heaan_ciphertext_wrapper.hpp"
-#include "heaan_plaintext_wrapper.hpp"
+#include "he_ckks_backend.hpp"
+#include "he_ckks_parameter.hpp"
+#include "seal_ciphertext_wrapper.hpp"
+#include "seal_plaintext_wrapper.hpp"
 #include "ngraph/runtime/backend.hpp"
 
 namespace ngraph
@@ -37,7 +36,7 @@ namespace ngraph
             class HECipherTensorView;
             class HEBackend;
 
-            namespace he_heaan
+            namespace he_ckks
             {
                 class HEHeaanBackend : public HEBackend
                 {
@@ -49,7 +48,7 @@ namespace ngraph
 
                     /// @brief Checks if parameter is valid for HEAAN encoding.
                     ///        Throws an error if parameter is not valid.
-                    void assert_valid_heaan_parameter(
+                    void assert_valid_ckks_parameter(
                         const std::shared_ptr<runtime::he::HEHeaanParameter> hp) const;
 
                     std::shared_ptr<runtime::TensorView>
@@ -122,27 +121,27 @@ namespace ngraph
                         std::shared_ptr<runtime::he::HEPlaintext>& output,
                         const std::shared_ptr<runtime::he::HECiphertext> input) const override;
 
-                    const inline std::shared_ptr<heaan::Scheme> get_scheme() const
+                    const inline std::shared_ptr<ckks::Scheme> get_scheme() const
                     {
                         return m_scheme;
                     }
 
-                    const inline std::shared_ptr<heaan::Context> get_context() const
+                    const inline std::shared_ptr<ckks::Context> get_context() const
                     {
                         return m_context;
                     }
 
                     const inline long get_precision() const { return m_log2_precision; }
-                    const inline std::shared_ptr<heaan::SecretKey> get_secret_key() const
+                    const inline std::shared_ptr<ckks::SecretKey> get_secret_key() const
                     {
                         return m_secret_key;
                     }
 
                 private:
-                    std::shared_ptr<heaan::SecretKey> m_secret_key;
+                    std::shared_ptr<ckks::SecretKey> m_secret_key;
 
-                    std::shared_ptr<heaan::Context> m_context;
-                    std::shared_ptr<heaan::Scheme> m_scheme;
+                    std::shared_ptr<ckks::Context> m_context;
+                    std::shared_ptr<ckks::Scheme> m_scheme;
 
                     long m_log2_precision; // Bits of precision
                 };

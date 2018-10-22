@@ -18,7 +18,7 @@
 
 #include "he_backend.hpp"
 #include "he_ciphertext.hpp"
-#include "he_heaan_backend.hpp"
+#include "he_ckks_backend.hpp"
 #include "he_plaintext.hpp"
 #include "he_seal_backend.hpp"
 #include "kernel/result.hpp"
@@ -75,12 +75,12 @@ void runtime::he::kernel::result(const vector<shared_ptr<runtime::he::HEPlaintex
             he_seal_backend->encrypt(out[i], arg[i]);
         }
     }
-    else if (auto he_heaan_backend =
-                 dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
+    else if (auto he_ckks_backend =
+                 dynamic_pointer_cast<runtime::he::he_ckks::HEHeaanBackend>(he_backend))
     {
         for (size_t i = 0; i < count; ++i)
         {
-            he_heaan_backend->encrypt(out[i], arg[i]);
+            he_ckks_backend->encrypt(out[i], arg[i]);
         }
     }
     else

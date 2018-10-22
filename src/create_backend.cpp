@@ -18,7 +18,7 @@
 
 #include "ngraph/runtime/backend.hpp"
 
-#include "he_heaan_backend.hpp"
+#include "he_ckks_backend.hpp"
 #include "he_seal_backend.hpp"
 
 using namespace std;
@@ -28,7 +28,7 @@ using namespace ngraph;
 // {
 //     NGRAPH_INFO << "Create_backend";
 //     runtime::Backend::register_backend("HE_HEAAN",
-//                                        make_shared<runtime::he::he_heaan::HEHeaanBackend>());
+//                                        make_shared<runtime::he::he_ckks::HEHeaanBackend>());
 //     runtime::Backend::register_backend("HE_SEAL",
 //                                        make_shared<runtime::he::he_seal::HESealBackend>());
 //     return true;
@@ -55,7 +55,7 @@ extern "C" runtime::Backend* new_backend(const char* configuration_chars)
         }
         else if (configuration_string == "HE:HEAAN")
         {
-            he_backend = make_shared<runtime::he::he_heaan::HEHeaanBackend>();
+            he_backend = make_shared<runtime::he::he_ckks::HEHeaanBackend>();
         }
         s_map_backends[configuration_string] = he_backend;
     }

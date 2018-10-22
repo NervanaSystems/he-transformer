@@ -17,15 +17,15 @@
 #include "nlohmann/json.hpp"
 
 #include "he_cipher_tensor_view.hpp"
-#include "he_heaan_backend.hpp"
-#include "he_heaan_parameter.hpp"
+#include "he_ckks_backend.hpp"
+#include "he_ckks_parameter.hpp"
 #include "he_plain_tensor_view.hpp"
 #include "he_tensor_view.hpp"
 
 using namespace ngraph;
 using namespace std;
 
-const static runtime::he::HEHeaanParameter parse_heaan_config_or_use_default()
+const static runtime::he::HEHeaanParameter parse_ckks_config_or_use_default()
 {
     try
     {
@@ -63,10 +63,10 @@ const static runtime::he::HEHeaanParameter parse_heaan_config_or_use_default()
     }
 }
 
-const static runtime::he::HEHeaanParameter default_heaan_parameter =
-    parse_heaan_config_or_use_default();
+const static runtime::he::HEHeaanParameter default_ckks_parameter =
+    parse_ckks_config_or_use_default();
 
-static void print_heaan_context(const heaan::Context& context)
+static void print_ckks_context(const ckks::Context& context)
 {
     NGRAPH_INFO << endl
                 << "/ Encryption parameters:" << endl
@@ -76,13 +76,13 @@ static void print_heaan_context(const heaan::Context& context)
                 << "\\ noise_standard_deviation: " << context.sigma;
 }
 
-runtime::he::he_heaan::HEHeaanBackend::HEHeaanBackend()
-    : runtime::he::he_heaan::HEHeaanBackend(
-          make_shared<runtime::he::HEHeaanParameter>(default_heaan_parameter))
+runtime::he::he_ckks::HEHeaanBackend::HEHeaanBackend()
+    : runtime::he::he_ckks::HEHeaanBackend(
+          make_shared<runtime::he::HEHeaanParameter>(default_ckks_parameter))
 {
 }
 
-runtime::he::he_heaan::HEHeaanBackend::HEHeaanBackend(
+runtime::he::he_ckks::HEHeaanBackend::HEHeaanBackend(
     const shared_ptr<runtime::he::HEHeaanParameter> hp)
 {
     NGRAPH_INFO << "[HEAAN parameter]";
@@ -90,18 +90,18 @@ runtime::he::he_heaan::HEHeaanBackend::HEHeaanBackend(
     NGRAPH_INFO << "hp.m_log2_plain_modulus: " << hp->m_log2_plain_modulus;
     NGRAPH_INFO << "hp.m_log2_precision: " << hp->m_log2_precision;
 
-    assert_valid_heaan_parameter(hp);
+    assert_valid_ckks_parameter(hp);
     // Context
-    m_context = make_shared<heaan::Context>(hp->m_log2_poly_modulus, hp->m_log2_plain_modulus);
-    print_heaan_context(*m_context);
+    m_context = make_shared<ckks::Context>(hp->m_log2_poly_modulus, hp->m_log2_plain_modulus);
+    print_ckks_context(*m_context);
 
     m_log2_precision = (long)hp->m_log2_precision;
 
     // Secret Key
-    m_secret_key = make_shared<heaan::SecretKey>(m_context->logN);
+    m_secret_key = make_shared<ckks::SecretKey>(m_context->logN);
 
     // Scheme
-    m_scheme = make_shared<heaan::Scheme>(*m_secret_key, *m_context);
+    m_scheme = make_shared<ckks::Scheme>(*m_secret_key, *m_context);
 
     // Plaintext constants
     m_plaintext_map["float"][0] = create_valued_plaintext(0, element::f32);
@@ -116,11 +116,11 @@ runtime::he::he_heaan::HEHeaanBackend::HEHeaanBackend(
     m_ciphertext_map["int64_t"][0] = create_valued_ciphertext(0, element::i64);
 }
 
-runtime::he::he_heaan::HEHeaanBackend::~HEHeaanBackend()
+runtime::he::he_ckks::HEHeaanBackend::~HEHeaanBackend()
 {
 }
 
-void runtime::he::he_heaan::HEHeaanBackend::assert_valid_heaan_parameter(
+void runtime::he::he_ckks::HEHeaanBackend::assert_valid_ckks_parameter(
     const shared_ptr<runtime::he::HEHeaanParameter> hp) const
 {
     static const int base = 2;
@@ -139,44 +139,44 @@ void runtime::he::he_heaan::HEHeaanBackend::assert_valid_heaan_parameter(
 }
 
 shared_ptr<runtime::TensorView>
-    runtime::he::he_heaan::HEHeaanBackend::create_tensor(const element::Type& element_type,
+    runtime::he::he_ckks::HEHeaanBackend::create_tensor(const element::Type& element_type,
                                                          const Shape& shape)
 {
-    shared_ptr<HEHeaanBackend> he_heaan_backend =
-        dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(shared_from_this());
-    auto rc = make_shared<runtime::he::HECipherTensorView>(element_type, shape, he_heaan_backend);
+    shared_ptr<HEHeaanBackend> he_ckks_backend =
+        dynamic_pointer_cast<runtime::he::he_ckks::HEHeaanBackend>(shared_from_this());
+    auto rc = make_shared<runtime::he::HECipherTensorView>(element_type, shape, he_ckks_backend);
     return static_pointer_cast<runtime::TensorView>(rc);
 }
 
-shared_ptr<runtime::TensorView> runtime::he::he_heaan::HEHeaanBackend::create_tensor(
+shared_ptr<runtime::TensorView> runtime::he::he_ckks::HEHeaanBackend::create_tensor(
     const element::Type& element_type, const Shape& shape, const bool batched)
 {
-    shared_ptr<HEHeaanBackend> he_heaan_backend =
-        dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(shared_from_this());
+    shared_ptr<HEHeaanBackend> he_ckks_backend =
+        dynamic_pointer_cast<runtime::he::he_ckks::HEHeaanBackend>(shared_from_this());
 
     auto rc = make_shared<runtime::he::HECipherTensorView>(
-        element_type, shape, he_heaan_backend, batched);
+        element_type, shape, he_ckks_backend, batched);
     return static_pointer_cast<runtime::TensorView>(rc);
 }
 
-shared_ptr<runtime::TensorView> runtime::he::he_heaan::HEHeaanBackend::create_tensor(
+shared_ptr<runtime::TensorView> runtime::he::he_ckks::HEHeaanBackend::create_tensor(
     const element::Type& element_type, const Shape& shape, void* memory_pointer)
 {
     throw ngraph_error("HEHeaan create_tensor unimplemented");
 }
 
 shared_ptr<runtime::TensorView>
-    runtime::he::he_heaan::HEHeaanBackend::create_plain_tensor(const element::Type& element_type,
+    runtime::he::he_ckks::HEHeaanBackend::create_plain_tensor(const element::Type& element_type,
                                                                const Shape& shape)
 {
-    shared_ptr<HEHeaanBackend> he_heaan_backend =
-        dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(shared_from_this());
-    auto rc = make_shared<runtime::he::HEPlainTensorView>(element_type, shape, he_heaan_backend);
+    shared_ptr<HEHeaanBackend> he_ckks_backend =
+        dynamic_pointer_cast<runtime::he::he_ckks::HEHeaanBackend>(shared_from_this());
+    auto rc = make_shared<runtime::he::HEPlainTensorView>(element_type, shape, he_ckks_backend);
     return static_pointer_cast<runtime::TensorView>(rc);
 }
 
 shared_ptr<runtime::he::HECiphertext>
-    runtime::he::he_heaan::HEHeaanBackend::create_valued_ciphertext(
+    runtime::he::he_ckks::HEHeaanBackend::create_valued_ciphertext(
         float value, const element::Type& element_type, size_t batch_size) const
 {
     auto ciphertext = dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(
@@ -195,7 +195,7 @@ shared_ptr<runtime::he::HECiphertext>
     return ciphertext;
 }
 
-shared_ptr<runtime::he::HECiphertext>& runtime::he::he_heaan::HEHeaanBackend::get_valued_ciphertext(
+shared_ptr<runtime::he::HECiphertext>& runtime::he::he_ckks::HEHeaanBackend::get_valued_ciphertext(
     int64_t value, const element::Type& element_type, size_t batch_size)
 {
     if (batch_size != 1)
@@ -212,12 +212,12 @@ shared_ptr<runtime::he::HECiphertext>& runtime::he::he_heaan::HEHeaanBackend::ge
 }
 
 shared_ptr<runtime::he::HECiphertext>
-    runtime::he::he_heaan::HEHeaanBackend::create_empty_ciphertext(size_t batch_size) const
+    runtime::he::he_ckks::HEHeaanBackend::create_empty_ciphertext(size_t batch_size) const
 {
     return make_shared<runtime::he::HeaanCiphertextWrapper>(batch_size);
 }
 
-shared_ptr<runtime::he::HEPlaintext> runtime::he::he_heaan::HEHeaanBackend::create_valued_plaintext(
+shared_ptr<runtime::he::HEPlaintext> runtime::he::he_ckks::HEHeaanBackend::create_valued_plaintext(
     float value, const element::Type& element_type) const
 {
     auto plaintext =
@@ -228,7 +228,7 @@ shared_ptr<runtime::he::HEPlaintext> runtime::he::he_heaan::HEHeaanBackend::crea
 }
 
 shared_ptr<runtime::he::HEPlaintext>
-    runtime::he::he_heaan::HEHeaanBackend::get_valued_plaintext(int64_t value,
+    runtime::he::he_ckks::HEHeaanBackend::get_valued_plaintext(int64_t value,
                                                                 const element::Type& element_type)
 {
     const string type_name = element_type.c_type_string();
@@ -241,12 +241,12 @@ shared_ptr<runtime::he::HEPlaintext>
 }
 
 shared_ptr<runtime::he::HEPlaintext>
-    runtime::he::he_heaan::HEHeaanBackend::create_empty_plaintext() const
+    runtime::he::he_ckks::HEHeaanBackend::create_empty_plaintext() const
 {
     return make_shared<HeaanPlaintextWrapper>();
 }
 
-shared_ptr<runtime::TensorView> runtime::he::he_heaan::HEHeaanBackend::create_valued_tensor(
+shared_ptr<runtime::TensorView> runtime::he::he_ckks::HEHeaanBackend::create_valued_tensor(
     float value, const element::Type& element_type, const Shape& shape)
 {
     auto tensor = static_pointer_cast<HECipherTensorView>(create_tensor(element_type, shape));
@@ -259,7 +259,7 @@ shared_ptr<runtime::TensorView> runtime::he::he_heaan::HEHeaanBackend::create_va
     return tensor;
 }
 
-shared_ptr<runtime::TensorView> runtime::he::he_heaan::HEHeaanBackend::create_valued_plain_tensor(
+shared_ptr<runtime::TensorView> runtime::he::he_ckks::HEHeaanBackend::create_valued_plain_tensor(
     float value, const element::Type& element_type, const Shape& shape)
 {
     auto tensor = static_pointer_cast<HEPlainTensorView>(create_plain_tensor(element_type, shape));
@@ -272,7 +272,7 @@ shared_ptr<runtime::TensorView> runtime::he::he_heaan::HEHeaanBackend::create_va
     return tensor;
 }
 
-void runtime::he::he_heaan::HEHeaanBackend::encode(shared_ptr<runtime::he::HEPlaintext>& output,
+void runtime::he::he_ckks::HEHeaanBackend::encode(shared_ptr<runtime::he::HEPlaintext>& output,
                                                    const void* input,
                                                    const element::Type& type,
                                                    size_t count) const
@@ -314,21 +314,21 @@ void runtime::he::he_heaan::HEHeaanBackend::encode(shared_ptr<runtime::he::HEPla
     }
 }
 
-void runtime::he::he_heaan::HEHeaanBackend::decode(void* output,
+void runtime::he::he_ckks::HEHeaanBackend::decode(void* output,
                                                    const shared_ptr<runtime::he::HEPlaintext> input,
                                                    const element::Type& type,
                                                    size_t count) const
 {
     const string type_name = type.c_type_string();
 
-    if (auto heaan_input = dynamic_pointer_cast<HeaanPlaintextWrapper>(input))
+    if (auto ckks_input = dynamic_pointer_cast<HeaanPlaintextWrapper>(input))
     {
         if (type_name == "int64_t")
         {
 #pragma omp parallel for
             for (size_t i = 0; i < count; ++i)
             {
-                int64_t x = round(heaan_input->m_plaintexts[i]);
+                int64_t x = round(ckks_input->m_plaintexts[i]);
                 memcpy((char*)output + i * type.size(), &x, type.size());
             }
         }
@@ -337,7 +337,7 @@ void runtime::he::he_heaan::HEHeaanBackend::decode(void* output,
 #pragma omp parallel for
             for (size_t i = 0; i < count; ++i)
             {
-                float x = heaan_input->m_plaintexts[i];
+                float x = ckks_input->m_plaintexts[i];
                 memcpy((char*)output + i * type.size(), &x, type.size());
             }
         }
@@ -346,7 +346,7 @@ void runtime::he::he_heaan::HEHeaanBackend::decode(void* output,
 #pragma omp parallel for
             for (size_t i = 0; i < count; ++i)
             {
-                double x = heaan_input->m_plaintexts[i];
+                double x = ckks_input->m_plaintexts[i];
                 memcpy((char*)output + i * type.size(), &x, type.size());
             }
         }
@@ -358,54 +358,54 @@ void runtime::he::he_heaan::HEHeaanBackend::decode(void* output,
     }
     else
     {
-        throw ngraph_error("HEHeaanBackend::decode input is not heaan plaintext");
+        throw ngraph_error("HEHeaanBackend::decode input is not ckks plaintext");
     }
 }
 
-void runtime::he::he_heaan::HEHeaanBackend::encrypt(
+void runtime::he::he_ckks::HEHeaanBackend::encrypt(
     shared_ptr<runtime::he::HECiphertext>& output,
     const shared_ptr<runtime::he::HEPlaintext> input) const
 {
-    auto heaan_output = dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(output);
-    auto heaan_input = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(input);
-    if (heaan_output != nullptr && heaan_input != nullptr)
+    auto ckks_output = dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(output);
+    auto ckks_input = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(input);
+    if (ckks_output != nullptr && ckks_input != nullptr)
     {
-        if (heaan_input->m_plaintexts.size() == 1)
+        if (ckks_input->m_plaintexts.size() == 1)
         {
-            heaan_output->m_ciphertext = m_scheme->encryptSingle(
-                heaan_input->m_plaintexts[0], m_log2_precision, m_context->logQ);
+            ckks_output->m_ciphertext = m_scheme->encryptSingle(
+                ckks_input->m_plaintexts[0], m_log2_precision, m_context->logQ);
         }
         else
         {
-            heaan_output->m_ciphertext =
-                m_scheme->encrypt(heaan_input->m_plaintexts, m_log2_precision, m_context->logQ);
+            ckks_output->m_ciphertext =
+                m_scheme->encrypt(ckks_input->m_plaintexts, m_log2_precision, m_context->logQ);
         }
-        heaan_output->m_count = heaan_input->m_plaintexts.size();
+        ckks_output->m_count = ckks_input->m_plaintexts.size();
     }
     else
     {
-        throw ngraph_error("HEHeaanBackend::encrypt has non-heaan ciphertexts");
+        throw ngraph_error("HEHeaanBackend::encrypt has non-ckks ciphertexts");
     }
 }
 
-void runtime::he::he_heaan::HEHeaanBackend::decrypt(
+void runtime::he::he_ckks::HEHeaanBackend::decrypt(
     shared_ptr<runtime::he::HEPlaintext>& output,
     const shared_ptr<runtime::he::HECiphertext> input) const
 {
-    auto heaan_output = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(output);
-    auto heaan_input = dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(input);
-    if (heaan_output != nullptr && heaan_input != nullptr)
+    auto ckks_output = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(output);
+    auto ckks_input = dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(input);
+    if (ckks_output != nullptr && ckks_input != nullptr)
     {
-        size_t batch_count = heaan_input->m_count;
+        size_t batch_count = ckks_input->m_count;
         if (batch_count == 1)
         {
-            heaan_output->m_plaintexts = {
-                m_scheme->decryptSingle(*m_secret_key, heaan_input->m_ciphertext).real()};
+            ckks_output->m_plaintexts = {
+                m_scheme->decryptSingle(*m_secret_key, ckks_input->m_ciphertext).real()};
         }
         else
         {
             vector<complex<double>> ciphertexts =
-                m_scheme->decrypt(*m_secret_key, heaan_input->m_ciphertext);
+                m_scheme->decrypt(*m_secret_key, ckks_input->m_ciphertext);
             vector<double> real_ciphertexts(batch_count);
 
             transform(ciphertexts.begin(),
@@ -413,11 +413,11 @@ void runtime::he::he_heaan::HEHeaanBackend::decrypt(
                       real_ciphertexts.begin(),
                       [](complex<double>& n) { return n.real(); });
 
-            heaan_output->m_plaintexts = real_ciphertexts;
+            ckks_output->m_plaintexts = real_ciphertexts;
         }
     }
     else
     {
-        throw ngraph_error("HEHeaanBackend::decrypt has non-heaan ciphertexts");
+        throw ngraph_error("HEHeaanBackend::decrypt has non-ckks ciphertexts");
     }
 }

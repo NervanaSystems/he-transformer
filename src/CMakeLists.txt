@@ -18,21 +18,21 @@
 set (HE_SRC
     # kernels
     kernel/add.cpp
-    kernel/avg_pool.cpp
-    kernel/broadcast.cpp
-    kernel/concat.cpp
-    kernel/constant.cpp
-    kernel/convolution.cpp
-    kernel/dot.cpp
-    kernel/multiply.cpp
-    kernel/negate.cpp
-    kernel/one_hot.cpp
-    kernel/pad.cpp
-    kernel/reshape.cpp
-    kernel/result.cpp
-    kernel/slice.cpp
-    kernel/subtract.cpp
-    kernel/sum.cpp
+    #kernel/avg_pool.cpp
+    #kernel/broadcast.cpp
+    #kernel/concat.cpp
+    #kernel/constant.cpp
+    #kernel/convolution.cpp
+    #kernel/dot.cpp
+    #kernel/multiply.cpp
+    #kernel/negate.cpp
+    #kernel/one_hot.cpp
+    #kernel/pad.cpp
+    #kernel/reshape.cpp
+    #kernel/result.cpp
+    #kernel/slice.cpp
+    #kernel/subtract.cpp
+    #kernel/sum.cpp
     # CKKS kernels
     # kernel/ckks/add_ckks.cpp
     # kernel/ckks/multiply_ckks.cpp

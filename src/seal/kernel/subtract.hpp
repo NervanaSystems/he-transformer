@@ -19,7 +19,7 @@
 #include <memory>
 #include <vector>
 
-#include "heaan_ciphertext_wrapper.hpp"
+#include "ckks_ciphertext_wrapper.hpp"
 
 namespace ngraph
 {

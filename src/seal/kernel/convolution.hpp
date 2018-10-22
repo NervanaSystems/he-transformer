@@ -22,7 +22,7 @@
 #include "he_backend.hpp"
 #include "he_cipher_tensor_view.hpp"
 #include "he_ciphertext.hpp"
-#include "he_heaan_backend.hpp"
+#include "he_ckks_backend.hpp"
 #include "he_seal_backend.hpp"
 #include "kernel/add.hpp"
 #include "kernel/convolution.hpp"
@@ -198,10 +198,10 @@ void ngraph::runtime::he::kernel::convolution_template(
     // * rotate_filter is false
 
     auto he_seal_backend = std::dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend);
-    auto he_heaan_backend = std::dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);
-    if (!he_seal_backend && !he_heaan_backend)
+    auto he_ckks_backend = std::dynamic_pointer_cast<runtime::he::he_ckks::HEHeaanBackend>(he_backend);
+    if (!he_seal_backend && !he_ckks_backend)
     {
-        throw ngraph_error("Convolution he_backend neither heaan nor seal.");
+        throw ngraph_error("Convolution he_backend neither ckks nor seal.");
     }
 
     // At the outermost level we will walk over every output coordinate O.
@@ -335,9 +335,9 @@ void ngraph::runtime::he::kernel::convolution_template(
         {
             result = he_seal_backend->create_valued_ciphertext(0., type);
         }
-        else if (he_heaan_backend)
+        else if (he_ckks_backend)
         {
-            result = he_heaan_backend->create_valued_ciphertext(0., type, batch_size);
+            result = he_ckks_backend->create_valued_ciphertext(0., type, batch_size);
         }
 
         CoordinateTransform::Iterator input_it = input_batch_transform.begin();
@@ -367,11 +367,11 @@ void ngraph::runtime::he::kernel::convolution_template(
                         ? arg0[input_batch_transform.index(input_batch_coord)]
                         : he_seal_backend->create_valued_ciphertext(0., type);
             }
-            else if (he_heaan_backend)
+            else if (he_ckks_backend)
             {
                 v = input_batch_transform.has_source_coordinate(input_batch_coord)
                         ? arg0[input_batch_transform.index(input_batch_coord)]
-                        : he_heaan_backend->create_valued_ciphertext(0., type, batch_size);
+                        : he_ckks_backend->create_valued_ciphertext(0., type, batch_size);
             }
 
             std::shared_ptr<runtime::he::HECiphertext> prod;
@@ -379,9 +379,9 @@ void ngraph::runtime::he::kernel::convolution_template(
             {
                 prod = he_seal_backend->create_empty_ciphertext();
             }
-            else if (he_heaan_backend)
+            else if (he_ckks_backend)
             {
-                prod = he_heaan_backend->create_empty_ciphertext(batch_size);
+                prod = he_ckks_backend->create_empty_ciphertext(batch_size);
             }
 
             // result += v * arg1[filter_transform.index(filter_coord)];

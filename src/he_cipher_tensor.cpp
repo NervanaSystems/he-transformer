@@ -19,10 +19,10 @@
 
 #include "he_backend.hpp"
 #include "he_cipher_tensor_view.hpp"
-#include "he_heaan_backend.hpp"
+#include "he_ckks_backend.hpp"
 #include "he_seal_backend.hpp"
-#include "heaan_ciphertext_wrapper.hpp"
-#include "heaan_plaintext_wrapper.hpp"
+#include "ckks_ciphertext_wrapper.hpp"
+#include "ckks_plaintext_wrapper.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_view_layout.hpp"
 #include "ngraph/util.hpp"
 #include "seal_ciphertext_wrapper.hpp"
@@ -47,8 +47,8 @@ runtime::he::HECipherTensorView::HECipherTensorView(const element::Type& element
         {
             m_cipher_texts[i] = make_shared<runtime::he::SealCiphertextWrapper>();
         }
-        else if (auto he_heaan_backend =
-                     dynamic_pointer_cast<he_heaan::HEHeaanBackend>(m_he_backend))
+        else if (auto he_ckks_backend =
+                     dynamic_pointer_cast<he_ckks::HEHeaanBackend>(m_he_backend))
         {
             m_cipher_texts[i] = make_shared<runtime::he::HeaanCiphertextWrapper>(m_batch_size);
         }
@@ -109,13 +109,13 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
             he_seal_backend->encode(p, src_with_offset, type);
             he_seal_backend->encrypt(m_cipher_texts[dst_index], p);
         }
-        else if (auto he_heaan_backend =
-                     dynamic_pointer_cast<he_heaan::HEHeaanBackend>(m_he_backend))
+        else if (auto he_ckks_backend =
+                     dynamic_pointer_cast<he_ckks::HEHeaanBackend>(m_he_backend))
         {
             shared_ptr<runtime::he::HEPlaintext> p =
                 make_shared<runtime::he::HeaanPlaintextWrapper>();
-            he_heaan_backend->encode(p, src_with_offset, type, m_batch_size);
-            he_heaan_backend->encrypt(m_cipher_texts[dst_index], p);
+            he_ckks_backend->encode(p, src_with_offset, type, m_batch_size);
+            he_ckks_backend->encrypt(m_cipher_texts[dst_index], p);
         }
         else
         {
@@ -137,8 +137,8 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
                 he_seal_backend->encode(p, src_with_offset, type);
                 he_seal_backend->encrypt(m_cipher_texts[dst_index], p);
             }
-            else if (auto he_heaan_backend =
-                         dynamic_pointer_cast<he_heaan::HEHeaanBackend>(m_he_backend))
+            else if (auto he_ckks_backend =
+                         dynamic_pointer_cast<he_ckks::HEHeaanBackend>(m_he_backend))
             {
                 shared_ptr<runtime::he::HEPlaintext> p =
                     make_shared<runtime::he::HeaanPlaintextWrapper>();
@@ -159,14 +159,14 @@ void runtime::he::HECipherTensorView::write(const void* source, size_t tensor_of
                         memcpy(destination, src, type.size());
                     }
 
-                    he_heaan_backend->encode(p, batch_src, type, m_batch_size);
+                    he_ckks_backend->encode(p, batch_src, type, m_batch_size);
                     free((void*)batch_src);
                 }
                 else
                 {
-                    he_heaan_backend->encode(p, src_with_offset, type, m_batch_size);
+                    he_ckks_backend->encode(p, src_with_offset, type, m_batch_size);
                 }
-                he_heaan_backend->encrypt(m_cipher_texts[dst_index], p);
+                he_ckks_backend->encrypt(m_cipher_texts[dst_index], p);
             }
             else
             {
@@ -197,13 +197,13 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
             he_seal_backend->decrypt(p, m_cipher_texts[src_index]);
             he_seal_backend->decode(dst_with_offset, p, type);
         }
-        else if (auto he_heaan_backend =
-                     dynamic_pointer_cast<he_heaan::HEHeaanBackend>(m_he_backend))
+        else if (auto he_ckks_backend =
+                     dynamic_pointer_cast<he_ckks::HEHeaanBackend>(m_he_backend))
         {
             shared_ptr<runtime::he::HEPlaintext> p =
                 make_shared<runtime::he::HeaanPlaintextWrapper>();
-            he_heaan_backend->decrypt(p, m_cipher_texts[src_index]);
-            he_heaan_backend->decode(dst_with_offset, p, type, m_batch_size);
+            he_ckks_backend->decrypt(p, m_cipher_texts[src_index]);
+            he_ckks_backend->decode(dst_with_offset, p, type, m_batch_size);
         }
         else
         {
@@ -229,13 +229,13 @@ void runtime::he::HECipherTensorView::read(void* target, size_t tensor_offset, s
                 he_seal_backend->decrypt(p, m_cipher_texts[src_index]);
                 he_seal_backend->decode(dst, p, type);
             }
-            else if (auto he_heaan_backend =
-                         dynamic_pointer_cast<he_heaan::HEHeaanBackend>(m_he_backend))
+            else if (auto he_ckks_backend =
+                         dynamic_pointer_cast<he_ckks::HEHeaanBackend>(m_he_backend))
             {
                 shared_ptr<runtime::he::HEPlaintext> p =
                     make_shared<runtime::he::HeaanPlaintextWrapper>();
-                he_heaan_backend->decrypt(p, m_cipher_texts[src_index]);
-                he_heaan_backend->decode(dst, p, type, m_batch_size);
+                he_ckks_backend->decrypt(p, m_cipher_texts[src_index]);
+                he_ckks_backend->decode(dst, p, type, m_batch_size);
             }
             else
             {

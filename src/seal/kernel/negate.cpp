@@ -16,9 +16,9 @@
 
 #include <vector>
 
-#include "he_heaan_backend.hpp"
+#include "he_ckks_backend.hpp"
 #include "he_seal_backend.hpp"
-#include "kernel/heaan/negate_heaan.hpp"
+#include "kernel/ckks/negate_ckks.hpp"
 #include "kernel/negate.hpp"
 #include "kernel/seal/negate_seal.hpp"
 #include "ngraph/type/element_type.hpp"
@@ -76,18 +76,18 @@ void runtime::he::kernel::scalar_negate(const shared_ptr<runtime::he::HECipherte
                 "negate backend is SEAL, but arguments or outputs are not SealCiphertextWrapper");
         }
     }
-    else if (auto he_heaan_backend =
-                 dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
+    else if (auto he_ckks_backend =
+                 dynamic_pointer_cast<runtime::he::he_ckks::HEHeaanBackend>(he_backend))
     {
-        shared_ptr<runtime::he::HeaanCiphertextWrapper> arg_heaan =
+        shared_ptr<runtime::he::HeaanCiphertextWrapper> arg_ckks =
             dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(arg);
-        shared_ptr<runtime::he::HeaanCiphertextWrapper> out_heaan =
+        shared_ptr<runtime::he::HeaanCiphertextWrapper> out_ckks =
             dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(out);
 
-        if (arg_heaan && out_heaan)
+        if (arg_ckks && out_ckks)
         {
-            kernel::heaan::scalar_negate(arg_heaan, out_heaan, type, he_heaan_backend);
-            out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_heaan);
+            kernel::ckks::scalar_negate(arg_ckks, out_ckks, type, he_ckks_backend);
+            out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_ckks);
         }
         else
         {
@@ -125,18 +125,18 @@ void runtime::he::kernel::scalar_negate(const shared_ptr<runtime::he::HEPlaintex
                 "negate backend is SEAL, but arguments or outputs are not SealPlaintextWrapper");
         }
     }
-    else if (auto he_heaan_backend =
-                 dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
+    else if (auto he_ckks_backend =
+                 dynamic_pointer_cast<runtime::he::he_ckks::HEHeaanBackend>(he_backend))
     {
-        shared_ptr<runtime::he::HeaanPlaintextWrapper> arg_heaan =
+        shared_ptr<runtime::he::HeaanPlaintextWrapper> arg_ckks =
             dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(arg);
-        shared_ptr<runtime::he::HeaanPlaintextWrapper> out_heaan =
+        shared_ptr<runtime::he::HeaanPlaintextWrapper> out_ckks =
             dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(out);
 
-        if (arg_heaan && out_heaan)
+        if (arg_ckks && out_ckks)
         {
-            kernel::heaan::scalar_negate(arg_heaan, out_heaan, type, he_heaan_backend);
-            out = dynamic_pointer_cast<runtime::he::HEPlaintext>(out_heaan);
+            kernel::ckks::scalar_negate(arg_ckks, out_ckks, type, he_ckks_backend);
+            out = dynamic_pointer_cast<runtime::he::HEPlaintext>(out_ckks);
         }
         else
         {
