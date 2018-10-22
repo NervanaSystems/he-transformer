@@ -18,12 +18,11 @@
 
 #include <memory>
 
-#include "he_backend.hpp"
-#include "he_seal_parameter.hpp"
+#include "seal/he_seal_parameter.hpp"
 #include "ngraph/runtime/backend.hpp"
 #include "seal/seal.h"
-#include "seal_ciphertext_wrapper.hpp"
-#include "seal_plaintext_wrapper.hpp"
+#include "seal/seal_ciphertext_wrapper.hpp"
+#include "seal/seal_plaintext_wrapper.hpp"
 
 namespace ngraph
 {
@@ -34,46 +33,21 @@ namespace ngraph
             class HETensor;
             class HEPlainTensor;
             class HECipherTensor;
-            class HEBackend;
+            class HESealBackend;
 
             namespace he_seal
             {
-                class HESealBackend : public HEBackend
+                class HESealBFVBackend : public HESealBackend
                 {
                 public:
-                    HESealBackend();
-                    HESealBackend(const std::shared_ptr<runtime::he::HESealParameter> sp);
-                    HESealBackend(HESealBackend& he_backend) = default;
-                    ~HESealBackend();
+                    HESealBFVBackend();
+                    HESealBFVBackend(const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp);
+                    HESealBFVBackend(HESealBFVBackend& he_backend) = default;
+                    ~HESealBFVBackend();
 
-                    /// @brief Checks if parameter is valid for SEAL encoding.
-                    //         Throws an error if parameter is not valid.
-                    void assert_valid_seal_parameter(
-                        const std::shared_ptr<runtime::he::HESealParameter> sp) const;
-
-                    /// @brief Constructs SEAL context from SEAL parameter
-                    /// @param sp SEAL Parameter from which to construct context
-                    /// @return Pointer to constructed context
-                    std::shared_ptr<seal::SEALContext> make_seal_context(
-                        const std::shared_ptr<runtime::he::HESealParameter> sp) const;
-
-                    std::shared_ptr<runtime::Tensor>
-                        create_tensor(const element::Type& element_type,
+                    std::shared_ptr<runtime::Tensor> create_batched_tensor(const element::Type& element_type,
                                       const Shape& shape) override;
 
-                    std::shared_ptr<runtime::Tensor>
-                        create_tensor(const element::Type& element_type,
-                                      const Shape& shape,
-                                      const bool batched) override;
-
-                    std::shared_ptr<runtime::Tensor>
-                        create_tensor(const element::Type& element_type,
-                                      const Shape& shape,
-                                      void* memory_pointer) override;
-
-                    std::shared_ptr<runtime::Tensor>
-                        create_plain_tensor(const element::Type& element_type,
-                                            const Shape& shape) override;
 
                     // Create scalar text with memory pool
                     std::shared_ptr<runtime::he::HECiphertext>
@@ -92,34 +66,28 @@ namespace ngraph
                         create_empty_plaintext(const seal::MemoryPoolHandle& pool) const;
 
                     // Create scalar text without memory pool
-                    std::shared_ptr<runtime::he::HECiphertext>
+                    /* std::shared_ptr<runtime::he::HECiphertext>
                         create_valued_ciphertext(float value,
                                                  const element::Type& element_type,
-                                                 size_t batch_size = 1) const override;
+                                                 size_t batch_size = 1) const override; */
 
-                    std::shared_ptr<runtime::he::HECiphertext>
-                        create_empty_ciphertext(size_t batch_size = 1) const override;
-
-                    std::shared_ptr<runtime::he::HEPlaintext>
+                   /*  std::shared_ptr<runtime::he::HEPlaintext>
                         create_valued_plaintext(float value,
                                                 const element::Type& element_type) const override;
 
                     std::shared_ptr<runtime::he::HEPlaintext>
                         get_valued_plaintext(std::int64_t value,
-                                             const element::Type& element_type) override;
-
-                    std::shared_ptr<runtime::he::HEPlaintext>
-                        create_empty_plaintext() const override;
+                                             const element::Type& element_type) override; */
 
                     // Create Tensor of the same value
-                    std::shared_ptr<runtime::Tensor>
+                   /*  std::shared_ptr<runtime::Tensor>
                         create_valued_tensor(float value,
                                              const element::Type& element_type,
                                              const Shape& shape) override;
                     std::shared_ptr<runtime::Tensor>
                         create_valued_plain_tensor(float value,
                                                    const element::Type& element_type,
-                                                   const Shape& shape) override;
+                                                   const Shape& shape) override; */
 
                     void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
                                 const void* input,
@@ -138,26 +106,6 @@ namespace ngraph
                         std::shared_ptr<runtime::he::HEPlaintext>& output,
                         const std::shared_ptr<runtime::he::HECiphertext> input) const override;
 
-                    const inline std::shared_ptr<seal::SEALContext> get_context() const
-                    {
-                        return m_context;
-                    }
-
-                    const inline std::shared_ptr<seal::Evaluator> get_evaluator() const
-                    {
-                        return m_evaluator;
-                    }
-
-                    const inline std::shared_ptr<seal::Encryptor> get_encryptor() const
-                    {
-                        return m_encryptor;
-                    }
-
-                    const inline std::shared_ptr<seal::Decryptor> get_decryptor() const
-                    {
-                        return m_decryptor;
-                    }
-
                     const inline std::shared_ptr<seal::IntegerEncoder> get_int_encoder() const
                     {
                         return m_int_encoder;
@@ -168,12 +116,7 @@ namespace ngraph
                         return m_frac_encoder;
                     }
 
-                    const inline std::shared_ptr<seal::RelinKeys> get_relin_key() const
-                    {
-                        return m_relin_key;
-                    }
-
-                    struct plaintext_num
+                    /* struct plaintext_num
                     {
                         seal::Plaintext fl_0;
                         seal::Plaintext fl_1;
@@ -186,7 +129,7 @@ namespace ngraph
                     const inline plaintext_num& get_plaintext_num() const
                     {
                         return m_plaintext_num;
-                    }
+                    } */
 
                     /// @brief Checks the noise budget of several tensor views
                     ///        Throws an error if the noise budget is exhauasted
@@ -200,17 +143,8 @@ namespace ngraph
                     int noise_budget(const std::shared_ptr<seal::Ciphertext>& ciphertext) const;
 
                 private:
-                    std::shared_ptr<seal::SEALContext> m_context;
                     std::shared_ptr<seal::IntegerEncoder> m_int_encoder;
                     std::shared_ptr<seal::FractionalEncoder> m_frac_encoder;
-                    std::shared_ptr<seal::KeyGenerator> m_keygen;
-                    std::shared_ptr<seal::PublicKey> m_public_key;
-                    std::shared_ptr<seal::SecretKey> m_secret_key;
-                    std::shared_ptr<seal::Encryptor> m_encryptor;
-                    std::shared_ptr<seal::Decryptor> m_decryptor;
-                    std::shared_ptr<seal::Evaluator> m_evaluator;
-                    std::shared_ptr<seal::RelinKeys> m_relin_key;
-                    plaintext_num m_plaintext_num;
                 };
             }
         }

@@ -16,9 +16,8 @@
 
 # HE transformer sources
 set (HE_SRC
-    # kernels
-    # seal kernels
     seal/he_seal_backend.cpp
+    seal/bfv/he_seal_bfv_backend.cpp
     # main
     # create_backend.cpp
     he_backend.cpp

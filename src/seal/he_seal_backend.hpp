@@ -46,6 +46,9 @@ namespace ngraph
                     HESealBackend(const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp);
                     ~HESealBackend();
 
+                    /// @brief Constructs SEAL context from SEAL parameter
+                    /// @param sp SEAL Parameter from which to construct context
+                    /// @return Pointer to constructed context
                     std::shared_ptr<seal::SEALContext> make_seal_context(
                         const std::shared_ptr<runtime::he::he_seal::HESealParameter> sp) const;
 
@@ -58,24 +61,23 @@ namespace ngraph
                         create_tensor(const element::Type& element_type,
                                       const Shape& shape) override;
 
-                    std::shared_ptr<runtime::Tensor>
-                        create_tensor(const element::Type& element_type,
-                                      const Shape& shape,
-                                      const bool batched) override;
+                    virtual std::shared_ptr<runtime::Tensor>
+                        create_batched_tensor(const element::Type& element_type,
+                                      const Shape& shape) = 0;
 
-                    std::shared_ptr<runtime::Tensor>
+                    virtual std::shared_ptr<runtime::Tensor>
                         create_tensor(const element::Type& element_type,
                                       const Shape& shape,
                                       void* memory_pointer) override;
 
-                    std::shared_ptr<runtime::Tensor>
+                    virtual std::shared_ptr<runtime::Tensor>
                         create_plain_tensor(const element::Type& element_type,
                                             const Shape& shape) override;
 
-                    std::shared_ptr<runtime::he::HECiphertext>&
+                    /* virtual std::shared_ptr<runtime::he::HECiphertext>&
                         get_valued_ciphertext(std::int64_t value,
                                               const element::Type& element_type,
-                                              size_t batch_size = 1);
+                                              size_t batch_size = 1); */
 
                     /* std::shared_ptr<runtime::he::HECiphertext>
                         create_valued_ciphertext(const float value,
@@ -83,18 +85,18 @@ namespace ngraph
                                                  const size_t batch_size = 1) const override; */
 
                     std::shared_ptr<runtime::he::HECiphertext>
-                        create_empty_ciphertext(const size_t batch_size = 1) const override;
+                        create_empty_ciphertext() const;
 
                     /* std::shared_ptr<runtime::he::HEPlaintext>
                         create_valued_plaintext(float value,
                                                 const element::Type& element_type) const override; */
 
-                    std::shared_ptr<runtime::he::HEPlaintext>
+                    /* std::shared_ptr<runtime::he::HEPlaintext>
                         get_valued_plaintext(std::int64_t value,
-                                             const element::Type& element_type) override;
+                                             const element::Type& element_type) override; */
 
                     std::shared_ptr<runtime::he::HEPlaintext>
-                        create_empty_plaintext() const override;
+                        create_empty_plaintext() const ;
 
                     /* std::shared_ptr<runtime::Tensor>
                         create_valued_tensor(float value,
@@ -106,15 +108,15 @@ namespace ngraph
                                                    const element::Type& element_type,
                                                    const Shape& shape) override; */
 
-                    void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
+                    virtual void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
                                 const void* input,
                                 const element::Type& type,
-                                size_t count = 1) const override;
+                                size_t count = 1) const = 0;
 
-                    void decode(void* output,
+                    virtual void decode(void* output,
                                 const std::shared_ptr<runtime::he::HEPlaintext> input,
                                 const element::Type& type,
-                                size_t count = 1) const override;
+                                size_t count = 1) const = 0;
 
                     void encrypt(
                         std::shared_ptr<runtime::he::HECiphertext>& output,
@@ -139,7 +141,7 @@ namespace ngraph
                         return m_relin_key;
                     }
 
-                private:
+                protected:
                     std::shared_ptr<seal::SecretKey> m_secret_key;
                     std::shared_ptr<seal::PublicKey> m_public_key;
                     std::shared_ptr<seal::RelinKeys> m_relin_key;

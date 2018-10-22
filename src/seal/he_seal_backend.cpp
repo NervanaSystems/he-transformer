@@ -155,11 +155,7 @@ shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealBackend::make_seal_con
 
     NGRAPH_INFO << "Creating context";
 
-    auto tmp =seal::SEALContext::Create(parms);
-
-    NGRAPH_INFO << "Returning context";
-
-    return tmp;
+    return seal::SEALContext::Create(parms);
 }
 
 shared_ptr<runtime::Tensor>
@@ -170,19 +166,6 @@ shared_ptr<runtime::Tensor>
         dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(shared_from_this());
     auto rc = make_shared<runtime::he::HECipherTensor>(element_type, shape, he_seal_backend);
     return static_pointer_cast<runtime::Tensor>(rc);
-}
-
-shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealBackend::create_tensor(
-    const element::Type& element_type, const Shape& shape, const bool batched)
-{
-    if (batched)
-    {
-        throw ngraph_error("HESealBackend does not support batched create tensor");
-    }
-    else
-    {
-        create_tensor(element_type, shape);
-    }
 }
 
 shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealBackend::create_tensor(
@@ -239,12 +222,8 @@ shared_ptr<runtime::Tensor>
 } */
 
 shared_ptr<runtime::he::HECiphertext>
-    runtime::he::he_seal::HESealBackend::create_empty_ciphertext(size_t batch_size) const
+    runtime::he::he_seal::HESealBackend::create_empty_ciphertext() const
 {
-    if (batch_size != 1)
-    {
-        throw ngraph_error("HESealBackend::create_empty_ciphertext only supports batch size 1");
-    }
     return make_shared<runtime::he::he_seal::SealCiphertextWrapper>();
 }
 
