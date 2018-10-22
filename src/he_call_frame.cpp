@@ -33,11 +33,10 @@
 #include "he_call_frame.hpp"
 #include "he_cipher_tensor.hpp"
 #include "he_plain_tensor.hpp"
-#include "he_seal_backend.hpp"
+#include "seal/he_seal_backend.hpp"
 #include "he_tensor.hpp"
-#include "int_call_frame.hpp"
 #include "kernel/add.hpp"
-#include "kernel/avg_pool.hpp"
+/* #include "kernel/avg_pool.hpp"
 #include "kernel/broadcast.hpp"
 #include "kernel/concat.hpp"
 #include "kernel/constant.hpp"
@@ -51,7 +50,7 @@
 #include "kernel/result.hpp"
 #include "kernel/slice.hpp"
 #include "kernel/subtract.hpp"
-#include "kernel/sum.hpp"
+#include "kernel/sum.hpp" */
 #include "ngraph/descriptor/layout/tensor_layout.hpp"
 #include "ngraph/runtime/backend.hpp"
 #include "ngraph/runtime/host_tensor.hpp"
@@ -110,21 +109,21 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
     {
         for (size_t i = 0; i < param->get_output_size(); ++i)
         {
-            descriptor::Tensor* tv = param->get_output_tensor(i).get();
+            descriptor::Tensor* tv = param->get_output_tensor_ptr(i).get();
             tensor_map.insert({tv, input_tvs[arg_index++]});
         }
     }
 
-    // Map output descriptor::tv to runtime::tv
-    for (size_t i = 0; i < function->get_output_size(); i++)
+    // map function outputs -> HostTensor
+    for (size_t output_count = 0; output_count < function->get_output_size(); ++output_count)
     {
-        auto output_op = function->get_output_op(i);
-        if (!dynamic_pointer_cast<op::Result>(output_op))
+        auto output = function->get_output_op(output_count);
+        if (!dynamic_pointer_cast<op::Result>(output))
         {
             throw ngraph_error("One of function's outputs isn't op::Result");
         }
-        descriptor::Tensor* tv = function->get_output_op(i)->get_output_tensor(0).get();
-        tensor_map.insert({tv, output_tvs[i]});
+        descriptor::Tensor* tv = output->get_output_tensor_ptr(0).get();
+        tensor_map.insert({tv, output_tvs[output_count]});
     }
 
     // Invoke computation
@@ -143,7 +142,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         vector<shared_ptr<runtime::he::HETensor>> inputs;
         for (const descriptor::Input& input : op->get_inputs())
         {
-            descriptor::Tensor* tv = input.get_output().get_tensor().get();
+            descriptor::Tensor* tv = input.get_output().get_tensor_ptr().get();
             inputs.push_back(tensor_map.at(tv));
         }
 
@@ -152,14 +151,14 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         vector<shared_ptr<runtime::he::HETensor>> outputs;
         for (size_t i = 0; i < op->get_output_size(); ++i)
         {
-            descriptor::Tensor* tv = op->get_output_tensor(i).get();
-            string name = tv->get_tensor().get_name();
-            if (!contains_key(tensor_map, tv))
+            descriptor::Tensor* tv = op->get_output_tensor_ptr(i).get();
+             auto it = tensor_map.find(tv);
+            if (it == tensor_map.end())
             {
                 // The output tensor is not in the tensor map so create a new tensor
                 const Shape& shape = op->get_output_shape(i);
                 const element::Type& element_type = op->get_output_element_type(i);
-                string tensor_name = op->get_output_tensor(i).get_name();
+                string name = op->get_output_tensor(i).get_name();
 
                 bool plain_out = all_of(
                     inputs.begin(), inputs.end(), [](shared_ptr<runtime::he::HETensor> input) {
@@ -217,22 +216,12 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
             check_cpu_calls(function, base_type, op, outputs, inputs, false);
         }
 
-        // Check noise budget after each op
-        if (auto he_seal_backend =
-                dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(m_he_backend))
-        {
-            if (auto output = dynamic_pointer_cast<runtime::he::HECipherTensor>(outputs[0]))
-            {
-                he_seal_backend->check_noise_budget(outputs);
-            }
-        }
-
-        // Delete any obsolete tensors
+        // delete any obsolete tensors
         for (const descriptor::Tensor* t : op->liveness_free_list)
         {
             for (auto it = tensor_map.begin(); it != tensor_map.end(); ++it)
             {
-                if (it->second->get_tensor().get_name() == t->get_name())
+                if (it->second->get_name() == t->get_name())
                 {
                     tensor_map.erase(it);
                     break;
@@ -258,7 +247,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
     const vector<shared_ptr<runtime::he::HETensor>>& inputs,
     bool verbose)
 {
-    runtime::interpreter::INTCallFrame cpu_call_frame(function);
+    /* runtime::interpreter::INTCallFrame cpu_call_frame(function);
     vector<shared_ptr<runtime::HostTensor>> cpu_inputs;
     vector<shared_ptr<runtime::HostTensor>> cpu_outputs;
     vector<shared_ptr<runtime::HostTensor>> result_outputs;
@@ -412,7 +401,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
                 cout << elem << " ";
             }
             cout << endl;
-        };
+        }; */
         /* for (shared_ptr<runtime::HostTensor> cpu_input : cpu_inputs)
         {
             NGRAPH_INFO << "Input";
@@ -423,13 +412,14 @@ void runtime::he::HECallFrame::check_cpu_calls(
             NGRAPH_INFO << "Output";
             print_tensor(cpu_output);
         } */
-        if (!correct)
+        /* if (!correct)
         {
             NGRAPH_INFO << "Inaccurate float computation";
             throw ngraph_error("Inaccurate float computation");
         }
     }
-    NGRAPH_INFO << "HE op matches CPU call";
+    NGRAPH_INFO << "HE op matches CPU call"; */
+    NGRAPH_INFO << "CPU Checking not enabled";
 }
 
 void runtime::he::HECallFrame::generate_calls(const element::Type& type,
@@ -505,7 +495,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
             throw ngraph_error("Add types not supported.");
         }
     }
-    else if (node_op == "AvgPool")
+    /* else if (node_op == "AvgPool")
     {
         shared_ptr<op::AvgPool> avg_pool = dynamic_pointer_cast<op::AvgPool>(node);
 
@@ -1108,7 +1098,7 @@ void runtime::he::HECallFrame::generate_calls(const element::Type& type,
         {
             throw ngraph_error("Pad cipher vs plain types not supported.");
         }
-    }
+    } */
     else
     {
         throw ngraph_error("Node op " + node_op + " unimplemented");

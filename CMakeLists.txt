@@ -34,6 +34,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0")
 # Global project name
 project (he-transformer)
 
+add_definitions(-DPROJECT_ROOT_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+
 # Installation paths when `make install`
 if (DEFINED NGRAPH_INSTALL_PREFIX)
     set(CMAKE_INSTALL_PREFIX ${NGRAPH_INSTALL_PREFIX})
