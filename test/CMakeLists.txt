@@ -31,7 +31,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHE_SERIALIZED_ZOO=\\\"${CMAKE_CURRENT_
 set (HE_TEST_SRC
     main.cpp
     test_seal.cpp
-    test_util.cpp
+    #test_util.cpp
 )
 
 # This dummy target always triggers re-configure of HE_HEAAN and HE_SEAL ngraph tests
@@ -43,46 +43,46 @@ add_custom_command(
 
 # Configure test for HE_SEAL
 set (NGRAPH_TEST_HE_SEAL_SRC
-    test_convolution_HE_SEAL.cpp
-    test_basics_HE_SEAL.cpp
+    #test_convolution_HE_SEAL.cpp
+    #test_basics_HE_SEAL.cpp
     # test_mnist_HE_SEAL.cpp # Disabled since SEAL does not support batching for float
 )
 
 # Configure test for HE_HEAAN
 set (NGRAPH_TEST_HE_HEAAN_SRC
-    test_convolution_HE_HEAAN.cpp
-    test_basics_HE_HEAAN.cpp
-    test_mnist_HE_HEAAN.cpp
+    #test_convolution_HE_HEAAN.cpp
+    #test_basics_HE_HEAAN.cpp
+    #test_mnist_HE_HEAAN.cpp
 )
 
 get_filename_component(HEAAN_MANIFEST he_heaan_disabled_test.manifest ABSOLUTE)
 get_filename_component(SEAL_MANIFEST he_seal_disabled_test.manifest ABSOLUTE)
 
-add_custom_command(
-    OUTPUT ${NGRAPH_TEST_HE_SEAL_SRC}
-    DEPENDS ext_ngraph always_build
-    COMMAND ${CMAKE_COMMAND}
-    -DNGRAPH_TEST_DIR=${NGRAPH_TEST_DIR}
-    -DHE_TRANSFORMER_TEST_DIR=${HE_TRANSFORMER_TEST_DIR}
-    -DBACKEND_REGISTERED_NAME=HE:SEAL
-    -DBACKEND_NAME=HE_SEAL
-    -DTEST_LOOPS=1
-    -DMANIFEST=${SEAL_MANIFEST}
-    -P ${CMAKE_CURRENT_SOURCE_DIR}/configure_test.cmake
-)
-
-add_custom_command(
-    OUTPUT ${NGRAPH_TEST_HE_HEAAN_SRC}
-    DEPENDS ext_ngraph always_build
-    COMMAND ${CMAKE_COMMAND}
-    -DNGRAPH_TEST_DIR=${NGRAPH_TEST_DIR}
-    -DHE_TRANSFORMER_TEST_DIR=${HE_TRANSFORMER_TEST_DIR}
-    -DBACKEND_REGISTERED_NAME=HE:HEAAN
-    -DBACKEND_NAME=HE_HEAAN
-    -DTEST_LOOPS=1
-    -DMANIFEST=${HEAAN_MANIFEST}
-    -P ${CMAKE_CURRENT_SOURCE_DIR}/configure_test.cmake
-)
+#add_custom_command(
+#    OUTPUT ${NGRAPH_TEST_HE_SEAL_SRC}
+#    DEPENDS ext_ngraph always_build
+#    COMMAND ${CMAKE_COMMAND}
+#    -DNGRAPH_TEST_DIR=${NGRAPH_TEST_DIR}
+#    -DHE_TRANSFORMER_TEST_DIR=${HE_TRANSFORMER_TEST_DIR}
+#    -DBACKEND_REGISTERED_NAME=HE:SEAL
+#    -DBACKEND_NAME=HE_SEAL
+#    -DTEST_LOOPS=1
+#    -DMANIFEST=${SEAL_MANIFEST}
+#    -P ${CMAKE_CURRENT_SOURCE_DIR}/configure_test.cmake
+#)
+#
+#add_custom_command(
+#    OUTPUT ${NGRAPH_TEST_HE_HEAAN_SRC}
+#    DEPENDS ext_ngraph always_build
+#    COMMAND ${CMAKE_COMMAND}
+#    -DNGRAPH_TEST_DIR=${NGRAPH_TEST_DIR}
+#    -DHE_TRANSFORMER_TEST_DIR=${HE_TRANSFORMER_TEST_DIR}
+#    -DBACKEND_REGISTERED_NAME=HE:HEAAN
+#    -DBACKEND_NAME=HE_HEAAN
+#    -DTEST_LOOPS=1
+#    -DMANIFEST=${HEAAN_MANIFEST}
+#    -P ${CMAKE_CURRENT_SOURCE_DIR}/configure_test.cmake
+#)
 
 # Build unit-test binary
 set(SRC

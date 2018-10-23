@@ -16,21 +16,19 @@
 
 #include <vector>
 
-#include "he_ckks_backend.hpp"
-#include "he_bfv_backend.hpp"
+#include "seal/he_seal_backend.hpp"
 #include "kernel/add.hpp"
-#include "kernel/ckks/add_ckks.hpp"
-#include "kernel/seal/add_seal.hpp"
+#include "seal/kernel/add_seal.hpp"
 #include "ngraph/type/element_type.hpp"
 
 using namespace std;
-using namespace ngraph;
+using namespace ngraph::runtime::he;
 
-void runtime::he::kernel::add(const vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
-                              const vector<shared_ptr<runtime::he::HECiphertext>>& arg1,
-                              vector<shared_ptr<runtime::he::HECiphertext>>& out,
+void kernel::add(const vector<shared_ptr<HECiphertext>>& arg0,
+                              const vector<shared_ptr<HECiphertext>>& arg1,
+                              vector<shared_ptr<HECiphertext>>& out,
                               const element::Type& type,
-                              const shared_ptr<runtime::he::HEBackend>& he_backend,
+                              const shared_ptr<HEBackend>& he_backend,
                               size_t count)
 {
 #pragma omp parallel for
@@ -40,11 +38,11 @@ void runtime::he::kernel::add(const vector<shared_ptr<runtime::he::HECiphertext>
     }
 }
 
-void runtime::he::kernel::add(const vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
-                              const vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,
-                              vector<shared_ptr<runtime::he::HECiphertext>>& out,
+void kernel::add(const vector<shared_ptr<HECiphertext>>& arg0,
+                              const vector<shared_ptr<HEPlaintext>>& arg1,
+                              vector<shared_ptr<HECiphertext>>& out,
                               const element::Type& type,
-                              const shared_ptr<runtime::he::HEBackend>& he_backend,
+                              const shared_ptr<HEBackend>& he_backend,
                               size_t count)
 {
 #pragma omp parallel for
@@ -54,21 +52,21 @@ void runtime::he::kernel::add(const vector<shared_ptr<runtime::he::HECiphertext>
     }
 }
 
-void runtime::he::kernel::add(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg0,
-                              const vector<shared_ptr<runtime::he::HECiphertext>>& arg1,
-                              vector<shared_ptr<runtime::he::HECiphertext>>& out,
+void kernel::add(const vector<shared_ptr<HEPlaintext>>& arg0,
+                              const vector<shared_ptr<HECiphertext>>& arg1,
+                              vector<shared_ptr<HECiphertext>>& out,
                               const element::Type& type,
-                              const shared_ptr<runtime::he::HEBackend>& he_backend,
+                              const shared_ptr<HEBackend>& he_backend,
                               size_t count)
 {
     add(arg1, arg0, out, type, he_backend, count);
 }
 
-void runtime::he::kernel::add(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg0,
-                              const vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,
-                              vector<shared_ptr<runtime::he::HEPlaintext>>& out,
+void kernel::add(const vector<shared_ptr<HEPlaintext>>& arg0,
+                              const vector<shared_ptr<HEPlaintext>>& arg1,
+                              vector<shared_ptr<HEPlaintext>>& out,
                               const element::Type& type,
-                              const shared_ptr<runtime::he::HEBackend>& he_backend,
+                              const shared_ptr<HEBackend>& he_backend,
                               size_t count)
 {
 #pragma omp parallel for
@@ -78,26 +76,26 @@ void runtime::he::kernel::add(const vector<shared_ptr<runtime::he::HEPlaintext>>
     }
 }
 
-void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HECiphertext>& arg0,
-                                     const shared_ptr<runtime::he::HECiphertext>& arg1,
-                                     shared_ptr<runtime::he::HECiphertext>& out,
+void kernel::scalar_add(const shared_ptr<HECiphertext>& arg0,
+                                     const shared_ptr<HECiphertext>& arg1,
+                                     shared_ptr<HECiphertext>& out,
                                      const element::Type& type,
-                                     const shared_ptr<runtime::he::HEBackend>& he_backend)
+                                     const shared_ptr<HEBackend>& he_backend)
 {
     if (auto he_seal_backend =
-            dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
+            dynamic_pointer_cast<he_seal::HESealBackend>(he_backend))
     {
-        shared_ptr<runtime::he::SealCiphertextWrapper> arg0_seal =
-            dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(arg0);
-        shared_ptr<runtime::he::SealCiphertextWrapper> arg1_seal =
-            dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(arg1);
-        shared_ptr<runtime::he::SealCiphertextWrapper> out_seal =
-            dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(out);
+        shared_ptr<he_seal::SealCiphertextWrapper> arg0_seal =
+            dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(arg0);
+        shared_ptr<he_seal::SealCiphertextWrapper> arg1_seal =
+            dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(arg1);
+        shared_ptr<he_seal::SealCiphertextWrapper> out_seal =
+            dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(out);
 
         if (arg0_seal && arg1_seal && out_seal)
         {
-            kernel::seal::scalar_add(arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
-            out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_seal);
+            he_seal::kernel::scalar_add(arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
+            out = dynamic_pointer_cast<HECiphertext>(out_seal);
         }
         else
         {
@@ -105,53 +103,32 @@ void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HECiphertext>
                 "Add backend is SEAL, but arguments or outputs are not SealCiphertextWrapper");
         }
     }
-    else if (auto he_ckks_backend =
-                 dynamic_pointer_cast<runtime::he::he_ckks::HEHeaanBackend>(he_backend))
-    {
-        shared_ptr<runtime::he::HeaanCiphertextWrapper> arg0_ckks =
-            dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(arg0);
-        shared_ptr<runtime::he::HeaanCiphertextWrapper> arg1_ckks =
-            dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(arg1);
-        shared_ptr<runtime::he::HeaanCiphertextWrapper> out_ckks =
-            dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(out);
-
-        if (arg0_ckks && arg1_ckks && out_ckks)
-        {
-            kernel::ckks::scalar_add(arg0_ckks, arg1_ckks, out_ckks, type, he_ckks_backend);
-            out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_ckks);
-        }
-        else
-        {
-            throw ngraph_error(
-                "Add backend is HEAAN, but arguments or outputs are not HeaanCiphertextWrapper");
-        }
-    }
     else
     {
-        throw ngraph_error("Add backend is neither SEAL nor HEAAN.");
+        throw ngraph_error("Add backend is not SEAL.");
     }
 }
 
-void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HEPlaintext>& arg0,
-                                     const shared_ptr<runtime::he::HEPlaintext>& arg1,
-                                     shared_ptr<runtime::he::HEPlaintext>& out,
+void kernel::scalar_add(const shared_ptr<HEPlaintext>& arg0,
+                                     const shared_ptr<HEPlaintext>& arg1,
+                                     shared_ptr<HEPlaintext>& out,
                                      const element::Type& type,
-                                     const shared_ptr<runtime::he::HEBackend>& he_backend)
+                                     const shared_ptr<HEBackend>& he_backend)
 {
     if (auto he_seal_backend =
-            dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
+            dynamic_pointer_cast<he_seal::HESealBackend>(he_backend))
     {
-        shared_ptr<runtime::he::SealPlaintextWrapper> arg0_seal =
-            dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(arg0);
-        shared_ptr<runtime::he::SealPlaintextWrapper> arg1_seal =
-            dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(arg1);
-        shared_ptr<runtime::he::SealPlaintextWrapper> out_seal =
-            dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(out);
+        shared_ptr<he_seal::SealPlaintextWrapper> arg0_seal =
+            dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(arg0);
+        shared_ptr<he_seal::SealPlaintextWrapper> arg1_seal =
+            dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(arg1);
+        shared_ptr<he_seal::SealPlaintextWrapper> out_seal =
+            dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(out);
 
         if (arg0_seal && arg1_seal && out_seal)
         {
-            kernel::seal::scalar_add(arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
-            out = dynamic_pointer_cast<runtime::he::HEPlaintext>(out_seal);
+            he_seal::kernel::scalar_add(arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
+            out = dynamic_pointer_cast<HEPlaintext>(out_seal);
         }
         else
         {
@@ -159,52 +136,31 @@ void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HEPlaintext>&
                 "Add backend is SEAL, but arguments or outputs are not SealPlaintextWrapper.:");
         }
     }
-    else if (auto he_ckks_backend =
-                 dynamic_pointer_cast<runtime::he::he_ckks::HEHeaanBackend>(he_backend))
-    {
-        shared_ptr<runtime::he::HeaanPlaintextWrapper> arg0_ckks =
-            dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(arg0);
-        shared_ptr<runtime::he::HeaanPlaintextWrapper> arg1_ckks =
-            dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(arg1);
-        shared_ptr<runtime::he::HeaanPlaintextWrapper> out_ckks =
-            dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(out);
-
-        if (arg0_ckks && arg1_ckks && out_ckks)
-        {
-            kernel::ckks::scalar_add(arg0_ckks, arg1_ckks, out_ckks, type, he_ckks_backend);
-            out = dynamic_pointer_cast<runtime::he::HEPlaintext>(out_ckks);
-        }
-        else
-        {
-            throw ngraph_error(
-                "Add backend is HEAAN, but arguments or outputs are not HeaanPlaintextWrapper.");
-        }
-    }
     else
     {
         throw ngraph_error("Add backend is neither SEAL nor HEAAN.");
     }
 }
 
-void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HECiphertext>& arg0,
-                                     const shared_ptr<runtime::he::HEPlaintext>& arg1,
-                                     shared_ptr<runtime::he::HECiphertext>& out,
+void kernel::scalar_add(const shared_ptr<HECiphertext>& arg0,
+                                     const shared_ptr<HEPlaintext>& arg1,
+                                     shared_ptr<HECiphertext>& out,
                                      const element::Type& type,
-                                     const shared_ptr<runtime::he::HEBackend>& he_backend)
+                                     const shared_ptr<HEBackend>& he_backend)
 {
     if (auto he_seal_backend =
-            dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
+            dynamic_pointer_cast<he_seal::HESealBackend>(he_backend))
     {
-        shared_ptr<runtime::he::SealCiphertextWrapper> arg0_seal =
-            dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(arg0);
-        shared_ptr<runtime::he::SealPlaintextWrapper> arg1_seal =
-            dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(arg1);
-        shared_ptr<runtime::he::SealCiphertextWrapper> out_seal =
-            dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(out);
+        shared_ptr<he_seal::SealCiphertextWrapper> arg0_seal =
+            dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(arg0);
+        shared_ptr<he_seal::SealPlaintextWrapper> arg1_seal =
+            dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(arg1);
+        shared_ptr<he_seal::SealCiphertextWrapper> out_seal =
+            dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(out);
 
         if (arg0_seal && arg1_seal && out_seal)
         {
-            auto zero = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(
+            auto zero = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(
                 he_seal_backend->get_valued_plaintext(0, type));
 
             if (arg1_seal->m_plaintext == zero->m_plaintext)
@@ -213,8 +169,8 @@ void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HECiphertext>
             }
             else
             {
-                kernel::seal::scalar_add(arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
-                out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_seal);
+                he_seal::kernel::scalar_add(arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
+                out = dynamic_pointer_cast<HECiphertext>(out_seal);
             }
         }
         else
@@ -223,49 +179,17 @@ void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HECiphertext>
                 "Add backend is SEAL, but arguments or outputs are not SealPlaintextWrapper");
         }
     }
-    else if (auto he_ckks_backend =
-                 dynamic_pointer_cast<runtime::he::he_ckks::HEHeaanBackend>(he_backend))
-    {
-        shared_ptr<runtime::he::HeaanCiphertextWrapper> arg0_ckks =
-            dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(arg0);
-        shared_ptr<runtime::he::HeaanPlaintextWrapper> arg1_ckks =
-            dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(arg1);
-        shared_ptr<runtime::he::HeaanCiphertextWrapper> out_ckks =
-            dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(out);
-
-        if (arg0_ckks && arg1_ckks && out_ckks)
-        {
-            auto zero = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(
-                he_ckks_backend->get_valued_plaintext(0, type));
-
-            if (arg1_ckks->m_plaintexts == zero->m_plaintexts)
-            {
-                out = arg0;
-            }
-            else
-            {
-                kernel::ckks::scalar_add(
-                    arg0_ckks, arg1_ckks, out_ckks, type, he_ckks_backend);
-                out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_ckks);
-            }
-        }
-        else
-        {
-            throw ngraph_error(
-                "Add backend is HEAAN, but arguments or outputs are not HeaanPlaintextWrapper.");
-        }
-    }
     else
     {
         throw ngraph_error("Add backend is neither SEAL nor HEAAN.");
     }
 }
 
-void runtime::he::kernel::scalar_add(const shared_ptr<runtime::he::HEPlaintext>& arg0,
-                                     const shared_ptr<runtime::he::HECiphertext>& arg1,
-                                     shared_ptr<runtime::he::HECiphertext>& out,
+void kernel::scalar_add(const shared_ptr<HEPlaintext>& arg0,
+                                     const shared_ptr<HECiphertext>& arg1,
+                                     shared_ptr<HECiphertext>& out,
                                      const element::Type& type,
-                                     const shared_ptr<runtime::he::HEBackend>& he_backend)
+                                     const shared_ptr<HEBackend>& he_backend)
 {
     scalar_add(arg1, arg0, out, type, he_backend);
 }

@@ -37,7 +37,7 @@ TEST(seal_example, seal_ckks_basics_i)
     parms.set_coeff_modulus(coeff_modulus_128(8192));
 
     auto context = SEALContext::Create(parms);
-    print_parameters(context);
+    //print_parameters(context);
 
     KeyGenerator keygen(context);
     auto public_key = keygen.public_key();

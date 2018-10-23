@@ -18,6 +18,8 @@
 set (HE_SRC
     seal/he_seal_backend.cpp
     seal/bfv/he_seal_bfv_backend.cpp
+
+    kernel/add.cpp
     # main
     # create_backend.cpp
     he_backend.cpp
