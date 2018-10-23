@@ -33,7 +33,7 @@ namespace ngraph
                 {
                     SealPlaintextWrapper(seal::Plaintext plain);
                     SealPlaintextWrapper();
-                    virtual ~SealPlaintextWrapper();
+                    ~SealPlaintextWrapper();
 
                     seal::Plaintext m_plaintext;
                 };

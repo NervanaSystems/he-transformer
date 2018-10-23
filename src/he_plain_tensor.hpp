@@ -39,7 +39,7 @@ namespace ngraph
                                   const Shape& shape,
                                   std::shared_ptr<HEBackend> he_backend,
                                   const std::string& name = "external");
-                virtual ~HEPlainTensor();
+                ~HEPlainTensor();
 
                 /// @brief Write bytes directly into the tensor after encoding
                 /// @param p Pointer to source of data

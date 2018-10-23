@@ -45,8 +45,8 @@ namespace ngraph
                     HESealBFVBackend(HESealBFVBackend& he_backend) = default;
                     ~HESealBFVBackend();
 
-                    std::shared_ptr<runtime::Tensor> create_batched_tensor(const element::Type& element_type,
-                                      const Shape& shape) override;
+                    /*std::shared_ptr<runtime::Tensor> create_batched_tensor(const element::Type& element_type,
+                                      const Shape& shape) override; */
 
 
                     // Create scalar text with memory pool

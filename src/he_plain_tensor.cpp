@@ -18,12 +18,10 @@
 #include <string>
 
 #include "he_backend.hpp"
-#include "he_ckks_backend.hpp"
 #include "he_plain_tensor.hpp"
-#include "he_seal_backend.hpp"
-#include "ckks_plaintext_wrapper.hpp"
+#include "seal/he_seal_backend.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
-#include "seal_plaintext_wrapper.hpp"
+#include "seal/seal_plaintext_wrapper.hpp"
 
 using namespace ngraph;
 using namespace std;
@@ -42,16 +40,11 @@ runtime::he::HEPlainTensor::HEPlainTensor(const element::Type& element_type,
     {
         if (auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(m_he_backend))
         {
-            m_plain_texts[i] = make_shared<runtime::he::SealPlaintextWrapper>();
-        }
-        else if (auto he_ckks_backend =
-                     dynamic_pointer_cast<he_ckks::HEHeaanBackend>(m_he_backend))
-        {
-            m_plain_texts[i] = make_shared<runtime::he::HeaanPlaintextWrapper>();
+            m_plain_texts[i] = make_shared<runtime::he::he_seal::SealPlaintextWrapper>();
         }
         else
         {
-            throw ngraph_error("m_he_backend neither SEAL nor HEAAN in HEPlainTensor");
+            throw ngraph_error("m_he_backend not SEAL.");
         }
     }
 }
@@ -76,14 +69,9 @@ void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
         {
             he_seal_backend->encode(m_plain_texts[dst_index], src_with_offset, type);
         }
-        else if (auto he_ckks_backend =
-                     dynamic_pointer_cast<he_ckks::HEHeaanBackend>(m_he_backend))
-        {
-            he_ckks_backend->encode(m_plain_texts[dst_index], src_with_offset, type);
-        }
         else
         {
-            throw ngraph_error("HEPlainTensor::write, he_backend is neither SEAL nor HEAAN.");
+            throw ngraph_error("m_he_backend not SEAL.");
         }
     }
     else
@@ -97,15 +85,9 @@ void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
             {
                 he_seal_backend->encode(m_plain_texts[dst_index], src_with_offset, type);
             }
-            else if (auto he_ckks_backend =
-                         dynamic_pointer_cast<he_ckks::HEHeaanBackend>(m_he_backend))
-            {
-                he_ckks_backend->encode(m_plain_texts[dst_index], src_with_offset, type);
-            }
             else
             {
-                throw ngraph_error(
-                    "HEPlainTensor::write, he_backend is neither SEAL nor HEAAN.");
+                throw ngraph_error("m_he_backend not SEAL.");
             }
         }
     }
@@ -127,14 +109,9 @@ void runtime::he::HEPlainTensor::read(void* target, size_t tensor_offset, size_t
         {
             he_seal_backend->decode(dst_with_offset, m_plain_texts[src_index], type);
         }
-        else if (auto he_ckks_backend =
-                     dynamic_pointer_cast<he_ckks::HEHeaanBackend>(m_he_backend))
-        {
-            he_ckks_backend->decode(dst_with_offset, m_plain_texts[src_index], type);
-        }
         else
         {
-            throw ngraph_error("HEPlainTensor::read, he_backend is neither SEAL nor HEAAN.");
+            throw ngraph_error("m_he_backend not SEAL.");
         }
     }
     else
@@ -148,15 +125,9 @@ void runtime::he::HEPlainTensor::read(void* target, size_t tensor_offset, size_t
             {
                 he_seal_backend->decode(dst_with_offset, m_plain_texts[src_index], type);
             }
-            else if (auto he_ckks_backend =
-                         dynamic_pointer_cast<he_ckks::HEHeaanBackend>(m_he_backend))
-            {
-                he_ckks_backend->decode(dst_with_offset, m_plain_texts[src_index], type);
-            }
             else
             {
-                throw ngraph_error(
-                    "HEPlainTensor::read, he_backend is neither SEAL nor HEAAN.");
+                throw ngraph_error("m_he_backend not SEAL.");
             }
         }
     }

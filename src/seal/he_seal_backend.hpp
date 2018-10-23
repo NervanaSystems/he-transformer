@@ -141,6 +141,11 @@ namespace ngraph
                         return m_relin_key;
                     }
 
+                    const inline std::shared_ptr<seal::Evaluator> get_evaluator() const
+                    {
+                        return m_evaluator;
+                    }
+
                 protected:
                     std::shared_ptr<seal::SecretKey> m_secret_key;
                     std::shared_ptr<seal::PublicKey> m_public_key;

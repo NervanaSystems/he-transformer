@@ -20,6 +20,12 @@ set (HE_SRC
     seal/bfv/he_seal_bfv_backend.cpp
 
     kernel/add.cpp
+    seal/kernel/add_seal.cpp
+
+    seal/seal_plaintext_wrapper.cpp
+    seal/seal_ciphertext_wrapper.cpp
+
+    he_plain_tensor.cpp
     # main
     # create_backend.cpp
     he_backend.cpp

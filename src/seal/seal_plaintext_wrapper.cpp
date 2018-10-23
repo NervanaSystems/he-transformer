@@ -19,16 +19,16 @@
 using namespace std;
 using namespace ngraph;
 
-runtime::he::SealPlaintextWrapper::SealPlaintextWrapper()
+runtime::he::he_seal::SealPlaintextWrapper::SealPlaintextWrapper()
     : m_plaintext(seal::Plaintext())
 {
 }
 
-runtime::he::SealPlaintextWrapper::SealPlaintextWrapper(seal::Plaintext plain)
+runtime::he::he_seal::SealPlaintextWrapper::SealPlaintextWrapper(seal::Plaintext plain)
     : m_plaintext(plain)
 {
 }
 
-runtime::he::SealPlaintextWrapper::~SealPlaintextWrapper()
+runtime::he::he_seal::SealPlaintextWrapper::~SealPlaintextWrapper()
 {
 }

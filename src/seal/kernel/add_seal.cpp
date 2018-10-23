@@ -14,68 +14,63 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <vector>
-
-#include "he_ckks_backend.hpp"
-#include "he_bfv_backend.hpp"
+#include "seal/he_seal_backend.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/seal.h"
+#include "seal/kernel/add_seal.hpp"
 
 using namespace std;
-using namespace ngraph;
+using namespace ngraph::runtime::he;
 
-void runtime::he::he_seal::kernel::scalar_add(const std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& arg0,
-                            const std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& arg1,
-                            std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
+void he_seal::kernel::scalar_add(const shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
+                            const shared_ptr<he_seal::SealCiphertextWrapper>& arg1,
+                            shared_ptr<he_seal::SealCiphertextWrapper>& out,
                             const element::Type& type,
-                            const std::shared_ptr<runtime::he::he_seal::HESealBackend>& he_seal_backend);
-
+                            const shared_ptr<he_seal::HESealBackend>& he_seal_backend)
 {
-    if ((arg0 == arg1) && ((arg1 == out))
+    if ((arg0 == arg1) && (arg1 == out))
     {
-       he_seal_backend->get_evaluator->square_inplace(out->m_ciphertext);
+       he_seal_backend->get_evaluator()->square_inplace(out->m_ciphertext);
     }
     else if (arg1 == arg0)
     {
-       he_seal_backend->get_evaluator->square(arg1->m_ciphertext, out->m_ciphertext);
+       he_seal_backend->get_evaluator()->square(arg1->m_ciphertext, out->m_ciphertext);
     }
     else if (arg0 == out)
     {
-       he_seal_backend->get_evaluator->add_inplace(out->m_ciphertext, arg1->m_ciphertext);
+       he_seal_backend->get_evaluator()->add_inplace(out->m_ciphertext, arg1->m_ciphertext);
     }
     else if (arg1 == out)
     {
-        he_seal_backend->get_evaluator->add_inplace(arg1->m_ciphertext, out->m_ciphertext);
+        he_seal_backend->get_evaluator()->add_inplace(arg1->m_ciphertext, out->m_ciphertext);
     }
     else
     {
-        he_seal_backend->get_evaluator->add(arg0->m_ciphertext, arg1->m_ciphertext, out->m_ciphertext);
+        he_seal_backend->get_evaluator()->add(arg0->m_ciphertext, arg1->m_ciphertext, out->m_ciphertext);
     }
 }
 
-void runtime::he::he_seal::kernel::scalar_add(const std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& arg0,
-                            const std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& arg1,
-                            std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
+void he_seal::kernel::scalar_add(const shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
+                            const shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
+                            shared_ptr<he_seal::SealCiphertextWrapper>& out,
                             const element::Type& type,
-                            const std::shared_ptr<runtime::he::he_seal::HESealBackend>& he_seal_backend);
-
+                            const shared_ptr<he_seal::HESealBackend>& he_seal_backend)
 {
-    if (arg1 == out)
+    if (arg0 == out)
     {
-        he_seal_backend->get_evaluator->add_plain_inplace(out->m_ciphertext, arg1->m_ciphertext);
+        he_seal_backend->get_evaluator()->add_plain_inplace(out->m_ciphertext, arg1->m_plaintext);
     }
     else
     {
-        he_seal_backend->get_evaluator->add_plain(arg0->m_ciphertext, arg1->m_ciphertext, out->m_ciphertext);
+        he_seal_backend->get_evaluator()->add_plain(arg0->m_ciphertext, arg1->m_plaintext, out->m_ciphertext);
     }
 }
 
-void runtime::he::he_seal::kernel::scalar_add(const std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& arg0,
-                            const std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& arg1,
-                            std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& out,
+void he_seal::kernel::scalar_add(const shared_ptr<he_seal::SealPlaintextWrapper>& arg0,
+                            const shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
+                            shared_ptr<he_seal::SealPlaintextWrapper>& out,
                             const element::Type& type,
-                            const std::shared_ptr<runtime::he::he_seal::HESealBackend>& he_seal_backend);
-
+                            const shared_ptr<he_seal::HESealBackend>& he_seal_backend)
 {
     throw ngraph_error("Scalar add not implemented");
 }
