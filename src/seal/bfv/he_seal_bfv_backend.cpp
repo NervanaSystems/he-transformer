@@ -16,13 +16,13 @@
 
 #include <limits>
 
-#include "he_call_frame.hpp"
 #include "he_cipher_tensor.hpp"
 #include "he_plain_tensor.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_parameter.hpp"
 #include "he_tensor.hpp"
 #include "seal/bfv/he_seal_bfv_backend.hpp"
+#include "ngraph/runtime/backend_manager.hpp"
 
 #include "seal/seal.h"
 
@@ -88,7 +88,7 @@ const static runtime::he::he_seal::HESealParameter default_seal_bfv_parameter =
     parse_seal_bfv_config_or_use_default();
 
 runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend()
-    : runtime::he::he_seal::HESealBackend(
+    : runtime::he::he_seal::HESealBFVBackend(
           make_shared<runtime::he::he_seal::HESealParameter>(default_seal_bfv_parameter))
 {
 }
@@ -98,7 +98,7 @@ runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend(
     const shared_ptr<runtime::he::he_seal::HESealParameter>& sp)
     : runtime::he::he_seal::HESealBackend::HESealBackend(sp)
 {
-    // NGRAPH_INFO << "Checking sp";
+    NGRAPH_INFO << "Creating HESealBFV Backend from sp";
    //  assert_valid_seal_parameter(sp);
 
     // Context
@@ -112,6 +112,7 @@ runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend(
     auto plain_modulus = m_context_data->parms().plain_modulus().value();
 
     m_int_encoder = make_shared<seal::IntegerEncoder>(plain_modulus);
+    NGRAPH_INFO << "Created m int encoder";
     m_frac_encoder =
         make_shared<seal::FractionalEncoder>(plain_modulus,
                                              poly_modulus,
@@ -120,11 +121,35 @@ runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend(
                                              2);
 }
 
+// Hack to fix weak pointer error. Better is to remove all shared_from_this() from code.
+// static runtime::Backend* s_seal_bfv_backend = nullptr;
+
 extern "C" runtime::Backend* new_backend(const char* configuration_string)
 {
+    /*if (s_seal_bfv_backend == nullptr)
+    {
+       s_seal_bfv_backend = new runtime::he::he_seal::HESealBFVBackend();
+    }
+    return s_seal_bfv_backend; */
+
     return new runtime::he::he_seal::HESealBFVBackend();
 }
 
+extern "C" void delete_backend(runtime::Backend* backend)
+{
+    NGRAPH_INFO << "Deleting backend";
+   //  delete backend;
+}
+
+namespace
+{
+    static class HESealBFVStaticInit
+    {
+    public:
+        HESealBFVStaticInit() { runtime::BackendManager::register_backend("HESealBFV", new_backend); }
+        ~HESealBFVStaticInit() {}
+    } s_he_seal_bfv_static_init;
+}
 
 /* shared_ptr<runtime::Tensor>
     runtime::he::he_seal::HESealBFVBackend::create_tensor(const element::Type& element_type,
@@ -262,11 +287,14 @@ void runtime::he::he_seal::HESealBFVBackend::encode(shared_ptr<runtime::he::HEPl
 
     if (type_name == "int64_t")
     {
+        NGRAPH_INFO << "Encoding int " << (*(int64_t*)input);
+        NGRAPH_INFO << "(m_int_encoder == NULL?) " << (m_int_encoder == nullptr);
         output =
             make_shared<runtime::he::he_seal::SealPlaintextWrapper>(m_int_encoder->encode(*(int64_t*)input));
     }
     else if (type_name == "float")
     {
+        NGRAPH_INFO << "Encoding float";
         output =
             make_shared<runtime::he::he_seal::SealPlaintextWrapper>(m_frac_encoder->encode(*(float*)input));
     }

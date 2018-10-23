@@ -40,20 +40,36 @@ NGRAPH_TEST(${BACKEND_NAME}, trivial)
     EXPECT_EQ(3, a + b);
 }
 
+NGRAPH_TEST(backend_api, registered_devices)
+{
+    vector<string> devices = runtime::Backend::get_registered_devices();
+    for (auto elem : devices)
+    {
+        NGRAPH_INFO << "device " << elem;
+    }
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, backend_init)
 {
-    auto he_seal = runtime::Backend::create("HE:SEAL::BFV");
+    auto he_seal = runtime::Backend::create("HE::SEAL::BFV"); // HE:SEAL:BFV");
     NGRAPH_INFO << "Created SEAL BFV backend";
     EXPECT_EQ(1, 1);
 }
 NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_scalar)
 {
-    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+    auto backend = runtime::Backend::create("HESealBFV");
 
     Shape shape{};
     auto a = backend->create_tensor(element::i64, shape);
+    NGRAPH_INFO << "Created tensor";
     copy_data(a, vector<int64_t>{5});
-    EXPECT_EQ(read_vector<int64_t>(a), (vector<int64_t>{5}));
+    NGRAPH_INFO << "Copied data";
+
+    auto tmp =read_vector<int64_t>(a) ;
+    NGRAPH_INFO << "Read vector";
+    NGRAPH_INFO << "vector " << tmp[0];
+    EXPECT_EQ(tmp, (vector<int64_t>{5}));
+    NGRAPH_INFO << "Equality passed?!";
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_2)

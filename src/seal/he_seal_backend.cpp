@@ -16,7 +16,6 @@
 
 #include <limits>
 
-#include "he_call_frame.hpp"
 #include "he_cipher_tensor.hpp"
 #include "he_plain_tensor.hpp"
 #include "he_seal_backend.hpp"
@@ -79,10 +78,6 @@ runtime::he::he_seal::HESealBackend::HESealBackend(
     m_evaluator = make_shared<seal::Evaluator>(m_context);
 }
 
-runtime::he::he_seal::HESealBackend::~HESealBackend()
-{
-}
-
 shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealBackend::make_seal_context(
     const shared_ptr<runtime::he::he_seal::HESealParameter> sp) const
 {
@@ -120,8 +115,12 @@ shared_ptr<runtime::Tensor>
     runtime::he::he_seal::HESealBackend::create_tensor(const element::Type& element_type,
                                                        const Shape& shape)
 {
+    HEBackend* ptr_he_backend = this;
+    shared_ptr<HEBackend> he_backend(ptr_he_backend);
+
+    //shared_ptr<HEBackend> he_backend(this;
     shared_ptr<HESealBackend> he_seal_backend =
-        dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(shared_from_this());
+        dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend);
     auto rc = make_shared<runtime::he::HECipherTensor>(element_type, shape, he_seal_backend);
     return static_pointer_cast<runtime::Tensor>(rc);
 }
@@ -136,8 +135,11 @@ shared_ptr<runtime::Tensor>
     runtime::he::he_seal::HESealBackend::create_plain_tensor(const element::Type& element_type,
                                                              const Shape& shape)
 {
+    HEBackend* ptr_he_backend = this;
+    shared_ptr<HEBackend> he_backend(ptr_he_backend);
+
     shared_ptr<HESealBackend> he_seal_backend =
-        dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(shared_from_this());
+        dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend);
     auto rc = make_shared<runtime::he::HEPlainTensor>(element_type, shape, he_seal_backend);
     return static_pointer_cast<runtime::Tensor>(rc);
 }

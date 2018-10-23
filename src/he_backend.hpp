@@ -18,8 +18,26 @@
 
 #include <memory>
 #include <unordered_map>
+#include <functional>
+#include <memory>
+#include <vector>
 
+#include "he_tensor.hpp"
+
+#include "ngraph/descriptor/layout/tensor_layout.hpp"
+#include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
+#include "ngraph/function.hpp"
+#include "ngraph/graph_util.hpp"
+#include "ngraph/pass/like_replacement.hpp"
+#include "ngraph/pass/liveness.hpp"
+#include "ngraph/pass/manager.hpp"
 #include "ngraph/runtime/backend.hpp"
+#include "ngraph/runtime/host_tensor.hpp"
+#include "ngraph/runtime/performance_counter.hpp"
+#include "ngraph/runtime/tensor.hpp"
+#include "ngraph/node.hpp"
+#include "ngraph/type/element_type.hpp"
+#include "ngraph/util.hpp"
 
 namespace ngraph
 {
@@ -34,8 +52,8 @@ namespace ngraph
             class HECiphertext;
             class HEPlaintext;
 
-            class HEBackend : public runtime::Backend,
-                              public std::enable_shared_from_this<HEBackend>
+            class HEBackend : public runtime::Backend
+                            , public std::enable_shared_from_this<HEBackend>
             {
             public:
                 HEBackend();
@@ -107,15 +125,15 @@ namespace ngraph
                 virtual std::shared_ptr<runtime::Tensor> create_valued_plain_tensor(
                     float value, const element::Type& element_type, const Shape& shape) = 0;
 
-                bool compile(std::shared_ptr<Function> func) override;
+                bool compile(std::shared_ptr<Function> function) override;
 
-                bool call(std::shared_ptr<Function> func,
+                bool call(std::shared_ptr<Function> function,
                           const std::vector<std::shared_ptr<runtime::Tensor>>& outputs,
                           const std::vector<std::shared_ptr<runtime::Tensor>>& inputs) override;
 
                 void clear_function_instance();
 
-                void remove_compiled_function(std::shared_ptr<Function> func) override;
+                void remove_compiled_function(std::shared_ptr<Function> function) override;
 
                 /// @brief Encodes bytes to a plaintext polynomial
                 /// @param output Pointer to plaintext to write to
@@ -151,14 +169,35 @@ namespace ngraph
                     decrypt(std::shared_ptr<runtime::he::HEPlaintext>& output,
                             const std::shared_ptr<runtime::he::HECiphertext> input) const = 0;
 
-                void enable_performance_data(std::shared_ptr<Function> func, bool enable) override;
+                void enable_performance_data(std::shared_ptr<Function> function, bool enable) override;
                 std::vector<PerformanceCounter>
-                    get_performance_data(std::shared_ptr<Function> func) const override;
+                    get_performance_data(std::shared_ptr<Function> function) const override;
 
             private:
-                std::unordered_map<std::shared_ptr<Function>,
+                class FunctionInstance
+                {
+                public:
+                    bool m_is_compiled = false;
+                    bool m_nan_check_enabled = false;
+                    bool m_performance_counters_enabled = false;
+                    std::unordered_map<const Node*, stopwatch> m_timer_map;
+                    std::vector<std::shared_ptr<Node>> m_nodes;
+                };
+                std::map<std::shared_ptr<Function>, FunctionInstance> m_function_map;
+
+                void generate_calls(const element::Type& type,
+                    const std::shared_ptr<Node>& op,
+                    const std::vector<std::shared_ptr<runtime::he::HETensor>>& outputs,
+                    const std::vector<std::shared_ptr<runtime::he::HETensor>>& inputs);
+
+                bool call(std::shared_ptr<Function> function,
+                    const std::vector<std::shared_ptr<runtime::he::HETensor>>& outputs,
+                    const std::vector<std::shared_ptr<runtime::he::HETensor>>& inputs);
+
+
+                /*std::unordered_map<std::shared_ptr<Function>,
                                    std::shared_ptr<runtime::he::HECallFrame>>
-                    m_function_map;
+                    m_function_map; */
 
             protected:
                 std::unordered_map<
