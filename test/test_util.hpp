@@ -23,13 +23,13 @@
 #include "gtest/gtest.h"
 
 #include "he_backend.hpp"
-#include "he_cipher_tensor_view.hpp"
-#include "he_heaan_backend.hpp"
-#include "he_seal_backend.hpp"
-#include "ngraph/descriptor/layout/tensor_view_layout.hpp"
+#include "he_cipher_tensor.hpp"
+// #include "seal/ckks/he_seal_ckks_backend.hpp"
+#include "seal/bfv/he_seal_bfv_backend.hpp"
+#include "ngraph/descriptor/layout/tensor_layout.hpp"
 #include "ngraph/file_util.hpp"
 #include "ngraph/node.hpp"
-#include "ngraph/runtime/tensor_view.hpp"
+#include "ngraph/runtime/tensor.hpp"
 #include "ngraph/type/element_type.hpp"
 
 using namespace ngraph;
@@ -39,8 +39,7 @@ class TestHEBackend : public ::testing::Test
 protected:
     virtual void SetUp();
     virtual void TearDown();
-    static std::shared_ptr<ngraph::runtime::he::he_seal::HESealBackend> m_he_seal_backend;
-    static std::shared_ptr<ngraph::runtime::he::he_heaan::HEHeaanBackend> m_he_heaan_backend;
+    static std::shared_ptr<ngraph::runtime::he::he_seal::HESealBFVBackend> m_he_seal_bfv_backend;
 };
 
 std::vector<float> read_binary_constant(const std::string filename, size_t num_elements);
@@ -67,21 +66,21 @@ bool all_close(const std::vector<std::complex<T>>& a,
     return true;
 }
 
-std::vector<std::tuple<std::vector<std::shared_ptr<ngraph::runtime::TensorView>>,
-             std::vector<std::shared_ptr<ngraph::runtime::TensorView>>>>
+std::vector<std::tuple<std::vector<std::shared_ptr<ngraph::runtime::Tensor>>,
+             std::vector<std::shared_ptr<ngraph::runtime::Tensor>>>>
     generate_plain_cipher_tensors(const std::vector<std::shared_ptr<Node>>& output,
                                   const std::vector<std::shared_ptr<Node>>& input,
                                   std::shared_ptr<ngraph::runtime::Backend> backend,
                                   const bool consistent_type = false);
 
 template <typename T> // TODO: add to ngraph?
-std::vector<T> generalized_read_vector(std::shared_ptr<ngraph::runtime::TensorView> tv)
+std::vector<T> generalized_read_vector(std::shared_ptr<ngraph::runtime::Tensor> tv)
 {
-    if (ngraph::element::from<T>() != tv->get_tensor_view_layout()->get_element_type())
+    if (ngraph::element::from<T>() != tv->get_tensor_layout()->get_element_type())
     {
-        throw std::invalid_argument("read_vector type must match TensorView type");
+        throw std::invalid_argument("read_vector type must match Tensor type");
     }
-    if (auto cipher_tv = std::dynamic_pointer_cast<ngraph::runtime::he::HECipherTensorView>(tv))
+    if (auto cipher_tv = std::dynamic_pointer_cast<ngraph::runtime::he::HECipherTensor>(tv))
     {
         size_t element_count;
         if (cipher_tv->is_batched())

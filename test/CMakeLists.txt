@@ -42,43 +42,43 @@ add_custom_command(
 )
 
 # Configure test for HE_SEAL
-set (NGRAPH_TEST_HE_SEAL_SRC
+set (NGRAPH_TEST_HE_SEAL_BFV_SRC
     #test_convolution_HE_SEAL.cpp
-    #test_basics_HE_SEAL.cpp
+    test_basics_HE_SEAL_BFV.cpp
     # test_mnist_HE_SEAL.cpp # Disabled since SEAL does not support batching for float
 )
 
 # Configure test for HE_HEAAN
-set (NGRAPH_TEST_HE_HEAAN_SRC
+set (NGRAPH_TEST_HE_SEAL_CKKS_SRC
     #test_convolution_HE_HEAAN.cpp
-    #test_basics_HE_HEAAN.cpp
+    #test_basics_HE_SEAL_CKKS.cpp
     #test_mnist_HE_HEAAN.cpp
 )
 
-get_filename_component(HEAAN_MANIFEST he_heaan_disabled_test.manifest ABSOLUTE)
-get_filename_component(SEAL_MANIFEST he_seal_disabled_test.manifest ABSOLUTE)
+get_filename_component(SEAL_BFV_MANIFEST he_seal_bfv_disabled_test.manifest ABSOLUTE)
+get_filename_component(SEAL_CKKS_MANIFEST he_seal_ckks_disabled_test.manifest ABSOLUTE)
+
+add_custom_command(
+    OUTPUT ${NGRAPH_TEST_HE_SEAL_BFV_SRC}
+    DEPENDS ext_ngraph always_build
+    COMMAND ${CMAKE_COMMAND}
+    -DNGRAPH_TEST_DIR=${NGRAPH_TEST_DIR}
+    -DHE_TRANSFORMER_TEST_DIR=${HE_TRANSFORMER_TEST_DIR}
+    -DBACKEND_REGISTERED_NAME=HE:SEAL::BFV
+    -DBACKEND_NAME=HE_SEAL_BFV
+    -DTEST_LOOPS=1
+    -DMANIFEST=${SEAL_MANIFEST}
+    -P ${CMAKE_CURRENT_SOURCE_DIR}/configure_test.cmake
+)
 
 #add_custom_command(
-#    OUTPUT ${NGRAPH_TEST_HE_SEAL_SRC}
+#    OUTPUT ${NGRAPH_TEST_HE_SEAL_CKKS_SRC}
 #    DEPENDS ext_ngraph always_build
 #    COMMAND ${CMAKE_COMMAND}
 #    -DNGRAPH_TEST_DIR=${NGRAPH_TEST_DIR}
 #    -DHE_TRANSFORMER_TEST_DIR=${HE_TRANSFORMER_TEST_DIR}
-#    -DBACKEND_REGISTERED_NAME=HE:SEAL
-#    -DBACKEND_NAME=HE_SEAL
-#    -DTEST_LOOPS=1
-#    -DMANIFEST=${SEAL_MANIFEST}
-#    -P ${CMAKE_CURRENT_SOURCE_DIR}/configure_test.cmake
-#)
-#
-#add_custom_command(
-#    OUTPUT ${NGRAPH_TEST_HE_HEAAN_SRC}
-#    DEPENDS ext_ngraph always_build
-#    COMMAND ${CMAKE_COMMAND}
-#    -DNGRAPH_TEST_DIR=${NGRAPH_TEST_DIR}
-#    -DHE_TRANSFORMER_TEST_DIR=${HE_TRANSFORMER_TEST_DIR}
-#    -DBACKEND_REGISTERED_NAME=HE:HEAAN
-#    -DBACKEND_NAME=HE_HEAAN
+#    -DBACKEND_REGISTERED_NAME=HE:SEAL::CKKS
+#    -DBACKEND_NAME=HE_SEAL_CKKS
 #    -DTEST_LOOPS=1
 #    -DMANIFEST=${HEAAN_MANIFEST}
 #    -P ${CMAKE_CURRENT_SOURCE_DIR}/configure_test.cmake
@@ -87,8 +87,8 @@ get_filename_component(SEAL_MANIFEST he_seal_disabled_test.manifest ABSOLUTE)
 # Build unit-test binary
 set(SRC
     ${HE_TEST_SRC}
-    ${NGRAPH_TEST_HE_SEAL_SRC}
-    ${NGRAPH_TEST_HE_HEAAN_SRC})
+    ${NGRAPH_TEST_HE_SEAL_BFV_SRC}
+    ${NGRAPH_TEST_HE_SEAL_CKKS_SRC})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 

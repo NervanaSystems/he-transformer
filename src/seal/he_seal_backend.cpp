@@ -28,53 +28,6 @@
 using namespace ngraph;
 using namespace std;
 
-const static runtime::he::he_seal::HESealParameter parse_seal_config_or_use_default()
-{
-    try
-    {
-        const char* config_path = std::getenv("NGRAPH_HE_SEAL_CONFIG");
-        if (config_path != nullptr)
-        {
-            // Read file to string
-            std::ifstream f(config_path);
-            std::stringstream ss;
-            ss << f.rdbuf();
-            std::string s = ss.str();
-
-            // Parse json
-            nlohmann::json js = nlohmann::json::parse(s);
-            std::uint64_t poly_modulus = js["poly_modulus"];
-            std::uint64_t plain_modulus = js["plain_modulus"];
-            std::uint64_t security_level = js["security_level"];
-            std:string scheme_name = js["scheme_name"];
-            int evaluation_decomposition_bit_count = js["evaluation_decomposition_bit_count"];
-
-            NGRAPH_INFO << "Using SEAL config for parameters: " << config_path;
-            return runtime::he::he_seal::HESealParameter(poly_modulus,
-                                                plain_modulus,
-                                                security_level,
-                                                scheme_name,
-                                                evaluation_decomposition_bit_count);
-        }
-        else
-        {
-            NGRAPH_INFO << "Using SEAL default parameters" << config_path;
-            throw std::runtime_error("config_path is NULL");
-        }
-    }
-    catch (const std::exception& e)
-    {
-        return runtime::he::he_seal::HESealParameter(2048,      // poly_modulus
-                                            1 << 8, // plain_modulus
-                                            128,       // security_level
-                                            "BFV",   // scheme name
-                                            16         // evaluation_decomposition_bit_count
-                                            );
-    }
-}
-
-const static runtime::he::he_seal::HESealParameter default_seal_parameter =
-    parse_seal_config_or_use_default();
 
 static void print_seal_context(const seal::SEALContext& context)
 {
@@ -89,11 +42,16 @@ static void print_seal_context(const seal::SEALContext& context)
                 << "\\ noise_standard_deviation: " << context_data->parms().noise_standard_deviation();
 }
 
-runtime::he::he_seal::HESealBackend::HESealBackend()
+extern "C" const char* get_ngraph_version_string()
+{
+    return "v0.9.0"; // TODO: move to CMakeLists
+}
+
+/* runtime::he::he_seal::HESealBackend::HESealBackend()
     : runtime::he::he_seal::HESealBackend(
           make_shared<runtime::he::he_seal::HESealParameter>(default_seal_parameter))
 {
-}
+} */
 
 runtime::he::he_seal::HESealBackend::HESealBackend(
     const shared_ptr<runtime::he::he_seal::HESealParameter>& sp)
@@ -132,18 +90,18 @@ shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealBackend::make_seal_con
                                         seal::scheme_type::CKKS);
     NGRAPH_INFO << "Making parms";
 
-    NGRAPH_INFO << "Setting poly mod degree to " << sp->m_poly_modulus;
+    NGRAPH_INFO << "Setting poly mod degree to " << sp->m_poly_modulus_degree;
 
-    parms.set_poly_modulus_degree(sp->m_poly_modulus);
+    parms.set_poly_modulus_degree(sp->m_poly_modulus_degree);
 
     NGRAPH_INFO << "Setting coeff mod to security level " << sp->m_security_level;
     if (sp->m_security_level == 128)
     {
-        parms.set_coeff_modulus(seal::coeff_modulus_128(sp->m_poly_modulus));
+        parms.set_coeff_modulus(seal::coeff_modulus_128(sp->m_poly_modulus_degree));
     }
     else if (sp->m_security_level == 192)
     {
-        parms.set_coeff_modulus(seal::coeff_modulus_192(sp->m_poly_modulus));
+        parms.set_coeff_modulus(seal::coeff_modulus_192(sp->m_poly_modulus_degree));
     }
     else
     {
@@ -184,47 +142,24 @@ shared_ptr<runtime::Tensor>
     return static_pointer_cast<runtime::Tensor>(rc);
 }
 
-/* shared_ptr<runtime::he::HECiphertext> runtime::he::he_seal::HESealBackend::create_valued_ciphertext(
-    const float value, const element::Type& element_type, const size_t batch_size) const
-{
-    throw ngraph_error("create_valued_ciphertext unimplemented");
-} */
-
-/* shared_ptr<runtime::he::HECiphertext> runtime::he::he_seal::HESealBackend::create_valued_ciphertext(
-    float value, const element::Type& element_type, size_t batch_size) const
-{
-    if (batch_size != 1)
-    {
-        throw ngraph_error("HESealBackend::create_valued_ciphertext only supports batch size 1");
-    }
-    const string type_name = element_type.c_type_string();
-    auto ciphertext =
-        dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(create_empty_ciphertext());
-    if (ciphertext == nullptr)
-    {
-        throw ngraph_error("Ciphertext is not seal ciphertext in create_valued_ciphertext");
-    }
-    if (type_name == "float")
-    {
-        seal::Plaintext plaintext = m_frac_encoder->encode(value);
-        m_encryptor->encrypt(plaintext, ciphertext->m_ciphertext);
-    }
-    else if (type_name == "int64_t")
-    {
-        seal::Plaintext plaintext = m_int_encoder->encode(static_cast<int64_t>(value));
-        m_encryptor->encrypt(plaintext, ciphertext->m_ciphertext);
-    }
-    else
-    {
-        throw ngraph_error("Type not supported at create_ciphertext");
-    }
-    return ciphertext;
-} */
 
 shared_ptr<runtime::he::HECiphertext>
     runtime::he::he_seal::HESealBackend::create_empty_ciphertext() const
 {
     return make_shared<runtime::he::he_seal::SealCiphertextWrapper>();
+}
+
+shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealBackend::create_valued_plain_tensor(
+    float value, const element::Type& element_type, const Shape& shape)
+{
+    auto tensor = static_pointer_cast<HEPlainTensor>(create_plain_tensor(element_type, shape));
+    vector<shared_ptr<runtime::he::HEPlaintext>>& plain_texts = tensor->get_elements();
+#pragma omp parallel for
+    for (size_t i = 0; i < plain_texts.size(); ++i)
+    {
+        plain_texts[i] = create_valued_plaintext(value, element_type);
+    }
+    return tensor;
 }
 
 /* shared_ptr<runtime::he::HEPlaintext> runtime::he::he_seal::HESealBackend::create_valued_plaintext(
@@ -278,7 +213,7 @@ shared_ptr<runtime::he::HEPlaintext>
     return make_shared<SealPlaintextWrapper>();
 }
 
-/* shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealBackend::create_valued_tensor(
+shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealBackend::create_valued_tensor(
     float value, const element::Type& element_type, const Shape& shape)
 {
     auto tensor = static_pointer_cast<HECipherTensor>(create_tensor(element_type, shape));
@@ -290,7 +225,7 @@ shared_ptr<runtime::he::HEPlaintext>
     }
     return tensor;
 }
-
+/*
 shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealBackend::create_valued_plain_tensor(
     float value, const element::Type& element_type, const Shape& shape)
 {

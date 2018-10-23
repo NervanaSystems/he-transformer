@@ -29,6 +29,70 @@
 using namespace ngraph;
 using namespace std;
 
+const static runtime::he::he_seal::HESealParameter parse_seal_bfv_config_or_use_default()
+{
+    try
+    {
+        const char* config_path = getenv("NGRAPH_HE_SEAL_BFV_CONFIG");
+        if (config_path != nullptr)
+        {
+            // Read file to string
+            ifstream f(config_path);
+            stringstream ss;
+            ss << f.rdbuf();
+            string s = ss.str();
+
+            // Parse json
+            nlohmann::json js = nlohmann::json::parse(s);
+            string scheme_name = js["scheme_name"];
+            // assert(scheme_name == "BFV");
+            uint64_t poly_modulus_degree = js["poly_modulus_degree"];
+            uint64_t plain_modulus = js["plain_modulus"];
+            uint64_t security_level = js["security_level"];
+            uint64_t fractional_encoder_integer_coeff_count = js["fractional_encoder_integer_coeff_count"];
+            uint64_t fractional_encoder_fraction_coeff_count = js["fractional_encoder_fraction_coeff_count"];
+            uint64_t fractional_encoder_base = js["fractional_encoder_base"];
+            uint64_t evaluation_decomposition_bit_count = js["evaluation_decomposition_bit_count"];
+
+            NGRAPH_INFO << "Using SEAL BFV config for parameters: " << config_path;
+            return runtime::he::he_seal::HESealParameter(scheme_name,
+                                                poly_modulus_degree,
+                                                plain_modulus,
+                                                security_level,
+                                                fractional_encoder_integer_coeff_count,
+                                                fractional_encoder_fraction_coeff_count,
+                                                fractional_encoder_base,
+                                                evaluation_decomposition_bit_count);
+        }
+        else
+        {
+            NGRAPH_INFO << "Using SEAL BFV default parameters" << config_path;
+            throw runtime_error("config_path is NULL");
+        }
+    }
+    catch (const exception& e)
+    {
+        return runtime::he::he_seal::HESealParameter("BFV", // scheme name
+                                            2048,      // poly_modulus_degree
+                                            1 << 8, // plain_modulus
+                                            128,       // security_level
+                                            64,   // fractional_encoder_integer_coeff_count
+                                            32,         // fractional_encoder_fraction_coeff_count
+                                             2,           // fractional_encoder_base
+                                            16            // evaluation_decomposition_bit_count
+                                            );
+    }
+}
+
+const static runtime::he::he_seal::HESealParameter default_seal_bfv_parameter =
+    parse_seal_bfv_config_or_use_default();
+
+runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend()
+    : runtime::he::he_seal::HESealBackend(
+          make_shared<runtime::he::he_seal::HESealParameter>(default_seal_bfv_parameter))
+{
+}
+
 
 runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend(
     const shared_ptr<runtime::he::he_seal::HESealParameter>& sp)
@@ -56,8 +120,9 @@ runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend(
                                              2);
 }
 
-runtime::he::he_seal::HESealBFVBackend::~HESealBFVBackend()
+extern "C" runtime::Backend* new_backend(const char* configuration_string)
 {
+    return new runtime::he::he_seal::HESealBFVBackend();
 }
 
 
@@ -69,31 +134,31 @@ runtime::he::he_seal::HESealBFVBackend::~HESealBFVBackend()
         dynamic_pointer_cast<runtime::he::he_seal::HESealBFVBackend>(shared_from_this());
     auto rc = make_shared<runtime::he::HECipherTensor>(element_type, shape, he_seal_backend);
     return static_pointer_cast<runtime::Tensor>(rc);
-}
+} */
 
 shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealBFVBackend::create_batched_tensor(
-    const element::Type& element_type, const Shape& shape, const bool batched)
+    const element::Type& element_type, const Shape& shape)
 {
     throw ngraph_error("HESealBFVBackend::create_batched_tensor unimplemented");
 
 }
 
-shared_ptr<runtime::he::HECiphertext>
-    runtime::he::he_seal::HESealBackend::create_empty_ciphertext(size_t batch_size) const
+/* shared_ptr<runtime::he::HECiphertext>
+    runtime::he::he_seal::HESealBFVBackend::create_empty_ciphertext(size_t batch_size) const
 {
     if (batch_size != 1)
     {
-        throw ngraph_error("HESealBackend::create_empty_ciphertext only supports batch size 1");
+        throw ngraph_error("HESealBFVBackend::create_empty_ciphertext only supports batch size 1");
     }
     return make_shared<runtime::he::SealCiphertextWrapper>();
 }
-
-shared_ptr<runtime::he::HEPlaintext> runtime::he::he_seal::HESealBackend::create_valued_plaintext(
+*/
+shared_ptr<runtime::he::HEPlaintext> runtime::he::he_seal::HESealBFVBackend::create_valued_plaintext(
     float value, const element::Type& element_type) const
 {
     const string type_name = element_type.c_type_string();
     shared_ptr<runtime::he::HEPlaintext> plaintext = create_empty_plaintext();
-    if (auto plaintext_seal = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(plaintext))
+    if (auto plaintext_seal = dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(plaintext))
     {
         if (type_name == "float")
         {
@@ -116,11 +181,12 @@ shared_ptr<runtime::he::HEPlaintext> runtime::he::he_seal::HESealBackend::create
 }
 
 shared_ptr<runtime::he::HEPlaintext>
-    runtime::he::he_seal::HESealBackend::get_valued_plaintext(int64_t value,
+    runtime::he::he_seal::HESealBFVBackend::get_valued_plaintext(int64_t value,
                                                               const element::Type& element_type)
 {
-    const string type_name = element_type.c_type_string();
-    std::unordered_set<int64_t> stored_plaintext_values{-1, 0, 1};
+    throw ngraph_error("HESealBFVBackend::get_valued_plaintext unimplemented");
+    /* const string type_name = element_type.c_type_string();
+    unordered_set<int64_t> stored_plaintext_values{-1, 0, 1};
     if (stored_plaintext_values.find(value) == stored_plaintext_values.end())
     {
         throw ngraph_error("Value not stored in stored plaintext values");
@@ -130,16 +196,16 @@ shared_ptr<runtime::he::HEPlaintext>
     {
         throw ngraph_error("Type or value not stored in m_plaintext_map");
     }
-    return m_plaintext_map[type_name][value];
+    return m_plaintext_map[type_name][value]; */
 }
-
+/*
 shared_ptr<runtime::he::HEPlaintext>
-    runtime::he::he_seal::HESealBackend::create_empty_plaintext() const
+    runtime::he::he_seal::HESealBFVBackend::create_empty_plaintext() const
 {
     return make_shared<SealPlaintextWrapper>();
-}
+} */
 
-shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealBackend::create_valued_tensor(
+shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealBFVBackend::create_valued_tensor(
     float value, const element::Type& element_type, const Shape& shape)
 {
     auto tensor = static_pointer_cast<HECipherTensor>(create_tensor(element_type, shape));
@@ -152,19 +218,36 @@ shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealBackend::create_valued_t
     return tensor;
 }
 
-shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealBackend::create_valued_plain_tensor(
-    float value, const element::Type& element_type, const Shape& shape)
+shared_ptr<runtime::he::HECiphertext> runtime::he::he_seal::HESealBFVBackend::create_valued_ciphertext(
+    float value, const element::Type& element_type, size_t batch_size) const
 {
-    auto tensor = static_pointer_cast<HEPlainTensor>(create_plain_tensor(element_type, shape));
-    vector<shared_ptr<runtime::he::HEPlaintext>>& plain_texts = tensor->get_elements();
-#pragma omp parallel for
-    for (size_t i = 0; i < plain_texts.size(); ++i)
+    if (batch_size != 1)
     {
-        plain_texts[i] = create_valued_plaintext(value, element_type);
+        throw ngraph_error("HESealBFVBackend::create_valued_ciphertext only supports batch size 1");
     }
-    return tensor;
+    const string type_name = element_type.c_type_string();
+    auto ciphertext =
+        dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(create_empty_ciphertext());
+    if (ciphertext == nullptr)
+    {
+        throw ngraph_error("Ciphertext is not seal ciphertext in HESealBFVBackend::create_valued_ciphertext");
+    }
+    if (type_name == "float")
+    {
+        seal::Plaintext plaintext = m_frac_encoder->encode(value);
+        m_encryptor->encrypt(plaintext, ciphertext->m_ciphertext);
+    }
+    else if (type_name == "int64_t")
+    {
+        seal::Plaintext plaintext = m_int_encoder->encode(static_cast<int64_t>(value));
+        m_encryptor->encrypt(plaintext, ciphertext->m_ciphertext);
+    }
+    else
+    {
+        throw ngraph_error("Type not supported at create_ciphertext");
+    }
+    return ciphertext;
 }
-*/
 
 void runtime::he::he_seal::HESealBFVBackend::encode(shared_ptr<runtime::he::HEPlaintext>& output,
                                                  const void* input,

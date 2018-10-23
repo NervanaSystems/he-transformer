@@ -19,6 +19,7 @@
 #include <memory>
 
 #include "seal/he_seal_parameter.hpp"
+#include "seal/he_seal_backend.hpp"
 #include "ngraph/runtime/backend.hpp"
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
@@ -43,48 +44,31 @@ namespace ngraph
                     HESealBFVBackend();
                     HESealBFVBackend(const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp);
                     HESealBFVBackend(HESealBFVBackend& he_backend) = default;
-                    ~HESealBFVBackend();
-
-                    /*std::shared_ptr<runtime::Tensor> create_batched_tensor(const element::Type& element_type,
-                                      const Shape& shape) override; */
+                    ~HESealBFVBackend() = default;
 
 
-                    // Create scalar text with memory pool
+                     std::shared_ptr<runtime::Tensor> create_batched_tensor(
+                        const element::Type& element_type, const Shape& shape) override;
+
                     std::shared_ptr<runtime::he::HECiphertext>
                         create_valued_ciphertext(float value,
                                                  const element::Type& element_type,
-                                                 const seal::MemoryPoolHandle& pool) const;
-                    std::shared_ptr<runtime::he::HECiphertext>
-                        create_empty_ciphertext(const seal::MemoryPoolHandle& pool) const;
+                                                 size_t batch_size = 1) const override;
 
                     std::shared_ptr<runtime::he::HEPlaintext>
-                        create_valued_plaintext(float value,
-                                                const element::Type& element_type,
-                                                const seal::MemoryPoolHandle& pool) const;
-
-                    std::shared_ptr<runtime::he::HEPlaintext>
-                        create_empty_plaintext(const seal::MemoryPoolHandle& pool) const;
-
-                    // Create scalar text without memory pool
-                    /* std::shared_ptr<runtime::he::HECiphertext>
-                        create_valued_ciphertext(float value,
-                                                 const element::Type& element_type,
-                                                 size_t batch_size = 1) const override; */
-
-                   /*  std::shared_ptr<runtime::he::HEPlaintext>
                         create_valued_plaintext(float value,
                                                 const element::Type& element_type) const override;
 
                     std::shared_ptr<runtime::he::HEPlaintext>
                         get_valued_plaintext(std::int64_t value,
-                                             const element::Type& element_type) override; */
+                                             const element::Type& element_type) override;
 
                     // Create Tensor of the same value
-                   /*  std::shared_ptr<runtime::Tensor>
+                    std::shared_ptr<runtime::Tensor>
                         create_valued_tensor(float value,
                                              const element::Type& element_type,
                                              const Shape& shape) override;
-                    std::shared_ptr<runtime::Tensor>
+                    /* std::shared_ptr<runtime::Tensor>
                         create_valued_plain_tensor(float value,
                                                    const element::Type& element_type,
                                                    const Shape& shape) override; */

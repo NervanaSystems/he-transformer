@@ -45,8 +45,8 @@ namespace ngraph
                     create_tensor(const element::Type& element_type,
                                   const Shape& shape) override = 0;
 
-                virtual std::shared_ptr<runtime::Tensor> create_tensor(
-                    const element::Type& element_type, const Shape& shape, const bool batched) = 0;
+                virtual std::shared_ptr<runtime::Tensor> create_batched_tensor(
+                    const element::Type& element_type, const Shape& shape) = 0;
 
                 /// @brief Return a handle for a tensor for given mem on backend device
                 std::shared_ptr<runtime::Tensor>
@@ -69,11 +69,9 @@ namespace ngraph
                                              size_t batch_size = 1) const = 0;
 
                 /// @brief Creates ciphertext of unspecified value
-                /// @param batch_size Number of elements to encrypt in a
-                ///        > 1 indicates batching
                 /// @return Shared pointer to created ciphertext
                 virtual std::shared_ptr<runtime::he::HECiphertext>
-                    create_empty_ciphertext(size_t batch_size = 1) const = 0;
+                    create_empty_ciphertext() const = 0;
 
                 /// @brief Creates plaintext of specified value
                 /// @param value Scalar which to encode

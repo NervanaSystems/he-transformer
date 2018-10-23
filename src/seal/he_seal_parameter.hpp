@@ -38,33 +38,47 @@ namespace ngraph
                 class HESealParameter
                 {
                     public:
-                        HESealParameter(std::uint64_t poly_modulus,
+                        HESealParameter(std::string scheme_name,
+                                        std::uint64_t poly_modulus_degree,
                                         std::uint64_t plain_modulus,
                                         std::uint64_t security_level,
-                                        std::string scheme_name,
-                                        int evaluation_decomposition_bit_count)
-                            : m_poly_modulus(poly_modulus)
+                                        std::uint64_t fractional_encoder_integer_coeff_count,
+                                        std::uint64_t fractional_encoder_fraction_coeff_count,
+                                        std::uint64_t fractional_encoder_base,
+                                        std::uint64_t evaluation_decomposition_bit_count)
+                            : m_scheme_name(scheme_name)
+                            , m_poly_modulus_degree(poly_modulus_degree)
                             , m_plain_modulus(plain_modulus)
                             , m_security_level(security_level)
-                            , m_scheme_name(scheme_name)
+                            , m_fractional_encoder_integer_coeff_count(
+                                fractional_encoder_integer_coeff_count)
+                            , m_fractional_encoder_fraction_coeff_count(
+                                fractional_encoder_fraction_coeff_count)
+                            , m_fractional_encoder_base(fractional_encoder_base)
                             , m_evaluation_decomposition_bit_count(evaluation_decomposition_bit_count)
                         {
                         }
 
                         ~HESealParameter() {}
-                        // SEALContext
+
+                        // Must be "BFV" or "CKKS"
+                        std::string m_scheme_name;
+
                         // Must be 1024, 2048, 4096, 8192, 16384, or 32768, aka n
-                        std::uint64_t m_poly_modulus;
+                        std::uint64_t m_poly_modulus_degree;
                         std::uint64_t m_plain_modulus;
                         // Must be 128 or 192
                         std::uint64_t m_security_level;
 
-                        std::string m_scheme_name; // Must be "BFV" or "CKKS"
+                        // FractionalEncoder
+                        std::uint64_t m_fractional_encoder_integer_coeff_count;
+                        std::uint64_t m_fractional_encoder_fraction_coeff_count;
+                        std::uint64_t m_fractional_encoder_base;
 
                         // Used to generate relin keys
-                        int m_evaluation_decomposition_bit_count;
-                    };
-                }
+                        std::uint64_t m_evaluation_decomposition_bit_count;
+                };
+            }
         }
     }
 }
