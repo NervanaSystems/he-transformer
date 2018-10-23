@@ -58,6 +58,7 @@ namespace ngraph
             public:
                 HEBackend();
                 HEBackend(HEBackend& he_backend) = default;
+                ~HEBackend() { NGRAPH_INFO << "~HEBackend()"; };
 
                 virtual std::shared_ptr<runtime::Tensor>
                     create_tensor(const element::Type& element_type,

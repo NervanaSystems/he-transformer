@@ -28,7 +28,3 @@ runtime::he::he_seal::SealPlaintextWrapper::SealPlaintextWrapper(seal::Plaintext
     : m_plaintext(plain)
 {
 }
-
-runtime::he::he_seal::SealPlaintextWrapper::~SealPlaintextWrapper()
-{
-}

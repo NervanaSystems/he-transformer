@@ -43,7 +43,7 @@ namespace ngraph
                 {
                 public:
                     HESealBackend(const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp);
-                    ~HESealBackend() {};
+                    ~HESealBackend() { NGRAPH_INFO << "~HESealBackend"; };
 
                     /// @brief Constructs SEAL context from SEAL parameter
                     /// @param sp SEAL Parameter from which to construct context

@@ -44,7 +44,7 @@ namespace ngraph
                     HESealBFVBackend();
                     HESealBFVBackend(const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp);
                     HESealBFVBackend(HESealBFVBackend& he_backend) = default;
-                    ~HESealBFVBackend() = default;
+                    ~HESealBFVBackend() { NGRAPH_INFO << "~HESealBFVBackend"; };
 
 
                      std::shared_ptr<runtime::Tensor> create_batched_tensor(

@@ -115,7 +115,7 @@ shared_ptr<runtime::Tensor>
     runtime::he::he_seal::HESealBackend::create_tensor(const element::Type& element_type,
                                                        const Shape& shape)
 {
-    HEBackend* ptr_he_backend = this;
+    HEBackend* ptr_he_backend = shared_from_this();
     shared_ptr<HEBackend> he_backend(ptr_he_backend);
 
     //shared_ptr<HEBackend> he_backend(this;

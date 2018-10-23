@@ -147,7 +147,7 @@ namespace
     {
     public:
         HESealBFVStaticInit() { runtime::BackendManager::register_backend("HESealBFV", new_backend); }
-        ~HESealBFVStaticInit() {}
+        ~HESealBFVStaticInit() { NGRAPH_INFO << "~HESealBFVStaticInit"; }
     } s_he_seal_bfv_static_init;
 }
 
