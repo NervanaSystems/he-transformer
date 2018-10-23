@@ -160,7 +160,8 @@ void kernel::scalar_add(const shared_ptr<HECiphertext>& arg0,
 
         if (arg0_seal && arg1_seal && out_seal)
         {
-            auto zero = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(
+            // TODO: re-enable optimized add!
+            /* auto zero = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(
                 he_seal_backend->get_valued_plaintext(0, type));
 
             if (arg1_seal->m_plaintext == zero->m_plaintext)
@@ -168,10 +169,10 @@ void kernel::scalar_add(const shared_ptr<HECiphertext>& arg0,
                 out = arg0;
             }
             else
-            {
+            { */
                 he_seal::kernel::scalar_add(arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
                 out = dynamic_pointer_cast<HECiphertext>(out_seal);
-            }
+            //}
         }
         else
         {

@@ -26,6 +26,8 @@ set (HE_SRC
     seal/seal_ciphertext_wrapper.cpp
 
     he_plain_tensor.cpp
+
+    kernel/result.cpp
     # main
     # create_backend.cpp
     he_backend.cpp

@@ -72,5 +72,28 @@ void he_seal::kernel::scalar_add(const shared_ptr<he_seal::SealPlaintextWrapper>
                             const element::Type& type,
                             const shared_ptr<he_seal::HESealBackend>& he_seal_backend)
 {
-    throw ngraph_error("Scalar add not implemented");
+    shared_ptr<runtime::he::HEPlaintext> out_he =
+        dynamic_pointer_cast<runtime::he::HEPlaintext>(out);
+    const string type_name = type.c_type_string();
+    if (type_name == "float")
+    {
+        float x, y;
+        he_seal_backend->decode(&x, arg0, type);
+        he_seal_backend->decode(&y, arg1, type);
+        float r = x + y;
+        he_seal_backend->encode(out_he, &r, type);
+    }
+    else if (type_name == "int64_t")
+    {
+        int64_t x, y;
+        he_seal_backend->decode(&x, arg0, type);
+        he_seal_backend->decode(&y, arg1, type);
+        int64_t r = x + y;
+        he_seal_backend->encode(out_he, &r, type);
+    }
+    else
+    {
+        throw ngraph_error("Unsupported type " + type_name + " in add");
+    }
+    out = dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(out_he);
 }

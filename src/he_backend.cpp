@@ -23,6 +23,7 @@
 #include "ngraph/pass/visualize_tree.hpp"
 
 #include "kernel/add.hpp"
+#include "kernel/result.hpp"
 
 #include "he_backend.hpp"
 #include "he_cipher_tensor.hpp"
@@ -340,6 +341,38 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
         else
         {
             throw ngraph_error("Add types not supported.");
+        }
+    }
+    else if (node_op == "Result")
+    {
+        shared_ptr<op::Result> res = dynamic_pointer_cast<op::Result>(node);
+
+        if (arg0_cipher != nullptr && out0_cipher != nullptr)
+        {
+            size_t output_size = shape_size(res->get_shape());
+            if (arg0_cipher->is_batched())
+            {
+                output_size /= arg0_cipher->get_batch_size();
+            }
+            runtime::he::kernel::result(
+                arg0_cipher->get_elements(), out0_cipher->get_elements(), output_size);
+        }
+        else if (arg0_plain != nullptr && out0_cipher != nullptr)
+        {
+            runtime::he::kernel::result(arg0_plain->get_elements(),
+                                        out0_cipher->get_elements(),
+                                        shape_size(res->get_shape()),
+                                        m_he_backend);
+        }
+        else if (arg0_plain != nullptr && out0_plain != nullptr)
+        {
+            runtime::he::kernel::result(arg0_plain->get_elements(),
+                                        out0_plain->get_elements(),
+                                        shape_size(res->get_shape()));
+        }
+        else
+        {
+            throw ngraph_error("Result types not supported.");
         }
     }
     else

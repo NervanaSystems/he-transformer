@@ -31,7 +31,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHE_SERIALIZED_ZOO=\\\"${CMAKE_CURRENT_
 set (HE_TEST_SRC
     main.cpp
     test_seal.cpp
-    #test_util.cpp
+    test_util.cpp
 )
 
 # This dummy target always triggers re-configure of HE_HEAAN and HE_SEAL ngraph tests

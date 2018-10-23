@@ -29,8 +29,6 @@
 #include "ngraph/node.hpp"
 
 #include "he_backend.hpp"
-#include "he_heaan_backend.hpp"
-#include "he_seal_backend.hpp"
 #include "test_util.hpp"
 
 using namespace std;
@@ -38,21 +36,23 @@ using namespace ngraph;
 
 void TestHEBackend::TearDown()
 {
-    m_he_seal_backend->clear_function_instance();
-    m_he_heaan_backend->clear_function_instance();
+    NGRAPH_INFO << "Tearing down";
+
+    //m_he_seal_bfv_backend->clear_function_instance();
+    //m_he_seal_ckks_backend->clear_function_instance();
 }
 
 void TestHEBackend::SetUp()
 {
-    m_he_seal_backend = static_pointer_cast<runtime::he::he_seal::HESealBackend>(
+    NGRAPH_INFO << "Setting up";
+    /*m_he_seal_bfv_backend = static_pointer_cast<runtime::he::he_seal::HESealBFVBackend>(
         runtime::Backend::create("HE_SEAL"));
-    m_he_heaan_backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("HE_HEAAN"));
+    m_he_seal_ckks_backend = static_pointer_cast<runtime::he::he_heaan::HESealCKKSBackend>(
+        runtime::Backend::create("HE_HEAAN")); */
 }
 
-shared_ptr<ngraph::runtime::he::he_seal::HESealBackend> TestHEBackend::m_he_seal_backend = nullptr;
-shared_ptr<ngraph::runtime::he::he_heaan::HEHeaanBackend> TestHEBackend::m_he_heaan_backend =
-    nullptr;
+//static shared_ptr<ngraph::runtime::he::he_seal::HESealBFVBackend> TestHEBackend::m_he_seal_bfv_backend = nullptr;
+//static shared_ptr<ngraph::runtime::he::he_seal::HESealCKKSBackend> TestHEBackend::m_he_seal_ckks_backend = nullptr;
 
 vector<float> read_constant(const string filename)
 {
@@ -108,30 +108,30 @@ void write_binary_constant(const vector<float>& values, const string filename)
     outfile.close();
 }
 
-vector<tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,
-             vector<shared_ptr<ngraph::runtime::TensorView>>>>
+vector<tuple<vector<shared_ptr<ngraph::runtime::Tensor>>,
+             vector<shared_ptr<ngraph::runtime::Tensor>>>>
     generate_plain_cipher_tensors(const vector<shared_ptr<Node>>& output,
                                   const vector<shared_ptr<Node>>& input,
                                   shared_ptr<ngraph::runtime::Backend> backend,
                                   bool consistent_type)
 {
-    using ret_tuple_type = tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,
-                                 vector<shared_ptr<ngraph::runtime::TensorView>>>;
+    using ret_tuple_type = tuple<vector<shared_ptr<ngraph::runtime::Tensor>>,
+                                 vector<shared_ptr<ngraph::runtime::Tensor>>>;
     auto he_backend = static_pointer_cast<ngraph::runtime::he::HEBackend>(backend);
 
-    vector<tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,
-                 vector<shared_ptr<ngraph::runtime::TensorView>>>>
+    vector<tuple<vector<shared_ptr<ngraph::runtime::Tensor>>,
+                 vector<shared_ptr<ngraph::runtime::Tensor>>>>
         ret;
 
     auto cipher_cipher = [&output, &input, &he_backend]() {
-        vector<shared_ptr<ngraph::runtime::TensorView>> result;
+        vector<shared_ptr<ngraph::runtime::Tensor>> result;
         for (auto elem : output)
         {
             auto output_tensor =
                 he_backend->create_tensor(elem->get_element_type(), elem->get_shape());
             result.push_back(output_tensor);
         }
-        vector<shared_ptr<ngraph::runtime::TensorView>> argument;
+        vector<shared_ptr<ngraph::runtime::Tensor>> argument;
         for (auto elem : input)
         {
             auto input_tensor =
@@ -141,14 +141,14 @@ vector<tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,
         return make_tuple(result, argument);
     };
     auto default_tensor = [&output, &input, &backend]() {
-        vector<shared_ptr<ngraph::runtime::TensorView>> result;
+        vector<shared_ptr<ngraph::runtime::Tensor>> result;
         for (auto elem : output)
         {
             auto output_tensor =
                 backend->create_tensor(elem->get_element_type(), elem->get_shape());
             result.push_back(output_tensor);
         }
-        vector<shared_ptr<ngraph::runtime::TensorView>> argument;
+        vector<shared_ptr<ngraph::runtime::Tensor>> argument;
         for (auto elem : input)
         {
             auto input_tensor = backend->create_tensor(elem->get_element_type(), elem->get_shape());
@@ -157,14 +157,14 @@ vector<tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,
         return make_tuple(result, argument);
     };
     auto plain_plain = [&output, &input, &he_backend]() {
-        vector<shared_ptr<ngraph::runtime::TensorView>> result;
+        vector<shared_ptr<ngraph::runtime::Tensor>> result;
         for (auto elem : output)
         {
             auto output_tensor =
                 he_backend->create_plain_tensor(elem->get_element_type(), elem->get_shape());
             result.push_back(output_tensor);
         }
-        vector<shared_ptr<ngraph::runtime::TensorView>> argument;
+        vector<shared_ptr<ngraph::runtime::Tensor>> argument;
         for (auto elem : input)
         {
             auto input_tensor =
@@ -174,14 +174,14 @@ vector<tuple<vector<shared_ptr<ngraph::runtime::TensorView>>,
         return make_tuple(result, argument);
     };
     auto alternate_cipher = [&output, &input, &he_backend](size_t mod) {
-        vector<shared_ptr<ngraph::runtime::TensorView>> result;
+        vector<shared_ptr<ngraph::runtime::Tensor>> result;
         for (auto elem : output)
         {
             auto output_tensor =
                 he_backend->create_tensor(elem->get_element_type(), elem->get_shape());
             result.push_back(output_tensor);
         }
-        vector<shared_ptr<ngraph::runtime::TensorView>> argument;
+        vector<shared_ptr<ngraph::runtime::Tensor>> argument;
         for (size_t i = 0; i < input.size(); ++i)
         {
             auto elem = input[i];

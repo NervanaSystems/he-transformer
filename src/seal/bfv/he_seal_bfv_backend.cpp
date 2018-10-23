@@ -122,15 +122,15 @@ runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend(
 }
 
 // Hack to fix weak pointer error. Better is to remove all shared_from_this() from code.
-// static runtime::Backend* s_seal_bfv_backend = nullptr;
+static runtime::Backend* s_seal_bfv_backend = nullptr;
 
 extern "C" runtime::Backend* new_backend(const char* configuration_string)
 {
-    /*if (s_seal_bfv_backend == nullptr)
+    if (s_seal_bfv_backend == nullptr)
     {
        s_seal_bfv_backend = new runtime::he::he_seal::HESealBFVBackend();
     }
-    return s_seal_bfv_backend; */
+    return s_seal_bfv_backend;
 
     return new runtime::he::he_seal::HESealBFVBackend();
 }
@@ -288,7 +288,6 @@ void runtime::he::he_seal::HESealBFVBackend::encode(shared_ptr<runtime::he::HEPl
     if (type_name == "int64_t")
     {
         NGRAPH_INFO << "Encoding int " << (*(int64_t*)input);
-        NGRAPH_INFO << "(m_int_encoder == NULL?) " << (m_int_encoder == nullptr);
         output =
             make_shared<runtime::he::he_seal::SealPlaintextWrapper>(m_int_encoder->encode(*(int64_t*)input));
     }

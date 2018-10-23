@@ -18,9 +18,8 @@
 
 #include "he_backend.hpp"
 #include "he_ciphertext.hpp"
-#include "he_ckks_backend.hpp"
 #include "he_plaintext.hpp"
-#include "he_seal_backend.hpp"
+#include "seal/he_seal_backend.hpp"
 #include "kernel/result.hpp"
 #include "ngraph/type/element_type.hpp"
 
@@ -75,16 +74,8 @@ void runtime::he::kernel::result(const vector<shared_ptr<runtime::he::HEPlaintex
             he_seal_backend->encrypt(out[i], arg[i]);
         }
     }
-    else if (auto he_ckks_backend =
-                 dynamic_pointer_cast<runtime::he::he_ckks::HEHeaanBackend>(he_backend))
-    {
-        for (size_t i = 0; i < count; ++i)
-        {
-            he_ckks_backend->encrypt(out[i], arg[i]);
-        }
-    }
     else
     {
-        throw ngraph_error("Result backend is neither SEAL nor HEAAN.");
+        throw ngraph_error("Result backend is not SEAL.");
     }
 }
