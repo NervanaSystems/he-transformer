@@ -30,30 +30,26 @@ using namespace std;
 
 runtime::he::HECipherTensor::HECipherTensor(const element::Type& element_type,
                                                     const Shape& shape,
-                                                    shared_ptr<HEBackend> he_backend,
+                                                    const std::shared_ptr<HECiphertext> he_ciphertext,
                                                     const bool batched,
                                                     const string& name)
-    : runtime::he::HETensor(element_type, shape, he_backend, batched, name)
+    : runtime::he::HETensor(element_type, shape, batched, name)
 {
     // get_tensor_layout()->get_size() is the number of elements
     m_num_elements = m_descriptor->get_tensor_layout()->get_size();
     m_cipher_texts.resize(m_num_elements);
     for (size_t i = 0; i < m_num_elements; ++i)
     {
-        if (auto he_seal_backend = dynamic_pointer_cast<he::he_seal::HESealBackend>(m_he_backend))
+        if (auto he_seal_ciphertext = dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(he_ciphertext))
         {
             m_cipher_texts[i] = make_shared<runtime::he::he_seal::SealCiphertextWrapper>();
         }
         else
         {
             throw ngraph_error(
-                "HECipherTensor::HECipherTensor(), he_backend is not SEAL.");
+                "HECipherTensor::HECipherTensor(), he_ciphertext is not SEAL ciphertext.");
         }
     }
-}
-
-runtime::he::HECipherTensor::~HECipherTensor()
-{
 }
 
 const Shape runtime::he::HECipherTensor::get_expanded_shape() const
@@ -81,7 +77,12 @@ const Shape runtime::he::HECipherTensor::get_expanded_shape() const
     }
 }
 
-void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset, size_t n)
+/* void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset, size_t n)
+{
+    throw ngraph_error("HECipherTensor::write unimplemented");
+} */
+
+void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset, size_t n, const HEBackend* he_backend)
 {
     check_io_bounds(source, tensor_offset, n / m_batch_size);
     const element::Type& type = get_tensor_layout()->get_element_type();
@@ -94,7 +95,7 @@ void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset
         const void* src_with_offset = (void*)((char*)source);
         size_t dst_index = dst_start_index;
 
-        if (auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(m_he_backend))
+        if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(he_backend))
         {
             shared_ptr<runtime::he::HEPlaintext> p =
                 make_shared<runtime::he::he_seal::SealPlaintextWrapper>();
@@ -114,7 +115,7 @@ void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset
             const void* src_with_offset = (void*)((char*)source + i * type.size() * m_batch_size);
             size_t dst_index = dst_start_index + i;
 
-            if (auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(m_he_backend))
+            if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(he_backend))
             {
                 shared_ptr<runtime::he::HEPlaintext> p =
                     make_shared<runtime::he::he_seal::SealPlaintextWrapper>();
@@ -130,7 +131,12 @@ void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset
     }
 }
 
-void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset, size_t n) const
+/* void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset, size_t n) const
+{
+    throw ngraph_error("HECipherTensor::read unimplemented");
+} */
+
+void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset, size_t n, const HEBackend* he_backend) const
 {
     check_io_bounds(target, tensor_offset, n / m_batch_size);
     const element::Type& type = get_tensor_layout()->get_element_type();
@@ -143,7 +149,7 @@ void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset, size_
     {
         void* dst_with_offset = (void*)((char*)target);
         size_t src_index = src_start_index;
-        if (auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(m_he_backend))
+        if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(he_backend))
         {
             shared_ptr<runtime::he::HEPlaintext> p =
                 make_shared<runtime::he::he_seal::SealPlaintextWrapper>();
@@ -167,7 +173,7 @@ void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset, size_
             }
 
             size_t src_index = src_start_index + i;
-            if (auto he_seal_backend = dynamic_pointer_cast<he_seal::HESealBackend>(m_he_backend))
+            if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(he_backend))
             {
                 shared_ptr<runtime::he::HEPlaintext> p =
                     make_shared<runtime::he::he_seal::SealPlaintextWrapper>();

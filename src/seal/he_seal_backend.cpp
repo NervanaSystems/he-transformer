@@ -115,13 +115,7 @@ shared_ptr<runtime::Tensor>
     runtime::he::he_seal::HESealBackend::create_tensor(const element::Type& element_type,
                                                        const Shape& shape)
 {
-    HEBackend* ptr_he_backend = shared_from_this();
-    shared_ptr<HEBackend> he_backend(ptr_he_backend);
-
-    //shared_ptr<HEBackend> he_backend(this;
-    shared_ptr<HESealBackend> he_seal_backend =
-        dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend);
-    auto rc = make_shared<runtime::he::HECipherTensor>(element_type, shape, he_seal_backend);
+    auto rc = make_shared<runtime::he::HECipherTensor>(element_type, shape, create_empty_ciphertext());
     return static_pointer_cast<runtime::Tensor>(rc);
 }
 
@@ -135,12 +129,7 @@ shared_ptr<runtime::Tensor>
     runtime::he::he_seal::HESealBackend::create_plain_tensor(const element::Type& element_type,
                                                              const Shape& shape)
 {
-    HEBackend* ptr_he_backend = this;
-    shared_ptr<HEBackend> he_backend(ptr_he_backend);
-
-    shared_ptr<HESealBackend> he_seal_backend =
-        dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend);
-    auto rc = make_shared<runtime::he::HEPlainTensor>(element_type, shape, he_seal_backend);
+    auto rc = make_shared<runtime::he::HEPlainTensor>(element_type, shape, create_empty_plaintext());
     return static_pointer_cast<runtime::Tensor>(rc);
 }
 

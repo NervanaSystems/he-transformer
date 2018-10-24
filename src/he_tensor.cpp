@@ -25,7 +25,6 @@ using namespace ngraph;
 
 runtime::he::HETensor::HETensor(const element::Type& element_type,
                                         const Shape& shape,
-                                        const shared_ptr<HEBackend>& he_backend,
                                         bool batched,
                                         const string& name)
     : runtime::Tensor(
@@ -48,7 +47,6 @@ runtime::he::HETensor::HETensor(const element::Type& element_type,
     {
         m_batch_size = 1;
     }
-    m_he_backend = he_backend;
     m_batched = batched;
 }
 

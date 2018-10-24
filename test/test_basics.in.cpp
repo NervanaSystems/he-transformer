@@ -62,11 +62,11 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_scalar)
     Shape shape{};
     auto a = backend->create_tensor(element::i64, shape);
     NGRAPH_INFO << "Created tensor";
-    copy_data(a, vector<int64_t>{5});
-    NGRAPH_INFO << "Copied data";
+    copy_he_data(a, vector<int64_t>{5}, backend);
+    NGRAPH_INFO << "Copied he data";
 
-    auto tmp =read_vector<int64_t>(a) ;
-    NGRAPH_INFO << "Read vector";
+    auto tmp = read_he_vector<int64_t>(a, backend);
+    NGRAPH_INFO << "Read he vector";
     NGRAPH_INFO << "vector " << tmp[0];
     EXPECT_EQ(tmp, (vector<int64_t>{5}));
     NGRAPH_INFO << "Equality passed?!";

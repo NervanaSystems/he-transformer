@@ -53,7 +53,6 @@ namespace ngraph
             class HEPlaintext;
 
             class HEBackend : public runtime::Backend
-                            , public std::enable_shared_from_this<HEBackend>
             {
             public:
                 HEBackend();

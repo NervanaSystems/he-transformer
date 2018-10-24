@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <memory>
+
 #include "ngraph/runtime/tensor.hpp"
 #include "ngraph/type/element_type.hpp"
 
@@ -32,7 +34,6 @@ namespace ngraph
             public:
                 HETensor(const element::Type& element_type,
                              const Shape& shape,
-                             const std::shared_ptr<HEBackend>& he_backend,
                              bool batched = false,
                              const std::string& name = "external");
                 virtual ~HETensor();
@@ -41,13 +42,18 @@ namespace ngraph
                 /// @param p Pointer to source of data
                 /// @param tensor_offset Offset into tensor storage to begin writing. Must be element-aligned.
                 /// @param n Number of bytes to write, must be integral number of elements.
-                virtual void write(const void* p, size_t tensor_offset, size_t n) override;
+                void write(const void* p, size_t tensor_offset, size_t n) override;
+
+                virtual void write(const void* source, size_t tensor_offset, size_t n, const HEBackend* he_backend) = 0;
 
                 /// @brief Read bytes directly from the tensor
                 /// @param p Pointer to destination for data
                 /// @param tensor_offset Offset into tensor storage to begin reading. Must be element-aligned.
                 /// @param n Number of bytes to read, must be integral number of elements.
-                virtual void read(void* p, size_t tensor_offset, size_t n) const override;
+                void read(void* p, size_t tensor_offset, size_t n) const override;
+
+                virtual void read(void* p, size_t tensor_offset, size_t n, const HEBackend* he_backend) const = 0;
+
 
                 /// @brief Reduces shape along batch axis
                 /// @param shape Input shape to batch
@@ -58,11 +64,9 @@ namespace ngraph
                                         size_t batch_axis = 0,
                                         bool batched = false) const;
 
-                /// @brief Returns backend
-                inline std::shared_ptr<HEBackend> get_backend() const { return m_he_backend; }
             protected:
+
                 void check_io_bounds(const void* p, size_t tensor_offset, size_t n) const;
-                std::shared_ptr<HEBackend> m_he_backend;
 
                 bool m_batched;
                 // TODO: support more arbitrary batching dimension

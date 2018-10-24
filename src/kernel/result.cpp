@@ -56,7 +56,7 @@ void runtime::he::kernel::result(const vector<shared_ptr<runtime::he::HECipherte
                                  vector<shared_ptr<runtime::he::HEPlaintext>>& out,
                                  size_t count,
                                  const element::Type& element_type,
-                                 const shared_ptr<runtime::he::HEBackend>& he_backend)
+                                 const runtime::he::HEBackend* he_backend)
 {
     throw ngraph_error("Result plaintext to ciphertext unimplemented");
 }
@@ -64,10 +64,9 @@ void runtime::he::kernel::result(const vector<shared_ptr<runtime::he::HECipherte
 void runtime::he::kernel::result(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg,
                                  vector<shared_ptr<runtime::he::HECiphertext>>& out,
                                  size_t count,
-                                 const shared_ptr<runtime::he::HEBackend>& he_backend)
+                                 const runtime::he::HEBackend* he_backend)
 {
-    if (auto he_seal_backend =
-            dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
+    if (auto he_seal_backend = dynamic_cast<const runtime::he::he_seal::HESealBackend*>(he_backend))
     {
         for (size_t i = 0; i < count; ++i)
         {

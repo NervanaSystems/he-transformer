@@ -149,8 +149,6 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
         tensor_map.insert({tv, output_tvs[output_count]});
     }
 
-    auto m_he_backend = shared_from_this();
-
     // for each ordered op in the graph
     for (shared_ptr<Node> op : function->get_ordered_ops())
     {
@@ -191,7 +189,7 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
                 if (plain_out)
                 {
                     auto otv = make_shared<runtime::he::HEPlainTensor>(
-                        element_type, shape, m_he_backend, name);
+                        element_type, shape, create_empty_plaintext(), name);
                     tensor_map.insert({tv, otv});
                 }
                 else
@@ -213,7 +211,7 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
                     any_batched |= batched_out;
 
                     auto otv = make_shared<runtime::he::HECipherTensor>(
-                        element_type, shape, m_he_backend, batched_out, name);
+                        element_type, shape, create_empty_ciphertext(), batched_out, name);
                     tensor_map.insert({tv, otv});
                 }
             }
@@ -298,7 +296,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
         batch_size = out0_cipher->get_batch_size();
     }
 
-    auto m_he_backend = shared_from_this();
+    auto m_he_backend = this;
 
     if (node_op == "Add")
     {

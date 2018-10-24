@@ -26,7 +26,7 @@ void he_seal::kernel::scalar_add(const shared_ptr<he_seal::SealCiphertextWrapper
                             const shared_ptr<he_seal::SealCiphertextWrapper>& arg1,
                             shared_ptr<he_seal::SealCiphertextWrapper>& out,
                             const element::Type& type,
-                            const shared_ptr<he_seal::HESealBackend>& he_seal_backend)
+                            const runtime::he::he_seal::HESealBackend* he_seal_backend)
 {
     if ((arg0 == arg1) && (arg1 == out))
     {
@@ -54,7 +54,7 @@ void he_seal::kernel::scalar_add(const shared_ptr<he_seal::SealCiphertextWrapper
                             const shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
                             shared_ptr<he_seal::SealCiphertextWrapper>& out,
                             const element::Type& type,
-                            const shared_ptr<he_seal::HESealBackend>& he_seal_backend)
+                            const runtime::he::he_seal::HESealBackend* he_seal_backend)
 {
     if (arg0 == out)
     {
@@ -70,7 +70,7 @@ void he_seal::kernel::scalar_add(const shared_ptr<he_seal::SealPlaintextWrapper>
                             const shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
                             shared_ptr<he_seal::SealPlaintextWrapper>& out,
                             const element::Type& type,
-                            const shared_ptr<he_seal::HESealBackend>& he_seal_backend)
+                            const runtime::he::he_seal::HESealBackend* he_seal_backend)
 {
     shared_ptr<runtime::he::HEPlaintext> out_he =
         dynamic_pointer_cast<runtime::he::HEPlaintext>(out);

@@ -23,6 +23,7 @@
 #include "gtest/gtest.h"
 
 #include "he_backend.hpp"
+#include "he_tensor.hpp"
 #include "he_cipher_tensor.hpp"
 // #include "seal/ckks/he_seal_ckks_backend.hpp"
 #include "seal/bfv/he_seal_bfv_backend.hpp"
@@ -73,7 +74,8 @@ std::vector<std::tuple<std::vector<std::shared_ptr<ngraph::runtime::Tensor>>,
                                   std::shared_ptr<ngraph::runtime::Backend> backend,
                                   const bool consistent_type = false);
 
-template <typename T> // TODO: add to ngraph?
+// Reads batched vector
+template <typename T>
 std::vector<T> generalized_read_vector(std::shared_ptr<ngraph::runtime::Tensor> tv)
 {
     if (ngraph::element::from<T>() != tv->get_tensor_layout()->get_element_type())
@@ -105,3 +107,25 @@ std::vector<T> generalized_read_vector(std::shared_ptr<ngraph::runtime::Tensor> 
         return rc;
     }
 }
+
+template <typename T>
+void copy_he_data(std::shared_ptr<ngraph::runtime::Tensor> tv, const std::vector<T>& data, std::shared_ptr<ngraph::runtime::Backend> he_backend)
+{
+    size_t data_size = data.size() * sizeof(T);
+    std::dynamic_pointer_cast<ngraph::runtime::he::HETensor>(tv)->write(data.data(), 0, data_size, std::dynamic_pointer_cast<ngraph::runtime::he::HEBackend>(he_backend).get());
+}
+
+template <typename T>
+std::vector<T> read_he_vector(std::shared_ptr<ngraph::runtime::Tensor> tv, std::shared_ptr<ngraph::runtime::Backend> he_backend)
+{
+    if (ngraph::element::from<T>() != tv->get_tensor_layout()->get_element_type())
+    {
+        throw std::invalid_argument("read_vector type must match Tensor type");
+    }
+    size_t element_count = ngraph::shape_size(tv->get_shape());
+    size_t size = element_count * sizeof(T);
+    std::vector<T> rc(element_count);
+    std::dynamic_pointer_cast<ngraph::runtime::he::HETensor>(tv)->read(rc.data(), 0, size, std::dynamic_pointer_cast<ngraph::runtime::he::HEBackend>(he_backend).get());
+    return rc;
+}
+
