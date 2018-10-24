@@ -121,24 +121,14 @@ runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend(
                                              2);
 }
 
-// Hack to fix weak pointer error. Better is to remove all shared_from_this() from code.
-static runtime::Backend* s_seal_bfv_backend = nullptr;
-
 extern "C" runtime::Backend* new_backend(const char* configuration_string)
 {
-    if (s_seal_bfv_backend == nullptr)
-    {
-       s_seal_bfv_backend = new runtime::he::he_seal::HESealBFVBackend();
-    }
-    return s_seal_bfv_backend;
-
     return new runtime::he::he_seal::HESealBFVBackend();
 }
 
 extern "C" void delete_backend(runtime::Backend* backend)
 {
-    NGRAPH_INFO << "Deleting backend";
-   //  delete backend;
+    delete backend;
 }
 
 namespace
@@ -146,8 +136,8 @@ namespace
     static class HESealBFVStaticInit
     {
     public:
-        HESealBFVStaticInit() { runtime::BackendManager::register_backend("HESealBFV", new_backend); }
-        ~HESealBFVStaticInit() { NGRAPH_INFO << "~HESealBFVStaticInit"; }
+        HESealBFVStaticInit() { runtime::BackendManager::register_backend("HE:SEAL:BFV", new_backend); }
+        ~HESealBFVStaticInit() {}
     } s_he_seal_bfv_static_init;
 }
 

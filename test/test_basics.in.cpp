@@ -51,25 +51,24 @@ NGRAPH_TEST(backend_api, registered_devices)
 
 NGRAPH_TEST(${BACKEND_NAME}, backend_init)
 {
-    auto he_seal = runtime::Backend::create("HESealBFV");
+    auto he_seal = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
     NGRAPH_INFO << "Created SEAL BFV backend";
     EXPECT_EQ(1, 1);
 }
 NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_scalar)
 {
-    auto backend = runtime::Backend::create("HESealBFV");
+    NGRAPH_INFO << "Creating backend";
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+    NGRAPH_INFO << "Created backend";
 
     Shape shape{};
     auto a = backend->create_tensor(element::i64, shape);
     NGRAPH_INFO << "Created tensor";
     copy_he_data(a, vector<int64_t>{5}, backend);
     NGRAPH_INFO << "Copied he data";
-
-    auto tmp = read_he_vector<int64_t>(a, backend);
+    auto tmp =read_he_vector<int64_t>(a, backend);
     NGRAPH_INFO << "Read he vector";
-    NGRAPH_INFO << "vector " << tmp[0];
     EXPECT_EQ(tmp, (vector<int64_t>{5}));
-    NGRAPH_INFO << "Equality passed?!";
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_2)
@@ -78,8 +77,8 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_2)
 
     Shape shape{2};
     auto a = backend->create_tensor(element::i64, shape);
-    copy_data(a, vector<int64_t>{5, 6});
-    EXPECT_EQ(read_vector<int64_t>(a), (vector<int64_t>{5, 6}));
+    copy_he_data(a, vector<int64_t>{5, 6}, backend);
+    EXPECT_EQ(read_he_vector<int64_t>(a, backend), (vector<int64_t>{5, 6}));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_2_3)
@@ -88,8 +87,8 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_2_3)
 
     Shape shape{2, 3};
     auto a = backend->create_tensor(element::i64, shape);
-    copy_data(a, test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector());
-    EXPECT_EQ(read_vector<int64_t>(a),
+    copy_he_data(a, test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector(), backend);
+    EXPECT_EQ(read_he_vector<int64_t>(a, backend),
               (test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector());
 }
 
@@ -115,10 +114,10 @@ NGRAPH_TEST(${BACKEND_NAME}, ab)
         auto t_b = inputs[1];
         auto t_result = results[0];
 
-        copy_data(t_a, test::NDArray<int64_t, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector());
-        copy_data(t_b, test::NDArray<int64_t, 2>({{7, 8, 9}, {10, 11, 12}}).get_vector());
+        copy_he_data(t_a, test::NDArray<int64_t, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector(), backend);
+        copy_he_data(t_b, test::NDArray<int64_t, 2>({{7, 8, 9}, {10, 11, 12}}).get_vector(), backend);
         backend->call(f, {t_result}, {t_a, t_b});
-        EXPECT_EQ(read_vector<int64_t>(t_result),
+        EXPECT_EQ(read_he_vector<int64_t>(t_result, backend),
                   (test::NDArray<int64_t, 2>({{8, 10, 12}, {14, 16, 18}})).get_vector());
     }
 }
@@ -129,8 +128,8 @@ NGRAPH_TEST(${BACKEND_NAME}, ab)
 
     Shape shape{};
     auto a = backend->create_plain_tensor(element::i64, shape);
-    copy_data(a, vector<int64_t>{5});
-    EXPECT_EQ(read_vector<int64_t>(a), (vector<int64_t>{5}));
+    copy_he_data(a, vector<int64_t>{5}, backend);
+    EXPECT_EQ(read_he_vector<int64_t>(a), (vector<int64_t>{5}));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2)
@@ -139,8 +138,8 @@ NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2)
 
     Shape shape{2};
     auto a = backend->create_plain_tensor(element::i64, shape);
-    copy_data(a, vector<int64_t>{5, 6});
-    EXPECT_EQ(read_vector<int64_t>(a), (vector<int64_t>{5, 6}));
+    copy_he_data(a, vector<int64_t>{5, 6}, backend);
+    EXPECT_EQ(read_he_vector<int64_t>(a), (vector<int64_t>{5, 6}));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2_3)
@@ -149,8 +148,8 @@ NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2_3)
 
     Shape shape{2, 3};
     auto a = backend->create_plain_tensor(element::i64, shape);
-    copy_data(a, test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector());
-    EXPECT_EQ(read_vector<int64_t>(a),
+    copy_he_data(a, test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector(), backend);
+    EXPECT_EQ(read_he_vector<int64_t>(a),
               (test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector());
 }
 */
