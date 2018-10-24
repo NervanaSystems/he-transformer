@@ -63,16 +63,6 @@ namespace ngraph
                         get_valued_plaintext(std::int64_t value,
                                              const element::Type& element_type) override;
 
-                    // Create Tensor of the same value
-                    std::shared_ptr<runtime::Tensor>
-                        create_valued_tensor(float value,
-                                             const element::Type& element_type,
-                                             const Shape& shape) override;
-                    /* std::shared_ptr<runtime::Tensor>
-                        create_valued_plain_tensor(float value,
-                                                   const element::Type& element_type,
-                                                   const Shape& shape) override; */
-
                     void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
                                 const void* input,
                                 const element::Type& type,
@@ -81,14 +71,6 @@ namespace ngraph
                                 const std::shared_ptr<runtime::he::HEPlaintext> input,
                                 const element::Type& type,
                                 size_t count = 1) const override;
-
-                    void encrypt(
-                        std::shared_ptr<runtime::he::HECiphertext>& output,
-                        const std::shared_ptr<runtime::he::HEPlaintext> input) const override;
-
-                    void decrypt(
-                        std::shared_ptr<runtime::he::HEPlaintext>& output,
-                        const std::shared_ptr<runtime::he::HECiphertext> input) const override;
 
                     const inline std::shared_ptr<seal::IntegerEncoder> get_int_encoder() const
                     {

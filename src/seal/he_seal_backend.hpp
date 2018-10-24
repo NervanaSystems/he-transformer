@@ -64,11 +64,6 @@ namespace ngraph
                         const element::Type& element_type, const Shape& shape) = 0;
 
                     virtual std::shared_ptr<runtime::Tensor>
-                        create_tensor(const element::Type& element_type,
-                                      const Shape& shape,
-                                      void* memory_pointer) override;
-
-                    virtual std::shared_ptr<runtime::Tensor>
                         create_plain_tensor(const element::Type& element_type,
                                             const Shape& shape) override;
 
@@ -85,7 +80,7 @@ namespace ngraph
                     std::shared_ptr<runtime::he::HECiphertext>
                         create_empty_ciphertext() const override;
 
-                    std::shared_ptr<runtime::he::HEPlaintext>
+                    virtual std::shared_ptr<runtime::he::HEPlaintext>
                         create_valued_plaintext(float value,
                                                 const element::Type& element_type) const override = 0;
 
@@ -99,7 +94,7 @@ namespace ngraph
                     std::shared_ptr<runtime::Tensor>
                         create_valued_tensor(float value,
                                              const element::Type& element_type,
-                                             const Shape& shape) override = 0;
+                                             const Shape& shape) override;
 
                     std::shared_ptr<runtime::Tensor>
                         create_valued_plain_tensor(float value,

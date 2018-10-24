@@ -290,8 +290,6 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
         batch_size = out0_cipher->get_batch_size();
     }
 
-    auto m_he_backend = this;
-
     if (node_op == "Add")
     {
         if (arg0_cipher != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
@@ -300,7 +298,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
                                      arg1_cipher->get_elements(),
                                      out0_cipher->get_elements(),
                                      type,
-                                     m_he_backend,
+                                     this,
                                      out0_cipher->get_element_count());
         }
         else if (arg0_cipher != nullptr && arg1_plain != nullptr && out0_cipher != nullptr)
@@ -309,7 +307,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
                                      arg1_plain->get_elements(),
                                      out0_cipher->get_elements(),
                                      type,
-                                     m_he_backend,
+                                     this,
                                      out0_cipher->get_element_count());
         }
         else if (arg0_plain != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
@@ -318,7 +316,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
                                      arg1_cipher->get_elements(),
                                      out0_cipher->get_elements(),
                                      type,
-                                     m_he_backend,
+                                     this,
                                      out0_cipher->get_element_count());
         }
         else if (arg0_plain != nullptr && arg1_plain != nullptr && out0_plain != nullptr)
@@ -327,7 +325,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
                                      arg1_plain->get_elements(),
                                      out0_plain->get_elements(),
                                      type,
-                                     m_he_backend,
+                                     this,
                                      out0_plain->get_element_count());
         }
         else
@@ -354,7 +352,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
             runtime::he::kernel::result(arg0_plain->get_elements(),
                                         out0_cipher->get_elements(),
                                         shape_size(res->get_shape()),
-                                        m_he_backend);
+                                        this);
         }
         else if (arg0_plain != nullptr && out0_plain != nullptr)
         {

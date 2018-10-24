@@ -141,16 +141,6 @@ namespace
     } s_he_seal_bfv_static_init;
 }
 
-/* shared_ptr<runtime::Tensor>
-    runtime::he::he_seal::HESealBFVBackend::create_tensor(const element::Type& element_type,
-                                                       const Shape& shape)
-{
-    shared_ptr<HESealBFVBackend> he_seal_backend =
-        dynamic_pointer_cast<runtime::he::he_seal::HESealBFVBackend>(shared_from_this());
-    auto rc = make_shared<runtime::he::HECipherTensor>(element_type, shape, he_seal_backend);
-    return static_pointer_cast<runtime::Tensor>(rc);
-} */
-
 shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealBFVBackend::create_batched_tensor(
     const element::Type& element_type, const Shape& shape)
 {
@@ -158,16 +148,6 @@ shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealBFVBackend::create_batch
 
 }
 
-/* shared_ptr<runtime::he::HECiphertext>
-    runtime::he::he_seal::HESealBFVBackend::create_empty_ciphertext(size_t batch_size) const
-{
-    if (batch_size != 1)
-    {
-        throw ngraph_error("HESealBFVBackend::create_empty_ciphertext only supports batch size 1");
-    }
-    return make_shared<runtime::he::SealCiphertextWrapper>();
-}
-*/
 shared_ptr<runtime::he::HEPlaintext> runtime::he::he_seal::HESealBFVBackend::create_valued_plaintext(
     float value, const element::Type& element_type) const
 {
@@ -212,25 +192,6 @@ shared_ptr<runtime::he::HEPlaintext>
         throw ngraph_error("Type or value not stored in m_plaintext_map");
     }
     return m_plaintext_map[type_name][value]; */
-}
-/*
-shared_ptr<runtime::he::HEPlaintext>
-    runtime::he::he_seal::HESealBFVBackend::create_empty_plaintext() const
-{
-    return make_shared<SealPlaintextWrapper>();
-} */
-
-shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealBFVBackend::create_valued_tensor(
-    float value, const element::Type& element_type, const Shape& shape)
-{
-    auto tensor = static_pointer_cast<HECipherTensor>(create_tensor(element_type, shape));
-    vector<shared_ptr<runtime::he::HECiphertext>>& cipher_texts = tensor->get_elements();
-#pragma omp parallel for
-    for (size_t i = 0; i < cipher_texts.size(); ++i)
-    {
-        cipher_texts[i] = create_valued_ciphertext(value, element_type);
-    }
-    return tensor;
 }
 
 shared_ptr<runtime::he::HECiphertext> runtime::he::he_seal::HESealBFVBackend::create_valued_ciphertext(
@@ -327,37 +288,6 @@ void runtime::he::he_seal::HESealBFVBackend::decode(void* output,
     {
         throw ngraph_error("HESealBFVBackend::decode input is not seal plaintext");
     }
-}
-
-void runtime::he::he_seal::HESealBFVBackend::encrypt(
-    shared_ptr<runtime::he::HECiphertext>& output,
-    const shared_ptr<runtime::he::HEPlaintext> input) const
-{
-    auto seal_output = dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(output);
-    auto seal_input = dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(input);
-    if (seal_output != nullptr && seal_input != nullptr)
-    {
-        m_encryptor->encrypt(seal_input->m_plaintext, seal_output->m_ciphertext);
-    }
-    else
-    {
-        throw ngraph_error("HESealBFVBackend::encrypt has non-seal ciphertexts");
-    }
-}
-
-void runtime::he::he_seal::HESealBFVBackend::decrypt(
-    shared_ptr<runtime::he::HEPlaintext>& output,
-    const shared_ptr<runtime::he::HECiphertext> input) const
-{
-    auto seal_output = dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(output);
-    auto seal_input = dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(input);
-    m_decryptor->decrypt(seal_input->m_ciphertext, seal_output->m_plaintext);
-}
-
-int runtime::he::he_seal::HESealBFVBackend::noise_budget(
-    const shared_ptr<seal::Ciphertext>& ciphertext) const
-{
-    return m_decryptor->invariant_noise_budget(*ciphertext);
 }
 
 void runtime::he::he_seal::HESealBFVBackend::check_noise_budget(

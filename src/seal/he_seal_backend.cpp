@@ -113,12 +113,6 @@ shared_ptr<runtime::Tensor>
     return static_pointer_cast<runtime::Tensor>(rc);
 }
 
-shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealBackend::create_tensor(
-    const element::Type& element_type, const Shape& shape, void* memory_pointer)
-{
-    throw ngraph_error("HESeal create_tensor unimplemented");
-}
-
 shared_ptr<runtime::Tensor>
     runtime::he::he_seal::HESealBackend::create_plain_tensor(const element::Type& element_type,
                                                              const Shape& shape)
