@@ -147,30 +147,12 @@ shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealBFVBackend::create_batch
 shared_ptr<runtime::he::HEPlaintext> runtime::he::he_seal::HESealBFVBackend::create_valued_plaintext(
     float value, const element::Type& element_type) const
 {
-    NGRAPH_INFO << "Creating valiued ciphertext";
-
+    NGRAPH_INFO << "Creating valued plaintext";
 
     const string type_name = element_type.c_type_string();
     shared_ptr<runtime::he::HEPlaintext> plaintext = create_empty_plaintext();
-    if (auto plaintext_seal = dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(plaintext))
-    {
-        if (type_name == "float")
-        {
-            plaintext_seal->m_plaintext = m_frac_encoder->encode(value);
-        }
-        else if (type_name == "int64_t")
-        {
-            plaintext_seal->m_plaintext = m_int_encoder->encode(static_cast<int64_t>(value));
-        }
-        else
-        {
-            throw ngraph_error("Type not supported at create_valued_plaintext");
-        }
-    }
-    else
-    {
-        NGRAPH_INFO << "Plaintext is not SEAL type in create_valued_plaintext";
-    }
+
+    encode(plaintext, (void*)(&value), element_type, 1);
     return plaintext;
 }
 
@@ -202,29 +184,10 @@ shared_ptr<runtime::he::HECiphertext> runtime::he::he_seal::HESealBFVBackend::cr
         throw ngraph_error("HESealBFVBackend::create_valued_ciphertext only supports batch size 1");
     }
     const string type_name = element_type.c_type_string();
-    auto ciphertext =
-        dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(create_empty_ciphertext());
-    if (ciphertext == nullptr)
-    {
-        throw ngraph_error("Ciphertext is not seal ciphertext in HESealBFVBackend::create_valued_ciphertext");
-    }
+    shared_ptr<runtime::he::HEPlaintext> plaintext = create_valued_plaintext(value, element_type);
+    shared_ptr<runtime::he::HECiphertext> ciphertext = create_empty_ciphertext();
 
-
-
-    if (type_name == "float")
-    {
-        seal::Plaintext plaintext = m_frac_encoder->encode(value);
-        m_encryptor->encrypt(plaintext, ciphertext->m_ciphertext);
-    }
-    else if (type_name == "int64_t")
-    {
-        seal::Plaintext plaintext = m_int_encoder->encode(static_cast<int64_t>(value));
-        m_encryptor->encrypt(plaintext, ciphertext->m_ciphertext);
-    }
-    else
-    {
-        throw ngraph_error("Type not supported at create_ciphertext");
-    }
+    encrypt(ciphertext, plaintext);
     return ciphertext;
 }
 
