@@ -49,10 +49,6 @@ namespace ngraph
                      std::shared_ptr<runtime::Tensor> create_batched_tensor(
                         const element::Type& element_type, const Shape& shape) override;
 
-                    std::shared_ptr<runtime::he::HEPlaintext>
-                        get_valued_plaintext(std::int64_t value,
-                                             const element::Type& element_type) override;
-
                     void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
                                 const void* input,
                                 const element::Type& type,
@@ -71,21 +67,6 @@ namespace ngraph
                     {
                         return m_frac_encoder;
                     }
-
-                    /* struct plaintext_num
-                    {
-                        seal::Plaintext fl_0;
-                        seal::Plaintext fl_1;
-                        seal::Plaintext fl_n1;
-                        seal::Plaintext int64_0;
-                        seal::Plaintext int64_1;
-                        seal::Plaintext int64_n1;
-                    };
-
-                    const inline plaintext_num& get_plaintext_num() const
-                    {
-                        return m_plaintext_num;
-                    } */
 
                     /// @brief Checks the noise budget of several tensor views
                     ///        Throws an error if the noise budget is exhauasted

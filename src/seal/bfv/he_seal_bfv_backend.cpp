@@ -93,7 +93,6 @@ runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend()
 {
 }
 
-
 runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend(
     const shared_ptr<runtime::he::he_seal::HESealParameter>& sp)
     : runtime::he::he_seal::HESealBackend::HESealBackend(sp)
@@ -143,27 +142,6 @@ shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealBFVBackend::create_batch
     throw ngraph_error("HESealBFVBackend::create_batched_tensor unimplemented");
 
 }
-
-
-shared_ptr<runtime::he::HEPlaintext>
-    runtime::he::he_seal::HESealBFVBackend::get_valued_plaintext(int64_t value,
-                                                              const element::Type& element_type)
-{
-    throw ngraph_error("HESealBFVBackend::get_valued_plaintext unimplemented");
-    /* const string type_name = element_type.c_type_string();
-    unordered_set<int64_t> stored_plaintext_values{-1, 0, 1};
-    if (stored_plaintext_values.find(value) == stored_plaintext_values.end())
-    {
-        throw ngraph_error("Value not stored in stored plaintext values");
-    }
-    if ((m_plaintext_map.find(type_name) == m_plaintext_map.end()) ||
-        m_plaintext_map[type_name].find(value) == m_plaintext_map[type_name].end())
-    {
-        throw ngraph_error("Type or value not stored in m_plaintext_map");
-    }
-    return m_plaintext_map[type_name][value]; */
-}
-
 
 void runtime::he::he_seal::HESealBFVBackend::encode(shared_ptr<runtime::he::HEPlaintext>& output,
                                                  const void* input,

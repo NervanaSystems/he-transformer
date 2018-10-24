@@ -99,13 +99,6 @@ namespace ngraph
                     create_valued_plaintext(float value,
                                             const element::Type& element_type) const;
 
-                /// @brief Returns plaintext of specified value
-                /// @param value Scalar which to encode
-                /// @param element_type Type to encode
-                /// @return Shared pointer to created plaintext
-                virtual std::shared_ptr<runtime::he::HEPlaintext>
-                    get_valued_plaintext(std::int64_t value, const element::Type& element_type) = 0;
-
                 /// @brief Creates plaintext of unspecified value
                 /// @return Shared pointer to created plaintext
                 virtual std::shared_ptr<runtime::he::HEPlaintext>

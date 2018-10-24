@@ -111,27 +111,6 @@ shared_ptr<runtime::he::HEPlaintext>
     return make_shared<SealPlaintextWrapper>();
 }
 
-/*
-shared_ptr<runtime::he::HEPlaintext>
-    runtime::he::he_seal::HESealBackend::get_valued_plaintext(int64_t value,
-                                                              const element::Type& element_type)
-{
-    const string type_name = element_type.c_type_string();
-    std::unordered_set<int64_t> stored_plaintext_values{-1, 0, 1};
-    if (stored_plaintext_values.find(value) == stored_plaintext_values.end())
-    {
-        throw ngraph_error("Value not stored in stored plaintext values");
-    }
-    if ((m_plaintext_map.find(type_name) == m_plaintext_map.end()) ||
-        m_plaintext_map[type_name].find(value) == m_plaintext_map[type_name].end())
-    {
-        throw ngraph_error("Type or value not stored in m_plaintext_map");
-    }
-    return m_plaintext_map[type_name][value];
- } */
-
-
-
 void runtime::he::he_seal::HESealBackend::encrypt(
     shared_ptr<runtime::he::HECiphertext>& output,
     const shared_ptr<runtime::he::HEPlaintext> input) const
@@ -154,5 +133,12 @@ void runtime::he::he_seal::HESealBackend::decrypt(
 {
     auto seal_output = dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(output);
     auto seal_input = dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(input);
-    m_decryptor->decrypt(seal_input->m_ciphertext, seal_output->m_plaintext);
+    if (seal_output != nullptr && seal_input != nullptr)
+    {
+        m_decryptor->decrypt(seal_input->m_ciphertext, seal_output->m_plaintext);
+    }
+    else
+    {
+        throw ngraph_error("HESealBackend::decrypt has non-seal ciphertexts");
+    }
 }

@@ -138,7 +138,7 @@ void kernel::scalar_add(const shared_ptr<HEPlaintext>& arg0,
     }
     else
     {
-        throw ngraph_error("Add backend is neither SEAL nor HEAAN.");
+        throw ngraph_error("Add backend is not SEAL.");
     }
 }
 
@@ -160,19 +160,41 @@ void kernel::scalar_add(const shared_ptr<HECiphertext>& arg0,
 
         if (arg0_seal && arg1_seal && out_seal)
         {
-            // TODO: re-enable optimized add!
-            /* auto zero = dynamic_cast<he_seal::SealPlaintextWrapper>(
-                he_seal_backend->get_valued_plaintext(0, type));
+            const string type_name = type.c_type_string();
 
-            if (arg1_seal->m_plaintext == zero->m_plaintext)
+            if (type_name == "float")
             {
+                float x;
+                he_backend->decode((void*)(&x), arg1, type, 1);
+
+            }
+            auto zero = he_backend->create_valued_plaintext(0, type);
+            auto zero2 = he_backend->create_valued_plaintext(0, type);
+
+            bool optimized = false;
+
+            if (type_name == "int64_t") // TODO: make more general / templatize
+            {
+                int64_t x = 0;
+                he_backend->decode((void*)(&x), arg1, type, 1);
+                optimized = (x == 0);
+            }
+            else if (type_name == "float")
+            {
+                float x;
+                he_backend->decode((void*)(&x), arg1, type, 1);
+                optimized = (x == 0);
+            }
+            if (optimized)
+            {
+                NGRAPH_INFO << "Optimized add";
                 out = arg0;
             }
             else
-            { */
+            {
                 he_seal::kernel::scalar_add(arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
                 out = dynamic_pointer_cast<HECiphertext>(out_seal);
-            //}
+            }
         }
         else
         {
@@ -182,7 +204,7 @@ void kernel::scalar_add(const shared_ptr<HECiphertext>& arg0,
     }
     else
     {
-        throw ngraph_error("Add backend is neither SEAL nor HEAAN.");
+        throw ngraph_error("Add backend is not SEAL.");
     }
 }
 
