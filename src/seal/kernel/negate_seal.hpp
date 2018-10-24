@@ -19,8 +19,6 @@
 #include <memory>
 #include <vector>
 
-#include "ngraph/coordinate_transform.hpp"
-
 namespace ngraph
 {
     namespace element
@@ -31,18 +29,22 @@ namespace ngraph
     {
         namespace he
         {
-            class HEBackend;
-            class HECiphertext;
-
-            namespace kernel
+            namespace he_seal
             {
-                void one_hot(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg,
-                             std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
-                             const Shape& in_shape,
-                             const Shape& out_shape,
-                             size_t one_hot_axis,
-                             const element::Type& type,
-                             const std::shared_ptr<runtime::he::HEBackend>& he_backend);
+                class HESealBackend;
+
+                namespace kernel
+                {
+                    void scalar_negate(const std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& arg,
+                            std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
+                            const element::Type& type,
+                            const runtime::he::he_seal::HESealBackend* he_seal_backend);
+
+                    void scalar_negate(const std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& arg,
+                            std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& out,
+                            const element::Type& type,
+                            const runtime::he::he_seal::HESealBackend* he_seal_backend);
+                }
             }
         }
     }

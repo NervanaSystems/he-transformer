@@ -24,6 +24,8 @@
 
 #include "kernel/add.hpp"
 #include "kernel/multiply.hpp"
+#include "kernel/negate.hpp"
+#include "kernel/subtract.hpp"
 #include "kernel/result.hpp"
 
 #include "he_backend.hpp"
@@ -377,6 +379,29 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
             throw ngraph_error("Multiply types not supported.");
         }
     }
+    else if (node_op == "Negative")
+    {
+        if (arg0_cipher != nullptr && out0_cipher != nullptr)
+        {
+            runtime::he::kernel::negate(arg0_cipher->get_elements(),
+                                     out0_cipher->get_elements(),
+                                     type,
+                                     this,
+                                     out0_cipher->get_element_count());
+        }
+        else if (arg0_plain != nullptr && out0_plain != nullptr)
+        {
+            runtime::he::kernel::negate(arg0_plain->get_elements(),
+                                     out0_plain->get_elements(),
+                                     type,
+                                     this,
+                                     out0_plain->get_element_count());
+        }
+        else
+        {
+            throw ngraph_error("Negative types not supported.");
+        }
+    }
     else if (node_op == "Result")
     {
         shared_ptr<op::Result> res = dynamic_pointer_cast<op::Result>(node);
@@ -409,9 +434,53 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
             throw ngraph_error("Result types not supported.");
         }
     }
+    else if (node_op == "Subtract")
+    {
+        if (arg0_cipher != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
+        {
+            runtime::he::kernel::subtract(arg0_cipher->get_elements(),
+                                     arg1_cipher->get_elements(),
+                                     out0_cipher->get_elements(),
+                                     type,
+                                     this,
+                                     out0_cipher->get_element_count());
+        }
+        else if (arg0_cipher != nullptr && arg1_plain != nullptr && out0_cipher != nullptr)
+        {
+            runtime::he::kernel::subtract(arg0_cipher->get_elements(),
+                                     arg1_plain->get_elements(),
+                                     out0_cipher->get_elements(),
+                                     type,
+                                     this,
+                                     out0_cipher->get_element_count());
+        }
+        else if (arg0_plain != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
+        {
+            runtime::he::kernel::subtract(arg0_plain->get_elements(),
+                                     arg1_cipher->get_elements(),
+                                     out0_cipher->get_elements(),
+                                     type,
+                                     this,
+                                     out0_cipher->get_element_count());
+        }
+        else if (arg0_plain != nullptr && arg1_plain != nullptr && out0_plain != nullptr)
+        {
+            runtime::he::kernel::subtract(arg0_plain->get_elements(),
+                                     arg1_plain->get_elements(),
+                                     out0_plain->get_elements(),
+                                     type,
+                                     this,
+                                     out0_plain->get_element_count());
+        }
+        else
+        {
+            throw ngraph_error("Subtract types not supported.");
+        }
+    }
     else
     {
         NGRAPH_INFO << "Op type " << node_op << " unsupported";
         throw ngraph_error("Unsupported op type");
     }
+
 }

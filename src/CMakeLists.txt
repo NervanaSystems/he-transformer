@@ -19,10 +19,14 @@ set (HE_SRC
 
     kernel/add.cpp
     kernel/multiply.cpp
+    kernel/negate.cpp
+    kernel/subtract.cpp
     kernel/result.cpp
 
     seal/kernel/add_seal.cpp
     seal/kernel/multiply_seal.cpp
+    seal/kernel/negate_seal.cpp
+    seal/kernel/subtract_seal.cpp
 
     seal/he_seal_backend.cpp
 

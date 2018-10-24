@@ -18,4 +18,6 @@ configure_file(${HE_TRANSFORMER_TEST_DIR}/test_convolution.in.cpp test_convoluti
 configure_file(${HE_TRANSFORMER_TEST_DIR}/test_read_write.in.cpp test_read_write_${BACKEND_NAME}.cpp)
 configure_file(${HE_TRANSFORMER_TEST_DIR}/test_add.in.cpp test_add_${BACKEND_NAME}.cpp)
 configure_file(${HE_TRANSFORMER_TEST_DIR}/test_multiply.in.cpp test_multiply_${BACKEND_NAME}.cpp)
+configure_file(${HE_TRANSFORMER_TEST_DIR}/test_negate.in.cpp test_negate_${BACKEND_NAME}.cpp)
+configure_file(${HE_TRANSFORMER_TEST_DIR}/test_subtract.in.cpp test_subtract_${BACKEND_NAME}.cpp)
 configure_file(${HE_TRANSFORMER_TEST_DIR}/test_mnist.in.cpp test_mnist_${BACKEND_NAME}.cpp)
