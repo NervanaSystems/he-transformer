@@ -59,9 +59,9 @@ namespace ngraph
                 HEBackend(HEBackend& he_backend) = default;
                 ~HEBackend() {};
 
-                virtual std::shared_ptr<runtime::Tensor>
+                std::shared_ptr<runtime::Tensor>
                     create_tensor(const element::Type& element_type,
-                                  const Shape& shape) override = 0;
+                                  const Shape& shape) override;
 
                 virtual std::shared_ptr<runtime::Tensor> create_batched_tensor(
                     const element::Type& element_type, const Shape& shape) = 0;
@@ -81,10 +81,10 @@ namespace ngraph
                 /// @param batch_size Number of elements to encrypt
                 ///        > 1 indicates batching
                 /// @return Shared pointer to created ciphertext
-                virtual std::shared_ptr<runtime::he::HECiphertext>
+                std::shared_ptr<runtime::he::HECiphertext>
                     create_valued_ciphertext(float value,
                                              const element::Type& element_type,
-                                             size_t batch_size = 1) const = 0;
+                                             size_t batch_size = 1) const;
 
                 /// @brief Creates ciphertext of unspecified value
                 /// @return Shared pointer to created ciphertext
@@ -95,9 +95,9 @@ namespace ngraph
                 /// @param value Scalar which to encode
                 /// @param element_type Type to encode
                 /// @return Shared pointer to created plaintext
-                virtual std::shared_ptr<runtime::he::HEPlaintext>
+                std::shared_ptr<runtime::he::HEPlaintext>
                     create_valued_plaintext(float value,
-                                            const element::Type& element_type) const = 0;
+                                            const element::Type& element_type) const;
 
                 /// @brief Returns plaintext of specified value
                 /// @param value Scalar which to encode
@@ -115,15 +115,15 @@ namespace ngraph
                 /// @param value Scalar which to enrypt
                 /// @param element_type Type to encrypt
                 /// @param shape Shape of created Tensor
-                virtual std::shared_ptr<runtime::Tensor> create_valued_tensor(
-                    float value, const element::Type& element_type, const Shape& shape) = 0;
+                std::shared_ptr<runtime::Tensor> create_valued_tensor(
+                    float value, const element::Type& element_type, const Shape& shape);
 
                 // Creates plaintext Tensor of the same value
                 /// @param value Scalar which to encode
                 /// @param element_type Type to encode
                 /// @param shape Shape of created Tensor
-                virtual std::shared_ptr<runtime::Tensor> create_valued_plain_tensor(
-                    float value, const element::Type& element_type, const Shape& shape) = 0;
+                std::shared_ptr<runtime::Tensor> create_valued_plain_tensor(
+                    float value, const element::Type& element_type, const Shape& shape);
 
                 bool compile(std::shared_ptr<Function> function) override;
 

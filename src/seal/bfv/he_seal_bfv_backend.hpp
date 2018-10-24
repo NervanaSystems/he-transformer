@@ -46,18 +46,8 @@ namespace ngraph
                     HESealBFVBackend(HESealBFVBackend& he_backend) = default;
                     ~HESealBFVBackend() {};
 
-
                      std::shared_ptr<runtime::Tensor> create_batched_tensor(
                         const element::Type& element_type, const Shape& shape) override;
-
-                    std::shared_ptr<runtime::he::HECiphertext>
-                        create_valued_ciphertext(float value,
-                                                 const element::Type& element_type,
-                                                 size_t batch_size = 1) const override;
-
-                    std::shared_ptr<runtime::he::HEPlaintext>
-                        create_valued_plaintext(float value,
-                                                const element::Type& element_type) const override;
 
                     std::shared_ptr<runtime::he::HEPlaintext>
                         get_valued_plaintext(std::int64_t value,

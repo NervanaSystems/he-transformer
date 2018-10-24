@@ -100,14 +100,6 @@ shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealBackend::make_seal_con
 }
 
 shared_ptr<runtime::Tensor>
-    runtime::he::he_seal::HESealBackend::create_tensor(const element::Type& element_type,
-                                                       const Shape& shape)
-{
-    auto rc = make_shared<runtime::he::HECipherTensor>(element_type, shape, create_empty_ciphertext());
-    return static_pointer_cast<runtime::Tensor>(rc);
-}
-
-shared_ptr<runtime::Tensor>
     runtime::he::he_seal::HESealBackend::create_plain_tensor(const element::Type& element_type,
                                                              const Shape& shape)
 {
@@ -122,46 +114,13 @@ shared_ptr<runtime::he::HECiphertext>
     return make_shared<runtime::he::he_seal::SealCiphertextWrapper>();
 }
 
-shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealBackend::create_valued_plain_tensor(
-    float value, const element::Type& element_type, const Shape& shape)
+shared_ptr<runtime::he::HEPlaintext>
+    runtime::he::he_seal::HESealBackend::create_empty_plaintext() const
 {
-    auto tensor = static_pointer_cast<HEPlainTensor>(create_plain_tensor(element_type, shape));
-    vector<shared_ptr<runtime::he::HEPlaintext>>& plain_texts = tensor->get_elements();
-#pragma omp parallel for
-    for (size_t i = 0; i < plain_texts.size(); ++i)
-    {
-        plain_texts[i] = create_valued_plaintext(value, element_type);
-    }
-    return tensor;
+    return make_shared<SealPlaintextWrapper>();
 }
 
-/* shared_ptr<runtime::he::HEPlaintext> runtime::he::he_seal::HESealBackend::create_valued_plaintext(
-    float value, const element::Type& element_type) const
-{
-    const string type_name = element_type.c_type_string();
-    shared_ptr<runtime::he::HEPlaintext> plaintext = create_empty_plaintext();
-    if (auto plaintext_seal = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(plaintext))
-    {
-        if (type_name == "float")
-        {
-            plaintext_seal->m_plaintext = m_frac_encoder->encode(value);
-        }
-        else if (type_name == "int64_t")
-        {
-            plaintext_seal->m_plaintext = m_int_encoder->encode(static_cast<int64_t>(value));
-        }
-        else
-        {
-            throw ngraph_error("Type not supported at create_valued_plaintext");
-        }
-    }
-    else
-    {
-        NGRAPH_INFO << "Plaintext is not SEAL type in create_valued_plaintext";
-    }
-    return plaintext;
-}
-
+/*
 shared_ptr<runtime::he::HEPlaintext>
     runtime::he::he_seal::HESealBackend::get_valued_plaintext(int64_t value,
                                                               const element::Type& element_type)
@@ -180,37 +139,7 @@ shared_ptr<runtime::he::HEPlaintext>
     return m_plaintext_map[type_name][value];
  } */
 
-shared_ptr<runtime::he::HEPlaintext>
-    runtime::he::he_seal::HESealBackend::create_empty_plaintext() const
-{
-    return make_shared<SealPlaintextWrapper>();
-}
 
-shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealBackend::create_valued_tensor(
-    float value, const element::Type& element_type, const Shape& shape)
-{
-    auto tensor = static_pointer_cast<HECipherTensor>(create_tensor(element_type, shape));
-    vector<shared_ptr<runtime::he::HECiphertext>>& cipher_texts = tensor->get_elements();
-#pragma omp parallel for
-    for (size_t i = 0; i < cipher_texts.size(); ++i)
-    {
-        cipher_texts[i] = create_valued_ciphertext(value, element_type);
-    }
-    return tensor;
-}
-/*
-shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealBackend::create_valued_plain_tensor(
-    float value, const element::Type& element_type, const Shape& shape)
-{
-    auto tensor = static_pointer_cast<HEPlainTensor>(create_plain_tensor(element_type, shape));
-    vector<shared_ptr<runtime::he::HEPlaintext>>& plain_texts = tensor->get_elements();
-#pragma omp parallel for
-    for (size_t i = 0; i < plain_texts.size(); ++i)
-    {
-        plain_texts[i] = create_valued_plaintext(value, element_type);
-    }
-    return tensor;
-} */
 
 void runtime::he::he_seal::HESealBackend::encrypt(
     shared_ptr<runtime::he::HECiphertext>& output,

@@ -144,17 +144,6 @@ shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealBFVBackend::create_batch
 
 }
 
-shared_ptr<runtime::he::HEPlaintext> runtime::he::he_seal::HESealBFVBackend::create_valued_plaintext(
-    float value, const element::Type& element_type) const
-{
-    NGRAPH_INFO << "Creating valued plaintext";
-
-    const string type_name = element_type.c_type_string();
-    shared_ptr<runtime::he::HEPlaintext> plaintext = create_empty_plaintext();
-
-    encode(plaintext, (void*)(&value), element_type, 1);
-    return plaintext;
-}
 
 shared_ptr<runtime::he::HEPlaintext>
     runtime::he::he_seal::HESealBFVBackend::get_valued_plaintext(int64_t value,
@@ -175,21 +164,6 @@ shared_ptr<runtime::he::HEPlaintext>
     return m_plaintext_map[type_name][value]; */
 }
 
-shared_ptr<runtime::he::HECiphertext> runtime::he::he_seal::HESealBFVBackend::create_valued_ciphertext(
-    float value, const element::Type& element_type, size_t batch_size) const
-{
-    NGRAPH_INFO << "Creating valiued ciphertext";
-    if (batch_size != 1)
-    {
-        throw ngraph_error("HESealBFVBackend::create_valued_ciphertext only supports batch size 1");
-    }
-    const string type_name = element_type.c_type_string();
-    shared_ptr<runtime::he::HEPlaintext> plaintext = create_valued_plaintext(value, element_type);
-    shared_ptr<runtime::he::HECiphertext> ciphertext = create_empty_ciphertext();
-
-    encrypt(ciphertext, plaintext);
-    return ciphertext;
-}
 
 void runtime::he::he_seal::HESealBFVBackend::encode(shared_ptr<runtime::he::HEPlaintext>& output,
                                                  const void* input,

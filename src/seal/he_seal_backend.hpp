@@ -56,33 +56,16 @@ namespace ngraph
                     //virtual void assert_valid_parameter(
                     //    const std::shared_ptr<runtime::he::he_seal::HESealParameter> hp) const = 0;
 
-                    std::shared_ptr<runtime::Tensor>
-                        create_tensor(const element::Type& element_type,
-                                      const Shape& shape) override;
 
                      virtual std::shared_ptr<runtime::Tensor> create_batched_tensor(
                         const element::Type& element_type, const Shape& shape) = 0;
 
-                    virtual std::shared_ptr<runtime::Tensor>
+                    std::shared_ptr<runtime::Tensor>
                         create_plain_tensor(const element::Type& element_type,
                                             const Shape& shape) override;
 
-                     /* std::shared_ptr<runtime::he::HECiphertext>&
-                        get_valued_ciphertext(std::int64_t value,
-                                              const element::Type& element_type,
-                                              size_t batch_size = 1) override = 0; */
-
-                    virtual std::shared_ptr<runtime::he::HECiphertext>
-                        create_valued_ciphertext(const float value,
-                                                 const element::Type& element_type,
-                                                 const size_t batch_size = 1) const override = 0;
-
                     std::shared_ptr<runtime::he::HECiphertext>
                         create_empty_ciphertext() const override;
-
-                    virtual std::shared_ptr<runtime::he::HEPlaintext>
-                        create_valued_plaintext(float value,
-                                                const element::Type& element_type) const override = 0;
 
                     std::shared_ptr<runtime::he::HEPlaintext>
                         get_valued_plaintext(std::int64_t value,
@@ -91,15 +74,6 @@ namespace ngraph
                     std::shared_ptr<runtime::he::HEPlaintext>
                         create_empty_plaintext() const;
 
-                    std::shared_ptr<runtime::Tensor>
-                        create_valued_tensor(float value,
-                                             const element::Type& element_type,
-                                             const Shape& shape) override;
-
-                    std::shared_ptr<runtime::Tensor>
-                        create_valued_plain_tensor(float value,
-                                                   const element::Type& element_type,
-                                                   const Shape& shape) override;
 
                     virtual void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
                                 const void* input,
