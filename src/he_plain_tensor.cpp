@@ -49,15 +49,6 @@ runtime::he::HEPlainTensor::HEPlainTensor(const element::Type& element_type,
     }
 }
 
-runtime::he::HEPlainTensor::~HEPlainTensor()
-{
-}
-
-/* void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset, size_t n)
-{
-    throw ngraph_error("HEPlainTensor::write unimplemented");
-} */
-
 void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset, size_t n, const HEBackend* he_backend)
 {
     check_io_bounds(source, tensor_offset, n);
@@ -97,11 +88,6 @@ void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
         }
     }
 }
-
-/* void runtime::he::HEPlainTensor::read(void* target, size_t tensor_offset, size_t n) const
-{
-    throw ngraph_error("HEPlainTensor::read unimplemented");
-} */
 
 void runtime::he::HEPlainTensor::read(void* target, size_t tensor_offset, size_t n, const HEBackend* he_backend) const
 {

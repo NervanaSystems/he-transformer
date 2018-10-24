@@ -46,12 +46,6 @@ extern "C" const char* get_ngraph_version_string()
     return "v0.9.0"; // TODO: move to CMakeLists
 }
 
-/* runtime::he::he_seal::HESealBackend::HESealBackend()
-    : runtime::he::he_seal::HESealBackend(
-          make_shared<runtime::he::he_seal::HESealParameter>(default_seal_parameter))
-{
-} */
-
 runtime::he::he_seal::HESealBackend::HESealBackend(
     const shared_ptr<runtime::he::he_seal::HESealParameter>& sp)
 {

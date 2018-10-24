@@ -36,7 +36,7 @@ namespace ngraph
                              const Shape& shape,
                              bool batched = false,
                              const std::string& name = "external");
-                virtual ~HETensor();
+                virtual ~HETensor() {};
 
                 /// @brief Write bytes directly into the tensor
                 /// @param p Pointer to source of data

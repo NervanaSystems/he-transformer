@@ -28,7 +28,3 @@ runtime::he::he_seal::SealCiphertextWrapper::SealCiphertextWrapper(seal::Ciphert
     : m_ciphertext(cipher)
 {
 }
-
-runtime::he::he_seal::SealCiphertextWrapper::~SealCiphertextWrapper()
-{
-}

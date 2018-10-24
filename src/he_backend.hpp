@@ -55,9 +55,9 @@ namespace ngraph
             class HEBackend : public runtime::Backend
             {
             public:
-                HEBackend();
+                HEBackend() {};
                 HEBackend(HEBackend& he_backend) = default;
-                ~HEBackend() { NGRAPH_INFO << "~HEBackend()"; };
+                ~HEBackend() {};
 
                 virtual std::shared_ptr<runtime::Tensor>
                     create_tensor(const element::Type& element_type,
@@ -193,11 +193,6 @@ namespace ngraph
                 bool call(std::shared_ptr<Function> function,
                     const std::vector<std::shared_ptr<runtime::he::HETensor>>& outputs,
                     const std::vector<std::shared_ptr<runtime::he::HETensor>>& inputs);
-
-
-                /*std::unordered_map<std::shared_ptr<Function>,
-                                   std::shared_ptr<runtime::he::HECallFrame>>
-                    m_function_map; */
 
             protected:
                 std::unordered_map<

@@ -35,10 +35,6 @@ using namespace std;
 
 using descriptor::layout::DenseTensorLayout;
 
-runtime::he::HEBackend::HEBackend()
-{
-}
-
 shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(
     const element::Type& element_type, const Shape& shape, void* memory_pointer)
 {
@@ -255,8 +251,6 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
 
         // Stop stopwatch and print time
         // TODO: currently timer is cleared at each run
-
-
         NGRAPH_INFO << "\033[1;31m" << op->get_name() << " took "
                     << instance.m_timer_map[op.get()].get_seconds() << "s"
                     << "\033[0m";

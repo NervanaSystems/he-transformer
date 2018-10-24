@@ -77,11 +77,6 @@ const Shape runtime::he::HECipherTensor::get_expanded_shape() const
     }
 }
 
-/* void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset, size_t n)
-{
-    throw ngraph_error("HECipherTensor::write unimplemented");
-} */
-
 void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset, size_t n, const HEBackend* he_backend)
 {
     check_io_bounds(source, tensor_offset, n / m_batch_size);
@@ -130,11 +125,6 @@ void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset
         }
     }
 }
-
-/* void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset, size_t n) const
-{
-    throw ngraph_error("HECipherTensor::read unimplemented");
-} */
 
 void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset, size_t n, const HEBackend* he_backend) const
 {

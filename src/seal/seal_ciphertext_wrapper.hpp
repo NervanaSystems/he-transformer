@@ -33,7 +33,7 @@ namespace ngraph
                 {
                     SealCiphertextWrapper();
                     SealCiphertextWrapper(seal::Ciphertext cipher);
-                    ~SealCiphertextWrapper();
+                    ~SealCiphertextWrapper() {};
 
                     seal::Ciphertext m_ciphertext;
                 };

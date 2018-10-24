@@ -40,7 +40,7 @@ namespace ngraph
                                   const Shape& shape,
                                   const std::shared_ptr<HEPlaintext> he_plaintext,
                                   const std::string& name = "external");
-                ~HEPlainTensor();
+                ~HEPlainTensor() {};
 
                 /// @brief Write bytes directly into the tensor after encoding
                 /// @param p Pointer to source of data
