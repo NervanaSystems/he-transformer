@@ -34,26 +34,6 @@
 using namespace std;
 using namespace ngraph;
 
-void TestHEBackend::TearDown()
-{
-    NGRAPH_INFO << "Tearing down";
-
-    //m_he_seal_bfv_backend->clear_function_instance();
-    //m_he_seal_ckks_backend->clear_function_instance();
-}
-
-void TestHEBackend::SetUp()
-{
-    NGRAPH_INFO << "Setting up";
-    /*m_he_seal_bfv_backend = static_pointer_cast<runtime::he::he_seal::HESealBFVBackend>(
-        runtime::Backend::create("HE_SEAL"));
-    m_he_seal_ckks_backend = static_pointer_cast<runtime::he::he_heaan::HESealCKKSBackend>(
-        runtime::Backend::create("HE_HEAAN")); */
-}
-
-//static shared_ptr<ngraph::runtime::he::he_seal::HESealBFVBackend> TestHEBackend::m_he_seal_bfv_backend = nullptr;
-//static shared_ptr<ngraph::runtime::he::he_seal::HESealCKKSBackend> TestHEBackend::m_he_seal_ckks_backend = nullptr;
-
 vector<float> read_constant(const string filename)
 {
     string data = file_util::read_file_to_string(filename);

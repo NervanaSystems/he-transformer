@@ -82,6 +82,14 @@ shared_ptr<runtime::Tensor>
     return static_pointer_cast<runtime::Tensor>(rc);
 }
 
+shared_ptr<runtime::Tensor>
+    runtime::he::HEBackend::create_plain_tensor(const element::Type& element_type,
+                                                             const Shape& shape)
+{
+    auto rc = make_shared<runtime::he::HEPlainTensor>(element_type, shape, create_empty_plaintext());
+    return static_pointer_cast<runtime::Tensor>(rc);
+}
+
 
 shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_valued_tensor(
     float value, const element::Type& element_type, const Shape& shape)

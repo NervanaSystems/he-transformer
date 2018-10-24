@@ -72,8 +72,8 @@ namespace ngraph
                                   const Shape& shape,
                                   void* memory_pointer) override;
 
-                virtual std::shared_ptr<runtime::Tensor>
-                    create_plain_tensor(const element::Type& element_type, const Shape& shape) = 0;
+                std::shared_ptr<runtime::Tensor>
+                    create_plain_tensor(const element::Type& element_type, const Shape& shape);
 
                 /// @brief Creates ciphertext of specified value
                 /// @param value Scalar which to encrypt

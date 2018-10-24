@@ -99,15 +99,6 @@ shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealBackend::make_seal_con
     return seal::SEALContext::Create(parms);
 }
 
-shared_ptr<runtime::Tensor>
-    runtime::he::he_seal::HESealBackend::create_plain_tensor(const element::Type& element_type,
-                                                             const Shape& shape)
-{
-    auto rc = make_shared<runtime::he::HEPlainTensor>(element_type, shape, create_empty_plaintext());
-    return static_pointer_cast<runtime::Tensor>(rc);
-}
-
-
 shared_ptr<runtime::he::HECiphertext>
     runtime::he::he_seal::HESealBackend::create_empty_ciphertext() const
 {

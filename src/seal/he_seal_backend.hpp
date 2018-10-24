@@ -60,10 +60,6 @@ namespace ngraph
                      virtual std::shared_ptr<runtime::Tensor> create_batched_tensor(
                         const element::Type& element_type, const Shape& shape) = 0;
 
-                    std::shared_ptr<runtime::Tensor>
-                        create_plain_tensor(const element::Type& element_type,
-                                            const Shape& shape) override;
-
                     std::shared_ptr<runtime::he::HECiphertext>
                         create_empty_ciphertext() const override;
 
