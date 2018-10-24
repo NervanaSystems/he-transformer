@@ -63,7 +63,7 @@ TEST(${BACKEND_NAME}, add_2_3)
     }
 }
 
-TEST(${BACKEND_NAME}, optimized_add_2_3)
+TEST(${BACKEND_NAME}, add_zero_2_3)
 {
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 

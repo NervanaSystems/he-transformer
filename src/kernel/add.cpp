@@ -161,31 +161,20 @@ void kernel::scalar_add(const shared_ptr<HECiphertext>& arg0,
         if (arg0_seal && arg1_seal && out_seal)
         {
             const string type_name = type.c_type_string();
-
-            if (type_name == "float")
-            {
-                float x;
-                he_backend->decode((void*)(&x), arg1, type, 1);
-
-            }
-            auto zero = he_backend->create_valued_plaintext(0, type);
-            auto zero2 = he_backend->create_valued_plaintext(0, type);
-
-            bool optimized = false;
-
+            bool add_zero = false;
             if (type_name == "int64_t") // TODO: make more general / templatize
             {
                 int64_t x = 0;
                 he_backend->decode((void*)(&x), arg1, type, 1);
-                optimized = (x == 0);
+                add_zero = (x == 0);
             }
             else if (type_name == "float")
             {
                 float x;
                 he_backend->decode((void*)(&x), arg1, type, 1);
-                optimized = (x == 0);
+                add_zero = (x == 0);
             }
-            if (optimized)
+            if (add_zero)
             {
                 NGRAPH_INFO << "Optimized add";
                 out = arg0;
