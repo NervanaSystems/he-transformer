@@ -122,34 +122,33 @@ NGRAPH_TEST(${BACKEND_NAME}, ab)
     }
 }
 
-/* NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_scalar)
+NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_scalar)
 {
-    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+    auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
     Shape shape{};
     auto a = backend->create_plain_tensor(element::i64, shape);
     copy_he_data(a, vector<int64_t>{5}, backend);
-    EXPECT_EQ(read_he_vector<int64_t>(a), (vector<int64_t>{5}));
+    EXPECT_EQ(read_he_vector<int64_t>(a, backend), (vector<int64_t>{5}));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2)
 {
-    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+    auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
     Shape shape{2};
     auto a = backend->create_plain_tensor(element::i64, shape);
     copy_he_data(a, vector<int64_t>{5, 6}, backend);
-    EXPECT_EQ(read_he_vector<int64_t>(a), (vector<int64_t>{5, 6}));
+    EXPECT_EQ(read_he_vector<int64_t>(a, backend), (vector<int64_t>{5, 6}));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2_3)
 {
-    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+    auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
     Shape shape{2, 3};
     auto a = backend->create_plain_tensor(element::i64, shape);
     copy_he_data(a, test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector(), backend);
-    EXPECT_EQ(read_he_vector<int64_t>(a),
+    EXPECT_EQ(read_he_vector<int64_t>(a, backend),
               (test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector());
 }
-*/
