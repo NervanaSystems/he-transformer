@@ -18,11 +18,16 @@
 
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
 #include "ngraph/function.hpp"
+
+#include "ngraph/op/dot.hpp"
+#include "ngraph/op/result.hpp"
+
 #include "ngraph/pass/assign_layout.hpp"
 #include "ngraph/pass/manager.hpp"
 #include "ngraph/pass/visualize_tree.hpp"
 
 #include "kernel/add.hpp"
+#include "kernel/dot.hpp"
 #include "kernel/multiply.hpp"
 #include "kernel/negate.hpp"
 #include "kernel/subtract.hpp"
@@ -334,6 +339,71 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
         else
         {
             throw ngraph_error("Add types not supported.");
+        }
+    }
+    else if (node_op == "Dot")
+    {
+        shared_ptr<op::Dot> dot = dynamic_pointer_cast<op::Dot>(node);
+        NGRAPH_INFO << join(args[0]->get_shape(), "x") << " dot "
+                    << join(args[1]->get_shape(), "x");
+        if (arg0_cipher != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
+        {
+            NGRAPH_INFO << "Dot cipher cipher => cipher";
+            runtime::he::kernel::dot(arg0_cipher->get_elements(),
+                                     arg1_cipher->get_elements(),
+                                     out0_cipher->get_elements(),
+                                     arg0_cipher->get_shape(),
+                                     arg1_cipher->get_shape(),
+                                     out0_cipher->get_shape(),
+                                     dot->get_reduction_axes_count(),
+                                     type,
+                                     batch_size,
+                                     this);
+        }
+        else if (arg0_cipher != nullptr && arg1_plain != nullptr && out0_cipher != nullptr)
+        {
+            NGRAPH_INFO << "Dot cipher plain => cipher";
+            runtime::he::kernel::dot(arg0_cipher->get_elements(),
+                                     arg1_plain->get_elements(),
+                                     out0_cipher->get_elements(),
+                                     arg0_cipher->get_shape(),
+                                     arg1_plain->get_shape(),
+                                     out0_cipher->get_shape(),
+                                     dot->get_reduction_axes_count(),
+                                     type,
+                                     batch_size,
+                                     this);
+        }
+        else if (arg0_plain != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
+        {
+            NGRAPH_INFO << "Dot plain cipher => cipher";
+            runtime::he::kernel::dot(arg0_plain->get_elements(),
+                                     arg1_cipher->get_elements(),
+                                     out0_cipher->get_elements(),
+                                     arg0_plain->get_shape(),
+                                     arg1_cipher->get_shape(),
+                                     out0_cipher->get_shape(),
+                                     dot->get_reduction_axes_count(),
+                                     type,
+                                     batch_size,
+                                     this);
+        }
+        else if (arg0_plain != nullptr && arg1_plain != nullptr && out0_plain != nullptr)
+        {
+            NGRAPH_INFO << "Dot plain plain => plain";
+            runtime::he::kernel::dot(arg0_plain->get_elements(),
+                                     arg1_plain->get_elements(),
+                                     out0_plain->get_elements(),
+                                     arg0_plain->get_shape(),
+                                     arg1_plain->get_shape(),
+                                     out0_plain->get_shape(),
+                                     dot->get_reduction_axes_count(),
+                                     type,
+                                     this);
+        }
+        else
+        {
+            throw ngraph_error("Dot types not supported.");
         }
     }
     else if (node_op == "Multiply")

@@ -19,9 +19,7 @@
 
 #include "he_backend.hpp"
 #include "he_cipher_tensor.hpp"
-#include "he_ckks_backend.hpp"
 #include "he_plain_tensor.hpp"
-#include "he_seal_backend.hpp"
 #include "kernel/add.hpp"
 #include "kernel/dot.hpp"
 #include "kernel/multiply.hpp"
@@ -29,18 +27,18 @@
 #include "ngraph/type/element_type.hpp"
 
 using namespace std;
-using namespace ngraph;
+using namespace ngraph::runtime::he;
 
-void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
-                              const vector<shared_ptr<runtime::he::HECiphertext>>& arg1,
-                              vector<shared_ptr<runtime::he::HECiphertext>>& out,
-                              const Shape& arg0_shape,
-                              const Shape& arg1_shape,
-                              const Shape& out_shape,
-                              size_t reduction_axes_count,
-                              const element::Type& type,
-                              size_t batch_size,
-                              const shared_ptr<runtime::he::HEBackend>& he_backend)
+void kernel::dot(const vector<shared_ptr<HECiphertext>>& arg0,
+                const vector<shared_ptr<HECiphertext>>& arg1,
+                vector<shared_ptr<HECiphertext>>& out,
+                const Shape& arg0_shape,
+                const Shape& arg1_shape,
+                const Shape& out_shape,
+                size_t reduction_axes_count,
+                const element::Type& type,
+                size_t batch_size,
+                const HEBackend* he_backend)
 {
     dot_template(arg0,
                  arg1,
@@ -54,16 +52,16 @@ void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HECiphertext>
                  he_backend);
 }
 
-void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
-                              const vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,
-                              vector<shared_ptr<runtime::he::HECiphertext>>& out,
+void kernel::dot(const vector<shared_ptr<HECiphertext>>& arg0,
+                              const vector<shared_ptr<HEPlaintext>>& arg1,
+                              vector<shared_ptr<HECiphertext>>& out,
                               const Shape& arg0_shape,
                               const Shape& arg1_shape,
                               const Shape& out_shape,
                               size_t reduction_axes_count,
                               const element::Type& type,
                               size_t batch_size,
-                              const shared_ptr<runtime::he::HEBackend>& he_backend)
+                              const HEBackend* he_backend)
 {
     dot_template(arg0,
                  arg1,
@@ -77,16 +75,16 @@ void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HECiphertext>
                  he_backend);
 }
 
-void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg0,
-                              const vector<shared_ptr<runtime::he::HECiphertext>>& arg1,
-                              vector<shared_ptr<runtime::he::HECiphertext>>& out,
+void kernel::dot(const vector<shared_ptr<HEPlaintext>>& arg0,
+                              const vector<shared_ptr<HECiphertext>>& arg1,
+                              vector<shared_ptr<HECiphertext>>& out,
                               const Shape& arg0_shape,
                               const Shape& arg1_shape,
                               const Shape& out_shape,
                               size_t reduction_axes_count,
                               const element::Type& type,
                               size_t batch_size,
-                              const shared_ptr<runtime::he::HEBackend>& he_backend)
+                              const HEBackend* he_backend)
 {
     dot_template(arg0,
                  arg1,
@@ -101,22 +99,16 @@ void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HEPlaintext>>
 }
 
 // TODO: merge with template dot
-void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg0,
-                              const vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,
-                              vector<shared_ptr<runtime::he::HEPlaintext>>& out,
+void kernel::dot(const vector<shared_ptr<HEPlaintext>>& arg0,
+                              const vector<shared_ptr<HEPlaintext>>& arg1,
+                              vector<shared_ptr<HEPlaintext>>& out,
                               const Shape& arg0_shape,
                               const Shape& arg1_shape,
                               const Shape& out_shape,
                               size_t reduction_axes_count,
                               const element::Type& type,
-                              const shared_ptr<runtime::he::HEBackend>& he_backend)
+                              const HEBackend* he_backend)
 {
-    auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend);
-    auto he_ckks_backend = dynamic_pointer_cast<runtime::he::he_ckks::HEHeaanBackend>(he_backend);
-    if (!he_seal_backend && !he_ckks_backend)
-    {
-        throw ngraph_error("Dot he_backend neither SEAL nor HEAAN.");
-    }
     // Get the sizes of the dot axes. It's easiest to pull them from arg1 because they're
     // right up front.
     Shape dot_axis_sizes(reduction_axes_count);
@@ -188,16 +180,9 @@ void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HEPlaintext>>
         copy(arg1_projected_coord.begin(), arg1_projected_coord.end(), out_coord_it);
 
         // Zero out to start the sum
-        shared_ptr<runtime::he::HEPlaintext> sum;
-        sum = he_backend->create_valued_plaintext(0, type);
-        /* if (he_seal_backend)
-        {
-            sum = he_seal_backend->create_valued_plaintext(0., type);
-        }
-        else if (he_ckks_backend)
-        {
-            sum = he_ckks_backend->create_valued_plaintext(0., type);
-        } */
+        shared_ptr<HEPlaintext> sum = he_backend->create_valued_plaintext(0, type);
+
+        shared_ptr<HEPlaintext> prod = he_backend->create_empty_plaintext();
 
         size_t out_index = output_transform.index(out_coord);
 
@@ -221,19 +206,9 @@ void runtime::he::kernel::dot(const vector<shared_ptr<runtime::he::HEPlaintext>>
             auto arg0_text = arg0[arg0_transform.index(arg0_coord)];
             auto arg1_text = arg1[arg1_transform.index(arg1_coord)];
 
-            shared_ptr<runtime::he::HEPlaintext> prod;
 
-            if (he_seal_backend)
-            {
-                prod = he_seal_backend->create_empty_plaintext();
-            }
-            else if (he_ckks_backend)
-            {
-                prod = he_ckks_backend->create_empty_plaintext();
-            }
-
-            runtime::he::kernel::scalar_multiply(arg0_text, arg1_text, prod, type, he_backend);
-            runtime::he::kernel::scalar_add(sum, prod, sum, type, he_backend);
+            kernel::scalar_multiply(arg0_text, arg1_text, prod, type, he_backend);
+            kernel::scalar_add(sum, prod, sum, type, he_backend);
         }
 
         // Write the sum back.

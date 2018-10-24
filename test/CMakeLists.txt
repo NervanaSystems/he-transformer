@@ -46,6 +46,7 @@ set (NGRAPH_TEST_HE_SEAL_BFV_SRC
     #test_convolution_HE_SEAL.cpp
     test_read_write_HE_SEAL_BFV.cpp
     test_add_HE_SEAL_BFV.cpp
+    test_dot_HE_SEAL_BFV.cpp
     test_multiply_HE_SEAL_BFV.cpp
     test_negate_HE_SEAL_BFV.cpp
     test_subtract_HE_SEAL_BFV.cpp

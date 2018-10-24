@@ -18,6 +18,7 @@
 set (HE_SRC
 
     kernel/add.cpp
+    kernel/dot.cpp
     kernel/multiply.cpp
     kernel/negate.cpp
     kernel/subtract.cpp

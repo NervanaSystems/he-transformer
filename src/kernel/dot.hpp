@@ -16,8 +16,7 @@
 
 #pragma once
 
-#include "he_ckks_backend.hpp"
-#include "he_seal_backend.hpp"
+#include "seal/he_seal_backend.hpp"
 #include "kernel/add.hpp"
 #include "kernel/multiply.hpp"
 #include "ngraph/coordinate_transform.hpp"
@@ -46,7 +45,7 @@ namespace ngraph
                                   size_t reduction_axes_count,
                                   const element::Type& type,
                                   size_t batch_size,
-                                  const std::shared_ptr<runtime::he::HEBackend>& he_backend);
+                                  const runtime::he::HEBackend* he_backend);
 
                 void dot(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
                          const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg1,
@@ -57,7 +56,7 @@ namespace ngraph
                          size_t reduction_axes_count,
                          const element::Type& type,
                          size_t batch_size,
-                         const std::shared_ptr<runtime::he::HEBackend>& he_backend);
+                         const runtime::he::HEBackend* he_backend);
 
                 void dot(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
                          const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg1,
@@ -68,7 +67,7 @@ namespace ngraph
                          size_t reduction_axes_count,
                          const element::Type& type,
                          size_t batch_size,
-                         const std::shared_ptr<runtime::he::HEBackend>& he_backend);
+                         const runtime::he::HEBackend* he_backend);
 
                 void dot(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg0,
                          const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg1,
@@ -79,7 +78,7 @@ namespace ngraph
                          size_t reduction_axes_count,
                          const element::Type& type,
                          size_t batch_size,
-                         const std::shared_ptr<runtime::he::HEBackend>& he_backend);
+                         const runtime::he::HEBackend* he_backend);
 
                 void dot(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg0,
                          const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg1,
@@ -89,7 +88,7 @@ namespace ngraph
                          const Shape& out_shape,
                          size_t reduction_axes_count,
                          const element::Type& type,
-                         const std::shared_ptr<runtime::he::HEBackend>& he_backend);
+                         const runtime::he::HEBackend* he_backend);
             }
         }
     }
@@ -105,15 +104,8 @@ void ngraph::runtime::he::kernel::dot_template(const std::vector<std::shared_ptr
                                                size_t reduction_axes_count,
                                                const element::Type& type,
                                                size_t batch_size,
-                                               const std::shared_ptr<runtime::he::HEBackend>& he_backend)
+                                               const runtime::he::HEBackend* he_backend)
 {
-    auto he_seal_backend = std::dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend);
-    auto he_ckks_backend = std::dynamic_pointer_cast<runtime::he::he_ckks::HEHeaanBackend>(he_backend);
-    if (!he_seal_backend && !he_ckks_backend)
-    {
-        throw ngraph_error("Dot he_backend neither ckks nor seal;");
-    }
-
     // Get the sizes of the dot axes. It's easiest to pull them from arg1 because they're
     // right up front.
     Shape dot_axis_sizes(reduction_axes_count);
@@ -187,15 +179,8 @@ void ngraph::runtime::he::kernel::dot_template(const std::vector<std::shared_ptr
         std::copy(arg1_projected_coord.begin(), arg1_projected_coord.end(), out_coord_it);
 
         // Zero out to start the sum
-        std::shared_ptr<runtime::he::HECiphertext> sum;
-        if (he_seal_backend)
-        {
-            sum = he_seal_backend->create_valued_ciphertext(0, type);
-        }
-        else if (he_ckks_backend)
-        {
-            sum = he_ckks_backend->create_valued_ciphertext(0, type, batch_size);
-        }
+        std::shared_ptr<runtime::he::HECiphertext> sum = he_backend->create_valued_ciphertext(0, type);
+        std::shared_ptr<runtime::he::HECiphertext> prod = he_backend->create_empty_ciphertext();
 
         size_t out_index = output_transform.index(out_coord);
 
@@ -219,23 +204,8 @@ void ngraph::runtime::he::kernel::dot_template(const std::vector<std::shared_ptr
             auto arg0_text = arg0[arg0_transform.index(arg0_coord)];
             auto arg1_text = arg1[arg1_transform.index(arg1_coord)];
 
-            std::shared_ptr<runtime::he::HECiphertext> prod;
-            if (he_seal_backend)
-            {
-                prod = he_seal_backend->create_empty_ciphertext();
-            }
-            else if (he_ckks_backend)
-            {
-                prod = he_ckks_backend->create_empty_ciphertext(batch_size);
-            }
-
             runtime::he::kernel::scalar_multiply(arg0_text, arg1_text, prod, type, he_backend);
-
-            std::shared_ptr<runtime::he::HECiphertext> sum_tmp = he_ckks_backend->create_empty_ciphertext(batch_size);
-            runtime::he::kernel::scalar_add(sum, prod, sum_tmp, type, he_backend);
-            dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(sum)->m_ciphertext =
-                dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(sum_tmp)->m_ciphertext;
-
+            runtime::he::kernel::scalar_add(sum, prod, sum, type, he_backend);
         }
 
         // Write the sum back.
