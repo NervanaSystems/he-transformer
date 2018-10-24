@@ -23,6 +23,7 @@
 #include "ngraph/pass/visualize_tree.hpp"
 
 #include "kernel/add.hpp"
+#include "kernel/multiply.hpp"
 #include "kernel/result.hpp"
 
 #include "he_backend.hpp"
@@ -331,6 +332,49 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
         else
         {
             throw ngraph_error("Add types not supported.");
+        }
+    }
+    else if (node_op == "Multiply")
+    {
+        if (arg0_cipher != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
+        {
+            runtime::he::kernel::multiply(arg0_cipher->get_elements(),
+                                     arg1_cipher->get_elements(),
+                                     out0_cipher->get_elements(),
+                                     type,
+                                     this,
+                                     out0_cipher->get_element_count());
+        }
+        else if (arg0_cipher != nullptr && arg1_plain != nullptr && out0_cipher != nullptr)
+        {
+            runtime::he::kernel::multiply(arg0_cipher->get_elements(),
+                                     arg1_plain->get_elements(),
+                                     out0_cipher->get_elements(),
+                                     type,
+                                     this,
+                                     out0_cipher->get_element_count());
+        }
+        else if (arg0_plain != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
+        {
+            runtime::he::kernel::multiply(arg0_plain->get_elements(),
+                                     arg1_cipher->get_elements(),
+                                     out0_cipher->get_elements(),
+                                     type,
+                                     this,
+                                     out0_cipher->get_element_count());
+        }
+        else if (arg0_plain != nullptr && arg1_plain != nullptr && out0_plain != nullptr)
+        {
+            runtime::he::kernel::multiply(arg0_plain->get_elements(),
+                                     arg1_plain->get_elements(),
+                                     out0_plain->get_elements(),
+                                     type,
+                                     this,
+                                     out0_plain->get_element_count());
+        }
+        else
+        {
+            throw ngraph_error("Multiply types not supported.");
         }
     }
     else if (node_op == "Result")

@@ -16,18 +16,24 @@
 
 # HE transformer sources
 set (HE_SRC
-    seal/he_seal_backend.cpp
-    seal/bfv/he_seal_bfv_backend.cpp
 
     kernel/add.cpp
+    kernel/multiply.cpp
+    kernel/result.cpp
+
     seal/kernel/add_seal.cpp
+    seal/kernel/multiply_seal.cpp
+
+    seal/he_seal_backend.cpp
 
     seal/seal_plaintext_wrapper.cpp
     seal/seal_ciphertext_wrapper.cpp
 
+    seal/bfv/he_seal_bfv_backend.cpp
+
+
     he_plain_tensor.cpp
 
-    kernel/result.cpp
     # main
     # create_backend.cpp
     he_backend.cpp

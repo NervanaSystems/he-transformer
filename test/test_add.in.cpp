@@ -33,7 +33,7 @@ using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
-TEST(${BACKEND_NAME}, ab)
+TEST(${BACKEND_NAME}, add_2_3)
 {
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 

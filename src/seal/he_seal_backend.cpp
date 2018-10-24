@@ -50,9 +50,7 @@ runtime::he::he_seal::HESealBackend::HESealBackend(
     const shared_ptr<runtime::he::he_seal::HESealParameter>& sp)
 {
     // Context
-    NGRAPH_INFO << "Making seal context";
     m_context = make_seal_context(sp);
-    NGRAPH_INFO << "Made seal context";
     auto m_context_data = m_context->context_data();
     print_seal_context(*m_context);
 
@@ -77,8 +75,6 @@ shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealBackend::make_seal_con
 {
     seal::EncryptionParameters parms = (sp->m_scheme_name == "BFV" ? seal::scheme_type::BFV :
                                         seal::scheme_type::CKKS);
-    NGRAPH_INFO << "Making parms";
-
     NGRAPH_INFO << "Setting poly mod degree to " << sp->m_poly_modulus_degree;
 
     parms.set_poly_modulus_degree(sp->m_poly_modulus_degree);
@@ -99,8 +95,6 @@ shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealBackend::make_seal_con
 
     NGRAPH_INFO << "Setting plain mod to " << sp->m_plain_modulus;
     parms.set_plain_modulus(sp->m_plain_modulus);
-
-    NGRAPH_INFO << "Creating context";
 
     return seal::SEALContext::Create(parms);
 }

@@ -28,7 +28,7 @@ void kernel::add(const vector<shared_ptr<HECiphertext>>& arg0,
                               const vector<shared_ptr<HECiphertext>>& arg1,
                               vector<shared_ptr<HECiphertext>>& out,
                               const element::Type& type,
-                              const runtime::he::HEBackend* he_backend,
+                              const HEBackend* he_backend,
                               size_t count)
 {
 #pragma omp parallel for
@@ -42,7 +42,7 @@ void kernel::add(const vector<shared_ptr<HECiphertext>>& arg0,
                               const vector<shared_ptr<HEPlaintext>>& arg1,
                               vector<shared_ptr<HECiphertext>>& out,
                               const element::Type& type,
-                              const runtime::he::HEBackend* he_backend,
+                              const HEBackend* he_backend,
                               size_t count)
 {
 #pragma omp parallel for
@@ -56,7 +56,7 @@ void kernel::add(const vector<shared_ptr<HEPlaintext>>& arg0,
                               const vector<shared_ptr<HECiphertext>>& arg1,
                               vector<shared_ptr<HECiphertext>>& out,
                               const element::Type& type,
-                              const runtime::he::HEBackend* he_backend,
+                              const HEBackend* he_backend,
                               size_t count)
 {
     add(arg1, arg0, out, type, he_backend, count);
@@ -66,7 +66,7 @@ void kernel::add(const vector<shared_ptr<HEPlaintext>>& arg0,
                               const vector<shared_ptr<HEPlaintext>>& arg1,
                               vector<shared_ptr<HEPlaintext>>& out,
                               const element::Type& type,
-                              const runtime::he::HEBackend* he_backend,
+                              const HEBackend* he_backend,
                               size_t count)
 {
 #pragma omp parallel for
@@ -80,7 +80,7 @@ void kernel::scalar_add(const shared_ptr<HECiphertext>& arg0,
                                      const shared_ptr<HECiphertext>& arg1,
                                      shared_ptr<HECiphertext>& out,
                                      const element::Type& type,
-                                     const runtime::he::HEBackend* he_backend)
+                                     const HEBackend* he_backend)
 {
     if (auto he_seal_backend =
             dynamic_cast<const he_seal::HESealBackend*>(he_backend))
@@ -113,7 +113,7 @@ void kernel::scalar_add(const shared_ptr<HEPlaintext>& arg0,
                                      const shared_ptr<HEPlaintext>& arg1,
                                      shared_ptr<HEPlaintext>& out,
                                      const element::Type& type,
-                                     const runtime::he::HEBackend* he_backend)
+                                     const HEBackend* he_backend)
 {
     if (auto he_seal_backend =
             dynamic_cast<const he_seal::HESealBackend*>(he_backend))
@@ -146,7 +146,7 @@ void kernel::scalar_add(const shared_ptr<HECiphertext>& arg0,
                                      const shared_ptr<HEPlaintext>& arg1,
                                      shared_ptr<HECiphertext>& out,
                                      const element::Type& type,
-                                     const runtime::he::HEBackend* he_backend)
+                                     const HEBackend* he_backend)
 {
     if (auto he_seal_backend =
             dynamic_cast<const he_seal::HESealBackend*>(he_backend))
@@ -190,7 +190,7 @@ void kernel::scalar_add(const shared_ptr<HEPlaintext>& arg0,
                                      const shared_ptr<HECiphertext>& arg1,
                                      shared_ptr<HECiphertext>& out,
                                      const element::Type& type,
-                                     const runtime::he::HEBackend* he_backend)
+                                     const HEBackend* he_backend)
 {
     scalar_add(arg1, arg0, out, type, he_backend);
 }

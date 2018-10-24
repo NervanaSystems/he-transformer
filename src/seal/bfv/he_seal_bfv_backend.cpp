@@ -98,13 +98,10 @@ runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend(
     const shared_ptr<runtime::he::he_seal::HESealParameter>& sp)
     : runtime::he::he_seal::HESealBackend::HESealBackend(sp)
 {
-    NGRAPH_INFO << "Creating HESealBFV Backend from sp";
    //  assert_valid_seal_parameter(sp);
 
     // Context
-    NGRAPH_INFO << "Making seal context";
     m_context = make_seal_context(sp);
-    NGRAPH_INFO << "Made seal context";
     auto m_context_data = m_context->context_data();
 
     // Encoders
@@ -112,7 +109,6 @@ runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend(
     auto plain_modulus = m_context_data->parms().plain_modulus().value();
 
     m_int_encoder = make_shared<seal::IntegerEncoder>(plain_modulus);
-    NGRAPH_INFO << "Created m int encoder";
     m_frac_encoder =
         make_shared<seal::FractionalEncoder>(plain_modulus,
                                              poly_modulus,
@@ -151,6 +147,9 @@ shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealBFVBackend::create_batch
 shared_ptr<runtime::he::HEPlaintext> runtime::he::he_seal::HESealBFVBackend::create_valued_plaintext(
     float value, const element::Type& element_type) const
 {
+    NGRAPH_INFO << "Creating valiued ciphertext";
+
+
     const string type_name = element_type.c_type_string();
     shared_ptr<runtime::he::HEPlaintext> plaintext = create_empty_plaintext();
     if (auto plaintext_seal = dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(plaintext))
@@ -197,6 +196,7 @@ shared_ptr<runtime::he::HEPlaintext>
 shared_ptr<runtime::he::HECiphertext> runtime::he::he_seal::HESealBFVBackend::create_valued_ciphertext(
     float value, const element::Type& element_type, size_t batch_size) const
 {
+    NGRAPH_INFO << "Creating valiued ciphertext";
     if (batch_size != 1)
     {
         throw ngraph_error("HESealBFVBackend::create_valued_ciphertext only supports batch size 1");
@@ -208,6 +208,9 @@ shared_ptr<runtime::he::HECiphertext> runtime::he::he_seal::HESealBFVBackend::cr
     {
         throw ngraph_error("Ciphertext is not seal ciphertext in HESealBFVBackend::create_valued_ciphertext");
     }
+
+
+
     if (type_name == "float")
     {
         seal::Plaintext plaintext = m_frac_encoder->encode(value);
@@ -238,13 +241,11 @@ void runtime::he::he_seal::HESealBFVBackend::encode(shared_ptr<runtime::he::HEPl
 
     if (type_name == "int64_t")
     {
-        NGRAPH_INFO << "Encoding int " << (*(int64_t*)input);
         output =
             make_shared<runtime::he::he_seal::SealPlaintextWrapper>(m_int_encoder->encode(*(int64_t*)input));
     }
     else if (type_name == "float")
     {
-        NGRAPH_INFO << "Encoding float";
         output =
             make_shared<runtime::he::he_seal::SealPlaintextWrapper>(m_frac_encoder->encode(*(float*)input));
     }
