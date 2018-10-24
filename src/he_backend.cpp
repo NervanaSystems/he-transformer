@@ -56,6 +56,7 @@ shared_ptr<runtime::he::HEPlaintext> runtime::he::HEBackend::create_valued_plain
 shared_ptr<runtime::he::HECiphertext> runtime::he::HEBackend::create_valued_ciphertext(
     float value, const element::Type& element_type, size_t batch_size) const
 {
+    NGRAPH_INFO << "Creating valued ciphertext value " << value;
     if (batch_size != 1)
     {
         throw ngraph_error("HESealBFVBackend::create_valued_ciphertext only supports batch size 1");

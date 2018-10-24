@@ -181,7 +181,6 @@ void kernel::dot(const vector<shared_ptr<HEPlaintext>>& arg0,
 
         // Zero out to start the sum
         shared_ptr<HEPlaintext> sum = he_backend->create_valued_plaintext(0, type);
-
         shared_ptr<HEPlaintext> prod = he_backend->create_empty_plaintext();
 
         size_t out_index = output_transform.index(out_coord);

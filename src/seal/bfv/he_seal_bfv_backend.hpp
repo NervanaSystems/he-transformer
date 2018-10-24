@@ -58,11 +58,6 @@ namespace ngraph
                                 const element::Type& type,
                                 size_t count = 1) const override;
 
-                    const inline std::shared_ptr<seal::IntegerEncoder> get_int_encoder() const
-                    {
-                        return m_int_encoder;
-                    }
-
                     const inline std::shared_ptr<seal::FractionalEncoder> get_frac_encoder() const
                     {
                         return m_frac_encoder;
@@ -80,7 +75,6 @@ namespace ngraph
                     int noise_budget(const std::shared_ptr<seal::Ciphertext>& ciphertext) const;
 
                 private:
-                    std::shared_ptr<seal::IntegerEncoder> m_int_encoder;
                     std::shared_ptr<seal::FractionalEncoder> m_frac_encoder;
                 };
             }

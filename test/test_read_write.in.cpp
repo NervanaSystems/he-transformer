@@ -43,10 +43,10 @@ TEST(${BACKEND_NAME}, cipher_tv_write_read_scalar)
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape{};
-    auto a = backend->create_tensor(element::i64, shape);
-    copy_he_data(a, vector<int64_t>{5}, backend);
-    auto tmp =read_he_vector<int64_t>(a, backend);
-    EXPECT_EQ(tmp, (vector<int64_t>{5}));
+    auto a = backend->create_tensor(element::f32, shape);
+    copy_he_data(a, vector<float>{5}, backend);
+    auto tmp =read_he_vector<float>(a, backend);
+    EXPECT_EQ(tmp, (vector<float>{5}));
 }
 
 TEST(${BACKEND_NAME}, cipher_tv_write_read_2)
@@ -54,9 +54,9 @@ TEST(${BACKEND_NAME}, cipher_tv_write_read_2)
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape{2};
-    auto a = backend->create_tensor(element::i64, shape);
-    copy_he_data(a, vector<int64_t>{5, 6}, backend);
-    EXPECT_EQ(read_he_vector<int64_t>(a, backend), (vector<int64_t>{5, 6}));
+    auto a = backend->create_tensor(element::f32, shape);
+    copy_he_data(a, vector<float>{5, 6}, backend);
+    EXPECT_EQ(read_he_vector<float>(a, backend), (vector<float>{5, 6}));
 }
 
 TEST(${BACKEND_NAME}, cipher_tv_write_read_2_3)
@@ -64,10 +64,10 @@ TEST(${BACKEND_NAME}, cipher_tv_write_read_2_3)
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape{2, 3};
-    auto a = backend->create_tensor(element::i64, shape);
-    copy_he_data(a, test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector(), backend);
-    EXPECT_EQ(read_he_vector<int64_t>(a, backend),
-              (test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector());
+    auto a = backend->create_tensor(element::f32, shape);
+    copy_he_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector(), backend);
+    EXPECT_EQ(read_he_vector<float>(a, backend),
+              (test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector());
 }
 
 TEST(${BACKEND_NAME}, plain_tv_write_read_scalar)
@@ -75,9 +75,9 @@ TEST(${BACKEND_NAME}, plain_tv_write_read_scalar)
     auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
     Shape shape{};
-    auto a = backend->create_plain_tensor(element::i64, shape);
-    copy_he_data(a, vector<int64_t>{5}, backend);
-    EXPECT_EQ(read_he_vector<int64_t>(a, backend), (vector<int64_t>{5}));
+    auto a = backend->create_plain_tensor(element::f32, shape);
+    copy_he_data(a, vector<float>{5}, backend);
+    EXPECT_EQ(read_he_vector<float>(a, backend), (vector<float>{5}));
 }
 
 TEST(${BACKEND_NAME}, plain_tv_write_read_2)
@@ -85,9 +85,9 @@ TEST(${BACKEND_NAME}, plain_tv_write_read_2)
     auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
     Shape shape{2};
-    auto a = backend->create_plain_tensor(element::i64, shape);
-    copy_he_data(a, vector<int64_t>{5, 6}, backend);
-    EXPECT_EQ(read_he_vector<int64_t>(a, backend), (vector<int64_t>{5, 6}));
+    auto a = backend->create_plain_tensor(element::f32, shape);
+    copy_he_data(a, vector<float>{5, 6}, backend);
+    EXPECT_EQ(read_he_vector<float>(a, backend), (vector<float>{5, 6}));
 }
 
 TEST(${BACKEND_NAME}, plain_tv_write_read_2_3)
@@ -95,8 +95,8 @@ TEST(${BACKEND_NAME}, plain_tv_write_read_2_3)
     auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
     Shape shape{2, 3};
-    auto a = backend->create_plain_tensor(element::i64, shape);
-    copy_he_data(a, test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector(), backend);
-    EXPECT_EQ(read_he_vector<int64_t>(a, backend),
-              (test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector());
+    auto a = backend->create_plain_tensor(element::f32, shape);
+    copy_he_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector(), backend);
+    EXPECT_EQ(read_he_vector<float>(a, backend),
+              (test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector());
 }

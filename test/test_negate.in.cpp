@@ -38,7 +38,7 @@ TEST(${BACKEND_NAME}, negate_2_3)
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape{2, 3};
-    auto a = make_shared<op::Parameter>(element::i64, shape);
+    auto a = make_shared<op::Parameter>(element::f32, shape);
     auto t = make_shared<op::Negative>(a);
     auto f = make_shared<Function>(t, op::ParameterVector{a});
 
@@ -53,9 +53,9 @@ TEST(${BACKEND_NAME}, negate_2_3)
         auto t_a = inputs[0];
         auto t_result = results[0];
 
-        copy_he_data(t_a, test::NDArray<int64_t, 2>({{-3, -2, -1}, {0, 1, 2}}).get_vector(), backend);
+        copy_he_data(t_a, test::NDArray<float, 2>({{-3, -2, -1}, {0, 1, 2}}).get_vector(), backend);
         backend->call(f, {t_result}, {t_a});
-        EXPECT_EQ(read_he_vector<int64_t>(t_result, backend),
-                  (test::NDArray<int64_t, 2>({{3, 2, 1}, {0, -1, -2}})).get_vector());
+        EXPECT_EQ(read_he_vector<float>(t_result, backend),
+                  (test::NDArray<float, 2>({{3, 2, 1}, {0, -1, -2}})).get_vector());
     }
 }

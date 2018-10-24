@@ -107,7 +107,6 @@ runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend(
     auto poly_modulus = m_context_data->parms().plain_modulus().value();
     auto plain_modulus = m_context_data->parms().plain_modulus().value();
 
-    m_int_encoder = make_shared<seal::IntegerEncoder>(plain_modulus);
     m_frac_encoder =
         make_shared<seal::FractionalEncoder>(plain_modulus,
                                              poly_modulus,
@@ -154,12 +153,7 @@ void runtime::he::he_seal::HESealBFVBackend::encode(shared_ptr<runtime::he::HEPl
     }
     const string type_name = type.c_type_string();
 
-    if (type_name == "int64_t")
-    {
-        output =
-            make_shared<runtime::he::he_seal::SealPlaintextWrapper>(m_int_encoder->encode(*(int64_t*)input));
-    }
-    else if (type_name == "float")
+    if (type_name == "float")
     {
         output =
             make_shared<runtime::he::he_seal::SealPlaintextWrapper>(m_frac_encoder->encode(*(float*)input));
@@ -184,12 +178,7 @@ void runtime::he::he_seal::HESealBFVBackend::decode(void* output,
 
     if (auto seal_input = dynamic_pointer_cast<SealPlaintextWrapper>(input))
     {
-        if (type_name == "int64_t")
-        {
-            int64_t x = m_int_encoder->decode_int64(seal_input->m_plaintext);
-            memcpy(output, &x, type.size());
-        }
-        else if (type_name == "float")
+        if (type_name == "float")
         {
             float x = m_frac_encoder->decode(seal_input->m_plaintext);
             memcpy(output, &x, type.size());

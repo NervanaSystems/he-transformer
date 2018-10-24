@@ -168,13 +168,7 @@ void kernel::scalar_subtract(const shared_ptr<HECiphertext>& arg0,
         {
             const string type_name = type.c_type_string();
             bool sub_zero = false;
-            if (type_name == "int64_t") // TODO: make more general / templatize
-            {
-                int64_t x = 0;
-                he_backend->decode((void*)(&x), arg1, type, 1);
-                sub_zero = (x == 0);
-            }
-            else if (type_name == "float")
+            if (type_name == "float")
             {
                 float x;
                 he_backend->decode((void*)(&x), arg1, type, 1);

@@ -180,7 +180,7 @@ void ngraph::runtime::he::kernel::dot_template(const std::vector<std::shared_ptr
 
         // Zero out to start the sum
         std::shared_ptr<runtime::he::HECiphertext> sum = he_backend->create_valued_ciphertext(0, type);
-        std::shared_ptr<runtime::he::HECiphertext> prod = he_backend->create_empty_ciphertext();
+
 
         size_t out_index = output_transform.index(out_coord);
 
@@ -204,6 +204,7 @@ void ngraph::runtime::he::kernel::dot_template(const std::vector<std::shared_ptr
             auto arg0_text = arg0[arg0_transform.index(arg0_coord)];
             auto arg1_text = arg1[arg1_transform.index(arg1_coord)];
 
+            std::shared_ptr<runtime::he::HECiphertext> prod = he_backend->create_empty_ciphertext();
             runtime::he::kernel::scalar_multiply(arg0_text, arg1_text, prod, type, he_backend);
             runtime::he::kernel::scalar_add(sum, prod, sum, type, he_backend);
         }

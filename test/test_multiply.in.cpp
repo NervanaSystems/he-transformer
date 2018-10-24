@@ -38,8 +38,8 @@ TEST(${BACKEND_NAME}, multiply_2_3)
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape{2, 3};
-    auto a = make_shared<op::Parameter>(element::i64, shape);
-    auto b = make_shared<op::Parameter>(element::i64, shape);
+    auto a = make_shared<op::Parameter>(element::f32, shape);
+    auto b = make_shared<op::Parameter>(element::f32, shape);
     auto t = make_shared<op::Multiply>(a, b);
     auto f = make_shared<Function>(t, op::ParameterVector{a, b});
 
@@ -55,11 +55,11 @@ TEST(${BACKEND_NAME}, multiply_2_3)
         auto t_b = inputs[1];
         auto t_result = results[0];
 
-        copy_he_data(t_a, test::NDArray<int64_t, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector(), backend);
-        copy_he_data(t_b, test::NDArray<int64_t, 2>({{7, 8, 9}, {10, 11, 12}}).get_vector(), backend);
+        copy_he_data(t_a, test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector(), backend);
+        copy_he_data(t_b, test::NDArray<float, 2>({{7, 8, 9}, {10, 11, 12}}).get_vector(), backend);
         backend->call(f, {t_result}, {t_a, t_b});
-        EXPECT_EQ(read_he_vector<int64_t>(t_result, backend),
-                  (test::NDArray<int64_t, 2>({{7, 16, 27}, {40, 55, 72}})).get_vector());
+        EXPECT_EQ(read_he_vector<float>(t_result, backend),
+                  (test::NDArray<float, 2>({{7, 16, 27}, {40, 55, 72}})).get_vector());
     }
 }
 
@@ -68,7 +68,7 @@ TEST(${BACKEND_NAME}, square_2_3)
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
     Shape shape{2, 3};
-    auto a = make_shared<op::Parameter>(element::i64, shape);
+    auto a = make_shared<op::Parameter>(element::f32, shape);
     auto t = make_shared<op::Multiply>(a, a);
     auto f = make_shared<Function>(t, op::ParameterVector{a, a});
 
@@ -84,9 +84,39 @@ TEST(${BACKEND_NAME}, square_2_3)
         auto t_b = inputs[1];
         auto t_result = results[0];
 
-        copy_he_data(t_a, test::NDArray<int64_t, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector(), backend);
+        copy_he_data(t_a, test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector(), backend);
         backend->call(f, {t_result}, {t_a, t_b});
-        EXPECT_EQ(read_he_vector<int64_t>(t_result, backend),
-                  (test::NDArray<int64_t, 2>({{1, 4, 9}, {16, 25, 36}})).get_vector());
+        EXPECT_EQ(read_he_vector<float>(t_result, backend),
+                  (test::NDArray<float, 2>({{1, 4, 9}, {16, 25, 36}})).get_vector());
+    }
+}
+
+TEST(${BACKEND_NAME}, multiply_optimized_2_3)
+{
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+
+    Shape shape{2, 3};
+    auto a = make_shared<op::Parameter>(element::f32, shape);
+    auto b = make_shared<op::Parameter>(element::f32, shape);
+    auto t = make_shared<op::Multiply>(a, b);
+    auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+
+    // Create some tensors for input/output
+    auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
+
+    for (auto tensors : tensors_list)
+    {
+        auto results = get<0>(tensors);
+        auto inputs = get<1>(tensors);
+
+        auto t_a = inputs[0];
+        auto t_b = inputs[1];
+        auto t_result = results[0];
+
+        copy_he_data(t_a, test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector(), backend);
+        copy_he_data(t_b, test::NDArray<float, 2>({{-1, 0, 1}, {-1, 0, 1 }}).get_vector(), backend);
+        backend->call(f, {t_result}, {t_a, t_b});
+        EXPECT_EQ(read_he_vector<float>(t_result, backend),
+                  (test::NDArray<float, 2>({{-1, 0, 3}, {-4, 0, 6}})).get_vector());
     }
 }

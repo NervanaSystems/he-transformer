@@ -19,6 +19,7 @@
 #include "seal/he_seal_backend.hpp"
 #include "kernel/multiply.hpp"
 #include "seal/kernel/multiply_seal.hpp"
+#include "seal/kernel/negate_seal.hpp"
 #include "ngraph/type/element_type.hpp"
 
 using namespace std;
@@ -160,19 +161,41 @@ void kernel::scalar_multiply(const shared_ptr<HECiphertext>& arg0,
 
         if (arg0_seal && arg1_seal && out_seal)
         {
-            // TODO: re-enable optimized multiply!
-            /* auto zero = dynamic_cast<he_seal::SealPlaintextWrapper>(
-                he_seal_backend->get_valued_plaintext(0, type));
+            const string type_name = type.c_type_string();
 
-            if (arg1_seal->m_plaintext == zero->m_plaintext)
+            enum Optimization {mult_zero, mult_one, mult_neg_one, no_optimization};
+            Optimization optimization = no_optimization;
+
+            if (type_name == "float")
             {
+                float x;
+                he_backend->decode((void*)(&x), arg1, type, 1);
+                optimization = (x == 0) ? mult_zero
+                            : (x == 1) ? mult_one
+                            : (x == -1) ? mult_neg_one
+                            : no_optimization;
+            }
+            if (optimization == mult_zero)
+            {
+                NGRAPH_INFO << "Optimized multiply by 0";
+                out = he_backend->create_valued_ciphertext(0, type);
+            }
+            else if (optimization == mult_one)
+            {
+                NGRAPH_INFO << "Optimized multiply by 1";
                 out = arg0;
             }
+            else if (optimization == mult_neg_one)
+            {
+                NGRAPH_INFO << "Optimized multiply by -1";
+                he_seal::kernel::scalar_negate(arg0_seal, out_seal, type, he_seal_backend);
+                out = dynamic_pointer_cast<HECiphertext>(out_seal);
+            }
             else
-            { */
+            {
                 he_seal::kernel::scalar_multiply(arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
                 out = dynamic_pointer_cast<HECiphertext>(out_seal);
-            //}
+            }
         }
         else
         {
