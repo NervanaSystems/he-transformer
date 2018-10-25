@@ -100,7 +100,7 @@ runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend(
 
     // Keygen, encryptor and decryptor
     m_keygen = make_shared<seal::KeyGenerator>(m_context);
-    m_relin_key = make_shared<seal::RelinKeys>(m_keygen->relin_keys(16));
+    m_relin_keys = make_shared<seal::RelinKeys>(m_keygen->relin_keys(sp->m_evaluation_decomposition_bit_count));
     m_public_key = make_shared<seal::PublicKey>(m_keygen->public_key());
     m_secret_key = make_shared<seal::SecretKey>(m_keygen->secret_key());
     m_encryptor = make_shared<seal::Encryptor>(m_context, *m_public_key);

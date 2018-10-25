@@ -93,9 +93,9 @@ namespace ngraph
                         return m_secret_key;
                     }
 
-                    const inline std::shared_ptr<seal::RelinKeys> get_relin_key() const
+                    const inline std::shared_ptr<seal::RelinKeys> get_relin_keys() const
                     {
-                        return m_relin_key;
+                        return m_relin_keys;
                     }
 
                     const inline std::shared_ptr<seal::Evaluator> get_evaluator() const
@@ -106,7 +106,7 @@ namespace ngraph
                 protected:
                     std::shared_ptr<seal::SecretKey> m_secret_key;
                     std::shared_ptr<seal::PublicKey> m_public_key;
-                    std::shared_ptr<seal::RelinKeys> m_relin_key;
+                    std::shared_ptr<seal::RelinKeys> m_relin_keys;
                     std::shared_ptr<seal::Encryptor> m_encryptor;
                     std::shared_ptr<seal::Decryptor> m_decryptor;
                     std::shared_ptr<seal::SEALContext> m_context;

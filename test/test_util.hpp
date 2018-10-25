@@ -25,8 +25,6 @@
 #include "he_backend.hpp"
 #include "he_tensor.hpp"
 #include "he_cipher_tensor.hpp"
-// #include "seal/ckks/he_seal_ckks_backend.hpp"
-#include "seal/bfv/he_seal_bfv_backend.hpp"
 #include "ngraph/descriptor/layout/tensor_layout.hpp"
 #include "ngraph/file_util.hpp"
 #include "ngraph/node.hpp"
@@ -34,14 +32,6 @@
 #include "ngraph/type/element_type.hpp"
 
 using namespace ngraph;
-
-class TestHEBackend : public ::testing::Test
-{
-protected:
-    virtual void SetUp();
-    virtual void TearDown();
-    static std::shared_ptr<ngraph::runtime::he::he_seal::HESealBFVBackend> m_he_seal_bfv_backend;
-};
 
 std::vector<float> read_binary_constant(const std::string filename, size_t num_elements);
 std::vector<float> read_constant(const std::string filename);

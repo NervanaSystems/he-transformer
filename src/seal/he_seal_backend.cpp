@@ -70,9 +70,15 @@ void runtime::he::he_seal::HESealBackend::assert_valid_seal_parameter(const shar
     {
         throw ngraph_error("m_poly_modulus must be 1024, 2048, 4096, 8192, 16384, 32768");
     }
+
     if (sp->m_security_level != 128 && sp->m_security_level != 192)
     {
         throw ngraph_error("sp.security_level must be 128, 192");
+    }
+
+    if (sp->m_evaluation_decomposition_bit_count > 60 || sp->m_evaluation_decomposition_bit_count < 1)
+    {
+        throw ngraph_error("sp.m_evaluation_decomposition_bit_count must be between 1 and 60");
     }
 }
 

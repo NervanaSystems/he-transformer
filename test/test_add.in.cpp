@@ -58,8 +58,8 @@ TEST(${BACKEND_NAME}, add_2_3)
         copy_he_data(t_a, test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector(), backend);
         copy_he_data(t_b, test::NDArray<float, 2>({{7, 8, 9}, {10, 11, 12}}).get_vector(), backend);
         backend->call(f, {t_result}, {t_a, t_b});
-        EXPECT_EQ(read_he_vector<float>(t_result, backend),
-                  (test::NDArray<float, 2>({{8, 10, 12}, {14, 16, 18}})).get_vector());
+        EXPECT_TRUE(all_close(read_he_vector<float>(t_result, backend),
+                  (test::NDArray<float, 2>({{8, 10, 12}, {14, 16, 18}})).get_vector()));
     }
 }
 
@@ -88,7 +88,7 @@ TEST(${BACKEND_NAME}, add_zero_2_3)
         copy_he_data(t_a, test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector(), backend);
         copy_he_data(t_b, test::NDArray<float, 2>({{0, 0, 0}, {0, 0, 0}}).get_vector(), backend);
         backend->call(f, {t_result}, {t_a, t_b});
-        EXPECT_EQ(read_he_vector<float>(t_result, backend),
-                  (test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}})).get_vector());
+        EXPECT_TRUE(all_close(read_he_vector<float>(t_result, backend),
+                  (test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}})).get_vector()));
     }
 }

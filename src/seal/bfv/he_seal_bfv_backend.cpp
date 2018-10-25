@@ -59,10 +59,11 @@ const static runtime::he::he_seal::HESealParameter parse_seal_bfv_config_or_use_
                                                 poly_modulus_degree,
                                                 plain_modulus,
                                                 security_level,
+                                                evaluation_decomposition_bit_count,
                                                 fractional_encoder_integer_coeff_count,
                                                 fractional_encoder_fraction_coeff_count,
-                                                fractional_encoder_base,
-                                                evaluation_decomposition_bit_count);
+                                                fractional_encoder_base
+                                                );
         }
         else
         {
@@ -76,10 +77,10 @@ const static runtime::he::he_seal::HESealParameter parse_seal_bfv_config_or_use_
                                             2048,      // poly_modulus_degree
                                             1 << 8, // plain_modulus
                                             128,       // security_level
+                                            16,            // evaluation_decomposition_bit_count
                                             64,   // fractional_encoder_integer_coeff_count
                                             32,         // fractional_encoder_fraction_coeff_count
-                                             2,           // fractional_encoder_base
-                                            16            // evaluation_decomposition_bit_count
+                                             2           // fractional_encoder_base
                                             );
     }
 }
@@ -108,7 +109,7 @@ runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend(
 
     // Keygen, encryptor and decryptor
     m_keygen = make_shared<seal::KeyGenerator>(m_context);
-    m_relin_key = make_shared<seal::RelinKeys>(m_keygen->relin_keys(16));
+    m_relin_keys = make_shared<seal::RelinKeys>(m_keygen->relin_keys(sp->m_evaluation_decomposition_bit_count));
     m_public_key = make_shared<seal::PublicKey>(m_keygen->public_key());
     m_secret_key = make_shared<seal::SecretKey>(m_keygen->secret_key());
     m_encryptor = make_shared<seal::Encryptor>(m_context, *m_public_key);

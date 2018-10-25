@@ -48,6 +48,7 @@ void he_seal::kernel::scalar_multiply(const shared_ptr<he_seal::SealCiphertextWr
     {
         he_seal_backend->get_evaluator()->multiply(arg0->m_ciphertext, arg1->m_ciphertext, out->m_ciphertext);
     }
+    he_seal_backend->get_evaluator()->relinearize_inplace(out->m_ciphertext, *(he_seal_backend->get_relin_keys()));
 }
 
 void he_seal::kernel::scalar_multiply(const shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
@@ -64,6 +65,7 @@ void he_seal::kernel::scalar_multiply(const shared_ptr<he_seal::SealCiphertextWr
     {
         he_seal_backend->get_evaluator()->multiply_plain(arg0->m_ciphertext, arg1->m_plaintext, out->m_ciphertext);
     }
+    he_seal_backend->get_evaluator()->relinearize_inplace(out->m_ciphertext, *(he_seal_backend->get_relin_keys()));
 }
 
 void he_seal::kernel::scalar_multiply(const shared_ptr<he_seal::SealPlaintextWrapper>& arg0,
