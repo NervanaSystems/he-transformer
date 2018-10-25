@@ -169,9 +169,9 @@ void runtime::he::kernel::convolution(const vector<shared_ptr<runtime::he::HECip
 
 // TODO: merge into template?
 void ngraph::runtime::he::kernel::convolution(
-    const std::vector<shared_ptr<runtime::he::HEPlaintext>>& arg0,
-    const std::vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,
-    std::vector<shared_ptr<runtime::he::HEPlaintext>>& out,
+    const vector<shared_ptr<runtime::he::HEPlaintext>>& arg0,
+    const vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,
+    vector<shared_ptr<runtime::he::HEPlaintext>>& out,
     const Shape& arg0_shape,
     const Shape& arg1_shape,
     const Shape& out_shape,
@@ -274,8 +274,8 @@ void ngraph::runtime::he::kernel::convolution(
         {
             size_t window_dilation_stride = window_dilation_strides[i - 2];
             size_t window_movement_stride = window_movement_strides[i - 2];
-            std::ptrdiff_t below_pad = padding_below[i - 2];
-            std::ptrdiff_t above_pad = padding_above[i - 2];
+            ptrdiff_t below_pad = padding_below[i - 2];
+            ptrdiff_t above_pad = padding_above[i - 2];
             size_t data_dilation_stride = data_dilation_strides[i - 2];
 
             input_batch_transform_start[i] = window_movement_stride * out_coord[i];

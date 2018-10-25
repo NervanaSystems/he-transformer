@@ -22,6 +22,7 @@ set (HE_SRC
     kernel/multiply.cpp
     kernel/negate.cpp
     kernel/subtract.cpp
+    kernel/reshape.cpp
     kernel/result.cpp
 
     seal/kernel/add_seal.cpp

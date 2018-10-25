@@ -49,6 +49,7 @@ set (NGRAPH_TEST_HE_SEAL_BFV_SRC
     test_dot_HE_SEAL_BFV.cpp
     test_multiply_HE_SEAL_BFV.cpp
     test_negate_HE_SEAL_BFV.cpp
+    test_reshape_HE_SEAL_BFV.cpp
     test_subtract_HE_SEAL_BFV.cpp
     # test_mnist_HE_SEAL.cpp # Disabled since BFV does not support batching for float
 )
@@ -61,6 +62,7 @@ set (NGRAPH_TEST_HE_SEAL_CKKS_SRC
     test_multiply_HE_SEAL_CKKS.cpp
     test_negate_HE_SEAL_CKKS.cpp
     test_subtract_HE_SEAL_CKKS.cpp
+    test_reshape_HE_SEAL_CKKS.cpp
 )
 
 get_filename_component(SEAL_BFV_MANIFEST he_seal_bfv_disabled_test.manifest ABSOLUTE)
@@ -75,7 +77,7 @@ add_custom_command(
     -DBACKEND_REGISTERED_NAME=HE:SEAL:BFV
     -DBACKEND_NAME=HE_SEAL_BFV
     -DTEST_LOOPS=1
-    -DMANIFEST=${SEAL_MANIFEST}
+    -DMANIFEST=${SEAL_BFV_MANIFEST}
     -P ${CMAKE_CURRENT_SOURCE_DIR}/configure_test.cmake
 )
 

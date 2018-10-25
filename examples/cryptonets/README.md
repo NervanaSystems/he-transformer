@@ -13,7 +13,7 @@ This trains the network briefly and stores the network weights.
 ## Python
 To test the network, run
 ```
-[NGRAHP_HE_HEAAN_CONFIG = heaan_config_1[X].json] NGRAPH_TF_BACKEND=HE:HEAAN python test.py
+[NGRAPH_HE_HEAAN_CONFIG = heaan_config_1[X].json] NGRAPH_TF_BACKEND=HE:HEAAN python test.py
 ```
 
 This runs inference on the Cryptonets network using the HEAAN backend.
