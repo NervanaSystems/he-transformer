@@ -62,6 +62,35 @@ TEST(${BACKEND_NAME}, dot1d)
     }
 }
 
+TEST(${BACKEND_NAME}, dot1d_optimized)
+{
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+
+    Shape shape{4};
+    auto a = make_shared<op::Parameter>(element::f32, shape);
+    auto b = make_shared<op::Parameter>(element::f32, shape);
+    auto t = make_shared<op::Dot>(a, b);
+    auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+
+    // Create some tensors for input/output
+    auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
+
+    for (auto tensors : tensors_list)
+    {
+        auto results = get<0>(tensors);
+        auto inputs = get<1>(tensors);
+
+        auto t_a = inputs[0];
+        auto t_b = inputs[1];
+        auto t_result = results[0];
+
+        copy_he_data(t_a, vector<float>{1, 2, 3, 4}, backend);
+        copy_he_data(t_b, vector<float>{-1, 0, 1, 2}, backend);
+        backend->call(f, {t_result}, {t_a, t_b});
+        EXPECT_TRUE(all_close(read_he_vector<float>(t_result, backend), vector<float>{10}));
+    }
+}
+
 TEST(${BACKEND_NAME}, dot_matrix_vector)
 {
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
