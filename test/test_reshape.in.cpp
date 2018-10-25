@@ -33,6 +33,7 @@ using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
+
 TEST(${BACKEND_NAME}, reshape_t2v_012)
 {
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");

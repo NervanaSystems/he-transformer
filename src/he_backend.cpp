@@ -19,6 +19,7 @@
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
 #include "ngraph/function.hpp"
 
+#include "ngraph/op/broadcast.hpp"
 #include "ngraph/op/dot.hpp"
 #include "ngraph/op/reshape.hpp"
 #include "ngraph/op/result.hpp"
@@ -28,6 +29,7 @@
 #include "ngraph/pass/visualize_tree.hpp"
 
 #include "kernel/add.hpp"
+#include "kernel/broadcast.hpp"
 #include "kernel/dot.hpp"
 #include "kernel/multiply.hpp"
 #include "kernel/negate.hpp"
@@ -409,6 +411,36 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
         else
         {
             throw ngraph_error("Add types not supported.");
+        }
+    }
+    else if (node_op == "Broadcast")
+    {
+        shared_ptr<op::Broadcast> broadcast = dynamic_pointer_cast<op::Broadcast>(node);
+        AxisSet broadcast_axes = broadcast->get_broadcast_axes();
+
+        if (arg0_cipher != nullptr && out0_cipher != nullptr)
+        {
+            Shape in_shape = arg0_cipher->get_shape();
+            Shape out_shape = out0_cipher->get_shape();
+            runtime::he::kernel::broadcast(arg0_cipher->get_elements(),
+                                           out0_cipher->get_elements(),
+                                           in_shape,
+                                           out_shape,
+                                           broadcast_axes);
+        }
+        else if (arg0_plain != nullptr && out0_plain != nullptr)
+        {
+            Shape in_shape = arg0_plain->get_shape();
+            Shape out_shape = out0_plain->get_shape();
+            runtime::he::kernel::broadcast(arg0_plain->get_elements(),
+                                           out0_plain->get_elements(),
+                                           in_shape,
+                                           out_shape,
+                                           broadcast_axes);
+        }
+        else
+        {
+            throw ngraph_error("Broadcast types not supported.");
         }
     }
     else if (node_op == "Dot")
