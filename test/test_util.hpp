@@ -67,6 +67,21 @@ bool all_close(const std::vector<std::complex<T>>& a,
     return true;
 }
 
+template <typename T>
+bool all_close(const std::vector<T>& a,
+               const std::vector<T>& b,
+               T atol = static_cast<T>(1e-5))
+{
+    for (size_t i = 0; i < a.size(); ++i)
+    {
+        if (std::abs(a[i] - b[i]) > atol)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 std::vector<std::tuple<std::vector<std::shared_ptr<ngraph::runtime::Tensor>>,
              std::vector<std::shared_ptr<ngraph::runtime::Tensor>>>>
     generate_plain_cipher_tensors(const std::vector<std::shared_ptr<Node>>& output,

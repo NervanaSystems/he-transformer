@@ -142,8 +142,6 @@ shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealBFVBackend::make_seal_
     seal::EncryptionParameters parms = (sp->m_scheme_name == "HE:SEAL:BFV" ? seal::scheme_type::BFV :
                                         throw ngraph_error("Invalid scheme name \"" + sp->m_scheme_name + "\""));
 
-    NGRAPH_INFO << "Using CKKS scheme? " << (parms == seal::scheme_type::CKKS);
-
     NGRAPH_INFO << "Setting poly mod degree to " << sp->m_poly_modulus_degree;
 
     parms.set_poly_modulus_degree(sp->m_poly_modulus_degree);
@@ -165,11 +163,7 @@ shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealBFVBackend::make_seal_
     NGRAPH_INFO << "Setting plain mod to " << sp->m_plain_modulus;
     parms.set_plain_modulus(sp->m_plain_modulus);
 
-    auto tmp =seal::SEALContext::Create(parms);
-
-    NGRAPH_INFO << "Created SEALContext(parmz)";
-
-    return  tmp;
+    return seal::SEALContext::Create(parms);
 }
 
 namespace

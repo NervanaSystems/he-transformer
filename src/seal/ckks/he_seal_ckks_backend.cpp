@@ -47,7 +47,6 @@ const static runtime::he::he_seal::HESealParameter parse_seal_ckks_config_or_use
             nlohmann::json js = nlohmann::json::parse(s);
             string scheme_name = js["scheme_name"];
             uint64_t poly_modulus_degree = js["poly_modulus_degree"];
-            uint64_t plain_modulus = js["plain_modulus"];
             uint64_t security_level = js["security_level"];
             uint64_t evaluation_decomposition_bit_count = js["evaluation_decomposition_bit_count"];
             double scale = js["scale"];
@@ -55,7 +54,6 @@ const static runtime::he::he_seal::HESealParameter parse_seal_ckks_config_or_use
             NGRAPH_INFO << "Using SEAL CKKS config for parameters: " << config_path;
             return runtime::he::he_seal::HESealParameter(scheme_name,
                                                 poly_modulus_degree,
-                                                plain_modulus,
                                                 security_level,
                                                 evaluation_decomposition_bit_count,
                                                 scale
@@ -71,10 +69,9 @@ const static runtime::he::he_seal::HESealParameter parse_seal_ckks_config_or_use
     {
         return runtime::he::he_seal::HESealParameter("HE:SEAL:CKKS", // scheme name
                                             2048,      // poly_modulus_degree
-                                            1 << 8, // plain_modulus
                                             128,       // security_level
                                             16,            // evaluation_decomposition_bit_count
-                                            pow(2, 60)  // scale
+                                            pow(2, 32)  // scale
                                             );
     }
 }
@@ -134,8 +131,6 @@ shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealCKKSBackend::make_seal
     seal::EncryptionParameters parms = (sp->m_scheme_name == "HE:SEAL:CKKS" ? seal::scheme_type::CKKS :
                                         throw ngraph_error("Invalid scheme name \"" + sp->m_scheme_name + "\""));
 
-    NGRAPH_INFO << "Using CKKS scheme? " << (parms == seal::scheme_type::CKKS);
-
     NGRAPH_INFO << "Setting poly mod degree to " << sp->m_poly_modulus_degree;
 
     parms.set_poly_modulus_degree(sp->m_poly_modulus_degree);
@@ -154,9 +149,7 @@ shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealCKKSBackend::make_seal
         throw ngraph_error("sp.security_level must be 128, 192");
     }
 
-    auto tmp =seal::SEALContext::Create(parms);
-    NGRAPH_INFO << "Created SEALContext(parmz)";
-    return  tmp;
+    return seal::SEALContext::Create(parms);
 }
 
 namespace

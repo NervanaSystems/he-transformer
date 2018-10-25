@@ -62,14 +62,12 @@ namespace ngraph
 
                         HESealParameter(std::string scheme_name,
                                         std::uint64_t poly_modulus_degree,
-                                        std::uint64_t plain_modulus,
                                         std::uint64_t security_level,
                                         std::uint64_t evaluation_decomposition_bit_count,
                                         double scale
                                         )
                             : m_scheme_name(scheme_name)
                             , m_poly_modulus_degree(poly_modulus_degree)
-                            , m_plain_modulus(plain_modulus)
                             , m_security_level(security_level)
                             , m_evaluation_decomposition_bit_count(evaluation_decomposition_bit_count)
                             , m_scale(scale)
