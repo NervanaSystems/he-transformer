@@ -31,14 +31,20 @@ using namespace std;
 static void print_seal_context(const seal::SEALContext& context)
 {
     auto context_data = context.context_data();
+    auto scheme_parms = context_data->parms();
+    string scheme_name = (scheme_parms.scheme() == seal::scheme_type::BFV) ? "SEAL:BFV" :
+                         (scheme_parms.scheme() == seal::scheme_type::CKKS) ? "SEAL:CKKS" :
+                                                                            "";
+
     NGRAPH_INFO << endl
                 << "/ Encryption parameters:" << endl
-                << "| poly_modulus: " << context_data->parms().poly_modulus_degree() << endl
+                << "| scheme: " << scheme_name << endl
+                << "| poly_modulus: " << scheme_parms.poly_modulus_degree() << endl
                 // Print the size of the true (product) coefficient modulus
                 << "| coeff_modulus size: " << context_data->total_coeff_modulus().significant_bit_count()
                 << " bits" << endl
-                << "| plain_modulus: " << context_data->parms().plain_modulus().value() << endl
-                << "\\ noise_standard_deviation: " << context_data->parms().noise_standard_deviation();
+                << "| plain_modulus: " << scheme_parms.plain_modulus().value() << endl
+                << "\\ noise_standard_deviation: " << scheme_parms.noise_standard_deviation();
 }
 
 extern "C" const char* get_ngraph_version_string()
@@ -46,9 +52,27 @@ extern "C" const char* get_ngraph_version_string()
     return "v0.9.0"; // TODO: move to CMakeLists
 }
 
+void runtime::he::he_seal::HESealBackend::assert_valid_seal_parameter(const shared_ptr<runtime::he::he_seal::HESealParameter> sp) const
+{
+    if (sp->m_scheme_name != "BFV" && sp->m_scheme_name != "CKKS")
+    {
+        throw ngraph_error("Invalid scheme name");
+    }
+    static unordered_set<uint64_t> valid_poly_modulus{1024, 2048, 4096, 8192, 16384, 32768};
+    if (valid_poly_modulus.count(sp->m_poly_modulus_degree) == 0)
+    {
+        throw ngraph_error("m_poly_modulus must be 1024, 2048, 4096, 8192, 16384, 32768");
+    }
+    if (sp->m_security_level != 128 && sp->m_security_level != 192)
+    {
+        throw ngraph_error("sp.security_level must be 128, 192");
+    }
+}
+
 runtime::he::he_seal::HESealBackend::HESealBackend(
     const shared_ptr<runtime::he::he_seal::HESealParameter>& sp)
 {
+    assert_valid_seal_parameter(sp);
     // Context
     m_context = make_seal_context(sp);
     auto m_context_data = m_context->context_data();

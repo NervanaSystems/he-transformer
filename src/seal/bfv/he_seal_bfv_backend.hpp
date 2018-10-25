@@ -63,6 +63,8 @@ namespace ngraph
                         return m_frac_encoder;
                     }
 
+                    void assert_valid_seal_bfv_parameter(const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp) const;
+
                     /// @brief Checks the noise budget of several tensor views
                     ///        Throws an error if the noise budget is exhauasted
                     ///        for any of the tensor views.

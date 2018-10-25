@@ -53,8 +53,8 @@ namespace ngraph
 
                     /// @brief Checks if parameter is valid for encoding.
                     ///        Throws an error if parameter is not valid.
-                    //virtual void assert_valid_parameter(
-                    //    const std::shared_ptr<runtime::he::he_seal::HESealParameter> hp) const = 0;
+                    void assert_valid_seal_parameter(
+                        const std::shared_ptr<runtime::he::he_seal::HESealParameter> sp) const;
 
                      virtual std::shared_ptr<runtime::Tensor> create_batched_tensor(
                         const element::Type& element_type, const Shape& shape) = 0;

@@ -97,7 +97,7 @@ runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend(
     const shared_ptr<runtime::he::he_seal::HESealParameter>& sp)
     : runtime::he::he_seal::HESealBackend::HESealBackend(sp)
 {
-   //  assert_valid_seal_parameter(sp);
+    assert_valid_seal_bfv_parameter(sp);
 
     // Context
     m_context = make_seal_context(sp);
@@ -133,6 +133,15 @@ namespace
         HESealBFVStaticInit() { runtime::BackendManager::register_backend("HE:SEAL:BFV", new_backend); }
         ~HESealBFVStaticInit() {}
     } s_he_seal_bfv_static_init;
+}
+
+void runtime::he::he_seal::HESealBFVBackend::assert_valid_seal_bfv_parameter(const shared_ptr<runtime::he::he_seal::HESealParameter>& sp) const
+{
+    assert_valid_seal_parameter(sp);
+    if (sp->m_scheme_name != "BFV")
+    {
+        throw ngraph_error("Invalid scheme name");
+    }
 }
 
 shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealBFVBackend::create_batched_tensor(
