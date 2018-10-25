@@ -23,6 +23,7 @@
 #include "he_tensor.hpp"
 #include "seal/bfv/he_seal_bfv_backend.hpp"
 #include "ngraph/runtime/backend_manager.hpp"
+#include "seal/he_seal_util.hpp"
 
 #include "seal/seal.h"
 
@@ -94,15 +95,29 @@ runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend()
 
 runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend(
     const shared_ptr<runtime::he::he_seal::HESealParameter>& sp)
-    : runtime::he::he_seal::HESealBackend::HESealBackend(sp)
 {
     assert_valid_seal_bfv_parameter(sp);
 
-    // Context
+    m_context = make_seal_context(sp);
+    print_seal_context(*m_context);
+
     auto m_context_data = m_context->context_data();
+
     auto poly_modulus = m_context_data->parms().plain_modulus().value();
     auto plain_modulus = m_context_data->parms().plain_modulus().value();
 
+    // Keygen, encryptor and decryptor
+    m_keygen = make_shared<seal::KeyGenerator>(m_context);
+    m_relin_key = make_shared<seal::RelinKeys>(m_keygen->relin_keys(16));
+    m_public_key = make_shared<seal::PublicKey>(m_keygen->public_key());
+    m_secret_key = make_shared<seal::SecretKey>(m_keygen->secret_key());
+    m_encryptor = make_shared<seal::Encryptor>(m_context, *m_public_key);
+    m_decryptor = make_shared<seal::Decryptor>(m_context, *m_secret_key);
+
+    // Evaluator
+    m_evaluator = make_shared<seal::Evaluator>(m_context);
+
+    // Encoder
     m_frac_encoder =
         make_shared<seal::FractionalEncoder>(plain_modulus,
                                              poly_modulus,
@@ -120,6 +135,42 @@ extern "C" runtime::Backend* new_bfv_backend(const char* configuration_string)
 {
     delete backend;
 } */
+
+shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealBFVBackend::make_seal_context(
+    const shared_ptr<runtime::he::he_seal::HESealParameter> sp) const
+{
+    seal::EncryptionParameters parms = (sp->m_scheme_name == "HE:SEAL:BFV" ? seal::scheme_type::BFV :
+                                        throw ngraph_error("Invalid scheme name \"" + sp->m_scheme_name + "\""));
+
+    NGRAPH_INFO << "Using CKKS scheme? " << (parms == seal::scheme_type::CKKS);
+
+    NGRAPH_INFO << "Setting poly mod degree to " << sp->m_poly_modulus_degree;
+
+    parms.set_poly_modulus_degree(sp->m_poly_modulus_degree);
+
+    NGRAPH_INFO << "Setting coeff mod to security level " << sp->m_security_level;
+    if (sp->m_security_level == 128)
+    {
+        parms.set_coeff_modulus(seal::coeff_modulus_128(sp->m_poly_modulus_degree));
+    }
+    else if (sp->m_security_level == 192)
+    {
+        parms.set_coeff_modulus(seal::coeff_modulus_192(sp->m_poly_modulus_degree));
+    }
+    else
+    {
+        throw ngraph_error("sp.security_level must be 128, 192");
+    }
+
+    NGRAPH_INFO << "Setting plain mod to " << sp->m_plain_modulus;
+    parms.set_plain_modulus(sp->m_plain_modulus);
+
+    auto tmp =seal::SEALContext::Create(parms);
+
+    NGRAPH_INFO << "Created SEALContext(parmz)";
+
+    return  tmp;
+}
 
 namespace
 {

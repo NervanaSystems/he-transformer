@@ -29,23 +29,6 @@
 using namespace ngraph;
 using namespace std;
 
-static void print_seal_context(const seal::SEALContext& context)
-{
-    auto context_data = context.context_data();
-    auto scheme_parms = context_data->parms();
-    string scheme_name = (scheme_parms.scheme() == seal::scheme_type::BFV) ? "HE:SEAL:BFV" :
-                         (scheme_parms.scheme() == seal::scheme_type::CKKS) ? "HE:SEAL:CKKS" : "";
-
-    NGRAPH_INFO << endl
-                << "/ Encryption parameters:" << endl
-                << "| scheme: " << scheme_name << endl
-                << "| poly_modulus: " << scheme_parms.poly_modulus_degree() << endl
-                // Print the size of the true (product) coefficient modulus
-                << "| coeff_modulus size: " << context_data->total_coeff_modulus().significant_bit_count()
-                << " bits" << endl
-                << "| plain_modulus: " << scheme_parms.plain_modulus().value() << endl
-                << "\\ noise_standard_deviation: " << scheme_parms.noise_standard_deviation();
-}
 
 extern "C" const char* get_ngraph_version_string()
 {
@@ -93,10 +76,11 @@ void runtime::he::he_seal::HESealBackend::assert_valid_seal_parameter(const shar
     }
 }
 
-runtime::he::he_seal::HESealBackend::HESealBackend(
+/* runtime::he::he_seal::HESealBackend::HESealBackend(
     const shared_ptr<runtime::he::he_seal::HESealParameter>& sp)
 {
     assert_valid_seal_parameter(sp);
+    NGRAPH_INFO << "Making HESealBackend " << sp->m_scheme_name;
     // Context
     m_context = make_seal_context(sp);
     auto m_context_data = m_context->context_data();
@@ -116,14 +100,17 @@ runtime::he::he_seal::HESealBackend::HESealBackend(
 
     // Evaluator
     m_evaluator = make_shared<seal::Evaluator>(m_context);
-}
+} */
 
+/*
 shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealBackend::make_seal_context(
     const shared_ptr<runtime::he::he_seal::HESealParameter> sp) const
 {
     seal::EncryptionParameters parms = (sp->m_scheme_name == "HE:SEAL:BFV" ? seal::scheme_type::BFV :
                                         sp->m_scheme_name == "HE:SEAL:CKKS" ? seal::scheme_type::CKKS :
                                         throw ngraph_error("Invalid scheme name \"" + sp->m_scheme_name + "\""));
+
+    NGRAPH_INFO << "Using CKKS scheme? " << (parms == seal::scheme_type::CKKS);
 
     NGRAPH_INFO << "Setting poly mod degree to " << sp->m_poly_modulus_degree;
 
@@ -143,11 +130,14 @@ shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealBackend::make_seal_con
         throw ngraph_error("sp.security_level must be 128, 192");
     }
 
-    NGRAPH_INFO << "Setting plain mod to " << sp->m_plain_modulus;
-    parms.set_plain_modulus(sp->m_plain_modulus);
 
-    return seal::SEALContext::Create(parms);
+    auto tmp =seal::SEALContext::Create(parms);
+
+    NGRAPH_INFO << "Created SEALContext(parmz)";
+
+    return  tmp;
 }
+*/
 
 shared_ptr<runtime::he::HECiphertext>
     runtime::he::he_seal::HESealBackend::create_empty_ciphertext() const

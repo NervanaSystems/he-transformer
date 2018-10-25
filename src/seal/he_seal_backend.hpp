@@ -42,14 +42,14 @@ namespace ngraph
                 class HESealBackend : public HEBackend
                 {
                 public:
-                    HESealBackend(const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp);
+                    // virtual HESealBackend(const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp) = 0;
                     ~HESealBackend() {};
 
                     /// @brief Constructs SEAL context from SEAL parameter
                     /// @param sp SEAL Parameter from which to construct context
                     /// @return Pointer to constructed context
-                    std::shared_ptr<seal::SEALContext> make_seal_context(
-                        const std::shared_ptr<runtime::he::he_seal::HESealParameter> sp) const;
+                    virtual std::shared_ptr<seal::SEALContext> make_seal_context(
+                        const std::shared_ptr<runtime::he::he_seal::HESealParameter> sp) const = 0;
 
                     /// @brief Checks if parameter is valid for encoding.
                     ///        Throws an error if parameter is not valid.

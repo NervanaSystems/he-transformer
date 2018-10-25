@@ -34,7 +34,7 @@ set (HE_TEST_SRC
     test_util.cpp
 )
 
-# This dummy target always triggers re-configure of HE_HEAAN and HE_SEAL ngraph tests
+# This dummy target always triggers re-configure of HE_SEAL_BFV and HE_SEAL_CKKS ngraph tests
 # If the source file is not changed, re-compile is not triggered
 add_custom_command(
     OUTPUT always_build
@@ -50,14 +50,17 @@ set (NGRAPH_TEST_HE_SEAL_BFV_SRC
     test_multiply_HE_SEAL_BFV.cpp
     test_negate_HE_SEAL_BFV.cpp
     test_subtract_HE_SEAL_BFV.cpp
-    # test_mnist_HE_SEAL.cpp # Disabled since SEAL does not support batching for float
+    # test_mnist_HE_SEAL.cpp # Disabled since BFV does not support batching for float
 )
 
 # Configure test for HE_HEAAN
 set (NGRAPH_TEST_HE_SEAL_CKKS_SRC
-    #test_convolution_HE_HEAAN.cpp
-    #test_basics_HE_SEAL_CKKS.cpp
-    #test_mnist_HE_HEAAN.cpp
+    test_read_write_HE_SEAL_CKKS.cpp
+    test_add_HE_SEAL_CKKS.cpp
+    test_dot_HE_SEAL_CKKS.cpp
+    test_multiply_HE_SEAL_CKKS.cpp
+    test_negate_HE_SEAL_CKKS.cpp
+    test_subtract_HE_SEAL_CKKS.cpp
 )
 
 get_filename_component(SEAL_BFV_MANIFEST he_seal_bfv_disabled_test.manifest ABSOLUTE)
@@ -76,18 +79,18 @@ add_custom_command(
     -P ${CMAKE_CURRENT_SOURCE_DIR}/configure_test.cmake
 )
 
-#add_custom_command(
-#    OUTPUT ${NGRAPH_TEST_HE_SEAL_CKKS_SRC}
-#    DEPENDS ext_ngraph always_build
-#    COMMAND ${CMAKE_COMMAND}
-#    -DNGRAPH_TEST_DIR=${NGRAPH_TEST_DIR}
-#    -DHE_TRANSFORMER_TEST_DIR=${HE_TRANSFORMER_TEST_DIR}
-#    -DBACKEND_REGISTERED_NAME=HE:SEAL::CKKS
-#    -DBACKEND_NAME=HE_SEAL_CKKS
-#    -DTEST_LOOPS=1
-#    -DMANIFEST=${HEAAN_MANIFEST}
-#    -P ${CMAKE_CURRENT_SOURCE_DIR}/configure_test.cmake
-#)
+add_custom_command(
+    OUTPUT ${NGRAPH_TEST_HE_SEAL_CKKS_SRC}
+    DEPENDS ext_ngraph always_build
+    COMMAND ${CMAKE_COMMAND}
+    -DNGRAPH_TEST_DIR=${NGRAPH_TEST_DIR}
+    -DHE_TRANSFORMER_TEST_DIR=${HE_TRANSFORMER_TEST_DIR}
+    -DBACKEND_REGISTERED_NAME=HE:SEAL:CKKS
+    -DBACKEND_NAME=HE_SEAL_CKKS
+    -DTEST_LOOPS=1
+    -DMANIFEST=${HEAAN_MANIFEST}
+    -P ${CMAKE_CURRENT_SOURCE_DIR}/configure_test.cmake
+)
 
 # Build unit-test binary
 set(SRC

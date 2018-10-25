@@ -35,9 +35,11 @@ static string s_manifest = "${MANIFEST}";
 
 TEST(${BACKEND_NAME}, backend_init)
 {
-    auto he_seal = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+    NGRAPH_INFO << "${BACKEND_REGISTERED_NAME}";
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
     EXPECT_EQ(1, 1);
 }
+
 TEST(${BACKEND_NAME}, cipher_tv_write_read_scalar)
 {
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
