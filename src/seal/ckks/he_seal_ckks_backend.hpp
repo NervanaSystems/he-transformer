@@ -18,12 +18,12 @@
 
 #include <memory>
 
-#include "he_backend.hpp"
-#include "he_ckks_backend.hpp"
-#include "he_ckks_parameter.hpp"
-#include "seal_ciphertext_wrapper.hpp"
-#include "seal_plaintext_wrapper.hpp"
+#include "seal/he_seal_parameter.hpp"
+#include "seal/he_seal_backend.hpp"
 #include "ngraph/runtime/backend.hpp"
+#include "seal/seal.h"
+#include "seal/seal_ciphertext_wrapper.hpp"
+#include "seal/seal_plaintext_wrapper.hpp"
 
 namespace ngraph
 {
@@ -34,116 +34,40 @@ namespace ngraph
             class HETensor;
             class HEPlainTensor;
             class HECipherTensor;
-            class HEBackend;
+            class HESealBackend;
 
-            namespace he_ckks
+            namespace he_seal
             {
-                class HEHeaanBackend : public HEBackend
+                class HESealCKKSBackend : public HESealBackend
                 {
                 public:
-                    HEHeaanBackend();
-                    HEHeaanBackend(const std::shared_ptr<runtime::he::HEHeaanParameter> sp);
-                    HEHeaanBackend(HEHeaanBackend& he_backend) = default;
-                    ~HEHeaanBackend();
+                    HESealCKKSBackend();
+                    HESealCKKSBackend(const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp);
+                    HESealCKKSBackend(HESealCKKSBackend& he_backend) = default;
+                    ~HESealCKKSBackend() {};
 
-                    /// @brief Checks if parameter is valid for HEAAN encoding.
-                    ///        Throws an error if parameter is not valid.
-                    void assert_valid_ckks_parameter(
-                        const std::shared_ptr<runtime::he::HEHeaanParameter> hp) const;
-
-                    std::shared_ptr<runtime::Tensor>
-                        create_tensor(const element::Type& element_type,
-                                      const Shape& shape) override;
-
-                    std::shared_ptr<runtime::Tensor>
-                        create_tensor(const element::Type& element_type,
-                                      const Shape& shape,
-                                      const bool batched) override;
-
-                    std::shared_ptr<runtime::Tensor>
-                        create_tensor(const element::Type& element_type,
-                                      const Shape& shape,
-                                      void* memory_pointer) override;
-
-                    std::shared_ptr<runtime::Tensor>
-                        create_plain_tensor(const element::Type& element_type,
-                                            const Shape& shape) override;
-
-                    std::shared_ptr<runtime::he::HECiphertext>&
-                        get_valued_ciphertext(std::int64_t value,
-                                              const element::Type& element_type,
-                                              size_t batch_size = 1);
-
-                    std::shared_ptr<runtime::he::HECiphertext>
-                        create_valued_ciphertext(float value,
-                                                 const element::Type& element_type,
-                                                 size_t batch_size = 1) const override;
-
-                    std::shared_ptr<runtime::he::HECiphertext>
-                        create_empty_ciphertext(size_t batch_size = 1) const override;
-
-                    std::shared_ptr<runtime::he::HEPlaintext>
-                        create_valued_plaintext(float value,
-                                                const element::Type& element_type) const override;
-
-                    std::shared_ptr<runtime::he::HEPlaintext>
-                        get_valued_plaintext(std::int64_t value,
-                                             const element::Type& element_type) override;
-
-                    std::shared_ptr<runtime::he::HEPlaintext>
-                        create_empty_plaintext() const override;
-
-                    std::shared_ptr<runtime::Tensor>
-                        create_valued_tensor(float value,
-                                             const element::Type& element_type,
-                                             const Shape& shape) override;
-
-                    std::shared_ptr<runtime::Tensor>
-                        create_valued_plain_tensor(float value,
-                                                   const element::Type& element_type,
-                                                   const Shape& shape) override;
+                     std::shared_ptr<runtime::Tensor> create_batched_tensor(
+                        const element::Type& element_type, const Shape& shape) override;
 
                     void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
                                 const void* input,
                                 const element::Type& type,
                                 size_t count = 1) const override;
-
                     void decode(void* output,
                                 const std::shared_ptr<runtime::he::HEPlaintext> input,
                                 const element::Type& type,
                                 size_t count = 1) const override;
 
-                    void encrypt(
-                        std::shared_ptr<runtime::he::HECiphertext>& output,
-                        const std::shared_ptr<runtime::he::HEPlaintext> input) const override;
-
-                    void decrypt(
-                        std::shared_ptr<runtime::he::HEPlaintext>& output,
-                        const std::shared_ptr<runtime::he::HECiphertext> input) const override;
-
-                    const inline std::shared_ptr<ckks::Scheme> get_scheme() const
+                    const inline std::shared_ptr<seal::CKKSEncoder> get_ckks_encoder() const
                     {
-                        return m_scheme;
+                        return m_ckks_encoder;
                     }
 
-                    const inline std::shared_ptr<ckks::Context> get_context() const
-                    {
-                        return m_context;
-                    }
-
-                    const inline long get_precision() const { return m_log2_precision; }
-                    const inline std::shared_ptr<ckks::SecretKey> get_secret_key() const
-                    {
-                        return m_secret_key;
-                    }
+                    void assert_valid_seal_ckks_parameter(const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp) const;
 
                 private:
-                    std::shared_ptr<ckks::SecretKey> m_secret_key;
-
-                    std::shared_ptr<ckks::Context> m_context;
-                    std::shared_ptr<ckks::Scheme> m_scheme;
-
-                    long m_log2_precision; // Bits of precision
+                    std::shared_ptr<seal::CKKSEncoder> m_ckks_encoder;
+                    double m_scale;
                 };
             }
         }

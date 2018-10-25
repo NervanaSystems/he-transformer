@@ -33,7 +33,7 @@ const static runtime::he::he_seal::HESealParameter parse_seal_bfv_config_or_use_
 {
     try
     {
-        const char* config_path = getenv("NGRAPH_HE_SEAL_BFV_CONFIG");
+        const char* config_path = getenv("NGRAPH_HE_SEAL_CONFIG");
         if (config_path != nullptr)
         {
             // Read file to string
@@ -45,7 +45,6 @@ const static runtime::he::he_seal::HESealParameter parse_seal_bfv_config_or_use_
             // Parse json
             nlohmann::json js = nlohmann::json::parse(s);
             string scheme_name = js["scheme_name"];
-            // assert(scheme_name == "BFV");
             uint64_t poly_modulus_degree = js["poly_modulus_degree"];
             uint64_t plain_modulus = js["plain_modulus"];
             uint64_t security_level = js["security_level"];
@@ -72,7 +71,7 @@ const static runtime::he::he_seal::HESealParameter parse_seal_bfv_config_or_use_
     }
     catch (const exception& e)
     {
-        return runtime::he::he_seal::HESealParameter("BFV", // scheme name
+        return runtime::he::he_seal::HESealParameter("HE:SEAL:BFV", // scheme name
                                             2048,      // poly_modulus_degree
                                             1 << 8, // plain_modulus
                                             128,       // security_level
@@ -100,37 +99,34 @@ runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend(
     assert_valid_seal_bfv_parameter(sp);
 
     // Context
-    m_context = make_seal_context(sp);
     auto m_context_data = m_context->context_data();
-
-    // Encoders
     auto poly_modulus = m_context_data->parms().plain_modulus().value();
     auto plain_modulus = m_context_data->parms().plain_modulus().value();
 
     m_frac_encoder =
         make_shared<seal::FractionalEncoder>(plain_modulus,
                                              poly_modulus,
-                                             64, // TODO: add to parameter
-                                             32,
-                                             2);
+                                             sp->m_fractional_encoder_integer_coeff_count,
+                                             sp->m_fractional_encoder_fraction_coeff_count,
+                                             sp->m_fractional_encoder_base);
 }
 
-extern "C" runtime::Backend* new_backend(const char* configuration_string)
+extern "C" runtime::Backend* new_bfv_backend(const char* configuration_string)
 {
     return new runtime::he::he_seal::HESealBFVBackend();
 }
 
-extern "C" void delete_backend(runtime::Backend* backend)
+/* extern "C" void delete_backend(runtime::Backend* backend)
 {
     delete backend;
-}
+} */
 
 namespace
 {
     static class HESealBFVStaticInit
     {
     public:
-        HESealBFVStaticInit() { runtime::BackendManager::register_backend("HE:SEAL:BFV", new_backend); }
+        HESealBFVStaticInit() { runtime::BackendManager::register_backend("HE:SEAL:BFV", new_bfv_backend); }
         ~HESealBFVStaticInit() {}
     } s_he_seal_bfv_static_init;
 }
@@ -138,7 +134,7 @@ namespace
 void runtime::he::he_seal::HESealBFVBackend::assert_valid_seal_bfv_parameter(const shared_ptr<runtime::he::he_seal::HESealParameter>& sp) const
 {
     assert_valid_seal_parameter(sp);
-    if (sp->m_scheme_name != "BFV")
+    if (sp->m_scheme_name != "HE:SEAL:BFV")
     {
         throw ngraph_error("Invalid scheme name");
     }

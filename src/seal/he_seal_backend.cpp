@@ -21,20 +21,20 @@
 #include "he_seal_backend.hpp"
 #include "he_seal_parameter.hpp"
 #include "he_tensor.hpp"
+#include "seal/ckks/he_seal_ckks_backend.hpp"
+#include "seal/bfv/he_seal_bfv_backend.hpp"
 
 #include "seal/seal.h"
 
 using namespace ngraph;
 using namespace std;
 
-
 static void print_seal_context(const seal::SEALContext& context)
 {
     auto context_data = context.context_data();
     auto scheme_parms = context_data->parms();
-    string scheme_name = (scheme_parms.scheme() == seal::scheme_type::BFV) ? "SEAL:BFV" :
-                         (scheme_parms.scheme() == seal::scheme_type::CKKS) ? "SEAL:CKKS" :
-                                                                            "";
+    string scheme_name = (scheme_parms.scheme() == seal::scheme_type::BFV) ? "HE:SEAL:BFV" :
+                         (scheme_parms.scheme() == seal::scheme_type::CKKS) ? "HE:SEAL:CKKS" : "";
 
     NGRAPH_INFO << endl
                 << "/ Encryption parameters:" << endl
@@ -52,9 +52,33 @@ extern "C" const char* get_ngraph_version_string()
     return "v0.9.0"; // TODO: move to CMakeLists
 }
 
+extern "C" runtime::Backend* new_backend(const char* configuration_chars)
+{
+    string configuration_string = string(configuration_chars);
+
+    if (configuration_string == "HE:SEAL:BFV")
+    {
+        return new runtime::he::he_seal::HESealBFVBackend();
+    }
+    else if (configuration_string == "HE:SEAL:CKKS")
+    {
+       return new runtime::he::he_seal::HESealCKKSBackend();
+    }
+    else
+    {
+        throw ngraph_error("Invalid configuration string \"" + configuration_string + "\" in new_backend");
+    }
+}
+
+extern "C" void delete_backend(runtime::Backend* backend)
+{
+    delete backend;
+}
+
+
 void runtime::he::he_seal::HESealBackend::assert_valid_seal_parameter(const shared_ptr<runtime::he::he_seal::HESealParameter> sp) const
 {
-    if (sp->m_scheme_name != "BFV" && sp->m_scheme_name != "CKKS")
+    if (sp->m_scheme_name != "HE:SEAL:BFV" && sp->m_scheme_name != "HE:SEAL:CKKS")
     {
         throw ngraph_error("Invalid scheme name");
     }
@@ -97,8 +121,10 @@ runtime::he::he_seal::HESealBackend::HESealBackend(
 shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealBackend::make_seal_context(
     const shared_ptr<runtime::he::he_seal::HESealParameter> sp) const
 {
-    seal::EncryptionParameters parms = (sp->m_scheme_name == "BFV" ? seal::scheme_type::BFV :
-                                        seal::scheme_type::CKKS);
+    seal::EncryptionParameters parms = (sp->m_scheme_name == "HE:SEAL:BFV" ? seal::scheme_type::BFV :
+                                        sp->m_scheme_name == "HE:SEAL:CKKS" ? seal::scheme_type::CKKS :
+                                        throw ngraph_error("Invalid scheme name \"" + sp->m_scheme_name + "\""));
+
     NGRAPH_INFO << "Setting poly mod degree to " << sp->m_poly_modulus_degree;
 
     parms.set_poly_modulus_degree(sp->m_poly_modulus_degree);
