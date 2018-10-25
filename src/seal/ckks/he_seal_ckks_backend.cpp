@@ -49,14 +49,12 @@ const static runtime::he::he_seal::HESealParameter parse_seal_ckks_config_or_use
             uint64_t poly_modulus_degree = js["poly_modulus_degree"];
             uint64_t security_level = js["security_level"];
             uint64_t evaluation_decomposition_bit_count = js["evaluation_decomposition_bit_count"];
-            double scale = js["scale"];
 
             NGRAPH_INFO << "Using SEAL CKKS config for parameters: " << config_path;
             return runtime::he::he_seal::HESealParameter(scheme_name,
                                                 poly_modulus_degree,
                                                 security_level,
-                                                evaluation_decomposition_bit_count,
-                                                scale
+                                                evaluation_decomposition_bit_count
                                                 );
         }
         else
@@ -68,10 +66,9 @@ const static runtime::he::he_seal::HESealParameter parse_seal_ckks_config_or_use
     catch (const exception& e)
     {
         return runtime::he::he_seal::HESealParameter("HE:SEAL:CKKS", // scheme name
-                                            2048,      // poly_modulus_degree
+                                            8192,      // poly_modulus_degree
                                             128,       // security_level
-                                            16,            // evaluation_decomposition_bit_count
-                                            pow(2, 32)  // scale
+                                            60            // evaluation_decomposition_bit_count
                                             );
     }
 }
@@ -109,7 +106,7 @@ runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend(
     // Evaluator
     m_evaluator = make_shared<seal::Evaluator>(m_context);
 
-    m_scale = sp->m_scale;
+    m_scale = static_cast<double>(m_context_data->parms().coeff_modulus().back().value());
 
     // Encoder
     m_ckks_encoder = make_shared<seal::CKKSEncoder>(m_context);
@@ -189,7 +186,6 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(shared_ptr<runtime::he::HEP
         if (count == 1)
         {
             double value = (double)(*(float*)input);
-            NGRAPH_INFO << "Encoding value " << value;
             m_ckks_encoder->encode(value, m_scale, dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(output)->m_plaintext);
         }
         else

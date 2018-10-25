@@ -175,6 +175,7 @@ void kernel::scalar_add(const shared_ptr<HECiphertext>& arg0,
             }
             else
             {
+                NGRAPH_INFO << "Adding";
                 he_seal::kernel::scalar_add(arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
                 out = dynamic_pointer_cast<HECiphertext>(out_seal);
             }

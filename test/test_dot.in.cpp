@@ -58,7 +58,7 @@ TEST(${BACKEND_NAME}, dot1d)
         copy_he_data(t_a, vector<float>{1, 2, 3, 4}, backend);
         copy_he_data(t_b, vector<float>{5, 6, 7, 8}, backend);
         backend->call(f, {t_result}, {t_a, t_b});
-        EXPECT_EQ(read_he_vector<float>(t_result, backend), vector<float>{70});
+        EXPECT_TRUE(all_close(read_he_vector<float>(t_result, backend), vector<float>{70}));
     }
 }
 
@@ -89,7 +89,7 @@ TEST(${BACKEND_NAME}, dot_matrix_vector)
         copy_he_data(t_a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, backend);
         copy_he_data(t_b, vector<float>{17, 18, 19, 20}, backend);
         backend->call(f, {t_result}, {t_a, t_b});
-        EXPECT_EQ(read_he_vector<float>(t_result, backend), (vector<float>{190, 486, 782, 1078}));
+        EXPECT_TRUE(all_close(read_he_vector<float>(t_result, backend), (vector<float>{190, 486, 782, 1078})));
     }
 }
 
@@ -119,6 +119,6 @@ TEST(${BACKEND_NAME}, dot_scalar)
         copy_he_data(t_a, vector<float>{8}, backend);
         copy_he_data(t_b, vector<float>{6}, backend);
         backend->call(f, {t_result}, {t_a, t_b});
-        EXPECT_EQ(read_he_vector<float>(t_result, backend), (vector<float>{48}));
+        EXPECT_TRUE(all_close(read_he_vector<float>(t_result, backend), (vector<float>{48})));
     }
 }

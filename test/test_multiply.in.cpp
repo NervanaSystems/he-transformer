@@ -58,8 +58,8 @@ TEST(${BACKEND_NAME}, multiply_2_3)
         copy_he_data(t_a, test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector(), backend);
         copy_he_data(t_b, test::NDArray<float, 2>({{7, 8, 9}, {10, 11, 12}}).get_vector(), backend);
         backend->call(f, {t_result}, {t_a, t_b});
-        EXPECT_EQ(read_he_vector<float>(t_result, backend),
-                  (test::NDArray<float, 2>({{7, 16, 27}, {40, 55, 72}})).get_vector());
+        EXPECT_TRUE(all_close(read_he_vector<float>(t_result, backend),
+                  (test::NDArray<float, 2>({{7, 16, 27}, {40, 55, 72}})).get_vector()));
     }
 }
 
@@ -86,8 +86,8 @@ TEST(${BACKEND_NAME}, square_2_3)
 
         copy_he_data(t_a, test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector(), backend);
         backend->call(f, {t_result}, {t_a, t_b});
-        EXPECT_EQ(read_he_vector<float>(t_result, backend),
-                  (test::NDArray<float, 2>({{1, 4, 9}, {16, 25, 36}})).get_vector());
+        EXPECT_TRUE(all_close(read_he_vector<float>(t_result, backend),
+                  (test::NDArray<float, 2>({{1, 4, 9}, {16, 25, 36}})).get_vector()));
     }
 }
 
@@ -116,7 +116,7 @@ TEST(${BACKEND_NAME}, multiply_optimized_2_3)
         copy_he_data(t_a, test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector(), backend);
         copy_he_data(t_b, test::NDArray<float, 2>({{-1, 0, 1}, {-1, 0, 1 }}).get_vector(), backend);
         backend->call(f, {t_result}, {t_a, t_b});
-        EXPECT_EQ(read_he_vector<float>(t_result, backend),
-                  (test::NDArray<float, 2>({{-1, 0, 3}, {-4, 0, 6}})).get_vector());
+        EXPECT_TRUE(all_close(read_he_vector<float>(t_result, backend),
+                  (test::NDArray<float, 2>({{-1, 0, 3}, {-4, 0, 6}})).get_vector()));
     }
 }

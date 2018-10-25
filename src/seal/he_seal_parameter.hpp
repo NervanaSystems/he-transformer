@@ -63,14 +63,12 @@ namespace ngraph
                         HESealParameter(std::string scheme_name,
                                         std::uint64_t poly_modulus_degree,
                                         std::uint64_t security_level,
-                                        std::uint64_t evaluation_decomposition_bit_count,
-                                        double scale
+                                        std::uint64_t evaluation_decomposition_bit_count
                                         )
                             : m_scheme_name(scheme_name)
                             , m_poly_modulus_degree(poly_modulus_degree)
                             , m_security_level(security_level)
                             , m_evaluation_decomposition_bit_count(evaluation_decomposition_bit_count)
-                            , m_scale(scale)
                         {
                         }
 
@@ -84,7 +82,6 @@ namespace ngraph
                         std::uint64_t m_plain_modulus;
                         // Must be 128 or 192
                         std::uint64_t m_security_level;
-
 
                         // Used to generate relin keys
                         std::uint64_t m_evaluation_decomposition_bit_count;

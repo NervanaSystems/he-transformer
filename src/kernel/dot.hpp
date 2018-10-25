@@ -190,6 +190,8 @@ void ngraph::runtime::he::kernel::dot_template(const std::vector<std::shared_ptr
         auto arg0_it =
             std::copy(arg0_projected_coord.begin(), arg0_projected_coord.end(), arg0_coord.begin());
 
+        std::vector<std::shared_ptr<runtime::he::HECiphertext>> summands;
+
         for (const Coordinate& dot_axis_positions : dot_axes_transform)
         {
             // In order to find the points to multiply together, we need to inject our current
@@ -206,10 +208,18 @@ void ngraph::runtime::he::kernel::dot_template(const std::vector<std::shared_ptr
 
             std::shared_ptr<runtime::he::HECiphertext> prod = he_backend->create_empty_ciphertext();
             runtime::he::kernel::scalar_multiply(arg0_text, arg1_text, prod, type, he_backend);
-            runtime::he::kernel::scalar_add(sum, prod, sum, type, he_backend);
+
+            summands.push_back(prod);
+        }
+        // Repeatedly sum and add to the back of the vector until the end is reached
+        for (size_t i = 0; i < summands.size() - 1; i += 2)
+        {
+            std::shared_ptr<runtime::he::HECiphertext> ciphertext = he_backend->create_empty_ciphertext();
+            runtime::he::kernel::scalar_add(summands[i], summands[i+1], ciphertext, type, he_backend);
+            summands.emplace_back(ciphertext);
         }
 
         // Write the sum back.
-        out[out_index] = sum;
+        out[out_index] = summands[summands.size() - 1];
     }
 }

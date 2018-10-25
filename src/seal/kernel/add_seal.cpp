@@ -19,6 +19,8 @@
 #include "seal/seal.h"
 #include "seal/kernel/add_seal.hpp"
 
+#include "seal/ckks/he_seal_ckks_backend.hpp"
+
 using namespace std;
 using namespace ngraph::runtime::he;
 
@@ -28,6 +30,31 @@ void he_seal::kernel::scalar_add(const shared_ptr<he_seal::SealCiphertextWrapper
                             const element::Type& type,
                             const he_seal::HESealBackend* he_seal_backend)
 {
+    if (auto he_seal_ckks_backend = dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend))
+    {
+        double scale0 = arg0->m_ciphertext.scale();
+        double scale1 = arg1->m_ciphertext.scale();
+
+        size_t chain_ind0 = he_seal_backend->get_context()->context_data(arg0->m_ciphertext.parms_id())->chain_index();
+        size_t chain_ind1 = he_seal_backend->get_context()->context_data(arg1->m_ciphertext.parms_id())->chain_index();
+
+        if (scale0 != scale1)
+        {
+            NGRAPH_INFO << "Warning! Scale " << scale0 << " does not match scale " << scale1 << " in scalar add";
+        }
+
+        while(chain_ind0 > chain_ind1)
+        {
+            he_seal_backend->get_evaluator()->mod_switch_to_inplace(arg0->m_ciphertext, arg1->m_ciphertext.parms_id());
+            chain_ind0 = he_seal_backend->get_context()->context_data(arg0->m_ciphertext.parms_id())->chain_index();
+        }
+        while(chain_ind1 > chain_ind0)
+        {
+            he_seal_backend->get_evaluator()->mod_switch_to_inplace(arg1->m_ciphertext, arg0->m_ciphertext.parms_id());
+            chain_ind1 = he_seal_backend->get_context()->context_data(arg1->m_ciphertext.parms_id())->chain_index();
+        }
+    }
+
     if (arg0 == out)
     {
        he_seal_backend->get_evaluator()->add_inplace(out->m_ciphertext, arg1->m_ciphertext);
