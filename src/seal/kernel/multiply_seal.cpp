@@ -72,6 +72,7 @@ void he_seal::kernel::scalar_multiply(const shared_ptr<he_seal::SealCiphertextWr
     {
         he_seal_backend->get_evaluator()->multiply_plain(arg0->m_ciphertext, arg1->m_plaintext, out->m_ciphertext);
     }
+
     he_seal_backend->get_evaluator()->relinearize_inplace(out->m_ciphertext, *(he_seal_backend->get_relin_keys()));
 
     if (auto he_seal_ckks_backend = dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend))

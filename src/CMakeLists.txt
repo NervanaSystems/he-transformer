@@ -42,7 +42,6 @@ set (HE_SRC
     seal/bfv/he_seal_bfv_backend.cpp
     seal/ckks/he_seal_ckks_backend.cpp
 
-
     he_plain_tensor.cpp
 
     # main
