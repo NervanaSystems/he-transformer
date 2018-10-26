@@ -23,6 +23,7 @@
 #include "ngraph/op/dot.hpp"
 #include "ngraph/op/reshape.hpp"
 #include "ngraph/op/result.hpp"
+#include "ngraph/op/slice.hpp"
 
 #include "ngraph/pass/assign_layout.hpp"
 #include "ngraph/pass/manager.hpp"
@@ -36,6 +37,7 @@
 #include "kernel/subtract.hpp"
 #include "kernel/result.hpp"
 #include "kernel/reshape.hpp"
+#include "kernel/slice.hpp"
 
 #include "he_backend.hpp"
 #include "he_cipher_tensor.hpp"
@@ -629,6 +631,34 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
         else
         {
             throw ngraph_error("Result types not supported.");
+        }
+    }
+    else if (node_op == "Slice")
+    {
+        shared_ptr<op::Slice> slice = dynamic_pointer_cast<op::Slice>(node);
+        if (arg0_cipher != nullptr && out0_cipher != nullptr)
+        {
+            runtime::he::kernel::slice(arg0_cipher->get_elements(),
+                                       out0_cipher->get_elements(),
+                                       arg0_cipher->get_shape(),
+                                       slice->get_lower_bounds(),
+                                       slice->get_upper_bounds(),
+                                       slice->get_strides(),
+                                       out0_cipher->get_shape());
+        }
+        else if (arg0_plain != nullptr && out0_plain != nullptr)
+        {
+            runtime::he::kernel::slice(arg0_plain->get_elements(),
+                                       out0_plain->get_elements(),
+                                       arg0_plain->get_shape(),
+                                       slice->get_lower_bounds(),
+                                       slice->get_upper_bounds(),
+                                       slice->get_strides(),
+                                       out0_plain->get_shape());
+        }
+        else
+        {
+            throw ngraph_error("Slice types not supported.");
         }
     }
     else if (node_op == "Subtract")

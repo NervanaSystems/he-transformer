@@ -22,5 +22,6 @@ configure_file(${HE_TRANSFORMER_TEST_DIR}/test_dot.in.cpp test_dot_${BACKEND_NAM
 configure_file(${HE_TRANSFORMER_TEST_DIR}/test_mnist.in.cpp test_mnist_${BACKEND_NAME}.cpp)
 configure_file(${HE_TRANSFORMER_TEST_DIR}/test_multiply.in.cpp test_multiply_${BACKEND_NAME}.cpp)
 configure_file(${HE_TRANSFORMER_TEST_DIR}/test_negate.in.cpp test_negate_${BACKEND_NAME}.cpp)
+configure_file(${HE_TRANSFORMER_TEST_DIR}/test_slice.in.cpp test_slice_${BACKEND_NAME}.cpp)
 configure_file(${HE_TRANSFORMER_TEST_DIR}/test_subtract.in.cpp test_subtract_${BACKEND_NAME}.cpp)
 configure_file(${HE_TRANSFORMER_TEST_DIR}/test_reshape.in.cpp test_reshape_${BACKEND_NAME}.cpp)
