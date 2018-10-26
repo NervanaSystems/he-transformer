@@ -23,9 +23,6 @@
 #include "util/test_tools.hpp"
 
 #include "he_backend.hpp"
-// #include "seal/ckks/he_seal_ckks_backend.hpp"
-#include "seal/bfv/he_seal_bfv_backend.hpp"
-
 #include "test_util.hpp"
 
 using namespace std;

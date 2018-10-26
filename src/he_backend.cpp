@@ -20,6 +20,7 @@
 #include "ngraph/function.hpp"
 
 #include "ngraph/op/broadcast.hpp"
+#include "ngraph/op/constant.hpp"
 #include "ngraph/op/convolution.hpp"
 #include "ngraph/op/dot.hpp"
 #include "ngraph/op/reshape.hpp"
@@ -32,6 +33,7 @@
 
 #include "kernel/add.hpp"
 #include "kernel/broadcast.hpp"
+#include "kernel/constant.hpp"
 #include "kernel/convolution.hpp"
 #include "kernel/dot.hpp"
 #include "kernel/multiply.hpp"
@@ -444,6 +446,22 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
         else
         {
             throw ngraph_error("Broadcast types not supported.");
+        }
+    }
+    else if (node_op == "Constant")
+    {
+        if (out0_plain != nullptr)
+        {
+            shared_ptr<op::Constant> constant = static_pointer_cast<op::Constant>(node);
+            runtime::he::kernel::constant(out0_plain->get_elements(),
+                                          type,
+                                          constant->get_data_ptr(),
+                                          this,
+                                          out0_plain->get_element_count());
+        }
+        else
+        {
+            throw ngraph_error("Constant type not supported.");
         }
     }
      else if (node_op == "Convolution")
