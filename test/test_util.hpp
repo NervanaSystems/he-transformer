@@ -67,7 +67,7 @@ bool all_close(const std::vector<T>& a,
     {
         if (std::abs(a[i] - b[i]) > atol)
         {
-            NGRAPH_INFO << a[i] << " != " << b[i];
+            NGRAPH_INFO << a[i] << " is not close to " << b[i] << " at index " << i;
             close = false;
         }
     }
@@ -83,7 +83,7 @@ std::vector<std::tuple<std::vector<std::shared_ptr<ngraph::runtime::Tensor>>,
 
 // Reads batched vector
 template <typename T>
-std::vector<T> generalized_read_vector(std::shared_ptr<ngraph::runtime::Tensor> tv)
+std::vector<T> generalized_read_vector(std::shared_ptr<ngraph::runtime::Tensor> tv, std::shared_ptr<ngraph::runtime::Backend> backend)
 {
     if (ngraph::element::from<T>() != tv->get_tensor_layout()->get_element_type())
     {
@@ -102,7 +102,7 @@ std::vector<T> generalized_read_vector(std::shared_ptr<ngraph::runtime::Tensor> 
         }
         size_t size = element_count * sizeof(T);
         std::vector<T> rc(element_count);
-        tv->read(rc.data(), 0, size);
+        std::dynamic_pointer_cast<ngraph::runtime::he::HETensor>(tv)->read(rc.data(), 0, size, std::dynamic_pointer_cast<ngraph::runtime::he::HEBackend>(backend).get());
         return rc;
     }
     else
@@ -110,7 +110,7 @@ std::vector<T> generalized_read_vector(std::shared_ptr<ngraph::runtime::Tensor> 
         size_t element_count = ngraph::shape_size(tv->get_shape());
         size_t size = element_count * sizeof(T);
         std::vector<T> rc(element_count);
-        tv->read(rc.data(), 0, size);
+        std::dynamic_pointer_cast<ngraph::runtime::he::HETensor>(tv)->read(rc.data(), 0, size, std::dynamic_pointer_cast<ngraph::runtime::he::HEBackend>(backend).get());
         return rc;
     }
 }

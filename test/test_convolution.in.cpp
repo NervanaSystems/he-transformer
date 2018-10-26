@@ -33,7 +33,7 @@ using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image)
+TEST(${BACKEND_NAME}, convolution_2d_1image)
 {
     auto shape_a = Shape{1, 1, 5, 5};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -56,10 +56,10 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image)
     vector<float> expected_result{9, 9, 9, 9, 9, 9, 9, 9, 9};
 
     backend->call(f, {result}, {a, b});
-    EXPECT_TRUE(test::all_close(vector<float>{expected_result}, read_he_vector<float>(result, backend)));
+    EXPECT_TRUE(all_close(vector<float>{expected_result}, read_he_vector<float>(result, backend)));
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_2outputs)
+TEST(${BACKEND_NAME}, convolution_2d_1image_2outputs)
 {
     auto shape_a = Shape{1, 1, 3, 5};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -81,10 +81,10 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_2outputs)
         51, 61, 71, 81, 101, 111, 121, 131, 115, 141, 167, 193, 245, 271, 297, 323};
 
     backend->call(f, {result}, {a, b});
-    EXPECT_TRUE(test::all_close(vector<float>{expected_result}, read_he_vector<float>(result, backend)));
+    EXPECT_TRUE(all_close(vector<float>{expected_result}, read_he_vector<float>(result, backend)));
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item)
+TEST(${BACKEND_NAME}, convolution_2d_1item)
 {
     Shape shape_a{1, 1, 3, 5};
     Shape shape_b{2, 1, 2, 2};
@@ -134,10 +134,10 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item)
                                   -21.0f};
 
     backend->call(function, {result}, {a, b});
-    EXPECT_TRUE(test::all_close(vector<float>{expected_result}, read_he_vector<float>(result, backend)));
+    EXPECT_TRUE(all_close(vector<float>{expected_result}, read_he_vector<float>(result, backend)));
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_1_1x1_1)
+TEST(${BACKEND_NAME}, convolution_2d_1item_padded_1_1x1_1)
 {
     Shape shape_a{1, 1, 3, 5};
     Shape shape_b{2, 1, 2, 2};
@@ -178,10 +178,10 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_1_1x1_1)
 
     backend->call(function, {result}, {a, b});
     EXPECT_TRUE(
-        test::all_close(vector<float>{expected_result}, read_he_vector<float>(result, backend), 1e-7f, 1e-7f));
+        all_close(vector<float>{expected_result}, read_he_vector<float>(result, backend), 1e-5f));
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5)
+TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5)
 {
     Shape shape_a{1, 1, 3, 5};
     Shape shape_b{2, 1, 2, 2};
@@ -234,10 +234,10 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5)
 
     backend->call(function, {result}, {a, b});
     EXPECT_TRUE(
-        test::all_close(vector<float>{expected_result}, read_he_vector<float>(result, backend), 1e-7f, 1e-7f));
+        all_close(vector<float>{expected_result}, read_he_vector<float>(result, backend), 1e-5f));
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items)
+TEST(${BACKEND_NAME}, convolution_2d_2items)
 {
     Shape shape_a{2, 1, 3, 5};
     Shape shape_b{2, 1, 2, 2};
@@ -275,10 +275,10 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items)
                                   138.0f, 30.0f,  -30.0f, 6.0f,   48.0f,  -66.0f, -42.0f,  72.0f};
 
     backend->call(function, {result}, {a, b});
-    EXPECT_TRUE(test::all_close(vector<float>{expected_result}, read_he_vector<float>(result, backend)));
+    EXPECT_TRUE(all_close(vector<float>{expected_result}, read_he_vector<float>(result, backend)));
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_strided_padded)
+TEST(${BACKEND_NAME}, convolution_2d_2items_strided_padded)
 {
     Shape shape_a{2, 1, 3, 5};
     Shape shape_b{2, 1, 2, 2};
@@ -328,5 +328,5 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_strided_padded)
 
     backend->call(function, {result}, {a, b});
     EXPECT_TRUE(
-        test::all_close(vector<float>{expected_result}, read_he_vector<float>(result, backend), 1e-7f, 1e-7f));
+        all_close(vector<float>{expected_result}, read_he_vector<float>(result, backend), 1e-5f));
 }

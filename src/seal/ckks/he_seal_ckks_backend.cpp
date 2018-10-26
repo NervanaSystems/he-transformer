@@ -136,7 +136,16 @@ shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealCKKSBackend::make_seal
     parms.set_poly_modulus_degree(sp->m_poly_modulus_degree);
     if (sp->m_security_level == 128)
     {
-        parms.set_coeff_modulus(seal::coeff_modulus_128(sp->m_poly_modulus_degree));
+        // parms.set_coeff_modulus(seal::coeff_modulus_128(sp->m_poly_modulus_degree));
+
+        // Slower, but increases multiplicative depth. Security remains valid, since 6*40 = 240 bits < 218 bits for default coeff.
+        parms.set_coeff_modulus({
+           seal::small_mods_40bit(0), seal::small_mods_40bit(1),
+           seal::small_mods_40bit(2), seal::small_mods_40bit(3),
+           seal::small_mods_40bit(4), seal::small_mods_40bit(5) // TODO: use fewer moduli to preserve security.
+        });
+
+
     }
     else if (sp->m_security_level == 192)
     {

@@ -64,12 +64,42 @@ void he_seal::kernel::scalar_multiply(const shared_ptr<he_seal::SealCiphertextWr
                             const element::Type& type,
                             const runtime::he::he_seal::HESealBackend* he_seal_backend)
 {
+    size_t chain_ind0 = he_seal_backend->get_context()->context_data(arg0->m_ciphertext.parms_id())->chain_index();
+    size_t chain_ind1 = he_seal_backend->get_context()->context_data(arg1->m_plaintext.parms_id())->chain_index();
+
+    //NGRAPH_INFO << "Chain ind0 " << chain_ind0 << " , chain ind1 " << chain_ind1;
+
+    while(chain_ind0 > chain_ind1)
+    {
+       // NGRAPH_INFO << "Mod switching " << chain_ind0 << " , " << chain_ind1;
+        he_seal_backend->get_evaluator()->mod_switch_to_inplace(arg0->m_ciphertext, arg1->m_plaintext.parms_id());
+        chain_ind0 = he_seal_backend->get_context()->context_data(arg0->m_ciphertext.parms_id())->chain_index();
+    }
+    while(chain_ind1 > chain_ind0)
+    {
+        //NGRAPH_INFO << "Mod switching " << chain_ind0 << " , " << chain_ind1;
+        he_seal_backend->get_evaluator()->mod_switch_to_inplace(arg1->m_plaintext, arg0->m_ciphertext.parms_id());
+        chain_ind1 = he_seal_backend->get_context()->context_data(arg1->m_plaintext.parms_id())->chain_index();
+    }
+
     if (arg0 == out)
     {
         he_seal_backend->get_evaluator()->multiply_plain_inplace(out->m_ciphertext, arg1->m_plaintext);
     }
     else
     {
+        //NGRAPH_INFO << "Multiplying plain";
+       /* NGRAPH_INFO << "encrypted_ntt.parms_id() ";
+        for (auto elem : arg0->m_ciphertext.parms_id() )
+        {
+            NGRAPH_INFO << elem;
+        }
+        NGRAPH_INFO << "plain_ntt.parms_id() " ;
+        for (auto elem : arg1->m_plaintext.parms_id() )
+        {
+            NGRAPH_INFO << elem;
+        } */
+
         he_seal_backend->get_evaluator()->multiply_plain(arg0->m_ciphertext, arg1->m_plaintext, out->m_ciphertext);
     }
 
