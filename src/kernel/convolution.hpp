@@ -327,6 +327,8 @@ void ngraph::runtime::he::kernel::convolution_template(
         CoordinateTransform::Iterator input_it = input_batch_transform.begin();
         CoordinateTransform::Iterator filter_it = filter_transform.begin();
 
+        std::vector<std::shared_ptr<runtime::he::HECiphertext>> summands;
+
         while (input_it != input_batch_transform.end() && filter_it != filter_transform.end())
         {
             const Coordinate& input_batch_coord = *input_it;
@@ -353,12 +355,24 @@ void ngraph::runtime::he::kernel::convolution_template(
             runtime::he::kernel::scalar_multiply(
                 v, arg1[filter_transform.index(filter_coord)], prod, type, he_backend);
             // TODO: add in tree-like manner to minimize rescaling required? (See dot kernel for example)
-            runtime::he::kernel::scalar_add(result, prod, result, type, he_backend);
+
+            summands.emplace_back(prod);
+            //runtime::he::kernel::scalar_add(result, prod, result, type, he_backend);
 
             ++input_it;
             ++filter_it;
         }
 
-        out[output_transform.index(out_coord)] = result;
+        // Repeatedly sum and add to the back of the vector until the end is reached
+        // This is better for the he_seal_ckks_backend as it reduces the need for the rescale op.
+        for (size_t i = 0; i < summands.size() - 1; i += 2)
+        {
+            std::shared_ptr<runtime::he::HECiphertext> ciphertext = he_backend->create_empty_ciphertext();
+            runtime::he::kernel::scalar_add(summands[i], summands[i+1], ciphertext, type, he_backend);
+            summands.emplace_back(ciphertext);
+        }
+
+        // Write the sum back.
+        out[output_transform.index(out_coord)] = summands[summands.size() - 1];
     }
 }

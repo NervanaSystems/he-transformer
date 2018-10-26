@@ -211,6 +211,7 @@ void ngraph::runtime::he::kernel::dot_template(const std::vector<std::shared_ptr
             summands.push_back(prod);
         }
         // Repeatedly sum and add to the back of the vector until the end is reached
+        // This is better for the he_seal_ckks_backend as it reduces the need for the rescale op.
         for (size_t i = 0; i < summands.size() - 1; i += 2)
         {
             std::shared_ptr<runtime::he::HECiphertext> ciphertext = he_backend->create_empty_ciphertext();
