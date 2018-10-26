@@ -20,6 +20,7 @@
 #include "ngraph/function.hpp"
 
 #include "ngraph/op/broadcast.hpp"
+#include "ngraph/op/convolution.hpp"
 #include "ngraph/op/dot.hpp"
 #include "ngraph/op/reshape.hpp"
 #include "ngraph/op/result.hpp"
@@ -31,6 +32,7 @@
 
 #include "kernel/add.hpp"
 #include "kernel/broadcast.hpp"
+#include "kernel/convolution.hpp"
 #include "kernel/dot.hpp"
 #include "kernel/multiply.hpp"
 #include "kernel/negate.hpp"
@@ -62,7 +64,6 @@ shared_ptr<runtime::he::HEPlaintext> runtime::he::HEBackend::create_valued_plain
 shared_ptr<runtime::he::HECiphertext> runtime::he::HEBackend::create_valued_ciphertext(
     float value, const element::Type& element_type, size_t batch_size) const
 {
-    NGRAPH_INFO << "Creating valued ciphertext value " << value;
     if (batch_size != 1)
     {
         throw ngraph_error("HESealBFVBackend::create_valued_ciphertext only supports batch size 1");
@@ -443,6 +444,111 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
         else
         {
             throw ngraph_error("Broadcast types not supported.");
+        }
+    }
+     else if (node_op == "Convolution")
+    {
+        shared_ptr<op::Convolution> c = dynamic_pointer_cast<op::Convolution>(node);
+
+        if (arg0_cipher != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
+        {
+            runtime::he::kernel::convolution(arg0_cipher->get_elements(),
+                                             arg1_cipher->get_elements(),
+                                             out0_cipher->get_elements(),
+                                             arg0_cipher->get_shape(),
+                                             arg1_cipher->get_shape(),
+                                             out0_cipher->get_shape(),
+                                             c->get_window_movement_strides(),
+                                             c->get_window_dilation_strides(),
+                                             c->get_padding_below(),
+                                             c->get_padding_above(),
+                                             c->get_data_dilation_strides(),
+                                             0,
+                                             1,
+                                             1,
+                                             0,
+                                             0,
+                                             1,
+                                             false,
+                                             type,
+                                             batch_size,
+                                             this);
+        }
+        else if (arg0_cipher != nullptr && arg1_plain != nullptr && out0_cipher != nullptr)
+        {
+            runtime::he::kernel::convolution(arg0_cipher->get_elements(),
+                                             arg1_plain->get_elements(),
+                                             out0_cipher->get_elements(),
+                                             arg0_cipher->get_shape(),
+                                             arg1_plain->get_shape(),
+                                             out0_cipher->get_shape(),
+                                             c->get_window_movement_strides(),
+                                             c->get_window_dilation_strides(),
+                                             c->get_padding_below(),
+                                             c->get_padding_above(),
+                                             c->get_data_dilation_strides(),
+                                             0,
+                                             1,
+                                             1,
+                                             0,
+                                             0,
+                                             1,
+                                             false,
+                                             type,
+                                             batch_size,
+                                             this);
+        }
+        else if (arg0_plain != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
+        {
+            runtime::he::kernel::convolution(arg0_plain->get_elements(),
+                                             arg1_cipher->get_elements(),
+                                             out0_cipher->get_elements(),
+                                             arg0_plain->get_shape(),
+                                             arg1_cipher->get_shape(),
+                                             out0_cipher->get_shape(),
+                                             c->get_window_movement_strides(),
+                                             c->get_window_dilation_strides(),
+                                             c->get_padding_below(),
+                                             c->get_padding_above(),
+                                             c->get_data_dilation_strides(),
+                                             0,
+                                             1,
+                                             1,
+                                             0,
+                                             0,
+                                             1,
+                                             false,
+                                             type,
+                                             batch_size,
+                                             this);
+        }
+        else if (arg0_plain != nullptr && arg1_plain != nullptr && out0_plain != nullptr)
+        {
+            runtime::he::kernel::convolution(arg0_plain->get_elements(),
+                                             arg1_plain->get_elements(),
+                                             out0_plain->get_elements(),
+                                             arg0_plain->get_shape(),
+                                             arg1_plain->get_shape(),
+                                             out0_plain->get_shape(),
+                                             c->get_window_movement_strides(),
+                                             c->get_window_dilation_strides(),
+                                             c->get_padding_below(),
+                                             c->get_padding_above(),
+                                             c->get_data_dilation_strides(),
+                                             0,
+                                             1,
+                                             1,
+                                             0,
+                                             0,
+                                             1,
+                                             false,
+                                             type,
+                                             batch_size,
+                                             this);
+        }
+        else
+        {
+            throw ngraph_error("Convolution types not supported.");
         }
     }
     else if (node_op == "Dot")

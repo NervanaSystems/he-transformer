@@ -16,7 +16,6 @@
 
 #pragma once
 
-#include "seal/he_seal_backend.hpp"
 #include "kernel/add.hpp"
 #include "kernel/multiply.hpp"
 #include "ngraph/coordinate_transform.hpp"

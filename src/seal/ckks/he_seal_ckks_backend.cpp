@@ -92,7 +92,7 @@ runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend(
 
     auto m_context_data = m_context->context_data();
 
-    auto poly_modulus = m_context_data->parms().plain_modulus().value();
+    auto poly_modulus = m_context_data->parms().poly_modulus_degree();
     auto plain_modulus = m_context_data->parms().plain_modulus().value();
 
     // Keygen, encryptor and decryptor
@@ -116,11 +116,6 @@ extern "C" runtime::Backend* new_ckks_backend(const char* configuration_string)
 {
     return new runtime::he::he_seal::HESealCKKSBackend();
 }
-/*
-extern "C" void delete_backend(runtime::Backend* backend)
-{
-    delete backend;
-} */
 
 shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealCKKSBackend::make_seal_context(
     const shared_ptr<runtime::he::he_seal::HESealParameter> sp) const
@@ -128,11 +123,7 @@ shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealCKKSBackend::make_seal
     seal::EncryptionParameters parms = (sp->m_scheme_name == "HE:SEAL:CKKS" ? seal::scheme_type::CKKS :
                                         throw ngraph_error("Invalid scheme name \"" + sp->m_scheme_name + "\""));
 
-    NGRAPH_INFO << "Setting poly mod degree to " << sp->m_poly_modulus_degree;
-
     parms.set_poly_modulus_degree(sp->m_poly_modulus_degree);
-
-    NGRAPH_INFO << "Setting coeff mod to security level " << sp->m_security_level;
     if (sp->m_security_level == 128)
     {
         parms.set_coeff_modulus(seal::coeff_modulus_128(sp->m_poly_modulus_degree));
@@ -145,7 +136,6 @@ shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealCKKSBackend::make_seal
     {
         throw ngraph_error("sp.security_level must be 128, 192");
     }
-
     return seal::SEALContext::Create(parms);
 }
 

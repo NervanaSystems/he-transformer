@@ -74,8 +74,8 @@ const static runtime::he::he_seal::HESealParameter parse_seal_bfv_config_or_use_
     catch (const exception& e)
     {
         return runtime::he::he_seal::HESealParameter("HE:SEAL:BFV", // scheme name
-                                            2048,      // poly_modulus_degree
-                                            1 << 8, // plain_modulus
+                                            4096,      // poly_modulus_degree
+                                            1 << 10, // plain_modulus
                                             128,       // security_level
                                             16,            // evaluation_decomposition_bit_count
                                             64,   // fractional_encoder_integer_coeff_count
@@ -104,7 +104,7 @@ runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend(
 
     auto m_context_data = m_context->context_data();
 
-    auto poly_modulus = m_context_data->parms().plain_modulus().value();
+    auto poly_modulus = m_context_data->parms().poly_modulus_degree();
     auto plain_modulus = m_context_data->parms().plain_modulus().value();
 
     // Keygen, encryptor and decryptor
@@ -131,11 +131,6 @@ extern "C" runtime::Backend* new_bfv_backend(const char* configuration_string)
 {
     return new runtime::he::he_seal::HESealBFVBackend();
 }
-
-/* extern "C" void delete_backend(runtime::Backend* backend)
-{
-    delete backend;
-} */
 
 shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealBFVBackend::make_seal_context(
     const shared_ptr<runtime::he::he_seal::HESealParameter> sp) const

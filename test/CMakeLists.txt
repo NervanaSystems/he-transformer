@@ -43,7 +43,7 @@ add_custom_command(
 
 # Configure test for HE_SEAL
 set (NGRAPH_TEST_HE_SEAL_BFV_SRC
-    #test_convolution_HE_SEAL.cpp
+    test_convolution_HE_SEAL_BFV.cpp
     test_read_write_HE_SEAL_BFV.cpp
     test_add_HE_SEAL_BFV.cpp
     test_broadcast_HE_SEAL_BFV.cpp
@@ -58,6 +58,7 @@ set (NGRAPH_TEST_HE_SEAL_BFV_SRC
 
 # Configure test for HE_HEAAN
 set (NGRAPH_TEST_HE_SEAL_CKKS_SRC
+    test_convolution_HE_SEAL_CKKS.cpp
     test_read_write_HE_SEAL_CKKS.cpp
     test_add_HE_SEAL_CKKS.cpp
     test_broadcast_HE_SEAL_CKKS.cpp

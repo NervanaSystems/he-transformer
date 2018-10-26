@@ -22,8 +22,7 @@
 #include "he_backend.hpp"
 #include "he_cipher_tensor.hpp"
 #include "he_ciphertext.hpp"
-#include "he_ckks_backend.hpp"
-#include "he_seal_backend.hpp"
+#include "seal/he_seal_backend.hpp"
 #include "kernel/add.hpp"
 #include "kernel/convolution.hpp"
 #include "kernel/multiply.hpp"
@@ -66,7 +65,7 @@ namespace ngraph
                     bool rotate_filter,
                     const element::Type& type,
                     size_t batch_size,
-                    const std::shared_ptr<runtime::he::HEBackend>& he_backend);
+                    const runtime::he::HEBackend* he_backend);
 
                 void
                     convolution(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
@@ -89,7 +88,7 @@ namespace ngraph
                                 bool rotate_filter,
                                 const element::Type& type,
                                 size_t batch_size,
-                                const std::shared_ptr<runtime::he::HEBackend>& he_backend);
+                                const runtime::he::HEBackend* he_backend);
 
                 void
                     convolution(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
@@ -112,7 +111,7 @@ namespace ngraph
                                 bool rotate_filter,
                                 const element::Type& type,
                                 size_t batch_size,
-                                const std::shared_ptr<runtime::he::HEBackend>& he_backend);
+                                const runtime::he::HEBackend* he_backend);
 
                 void
                     convolution(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg0,
@@ -135,7 +134,7 @@ namespace ngraph
                                 bool rotate_filter,
                                 const element::Type& type,
                                 size_t batch_size,
-                                const std::shared_ptr<runtime::he::HEBackend>& he_backend);
+                                const runtime::he::HEBackend* he_backend);
 
                 void convolution(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg0,
                                  const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg1,
@@ -157,7 +156,7 @@ namespace ngraph
                                  bool rotate_filter,
                                  const element::Type& type,
                                  size_t batch_size,
-                                 const std::shared_ptr<runtime::he::HEBackend>& he_backend);
+                                 const runtime::he::HEBackend* he_backend);
             }
         }
     }
@@ -185,7 +184,7 @@ void ngraph::runtime::he::kernel::convolution_template(
     bool rotate_filter,
     const element::Type& type,
     size_t batch_size,
-    const std::shared_ptr<runtime::he::HEBackend>& he_backend)
+    const runtime::he::HEBackend* he_backend)
 {
     // TODO: parallelize more effetively
 
@@ -196,13 +195,6 @@ void ngraph::runtime::he::kernel::convolution_template(
     // * output channel axes for filters is 0
     // * output channel axis for output data is 1
     // * rotate_filter is false
-
-    auto he_seal_backend = std::dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend);
-    auto he_ckks_backend = std::dynamic_pointer_cast<runtime::he::he_ckks::HEHeaanBackend>(he_backend);
-    if (!he_seal_backend && !he_ckks_backend)
-    {
-        throw ngraph_error("Convolution he_backend neither ckks nor seal.");
-    }
 
     // At the outermost level we will walk over every output coordinate O.
     CoordinateTransform output_transform(out_shape);
@@ -330,15 +322,7 @@ void ngraph::runtime::he::kernel::convolution_template(
         //   output[O] += arg0[I] * arg1[F].
 
         // T result = 0;
-        std::shared_ptr<runtime::he::HECiphertext> result;
-        if (he_seal_backend)
-        {
-            result = he_seal_backend->create_valued_ciphertext(0., type);
-        }
-        else if (he_ckks_backend)
-        {
-            result = he_ckks_backend->create_valued_ciphertext(0., type, batch_size);
-        }
+        std::shared_ptr<runtime::he::HECiphertext> result = he_backend->create_valued_ciphertext(0., type);
 
         CoordinateTransform::Iterator input_it = input_batch_transform.begin();
         CoordinateTransform::Iterator filter_it = filter_transform.begin();
@@ -360,33 +344,15 @@ void ngraph::runtime::he::kernel::convolution_template(
                 }
             }
 
-            std::shared_ptr<runtime::he::HECiphertext> v;
-            if (he_seal_backend)
-            {
-                v = input_batch_transform.has_source_coordinate(input_batch_coord)
+            std::shared_ptr<runtime::he::HECiphertext> v = input_batch_transform.has_source_coordinate(input_batch_coord)
                         ? arg0[input_batch_transform.index(input_batch_coord)]
-                        : he_seal_backend->create_valued_ciphertext(0., type);
-            }
-            else if (he_ckks_backend)
-            {
-                v = input_batch_transform.has_source_coordinate(input_batch_coord)
-                        ? arg0[input_batch_transform.index(input_batch_coord)]
-                        : he_ckks_backend->create_valued_ciphertext(0., type, batch_size);
-            }
-
-            std::shared_ptr<runtime::he::HECiphertext> prod;
-            if (he_seal_backend)
-            {
-                prod = he_seal_backend->create_empty_ciphertext();
-            }
-            else if (he_ckks_backend)
-            {
-                prod = he_ckks_backend->create_empty_ciphertext(batch_size);
-            }
+                        : he_backend->create_valued_ciphertext(0., type);
+            std::shared_ptr<runtime::he::HECiphertext> prod = he_backend->create_empty_ciphertext();
 
             // result += v * arg1[filter_transform.index(filter_coord)];
             runtime::he::kernel::scalar_multiply(
                 v, arg1[filter_transform.index(filter_coord)], prod, type, he_backend);
+            // TODO: add in tree-like manner to minimize rescaling required? (See dot kernel for example)
             runtime::he::kernel::scalar_add(result, prod, result, type, he_backend);
 
             ++input_it;
