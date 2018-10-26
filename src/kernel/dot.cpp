@@ -181,7 +181,6 @@ void kernel::dot(const vector<shared_ptr<HEPlaintext>>& arg0,
 
         // Zero out to start the sum
         shared_ptr<HEPlaintext> sum = he_backend->create_valued_plaintext(0, type);
-        shared_ptr<HEPlaintext> prod = he_backend->create_empty_plaintext();
 
         size_t out_index = output_transform.index(out_coord);
 
@@ -205,7 +204,7 @@ void kernel::dot(const vector<shared_ptr<HEPlaintext>>& arg0,
             auto arg0_text = arg0[arg0_transform.index(arg0_coord)];
             auto arg1_text = arg1[arg1_transform.index(arg1_coord)];
 
-
+            shared_ptr<HEPlaintext> prod = he_backend->create_empty_plaintext();
             kernel::scalar_multiply(arg0_text, arg1_text, prod, type, he_backend);
             kernel::scalar_add(sum, prod, sum, type, he_backend);
         }

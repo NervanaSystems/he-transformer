@@ -156,7 +156,6 @@ void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset, size_
 #pragma omp parallel for
         for (size_t i = 0; i < num_elements_to_read; ++i)
         {
-            NGRAPH_INFO << "Reading " << num_elements_to_read << " elements";
             void* dst = malloc(type.size() * m_batch_size);
             if (!dst)
             {

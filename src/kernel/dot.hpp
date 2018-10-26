@@ -180,7 +180,6 @@ void ngraph::runtime::he::kernel::dot_template(const std::vector<std::shared_ptr
         // Zero out to start the sum
         std::shared_ptr<runtime::he::HECiphertext> sum = he_backend->create_valued_ciphertext(0, type);
 
-
         size_t out_index = output_transform.index(out_coord);
 
         // Walk along the dotted axes.

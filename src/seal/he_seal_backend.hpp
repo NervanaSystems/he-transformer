@@ -17,6 +17,7 @@
 #pragma once
 
 #include <memory>
+#include <unordered_map>
 
 #include "he_backend.hpp"
 #include "seal/he_seal_parameter.hpp"
@@ -103,6 +104,8 @@ namespace ngraph
                         return m_evaluator;
                     }
 
+                    const std::shared_ptr<runtime::he::HEPlaintext> get_valued_plaintext(int64_t value) const;
+
                 protected:
                     std::shared_ptr<seal::SecretKey> m_secret_key;
                     std::shared_ptr<seal::PublicKey> m_public_key;
@@ -112,6 +115,8 @@ namespace ngraph
                     std::shared_ptr<seal::SEALContext> m_context;
                     std::shared_ptr<seal::Evaluator> m_evaluator;
                     std::shared_ptr<seal::KeyGenerator> m_keygen;
+
+                    std::unordered_map<std::int64_t, std::shared_ptr<runtime::he::HEPlaintext>> m_plaintext_map;
                 };
             }
         }

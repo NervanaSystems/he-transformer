@@ -62,14 +62,16 @@ bool all_close(const std::vector<T>& a,
                const std::vector<T>& b,
                T atol = static_cast<T>(1e-5))
 {
+    bool close = true;
     for (size_t i = 0; i < a.size(); ++i)
     {
         if (std::abs(a[i] - b[i]) > atol)
         {
-            return false;
+            NGRAPH_INFO << a[i] << " != " << b[i];
+            close = false;
         }
     }
-    return true;
+    return close;
 }
 
 std::vector<std::tuple<std::vector<std::shared_ptr<ngraph::runtime::Tensor>>,

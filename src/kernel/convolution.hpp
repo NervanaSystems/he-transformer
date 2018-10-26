@@ -355,10 +355,7 @@ void ngraph::runtime::he::kernel::convolution_template(
             }
 
             // result += v * arg1[filter_transform.index(filter_coord)];
-
             // TODO: add in tree-like manner to minimize rescaling required? (See dot kernel for example)
-
-
             //runtime::he::kernel::scalar_add(result, prod, result, type, he_backend);
 
             ++input_it;

@@ -43,7 +43,7 @@ namespace ngraph
                     const Shape& padding_above,
                     const Shape& padding_interior,
                     size_t batch_size,
-                    const std::shared_ptr<runtime::he::HEBackend>& he_backend);
+                    const runtime::he::HEBackend* he_backend);
 
                 void pad(
                     const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
@@ -55,7 +55,7 @@ namespace ngraph
                     const Shape& padding_above,
                     const Shape& padding_interior,
                     size_t batch_size,
-                    const std::shared_ptr<runtime::he::HEBackend>& he_backend);
+                    const runtime::he::HEBackend* he_backend);
             }
         }
     }

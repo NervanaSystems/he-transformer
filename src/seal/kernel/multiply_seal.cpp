@@ -96,6 +96,7 @@ void he_seal::kernel::scalar_multiply(const shared_ptr<he_seal::SealPlaintextWra
         float x, y;
         he_seal_backend->decode(&x, arg0, type);
         he_seal_backend->decode(&y, arg1, type);
+        NGRAPH_INFO << "Multiplying plain " << x << " * " << y;
         float r = x * y;
         he_seal_backend->encode(out_he, &r, type);
     }

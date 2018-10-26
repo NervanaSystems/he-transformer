@@ -102,6 +102,7 @@ void he_seal::kernel::scalar_add(const shared_ptr<he_seal::SealPlaintextWrapper>
         he_seal_backend->decode(&x, arg0, type);
         he_seal_backend->decode(&y, arg1, type);
         float r = x + y;
+        NGRAPH_INFO << "Adding plain " << x << " + " << y;
         he_seal_backend->encode(out_he, &r, type);
     }
     else if (type_name == "int64_t")

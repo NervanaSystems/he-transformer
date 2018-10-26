@@ -188,3 +188,17 @@ void runtime::he::he_seal::HESealBackend::decrypt(
         throw ngraph_error("HESealBackend::decrypt has non-seal ciphertexts");
     }
 }
+
+const shared_ptr<runtime::he::HEPlaintext>
+    runtime::he::he_seal::HESealBackend::get_valued_plaintext(int64_t value) const
+{
+    std::unordered_set<int64_t> stored_plaintext_values{-1, 0, 1};
+    if (stored_plaintext_values.find(value) == stored_plaintext_values.end())
+    {
+        throw ngraph_error("Value not stored in stored plaintext values");
+    }
+    auto plaintext = create_empty_plaintext();
+    plaintext = m_plaintext_map.at(value);
+    return plaintext;
+    // return m_plaintext_map.at(value);
+}

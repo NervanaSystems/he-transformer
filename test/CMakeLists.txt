@@ -51,6 +51,7 @@ set (NGRAPH_TEST_HE_SEAL_BFV_SRC
     test_dot_HE_SEAL_BFV.cpp
     test_multiply_HE_SEAL_BFV.cpp
     test_negate_HE_SEAL_BFV.cpp
+    test_pad_HE_SEAL_BFV.cpp
     test_reshape_HE_SEAL_BFV.cpp
     test_slice_HE_SEAL_BFV.cpp
     test_subtract_HE_SEAL_BFV.cpp
@@ -68,6 +69,7 @@ set (NGRAPH_TEST_HE_SEAL_CKKS_SRC
     test_multiply_HE_SEAL_CKKS.cpp
     test_mnist_HE_SEAL_CKKS.cpp
     test_negate_HE_SEAL_CKKS.cpp
+    test_pad_HE_SEAL_CKKS.cpp
     test_reshape_HE_SEAL_CKKS.cpp
     test_slice_HE_SEAL_CKKS.cpp
     test_subtract_HE_SEAL_CKKS.cpp

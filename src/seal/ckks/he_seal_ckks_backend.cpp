@@ -110,6 +110,16 @@ runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend(
 
     // Encoder
     m_ckks_encoder = make_shared<seal::CKKSEncoder>(m_context);
+
+    // Plaintext constants
+    vector<shared_ptr<runtime::he::HEPlaintext>> valued_plaintexts{create_empty_plaintext(), create_empty_plaintext(), create_empty_plaintext()};
+    m_ckks_encoder->encode(-1, m_scale, dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(valued_plaintexts[0])->m_plaintext);
+    m_ckks_encoder->encode(0, m_scale, dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(valued_plaintexts[1])->m_plaintext);
+    m_ckks_encoder->encode(1, m_scale, dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(valued_plaintexts[2])->m_plaintext);
+
+    m_plaintext_map[-1] = valued_plaintexts[0];
+    m_plaintext_map[0] = valued_plaintexts[1];
+    m_plaintext_map[1] = valued_plaintexts[2];
 }
 
 extern "C" runtime::Backend* new_ckks_backend(const char* configuration_string)
@@ -176,7 +186,16 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(shared_ptr<runtime::he::HEP
         if (count == 1)
         {
             double value = (double)(*(float*)input);
-            m_ckks_encoder->encode(value, m_scale, dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(output)->m_plaintext);
+
+            /*if (m_plaintext_map.find(value) != m_plaintext_map.end())
+            {
+                NGRAPH_INFO << "Optimized encode of " << value;
+                output = get_valued_plaintext(value);
+            }
+            else
+            { */
+                m_ckks_encoder->encode(value, m_scale, dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(output)->m_plaintext);
+            // }
         }
         else
         {
@@ -222,3 +241,4 @@ void runtime::he::he_seal::HESealCKKSBackend::decode(void* output,
         throw ngraph_error("Unsupported element type " + type_name);
     }
 }
+

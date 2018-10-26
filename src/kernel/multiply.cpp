@@ -166,15 +166,15 @@ void kernel::scalar_multiply(const shared_ptr<HECiphertext>& arg0,
             enum Optimization {mult_zero, mult_one, mult_neg_one, no_optimization};
             Optimization optimization = no_optimization;
 
-            if (type_name == "float")
+            // TODO: enable optimization
+            /* if (type_name == "float")
             {
-                float x;
-                he_backend->decode((void*)(&x), arg1, type, 1);
-                optimization = (x == 0) ? mult_zero
-                            : (x == 1) ? mult_one
-                            : (x == -1) ? mult_neg_one
+                optimization = (arg1 == he_seal_backend->get_valued_plaintext(0)) ? mult_zero
+                            : (arg1 == he_seal_backend->get_valued_plaintext(1)) ? mult_one
+                            : (arg1 == he_seal_backend->get_valued_plaintext(-1)) ? mult_neg_one
                             : no_optimization;
-            }
+            } */
+
             if (optimization == mult_zero)
             {
                 NGRAPH_INFO << "Optimized multiply by 0";

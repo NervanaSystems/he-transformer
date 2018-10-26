@@ -113,6 +113,13 @@ TEST(${BACKEND_NAME}, multiply_optimized_2_3)
         copy_he_data(t_a, test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector(), backend);
         copy_he_data(t_b, test::NDArray<float, 2>({{-1, 0, 1}, {-1, 0, 1 }}).get_vector(), backend);
         backend->call(f, {t_result}, {t_a, t_b});
+
+        auto tmp = read_he_vector<float>(t_result, backend);
+
+        for (auto elem : tmp)
+        {
+            NGRAPH_INFO << elem;
+        }
         EXPECT_TRUE(all_close(read_he_vector<float>(t_result, backend),
                   (test::NDArray<float, 2>({{-1, 0, 3}, {-4, 0, 6}})).get_vector()));
     }
