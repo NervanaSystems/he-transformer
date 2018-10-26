@@ -102,7 +102,7 @@ std::vector<T> generalized_read_vector(std::shared_ptr<ngraph::runtime::Tensor> 
         }
         size_t size = element_count * sizeof(T);
         std::vector<T> rc(element_count);
-        std::dynamic_pointer_cast<ngraph::runtime::he::HETensor>(tv)->read(rc.data(), 0, size, std::dynamic_pointer_cast<ngraph::runtime::he::HEBackend>(backend).get());
+        std::dynamic_pointer_cast<ngraph::runtime::he::HETensor>(tv)->read(rc.data(), 0, size);
         return rc;
     }
     else
@@ -110,7 +110,7 @@ std::vector<T> generalized_read_vector(std::shared_ptr<ngraph::runtime::Tensor> 
         size_t element_count = ngraph::shape_size(tv->get_shape());
         size_t size = element_count * sizeof(T);
         std::vector<T> rc(element_count);
-        std::dynamic_pointer_cast<ngraph::runtime::he::HETensor>(tv)->read(rc.data(), 0, size, std::dynamic_pointer_cast<ngraph::runtime::he::HEBackend>(backend).get());
+        std::dynamic_pointer_cast<ngraph::runtime::he::HETensor>(tv)->read(rc.data(), 0, size);
         return rc;
     }
 }
@@ -119,7 +119,7 @@ template <typename T>
 void copy_he_data(std::shared_ptr<ngraph::runtime::Tensor> tv, const std::vector<T>& data, std::shared_ptr<ngraph::runtime::Backend> he_backend)
 {
     size_t data_size = data.size() * sizeof(T);
-    std::dynamic_pointer_cast<ngraph::runtime::he::HETensor>(tv)->write(data.data(), 0, data_size, std::dynamic_pointer_cast<ngraph::runtime::he::HEBackend>(he_backend).get());
+    std::dynamic_pointer_cast<ngraph::runtime::he::HETensor>(tv)->write(data.data(), 0, data_size);
 }
 
 template <typename T>
@@ -132,7 +132,7 @@ std::vector<T> read_he_vector(std::shared_ptr<ngraph::runtime::Tensor> tv, std::
     size_t element_count = ngraph::shape_size(tv->get_shape());
     size_t size = element_count * sizeof(T);
     std::vector<T> rc(element_count);
-    std::dynamic_pointer_cast<ngraph::runtime::he::HETensor>(tv)->read(rc.data(), 0, size, std::dynamic_pointer_cast<ngraph::runtime::he::HEBackend>(he_backend).get());
+    std::dynamic_pointer_cast<ngraph::runtime::he::HETensor>(tv)->read(rc.data(), 0, size);
     return rc;
 }
 

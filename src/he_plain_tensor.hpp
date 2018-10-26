@@ -38,6 +38,7 @@ namespace ngraph
             public:
                 HEPlainTensor(const element::Type& element_type,
                                   const Shape& shape,
+                                  const HEBackend* he_backend,
                                   const std::shared_ptr<HEPlaintext> he_plaintext,
                                   const std::string& name = "external");
                 ~HEPlainTensor() {};
@@ -49,7 +50,7 @@ namespace ngraph
                 /// @param n Number of bytes to write, must be integral number of elements.
                 // void write(const void* p, size_t tensor_offset, size_t n) override;
 
-                void write(const void* source, size_t tensor_offset, size_t n, const HEBackend* he_backend) override;
+                void write(const void* source, size_t tensor_offset, size_t n) override;
 
                 /// @brief Read bytes directly from the tensor after decoding
                 /// @param p Pointer to destination for data
@@ -58,7 +59,7 @@ namespace ngraph
                 /// @param n Number of bytes to read, must be integral number of elements.
                 // void read(void* p, size_t tensor_offset, size_t n) const override;
 
-                void read(void* target, size_t tensor_offset, size_t n, const HEBackend* he_backend) const override;
+                void read(void* target, size_t tensor_offset, size_t n) const override;
 
                 inline std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& get_elements()
                 {

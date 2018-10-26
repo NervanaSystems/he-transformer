@@ -90,7 +90,7 @@ shared_ptr<runtime::Tensor>
     runtime::he::HEBackend::create_tensor(const element::Type& element_type,
                                                        const Shape& shape)
 {
-    auto rc = make_shared<runtime::he::HECipherTensor>(element_type, shape, create_empty_ciphertext());
+    auto rc = make_shared<runtime::he::HECipherTensor>(element_type, shape, this, create_empty_ciphertext());
     return static_pointer_cast<runtime::Tensor>(rc);
 }
 
@@ -98,7 +98,7 @@ shared_ptr<runtime::Tensor>
     runtime::he::HEBackend::create_plain_tensor(const element::Type& element_type,
                                                              const Shape& shape)
 {
-    auto rc = make_shared<runtime::he::HEPlainTensor>(element_type, shape, create_empty_plaintext());
+    auto rc = make_shared<runtime::he::HEPlainTensor>(element_type, shape, this, create_empty_plaintext());
     return static_pointer_cast<runtime::Tensor>(rc);
 }
 
@@ -272,7 +272,7 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
                 if (plain_out)
                 {
                     auto otv = make_shared<runtime::he::HEPlainTensor>(
-                        element_type, shape, create_empty_plaintext(), name);
+                        element_type, shape, this, create_empty_plaintext(), name);
                     tensor_map.insert({tv, otv});
                 }
                 else
@@ -294,7 +294,7 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
                     any_batched |= batched_out;
 
                     auto otv = make_shared<runtime::he::HECipherTensor>(
-                        element_type, shape, create_empty_ciphertext(), batched_out, name);
+                        element_type, shape, this, create_empty_ciphertext(), batched_out, name);
                     tensor_map.insert({tv, otv});
                 }
             }

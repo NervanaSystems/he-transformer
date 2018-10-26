@@ -34,6 +34,7 @@ namespace ngraph
             public:
                 HETensor(const element::Type& element_type,
                              const Shape& shape,
+                             const HEBackend* he_backend,
                              bool batched = false,
                              const std::string& name = "external");
                 virtual ~HETensor() {};
@@ -42,18 +43,13 @@ namespace ngraph
                 /// @param p Pointer to source of data
                 /// @param tensor_offset Offset into tensor storage to begin writing. Must be element-aligned.
                 /// @param n Number of bytes to write, must be integral number of elements.
-                void write(const void* p, size_t tensor_offset, size_t n) override;
-
-                virtual void write(const void* source, size_t tensor_offset, size_t n, const HEBackend* he_backend) = 0;
+                virtual void write(const void* p, size_t tensor_offset, size_t n) override = 0;
 
                 /// @brief Read bytes directly from the tensor
                 /// @param p Pointer to destination for data
                 /// @param tensor_offset Offset into tensor storage to begin reading. Must be element-aligned.
                 /// @param n Number of bytes to read, must be integral number of elements.
-                void read(void* p, size_t tensor_offset, size_t n) const override;
-
-                virtual void read(void* p, size_t tensor_offset, size_t n, const HEBackend* he_backend) const = 0;
-
+                virtual void read(void* p, size_t tensor_offset, size_t n) const override = 0;
 
                 /// @brief Reduces shape along batch axis
                 /// @param shape Input shape to batch
@@ -71,6 +67,8 @@ namespace ngraph
                 bool m_batched;
                 // TODO: support more arbitrary batching dimension
                 size_t m_batch_size; // If m_batched, corresponds to first shape dimesion.
+
+               const HEBackend* m_he_backend;
             };
         }
     }

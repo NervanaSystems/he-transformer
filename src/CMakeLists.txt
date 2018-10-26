@@ -16,7 +16,7 @@
 
 # HE transformer sources
 set (HE_SRC
-
+    # kernels
     kernel/add.cpp
     kernel/broadcast.cpp
     kernel/convolution.cpp
@@ -30,24 +30,21 @@ set (HE_SRC
     kernel/result.cpp
     kernel/slice.cpp
 
+    # seal
     seal/kernel/add_seal.cpp
     seal/kernel/multiply_seal.cpp
     seal/kernel/negate_seal.cpp
     seal/kernel/subtract_seal.cpp
-
     seal/he_seal_backend.cpp
-
     seal/seal_plaintext_wrapper.cpp
     seal/seal_ciphertext_wrapper.cpp
-
     seal/bfv/he_seal_bfv_backend.cpp
     seal/ckks/he_seal_ckks_backend.cpp
-
-    he_plain_tensor.cpp
 
     # main
     he_backend.cpp
     he_cipher_tensor.cpp
+    he_plain_tensor.cpp
     he_tensor.cpp
 )
 

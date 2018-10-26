@@ -30,10 +30,11 @@ using namespace std;
 
 runtime::he::HECipherTensor::HECipherTensor(const element::Type& element_type,
                                                     const Shape& shape,
+                                                     const HEBackend* he_backend,
                                                     const std::shared_ptr<HECiphertext> he_ciphertext,
                                                     const bool batched,
                                                     const string& name)
-    : runtime::he::HETensor(element_type, shape, batched, name)
+    : runtime::he::HETensor(element_type, shape, he_backend, batched, name)
 {
     // get_tensor_layout()->get_size() is the number of elements
     m_num_elements = m_descriptor->get_tensor_layout()->get_size();
@@ -77,7 +78,7 @@ const Shape runtime::he::HECipherTensor::get_expanded_shape() const
     }
 }
 
-void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset, size_t n, const HEBackend* he_backend)
+void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset, size_t n)
 {
     check_io_bounds(source, tensor_offset, n / m_batch_size);
     const element::Type& type = get_tensor_layout()->get_element_type();
@@ -90,7 +91,7 @@ void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset
         const void* src_with_offset = (void*)((char*)source);
         size_t dst_index = dst_start_index;
 
-        if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(he_backend))
+        if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(m_he_backend))
         {
             shared_ptr<runtime::he::HEPlaintext> p =
                 make_shared<runtime::he::he_seal::SealPlaintextWrapper>();
@@ -99,7 +100,7 @@ void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset
         }
         else
         {
-            throw ngraph_error("HECipherTensor::write, he_backend is not SEAL.");
+            throw ngraph_error("HECipherTensor::write, m_he_backend is not SEAL.");
         }
     }
     else
@@ -110,7 +111,7 @@ void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset
             const void* src_with_offset = (void*)((char*)source + i * type.size() * m_batch_size);
             size_t dst_index = dst_start_index + i;
 
-            if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(he_backend))
+            if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(m_he_backend))
             {
                 shared_ptr<runtime::he::HEPlaintext> p =
                     make_shared<runtime::he::he_seal::SealPlaintextWrapper>();
@@ -120,13 +121,13 @@ void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset
             else
             {
                 throw ngraph_error(
-                    "HECipherTensor::write, he_backend is not SEAL.");
+                    "HECipherTensor::write, m_he_backend is not SEAL.");
             }
         }
     }
 }
 
-void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset, size_t n, const HEBackend* he_backend) const
+void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset, size_t n) const
 {
     check_io_bounds(target, tensor_offset, n / m_batch_size);
     const element::Type& type = get_tensor_layout()->get_element_type();
@@ -139,7 +140,7 @@ void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset, size_
     {
         void* dst_with_offset = (void*)((char*)target);
         size_t src_index = src_start_index;
-        if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(he_backend))
+        if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(m_he_backend))
         {
             shared_ptr<runtime::he::HEPlaintext> p =
                 make_shared<runtime::he::he_seal::SealPlaintextWrapper>();
@@ -148,7 +149,7 @@ void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset, size_
         }
         else
         {
-            throw ngraph_error("HECipherTensor::read he_backend is not SEAL.");
+            throw ngraph_error("HECipherTensor::read m_he_backend is not SEAL.");
         }
     }
     else
@@ -163,7 +164,7 @@ void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset, size_
             }
 
             size_t src_index = src_start_index + i;
-            if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(he_backend))
+            if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(m_he_backend))
             {
                 shared_ptr<runtime::he::HEPlaintext> p =
                     make_shared<runtime::he::he_seal::SealPlaintextWrapper>();
@@ -172,7 +173,7 @@ void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset, size_
             }
             else
             {
-                throw ngraph_error("HECipherTensor::read he_backend is not SEAL.");
+                throw ngraph_error("HECipherTensor::read m_he_backend is not SEAL.");
             }
             for (size_t j = 0; j < m_batch_size; ++j)
             {

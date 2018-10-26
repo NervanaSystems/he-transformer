@@ -25,10 +25,13 @@ using namespace ngraph;
 
 runtime::he::HETensor::HETensor(const element::Type& element_type,
                                         const Shape& shape,
+                                        const HEBackend* he_backend,
                                         bool batched,
                                         const string& name)
     : runtime::Tensor(
           std::make_shared<descriptor::Tensor>(element_type, batch_shape(shape, 0, batched), name))
+    , m_he_backend(he_backend)
+    , m_batched(batched)
 {
     m_descriptor->set_tensor_layout(
         make_shared<descriptor::layout::DenseTensorLayout>(*m_descriptor));
@@ -47,7 +50,7 @@ runtime::he::HETensor::HETensor(const element::Type& element_type,
     {
         m_batch_size = 1;
     }
-    m_batched = batched;
+
 }
 
 const Shape runtime::he::HETensor::batch_shape(const Shape& shape,
@@ -86,14 +89,4 @@ void runtime::he::HETensor::check_io_bounds(const void* source,
     {
         throw out_of_range("I/O access past end of tensor");
     }
-}
-
-void runtime::he::HETensor::write(const void* p, size_t tensor_offset, size_t n)
-{
-    throw ngraph_error("HETensor write not implemented");
-}
-
-void runtime::he::HETensor::read(void* p, size_t tensor_offset, size_t n) const
-{
-    throw ngraph_error("HETensor read not implemented");
 }
