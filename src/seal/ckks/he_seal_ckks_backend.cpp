@@ -142,7 +142,8 @@ shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealCKKSBackend::make_seal
         parms.set_coeff_modulus({
            seal::small_mods_40bit(0), seal::small_mods_40bit(1),
            seal::small_mods_40bit(2), seal::small_mods_40bit(3),
-           seal::small_mods_40bit(4), seal::small_mods_40bit(5) // TODO: use fewer moduli to preserve security.
+           seal::small_mods_40bit(4), seal::small_mods_40bit(5),
+           seal::small_mods_40bit(6), seal::small_mods_40bit(7) // TODO: use fewer moduli to preserve security.
         });
 
 

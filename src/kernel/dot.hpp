@@ -206,7 +206,6 @@ void ngraph::runtime::he::kernel::dot_template(const std::vector<std::shared_ptr
 
             std::shared_ptr<runtime::he::HECiphertext> prod = he_backend->create_empty_ciphertext();
             runtime::he::kernel::scalar_multiply(arg0_text, arg1_text, prod, type, he_backend);
-
             summands.push_back(prod);
         }
         // Repeatedly sum and add to the back of the vector until the end is reached
@@ -217,7 +216,6 @@ void ngraph::runtime::he::kernel::dot_template(const std::vector<std::shared_ptr
             runtime::he::kernel::scalar_add(summands[i], summands[i+1], ciphertext, type, he_backend);
             summands.emplace_back(ciphertext);
         }
-
         // Write the sum back.
         out[out_index] = summands[summands.size() - 1];
     }

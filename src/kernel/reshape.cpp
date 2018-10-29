@@ -57,7 +57,7 @@ void runtime::he::kernel::reshape(const vector<shared_ptr<runtime::he::HEPlainte
                                   const AxisVector& in_axis_order,
                                   const Shape& out_shape)
 {
-    NGRAPH_INFO << "REshaping plain";
+    NGRAPH_INFO << "Reshaping plain";
 
     // Unfortunately we don't yet have a constructor for CoordinateTransform that lets us pass only source_space_shape
     // and source_axis_order so we have to construct the defaults here.
