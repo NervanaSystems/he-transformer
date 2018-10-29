@@ -25,6 +25,8 @@
 #include "he_backend.hpp"
 #include "test_util.hpp"
 
+#include "seal/ckks/he_seal_ckks_backend.hpp"
+
 using namespace std;
 using namespace ngraph;
 
@@ -147,4 +149,29 @@ TEST(${BACKEND_NAME}, dot_scalar)
         backend->call(f, {t_result}, {t_a, t_b});
         EXPECT_TRUE(all_close(read_he_vector<float>(t_result, backend), (vector<float>{48})));
     }
+}
+
+TEST(${BACKEND_NAME}, dot_scalar_batch)
+{
+    auto backend = static_pointer_cast<runtime::he::he_seal::HESealCKKSBackend>(
+        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+
+    Shape shape_a{3, 1};
+    Shape shape_b{1};
+    Shape shape_r{3, 1};
+    auto a = make_shared<op::Parameter>(element::f32, shape_a);
+    auto b = make_shared<op::Parameter>(element::f32, shape_b);
+    auto t = make_shared<op::Dot>(a, b);
+
+    auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+
+    // Create some tensors for input/output
+    auto t_a = backend->create_batched_tensor(element::f32, shape_a);
+    auto t_b = backend->create_plain_tensor(element::f32, shape_b);
+    auto t_result = backend->create_batched_tensor(element::f32, shape_r);
+
+    copy_data(t_a, vector<float>{1, 2, 3});
+    copy_data(t_b, vector<float>{4});
+    backend->call(f, {t_result}, {t_a, t_b});
+    EXPECT_EQ((vector<float>{4, 8, 12}), generalized_read_vector<float>(t_result));
 }

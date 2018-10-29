@@ -35,15 +35,9 @@ runtime::he::HETensor::HETensor(const element::Type& element_type,
 {
     m_descriptor->set_tensor_layout(
         make_shared<descriptor::layout::DenseTensorLayout>(*m_descriptor));
-    auto is_power_of_2 = [](size_t n) -> bool { return ((n & (n - 1)) == 0) && (n != 0); };
 
     if (batched)
     {
-        if (!is_power_of_2(shape[0]))
-        {
-            throw ngraph_error("Batching size must be power of two");
-        }
-
         m_batch_size = shape[0];
     }
     else

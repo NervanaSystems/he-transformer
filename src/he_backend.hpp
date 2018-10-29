@@ -192,11 +192,6 @@ namespace ngraph
                     std::string,
                     std::unordered_map<std::int64_t, std::shared_ptr<runtime::he::HEPlaintext>>>
                     m_plaintext_map;
-
-                std::unordered_map<
-                    std::string,
-                    std::unordered_map<std::int64_t, std::shared_ptr<runtime::he::HECiphertext>>>
-                    m_ciphertext_map;
             };
         }
     }

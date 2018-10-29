@@ -30,6 +30,8 @@
 #include "he_backend.hpp"
 #include "test_util.hpp"
 
+#include "seal/ckks/he_seal_ckks_backend.hpp"
+
 using namespace std;
 using namespace ngraph;
 
@@ -96,10 +98,11 @@ static void run_cryptonets_benchmark(string backend_name, size_t batch_size, boo
         auto& type = parameter->get_element_type();
 
 
-        //auto parameter_cipher_tv = (backend_name == "INTERPRETER") ? backend->create_tensor(type, shape)
-        //                                       : static_pointer_cast<runtime::he::he_SEAL_CKKS::HESEAL:CKKSBackend>(backend)->create_tensor(type, shape, batched);
+        auto parameter_cipher_tv = (backend_name == "INTERPRETER") ? backend->create_tensor(type, shape)
+                                                                   : batched ? static_pointer_cast<runtime::he::he_seal::HESealCKKSBackend>(backend)->create_batched_tensor(type, shape)
+                                                                   : static_pointer_cast<runtime::he::he_seal::HESealCKKSBackend>(backend)->create_tensor(type, shape);
 
-        auto parameter_cipher_tv = backend->create_tensor(type, shape);
+        // auto parameter_cipher_tv = backend->create_tensor(type, shape);
 
         NGRAPH_INFO << "Creating input shape: " << join(shape, "x");
 
@@ -133,8 +136,14 @@ static void run_cryptonets_benchmark(string backend_name, size_t batch_size, boo
         auto& type = result->get_element_type();
         NGRAPH_INFO << "Creating output shape: " << join(shape, "x");
 
-        //result_tvs.push_back(static_pointer_cast<runtime::he::he_SEAL_CKKS::HESEAL:CKKSBackend>(backend)->create_tensor(type, shape, batched));
-        result_tvs.push_back(backend->create_tensor(type, shape));
+        if (batched && backend_name != "INTERPRETER")
+        {
+            result_tvs.push_back(static_pointer_cast<runtime::he::he_seal::HESealCKKSBackend>(backend)->create_batched_tensor(type, shape));
+        }
+        else
+        {
+            result_tvs.push_back(backend->create_tensor(type, shape));
+        }
     }
     sw_encrypt_input.stop();
     NGRAPH_INFO << "sw_encrypt_input: " << sw_encrypt_input.get_milliseconds() << "ms";

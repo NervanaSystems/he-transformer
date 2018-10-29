@@ -211,9 +211,6 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(shared_ptr<runtime::he::HEP
         {
             vector<float> values{(float*)input, (float*)input + count};
             vector<double> double_values(values.begin(), values.end());
-
-            NGRAPH_INFO << "Encoding " << double_values[0] << " " << double_values[1];
-
             m_ckks_encoder->encode(double_values, m_scale, dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(output)->m_plaintext);
 
         }
