@@ -181,8 +181,8 @@ void runtime::he::he_seal::HESealCKKSBackend::assert_valid_seal_ckks_parameter(c
 shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealCKKSBackend::create_batched_tensor(
     const element::Type& element_type, const Shape& shape)
 {
-    throw ngraph_error("HESealCKKSBackend::create_batched_tensor unimplemented");
-
+    auto rc = make_shared<runtime::he::HECipherTensor>(element_type, shape, this, create_empty_ciphertext(), true);
+    return static_pointer_cast<runtime::Tensor>(rc);
 }
 
 void runtime::he::he_seal::HESealCKKSBackend::encode(shared_ptr<runtime::he::HEPlaintext>& output,
@@ -209,7 +209,13 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(shared_ptr<runtime::he::HEP
         }
         else
         {
-            throw ngraph_error("Batch encode not supported in CKKS encode");
+            vector<float> values{(float*)input, (float*)input + count};
+            vector<double> double_values(values.begin(), values.end());
+
+            NGRAPH_INFO << "Encoding " << double_values[0] << " " << double_values[1];
+
+            m_ckks_encoder->encode(double_values, m_scale, dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(output)->m_plaintext);
+
         }
     }
     else
@@ -233,18 +239,12 @@ void runtime::he::he_seal::HESealCKKSBackend::decode(void* output,
         {
             throw ngraph_error("HESealCKKSBackend::decode input is not seal plaintext");
         }
-        if (count == 1)
-        {
-            vector<double> xs(count, 0);
-            m_ckks_encoder->decode(seal_input->m_plaintext, xs);
-            vector<float> xs_float(xs.begin(), xs.end());
-            memcpy(output, &xs_float[0], type.size() * count);
-        }
-        else
-        {
-            throw ngraph_error("Batching not enabled for SEAL in decode");
-        }
+        vector<double> xs(count, 0);
+        m_ckks_encoder->decode(seal_input->m_plaintext, xs);
+        vector<float> xs_float(xs.begin(), xs.end());
+        NGRAPH_INFO << "Decoding " << xs_float[0] << " " << xs_float[1];
 
+        memcpy(output, &xs_float[0], type.size() * count);
     }
     else
     {

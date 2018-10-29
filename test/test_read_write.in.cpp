@@ -97,3 +97,16 @@ TEST(${BACKEND_NAME}, plain_tv_write_read_2_3)
     copy_he_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector(), backend);
     EXPECT_TRUE(all_close(read_he_vector<float>(a, backend), test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector()));
 }
+
+TEST(${BACKEND_NAME}, cipher_tv_batch)
+{
+    auto backend = static_pointer_cast<runtime::he::HEBackend>(
+        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+
+    Shape shape{2, 3};
+    auto a = backend->create_batched_tensor(element::f32, shape);
+    copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector());
+
+    EXPECT_EQ(generalized_read_vector<float>(a),
+              (test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector());
+}

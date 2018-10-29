@@ -93,10 +93,10 @@ void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset
 
         if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(m_he_backend))
         {
-            shared_ptr<runtime::he::HEPlaintext> p =
+            shared_ptr<runtime::he::HEPlaintext> plaintext =
                 make_shared<runtime::he::he_seal::SealPlaintextWrapper>();
-            he_seal_backend->encode(p, src_with_offset, type);
-            he_seal_backend->encrypt(m_cipher_texts[dst_index], p);
+            he_seal_backend->encode(plaintext, src_with_offset, type, m_batch_size);
+            he_seal_backend->encrypt(m_cipher_texts[dst_index], plaintext);
         }
         else
         {
@@ -113,10 +113,34 @@ void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset
 
             if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(m_he_backend))
             {
-                shared_ptr<runtime::he::HEPlaintext> p =
+                shared_ptr<runtime::he::HEPlaintext> plaintext =
                     make_shared<runtime::he::he_seal::SealPlaintextWrapper>();
-                he_seal_backend->encode(p, src_with_offset, type);
-                he_seal_backend->encrypt(m_cipher_texts[dst_index], p);
+
+                if (m_batch_size > 1)
+                {
+                    size_t allocation_size = type.size() * m_batch_size;
+                    const void* batch_src = malloc(allocation_size);
+                    if (!batch_src)
+                    {
+                        throw ngraph_error("Error allocating HE Cipher Tensor View memory");
+                    }
+
+                    for (size_t j = 0; j < m_batch_size; ++j)
+                    {
+                        void* destination = (void*)((char*)batch_src + j * type.size());
+                        const void* src =
+                            (void*)((char*)source + type.size() * (i + j * num_elements_to_write));
+                        memcpy(destination, src, type.size());
+                    }
+
+                    he_seal_backend->encode(plaintext, batch_src, type, m_batch_size);
+                    free((void*)batch_src);
+                }
+                else
+                {
+                    he_seal_backend->encode(plaintext, src_with_offset, type, m_batch_size);
+                }
+                he_seal_backend->encrypt(m_cipher_texts[dst_index], plaintext);
             }
             else
             {
@@ -145,7 +169,7 @@ void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset, size_
             shared_ptr<runtime::he::HEPlaintext> p =
                 make_shared<runtime::he::he_seal::SealPlaintextWrapper>();
             he_seal_backend->decrypt(p, m_cipher_texts[src_index]);
-            he_seal_backend->decode(dst_with_offset, p, type);
+            he_seal_backend->decode(dst_with_offset, p, type, m_batch_size);
         }
         else
         {
@@ -169,7 +193,7 @@ void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset, size_
                 shared_ptr<runtime::he::HEPlaintext> p =
                     make_shared<runtime::he::he_seal::SealPlaintextWrapper>();
                 he_seal_backend->decrypt(p, m_cipher_texts[src_index]);
-                he_seal_backend->decode(dst, p, type);
+                he_seal_backend->decode(dst, p, type, m_batch_size);
             }
             else
             {

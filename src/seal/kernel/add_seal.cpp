@@ -74,6 +74,27 @@ void he_seal::kernel::scalar_add(const shared_ptr<he_seal::SealCiphertextWrapper
     {
         he_seal_backend->get_evaluator()->add(arg0->m_ciphertext, arg1->m_ciphertext, out->m_ciphertext);
     }
+
+
+    // DEBUG. TODO: remove
+    /*std::shared_ptr<runtime::he::HEPlaintext> plaintext1= he_seal_backend->create_empty_plaintext();
+    std::shared_ptr<runtime::he::HEPlaintext> plaintext2 = he_seal_backend->create_empty_plaintext();
+    std::shared_ptr<runtime::he::HEPlaintext> plaintext3= he_seal_backend->create_empty_plaintext();
+    he_seal_backend->decrypt(plaintext1, dynamic_pointer_cast<runtime::he::HECiphertext>(arg0));
+    he_seal_backend->decrypt(plaintext2, dynamic_pointer_cast<runtime::he::HECiphertext>(arg1));
+    he_seal_backend->decrypt(plaintext3, dynamic_pointer_cast<runtime::he::HECiphertext>(out));
+    float x1, x2, x3;
+    he_seal_backend->decode((void*)(&x1), plaintext1, type);
+    he_seal_backend->decode((void*)(&x2), plaintext2, type);
+    he_seal_backend->decode((void*)(&x3), plaintext3, type);
+
+    NGRAPH_INFO << "Adding " << x1 << " + " << x2 << " = " << x3;
+
+    if (abs(x1 + x2 - x3) > 0.1)
+    {
+        NGRAPH_INFO << "Error in add";
+        throw ngraph_error("Innacruate addition!");
+    } */
 }
 
 void he_seal::kernel::scalar_add(const shared_ptr<he_seal::SealCiphertextWrapper>& arg0,

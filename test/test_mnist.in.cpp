@@ -151,7 +151,7 @@ static void run_cryptonets_benchmark(string backend_name, size_t batch_size, boo
     stopwatch sw_decrypt_output;
     sw_decrypt_output.start();
     auto result = (backend_name == "INTERPRETER") ? read_vector<float>(result_tvs[0])
-                                                  : generalized_read_vector<float>(result_tvs[0], backend);
+                                                  : generalized_read_vector<float>(result_tvs[0]);
     sw_decrypt_output.stop();
     NGRAPH_INFO << "sw_decrypt_output: " << sw_decrypt_output.get_milliseconds() << "ms";
 

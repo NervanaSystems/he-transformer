@@ -50,7 +50,6 @@ runtime::he::HETensor::HETensor(const element::Type& element_type,
     {
         m_batch_size = 1;
     }
-
 }
 
 const Shape runtime::he::HETensor::batch_shape(const Shape& shape,

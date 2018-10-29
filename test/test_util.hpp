@@ -83,7 +83,7 @@ std::vector<std::tuple<std::vector<std::shared_ptr<ngraph::runtime::Tensor>>,
 
 // Reads batched vector
 template <typename T>
-std::vector<T> generalized_read_vector(std::shared_ptr<ngraph::runtime::Tensor> tv, std::shared_ptr<ngraph::runtime::Backend> backend)
+std::vector<T> generalized_read_vector(std::shared_ptr<ngraph::runtime::Tensor> tv)
 {
     if (ngraph::element::from<T>() != tv->get_tensor_layout()->get_element_type())
     {
