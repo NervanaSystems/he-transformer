@@ -18,51 +18,34 @@
 set (HE_SRC
     # kernels
     kernel/add.cpp
-    kernel/avg_pool.cpp
     kernel/broadcast.cpp
-    kernel/concat.cpp
-    kernel/constant.cpp
     kernel/convolution.cpp
+    kernel/constant.cpp
     kernel/dot.cpp
     kernel/multiply.cpp
     kernel/negate.cpp
-    kernel/one_hot.cpp
     kernel/pad.cpp
+    kernel/subtract.cpp
     kernel/reshape.cpp
     kernel/result.cpp
     kernel/slice.cpp
-    kernel/subtract.cpp
-    kernel/sum.cpp
-    # heaan kernels
-    kernel/heaan/add_heaan.cpp
-    kernel/heaan/multiply_heaan.cpp
-    kernel/heaan/negate_heaan.cpp
-    kernel/heaan/square_heaan.cpp
-    kernel/heaan/subtract_heaan.cpp
-    # seal kernels
-    kernel/seal/add_seal.cpp
-    kernel/seal/multiply_seal.cpp
-    kernel/seal/negate_seal.cpp
-    kernel/seal/square_seal.cpp
-    kernel/seal/subtract_seal.cpp
-    # main
-    create_backend.cpp
-    he_backend.cpp
-    he_call_frame.cpp
-    he_cipher_tensor_view.cpp
-    he_ciphertext.cpp
-    he_plaintext.cpp
-    he_tensor_view.cpp
-    he_plain_tensor_view.cpp
-    int_call_frame.cpp
-    # heaan
-    he_heaan_backend.cpp
-    heaan_ciphertext_wrapper.cpp
-    heaan_plaintext_wrapper.cpp
+
     # seal
-    he_seal_backend.cpp
-    seal_ciphertext_wrapper.cpp
-    seal_plaintext_wrapper.cpp
+    seal/kernel/add_seal.cpp
+    seal/kernel/multiply_seal.cpp
+    seal/kernel/negate_seal.cpp
+    seal/kernel/subtract_seal.cpp
+    seal/he_seal_backend.cpp
+    seal/seal_plaintext_wrapper.cpp
+    seal/seal_ciphertext_wrapper.cpp
+    seal/bfv/he_seal_bfv_backend.cpp
+    seal/ckks/he_seal_ckks_backend.cpp
+
+    # main
+    he_backend.cpp
+    he_cipher_tensor.cpp
+    he_plain_tensor.cpp
+    he_tensor.cpp
 )
 
 # Paths for the upstream ngraph
@@ -84,8 +67,8 @@ message("Linking directories: ${NGRAPH_LIB_DIR}, ${EXTERNAL_INSTALL_LIB_DIR}")
 
 # Target library
 add_library(he_backend SHARED ${HE_SRC})
-add_dependencies(he_backend ext_ngraph ext_seal ext_heaan)
-target_link_libraries(he_backend ngraph seal heaan ntl libjson)
+add_dependencies(he_backend ext_ngraph ext_seal)
+target_link_libraries(he_backend ngraph seal libjson)
 
 set_target_properties(he_backend PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY

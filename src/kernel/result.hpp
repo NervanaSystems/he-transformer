@@ -50,12 +50,12 @@ namespace ngraph
                             std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
                             size_t count,
                             const element::Type& element_type,
-                            const std::shared_ptr<runtime::he::HEBackend>& he_backend);
+                            const runtime::he::HEBackend* he_backend);
 
                 void result(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg,
                             std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
                             size_t count,
-                            const std::shared_ptr<runtime::he::HEBackend>& he_backend);
+                            const runtime::he::HEBackend* he_backend);
             }
         }
     }

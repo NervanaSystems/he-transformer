@@ -17,8 +17,7 @@
 #include <assert.h>
 
 #include "he_backend.hpp"
-#include "he_heaan_backend.hpp"
-#include "he_seal_backend.hpp"
+#include "seal/he_seal_backend.hpp"
 
 #include "ngraph/ngraph.hpp"
 #include "util/all_close.hpp"
@@ -34,37 +33,7 @@ using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2image_batch)
-{
-    auto shape_a = Shape{2, 1, 5, 5};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
-    auto shape_b = Shape{1, 1, 3, 3};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
-    auto shape_r = Shape{2, 1, 3, 3};
-    auto f = make_shared<Function>(make_shared<op::Convolution>(A, B, Strides{1, 1}, Strides{1, 1}),
-                                   op::ParameterVector{A, B});
-
-    // Create some tensors for input/output
-    auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
-
-    auto a = backend->create_tensor(element::f32, shape_a, true);
-    copy_data(a, vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
-                               2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
-                               2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
-                               2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0});
-    auto b = backend->create_plain_tensor(element::f32, shape_b);
-    copy_data(b, vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5});
-    auto result = backend->create_tensor(element::f32, shape_r, true);
-
-    vector<float> expected_result{9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9};
-
-    backend->call(f, {result}, {a, b});
-    EXPECT_TRUE(
-        test::all_close(vector<float>{expected_result}, generalized_read_vector<float>(result)));
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_batch)
+TEST(${BACKEND_NAME}, convolution_2d_1image)
 {
     auto shape_a = Shape{1, 1, 5, 5};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -75,34 +44,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_batch)
                                    op::ParameterVector{A, B});
 
     // Create some tensors for input/output
-    auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
-        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
-
-    auto a = backend->create_tensor(element::f32, shape_a, true);
-    copy_data(a, vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
-                               2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0});
-    auto b = backend->create_tensor(element::f32, shape_b);
-    copy_data(b, vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5});
-    auto result = backend->create_tensor(element::f32, shape_r, true);
-
-    vector<float> expected_result{9, 9, 9, 9, 9, 9, 9, 9, 9};
-
-    backend->call(f, {result}, {a, b});
-    EXPECT_TRUE(test::all_close(vector<float>{expected_result}, read_vector<float>(result)));
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image)
-{
-    auto shape_a = Shape{1, 1, 5, 5};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
-    auto shape_b = Shape{1, 1, 3, 3};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
-    auto shape_r = Shape{1, 1, 3, 3};
-    auto f = make_shared<Function>(make_shared<op::Convolution>(A, B, Strides{1, 1}, Strides{1, 1}),
-                                   op::ParameterVector{A, B});
-
-    // Create some tensors for input/output
-    auto backend = static_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(
+    auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
         runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
     auto a = backend->create_tensor(element::f32, shape_a);
@@ -115,10 +57,10 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image)
     vector<float> expected_result{9, 9, 9, 9, 9, 9, 9, 9, 9};
 
     backend->call(f, {result}, {a, b});
-    EXPECT_TRUE(test::all_close(vector<float>{expected_result}, read_vector<float>(result)));
+    EXPECT_TRUE(all_close(vector<float>{expected_result}, read_vector<float>(result)));
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_2outputs)
+TEST(${BACKEND_NAME}, convolution_2d_1image_2outputs)
 {
     auto shape_a = Shape{1, 1, 3, 5};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -128,8 +70,9 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_2outputs)
     auto f = make_shared<Function>(make_shared<op::Convolution>(A, B, Strides{1, 1}, Strides{1, 1}),
                                    op::ParameterVector{A, B});
 
-    // Create some tensors for input/output
-    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+    auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
+        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+
     auto a = backend->create_tensor(element::f32, shape_a);
     copy_data(a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15});
     auto b = backend->create_tensor(element::f32, shape_b);
@@ -140,10 +83,10 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_2outputs)
         51, 61, 71, 81, 101, 111, 121, 131, 115, 141, 167, 193, 245, 271, 297, 323};
 
     backend->call(f, {result}, {a, b});
-    EXPECT_TRUE(test::all_close(vector<float>{expected_result}, read_vector<float>(result)));
+    EXPECT_TRUE(all_close(vector<float>{expected_result}, read_vector<float>(result)));
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item)
+TEST(${BACKEND_NAME}, convolution_2d_1item)
 {
     Shape shape_a{1, 1, 3, 5};
     Shape shape_b{2, 1, 2, 2};
@@ -164,8 +107,9 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item)
 
     auto function = make_graph();
 
-    // Create some tensors for input/output
-    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+    auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
+        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+
     auto a = backend->create_tensor(element::f32, shape_a);
     copy_data(
         a,
@@ -193,10 +137,10 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item)
                                   -21.0f};
 
     backend->call(function, {result}, {a, b});
-    EXPECT_TRUE(test::all_close(vector<float>{expected_result}, read_vector<float>(result)));
+    EXPECT_TRUE(all_close(vector<float>{expected_result}, read_vector<float>(result)));
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_1_1x1_1)
+TEST(${BACKEND_NAME}, convolution_2d_1item_padded_1_1x1_1)
 {
     Shape shape_a{1, 1, 3, 5};
     Shape shape_b{2, 1, 2, 2};
@@ -217,8 +161,9 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_1_1x1_1)
 
     auto function = make_graph();
 
-    // Create some tensors for input/output
-    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+    auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
+        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+
     auto a = backend->create_tensor(element::f32, shape_a);
     copy_data(
         a,
@@ -236,11 +181,10 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_1_1x1_1)
                                   -21.0f, 45.0f,  -72.0f, -63.0f, 27.0f,  90.0f,  54.0f,  -18.0f};
 
     backend->call(function, {result}, {a, b});
-    EXPECT_TRUE(
-        test::all_close(vector<float>{expected_result}, read_vector<float>(result), 1e-7f, 1e-7f));
+    EXPECT_TRUE(all_close(vector<float>{expected_result}, read_vector<float>(result), 1e-5f));
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5)
+TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5)
 {
     Shape shape_a{1, 1, 3, 5};
     Shape shape_b{2, 1, 2, 2};
@@ -262,7 +206,9 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5)
     auto function = make_graph();
 
     // Create some tensors for input/output
-    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+    auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
+        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+
     auto a = backend->create_tensor(element::f32, shape_a);
     copy_data(
         a,
@@ -291,11 +237,10 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5)
         0.0f, 0.0f, 0.0f,   0.0f,   0.0f,   0.0f,    0.0f,   0.0f,   0.0f, 0.0f, 0.0f, 0.0f};
 
     backend->call(function, {result}, {a, b});
-    EXPECT_TRUE(
-        test::all_close(vector<float>{expected_result}, read_vector<float>(result), 1e-7f, 1e-7f));
+    EXPECT_TRUE(all_close(vector<float>{expected_result}, read_vector<float>(result), 1e-5f));
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items)
+TEST(${BACKEND_NAME}, convolution_2d_2items)
 {
     Shape shape_a{2, 1, 3, 5};
     Shape shape_b{2, 1, 2, 2};
@@ -317,7 +262,9 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items)
     auto function = make_graph();
 
     // Create some tensors for input/output
-    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+    auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
+        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+
     auto a = backend->create_tensor(element::f32, shape_a);
     copy_data(a, vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f, -8.f, 5.f,
                                -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,  9.f,  -7.f, 3.f,  0.f,
@@ -332,10 +279,10 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items)
                                   138.0f, 30.0f,  -30.0f, 6.0f,   48.0f,  -66.0f, -42.0f,  72.0f};
 
     backend->call(function, {result}, {a, b});
-    EXPECT_TRUE(test::all_close(vector<float>{expected_result}, read_vector<float>(result)));
+    EXPECT_TRUE(all_close(vector<float>{expected_result}, read_vector<float>(result)));
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_strided_padded)
+TEST(${BACKEND_NAME}, convolution_2d_2items_strided_padded)
 {
     Shape shape_a{2, 1, 3, 5};
     Shape shape_b{2, 1, 2, 2};
@@ -357,7 +304,9 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_strided_padded)
     auto function = make_graph();
 
     // Create some tensors for input/output
-    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+    auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
+        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+
     auto a = backend->create_tensor(element::f32, shape_a);
     copy_data(a, vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f, -8.f, 5.f,
                                -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,  9.f,  -7.f, 3.f,  0.f,
@@ -383,6 +332,5 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_strided_padded)
         0.0f,  0.0f, 0.0f, 0.0f,   0.0f,   0.0f,   0.0f,   0.0f, 0.0f, 0.0f,   0.0f,   0.0f};
 
     backend->call(function, {result}, {a, b});
-    EXPECT_TRUE(
-        test::all_close(vector<float>{expected_result}, read_vector<float>(result), 1e-7f, 1e-7f));
+    EXPECT_TRUE(all_close(vector<float>{expected_result}, read_vector<float>(result), 1e-5f));
 }

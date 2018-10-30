@@ -16,21 +16,19 @@
 
 #include <vector>
 
-#include "he_heaan_backend.hpp"
-#include "he_seal_backend.hpp"
-#include "kernel/heaan/negate_heaan.hpp"
 #include "kernel/negate.hpp"
-#include "kernel/seal/negate_seal.hpp"
 #include "ngraph/type/element_type.hpp"
+#include "seal/he_seal_backend.hpp"
+#include "seal/kernel/negate_seal.hpp"
 
 using namespace std;
-using namespace ngraph;
+using namespace ngraph::runtime::he;
 
-void runtime::he::kernel::negate(const vector<shared_ptr<runtime::he::HECiphertext>>& arg,
-                                 vector<shared_ptr<runtime::he::HECiphertext>>& out,
-                                 const element::Type& type,
-                                 const shared_ptr<runtime::he::HEBackend>& he_backend,
-                                 size_t count)
+void kernel::negate(const vector<shared_ptr<HECiphertext>>& arg,
+                    vector<shared_ptr<HECiphertext>>& out,
+                    const element::Type& type,
+                    const HEBackend* he_backend,
+                    size_t count)
 {
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
@@ -39,11 +37,11 @@ void runtime::he::kernel::negate(const vector<shared_ptr<runtime::he::HECipherte
     }
 }
 
-void runtime::he::kernel::negate(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg,
-                                 vector<shared_ptr<runtime::he::HEPlaintext>>& out,
-                                 const element::Type& type,
-                                 const shared_ptr<runtime::he::HEBackend>& he_backend,
-                                 size_t count)
+void kernel::negate(const vector<shared_ptr<HEPlaintext>>& arg,
+                    vector<shared_ptr<HEPlaintext>>& out,
+                    const element::Type& type,
+                    const HEBackend* he_backend,
+                    size_t count)
 {
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
@@ -52,23 +50,22 @@ void runtime::he::kernel::negate(const vector<shared_ptr<runtime::he::HEPlaintex
     }
 }
 
-void runtime::he::kernel::scalar_negate(const shared_ptr<runtime::he::HECiphertext>& arg,
-                                        shared_ptr<runtime::he::HECiphertext>& out,
-                                        const element::Type& type,
-                                        const shared_ptr<runtime::he::HEBackend>& he_backend)
+void kernel::scalar_negate(const shared_ptr<HECiphertext>& arg,
+                           shared_ptr<HECiphertext>& out,
+                           const element::Type& type,
+                           const HEBackend* he_backend)
 {
-    if (auto he_seal_backend =
-            dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
+    if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(he_backend))
     {
-        shared_ptr<runtime::he::SealCiphertextWrapper> arg_seal =
-            dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(arg);
-        shared_ptr<runtime::he::SealCiphertextWrapper> out_seal =
-            dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(out);
+        shared_ptr<he_seal::SealCiphertextWrapper> arg_seal =
+            dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(arg);
+        shared_ptr<he_seal::SealCiphertextWrapper> out_seal =
+            dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(out);
 
         if (arg_seal && out_seal)
         {
-            kernel::seal::scalar_negate(arg_seal, out_seal, type, he_seal_backend);
-            out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_seal);
+            he_seal::kernel::scalar_negate(arg_seal, out_seal, type, he_seal_backend);
+            out = dynamic_pointer_cast<HECiphertext>(out_seal);
         }
         else
         {
@@ -76,72 +73,33 @@ void runtime::he::kernel::scalar_negate(const shared_ptr<runtime::he::HECipherte
                 "negate backend is SEAL, but arguments or outputs are not SealCiphertextWrapper");
         }
     }
-    else if (auto he_heaan_backend =
-                 dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
-    {
-        shared_ptr<runtime::he::HeaanCiphertextWrapper> arg_heaan =
-            dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(arg);
-        shared_ptr<runtime::he::HeaanCiphertextWrapper> out_heaan =
-            dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(out);
-
-        if (arg_heaan && out_heaan)
-        {
-            kernel::heaan::scalar_negate(arg_heaan, out_heaan, type, he_heaan_backend);
-            out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_heaan);
-        }
-        else
-        {
-            throw ngraph_error(
-                "negate backend is HEAAN, but arguments or outputs are not HeaanCiphertextWrapper");
-        }
-    }
     else
     {
-        throw ngraph_error("negate backend is neither SEAL nor HEAAN.");
+        throw ngraph_error("negate backend is not SEAL.");
     }
 }
 
-void runtime::he::kernel::scalar_negate(const shared_ptr<runtime::he::HEPlaintext>& arg,
-                                        shared_ptr<runtime::he::HEPlaintext>& out,
-                                        const element::Type& type,
-                                        const shared_ptr<runtime::he::HEBackend>& he_backend)
+void kernel::scalar_negate(const shared_ptr<HEPlaintext>& arg,
+                           shared_ptr<HEPlaintext>& out,
+                           const element::Type& type,
+                           const HEBackend* he_backend)
 {
-    if (auto he_seal_backend =
-            dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
+    if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(he_backend))
     {
-        shared_ptr<runtime::he::SealPlaintextWrapper> arg_seal =
-            dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(arg);
-        shared_ptr<runtime::he::SealPlaintextWrapper> out_seal =
-            dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(out);
+        shared_ptr<he_seal::SealPlaintextWrapper> arg_seal =
+            dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(arg);
+        shared_ptr<he_seal::SealPlaintextWrapper> out_seal =
+            dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(out);
 
         if (arg_seal && out_seal)
         {
-            kernel::seal::scalar_negate(arg_seal, out_seal, type, he_seal_backend);
-            out = dynamic_pointer_cast<runtime::he::HEPlaintext>(out_seal);
+            he_seal::kernel::scalar_negate(arg_seal, out_seal, type, he_seal_backend);
+            out = dynamic_pointer_cast<HEPlaintext>(out_seal);
         }
         else
         {
             throw ngraph_error(
-                "negate backend is SEAL, but arguments or outputs are not SealPlaintextWrapper");
-        }
-    }
-    else if (auto he_heaan_backend =
-                 dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
-    {
-        shared_ptr<runtime::he::HeaanPlaintextWrapper> arg_heaan =
-            dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(arg);
-        shared_ptr<runtime::he::HeaanPlaintextWrapper> out_heaan =
-            dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(out);
-
-        if (arg_heaan && out_heaan)
-        {
-            kernel::heaan::scalar_negate(arg_heaan, out_heaan, type, he_heaan_backend);
-            out = dynamic_pointer_cast<runtime::he::HEPlaintext>(out_heaan);
-        }
-        else
-        {
-            throw ngraph_error(
-                "negate backend is HEAAN, but arguments or outputs are not HeaanPlaintextWrapper");
+                "negate backend is SEAL, but arguments or outputs are not SealPlaintextWrapper.:");
         }
     }
     else

@@ -39,7 +39,6 @@ ExternalProject_Add(
                -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                -DCMAKE_CXX_FLAGS=${GTEST_CXX_FLAGS}
     EXCLUDE_FROM_ALL TRUE
-    BUILD_ALWAYS 1
 )
 
 

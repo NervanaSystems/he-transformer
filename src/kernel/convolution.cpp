@@ -19,13 +19,12 @@
 #include "ngraph/type/element_type.hpp"
 
 #include "he_backend.hpp"
-#include "he_cipher_tensor_view.hpp"
+#include "he_cipher_tensor.hpp"
 #include "he_ciphertext.hpp"
-#include "he_heaan_backend.hpp"
-#include "he_seal_backend.hpp"
 #include "kernel/add.hpp"
 #include "kernel/convolution.hpp"
 #include "kernel/multiply.hpp"
+#include "seal/he_seal_backend.hpp"
 
 using namespace std;
 using namespace ngraph;
@@ -50,8 +49,9 @@ void runtime::he::kernel::convolution(const vector<shared_ptr<runtime::he::HECip
                                       bool rotate_filter,
                                       const element::Type& type,
                                       size_t batch_size,
-                                      const shared_ptr<runtime::he::HEBackend>& he_backend)
+                                      const runtime::he::HEBackend* he_backend)
 {
+    NGRAPH_INFO << "Convolution C * P";
     convolution_template<runtime::he::HECiphertext, runtime::he::HEPlaintext>(
         arg0,
         arg1,
@@ -96,7 +96,7 @@ void runtime::he::kernel::convolution(const vector<shared_ptr<runtime::he::HEPla
                                       bool rotate_filter,
                                       const element::Type& type,
                                       size_t batch_size,
-                                      const shared_ptr<runtime::he::HEBackend>& he_backend)
+                                      const runtime::he::HEBackend* he_backend)
 {
     convolution(arg1,
                 arg0,
@@ -141,8 +141,10 @@ void runtime::he::kernel::convolution(const vector<shared_ptr<runtime::he::HECip
                                       bool rotate_filter,
                                       const element::Type& type,
                                       size_t batch_size,
-                                      const shared_ptr<runtime::he::HEBackend>& he_backend)
+                                      const runtime::he::HEBackend* he_backend)
 {
+    NGRAPH_INFO << "Convolution C * C";
+
     convolution_template<runtime::he::HECiphertext, runtime::he::HECiphertext>(
         arg0,
         arg1,
@@ -169,9 +171,9 @@ void runtime::he::kernel::convolution(const vector<shared_ptr<runtime::he::HECip
 
 // TODO: merge into template?
 void ngraph::runtime::he::kernel::convolution(
-    const std::vector<shared_ptr<runtime::he::HEPlaintext>>& arg0,
-    const std::vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,
-    std::vector<shared_ptr<runtime::he::HEPlaintext>>& out,
+    const vector<shared_ptr<runtime::he::HEPlaintext>>& arg0,
+    const vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,
+    vector<shared_ptr<runtime::he::HEPlaintext>>& out,
     const Shape& arg0_shape,
     const Shape& arg1_shape,
     const Shape& out_shape,
@@ -189,7 +191,7 @@ void ngraph::runtime::he::kernel::convolution(
     bool rotate_filter,
     const element::Type& type,
     size_t batch_size,
-    const shared_ptr<runtime::he::HEBackend>& he_backend)
+    const runtime::he::HEBackend* he_backend)
 {
     // TODO: parallelize more effetively
 
@@ -201,12 +203,7 @@ void ngraph::runtime::he::kernel::convolution(
     // * output channel axis for output data is 1
     // * rotate_filter is false
 
-    auto he_seal_backend = dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend);
-    auto he_heaan_backend = dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend);
-    if (!he_seal_backend && !he_heaan_backend)
-    {
-        throw ngraph_error("Convolution he_backend neither heaan nor seal.");
-    }
+    NGRAPH_INFO << "Convolution P * P";
 
     // At the outermost level we will walk over every output coordinate O.
     CoordinateTransform output_transform(out_shape);
@@ -274,8 +271,8 @@ void ngraph::runtime::he::kernel::convolution(
         {
             size_t window_dilation_stride = window_dilation_strides[i - 2];
             size_t window_movement_stride = window_movement_strides[i - 2];
-            std::ptrdiff_t below_pad = padding_below[i - 2];
-            std::ptrdiff_t above_pad = padding_above[i - 2];
+            ptrdiff_t below_pad = padding_below[i - 2];
+            ptrdiff_t above_pad = padding_above[i - 2];
             size_t data_dilation_stride = data_dilation_strides[i - 2];
 
             input_batch_transform_start[i] = window_movement_stride * out_coord[i];
@@ -334,15 +331,7 @@ void ngraph::runtime::he::kernel::convolution(
         //   output[O] += arg0[I] * arg1[F].
 
         // T result = 0;
-        shared_ptr<runtime::he::HEPlaintext> result;
-        if (he_seal_backend)
-        {
-            result = he_seal_backend->create_valued_plaintext(0., type);
-        }
-        else if (he_heaan_backend)
-        {
-            result = he_heaan_backend->create_valued_plaintext(0., type);
-        }
+        shared_ptr<runtime::he::HEPlaintext> result = he_backend->create_valued_plaintext(0., type);
 
         CoordinateTransform::Iterator input_it = input_batch_transform.begin();
         CoordinateTransform::Iterator filter_it = filter_transform.begin();
@@ -364,29 +353,12 @@ void ngraph::runtime::he::kernel::convolution(
                 }
             }
 
-            shared_ptr<runtime::he::HEPlaintext> v;
-            if (he_seal_backend)
-            {
-                v = input_batch_transform.has_source_coordinate(input_batch_coord)
-                        ? arg0[input_batch_transform.index(input_batch_coord)]
-                        : he_seal_backend->create_valued_plaintext(0., type);
-            }
-            else if (he_heaan_backend)
-            {
-                v = input_batch_transform.has_source_coordinate(input_batch_coord)
-                        ? arg0[input_batch_transform.index(input_batch_coord)]
-                        : he_heaan_backend->create_valued_plaintext(0., type);
-            }
+            shared_ptr<runtime::he::HEPlaintext> v =
+                input_batch_transform.has_source_coordinate(input_batch_coord)
+                    ? arg0[input_batch_transform.index(input_batch_coord)]
+                    : he_backend->create_valued_plaintext(0., type);
 
-            shared_ptr<runtime::he::HEPlaintext> prod;
-            if (he_seal_backend)
-            {
-                prod = he_seal_backend->create_empty_plaintext();
-            }
-            else if (he_heaan_backend)
-            {
-                prod = he_heaan_backend->create_empty_plaintext();
-            }
+            shared_ptr<runtime::he::HEPlaintext> prod = he_backend->create_empty_plaintext();
 
             // result += v * arg1[filter_transform.index(filter_coord)];
             runtime::he::kernel::scalar_multiply(

@@ -30,57 +30,76 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHE_SERIALIZED_ZOO=\\\"${CMAKE_CURRENT_
 
 set (HE_TEST_SRC
     main.cpp
-    test_heaan.cpp
     test_seal.cpp
     test_util.cpp
 )
 
-# This dummy target always triggers re-configure of HE_HEAAN and HE_SEAL ngraph tests
+# This dummy target always triggers re-configure of HE_SEAL_BFV and HE_SEAL_CKKS ngraph tests
 # If the source file is not changed, re-compile is not triggered
 add_custom_command(
     OUTPUT always_build
     COMMAND cmake -E echo
 )
 
-# Configure test for HE_SEAL
-set (NGRAPH_TEST_HE_SEAL_SRC
-    test_convolution_HE_SEAL.cpp
-    test_basics_HE_SEAL.cpp
-    # test_mnist_HE_SEAL.cpp # Disabled since SEAL does not support batching for float
+# Configure test for HE_SEAL_BFV
+set (NGRAPH_TEST_HE_SEAL_BFV_SRC
+    test_constant_HE_SEAL_BFV.cpp
+    test_convolution_HE_SEAL_BFV.cpp
+    test_read_write_HE_SEAL_BFV.cpp
+    test_add_HE_SEAL_BFV.cpp
+    test_broadcast_HE_SEAL_BFV.cpp
+    test_dot_HE_SEAL_BFV.cpp
+    test_multiply_HE_SEAL_BFV.cpp
+    test_negate_HE_SEAL_BFV.cpp
+    test_pad_HE_SEAL_BFV.cpp
+    test_reshape_HE_SEAL_BFV.cpp
+    test_slice_HE_SEAL_BFV.cpp
+    test_subtract_HE_SEAL_BFV.cpp
+    # test_mnist_HE_SEAL_BFV.cpp # Disabled since BFV does not support batching for float
 )
 
-# Configure test for HE_HEAAN
-set (NGRAPH_TEST_HE_HEAAN_SRC
-    test_convolution_HE_HEAAN.cpp
-    test_basics_HE_HEAAN.cpp
-    test_mnist_HE_HEAAN.cpp
+# Configure test for HE_SEAL_CKKS
+set (NGRAPH_TEST_HE_SEAL_CKKS_SRC
+    test_constant_HE_SEAL_CKKS.cpp
+    test_convolution_HE_SEAL_CKKS.cpp
+    test_read_write_HE_SEAL_CKKS.cpp
+    test_add_HE_SEAL_CKKS.cpp
+    test_broadcast_HE_SEAL_CKKS.cpp
+    test_dot_HE_SEAL_CKKS.cpp
+    test_multiply_HE_SEAL_CKKS.cpp
+    test_mnist_HE_SEAL_CKKS.cpp
+    test_negate_HE_SEAL_CKKS.cpp
+    test_pad_HE_SEAL_CKKS.cpp
+    test_reshape_HE_SEAL_CKKS.cpp
+    test_slice_HE_SEAL_CKKS.cpp
+    test_subtract_HE_SEAL_CKKS.cpp
 )
 
-get_filename_component(HEAAN_MANIFEST he_heaan_disabled_test.manifest ABSOLUTE)
-get_filename_component(SEAL_MANIFEST he_seal_disabled_test.manifest ABSOLUTE)
+get_filename_component(SEAL_BFV_MANIFEST he_seal_bfv_disabled_test.manifest ABSOLUTE)
+get_filename_component(SEAL_CKKS_MANIFEST he_seal_ckks_disabled_test.manifest ABSOLUTE)
 
 add_custom_command(
-    OUTPUT ${NGRAPH_TEST_HE_SEAL_SRC}
+    OUTPUT ${NGRAPH_TEST_HE_SEAL_BFV_SRC}
     DEPENDS ext_ngraph always_build
     COMMAND ${CMAKE_COMMAND}
     -DNGRAPH_TEST_DIR=${NGRAPH_TEST_DIR}
     -DHE_TRANSFORMER_TEST_DIR=${HE_TRANSFORMER_TEST_DIR}
-    -DBACKEND_REGISTERED_NAME=HE:SEAL
-    -DBACKEND_NAME=HE_SEAL
-    -DTEST_LOOPS=2
-    -DMANIFEST=${SEAL_MANIFEST}
+    -DBACKEND_REGISTERED_NAME=HE:SEAL:BFV
+    -DBACKEND_NAME=HE_SEAL_BFV
+    -DTEST_LOOPS=1
+    -DMANIFEST=${SEAL_BFV_MANIFEST}
     -P ${CMAKE_CURRENT_SOURCE_DIR}/configure_test.cmake
 )
 
 add_custom_command(
-    OUTPUT ${NGRAPH_TEST_HE_HEAAN_SRC}
+    OUTPUT ${NGRAPH_TEST_HE_SEAL_CKKS_SRC}
     DEPENDS ext_ngraph always_build
     COMMAND ${CMAKE_COMMAND}
     -DNGRAPH_TEST_DIR=${NGRAPH_TEST_DIR}
     -DHE_TRANSFORMER_TEST_DIR=${HE_TRANSFORMER_TEST_DIR}
-    -DBACKEND_REGISTERED_NAME=HE:HEAAN
-    -DBACKEND_NAME=HE_HEAAN
-    -DTEST_LOOPS=2
+    -DBACKEND_REGISTERED_NAME=HE:SEAL:CKKS
+    -DBACKEND_NAME=HE_SEAL_CKKS
+    -DTEST_LOOPS=1
     -DMANIFEST=${HEAAN_MANIFEST}
     -P ${CMAKE_CURRENT_SOURCE_DIR}/configure_test.cmake
 )
@@ -88,8 +107,8 @@ add_custom_command(
 # Build unit-test binary
 set(SRC
     ${HE_TEST_SRC}
-    ${NGRAPH_TEST_HE_SEAL_SRC}
-    ${NGRAPH_TEST_HE_HEAAN_SRC})
+    ${NGRAPH_TEST_HE_SEAL_BFV_SRC}
+    ${NGRAPH_TEST_HE_SEAL_CKKS_SRC})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -97,6 +116,6 @@ add_executable(unit-test ${SRC})
 
 target_link_libraries(unit-test libgtest)
 target_link_libraries(unit-test ngraph_test_util)
-target_link_libraries(unit-test he_backend seal heaan ntl pthread ${CMAKE_DL_LIBS})
+target_link_libraries(unit-test he_backend seal pthread ${CMAKE_DL_LIBS})
 
-add_dependencies(unit-test he_backend ext_seal ext_heaan ext_ngraph ext_gtest)
+add_dependencies(unit-test he_backend ext_seal ext_ngraph ext_gtest)

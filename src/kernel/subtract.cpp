@@ -16,25 +16,22 @@
 
 #include <vector>
 
-#include "he_backend.hpp"
-#include "he_heaan_backend.hpp"
-#include "he_seal_backend.hpp"
-#include "kernel/heaan/negate_heaan.hpp"
-#include "kernel/heaan/subtract_heaan.hpp"
-#include "kernel/seal/negate_seal.hpp"
-#include "kernel/seal/subtract_seal.hpp"
+#include "kernel/add.hpp"
+#include "kernel/negate.hpp"
 #include "kernel/subtract.hpp"
 #include "ngraph/type/element_type.hpp"
+#include "seal/he_seal_backend.hpp"
+#include "seal/kernel/subtract_seal.hpp"
 
 using namespace std;
-using namespace ngraph;
+using namespace ngraph::runtime::he;
 
-void runtime::he::kernel::subtract(const vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
-                                   const vector<shared_ptr<runtime::he::HECiphertext>>& arg1,
-                                   vector<shared_ptr<runtime::he::HECiphertext>>& out,
-                                   const element::Type& type,
-                                   const shared_ptr<runtime::he::HEBackend>& he_backend,
-                                   size_t count)
+void kernel::subtract(const vector<shared_ptr<HECiphertext>>& arg0,
+                      const vector<shared_ptr<HECiphertext>>& arg1,
+                      vector<shared_ptr<HECiphertext>>& out,
+                      const element::Type& type,
+                      const HEBackend* he_backend,
+                      size_t count)
 {
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
@@ -43,12 +40,12 @@ void runtime::he::kernel::subtract(const vector<shared_ptr<runtime::he::HECipher
     }
 }
 
-void runtime::he::kernel::subtract(const vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
-                                   const vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,
-                                   vector<shared_ptr<runtime::he::HECiphertext>>& out,
-                                   const element::Type& type,
-                                   const shared_ptr<runtime::he::HEBackend>& he_backend,
-                                   size_t count)
+void kernel::subtract(const vector<shared_ptr<HECiphertext>>& arg0,
+                      const vector<shared_ptr<HEPlaintext>>& arg1,
+                      vector<shared_ptr<HECiphertext>>& out,
+                      const element::Type& type,
+                      const HEBackend* he_backend,
+                      size_t count)
 {
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
@@ -57,12 +54,12 @@ void runtime::he::kernel::subtract(const vector<shared_ptr<runtime::he::HECipher
     }
 }
 
-void runtime::he::kernel::subtract(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg0,
-                                   const vector<shared_ptr<runtime::he::HECiphertext>>& arg1,
-                                   vector<shared_ptr<runtime::he::HECiphertext>>& out,
-                                   const element::Type& type,
-                                   const shared_ptr<runtime::he::HEBackend>& he_backend,
-                                   size_t count)
+void kernel::subtract(const vector<shared_ptr<HEPlaintext>>& arg0,
+                      const vector<shared_ptr<HECiphertext>>& arg1,
+                      vector<shared_ptr<HECiphertext>>& out,
+                      const element::Type& type,
+                      const HEBackend* he_backend,
+                      size_t count)
 {
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
@@ -71,12 +68,12 @@ void runtime::he::kernel::subtract(const vector<shared_ptr<runtime::he::HEPlaint
     }
 }
 
-void runtime::he::kernel::subtract(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg0,
-                                   const vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,
-                                   vector<shared_ptr<runtime::he::HEPlaintext>>& out,
-                                   const element::Type& type,
-                                   const shared_ptr<runtime::he::HEBackend>& he_backend,
-                                   size_t count)
+void kernel::subtract(const vector<shared_ptr<HEPlaintext>>& arg0,
+                      const vector<shared_ptr<HEPlaintext>>& arg1,
+                      vector<shared_ptr<HEPlaintext>>& out,
+                      const element::Type& type,
+                      const HEBackend* he_backend,
+                      size_t count)
 {
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
@@ -85,270 +82,121 @@ void runtime::he::kernel::subtract(const vector<shared_ptr<runtime::he::HEPlaint
     }
 }
 
-void runtime::he::kernel::scalar_subtract(const shared_ptr<runtime::he::HECiphertext>& arg0,
-                                          const shared_ptr<runtime::he::HECiphertext>& arg1,
-                                          shared_ptr<runtime::he::HECiphertext>& out,
-                                          const element::Type& type,
-                                          const shared_ptr<runtime::he::HEBackend>& he_backend)
+void kernel::scalar_subtract(const shared_ptr<HECiphertext>& arg0,
+                             const shared_ptr<HECiphertext>& arg1,
+                             shared_ptr<HECiphertext>& out,
+                             const element::Type& type,
+                             const HEBackend* he_backend)
 {
-    if (auto he_seal_backend =
-            dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
+    if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(he_backend))
     {
-        shared_ptr<runtime::he::SealCiphertextWrapper> arg0_seal =
-            dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(arg0);
-        shared_ptr<runtime::he::SealCiphertextWrapper> arg1_seal =
-            dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(arg1);
-        shared_ptr<runtime::he::SealCiphertextWrapper> out_seal =
-            dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(out);
+        shared_ptr<he_seal::SealCiphertextWrapper> arg0_seal =
+            dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(arg0);
+        shared_ptr<he_seal::SealCiphertextWrapper> arg1_seal =
+            dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(arg1);
+        shared_ptr<he_seal::SealCiphertextWrapper> out_seal =
+            dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(out);
 
         if (arg0_seal && arg1_seal && out_seal)
         {
-            kernel::seal::scalar_subtract(arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
-            out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_seal);
+            he_seal::kernel::scalar_subtract(arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
+            out = dynamic_pointer_cast<HECiphertext>(out_seal);
         }
         else
         {
             throw ngraph_error(
-                "Subtract backend is SEAL, but arguments or outputs are not SealCiphertextWrapper");
-        }
-    }
-    else if (auto he_heaan_backend =
-                 dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
-    {
-        shared_ptr<runtime::he::HeaanCiphertextWrapper> arg0_heaan =
-            dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(arg0);
-        shared_ptr<runtime::he::HeaanCiphertextWrapper> arg1_heaan =
-            dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(arg1);
-        shared_ptr<runtime::he::HeaanCiphertextWrapper> out_heaan =
-            dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(out);
-
-        if (arg0_heaan && arg1_heaan && out_heaan)
-        {
-            kernel::heaan::scalar_subtract(
-                arg0_heaan, arg1_heaan, out_heaan, type, he_heaan_backend);
-            out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_heaan);
-        }
-        else
-        {
-            throw ngraph_error(
-                "Subtract backend is HEAAN, but arguments or outputs are not "
-                "HeaanCiphertextWrapper");
+                "subtract backend is SEAL, but arguments or outputs are not SealCiphertextWrapper");
         }
     }
     else
     {
-        throw ngraph_error("Subtract backend is neither SEAL nor HEAAN.");
+        throw ngraph_error("subtract backend is not SEAL.");
     }
 }
 
-void runtime::he::kernel::scalar_subtract(const shared_ptr<runtime::he::HEPlaintext>& arg0,
-                                          const shared_ptr<runtime::he::HEPlaintext>& arg1,
-                                          shared_ptr<runtime::he::HEPlaintext>& out,
-                                          const element::Type& type,
-                                          const shared_ptr<runtime::he::HEBackend>& he_backend)
+void kernel::scalar_subtract(const shared_ptr<HEPlaintext>& arg0,
+                             const shared_ptr<HEPlaintext>& arg1,
+                             shared_ptr<HEPlaintext>& out,
+                             const element::Type& type,
+                             const HEBackend* he_backend)
 {
-    if (auto he_seal_backend =
-            dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
+    if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(he_backend))
     {
-        shared_ptr<runtime::he::SealPlaintextWrapper> arg0_seal =
-            dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(arg0);
-        shared_ptr<runtime::he::SealPlaintextWrapper> arg1_seal =
-            dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(arg1);
-        shared_ptr<runtime::he::SealPlaintextWrapper> out_seal =
-            dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(out);
+        shared_ptr<he_seal::SealPlaintextWrapper> arg0_seal =
+            dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(arg0);
+        shared_ptr<he_seal::SealPlaintextWrapper> arg1_seal =
+            dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(arg1);
+        shared_ptr<he_seal::SealPlaintextWrapper> out_seal =
+            dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(out);
 
         if (arg0_seal && arg1_seal && out_seal)
         {
-            kernel::seal::scalar_subtract(arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
-            out = dynamic_pointer_cast<runtime::he::HEPlaintext>(out_seal);
+            he_seal::kernel::scalar_subtract(arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
+            out = dynamic_pointer_cast<HEPlaintext>(out_seal);
         }
         else
         {
             throw ngraph_error(
-                "Subtract backend is SEAL, but arguments or outputs are not SealPlaintextWrapper");
-        }
-    }
-    else if (auto he_heaan_backend =
-                 dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
-    {
-        shared_ptr<runtime::he::HeaanPlaintextWrapper> arg0_heaan =
-            dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(arg0);
-        shared_ptr<runtime::he::HeaanPlaintextWrapper> arg1_heaan =
-            dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(arg1);
-        shared_ptr<runtime::he::HeaanPlaintextWrapper> out_heaan =
-            dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(out);
-
-        if (arg0_heaan && arg1_heaan && out_heaan)
-        {
-            kernel::heaan::scalar_subtract(
-                arg0_heaan, arg1_heaan, out_heaan, type, he_heaan_backend);
-            out = dynamic_pointer_cast<runtime::he::HEPlaintext>(out_heaan);
-        }
-        else
-        {
-            throw ngraph_error(
-                "Subtract backend is HEAAN, but arguments or outputs are not "
-                "HeaanPlaintextWrapper");
+                "subtract backend is SEAL, but arguments or outputs are not "
+                "SealPlaintextWrapper.:");
         }
     }
     else
     {
-        throw ngraph_error("Subtract backend is neither SEAL nor HEAAN.");
+        throw ngraph_error("subtract backend is neither SEAL nor HEAAN.");
     }
 }
 
-void runtime::he::kernel::scalar_subtract(const shared_ptr<runtime::he::HECiphertext>& arg0,
-                                          const shared_ptr<runtime::he::HEPlaintext>& arg1,
-                                          shared_ptr<runtime::he::HECiphertext>& out,
-                                          const element::Type& type,
-                                          const shared_ptr<runtime::he::HEBackend>& he_backend)
+void kernel::scalar_subtract(const shared_ptr<HECiphertext>& arg0,
+                             const shared_ptr<HEPlaintext>& arg1,
+                             shared_ptr<HECiphertext>& out,
+                             const element::Type& type,
+                             const HEBackend* he_backend)
 {
-    if (auto he_seal_backend =
-            dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
+    if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(he_backend))
     {
-        shared_ptr<runtime::he::SealCiphertextWrapper> arg0_seal =
-            dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(arg0);
-        shared_ptr<runtime::he::SealPlaintextWrapper> arg1_seal =
-            dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(arg1);
-        shared_ptr<runtime::he::SealCiphertextWrapper> out_seal =
-            dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(out);
+        shared_ptr<he_seal::SealCiphertextWrapper> arg0_seal =
+            dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(arg0);
+        shared_ptr<he_seal::SealPlaintextWrapper> arg1_seal =
+            dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(arg1);
+        shared_ptr<he_seal::SealCiphertextWrapper> out_seal =
+            dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(out);
 
         if (arg0_seal && arg1_seal && out_seal)
         {
-            auto zero = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(
-                he_seal_backend->get_valued_plaintext(0, type));
-
-            if (arg1_seal->m_plaintext == zero->m_plaintext)
+            const string type_name = type.c_type_string();
+            bool sub_zero = (arg1 == he_seal_backend->get_valued_plaintext(0));
+            if (sub_zero && type_name == "float")
             {
+                NGRAPH_INFO << "Optimized subtract";
                 out = arg0;
             }
             else
             {
-                kernel::seal::scalar_subtract(
+                he_seal::kernel::scalar_subtract(
                     arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
-                out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_seal);
+                out = dynamic_pointer_cast<HECiphertext>(out_seal);
             }
         }
         else
         {
             throw ngraph_error(
-                "Subtract backend is SEAL, but arguments or outputs are not SealPlaintextWrapper");
-        }
-    }
-    else if (auto he_heaan_backend =
-                 dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
-    {
-        shared_ptr<runtime::he::HeaanCiphertextWrapper> arg0_heaan =
-            dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(arg0);
-        shared_ptr<runtime::he::HeaanPlaintextWrapper> arg1_heaan =
-            dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(arg1);
-        shared_ptr<runtime::he::HeaanCiphertextWrapper> out_heaan =
-            dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(out);
-
-        if (arg0_heaan && arg1_heaan && out_heaan)
-        {
-            auto zero = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(
-                he_heaan_backend->get_valued_plaintext(0, type));
-
-            if (arg1_heaan->m_plaintexts == zero->m_plaintexts)
-            {
-                out = arg0;
-            }
-            else
-            {
-                kernel::heaan::scalar_subtract(
-                    arg0_heaan, arg1_heaan, out_heaan, type, he_heaan_backend);
-                out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_heaan);
-            }
-        }
-        else
-        {
-            throw ngraph_error(
-                "Subtract backend is HEAAN, but arguments or outputs are not "
-                "HeaanPlaintextWrapper");
+                "subtract backend is SEAL, but arguments or outputs are not SealPlaintextWrapper");
         }
     }
     else
     {
-        throw ngraph_error("Subtract backend is neither SEAL nor HEAAN.");
+        throw ngraph_error("subtract backend is neither SEAL nor HEAAN.");
     }
 }
 
-void runtime::he::kernel::scalar_subtract(const shared_ptr<runtime::he::HEPlaintext>& arg0,
-                                          const shared_ptr<runtime::he::HECiphertext>& arg1,
-                                          shared_ptr<runtime::he::HECiphertext>& out,
-                                          const element::Type& type,
-                                          const shared_ptr<runtime::he::HEBackend>& he_backend)
+void kernel::scalar_subtract(const shared_ptr<HEPlaintext>& arg0,
+                             const shared_ptr<HECiphertext>& arg1,
+                             shared_ptr<HECiphertext>& out,
+                             const element::Type& type,
+                             const HEBackend* he_backend)
 {
-    if (auto he_seal_backend =
-            dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
-    {
-        shared_ptr<runtime::he::SealPlaintextWrapper> arg0_seal =
-            dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(arg0);
-        shared_ptr<runtime::he::SealCiphertextWrapper> arg1_seal =
-            dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(arg1);
-        shared_ptr<runtime::he::SealCiphertextWrapper> out_seal =
-            dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(out);
-
-        if (arg0_seal && arg1_seal && out_seal)
-        {
-            auto zero = dynamic_pointer_cast<runtime::he::SealPlaintextWrapper>(
-                he_seal_backend->get_valued_plaintext(0, type));
-
-            if (arg0_seal->m_plaintext == zero->m_plaintext)
-            {
-                kernel::seal::scalar_negate(arg1_seal, out_seal, type, he_seal_backend);
-                out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_seal);
-            }
-            else
-            {
-                kernel::seal::scalar_subtract(
-                    arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
-                out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_seal);
-            }
-        }
-        else
-        {
-            throw ngraph_error(
-                "Subtract backend is SEAL, but arguments or outputs are not SealPlaintextWrapper");
-        }
-    }
-    else if (auto he_heaan_backend =
-                 dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
-    {
-        shared_ptr<runtime::he::HeaanPlaintextWrapper> arg0_heaan =
-            dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(arg0);
-        shared_ptr<runtime::he::HeaanCiphertextWrapper> arg1_heaan =
-            dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(arg1);
-        shared_ptr<runtime::he::HeaanCiphertextWrapper> out_heaan =
-            dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(out);
-
-        if (arg0_heaan && arg1_heaan && out_heaan)
-        {
-            auto zero = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(
-                he_heaan_backend->get_valued_plaintext(0, type));
-
-            if (arg0_heaan->m_plaintexts == zero->m_plaintexts)
-            {
-                kernel::heaan::scalar_negate(arg1_heaan, out_heaan, type, he_heaan_backend);
-                out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_heaan);
-            }
-            else
-            {
-                kernel::heaan::scalar_subtract(
-                    arg0_heaan, arg1_heaan, out_heaan, type, he_heaan_backend);
-                out = dynamic_pointer_cast<runtime::he::HECiphertext>(out_heaan);
-            }
-        }
-        else
-        {
-            throw ngraph_error(
-                "Subtract backend is HEAAN, but arguments or outputs are not "
-                "HeaanPlaintextWrapper");
-        }
-    }
-    else
-    {
-        throw ngraph_error("Subtract backend is neither SEAL nor HEAAN.");
-    }
+    auto neg_arg1 = arg1;
+    scalar_negate(neg_arg1, neg_arg1, type, he_backend);
+    scalar_add(arg0, neg_arg1, out, type, he_backend);
 }

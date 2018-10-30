@@ -20,24 +20,23 @@
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/except.hpp"
 
-#include "he_heaan_backend.hpp"
-#include "he_seal_backend.hpp"
+#include "he_backend.hpp"
+
 #include "kernel/pad.hpp"
 
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::pad(
-    const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
-    const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg1, // scalar
-    std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
-    const Shape& arg0_shape,
-    const Shape& out_shape,
-    const Shape& padding_below,
-    const Shape& padding_above,
-    const Shape& padding_interior,
-    size_t batch_size,
-    const std::shared_ptr<runtime::he::HEBackend>& he_backend)
+void runtime::he::kernel::pad(const vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
+                              const vector<shared_ptr<runtime::he::HECiphertext>>& arg1, // scalar
+                              vector<shared_ptr<runtime::he::HECiphertext>>& out,
+                              const Shape& arg0_shape,
+                              const Shape& out_shape,
+                              const Shape& padding_below,
+                              const Shape& padding_above,
+                              const Shape& padding_interior,
+                              size_t batch_size,
+                              const runtime::he::HEBackend* he_backend)
 {
     if (arg1.size() != 1)
     {
@@ -46,7 +45,7 @@ void runtime::he::kernel::pad(
 
     NGRAPH_INFO << "pad cipher ciper";
 
-    std::shared_ptr<runtime::he::HECiphertext> pad_val = arg1[0];
+    shared_ptr<runtime::he::HECiphertext> pad_val = arg1[0];
 
     Coordinate input_start(arg0_shape.size(), 0); // start at (0,0,...,0)
     Coordinate input_end =
@@ -92,96 +91,35 @@ void runtime::he::kernel::pad(
     {
         const Coordinate& out_coord = *output_it;
 
-        std::shared_ptr<runtime::he::HECiphertext> v =
-            input_transform.has_source_coordinate(in_coord) ? arg0[input_transform.index(in_coord)]
-                                                            : pad_val;
+        shared_ptr<runtime::he::HECiphertext> v = input_transform.has_source_coordinate(in_coord)
+                                                      ? arg0[input_transform.index(in_coord)]
+                                                      : pad_val;
         out[output_transform.index(out_coord)] = v;
 
         ++output_it;
     }
 }
 
-void runtime::he::kernel::pad(
-    const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
-    const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg1, // scalar
-    std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
-    const Shape& arg0_shape,
-    const Shape& out_shape,
-    const Shape& padding_below,
-    const Shape& padding_above,
-    const Shape& padding_interior,
-    size_t batch_size,
-    const std::shared_ptr<runtime::he::HEBackend>& he_backend)
+void runtime::he::kernel::pad(const vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
+                              const vector<shared_ptr<runtime::he::HEPlaintext>>& arg1, // scalar
+                              vector<shared_ptr<runtime::he::HECiphertext>>& out,
+                              const Shape& arg0_shape,
+                              const Shape& out_shape,
+                              const Shape& padding_below,
+                              const Shape& padding_above,
+                              const Shape& padding_interior,
+                              size_t batch_size,
+                              const runtime::he::HEBackend* he_backend)
 {
     if (arg1.size() != 1)
     {
         throw ngraph_error("Padding element must be scalar");
     }
 
-    std::shared_ptr<runtime::he::HECiphertext> arg1_encrypted;
+    shared_ptr<runtime::he::HECiphertext> arg1_encrypted = he_backend->create_empty_ciphertext();
+    he_backend->encrypt(arg1_encrypted, arg1[0]);
 
-    if (auto he_seal_backend =
-            dynamic_pointer_cast<runtime::he::he_seal::HESealBackend>(he_backend))
-    {
-        std::shared_ptr<runtime::he::HECiphertext> ciphertext =
-            dynamic_pointer_cast<runtime::he::SealCiphertextWrapper>(
-                he_seal_backend->create_empty_ciphertext());
-        he_seal_backend->encrypt(ciphertext, arg1[0]);
-        arg1_encrypted = ciphertext;
-    }
-    else if (auto he_heaan_backend =
-                 dynamic_pointer_cast<runtime::he::he_heaan::HEHeaanBackend>(he_backend))
-    {
-        if (arg0.size() == 0)
-        {
-            std::shared_ptr<runtime::he::HECiphertext> ciphertext =
-                dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(
-                    he_heaan_backend->create_empty_ciphertext());
-            he_heaan_backend->encrypt(ciphertext, arg1[0]);
-            arg1_encrypted = ciphertext;
-        }
-        else // Ensure arg0 and arg1 has the same precision and logq.
-        {
-            // TODO: move into he_backend
-            auto arg0_heaan = dynamic_pointer_cast<runtime::he::HeaanCiphertextWrapper>(arg0[0]);
-
-            if (batch_size == 1)
-            {
-                heaan::Ciphertext ciphertext = he_heaan_backend->get_scheme()->encryptSingle(
-                                    dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(arg1[0])->m_plaintexts[0],
-                                    arg0_heaan->m_ciphertext.logp,
-                                    arg0_heaan->m_ciphertext.logq);
-                NGRAPH_INFO << "Padding with zeros size " << arg0_heaan->m_count;
-                arg1_encrypted = make_shared<runtime::he::HeaanCiphertextWrapper>(ciphertext, arg0_heaan->m_count);
-            }
-            else
-            {
-                double pad_value = dynamic_pointer_cast<runtime::he::HeaanPlaintextWrapper>(arg1[0])->m_plaintexts[0];
-                NGRAPH_INFO << "pad value " << pad_value;
-                vector<double> plaintexts(batch_size, pad_value);
-
-                NGRAPH_INFO << "Padding with zeros batch size " << batch_size;
-                NGRAPH_INFO << "plaintext size " << plaintexts.size();
-                for (auto elem : plaintexts)
-                {
-                    NGRAPH_INFO << "elem " << elem;
-                }
-
-               heaan::Ciphertext ciphertext = he_heaan_backend->get_scheme()->encrypt(
-                    plaintexts,
-                    arg0_heaan->m_ciphertext.logp,
-                    arg0_heaan->m_ciphertext.logq);
-
-                arg1_encrypted = make_shared<runtime::he::HeaanCiphertextWrapper>(ciphertext, batch_size);
-            }
-        }
-    }
-    else
-    {
-        throw ngraph_error("Result backend is neither SEAL nor HEAAN.");
-    }
-
-    std::vector<std::shared_ptr<runtime::he::HECiphertext>> arg1_encrypted_vector{arg1_encrypted};
+    vector<shared_ptr<runtime::he::HECiphertext>> arg1_encrypted_vector{arg1_encrypted};
 
     runtime::he::kernel::pad(arg0,
                              arg1_encrypted_vector,

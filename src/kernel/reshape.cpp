@@ -22,6 +22,7 @@
 using namespace std;
 using namespace ngraph;
 
+// TODO: move to template
 void runtime::he::kernel::reshape(const vector<shared_ptr<HECiphertext>>& arg,
                                   vector<shared_ptr<runtime::he::HECiphertext>>& out,
                                   const Shape& in_shape,
@@ -49,6 +50,7 @@ void runtime::he::kernel::reshape(const vector<shared_ptr<HECiphertext>>& arg,
     }
 }
 
+// TODO: move to template
 void runtime::he::kernel::reshape(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg,
                                   vector<shared_ptr<runtime::he::HEPlaintext>>& out,
                                   const Shape& in_shape,
