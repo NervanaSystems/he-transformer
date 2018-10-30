@@ -153,7 +153,7 @@ TEST(${BACKEND_NAME}, pad_interior_exterior_2d)
                                         {9, 9, 9, 9, 9, 9},
                                         {9, 9, 9, 9, 9, 9}})
                    .get_vector()),
-              read_vector<float>(result ));
+              read_vector<float>(result));
 }
 
 TEST(${BACKEND_NAME}, pad_exterior_2d_0x0)
@@ -290,7 +290,7 @@ TEST(${BACKEND_NAME}, pad_exterior_4d_1x2x2x2)
     // clang-format on
 
     auto b = backend->create_tensor(element::f32, shape_b);
-    copy_data(b, vector<float>{42} );
+    copy_data(b, vector<float>{42});
 
     auto result = backend->create_tensor(element::f32, shape_r);
 

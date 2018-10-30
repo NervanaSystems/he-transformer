@@ -48,10 +48,8 @@ TEST(${BACKEND_NAME}, convolution_2d_1image)
         runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
     auto a = backend->create_tensor(element::f32, shape_a);
-    copy_data(a,
-                 vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
-                               2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0}
-                 );
+    copy_data(a, vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                               2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0});
     auto b = backend->create_tensor(element::f32, shape_b);
     copy_data(b, vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5});
     auto result = backend->create_tensor(element::f32, shape_r);
@@ -116,8 +114,7 @@ TEST(${BACKEND_NAME}, convolution_2d_1item)
     copy_data(
         a,
         vector<float>{
-            -8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f, -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f}
-        );
+            -8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f, -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f});
     auto b = backend->create_tensor(element::f32, shape_b);
     copy_data(b, vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f});
     auto result = backend->create_tensor(element::f32, shape_r);
@@ -171,8 +168,7 @@ TEST(${BACKEND_NAME}, convolution_2d_1item_padded_1_1x1_1)
     copy_data(
         a,
         vector<float>{
-            -8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f, -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f}
-        );
+            -8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f, -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f});
     auto b = backend->create_tensor(element::f32, shape_b);
     copy_data(b, vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f});
     auto result = backend->create_tensor(element::f32, shape_r);
@@ -185,8 +181,7 @@ TEST(${BACKEND_NAME}, convolution_2d_1item_padded_1_1x1_1)
                                   -21.0f, 45.0f,  -72.0f, -63.0f, 27.0f,  90.0f,  54.0f,  -18.0f};
 
     backend->call(function, {result}, {a, b});
-    EXPECT_TRUE(
-        all_close(vector<float>{expected_result}, read_vector<float>(result), 1e-5f));
+    EXPECT_TRUE(all_close(vector<float>{expected_result}, read_vector<float>(result), 1e-5f));
 }
 
 TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5)
@@ -218,8 +213,7 @@ TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5)
     copy_data(
         a,
         vector<float>{
-            -8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f, -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f}
-        );
+            -8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f, -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f});
     auto b = backend->create_tensor(element::f32, shape_b);
     copy_data(b, vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f});
     auto result = backend->create_tensor(element::f32, shape_r);
@@ -243,8 +237,7 @@ TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5)
         0.0f, 0.0f, 0.0f,   0.0f,   0.0f,   0.0f,    0.0f,   0.0f,   0.0f, 0.0f, 0.0f, 0.0f};
 
     backend->call(function, {result}, {a, b});
-    EXPECT_TRUE(
-        all_close(vector<float>{expected_result}, read_vector<float>(result), 1e-5f));
+    EXPECT_TRUE(all_close(vector<float>{expected_result}, read_vector<float>(result), 1e-5f));
 }
 
 TEST(${BACKEND_NAME}, convolution_2d_2items)
@@ -273,11 +266,9 @@ TEST(${BACKEND_NAME}, convolution_2d_2items)
         runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
     auto a = backend->create_tensor(element::f32, shape_a);
-    copy_data(a,
-                 vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f, -8.f, 5.f,
+    copy_data(a, vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f, -8.f, 5.f,
                                -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,  9.f,  -7.f, 3.f,  0.f,
-                               6.f,  -1.f, -4.f, -2.f, 7.f,  -0.f, -1.f, 7.f,  -4.f, -9.f}
-                 );
+                               6.f,  -1.f, -4.f, -2.f, 7.f,  -0.f, -1.f, 7.f,  -4.f, -9.f});
     auto b = backend->create_tensor(element::f32, shape_b);
     copy_data(b, vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f});
     auto result = backend->create_tensor(element::f32, shape_r);
@@ -317,11 +308,9 @@ TEST(${BACKEND_NAME}, convolution_2d_2items_strided_padded)
         runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
     auto a = backend->create_tensor(element::f32, shape_a);
-    copy_data(a,
-                 vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f, -8.f, 5.f,
+    copy_data(a, vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f, -8.f, 5.f,
                                -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,  9.f,  -7.f, 3.f,  0.f,
-                               6.f,  -1.f, -4.f, -2.f, 7.f,  -0.f, -1.f, 7.f,  -4.f, -9.f}
-                 );
+                               6.f,  -1.f, -4.f, -2.f, 7.f,  -0.f, -1.f, 7.f,  -4.f, -9.f});
     auto b = backend->create_tensor(element::f32, shape_b);
     copy_data(b, vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f});
     auto result = backend->create_tensor(element::f32, shape_r);
@@ -343,6 +332,5 @@ TEST(${BACKEND_NAME}, convolution_2d_2items_strided_padded)
         0.0f,  0.0f, 0.0f, 0.0f,   0.0f,   0.0f,   0.0f,   0.0f, 0.0f, 0.0f,   0.0f,   0.0f};
 
     backend->call(function, {result}, {a, b});
-    EXPECT_TRUE(
-        all_close(vector<float>{expected_result}, read_vector<float>(result), 1e-5f));
+    EXPECT_TRUE(all_close(vector<float>{expected_result}, read_vector<float>(result), 1e-5f));
 }
