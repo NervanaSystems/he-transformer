@@ -100,7 +100,15 @@ std::vector<T> generalized_read_vector(std::shared_ptr<ngraph::runtime::Tensor> 
         }
         size_t size = element_count * sizeof(T);
         std::vector<T> rc(element_count);
-        std::dynamic_pointer_cast<ngraph::runtime::he::HETensor>(tv)->read(rc.data(), 0, size);
+
+        if (auto hetv = std::dynamic_pointer_cast<ngraph::runtime::he::HETensor>(tv))
+        {
+            hetv->read(rc.data(), 0, size);
+        }
+        else
+        {
+            throw ngraph_error("Tensor is not HETensor in generalized_read_vector");
+        }
         return rc;
     }
     else

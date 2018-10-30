@@ -36,7 +36,7 @@ void runtime::he::kernel::constant(vector<shared_ptr<runtime::he::HEPlaintext>>&
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
     {
-        const void* src_with_offset = (void*)((char*)data_ptr + i * type.size());
+        const void* src_with_offset = (void*)((char*)data_ptr + i * type_byte_size);
         he_backend->encode(out[i], src_with_offset, type);
     }
 }

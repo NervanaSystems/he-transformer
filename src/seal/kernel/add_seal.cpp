@@ -37,10 +37,10 @@ void he_seal::kernel::scalar_add(const shared_ptr<he_seal::SealCiphertextWrapper
         double scale0 = arg0->m_ciphertext.scale();
         double scale1 = arg1->m_ciphertext.scale();
 
-        size_t chain_ind0 = he_seal_backend->get_context()
+        size_t chain_ind0 = he_seal_ckks_backend->get_context()
                                 ->context_data(arg0->m_ciphertext.parms_id())
                                 ->chain_index();
-        size_t chain_ind1 = he_seal_backend->get_context()
+        size_t chain_ind1 = he_seal_ckks_backend->get_context()
                                 ->context_data(arg1->m_ciphertext.parms_id())
                                 ->chain_index();
 
@@ -58,18 +58,18 @@ void he_seal::kernel::scalar_add(const shared_ptr<he_seal::SealCiphertextWrapper
         while (chain_ind0 > chain_ind1)
         {
             // NGRAPH_INFO << "Mod switching " << chain_ind0 << " , " << chain_ind1;
-            he_seal_backend->get_evaluator()->mod_switch_to_inplace(arg0->m_ciphertext,
+            he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(arg0->m_ciphertext,
                                                                     arg1->m_ciphertext.parms_id());
-            chain_ind0 = he_seal_backend->get_context()
+            chain_ind0 = he_seal_ckks_backend->get_context()
                              ->context_data(arg0->m_ciphertext.parms_id())
                              ->chain_index();
         }
         while (chain_ind1 > chain_ind0)
         {
             // NGRAPH_INFO << "Mod switching " << chain_ind0 << " , " << chain_ind1;
-            he_seal_backend->get_evaluator()->mod_switch_to_inplace(arg1->m_ciphertext,
+            he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(arg1->m_ciphertext,
                                                                     arg0->m_ciphertext.parms_id());
-            chain_ind1 = he_seal_backend->get_context()
+            chain_ind1 = he_seal_ckks_backend->get_context()
                              ->context_data(arg1->m_ciphertext.parms_id())
                              ->chain_index();
         }

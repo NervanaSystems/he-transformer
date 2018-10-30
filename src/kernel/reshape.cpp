@@ -14,66 +14,28 @@
 * limitations under the License.
 *******************************************************************************/
 
+#include <cmath>
+#include <utility>
+
 #include "kernel/reshape.hpp"
-#include "he_backend.hpp"
-#include "he_ciphertext.hpp"
-#include "he_plaintext.hpp"
 
 using namespace std;
-using namespace ngraph;
+using namespace ngraph::runtime::he;
 
-// TODO: move to template
-void runtime::he::kernel::reshape(const vector<shared_ptr<HECiphertext>>& arg,
-                                  vector<shared_ptr<runtime::he::HECiphertext>>& out,
-                                  const Shape& in_shape,
-                                  const AxisVector& in_axis_order,
-                                  const Shape& out_shape)
+void kernel::reshape(const std::vector<std::shared_ptr<HECiphertext>>& arg,
+                        std::vector<std::shared_ptr<HECiphertext>>& out,
+                        const Shape& in_shape,
+                        const AxisVector& in_axis_order,
+                        const Shape& out_shape)
 {
-    // Unfortunately we don't yet have a constructor for CoordinateTransform that lets us pass only source_space_shape
-    // and source_axis_order so we have to construct the defaults here.
-    Shape in_start_corner(in_shape.size(), 0); // (0,...0)
-    Strides in_strides(in_shape.size(), 1);    // (1,...,1)
-
-    CoordinateTransform input_transform(
-        in_shape, in_start_corner, in_shape, in_strides, in_axis_order);
-
-    CoordinateTransform output_transform(out_shape);
-    CoordinateTransform::Iterator output_it = output_transform.begin();
-
-    for (const Coordinate& input_coord : input_transform)
-    {
-        const Coordinate& output_coord = *output_it;
-
-        out[output_transform.index(output_coord)] = arg[input_transform.index(input_coord)];
-
-        ++output_it;
-    }
+    kernel::reshape_template(arg, out, in_shape, in_axis_order, out_shape);
 }
 
-// TODO: move to template
-void runtime::he::kernel::reshape(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg,
-                                  vector<shared_ptr<runtime::he::HEPlaintext>>& out,
-                                  const Shape& in_shape,
-                                  const AxisVector& in_axis_order,
-                                  const Shape& out_shape)
+void kernel::reshape(const std::vector<std::shared_ptr<HEPlaintext>>& arg,
+                        std::vector<std::shared_ptr<HEPlaintext>>& out,
+                        const Shape& in_shape,
+                        const AxisVector& in_axis_order,
+                        const Shape& out_shape)
 {
-    // Unfortunately we don't yet have a constructor for CoordinateTransform that lets us pass only source_space_shape
-    // and source_axis_order so we have to construct the defaults here.
-    Shape in_start_corner(in_shape.size(), 0); // (0,...0)
-    Strides in_strides(in_shape.size(), 1);    // (1,...,1)
-
-    CoordinateTransform input_transform(
-        in_shape, in_start_corner, in_shape, in_strides, in_axis_order);
-
-    CoordinateTransform output_transform(out_shape);
-    CoordinateTransform::Iterator output_it = output_transform.begin();
-
-    for (const Coordinate& input_coord : input_transform)
-    {
-        const Coordinate& output_coord = *output_it;
-
-        out[output_transform.index(output_coord)] = arg[input_transform.index(input_coord)];
-
-        ++output_it;
-    }
+    kernel::reshape_template(arg, out, in_shape, in_axis_order, out_shape);
 }

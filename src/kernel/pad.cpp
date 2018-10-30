@@ -87,6 +87,11 @@ void runtime::he::kernel::pad(const vector<shared_ptr<runtime::he::HECiphertext>
 
     CoordinateTransform::Iterator output_it = output_transform.begin();
 
+    if (output_it == output_transform.end())
+    {
+        return;
+    }
+
     for (const Coordinate& in_coord : input_transform)
     {
         const Coordinate& out_coord = *output_it;

@@ -161,12 +161,20 @@ void ngraph::runtime::he::kernel::dot_template(
         auto arg0_projected_it = arg0_projected_transform.begin();
         for (size_t i = 0; i < arg0_projected_idx; ++i)
         {
+            if (arg0_projected_it == arg0_projected_transform.end())
+            {
+                throw ngraph_error("Reached end of iterator");
+            }
             ++arg0_projected_it;
         }
         const Coordinate& arg0_projected_coord = *arg0_projected_it;
         auto arg1_projected_it = arg1_projected_transform.begin();
         for (size_t i = 0; i < arg1_projected_idx; ++i)
         {
+            if (arg1_projected_it == arg1_projected_transform.end())
+            {
+                throw ngraph_error("Reached end of iterator");
+            }
             ++arg1_projected_it;
         }
         const Coordinate& arg1_projected_coord = *arg1_projected_it;
