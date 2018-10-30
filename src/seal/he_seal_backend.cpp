@@ -21,14 +21,13 @@
 #include "he_seal_backend.hpp"
 #include "he_seal_parameter.hpp"
 #include "he_tensor.hpp"
-#include "seal/ckks/he_seal_ckks_backend.hpp"
 #include "seal/bfv/he_seal_bfv_backend.hpp"
+#include "seal/ckks/he_seal_ckks_backend.hpp"
 
 #include "seal/seal.h"
 
 using namespace ngraph;
 using namespace std;
-
 
 extern "C" const char* get_ngraph_version_string()
 {
@@ -45,11 +44,12 @@ extern "C" runtime::Backend* new_backend(const char* configuration_chars)
     }
     else if (configuration_string == "HE:SEAL:CKKS")
     {
-       return new runtime::he::he_seal::HESealCKKSBackend();
+        return new runtime::he::he_seal::HESealCKKSBackend();
     }
     else
     {
-        throw ngraph_error("Invalid configuration string \"" + configuration_string + "\" in new_backend");
+        throw ngraph_error("Invalid configuration string \"" + configuration_string +
+                           "\" in new_backend");
     }
 }
 
@@ -58,8 +58,8 @@ extern "C" void delete_backend(runtime::Backend* backend)
     delete backend;
 }
 
-
-void runtime::he::he_seal::HESealBackend::assert_valid_seal_parameter(const shared_ptr<runtime::he::he_seal::HESealParameter> sp) const
+void runtime::he::he_seal::HESealBackend::assert_valid_seal_parameter(
+    const shared_ptr<runtime::he::he_seal::HESealParameter> sp) const
 {
     if (sp->m_scheme_name != "HE:SEAL:BFV" && sp->m_scheme_name != "HE:SEAL:CKKS")
     {
@@ -76,7 +76,8 @@ void runtime::he::he_seal::HESealBackend::assert_valid_seal_parameter(const shar
         throw ngraph_error("sp.security_level must be 128, 192");
     }
 
-    if (sp->m_evaluation_decomposition_bit_count > 60 || sp->m_evaluation_decomposition_bit_count < 1)
+    if (sp->m_evaluation_decomposition_bit_count > 60 ||
+        sp->m_evaluation_decomposition_bit_count < 1)
     {
         throw ngraph_error("sp.m_evaluation_decomposition_bit_count must be between 1 and 60");
     }
@@ -190,9 +191,9 @@ void runtime::he::he_seal::HESealBackend::decrypt(
 }
 
 const shared_ptr<runtime::he::HEPlaintext>
-    runtime::he::he_seal::HESealBackend::get_valued_plaintext(int64_t value) const
+    runtime::he::he_seal::HESealBackend::get_valued_plaintext(double value) const
 {
-    std::unordered_set<int64_t> stored_plaintext_values{-1, 0, 1};
+    std::unordered_set<double> stored_plaintext_values{-1, 0, 1};
     if (stored_plaintext_values.find(value) == stored_plaintext_values.end())
     {
         throw ngraph_error("Value not stored in stored plaintext values");

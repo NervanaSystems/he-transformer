@@ -14,23 +14,23 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "seal/he_seal_backend.hpp"
-#include "ngraph/type/element_type.hpp"
-#include "seal/seal.h"
 #include "seal/kernel/subtract_seal.hpp"
+#include "ngraph/type/element_type.hpp"
+#include "seal/he_seal_backend.hpp"
+#include "seal/seal.h"
 
 using namespace std;
 using namespace ngraph::runtime::he;
 
 void he_seal::kernel::scalar_subtract(const shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
-                            const shared_ptr<he_seal::SealCiphertextWrapper>& arg1,
-                            shared_ptr<he_seal::SealCiphertextWrapper>& out,
-                            const element::Type& type,
-                            const he_seal::HESealBackend* he_seal_backend)
+                                      const shared_ptr<he_seal::SealCiphertextWrapper>& arg1,
+                                      shared_ptr<he_seal::SealCiphertextWrapper>& out,
+                                      const element::Type& type,
+                                      const he_seal::HESealBackend* he_seal_backend)
 {
     if (arg0 == out)
     {
-       he_seal_backend->get_evaluator()->sub_inplace(out->m_ciphertext, arg1->m_ciphertext);
+        he_seal_backend->get_evaluator()->sub_inplace(out->m_ciphertext, arg1->m_ciphertext);
     }
     else if (arg1 == out)
     {
@@ -38,15 +38,16 @@ void he_seal::kernel::scalar_subtract(const shared_ptr<he_seal::SealCiphertextWr
     }
     else
     {
-        he_seal_backend->get_evaluator()->sub(arg0->m_ciphertext, arg1->m_ciphertext, out->m_ciphertext);
+        he_seal_backend->get_evaluator()->sub(
+            arg0->m_ciphertext, arg1->m_ciphertext, out->m_ciphertext);
     }
 }
 
 void he_seal::kernel::scalar_subtract(const shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
-                            const shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
-                            shared_ptr<he_seal::SealCiphertextWrapper>& out,
-                            const element::Type& type,
-                            const he_seal::HESealBackend* he_seal_backend)
+                                      const shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
+                                      shared_ptr<he_seal::SealCiphertextWrapper>& out,
+                                      const element::Type& type,
+                                      const he_seal::HESealBackend* he_seal_backend)
 {
     if (arg0 == out)
     {
@@ -54,18 +55,18 @@ void he_seal::kernel::scalar_subtract(const shared_ptr<he_seal::SealCiphertextWr
     }
     else
     {
-        he_seal_backend->get_evaluator()->sub_plain(arg0->m_ciphertext, arg1->m_plaintext, out->m_ciphertext);
+        he_seal_backend->get_evaluator()->sub_plain(
+            arg0->m_ciphertext, arg1->m_plaintext, out->m_ciphertext);
     }
 }
 
 void he_seal::kernel::scalar_subtract(const shared_ptr<he_seal::SealPlaintextWrapper>& arg0,
-                            const shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
-                            shared_ptr<he_seal::SealPlaintextWrapper>& out,
-                            const element::Type& type,
-                            const he_seal::HESealBackend* he_seal_backend)
+                                      const shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
+                                      shared_ptr<he_seal::SealPlaintextWrapper>& out,
+                                      const element::Type& type,
+                                      const he_seal::HESealBackend* he_seal_backend)
 {
-    shared_ptr<HEPlaintext> out_he =
-        dynamic_pointer_cast<HEPlaintext>(out);
+    shared_ptr<HEPlaintext> out_he = dynamic_pointer_cast<HEPlaintext>(out);
     const string type_name = type.c_type_string();
     if (type_name == "float")
     {

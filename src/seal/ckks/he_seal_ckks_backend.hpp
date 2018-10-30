@@ -18,9 +18,9 @@
 
 #include <memory>
 
-#include "seal/he_seal_parameter.hpp"
-#include "seal/he_seal_backend.hpp"
 #include "ngraph/runtime/backend.hpp"
+#include "seal/he_seal_backend.hpp"
+#include "seal/he_seal_parameter.hpp"
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
@@ -42,15 +42,18 @@ namespace ngraph
                 {
                 public:
                     HESealCKKSBackend();
-                    HESealCKKSBackend(const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp);
+                    HESealCKKSBackend(
+                        const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp);
                     HESealCKKSBackend(HESealCKKSBackend& he_backend) = default;
-                    ~HESealCKKSBackend() {};
+                    ~HESealCKKSBackend(){};
 
-                     std::shared_ptr<runtime::Tensor> create_batched_tensor(
-                        const element::Type& element_type, const Shape& shape) override;
+                    std::shared_ptr<runtime::Tensor>
+                        create_batched_tensor(const element::Type& element_type,
+                                              const Shape& shape) override;
 
                     std::shared_ptr<seal::SEALContext> make_seal_context(
-                        const std::shared_ptr<runtime::he::he_seal::HESealParameter> sp) const override;
+                        const std::shared_ptr<runtime::he::he_seal::HESealParameter> sp)
+                        const override;
 
                     void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
                                 const void* input,
@@ -66,7 +69,8 @@ namespace ngraph
                         return m_ckks_encoder;
                     }
 
-                    void assert_valid_seal_ckks_parameter(const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp) const;
+                    void assert_valid_seal_ckks_parameter(
+                        const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp) const;
 
                 private:
                     std::shared_ptr<seal::CKKSEncoder> m_ckks_encoder;

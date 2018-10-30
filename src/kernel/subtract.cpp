@@ -16,22 +16,22 @@
 
 #include <vector>
 
-#include "seal/he_seal_backend.hpp"
-#include "kernel/subtract.hpp"
 #include "kernel/add.hpp"
 #include "kernel/negate.hpp"
-#include "seal/kernel/subtract_seal.hpp"
+#include "kernel/subtract.hpp"
 #include "ngraph/type/element_type.hpp"
+#include "seal/he_seal_backend.hpp"
+#include "seal/kernel/subtract_seal.hpp"
 
 using namespace std;
 using namespace ngraph::runtime::he;
 
 void kernel::subtract(const vector<shared_ptr<HECiphertext>>& arg0,
-                              const vector<shared_ptr<HECiphertext>>& arg1,
-                              vector<shared_ptr<HECiphertext>>& out,
-                              const element::Type& type,
-                              const HEBackend* he_backend,
-                              size_t count)
+                      const vector<shared_ptr<HECiphertext>>& arg1,
+                      vector<shared_ptr<HECiphertext>>& out,
+                      const element::Type& type,
+                      const HEBackend* he_backend,
+                      size_t count)
 {
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
@@ -41,11 +41,11 @@ void kernel::subtract(const vector<shared_ptr<HECiphertext>>& arg0,
 }
 
 void kernel::subtract(const vector<shared_ptr<HECiphertext>>& arg0,
-                              const vector<shared_ptr<HEPlaintext>>& arg1,
-                              vector<shared_ptr<HECiphertext>>& out,
-                              const element::Type& type,
-                              const HEBackend* he_backend,
-                              size_t count)
+                      const vector<shared_ptr<HEPlaintext>>& arg1,
+                      vector<shared_ptr<HECiphertext>>& out,
+                      const element::Type& type,
+                      const HEBackend* he_backend,
+                      size_t count)
 {
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
@@ -55,11 +55,11 @@ void kernel::subtract(const vector<shared_ptr<HECiphertext>>& arg0,
 }
 
 void kernel::subtract(const vector<shared_ptr<HEPlaintext>>& arg0,
-                              const vector<shared_ptr<HECiphertext>>& arg1,
-                              vector<shared_ptr<HECiphertext>>& out,
-                              const element::Type& type,
-                              const HEBackend* he_backend,
-                              size_t count)
+                      const vector<shared_ptr<HECiphertext>>& arg1,
+                      vector<shared_ptr<HECiphertext>>& out,
+                      const element::Type& type,
+                      const HEBackend* he_backend,
+                      size_t count)
 {
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
@@ -69,11 +69,11 @@ void kernel::subtract(const vector<shared_ptr<HEPlaintext>>& arg0,
 }
 
 void kernel::subtract(const vector<shared_ptr<HEPlaintext>>& arg0,
-                              const vector<shared_ptr<HEPlaintext>>& arg1,
-                              vector<shared_ptr<HEPlaintext>>& out,
-                              const element::Type& type,
-                              const HEBackend* he_backend,
-                              size_t count)
+                      const vector<shared_ptr<HEPlaintext>>& arg1,
+                      vector<shared_ptr<HEPlaintext>>& out,
+                      const element::Type& type,
+                      const HEBackend* he_backend,
+                      size_t count)
 {
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
@@ -83,13 +83,12 @@ void kernel::subtract(const vector<shared_ptr<HEPlaintext>>& arg0,
 }
 
 void kernel::scalar_subtract(const shared_ptr<HECiphertext>& arg0,
-                                     const shared_ptr<HECiphertext>& arg1,
-                                     shared_ptr<HECiphertext>& out,
-                                     const element::Type& type,
-                                     const HEBackend* he_backend)
+                             const shared_ptr<HECiphertext>& arg1,
+                             shared_ptr<HECiphertext>& out,
+                             const element::Type& type,
+                             const HEBackend* he_backend)
 {
-    if (auto he_seal_backend =
-            dynamic_cast<const he_seal::HESealBackend*>(he_backend))
+    if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(he_backend))
     {
         shared_ptr<he_seal::SealCiphertextWrapper> arg0_seal =
             dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(arg0);
@@ -116,13 +115,12 @@ void kernel::scalar_subtract(const shared_ptr<HECiphertext>& arg0,
 }
 
 void kernel::scalar_subtract(const shared_ptr<HEPlaintext>& arg0,
-                                     const shared_ptr<HEPlaintext>& arg1,
-                                     shared_ptr<HEPlaintext>& out,
-                                     const element::Type& type,
-                                     const HEBackend* he_backend)
+                             const shared_ptr<HEPlaintext>& arg1,
+                             shared_ptr<HEPlaintext>& out,
+                             const element::Type& type,
+                             const HEBackend* he_backend)
 {
-    if (auto he_seal_backend =
-            dynamic_cast<const he_seal::HESealBackend*>(he_backend))
+    if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(he_backend))
     {
         shared_ptr<he_seal::SealPlaintextWrapper> arg0_seal =
             dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(arg0);
@@ -139,7 +137,8 @@ void kernel::scalar_subtract(const shared_ptr<HEPlaintext>& arg0,
         else
         {
             throw ngraph_error(
-                "subtract backend is SEAL, but arguments or outputs are not SealPlaintextWrapper.:");
+                "subtract backend is SEAL, but arguments or outputs are not "
+                "SealPlaintextWrapper.:");
         }
     }
     else
@@ -149,13 +148,12 @@ void kernel::scalar_subtract(const shared_ptr<HEPlaintext>& arg0,
 }
 
 void kernel::scalar_subtract(const shared_ptr<HECiphertext>& arg0,
-                                     const shared_ptr<HEPlaintext>& arg1,
-                                     shared_ptr<HECiphertext>& out,
-                                     const element::Type& type,
-                                     const HEBackend* he_backend)
+                             const shared_ptr<HEPlaintext>& arg1,
+                             shared_ptr<HECiphertext>& out,
+                             const element::Type& type,
+                             const HEBackend* he_backend)
 {
-    if (auto he_seal_backend =
-            dynamic_cast<const he_seal::HESealBackend*>(he_backend))
+    if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(he_backend))
     {
         shared_ptr<he_seal::SealCiphertextWrapper> arg0_seal =
             dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(arg0);
@@ -167,21 +165,16 @@ void kernel::scalar_subtract(const shared_ptr<HECiphertext>& arg0,
         if (arg0_seal && arg1_seal && out_seal)
         {
             const string type_name = type.c_type_string();
-            bool sub_zero = false;
-            if (type_name == "float")
-            {
-                float x;
-                he_backend->decode((void*)(&x), arg1, type, 1);
-                sub_zero = (x == 0);
-            }
-            if (sub_zero)
+            bool sub_zero = (arg1 == he_seal_backend->get_valued_plaintext(0));
+            if (sub_zero && type_name == "float")
             {
                 NGRAPH_INFO << "Optimized subtract";
                 out = arg0;
             }
             else
             {
-                he_seal::kernel::scalar_subtract(arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
+                he_seal::kernel::scalar_subtract(
+                    arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
                 out = dynamic_pointer_cast<HECiphertext>(out_seal);
             }
         }
@@ -198,10 +191,10 @@ void kernel::scalar_subtract(const shared_ptr<HECiphertext>& arg0,
 }
 
 void kernel::scalar_subtract(const shared_ptr<HEPlaintext>& arg0,
-                                     const shared_ptr<HECiphertext>& arg1,
-                                     shared_ptr<HECiphertext>& out,
-                                     const element::Type& type,
-                                     const HEBackend* he_backend)
+                             const shared_ptr<HECiphertext>& arg1,
+                             shared_ptr<HECiphertext>& out,
+                             const element::Type& type,
+                             const HEBackend* he_backend)
 {
     auto neg_arg1 = arg1;
     scalar_negate(neg_arg1, neg_arg1, type, he_backend);

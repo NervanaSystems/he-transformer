@@ -53,6 +53,6 @@ TEST(${BACKEND_NAME}, negate_2_3)
         copy_he_data(t_a, test::NDArray<float, 2>({{-3, -2, -1}, {0, 1, 2}}).get_vector(), backend);
         backend->call(f, {t_result}, {t_a});
         EXPECT_TRUE(all_close(read_he_vector<float>(t_result, backend),
-                  (test::NDArray<float, 2>({{3, 2, 1}, {0, -1, -2}})).get_vector()));
+                              (test::NDArray<float, 2>({{3, 2, 1}, {0, -1, -2}})).get_vector()));
     }
 }

@@ -27,17 +27,16 @@
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::pad(
-    const vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
-    const vector<shared_ptr<runtime::he::HECiphertext>>& arg1, // scalar
-    vector<shared_ptr<runtime::he::HECiphertext>>& out,
-    const Shape& arg0_shape,
-    const Shape& out_shape,
-    const Shape& padding_below,
-    const Shape& padding_above,
-    const Shape& padding_interior,
-    size_t batch_size,
-    const runtime::he::HEBackend* he_backend)
+void runtime::he::kernel::pad(const vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
+                              const vector<shared_ptr<runtime::he::HECiphertext>>& arg1, // scalar
+                              vector<shared_ptr<runtime::he::HECiphertext>>& out,
+                              const Shape& arg0_shape,
+                              const Shape& out_shape,
+                              const Shape& padding_below,
+                              const Shape& padding_above,
+                              const Shape& padding_interior,
+                              size_t batch_size,
+                              const runtime::he::HEBackend* he_backend)
 {
     if (arg1.size() != 1)
     {
@@ -92,26 +91,25 @@ void runtime::he::kernel::pad(
     {
         const Coordinate& out_coord = *output_it;
 
-        shared_ptr<runtime::he::HECiphertext> v =
-            input_transform.has_source_coordinate(in_coord) ? arg0[input_transform.index(in_coord)]
-                                                            : pad_val;
+        shared_ptr<runtime::he::HECiphertext> v = input_transform.has_source_coordinate(in_coord)
+                                                      ? arg0[input_transform.index(in_coord)]
+                                                      : pad_val;
         out[output_transform.index(out_coord)] = v;
 
         ++output_it;
     }
 }
 
-void runtime::he::kernel::pad(
-    const vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
-    const vector<shared_ptr<runtime::he::HEPlaintext>>& arg1, // scalar
-    vector<shared_ptr<runtime::he::HECiphertext>>& out,
-    const Shape& arg0_shape,
-    const Shape& out_shape,
-    const Shape& padding_below,
-    const Shape& padding_above,
-    const Shape& padding_interior,
-    size_t batch_size,
-    const runtime::he::HEBackend* he_backend)
+void runtime::he::kernel::pad(const vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
+                              const vector<shared_ptr<runtime::he::HEPlaintext>>& arg1, // scalar
+                              vector<shared_ptr<runtime::he::HECiphertext>>& out,
+                              const Shape& arg0_shape,
+                              const Shape& out_shape,
+                              const Shape& padding_below,
+                              const Shape& padding_above,
+                              const Shape& padding_interior,
+                              size_t batch_size,
+                              const runtime::he::HEBackend* he_backend)
 {
     if (arg1.size() != 1)
     {

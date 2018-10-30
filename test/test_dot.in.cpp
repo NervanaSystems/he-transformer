@@ -86,7 +86,7 @@ TEST(${BACKEND_NAME}, dot1d_optimized)
         copy_he_data(t_a, vector<float>{1, 2, 3, 4}, backend);
         copy_he_data(t_b, vector<float>{-1, 0, 1, 2}, backend);
         backend->call(f, {t_result}, {t_a, t_b});
-        EXPECT_TRUE(all_close(read_he_vector<float>(t_result, backend), vector<float>{10}));
+        EXPECT_TRUE(all_close(read_he_vector<float>(t_result, backend), vector<float>{10}, 0.001f));
     }
 }
 
@@ -114,10 +114,12 @@ TEST(${BACKEND_NAME}, dot_matrix_vector)
         auto t_b = inputs[1];
         auto t_result = results[0];
 
-        copy_he_data(t_a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, backend);
+        copy_he_data(
+            t_a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, backend);
         copy_he_data(t_b, vector<float>{17, 18, 19, 20}, backend);
         backend->call(f, {t_result}, {t_a, t_b});
-        EXPECT_TRUE(all_close(read_he_vector<float>(t_result, backend), (vector<float>{190, 486, 782, 1078})));
+        EXPECT_TRUE(all_close(read_he_vector<float>(t_result, backend),
+                              (vector<float>{190, 486, 782, 1078})));
     }
 }
 

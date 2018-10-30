@@ -23,8 +23,8 @@
 #include "gtest/gtest.h"
 
 #include "he_backend.hpp"
-#include "he_tensor.hpp"
 #include "he_cipher_tensor.hpp"
+#include "he_tensor.hpp"
 #include "ngraph/descriptor/layout/tensor_layout.hpp"
 #include "ngraph/file_util.hpp"
 #include "ngraph/node.hpp"
@@ -58,9 +58,7 @@ bool all_close(const std::vector<std::complex<T>>& a,
 }
 
 template <typename T>
-bool all_close(const std::vector<T>& a,
-               const std::vector<T>& b,
-               T atol = static_cast<T>(1e-5))
+bool all_close(const std::vector<T>& a, const std::vector<T>& b, T atol = static_cast<T>(1e-5))
 {
     bool close = true;
     for (size_t i = 0; i < a.size(); ++i)
@@ -75,7 +73,7 @@ bool all_close(const std::vector<T>& a,
 }
 
 std::vector<std::tuple<std::vector<std::shared_ptr<ngraph::runtime::Tensor>>,
-             std::vector<std::shared_ptr<ngraph::runtime::Tensor>>>>
+                       std::vector<std::shared_ptr<ngraph::runtime::Tensor>>>>
     generate_plain_cipher_tensors(const std::vector<std::shared_ptr<Node>>& output,
                                   const std::vector<std::shared_ptr<Node>>& input,
                                   std::shared_ptr<ngraph::runtime::Backend> backend,
@@ -116,14 +114,17 @@ std::vector<T> generalized_read_vector(std::shared_ptr<ngraph::runtime::Tensor> 
 }
 
 template <typename T>
-void copy_he_data(std::shared_ptr<ngraph::runtime::Tensor> tv, const std::vector<T>& data, std::shared_ptr<ngraph::runtime::Backend> he_backend)
+void copy_he_data(std::shared_ptr<ngraph::runtime::Tensor> tv,
+                  const std::vector<T>& data,
+                  std::shared_ptr<ngraph::runtime::Backend> he_backend)
 {
     size_t data_size = data.size() * sizeof(T);
     std::dynamic_pointer_cast<ngraph::runtime::he::HETensor>(tv)->write(data.data(), 0, data_size);
 }
 
 template <typename T>
-std::vector<T> read_he_vector(std::shared_ptr<ngraph::runtime::Tensor> tv, std::shared_ptr<ngraph::runtime::Backend> he_backend)
+std::vector<T> read_he_vector(std::shared_ptr<ngraph::runtime::Tensor> tv,
+                              std::shared_ptr<ngraph::runtime::Backend> he_backend)
 {
     if (ngraph::element::from<T>() != tv->get_tensor_layout()->get_element_type())
     {
@@ -135,4 +136,3 @@ std::vector<T> read_he_vector(std::shared_ptr<ngraph::runtime::Tensor> tv, std::
     std::dynamic_pointer_cast<ngraph::runtime::he::HETensor>(tv)->read(rc.data(), 0, size);
     return rc;
 }
-

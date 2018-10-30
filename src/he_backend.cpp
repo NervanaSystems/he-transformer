@@ -40,10 +40,10 @@
 #include "kernel/multiply.hpp"
 #include "kernel/negate.hpp"
 #include "kernel/pad.hpp"
-#include "kernel/subtract.hpp"
-#include "kernel/result.hpp"
 #include "kernel/reshape.hpp"
+#include "kernel/result.hpp"
 #include "kernel/slice.hpp"
+#include "kernel/subtract.hpp"
 
 #include "he_backend.hpp"
 #include "he_cipher_tensor.hpp"
@@ -55,8 +55,9 @@ using namespace std;
 
 using descriptor::layout::DenseTensorLayout;
 
-shared_ptr<runtime::he::HEPlaintext> runtime::he::HEBackend::create_valued_plaintext(
-    float value, const element::Type& element_type) const
+shared_ptr<runtime::he::HEPlaintext>
+    runtime::he::HEBackend::create_valued_plaintext(float value,
+                                                    const element::Type& element_type) const
 {
     const string type_name = element_type.c_type_string();
     shared_ptr<runtime::he::HEPlaintext> plaintext = create_empty_plaintext();
@@ -80,25 +81,27 @@ shared_ptr<runtime::he::HECiphertext> runtime::he::HEBackend::create_valued_ciph
     return ciphertext;
 }
 
-shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(
-    const element::Type& element_type, const Shape& shape, void* memory_pointer)
+shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(const element::Type& element_type,
+                                                                  const Shape& shape,
+                                                                  void* memory_pointer)
 {
     throw ngraph_error("HE create_tensor unimplemented");
 }
 
-shared_ptr<runtime::Tensor>
-    runtime::he::HEBackend::create_tensor(const element::Type& element_type,
-                                                       const Shape& shape)
+shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(const element::Type& element_type,
+                                                                  const Shape& shape)
 {
-    auto rc = make_shared<runtime::he::HECipherTensor>(element_type, shape, this, create_empty_ciphertext());
+    auto rc = make_shared<runtime::he::HECipherTensor>(
+        element_type, shape, this, create_empty_ciphertext());
     return static_pointer_cast<runtime::Tensor>(rc);
 }
 
 shared_ptr<runtime::Tensor>
     runtime::he::HEBackend::create_plain_tensor(const element::Type& element_type,
-                                                             const Shape& shape)
+                                                const Shape& shape)
 {
-    auto rc = make_shared<runtime::he::HEPlainTensor>(element_type, shape, this, create_empty_plaintext());
+    auto rc = make_shared<runtime::he::HEPlainTensor>(
+        element_type, shape, this, create_empty_plaintext());
     return static_pointer_cast<runtime::Tensor>(rc);
 }
 
@@ -196,11 +199,11 @@ vector<runtime::PerformanceCounter>
 }
 
 bool runtime::he::HEBackend::call(shared_ptr<Function> function,
-                                    const vector<shared_ptr<runtime::he::HETensor>>& output_tvs,
-                                    const vector<shared_ptr<runtime::he::HETensor>>& input_tvs)
+                                  const vector<shared_ptr<runtime::he::HETensor>>& output_tvs,
+                                  const vector<shared_ptr<runtime::he::HETensor>>& input_tvs)
 {
     // TODO: we clear timer at each run for now
-   //  m_timer_map.clear();
+    //  m_timer_map.clear();
 
     // HEAAN may call with batch != 1, so we disabel validate_call here
     // validate_call(function, outputs, inputs);
@@ -251,7 +254,7 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
             inputs.push_back(tensor_map.at(tv));
         }
 
-       // get op outputs from map or create
+        // get op outputs from map or create
         bool any_batched = false;
         vector<shared_ptr<runtime::he::HETensor>> outputs;
         for (size_t i = 0; i < op->get_output_size(); ++i)
@@ -277,20 +280,17 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
                 }
                 else
                 {
-                    bool batched_out =
-                        any_of(inputs.begin(),
-                               inputs.end(),
-                               [](shared_ptr<runtime::he::HETensor> input) {
-                                   if (auto input_cipher_tv =
-                                           dynamic_pointer_cast<HECipherTensor>(input))
-                                   {
-                                       return input_cipher_tv->is_batched();
-                                   }
-                                   else
-                                   {
-                                       return false;
-                                   }
-                               });
+                    bool batched_out = any_of(
+                        inputs.begin(), inputs.end(), [](shared_ptr<runtime::he::HETensor> input) {
+                            if (auto input_cipher_tv = dynamic_pointer_cast<HECipherTensor>(input))
+                            {
+                                return input_cipher_tv->is_batched();
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        });
                     any_batched |= batched_out;
 
                     auto otv = make_shared<runtime::he::HECipherTensor>(
@@ -346,11 +346,10 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
     return true;
 }
 
-
 void runtime::he::HEBackend::generate_calls(const element::Type& type,
-                                              const shared_ptr<Node>& node,
-                                              const vector<shared_ptr<HETensor>>& out,
-                                              const vector<shared_ptr<HETensor>>& args)
+                                            const shared_ptr<Node>& node,
+                                            const vector<shared_ptr<HETensor>>& out,
+                                            const vector<shared_ptr<HETensor>>& args)
 {
     string node_op = node->description();
     shared_ptr<HECipherTensor> arg0_cipher = nullptr;
@@ -466,7 +465,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
             throw ngraph_error("Constant type not supported.");
         }
     }
-     else if (node_op == "Convolution")
+    else if (node_op == "Convolution")
     {
         shared_ptr<op::Convolution> c = dynamic_pointer_cast<op::Convolution>(node);
 
@@ -641,38 +640,38 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
         if (arg0_cipher != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
             runtime::he::kernel::multiply(arg0_cipher->get_elements(),
-                                     arg1_cipher->get_elements(),
-                                     out0_cipher->get_elements(),
-                                     type,
-                                     this,
-                                     out0_cipher->get_element_count());
+                                          arg1_cipher->get_elements(),
+                                          out0_cipher->get_elements(),
+                                          type,
+                                          this,
+                                          out0_cipher->get_element_count());
         }
         else if (arg0_cipher != nullptr && arg1_plain != nullptr && out0_cipher != nullptr)
         {
             runtime::he::kernel::multiply(arg0_cipher->get_elements(),
-                                     arg1_plain->get_elements(),
-                                     out0_cipher->get_elements(),
-                                     type,
-                                     this,
-                                     out0_cipher->get_element_count());
+                                          arg1_plain->get_elements(),
+                                          out0_cipher->get_elements(),
+                                          type,
+                                          this,
+                                          out0_cipher->get_element_count());
         }
         else if (arg0_plain != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
             runtime::he::kernel::multiply(arg0_plain->get_elements(),
-                                     arg1_cipher->get_elements(),
-                                     out0_cipher->get_elements(),
-                                     type,
-                                     this,
-                                     out0_cipher->get_element_count());
+                                          arg1_cipher->get_elements(),
+                                          out0_cipher->get_elements(),
+                                          type,
+                                          this,
+                                          out0_cipher->get_element_count());
         }
         else if (arg0_plain != nullptr && arg1_plain != nullptr && out0_plain != nullptr)
         {
             runtime::he::kernel::multiply(arg0_plain->get_elements(),
-                                     arg1_plain->get_elements(),
-                                     out0_plain->get_elements(),
-                                     type,
-                                     this,
-                                     out0_plain->get_element_count());
+                                          arg1_plain->get_elements(),
+                                          out0_plain->get_elements(),
+                                          type,
+                                          this,
+                                          out0_plain->get_element_count());
         }
         else
         {
@@ -684,18 +683,18 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
         if (arg0_cipher != nullptr && out0_cipher != nullptr)
         {
             runtime::he::kernel::negate(arg0_cipher->get_elements(),
-                                     out0_cipher->get_elements(),
-                                     type,
-                                     this,
-                                     out0_cipher->get_element_count());
+                                        out0_cipher->get_elements(),
+                                        type,
+                                        this,
+                                        out0_cipher->get_element_count());
         }
         else if (arg0_plain != nullptr && out0_plain != nullptr)
         {
             runtime::he::kernel::negate(arg0_plain->get_elements(),
-                                     out0_plain->get_elements(),
-                                     type,
-                                     this,
-                                     out0_plain->get_element_count());
+                                        out0_plain->get_elements(),
+                                        type,
+                                        this,
+                                        out0_plain->get_element_count());
         }
         else
         {
@@ -849,38 +848,38 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
         if (arg0_cipher != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
             runtime::he::kernel::subtract(arg0_cipher->get_elements(),
-                                     arg1_cipher->get_elements(),
-                                     out0_cipher->get_elements(),
-                                     type,
-                                     this,
-                                     out0_cipher->get_element_count());
+                                          arg1_cipher->get_elements(),
+                                          out0_cipher->get_elements(),
+                                          type,
+                                          this,
+                                          out0_cipher->get_element_count());
         }
         else if (arg0_cipher != nullptr && arg1_plain != nullptr && out0_cipher != nullptr)
         {
             runtime::he::kernel::subtract(arg0_cipher->get_elements(),
-                                     arg1_plain->get_elements(),
-                                     out0_cipher->get_elements(),
-                                     type,
-                                     this,
-                                     out0_cipher->get_element_count());
+                                          arg1_plain->get_elements(),
+                                          out0_cipher->get_elements(),
+                                          type,
+                                          this,
+                                          out0_cipher->get_element_count());
         }
         else if (arg0_plain != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
             runtime::he::kernel::subtract(arg0_plain->get_elements(),
-                                     arg1_cipher->get_elements(),
-                                     out0_cipher->get_elements(),
-                                     type,
-                                     this,
-                                     out0_cipher->get_element_count());
+                                          arg1_cipher->get_elements(),
+                                          out0_cipher->get_elements(),
+                                          type,
+                                          this,
+                                          out0_cipher->get_element_count());
         }
         else if (arg0_plain != nullptr && arg1_plain != nullptr && out0_plain != nullptr)
         {
             runtime::he::kernel::subtract(arg0_plain->get_elements(),
-                                     arg1_plain->get_elements(),
-                                     out0_plain->get_elements(),
-                                     type,
-                                     this,
-                                     out0_plain->get_element_count());
+                                          arg1_plain->get_elements(),
+                                          out0_plain->get_elements(),
+                                          type,
+                                          this,
+                                          out0_plain->get_element_count());
         }
         else
         {
@@ -892,5 +891,4 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
         NGRAPH_INFO << "Op type " << node_op << " unsupported";
         throw ngraph_error("Unsupported op type");
     }
-
 }

@@ -58,7 +58,7 @@ TEST(${BACKEND_NAME}, add_2_3)
         copy_he_data(t_b, test::NDArray<float, 2>({{7, 8, 9}, {10, 11, 12}}).get_vector(), backend);
         backend->call(f, {t_result}, {t_a, t_b});
         EXPECT_TRUE(all_close(read_he_vector<float>(t_result, backend),
-                  (test::NDArray<float, 2>({{8, 10, 12}, {14, 16, 18}})).get_vector()));
+                              (test::NDArray<float, 2>({{8, 10, 12}, {14, 16, 18}})).get_vector()));
     }
 }
 
@@ -88,7 +88,7 @@ TEST(${BACKEND_NAME}, add_zero_2_3)
         copy_he_data(t_b, test::NDArray<float, 2>({{0, 0, 0}, {0, 0, 0}}).get_vector(), backend);
         backend->call(f, {t_result}, {t_a, t_b});
         EXPECT_TRUE(all_close(read_he_vector<float>(t_result, backend),
-                  (test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}})).get_vector()));
+                              (test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}})).get_vector()));
     }
 }
 
@@ -116,4 +116,34 @@ TEST(${BACKEND_NAME}, add_4_3_batch)
     backend->call(f, {t_result}, {t_a, t_b});
     EXPECT_EQ((vector<float>{14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36}),
               generalized_read_vector<float>(t_result));
+}
+
+TEST(${BACKEND_NAME}, add_optimized_2_3)
+{
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+
+    Shape shape{2, 3};
+    auto a = make_shared<op::Parameter>(element::f32, shape);
+    auto b = make_shared<op::Parameter>(element::f32, shape);
+    auto t = make_shared<op::Add>(a, b);
+    auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+
+    // Create some tensors for input/output
+    auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
+
+    for (auto tensors : tensors_list)
+    {
+        auto results = get<0>(tensors);
+        auto inputs = get<1>(tensors);
+
+        auto t_a = inputs[0];
+        auto t_b = inputs[1];
+        auto t_result = results[0];
+
+        copy_he_data(t_a, test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector(), backend);
+        copy_he_data(t_b, test::NDArray<float, 2>({{-1, 0, 1}, {-1, 0, 1}}).get_vector(), backend);
+        backend->call(f, {t_result}, {t_a, t_b});
+        EXPECT_TRUE(all_close(read_he_vector<float>(t_result, backend),
+                              (test::NDArray<float, 2>({{0, 2, 4}, {3, 5, 7}})).get_vector()));
+    }
 }

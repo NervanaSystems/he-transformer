@@ -18,14 +18,16 @@
 
 #include "he_cipher_tensor.hpp"
 #include "he_plain_tensor.hpp"
+#include "he_tensor.hpp"
+#include "ngraph/runtime/backend_manager.hpp"
+#include "seal/ckks/he_seal_ckks_backend.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_parameter.hpp"
-#include "he_tensor.hpp"
-#include "seal/ckks/he_seal_ckks_backend.hpp"
-#include "ngraph/runtime/backend_manager.hpp"
 #include "seal/he_seal_util.hpp"
 
 #include "seal/seal.h"
+
+#include "ngraph/type/element_type.hpp" // TODO:  remove
 
 using namespace ngraph;
 using namespace std;
@@ -52,10 +54,9 @@ const static runtime::he::he_seal::HESealParameter parse_seal_ckks_config_or_use
 
             NGRAPH_INFO << "Using SEAL CKKS config for parameters: " << config_path;
             return runtime::he::he_seal::HESealParameter(scheme_name,
-                                                poly_modulus_degree,
-                                                security_level,
-                                                evaluation_decomposition_bit_count
-                                                );
+                                                         poly_modulus_degree,
+                                                         security_level,
+                                                         evaluation_decomposition_bit_count);
         }
         else
         {
@@ -66,10 +67,10 @@ const static runtime::he::he_seal::HESealParameter parse_seal_ckks_config_or_use
     catch (const exception& e)
     {
         return runtime::he::he_seal::HESealParameter("HE:SEAL:CKKS", // scheme name
-                                            8192,      // poly_modulus_degree
-                                            128,       // security_level
-                                            60            // evaluation_decomposition_bit_count
-                                            );
+                                                     8192,           // poly_modulus_degree
+                                                     128,            // security_level
+                                                     60 // evaluation_decomposition_bit_count
+                                                     );
     }
 }
 
@@ -97,7 +98,8 @@ runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend(
 
     // Keygen, encryptor and decryptor
     m_keygen = make_shared<seal::KeyGenerator>(m_context);
-    m_relin_keys = make_shared<seal::RelinKeys>(m_keygen->relin_keys(sp->m_evaluation_decomposition_bit_count));
+    m_relin_keys = make_shared<seal::RelinKeys>(
+        m_keygen->relin_keys(sp->m_evaluation_decomposition_bit_count));
     m_public_key = make_shared<seal::PublicKey>(m_keygen->public_key());
     m_secret_key = make_shared<seal::SecretKey>(m_keygen->secret_key());
     m_encryptor = make_shared<seal::Encryptor>(m_context, *m_public_key);
@@ -112,14 +114,28 @@ runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend(
     m_ckks_encoder = make_shared<seal::CKKSEncoder>(m_context);
 
     // Plaintext constants
-    vector<shared_ptr<runtime::he::HEPlaintext>> valued_plaintexts{create_empty_plaintext(), create_empty_plaintext(), create_empty_plaintext()};
-    m_ckks_encoder->encode(-1, m_scale, dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(valued_plaintexts[0])->m_plaintext);
-    m_ckks_encoder->encode(0, m_scale, dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(valued_plaintexts[1])->m_plaintext);
-    m_ckks_encoder->encode(1, m_scale, dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(valued_plaintexts[2])->m_plaintext);
+    ngraph::element::Type type = ngraph::element::f32;
+    shared_ptr<runtime::he::HEPlaintext> plaintext_neg1 = create_empty_plaintext();
+    shared_ptr<runtime::he::HEPlaintext> plaintext_0 = create_empty_plaintext();
+    shared_ptr<runtime::he::HEPlaintext> plaintext_1 = create_empty_plaintext();
 
-    m_plaintext_map[-1] = valued_plaintexts[0];
-    m_plaintext_map[0] = valued_plaintexts[1];
-    m_plaintext_map[1] = valued_plaintexts[2];
+    m_ckks_encoder->encode(
+        -1,
+        m_scale,
+        dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(plaintext_neg1)
+            ->m_plaintext);
+    m_ckks_encoder->encode(
+        0,
+        m_scale,
+        dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(plaintext_0)->m_plaintext);
+    m_ckks_encoder->encode(
+        1,
+        m_scale,
+        dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(plaintext_1)->m_plaintext);
+
+    m_plaintext_map[-1] = plaintext_neg1;
+    m_plaintext_map[0] = plaintext_0;
+    m_plaintext_map[1] = plaintext_1;
 }
 
 extern "C" runtime::Backend* new_ckks_backend(const char* configuration_string)
@@ -130,8 +146,10 @@ extern "C" runtime::Backend* new_ckks_backend(const char* configuration_string)
 shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealCKKSBackend::make_seal_context(
     const shared_ptr<runtime::he::he_seal::HESealParameter> sp) const
 {
-    seal::EncryptionParameters parms = (sp->m_scheme_name == "HE:SEAL:CKKS" ? seal::scheme_type::CKKS :
-                                        throw ngraph_error("Invalid scheme name \"" + sp->m_scheme_name + "\""));
+    seal::EncryptionParameters parms =
+        (sp->m_scheme_name == "HE:SEAL:CKKS"
+             ? seal::scheme_type::CKKS
+             : throw ngraph_error("Invalid scheme name \"" + sp->m_scheme_name + "\""));
 
     parms.set_poly_modulus_degree(sp->m_poly_modulus_degree);
     if (sp->m_security_level == 128)
@@ -140,13 +158,15 @@ shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealCKKSBackend::make_seal
 
         // Slower, but increases multiplicative depth. Security remains valid, since 6*40 = 240 bits < 218 bits for default coeff.
         parms.set_coeff_modulus({
-           seal::small_mods_40bit(0), seal::small_mods_40bit(1),
-           seal::small_mods_40bit(2), seal::small_mods_40bit(3),
-           seal::small_mods_40bit(4), seal::small_mods_40bit(5),
-           seal::small_mods_40bit(6), seal::small_mods_40bit(7) // TODO: use fewer moduli to preserve security.
+            seal::small_mods_40bit(0),
+            seal::small_mods_40bit(1),
+            seal::small_mods_40bit(2),
+            seal::small_mods_40bit(3),
+            seal::small_mods_40bit(4),
+            seal::small_mods_40bit(5),
+            seal::small_mods_40bit(6),
+            seal::small_mods_40bit(7) // TODO: use fewer moduli to preserve security.
         });
-
-
     }
     else if (sp->m_security_level == 192)
     {
@@ -164,12 +184,16 @@ namespace
     static class HESealCKKSStaticInit
     {
     public:
-        HESealCKKSStaticInit() { runtime::BackendManager::register_backend("HE:SEAL:CKKS", new_ckks_backend); }
+        HESealCKKSStaticInit()
+        {
+            runtime::BackendManager::register_backend("HE:SEAL:CKKS", new_ckks_backend);
+        }
         ~HESealCKKSStaticInit() {}
     } s_he_seal_ckks_static_init;
 }
 
-void runtime::he::he_seal::HESealCKKSBackend::assert_valid_seal_ckks_parameter(const shared_ptr<runtime::he::he_seal::HESealParameter>& sp) const
+void runtime::he::he_seal::HESealCKKSBackend::assert_valid_seal_ckks_parameter(
+    const shared_ptr<runtime::he::he_seal::HESealParameter>& sp) const
 {
     assert_valid_seal_parameter(sp);
     if (sp->m_scheme_name != "HE:SEAL:CKKS")
@@ -181,14 +205,15 @@ void runtime::he::he_seal::HESealCKKSBackend::assert_valid_seal_ckks_parameter(c
 shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealCKKSBackend::create_batched_tensor(
     const element::Type& element_type, const Shape& shape)
 {
-    auto rc = make_shared<runtime::he::HECipherTensor>(element_type, shape, this, create_empty_ciphertext(), true);
+    auto rc = make_shared<runtime::he::HECipherTensor>(
+        element_type, shape, this, create_empty_ciphertext(), true);
     return static_pointer_cast<runtime::Tensor>(rc);
 }
 
 void runtime::he::he_seal::HESealCKKSBackend::encode(shared_ptr<runtime::he::HEPlaintext>& output,
-                                                 const void* input,
-                                                 const element::Type& type,
-                                                 size_t count) const
+                                                     const void* input,
+                                                     const element::Type& type,
+                                                     size_t count) const
 {
     const string type_name = type.c_type_string();
     if (type_name == "float")
@@ -196,23 +221,28 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(shared_ptr<runtime::he::HEP
         if (count == 1)
         {
             double value = (double)(*(float*)input);
-
-            /*if (m_plaintext_map.find(value) != m_plaintext_map.end())
+            if (m_plaintext_map.find(value) != m_plaintext_map.end())
             {
-                NGRAPH_INFO << "Optimized encode of " << value;
                 output = get_valued_plaintext(value);
             }
             else
-            { */
-                m_ckks_encoder->encode(value, m_scale, dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(output)->m_plaintext);
-            // }
+            {
+                m_ckks_encoder->encode(
+                    value,
+                    m_scale,
+                    dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(output)
+                        ->m_plaintext);
+            }
         }
         else
         {
             vector<float> values{(float*)input, (float*)input + count};
             vector<double> double_values(values.begin(), values.end());
-            m_ckks_encoder->encode(double_values, m_scale, dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(output)->m_plaintext);
-
+            m_ckks_encoder->encode(
+                double_values,
+                m_scale,
+                dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(output)
+                    ->m_plaintext);
         }
     }
     else
@@ -222,10 +252,11 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(shared_ptr<runtime::he::HEP
     }
 }
 
-void runtime::he::he_seal::HESealCKKSBackend::decode(void* output,
-                                                 const shared_ptr<runtime::he::HEPlaintext> input,
-                                                 const element::Type& type,
-                                                 size_t count) const
+void runtime::he::he_seal::HESealCKKSBackend::decode(
+    void* output,
+    const shared_ptr<runtime::he::HEPlaintext> input,
+    const element::Type& type,
+    size_t count) const
 {
     const string type_name = type.c_type_string();
 
@@ -239,7 +270,7 @@ void runtime::he::he_seal::HESealCKKSBackend::decode(void* output,
         vector<double> xs(count, 0);
         m_ckks_encoder->decode(seal_input->m_plaintext, xs);
         vector<float> xs_float(xs.begin(), xs.end());
-        NGRAPH_INFO << "Decoding " << xs_float[0] << " " << xs_float[1];
+        //  NGRAPH_INFO << "Decoding " << xs_float[0] << " " << xs_float[1];
 
         memcpy(output, &xs_float[0], type.size() * count);
     }
@@ -248,4 +279,3 @@ void runtime::he::he_seal::HESealCKKSBackend::decode(void* output,
         throw ngraph_error("Unsupported element type " + type_name);
     }
 }
-

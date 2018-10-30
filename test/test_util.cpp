@@ -88,8 +88,8 @@ void write_binary_constant(const vector<float>& values, const string filename)
     outfile.close();
 }
 
-vector<tuple<vector<shared_ptr<ngraph::runtime::Tensor>>,
-             vector<shared_ptr<ngraph::runtime::Tensor>>>>
+vector<
+    tuple<vector<shared_ptr<ngraph::runtime::Tensor>>, vector<shared_ptr<ngraph::runtime::Tensor>>>>
     generate_plain_cipher_tensors(const vector<shared_ptr<Node>>& output,
                                   const vector<shared_ptr<Node>>& input,
                                   shared_ptr<ngraph::runtime::Backend> backend,

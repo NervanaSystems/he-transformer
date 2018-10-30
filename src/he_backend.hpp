@@ -16,18 +16,19 @@
 
 #pragma once
 
-#include <memory>
-#include <unordered_map>
 #include <functional>
 #include <memory>
+#include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include "he_tensor.hpp"
 
-#include "ngraph/descriptor/layout/tensor_layout.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
+#include "ngraph/descriptor/layout/tensor_layout.hpp"
 #include "ngraph/function.hpp"
 #include "ngraph/graph_util.hpp"
+#include "ngraph/node.hpp"
 #include "ngraph/pass/like_replacement.hpp"
 #include "ngraph/pass/liveness.hpp"
 #include "ngraph/pass/manager.hpp"
@@ -35,7 +36,6 @@
 #include "ngraph/runtime/host_tensor.hpp"
 #include "ngraph/runtime/performance_counter.hpp"
 #include "ngraph/runtime/tensor.hpp"
-#include "ngraph/node.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "ngraph/util.hpp"
 
@@ -55,22 +55,21 @@ namespace ngraph
             class HEBackend : public runtime::Backend
             {
             public:
-                HEBackend() {};
+                HEBackend(){};
                 HEBackend(HEBackend& he_backend) = default;
-                ~HEBackend() {};
+                ~HEBackend(){};
 
-                std::shared_ptr<runtime::Tensor>
-                    create_tensor(const element::Type& element_type,
-                                  const Shape& shape) override;
+                std::shared_ptr<runtime::Tensor> create_tensor(const element::Type& element_type,
+                                                               const Shape& shape) override;
 
-                virtual std::shared_ptr<runtime::Tensor> create_batched_tensor(
-                    const element::Type& element_type, const Shape& shape) = 0;
+                virtual std::shared_ptr<runtime::Tensor>
+                    create_batched_tensor(const element::Type& element_type,
+                                          const Shape& shape) = 0;
 
                 /// @brief Return a handle for a tensor for given mem on backend device
-                std::shared_ptr<runtime::Tensor>
-                    create_tensor(const element::Type& element_type,
-                                  const Shape& shape,
-                                  void* memory_pointer) override;
+                std::shared_ptr<runtime::Tensor> create_tensor(const element::Type& element_type,
+                                                               const Shape& shape,
+                                                               void* memory_pointer) override;
 
                 std::shared_ptr<runtime::Tensor>
                     create_plain_tensor(const element::Type& element_type, const Shape& shape);
@@ -81,10 +80,8 @@ namespace ngraph
                 /// @param batch_size Number of elements to encrypt
                 ///        > 1 indicates batching
                 /// @return Shared pointer to created ciphertext
-                std::shared_ptr<runtime::he::HECiphertext>
-                    create_valued_ciphertext(float value,
-                                             const element::Type& element_type,
-                                             size_t batch_size = 1) const;
+                std::shared_ptr<runtime::he::HECiphertext> create_valued_ciphertext(
+                    float value, const element::Type& element_type, size_t batch_size = 1) const;
 
                 /// @brief Creates ciphertext of unspecified value
                 /// @return Shared pointer to created ciphertext
@@ -96,8 +93,7 @@ namespace ngraph
                 /// @param element_type Type to encode
                 /// @return Shared pointer to created plaintext
                 std::shared_ptr<runtime::he::HEPlaintext>
-                    create_valued_plaintext(float value,
-                                            const element::Type& element_type) const;
+                    create_valued_plaintext(float value, const element::Type& element_type) const;
 
                 /// @brief Creates plaintext of unspecified value
                 /// @return Shared pointer to created plaintext
@@ -162,7 +158,8 @@ namespace ngraph
                     decrypt(std::shared_ptr<runtime::he::HEPlaintext>& output,
                             const std::shared_ptr<runtime::he::HECiphertext> input) const = 0;
 
-                void enable_performance_data(std::shared_ptr<Function> function, bool enable) override;
+                void enable_performance_data(std::shared_ptr<Function> function,
+                                             bool enable) override;
                 std::vector<PerformanceCounter>
                     get_performance_data(std::shared_ptr<Function> function) const override;
 
@@ -178,20 +175,15 @@ namespace ngraph
                 };
                 std::map<std::shared_ptr<Function>, FunctionInstance> m_function_map;
 
-                void generate_calls(const element::Type& type,
+                void generate_calls(
+                    const element::Type& type,
                     const std::shared_ptr<Node>& op,
                     const std::vector<std::shared_ptr<runtime::he::HETensor>>& outputs,
                     const std::vector<std::shared_ptr<runtime::he::HETensor>>& inputs);
 
                 bool call(std::shared_ptr<Function> function,
-                    const std::vector<std::shared_ptr<runtime::he::HETensor>>& outputs,
-                    const std::vector<std::shared_ptr<runtime::he::HETensor>>& inputs);
-
-            protected:
-                std::unordered_map<
-                    std::string,
-                    std::unordered_map<std::int64_t, std::shared_ptr<runtime::he::HEPlaintext>>>
-                    m_plaintext_map;
+                          const std::vector<std::shared_ptr<runtime::he::HETensor>>& outputs,
+                          const std::vector<std::shared_ptr<runtime::he::HETensor>>& inputs);
             };
         }
     }

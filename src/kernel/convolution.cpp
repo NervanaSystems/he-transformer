@@ -21,10 +21,10 @@
 #include "he_backend.hpp"
 #include "he_cipher_tensor.hpp"
 #include "he_ciphertext.hpp"
-#include "seal/he_seal_backend.hpp"
 #include "kernel/add.hpp"
 #include "kernel/convolution.hpp"
 #include "kernel/multiply.hpp"
+#include "seal/he_seal_backend.hpp"
 
 using namespace std;
 using namespace ngraph;
@@ -353,9 +353,10 @@ void ngraph::runtime::he::kernel::convolution(
                 }
             }
 
-            shared_ptr<runtime::he::HEPlaintext> v = input_batch_transform.has_source_coordinate(input_batch_coord)
-                        ? arg0[input_batch_transform.index(input_batch_coord)]
-                        : he_backend->create_valued_plaintext(0., type);
+            shared_ptr<runtime::he::HEPlaintext> v =
+                input_batch_transform.has_source_coordinate(input_batch_coord)
+                    ? arg0[input_batch_transform.index(input_batch_coord)]
+                    : he_backend->create_valued_plaintext(0., type);
 
             shared_ptr<runtime::he::HEPlaintext> prod = he_backend->create_empty_plaintext();
 

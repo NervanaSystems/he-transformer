@@ -44,11 +44,14 @@ TEST(${BACKEND_NAME}, convolution_2d_1image)
                                    op::ParameterVector{A, B});
 
     // Create some tensors for input/output
-    auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+    auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
+        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
     auto a = backend->create_tensor(element::f32, shape_a);
-    copy_he_data(a, vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
-                               2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0}, backend);
+    copy_he_data(a,
+                 vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                               2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0},
+                 backend);
     auto b = backend->create_tensor(element::f32, shape_b);
     copy_he_data(b, vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5}, backend);
     auto result = backend->create_tensor(element::f32, shape_r);
@@ -69,7 +72,8 @@ TEST(${BACKEND_NAME}, convolution_2d_1image_2outputs)
     auto f = make_shared<Function>(make_shared<op::Convolution>(A, B, Strides{1, 1}, Strides{1, 1}),
                                    op::ParameterVector{A, B});
 
-    auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+    auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
+        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
     auto a = backend->create_tensor(element::f32, shape_a);
     copy_he_data(a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}, backend);
@@ -105,13 +109,15 @@ TEST(${BACKEND_NAME}, convolution_2d_1item)
 
     auto function = make_graph();
 
-    auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+    auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
+        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
     auto a = backend->create_tensor(element::f32, shape_a);
     copy_he_data(
         a,
         vector<float>{
-            -8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f, -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f}, backend);
+            -8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f, -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f},
+        backend);
     auto b = backend->create_tensor(element::f32, shape_b);
     copy_he_data(b, vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f}, backend);
     auto result = backend->create_tensor(element::f32, shape_r);
@@ -158,13 +164,15 @@ TEST(${BACKEND_NAME}, convolution_2d_1item_padded_1_1x1_1)
 
     auto function = make_graph();
 
-    auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+    auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
+        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
     auto a = backend->create_tensor(element::f32, shape_a);
     copy_he_data(
         a,
         vector<float>{
-            -8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f, -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f}, backend);
+            -8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f, -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f},
+        backend);
     auto b = backend->create_tensor(element::f32, shape_b);
     copy_he_data(b, vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f}, backend);
     auto result = backend->create_tensor(element::f32, shape_r);
@@ -203,13 +211,15 @@ TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5)
     auto function = make_graph();
 
     // Create some tensors for input/output
-    auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+    auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
+        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
     auto a = backend->create_tensor(element::f32, shape_a);
     copy_he_data(
         a,
         vector<float>{
-            -8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f, -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f}, backend);
+            -8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f, -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f},
+        backend);
     auto b = backend->create_tensor(element::f32, shape_b);
     copy_he_data(b, vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f}, backend);
     auto result = backend->create_tensor(element::f32, shape_r);
@@ -259,12 +269,15 @@ TEST(${BACKEND_NAME}, convolution_2d_2items)
     auto function = make_graph();
 
     // Create some tensors for input/output
-    auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+    auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
+        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
     auto a = backend->create_tensor(element::f32, shape_a);
-    copy_he_data(a, vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f, -8.f, 5.f,
+    copy_he_data(a,
+                 vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f, -8.f, 5.f,
                                -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,  9.f,  -7.f, 3.f,  0.f,
-                               6.f,  -1.f, -4.f, -2.f, 7.f,  -0.f, -1.f, 7.f,  -4.f, -9.f}, backend);
+                               6.f,  -1.f, -4.f, -2.f, 7.f,  -0.f, -1.f, 7.f,  -4.f, -9.f},
+                 backend);
     auto b = backend->create_tensor(element::f32, shape_b);
     copy_he_data(b, vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f}, backend);
     auto result = backend->create_tensor(element::f32, shape_r);
@@ -300,12 +313,15 @@ TEST(${BACKEND_NAME}, convolution_2d_2items_strided_padded)
     auto function = make_graph();
 
     // Create some tensors for input/output
-    auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+    auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
+        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
     auto a = backend->create_tensor(element::f32, shape_a);
-    copy_he_data(a, vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f, -8.f, 5.f,
+    copy_he_data(a,
+                 vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f, -8.f, 5.f,
                                -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,  9.f,  -7.f, 3.f,  0.f,
-                               6.f,  -1.f, -4.f, -2.f, 7.f,  -0.f, -1.f, 7.f,  -4.f, -9.f}, backend);
+                               6.f,  -1.f, -4.f, -2.f, 7.f,  -0.f, -1.f, 7.f,  -4.f, -9.f},
+                 backend);
     auto b = backend->create_tensor(element::f32, shape_b);
     copy_he_data(b, vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f}, backend);
     auto result = backend->create_tensor(element::f32, shape_r);

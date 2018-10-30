@@ -19,18 +19,18 @@
 
 #include "he_backend.hpp"
 #include "he_plain_tensor.hpp"
-#include "seal/he_seal_backend.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
+#include "seal/he_seal_backend.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
 
 using namespace ngraph;
 using namespace std;
 
 runtime::he::HEPlainTensor::HEPlainTensor(const element::Type& element_type,
-                                                  const Shape& shape,
-                                                  const HEBackend* he_backend,
-                                                  const shared_ptr<HEPlaintext> he_plaintext,
-                                                  const string& name)
+                                          const Shape& shape,
+                                          const HEBackend* he_backend,
+                                          const shared_ptr<HEPlaintext> he_plaintext,
+                                          const string& name)
     : runtime::he::HETensor(element_type, shape, he_backend)
 {
     // get_tensor_layout()->get_size() is the number of elements
@@ -39,7 +39,8 @@ runtime::he::HEPlainTensor::HEPlainTensor(const element::Type& element_type,
 #pragma omp parallel for
     for (size_t i = 0; i < m_num_elements; ++i)
     {
-        if (auto he_seal_plaintext = dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(he_plaintext))
+        if (auto he_seal_plaintext =
+                dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(he_plaintext))
         {
             m_plain_texts[i] = make_shared<runtime::he::he_seal::SealPlaintextWrapper>();
         }

@@ -16,20 +16,20 @@
 
 #include <vector>
 
-#include "seal/he_seal_backend.hpp"
 #include "kernel/add.hpp"
-#include "seal/kernel/add_seal.hpp"
 #include "ngraph/type/element_type.hpp"
+#include "seal/he_seal_backend.hpp"
+#include "seal/kernel/add_seal.hpp"
 
 using namespace std;
 using namespace ngraph::runtime::he;
 
 void kernel::add(const vector<shared_ptr<HECiphertext>>& arg0,
-                              const vector<shared_ptr<HECiphertext>>& arg1,
-                              vector<shared_ptr<HECiphertext>>& out,
-                              const element::Type& type,
-                              const HEBackend* he_backend,
-                              size_t count)
+                 const vector<shared_ptr<HECiphertext>>& arg1,
+                 vector<shared_ptr<HECiphertext>>& out,
+                 const element::Type& type,
+                 const HEBackend* he_backend,
+                 size_t count)
 {
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
@@ -39,11 +39,11 @@ void kernel::add(const vector<shared_ptr<HECiphertext>>& arg0,
 }
 
 void kernel::add(const vector<shared_ptr<HECiphertext>>& arg0,
-                              const vector<shared_ptr<HEPlaintext>>& arg1,
-                              vector<shared_ptr<HECiphertext>>& out,
-                              const element::Type& type,
-                              const HEBackend* he_backend,
-                              size_t count)
+                 const vector<shared_ptr<HEPlaintext>>& arg1,
+                 vector<shared_ptr<HECiphertext>>& out,
+                 const element::Type& type,
+                 const HEBackend* he_backend,
+                 size_t count)
 {
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
@@ -53,21 +53,21 @@ void kernel::add(const vector<shared_ptr<HECiphertext>>& arg0,
 }
 
 void kernel::add(const vector<shared_ptr<HEPlaintext>>& arg0,
-                              const vector<shared_ptr<HECiphertext>>& arg1,
-                              vector<shared_ptr<HECiphertext>>& out,
-                              const element::Type& type,
-                              const HEBackend* he_backend,
-                              size_t count)
+                 const vector<shared_ptr<HECiphertext>>& arg1,
+                 vector<shared_ptr<HECiphertext>>& out,
+                 const element::Type& type,
+                 const HEBackend* he_backend,
+                 size_t count)
 {
     add(arg1, arg0, out, type, he_backend, count);
 }
 
 void kernel::add(const vector<shared_ptr<HEPlaintext>>& arg0,
-                              const vector<shared_ptr<HEPlaintext>>& arg1,
-                              vector<shared_ptr<HEPlaintext>>& out,
-                              const element::Type& type,
-                              const HEBackend* he_backend,
-                              size_t count)
+                 const vector<shared_ptr<HEPlaintext>>& arg1,
+                 vector<shared_ptr<HEPlaintext>>& out,
+                 const element::Type& type,
+                 const HEBackend* he_backend,
+                 size_t count)
 {
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
@@ -77,13 +77,12 @@ void kernel::add(const vector<shared_ptr<HEPlaintext>>& arg0,
 }
 
 void kernel::scalar_add(const shared_ptr<HECiphertext>& arg0,
-                                     const shared_ptr<HECiphertext>& arg1,
-                                     shared_ptr<HECiphertext>& out,
-                                     const element::Type& type,
-                                     const HEBackend* he_backend)
+                        const shared_ptr<HECiphertext>& arg1,
+                        shared_ptr<HECiphertext>& out,
+                        const element::Type& type,
+                        const HEBackend* he_backend)
 {
-    if (auto he_seal_backend =
-            dynamic_cast<const he_seal::HESealBackend*>(he_backend))
+    if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(he_backend))
     {
         shared_ptr<he_seal::SealCiphertextWrapper> arg0_seal =
             dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(arg0);
@@ -110,13 +109,12 @@ void kernel::scalar_add(const shared_ptr<HECiphertext>& arg0,
 }
 
 void kernel::scalar_add(const shared_ptr<HEPlaintext>& arg0,
-                                     const shared_ptr<HEPlaintext>& arg1,
-                                     shared_ptr<HEPlaintext>& out,
-                                     const element::Type& type,
-                                     const HEBackend* he_backend)
+                        const shared_ptr<HEPlaintext>& arg1,
+                        shared_ptr<HEPlaintext>& out,
+                        const element::Type& type,
+                        const HEBackend* he_backend)
 {
-    if (auto he_seal_backend =
-            dynamic_cast<const he_seal::HESealBackend*>(he_backend))
+    if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(he_backend))
     {
         shared_ptr<he_seal::SealPlaintextWrapper> arg0_seal =
             dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(arg0);
@@ -143,13 +141,12 @@ void kernel::scalar_add(const shared_ptr<HEPlaintext>& arg0,
 }
 
 void kernel::scalar_add(const shared_ptr<HECiphertext>& arg0,
-                                     const shared_ptr<HEPlaintext>& arg1,
-                                     shared_ptr<HECiphertext>& out,
-                                     const element::Type& type,
-                                     const HEBackend* he_backend)
+                        const shared_ptr<HEPlaintext>& arg1,
+                        shared_ptr<HECiphertext>& out,
+                        const element::Type& type,
+                        const HEBackend* he_backend)
 {
-    if (auto he_seal_backend =
-            dynamic_cast<const he_seal::HESealBackend*>(he_backend))
+    if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(he_backend))
     {
         shared_ptr<he_seal::SealCiphertextWrapper> arg0_seal =
             dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(arg0);
@@ -161,16 +158,11 @@ void kernel::scalar_add(const shared_ptr<HECiphertext>& arg0,
         if (arg0_seal && arg1_seal && out_seal)
         {
             const string type_name = type.c_type_string();
-            bool add_zero = false;
-            if (type_name == "float")
+            bool add_zero = (arg1 == he_seal_backend->get_valued_plaintext(0));
+
+            if (add_zero && type_name == "float")
             {
-                float x;
-                he_backend->decode((void*)(&x), arg1, type, 1);
-                add_zero = (x == 0);
-            }
-            if (add_zero)
-            {
-                NGRAPH_INFO << "Optimized add";
+                NGRAPH_INFO << "Optimized add by 0";
                 out = arg0;
             }
             else
@@ -192,10 +184,10 @@ void kernel::scalar_add(const shared_ptr<HECiphertext>& arg0,
 }
 
 void kernel::scalar_add(const shared_ptr<HEPlaintext>& arg0,
-                                     const shared_ptr<HECiphertext>& arg1,
-                                     shared_ptr<HECiphertext>& out,
-                                     const element::Type& type,
-                                     const HEBackend* he_backend)
+                        const shared_ptr<HECiphertext>& arg1,
+                        shared_ptr<HECiphertext>& out,
+                        const element::Type& type,
+                        const HEBackend* he_backend)
 {
     scalar_add(arg1, arg0, out, type, he_backend);
 }

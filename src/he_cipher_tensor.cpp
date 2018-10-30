@@ -19,9 +19,9 @@
 
 #include "he_backend.hpp"
 #include "he_cipher_tensor.hpp"
-#include "seal/he_seal_backend.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
 #include "ngraph/util.hpp"
+#include "seal/he_seal_backend.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
 
@@ -29,11 +29,11 @@ using namespace ngraph;
 using namespace std;
 
 runtime::he::HECipherTensor::HECipherTensor(const element::Type& element_type,
-                                                    const Shape& shape,
-                                                     const HEBackend* he_backend,
-                                                    const std::shared_ptr<HECiphertext> he_ciphertext,
-                                                    const bool batched,
-                                                    const string& name)
+                                            const Shape& shape,
+                                            const HEBackend* he_backend,
+                                            const std::shared_ptr<HECiphertext> he_ciphertext,
+                                            const bool batched,
+                                            const string& name)
     : runtime::he::HETensor(element_type, shape, he_backend, batched, name)
 {
     // get_tensor_layout()->get_size() is the number of elements
@@ -41,7 +41,8 @@ runtime::he::HECipherTensor::HECipherTensor(const element::Type& element_type,
     m_cipher_texts.resize(m_num_elements);
     for (size_t i = 0; i < m_num_elements; ++i)
     {
-        if (auto he_seal_ciphertext = dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(he_ciphertext))
+        if (auto he_seal_ciphertext =
+                dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(he_ciphertext))
         {
             m_cipher_texts[i] = make_shared<runtime::he::he_seal::SealCiphertextWrapper>();
         }
@@ -144,8 +145,7 @@ void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset
             }
             else
             {
-                throw ngraph_error(
-                    "HECipherTensor::write, m_he_backend is not SEAL.");
+                throw ngraph_error("HECipherTensor::write, m_he_backend is not SEAL.");
             }
         }
     }

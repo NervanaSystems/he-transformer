@@ -39,7 +39,8 @@ TEST(${BACKEND_NAME}, constant)
 
     auto result = backend->create_tensor(element::f32, shape);
     backend->call(f, {result}, {});
-    EXPECT_TRUE(all_close((vector<float>{0.1, 0.2, 0.3, 0.4}), read_he_vector<float>(result, backend)));
+    EXPECT_TRUE(
+        all_close((vector<float>{0.1, 0.2, 0.3, 0.4}), read_he_vector<float>(result, backend)));
 }
 
 TEST(${BACKEND_NAME}, constant_abc)
@@ -70,6 +71,6 @@ TEST(${BACKEND_NAME}, constant_abc)
         backend->call(f, {result}, {b, c});
 
         EXPECT_TRUE(all_close(read_he_vector<float>(result, backend),
-                  (test::NDArray<float, 2>({{54, 80}, {110, 144}})).get_vector()));
+                              (test::NDArray<float, 2>({{54, 80}, {110, 144}})).get_vector()));
     }
 }

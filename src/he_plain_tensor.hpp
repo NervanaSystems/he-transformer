@@ -16,9 +16,9 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
 
 #include "he_plaintext.hpp"
 #include "he_tensor.hpp"
@@ -37,11 +37,11 @@ namespace ngraph
             {
             public:
                 HEPlainTensor(const element::Type& element_type,
-                                  const Shape& shape,
-                                  const HEBackend* he_backend,
-                                  const std::shared_ptr<HEPlaintext> he_plaintext,
-                                  const std::string& name = "external");
-                ~HEPlainTensor() {};
+                              const Shape& shape,
+                              const HEBackend* he_backend,
+                              const std::shared_ptr<HEPlaintext> he_plaintext,
+                              const std::string& name = "external");
+                ~HEPlainTensor(){};
 
                 /// @brief Write bytes directly into the tensor after encoding
                 /// @param p Pointer to source of data

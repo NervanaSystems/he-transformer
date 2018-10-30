@@ -18,11 +18,11 @@
 
 #include "he_cipher_tensor.hpp"
 #include "he_plain_tensor.hpp"
+#include "he_tensor.hpp"
+#include "ngraph/runtime/backend_manager.hpp"
+#include "seal/bfv/he_seal_bfv_backend.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_parameter.hpp"
-#include "he_tensor.hpp"
-#include "seal/bfv/he_seal_bfv_backend.hpp"
-#include "ngraph/runtime/backend_manager.hpp"
 #include "seal/he_seal_util.hpp"
 
 #include "seal/seal.h"
@@ -49,21 +49,22 @@ const static runtime::he::he_seal::HESealParameter parse_seal_bfv_config_or_use_
             uint64_t poly_modulus_degree = js["poly_modulus_degree"];
             uint64_t plain_modulus = js["plain_modulus"];
             uint64_t security_level = js["security_level"];
-            uint64_t fractional_encoder_integer_coeff_count = js["fractional_encoder_integer_coeff_count"];
-            uint64_t fractional_encoder_fraction_coeff_count = js["fractional_encoder_fraction_coeff_count"];
+            uint64_t fractional_encoder_integer_coeff_count =
+                js["fractional_encoder_integer_coeff_count"];
+            uint64_t fractional_encoder_fraction_coeff_count =
+                js["fractional_encoder_fraction_coeff_count"];
             uint64_t fractional_encoder_base = js["fractional_encoder_base"];
             uint64_t evaluation_decomposition_bit_count = js["evaluation_decomposition_bit_count"];
 
             NGRAPH_INFO << "Using SEAL BFV config for parameters: " << config_path;
             return runtime::he::he_seal::HESealParameter(scheme_name,
-                                                poly_modulus_degree,
-                                                plain_modulus,
-                                                security_level,
-                                                evaluation_decomposition_bit_count,
-                                                fractional_encoder_integer_coeff_count,
-                                                fractional_encoder_fraction_coeff_count,
-                                                fractional_encoder_base
-                                                );
+                                                         poly_modulus_degree,
+                                                         plain_modulus,
+                                                         security_level,
+                                                         evaluation_decomposition_bit_count,
+                                                         fractional_encoder_integer_coeff_count,
+                                                         fractional_encoder_fraction_coeff_count,
+                                                         fractional_encoder_base);
         }
         else
         {
@@ -74,14 +75,14 @@ const static runtime::he::he_seal::HESealParameter parse_seal_bfv_config_or_use_
     catch (const exception& e)
     {
         return runtime::he::he_seal::HESealParameter("HE:SEAL:BFV", // scheme name
-                                            4096,      // poly_modulus_degree
-                                            1 << 10, // plain_modulus
-                                            128,       // security_level
-                                            16,            // evaluation_decomposition_bit_count
-                                            64,   // fractional_encoder_integer_coeff_count
-                                            32,         // fractional_encoder_fraction_coeff_count
-                                             2           // fractional_encoder_base
-                                            );
+                                                     4096,          // poly_modulus_degree
+                                                     1 << 10,       // plain_modulus
+                                                     128,           // security_level
+                                                     16, // evaluation_decomposition_bit_count
+                                                     64, // fractional_encoder_integer_coeff_count
+                                                     32, // fractional_encoder_fraction_coeff_count
+                                                     2   // fractional_encoder_base
+                                                     );
     }
 }
 
@@ -109,7 +110,8 @@ runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend(
 
     // Keygen, encryptor and decryptor
     m_keygen = make_shared<seal::KeyGenerator>(m_context);
-    m_relin_keys = make_shared<seal::RelinKeys>(m_keygen->relin_keys(sp->m_evaluation_decomposition_bit_count));
+    m_relin_keys = make_shared<seal::RelinKeys>(
+        m_keygen->relin_keys(sp->m_evaluation_decomposition_bit_count));
     m_public_key = make_shared<seal::PublicKey>(m_keygen->public_key());
     m_secret_key = make_shared<seal::SecretKey>(m_keygen->secret_key());
     m_encryptor = make_shared<seal::Encryptor>(m_context, *m_public_key);
@@ -125,6 +127,14 @@ runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend(
                                              sp->m_fractional_encoder_integer_coeff_count,
                                              sp->m_fractional_encoder_fraction_coeff_count,
                                              sp->m_fractional_encoder_base);
+
+    // Plaintext constants
+    m_plaintext_map[-1] = make_shared<SealPlaintextWrapper>(m_frac_encoder->encode(double(-1)));
+    ;
+    m_plaintext_map[0] = make_shared<SealPlaintextWrapper>(m_frac_encoder->encode(double(0)));
+    ;
+    m_plaintext_map[1] = make_shared<SealPlaintextWrapper>(m_frac_encoder->encode(double(1)));
+    ;
 }
 
 extern "C" runtime::Backend* new_bfv_backend(const char* configuration_string)
@@ -135,8 +145,10 @@ extern "C" runtime::Backend* new_bfv_backend(const char* configuration_string)
 shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealBFVBackend::make_seal_context(
     const shared_ptr<runtime::he::he_seal::HESealParameter> sp) const
 {
-    seal::EncryptionParameters parms = (sp->m_scheme_name == "HE:SEAL:BFV" ? seal::scheme_type::BFV :
-                                        throw ngraph_error("Invalid scheme name \"" + sp->m_scheme_name + "\""));
+    seal::EncryptionParameters parms =
+        (sp->m_scheme_name == "HE:SEAL:BFV"
+             ? seal::scheme_type::BFV
+             : throw ngraph_error("Invalid scheme name \"" + sp->m_scheme_name + "\""));
 
     NGRAPH_INFO << "Setting poly mod degree to " << sp->m_poly_modulus_degree;
 
@@ -167,12 +179,16 @@ namespace
     static class HESealBFVStaticInit
     {
     public:
-        HESealBFVStaticInit() { runtime::BackendManager::register_backend("HE:SEAL:BFV", new_bfv_backend); }
+        HESealBFVStaticInit()
+        {
+            runtime::BackendManager::register_backend("HE:SEAL:BFV", new_bfv_backend);
+        }
         ~HESealBFVStaticInit() {}
     } s_he_seal_bfv_static_init;
 }
 
-void runtime::he::he_seal::HESealBFVBackend::assert_valid_seal_bfv_parameter(const shared_ptr<runtime::he::he_seal::HESealParameter>& sp) const
+void runtime::he::he_seal::HESealBFVBackend::assert_valid_seal_bfv_parameter(
+    const shared_ptr<runtime::he::he_seal::HESealParameter>& sp) const
 {
     assert_valid_seal_parameter(sp);
     if (sp->m_scheme_name != "HE:SEAL:BFV")
@@ -181,17 +197,17 @@ void runtime::he::he_seal::HESealBFVBackend::assert_valid_seal_bfv_parameter(con
     }
 }
 
-shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealBFVBackend::create_batched_tensor(
-    const element::Type& element_type, const Shape& shape)
+shared_ptr<runtime::Tensor>
+    runtime::he::he_seal::HESealBFVBackend::create_batched_tensor(const element::Type& element_type,
+                                                                  const Shape& shape)
 {
     throw ngraph_error("HESealBFVBackend::create_batched_tensor unimplemented");
-
 }
 
 void runtime::he::he_seal::HESealBFVBackend::encode(shared_ptr<runtime::he::HEPlaintext>& output,
-                                                 const void* input,
-                                                 const element::Type& type,
-                                                 size_t count) const
+                                                    const void* input,
+                                                    const element::Type& type,
+                                                    size_t count) const
 {
     if (count != 1)
     {
@@ -201,8 +217,16 @@ void runtime::he::he_seal::HESealBFVBackend::encode(shared_ptr<runtime::he::HEPl
 
     if (type_name == "float")
     {
-        output =
-            make_shared<runtime::he::he_seal::SealPlaintextWrapper>(m_frac_encoder->encode(*(float*)input));
+        double value = (double)(*(float*)input);
+        if (m_plaintext_map.find(value) != m_plaintext_map.end())
+        {
+            output = get_valued_plaintext(value);
+        }
+        else
+        {
+            output = make_shared<runtime::he::he_seal::SealPlaintextWrapper>(
+                m_frac_encoder->encode(*(float*)input));
+        }
     }
     else
     {
@@ -211,10 +235,11 @@ void runtime::he::he_seal::HESealBFVBackend::encode(shared_ptr<runtime::he::HEPl
     }
 }
 
-void runtime::he::he_seal::HESealBFVBackend::decode(void* output,
-                                                 const shared_ptr<runtime::he::HEPlaintext> input,
-                                                 const element::Type& type,
-                                                 size_t count) const
+void runtime::he::he_seal::HESealBFVBackend::decode(
+    void* output,
+    const shared_ptr<runtime::he::HEPlaintext> input,
+    const element::Type& type,
+    size_t count) const
 {
     if (count != 1)
     {

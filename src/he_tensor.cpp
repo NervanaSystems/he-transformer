@@ -24,10 +24,10 @@ using namespace std;
 using namespace ngraph;
 
 runtime::he::HETensor::HETensor(const element::Type& element_type,
-                                        const Shape& shape,
-                                        const HEBackend* he_backend,
-                                        bool batched,
-                                        const string& name)
+                                const Shape& shape,
+                                const HEBackend* he_backend,
+                                bool batched,
+                                const string& name)
     : runtime::Tensor(
           std::make_shared<descriptor::Tensor>(element_type, batch_shape(shape, 0, batched), name))
     , m_he_backend(he_backend)
@@ -46,9 +46,8 @@ runtime::he::HETensor::HETensor(const element::Type& element_type,
     }
 }
 
-const Shape runtime::he::HETensor::batch_shape(const Shape& shape,
-                                                   size_t batch_axis,
-                                                   bool batched) const
+const Shape
+    runtime::he::HETensor::batch_shape(const Shape& shape, size_t batch_axis, bool batched) const
 {
     if (batched)
     {
@@ -65,8 +64,8 @@ const Shape runtime::he::HETensor::batch_shape(const Shape& shape,
 }
 
 void runtime::he::HETensor::check_io_bounds(const void* source,
-                                                size_t tensor_offset,
-                                                size_t n) const
+                                            size_t tensor_offset,
+                                            size_t n) const
 {
     const element::Type& type = get_tensor_layout()->get_element_type();
     size_t type_byte_size = type.size();

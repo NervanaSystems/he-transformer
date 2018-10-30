@@ -30,7 +30,6 @@ using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
-
 TEST(${BACKEND_NAME}, pad_interior_1d)
 {
     Shape shape_a{6};

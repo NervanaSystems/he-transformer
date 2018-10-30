@@ -52,7 +52,7 @@ TEST(seal_example, seal_ckks_basics_i)
     size_t slot_count = encoder.slot_count();
     cout << "Number of slots: " << slot_count << endl;
 
-    vector<double> input{ 0.0, 1.1, 2.2, 3.3 };
+    vector<double> input{0.0, 1.1, 2.2, 3.3};
 
     Plaintext plain;
     double scale = pow(2.0, 60);
@@ -72,15 +72,9 @@ TEST(seal_example, seal_ckks_basics_i)
 
     encoder.decode(plain, input);
 
-
     encrypted.scale() *= 3;
     decryptor.decrypt(encrypted, plain);
     encoder.decode(plain, input);
-
-
-
-
-
 }
 
 TEST(seal_example, seal_bfv_basics_i)

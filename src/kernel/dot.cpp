@@ -30,84 +30,84 @@ using namespace std;
 using namespace ngraph::runtime::he;
 
 void kernel::dot(const vector<shared_ptr<HECiphertext>>& arg0,
-                const vector<shared_ptr<HECiphertext>>& arg1,
-                vector<shared_ptr<HECiphertext>>& out,
-                const Shape& arg0_shape,
-                const Shape& arg1_shape,
-                const Shape& out_shape,
-                size_t reduction_axes_count,
-                const element::Type& type,
-                size_t batch_size,
-                const HEBackend* he_backend)
+                 const vector<shared_ptr<HECiphertext>>& arg1,
+                 vector<shared_ptr<HECiphertext>>& out,
+                 const Shape& arg0_shape,
+                 const Shape& arg1_shape,
+                 const Shape& out_shape,
+                 size_t reduction_axes_count,
+                 const element::Type& type,
+                 size_t batch_size,
+                 const HEBackend* he_backend)
 {
-    dot_template(arg0,
-                 arg1,
-                 out,
-                 arg0_shape,
-                 arg1_shape,
-                 out_shape,
-                 reduction_axes_count,
-                 type,
-                 batch_size,
-                 he_backend);
+    kernel::dot_template(arg0,
+                         arg1,
+                         out,
+                         arg0_shape,
+                         arg1_shape,
+                         out_shape,
+                         reduction_axes_count,
+                         type,
+                         batch_size,
+                         he_backend);
 }
 
 void kernel::dot(const vector<shared_ptr<HECiphertext>>& arg0,
-                              const vector<shared_ptr<HEPlaintext>>& arg1,
-                              vector<shared_ptr<HECiphertext>>& out,
-                              const Shape& arg0_shape,
-                              const Shape& arg1_shape,
-                              const Shape& out_shape,
-                              size_t reduction_axes_count,
-                              const element::Type& type,
-                              size_t batch_size,
-                              const HEBackend* he_backend)
+                 const vector<shared_ptr<HEPlaintext>>& arg1,
+                 vector<shared_ptr<HECiphertext>>& out,
+                 const Shape& arg0_shape,
+                 const Shape& arg1_shape,
+                 const Shape& out_shape,
+                 size_t reduction_axes_count,
+                 const element::Type& type,
+                 size_t batch_size,
+                 const HEBackend* he_backend)
 {
-    dot_template(arg0,
-                 arg1,
-                 out,
-                 arg0_shape,
-                 arg1_shape,
-                 out_shape,
-                 reduction_axes_count,
-                 type,
-                 batch_size,
-                 he_backend);
+    kernel::dot_template(arg0,
+                         arg1,
+                         out,
+                         arg0_shape,
+                         arg1_shape,
+                         out_shape,
+                         reduction_axes_count,
+                         type,
+                         batch_size,
+                         he_backend);
 }
 
 void kernel::dot(const vector<shared_ptr<HEPlaintext>>& arg0,
-                              const vector<shared_ptr<HECiphertext>>& arg1,
-                              vector<shared_ptr<HECiphertext>>& out,
-                              const Shape& arg0_shape,
-                              const Shape& arg1_shape,
-                              const Shape& out_shape,
-                              size_t reduction_axes_count,
-                              const element::Type& type,
-                              size_t batch_size,
-                              const HEBackend* he_backend)
+                 const vector<shared_ptr<HECiphertext>>& arg1,
+                 vector<shared_ptr<HECiphertext>>& out,
+                 const Shape& arg0_shape,
+                 const Shape& arg1_shape,
+                 const Shape& out_shape,
+                 size_t reduction_axes_count,
+                 const element::Type& type,
+                 size_t batch_size,
+                 const HEBackend* he_backend)
 {
-    dot_template(arg0,
-                 arg1,
-                 out,
-                 arg0_shape,
-                 arg1_shape,
-                 out_shape,
-                 reduction_axes_count,
-                 type,
-                 batch_size,
-                 he_backend);
+    kernel::dot_template(arg0,
+                         arg1,
+                         out,
+                         arg0_shape,
+                         arg1_shape,
+                         out_shape,
+                         reduction_axes_count,
+                         type,
+                         batch_size,
+                         he_backend);
 }
 
 // TODO: merge with template dot
 void kernel::dot(const vector<shared_ptr<HEPlaintext>>& arg0,
-                              const vector<shared_ptr<HEPlaintext>>& arg1,
-                              vector<shared_ptr<HEPlaintext>>& out,
-                              const Shape& arg0_shape,
-                              const Shape& arg1_shape,
-                              const Shape& out_shape,
-                              size_t reduction_axes_count,
-                              const element::Type& type,
-                              const HEBackend* he_backend)
+                 const vector<shared_ptr<HEPlaintext>>& arg1,
+                 vector<shared_ptr<HEPlaintext>>& out,
+                 const Shape& arg0_shape,
+                 const Shape& arg1_shape,
+                 const Shape& out_shape,
+                 size_t reduction_axes_count,
+                 const element::Type& type,
+                 const HEBackend* he_backend)
 {
     // Get the sizes of the dot axes. It's easiest to pull them from arg1 because they're
     // right up front.
@@ -179,9 +179,7 @@ void kernel::dot(const vector<shared_ptr<HEPlaintext>>& arg0,
             copy(arg0_projected_coord.begin(), arg0_projected_coord.end(), out_coord.begin());
         copy(arg1_projected_coord.begin(), arg1_projected_coord.end(), out_coord_it);
 
-        // Zero out to start the sum
-        shared_ptr<HEPlaintext> sum = he_backend->create_valued_plaintext(0, type);
-
+        vector<shared_ptr<runtime::he::HEPlaintext>> summands;
         size_t out_index = output_transform.index(out_coord);
 
         // Walk along the dotted axes.
@@ -200,16 +198,26 @@ void kernel::dot(const vector<shared_ptr<HEPlaintext>>& arg0,
                 copy(dot_axis_positions.begin(), dot_axis_positions.end(), arg1_coord.begin());
             copy(arg1_projected_coord.begin(), arg1_projected_coord.end(), arg1_it);
 
-            // Multiply and add to the sum.
+            // Multiply and add to the summands.
             auto arg0_text = arg0[arg0_transform.index(arg0_coord)];
             auto arg1_text = arg1[arg1_transform.index(arg1_coord)];
 
             shared_ptr<HEPlaintext> prod = he_backend->create_empty_plaintext();
             kernel::scalar_multiply(arg0_text, arg1_text, prod, type, he_backend);
-            kernel::scalar_add(sum, prod, sum, type, he_backend);
+
+            summands.emplace_back(prod);
         }
 
+        // Repeatedly sum and add to the back of the vector until the end is reached
+        // This is better for the he_seal_ckks_backend as it reduces the need for the rescale op.
+        for (size_t i = 0; i < summands.size() - 1; i += 2)
+        {
+            shared_ptr<HEPlaintext> plaintext = he_backend->create_empty_plaintext();
+            runtime::he::kernel::scalar_add(
+                summands[i], summands[i + 1], plaintext, type, he_backend);
+            summands.emplace_back(plaintext);
+        }
         // Write the sum back.
-        out[out_index] = sum;
+        out[out_index] = summands[summands.size() - 1];
     }
 }

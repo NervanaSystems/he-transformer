@@ -40,12 +40,12 @@ namespace ngraph
             {
             public:
                 HECipherTensor(const element::Type& element_type,
-                                   const Shape& shape,
-                                   const HEBackend* he_backend,
-                                   const std::shared_ptr<HECiphertext> he_ciphertext,
-                                   const bool batched = false,
-                                   const std::string& name = "external");
-                ~HECipherTensor() {};
+                               const Shape& shape,
+                               const HEBackend* he_backend,
+                               const std::shared_ptr<HECiphertext> he_ciphertext,
+                               const bool batched = false,
+                               const std::string& name = "external");
+                ~HECipherTensor(){};
 
                 const Shape get_expanded_shape() const;
 
@@ -78,13 +78,10 @@ namespace ngraph
                 }
 
                 inline size_t get_batch_size() { return m_batch_size; }
-
                 inline bool is_batched() { return m_batched; }
-
             private:
                 std::vector<std::shared_ptr<runtime::he::HECiphertext>> m_cipher_texts;
                 size_t m_num_elements;
-
             };
         }
     }

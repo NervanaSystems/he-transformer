@@ -33,9 +33,9 @@
 #include "he_call_frame.hpp"
 #include "he_cipher_tensor.hpp"
 #include "he_plain_tensor.hpp"
-#include "seal/he_seal_backend.hpp"
 #include "he_tensor.hpp"
 #include "kernel/add.hpp"
+#include "seal/he_seal_backend.hpp"
 /* #include "kernel/avg_pool.hpp"
 #include "kernel/broadcast.hpp"
 #include "kernel/concat.hpp"
@@ -152,7 +152,7 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
         for (size_t i = 0; i < op->get_output_size(); ++i)
         {
             descriptor::Tensor* tv = op->get_output_tensor_ptr(i).get();
-             auto it = tensor_map.find(tv);
+            auto it = tensor_map.find(tv);
             if (it == tensor_map.end())
             {
                 // The output tensor is not in the tensor map so create a new tensor
@@ -172,20 +172,17 @@ void runtime::he::HECallFrame::call(shared_ptr<Function> function,
                 }
                 else
                 {
-                    bool batched_out =
-                        any_of(inputs.begin(),
-                               inputs.end(),
-                               [](shared_ptr<runtime::he::HETensor> input) {
-                                   if (auto input_cipher_tv =
-                                           dynamic_pointer_cast<HECipherTensor>(input))
-                                   {
-                                       return input_cipher_tv->is_batched();
-                                   }
-                                   else
-                                   {
-                                       return false;
-                                   }
-                               });
+                    bool batched_out = any_of(
+                        inputs.begin(), inputs.end(), [](shared_ptr<runtime::he::HETensor> input) {
+                            if (auto input_cipher_tv = dynamic_pointer_cast<HECipherTensor>(input))
+                            {
+                                return input_cipher_tv->is_batched();
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        });
                     any_batched |= batched_out;
 
                     auto otv = make_shared<runtime::he::HECipherTensor>(
@@ -402,7 +399,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
             }
             cout << endl;
         }; */
-        /* for (shared_ptr<runtime::HostTensor> cpu_input : cpu_inputs)
+    /* for (shared_ptr<runtime::HostTensor> cpu_input : cpu_inputs)
         {
             NGRAPH_INFO << "Input";
             print_tensor(cpu_input);
@@ -412,7 +409,7 @@ void runtime::he::HECallFrame::check_cpu_calls(
             NGRAPH_INFO << "Output";
             print_tensor(cpu_output);
         } */
-        /* if (!correct)
+    /* if (!correct)
         {
             NGRAPH_INFO << "Inaccurate float computation";
             throw ngraph_error("Inaccurate float computation");

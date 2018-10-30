@@ -33,11 +33,11 @@ namespace ngraph
             {
             public:
                 HETensor(const element::Type& element_type,
-                             const Shape& shape,
-                             const HEBackend* he_backend,
-                             bool batched = false,
-                             const std::string& name = "external");
-                virtual ~HETensor() {};
+                         const Shape& shape,
+                         const HEBackend* he_backend,
+                         bool batched = false,
+                         const std::string& name = "external");
+                virtual ~HETensor(){};
 
                 /// @brief Write bytes directly into the tensor
                 /// @param p Pointer to source of data
@@ -61,14 +61,13 @@ namespace ngraph
                                         bool batched = false) const;
 
             protected:
-
                 void check_io_bounds(const void* p, size_t tensor_offset, size_t n) const;
 
                 bool m_batched;
                 // TODO: support more arbitrary batching dimension
                 size_t m_batch_size; // If m_batched, corresponds to first shape dimesion.
 
-               const HEBackend* m_he_backend;
+                const HEBackend* m_he_backend;
             };
         }
     }

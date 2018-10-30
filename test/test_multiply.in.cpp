@@ -58,7 +58,7 @@ TEST(${BACKEND_NAME}, multiply_2_3)
         copy_he_data(t_b, test::NDArray<float, 2>({{7, 8, 9}, {10, 11, 12}}).get_vector(), backend);
         backend->call(f, {t_result}, {t_a, t_b});
         EXPECT_TRUE(all_close(read_he_vector<float>(t_result, backend),
-                  (test::NDArray<float, 2>({{7, 16, 27}, {40, 55, 72}})).get_vector()));
+                              (test::NDArray<float, 2>({{7, 16, 27}, {40, 55, 72}})).get_vector()));
     }
 }
 
@@ -72,7 +72,7 @@ TEST(${BACKEND_NAME}, square_2_3)
     auto f = make_shared<Function>(t, op::ParameterVector{a, a});
 
     // Create some tensors for input/output
-    auto tensors_list = generate_plain_cipher_tensors({t}, {a,a }, backend);
+    auto tensors_list = generate_plain_cipher_tensors({t}, {a, a}, backend);
 
     for (auto tensors : tensors_list)
     {
@@ -86,7 +86,7 @@ TEST(${BACKEND_NAME}, square_2_3)
         copy_he_data(t_a, test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector(), backend);
         backend->call(f, {t_result}, {t_a, t_b});
         EXPECT_TRUE(all_close(read_he_vector<float>(t_result, backend),
-                  (test::NDArray<float, 2>({{1, 4, 9}, {16, 25, 36}})).get_vector()));
+                              (test::NDArray<float, 2>({{1, 4, 9}, {16, 25, 36}})).get_vector()));
     }
 }
 
@@ -113,17 +113,10 @@ TEST(${BACKEND_NAME}, multiply_optimized_2_3)
         auto t_result = results[0];
 
         copy_he_data(t_a, test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector(), backend);
-        copy_he_data(t_b, test::NDArray<float, 2>({{-1, 0, 1}, {-1, 0, 1 }}).get_vector(), backend);
+        copy_he_data(t_b, test::NDArray<float, 2>({{-1, 0, 1}, {-1, 0, 1}}).get_vector(), backend);
         backend->call(f, {t_result}, {t_a, t_b});
-
-        auto tmp = read_he_vector<float>(t_result, backend);
-
-        for (auto elem : tmp)
-        {
-            NGRAPH_INFO << elem;
-        }
         EXPECT_TRUE(all_close(read_he_vector<float>(t_result, backend),
-                  (test::NDArray<float, 2>({{-1, 0, 3}, {-4, 0, 6}})).get_vector()));
+                              (test::NDArray<float, 2>({{-1, 0, 3}, {-4, 0, 6}})).get_vector()));
     }
 }
 

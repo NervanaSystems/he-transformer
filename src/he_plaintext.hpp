@@ -25,8 +25,8 @@ namespace ngraph
             class HEPlaintext
             {
             public:
-                HEPlaintext() {};
-                virtual ~HEPlaintext() {};
+                HEPlaintext(){};
+                virtual ~HEPlaintext(){};
             };
         }
     }

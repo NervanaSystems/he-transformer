@@ -30,7 +30,6 @@ using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
-
 TEST(${BACKEND_NAME}, broadcast_vector)
 {
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
@@ -117,7 +116,8 @@ TEST(${BACKEND_NAME}, broadcast_tensor)
         copy_he_data(a, vector<float>{6}, backend);
 
         backend->call(f, {result}, {a});
-        EXPECT_TRUE(all_close((vector<float>{6, 6, 6, 6, 6, 6, 6, 6}), read_he_vector<float>(result, backend)));
+        EXPECT_TRUE(all_close((vector<float>{6, 6, 6, 6, 6, 6, 6, 6}),
+                              read_he_vector<float>(result, backend)));
     }
 }
 
@@ -142,7 +142,8 @@ TEST(${BACKEND_NAME}, broadcast_trivial)
         copy_he_data(a, vector<float>{2, 4, 6, 8, 16, 32, 64, 128}, backend);
 
         backend->call(f, {result}, {a});
-        EXPECT_TRUE(all_close((vector<float>{2, 4, 6, 8, 16, 32, 64, 128}), read_he_vector<float>(result, backend)));
+        EXPECT_TRUE(all_close((vector<float>{2, 4, 6, 8, 16, 32, 64, 128}),
+                              read_he_vector<float>(result, backend)));
     }
 }
 
@@ -169,7 +170,8 @@ TEST(${BACKEND_NAME}, broadcast_vector_colwise)
         copy_he_data(a, vector<float>{1, 2, 3}, backend);
 
         backend->call(f, {result}, {a});
-        EXPECT_TRUE(all_close((vector<float>{1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3}), read_he_vector<float>(result, backend)));
+        EXPECT_TRUE(all_close((vector<float>{1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3}),
+                              read_he_vector<float>(result, backend)));
     }
 }
 
@@ -196,7 +198,8 @@ TEST(${BACKEND_NAME}, broadcast_vector_rowwise)
         copy_he_data(a, vector<float>{1, 2, 3, 4}, backend);
 
         backend->call(f, {result}, {a});
-        EXPECT_TRUE(all_close((vector<float>{1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4}), read_he_vector<float>(result, backend)));
+        EXPECT_TRUE(all_close((vector<float>{1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4}),
+                              read_he_vector<float>(result, backend)));
     }
 }
 
@@ -222,7 +225,8 @@ TEST(${BACKEND_NAME}, broadcast_matrix_0)
         copy_he_data(a, vector<float>{1, 2, 3, 4}, backend);
 
         backend->call(f, {result}, {a});
-        EXPECT_TRUE(all_close((vector<float>{1, 2, 3, 4, 1, 2, 3, 4}), read_he_vector<float>(result, backend)));
+        EXPECT_TRUE(all_close((vector<float>{1, 2, 3, 4, 1, 2, 3, 4}),
+                              read_he_vector<float>(result, backend)));
     }
 }
 
@@ -248,7 +252,8 @@ TEST(${BACKEND_NAME}, broadcast_matrix_1)
         copy_he_data(a, vector<float>{1, 2, 3, 4}, backend);
 
         backend->call(f, {result}, {a});
-        EXPECT_TRUE(all_close((vector<float>{1, 2, 1, 2, 3, 4, 3, 4}), read_he_vector<float>(result, backend)));
+        EXPECT_TRUE(all_close((vector<float>{1, 2, 1, 2, 3, 4, 3, 4}),
+                              read_he_vector<float>(result, backend)));
     }
 }
 
@@ -274,6 +279,7 @@ TEST(${BACKEND_NAME}, broadcast_matrix_2)
         copy_he_data(a, vector<float>{1, 2, 3, 4}, backend);
 
         backend->call(f, {result}, {a});
-        EXPECT_TRUE(all_close((vector<float>{1, 1, 2, 2, 3, 3, 4, 4}), read_he_vector<float>(result, backend)));
+        EXPECT_TRUE(all_close((vector<float>{1, 1, 2, 2, 3, 3, 4, 4}),
+                              read_he_vector<float>(result, backend)));
     }
 }
