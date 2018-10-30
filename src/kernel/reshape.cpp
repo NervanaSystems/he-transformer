@@ -23,19 +23,19 @@ using namespace std;
 using namespace ngraph::runtime::he;
 
 void kernel::reshape(const std::vector<std::shared_ptr<HECiphertext>>& arg,
-                        std::vector<std::shared_ptr<HECiphertext>>& out,
-                        const Shape& in_shape,
-                        const AxisVector& in_axis_order,
-                        const Shape& out_shape)
+                     std::vector<std::shared_ptr<HECiphertext>>& out,
+                     const Shape& in_shape,
+                     const AxisVector& in_axis_order,
+                     const Shape& out_shape)
 {
     kernel::reshape_template(arg, out, in_shape, in_axis_order, out_shape);
 }
 
 void kernel::reshape(const std::vector<std::shared_ptr<HEPlaintext>>& arg,
-                        std::vector<std::shared_ptr<HEPlaintext>>& out,
-                        const Shape& in_shape,
-                        const AxisVector& in_axis_order,
-                        const Shape& out_shape)
+                     std::vector<std::shared_ptr<HEPlaintext>>& out,
+                     const Shape& in_shape,
+                     const AxisVector& in_axis_order,
+                     const Shape& out_shape)
 {
     kernel::reshape_template(arg, out, in_shape, in_axis_order, out_shape);
 }

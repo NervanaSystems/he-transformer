@@ -100,47 +100,19 @@ std::vector<T> generalized_read_vector(std::shared_ptr<ngraph::runtime::Tensor> 
         }
         size_t size = element_count * sizeof(T);
         std::vector<T> rc(element_count);
-
-        if (auto hetv = std::dynamic_pointer_cast<ngraph::runtime::he::HETensor>(tv))
-        {
-            hetv->read(rc.data(), 0, size);
-        }
-        else
-        {
-            throw ngraph_error("Tensor is not HETensor in generalized_read_vector");
-        }
+        cipher_tv->read(rc.data(), 0, size);
         return rc;
     }
-    else
+    else if (auto hetv = std::dynamic_pointer_cast<ngraph::runtime::he::HETensor>(tv))
     {
         size_t element_count = ngraph::shape_size(tv->get_shape());
         size_t size = element_count * sizeof(T);
         std::vector<T> rc(element_count);
-        std::dynamic_pointer_cast<ngraph::runtime::he::HETensor>(tv)->read(rc.data(), 0, size);
+        hetv->read(rc.data(), 0, size);
         return rc;
     }
-}
-
-template <typename T>
-void copy_he_data(std::shared_ptr<ngraph::runtime::Tensor> tv,
-                  const std::vector<T>& data,
-                  std::shared_ptr<ngraph::runtime::Backend> he_backend)
-{
-    size_t data_size = data.size() * sizeof(T);
-    std::dynamic_pointer_cast<ngraph::runtime::he::HETensor>(tv)->write(data.data(), 0, data_size);
-}
-
-template <typename T>
-std::vector<T> read_he_vector(std::shared_ptr<ngraph::runtime::Tensor> tv,
-                              std::shared_ptr<ngraph::runtime::Backend> he_backend)
-{
-    if (ngraph::element::from<T>() != tv->get_tensor_layout()->get_element_type())
+    else
     {
-        throw std::invalid_argument("read_vector type must match Tensor type");
+        throw ngraph_error("Tensor is not HETensor is generalized read vector");
     }
-    size_t element_count = ngraph::shape_size(tv->get_shape());
-    size_t size = element_count * sizeof(T);
-    std::vector<T> rc(element_count);
-    std::dynamic_pointer_cast<ngraph::runtime::he::HETensor>(tv)->read(rc.data(), 0, size);
-    return rc;
 }

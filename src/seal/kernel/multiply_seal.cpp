@@ -80,17 +80,17 @@ void he_seal::kernel::scalar_multiply(const shared_ptr<he_seal::SealCiphertextWr
         while (chain_ind0 > chain_ind1) // TODO: switch to if-statement
         {
             // NGRAPH_INFO << "Mod switching " << chain_ind0 << " , " << chain_ind1;
-            he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(arg0->m_ciphertext,
-                                                                    arg1->m_plaintext.parms_id());
+            he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
+                arg0->m_ciphertext, arg1->m_plaintext.parms_id());
             chain_ind0 = he_seal_ckks_backend->get_context()
                              ->context_data(arg0->m_ciphertext.parms_id())
                              ->chain_index();
         }
-        while (chain_ind1 > chain_ind0)  // TODO: switch to if-statement
+        while (chain_ind1 > chain_ind0) // TODO: switch to if-statement
         {
             // NGRAPH_INFO << "Mod switching " << chain_ind0 << " , " << chain_ind1;
-            he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(arg1->m_plaintext,
-                                                                    arg0->m_ciphertext.parms_id());
+            he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
+                arg1->m_plaintext, arg0->m_ciphertext.parms_id());
             chain_ind1 = he_seal_ckks_backend->get_context()
                              ->context_data(arg1->m_plaintext.parms_id())
                              ->chain_index();
