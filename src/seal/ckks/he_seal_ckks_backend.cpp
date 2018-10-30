@@ -257,6 +257,11 @@ void runtime::he::he_seal::HESealCKKSBackend::decode(
 {
     const string type_name = type.c_type_string();
 
+    if (count == 0)
+    {
+        throw ngraph_error("Decode called on 0 elements");
+    }
+
     if (type_name == "float")
     {
         auto seal_input = dynamic_pointer_cast<SealPlaintextWrapper>(input);
@@ -267,7 +272,6 @@ void runtime::he::he_seal::HESealCKKSBackend::decode(
         vector<double> xs(count, 0);
         m_ckks_encoder->decode(seal_input->m_plaintext, xs);
         vector<float> xs_float(xs.begin(), xs.end());
-        //  NGRAPH_INFO << "Decoding " << xs_float[0] << " " << xs_float[1];
 
         memcpy(output, &xs_float[0], type.size() * count);
     }

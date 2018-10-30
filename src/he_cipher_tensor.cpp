@@ -157,7 +157,6 @@ void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset, size_
     const element::Type& type = get_tensor_layout()->get_element_type();
     size_t type_byte_size = type.size();
     size_t src_start_index = tensor_offset / type_byte_size;
-    size_t num_elements_per_batch = n / (type_byte_size * m_batch_size);
     size_t num_elements_to_read = n / (type_byte_size * m_batch_size);
 
     if (num_elements_to_read == 1)
@@ -197,6 +196,7 @@ void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset, size_
             }
             else
             {
+                free(dst);
                 throw ngraph_error("HECipherTensor::read m_he_backend is not SEAL.");
             }
             for (size_t j = 0; j < m_batch_size; ++j)

@@ -30,32 +30,105 @@ using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
-TEST(${BACKEND_NAME}, ab)
+TEST(${BACKEND_NAME}, validate_call_input_count)
 {
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
-    Shape shape{2, 3};
-    auto a = make_shared<op::Parameter>(element::i64, shape);
-    auto b = make_shared<op::Parameter>(element::i64, shape);
-    auto t = make_shared<op::Add>(a, b);
-    auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+    Shape shape{2, 2};
 
-    // Create some tensors for input/output
-    auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
+    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto f = make_shared<Function>(make_shared<op::Add>(A, B), op::ParameterVector{A, B});
 
-    for (auto tensors : tensors_list)
-    {
-        auto results = get<0>(tensors);
-        auto inputs = get<1>(tensors);
+    auto a = backend->create_tensor(element::f32, shape);
+    auto b = backend->create_tensor(element::f32, shape);
+    auto c = backend->create_tensor(element::f32, shape);
 
-        auto t_a = inputs[0];
-        auto t_b = inputs[1];
-        auto t_result = results[0];
+    EXPECT_ANY_THROW(backend->call_with_validate(f, {c}, {a}));
+}
 
-        copy_data(t_a, test::NDArray<int64_t, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector(), backend);
-        copy_data(t_b, test::NDArray<int64_t, 2>({{7, 8, 9}, {10, 11, 12}}).get_vector(), backend);
-        backend->call(f, {t_result}, {t_a, t_b});
-        EXPECT_EQ(read_vector<int64_t>(t_result, backend),
-                  (test::NDArray<int64_t, 2>({{8, 10, 12}, {14, 16, 18}})).get_vector());
-    }
+TEST(${BACKEND_NAME}, validate_call_input_type)
+{
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+
+    Shape shape{2, 2};
+
+    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto f = make_shared<Function>(make_shared<op::Add>(A, B), op::ParameterVector{A, B});
+
+    auto a = backend->create_tensor(element::i32, shape);
+    auto b = backend->create_tensor(element::f32, shape);
+    auto c = backend->create_tensor(element::f32, shape);
+
+    EXPECT_ANY_THROW(backend->call_with_validate(f, {c}, {a, b}));
+}
+
+TEST(${BACKEND_NAME}, validate_call_input_shape)
+{
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+
+    Shape shape{2, 2};
+
+    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto f = make_shared<Function>(make_shared<op::Add>(A, B), op::ParameterVector{A, B});
+
+    auto a = backend->create_tensor(element::f32, {2, 3});
+    auto b = backend->create_tensor(element::f32, shape);
+    auto c = backend->create_tensor(element::f32, shape);
+
+    EXPECT_ANY_THROW(backend->call_with_validate(f, {c}, {a, b}));
+}
+
+TEST(${BACKEND_NAME}, validate_call_output_count)
+{
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+
+    Shape shape{2, 2};
+
+    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto f = make_shared<Function>(make_shared<op::Add>(A, B), op::ParameterVector{A, B});
+
+    auto a = backend->create_tensor(element::f32, shape);
+    auto b = backend->create_tensor(element::f32, shape);
+    auto c = backend->create_tensor(element::f32, shape);
+    auto d = backend->create_tensor(element::f32, shape);
+
+    EXPECT_ANY_THROW(backend->call_with_validate(f, {c, d}, {a, b}));
+}
+
+TEST(${BACKEND_NAME}, validate_call_output_type)
+{
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+
+    Shape shape{2, 2};
+
+    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto f = make_shared<Function>(make_shared<op::Add>(A, B), op::ParameterVector{A, B});
+
+    auto a = backend->create_tensor(element::i32, shape);
+    auto b = backend->create_tensor(element::f32, shape);
+    auto c = backend->create_tensor(element::f32, shape);
+
+    EXPECT_ANY_THROW(backend->call_with_validate(f, {a}, {b, c}));
+}
+
+TEST(${BACKEND_NAME}, validate_call_output_shape)
+{
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+
+    Shape shape{2, 2};
+
+    auto A = make_shared<op::Parameter>(element::f32, shape);
+    auto B = make_shared<op::Parameter>(element::f32, shape);
+    auto f = make_shared<Function>(make_shared<op::Add>(A, B), op::ParameterVector{A, B});
+
+    auto a = backend->create_tensor(element::f32, {2, 3});
+    auto b = backend->create_tensor(element::f32, shape);
+    auto c = backend->create_tensor(element::f32, shape);
+
+    EXPECT_ANY_THROW(backend->call_with_validate(f, {a}, {c, b}));
 }

@@ -166,7 +166,7 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
     {
         he_outputs.push_back(static_pointer_cast<runtime::he::HETensor>(tv));
     }
-    call(function, he_outputs, he_inputs);
+    return call(function, he_outputs, he_inputs);
 }
 
 void runtime::he::HEBackend::clear_function_instance()

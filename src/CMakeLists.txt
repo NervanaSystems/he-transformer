@@ -25,8 +25,8 @@ set (HE_SRC
     kernel/multiply.cpp
     kernel/negate.cpp
     kernel/pad.cpp
-    kernel/subtract.cpp
     kernel/reshape.cpp
+    kernel/subtract.cpp
     kernel/result.cpp
     kernel/slice.cpp
 
