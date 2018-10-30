@@ -106,8 +106,6 @@ static void run_cryptonets_benchmark(string backend_name, size_t batch_size, boo
                       : static_pointer_cast<runtime::he::he_seal::HESealCKKSBackend>(backend)
                             ->create_tensor(type, shape);
 
-        // auto parameter_cipher_tv = backend->create_tensor(type, shape);
-
         NGRAPH_INFO << "Creating input shape: " << join(shape, "x");
 
         if (shape == Shape{batch_size, 784})
@@ -115,14 +113,7 @@ static void run_cryptonets_benchmark(string backend_name, size_t batch_size, boo
             NGRAPH_INFO << "Copying " << shape_size(shape) << " elements";
             NGRAPH_INFO << "x is " << x.size() << " elements";
 
-            if (backend_name == "INTERPRETER")
-            {
-                copy_data(parameter_cipher_tv, x);
-            }
-            else
-            {
-                copy_he_data(parameter_cipher_tv, x, backend);
-            }
+            copy_data(parameter_cipher_tv, x);
             parameter_tvs.push_back(parameter_cipher_tv);
         }
         else
@@ -174,17 +165,6 @@ static void run_cryptonets_benchmark(string backend_name, size_t batch_size, boo
     sw_global.stop();
     NGRAPH_INFO << "sw_global: " << sw_global.get_milliseconds() << "ms";
 
-    NGRAPH_INFO << "Result ";
-    for (auto elem : result)
-    {
-        NGRAPH_INFO << elem;
-    }
-    NGRAPH_INFO << "Truth";
-    for (auto elem : y)
-    {
-        NGRAPH_INFO << elem;
-    }
-
     // Check prediction vs ground truth
     vector<int> y_gt_label = batched_argmax(y);
     vector<int> y_predicted_label = batched_argmax(result);
@@ -211,69 +191,67 @@ static void run_cryptonets_benchmark(string backend_name, size_t batch_size, boo
     NGRAPH_INFO << "sw_global: " << sw_global.get_milliseconds() << "ms";
 }
 
-// These tests take a long time, so run them after all other unit-test
-// by naming them with leading underscore.
-TEST(HE_SEAL_CKKS, _cryptonets_benchmark_interpreter_1)
+TEST(HE_SEAL_CKKS, cryptonets_benchmark_interpreter_1)
 {
     run_cryptonets_benchmark("INTERPRETER", 1);
 }
 
-TEST(HE_SEAL_CKKS, _cryptonets_benchmark_interpreter_2)
+TEST(HE_SEAL_CKKS, cryptonets_benchmark_interpreter_2)
 {
     run_cryptonets_benchmark("INTERPRETER", 2);
 }
 
-TEST(HE_SEAL_CKKS, _cryptonets_benchmark_interpreter_4)
+TEST(HE_SEAL_CKKS, cryptonets_benchmark_interpreter_4)
 {
     run_cryptonets_benchmark("INTERPRETER", 4);
 }
 
-TEST(HE_SEAL_CKKS, _cryptonets_benchmark_interpreter_8)
+TEST(HE_SEAL_CKKS, cryptonets_benchmark_interpreter_8)
 {
     run_cryptonets_benchmark("INTERPRETER", 8);
 }
 
-TEST(HE_SEAL_CKKS, _cryptonets_benchmark_interpreter_16)
+TEST(HE_SEAL_CKKS, cryptonets_benchmark_interpreter_16)
 {
     run_cryptonets_benchmark("INTERPRETER", 16);
 }
 
-TEST(HE_SEAL_CKKS, _cryptonets_benchmark_interpreter_32)
+TEST(HE_SEAL_CKKS, cryptonets_benchmark_interpreter_32)
 {
     run_cryptonets_benchmark("INTERPRETER", 32);
 }
 
-TEST(HE_SEAL_CKKS, _cryptonets_benchmark_interpreter_64)
+TEST(HE_SEAL_CKKS, cryptonets_benchmark_interpreter_64)
 {
     run_cryptonets_benchmark("INTERPRETER", 64);
 }
 
-TEST(HE_SEAL_CKKS, _cryptonets_benchmark_interpreter_128)
+TEST(HE_SEAL_CKKS, cryptonets_benchmark_interpreter_128)
 {
     run_cryptonets_benchmark("INTERPRETER", 128);
 }
 
-TEST(HE_SEAL_CKKS, _cryptonets_benchmark_interpreter_256)
+TEST(HE_SEAL_CKKS, cryptonets_benchmark_interpreter_256)
 {
     run_cryptonets_benchmark("INTERPRETER", 256);
 }
 
-TEST(HE_SEAL_CKKS, _cryptonets_benchmark_interpreter_512)
+TEST(HE_SEAL_CKKS, cryptonets_benchmark_interpreter_512)
 {
     run_cryptonets_benchmark("INTERPRETER", 512);
 }
 
-TEST(HE_SEAL_CKKS, _cryptonets_benchmark_interpreter_1024)
+TEST(HE_SEAL_CKKS, cryptonets_benchmark_interpreter_1024)
 {
     run_cryptonets_benchmark("INTERPRETER", 1024);
 }
 
-TEST(HE_SEAL_CKKS, _cryptonets_benchmark_interpreter_2048)
+TEST(HE_SEAL_CKKS, cryptonets_benchmark_interpreter_2048)
 {
     run_cryptonets_benchmark("INTERPRETER", 2048);
 }
 
-TEST(HE_SEAL_CKKS, _cryptonets_benchmark_interpreter_4096)
+TEST(HE_SEAL_CKKS, cryptonets_benchmark_interpreter_4096)
 {
     run_cryptonets_benchmark("INTERPRETER", 4096);
 }

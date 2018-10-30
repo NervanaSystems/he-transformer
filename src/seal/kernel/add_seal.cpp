@@ -18,8 +18,9 @@
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal.h"
-
 #include "seal/ckks/he_seal_ckks_backend.hpp"
+#include "seal/seal_ciphertext_wrapper.hpp"
+#include "seal/seal_plaintext_wrapper.hpp"
 
 using namespace std;
 using namespace ngraph::runtime::he;

@@ -49,11 +49,11 @@ TEST(${BACKEND_NAME}, reshape_t2v_012)
         auto a = inputs[0];
         auto result = results[0];
 
-        copy_he_data(a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}, backend);
+        copy_data(a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
 
         backend->call(f, {result}, {a});
         EXPECT_EQ((vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}),
-                  read_he_vector<float>(result, backend));
+                  read_vector<float>(result));
     }
 }
 
@@ -76,10 +76,10 @@ TEST(${BACKEND_NAME}, reshape_t2s_012)
         auto a = inputs[0];
         auto result = results[0];
 
-        copy_he_data(a, vector<float>{6}, backend);
+        copy_data(a, vector<float>{6});
 
         backend->call(f, {result}, {a});
-        EXPECT_EQ((vector<float>{6}), read_he_vector<float>(result, backend));
+        EXPECT_EQ((vector<float>{6}), read_vector<float>(result));
     }
 }
 
@@ -102,10 +102,10 @@ TEST(${BACKEND_NAME}, reshape_t2s_120)
         auto a = inputs[0];
         auto result = results[0];
 
-        copy_he_data(a, vector<float>{6}, backend);
+        copy_data(a, vector<float>{6});
 
         backend->call(f, {result}, {a});
-        EXPECT_EQ((vector<float>{6}), read_he_vector<float>(result, backend));
+        EXPECT_EQ((vector<float>{6}), read_vector<float>(result));
     }
 }
 
@@ -128,10 +128,10 @@ TEST(${BACKEND_NAME}, reshape_s2t)
         auto a = inputs[0];
         auto result = results[0];
 
-        copy_he_data(a, vector<float>{42}, backend);
+        copy_data(a, vector<float>{42});
 
         backend->call(f, {result}, {a});
-        EXPECT_EQ((vector<float>{42}), read_he_vector<float>(result, backend));
+        EXPECT_EQ((vector<float>{42}), read_vector<float>(result));
     }
 }
 
@@ -154,9 +154,9 @@ TEST(${BACKEND_NAME}, reshape_v2m_col)
         auto a = inputs[0];
         auto result = results[0];
 
-        copy_he_data(a, vector<float>{1, 2, 3}, backend);
+        copy_data(a, vector<float>{1, 2, 3});
         backend->call(f, {result}, {a});
-        EXPECT_EQ((vector<float>{1, 2, 3}), read_he_vector<float>(result, backend));
+        EXPECT_EQ((vector<float>{1, 2, 3}), read_vector<float>(result));
     }
 }
 
@@ -179,9 +179,9 @@ TEST(${BACKEND_NAME}, reshape_v2m_row)
         auto a = inputs[0];
         auto result = results[0];
 
-        copy_he_data(a, vector<float>{1, 2, 3}, backend);
+        copy_data(a, vector<float>{1, 2, 3});
         backend->call(f, {result}, {a});
-        EXPECT_EQ((vector<float>{1, 2, 3}), read_he_vector<float>(result, backend));
+        EXPECT_EQ((vector<float>{1, 2, 3}), read_vector<float>(result));
     }
 }
 
@@ -204,9 +204,9 @@ TEST(${BACKEND_NAME}, reshape_v2t_middle)
         auto a = inputs[0];
         auto result = results[0];
 
-        copy_he_data(a, vector<float>{1, 2, 3}, backend);
+        copy_data(a, vector<float>{1, 2, 3});
         backend->call(f, {result}, {a});
-        EXPECT_EQ((vector<float>{1, 2, 3}), read_he_vector<float>(result, backend));
+        EXPECT_EQ((vector<float>{1, 2, 3}), read_vector<float>(result));
     }
 }
 
@@ -229,10 +229,10 @@ TEST(${BACKEND_NAME}, reshape_m2m_same)
         auto a = inputs[0];
         auto result = results[0];
 
-        copy_he_data(a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9}, backend);
+        copy_data(a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9});
         backend->call(f, {result}, {a});
         EXPECT_EQ((vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9}),
-                  read_he_vector<float>(result, backend));
+                  read_vector<float>(result));
     }
 }
 
@@ -255,10 +255,10 @@ TEST(${BACKEND_NAME}, reshape_m2m_transpose)
         auto a = inputs[0];
         auto result = results[0];
 
-        copy_he_data(a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9}, backend);
+        copy_data(a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9});
         backend->call(f, {result}, {a});
         EXPECT_EQ((vector<float>{1, 4, 7, 2, 5, 8, 3, 6, 9}),
-                  read_he_vector<float>(result, backend));
+                  read_vector<float>(result));
     }
 }
 
@@ -281,9 +281,9 @@ TEST(${BACKEND_NAME}, reshape_m2m_dim_change_transpose)
         auto a = inputs[0];
         auto result = results[0];
 
-        copy_he_data(a, vector<float>{1, 2, 3, 4, 5, 6}, backend);
+        copy_data(a, vector<float>{1, 2, 3, 4, 5, 6});
         backend->call(f, {result}, {a});
-        EXPECT_EQ((vector<float>{1, 3, 5, 2, 4, 6}), read_he_vector<float>(result, backend));
+        EXPECT_EQ((vector<float>{1, 3, 5, 2, 4, 6}), read_vector<float>(result));
     }
 }
 
@@ -354,9 +354,8 @@ TEST(${BACKEND_NAME}, reshape_6d)
         auto a = inputs[0];
         auto result = results[0];
 
-        copy_he_data(a, a_data, backend);
+        copy_data(a, a_data);
         backend->call(f, {result}, {a});
-        NGRAPH_INFO << "Reading he vector";
         EXPECT_EQ(
             (vector<float>{
                 1.,   73.,  9.,   81.,  17.,  89.,  2.,   74.,  10.,  82.,  18.,  90.,  3.,   75.,
@@ -380,6 +379,6 @@ TEST(${BACKEND_NAME}, reshape_6d)
                 55.,  127., 63.,  135., 71.,  143., 56.,  128., 64.,  136., 72.,  144., 197., 269.,
                 205., 277., 213., 285., 198., 270., 206., 278., 214., 286., 199., 271., 207., 279.,
                 215., 287., 200., 272., 208., 280., 216., 288.}),
-            read_he_vector<float>(result, backend));
+            read_vector<float>(result));
     }
 }

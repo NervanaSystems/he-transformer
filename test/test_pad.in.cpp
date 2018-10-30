@@ -48,16 +48,16 @@ TEST(${BACKEND_NAME}, pad_interior_1d)
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
-    copy_he_data(a, test::NDArray<float, 1>({1, 2, 3, 4, 5, 6}).get_vector(), backend);
+    copy_data(a, test::NDArray<float, 1>({1, 2, 3, 4, 5, 6}).get_vector());
     auto b = backend->create_tensor(element::f32, shape_b);
-    copy_he_data(b, vector<float>{2112}, backend);
+    copy_data(b, vector<float>{2112});
     auto result = backend->create_tensor(element::f32, shape_r);
 
     backend->call_with_validate(f, {result}, {a, b});
     EXPECT_EQ((test::NDArray<float, 1>(
                    {1, 2112, 2112, 2, 2112, 2112, 3, 2112, 2112, 4, 2112, 2112, 5, 2112, 2112, 6})
                    .get_vector()),
-              read_he_vector<float>(result, backend));
+              read_vector<float>(result));
 }
 
 TEST(${BACKEND_NAME}, pad_exterior_1d)
@@ -78,16 +78,16 @@ TEST(${BACKEND_NAME}, pad_exterior_1d)
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
-    copy_he_data(a, test::NDArray<float, 1>({1, 2, 3, 4, 5, 6}).get_vector(), backend);
+    copy_data(a, test::NDArray<float, 1>({1, 2, 3, 4, 5, 6}).get_vector());
     auto b = backend->create_tensor(element::f32, shape_b);
-    copy_he_data(b, vector<float>{2112}, backend);
+    copy_data(b, vector<float>{2112});
     auto result = backend->create_tensor(element::f32, shape_r);
 
     backend->call_with_validate(f, {result}, {a, b});
     EXPECT_EQ((test::NDArray<float, 1>(
                    {2112, 2112, 2112, 2112, 1, 2, 3, 4, 5, 6, 2112, 2112, 2112, 2112, 2112})
                    .get_vector()),
-              read_he_vector<float>(result, backend));
+              read_vector<float>(result));
 }
 
 TEST(${BACKEND_NAME}, pad_interior_exterior_1d)
@@ -108,9 +108,9 @@ TEST(${BACKEND_NAME}, pad_interior_exterior_1d)
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
-    copy_he_data(a, test::NDArray<float, 1>({1, 2, 3, 4, 5, 6}).get_vector(), backend);
+    copy_data(a, test::NDArray<float, 1>({1, 2, 3, 4, 5, 6}).get_vector());
     auto b = backend->create_tensor(element::f32, shape_b);
-    copy_he_data(b, vector<float>{2112}, backend);
+    copy_data(b, vector<float>{2112});
     auto result = backend->create_tensor(element::f32, shape_r);
 
     backend->call_with_validate(f, {result}, {a, b});
@@ -118,7 +118,7 @@ TEST(${BACKEND_NAME}, pad_interior_exterior_1d)
                                         2112, 3,    2112, 2112, 4,    2112, 2112, 5, 2112,
                                         2112, 6,    2112, 2112, 2112, 2112, 2112})
                    .get_vector()),
-              read_he_vector<float>(result, backend));
+              read_vector<float>(result));
 }
 
 TEST(${BACKEND_NAME}, pad_interior_exterior_2d)
@@ -139,9 +139,9 @@ TEST(${BACKEND_NAME}, pad_interior_exterior_2d)
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
-    copy_he_data(a, test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector(), backend);
+    copy_data(a, test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector());
     auto b = backend->create_tensor(element::f32, shape_b);
-    copy_he_data(b, vector<float>{9}, backend);
+    copy_data(b, vector<float>{9});
     auto result = backend->create_tensor(element::f32, shape_r);
 
     backend->call_with_validate(f, {result}, {a, b});
@@ -153,7 +153,7 @@ TEST(${BACKEND_NAME}, pad_interior_exterior_2d)
                                         {9, 9, 9, 9, 9, 9},
                                         {9, 9, 9, 9, 9, 9}})
                    .get_vector()),
-              read_he_vector<float>(result, backend));
+              read_vector<float>(result ));
 }
 
 TEST(${BACKEND_NAME}, pad_exterior_2d_0x0)
@@ -174,9 +174,9 @@ TEST(${BACKEND_NAME}, pad_exterior_2d_0x0)
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
-    // copy_he_data(a, test::NDArray<float, 2>({{}}).get_vector(), backend);
+    // copy_data(a, test::NDArray<float, 2>({{}}).get_vector(), backend);
     auto b = backend->create_tensor(element::f32, shape_b);
-    copy_he_data(b, vector<float>{2112}, backend);
+    copy_data(b, vector<float>{2112});
     auto result = backend->create_tensor(element::f32, shape_r);
 
     backend->call_with_validate(f, {result}, {a, b});
@@ -186,7 +186,7 @@ TEST(${BACKEND_NAME}, pad_exterior_2d_0x0)
                                         {2112, 2112, 2112, 2112, 2112},
                                         {2112, 2112, 2112, 2112, 2112}})
                    .get_vector()),
-              read_he_vector<float>(result, backend));
+              read_vector<float>(result));
 }
 
 TEST(${BACKEND_NAME}, pad_exterior_2d_0x3)
@@ -207,9 +207,9 @@ TEST(${BACKEND_NAME}, pad_exterior_2d_0x3)
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
-    // copy_he_data(a, test::NDArray<float, 2>({}).get_vector(), backend);
+    // copy_data(a, test::NDArray<float, 2>({}).get_vector(), backend);
     auto b = backend->create_tensor(element::f32, shape_b);
-    copy_he_data(b, vector<float>{2112}, backend);
+    copy_data(b, vector<float>{2112});
     auto result = backend->create_tensor(element::f32, shape_r);
 
     backend->call_with_validate(f, {result}, {a, b});
@@ -219,7 +219,7 @@ TEST(${BACKEND_NAME}, pad_exterior_2d_0x3)
                                         {2112, 2112, 2112, 2112, 2112},
                                         {2112, 2112, 2112, 2112, 2112}})
                    .get_vector()),
-              read_he_vector<float>(result, backend));
+              read_vector<float>(result));
 }
 
 TEST(${BACKEND_NAME}, pad_exterior_2d_3x0)
@@ -240,9 +240,9 @@ TEST(${BACKEND_NAME}, pad_exterior_2d_3x0)
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
-    // copy_he_data(a, test::NDArray<float, 2>({}).get_vector(), backend);
+    // copy_data(a, test::NDArray<float, 2>({}).get_vector(), backend);
     auto b = backend->create_tensor(element::f32, shape_b);
-    copy_he_data(b, vector<float>{2112}, backend);
+    copy_data(b, vector<float>{2112});
     auto result = backend->create_tensor(element::f32, shape_r);
 
     backend->call_with_validate(f, {result}, {a, b});
@@ -252,7 +252,7 @@ TEST(${BACKEND_NAME}, pad_exterior_2d_3x0)
                                         {2112, 2112, 2112, 2112, 2112},
                                         {2112, 2112, 2112, 2112, 2112}})
                    .get_vector()),
-              read_he_vector<float>(result, backend));
+              read_vector<float>(result));
 }
 
 TEST(${BACKEND_NAME}, pad_exterior_4d_1x2x2x2)
@@ -274,7 +274,7 @@ TEST(${BACKEND_NAME}, pad_exterior_4d_1x2x2x2)
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
     // clang-format off
-    copy_he_data(a, test::NDArray<float, 4>(
+    copy_data(a, test::NDArray<float, 4>(
         {
             {
                 {
@@ -286,17 +286,17 @@ TEST(${BACKEND_NAME}, pad_exterior_4d_1x2x2x2)
                     {0.0f, 0.0f}
                 }
             }
-        }).get_vector(), backend);
+        }).get_vector());
     // clang-format on
 
     auto b = backend->create_tensor(element::f32, shape_b);
-    copy_he_data(b, vector<float>{42}, backend);
+    copy_data(b, vector<float>{42} );
 
     auto result = backend->create_tensor(element::f32, shape_r);
 
     backend->call_with_validate(f, {result}, {a, b});
     // clang-format off
-    EXPECT_TRUE(test::all_close((test::NDArray<float, 4>(
+    EXPECT_TRUE(all_close((test::NDArray<float, 4>(
         {
             {
                 {
@@ -313,7 +313,7 @@ TEST(${BACKEND_NAME}, pad_exterior_4d_1x2x2x2)
                 }
             }
         }).get_vector()),
-        read_he_vector<float>(result, backend)));
+        read_vector<float>(result)));
     // clang-format on
 }
 
@@ -340,15 +340,15 @@ TEST(${BACKEND_NAME}, pad_interior_exterior_4d_2x0x3x2)
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
-    // copy_he_data(a, test::NDArray<float, 2>({}).get_vector(), backend);
+    // copy_data(a, test::NDArray<float, 2>({}).get_vector(), backend);
     auto b = backend->create_tensor(element::f32, shape_b);
-    copy_he_data(b, vector<float>{2112}, backend);
+    copy_data(b, vector<float>{2112});
     auto result = backend->create_tensor(element::f32, shape_r);
 
     vector<float> expected(5 * 2 * 3 * 2, 2112);
 
     backend->call_with_validate(f, {result}, {a, b});
-    EXPECT_EQ(expected, read_he_vector<float>(result, backend));
+    EXPECT_EQ(expected, read_vector<float>(result));
 }
 
 TEST(${BACKEND_NAME}, pad_const_interior_1d)
@@ -369,14 +369,14 @@ TEST(${BACKEND_NAME}, pad_const_interior_1d)
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
-    copy_he_data(a, test::NDArray<float, 1>({1, 2, 3, 4, 5, 6}).get_vector(), backend);
+    copy_data(a, test::NDArray<float, 1>({1, 2, 3, 4, 5, 6}).get_vector());
     auto result = backend->create_tensor(element::f32, shape_r);
 
     backend->call_with_validate(f, {result}, {a});
     EXPECT_EQ((test::NDArray<float, 1>(
                    {1, 123, 123, 2, 123, 123, 3, 123, 123, 4, 123, 123, 5, 123, 123, 6})
                    .get_vector()),
-              read_he_vector<float>(result, backend));
+              read_vector<float>(result));
 }
 
 TEST(${BACKEND_NAME}, pad_const_exterior_1d)
@@ -397,14 +397,14 @@ TEST(${BACKEND_NAME}, pad_const_exterior_1d)
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
-    copy_he_data(a, test::NDArray<float, 1>({1, 2, 3, 4, 5, 6}).get_vector(), backend);
+    copy_data(a, test::NDArray<float, 1>({1, 2, 3, 4, 5, 6}).get_vector());
     auto result = backend->create_tensor(element::f32, shape_r);
 
     backend->call_with_validate(f, {result}, {a});
-    EXPECT_EQ(
+    EXPECT_TRUE(all_close(
         (test::NDArray<float, 1>({123, 123, 123, 123, 1, 2, 3, 4, 5, 6, 123, 123, 123, 123, 123})
              .get_vector()),
-        read_he_vector<float>(result, backend));
+        read_vector<float>(result)));
 }
 
 TEST(${BACKEND_NAME}, pad_const_interior_exterior_1d)
@@ -425,7 +425,7 @@ TEST(${BACKEND_NAME}, pad_const_interior_exterior_1d)
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
-    copy_he_data(a, test::NDArray<float, 1>({1, 2, 3, 4, 5, 6}).get_vector(), backend);
+    copy_data(a, test::NDArray<float, 1>({1, 2, 3, 4, 5, 6}).get_vector());
     auto result = backend->create_tensor(element::f32, shape_r);
 
     backend->call_with_validate(f, {result}, {a});
@@ -433,7 +433,7 @@ TEST(${BACKEND_NAME}, pad_const_interior_exterior_1d)
         (test::NDArray<float, 1>({123, 123, 123, 123, 1,   123, 123, 2,   123, 123, 3,   123, 123,
                                   4,   123, 123, 5,   123, 123, 6,   123, 123, 123, 123, 123})
              .get_vector()),
-        read_he_vector<float>(result, backend));
+        read_vector<float>(result));
 }
 
 TEST(${BACKEND_NAME}, pad_const_interior_exterior_2d)
@@ -454,7 +454,7 @@ TEST(${BACKEND_NAME}, pad_const_interior_exterior_2d)
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
-    copy_he_data(a, test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector(), backend);
+    copy_data(a, test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector());
     auto result = backend->create_tensor(element::f32, shape_r);
 
     backend->call_with_validate(f, {result}, {a});
@@ -466,7 +466,7 @@ TEST(${BACKEND_NAME}, pad_const_interior_exterior_2d)
                                         {123, 123, 123, 123, 123, 123},
                                         {123, 123, 123, 123, 123, 123}})
                    .get_vector()),
-              read_he_vector<float>(result, backend));
+              read_vector<float>(result));
 }
 
 TEST(${BACKEND_NAME}, pad_const_exterior_2d_0x0)
@@ -487,7 +487,7 @@ TEST(${BACKEND_NAME}, pad_const_exterior_2d_0x0)
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
-    // copy_he_data(a, test::NDArray<float, 2>({{}}).get_vector(), backend);
+    // copy_data(a, test::NDArray<float, 2>({{}}).get_vector(), backend);
     auto result = backend->create_tensor(element::f32, shape_r);
 
     backend->call_with_validate(f, {result}, {a});
@@ -497,7 +497,7 @@ TEST(${BACKEND_NAME}, pad_const_exterior_2d_0x0)
                                         {123, 123, 123, 123, 123},
                                         {123, 123, 123, 123, 123}})
                    .get_vector()),
-              read_he_vector<float>(result, backend));
+              read_vector<float>(result));
 }
 
 TEST(${BACKEND_NAME}, pad_const_exterior_2d_0x3)
@@ -518,7 +518,7 @@ TEST(${BACKEND_NAME}, pad_const_exterior_2d_0x3)
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
-    // copy_he_data(a, test::NDArray<float, 2>({}).get_vector(), backend);
+    // copy_data(a, test::NDArray<float, 2>({}).get_vector(), backend);
     auto result = backend->create_tensor(element::f32, shape_r);
 
     backend->call_with_validate(f, {result}, {a});
@@ -528,7 +528,7 @@ TEST(${BACKEND_NAME}, pad_const_exterior_2d_0x3)
                                         {123, 123, 123, 123, 123},
                                         {123, 123, 123, 123, 123}})
                    .get_vector()),
-              read_he_vector<float>(result, backend));
+              read_vector<float>(result));
 }
 
 TEST(${BACKEND_NAME}, pad_const_exterior_2d_3x0)
@@ -549,7 +549,7 @@ TEST(${BACKEND_NAME}, pad_const_exterior_2d_3x0)
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
-    // copy_he_data(a, test::NDArray<float, 2>({}).get_vector(), backend);
+    // copy_data(a, test::NDArray<float, 2>({}).get_vector(), backend);
     auto result = backend->create_tensor(element::f32, shape_r);
 
     backend->call_with_validate(f, {result}, {a});
@@ -559,7 +559,7 @@ TEST(${BACKEND_NAME}, pad_const_exterior_2d_3x0)
                                         {123, 123, 123, 123, 123},
                                         {123, 123, 123, 123, 123}})
                    .get_vector()),
-              read_he_vector<float>(result, backend));
+              read_vector<float>(result));
 }
 
 TEST(${BACKEND_NAME}, pad_const_exterior_4d_1x2x2x2)
@@ -581,7 +581,7 @@ TEST(${BACKEND_NAME}, pad_const_exterior_4d_1x2x2x2)
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
     // clang-format off
-    copy_he_data(a, test::NDArray<float, 4>(
+    copy_data(a, test::NDArray<float, 4>(
         {
             {
                 {
@@ -593,14 +593,14 @@ TEST(${BACKEND_NAME}, pad_const_exterior_4d_1x2x2x2)
                     {0.0f, 0.0f}
                 }
             }
-        }).get_vector(), backend);
+        }).get_vector());
     // clang-format on
 
     auto result = backend->create_tensor(element::f32, shape_r);
 
     backend->call_with_validate(f, {result}, {a});
     // clang-format off
-    EXPECT_TRUE(test::all_close((test::NDArray<float, 4>(
+    EXPECT_TRUE(all_close((test::NDArray<float, 4>(
         {
             {
                 {
@@ -617,7 +617,7 @@ TEST(${BACKEND_NAME}, pad_const_exterior_4d_1x2x2x2)
                 }
             }
         }).get_vector()),
-        read_he_vector<float>(result, backend)));
+        read_vector<float>(result)));
     // clang-format on
 }
 
@@ -644,11 +644,11 @@ TEST(${BACKEND_NAME}, pad_const_interior_exterior_4d_2x0x3x2)
 
     // Create some tensors for input/output
     auto a = backend->create_tensor(element::f32, shape_a);
-    // copy_he_data(a, test::NDArray<float, 2>({}).get_vector(), backend);
+    // copy_data(a, test::NDArray<float, 2>({}).get_vector(), backend);
     auto result = backend->create_tensor(element::f32, shape_r);
 
     vector<float> expected(5 * 2 * 3 * 2, 123);
 
     backend->call_with_validate(f, {result}, {a});
-    EXPECT_EQ(expected, read_he_vector<float>(result, backend));
+    EXPECT_EQ(expected, read_vector<float>(result));
 }

@@ -50,10 +50,10 @@ TEST(${BACKEND_NAME}, broadcast_vector)
         auto a = inputs[0];
         auto result = results[0];
 
-        copy_he_data(a, vector<float>{6}, backend);
+        copy_data(a, vector<float>{6});
 
         backend->call(f, {result}, {a});
-        EXPECT_TRUE(all_close((vector<float>{6, 6, 6, 6}), read_he_vector<float>(result, backend)));
+        EXPECT_TRUE(all_close((vector<float>{6, 6, 6, 6}), read_vector<float>(result)));
     }
 }
 
@@ -87,10 +87,10 @@ TEST(${BACKEND_NAME}, broadcast_matrix)
         auto a = inputs[0];
         auto result = results[0];
 
-        copy_he_data(a, vector<float>{6}, backend);
+        copy_data(a, vector<float>{6});
 
         backend->call(f, {result}, {a});
-        EXPECT_TRUE(all_close((vector<float>{6, 6, 6, 6}), read_he_vector<float>(result, backend)));
+        EXPECT_TRUE(all_close((vector<float>{6, 6, 6, 6}), read_vector<float>(result)));
     }
 }
 
@@ -113,11 +113,11 @@ TEST(${BACKEND_NAME}, broadcast_tensor)
         auto a = inputs[0];
         auto result = results[0];
 
-        copy_he_data(a, vector<float>{6}, backend);
+        copy_data(a, vector<float>{6});
 
         backend->call(f, {result}, {a});
         EXPECT_TRUE(all_close((vector<float>{6, 6, 6, 6, 6, 6, 6, 6}),
-                              read_he_vector<float>(result, backend)));
+                              read_vector<float>(result)));
     }
 }
 
@@ -139,11 +139,11 @@ TEST(${BACKEND_NAME}, broadcast_trivial)
         auto a = inputs[0];
         auto result = results[0];
 
-        copy_he_data(a, vector<float>{2, 4, 6, 8, 16, 32, 64, 128}, backend);
+        copy_data(a, vector<float>{2, 4, 6, 8, 16, 32, 64, 128});
 
         backend->call(f, {result}, {a});
         EXPECT_TRUE(all_close((vector<float>{2, 4, 6, 8, 16, 32, 64, 128}),
-                              read_he_vector<float>(result, backend)));
+                              read_vector<float>(result)));
     }
 }
 
@@ -167,11 +167,11 @@ TEST(${BACKEND_NAME}, broadcast_vector_colwise)
         auto a = inputs[0];
         auto result = results[0];
 
-        copy_he_data(a, vector<float>{1, 2, 3}, backend);
+        copy_data(a, vector<float>{1, 2, 3});
 
         backend->call(f, {result}, {a});
         EXPECT_TRUE(all_close((vector<float>{1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3}),
-                              read_he_vector<float>(result, backend)));
+                              read_vector<float>(result)));
     }
 }
 
@@ -195,11 +195,11 @@ TEST(${BACKEND_NAME}, broadcast_vector_rowwise)
         auto a = inputs[0];
         auto result = results[0];
 
-        copy_he_data(a, vector<float>{1, 2, 3, 4}, backend);
+        copy_data(a, vector<float>{1, 2, 3, 4});
 
         backend->call(f, {result}, {a});
         EXPECT_TRUE(all_close((vector<float>{1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4}),
-                              read_he_vector<float>(result, backend)));
+                              read_vector<float>(result)));
     }
 }
 
@@ -222,11 +222,11 @@ TEST(${BACKEND_NAME}, broadcast_matrix_0)
         auto a = inputs[0];
         auto result = results[0];
 
-        copy_he_data(a, vector<float>{1, 2, 3, 4}, backend);
+        copy_data(a, vector<float>{1, 2, 3, 4});
 
         backend->call(f, {result}, {a});
         EXPECT_TRUE(all_close((vector<float>{1, 2, 3, 4, 1, 2, 3, 4}),
-                              read_he_vector<float>(result, backend)));
+                              read_vector<float>(result)));
     }
 }
 
@@ -249,11 +249,11 @@ TEST(${BACKEND_NAME}, broadcast_matrix_1)
         auto a = inputs[0];
         auto result = results[0];
 
-        copy_he_data(a, vector<float>{1, 2, 3, 4}, backend);
+        copy_data(a, vector<float>{1, 2, 3, 4});
 
         backend->call(f, {result}, {a});
         EXPECT_TRUE(all_close((vector<float>{1, 2, 1, 2, 3, 4, 3, 4}),
-                              read_he_vector<float>(result, backend)));
+                              read_vector<float>(result)));
     }
 }
 
@@ -276,10 +276,10 @@ TEST(${BACKEND_NAME}, broadcast_matrix_2)
         auto a = inputs[0];
         auto result = results[0];
 
-        copy_he_data(a, vector<float>{1, 2, 3, 4}, backend);
+        copy_data(a, vector<float>{1, 2, 3, 4});
 
         backend->call(f, {result}, {a});
         EXPECT_TRUE(all_close((vector<float>{1, 1, 2, 2, 3, 3, 4, 4}),
-                              read_he_vector<float>(result, backend)));
+                              read_vector<float>(result)));
     }
 }

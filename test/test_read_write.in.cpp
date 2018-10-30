@@ -43,8 +43,8 @@ TEST(${BACKEND_NAME}, cipher_tv_write_read_scalar)
 
     Shape shape{};
     auto a = backend->create_tensor(element::f32, shape);
-    copy_he_data(a, vector<float>{5}, backend);
-    EXPECT_TRUE(all_close(read_he_vector<float>(a, backend), (vector<float>{5})));
+    copy_data(a, vector<float>{5});
+    EXPECT_TRUE(all_close(read_vector<float>(a), (vector<float>{5})));
 }
 
 TEST(${BACKEND_NAME}, cipher_tv_write_read_2)
@@ -53,8 +53,8 @@ TEST(${BACKEND_NAME}, cipher_tv_write_read_2)
 
     Shape shape{2};
     auto a = backend->create_tensor(element::f32, shape);
-    copy_he_data(a, vector<float>{5, 6}, backend);
-    EXPECT_TRUE(all_close(read_he_vector<float>(a, backend), (vector<float>{5, 6})));
+    copy_data(a, vector<float>{5, 6});
+    EXPECT_TRUE(all_close(read_vector<float>(a), (vector<float>{5, 6})));
 }
 
 TEST(${BACKEND_NAME}, cipher_tv_write_read_2_3)
@@ -63,8 +63,8 @@ TEST(${BACKEND_NAME}, cipher_tv_write_read_2_3)
 
     Shape shape{2, 3};
     auto a = backend->create_tensor(element::f32, shape);
-    copy_he_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector(), backend);
-    EXPECT_TRUE(all_close(read_he_vector<float>(a, backend),
+    copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector());
+    EXPECT_TRUE(all_close(read_vector<float>(a),
                           (test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector()));
 }
 
@@ -75,8 +75,8 @@ TEST(${BACKEND_NAME}, plain_tv_write_read_scalar)
 
     Shape shape{};
     auto a = backend->create_plain_tensor(element::f32, shape);
-    copy_he_data(a, vector<float>{5}, backend);
-    EXPECT_TRUE(all_close(read_he_vector<float>(a, backend), (vector<float>{5})));
+    copy_data(a, vector<float>{5});
+    EXPECT_TRUE(all_close(read_vector<float>(a), (vector<float>{5})));
 }
 
 TEST(${BACKEND_NAME}, plain_tv_write_read_2)
@@ -86,8 +86,8 @@ TEST(${BACKEND_NAME}, plain_tv_write_read_2)
 
     Shape shape{2};
     auto a = backend->create_plain_tensor(element::f32, shape);
-    copy_he_data(a, vector<float>{5, 6}, backend);
-    EXPECT_TRUE(all_close(read_he_vector<float>(a, backend), (vector<float>{5, 6})));
+    copy_data(a, vector<float>{5, 6});
+    EXPECT_TRUE(all_close(read_vector<float>(a), (vector<float>{5, 6})));
 }
 
 TEST(${BACKEND_NAME}, plain_tv_write_read_2_3)
@@ -97,8 +97,8 @@ TEST(${BACKEND_NAME}, plain_tv_write_read_2_3)
 
     Shape shape{2, 3};
     auto a = backend->create_plain_tensor(element::f32, shape);
-    copy_he_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector(), backend);
-    EXPECT_TRUE(all_close(read_he_vector<float>(a, backend),
+    copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector());
+    EXPECT_TRUE(all_close(read_vector<float>(a),
                           test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector()));
 }
 

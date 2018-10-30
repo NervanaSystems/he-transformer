@@ -54,10 +54,10 @@ TEST(${BACKEND_NAME}, dot1d)
         auto t_b = inputs[1];
         auto t_result = results[0];
 
-        copy_he_data(t_a, vector<float>{1, 2, 3, 4}, backend);
-        copy_he_data(t_b, vector<float>{5, 6, 7, 8}, backend);
+        copy_data(t_a, vector<float>{1, 2, 3, 4});
+        copy_data(t_b, vector<float>{5, 6, 7, 8});
         backend->call(f, {t_result}, {t_a, t_b});
-        EXPECT_TRUE(all_close(read_he_vector<float>(t_result, backend), vector<float>{70}));
+        EXPECT_TRUE(all_close(read_vector<float>(t_result), vector<float>{70}));
     }
 }
 
@@ -83,10 +83,10 @@ TEST(${BACKEND_NAME}, dot1d_optimized)
         auto t_b = inputs[1];
         auto t_result = results[0];
 
-        copy_he_data(t_a, vector<float>{1, 2, 3, 4}, backend);
-        copy_he_data(t_b, vector<float>{-1, 0, 1, 2}, backend);
+        copy_data(t_a, vector<float>{1, 2, 3, 4});
+        copy_data(t_b, vector<float>{-1, 0, 1, 2});
         backend->call(f, {t_result}, {t_a, t_b});
-        EXPECT_TRUE(all_close(read_he_vector<float>(t_result, backend), vector<float>{10}, 0.001f));
+        EXPECT_TRUE(all_close(read_vector<float>(t_result), vector<float>{10}, 0.001f));
     }
 }
 
@@ -114,11 +114,11 @@ TEST(${BACKEND_NAME}, dot_matrix_vector)
         auto t_b = inputs[1];
         auto t_result = results[0];
 
-        copy_he_data(
-            t_a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, backend);
-        copy_he_data(t_b, vector<float>{17, 18, 19, 20}, backend);
+        copy_data(
+            t_a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
+        copy_data(t_b, vector<float>{17, 18, 19, 20});
         backend->call(f, {t_result}, {t_a, t_b});
-        EXPECT_TRUE(all_close(read_he_vector<float>(t_result, backend),
+        EXPECT_TRUE(all_close(read_vector<float>(t_result),
                               (vector<float>{190, 486, 782, 1078})));
     }
 }
@@ -146,10 +146,10 @@ TEST(${BACKEND_NAME}, dot_scalar)
         auto t_b = inputs[1];
         auto t_result = results[0];
 
-        copy_he_data(t_a, vector<float>{8}, backend);
-        copy_he_data(t_b, vector<float>{6}, backend);
+        copy_data(t_a, vector<float>{8});
+        copy_data(t_b, vector<float>{6});
         backend->call(f, {t_result}, {t_a, t_b});
-        EXPECT_TRUE(all_close(read_he_vector<float>(t_result, backend), (vector<float>{48})));
+        EXPECT_TRUE(all_close(read_vector<float>(t_result), (vector<float>{48})));
     }
 }
 

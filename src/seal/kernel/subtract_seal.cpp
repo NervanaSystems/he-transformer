@@ -76,14 +76,6 @@ void he_seal::kernel::scalar_subtract(const shared_ptr<he_seal::SealPlaintextWra
         float r = x - y;
         he_seal_backend->encode(out_he, &r, type);
     }
-    else if (type_name == "int64_t")
-    {
-        int64_t x, y;
-        he_seal_backend->decode(&x, arg0, type);
-        he_seal_backend->decode(&y, arg1, type);
-        int64_t r = x - y;
-        he_seal_backend->encode(out_he, &r, type);
-    }
     else
     {
         throw ngraph_error("Unsupported type " + type_name + " in subtract");
