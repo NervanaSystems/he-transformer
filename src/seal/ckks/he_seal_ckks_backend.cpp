@@ -27,8 +27,6 @@
 
 #include "seal/seal.h"
 
-#include "ngraph/type/element_type.hpp" // TODO:  remove
-
 using namespace ngraph;
 using namespace std;
 
@@ -114,7 +112,6 @@ runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend(
     m_ckks_encoder = make_shared<seal::CKKSEncoder>(m_context);
 
     // Plaintext constants
-    ngraph::element::Type type = ngraph::element::f32;
     shared_ptr<runtime::he::HEPlaintext> plaintext_neg1 = create_empty_plaintext();
     shared_ptr<runtime::he::HEPlaintext> plaintext_0 = create_empty_plaintext();
     shared_ptr<runtime::he::HEPlaintext> plaintext_1 = create_empty_plaintext();
