@@ -21,14 +21,14 @@
 
 using namespace std;
 
-TEST(seal_example, trivial)
+NGRAPH_TEST(seal_example, trivial)
 {
     int a = 1;
     int b = 2;
     EXPECT_EQ(3, a + b);
 }
 
-TEST(seal_example, seal_ckks_basics_i)
+NGRAPH_TEST(seal_example, seal_ckks_basics_i)
 {
     using namespace seal;
 
@@ -77,7 +77,7 @@ TEST(seal_example, seal_ckks_basics_i)
     encoder.decode(plain, input);
 }
 
-TEST(seal_example, seal_bfv_basics_i)
+NGRAPH_TEST(seal_example, seal_bfv_basics_i)
 {
     using namespace seal;
 
@@ -132,7 +132,7 @@ TEST(seal_example, seal_bfv_basics_i)
     EXPECT_EQ(84, result);
 }
 
-TEST(seal_example, seal_bfv_shared_ptr_encrypt)
+NGRAPH_TEST(seal_example, seal_bfv_shared_ptr_encrypt)
 {
     using namespace seal;
 

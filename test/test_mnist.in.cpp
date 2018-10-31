@@ -173,137 +173,137 @@ static void run_cryptonets_benchmark(string backend_name, size_t batch_size, boo
     NGRAPH_INFO << "sw_global: " << sw_global.get_milliseconds() << "ms";
 }
 
-TEST(${BACKEND_NAME}, cryptonets_benchmark_interpreter_1)
+NGRAPH_TEST(${BACKEND_NAME}, cryptonets_benchmark_interpreter_1)
 {
     run_cryptonets_benchmark("INTERPRETER", 1);
 }
 
-TEST(${BACKEND_NAME}, cryptonets_benchmark_interpreter_2)
+NGRAPH_TEST(${BACKEND_NAME}, cryptonets_benchmark_interpreter_2)
 {
     run_cryptonets_benchmark("INTERPRETER", 2);
 }
 
-TEST(${BACKEND_NAME}, cryptonets_benchmark_interpreter_4)
+NGRAPH_TEST(${BACKEND_NAME}, cryptonets_benchmark_interpreter_4)
 {
     run_cryptonets_benchmark("INTERPRETER", 4);
 }
 
-TEST(${BACKEND_NAME}, cryptonets_benchmark_interpreter_8)
+NGRAPH_TEST(${BACKEND_NAME}, cryptonets_benchmark_interpreter_8)
 {
     run_cryptonets_benchmark("INTERPRETER", 8);
 }
 
-TEST(${BACKEND_NAME}, cryptonets_benchmark_interpreter_16)
+NGRAPH_TEST(${BACKEND_NAME}, cryptonets_benchmark_interpreter_16)
 {
     run_cryptonets_benchmark("INTERPRETER", 16);
 }
 
-TEST(${BACKEND_NAME}, cryptonets_benchmark_interpreter_32)
+NGRAPH_TEST(${BACKEND_NAME}, cryptonets_benchmark_interpreter_32)
 {
     run_cryptonets_benchmark("INTERPRETER", 32);
 }
 
-TEST(${BACKEND_NAME}, cryptonets_benchmark_interpreter_64)
+NGRAPH_TEST(${BACKEND_NAME}, cryptonets_benchmark_interpreter_64)
 {
     run_cryptonets_benchmark("INTERPRETER", 64);
 }
 
-TEST(${BACKEND_NAME}, cryptonets_benchmark_interpreter_128)
+NGRAPH_TEST(${BACKEND_NAME}, cryptonets_benchmark_interpreter_128)
 {
     run_cryptonets_benchmark("INTERPRETER", 128);
 }
 
-TEST(${BACKEND_NAME}, cryptonets_benchmark_interpreter_256)
+NGRAPH_TEST(${BACKEND_NAME}, cryptonets_benchmark_interpreter_256)
 {
     run_cryptonets_benchmark("INTERPRETER", 256);
 }
 
-TEST(${BACKEND_NAME}, cryptonets_benchmark_interpreter_512)
+NGRAPH_TEST(${BACKEND_NAME}, cryptonets_benchmark_interpreter_512)
 {
     run_cryptonets_benchmark("INTERPRETER", 512);
 }
 
-TEST(${BACKEND_NAME}, cryptonets_benchmark_interpreter_1024)
+NGRAPH_TEST(${BACKEND_NAME}, cryptonets_benchmark_interpreter_1024)
 {
     run_cryptonets_benchmark("INTERPRETER", 1024);
 }
 
-TEST(${BACKEND_NAME}, cryptonets_benchmark_interpreter_2048)
+NGRAPH_TEST(${BACKEND_NAME}, cryptonets_benchmark_interpreter_2048)
 {
     run_cryptonets_benchmark("INTERPRETER", 2048);
 }
 
-TEST(${BACKEND_NAME}, cryptonets_benchmark_interpreter_4096)
+NGRAPH_TEST(${BACKEND_NAME}, cryptonets_benchmark_interpreter_4096)
 {
     run_cryptonets_benchmark("INTERPRETER", 4096);
 }
 
-TEST(${BACKEND_NAME}, cryptonets_benchmark_no_batch)
+NGRAPH_TEST(${BACKEND_NAME}, cryptonets_benchmark_no_batch)
 {
     run_cryptonets_benchmark("HE:SEAL:CKKS", 1, false);
 }
 
-TEST(${BACKEND_NAME}, cryptonets_benchmark_seal_ckks_1)
+NGRAPH_TEST(${BACKEND_NAME}, cryptonets_benchmark_seal_ckks_1)
 {
     run_cryptonets_benchmark("HE:SEAL:CKKS", 1);
 }
 
-TEST(${BACKEND_NAME}, cryptonets_benchmark_seal_ckks_2)
+NGRAPH_TEST(${BACKEND_NAME}, cryptonets_benchmark_seal_ckks_2)
 {
     run_cryptonets_benchmark("HE:SEAL:CKKS", 2);
 }
 
-TEST(${BACKEND_NAME}, cryptonets_benchmark_seal_ckks_4)
+NGRAPH_TEST(${BACKEND_NAME}, cryptonets_benchmark_seal_ckks_4)
 {
     run_cryptonets_benchmark("HE:SEAL:CKKS", 4);
 }
 
-TEST(${BACKEND_NAME}, cryptonets_benchmark_seal_ckks_8)
+NGRAPH_TEST(${BACKEND_NAME}, cryptonets_benchmark_seal_ckks_8)
 {
     run_cryptonets_benchmark("HE:SEAL:CKKS", 8);
 }
 
-TEST(${BACKEND_NAME}, cryptonets_benchmark_seal_ckks_16)
+NGRAPH_TEST(${BACKEND_NAME}, cryptonets_benchmark_seal_ckks_16)
 {
     run_cryptonets_benchmark("HE:SEAL:CKKS", 16);
 }
 
-TEST(${BACKEND_NAME}, cryptonets_benchmark_seal_ckks_32)
+NGRAPH_TEST(${BACKEND_NAME}, cryptonets_benchmark_seal_ckks_32)
 {
     run_cryptonets_benchmark("HE:SEAL:CKKS", 32);
 }
 
-TEST(${BACKEND_NAME}, cryptonets_benchmark_seal_ckks_64)
+NGRAPH_TEST(${BACKEND_NAME}, cryptonets_benchmark_seal_ckks_64)
 {
     run_cryptonets_benchmark("HE:SEAL:CKKS", 64);
 }
 
-TEST(${BACKEND_NAME}, cryptonets_benchmark_seal_ckks_128)
+NGRAPH_TEST(${BACKEND_NAME}, cryptonets_benchmark_seal_ckks_128)
 {
     run_cryptonets_benchmark("HE:SEAL:CKKS", 128);
 }
 
-TEST(${BACKEND_NAME}, cryptonets_benchmark_seal_ckks_256)
+NGRAPH_TEST(${BACKEND_NAME}, cryptonets_benchmark_seal_ckks_256)
 {
     run_cryptonets_benchmark("HE:SEAL:CKKS", 256);
 }
 
-TEST(${BACKEND_NAME}, cryptonets_benchmark_seal_ckks_512)
+NGRAPH_TEST(${BACKEND_NAME}, cryptonets_benchmark_seal_ckks_512)
 {
     run_cryptonets_benchmark("HE:SEAL:CKKS", 512);
 }
 
-TEST(${BACKEND_NAME}, cryptonets_benchmark_seal_ckks_1024)
+NGRAPH_TEST(${BACKEND_NAME}, cryptonets_benchmark_seal_ckks_1024)
 {
     run_cryptonets_benchmark("HE:SEAL:CKKS", 1024);
 }
 
-TEST(${BACKEND_NAME}, cryptonets_benchmark_seal_ckks_2048)
+NGRAPH_TEST(${BACKEND_NAME}, cryptonets_benchmark_seal_ckks_2048)
 {
     run_cryptonets_benchmark("HE:SEAL:CKKS", 2048);
 }
 
-TEST(${BACKEND_NAME}, cryptonets_benchmark_seal_ckks_4096)
+NGRAPH_TEST(${BACKEND_NAME}, cryptonets_benchmark_seal_ckks_4096)
 {
     run_cryptonets_benchmark("HE:SEAL:CKKS", 4096);
 }

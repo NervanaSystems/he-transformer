@@ -32,7 +32,7 @@ using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
-TEST(${BACKEND_NAME}, dot1d)
+NGRAPH_TEST(${BACKEND_NAME}, dot1d)
 {
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
@@ -61,7 +61,7 @@ TEST(${BACKEND_NAME}, dot1d)
     }
 }
 
-TEST(${BACKEND_NAME}, dot1d_optimized)
+NGRAPH_TEST(${BACKEND_NAME}, dot1d_optimized)
 {
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
@@ -90,7 +90,7 @@ TEST(${BACKEND_NAME}, dot1d_optimized)
     }
 }
 
-TEST(${BACKEND_NAME}, dot_matrix_vector)
+NGRAPH_TEST(${BACKEND_NAME}, dot_matrix_vector)
 {
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
@@ -121,7 +121,7 @@ TEST(${BACKEND_NAME}, dot_matrix_vector)
     }
 }
 
-TEST(${BACKEND_NAME}, dot_scalar)
+NGRAPH_TEST(${BACKEND_NAME}, dot_scalar)
 {
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
@@ -151,7 +151,7 @@ TEST(${BACKEND_NAME}, dot_scalar)
     }
 }
 
-TEST(${BACKEND_NAME}, dot_scalar_batch)
+NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_batch)
 {
     auto backend = static_pointer_cast<runtime::he::he_seal::HESealCKKSBackend>(
         runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));

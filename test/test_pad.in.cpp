@@ -30,7 +30,7 @@ using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
-TEST(${BACKEND_NAME}, pad_interior_1d)
+NGRAPH_TEST(${BACKEND_NAME}, pad_interior_1d)
 {
     Shape shape_a{6};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -60,7 +60,7 @@ TEST(${BACKEND_NAME}, pad_interior_1d)
               read_vector<float>(result));
 }
 
-TEST(${BACKEND_NAME}, pad_exterior_1d)
+NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_1d)
 {
     Shape shape_a{6};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -90,7 +90,7 @@ TEST(${BACKEND_NAME}, pad_exterior_1d)
               read_vector<float>(result));
 }
 
-TEST(${BACKEND_NAME}, pad_interior_exterior_1d)
+NGRAPH_TEST(${BACKEND_NAME}, pad_interior_exterior_1d)
 {
     Shape shape_a{6};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -121,7 +121,7 @@ TEST(${BACKEND_NAME}, pad_interior_exterior_1d)
               read_vector<float>(result));
 }
 
-TEST(${BACKEND_NAME}, pad_interior_exterior_2d)
+NGRAPH_TEST(${BACKEND_NAME}, pad_interior_exterior_2d)
 {
     Shape shape_a{2, 3};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -156,7 +156,7 @@ TEST(${BACKEND_NAME}, pad_interior_exterior_2d)
               read_vector<float>(result));
 }
 
-TEST(${BACKEND_NAME}, pad_exterior_2d_0x0)
+NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_0x0)
 {
     Shape shape_a{0, 0};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -189,7 +189,7 @@ TEST(${BACKEND_NAME}, pad_exterior_2d_0x0)
               read_vector<float>(result));
 }
 
-TEST(${BACKEND_NAME}, pad_exterior_2d_0x3)
+NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_0x3)
 {
     Shape shape_a{0, 3};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -222,7 +222,7 @@ TEST(${BACKEND_NAME}, pad_exterior_2d_0x3)
               read_vector<float>(result));
 }
 
-TEST(${BACKEND_NAME}, pad_exterior_2d_3x0)
+NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_3x0)
 {
     Shape shape_a{3, 0};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -255,7 +255,7 @@ TEST(${BACKEND_NAME}, pad_exterior_2d_3x0)
               read_vector<float>(result));
 }
 
-TEST(${BACKEND_NAME}, pad_exterior_4d_1x2x2x2)
+NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_4d_1x2x2x2)
 {
     Shape shape_a{1, 2, 2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -322,7 +322,7 @@ TEST(${BACKEND_NAME}, pad_exterior_4d_1x2x2x2)
 // zero-length axis with interior padding. Rather than subtract 1 from the
 // source shape and multiply by the interior padding (which causes underflow),
 // we should just count the pre-interior-padding length as zero.
-TEST(${BACKEND_NAME}, pad_interior_exterior_4d_2x0x3x2)
+NGRAPH_TEST(${BACKEND_NAME}, pad_interior_exterior_4d_2x0x3x2)
 {
     Shape shape_a{2, 0, 3, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -351,7 +351,7 @@ TEST(${BACKEND_NAME}, pad_interior_exterior_4d_2x0x3x2)
     EXPECT_EQ(expected, read_vector<float>(result));
 }
 
-TEST(${BACKEND_NAME}, pad_const_interior_1d)
+NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_1d)
 {
     Shape shape_a{6};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -379,7 +379,7 @@ TEST(${BACKEND_NAME}, pad_const_interior_1d)
               read_vector<float>(result));
 }
 
-TEST(${BACKEND_NAME}, pad_const_exterior_1d)
+NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_1d)
 {
     Shape shape_a{6};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -407,7 +407,7 @@ TEST(${BACKEND_NAME}, pad_const_exterior_1d)
         read_vector<float>(result)));
 }
 
-TEST(${BACKEND_NAME}, pad_const_interior_exterior_1d)
+NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_exterior_1d)
 {
     Shape shape_a{6};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -436,7 +436,7 @@ TEST(${BACKEND_NAME}, pad_const_interior_exterior_1d)
         read_vector<float>(result));
 }
 
-TEST(${BACKEND_NAME}, pad_const_interior_exterior_2d)
+NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_exterior_2d)
 {
     Shape shape_a{2, 3};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -469,7 +469,7 @@ TEST(${BACKEND_NAME}, pad_const_interior_exterior_2d)
               read_vector<float>(result));
 }
 
-TEST(${BACKEND_NAME}, pad_const_exterior_2d_0x0)
+NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_2d_0x0)
 {
     Shape shape_a{0, 0};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -500,7 +500,7 @@ TEST(${BACKEND_NAME}, pad_const_exterior_2d_0x0)
               read_vector<float>(result));
 }
 
-TEST(${BACKEND_NAME}, pad_const_exterior_2d_0x3)
+NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_2d_0x3)
 {
     Shape shape_a{0, 3};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -531,7 +531,7 @@ TEST(${BACKEND_NAME}, pad_const_exterior_2d_0x3)
               read_vector<float>(result));
 }
 
-TEST(${BACKEND_NAME}, pad_const_exterior_2d_3x0)
+NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_2d_3x0)
 {
     Shape shape_a{3, 0};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -562,7 +562,7 @@ TEST(${BACKEND_NAME}, pad_const_exterior_2d_3x0)
               read_vector<float>(result));
 }
 
-TEST(${BACKEND_NAME}, pad_const_exterior_4d_1x2x2x2)
+NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_4d_1x2x2x2)
 {
     Shape shape_a{1, 2, 2, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -626,7 +626,7 @@ TEST(${BACKEND_NAME}, pad_const_exterior_4d_1x2x2x2)
 // zero-length axis with interior padding. Rather than subtract 1 from the
 // source shape and multiply by the interior padding (which causes underflow),
 // we should just count the pre-interior-padding length as zero.
-TEST(${BACKEND_NAME}, pad_const_interior_exterior_4d_2x0x3x2)
+NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_exterior_4d_2x0x3x2)
 {
     Shape shape_a{2, 0, 3, 2};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);

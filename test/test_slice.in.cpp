@@ -30,7 +30,7 @@ using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
-TEST(${BACKEND_NAME}, slice_scalar)
+NGRAPH_TEST(${BACKEND_NAME}, slice_scalar)
 {
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
@@ -55,7 +55,7 @@ TEST(${BACKEND_NAME}, slice_scalar)
     }
 }
 
-TEST(${BACKEND_NAME}, slice_matrix)
+NGRAPH_TEST(${BACKEND_NAME}, slice_matrix)
 {
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
@@ -80,7 +80,7 @@ TEST(${BACKEND_NAME}, slice_matrix)
     }
 }
 
-TEST(${BACKEND_NAME}, slice_vector)
+NGRAPH_TEST(${BACKEND_NAME}, slice_vector)
 {
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
@@ -106,7 +106,7 @@ TEST(${BACKEND_NAME}, slice_vector)
     }
 }
 
-TEST(${BACKEND_NAME}, slice_matrix_strided)
+NGRAPH_TEST(${BACKEND_NAME}, slice_matrix_strided)
 {
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
@@ -131,7 +131,7 @@ TEST(${BACKEND_NAME}, slice_matrix_strided)
     }
 }
 
-TEST(${BACKEND_NAME}, slice_3d)
+NGRAPH_TEST(${BACKEND_NAME}, slice_3d)
 {
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
@@ -159,7 +159,7 @@ TEST(${BACKEND_NAME}, slice_3d)
     }
 }
 
-TEST(${BACKEND_NAME}, slice_3d_strided)
+NGRAPH_TEST(${BACKEND_NAME}, slice_3d_strided)
 {
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
@@ -187,7 +187,7 @@ TEST(${BACKEND_NAME}, slice_3d_strided)
     }
 }
 
-TEST(${BACKEND_NAME}, slice_3d_strided_different_strides)
+NGRAPH_TEST(${BACKEND_NAME}, slice_3d_strided_different_strides)
 {
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 

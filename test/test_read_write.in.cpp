@@ -30,14 +30,14 @@ using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
-TEST(${BACKEND_NAME}, backend_init)
+NGRAPH_TEST(${BACKEND_NAME}, backend_init)
 {
     NGRAPH_INFO << "Initializing backend ${BACKEND_REGISTERED_NAME}";
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
     EXPECT_EQ(1, 1);
 }
 
-TEST(${BACKEND_NAME}, cipher_tv_write_read_scalar)
+NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_scalar)
 {
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
@@ -47,7 +47,7 @@ TEST(${BACKEND_NAME}, cipher_tv_write_read_scalar)
     EXPECT_TRUE(all_close(read_vector<float>(a), (vector<float>{5})));
 }
 
-TEST(${BACKEND_NAME}, cipher_tv_write_read_2)
+NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_2)
 {
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
@@ -57,7 +57,7 @@ TEST(${BACKEND_NAME}, cipher_tv_write_read_2)
     EXPECT_TRUE(all_close(read_vector<float>(a), (vector<float>{5, 6})));
 }
 
-TEST(${BACKEND_NAME}, cipher_tv_write_read_2_3)
+NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_2_3)
 {
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
@@ -68,7 +68,7 @@ TEST(${BACKEND_NAME}, cipher_tv_write_read_2_3)
                           (test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector()));
 }
 
-TEST(${BACKEND_NAME}, plain_tv_write_read_scalar)
+NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_scalar)
 {
     auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
         runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
@@ -79,7 +79,7 @@ TEST(${BACKEND_NAME}, plain_tv_write_read_scalar)
     EXPECT_TRUE(all_close(read_vector<float>(a), (vector<float>{5})));
 }
 
-TEST(${BACKEND_NAME}, plain_tv_write_read_2)
+NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2)
 {
     auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
         runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
@@ -90,7 +90,7 @@ TEST(${BACKEND_NAME}, plain_tv_write_read_2)
     EXPECT_TRUE(all_close(read_vector<float>(a), (vector<float>{5, 6})));
 }
 
-TEST(${BACKEND_NAME}, plain_tv_write_read_2_3)
+NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2_3)
 {
     auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
         runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
@@ -102,7 +102,7 @@ TEST(${BACKEND_NAME}, plain_tv_write_read_2_3)
                           test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector()));
 }
 
-TEST(${BACKEND_NAME}, cipher_tv_batch)
+NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_batch)
 {
     auto backend = static_pointer_cast<runtime::he::HEBackend>(
         runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
