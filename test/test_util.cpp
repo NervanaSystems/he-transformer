@@ -50,6 +50,25 @@ vector<float> read_constant(const string filename)
     return res;
 }
 
+vector<int> batched_argmax(const vector<float>& ys)
+{
+    if (ys.size() % 10 != 0)
+    {
+        cout << "ys.size() must be a multiple of 10" << endl;
+        exit(1);
+    }
+    vector<int> labels;
+    const float* data = ys.data();
+    size_t idx = 0;
+    while (idx < ys.size())
+    {
+        int label = distance(data + idx, max_element(data + idx, data + idx + 10));
+        labels.push_back(label);
+        idx += 10;
+    }
+    return labels;
+}
+
 float get_accuracy(const vector<float>& pre_sigmoid, const vector<float>& y)
 {
     assert(pre_sigmoid.size() % 10 == 0);

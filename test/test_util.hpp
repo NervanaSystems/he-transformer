@@ -36,6 +36,10 @@ using namespace ngraph;
 std::vector<float> read_binary_constant(const std::string filename, size_t num_elements);
 std::vector<float> read_constant(const std::string filename);
 
+// ys is logits output, or one-hot encoded ground truth
+std::vector<int> batched_argmax(const std::vector<float>& ys);
+
+
 void write_constant(const std::vector<float>& values, const std::string filename);
 void write_binary_constant(const std::vector<float>& values, const std::string filename);
 
