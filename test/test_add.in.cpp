@@ -32,7 +32,7 @@ using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
-TEST(${BACKEND_NAME}, add_2_3)
+NGRAPH_TEST(${BACKEND_NAME}, add_2_3)
 {
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
@@ -62,7 +62,7 @@ TEST(${BACKEND_NAME}, add_2_3)
     }
 }
 
-TEST(${BACKEND_NAME}, add_zero_2_3)
+NGRAPH_TEST(${BACKEND_NAME}, add_zero_2_3)
 {
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
@@ -92,7 +92,7 @@ TEST(${BACKEND_NAME}, add_zero_2_3)
     }
 }
 
-TEST(${BACKEND_NAME}, add_4_3_batch)
+NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch)
 {
     auto backend = static_pointer_cast<runtime::he::he_seal::HESealCKKSBackend>(
         runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
@@ -118,7 +118,7 @@ TEST(${BACKEND_NAME}, add_4_3_batch)
               generalized_read_vector<float>(t_result));
 }
 
-TEST(${BACKEND_NAME}, add_optimized_2_3)
+NGRAPH_TEST(${BACKEND_NAME}, add_optimized_2_3)
 {
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 

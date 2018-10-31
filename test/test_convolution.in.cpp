@@ -33,7 +33,7 @@ using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
-TEST(${BACKEND_NAME}, convolution_2d_1image)
+NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image)
 {
     auto shape_a = Shape{1, 1, 5, 5};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -60,7 +60,7 @@ TEST(${BACKEND_NAME}, convolution_2d_1image)
     EXPECT_TRUE(all_close(vector<float>{expected_result}, read_vector<float>(result)));
 }
 
-TEST(${BACKEND_NAME}, convolution_2d_1image_2outputs)
+NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_2outputs)
 {
     auto shape_a = Shape{1, 1, 3, 5};
     auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -86,7 +86,7 @@ TEST(${BACKEND_NAME}, convolution_2d_1image_2outputs)
     EXPECT_TRUE(all_close(vector<float>{expected_result}, read_vector<float>(result)));
 }
 
-TEST(${BACKEND_NAME}, convolution_2d_1item)
+NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item)
 {
     Shape shape_a{1, 1, 3, 5};
     Shape shape_b{2, 1, 2, 2};
@@ -140,7 +140,7 @@ TEST(${BACKEND_NAME}, convolution_2d_1item)
     EXPECT_TRUE(all_close(vector<float>{expected_result}, read_vector<float>(result)));
 }
 
-TEST(${BACKEND_NAME}, convolution_2d_1item_padded_1_1x1_1)
+NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_1_1x1_1)
 {
     Shape shape_a{1, 1, 3, 5};
     Shape shape_b{2, 1, 2, 2};
@@ -184,7 +184,7 @@ TEST(${BACKEND_NAME}, convolution_2d_1item_padded_1_1x1_1)
     EXPECT_TRUE(all_close(vector<float>{expected_result}, read_vector<float>(result), 1e-5f));
 }
 
-TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5)
+NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5)
 {
     Shape shape_a{1, 1, 3, 5};
     Shape shape_b{2, 1, 2, 2};
@@ -240,7 +240,7 @@ TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5)
     EXPECT_TRUE(all_close(vector<float>{expected_result}, read_vector<float>(result), 1e-5f));
 }
 
-TEST(${BACKEND_NAME}, convolution_2d_2items)
+NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items)
 {
     Shape shape_a{2, 1, 3, 5};
     Shape shape_b{2, 1, 2, 2};
@@ -282,7 +282,7 @@ TEST(${BACKEND_NAME}, convolution_2d_2items)
     EXPECT_TRUE(all_close(vector<float>{expected_result}, read_vector<float>(result)));
 }
 
-TEST(${BACKEND_NAME}, convolution_2d_2items_strided_padded)
+NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_strided_padded)
 {
     Shape shape_a{2, 1, 3, 5};
     Shape shape_b{2, 1, 2, 2};
