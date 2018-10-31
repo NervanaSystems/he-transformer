@@ -59,22 +59,14 @@ set(MULTI_TEST_SRC
 
 foreach(BACKEND_NAME ${ACTIVE_BACKEND_LIST})
     string(REPLACE "_" ":" BACKEND_REGISTERED_NAME ${BACKEND_NAME})
-    message("BACKEND_REGISTERED_NAME ${BACKEND_REGISTERED_NAME}")
-    message("BACKEND_NAME ${BACKEND_NAME}")
-
     string(REPLACE "HE_" "" BACKEND_DIR ${BACKEND_NAME})
-    message("BACKEND DIR ${BACKEND_DIR}")
     string(REPLACE "_" "/" BACKEND_DIR ${BACKEND_DIR})
-    message("BACKEND DIR ${BACKEND_DIR}")
     string(TOLOWER ${BACKEND_DIR} BACKEND_DIR)
 
-    message("BACKEND DIR ${BACKEND_DIR}")
     set(MANIFEST ${PROJECT_SOURCE_DIR}/src/${BACKEND_DIR}/unit_test.manifest)
-    message("MANIFEST ${MANIFEST}")
 
     foreach(TEST_SRC ${MULTI_TEST_SRC})
         string(REPLACE ".in." "_${BACKEND_NAME}." TARGET_NAME ${TEST_SRC})
-        message("TEST_SRC ${TEST_SRC}, TARGET_NAME ${TARGET_NAME}")
         configure_file(${TEST_SRC} ${TARGET_NAME})
         set(SRC ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME} ${SRC})
     endforeach()
@@ -107,80 +99,3 @@ target_link_libraries(unit-test ngraph_test_util)
 target_link_libraries(unit-test he_backend seal pthread ${CMAKE_DL_LIBS})
 
 add_dependencies(unit-test he_backend ext_seal ext_ngraph ext_gtest)
-
-
-# Configure test for HE_SEAL_BFV
-#set (NGRAPH_TEST_HE_SEAL_BFV_SRC
-#    test_add_HE_SEAL_BFV.cpp
-#    test_basics_HE_SEAL_BFV.cpp
-#    test_broadcast_HE_SEAL_BFV.cpp
-#    test_constant_HE_SEAL_BFV.cpp
-#    test_convolution_HE_SEAL_BFV.cpp
-#    test_dot_HE_SEAL_BFV.cpp
-#    # test_mnist_HE_SEAL_BFV.cpp # Disabled since BFV does not support batching for float
-#    test_multiply_HE_SEAL_BFV.cpp
-#    test_negate_HE_SEAL_BFV.cpp
-#    test_pad_HE_SEAL_BFV.cpp
-#    test_read_write_HE_SEAL_BFV.cpp
-#    test_reshape_HE_SEAL_BFV.cpp
-#    test_slice_HE_SEAL_BFV.cpp
-#    test_subtract_HE_SEAL_BFV.cpp
-
-#)
-
-# Configure test for HE_SEAL_CKKS
-#set (NGRAPH_TEST_HE_SEAL_CKKS_SRC
-#    test_add_HE_SEAL_CKKS.cpp
-#    test_basics_HE_SEAL_CKKS.cpp
-#    test_broadcast_HE_SEAL_CKKS.cpp
-#    test_constant_HE_SEAL_CKKS.cpp
-#    test_convolution_HE_SEAL_CKKS.cpp
-#    test_dot_HE_SEAL_CKKS.cpp
-#    test_read_write_HE_SEAL_CKKS.cpp
-#    test_multiply_HE_SEAL_CKKS.cpp
-#    test_mnist_HE_SEAL_CKKS.cpp
-#    test_negate_HE_SEAL_CKKS.cpp
-#    test_pad_HE_SEAL_CKKS.cpp
-#    test_reshape_HE_SEAL_CKKS.cpp
-#    test_slice_HE_SEAL_CKKS.cpp
-#    test_subtract_HE_SEAL_CKKS.cpp
-#)
-
-#get_filename_component(SEAL_BFV_MANIFEST he_seal_bfv_disabled_test.manifest ABSOLUTE)
-#get_filename_component(SEAL_CKKS_MANIFEST he_seal_ckks_disabled_test.manifest ABSOLUTE)
-
-#add_custom_command(
-#    OUTPUT ${NGRAPH_TEST_HE_SEAL_BFV_SRC}
-#    DEPENDS ext_ngraph always_build
-#    COMMAND ${CMAKE_COMMAND}
-#    -DNGRAPH_TEST_DIR=${NGRAPH_TEST_DIR}
-#    -DHE_TRANSFORMER_TEST_DIR=${HE_TRANSFORMER_TEST_DIR}
-#    -DBACKEND_REGISTERED_NAME=HE:SEAL:BFV
-#    -DBACKEND_NAME=HE_SEAL_BFV
-#    -DTEST_LOOPS=1
-#    -DMANIFEST=${SEAL_BFV_MANIFEST}
-#    -P ${CMAKE_CURRENT_SOURCE_DIR}/configure_test.cmake
-#)
-#
-#add_custom_command(
-#    OUTPUT ${NGRAPH_TEST_HE_SEAL_CKKS_SRC}
-#    DEPENDS ext_ngraph always_build
-#    COMMAND ${CMAKE_COMMAND}
-#    -DNGRAPH_TEST_DIR=${NGRAPH_TEST_DIR}
-#    -DHE_TRANSFORMER_TEST_DIR=${HE_TRANSFORMER_TEST_DIR}
-#    -DBACKEND_REGISTERED_NAME=HE:SEAL:CKKS
-#    -DBACKEND_NAME=HE_SEAL_CKKS
-#    -DTEST_LOOPS=1
-#    -DMANIFEST=${HEAAN_MANIFEST}
-#    -P ${CMAKE_CURRENT_SOURCE_DIR}/configure_test.cmake
-#)
-
-# Build unit-test binary
-#set(SRC
-#    ${HE_TEST_SRC}
-#    ${NGRAPH_TEST_HE_SEAL_BFV_SRC}
-#    ${NGRAPH_TEST_HE_SEAL_CKKS_SRC})
-#
-
-
-
