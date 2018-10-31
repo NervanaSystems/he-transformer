@@ -30,7 +30,7 @@ using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
-TEST(${BACKEND_NAME}, sub_2_3)
+NGRAPH_TEST(${BACKEND_NAME}, sub_2_3)
 {
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
@@ -60,7 +60,7 @@ TEST(${BACKEND_NAME}, sub_2_3)
     }
 }
 
-TEST(${BACKEND_NAME}, sub_zero_2_3)
+NGRAPH_TEST(${BACKEND_NAME}, sub_zero_2_3)
 {
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
@@ -90,7 +90,7 @@ TEST(${BACKEND_NAME}, sub_zero_2_3)
     }
 }
 
-TEST(${BACKEND_NAME}, sub_from_zero_2_3)
+NGRAPH_TEST(${BACKEND_NAME}, sub_from_zero_2_3)
 {
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
