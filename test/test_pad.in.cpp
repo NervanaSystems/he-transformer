@@ -54,10 +54,10 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_interior_1d)
     auto result = backend->create_tensor(element::f32, shape_r);
 
     backend->call_with_validate(f, {result}, {a, b});
-    EXPECT_EQ((test::NDArray<float, 1>(
+    EXPECT_TRUE(all_close((test::NDArray<float, 1>(
                    {1, 2112, 2112, 2, 2112, 2112, 3, 2112, 2112, 4, 2112, 2112, 5, 2112, 2112, 6})
                    .get_vector()),
-              read_vector<float>(result));
+              read_vector<float>(result)));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_1d)
@@ -84,10 +84,10 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_1d)
     auto result = backend->create_tensor(element::f32, shape_r);
 
     backend->call_with_validate(f, {result}, {a, b});
-    EXPECT_EQ((test::NDArray<float, 1>(
+    EXPECT_TRUE(all_close((test::NDArray<float, 1>(
                    {2112, 2112, 2112, 2112, 1, 2, 3, 4, 5, 6, 2112, 2112, 2112, 2112, 2112})
                    .get_vector()),
-              read_vector<float>(result));
+              read_vector<float>(result)));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_interior_exterior_1d)
@@ -114,11 +114,11 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_interior_exterior_1d)
     auto result = backend->create_tensor(element::f32, shape_r);
 
     backend->call_with_validate(f, {result}, {a, b});
-    EXPECT_EQ((test::NDArray<float, 1>({2112, 2112, 2112, 2112, 1,    2112, 2112, 2, 2112,
+    EXPECT_TRUE(all_close((test::NDArray<float, 1>({2112, 2112, 2112, 2112, 1,    2112, 2112, 2, 2112,
                                         2112, 3,    2112, 2112, 4,    2112, 2112, 5, 2112,
                                         2112, 6,    2112, 2112, 2112, 2112, 2112})
                    .get_vector()),
-              read_vector<float>(result));
+              read_vector<float>(result)));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_interior_exterior_2d)
@@ -145,7 +145,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_interior_exterior_2d)
     auto result = backend->create_tensor(element::f32, shape_r);
 
     backend->call_with_validate(f, {result}, {a, b});
-    EXPECT_EQ((test::NDArray<float, 2>({{9, 9, 9, 9, 9, 9},
+    EXPECT_TRUE(all_close((test::NDArray<float, 2>({{9, 9, 9, 9, 9, 9},
                                         {1, 9, 2, 9, 3, 9},
                                         {9, 9, 9, 9, 9, 9},
                                         {9, 9, 9, 9, 9, 9},
@@ -153,7 +153,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_interior_exterior_2d)
                                         {9, 9, 9, 9, 9, 9},
                                         {9, 9, 9, 9, 9, 9}})
                    .get_vector()),
-              read_vector<float>(result));
+              read_vector<float>(result)));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_0x0)
@@ -180,13 +180,13 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_0x0)
     auto result = backend->create_tensor(element::f32, shape_r);
 
     backend->call_with_validate(f, {result}, {a, b});
-    EXPECT_EQ((test::NDArray<float, 2>({{2112, 2112, 2112, 2112, 2112},
+    EXPECT_TRUE(all_close((test::NDArray<float, 2>({{2112, 2112, 2112, 2112, 2112},
                                         {2112, 2112, 2112, 2112, 2112},
                                         {2112, 2112, 2112, 2112, 2112},
                                         {2112, 2112, 2112, 2112, 2112},
                                         {2112, 2112, 2112, 2112, 2112}})
                    .get_vector()),
-              read_vector<float>(result));
+              read_vector<float>(result)));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_0x3)
@@ -213,13 +213,13 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_0x3)
     auto result = backend->create_tensor(element::f32, shape_r);
 
     backend->call_with_validate(f, {result}, {a, b});
-    EXPECT_EQ((test::NDArray<float, 2>({{2112, 2112, 2112, 2112, 2112},
+    EXPECT_TRUE(all_close((test::NDArray<float, 2>({{2112, 2112, 2112, 2112, 2112},
                                         {2112, 2112, 2112, 2112, 2112},
                                         {2112, 2112, 2112, 2112, 2112},
                                         {2112, 2112, 2112, 2112, 2112},
                                         {2112, 2112, 2112, 2112, 2112}})
                    .get_vector()),
-              read_vector<float>(result));
+              read_vector<float>(result)));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_3x0)
@@ -246,13 +246,13 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_3x0)
     auto result = backend->create_tensor(element::f32, shape_r);
 
     backend->call_with_validate(f, {result}, {a, b});
-    EXPECT_EQ((test::NDArray<float, 2>({{2112, 2112, 2112, 2112, 2112},
+    EXPECT_TRUE(all_close((test::NDArray<float, 2>({{2112, 2112, 2112, 2112, 2112},
                                         {2112, 2112, 2112, 2112, 2112},
                                         {2112, 2112, 2112, 2112, 2112},
                                         {2112, 2112, 2112, 2112, 2112},
                                         {2112, 2112, 2112, 2112, 2112}})
                    .get_vector()),
-              read_vector<float>(result));
+              read_vector<float>(result)));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_4d_1x2x2x2)
@@ -313,7 +313,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_4d_1x2x2x2)
                 }
             }
         }).get_vector()),
-        read_vector<float>(result)));
+        read_vector<float>(result))));
     // clang-format on
 }
 
@@ -348,7 +348,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_interior_exterior_4d_2x0x3x2)
     vector<float> expected(5 * 2 * 3 * 2, 2112);
 
     backend->call_with_validate(f, {result}, {a, b});
-    EXPECT_EQ(expected, read_vector<float>(result));
+    EXPECT_TRUE(all_close(expected, read_vector<float>(result)));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_1d)
@@ -373,10 +373,10 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_1d)
     auto result = backend->create_tensor(element::f32, shape_r);
 
     backend->call_with_validate(f, {result}, {a});
-    EXPECT_EQ((test::NDArray<float, 1>(
+    EXPECT_TRUE(all_close((test::NDArray<float, 1>(
                    {1, 123, 123, 2, 123, 123, 3, 123, 123, 4, 123, 123, 5, 123, 123, 6})
                    .get_vector()),
-              read_vector<float>(result));
+              read_vector<float>(result)));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_1d)
@@ -404,7 +404,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_1d)
     EXPECT_TRUE(all_close(
         (test::NDArray<float, 1>({123, 123, 123, 123, 1, 2, 3, 4, 5, 6, 123, 123, 123, 123, 123})
              .get_vector()),
-        read_vector<float>(result)));
+        read_vector<float>(result))));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_exterior_1d)
@@ -429,11 +429,11 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_exterior_1d)
     auto result = backend->create_tensor(element::f32, shape_r);
 
     backend->call_with_validate(f, {result}, {a});
-    EXPECT_EQ(
+    EXPECT_TRUE(all_close(
         (test::NDArray<float, 1>({123, 123, 123, 123, 1,   123, 123, 2,   123, 123, 3,   123, 123,
                                   4,   123, 123, 5,   123, 123, 6,   123, 123, 123, 123, 123})
              .get_vector()),
-        read_vector<float>(result));
+        read_vector<float>(result)));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_exterior_2d)
@@ -458,7 +458,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_exterior_2d)
     auto result = backend->create_tensor(element::f32, shape_r);
 
     backend->call_with_validate(f, {result}, {a});
-    EXPECT_EQ((test::NDArray<float, 2>({{123, 123, 123, 123, 123, 123},
+    EXPECT_TRUE(all_close((test::NDArray<float, 2>({{123, 123, 123, 123, 123, 123},
                                         {1, 123, 2, 123, 3, 123},
                                         {123, 123, 123, 123, 123, 123},
                                         {123, 123, 123, 123, 123, 123},
@@ -466,7 +466,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_exterior_2d)
                                         {123, 123, 123, 123, 123, 123},
                                         {123, 123, 123, 123, 123, 123}})
                    .get_vector()),
-              read_vector<float>(result));
+              read_vector<float>(result)));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_2d_0x0)
@@ -491,13 +491,13 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_2d_0x0)
     auto result = backend->create_tensor(element::f32, shape_r);
 
     backend->call_with_validate(f, {result}, {a});
-    EXPECT_EQ((test::NDArray<float, 2>({{123, 123, 123, 123, 123},
+    EXPECT_TRUE(all_close((test::NDArray<float, 2>({{123, 123, 123, 123, 123},
                                         {123, 123, 123, 123, 123},
                                         {123, 123, 123, 123, 123},
                                         {123, 123, 123, 123, 123},
                                         {123, 123, 123, 123, 123}})
                    .get_vector()),
-              read_vector<float>(result));
+              read_vector<float>(result)));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_2d_0x3)
@@ -522,13 +522,13 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_2d_0x3)
     auto result = backend->create_tensor(element::f32, shape_r);
 
     backend->call_with_validate(f, {result}, {a});
-    EXPECT_EQ((test::NDArray<float, 2>({{123, 123, 123, 123, 123},
+    EXPECT_TRUE(all_close((test::NDArray<float, 2>({{123, 123, 123, 123, 123},
                                         {123, 123, 123, 123, 123},
                                         {123, 123, 123, 123, 123},
                                         {123, 123, 123, 123, 123},
                                         {123, 123, 123, 123, 123}})
                    .get_vector()),
-              read_vector<float>(result));
+              read_vector<float>(result)));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_2d_3x0)
@@ -553,13 +553,13 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_2d_3x0)
     auto result = backend->create_tensor(element::f32, shape_r);
 
     backend->call_with_validate(f, {result}, {a});
-    EXPECT_EQ((test::NDArray<float, 2>({{123, 123, 123, 123, 123},
+    EXPECT_TRUE(all_close((test::NDArray<float, 2>({{123, 123, 123, 123, 123},
                                         {123, 123, 123, 123, 123},
                                         {123, 123, 123, 123, 123},
                                         {123, 123, 123, 123, 123},
                                         {123, 123, 123, 123, 123}})
                    .get_vector()),
-              read_vector<float>(result));
+              read_vector<float>(result)));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_4d_1x2x2x2)
@@ -617,7 +617,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_4d_1x2x2x2)
                 }
             }
         }).get_vector()),
-        read_vector<float>(result)));
+        read_vector<float>(result))));
     // clang-format on
 }
 
@@ -650,5 +650,5 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_exterior_4d_2x0x3x2)
     vector<float> expected(5 * 2 * 3 * 2, 123);
 
     backend->call_with_validate(f, {result}, {a});
-    EXPECT_EQ(expected, read_vector<float>(result));
+    EXPECT_TRUE(all_close(expected, read_vector<float>(result)));
 }
