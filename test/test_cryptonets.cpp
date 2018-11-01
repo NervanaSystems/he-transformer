@@ -17,17 +17,8 @@
 #include <algorithm>
 #include <assert.h>
 
-#include "ngraph/ngraph.hpp"
-#include "ngraph/pass/manager.hpp"
-#include "ngraph/pass/visualize_tree.hpp"
-#include "ngraph/util.hpp"
-
-//#include "util/all_close.hpp"
-//#include "util/ndarray.hpp"
-// #include "util/test_control.hpp"
 #include "util/test_tools.hpp"
 
-#include "he_backend.hpp"
 #include "test_util.hpp"
 
 #include "seal/ckks/he_seal_ckks_backend.hpp"
@@ -89,7 +80,6 @@ static void run_cryptonets_benchmark(string backend_name, size_t batch_size, boo
         if (shape == Shape{batch_size, 784})
         {
             NGRAPH_INFO << "Copying " << shape_size(shape) << " elements";
-            NGRAPH_INFO << "x is " << x.size() << " elements";
 
             copy_data(parameter_cipher_tv, x);
             parameter_tvs.push_back(parameter_cipher_tv);
@@ -161,7 +151,7 @@ static void run_cryptonets_benchmark(string backend_name, size_t batch_size, boo
     float accuracy = 1.f - (float)(error_count) / batch_size;
     NGRAPH_INFO << "Accuracy: " << accuracy;
 
-    assert(accuracy > 0.95);
+    assert(accuracy > 0.97);
 
     // Print results
     NGRAPH_INFO << "[Summary]";
@@ -174,9 +164,12 @@ static void run_cryptonets_benchmark(string backend_name, size_t batch_size, boo
 
 int main()
 {
-    for (size_t batch_size = 1; batch_size <= 8192; batch_size *= 2)
+    //run_cryptonets_benchmark("INTERPRETER", 1);
+
+    // Run unbatched version as warm-up
+    run_cryptonets_benchmark("HE:SEAL:CKKS", 1, false);
+    for (size_t batch_size = 1; batch_size <= 4096; batch_size *= 2)
     {
         run_cryptonets_benchmark("HE:SEAL:CKKS", batch_size);
-        // run_cryptonets_benchmark("INTERPRETER", batch_size);
     }
 }

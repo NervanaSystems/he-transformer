@@ -38,6 +38,9 @@ namespace ngraph
                 class HESealParameter
                 {
                 public:
+                    struct CoeffModulus;
+
+                    // For BFV
                     HESealParameter(std::string scheme_name,
                                     std::uint64_t poly_modulus_degree,
                                     std::uint64_t plain_modulus,
@@ -59,6 +62,7 @@ namespace ngraph
                     {
                     }
 
+                    // For CKKS
                     HESealParameter(std::string scheme_name,
                                     std::uint64_t poly_modulus_degree,
                                     std::uint64_t security_level,
@@ -67,6 +71,20 @@ namespace ngraph
                         , m_poly_modulus_degree(poly_modulus_degree)
                         , m_security_level(security_level)
                         , m_evaluation_decomposition_bit_count(evaluation_decomposition_bit_count)
+                    {
+                    }
+
+                    // For CKKS
+                    HESealParameter(std::string scheme_name,
+                                    std::uint64_t poly_modulus_degree,
+                                    std::uint64_t security_level,
+                                    std::uint64_t evaluation_decomposition_bit_count,
+                                    CoeffModulus coeff_modulus)
+                        : m_scheme_name(scheme_name)
+                        , m_poly_modulus_degree(poly_modulus_degree)
+                        , m_security_level(security_level)
+                        , m_evaluation_decomposition_bit_count(evaluation_decomposition_bit_count)
+                        , m_coeff_modulus(coeff_modulus)
                     {
                     }
 
@@ -85,6 +103,13 @@ namespace ngraph
 
                     // For CKKS encoder
                     double m_scale;
+
+                    // Size and number of coefficient modulus.
+                    typedef struct CoeffModulus {
+                        std::uint64_t bit_count;
+                        std::uint64_t coeff_count;
+                    };
+                    CoeffModulus m_coeff_modulus;
 
                     // For BFV FractionalEncoder
                     std::uint64_t m_fractional_encoder_integer_coeff_count;
