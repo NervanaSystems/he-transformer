@@ -20,8 +20,6 @@
 #include <string>
 #include <vector>
 
-#include "gtest/gtest.h"
-
 #include "he_backend.hpp"
 #include "he_cipher_tensor.hpp"
 #include "he_tensor.hpp"

@@ -17,18 +17,11 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include <sstream>
 #include <string>
 #include <vector>
+#include <iterator>
+#include <assert.h>
 
-#include "ngraph/cpio.hpp"
-#include "ngraph/file_util.hpp"
-#include "ngraph/graph_util.hpp"
-#include "ngraph/log.hpp"
-#include "ngraph/ngraph.hpp"
-#include "ngraph/node.hpp"
-
-#include "he_backend.hpp"
 #include "test_util.hpp"
 
 using namespace std;

@@ -24,28 +24,8 @@
 
 using namespace std;
 
-// This is a hack that we put around since HE_SEAL and HE_HEAAN are all in libhe_backend.so
-// This can be removed, if libhe_backend.so only contains one
-static void register_he_backends()
-{
-    cout << "Registering backends" << endl;
-    ;
-    void* handle = nullptr;
-    string name = "libhe_backend.so";
-    handle = dlopen(name.c_str(), RTLD_NOW | RTLD_GLOBAL);
-    if (handle)
-    {
-        function<void()> create = reinterpret_cast<void (*)()>(dlsym(handle, "create_backend"));
-        if (create)
-        {
-            create();
-        }
-    }
-}
-
 int main(int argc, char** argv)
 {
-    // register_he_backends();
     ::testing::InitGoogleTest(&argc, argv);
     int rc = RUN_ALL_TESTS();
     return rc;

@@ -32,13 +32,6 @@ set (SRC
     test_util.cpp
 )
 
-# This dummy target always triggers re-configure of HE_SEAL_BFV and HE_SEAL_CKKS ngraph tests
-# If the source file is not changed, re-compile is not triggered
-#add_custom_command(
-#    OUTPUT always_build
-#    COMMAND cmake -E echo
-#)
-
 set(ACTIVE_BACKEND_LIST HE_SEAL_BFV HE_SEAL_CKKS)
 
 set(MULTI_TEST_SRC
@@ -47,7 +40,6 @@ set(MULTI_TEST_SRC
     test_broadcast.in.cpp
     test_convolution.in.cpp
     test_dot.in.cpp
-    test_mnist.in.cpp
     test_multiply.in.cpp
     test_negate.in.cpp
     test_pad.in.cpp
@@ -99,3 +91,29 @@ target_link_libraries(unit-test ngraph_test_util)
 target_link_libraries(unit-test he_backend seal pthread ${CMAKE_DL_LIBS})
 
 add_dependencies(unit-test he_backend ext_seal ext_ngraph ext_gtest)
+
+# Cryptonets
+set (CRYPTONETS_SRC test_cryptonets.cpp test_util.cpp)
+add_executable(cryptonets_benchmark ${CRYPTONETS_SRC})
+
+include_directories(SYSTEM
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${GTEST_INCLUDE_DIR}
+    ${NGRAPH_INCLUDE_DIR}
+    ${NGRAPH_TEST_DIR}
+    ${HE_TRANSFORMER_SOURCE_DIR}
+    ${EXTERNAL_INSTALL_INCLUDE_DIR}
+)
+
+link_directories(
+    ${NGRAPH_LIB_DIR}
+    ${EXTERNAL_INSTALL_LIB_DIR}
+)
+
+target_include_directories(cryptonets_benchmark PRIVATE ".")
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHE_SERIALIZED_ZOO=\\\"${CMAKE_CURRENT_SOURCE_DIR}/model\\\"")
+
+target_link_libraries(cryptonets_benchmark ngraph_test_util)
+target_link_libraries(cryptonets_benchmark he_backend seal pthread ${CMAKE_DL_LIBS})
+add_dependencies(cryptonets_benchmark he_backend ext_seal ext_ngraph)
