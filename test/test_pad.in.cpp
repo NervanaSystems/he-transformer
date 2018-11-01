@@ -313,7 +313,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_4d_1x2x2x2)
                 }
             }
         }).get_vector()),
-        read_vector<float>(result)));
+        read_vector<float>(result))));
     // clang-format on
 }
 
@@ -404,7 +404,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_1d)
     EXPECT_TRUE(all_close(
         (test::NDArray<float, 1>({123, 123, 123, 123, 1, 2, 3, 4, 5, 6, 123, 123, 123, 123, 123})
              .get_vector()),
-        read_vector<float>(result)));
+        read_vector<float>(result))));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_exterior_1d)
@@ -617,7 +617,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_4d_1x2x2x2)
                 }
             }
         }).get_vector()),
-        read_vector<float>(result)));
+        read_vector<float>(result))));
     // clang-format on
 }
 
