@@ -152,6 +152,109 @@ bool runtime::he::HEBackend::compile(shared_ptr<Function> function)
     return true;
 }
 
+void runtime::he::HEBackend::validate_he_call(shared_ptr<const Function> function,
+                                     const vector<shared_ptr<runtime::he::HETensor>>& outputs,
+                                     const vector<shared_ptr<runtime::he::HETensor>>& inputs)
+{
+    NGRAPH_INFO << "HEBackend validate call";
+    const op::ParameterVector& input_parameters = function->get_parameters();
+    if (input_parameters.size() != inputs.size())
+    {
+        stringstream ss;
+        ss << "Call input count " << inputs.size() << " does not match Function's Parameter count "
+           << input_parameters.size();
+        throw runtime_error(ss.str());
+    }
+    if (function->get_output_size() != outputs.size())
+    {
+        stringstream ss;
+        ss << "Call output count " << outputs.size() << " does not match Function's Result count "
+           << function->get_output_size();
+        throw runtime_error(ss.str());
+    }
+
+    for (size_t i = 0; i < input_parameters.size(); i++)
+    {
+        if (input_parameters[i]->get_element_type() != inputs[i]->get_element_type())
+        {
+            stringstream ss;
+            ss << "Input " << i << " type '" << inputs[i]->get_element_type()
+               << "' does not match Parameter type '" << input_parameters[i]->get_element_type()
+               << "'";
+            throw runtime_error(ss.str());
+        }
+        if (auto input_cipher_tv = dynamic_pointer_cast<HECipherTensor>(inputs[i]))
+        {
+            if (input_cipher_tv->is_batched() && input_cipher_tv->get_expanded_shape() != input_parameters[i]->get_shape())
+            {
+                stringstream ss;
+                ss << "Input " << i << " shape {" << join(input_cipher_tv->get_expanded_shape())
+                << "} does not match Parameter shape {" << join(input_parameters[i]->get_shape())
+                << "}";
+                throw runtime_error(ss.str());
+            }
+            else if (!input_cipher_tv->is_batched() && input_cipher_tv->get_shape() != input_parameters[i]->get_shape())
+            {
+                stringstream ss;
+                ss << "Input " << i << " shape {" << join(input_cipher_tv->get_expanded_shape())
+                << "} does not match Parameter shape {" << join(input_parameters[i]->get_shape())
+                << "}";
+                throw runtime_error(ss.str());
+            }
+        }
+        else if (input_parameters[i]->get_shape() != inputs[i]->get_shape())
+        {
+            stringstream ss;
+            ss << "Input " << i << " shape {" << join(inputs[i]->get_shape())
+               << "} does not match Parameter shape {" << join(input_parameters[i]->get_shape())
+               << "}";
+            throw runtime_error(ss.str());
+        }
+    }
+
+    for (size_t i = 0; i < function->get_output_size(); i++)
+    {
+        if (function->get_output_element_type(i) != outputs[i]->get_element_type())
+        {
+            stringstream ss;
+            ss << "Output " << i << " type '" << outputs[i]->get_element_type()
+               << "' does not match Result type '" << function->get_output_element_type(i) << "'";
+            throw runtime_error(ss.str());
+        }
+        if (auto output_cipher_tv = dynamic_pointer_cast<HECipherTensor>(outputs[i]))
+        {
+            NGRAPH_INFO << "Batched output " << output_cipher_tv->is_batched();
+            NGRAPH_INFO << "output_cipher_tv->get_expanded_shape() " << join(output_cipher_tv->get_expanded_shape());
+            NGRAPH_INFO << "function->get_output_shape(i) " << join(function->get_output_shape(i));
+
+            // TODO: check if shapes are equal, not just shape sizes.
+            // Currently, this fails when output shape is {3}, and
+            // expanded shape is {3,1} on HE_SEAL_CKKS.dot_scalar_batch unit-test.
+            if (output_cipher_tv->is_batched() && shape_size(output_cipher_tv->get_expanded_shape()) != shape_size(function->get_output_shape(i)))
+            {
+                stringstream ss;
+                ss << "Batched Output " << i << " shape {" << join(output_cipher_tv->get_expanded_shape())
+                << "} does not match Result shape {" << join(function->get_output_shape(i)) << "}";
+                throw runtime_error(ss.str());
+            }
+            else if (!output_cipher_tv->is_batched() && function->get_output_shape(i) != outputs[i]->get_shape())
+            {
+                stringstream ss;
+                ss << "Output " << i << " shape {" << join(outputs[i]->get_shape())
+                << "} does not match Result shape {" << join(function->get_output_shape(i)) << "}";
+                throw runtime_error(ss.str());
+            }
+        }
+        else if (function->get_output_shape(i) != outputs[i]->get_shape())
+        {
+            stringstream ss;
+            ss << "Output " << i << " shape {" << join(outputs[i]->get_shape())
+               << "} does not match Result shape {" << join(function->get_output_shape(i)) << "}";
+            throw runtime_error(ss.str());
+        }
+    }
+}
+
 bool runtime::he::HEBackend::call(shared_ptr<Function> function,
                                   const vector<shared_ptr<runtime::Tensor>>& outputs,
                                   const vector<shared_ptr<runtime::Tensor>>& inputs)
@@ -202,11 +305,7 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
                                   const vector<shared_ptr<runtime::he::HETensor>>& output_tvs,
                                   const vector<shared_ptr<runtime::he::HETensor>>& input_tvs)
 {
-    // TODO: we clear timer at each run for now
-    //  m_timer_map.clear();
-
-    // HEAAN may call with batch != 1, so we disabel validate_call here
-    // validate_call(function, outputs, inputs);
+    validate_he_call(function, output_tvs, input_tvs);
 
     compile(function);
     FunctionInstance& instance = m_function_map[function];
@@ -317,12 +416,6 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
 
         const string op_name = op->description();
 
-        // Check result with CPU backend
-        /*if (is_cpu_check_enabled(op) && !any_batched)
-        {
-            check_cpu_calls(function, base_type, op, outputs, inputs, false);
-        } */
-
         // delete any obsolete tensors
         for (const descriptor::Tensor* t : op->liveness_free_list)
         {
@@ -336,8 +429,6 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
             }
         }
 
-        // Stop stopwatch and print time
-        // TODO: currently timer is cleared at each run
         NGRAPH_INFO << "\033[1;31m" << op->get_name() << " took "
                     << instance.m_timer_map[op.get()].get_seconds() << "s"
                     << "\033[0m";

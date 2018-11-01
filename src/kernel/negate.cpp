@@ -104,6 +104,6 @@ void kernel::scalar_negate(const shared_ptr<HEPlaintext>& arg,
     }
     else
     {
-        throw ngraph_error("negate backend is neither SEAL nor HEAAN.");
+        throw ngraph_error("negate backend is not SEAL.");
     }
 }

@@ -145,7 +145,7 @@ void kernel::scalar_subtract(const shared_ptr<HEPlaintext>& arg0,
     }
     else
     {
-        throw ngraph_error("subtract backend is neither SEAL nor HEAAN.");
+        throw ngraph_error("subtract backend is not SEAL.");
     }
 }
 
@@ -188,7 +188,7 @@ void kernel::scalar_subtract(const shared_ptr<HECiphertext>& arg0,
     }
     else
     {
-        throw ngraph_error("subtract backend is neither SEAL nor HEAAN.");
+        throw ngraph_error("subtract backend is not SEAL.");
     }
 }
 
