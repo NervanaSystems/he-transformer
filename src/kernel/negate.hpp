@@ -37,24 +37,24 @@ namespace ngraph
             {
                 void negate(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg,
                             std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
-                            const element::Type& type,
+                            const element::Type& element_type,
                             const runtime::he::HEBackend* he_backend,
                             size_t count);
 
                 void negate(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg,
                             std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
-                            const element::Type& type,
+                            const element::Type& element_type,
                             const runtime::he::HEBackend* he_backend,
                             size_t count);
 
                 void scalar_negate(const std::shared_ptr<runtime::he::HECiphertext>& arg,
                                    std::shared_ptr<runtime::he::HECiphertext>& out,
-                                   const element::Type& type,
+                                   const element::Type& element_type,
                                    const runtime::he::HEBackend* he_backend);
 
                 void scalar_negate(const std::shared_ptr<runtime::he::HEPlaintext>& arg,
                                    std::shared_ptr<runtime::he::HEPlaintext>& out,
-                                   const element::Type& type,
+                                   const element::Type& element_type,
                                    const runtime::he::HEBackend* he_backend);
             }
         }

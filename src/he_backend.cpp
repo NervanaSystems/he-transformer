@@ -346,7 +346,7 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
     return true;
 }
 
-void runtime::he::HEBackend::generate_calls(const element::Type& type,
+void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                             const shared_ptr<Node>& node,
                                             const vector<shared_ptr<HETensor>>& out,
                                             const vector<shared_ptr<HETensor>>& args)
@@ -383,7 +383,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
             runtime::he::kernel::add(arg0_cipher->get_elements(),
                                      arg1_cipher->get_elements(),
                                      out0_cipher->get_elements(),
-                                     type,
+                                     element_type,
                                      this,
                                      out0_cipher->get_element_count());
         }
@@ -392,7 +392,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
             runtime::he::kernel::add(arg0_cipher->get_elements(),
                                      arg1_plain->get_elements(),
                                      out0_cipher->get_elements(),
-                                     type,
+                                     element_type,
                                      this,
                                      out0_cipher->get_element_count());
         }
@@ -401,7 +401,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
             runtime::he::kernel::add(arg0_plain->get_elements(),
                                      arg1_cipher->get_elements(),
                                      out0_cipher->get_elements(),
-                                     type,
+                                     element_type,
                                      this,
                                      out0_cipher->get_element_count());
         }
@@ -410,7 +410,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
             runtime::he::kernel::add(arg0_plain->get_elements(),
                                      arg1_plain->get_elements(),
                                      out0_plain->get_elements(),
-                                     type,
+                                     element_type,
                                      this,
                                      out0_plain->get_element_count());
         }
@@ -455,7 +455,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
         {
             shared_ptr<op::Constant> constant = static_pointer_cast<op::Constant>(node);
             runtime::he::kernel::constant(out0_plain->get_elements(),
-                                          type,
+                                          element_type,
                                           constant->get_data_ptr(),
                                           this,
                                           out0_plain->get_element_count());
@@ -489,7 +489,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
                                              0,
                                              1,
                                              false,
-                                             type,
+                                             element_type,
                                              batch_size,
                                              this);
         }
@@ -513,7 +513,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
                                              0,
                                              1,
                                              false,
-                                             type,
+                                             element_type,
                                              batch_size,
                                              this);
         }
@@ -537,7 +537,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
                                              0,
                                              1,
                                              false,
-                                             type,
+                                             element_type,
                                              batch_size,
                                              this);
         }
@@ -561,7 +561,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
                                              0,
                                              1,
                                              false,
-                                             type,
+                                             element_type,
                                              batch_size,
                                              this);
         }
@@ -585,7 +585,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
                                      arg1_cipher->get_shape(),
                                      out0_cipher->get_shape(),
                                      dot->get_reduction_axes_count(),
-                                     type,
+                                     element_type,
                                      batch_size,
                                      this);
         }
@@ -599,7 +599,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
                                      arg1_plain->get_shape(),
                                      out0_cipher->get_shape(),
                                      dot->get_reduction_axes_count(),
-                                     type,
+                                     element_type,
                                      batch_size,
                                      this);
         }
@@ -613,7 +613,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
                                      arg1_cipher->get_shape(),
                                      out0_cipher->get_shape(),
                                      dot->get_reduction_axes_count(),
-                                     type,
+                                     element_type,
                                      batch_size,
                                      this);
         }
@@ -627,7 +627,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
                                      arg1_plain->get_shape(),
                                      out0_plain->get_shape(),
                                      dot->get_reduction_axes_count(),
-                                     type,
+                                     element_type,
                                      this);
         }
         else
@@ -642,7 +642,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
             runtime::he::kernel::multiply(arg0_cipher->get_elements(),
                                           arg1_cipher->get_elements(),
                                           out0_cipher->get_elements(),
-                                          type,
+                                          element_type,
                                           this,
                                           out0_cipher->get_element_count());
         }
@@ -651,7 +651,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
             runtime::he::kernel::multiply(arg0_cipher->get_elements(),
                                           arg1_plain->get_elements(),
                                           out0_cipher->get_elements(),
-                                          type,
+                                          element_type,
                                           this,
                                           out0_cipher->get_element_count());
         }
@@ -660,7 +660,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
             runtime::he::kernel::multiply(arg0_plain->get_elements(),
                                           arg1_cipher->get_elements(),
                                           out0_cipher->get_elements(),
-                                          type,
+                                          element_type,
                                           this,
                                           out0_cipher->get_element_count());
         }
@@ -669,7 +669,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
             runtime::he::kernel::multiply(arg0_plain->get_elements(),
                                           arg1_plain->get_elements(),
                                           out0_plain->get_elements(),
-                                          type,
+                                          element_type,
                                           this,
                                           out0_plain->get_element_count());
         }
@@ -684,7 +684,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
         {
             runtime::he::kernel::negate(arg0_cipher->get_elements(),
                                         out0_cipher->get_elements(),
-                                        type,
+                                        element_type,
                                         this,
                                         out0_cipher->get_element_count());
         }
@@ -692,7 +692,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
         {
             runtime::he::kernel::negate(arg0_plain->get_elements(),
                                         out0_plain->get_elements(),
-                                        type,
+                                        element_type,
                                         this,
                                         out0_plain->get_element_count());
         }
@@ -850,7 +850,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
             runtime::he::kernel::subtract(arg0_cipher->get_elements(),
                                           arg1_cipher->get_elements(),
                                           out0_cipher->get_elements(),
-                                          type,
+                                          element_type,
                                           this,
                                           out0_cipher->get_element_count());
         }
@@ -859,7 +859,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
             runtime::he::kernel::subtract(arg0_cipher->get_elements(),
                                           arg1_plain->get_elements(),
                                           out0_cipher->get_elements(),
-                                          type,
+                                          element_type,
                                           this,
                                           out0_cipher->get_element_count());
         }
@@ -868,7 +868,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
             runtime::he::kernel::subtract(arg0_plain->get_elements(),
                                           arg1_cipher->get_elements(),
                                           out0_cipher->get_elements(),
-                                          type,
+                                          element_type,
                                           this,
                                           out0_cipher->get_element_count());
         }
@@ -877,7 +877,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& type,
             runtime::he::kernel::subtract(arg0_plain->get_elements(),
                                           arg1_plain->get_elements(),
                                           out0_plain->get_elements(),
-                                          type,
+                                          element_type,
                                           this,
                                           out0_plain->get_element_count());
         }

@@ -54,8 +54,8 @@ runtime::he::HEPlainTensor::HEPlainTensor(const element::Type& element_type,
 void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset, size_t n)
 {
     check_io_bounds(source, tensor_offset, n);
-    const element::Type& type = get_tensor_layout()->get_element_type();
-    size_t type_byte_size = type.size();
+    const element::Type& element_type = get_tensor_layout()->get_element_type();
+    size_t type_byte_size = element_type.size();
     size_t dst_start_index = tensor_offset / type_byte_size;
     size_t num_elements_to_write = n / type_byte_size;
     if (num_elements_to_write == 1)
@@ -65,7 +65,7 @@ void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
 
         if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(m_he_backend))
         {
-            he_seal_backend->encode(m_plain_texts[dst_index], src_with_offset, type);
+            he_seal_backend->encode(m_plain_texts[dst_index], src_with_offset, element_type);
         }
         else
         {
@@ -77,11 +77,11 @@ void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
 #pragma omp parallel for
         for (size_t i = 0; i < num_elements_to_write; ++i)
         {
-            const void* src_with_offset = (void*)((char*)source + i * type.size());
+            const void* src_with_offset = (void*)((char*)source + i * type_byte_size);
             size_t dst_index = dst_start_index + i;
             if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(m_he_backend))
             {
-                he_seal_backend->encode(m_plain_texts[dst_index], src_with_offset, type);
+                he_seal_backend->encode(m_plain_texts[dst_index], src_with_offset, element_type);
             }
             else
             {
@@ -94,8 +94,8 @@ void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
 void runtime::he::HEPlainTensor::read(void* target, size_t tensor_offset, size_t n) const
 {
     check_io_bounds(target, tensor_offset, n);
-    const element::Type& type = get_tensor_layout()->get_element_type();
-    size_t type_byte_size = type.size();
+    const element::Type& element_type = get_tensor_layout()->get_element_type();
+    size_t type_byte_size = element_type.size();
     size_t src_start_index = tensor_offset / type_byte_size;
     size_t num_elements_to_read = n / type_byte_size;
 
@@ -105,7 +105,7 @@ void runtime::he::HEPlainTensor::read(void* target, size_t tensor_offset, size_t
         size_t src_index = src_start_index;
         if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(m_he_backend))
         {
-            he_seal_backend->decode(dst_with_offset, m_plain_texts[src_index], type);
+            he_seal_backend->decode(dst_with_offset, m_plain_texts[src_index], element_type);
         }
         else
         {
@@ -117,11 +117,11 @@ void runtime::he::HEPlainTensor::read(void* target, size_t tensor_offset, size_t
 #pragma omp parallel for
         for (size_t i = 0; i < num_elements_to_read; ++i)
         {
-            void* dst_with_offset = (void*)((char*)target + i * type.size());
+            void* dst_with_offset = (void*)((char*)target + i * type_byte_size);
             size_t src_index = src_start_index + i;
             if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(m_he_backend))
             {
-                he_seal_backend->decode(dst_with_offset, m_plain_texts[src_index], type);
+                he_seal_backend->decode(dst_with_offset, m_plain_texts[src_index], element_type);
             }
             else
             {

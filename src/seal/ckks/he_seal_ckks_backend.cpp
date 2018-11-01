@@ -209,10 +209,10 @@ shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealCKKSBackend::create_batc
 
 void runtime::he::he_seal::HESealCKKSBackend::encode(shared_ptr<runtime::he::HEPlaintext>& output,
                                                      const void* input,
-                                                     const element::Type& type,
+                                                     const element::Type& element_type,
                                                      size_t count) const
 {
-    const string type_name = type.c_type_string();
+    const string type_name = element_type.c_type_string();
     if (type_name == "float")
     {
         if (count == 1)
@@ -252,10 +252,10 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(shared_ptr<runtime::he::HEP
 void runtime::he::he_seal::HESealCKKSBackend::decode(
     void* output,
     const shared_ptr<runtime::he::HEPlaintext> input,
-    const element::Type& type,
+    const element::Type& element_type,
     size_t count) const
 {
-    const string type_name = type.c_type_string();
+    const string type_name = element_type.c_type_string();
 
     if (count == 0)
     {
@@ -273,7 +273,7 @@ void runtime::he::he_seal::HESealCKKSBackend::decode(
         m_ckks_encoder->decode(seal_input->m_plaintext, xs);
         vector<float> xs_float(xs.begin(), xs.end());
 
-        memcpy(output, &xs_float[0], type.size() * count);
+        memcpy(output, &xs_float[0], element_type.size() * count);
     }
     else
     {

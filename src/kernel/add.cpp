@@ -27,59 +27,59 @@ using namespace ngraph::runtime::he;
 void kernel::add(const vector<shared_ptr<HECiphertext>>& arg0,
                  const vector<shared_ptr<HECiphertext>>& arg1,
                  vector<shared_ptr<HECiphertext>>& out,
-                 const element::Type& type,
+                 const element::Type& element_type,
                  const HEBackend* he_backend,
                  size_t count)
 {
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
     {
-        scalar_add(arg0[i], arg1[i], out[i], type, he_backend);
+        scalar_add(arg0[i], arg1[i], out[i], element_type, he_backend);
     }
 }
 
 void kernel::add(const vector<shared_ptr<HECiphertext>>& arg0,
                  const vector<shared_ptr<HEPlaintext>>& arg1,
                  vector<shared_ptr<HECiphertext>>& out,
-                 const element::Type& type,
+                 const element::Type& element_type,
                  const HEBackend* he_backend,
                  size_t count)
 {
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
     {
-        scalar_add(arg0[i], arg1[i], out[i], type, he_backend);
+        scalar_add(arg0[i], arg1[i], out[i], element_type, he_backend);
     }
 }
 
 void kernel::add(const vector<shared_ptr<HEPlaintext>>& arg0,
                  const vector<shared_ptr<HECiphertext>>& arg1,
                  vector<shared_ptr<HECiphertext>>& out,
-                 const element::Type& type,
+                 const element::Type& element_type,
                  const HEBackend* he_backend,
                  size_t count)
 {
-    add(arg1, arg0, out, type, he_backend, count);
+    add(arg1, arg0, out, element_type, he_backend, count);
 }
 
 void kernel::add(const vector<shared_ptr<HEPlaintext>>& arg0,
                  const vector<shared_ptr<HEPlaintext>>& arg1,
                  vector<shared_ptr<HEPlaintext>>& out,
-                 const element::Type& type,
+                 const element::Type& element_type,
                  const HEBackend* he_backend,
                  size_t count)
 {
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
     {
-        scalar_add(arg0[i], arg1[i], out[i], type, he_backend);
+        scalar_add(arg0[i], arg1[i], out[i], element_type, he_backend);
     }
 }
 
 void kernel::scalar_add(const shared_ptr<HECiphertext>& arg0,
                         const shared_ptr<HECiphertext>& arg1,
                         shared_ptr<HECiphertext>& out,
-                        const element::Type& type,
+                        const element::Type& element_type,
                         const HEBackend* he_backend)
 {
     if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(he_backend))
@@ -93,7 +93,8 @@ void kernel::scalar_add(const shared_ptr<HECiphertext>& arg0,
 
         if (arg0_seal && arg1_seal && out_seal)
         {
-            he_seal::kernel::scalar_add(arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
+            he_seal::kernel::scalar_add(
+                arg0_seal, arg1_seal, out_seal, element_type, he_seal_backend);
             out = dynamic_pointer_cast<HECiphertext>(out_seal);
         }
         else
@@ -111,7 +112,7 @@ void kernel::scalar_add(const shared_ptr<HECiphertext>& arg0,
 void kernel::scalar_add(const shared_ptr<HEPlaintext>& arg0,
                         const shared_ptr<HEPlaintext>& arg1,
                         shared_ptr<HEPlaintext>& out,
-                        const element::Type& type,
+                        const element::Type& element_type,
                         const HEBackend* he_backend)
 {
     if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(he_backend))
@@ -125,7 +126,8 @@ void kernel::scalar_add(const shared_ptr<HEPlaintext>& arg0,
 
         if (arg0_seal && arg1_seal && out_seal)
         {
-            he_seal::kernel::scalar_add(arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
+            he_seal::kernel::scalar_add(
+                arg0_seal, arg1_seal, out_seal, element_type, he_seal_backend);
             out = dynamic_pointer_cast<HEPlaintext>(out_seal);
         }
         else
@@ -143,7 +145,7 @@ void kernel::scalar_add(const shared_ptr<HEPlaintext>& arg0,
 void kernel::scalar_add(const shared_ptr<HECiphertext>& arg0,
                         const shared_ptr<HEPlaintext>& arg1,
                         shared_ptr<HECiphertext>& out,
-                        const element::Type& type,
+                        const element::Type& element_type,
                         const HEBackend* he_backend)
 {
     if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(he_backend))
@@ -157,7 +159,7 @@ void kernel::scalar_add(const shared_ptr<HECiphertext>& arg0,
 
         if (arg0_seal && arg1_seal && out_seal)
         {
-            const string type_name = type.c_type_string();
+            const string type_name = element_type.c_type_string();
             bool add_zero = (arg1 == he_seal_backend->get_valued_plaintext(0));
 
             if (add_zero && type_name == "float")
@@ -167,7 +169,8 @@ void kernel::scalar_add(const shared_ptr<HECiphertext>& arg0,
             }
             else
             {
-                he_seal::kernel::scalar_add(arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
+                he_seal::kernel::scalar_add(
+                    arg0_seal, arg1_seal, out_seal, element_type, he_seal_backend);
                 out = dynamic_pointer_cast<HECiphertext>(out_seal);
             }
         }
@@ -186,8 +189,8 @@ void kernel::scalar_add(const shared_ptr<HECiphertext>& arg0,
 void kernel::scalar_add(const shared_ptr<HEPlaintext>& arg0,
                         const shared_ptr<HECiphertext>& arg1,
                         shared_ptr<HECiphertext>& out,
-                        const element::Type& type,
+                        const element::Type& element_type,
                         const HEBackend* he_backend)
 {
-    scalar_add(arg1, arg0, out, type, he_backend);
+    scalar_add(arg1, arg0, out, element_type, he_backend);
 }

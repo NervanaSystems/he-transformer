@@ -57,11 +57,11 @@ namespace ngraph
 
                     void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
                                 const void* input,
-                                const element::Type& type,
+                                const element::Type& element_type,
                                 size_t count = 1) const override;
                     void decode(void* output,
                                 const std::shared_ptr<runtime::he::HEPlaintext> input,
-                                const element::Type& type,
+                                const element::Type& element_type,
                                 size_t count = 1) const override;
 
                     const inline std::shared_ptr<seal::CKKSEncoder> get_ckks_encoder() const

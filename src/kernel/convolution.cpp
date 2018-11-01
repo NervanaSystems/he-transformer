@@ -47,7 +47,7 @@ void runtime::he::kernel::convolution(const vector<shared_ptr<runtime::he::HECip
                                       size_t batch_axis_result,
                                       size_t output_channel_axis_result,
                                       bool rotate_filter,
-                                      const element::Type& type,
+                                      const element::Type& element_type,
                                       size_t batch_size,
                                       const runtime::he::HEBackend* he_backend)
 {
@@ -71,7 +71,7 @@ void runtime::he::kernel::convolution(const vector<shared_ptr<runtime::he::HECip
         batch_axis_result,
         output_channel_axis_result,
         rotate_filter,
-        type,
+        element_type,
         batch_size,
         he_backend);
 }
@@ -94,7 +94,7 @@ void runtime::he::kernel::convolution(const vector<shared_ptr<runtime::he::HEPla
                                       size_t batch_axis_result,
                                       size_t output_channel_axis_result,
                                       bool rotate_filter,
-                                      const element::Type& type,
+                                      const element::Type& element_type,
                                       size_t batch_size,
                                       const runtime::he::HEBackend* he_backend)
 {
@@ -116,7 +116,7 @@ void runtime::he::kernel::convolution(const vector<shared_ptr<runtime::he::HEPla
                 batch_axis_result,
                 output_channel_axis_result,
                 rotate_filter,
-                type,
+                element_type,
                 batch_size,
                 he_backend);
 }
@@ -139,7 +139,7 @@ void runtime::he::kernel::convolution(const vector<shared_ptr<runtime::he::HECip
                                       size_t batch_axis_result,
                                       size_t output_channel_axis_result,
                                       bool rotate_filter,
-                                      const element::Type& type,
+                                      const element::Type& element_type,
                                       size_t batch_size,
                                       const runtime::he::HEBackend* he_backend)
 {
@@ -164,7 +164,7 @@ void runtime::he::kernel::convolution(const vector<shared_ptr<runtime::he::HECip
         batch_axis_result,
         output_channel_axis_result,
         rotate_filter,
-        type,
+        element_type,
         batch_size,
         he_backend);
 }
@@ -189,7 +189,7 @@ void ngraph::runtime::he::kernel::convolution(
     size_t batch_axis_result,
     size_t output_channel_axis_result,
     bool rotate_filter,
-    const element::Type& type,
+    const element::Type& element_type,
     size_t batch_size,
     const runtime::he::HEBackend* he_backend)
 {
@@ -331,7 +331,8 @@ void ngraph::runtime::he::kernel::convolution(
         //   output[O] += arg0[I] * arg1[F].
 
         // T result = 0;
-        shared_ptr<runtime::he::HEPlaintext> result = he_backend->create_valued_plaintext(0., type);
+        shared_ptr<runtime::he::HEPlaintext> result =
+            he_backend->create_valued_plaintext(0., element_type);
 
         CoordinateTransform::Iterator input_it = input_batch_transform.begin();
         CoordinateTransform::Iterator filter_it = filter_transform.begin();
@@ -356,14 +357,14 @@ void ngraph::runtime::he::kernel::convolution(
             shared_ptr<runtime::he::HEPlaintext> v =
                 input_batch_transform.has_source_coordinate(input_batch_coord)
                     ? arg0[input_batch_transform.index(input_batch_coord)]
-                    : he_backend->create_valued_plaintext(0., type);
+                    : he_backend->create_valued_plaintext(0., element_type);
 
             shared_ptr<runtime::he::HEPlaintext> prod = he_backend->create_empty_plaintext();
 
             // result += v * arg1[filter_transform.index(filter_coord)];
             runtime::he::kernel::scalar_multiply(
-                v, arg1[filter_transform.index(filter_coord)], prod, type, he_backend);
-            runtime::he::kernel::scalar_add(result, prod, result, type, he_backend);
+                v, arg1[filter_transform.index(filter_coord)], prod, element_type, he_backend);
+            runtime::he::kernel::scalar_add(result, prod, result, element_type, he_backend);
 
             ++input_it;
             ++filter_it;

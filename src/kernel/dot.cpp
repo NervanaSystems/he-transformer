@@ -36,7 +36,7 @@ void kernel::dot(const vector<shared_ptr<HECiphertext>>& arg0,
                  const Shape& arg1_shape,
                  const Shape& out_shape,
                  size_t reduction_axes_count,
-                 const element::Type& type,
+                 const element::Type& element_type,
                  size_t batch_size,
                  const HEBackend* he_backend)
 {
@@ -47,7 +47,7 @@ void kernel::dot(const vector<shared_ptr<HECiphertext>>& arg0,
                          arg1_shape,
                          out_shape,
                          reduction_axes_count,
-                         type,
+                         element_type,
                          batch_size,
                          he_backend);
 }
@@ -59,7 +59,7 @@ void kernel::dot(const vector<shared_ptr<HECiphertext>>& arg0,
                  const Shape& arg1_shape,
                  const Shape& out_shape,
                  size_t reduction_axes_count,
-                 const element::Type& type,
+                 const element::Type& element_type,
                  size_t batch_size,
                  const HEBackend* he_backend)
 {
@@ -70,7 +70,7 @@ void kernel::dot(const vector<shared_ptr<HECiphertext>>& arg0,
                          arg1_shape,
                          out_shape,
                          reduction_axes_count,
-                         type,
+                         element_type,
                          batch_size,
                          he_backend);
 }
@@ -82,7 +82,7 @@ void kernel::dot(const vector<shared_ptr<HEPlaintext>>& arg0,
                  const Shape& arg1_shape,
                  const Shape& out_shape,
                  size_t reduction_axes_count,
-                 const element::Type& type,
+                 const element::Type& element_type,
                  size_t batch_size,
                  const HEBackend* he_backend)
 {
@@ -93,7 +93,7 @@ void kernel::dot(const vector<shared_ptr<HEPlaintext>>& arg0,
                          arg1_shape,
                          out_shape,
                          reduction_axes_count,
-                         type,
+                         element_type,
                          batch_size,
                          he_backend);
 }
@@ -106,7 +106,7 @@ void kernel::dot(const vector<shared_ptr<HEPlaintext>>& arg0,
                  const Shape& arg1_shape,
                  const Shape& out_shape,
                  size_t reduction_axes_count,
-                 const element::Type& type,
+                 const element::Type& element_type,
                  const HEBackend* he_backend)
 {
     // Get the sizes of the dot axes. It's easiest to pull them from arg1 because they're
@@ -211,7 +211,7 @@ void kernel::dot(const vector<shared_ptr<HEPlaintext>>& arg0,
             auto arg1_text = arg1[arg1_transform.index(arg1_coord)];
 
             shared_ptr<HEPlaintext> prod = he_backend->create_empty_plaintext();
-            kernel::scalar_multiply(arg0_text, arg1_text, prod, type, he_backend);
+            kernel::scalar_multiply(arg0_text, arg1_text, prod, element_type, he_backend);
 
             summands.emplace_back(prod);
         }
@@ -222,7 +222,7 @@ void kernel::dot(const vector<shared_ptr<HEPlaintext>>& arg0,
         {
             shared_ptr<HEPlaintext> plaintext = he_backend->create_empty_plaintext();
             runtime::he::kernel::scalar_add(
-                summands[i], summands[i + 1], plaintext, type, he_backend);
+                summands[i], summands[i + 1], plaintext, element_type, he_backend);
             summands.emplace_back(plaintext);
         }
         // Write the sum back.

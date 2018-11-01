@@ -42,7 +42,7 @@ namespace ngraph
                                   const Shape& arg1_shape,
                                   const Shape& out_shape,
                                   size_t reduction_axes_count,
-                                  const element::Type& type,
+                                  const element::Type& element_type,
                                   size_t batch_size,
                                   const runtime::he::HEBackend* he_backend);
 
@@ -53,7 +53,7 @@ namespace ngraph
                          const Shape& arg1_shape,
                          const Shape& out_shape,
                          size_t reduction_axes_count,
-                         const element::Type& type,
+                         const element::Type& element_type,
                          size_t batch_size,
                          const runtime::he::HEBackend* he_backend);
 
@@ -64,7 +64,7 @@ namespace ngraph
                          const Shape& arg1_shape,
                          const Shape& out_shape,
                          size_t reduction_axes_count,
-                         const element::Type& type,
+                         const element::Type& element_type,
                          size_t batch_size,
                          const runtime::he::HEBackend* he_backend);
 
@@ -75,7 +75,7 @@ namespace ngraph
                          const Shape& arg1_shape,
                          const Shape& out_shape,
                          size_t reduction_axes_count,
-                         const element::Type& type,
+                         const element::Type& element_type,
                          size_t batch_size,
                          const runtime::he::HEBackend* he_backend);
 
@@ -86,7 +86,7 @@ namespace ngraph
                          const Shape& arg1_shape,
                          const Shape& out_shape,
                          size_t reduction_axes_count,
-                         const element::Type& type,
+                         const element::Type& element_type,
                          const runtime::he::HEBackend* he_backend);
             }
         }
@@ -102,7 +102,7 @@ void ngraph::runtime::he::kernel::dot_template(
     const Shape& arg1_shape,
     const Shape& out_shape,
     size_t reduction_axes_count,
-    const element::Type& type,
+    const element::Type& element_type,
     size_t batch_size,
     const runtime::he::HEBackend* he_backend)
 {
@@ -211,7 +211,8 @@ void ngraph::runtime::he::kernel::dot_template(
             auto arg1_text = arg1[arg1_transform.index(arg1_coord)];
 
             std::shared_ptr<runtime::he::HECiphertext> prod = he_backend->create_empty_ciphertext();
-            runtime::he::kernel::scalar_multiply(arg0_text, arg1_text, prod, type, he_backend);
+            runtime::he::kernel::scalar_multiply(
+                arg0_text, arg1_text, prod, element_type, he_backend);
 
             summands.emplace_back(prod);
         }
@@ -222,7 +223,7 @@ void ngraph::runtime::he::kernel::dot_template(
             std::shared_ptr<runtime::he::HECiphertext> ciphertext =
                 he_backend->create_empty_ciphertext();
             runtime::he::kernel::scalar_add(
-                summands[i], summands[i + 1], ciphertext, type, he_backend);
+                summands[i], summands[i + 1], ciphertext, element_type, he_backend);
             summands.emplace_back(ciphertext);
         }
         // Write the sum back.
