@@ -53,7 +53,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_t2v_012)
 
         backend->call(f, {result}, {a});
         EXPECT_TRUE(all_close((vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}),
-                  read_vector<float>(result)));
+                              read_vector<float>(result)));
     }
 }
 
@@ -231,7 +231,8 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_same)
 
         copy_data(a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9});
         backend->call(f, {result}, {a});
-        EXPECT_TRUE(all_close((vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9}), read_vector<float>(result)));
+        EXPECT_TRUE(
+            all_close((vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9}), read_vector<float>(result)));
     }
 }
 
@@ -256,7 +257,8 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_transpose)
 
         copy_data(a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9});
         backend->call(f, {result}, {a});
-        EXPECT_TRUE(all_close((vector<float>{1, 4, 7, 2, 5, 8, 3, 6, 9}), read_vector<float>(result)));
+        EXPECT_TRUE(
+            all_close((vector<float>{1, 4, 7, 2, 5, 8, 3, 6, 9}), read_vector<float>(result)));
     }
 }
 

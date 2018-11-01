@@ -109,7 +109,8 @@ void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset
 #pragma omp parallel for
         for (size_t i = 0; i < num_elements_to_write; ++i)
         {
-            const void* src_with_offset = (void*)((char*)source + i * type_byte_size * m_batch_size);
+            const void* src_with_offset =
+                (void*)((char*)source + i * type_byte_size * m_batch_size);
             size_t dst_index = dst_start_index + i;
 
             if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(m_he_backend))
@@ -129,8 +130,8 @@ void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset
                     for (size_t j = 0; j < m_batch_size; ++j)
                     {
                         void* destination = (void*)((char*)batch_src + j * type_byte_size);
-                        const void* src =
-                            (void*)((char*)source + type_byte_size* (i + j * num_elements_to_write));
+                        const void* src = (void*)((char*)source +
+                                                  type_byte_size * (i + j * num_elements_to_write));
                         memcpy(destination, src, type_byte_size);
                     }
 

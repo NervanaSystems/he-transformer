@@ -331,7 +331,8 @@ void ngraph::runtime::he::kernel::convolution(
         //   output[O] += arg0[I] * arg1[F].
 
         // T result = 0;
-        shared_ptr<runtime::he::HEPlaintext> result = he_backend->create_valued_plaintext(0., element_type);
+        shared_ptr<runtime::he::HEPlaintext> result =
+            he_backend->create_valued_plaintext(0., element_type);
 
         CoordinateTransform::Iterator input_it = input_batch_transform.begin();
         CoordinateTransform::Iterator filter_it = filter_transform.begin();

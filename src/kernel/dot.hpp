@@ -211,7 +211,8 @@ void ngraph::runtime::he::kernel::dot_template(
             auto arg1_text = arg1[arg1_transform.index(arg1_coord)];
 
             std::shared_ptr<runtime::he::HECiphertext> prod = he_backend->create_empty_ciphertext();
-            runtime::he::kernel::scalar_multiply(arg0_text, arg1_text, prod, element_type, he_backend);
+            runtime::he::kernel::scalar_multiply(
+                arg0_text, arg1_text, prod, element_type, he_backend);
 
             summands.emplace_back(prod);
         }

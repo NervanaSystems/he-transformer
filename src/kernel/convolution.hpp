@@ -362,7 +362,8 @@ void ngraph::runtime::he::kernel::convolution_template(
 
         if (summands.size() == 0)
         {
-            out[output_transform.index(out_coord)] = he_backend->create_valued_ciphertext(0., element_type);
+            out[output_transform.index(out_coord)] =
+                he_backend->create_valued_ciphertext(0., element_type);
         }
         else
         {

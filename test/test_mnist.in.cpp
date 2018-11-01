@@ -37,8 +37,6 @@ using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
-
-
 static void run_cryptonets_benchmark(string backend_name, size_t batch_size, bool batched = true)
 {
     if (!batched && batch_size > 1)
