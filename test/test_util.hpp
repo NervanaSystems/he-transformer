@@ -19,8 +19,10 @@
 #include <complex>
 #include <string>
 #include <vector>
+#include <assert.h>
 
-#include "gtest/gtest.h"
+
+// #include "gtest/gtest.h"
 
 #include "he_backend.hpp"
 #include "he_cipher_tensor.hpp"
@@ -30,6 +32,7 @@
 #include "ngraph/node.hpp"
 #include "ngraph/runtime/tensor.hpp"
 #include "ngraph/type/element_type.hpp"
+#include "ngraph/log.hpp"
 
 using namespace ngraph;
 

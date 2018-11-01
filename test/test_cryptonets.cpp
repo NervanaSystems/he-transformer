@@ -22,9 +22,9 @@
 #include "ngraph/pass/visualize_tree.hpp"
 #include "ngraph/util.hpp"
 
-#include "util/all_close.hpp"
-#include "util/ndarray.hpp"
-#include "util/test_control.hpp"
+//#include "util/all_close.hpp"
+//#include "util/ndarray.hpp"
+// #include "util/test_control.hpp"
 #include "util/test_tools.hpp"
 
 #include "he_backend.hpp"
@@ -158,7 +158,10 @@ static void run_cryptonets_benchmark(string backend_name, size_t batch_size, boo
         }
     }
     NGRAPH_INFO << "Error count " << error_count << " of " << batch_size << " elements.";
-    NGRAPH_INFO << "Accuracy: " << 1.f - (float)(error_count) / batch_size;
+    float accuracy = 1.f - (float)(error_count) / batch_size;
+    NGRAPH_INFO << "Accuracy: " << accuracy;
+
+    assert(accuracy > 0.95);
 
     // Print results
     NGRAPH_INFO << "[Summary]";
@@ -169,137 +172,11 @@ static void run_cryptonets_benchmark(string backend_name, size_t batch_size, boo
     NGRAPH_INFO << "sw_global: " << sw_global.get_milliseconds() << "ms";
 }
 
-TEST(INTERPRETER, cryptonets_benchmark_1)
+int main()
 {
-    run_cryptonets_benchmark("INTERPRETER", 1);
-}
-
-TEST(INTERPRETER, cryptonets_benchmark_2)
-{
-    run_cryptonets_benchmark("INTERPRETER", 2);
-}
-
-TEST(INTERPRETER, cryptonets_benchmark_4)
-{
-    run_cryptonets_benchmark("INTERPRETER", 4);
-}
-
-TEST(INTERPRETER, cryptonets_benchmark_8)
-{
-    run_cryptonets_benchmark("INTERPRETER", 8);
-}
-
-TEST(INTERPRETER, cryptonets_benchmark_16)
-{
-    run_cryptonets_benchmark("INTERPRETER", 16);
-}
-
-TEST(INTERPRETER, cryptonets_benchmark_32)
-{
-    run_cryptonets_benchmark("INTERPRETER", 32);
-}
-
-TEST(INTERPRETER, cryptonets_benchmark_64)
-{
-    run_cryptonets_benchmark("INTERPRETER", 64);
-}
-
-TEST(INTERPRETER, cryptonets_benchmark_128)
-{
-    run_cryptonets_benchmark("INTERPRETER", 128);
-}
-
-TEST(INTERPRETER, cryptonets_benchmark_256)
-{
-    run_cryptonets_benchmark("INTERPRETER", 256);
-}
-
-TEST(INTERPRETER, cryptonets_benchmark_512)
-{
-    run_cryptonets_benchmark("INTERPRETER", 512);
-}
-
-TEST(INTERPRETER, cryptonets_benchmark_1024)
-{
-    run_cryptonets_benchmark("INTERPRETER", 1024);
-}
-
-TEST(INTERPRETER, cryptonets_benchmark_2048)
-{
-    run_cryptonets_benchmark("INTERPRETER", 2048);
-}
-
-TEST(INTERPRETER, cryptonets_benchmark_4096)
-{
-    run_cryptonets_benchmark("INTERPRETER", 4096);
-}
-
-TEST(HE_SEAL_CKKS, cryptonets_benchmark_no_batch)
-{
-    run_cryptonets_benchmark("HE:SEAL:CKKS", 1, false);
-}
-
-TEST(HE_SEAL_CKKS, cryptonets_benchmark_1)
-{
-    run_cryptonets_benchmark("HE:SEAL:CKKS", 1);
-}
-
-TEST(HE_SEAL_CKKS, cryptonets_benchmark_2)
-{
-    run_cryptonets_benchmark("HE:SEAL:CKKS", 2);
-}
-
-TEST(HE_SEAL_CKKS, cryptonets_benchmark_4)
-{
-    run_cryptonets_benchmark("HE:SEAL:CKKS", 4);
-}
-
-TEST(HE_SEAL_CKKS, cryptonets_benchmark_8)
-{
-    run_cryptonets_benchmark("HE:SEAL:CKKS", 8);
-}
-
-TEST(HE_SEAL_CKKS, cryptonets_benchmark_16)
-{
-    run_cryptonets_benchmark("HE:SEAL:CKKS", 16);
-}
-
-TEST(HE_SEAL_CKKS, cryptonets_benchmark_32)
-{
-    run_cryptonets_benchmark("HE:SEAL:CKKS", 32);
-}
-
-TEST(HE_SEAL_CKKS, cryptonets_benchmark_64)
-{
-    run_cryptonets_benchmark("HE:SEAL:CKKS", 64);
-}
-
-TEST(HE_SEAL_CKKS, cryptonets_benchmark_128)
-{
-    run_cryptonets_benchmark("HE:SEAL:CKKS", 128);
-}
-
-TEST(HE_SEAL_CKKS, cryptonets_benchmark_256)
-{
-    run_cryptonets_benchmark("HE:SEAL:CKKS", 256);
-}
-
-TEST(HE_SEAL_CKKS, cryptonets_benchmark_512)
-{
-    run_cryptonets_benchmark("HE:SEAL:CKKS", 512);
-}
-
-TEST(HE_SEAL_CKKS, cryptonets_benchmark_1024)
-{
-    run_cryptonets_benchmark("HE:SEAL:CKKS", 1024);
-}
-
-TEST(HE_SEAL_CKKS, cryptonets_benchmark_2048)
-{
-    run_cryptonets_benchmark("HE:SEAL:CKKS", 2048);
-}
-
-TEST(HE_SEAL_CKKS, cryptonets_benchmark_4096)
-{
-    run_cryptonets_benchmark("HE:SEAL:CKKS", 4096);
+    for (size_t batch_size = 1; batch_size <= 8192; batch_size *= 2)
+    {
+        run_cryptonets_benchmark("HE:SEAL:CKKS", batch_size);
+        // run_cryptonets_benchmark("INTERPRETER", batch_size);
+    }
 }

@@ -28,7 +28,6 @@ link_directories(
 
 set (SRC
     main.cpp
-    test_cryptonets.cpp
     test_seal.cpp
     test_util.cpp
 )
@@ -92,3 +91,29 @@ target_link_libraries(unit-test ngraph_test_util)
 target_link_libraries(unit-test he_backend seal pthread ${CMAKE_DL_LIBS})
 
 add_dependencies(unit-test he_backend ext_seal ext_ngraph ext_gtest)
+
+# Cryptonets
+set (CRYPTONETS_SRC test_cryptonets.cpp test_util.cpp)
+add_executable(cryptonets_benchmark ${CRYPTONETS_SRC})
+
+include_directories(SYSTEM
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${GTEST_INCLUDE_DIR}
+    ${NGRAPH_INCLUDE_DIR}
+    ${NGRAPH_TEST_DIR}
+    ${HE_TRANSFORMER_SOURCE_DIR}
+    ${EXTERNAL_INSTALL_INCLUDE_DIR}
+)
+
+link_directories(
+    ${NGRAPH_LIB_DIR}
+    ${EXTERNAL_INSTALL_LIB_DIR}
+)
+
+target_include_directories(cryptonets_benchmark PRIVATE ".")
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHE_SERIALIZED_ZOO=\\\"${CMAKE_CURRENT_SOURCE_DIR}/model\\\"")
+
+target_link_libraries(cryptonets_benchmark ngraph_test_util)
+target_link_libraries(cryptonets_benchmark he_backend seal pthread ${CMAKE_DL_LIBS})
+add_dependencies(cryptonets_benchmark he_backend ext_seal ext_ngraph)

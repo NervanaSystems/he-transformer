@@ -26,7 +26,6 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
-    // register_he_backends();
     ::testing::InitGoogleTest(&argc, argv);
     int rc = RUN_ALL_TESTS();
     return rc;

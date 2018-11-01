@@ -20,6 +20,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <iterator>
 
 #include "ngraph/cpio.hpp"
 #include "ngraph/file_util.hpp"
