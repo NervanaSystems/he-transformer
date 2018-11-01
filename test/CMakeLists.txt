@@ -28,16 +28,10 @@ link_directories(
 
 set (SRC
     main.cpp
+    test_cryptonets.cpp
     test_seal.cpp
     test_util.cpp
 )
-
-# This dummy target always triggers re-configure of HE_SEAL_BFV and HE_SEAL_CKKS ngraph tests
-# If the source file is not changed, re-compile is not triggered
-#add_custom_command(
-#    OUTPUT always_build
-#    COMMAND cmake -E echo
-#)
 
 set(ACTIVE_BACKEND_LIST HE_SEAL_BFV HE_SEAL_CKKS)
 
@@ -47,7 +41,6 @@ set(MULTI_TEST_SRC
     test_broadcast.in.cpp
     test_convolution.in.cpp
     test_dot.in.cpp
-    test_mnist.in.cpp
     test_multiply.in.cpp
     test_negate.in.cpp
     test_pad.in.cpp
