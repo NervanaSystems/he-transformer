@@ -120,6 +120,10 @@ namespace ngraph
                           const std::vector<std::shared_ptr<runtime::Tensor>>& outputs,
                           const std::vector<std::shared_ptr<runtime::Tensor>>& inputs) override;
 
+                void validate_he_call(std::shared_ptr<const Function> function,
+                        const std::vector<std::shared_ptr<runtime::he::HETensor>>& outputs,
+                        const std::vector<std::shared_ptr<runtime::he::HETensor>>& inputs);
+
                 void clear_function_instance();
 
                 void remove_compiled_function(std::shared_ptr<Function> function) override;
