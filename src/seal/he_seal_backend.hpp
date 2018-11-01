@@ -67,12 +67,12 @@ namespace ngraph
 
                     virtual void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
                                         const void* input,
-                                        const element::Type& type,
+                                        const element::Type& element_type,
                                         size_t count = 1) const = 0;
 
                     virtual void decode(void* output,
                                         const std::shared_ptr<runtime::he::HEPlaintext> input,
-                                        const element::Type& type,
+                                        const element::Type& element_type,
                                         size_t count = 1) const = 0;
 
                     void encrypt(

@@ -206,14 +206,14 @@ shared_ptr<runtime::Tensor>
 
 void runtime::he::he_seal::HESealBFVBackend::encode(shared_ptr<runtime::he::HEPlaintext>& output,
                                                     const void* input,
-                                                    const element::Type& type,
+                                                    const element::Type& element_type,
                                                     size_t count) const
 {
     if (count != 1)
     {
         throw ngraph_error("Batching not enabled for SEAL in encode");
     }
-    const string type_name = type.c_type_string();
+    const string type_name = element_type.c_type_string();
 
     if (type_name == "float")
     {
@@ -238,21 +238,21 @@ void runtime::he::he_seal::HESealBFVBackend::encode(shared_ptr<runtime::he::HEPl
 void runtime::he::he_seal::HESealBFVBackend::decode(
     void* output,
     const shared_ptr<runtime::he::HEPlaintext> input,
-    const element::Type& type,
+    const element::Type& element_type,
     size_t count) const
 {
     if (count != 1)
     {
         throw ngraph_error("Batching not enabled for SEAL in decode");
     }
-    const string type_name = type.c_type_string();
+    const string type_name = element_type.c_type_string();
 
     if (auto seal_input = dynamic_pointer_cast<SealPlaintextWrapper>(input))
     {
         if (type_name == "float")
         {
             float x = m_frac_encoder->decode(seal_input->m_plaintext);
-            memcpy(output, &x, type.size());
+            memcpy(output, &x, element_type.size());
         }
         else
         {

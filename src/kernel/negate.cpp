@@ -26,33 +26,33 @@ using namespace ngraph::runtime::he;
 
 void kernel::negate(const vector<shared_ptr<HECiphertext>>& arg,
                     vector<shared_ptr<HECiphertext>>& out,
-                    const element::Type& type,
+                    const element::Type& element_type,
                     const HEBackend* he_backend,
                     size_t count)
 {
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
     {
-        scalar_negate(arg[i], out[i], type, he_backend);
+        scalar_negate(arg[i], out[i], element_type, he_backend);
     }
 }
 
 void kernel::negate(const vector<shared_ptr<HEPlaintext>>& arg,
                     vector<shared_ptr<HEPlaintext>>& out,
-                    const element::Type& type,
+                    const element::Type& element_type,
                     const HEBackend* he_backend,
                     size_t count)
 {
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i)
     {
-        scalar_negate(arg[i], out[i], type, he_backend);
+        scalar_negate(arg[i], out[i], element_type, he_backend);
     }
 }
 
 void kernel::scalar_negate(const shared_ptr<HECiphertext>& arg,
                            shared_ptr<HECiphertext>& out,
-                           const element::Type& type,
+                           const element::Type& element_type,
                            const HEBackend* he_backend)
 {
     if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(he_backend))
@@ -64,7 +64,7 @@ void kernel::scalar_negate(const shared_ptr<HECiphertext>& arg,
 
         if (arg_seal && out_seal)
         {
-            he_seal::kernel::scalar_negate(arg_seal, out_seal, type, he_seal_backend);
+            he_seal::kernel::scalar_negate(arg_seal, out_seal, element_type, he_seal_backend);
             out = dynamic_pointer_cast<HECiphertext>(out_seal);
         }
         else
@@ -81,7 +81,7 @@ void kernel::scalar_negate(const shared_ptr<HECiphertext>& arg,
 
 void kernel::scalar_negate(const shared_ptr<HEPlaintext>& arg,
                            shared_ptr<HEPlaintext>& out,
-                           const element::Type& type,
+                           const element::Type& element_type,
                            const HEBackend* he_backend)
 {
     if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(he_backend))
@@ -93,7 +93,7 @@ void kernel::scalar_negate(const shared_ptr<HEPlaintext>& arg,
 
         if (arg_seal && out_seal)
         {
-            he_seal::kernel::scalar_negate(arg_seal, out_seal, type, he_seal_backend);
+            he_seal::kernel::scalar_negate(arg_seal, out_seal, element_type, he_seal_backend);
             out = dynamic_pointer_cast<HEPlaintext>(out_seal);
         }
         else

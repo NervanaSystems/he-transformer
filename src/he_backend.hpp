@@ -131,7 +131,7 @@ namespace ngraph
                 /// @param count Number of elements to encode, count > 1 indicates batching
                 virtual void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
                                     const void* input,
-                                    const element::Type& type,
+                                    const element::Type& element_type,
                                     size_t count = 1) const = 0;
 
                 /// @brief Decodes plaintext polynomial to bytes
@@ -141,7 +141,7 @@ namespace ngraph
                 /// @param count Number of elements to decode, count > 1 indicates batching
                 virtual void decode(void* output,
                                     const std::shared_ptr<runtime::he::HEPlaintext> input,
-                                    const element::Type& type,
+                                    const element::Type& element_type,
                                     size_t count = 1) const = 0;
 
                 /// @brief Encrypts plaintext polynomial to ciphertext
@@ -176,7 +176,7 @@ namespace ngraph
                 std::map<std::shared_ptr<Function>, FunctionInstance> m_function_map;
 
                 void generate_calls(
-                    const element::Type& type,
+                    const element::Type& element_type,
                     const std::shared_ptr<Node>& op,
                     const std::vector<std::shared_ptr<runtime::he::HETensor>>& outputs,
                     const std::vector<std::shared_ptr<runtime::he::HETensor>>& inputs);

@@ -63,7 +63,7 @@ namespace ngraph
                     size_t batch_axis_result,
                     size_t output_channel_axis_result,
                     bool rotate_filter,
-                    const element::Type& type,
+                    const element::Type& element_type,
                     size_t batch_size,
                     const runtime::he::HEBackend* he_backend);
 
@@ -86,7 +86,7 @@ namespace ngraph
                                 size_t batch_axis_result,
                                 size_t output_channel_axis_result,
                                 bool rotate_filter,
-                                const element::Type& type,
+                                const element::Type& element_type,
                                 size_t batch_size,
                                 const runtime::he::HEBackend* he_backend);
 
@@ -109,7 +109,7 @@ namespace ngraph
                                 size_t batch_axis_result,
                                 size_t output_channel_axis_result,
                                 bool rotate_filter,
-                                const element::Type& type,
+                                const element::Type& element_type,
                                 size_t batch_size,
                                 const runtime::he::HEBackend* he_backend);
 
@@ -132,7 +132,7 @@ namespace ngraph
                                 size_t batch_axis_result,
                                 size_t output_channel_axis_result,
                                 bool rotate_filter,
-                                const element::Type& type,
+                                const element::Type& element_type,
                                 size_t batch_size,
                                 const runtime::he::HEBackend* he_backend);
 
@@ -154,7 +154,7 @@ namespace ngraph
                                  size_t batch_axis_result,
                                  size_t output_channel_axis_result,
                                  bool rotate_filter,
-                                 const element::Type& type,
+                                 const element::Type& element_type,
                                  size_t batch_size,
                                  const runtime::he::HEBackend* he_backend);
             }
@@ -182,7 +182,7 @@ void ngraph::runtime::he::kernel::convolution_template(
     size_t batch_axis_result,
     size_t output_channel_axis_result,
     bool rotate_filter,
-    const element::Type& type,
+    const element::Type& element_type,
     size_t batch_size,
     const runtime::he::HEBackend* he_backend)
 {
@@ -353,7 +353,7 @@ void ngraph::runtime::he::kernel::convolution_template(
                     he_backend->create_empty_ciphertext();
 
                 runtime::he::kernel::scalar_multiply(
-                    v, arg1[filter_transform.index(filter_coord)], prod, type, he_backend);
+                    v, arg1[filter_transform.index(filter_coord)], prod, element_type, he_backend);
                 summands.emplace_back(prod);
             }
             ++input_it;
@@ -362,7 +362,7 @@ void ngraph::runtime::he::kernel::convolution_template(
 
         if (summands.size() == 0)
         {
-            out[output_transform.index(out_coord)] = he_backend->create_valued_ciphertext(0., type);
+            out[output_transform.index(out_coord)] = he_backend->create_valued_ciphertext(0., element_type);
         }
         else
         {
@@ -373,7 +373,7 @@ void ngraph::runtime::he::kernel::convolution_template(
                 std::shared_ptr<runtime::he::HECiphertext> ciphertext =
                     he_backend->create_empty_ciphertext();
                 runtime::he::kernel::scalar_add(
-                    summands[i], summands[i + 1], ciphertext, type, he_backend);
+                    summands[i], summands[i + 1], ciphertext, element_type, he_backend);
                 summands.emplace_back(ciphertext);
             }
 

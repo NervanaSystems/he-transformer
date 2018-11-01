@@ -24,7 +24,7 @@ using namespace ngraph::runtime::he;
 
 void he_seal::kernel::scalar_negate(const shared_ptr<he_seal::SealCiphertextWrapper>& arg,
                                     shared_ptr<he_seal::SealCiphertextWrapper>& out,
-                                    const element::Type& type,
+                                    const element::Type& element_type,
                                     const he_seal::HESealBackend* he_seal_backend)
 {
     if (arg == out)
@@ -39,28 +39,28 @@ void he_seal::kernel::scalar_negate(const shared_ptr<he_seal::SealCiphertextWrap
 
 void he_seal::kernel::scalar_negate(const shared_ptr<he_seal::SealPlaintextWrapper>& arg,
                                     shared_ptr<he_seal::SealPlaintextWrapper>& out,
-                                    const element::Type& type,
+                                    const element::Type& element_type,
                                     const he_seal::HESealBackend* he_seal_backend)
 {
     shared_ptr<HEPlaintext> out_he = dynamic_pointer_cast<HEPlaintext>(out);
-    const string type_name = type.c_type_string();
+    const string type_name = element_type.c_type_string();
     if (type_name == "float")
     {
         float x;
-        he_seal_backend->decode(&x, arg, type);
+        he_seal_backend->decode(&x, arg, element_type);
         float r = -x;
-        he_seal_backend->encode(out_he, &r, type);
+        he_seal_backend->encode(out_he, &r, element_type);
     }
     else if (type_name == "int64_t")
     {
         int64_t x;
-        he_seal_backend->decode(&x, arg, type);
+        he_seal_backend->decode(&x, arg, element_type);
         int64_t r = -x;
-        he_seal_backend->encode(out_he, &r, type);
+        he_seal_backend->encode(out_he, &r, element_type);
     }
     else
     {
-        throw ngraph_error("Unsupported type " + type_name + " in negate");
+        throw ngraph_error("Unsupported element type " + type_name + " in negate");
     }
     out = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(out_he);
 }

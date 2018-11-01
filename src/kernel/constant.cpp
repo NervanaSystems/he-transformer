@@ -22,12 +22,12 @@ using namespace std;
 using namespace ngraph;
 
 void runtime::he::kernel::constant(vector<shared_ptr<runtime::he::HEPlaintext>>& out,
-                                   const element::Type& type,
+                                   const element::Type& element_type,
                                    const void* data_ptr,
                                    const runtime::he::HEBackend* he_backend,
                                    size_t count)
 {
-    size_t type_byte_size = type.size();
+    size_t type_byte_size = element_type.size();
     if (out.size() != count)
     {
         throw ngraph_error("out.size() != count for constant op");
@@ -37,6 +37,6 @@ void runtime::he::kernel::constant(vector<shared_ptr<runtime::he::HEPlaintext>>&
     for (size_t i = 0; i < count; ++i)
     {
         const void* src_with_offset = (void*)((char*)data_ptr + i * type_byte_size);
-        he_backend->encode(out[i], src_with_offset, type);
+        he_backend->encode(out[i], src_with_offset, element_type);
     }
 }

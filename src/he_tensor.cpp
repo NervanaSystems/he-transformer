@@ -67,8 +67,8 @@ void runtime::he::HETensor::check_io_bounds(const void* source,
                                             size_t tensor_offset,
                                             size_t n) const
 {
-    const element::Type& type = get_tensor_layout()->get_element_type();
-    size_t type_byte_size = type.size();
+    const element::Type& element_type = get_tensor_layout()->get_element_type();
+    size_t type_byte_size = element_type.size();
 
     // Memory must be byte-aligned to type_byte_size
     // tensor_offset and n are all in bytes
