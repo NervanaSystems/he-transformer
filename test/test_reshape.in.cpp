@@ -354,7 +354,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_6d)
 
         copy_data(a, a_data);
         backend->call(f, {result}, {a});
-        EXPECT_TRUE(all_close)(
+        EXPECT_TRUE(all_close(
             (vector<float>{
                 1.,   73.,  9.,   81.,  17.,  89.,  2.,   74.,  10.,  82.,  18.,  90.,  3.,   75.,
                 11.,  83.,  19.,  91.,  4.,   76.,  12.,  84.,  20.,  92.,  145., 217., 153., 225.,
@@ -377,6 +377,6 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_6d)
                 55.,  127., 63.,  135., 71.,  143., 56.,  128., 64.,  136., 72.,  144., 197., 269.,
                 205., 277., 213., 285., 198., 270., 206., 278., 214., 286., 199., 271., 207., 279.,
                 215., 287., 200., 272., 208., 280., 216., 288.}),
-            read_vector<float>(result));
+            read_vector<float>(result)));
     }
 }
