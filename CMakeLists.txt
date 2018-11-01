@@ -68,7 +68,7 @@ set(CMAKE_INSTALL_RPATH "\$ORIGIN")
 set(HE_TRANSFORMER_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(HE_TRANSFORMER_TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test)
 
-# External projects (ngraph, seal, heaan)
+# External projects (ngraph, seal, etc. )
 include(ExternalProject)
 set(EXTERNAL_INSTALL_DIR ${CMAKE_BINARY_DIR}/external)
 set(EXTERNAL_INSTALL_LIB_DIR ${EXTERNAL_INSTALL_DIR}/lib)

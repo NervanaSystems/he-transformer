@@ -135,12 +135,12 @@ void kernel::scalar_multiply(const shared_ptr<HEPlaintext>& arg0,
         {
             throw ngraph_error(
                 "multiply backend is SEAL, but arguments or outputs are not "
-                "SealPlaintextWrapper.:");
+                "SealPlaintextWrapper.");
         }
     }
     else
     {
-        throw ngraph_error("multiply backend is neither SEAL nor HEAAN.");
+        throw ngraph_error("Multiply backend is not SEAL.");
     }
 }
 
@@ -209,12 +209,12 @@ void kernel::scalar_multiply(const shared_ptr<HECiphertext>& arg0,
         else
         {
             throw ngraph_error(
-                "multiply backend is SEAL, but arguments or outputs are not SealPlaintextWrapper");
+                "multiply backend is SEAL, but arguments or outputs are not SealPlaintextWrapper.");
         }
     }
     else
     {
-        throw ngraph_error("multiply backend is neither SEAL nor HEAAN.");
+        throw ngraph_error("Multiply backend is not SEAL.");
     }
 }
 
