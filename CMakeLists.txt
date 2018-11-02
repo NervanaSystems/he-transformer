@@ -59,10 +59,10 @@ set(NGRAPH_INSTALL_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/include")
 # This allows libhe_backend.so to find libraries in the same directory
 set(CMAKE_INSTALL_RPATH "\$ORIGIN")
 
-option(TF_ENABLE "Support Tensorflow integration through ngraph-tf" OFF)
+option(ENABLE_TF "Support Tensorflow integration through ngraph-tf" OFF)
 
 # Check python environment is active if TF is enabled
-if (TF_ENABLE)
+if (ENABLE_TF)
     execute_process(
         COMMAND python -c "import os; print(os.environ['VIRTUAL_ENV'])"
         RESULT_VARIABLE PY_ENV_ERROR
@@ -86,7 +86,7 @@ include(cmake/gtest.cmake)
 include(cmake/json.cmake)
 include(cmake/ngraph.cmake)
 
-if (TF_ENABLE)
+if (ENABLE_TF)
     message("Building with Tensorflow integration through ngraph-tf")
 
     # Allows "make ext_ngraph_tf"
@@ -96,7 +96,7 @@ if (TF_ENABLE)
     )
 
     include(cmake/ngraph-tf.cmake)
-endif() # TF_ENABLE
+endif() # ENABL_TFE
 
 include(cmake/openmp.cmake)
 include(cmake/seal.cmake)
