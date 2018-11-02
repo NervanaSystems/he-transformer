@@ -59,9 +59,20 @@ set(NGRAPH_INSTALL_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/include")
 # This allows libhe_backend.so to find libraries in the same directory
 set(CMAKE_INSTALL_RPATH "\$ORIGIN")
 
-option(TF_ENABLE "Support Tensorflow integration through ngraph-tf" FALSE)
+option(TF_ENABLE "Support Tensorflow integration through ngraph-tf" OFF)
 
-# HE transformer headers
+# Check python environment is active if TF is enabled
+if (TF_ENABLE)
+    execute_process(
+        COMMAND python -c "import os; print(os.environ['VIRTUAL_ENV'])"
+        RESULT_VARIABLE PY_ENV_ERROR
+    )
+    if(PY_ENV_ERROR)
+        message(FATAL_ERROR "Set python virtual environment when building with TF support.")
+    endif()
+endif()
+
+# he-transformer headers
 set(HE_TRANSFORMER_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(HE_TRANSFORMER_TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test)
 
