@@ -12,13 +12,108 @@ Currently, we support two encryption schemes, both provided by the [SEAL encrypt
 
 Additionally, we integrate with the [**Intel® nGraph™ Compiler and runtime engine for TensorFlow**](https://github.com/NervanaSystems/ngraph-tf) to allow users to run inference on trained neural networks through Tensorflow.
 
+## Examples
+The [examples](https://github.com/NervanaSystems/he-transformer/tree/master/examples) directory contains a deep learning example which depends on the [**Intel® nGraph™ Compiler and runtime engine for TensorFlow**](https://github.com/NervanaSystems/ngraph-tf).
+
+
 ## Building HE Transformer
 
-See the [wiki](https://github.com/NervanaSystems/he-transformer/wiki) for information on how to build the he-transformer.
+### Dependencies
+- We currently only support Ubuntu 16.04
+- CMake 3.12.3, although different versions may work
+- OpenMP is strongly suggested, though not strictly necessary. You may experience *very* slow runtimes without OpenMP
+- [nGraph](https://github.com/NervanaSystems/ngraph) version 0.9.0
+- [nGraph-tf](https://github.com/NervanaSystems/ngraph-tf) version v0.7.0-rc0
+
+### 1. If the setup has already been done
+TLDR, if the setup has already been done, here's the command to run the python example and C++ unit-tests.
+```bash
+# Replace ~/repos/he-transformer with wherever you installed he-transformer
+export HE_TRANSFORMER=~/repos/he-transformer
+```
+#### Without Tensorflow (TF)
+```bash
+cd $HE_TRANSFORMER/build
+./test/unit-test --gtest_filter="HE_SEAL_CKKS.add_2_3"
+```
+
+#### With TF
+```bash
+# activate python environment with Tensorflow and nGraph installed
+source ~/repos/venvs/he3/bin/activate
+cd $HE_TRANSFORMER/examples/
+# Run on SEAL BFV backend
+NGRAPH_TF_BACKEND=HE:SEAL:BFV python axpy.py
+# Run on SEAL CKKS backend
+NGRAPH_TF_BACKEND=HE:SEAL:CKKS python axpy.py
+```
+
+### 2. Build `he-transformer`
+- Clone the repository
+```bash
+git clone https://github.com/NervanaSystems/he-transformer.git
+cd he-transformer
+export HE_TRANSFORMER=$(pwd)
+```
+- Create build directory
+```bash
+mkdir $HE_TRANSFORMER/build
+cd $HE_TRANSFORMER/build
+```
+#### 2.1a Build HE Transformer without TF
+-  To build without TF, run
+```bash
+cmake ..
+make -j
+```
+#### 2.1b Build HE Transformer with TF
+ To build with TF, first create and activate python virtual environment
+```bash
+mkdir -p ~/venvs
+virtualenv ~/venvs/he3 -p python3
+source ~/venvs/he3/bin/activate
+```
+and then, with the python environment active, run
+```bash
+cmake .. -DENABLE_TF=ON
+make -j
+make -j install
+```
+
+#### 2.2 Run C++ Native example
+Whether or not you built with TF support (2.1a or 2.1b), you can run the C++ unit-tests.
+```bash
+cd $HE_TRANSFORMER/build
+./test/unit-test --gtest_filter="HE_SEAL_BFV.add_2_3"
+./test/unit-test --gtest_filter="HE_SEAL_CKKS.add_2_3"
+```
+This will run a basic addition unit-test with the SEAL BFV and SEAL CKKS backends. To run all the C++ unit tests,
+```bash
+./test/unit-test
+```
+
+#### 2.3 Run TF python model
+
+Note: must be done inside the python virtual environment from step 2.1b.
+
+```bash
+# source activate virtualenv first
+source ~/venvs/he3/bin/activate
+cd $HE_TRANSFORMER/examples
+
+# run on ngraph-CPU
+python axpy.py
+
+# run on SEAL:BFV
+NGRAPH_TF_BACKEND=HE:SEAL:BFV python axpy.py
+
+# run on SEAL:CKKS
+NGRAPH_TF_BACKEND=HE:SEAL:CKKS python axpy.py
+```
+
+For a deep learning example, see [examples/cryptonets/](https://github.com/NervanaSystems/he-transformer/tree/master/examples/cryptonets).
 
 ## Code formatting
 
 Please run `maint/apply-code-format.sh` before submitting a pull request.
 
-## Examples
-The `examples` directory contains a deep learning example which depends on the [**Intel® nGraph™ Compiler and runtime engine for TensorFlow**](https://github.com/NervanaSystems/ngraph-tf).

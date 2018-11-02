@@ -75,29 +75,37 @@ set_target_properties(he_backend PROPERTIES
     ${EXTERNAL_NGRAPH_INSTALL_DIR}/lib
 )
 
-if (PREBUILD_NGRAPH_LIB_DIR)
-    install(TARGETS he_backend DESTINATION ${PREBUILD_NGRAPH_LIB_DIR})
-    install(DIRECTORY
-        ${EXTERNAL_INSTALL_LIB_DIR}/
-        DESTINATION ${PREBUILD_NGRAPH_LIB_DIR}
+if (TF_ENABLE)
+    # Install he-transformer to the python environment at `make install`
+    execute_process(
+        COMMAND python -c "import os; print(os.environ['VIRTUAL_ENV'])"
+        OUTPUT_VARIABLE PYTHON_ENV
+        OUTPUT_STRIP_TRAILING_WHITESPACE
     )
 
-else()
-    # Install he-transformer (the HE libraries are installed separately) at `make install`
-    # By default, this installs to `~/ngraph_dist`
-    install(TARGETS he_backend DESTINATION ${NGRAPH_INSTALL_LIB_DIR})
-    install(DIRECTORY
-        ${CMAKE_CURRENT_SOURCE_DIR}/
-        DESTINATION ${NGRAPH_INSTALL_INCLUDE_DIR}
-        FILES_MATCHING PATTERN "*.hpp"
-    )
+    set (PY_NGRAPH_LIB_DIR ${PYTHON_ENV}/lib/python3.5/site-packages/ngraph)
+
+    message("PY_NGRAPH_LIB_DIR ${PY_NGRAPH_LIB_DIR}")
+    install(TARGETS he_backend DESTINATION ${PY_NGRAPH_LIB_DIR})
     install(DIRECTORY
         ${EXTERNAL_INSTALL_LIB_DIR}/
-        DESTINATION ${NGRAPH_INSTALL_LIB_DIR}
+        DESTINATION ${PY_NGRAPH_LIB_DIR}
     )
-    install(DIRECTORY
-        ${EXTERNAL_INSTALL_INCLUDE_DIR}/
-        DESTINATION ${NGRAPH_INSTALL_INCLUDE_DIR}
-    )
-
 endif()
+
+# Install he-transformer (the HE libraries are installed separately) at `make install`
+# By default, this installs to `~/ngraph_dist`
+install(TARGETS he_backend DESTINATION ${NGRAPH_INSTALL_LIB_DIR})
+install(DIRECTORY
+    ${CMAKE_CURRENT_SOURCE_DIR}/
+    DESTINATION ${NGRAPH_INSTALL_INCLUDE_DIR}
+    FILES_MATCHING PATTERN "*.hpp"
+)
+install(DIRECTORY
+    ${EXTERNAL_INSTALL_LIB_DIR}/
+    DESTINATION ${NGRAPH_INSTALL_LIB_DIR}
+)
+install(DIRECTORY
+    ${EXTERNAL_INSTALL_INCLUDE_DIR}/
+    DESTINATION ${NGRAPH_INSTALL_INCLUDE_DIR}
+)

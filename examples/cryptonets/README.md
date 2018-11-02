@@ -35,6 +35,6 @@ To test the network with the C++ nGraph integration, change to the build directo
 and run the unit test
 ```
 cd ../../build
-NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_13.json ./test/cryptonets_benchmark"
+NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_13.json ./test/cryptonets_benchmark
 ```
 This will run a pre-trained Cryptonets example on various batch sizes `N={1, 2, 4, 8, 16, ..., 4096}`.

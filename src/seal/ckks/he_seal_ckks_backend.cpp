@@ -224,7 +224,7 @@ shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealCKKSBackend::make_seal
             if (default_coeff_bit_count < coeff_bit_count)
             {
                 NGRAPH_WARN << "Custom coefficient modulus has total bit count "
-                            << coeff_bit_count + " which is greater than the default bit count "
+                            << coeff_bit_count << " which is greater than the default bit count "
                              << default_coeff_bit_count << ", resulting in lower security";
             }
         }
@@ -245,7 +245,7 @@ shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealCKKSBackend::make_seal
             if (default_coeff_bit_count < coeff_bit_count)
             {
                 NGRAPH_WARN << "Custom coefficient modulus has total bit count "
-                            << coeff_bit_count + " which is greater than the default bit count "
+                            << coeff_bit_count << " which is greater than the default bit count "
                              << default_coeff_bit_count << ", resulting in lower security";
             }
         }
