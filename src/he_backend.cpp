@@ -800,23 +800,23 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
         Shape out_shape = node->get_output_shape(0);
         if (arg0_cipher != nullptr && out0_cipher != nullptr)
         {
-            NGRAPH_INFO << "arg0_cipher->is_batched(): " << arg0_cipher->is_batched();
-            NGRAPH_INFO << "arg0_cipher->get_batch_size(): " << arg0_cipher->get_batch_size();
+            NGRAPH_DEBUG << "arg0_cipher->is_batched(): " << arg0_cipher->is_batched();
+            NGRAPH_DEBUG << "arg0_cipher->get_batch_size(): " << arg0_cipher->get_batch_size();
             if (arg0_cipher->is_batched())
             {
                 arg0_shape[0] = arg0_shape[0] / arg0_cipher->get_batch_size();
             }
 
-            NGRAPH_INFO << "out0_cipher->is_batched(): " << out0_cipher->is_batched();
-            NGRAPH_INFO << "arg0_cipher->get_batch_size(): " << out0_cipher->get_batch_size();
+            NGRAPH_DEBUG << "out0_cipher->is_batched(): " << out0_cipher->is_batched();
+            NGRAPH_DEBUG << "arg0_cipher->get_batch_size(): " << out0_cipher->get_batch_size();
             if (out0_cipher->is_batched())
             {
                 out_shape[0] = out_shape[0] / out0_cipher->get_batch_size();
             }
         }
 
-        NGRAPH_INFO << "arg0_shape after batching: " << join(arg0_shape);
-        NGRAPH_INFO << "out_shape after batching: " << join(out_shape);
+        NGRAPH_DEBUG << "arg0_shape after batching: " << join(arg0_shape);
+        NGRAPH_DEBUG << "out_shape after batching: " << join(out_shape);
 
         if (arg0_cipher != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
