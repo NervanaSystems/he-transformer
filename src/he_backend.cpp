@@ -305,7 +305,7 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
                                   const vector<shared_ptr<runtime::he::HETensor>>& output_tvs,
                                   const vector<shared_ptr<runtime::he::HETensor>>& input_tvs)
 {
-    validate_he_call(function, output_tvs, input_tvs);
+    // validate_he_call(function, output_tvs, input_tvs);
 
     compile(function);
     FunctionInstance& instance = m_function_map[function];

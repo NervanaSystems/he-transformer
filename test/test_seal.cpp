@@ -50,7 +50,6 @@ TEST(seal_example, seal_ckks_basics_i)
 
     CKKSEncoder encoder(context);
     size_t slot_count = encoder.slot_count();
-    cout << "Number of slots: " << slot_count << endl;
 
     vector<double> input{0.0, 1.1, 2.2, 3.3};
 
@@ -82,19 +81,15 @@ TEST(seal_example, seal_bfv_basics_i)
     using namespace seal;
 
     // Parameter
-    std::cout << "Creating params" << std::endl;
     EncryptionParameters parms(seal::scheme_type::BFV);
-    std::cout << "Created params" << std::endl;
     parms.set_poly_modulus_degree(2048);
     parms.set_coeff_modulus(coeff_modulus_128(2048));
     parms.set_plain_modulus(1 << 8);
-    std::cout << "Creating context" << std::endl;
 
     // Context: print with print_parameters(context);
     auto context = SEALContext::Create(parms);
 
     // Objects from context
-    std::cout << "Creating encoder" << std::endl;
     IntegerEncoder encoder(parms.plain_modulus());
     KeyGenerator keygen(context);
     PublicKey public_key = keygen.public_key();
@@ -104,8 +99,6 @@ TEST(seal_example, seal_bfv_basics_i)
     Decryptor decryptor(context, secret_key);
 
     // Encode
-    std::cout << "Encoding" << std::endl;
-
     int value1 = 5;
     Plaintext plain1 = encoder.encode(value1);
     int value2 = -7;
@@ -113,7 +106,6 @@ TEST(seal_example, seal_bfv_basics_i)
 
     // Encrypt
     Ciphertext encrypted1, encrypted2;
-    std::cout << "Encrypting" << std::endl;
 
     encryptor.encrypt(plain1, encrypted1);
     encryptor.encrypt(plain2, encrypted2);
@@ -160,10 +152,7 @@ TEST(seal_example, seal_bfv_shared_ptr_encrypt)
 
     // Encrypt
     auto encrypted_ptr = make_shared<Ciphertext>();
-    std::cout << "Encrypting" << std::endl;
     encryptor.encrypt(plain, *encrypted_ptr);
-
-    std::cout << "Encrypted" << std::endl;
 
     // Decrypt
     Plaintext plain_result;

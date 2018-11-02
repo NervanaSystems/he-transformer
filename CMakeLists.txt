@@ -17,11 +17,6 @@
 # To support BUILD_BYPRODUCTS
 cmake_minimum_required (VERSION 3.2)
 
-# Suppress an OS X-specific warning.
-if (POLICY CMP0042)
-    cmake_policy(SET CMP0042 OLD)
-endif()
-
 # These variables are undocumented but useful.
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
@@ -33,7 +28,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0")
 SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g")
 SET(CMAKE_CXX_FLAGS_DEBUG  "-O0 -g")
 
-# flags required for SDL-3
+# Flags required for SDL-3
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -fPIE -D_FORTIFY_SOURCE=2")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wformat -Wformat-security")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -z noexecstack")
@@ -61,8 +56,10 @@ endif()
 set(NGRAPH_INSTALL_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib")
 set(NGRAPH_INSTALL_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/include")
 
-# This allows libhe_backend.so to find libraries in the same dir
+# This allows libhe_backend.so to find libraries in the same directory
 set(CMAKE_INSTALL_RPATH "\$ORIGIN")
+
+option(TF_ENABLE "Support Tensorflow integration through ngraph-tf" FALSE)
 
 # HE transformer headers
 set(HE_TRANSFORMER_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -73,12 +70,26 @@ include(ExternalProject)
 set(EXTERNAL_INSTALL_DIR ${CMAKE_BINARY_DIR}/external)
 set(EXTERNAL_INSTALL_LIB_DIR ${EXTERNAL_INSTALL_DIR}/lib)
 set(EXTERNAL_INSTALL_INCLUDE_DIR ${EXTERNAL_INSTALL_DIR}/include)
-include(cmake/openmp.cmake)
-include(cmake/ngraph.cmake)
-include(cmake/gtest.cmake)
-include(cmake/seal.cmake)
-include(cmake/json.cmake)
 
-# HE transformer source directory
+include(cmake/gtest.cmake)
+include(cmake/json.cmake)
+include(cmake/ngraph.cmake)
+
+if (TF_ENABLE)
+    message("Building with Tensorflow integration through ngraph-tf")
+
+    # Allows "make ext_ngraph_tf"
+    add_custom_target(
+        install_tensorflow
+        COMMAND pip install -U tensorflow
+    )
+
+    include(cmake/ngraph-tf.cmake)
+endif() # TF_ENABLE
+
+include(cmake/openmp.cmake)
+include(cmake/seal.cmake)
+
+# HE transformer source and test directories
 add_subdirectory(src)
 add_subdirectory(test)
