@@ -67,19 +67,41 @@ void he_seal::kernel::scalar_multiply(const shared_ptr<he_seal::SealCiphertextWr
                                       const element::Type& element_type,
                                       const runtime::he::he_seal::HESealBackend* he_seal_backend)
 {
+    NGRAPH_DEBUG << "Scalar_multiply(Cipherwrapper, Plainwrapper)";
     if (auto he_seal_ckks_backend =
             dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend))
     {
+        NGRAPH_DEBUG << "CKKS backend in seal scalar multipyl";
+
+        auto tmp = he_seal_ckks_backend->get_context();
+
+        NGRAPH_INFO << "he_seal_ckks_backend->get_context() okay";
+
+        auto tmp2 = arg0->m_ciphertext.parms_id();
+
+        NGRAPH_INFO << "arg0->m_ciphertext.parms_id() okay";
+
+        auto tmp3 = he_seal_ckks_backend->get_context()->context_data(arg0->m_ciphertext.parms_id());
+
+        NGRAPH_INFO << "tmp3 " << tmp3;
+
+        NGRAPH_DEBUG << "he_seal_ckks_backend->get_context()->context_data(arg0->m_ciphertext.parms_id()); okay"  ;
+
+
         size_t chain_ind0 = he_seal_ckks_backend->get_context()
                                 ->context_data(arg0->m_ciphertext.parms_id())
                                 ->chain_index();
+
+        NGRAPH_DEBUG << "chain ind 0 " << chain_ind0;
         size_t chain_ind1 = he_seal_ckks_backend->get_context()
                                 ->context_data(arg1->m_plaintext.parms_id())
                                 ->chain_index();
 
+        NGRAPH_DEBUG << "chain ind 1 " << chain_ind1;
+
         while (chain_ind0 > chain_ind1) // TODO: switch to if-statement
         {
-            // NGRAPH_INFO << "Mod switching " << chain_ind0 << " , " << chain_ind1;
+            NGRAPH_DEBUG << "Mod switching " << chain_ind0 << " , " << chain_ind1;
             he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
                 arg0->m_ciphertext, arg1->m_plaintext.parms_id());
             chain_ind0 = he_seal_ckks_backend->get_context()
@@ -88,7 +110,7 @@ void he_seal::kernel::scalar_multiply(const shared_ptr<he_seal::SealCiphertextWr
         }
         while (chain_ind1 > chain_ind0) // TODO: switch to if-statement
         {
-            // NGRAPH_INFO << "Mod switching " << chain_ind0 << " , " << chain_ind1;
+            NGRAPH_DEBUG << "Mod switching " << chain_ind0 << " , " << chain_ind1;
             he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
                 arg1->m_plaintext, arg0->m_ciphertext.parms_id());
             chain_ind1 = he_seal_ckks_backend->get_context()
@@ -99,14 +121,18 @@ void he_seal::kernel::scalar_multiply(const shared_ptr<he_seal::SealCiphertextWr
 
     if (arg0 == out)
     {
+        NGRAPH_DEBUG << "Multiplying plain inplace";
         he_seal_backend->get_evaluator()->multiply_plain_inplace(out->m_ciphertext,
                                                                  arg1->m_plaintext);
     }
     else
     {
+        NGRAPH_DEBUG << "Multiplying plain";
         he_seal_backend->get_evaluator()->multiply_plain(
             arg0->m_ciphertext, arg1->m_plaintext, out->m_ciphertext);
     }
+
+    NGRAPH_DEBUG << "Relinearizing inplace";
 
     he_seal_backend->get_evaluator()->relinearize_inplace(out->m_ciphertext,
                                                           *(he_seal_backend->get_relin_keys()));
@@ -115,8 +141,10 @@ void he_seal::kernel::scalar_multiply(const shared_ptr<he_seal::SealCiphertextWr
             dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend))
     {
         // TODO: rescale only if needed? Check mod switching?
+        NGRAPH_DEBUG << "Rescaling to next in place";
         he_seal_ckks_backend->get_evaluator()->rescale_to_next_inplace(out->m_ciphertext);
     }
+    NGRAPH_DEBUG << "Done with seal scalar multiply";
 }
 
 void he_seal::kernel::scalar_multiply(const shared_ptr<he_seal::SealPlaintextWrapper>& arg0,

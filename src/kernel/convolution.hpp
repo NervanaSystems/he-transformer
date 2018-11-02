@@ -352,8 +352,11 @@ void ngraph::runtime::he::kernel::convolution_template(
                 std::shared_ptr<runtime::he::HECiphertext> prod =
                     he_backend->create_empty_ciphertext();
 
+                NGRAPH_INFO << "Scalar multiypling...";
+
                 runtime::he::kernel::scalar_multiply(
                     v, arg1[filter_transform.index(filter_coord)], prod, element_type, he_backend);
+                NGRAPH_INFO << "Done scalar multiypling.";
                 summands.emplace_back(prod);
             }
             ++input_it;
@@ -373,8 +376,10 @@ void ngraph::runtime::he::kernel::convolution_template(
             {
                 std::shared_ptr<runtime::he::HECiphertext> ciphertext =
                     he_backend->create_empty_ciphertext();
+                NGRAPH_INFO << "Scalar adding...";
                 runtime::he::kernel::scalar_add(
                     summands[i], summands[i + 1], ciphertext, element_type, he_backend);
+                NGRAPH_INFO << "Done scalar adding";
                 summands.emplace_back(ciphertext);
             }
 

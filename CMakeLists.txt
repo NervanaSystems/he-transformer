@@ -61,6 +61,8 @@ set(CMAKE_INSTALL_RPATH "\$ORIGIN")
 
 option(ENABLE_TF "Support Tensorflow integration through ngraph-tf" OFF)
 
+message("ENABLE_TF ${ENABLE_TF}")
+
 # Check python environment is active if TF is enabled
 if (ENABLE_TF)
     execute_process(
