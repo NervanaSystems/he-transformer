@@ -38,7 +38,7 @@ else
     DOCKER_HTTPS_PROXY=' '
 fi
 
-DFILE="Dockerfile.ngraph-he"
+DFILE="Dockerfile.he-transformer"
 DIMAGE_NAME="${DOCKER_IMAGE_NAME}"
 DIMAGE_VERSION=`date -Iseconds | sed -e 's/:/-/g'`
 

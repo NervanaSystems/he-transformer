@@ -27,6 +27,7 @@ ls -la /home
 echo ' '
 
 # Test c++ integration
+rm -rf build
 mkdir build
 cd build
 cmake ..
