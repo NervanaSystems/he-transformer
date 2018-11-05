@@ -14,13 +14,13 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include <assert.h>
 #include <fstream>
 #include <iostream>
+#include <iterator>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <iterator>
-#include <assert.h>
 
 #include "test_util.hpp"
 

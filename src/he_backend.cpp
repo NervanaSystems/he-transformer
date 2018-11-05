@@ -93,7 +93,8 @@ shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(const element:
 {
     // Needed for ngraph-tf integration for batched inputs
     const char* ng_batch_tensor_value = std::getenv("NGRAPH_BATCHED_TENSOR");
-    if (ng_batch_tensor_value != nullptr) {
+    if (ng_batch_tensor_value != nullptr)
+    {
         string batch_tensor = std::string(ng_batch_tensor_value);
         NGRAPH_INFO << "batch tensor " << batch_tensor;
         NGRAPH_INFO << "Shape " << shape;
@@ -162,9 +163,10 @@ bool runtime::he::HEBackend::compile(shared_ptr<Function> function)
     return true;
 }
 
-void runtime::he::HEBackend::validate_he_call(shared_ptr<const Function> function,
-                                     const vector<shared_ptr<runtime::he::HETensor>>& outputs,
-                                     const vector<shared_ptr<runtime::he::HETensor>>& inputs)
+void runtime::he::HEBackend::validate_he_call(
+    shared_ptr<const Function> function,
+    const vector<shared_ptr<runtime::he::HETensor>>& outputs,
+    const vector<shared_ptr<runtime::he::HETensor>>& inputs)
 {
     NGRAPH_INFO << "HEBackend validate call";
     const op::ParameterVector& input_parameters = function->get_parameters();
@@ -195,20 +197,22 @@ void runtime::he::HEBackend::validate_he_call(shared_ptr<const Function> functio
         }
         if (auto input_cipher_tv = dynamic_pointer_cast<HECipherTensor>(inputs[i]))
         {
-            if (input_cipher_tv->is_batched() && input_cipher_tv->get_expanded_shape() != input_parameters[i]->get_shape())
+            if (input_cipher_tv->is_batched() &&
+                input_cipher_tv->get_expanded_shape() != input_parameters[i]->get_shape())
             {
                 stringstream ss;
                 ss << "Input " << i << " shape {" << join(input_cipher_tv->get_expanded_shape())
-                << "} does not match Parameter shape {" << join(input_parameters[i]->get_shape())
-                << "}";
+                   << "} does not match Parameter shape {" << join(input_parameters[i]->get_shape())
+                   << "}";
                 throw runtime_error(ss.str());
             }
-            else if (!input_cipher_tv->is_batched() && input_cipher_tv->get_shape() != input_parameters[i]->get_shape())
+            else if (!input_cipher_tv->is_batched() &&
+                     input_cipher_tv->get_shape() != input_parameters[i]->get_shape())
             {
                 stringstream ss;
                 ss << "Input " << i << " shape {" << join(input_cipher_tv->get_expanded_shape())
-                << "} does not match Parameter shape {" << join(input_parameters[i]->get_shape())
-                << "}";
+                   << "} does not match Parameter shape {" << join(input_parameters[i]->get_shape())
+                   << "}";
                 throw runtime_error(ss.str());
             }
         }
@@ -234,24 +238,31 @@ void runtime::he::HEBackend::validate_he_call(shared_ptr<const Function> functio
         if (auto output_cipher_tv = dynamic_pointer_cast<HECipherTensor>(outputs[i]))
         {
             NGRAPH_INFO << "Batched output " << output_cipher_tv->is_batched();
-            NGRAPH_INFO << "output_cipher_tv->get_expanded_shape() " << join(output_cipher_tv->get_expanded_shape());
+            NGRAPH_INFO << "output_cipher_tv->get_expanded_shape() "
+                        << join(output_cipher_tv->get_expanded_shape());
             NGRAPH_INFO << "function->get_output_shape(i) " << join(function->get_output_shape(i));
 
             // TODO: check if shapes are equal, not just shape sizes.
             // Currently, this fails when output shape is {3}, and
             // expanded shape is {3,1} on HE_SEAL_CKKS.dot_scalar_batch unit-test.
-            if (output_cipher_tv->is_batched() && shape_size(output_cipher_tv->get_expanded_shape()) != shape_size(function->get_output_shape(i)))
+            if (output_cipher_tv->is_batched() &&
+                shape_size(output_cipher_tv->get_expanded_shape()) !=
+                    shape_size(function->get_output_shape(i)))
             {
                 stringstream ss;
-                ss << "Batched Output " << i << " shape {" << join(output_cipher_tv->get_expanded_shape())
-                << "} does not match Result shape {" << join(function->get_output_shape(i)) << "}";
+                ss << "Batched Output " << i << " shape {"
+                   << join(output_cipher_tv->get_expanded_shape())
+                   << "} does not match Result shape {" << join(function->get_output_shape(i))
+                   << "}";
                 throw runtime_error(ss.str());
             }
-            else if (!output_cipher_tv->is_batched() && function->get_output_shape(i) != outputs[i]->get_shape())
+            else if (!output_cipher_tv->is_batched() &&
+                     function->get_output_shape(i) != outputs[i]->get_shape())
             {
                 stringstream ss;
                 ss << "Output " << i << " shape {" << join(outputs[i]->get_shape())
-                << "} does not match Result shape {" << join(function->get_output_shape(i)) << "}";
+                   << "} does not match Result shape {" << join(function->get_output_shape(i))
+                   << "}";
                 throw runtime_error(ss.str());
             }
         }

@@ -114,7 +114,6 @@ void he_seal::kernel::scalar_multiply(const shared_ptr<he_seal::SealCiphertextWr
             arg0->m_ciphertext, arg1->m_plaintext, out->m_ciphertext);
     }
 
-
     he_seal_backend->get_evaluator()->relinearize_inplace(out->m_ciphertext,
                                                           *(he_seal_backend->get_relin_keys()));
 
