@@ -61,6 +61,8 @@ set(CMAKE_INSTALL_RPATH "\$ORIGIN")
 
 option(ENABLE_TF "Support Tensorflow integration through ngraph-tf" OFF)
 
+message("ENABLE_TF ${ENABLE_TF}")
+
 # Check python environment is active if TF is enabled
 if (ENABLE_TF)
     execute_process(
@@ -84,6 +86,8 @@ set(EXTERNAL_INSTALL_INCLUDE_DIR ${EXTERNAL_INSTALL_DIR}/include)
 
 include(cmake/gtest.cmake)
 include(cmake/json.cmake)
+
+
 include(cmake/ngraph.cmake)
 
 if (ENABLE_TF)
@@ -94,9 +98,8 @@ if (ENABLE_TF)
         install_tensorflow
         COMMAND pip install -U tensorflow
     )
-
     include(cmake/ngraph-tf.cmake)
-endif() # ENABL_TFE
+endif() # ENABLE_TF
 
 include(cmake/openmp.cmake)
 include(cmake/seal.cmake)

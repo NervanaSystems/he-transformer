@@ -55,7 +55,8 @@ const static runtime::he::he_seal::HESealParameter parse_seal_ckks_config_or_use
             {
                 string coeff_mod_name = coeff_mod->begin().key();
 
-                set<string> valid_coeff_mods{"small_mods_30bit", "small_mods_40bit", "small_mods_50bit", "small_mods_60bit"};
+                set<string> valid_coeff_mods{
+                    "small_mods_30bit", "small_mods_40bit", "small_mods_50bit", "small_mods_60bit"};
 
                 auto valid_coeff_mod = valid_coeff_mods.find(coeff_mod_name);
                 if (valid_coeff_mod == valid_coeff_mods.end())
@@ -63,17 +64,19 @@ const static runtime::he::he_seal::HESealParameter parse_seal_ckks_config_or_use
                     throw ngraph_error("Coeff modulus " + coeff_mod_name + " not valid");
                 }
                 std::uint64_t bit_count = std::stoi(coeff_mod_name.substr(11, 2));
-                std::uint64_t coeff_count =coeff_mod->begin().value();
+                std::uint64_t coeff_count = coeff_mod->begin().value();
 
-                NGRAPH_INFO << "Using SEAL CKKS config with " << coeff_count << " " << bit_count << "-bit coefficients";
+                NGRAPH_INFO << "Using SEAL CKKS config with " << coeff_count << " " << bit_count
+                            << "-bit coefficients";
 
-                runtime::he::he_seal::HESealParameter::CoeffModulus coeff_modulus {bit_count, coeff_count};
+                runtime::he::he_seal::HESealParameter::CoeffModulus coeff_modulus{bit_count,
+                                                                                  coeff_count};
 
                 return runtime::he::he_seal::HESealParameter(scheme_name,
-                                                poly_modulus_degree,
-                                                security_level,
-                                                evaluation_decomposition_bit_count,
-                                                coeff_modulus);
+                                                             poly_modulus_degree,
+                                                             security_level,
+                                                             evaluation_decomposition_bit_count,
+                                                             coeff_modulus);
             }
 
             NGRAPH_INFO << "Using SEAL CKKS config for parameters: " << config_path;
@@ -92,13 +95,13 @@ const static runtime::he::he_seal::HESealParameter parse_seal_ckks_config_or_use
     {
         NGRAPH_INFO << "Error " << e.what();
         NGRAPH_INFO << "Error using NGRAPH_HE_SEAL_CONFIG. Using default ";
-        return runtime::he::he_seal::HESealParameter("HE:SEAL:CKKS", // scheme name
-                                                     1024,           // poly_modulus_degree
-                                                     128,            // security_level
-                                                     60, // evaluation_decomposition_bit_count
-                                                     // Coefficient modulus
-                                                     runtime::he::he_seal::HESealParameter::CoeffModulus{40, 3}
-                                                     );
+        return runtime::he::he_seal::HESealParameter(
+            "HE:SEAL:CKKS", // scheme name
+            1024,           // poly_modulus_degree
+            128,            // security_level
+            60,             // evaluation_decomposition_bit_count
+            // Coefficient modulus
+            runtime::he::he_seal::HESealParameter::CoeffModulus{40, 3});
     }
 }
 
@@ -186,27 +189,36 @@ shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealCKKSBackend::make_seal
     {
         if (sp->m_coeff_modulus.bit_count == 30)
         {
-            std::vector<seal::SmallModulus> small_mods_30_bit = seal::util::global_variables::small_mods_30bit;
-            parms.set_coeff_modulus({small_mods_30_bit.begin(), small_mods_30_bit.begin() + sp->m_coeff_modulus.coeff_count});
+            std::vector<seal::SmallModulus> small_mods_30_bit =
+                seal::util::global_variables::small_mods_30bit;
+            parms.set_coeff_modulus({small_mods_30_bit.begin(),
+                                     small_mods_30_bit.begin() + sp->m_coeff_modulus.coeff_count});
         }
         else if (sp->m_coeff_modulus.bit_count == 40)
         {
-            std::vector<seal::SmallModulus> small_mods_40_bit = seal::util::global_variables::small_mods_40bit;
-            parms.set_coeff_modulus( {small_mods_40_bit.begin(), small_mods_40_bit.begin() + sp->m_coeff_modulus.coeff_count});
+            std::vector<seal::SmallModulus> small_mods_40_bit =
+                seal::util::global_variables::small_mods_40bit;
+            parms.set_coeff_modulus({small_mods_40_bit.begin(),
+                                     small_mods_40_bit.begin() + sp->m_coeff_modulus.coeff_count});
         }
         else if (sp->m_coeff_modulus.bit_count == 50)
         {
-            std::vector<seal::SmallModulus> small_mods_50_bit = seal::util::global_variables::small_mods_50bit;
-            parms.set_coeff_modulus( {small_mods_50_bit.begin(), small_mods_50_bit.begin() + sp->m_coeff_modulus.coeff_count});
+            std::vector<seal::SmallModulus> small_mods_50_bit =
+                seal::util::global_variables::small_mods_50bit;
+            parms.set_coeff_modulus({small_mods_50_bit.begin(),
+                                     small_mods_50_bit.begin() + sp->m_coeff_modulus.coeff_count});
         }
         else if (sp->m_coeff_modulus.bit_count == 60)
         {
-            std::vector<seal::SmallModulus> small_mods_60_bit = seal::util::global_variables::small_mods_60bit;
-            parms.set_coeff_modulus( {small_mods_60_bit.begin(), small_mods_60_bit.begin() + sp->m_coeff_modulus.coeff_count});
+            std::vector<seal::SmallModulus> small_mods_60_bit =
+                seal::util::global_variables::small_mods_60bit;
+            parms.set_coeff_modulus({small_mods_60_bit.begin(),
+                                     small_mods_60_bit.begin() + sp->m_coeff_modulus.coeff_count});
         }
         else
         {
-            throw ngraph_error("Invalid coefficient bit count " + to_string(sp->m_coeff_modulus.bit_count));
+            throw ngraph_error("Invalid coefficient bit count " +
+                               to_string(sp->m_coeff_modulus.bit_count));
         }
     }
 
@@ -219,13 +231,13 @@ shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealCKKSBackend::make_seal
             uint64_t default_coeff_bit_count = 0;
             for (auto small_modulus : seal::coeff_modulus_128(sp->m_poly_modulus_degree))
             {
-               default_coeff_bit_count += small_modulus.bit_count();
+                default_coeff_bit_count += small_modulus.bit_count();
             }
             if (default_coeff_bit_count < coeff_bit_count)
             {
-                NGRAPH_WARN << "Custom coefficient modulus has total bit count "
-                            << coeff_bit_count << " which is greater than the default bit count "
-                             << default_coeff_bit_count << ", resulting in lower security";
+                NGRAPH_WARN << "Custom coefficient modulus has total bit count " << coeff_bit_count
+                            << " which is greater than the default bit count "
+                            << default_coeff_bit_count << ", resulting in lower security";
             }
         }
         else
@@ -240,13 +252,13 @@ shared_ptr<seal::SEALContext> runtime::he::he_seal::HESealCKKSBackend::make_seal
             uint64_t default_coeff_bit_count = 0;
             for (auto small_modulus : seal::coeff_modulus_192(sp->m_poly_modulus_degree))
             {
-               default_coeff_bit_count += small_modulus.bit_count();
+                default_coeff_bit_count += small_modulus.bit_count();
             }
             if (default_coeff_bit_count < coeff_bit_count)
             {
-                NGRAPH_WARN << "Custom coefficient modulus has total bit count "
-                            << coeff_bit_count << " which is greater than the default bit count "
-                             << default_coeff_bit_count << ", resulting in lower security";
+                NGRAPH_WARN << "Custom coefficient modulus has total bit count " << coeff_bit_count
+                            << " which is greater than the default bit count "
+                            << default_coeff_bit_count << ", resulting in lower security";
             }
         }
         else

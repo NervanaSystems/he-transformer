@@ -105,7 +105,8 @@ namespace ngraph
                     double m_scale;
 
                     // Size and number of coefficient modulus.
-                    typedef struct CoeffModulus {
+                    typedef struct CoeffModulus
+                    {
                         std::uint64_t bit_count;
                         std::uint64_t coeff_count;
                     };

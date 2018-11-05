@@ -75,7 +75,7 @@ set_target_properties(he_backend PROPERTIES
     ${EXTERNAL_NGRAPH_INSTALL_DIR}/lib
 )
 
-if (TF_ENABLE)
+if (ENABLE_TF)
     # Install he-transformer to the python environment at `make install`
     execute_process(
         COMMAND python -c "import os; print(os.environ['VIRTUAL_ENV'])"
