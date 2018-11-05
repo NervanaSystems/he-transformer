@@ -106,7 +106,7 @@ void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset
     }
     else
     {
-// #pragma omp parallel for
+#pragma omp parallel for
         for (size_t i = 0; i < num_elements_to_write; ++i)
         {
             const void* src_with_offset =

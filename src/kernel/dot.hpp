@@ -140,13 +140,13 @@ void ngraph::runtime::he::kernel::dot_template(
     std::vector<ngraph::Coordinate> arg0_projected_coords;
     for (const Coordinate& coord : arg0_projected_transform)
     {
-        arg0_projected_coords.push_back(coord);
+        arg0_projected_coords.emplace_back(coord);
     }
 
     std::vector<ngraph::Coordinate> arg1_projected_coords;
     for (const Coordinate& coord : arg1_projected_transform)
     {
-        arg1_projected_coords.push_back(coord);
+        arg1_projected_coords.emplace_back(coord);
     }
 
     size_t arg0_projected_size = arg0_projected_coords.size();
