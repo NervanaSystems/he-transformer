@@ -35,7 +35,6 @@ runtime::he::HEPlainTensor::HEPlainTensor(const element::Type& element_type,
 {
     // get_tensor_layout()->get_size() is the number of elements
     m_num_elements = m_descriptor->get_tensor_layout()->get_size();
-    NGRAPH_INFO << "m_plain_texts.size() " << m_plain_texts.size();
 //    m_plain_texts.resize(m_num_elements);
 // #pragma omp parallel for
     for (size_t i = 0; i < m_num_elements; ++i)
@@ -43,7 +42,7 @@ runtime::he::HEPlainTensor::HEPlainTensor(const element::Type& element_type,
         if (auto he_seal_plaintext =
                 dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(he_plaintext))
         {
-            m_plain_texts.emplace_back(make_shared<runtime::he::he_seal::SealPlaintextWrapper>() );
+            m_plain_texts.emplace_back(make_shared<runtime::he::he_seal::SealPlaintextWrapper>());
         }
         else
         {

@@ -186,8 +186,6 @@ void ngraph::runtime::he::kernel::convolution_template(
     size_t batch_size,
     const runtime::he::HEBackend* he_backend)
 {
-    // TODO: parallelize more effetively
-
     // Comments throughout assume without loss of generality that:
     //
     // * batch axes for both input data and output data are 0
@@ -199,23 +197,19 @@ void ngraph::runtime::he::kernel::convolution_template(
     // At the outermost level we will walk over every output coordinate O.
     CoordinateTransform output_transform(out_shape);
 
-    size_t out_transform_size = 0;
-    for (Coordinate out_coord : output_transform)
+    // Store output coordinates for parallelization
+    std::vector<ngraph::Coordinate> out_coords;
+    for (Coordinate& out_coord : output_transform)
     {
-        out_transform_size++;
+        out_coords.emplace_back(out_coord);
     }
+
+    size_t out_transform_size = out_coords.size();
     NGRAPH_INFO << "out_transform_size " << out_transform_size++;
-#pragma omp parallel for
+// #pragma omp parallel for
     for (size_t out_coord_idx = 0; out_coord_idx < out_transform_size; ++out_coord_idx)
     {
-        // TODO: move to coordinate transform
-        auto out_coord_it = output_transform.begin();
-        for (size_t i = 0; i < out_coord_idx; ++i)
-        {
-            ++out_coord_it;
-        }
-
-        const Coordinate out_coord = *out_coord_it;
+        const Coordinate out_coord = out_coords[i];
 
         //for (Coordinate out_coord : output_transform)
         //{

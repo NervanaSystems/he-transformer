@@ -44,7 +44,7 @@ void he_seal::kernel::scalar_add(const shared_ptr<he_seal::SealCiphertextWrapper
                                 ->context_data(arg1->m_ciphertext.parms_id())
                                 ->chain_index();
 
-        if (scale0 < 0.999 * scale1 || scale0 > 1.001 * scale1)
+        if (scale0 < 0.99 * scale1 || scale0 > 1.01 * scale1)
         {
             NGRAPH_DEBUG << "Scale " << setw(10) << scale0 << " does not match scale " << scale1
                          << " in scalar add, ratio is " << scale0 / scale1;
