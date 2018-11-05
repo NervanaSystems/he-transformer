@@ -20,7 +20,7 @@ include(ExternalProject)
 set(SEAL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ext_seal)
 set(SEAL_SRC_DIR ${SEAL_PREFIX}/src/ext_seal/SEAL)
 set(SEAL_TAR_FILE https://download.microsoft.com/download/B/3/7/B3720F6B-4F4A-4B54-9C6C-751EF194CBE7/SEAL_3.0.tar.gz)
-set(SEAL_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -DSEAL_DEBUG")
+set(SEAL_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
 ExternalProject_Add(
     ext_seal
@@ -34,5 +34,4 @@ ExternalProject_Add(
                             -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                             -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                             -DCMAKE_INSTALL_MESSAGE=LAZY
-    BUILD_ALWAYS 1
 )

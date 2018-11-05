@@ -112,8 +112,6 @@ link_directories(
 
 target_include_directories(cryptonets_benchmark PRIVATE ".")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHE_SERIALIZED_ZOO=\\\"${CMAKE_CURRENT_SOURCE_DIR}/model\\\"")
-
 target_link_libraries(cryptonets_benchmark ngraph_test_util)
 target_link_libraries(cryptonets_benchmark he_backend seal pthread ${CMAKE_DL_LIBS})
 add_dependencies(cryptonets_benchmark he_backend ext_seal ext_ngraph)
