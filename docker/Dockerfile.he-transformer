@@ -32,6 +32,9 @@ RUN apt-get clean autoclean && \
     apt-get autoremove -y
 RUN pip install --upgrade pip
 
+# For ngraph-tf integration testing
+RUN pip install virtualenv
+
 # SEAL requires newer version of CMake
 RUN pip install cmake --upgrade
 

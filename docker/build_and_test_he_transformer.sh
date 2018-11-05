@@ -33,7 +33,7 @@ test_cpp_build ()
     rm -rf build
     mkdir build
     cd build
-    cmake ..
+    cmake .. -DCMAKE_BUILD_TYPE=Debug
     make -j22
     ./test/unit-test
     echo 'Testing cryptonets'
@@ -51,10 +51,11 @@ test_python_build ()
     rm -rf build
     mkdir build
     mkdir -p ~/venvs
+    python -m virtualenv venv
     virtualenv ~/venvs/he3 -p python3
     source ~/venvs/he3/bin/activate
     cd build
-    cmake .. -DENABLE_TF=on
+    cmake .. -DENABLE_TF=on -DCMAKE_BUILD_TYPE=Debug
     make -j22
     make install
 

@@ -86,8 +86,6 @@ set(EXTERNAL_INSTALL_INCLUDE_DIR ${EXTERNAL_INSTALL_DIR}/include)
 
 include(cmake/gtest.cmake)
 include(cmake/json.cmake)
-
-
 include(cmake/ngraph.cmake)
 
 if (ENABLE_TF)

@@ -121,6 +121,50 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_matrix_vector)
     }
 }
 
+NGRAPH_TEST(${BACKEND_NAME}, dot_matrix_vector_cipher_cipher)
+{
+    Shape shape_a{4, 4};
+    Shape shape_b{4};
+    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto f = make_shared<Function>(make_shared<op::Dot>(A, B), op::ParameterVector{A, B});
+    Shape shape_r{4};
+
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+
+    // Create some tensors for input/output
+    auto a = backend->create_tensor(element::f32, shape_a);
+    copy_data(a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
+    auto b = backend->create_tensor(element::f32, shape_b);
+    copy_data(b, vector<float>{17, 18, 19, 20});
+    auto result = backend->create_tensor(element::f32, shape_r);
+
+    backend->call_with_validate(f, {result}, {a, b});
+    EXPECT_EQ((vector<float>{190, 486, 782, 1078}), read_vector<float>(result));
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, dot_matrix_vector_plain_plain)
+{
+    Shape shape_a{4, 4};
+    Shape shape_b{4};
+    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto B = make_shared<op::Parameter>(element::f32, shape_b);
+    auto f = make_shared<Function>(make_shared<op::Dot>(A, B), op::ParameterVector{A, B});
+    Shape shape_r{4};
+
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+
+    // Create some tensors for input/output
+    auto a = dynamic_pointer_cast<runtime::he::HEBackend>(backend)->create_plain_tensor(element::f32, shape_a);
+    copy_data(a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
+    auto b = dynamic_pointer_cast<runtime::he::HEBackend>(backend)->create_plain_tensor(element::f32, shape_b);
+    copy_data(b, vector<float>{17, 18, 19, 20});
+    auto result = backend->create_tensor(element::f32, shape_r);
+
+    backend->call_with_validate(f, {result}, {a, b});
+    EXPECT_EQ((vector<float>{190, 486, 782, 1078}), read_vector<float>(result));
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, dot_scalar)
 {
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");

@@ -85,6 +85,9 @@ link_directories(
 target_include_directories(unit-test PRIVATE ".")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHE_SERIALIZED_ZOO=\\\"${CMAKE_CURRENT_SOURCE_DIR}/model\\\"")
+if(NGRAPH_HE_SANITIZE_ADDRESS)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fsanitize=address -fno-omit-frame-pointer")
+endif()
 
 target_link_libraries(unit-test libgtest)
 target_link_libraries(unit-test ngraph_test_util)
