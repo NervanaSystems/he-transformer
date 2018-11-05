@@ -20,6 +20,7 @@ FROM ubuntu:16.04
 
 RUN apt-get update && apt-get install -y \
         build-essential cmake \
+        software-properties-common \
         clang-3.9 clang-format-3.9 \
         git \
         wget patch diffutils zlib1g-dev libtinfo-dev \
@@ -31,6 +32,9 @@ RUN apt-get clean autoclean && \
     apt-get autoremove -y
 RUN pip install --upgrade pip
 
+# SEAL requires newer version of CMake
+RUN pip install cmake --upgrade
+
 # allows for make html build under the doc/source directory as an interim build process
 RUN pip install sphinx
 RUN pip install breathe
@@ -38,4 +42,18 @@ RUN pip install breathe
 # need numpy to successfully build docs for python_api
 RUN pip install numpy
 
+# Get g++-7
+RUN add-apt-repository ppa:ubuntu-toolchain-r/test \
+       && apt update \
+       && apt install g++-7 -y
+
+# Set g++-7 to default
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 50
+RUN update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 50
+RUN update-alternatives --set g++ /usr/bin/g++-7
+RUN update-alternatives --set gcc /usr/bin/gcc-7
+
 WORKDIR /home
+
+# Add he-transformer repo to docker image
+ADD . .
