@@ -100,7 +100,6 @@ shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(const element:
 
         return create_batched_tensor(element_type, shape);
     }
-    NGRAPH_INFO << "Creating regular tensor";
 
     auto rc = make_shared<runtime::he::HECipherTensor>(
         element_type, shape, this, create_empty_ciphertext());
