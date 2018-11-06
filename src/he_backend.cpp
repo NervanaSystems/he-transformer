@@ -159,7 +159,6 @@ bool runtime::he::HEBackend::compile(shared_ptr<Function> function)
             instance.m_nodes.emplace_back(node);
         }
     }
-
     return true;
 }
 
@@ -168,7 +167,6 @@ void runtime::he::HEBackend::validate_he_call(
     const vector<shared_ptr<runtime::he::HETensor>>& outputs,
     const vector<shared_ptr<runtime::he::HETensor>>& inputs)
 {
-    NGRAPH_INFO << "HEBackend validate call";
     const op::ParameterVector& input_parameters = function->get_parameters();
     if (input_parameters.size() != inputs.size())
     {
@@ -326,7 +324,7 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
                                   const vector<shared_ptr<runtime::he::HETensor>>& output_tvs,
                                   const vector<shared_ptr<runtime::he::HETensor>>& input_tvs)
 {
-    // validate_he_call(function, output_tvs, input_tvs);
+    validate_he_call(function, output_tvs, input_tvs);
 
     compile(function);
     FunctionInstance& instance = m_function_map[function];
