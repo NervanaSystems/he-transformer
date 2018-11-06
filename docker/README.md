@@ -2,14 +2,14 @@
 
 ## Introduction
 
-This directory contains a basic build system for creating docker images of the _reference-OS_ on which ngraph builds and unit tests are run.  The purpose is to provide reference builds for _Continuous Integration_ used in developing and testing ngraph.
+This directory contains a basic build system for creating docker images of the _reference-OS_ on which he-transformer builds and unit tests are run.  The purpose is to provide reference builds for _Continuous Integration_ used in developing and testing he-transformer.
 
 The `Makefile` provides targets for:
 
 * Building the _reference-OS_ into a docker image
 * Building he-transformer and running unit tests in this cloned repo, mounted into the docker image of the _reference-OS_
 
-The _make_ targets are designed to handle all aspects of building the _reference-OS_ docker image, running ngraph builds and unit testing in it, and opening up a session in the docker image for interactive use.  You should not need to issue any manual commands (unless you want to).  In addition the `Dockerfile.ngraph.*` files provide a description of how each _reference-OS_ environment is built, should you want to build your own server or docker image.
+The _make_ targets are designed to handle all aspects of building the _reference-OS_ docker image, running he-transformer builds and unit testing in it, and opening up a session in the docker image for interactive use.  You should not need to issue any manual commands (unless you want to).  In addition the `Dockerfile.he-transformer` files provide a description of how the _reference-OS_ environment is built, should you want to build your own server or docker image.
 
 ## Prerequisites
 
@@ -25,29 +25,6 @@ The _make_ targets are designed to provide easy commands to run actions using th
 
 * Running the command **`make build_docker_image`** will create the docker image from the reference OS.
 * Running the command **`make build_and_test_he_transformer`** will build he-transformer and run a series of unit-tests.
-
-## Examples/Hints
-
-* To build an Ubuntu 16.04 docker container, compile with gcc 5.4, and run unit tests:
-
-```
-cd contrib/docker
-make check_gcc
-```
-
-* To build an Ubuntu 16.04 docker container, compile with clang 3.9, and run unit tests:
-
-```
-cd contrib/docker
-make check_clang
-```
-
-* To build a CentOS 7.4 docker container, compile with gcc 4.8.5, and run unit tests:
-
-```
-cd contrib/docker
-make check_gcc OS=centos74
-```
 
 ## Helper Scripts
 
