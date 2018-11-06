@@ -74,12 +74,10 @@ void he_seal::kernel::scalar_multiply(const shared_ptr<he_seal::SealCiphertextWr
                                 ->context_data(arg0->m_ciphertext.parms_id())
                                 ->chain_index();
 
-        // NGRAPH_DEBUG << "chain ind 0 " << chain_ind0;
         size_t chain_ind1 = he_seal_ckks_backend->get_context()
                                 ->context_data(arg1->m_plaintext.parms_id())
                                 ->chain_index();
 
-        // NGRAPH_DEBUG << "chain ind 1 " << chain_ind1;
 
         while (chain_ind0 > chain_ind1) // TODO: switch to if-statement
         {

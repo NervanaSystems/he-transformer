@@ -57,7 +57,6 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_2)
     EXPECT_TRUE(all_close(read_vector<float>(a), (vector<float>{5, 6})));
 }
 
-
 NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_2_3)
 {
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");

@@ -43,7 +43,7 @@ void runtime::he::kernel::pad(const vector<shared_ptr<runtime::he::HECiphertext>
         throw ngraph_error("Padding element must be scalar");
     }
 
-    NGRAPH_INFO << "pad cipher ciper";
+    NGRAPH_INFO << "Pad cipher ciper";
 
     shared_ptr<runtime::he::HECiphertext> pad_val = arg1[0];
 

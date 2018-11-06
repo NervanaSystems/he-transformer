@@ -59,4 +59,5 @@ RUN update-alternatives --set gcc /usr/bin/gcc-7
 WORKDIR /home
 
 # Add he-transformer repo to docker image
+# TODO: use git clone once repository has been open-sourced
 ADD . .
