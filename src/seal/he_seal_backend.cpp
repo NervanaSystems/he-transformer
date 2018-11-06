@@ -92,7 +92,7 @@ shared_ptr<runtime::he::HECiphertext>
 shared_ptr<runtime::he::HEPlaintext>
     runtime::he::he_seal::HESealBackend::create_empty_plaintext() const
 {
-    return make_shared<SealPlaintextWrapper>();
+    return make_shared<runtime::he::he_seal::SealPlaintextWrapper>();
 }
 
 void runtime::he::he_seal::HESealBackend::encrypt(

@@ -92,7 +92,7 @@ shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(const element:
                                                                   const Shape& shape)
 {
     // Needed for ngraph-tf integration for batched inputs
-    const char* ng_batch_tensor_value = std::getenv("NGRAPH_BATCHED_TENSOR");
+    /* const char* ng_batch_tensor_value = std::getenv("NGRAPH_BATCHED_TENSOR");
     if (ng_batch_tensor_value != nullptr)
     {
         string batch_tensor = std::string(ng_batch_tensor_value);
@@ -100,7 +100,7 @@ shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(const element:
         NGRAPH_INFO << "Shape " << shape;
 
         return create_batched_tensor(element_type, shape);
-    }
+    } */
 
     auto rc = make_shared<runtime::he::HECipherTensor>(
         element_type, shape, this, create_empty_ciphertext());

@@ -201,7 +201,6 @@ void kernel::scalar_multiply(const shared_ptr<HECiphertext>& arg0,
             }
             else
             {
-                NGRAPH_DEBUG << "Unoptimized multiply.";
                 he_seal::kernel::scalar_multiply(
                     arg0_seal, arg1_seal, out_seal, element_type, he_seal_backend);
                 out = dynamic_pointer_cast<HECiphertext>(out_seal);

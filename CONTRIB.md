@@ -15,7 +15,7 @@ Code formatting
 
 All C/C++ source code in the repository, including the test code, must
 adhere to the source-code formatting and style guidelines described
-here. The coding style described here applies to the nGraph-he repository.
+here. The coding style described here applies to the he-transformer repository.
 Related repositories may make adjustements to better match the coding
 styles of libraries they are using.
 

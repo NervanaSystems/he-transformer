@@ -68,6 +68,28 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_2_3)
                           (test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector()));
 }
 
+NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_5_5)
+{
+    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+
+    Shape shape{5, 5};
+    auto a = backend->create_tensor(element::f32, shape);
+    copy_data(a,
+              test::NDArray<float, 2>({{1, 2, 3, 4, 5},
+                                       {6, 7, 8, 9, 10},
+                                       {11, 12, 13, 14, 15},
+                                       {16, 17, 18, 19, 20},
+                                       {21, 22, 23, 24, 25}})
+                  .get_vector());
+    EXPECT_TRUE(all_close(read_vector<float>(a),
+                          (test::NDArray<float, 2>({{1, 2, 3, 4, 5},
+                                                    {6, 7, 8, 9, 10},
+                                                    {11, 12, 13, 14, 15},
+                                                    {16, 17, 18, 19, 20},
+                                                    {21, 22, 23, 24, 25}}))
+                              .get_vector()));
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_scalar)
 {
     auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(

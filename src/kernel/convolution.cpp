@@ -51,7 +51,7 @@ void runtime::he::kernel::convolution(const vector<shared_ptr<runtime::he::HECip
                                       size_t batch_size,
                                       const runtime::he::HEBackend* he_backend)
 {
-    NGRAPH_INFO << "Convolution C * P";
+    NGRAPH_INFO << "Convolution Cipher * Plain";
     convolution_template<runtime::he::HECiphertext, runtime::he::HEPlaintext>(
         arg0,
         arg1,
@@ -143,7 +143,7 @@ void runtime::he::kernel::convolution(const vector<shared_ptr<runtime::he::HECip
                                       size_t batch_size,
                                       const runtime::he::HEBackend* he_backend)
 {
-    NGRAPH_INFO << "Convolution C * C";
+    NGRAPH_INFO << "Convolution Cipher * Cipher";
 
     convolution_template<runtime::he::HECiphertext, runtime::he::HECiphertext>(
         arg0,
@@ -203,7 +203,7 @@ void ngraph::runtime::he::kernel::convolution(
     // * output channel axis for output data is 1
     // * rotate_filter is false
 
-    NGRAPH_INFO << "Convolution P * P";
+    NGRAPH_INFO << "Convolution Plain * Plain";
 
     // At the outermost level we will walk over every output coordinate O.
     CoordinateTransform output_transform(out_shape);

@@ -75,6 +75,12 @@ set_target_properties(he_backend PROPERTIES
     ${EXTERNAL_NGRAPH_INSTALL_DIR}/lib
 )
 
+# Note, this will flag many false positives near openmp parallel for loops.
+if(NGRAPH_HE_SANITIZE_ADDRESS)
+    message(STATUS "Enable Address Sanitizer")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fsanitize=address -fno-omit-frame-pointer")
+endif()
+
 if (ENABLE_TF)
     # Install he-transformer to the python environment at `make install`
     execute_process(
