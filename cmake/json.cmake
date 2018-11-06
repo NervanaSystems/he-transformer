@@ -22,18 +22,22 @@ include(ExternalProject)
 #------------------------------------------------------------------------------
 
 SET(JSON_GIT_REPO_URL https://github.com/nlohmann/json)
-SET(JSON_GIT_LABEL v3.1.1)
+SET(JSON_GIT_LABEL v3.4.0)
 
 ExternalProject_Add(
     ext_json
     PREFIX json
     GIT_REPOSITORY ${JSON_GIT_REPO_URL}
     GIT_TAG ${JSON_GIT_LABEL}
+    # Disable install step
+    CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
     INSTALL_COMMAND ""
     UPDATE_COMMAND ""
     EXCLUDE_FROM_ALL TRUE
-)
+    )
+
+#------------------------------------------------------------------------------
 
 ExternalProject_Get_Property(ext_json SOURCE_DIR)
 add_library(libjson INTERFACE)

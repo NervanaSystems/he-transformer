@@ -23,10 +23,13 @@ if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNGRAPH_DEBUG_ENABLE=TRUE")
 endif()
 
+SET(NGRAPH_REPO_URL https://github.com/NervanaSystems/ngraph.git)
+SET(NGRAPH_GIT_LABEL v0.9.1)
+
 ExternalProject_Add(
     ext_ngraph
-    GIT_REPOSITORY https://github.com/NervanaSystems/ngraph.git
-    GIT_TAG v0.9.0
+    GIT_REPOSITORY ${NGAPH_REPO_LABEL}
+    GIT_TAG ${NGRAPH_GIT_LABEL}
     PREFIX ${NGRAPH_CMAKE_PREFIX}
     UPDATE_COMMAND ""
     CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -39,7 +42,7 @@ ExternalProject_Add(
             -DNGRAPH_TOOLS_ENABLE=FALSE
             -DCMAKE_INSTALL_MESSAGE=LAZY
     BUILD_BYPRODUCTS ${NGRAPH_CMAKE_PREFIX}
-    BUILD_ALWAYS 1
+    # BUILD_ALWAYS 1
 )
 
 ExternalProject_Get_Property(ext_ngraph source_dir)

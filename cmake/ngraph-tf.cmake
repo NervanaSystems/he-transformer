@@ -13,13 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ******************************************************************************
+
 include(ExternalProject)
+
 set(EXTERNAL_NGRAPH_TF_INSTALL_DIR ${EXTERNAL_INSTALL_DIR})
 set(NGRAPH_TF_CMAKE_PREFIX ext_ngraph_tf)
+
+SET(NGRAPH_TF_REPO_URL https://github.com/NervanaSystems/ngraph-tf.git)
+SET(NGRAPH_TF_GIT_LABEL v0.7.0)
+
 ExternalProject_Add(
    ext_ngraph_tf DEPENDS install_tensorflow
-   GIT_REPOSITORY https://github.com/NervanaSystems/ngraph-tf.git
-   GIT_TAG v0.7.0-rc0
+   GIT_REPOSITORY ${NGRAPH_TF_REPO_URL}
+   GIT_TAG ${NGRAPH_TF_GIT_LABEL}
    PREFIX ${NGRAPH_TF_CMAKE_PREFIX}
    # CONFIGURE_COMMAND pip install -U tensorflow
    UPDATE_COMMAND ""
@@ -27,4 +33,3 @@ ExternalProject_Add(
    TEST_COMMAND python -c "import ngraph"
    #BUILD_ALWAYS 1
 )
-# ExternalProject_Get_Property(ext_ngraph_tf source_dir)
