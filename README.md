@@ -22,8 +22,8 @@ The [examples](https://github.com/NervanaSystems/he-transformer/tree/master/exam
 - We currently only support Ubuntu 16.04
 - CMake 3.12.3, although different versions may work
 - OpenMP is strongly suggested, though not strictly necessary. You may experience *very* slow runtimes without OpenMP
-- [nGraph](https://github.com/NervanaSystems/ngraph) version 0.9.0
-- [nGraph-tf](https://github.com/NervanaSystems/ngraph-tf) version v0.7.0-rc0
+- [nGraph](https://github.com/NervanaSystems/ngraph) version 0.9.1
+- [nGraph-tf](https://github.com/NervanaSystems/ngraph-tf) version v0.7.0
 
 ### 1. If the setup has already been done
 TLDR, if the setup has already been done, here's the command to run the python example and C++ unit-tests.
