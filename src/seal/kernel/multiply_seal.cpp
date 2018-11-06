@@ -78,7 +78,6 @@ void he_seal::kernel::scalar_multiply(const shared_ptr<he_seal::SealCiphertextWr
                                 ->context_data(arg1->m_plaintext.parms_id())
                                 ->chain_index();
 
-
         while (chain_ind0 > chain_ind1) // TODO: switch to if-statement
         {
             // NGRAPH_DEBUG << "Mod switching " << chain_ind0 << " , " << chain_ind1;

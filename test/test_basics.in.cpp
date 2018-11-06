@@ -34,7 +34,7 @@ NGRAPH_TEST(${BACKEND_NAME}, create_tensor)
 {
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
-    Shape shape{2,2};
+    Shape shape{2, 2};
     backend->create_tensor(element::f32, shape);
 }
 
@@ -42,7 +42,7 @@ NGRAPH_TEST(${BACKEND_NAME}, create_plain_tensor)
 {
     auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
-    Shape shape{2,2};
+    Shape shape{2, 2};
     dynamic_pointer_cast<runtime::he::HEBackend>(backend)->create_plain_tensor(element::f32, shape);
 }
 
