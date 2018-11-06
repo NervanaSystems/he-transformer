@@ -38,7 +38,7 @@ test_cpp_build ()
     ./test/unit-test
     echo 'Testing cryptonets'
     NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_13.json ./test/cryptonets_benchmark
-    NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_14.json ./test/cryptonets_benchmark
+    # NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_14.json ./test/cryptonets_benchmark
 
     echo 'Done testing C++ build.'
 }
