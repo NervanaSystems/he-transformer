@@ -98,11 +98,12 @@ void runtime::he::kernel::convolution(const vector<shared_ptr<runtime::he::HEPla
                                       size_t batch_size,
                                       const runtime::he::HEBackend* he_backend)
 {
-    convolution(arg1,
-                arg0,
+    NGRAPH_INFO << "Convolution Plain * Cipher";
+    convolution_template<runtime::he::HEPlaintext, runtime::he::HECiphertext>(arg0,
+                arg1,
                 out,
-                arg1_shape,
                 arg0_shape,
+                arg1_shape,
                 out_shape,
                 window_movement_strides,
                 window_dilation_strides,
@@ -193,7 +194,6 @@ void ngraph::runtime::he::kernel::convolution(
     size_t batch_size,
     const runtime::he::HEBackend* he_backend)
 {
-    // TODO: parallelize more effetively
 
     // Comments throughout assume without loss of generality that:
     //
@@ -208,23 +208,19 @@ void ngraph::runtime::he::kernel::convolution(
     // At the outermost level we will walk over every output coordinate O.
     CoordinateTransform output_transform(out_shape);
 
-    size_t out_transform_size = 0;
-    for (Coordinate out_coord : output_transform)
+    // Store output coordinates for parallelization
+    std::vector<ngraph::Coordinate> out_coords;
+    for (const Coordinate& out_coord : output_transform)
     {
-        out_transform_size++;
+        out_coords.emplace_back(out_coord);
     }
-    NGRAPH_INFO << "out_transform_size " << out_transform_size++;
+    size_t out_transform_size = out_coords.size();
+    NGRAPH_INFO << "out_transform_size " << out_transform_size;
+
 #pragma omp parallel for
     for (size_t out_coord_idx = 0; out_coord_idx < out_transform_size; ++out_coord_idx)
     {
-        // TODO: move to coordinate transform
-        auto out_coord_it = output_transform.begin();
-        for (size_t i = 0; i < out_coord_idx; ++i)
-        {
-            ++out_coord_it;
-        }
-
-        const Coordinate out_coord = *out_coord_it;
+        const Coordinate out_coord = out_coords[out_coord_idx];
 
         //for (Coordinate out_coord : output_transform)
         //{
@@ -331,11 +327,11 @@ void ngraph::runtime::he::kernel::convolution(
         //   output[O] += arg0[I] * arg1[F].
 
         // T result = 0;
-        shared_ptr<runtime::he::HEPlaintext> result =
-            he_backend->create_valued_plaintext(0., element_type);
 
         CoordinateTransform::Iterator input_it = input_batch_transform.begin();
         CoordinateTransform::Iterator filter_it = filter_transform.begin();
+
+        std::vector<std::shared_ptr<runtime::he::HEPlaintext>> summands;
 
         while (input_it != input_batch_transform.end() && filter_it != filter_transform.end())
         {
@@ -354,22 +350,41 @@ void ngraph::runtime::he::kernel::convolution(
                 }
             }
 
-            shared_ptr<runtime::he::HEPlaintext> v =
-                input_batch_transform.has_source_coordinate(input_batch_coord)
-                    ? arg0[input_batch_transform.index(input_batch_coord)]
-                    : he_backend->create_valued_plaintext(0., element_type);
+            if (input_batch_transform.has_source_coordinate(input_batch_coord))
+            {
+                std::shared_ptr<runtime::he::HEPlaintext> v =
+                    arg0[input_batch_transform.index(input_batch_coord)];
 
-            shared_ptr<runtime::he::HEPlaintext> prod = he_backend->create_empty_plaintext();
+                std::shared_ptr<runtime::he::HEPlaintext> prod =
+                    he_backend->create_empty_plaintext();
 
-            // result += v * arg1[filter_transform.index(filter_coord)];
-            runtime::he::kernel::scalar_multiply(
-                v, arg1[filter_transform.index(filter_coord)], prod, element_type, he_backend);
-            runtime::he::kernel::scalar_add(result, prod, result, element_type, he_backend);
-
+                runtime::he::kernel::scalar_multiply(
+                    v, arg1[filter_transform.index(filter_coord)], prod, element_type, he_backend);
+                summands.emplace_back(prod);
+            }
             ++input_it;
             ++filter_it;
         }
+        if (summands.size() == 0)
+        {
+            out[output_transform.index(out_coord)] =
+                he_backend->create_valued_plaintext(0., element_type);
+        }
+        else
+        {
+            // Repeatedly sum and add to the back of the vector until the end is reached
+            // This is better for the he_seal_ckks_backend as it reduces the need for the rescale op.
+            for (size_t i = 0; i < summands.size() - 1; i += 2)
+            {
+                std::shared_ptr<runtime::he::HEPlaintext> plaintext =
+                    he_backend->create_empty_plaintext();
+                runtime::he::kernel::scalar_add(
+                    summands[i], summands[i + 1], plaintext, element_type, he_backend);
+                summands.emplace_back(plaintext);
+            }
 
-        out[output_transform.index(out_coord)] = result;
+            // Write the sum back.
+            out[output_transform.index(out_coord)] = summands[summands.size() - 1];
+        }
     }
 }

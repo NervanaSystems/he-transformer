@@ -36,28 +36,35 @@ static string s_manifest = "${MANIFEST}";
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image)
 {
     auto shape_a = Shape{1, 1, 5, 5};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto a = make_shared<op::Parameter>(element::f32, shape_a);
     auto shape_b = Shape{1, 1, 3, 3};
-    auto B = make_shared<op::Parameter>(element::f32, shape_b);
-    auto shape_r = Shape{1, 1, 3, 3};
-    auto f = make_shared<Function>(make_shared<op::Convolution>(A, B, Strides{1, 1}, Strides{1, 1}),
-                                   op::ParameterVector{A, B});
+    auto b = make_shared<op::Parameter>(element::f32, shape_b);
+
+    auto t = make_shared<op::Convolution>(a, b, Strides{1, 1}, Strides{1, 1});
+    auto f = make_shared<Function>(t, op::ParameterVector{a, b});
 
     // Create some tensors for input/output
     auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
         runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
-    auto a = backend->create_tensor(element::f32, shape_a);
-    copy_data(a, vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+        // Create some tensors for input/output
+    auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
+
+    for (auto tensors : tensors_list)
+    {
+        auto results = get<0>(tensors);
+        auto inputs = get<1>(tensors);
+
+        auto t_a = inputs[0];
+        auto t_b = inputs[1];
+        auto t_result = results[0];
+
+        copy_data(t_a, vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
                                2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0});
-    auto b = backend->create_tensor(element::f32, shape_b);
-    copy_data(b, vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5});
-    auto result = backend->create_tensor(element::f32, shape_r);
-
-    vector<float> expected_result{9, 9, 9, 9, 9, 9, 9, 9, 9};
-
-    backend->call(f, {result}, {a, b});
-    EXPECT_TRUE(all_close(vector<float>{expected_result}, read_vector<float>(result)));
+        copy_data(t_b, vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5});
+        backend->call(f, {t_result}, {t_a, t_b});
+        EXPECT_TRUE(all_close(read_vector<float>(t_result), vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}));
+    }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_2outputs)
