@@ -50,7 +50,6 @@
 #include "he_plain_tensor.hpp"
 #include "he_tensor.hpp"
 
-
 using namespace ngraph;
 using namespace std;
 
@@ -92,14 +91,13 @@ shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(const element:
 shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(const element::Type& element_type,
                                                                   const Shape& shape)
 {
+    // Needed for ngraph-tf integration
     const char* ng_batch_tensor_value = std::getenv("NGRAPH_BATCHED_TENSOR");
-
     if (ng_batch_tensor_value != nullptr)
     {
         NGRAPH_INFO << "Creating batched tensor";
         return create_batched_tensor(element_type, shape);
     }
-
 
     auto rc = make_shared<runtime::he::HECipherTensor>(
         element_type, shape, this, create_empty_ciphertext());
