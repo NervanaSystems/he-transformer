@@ -369,6 +369,7 @@ void ngraph::runtime::he::kernel::convolution_template(
                 std::shared_ptr<runtime::he::HECiphertext> ciphertext =
                     he_backend->create_empty_ciphertext();
 
+
                 runtime::he::kernel::scalar_add(
                     summands[i], summands[i + 1], ciphertext, element_type, he_backend);
                 summands.emplace_back(ciphertext);
