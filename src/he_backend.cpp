@@ -92,6 +92,15 @@ shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(const element:
 shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(const element::Type& element_type,
                                                                   const Shape& shape)
 {
+    const char* ng_batch_tensor_value = std::getenv("NGRAPH_BATCHED_TENSOR");
+
+    if (ng_batch_tensor_value != nullptr)
+    {
+        NGRAPH_INFO << "Creating batched tensor";
+        return create_batched_tensor(element_type, shape);
+    }
+
+
     auto rc = make_shared<runtime::he::HECipherTensor>(
         element_type, shape, this, create_empty_ciphertext());
     return static_pointer_cast<runtime::Tensor>(rc);
@@ -264,23 +273,6 @@ void runtime::he::HEBackend::validate_he_call(
     }
 }
 
-bool runtime::he::HEBackend::call(shared_ptr<Function> function,
-                                  const vector<shared_ptr<runtime::Tensor>>& outputs,
-                                  const vector<shared_ptr<runtime::Tensor>>& inputs)
-{
-    vector<shared_ptr<runtime::he::HETensor>> he_inputs;
-    vector<shared_ptr<runtime::he::HETensor>> he_outputs;
-    for (auto tv : inputs)
-    {
-        he_inputs.push_back(static_pointer_cast<runtime::he::HETensor>(tv));
-    }
-    for (auto tv : outputs)
-    {
-        he_outputs.push_back(static_pointer_cast<runtime::he::HETensor>(tv));
-    }
-    return call(function, he_outputs, he_inputs);
-}
-
 void runtime::he::HEBackend::clear_function_instance()
 {
     m_function_map.clear();
@@ -352,16 +344,31 @@ shared_ptr<runtime::he::HETensor> runtime::he::HEBackend::unbatched_to_batched(c
 }
 
 bool runtime::he::HEBackend::call(shared_ptr<Function> function,
-                                  const vector<shared_ptr<runtime::he::HETensor>>& output_tvs,
-                                  const vector<shared_ptr<runtime::he::HETensor>>& input_tvs)
+                                  const vector<shared_ptr<runtime::Tensor>>& outputs,
+                                  const vector<shared_ptr<runtime::Tensor>>& inputs)
 {
-    // Needed for ngraph-tf integration for batched inputs
-    const char* ng_batch_tensor_value = std::getenv("NGRAPH_BATCHED_TENSOR");
-
-    validate_he_call(function, output_tvs, input_tvs);
 
     compile(function);
     FunctionInstance& instance = m_function_map[function];
+
+    // convert outputs to HETensor
+    vector<shared_ptr<runtime::he::HETensor>> he_inputs;
+    for (auto tv : inputs)
+    {
+        he_inputs.push_back(static_pointer_cast<runtime::he::HETensor>(tv));
+    }
+
+    // convert inputs to HETensor
+    vector<shared_ptr<runtime::he::HETensor>> he_outputs;
+    for (auto tv : outputs)
+    {
+        he_outputs.push_back(static_pointer_cast<runtime::he::HETensor>(tv));
+    }
+
+    // Needed for ngraph-tf integration for batched inputs
+    const char* ng_batch_tensor_value = std::getenv("NGRAPH_BATCHED_TENSOR");
+
+    validate_he_call(function, he_outputs, he_inputs);
 
     // map function params -> HETensor
     unordered_map<descriptor::Tensor*, shared_ptr<runtime::he::HETensor>> tensor_map;
@@ -372,16 +379,16 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
         {
             descriptor::Tensor* tv = param->get_output_tensor_ptr(i).get();
 
-            if (ng_batch_tensor_value != nullptr)
+            /* if (ng_batch_tensor_value != nullptr)
             {
                 NGRAPH_INFO << "Converting unbatched parameter tensor to batched parameter tensor";
-                shared_ptr<runtime::he::HETensor> batched_tv = unbatched_to_batched(input_tvs[input_count++]);
+                shared_ptr<runtime::he::HETensor> batched_tv = unbatched_to_batched(he_inputs[input_count++]);
                 tensor_map.insert({tv, batched_tv});
             }
             else
-            {
-                tensor_map.insert({tv, input_tvs[input_count++]});
-            }
+            { */
+                tensor_map.insert({tv, he_inputs[input_count++]});
+            //}
         }
     }
 
@@ -395,17 +402,20 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
         }
 
         descriptor::Tensor* tv = output->get_output_tensor_ptr(0).get();
-        if (ng_batch_tensor_value != nullptr)
+        /* if (ng_batch_tensor_value != nullptr)
         {
             NGRAPH_INFO << "Converting unbatched result tensor to batched result tensor";
-            shared_ptr<runtime::he::HETensor> batched_tv = unbatched_to_batched(output_tvs[output_count++], false);
+            shared_ptr<runtime::he::HETensor> batched_tv = unbatched_to_batched(he_outputs[output_count++], false);
             tensor_map.insert({tv, batched_tv});
+
+            he_outputs[output_count] = batched_tv;
         }
         else
-        {
-            tensor_map.insert({tv, output_tvs[output_count++]});
-        }
+        { */
+            tensor_map.insert({tv, he_outputs[output_count++]});
+        //}
     }
+
 
     // for each ordered op in the graph
     for (shared_ptr<Node> op : function->get_ordered_ops())
@@ -419,16 +429,16 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
         }
 
         // get op inputs from map
-        vector<shared_ptr<runtime::he::HETensor>> inputs;
+        vector<shared_ptr<runtime::he::HETensor>> op_inputs;
         for (const descriptor::Input& input : op->get_inputs())
         {
             descriptor::Tensor* tv = input.get_output().get_tensor_ptr().get();
-            inputs.push_back(tensor_map.at(tv));
+            op_inputs.push_back(tensor_map.at(tv));
         }
 
         // get op outputs from map or create
         bool any_batched = false;
-        vector<shared_ptr<runtime::he::HETensor>> outputs;
+        vector<shared_ptr<runtime::he::HETensor>> op_outputs;
         for (size_t i = 0; i < op->get_output_size(); ++i)
         {
             descriptor::Tensor* tv = op->get_output_tensor_ptr(i).get();
@@ -441,8 +451,8 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
                 string name = op->get_output_tensor(i).get_name();
 
                 bool plain_out = all_of(
-                    inputs.begin(), inputs.end(), [](shared_ptr<runtime::he::HETensor> input) {
-                        return dynamic_pointer_cast<HEPlainTensor>(input) != nullptr;
+                    op_inputs.begin(), op_inputs.end(), [](shared_ptr<runtime::he::HETensor> op_input) {
+                        return dynamic_pointer_cast<HEPlainTensor>(op_input) != nullptr;
                     });
                 if (plain_out)
                 {
@@ -453,8 +463,8 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
                 else
                 {
                     bool batched_out = any_of(
-                        inputs.begin(), inputs.end(), [](shared_ptr<runtime::he::HETensor> input) {
-                            if (auto input_cipher_tv = dynamic_pointer_cast<HECipherTensor>(input))
+                        op_inputs.begin(), op_inputs.end(), [](shared_ptr<runtime::he::HETensor> op_input) {
+                            if (auto input_cipher_tv = dynamic_pointer_cast<HECipherTensor>(op_input))
                             {
                                 return input_cipher_tv->is_batched();
                             }
@@ -472,7 +482,7 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
                     tensor_map.insert({tv, otv});
                 }
             }
-            outputs.push_back(tensor_map.at(tv));
+            op_outputs.push_back(tensor_map.at(tv));
         }
 
         element::Type base_type;
@@ -488,7 +498,7 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
         NGRAPH_INFO << "Generating calls for op ";
 
         instance.m_timer_map[op.get()].start();
-        generate_calls(base_type, op, outputs, inputs);
+        generate_calls(base_type, op, op_outputs, op_inputs);
         instance.m_timer_map[op.get()].stop();
 
         const string op_name = op->description();
@@ -807,23 +817,26 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
         {
             shared_ptr<HECipherTensor> out = out0_cipher;
 
-            for (shared_ptr<ngraph::runtime::he::HECiphertext> out_cipher : out->get_elements())
+            if (out->get_elements().size() < 100)
             {
-                auto plaintext = create_empty_plaintext();
-                NGRAPH_INFO << "Decrypting";
-                decrypt(plaintext, out_cipher);
-                NGRAPH_INFO << "Decrypted";
-                std::vector<float> values(batch_size, 0);
-                NGRAPH_INFO << "Decoding";
-                decode((void*)(&(values[0])), plaintext, element_type, batch_size);
-                NGRAPH_INFO << "Decoded";
-
-                for (auto elem : values)
+                for (shared_ptr<ngraph::runtime::he::HECiphertext> out_cipher : out->get_elements())
                 {
-                    NGRAPH_INFO << elem;
-                }
+                    auto plaintext = create_empty_plaintext();
+                    NGRAPH_INFO << "Decrypting";
+                    decrypt(plaintext, out_cipher);
+                    NGRAPH_INFO << "Decrypted";
+                    std::vector<float> values(batch_size, 0);
+                    NGRAPH_INFO << "Decoding";
+                    decode((void*)(&(values[0])), plaintext, element_type, batch_size);
+                    NGRAPH_INFO << "Decoded";
 
-            }
+                    for (auto elem : values)
+                    {
+                        NGRAPH_INFO << elem;
+                    }
+
+                }
+             }
         }
     }
     else if (node_op == "Multiply")
@@ -988,6 +1001,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
             {
                 output_size /= arg0_cipher->get_batch_size();
             }
+            NGRAPH_INFO << "Result output size " << output_size;
             runtime::he::kernel::result(
                 arg0_cipher->get_elements(), out0_cipher->get_elements(), output_size);
         }
@@ -1007,6 +1021,29 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
         else
         {
             throw ngraph_error("Result types not supported.");
+        }
+
+        NGRAPH_INFO << "Done with result";
+        if (out0_cipher != nullptr)
+        {
+            shared_ptr<HECipherTensor> out = out0_cipher;
+
+            for (shared_ptr<ngraph::runtime::he::HECiphertext> out_cipher : out->get_elements())
+            {
+                auto plaintext = create_empty_plaintext();
+                NGRAPH_INFO << "Decrypting";
+                decrypt(plaintext, out_cipher);
+                NGRAPH_INFO << "Decrypted";
+                std::vector<float> values(batch_size, 0);
+                NGRAPH_INFO << "Decoding";
+                decode((void*)(&(values[0])), plaintext, element_type, batch_size);
+                NGRAPH_INFO << "Decoded";
+
+                for (auto elem : values)
+                {
+                    NGRAPH_INFO << elem;
+                }
+            }
         }
     }
     else if (node_op == "Slice")

@@ -38,6 +38,7 @@ runtime::he::HEPlainTensor::HEPlainTensor(const element::Type& element_type,
     m_plain_texts.resize(m_num_elements);
     for (size_t i = 0; i < m_num_elements; ++i)
     {
+        // TODO: create_empty_plaintext()
         if (auto he_seal_plaintext =
                 dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(he_plaintext))
         {

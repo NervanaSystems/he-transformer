@@ -153,29 +153,24 @@ def test_mnist_cnn(FLAGS, network):
         elasped_time = time.time() - start_time
         print("total time(s)", elasped_time)
 
-    if FLAGS.save_batch or FLAGS.report_accuracy:
-        with tf.Session() as sess:
-            sess.run(tf.global_variables_initializer())
+    x_test_batch = mnist.test.images[:FLAGS.batch_size]
+    y_test_batch = mnist.test.labels[:FLAGS.batch_size]
+    x_test = mnist.test.images
+    y_test = mnist.test.labels
 
-            x_test_batch = mnist.test.images[:FLAGS.batch_size]
-            y_test_batch = mnist.test.labels[:FLAGS.batch_size]
-            x_test = mnist.test.images
-            y_test = mnist.test.labels
+    y_label_batch = np.argmax(y_test_batch, 1)
 
-            y_label_batch = np.argmax(y_test_batch, 1)
+    if FLAGS.save_batch:
+        x_test_batch.tofile("x_test_" + str(FLAGS.batch_size) + ".bin")
+        y_label_batch.astype('float32').tofile("y_label_" + str(FLAGS.batch_size) + ".bin")
 
-            if FLAGS.save_batch:
-                x_test_batch.tofile("x_test_" + str(FLAGS.batch_size) + ".bin")
-                y_label_batch.astype('float32').tofile("y_label_" + str(FLAGS.batch_size) + ".bin")
+    if FLAGS.report_accuracy:
+        correct_prediction = np.equal(np.argmax(y_conv_val, 1), y_label_batch)
+        error_count = np.size(correct_prediction) - np.sum(correct_prediction)
+        test_accuracy = np.mean(correct_prediction)
 
-            if FLAGS.report_accuracy:
-                with tf.name_scope('accuracy'):
-                    correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
-                    correct_prediction = tf.cast(correct_prediction, tf.float32)
-                accuracy = tf.reduce_mean(correct_prediction)
-                test_accuracy = accuracy.eval(feed_dict={x: x_test, y_: y_test})
-
-                print('test accuracy wth ' + network + ': %g' % test_accuracy)
+        print('Error count', error_count, 'of', FLAGS.batch_size, 'elements.')
+        print('Accuracy with ' + network + ': %g ' % test_accuracy)
 
     # Rename serialized graph
     try:

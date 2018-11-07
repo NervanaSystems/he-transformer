@@ -42,10 +42,11 @@ runtime::he::HECipherTensor::HECipherTensor(const element::Type& element_type,
     NGRAPH_INFO << "Creating HECipherTensor with " << m_num_elements << " elements";
     if (batched)
     {
-        NGRAPH_INFO << "HECipherTensor is batched";
+        NGRAPH_INFO << "HECipherTensor is batched with batch size " << m_batch_size;
     }
     for (size_t i = 0; i < m_num_elements; ++i)
     {
+        // TODO: replace with he_backend->create_empty_ciphertext()
         if (auto he_seal_ciphertext =
                 dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(he_ciphertext))
         {
@@ -89,8 +90,22 @@ void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset
     check_io_bounds(source, tensor_offset, n / m_batch_size);
     const element::Type& element_type = get_tensor_layout()->get_element_type();
     size_t type_byte_size = element_type.size();
+
+    // Hack to fix Cryptonets with ngraph-tf
+    const char* ng_batch_tensor_value = std::getenv("NGRAPH_BATCHED_TENSOR");
+    if (ng_batch_tensor_value != nullptr)
+    {
+        n *= m_batch_size;
+    }
+
+    NGRAPH_INFO << "writing with n = " << n;
+    NGRAPH_INFO << "type btye size " << type_byte_size;
+    NGRAPH_INFO << "m_batch_size " << m_batch_size;
+
     size_t dst_start_index = tensor_offset / type_byte_size;
     size_t num_elements_to_write = n / (type_byte_size * m_batch_size);
+
+    NGRAPH_INFO << "writing " << num_elements_to_write << " elements with batch size " << m_batch_size;
 
     if (num_elements_to_write == 1)
     {
@@ -159,16 +174,27 @@ void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset
 
 void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset, size_t n) const
 {
+      // Hack to fix Cryptonets with ngraph-tf
+    const char* ng_batch_tensor_value = std::getenv("NGRAPH_BATCHED_TENSOR");
+    if (ng_batch_tensor_value != nullptr)
+    {
+        n *= m_batch_size;
+    }
+
     check_io_bounds(target, tensor_offset, n / m_batch_size);
     const element::Type& element_type = get_tensor_layout()->get_element_type();
     size_t type_byte_size = element_type.size();
     size_t src_start_index = tensor_offset / type_byte_size;
     size_t num_elements_to_read = n / (type_byte_size * m_batch_size);
 
+
+    NGRAPH_INFO << "reading with n = " << n;
+    NGRAPH_INFO << "type btye size " << type_byte_size;
+    NGRAPH_INFO << "m_batch_size " << m_batch_size;
     NGRAPH_INFO << "Reading from he cipher tensor";
     NGRAPH_INFO << "m_batch_size = " << m_batch_size;
     NGRAPH_INFO << "num_elements_to_read " << num_elements_to_read;
-
+    NGRAPH_INFO << "Size of ciphertexts " << m_cipher_texts.size();
 
     if (num_elements_to_read == 1)
     {
@@ -176,6 +202,7 @@ void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset, size_
         size_t src_index = src_start_index;
         if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(m_he_backend))
         {
+            // TODO: create_empty_plaintext()
             shared_ptr<runtime::he::HEPlaintext> p =
                 make_shared<runtime::he::he_seal::SealPlaintextWrapper>();
             he_seal_backend->decrypt(p, m_cipher_texts[src_index]);
@@ -188,7 +215,7 @@ void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset, size_
     }
     else
     {
-#pragma omp parallel for
+// #pragma omp parallel for
         for (size_t i = 0; i < num_elements_to_read; ++i)
         {
             void* dst = malloc(type_byte_size * m_batch_size);
@@ -200,8 +227,8 @@ void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset, size_
             size_t src_index = src_start_index + i;
             if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(m_he_backend))
             {
-                shared_ptr<runtime::he::HEPlaintext> p =
-                    make_shared<runtime::he::he_seal::SealPlaintextWrapper>();
+                shared_ptr<runtime::he::HEPlaintext> p = he_seal_backend->create_empty_plaintext();
+                //    make_shared<runtime::he::he_seal::SealPlaintextWrapper>();
                 he_seal_backend->decrypt(p, m_cipher_texts[src_index]);
                 he_seal_backend->decode(dst, p, element_type, m_batch_size);
             }
