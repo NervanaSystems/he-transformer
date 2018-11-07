@@ -60,6 +60,12 @@ namespace ngraph
                                         size_t batch_axis = 0,
                                         bool batched = false) const;
 
+                /// @brief Returns number of elements in the expanded tensor
+                size_t get_element_count() const;
+
+                /// @brief Returns the number of elements in the un-expanded tensor
+                size_t get_batched_element_count() const;
+
             protected:
                 void check_io_bounds(const void* p, size_t tensor_offset, size_t n) const;
 

@@ -299,6 +299,7 @@ void runtime::he::he_seal::HESealCKKSBackend::assert_valid_seal_ckks_parameter(
 shared_ptr<runtime::Tensor> runtime::he::he_seal::HESealCKKSBackend::create_batched_tensor(
     const element::Type& element_type, const Shape& shape)
 {
+    NGRAPH_INFO << "Creating batched tensor with shape " << join(shape);
     auto rc = make_shared<runtime::he::HECipherTensor>(
         element_type, shape, this, create_empty_ciphertext(), true);
     return static_pointer_cast<runtime::Tensor>(rc);

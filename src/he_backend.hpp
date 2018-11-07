@@ -71,6 +71,9 @@ namespace ngraph
                                                                const Shape& shape,
                                                                void* memory_pointer) override;
 
+                /// @brief Converts unbatched tensor to a batched tensor.
+                std::shared_ptr<runtime::he::HETensor> unbatched_to_batched(const std::shared_ptr<runtime::Tensor> tv, bool copy_elements = true);
+
                 std::shared_ptr<runtime::Tensor>
                     create_plain_tensor(const element::Type& element_type, const Shape& shape);
 

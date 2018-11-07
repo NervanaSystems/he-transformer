@@ -42,7 +42,9 @@ def cryptonets_test_squashed(x):
     # Last dimension is for "features" - there is only one here, since images are
     # grayscale -- it would be 3 for an RGB image, 4 for RGBA, etc.
     with tf.name_scope('reshape'):
+        tf.print(tf.shape(x))
         x_image = tf.reshape(x, [-1, 28, 28, 1])
+        # x_image = tf.Print(x_image, [x_image], summarize=784*2, message="x_image\n")
 
     # First conv layer: maps one grayscale image to 5 feature maps of 13 x 13
     with tf.name_scope('conv1'):
@@ -70,7 +72,7 @@ def cryptonets_test_squashed(x):
         W_fc2 = tf.constant(
             np.loadtxt('W_fc2.txt', dtype=np.float32).reshape([100, 10]))
         y_conv = tf.matmul(h_fc1, W_fc2)
-        # y_conv = tf.Print(y_conv, [y_conv], summarize=100, message="Result\n")
+        y_conv = tf.Print(y_conv, [y_conv], summarize=100, message="Result\n")
     return y_conv
 
 

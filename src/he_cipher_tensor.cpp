@@ -39,6 +39,11 @@ runtime::he::HECipherTensor::HECipherTensor(const element::Type& element_type,
     // get_tensor_layout()->get_size() is the number of elements
     m_num_elements = m_descriptor->get_tensor_layout()->get_size();
     m_cipher_texts.resize(m_num_elements);
+    NGRAPH_INFO << "Creating HECipherTensor with " << m_num_elements << " elements";
+    if (batched)
+    {
+        NGRAPH_INFO << "HECipherTensor is batched";
+    }
     for (size_t i = 0; i < m_num_elements; ++i)
     {
         if (auto he_seal_ciphertext =
@@ -160,6 +165,11 @@ void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset, size_
     size_t src_start_index = tensor_offset / type_byte_size;
     size_t num_elements_to_read = n / (type_byte_size * m_batch_size);
 
+    NGRAPH_INFO << "Reading from he cipher tensor";
+    NGRAPH_INFO << "m_batch_size = " << m_batch_size;
+    NGRAPH_INFO << "num_elements_to_read " << num_elements_to_read;
+
+
     if (num_elements_to_read == 1)
     {
         void* dst_with_offset = (void*)((char*)target);
@@ -200,6 +210,7 @@ void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset, size_
                 free(dst);
                 throw ngraph_error("HECipherTensor::read m_he_backend is not SEAL.");
             }
+
             for (size_t j = 0; j < m_batch_size; ++j)
             {
                 void* dst_with_offset =

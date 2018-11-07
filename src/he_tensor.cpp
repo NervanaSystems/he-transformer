@@ -82,3 +82,14 @@ void runtime::he::HETensor::check_io_bounds(const void* source,
         throw out_of_range("I/O access past end of tensor");
     }
 }
+
+size_t runtime::he::HETensor::get_element_count() const
+{
+    NGRAPH_INFO << "runime::he::HETensor::get_element_tcount";
+    return get_tensor_layout()->get_size() * m_batch_size;
+}
+
+size_t runtime::he::HETensor::get_batched_element_count() const
+{
+   return get_tensor_layout()->get_size();
+}

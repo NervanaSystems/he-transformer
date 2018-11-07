@@ -50,6 +50,7 @@
 #include "he_plain_tensor.hpp"
 #include "he_tensor.hpp"
 
+
 using namespace ngraph;
 using namespace std;
 
@@ -91,17 +92,6 @@ shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(const element:
 shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(const element::Type& element_type,
                                                                   const Shape& shape)
 {
-    // Needed for ngraph-tf integration for batched inputs
-    /* const char* ng_batch_tensor_value = std::getenv("NGRAPH_BATCHED_TENSOR");
-    if (ng_batch_tensor_value != nullptr)
-    {
-        string batch_tensor = std::string(ng_batch_tensor_value);
-        NGRAPH_INFO << "batch tensor " << batch_tensor;
-        NGRAPH_INFO << "Shape " << shape;
-
-        return create_batched_tensor(element_type, shape);
-    } */
-
     auto rc = make_shared<runtime::he::HECipherTensor>(
         element_type, shape, this, create_empty_ciphertext());
     return static_pointer_cast<runtime::Tensor>(rc);
@@ -320,10 +310,54 @@ vector<runtime::PerformanceCounter>
     return rc;
 }
 
+// TODO: move to CipherTensor
+shared_ptr<runtime::he::HETensor> runtime::he::HEBackend::unbatched_to_batched(const shared_ptr<runtime::Tensor> tv, bool copy_elements)
+{
+    NGRAPH_INFO << "shape " << join(tv->get_shape());
+
+    auto batched_tv = static_pointer_cast<runtime::he::HECipherTensor>(create_batched_tensor(tv->get_element_type(), tv->get_shape()));
+
+    NGRAPH_INFO << "Cast okay.";
+
+    if(copy_elements)
+    {
+        size_t element_count = shape_size(tv->get_shape());
+        size_t size = element_count * sizeof(float);
+
+        NGRAPH_INFO << "elemnt count " << element_count;
+        std::vector<float> elements(element_count);
+        tv->read(elements.data(), 0, size);
+
+        NGRAPH_INFO << "read elements ";
+
+        size_t batch_size = batched_tv->get_batch_size();
+        //size_t num_elements_to_encode = element_count / batch_size;
+
+        NGRAPH_INFO << "num element " << elements.size();
+        NGRAPH_INFO << "batch_size " << batch_size;
+
+        /* for(size_t batch = 0; batch < batch_size; ++batch)
+        {
+            for(size_t element_ind = 0; j < num_elements_to_encode; ++element_ind)
+            {
+                batched_elements[element_ind * batch_size +  ] = elements[num_elements_to_encode * batch + element_ind];
+            }
+
+        } */
+
+        batched_tv->write(elements.data(), 0, size);
+    }
+
+    return batched_tv;
+}
+
 bool runtime::he::HEBackend::call(shared_ptr<Function> function,
                                   const vector<shared_ptr<runtime::he::HETensor>>& output_tvs,
                                   const vector<shared_ptr<runtime::he::HETensor>>& input_tvs)
 {
+    // Needed for ngraph-tf integration for batched inputs
+    const char* ng_batch_tensor_value = std::getenv("NGRAPH_BATCHED_TENSOR");
+
     validate_he_call(function, output_tvs, input_tvs);
 
     compile(function);
@@ -337,7 +371,17 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
         for (size_t i = 0; i < param->get_output_size(); ++i)
         {
             descriptor::Tensor* tv = param->get_output_tensor_ptr(i).get();
-            tensor_map.insert({tv, input_tvs[input_count++]});
+
+            if (ng_batch_tensor_value != nullptr)
+            {
+                NGRAPH_INFO << "Converting unbatched parameter tensor to batched parameter tensor";
+                shared_ptr<runtime::he::HETensor> batched_tv = unbatched_to_batched(input_tvs[input_count++]);
+                tensor_map.insert({tv, batched_tv});
+            }
+            else
+            {
+                tensor_map.insert({tv, input_tvs[input_count++]});
+            }
         }
     }
 
@@ -349,8 +393,18 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
         {
             throw ngraph_error("One of function's outputs isn't op::Result");
         }
+
         descriptor::Tensor* tv = output->get_output_tensor_ptr(0).get();
-        tensor_map.insert({tv, output_tvs[output_count]});
+        if (ng_batch_tensor_value != nullptr)
+        {
+            NGRAPH_INFO << "Converting unbatched result tensor to batched result tensor";
+            shared_ptr<runtime::he::HETensor> batched_tv = unbatched_to_batched(output_tvs[output_count++], false);
+            tensor_map.insert({tv, batched_tv});
+        }
+        else
+        {
+            tensor_map.insert({tv, output_tvs[output_count++]});
+        }
     }
 
     // for each ordered op in the graph
@@ -409,6 +463,8 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
                                 return false;
                             }
                         });
+
+                    NGRAPH_INFO << "batched out for op " << i << " : " << batched_out;
                     any_batched |= batched_out;
 
                     auto otv = make_shared<runtime::he::HECipherTensor>(
@@ -429,6 +485,8 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
             base_type = op->get_inputs().at(0).get_tensor().get_element_type();
         }
 
+        NGRAPH_INFO << "Generating calls for op ";
+
         instance.m_timer_map[op.get()].start();
         generate_calls(base_type, op, outputs, inputs);
         instance.m_timer_map[op.get()].stop();
@@ -447,12 +505,10 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
                 }
             }
         }
-
         NGRAPH_INFO << "\033[1;31m" << op->get_name() << " took "
                     << instance.m_timer_map[op.get()].get_seconds() << "s"
                     << "\033[0m";
     }
-
     return true;
 }
 
@@ -485,6 +541,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
     {
         batch_size = out0_cipher->get_batch_size();
     }
+    NGRAPH_INFO << "Generating call for batch size " << batch_size;
 
     if (node_op == "Add")
     {
@@ -495,7 +552,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                      out0_cipher->get_elements(),
                                      element_type,
                                      this,
-                                     out0_cipher->get_element_count());
+                                     out0_cipher->get_batched_element_count());
         }
         else if (arg0_cipher != nullptr && arg1_plain != nullptr && out0_cipher != nullptr)
         {
@@ -504,7 +561,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                      out0_cipher->get_elements(),
                                      element_type,
                                      this,
-                                     out0_cipher->get_element_count());
+                                     out0_cipher->get_batched_element_count());
         }
         else if (arg0_plain != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
@@ -513,7 +570,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                      out0_cipher->get_elements(),
                                      element_type,
                                      this,
-                                     out0_cipher->get_element_count());
+                                     out0_cipher->get_batched_element_count());
         }
         else if (arg0_plain != nullptr && arg1_plain != nullptr && out0_plain != nullptr)
         {
@@ -522,7 +579,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                      out0_plain->get_elements(),
                                      element_type,
                                      this,
-                                     out0_plain->get_element_count());
+                                     out0_plain->get_batched_element_count());
         }
         else
         {
@@ -568,7 +625,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                           element_type,
                                           constant->get_data_ptr(),
                                           this,
-                                          out0_plain->get_element_count());
+                                          out0_plain->get_batched_element_count());
         }
         else
         {
@@ -744,6 +801,30 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
         {
             throw ngraph_error("Dot types not supported.");
         }
+
+        NGRAPH_INFO << "Done with dot";
+        if (out0_cipher != nullptr)
+        {
+            shared_ptr<HECipherTensor> out = out0_cipher;
+
+            for (shared_ptr<ngraph::runtime::he::HECiphertext> out_cipher : out->get_elements())
+            {
+                auto plaintext = create_empty_plaintext();
+                NGRAPH_INFO << "Decrypting";
+                decrypt(plaintext, out_cipher);
+                NGRAPH_INFO << "Decrypted";
+                std::vector<float> values(batch_size, 0);
+                NGRAPH_INFO << "Decoding";
+                decode((void*)(&(values[0])), plaintext, element_type, batch_size);
+                NGRAPH_INFO << "Decoded";
+
+                for (auto elem : values)
+                {
+                    NGRAPH_INFO << elem;
+                }
+
+            }
+        }
     }
     else if (node_op == "Multiply")
     {
@@ -754,7 +835,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                           out0_cipher->get_elements(),
                                           element_type,
                                           this,
-                                          out0_cipher->get_element_count());
+                                          out0_cipher->get_batched_element_count());
         }
         else if (arg0_cipher != nullptr && arg1_plain != nullptr && out0_cipher != nullptr)
         {
@@ -763,7 +844,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                           out0_cipher->get_elements(),
                                           element_type,
                                           this,
-                                          out0_cipher->get_element_count());
+                                          out0_cipher->get_batched_element_count());
         }
         else if (arg0_plain != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
@@ -772,7 +853,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                           out0_cipher->get_elements(),
                                           element_type,
                                           this,
-                                          out0_cipher->get_element_count());
+                                          out0_cipher->get_batched_element_count());
         }
         else if (arg0_plain != nullptr && arg1_plain != nullptr && out0_plain != nullptr)
         {
@@ -781,7 +862,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                           out0_plain->get_elements(),
                                           element_type,
                                           this,
-                                          out0_plain->get_element_count());
+                                          out0_plain->get_batched_element_count());
         }
         else
         {
@@ -796,7 +877,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                         out0_cipher->get_elements(),
                                         element_type,
                                         this,
-                                        out0_cipher->get_element_count());
+                                        out0_cipher->get_batched_element_count());
         }
         else if (arg0_plain != nullptr && out0_plain != nullptr)
         {
@@ -804,7 +885,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                         out0_plain->get_elements(),
                                         element_type,
                                         this,
-                                        out0_plain->get_element_count());
+                                        out0_plain->get_batched_element_count());
         }
         else
         {
@@ -815,6 +896,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
     {
         shared_ptr<op::Pad> pad = dynamic_pointer_cast<op::Pad>(node);
 
+        // TODO: clean up
         Shape arg0_shape = node->get_inputs().at(0).get_shape();
         Shape out_shape = node->get_output_shape(0);
         if (arg0_cipher != nullptr && out0_cipher != nullptr)
@@ -895,10 +977,12 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
     }
     else if (node_op == "Result")
     {
+        NGRAPH_INFO << "Result node";
         shared_ptr<op::Result> res = dynamic_pointer_cast<op::Result>(node);
 
         if (arg0_cipher != nullptr && out0_cipher != nullptr)
         {
+            // TODO: cleanup
             size_t output_size = shape_size(res->get_shape());
             if (arg0_cipher->is_batched())
             {
@@ -962,7 +1046,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                           out0_cipher->get_elements(),
                                           element_type,
                                           this,
-                                          out0_cipher->get_element_count());
+                                          out0_cipher->get_batched_element_count());
         }
         else if (arg0_cipher != nullptr && arg1_plain != nullptr && out0_cipher != nullptr)
         {
@@ -971,7 +1055,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                           out0_cipher->get_elements(),
                                           element_type,
                                           this,
-                                          out0_cipher->get_element_count());
+                                          out0_cipher->get_batched_element_count());
         }
         else if (arg0_plain != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
@@ -980,7 +1064,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                           out0_cipher->get_elements(),
                                           element_type,
                                           this,
-                                          out0_cipher->get_element_count());
+                                          out0_cipher->get_batched_element_count());
         }
         else if (arg0_plain != nullptr && arg1_plain != nullptr && out0_plain != nullptr)
         {
@@ -989,7 +1073,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                           out0_plain->get_elements(),
                                           element_type,
                                           this,
-                                          out0_plain->get_element_count());
+                                          out0_plain->get_batched_element_count());
         }
         else
         {
