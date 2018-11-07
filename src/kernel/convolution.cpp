@@ -99,27 +99,28 @@ void runtime::he::kernel::convolution(const vector<shared_ptr<runtime::he::HEPla
                                       const runtime::he::HEBackend* he_backend)
 {
     NGRAPH_INFO << "Convolution Plain * Cipher";
-    convolution_template<runtime::he::HEPlaintext, runtime::he::HECiphertext>(arg0,
-                arg1,
-                out,
-                arg0_shape,
-                arg1_shape,
-                out_shape,
-                window_movement_strides,
-                window_dilation_strides,
-                padding_below,
-                padding_above,
-                data_dilation_strides,
-                batch_axis_data,
-                input_channel_axis_data,
-                input_channel_axis_filters,
-                output_channel_axis_filters,
-                batch_axis_result,
-                output_channel_axis_result,
-                rotate_filter,
-                element_type,
-                batch_size,
-                he_backend);
+    convolution_template<runtime::he::HEPlaintext, runtime::he::HECiphertext>(
+        arg0,
+        arg1,
+        out,
+        arg0_shape,
+        arg1_shape,
+        out_shape,
+        window_movement_strides,
+        window_dilation_strides,
+        padding_below,
+        padding_above,
+        data_dilation_strides,
+        batch_axis_data,
+        input_channel_axis_data,
+        input_channel_axis_filters,
+        output_channel_axis_filters,
+        batch_axis_result,
+        output_channel_axis_result,
+        rotate_filter,
+        element_type,
+        batch_size,
+        he_backend);
 }
 
 void runtime::he::kernel::convolution(const vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
@@ -194,7 +195,6 @@ void ngraph::runtime::he::kernel::convolution(
     size_t batch_size,
     const runtime::he::HEBackend* he_backend)
 {
-
     // Comments throughout assume without loss of generality that:
     //
     // * batch axes for both input data and output data are 0

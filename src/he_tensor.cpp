@@ -90,5 +90,5 @@ size_t runtime::he::HETensor::get_element_count() const
 
 size_t runtime::he::HETensor::get_batched_element_count() const
 {
-   return get_tensor_layout()->get_size();
+    return get_tensor_layout()->get_size();
 }

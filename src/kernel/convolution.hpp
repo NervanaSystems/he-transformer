@@ -206,11 +206,10 @@ void ngraph::runtime::he::kernel::convolution_template(
     size_t out_transform_size = out_coords.size();
     NGRAPH_INFO << "out_transform_size " << out_transform_size;
 
- #pragma omp parallel for
+#pragma omp parallel for
     for (size_t out_coord_idx = 0; out_coord_idx < out_transform_size; ++out_coord_idx)
     {
         const Coordinate out_coord = out_coords[out_coord_idx];
-
 
         //for (Coordinate out_coord : output_transform)
         //{
@@ -342,8 +341,7 @@ void ngraph::runtime::he::kernel::convolution_template(
 
             if (input_batch_transform.has_source_coordinate(input_batch_coord))
             {
-                std::shared_ptr<S> v =
-                    arg0[input_batch_transform.index(input_batch_coord)];
+                std::shared_ptr<S> v = arg0[input_batch_transform.index(input_batch_coord)];
 
                 std::shared_ptr<runtime::he::HECiphertext> prod =
                     he_backend->create_empty_ciphertext();
@@ -368,7 +366,6 @@ void ngraph::runtime::he::kernel::convolution_template(
             {
                 std::shared_ptr<runtime::he::HECiphertext> ciphertext =
                     he_backend->create_empty_ciphertext();
-
 
                 runtime::he::kernel::scalar_add(
                     summands[i], summands[i + 1], ciphertext, element_type, he_backend);

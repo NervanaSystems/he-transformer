@@ -299,7 +299,6 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
                                   const vector<shared_ptr<runtime::Tensor>>& outputs,
                                   const vector<shared_ptr<runtime::Tensor>>& inputs)
 {
-
     compile(function);
     FunctionInstance& instance = m_function_map[function];
 
@@ -379,10 +378,12 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
                 const element::Type& element_type = op->get_output_element_type(i);
                 string name = op->get_output_tensor(i).get_name();
 
-                bool plain_out = all_of(
-                    op_inputs.begin(), op_inputs.end(), [](shared_ptr<runtime::he::HETensor> op_input) {
-                        return dynamic_pointer_cast<HEPlainTensor>(op_input) != nullptr;
-                    });
+                bool plain_out =
+                    all_of(op_inputs.begin(),
+                           op_inputs.end(),
+                           [](shared_ptr<runtime::he::HETensor> op_input) {
+                               return dynamic_pointer_cast<HEPlainTensor>(op_input) != nullptr;
+                           });
                 if (plain_out)
                 {
                     auto otv = make_shared<runtime::he::HEPlainTensor>(
@@ -391,17 +392,20 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
                 }
                 else
                 {
-                    bool batched_out = any_of(
-                        op_inputs.begin(), op_inputs.end(), [](shared_ptr<runtime::he::HETensor> op_input) {
-                            if (auto input_cipher_tv = dynamic_pointer_cast<HECipherTensor>(op_input))
-                            {
-                                return input_cipher_tv->is_batched();
-                            }
-                            else
-                            {
-                                return false;
-                            }
-                        });
+                    bool batched_out =
+                        any_of(op_inputs.begin(),
+                               op_inputs.end(),
+                               [](shared_ptr<runtime::he::HETensor> op_input) {
+                                   if (auto input_cipher_tv =
+                                           dynamic_pointer_cast<HECipherTensor>(op_input))
+                                   {
+                                       return input_cipher_tv->is_batched();
+                                   }
+                                   else
+                                   {
+                                       return false;
+                                   }
+                               });
                     any_batched |= batched_out;
 
                     auto otv = make_shared<runtime::he::HECipherTensor>(
