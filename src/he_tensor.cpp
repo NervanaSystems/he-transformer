@@ -85,7 +85,6 @@ void runtime::he::HETensor::check_io_bounds(const void* source,
 
 size_t runtime::he::HETensor::get_element_count() const
 {
-    NGRAPH_INFO << "runime::he::HETensor::get_element_count with batch size " << m_batch_size << " returning " << get_tensor_layout()->get_size() * m_batch_size;
     return get_tensor_layout()->get_size() * m_batch_size;
 }
 

@@ -234,11 +234,6 @@ void runtime::he::HEBackend::validate_he_call(
         }
         if (auto output_cipher_tv = dynamic_pointer_cast<HECipherTensor>(outputs[i]))
         {
-            NGRAPH_INFO << "Batched output " << output_cipher_tv->is_batched();
-            NGRAPH_INFO << "output_cipher_tv->get_expanded_shape() "
-                        << join(output_cipher_tv->get_expanded_shape());
-            NGRAPH_INFO << "function->get_output_shape(i) " << join(function->get_output_shape(i));
-
             // TODO: check if shapes are equal, not just shape sizes.
             // Currently, this fails when output shape is {3}, and
             // expanded shape is {3,1} on HE_SEAL_CKKS.dot_scalar_batch unit-test.
@@ -409,8 +404,6 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
                                 return false;
                             }
                         });
-
-                    NGRAPH_INFO << "batched out for op " << i << " : " << batched_out;
                     any_batched |= batched_out;
 
                     auto otv = make_shared<runtime::he::HECipherTensor>(
@@ -430,8 +423,6 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
         {
             base_type = op->get_inputs().at(0).get_tensor().get_element_type();
         }
-
-        NGRAPH_INFO << "Generating calls for op ";
 
         instance.m_timer_map[op.get()].start();
         generate_calls(base_type, op, op_outputs, op_inputs);
@@ -487,7 +478,6 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
     {
         batch_size = out0_cipher->get_batch_size();
     }
-    NGRAPH_INFO << "Generating call for batch size " << batch_size;
 
     if (node_op == "Add")
     {
@@ -747,33 +737,6 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
         {
             throw ngraph_error("Dot types not supported.");
         }
-
-        NGRAPH_INFO << "Done with dot";
-        if (out0_cipher != nullptr)
-        {
-            shared_ptr<HECipherTensor> out = out0_cipher;
-
-            if (out->get_elements().size() < 100)
-            {
-                for (shared_ptr<ngraph::runtime::he::HECiphertext> out_cipher : out->get_elements())
-                {
-                    auto plaintext = create_empty_plaintext();
-                    NGRAPH_INFO << "Decrypting";
-                    decrypt(plaintext, out_cipher);
-                    NGRAPH_INFO << "Decrypted";
-                    std::vector<float> values(batch_size, 0);
-                    NGRAPH_INFO << "Decoding";
-                    decode((void*)(&(values[0])), plaintext, element_type, batch_size);
-                    NGRAPH_INFO << "Decoded";
-
-                    for (auto elem : values)
-                    {
-                        NGRAPH_INFO << elem;
-                    }
-
-                }
-             }
-        }
     }
     else if (node_op == "Multiply")
     {
@@ -926,7 +889,6 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
     }
     else if (node_op == "Result")
     {
-        NGRAPH_INFO << "Result node";
         shared_ptr<op::Result> res = dynamic_pointer_cast<op::Result>(node);
 
         if (arg0_cipher != nullptr && out0_cipher != nullptr)
@@ -957,29 +919,6 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
         else
         {
             throw ngraph_error("Result types not supported.");
-        }
-
-        NGRAPH_INFO << "Done with result";
-        if (out0_cipher != nullptr)
-        {
-            shared_ptr<HECipherTensor> out = out0_cipher;
-
-            for (shared_ptr<ngraph::runtime::he::HECiphertext> out_cipher : out->get_elements())
-            {
-                auto plaintext = create_empty_plaintext();
-                NGRAPH_INFO << "Decrypting";
-                decrypt(plaintext, out_cipher);
-                NGRAPH_INFO << "Decrypted";
-                std::vector<float> values(batch_size, 0);
-                NGRAPH_INFO << "Decoding";
-                decode((void*)(&(values[0])), plaintext, element_type, batch_size);
-                NGRAPH_INFO << "Decoded";
-
-                for (auto elem : values)
-                {
-                    NGRAPH_INFO << elem;
-                }
-            }
         }
     }
     else if (node_op == "Slice")

@@ -16,47 +16,29 @@
 
 #include <memory>
 #include <string>
+#include <cstring>
 
 #include "he_backend.hpp"
 #include "he_cipher_tensor.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
 #include "ngraph/util.hpp"
-#include "seal/he_seal_backend.hpp"
-#include "seal/seal_ciphertext_wrapper.hpp"
-#include "seal/seal_plaintext_wrapper.hpp"
 
 using namespace ngraph;
 using namespace std;
 
 runtime::he::HECipherTensor::HECipherTensor(const element::Type& element_type,
                                             const Shape& shape,
-                                            const HEBackend* he_backend,
+                                            const HEBackend*m_he_backend,
                                             const std::shared_ptr<HECiphertext> he_ciphertext,
                                             const bool batched,
                                             const string& name)
-    : runtime::he::HETensor(element_type, shape, he_backend, batched, name)
+    : runtime::he::HETensor(element_type, shape,m_he_backend, batched, name)
 {
-    // get_tensor_layout()->get_size() is the number of elements
     m_num_elements = m_descriptor->get_tensor_layout()->get_size();
     m_cipher_texts.resize(m_num_elements);
-    NGRAPH_INFO << "Creating HECipherTensor with " << m_num_elements << " elements";
-    if (batched)
-    {
-        NGRAPH_INFO << "HECipherTensor is batched with batch size " << m_batch_size;
-    }
     for (size_t i = 0; i < m_num_elements; ++i)
     {
-        // TODO: replace with he_backend->create_empty_ciphertext()
-        if (auto he_seal_ciphertext =
-                dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(he_ciphertext))
-        {
-            m_cipher_texts[i] = make_shared<runtime::he::he_seal::SealCiphertextWrapper>();
-        }
-        else
-        {
-            throw ngraph_error(
-                "HECipherTensor::HECipherTensor(), he_ciphertext is not SEAL ciphertext.");
-        }
+        m_cipher_texts[i] = m_he_backend->create_empty_ciphertext();
     }
 }
 
@@ -87,10 +69,6 @@ const Shape runtime::he::HECipherTensor::get_expanded_shape() const
 
 void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset, size_t n)
 {
-    check_io_bounds(source, tensor_offset, n / m_batch_size);
-    const element::Type& element_type = get_tensor_layout()->get_element_type();
-    size_t type_byte_size = element_type.size();
-
     // Hack to fix Cryptonets with ngraph-tf
     const char* ng_batch_tensor_value = std::getenv("NGRAPH_BATCHED_TENSOR");
     if (ng_batch_tensor_value != nullptr)
@@ -98,31 +76,20 @@ void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset
         n *= m_batch_size;
     }
 
-    NGRAPH_INFO << "writing with n = " << n;
-    NGRAPH_INFO << "type btye size " << type_byte_size;
-    NGRAPH_INFO << "m_batch_size " << m_batch_size;
-
+    check_io_bounds(source, tensor_offset, n / m_batch_size);
+    const element::Type& element_type = get_tensor_layout()->get_element_type();
+    size_t type_byte_size = element_type.size();
     size_t dst_start_index = tensor_offset / type_byte_size;
     size_t num_elements_to_write = n / (type_byte_size * m_batch_size);
-
-    NGRAPH_INFO << "writing " << num_elements_to_write << " elements with batch size " << m_batch_size;
 
     if (num_elements_to_write == 1)
     {
         const void* src_with_offset = (void*)((char*)source);
         size_t dst_index = dst_start_index;
 
-        if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(m_he_backend))
-        {
-            shared_ptr<runtime::he::HEPlaintext> plaintext =
-                make_shared<runtime::he::he_seal::SealPlaintextWrapper>();
-            he_seal_backend->encode(plaintext, src_with_offset, element_type, m_batch_size);
-            he_seal_backend->encrypt(m_cipher_texts[dst_index], plaintext);
-        }
-        else
-        {
-            throw ngraph_error("HECipherTensor::write, m_he_backend is not SEAL.");
-        }
+        shared_ptr<runtime::he::HEPlaintext> plaintext = m_he_backend->create_empty_plaintext();
+        m_he_backend->encode(plaintext, src_with_offset, element_type, m_batch_size);
+        m_he_backend->encrypt(m_cipher_texts[dst_index], plaintext);
     }
     else
     {
@@ -133,41 +100,32 @@ void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset
                 (void*)((char*)source + i * type_byte_size * m_batch_size);
             size_t dst_index = dst_start_index + i;
 
-            if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(m_he_backend))
+            shared_ptr<runtime::he::HEPlaintext> plaintext = m_he_backend->create_empty_plaintext();
+            if (m_batch_size > 1)
             {
-                shared_ptr<runtime::he::HEPlaintext> plaintext =
-                    make_shared<runtime::he::he_seal::SealPlaintextWrapper>();
-
-                if (m_batch_size > 1)
+                size_t allocation_size = type_byte_size * m_batch_size;
+                const void* batch_src = malloc(allocation_size);
+                if (!batch_src)
                 {
-                    size_t allocation_size = type_byte_size * m_batch_size;
-                    const void* batch_src = malloc(allocation_size);
-                    if (!batch_src)
-                    {
-                        throw ngraph_error("Error allocating HE Cipher Tensor View memory");
-                    }
-
-                    for (size_t j = 0; j < m_batch_size; ++j)
-                    {
-                        void* destination = (void*)((char*)batch_src + j * type_byte_size);
-                        const void* src = (void*)((char*)source +
-                                                  type_byte_size * (i + j * num_elements_to_write));
-                        memcpy(destination, src, type_byte_size);
-                    }
-
-                    he_seal_backend->encode(plaintext, batch_src, element_type, m_batch_size);
-                    free((void*)batch_src);
+                    throw ngraph_error("Error allocating HE Cipher Tensor View memory");
                 }
-                else
+
+                for (size_t j = 0; j < m_batch_size; ++j)
                 {
-                    he_seal_backend->encode(plaintext, src_with_offset, element_type, m_batch_size);
+                    void* destination = (void*)((char*)batch_src + j * type_byte_size);
+                    const void* src = (void*)((char*)source +
+                                                type_byte_size * (i + j * num_elements_to_write));
+                    memcpy(destination, src, type_byte_size);
                 }
-                he_seal_backend->encrypt(m_cipher_texts[dst_index], plaintext);
+
+                m_he_backend->encode(plaintext, batch_src, element_type, m_batch_size);
+                free((void*)batch_src);
             }
             else
             {
-                throw ngraph_error("HECipherTensor::write, m_he_backend is not SEAL.");
+               m_he_backend->encode(plaintext, src_with_offset, element_type, m_batch_size);
             }
+            m_he_backend->encrypt(m_cipher_texts[dst_index], plaintext);
         }
     }
 }
@@ -187,31 +145,13 @@ void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset, size_
     size_t src_start_index = tensor_offset / type_byte_size;
     size_t num_elements_to_read = n / (type_byte_size * m_batch_size);
 
-
-    NGRAPH_INFO << "reading with n = " << n;
-    NGRAPH_INFO << "type btye size " << type_byte_size;
-    NGRAPH_INFO << "m_batch_size " << m_batch_size;
-    NGRAPH_INFO << "Reading from he cipher tensor";
-    NGRAPH_INFO << "m_batch_size = " << m_batch_size;
-    NGRAPH_INFO << "num_elements_to_read " << num_elements_to_read;
-    NGRAPH_INFO << "Size of ciphertexts " << m_cipher_texts.size();
-
     if (num_elements_to_read == 1)
     {
         void* dst_with_offset = (void*)((char*)target);
         size_t src_index = src_start_index;
-        if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(m_he_backend))
-        {
-            // TODO: create_empty_plaintext()
-            shared_ptr<runtime::he::HEPlaintext> p =
-                make_shared<runtime::he::he_seal::SealPlaintextWrapper>();
-            he_seal_backend->decrypt(p, m_cipher_texts[src_index]);
-            he_seal_backend->decode(dst_with_offset, p, element_type, m_batch_size);
-        }
-        else
-        {
-            throw ngraph_error("HECipherTensor::read m_he_backend is not SEAL.");
-        }
+        shared_ptr<runtime::he::HEPlaintext> p = m_he_backend->create_empty_plaintext();
+        m_he_backend->decrypt(p, m_cipher_texts[src_index]);
+        m_he_backend->decode(dst_with_offset, p, element_type, m_batch_size);
     }
     else
     {
@@ -225,18 +165,9 @@ void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset, size_
             }
 
             size_t src_index = src_start_index + i;
-            if (auto he_seal_backend = dynamic_cast<const he_seal::HESealBackend*>(m_he_backend))
-            {
-                shared_ptr<runtime::he::HEPlaintext> p = he_seal_backend->create_empty_plaintext();
-                //    make_shared<runtime::he::he_seal::SealPlaintextWrapper>();
-                he_seal_backend->decrypt(p, m_cipher_texts[src_index]);
-                he_seal_backend->decode(dst, p, element_type, m_batch_size);
-            }
-            else
-            {
-                free(dst);
-                throw ngraph_error("HECipherTensor::read m_he_backend is not SEAL.");
-            }
+            shared_ptr<runtime::he::HEPlaintext> p = m_he_backend->create_empty_plaintext();
+            m_he_backend->decrypt(p, m_cipher_texts[src_index]);
+            m_he_backend->decode(dst, p, element_type, m_batch_size);
 
             for (size_t j = 0; j < m_batch_size; ++j)
             {
