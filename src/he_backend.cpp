@@ -91,16 +91,13 @@ shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(const element:
 shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(const element::Type& element_type,
                                                                   const Shape& shape)
 {
-    // Needed for ngraph-tf integration for batched inputs
-    /* const char* ng_batch_tensor_value = std::getenv("NGRAPH_BATCHED_TENSOR");
+    // Needed for ngraph-tf integration
+    const char* ng_batch_tensor_value = std::getenv("NGRAPH_BATCHED_TENSOR");
     if (ng_batch_tensor_value != nullptr)
     {
-        string batch_tensor = std::string(ng_batch_tensor_value);
-        NGRAPH_INFO << "batch tensor " << batch_tensor;
-        NGRAPH_INFO << "Shape " << shape;
-
+        NGRAPH_INFO << "Creating batched tensor";
         return create_batched_tensor(element_type, shape);
-    } */
+    }
 
     auto rc = make_shared<runtime::he::HECipherTensor>(
         element_type, shape, this, create_empty_ciphertext());
@@ -159,7 +156,6 @@ bool runtime::he::HEBackend::compile(shared_ptr<Function> function)
             instance.m_nodes.emplace_back(node);
         }
     }
-
     return true;
 }
 
@@ -168,7 +164,6 @@ void runtime::he::HEBackend::validate_he_call(
     const vector<shared_ptr<runtime::he::HETensor>>& outputs,
     const vector<shared_ptr<runtime::he::HETensor>>& inputs)
 {
-    NGRAPH_INFO << "HEBackend validate call";
     const op::ParameterVector& input_parameters = function->get_parameters();
     if (input_parameters.size() != inputs.size())
     {
@@ -237,11 +232,6 @@ void runtime::he::HEBackend::validate_he_call(
         }
         if (auto output_cipher_tv = dynamic_pointer_cast<HECipherTensor>(outputs[i]))
         {
-            NGRAPH_INFO << "Batched output " << output_cipher_tv->is_batched();
-            NGRAPH_INFO << "output_cipher_tv->get_expanded_shape() "
-                        << join(output_cipher_tv->get_expanded_shape());
-            NGRAPH_INFO << "function->get_output_shape(i) " << join(function->get_output_shape(i));
-
             // TODO: check if shapes are equal, not just shape sizes.
             // Currently, this fails when output shape is {3}, and
             // expanded shape is {3,1} on HE_SEAL_CKKS.dot_scalar_batch unit-test.
@@ -276,23 +266,6 @@ void runtime::he::HEBackend::validate_he_call(
     }
 }
 
-bool runtime::he::HEBackend::call(shared_ptr<Function> function,
-                                  const vector<shared_ptr<runtime::Tensor>>& outputs,
-                                  const vector<shared_ptr<runtime::Tensor>>& inputs)
-{
-    vector<shared_ptr<runtime::he::HETensor>> he_inputs;
-    vector<shared_ptr<runtime::he::HETensor>> he_outputs;
-    for (auto tv : inputs)
-    {
-        he_inputs.push_back(static_pointer_cast<runtime::he::HETensor>(tv));
-    }
-    for (auto tv : outputs)
-    {
-        he_outputs.push_back(static_pointer_cast<runtime::he::HETensor>(tv));
-    }
-    return call(function, he_outputs, he_inputs);
-}
-
 void runtime::he::HEBackend::clear_function_instance()
 {
     m_function_map.clear();
@@ -323,13 +296,31 @@ vector<runtime::PerformanceCounter>
 }
 
 bool runtime::he::HEBackend::call(shared_ptr<Function> function,
-                                  const vector<shared_ptr<runtime::he::HETensor>>& output_tvs,
-                                  const vector<shared_ptr<runtime::he::HETensor>>& input_tvs)
+                                  const vector<shared_ptr<runtime::Tensor>>& outputs,
+                                  const vector<shared_ptr<runtime::Tensor>>& inputs)
 {
-    // validate_he_call(function, output_tvs, input_tvs);
 
     compile(function);
     FunctionInstance& instance = m_function_map[function];
+
+    // convert outputs to HETensor
+    vector<shared_ptr<runtime::he::HETensor>> he_inputs;
+    for (auto tv : inputs)
+    {
+        he_inputs.push_back(static_pointer_cast<runtime::he::HETensor>(tv));
+    }
+
+    // convert inputs to HETensor
+    vector<shared_ptr<runtime::he::HETensor>> he_outputs;
+    for (auto tv : outputs)
+    {
+        he_outputs.push_back(static_pointer_cast<runtime::he::HETensor>(tv));
+    }
+
+    // Needed for ngraph-tf integration for batched inputs
+    const char* ng_batch_tensor_value = std::getenv("NGRAPH_BATCHED_TENSOR");
+
+    validate_he_call(function, he_outputs, he_inputs);
 
     // map function params -> HETensor
     unordered_map<descriptor::Tensor*, shared_ptr<runtime::he::HETensor>> tensor_map;
@@ -339,7 +330,7 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
         for (size_t i = 0; i < param->get_output_size(); ++i)
         {
             descriptor::Tensor* tv = param->get_output_tensor_ptr(i).get();
-            tensor_map.insert({tv, input_tvs[input_count++]});
+            tensor_map.insert({tv, he_inputs[input_count++]});
         }
     }
 
@@ -352,7 +343,7 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
             throw ngraph_error("One of function's outputs isn't op::Result");
         }
         descriptor::Tensor* tv = output->get_output_tensor_ptr(0).get();
-        tensor_map.insert({tv, output_tvs[output_count]});
+        tensor_map.insert({tv, he_outputs[output_count++]});
     }
 
     // for each ordered op in the graph
@@ -367,16 +358,16 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
         }
 
         // get op inputs from map
-        vector<shared_ptr<runtime::he::HETensor>> inputs;
+        vector<shared_ptr<runtime::he::HETensor>> op_inputs;
         for (const descriptor::Input& input : op->get_inputs())
         {
             descriptor::Tensor* tv = input.get_output().get_tensor_ptr().get();
-            inputs.push_back(tensor_map.at(tv));
+            op_inputs.push_back(tensor_map.at(tv));
         }
 
         // get op outputs from map or create
         bool any_batched = false;
-        vector<shared_ptr<runtime::he::HETensor>> outputs;
+        vector<shared_ptr<runtime::he::HETensor>> op_outputs;
         for (size_t i = 0; i < op->get_output_size(); ++i)
         {
             descriptor::Tensor* tv = op->get_output_tensor_ptr(i).get();
@@ -389,8 +380,8 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
                 string name = op->get_output_tensor(i).get_name();
 
                 bool plain_out = all_of(
-                    inputs.begin(), inputs.end(), [](shared_ptr<runtime::he::HETensor> input) {
-                        return dynamic_pointer_cast<HEPlainTensor>(input) != nullptr;
+                    op_inputs.begin(), op_inputs.end(), [](shared_ptr<runtime::he::HETensor> op_input) {
+                        return dynamic_pointer_cast<HEPlainTensor>(op_input) != nullptr;
                     });
                 if (plain_out)
                 {
@@ -401,8 +392,8 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
                 else
                 {
                     bool batched_out = any_of(
-                        inputs.begin(), inputs.end(), [](shared_ptr<runtime::he::HETensor> input) {
-                            if (auto input_cipher_tv = dynamic_pointer_cast<HECipherTensor>(input))
+                        op_inputs.begin(), op_inputs.end(), [](shared_ptr<runtime::he::HETensor> op_input) {
+                            if (auto input_cipher_tv = dynamic_pointer_cast<HECipherTensor>(op_input))
                             {
                                 return input_cipher_tv->is_batched();
                             }
@@ -418,7 +409,7 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
                     tensor_map.insert({tv, otv});
                 }
             }
-            outputs.push_back(tensor_map.at(tv));
+            op_outputs.push_back(tensor_map.at(tv));
         }
 
         element::Type base_type;
@@ -432,7 +423,7 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
         }
 
         instance.m_timer_map[op.get()].start();
-        generate_calls(base_type, op, outputs, inputs);
+        generate_calls(base_type, op, op_outputs, op_inputs);
         instance.m_timer_map[op.get()].stop();
 
         const string op_name = op->description();
@@ -449,12 +440,10 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
                 }
             }
         }
-
         NGRAPH_INFO << "\033[1;31m" << op->get_name() << " took "
                     << instance.m_timer_map[op.get()].get_seconds() << "s"
                     << "\033[0m";
     }
-
     return true;
 }
 
@@ -497,7 +486,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                      out0_cipher->get_elements(),
                                      element_type,
                                      this,
-                                     out0_cipher->get_element_count());
+                                     out0_cipher->get_batched_element_count());
         }
         else if (arg0_cipher != nullptr && arg1_plain != nullptr && out0_cipher != nullptr)
         {
@@ -506,7 +495,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                      out0_cipher->get_elements(),
                                      element_type,
                                      this,
-                                     out0_cipher->get_element_count());
+                                     out0_cipher->get_batched_element_count());
         }
         else if (arg0_plain != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
@@ -515,7 +504,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                      out0_cipher->get_elements(),
                                      element_type,
                                      this,
-                                     out0_cipher->get_element_count());
+                                     out0_cipher->get_batched_element_count());
         }
         else if (arg0_plain != nullptr && arg1_plain != nullptr && out0_plain != nullptr)
         {
@@ -524,7 +513,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                      out0_plain->get_elements(),
                                      element_type,
                                      this,
-                                     out0_plain->get_element_count());
+                                     out0_plain->get_batched_element_count());
         }
         else
         {
@@ -570,7 +559,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                           element_type,
                                           constant->get_data_ptr(),
                                           this,
-                                          out0_plain->get_element_count());
+                                          out0_plain->get_batched_element_count());
         }
         else
         {
@@ -756,7 +745,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                           out0_cipher->get_elements(),
                                           element_type,
                                           this,
-                                          out0_cipher->get_element_count());
+                                          out0_cipher->get_batched_element_count());
         }
         else if (arg0_cipher != nullptr && arg1_plain != nullptr && out0_cipher != nullptr)
         {
@@ -765,7 +754,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                           out0_cipher->get_elements(),
                                           element_type,
                                           this,
-                                          out0_cipher->get_element_count());
+                                          out0_cipher->get_batched_element_count());
         }
         else if (arg0_plain != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
@@ -774,7 +763,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                           out0_cipher->get_elements(),
                                           element_type,
                                           this,
-                                          out0_cipher->get_element_count());
+                                          out0_cipher->get_batched_element_count());
         }
         else if (arg0_plain != nullptr && arg1_plain != nullptr && out0_plain != nullptr)
         {
@@ -783,7 +772,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                           out0_plain->get_elements(),
                                           element_type,
                                           this,
-                                          out0_plain->get_element_count());
+                                          out0_plain->get_batched_element_count());
         }
         else
         {
@@ -798,7 +787,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                         out0_cipher->get_elements(),
                                         element_type,
                                         this,
-                                        out0_cipher->get_element_count());
+                                        out0_cipher->get_batched_element_count());
         }
         else if (arg0_plain != nullptr && out0_plain != nullptr)
         {
@@ -806,7 +795,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                         out0_plain->get_elements(),
                                         element_type,
                                         this,
-                                        out0_plain->get_element_count());
+                                        out0_plain->get_batched_element_count());
         }
         else
         {
@@ -817,6 +806,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
     {
         shared_ptr<op::Pad> pad = dynamic_pointer_cast<op::Pad>(node);
 
+        // TODO: clean up
         Shape arg0_shape = node->get_inputs().at(0).get_shape();
         Shape out_shape = node->get_output_shape(0);
         if (arg0_cipher != nullptr && out0_cipher != nullptr)
@@ -901,11 +891,13 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
 
         if (arg0_cipher != nullptr && out0_cipher != nullptr)
         {
+            // TODO: cleanup
             size_t output_size = shape_size(res->get_shape());
             if (arg0_cipher->is_batched())
             {
                 output_size /= arg0_cipher->get_batch_size();
             }
+            NGRAPH_INFO << "Result output size " << output_size;
             runtime::he::kernel::result(
                 arg0_cipher->get_elements(), out0_cipher->get_elements(), output_size);
         }
@@ -964,7 +956,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                           out0_cipher->get_elements(),
                                           element_type,
                                           this,
-                                          out0_cipher->get_element_count());
+                                          out0_cipher->get_batched_element_count());
         }
         else if (arg0_cipher != nullptr && arg1_plain != nullptr && out0_cipher != nullptr)
         {
@@ -973,7 +965,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                           out0_cipher->get_elements(),
                                           element_type,
                                           this,
-                                          out0_cipher->get_element_count());
+                                          out0_cipher->get_batched_element_count());
         }
         else if (arg0_plain != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
         {
@@ -982,7 +974,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                           out0_cipher->get_elements(),
                                           element_type,
                                           this,
-                                          out0_cipher->get_element_count());
+                                          out0_cipher->get_batched_element_count());
         }
         else if (arg0_plain != nullptr && arg1_plain != nullptr && out0_plain != nullptr)
         {
@@ -991,7 +983,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                           out0_plain->get_elements(),
                                           element_type,
                                           this,
-                                          out0_plain->get_element_count());
+                                          out0_plain->get_batched_element_count());
         }
         else
         {

@@ -185,10 +185,6 @@ namespace ngraph
                     const std::shared_ptr<Node>& op,
                     const std::vector<std::shared_ptr<runtime::he::HETensor>>& outputs,
                     const std::vector<std::shared_ptr<runtime::he::HETensor>>& inputs);
-
-                bool call(std::shared_ptr<Function> function,
-                          const std::vector<std::shared_ptr<runtime::he::HETensor>>& outputs,
-                          const std::vector<std::shared_ptr<runtime::he::HETensor>>& inputs);
             };
         }
     }

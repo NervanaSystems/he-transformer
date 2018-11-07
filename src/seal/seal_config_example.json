@@ -1,9 +1,0 @@
-{
-    "poly_modulus": 8192,
-    "plain_modulus": 2147483648,
-    "security_level": 128,
-    "fractional_encoder_integer_coeff_count": 64,
-    "fractional_encoder_fraction_coeff_count": 32,
-    "fractional_encoder_base": 2,
-    "evaluation_decomposition_bit_count": 16
-}

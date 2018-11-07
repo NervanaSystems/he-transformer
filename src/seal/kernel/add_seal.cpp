@@ -14,6 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include <iomanip>
+
 #include "seal/kernel/add_seal.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/ckks/he_seal_ckks_backend.hpp"

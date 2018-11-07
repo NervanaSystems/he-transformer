@@ -17,10 +17,10 @@ This trains the network briefly and stores the network weights.
 ## Python
 To test the network, run
 ```
-NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_13.json NGRAPH_TF_BACKEND=HE:SEAL:CKKS python test.py --batch_size=1
+NGRAPH_BATCHED_TENSOR=1 NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_13.json NGRAPH_TF_BACKEND=HE:SEAL:CKKS python test.py --batch_size=4096 --report_accuracy=1
 ```
 This runs inference on the Cryptonets network using the SEAL CKKS backend.
-The `he_seal_ckks_config_13.json` file specifies the parameters which to run the model on. You can also use the `he_seal_ckks_config_14.json` or create your own configuration. Note: the model currently doesn't support batch sizes besides 1.
+The `he_seal_ckks_config_13.json` file specifies the parameters which to run the model on. You can also use the `he_seal_ckks_config_14.json` or create your own configuration. Note: the batch size must be beweteen 1 and 4096.
 
 To export the serialized model for use in C++ integration with nGraph, run
 ```

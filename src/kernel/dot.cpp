@@ -137,16 +137,21 @@ void kernel::dot(const vector<shared_ptr<HEPlaintext>>& arg0,
     CoordinateTransform dot_axes_transform(dot_axis_sizes);
 
     // Get arg0_projected_size and arg1_projected_size for parallelization
-    size_t arg0_projected_size = 0;
-    for (const Coordinate& arg0_projected_coord : arg0_projected_transform)
+    // and pre-compute coordinates
+    std::vector<ngraph::Coordinate> arg0_projected_coords;
+    for (const Coordinate& coord : arg0_projected_transform)
     {
-        arg0_projected_size++;
+        arg0_projected_coords.emplace_back(coord);
     }
-    size_t arg1_projected_size = 0;
-    for (const Coordinate& arg1_projected_coord : arg1_projected_transform)
+
+    std::vector<ngraph::Coordinate> arg1_projected_coords;
+    for (const Coordinate& coord : arg1_projected_transform)
     {
-        arg1_projected_size++;
+        arg1_projected_coords.emplace_back(coord);
     }
+
+    size_t arg0_projected_size = arg0_projected_coords.size();
+    size_t arg1_projected_size = arg1_projected_coords.size();
     size_t global_projected_size = arg0_projected_size * arg1_projected_size;
 
 #pragma omp parallel for
@@ -157,28 +162,8 @@ void kernel::dot(const vector<shared_ptr<HEPlaintext>>& arg0,
         size_t arg0_projected_idx = global_projected_idx / arg1_projected_size;
         size_t arg1_projected_idx = global_projected_idx % arg1_projected_size;
 
-        // TODO: move to coordinate transform, or precompute this and store in a
-        //       matrix
-        auto arg0_projected_it = arg0_projected_transform.begin();
-        for (size_t i = 0; i < arg0_projected_idx; ++i)
-        {
-            /* if (arg0_projected_it == arg0_projected_transform.end())
-            {
-                throw ngraph_error("Reached end of iterator");
-            } */
-            ++arg0_projected_it;
-        }
-        const Coordinate& arg0_projected_coord = *arg0_projected_it;
-        auto arg1_projected_it = arg1_projected_transform.begin();
-        for (size_t i = 0; i < arg1_projected_idx; ++i)
-        {
-            if (arg1_projected_it == arg1_projected_transform.end())
-            {
-                throw ngraph_error("Reached end of iterator");
-            }
-            ++arg1_projected_it;
-        }
-        const Coordinate& arg1_projected_coord = *arg1_projected_it;
+        const Coordinate& arg0_projected_coord = arg0_projected_coords[arg0_projected_idx];
+        const Coordinate& arg1_projected_coord = arg1_projected_coords[arg1_projected_idx];
 
         // The output coordinate is just the concatenation of the projected coordinates.
         Coordinate out_coord(arg0_projected_coord.size() + arg1_projected_coord.size());
