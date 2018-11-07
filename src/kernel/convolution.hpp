@@ -322,7 +322,6 @@ void ngraph::runtime::he::kernel::convolution_template(
 
         std::vector<std::shared_ptr<runtime::he::HECiphertext>> summands;
 
-
         while (input_it != input_batch_transform.end() && filter_it != filter_transform.end())
         {
             const Coordinate& input_batch_coord = *input_it;
@@ -355,7 +354,6 @@ void ngraph::runtime::he::kernel::convolution_template(
             ++input_it;
             ++filter_it;
         }
-
         if (summands.size() == 0)
         {
             out[output_transform.index(out_coord)] =

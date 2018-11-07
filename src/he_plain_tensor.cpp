@@ -26,16 +26,16 @@ using namespace std;
 
 runtime::he::HEPlainTensor::HEPlainTensor(const element::Type& element_type,
                                           const Shape& shape,
-                                          const HEBackend* m_he_backend,
+                                          const HEBackend* he_backend,
                                           const shared_ptr<HEPlaintext> he_plaintext,
                                           const string& name)
-    : runtime::he::HETensor(element_type, shape, m_he_backend)
+    : runtime::he::HETensor(element_type, shape, he_backend)
 {
     m_num_elements = m_descriptor->get_tensor_layout()->get_size();
     m_plain_texts.resize(m_num_elements);
     for (size_t i = 0; i < m_num_elements; ++i)
     {
-        m_plain_texts[i] = m_he_backend->create_empty_plaintext();
+        m_plain_texts[i] = he_backend->create_empty_plaintext();
     }
 }
 

@@ -165,10 +165,6 @@ static void run_cryptonets_benchmark(string backend_name, size_t batch_size, boo
 int main()
 {
     //run_cryptonets_benchmark("INTERPRETER", 1);
-    run_cryptonets_benchmark("HE:SEAL:CKKS", 2);
-
-    return 0;
-
     // Run unbatched version as warm-up
     run_cryptonets_benchmark("HE:SEAL:CKKS", 1, false);
     for (size_t batch_size = 1; batch_size <= 4096; batch_size *= 2)
