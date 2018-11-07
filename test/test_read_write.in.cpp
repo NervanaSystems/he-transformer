@@ -136,19 +136,3 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_batch)
     EXPECT_EQ(generalized_read_vector<float>(a),
               (test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector());
 }
-
-NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_unbatched_to_batched)
-{
-    auto backend = static_pointer_cast<runtime::he::HEBackend>(
-        runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
-
-    Shape shape{2, 3};
-    auto a = backend->create_tensor(element::f32, shape);
-    copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector());
-
-    auto b = backend->unbatched_to_batched(a);
-
-    EXPECT_EQ(generalized_read_vector<float>(b),
-              (test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector());
-}
-

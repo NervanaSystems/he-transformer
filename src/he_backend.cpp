@@ -302,47 +302,6 @@ vector<runtime::PerformanceCounter>
     return rc;
 }
 
-// TODO: move to CipherTensor
-shared_ptr<runtime::he::HETensor> runtime::he::HEBackend::unbatched_to_batched(const shared_ptr<runtime::Tensor> tv, bool copy_elements)
-{
-    NGRAPH_INFO << "shape " << join(tv->get_shape());
-
-    auto batched_tv = static_pointer_cast<runtime::he::HECipherTensor>(create_batched_tensor(tv->get_element_type(), tv->get_shape()));
-
-    NGRAPH_INFO << "Cast okay.";
-
-    if(copy_elements)
-    {
-        size_t element_count = shape_size(tv->get_shape());
-        size_t size = element_count * sizeof(float);
-
-        NGRAPH_INFO << "elemnt count " << element_count;
-        std::vector<float> elements(element_count);
-        tv->read(elements.data(), 0, size);
-
-        NGRAPH_INFO << "read elements ";
-
-        size_t batch_size = batched_tv->get_batch_size();
-        //size_t num_elements_to_encode = element_count / batch_size;
-
-        NGRAPH_INFO << "num element " << elements.size();
-        NGRAPH_INFO << "batch_size " << batch_size;
-
-        /* for(size_t batch = 0; batch < batch_size; ++batch)
-        {
-            for(size_t element_ind = 0; j < num_elements_to_encode; ++element_ind)
-            {
-                batched_elements[element_ind * batch_size +  ] = elements[num_elements_to_encode * batch + element_ind];
-            }
-
-        } */
-
-        batched_tv->write(elements.data(), 0, size);
-    }
-
-    return batched_tv;
-}
-
 bool runtime::he::HEBackend::call(shared_ptr<Function> function,
                                   const vector<shared_ptr<runtime::Tensor>>& outputs,
                                   const vector<shared_ptr<runtime::Tensor>>& inputs)
@@ -378,17 +337,7 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
         for (size_t i = 0; i < param->get_output_size(); ++i)
         {
             descriptor::Tensor* tv = param->get_output_tensor_ptr(i).get();
-
-            /* if (ng_batch_tensor_value != nullptr)
-            {
-                NGRAPH_INFO << "Converting unbatched parameter tensor to batched parameter tensor";
-                shared_ptr<runtime::he::HETensor> batched_tv = unbatched_to_batched(he_inputs[input_count++]);
-                tensor_map.insert({tv, batched_tv});
-            }
-            else
-            { */
-                tensor_map.insert({tv, he_inputs[input_count++]});
-            //}
+            tensor_map.insert({tv, he_inputs[input_count++]});
         }
     }
 
@@ -400,22 +349,9 @@ bool runtime::he::HEBackend::call(shared_ptr<Function> function,
         {
             throw ngraph_error("One of function's outputs isn't op::Result");
         }
-
         descriptor::Tensor* tv = output->get_output_tensor_ptr(0).get();
-        /* if (ng_batch_tensor_value != nullptr)
-        {
-            NGRAPH_INFO << "Converting unbatched result tensor to batched result tensor";
-            shared_ptr<runtime::he::HETensor> batched_tv = unbatched_to_batched(he_outputs[output_count++], false);
-            tensor_map.insert({tv, batched_tv});
-
-            he_outputs[output_count] = batched_tv;
-        }
-        else
-        { */
-            tensor_map.insert({tv, he_outputs[output_count++]});
-        //}
+        tensor_map.insert({tv, he_outputs[output_count++]});
     }
-
 
     // for each ordered op in the graph
     for (shared_ptr<Node> op : function->get_ordered_ops())
