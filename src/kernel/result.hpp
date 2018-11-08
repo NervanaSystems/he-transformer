@@ -15,47 +15,45 @@
 //*****************************************************************************
 
 #pragma once
+
 #include <memory>
 #include <vector>
 
+#include "he_backend.hpp"
+#include "he_ciphertext.hpp"
+#include "he_plaintext.hpp"
+
+#include "ngraph/log.hpp"
+
 namespace ngraph
 {
-    namespace element
-    {
-        class Type;
-    }
     namespace runtime
     {
         namespace he
         {
-            class HEBackend;
-            class HECipherText;
-            class HEPlaintext;
-
             namespace kernel
             {
-                void result(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg,
-                            std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
-                            size_t count);
+                template <typename T>
+                void result(const std::vector<std::shared_ptr<T>>& arg,
+                                  std::vector<std::shared_ptr<T>>& out,
+                                  size_t count)
+                {
+                    if (out.size() != arg.size())
+                    {
+                        NGRAPH_INFO << "Result output size " << out.size() << " does not match result input size "
+                                    << arg.size();
+                        throw ngraph_error("Wrong size in result");
+                    }
+                    for (size_t i = 0; i < count; ++i)
+                    {
+                        out[i] = arg[i];
+                    }
+                }
 
                 void result(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg,
-                            std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
-                            size_t count);
-
-                void result(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg,
-                            std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
-                            size_t count);
-
-                void result(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg,
-                            std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
-                            size_t count,
-                            const element::Type& element_type,
-                            const runtime::he::HEBackend* he_backend);
-
-                void result(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg,
-                            std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
-                            size_t count,
-                            const runtime::he::HEBackend* he_backend);
+                                  std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
+                                  size_t count,
+                                  const runtime::he::HEBackend* he_backend);
             }
         }
     }

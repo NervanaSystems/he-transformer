@@ -14,21 +14,15 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include <vector>
-
-#include "he_backend.hpp"
-#include "he_ciphertext.hpp"
-#include "he_plaintext.hpp"
 #include "kernel/result.hpp"
-#include "ngraph/type/element_type.hpp"
-#include "seal/he_seal_backend.hpp"
 
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::result(const vector<shared_ptr<runtime::he::HECiphertext>>& arg,
+void runtime::he::kernel::result(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg,
                                  vector<shared_ptr<runtime::he::HECiphertext>>& out,
-                                 size_t count)
+                                 size_t count,
+                                 const runtime::he::HEBackend* he_backend)
 {
     if (out.size() != arg.size())
     {
@@ -38,43 +32,6 @@ void runtime::he::kernel::result(const vector<shared_ptr<runtime::he::HECipherte
     }
     for (size_t i = 0; i < count; ++i)
     {
-        out[i] = arg[i];
-    }
-}
-
-void runtime::he::kernel::result(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg,
-                                 vector<shared_ptr<runtime::he::HEPlaintext>>& out,
-                                 size_t count)
-{
-    for (size_t i = 0; i < count; ++i)
-    {
-        out[i] = arg[i];
-    }
-}
-
-void runtime::he::kernel::result(const vector<shared_ptr<runtime::he::HECiphertext>>& arg,
-                                 vector<shared_ptr<runtime::he::HEPlaintext>>& out,
-                                 size_t count,
-                                 const element::Type& element_type,
-                                 const runtime::he::HEBackend* he_backend)
-{
-    throw ngraph_error("Result plaintext to ciphertext unimplemented");
-}
-
-void runtime::he::kernel::result(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg,
-                                 vector<shared_ptr<runtime::he::HECiphertext>>& out,
-                                 size_t count,
-                                 const runtime::he::HEBackend* he_backend)
-{
-    if (auto he_seal_backend = dynamic_cast<const runtime::he::he_seal::HESealBackend*>(he_backend))
-    {
-        for (size_t i = 0; i < count; ++i)
-        {
-            he_seal_backend->encrypt(out[i], arg[i]);
-        }
-    }
-    else
-    {
-        throw ngraph_error("Result backend is not SEAL.");
+        he_backend->encrypt(out[i], arg[i]);
     }
 }
