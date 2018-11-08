@@ -14,67 +14,12 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include <vector>
-
 #include "kernel/add.hpp"
-#include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/kernel/add_seal.hpp"
 
 using namespace std;
 using namespace ngraph::runtime::he;
-
-void kernel::add(const vector<shared_ptr<HECiphertext>>& arg0,
-                 const vector<shared_ptr<HECiphertext>>& arg1,
-                 vector<shared_ptr<HECiphertext>>& out,
-                 const element::Type& element_type,
-                 const HEBackend* he_backend,
-                 size_t count)
-{
-#pragma omp parallel for
-    for (size_t i = 0; i < count; ++i)
-    {
-        scalar_add(arg0[i], arg1[i], out[i], element_type, he_backend);
-    }
-}
-
-void kernel::add(const vector<shared_ptr<HECiphertext>>& arg0,
-                 const vector<shared_ptr<HEPlaintext>>& arg1,
-                 vector<shared_ptr<HECiphertext>>& out,
-                 const element::Type& element_type,
-                 const HEBackend* he_backend,
-                 size_t count)
-{
-#pragma omp parallel for
-    for (size_t i = 0; i < count; ++i)
-    {
-        scalar_add(arg0[i], arg1[i], out[i], element_type, he_backend);
-    }
-}
-
-void kernel::add(const vector<shared_ptr<HEPlaintext>>& arg0,
-                 const vector<shared_ptr<HECiphertext>>& arg1,
-                 vector<shared_ptr<HECiphertext>>& out,
-                 const element::Type& element_type,
-                 const HEBackend* he_backend,
-                 size_t count)
-{
-    add(arg1, arg0, out, element_type, he_backend, count);
-}
-
-void kernel::add(const vector<shared_ptr<HEPlaintext>>& arg0,
-                 const vector<shared_ptr<HEPlaintext>>& arg1,
-                 vector<shared_ptr<HEPlaintext>>& out,
-                 const element::Type& element_type,
-                 const HEBackend* he_backend,
-                 size_t count)
-{
-#pragma omp parallel for
-    for (size_t i = 0; i < count; ++i)
-    {
-        scalar_add(arg0[i], arg1[i], out[i], element_type, he_backend);
-    }
-}
 
 void kernel::scalar_add(const shared_ptr<HECiphertext>& arg0,
                         const shared_ptr<HECiphertext>& arg1,
