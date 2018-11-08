@@ -69,7 +69,8 @@ namespace ngraph
             protected:
                 void check_io_bounds(const void* p, size_t tensor_offset, size_t n) const;
 
-                bool m_batched;      // Whether or not the tensor is batched, i.e. stores more than one scalar per element.
+                bool
+                    m_batched; // Whether or not the tensor is batched, i.e. stores more than one scalar per element.
                 size_t m_batch_size; // If m_batched, corresponds to first shape dimesion.
 
                 const HEBackend* m_he_backend;

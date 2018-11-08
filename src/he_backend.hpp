@@ -74,14 +74,20 @@ namespace ngraph
                 /// @return Shared pointer to created ciphertext
                 template <typename T>
                 std::shared_ptr<runtime::he::HECiphertext>
-                    create_empty_hetext(std::shared_ptr<runtime::he::HECiphertext>) const { return create_empty_ciphertext(); };
+                    create_empty_hetext(std::shared_ptr<runtime::he::HECiphertext>) const
+                {
+                    return create_empty_ciphertext();
+                };
 
                 /// @brief Creates plaintext of unspecified value
                 /// Alias for create_empty_plaintext()
                 /// @return Shared pointer to created plaintext
                 template <typename T>
                 std::shared_ptr<runtime::he::HEPlaintext>
-                    create_empty_hetext(std::shared_ptr<runtime::he::HEPlaintext>) const { return create_empty_plaintext(); };
+                    create_empty_hetext(std::shared_ptr<runtime::he::HEPlaintext>) const
+                {
+                    return create_empty_plaintext();
+                };
 
                 /// @brief Creates ciphertext of specified value
                 /// @param value Scalar which to encrypt
@@ -107,8 +113,7 @@ namespace ngraph
                     create_valued_hetext(float value,
                                          const element::Type& element_type,
                                          std::shared_ptr<runtime::he::HECiphertext>,
-                                         size_t batch_size = 1
-                                         ) const
+                                         size_t batch_size = 1) const
                 {
                     return create_valued_ciphertext(value, element_type, batch_size);
                 };
@@ -120,8 +125,7 @@ namespace ngraph
                 std::shared_ptr<runtime::he::HEPlaintext>
                     create_valued_hetext(float value,
                                          const element::Type& element_type,
-                                         std::shared_ptr<runtime::he::HEPlaintext>
-                                         ) const
+                                         std::shared_ptr<runtime::he::HEPlaintext>) const
                 {
                     return create_valued_plaintext(value, element_type);
                 };

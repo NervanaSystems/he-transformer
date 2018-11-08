@@ -37,30 +37,29 @@ namespace ngraph
             {
                 template <typename S, typename T, typename V>
                 void dot(const std::vector<std::shared_ptr<S>>& arg0,
-                                  const std::vector<std::shared_ptr<T>>& arg1,
-                                  std::vector<std::shared_ptr<V>>& out,
-                                  const Shape& arg0_shape,
-                                  const Shape& arg1_shape,
-                                  const Shape& out_shape,
-                                  size_t reduction_axes_count,
-                                  const element::Type& element_type,
-                                  const runtime::he::HEBackend* he_backend);
+                         const std::vector<std::shared_ptr<T>>& arg1,
+                         std::vector<std::shared_ptr<V>>& out,
+                         const Shape& arg0_shape,
+                         const Shape& arg1_shape,
+                         const Shape& out_shape,
+                         size_t reduction_axes_count,
+                         const element::Type& element_type,
+                         const runtime::he::HEBackend* he_backend);
             }
         }
     }
 }
 
 template <typename S, typename T, typename V>
-void ngraph::runtime::he::kernel::dot(
-    const std::vector<std::shared_ptr<S>>& arg0,
-    const std::vector<std::shared_ptr<T>>& arg1,
-    std::vector<std::shared_ptr<V>>& out,
-    const Shape& arg0_shape,
-    const Shape& arg1_shape,
-    const Shape& out_shape,
-    size_t reduction_axes_count,
-    const element::Type& element_type,
-    const runtime::he::HEBackend* he_backend)
+void ngraph::runtime::he::kernel::dot(const std::vector<std::shared_ptr<S>>& arg0,
+                                      const std::vector<std::shared_ptr<T>>& arg1,
+                                      std::vector<std::shared_ptr<V>>& out,
+                                      const Shape& arg0_shape,
+                                      const Shape& arg1_shape,
+                                      const Shape& out_shape,
+                                      size_t reduction_axes_count,
+                                      const element::Type& element_type,
+                                      const runtime::he::HEBackend* he_backend)
 {
     // Get the sizes of the dot axes. It's easiest to pull them from arg1 because they're
     // right up front.
