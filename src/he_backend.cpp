@@ -895,13 +895,7 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
 
         if (arg0_cipher != nullptr && out0_cipher != nullptr)
         {
-            // TODO: cleanup
-            size_t output_size = shape_size(res->get_shape());
-            if (arg0_cipher->is_batched())
-            {
-                output_size /= arg0_cipher->get_batch_size();
-            }
-            NGRAPH_INFO << "Result output size " << output_size;
+            size_t output_size = arg0_cipher->get_batched_element_count();
             runtime::he::kernel::result(
                 arg0_cipher->get_elements(), out0_cipher->get_elements(), output_size);
         }
