@@ -59,6 +59,77 @@ namespace ngraph
                 HEBackend(HEBackend& he_backend) = default;
                 ~HEBackend(){};
 
+                /// @brief Creates ciphertext of unspecified value
+                /// @return Shared pointer to created ciphertext
+                virtual std::shared_ptr<runtime::he::HECiphertext>
+                    create_empty_ciphertext() const = 0;
+
+                /// @brief Creates plaintext of unspecified value
+                /// @return Shared pointer to created plaintext
+                virtual std::shared_ptr<runtime::he::HEPlaintext>
+                    create_empty_plaintext() const = 0;
+
+                /// @brief Creates ciphertext of unspecified value
+                /// Alias for create_empty_ciphertext()
+                /// @return Shared pointer to created ciphertext
+                template <typename T>
+                std::shared_ptr<runtime::he::HECiphertext>
+                    create_empty_hetext(std::shared_ptr<runtime::he::HECiphertext>) const
+                {
+                    return create_empty_ciphertext();
+                };
+
+                /// @brief Creates plaintext of unspecified value
+                /// Alias for create_empty_plaintext()
+                /// @return Shared pointer to created plaintext
+                template <typename T>
+                std::shared_ptr<runtime::he::HEPlaintext>
+                    create_empty_hetext(std::shared_ptr<runtime::he::HEPlaintext>) const
+                {
+                    return create_empty_plaintext();
+                };
+
+                /// @brief Creates ciphertext of specified value
+                /// @param value Scalar which to encrypt
+                /// @param element_type Type to encrypt
+                /// @param batch_size Number of elements to encrypt
+                ///        > 1 indicates batching
+                /// @return Shared pointer to created ciphertext
+                std::shared_ptr<runtime::he::HECiphertext> create_valued_ciphertext(
+                    float value, const element::Type& element_type, size_t batch_size = 1) const;
+
+                /// @brief Creates plaintext of specified value
+                /// @param value Scalar which to encode
+                /// @param element_type Type to encode
+                /// @return Shared pointer to created plaintext
+                std::shared_ptr<runtime::he::HEPlaintext>
+                    create_valued_plaintext(float value, const element::Type& element_type) const;
+
+                /// @brief Creates ciphertext of specified value
+                /// Alias for create_valued_ciphertext()
+                /// @return Shared pointer to created ciphertext
+                template <typename T>
+                std::shared_ptr<runtime::he::HECiphertext>
+                    create_valued_hetext(float value,
+                                         const element::Type& element_type,
+                                         std::shared_ptr<runtime::he::HECiphertext>,
+                                         size_t batch_size = 1) const
+                {
+                    return create_valued_ciphertext(value, element_type, batch_size);
+                };
+
+                /// @brief Creates plaintext of specified value
+                /// Alias for create_valued_plaintext()
+                /// @return Shared pointer to created plaintext
+                template <typename T>
+                std::shared_ptr<runtime::he::HEPlaintext>
+                    create_valued_hetext(float value,
+                                         const element::Type& element_type,
+                                         std::shared_ptr<runtime::he::HEPlaintext>) const
+                {
+                    return create_valued_plaintext(value, element_type);
+                };
+
                 std::shared_ptr<runtime::Tensor> create_tensor(const element::Type& element_type,
                                                                const Shape& shape) override;
 
@@ -73,32 +144,6 @@ namespace ngraph
 
                 std::shared_ptr<runtime::Tensor>
                     create_plain_tensor(const element::Type& element_type, const Shape& shape);
-
-                /// @brief Creates ciphertext of specified value
-                /// @param value Scalar which to encrypt
-                /// @param element_type Type to encrypt
-                /// @param batch_size Number of elements to encrypt
-                ///        > 1 indicates batching
-                /// @return Shared pointer to created ciphertext
-                std::shared_ptr<runtime::he::HECiphertext> create_valued_ciphertext(
-                    float value, const element::Type& element_type, size_t batch_size = 1) const;
-
-                /// @brief Creates ciphertext of unspecified value
-                /// @return Shared pointer to created ciphertext
-                virtual std::shared_ptr<runtime::he::HECiphertext>
-                    create_empty_ciphertext() const = 0;
-
-                /// @brief Creates plaintext of specified value
-                /// @param value Scalar which to encode
-                /// @param element_type Type to encode
-                /// @return Shared pointer to created plaintext
-                std::shared_ptr<runtime::he::HEPlaintext>
-                    create_valued_plaintext(float value, const element::Type& element_type) const;
-
-                /// @brief Creates plaintext of unspecified value
-                /// @return Shared pointer to created plaintext
-                virtual std::shared_ptr<runtime::he::HEPlaintext>
-                    create_empty_plaintext() const = 0;
 
                 /// @brief Creates ciphertext Tensor of the same value
                 /// @param value Scalar which to enrypt

@@ -129,12 +129,9 @@ runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend(
                                              sp->m_fractional_encoder_base);
 
     // Plaintext constants
-    m_plaintext_map[-1] = make_shared<SealPlaintextWrapper>(m_frac_encoder->encode(double(-1)));
-    ;
-    m_plaintext_map[0] = make_shared<SealPlaintextWrapper>(m_frac_encoder->encode(double(0)));
-    ;
-    m_plaintext_map[1] = make_shared<SealPlaintextWrapper>(m_frac_encoder->encode(double(1)));
-    ;
+    m_plaintext_map[-1] = make_shared<SealPlaintextWrapper>(m_frac_encoder->encode(-1.));
+    m_plaintext_map[0] = make_shared<SealPlaintextWrapper>(m_frac_encoder->encode(0.));
+    m_plaintext_map[1] = make_shared<SealPlaintextWrapper>(m_frac_encoder->encode(1.));
 }
 
 extern "C" runtime::Backend* new_bfv_backend(const char* configuration_string)

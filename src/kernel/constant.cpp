@@ -15,8 +15,6 @@
 //*****************************************************************************
 
 #include "kernel/constant.hpp"
-#include "he_backend.hpp"
-#include "ngraph/type/element_type.hpp"
 
 using namespace std;
 using namespace ngraph;

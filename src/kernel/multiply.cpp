@@ -17,65 +17,12 @@
 #include <vector>
 
 #include "kernel/multiply.hpp"
-#include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/kernel/multiply_seal.hpp"
 #include "seal/kernel/negate_seal.hpp"
 
 using namespace std;
 using namespace ngraph::runtime::he;
-
-void kernel::multiply(const vector<shared_ptr<HECiphertext>>& arg0,
-                      const vector<shared_ptr<HECiphertext>>& arg1,
-                      vector<shared_ptr<HECiphertext>>& out,
-                      const element::Type& element_type,
-                      const HEBackend* he_backend,
-                      size_t count)
-{
-#pragma omp parallel for
-    for (size_t i = 0; i < count; ++i)
-    {
-        scalar_multiply(arg0[i], arg1[i], out[i], element_type, he_backend);
-    }
-}
-
-void kernel::multiply(const vector<shared_ptr<HECiphertext>>& arg0,
-                      const vector<shared_ptr<HEPlaintext>>& arg1,
-                      vector<shared_ptr<HECiphertext>>& out,
-                      const element::Type& element_type,
-                      const HEBackend* he_backend,
-                      size_t count)
-{
-#pragma omp parallel for
-    for (size_t i = 0; i < count; ++i)
-    {
-        scalar_multiply(arg0[i], arg1[i], out[i], element_type, he_backend);
-    }
-}
-
-void kernel::multiply(const vector<shared_ptr<HEPlaintext>>& arg0,
-                      const vector<shared_ptr<HECiphertext>>& arg1,
-                      vector<shared_ptr<HECiphertext>>& out,
-                      const element::Type& element_type,
-                      const HEBackend* he_backend,
-                      size_t count)
-{
-    multiply(arg1, arg0, out, element_type, he_backend, count);
-}
-
-void kernel::multiply(const vector<shared_ptr<HEPlaintext>>& arg0,
-                      const vector<shared_ptr<HEPlaintext>>& arg1,
-                      vector<shared_ptr<HEPlaintext>>& out,
-                      const element::Type& element_type,
-                      const HEBackend* he_backend,
-                      size_t count)
-{
-#pragma omp parallel for
-    for (size_t i = 0; i < count; ++i)
-    {
-        scalar_multiply(arg0[i], arg1[i], out[i], element_type, he_backend);
-    }
-}
 
 void kernel::scalar_multiply(const shared_ptr<HECiphertext>& arg0,
                              const shared_ptr<HECiphertext>& arg1,

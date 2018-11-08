@@ -35,18 +35,6 @@ namespace ngraph
 
             namespace kernel
             {
-                void negate(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg,
-                            std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
-                            const element::Type& element_type,
-                            const runtime::he::HEBackend* he_backend,
-                            size_t count);
-
-                void negate(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg,
-                            std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
-                            const element::Type& element_type,
-                            const runtime::he::HEBackend* he_backend,
-                            size_t count);
-
                 void scalar_negate(const std::shared_ptr<runtime::he::HECiphertext>& arg,
                                    std::shared_ptr<runtime::he::HECiphertext>& out,
                                    const element::Type& element_type,
@@ -56,6 +44,20 @@ namespace ngraph
                                    std::shared_ptr<runtime::he::HEPlaintext>& out,
                                    const element::Type& element_type,
                                    const runtime::he::HEBackend* he_backend);
+
+                template <typename T>
+                void negate(const std::vector<std::shared_ptr<T>>& arg,
+                            std::vector<std::shared_ptr<T>>& out,
+                            const element::Type& element_type,
+                            const runtime::he::HEBackend* he_backend,
+                            size_t count)
+                {
+#pragma omp parallel for
+                    for (size_t i = 0; i < count; ++i)
+                    {
+                        kernel::scalar_negate(arg[i], out[i], element_type, he_backend);
+                    }
+                }
             }
         }
     }

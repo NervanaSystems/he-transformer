@@ -19,68 +19,11 @@
 #include "kernel/add.hpp"
 #include "kernel/negate.hpp"
 #include "kernel/subtract.hpp"
-#include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/kernel/subtract_seal.hpp"
 
 using namespace std;
 using namespace ngraph::runtime::he;
-
-void kernel::subtract(const vector<shared_ptr<HECiphertext>>& arg0,
-                      const vector<shared_ptr<HECiphertext>>& arg1,
-                      vector<shared_ptr<HECiphertext>>& out,
-                      const element::Type& element_type,
-                      const HEBackend* he_backend,
-                      size_t count)
-{
-#pragma omp parallel for
-    for (size_t i = 0; i < count; ++i)
-    {
-        scalar_subtract(arg0[i], arg1[i], out[i], element_type, he_backend);
-    }
-}
-
-void kernel::subtract(const vector<shared_ptr<HECiphertext>>& arg0,
-                      const vector<shared_ptr<HEPlaintext>>& arg1,
-                      vector<shared_ptr<HECiphertext>>& out,
-                      const element::Type& element_type,
-                      const HEBackend* he_backend,
-                      size_t count)
-{
-#pragma omp parallel for
-    for (size_t i = 0; i < count; ++i)
-    {
-        scalar_subtract(arg0[i], arg1[i], out[i], element_type, he_backend);
-    }
-}
-
-void kernel::subtract(const vector<shared_ptr<HEPlaintext>>& arg0,
-                      const vector<shared_ptr<HECiphertext>>& arg1,
-                      vector<shared_ptr<HECiphertext>>& out,
-                      const element::Type& element_type,
-                      const HEBackend* he_backend,
-                      size_t count)
-{
-#pragma omp parallel for
-    for (size_t i = 0; i < count; ++i)
-    {
-        scalar_subtract(arg0[i], arg1[i], out[i], element_type, he_backend);
-    }
-}
-
-void kernel::subtract(const vector<shared_ptr<HEPlaintext>>& arg0,
-                      const vector<shared_ptr<HEPlaintext>>& arg1,
-                      vector<shared_ptr<HEPlaintext>>& out,
-                      const element::Type& element_type,
-                      const HEBackend* he_backend,
-                      size_t count)
-{
-#pragma omp parallel for
-    for (size_t i = 0; i < count; ++i)
-    {
-        scalar_subtract(arg0[i], arg1[i], out[i], element_type, he_backend);
-    }
-}
 
 void kernel::scalar_subtract(const shared_ptr<HECiphertext>& arg0,
                              const shared_ptr<HECiphertext>& arg1,
@@ -140,7 +83,7 @@ void kernel::scalar_subtract(const shared_ptr<HEPlaintext>& arg0,
         {
             throw ngraph_error(
                 "subtract backend is SEAL, but arguments or outputs are not "
-                "SealPlaintextWrapper.:");
+                "SealPlaintextWrapper");
         }
     }
     else
@@ -188,7 +131,7 @@ void kernel::scalar_subtract(const shared_ptr<HECiphertext>& arg0,
     }
     else
     {
-        throw ngraph_error("subtract backend is not SEAL.");
+        throw ngraph_error("subtract backend is not SEAL");
     }
 }
 

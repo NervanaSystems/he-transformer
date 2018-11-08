@@ -19,6 +19,8 @@
 #include <memory>
 #include <vector>
 
+#include "he_ciphertext.hpp"
+#include "he_plaintext.hpp"
 #include "ngraph/coordinate_transform.hpp"
 
 namespace ngraph
@@ -27,10 +29,6 @@ namespace ngraph
     {
         namespace he
         {
-            class HEBackend;
-            class HECiphertext;
-            class HEPlaintext;
-
             namespace kernel
             {
                 template <typename S, typename T>
@@ -50,18 +48,6 @@ namespace ngraph
                             arg[input_transform.index(input_coord)];
                     }
                 };
-
-                void broadcast(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
-                               std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
-                               const Shape& in_shape,
-                               const Shape& out_shape,
-                               const AxisSet& broadcast_axes);
-
-                void broadcast(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg0,
-                               std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
-                               const Shape& in_shape,
-                               const Shape& out_shape,
-                               const AxisSet& broadcast_axes);
             }
         }
     }

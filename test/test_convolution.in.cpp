@@ -58,12 +58,14 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image)
         auto t_b = inputs[1];
         auto t_result = results[0];
 
-        copy_data(t_a, vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
-                               2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0});
+        copy_data(t_a,
+                  vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                                2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0});
         copy_data(t_b, vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5});
 
         backend->call(f, {t_result}, {t_a, t_b});
-        EXPECT_TRUE(all_close(read_vector<float>(t_result), vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}, 1e-3f));
+        EXPECT_TRUE(all_close(
+            read_vector<float>(t_result), vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}, 1e-3f));
     }
 }
 
@@ -93,7 +95,11 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_2outputs)
         copy_data(t_b, vector<float>{1, 2, 3, 4, 5, 6, 7, 8});
 
         backend->call(f, {t_result}, {t_a, t_b});
-        EXPECT_TRUE(all_close(read_vector<float>(t_result), vector<float>{51, 61, 71, 81, 101, 111, 121, 131, 115, 141, 167, 193, 245, 271, 297, 323}, 1e-3f));
+        EXPECT_TRUE(all_close(
+            read_vector<float>(t_result),
+            vector<float>{
+                51, 61, 71, 81, 101, 111, 121, 131, 115, 141, 167, 193, 245, 271, 297, 323},
+            1e-3f));
     }
 }
 
@@ -104,12 +110,12 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item)
     auto a = make_shared<op::Parameter>(element::f32, shape_a);
     auto b = make_shared<op::Parameter>(element::f32, shape_b);
     auto t = make_shared<op::Convolution>(a,
-                                         b,
-                                         Strides{1, 1},        // move_strides
-                                         Strides{1, 1},        // filter_dilation
-                                         CoordinateDiff{0, 0}, // below_pads
-                                         CoordinateDiff{0, 0}, // above_pads
-                                         Strides{1, 1});       // data_dilation
+                                          b,
+                                          Strides{1, 1},        // move_strides
+                                          Strides{1, 1},        // filter_dilation
+                                          CoordinateDiff{0, 0}, // below_pads
+                                          CoordinateDiff{0, 0}, // above_pads
+                                          Strides{1, 1});       // data_dilation
     auto f = make_shared<Function>(t, op::ParameterVector{a, b});
 
     // Create some tensors for input/output
@@ -128,25 +134,30 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item)
         auto t_b = inputs[1];
         auto t_result = results[0];
 
-        copy_data(t_a, vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f, -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f});
+        copy_data(
+            t_a,
+            vector<float>{
+                -8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f, -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f});
         copy_data(t_b, vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f});
         backend->call(f, {t_result}, {t_a, t_b});
-        EXPECT_TRUE(all_close(read_vector<float>(t_result), vector<float>{32.0f,
-                                  -18.0f,
-                                  56.0f,
-                                  56.0f,
-                                  -42.0f,
-                                  -14.0f,
-                                  -16.0f,
-                                  46.0f,
-                                  -54.0f,
-                                  -9.0f,
-                                  -30.0f,
-                                  48.0f,
-                                  78.0f,
-                                  -33.0f,
-                                  -123.0f,
-                                  -21.0f}, 1e-3f));
+        EXPECT_TRUE(all_close(read_vector<float>(t_result),
+                              vector<float>{32.0f,
+                                            -18.0f,
+                                            56.0f,
+                                            56.0f,
+                                            -42.0f,
+                                            -14.0f,
+                                            -16.0f,
+                                            46.0f,
+                                            -54.0f,
+                                            -9.0f,
+                                            -30.0f,
+                                            48.0f,
+                                            78.0f,
+                                            -33.0f,
+                                            -123.0f,
+                                            -21.0f},
+                              1e-3f));
     }
 }
 
@@ -157,15 +168,15 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_1_1x1_1)
     auto a = make_shared<op::Parameter>(element::f32, shape_a);
     auto b = make_shared<op::Parameter>(element::f32, shape_b);
     auto t = make_shared<op::Convolution>(a,
-                                         b,
-                                         Strides{1, 1},        // move_strides
-                                         Strides{1, 1},        // filter_dilation
-                                         CoordinateDiff{1, 1}, // below_pads
-                                         CoordinateDiff{1, 1}, // above_pads
-                                         Strides{1, 1});       // data_dilation
+                                          b,
+                                          Strides{1, 1},        // move_strides
+                                          Strides{1, 1},        // filter_dilation
+                                          CoordinateDiff{1, 1}, // below_pads
+                                          CoordinateDiff{1, 1}, // above_pads
+                                          Strides{1, 1});       // data_dilation
     auto f = make_shared<Function>(t, op::ParameterVector{a, b});
 
-     // Create some tensors for input/output
+    // Create some tensors for input/output
     auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
         runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
@@ -181,15 +192,21 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_1_1x1_1)
         auto t_b = inputs[1];
         auto t_result = results[0];
 
-        copy_data(t_a, vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f, -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f});
+        copy_data(
+            t_a,
+            vector<float>{
+                -8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f, -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f});
         copy_data(t_b, vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f});
         backend->call(f, {t_result}, {t_a, t_b});
-        EXPECT_TRUE(all_close(read_vector<float>(t_result), vector<float>{16.0f,  28.0f,  0.0f,   20.0f,  -10.0f, -36.0f, -34.0f, 32.0f,
-                                  -18.0f, 56.0f,  56.0f,  -92.0f, 34.0f,  -42.0f, -14.0f, -16.0f,
-                                  46.0f,  -32.0f, -16.0f, 66.0f,  -4.0f,  0.0f,   -68.0f, 16.0f,
-                                  24.0f,  -6.0f,  12.0f,  6.0f,   -27.0f, 0.0f,   -99.0f, -54.0f,
-                                  -9.0f,  -30.0f, 48.0f,  81.0f,  105.0f, 78.0f,  -33.0f, -123.0f,
-                                  -21.0f, 45.0f,  -72.0f, -63.0f, 27.0f,  90.0f,  54.0f,  -18.0f}, 1e-3f));
+        EXPECT_TRUE(
+            all_close(read_vector<float>(t_result),
+                      vector<float>{16.0f,  28.0f,  0.0f,   20.0f,  -10.0f, -36.0f, -34.0f, 32.0f,
+                                    -18.0f, 56.0f,  56.0f,  -92.0f, 34.0f,  -42.0f, -14.0f, -16.0f,
+                                    46.0f,  -32.0f, -16.0f, 66.0f,  -4.0f,  0.0f,   -68.0f, 16.0f,
+                                    24.0f,  -6.0f,  12.0f,  6.0f,   -27.0f, 0.0f,   -99.0f, -54.0f,
+                                    -9.0f,  -30.0f, 48.0f,  81.0f,  105.0f, 78.0f,  -33.0f, -123.0f,
+                                    -21.0f, 45.0f,  -72.0f, -63.0f, 27.0f,  90.0f,  54.0f,  -18.0f},
+                      1e-3f));
     }
 }
 
@@ -200,12 +217,12 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5)
     auto a = make_shared<op::Parameter>(element::f32, shape_a);
     auto b = make_shared<op::Parameter>(element::f32, shape_b);
     auto t = make_shared<op::Convolution>(a,
-                                         b,
-                                         Strides{1, 1},        // move_strides
-                                         Strides{1, 1},        // filter_dilation
-                                         CoordinateDiff{2, 3}, // below_pads
-                                         CoordinateDiff{4, 5}, // above_pads
-                                         Strides{1, 1});       // data_dilation
+                                          b,
+                                          Strides{1, 1},        // move_strides
+                                          Strides{1, 1},        // filter_dilation
+                                          CoordinateDiff{2, 3}, // below_pads
+                                          CoordinateDiff{4, 5}, // above_pads
+                                          Strides{1, 1});       // data_dilation
     auto f = make_shared<Function>(t, op::ParameterVector{a, b});
 
     // Create some tensors for input/output
@@ -224,26 +241,36 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5)
         auto t_b = inputs[1];
         auto t_result = results[0];
 
-        copy_data(t_a, vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f, -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f});
+        copy_data(
+            t_a,
+            vector<float>{
+                -8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f, -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f});
         copy_data(t_b, vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f});
         backend->call(f, {t_result}, {t_a, t_b});
-        EXPECT_TRUE(all_close(read_vector<float>(t_result),
-        vector<float>{0.0f, 0.0f, 0.0f,   0.0f,   0.0f,   0.0f,    0.0f,   0.0f,   0.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 16.0f,  28.0f,  0.0f,   20.0f,   -10.0f, -36.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, -34.0f, 32.0f,  -18.0f, 56.0f,   56.0f,  -92.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 34.0f,  -42.0f, -14.0f, -16.0f,  46.0f,  -32.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, -16.0f, 66.0f,  -4.0f,  0.0f,    -68.0f, 16.0f,  0.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 0.0f,   0.0f,   0.0f,   0.0f,    0.0f,   0.0f,   0.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 0.0f,   0.0f,   0.0f,   0.0f,    0.0f,   0.0f,   0.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 0.0f,   0.0f,   0.0f,   0.0f,    0.0f,   0.0f,   0.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 0.0f,   0.0f,   0.0f,   0.0f,    0.0f,   0.0f,   0.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 24.0f,  -6.0f,  12.0f,  6.0f,    -27.0f, 0.0f,   0.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, -99.0f, -54.0f, -9.0f,  -30.0f,  48.0f,  81.0f,  0.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 105.0f, 78.0f,  -33.0f, -123.0f, -21.0f, 45.0f,  0.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, -72.0f, -63.0f, 27.0f,  90.0f,   54.0f,  -18.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 0.0f,   0.0f,   0.0f,   0.0f,    0.0f,   0.0f,   0.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 0.0f,   0.0f,   0.0f,   0.0f,    0.0f,   0.0f,   0.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 0.0f,   0.0f,   0.0f,   0.0f,    0.0f,   0.0f,   0.0f, 0.0f, 0.0f, 0.0f}, 1e-3f));
+        EXPECT_TRUE(all_close(
+            read_vector<float>(t_result),
+            vector<float>{
+                0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f,    0.0f,   0.0f,
+                0.0f,   0.0f,   0.0f,   0.0f,   16.0f,  28.0f,  0.0f,   20.0f,   -10.0f, -36.0f,
+                0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   -34.0f, 32.0f,   -18.0f, 56.0f,
+                56.0f,  -92.0f, 0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f,    34.0f,  -42.0f,
+                -14.0f, -16.0f, 46.0f,  -32.0f, 0.0f,   0.0f,   0.0f,   0.0f,    0.0f,   0.0f,
+                -16.0f, 66.0f,  -4.0f,  0.0f,   -68.0f, 16.0f,  0.0f,   0.0f,    0.0f,   0.0f,
+                0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f,    0.0f,   0.0f,
+                0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f,    0.0f,   0.0f,
+                0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f,    0.0f,   0.0f,
+                0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f,    0.0f,   0.0f,
+                0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f,    0.0f,   0.0f,
+                24.0f,  -6.0f,  12.0f,  6.0f,   -27.0f, 0.0f,   0.0f,   0.0f,    0.0f,   0.0f,
+                0.0f,   0.0f,   -99.0f, -54.0f, -9.0f,  -30.0f, 48.0f,  81.0f,   0.0f,   0.0f,
+                0.0f,   0.0f,   0.0f,   0.0f,   105.0f, 78.0f,  -33.0f, -123.0f, -21.0f, 45.0f,
+                0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   -72.0f, -63.0f,  27.0f,  90.0f,
+                54.0f,  -18.0f, 0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f,    0.0f,   0.0f,
+                0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f,    0.0f,   0.0f,
+                0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f,    0.0f,   0.0f,
+                0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f,    0.0f,   0.0f,
+                0.0f,   0.0f},
+            1e-3f));
     }
 }
 
@@ -254,12 +281,12 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items)
     auto a = make_shared<op::Parameter>(element::f32, shape_a);
     auto b = make_shared<op::Parameter>(element::f32, shape_b);
     auto t = make_shared<op::Convolution>(a,
-                                         b,
-                                         Strides{1, 1},        // move_strides
-                                         Strides{1, 1},        // filter_dilation
-                                         CoordinateDiff{0, 0}, // below_pads
-                                         CoordinateDiff{0, 0}, // above_pads
-                                         Strides{1, 1});       // data_dilation
+                                          b,
+                                          Strides{1, 1},        // move_strides
+                                          Strides{1, 1},        // filter_dilation
+                                          CoordinateDiff{0, 0}, // below_pads
+                                          CoordinateDiff{0, 0}, // above_pads
+                                          Strides{1, 1});       // data_dilation
     auto f = make_shared<Function>(t, op::ParameterVector{a, b});
 
     // Create some tensors for input/output
@@ -279,15 +306,17 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items)
         auto t_result = results[0];
 
         copy_data(t_a, vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f, -8.f, 5.f,
-                               -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,  9.f,  -7.f, 3.f,  0.f,
-                               6.f,  -1.f, -4.f, -2.f, 7.f,  -0.f, -1.f, 7.f,  -4.f, -9.f});
+                                     -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,  9.f,  -7.f, 3.f,  0.f,
+                                     6.f,  -1.f, -4.f, -2.f, 7.f,  -0.f, -1.f, 7.f,  -4.f, -9.f});
         copy_data(t_b, vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f});
         backend->call(f, {t_result}, {t_a, t_b});
-        EXPECT_TRUE(all_close(read_vector<float>(t_result),
-        vector<float>{32.0f,  -18.0f, 56.0f,  56.0f,  -42.0f, -14.0f, -16.0f,  46.0f,
-                                  -54.0f, -9.0f,  -30.0f, 48.0f,  78.0f,  -33.0f, -123.0f, -21.0f,
-                                  -52.0f, -74.0f, 82.0f,  -30.0f, -48.0f, -10.0f, 8.0f,    64.0f,
-                                  138.0f, 30.0f,  -30.0f, 6.0f,   48.0f,  -66.0f, -42.0f,  72.0f}, 1e-3f));
+        EXPECT_TRUE(
+            all_close(read_vector<float>(t_result),
+                      vector<float>{32.0f,  -18.0f, 56.0f,  56.0f,  -42.0f, -14.0f, -16.0f,  46.0f,
+                                    -54.0f, -9.0f,  -30.0f, 48.0f,  78.0f,  -33.0f, -123.0f, -21.0f,
+                                    -52.0f, -74.0f, 82.0f,  -30.0f, -48.0f, -10.0f, 8.0f,    64.0f,
+                                    138.0f, 30.0f,  -30.0f, 6.0f,   48.0f,  -66.0f, -42.0f,  72.0f},
+                      1e-3f));
     }
 }
 
@@ -295,7 +324,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_strided_padded)
 {
     Shape shape_a{2, 1, 3, 5};
     Shape shape_b{2, 1, 2, 2};
-       auto a = make_shared<op::Parameter>(element::f32, shape_a);
+    auto a = make_shared<op::Parameter>(element::f32, shape_a);
     auto b = make_shared<op::Parameter>(element::f32, shape_b);
     auto t = make_shared<op::Convolution>(a,
                                           b,
@@ -323,24 +352,29 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_strided_padded)
         auto t_result = results[0];
 
         copy_data(t_a, vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f, -8.f, 5.f,
-                               -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,  9.f,  -7.f, 3.f,  0.f,
-                               6.f,  -1.f, -4.f, -2.f, 7.f,  -0.f, -1.f, 7.f,  -4.f, -9.f});
+                                     -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,  9.f,  -7.f, 3.f,  0.f,
+                                     6.f,  -1.f, -4.f, -2.f, 7.f,  -0.f, -1.f, 7.f,  -4.f, -9.f});
         copy_data(t_b, vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f});
         backend->call(f, {t_result}, {t_a, t_b});
-        EXPECT_TRUE(all_close(read_vector<float>(t_result),
-        vector<float>{0.0f,  0.0f, 0.0f, 0.0f,   0.0f,   0.0f,   0.0f,   0.0f, 0.0f, 0.0f,   0.0f,   0.0f,
-        0.0f,  0.0f, 0.0f, 32.0f,  56.0f,  -92.0f, 0.0f,   0.0f, 0.0f, 0.0f,   66.0f,  0.0f,
-        16.0f, 0.0f, 0.0f, 0.0f,   0.0f,   0.0f,   0.0f,   0.0f, 0.0f, 0.0f,   0.0f,   0.0f,
-        0.0f,  0.0f, 0.0f, 0.0f,   0.0f,   0.0f,   0.0f,   0.0f, 0.0f, 0.0f,   0.0f,   0.0f,
-        0.0f,  0.0f, 0.0f, 0.0f,   0.0f,   0.0f,   0.0f,   0.0f, 0.0f, -54.0f, -30.0f, 81.0f,
-        0.0f,  0.0f, 0.0f, 0.0f,   -63.0f, 90.0f,  -18.0f, 0.0f, 0.0f, 0.0f,   0.0f,   0.0f,
-        0.0f,  0.0f, 0.0f, 0.0f,   0.0f,   0.0f,   0.0f,   0.0f, 0.0f, 0.0f,   0.0f,   0.0f,
-        0.0f,  0.0f, 0.0f, 0.0f,   0.0f,   0.0f,   0.0f,   0.0f, 0.0f, 0.0f,   0.0f,   0.0f,
-        0.0f,  0.0f, 0.0f, -52.0f, 82.0f,  -28.0f, 0.0f,   0.0f, 0.0f, 0.0f,   -2.0f,  -64.0f,
-        72.0f, 0.0f, 0.0f, 0.0f,   0.0f,   0.0f,   0.0f,   0.0f, 0.0f, 0.0f,   0.0f,   0.0f,
-        0.0f,  0.0f, 0.0f, 0.0f,   0.0f,   0.0f,   0.0f,   0.0f, 0.0f, 0.0f,   0.0f,   0.0f,
-        0.0f,  0.0f, 0.0f, 0.0f,   0.0f,   0.0f,   0.0f,   0.0f, 0.0f, 138.0f, -30.0f, 0.0f,
-        0.0f,  0.0f, 0.0f, 0.0f,   -9.0f,  27.0f,  -81.0f, 0.0f, 0.0f, 0.0f,   0.0f,   0.0f,
-        0.0f,  0.0f, 0.0f, 0.0f,   0.0f,   0.0f,   0.0f,   0.0f, 0.0f, 0.0f,   0.0f,   0.0f}, 1e-3f));
+        EXPECT_TRUE(all_close(
+            read_vector<float>(t_result),
+            vector<float>{
+                0.0f,   0.0f,  0.0f,   0.0f,   0.0f,  0.0f,  0.0f,   0.0f,   0.0f,   0.0f,   0.0f,
+                0.0f,   0.0f,  0.0f,   0.0f,   32.0f, 56.0f, -92.0f, 0.0f,   0.0f,   0.0f,   0.0f,
+                66.0f,  0.0f,  16.0f,  0.0f,   0.0f,  0.0f,  0.0f,   0.0f,   0.0f,   0.0f,   0.0f,
+                0.0f,   0.0f,  0.0f,   0.0f,   0.0f,  0.0f,  0.0f,   0.0f,   0.0f,   0.0f,   0.0f,
+                0.0f,   0.0f,  0.0f,   0.0f,   0.0f,  0.0f,  0.0f,   0.0f,   0.0f,   0.0f,   0.0f,
+                0.0f,   0.0f,  -54.0f, -30.0f, 81.0f, 0.0f,  0.0f,   0.0f,   0.0f,   -63.0f, 90.0f,
+                -18.0f, 0.0f,  0.0f,   0.0f,   0.0f,  0.0f,  0.0f,   0.0f,   0.0f,   0.0f,   0.0f,
+                0.0f,   0.0f,  0.0f,   0.0f,   0.0f,  0.0f,  0.0f,   0.0f,   0.0f,   0.0f,   0.0f,
+                0.0f,   0.0f,  0.0f,   0.0f,   0.0f,  0.0f,  0.0f,   0.0f,   0.0f,   0.0f,   0.0f,
+                -52.0f, 82.0f, -28.0f, 0.0f,   0.0f,  0.0f,  0.0f,   -2.0f,  -64.0f, 72.0f,  0.0f,
+                0.0f,   0.0f,  0.0f,   0.0f,   0.0f,  0.0f,  0.0f,   0.0f,   0.0f,   0.0f,   0.0f,
+                0.0f,   0.0f,  0.0f,   0.0f,   0.0f,  0.0f,  0.0f,   0.0f,   0.0f,   0.0f,   0.0f,
+                0.0f,   0.0f,  0.0f,   0.0f,   0.0f,  0.0f,  0.0f,   0.0f,   0.0f,   138.0f, -30.0f,
+                0.0f,   0.0f,  0.0f,   0.0f,   0.0f,  -9.0f, 27.0f,  -81.0f, 0.0f,   0.0f,   0.0f,
+                0.0f,   0.0f,  0.0f,   0.0f,   0.0f,  0.0f,  0.0f,   0.0f,   0.0f,   0.0f,   0.0f,
+                0.0f,   0.0f,  0.0f},
+            1e-3f));
     }
 }

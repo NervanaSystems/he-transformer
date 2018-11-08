@@ -18,17 +18,12 @@
 set (HE_SRC
     # kernels
     kernel/add.cpp
-    kernel/broadcast.cpp
-    kernel/convolution.cpp
     kernel/constant.cpp
-    kernel/dot.cpp
     kernel/multiply.cpp
     kernel/negate.cpp
     kernel/pad.cpp
-    kernel/reshape.cpp
     kernel/subtract.cpp
     kernel/result.cpp
-    kernel/slice.cpp
 
     # seal
     seal/kernel/add_seal.cpp

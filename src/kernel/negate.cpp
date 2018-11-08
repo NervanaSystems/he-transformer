@@ -24,32 +24,6 @@
 using namespace std;
 using namespace ngraph::runtime::he;
 
-void kernel::negate(const vector<shared_ptr<HECiphertext>>& arg,
-                    vector<shared_ptr<HECiphertext>>& out,
-                    const element::Type& element_type,
-                    const HEBackend* he_backend,
-                    size_t count)
-{
-#pragma omp parallel for
-    for (size_t i = 0; i < count; ++i)
-    {
-        scalar_negate(arg[i], out[i], element_type, he_backend);
-    }
-}
-
-void kernel::negate(const vector<shared_ptr<HEPlaintext>>& arg,
-                    vector<shared_ptr<HEPlaintext>>& out,
-                    const element::Type& element_type,
-                    const HEBackend* he_backend,
-                    size_t count)
-{
-#pragma omp parallel for
-    for (size_t i = 0; i < count; ++i)
-    {
-        scalar_negate(arg[i], out[i], element_type, he_backend);
-    }
-}
-
 void kernel::scalar_negate(const shared_ptr<HECiphertext>& arg,
                            shared_ptr<HECiphertext>& out,
                            const element::Type& element_type,
@@ -75,7 +49,7 @@ void kernel::scalar_negate(const shared_ptr<HECiphertext>& arg,
     }
     else
     {
-        throw ngraph_error("negate backend is not SEAL.");
+        throw ngraph_error("negate backend is not SEAL");
     }
 }
 
@@ -99,11 +73,11 @@ void kernel::scalar_negate(const shared_ptr<HEPlaintext>& arg,
         else
         {
             throw ngraph_error(
-                "negate backend is SEAL, but arguments or outputs are not SealPlaintextWrapper.:");
+                "negate backend is SEAL, but arguments or outputs are not SealPlaintextWrapper");
         }
     }
     else
     {
-        throw ngraph_error("negate backend is not SEAL.");
+        throw ngraph_error("negate backend is not SEAL");
     }
 }

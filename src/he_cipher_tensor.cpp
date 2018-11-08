@@ -14,9 +14,9 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include <cstring>
 #include <memory>
 #include <string>
-#include <cstring>
 
 #include "he_backend.hpp"
 #include "he_cipher_tensor.hpp"
@@ -113,8 +113,8 @@ void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset
                 for (size_t j = 0; j < m_batch_size; ++j)
                 {
                     void* destination = (void*)((char*)batch_src + j * type_byte_size);
-                    const void* src = (void*)((char*)source +
-                                                type_byte_size * (i + j * num_elements_to_write));
+                    const void* src =
+                        (void*)((char*)source + type_byte_size * (i + j * num_elements_to_write));
                     memcpy(destination, src, type_byte_size);
                 }
 
@@ -123,7 +123,7 @@ void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset
             }
             else
             {
-               m_he_backend->encode(plaintext, src_with_offset, element_type, m_batch_size);
+                m_he_backend->encode(plaintext, src_with_offset, element_type, m_batch_size);
             }
             m_he_backend->encrypt(m_cipher_texts[dst_index], plaintext);
         }
@@ -132,7 +132,7 @@ void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset
 
 void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset, size_t n) const
 {
-      // Hack to fix Cryptonets with ngraph-tf
+    // Hack to fix Cryptonets with ngraph-tf
     const char* ng_batch_tensor_value = std::getenv("NGRAPH_BATCHED_TENSOR");
     if (ng_batch_tensor_value != nullptr)
     {

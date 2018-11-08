@@ -19,50 +19,19 @@
 #include <memory>
 #include <vector>
 
+#include "he_backend.hpp"
+#include "he_ciphertext.hpp"
+#include "he_plaintext.hpp"
+#include "ngraph/type/element_type.hpp"
+
 namespace ngraph
 {
-    namespace element
-    {
-        class Type;
-    }
     namespace runtime
     {
         namespace he
         {
-            class HEBackend;
-            class HECiphertext;
-            class HEPlaintext;
-
             namespace kernel
             {
-                void add(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
-                         const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg1,
-                         std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
-                         const element::Type& element_type,
-                         const runtime::he::HEBackend* he_backend,
-                         size_t count);
-
-                void add(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
-                         const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg1,
-                         std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
-                         const element::Type& element_type,
-                         const runtime::he::HEBackend* he_backend,
-                         size_t count);
-
-                void add(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg0,
-                         const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg1,
-                         std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
-                         const element::Type& element_type,
-                         const runtime::he::HEBackend* he_backend,
-                         size_t count);
-
-                void add(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg0,
-                         const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg1,
-                         std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
-                         const element::Type& element_type,
-                         const runtime::he::HEBackend* he_backend,
-                         size_t count);
-
                 void scalar_add(const std::shared_ptr<runtime::he::HECiphertext>& arg0,
                                 const std::shared_ptr<runtime::he::HECiphertext>& arg1,
                                 std::shared_ptr<runtime::he::HECiphertext>& out,
@@ -86,6 +55,21 @@ namespace ngraph
                                 std::shared_ptr<runtime::he::HEPlaintext>& out,
                                 const element::Type& element_type,
                                 const runtime::he::HEBackend* he_backend);
+
+                template <typename S, typename T, typename V>
+                void add(const std::vector<std::shared_ptr<S>>& arg0,
+                         const std::vector<std::shared_ptr<T>>& arg1,
+                         std::vector<std::shared_ptr<V>>& out,
+                         const element::Type& element_type,
+                         const runtime::he::HEBackend* he_backend,
+                         size_t count)
+                {
+#pragma omp parallel for
+                    for (size_t i = 0; i < count; ++i)
+                    {
+                        scalar_add(arg0[i], arg1[i], out[i], element_type, he_backend);
+                    }
+                }
             }
         }
     }

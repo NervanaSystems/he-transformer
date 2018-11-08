@@ -16,72 +16,29 @@
 
 #pragma once
 
+#include <memory>
+#include <vector>
+
+#include "he_backend.hpp"
+#include "he_ciphertext.hpp"
+#include "he_plaintext.hpp"
+
 #include "kernel/add.hpp"
 #include "kernel/multiply.hpp"
 #include "ngraph/coordinate_transform.hpp"
 
 namespace ngraph
 {
-    namespace element
-    {
-        class Type;
-    }
     namespace runtime
     {
         namespace he
         {
-            class HEBackend;
-
             namespace kernel
             {
-                template <typename S, typename T>
-                void dot_template(const std::vector<std::shared_ptr<S>>& arg0,
-                                  const std::vector<std::shared_ptr<T>>& arg1,
-                                  std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
-                                  const Shape& arg0_shape,
-                                  const Shape& arg1_shape,
-                                  const Shape& out_shape,
-                                  size_t reduction_axes_count,
-                                  const element::Type& element_type,
-                                  size_t batch_size,
-                                  const runtime::he::HEBackend* he_backend);
-
-                void dot(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
-                         const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg1,
-                         std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
-                         const Shape& arg0_shape,
-                         const Shape& arg1_shape,
-                         const Shape& out_shape,
-                         size_t reduction_axes_count,
-                         const element::Type& element_type,
-                         size_t batch_size,
-                         const runtime::he::HEBackend* he_backend);
-
-                void dot(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
-                         const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg1,
-                         std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
-                         const Shape& arg0_shape,
-                         const Shape& arg1_shape,
-                         const Shape& out_shape,
-                         size_t reduction_axes_count,
-                         const element::Type& element_type,
-                         size_t batch_size,
-                         const runtime::he::HEBackend* he_backend);
-
-                void dot(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg0,
-                         const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg1,
-                         std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
-                         const Shape& arg0_shape,
-                         const Shape& arg1_shape,
-                         const Shape& out_shape,
-                         size_t reduction_axes_count,
-                         const element::Type& element_type,
-                         size_t batch_size,
-                         const runtime::he::HEBackend* he_backend);
-
-                void dot(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg0,
-                         const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg1,
-                         std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
+                template <typename S, typename T, typename V>
+                void dot(const std::vector<std::shared_ptr<S>>& arg0,
+                         const std::vector<std::shared_ptr<T>>& arg1,
+                         std::vector<std::shared_ptr<V>>& out,
                          const Shape& arg0_shape,
                          const Shape& arg1_shape,
                          const Shape& out_shape,
@@ -93,18 +50,16 @@ namespace ngraph
     }
 }
 
-template <typename S, typename T>
-void ngraph::runtime::he::kernel::dot_template(
-    const std::vector<std::shared_ptr<S>>& arg0,
-    const std::vector<std::shared_ptr<T>>& arg1,
-    std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
-    const Shape& arg0_shape,
-    const Shape& arg1_shape,
-    const Shape& out_shape,
-    size_t reduction_axes_count,
-    const element::Type& element_type,
-    size_t batch_size,
-    const runtime::he::HEBackend* he_backend)
+template <typename S, typename T, typename V>
+void ngraph::runtime::he::kernel::dot(const std::vector<std::shared_ptr<S>>& arg0,
+                                      const std::vector<std::shared_ptr<T>>& arg1,
+                                      std::vector<std::shared_ptr<V>>& out,
+                                      const Shape& arg0_shape,
+                                      const Shape& arg1_shape,
+                                      const Shape& out_shape,
+                                      size_t reduction_axes_count,
+                                      const element::Type& element_type,
+                                      const runtime::he::HEBackend* he_backend)
 {
     // Get the sizes of the dot axes. It's easiest to pull them from arg1 because they're
     // right up front.
@@ -179,7 +134,7 @@ void ngraph::runtime::he::kernel::dot_template(
         auto arg0_it =
             std::copy(arg0_projected_coord.begin(), arg0_projected_coord.end(), arg0_coord.begin());
 
-        std::vector<std::shared_ptr<runtime::he::HECiphertext>> summands;
+        std::vector<std::shared_ptr<V>> summands;
 
         for (const Coordinate& dot_axis_positions : dot_axes_transform)
         {
@@ -195,7 +150,8 @@ void ngraph::runtime::he::kernel::dot_template(
             auto arg0_text = arg0[arg0_transform.index(arg0_coord)];
             auto arg1_text = arg1[arg1_transform.index(arg1_coord)];
 
-            std::shared_ptr<runtime::he::HECiphertext> prod = he_backend->create_empty_ciphertext();
+            std::shared_ptr<V> prod;
+            prod = he_backend->create_empty_hetext<V>(prod);
             runtime::he::kernel::scalar_multiply(
                 arg0_text, arg1_text, prod, element_type, he_backend);
 
@@ -205,11 +161,11 @@ void ngraph::runtime::he::kernel::dot_template(
         // This is better for the he_seal_ckks_backend as it reduces the need for the rescale op.
         for (size_t i = 0; i < summands.size() - 1; i += 2)
         {
-            std::shared_ptr<runtime::he::HECiphertext> ciphertext =
-                he_backend->create_empty_ciphertext();
+            std::shared_ptr<V> sum; // = he_backend->create_empty_hetext<T>();
+            sum = he_backend->create_empty_hetext<V>(sum);
             runtime::he::kernel::scalar_add(
-                summands[i], summands[i + 1], ciphertext, element_type, he_backend);
-            summands.emplace_back(ciphertext);
+                summands[i], summands[i + 1], sum, element_type, he_backend);
+            summands.emplace_back(sum);
         }
         // Write the sum back.
         out[out_index] = summands[summands.size() - 1];
