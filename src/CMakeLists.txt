@@ -25,7 +25,6 @@ set (HE_SRC
     kernel/pad.cpp
     kernel/subtract.cpp
     kernel/result.cpp
-    kernel/slice.cpp
 
     # seal
     seal/kernel/add_seal.cpp

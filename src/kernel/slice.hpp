@@ -27,14 +27,10 @@ namespace ngraph
     {
         namespace he
         {
-            class HECiphertext;
-            class HEPlaintext;
-            class HEBackend;
-
             namespace kernel
             {
-                template <typename S, typename T>
-                void slice(const std::vector<std::shared_ptr<S>>& arg,
+                template <typename T>
+                void slice(const std::vector<std::shared_ptr<T>>& arg,
                            std::vector<std::shared_ptr<T>>& out,
                            const Shape& arg_shape,
                            const Coordinate& lower_bounds,
@@ -58,22 +54,6 @@ namespace ngraph
                         ++output_it;
                     }
                 }
-
-                void slice(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg,
-                           std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
-                           const Shape& arg_shape,
-                           const Coordinate& lower_bounds,
-                           const Coordinate& upper_bounds,
-                           const Strides& strides,
-                           const Shape& out_shape);
-
-                void slice(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg,
-                           std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
-                           const Shape& arg_shape,
-                           const Coordinate& lower_bounds,
-                           const Coordinate& upper_bounds,
-                           const Strides& strides,
-                           const Shape& out_shape);
             }
         }
     }
