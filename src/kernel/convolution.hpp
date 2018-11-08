@@ -20,34 +20,27 @@
 #include <vector>
 
 #include "he_backend.hpp"
-#include "he_cipher_tensor.hpp"
 #include "he_ciphertext.hpp"
+#include "he_plaintext.hpp"
+
 #include "kernel/add.hpp"
-#include "kernel/convolution.hpp"
 #include "kernel/multiply.hpp"
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/type/element_type.hpp"
-#include "seal/he_seal_backend.hpp"
 
 namespace ngraph
 {
-    namespace element
-    {
-        class Type;
-    }
     namespace runtime
     {
         namespace he
         {
-            class HEBackend;
-            class HECiphertext;
             namespace kernel
             {
-                template <typename S, typename T = S>
-                void convolution_template(
+                template <typename S, typename T, typename V>
+                void convolution(
                     const std::vector<std::shared_ptr<S>>& arg0,
                     const std::vector<std::shared_ptr<T>>& arg1,
-                    std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
+                    std::vector<std::shared_ptr<V>>& out,
                     const Shape& arg0_shape,
                     const Shape& arg1_shape,
                     const Shape& out_shape,
@@ -66,107 +59,16 @@ namespace ngraph
                     const element::Type& element_type,
                     size_t batch_size,
                     const runtime::he::HEBackend* he_backend);
-
-                void
-                    convolution(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
-                                const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg1,
-                                std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
-                                const Shape& arg0_shape,
-                                const Shape& arg1_shape,
-                                const Shape& out_shape,
-                                const Strides& window_movement_strides,
-                                const Strides& window_dilation_strides,
-                                const CoordinateDiff& padding_below,
-                                const CoordinateDiff& padding_above,
-                                const Strides& data_dilation_strides,
-                                size_t batch_axis_data,
-                                size_t input_channel_axis_data,
-                                size_t input_channel_axis_filters,
-                                size_t output_channel_axis_filters,
-                                size_t batch_axis_result,
-                                size_t output_channel_axis_result,
-                                bool rotate_filter,
-                                const element::Type& element_type,
-                                size_t batch_size,
-                                const runtime::he::HEBackend* he_backend);
-
-                void
-                    convolution(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
-                                const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg1,
-                                std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
-                                const Shape& arg0_shape,
-                                const Shape& arg1_shape,
-                                const Shape& out_shape,
-                                const Strides& window_movement_strides,
-                                const Strides& window_dilation_strides,
-                                const CoordinateDiff& padding_below,
-                                const CoordinateDiff& padding_above,
-                                const Strides& data_dilation_strides,
-                                size_t batch_axis_data,
-                                size_t input_channel_axis_data,
-                                size_t input_channel_axis_filters,
-                                size_t output_channel_axis_filters,
-                                size_t batch_axis_result,
-                                size_t output_channel_axis_result,
-                                bool rotate_filter,
-                                const element::Type& element_type,
-                                size_t batch_size,
-                                const runtime::he::HEBackend* he_backend);
-
-                void
-                    convolution(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg0,
-                                const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg1,
-                                std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
-                                const Shape& arg0_shape,
-                                const Shape& arg1_shape,
-                                const Shape& out_shape,
-                                const Strides& window_movement_strides,
-                                const Strides& window_dilation_strides,
-                                const CoordinateDiff& padding_below,
-                                const CoordinateDiff& padding_above,
-                                const Strides& data_dilation_strides,
-                                size_t batch_axis_data,
-                                size_t input_channel_axis_data,
-                                size_t input_channel_axis_filters,
-                                size_t output_channel_axis_filters,
-                                size_t batch_axis_result,
-                                size_t output_channel_axis_result,
-                                bool rotate_filter,
-                                const element::Type& element_type,
-                                size_t batch_size,
-                                const runtime::he::HEBackend* he_backend);
-
-                void convolution(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg0,
-                                 const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg1,
-                                 std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
-                                 const Shape& arg0_shape,
-                                 const Shape& arg1_shape,
-                                 const Shape& out_shape,
-                                 const Strides& window_movement_strides,
-                                 const Strides& window_dilation_strides,
-                                 const CoordinateDiff& padding_below,
-                                 const CoordinateDiff& padding_above,
-                                 const Strides& data_dilation_strides,
-                                 size_t batch_axis_data,
-                                 size_t input_channel_axis_data,
-                                 size_t input_channel_axis_filters,
-                                 size_t output_channel_axis_filters,
-                                 size_t batch_axis_result,
-                                 size_t output_channel_axis_result,
-                                 bool rotate_filter,
-                                 const element::Type& element_type,
-                                 size_t batch_size,
-                                 const runtime::he::HEBackend* he_backend);
             }
         }
     }
 }
 
-template <typename S, typename T>
-void ngraph::runtime::he::kernel::convolution_template(
+template <typename S, typename T, typename V>
+void ngraph::runtime::he::kernel::convolution(
     const std::vector<std::shared_ptr<S>>& arg0,
     const std::vector<std::shared_ptr<T>>& arg1,
-    std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
+    std::vector<std::shared_ptr<V>>& out,
     const Shape& arg0_shape,
     const Shape& arg1_shape,
     const Shape& out_shape,
@@ -320,7 +222,7 @@ void ngraph::runtime::he::kernel::convolution_template(
         CoordinateTransform::Iterator input_it = input_batch_transform.begin();
         CoordinateTransform::Iterator filter_it = filter_transform.begin();
 
-        std::vector<std::shared_ptr<runtime::he::HECiphertext>> summands;
+        std::vector<std::shared_ptr<V>> summands;
 
         while (input_it != input_batch_transform.end() && filter_it != filter_transform.end())
         {
@@ -343,8 +245,8 @@ void ngraph::runtime::he::kernel::convolution_template(
             {
                 std::shared_ptr<S> v = arg0[input_batch_transform.index(input_batch_coord)];
 
-                std::shared_ptr<runtime::he::HECiphertext> prod =
-                    he_backend->create_empty_ciphertext();
+                std::shared_ptr<V> prod;
+                prod = he_backend->create_empty_hetext<V>(prod);
 
                 runtime::he::kernel::scalar_multiply(
                     v, arg1[filter_transform.index(filter_coord)], prod, element_type, he_backend);
@@ -355,8 +257,8 @@ void ngraph::runtime::he::kernel::convolution_template(
         }
         if (summands.size() == 0)
         {
-            out[output_transform.index(out_coord)] =
-                he_backend->create_valued_ciphertext(0., element_type);
+            std::shared_ptr<V> type;
+            out[output_transform.index(out_coord)] = he_backend->create_valued_hetext<V>(0.f, element_type, type);
         }
         else
         {
@@ -364,12 +266,12 @@ void ngraph::runtime::he::kernel::convolution_template(
             // This is better for the he_seal_ckks_backend as it reduces the need for the rescale op.
             for (size_t i = 0; i < summands.size() - 1; i += 2)
             {
-                std::shared_ptr<runtime::he::HECiphertext> ciphertext =
-                    he_backend->create_empty_ciphertext();
+                std::shared_ptr<V> sum;
+                sum = he_backend->create_empty_hetext<V>(sum);
 
                 runtime::he::kernel::scalar_add(
-                    summands[i], summands[i + 1], ciphertext, element_type, he_backend);
-                summands.emplace_back(ciphertext);
+                    summands[i], summands[i + 1], sum, element_type, he_backend);
+                summands.emplace_back(sum);
             }
 
             // Write the sum back.

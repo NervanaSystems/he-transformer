@@ -16,22 +16,23 @@
 
 #pragma once
 
+#include <memory>
+#include <vector>
+
+#include "he_backend.hpp"
+#include "he_ciphertext.hpp"
+#include "he_plaintext.hpp"
+
 #include "kernel/add.hpp"
 #include "kernel/multiply.hpp"
 #include "ngraph/coordinate_transform.hpp"
 
 namespace ngraph
 {
-    namespace element
-    {
-        class Type;
-    }
     namespace runtime
     {
         namespace he
         {
-            class HEBackend;
-
             namespace kernel
             {
                 template <typename S, typename T, typename V>

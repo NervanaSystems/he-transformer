@@ -19,7 +19,6 @@ set (HE_SRC
     # kernels
     kernel/add.cpp
     kernel/broadcast.cpp
-    kernel/convolution.cpp
     kernel/constant.cpp
     kernel/multiply.cpp
     kernel/negate.cpp
