@@ -19,22 +19,16 @@
 #include <memory>
 #include <vector>
 
+#include "ngraph/type/element_type.hpp"
+#include "he_backend.hpp"
+#include "he_plaintext.hpp"
+
 namespace ngraph
 {
-    class Node;
-
-    namespace element
-    {
-        class Type;
-    }
-
     namespace runtime
     {
         namespace he
         {
-            class HEBackend;
-            class HEPlaintext;
-
             namespace kernel
             {
                 void constant(std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
