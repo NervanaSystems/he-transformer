@@ -52,7 +52,7 @@ namespace ngraph
                             const runtime::he::HEBackend* he_backend,
                             size_t count)
                 {
-                    #pragma omp parallel for
+#pragma omp parallel for
                     for (size_t i = 0; i < count; ++i)
                     {
                         kernel::scalar_negate(arg[i], out[i], element_type, he_backend);

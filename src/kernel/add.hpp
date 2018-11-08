@@ -19,10 +19,10 @@
 #include <memory>
 #include <vector>
 
-#include "ngraph/type/element_type.hpp"
+#include "he_backend.hpp"
 #include "he_ciphertext.hpp"
 #include "he_plaintext.hpp"
-#include "he_backend.hpp"
+#include "ngraph/type/element_type.hpp"
 
 namespace ngraph
 {
@@ -64,7 +64,7 @@ namespace ngraph
                          const runtime::he::HEBackend* he_backend,
                          size_t count)
                 {
-                    #pragma omp parallel for
+#pragma omp parallel for
                     for (size_t i = 0; i < count; ++i)
                     {
                         scalar_add(arg0[i], arg1[i], out[i], element_type, he_backend);

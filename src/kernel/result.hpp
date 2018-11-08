@@ -35,13 +35,13 @@ namespace ngraph
             {
                 template <typename T>
                 void result(const std::vector<std::shared_ptr<T>>& arg,
-                                  std::vector<std::shared_ptr<T>>& out,
-                                  size_t count)
+                            std::vector<std::shared_ptr<T>>& out,
+                            size_t count)
                 {
                     if (out.size() != arg.size())
                     {
-                        NGRAPH_INFO << "Result output size " << out.size() << " does not match result input size "
-                                    << arg.size();
+                        NGRAPH_INFO << "Result output size " << out.size()
+                                    << " does not match result input size " << arg.size();
                         throw ngraph_error("Wrong size in result");
                     }
                     for (size_t i = 0; i < count; ++i)
@@ -51,9 +51,9 @@ namespace ngraph
                 }
 
                 void result(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg,
-                                  std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
-                                  size_t count,
-                                  const runtime::he::HEBackend* he_backend);
+                            std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
+                            size_t count,
+                            const runtime::he::HEBackend* he_backend);
             }
         }
     }

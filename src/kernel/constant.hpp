@@ -19,9 +19,9 @@
 #include <memory>
 #include <vector>
 
-#include "ngraph/type/element_type.hpp"
 #include "he_backend.hpp"
 #include "he_plaintext.hpp"
+#include "ngraph/type/element_type.hpp"
 
 namespace ngraph
 {

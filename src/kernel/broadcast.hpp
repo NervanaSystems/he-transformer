@@ -19,9 +19,9 @@
 #include <memory>
 #include <vector>
 
-#include "ngraph/coordinate_transform.hpp"
 #include "he_ciphertext.hpp"
 #include "he_plaintext.hpp"
+#include "ngraph/coordinate_transform.hpp"
 
 namespace ngraph
 {
