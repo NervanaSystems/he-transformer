@@ -691,7 +691,6 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                      out0_cipher->get_shape(),
                                      dot->get_reduction_axes_count(),
                                      element_type,
-                                     batch_size,
                                      this);
         }
         else if (arg0_cipher != nullptr && arg1_plain != nullptr && out0_cipher != nullptr)
@@ -705,7 +704,6 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                      out0_cipher->get_shape(),
                                      dot->get_reduction_axes_count(),
                                      element_type,
-                                     batch_size,
                                      this);
         }
         else if (arg0_plain != nullptr && arg1_cipher != nullptr && out0_cipher != nullptr)
@@ -719,7 +717,6 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
                                      out0_cipher->get_shape(),
                                      dot->get_reduction_axes_count(),
                                      element_type,
-                                     batch_size,
                                      this);
         }
         else if (arg0_plain != nullptr && arg1_plain != nullptr && out0_plain != nullptr)

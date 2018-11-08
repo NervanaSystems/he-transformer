@@ -88,6 +88,20 @@ namespace ngraph
                 virtual std::shared_ptr<runtime::he::HECiphertext>
                     create_empty_ciphertext() const = 0;
 
+                /// @brief Creates ciphertext of unspecified value
+                /// Alias for create_empty_ciphertext()
+                /// @return Shared pointer to created ciphertext
+                template <typename T>
+                std::shared_ptr<runtime::he::HECiphertext>
+                    create_empty_hetext(std::shared_ptr<runtime::he::HECiphertext>) const { return create_empty_ciphertext(); };
+
+                /// @brief Creates plaintext of unspecified value
+                /// Alias for create_empty_ciphertext()
+                /// @return Shared pointer to created plaintext
+                template <typename T>
+                std::shared_ptr<runtime::he::HEPlaintext>
+                    create_empty_hetext(std::shared_ptr<runtime::he::HEPlaintext>) const { return create_empty_plaintext(); };
+
                 /// @brief Creates plaintext of specified value
                 /// @param value Scalar which to encode
                 /// @param element_type Type to encode
