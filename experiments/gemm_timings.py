@@ -23,8 +23,8 @@ import argparse
 
 
 def gemm_trial(n, p_zeros=0., p_ones=0, fname="./results.txt"):
-    ra = np.float32(np.random.randint(low=-5, high=5, size=(n,n)))
-    rb = np.float32(np.random.randint(low=-5, high=5, size=(n,n)))
+    ra = np.float32(np.random.choice([-5,-4,-3,-2,2,3,4,5], size=(n,n)))
+    rb = np.float32(np.random.choice([-5,-4,-3,-2,2,3,4,5], size=(n,n)))
 
     # randomly set entries to 0
     n_zeros = int(p_zeros * n * n)
@@ -33,7 +33,7 @@ def gemm_trial(n, p_zeros=0., p_ones=0, fname="./results.txt"):
     for i in zero_indices:
         row = i // n
         col = i % n
-        ra[row, col] = 0.
+        ra[row, col] = 1.
 
     print('ra', ra)
     print('rb', rb)
@@ -62,8 +62,8 @@ if __name__ == "__main__":
 
     fname = args.out
 
-    for n in [5, 10, 15, 20, 25, 30, 35, 40, 45]:
-        for p_zeros in [0.5, 0.8]:
+    for n in [45, 40, 35, 30, 25, 20, 15, 10, 5]:
+        for p_zeros in [0, 0.5, 0.8]:
             gemm_trial(n=n, p_zeros=p_zeros, fname=fname)
 
 

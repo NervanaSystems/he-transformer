@@ -62,6 +62,8 @@ shared_ptr<runtime::he::HEPlaintext>
     const string type_name = element_type.c_type_string();
     shared_ptr<runtime::he::HEPlaintext> plaintext = create_empty_plaintext();
 
+    // TODO: call get_valued_plaintext() !!!
+
     encode(plaintext, (void*)(&value), element_type, 1);
     return plaintext;
 }
