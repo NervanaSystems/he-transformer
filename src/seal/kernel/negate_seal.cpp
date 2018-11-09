@@ -22,7 +22,7 @@
 using namespace std;
 using namespace ngraph::runtime::he;
 
-void he_seal::kernel::scalar_negate(const shared_ptr<he_seal::SealCiphertextWrapper>& arg,
+void he_seal::kernel::scalar_negate(const shared_ptr<const he_seal::SealCiphertextWrapper>& arg,
                                     shared_ptr<he_seal::SealCiphertextWrapper>& out,
                                     const element::Type& element_type,
                                     const he_seal::HESealBackend* he_seal_backend)

@@ -23,8 +23,8 @@
 using namespace std;
 using namespace ngraph::runtime::he;
 
-void he_seal::kernel::scalar_multiply(const shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
-                                      const shared_ptr<he_seal::SealCiphertextWrapper>& arg1,
+void he_seal::kernel::scalar_multiply(const shared_ptr<const he_seal::SealCiphertextWrapper>& arg0,
+                                      const shared_ptr<const he_seal::SealCiphertextWrapper>& arg1,
                                       shared_ptr<he_seal::SealCiphertextWrapper>& out,
                                       const element::Type& element_type,
                                       const runtime::he::he_seal::HESealBackend* he_seal_backend)
@@ -61,12 +61,14 @@ void he_seal::kernel::scalar_multiply(const shared_ptr<he_seal::SealCiphertextWr
     }
 }
 
-void he_seal::kernel::scalar_multiply(const shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
-                                      const shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
+void he_seal::kernel::scalar_multiply(const shared_ptr<const he_seal::SealCiphertextWrapper>& arg0,
+                                      const shared_ptr<const he_seal::SealPlaintextWrapper>& arg1,
                                       shared_ptr<he_seal::SealCiphertextWrapper>& out,
                                       const element::Type& element_type,
                                       const runtime::he::he_seal::HESealBackend* he_seal_backend)
 {
+    auto arg0_scaled = make_shared<he_seal::SealCiphertextWrapper>(arg0->m_ciphertext);
+    auto arg1_scaled = make_shared<he_seal::SealPlaintextWrapper>(arg1->m_plaintext);
     if (auto he_seal_ckks_backend =
             dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend))
     {
@@ -78,35 +80,34 @@ void he_seal::kernel::scalar_multiply(const shared_ptr<he_seal::SealCiphertextWr
                                 ->context_data(arg1->m_plaintext.parms_id())
                                 ->chain_index();
 
-        while (chain_ind0 > chain_ind1) // TODO: switch to if-statement
+        if (chain_ind0 > chain_ind1)
         {
-            // NGRAPH_DEBUG << "Mod switching " << chain_ind0 << " , " << chain_ind1;
-            he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
-                arg0->m_ciphertext, arg1->m_plaintext.parms_id());
+            he_seal_ckks_backend->get_evaluator()->mod_switch_to(
+                arg0->m_ciphertext, arg1->m_plaintext.parms_id(), arg0_scaled->m_ciphertext);
             chain_ind0 = he_seal_ckks_backend->get_context()
-                             ->context_data(arg0->m_ciphertext.parms_id())
+                             ->context_data(arg0_scaled->m_ciphertext.parms_id())
                              ->chain_index();
         }
-        while (chain_ind1 > chain_ind0) // TODO: switch to if-statement
+        else if (chain_ind1 > chain_ind0)
         {
-            // NGRAPH_DEBUG << "Mod switching " << chain_ind0 << " , " << chain_ind1;
-            he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
-                arg1->m_plaintext, arg0->m_ciphertext.parms_id());
+            he_seal_ckks_backend->get_evaluator()->mod_switch_to(
+                arg1->m_plaintext, arg0->m_ciphertext.parms_id(), arg1_scaled->m_plaintext);
             chain_ind1 = he_seal_ckks_backend->get_context()
-                             ->context_data(arg1->m_plaintext.parms_id())
+                             ->context_data(arg1_scaled->m_plaintext.parms_id())
                              ->chain_index();
         }
+        assert(chain_ind0 == chain_ind1);
     }
 
     if (arg0 == out)
     {
         he_seal_backend->get_evaluator()->multiply_plain_inplace(out->m_ciphertext,
-                                                                 arg1->m_plaintext);
+                                                                 arg1_scaled->m_plaintext);
     }
     else
     {
         he_seal_backend->get_evaluator()->multiply_plain(
-            arg0->m_ciphertext, arg1->m_plaintext, out->m_ciphertext);
+            arg0_scaled->m_ciphertext, arg1_scaled->m_plaintext, out->m_ciphertext);
     }
 
     he_seal_backend->get_evaluator()->relinearize_inplace(out->m_ciphertext,
@@ -116,7 +117,7 @@ void he_seal::kernel::scalar_multiply(const shared_ptr<he_seal::SealCiphertextWr
             dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend))
     {
         // TODO: rescale only if needed? Check mod switching?
-        // NGRAPH_DEBUG << "Rescaling to next in place";
+        NGRAPH_DEBUG << "Rescaling to next in place";
         he_seal_ckks_backend->get_evaluator()->rescale_to_next_inplace(out->m_ciphertext);
     }
 }

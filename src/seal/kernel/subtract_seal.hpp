@@ -39,22 +39,22 @@ namespace ngraph
                 namespace kernel
                 {
                     void scalar_subtract(
-                        const std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& arg0,
-                        const std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& arg1,
+                        const std::shared_ptr<const runtime::he::he_seal::SealCiphertextWrapper>& arg0,
+                        const std::shared_ptr<const runtime::he::he_seal::SealCiphertextWrapper>& arg1,
                         std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
                         const element::Type& element_type,
                         const runtime::he::he_seal::HESealBackend* he_seal_backend);
 
                     void scalar_subtract(
-                        const std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& arg0,
-                        const std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& arg1,
+                        const std::shared_ptr<const runtime::he::he_seal::SealCiphertextWrapper>& arg0,
+                        const std::shared_ptr<const runtime::he::he_seal::SealPlaintextWrapper>& arg1,
                         std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
                         const element::Type& element_type,
                         const runtime::he::he_seal::HESealBackend* he_seal_backend);
 
                     void scalar_subtract(
-                        const std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& arg0,
-                        const std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& arg1,
+                        const std::shared_ptr<const runtime::he::he_seal::SealPlaintextWrapper>& arg0,
+                        const std::shared_ptr<const runtime::he::he_seal::SealCiphertextWrapper>& arg1,
                         std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
                         const element::Type& element_type,
                         const runtime::he::he_seal::HESealBackend* he_seal_backend);
