@@ -132,17 +132,14 @@ void kernel::scalar_multiply(const shared_ptr<HECiphertext>& arg0,
 
             if (optimization == mult_zero)
             {
-                NGRAPH_DEBUG << "Optimized multiply by 0";
                 out = he_backend->create_valued_ciphertext(0, element_type);
             }
             else if (optimization == mult_one)
             {
-                NGRAPH_DEBUG << "Optimized multiply by 1";
                 out = arg0;
             }
             else if (optimization == mult_neg_one)
             {
-                NGRAPH_DEBUG << "Optimized multiply by -1";
                 he_seal::kernel::scalar_negate(arg0_seal, out_seal, element_type, he_seal_backend);
                 out = dynamic_pointer_cast<HECiphertext>(out_seal);
             }
