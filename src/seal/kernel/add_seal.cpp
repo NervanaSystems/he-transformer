@@ -33,6 +33,9 @@ void he_seal::kernel::scalar_add(const shared_ptr<he_seal::SealCiphertextWrapper
                                  const element::Type& element_type,
                                  const he_seal::HESealBackend* he_seal_backend)
 {
+    auto arg0_scaled = make_shared<he_seal::SealCiphertextWrapper>(arg0->m_ciphertext);
+    auto arg1_scaled = make_shared<he_seal::SealCiphertextWrapper>(arg1->m_ciphertext);
+
     if (auto he_seal_ckks_backend =
             dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend))
     {
@@ -53,41 +56,40 @@ void he_seal::kernel::scalar_add(const shared_ptr<he_seal::SealCiphertextWrapper
         }
         if (scale0 != scale1)
         {
-            arg0->m_ciphertext.scale() = arg1->m_ciphertext.scale();
+            arg0_scaled->m_ciphertext.scale() = arg1_scaled->m_ciphertext.scale();
         }
 
-        while (chain_ind0 > chain_ind1)
+        if (chain_ind0 > chain_ind1)
         {
-            // NGRAPH_INFO << "Mod switching " << chain_ind0 << " , " << chain_ind1;
             he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
-                arg0->m_ciphertext, arg1->m_ciphertext.parms_id());
+                arg0_scaled->m_ciphertext, arg1_scaled->m_ciphertext.parms_id());
             chain_ind0 = he_seal_ckks_backend->get_context()
-                             ->context_data(arg0->m_ciphertext.parms_id())
+                             ->context_data(arg0_scaled->m_ciphertext.parms_id())
                              ->chain_index();
         }
-        while (chain_ind1 > chain_ind0)
+        else if (chain_ind1 > chain_ind0)
         {
-            // NGRAPH_INFO << "Mod switching " << chain_ind0 << " , " << chain_ind1;
             he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
-                arg1->m_ciphertext, arg0->m_ciphertext.parms_id());
+                arg1_scaled->m_ciphertext, arg0_scaled->m_ciphertext.parms_id());
             chain_ind1 = he_seal_ckks_backend->get_context()
-                             ->context_data(arg1->m_ciphertext.parms_id())
+                             ->context_data(arg1_scaled->m_ciphertext.parms_id())
                              ->chain_index();
         }
+        assert(chain_ind1 == chain_ind0);
     }
 
     if (arg0 == out)
     {
-        he_seal_backend->get_evaluator()->add_inplace(out->m_ciphertext, arg1->m_ciphertext);
+        he_seal_backend->get_evaluator()->add_inplace(out->m_ciphertext, arg1_scaled->m_ciphertext);
     }
     else if (arg1 == out)
     {
-        he_seal_backend->get_evaluator()->add_inplace(out->m_ciphertext, arg0->m_ciphertext);
+        he_seal_backend->get_evaluator()->add_inplace(out->m_ciphertext, arg0_scaled->m_ciphertext);
     }
     else
     {
         he_seal_backend->get_evaluator()->add(
-            arg0->m_ciphertext, arg1->m_ciphertext, out->m_ciphertext);
+            arg0_scaled->m_ciphertext, arg1_scaled->m_ciphertext, out->m_ciphertext);
     }
 }
 
