@@ -27,8 +27,8 @@
 using namespace std;
 using namespace ngraph::runtime::he;
 
-void he_seal::kernel::scalar_add(const shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
-                                 const shared_ptr<he_seal::SealCiphertextWrapper>& arg1,
+void he_seal::kernel::scalar_add(const shared_ptr<const he_seal::SealCiphertextWrapper>& arg0,
+                                 const shared_ptr<const he_seal::SealCiphertextWrapper>& arg1,
                                  shared_ptr<he_seal::SealCiphertextWrapper>& out,
                                  const element::Type& element_type,
                                  const he_seal::HESealBackend* he_seal_backend)
@@ -93,8 +93,8 @@ void he_seal::kernel::scalar_add(const shared_ptr<he_seal::SealCiphertextWrapper
     }
 }
 
-void he_seal::kernel::scalar_add(const shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
-                                 const shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
+void he_seal::kernel::scalar_add(const shared_ptr<const he_seal::SealCiphertextWrapper>& arg0,
+                                 const shared_ptr<const he_seal::SealPlaintextWrapper>& arg1,
                                  shared_ptr<he_seal::SealCiphertextWrapper>& out,
                                  const element::Type& element_type,
                                  const he_seal::HESealBackend* he_seal_backend)
@@ -108,6 +108,15 @@ void he_seal::kernel::scalar_add(const shared_ptr<he_seal::SealCiphertextWrapper
         he_seal_backend->get_evaluator()->add_plain(
             arg0->m_ciphertext, arg1->m_plaintext, out->m_ciphertext);
     }
+}
+
+void he_seal::kernel::scalar_add(const shared_ptr<const he_seal::SealPlaintextWrapper>& arg0,
+                                 const shared_ptr<const he_seal::SealCiphertextWrapper>& arg1,
+                                 shared_ptr<he_seal::SealCiphertextWrapper>& out,
+                                 const element::Type& element_type,
+                                 const he_seal::HESealBackend* he_seal_backend)
+{
+    he_seal::kernel::scalar_add(arg1, arg0, out, element_type, he_seal_backend);
 }
 
 void he_seal::kernel::scalar_add(const shared_ptr<he_seal::SealPlaintextWrapper>& arg0,

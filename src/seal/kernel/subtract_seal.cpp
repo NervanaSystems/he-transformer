@@ -22,8 +22,8 @@
 using namespace std;
 using namespace ngraph::runtime::he;
 
-void he_seal::kernel::scalar_subtract(const shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
-                                      const shared_ptr<he_seal::SealCiphertextWrapper>& arg1,
+void he_seal::kernel::scalar_subtract(const shared_ptr<const he_seal::SealCiphertextWrapper>& arg0,
+                                      const shared_ptr<const he_seal::SealCiphertextWrapper>& arg1,
                                       shared_ptr<he_seal::SealCiphertextWrapper>& out,
                                       const element::Type& element_type,
                                       const he_seal::HESealBackend* he_seal_backend)
@@ -43,8 +43,8 @@ void he_seal::kernel::scalar_subtract(const shared_ptr<he_seal::SealCiphertextWr
     }
 }
 
-void he_seal::kernel::scalar_subtract(const shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
-                                      const shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
+void he_seal::kernel::scalar_subtract(const shared_ptr<const he_seal::SealCiphertextWrapper>& arg0,
+                                      const shared_ptr<const he_seal::SealPlaintextWrapper>& arg1,
                                       shared_ptr<he_seal::SealCiphertextWrapper>& out,
                                       const element::Type& element_type,
                                       const he_seal::HESealBackend* he_seal_backend)
