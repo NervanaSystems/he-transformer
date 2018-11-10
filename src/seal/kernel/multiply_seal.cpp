@@ -117,7 +117,11 @@ void he_seal::kernel::scalar_multiply(const shared_ptr<const he_seal::SealCipher
             dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend))
     {
         // TODO: rescale only if needed? Check mod switching?
-        NGRAPH_DEBUG << "Rescaling to next in place";
+        // NGRAPH_DEBUG isn't thread-safe until ngraph commit #1977
+        // https://github.com/NervanaSystems/ngraph/commit/ee6444ed39864776c8ce9a406eee9275382a88bb
+        // so we comment it out.
+        // TODO: uncomment at next ngraph version
+        // NGRAPH_DEBUG << "Rescaling to next in place";
         he_seal_ckks_backend->get_evaluator()->rescale_to_next_inplace(out->m_ciphertext);
     }
 }

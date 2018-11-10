@@ -96,6 +96,7 @@ void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset
 #pragma omp parallel for
         for (size_t i = 0; i < num_elements_to_write; ++i)
         {
+
             const void* src_with_offset =
                 (void*)((char*)source + i * type_byte_size * m_batch_size);
             size_t dst_index = dst_start_index + i;
@@ -126,6 +127,7 @@ void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset
                 m_he_backend->encode(plaintext, src_with_offset, element_type, m_batch_size);
             }
             m_he_backend->encrypt(m_cipher_texts[dst_index], plaintext);
+
         }
     }
 }

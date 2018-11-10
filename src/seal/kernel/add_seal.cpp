@@ -51,7 +51,11 @@ void he_seal::kernel::scalar_add(const shared_ptr<const he_seal::SealCiphertextW
 
         if (scale0 < 0.99 * scale1 || scale0 > 1.01 * scale1)
         {
-            NGRAPH_DEBUG << "Scale " << setw(10) << scale0 << " does not match scale " << scale1
+            // NGRAPH_DEBUG isn't thread-safe until ngraph commit #1977
+            // https://github.com/NervanaSystems/ngraph/commit/ee6444ed39864776c8ce9a406eee9275382a88bb
+            // so we comment it out.
+            // TODO: use NGRAPH_DEBUG at next ngraph version
+            NGRAPH_WARN << "Scale " << setw(10) << scale0 << " does not match scale " << scale1
                          << " in scalar add, ratio is " << scale0 / scale1;
         }
         if (scale0 != scale1)
@@ -61,7 +65,7 @@ void he_seal::kernel::scalar_add(const shared_ptr<const he_seal::SealCiphertextW
 
         if (chain_ind0 > chain_ind1)
         {
-            NGRAPH_INFO << "Chain switching " << chain_ind0 << ", " << chain_ind1;
+           // NGRAPH_INFO << "Chain switching " << chain_ind0 << ", " << chain_ind1;
             he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
                 arg0_scaled->m_ciphertext, arg1_scaled->m_ciphertext.parms_id());
             chain_ind0 = he_seal_ckks_backend->get_context()
@@ -70,7 +74,7 @@ void he_seal::kernel::scalar_add(const shared_ptr<const he_seal::SealCiphertextW
         }
         else if (chain_ind1 > chain_ind0)
         {
-            NGRAPH_INFO << "Chain switching " << chain_ind0 << ", " << chain_ind1;
+            // NGRAPH_INFO << "Chain switching " << chain_ind0 << ", " << chain_ind1;
             he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
                 arg1_scaled->m_ciphertext, arg0_scaled->m_ciphertext.parms_id());
             chain_ind1 = he_seal_ckks_backend->get_context()
@@ -80,7 +84,7 @@ void he_seal::kernel::scalar_add(const shared_ptr<const he_seal::SealCiphertextW
         assert(chain_ind1 == chain_ind0);
     }
 
-    // TODO: enale in-place optimizations
+    // TODO: enable in-place with different scale / modulus chain
     if (arg0 == out)
     {
         NGRAPH_INFO << "In-place arg0 add cipher cipher";
