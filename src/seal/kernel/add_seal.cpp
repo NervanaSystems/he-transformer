@@ -61,6 +61,7 @@ void he_seal::kernel::scalar_add(const shared_ptr<const he_seal::SealCiphertextW
 
         if (chain_ind0 > chain_ind1)
         {
+            NGRAPH_INFO << "Chain switching " << chain_ind0 << ", " << chain_ind1;
             he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
                 arg0_scaled->m_ciphertext, arg1_scaled->m_ciphertext.parms_id());
             chain_ind0 = he_seal_ckks_backend->get_context()
@@ -69,6 +70,7 @@ void he_seal::kernel::scalar_add(const shared_ptr<const he_seal::SealCiphertextW
         }
         else if (chain_ind1 > chain_ind0)
         {
+            NGRAPH_INFO << "Chain switching " << chain_ind0 << ", " << chain_ind1;
             he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
                 arg1_scaled->m_ciphertext, arg0_scaled->m_ciphertext.parms_id());
             chain_ind1 = he_seal_ckks_backend->get_context()
@@ -78,12 +80,31 @@ void he_seal::kernel::scalar_add(const shared_ptr<const he_seal::SealCiphertextW
         assert(chain_ind1 == chain_ind0);
     }
 
+    // TODO: enale in-place optimizations
     if (arg0 == out)
     {
+        NGRAPH_INFO << "In-place arg0 add cipher cipher";
+        if (auto he_seal_ckks_backend =
+            dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend))
+        {
+            double scale0 = arg0->m_ciphertext.scale();
+            double scale1 = arg1->m_ciphertext.scale();
+
+            size_t chain_ind0 = he_seal_ckks_backend->get_context()
+                                    ->context_data(arg0->m_ciphertext.parms_id())
+                                    ->chain_index();
+            size_t chain_ind1 = he_seal_ckks_backend->get_context()
+                                    ->context_data(arg1->m_ciphertext.parms_id())
+                                    ->chain_index();
+
+            NGRAPH_INFO << "Chain ind " << chain_ind0 << ",  " << chain_ind1;
+        }
+
         he_seal_backend->get_evaluator()->add_inplace(out->m_ciphertext, arg1_scaled->m_ciphertext);
     }
     else if (arg1 == out)
     {
+        NGRAPH_INFO << "In-place arg1 add cipher cipher";
         he_seal_backend->get_evaluator()->add_inplace(out->m_ciphertext, arg0_scaled->m_ciphertext);
     }
     else
