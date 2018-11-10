@@ -220,7 +220,9 @@ void ngraph::runtime::he::kernel::convolution(const std::vector<std::shared_ptr<
         CoordinateTransform::Iterator input_it = input_batch_transform.begin();
         CoordinateTransform::Iterator filter_it = filter_transform.begin();
 
-        std::vector<std::shared_ptr<V>> summands;
+        // std::vector<std::shared_ptr<V>> summands;
+        std::shared_ptr<V> sum = he_backend->create_empty_hetext<V>(std::shared_ptr<V>{});
+        bool first_add = true;
 
         while (input_it != input_batch_transform.end() && filter_it != filter_transform.end())
         {
@@ -248,12 +250,25 @@ void ngraph::runtime::he::kernel::convolution(const std::vector<std::shared_ptr<
 
                 runtime::he::kernel::scalar_multiply(
                     v, arg1[filter_transform.index(filter_coord)], prod, element_type, he_backend);
-                summands.emplace_back(prod);
+
+                if (first_add)
+                {
+                    sum = prod;
+                    first_add = false;
+                }
+                else
+                {
+                    // TODO: don't use tmp sum!
+                    std::shared_ptr<V> tmp_sum = he_backend->create_empty_hetext<V>(std::shared_ptr<V>{});
+                    runtime::he::kernel::scalar_add(sum, prod, tmp_sum, element_type, he_backend);
+                    sum = tmp_sum;
+                }
+                //summands.emplace_back(prod);
             }
             ++input_it;
             ++filter_it;
         }
-        if (summands.size() == 0)
+        if (first_add)
         {
             std::shared_ptr<V> type;
             out[output_transform.index(out_coord)] =
@@ -263,7 +278,7 @@ void ngraph::runtime::he::kernel::convolution(const std::vector<std::shared_ptr<
         {
             // Repeatedly sum and add to the back of the vector until the end is reached
             // This is better for the he_seal_ckks_backend as it reduces the need for the rescale op.
-            for (size_t i = 0; i < summands.size() - 1; i += 2)
+            /* for (size_t i = 0; i < summands.size() - 1; i += 2)
             {
                 std::shared_ptr<V> sum;
                 sum = he_backend->create_empty_hetext<V>(sum);
@@ -271,10 +286,10 @@ void ngraph::runtime::he::kernel::convolution(const std::vector<std::shared_ptr<
                 runtime::he::kernel::scalar_add(
                     summands[i], summands[i + 1], sum, element_type, he_backend);
                 summands.emplace_back(sum);
-            }
+            } */
 
             // Write the sum back.
-            out[output_transform.index(out_coord)] = summands[summands.size() - 1];
+            out[output_transform.index(out_coord)] = sum;
         }
     }
 }
