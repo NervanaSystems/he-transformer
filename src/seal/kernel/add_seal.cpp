@@ -14,12 +14,12 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include <iomanip>
-
-#include "ngraph/type/element_type.hpp"
-#include "seal/ckks/he_seal_ckks_backend.hpp"
-#include "seal/he_seal_backend.hpp"
 #include "seal/kernel/add_seal.hpp"
+#include "ngraph/type/element_type.hpp"
+#include "seal/bfv/kernel/add_seal_bfv.hpp"
+#include "seal/ckks/he_seal_ckks_backend.hpp"
+#include "seal/ckks/kernel/add_seal_ckks.hpp"
+#include "seal/he_seal_backend.hpp"
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
@@ -33,63 +33,19 @@ void he_seal::kernel::scalar_add(const shared_ptr<const he_seal::SealCiphertextW
                                  const element::Type& element_type,
                                  const he_seal::HESealBackend* he_seal_backend)
 {
-    auto arg0_scaled = make_shared<he_seal::SealCiphertextWrapper>(arg0->m_ciphertext);
-    auto arg1_scaled = make_shared<he_seal::SealCiphertextWrapper>(arg1->m_ciphertext);
-
     if (auto he_seal_ckks_backend =
             dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend))
     {
-        double scale0 = arg0->m_ciphertext.scale();
-        double scale1 = arg1->m_ciphertext.scale();
-
-        size_t chain_ind0 = he_seal_ckks_backend->get_context()
-                                ->context_data(arg0->m_ciphertext.parms_id())
-                                ->chain_index();
-        size_t chain_ind1 = he_seal_ckks_backend->get_context()
-                                ->context_data(arg1->m_ciphertext.parms_id())
-                                ->chain_index();
-
-        if (scale0 < 0.99 * scale1 || scale0 > 1.01 * scale1)
-        {
-            NGRAPH_DEBUG << "Scale " << setw(10) << scale0 << " does not match scale " << scale1
-                         << " in scalar add, ratio is " << scale0 / scale1;
-        }
-        if (scale0 != scale1)
-        {
-            arg0_scaled->m_ciphertext.scale() = arg1_scaled->m_ciphertext.scale();
-        }
-
-        if (chain_ind0 > chain_ind1)
-        {
-            he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
-                arg0_scaled->m_ciphertext, arg1_scaled->m_ciphertext.parms_id());
-            chain_ind0 = he_seal_ckks_backend->get_context()
-                             ->context_data(arg0_scaled->m_ciphertext.parms_id())
-                             ->chain_index();
-        }
-        else if (chain_ind1 > chain_ind0)
-        {
-            he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
-                arg1_scaled->m_ciphertext, arg0_scaled->m_ciphertext.parms_id());
-            chain_ind1 = he_seal_ckks_backend->get_context()
-                             ->context_data(arg1_scaled->m_ciphertext.parms_id())
-                             ->chain_index();
-        }
-        assert(chain_ind1 == chain_ind0);
+        he_seal::ckks::kernel::scalar_add_ckks(arg0, arg1, out, element_type, he_seal_ckks_backend);
     }
-
-    if (arg0 == out)
+    else if (auto he_seal_bfv_backend =
+                 dynamic_cast<const he_seal::HESealBFVBackend*>(he_seal_backend))
     {
-        he_seal_backend->get_evaluator()->add_inplace(out->m_ciphertext, arg1_scaled->m_ciphertext);
-    }
-    else if (arg1 == out)
-    {
-        he_seal_backend->get_evaluator()->add_inplace(out->m_ciphertext, arg0_scaled->m_ciphertext);
+        he_seal::bfv::kernel::scalar_add_bfv(arg0, arg1, out, element_type, he_seal_bfv_backend);
     }
     else
     {
-        he_seal_backend->get_evaluator()->add(
-            arg0_scaled->m_ciphertext, arg1_scaled->m_ciphertext, out->m_ciphertext);
+        throw ngraph_error("HESealBackend is neither BFV nor CKKS");
     }
 }
 
@@ -99,14 +55,19 @@ void he_seal::kernel::scalar_add(const shared_ptr<const he_seal::SealCiphertextW
                                  const element::Type& element_type,
                                  const he_seal::HESealBackend* he_seal_backend)
 {
-    if (arg0 == out)
+    if (auto he_seal_ckks_backend =
+            dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend))
     {
-        he_seal_backend->get_evaluator()->add_plain_inplace(out->m_ciphertext, arg1->m_plaintext);
+        he_seal::ckks::kernel::scalar_add_ckks(arg0, arg1, out, element_type, he_seal_ckks_backend);
+    }
+    else if (auto he_seal_bfv_backend =
+                 dynamic_cast<const he_seal::HESealBFVBackend*>(he_seal_backend))
+    {
+        he_seal::bfv::kernel::scalar_add_bfv(arg0, arg1, out, element_type, he_seal_bfv_backend);
     }
     else
     {
-        he_seal_backend->get_evaluator()->add_plain(
-            arg0->m_ciphertext, arg1->m_plaintext, out->m_ciphertext);
+        throw ngraph_error("HESealBackend is neither BFV nor CKKS");
     }
 }
 

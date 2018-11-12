@@ -23,14 +23,15 @@ import argparse
 
 
 def gemm_trial(n, p_zeros=0., p_ones=0, fname="./results.txt"):
+    # Pick values not in {-1, 0, 1} for fair comparison
     ra = np.float32(np.random.choice([-5,-4,-3,-2,2,3,4,5], size=(n,n)))
     rb = np.float32(np.random.choice([-5,-4,-3,-2,2,3,4,5], size=(n,n)))
 
-    # randomly set entries to 0
+    # randomly set entries to 1
     n_zeros = int(p_zeros * n * n)
     n_ones = int(p_ones * n * n)
-    zero_indices = np.random.choice( n * n, n_zeros, replace=False)
-    for i in zero_indices:
+    one_indices = np.random.choice( n * n, n_zeros, replace=False)
+    for i in one_indices:
         row = i // n
         col = i % n
         ra[row, col] = 1.
