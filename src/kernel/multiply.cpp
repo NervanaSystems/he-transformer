@@ -121,11 +121,16 @@ void kernel::scalar_multiply(const shared_ptr<HECiphertext>& arg0,
 
             if (type_name == "float")
             {
-                optimization = (arg1 == he_seal_backend->get_valued_plaintext(0))
+                auto arg1_seal_plaintext = arg1_seal->m_plaintext;
+                auto seal_0_plaintext = static_pointer_cast<const he_seal::SealPlaintextWrapper>(he_seal_backend->get_valued_plaintext(0))->m_plaintext;
+                auto seal_1_plaintext = static_pointer_cast<const he_seal::SealPlaintextWrapper>(he_seal_backend->get_valued_plaintext(1))->m_plaintext;
+                auto seal_neg1_plaintext = static_pointer_cast<const he_seal::SealPlaintextWrapper>(he_seal_backend->get_valued_plaintext(-1))->m_plaintext;
+
+                optimization = (arg1_seal_plaintext == seal_0_plaintext )
                                    ? mult_zero
-                                   : (arg1 == he_seal_backend->get_valued_plaintext(1))
+                                   : (arg1_seal_plaintext == seal_1_plaintext)
                                          ? mult_one
-                                         : (arg1 == he_seal_backend->get_valued_plaintext(-1))
+                                         : (arg1_seal_plaintext == seal_neg1_plaintext)
                                                ? mult_neg_one
                                                : no_optimization;
             }
@@ -136,6 +141,7 @@ void kernel::scalar_multiply(const shared_ptr<HECiphertext>& arg0,
             }
             else if (optimization == mult_one)
             {
+                NGRAPH_INFO << "Mult 1 optimization";
                 out = arg0;
             }
             else if (optimization == mult_neg_one)
