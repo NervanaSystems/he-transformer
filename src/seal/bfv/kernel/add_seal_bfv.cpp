@@ -65,26 +65,3 @@ void he_seal::bfv::kernel::scalar_add_bfv(const shared_ptr<const he_seal::SealPl
 {
     he_seal::bfv::kernel::scalar_add_bfv(arg1, arg0, out, element_type, he_seal_bfv_backend);
 }
-
-void he_seal::bfv::kernel::scalar_add_bfv(const shared_ptr<he_seal::SealPlaintextWrapper>& arg0,
-                                 const shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
-                                 shared_ptr<he_seal::SealPlaintextWrapper>& out,
-                                 const element::Type& element_type,
-                                 const he_seal::HESealBFVBackend* he_seal_bfv_backend)
-{
-    shared_ptr<HEPlaintext> out_he = dynamic_pointer_cast<HEPlaintext>(out);
-    const string type_name = element_type.c_type_string();
-    if (type_name == "float")
-    {
-        float x, y;
-        he_seal_bfv_backend->decode(&x, arg0, element_type);
-        he_seal_bfv_backend->decode(&y, arg1, element_type);
-        float r = x + y;
-        he_seal_bfv_backend->encode(out_he, &r, element_type);
-    }
-    else
-    {
-        throw ngraph_error("Unsupported element type " + type_name + " in add");
-    }
-    out = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(out_he);
-}

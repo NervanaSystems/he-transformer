@@ -16,14 +16,7 @@
 
 
 #include <iomanip>
-
-#include "ngraph/type/element_type.hpp"
-#include "seal/ckks/he_seal_ckks_backend.hpp"
-#include "seal/kernel/add_seal.hpp"
 #include "seal/ckks/kernel/add_seal_ckks.hpp"
-#include "seal/seal.h"
-#include "seal/seal_ciphertext_wrapper.hpp"
-#include "seal/seal_plaintext_wrapper.hpp"
 
 using namespace std;
 using namespace ngraph::runtime::he;
@@ -81,29 +74,13 @@ void he_seal::ckks::kernel::scalar_add_ckks(const shared_ptr<const he_seal::Seal
     }
     NGRAPH_ASSERT(chain_ind1 == chain_ind0) << "Chain moduli are different";
 
-    // TODO: enable in-place with different scale / modulus chain
     if (arg0 == out)
     {
-        NGRAPH_INFO << "In-place arg0 add cipher cipher";
-
-        double scale0 = arg0->m_ciphertext.scale();
-        double scale1 = arg1->m_ciphertext.scale();
-
-        size_t chain_ind0 = he_seal_ckks_backend->get_context()
-                                ->context_data(arg0->m_ciphertext.parms_id())
-                                ->chain_index();
-        size_t chain_ind1 = he_seal_ckks_backend->get_context()
-                                ->context_data(arg1->m_ciphertext.parms_id())
-                                ->chain_index();
-
-        NGRAPH_INFO << "Chain ind " << chain_ind0 << ",  " << chain_ind1;
-
         he_seal_ckks_backend->get_evaluator()->add_inplace(arg0_scaled->m_ciphertext, arg1_scaled->m_ciphertext);
         out = arg0_scaled;
     }
     else if (arg1 == out)
     {
-        NGRAPH_INFO << "In-place arg1 add cipher cipher";
         he_seal_ckks_backend->get_evaluator()->add_inplace(arg1_scaled->m_ciphertext, arg0_scaled->m_ciphertext);
         out = arg1_scaled;
     }
@@ -139,28 +116,4 @@ void he_seal::ckks::kernel::scalar_add_ckks(const shared_ptr<const he_seal::Seal
                                  const he_seal::HESealCKKSBackend* he_seal_ckks_backend)
 {
     he_seal::ckks::kernel::scalar_add_ckks(arg1, arg0, out, element_type, he_seal_ckks_backend);
-}
-
-void he_seal::ckks::kernel::scalar_add_ckks(const shared_ptr<he_seal::SealPlaintextWrapper>& arg0,
-                                 const shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
-                                 shared_ptr<he_seal::SealPlaintextWrapper>& out,
-                                 const element::Type& element_type,
-                                 const he_seal::HESealCKKSBackend* he_seal_ckks_backend)
-{
-    // TODO: enable with different scale / modulus chain
-    shared_ptr<HEPlaintext> out_he = dynamic_pointer_cast<HEPlaintext>(out);
-    const string type_name = element_type.c_type_string();
-    if (type_name == "float")
-    {
-        float x, y;
-        he_seal_ckks_backend->decode(&x, arg0, element_type);
-        he_seal_ckks_backend->decode(&y, arg1, element_type);
-        float r = x + y;
-        he_seal_ckks_backend->encode(out_he, &r, element_type);
-    }
-    else
-    {
-        throw ngraph_error("Unsupported element type " + type_name + " in add");
-    }
-    out = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(out_he);
 }

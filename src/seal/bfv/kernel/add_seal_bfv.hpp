@@ -54,12 +54,6 @@ namespace ngraph
                                     shared_ptr<he_seal::SealCiphertextWrapper>& out,
                                     const element::Type& element_type,
                                     const he_seal::HESealBFVBackend* he_seal_bfv_backend);
-
-                        void scalar_add_bfv(const shared_ptr<he_seal::SealPlaintextWrapper>& arg0,
-                                    const shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
-                                    shared_ptr<he_seal::SealPlaintextWrapper>& out,
-                                    const element::Type& element_type,
-                                    const he_seal::HESealBFVBackend* he_seal_bfv_backend);
                     }
                 }
             }

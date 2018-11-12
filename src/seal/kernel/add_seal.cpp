@@ -14,8 +14,6 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include <iomanip>
-
 #include "ngraph/type/element_type.hpp"
 #include "seal/ckks/he_seal_ckks_backend.hpp"
 #include "seal/he_seal_backend.hpp"
@@ -88,18 +86,19 @@ void he_seal::kernel::scalar_add(const shared_ptr<he_seal::SealPlaintextWrapper>
                                  const element::Type& element_type,
                                  const he_seal::HESealBackend* he_seal_backend)
 {
-    if (auto he_seal_ckks_backend =
-            dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend))
+    shared_ptr<HEPlaintext> out_he = dynamic_pointer_cast<HEPlaintext>(out);
+    const string type_name = element_type.c_type_string();
+    if (type_name == "float")
     {
-        he_seal::ckks::kernel::scalar_add_ckks(arg0, arg1, out, element_type, he_seal_ckks_backend);
-    }
-    else if (auto he_seal_bfv_backend =
-        dynamic_cast<const he_seal::HESealBFVBackend*>(he_seal_backend))
-    {
-        he_seal::bfv::kernel::scalar_add_bfv(arg0, arg1, out, element_type, he_seal_bfv_backend);
+        float x, y;
+        he_seal_backend->decode(&x, arg0, element_type);
+        he_seal_backend->decode(&y, arg1, element_type);
+        float r = x + y;
+        he_seal_backend->encode(out_he, &r, element_type);
     }
     else
     {
-        throw ngraph_error("HESealBackend is neither BFV nor CKKS");
+        throw ngraph_error("Unsupported element type " + type_name + " in add");
     }
+    out = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(out_he);
 }

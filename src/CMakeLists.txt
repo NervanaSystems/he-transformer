@@ -35,8 +35,10 @@ set (HE_SRC
     seal/seal_ciphertext_wrapper.cpp
     seal/bfv/he_seal_bfv_backend.cpp
     seal/bfv/kernel/add_seal_bfv.cpp
+    seal/bfv/kernel/multiply_seal_bfv.cpp
     seal/ckks/he_seal_ckks_backend.cpp
     seal/ckks/kernel/add_seal_ckks.cpp
+    seal/ckks/kernel/multiply_seal_ckks.cpp
 
     # main
     he_backend.cpp

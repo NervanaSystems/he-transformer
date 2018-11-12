@@ -164,7 +164,7 @@ void ngraph::runtime::he::kernel::dot(const std::vector<std::shared_ptr<S>>& arg
             {
                 // TODO: don't use tmp sum!
                 std::shared_ptr<V> tmp_sum = he_backend->create_empty_hetext<V>(std::shared_ptr<V>{});
-                runtime::he::kernel::scalar_add(sum, prod, sum, element_type, he_backend);
+                runtime::he::kernel::scalar_add(sum, prod, tmp_sum, element_type, he_backend);
                 sum = tmp_sum;
             }
         }
