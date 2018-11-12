@@ -109,7 +109,7 @@ void ngraph::runtime::he::kernel::convolution(const std::vector<std::shared_ptr<
 #pragma omp parallel for
     for (size_t out_coord_idx = 0; out_coord_idx < out_transform_size; ++out_coord_idx)
     {
-        const Coordinate out_coord = out_coords[out_coord_idx];
+        const Coordinate& out_coord = out_coords[out_coord_idx];
 
         //for (Coordinate out_coord : output_transform)
         //{
@@ -219,11 +219,13 @@ void ngraph::runtime::he::kernel::convolution(const std::vector<std::shared_ptr<
 
         CoordinateTransform::Iterator input_it = input_batch_transform.begin();
         CoordinateTransform::Iterator filter_it = filter_transform.begin();
+        CoordinateTransform::Iterator input_end = input_batch_transform.end();
+        CoordinateTransform::Iterator filter_end = filter_transform.end();
 
         std::shared_ptr<V> sum = he_backend->create_empty_hetext<V>(std::shared_ptr<V>{});
         bool first_add = true;
 
-        while (input_it != input_batch_transform.end() && filter_it != filter_transform.end())
+        while (input_it != input_end && filter_it != filter_end)
         {
             const Coordinate& input_batch_coord = *input_it;
             Coordinate filter_coord = *filter_it;
@@ -242,13 +244,12 @@ void ngraph::runtime::he::kernel::convolution(const std::vector<std::shared_ptr<
 
             if (input_batch_transform.has_source_coordinate(input_batch_coord))
             {
-                std::shared_ptr<S> v = arg0[input_batch_transform.index(input_batch_coord)];
+                std::shared_ptr<S> arg0_multiplicand = arg0[input_batch_transform.index(input_batch_coord)];
+                std::shared_ptr<T> arg1_multiplicand = arg1[filter_transform.index(filter_coord)];
 
-                std::shared_ptr<V> prod;
-                prod = he_backend->create_empty_hetext<V>(prod);
-
+                std::shared_ptr<V> prod = he_backend->create_empty_hetext<V>(std::shared_ptr<V>{});
                 runtime::he::kernel::scalar_multiply(
-                    v, arg1[filter_transform.index(filter_coord)], prod, element_type, he_backend);
+                    arg0_multiplicand, arg1_multiplicand, prod, element_type, he_backend);
 
                 if (first_add)
                 {
@@ -268,8 +269,7 @@ void ngraph::runtime::he::kernel::convolution(const std::vector<std::shared_ptr<
         }
         if (first_add)
         {
-            std::shared_ptr<V> type;
-            out[out_coord_idx] = he_backend->create_valued_hetext<V>(0.f, element_type, type);
+            out[out_coord_idx] = he_backend->create_valued_hetext<V>(0.f, element_type, std::shared_ptr<V>{});
         }
         else
         {

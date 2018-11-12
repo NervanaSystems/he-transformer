@@ -70,6 +70,7 @@ const Shape runtime::he::HECipherTensor::get_expanded_shape() const
 void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset, size_t n)
 {
     // Hack to fix Cryptonets with ngraph-tf
+    // TODO: create / use write_unbatched() instead
     const char* ng_batch_tensor_value = std::getenv("NGRAPH_BATCHED_TENSOR");
     if (ng_batch_tensor_value != nullptr)
     {
@@ -96,7 +97,6 @@ void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset
 #pragma omp parallel for
         for (size_t i = 0; i < num_elements_to_write; ++i)
         {
-
             const void* src_with_offset =
                 (void*)((char*)source + i * type_byte_size * m_batch_size);
             size_t dst_index = dst_start_index + i;
@@ -110,7 +110,6 @@ void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset
                 {
                     throw ngraph_error("Error allocating HE Cipher Tensor View memory");
                 }
-
                 for (size_t j = 0; j < m_batch_size; ++j)
                 {
                     void* destination = (void*)((char*)batch_src + j * type_byte_size);
@@ -127,7 +126,6 @@ void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset
                 m_he_backend->encode(plaintext, src_with_offset, element_type, m_batch_size);
             }
             m_he_backend->encrypt(m_cipher_texts[dst_index], plaintext);
-
         }
     }
 }
@@ -135,6 +133,7 @@ void runtime::he::HECipherTensor::write(const void* source, size_t tensor_offset
 void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset, size_t n) const
 {
     // Hack to fix Cryptonets with ngraph-tf
+    // TODO: create / use read_unbatched() instead
     const char* ng_batch_tensor_value = std::getenv("NGRAPH_BATCHED_TENSOR");
     if (ng_batch_tensor_value != nullptr)
     {
