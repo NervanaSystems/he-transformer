@@ -77,16 +77,16 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
 
     if (chain_ind0 > chain_ind1)
     {
-        he_seal_ckks_backend->get_evaluator()->mod_switch_to(
-            arg0->m_ciphertext, arg1->m_plaintext.parms_id(), arg0_scaled->m_ciphertext);
+        he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
+            arg0_scaled->m_ciphertext, arg1_scaled->m_plaintext.parms_id());
         chain_ind0 = he_seal_ckks_backend->get_context()
                          ->context_data(arg0_scaled->m_ciphertext.parms_id())
                          ->chain_index();
     }
     else if (chain_ind1 > chain_ind0)
     {
-        he_seal_ckks_backend->get_evaluator()->mod_switch_to(
-            arg1->m_plaintext, arg0->m_ciphertext.parms_id(), arg1_scaled->m_plaintext);
+        he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
+            arg1_scaled->m_plaintext, arg0_scaled->m_ciphertext.parms_id());
         chain_ind1 = he_seal_ckks_backend->get_context()
                          ->context_data(arg1_scaled->m_plaintext.parms_id())
                          ->chain_index();

@@ -33,12 +33,12 @@ test_cpp_build ()
     rm -rf build
     mkdir build
     cd build
-    cmake .. -DCMAKE_BUILD_TYPE=Release
+    cmake ..
     make -j22
     ./test/unit-test
     echo 'Testing cryptonets'
-    NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_13.json ./test/cryptonets_benchmark
-    # NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_14.json ./test/cryptonets_benchmark
+    NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_13.json ./test/cryptonets_benchmark --gtest_filter="Cryptonets.CKKS_4096"
+    NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_14.json ./test/cryptonets_benchmark --gtest_filter="Cryptonets.CKKS_4096"
 
     echo 'Done testing C++ build.'
 }
@@ -55,7 +55,7 @@ test_python_build ()
     virtualenv ~/venvs/he3 -p python3
     source ~/venvs/he3/bin/activate
     cd build
-    cmake .. -DENABLE_TF=on -DCMAKE_BUILD_TYPE=Release
+    cmake .. -DENABLE_TF=on
     make -j22
     make install
 
@@ -70,6 +70,7 @@ test_python_build ()
     # Test cryptonets under python
     cd cryptonets
     NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_13.json NGRAPH_TF_BACKEND=HE:SEAL:CKKS python test.py --batch_size=1
+    NGRAPH_BATCHED_TENSOR=1 NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_13.json NGRAPH_TF_BACKEND=HE:SEAL:CKKS python test.py --batch_size=4096 --report_accuracy=1
 
     echo 'Done testing python build'
 }

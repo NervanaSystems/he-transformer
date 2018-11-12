@@ -127,13 +127,9 @@ void runtime::he::he_seal::HESealBackend::decrypt(
     }
 }
 
-const shared_ptr<runtime::he::HEPlaintext>
+const shared_ptr<const runtime::he::HEPlaintext>
     runtime::he::he_seal::HESealBackend::get_valued_plaintext(double value) const
 {
-    std::unordered_set<double> stored_plaintext_values{-1, 0, 1};
-    if (stored_plaintext_values.find(value) == stored_plaintext_values.end())
-    {
-        throw ngraph_error("Value not stored in stored plaintext values");
-    }
+    NGRAPH_ASSERT(m_plaintext_map.find(value) != m_plaintext_map.end()) << "Plaintext value " << value << " not found";
     return m_plaintext_map.at(value);
 }
