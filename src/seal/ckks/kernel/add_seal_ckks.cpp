@@ -14,18 +14,18 @@
 // limitations under the License.
 //*****************************************************************************
 
-
-#include <iomanip>
 #include "seal/ckks/kernel/add_seal_ckks.hpp"
+#include <iomanip>
 
 using namespace std;
 using namespace ngraph::runtime::he;
 
-void he_seal::ckks::kernel::scalar_add_ckks(const shared_ptr<const he_seal::SealCiphertextWrapper>& arg0,
-                                 const shared_ptr<const he_seal::SealCiphertextWrapper>& arg1,
-                                 shared_ptr<he_seal::SealCiphertextWrapper>& out,
-                                 const element::Type& element_type,
-                                 const he_seal::HESealCKKSBackend* he_seal_ckks_backend)
+void he_seal::ckks::kernel::scalar_add_ckks(
+    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg0,
+    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg1,
+    shared_ptr<he_seal::SealCiphertextWrapper>& out,
+    const element::Type& element_type,
+    const he_seal::HESealCKKSBackend* he_seal_ckks_backend)
 {
     auto arg0_scaled = make_shared<he_seal::SealCiphertextWrapper>(arg0->m_ciphertext);
     auto arg1_scaled = make_shared<he_seal::SealCiphertextWrapper>(arg1->m_ciphertext);
@@ -47,7 +47,7 @@ void he_seal::ckks::kernel::scalar_add_ckks(const shared_ptr<const he_seal::Seal
         // so we comment it out.
         // TODO: use NGRAPH_DEBUG at next ngraph version
         NGRAPH_WARN << "Scale " << setw(10) << scale0 << " does not match scale " << scale1
-                        << " in scalar add, ratio is " << scale0 / scale1;
+                    << " in scalar add, ratio is " << scale0 / scale1;
     }
     if (scale0 != scale1)
     {
@@ -60,8 +60,8 @@ void he_seal::ckks::kernel::scalar_add_ckks(const shared_ptr<const he_seal::Seal
         he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
             arg0_scaled->m_ciphertext, arg1_scaled->m_ciphertext.parms_id());
         chain_ind0 = he_seal_ckks_backend->get_context()
-                            ->context_data(arg0_scaled->m_ciphertext.parms_id())
-                            ->chain_index();
+                         ->context_data(arg0_scaled->m_ciphertext.parms_id())
+                         ->chain_index();
     }
     else if (chain_ind1 > chain_ind0)
     {
@@ -69,19 +69,21 @@ void he_seal::ckks::kernel::scalar_add_ckks(const shared_ptr<const he_seal::Seal
         he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
             arg1_scaled->m_ciphertext, arg0_scaled->m_ciphertext.parms_id());
         chain_ind1 = he_seal_ckks_backend->get_context()
-                            ->context_data(arg1_scaled->m_ciphertext.parms_id())
-                            ->chain_index();
+                         ->context_data(arg1_scaled->m_ciphertext.parms_id())
+                         ->chain_index();
     }
     NGRAPH_ASSERT(chain_ind1 == chain_ind0) << "Chain moduli are different";
 
     if (arg0 == out)
     {
-        he_seal_ckks_backend->get_evaluator()->add_inplace(arg0_scaled->m_ciphertext, arg1_scaled->m_ciphertext);
+        he_seal_ckks_backend->get_evaluator()->add_inplace(arg0_scaled->m_ciphertext,
+                                                           arg1_scaled->m_ciphertext);
         out = arg0_scaled;
     }
     else if (arg1 == out)
     {
-        he_seal_ckks_backend->get_evaluator()->add_inplace(arg1_scaled->m_ciphertext, arg0_scaled->m_ciphertext);
+        he_seal_ckks_backend->get_evaluator()->add_inplace(arg1_scaled->m_ciphertext,
+                                                           arg0_scaled->m_ciphertext);
         out = arg1_scaled;
     }
     else
@@ -91,16 +93,18 @@ void he_seal::ckks::kernel::scalar_add_ckks(const shared_ptr<const he_seal::Seal
     }
 }
 
-void he_seal::ckks::kernel::scalar_add_ckks(const shared_ptr<const he_seal::SealCiphertextWrapper>& arg0,
-                                 const shared_ptr<const he_seal::SealPlaintextWrapper>& arg1,
-                                 shared_ptr<he_seal::SealCiphertextWrapper>& out,
-                                 const element::Type& element_type,
-                                 const he_seal::HESealCKKSBackend* he_seal_ckks_backend)
+void he_seal::ckks::kernel::scalar_add_ckks(
+    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg0,
+    const shared_ptr<const he_seal::SealPlaintextWrapper>& arg1,
+    shared_ptr<he_seal::SealCiphertextWrapper>& out,
+    const element::Type& element_type,
+    const he_seal::HESealCKKSBackend* he_seal_ckks_backend)
 {
     // TODO: enable with different scale / modulus chain
     if (arg0 == out)
     {
-        he_seal_ckks_backend->get_evaluator()->add_plain_inplace(out->m_ciphertext, arg1->m_plaintext);
+        he_seal_ckks_backend->get_evaluator()->add_plain_inplace(out->m_ciphertext,
+                                                                 arg1->m_plaintext);
     }
     else
     {
@@ -109,11 +113,12 @@ void he_seal::ckks::kernel::scalar_add_ckks(const shared_ptr<const he_seal::Seal
     }
 }
 
-void he_seal::ckks::kernel::scalar_add_ckks(const shared_ptr<const he_seal::SealPlaintextWrapper>& arg0,
-                                 const shared_ptr<const he_seal::SealCiphertextWrapper>& arg1,
-                                 shared_ptr<he_seal::SealCiphertextWrapper>& out,
-                                 const element::Type& element_type,
-                                 const he_seal::HESealCKKSBackend* he_seal_ckks_backend)
+void he_seal::ckks::kernel::scalar_add_ckks(
+    const shared_ptr<const he_seal::SealPlaintextWrapper>& arg0,
+    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg1,
+    shared_ptr<he_seal::SealCiphertextWrapper>& out,
+    const element::Type& element_type,
+    const he_seal::HESealCKKSBackend* he_seal_ckks_backend)
 {
     he_seal::ckks::kernel::scalar_add_ckks(arg1, arg0, out, element_type, he_seal_ckks_backend);
 }

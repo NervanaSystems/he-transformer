@@ -244,7 +244,8 @@ void ngraph::runtime::he::kernel::convolution(const std::vector<std::shared_ptr<
 
             if (input_batch_transform.has_source_coordinate(input_batch_coord))
             {
-                std::shared_ptr<S> arg0_multiplicand = arg0[input_batch_transform.index(input_batch_coord)];
+                std::shared_ptr<S> arg0_multiplicand =
+                    arg0[input_batch_transform.index(input_batch_coord)];
                 std::shared_ptr<T> arg1_multiplicand = arg1[filter_transform.index(filter_coord)];
 
                 std::shared_ptr<V> prod = he_backend->create_empty_hetext<V>(std::shared_ptr<V>{});
@@ -259,7 +260,8 @@ void ngraph::runtime::he::kernel::convolution(const std::vector<std::shared_ptr<
                 else
                 {
                     // TODO: don't use tmp sum!
-                    std::shared_ptr<V> tmp_sum = he_backend->create_empty_hetext<V>(std::shared_ptr<V>{});
+                    std::shared_ptr<V> tmp_sum =
+                        he_backend->create_empty_hetext<V>(std::shared_ptr<V>{});
                     runtime::he::kernel::scalar_add(sum, prod, tmp_sum, element_type, he_backend);
                     sum = tmp_sum;
                 }
@@ -269,7 +271,8 @@ void ngraph::runtime::he::kernel::convolution(const std::vector<std::shared_ptr<
         }
         if (first_add)
         {
-            out[out_coord_idx] = he_backend->create_valued_hetext<V>(0.f, element_type, std::shared_ptr<V>{});
+            out[out_coord_idx] =
+                he_backend->create_valued_hetext<V>(0.f, element_type, std::shared_ptr<V>{});
         }
         else
         {

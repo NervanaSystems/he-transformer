@@ -14,12 +14,12 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "ngraph/type/element_type.hpp"
-#include "seal/ckks/he_seal_ckks_backend.hpp"
-#include "seal/he_seal_backend.hpp"
 #include "seal/kernel/add_seal.hpp"
+#include "ngraph/type/element_type.hpp"
 #include "seal/bfv/kernel/add_seal_bfv.hpp"
+#include "seal/ckks/he_seal_ckks_backend.hpp"
 #include "seal/ckks/kernel/add_seal_ckks.hpp"
+#include "seal/he_seal_backend.hpp"
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
@@ -39,7 +39,7 @@ void he_seal::kernel::scalar_add(const shared_ptr<const he_seal::SealCiphertextW
         he_seal::ckks::kernel::scalar_add_ckks(arg0, arg1, out, element_type, he_seal_ckks_backend);
     }
     else if (auto he_seal_bfv_backend =
-        dynamic_cast<const he_seal::HESealBFVBackend*>(he_seal_backend))
+                 dynamic_cast<const he_seal::HESealBFVBackend*>(he_seal_backend))
     {
         he_seal::bfv::kernel::scalar_add_bfv(arg0, arg1, out, element_type, he_seal_bfv_backend);
     }
@@ -61,7 +61,7 @@ void he_seal::kernel::scalar_add(const shared_ptr<const he_seal::SealCiphertextW
         he_seal::ckks::kernel::scalar_add_ckks(arg0, arg1, out, element_type, he_seal_ckks_backend);
     }
     else if (auto he_seal_bfv_backend =
-        dynamic_cast<const he_seal::HESealBFVBackend*>(he_seal_backend))
+                 dynamic_cast<const he_seal::HESealBFVBackend*>(he_seal_backend))
     {
         he_seal::bfv::kernel::scalar_add_bfv(arg0, arg1, out, element_type, he_seal_bfv_backend);
     }
