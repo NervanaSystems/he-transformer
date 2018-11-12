@@ -17,9 +17,9 @@
 #include <algorithm>
 #include <assert.h>
 
-#include "util/test_tools.hpp"
-#include "test_util.hpp"
 #include "seal/ckks/he_seal_ckks_backend.hpp"
+#include "test_util.hpp"
+#include "util/test_tools.hpp"
 
 #include "ngraph/ngraph.hpp"
 #include "ngraph/util.hpp"
@@ -28,7 +28,6 @@
 #include "util/ndarray.hpp"
 #include "util/test_control.hpp"
 #include "util/test_tools.hpp"
-
 
 using namespace std;
 using namespace ngraph;

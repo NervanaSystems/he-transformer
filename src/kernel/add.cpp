@@ -106,7 +106,9 @@ void kernel::scalar_add(const shared_ptr<HECiphertext>& arg0,
         {
             const string type_name = element_type.c_type_string();
 
-            auto seal_0_plaintext = static_pointer_cast<const he_seal::SealPlaintextWrapper>(he_seal_backend->get_valued_plaintext(0))->m_plaintext;
+            auto seal_0_plaintext = static_pointer_cast<const he_seal::SealPlaintextWrapper>(
+                                        he_seal_backend->get_valued_plaintext(0))
+                                        ->m_plaintext;
             bool add_zero = (arg1_seal->m_plaintext == seal_0_plaintext);
 
             if (add_zero && type_name == "float")

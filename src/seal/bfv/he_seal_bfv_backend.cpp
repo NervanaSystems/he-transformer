@@ -217,8 +217,11 @@ void runtime::he::he_seal::HESealBFVBackend::encode(shared_ptr<runtime::he::HEPl
         double value = (double)(*(float*)input);
         if (m_plaintext_map.find(value) != m_plaintext_map.end())
         {
-            auto plain_value = static_pointer_cast<const runtime::he::he_seal::SealPlaintextWrapper>(get_valued_plaintext(value));
-            output = make_shared<runtime::he::he_seal::SealPlaintextWrapper>(*plain_value);;
+            auto plain_value =
+                static_pointer_cast<const runtime::he::he_seal::SealPlaintextWrapper>(
+                    get_valued_plaintext(value));
+            output = make_shared<runtime::he::he_seal::SealPlaintextWrapper>(*plain_value);
+            ;
         }
         else
         {
