@@ -96,7 +96,7 @@ target_link_libraries(unit-test he_backend seal pthread ${CMAKE_DL_LIBS})
 add_dependencies(unit-test he_backend ext_seal ext_ngraph ext_gtest)
 
 # Cryptonets
-set (CRYPTONETS_SRC test_cryptonets.cpp test_util.cpp)
+set (CRYPTONETS_SRC test_cryptonets.cpp test_util.cpp main_cryptonets.cpp)
 add_executable(cryptonets_benchmark ${CRYPTONETS_SRC})
 
 include_directories(SYSTEM
@@ -115,6 +115,7 @@ link_directories(
 
 target_include_directories(cryptonets_benchmark PRIVATE ".")
 
+target_link_libraries(cryptonets_benchmark libgtest)
 target_link_libraries(cryptonets_benchmark ngraph_test_util)
 target_link_libraries(cryptonets_benchmark he_backend seal pthread ${CMAKE_DL_LIBS})
-add_dependencies(cryptonets_benchmark he_backend ext_seal ext_ngraph)
+add_dependencies(cryptonets_benchmark he_backend ext_seal ext_ngraph ext_gtest)
