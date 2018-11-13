@@ -134,7 +134,9 @@ void ngraph::runtime::he::kernel::dot(const std::vector<std::shared_ptr<S>>& arg
         auto arg0_it =
             std::copy(arg0_projected_coord.begin(), arg0_projected_coord.end(), arg0_coord.begin());
 
-        std::vector<std::shared_ptr<V>> summands;
+        std::shared_ptr<V> sum = he_backend->create_empty_hetext<V>(std::shared_ptr<V>{});
+
+        bool first_add = true;
 
         for (const Coordinate& dot_axis_positions : dot_axes_transform)
         {
@@ -150,24 +152,20 @@ void ngraph::runtime::he::kernel::dot(const std::vector<std::shared_ptr<S>>& arg
             auto arg0_text = arg0[arg0_transform.index(arg0_coord)];
             auto arg1_text = arg1[arg1_transform.index(arg1_coord)];
 
-            std::shared_ptr<V> prod;
-            prod = he_backend->create_empty_hetext<V>(prod);
+            std::shared_ptr<V> prod = he_backend->create_empty_hetext<V>(std::shared_ptr<V>{});
             runtime::he::kernel::scalar_multiply(
                 arg0_text, arg1_text, prod, element_type, he_backend);
-
-            summands.emplace_back(prod);
-        }
-        // Repeatedly sum and add to the back of the vector until the end is reached
-        // This is better for the he_seal_ckks_backend as it reduces the need for the rescale op.
-        for (size_t i = 0; i < summands.size() - 1; i += 2)
-        {
-            std::shared_ptr<V> sum; // = he_backend->create_empty_hetext<T>();
-            sum = he_backend->create_empty_hetext<V>(sum);
-            runtime::he::kernel::scalar_add(
-                summands[i], summands[i + 1], sum, element_type, he_backend);
-            summands.emplace_back(sum);
+            if (first_add)
+            {
+                sum = prod;
+                first_add = false;
+            }
+            else
+            {
+                runtime::he::kernel::scalar_add(sum, prod, sum, element_type, he_backend);
+            }
         }
         // Write the sum back.
-        out[out_index] = summands[summands.size() - 1];
+        out[out_index] = sum;
     }
 }

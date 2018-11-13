@@ -103,7 +103,7 @@ namespace ngraph
                         return m_evaluator;
                     }
 
-                    const std::shared_ptr<runtime::he::HEPlaintext>
+                    const std::shared_ptr<const runtime::he::HEPlaintext>
                         get_valued_plaintext(double value) const;
 
                 protected:

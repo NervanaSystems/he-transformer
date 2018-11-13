@@ -110,7 +110,12 @@ void kernel::scalar_subtract(const shared_ptr<HECiphertext>& arg0,
         if (arg0_seal && arg1_seal && out_seal)
         {
             const string type_name = element_type.c_type_string();
-            bool sub_zero = (arg1 == he_seal_backend->get_valued_plaintext(0));
+
+            auto seal_0_plaintext = static_pointer_cast<const he_seal::SealPlaintextWrapper>(
+                                        he_seal_backend->get_valued_plaintext(0))
+                                        ->m_plaintext;
+            bool sub_zero = (arg1_seal->m_plaintext == seal_0_plaintext);
+
             if (sub_zero && type_name == "float")
             {
                 NGRAPH_INFO << "Optimized subtract";
