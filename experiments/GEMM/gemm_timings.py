@@ -21,16 +21,15 @@ import time
 import sys
 import argparse
 
-
-def gemm_trial(n, p_zeros=0., p_ones=0, fname="./results.txt"):
+def gemm_trial(n, p_ones=0, fname="./results.txt"):
+    # Pick values not in {-1, 0, 1} for fair comparison
     ra = np.float32(np.random.choice([-5,-4,-3,-2,2,3,4,5], size=(n,n)))
     rb = np.float32(np.random.choice([-5,-4,-3,-2,2,3,4,5], size=(n,n)))
 
-    # randomly set entries to 0
-    n_zeros = int(p_zeros * n * n)
+    # randomly set entries to 1
     n_ones = int(p_ones * n * n)
-    zero_indices = np.random.choice( n * n, n_zeros, replace=False)
-    for i in zero_indices:
+    one_indices = np.random.choice( n * n, n_ones, replace=False)
+    for i in one_indices:
         row = i // n
         col = i % n
         ra[row, col] = 1.
@@ -63,7 +62,5 @@ if __name__ == "__main__":
     fname = args.out
 
     for n in [45, 40, 35, 30, 25, 20, 15, 10, 5]:
-        for p_zeros in [0, 0.5, 0.8]:
-            gemm_trial(n=n, p_zeros=p_zeros, fname=fname)
-
-
+        for p_ones in [0, 0.5, 0.8]:
+            gemm_trial(n=n, p_ones=p_ones, fname=fname)
