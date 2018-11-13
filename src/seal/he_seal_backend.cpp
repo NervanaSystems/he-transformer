@@ -130,6 +130,7 @@ void runtime::he::he_seal::HESealBackend::decrypt(
 const shared_ptr<const runtime::he::HEPlaintext>
     runtime::he::he_seal::HESealBackend::get_valued_plaintext(double value) const
 {
-    NGRAPH_ASSERT(m_plaintext_map.find(value) != m_plaintext_map.end()) << "Plaintext value " << value << " not found";
+    NGRAPH_ASSERT(m_plaintext_map.find(value) != m_plaintext_map.end()) << "Plaintext value "
+                                                                        << value << " not found";
     return m_plaintext_map.at(value);
 }
