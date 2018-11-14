@@ -31,8 +31,8 @@ namespace ngraph
         {
             namespace kernel
             {
-                template <typename S, typename T>
-                void broadcast(const std::vector<std::shared_ptr<S>>& arg,
+                template <typename T>
+                void broadcast(const std::vector<std::shared_ptr<T>>& arg,
                                std::vector<std::shared_ptr<T>>& out,
                                const Shape& in_shape,
                                const Shape& out_shape,
