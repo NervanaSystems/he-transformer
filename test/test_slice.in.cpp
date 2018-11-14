@@ -40,7 +40,7 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_scalar)
     auto r = make_shared<op::Slice>(A, Coordinate{}, Coordinate{});
     auto f = make_shared<Function>(r, op::ParameterVector{A});
     // Create some tensors for input/output
-    auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend);
+    auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
     for (auto tensors : tensors_list)
     {
         auto results = get<0>(tensors);
@@ -65,7 +65,7 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_matrix)
     auto r = make_shared<op::Slice>(A, Coordinate{0, 1}, Coordinate{3, 3});
     auto f = make_shared<Function>(r, op::ParameterVector{A});
     // Create some tensors for input/output
-    auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend);
+    auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
     for (auto tensors : tensors_list)
     {
         auto results = get<0>(tensors);
@@ -90,7 +90,7 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_vector)
     auto r = make_shared<op::Slice>(A, Coordinate{2}, Coordinate{14});
     auto f = make_shared<Function>(r, op::ParameterVector{A});
     // Create some tensors for input/output
-    auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend);
+    auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
     for (auto tensors : tensors_list)
     {
         auto results = get<0>(tensors);
@@ -116,7 +116,7 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_matrix_strided)
     auto r = make_shared<op::Slice>(A, Coordinate{1, 0}, Coordinate{4, 4}, Strides{2, 3});
     auto f = make_shared<Function>(r, op::ParameterVector{A});
     // Create some tensors for input/output
-    auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend);
+    auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
     for (auto tensors : tensors_list)
     {
         auto results = get<0>(tensors);
@@ -141,7 +141,7 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_3d)
     auto r = make_shared<op::Slice>(A, Coordinate{1, 1, 1}, Coordinate{3, 3, 3});
     auto f = make_shared<Function>(r, op::ParameterVector{A});
     // Create some tensors for input/output
-    auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend);
+    auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
     for (auto tensors : tensors_list)
     {
         auto results = get<0>(tensors);
@@ -169,7 +169,7 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_3d_strided)
     auto r = make_shared<op::Slice>(A, Coordinate{0, 0, 0}, Coordinate{4, 4, 4}, Strides{2, 2, 2});
     auto f = make_shared<Function>(r, op::ParameterVector{A});
     // Create some tensors for input/output
-    auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend);
+    auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
     for (auto tensors : tensors_list)
     {
         auto results = get<0>(tensors);
@@ -198,7 +198,7 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_3d_strided_different_strides)
     auto f = make_shared<Function>(r, op::ParameterVector{A});
 
     // Create some tensors for input/output
-    auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend);
+    auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
     for (auto tensors : tensors_list)
     {
         auto results = get<0>(tensors);
