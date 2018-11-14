@@ -51,8 +51,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_0d)
         copy_data(a, vector<float>{6});
 
         backend->call(f, {result}, {a});
-        EXPECT_TRUE(all_close((vector<float>{6}),
-                              read_vector<float>(result)));
+        EXPECT_TRUE(all_close((vector<float>{6}), read_vector<float>(result)));
     }
 }
 
@@ -77,8 +76,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_1d_nochange)
         copy_data(a, vector<float>{0, 1, 2, 3, 4, 5, 6, 7});
 
         backend->call(f, {result}, {a});
-        EXPECT_TRUE(all_close((vector<float>{0, 1, 2, 3, 4, 5, 6, 7}),
-                              read_vector<float>(result)));
+        EXPECT_TRUE(all_close((vector<float>{0, 1, 2, 3, 4, 5, 6, 7}), read_vector<float>(result)));
     }
 }
 
@@ -103,8 +101,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_1d_0)
         copy_data(a, vector<float>{0, 1, 2, 3, 4, 5, 6, 7});
 
         backend->call(f, {result}, {a});
-        EXPECT_TRUE(all_close((vector<float>{7, 6, 5, 4, 3, 2, 1, 0}),
-                              read_vector<float>(result)));
+        EXPECT_TRUE(all_close((vector<float>{7, 6, 5, 4, 3, 2, 1, 0}), read_vector<float>(result)));
     }
 }
 
@@ -126,11 +123,14 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_nochange)
         auto a = inputs[0];
         auto result = results[0];
 
-        copy_data(a, test::NDArray<float, 2>({{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}}).get_vector());
+        copy_data(
+            a,
+            test::NDArray<float, 2>({{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}}).get_vector());
 
         backend->call(f, {result}, {a});
-        EXPECT_TRUE(all_close((test::NDArray<float, 2>({{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}}).get_vector()),
-                              read_vector<float>(result)));
+        EXPECT_TRUE(all_close(
+            (test::NDArray<float, 2>({{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}}).get_vector()),
+            read_vector<float>(result)));
     }
 }
 
@@ -152,11 +152,14 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_0)
         auto a = inputs[0];
         auto result = results[0];
 
-        copy_data(a, test::NDArray<float, 2>({{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}}).get_vector());
+        copy_data(
+            a,
+            test::NDArray<float, 2>({{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}}).get_vector());
 
         backend->call(f, {result}, {a});
-        EXPECT_TRUE(all_close((test::NDArray<float, 2>({{9, 10, 11}, {6, 7, 8}, {3, 4, 5}, {0, 1, 2}}).get_vector()),
-                              read_vector<float>(result)));
+        EXPECT_TRUE(all_close(
+            (test::NDArray<float, 2>({{9, 10, 11}, {6, 7, 8}, {3, 4, 5}, {0, 1, 2}}).get_vector()),
+            read_vector<float>(result)));
     }
 }
 
@@ -178,11 +181,14 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_1)
         auto a = inputs[0];
         auto result = results[0];
 
-        copy_data(a, test::NDArray<float, 2>({{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}}).get_vector());
+        copy_data(
+            a,
+            test::NDArray<float, 2>({{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}}).get_vector());
 
         backend->call(f, {result}, {a});
-        EXPECT_TRUE(all_close((test::NDArray<float, 2>({{2, 1, 0}, {5, 4, 3}, {8, 7, 6}, {11, 10, 9}}).get_vector()),
-                              read_vector<float>(result)));
+        EXPECT_TRUE(all_close(
+            (test::NDArray<float, 2>({{2, 1, 0}, {5, 4, 3}, {8, 7, 6}, {11, 10, 9}}).get_vector()),
+            read_vector<float>(result)));
     }
 }
 
@@ -192,7 +198,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_01)
 
     Shape shape{4, 3};
     auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto r = make_shared<op::Reverse>(A, AxisSet{0,1});
+    auto r = make_shared<op::Reverse>(A, AxisSet{0, 1});
     auto f = make_shared<Function>(r, op::ParameterVector{A});
     // Create some tensors for input/output
     auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
@@ -204,11 +210,14 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_01)
         auto a = inputs[0];
         auto result = results[0];
 
-        copy_data(a, test::NDArray<float, 2>({{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}}).get_vector());
+        copy_data(
+            a,
+            test::NDArray<float, 2>({{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}}).get_vector());
 
         backend->call(f, {result}, {a});
-        EXPECT_TRUE(all_close((test::NDArray<float, 2>({{11, 10, 9}, {8, 7, 6}, {5, 4, 3}, {2, 1, 0}}).get_vector()),
-                              read_vector<float>(result)));
+        EXPECT_TRUE(all_close(
+            (test::NDArray<float, 2>({{11, 10, 9}, {8, 7, 6}, {5, 4, 3}, {2, 1, 0}}).get_vector()),
+            read_vector<float>(result)));
     }
 }
 
@@ -230,13 +239,18 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_nochange)
         auto a = inputs[0];
         auto result = results[0];
 
-        copy_data(a, test::NDArray<float, 3>({{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
-                                       {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}}).get_vector());
+        copy_data(
+            a,
+            test::NDArray<float, 3>({{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
+                                     {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
+                .get_vector());
 
         backend->call(f, {result}, {a});
-        EXPECT_TRUE(all_close((test::NDArray<float, 3>({{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
-                                       {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}}).get_vector()),
-                              read_vector<float>(result)));
+        EXPECT_TRUE(all_close(
+            (test::NDArray<float, 3>({{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
+                                      {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
+                 .get_vector()),
+            read_vector<float>(result)));
     }
 }
 
@@ -258,13 +272,18 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_0)
         auto a = inputs[0];
         auto result = results[0];
 
-        copy_data(a, test::NDArray<float, 3>({{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
-                                       {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}}).get_vector());
+        copy_data(
+            a,
+            test::NDArray<float, 3>({{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
+                                     {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
+                .get_vector());
 
         backend->call(f, {result}, {a});
-        EXPECT_TRUE(all_close((test::NDArray<float, 3>({{{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}},
-                                        {{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}}}).get_vector()),
-                              read_vector<float>(result)));
+        EXPECT_TRUE(all_close(
+            (test::NDArray<float, 3>({{{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}},
+                                      {{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}}})
+                 .get_vector()),
+            read_vector<float>(result)));
     }
 }
 
@@ -286,13 +305,18 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_1)
         auto a = inputs[0];
         auto result = results[0];
 
-        copy_data(a, test::NDArray<float, 3>({{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
-                                       {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}}).get_vector());
+        copy_data(
+            a,
+            test::NDArray<float, 3>({{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
+                                     {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
+                .get_vector());
 
         backend->call(f, {result}, {a});
-        EXPECT_TRUE(all_close((test::NDArray<float, 3>({{{9, 10, 11}, {6, 7, 8}, {3, 4, 5}, {0, 1, 2}},
-                                        {{21, 22, 23}, {18, 19, 20}, {15, 16, 17}, {12, 13, 14}}}).get_vector()),
-                              read_vector<float>(result)));
+        EXPECT_TRUE(all_close(
+            (test::NDArray<float, 3>({{{9, 10, 11}, {6, 7, 8}, {3, 4, 5}, {0, 1, 2}},
+                                      {{21, 22, 23}, {18, 19, 20}, {15, 16, 17}, {12, 13, 14}}})
+                 .get_vector()),
+            read_vector<float>(result)));
     }
 }
 
@@ -314,13 +338,18 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_2)
         auto a = inputs[0];
         auto result = results[0];
 
-        copy_data(a, test::NDArray<float, 3>({{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
-                                       {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}}).get_vector());
+        copy_data(
+            a,
+            test::NDArray<float, 3>({{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
+                                     {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
+                .get_vector());
 
         backend->call(f, {result}, {a});
-        EXPECT_TRUE(all_close((test::NDArray<float, 3>({{{2, 1, 0}, {5, 4, 3}, {8, 7, 6}, {11, 10, 9}},
-                                        {{14, 13, 12}, {17, 16, 15}, {20, 19, 18}, {23, 22, 21}}}).get_vector()),
-                              read_vector<float>(result)));
+        EXPECT_TRUE(all_close(
+            (test::NDArray<float, 3>({{{2, 1, 0}, {5, 4, 3}, {8, 7, 6}, {11, 10, 9}},
+                                      {{14, 13, 12}, {17, 16, 15}, {20, 19, 18}, {23, 22, 21}}})
+                 .get_vector()),
+            read_vector<float>(result)));
     }
 }
 
@@ -330,7 +359,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_01)
 
     Shape shape{2, 4, 3};
     auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto r = make_shared<op::Reverse>(A, AxisSet{0,1});
+    auto r = make_shared<op::Reverse>(A, AxisSet{0, 1});
     auto f = make_shared<Function>(r, op::ParameterVector{A});
     // Create some tensors for input/output
     auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
@@ -342,13 +371,18 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_01)
         auto a = inputs[0];
         auto result = results[0];
 
-        copy_data(a, test::NDArray<float, 3>({{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
-                                       {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}}).get_vector());
+        copy_data(
+            a,
+            test::NDArray<float, 3>({{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
+                                     {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
+                .get_vector());
 
         backend->call(f, {result}, {a});
-        EXPECT_TRUE(all_close((test::NDArray<float, 3>({{{21, 22, 23}, {18, 19, 20}, {15, 16, 17}, {12, 13, 14}},
-                                        {{9, 10, 11}, {6, 7, 8}, {3, 4, 5}, {0, 1, 2}}}).get_vector()),
-                              read_vector<float>(result)));
+        EXPECT_TRUE(all_close(
+            (test::NDArray<float, 3>({{{21, 22, 23}, {18, 19, 20}, {15, 16, 17}, {12, 13, 14}},
+                                      {{9, 10, 11}, {6, 7, 8}, {3, 4, 5}, {0, 1, 2}}})
+                 .get_vector()),
+            read_vector<float>(result)));
     }
 }
 
@@ -358,7 +392,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_02)
 
     Shape shape{2, 4, 3};
     auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto r = make_shared<op::Reverse>(A, AxisSet{0,2});
+    auto r = make_shared<op::Reverse>(A, AxisSet{0, 2});
     auto f = make_shared<Function>(r, op::ParameterVector{A});
     // Create some tensors for input/output
     auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
@@ -370,13 +404,18 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_02)
         auto a = inputs[0];
         auto result = results[0];
 
-        copy_data(a, test::NDArray<float, 3>({{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
-                                       {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}}).get_vector());
+        copy_data(
+            a,
+            test::NDArray<float, 3>({{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
+                                     {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
+                .get_vector());
 
         backend->call(f, {result}, {a});
-        EXPECT_TRUE(all_close((test::NDArray<float, 3>({{{14, 13, 12}, {17, 16, 15}, {20, 19, 18}, {23, 22, 21}},
-                                        {{2, 1, 0}, {5, 4, 3}, {8, 7, 6}, {11, 10, 9}}}).get_vector()),
-                              read_vector<float>(result)));
+        EXPECT_TRUE(all_close(
+            (test::NDArray<float, 3>({{{14, 13, 12}, {17, 16, 15}, {20, 19, 18}, {23, 22, 21}},
+                                      {{2, 1, 0}, {5, 4, 3}, {8, 7, 6}, {11, 10, 9}}})
+                 .get_vector()),
+            read_vector<float>(result)));
     }
 }
 
@@ -386,7 +425,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_12)
 
     Shape shape{2, 4, 3};
     auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto r = make_shared<op::Reverse>(A, AxisSet{1,2});
+    auto r = make_shared<op::Reverse>(A, AxisSet{1, 2});
     auto f = make_shared<Function>(r, op::ParameterVector{A});
     // Create some tensors for input/output
     auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
@@ -398,13 +437,18 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_12)
         auto a = inputs[0];
         auto result = results[0];
 
-        copy_data(a, test::NDArray<float, 3>({{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
-                                       {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}}).get_vector());
+        copy_data(
+            a,
+            test::NDArray<float, 3>({{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
+                                     {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
+                .get_vector());
 
         backend->call(f, {result}, {a});
-        EXPECT_TRUE(all_close((test::NDArray<float, 3>({{{11, 10, 9}, {8, 7, 6}, {5, 4, 3}, {2, 1, 0}},
-                                        {{23, 22, 21}, {20, 19, 18}, {17, 16, 15}, {14, 13, 12}}}).get_vector()),
-                              read_vector<float>(result)));
+        EXPECT_TRUE(all_close(
+            (test::NDArray<float, 3>({{{11, 10, 9}, {8, 7, 6}, {5, 4, 3}, {2, 1, 0}},
+                                      {{23, 22, 21}, {20, 19, 18}, {17, 16, 15}, {14, 13, 12}}})
+                 .get_vector()),
+            read_vector<float>(result)));
     }
 }
 
@@ -414,7 +458,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_012)
 
     Shape shape{2, 4, 3};
     auto A = make_shared<op::Parameter>(element::f32, shape);
-    auto r = make_shared<op::Reverse>(A, AxisSet{0,1,2});
+    auto r = make_shared<op::Reverse>(A, AxisSet{0, 1, 2});
     auto f = make_shared<Function>(r, op::ParameterVector{A});
     // Create some tensors for input/output
     auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
@@ -426,12 +470,17 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_012)
         auto a = inputs[0];
         auto result = results[0];
 
-        copy_data(a, test::NDArray<float, 3>({{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
-                                       {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}}).get_vector());
+        copy_data(
+            a,
+            test::NDArray<float, 3>({{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
+                                     {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
+                .get_vector());
 
         backend->call(f, {result}, {a});
-        EXPECT_TRUE(all_close((test::NDArray<float, 3>({{{23, 22, 21}, {20, 19, 18}, {17, 16, 15}, {14, 13, 12}},
-                                        {{11, 10, 9}, {8, 7, 6}, {5, 4, 3}, {2, 1, 0}}}).get_vector()),
-                              read_vector<float>(result)));
+        EXPECT_TRUE(all_close(
+            (test::NDArray<float, 3>({{{23, 22, 21}, {20, 19, 18}, {17, 16, 15}, {14, 13, 12}},
+                                      {{11, 10, 9}, {8, 7, 6}, {5, 4, 3}, {2, 1, 0}}})
+                 .get_vector()),
+            read_vector<float>(result)));
     }
 }

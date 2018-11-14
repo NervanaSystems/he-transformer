@@ -34,30 +34,31 @@ namespace ngraph
             {
                 template <typename T>
                 void reverse(const std::vector<std::shared_ptr<T>>& arg,
-                           std::vector<std::shared_ptr<T>>& out,
-                           const Shape& arg_shape,
-                           const Shape& out_shape,
-                           const AxisSet& reversed_axes)
-            {
-                // In fact arg_shape == out_shape, but we'll use both for stylistic consistency with other kernels.
-                CoordinateTransform arg_transform(arg_shape);
-                CoordinateTransform output_transform(out_shape);
-
-                for (Coordinate out_coord : output_transform)
+                             std::vector<std::shared_ptr<T>>& out,
+                             const Shape& arg_shape,
+                             const Shape& out_shape,
+                             const AxisSet& reversed_axes)
                 {
-                    Coordinate arg_coord = out_coord;
+                    // In fact arg_shape == out_shape, but we'll use both for stylistic consistency with other kernels.
+                    CoordinateTransform arg_transform(arg_shape);
+                    CoordinateTransform output_transform(out_shape);
 
-                    for (size_t i = 0; i < arg_coord.size(); i++)
+                    for (Coordinate out_coord : output_transform)
                     {
-                        if (reversed_axes.count(i) != 0)
-                        {
-                            arg_coord[i] = arg_shape[i] - arg_coord[i] - 1;
-                        }
-                    }
+                        Coordinate arg_coord = out_coord;
 
-                    out[output_transform.index(out_coord)] = arg[arg_transform.index(arg_coord)];
+                        for (size_t i = 0; i < arg_coord.size(); i++)
+                        {
+                            if (reversed_axes.count(i) != 0)
+                            {
+                                arg_coord[i] = arg_shape[i] - arg_coord[i] - 1;
+                            }
+                        }
+
+                        out[output_transform.index(out_coord)] =
+                            arg[arg_transform.index(arg_coord)];
+                    }
                 }
-            }
             }
         }
     }

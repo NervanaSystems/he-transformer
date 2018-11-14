@@ -923,22 +923,20 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
         if (arg0_cipher != nullptr && out0_cipher != nullptr)
         {
             NGRAPH_INFO << "Reverse cipher cipher";
-            runtime::he::kernel::reverse(
-                arg0_cipher->get_elements(),
-                out0_cipher->get_elements(),
-                arg0_cipher->get_shape(),
-                out0_cipher->get_shape(),
-                reverse->get_reversed_axes());
+            runtime::he::kernel::reverse(arg0_cipher->get_elements(),
+                                         out0_cipher->get_elements(),
+                                         arg0_cipher->get_shape(),
+                                         out0_cipher->get_shape(),
+                                         reverse->get_reversed_axes());
         }
         else if (arg0_plain != nullptr && out0_plain != nullptr)
         {
             NGRAPH_INFO << "Reverse plain plain";
-            runtime::he::kernel::reverse(
-                arg0_plain->get_elements(),
-                out0_plain->get_elements(),
-                arg0_plain->get_shape(),
-                out0_plain->get_shape(),
-                reverse->get_reversed_axes());
+            runtime::he::kernel::reverse(arg0_plain->get_elements(),
+                                         out0_plain->get_elements(),
+                                         arg0_plain->get_shape(),
+                                         out0_plain->get_shape(),
+                                         reverse->get_reversed_axes());
         }
         else
         {
