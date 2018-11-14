@@ -19,6 +19,7 @@
 #include <memory>
 #include <vector>
 
+#include "he_backend.hpp"
 #include "he_ciphertext.hpp"
 #include "he_plaintext.hpp"
 #include "ngraph/coordinate_transform.hpp"
@@ -32,22 +33,32 @@ namespace ngraph
             namespace kernel
             {
                 template <typename T>
-                void broadcast(const std::vector<std::shared_ptr<T>>& arg,
-                               std::vector<std::shared_ptr<T>>& out,
-                               const Shape& in_shape,
-                               const Shape& out_shape,
-                               const AxisSet& broadcast_axes)
+                void reverse(const std::vector<std::shared_ptr<T>>& arg,
+                             std::vector<std::shared_ptr<T>>& out,
+                             const Shape& arg_shape,
+                             const Shape& out_shape,
+                             const AxisSet& reversed_axes)
                 {
-                    CoordinateTransform input_transform(in_shape);
+                    // In fact arg_shape == out_shape, but we'll use both for stylistic consistency with other kernels.
+                    CoordinateTransform arg_transform(arg_shape);
                     CoordinateTransform output_transform(out_shape);
-                    for (const Coordinate& output_coord : output_transform)
-                    {
-                        Coordinate input_coord = reduce(output_coord, broadcast_axes);
 
-                        out[output_transform.index(output_coord)] =
-                            arg[input_transform.index(input_coord)];
+                    for (Coordinate out_coord : output_transform)
+                    {
+                        Coordinate arg_coord = out_coord;
+
+                        for (size_t i = 0; i < arg_coord.size(); i++)
+                        {
+                            if (reversed_axes.count(i) != 0)
+                            {
+                                arg_coord[i] = arg_shape[i] - arg_coord[i] - 1;
+                            }
+                        }
+
+                        out[output_transform.index(out_coord)] =
+                            arg[arg_transform.index(arg_coord)];
                     }
-                };
+                }
             }
         }
     }

@@ -45,6 +45,7 @@ set(MULTI_TEST_SRC
     test_pad.in.cpp
     test_read_write.in.cpp
     test_reshape.in.cpp
+    test_reverse.in.cpp
     test_slice.in.cpp
     test_subtract.in.cpp
 )

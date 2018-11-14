@@ -26,6 +26,7 @@
 #include "ngraph/op/pad.hpp"
 #include "ngraph/op/reshape.hpp"
 #include "ngraph/op/result.hpp"
+#include "ngraph/op/reverse.hpp"
 #include "ngraph/op/slice.hpp"
 
 #include "ngraph/pass/assign_layout.hpp"
@@ -42,6 +43,7 @@
 #include "kernel/pad.hpp"
 #include "kernel/reshape.hpp"
 #include "kernel/result.hpp"
+#include "kernel/reverse.hpp"
 #include "kernel/slice.hpp"
 #include "kernel/subtract.hpp"
 
@@ -912,6 +914,33 @@ void runtime::he::HEBackend::generate_calls(const element::Type& element_type,
         else
         {
             throw ngraph_error("Result types not supported.");
+        }
+    }
+    else if (node_op == "Reverse")
+    {
+        shared_ptr<op::Reverse> reverse = dynamic_pointer_cast<op::Reverse>(node);
+
+        if (arg0_cipher != nullptr && out0_cipher != nullptr)
+        {
+            NGRAPH_INFO << "Reverse cipher cipher";
+            runtime::he::kernel::reverse(arg0_cipher->get_elements(),
+                                         out0_cipher->get_elements(),
+                                         arg0_cipher->get_shape(),
+                                         out0_cipher->get_shape(),
+                                         reverse->get_reversed_axes());
+        }
+        else if (arg0_plain != nullptr && out0_plain != nullptr)
+        {
+            NGRAPH_INFO << "Reverse plain plain";
+            runtime::he::kernel::reverse(arg0_plain->get_elements(),
+                                         out0_plain->get_elements(),
+                                         arg0_plain->get_shape(),
+                                         out0_plain->get_shape(),
+                                         reverse->get_reversed_axes());
+        }
+        else
+        {
+            throw ngraph_error("Reverse types not supported.");
         }
     }
     else if (node_op == "Slice")
