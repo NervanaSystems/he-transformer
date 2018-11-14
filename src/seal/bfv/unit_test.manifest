@@ -1,4 +1,6 @@
-add_4_3_batch
-cipher_tv_batch
-dot_scalar_batch
-multiply_4_3_batch
+add_4_3_batch # BFV doesn't support floating-point batching
+cipher_tv_batch # BFV doesn't support floating-point batching
+dot_scalar_batch # BFV doesn't support floating-point batching
+multiply_4_3_batch # BFV doesn't support floating-point batching
+convolution_2d_1image_2outputs # Needs larger parameters => slow
+convolution_2d_1item_padded_2_3x4_5 # Needs larger parameters => slow
