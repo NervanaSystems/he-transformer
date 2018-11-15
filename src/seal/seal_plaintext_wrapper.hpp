@@ -30,6 +30,8 @@ struct SealPlaintextWrapper : public HEPlaintext {
   SealPlaintextWrapper();
   ~SealPlaintextWrapper(){};
 
+  seal::Plaintext& get_hetext() { return m_plaintext; }
+
   seal::Plaintext m_plaintext;
 };
 }  // namespace he_seal

@@ -30,6 +30,8 @@ struct SealCiphertextWrapper : public HECiphertext {
   SealCiphertextWrapper(seal::Ciphertext cipher);
   ~SealCiphertextWrapper(){};
 
+  seal::Ciphertext& get_hetext() { return m_ciphertext; }
+
   seal::Ciphertext m_ciphertext;
 };
 }  // namespace he_seal
