@@ -32,8 +32,23 @@ template <typename S, typename T>
 std::pair<std::shared_ptr<S>, std::shared_ptr<T>> match_arguments(
     const std::shared_ptr<const S>& arg0, const std::shared_ptr<const T>& arg1,
     const HESealCKKSBackend* he_seal_ckks_backend) {
-  auto arg0_scaled = std::make_shared<S>(*arg0);  // ->get_hetext());
-  auto arg1_scaled = std::make_shared<T>(*arg1);  //->get_hetext());
+  auto arg0_scaled = std::make_shared<S>(*arg0);
+  auto arg1_scaled = std::make_shared<T>(*arg1);
+
+  auto scale0 = arg0_scaled->get_hetext().scale();
+  auto scale1 = arg0_scaled->get_hetext().scale();
+
+  if (scale0 < 0.99 * scale1 || scale0 > 1.01 * scale1) {
+    // NGRAPH_DEBUG isn't thread-safe until ngraph commit #1977
+    // https://github.com/NervanaSystems/ngraph/commit/ee6444ed39864776c8ce9a406eee9275382a88bb
+    // so we comment it out.
+    // TODO: use NGRAPH_DEBUG at next ngraph version
+    NGRAPH_WARN << "Scale " << setw(10) << scale0 << " does not match scale "
+                << scale1 << " in scalar add, ratio is " << scale0 / scale1;
+  }
+  if (scale0 != scale1) {
+    arg0_scaled->get_hetext().scale() = arg1_scaled->get_hetext().scale();
+  }
 
   size_t chain_ind0 = he_seal_ckks_backend->get_context()
                           ->context_data(arg0_scaled->get_hetext().parms_id())
@@ -42,8 +57,6 @@ std::pair<std::shared_ptr<S>, std::shared_ptr<T>> match_arguments(
   size_t chain_ind1 = he_seal_ckks_backend->get_context()
                           ->context_data(arg1_scaled->get_hetext().parms_id())
                           ->chain_index();
-
-  NGRAPH_INFO << "Chain inds " << chain_ind0 << ", " << chain_ind1;
 
   if (chain_ind0 > chain_ind1) {
     he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(

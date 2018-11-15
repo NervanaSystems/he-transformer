@@ -14,8 +14,11 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "seal/ckks/kernel/add_seal_ckks.hpp"
 #include <iomanip>
+#include <utility>
+
+#include "seal/ckks/kernel/add_seal_ckks.hpp"
+#include "seal_ckks_util.hpp"
 
 using namespace std;
 using namespace ngraph::runtime::he;
@@ -26,63 +29,13 @@ void he_seal::ckks::kernel::scalar_add_ckks(
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealCKKSBackend* he_seal_ckks_backend) {
-  auto arg0_scaled =
-      make_shared<he_seal::SealCiphertextWrapper>(arg0->m_ciphertext);
-  auto arg1_scaled =
-      make_shared<he_seal::SealCiphertextWrapper>(arg1->m_ciphertext);
+  auto argument_matching_pair =
+      match_arguments(arg0, arg1, he_seal_ckks_backend);
+  auto arg0_scaled = get<0>(argument_matching_pair);
+  auto arg1_scaled = get<1>(argument_matching_pair);
 
-  double scale0 = arg0->m_ciphertext.scale();
-  double scale1 = arg1->m_ciphertext.scale();
-
-  size_t chain_ind0 = he_seal_ckks_backend->get_context()
-                          ->context_data(arg0->m_ciphertext.parms_id())
-                          ->chain_index();
-  size_t chain_ind1 = he_seal_ckks_backend->get_context()
-                          ->context_data(arg1->m_ciphertext.parms_id())
-                          ->chain_index();
-
-  if (scale0 < 0.99 * scale1 || scale0 > 1.01 * scale1) {
-    // NGRAPH_DEBUG isn't thread-safe until ngraph commit #1977
-    // https://github.com/NervanaSystems/ngraph/commit/ee6444ed39864776c8ce9a406eee9275382a88bb
-    // so we comment it out.
-    // TODO: use NGRAPH_DEBUG at next ngraph version
-    NGRAPH_WARN << "Scale " << setw(10) << scale0 << " does not match scale "
-                << scale1 << " in scalar add, ratio is " << scale0 / scale1;
-  }
-  if (scale0 != scale1) {
-    arg0_scaled->m_ciphertext.scale() = arg1_scaled->m_ciphertext.scale();
-  }
-
-  if (chain_ind0 > chain_ind1) {
-    // NGRAPH_INFO << "Chain switching " << chain_ind0 << ", " << chain_ind1;
-    he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
-        arg0_scaled->m_ciphertext, arg1_scaled->m_ciphertext.parms_id());
-    chain_ind0 = he_seal_ckks_backend->get_context()
-                     ->context_data(arg0_scaled->m_ciphertext.parms_id())
-                     ->chain_index();
-  } else if (chain_ind1 > chain_ind0) {
-    // NGRAPH_INFO << "Chain switching " << chain_ind0 << ", " << chain_ind1;
-    he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
-        arg1_scaled->m_ciphertext, arg0_scaled->m_ciphertext.parms_id());
-    chain_ind1 = he_seal_ckks_backend->get_context()
-                     ->context_data(arg1_scaled->m_ciphertext.parms_id())
-                     ->chain_index();
-  }
-  NGRAPH_ASSERT(chain_ind1 == chain_ind0) << "Chain moduli are different";
-
-  if (arg0 == out) {
-    he_seal_ckks_backend->get_evaluator()->add_inplace(
-        arg0_scaled->m_ciphertext, arg1_scaled->m_ciphertext);
-    out = arg0_scaled;
-  } else if (arg1 == out) {
-    he_seal_ckks_backend->get_evaluator()->add_inplace(
-        arg1_scaled->m_ciphertext, arg0_scaled->m_ciphertext);
-    out = arg1_scaled;
-  } else {
-    he_seal_ckks_backend->get_evaluator()->add(arg0_scaled->m_ciphertext,
-                                               arg1_scaled->m_ciphertext,
-                                               out->m_ciphertext);
-  }
+  he_seal_ckks_backend->get_evaluator()->add(
+      arg0_scaled->m_ciphertext, arg1_scaled->m_ciphertext, out->m_ciphertext);
 }
 
 void he_seal::ckks::kernel::scalar_add_ckks(
@@ -91,14 +44,13 @@ void he_seal::ckks::kernel::scalar_add_ckks(
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealCKKSBackend* he_seal_ckks_backend) {
-  // TODO: enable with different scale / modulus chain
-  if (arg0 == out) {
-    he_seal_ckks_backend->get_evaluator()->add_plain_inplace(out->m_ciphertext,
-                                                             arg1->m_plaintext);
-  } else {
-    he_seal_ckks_backend->get_evaluator()->add_plain(
-        arg0->m_ciphertext, arg1->m_plaintext, out->m_ciphertext);
-  }
+  auto argument_matching_pair =
+      match_arguments(arg0, arg1, he_seal_ckks_backend);
+  auto arg0_scaled = get<0>(argument_matching_pair);
+  auto arg1_scaled = get<1>(argument_matching_pair);
+
+  he_seal_ckks_backend->get_evaluator()->add_plain(
+      arg0_scaled->m_ciphertext, arg1_scaled->m_plaintext, out->m_ciphertext);
 }
 
 void he_seal::ckks::kernel::scalar_add_ckks(

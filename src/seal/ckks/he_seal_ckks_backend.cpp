@@ -90,8 +90,8 @@ parse_seal_ckks_config_or_use_default() {
         1024,            // poly_modulus_degree
         128,             // security_level
         60,              // evaluation_decomposition_bit_count
-        // Coefficient modulus
-        runtime::he::he_seal::HESealParameter::CoeffModulus{40, 3});
+                         // Coefficient modulus
+        runtime::he::he_seal::HESealParameter::CoeffModulus{30, 4});
   }
 }
 

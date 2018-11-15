@@ -51,7 +51,8 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_trivial) {
 
     copy_data(t_a, vector<float>{1, 2, 3, 4});
     backend->call(f, {t_result}, {t_a});
-    EXPECT_EQ((vector<float>{1, 2, 3, 4}), read_vector<float>(t_result));
+    EXPECT_TRUE(
+        all_close((vector<float>{1, 2, 3, 4}), read_vector<float>(t_result)));
   }
 }
 
@@ -78,9 +79,10 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_trivial_5d) {
               vector<float>{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1});
     backend->call(f, {t_result}, {t_a});
-    EXPECT_EQ((vector<float>{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}),
-              read_vector<float>(t_result));
+    EXPECT_TRUE(all_close(
+        (vector<float>{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                       1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}),
+        read_vector<float>(t_result)));
   }
 }
 
@@ -105,11 +107,13 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_to_scalar) {
 
     copy_data(t_a, vector<float>{1, 2, 3, 4});
     backend->call(f, {t_result}, {t_a});
-    EXPECT_EQ((vector<float>{10}), read_vector<float>(t_result));
+    EXPECT_TRUE(
+        all_close((vector<float>{10}), read_vector<float>(t_result), 1e-3f));
 
     // For some reason I'm feeling extra paranoid about making sure reduction
     // doesn't clobber the input tensors, so let's do this too.
-    EXPECT_EQ((vector<float>{1, 2, 3, 4}), read_vector<float>(t_a));
+    EXPECT_TRUE(
+        all_close((vector<float>{1, 2, 3, 4}), read_vector<float>(t_a), 1e-3f));
   }
 }
 
@@ -134,11 +138,13 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_columns) {
 
     copy_data(t_a, vector<float>{1, 2, 3, 4, 5, 6});
     backend->call(f, {t_result}, {t_a});
-    EXPECT_EQ((vector<float>{9, 12}), read_vector<float>(t_result));
+    EXPECT_TRUE(
+        all_close((vector<float>{9, 12}), read_vector<float>(t_result)));
 
     // For some reason I'm feeling extra paranoid about making sure reduction
     // doesn't clobber the input tensors, so let's do this too.
-    EXPECT_EQ((vector<float>{1, 2, 3, 4, 5, 6}), read_vector<float>(t_a));
+    EXPECT_TRUE(
+        all_close((vector<float>{1, 2, 3, 4, 5, 6}), read_vector<float>(t_a)));
   }
 }
 
@@ -163,11 +169,13 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_rows) {
 
     copy_data(t_a, vector<float>{1, 2, 3, 4, 5, 6});
     backend->call(f, {t_result}, {t_a});
-    EXPECT_EQ((vector<float>{3, 7, 11}), read_vector<float>(t_result));
+    EXPECT_TRUE(
+        all_close((vector<float>{3, 7, 11}), read_vector<float>(t_result)));
 
     // For some reason I'm feeling extra paranoid about making sure reduction
     // doesn't clobber the input tensors, so let's do this too.
-    EXPECT_EQ((vector<float>{1, 2, 3, 4, 5, 6}), read_vector<float>(t_a));
+    EXPECT_TRUE(
+        all_close((vector<float>{1, 2, 3, 4, 5, 6}), read_vector<float>(t_a)));
   }
 }
 

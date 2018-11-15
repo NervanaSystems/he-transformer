@@ -90,7 +90,7 @@ NGRAPH_TEST(${BACKEND_NAME}, add_zero_2_3) {
     backend->call(f, {t_result}, {t_a, t_b});
     EXPECT_TRUE(all_close(
         read_vector<float>(t_result),
-        (test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}})).get_vector()));
+        (test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}})).get_vector(), 1e-3f));
   }
 }
 
@@ -115,8 +115,9 @@ NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch) {
   copy_data(t_a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
   copy_data(t_b, vector<float>{13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24});
   backend->call(f, {t_result}, {t_a, t_b});
-  EXPECT_EQ((vector<float>{14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36}),
-            generalized_read_vector<float>(t_result));
+  EXPECT_TRUE(
+      all_close((vector<float>{14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36}),
+                generalized_read_vector<float>(t_result)));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, add_optimized_2_3) {
