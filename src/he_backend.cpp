@@ -97,7 +97,6 @@ shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(
   // Needed for ngraph-tf integration
   const char* ng_batch_tensor_value = std::getenv("NGRAPH_BATCHED_TENSOR");
   if (ng_batch_tensor_value != nullptr) {
-    NGRAPH_INFO << "Creating batched tensor";
     return create_batched_tensor(element_type, shape);
   }
 
