@@ -84,7 +84,6 @@ void ngraph::runtime::he::kernel::convolution(
     out_coords.emplace_back(out_coord);
   }
   size_t out_transform_size = out_coords.size();
-  NGRAPH_INFO << "out_transform_size " << out_transform_size;
 
 #pragma omp parallel for
   for (size_t out_coord_idx = 0; out_coord_idx < out_transform_size;

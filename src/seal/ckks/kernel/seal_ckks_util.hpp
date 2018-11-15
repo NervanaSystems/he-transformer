@@ -36,7 +36,7 @@ std::pair<std::shared_ptr<S>, std::shared_ptr<T>> match_arguments(
   auto arg1_scaled = std::make_shared<T>(*arg1);
 
   auto scale0 = arg0_scaled->get_hetext().scale();
-  auto scale1 = arg0_scaled->get_hetext().scale();
+  auto scale1 = arg1_scaled->get_hetext().scale();
 
   if (scale0 < 0.99 * scale1 || scale0 > 1.01 * scale1) {
     // NGRAPH_DEBUG isn't thread-safe until ngraph commit #1977
