@@ -48,6 +48,7 @@ set(MULTI_TEST_SRC
     test_reverse.in.cpp
     test_slice.in.cpp
     test_subtract.in.cpp
+    test_sum.in.cpp
 )
 
 foreach(BACKEND_NAME ${ACTIVE_BACKEND_LIST})

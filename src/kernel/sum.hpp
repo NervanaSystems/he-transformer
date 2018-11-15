@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "ngraph/coordinate_transform.hpp"
+#include "ngraph/type/element_type.hpp"
 
 namespace ngraph {
 namespace runtime {
@@ -28,22 +29,25 @@ namespace kernel {
 template <typename T>
 void sum(const std::vector<std::shared_ptr<T>>& arg,
          std::vector<std::shared_ptr<T>>& out, const Shape& in_shape,
-         const Shape& out_shape, const AxisSet& reduction_axes) {
+         const Shape& out_shape, const AxisSet& reduction_axes,
+         const element::Type& element_type,
+         const runtime::he::HEBackend* he_backend) {
   CoordinateTransform output_transform(out_shape);
 
   for (const Coordinate& output_coord : output_transform) {
-    out[output_transform.index(output_coord)] = 0;
+    out[output_transform.index(output_coord)] =
+        he_backend->create_valued_hetext<T>(0.f, element_type, T{});
   }
 
   CoordinateTransform input_transform(in_shape);
 
-  T c = 0;
   for (const Coordinate& input_coord : input_transform) {
     Coordinate output_coord = reduce(input_coord, reduction_axes);
-    T y = arg[input_transform.index(input_coord)] - c;
-    T t = out[output_transform.index(output_coord)] + y;
-    c = (t - out[output_transform.index(output_coord)]) - y;
-    out[output_transform.index(output_coord)] = t;
+
+    auto& input = arg[input_transform.index(input_coord)];
+    auto& output = out[output_transform.index(output_coord)];
+    runtime::he::kernel::scalar_add(input, output, output, element_type,
+                                    he_backend);
   }
 }
 }  // namespace kernel

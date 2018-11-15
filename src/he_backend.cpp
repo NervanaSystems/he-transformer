@@ -28,6 +28,7 @@
 #include "ngraph/op/result.hpp"
 #include "ngraph/op/reverse.hpp"
 #include "ngraph/op/slice.hpp"
+#include "ngraph/op/sum.hpp"
 
 #include "ngraph/pass/assign_layout.hpp"
 #include "ngraph/pass/manager.hpp"
@@ -767,6 +768,21 @@ void runtime::he::HEBackend::generate_calls(
           out0_plain->get_batched_element_count());
     } else {
       throw ngraph_error("Subtract types not supported.");
+    }
+  } else if (node_op == "Sum") {
+    shared_ptr<op::Sum> sum = dynamic_pointer_cast<op::Sum>(node);
+    if (arg0_cipher != nullptr && out0_cipher != nullptr) {
+      runtime::he::kernel::sum(
+          arg0_cipher->get_elements(), out0_cipher->get_elements(),
+          arg0_cipher->get_shape(), out0_cipher->get_shape(),
+          sum->get_reduction_axes(), element_type, this);
+    } else if (arg0_plain != nullptr && out0_plain != nullptr) {
+      runtime::he::kernel::sum(arg0_plain->get_elements(),
+                               out0_plain->get_elements(),
+                               arg0_plain->get_shape(), out0_plain->get_shape(),
+                               sum->get_reduction_axes(), element_type, this);
+    } else {
+      throw ngraph_error("Sum types not supported.");
     }
   } else {
     NGRAPH_INFO << "Op type " << node_op << " unsupported";
