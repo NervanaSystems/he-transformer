@@ -16,18 +16,14 @@
 
 #pragma once
 
-namespace ngraph
-{
-    namespace runtime
-    {
-        namespace he
-        {
-            class HEPlaintext
-            {
-            public:
-                HEPlaintext(){};
-                virtual ~HEPlaintext(){};
-            };
-        }
-    }
-}
+namespace ngraph {
+namespace runtime {
+namespace he {
+class HEPlaintext {
+ public:
+  HEPlaintext(){};
+  virtual ~HEPlaintext(){};
+};
+}  // namespace he
+}  // namespace runtime
+}  // namespace ngraph

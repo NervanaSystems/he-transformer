@@ -20,11 +20,8 @@ using namespace std;
 using namespace ngraph;
 
 runtime::he::he_seal::SealCiphertextWrapper::SealCiphertextWrapper()
-    : m_ciphertext(seal::Ciphertext())
-{
-}
+    : m_ciphertext(seal::Ciphertext()) {}
 
-runtime::he::he_seal::SealCiphertextWrapper::SealCiphertextWrapper(seal::Ciphertext cipher)
-    : m_ciphertext(cipher)
-{
-}
+runtime::he::he_seal::SealCiphertextWrapper::SealCiphertextWrapper(
+    seal::Ciphertext cipher)
+    : m_ciphertext(cipher) {}

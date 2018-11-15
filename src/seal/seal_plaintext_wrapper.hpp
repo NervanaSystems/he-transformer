@@ -19,25 +19,20 @@
 #include "he_plaintext.hpp"
 #include "seal/seal.h"
 
-namespace ngraph
-{
-    namespace runtime
-    {
-        namespace he
-        {
-            class HEPlaintext;
+namespace ngraph {
+namespace runtime {
+namespace he {
+class HEPlaintext;
 
-            namespace he_seal
-            {
-                struct SealPlaintextWrapper : public HEPlaintext
-                {
-                    SealPlaintextWrapper(seal::Plaintext plain);
-                    SealPlaintextWrapper();
-                    ~SealPlaintextWrapper(){};
+namespace he_seal {
+struct SealPlaintextWrapper : public HEPlaintext {
+  SealPlaintextWrapper(seal::Plaintext plain);
+  SealPlaintextWrapper();
+  ~SealPlaintextWrapper(){};
 
-                    seal::Plaintext m_plaintext;
-                };
-            }
-        }
-    }
-}
+  seal::Plaintext m_plaintext;
+};
+}  // namespace he_seal
+}  // namespace he
+}  // namespace runtime
+}  // namespace ngraph
