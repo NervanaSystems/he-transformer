@@ -19,19 +19,16 @@
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::result(const vector<shared_ptr<runtime::he::HEPlaintext>>& arg,
-                                 vector<shared_ptr<runtime::he::HECiphertext>>& out,
-                                 size_t count,
-                                 const runtime::he::HEBackend* he_backend)
-{
-    if (out.size() != arg.size())
-    {
-        NGRAPH_INFO << "Result output size " << out.size() << " does not match result input size "
-                    << arg.size();
-        throw ngraph_error("Wrong size in result");
-    }
-    for (size_t i = 0; i < count; ++i)
-    {
-        he_backend->encrypt(out[i], arg[i]);
-    }
+void runtime::he::kernel::result(
+    const vector<shared_ptr<runtime::he::HEPlaintext>>& arg,
+    vector<shared_ptr<runtime::he::HECiphertext>>& out, size_t count,
+    const runtime::he::HEBackend* he_backend) {
+  if (out.size() != arg.size()) {
+    NGRAPH_INFO << "Result output size " << out.size()
+                << " does not match result input size " << arg.size();
+    throw ngraph_error("Wrong size in result");
+  }
+  for (size_t i = 0; i < count; ++i) {
+    he_backend->encrypt(out[i], arg[i]);
+  }
 }

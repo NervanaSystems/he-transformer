@@ -21,42 +21,32 @@
 #include "ngraph/axis_vector.hpp"
 #include "ngraph/coordinate_transform.hpp"
 
-namespace ngraph
-{
-    namespace runtime
-    {
-        namespace he
-        {
-            class HEBackend;
-            class HECiphertext;
-            class HEPlaintext;
+namespace ngraph {
+namespace runtime {
+namespace he {
+class HEBackend;
+class HECiphertext;
+class HEPlaintext;
 
-            namespace kernel
-            {
-                void pad(
-                    const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
-                    const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg1, // scalar
-                    std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
-                    const Shape& arg0_shape,
-                    const Shape& out_shape,
-                    const Shape& padding_below,
-                    const Shape& padding_above,
-                    const Shape& padding_interior,
-                    size_t batch_size,
-                    const runtime::he::HEBackend* he_backend);
+namespace kernel {
+void pad(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
+         const std::vector<std::shared_ptr<runtime::he::HECiphertext>>&
+             arg1,  // scalar
+         std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
+         const Shape& arg0_shape, const Shape& out_shape,
+         const Shape& padding_below, const Shape& padding_above,
+         const Shape& padding_interior, size_t batch_size,
+         const runtime::he::HEBackend* he_backend);
 
-                void pad(
-                    const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
-                    const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg1, // scalar
-                    std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
-                    const Shape& arg0_shape,
-                    const Shape& out_shape,
-                    const Shape& padding_below,
-                    const Shape& padding_above,
-                    const Shape& padding_interior,
-                    size_t batch_size,
-                    const runtime::he::HEBackend* he_backend);
-            }
-        }
-    }
-}
+void pad(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
+         const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>&
+             arg1,  // scalar
+         std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
+         const Shape& arg0_shape, const Shape& out_shape,
+         const Shape& padding_below, const Shape& padding_above,
+         const Shape& padding_interior, size_t batch_size,
+         const runtime::he::HEBackend* he_backend);
+}  // namespace kernel
+}  // namespace he
+}  // namespace runtime
+}  // namespace ngraph

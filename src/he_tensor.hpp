@@ -21,60 +21,56 @@
 #include "ngraph/runtime/tensor.hpp"
 #include "ngraph/type/element_type.hpp"
 
-namespace ngraph
-{
-    namespace runtime
-    {
-        namespace he
-        {
-            class HEBackend;
+namespace ngraph {
+namespace runtime {
+namespace he {
+class HEBackend;
 
-            class HETensor : public runtime::Tensor
-            {
-            public:
-                HETensor(const element::Type& element_type,
-                         const Shape& shape,
-                         const HEBackend* he_backend,
-                         bool batched = false,
-                         const std::string& name = "external");
-                virtual ~HETensor(){};
+class HETensor : public runtime::Tensor {
+ public:
+  HETensor(const element::Type& element_type, const Shape& shape,
+           const HEBackend* he_backend, bool batched = false,
+           const std::string& name = "external");
+  virtual ~HETensor(){};
 
-                /// @brief Write bytes directly into the tensor
-                /// @param p Pointer to source of data
-                /// @param tensor_offset Offset into tensor storage to begin writing. Must be element-aligned.
-                /// @param n Number of bytes to write, must be integral number of elements.
-                virtual void write(const void* p, size_t tensor_offset, size_t n) override = 0;
+  /// @brief Write bytes directly into the tensor
+  /// @param p Pointer to source of data
+  /// @param tensor_offset Offset into tensor storage to begin writing. Must be
+  /// element-aligned.
+  /// @param n Number of bytes to write, must be integral number of elements.
+  virtual void write(const void* p, size_t tensor_offset,
+                     size_t n) override = 0;
 
-                /// @brief Read bytes directly from the tensor
-                /// @param p Pointer to destination for data
-                /// @param tensor_offset Offset into tensor storage to begin reading. Must be element-aligned.
-                /// @param n Number of bytes to read, must be integral number of elements.
-                virtual void read(void* p, size_t tensor_offset, size_t n) const override = 0;
+  /// @brief Read bytes directly from the tensor
+  /// @param p Pointer to destination for data
+  /// @param tensor_offset Offset into tensor storage to begin reading. Must be
+  /// element-aligned.
+  /// @param n Number of bytes to read, must be integral number of elements.
+  virtual void read(void* p, size_t tensor_offset, size_t n) const override = 0;
 
-                /// @brief Reduces shape along batch axis
-                /// @param shape Input shape to batch
-                /// @param batch_dim Axis along which to batch
-                /// @param batched Whether or not batching is enabled
-                /// @return Shape after batching along batch axis
-                const Shape batch_shape(const Shape& shape,
-                                        size_t batch_axis = 0,
-                                        bool batched = false) const;
+  /// @brief Reduces shape along batch axis
+  /// @param shape Input shape to batch
+  /// @param batch_dim Axis along which to batch
+  /// @param batched Whether or not batching is enabled
+  /// @return Shape after batching along batch axis
+  const Shape batch_shape(const Shape& shape, size_t batch_axis = 0,
+                          bool batched = false) const;
 
-                /// @brief Returns number of elements in the expanded tensor
-                size_t get_element_count() const;
+  /// @brief Returns number of elements in the expanded tensor
+  size_t get_element_count() const;
 
-                /// @brief Returns the number of elements in the un-expanded tensor
-                size_t get_batched_element_count() const;
+  /// @brief Returns the number of elements in the un-expanded tensor
+  size_t get_batched_element_count() const;
 
-            protected:
-                void check_io_bounds(const void* p, size_t tensor_offset, size_t n) const;
+ protected:
+  void check_io_bounds(const void* p, size_t tensor_offset, size_t n) const;
 
-                bool
-                    m_batched; // Whether or not the tensor is batched, i.e. stores more than one scalar per element.
-                size_t m_batch_size; // If m_batched, corresponds to first shape dimesion.
+  bool m_batched;  // Whether or not the tensor is batched, i.e. stores more
+                   // than one scalar per element.
+  size_t m_batch_size;  // If m_batched, corresponds to first shape dimesion.
 
-                const HEBackend* m_he_backend;
-            };
-        }
-    }
-}
+  const HEBackend* m_he_backend;
+};
+}  // namespace he
+}  // namespace runtime
+}  // namespace ngraph

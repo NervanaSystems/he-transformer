@@ -4,3 +4,4 @@ dot_scalar_batch # BFV doesn't support floating-point batching
 multiply_4_3_batch # BFV doesn't support floating-point batching
 convolution_2d_1image_2outputs # Needs larger parameters => slow
 convolution_2d_1item_padded_2_3x4_5 # Needs larger parameters => slow
+convolution_2d_1item_padded_1_1x1_1 # Needs larger parameters => slow

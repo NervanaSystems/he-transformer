@@ -20,31 +20,37 @@
 #include <vector>
 
 #include "he_backend.hpp"
-#include "he_ciphertext.hpp"
-#include "he_plaintext.hpp"
-
-#include "ngraph/log.hpp"
+#include "ngraph/coordinate_transform.hpp"
+#include "ngraph/type/element_type.hpp"
 
 namespace ngraph {
 namespace runtime {
 namespace he {
 namespace kernel {
 template <typename T>
-void result(const std::vector<std::shared_ptr<T>>& arg,
-            std::vector<std::shared_ptr<T>>& out, size_t count) {
-  if (out.size() != arg.size()) {
-    NGRAPH_INFO << "Result output size " << out.size()
-                << " does not match result input size " << arg.size();
-    throw ngraph_error("Wrong size in result");
+void sum(const std::vector<std::shared_ptr<T>>& arg,
+         std::vector<std::shared_ptr<T>>& out, const Shape& in_shape,
+         const Shape& out_shape, const AxisSet& reduction_axes,
+         const element::Type& element_type,
+         const runtime::he::HEBackend* he_backend) {
+  CoordinateTransform output_transform(out_shape);
+
+  for (const Coordinate& output_coord : output_transform) {
+    out[output_transform.index(output_coord)] =
+        he_backend->create_valued_hetext<T>(0.f, element_type, T{});
   }
-  for (size_t i = 0; i < count; ++i) {
-    out[i] = arg[i];
+
+  CoordinateTransform input_transform(in_shape);
+
+  for (const Coordinate& input_coord : input_transform) {
+    Coordinate output_coord = reduce(input_coord, reduction_axes);
+
+    auto& input = arg[input_transform.index(input_coord)];
+    auto& output = out[output_transform.index(output_coord)];
+    runtime::he::kernel::scalar_add(input, output, output, element_type,
+                                    he_backend);
   }
 }
-
-void result(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg,
-            std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
-            size_t count, const runtime::he::HEBackend* he_backend);
 }  // namespace kernel
 }  // namespace he
 }  // namespace runtime

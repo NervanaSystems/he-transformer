@@ -19,25 +19,22 @@
 #include "he_ciphertext.hpp"
 #include "seal/seal.h"
 
-namespace ngraph
-{
-    namespace runtime
-    {
-        namespace he
-        {
-            class HECiphertext;
+namespace ngraph {
+namespace runtime {
+namespace he {
+class HECiphertext;
 
-            namespace he_seal
-            {
-                struct SealCiphertextWrapper : public HECiphertext
-                {
-                    SealCiphertextWrapper();
-                    SealCiphertextWrapper(seal::Ciphertext cipher);
-                    ~SealCiphertextWrapper(){};
+namespace he_seal {
+struct SealCiphertextWrapper : public HECiphertext {
+  SealCiphertextWrapper();
+  SealCiphertextWrapper(seal::Ciphertext cipher);
+  ~SealCiphertextWrapper(){};
 
-                    seal::Ciphertext m_ciphertext;
-                };
-            }
-        }
-    }
-}
+  seal::Ciphertext& get_hetext() { return m_ciphertext; }
+
+  seal::Ciphertext m_ciphertext;
+};
+}  // namespace he_seal
+}  // namespace he
+}  // namespace runtime
+}  // namespace ngraph

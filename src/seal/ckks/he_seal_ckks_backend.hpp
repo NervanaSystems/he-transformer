@@ -25,58 +25,50 @@
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
 
-namespace ngraph
-{
-    namespace runtime
-    {
-        namespace he
-        {
-            class HETensor;
-            class HEPlainTensor;
-            class HECipherTensor;
-            class HESealBackend;
+namespace ngraph {
+namespace runtime {
+namespace he {
+class HETensor;
+class HEPlainTensor;
+class HECipherTensor;
+class HESealBackend;
 
-            namespace he_seal
-            {
-                class HESealCKKSBackend : public HESealBackend
-                {
-                public:
-                    HESealCKKSBackend();
-                    HESealCKKSBackend(
-                        const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp);
-                    HESealCKKSBackend(HESealCKKSBackend& he_backend) = default;
-                    ~HESealCKKSBackend(){};
+namespace he_seal {
+class HESealCKKSBackend : public HESealBackend {
+ public:
+  HESealCKKSBackend();
+  HESealCKKSBackend(
+      const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp);
+  HESealCKKSBackend(HESealCKKSBackend& he_backend) = default;
+  ~HESealCKKSBackend(){};
 
-                    std::shared_ptr<runtime::Tensor>
-                        create_batched_tensor(const element::Type& element_type,
-                                              const Shape& shape) override;
+  std::shared_ptr<runtime::Tensor> create_batched_tensor(
+      const element::Type& element_type, const Shape& shape) override;
 
-                    std::shared_ptr<seal::SEALContext> make_seal_context(
-                        const std::shared_ptr<runtime::he::he_seal::HESealParameter> sp)
-                        const override;
+  std::shared_ptr<seal::SEALContext> make_seal_context(
+      const std::shared_ptr<runtime::he::he_seal::HESealParameter> sp)
+      const override;
 
-                    void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
-                                const void* input,
-                                const element::Type& element_type,
-                                size_t count = 1) const override;
-                    void decode(void* output,
-                                const std::shared_ptr<runtime::he::HEPlaintext> input,
-                                const element::Type& element_type,
-                                size_t count = 1) const override;
+  void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
+              const void* input, const element::Type& element_type,
+              size_t count = 1) const override;
+  void decode(void* output,
+              const std::shared_ptr<runtime::he::HEPlaintext> input,
+              const element::Type& element_type,
+              size_t count = 1) const override;
 
-                    const inline std::shared_ptr<seal::CKKSEncoder> get_ckks_encoder() const
-                    {
-                        return m_ckks_encoder;
-                    }
+  const inline std::shared_ptr<seal::CKKSEncoder> get_ckks_encoder() const {
+    return m_ckks_encoder;
+  }
 
-                    void assert_valid_seal_ckks_parameter(
-                        const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp) const;
+  void assert_valid_seal_ckks_parameter(
+      const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp) const;
 
-                private:
-                    std::shared_ptr<seal::CKKSEncoder> m_ckks_encoder;
-                    double m_scale;
-                };
-            }
-        }
-    }
-}
+ private:
+  std::shared_ptr<seal::CKKSEncoder> m_ckks_encoder;
+  double m_scale;
+};
+}  // namespace he_seal
+}  // namespace he
+}  // namespace runtime
+}  // namespace ngraph

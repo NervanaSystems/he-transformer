@@ -22,57 +22,51 @@
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
 
-namespace ngraph
-{
-    namespace element
-    {
-        class Type;
-    }
-    namespace runtime
-    {
-        namespace he
-        {
-            namespace he_seal
-            {
-                class HESealBackend;
-
-                namespace kernel
-                {
-                    void scalar_multiply(
-                        const std::shared_ptr<const runtime::he::he_seal::SealCiphertextWrapper>&
-                            arg0,
-                        const std::shared_ptr<const runtime::he::he_seal::SealCiphertextWrapper>&
-                            arg1,
-                        std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
-                        const element::Type& element_type,
-                        const runtime::he::he_seal::HESealBackend* he_seal_backend);
-
-                    void scalar_multiply(
-                        const std::shared_ptr<const runtime::he::he_seal::SealCiphertextWrapper>&
-                            arg0,
-                        const std::shared_ptr<const runtime::he::he_seal::SealPlaintextWrapper>&
-                            arg1,
-                        std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
-                        const element::Type& element_type,
-                        const runtime::he::he_seal::HESealBackend* he_seal_backend);
-
-                    void scalar_multiply(
-                        const std::shared_ptr<const runtime::he::he_seal::SealPlaintextWrapper>&
-                            arg0,
-                        const std::shared_ptr<const runtime::he::he_seal::SealCiphertextWrapper>&
-                            arg1,
-                        std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
-                        const element::Type& element_type,
-                        const runtime::he::he_seal::HESealBackend* he_seal_backend);
-
-                    void scalar_multiply(
-                        const std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& arg0,
-                        const std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& arg1,
-                        std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& out,
-                        const element::Type& element_type,
-                        const runtime::he::he_seal::HESealBackend* he_seal_backend);
-                }
-            }
-        }
-    }
+namespace ngraph {
+namespace element {
+class Type;
 }
+namespace runtime {
+namespace he {
+namespace he_seal {
+class HESealBackend;
+
+namespace kernel {
+void scalar_multiply(
+    const std::shared_ptr<const runtime::he::he_seal::SealCiphertextWrapper>&
+        arg0,
+    const std::shared_ptr<const runtime::he::he_seal::SealCiphertextWrapper>&
+        arg1,
+    std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
+    const element::Type& element_type,
+    const runtime::he::he_seal::HESealBackend* he_seal_backend);
+
+void scalar_multiply(
+    const std::shared_ptr<const runtime::he::he_seal::SealCiphertextWrapper>&
+        arg0,
+    const std::shared_ptr<const runtime::he::he_seal::SealPlaintextWrapper>&
+        arg1,
+    std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
+    const element::Type& element_type,
+    const runtime::he::he_seal::HESealBackend* he_seal_backend);
+
+void scalar_multiply(
+    const std::shared_ptr<const runtime::he::he_seal::SealPlaintextWrapper>&
+        arg0,
+    const std::shared_ptr<const runtime::he::he_seal::SealCiphertextWrapper>&
+        arg1,
+    std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
+    const element::Type& element_type,
+    const runtime::he::he_seal::HESealBackend* he_seal_backend);
+
+void scalar_multiply(
+    const std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& arg0,
+    const std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& arg1,
+    std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& out,
+    const element::Type& element_type,
+    const runtime::he::he_seal::HESealBackend* he_seal_backend);
+}  // namespace kernel
+}  // namespace he_seal
+}  // namespace he
+}  // namespace runtime
+}  // namespace ngraph
