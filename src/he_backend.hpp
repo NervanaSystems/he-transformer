@@ -201,6 +201,14 @@ class HEBackend : public runtime::Backend {
   std::vector<PerformanceCounter> get_performance_data(
       std::shared_ptr<Function> function) const override;
 
+  /// @brief Return whether or not scalar optimizations are enabled
+  bool optimized_add() const { return m_optimized_add; };
+  bool optimized_mult() const { return m_optimized_mult; };
+
+  /// @brief Set scalar optimizations
+  bool set_optimized_add(bool enable) { m_optimized_add = enable; };
+  bool set_optimized_mult(bool enable) { m_optimized_mult = enable; };
+
  private:
   class FunctionInstance {
    public:
@@ -211,6 +219,9 @@ class HEBackend : public runtime::Backend {
     std::vector<std::shared_ptr<Node>> m_nodes;
   };
   std::map<std::shared_ptr<Function>, FunctionInstance> m_function_map;
+
+  bool m_optimized_add{true};
+  bool m_optimized_mult{true};
 
   void generate_calls(
       const element::Type& element_type, const std::shared_ptr<Node>& op,

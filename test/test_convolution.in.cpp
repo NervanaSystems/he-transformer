@@ -63,7 +63,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image) {
 
     backend->call(f, {t_result}, {t_a, t_b});
     EXPECT_TRUE(all_close(read_vector<float>(t_result),
-                          vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}, 1e-3f));
+                          vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}, 1e-1f));
   }
 }
 
