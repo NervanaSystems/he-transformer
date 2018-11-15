@@ -82,7 +82,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_trivial_5d) {
     EXPECT_TRUE(all_close(
         (vector<float>{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}),
-        read_vector<float>(t_result)));
+        read_vector<float>(t_result), 1e-3f));
   }
 }
 
@@ -139,12 +139,12 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_columns) {
     copy_data(t_a, vector<float>{1, 2, 3, 4, 5, 6});
     backend->call(f, {t_result}, {t_a});
     EXPECT_TRUE(
-        all_close((vector<float>{9, 12}), read_vector<float>(t_result)));
+        all_close((vector<float>{9, 12}), read_vector<float>(t_result), 1e-3f));
 
     // For some reason I'm feeling extra paranoid about making sure reduction
     // doesn't clobber the input tensors, so let's do this too.
-    EXPECT_TRUE(
-        all_close((vector<float>{1, 2, 3, 4, 5, 6}), read_vector<float>(t_a)));
+    EXPECT_TRUE(all_close((vector<float>{1, 2, 3, 4, 5, 6}),
+                          read_vector<float>(t_a), 1e-3f));
   }
 }
 
