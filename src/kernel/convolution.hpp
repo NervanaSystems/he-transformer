@@ -236,7 +236,7 @@ void ngraph::runtime::he::kernel::convolution(
           sum = prod;
           first_add = false;
         } else {
-          runtime::he::kernel::scalar_add(sum, prod, sum, element_type,
+          runtime::he::kernel::scalar_add(sum.get(), prod.get(), sum.get(), element_type,
                                           he_backend);
         }
       }

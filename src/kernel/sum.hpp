@@ -47,7 +47,7 @@ void sum(const std::vector<std::shared_ptr<T>>& arg,
 
     auto& input = arg[input_transform.index(input_coord)];
     auto& output = out[output_transform.index(output_coord)];
-    runtime::he::kernel::scalar_add(input, output, output, element_type,
+    runtime::he::kernel::scalar_add(input.get(), output.get(), output.get(), element_type,
                                     he_backend);
   }
 }

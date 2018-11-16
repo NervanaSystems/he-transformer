@@ -28,27 +28,27 @@ namespace ngraph {
 namespace runtime {
 namespace he {
 namespace kernel {
-void scalar_add(const std::shared_ptr<runtime::he::HECiphertext>& arg0,
-                const std::shared_ptr<runtime::he::HECiphertext>& arg1,
-                std::shared_ptr<runtime::he::HECiphertext>& out,
+void scalar_add(const runtime::he::HECiphertext* arg0,
+                const runtime::he::HECiphertext* arg1,
+                runtime::he::HECiphertext* out,
                 const element::Type& element_type,
                 const runtime::he::HEBackend* he_backend);
 
-void scalar_add(const std::shared_ptr<runtime::he::HECiphertext>& arg0,
-                const std::shared_ptr<runtime::he::HEPlaintext>& arg1,
-                std::shared_ptr<runtime::he::HECiphertext>& out,
+void scalar_add(const runtime::he::HECiphertext* arg0,
+                const runtime::he::HEPlaintext* arg1,
+                runtime::he::HECiphertext* out,
                 const element::Type& element_type,
                 const runtime::he::HEBackend* he_backend);
 
-void scalar_add(const std::shared_ptr<runtime::he::HEPlaintext>& arg0,
-                const std::shared_ptr<runtime::he::HECiphertext>& arg1,
-                std::shared_ptr<runtime::he::HECiphertext>& out,
+void scalar_add(const runtime::he::HEPlaintext* arg0,
+                const runtime::he::HECiphertext* arg1,
+                runtime::he::HECiphertext* out,
                 const element::Type& element_type,
                 const runtime::he::HEBackend* he_backend);
 
-void scalar_add(const std::shared_ptr<runtime::he::HEPlaintext>& arg0,
-                const std::shared_ptr<runtime::he::HEPlaintext>& arg1,
-                std::shared_ptr<runtime::he::HEPlaintext>& out,
+void scalar_add(const runtime::he::HEPlaintext* arg0,
+                const runtime::he::HEPlaintext* arg1,
+                runtime::he::HEPlaintext* out,
                 const element::Type& element_type,
                 const runtime::he::HEBackend* he_backend);
 
@@ -60,7 +60,7 @@ void add(const std::vector<std::shared_ptr<S>>& arg0,
          const runtime::he::HEBackend* he_backend, size_t count) {
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
-    scalar_add(arg0[i], arg1[i], out[i], element_type, he_backend);
+    scalar_add(arg0[i].get(), arg1[i].get(), out[i].get(), element_type, he_backend);
   }
 }
 }  // namespace kernel

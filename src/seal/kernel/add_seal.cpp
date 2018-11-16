@@ -28,9 +28,9 @@ using namespace std;
 using namespace ngraph::runtime::he;
 
 void he_seal::kernel::scalar_add(
-    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg0,
-    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg1,
-    shared_ptr<he_seal::SealCiphertextWrapper>& out,
+    const he_seal::SealCiphertextWrapper* arg0,
+    const he_seal::SealCiphertextWrapper* arg1,
+    he_seal::SealCiphertextWrapper* out,
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend) {
   if (auto he_seal_ckks_backend =
@@ -48,9 +48,9 @@ void he_seal::kernel::scalar_add(
 }
 
 void he_seal::kernel::scalar_add(
-    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg0,
-    const shared_ptr<const he_seal::SealPlaintextWrapper>& arg1,
-    shared_ptr<he_seal::SealCiphertextWrapper>& out,
+    const he_seal::SealCiphertextWrapper* arg0,
+    const he_seal::SealPlaintextWrapper* arg1,
+    he_seal::SealCiphertextWrapper* out,
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend) {
   if (auto he_seal_ckks_backend =
@@ -68,21 +68,24 @@ void he_seal::kernel::scalar_add(
 }
 
 void he_seal::kernel::scalar_add(
-    const shared_ptr<const he_seal::SealPlaintextWrapper>& arg0,
-    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg1,
-    shared_ptr<he_seal::SealCiphertextWrapper>& out,
+    const he_seal::SealPlaintextWrapper* arg0,
+    const he_seal::SealCiphertextWrapper* arg1,
+    he_seal::SealCiphertextWrapper* out,
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend) {
   he_seal::kernel::scalar_add(arg1, arg0, out, element_type, he_seal_backend);
 }
 
 void he_seal::kernel::scalar_add(
-    const shared_ptr<he_seal::SealPlaintextWrapper>& arg0,
-    const shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
-    shared_ptr<he_seal::SealPlaintextWrapper>& out,
+    const he_seal::SealPlaintextWrapper* arg0,
+    const he_seal::SealPlaintextWrapper* arg1,
+    he_seal::SealPlaintextWrapper* out,
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend) {
-  shared_ptr<HEPlaintext> out_he = dynamic_pointer_cast<HEPlaintext>(out);
+
+      throw ngraph_error("Scalar add P+P unimplemented");
+      /*
+  auto out_he = dynamic_cast<HEPlaintext*>(out);
   const string type_name = element_type.c_type_string();
   if (type_name == "float") {
     float x, y;
@@ -94,4 +97,5 @@ void he_seal::kernel::scalar_add(
     throw ngraph_error("Unsupported element type " + type_name + " in add");
   }
   out = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(out_he);
+  */
 }
