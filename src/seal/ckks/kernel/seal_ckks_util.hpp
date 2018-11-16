@@ -30,7 +30,7 @@ namespace ckks {
 namespace kernel {
 template <typename S, typename T>
 std::pair<std::shared_ptr<S>, std::shared_ptr<T>> match_arguments(
-    const std::shared_ptr<const S>& arg0, const std::shared_ptr<const T>& arg1,
+    const S* arg0, const T* arg1,
     const HESealCKKSBackend* he_seal_ckks_backend) {
   auto arg0_scaled = std::make_shared<S>(*arg0);
   auto arg1_scaled = std::make_shared<T>(*arg1);

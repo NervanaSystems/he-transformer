@@ -21,19 +21,14 @@
 using namespace std;
 using namespace ngraph::runtime::he;
 
-void kernel::scalar_add(const HECiphertext* arg0,
-                        const HECiphertext* arg1,
-                        HECiphertext* out,
-                        const element::Type& element_type,
+void kernel::scalar_add(const HECiphertext* arg0, const HECiphertext* arg1,
+                        HECiphertext* out, const element::Type& element_type,
                         const HEBackend* he_backend) {
   if (auto he_seal_backend =
           dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
-    auto arg0_seal =
-        dynamic_cast<const he_seal::SealCiphertextWrapper*>(arg0);
-    auto arg1_seal =
-        dynamic_cast<const he_seal::SealCiphertextWrapper*>(arg1);
-    auto out_seal =
-        dynamic_cast<he_seal::SealCiphertextWrapper*>(out);
+    auto arg0_seal = dynamic_cast<const he_seal::SealCiphertextWrapper*>(arg0);
+    auto arg1_seal = dynamic_cast<const he_seal::SealCiphertextWrapper*>(arg1);
+    auto out_seal = dynamic_cast<he_seal::SealCiphertextWrapper*>(out);
 
     if (arg0_seal && arg1_seal && out_seal) {
       he_seal::kernel::scalar_add(arg0_seal, arg1_seal, out_seal, element_type,
@@ -49,19 +44,14 @@ void kernel::scalar_add(const HECiphertext* arg0,
   }
 }
 
-void kernel::scalar_add(const HEPlaintext* arg0,
-                        const HEPlaintext* arg1,
-                        HEPlaintext* out,
-                        const element::Type& element_type,
+void kernel::scalar_add(const HEPlaintext* arg0, const HEPlaintext* arg1,
+                        HEPlaintext* out, const element::Type& element_type,
                         const HEBackend* he_backend) {
   if (auto he_seal_backend =
           dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
-    auto arg0_seal =
-        dynamic_cast<const he_seal::SealPlaintextWrapper*>(arg0);
-    auto arg1_seal =
-        dynamic_cast<const he_seal::SealPlaintextWrapper*>(arg1);
-    auto out_seal =
-        dynamic_cast<he_seal::SealPlaintextWrapper*>(out);
+    auto arg0_seal = dynamic_cast<const he_seal::SealPlaintextWrapper*>(arg0);
+    auto arg1_seal = dynamic_cast<const he_seal::SealPlaintextWrapper*>(arg1);
+    auto out_seal = dynamic_cast<he_seal::SealPlaintextWrapper*>(out);
 
     if (arg0_seal && arg1_seal && out_seal) {
       he_seal::kernel::scalar_add(arg0_seal, arg1_seal, out_seal, element_type,
@@ -77,19 +67,14 @@ void kernel::scalar_add(const HEPlaintext* arg0,
   }
 }
 
-void kernel::scalar_add(const HECiphertext* arg0,
-                        const HEPlaintext* arg1,
-                        HECiphertext* out,
-                        const element::Type& element_type,
+void kernel::scalar_add(const HECiphertext* arg0, const HEPlaintext* arg1,
+                        HECiphertext* out, const element::Type& element_type,
                         const HEBackend* he_backend) {
   if (auto he_seal_backend =
           dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
-    auto arg0_seal =
-        dynamic_cast<const he_seal::SealCiphertextWrapper*>(arg0);
-    auto arg1_seal =
-        dynamic_cast<const he_seal::SealPlaintextWrapper*>(arg1);
-    auto out_seal =
-        dynamic_cast<he_seal::SealCiphertextWrapper*>(out);
+    auto arg0_seal = dynamic_cast<const he_seal::SealCiphertextWrapper*>(arg0);
+    auto arg1_seal = dynamic_cast<const he_seal::SealPlaintextWrapper*>(arg1);
+    auto out_seal = dynamic_cast<he_seal::SealCiphertextWrapper*>(out);
 
     if (arg0_seal && arg1_seal && out_seal) {
       const string type_name = element_type.c_type_string();
@@ -122,10 +107,8 @@ void kernel::scalar_add(const HECiphertext* arg0,
   }
 }
 
-void kernel::scalar_add(const HEPlaintext* arg0,
-                        const HECiphertext* arg1,
-                        HECiphertext* out,
-                        const element::Type& element_type,
+void kernel::scalar_add(const HEPlaintext* arg0, const HECiphertext* arg1,
+                        HECiphertext* out, const element::Type& element_type,
                         const HEBackend* he_backend) {
   scalar_add(arg1, arg0, out, element_type, he_backend);
 }

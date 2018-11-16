@@ -18,7 +18,6 @@
 
 #include "ngraph/type/element_type.hpp"
 #include "seal/ckks/he_seal_ckks_backend.hpp"
-#include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
 
@@ -32,24 +31,21 @@ namespace he_seal {
 namespace ckks {
 namespace kernel {
 void scalar_multiply_ckks(
-    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg0,
-    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg1,
-    shared_ptr<he_seal::SealCiphertextWrapper>& out,
-    const element::Type& element_type,
+    const he_seal::SealCiphertextWrapper* arg0,
+    const he_seal::SealCiphertextWrapper* arg1,
+    he_seal::SealCiphertextWrapper* out, const element::Type& element_type,
     const he_seal::HESealCKKSBackend* he_seal_ckks_backend);
 
 void scalar_multiply_ckks(
-    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg0,
-    const shared_ptr<const he_seal::SealPlaintextWrapper>& arg1,
-    shared_ptr<he_seal::SealCiphertextWrapper>& out,
-    const element::Type& element_type,
+    const he_seal::SealCiphertextWrapper* arg0,
+    const he_seal::SealPlaintextWrapper* arg1,
+    he_seal::SealCiphertextWrapper* out, const element::Type& element_type,
     const he_seal::HESealCKKSBackend* he_seal_ckks_backend);
 
 void scalar_multiply_ckks(
-    const shared_ptr<const he_seal::SealPlaintextWrapper>& arg0,
-    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg1,
-    shared_ptr<he_seal::SealCiphertextWrapper>& out,
-    const element::Type& element_type,
+    const he_seal::SealPlaintextWrapper* arg0,
+    const he_seal::SealCiphertextWrapper* arg1,
+    he_seal::SealCiphertextWrapper* out, const element::Type& element_type,
     const he_seal::HESealCKKSBackend* he_seal_ckks_backend);
 }  // namespace kernel
 }  // namespace ckks

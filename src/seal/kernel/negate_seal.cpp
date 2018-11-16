@@ -23,9 +23,8 @@ using namespace std;
 using namespace ngraph::runtime::he;
 
 void he_seal::kernel::scalar_negate(
-    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg,
-    shared_ptr<he_seal::SealCiphertextWrapper>& out,
-    const element::Type& element_type,
+    const he_seal::SealCiphertextWrapper* arg,
+    he_seal::SealCiphertextWrapper* out, const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend) {
   if (arg == out) {
     he_seal_backend->get_evaluator()->negate_inplace(out->m_ciphertext);
@@ -36,10 +35,11 @@ void he_seal::kernel::scalar_negate(
 }
 
 void he_seal::kernel::scalar_negate(
-    const shared_ptr<he_seal::SealPlaintextWrapper>& arg,
-    shared_ptr<he_seal::SealPlaintextWrapper>& out,
-    const element::Type& element_type,
+    const he_seal::SealPlaintextWrapper* arg,
+    he_seal::SealPlaintextWrapper* out, const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend) {
+  throw ngraph_error("Negate plaintext-plaintext not enabled");
+  /*
   shared_ptr<HEPlaintext> out_he = dynamic_pointer_cast<HEPlaintext>(out);
   const string type_name = element_type.c_type_string();
   if (type_name == "float") {
@@ -56,4 +56,5 @@ void he_seal::kernel::scalar_negate(
     throw ngraph_error("Unsupported element type " + type_name + " in negate");
   }
   out = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(out_he);
+  */
 }

@@ -33,36 +33,30 @@ class HESealBackend;
 
 namespace kernel {
 void scalar_multiply(
-    const std::shared_ptr<const runtime::he::he_seal::SealCiphertextWrapper>&
-        arg0,
-    const std::shared_ptr<const runtime::he::he_seal::SealCiphertextWrapper>&
-        arg1,
-    std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
+    const runtime::he::he_seal::SealCiphertextWrapper* arg0,
+    const runtime::he::he_seal::SealCiphertextWrapper* arg1,
+    runtime::he::he_seal::SealCiphertextWrapper* out,
     const element::Type& element_type,
     const runtime::he::he_seal::HESealBackend* he_seal_backend);
 
 void scalar_multiply(
-    const std::shared_ptr<const runtime::he::he_seal::SealCiphertextWrapper>&
-        arg0,
-    const std::shared_ptr<const runtime::he::he_seal::SealPlaintextWrapper>&
-        arg1,
-    std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
+    const runtime::he::he_seal::SealCiphertextWrapper* arg0,
+    const runtime::he::he_seal::SealPlaintextWrapper* arg1,
+    runtime::he::he_seal::SealCiphertextWrapper* out,
     const element::Type& element_type,
     const runtime::he::he_seal::HESealBackend* he_seal_backend);
 
 void scalar_multiply(
-    const std::shared_ptr<const runtime::he::he_seal::SealPlaintextWrapper>&
-        arg0,
-    const std::shared_ptr<const runtime::he::he_seal::SealCiphertextWrapper>&
-        arg1,
-    std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
+    const runtime::he::he_seal::SealPlaintextWrapper* arg0,
+    const runtime::he::he_seal::SealCiphertextWrapper* arg1,
+    runtime::he::he_seal::SealCiphertextWrapper* out,
     const element::Type& element_type,
     const runtime::he::he_seal::HESealBackend* he_seal_backend);
 
 void scalar_multiply(
-    const std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& arg0,
-    const std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& arg1,
-    std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& out,
+    const runtime::he::he_seal::SealPlaintextWrapper* arg0,
+    const runtime::he::he_seal::SealPlaintextWrapper* arg1,
+    runtime::he::he_seal::SealPlaintextWrapper* out,
     const element::Type& element_type,
     const runtime::he::he_seal::HESealBackend* he_seal_backend);
 }  // namespace kernel

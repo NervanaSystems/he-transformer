@@ -30,13 +30,13 @@ class HECiphertext;
 class HEPlaintext;
 
 namespace kernel {
-void scalar_negate(const std::shared_ptr<runtime::he::HECiphertext>& arg,
-                   std::shared_ptr<runtime::he::HECiphertext>& out,
+void scalar_negate(const runtime::he::HECiphertext* arg,
+                   runtime::he::HECiphertext* out,
                    const element::Type& element_type,
                    const runtime::he::HEBackend* he_backend);
 
-void scalar_negate(const std::shared_ptr<runtime::he::HEPlaintext>& arg,
-                   std::shared_ptr<runtime::he::HEPlaintext>& out,
+void scalar_negate(const runtime::he::HEPlaintext* arg,
+                   runtime::he::HEPlaintext* out,
                    const element::Type& element_type,
                    const runtime::he::HEBackend* he_backend);
 
@@ -47,7 +47,7 @@ void negate(const std::vector<std::shared_ptr<T>>& arg,
             const runtime::he::HEBackend* he_backend, size_t count) {
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
-    kernel::scalar_negate(arg[i], out[i], element_type, he_backend);
+    kernel::scalar_negate(arg[i].get(), out[i].get(), element_type, he_backend);
   }
 }
 }  // namespace kernel

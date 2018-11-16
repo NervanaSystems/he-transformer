@@ -151,14 +151,15 @@ void ngraph::runtime::he::kernel::dot(
       auto arg1_text = arg1[arg1_transform.index(arg1_coord)];
 
       std::shared_ptr<V> prod = he_backend->create_empty_hetext<V>(V{});
-      runtime::he::kernel::scalar_multiply(arg0_text, arg1_text, prod,
-                                           element_type, he_backend);
+      runtime::he::kernel::scalar_multiply(arg0_text.get(), arg1_text.get(),
+                                           prod.get(), element_type,
+                                           he_backend);
       if (first_add) {
         sum = prod;
         first_add = false;
       } else {
-        runtime::he::kernel::scalar_add(sum.get(), prod.get(), sum.get(), element_type,
-                                        he_backend);
+        runtime::he::kernel::scalar_add(sum.get(), prod.get(), sum.get(),
+                                        element_type, he_backend);
       }
     }
     // Write the sum back.

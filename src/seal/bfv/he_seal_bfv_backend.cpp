@@ -75,7 +75,7 @@ parse_seal_bfv_config_or_use_default() {
         64,             // fractional_encoder_integer_coeff_count
         32,             // fractional_encoder_fraction_coeff_count
         2               // fractional_encoder_base
-        );
+    );
   }
 }
 

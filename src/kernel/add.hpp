@@ -60,7 +60,8 @@ void add(const std::vector<std::shared_ptr<S>>& arg0,
          const runtime::he::HEBackend* he_backend, size_t count) {
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
-    scalar_add(arg0[i].get(), arg1[i].get(), out[i].get(), element_type, he_backend);
+    scalar_add(arg0[i].get(), arg1[i].get(), out[i].get(), element_type,
+               he_backend);
   }
 }
 }  // namespace kernel
