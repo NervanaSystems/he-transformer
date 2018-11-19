@@ -119,6 +119,6 @@ void kernel::scalar_subtract(const shared_ptr<HEPlaintext>& arg0,
                              const element::Type& element_type,
                              const HEBackend* he_backend) {
   auto neg_arg1 = arg1;
-  scalar_negate(neg_arg1, neg_arg1, element_type, he_backend);
+  scalar_negate(neg_arg1.get(), neg_arg1, element_type, he_backend);
   scalar_add(arg0.get(), neg_arg1.get(), out, element_type, he_backend);
 }

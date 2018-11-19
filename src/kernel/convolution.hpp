@@ -241,8 +241,8 @@ void ngraph::runtime::he::kernel::convolution(
             arg1[filter_transform.index(filter_coord)];
 
         std::shared_ptr<V> prod = he_backend->create_empty_hetext<V>(V{});
-        runtime::he::kernel::scalar_multiply(arg0_multiplicand,
-                                             arg1_multiplicand, prod,
+        runtime::he::kernel::scalar_multiply(arg0_multiplicand.get(),
+                                             arg1_multiplicand.get(), prod,
                                              element_type, he_backend);
 
         if (first_add) {

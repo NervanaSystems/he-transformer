@@ -21,20 +21,20 @@ using namespace std;
 using namespace ngraph::runtime::he;
 
 void he_seal::ckks::kernel::scalar_multiply_ckks(
-    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg0,
-    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg1,
+    const he_seal::SealCiphertextWrapper* arg0,
+    const he_seal::SealCiphertextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const runtime::he::he_seal::HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
-  if ((arg0 == arg1) && (arg1 == out)) {
+  if ((arg0 == arg1) && (arg1 == out.get())) {
     he_seal_ckks_backend->get_evaluator()->square_inplace(out->m_ciphertext);
   } else if (arg1 == arg0) {
     he_seal_ckks_backend->get_evaluator()->square(arg1->m_ciphertext,
                                                   out->m_ciphertext);
   } else {
     auto argument_matching_pair =
-        match_arguments(arg0.get(), arg1.get(), he_seal_ckks_backend);
+        match_arguments(arg0, arg1, he_seal_ckks_backend);
     auto arg0_scaled = get<0>(argument_matching_pair);
     auto arg1_scaled = get<1>(argument_matching_pair);
 
@@ -51,14 +51,14 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
 }
 
 void he_seal::ckks::kernel::scalar_multiply_ckks(
-    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg0,
-    const shared_ptr<const he_seal::SealPlaintextWrapper>& arg1,
+    const he_seal::SealCiphertextWrapper* arg0,
+    const he_seal::SealPlaintextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const runtime::he::he_seal::HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
   auto argument_matching_pair =
-      match_arguments(arg0.get(), arg1.get(), he_seal_ckks_backend);
+      match_arguments(arg0, arg1, he_seal_ckks_backend);
   auto arg0_scaled = get<0>(argument_matching_pair);
   auto arg1_scaled = get<1>(argument_matching_pair);
 
@@ -74,8 +74,8 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
 }
 
 void he_seal::ckks::kernel::scalar_multiply_ckks(
-    const shared_ptr<const he_seal::SealPlaintextWrapper>& arg0,
-    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg1,
+    const he_seal::SealPlaintextWrapper* arg0,
+    const he_seal::SealCiphertextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const runtime::he::he_seal::HESealCKKSBackend* he_seal_ckks_backend,

@@ -231,8 +231,8 @@ void ngraph::runtime::he::he_seal::kernel::convolution_seal(
         std::shared_ptr<V> prod =
             he_seal_backend->create_empty_hetext<V>(V{}, pool);
         runtime::he::he_seal::kernel::scalar_multiply(
-            arg0_multiplicand, arg1_multiplicand, prod, element_type,
-            he_seal_backend, pool);
+            arg0_multiplicand.get(), arg1_multiplicand.get(), prod,
+            element_type, he_seal_backend, pool);
 
         if (first_add) {
           sum = prod;
