@@ -69,7 +69,6 @@ void ngraph::runtime::he::he_seal::kernel::convolution_seal(
     size_t batch_axis_result, size_t output_channel_axis_result,
     bool rotate_filter, const element::Type& element_type, size_t batch_size,
     const runtime::he::he_seal::HESealBackend* he_seal_backend) {
-  NGRAPH_INFO << "Seal conv";
   // Comments throughout assume without loss of generality that:
   //
   // * batch axes for both input data and output data are 0
