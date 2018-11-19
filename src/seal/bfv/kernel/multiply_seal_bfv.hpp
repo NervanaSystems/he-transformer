@@ -22,9 +22,6 @@
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
 
-using namespace std;
-using namespace ngraph::runtime::he;
-
 namespace ngraph {
 namespace runtime {
 namespace he {
@@ -32,23 +29,23 @@ namespace he_seal {
 namespace bfv {
 namespace kernel {
 void scalar_multiply_bfv(
-    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg0,
-    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg1,
-    shared_ptr<he_seal::SealCiphertextWrapper>& out,
+    const std::shared_ptr<const he_seal::SealCiphertextWrapper>& arg0,
+    const std::shared_ptr<const he_seal::SealCiphertextWrapper>& arg1,
+    std::shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealBFVBackend* he_seal_bfv_backend);
 
 void scalar_multiply_bfv(
-    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg0,
-    const shared_ptr<const he_seal::SealPlaintextWrapper>& arg1,
-    shared_ptr<he_seal::SealCiphertextWrapper>& out,
+    const std::shared_ptr<const he_seal::SealCiphertextWrapper>& arg0,
+    const std::shared_ptr<const he_seal::SealPlaintextWrapper>& arg1,
+    std::shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealBFVBackend* he_seal_bfv_backend);
 
 void scalar_multiply_bfv(
-    const shared_ptr<const he_seal::SealPlaintextWrapper>& arg0,
-    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg1,
-    shared_ptr<he_seal::SealCiphertextWrapper>& out,
+    const std::shared_ptr<const he_seal::SealPlaintextWrapper>& arg0,
+    const std::shared_ptr<const he_seal::SealCiphertextWrapper>& arg1,
+    std::shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealBFVBackend* he_seal_bfv_backend);
 }  // namespace kernel

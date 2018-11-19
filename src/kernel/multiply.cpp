@@ -31,12 +31,9 @@ void kernel::scalar_multiply(const shared_ptr<HECiphertext>& arg0,
                              const HEBackend* he_backend) {
   if (auto he_seal_backend =
           dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
-    shared_ptr<he_seal::SealCiphertextWrapper> arg0_seal =
-        dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(arg0);
-    shared_ptr<he_seal::SealCiphertextWrapper> arg1_seal =
-        dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(arg1);
-    shared_ptr<he_seal::SealCiphertextWrapper> out_seal =
-        dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(out);
+    auto arg0_seal = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(arg0);
+    auto arg1_seal = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(arg1);
+    auto out_seal = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(out);
 
     if (arg0_seal && arg1_seal && out_seal) {
       he_seal::kernel::scalar_multiply(arg0_seal, arg1_seal, out_seal,
@@ -59,12 +56,9 @@ void kernel::scalar_multiply(const shared_ptr<HEPlaintext>& arg0,
                              const HEBackend* he_backend) {
   if (auto he_seal_backend =
           dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
-    shared_ptr<he_seal::SealPlaintextWrapper> arg0_seal =
-        dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(arg0);
-    shared_ptr<he_seal::SealPlaintextWrapper> arg1_seal =
-        dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(arg1);
-    shared_ptr<he_seal::SealPlaintextWrapper> out_seal =
-        dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(out);
+    auto arg0_seal = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(arg0);
+    auto arg1_seal = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(arg1);
+    auto out_seal = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(out);
 
     if (arg0_seal && arg1_seal && out_seal) {
       he_seal::kernel::scalar_multiply(arg0_seal, arg1_seal, out_seal,
@@ -87,58 +81,14 @@ void kernel::scalar_multiply(const shared_ptr<HECiphertext>& arg0,
                              const HEBackend* he_backend) {
   if (auto he_seal_backend =
           dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
-    shared_ptr<he_seal::SealCiphertextWrapper> arg0_seal =
-        dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(arg0);
-    shared_ptr<he_seal::SealPlaintextWrapper> arg1_seal =
-        dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(arg1);
-    shared_ptr<he_seal::SealCiphertextWrapper> out_seal =
-        dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(out);
+    auto arg0_seal = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(arg0);
+    auto arg1_seal = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(arg1);
+    auto out_seal = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(out);
 
     if (arg0_seal && arg1_seal && out_seal) {
-      const string type_name = element_type.c_type_string();
-
-      enum Optimization { mult_zero, mult_one, mult_neg_one, no_optimization };
-      Optimization optimization = no_optimization;
-
-      if (type_name == "float") {
-        if (he_backend->optimized_mult()) {
-          auto arg1_seal_plaintext = arg1_seal->m_plaintext;
-          auto seal_0_plaintext =
-              static_pointer_cast<const he_seal::SealPlaintextWrapper>(
-                  he_seal_backend->get_valued_plaintext(0))
-                  ->m_plaintext;
-          auto seal_1_plaintext =
-              static_pointer_cast<const he_seal::SealPlaintextWrapper>(
-                  he_seal_backend->get_valued_plaintext(1))
-                  ->m_plaintext;
-          auto seal_neg1_plaintext =
-              static_pointer_cast<const he_seal::SealPlaintextWrapper>(
-                  he_seal_backend->get_valued_plaintext(-1))
-                  ->m_plaintext;
-
-          if (arg1_seal_plaintext == seal_0_plaintext) {
-            optimization = mult_zero;
-          } else if ((arg1_seal_plaintext == seal_1_plaintext)) {
-            optimization = mult_one;
-          } else if ((arg1_seal_plaintext == seal_neg1_plaintext)) {
-            optimization = mult_neg_one;
-          }
-        }
-      }
-
-      if (optimization == mult_zero) {
-        out = he_backend->create_valued_ciphertext(0, element_type);
-      } else if (optimization == mult_one) {
-        out = arg0;
-      } else if (optimization == mult_neg_one) {
-        he_seal::kernel::scalar_negate(arg0_seal, out_seal, element_type,
-                                       he_seal_backend);
-        out = dynamic_pointer_cast<HECiphertext>(out_seal);
-      } else {
-        he_seal::kernel::scalar_multiply(arg0_seal, arg1_seal, out_seal,
-                                         element_type, he_seal_backend);
-        out = dynamic_pointer_cast<HECiphertext>(out_seal);
-      }
+      he_seal::kernel::scalar_multiply(arg0_seal, arg1_seal, out_seal,
+                                       element_type, he_seal_backend);
+      out = dynamic_pointer_cast<HECiphertext>(out_seal);
     } else {
       throw ngraph_error(
           "multiply backend is SEAL, but arguments or outputs are not "

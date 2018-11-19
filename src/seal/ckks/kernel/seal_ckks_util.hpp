@@ -43,8 +43,9 @@ std::pair<std::shared_ptr<S>, std::shared_ptr<T>> match_arguments(
     // https://github.com/NervanaSystems/ngraph/commit/ee6444ed39864776c8ce9a406eee9275382a88bb
     // so we comment it out.
     // TODO: use NGRAPH_DEBUG at next ngraph version
-    NGRAPH_WARN << "Scale " << setw(10) << scale0 << " does not match scale "
-                << scale1 << " in scalar add, ratio is " << scale0 / scale1;
+    NGRAPH_WARN << "Scale " << std::setw(10) << scale0
+                << " does not match scale " << scale1
+                << " in scalar add, ratio is " << scale0 / scale1;
   }
   if (scale0 != scale1) {
     arg0_scaled->get_hetext().scale() = arg1_scaled->get_hetext().scale();

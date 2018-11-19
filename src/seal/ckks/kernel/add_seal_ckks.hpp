@@ -22,9 +22,6 @@
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
 
-using namespace std;
-using namespace ngraph::runtime::he;
-
 namespace ngraph {
 namespace runtime {
 namespace he {
@@ -32,23 +29,29 @@ namespace he_seal {
 namespace ckks {
 namespace kernel {
 void scalar_add_ckks(
-    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg0,
-    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg1,
-    shared_ptr<he_seal::SealCiphertextWrapper>& out,
+    const std::shared_ptr<const runtime::he::he_seal::SealCiphertextWrapper>&
+        arg0,
+    const std::shared_ptr<const runtime::he::he_seal::SealCiphertextWrapper>&
+        arg1,
+    std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealCKKSBackend* he_seal_ckks_backend);
 
 void scalar_add_ckks(
-    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg0,
-    const shared_ptr<const he_seal::SealPlaintextWrapper>& arg1,
-    shared_ptr<he_seal::SealCiphertextWrapper>& out,
+    const std::shared_ptr<const runtime::he::he_seal::SealCiphertextWrapper>&
+        arg0,
+    const std::shared_ptr<const runtime::he::he_seal::SealPlaintextWrapper>&
+        arg1,
+    std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealCKKSBackend* he_seal_ckks_backend);
 
 void scalar_add_ckks(
-    const shared_ptr<const he_seal::SealPlaintextWrapper>& arg0,
-    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg1,
-    shared_ptr<he_seal::SealCiphertextWrapper>& out,
+    const std::shared_ptr<const runtime::he::he_seal::SealPlaintextWrapper>&
+        arg0,
+    const std::shared_ptr<const runtime::he::he_seal::SealCiphertextWrapper>&
+        arg1,
+    std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealCKKSBackend* he_seal_ckks_backend);
 }  // namespace kernel

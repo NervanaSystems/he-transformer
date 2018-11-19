@@ -14,16 +14,13 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include <assert.h>
-
+#include "he_backend.hpp"
 #include "ngraph/ngraph.hpp"
+#include "test_util.hpp"
 #include "util/all_close.hpp"
 #include "util/ndarray.hpp"
 #include "util/test_control.hpp"
 #include "util/test_tools.hpp"
-
-#include "he_backend.hpp"
-#include "test_util.hpp"
 
 using namespace std;
 using namespace ngraph;
@@ -49,7 +46,8 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_0d) {
     copy_data(a, vector<float>{6});
 
     backend->call(f, {result}, {a});
-    EXPECT_TRUE(all_close((vector<float>{6}), read_vector<float>(result)));
+    EXPECT_TRUE(
+        all_close((vector<float>{6}), read_vector<float>(result), 1e-3f));
   }
 }
 
@@ -73,7 +71,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_1d_nochange) {
 
     backend->call(f, {result}, {a});
     EXPECT_TRUE(all_close((vector<float>{0, 1, 2, 3, 4, 5, 6, 7}),
-                          read_vector<float>(result)));
+                          read_vector<float>(result), 1e-3f));
   }
 }
 
@@ -97,7 +95,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_1d_0) {
 
     backend->call(f, {result}, {a});
     EXPECT_TRUE(all_close((vector<float>{7, 6, 5, 4, 3, 2, 1, 0}),
-                          read_vector<float>(result)));
+                          read_vector<float>(result), 1e-3f));
   }
 }
 
@@ -125,7 +123,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_nochange) {
     EXPECT_TRUE(all_close(
         (test::NDArray<float, 2>({{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}})
              .get_vector()),
-        read_vector<float>(result)));
+        read_vector<float>(result), 1e-3f));
   }
 }
 
@@ -153,7 +151,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_0) {
     EXPECT_TRUE(all_close(
         (test::NDArray<float, 2>({{9, 10, 11}, {6, 7, 8}, {3, 4, 5}, {0, 1, 2}})
              .get_vector()),
-        read_vector<float>(result)));
+        read_vector<float>(result), 1e-3f));
   }
 }
 
@@ -181,7 +179,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_1) {
     EXPECT_TRUE(all_close(
         (test::NDArray<float, 2>({{2, 1, 0}, {5, 4, 3}, {8, 7, 6}, {11, 10, 9}})
              .get_vector()),
-        read_vector<float>(result)));
+        read_vector<float>(result), 1e-3f));
   }
 }
 
@@ -209,7 +207,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_01) {
     EXPECT_TRUE(all_close(
         (test::NDArray<float, 2>({{11, 10, 9}, {8, 7, 6}, {5, 4, 3}, {2, 1, 0}})
              .get_vector()),
-        read_vector<float>(result)));
+        read_vector<float>(result), 1e-3f));
   }
 }
 
@@ -240,7 +238,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_nochange) {
              {{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
               {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
              .get_vector()),
-        read_vector<float>(result)));
+        read_vector<float>(result), 1e-3f));
   }
 }
 
@@ -302,7 +300,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_1) {
              {{{9, 10, 11}, {6, 7, 8}, {3, 4, 5}, {0, 1, 2}},
               {{21, 22, 23}, {18, 19, 20}, {15, 16, 17}, {12, 13, 14}}})
              .get_vector()),
-        read_vector<float>(result)));
+        read_vector<float>(result), 1e-3f));
   }
 }
 
@@ -333,7 +331,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_2) {
              {{{2, 1, 0}, {5, 4, 3}, {8, 7, 6}, {11, 10, 9}},
               {{14, 13, 12}, {17, 16, 15}, {20, 19, 18}, {23, 22, 21}}})
              .get_vector()),
-        read_vector<float>(result)));
+        read_vector<float>(result), 1e-3f));
   }
 }
 
@@ -364,7 +362,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_01) {
              {{{21, 22, 23}, {18, 19, 20}, {15, 16, 17}, {12, 13, 14}},
               {{9, 10, 11}, {6, 7, 8}, {3, 4, 5}, {0, 1, 2}}})
              .get_vector()),
-        read_vector<float>(result)));
+        read_vector<float>(result), 1e-3f));
   }
 }
 
@@ -395,7 +393,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_02) {
              {{{14, 13, 12}, {17, 16, 15}, {20, 19, 18}, {23, 22, 21}},
               {{2, 1, 0}, {5, 4, 3}, {8, 7, 6}, {11, 10, 9}}})
              .get_vector()),
-        read_vector<float>(result)));
+        read_vector<float>(result), 1e-3f));
   }
 }
 
@@ -426,7 +424,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_12) {
              {{{11, 10, 9}, {8, 7, 6}, {5, 4, 3}, {2, 1, 0}},
               {{23, 22, 21}, {20, 19, 18}, {17, 16, 15}, {14, 13, 12}}})
              .get_vector()),
-        read_vector<float>(result)));
+        read_vector<float>(result), 1e-3f));
   }
 }
 
@@ -457,6 +455,6 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_012) {
              {{{23, 22, 21}, {20, 19, 18}, {17, 16, 15}, {14, 13, 12}},
               {{11, 10, 9}, {8, 7, 6}, {5, 4, 3}, {2, 1, 0}}})
              .get_vector()),
-        read_vector<float>(result)));
+        read_vector<float>(result), 1e-3f));
   }
 }

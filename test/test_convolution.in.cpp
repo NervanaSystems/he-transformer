@@ -14,19 +14,15 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include <assert.h>
-
 #include "he_backend.hpp"
-#include "seal/he_seal_backend.hpp"
-
 #include "ngraph/ngraph.hpp"
+#include "seal/he_seal_backend.hpp"
+#include "test_util.hpp"
 #include "util/all_close.hpp"
 #include "util/autodiff/numeric_compare.hpp"
 #include "util/ndarray.hpp"
 #include "util/test_control.hpp"
 #include "util/test_tools.hpp"
-
-#include "test_util.hpp"
 
 using namespace std;
 using namespace ngraph;

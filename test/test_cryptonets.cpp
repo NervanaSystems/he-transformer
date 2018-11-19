@@ -84,12 +84,13 @@ static void run_cryptonets_benchmark(string backend_name, size_t batch_size,
     auto parameter_cipher_tv =
         (backend_name == "INTERPRETER")
             ? backend->create_tensor(type, shape)
-            : batched ? static_pointer_cast<
-                            runtime::he::he_seal::HESealCKKSBackend>(backend)
-                            ->create_batched_tensor(type, shape)
-                      : static_pointer_cast<
-                            runtime::he::he_seal::HESealCKKSBackend>(backend)
-                            ->create_tensor(type, shape);
+            : batched
+                  ? static_pointer_cast<
+                        runtime::he::he_seal::HESealCKKSBackend>(backend)
+                        ->create_batched_tensor(type, shape)
+                  : static_pointer_cast<
+                        runtime::he::he_seal::HESealCKKSBackend>(backend)
+                        ->create_tensor(type, shape);
 
     NGRAPH_INFO << "Creating input shape: " << join(shape, "x");
 

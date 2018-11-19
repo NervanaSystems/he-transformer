@@ -20,6 +20,7 @@
 #include "seal/ckks/he_seal_ckks_backend.hpp"
 #include "seal/ckks/kernel/multiply_seal_ckks.hpp"
 #include "seal/he_seal_backend.hpp"
+#include "seal/kernel/negate_seal.hpp"
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
@@ -32,11 +33,12 @@ void he_seal::kernel::scalar_multiply(
     const shared_ptr<const he_seal::SealCiphertextWrapper>& arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
-    const he_seal::HESealBackend* he_seal_backend) {
+    const he_seal::HESealBackend* he_seal_backend,
+    const seal::MemoryPoolHandle& pool) {
   if (auto he_seal_ckks_backend =
           dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend)) {
     he_seal::ckks::kernel::scalar_multiply_ckks(arg0, arg1, out, element_type,
-                                                he_seal_ckks_backend);
+                                                he_seal_ckks_backend, pool);
   } else if (auto he_seal_bfv_backend =
                  dynamic_cast<const he_seal::HESealBFVBackend*>(
                      he_seal_backend)) {
@@ -45,6 +47,19 @@ void he_seal::kernel::scalar_multiply(
   } else {
     throw ngraph_error("HESealBackend is neither BFV nor CKKS");
   }
+}
+
+void he_seal::kernel::scalar_multiply(
+    const shared_ptr<HECiphertext>& arg0, const shared_ptr<HECiphertext>& arg1,
+    shared_ptr<HECiphertext>& out, const element::Type& element_type,
+    const he_seal::HESealBackend* he_seal_backend,
+    const seal::MemoryPoolHandle& pool) {
+  auto arg0_seal = static_pointer_cast<he_seal::SealCiphertextWrapper>(arg0);
+  auto arg1_seal = static_pointer_cast<he_seal::SealCiphertextWrapper>(arg1);
+  auto out_seal = static_pointer_cast<he_seal::SealCiphertextWrapper>(out);
+  he_seal::kernel::scalar_multiply(arg0_seal, arg1_seal, out_seal, element_type,
+                                   he_seal_backend, pool);
+  out = static_pointer_cast<HECiphertext>(out_seal);
 }
 
 void he_seal::kernel::scalar_multiply(
@@ -52,19 +67,86 @@ void he_seal::kernel::scalar_multiply(
     const shared_ptr<const he_seal::SealPlaintextWrapper>& arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
-    const he_seal::HESealBackend* he_seal_backend) {
-  if (auto he_seal_ckks_backend =
-          dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend)) {
-    he_seal::ckks::kernel::scalar_multiply_ckks(arg0, arg1, out, element_type,
-                                                he_seal_ckks_backend);
-  } else if (auto he_seal_bfv_backend =
-                 dynamic_cast<const he_seal::HESealBFVBackend*>(
-                     he_seal_backend)) {
-    he_seal::bfv::kernel::scalar_multiply_bfv(arg0, arg1, out, element_type,
-                                              he_seal_bfv_backend);
-  } else {
-    throw ngraph_error("HESealBackend is neither BFV nor CKKS");
+    const he_seal::HESealBackend* he_seal_backend,
+    const seal::MemoryPoolHandle& pool) {
+  enum class Optimization {
+    mult_zero,
+    mult_one,
+    mult_neg_one,
+    no_optimization
+  };
+  Optimization optimization = Optimization::no_optimization;
+  const string type_name = element_type.c_type_string();
+
+  if (type_name == "float") {
+    if (he_seal_backend->optimized_mult()) {
+      auto arg1_plaintext = arg1->m_plaintext;
+      auto seal_0_plaintext =
+          static_pointer_cast<const he_seal::SealPlaintextWrapper>(
+              he_seal_backend->get_valued_plaintext(0))
+              ->m_plaintext;
+      auto seal_1_plaintext =
+          static_pointer_cast<const he_seal::SealPlaintextWrapper>(
+              he_seal_backend->get_valued_plaintext(1))
+              ->m_plaintext;
+      auto seal_neg1_plaintext =
+          static_pointer_cast<const he_seal::SealPlaintextWrapper>(
+              he_seal_backend->get_valued_plaintext(-1))
+              ->m_plaintext;
+
+      if (arg1_plaintext == seal_0_plaintext) {
+        optimization = Optimization::mult_zero;
+      } else if ((arg1_plaintext == seal_1_plaintext)) {
+        optimization = Optimization::mult_one;
+      } else if ((arg1_plaintext == seal_neg1_plaintext)) {
+        optimization = Optimization::mult_neg_one;
+      }
+    }
   }
+
+  if (optimization == Optimization::mult_zero) {
+    out = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(
+        he_seal_backend->create_valued_ciphertext(0, element_type));
+  } else if (optimization == Optimization::mult_one) {
+    out = const_pointer_cast<he_seal::SealCiphertextWrapper>(arg0);
+  } else if (optimization == Optimization::mult_neg_one) {
+    he_seal::kernel::scalar_negate(arg0, out, element_type, he_seal_backend);
+  } else {
+    if (auto he_seal_ckks_backend =
+            dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend)) {
+      he_seal::ckks::kernel::scalar_multiply_ckks(arg0, arg1, out, element_type,
+                                                  he_seal_ckks_backend, pool);
+    } else if (auto he_seal_bfv_backend =
+                   dynamic_cast<const he_seal::HESealBFVBackend*>(
+                       he_seal_backend)) {
+      he_seal::bfv::kernel::scalar_multiply_bfv(arg0, arg1, out, element_type,
+                                                he_seal_bfv_backend);
+    } else {
+      throw ngraph_error("HESealBackend is neither BFV nor CKKS");
+    }
+  }
+}
+
+void he_seal::kernel::scalar_multiply(
+    const shared_ptr<HECiphertext>& arg0, const shared_ptr<HEPlaintext>& arg1,
+    shared_ptr<HECiphertext>& out, const element::Type& element_type,
+    const he_seal::HESealBackend* he_seal_backend,
+    const seal::MemoryPoolHandle& pool) {
+  auto arg0_seal = static_pointer_cast<he_seal::SealCiphertextWrapper>(arg0);
+  auto arg1_seal = static_pointer_cast<he_seal::SealPlaintextWrapper>(arg1);
+  auto out_seal = static_pointer_cast<he_seal::SealCiphertextWrapper>(out);
+  he_seal::kernel::scalar_multiply(arg0_seal, arg1_seal, out_seal, element_type,
+                                   he_seal_backend, pool);
+  out = static_pointer_cast<HECiphertext>(out_seal);
+}
+
+void he_seal::kernel::scalar_multiply(
+    const shared_ptr<HEPlaintext>& arg0, const shared_ptr<HECiphertext>& arg1,
+    shared_ptr<HECiphertext>& out, const element::Type& element_type,
+    const he_seal::HESealBackend* he_seal_backend,
+    const seal::MemoryPoolHandle& pool) {
+  he_seal::kernel::scalar_multiply(arg1, arg0, out, element_type,
+                                   he_seal_backend, pool);
 }
 
 void he_seal::kernel::scalar_multiply(
@@ -72,9 +154,10 @@ void he_seal::kernel::scalar_multiply(
     const shared_ptr<const he_seal::SealCiphertextWrapper>& arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
-    const he_seal::HESealBackend* he_seal_backend) {
+    const he_seal::HESealBackend* he_seal_backend,
+    const seal::MemoryPoolHandle& pool) {
   he_seal::kernel::scalar_multiply(arg1, arg0, out, element_type,
-                                   he_seal_backend);
+                                   he_seal_backend, pool);
 }
 
 void he_seal::kernel::scalar_multiply(
@@ -82,7 +165,8 @@ void he_seal::kernel::scalar_multiply(
     const shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
     shared_ptr<he_seal::SealPlaintextWrapper>& out,
     const element::Type& element_type,
-    const he_seal::HESealBackend* he_seal_backend) {
+    const he_seal::HESealBackend* he_seal_backend,
+    const seal::MemoryPoolHandle& pool) {
   shared_ptr<runtime::he::HEPlaintext> out_he =
       dynamic_pointer_cast<runtime::he::HEPlaintext>(out);
   const string type_name = element_type.c_type_string();
@@ -96,6 +180,18 @@ void he_seal::kernel::scalar_multiply(
     throw ngraph_error("Unsupported element type " + type_name +
                        " in multiply");
   }
-  out =
-      dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(out_he);
+  out = static_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(out_he);
+}
+
+void he_seal::kernel::scalar_multiply(
+    const shared_ptr<HEPlaintext>& arg0, const shared_ptr<HEPlaintext>& arg1,
+    shared_ptr<HEPlaintext>& out, const element::Type& element_type,
+    const he_seal::HESealBackend* he_seal_backend,
+    const seal::MemoryPoolHandle& pool) {
+  auto arg0_seal = static_pointer_cast<he_seal::SealPlaintextWrapper>(arg0);
+  auto arg1_seal = static_pointer_cast<he_seal::SealPlaintextWrapper>(arg1);
+  auto out_seal = static_pointer_cast<he_seal::SealPlaintextWrapper>(out);
+  he_seal::kernel::scalar_multiply(arg0_seal, arg1_seal, out_seal, element_type,
+                                   he_seal_backend, pool);
+  out = static_pointer_cast<HEPlaintext>(out_seal);
 }

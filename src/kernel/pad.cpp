@@ -38,8 +38,6 @@ void runtime::he::kernel::pad(
     throw ngraph_error("Padding element must be scalar");
   }
 
-  NGRAPH_INFO << "Pad cipher ciper";
-
   shared_ptr<runtime::he::HECiphertext> pad_val = arg1[0];
 
   Coordinate input_start(arg0_shape.size(), 0);  // start at (0,0,...,0)

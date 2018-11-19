@@ -58,7 +58,32 @@ class HESealBackend : public HEBackend {
   std::shared_ptr<runtime::he::HECiphertext> create_empty_ciphertext()
       const override;
 
-  std::shared_ptr<runtime::he::HEPlaintext> create_empty_plaintext() const;
+  std::shared_ptr<runtime::he::HECiphertext> create_empty_ciphertext(
+      const seal::MemoryPoolHandle& pool) const;
+
+  std::shared_ptr<runtime::he::HEPlaintext> create_empty_plaintext()
+      const override;
+
+  std::shared_ptr<runtime::he::HEPlaintext> create_empty_plaintext(
+      const seal::MemoryPoolHandle& pool) const;
+
+  /// @brief Creates ciphertext of unspecified value using memory pool
+  /// Alias for create_empty_ciphertext()
+  /// @return Shared pointer to created ciphertext
+  template <typename T>
+  std::shared_ptr<runtime::he::HECiphertext> create_empty_hetext(
+      runtime::he::HECiphertext&&, const seal::MemoryPoolHandle& pool) const {
+    return create_empty_ciphertext(pool);
+  };
+
+  /// @brief Creates plaintext of unspecified value using memory pool
+  /// Alias for create_empty_plaintext()
+  /// @return Shared pointer to created plaintext
+  template <typename T>
+  std::shared_ptr<runtime::he::HEPlaintext> create_empty_hetext(
+      runtime::he::HEPlaintext&&, const seal::MemoryPoolHandle& pool) const {
+    return create_empty_plaintext(pool);
+  };
 
   virtual void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
                       const void* input, const element::Type& element_type,
