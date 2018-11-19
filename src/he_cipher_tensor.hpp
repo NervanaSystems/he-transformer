@@ -16,22 +16,17 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
+#include <vector>
 
+#include "he_ciphertext.hpp"
 #include "he_tensor.hpp"
-#include "ngraph/runtime/tensor.hpp"
 #include "ngraph/type/element_type.hpp"
 
 namespace ngraph {
 namespace runtime {
 namespace he {
-class HEBackend;
-class HECiphertext;
-
-namespace he_seal {
-class HESealBackend;
-}
-
 class HECipherTensor : public HETensor {
  public:
   HECipherTensor(const element::Type& element_type, const Shape& shape,

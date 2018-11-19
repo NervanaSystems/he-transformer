@@ -22,8 +22,6 @@
 namespace ngraph {
 namespace runtime {
 namespace he {
-class HEPlaintext;
-
 namespace he_seal {
 struct SealPlaintextWrapper : public HEPlaintext {
   SealPlaintextWrapper(seal::Plaintext plain);

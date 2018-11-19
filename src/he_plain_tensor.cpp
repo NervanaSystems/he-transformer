@@ -19,7 +19,6 @@
 
 #include "he_backend.hpp"
 #include "he_plain_tensor.hpp"
-#include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
 
 using namespace ngraph;
 using namespace std;

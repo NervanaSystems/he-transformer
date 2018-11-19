@@ -15,14 +15,11 @@
 //*****************************************************************************
 
 #include "seal/kernel/subtract_seal.hpp"
-#include "ngraph/type/element_type.hpp"
-#include "seal/he_seal_backend.hpp"
-#include "seal/seal.h"
 
 using namespace std;
-using namespace ngraph::runtime::he;
+using namespace ngraph;
 
-void he_seal::kernel::scalar_subtract(
+void runtime::he::he_seal::kernel::scalar_subtract(
     const shared_ptr<const he_seal::SealCiphertextWrapper>& arg0,
     const shared_ptr<const he_seal::SealCiphertextWrapper>& arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
@@ -40,7 +37,7 @@ void he_seal::kernel::scalar_subtract(
   }
 }
 
-void he_seal::kernel::scalar_subtract(
+void runtime::he::he_seal::kernel::scalar_subtract(
     const shared_ptr<const he_seal::SealCiphertextWrapper>& arg0,
     const shared_ptr<const he_seal::SealPlaintextWrapper>& arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
@@ -55,7 +52,7 @@ void he_seal::kernel::scalar_subtract(
   }
 }
 
-void he_seal::kernel::scalar_subtract(
+void runtime::he::he_seal::kernel::scalar_subtract(
     const shared_ptr<he_seal::SealPlaintextWrapper>& arg0,
     const shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
     shared_ptr<he_seal::SealPlaintextWrapper>& out,

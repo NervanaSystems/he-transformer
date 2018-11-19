@@ -18,6 +18,7 @@
 
 #include <memory>
 
+#include "he_backend.hpp"
 #include "ngraph/runtime/tensor.hpp"
 #include "ngraph/type/element_type.hpp"
 
@@ -25,7 +26,6 @@ namespace ngraph {
 namespace runtime {
 namespace he {
 class HEBackend;
-
 class HETensor : public runtime::Tensor {
  public:
   HETensor(const element::Type& element_type, const Shape& shape,

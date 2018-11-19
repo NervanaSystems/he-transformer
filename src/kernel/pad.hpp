@@ -16,18 +16,16 @@
 
 #pragma once
 
-#include <cmath>
+#include <memory>
+#include <vector>
 
+#include "he_backend.hpp"
 #include "ngraph/axis_vector.hpp"
 #include "ngraph/coordinate_transform.hpp"
 
 namespace ngraph {
 namespace runtime {
 namespace he {
-class HEBackend;
-class HECiphertext;
-class HEPlaintext;
-
 namespace kernel {
 void pad(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
          const std::vector<std::shared_ptr<runtime::he::HECiphertext>>&

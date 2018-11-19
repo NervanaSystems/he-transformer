@@ -20,6 +20,8 @@
 #include <vector>
 
 #include "ngraph/type/element_type.hpp"
+#include "seal/he_seal_backend.hpp"
+#include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
 
@@ -27,8 +29,6 @@ namespace ngraph {
 namespace runtime {
 namespace he {
 namespace he_seal {
-class HESealBackend;
-
 namespace kernel {
 void scalar_add(
     const std::shared_ptr<const runtime::he::he_seal::SealCiphertextWrapper>&

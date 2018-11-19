@@ -16,21 +16,16 @@
 
 #include <limits>
 
-#include "he_cipher_tensor.hpp"
-#include "he_plain_tensor.hpp"
-#include "he_seal_backend.hpp"
-#include "he_seal_parameter.hpp"
-#include "he_tensor.hpp"
 #include "seal/bfv/he_seal_bfv_backend.hpp"
 #include "seal/ckks/he_seal_ckks_backend.hpp"
-
+#include "seal/he_seal_backend.hpp"
 #include "seal/seal.h"
 
 using namespace ngraph;
 using namespace std;
 
 extern "C" const char* get_ngraph_version_string() {
-  return "v0.9.0";  // TODO: move to CMakeLists
+  return "v0.9.1";  // TODO: move to CMakeLists
 }
 
 extern "C" runtime::Backend* new_backend(const char* configuration_chars) {

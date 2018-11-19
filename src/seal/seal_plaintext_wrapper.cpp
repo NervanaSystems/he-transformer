@@ -16,7 +16,6 @@
 
 #include "seal_plaintext_wrapper.hpp"
 
-using namespace std;
 using namespace ngraph;
 
 runtime::he::he_seal::SealPlaintextWrapper::SealPlaintextWrapper()

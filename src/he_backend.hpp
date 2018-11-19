@@ -21,8 +21,9 @@
 #include <unordered_map>
 #include <vector>
 
+#include "he_ciphertext.hpp"
+#include "he_plaintext.hpp"
 #include "he_tensor.hpp"
-
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
 #include "ngraph/descriptor/layout/tensor_layout.hpp"
 #include "ngraph/function.hpp"
@@ -41,13 +42,7 @@
 namespace ngraph {
 namespace runtime {
 namespace he {
-class HECallFrame;
 class HETensor;
-class HEPlainTensor;
-class HECipherTensor;
-class HECiphertext;
-class HEPlaintext;
-
 class HEBackend : public runtime::Backend {
  public:
   HEBackend(){};

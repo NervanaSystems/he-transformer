@@ -22,8 +22,6 @@
 namespace ngraph {
 namespace runtime {
 namespace he {
-class HECiphertext;
-
 namespace he_seal {
 struct SealCiphertextWrapper : public HECiphertext {
   SealCiphertextWrapper();
