@@ -176,6 +176,8 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_batch) {
 NGRAPH_TEST(${BACKEND_NAME}, dot_perf) {
   auto backend = static_pointer_cast<runtime::he::he_seal::HESealCKKSBackend>(
       runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+  backend->set_optimized_mult(false);
+  backend->set_optimized_add(false);
 
   Shape shape_a{100, 100};
   Shape shape_b{100, 100};

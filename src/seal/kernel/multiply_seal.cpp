@@ -20,6 +20,7 @@
 #include "seal/ckks/he_seal_ckks_backend.hpp"
 #include "seal/ckks/kernel/multiply_seal_ckks.hpp"
 #include "seal/he_seal_backend.hpp"
+#include "seal/kernel/negate_seal.hpp"
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
@@ -68,17 +69,61 @@ void he_seal::kernel::scalar_multiply(
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
-  if (auto he_seal_ckks_backend =
-          dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend)) {
-    he_seal::ckks::kernel::scalar_multiply_ckks(arg0, arg1, out, element_type,
-                                                he_seal_ckks_backend, pool);
-  } else if (auto he_seal_bfv_backend =
-                 dynamic_cast<const he_seal::HESealBFVBackend*>(
-                     he_seal_backend)) {
-    he_seal::bfv::kernel::scalar_multiply_bfv(arg0, arg1, out, element_type,
-                                              he_seal_bfv_backend);
+  enum class Optimization {
+    mult_zero,
+    mult_one,
+    mult_neg_one,
+    no_optimization
+  };
+  Optimization optimization = Optimization::no_optimization;
+  const string type_name = element_type.c_type_string();
+
+  if (type_name == "float") {
+    if (he_seal_backend->optimized_mult()) {
+      auto arg1_plaintext = arg1->m_plaintext;
+      auto seal_0_plaintext =
+          static_pointer_cast<const he_seal::SealPlaintextWrapper>(
+              he_seal_backend->get_valued_plaintext(0))
+              ->m_plaintext;
+      auto seal_1_plaintext =
+          static_pointer_cast<const he_seal::SealPlaintextWrapper>(
+              he_seal_backend->get_valued_plaintext(1))
+              ->m_plaintext;
+      auto seal_neg1_plaintext =
+          static_pointer_cast<const he_seal::SealPlaintextWrapper>(
+              he_seal_backend->get_valued_plaintext(-1))
+              ->m_plaintext;
+
+      if (arg1_plaintext == seal_0_plaintext) {
+        optimization = Optimization::mult_zero;
+      } else if ((arg1_plaintext == seal_1_plaintext)) {
+        optimization = Optimization::mult_one;
+      } else if ((arg1_plaintext == seal_neg1_plaintext)) {
+        optimization = Optimization::mult_neg_one;
+      }
+    }
+  }
+
+  if (optimization == Optimization::mult_zero) {
+    out = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(
+        he_seal_backend->create_valued_ciphertext(0, element_type));
+  } else if (optimization == Optimization::mult_one) {
+    out = const_pointer_cast<he_seal::SealCiphertextWrapper>(arg0);
+  } else if (optimization == Optimization::mult_neg_one) {
+    he_seal::kernel::scalar_negate(arg0, out, element_type, he_seal_backend);
   } else {
-    throw ngraph_error("HESealBackend is neither BFV nor CKKS");
+    if (auto he_seal_ckks_backend =
+            dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend)) {
+      he_seal::ckks::kernel::scalar_multiply_ckks(arg0, arg1, out, element_type,
+                                                  he_seal_ckks_backend, pool);
+    } else if (auto he_seal_bfv_backend =
+                   dynamic_cast<const he_seal::HESealBFVBackend*>(
+                       he_seal_backend)) {
+      he_seal::bfv::kernel::scalar_multiply_bfv(arg0, arg1, out, element_type,
+                                                he_seal_bfv_backend);
+    } else {
+      throw ngraph_error("HESealBackend is neither BFV nor CKKS");
+    }
   }
 }
 

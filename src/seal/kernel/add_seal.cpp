@@ -70,17 +70,34 @@ void he_seal::kernel::scalar_add(
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
-  if (auto he_seal_ckks_backend =
-          dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend)) {
-    he_seal::ckks::kernel::scalar_add_ckks(arg0, arg1, out, element_type,
-                                           he_seal_ckks_backend);
-  } else if (auto he_seal_bfv_backend =
-                 dynamic_cast<const he_seal::HESealBFVBackend*>(
-                     he_seal_backend)) {
-    he_seal::bfv::kernel::scalar_add_bfv(arg0, arg1, out, element_type,
-                                         he_seal_bfv_backend);
+  const string type_name = element_type.c_type_string();
+
+  bool add_zero = he_seal_backend->optimized_add();
+  if (add_zero) {
+    auto arg0_plaintext =
+        static_pointer_cast<const he_seal::SealPlaintextWrapper>(
+            he_seal_backend->get_valued_plaintext(0))
+            ->m_plaintext;
+
+    add_zero = (arg1->m_plaintext == arg0_plaintext);
+  }
+
+  if (add_zero && type_name == "float") {
+    NGRAPH_INFO << "Optimized add by 0";
+    out = const_pointer_cast<he_seal::SealCiphertextWrapper>(arg0);
   } else {
-    throw ngraph_error("HESealBackend is neither BFV nor CKKS");
+    if (auto he_seal_ckks_backend =
+            dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend)) {
+      he_seal::ckks::kernel::scalar_add_ckks(arg0, arg1, out, element_type,
+                                             he_seal_ckks_backend);
+    } else if (auto he_seal_bfv_backend =
+                   dynamic_cast<const he_seal::HESealBFVBackend*>(
+                       he_seal_backend)) {
+      he_seal::bfv::kernel::scalar_add_bfv(arg0, arg1, out, element_type,
+                                           he_seal_bfv_backend);
+    } else {
+      throw ngraph_error("HESealBackend is neither BFV nor CKKS");
+    }
   }
 }
 
