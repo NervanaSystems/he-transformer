@@ -22,48 +22,41 @@
 #include "he_backend.hpp"
 #include "he_ciphertext.hpp"
 #include "he_plaintext.hpp"
-#include "kernel/add.hpp"
-#include "kernel/multiply.hpp"
 #include "ngraph/coordinate_transform.hpp"
 #include "seal/he_seal_backend.hpp"
-#include "seal/kernel/dot_seal.hpp"
+#include "seal/kernel/add_seal.hpp"
+#include "seal/kernel/multiply_seal.hpp"
 
 namespace ngraph {
 namespace runtime {
 namespace he {
+namespace he_seal {
 namespace kernel {
 template <typename S, typename T, typename V>
-void dot(const std::vector<std::shared_ptr<S>>& arg0,
-         const std::vector<std::shared_ptr<T>>& arg1,
-         std::vector<std::shared_ptr<V>>& out, const Shape& arg0_shape,
-         const Shape& arg1_shape, const Shape& out_shape,
-         size_t reduction_axes_count, const element::Type& element_type,
-         const runtime::he::HEBackend* he_backend);
+void dot_seal(const std::vector<std::shared_ptr<S>>& arg0,
+              const std::vector<std::shared_ptr<T>>& arg1,
+              std::vector<std::shared_ptr<V>>& out, const Shape& arg0_shape,
+              const Shape& arg1_shape, const Shape& out_shape,
+              size_t reduction_axes_count, const element::Type& element_type,
+              const runtime::he::he_seal::HESealBackend* he_seal_backend);
 }
+}  // namespace he_seal
 }  // namespace he
 }  // namespace runtime
 }  // namespace ngraph
 
 template <typename S, typename T, typename V>
-void ngraph::runtime::he::kernel::dot(
+void ngraph::runtime::he::he_seal::kernel::dot_seal(
     const std::vector<std::shared_ptr<S>>& arg0,
     const std::vector<std::shared_ptr<T>>& arg1,
     std::vector<std::shared_ptr<V>>& out, const Shape& arg0_shape,
     const Shape& arg1_shape, const Shape& out_shape,
     size_t reduction_axes_count, const element::Type& element_type,
-    const runtime::he::HEBackend* he_backend) {
+    const runtime::he::he_seal::HESealBackend* he_seal_backend) {
   // Get the sizes of the dot axes. It's easiest to pull them from arg1 because
   // they're
   // right up front.
-  if (auto he_seal_backend =
-          dynamic_cast<const runtime::he::he_seal::HESealBackend*>(
-              he_backend)) {
-    runtime::he::he_seal::kernel::dot_seal(
-        arg0, arg1, out, arg0_shape, arg1_shape, out_shape,
-        reduction_axes_count, element_type, he_seal_backend);
-    return;
-  }
-
+  NGRAPH_INFO << "Dot seal";
   Shape dot_axis_sizes(reduction_axes_count);
   std::copy(arg1_shape.begin(), arg1_shape.begin() + reduction_axes_count,
             dot_axis_sizes.begin());
@@ -112,6 +105,9 @@ void ngraph::runtime::he::kernel::dot(
 #pragma omp parallel for
   for (size_t global_projected_idx = 0;
        global_projected_idx < global_projected_size; ++global_projected_idx) {
+    // Init thread-local memory pool for each thread
+    seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New();
+
     // Compute outer and inner index
     size_t arg0_projected_idx = global_projected_idx / arg1_projected_size;
     size_t arg1_projected_idx = global_projected_idx % arg1_projected_size;
@@ -140,7 +136,7 @@ void ngraph::runtime::he::kernel::dot(
     auto arg0_it = std::copy(arg0_projected_coord.begin(),
                              arg0_projected_coord.end(), arg0_coord.begin());
 
-    std::shared_ptr<V> sum = he_backend->create_empty_hetext<V>(V{});
+    std::shared_ptr<V> sum = he_seal_backend->create_empty_hetext<V>(V{}, pool);
 
     bool first_add = true;
 
@@ -160,15 +156,16 @@ void ngraph::runtime::he::kernel::dot(
       auto arg0_text = arg0[arg0_transform.index(arg0_coord)];
       auto arg1_text = arg1[arg1_transform.index(arg1_coord)];
 
-      std::shared_ptr<V> prod = he_backend->create_empty_hetext<V>(V{});
-      runtime::he::kernel::scalar_multiply(arg0_text, arg1_text, prod,
-                                           element_type, he_backend);
+      std::shared_ptr<V> prod =
+          he_seal_backend->create_empty_hetext<V>(V{}, pool);
+      runtime::he::he_seal::kernel::scalar_multiply(
+          arg0_text, arg1_text, prod, element_type, he_seal_backend, pool);
       if (first_add) {
         sum = prod;
         first_add = false;
       } else {
-        runtime::he::kernel::scalar_add(sum, prod, sum, element_type,
-                                        he_backend);
+        runtime::he::he_seal::kernel::scalar_add(sum, prod, sum, element_type,
+                                                 he_seal_backend, pool);
       }
     }
     // Write the sum back.

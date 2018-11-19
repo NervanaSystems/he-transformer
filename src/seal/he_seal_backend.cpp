@@ -77,9 +77,21 @@ runtime::he::he_seal::HESealBackend::create_empty_ciphertext() const {
   return make_shared<runtime::he::he_seal::SealCiphertextWrapper>();
 }
 
+shared_ptr<runtime::he::HECiphertext>
+runtime::he::he_seal::HESealBackend::create_empty_ciphertext(
+    const seal::MemoryPoolHandle& pool) const {
+  return make_shared<runtime::he::he_seal::SealCiphertextWrapper>(pool);
+}
+
 shared_ptr<runtime::he::HEPlaintext>
 runtime::he::he_seal::HESealBackend::create_empty_plaintext() const {
   return make_shared<runtime::he::he_seal::SealPlaintextWrapper>();
+}
+
+shared_ptr<runtime::he::HEPlaintext>
+runtime::he::he_seal::HESealBackend::create_empty_plaintext(
+    const seal::MemoryPoolHandle& pool) const {
+  return make_shared<runtime::he::he_seal::SealPlaintextWrapper>(pool);
 }
 
 void runtime::he::he_seal::HESealBackend::encrypt(

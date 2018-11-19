@@ -172,3 +172,32 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_batch) {
   EXPECT_TRUE(all_close((vector<float>{4, 8, 12}),
                         generalized_read_vector<float>(t_result), 1e-3f));
 }
+
+NGRAPH_TEST(${BACKEND_NAME}, dot_perf) {
+  auto backend = static_pointer_cast<runtime::he::he_seal::HESealCKKSBackend>(
+      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+
+  Shape shape_a{100, 100};
+  Shape shape_b{100, 100};
+  Shape shape_r{100, 100};
+  auto a = make_shared<op::Parameter>(element::f32, shape_a);
+  auto b = make_shared<op::Parameter>(element::f32, shape_b);
+  auto t = make_shared<op::Dot>(a, b);
+
+  auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+
+  // Create some tensors for input/output
+  auto t_a = backend->create_tensor(element::f32, shape_a);
+  auto t_b = backend->create_plain_tensor(element::f32, shape_b);
+  auto t_result = backend->create_tensor(element::f32, shape_r);
+
+  vector<float> a_vals, b_vals;
+  for (size_t i = 0; i < 100 * 100; ++i) {
+    a_vals.emplace_back(i % 11 - 5);
+    b_vals.emplace_back((i + 1) % 11 - 5);
+  }
+
+  copy_data(t_a, a_vals);
+  copy_data(t_b, b_vals);
+  backend->call(f, {t_result}, {t_a, t_b});
+}
