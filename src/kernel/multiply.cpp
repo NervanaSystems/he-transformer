@@ -88,6 +88,7 @@ void kernel::scalar_multiply(const shared_ptr<HECiphertext>& arg0,
     if (arg0_seal && arg1_seal && out_seal) {
       he_seal::kernel::scalar_multiply(arg0_seal, arg1_seal, out_seal,
                                        element_type, he_seal_backend);
+      out = dynamic_pointer_cast<HECiphertext>(out_seal);
     } else {
       throw ngraph_error(
           "multiply backend is SEAL, but arguments or outputs are not "
