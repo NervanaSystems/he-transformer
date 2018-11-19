@@ -15,9 +15,6 @@
 //*****************************************************************************
 
 #include "seal/kernel/negate_seal.hpp"
-#include "ngraph/type/element_type.hpp"
-#include "seal/he_seal_backend.hpp"
-#include "seal/seal.h"
 
 using namespace std;
 using namespace ngraph::runtime::he;

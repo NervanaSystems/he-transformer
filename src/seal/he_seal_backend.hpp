@@ -20,21 +20,12 @@
 #include <unordered_map>
 
 #include "he_backend.hpp"
-#include "ngraph/runtime/backend.hpp"
 #include "seal/he_seal_parameter.hpp"
-#include "seal/seal_ciphertext_wrapper.hpp"
-#include "seal/seal_plaintext_wrapper.hpp"
-
 #include "seal/seal.h"
 
 namespace ngraph {
 namespace runtime {
 namespace he {
-class HETensor;
-class HEPlainTensor;
-class HECipherTensor;
-class HEBackend;
-
 namespace he_seal {
 class HESealBackend : public HEBackend {
  public:

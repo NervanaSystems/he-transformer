@@ -19,16 +19,12 @@
 #include <memory>
 #include <vector>
 
+#include "ngraph/type/element_type.hpp"
+#include "seal/he_seal_backend.hpp"
+
 namespace ngraph {
-namespace element {
-class Type;
-}
 namespace runtime {
 namespace he {
-class HEBackend;
-class HECiphertext;
-class HEPlaintext;
-
 namespace kernel {
 void scalar_negate(const std::shared_ptr<runtime::he::HECiphertext>& arg,
                    std::shared_ptr<runtime::he::HECiphertext>& out,

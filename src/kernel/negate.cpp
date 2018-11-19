@@ -17,8 +17,6 @@
 #include <vector>
 
 #include "kernel/negate.hpp"
-#include "ngraph/type/element_type.hpp"
-#include "seal/he_seal_backend.hpp"
 #include "seal/kernel/negate_seal.hpp"
 
 using namespace std;

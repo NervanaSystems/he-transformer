@@ -16,13 +16,10 @@
 
 #include <cmath>
 
+#include "kernel/pad.hpp"
 #include "ngraph/axis_vector.hpp"
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/except.hpp"
-
-#include "he_backend.hpp"
-
-#include "kernel/pad.hpp"
 
 using namespace std;
 using namespace ngraph;

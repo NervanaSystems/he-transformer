@@ -15,15 +15,11 @@
 //*****************************************************************************
 
 #include "seal/kernel/multiply_seal.hpp"
-#include "ngraph/type/element_type.hpp"
 #include "seal/bfv/kernel/multiply_seal_bfv.hpp"
 #include "seal/ckks/he_seal_ckks_backend.hpp"
 #include "seal/ckks/kernel/multiply_seal_ckks.hpp"
-#include "seal/he_seal_backend.hpp"
+#include "seal/kernel/multiply_seal.hpp"
 #include "seal/kernel/negate_seal.hpp"
-#include "seal/seal.h"
-#include "seal/seal_ciphertext_wrapper.hpp"
-#include "seal/seal_plaintext_wrapper.hpp"
 
 using namespace std;
 using namespace ngraph::runtime::he;

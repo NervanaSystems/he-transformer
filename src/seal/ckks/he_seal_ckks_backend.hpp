@@ -18,6 +18,9 @@
 
 #include <memory>
 
+#include "he_cipher_tensor.hpp"
+#include "he_plain_tensor.hpp"
+#include "he_tensor.hpp"
 #include "ngraph/runtime/backend.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_parameter.hpp"
@@ -28,11 +31,6 @@
 namespace ngraph {
 namespace runtime {
 namespace he {
-class HETensor;
-class HEPlainTensor;
-class HECipherTensor;
-class HESealBackend;
-
 namespace he_seal {
 class HESealCKKSBackend : public HESealBackend {
  public:
@@ -66,6 +64,7 @@ class HESealCKKSBackend : public HESealBackend {
 
  private:
   std::shared_ptr<seal::CKKSEncoder> m_ckks_encoder;
+  // Scale with which to encode new ciphertexts
   double m_scale;
 };
 }  // namespace he_seal

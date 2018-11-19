@@ -19,18 +19,15 @@
 #include <memory>
 #include <vector>
 
+#include "ngraph/type/element_type.hpp"
+#include "seal/he_seal_backend.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
 
 namespace ngraph {
-namespace element {
-class Type;
-}
 namespace runtime {
 namespace he {
 namespace he_seal {
-class HESealBackend;
-
 namespace kernel {
 void scalar_subtract(
     const std::shared_ptr<const runtime::he::he_seal::SealCiphertextWrapper>&

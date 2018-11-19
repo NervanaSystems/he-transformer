@@ -15,8 +15,6 @@
 //*****************************************************************************
 
 #include <cstring>
-#include <memory>
-#include <string>
 
 #include "he_backend.hpp"
 #include "he_cipher_tensor.hpp"
