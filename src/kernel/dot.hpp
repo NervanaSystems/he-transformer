@@ -52,9 +52,7 @@ void ngraph::runtime::he::kernel::dot(
     const Shape& arg1_shape, const Shape& out_shape,
     size_t reduction_axes_count, const element::Type& element_type,
     const runtime::he::HEBackend* he_backend) {
-  // Get the sizes of the dot axes. It's easiest to pull them from arg1 because
-  // they're
-  // right up front.
+  // Use optimized SEAL dot if possible
   if (auto he_seal_backend =
           dynamic_cast<const runtime::he::he_seal::HESealBackend*>(
               he_backend)) {
@@ -64,6 +62,9 @@ void ngraph::runtime::he::kernel::dot(
     return;
   }
 
+  // Get the sizes of the dot axes. It's easiest to pull them from arg1 because
+  // they're
+  // right up front.
   Shape dot_axis_sizes(reduction_axes_count);
   std::copy(arg1_shape.begin(), arg1_shape.begin() + reduction_axes_count,
             dot_axis_sizes.begin());

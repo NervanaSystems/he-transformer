@@ -22,40 +22,21 @@
 #include "he_backend.hpp"
 #include "he_ciphertext.hpp"
 #include "he_plaintext.hpp"
+#include "kernel/add.hpp"
+#include "kernel/multiply.hpp"
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/kernel/add_seal.hpp"
-#include "seal/kernel/convolution_seal.hpp"
 #include "seal/kernel/multiply_seal.hpp"
 
 namespace ngraph {
 namespace runtime {
 namespace he {
+namespace he_seal {
 namespace kernel {
 template <typename S, typename T, typename V>
-void convolution(const std::vector<std::shared_ptr<S>>& arg0,
-                 const std::vector<std::shared_ptr<T>>& arg1,
-                 std::vector<std::shared_ptr<V>>& out, const Shape& arg0_shape,
-                 const Shape& arg1_shape, const Shape& out_shape,
-                 const Strides& window_movement_strides,
-                 const Strides& window_dilation_strides,
-                 const CoordinateDiff& padding_below,
-                 const CoordinateDiff& padding_above,
-                 const Strides& data_dilation_strides, size_t batch_axis_data,
-                 size_t input_channel_axis_data,
-                 size_t input_channel_axis_filters,
-                 size_t output_channel_axis_filters, size_t batch_axis_result,
-                 size_t output_channel_axis_result, bool rotate_filter,
-                 const element::Type& element_type, size_t batch_size,
-                 const runtime::he::HEBackend* he_backend);
-}
-}  // namespace he
-}  // namespace runtime
-}  // namespace ngraph
-
-template <typename S, typename T, typename V>
-void ngraph::runtime::he::kernel::convolution(
+void convolution_seal(
     const std::vector<std::shared_ptr<S>>& arg0,
     const std::vector<std::shared_ptr<T>>& arg1,
     std::vector<std::shared_ptr<V>>& out, const Shape& arg0_shape,
@@ -67,21 +48,28 @@ void ngraph::runtime::he::kernel::convolution(
     size_t input_channel_axis_filters, size_t output_channel_axis_filters,
     size_t batch_axis_result, size_t output_channel_axis_result,
     bool rotate_filter, const element::Type& element_type, size_t batch_size,
-    const runtime::he::HEBackend* he_backend) {
-  // Use optimized SEAL conv if possible
-  if (auto he_seal_backend =
-          dynamic_cast<const runtime::he::he_seal::HESealBackend*>(
-              he_backend)) {
-    runtime::he::he_seal::kernel::convolution_seal(
-        arg0, arg1, out, arg0_shape, arg1_shape, out_shape,
-        window_movement_strides, window_dilation_strides, padding_below,
-        padding_above, data_dilation_strides, batch_axis_data,
-        input_channel_axis_data, input_channel_axis_filters,
-        output_channel_axis_filters, batch_axis_result,
-        output_channel_axis_result, rotate_filter, element_type, batch_size,
-        he_seal_backend);
-    return;
-  }
+    const runtime::he::he_seal::HESealBackend* he_seal_backend);
+}
+}  // namespace he_seal
+}  // namespace he
+}  // namespace runtime
+}  // namespace ngraph
+
+template <typename S, typename T, typename V>
+void ngraph::runtime::he::he_seal::kernel::convolution_seal(
+    const std::vector<std::shared_ptr<S>>& arg0,
+    const std::vector<std::shared_ptr<T>>& arg1,
+    std::vector<std::shared_ptr<V>>& out, const Shape& arg0_shape,
+    const Shape& arg1_shape, const Shape& out_shape,
+    const Strides& window_movement_strides,
+    const Strides& window_dilation_strides, const CoordinateDiff& padding_below,
+    const CoordinateDiff& padding_above, const Strides& data_dilation_strides,
+    size_t batch_axis_data, size_t input_channel_axis_data,
+    size_t input_channel_axis_filters, size_t output_channel_axis_filters,
+    size_t batch_axis_result, size_t output_channel_axis_result,
+    bool rotate_filter, const element::Type& element_type, size_t batch_size,
+    const runtime::he::he_seal::HESealBackend* he_seal_backend) {
+  NGRAPH_INFO << "Seal conv";
   // Comments throughout assume without loss of generality that:
   //
   // * batch axes for both input data and output data are 0
@@ -103,6 +91,9 @@ void ngraph::runtime::he::kernel::convolution(
 #pragma omp parallel for
   for (size_t out_coord_idx = 0; out_coord_idx < out_transform_size;
        ++out_coord_idx) {
+    // Init thread-local memory pool for each thread
+    seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New();
+
     const Coordinate& out_coord = out_coords[out_coord_idx];
 
     // for (Coordinate out_coord : output_transform)
@@ -219,7 +210,7 @@ void ngraph::runtime::he::kernel::convolution(
     CoordinateTransform::Iterator input_end = input_batch_transform.end();
     CoordinateTransform::Iterator filter_end = filter_transform.end();
 
-    std::shared_ptr<V> sum = he_backend->create_empty_hetext<V>(V{});
+    std::shared_ptr<V> sum = he_seal_backend->create_empty_hetext<V>(V{}, pool);
     bool first_add = true;
 
     while (input_it != input_end && filter_it != filter_end) {
@@ -242,17 +233,18 @@ void ngraph::runtime::he::kernel::convolution(
         std::shared_ptr<T> arg1_multiplicand =
             arg1[filter_transform.index(filter_coord)];
 
-        std::shared_ptr<V> prod = he_backend->create_empty_hetext<V>(V{});
-        runtime::he::kernel::scalar_multiply(arg0_multiplicand,
-                                             arg1_multiplicand, prod,
-                                             element_type, he_backend);
+        std::shared_ptr<V> prod =
+            he_seal_backend->create_empty_hetext<V>(V{}, pool);
+        runtime::he::he_seal::kernel::scalar_multiply(
+            arg0_multiplicand, arg1_multiplicand, prod, element_type,
+            he_seal_backend, pool);
 
         if (first_add) {
           sum = prod;
           first_add = false;
         } else {
-          runtime::he::kernel::scalar_add(sum, prod, sum, element_type,
-                                          he_backend);
+          runtime::he::he_seal::kernel::scalar_add(sum, prod, sum, element_type,
+                                                   he_seal_backend, pool);
         }
       }
       ++input_it;
@@ -260,7 +252,7 @@ void ngraph::runtime::he::kernel::convolution(
     }
     if (first_add) {
       out[out_coord_idx] =
-          he_backend->create_valued_hetext<V>(0.f, element_type, V{});
+          he_seal_backend->create_valued_hetext<V>(0.f, element_type, V{});
     } else {
       // Write the sum back.
       out[out_coord_idx] = sum;

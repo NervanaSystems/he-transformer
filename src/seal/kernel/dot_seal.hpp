@@ -56,7 +56,6 @@ void ngraph::runtime::he::he_seal::kernel::dot_seal(
   // Get the sizes of the dot axes. It's easiest to pull them from arg1 because
   // they're
   // right up front.
-  NGRAPH_INFO << "Dot seal";
   Shape dot_axis_sizes(reduction_axes_count);
   std::copy(arg1_shape.begin(), arg1_shape.begin() + reduction_axes_count,
             dot_axis_sizes.begin());
