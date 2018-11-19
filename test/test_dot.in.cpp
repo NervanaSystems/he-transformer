@@ -84,7 +84,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot1d_optimized) {
     copy_data(t_b, vector<float>{-1, 0, 1, 2});
     backend->call(f, {t_result}, {t_a, t_b});
     EXPECT_TRUE(
-        all_close(read_vector<float>(t_result), vector<float>{10}, 1e-3f));
+        all_close(read_vector<float>(t_result), vector<float>{10}, 1e-1f));
   }
 }
 

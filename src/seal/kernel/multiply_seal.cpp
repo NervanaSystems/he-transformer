@@ -58,6 +58,7 @@ void he_seal::kernel::scalar_multiply(
   auto out_seal = static_pointer_cast<he_seal::SealCiphertextWrapper>(out);
   he_seal::kernel::scalar_multiply(arg0_seal, arg1_seal, out_seal, element_type,
                                    he_seal_backend, pool);
+  out = static_pointer_cast<HECiphertext>(out_seal);
 }
 
 void he_seal::kernel::scalar_multiply(
@@ -91,6 +92,7 @@ void he_seal::kernel::scalar_multiply(
   auto out_seal = static_pointer_cast<he_seal::SealCiphertextWrapper>(out);
   he_seal::kernel::scalar_multiply(arg0_seal, arg1_seal, out_seal, element_type,
                                    he_seal_backend, pool);
+  out = static_pointer_cast<HECiphertext>(out_seal);
 }
 
 void he_seal::kernel::scalar_multiply(
@@ -133,8 +135,7 @@ void he_seal::kernel::scalar_multiply(
     throw ngraph_error("Unsupported element type " + type_name +
                        " in multiply");
   }
-  out =
-      dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(out_he);
+  out = static_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(out_he);
 }
 
 void he_seal::kernel::scalar_multiply(
@@ -147,4 +148,5 @@ void he_seal::kernel::scalar_multiply(
   auto out_seal = static_pointer_cast<he_seal::SealPlaintextWrapper>(out);
   he_seal::kernel::scalar_multiply(arg0_seal, arg1_seal, out_seal, element_type,
                                    he_seal_backend, pool);
+  out = static_pointer_cast<HEPlaintext>(out_seal);
 }
