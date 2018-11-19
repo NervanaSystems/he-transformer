@@ -25,15 +25,14 @@
 using namespace std;
 using namespace ngraph::runtime::he;
 
-void kernel::scalar_subtract(const shared_ptr<HECiphertext>& arg0,
-                             const shared_ptr<HECiphertext>& arg1,
+void kernel::scalar_subtract(const HECiphertext* arg0, const HECiphertext* arg1,
                              shared_ptr<HECiphertext>& out,
                              const element::Type& element_type,
                              const HEBackend* he_backend) {
   if (auto he_seal_backend =
           dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
-    auto arg0_seal = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(arg0);
-    auto arg1_seal = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(arg1);
+    auto arg0_seal = dynamic_cast<const he_seal::SealCiphertextWrapper*>(arg0);
+    auto arg1_seal = dynamic_cast<const he_seal::SealCiphertextWrapper*>(arg1);
     auto out_seal = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(out);
 
     if (arg0_seal && arg1_seal && out_seal) {
@@ -50,15 +49,14 @@ void kernel::scalar_subtract(const shared_ptr<HECiphertext>& arg0,
   }
 }
 
-void kernel::scalar_subtract(const shared_ptr<HEPlaintext>& arg0,
-                             const shared_ptr<HEPlaintext>& arg1,
+void kernel::scalar_subtract(const HEPlaintext* arg0, const HEPlaintext* arg1,
                              shared_ptr<HEPlaintext>& out,
                              const element::Type& element_type,
                              const HEBackend* he_backend) {
   if (auto he_seal_backend =
           dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
-    auto arg0_seal = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(arg0);
-    auto arg1_seal = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(arg1);
+    auto arg0_seal = dynamic_cast<const he_seal::SealPlaintextWrapper*>(arg0);
+    auto arg1_seal = dynamic_cast<const he_seal::SealPlaintextWrapper*>(arg1);
     auto out_seal = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(out);
 
     if (arg0_seal && arg1_seal && out_seal) {
@@ -75,15 +73,14 @@ void kernel::scalar_subtract(const shared_ptr<HEPlaintext>& arg0,
   }
 }
 
-void kernel::scalar_subtract(const shared_ptr<HECiphertext>& arg0,
-                             const shared_ptr<HEPlaintext>& arg1,
+void kernel::scalar_subtract(const HECiphertext* arg0, const HEPlaintext* arg1,
                              shared_ptr<HECiphertext>& out,
                              const element::Type& element_type,
                              const HEBackend* he_backend) {
   if (auto he_seal_backend =
           dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
-    auto arg0_seal = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(arg0);
-    auto arg1_seal = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(arg1);
+    auto arg0_seal = dynamic_cast<const he_seal::SealCiphertextWrapper*>(arg0);
+    auto arg1_seal = dynamic_cast<const he_seal::SealPlaintextWrapper*>(arg1);
     auto out_seal = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(out);
 
     if (arg0_seal && arg1_seal && out_seal) {
@@ -96,8 +93,8 @@ void kernel::scalar_subtract(const shared_ptr<HECiphertext>& arg0,
       bool sub_zero = (arg1_seal->m_plaintext == seal_0_plaintext);
 
       if (sub_zero && type_name == "float") {
-        NGRAPH_INFO << "Optimized subtract";
-        out = arg0;
+        out = static_pointer_cast<HECiphertext>(
+            make_shared<he_seal::SealCiphertextWrapper>(*arg0_seal));
       } else {
         he_seal::kernel::scalar_subtract(arg0_seal, arg1_seal, out_seal,
                                          element_type, he_seal_backend);
@@ -113,12 +110,10 @@ void kernel::scalar_subtract(const shared_ptr<HECiphertext>& arg0,
   }
 }
 
-void kernel::scalar_subtract(const shared_ptr<HEPlaintext>& arg0,
-                             const shared_ptr<HECiphertext>& arg1,
+void kernel::scalar_subtract(const HEPlaintext* arg0, const HECiphertext* arg1,
                              shared_ptr<HECiphertext>& out,
                              const element::Type& element_type,
                              const HEBackend* he_backend) {
-  auto neg_arg1 = arg1;
-  scalar_negate(neg_arg1.get(), neg_arg1, element_type, he_backend);
-  scalar_add(arg0.get(), neg_arg1.get(), out, element_type, he_backend);
+  scalar_negate(arg1, out, element_type, he_backend);
+  scalar_add(arg0, out.get(), out, element_type, he_backend);
 }
