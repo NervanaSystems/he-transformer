@@ -28,10 +28,8 @@ void kernel::scalar_negate(const shared_ptr<HECiphertext>& arg,
                            const HEBackend* he_backend) {
   if (auto he_seal_backend =
           dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
-    shared_ptr<he_seal::SealCiphertextWrapper> arg_seal =
-        dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(arg);
-    shared_ptr<he_seal::SealCiphertextWrapper> out_seal =
-        dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(out);
+    auto arg_seal = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(arg);
+    auto out_seal = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(out);
 
     if (arg_seal && out_seal) {
       he_seal::kernel::scalar_negate(arg_seal, out_seal, element_type,
@@ -53,10 +51,8 @@ void kernel::scalar_negate(const shared_ptr<HEPlaintext>& arg,
                            const HEBackend* he_backend) {
   if (auto he_seal_backend =
           dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
-    shared_ptr<he_seal::SealPlaintextWrapper> arg_seal =
-        dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(arg);
-    shared_ptr<he_seal::SealPlaintextWrapper> out_seal =
-        dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(out);
+    auto arg_seal = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(arg);
+    auto out_seal = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(out);
 
     if (arg_seal && out_seal) {
       he_seal::kernel::scalar_negate(arg_seal, out_seal, element_type,

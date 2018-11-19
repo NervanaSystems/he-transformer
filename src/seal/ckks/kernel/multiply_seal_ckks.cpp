@@ -34,7 +34,7 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
                                                   out->m_ciphertext);
   } else {
     auto argument_matching_pair =
-        match_arguments(arg0, arg1, he_seal_ckks_backend);
+        match_arguments(arg0.get(), arg1.get(), he_seal_ckks_backend);
     auto arg0_scaled = get<0>(argument_matching_pair);
     auto arg1_scaled = get<1>(argument_matching_pair);
 
@@ -58,7 +58,7 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
     const runtime::he::he_seal::HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
   auto argument_matching_pair =
-      match_arguments(arg0, arg1, he_seal_ckks_backend);
+      match_arguments(arg0.get(), arg1.get(), he_seal_ckks_backend);
   auto arg0_scaled = get<0>(argument_matching_pair);
   auto arg1_scaled = get<1>(argument_matching_pair);
 

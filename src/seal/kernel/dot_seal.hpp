@@ -163,8 +163,8 @@ void ngraph::runtime::he::he_seal::kernel::dot_seal(
         sum = prod;
         first_add = false;
       } else {
-        runtime::he::he_seal::kernel::scalar_add(sum, prod, sum, element_type,
-                                                 he_seal_backend, pool);
+        runtime::he::he_seal::kernel::scalar_add(
+            sum.get(), prod.get(), sum, element_type, he_seal_backend, pool);
       }
     }
     // Write the sum back.

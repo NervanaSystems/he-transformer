@@ -20,8 +20,6 @@
 #include <vector>
 
 #include "he_backend.hpp"
-#include "he_ciphertext.hpp"
-#include "he_plaintext.hpp"
 #include "kernel/add.hpp"
 #include "kernel/multiply.hpp"
 #include "ngraph/coordinate_transform.hpp"
@@ -251,8 +249,8 @@ void ngraph::runtime::he::kernel::convolution(
           sum = prod;
           first_add = false;
         } else {
-          runtime::he::kernel::scalar_add(sum, prod, sum, element_type,
-                                          he_backend);
+          runtime::he::kernel::scalar_add(sum.get(), prod.get(), sum,
+                                          element_type, he_backend);
         }
       }
       ++input_it;
