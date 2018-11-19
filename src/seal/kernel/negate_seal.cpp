@@ -41,13 +41,8 @@ void he_seal::kernel::scalar_negate(
   const string type_name = element_type.c_type_string();
   if (type_name == "float") {
     float x;
-    he_seal_backend->decode(&x, arg, element_type);
+    he_seal_backend->decode(&x, arg.get(), element_type);
     float r = -x;
-    he_seal_backend->encode(out_he, &r, element_type);
-  } else if (type_name == "int64_t") {
-    int64_t x;
-    he_seal_backend->decode(&x, arg, element_type);
-    int64_t r = -x;
     he_seal_backend->encode(out_he, &r, element_type);
   } else {
     throw ngraph_error("Unsupported element type " + type_name + " in negate");

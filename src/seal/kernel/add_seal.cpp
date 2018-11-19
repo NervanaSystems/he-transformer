@@ -135,20 +135,18 @@ void he_seal::kernel::scalar_add(const he_seal::SealPlaintextWrapper* arg0,
                                  const element::Type& element_type,
                                  const he_seal::HESealBackend* he_seal_backend,
                                  const seal::MemoryPoolHandle& pool) {
-  /*
-shared_ptr<HEPlaintext> out_he = dynamic_pointer_cast<HEPlaintext>(out);
-const string type_name = element_type.c_type_string();
-if (type_name == "float") {
-float x, y;
-he_seal_backend->decode(&x, arg0, element_type);
-he_seal_backend->decode(&y, arg1, element_type);
-float r = x + y;
-he_seal_backend->encode(out_he, &r, element_type);
-} else {
-throw ngraph_error("Unsupported element type " + type_name + " in add");
-}
-out = static_pointer_cast<he_seal::SealPlaintextWrapper>(out_he);
-*/
+  shared_ptr<HEPlaintext> out_he = dynamic_pointer_cast<HEPlaintext>(out);
+  const string type_name = element_type.c_type_string();
+  if (type_name == "float") {
+    float x, y;
+    he_seal_backend->decode(&x, arg0, element_type);
+    he_seal_backend->decode(&y, arg1, element_type);
+    float r = x + y;
+    he_seal_backend->encode(out_he, &r, element_type);
+  } else {
+    throw ngraph_error("Unsupported element type " + type_name + " in add");
+  }
+  out = static_pointer_cast<he_seal::SealPlaintextWrapper>(out_he);
 }
 
 void he_seal::kernel::scalar_add(const runtime::he::HEPlaintext* arg0,

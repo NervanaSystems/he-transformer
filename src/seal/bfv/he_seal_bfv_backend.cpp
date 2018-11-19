@@ -75,7 +75,7 @@ parse_seal_bfv_config_or_use_default() {
         64,             // fractional_encoder_integer_coeff_count
         32,             // fractional_encoder_fraction_coeff_count
         2               // fractional_encoder_base
-        );
+    );
   }
 }
 
@@ -210,14 +210,14 @@ void runtime::he::he_seal::HESealBFVBackend::encode(
 }
 
 void runtime::he::he_seal::HESealBFVBackend::decode(
-    void* output, const shared_ptr<runtime::he::HEPlaintext> input,
+    void* output, const runtime::he::HEPlaintext* input,
     const element::Type& element_type, size_t count) const {
   if (count != 1) {
     throw ngraph_error("Batching not enabled for SEAL in decode");
   }
   const string type_name = element_type.c_type_string();
 
-  if (auto seal_input = dynamic_pointer_cast<SealPlaintextWrapper>(input)) {
+  if (auto seal_input = dynamic_cast<const SealPlaintextWrapper*>(input)) {
     if (type_name == "float") {
       float x = m_frac_encoder->decode(seal_input->m_plaintext);
       memcpy(output, &x, element_type.size());
@@ -228,40 +228,4 @@ void runtime::he::he_seal::HESealBFVBackend::decode(
   } else {
     throw ngraph_error("HESealBFVBackend::decode input is not seal plaintext");
   }
-}
-
-void runtime::he::he_seal::HESealBFVBackend::check_noise_budget(
-    const vector<shared_ptr<runtime::he::HETensor>>& tvs) const {
-  // Check noise budget
-  NGRAPH_INFO << "Checking noise budget ";
-
-  // Usually tvs.size() is very small (e.g. 1 for most ops), parallel the
-  // internal loops
-  for (size_t i = 0; i < tvs.size(); ++i) {
-    if (auto cipher_tv = dynamic_pointer_cast<HECipherTensor>(tvs[i])) {
-      size_t lowest_budget = numeric_limits<size_t>::max();
-
-#pragma omp parallel for reduction(min : lowest_budget)
-      for (size_t i = 0; i < cipher_tv->get_element_count(); ++i) {
-        seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New();
-        shared_ptr<runtime::he::HECiphertext>& ciphertext =
-            cipher_tv->get_element(i);
-
-        if (auto seal_cipher_wrapper =
-                dynamic_pointer_cast<SealCiphertextWrapper>(ciphertext)) {
-          int budget = m_decryptor->invariant_noise_budget(
-              seal_cipher_wrapper->m_ciphertext, pool);
-          if (budget <= 0) {
-            NGRAPH_INFO << "Noise budget depleted";
-            throw ngraph_error("Noise budget depleted");
-          }
-          if (budget < lowest_budget) {
-            lowest_budget = budget;
-          }
-        }
-      }
-      NGRAPH_INFO << "Lowest noise budget " << lowest_budget;
-    }
-  }
-  NGRAPH_INFO << "Done checking noise budget ";
 }

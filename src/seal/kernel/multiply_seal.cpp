@@ -168,8 +168,8 @@ void he_seal::kernel::scalar_multiply(
   const string type_name = element_type.c_type_string();
   if (type_name == "float") {
     float x, y;
-    he_seal_backend->decode(&x, arg0, element_type);
-    he_seal_backend->decode(&y, arg1, element_type);
+    he_seal_backend->decode(&x, arg0.get(), element_type);
+    he_seal_backend->decode(&y, arg1.get(), element_type);
     float r = x * y;
     he_seal_backend->encode(out_he, &r, element_type);
   } else {

@@ -70,14 +70,14 @@ void runtime::he::HEPlainTensor::read(void* target, size_t tensor_offset,
   if (num_elements_to_read == 1) {
     void* dst_with_offset = (void*)((char*)target);
     size_t src_index = src_start_index;
-    m_he_backend->decode(dst_with_offset, m_plain_texts[src_index],
+    m_he_backend->decode(dst_with_offset, m_plain_texts[src_index].get(),
                          element_type);
   } else {
 #pragma omp parallel for
     for (size_t i = 0; i < num_elements_to_read; ++i) {
       void* dst_with_offset = (void*)((char*)target + i * type_byte_size);
       size_t src_index = src_start_index + i;
-      m_he_backend->decode(dst_with_offset, m_plain_texts[src_index],
+      m_he_backend->decode(dst_with_offset, m_plain_texts[src_index].get(),
                            element_type);
     }
   }
