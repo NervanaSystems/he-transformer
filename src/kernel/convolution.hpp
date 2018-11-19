@@ -22,12 +22,12 @@
 #include "he_backend.hpp"
 #include "he_ciphertext.hpp"
 #include "he_plaintext.hpp"
+#include "kernel/add.hpp"
+#include "kernel/multiply.hpp"
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
-#include "seal/kernel/add_seal.hpp"
 #include "seal/kernel/convolution_seal.hpp"
-#include "seal/kernel/multiply_seal.hpp"
 
 namespace ngraph {
 namespace runtime {
