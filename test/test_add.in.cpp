@@ -14,14 +14,14 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "he_backend.hpp"
 #include "ngraph/ngraph.hpp"
+#include "seal/ckks/he_seal_ckks_backend.hpp"
+#include "test_util.hpp"
 #include "util/all_close.hpp"
 #include "util/ndarray.hpp"
 #include "util/test_control.hpp"
 #include "util/test_tools.hpp"
-#include "he_backend.hpp"
-#include "test_util.hpp"
-#include "seal/ckks/he_seal_ckks_backend.hpp"
 
 using namespace std;
 using namespace ngraph;
