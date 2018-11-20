@@ -20,15 +20,15 @@ using namespace std;
 using namespace ngraph;
 
 void runtime::he::he_seal::kernel::scalar_subtract(
-    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg0,
-    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg1,
+    const he_seal::SealCiphertextWrapper* arg0,
+    const he_seal::SealCiphertextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend) {
-  if (arg0 == out) {
+  if (arg0 == out.get()) {
     he_seal_backend->get_evaluator()->sub_inplace(out->m_ciphertext,
                                                   arg1->m_ciphertext);
-  } else if (arg1 == out) {
+  } else if (arg1 == out.get()) {
     he_seal_backend->get_evaluator()->sub_inplace(out->m_ciphertext,
                                                   arg0->m_ciphertext);
   } else {
@@ -38,12 +38,12 @@ void runtime::he::he_seal::kernel::scalar_subtract(
 }
 
 void runtime::he::he_seal::kernel::scalar_subtract(
-    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg0,
-    const shared_ptr<const he_seal::SealPlaintextWrapper>& arg1,
+    const he_seal::SealCiphertextWrapper* arg0,
+    const he_seal::SealPlaintextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend) {
-  if (arg0 == out) {
+  if (arg0 == out.get()) {
     he_seal_backend->get_evaluator()->sub_plain_inplace(out->m_ciphertext,
                                                         arg1->m_plaintext);
   } else {
@@ -53,8 +53,8 @@ void runtime::he::he_seal::kernel::scalar_subtract(
 }
 
 void runtime::he::he_seal::kernel::scalar_subtract(
-    const shared_ptr<he_seal::SealPlaintextWrapper>& arg0,
-    const shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
+    const he_seal::SealPlaintextWrapper* arg0,
+    const he_seal::SealPlaintextWrapper* arg1,
     shared_ptr<he_seal::SealPlaintextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend) {

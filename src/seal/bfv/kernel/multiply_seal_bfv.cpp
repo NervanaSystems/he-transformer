@@ -20,20 +20,20 @@ using namespace std;
 using namespace ngraph::runtime::he;
 
 void he_seal::bfv::kernel::scalar_multiply_bfv(
-    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg0,
-    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg1,
+    const he_seal::SealCiphertextWrapper* arg0,
+    const he_seal::SealCiphertextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const runtime::he::he_seal::HESealBFVBackend* he_seal_bfv_backend) {
-  if ((arg0 == arg1) && (arg1 == out)) {
+  if ((arg0 == arg1) && (arg1 == out.get())) {
     he_seal_bfv_backend->get_evaluator()->square_inplace(out->m_ciphertext);
   } else if (arg1 == arg0) {
     he_seal_bfv_backend->get_evaluator()->square(arg1->m_ciphertext,
                                                  out->m_ciphertext);
-  } else if (arg0 == out) {
+  } else if (arg0 == out.get()) {
     he_seal_bfv_backend->get_evaluator()->multiply_inplace(out->m_ciphertext,
                                                            arg1->m_ciphertext);
-  } else if (arg1 == out) {
+  } else if (arg1 == out.get()) {
     he_seal_bfv_backend->get_evaluator()->multiply_inplace(out->m_ciphertext,
                                                            arg0->m_ciphertext);
   } else {
@@ -46,12 +46,12 @@ void he_seal::bfv::kernel::scalar_multiply_bfv(
 }
 
 void he_seal::bfv::kernel::scalar_multiply_bfv(
-    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg0,
-    const shared_ptr<const he_seal::SealPlaintextWrapper>& arg1,
+    const he_seal::SealCiphertextWrapper* arg0,
+    const he_seal::SealPlaintextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const runtime::he::he_seal::HESealBFVBackend* he_seal_bfv_backend) {
-  if (arg0 == out) {
+  if (arg0 == out.get()) {
     he_seal_bfv_backend->get_evaluator()->multiply_plain_inplace(
         out->m_ciphertext, arg1->m_plaintext);
   } else {
@@ -64,8 +64,8 @@ void he_seal::bfv::kernel::scalar_multiply_bfv(
 }
 
 void he_seal::bfv::kernel::scalar_multiply_bfv(
-    const shared_ptr<const he_seal::SealPlaintextWrapper>& arg0,
-    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg1,
+    const he_seal::SealPlaintextWrapper* arg0,
+    const he_seal::SealCiphertextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const runtime::he::he_seal::HESealBFVBackend* he_seal_bfv_backend) {

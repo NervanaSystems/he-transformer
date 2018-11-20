@@ -317,7 +317,7 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
 }
 
 void runtime::he::he_seal::HESealCKKSBackend::decode(
-    void* output, const shared_ptr<runtime::he::HEPlaintext> input,
+    void* output, const runtime::he::HEPlaintext* input,
     const element::Type& element_type, size_t count) const {
   const string type_name = element_type.c_type_string();
 
@@ -326,7 +326,7 @@ void runtime::he::he_seal::HESealCKKSBackend::decode(
   }
 
   if (type_name == "float") {
-    auto seal_input = dynamic_pointer_cast<SealPlaintextWrapper>(input);
+    auto seal_input = dynamic_cast<const SealPlaintextWrapper*>(input);
     if (!seal_input) {
       throw ngraph_error(
           "HESealCKKSBackend::decode input is not seal plaintext");

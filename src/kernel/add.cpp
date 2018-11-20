@@ -21,19 +21,15 @@
 using namespace std;
 using namespace ngraph::runtime::he;
 
-void kernel::scalar_add(const shared_ptr<HECiphertext>& arg0,
-                        const shared_ptr<HECiphertext>& arg1,
+void kernel::scalar_add(const HECiphertext* arg0, const HECiphertext* arg1,
                         shared_ptr<HECiphertext>& out,
                         const element::Type& element_type,
                         const HEBackend* he_backend) {
   if (auto he_seal_backend =
           dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
-    shared_ptr<he_seal::SealCiphertextWrapper> arg0_seal =
-        dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(arg0);
-    shared_ptr<he_seal::SealCiphertextWrapper> arg1_seal =
-        dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(arg1);
-    shared_ptr<he_seal::SealCiphertextWrapper> out_seal =
-        dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(out);
+    auto arg0_seal = dynamic_cast<const he_seal::SealCiphertextWrapper*>(arg0);
+    auto arg1_seal = dynamic_cast<const he_seal::SealCiphertextWrapper*>(arg1);
+    auto out_seal = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(out);
 
     if (arg0_seal && arg1_seal && out_seal) {
       he_seal::kernel::scalar_add(arg0_seal, arg1_seal, out_seal, element_type,
@@ -49,15 +45,14 @@ void kernel::scalar_add(const shared_ptr<HECiphertext>& arg0,
   }
 }
 
-void kernel::scalar_add(const shared_ptr<HEPlaintext>& arg0,
-                        const shared_ptr<HEPlaintext>& arg1,
+void kernel::scalar_add(const HEPlaintext* arg0, const HEPlaintext* arg1,
                         shared_ptr<HEPlaintext>& out,
                         const element::Type& element_type,
                         const HEBackend* he_backend) {
   if (auto he_seal_backend =
           dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
-    auto arg0_seal = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(arg0);
-    auto arg1_seal = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(arg1);
+    auto arg0_seal = dynamic_cast<const he_seal::SealPlaintextWrapper*>(arg0);
+    auto arg1_seal = dynamic_cast<const he_seal::SealPlaintextWrapper*>(arg1);
     auto out_seal = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(out);
 
     if (arg0_seal && arg1_seal && out_seal) {
@@ -74,15 +69,14 @@ void kernel::scalar_add(const shared_ptr<HEPlaintext>& arg0,
   }
 }
 
-void kernel::scalar_add(const shared_ptr<HECiphertext>& arg0,
-                        const shared_ptr<HEPlaintext>& arg1,
+void kernel::scalar_add(const HECiphertext* arg0, const HEPlaintext* arg1,
                         shared_ptr<HECiphertext>& out,
                         const element::Type& element_type,
                         const HEBackend* he_backend) {
   if (auto he_seal_backend =
           dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
-    auto arg0_seal = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(arg0);
-    auto arg1_seal = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(arg1);
+    auto arg0_seal = dynamic_cast<const he_seal::SealCiphertextWrapper*>(arg0);
+    auto arg1_seal = dynamic_cast<const he_seal::SealPlaintextWrapper*>(arg1);
     auto out_seal = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(out);
 
     if (arg0_seal && arg1_seal && out_seal) {
@@ -99,8 +93,7 @@ void kernel::scalar_add(const shared_ptr<HECiphertext>& arg0,
   }
 }
 
-void kernel::scalar_add(const shared_ptr<HEPlaintext>& arg0,
-                        const shared_ptr<HECiphertext>& arg1,
+void kernel::scalar_add(const HEPlaintext* arg0, const HECiphertext* arg1,
                         shared_ptr<HECiphertext>& out,
                         const element::Type& element_type,
                         const HEBackend* he_backend) {

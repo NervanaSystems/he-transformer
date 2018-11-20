@@ -85,7 +85,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sub_zero_2_3) {
     backend->call(f, {t_result}, {t_a, t_b});
     EXPECT_TRUE(all_close(
         read_vector<float>(t_result),
-        (test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}})).get_vector()));
+        (test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}})).get_vector(), 1e-3f));
   }
 }
 

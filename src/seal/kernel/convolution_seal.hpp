@@ -20,10 +20,6 @@
 #include <vector>
 
 #include "he_backend.hpp"
-#include "he_ciphertext.hpp"
-#include "he_plaintext.hpp"
-#include "kernel/add.hpp"
-#include "kernel/multiply.hpp"
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
@@ -235,15 +231,15 @@ void ngraph::runtime::he::he_seal::kernel::convolution_seal(
         std::shared_ptr<V> prod =
             he_seal_backend->create_empty_hetext<V>(V{}, pool);
         runtime::he::he_seal::kernel::scalar_multiply(
-            arg0_multiplicand, arg1_multiplicand, prod, element_type,
-            he_seal_backend, pool);
+            arg0_multiplicand.get(), arg1_multiplicand.get(), prod,
+            element_type, he_seal_backend, pool);
 
         if (first_add) {
           sum = prod;
           first_add = false;
         } else {
-          runtime::he::he_seal::kernel::scalar_add(sum, prod, sum, element_type,
-                                                   he_seal_backend, pool);
+          runtime::he::he_seal::kernel::scalar_add(
+              sum.get(), prod.get(), sum, element_type, he_seal_backend, pool);
         }
       }
       ++input_it;

@@ -20,8 +20,6 @@
 #include <vector>
 
 #include "he_backend.hpp"
-#include "he_ciphertext.hpp"
-#include "he_plaintext.hpp"
 #include "kernel/add.hpp"
 #include "kernel/multiply.hpp"
 #include "ngraph/coordinate_transform.hpp"
@@ -162,14 +160,14 @@ void ngraph::runtime::he::kernel::dot(
       auto arg1_text = arg1[arg1_transform.index(arg1_coord)];
 
       std::shared_ptr<V> prod = he_backend->create_empty_hetext<V>(V{});
-      runtime::he::kernel::scalar_multiply(arg0_text, arg1_text, prod,
-                                           element_type, he_backend);
+      runtime::he::kernel::scalar_multiply(arg0_text.get(), arg1_text.get(),
+                                           prod, element_type, he_backend);
       if (first_add) {
         sum = prod;
         first_add = false;
       } else {
-        runtime::he::kernel::scalar_add(sum, prod, sum, element_type,
-                                        he_backend);
+        runtime::he::kernel::scalar_add(sum.get(), prod.get(), sum,
+                                        element_type, he_backend);
       }
     }
     // Write the sum back.

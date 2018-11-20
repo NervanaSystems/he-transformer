@@ -158,13 +158,14 @@ void ngraph::runtime::he::he_seal::kernel::dot_seal(
       std::shared_ptr<V> prod =
           he_seal_backend->create_empty_hetext<V>(V{}, pool);
       runtime::he::he_seal::kernel::scalar_multiply(
-          arg0_text, arg1_text, prod, element_type, he_seal_backend, pool);
+          arg0_text.get(), arg1_text.get(), prod, element_type, he_seal_backend,
+          pool);
       if (first_add) {
         sum = prod;
         first_add = false;
       } else {
-        runtime::he::he_seal::kernel::scalar_add(sum, prod, sum, element_type,
-                                                 he_seal_backend, pool);
+        runtime::he::he_seal::kernel::scalar_add(
+            sum.get(), prod.get(), sum, element_type, he_seal_backend, pool);
       }
     }
     // Write the sum back.

@@ -20,11 +20,11 @@ using namespace std;
 using namespace ngraph::runtime::he;
 
 void he_seal::kernel::scalar_negate(
-    const shared_ptr<const he_seal::SealCiphertextWrapper>& arg,
+    const he_seal::SealCiphertextWrapper* arg,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend) {
-  if (arg == out) {
+  if (arg == out.get()) {
     he_seal_backend->get_evaluator()->negate_inplace(out->m_ciphertext);
   } else {
     he_seal_backend->get_evaluator()->negate(arg->m_ciphertext,
@@ -33,7 +33,7 @@ void he_seal::kernel::scalar_negate(
 }
 
 void he_seal::kernel::scalar_negate(
-    const shared_ptr<he_seal::SealPlaintextWrapper>& arg,
+    const he_seal::SealPlaintextWrapper* arg,
     shared_ptr<he_seal::SealPlaintextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend) {
@@ -43,11 +43,6 @@ void he_seal::kernel::scalar_negate(
     float x;
     he_seal_backend->decode(&x, arg, element_type);
     float r = -x;
-    he_seal_backend->encode(out_he, &r, element_type);
-  } else if (type_name == "int64_t") {
-    int64_t x;
-    he_seal_backend->decode(&x, arg, element_type);
-    int64_t r = -x;
     he_seal_backend->encode(out_he, &r, element_type);
   } else {
     throw ngraph_error("Unsupported element type " + type_name + " in negate");

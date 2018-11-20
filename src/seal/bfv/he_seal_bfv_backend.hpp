@@ -50,8 +50,7 @@ class HESealBFVBackend : public HESealBackend {
   void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
               const void* input, const element::Type& element_type,
               size_t count = 1) const override;
-  void decode(void* output,
-              const std::shared_ptr<runtime::he::HEPlaintext> input,
+  void decode(void* output, const runtime::he::HEPlaintext* input,
               const element::Type& element_type,
               size_t count = 1) const override;
 
@@ -62,17 +61,6 @@ class HESealBFVBackend : public HESealBackend {
 
   void assert_valid_seal_bfv_parameter(
       const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp) const;
-
-  /// @brief Checks the noise budget of several tensor views
-  ///        Throws an error if the noise budget is exhauasted
-  ///        for any of the tensor views.
-  void check_noise_budget(
-      const std::vector<std::shared_ptr<runtime::he::HETensor>>& tvs) const;
-
-  /// @brief Returns the remaining noise budget for a ciphertext.
-  //         A noise budget of <= 0 indicate the ciphertext is no longer
-  //         decryptable.
-  int noise_budget(const std::shared_ptr<seal::Ciphertext>& ciphertext) const;
 
  private:
   std::shared_ptr<seal::FractionalEncoder> m_frac_encoder;

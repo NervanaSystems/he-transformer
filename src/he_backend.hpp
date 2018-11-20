@@ -172,8 +172,7 @@ class HEBackend : public runtime::Backend {
   /// @param input Pointer to plaintext to decode
   /// @param type Type of scalar to encode
   /// @param count Number of elements to decode, count > 1 indicates batching
-  virtual void decode(void* output,
-                      const std::shared_ptr<runtime::he::HEPlaintext> input,
+  virtual void decode(void* output, const runtime::he::HEPlaintext* input,
                       const element::Type& element_type,
                       size_t count = 1) const = 0;
 

@@ -22,16 +22,14 @@
 using namespace std;
 using namespace ngraph::runtime::he;
 
-void kernel::scalar_negate(const shared_ptr<HECiphertext>& arg,
+void kernel::scalar_negate(const HECiphertext* arg,
                            shared_ptr<HECiphertext>& out,
                            const element::Type& element_type,
                            const HEBackend* he_backend) {
   if (auto he_seal_backend =
           dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
-    shared_ptr<he_seal::SealCiphertextWrapper> arg_seal =
-        dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(arg);
-    shared_ptr<he_seal::SealCiphertextWrapper> out_seal =
-        dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(out);
+    auto arg_seal = dynamic_cast<const he_seal::SealCiphertextWrapper*>(arg);
+    auto out_seal = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(out);
 
     if (arg_seal && out_seal) {
       he_seal::kernel::scalar_negate(arg_seal, out_seal, element_type,
@@ -47,16 +45,13 @@ void kernel::scalar_negate(const shared_ptr<HECiphertext>& arg,
   }
 }
 
-void kernel::scalar_negate(const shared_ptr<HEPlaintext>& arg,
-                           shared_ptr<HEPlaintext>& out,
+void kernel::scalar_negate(const HEPlaintext* arg, shared_ptr<HEPlaintext>& out,
                            const element::Type& element_type,
                            const HEBackend* he_backend) {
   if (auto he_seal_backend =
           dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
-    shared_ptr<he_seal::SealPlaintextWrapper> arg_seal =
-        dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(arg);
-    shared_ptr<he_seal::SealPlaintextWrapper> out_seal =
-        dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(out);
+    auto arg_seal = dynamic_cast<const he_seal::SealPlaintextWrapper*>(arg);
+    auto out_seal = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(out);
 
     if (arg_seal && out_seal) {
       he_seal::kernel::scalar_negate(arg_seal, out_seal, element_type,
