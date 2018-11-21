@@ -100,7 +100,7 @@ void runtime::he::kernel::pad(
 
   shared_ptr<runtime::he::HECiphertext> arg1_encrypted =
       he_backend->create_empty_ciphertext();
-  he_backend->encrypt(arg1_encrypted, arg1[0]);
+  he_backend->encrypt(arg1_encrypted, *arg1[0]);
 
   vector<shared_ptr<runtime::he::HECiphertext>> arg1_encrypted_vector{
       arg1_encrypted};

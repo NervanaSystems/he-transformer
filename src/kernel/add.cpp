@@ -27,8 +27,8 @@ void kernel::scalar_add(const HECiphertext* arg0, const HECiphertext* arg1,
                         const HEBackend* he_backend) {
   if (auto he_seal_backend =
           dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
-    auto arg0_seal = dynamic_cast<const he_seal::SealCiphertextWrapper*>(arg0);
-    auto arg1_seal = dynamic_cast<const he_seal::SealCiphertextWrapper*>(arg1);
+    auto arg0_seal = static_cast<const he_seal::SealCiphertextWrapper*>(arg0);
+    auto arg1_seal = static_cast<const he_seal::SealCiphertextWrapper*>(arg1);
     auto out_seal = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(out);
 
     if (arg0_seal && arg1_seal && out_seal) {
@@ -51,11 +51,11 @@ void kernel::scalar_add(const HEPlaintext* arg0, const HEPlaintext* arg1,
                         const HEBackend* he_backend) {
   if (auto he_seal_backend =
           dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
-    auto arg0_seal = dynamic_cast<const he_seal::SealPlaintextWrapper*>(arg0);
-    auto arg1_seal = dynamic_cast<const he_seal::SealPlaintextWrapper*>(arg1);
+    auto arg0_seal = static_cast<const he_seal::SealPlaintextWrapper*>(arg0);
+    auto arg1_seal = static_cast<const he_seal::SealPlaintextWrapper*>(arg1);
     auto out_seal = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(out);
 
-    if (arg0_seal && arg1_seal && out_seal) {
+    if (out_seal) {
       he_seal::kernel::scalar_add(arg0_seal, arg1_seal, out_seal, element_type,
                                   he_seal_backend);
       out = dynamic_pointer_cast<HEPlaintext>(out_seal);
@@ -75,11 +75,11 @@ void kernel::scalar_add(const HECiphertext* arg0, const HEPlaintext* arg1,
                         const HEBackend* he_backend) {
   if (auto he_seal_backend =
           dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
-    auto arg0_seal = dynamic_cast<const he_seal::SealCiphertextWrapper*>(arg0);
-    auto arg1_seal = dynamic_cast<const he_seal::SealPlaintextWrapper*>(arg1);
+    auto arg0_seal = static_cast<const he_seal::SealCiphertextWrapper*>(arg0);
+    auto arg1_seal = static_cast<const he_seal::SealPlaintextWrapper*>(arg1);
     auto out_seal = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(out);
 
-    if (arg0_seal && arg1_seal && out_seal) {
+    if (out_seal) {
       he_seal::kernel::scalar_add(arg0_seal, arg1_seal, out_seal, element_type,
                                   he_seal_backend);
       out = dynamic_pointer_cast<HECiphertext>(out_seal);

@@ -45,10 +45,6 @@ namespace he {
 class HETensor;
 class HEBackend : public runtime::Backend {
  public:
-  HEBackend(){};
-  HEBackend(HEBackend& he_backend) = default;
-  ~HEBackend(){};
-
   /// @brief Creates ciphertext of unspecified value
   /// @return Shared pointer to created ciphertext
   virtual std::shared_ptr<runtime::he::HECiphertext> create_empty_ciphertext()
@@ -179,16 +175,14 @@ class HEBackend : public runtime::Backend {
   /// @brief Encrypts plaintext polynomial to ciphertext
   /// @param output Pointer to ciphertext to encrypt to
   /// @param input Pointer to plaintext to encrypt
-  virtual void encrypt(
-      std::shared_ptr<runtime::he::HECiphertext>& output,
-      const std::shared_ptr<runtime::he::HEPlaintext> input) const = 0;
+  virtual void encrypt(std::shared_ptr<runtime::he::HECiphertext>& output,
+                       const runtime::he::HEPlaintext& input) const = 0;
 
   /// @brief Decrypts ciphertext to plaintext polynomial
   /// @param output Pointer to plaintext to decrypt to
   /// @param input Pointer to ciphertext to decrypt
-  virtual void decrypt(
-      std::shared_ptr<runtime::he::HEPlaintext>& output,
-      const std::shared_ptr<runtime::he::HECiphertext> input) const = 0;
+  virtual void decrypt(std::shared_ptr<runtime::he::HEPlaintext>& output,
+                       const runtime::he::HECiphertext& input) const = 0;
 
   void enable_performance_data(std::shared_ptr<Function> function,
                                bool enable) override;

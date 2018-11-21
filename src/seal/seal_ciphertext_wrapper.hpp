@@ -24,11 +24,10 @@ namespace runtime {
 namespace he {
 namespace he_seal {
 struct SealCiphertextWrapper : public HECiphertext {
-  SealCiphertextWrapper();
-  SealCiphertextWrapper(seal::Ciphertext cipher);
-  ~SealCiphertextWrapper(){};
+  SealCiphertextWrapper(){};
+  SealCiphertextWrapper(const seal::Ciphertext& cipher);
 
-  seal::Ciphertext& get_hetext() { return m_ciphertext; }
+  seal::Ciphertext& get_hetext() noexcept { return m_ciphertext; }
 
   seal::Ciphertext m_ciphertext;
 };

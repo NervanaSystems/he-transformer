@@ -24,11 +24,10 @@ namespace runtime {
 namespace he {
 namespace he_seal {
 struct SealPlaintextWrapper : public HEPlaintext {
-  SealPlaintextWrapper(seal::Plaintext plain);
-  SealPlaintextWrapper();
-  ~SealPlaintextWrapper(){};
+  SealPlaintextWrapper(){};
+  SealPlaintextWrapper(const seal::Plaintext& plain);
 
-  seal::Plaintext& get_hetext() { return m_plaintext; }
+  seal::Plaintext& get_hetext() noexcept { return m_plaintext; }
 
   seal::Plaintext m_plaintext;
 };

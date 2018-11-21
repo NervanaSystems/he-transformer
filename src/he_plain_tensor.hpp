@@ -33,7 +33,6 @@ class HEPlainTensor : public HETensor {
                 const HEBackend* he_backend,
                 const std::shared_ptr<HEPlaintext> he_plaintext,
                 const std::string& name = "external");
-  ~HEPlainTensor(){};
 
   /// @brief Write bytes directly into the tensor after encoding
   /// @param p Pointer to source of data
@@ -54,7 +53,7 @@ class HEPlainTensor : public HETensor {
   void read(void* target, size_t tensor_offset, size_t n) const override;
 
   inline std::vector<std::shared_ptr<runtime::he::HEPlaintext>>&
-  get_elements() {
+  get_elements() noexcept {
     return m_plain_texts;
   }
 

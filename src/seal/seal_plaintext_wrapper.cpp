@@ -18,9 +18,6 @@
 
 using namespace ngraph;
 
-runtime::he::he_seal::SealPlaintextWrapper::SealPlaintextWrapper()
-    : m_plaintext(seal::Plaintext()) {}
-
 runtime::he::he_seal::SealPlaintextWrapper::SealPlaintextWrapper(
-    seal::Plaintext plain)
+    const seal::Plaintext& plain)
     : m_plaintext(plain) {}
