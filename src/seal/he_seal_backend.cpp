@@ -91,30 +91,22 @@ runtime::he::he_seal::HESealBackend::create_empty_plaintext(
 
 void runtime::he::he_seal::HESealBackend::encrypt(
     shared_ptr<runtime::he::HECiphertext>& output,
-    const shared_ptr<runtime::he::HEPlaintext> input) const {
+    const runtime::he::HEPlaintext& input) const {
   auto seal_output =
-      dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(output);
+      static_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(output);
   auto seal_input =
-      dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(input);
-  if (seal_output != nullptr && seal_input != nullptr) {
-    m_encryptor->encrypt(seal_input->m_plaintext, seal_output->m_ciphertext);
-  } else {
-    throw ngraph_error("HESealBackend::encrypt has non-seal ciphertexts");
-  }
+      static_cast<const runtime::he::he_seal::SealPlaintextWrapper&>(input);
+  m_encryptor->encrypt(seal_input.m_plaintext, seal_output->m_ciphertext);
 }
 
 void runtime::he::he_seal::HESealBackend::decrypt(
     shared_ptr<runtime::he::HEPlaintext>& output,
-    const shared_ptr<runtime::he::HECiphertext> input) const {
+    const runtime::he::HECiphertext& input) const {
   auto seal_output =
       dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(output);
   auto seal_input =
-      dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(input);
-  if (seal_output != nullptr && seal_input != nullptr) {
-    m_decryptor->decrypt(seal_input->m_ciphertext, seal_output->m_plaintext);
-  } else {
-    throw ngraph_error("HESealBackend::decrypt has non-seal ciphertexts");
-  }
+      static_cast<const runtime::he::he_seal::SealCiphertextWrapper&>(input);
+  m_decryptor->decrypt(seal_input.m_ciphertext, seal_output->m_plaintext);
 }
 
 const shared_ptr<const runtime::he::HEPlaintext>

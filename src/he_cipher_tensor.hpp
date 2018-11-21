@@ -34,7 +34,6 @@ class HECipherTensor : public HETensor {
                  const std::shared_ptr<HECiphertext> he_ciphertext,
                  const bool batched = false,
                  const std::string& name = "external");
-  ~HECipherTensor(){};
 
   const Shape get_expanded_shape() const;
 
@@ -57,7 +56,7 @@ class HECipherTensor : public HETensor {
   void read(void* target, size_t tensor_offset, size_t n) const override;
 
   inline std::vector<std::shared_ptr<runtime::he::HECiphertext>>&
-  get_elements() {
+  get_elements() noexcept {
     return m_cipher_texts;
   }
 
@@ -65,8 +64,8 @@ class HECipherTensor : public HETensor {
     return m_cipher_texts[i];
   }
 
-  inline size_t get_batch_size() { return m_batch_size; }
-  inline bool is_batched() { return m_batched; }
+  inline size_t get_batch_size() noexcept { return m_batch_size; }
+  inline bool is_batched() noexcept { return m_batched; }
 
  private:
   std::vector<std::shared_ptr<runtime::he::HECiphertext>> m_cipher_texts;

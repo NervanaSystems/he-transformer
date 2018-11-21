@@ -29,8 +29,6 @@ namespace he {
 namespace he_seal {
 class HESealBackend : public HEBackend {
  public:
-  ~HESealBackend(){};
-
   /// @brief Constructs SEAL context from SEAL parameter
   /// @param sp SEAL Parameter from which to construct context
   /// @return Pointer to constructed context
@@ -84,27 +82,27 @@ class HESealBackend : public HEBackend {
                       const element::Type& element_type,
                       size_t count = 1) const = 0;
 
-  void encrypt(
-      std::shared_ptr<runtime::he::HECiphertext>& output,
-      const std::shared_ptr<runtime::he::HEPlaintext> input) const override;
+  void encrypt(std::shared_ptr<runtime::he::HECiphertext>& output,
+               const runtime::he::HEPlaintext& input) const override;
 
-  void decrypt(
-      std::shared_ptr<runtime::he::HEPlaintext>& output,
-      const std::shared_ptr<runtime::he::HECiphertext> input) const override;
+  void decrypt(std::shared_ptr<runtime::he::HEPlaintext>& output,
+               const runtime::he::HECiphertext& input) const override;
 
-  const inline std::shared_ptr<seal::SEALContext> get_context() const {
+  const inline std::shared_ptr<seal::SEALContext> get_context() const noexcept {
     return m_context;
   }
 
-  const inline std::shared_ptr<seal::SecretKey> get_secret_key() const {
+  const inline std::shared_ptr<seal::SecretKey> get_secret_key() const
+      noexcept {
     return m_secret_key;
   }
 
-  const inline std::shared_ptr<seal::RelinKeys> get_relin_keys() const {
+  const inline std::shared_ptr<seal::RelinKeys> get_relin_keys() const
+      noexcept {
     return m_relin_keys;
   }
 
-  const inline std::shared_ptr<seal::Evaluator> get_evaluator() const {
+  const inline std::shared_ptr<seal::Evaluator> get_evaluator() const noexcept {
     return m_evaluator;
   }
 

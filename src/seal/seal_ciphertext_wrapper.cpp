@@ -18,9 +18,6 @@
 
 using namespace ngraph;
 
-runtime::he::he_seal::SealCiphertextWrapper::SealCiphertextWrapper()
-    : m_ciphertext(seal::Ciphertext()) {}
-
 runtime::he::he_seal::SealCiphertextWrapper::SealCiphertextWrapper(
-    seal::Ciphertext cipher)
+    const seal::Ciphertext& cipher)
     : m_ciphertext(cipher) {}
