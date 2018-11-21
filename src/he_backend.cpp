@@ -98,24 +98,32 @@ shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(
   const char* ng_batch_tensor_value = std::getenv("NGRAPH_BATCHED_TENSOR");
   if (ng_batch_tensor_value != nullptr) {
     return create_batched_tensor(element_type, shape);
+  } else {
+    return create_plain_tensor(element_type, shape);
   }
+}
+
+shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_plain_tensor(
+    const element::Type& element_type, const Shape& shape) {
+  NGRAPH_INFO << "Creating plain tensor shape " << join(shape);
+  auto rc = make_shared<runtime::he::HEPlainTensor>(element_type, shape, this,
+                                                    create_empty_plaintext());
+  return static_pointer_cast<runtime::Tensor>(rc);
+}
+
+shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_cipher_tensor(
+    const element::Type& element_type, const Shape& shape) {
+  NGRAPH_INFO << "Creating cipher tensor shape " << join(shape);
 
   auto rc = make_shared<runtime::he::HECipherTensor>(element_type, shape, this,
                                                      create_empty_ciphertext());
   return static_pointer_cast<runtime::Tensor>(rc);
 }
 
-shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_plain_tensor(
-    const element::Type& element_type, const Shape& shape) {
-  auto rc = make_shared<runtime::he::HEPlainTensor>(element_type, shape, this,
-                                                    create_empty_plaintext());
-  return static_pointer_cast<runtime::Tensor>(rc);
-}
-
-shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_valued_tensor(
+shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_valued_cipher_tensor(
     float value, const element::Type& element_type, const Shape& shape) {
-  auto tensor =
-      static_pointer_cast<HECipherTensor>(create_tensor(element_type, shape));
+  auto tensor = static_pointer_cast<HECipherTensor>(
+      create_cipher_tensor(element_type, shape));
   vector<shared_ptr<runtime::he::HECiphertext>>& cipher_texts =
       tensor->get_elements();
 #pragma omp parallel for

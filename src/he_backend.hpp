@@ -124,11 +124,14 @@ class HEBackend : public runtime::Backend {
   std::shared_ptr<runtime::Tensor> create_plain_tensor(
       const element::Type& element_type, const Shape& shape);
 
+  std::shared_ptr<runtime::Tensor> create_cipher_tensor(
+      const element::Type& element_type, const Shape& shape);
+
   /// @brief Creates ciphertext Tensor of the same value
   /// @param value Scalar which to enrypt
   /// @param element_type Type to encrypt
   /// @param shape Shape of created Tensor
-  std::shared_ptr<runtime::Tensor> create_valued_tensor(
+  std::shared_ptr<runtime::Tensor> create_valued_cipher_tensor(
       float value, const element::Type& element_type, const Shape& shape);
 
   // Creates plaintext Tensor of the same value

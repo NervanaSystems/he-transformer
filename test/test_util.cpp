@@ -94,59 +94,43 @@ void write_binary_constant(const vector<float>& values, const string filename) {
   outfile.close();
 }
 
-vector<tuple<vector<shared_ptr<ngraph::runtime::Tensor>>,
-             vector<shared_ptr<ngraph::runtime::Tensor>>>>
+vector<tuple<vector<shared_ptr<runtime::Tensor>>,
+             vector<shared_ptr<runtime::Tensor>>>>
 generate_plain_cipher_tensors(const vector<shared_ptr<Node>>& output,
                               const vector<shared_ptr<Node>>& input,
-                              shared_ptr<ngraph::runtime::Backend> backend,
+                              shared_ptr<runtime::Backend> backend,
                               bool consistent_type) {
-  using ret_tuple_type = tuple<vector<shared_ptr<ngraph::runtime::Tensor>>,
-                               vector<shared_ptr<ngraph::runtime::Tensor>>>;
-  auto he_backend =
-      static_pointer_cast<ngraph::runtime::he::HEBackend>(backend);
+  auto he_backend = static_pointer_cast<runtime::he::HEBackend>(backend);
 
-  vector<tuple<vector<shared_ptr<ngraph::runtime::Tensor>>,
-               vector<shared_ptr<ngraph::runtime::Tensor>>>>
-      ret;
+  using TupleOfInputOutputs =
+      vector<tuple<vector<shared_ptr<runtime::Tensor>>,
+                   vector<shared_ptr<runtime::Tensor>>>>;
+  TupleOfInputOutputs ret;
 
   auto cipher_cipher = [&output, &input, &he_backend]() {
-    vector<shared_ptr<ngraph::runtime::Tensor>> result;
+    vector<shared_ptr<runtime::Tensor>> result;
     for (auto elem : output) {
-      auto output_tensor = he_backend->create_tensor(elem->get_element_type(),
-                                                     elem->get_shape());
+      auto output_tensor = he_backend->create_cipher_tensor(
+          elem->get_element_type(), elem->get_shape());
       result.push_back(output_tensor);
     }
-    vector<shared_ptr<ngraph::runtime::Tensor>> argument;
+    vector<shared_ptr<runtime::Tensor>> argument;
     for (auto elem : input) {
-      auto input_tensor = he_backend->create_tensor(elem->get_element_type(),
-                                                    elem->get_shape());
+      auto input_tensor = he_backend->create_cipher_tensor(
+          elem->get_element_type(), elem->get_shape());
       argument.push_back(input_tensor);
     }
     return make_tuple(result, argument);
   };
-  auto default_tensor = [&output, &input, &backend]() {
-    vector<shared_ptr<ngraph::runtime::Tensor>> result;
-    for (auto elem : output) {
-      auto output_tensor =
-          backend->create_tensor(elem->get_element_type(), elem->get_shape());
-      result.push_back(output_tensor);
-    }
-    vector<shared_ptr<ngraph::runtime::Tensor>> argument;
-    for (auto elem : input) {
-      auto input_tensor =
-          backend->create_tensor(elem->get_element_type(), elem->get_shape());
-      argument.push_back(input_tensor);
-    }
-    return make_tuple(result, argument);
-  };
+
   auto plain_plain = [&output, &input, &he_backend]() {
-    vector<shared_ptr<ngraph::runtime::Tensor>> result;
+    vector<shared_ptr<runtime::Tensor>> result;
     for (auto elem : output) {
       auto output_tensor = he_backend->create_plain_tensor(
           elem->get_element_type(), elem->get_shape());
       result.push_back(output_tensor);
     }
-    vector<shared_ptr<ngraph::runtime::Tensor>> argument;
+    vector<shared_ptr<runtime::Tensor>> argument;
     for (auto elem : input) {
       auto input_tensor = he_backend->create_plain_tensor(
           elem->get_element_type(), elem->get_shape());
@@ -155,13 +139,13 @@ generate_plain_cipher_tensors(const vector<shared_ptr<Node>>& output,
     return make_tuple(result, argument);
   };
   auto alternate_cipher = [&output, &input, &he_backend](size_t mod) {
-    vector<shared_ptr<ngraph::runtime::Tensor>> result;
+    vector<shared_ptr<runtime::Tensor>> result;
     for (auto elem : output) {
-      auto output_tensor = he_backend->create_tensor(elem->get_element_type(),
-                                                     elem->get_shape());
+      auto output_tensor = he_backend->create_cipher_tensor(
+          elem->get_element_type(), elem->get_shape());
       result.push_back(output_tensor);
     }
-    vector<shared_ptr<ngraph::runtime::Tensor>> argument;
+    vector<shared_ptr<runtime::Tensor>> argument;
     for (size_t i = 0; i < input.size(); ++i) {
       auto elem = input[i];
       if (i % 2 == mod) {
@@ -169,8 +153,8 @@ generate_plain_cipher_tensors(const vector<shared_ptr<Node>>& output,
             elem->get_element_type(), elem->get_shape());
         argument.push_back(input_tensor);
       } else {
-        auto input_tensor = he_backend->create_tensor(elem->get_element_type(),
-                                                      elem->get_shape());
+        auto input_tensor = he_backend->create_cipher_tensor(
+            elem->get_element_type(), elem->get_shape());
         argument.push_back(input_tensor);
       }
     }
@@ -194,8 +178,6 @@ generate_plain_cipher_tensors(const vector<shared_ptr<Node>>& output,
     if (input.size() >= 2 && !consistent_type) {
       ret.push_back(cipher_plain_cipher());
     }
-  } else {
-    ret.push_back(default_tensor());
   }
 
   return ret;
