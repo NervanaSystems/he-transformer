@@ -56,7 +56,10 @@ NGRAPH_TEST(${BACKEND_NAME}, dot1d) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, dot1d_optimized) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = static_pointer_cast<runtime::he::HEBackend>(
+      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+  backend->set_optimized_mult(true);
+  backend->set_optimized_add(true);
 
   Shape shape{4};
   auto a = make_shared<op::Parameter>(element::f32, shape);

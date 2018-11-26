@@ -142,7 +142,9 @@ NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_plain) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, add_optimized_2_3) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = static_pointer_cast<runtime::he::HEBackend>(
+      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+  backend->set_optimized_add(true);
 
   Shape shape{2, 3};
   auto a = make_shared<op::Parameter>(element::f32, shape);

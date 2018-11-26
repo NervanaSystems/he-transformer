@@ -163,6 +163,7 @@ void he_seal::kernel::scalar_multiply(
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
+  // TODO: generalize to multiple batch sizes
   shared_ptr<runtime::he::HEPlaintext> out_he =
       dynamic_pointer_cast<runtime::he::HEPlaintext>(out);
   const string type_name = element_type.c_type_string();
