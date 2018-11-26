@@ -37,8 +37,8 @@ test_cpp_build ()
     make -j22
     ./test/unit-test
     echo 'Testing cryptonets'
-    NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_13.json ./test/cryptonets_benchmark --gtest_filter="Cryptonets.CKKS_4096"
-    NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_14.json ./test/cryptonets_benchmark --gtest_filter="Cryptonets.CKKS_4096"
+    NGRAPH_ENCRYPT_DATA=1 NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_13.json ./test/cryptonets_benchmark --gtest_filter="Cryptonets.CKKS_4096"
+    NGRAPH_ENCRYPT_MODEL=1 NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_14.json ./test/cryptonets_benchmark --gtest_filter="Cryptonets.CKKS_4096"
 
     echo 'Done testing C++ build.'
 }
@@ -69,8 +69,8 @@ test_python_build ()
 
     # Test cryptonets under python
     cd cryptonets
-    NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_13.json NGRAPH_TF_BACKEND=HE:SEAL:CKKS python test.py --batch_size=1
-    NGRAPH_BATCHED_TENSOR=1 NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_13.json NGRAPH_TF_BACKEND=HE:SEAL:CKKS python test.py --batch_size=4096 --report_accuracy=1
+    NGRAPH_ENCRYPT_DATA=1 NGRAPH_BATCH_TF=1 NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_13.json ./test/cryptonets_benchmark python test.py --batch_size=4096 --report_accuracy=1
+    NGRAPH_ENCRYPT_MODEL=1 NGRAPH_BATCH_TF=1 NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_13.json ./test/cryptonets_benchmark python test.py --batch_size=4096 --report_accuracy=1
 
     echo 'Done testing python build'
 }
