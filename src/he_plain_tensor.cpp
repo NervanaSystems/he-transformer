@@ -37,16 +37,12 @@ runtime::he::HEPlainTensor::HEPlainTensor(
 
 void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
                                        size_t n) {
-  NGRAPH_INFO << "Writing plain tensor, batch size " << m_batch_size;
-  NGRAPH_INFO << "Checking io bounds";
   check_io_bounds(source, tensor_offset, n / m_batch_size);
   const element::Type& element_type = get_tensor_layout()->get_element_type();
   size_t type_byte_size = element_type.size();
   size_t dst_start_index = tensor_offset / type_byte_size;
   size_t num_elements_to_write = n / (type_byte_size * m_batch_size);
 
-  NGRAPH_INFO << "Writing " << num_elements_to_write << " elements";
-  NGRAPH_INFO << "Batch size " << m_batch_size;
   if (num_elements_to_write == 1) {
     const void* src_with_offset = (void*)((char*)source);
     size_t dst_index = dst_start_index;
@@ -71,7 +67,6 @@ void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
                       type_byte_size * (i + j * num_elements_to_write));
           memcpy(destination, src, type_byte_size);
         }
-        NGRAPH_INFO << "Encoding";
         m_he_backend->encode(m_plain_texts[dst_index], batch_src, element_type,
                              m_batch_size);
         free((void*)batch_src);
@@ -86,13 +81,11 @@ void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
 
 void runtime::he::HEPlainTensor::read(void* target, size_t tensor_offset,
                                       size_t n) const {
-  NGRAPH_INFO << "Reading plain tensor";
   check_io_bounds(target, tensor_offset, n);
   const element::Type& element_type = get_tensor_layout()->get_element_type();
   size_t type_byte_size = element_type.size();
   size_t src_start_index = tensor_offset / type_byte_size;
   size_t num_elements_to_read = n / (type_byte_size * m_batch_size);
-  NGRAPH_INFO << "Reading " << num_elements_to_read << " elements";
 
   if (num_elements_to_read == 1) {
     void* dst_with_offset = (void*)((char*)target);

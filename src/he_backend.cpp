@@ -445,7 +445,10 @@ void runtime::he::HEBackend::generate_calls(
   size_t batch_size = 1;
   if (out0_cipher != nullptr) {
     batch_size = out0_cipher->get_batch_size();
+  } else if (out0_plain != nullptr) {
+    batch_size = out0_plain->get_batch_size();
   }
+  NGRAPH_INFO << "Batch size " << batch_size;
 
   if (node_op == "Add") {
     if (out0_cipher != nullptr) {

@@ -137,6 +137,7 @@ void he_seal::kernel::scalar_add(const he_seal::SealPlaintextWrapper* arg0,
                                  const seal::MemoryPoolHandle& pool) {
   auto out_he = static_pointer_cast<HEPlaintext>(out);
   const string type_name = element_type.c_type_string();
+  // TODO: generalize to multiple batch sizes
   if (type_name == "float") {
     float x, y;
     he_seal_backend->decode(&x, arg0, element_type);
