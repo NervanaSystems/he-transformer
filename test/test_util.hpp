@@ -85,22 +85,7 @@ std::vector<T> generalized_read_vector(std::shared_ptr<runtime::Tensor> tv) {
   if (element::from<T>() != tv->get_tensor_layout()->get_element_type()) {
     throw std::invalid_argument("read_vector type must match Tensor type");
   }
-  NGRAPH_INFO << "Generalized read vector";
-  if (auto cipher_tv =
-          std::dynamic_pointer_cast<runtime::he::HECipherTensor>(tv)) {
-    size_t element_count;
-    if (cipher_tv->is_batched()) {
-      element_count = shape_size(cipher_tv->get_expanded_shape());
-    } else {
-      element_count = shape_size(cipher_tv->get_shape());
-    }
-    NGRAPH_INFO << "Element count " << element_count;
-
-    size_t size = element_count * sizeof(T);
-    std::vector<T> rc(element_count);
-    cipher_tv->read(rc.data(), 0, size);
-    return rc;
-  } else if (auto hetv = std::dynamic_pointer_cast<runtime::he::HETensor>(tv)) {
+  if (auto hetv = std::dynamic_pointer_cast<runtime::he::HETensor>(tv)) {
     size_t element_count = shape_size(hetv->get_expanded_shape());
 
     NGRAPH_INFO << "Element count " << element_count;
