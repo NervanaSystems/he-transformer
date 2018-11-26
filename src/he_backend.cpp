@@ -94,28 +94,33 @@ shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(
 
 shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(
     const element::Type& element_type, const Shape& shape) {
-  // Needed for ngraph-tf integration
-  const char* ng_batch_tensor_value = std::getenv("NGRAPH_BATCHED_TENSOR");
-  if (ng_batch_tensor_value != nullptr) {
-    return create_batched_tensor(element_type, shape);
+  if (batch_data()) {
+    return create_batched_plain_tensor(element_type, shape);
+  } else {
+    return create_plain_tensor(element_type, shape);
   }
-
-  auto rc = make_shared<runtime::he::HECipherTensor>(element_type, shape, this,
-                                                     create_empty_ciphertext());
-  return static_pointer_cast<runtime::Tensor>(rc);
 }
 
 shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_plain_tensor(
-    const element::Type& element_type, const Shape& shape) {
-  auto rc = make_shared<runtime::he::HEPlainTensor>(element_type, shape, this,
-                                                    create_empty_plaintext());
+    const element::Type& element_type, const Shape& shape,
+    const bool batched) const {
+  auto rc = make_shared<runtime::he::HEPlainTensor>(
+      element_type, shape, this, create_empty_plaintext(), batched);
   return static_pointer_cast<runtime::Tensor>(rc);
 }
 
-shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_valued_tensor(
-    float value, const element::Type& element_type, const Shape& shape) {
-  auto tensor =
-      static_pointer_cast<HECipherTensor>(create_tensor(element_type, shape));
+shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_cipher_tensor(
+    const element::Type& element_type, const Shape& shape,
+    const bool batched) const {
+  auto rc = make_shared<runtime::he::HECipherTensor>(
+      element_type, shape, this, create_empty_ciphertext(), batched);
+  return static_pointer_cast<runtime::Tensor>(rc);
+}
+
+shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_valued_cipher_tensor(
+    float value, const element::Type& element_type, const Shape& shape) const {
+  auto tensor = static_pointer_cast<HECipherTensor>(
+      create_cipher_tensor(element_type, shape));
   vector<shared_ptr<runtime::he::HECiphertext>>& cipher_texts =
       tensor->get_elements();
 #pragma omp parallel for
@@ -126,7 +131,7 @@ shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_valued_tensor(
 }
 
 shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_valued_plain_tensor(
-    float value, const element::Type& element_type, const Shape& shape) {
+    float value, const element::Type& element_type, const Shape& shape) const {
   auto tensor = static_pointer_cast<HEPlainTensor>(
       create_plain_tensor(element_type, shape));
   vector<shared_ptr<runtime::he::HEPlaintext>>& plain_texts =
@@ -176,38 +181,17 @@ void runtime::he::HEBackend::validate_he_call(
   }
 
   for (size_t i = 0; i < input_parameters.size(); i++) {
-    if (input_parameters[i]->get_element_type() !=
-        inputs[i]->get_element_type()) {
+    if (inputs[i]->get_element_type() !=
+        input_parameters[i]->get_element_type()) {
       stringstream ss;
       ss << "Input " << i << " type '" << inputs[i]->get_element_type()
          << "' does not match Parameter type '"
          << input_parameters[i]->get_element_type() << "'";
       throw runtime_error(ss.str());
     }
-    if (auto input_cipher_tv =
-            dynamic_pointer_cast<HECipherTensor>(inputs[i])) {
-      if (input_cipher_tv->is_batched() &&
-          input_cipher_tv->get_expanded_shape() !=
-              input_parameters[i]->get_shape()) {
-        stringstream ss;
-        ss << "Input " << i << " shape {"
-           << join(input_cipher_tv->get_expanded_shape())
-           << "} does not match Parameter shape {"
-           << join(input_parameters[i]->get_shape()) << "}";
-        throw runtime_error(ss.str());
-      } else if (!input_cipher_tv->is_batched() &&
-                 input_cipher_tv->get_shape() !=
-                     input_parameters[i]->get_shape()) {
-        stringstream ss;
-        ss << "Input " << i << " shape {"
-           << join(input_cipher_tv->get_expanded_shape())
-           << "} does not match Parameter shape {"
-           << join(input_parameters[i]->get_shape()) << "}";
-        throw runtime_error(ss.str());
-      }
-    } else if (input_parameters[i]->get_shape() != inputs[i]->get_shape()) {
+    if (inputs[i]->get_expanded_shape() != input_parameters[i]->get_shape()) {
       stringstream ss;
-      ss << "Input " << i << " shape {" << join(inputs[i]->get_shape())
+      ss << "Input " << i << " shape {" << join(inputs[i]->get_expanded_shape())
          << "} does not match Parameter shape {"
          << join(input_parameters[i]->get_shape()) << "}";
       throw runtime_error(ss.str());
@@ -215,39 +199,18 @@ void runtime::he::HEBackend::validate_he_call(
   }
 
   for (size_t i = 0; i < function->get_output_size(); i++) {
-    if (function->get_output_element_type(i) !=
-        outputs[i]->get_element_type()) {
+    if (outputs[i]->get_element_type() !=
+        function->get_output_element_type(i)) {
       stringstream ss;
       ss << "Output " << i << " type '" << outputs[i]->get_element_type()
          << "' does not match Result type '"
          << function->get_output_element_type(i) << "'";
       throw runtime_error(ss.str());
     }
-    if (auto output_cipher_tv =
-            dynamic_pointer_cast<HECipherTensor>(outputs[i])) {
-      // TODO: check if shapes are equal, not just shape sizes.
-      // Currently, this fails when output shape is {3}, and
-      // expanded shape is {3,1} on HE_SEAL_CKKS.dot_scalar_batch unit-test.
-      if (output_cipher_tv->is_batched() &&
-          shape_size(output_cipher_tv->get_expanded_shape()) !=
-              shape_size(function->get_output_shape(i))) {
-        stringstream ss;
-        ss << "Batched Output " << i << " shape {"
-           << join(output_cipher_tv->get_expanded_shape())
-           << "} does not match Result shape {"
-           << join(function->get_output_shape(i)) << "}";
-        throw runtime_error(ss.str());
-      } else if (!output_cipher_tv->is_batched() &&
-                 function->get_output_shape(i) != outputs[i]->get_shape()) {
-        stringstream ss;
-        ss << "Output " << i << " shape {" << join(outputs[i]->get_shape())
-           << "} does not match Result shape {"
-           << join(function->get_output_shape(i)) << "}";
-        throw runtime_error(ss.str());
-      }
-    } else if (function->get_output_shape(i) != outputs[i]->get_shape()) {
+    if (function->get_output_shape(i) != outputs[i]->get_expanded_shape()) {
       stringstream ss;
-      ss << "Output " << i << " shape {" << join(outputs[i]->get_shape())
+      ss << "Output " << i << " shape {"
+         << join(outputs[i]->get_expanded_shape())
          << "} does not match Result shape {"
          << join(function->get_output_shape(i)) << "}";
       throw runtime_error(ss.str());
@@ -286,23 +249,30 @@ bool runtime::he::HEBackend::call(
     shared_ptr<Function> function,
     const vector<shared_ptr<runtime::Tensor>>& outputs,
     const vector<shared_ptr<runtime::Tensor>>& inputs) {
+  if (encrypt_data()) {
+    NGRAPH_INFO << "Encrypting data";
+  }
+  if (batch_data()) {
+    NGRAPH_INFO << "Batching data";
+  }
+  if (encrypt_model()) {
+    NGRAPH_INFO << "Encrypting model";
+  }
+
   compile(function);
   FunctionInstance& instance = m_function_map[function];
 
   // convert outputs to HETensor
   vector<shared_ptr<runtime::he::HETensor>> he_inputs;
-  for (auto tv : inputs) {
+  for (auto& tv : inputs) {
     he_inputs.push_back(static_pointer_cast<runtime::he::HETensor>(tv));
   }
 
   // convert inputs to HETensor
   vector<shared_ptr<runtime::he::HETensor>> he_outputs;
-  for (auto tv : outputs) {
+  for (auto& tv : outputs) {
     he_outputs.push_back(static_pointer_cast<runtime::he::HETensor>(tv));
   }
-
-  // Needed for ngraph-tf integration for batched inputs
-  const char* ng_batch_tensor_value = std::getenv("NGRAPH_BATCHED_TENSOR");
 
   validate_he_call(function, he_outputs, he_inputs);
 
@@ -313,7 +283,23 @@ bool runtime::he::HEBackend::call(
   for (auto param : function->get_parameters()) {
     for (size_t i = 0; i < param->get_output_size(); ++i) {
       descriptor::Tensor* tv = param->get_output_tensor_ptr(i).get();
-      tensor_map.insert({tv, he_inputs[input_count++]});
+
+      if (encrypt_data()) {
+        auto plain_input = static_pointer_cast<runtime::he::HEPlainTensor>(
+            he_inputs[input_count]);
+        auto cipher_input = static_pointer_cast<runtime::he::HECipherTensor>(
+            create_cipher_tensor(plain_input->get_element_type(),
+                                 plain_input->get_shape(), batch_data()));
+
+        for (size_t i = 0; i < plain_input->get_batched_element_count(); ++i) {
+          encrypt(cipher_input->get_element(i), *plain_input->get_element(i));
+        }
+
+        tensor_map.insert({tv, cipher_input});
+        input_count++;
+      } else {
+        tensor_map.insert({tv, he_inputs[input_count++]});
+      }
     }
   }
 
@@ -334,6 +320,7 @@ bool runtime::he::HEBackend::call(
                 << "[ " << op->get_name() << " ]"
                 << "\033[0m";
     if (op->description() == "Parameter") {
+      NGRAPH_INFO << "Parameter shape " << join(op->get_shape());
       continue;
     }
 
@@ -345,7 +332,6 @@ bool runtime::he::HEBackend::call(
     }
 
     // get op outputs from map or create
-    bool any_batched = false;
     vector<shared_ptr<runtime::he::HETensor>> op_outputs;
     for (size_t i = 0; i < op->get_output_size(); ++i) {
       descriptor::Tensor* tv = op->get_output_tensor_ptr(i).get();
@@ -361,23 +347,20 @@ bool runtime::he::HEBackend::call(
             [](shared_ptr<runtime::he::HETensor> op_input) {
               return dynamic_pointer_cast<HEPlainTensor>(op_input) != nullptr;
             });
+        if (op->is_constant()) {
+          plain_out = !encrypt_model();
+        }
+
+        bool batched_out = any_of(op_inputs.begin(), op_inputs.end(),
+                                  [](shared_ptr<runtime::he::HETensor> he_tv) {
+                                    return he_tv->is_batched();
+                                  });
         if (plain_out) {
           auto otv = make_shared<runtime::he::HEPlainTensor>(
-              element_type, shape, this, create_empty_plaintext(), name);
+              element_type, shape, this, create_empty_plaintext(), batched_out,
+              name);
           tensor_map.insert({tv, otv});
         } else {
-          bool batched_out =
-              any_of(op_inputs.begin(), op_inputs.end(),
-                     [](shared_ptr<runtime::he::HETensor> op_input) {
-                       if (auto input_cipher_tv =
-                               dynamic_pointer_cast<HECipherTensor>(op_input)) {
-                         return input_cipher_tv->is_batched();
-                       } else {
-                         return false;
-                       }
-                     });
-          any_batched |= batched_out;
-
           auto otv = make_shared<runtime::he::HECipherTensor>(
               element_type, shape, this, create_empty_ciphertext(), batched_out,
               name);
@@ -425,10 +408,8 @@ void runtime::he::HEBackend::generate_calls(
   shared_ptr<HEPlainTensor> arg0_plain = nullptr;
   shared_ptr<HECipherTensor> arg1_cipher = nullptr;
   shared_ptr<HEPlainTensor> arg1_plain = nullptr;
-  shared_ptr<HECipherTensor> out0_cipher =
-      dynamic_pointer_cast<HECipherTensor>(out[0]);
-  shared_ptr<HEPlainTensor> out0_plain =
-      dynamic_pointer_cast<HEPlainTensor>(out[0]);
+  auto out0_cipher = dynamic_pointer_cast<HECipherTensor>(out[0]);
+  auto out0_plain = dynamic_pointer_cast<HEPlainTensor>(out[0]);
 
   if (args.size() > 0) {
     arg0_cipher = dynamic_pointer_cast<HECipherTensor>(args[0]);
@@ -442,6 +423,34 @@ void runtime::he::HEBackend::generate_calls(
   size_t batch_size = 1;
   if (out0_cipher != nullptr) {
     batch_size = out0_cipher->get_batch_size();
+  } else if (out0_plain != nullptr) {
+    batch_size = out0_plain->get_batch_size();
+  }
+
+  stringstream ss;
+  ss << "Inputs: ";
+  if (arg0_cipher != nullptr) {
+    ss << "Cipher";
+  } else if (arg0_plain != nullptr) {
+    ss << "Plain";
+  }
+  if (arg1_cipher != nullptr) {
+    ss << ", Cipher";
+  } else if (arg1_plain != nullptr) {
+    ss << ", Plain";
+  }
+  NGRAPH_INFO << ss.str();
+  ss.str("");
+  ss << "Outputs: ";
+  if (out0_cipher != nullptr) {
+    ss << "Cipher";
+  } else if (out0_plain != nullptr) {
+    ss << "Plain";
+  }
+  NGRAPH_INFO << ss.str();
+
+  if (batch_size != 1) {
+    NGRAPH_INFO << "Batch size " << batch_size;
   }
 
   if (node_op == "Add") {
@@ -499,6 +508,12 @@ void runtime::he::HEBackend::generate_calls(
       runtime::he::kernel::constant(out0_plain->get_elements(), element_type,
                                     constant->get_data_ptr(), this,
                                     out0_plain->get_batched_element_count());
+    } else if (out0_cipher != nullptr) {
+      shared_ptr<op::Constant> constant =
+          static_pointer_cast<op::Constant>(node);
+      runtime::he::kernel::constant(out0_cipher->get_elements(), element_type,
+                                    constant->get_data_ptr(), this,
+                                    out0_cipher->get_batched_element_count());
     } else {
       throw ngraph_error("Constant type not supported.");
     }
@@ -554,7 +569,6 @@ void runtime::he::HEBackend::generate_calls(
                 << join(args[1]->get_shape(), "x");
     if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
         out0_cipher != nullptr) {
-      NGRAPH_INFO << "Dot cipher cipher => cipher";
       runtime::he::kernel::dot(
           arg0_cipher->get_elements(), arg1_cipher->get_elements(),
           out0_cipher->get_elements(), arg0_cipher->get_shape(),
@@ -562,7 +576,6 @@ void runtime::he::HEBackend::generate_calls(
           dot->get_reduction_axes_count(), element_type, this);
     } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                out0_cipher != nullptr) {
-      NGRAPH_INFO << "Dot cipher plain => cipher";
       runtime::he::kernel::dot(
           arg0_cipher->get_elements(), arg1_plain->get_elements(),
           out0_cipher->get_elements(), arg0_cipher->get_shape(),
@@ -570,7 +583,6 @@ void runtime::he::HEBackend::generate_calls(
           dot->get_reduction_axes_count(), element_type, this);
     } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
                out0_cipher != nullptr) {
-      NGRAPH_INFO << "Dot plain cipher => cipher";
       runtime::he::kernel::dot(
           arg0_plain->get_elements(), arg1_cipher->get_elements(),
           out0_cipher->get_elements(), arg0_plain->get_shape(),
@@ -578,7 +590,6 @@ void runtime::he::HEBackend::generate_calls(
           dot->get_reduction_axes_count(), element_type, this);
     } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                out0_plain != nullptr) {
-      NGRAPH_INFO << "Dot plain plain => plain";
       runtime::he::kernel::dot(
           arg0_plain->get_elements(), arg1_plain->get_elements(),
           out0_plain->get_elements(), arg0_plain->get_shape(),
@@ -673,7 +684,6 @@ void runtime::he::HEBackend::generate_calls(
     }
   } else if (node_op == "Reshape") {
     shared_ptr<op::Reshape> reshape = dynamic_pointer_cast<op::Reshape>(node);
-
     if (arg0_cipher != nullptr && out0_cipher != nullptr) {
       runtime::he::kernel::reshape(
           arg0_cipher->get_elements(), out0_cipher->get_elements(),
@@ -689,19 +699,29 @@ void runtime::he::HEBackend::generate_calls(
     }
   } else if (node_op == "Result") {
     shared_ptr<op::Result> res = dynamic_pointer_cast<op::Result>(node);
+    size_t output_size;
+    if (arg0_plain != nullptr) {
+      output_size = arg0_plain->get_batched_element_count();
+    } else if (arg0_cipher != nullptr) {
+      output_size = arg0_cipher->get_batched_element_count();
+    } else {
+      throw ngraph_error("Input argument is neither plaintext nor ciphertext");
+    }
 
     if (arg0_cipher != nullptr && out0_cipher != nullptr) {
-      size_t output_size = arg0_cipher->get_batched_element_count();
       runtime::he::kernel::result(arg0_cipher->get_elements(),
                                   out0_cipher->get_elements(), output_size);
     } else if (arg0_plain != nullptr && out0_cipher != nullptr) {
       runtime::he::kernel::result(arg0_plain->get_elements(),
-                                  out0_cipher->get_elements(),
-                                  shape_size(res->get_shape()), this);
+                                  out0_cipher->get_elements(), output_size,
+                                  this);
+    } else if (arg0_cipher != nullptr && out0_plain != nullptr) {
+      runtime::he::kernel::result(arg0_cipher->get_elements(),
+                                  out0_plain->get_elements(), output_size,
+                                  this);
     } else if (arg0_plain != nullptr && out0_plain != nullptr) {
       runtime::he::kernel::result(arg0_plain->get_elements(),
-                                  out0_plain->get_elements(),
-                                  shape_size(res->get_shape()));
+                                  out0_plain->get_elements(), output_size);
     } else {
       throw ngraph_error("Result types not supported.");
     }

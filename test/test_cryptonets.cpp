@@ -34,17 +34,16 @@ using namespace ngraph;
 
 static string s_manifest = "";
 
-static void run_cryptonets_benchmark(string backend_name, size_t batch_size,
-                                     bool batched = true) {
-  if (!batched && batch_size > 1) {
-    throw ngraph_error("Non-batched must have batch_size 1");
+static void run_cryptonets_benchmark(string backend_name,
+                                     size_t batch_size = 1) {
+  if (backend_name == "INTERPRETER") {
+    assert(batch_size == 1);
   }
   auto backend = runtime::Backend::create(backend_name);
-  if (backend_name != "INTERPRETER") {
-    static_pointer_cast<runtime::he::he_seal::HESealCKKSBackend>(backend)
-        ->set_optimized_add(false);
-    static_pointer_cast<runtime::he::he_seal::HESealCKKSBackend>(backend)
-        ->set_optimized_mult(false);
+  auto he_backend = dynamic_pointer_cast<runtime::he::HEBackend>(backend);
+  if (he_backend) {
+    he_backend->set_optimized_add(false);
+    he_backend->set_optimized_mult(false);
   }
 
   vector<float> x = read_binary_constant(
@@ -77,20 +76,12 @@ static void run_cryptonets_benchmark(string backend_name, size_t batch_size,
   sw_encrypt_input.start();
   auto parameters = f->get_parameters();
   vector<shared_ptr<runtime::Tensor>> parameter_tvs;
-  for (auto parameter : parameters) {
+  for (const auto& parameter : parameters) {
     auto& shape = parameter->get_shape();
     auto& type = parameter->get_element_type();
 
-    auto parameter_cipher_tv =
-        (backend_name == "INTERPRETER")
-            ? backend->create_tensor(type, shape)
-            : batched
-                  ? static_pointer_cast<
-                        runtime::he::he_seal::HESealCKKSBackend>(backend)
-                        ->create_batched_tensor(type, shape)
-                  : static_pointer_cast<
-                        runtime::he::he_seal::HESealCKKSBackend>(backend)
-                        ->create_tensor(type, shape);
+    std::shared_ptr<runtime::Tensor> parameter_cipher_tv =
+        backend->create_tensor(type, shape);
 
     NGRAPH_INFO << "Creating input shape: " << join(shape, "x");
 
@@ -107,18 +98,12 @@ static void run_cryptonets_benchmark(string backend_name, size_t batch_size,
 
   auto results = f->get_results();
   vector<shared_ptr<runtime::Tensor>> result_tvs;
-  for (auto result : results) {
+  for (const auto& result : results) {
     auto& shape = result->get_shape();
     auto& type = result->get_element_type();
     NGRAPH_INFO << "Creating output shape: " << join(shape, "x");
 
-    if (batched && backend_name != "INTERPRETER") {
-      result_tvs.push_back(
-          static_pointer_cast<runtime::he::he_seal::HESealCKKSBackend>(backend)
-              ->create_batched_tensor(type, shape));
-    } else {
-      result_tvs.push_back(backend->create_tensor(type, shape));
-    }
+    result_tvs.push_back(backend->create_tensor(type, shape));
   }
   sw_encrypt_input.stop();
   NGRAPH_INFO << "sw_encrypt_input: " << sw_encrypt_input.get_milliseconds()
@@ -176,10 +161,6 @@ static void run_cryptonets_benchmark(string backend_name, size_t batch_size,
               << "ms";
   NGRAPH_INFO << "sw_global: " << sw_global.get_milliseconds() << "ms";
 };
-
-NGRAPH_TEST(Cryptonets, CKKS_unbatched) {
-  run_cryptonets_benchmark("HE:SEAL:CKKS", 1, false);
-}
 
 NGRAPH_TEST(Cryptonets, CKKS_1) { run_cryptonets_benchmark("HE:SEAL:CKKS", 1); }
 

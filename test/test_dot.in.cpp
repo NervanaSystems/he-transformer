@@ -16,7 +16,6 @@
 
 #include "he_backend.hpp"
 #include "ngraph/ngraph.hpp"
-#include "seal/ckks/he_seal_ckks_backend.hpp"
 #include "test_util.hpp"
 #include "util/all_close.hpp"
 #include "util/ndarray.hpp"
@@ -57,7 +56,10 @@ NGRAPH_TEST(${BACKEND_NAME}, dot1d) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, dot1d_optimized) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = static_pointer_cast<runtime::he::HEBackend>(
+      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+  backend->set_optimized_mult(true);
+  backend->set_optimized_add(true);
 
   Shape shape{4};
   auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -145,12 +147,12 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_scalar) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_batch) {
-  auto backend = static_pointer_cast<runtime::he::he_seal::HESealCKKSBackend>(
+  auto backend = static_pointer_cast<runtime::he::HEBackend>(
       runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
   Shape shape_a{3, 1};
   Shape shape_b{1};
-  Shape shape_r{3, 1};
+  Shape shape_r{3};
   auto a = make_shared<op::Parameter>(element::f32, shape_a);
   auto b = make_shared<op::Parameter>(element::f32, shape_b);
   auto t = make_shared<op::Dot>(a, b);
@@ -158,9 +160,9 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_batch) {
   auto f = make_shared<Function>(t, op::ParameterVector{a, b});
 
   // Create some tensors for input/output
-  auto t_a = backend->create_batched_tensor(element::f32, shape_a);
+  auto t_a = backend->create_batched_plain_tensor(element::f32, shape_a);
   auto t_b = backend->create_plain_tensor(element::f32, shape_b);
-  auto t_result = backend->create_batched_tensor(element::f32, shape_r);
+  auto t_result = backend->create_batched_plain_tensor(element::f32, shape_r);
 
   copy_data(t_a, vector<float>{1, 2, 3});
   copy_data(t_b, vector<float>{4});
@@ -170,7 +172,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_batch) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, dot_perf) {
-  auto backend = static_pointer_cast<runtime::he::he_seal::HESealCKKSBackend>(
+  auto backend = static_pointer_cast<runtime::he::HEBackend>(
       runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
   backend->set_optimized_mult(false);
   backend->set_optimized_add(false);
@@ -185,9 +187,9 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_perf) {
   auto f = make_shared<Function>(t, op::ParameterVector{a, b});
 
   // Create some tensors for input/output
-  auto t_a = backend->create_tensor(element::f32, shape_a);
+  auto t_a = backend->create_cipher_tensor(element::f32, shape_a);
   auto t_b = backend->create_plain_tensor(element::f32, shape_b);
-  auto t_result = backend->create_tensor(element::f32, shape_r);
+  auto t_result = backend->create_cipher_tensor(element::f32, shape_r);
 
   vector<float> a_vals, b_vals;
   for (size_t i = 0; i < 100 * 100; ++i) {

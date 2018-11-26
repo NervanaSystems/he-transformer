@@ -177,7 +177,13 @@ void runtime::he::he_seal::HESealBFVBackend::assert_valid_seal_bfv_parameter(
 }
 
 shared_ptr<runtime::Tensor>
-runtime::he::he_seal::HESealBFVBackend::create_batched_tensor(
+runtime::he::he_seal::HESealBFVBackend::create_batched_cipher_tensor(
+    const element::Type& element_type, const Shape& shape) {
+  throw ngraph_error("HESealBFVBackend::create_batched_tensor unimplemented");
+}
+
+shared_ptr<runtime::Tensor>
+runtime::he::he_seal::HESealBFVBackend::create_batched_plain_tensor(
     const element::Type& element_type, const Shape& shape) {
   throw ngraph_error("HESealBFVBackend::create_batched_tensor unimplemented");
 }

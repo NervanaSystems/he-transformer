@@ -38,27 +38,11 @@ runtime::he::HECipherTensor::HECipherTensor(
   }
 }
 
-const Shape runtime::he::HECipherTensor::get_expanded_shape() const {
-  if (m_batched) {
-    Shape expanded_shape = get_shape();
-    if (is_scalar(expanded_shape)) {
-      return Shape{m_batch_size, 1};
-    } else if (expanded_shape[0] == 1) {
-      expanded_shape[0] = m_batch_size;
-    } else {
-      expanded_shape.insert(expanded_shape.begin(), m_batch_size);
-    }
-    return expanded_shape;
-  } else {
-    return get_shape();
-  }
-}
-
 void runtime::he::HECipherTensor::write(const void* source,
                                         size_t tensor_offset, size_t n) {
   // Hack to fix Cryptonets with ngraph-tf
-  // TODO: create / use write_unbatched() instead
-  const char* ng_batch_tensor_value = std::getenv("NGRAPH_BATCHED_TENSOR");
+  // TODO: modify get_element_count() instead
+  const char* ng_batch_tensor_value = std::getenv("NGRAPH_BATCH_TF");
   if (ng_batch_tensor_value != nullptr) {
     n *= m_batch_size;
   }
@@ -115,8 +99,8 @@ void runtime::he::HECipherTensor::write(const void* source,
 void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset,
                                        size_t n) const {
   // Hack to fix Cryptonets with ngraph-tf
-  // TODO: create / use read_unbatched() instead
-  const char* ng_batch_tensor_value = std::getenv("NGRAPH_BATCHED_TENSOR");
+  // TODO: modify get_element_count() instead
+  const char* ng_batch_tensor_value = std::getenv("NGRAPH_BATCH_TF");
   if (ng_batch_tensor_value != nullptr) {
     n *= m_batch_size;
   }

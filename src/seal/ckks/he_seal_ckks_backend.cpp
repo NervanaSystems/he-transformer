@@ -273,11 +273,20 @@ void runtime::he::he_seal::HESealCKKSBackend::assert_valid_seal_ckks_parameter(
 }
 
 shared_ptr<runtime::Tensor>
-runtime::he::he_seal::HESealCKKSBackend::create_batched_tensor(
+runtime::he::he_seal::HESealCKKSBackend::create_batched_cipher_tensor(
     const element::Type& element_type, const Shape& shape) {
-  NGRAPH_INFO << "Creating batched tensor with shape " << join(shape);
+  NGRAPH_INFO << "Creating batched cipher tensor with shape " << join(shape);
   auto rc = make_shared<runtime::he::HECipherTensor>(
       element_type, shape, this, create_empty_ciphertext(), true);
+  return static_pointer_cast<runtime::Tensor>(rc);
+}
+
+shared_ptr<runtime::Tensor>
+runtime::he::he_seal::HESealCKKSBackend::create_batched_plain_tensor(
+    const element::Type& element_type, const Shape& shape) {
+  NGRAPH_INFO << "Creating batched plain tensor with shape " << join(shape);
+  auto rc = make_shared<runtime::he::HEPlainTensor>(
+      element_type, shape, this, create_empty_plaintext(), true);
   return static_pointer_cast<runtime::Tensor>(rc);
 }
 
@@ -311,7 +320,7 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
               ->m_plaintext);
     }
   } else {
-    NGRAPH_INFO << "Unsupported element type in decode " << type_name;
+    NGRAPH_INFO << "Unsupported element type in encode " << type_name;
     throw ngraph_error("Unsupported element type " + type_name);
   }
 }
@@ -331,7 +340,7 @@ void runtime::he::he_seal::HESealCKKSBackend::decode(
       throw ngraph_error(
           "HESealCKKSBackend::decode input is not seal plaintext");
     }
-    vector<double> xs(count, 0);
+    vector<double> xs;
     m_ckks_encoder->decode(seal_input->m_plaintext, xs);
     vector<float> xs_float(xs.begin(), xs.end());
 

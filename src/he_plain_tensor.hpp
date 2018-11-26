@@ -32,6 +32,7 @@ class HEPlainTensor : public HETensor {
   HEPlainTensor(const element::Type& element_type, const Shape& shape,
                 const HEBackend* he_backend,
                 const std::shared_ptr<HEPlaintext> he_plaintext,
+                const bool batched = false,
                 const std::string& name = "external");
 
   /// @brief Write bytes directly into the tensor after encoding

@@ -41,8 +41,11 @@ class HESealBackend : public HEBackend {
   void assert_valid_seal_parameter(
       const std::shared_ptr<runtime::he::he_seal::HESealParameter> sp) const;
 
-  virtual std::shared_ptr<runtime::Tensor> create_batched_tensor(
-      const element::Type& element_type, const Shape& shape) = 0;
+  virtual std::shared_ptr<runtime::Tensor> create_batched_cipher_tensor(
+      const element::Type& element_type, const Shape& shape) override = 0;
+
+  virtual std::shared_ptr<runtime::Tensor> create_batched_plain_tensor(
+      const element::Type& element_type, const Shape& shape) override = 0;
 
   std::shared_ptr<runtime::he::HECiphertext> create_empty_ciphertext()
       const override;

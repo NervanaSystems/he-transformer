@@ -35,8 +35,6 @@ class HECipherTensor : public HETensor {
                  const bool batched = false,
                  const std::string& name = "external");
 
-  const Shape get_expanded_shape() const;
-
   /// @brief Write bytes directly into the tensor after encoding and encrypting
   /// @param p Pointer to source of data
   /// @param tensor_offset Offset (bytes) into tensor storage to begin writing.
@@ -63,9 +61,6 @@ class HECipherTensor : public HETensor {
   inline std::shared_ptr<runtime::he::HECiphertext>& get_element(size_t i) {
     return m_cipher_texts[i];
   }
-
-  inline size_t get_batch_size() noexcept { return m_batch_size; }
-  inline bool is_batched() noexcept { return m_batched; }
 
  private:
   std::vector<std::shared_ptr<runtime::he::HECiphertext>> m_cipher_texts;
