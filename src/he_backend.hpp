@@ -220,8 +220,8 @@ class HEBackend : public runtime::Backend {
   };
   std::map<std::shared_ptr<Function>, FunctionInstance> m_function_map;
 
-  bool m_optimized_add{true};
-  bool m_optimized_mult{true};
+  bool m_optimized_add{std::getenv("NGRAPH_OPTIMIZED_ADD") != nullptr};
+  bool m_optimized_mult{std::getenv("NGRAPH_OPTIMIZED_MULT") != nullptr};
   bool m_encrypt_data{std::getenv("NGRAPH_ENCRYPT_DATA") != nullptr};
   bool m_batch_data{std::getenv("NGRAPH_BATCH_DATA") != nullptr};
   bool m_encrypt_model{std::getenv("NGRAPH_ENCRYPT_MODEL") != nullptr};

@@ -149,7 +149,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_batch) {
 
   Shape shape_a{3, 1};
   Shape shape_b{1};
-  Shape shape_r{3, 1};
+  Shape shape_r{3};
   auto a = make_shared<op::Parameter>(element::f32, shape_a);
   auto b = make_shared<op::Parameter>(element::f32, shape_b);
   auto t = make_shared<op::Dot>(a, b);
@@ -184,9 +184,9 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_perf) {
   auto f = make_shared<Function>(t, op::ParameterVector{a, b});
 
   // Create some tensors for input/output
-  auto t_a = backend->create_tensor(element::f32, shape_a);
+  auto t_a = backend->create_cipher_tensor(element::f32, shape_a);
   auto t_b = backend->create_plain_tensor(element::f32, shape_b);
-  auto t_result = backend->create_tensor(element::f32, shape_r);
+  auto t_result = backend->create_cipher_tensor(element::f32, shape_r);
 
   vector<float> a_vals, b_vals;
   for (size_t i = 0; i < 100 * 100; ++i) {

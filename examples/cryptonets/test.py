@@ -179,8 +179,6 @@ def test_mnist_cnn(FLAGS, network):
             dst_path = "mnist_cryptonets_batch_%s.json" % (FLAGS.batch_size,)
             print("Moving", src_path, "to", dst_path)
             os.rename(src_path, dst_path)
-        else:
-            print("can't reserialize!")
     except:
         print("Renaming serialized graph not successful")
 

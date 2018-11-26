@@ -32,7 +32,6 @@ runtime::he::HECipherTensor::HECipherTensor(
     : runtime::he::HETensor(element_type, shape, he_backend, batched, name) {
   m_num_elements = m_descriptor->get_tensor_layout()->get_size();
   m_cipher_texts.resize(m_num_elements);
-  NGRAPH_INFO << "HECipherTEnsor has " << m_num_elements << " elements";
 #pragma omp parallel for
   for (size_t i = 0; i < m_num_elements; ++i) {
     m_cipher_texts[i] = he_backend->create_empty_ciphertext();
@@ -42,9 +41,8 @@ runtime::he::HECipherTensor::HECipherTensor(
 void runtime::he::HECipherTensor::write(const void* source,
                                         size_t tensor_offset, size_t n) {
   // Hack to fix Cryptonets with ngraph-tf
-  // TODO: create / use write_unbatched() instead
-  NGRAPH_INFO << "Writing cipher tensor";
-  const char* ng_batch_tensor_value = std::getenv("NGRAPH_BATCHED_TENSOR");
+  // TODO: modify get_element_count() instead
+  const char* ng_batch_tensor_value = std::getenv("NGRAPH_BATCH_TF");
   if (ng_batch_tensor_value != nullptr) {
     n *= m_batch_size;
   }
@@ -54,8 +52,6 @@ void runtime::he::HECipherTensor::write(const void* source,
   size_t type_byte_size = element_type.size();
   size_t dst_start_index = tensor_offset / type_byte_size;
   size_t num_elements_to_write = n / (type_byte_size * m_batch_size);
-
-  NGRAPH_INFO << "Num elements to write " << num_elements_to_write;
 
   if (num_elements_to_write == 1) {
     const void* src_with_offset = (void*)((char*)source);
@@ -102,10 +98,9 @@ void runtime::he::HECipherTensor::write(const void* source,
 
 void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset,
                                        size_t n) const {
-  NGRAPH_INFO << "Reading HECipherTensor";
   // Hack to fix Cryptonets with ngraph-tf
-  // TODO: create / use read_unbatched() instead
-  const char* ng_batch_tensor_value = std::getenv("NGRAPH_BATCHED_TENSOR");
+  // TODO: modify get_element_count() instead
+  const char* ng_batch_tensor_value = std::getenv("NGRAPH_BATCH_TF");
   if (ng_batch_tensor_value != nullptr) {
     n *= m_batch_size;
   }
@@ -115,7 +110,6 @@ void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset,
   size_t type_byte_size = element_type.size();
   size_t src_start_index = tensor_offset / type_byte_size;
   size_t num_elements_to_read = n / (type_byte_size * m_batch_size);
-  NGRAPH_INFO << "Reading " << num_elements_to_read << " elements";
 
   if (num_elements_to_read == 1) {
     void* dst_with_offset = (void*)((char*)target);

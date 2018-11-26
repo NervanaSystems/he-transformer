@@ -37,6 +37,11 @@ To test the network with the C++ nGraph integration, change to the build directo
 and run the unit test
 ```
 cd ../../build
-NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_13.json ./test/cryptonets_benchmark
+[NGRAPH_ENCRYPT_DATA=1] [NGRAPH_ENCRYPT_MODEL=1] [NGRAPH_BATCH_DATA=1] NGRAPH_BATCH_TF=1 NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_13.json ./test/cryptonets_benchmark
 ```
 This will run a pre-trained Cryptonets example on various batch sizes `N={1, 2, 4, 8, 16, ..., 4096}`.
+If `NGRAPH_ENCRYPT_DATA=1`, the Cryptonets input data will be encrypted, preserving the privacy of the data.
+If `NGRAPH_ENCRYPT_MODEL=1`, the Cryptonets model will be encrypted, preserving the privacy of the model.
+If both `NGRAPH_ENCRPYT_DATA=1` and `NGRAPH_ENCRPYT_MODEL=1` are set, the runtime will roughly double, due to unavailibility of plaintext optimizations.
+If `NGRAPH_BATCH_DATA=1`, the Cryptonets model will perform SIMD batching for greatly-increased throughput.
+Note: either `NGRAPH_ENCRPYT_DATA=1` or `NGRAPH_ENCRYPT_MODEL=1` should be set; otherwise the model simply uses unencrypted computation.

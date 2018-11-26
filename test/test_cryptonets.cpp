@@ -34,13 +34,10 @@ using namespace ngraph;
 
 static string s_manifest = "";
 
-static void run_cryptonets_benchmark(string backend_name, size_t batch_size,
-                                     bool batched = true) {
-  if (!batched && batch_size > 1) {
-    throw ngraph_error("Non-batched must have batch_size 1");
-  }
+static void run_cryptonets_benchmark(string backend_name,
+                                     size_t batch_size = 1) {
   if (backend_name == "INTERPRETER") {
-    assert(!batched);
+    assert(batch_size == 1);
   }
   auto backend = runtime::Backend::create(backend_name);
   auto he_backend = dynamic_pointer_cast<runtime::he::HEBackend>(backend);
@@ -164,10 +161,6 @@ static void run_cryptonets_benchmark(string backend_name, size_t batch_size,
               << "ms";
   NGRAPH_INFO << "sw_global: " << sw_global.get_milliseconds() << "ms";
 };
-
-NGRAPH_TEST(Cryptonets, CKKS_unbatched) {
-  run_cryptonets_benchmark("HE:SEAL:CKKS", 1, false);
-}
 
 NGRAPH_TEST(Cryptonets, CKKS_1) { run_cryptonets_benchmark("HE:SEAL:CKKS", 1); }
 

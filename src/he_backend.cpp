@@ -104,7 +104,6 @@ shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(
 shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_plain_tensor(
     const element::Type& element_type, const Shape& shape,
     const bool batched) const {
-  NGRAPH_INFO << "Creating plain tensor shape " << join(shape);
   auto rc = make_shared<runtime::he::HEPlainTensor>(
       element_type, shape, this, create_empty_plaintext(), batched);
   return static_pointer_cast<runtime::Tensor>(rc);
@@ -113,8 +112,6 @@ shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_plain_tensor(
 shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_cipher_tensor(
     const element::Type& element_type, const Shape& shape,
     const bool batched) const {
-  NGRAPH_INFO << "Creating cipher tensor shape " << join(shape);
-
   auto rc = make_shared<runtime::he::HECipherTensor>(
       element_type, shape, this, create_empty_ciphertext(), batched);
   return static_pointer_cast<runtime::Tensor>(rc);
@@ -252,6 +249,16 @@ bool runtime::he::HEBackend::call(
     shared_ptr<Function> function,
     const vector<shared_ptr<runtime::Tensor>>& outputs,
     const vector<shared_ptr<runtime::Tensor>>& inputs) {
+  if (encrypt_data()) {
+    NGRAPH_INFO << "Encrypting data";
+  }
+  if (batch_data()) {
+    NGRAPH_INFO << "Batching data";
+  }
+  if (encrypt_model()) {
+    NGRAPH_INFO << "Encrypting model";
+  }
+
   compile(function);
   FunctionInstance& instance = m_function_map[function];
 
@@ -267,16 +274,6 @@ bool runtime::he::HEBackend::call(
     he_outputs.push_back(static_pointer_cast<runtime::he::HETensor>(tv));
   }
 
-  if (encrypt_data()) {
-    NGRAPH_INFO << "Encrypting data";
-  }
-  if (encrypt_model()) {
-    NGRAPH_INFO << "Encrypting model";
-  }
-  if (batch_data()) {
-    NGRAPH_INFO << "Batching data";
-  }
-
   validate_he_call(function, he_outputs, he_inputs);
 
   // map function params -> HETensor
@@ -285,7 +282,6 @@ bool runtime::he::HEBackend::call(
   size_t input_count = 0;
   for (auto param : function->get_parameters()) {
     for (size_t i = 0; i < param->get_output_size(); ++i) {
-      NGRAPH_INFO << "Processing parm";
       descriptor::Tensor* tv = param->get_output_tensor_ptr(i).get();
 
       if (encrypt_data()) {
@@ -295,25 +291,18 @@ bool runtime::he::HEBackend::call(
             create_cipher_tensor(plain_input->get_element_type(),
                                  plain_input->get_shape(), batch_data()));
 
-        NGRAPH_INFO << "element count " << plain_input->get_element_count();
-        NGRAPH_INFO << "better count "
-                    << plain_input->get_batched_element_count();
-
         for (size_t i = 0; i < plain_input->get_batched_element_count(); ++i) {
           encrypt(cipher_input->get_element(i), *plain_input->get_element(i));
         }
 
-        NGRAPH_INFO << "Inserting cipher param";
         tensor_map.insert({tv, cipher_input});
         input_count++;
       } else {
-        NGRAPH_INFO << "Inserting plaintext parameter";
         tensor_map.insert({tv, he_inputs[input_count++]});
       }
     }
   }
 
-  NGRAPH_INFO << "Mapping function results";
   // map function outputs -> HostTensor
   for (size_t output_count = 0; output_count < function->get_output_size();
        ++output_count) {
@@ -366,13 +355,6 @@ bool runtime::he::HEBackend::call(
                                   [](shared_ptr<runtime::he::HETensor> he_tv) {
                                     return he_tv->is_batched();
                                   });
-
-        NGRAPH_INFO << "Op: " << op->get_friendly_name() << ", plain? "
-                    << plain_out;
-        NGRAPH_INFO << "Op: " << op->get_friendly_name() << ", cipher? "
-                    << !plain_out;
-        NGRAPH_INFO << "Batched out: " << batched_out;
-
         if (plain_out) {
           auto otv = make_shared<runtime::he::HEPlainTensor>(
               element_type, shape, this, create_empty_plaintext(), batched_out,
@@ -384,9 +366,6 @@ bool runtime::he::HEBackend::call(
               name);
           tensor_map.insert({tv, otv});
         }
-      } else {
-        NGRAPH_INFO << "Op " << op->get_friendly_name()
-                    << " already in tensor map";
       }
       op_outputs.push_back(tensor_map.at(tv));
     }
@@ -400,7 +379,6 @@ bool runtime::he::HEBackend::call(
 
     instance.m_timer_map[op.get()].start();
     generate_calls(base_type, op, op_outputs, op_inputs);
-    NGRAPH_INFO << "Done with call " << op->get_friendly_name();
     instance.m_timer_map[op.get()].stop();
 
     const string op_name = op->description();
@@ -448,13 +426,34 @@ void runtime::he::HEBackend::generate_calls(
   } else if (out0_plain != nullptr) {
     batch_size = out0_plain->get_batch_size();
   }
-  NGRAPH_INFO << "Batch size " << batch_size;
+
+  stringstream ss;
+  ss << "Inputs: ";
+  if (arg0_cipher != nullptr) {
+    ss << "Cipher";
+  } else if (arg0_plain != nullptr) {
+    ss << "Plain";
+  }
+  if (arg1_cipher != nullptr) {
+    ss << ", Cipher";
+  } else if (arg1_plain != nullptr) {
+    ss << ", Plain";
+  }
+  NGRAPH_INFO << ss.str();
+  ss.str("");
+  ss << "Outputs: ";
+  if (out0_cipher != nullptr) {
+    ss << "Cipher";
+  } else if (out0_plain != nullptr) {
+    ss << "Plain";
+  }
+  NGRAPH_INFO << ss.str();
+
+  if (batch_size != 1) {
+    NGRAPH_INFO << "Batch size " << batch_size;
+  }
 
   if (node_op == "Add") {
-    if (out0_cipher != nullptr) {
-      NGRAPH_INFO << "out0_cipher->get_batched_element_count()"
-                  << out0_cipher->get_batched_element_count();
-    }
     if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
         out0_cipher != nullptr) {
       runtime::he::kernel::add(arg0_cipher->get_elements(),
@@ -475,8 +474,6 @@ void runtime::he::HEBackend::generate_calls(
                                out0_cipher->get_batched_element_count());
     } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                out0_plain != nullptr) {
-      NGRAPH_INFO << "out0_plain->get_batched_element_count() "
-                  << out0_plain->get_batched_element_count();
       runtime::he::kernel::add(arg0_plain->get_elements(),
                                arg1_plain->get_elements(),
                                out0_plain->get_elements(), element_type, this,
@@ -572,7 +569,6 @@ void runtime::he::HEBackend::generate_calls(
                 << join(args[1]->get_shape(), "x");
     if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
         out0_cipher != nullptr) {
-      NGRAPH_INFO << "Dot cipher cipher => cipher";
       runtime::he::kernel::dot(
           arg0_cipher->get_elements(), arg1_cipher->get_elements(),
           out0_cipher->get_elements(), arg0_cipher->get_shape(),
@@ -580,7 +576,6 @@ void runtime::he::HEBackend::generate_calls(
           dot->get_reduction_axes_count(), element_type, this);
     } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                out0_cipher != nullptr) {
-      NGRAPH_INFO << "Dot cipher plain => cipher";
       runtime::he::kernel::dot(
           arg0_cipher->get_elements(), arg1_plain->get_elements(),
           out0_cipher->get_elements(), arg0_cipher->get_shape(),
@@ -588,7 +583,6 @@ void runtime::he::HEBackend::generate_calls(
           dot->get_reduction_axes_count(), element_type, this);
     } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
                out0_cipher != nullptr) {
-      NGRAPH_INFO << "Dot plain cipher => cipher";
       runtime::he::kernel::dot(
           arg0_plain->get_elements(), arg1_cipher->get_elements(),
           out0_cipher->get_elements(), arg0_plain->get_shape(),
@@ -596,7 +590,6 @@ void runtime::he::HEBackend::generate_calls(
           dot->get_reduction_axes_count(), element_type, this);
     } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                out0_plain != nullptr) {
-      NGRAPH_INFO << "Dot plain plain => plain";
       runtime::he::kernel::dot(
           arg0_plain->get_elements(), arg1_plain->get_elements(),
           out0_plain->get_elements(), arg0_plain->get_shape(),
@@ -691,11 +684,6 @@ void runtime::he::HEBackend::generate_calls(
     }
   } else if (node_op == "Reshape") {
     shared_ptr<op::Reshape> reshape = dynamic_pointer_cast<op::Reshape>(node);
-    NGRAPH_INFO << "arg0 cipher? " << (arg0_cipher != nullptr);
-    NGRAPH_INFO << "arg0 plain? " << (arg0_plain != nullptr);
-    NGRAPH_INFO << "out0 cipher? " << (out0_cipher != nullptr);
-    NGRAPH_INFO << "out0 plain? " << (out0_plain != nullptr);
-
     if (arg0_cipher != nullptr && out0_cipher != nullptr) {
       runtime::he::kernel::reshape(
           arg0_cipher->get_elements(), out0_cipher->get_elements(),
@@ -711,26 +699,15 @@ void runtime::he::HEBackend::generate_calls(
     }
   } else if (node_op == "Result") {
     shared_ptr<op::Result> res = dynamic_pointer_cast<op::Result>(node);
-    NGRAPH_INFO << "arg0 cipher? " << (arg0_cipher != nullptr);
-    NGRAPH_INFO << "arg0 plain? " << (arg0_plain != nullptr);
-    NGRAPH_INFO << "out0 cipher? " << (out0_cipher != nullptr);
-    NGRAPH_INFO << "out0 plain? " << (out0_plain != nullptr);
-
     size_t output_size;
     if (arg0_plain != nullptr) {
       output_size = arg0_plain->get_batched_element_count();
-      NGRAPH_INFO << "arg0_plain->get_elements() "
-                  << arg0_plain->get_elements().size();
     } else if (arg0_cipher != nullptr) {
       output_size = arg0_cipher->get_batched_element_count();
-      NGRAPH_INFO << "arg0_cipher->get_elements() "
-                  << arg0_cipher->get_elements().size();
     } else {
       throw ngraph_error("Input argument is neither plaintext nor ciphertext");
     }
-    NGRAPH_INFO << "Output size " << output_size;
 
-    // TODO: clean up
     if (arg0_cipher != nullptr && out0_cipher != nullptr) {
       runtime::he::kernel::result(arg0_cipher->get_elements(),
                                   out0_cipher->get_elements(), output_size);
