@@ -273,11 +273,20 @@ void runtime::he::he_seal::HESealCKKSBackend::assert_valid_seal_ckks_parameter(
 }
 
 shared_ptr<runtime::Tensor>
-runtime::he::he_seal::HESealCKKSBackend::create_batched_tensor(
+runtime::he::he_seal::HESealCKKSBackend::create_batched_cipher_tensor(
     const element::Type& element_type, const Shape& shape) {
-  NGRAPH_INFO << "Creating batched tensor with shape " << join(shape);
+  NGRAPH_INFO << "Creating batched cipher tensor with shape " << join(shape);
   auto rc = make_shared<runtime::he::HECipherTensor>(
       element_type, shape, this, create_empty_ciphertext(), true);
+  return static_pointer_cast<runtime::Tensor>(rc);
+}
+
+shared_ptr<runtime::Tensor>
+runtime::he::he_seal::HESealCKKSBackend::create_batched_plain_tensor(
+    const element::Type& element_type, const Shape& shape) {
+  NGRAPH_INFO << "Creating batched plain tensor with shape " << join(shape);
+  auto rc = make_shared<runtime::he::HEPlainTensor>(
+      element_type, shape, this, create_empty_plaintext(), true);
   return static_pointer_cast<runtime::Tensor>(rc);
 }
 
@@ -285,6 +294,7 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
     shared_ptr<runtime::he::HEPlaintext>& output, const void* input,
     const element::Type& element_type, size_t count) const {
   const string type_name = element_type.c_type_string();
+  NGRAPH_INFO << "Encoding count " << count;
   if (type_name == "float") {
     if (count == 1) {
       double value = (double)(*(float*)input);
@@ -304,6 +314,10 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
     } else {
       vector<float> values{(float*)input, (float*)input + count};
       vector<double> double_values(values.begin(), values.end());
+      NGRAPH_INFO << "Encoding batch";
+      for (auto elem : double_values) {
+        NGRAPH_INFO << "encoding " << elem;
+      }
       m_ckks_encoder->encode(
           double_values, m_scale,
           dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(
@@ -311,7 +325,7 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
               ->m_plaintext);
     }
   } else {
-    NGRAPH_INFO << "Unsupported element type in decode " << type_name;
+    NGRAPH_INFO << "Unsupported element type in encode " << type_name;
     throw ngraph_error("Unsupported element type " + type_name);
   }
 }
@@ -324,6 +338,7 @@ void runtime::he::he_seal::HESealCKKSBackend::decode(
   if (count == 0) {
     throw ngraph_error("Decode called on 0 elements");
   }
+  NGRAPH_INFO << "Decoding " << count << " count";
 
   if (type_name == "float") {
     auto seal_input = dynamic_cast<const SealPlaintextWrapper*>(input);
@@ -335,8 +350,15 @@ void runtime::he::he_seal::HESealCKKSBackend::decode(
     m_ckks_encoder->decode(seal_input->m_plaintext, xs);
     vector<float> xs_float(xs.begin(), xs.end());
 
+    NGRAPH_INFO << "Decoding batch";
+    NGRAPH_INFO << "xs_float.size() " << xs_float.size();
+    for (size_t i = 0; i < count; ++i) {
+      NGRAPH_INFO << "decoding " << xs_float[i];
+    }
+
     memcpy(output, &xs_float[0], element_type.size() * count);
   } else {
     throw ngraph_error("Unsupported element type " + type_name);
   }
+  NGRAPH_INFO << "Done decoding";
 }

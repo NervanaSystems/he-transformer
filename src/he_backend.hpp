@@ -113,7 +113,10 @@ class HEBackend : public runtime::Backend {
   std::shared_ptr<runtime::Tensor> create_tensor(
       const element::Type& element_type, const Shape& shape) override;
 
-  virtual std::shared_ptr<runtime::Tensor> create_batched_tensor(
+  virtual std::shared_ptr<runtime::Tensor> create_batched_cipher_tensor(
+      const element::Type& element_type, const Shape& shape) = 0;
+
+  virtual std::shared_ptr<runtime::Tensor> create_batched_plain_tensor(
       const element::Type& element_type, const Shape& shape) = 0;
 
   /// @brief Return a handle for a tensor for given mem on backend device
@@ -122,24 +125,26 @@ class HEBackend : public runtime::Backend {
       void* memory_pointer) override;
 
   std::shared_ptr<runtime::Tensor> create_plain_tensor(
-      const element::Type& element_type, const Shape& shape);
+      const element::Type& element_type, const Shape& shape,
+      const bool batched = false) const;
 
   std::shared_ptr<runtime::Tensor> create_cipher_tensor(
-      const element::Type& element_type, const Shape& shape);
+      const element::Type& element_type, const Shape& shape,
+      const bool batched = false) const;
 
   /// @brief Creates ciphertext Tensor of the same value
   /// @param value Scalar which to enrypt
   /// @param element_type Type to encrypt
   /// @param shape Shape of created Tensor
   std::shared_ptr<runtime::Tensor> create_valued_cipher_tensor(
-      float value, const element::Type& element_type, const Shape& shape);
+      float value, const element::Type& element_type, const Shape& shape) const;
 
   // Creates plaintext Tensor of the same value
   /// @param value Scalar which to encode
   /// @param element_type Type to encode
   /// @param shape Shape of created Tensor
   std::shared_ptr<runtime::Tensor> create_valued_plain_tensor(
-      float value, const element::Type& element_type, const Shape& shape);
+      float value, const element::Type& element_type, const Shape& shape) const;
 
   bool compile(std::shared_ptr<Function> function) override;
 
@@ -200,6 +205,10 @@ class HEBackend : public runtime::Backend {
   bool set_optimized_add(bool enable) { m_optimized_add = enable; };
   bool set_optimized_mult(bool enable) { m_optimized_mult = enable; };
 
+  bool encrypt_data() const { return m_encrypt_data; };
+  bool batch_data() const { return m_batch_data; };
+  bool encrypt_model() const { return m_encrypt_model; };
+
  private:
   class FunctionInstance {
    public:
@@ -213,6 +222,9 @@ class HEBackend : public runtime::Backend {
 
   bool m_optimized_add{true};
   bool m_optimized_mult{true};
+  bool m_encrypt_data{std::getenv("NGRAPH_ENCRYPT_DATA") != nullptr};
+  bool m_batch_data{std::getenv("NGRAPH_BATCH_DATA") != nullptr};
+  bool m_encrypt_model{std::getenv("NGRAPH_ENCRYPT_MODEL") != nullptr};
 
   void generate_calls(
       const element::Type& element_type, const std::shared_ptr<Node>& op,

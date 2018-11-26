@@ -72,41 +72,43 @@ bool all_close(const std::vector<T>& a, const std::vector<T>& b,
   return close;
 }
 
-std::vector<std::tuple<std::vector<std::shared_ptr<ngraph::runtime::Tensor>>,
-                       std::vector<std::shared_ptr<ngraph::runtime::Tensor>>>>
+std::vector<std::tuple<std::vector<std::shared_ptr<runtime::Tensor>>,
+                       std::vector<std::shared_ptr<runtime::Tensor>>>>
 generate_plain_cipher_tensors(const std::vector<std::shared_ptr<Node>>& output,
                               const std::vector<std::shared_ptr<Node>>& input,
-                              std::shared_ptr<ngraph::runtime::Backend> backend,
+                              std::shared_ptr<runtime::Backend> backend,
                               const bool consistent_type = false);
 
 // Reads batched vector
 template <typename T>
-std::vector<T> generalized_read_vector(
-    std::shared_ptr<ngraph::runtime::Tensor> tv) {
-  if (ngraph::element::from<T>() !=
-      tv->get_tensor_layout()->get_element_type()) {
+std::vector<T> generalized_read_vector(std::shared_ptr<runtime::Tensor> tv) {
+  if (element::from<T>() != tv->get_tensor_layout()->get_element_type()) {
     throw std::invalid_argument("read_vector type must match Tensor type");
   }
+  NGRAPH_INFO << "Generalized read vector";
   if (auto cipher_tv =
-          std::dynamic_pointer_cast<ngraph::runtime::he::HECipherTensor>(tv)) {
+          std::dynamic_pointer_cast<runtime::he::HECipherTensor>(tv)) {
     size_t element_count;
     if (cipher_tv->is_batched()) {
-      element_count = ngraph::shape_size(cipher_tv->get_expanded_shape());
+      element_count = shape_size(cipher_tv->get_expanded_shape());
     } else {
-      element_count = ngraph::shape_size(cipher_tv->get_shape());
+      element_count = shape_size(cipher_tv->get_shape());
     }
+    NGRAPH_INFO << "Element count " << element_count;
+
     size_t size = element_count * sizeof(T);
     std::vector<T> rc(element_count);
     cipher_tv->read(rc.data(), 0, size);
     return rc;
-  } else if (auto hetv =
-                 std::dynamic_pointer_cast<ngraph::runtime::he::HETensor>(tv)) {
-    size_t element_count = ngraph::shape_size(tv->get_shape());
+  } else if (auto hetv = std::dynamic_pointer_cast<runtime::he::HETensor>(tv)) {
+    size_t element_count = shape_size(hetv->get_expanded_shape());
+
+    NGRAPH_INFO << "Element count " << element_count;
     size_t size = element_count * sizeof(T);
     std::vector<T> rc(element_count);
     hetv->read(rc.data(), 0, size);
     return rc;
   } else {
-    throw ngraph_error("Tensor is not HETensor is generalized read vector");
+    throw ngraph_error("Tensor is not HETensor in generalized read vector");
   }
 }

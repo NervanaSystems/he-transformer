@@ -114,12 +114,25 @@ NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2_3) {
       test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector()));
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_batch) {
+NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_batch_write_read_2_3) {
   auto backend = static_pointer_cast<runtime::he::HEBackend>(
       runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
 
   Shape shape{2, 3};
-  auto a = backend->create_batched_tensor(element::f32, shape);
+  auto a = backend->create_batched_cipher_tensor(element::f32, shape);
+  copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector());
+
+  EXPECT_TRUE(all_close(
+      generalized_read_vector<float>(a),
+      (test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector()));
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, plain_tv_batch_write_read_2_3) {
+  auto backend = static_pointer_cast<runtime::he::HEBackend>(
+      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+
+  Shape shape{2, 3};
+  auto a = backend->create_batched_plain_tensor(element::f32, shape);
   copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector());
 
   EXPECT_TRUE(all_close(

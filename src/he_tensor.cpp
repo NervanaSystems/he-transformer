@@ -38,6 +38,8 @@ runtime::he::HETensor::HETensor(const element::Type& element_type,
   } else {
     m_batch_size = 1;
   }
+  m_batched_shape = batch_shape(shape, 0, batched);
+  m_expanded_shape = shape;
 }
 
 const Shape runtime::he::HETensor::batch_shape(const Shape& shape,

@@ -40,7 +40,10 @@ class HESealBFVBackend : public HESealBackend {
   HESealBFVBackend(HESealBFVBackend& he_backend) = default;
   ~HESealBFVBackend(){};
 
-  std::shared_ptr<runtime::Tensor> create_batched_tensor(
+  std::shared_ptr<runtime::Tensor> create_batched_cipher_tensor(
+      const element::Type& element_type, const Shape& shape) override;
+
+  std::shared_ptr<runtime::Tensor> create_batched_plain_tensor(
       const element::Type& element_type, const Shape& shape) override;
 
   std::shared_ptr<seal::SEALContext> make_seal_context(

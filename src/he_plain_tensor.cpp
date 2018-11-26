@@ -14,8 +14,7 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include <memory>
-#include <string>
+#include <cstring>
 
 #include "he_backend.hpp"
 #include "he_plain_tensor.hpp"
@@ -26,8 +25,8 @@ using namespace std;
 runtime::he::HEPlainTensor::HEPlainTensor(
     const element::Type& element_type, const Shape& shape,
     const HEBackend* he_backend, const shared_ptr<HEPlaintext> he_plaintext,
-    const string& name)
-    : runtime::he::HETensor(element_type, shape, he_backend) {
+    const bool batched, const string& name)
+    : runtime::he::HETensor(element_type, shape, he_backend, batched, name) {
   m_num_elements = m_descriptor->get_tensor_layout()->get_size();
   m_plain_texts.resize(m_num_elements);
 #pragma omp parallel for
@@ -38,11 +37,16 @@ runtime::he::HEPlainTensor::HEPlainTensor(
 
 void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
                                        size_t n) {
-  check_io_bounds(source, tensor_offset, n);
+  NGRAPH_INFO << "Writing plain tensor, batch size " << m_batch_size;
+  NGRAPH_INFO << "Checking io bounds";
+  check_io_bounds(source, tensor_offset, n / m_batch_size);
   const element::Type& element_type = get_tensor_layout()->get_element_type();
   size_t type_byte_size = element_type.size();
   size_t dst_start_index = tensor_offset / type_byte_size;
-  size_t num_elements_to_write = n / type_byte_size;
+  size_t num_elements_to_write = n / (type_byte_size * m_batch_size);
+
+  NGRAPH_INFO << "Writing " << num_elements_to_write << " elements";
+  NGRAPH_INFO << "Batch size " << m_batch_size;
   if (num_elements_to_write == 1) {
     const void* src_with_offset = (void*)((char*)source);
     size_t dst_index = dst_start_index;
@@ -53,32 +57,73 @@ void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
     for (size_t i = 0; i < num_elements_to_write; ++i) {
       const void* src_with_offset = (void*)((char*)source + i * type_byte_size);
       size_t dst_index = dst_start_index + i;
-      m_he_backend->encode(m_plain_texts[dst_index], src_with_offset,
-                           element_type);
+
+      if (m_batch_size > 1) {
+        size_t allocation_size = type_byte_size * m_batch_size;
+        const void* batch_src = malloc(allocation_size);
+        if (!batch_src) {
+          throw ngraph_error("Error allocating HE Cipher Tensor View memory");
+        }
+        for (size_t j = 0; j < m_batch_size; ++j) {
+          void* destination = (void*)((char*)batch_src + j * type_byte_size);
+          const void* src =
+              (void*)((char*)source +
+                      type_byte_size * (i + j * num_elements_to_write));
+          memcpy(destination, src, type_byte_size);
+        }
+        NGRAPH_INFO << "Encoding";
+        m_he_backend->encode(m_plain_texts[dst_index], batch_src, element_type,
+                             m_batch_size);
+        free((void*)batch_src);
+
+      } else {
+        m_he_backend->encode(m_plain_texts[dst_index], src_with_offset,
+                             element_type);
+      }
     }
   }
 }
 
 void runtime::he::HEPlainTensor::read(void* target, size_t tensor_offset,
                                       size_t n) const {
+  NGRAPH_INFO << "Reading plain tensor";
   check_io_bounds(target, tensor_offset, n);
   const element::Type& element_type = get_tensor_layout()->get_element_type();
   size_t type_byte_size = element_type.size();
   size_t src_start_index = tensor_offset / type_byte_size;
-  size_t num_elements_to_read = n / type_byte_size;
+  size_t num_elements_to_read = n / (type_byte_size * m_batch_size);
+  NGRAPH_INFO << "Reading " << num_elements_to_read << " elements";
 
   if (num_elements_to_read == 1) {
     void* dst_with_offset = (void*)((char*)target);
     size_t src_index = src_start_index;
     m_he_backend->decode(dst_with_offset, m_plain_texts[src_index].get(),
-                         element_type);
+                         element_type, m_batch_size);
   } else {
 #pragma omp parallel for
     for (size_t i = 0; i < num_elements_to_read; ++i) {
+      void* dst = malloc(type_byte_size * m_batch_size);
+      if (!dst) {
+        throw ngraph_error("Error allocating HE Cipher Tensor memory");
+      }
+      size_t src_index = src_start_index + i;
+      m_he_backend->decode(dst, m_plain_texts[src_index].get(), element_type,
+                           m_batch_size);
+
+      for (size_t j = 0; j < m_batch_size; ++j) {
+        void* dst_with_offset =
+            (void*)((char*)target +
+                    type_byte_size * (i + j * num_elements_to_read));
+        const void* src = (void*)((char*)dst + j * type_byte_size);
+        memcpy(dst_with_offset, src, type_byte_size);
+      }
+      free(dst);
+    }
+    /*for (size_t i = 0; i < num_elements_to_read; ++i) {
       void* dst_with_offset = (void*)((char*)target + i * type_byte_size);
       size_t src_index = src_start_index + i;
       m_he_backend->decode(dst_with_offset, m_plain_texts[src_index].get(),
-                           element_type);
-    }
+                           element_type, m_batch_size);
+    }*/
   }
 }
