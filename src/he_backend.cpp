@@ -320,7 +320,7 @@ bool runtime::he::HEBackend::call(
                 << "[ " << op->get_name() << " ]"
                 << "\033[0m";
     if (op->description() == "Parameter") {
-      NGRAPH_INFO << "Parameter shape " << join(op->get_shape());
+      NGRAPH_INFO << "Parameter shape {" << join(op->get_shape()) << "}";
       continue;
     }
 

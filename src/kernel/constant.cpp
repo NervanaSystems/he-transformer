@@ -24,7 +24,6 @@ void runtime::he::kernel::constant(
     const element::Type& element_type, const void* data_ptr,
     const runtime::he::HEBackend* he_backend, size_t count) {
   size_t type_byte_size = element_type.size();
-  NGRAPH_INFO << "Constant to Plaintext";
   if (out.size() != count) {
     throw ngraph_error("out.size() != count for constant op");
   }
@@ -41,7 +40,6 @@ void runtime::he::kernel::constant(
     const element::Type& element_type, const void* data_ptr,
     const runtime::he::HEBackend* he_backend, size_t count) {
   size_t type_byte_size = element_type.size();
-  NGRAPH_INFO << "Constant to Ciphertext";
   if (out.size() != count) {
     throw ngraph_error("out.size() != count for constant op");
   }
