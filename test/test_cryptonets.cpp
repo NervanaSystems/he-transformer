@@ -69,6 +69,8 @@ static void run_cryptonets_benchmark(string backend_name,
   auto model_file_name = ngraph::file_util::get_file_name(json_string) +
                          std::string(".") + pass::VisualizeTree::get_file_ext();
 
+  // To visualize
+  /*
   pass::Manager pass_manager;
   std::vector<std::shared_ptr<ngraph::Function>> tmp;
   tmp.push_back(f);
@@ -78,7 +80,7 @@ static void run_cryptonets_benchmark(string backend_name,
   // pass_manager.run_passes(f);
   NGRAPH_INFO << "Run passes on " << json_path;
 
-  return;
+  return; */
 
   NGRAPH_INFO << "Deserialize graph";
   NGRAPH_INFO << "x size " << x.size();
