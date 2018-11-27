@@ -290,7 +290,7 @@ bool runtime::he::HEBackend::call(
         auto cipher_input = static_pointer_cast<runtime::he::HECipherTensor>(
             create_cipher_tensor(plain_input->get_element_type(),
                                  plain_input->get_shape(), batch_data()));
-
+#pragma omp parallel for
         for (size_t i = 0; i < plain_input->get_batched_element_count(); ++i) {
           encrypt(cipher_input->get_element(i), *plain_input->get_element(i));
         }
