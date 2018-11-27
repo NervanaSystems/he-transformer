@@ -139,11 +139,8 @@ runtime::he::he_seal::HESealBFVBackend::make_seal_context(
            : throw ngraph_error("Invalid scheme name \"" + sp->m_scheme_name +
                                 "\""));
 
-  NGRAPH_INFO << "Setting poly mod degree to " << sp->m_poly_modulus_degree;
-
   parms.set_poly_modulus_degree(sp->m_poly_modulus_degree);
 
-  NGRAPH_INFO << "Setting coeff mod to security level " << sp->m_security_level;
   if (sp->m_security_level == 128) {
     parms.set_coeff_modulus(seal::coeff_modulus_128(sp->m_poly_modulus_degree));
   } else if (sp->m_security_level == 192) {
@@ -151,8 +148,6 @@ runtime::he::he_seal::HESealBFVBackend::make_seal_context(
   } else {
     throw ngraph_error("sp.security_level must be 128, 192");
   }
-
-  NGRAPH_INFO << "Setting plain mod to " << sp->m_plain_modulus;
   parms.set_plain_modulus(sp->m_plain_modulus);
 
   return seal::SEALContext::Create(parms);
