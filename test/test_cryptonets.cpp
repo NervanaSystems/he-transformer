@@ -162,6 +162,10 @@ static void run_cryptonets_benchmark(string backend_name,
   NGRAPH_INFO << "sw_global: " << sw_global.get_milliseconds() << "ms";
 };
 
+NGRAPH_TEST(Cryptonets, CKKS_warmup) {
+  run_cryptonets_benchmark("HE:SEAL:CKKS", 1);
+}
+
 NGRAPH_TEST(Cryptonets, CKKS_1) { run_cryptonets_benchmark("HE:SEAL:CKKS", 1); }
 
 NGRAPH_TEST(Cryptonets, CKKS_2) { run_cryptonets_benchmark("HE:SEAL:CKKS", 2); }
