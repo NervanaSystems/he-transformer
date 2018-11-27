@@ -1,0 +1,38 @@
+digraph ngraph
+{
+    Dot_15 [shape=ellipse color=black label="Dot_15 "]
+    Result_16 [shape=box style=filled fillcolor=pink  label="Result_16 "]
+    Dot_15 -> Result_16;
+    Multiply_14 [shape=ellipse color=black label="Multiply_14 "]
+    Multiply_14 -> Dot_15;
+    Constant_1 [shape=ellipse color=black label="Constant_1 "]
+    Constant_1 -> Dot_15;
+    Dot_13 [shape=ellipse color=black label="Dot_13 "]
+    Dot_13 -> Multiply_14;
+    Dot_13 -> Multiply_14;
+    Reshape_12 [shape=ellipse color=black label="Reshape_12 "]
+    Reshape_12 -> Dot_13;
+    Constant_2 [shape=ellipse color=black label="Constant_2 "]
+    Constant_2 -> Dot_13;
+    Pad_11 [shape=ellipse color=black label="Pad_11 "]
+    Pad_11 -> Reshape_12;
+    Multiply_10 [shape=ellipse color=black label="Multiply_10 "]
+    Multiply_10 -> Pad_11;
+    Constant_3 [shape=ellipse color=black label="Constant_3 "]
+    Constant_3 -> Pad_11;
+    Reshape_9 [shape=ellipse color=black label="Reshape_9 "]
+    Reshape_9 -> Multiply_10;
+    Reshape_9 -> Multiply_10;
+    Convolution_8 [shape=ellipse color=black label="Convolution_8 "]
+    Convolution_8 -> Reshape_9;
+    Reshape_7 [shape=ellipse color=black label="Reshape_7 "]
+    Reshape_7 -> Convolution_8;
+    Reshape_6 [shape=ellipse color=black label="Reshape_6 "]
+    Reshape_6 -> Convolution_8;
+    Constant_4 [shape=ellipse color=black label="Constant_4 "]
+    Constant_4 -> Reshape_6;
+    Reshape_5 [shape=ellipse color=black label="Reshape_5 "]
+    Reshape_5 -> Reshape_7;
+    Parameter_0 [shape=box color=blue  label="Parameter_0 "]
+    Parameter_0 -> Reshape_5;
+}

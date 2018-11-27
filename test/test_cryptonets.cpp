@@ -17,6 +17,7 @@
 #include <assert.h>
 #include <algorithm>
 
+#include "ngraph/pass/visualize_tree.hpp"
 #include "seal/ckks/he_seal_ckks_backend.hpp"
 #include "test_util.hpp"
 #include "util/test_tools.hpp"
@@ -65,6 +66,20 @@ static void run_cryptonets_benchmark(string backend_name,
       file_util::path_join(HE_SERIALIZED_ZOO, filename + ".json");
   const string json_string = file_util::read_file_to_string(json_path);
   shared_ptr<Function> f = deserialize(json_string);
+  auto model_file_name = ngraph::file_util::get_file_name(json_string) +
+                         std::string(".") + pass::VisualizeTree::get_file_ext();
+
+  pass::Manager pass_manager;
+  std::vector<std::shared_ptr<ngraph::Function>> tmp;
+  tmp.push_back(f);
+  auto vis_tree = pass::VisualizeTree(json_path);
+  vis_tree.run_on_module(tmp);
+  // pass_manager.register_pass<pass::VisualizeTree::run_on_module>(f);
+  // pass_manager.run_passes(f);
+  NGRAPH_INFO << "Run passes on " << json_path;
+
+  return;
+
   NGRAPH_INFO << "Deserialize graph";
   NGRAPH_INFO << "x size " << x.size();
   NGRAPH_INFO << "Inputs loaded";

@@ -70,7 +70,7 @@ def cryptonets_test_squashed(x):
         W_fc2 = tf.constant(
             np.loadtxt('W_fc2.txt', dtype=np.float32).reshape([100, 10]))
         y_conv = tf.matmul(h_fc1, W_fc2)
-        y_conv = tf.Print(y_conv, [y_conv], summarize=100, message="Result\n")
+        y_conv = tf.Print(y_conv, [y_conv], summarize=20, message="Result\n")
     return y_conv
 
 
@@ -144,6 +144,8 @@ def test_mnist_cnn(FLAGS, network):
 
     x_test = mnist.test.images[:FLAGS.batch_size]
     y_test = mnist.test.labels[:FLAGS.batch_size]
+    x_test_batch = mnist.test.images[:FLAGS.batch_size]
+    y_test_batch = mnist.test.labels[:FLAGS.batch_size]
 
     # Run warm-up and 10 trials
     with tf.Session() as sess:
@@ -152,12 +154,34 @@ def test_mnist_cnn(FLAGS, network):
         y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
         elasped_time = time.time() - start_time
         print("total time warmup:", elasped_time)
+    '''
+    # Avoid performing in a session, to allow he backends to report accuracy.
+    if FLAGS.report_accuracy:
+        y_label_batch = np.argmax(y_test_batch, 1)
+        correct_prediction = np.equal(np.argmax(y_conv_val, 1), y_label_batch)
+        error_count = np.size(correct_prediction) - np.sum(correct_prediction)
+        test_accuracy = np.mean(correct_prediction)
+
+        print('Error count', error_count, 'of', FLAGS.batch_size, 'elements.')
+        print('Accuracy with ' + network + ': %g ' % test_accuracy)
+
     with tf.Session() as sess:
         start_time = time.time()
         # Run model
         y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
         elasped_time = time.time() - start_time
         print("total time trial 1:", elasped_time)
+
+    # Avoid performing in a session, to allow he backends to report accuracy.
+    if FLAGS.report_accuracy:
+        y_label_batch = np.argmax(y_test_batch, 1)
+        correct_prediction = np.equal(np.argmax(y_conv_val, 1), y_label_batch)
+        error_count = np.size(correct_prediction) - np.sum(correct_prediction)
+        test_accuracy = np.mean(correct_prediction)
+
+        print('Error count', error_count, 'of', FLAGS.batch_size, 'elements.')
+        print('Accuracy with ' + network + ': %g ' % test_accuracy)
+
     with tf.Session() as sess:
         start_time = time.time()
         # Run model
@@ -212,13 +236,7 @@ def test_mnist_cnn(FLAGS, network):
         y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
         elasped_time = time.time() - start_time
         print("total time trial 10:", elasped_time)
-
-    x_test_batch = mnist.test.images[:FLAGS.batch_size]
-    y_test_batch = mnist.test.labels[:FLAGS.batch_size]
-    x_test = mnist.test.images
-    y_test = mnist.test.labels
-
-    y_label_batch = np.argmax(y_test_batch, 1)
+    '''
 
     if FLAGS.save_batch:
         x_test_batch.tofile("x_test_" + str(FLAGS.batch_size) + ".bin")
