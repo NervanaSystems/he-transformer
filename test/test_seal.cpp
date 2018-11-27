@@ -21,144 +21,140 @@
 
 using namespace std;
 
-TEST(seal_example, trivial)
-{
-    int a = 1;
-    int b = 2;
-    EXPECT_EQ(3, a + b);
+TEST(seal_example, trivial) {
+  int a = 1;
+  int b = 2;
+  EXPECT_EQ(3, a + b);
 }
 
-TEST(seal_example, seal_ckks_basics_i)
-{
-    using namespace seal;
+TEST(seal_example, seal_ckks_basics_i) {
+  using namespace seal;
 
-    EncryptionParameters parms(scheme_type::CKKS);
-    parms.set_poly_modulus_degree(8192);
-    parms.set_coeff_modulus(coeff_modulus_128(8192));
+  EncryptionParameters parms(scheme_type::CKKS);
+  parms.set_poly_modulus_degree(8192);
+  parms.set_coeff_modulus(coeff_modulus_128(8192));
 
-    auto context = SEALContext::Create(parms);
-    //print_parameters(context);
+  auto context = SEALContext::Create(parms);
+  // print_parameters(context);
 
-    KeyGenerator keygen(context);
-    auto public_key = keygen.public_key();
-    auto secret_key = keygen.secret_key();
-    auto relin_keys = keygen.relin_keys(60);
+  KeyGenerator keygen(context);
+  auto public_key = keygen.public_key();
+  auto secret_key = keygen.secret_key();
+  auto relin_keys = keygen.relin_keys(60);
 
-    Encryptor encryptor(context, public_key);
-    Evaluator evaluator(context);
-    Decryptor decryptor(context, secret_key);
+  Encryptor encryptor(context, public_key);
+  Evaluator evaluator(context);
+  Decryptor decryptor(context, secret_key);
 
-    CKKSEncoder encoder(context);
-    size_t slot_count = encoder.slot_count();
+  CKKSEncoder encoder(context);
+  size_t slot_count = encoder.slot_count();
 
-    vector<double> input{0.0, 1.1, 2.2, 3.3};
+  vector<double> input{0.0, 1.1, 2.2, 3.3};
 
-    Plaintext plain;
-    double scale = pow(2.0, 60);
-    encoder.encode(input, scale, plain);
+  Plaintext plain;
+  double scale = pow(2.0, 60);
+  encoder.encode(input, scale, plain);
 
-    Ciphertext encrypted;
-    encryptor.encrypt(plain, encrypted);
+  Ciphertext encrypted;
+  encryptor.encrypt(plain, encrypted);
 
-    evaluator.square_inplace(encrypted);
-    evaluator.relinearize_inplace(encrypted, relin_keys);
-    decryptor.decrypt(encrypted, plain);
-    encoder.decode(plain, input);
+  evaluator.square_inplace(encrypted);
+  evaluator.relinearize_inplace(encrypted, relin_keys);
+  decryptor.decrypt(encrypted, plain);
+  encoder.decode(plain, input);
 
-    evaluator.mod_switch_to_next_inplace(encrypted);
+  evaluator.mod_switch_to_next_inplace(encrypted);
 
-    decryptor.decrypt(encrypted, plain);
+  decryptor.decrypt(encrypted, plain);
 
-    encoder.decode(plain, input);
+  encoder.decode(plain, input);
 
-    encrypted.scale() *= 3;
-    decryptor.decrypt(encrypted, plain);
-    encoder.decode(plain, input);
+  encrypted.scale() *= 3;
+  decryptor.decrypt(encrypted, plain);
+  encoder.decode(plain, input);
 }
 
-TEST(seal_example, seal_bfv_basics_i)
-{
-    using namespace seal;
+TEST(seal_example, seal_bfv_basics_i) {
+  using namespace seal;
 
-    // Parameter
-    EncryptionParameters parms(seal::scheme_type::BFV);
-    parms.set_poly_modulus_degree(2048);
-    parms.set_coeff_modulus(coeff_modulus_128(2048));
-    parms.set_plain_modulus(1 << 8);
+  // Parameter
+  EncryptionParameters parms(seal::scheme_type::BFV);
+  parms.set_poly_modulus_degree(2048);
+  parms.set_coeff_modulus(coeff_modulus_128(2048));
+  parms.set_plain_modulus(1 << 8);
 
-    // Context: print with print_parameters(context);
-    auto context = SEALContext::Create(parms);
+  // Context: print with print_parameters(context);
+  auto context = SEALContext::Create(parms);
 
-    // Objects from context
-    IntegerEncoder encoder(parms.plain_modulus());
-    KeyGenerator keygen(context);
-    PublicKey public_key = keygen.public_key();
-    SecretKey secret_key = keygen.secret_key();
-    Encryptor encryptor(context, public_key);
-    Evaluator evaluator(context);
-    Decryptor decryptor(context, secret_key);
+  // Objects from context
+  IntegerEncoder encoder(parms.plain_modulus());
+  KeyGenerator keygen(context);
+  PublicKey public_key = keygen.public_key();
+  SecretKey secret_key = keygen.secret_key();
+  Encryptor encryptor(context, public_key);
+  Evaluator evaluator(context);
+  Decryptor decryptor(context, secret_key);
 
-    // Encode
-    int value1 = 5;
-    Plaintext plain1 = encoder.encode(value1);
-    int value2 = -7;
-    Plaintext plain2 = encoder.encode(value2);
+  // Encode
+  int value1 = 5;
+  Plaintext plain1 = encoder.encode(value1);
+  int value2 = -7;
+  Plaintext plain2 = encoder.encode(value2);
 
-    // Encrypt
-    Ciphertext encrypted1, encrypted2;
+  // Encrypt
+  Ciphertext encrypted1, encrypted2;
 
-    encryptor.encrypt(plain1, encrypted1);
-    encryptor.encrypt(plain2, encrypted2);
+  encryptor.encrypt(plain1, encrypted1);
+  encryptor.encrypt(plain2, encrypted2);
 
-    // Compute. In-place add and multiply will over-write encrypted1
-    evaluator.negate_inplace(encrypted1);
-    evaluator.add_inplace(encrypted1, encrypted2);
-    evaluator.multiply_inplace(encrypted1, encrypted2);
+  // Compute. In-place add and multiply will over-write encrypted1
+  evaluator.negate_inplace(encrypted1);
+  evaluator.add_inplace(encrypted1, encrypted2);
+  evaluator.multiply_inplace(encrypted1, encrypted2);
 
-    // Decrypt
-    Plaintext plain_result;
-    decryptor.decrypt(encrypted1, plain_result);
+  // Decrypt
+  Plaintext plain_result;
+  decryptor.decrypt(encrypted1, plain_result);
 
-    // Decode
-    int result = encoder.decode_int32(plain_result);
-    EXPECT_EQ(84, result);
+  // Decode
+  int result = encoder.decode_int32(plain_result);
+  EXPECT_EQ(84, result);
 }
 
-TEST(seal_example, seal_bfv_shared_ptr_encrypt)
-{
-    using namespace seal;
+TEST(seal_example, seal_bfv_shared_ptr_encrypt) {
+  using namespace seal;
 
-    // Parameter
-    EncryptionParameters parms(seal::scheme_type::BFV);
-    parms.set_poly_modulus_degree(2048);
-    parms.set_coeff_modulus(coeff_modulus_128(2048));
-    parms.set_plain_modulus(1 << 8);
+  // Parameter
+  EncryptionParameters parms(seal::scheme_type::BFV);
+  parms.set_poly_modulus_degree(2048);
+  parms.set_coeff_modulus(coeff_modulus_128(2048));
+  parms.set_plain_modulus(1 << 8);
 
-    // Context: print with print_parameters(context);
-    auto context = SEALContext::Create(parms);
+  // Context: print with print_parameters(context);
+  auto context = SEALContext::Create(parms);
 
-    // Objects from context
-    IntegerEncoder encoder(parms.plain_modulus());
-    KeyGenerator keygen(context);
-    PublicKey public_key = keygen.public_key();
-    SecretKey secret_key = keygen.secret_key();
-    Encryptor encryptor(context, public_key);
-    Evaluator evaluator(context);
-    Decryptor decryptor(context, secret_key);
+  // Objects from context
+  IntegerEncoder encoder(parms.plain_modulus());
+  KeyGenerator keygen(context);
+  PublicKey public_key = keygen.public_key();
+  SecretKey secret_key = keygen.secret_key();
+  Encryptor encryptor(context, public_key);
+  Evaluator evaluator(context);
+  Decryptor decryptor(context, secret_key);
 
-    // Encode
-    int value1 = 5;
-    Plaintext plain = encoder.encode(value1);
+  // Encode
+  int value1 = 5;
+  Plaintext plain = encoder.encode(value1);
 
-    // Encrypt
-    auto encrypted_ptr = make_shared<Ciphertext>();
-    encryptor.encrypt(plain, *encrypted_ptr);
+  // Encrypt
+  auto encrypted_ptr = make_shared<Ciphertext>();
+  encryptor.encrypt(plain, *encrypted_ptr);
 
-    // Decrypt
-    Plaintext plain_result;
-    decryptor.decrypt(*encrypted_ptr, plain_result);
+  // Decrypt
+  Plaintext plain_result;
+  decryptor.decrypt(*encrypted_ptr, plain_result);
 
-    // Decode
-    int result = encoder.decode_int32(plain_result);
-    EXPECT_EQ(5, result);
+  // Decode
+  int result = encoder.decode_int32(plain_result);
+  EXPECT_EQ(5, result);
 }

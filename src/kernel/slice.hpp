@@ -21,40 +21,31 @@
 
 #include "ngraph/coordinate_transform.hpp"
 
-namespace ngraph
-{
-    namespace runtime
-    {
-        namespace he
-        {
-            namespace kernel
-            {
-                template <typename T>
-                void slice(const std::vector<std::shared_ptr<T>>& arg,
-                           std::vector<std::shared_ptr<T>>& out,
-                           const Shape& arg_shape,
-                           const Coordinate& lower_bounds,
-                           const Coordinate& upper_bounds,
-                           const Strides& strides,
-                           const Shape& out_shape)
-                {
-                    CoordinateTransform input_transform(
-                        arg_shape, lower_bounds, upper_bounds, strides);
-                    CoordinateTransform output_transform(out_shape);
+namespace ngraph {
+namespace runtime {
+namespace he {
+namespace kernel {
+template <typename T>
+void slice(const std::vector<std::shared_ptr<T>>& arg,
+           std::vector<std::shared_ptr<T>>& out, const Shape& arg_shape,
+           const Coordinate& lower_bounds, const Coordinate& upper_bounds,
+           const Strides& strides, const Shape& out_shape) {
+  CoordinateTransform input_transform(arg_shape, lower_bounds, upper_bounds,
+                                      strides);
+  CoordinateTransform output_transform(out_shape);
 
-                    CoordinateTransform::Iterator output_it = output_transform.begin();
+  CoordinateTransform::Iterator output_it = output_transform.begin();
 
-                    for (const Coordinate& in_coord : input_transform)
-                    {
-                        const Coordinate& out_coord = *output_it;
+  for (const Coordinate& in_coord : input_transform) {
+    const Coordinate& out_coord = *output_it;
 
-                        out[output_transform.index(out_coord)] =
-                            arg[input_transform.index(in_coord)];
+    out[output_transform.index(out_coord)] =
+        arg[input_transform.index(in_coord)];
 
-                        ++output_it;
-                    }
-                }
-            }
-        }
-    }
+    ++output_it;
+  }
 }
+}  // namespace kernel
+}  // namespace he
+}  // namespace runtime
+}  // namespace ngraph

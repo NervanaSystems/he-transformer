@@ -14,45 +14,42 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include <assert.h>
-
+#include "he_backend.hpp"
 #include "ngraph/ngraph.hpp"
+#include "test_util.hpp"
 #include "util/all_close.hpp"
 #include "util/ndarray.hpp"
 #include "util/test_control.hpp"
 #include "util/test_tools.hpp"
-
-#include "he_backend.hpp"
-#include "test_util.hpp"
 
 using namespace std;
 using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
-NGRAPH_TEST(${BACKEND_NAME}, negate_2_3)
-{
-    auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+NGRAPH_TEST(${BACKEND_NAME}, negate_2_3) {
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
 
-    Shape shape{2, 3};
-    auto a = make_shared<op::Parameter>(element::f32, shape);
-    auto t = make_shared<op::Negative>(a);
-    auto f = make_shared<Function>(t, op::ParameterVector{a});
+  Shape shape{2, 3};
+  auto a = make_shared<op::Parameter>(element::f32, shape);
+  auto t = make_shared<op::Negative>(a);
+  auto f = make_shared<Function>(t, op::ParameterVector{a});
 
-    // Create some tensors for input/output
-    auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend);
+  // Create some tensors for input/output
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend, true);
 
-    for (auto tensors : tensors_list)
-    {
-        auto results = get<0>(tensors);
-        auto inputs = get<1>(tensors);
+  for (auto tensors : tensors_list) {
+    auto results = get<0>(tensors);
+    auto inputs = get<1>(tensors);
 
-        auto t_a = inputs[0];
-        auto t_result = results[0];
+    auto t_a = inputs[0];
+    auto t_result = results[0];
 
-        copy_data(t_a, test::NDArray<float, 2>({{-3, -2, -1}, {0, 1, 2}}).get_vector());
-        backend->call(f, {t_result}, {t_a});
-        EXPECT_TRUE(all_close(read_vector<float>(t_result),
-                              (test::NDArray<float, 2>({{3, 2, 1}, {0, -1, -2}})).get_vector()));
-    }
+    copy_data(t_a,
+              test::NDArray<float, 2>({{-3, -2, -1}, {0, 1, 2}}).get_vector());
+    backend->call(f, {t_result}, {t_a});
+    EXPECT_TRUE(all_close(
+        read_vector<float>(t_result),
+        (test::NDArray<float, 2>({{3, 2, 1}, {0, -1, -2}})).get_vector()));
+  }
 }

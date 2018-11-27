@@ -24,57 +24,48 @@
 #include "he_tensor.hpp"
 #include "ngraph/type/element_type.hpp"
 
-namespace ngraph
-{
-    namespace runtime
-    {
-        namespace he
-        {
-            class HEBackend;
-            class HEPlaintext;
+namespace ngraph {
+namespace runtime {
+namespace he {
+class HEPlainTensor : public HETensor {
+ public:
+  HEPlainTensor(const element::Type& element_type, const Shape& shape,
+                const HEBackend* he_backend,
+                const std::shared_ptr<HEPlaintext> he_plaintext,
+                const bool batched = false,
+                const std::string& name = "external");
 
-            class HEPlainTensor : public HETensor
-            {
-            public:
-                HEPlainTensor(const element::Type& element_type,
-                              const Shape& shape,
-                              const HEBackend* he_backend,
-                              const std::shared_ptr<HEPlaintext> he_plaintext,
-                              const std::string& name = "external");
-                ~HEPlainTensor(){};
+  /// @brief Write bytes directly into the tensor after encoding
+  /// @param p Pointer to source of data
+  /// @param tensor_offset Offset (bytes) into tensor storage to begin writing.
+  ///        Must be element-aligned.
+  /// @param n Number of bytes to write, must be integral number of elements.
+  // void write(const void* p, size_t tensor_offset, size_t n) override;
 
-                /// @brief Write bytes directly into the tensor after encoding
-                /// @param p Pointer to source of data
-                /// @param tensor_offset Offset (bytes) into tensor storage to begin writing.
-                ///        Must be element-aligned.
-                /// @param n Number of bytes to write, must be integral number of elements.
-                // void write(const void* p, size_t tensor_offset, size_t n) override;
+  void write(const void* source, size_t tensor_offset, size_t n) override;
 
-                void write(const void* source, size_t tensor_offset, size_t n) override;
+  /// @brief Read bytes directly from the tensor after decoding
+  /// @param p Pointer to destination for data
+  /// @param tensor_offset Offset (bytes) into tensor storage to begin reading.
+  ///        Must be element-aligned.
+  /// @param n Number of bytes to read, must be integral number of elements.
+  // void read(void* p, size_t tensor_offset, size_t n) const override;
 
-                /// @brief Read bytes directly from the tensor after decoding
-                /// @param p Pointer to destination for data
-                /// @param tensor_offset Offset (bytes) into tensor storage to begin reading.
-                ///        Must be element-aligned.
-                /// @param n Number of bytes to read, must be integral number of elements.
-                // void read(void* p, size_t tensor_offset, size_t n) const override;
+  void read(void* target, size_t tensor_offset, size_t n) const override;
 
-                void read(void* target, size_t tensor_offset, size_t n) const override;
+  inline std::vector<std::shared_ptr<runtime::he::HEPlaintext>>&
+  get_elements() noexcept {
+    return m_plain_texts;
+  }
 
-                inline std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& get_elements()
-                {
-                    return m_plain_texts;
-                }
+  inline std::shared_ptr<runtime::he::HEPlaintext>& get_element(size_t i) {
+    return m_plain_texts[i];
+  }
 
-                inline std::shared_ptr<runtime::he::HEPlaintext>& get_element(size_t i)
-                {
-                    return m_plain_texts[i];
-                }
-
-            private:
-                std::vector<std::shared_ptr<runtime::he::HEPlaintext>> m_plain_texts;
-                size_t m_num_elements;
-            };
-        }
-    }
-}
+ private:
+  std::vector<std::shared_ptr<runtime::he::HEPlaintext>> m_plain_texts;
+  size_t m_num_elements;
+};
+}  // namespace he
+}  // namespace runtime
+}  // namespace ngraph

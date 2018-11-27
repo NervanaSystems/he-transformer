@@ -19,40 +19,36 @@
 #include <memory>
 #include <vector>
 
-#include "ngraph/axis_vector.hpp"
+#include "he_backend.hpp"
 #include "ngraph/coordinate_transform.hpp"
+#include "ngraph/type/element_type.hpp"
 
 namespace ngraph {
 namespace runtime {
 namespace he {
 namespace kernel {
 template <typename T>
-void reshape(const std::vector<std::shared_ptr<T>>& arg,
-             std::vector<std::shared_ptr<T>>& out, const Shape& in_shape,
-             const AxisVector& in_axis_order, const Shape& out_shape) {
-  // Unfortunately we don't yet have a constructor for CoordinateTransform that
-  // lets us pass only source_space_shape and source_axis_order so we have to
-  // construct the defaults here.
-  Shape in_start_corner(in_shape.size(), 0);  // (0,...0)
-  Strides in_strides(in_shape.size(), 1);     // (1,...,1)
-
-  CoordinateTransform input_transform(in_shape, in_start_corner, in_shape,
-                                      in_strides, in_axis_order);
-
+void sum(const std::vector<std::shared_ptr<T>>& arg,
+         std::vector<std::shared_ptr<T>>& out, const Shape& in_shape,
+         const Shape& out_shape, const AxisSet& reduction_axes,
+         const element::Type& element_type,
+         const runtime::he::HEBackend* he_backend) {
   CoordinateTransform output_transform(out_shape);
-  CoordinateTransform::Iterator output_it = output_transform.begin();
 
-  if (output_it == output_transform.end()) {
-    return;
+  for (const Coordinate& output_coord : output_transform) {
+    out[output_transform.index(output_coord)] =
+        he_backend->create_valued_hetext<T>(0.f, element_type, T{});
   }
 
+  CoordinateTransform input_transform(in_shape);
+
   for (const Coordinate& input_coord : input_transform) {
-    const Coordinate& output_coord = *output_it;
+    Coordinate output_coord = reduce(input_coord, reduction_axes);
 
-    out[output_transform.index(output_coord)] =
-        arg[input_transform.index(input_coord)];
-
-    ++output_it;
+    auto& input = arg[input_transform.index(input_coord)];
+    auto& output = out[output_transform.index(output_coord)];
+    runtime::he::kernel::scalar_add(input.get(), output.get(), output,
+                                    element_type, he_backend);
   }
 }
 }  // namespace kernel

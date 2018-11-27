@@ -38,6 +38,7 @@ set(MULTI_TEST_SRC
     test_add.in.cpp
     test_basics.in.cpp
     test_broadcast.in.cpp
+    test_layers.in.cpp
     test_convolution.in.cpp
     test_dot.in.cpp
     test_multiply.in.cpp
@@ -45,8 +46,10 @@ set(MULTI_TEST_SRC
     test_pad.in.cpp
     test_read_write.in.cpp
     test_reshape.in.cpp
+    test_reverse.in.cpp
     test_slice.in.cpp
     test_subtract.in.cpp
+    test_sum.in.cpp
 )
 
 foreach(BACKEND_NAME ${ACTIVE_BACKEND_LIST})

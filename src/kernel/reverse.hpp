@@ -19,7 +19,9 @@
 #include <memory>
 #include <vector>
 
-#include "ngraph/axis_vector.hpp"
+#include "he_backend.hpp"
+#include "he_ciphertext.hpp"
+#include "he_plaintext.hpp"
 #include "ngraph/coordinate_transform.hpp"
 
 namespace ngraph {
@@ -27,32 +29,25 @@ namespace runtime {
 namespace he {
 namespace kernel {
 template <typename T>
-void reshape(const std::vector<std::shared_ptr<T>>& arg,
-             std::vector<std::shared_ptr<T>>& out, const Shape& in_shape,
-             const AxisVector& in_axis_order, const Shape& out_shape) {
-  // Unfortunately we don't yet have a constructor for CoordinateTransform that
-  // lets us pass only source_space_shape and source_axis_order so we have to
-  // construct the defaults here.
-  Shape in_start_corner(in_shape.size(), 0);  // (0,...0)
-  Strides in_strides(in_shape.size(), 1);     // (1,...,1)
-
-  CoordinateTransform input_transform(in_shape, in_start_corner, in_shape,
-                                      in_strides, in_axis_order);
-
+void reverse(const std::vector<std::shared_ptr<T>>& arg,
+             std::vector<std::shared_ptr<T>>& out, const Shape& arg_shape,
+             const Shape& out_shape, const AxisSet& reversed_axes) {
+  // In fact arg_shape == out_shape, but we'll use both for stylistic
+  // consistency with other kernels.
+  CoordinateTransform arg_transform(arg_shape);
   CoordinateTransform output_transform(out_shape);
-  CoordinateTransform::Iterator output_it = output_transform.begin();
 
-  if (output_it == output_transform.end()) {
-    return;
-  }
+  for (Coordinate out_coord : output_transform) {
+    Coordinate arg_coord = out_coord;
 
-  for (const Coordinate& input_coord : input_transform) {
-    const Coordinate& output_coord = *output_it;
+    for (size_t i = 0; i < arg_coord.size(); i++) {
+      if (reversed_axes.count(i) != 0) {
+        arg_coord[i] = arg_shape[i] - arg_coord[i] - 1;
+      }
+    }
 
-    out[output_transform.index(output_coord)] =
-        arg[input_transform.index(input_coord)];
-
-    ++output_it;
+    out[output_transform.index(out_coord)] =
+        arg[arg_transform.index(arg_coord)];
   }
 }
 }  // namespace kernel

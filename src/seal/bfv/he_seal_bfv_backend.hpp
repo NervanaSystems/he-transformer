@@ -18,6 +18,9 @@
 
 #include <memory>
 
+#include "he_cipher_tensor.hpp"
+#include "he_plain_tensor.hpp"
+#include "he_tensor.hpp"
 #include "ngraph/runtime/backend.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_parameter.hpp"
@@ -25,68 +28,47 @@
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
 
-namespace ngraph
-{
-    namespace runtime
-    {
-        namespace he
-        {
-            class HETensor;
-            class HEPlainTensor;
-            class HECipherTensor;
-            class HESealBackend;
+namespace ngraph {
+namespace runtime {
+namespace he {
+namespace he_seal {
+class HESealBFVBackend : public HESealBackend {
+ public:
+  HESealBFVBackend();
+  HESealBFVBackend(
+      const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp);
+  HESealBFVBackend(HESealBFVBackend& he_backend) = default;
+  ~HESealBFVBackend(){};
 
-            namespace he_seal
-            {
-                class HESealBFVBackend : public HESealBackend
-                {
-                public:
-                    HESealBFVBackend();
-                    HESealBFVBackend(
-                        const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp);
-                    HESealBFVBackend(HESealBFVBackend& he_backend) = default;
-                    ~HESealBFVBackend(){};
+  std::shared_ptr<runtime::Tensor> create_batched_cipher_tensor(
+      const element::Type& element_type, const Shape& shape) override;
 
-                    std::shared_ptr<runtime::Tensor>
-                        create_batched_tensor(const element::Type& element_type,
-                                              const Shape& shape) override;
+  std::shared_ptr<runtime::Tensor> create_batched_plain_tensor(
+      const element::Type& element_type, const Shape& shape) override;
 
-                    std::shared_ptr<seal::SEALContext> make_seal_context(
-                        const std::shared_ptr<runtime::he::he_seal::HESealParameter> sp)
-                        const override;
+  std::shared_ptr<seal::SEALContext> make_seal_context(
+      const std::shared_ptr<runtime::he::he_seal::HESealParameter> sp)
+      const override;
 
-                    void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
-                                const void* input,
-                                const element::Type& element_type,
-                                size_t count = 1) const override;
-                    void decode(void* output,
-                                const std::shared_ptr<runtime::he::HEPlaintext> input,
-                                const element::Type& element_type,
-                                size_t count = 1) const override;
+  void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
+              const void* input, const element::Type& element_type,
+              size_t count = 1) const override;
+  void decode(void* output, const runtime::he::HEPlaintext* input,
+              const element::Type& element_type,
+              size_t count = 1) const override;
 
-                    const inline std::shared_ptr<seal::FractionalEncoder> get_frac_encoder() const
-                    {
-                        return m_frac_encoder;
-                    }
+  const inline std::shared_ptr<seal::FractionalEncoder> get_frac_encoder()
+      const {
+    return m_frac_encoder;
+  }
 
-                    void assert_valid_seal_bfv_parameter(
-                        const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp) const;
+  void assert_valid_seal_bfv_parameter(
+      const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp) const;
 
-                    /// @brief Checks the noise budget of several tensor views
-                    ///        Throws an error if the noise budget is exhauasted
-                    ///        for any of the tensor views.
-                    void check_noise_budget(
-                        const std::vector<std::shared_ptr<runtime::he::HETensor>>& tvs) const;
-
-                    /// @brief Returns the remaining noise budget for a ciphertext.
-                    //         A noise budget of <= 0 indicate the ciphertext is no longer
-                    //         decryptable.
-                    int noise_budget(const std::shared_ptr<seal::Ciphertext>& ciphertext) const;
-
-                private:
-                    std::shared_ptr<seal::FractionalEncoder> m_frac_encoder;
-                };
-            }
-        }
-    }
-}
+ private:
+  std::shared_ptr<seal::FractionalEncoder> m_frac_encoder;
+};
+}  // namespace he_seal
+}  // namespace he
+}  // namespace runtime
+}  // namespace ngraph
