@@ -393,7 +393,7 @@ bool runtime::he::HEBackend::call(
       }
     }
     NGRAPH_INFO << "\033[1;31m" << op->get_name() << " took "
-                << instance.m_timer_map[op.get()].get_seconds() << "s"
+                << instance.m_timer_map[op.get()].get_milliseconds() << "ms"
                 << "\033[0m";
   }
   return true;

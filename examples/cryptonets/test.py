@@ -142,14 +142,76 @@ def test_mnist_cnn(FLAGS, network):
     else:
         y_conv = cryptonets_test_squashed(x)
 
+    x_test = mnist.test.images[:FLAGS.batch_size]
+    y_test = mnist.test.labels[:FLAGS.batch_size]
+
+    # Run warm-up and 10 trials
     with tf.Session() as sess:
         start_time = time.time()
-        x_test = mnist.test.images[:FLAGS.batch_size]
-        y_test = mnist.test.labels[:FLAGS.batch_size]
         # Run model
         y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
         elasped_time = time.time() - start_time
-        print("total time(s)", elasped_time)
+        print("total time warmup:", elasped_time)
+    with tf.Session() as sess:
+        start_time = time.time()
+        # Run model
+        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
+        elasped_time = time.time() - start_time
+        print("total time trial 1:", elasped_time)
+    with tf.Session() as sess:
+        start_time = time.time()
+        # Run model
+        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
+        elasped_time = time.time() - start_time
+        print("total time trial 2:", elasped_time)
+    with tf.Session() as sess:
+        start_time = time.time()
+        # Run model
+        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
+        elasped_time = time.time() - start_time
+        print("total time trial 3:", elasped_time)
+    with tf.Session() as sess:
+        start_time = time.time()
+        # Run model
+        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
+        elasped_time = time.time() - start_time
+        print("total time trial 4:", elasped_time)
+    with tf.Session() as sess:
+        start_time = time.time()
+        # Run model
+        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
+        elasped_time = time.time() - start_time
+        print("total time trial 5:", elasped_time)
+    with tf.Session() as sess:
+        start_time = time.time()
+        # Run model
+        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
+        elasped_time = time.time() - start_time
+        print("total time trial 6:", elasped_time)
+    with tf.Session() as sess:
+        start_time = time.time()
+        # Run model
+        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
+        elasped_time = time.time() - start_time
+        print("total time trial 7:", elasped_time)
+    with tf.Session() as sess:
+        start_time = time.time()
+        # Run model
+        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
+        elasped_time = time.time() - start_time
+        print("total time trial 8:", elasped_time)
+    with tf.Session() as sess:
+        start_time = time.time()
+        # Run model
+        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
+        elasped_time = time.time() - start_time
+        print("total time trial 9:", elasped_time)
+    with tf.Session() as sess:
+        start_time = time.time()
+        # Run model
+        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
+        elasped_time = time.time() - start_time
+        print("total time trial 10:", elasped_time)
 
     x_test_batch = mnist.test.images[:FLAGS.batch_size]
     y_test_batch = mnist.test.labels[:FLAGS.batch_size]
