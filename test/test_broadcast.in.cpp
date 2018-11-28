@@ -33,7 +33,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector) {
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{4};
   auto t = make_shared<op::Broadcast>(A, shape_r, AxisSet{0});
-  auto f = make_shared<Function>(t, op::ParameterVector{A});
+  auto f = make_shared<Function>(t, ParameterVector{A});
 
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({t}, {A}, backend, true);
@@ -60,7 +60,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_to_non_existent_axis) {
   Shape shape_r{4};
   ASSERT_THROW(auto f = make_shared<Function>(
                    make_shared<op::Broadcast>(A, shape_r, AxisSet{0, 1}),
-                   op::ParameterVector{A}),
+                   ParameterVector{A}),
                ngraph_error);
 }
 
@@ -70,7 +70,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix) {
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{2, 2};
   auto t = make_shared<op::Broadcast>(A, shape_r, AxisSet{0, 1});
-  auto f = make_shared<Function>(t, op::ParameterVector{A});
+  auto f = make_shared<Function>(t, ParameterVector{A});
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({t}, {A}, backend, true);
 
@@ -95,7 +95,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_tensor) {
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{2, 2, 2};
   auto t = make_shared<op::Broadcast>(A, shape_r, AxisSet{0, 1, 2});
-  auto f = make_shared<Function>(t, op::ParameterVector{A});
+  auto f = make_shared<Function>(t, ParameterVector{A});
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({t}, {A}, backend, true);
 
@@ -119,7 +119,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_trivial) {
   Shape shape{2, 2, 2};
   auto A = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Broadcast>(A, shape, AxisSet{});
-  auto f = make_shared<Function>(t, op::ParameterVector{A});
+  auto f = make_shared<Function>(t, ParameterVector{A});
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({t}, {A}, backend, true);
 
@@ -145,7 +145,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_colwise) {
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{3, 4};
   auto t = make_shared<op::Broadcast>(A, shape_r, AxisSet{1});
-  auto f = make_shared<Function>(t, op::ParameterVector{A});
+  auto f = make_shared<Function>(t, ParameterVector{A});
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({t}, {A}, backend, true);
 
@@ -171,7 +171,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_rowwise) {
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{3, 4};
   auto t = make_shared<op::Broadcast>(A, shape_r, AxisSet{0});
-  auto f = make_shared<Function>(t, op::ParameterVector{A});
+  auto f = make_shared<Function>(t, ParameterVector{A});
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({t}, {A}, backend, true);
 
@@ -197,7 +197,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_0) {
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{2, 2, 2};
   auto t = make_shared<op::Broadcast>(A, shape_r, AxisSet{0});
-  auto f = make_shared<Function>(t, op::ParameterVector{A});
+  auto f = make_shared<Function>(t, ParameterVector{A});
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({t}, {A}, backend, true);
   for (auto tensors : tensors_list) {
@@ -222,7 +222,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_1) {
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{2, 2, 2};
   auto t = make_shared<op::Broadcast>(A, shape_r, AxisSet{1});
-  auto f = make_shared<Function>(t, op::ParameterVector{A});
+  auto f = make_shared<Function>(t, ParameterVector{A});
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({t}, {A}, backend, true);
   for (auto tensors : tensors_list) {
@@ -247,7 +247,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_2) {
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{2, 2, 2};
   auto t = make_shared<op::Broadcast>(A, shape_r, AxisSet{2});
-  auto f = make_shared<Function>(t, op::ParameterVector{A});
+  auto f = make_shared<Function>(t, ParameterVector{A});
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({t}, {A}, backend, true);
   for (auto tensors : tensors_list) {

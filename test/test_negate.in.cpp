@@ -33,7 +33,7 @@ NGRAPH_TEST(${BACKEND_NAME}, negate_2_3) {
   Shape shape{2, 3};
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Negative>(a);
-  auto f = make_shared<Function>(t, op::ParameterVector{a});
+  auto f = make_shared<Function>(t, ParameterVector{a});
 
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend, true);

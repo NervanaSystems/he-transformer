@@ -39,7 +39,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_interior_1d) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A, B});
+      ParameterVector{A, B});
 
   auto backend = static_pointer_cast<runtime::he::HEBackend>(
       runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
@@ -71,7 +71,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_1d) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A, B});
+      ParameterVector{A, B});
 
   auto backend = static_pointer_cast<runtime::he::HEBackend>(
       runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
@@ -103,7 +103,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_interior_exterior_1d) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A, B});
+      ParameterVector{A, B});
 
   auto backend = static_pointer_cast<runtime::he::HEBackend>(
       runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
@@ -136,7 +136,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_interior_exterior_2d) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A, B});
+      ParameterVector{A, B});
 
   auto backend = static_pointer_cast<runtime::he::HEBackend>(
       runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
@@ -172,7 +172,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_0x0) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A, B});
+      ParameterVector{A, B});
 
   auto backend = static_pointer_cast<runtime::he::HEBackend>(
       runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
@@ -207,7 +207,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_0x3) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A, B});
+      ParameterVector{A, B});
 
   auto backend = static_pointer_cast<runtime::he::HEBackend>(
       runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
@@ -242,7 +242,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_3x0) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A, B});
+      ParameterVector{A, B});
 
   auto backend = static_pointer_cast<runtime::he::HEBackend>(
       runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
@@ -277,7 +277,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_4d_1x2x2x2) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A, B});
+      ParameterVector{A, B});
 
   auto backend = static_pointer_cast<runtime::he::HEBackend>(
       runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
@@ -345,7 +345,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_interior_exterior_4d_2x0x3x2) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A, B});
+      ParameterVector{A, B});
 
   auto backend = static_pointer_cast<runtime::he::HEBackend>(
       runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
@@ -375,7 +375,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_1d) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A});
+      ParameterVector{A});
 
   auto backend = static_pointer_cast<runtime::he::HEBackend>(
       runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
@@ -405,7 +405,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_1d) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A});
+      ParameterVector{A});
 
   auto backend = static_pointer_cast<runtime::he::HEBackend>(
       runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
@@ -435,7 +435,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_exterior_1d) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A});
+      ParameterVector{A});
 
   auto backend = static_pointer_cast<runtime::he::HEBackend>(
       runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
@@ -466,7 +466,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_exterior_2d) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A});
+      ParameterVector{A});
 
   auto backend = static_pointer_cast<runtime::he::HEBackend>(
       runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
@@ -501,7 +501,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_2d_0x0) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A});
+      ParameterVector{A});
 
   auto backend = static_pointer_cast<runtime::he::HEBackend>(
       runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
@@ -533,7 +533,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_2d_0x3) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A});
+      ParameterVector{A});
 
   auto backend = static_pointer_cast<runtime::he::HEBackend>(
       runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
@@ -565,7 +565,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_2d_3x0) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A});
+      ParameterVector{A});
 
   auto backend = static_pointer_cast<runtime::he::HEBackend>(
       runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
@@ -597,7 +597,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_4d_1x2x2x2) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A});
+      ParameterVector{A});
 
   auto backend = static_pointer_cast<runtime::he::HEBackend>(
       runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
@@ -662,7 +662,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_exterior_4d_2x0x3x2) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A});
+      ParameterVector{A});
 
   auto backend = static_pointer_cast<runtime::he::HEBackend>(
       runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));

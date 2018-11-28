@@ -35,7 +35,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image) {
   auto shape_b = Shape{1, 1, 3, 3};
   auto b = make_shared<op::Parameter>(element::f32, shape_b);
   auto t = make_shared<op::Convolution>(a, b, Strides{1, 1}, Strides{1, 1});
-  auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
   auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
@@ -69,7 +69,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_2outputs) {
   auto shape_b = Shape{2, 1, 2, 2};
   auto b = make_shared<op::Parameter>(element::f32, shape_b);
   auto t = make_shared<op::Convolution>(a, b, Strides{1, 1}, Strides{1, 1});
-  auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
       runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
@@ -105,7 +105,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item) {
                                         CoordinateDiff{0, 0},  // below_pads
                                         CoordinateDiff{0, 0},  // above_pads
                                         Strides{1, 1});        // data_dilation
-  auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
   auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
@@ -145,7 +145,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_1_1x1_1) {
                                         CoordinateDiff{1, 1},  // below_pads
                                         CoordinateDiff{1, 1},  // above_pads
                                         Strides{1, 1});        // data_dilation
-  auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
   auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
@@ -189,7 +189,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5) {
                                         CoordinateDiff{2, 3},  // below_pads
                                         CoordinateDiff{4, 5},  // above_pads
                                         Strides{1, 1});        // data_dilation
-  auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
   auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
@@ -251,7 +251,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items) {
                                         CoordinateDiff{0, 0},  // below_pads
                                         CoordinateDiff{0, 0},  // above_pads
                                         Strides{1, 1});        // data_dilation
-  auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
   auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
@@ -295,7 +295,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_strided_padded) {
                                         CoordinateDiff{4, 2},  // below_pads
                                         CoordinateDiff{5, 7},  // above_pads
                                         Strides{1, 1});        // data_dilation
-  auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
   auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(

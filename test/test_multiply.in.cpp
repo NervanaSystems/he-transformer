@@ -34,7 +34,7 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_2_3) {
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Multiply>(a, b);
-  auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
@@ -65,7 +65,7 @@ NGRAPH_TEST(${BACKEND_NAME}, square_2_3) {
   Shape shape{2, 3};
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Multiply>(a, a);
-  auto f = make_shared<Function>(t, op::ParameterVector{a, a});
+  auto f = make_shared<Function>(t, ParameterVector{a, a});
 
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({t}, {a, a}, backend);
@@ -98,7 +98,7 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_optimized_2_3) {
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Multiply>(a, b);
-  auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
@@ -134,7 +134,7 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_4_3_batch) {
   auto b = make_shared<op::Parameter>(element::f32, shape_b);
   auto t = make_shared<op::Multiply>(a, b);
 
-  auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
   auto t_a = backend->create_batched_plain_tensor(element::f32, shape_a);

@@ -34,7 +34,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_t2v_012) {
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{12};
   auto r = make_shared<op::Reshape>(A, AxisVector{0, 1, 2}, shape_r);
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
   for (auto tensors : tensors_list) {
@@ -60,7 +60,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_t2s_012) {
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{};
   auto r = make_shared<op::Reshape>(A, AxisVector{0, 1, 2}, shape_r);
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
   for (auto tensors : tensors_list) {
@@ -84,7 +84,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_t2s_120) {
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{};
   auto r = make_shared<op::Reshape>(A, AxisVector{0, 1, 2}, shape_r);
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
   for (auto tensors : tensors_list) {
@@ -108,7 +108,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_s2t) {
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{1, 1, 1, 1, 1, 1};
   auto r = make_shared<op::Reshape>(A, AxisVector{}, shape_r);
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
   for (auto tensors : tensors_list) {
@@ -132,7 +132,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_v2m_col) {
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{3, 1};
   auto r = make_shared<op::Reshape>(A, AxisVector{0}, shape_r);
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
   for (auto tensors : tensors_list) {
@@ -156,7 +156,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_v2m_row) {
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{1, 3};
   auto r = make_shared<op::Reshape>(A, AxisVector{0}, shape_r);
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
   for (auto tensors : tensors_list) {
@@ -180,7 +180,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_v2t_middle) {
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{1, 3, 1};
   auto r = make_shared<op::Reshape>(A, AxisVector{0}, shape_r);
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
   for (auto tensors : tensors_list) {
@@ -204,7 +204,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_same) {
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{3, 3};
   auto r = make_shared<op::Reshape>(A, AxisVector{0, 1}, shape_r);
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
   for (auto tensors : tensors_list) {
@@ -228,7 +228,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_transpose) {
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{3, 3};
   auto r = make_shared<op::Reshape>(A, AxisVector{1, 0}, shape_r);
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
   for (auto tensors : tensors_list) {
@@ -252,7 +252,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_dim_change_transpose) {
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{2, 3};
   auto r = make_shared<op::Reshape>(A, AxisVector{1, 0}, shape_r);
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
   for (auto tensors : tensors_list) {
@@ -323,7 +323,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_6d) {
   Shape shape_r{3, 2, 2, 4, 3, 2};
 
   auto r = make_shared<op::Reshape>(A, AxisVector{2, 4, 0, 5, 3, 1}, shape_r);
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
   for (auto tensors : tensors_list) {

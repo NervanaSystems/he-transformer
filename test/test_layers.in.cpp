@@ -33,7 +33,7 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_cipher) {
   auto A = make_shared<op::Parameter>(element::f32, shape);
   auto B = make_shared<op::Parameter>(element::f32, shape);
   auto C = make_shared<op::Parameter>(element::f32, shape);
-  auto f = make_shared<Function>((A * B) * C, op::ParameterVector{A, B, C});
+  auto f = make_shared<Function>((A * B) * C, ParameterVector{A, B, C});
 
   auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
       runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
@@ -70,7 +70,7 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_plain) {
   auto A = make_shared<op::Parameter>(element::f32, shape);
   auto B = make_shared<op::Parameter>(element::f32, shape);
   auto C = make_shared<op::Parameter>(element::f32, shape);
-  auto f = make_shared<Function>((A * B) * C, op::ParameterVector{A, B, C});
+  auto f = make_shared<Function>((A * B) * C, ParameterVector{A, B, C});
 
   auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
       runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
@@ -107,7 +107,7 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_plain_plain) {
   auto A = make_shared<op::Parameter>(element::f32, shape);
   auto B = make_shared<op::Parameter>(element::f32, shape);
   auto C = make_shared<op::Parameter>(element::f32, shape);
-  auto f = make_shared<Function>((A * B) * C, op::ParameterVector{A, B, C});
+  auto f = make_shared<Function>((A * B) * C, ParameterVector{A, B, C});
 
   auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
       runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
@@ -144,7 +144,7 @@ NGRAPH_TEST(${BACKEND_NAME}, add_layer_cipher_cipher) {
   auto A = make_shared<op::Parameter>(element::f32, shape);
   auto B = make_shared<op::Parameter>(element::f32, shape);
   auto C = make_shared<op::Parameter>(element::f32, shape);
-  auto f = make_shared<Function>((A * B) + C, op::ParameterVector{A, B, C});
+  auto f = make_shared<Function>((A * B) + C, ParameterVector{A, B, C});
 
   auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
       runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
@@ -171,7 +171,7 @@ NGRAPH_TEST(${BACKEND_NAME}, add_layer_cipher_plain) {
   auto A = make_shared<op::Parameter>(element::f32, shape);
   auto B = make_shared<op::Parameter>(element::f32, shape);
   auto C = make_shared<op::Parameter>(element::f32, shape);
-  auto f = make_shared<Function>((A * B) + C, op::ParameterVector{A, B, C});
+  auto f = make_shared<Function>((A * B) + C, ParameterVector{A, B, C});
 
   auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
       runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
@@ -198,7 +198,7 @@ NGRAPH_TEST(${BACKEND_NAME}, add_layer_plain_plain) {
   auto A = make_shared<op::Parameter>(element::f32, shape);
   auto B = make_shared<op::Parameter>(element::f32, shape);
   auto C = make_shared<op::Parameter>(element::f32, shape);
-  auto f = make_shared<Function>((A * B) + C, op::ParameterVector{A, B, C});
+  auto f = make_shared<Function>((A * B) + C, ParameterVector{A, B, C});
 
   auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
       runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));

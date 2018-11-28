@@ -34,7 +34,7 @@ NGRAPH_TEST(${BACKEND_NAME}, add_2_3) {
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Add>(a, b);
-  auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
@@ -65,7 +65,7 @@ NGRAPH_TEST(${BACKEND_NAME}, add_zero_2_3) {
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Add>(a, b);
-  auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
@@ -100,7 +100,7 @@ NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_cipher) {
   auto b = make_shared<op::Parameter>(element::f32, shape_b);
   auto t = make_shared<op::Add>(a, b);
 
-  auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
   auto t_a = backend->create_batched_cipher_tensor(element::f32, shape_a);
@@ -126,7 +126,7 @@ NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_plain) {
   auto b = make_shared<op::Parameter>(element::f32, shape_b);
   auto t = make_shared<op::Add>(a, b);
 
-  auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
   auto t_a = backend->create_batched_plain_tensor(element::f32, shape_a);
@@ -150,7 +150,7 @@ NGRAPH_TEST(${BACKEND_NAME}, add_optimized_2_3) {
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Add>(a, b);
-  auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);

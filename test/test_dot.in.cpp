@@ -34,7 +34,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot1d) {
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Dot>(a, b);
-  auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
@@ -65,7 +65,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot1d_optimized) {
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Dot>(a, b);
-  auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
@@ -95,7 +95,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_matrix_vector) {
   auto a = make_shared<op::Parameter>(element::f32, shape_a);
   auto b = make_shared<op::Parameter>(element::f32, shape_b);
   auto t = make_shared<op::Dot>(a, b);
-  auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
@@ -125,7 +125,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_scalar) {
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Dot>(a, b);
-  auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
@@ -157,7 +157,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_batch) {
   auto b = make_shared<op::Parameter>(element::f32, shape_b);
   auto t = make_shared<op::Dot>(a, b);
 
-  auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
   auto t_a = backend->create_batched_plain_tensor(element::f32, shape_a);
@@ -184,7 +184,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_perf) {
   auto b = make_shared<op::Parameter>(element::f32, shape_b);
   auto t = make_shared<op::Dot>(a, b);
 
-  auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
   auto t_a = backend->create_cipher_tensor(element::f32, shape_a);
