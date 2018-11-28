@@ -61,7 +61,7 @@ bool all_close(const std::vector<std::complex<T>>& a,
 
 template <typename T>
 bool all_close(const std::vector<T>& a, const std::vector<T>& b,
-               T atol = static_cast<T>(1e-5)) {
+               T atol = static_cast<T>(1e-3)) {
   bool close = true;
   for (size_t i = 0; i < a.size(); ++i) {
     if (std::abs(a[i] - b[i]) > atol) {
@@ -76,7 +76,7 @@ std::vector<std::tuple<std::vector<std::shared_ptr<runtime::Tensor>>,
                        std::vector<std::shared_ptr<runtime::Tensor>>>>
 generate_plain_cipher_tensors(const std::vector<std::shared_ptr<Node>>& output,
                               const std::vector<std::shared_ptr<Node>>& input,
-                              std::shared_ptr<runtime::Backend> backend,
+                              const runtime::Backend* backend,
                               const bool consistent_type = false);
 
 // Reads batched vector

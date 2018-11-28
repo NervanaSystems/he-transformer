@@ -5,3 +5,5 @@ cipher_tv_batch_write_read_2_3 # BFV doesn't support floating-point batching
 plain_tv_batch_write_read_2_3 # BFV doesn't support floating-point batching
 add_4_3_batch_cipher # BFV doesn't support floating-point batching
 add_4_3_batch_plain # BFV doesn't support floating-point batching
+multiply_4_3_batch # BFV doesn't support floating-point batching
+dot_scalar_batch # BFV doesn't support floating-point batching

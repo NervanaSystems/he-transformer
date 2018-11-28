@@ -22,6 +22,7 @@
 #include "he_ciphertext.hpp"
 #include "he_plaintext.hpp"
 #include "ngraph/coordinate_transform.hpp"
+#include "ngraph/shape_util.hpp"
 
 namespace ngraph {
 namespace runtime {

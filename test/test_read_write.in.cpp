@@ -83,31 +83,31 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_5_5) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_scalar) {
-  auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
 
   Shape shape{};
-  auto a = backend->create_plain_tensor(element::f32, shape);
+  auto a = he_backend->create_plain_tensor(element::f32, shape);
   copy_data(a, vector<float>{5});
   EXPECT_TRUE(all_close(read_vector<float>(a), (vector<float>{5})));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2) {
-  auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
 
   Shape shape{2};
-  auto a = backend->create_plain_tensor(element::f32, shape);
+  auto a = he_backend->create_plain_tensor(element::f32, shape);
   copy_data(a, vector<float>{5, 6});
   EXPECT_TRUE(all_close(read_vector<float>(a), (vector<float>{5, 6})));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2_3) {
-  auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
 
   Shape shape{2, 3};
-  auto a = backend->create_plain_tensor(element::f32, shape);
+  auto a = he_backend->create_plain_tensor(element::f32, shape);
   copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector());
   EXPECT_TRUE(all_close(
       read_vector<float>(a),
@@ -115,11 +115,11 @@ NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2_3) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_batch_write_read_2_3) {
-  auto backend = static_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
 
   Shape shape{2, 3};
-  auto a = backend->create_batched_cipher_tensor(element::f32, shape);
+  auto a = he_backend->create_batched_cipher_tensor(element::f32, shape);
   copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector());
 
   EXPECT_TRUE(all_close(
@@ -128,11 +128,11 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_batch_write_read_2_3) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, plain_tv_batch_write_read_2_3) {
-  auto backend = static_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
 
   Shape shape{2, 3};
-  auto a = backend->create_batched_plain_tensor(element::f32, shape);
+  auto a = he_backend->create_batched_plain_tensor(element::f32, shape);
   copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector());
 
   EXPECT_TRUE(all_close(

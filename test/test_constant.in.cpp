@@ -31,7 +31,7 @@ NGRAPH_TEST(${BACKEND_NAME}, constant) {
   auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
   Shape shape{2, 2};
   auto A = op::Constant::create(element::f32, shape, {0.1, 0.2, 0.3, 0.4});
-  auto f = make_shared<Function>(A, op::ParameterVector{});
+  auto f = make_shared<Function>(A, ParameterVector{});
 
   auto result = backend->create_tensor(element::f32, shape);
   backend->call(f, {result}, {});
@@ -46,7 +46,7 @@ NGRAPH_TEST(${BACKEND_NAME}, constant_abc) {
   auto B = make_shared<op::Parameter>(element::f32, shape);
   auto C = make_shared<op::Parameter>(element::f32, shape);
   auto t = (A + B) * C;
-  auto f = make_shared<Function>(t, op::ParameterVector{B, C});
+  auto f = make_shared<Function>(t, ParameterVector{B, C});
 
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({t}, {B, C}, backend);

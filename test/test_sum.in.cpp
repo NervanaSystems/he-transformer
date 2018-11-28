@@ -34,10 +34,11 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_trivial) {
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Sum>(a, AxisSet{});
-  auto f = make_shared<Function>(t, op::ParameterVector{a});
+  auto f = make_shared<Function>(t, ParameterVector{a});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend, true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -60,10 +61,11 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_trivial_5d) {
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Sum>(a, AxisSet{});
-  auto f = make_shared<Function>(t, op::ParameterVector{a});
+  auto f = make_shared<Function>(t, ParameterVector{a});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend, true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -90,10 +92,11 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_to_scalar) {
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Sum>(a, AxisSet{0, 1});
-  auto f = make_shared<Function>(t, op::ParameterVector{a});
+  auto f = make_shared<Function>(t, ParameterVector{a});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend, true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -121,10 +124,11 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_columns) {
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Sum>(a, AxisSet{0});
-  auto f = make_shared<Function>(t, op::ParameterVector{a});
+  auto f = make_shared<Function>(t, ParameterVector{a});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend, true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -152,10 +156,11 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_rows) {
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Sum>(a, AxisSet{1});
-  auto f = make_shared<Function>(t, op::ParameterVector{a});
+  auto f = make_shared<Function>(t, ParameterVector{a});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend, true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -183,10 +188,11 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_rows_zero) {
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Sum>(a, AxisSet{1});
-  auto f = make_shared<Function>(t, op::ParameterVector{a});
+  auto f = make_shared<Function>(t, ParameterVector{a});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend, true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -214,10 +220,11 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_cols_zero) {
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Sum>(a, AxisSet{0});
-  auto f = make_shared<Function>(t, op::ParameterVector{a});
+  auto f = make_shared<Function>(t, ParameterVector{a});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend, true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -244,10 +251,11 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_vector_zero) {
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Sum>(a, AxisSet{0});
-  auto f = make_shared<Function>(t, op::ParameterVector{a});
+  auto f = make_shared<Function>(t, ParameterVector{a});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend, true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -274,10 +282,11 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_to_scalar_zero_by_zero) {
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Sum>(a, AxisSet{0, 1});
-  auto f = make_shared<Function>(t, op::ParameterVector{a});
+  auto f = make_shared<Function>(t, ParameterVector{a});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend, true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);

@@ -164,7 +164,7 @@ void runtime::he::HEBackend::validate_he_call(
     shared_ptr<const Function> function,
     const vector<shared_ptr<runtime::he::HETensor>>& outputs,
     const vector<shared_ptr<runtime::he::HETensor>>& inputs) {
-  const op::ParameterVector& input_parameters = function->get_parameters();
+  const ParameterVector& input_parameters = function->get_parameters();
   if (input_parameters.size() != inputs.size()) {
     stringstream ss;
     ss << "Call input count " << inputs.size()

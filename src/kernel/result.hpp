@@ -22,7 +22,6 @@
 #include "he_backend.hpp"
 #include "he_ciphertext.hpp"
 #include "he_plaintext.hpp"
-
 #include "ngraph/log.hpp"
 
 namespace ngraph {

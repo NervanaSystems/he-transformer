@@ -33,9 +33,9 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_0d) {
   Shape shape{};
   auto A = make_shared<op::Parameter>(element::f32, shape);
   auto r = make_shared<op::Reverse>(A, AxisSet{});
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
+  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -57,9 +57,9 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_1d_nochange) {
   Shape shape{8};
   auto A = make_shared<op::Parameter>(element::f32, shape);
   auto r = make_shared<op::Reverse>(A, AxisSet{});
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
+  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -81,9 +81,9 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_1d_0) {
   Shape shape{8};
   auto A = make_shared<op::Parameter>(element::f32, shape);
   auto r = make_shared<op::Reverse>(A, AxisSet{0});
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
+  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -105,9 +105,9 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_nochange) {
   Shape shape{4, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape);
   auto r = make_shared<op::Reverse>(A, AxisSet{});
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
+  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -133,9 +133,9 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_0) {
   Shape shape{4, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape);
   auto r = make_shared<op::Reverse>(A, AxisSet{0});
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
+  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -161,9 +161,9 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_1) {
   Shape shape{4, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape);
   auto r = make_shared<op::Reverse>(A, AxisSet{1});
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
+  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -189,9 +189,9 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_01) {
   Shape shape{4, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape);
   auto r = make_shared<op::Reverse>(A, AxisSet{0, 1});
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
+  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -217,9 +217,9 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_nochange) {
   Shape shape{2, 4, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape);
   auto r = make_shared<op::Reverse>(A, AxisSet{});
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
+  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -248,9 +248,9 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_0) {
   Shape shape{2, 4, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape);
   auto r = make_shared<op::Reverse>(A, AxisSet{0});
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
+  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -279,9 +279,9 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_1) {
   Shape shape{2, 4, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape);
   auto r = make_shared<op::Reverse>(A, AxisSet{1});
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
+  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -310,9 +310,9 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_2) {
   Shape shape{2, 4, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape);
   auto r = make_shared<op::Reverse>(A, AxisSet{2});
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
+  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -341,9 +341,9 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_01) {
   Shape shape{2, 4, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape);
   auto r = make_shared<op::Reverse>(A, AxisSet{0, 1});
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
+  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -372,9 +372,9 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_02) {
   Shape shape{2, 4, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape);
   auto r = make_shared<op::Reverse>(A, AxisSet{0, 2});
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
+  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -403,9 +403,9 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_12) {
   Shape shape{2, 4, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape);
   auto r = make_shared<op::Reverse>(A, AxisSet{1, 2});
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
+  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -434,9 +434,9 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_012) {
   Shape shape{2, 4, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape);
   auto r = make_shared<op::Reverse>(A, AxisSet{0, 1, 2});
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
+  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);

@@ -20,7 +20,7 @@ set(EXTERNAL_NGRAPH_TF_INSTALL_DIR ${EXTERNAL_INSTALL_DIR})
 set(NGRAPH_TF_CMAKE_PREFIX ext_ngraph_tf)
 
 SET(NGRAPH_TF_REPO_URL https://github.com/NervanaSystems/ngraph-tf.git)
-SET(NGRAPH_TF_GIT_LABEL v0.7.0)
+SET(NGRAPH_TF_GIT_LABEL a090ed8) # Nov. 28, 2018, commit #328
 
 ExternalProject_Add(
    ext_ngraph_tf DEPENDS install_tensorflow
@@ -29,7 +29,7 @@ ExternalProject_Add(
    PREFIX ${NGRAPH_TF_CMAKE_PREFIX}
    # CONFIGURE_COMMAND pip install -U tensorflow
    UPDATE_COMMAND ""
-   INSTALL_COMMAND make install && pip install python/dist/ngraph-0.7.0-py2.py3-none-linux_x86_64.whl
-   TEST_COMMAND python -c "import ngraph"
+   INSTALL_COMMAND make install && pip install python/dist/ngraph_config-0.8.0rc0-py2.py3-none-linux_x86_64.whl
+   TEST_COMMAND python -c "import ngraph_config"
    #BUILD_ALWAYS 1
 )

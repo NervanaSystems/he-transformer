@@ -28,6 +28,9 @@ using namespace ngraph;
 static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_interior_1d) {
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+
   Shape shape_a{6};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_b{};
@@ -39,17 +42,14 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_interior_1d) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A, B});
-
-  auto backend = static_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+      ParameterVector{A, B});
 
   // Create some tensors for input/output
-  auto a = backend->create_cipher_tensor(element::f32, shape_a);
+  auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
   copy_data(a, test::NDArray<float, 1>({1, 2, 3, 4, 5, 6}).get_vector());
-  auto b = backend->create_cipher_tensor(element::f32, shape_b);
+  auto b = he_backend->create_cipher_tensor(element::f32, shape_b);
   copy_data(b, vector<float>{2112});
-  auto result = backend->create_cipher_tensor(element::f32, shape_r);
+  auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
   backend->call_with_validate(f, {result}, {a, b});
   EXPECT_TRUE(all_close(
@@ -60,6 +60,9 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_interior_1d) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_1d) {
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+
   Shape shape_a{6};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_b{};
@@ -71,17 +74,14 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_1d) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A, B});
-
-  auto backend = static_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+      ParameterVector{A, B});
 
   // Create some tensors for input/output
-  auto a = backend->create_cipher_tensor(element::f32, shape_a);
+  auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
   copy_data(a, test::NDArray<float, 1>({1, 2, 3, 4, 5, 6}).get_vector());
-  auto b = backend->create_cipher_tensor(element::f32, shape_b);
+  auto b = he_backend->create_cipher_tensor(element::f32, shape_b);
   copy_data(b, vector<float>{2112});
-  auto result = backend->create_cipher_tensor(element::f32, shape_r);
+  auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
   backend->call_with_validate(f, {result}, {a, b});
   EXPECT_TRUE(
@@ -92,6 +92,9 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_1d) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_interior_exterior_1d) {
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+
   Shape shape_a{6};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_b{};
@@ -103,19 +106,16 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_interior_exterior_1d) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A, B});
-
-  auto backend = static_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+      ParameterVector{A, B});
 
   // Create some tensors for input/output
-  auto a = backend->create_cipher_tensor(element::f32, shape_a);
+  auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
   copy_data(a, test::NDArray<float, 1>({1, 2, 3, 4, 5, 6}).get_vector());
-  auto b = backend->create_cipher_tensor(element::f32, shape_b);
+  auto b = he_backend->create_cipher_tensor(element::f32, shape_b);
   copy_data(b, vector<float>{2112});
-  auto result = backend->create_cipher_tensor(element::f32, shape_r);
+  auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
-  backend->call_with_validate(f, {result}, {a, b});
+  he_backend->call_with_validate(f, {result}, {a, b});
   EXPECT_TRUE(all_close((test::NDArray<float, 1>(
                              {2112, 2112, 2112, 2112, 1,    2112, 2112, 2, 2112,
                               2112, 3,    2112, 2112, 4,    2112, 2112, 5, 2112,
@@ -125,6 +125,9 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_interior_exterior_1d) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_interior_exterior_2d) {
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+
   Shape shape_a{2, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_b{};
@@ -136,17 +139,14 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_interior_exterior_2d) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A, B});
-
-  auto backend = static_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+      ParameterVector{A, B});
 
   // Create some tensors for input/output
-  auto a = backend->create_cipher_tensor(element::f32, shape_a);
+  auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
   copy_data(a, test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector());
-  auto b = backend->create_cipher_tensor(element::f32, shape_b);
+  auto b = he_backend->create_cipher_tensor(element::f32, shape_b);
   copy_data(b, vector<float>{9});
-  auto result = backend->create_cipher_tensor(element::f32, shape_r);
+  auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
   backend->call_with_validate(f, {result}, {a, b});
   EXPECT_TRUE(all_close((test::NDArray<float, 2>({{9, 9, 9, 9, 9, 9},
@@ -161,6 +161,9 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_interior_exterior_2d) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_0x0) {
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+
   Shape shape_a{0, 0};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_b{};
@@ -172,17 +175,14 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_0x0) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A, B});
-
-  auto backend = static_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+      ParameterVector{A, B});
 
   // Create some tensors for input/output
-  auto a = backend->create_cipher_tensor(element::f32, shape_a);
+  auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
   // copy_data(a, test::NDArray<float, 2>({{}}).get_vector(), backend);
-  auto b = backend->create_cipher_tensor(element::f32, shape_b);
+  auto b = he_backend->create_cipher_tensor(element::f32, shape_b);
   copy_data(b, vector<float>{2112});
-  auto result = backend->create_cipher_tensor(element::f32, shape_r);
+  auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
   backend->call_with_validate(f, {result}, {a, b});
   EXPECT_TRUE(
@@ -196,6 +196,9 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_0x0) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_0x3) {
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+
   Shape shape_a{0, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_b{};
@@ -207,17 +210,14 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_0x3) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A, B});
-
-  auto backend = static_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+      ParameterVector{A, B});
 
   // Create some tensors for input/output
-  auto a = backend->create_cipher_tensor(element::f32, shape_a);
+  auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
   // copy_data(a, test::NDArray<float, 2>({}).get_vector(), backend);
-  auto b = backend->create_cipher_tensor(element::f32, shape_b);
+  auto b = he_backend->create_cipher_tensor(element::f32, shape_b);
   copy_data(b, vector<float>{2112});
-  auto result = backend->create_cipher_tensor(element::f32, shape_r);
+  auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
   backend->call_with_validate(f, {result}, {a, b});
   EXPECT_TRUE(
@@ -231,6 +231,9 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_0x3) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_3x0) {
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+
   Shape shape_a{3, 0};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_b{};
@@ -242,17 +245,14 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_3x0) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A, B});
-
-  auto backend = static_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+      ParameterVector{A, B});
 
   // Create some tensors for input/output
-  auto a = backend->create_cipher_tensor(element::f32, shape_a);
+  auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
   // copy_data(a, test::NDArray<float, 2>({}).get_vector(), backend);
-  auto b = backend->create_cipher_tensor(element::f32, shape_b);
+  auto b = he_backend->create_cipher_tensor(element::f32, shape_b);
   copy_data(b, vector<float>{2112});
-  auto result = backend->create_cipher_tensor(element::f32, shape_r);
+  auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
   backend->call_with_validate(f, {result}, {a, b});
   EXPECT_TRUE(
@@ -266,6 +266,9 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_3x0) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_4d_1x2x2x2) {
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+
   Shape shape_a{1, 2, 2, 2};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_b{};
@@ -277,13 +280,10 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_4d_1x2x2x2) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A, B});
-
-  auto backend = static_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+      ParameterVector{A, B});
 
   // Create some tensors for input/output
-  auto a = backend->create_cipher_tensor(element::f32, shape_a);
+  auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
   // clang-format off
     copy_data(a, test::NDArray<float, 4>(
         {
@@ -300,10 +300,10 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_4d_1x2x2x2) {
         }).get_vector());
   // clang-format on
 
-  auto b = backend->create_cipher_tensor(element::f32, shape_b);
+  auto b = he_backend->create_cipher_tensor(element::f32, shape_b);
   copy_data(b, vector<float>{42});
 
-  auto result = backend->create_cipher_tensor(element::f32, shape_r);
+  auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
   backend->call_with_validate(f, {result}, {a, b});
   // clang-format off
@@ -334,6 +334,9 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_4d_1x2x2x2) {
 // source shape and multiply by the interior padding (which causes underflow),
 // we should just count the pre-interior-padding length as zero.
 NGRAPH_TEST(${BACKEND_NAME}, pad_interior_exterior_4d_2x0x3x2) {
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+
   Shape shape_a{2, 0, 3, 2};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_b{};
@@ -345,17 +348,14 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_interior_exterior_4d_2x0x3x2) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A, B});
-
-  auto backend = static_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+      ParameterVector{A, B});
 
   // Create some tensors for input/output
-  auto a = backend->create_cipher_tensor(element::f32, shape_a);
+  auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
   // copy_data(a, test::NDArray<float, 2>({}).get_vector(), backend);
-  auto b = backend->create_cipher_tensor(element::f32, shape_b);
+  auto b = he_backend->create_cipher_tensor(element::f32, shape_b);
   copy_data(b, vector<float>{2112});
-  auto result = backend->create_cipher_tensor(element::f32, shape_r);
+  auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
   vector<float> expected(5 * 2 * 3 * 2, 2112);
 
@@ -364,6 +364,9 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_interior_exterior_4d_2x0x3x2) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_1d) {
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+
   Shape shape_a{6};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_b{};
@@ -375,15 +378,12 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_1d) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A});
-
-  auto backend = static_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+      ParameterVector{A});
 
   // Create some tensors for input/output
-  auto a = backend->create_cipher_tensor(element::f32, shape_a);
+  auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
   copy_data(a, test::NDArray<float, 1>({1, 2, 3, 4, 5, 6}).get_vector());
-  auto result = backend->create_cipher_tensor(element::f32, shape_r);
+  auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
   backend->call_with_validate(f, {result}, {a});
   EXPECT_TRUE(
@@ -394,6 +394,9 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_1d) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_1d) {
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+
   Shape shape_a{6};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_b{};
@@ -405,15 +408,12 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_1d) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A});
-
-  auto backend = static_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+      ParameterVector{A});
 
   // Create some tensors for input/output
-  auto a = backend->create_cipher_tensor(element::f32, shape_a);
+  auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
   copy_data(a, test::NDArray<float, 1>({1, 2, 3, 4, 5, 6}).get_vector());
-  auto result = backend->create_cipher_tensor(element::f32, shape_r);
+  auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
   backend->call_with_validate(f, {result}, {a});
   EXPECT_TRUE(
@@ -424,6 +424,9 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_1d) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_exterior_1d) {
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+
   Shape shape_a{6};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_b{};
@@ -435,15 +438,12 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_exterior_1d) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A});
-
-  auto backend = static_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+      ParameterVector{A});
 
   // Create some tensors for input/output
-  auto a = backend->create_cipher_tensor(element::f32, shape_a);
+  auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
   copy_data(a, test::NDArray<float, 1>({1, 2, 3, 4, 5, 6}).get_vector());
-  auto result = backend->create_cipher_tensor(element::f32, shape_r);
+  auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
   backend->call_with_validate(f, {result}, {a});
   EXPECT_TRUE(all_close(
@@ -455,6 +455,9 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_exterior_1d) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_exterior_2d) {
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+
   Shape shape_a{2, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_b{};
@@ -466,15 +469,12 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_exterior_2d) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A});
-
-  auto backend = static_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+      ParameterVector{A});
 
   // Create some tensors for input/output
-  auto a = backend->create_cipher_tensor(element::f32, shape_a);
+  auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
   copy_data(a, test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector());
-  auto result = backend->create_cipher_tensor(element::f32, shape_r);
+  auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
   backend->call_with_validate(f, {result}, {a});
   EXPECT_TRUE(
@@ -490,6 +490,9 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_exterior_2d) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_2d_0x0) {
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+
   Shape shape_a{0, 0};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_b{};
@@ -501,15 +504,12 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_2d_0x0) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A});
-
-  auto backend = static_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+      ParameterVector{A});
 
   // Create some tensors for input/output
-  auto a = backend->create_cipher_tensor(element::f32, shape_a);
+  auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
   // copy_data(a, test::NDArray<float, 2>({{}}).get_vector(), backend);
-  auto result = backend->create_cipher_tensor(element::f32, shape_r);
+  auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
   backend->call_with_validate(f, {result}, {a});
   EXPECT_TRUE(all_close((test::NDArray<float, 2>({{123, 123, 123, 123, 123},
@@ -522,6 +522,9 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_2d_0x0) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_2d_0x3) {
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+
   Shape shape_a{0, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_b{};
@@ -533,15 +536,12 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_2d_0x3) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A});
-
-  auto backend = static_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+      ParameterVector{A});
 
   // Create some tensors for input/output
-  auto a = backend->create_cipher_tensor(element::f32, shape_a);
+  auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
   // copy_data(a, test::NDArray<float, 2>({}).get_vector(), backend);
-  auto result = backend->create_cipher_tensor(element::f32, shape_r);
+  auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
   backend->call_with_validate(f, {result}, {a});
   EXPECT_TRUE(all_close((test::NDArray<float, 2>({{123, 123, 123, 123, 123},
@@ -554,6 +554,9 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_2d_0x3) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_2d_3x0) {
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+
   Shape shape_a{3, 0};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_b{};
@@ -565,15 +568,12 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_2d_3x0) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A});
-
-  auto backend = static_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+      ParameterVector{A});
 
   // Create some tensors for input/output
-  auto a = backend->create_cipher_tensor(element::f32, shape_a);
+  auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
   // copy_data(a, test::NDArray<float, 2>({}).get_vector(), backend);
-  auto result = backend->create_cipher_tensor(element::f32, shape_r);
+  auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
   backend->call_with_validate(f, {result}, {a});
   EXPECT_TRUE(all_close((test::NDArray<float, 2>({{123, 123, 123, 123, 123},
@@ -586,6 +586,9 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_2d_3x0) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_4d_1x2x2x2) {
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+
   Shape shape_a{1, 2, 2, 2};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_b{};
@@ -597,13 +600,10 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_4d_1x2x2x2) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A});
-
-  auto backend = static_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+      ParameterVector{A});
 
   // Create some tensors for input/output
-  auto a = backend->create_cipher_tensor(element::f32, shape_a);
+  auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
   // clang-format off
     copy_data(a, test::NDArray<float, 4>(
         {
@@ -620,7 +620,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_4d_1x2x2x2) {
         }).get_vector());
   // clang-format on
 
-  auto result = backend->create_cipher_tensor(element::f32, shape_r);
+  auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
   backend->call_with_validate(f, {result}, {a});
   // clang-format off
@@ -651,6 +651,9 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_4d_1x2x2x2) {
 // source shape and multiply by the interior padding (which causes underflow),
 // we should just count the pre-interior-padding length as zero.
 NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_exterior_4d_2x0x3x2) {
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+
   Shape shape_a{2, 0, 3, 2};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_b{};
@@ -662,15 +665,12 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_exterior_4d_2x0x3x2) {
   auto f = make_shared<Function>(
       make_shared<op::Pad>(A, B, padding_below, padding_above,
                            padding_interior),
-      op::ParameterVector{A});
-
-  auto backend = static_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+      ParameterVector{A});
 
   // Create some tensors for input/output
-  auto a = backend->create_cipher_tensor(element::f32, shape_a);
+  auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
   // copy_data(a, test::NDArray<float, 2>({}).get_vector(), backend);
-  auto result = backend->create_cipher_tensor(element::f32, shape_r);
+  auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
   vector<float> expected(5 * 2 * 3 * 2, 123);
 

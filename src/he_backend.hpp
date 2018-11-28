@@ -194,6 +194,7 @@ class HEBackend : public runtime::Backend {
 
   void enable_performance_data(std::shared_ptr<Function> function,
                                bool enable) override;
+
   std::vector<PerformanceCounter> get_performance_data(
       std::shared_ptr<Function> function) const override;
 
@@ -202,8 +203,8 @@ class HEBackend : public runtime::Backend {
   bool optimized_mult() const { return m_optimized_mult; };
 
   /// @brief Set scalar optimizations
-  bool set_optimized_add(bool enable) { m_optimized_add = enable; };
-  bool set_optimized_mult(bool enable) { m_optimized_mult = enable; };
+  void set_optimized_add(bool enable) { m_optimized_add = enable; };
+  void set_optimized_mult(bool enable) { m_optimized_mult = enable; };
 
   bool encrypt_data() const { return m_encrypt_data; };
   bool batch_data() const { return m_batch_data; };

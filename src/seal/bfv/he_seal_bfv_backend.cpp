@@ -24,7 +24,6 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_parameter.hpp"
 #include "seal/he_seal_util.hpp"
-
 #include "seal/seal.h"
 
 using namespace ngraph;
