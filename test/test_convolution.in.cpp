@@ -30,6 +30,8 @@ using namespace ngraph;
 static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image) {
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+
   auto shape_a = Shape{1, 1, 5, 5};
   auto a = make_shared<op::Parameter>(element::f32, shape_a);
   auto shape_b = Shape{1, 1, 3, 3};
@@ -38,11 +40,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image) {
   auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
-  auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
-
-  // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend.get());
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -64,6 +62,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_2outputs) {
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+
   auto shape_a = Shape{1, 1, 3, 5};
   auto a = make_shared<op::Parameter>(element::f32, shape_a);
   auto shape_b = Shape{2, 1, 2, 2};
@@ -71,10 +71,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_2outputs) {
   auto t = make_shared<op::Convolution>(a, b, Strides{1, 1}, Strides{1, 1});
   auto f = make_shared<Function>(t, ParameterVector{a, b});
 
-  auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
-
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend.get());
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -96,6 +93,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_2outputs) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item) {
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+
   Shape shape_a{1, 1, 3, 5};
   Shape shape_b{2, 1, 2, 2};
   auto a = make_shared<op::Parameter>(element::f32, shape_a);
@@ -108,11 +107,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item) {
   auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
-  auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
-
-  // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend.get());
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -136,6 +131,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_1_1x1_1) {
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+
   Shape shape_a{1, 1, 3, 5};
   Shape shape_b{2, 1, 2, 2};
   auto a = make_shared<op::Parameter>(element::f32, shape_a);
@@ -148,11 +145,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_1_1x1_1) {
   auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
-  auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
-
-  // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend.get());
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -180,6 +173,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_1_1x1_1) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5) {
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+
   Shape shape_a{1, 1, 3, 5};
   Shape shape_b{2, 1, 2, 2};
   auto a = make_shared<op::Parameter>(element::f32, shape_a);
@@ -192,11 +187,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5) {
   auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
-  auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
-
-  // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend.get());
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -242,6 +233,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items) {
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+
   Shape shape_a{2, 1, 3, 5};
   Shape shape_b{2, 1, 2, 2};
   auto a = make_shared<op::Parameter>(element::f32, shape_a);
@@ -254,11 +247,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items) {
   auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
-  auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
-
-  // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend.get());
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -286,6 +275,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_strided_padded) {
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+
   Shape shape_a{2, 1, 3, 5};
   Shape shape_b{2, 1, 2, 2};
   auto a = make_shared<op::Parameter>(element::f32, shape_a);
@@ -298,11 +289,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_strided_padded) {
   auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
-  auto backend = dynamic_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
-
-  // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend.get());
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);

@@ -22,9 +22,15 @@ include(ExternalProject)
 #------------------------------------------------------------------------------
 
 SET(GTEST_GIT_REPO_URL https://github.com/google/googletest.git)
-SET(GTEST_GIT_LABEL release-1.8.0)
+SET(GTEST_GIT_LABEL release-1.8.1)
 
-set(GTEST_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+
+set(COMPILE_FLAGS -fPIC)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    if (DEFINED NGRAPH_USE_CXX_ABI)
+        set(COMPILE_FLAGS "${COMPILE_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=${NGRAPH_USE_CXX_ABI}")
+    endif()
+endif()
 
 ExternalProject_Add(
     ext_gtest
@@ -35,12 +41,17 @@ ExternalProject_Add(
     INSTALL_COMMAND ""
     UPDATE_COMMAND ""
     CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-               -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-               -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-               -DCMAKE_CXX_FLAGS=${GTEST_CXX_FLAGS}
+                -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                -DCMAKE_CXX_FLAGS=${COMPILE_FLAGS}
+    TMP_DIR "${EXTERNAL_PROJECTS_ROOT}/gtest/tmp"
+    STAMP_DIR "${EXTERNAL_PROJECTS_ROOT}/gtest/stamp"
+    DOWNLOAD_DIR "${EXTERNAL_PROJECTS_ROOT}/gtest/download"
+    SOURCE_DIR "${EXTERNAL_PROJECTS_ROOT}/gtest/src"
+    BINARY_DIR "${EXTERNAL_PROJECTS_ROOT}/gtest/build"
+    INSTALL_DIR "${EXTERNAL_PROJECTS_ROOT}/gtest"
+    BUILD_BYPRODUCTS "${EXTERNAL_PROJECTS_ROOT}/gtest/build/googlemock/gtest/libgtest.a"
     EXCLUDE_FROM_ALL TRUE
-)
-
+    )
 
 #------------------------------------------------------------------------------
 

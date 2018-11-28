@@ -76,7 +76,7 @@ std::vector<std::tuple<std::vector<std::shared_ptr<runtime::Tensor>>,
                        std::vector<std::shared_ptr<runtime::Tensor>>>>
 generate_plain_cipher_tensors(const std::vector<std::shared_ptr<Node>>& output,
                               const std::vector<std::shared_ptr<Node>>& input,
-                              std::shared_ptr<runtime::Backend> backend,
+                              const runtime::Backend* backend,
                               const bool consistent_type = false);
 
 // Reads batched vector

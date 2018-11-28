@@ -36,7 +36,7 @@ NGRAPH_TEST(${BACKEND_NAME}, negate_2_3) {
   auto f = make_shared<Function>(t, ParameterVector{a});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend, true);
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);

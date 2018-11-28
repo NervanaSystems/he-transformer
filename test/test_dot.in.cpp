@@ -37,7 +37,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot1d) {
   auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend.get());
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -56,10 +56,11 @@ NGRAPH_TEST(${BACKEND_NAME}, dot1d) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, dot1d_optimized) {
-  auto backend = static_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
-  backend->set_optimized_mult(true);
-  backend->set_optimized_add(true);
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+  ;
+  he_backend->set_optimized_mult(true);
+  he_backend->set_optimized_add(true);
 
   Shape shape{4};
   auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -68,7 +69,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot1d_optimized) {
   auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend.get());
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -98,7 +99,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_matrix_vector) {
   auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend.get());
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -128,7 +129,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_scalar) {
   auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend.get());
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -147,8 +148,9 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_scalar) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_batch) {
-  auto backend = static_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+  ;
 
   Shape shape_a{3, 1};
   Shape shape_b{1};
@@ -160,9 +162,10 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_batch) {
   auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
-  auto t_a = backend->create_batched_plain_tensor(element::f32, shape_a);
-  auto t_b = backend->create_plain_tensor(element::f32, shape_b);
-  auto t_result = backend->create_batched_plain_tensor(element::f32, shape_r);
+  auto t_a = he_backend->create_batched_plain_tensor(element::f32, shape_a);
+  auto t_b = he_backend->create_plain_tensor(element::f32, shape_b);
+  auto t_result =
+      he_backend->create_batched_plain_tensor(element::f32, shape_r);
 
   copy_data(t_a, vector<float>{1, 2, 3});
   copy_data(t_b, vector<float>{4});
@@ -172,10 +175,10 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_batch) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, dot_perf) {
-  auto backend = static_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
-  backend->set_optimized_mult(false);
-  backend->set_optimized_add(false);
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+  he_backend->set_optimized_mult(false);
+  he_backend->set_optimized_add(false);
 
   Shape shape_a{100, 100};
   Shape shape_b{100, 100};
@@ -187,9 +190,9 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_perf) {
   auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
-  auto t_a = backend->create_cipher_tensor(element::f32, shape_a);
-  auto t_b = backend->create_plain_tensor(element::f32, shape_b);
-  auto t_result = backend->create_cipher_tensor(element::f32, shape_r);
+  auto t_a = he_backend->create_cipher_tensor(element::f32, shape_a);
+  auto t_b = he_backend->create_plain_tensor(element::f32, shape_b);
+  auto t_result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
   vector<float> a_vals, b_vals;
   for (size_t i = 0; i < 100 * 100; ++i) {

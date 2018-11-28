@@ -37,7 +37,7 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_2_3) {
   auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend.get());
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -68,7 +68,7 @@ NGRAPH_TEST(${BACKEND_NAME}, square_2_3) {
   auto f = make_shared<Function>(t, ParameterVector{a, a});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a, a}, backend);
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a, a}, backend.get());
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -89,10 +89,10 @@ NGRAPH_TEST(${BACKEND_NAME}, square_2_3) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, multiply_optimized_2_3) {
-  auto backend = static_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
-  backend->set_optimized_add(true);
-  backend->set_optimized_mult(true);
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+  he_backend->set_optimized_add(true);
+  he_backend->set_optimized_mult(true);
 
   Shape shape{2, 3};
   auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -101,7 +101,7 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_optimized_2_3) {
   auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend.get());
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -124,8 +124,8 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_optimized_2_3) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, multiply_4_3_batch) {
-  auto backend = static_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
 
   Shape shape_a{4, 3};
   Shape shape_b{4, 3};
@@ -137,9 +137,10 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_4_3_batch) {
   auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
-  auto t_a = backend->create_batched_plain_tensor(element::f32, shape_a);
-  auto t_b = backend->create_batched_plain_tensor(element::f32, shape_b);
-  auto t_result = backend->create_batched_plain_tensor(element::f32, shape_r);
+  auto t_a = he_backend->create_batched_plain_tensor(element::f32, shape_a);
+  auto t_b = he_backend->create_batched_plain_tensor(element::f32, shape_b);
+  auto t_result =
+      he_backend->create_batched_plain_tensor(element::f32, shape_r);
 
   copy_data(t_a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
   copy_data(t_b, vector<float>{13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24});

@@ -37,7 +37,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_trivial) {
   auto f = make_shared<Function>(t, ParameterVector{a});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend, true);
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -63,7 +63,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_trivial_5d) {
   auto f = make_shared<Function>(t, ParameterVector{a});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend, true);
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -93,7 +93,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_to_scalar) {
   auto f = make_shared<Function>(t, ParameterVector{a});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend, true);
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -124,7 +124,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_columns) {
   auto f = make_shared<Function>(t, ParameterVector{a});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend, true);
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -155,7 +155,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_rows) {
   auto f = make_shared<Function>(t, ParameterVector{a});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend, true);
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -186,7 +186,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_rows_zero) {
   auto f = make_shared<Function>(t, ParameterVector{a});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend, true);
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -217,7 +217,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_cols_zero) {
   auto f = make_shared<Function>(t, ParameterVector{a});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend, true);
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -247,7 +247,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_vector_zero) {
   auto f = make_shared<Function>(t, ParameterVector{a});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend, true);
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -277,7 +277,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_to_scalar_zero_by_zero) {
   auto f = make_shared<Function>(t, ParameterVector{a});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend, true);
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);

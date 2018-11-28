@@ -37,7 +37,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sub_2_3) {
   auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend.get());
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -59,9 +59,9 @@ NGRAPH_TEST(${BACKEND_NAME}, sub_2_3) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sub_zero_2_3) {
-  auto backend = static_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
-  backend->set_optimized_add(true);
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+  he_backend->set_optimized_add(true);
 
   Shape shape{2, 3};
   auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -70,7 +70,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sub_zero_2_3) {
   auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, he_backend);
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -92,9 +92,9 @@ NGRAPH_TEST(${BACKEND_NAME}, sub_zero_2_3) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sub_from_zero_2_3) {
-  auto backend = static_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
-  backend->set_optimized_add(true);
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+  he_backend->set_optimized_add(true);
 
   Shape shape{2, 3};
   auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -103,7 +103,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sub_from_zero_2_3) {
   auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend.get());
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);

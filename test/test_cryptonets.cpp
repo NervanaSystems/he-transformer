@@ -39,8 +39,8 @@ static void run_cryptonets_benchmark(string backend_name,
   if (backend_name == "INTERPRETER") {
     assert(batch_size == 1);
   }
-  auto backend = runtime::Backend::create(backend_name);
-  auto he_backend = dynamic_pointer_cast<runtime::he::HEBackend>(backend);
+  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto he_backend = dynamic_cast<runtime::he::HEBackend*>(backend.get());
   if (he_backend) {
     he_backend->set_optimized_add(false);
     he_backend->set_optimized_mult(false);
@@ -91,8 +91,7 @@ static void run_cryptonets_benchmark(string backend_name,
       copy_data(parameter_cipher_tv, x);
       parameter_tvs.push_back(parameter_cipher_tv);
     } else {
-      NGRAPH_INFO << "Invalid shape" << join(shape, "x");
-      throw ngraph_error("Invalid shape " + shape_size(shape));
+      throw ngraph_error("Invalid shape " + to_string(shape_size(shape)));
     }
   }
 
