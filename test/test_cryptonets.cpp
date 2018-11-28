@@ -39,7 +39,7 @@ static void run_cryptonets_benchmark(string backend_name,
   if (backend_name == "INTERPRETER") {
     assert(batch_size == 1);
   }
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create(backend_name);
   auto he_backend = dynamic_cast<runtime::he::HEBackend*>(backend.get());
   if (he_backend) {
     he_backend->set_optimized_add(false);
