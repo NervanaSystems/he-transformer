@@ -36,7 +36,8 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_t2v_012) {
   auto r = make_shared<op::Reshape>(A, AxisVector{0, 1, 2}, shape_r);
   auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -49,7 +50,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_t2v_012) {
     backend->call(f, {result}, {a});
     EXPECT_TRUE(
         all_close((vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}),
-                  read_vector<float>(result)));
+                  read_vector<float>(result), 1e-3f));
   }
 }
 
@@ -62,7 +63,8 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_t2s_012) {
   auto r = make_shared<op::Reshape>(A, AxisVector{0, 1, 2}, shape_r);
   auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -73,7 +75,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_t2s_012) {
     copy_data(a, vector<float>{6});
 
     backend->call(f, {result}, {a});
-    EXPECT_TRUE(all_close((vector<float>{6}), read_vector<float>(result)));
+    EXPECT_TRUE(all_close((vector<float>{6}), read_vector<float>(result), 1e-3f));
   }
 }
 
@@ -86,7 +88,8 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_t2s_120) {
   auto r = make_shared<op::Reshape>(A, AxisVector{0, 1, 2}, shape_r);
   auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -97,7 +100,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_t2s_120) {
     copy_data(a, vector<float>{6});
 
     backend->call(f, {result}, {a});
-    EXPECT_TRUE(all_close((vector<float>{6}), read_vector<float>(result)));
+    EXPECT_TRUE(all_close((vector<float>{6}), read_vector<float>(result), 1e-3f));
   }
 }
 
@@ -110,7 +113,8 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_s2t) {
   auto r = make_shared<op::Reshape>(A, AxisVector{}, shape_r);
   auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -121,7 +125,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_s2t) {
     copy_data(a, vector<float>{42});
 
     backend->call(f, {result}, {a});
-    EXPECT_TRUE(all_close((vector<float>{42}), read_vector<float>(result)));
+    EXPECT_TRUE(all_close((vector<float>{42}), read_vector<float>(result), 1e-3f));
   }
 }
 
@@ -134,7 +138,8 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_v2m_col) {
   auto r = make_shared<op::Reshape>(A, AxisVector{0}, shape_r);
   auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -145,7 +150,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_v2m_col) {
     copy_data(a, vector<float>{1, 2, 3});
     backend->call(f, {result}, {a});
     EXPECT_TRUE(
-        all_close((vector<float>{1, 2, 3}), read_vector<float>(result)));
+        all_close((vector<float>{1, 2, 3}), read_vector<float>(result), 1e-3f));
   }
 }
 
@@ -158,7 +163,8 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_v2m_row) {
   auto r = make_shared<op::Reshape>(A, AxisVector{0}, shape_r);
   auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -169,7 +175,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_v2m_row) {
     copy_data(a, vector<float>{1, 2, 3});
     backend->call(f, {result}, {a});
     EXPECT_TRUE(
-        all_close((vector<float>{1, 2, 3}), read_vector<float>(result)));
+        all_close((vector<float>{1, 2, 3}), read_vector<float>(result), 1e-3f));
   }
 }
 
@@ -182,7 +188,8 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_v2t_middle) {
   auto r = make_shared<op::Reshape>(A, AxisVector{0}, shape_r);
   auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -193,7 +200,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_v2t_middle) {
     copy_data(a, vector<float>{1, 2, 3});
     backend->call(f, {result}, {a});
     EXPECT_TRUE(
-        all_close((vector<float>{1, 2, 3}), read_vector<float>(result)));
+        all_close((vector<float>{1, 2, 3}), read_vector<float>(result), 1e-3f));
   }
 }
 
@@ -206,7 +213,8 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_same) {
   auto r = make_shared<op::Reshape>(A, AxisVector{0, 1}, shape_r);
   auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -217,7 +225,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_same) {
     copy_data(a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9});
     backend->call(f, {result}, {a});
     EXPECT_TRUE(all_close((vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9}),
-                          read_vector<float>(result)));
+                          read_vector<float>(result), 1e-3f));
   }
 }
 
@@ -230,7 +238,8 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_transpose) {
   auto r = make_shared<op::Reshape>(A, AxisVector{1, 0}, shape_r);
   auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -241,7 +250,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_transpose) {
     copy_data(a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9});
     backend->call(f, {result}, {a});
     EXPECT_TRUE(all_close((vector<float>{1, 4, 7, 2, 5, 8, 3, 6, 9}),
-                          read_vector<float>(result)));
+                          read_vector<float>(result), 1e-3f));
   }
 }
 
@@ -254,7 +263,8 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_dim_change_transpose) {
   auto r = make_shared<op::Reshape>(A, AxisVector{1, 0}, shape_r);
   auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -265,7 +275,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_dim_change_transpose) {
     copy_data(a, vector<float>{1, 2, 3, 4, 5, 6});
     backend->call(f, {result}, {a});
     EXPECT_TRUE(all_close((vector<float>{1, 3, 5, 2, 4, 6}),
-                          read_vector<float>(result)));
+                          read_vector<float>(result), 1e-3f));
   }
 }
 
@@ -325,7 +335,8 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_6d) {
   auto r = make_shared<op::Reshape>(A, AxisVector{2, 4, 0, 5, 3, 1}, shape_r);
   auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -364,6 +375,6 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_6d) {
             197., 269., 205., 277., 213., 285., 198., 270., 206., 278., 214.,
             286., 199., 271., 207., 279., 215., 287., 200., 272., 208., 280.,
             216., 288.}),
-        read_vector<float>(result)));
+        read_vector<float>(result), 1e-3f));
   }
 }

@@ -14,7 +14,7 @@
 # limitations under the License.
 # ******************************************************************************
 
-# Environment to build and unit-test ngraph
+# Environment to build and unit-test he-transformer
 
 FROM ubuntu:16.04
 
@@ -38,11 +38,7 @@ RUN pip install virtualenv
 # SEAL requires newer version of CMake
 RUN pip install cmake --upgrade
 
-# allows for make html build under the doc/source directory as an interim build process
-RUN pip install sphinx
-RUN pip install breathe
-
-# need numpy to successfully build docs for python_api
+# need numpy for Cryptonets example
 RUN pip install numpy
 
 # Get g++-7
@@ -55,6 +51,12 @@ RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 50
 RUN update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 50
 RUN update-alternatives --set g++ /usr/bin/g++-7
 RUN update-alternatives --set gcc /usr/bin/gcc-7
+
+# Get clang 6.0
+RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
+RUN apt-add-repository "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-6.0 main"
+RUN apt-get update
+RUN apt-get install -y clang-6.0
 
 WORKDIR /home
 

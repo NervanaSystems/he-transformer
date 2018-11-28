@@ -21,7 +21,8 @@ The [examples](https://github.com/NervanaSystems/he-transformer/tree/master/exam
 ### Dependencies
 - We currently only support Ubuntu 16.04
 - CMake 3.12.3, although different versions may work
-- OpenMP is strongly suggested, though not strictly necessary. You may experience *very* slow runtimes without OpenMP
+- Clang version 6.0, although different versions may work
+- OpenMP is strongly suggested, though not strictly necessary. You may experience slow runtimes without OpenMP
 - [nGraph](https://github.com/NervanaSystems/ngraph) version 0.9.1
 - [nGraph-tf](https://github.com/NervanaSystems/ngraph-tf) version v0.7.0
 
@@ -34,6 +35,7 @@ export HE_TRANSFORMER=~/repos/he-transformer
 #### Without Tensorflow (TF)
 ```bash
 cd $HE_TRANSFORMER/build
+./test/unit-test --gtest_filter="HE_SEAL_BFV.add_2_3"
 ./test/unit-test --gtest_filter="HE_SEAL_CKKS.add_2_3"
 ```
 
