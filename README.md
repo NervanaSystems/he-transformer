@@ -68,6 +68,11 @@ cd $HE_TRANSFORMER/build
 cmake ..
 make -j
 ```
+Note, you may need to pass in clang-6.0 as the compiler, i.e., call
+```bash
+cmake .. -DCMAKE_CXX_COMPILER=clang++-6.0 -DCMAKE_C_COMPILER=clang-6.0
+```
+
 #### 2.1b Build HE Transformer with TF
  To build with TF, first create and activate python virtual environment
 ```bash
@@ -81,6 +86,11 @@ cmake .. -DENABLE_TF=ON
 make -j
 make -j install
 ```
+Note, you may need to pass in clang-6.0 as the compiler, i.e., call
+```bash
+cmake .. -DCMAKE_CXX_COMPILER=clang++-6.0 -DCMAKE_C_COMPILER=clang-6.0
+```
+
 
 #### 2.2 Run C++ Native example
 Whether or not you built with TF support (2.1a or 2.1b), you can run the C++ unit-tests.
