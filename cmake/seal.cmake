@@ -23,7 +23,7 @@ set(SEAL_TAR_FILE https://download.microsoft.com/download/B/3/7/B3720F6B-4F4A-4B
 
 # TODO: remove before release
 set(SEAL_SRC_DIR ${SEAL_PREFIX}/src/ext_seal/src)
-set(SEAL_TAR_FILE /nfs/site/home/fboemer/repos/SEAL_3.1_pre.tar.gz)
+set(SEAL_TAR_FILE /nfs/site/home/fboemer/repos/SEAL_3.1.tar.gz)
 set(SEAL_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
 ExternalProject_Add(
