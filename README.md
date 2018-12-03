@@ -6,7 +6,7 @@ Homomorphic encryption is a form of encryption that allows computation on encryp
 
 This project is meant as a proof-of-concept to demonstrate the feasibility of HE  on local machines. The goal is to measure performance of various HE schemes for deep learning. This is  **not** intended to be a production-ready product, but rather a research tool.
 
-Currently, we support two encryption schemes, both provided by the [SEAL encryption library](https://www.microsoft.com/en-us/research/project/simple-encrypted-arithmetic-library/), which is installed as an external dependency:
+Currently, we support two encryption schemes, implemented by the [Simple Encrypted Arithmetic Library (SEAL)](https://github.com/Microsoft/SEAL) from Microsoft Research:
   * [BFV](https://eprint.iacr.org/2016/510.pdf)
   * [CKKS](https://eprint.iacr.org/2018/931.pdf)
 
@@ -26,6 +26,7 @@ The [examples](https://github.com/NervanaSystems/he-transformer/tree/master/exam
 #### The following dependencies are built automatically
 - [nGraph](https://github.com/NervanaSystems/ngraph) version 0.10.1
 - [nGraph-tf](https://github.com/NervanaSystems/ngraph-tf) - For Tensorflow integration
+- [SEAL](https://github.com/Microsoft/SEAL) version 3.1
 
 The `docker` folder contains a script to build `he-transformer` through Docker for testing purposes, and requires only Docker.
 
