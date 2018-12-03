@@ -112,9 +112,6 @@ runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend(
 
   auto m_context_data = m_context->context_data();
 
-  auto poly_modulus = m_context_data->parms().poly_modulus_degree();
-  auto plain_modulus = m_context_data->parms().plain_modulus().value();
-
   // Keygen, encryptor and decryptor
   m_keygen = make_shared<seal::KeyGenerator>(m_context);
   m_relin_keys = make_shared<seal::RelinKeys>(

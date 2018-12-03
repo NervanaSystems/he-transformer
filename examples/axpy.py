@@ -14,7 +14,7 @@
 #  limitations under the License.
 # ==============================================================================
 
-import ngraph_config
+import ngraph_bridge
 import numpy as np
 import tensorflow as tf
 

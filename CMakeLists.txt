@@ -17,13 +17,11 @@
 # To support BUILD_BYPRODUCTS
 cmake_minimum_required (VERSION 3.2)
 
-# These variables are undocumented but useful.
-set(CMAKE_DISABLE_SOURCE_CHANGES ON)
-set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+# Global project name
+project (he-transformer LANGUAGES CXX)
 
 # CXX flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z -std=gnu++1z")
-
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z -std=gnu++1z -Wall")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g")
 set(CMAKE_CXX_FLAGS_DEBUG  "-O0 -g")
 
@@ -31,8 +29,9 @@ set(CMAKE_INSTALL_MESSAGE LAZY)
 
 include(cmake/sdl.cmake)
 
-# Global project name
-project (he-transformer)
+# These variables are undocumented but useful.
+set(CMAKE_DISABLE_SOURCE_CHANGES ON)
+set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
 add_definitions(-DPROJECT_ROOT_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 
@@ -48,9 +47,9 @@ set(NGRAPH_INSTALL_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/include")
 # This allows libhe_backend.so to find libraries in the same directory
 set(CMAKE_INSTALL_RPATH "\$ORIGIN")
 
+# Build options
 option(ENABLE_TF "Support Tensorflow integration through ngraph-tf" OFF)
-
-message("ENABLE_TF ${ENABLE_TF}")
+message(STATUS "ENABLE_TF: ${ENABLE_TF}")
 
 # Check python environment is active if TF is enabled
 if (ENABLE_TF)
@@ -79,6 +78,12 @@ endif()
 include(cmake/gtest.cmake)
 include(cmake/json.cmake)
 include(cmake/ngraph.cmake)
+include(cmake/openmp.cmake)
+include(cmake/seal.cmake)
+
+# HE transformer source and test directories
+add_subdirectory(src)
+add_subdirectory(test)
 
 if (ENABLE_TF)
     message("Building with Tensorflow integration through ngraph-tf")
@@ -90,10 +95,3 @@ if (ENABLE_TF)
     )
     include(cmake/ngraph-tf.cmake)
 endif() # ENABLE_TF
-
-include(cmake/openmp.cmake)
-include(cmake/seal.cmake)
-
-# HE transformer source and test directories
-add_subdirectory(src)
-add_subdirectory(test)

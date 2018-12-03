@@ -88,7 +88,7 @@ if (ENABLE_TF)
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
 
-    set (PY_NGRAPH_LIB_DIR ${PYTHON_ENV}/lib/python3.5/site-packages/ngraph)
+    set (PY_NGRAPH_LIB_DIR ${PYTHON_ENV}/lib/python3.5/site-packages/ngraph_bridge)
 
     message("PY_NGRAPH_LIB_DIR ${PY_NGRAPH_LIB_DIR}")
     install(TARGETS he_backend DESTINATION ${PY_NGRAPH_LIB_DIR})
