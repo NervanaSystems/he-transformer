@@ -24,7 +24,7 @@ if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
 endif()
 
 SET(NGRAPH_REPO_URL https://github.com/NervanaSystems/ngraph.git)
-SET(NGRAPH_GIT_LABEL v0.10.0)
+SET(NGRAPH_GIT_LABEL v0.10.1)
 
 ExternalProject_Add(
     ext_ngraph

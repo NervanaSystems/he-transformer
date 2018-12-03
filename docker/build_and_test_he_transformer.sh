@@ -33,12 +33,12 @@ test_cpp_build ()
     rm -rf build
     mkdir build
     cd build
-    cmake ..
-    make -j22
+    cmake .. -DCMAKE_CXX_COMPILER=clang++-6.0 -DCMAKE_C_COMPILER=clang-6.0
+    make -j
     ./test/unit-test
     echo 'Testing cryptonets'
-    NGRAPH_ENCRYPT_DATA=1 NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_13.json ./test/cryptonets_benchmark --gtest_filter="Cryptonets.CKKS_4096"
-    NGRAPH_ENCRYPT_MODEL=1 NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_14.json ./test/cryptonets_benchmark --gtest_filter="Cryptonets.CKKS_4096"
+    NGRAPH_BATCH_DATA=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_13.json ./test/cryptonets_benchmark --gtest_filter="Cryptonets.CKKS_4096"
+    NGRAPH_BATCH_DATA=1 NGRAPH_ENCRYPT_MODEL=1 NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_14.json ./test/cryptonets_benchmark --gtest_filter="Cryptonets.CKKS_4096"
 
     echo 'Done testing C++ build.'
 }
@@ -55,8 +55,8 @@ test_python_build ()
     virtualenv ~/venvs/he3 -p python3
     source ~/venvs/he3/bin/activate
     cd build
-    cmake .. -DENABLE_TF=on
-    make -j22
+    cmake .. -DENABLE_TF=on -DCMAKE_CXX_COMPILER=clang++-6.0 -DCMAKE_C_COMPILER=clang-6.0
+    make -j
     make install
 
     # Test c++ unit-tests under python
@@ -69,13 +69,11 @@ test_python_build ()
 
     # Test cryptonets under python
     cd cryptonets
-    NGRAPH_ENCRYPT_DATA=1 NGRAPH_BATCH_TF=1 NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_13.json ./test/cryptonets_benchmark python test.py --batch_size=4096 --report_accuracy=1
-    NGRAPH_ENCRYPT_MODEL=1 NGRAPH_BATCH_TF=1 NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_13.json ./test/cryptonets_benchmark python test.py --batch_size=4096 --report_accuracy=1
+    NGRAPH_BATCH_DATA=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_BATCH_TF=1 NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_13.json python test.py --batch_size=4096 --report_accuracy=1
+    NGRAPH_BATCH_DATA=1 NGRAPH_ENCRYPT_MODEL=1 NGRAPH_BATCH_TF=1 NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_13.json python test.py --batch_size=4096 --report_accuracy=1
 
     echo 'Done testing python build'
 }
 
 test_cpp_build
 test_python_build
-
-
