@@ -32,8 +32,6 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     endif()
 endif()
 
-message("Compile flags ${COMPILE_FLAGS}")
-
 ExternalProject_Add(
     ext_gtest
     PREFIX gtest

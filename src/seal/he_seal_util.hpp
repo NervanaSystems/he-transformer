@@ -37,8 +37,8 @@ static void print_seal_context(const seal::SEALContext& context) {
                 << std::endl
                 // Print the size of the true (product) coefficient modulus
                 << "| coeff_modulus size: "
-                << context_data->total_coeff_modulus().significant_bit_count()
-                << " bits" << std::endl
+                << context_data->total_coeff_modulus_bit_count() << " bits"
+                << std::endl
                 << "| plain_modulus: " << scheme_parms.plain_modulus().value()
                 << std::endl
                 << "\\ noise_standard_deviation: "
@@ -51,8 +51,8 @@ static void print_seal_context(const seal::SEALContext& context) {
                 << std::endl
                 // Print the size of the true (product) coefficient modulus
                 << "| coeff_modulus size: "
-                << context_data->total_coeff_modulus().significant_bit_count()
-                << " bits" << std::endl
+                << context_data->total_coeff_modulus_bit_count() << " bits"
+                << std::endl
                 << "\\ noise_standard_deviation: "
                 << scheme_parms.noise_standard_deviation();
   }

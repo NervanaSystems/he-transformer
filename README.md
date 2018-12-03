@@ -23,8 +23,11 @@ The [examples](https://github.com/NervanaSystems/he-transformer/tree/master/exam
 - CMake 3.12.3, although different versions may work
 - Clang version 6.0, although different versions may work
 - OpenMP is strongly suggested, though not strictly necessary. You may experience slow runtimes without OpenMP
-- [nGraph](https://github.com/NervanaSystems/ngraph) version 0.9.1
-- [nGraph-tf](https://github.com/NervanaSystems/ngraph-tf) version v0.7.0
+#### The following dependencies are built automatically
+- [nGraph](https://github.com/NervanaSystems/ngraph) version 0.10.1
+- [nGraph-tf](https://github.com/NervanaSystems/ngraph-tf) - For Tensorflow integration
+
+The `docker` folder contains a script to build `he-transformer` through Docker for testing purposes, and requires only Docker.
 
 ### 1. If the setup has already been done
 TLDR, if the setup has already been done, here's the command to run the python example and C++ unit-tests.
@@ -44,9 +47,9 @@ cd $HE_TRANSFORMER/build
 # activate python environment with Tensorflow and nGraph installed
 source ~/repos/venvs/he3/bin/activate
 cd $HE_TRANSFORMER/examples/
-# Run on SEAL BFV backend
+# run on SEAL BFV backend
 NGRAPH_TF_BACKEND=HE:SEAL:BFV python axpy.py
-# Run on SEAL CKKS backend
+# run on SEAL CKKS backend
 NGRAPH_TF_BACKEND=HE:SEAL:CKKS python axpy.py
 ```
 
@@ -65,7 +68,7 @@ cd $HE_TRANSFORMER/build
 #### 2.1a Build HE Transformer without TF
 -  To build without TF, run
 ```bash
-cmake ..
+cmake .. [-DCMAKE_CXX_COMPILER=clang++-6.0 -DCMAKE_C_COMPILER=clang-6.0]
 make -j
 ```
 #### 2.1b Build HE Transformer with TF
@@ -77,7 +80,7 @@ source ~/venvs/he3/bin/activate
 ```
 and then, with the python environment active, run
 ```bash
-cmake .. -DENABLE_TF=ON
+cmake .. -DENABLE_TF=ON [-DCMAKE_CXX_COMPILER=clang++-6.0 -DCMAKE_C_COMPILER=clang-6.0]
 make -j
 make -j install
 ```
