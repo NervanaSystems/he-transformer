@@ -55,7 +55,7 @@ test_python_build ()
     virtualenv ~/venvs/he3 -p python3
     source ~/venvs/he3/bin/activate
     cd build
-    cmake .. -DENABLE_TF=on -DCMAKE_CXX_COMPILER=clang++-6.0 -DCMAKE_C_COMPILER=clang-6.0
+    cmake .. -DENABLE_TF=ON -DCMAKE_CXX_COMPILER=clang++-6.0 -DCMAKE_C_COMPILER=clang-6.0
     make -j
     make install
 
