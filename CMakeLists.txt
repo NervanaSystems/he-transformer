@@ -18,7 +18,7 @@
 cmake_minimum_required (VERSION 3.2)
 
 # Global project name
-project (he-transformer LANGUAGES CXX)
+project (he-transformer CXX)
 
 # CXX flags
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z -std=gnu++1z -Wall")
@@ -36,11 +36,8 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 add_definitions(-DPROJECT_ROOT_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 
 # Installation paths when `make install`
-if (DEFINED NGRAPH_INSTALL_PREFIX)
-    set(CMAKE_INSTALL_PREFIX ${NGRAPH_INSTALL_PREFIX})
-else()
-    set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/ngraph_dist")
-endif()
+message(STATUS "Installation directory: ${CMAKE_INSTALL_PREFIX}")
+
 set(NGRAPH_INSTALL_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib")
 set(NGRAPH_INSTALL_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/include")
 
@@ -60,6 +57,19 @@ if (ENABLE_TF)
     if(PY_ENV_ERROR)
         message(FATAL_ERROR "Set python virtual environment when building with TF support.")
     endif()
+
+    # Allows "make ext_ngraph_tf"
+    execute_process(
+        COMMAND pip install -U tensorflow
+    )
+    execute_process(
+        COMMAND python -c "import tensorflow as tf; print(tf.__cxx11_abi_flag__)"
+        RESULT_VARIABLE USE_CX11_ABI
+    )
+endif() # ENABLE TF
+
+if(DEFINED USE_CXX11_ABI)
+    message("USE_CX11_ABI: ${USE_CX11_ABI}")
 endif()
 
 # he-transformer headers
@@ -81,17 +91,11 @@ include(cmake/ngraph.cmake)
 include(cmake/openmp.cmake)
 include(cmake/seal.cmake)
 
+if (ENABLE_TF)
+    message("Building with Tensorflow integration through ngraph-tf")
+    include(cmake/ngraph-tf.cmake)
+endif() # ENABLE_TF
+
 # HE transformer source and test directories
 add_subdirectory(src)
 add_subdirectory(test)
-
-if (ENABLE_TF)
-    message("Building with Tensorflow integration through ngraph-tf")
-
-    # Allows "make ext_ngraph_tf"
-    add_custom_target(
-        install_tensorflow
-        COMMAND pip install -U tensorflow
-    )
-    include(cmake/ngraph-tf.cmake)
-endif() # ENABLE_TF
