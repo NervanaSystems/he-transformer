@@ -36,7 +36,7 @@ ExternalProject_Add(
                 -DCMAKE_CXX_FLAGS=${COMPILE_FLAGS}
                 -DNGRAPH_TF_CXX11_ABI=${NGRAPH_TF_CXX11_ABI}
    UPDATE_COMMAND ""
-   INSTALL_COMMAND make install && pip install python/dist/ngraph_tensorflow_bridge-0.8.0-py2.py3-none-manylinux1_x86_64.whl
+   INSTALL_COMMAND make install && pip install python/dist/ngraph_config-0.8.0rc0-py2.py3-none-linux_x86_64.whl
    TEST_COMMAND python -c "import tensorflow as tf; print('TensorFlow version: r',tf.__version__);import ngraph_bridge; print(ngraph_bridge.__version__)"
    #BUILD_ALWAYS 1
 )
