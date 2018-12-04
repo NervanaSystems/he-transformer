@@ -92,6 +92,10 @@ if (ENABLE_TF)
 
     message("PY_NGRAPH_LIB_DIR ${PY_NGRAPH_LIB_DIR}")
     install(TARGETS he_backend DESTINATION ${PY_NGRAPH_LIB_DIR})
+
+    # Workaround to make pip package recognize he_seal_ckks and he_seal_bfv backends
+    # install(TARGETS he_backend EXPORT he_seal_ckks_backend DESTINATION ${PY_NGRAPH_LIB_DIR})
+
     install(DIRECTORY
         ${EXTERNAL_INSTALL_LIB_DIR}/
         DESTINATION ${PY_NGRAPH_LIB_DIR}
@@ -100,6 +104,8 @@ endif()
 
 # Install he-transformer (the HE libraries are installed separately) at `make install`
 # By default, this installs to `~/ngraph_dist`
+message("NGRAPH_INSTALL_LIB_DIR" ${NGRAPH_INSTALL_LIB_DIR})
+
 install(TARGETS he_backend DESTINATION ${NGRAPH_INSTALL_LIB_DIR})
 install(DIRECTORY
     ${CMAKE_CURRENT_SOURCE_DIR}/

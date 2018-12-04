@@ -86,7 +86,7 @@ parse_seal_ckks_config_or_use_default() {
     NGRAPH_INFO << "Error " << e.what();
     NGRAPH_INFO << "Error using NGRAPH_HE_SEAL_CONFIG. Using default ";
     return runtime::he::he_seal::HESealParameter(
-        "HE:SEAL:CKKS",  // scheme name
+        "HE_SEAL_CKKS",  // scheme name
         1024,            // poly_modulus_degree
         128,             // security_level
         60,              // evaluation_decomposition_bit_count
@@ -166,7 +166,7 @@ shared_ptr<seal::SEALContext>
 runtime::he::he_seal::HESealCKKSBackend::make_seal_context(
     const shared_ptr<runtime::he::he_seal::HESealParameter> sp) const {
   seal::EncryptionParameters parms =
-      (sp->m_scheme_name == "HE:SEAL:CKKS"
+      (sp->m_scheme_name == "HE_SEAL_CKKS"
            ? seal::scheme_type::CKKS
            : throw ngraph_error("Invalid scheme name \"" + sp->m_scheme_name +
                                 "\""));
@@ -255,7 +255,7 @@ namespace {
 static class HESealCKKSStaticInit {
  public:
   HESealCKKSStaticInit() {
-    runtime::BackendManager::register_backend("HE:SEAL:CKKS", new_ckks_backend);
+    runtime::BackendManager::register_backend("HE_SEAL_CKKS", new_ckks_backend);
   }
   ~HESealCKKSStaticInit() {}
 } s_he_seal_ckks_static_init;
@@ -264,7 +264,7 @@ static class HESealCKKSStaticInit {
 void runtime::he::he_seal::HESealCKKSBackend::assert_valid_seal_ckks_parameter(
     const shared_ptr<runtime::he::he_seal::HESealParameter>& sp) const {
   assert_valid_seal_parameter(sp);
-  if (sp->m_scheme_name != "HE:SEAL:CKKS") {
+  if (sp->m_scheme_name != "HE_SEAL_CKKS") {
     throw ngraph_error("Invalid scheme name");
   }
 }

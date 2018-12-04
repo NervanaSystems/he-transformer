@@ -29,8 +29,18 @@ message("ng-tf CMAKE_CXX_COMPILER ${CMAKE_CXX_COMPILER}")
 message("ng-tf CMAKE_CXX_COMPILER ${CMAKE_C_COMPILER}")
 message("ng-tf CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}")
 
+execute_process(
+        COMMAND python -c "import os; print(os.environ['VIRTUAL_ENV'])"
+        OUTPUT_VARIABLE PYTHON_ENV
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+set (PY_NGRAPH_LIB_DIR ${PYTHON_ENV}/lib/python3.5/site-packages/ngraph_bridge)
+
+message("ng-tf PY_NGRAPH_LIB_DIR ${PY_NGRAPH_LIB_DIR}")
+
 ExternalProject_Add(
-   ext_ngraph_tf DEPENDS ext_ngraph
+   ext_ngraph_tf DEPENDS ext_ngraph he_backend
    GIT_REPOSITORY ${NGRAPH_TF_REPO_URL}
    GIT_TAG ${NGRAPH_TF_GIT_LABEL}
    PREFIX ${NGRAPH_TF_CMAKE_PREFIX}
@@ -41,8 +51,12 @@ ExternalProject_Add(
                -DUSE_PRE_BUILT_NGRAPH=ON
                -DNGRAPH_ARTIFACTS_DIR=${EXTERNAL_INSTALL_DIR}
 
-   INSTALL_COMMAND pip install ngraph-tensorflow-bridge
-   #INSTALL_COMMAND make install && pip install python/dist/ngraph_tensorflow_bridge-0.8.0-py2.py3-none-manylinux1_x86_64.whl
+   # TODO: try below instead; note, make install ensures we copy he_backend.so to the CreatePipWhl.cmake first.
+   #INSTALL_COMMAND make install && pip install ngraph-tensorflow-bridge
+   # Work-around for ngraph-tf to recognize backends. TODO: modify ngraph-tf instead
+   INSTALL_COMMAND make install && cp ${PY_NGRAPH_LIB_DIR}/libhe_backend.so ${PY_NGRAPH_LIB_DIR}/libhe_seal_ckks_backend.so
+                                && cp ${PY_NGRAPH_LIB_DIR}/libhe_backend.so ${PY_NGRAPH_LIB_DIR}/libhe_seal_bfv_backend.so
+                                 && pip install --force-reinstall --ignore-installed python/dist/ngraph_tensorflow_bridge-0.8.0-py2.py3-none-manylinux1_x86_64.whl
    TEST_COMMAND python -c "import tensorflow as tf; print('TensorFlow version: r',tf.__version__);import ngraph_bridge; print(ngraph_bridge.__version__)"
    # BUILD_ALWAYS 1
 )

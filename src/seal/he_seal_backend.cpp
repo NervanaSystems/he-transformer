@@ -33,7 +33,7 @@ extern "C" runtime::Backend* new_backend(const char* configuration_chars) {
 
   if (configuration_string == "HE:SEAL:BFV") {
     return new runtime::he::he_seal::HESealBFVBackend();
-  } else if (configuration_string == "HE:SEAL:CKKS") {
+  } else if (configuration_string == "HE_SEAL_CKKS") {
     return new runtime::he::he_seal::HESealCKKSBackend();
   } else {
     throw ngraph_error("Invalid configuration string \"" +
@@ -46,7 +46,7 @@ extern "C" void delete_backend(runtime::Backend* backend) { delete backend; }
 void runtime::he::he_seal::HESealBackend::assert_valid_seal_parameter(
     const shared_ptr<runtime::he::he_seal::HESealParameter> sp) const {
   if (sp->m_scheme_name != "HE:SEAL:BFV" &&
-      sp->m_scheme_name != "HE:SEAL:CKKS") {
+      sp->m_scheme_name != "HE_SEAL_CKKS") {
     throw ngraph_error("Invalid scheme name");
   }
   static unordered_set<uint64_t> valid_poly_modulus{1024, 2048,  4096,
