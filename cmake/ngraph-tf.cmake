@@ -26,6 +26,7 @@ set(COMPILE_FLAGS ${CMAKE_CXX_FLAGS})
 message("Compile flags ${COMPILE_FLAGS}")
 
 message("ng-tf CMAKE_CXX_COMPILER ${CMAKE_CXX_COMPILER}")
+message("ng-tf CMAKE_CXX_COMPILER ${CMAKE_C_COMPILER}")
 message("ng-tf CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}")
 
 ExternalProject_Add(

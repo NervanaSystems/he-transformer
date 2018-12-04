@@ -24,13 +24,9 @@ include(ExternalProject)
 set(GTEST_GIT_REPO_URL https://github.com/google/googletest.git)
 set(GTEST_GIT_LABEL release-1.8.1)
 
-set(COMPILE_FLAGS -fPIC)
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    message("GNU compiler")
-    if (DEFINED NGRAPH_USE_CXX_ABI)
-        set(COMPILE_FLAGS "${COMPILE_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=${NGRAPH_USE_CXX_ABI}")
-    endif()
-endif()
+set(COMPILE_FLAGS "-fPIC -D_GLIBCXX_USE_CXX11_ABI=0")
+
+message("he-transfroemr COMPILE FFLAGS ${COMPILE_FLAGS}")
 
 ExternalProject_Add(
     ext_gtest

@@ -18,10 +18,14 @@
 cmake_minimum_required (VERSION 3.2)
 
 # Global project name
-project (he-transformer CXX)
+project (he-transformer LANGUAGES CXX C)
 
 # CXX flags
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z -std=gnu++1z -Wall")
+# Tensorflow pip package uses GCC 4.8, with older CXX11_ABI
+# SEAL requires GCC >= 5.0, with newer CX11_ABI.
+# For compatibility with TF, we use older CX11_ABI.
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g")
 set(CMAKE_CXX_FLAGS_DEBUG  "-O0 -g")
 

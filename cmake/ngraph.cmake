@@ -19,12 +19,10 @@ include(ExternalProject)
 set(EXTERNAL_NGRAPH_INSTALL_DIR ${EXTERNAL_INSTALL_DIR})
 set(NGRAPH_CMAKE_PREFIX ext_ngraph)
 
-if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNGRAPH_DEBUG_ENABLE=TRUE")
-endif()
-
 SET(NGRAPH_REPO_URL https://github.com/NervanaSystems/ngraph.git)
-SET(NGRAPH_GIT_LABEL fboemer/cxx_abi) #v0.10.1)
+SET(NGRAPH_GIT_LABEL fboemer/gnu_compiler_fix) #v0.10.1)
+
+message("CMAKE_CXX_COMPILER ${CMAKE_CXX_COMPILER}")
 
 ExternalProject_Add(
     ext_ngraph
@@ -44,9 +42,7 @@ ExternalProject_Add(
             -DNGRAPH_INTERPRETER_ENABLE=OFF
             -DNGRAPH_USE_PREBUILT_LLVM=TRUE
             -DNGRAPH_INSTALL_PREFIX=${EXTERNAL_INSTALL_DIR}
-            if (DEFINED ${USE_CX11_ABI})
-                -DNGRAPH_USE_CXX_ABI=${USE_CX11_ABI}
-            endif()
+            -DNGRAPH_USE_CXX_ABI=0
     BUILD_BYPRODUCTS ${NGRAPH_CMAKE_PREFIX}
     INSTALL_DIR "${EXTERNAL_INSTALL_DIR}"
     # BUILD_ALWAYS 1
