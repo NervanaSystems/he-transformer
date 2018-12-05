@@ -185,60 +185,6 @@ def inputs(eval_data):
     labels = tf.cast(labels, tf.float16)
   return images, labels
 
-def he_inference(images):
-  """Build CIFAR-10 HE model.
-
-  Args:
-    images: Images returned from distorted_inputs() or inputs().
-
-  Returns:
-    Logits.
-  """
-  # conv1
-  conv1 = conv_layer(images,
-                          size=3,
-                          filters=64,
-                          stride=1,
-                          decay=False,
-                          name='conv1')
-
-  # pool1
-  pool1 = pool_layer(conv1,
-                          size=3,
-                          stride=2,
-                          name='pool1')
-
-  # fire2
-  fire2 = fire_layer(pool1, 16, 64, 64, decay=False, name='fire2')
-
-  # fire3
-  fire3 = fire_layer(fire2, 16, 64, 64, decay=False, name='fire3')
-
-  # pool2
-  pool2 = pool_layer(fire3,
-                          size=3,
-                          stride=2,
-                          name='pool2')
-
-  # fire4
-  fire4 = fire_layer(pool2, 32, 128, 128, decay=False, name='fire4')
-
-  # fire5
-  fire5 = fire_layer(fire4, 32, 128, 128, decay=False, name='fire5')
-
-  # Final squeeze to get ten classes
-  conv2 = conv_layer(fire5,
-                          size=1,
-                          filters=10,
-                          stride=1,
-                          decay=False,
-                          name='squeeze')
-
-  # Average pooling on spatial dimensions
-  predictions = avg_layer(conv2, name='avg_pool')
-
-  return predictions
-
 def inference(images):
   """Build the CIFAR-10 model.
 
@@ -449,3 +395,119 @@ def maybe_download_and_extract():
   extracted_dir_path = os.path.join(dest_directory, 'cifar-10-batches-bin')
   if not os.path.exists(extracted_dir_path):
     tarfile.open(filepath, 'r:gz').extractall(dest_directory)
+
+
+def he_inference(images):
+  """Build CIFAR-10 HE model.
+
+  Args:
+    images: Images returned from distorted_inputs() or inputs().
+
+  Returns:
+    Logits.
+  """
+  # conv1
+  conv1 = conv_layer(images,
+                          size=3,
+                          filters=64,
+                          stride=1,
+                          decay=False,
+                          name='conv1')
+
+  # pool1
+  pool1 = pool_layer(conv1,
+                          size=3,
+                          stride=2,
+                          name='pool1')
+
+  # fire2
+  fire2 = fire_layer(pool1, 16, 64, 64, decay=False, name='fire2')
+
+  # fire3
+  fire3 = fire_layer(fire2, 16, 64, 64, decay=False, name='fire3')
+
+  # pool2
+  pool2 = pool_layer(fire3,
+                          size=3,
+                          stride=2,
+                          name='pool2')
+
+  # fire4
+  fire4 = fire_layer(pool2, 32, 128, 128, decay=False, name='fire4')
+
+  # fire5
+  fire5 = fire_layer(fire4, 32, 128, 128, decay=False, name='fire5')
+
+  # Final squeeze to get ten classes
+  conv2 = conv_layer(fire5,
+                          size=1,
+                          filters=10,
+                          stride=1,
+                          decay=False,
+                          name='squeeze')
+
+  # Average pooling on spatial dimensions
+  predictions = avg_layer(conv2, name='avg_pool')
+
+  return predictions
+
+
+def he_train(total_loss, global_step):
+  """Train CIFAR-10 model.
+
+  Create an optimizer and apply to all trainable variables. Add moving
+  average for all trainable variables.
+
+  Args:
+    total_loss: Total loss from loss().
+    global_step: Integer Variable counting the number of training steps
+      processed.
+  Returns:
+    train_op: op for training.
+  """
+  # Variables that affect learning rate.
+  num_batches_per_epoch = NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN / FLAGS.batch_size
+  decay_steps = int(num_batches_per_epoch * NUM_EPOCHS_PER_DECAY)
+
+  # Decay the learning rate exponentially based on the number of steps.
+  lr = tf.train.exponential_decay(INITIAL_LEARNING_RATE,
+                                  global_step,
+                                  decay_steps,
+                                  LEARNING_RATE_DECAY_FACTOR,
+                                  staircase=True)
+  tf.summary.scalar('learning_rate', lr)
+
+  # Generate moving averages of all losses and associated summaries.
+  loss_averages_op = _add_loss_summaries(total_loss)
+
+  # Compute gradients.
+  with tf.control_dependencies([loss_averages_op]):
+    opt = tf.train.GradientDescentOptimizer(lr)
+    grads = opt.compute_gradients(total_loss)
+
+    # Clip gradients
+    for grad, var in grads:
+      assert(var is not None)
+      #assert(grad is not None)
+
+    capped_gvs = [(tf.clip_by_value(grad, -1., 1.), var) for grad, var in grads if grad is not None]
+
+  # Apply gradients.
+  apply_gradient_op = opt.apply_gradients(capped_gvs, global_step=global_step)
+
+  # Add histograms for trainable variables.
+  for var in tf.trainable_variables():
+    tf.summary.histogram(var.op.name, var)
+
+  # Add histograms for gradients.
+  for grad, var in grads:
+    if grad is not None:
+      tf.summary.histogram(var.op.name + '/gradients', grad)
+
+  # Track the moving averages of all trainable variables.
+  variable_averages = tf.train.ExponentialMovingAverage(
+      MOVING_AVERAGE_DECAY, global_step)
+  with tf.control_dependencies([apply_gradient_op]):
+    variables_averages_op = variable_averages.apply(tf.trainable_variables())
+
+  return variables_averages_op

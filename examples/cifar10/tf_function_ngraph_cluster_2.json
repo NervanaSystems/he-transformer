@@ -1,0 +1,112 @@
+[
+    {
+        "name": "Function_1",
+        "ops": [
+            {
+                "cacheable": false,
+                "control_deps": [],
+                "element_type": "float",
+                "inputs": [],
+                "name": "Parameter_34",
+                "op": "Parameter",
+                "outputs": [
+                    "Parameter_34_0"
+                ],
+                "shape": [
+                    24,
+                    24,
+                    3
+                ]
+            },
+            {
+                "cacheable": false,
+                "control_deps": [],
+                "element_type": "float",
+                "inputs": [],
+                "name": "Parameter_33",
+                "op": "Parameter",
+                "outputs": [
+                    "Parameter_33_0"
+                ],
+                "shape": []
+            },
+            {
+                "control_deps": [],
+                "element_type": "float",
+                "inputs": [],
+                "name": "Constant_35",
+                "op": "Constant",
+                "outputs": [
+                    "Constant_35_0"
+                ],
+                "shape": [],
+                "value": [
+                    "0.0240563"
+                ]
+            },
+            {
+                "control_deps": [],
+                "inputs": [
+                    "Parameter_33",
+                    "Constant_35"
+                ],
+                "name": "Maximum_36",
+                "op": "Maximum",
+                "outputs": [
+                    "Maximum_36_0"
+                ]
+            },
+            {
+                "axes": [
+                    0,
+                    1,
+                    2
+                ],
+                "control_deps": [],
+                "inputs": [
+                    "Maximum_36"
+                ],
+                "name": "Broadcast_37",
+                "op": "Broadcast",
+                "outputs": [
+                    "Broadcast_37_0"
+                ],
+                "shape": [
+                    24,
+                    24,
+                    3
+                ]
+            },
+            {
+                "control_deps": [],
+                "inputs": [
+                    "Parameter_34",
+                    "Broadcast_37"
+                ],
+                "name": "Divide_38",
+                "op": "Divide",
+                "outputs": [
+                    "Divide_38_0"
+                ]
+            },
+            {
+                "control_deps": [],
+                "inputs": [
+                    "Divide_38"
+                ],
+                "name": "Result_39",
+                "op": "Result",
+                "outputs": [
+                    "Result_39_0"
+                ]
+            }
+        ],
+        "parameters": [
+            "Parameter_33",
+            "Parameter_34"
+        ],
+        "result": [
+            "Result_39"
+        ]
+    }
+]

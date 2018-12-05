@@ -45,8 +45,8 @@ def conv_layer(inputs, size, filters, stride, decay, name, bn=False):
                           padding='SAME')
       pre_activation = tf.nn.bias_add(conv, biases)
 
-      a = tf.get_variagle('a', shape=[1], initializer=tf.constant_initializer(0.0))
-      b = tf.get_variagle('b', shape=[1])
+      a = tf.get_variable('a', shape=[1], initializer=tf.constant_initializer(0.0))
+      b = tf.get_variable('b', shape=[1])
 
       outputs = a * pre_activation**2 + b * pre_activation
 
