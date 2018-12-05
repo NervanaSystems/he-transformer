@@ -64,8 +64,8 @@ test_python_build ()
 
     # Test python unit-test
     cd ../examples
-    NGRAPH_TF_BACKEND=HE:SEAL:BFV python axpy.py
-    NGRAPH_TF_BACKEND=HE:SEAL:CKKS python axpy.py
+    #NGRAPH_TF_BACKEND=HE:SEAL:BFV python axpy.py
+    NGRAPH_TF_BACKEND=HE_SEAL_CKKS python axpy.py
 
     # Test cryptonets under python
     cd cryptonets
@@ -75,5 +75,5 @@ test_python_build ()
     echo 'Done testing python build'
 }
 
-test_cpp_build
+# test_cpp_build
 test_python_build

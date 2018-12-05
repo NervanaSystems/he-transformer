@@ -26,12 +26,3 @@ f = (a + b) * c
 with tf.Session() as sess:
     f_val = sess.run(f, feed_dict={b: np.ones((2, 2)), c: np.array(5, )})
     print("Result: ", f_val)
-
-a = tf.constant(2 * np.ones((2, 3)), dtype=np.float32)
-b = tf.placeholder(tf.float32, shape=(3, 4))
-f = tf.matmul(a, b)
-
-with tf.Session() as sess:
-    f_val = sess.run(f, feed_dict={b: 3 * np.ones((3, 4))})
-    print("Result: ", f_val)
-

@@ -24,7 +24,7 @@ include(ExternalProject)
 set(GTEST_GIT_REPO_URL https://github.com/google/googletest.git)
 set(GTEST_GIT_LABEL release-1.8.1)
 
-set(COMPILE_FLAGS "-fPIC -D_GLIBCXX_USE_CXX11_ABI=0")
+set(COMPILE_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
 message("he-transfroemr COMPILE FFLAGS ${COMPILE_FLAGS}")
 

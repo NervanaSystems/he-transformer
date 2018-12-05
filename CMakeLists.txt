@@ -25,7 +25,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z -std=gnu++1z -Wall")
 # Tensorflow pip package uses GCC 4.8, with older CXX11_ABI
 # SEAL requires GCC >= 5.0, with newer CX11_ABI.
 # For compatibility with TF, we use older CX11_ABI.
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0")
+set(CXX11_ABI 0)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=${CXX11_ABI}")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g")
 set(CMAKE_CXX_FLAGS_DEBUG  "-O0 -g")
 
@@ -57,24 +58,23 @@ if (ENABLE_TF)
     execute_process(
         COMMAND python -c "import os; print(os.environ['VIRTUAL_ENV'])"
         RESULT_VARIABLE PY_ENV_ERROR
+        OUTPUT_VARIABLE PY_ENV
+        OUTPUT_STRIP_TRAILING_WHITESPACE
     )
     if(PY_ENV_ERROR)
         message(FATAL_ERROR "Set python virtual environment when building with TF support.")
     endif()
 
-    # Allows "make ext_ngraph_tf"
+    message("PYENV ${PY_ENV}")
+
+    set (PY_NGRAPH_LIB_DIR ${PY_ENV}/lib/python3.5/site-packages/ngraph_bridge)
+
     execute_process(
         COMMAND pip install -U tensorflow
     )
-    execute_process(
-        COMMAND python -c "import tensorflow as tf; print(tf.__cxx11_abi_flag__)"
-        RESULT_VARIABLE USE_CX11_ABI
-    )
 endif() # ENABLE TF
 
-if(DEFINED USE_CXX11_ABI)
-    message("USE_CX11_ABI: ${USE_CX11_ABI}")
-endif()
+message("PY_NGRAPH_LIB_DIR ${PY_ENV} OOO")
 
 # he-transformer headers
 set(HE_TRANSFORMER_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)

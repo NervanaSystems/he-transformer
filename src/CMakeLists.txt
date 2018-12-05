@@ -82,13 +82,13 @@ endif()
 
 if (ENABLE_TF)
     # Install he-transformer to the python environment at `make install`
-    execute_process(
-        COMMAND python -c "import os; print(os.environ['VIRTUAL_ENV'])"
-        OUTPUT_VARIABLE PYTHON_ENV
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
+    #execute_process(
+    #    COMMAND python -c "import os; print(os.environ['VIRTUAL_ENV'])"
+    #    OUTPUT_VARIABLE PYTHON_ENV
+    #    OUTPUT_STRIP_TRAILING_WHITESPACE
+    #)
 
-    set (PY_NGRAPH_LIB_DIR ${PYTHON_ENV}/lib/python3.5/site-packages/ngraph_bridge)
+    #set (PY_NGRAPH_LIB_DIR ${PYTHON_ENV}/lib/python3.5/site-packages/ngraph_bridge)
 
     message("PY_NGRAPH_LIB_DIR ${PY_NGRAPH_LIB_DIR}")
     install(TARGETS he_backend DESTINATION ${PY_NGRAPH_LIB_DIR})
