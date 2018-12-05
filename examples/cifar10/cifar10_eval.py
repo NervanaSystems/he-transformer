@@ -48,6 +48,9 @@ FLAGS = None
 
 import ngraph_bridge
 
+import time
+
+node_names = []
 
 def eval_once(saver, summary_writer, top_k_op, summary_op):
   """Run Eval once.
@@ -58,7 +61,12 @@ def eval_once(saver, summary_writer, top_k_op, summary_op):
     top_k_op: Top K op.
     summary_op: Summary op.
   """
+
+  print("Calling eval once")
   with tf.Session() as sess:
+    print('Creating session')
+
+
     ckpt = tf.train.get_checkpoint_state(FLAGS.checkpoint_dir)
     if ckpt and ckpt.model_checkpoint_path:
       # Restores from checkpoint
@@ -71,36 +79,51 @@ def eval_once(saver, summary_writer, top_k_op, summary_op):
       print('No checkpoint file found')
       return
 
+
+    # Convert variables to constants
+    with tf.Graph().as_default() as g:
+      tf.graph_util.convert_variables_to_constants(sess, g.as_graph_def(), node_names,
+        variable_names_whitelist=node_names)
+
+
     # Start the queue runners.
-    coord = tf.train.Coordinator()
-    try:
-      threads = []
-      for qr in tf.get_collection(tf.GraphKeys.QUEUE_RUNNERS):
-        threads.extend(qr.create_threads(sess, coord=coord, daemon=True,
-                                         start=True))
+    if True:
+      print("computing precision")
+      coord = tf.train.Coordinator()
+      try:
+        threads = []
+        for qr in tf.get_collection(tf.GraphKeys.QUEUE_RUNNERS):
+          threads.extend(qr.create_threads(sess, coord=coord, daemon=True,
+                                          start=True))
 
-      num_iter = int(math.ceil(FLAGS.num_examples / 128))
-      true_count = 0  # Counts the number of correct predictions.
-      total_sample_count = num_iter * 128
-      step = 0
-      while step < num_iter and not coord.should_stop():
-        predictions = sess.run([top_k_op])
-        true_count += np.sum(predictions)
-        step += 1
+        num_iter = int(math.ceil(FLAGS.num_examples / 128))
+        true_count = 0  # Counts the number of correct predictions.
+        total_sample_count = num_iter * 128
+        step = 0
+        while step < num_iter and not coord.should_stop():
+          predictions = sess.run([top_k_op])
+          time.sleep(100)
+          true_count += np.sum(predictions)
+          step += 1
 
-      # Compute precision @ 1.
-      precision = true_count / total_sample_count
-      print('%s: precision @ 1 = %.3f' % (datetime.datetime.now(), precision))
+        # Compute precision @ 1.
+        precision = true_count / total_sample_count
 
-      summary = tf.Summary()
-      summary.ParseFromString(sess.run(summary_op))
-      summary.value.add(tag='Precision @ 1', simple_value=precision)
-      summary_writer.add_summary(summary, global_step)
-    except Exception as e:  # pylint: disable=broad-except
-      coord.request_stop(e)
 
-    coord.request_stop()
-    coord.join(threads, stop_grace_period_secs=10)
+        print('%s: precision @ 1 = %.3f' % (datetime.datetime.now(), precision))
+
+        summary = tf.Summary()
+        summary.ParseFromString(sess.run(summary_op))
+        summary.value.add(tag='Precision @ 1', simple_value=precision)
+        summary_writer.add_summary(summary, global_step)
+      except Exception as e:  # pylint: disable=broad-except
+        coord.request_stop(e)
+        print("Error in starting queue runners")
+
+      coord.request_stop()
+      coord.join(threads, stop_grace_period_secs=10)
+
+      print("done computing precision")
 
     # Save variables
     for var in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES):
@@ -118,6 +141,9 @@ def evaluate():
     eval_data = FLAGS.eval_data == 'test'
     images, labels = cifar10.inputs(eval_data=eval_data)
 
+    images = images[0:10]
+    labels = labels[0:10]
+
     # Build a Graph that computes the logits predictions from the
     # inference model.
     logits = cifar10.he_inference(images)
@@ -131,13 +157,30 @@ def evaluate():
     variables_to_restore = variable_averages.variables_to_restore()
     saver = tf.train.Saver(variables_to_restore)
 
+    # Convert variables to constants
+    node_names = [n.name for n in tf.get_default_graph().as_graph_def().node]
+    node_names = [var.name for var in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)]
+    print('node names', node_names)
+    #get_node_names()
+    #exit(1)
+    '''
+    node_names = [n.name for n in tf.get_default_graph().as_graph_def().node]
+    print('node names', node_names)
+    exit(1)
+    with tf.Session() as sess:
+      tf.graph_util.convert_variables_to_constants(sess, sess.graph.as_graph_def(), node_names)
+    '''
+
+
     # Build the summary operation based on the TF collection of Summaries.
     summary_op = tf.summary.merge_all()
 
     summary_writer = tf.summary.FileWriter(FLAGS.eval_dir, g)
 
     while True:
-      eval_once(saver, summary_writer, top_k_op, summary_op)
+      eval_once(saver, summary_writer, logits, summary_op)
+      # eval_once(saver, summary_writer, top_k_op, summary_op)
+      print('done with eval once')
       if FLAGS.run_once:
         break
       time.sleep(FLAGS.eval_interval_secs)
@@ -182,7 +225,7 @@ if __name__ == '__main__':
   parser.add_argument(
       '--run_once',
       type=bool,
-      default=False,
+      default=True,
       help='Whether to run eval only once.')
 
   FLAGS, unparsed = parser.parse_known_args()
