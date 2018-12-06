@@ -60,12 +60,8 @@ static void run_cifar10_benchmark(string backend_name, size_t batch_size = 1) {
        batch_size * 10);
        */
 
-  vector<float> x(batch_size, 0.1);
+  vector<float> x(batch_size * 24 * 24 * 3, 0.1);
   vector<float> y(batch_size * 10, 0);
-
-  for (auto elem : x) {
-    NGRAPH_INFO << "elem, " << elem;
-  }
 
   // Global stop watch
   stopwatch sw_global;

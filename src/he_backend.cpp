@@ -285,15 +285,22 @@ bool runtime::he::HEBackend::call(
       descriptor::Tensor* tv = param->get_output_tensor_ptr(i).get();
 
       if (encrypt_data()) {
+        NGRAPH_INFO << "Encrypting parameter " << i;
         auto plain_input = static_pointer_cast<runtime::he::HEPlainTensor>(
             he_inputs[input_count]);
+        assert(plain_input != nullptr);
         auto cipher_input = static_pointer_cast<runtime::he::HECipherTensor>(
             create_cipher_tensor(plain_input->get_element_type(),
                                  plain_input->get_shape(), batch_data()));
+
+        NGRAPH_INFO << "plain_input->get_batched_element_count() "
+                    << plain_input->get_batched_element_count();
 #pragma omp parallel for
         for (size_t i = 0; i < plain_input->get_batched_element_count(); ++i) {
           encrypt(cipher_input->get_element(i), *plain_input->get_element(i));
         }
+
+        NGRAPH_INFO << "Done encrypting parameter " << i;
 
         tensor_map.insert({tv, cipher_input});
         input_count++;
