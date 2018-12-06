@@ -196,6 +196,119 @@ def eval_once(saver, summary_writer, logits, summary_op):
       print("saving", filename)
       np.savetxt(str(filename), weight)
 
+
+def evaluate_const():
+  eval_data = FLAGS.eval_data == 'test'
+  images, labels = cifar10.inputs(eval_data=eval_data)
+
+  images = images[0:10]
+  labels = labels[0:10]
+
+  # Build a Graph that computes the logits predictions from the
+  # inference model.
+  logits = cifar10.he_inference(images)
+
+  # Calculate predictions.
+  top_k_op = tf.nn.in_top_k(logits, labels, 1)
+
+  # Restore the moving average version of the learned variables for eval.
+  variable_averages = tf.train.ExponentialMovingAverage(
+      cifar10.MOVING_AVERAGE_DECAY)
+  variables_to_restore = variable_averages.variables_to_restore()
+
+  print('variables_to_restore', variables_to_restore)
+  saver = tf.train.Saver(variables_to_restore)
+
+  print('before', [n.name for n in tf.get_default_graph().as_graph_def().node])
+
+
+  with tf.Session() as sess:
+    print('Creating session')
+
+    ckpt = tf.train.get_checkpoint_state(FLAGS.checkpoint_dir)
+    if ckpt and ckpt.model_checkpoint_path:
+      # Restores from checkpoint
+      saver.restore(sess, ckpt.model_checkpoint_path)
+      # Assuming model_checkpoint_path looks something like:
+      #   /my-favorite-path/cifar10_train/model.ckpt-0,
+      # extract global_step from it.
+      global_step = ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1]
+    else:
+      print('No checkpoint file found')
+      return
+
+    print('Converting variables to constants')
+    output_node_names = ['avg_pool/avg_pool']
+    # variable_names_whitelist = []
+    variable_names_blacklist = []
+
+    input_graph = '/tmp/cifar10_train/graph.pbtxt'
+    input_binary = (input_graph[-2:] == 'pb')
+    #print('input binary', input_binary)
+    input_graph_def = _parse_input_graph_proto(input_graph, input_binary)
+
+  with tf.Session() as sess:
+
+    output_graph_def = tf.graph_util.convert_variables_to_constants(
+          sess,
+          input_graph_def,
+          output_node_names,
+          #variable_names_whitelist=variable_names_whitelist,
+          variable_names_blacklist=variable_names_blacklist)
+
+    tf.train.write_graph(output_graph_def, './freeze', 'cifar10_const.pbtxt', as_text=True)
+
+    # Start the queue runners.
+    if True:
+      print("computing precision")
+      coord = tf.train.Coordinator()
+      try:
+        threads = []
+        for qr in tf.get_collection(tf.GraphKeys.QUEUE_RUNNERS):
+          threads.extend(qr.create_threads(sess, coord=coord, daemon=True,
+                                          start=True))
+
+        num_iter = int(math.ceil(FLAGS.num_examples / 128))
+        true_count = 0  # Counts the number of correct predictions.
+        total_sample_count = num_iter * 128
+        step = 0
+        while step < num_iter and not coord.should_stop():
+          predictions = sess.run(['avg_pool/avg_pool'])
+          print('Sleeping')
+          time.sleep(100)
+          true_count += np.sum(predictions)
+          step += 1
+
+        # Compute precision @ 1.
+        precision = true_count / total_sample_count
+
+
+        print('%s: precision @ 1 = %.3f' % (datetime.datetime.now(), precision))
+
+        summary = tf.Summary()
+        summary.ParseFromString(sess.run(summary_op))
+        summary.value.add(tag='Precision @ 1', simple_value=precision)
+        summary_writer.add_summary(summary, global_step)
+      except Exception as e:  # pylint: disable=broad-except
+        coord.request_stop(e)
+        print("Error in starting queue runners")
+
+      coord.request_stop()
+      coord.join(threads, stop_grace_period_secs=10)
+
+      print("done computing precision")
+
+
+
+
+
+
+
+
+  exit(1)
+
+
+
 def evaluate():
   """Eval CIFAR-10 for a number of steps."""
   with tf.Graph().as_default() as g:
@@ -305,7 +418,8 @@ def main(argv=None):  # pylint: disable=unused-argument
   #
 
   #freeze_cifar()
-  evaluate()
+  #evaluate()
+  evaluate_const()
 
 
 
