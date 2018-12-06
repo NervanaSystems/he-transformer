@@ -33,7 +33,7 @@ test_cpp_build ()
     rm -rf build
     mkdir build
     cd build
-    cmake .. -DCMAKE_CXX_COMPILER=clang++-6.0 -DCMAKE_C_COMPILER=clang-6.0
+    cmake .. -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7
     make -j
     ./test/unit-test
     echo 'Testing cryptonets'
@@ -55,7 +55,7 @@ test_python_build ()
     virtualenv ~/venvs/he3 -p python3
     source ~/venvs/he3/bin/activate
     cd build
-    cmake .. -DENABLE_TF=ON -DCMAKE_CXX_COMPILER=clang++-6.0 -DCMAKE_C_COMPILER=clang-6.0
+    cmake .. -DENABLE_TF=ON -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7
     make -j
     make install
 

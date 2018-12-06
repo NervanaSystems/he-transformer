@@ -16,26 +16,14 @@
 
 #include <limits>
 
-#include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
-#include "ngraph/function.hpp"
-
-#include "ngraph/op/broadcast.hpp"
-#include "ngraph/op/constant.hpp"
-#include "ngraph/op/convolution.hpp"
-#include "ngraph/op/dot.hpp"
-#include "ngraph/op/pad.hpp"
-#include "ngraph/op/reshape.hpp"
-#include "ngraph/op/result.hpp"
-#include "ngraph/op/reverse.hpp"
-#include "ngraph/op/slice.hpp"
-#include "ngraph/op/sum.hpp"
-
-#include "ngraph/pass/assign_layout.hpp"
-#include "ngraph/pass/manager.hpp"
-#include "ngraph/pass/visualize_tree.hpp"
-
+#include "he_backend.hpp"
+#include "he_cipher_tensor.hpp"
+#include "he_plain_tensor.hpp"
+#include "he_tensor.hpp"
 #include "kernel/add.hpp"
+#include "kernel/avg_pool.hpp"
 #include "kernel/broadcast.hpp"
+#include "kernel/concat.hpp"
 #include "kernel/constant.hpp"
 #include "kernel/convolution.hpp"
 #include "kernel/dot.hpp"
@@ -48,11 +36,23 @@
 #include "kernel/slice.hpp"
 #include "kernel/subtract.hpp"
 #include "kernel/sum.hpp"
-
-#include "he_backend.hpp"
-#include "he_cipher_tensor.hpp"
-#include "he_plain_tensor.hpp"
-#include "he_tensor.hpp"
+#include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
+#include "ngraph/function.hpp"
+#include "ngraph/op/avg_pool.hpp"
+#include "ngraph/op/broadcast.hpp"
+#include "ngraph/op/concat.hpp"
+#include "ngraph/op/constant.hpp"
+#include "ngraph/op/convolution.hpp"
+#include "ngraph/op/dot.hpp"
+#include "ngraph/op/pad.hpp"
+#include "ngraph/op/reshape.hpp"
+#include "ngraph/op/result.hpp"
+#include "ngraph/op/reverse.hpp"
+#include "ngraph/op/slice.hpp"
+#include "ngraph/op/sum.hpp"
+#include "ngraph/pass/assign_layout.hpp"
+#include "ngraph/pass/manager.hpp"
+#include "ngraph/pass/visualize_tree.hpp"
 
 using namespace ngraph;
 using namespace std;
@@ -481,6 +481,30 @@ void runtime::he::HEBackend::generate_calls(
     } else {
       throw ngraph_error("Add types not supported.");
     }
+  } else if (node_op == "AvgPool") {
+    shared_ptr<op::AvgPool> avg_pool = dynamic_pointer_cast<op::AvgPool>(node);
+
+    if (arg0_cipher != nullptr && out0_cipher != nullptr) {
+      Shape in_shape = arg0_cipher->get_shape();
+      Shape out_shape = out0_cipher->get_shape();
+
+      runtime::he::kernel::avg_pool(
+          arg0_cipher->get_elements(), out0_cipher->get_elements(),
+          node->get_input_shape(0), node->get_output_shape(0),
+          avg_pool->get_window_shape(), avg_pool->get_window_movement_strides(),
+          avg_pool->get_padding_below(), avg_pool->get_padding_above(),
+          avg_pool->get_include_padding_in_avg_computation(), this);
+
+    } else if (arg0_plain != nullptr && out0_plain != nullptr) {
+      runtime::he::kernel::avg_pool(
+          arg0_plain->get_elements(), out0_plain->get_elements(),
+          node->get_input_shape(0), node->get_output_shape(0),
+          avg_pool->get_window_shape(), avg_pool->get_window_movement_strides(),
+          avg_pool->get_padding_below(), avg_pool->get_padding_above(),
+          avg_pool->get_include_padding_in_avg_computation(), this);
+    } else {
+      throw ngraph_error("Broadcast types not supported.");
+    }
   } else if (node_op == "Broadcast") {
     shared_ptr<op::Broadcast> broadcast =
         dynamic_pointer_cast<op::Broadcast>(node);
@@ -500,6 +524,46 @@ void runtime::he::HEBackend::generate_calls(
                                      out_shape, broadcast_axes);
     } else {
       throw ngraph_error("Broadcast types not supported.");
+    }
+  } else if (node_op == "Concat") {
+    shared_ptr<op::Concat> concat = dynamic_pointer_cast<op::Concat>(node);
+
+    if (arg0_cipher != nullptr && out0_cipher != nullptr) {
+      std::vector<Shape> in_shapes;
+      std::vector<std::vector<std::shared_ptr<HECiphertext>>> in_args;
+
+      for (shared_ptr<HETensor> arg : args) {
+        shared_ptr<HECipherTensor> arg_cipher =
+            dynamic_pointer_cast<HECipherTensor>(arg);
+        if (arg_cipher == nullptr) {
+          throw ngraph_error("Concat type not consistent");
+        }
+        in_args.push_back(arg_cipher->get_elements());
+        in_shapes.push_back(arg_cipher->get_shape());
+
+        runtime::he::kernel::concat(in_args, out0_cipher->get_elements(),
+                                    in_shapes, node->get_output_shape(0),
+                                    concat->get_concatenation_axis());
+      }
+    } else if (arg0_plain != nullptr && out0_plain != nullptr) {
+      std::vector<Shape> in_shapes;
+      std::vector<std::vector<std::shared_ptr<HEPlaintext>>> in_args;
+
+      for (shared_ptr<HETensor> arg : args) {
+        shared_ptr<HEPlainTensor> arg_plain =
+            dynamic_pointer_cast<HEPlainTensor>(arg);
+        if (arg_plain == nullptr) {
+          throw ngraph_error("Concat type not consistent");
+        }
+        in_args.push_back(arg_plain->get_elements());
+        in_shapes.push_back(arg_plain->get_shape());
+
+        runtime::he::kernel::concat(in_args, out0_plain->get_elements(),
+                                    in_shapes, node->get_output_shape(0),
+                                    concat->get_concatenation_axis());
+      }
+    } else {
+      throw ngraph_error("Concat types not supported.");
     }
   } else if (node_op == "Constant") {
     if (out0_plain != nullptr) {
