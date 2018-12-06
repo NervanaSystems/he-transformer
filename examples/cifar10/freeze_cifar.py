@@ -42,6 +42,14 @@ import time
 import numpy as np
 import tensorflow as tf
 
+from tensorflow.python.tools import freeze_graph
+from tensorflow.python.platform import gfile
+from tensorflow.core.framework import graph_pb2
+from google.protobuf import text_format
+
+
+
+
 import cifar10
 
 FLAGS = None
@@ -52,7 +60,29 @@ import time
 
 node_names = []
 
-def eval_once(saver, summary_writer, top_k_op, summary_op):
+def _parse_input_graph_proto(input_graph, input_binary):
+  """Parser input tensorflow graph into GraphDef proto."""
+  if not gfile.Exists(input_graph):
+    print("Input graph file '" + input_graph + "' does not exist!")
+    return -1
+  input_graph_def = graph_pb2.GraphDef()
+  mode = "rb" if input_binary else "r"
+  with gfile.FastGFile(input_graph, mode) as f:
+    if input_binary:
+      input_graph_def.ParseFromString(f.read())
+    else:
+      text_format.Merge(f.read(), input_graph_def)
+  return input_graph_def
+
+def create_graph(modelFullPath):
+    """Creates a graph from saved GraphDef file and returns a saver."""
+    # Creates graph from saved graph_def.pb.
+    with tf.gfile.FastGFile(modelFullPath, 'rb') as f:
+        graph_def = tf.GraphDef()
+        graph_def.ParseFromString(f.read())
+        tf.import_graph_def(graph_def, name='')
+
+def eval_once(saver, summary_writer, logits, summary_op):
   """Run Eval once.
 
   Args:
@@ -79,12 +109,42 @@ def eval_once(saver, summary_writer, top_k_op, summary_op):
       print('No checkpoint file found')
       return
 
+    print('Converting variables to constants')
+    output_node_names = ['avg_pool/avg_pool']
+    # variable_names_whitelist = []
+    variable_names_blacklist = []
+
+    input_graph = '/tmp/cifar10_train/graph.pbtxt'
+    input_binary = (input_graph[-2:] == 'pb')
+    #print('input binary', input_binary)
+    input_graph_def = _parse_input_graph_proto(input_graph, input_binary)
+
+
+    output_graph_def = tf.graph_util.convert_variables_to_constants(
+          sess,
+          input_graph_def,
+          output_node_names,
+          #variable_names_whitelist=variable_names_whitelist,
+          variable_names_blacklist=variable_names_blacklist)
+
+    tf.train.write_graph(output_graph_def, './freeze', 'cifar10_const.pbtxt', as_text=True)
+
+    print('converted variables to constants')
+    #print('output graph def', output_graph_def)
+
+  with tf.Session() as sess:
+    #create_graph(output_graph_def)
+
+    output_graph = output_graph_def
+
+
+
 
     # Convert variables to constants
-    print('converting variables to constants')
-    with tf.Graph().as_default() as g:
-      tf.graph_util.convert_variables_to_constants(sess, g.as_graph_def(), node_names)
-        # variable_names_whitelist=node_names)
+    # print('converting variables to constants')
+    #with tf.Graph().as_default() as g:
+    # tf.graph_util.convert_variables_to_constants(sess, g.as_graph_def(), node_names)
+    #  # variable_names_whitelist=node_names)
 
 
     # Start the queue runners.
@@ -102,7 +162,7 @@ def eval_once(saver, summary_writer, top_k_op, summary_op):
         total_sample_count = num_iter * 128
         step = 0
         while step < num_iter and not coord.should_stop():
-          predictions = sess.run([top_k_op])
+          predictions = sess.run([logits])
           print('Sleeping')
           time.sleep(100)
           true_count += np.sum(predictions)
@@ -157,12 +217,17 @@ def evaluate():
     variable_averages = tf.train.ExponentialMovingAverage(
         cifar10.MOVING_AVERAGE_DECAY)
     variables_to_restore = variable_averages.variables_to_restore()
+
+    print('variables_to_restore', variables_to_restore)
     saver = tf.train.Saver(variables_to_restore)
 
+
+
     # Convert variables to constants
-    node_names = [n.name for n in tf.get_default_graph().as_graph_def().node]
-    node_names = [var.name for var in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)]
-    print('node names', node_names)
+    # node_names = [n.name for n in tf.get_default_graph().as_graph_def().node]
+    #var_names = [var.name for var in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)]
+    #print('node names', node_names)
+    #print('var names', var_names)
     #get_node_names()
     #exit(1)
     '''
@@ -187,6 +252,48 @@ def evaluate():
         break
       time.sleep(FLAGS.eval_interval_secs)
 
+def freeze_cifar():
+    ckpt = tf.train.get_checkpoint_state(FLAGS.checkpoint_dir)
+    print('ckpt', ckpt)
+    print('ckpt.model_checkpoint_path', ckpt.model_checkpoint_path)
+
+    input_graph_path = '/tmp/cifar10_train/graph.pbtxt'
+    input_saver_def_path = ''
+    input_binary = False # Since .pbtxt (True for .pb)
+    input_checkpoint = '/tmp/cifar10_train/model.ckpt-100' #/tmp/cifar10_train/checkpoint'
+    output_node_names = 'avg_pool/avg_pool' #logits'
+    output_graph = '/tmp/cifar10_train/frozen_graph.pbtxt'
+
+    restore_op_name = "save/restore_all"
+    filename_tensor_name = "save/Const:0"
+    clear_devices = True
+
+    input_meta_graph = None # '/tmp/cifar10_train/model.ckpt-100.meta'
+
+    checkpoint_path = '/tmp/cifar10_train'
+
+    output_graph_path = './freeze/cifar10.pb'
+
+    #saver_write_version = tf.train.SaverDef.V2
+    print('Freezing graph')
+    freeze_graph.freeze_graph(
+        input_graph_path,
+        input_saver_def_path,
+        input_binary,
+        input_checkpoint,
+        output_node_names,
+        restore_op_name,
+        filename_tensor_name,
+        output_graph_path,
+        clear_devices,
+        "",
+        "",
+        input_meta_graph)
+        #checkpoint_version=saver_write_version)
+    print('froze graph')
+    #exit(1)
+
+
 
 
 def main(argv=None):  # pylint: disable=unused-argument
@@ -194,7 +301,13 @@ def main(argv=None):  # pylint: disable=unused-argument
   if tf.gfile.Exists(FLAGS.eval_dir):
     tf.gfile.DeleteRecursively(FLAGS.eval_dir)
   tf.gfile.MakeDirs(FLAGS.eval_dir)
+
+  #
+
+  #freeze_cifar()
   evaluate()
+
+
 
 
 if __name__ == '__main__':
