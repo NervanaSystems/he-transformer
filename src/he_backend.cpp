@@ -21,6 +21,7 @@
 #include "he_plain_tensor.hpp"
 #include "he_tensor.hpp"
 #include "kernel/add.hpp"
+#include "kernel/avg_pool.hpp"
 #include "kernel/broadcast.hpp"
 #include "kernel/concat.hpp"
 #include "kernel/constant.hpp"
@@ -37,6 +38,7 @@
 #include "kernel/sum.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
 #include "ngraph/function.hpp"
+#include "ngraph/op/avg_pool.hpp"
 #include "ngraph/op/broadcast.hpp"
 #include "ngraph/op/concat.hpp"
 #include "ngraph/op/constant.hpp"
@@ -478,6 +480,30 @@ void runtime::he::HEBackend::generate_calls(
                                out0_plain->get_batched_element_count());
     } else {
       throw ngraph_error("Add types not supported.");
+    }
+  } else if (node_op == "AvgPool") {
+    shared_ptr<op::AvgPool> avg_pool = dynamic_pointer_cast<op::AvgPool>(node);
+
+    if (arg0_cipher != nullptr && out0_cipher != nullptr) {
+      Shape in_shape = arg0_cipher->get_shape();
+      Shape out_shape = out0_cipher->get_shape();
+
+      runtime::he::kernel::avg_pool(
+          arg0_cipher->get_elements(), out0_cipher->get_elements(),
+          node->get_input_shape(0), node->get_output_shape(0),
+          avg_pool->get_window_shape(), avg_pool->get_window_movement_strides(),
+          avg_pool->get_padding_below(), avg_pool->get_padding_above(),
+          avg_pool->get_include_padding_in_avg_computation(), this);
+
+    } else if (arg0_plain != nullptr && out0_plain != nullptr) {
+      runtime::he::kernel::avg_pool(
+          arg0_plain->get_elements(), out0_plain->get_elements(),
+          node->get_input_shape(0), node->get_output_shape(0),
+          avg_pool->get_window_shape(), avg_pool->get_window_movement_strides(),
+          avg_pool->get_padding_below(), avg_pool->get_padding_above(),
+          avg_pool->get_include_padding_in_avg_computation(), this);
+    } else {
+      throw ngraph_error("Broadcast types not supported.");
     }
   } else if (node_op == "Broadcast") {
     shared_ptr<op::Broadcast> broadcast =
