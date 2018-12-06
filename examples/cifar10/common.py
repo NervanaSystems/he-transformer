@@ -1,10 +1,11 @@
 import tensorflow as tf
 import numpy as np
 
-def get_variable(name, shape, dtype=None, initializer=None, restore_saved=False, restore_filename=''):
+def get_variable(name, shape, dtype=None, initializer=None, restore_saved=False):
   if not restore_saved:
     return tf.get_variable(name, shape=shape, dtype=dtype, initializer=initializer)
   else:
+    restore_filename = name_to_filename(name)
     print('restoring variable: ', restore_filename)
     return tf.constant(np.loadtxt(restore_filename, dtype=np.float32).reshape(shape))
 
@@ -53,39 +54,52 @@ def conv_layer(inputs, size, filters, stride, decay, name, bn=False, restore_sav
   channels = inputs.get_shape()[3]
   shape = [size, size, channels, filters]
   with tf.variable_scope(name + '/conv') as scope:
-      weights = tf.get_variable('weights', shape=shape)
-
-      if restore_saved:
-        weights = get_variable(weights.name, shape=weights.shape, restore_saved=True, restore_filename=name_to_filename(weights.name))
-
-      biases = tf.get_variable('biases',
-                              shape=[filters],
-                              dtype=tf.float32,
-                              initializer=tf.constant_initializer(0.0))
-      if restore_saved:
-        biases = get_variable(biases.name, shape=biases.shape, restore_saved=True, restore_filename=name_to_filename(biases.name))
-
-
-
+    if not restore_saved:
+      weights = get_variable('weights', shape=shape)
+      biases = get_variable('biases',
+                            shape=[filters],
+                            dtype=tf.float32,
+                            initializer=tf.constant_initializer(0.0))
       conv = tf.nn.conv2d(inputs,
-                          weights,
-                          strides=[1,stride,stride,1],
-                          padding='SAME')
+                        weights,
+                        strides=[1,stride,stride,1],
+                        padding='SAME')
       pre_activation = tf.nn.bias_add(conv, biases)
 
-      a = tf.get_variable('a', shape=[1], initializer=tf.constant_initializer(0.0))
-
-      if restore_saved:
-        a = get_variable(a.name, shape=a.shape, restore_saved=True, restore_filename=name_to_filename(a.name))
-
-
-      b = tf.get_variable('b', shape=[1])
-      if restore_saved:
-        b = get_variable(b.name, shape=b.shape, restore_saved=True, restore_filename=name_to_filename(b.name))
+      a = get_variable('a', shape=[1], initializer=tf.constant_initializer(0.0))
+      b = get_variable('b', shape=[1])
 
       outputs = a * pre_activation**2 + b * pre_activation
+      # outputs = tf.nn.relu(pre_activation, name=scope.name)
 
-      outputs = tf.nn.relu(pre_activation, name=scope.name)
+    else: # Restore saved
+      print('scope', scope.name)
+
+      weights_name =scope.name + '/weights'
+      biases_name = scope.name + '/biases'
+      a_name = scope.name + '/a'
+      b_name = scope.name + '/b'
+
+      weights = get_variable(weights_name, shape=shape, restore_saved=True)
+
+      conv = tf.nn.conv2d(inputs,
+                        weights,
+                        strides=[1,stride,stride,1],
+                        padding='SAME')
+
+      biases = get_variable(biases_name,
+                              shape=[filters],
+                              dtype=tf.float32,
+                              initializer=tf.constant_initializer(0.0), restore_saved=True)
+
+      pre_activation = tf.nn.bias_add(conv, biases)
+
+      a = get_variable(a_name, shape=[1], initializer=tf.constant_initializer(0.0), restore_saved=True)
+      b = get_variable(b_name, shape=[1], restore_saved=True)
+
+      pre_activation = tf.nn.bias_add(conv, biases)
+
+      outputs = a * pre_activation**2 + b * pre_activation
 
   return outputs
 

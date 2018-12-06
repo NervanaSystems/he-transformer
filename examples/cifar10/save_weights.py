@@ -74,7 +74,6 @@ def save_weights():
     with tf.Session() as sess:
       print('Creating session')
 
-
       ckpt = tf.train.get_checkpoint_state(FLAGS.checkpoint_dir)
       if ckpt and ckpt.model_checkpoint_path:
         # Restores from checkpoint

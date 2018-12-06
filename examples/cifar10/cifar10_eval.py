@@ -141,18 +141,31 @@ def evaluate():
   with tf.Graph().as_default() as g:
     # Get images and labels for CIFAR-10.
     eval_data = FLAGS.eval_data == 'test'
-    images, labels = cifar10.inputs(eval_data=eval_data)
+    #images, labels = cifar10.inputs(eval_data=eval_data)
 
-    images = images[0:10]
-    labels = labels[0:10]
+    #images = np.random.random((1, 24, 24, 3))
+
+    images = tf.constant(
+        1,
+        dtype=tf.float32,
+        shape=[1, 24, 24, 3]
+    )
+
+
+    print('images', images)
+
+    #xit(1)
 
     # Build a Graph that computes the logits predictions from the
     # inference model.
-    logits = cifar10.he_inference(images, restore_saved=True)
+    logits = cifar10.he_saved_inference(images, restore_saved=True)
+
+
 
     print("loaded saved graph!")
+    '''
 
-    exit(1)
+    #exit(1)
 
     # Calculate predictions.
     top_k_op = tf.nn.in_top_k(logits, labels, 1)
@@ -162,11 +175,15 @@ def evaluate():
         cifar10.MOVING_AVERAGE_DECAY)
     variables_to_restore = variable_averages.variables_to_restore()
     saver = tf.train.Saver(variables_to_restore)
+    '''
 
     # Convert variables to constants
     node_names = [n.name for n in tf.get_default_graph().as_graph_def().node]
-    node_names = [var.name for var in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)]
+    varnames = [var.name for var in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)]
     print('node names', node_names)
+    print('varnames', varnames)
+
+
     #get_node_names()
     #exit(1)
     '''
@@ -177,6 +194,15 @@ def evaluate():
       tf.graph_util.convert_variables_to_constants(sess, sess.graph.as_graph_def(), node_names)
     '''
 
+    #exit(1)
+
+    print('running session')
+    with tf.Session() as sess:
+      sess.run(logits, feed_dict = {images: np.random.random((1, 24, 24, 3))})
+
+    print('done with session')
+
+    exit(1)
 
     # Build the summary operation based on the TF collection of Summaries.
     summary_op = tf.summary.merge_all()
