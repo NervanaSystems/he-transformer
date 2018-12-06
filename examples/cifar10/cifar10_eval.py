@@ -148,7 +148,11 @@ def evaluate():
 
     # Build a Graph that computes the logits predictions from the
     # inference model.
-    logits = cifar10.he_inference(images)
+    logits = cifar10.he_inference(images, restore_saved=True)
+
+    print("loaded saved graph!")
+
+    exit(1)
 
     # Calculate predictions.
     top_k_op = tf.nn.in_top_k(logits, labels, 1)

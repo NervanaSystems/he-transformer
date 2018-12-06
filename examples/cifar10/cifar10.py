@@ -396,8 +396,7 @@ def maybe_download_and_extract():
   if not os.path.exists(extracted_dir_path):
     tarfile.open(filepath, 'r:gz').extractall(dest_directory)
 
-
-def he_inference(images):
+def he_inference(images, restore_saved=False):
   """Build CIFAR-10 HE model.
 
   Args:
@@ -412,7 +411,8 @@ def he_inference(images):
                           filters=64,
                           stride=1,
                           decay=False,
-                          name='conv1')
+                          name='conv1',
+                          restore_saved=restore_saved)
 
   # pool1
   pool1 = pool_layer(conv1,
@@ -421,10 +421,10 @@ def he_inference(images):
                           name='pool1')
 
   # fire2
-  fire2 = fire_layer(pool1, 16, 64, 64, decay=False, name='fire2')
+  fire2 = fire_layer(pool1, 16, 64, 64, decay=False, name='fire2', restore_saved=restore_saved)
 
   # fire3
-  fire3 = fire_layer(fire2, 16, 64, 64, decay=False, name='fire3')
+  fire3 = fire_layer(fire2, 16, 64, 64, decay=False, name='fire3', restore_saved=restore_saved)
 
   # pool2
   pool2 = pool_layer(fire3,
@@ -433,10 +433,10 @@ def he_inference(images):
                           name='pool2')
 
   # fire4
-  fire4 = fire_layer(pool2, 32, 128, 128, decay=False, name='fire4')
+  fire4 = fire_layer(pool2, 32, 128, 128, decay=False, name='fire4', restore_saved=restore_saved)
 
   # fire5
-  fire5 = fire_layer(fire4, 32, 128, 128, decay=False, name='fire5')
+  fire5 = fire_layer(fire4, 32, 128, 128, decay=False, name='fire5', restore_saved=restore_saved)
 
   # Final squeeze to get ten classes
   conv2 = conv_layer(fire5,
@@ -444,7 +444,7 @@ def he_inference(images):
                           filters=10,
                           stride=1,
                           decay=False,
-                          name='squeeze')
+                          name='squeeze', restore_saved=restore_saved)
 
   # Average pooling on spatial dimensions
   predictions = avg_layer(conv2, name='avg_pool')

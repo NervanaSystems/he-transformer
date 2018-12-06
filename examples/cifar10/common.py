@@ -1,6 +1,16 @@
 import tensorflow as tf
+import numpy as np
 
-def fire_layer(inputs, s1x1, e1x1, e3x3, name, decay=False):
+def get_variable(name, shape, dtype=None, initializer=None, restore_saved=False, restore_filename=''):
+  if not restore_saved:
+    return tf.get_variable(name, shape=shape, dtype=dtype, initializer=initializer)
+  else:
+    print('restoring variable: ', restore_filename)
+    return tf.constant(np.loadtxt(restore_filename, dtype=np.float32).reshape(shape))
+
+
+
+def fire_layer(inputs, s1x1, e1x1, e3x3, name, decay=False, restore_saved=False):
   with tf.variable_scope(name) as scope:
       # Squeeze sub-layer
       squeezed_inputs = conv_layer(inputs,
@@ -8,7 +18,8 @@ def fire_layer(inputs, s1x1, e1x1, e3x3, name, decay=False):
                                         filters=s1x1,
                                         stride=1,
                                         decay=decay,
-                                        name='s1x1')
+                                        name='s1x1',
+                                        restore_saved=restore_saved)
 
       # Expand 1x1 sub-layer
       e1x1_outputs = conv_layer(squeezed_inputs,
@@ -16,7 +27,8 @@ def fire_layer(inputs, s1x1, e1x1, e3x3, name, decay=False):
                                       filters=e1x1,
                                       stride=1,
                                       decay=decay,
-                                      name='e1x1')
+                                      name='e1x1',
+                                      restore_saved=restore_saved)
 
       # Expand 3x3 sub-layer
       e3x3_outputs = conv_layer(squeezed_inputs,
@@ -24,21 +36,37 @@ def fire_layer(inputs, s1x1, e1x1, e3x3, name, decay=False):
                                       filters=e3x3,
                                       stride=1,
                                       decay=decay,
-                                      name='e3x3')
+                                      name='e3x3',
+                                      restore_saved=restore_saved)
 
   # Concatenate outputs along the last dimension (channel)
   return tf.concat([e1x1_outputs, e3x3_outputs], 3)
 
-def conv_layer(inputs, size, filters, stride, decay, name, bn=False):
+def name_to_filename(name):
+  name = name.replace('/','_')
+  name = name.replace(':0', '') + '.txt'
+
+  return 'weights/' + name
+
+
+def conv_layer(inputs, size, filters, stride, decay, name, bn=False, restore_saved=False):
   channels = inputs.get_shape()[3]
   shape = [size, size, channels, filters]
   with tf.variable_scope(name + '/conv') as scope:
       weights = tf.get_variable('weights', shape=shape)
 
+      if restore_saved:
+        weights = get_variable(weights.name, shape=weights.shape, restore_saved=True, restore_filename=name_to_filename(weights.name))
+
       biases = tf.get_variable('biases',
                               shape=[filters],
                               dtype=tf.float32,
                               initializer=tf.constant_initializer(0.0))
+      if restore_saved:
+        biases = get_variable(biases.name, shape=biases.shape, restore_saved=True, restore_filename=name_to_filename(biases.name))
+
+
+
       conv = tf.nn.conv2d(inputs,
                           weights,
                           strides=[1,stride,stride,1],
@@ -46,7 +74,14 @@ def conv_layer(inputs, size, filters, stride, decay, name, bn=False):
       pre_activation = tf.nn.bias_add(conv, biases)
 
       a = tf.get_variable('a', shape=[1], initializer=tf.constant_initializer(0.0))
+
+      if restore_saved:
+        a = get_variable(a.name, shape=a.shape, restore_saved=True, restore_filename=name_to_filename(a.name))
+
+
       b = tf.get_variable('b', shape=[1])
+      if restore_saved:
+        b = get_variable(b.name, shape=b.shape, restore_saved=True, restore_filename=name_to_filename(b.name))
 
       outputs = a * pre_activation**2 + b * pre_activation
 
