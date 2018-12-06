@@ -64,12 +64,12 @@ def conv_layer(inputs, size, filters, stride, decay, name, bn=False, restore_sav
                         weights,
                         strides=[1,stride,stride,1],
                         padding='SAME')
-      pre_activation = tf.nn.bias_add(conv, biases)
+      pre_act = tf.nn.bias_add(conv, biases)
 
       a = get_variable('a', shape=[1], initializer=tf.constant_initializer(0.0))
       b = get_variable('b', shape=[1])
 
-      outputs = a * pre_activation**2 + b * pre_activation
+      outputs = pre_act * pre_act * a + b * pre_act
       # outputs = tf.nn.relu(pre_activation, name=scope.name)
 
     else: # Restore saved
@@ -92,14 +92,13 @@ def conv_layer(inputs, size, filters, stride, decay, name, bn=False, restore_sav
                               dtype=tf.float32,
                               initializer=tf.constant_initializer(0.0), restore_saved=True)
 
-      pre_activation = tf.nn.bias_add(conv, biases)
+      pre_act = tf.nn.bias_add(conv, biases)
 
       a = get_variable(a_name, shape=[1], initializer=tf.constant_initializer(0.0), restore_saved=True)
       b = get_variable(b_name, shape=[1], restore_saved=True)
 
-      pre_activation = tf.nn.bias_add(conv, biases)
-
-      outputs = a * pre_activation**2 + b * pre_activation
+      pre_act = tf.nn.bias_add(conv, biases)
+      outputs = pre_act * pre_act * a + b * pre_act
 
   return outputs
 

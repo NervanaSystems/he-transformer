@@ -160,8 +160,6 @@ def evaluate():
     # inference model.
     logits = cifar10.he_saved_inference(images, restore_saved=True)
 
-
-
     print("loaded saved graph!")
     '''
 
