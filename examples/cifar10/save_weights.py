@@ -43,10 +43,9 @@ import numpy as np
 import tensorflow as tf
 
 import cifar10
+import ngraph_bridge
 
 FLAGS = None
-
-import time
 
 def save_weights():
   """Saves CIFAR10 weights"""
@@ -61,9 +60,6 @@ def save_weights():
     # Build a Graph that computes the logits predictions from the
     # inference model.
     logits = cifar10.he_inference(images)
-
-    # Calculate predictions.
-    top_k_op = tf.nn.in_top_k(logits, labels, 1)
 
     # Restore the moving average version of the learned variables for eval.
     variable_averages = tf.train.ExponentialMovingAverage(
@@ -96,12 +92,32 @@ def save_weights():
         np.savetxt(str(filename), weight)
 
 
+def export_model():
+    with tf.Graph().as_default() as g:
+        # Get images and labels for CIFAR-10.
+        eval_data = FLAGS.eval_data == 'test'
+
+        images = tf.constant(
+            1,
+            dtype=tf.float32,
+            shape=[1, 24, 24, 3]
+        )
+
+        # Build a Graph that computes the logits predictions from the
+        # inference model.
+        logits = cifar10.he_inference(images, restore_saved=True)
+        print("loaded saved graph")
+        with tf.Session() as sess:
+            sess.run(logits, feed_dict = {images: np.random.random((1, 24, 24, 3))})
+        print('done with session')
+
 def main(argv=None):  # pylint: disable=unused-argument
   cifar10.maybe_download_and_extract()
   if tf.gfile.Exists(FLAGS.eval_dir):
     tf.gfile.DeleteRecursively(FLAGS.eval_dir)
   tf.gfile.MakeDirs(FLAGS.eval_dir)
   save_weights()
+  export_model()
 
 
 if __name__ == '__main__':

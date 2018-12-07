@@ -1,4 +1,4 @@
-# Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,31 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Evaluation for CIFAR-10.
 
+"""Evaluation for CIFAR-10.
 Accuracy:
 cifar10_train.py achieves 83.0% accuracy after 100K steps (256 epochs
 of data) as judged by cifar10_eval.py.
-
 Speed:
 On a single Tesla K40, cifar10_train.py processes a single batch of 128 images
 in 0.25-0.35 sec (i.e. 350 - 600 images /sec). The model reaches ~86%
 accuracy after 100K steps in 8 hours of training time.
-
 Usage:
 Please see the tutorial and website for how to download the CIFAR-10
 data set, compile the program and train the model.
-
 http://tensorflow.org/tutorials/deep_cnn/
 """
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import argparse
-import datetime
+from datetime import datetime
 import math
-import sys
 import time
 
 import numpy as np
@@ -44,29 +39,31 @@ import tensorflow as tf
 
 import cifar10
 
-FLAGS = None
+FLAGS = tf.app.flags.FLAGS
 
-import ngraph_bridge
+tf.app.flags.DEFINE_string('eval_dir', '/tmp/cifar10_eval',
+                           """Directory where to write event logs.""")
+tf.app.flags.DEFINE_string('eval_data', 'test',
+                           """Either 'test' or 'train_eval'.""")
+tf.app.flags.DEFINE_string('checkpoint_dir', '/tmp/cifar10_train',
+                           """Directory where to read model checkpoints.""")
+tf.app.flags.DEFINE_integer('eval_interval_secs', 60 * 5,
+                            """How often to run the eval.""")
+tf.app.flags.DEFINE_integer('num_examples', 10000,
+                            """Number of examples to run.""")
+tf.app.flags.DEFINE_boolean('run_once', False,
+                         """Whether to run eval only once.""")
 
-import time
-
-node_names = []
 
 def eval_once(saver, summary_writer, top_k_op, summary_op):
   """Run Eval once.
-
   Args:
     saver: Saver.
     summary_writer: Summary writer.
     top_k_op: Top K op.
     summary_op: Summary op.
   """
-
-  print("Calling eval once")
   with tf.Session() as sess:
-    print('Creating session')
-
-
     ckpt = tf.train.get_checkpoint_state(FLAGS.checkpoint_dir)
     if ckpt and ckpt.model_checkpoint_path:
       # Restores from checkpoint
@@ -79,91 +76,48 @@ def eval_once(saver, summary_writer, top_k_op, summary_op):
       print('No checkpoint file found')
       return
 
-
-    # Convert variables to constants
-    print('converting variables to constants')
-    with tf.Graph().as_default() as g:
-      tf.graph_util.convert_variables_to_constants(sess, g.as_graph_def(), node_names)
-        # variable_names_whitelist=node_names)
-
-
     # Start the queue runners.
-    if True:
-      print("computing precision")
-      coord = tf.train.Coordinator()
-      try:
-        threads = []
-        for qr in tf.get_collection(tf.GraphKeys.QUEUE_RUNNERS):
-          threads.extend(qr.create_threads(sess, coord=coord, daemon=True,
-                                          start=True))
+    coord = tf.train.Coordinator()
+    try:
+      threads = []
+      for qr in tf.get_collection(tf.GraphKeys.QUEUE_RUNNERS):
+        threads.extend(qr.create_threads(sess, coord=coord, daemon=True,
+                                         start=True))
 
-        num_iter = int(math.ceil(FLAGS.num_examples / 128))
-        true_count = 0  # Counts the number of correct predictions.
-        total_sample_count = num_iter * 128
-        step = 0
-        while step < num_iter and not coord.should_stop():
-          predictions = sess.run([top_k_op])
-          print('Sleeping')
-          time.sleep(100)
-          true_count += np.sum(predictions)
-          step += 1
+      num_iter = int(math.ceil(FLAGS.num_examples / FLAGS.batch_size))
+      true_count = 0  # Counts the number of correct predictions.
+      total_sample_count = num_iter * FLAGS.batch_size
+      step = 0
+      while step < num_iter and not coord.should_stop():
+        predictions = sess.run([top_k_op])
+        true_count += np.sum(predictions)
+        step += 1
 
-        # Compute precision @ 1.
-        precision = true_count / total_sample_count
+      # Compute precision @ 1.
+      precision = true_count / total_sample_count
+      print('%s: precision @ 1 = %.3f' % (datetime.now(), precision))
 
+      summary = tf.Summary()
+      summary.ParseFromString(sess.run(summary_op))
+      summary.value.add(tag='Precision @ 1', simple_value=precision)
+      summary_writer.add_summary(summary, global_step)
+    except Exception as e:  # pylint: disable=broad-except
+      coord.request_stop(e)
 
-        print('%s: precision @ 1 = %.3f' % (datetime.datetime.now(), precision))
+    coord.request_stop()
+    coord.join(threads, stop_grace_period_secs=10)
 
-        summary = tf.Summary()
-        summary.ParseFromString(sess.run(summary_op))
-        summary.value.add(tag='Precision @ 1', simple_value=precision)
-        summary_writer.add_summary(summary, global_step)
-      except Exception as e:  # pylint: disable=broad-except
-        coord.request_stop(e)
-        print("Error in starting queue runners")
-
-      coord.request_stop()
-      coord.join(threads, stop_grace_period_secs=10)
-
-      print("done computing precision")
-
-    # Save variables
-    for var in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES):
-      weight = (sess.run([var]))[0].flatten().tolist()
-      filename = (str(var).split())[1].replace('/', '_')
-      filename = filename.replace("'", "").replace(':0', '') + '.txt'
-
-      print("saving", filename)
-      np.savetxt(str(filename), weight)
 
 def evaluate():
   """Eval CIFAR-10 for a number of steps."""
   with tf.Graph().as_default() as g:
     # Get images and labels for CIFAR-10.
     eval_data = FLAGS.eval_data == 'test'
-    #images, labels = cifar10.inputs(eval_data=eval_data)
-
-    #images = np.random.random((1, 24, 24, 3))
-
-    images = tf.constant(
-        1,
-        dtype=tf.float32,
-        shape=[1, 24, 24, 3]
-    )
-
-
-    print('images', images)
-
-    #xit(1)
+    images, labels = cifar10.inputs(eval_data=eval_data)
 
     # Build a Graph that computes the logits predictions from the
     # inference model.
-    logits = cifar10.he_saved_inference(images, restore_saved=True)
-
-    print("loaded saved graph!")
-    '''
-
-    #exit(1)
+    logits = cifar10.inference(images)
 
     # Calculate predictions.
     top_k_op = tf.nn.in_top_k(logits, labels, 1)
@@ -173,34 +127,6 @@ def evaluate():
         cifar10.MOVING_AVERAGE_DECAY)
     variables_to_restore = variable_averages.variables_to_restore()
     saver = tf.train.Saver(variables_to_restore)
-    '''
-
-    # Convert variables to constants
-    node_names = [n.name for n in tf.get_default_graph().as_graph_def().node]
-    varnames = [var.name for var in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)]
-    print('node names', node_names)
-    print('varnames', varnames)
-
-
-    #get_node_names()
-    #exit(1)
-    '''
-    node_names = [n.name for n in tf.get_default_graph().as_graph_def().node]
-    print('node names', node_names)
-    exit(1)
-    with tf.Session() as sess:
-      tf.graph_util.convert_variables_to_constants(sess, sess.graph.as_graph_def(), node_names)
-    '''
-
-    #exit(1)
-
-    print('running session')
-    with tf.Session() as sess:
-      sess.run(logits, feed_dict = {images: np.random.random((1, 24, 24, 3))})
-
-    print('done with session')
-
-    exit(1)
 
     # Build the summary operation based on the TF collection of Summaries.
     summary_op = tf.summary.merge_all()
@@ -208,13 +134,10 @@ def evaluate():
     summary_writer = tf.summary.FileWriter(FLAGS.eval_dir, g)
 
     while True:
-      eval_once(saver, summary_writer, logits, summary_op)
-      # eval_once(saver, summary_writer, top_k_op, summary_op)
-      print('done with eval once')
+      eval_once(saver, summary_writer, top_k_op, summary_op)
       if FLAGS.run_once:
         break
       time.sleep(FLAGS.eval_interval_secs)
-
 
 
 def main(argv=None):  # pylint: disable=unused-argument
@@ -226,37 +149,4 @@ def main(argv=None):  # pylint: disable=unused-argument
 
 
 if __name__ == '__main__':
-  parser = argparse.ArgumentParser()
-  parser.add_argument(
-      '--eval_dir',
-      type=str,
-      default='/tmp/cifar10_eval',
-      help='Directory where to write event logs.')
-  parser.add_argument(
-      '--eval_data',
-      type=str,
-      default='test',
-      help="""Either 'test' or 'train_eval'.""")
-  parser.add_argument(
-      '--checkpoint_dir',
-      type=str,
-      default='/tmp/cifar10_train',
-      help="""Directory where to read model checkpoints.""")
-  parser.add_argument(
-      '--eval_interval_secs',
-      type=int,
-      default=60 * 5,
-      help='How often to run the eval.')
-  parser.add_argument(
-      '--num_examples',
-      type=int,
-      default=10000,
-      help='Number of examples to run.')
-  parser.add_argument(
-      '--run_once',
-      type=bool,
-      default=True,
-      help='Whether to run eval only once.')
-
-  FLAGS, unparsed = parser.parse_known_args()
-  tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
+  tf.app.run()
