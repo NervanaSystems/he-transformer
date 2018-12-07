@@ -85,12 +85,19 @@ def train_ops():
     tf.summary.scalar('loss', loss)
     tf.summary.scalar('batch accuracy', accuracy)
     # Note that for debugging purpose, we could also track other losses
-    #for l in tf.get_collection('losses'):
-    #    tf.summary.scalar(l.op.name, l)
+    for l in tf.get_collection('losses'):
+        tf.summary.scalar(l.op.name, l)
 
     # Build a graph that applies gradient descent to update model parameters
     optimizer = tf.train.GradientDescentOptimizer(learning_rate)
-    sgd_op = optimizer.minimize(loss, global_step = global_step)
+
+    # Clip gradients to [-1, 1]
+    gvs = optimizer.compute_gradients(loss)
+    capped_gvs = [(tf.clip_by_value(grad, -1., 1.), var) for grad, var in gvs if grad is not None]
+    sgd_op = optimizer.apply_gradients(capped_gvs, global_step = global_step)
+
+    # sgd_op = optimizer.minimize(loss, global_step = global_step)
+
 
     # Build yet another graph to evaluate moving averages of variables after
     # each step: these smoothed parameters will be loaded instead of the raw
@@ -112,8 +119,6 @@ def train_ops():
     return (train_op, loss, accuracy, summary_op)
 
 def train_loop():
-
-
     train_op, loss, accuracy, summary_op = train_ops()
 
     # We use one log dir per run

@@ -19,12 +19,17 @@ class Model(object):
         #self.training = tf.placeholder_with_default(False, shape=[], name="training")
         self.bool_training = bool_training
         self.model_name = model_name
+        print("Creating model with decay", wd)
 
     def name_to_filename(self, name):
       """Given a variable name, returns the filename where to store it"""
       name = name.replace('/','_')
       name = name.replace(':0', '') + '.txt'
       return 'weights/' + self.model_name + '/' + name
+
+
+    def poly_act(self, x):
+        return x * x + x
 
     def _get_weights_var(self, name, shape, decay=False, scope='',
             initializer=tf.contrib.layers.xavier_initializer(uniform=False,dtype=tf.float32)):
@@ -44,10 +49,8 @@ class Model(object):
         Returns:
             Variable Tensor
         """
-        print("get weights shape", shape)
         if self.bool_training:
           # Declare variable (it is trainable by default)
-          print('getting variable?!', name)
           var = tf.get_variable(name=name,
                                 shape=shape,
                                 initializer=initializer,
@@ -57,7 +60,7 @@ class Model(object):
               # model weight decay divided by the tensor size
               weight_decay = self.wd
               for x in shape:
-                  weight_decay /= x
+                  weight_decay /= int(x)
               # Weight loss is L2 loss multiplied by weight decay
               weight_loss = tf.multiply(tf.nn.l2_loss(var),
                                         weight_decay,
@@ -94,7 +97,8 @@ class Model(object):
             pre_activation = tf.nn.bias_add(conv, biases)
 
             if activation:
-                outputs= tf.nn.relu(pre_activation, name=scope.name)
+                outputs= self.poly_act(pre_activation)
+                 #tf.nn.relu(pre_activation, name=scope.name)
             else:
                 outputs = pre_activation
 
@@ -106,7 +110,7 @@ class Model(object):
         # Number of convolutions
         num_flops = (1+2*int(channels)*size*size)*filters*int(w)*int(h)
         # Number of ReLU
-        num_flops += 2*filters*int(w)*int(h)
+        num_flops += filters*int(w)*int(h)
         self.flops.append((name, num_flops))
 
         return outputs
@@ -144,7 +148,7 @@ class Model(object):
             if bn:
                 x = tf.layers.batch_normalization(x, training=self.bool_training)
             if activation:
-                outputs = tf.nn.relu(x)
+                outputs = self.poly_act(x)
             else:
                 outputs = x
 
@@ -156,7 +160,7 @@ class Model(object):
         num_flops = (2 * dim + 1) * neurons
         # ReLU
         if activation:
-            num_flops += 2 * neurons
+            num_flops += neurons
         self.flops.append((name, num_flops))
 
         return outputs

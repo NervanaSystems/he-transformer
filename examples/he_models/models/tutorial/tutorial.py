@@ -7,7 +7,7 @@ import tensorflow as tf
 
 import model
 
-WEIGHT_DECAY = 5e2
+WEIGHT_DECAY = 1e-2
 
 class Tutorial(model.Model):
 
@@ -20,46 +20,83 @@ class Tutorial(model.Model):
         # conv1
         conv1 = self.conv_layer(images,
                                 size=5,
-                                filters=20,
+                                filters=96,
                                 stride=2,
-                                decay=False,
-                                activation=True,
-                                bn=False,
+                                decay=True,
+                                activation=False,
+                                bn=True,
                                 name='conv1')
-
-        # pool1 & norm1
-        pool1 = self.pool_layer(conv1,
-                                size=3,
-                                stride=2,
-                                name='pool1')
 
         conv2 = self.conv_layer(conv1,
                                 size=5,
                                 filters=96,
                                 stride=1,
-                                decay=False,
+                                decay=True,
                                 activation=False,
-                                bn=False,
+                                bn=True,
                                 name='conv2')
-                # pool1 & norm1
-        pool2 = self.pool_layer(conv2,
-                                size=3,
-                                stride=2,
-                                name='pool1')
+
+        conv3 = self.conv_layer(conv2,
+                        size=5,
+                        filters=96,
+                        stride=1,
+                        decay=True,
+                        activation=True,
+                        bn=True,
+                        name='conv3')
+
+        conv4 = self.conv_layer(conv3,
+                        size=5,
+                        filters=192,
+                        stride=1,
+                        decay=True,
+                        activation=False,
+                        bn=True,
+                        name='conv4')
+
+        conv5 = self.conv_layer(conv4,
+                        size=5,
+                        filters=192,
+                        stride=1,
+                        decay=True,
+                        activation=True,
+                        bn=True,
+                        name='conv5')
+
+        conv6 = self.conv_layer(conv5,
+                        size=5,
+                        filters=192,
+                        stride=1,
+                        decay=True,
+                        activation=False,
+                        bn=True,
+                        name='conv6')
+
+        conv7 = self.conv_layer(conv5,
+                        size=5,
+                        filters=192,
+                        stride=1,
+                        decay=True,
+                        activation=False,
+                        bn=True,
+                        name='conv7')
+
+        conv8 = self.conv_layer(conv7,
+                        size=5,
+                        filters=192,
+                        stride=1,
+                        decay=True,
+                        activation=True,
+                        bn=True,
+                        name='conv8')
 
 
         # local3
-        fc2 = self.fc_layer(pool1,
-                            neurons=384,
+        fc2 = self.fc_layer(conv8,
+                            neurons=10,
                             decay=True,
-                            activation=True,
+                            activation=False,
+                            bn=True,
                             name='fc2')
 
-        # local4
-        fc3 = self.fc_layer(fc2,
-                            neurons=192,
-                            decay=True,
-                            name='fc3')
-
-
-        return fc3
+        return fc2
