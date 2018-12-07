@@ -10,21 +10,24 @@ WEIGHT_DECAY = 1e2
 
 class Model(object):
 
-    def __init__(self, wd=WEIGHT_DECAY, dropout=0.0):
+    def __init__(self, model_name, wd=WEIGHT_DECAY, bool_training=True, dropout=0.0):
 
         self.wd = wd
         self.dropout = dropout
         self.sizes = []
         self.flops = []
-        self.training = tf.placeholder_with_default(False, shape=[], name="training")
+        #self.training = tf.placeholder_with_default(False, shape=[], name="training")
+        self.bool_training = bool_training
+        self.model_name = model_name
 
-    def name_to_filename(name):
+    def name_to_filename(self, name):
       """Given a variable name, returns the filename where to store it"""
       name = name.replace('/','_')
       name = name.replace(':0', '') + '.txt'
-      return 'weights/' + name
+      return 'weights/' + self.model_name + '/' + name
 
-    def _get_weights_var(self, name, shape, decay=False):
+    def _get_weights_var(self, name, shape, decay=False, scope='',
+            initializer=tf.contrib.layers.xavier_initializer(uniform=False,dtype=tf.float32)):
         """Helper to create an initialized Variable with weight decay.
 
         The Variable is initialized using a normal distribution whose variance
@@ -41,10 +44,10 @@ class Model(object):
         Returns:
             Variable Tensor
         """
-        if self.training:
-          # Declare an initializer for this variable
-          initializer = tf.contrib.layers.xavier_initializer(uniform=False,dtype=tf.float32)
+        print("get weights shape", shape)
+        if self.bool_training:
           # Declare variable (it is trainable by default)
+          print('getting variable?!', name)
           var = tf.get_variable(name=name,
                                 shape=shape,
                                 initializer=initializer,
@@ -64,32 +67,36 @@ class Model(object):
 
           return var
         else:
-          restore_filename = name_to_filename(name)
-          print('restoring variable: ', restore_filename)
+          restore_filename = self.name_to_filename(scope.name + '/' + name)
+          print('restoring variable: ', restore_filename, ' with shape', shape, '\n')
           return tf.constant(np.loadtxt(restore_filename, dtype=np.float32).reshape(shape))
 
-    def conv_layer(self, inputs, size, filters, stride, decay, name, bn=False):
+    def conv_layer(self, inputs, size, filters, stride, decay, name, activation=True, bn=False):
         channels = inputs.get_shape()[3]
         shape = [size, size, channels, filters]
         with tf.variable_scope(name + '/conv') as scope:
             weights = self._get_weights_var('weights',
                                             shape=shape,
-                                            decay=decay)
+                                            decay=decay, scope=scope)
 
-            biases = tf.get_variable('biases',
+
+            print('bias ', scope.name, 'shape', [filters])
+            biases = self._get_weights_var('biases',
                                     shape=[filters],
-                                    dtype=tf.float32,
-                                    initializer=tf.constant_initializer(0.0))
+                                    initializer=tf.constant_initializer(0.0), scope=scope)
             conv = tf.nn.conv2d(inputs,
                                 weights,
                                 strides=[1,stride,stride,1],
                                 padding='SAME')
             if bn:
                 conv = tf.layers.batch_normalization(conv,
-                                                     training=self.training)
+                                                     training=self.bool_training)
             pre_activation = tf.nn.bias_add(conv, biases)
 
-            outputs= tf.nn.relu(pre_activation, name=scope.name)
+            if activation:
+                outputs= tf.nn.relu(pre_activation, name=scope.name)
+            else:
+                outputs = pre_activation
 
         # Evaluate layer size
         self.sizes.append((name,(1+size*size*int(channels))*filters))
@@ -114,7 +121,7 @@ class Model(object):
 
         return outputs
 
-    def fc_layer(self, inputs, neurons, decay, name, relu=True, bn=False):
+    def fc_layer(self, inputs, neurons, decay, name, activation=True, bn=False):
         with tf.variable_scope(name) as scope:
             if len(inputs.get_shape().as_list()) > 2:
                 # We need to reshape inputs:
@@ -129,15 +136,14 @@ class Model(object):
             dim = reshaped.get_shape().as_list()[1]
             weights = self._get_weights_var('weights',
                                             shape=[dim,neurons],
-                                            decay=decay)
-            biases = tf.get_variable('biases',
+                                            decay=decay, scope=scope)
+            biases = self._get_weights_var('biases',
                                     shape=[neurons],
-                                    dtype=tf.float32,
-                                    initializer=tf.constant_initializer(0.0))
+                                    initializer=tf.constant_initializer(0.0), scope=scope)
             x = tf.add(tf.matmul(reshaped, weights), biases)
             if bn:
-                x = tf.layers.batch_normalization(x, training=self.training)
-            if relu:
+                x = tf.layers.batch_normalization(x, training=self.bool_training)
+            if activation:
                 outputs = tf.nn.relu(x)
             else:
                 outputs = x
@@ -149,7 +155,7 @@ class Model(object):
         # Matrix multiplication plus bias
         num_flops = (2 * dim + 1) * neurons
         # ReLU
-        if relu:
+        if activation:
             num_flops += 2 * neurons
         self.flops.append((name, num_flops))
 
