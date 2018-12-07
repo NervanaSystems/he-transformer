@@ -72,7 +72,7 @@ def train_ops():
     # inference model
     logits = model.inference(inputs)
     print('Multiplicative depth', model.mult_depth())
-    print('FLOPS: ', model.get_flops())
+    print('FLOPS:', model.get_flops())
 
 
     # In the same way, create a 'virtual' node for outputs

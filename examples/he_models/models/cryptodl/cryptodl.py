@@ -13,7 +13,7 @@ class CryptoDL(model.Model):
 
     def __init__(self, wd=WEIGHT_DECAY, bool_training=False):
 
-        super(CryptoDL, self).__init__(model_name='CryptoDL', wd=wd, bool_training=bool_training)
+        super(CryptoDL, self).__init__(model_name='cryptodl', wd=wd, bool_training=bool_training)
 
     def inference(self, images):
 
@@ -89,7 +89,6 @@ class CryptoDL(model.Model):
                         activation=True,
                         bn=True,
                         name='conv8')
-
 
         # local3
         fc2 = self.fc_layer(conv8,

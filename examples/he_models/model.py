@@ -28,10 +28,9 @@ class Model(object):
       name = name.replace(':0', '') + '.txt'
       return 'weights/' + self.model_name + '/' + name
 
-
     def poly_act(self, x):
         self.multiplcative_depth += 1
-        return x * x + x
+        return 0.1 * x * x + x
 
     def _get_weights_var(self, name, shape, decay=False, scope='',
             initializer=tf.contrib.layers.xavier_initializer(uniform=False,dtype=tf.float32)):
@@ -99,8 +98,7 @@ class Model(object):
             self.multiplcative_depth += 1
             if bn:
                 print('BN training? ', self.bool_training)
-                conv = tf.layers.batch_normalization(conv,
-                                                     training=self.bool_training)
+                conv = tf.layers.batch_normalization(conv, training=self.bool_training)
                 self.multiplcative_depth += 1
             pre_activation = tf.nn.bias_add(conv, biases)
 
