@@ -71,6 +71,9 @@ def train_ops():
     # Build a Graph that computes the logits predictions from the
     # inference model
     logits = model.inference(inputs)
+    print('Multiplicative depth', model.mult_depth())
+    print('FLOPS: ', model.get_flops())
+
 
     # In the same way, create a 'virtual' node for outputs
     outputs = tf.identity(logits, 'predictions')

@@ -1,13 +1,14 @@
 import tensorflow as tf
 
-import models.tutorial.tutorial as tutorial
+import models.cryptodl.cryptodl as cryptodl
 
-tf.app.flags.DEFINE_string('model', 'tutorial',
-        """One of [tuto].""")
+tf.app.flags.DEFINE_string('model', 'CryptoDL',
+        """One of [CryptoDL].""")
 
 def by_name(name, bool_training=False):
-    if name == 'tutorial':
-        model = tutorial.Tutorial(bool_training=bool_training)
+    if name == 'CryptoDL':
+        model = cryptodl.CryptoDL(bool_training=bool_training)
     else:
         raise ValueError('No such model %s' % name)
     return model
+

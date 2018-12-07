@@ -51,8 +51,6 @@ def save_weights():
     saver = tf.train.Saver(variables_to_restore)
 
     with tf.Session() as sess:
-      print('Creating session')
-
       ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
       if ckpt and ckpt.model_checkpoint_path:
         # Restores from checkpoint
@@ -73,7 +71,6 @@ def save_weights():
         weight = (sess.run([var]))[0].flatten().tolist()
         filename = model.name_to_filename(var.name)
         dir_name = filename.rsplit('/',1)[0]
-        print('dirnmame', dir_name)
         os.makedirs(dir_name, exist_ok=True)
 
         print("saving", filename)

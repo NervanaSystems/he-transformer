@@ -16,6 +16,7 @@ class Model(object):
         self.dropout = dropout
         self.sizes = []
         self.flops = []
+        self.multiplcative_depth = 0
         #self.training = tf.placeholder_with_default(False, shape=[], name="training")
         self.bool_training = bool_training
         self.model_name = model_name
@@ -29,6 +30,7 @@ class Model(object):
 
 
     def poly_act(self, x):
+        self.multiplcative_depth += 1
         return x * x + x
 
     def _get_weights_var(self, name, shape, decay=False, scope='',
@@ -75,6 +77,10 @@ class Model(object):
           return tf.constant(np.loadtxt(restore_filename, dtype=np.float32).reshape(shape))
 
     def conv_layer(self, inputs, size, filters, stride, decay, name, activation=True, bn=False):
+        if bn:
+            # ng-tf graph will contain batch normalization nodes
+            raise NotImplementedError("Batch norm not implemented")
+
         channels = inputs.get_shape()[3]
         shape = [size, size, channels, filters]
         with tf.variable_scope(name + '/conv') as scope:
@@ -82,8 +88,6 @@ class Model(object):
                                             shape=shape,
                                             decay=decay, scope=scope)
 
-
-            print('bias ', scope.name, 'shape', [filters])
             biases = self._get_weights_var('biases',
                                     shape=[filters],
                                     initializer=tf.constant_initializer(0.0), scope=scope)
@@ -91,9 +95,13 @@ class Model(object):
                                 weights,
                                 strides=[1,stride,stride,1],
                                 padding='SAME')
+
+            self.multiplcative_depth += 1
             if bn:
+                print('BN training? ', self.bool_training)
                 conv = tf.layers.batch_normalization(conv,
                                                      training=self.bool_training)
+                self.multiplcative_depth += 1
             pre_activation = tf.nn.bias_add(conv, biases)
 
             if activation:
@@ -126,6 +134,10 @@ class Model(object):
         return outputs
 
     def fc_layer(self, inputs, neurons, decay, name, activation=True, bn=False):
+        if bn:
+            # ng-tf graph will contain batch normalization nodes
+            raise NotImplementedError("Batch norm not implemented")
+
         with tf.variable_scope(name) as scope:
             if len(inputs.get_shape().as_list()) > 2:
                 # We need to reshape inputs:
@@ -145,8 +157,11 @@ class Model(object):
                                     shape=[neurons],
                                     initializer=tf.constant_initializer(0.0), scope=scope)
             x = tf.add(tf.matmul(reshaped, weights), biases)
+            self.multiplcative_depth += 1
+
             if bn:
                 x = tf.layers.batch_normalization(x, training=self.bool_training)
+                self.multiplcative_depth += 1
             if activation:
                 outputs = self.poly_act(x)
             else:
@@ -165,6 +180,7 @@ class Model(object):
 
         return outputs
 
+    # Not supported by ngraph-tf
     def lrn_layer(self, inputs, name):
         depth_radius=4
         with tf.variable_scope(name) as scope:
@@ -199,6 +215,7 @@ class Model(object):
                                  padding='VALID',
                                  name=scope.name)
         # Reshape output to remove spatial dimensions reduced to one
+        self.multiplcative_depth += 1
         return tf.reshape(avg, shape=[-1,c])
 
     def inference(self, images):
@@ -239,3 +256,6 @@ class Model(object):
         for layer in self.sizes:
             size += layer[1]
         return size
+
+    def mult_depth(self):
+        return self.multiplcative_depth
