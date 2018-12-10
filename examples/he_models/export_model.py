@@ -8,6 +8,7 @@ import datetime
 import math
 import sys
 import time
+import os
 
 import numpy as np
 import tensorflow as tf
@@ -15,20 +16,12 @@ from tensorflow.python.tools import optimize_for_inference_lib
 from tensorflow.python.framework import dtypes
 from tensorflow.python.tools import freeze_graph
 
-
-
 import models.data as data
 import models.select as select
-import os
 
 from train import get_run_dir
 
 import ngraph_bridge
-
-FLAGS = None
-
-import models.data as data
-import models.select as select
 
 FLAGS = tf.app.flags.FLAGS
 

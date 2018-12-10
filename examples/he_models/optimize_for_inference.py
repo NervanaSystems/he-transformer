@@ -15,6 +15,9 @@ import tensorflow as tf
 import models.data as data
 import models.select as select
 import os
+from tensorflow.python.tools import optimize_for_inference_lib
+from tensorflow.python.framework import dtypes
+from tensorflow.python.tools import freeze_graph
 
 from train import get_run_dir
 
@@ -29,15 +32,25 @@ def save_weights():
   with tf.Graph().as_default() as g:
     # Get images and labels for CIFAR-10.
     print('data dir', FLAGS.data_dir)
-    images, labels = data.train_inputs(data_dir=FLAGS.data_dir)
+    #images, labels = data.train_inputs(data_dir=FLAGS.data_dir)
 
-    model = select.by_name(FLAGS.model, training=True)
+    IMAGE_SIZE = 24 if FLAGS.data_aug else 32
+
+    images = tf.constant(
+        1,
+        dtype=tf.float32,
+        shape=[1, IMAGE_SIZE, IMAGE_SIZE, 3]
+    )
+
+    model = select.by_name(FLAGS.model, training=False)
 
     print('FLAGS.model', FLAGS.model)
 
     # Build a Graph that computes the logits predictions from the
     # inference model.
+    images  = tf.identity(images, 'input')
     logits = model.inference(images)
+    logits = tf.identity(logits, 'output')
 
     # Restore the moving average version of the learned variables for eval.
     variables_averages = tf.train.ExponentialMovingAverage(1.0) # 1.0 decay is unused
@@ -62,14 +75,38 @@ def save_weights():
         return
 
       # Save variables
-      for var in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES):
-        weight = (sess.run([var]))[0].flatten().tolist()
-        filename = model.name_to_filename(var.name)
-        dir_name = filename.rsplit('/',1)[0]
-        os.makedirs(dir_name, exist_ok=True)
+      if False:
+        for var in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES):
+          weight = (sess.run([var]))[0].flatten().tolist()
+          filename = model.name_to_filename(var.name)
+          dir_name = filename.rsplit('/',1)[0]
+          os.makedirs(dir_name, exist_ok=True)
 
-        print("saving", filename)
-        np.savetxt(str(filename), weight)
+          print("saving", filename)
+          np.savetxt(str(filename), weight)
+
+      print('nodes', [n.name for n in tf.get_default_graph().as_graph_def().node])
+      print('input graph', os.path.join(checkpoint_dir, 'graph.pbtxt')
+
+      freeze_graph.freeze_graph(
+          input_graph=os.path.join(checkpoint_dir, 'graph.pbtxt'),
+          input_saver="",
+          input_binary=False,
+          input_checkpoint=ckpt.model_checkpoint_path,
+          output_node_names='output',
+          restore_op_name='save/restore_all',
+          filename_tensor_name='save/Const:0',
+          initializer_nodes=[],
+          output_graph='',
+          clear_devices=True)
+
+      print('froze graph')
+
+
+      output_graph_def = optimize_for_inference_lib.optimize_for_inference(tf.get_default_graph().as_graph_def(),
+                ['input'], ['output'], dtypes.float32.as_datatype_enum, False)
+
+
 
 def main(argv=None):
   data.maybe_download_and_extract(FLAGS.data_dir)
@@ -78,3 +115,5 @@ def main(argv=None):
 
 if __name__ == '__main__':
     tf.app.run()
+
+

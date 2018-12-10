@@ -74,9 +74,8 @@ def train_ops():
     print('Multiplicative depth', model.mult_depth())
     print('FLOPS:', model.get_flops())
 
-
     # In the same way, create a 'virtual' node for outputs
-    outputs = tf.identity(logits, 'predictions')
+    outputs = tf.identity(logits, 'outputs')
 
     # Calculate loss
     loss = model.loss(logits, labels)

@@ -16,7 +16,7 @@ class Simple(model.Model):
         super(Simple, self).__init__(model_name='simple', wd=wd, training=training)
 
     def inference(self, images):
-        images = tf.identity(images, name='input')
+        #images = tf.identity(images, name='input')
 
         # conv1
         conv1 = self.conv_layer(images,
@@ -35,6 +35,6 @@ class Simple(model.Model):
                             bn=False,
                             name='fc3')
 
-        output = tf.identity(fc3, name='output')
+        #output = tf.identity(fc3, name='output')
 
         return fc3
