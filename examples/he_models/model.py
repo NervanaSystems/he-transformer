@@ -10,7 +10,7 @@ WEIGHT_DECAY = 1e2
 
 class Model(object):
 
-    def __init__(self, model_name, wd=WEIGHT_DECAY, bool_training=True, dropout=0.0):
+    def __init__(self, model_name, wd=WEIGHT_DECAY, training=True, dropout=0.0):
 
         self.wd = wd
         self.dropout = dropout
@@ -18,7 +18,7 @@ class Model(object):
         self.flops = []
         self.multiplcative_depth = 0
         #self.training = tf.placeholder_with_default(False, shape=[], name="training")
-        self.bool_training = bool_training
+        self.training =training
         self.model_name = model_name
         print("Creating model with decay", wd)
 
@@ -50,7 +50,7 @@ class Model(object):
         Returns:
             Variable Tensor
         """
-        if self.bool_training:
+        if self.training:
           # Declare variable (it is trainable by default)
           var = tf.get_variable(name=name,
                                 shape=shape,
@@ -76,9 +76,9 @@ class Model(object):
           return tf.constant(np.loadtxt(restore_filename, dtype=np.float32).reshape(shape))
 
     def conv_layer(self, inputs, size, filters, stride, decay, name, activation=True, bn=False):
-        if bn:
-            # ng-tf graph will contain batch normalization nodes
-            raise NotImplementedError("Batch norm not implemented")
+        #if bn:
+        #    # ng-tf graph will contain batch normalization nodes
+        #    raise NotImplementedError("Batch norm not implemented")
 
         channels = inputs.get_shape()[3]
         shape = [size, size, channels, filters]
@@ -97,8 +97,8 @@ class Model(object):
 
             self.multiplcative_depth += 1
             if bn:
-                print('BN training? ', self.bool_training)
-                conv = tf.layers.batch_normalization(conv, training=self.bool_training)
+                print('BN training? ', self.training)
+                conv = tf.layers.batch_normalization(conv, training=self.training)
                 self.multiplcative_depth += 1
             pre_activation = tf.nn.bias_add(conv, biases)
 
@@ -158,7 +158,7 @@ class Model(object):
             self.multiplcative_depth += 1
 
             if bn:
-                x = tf.layers.batch_normalization(x, training=self.bool_training)
+                x = tf.layers.batch_normalization(x, training=self.training)
                 self.multiplcative_depth += 1
             if activation:
                 outputs = self.poly_act(x)

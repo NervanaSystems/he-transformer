@@ -38,7 +38,7 @@ def export_model():
             shape=[1, IMAGE_SIZE, IMAGE_SIZE, 3]
         )
 
-        model = select.by_name(FLAGS.model, bool_training=False)
+        model = select.by_name(FLAGS.model, training=False)
         logits = model.inference(images)
 
         print('nodes', [n.name for n in tf.get_default_graph().as_graph_def().node])

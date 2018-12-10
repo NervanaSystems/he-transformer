@@ -11,9 +11,9 @@ WEIGHT_DECAY = 1e-2
 
 class CryptoDL(model.Model):
 
-    def __init__(self, wd=WEIGHT_DECAY, bool_training=False):
+    def __init__(self, wd=WEIGHT_DECAY, training=False):
 
-        super(CryptoDL, self).__init__(model_name='cryptodl', wd=wd, bool_training=bool_training)
+        super(CryptoDL, self).__init__(model_name='cryptodl', wd=wd, training=training)
 
     def inference(self, images):
 

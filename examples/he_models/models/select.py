@@ -6,12 +6,12 @@ import models.simple.simple as simple
 tf.app.flags.DEFINE_string('model', 'CryptoDL',
         """One of [CryptoDL].""")
 
-def by_name(name, bool_training=False):
+def by_name(name, training=False):
     name = name.lower()
     if name == 'cryptodl':
-        model = cryptodl.CryptoDL(bool_training=bool_training)
+        model = cryptodl.CryptoDL(training=training)
     elif name == 'simple':
-        model = simple.Simple(bool_training=bool_training)
+        model = simple.Simple(training=training)
     else:
         raise ValueError('No such model %s' % name)
     return model

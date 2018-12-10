@@ -331,6 +331,10 @@ bool runtime::he::HEBackend::call(
       continue;
     }
 
+    if (op->description() == "Constant") {
+      NGRAPH_INFO << "Constant shape { " << join(op->get_shape()) << "}";
+    }
+
     // get op inputs from map
     vector<shared_ptr<runtime::he::HETensor>> op_inputs;
     for (const descriptor::Input& input : op->get_inputs()) {
