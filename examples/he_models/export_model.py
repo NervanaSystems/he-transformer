@@ -11,6 +11,11 @@ import time
 
 import numpy as np
 import tensorflow as tf
+from tensorflow.python.tools import optimize_for_inference_lib
+from tensorflow.python.framework import dtypes
+from tensorflow.python.tools import freeze_graph
+
+
 
 import models.data as data
 import models.select as select
@@ -42,6 +47,11 @@ def export_model():
         logits = model.inference(images)
 
         print('nodes', [n.name for n in tf.get_default_graph().as_graph_def().node])
+
+        output_graph_def = optimize_for_inference_lib.optimize_for_inference(tf.get_default_graph().as_graph_def(),
+                  ['input'], ['output'], dtypes.float32.as_datatype_enum, False)
+
+
 
         # Build a Graph that computes the logits predictions from the
         # inference model.
