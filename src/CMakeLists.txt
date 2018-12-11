@@ -81,20 +81,8 @@ if(NGRAPH_HE_SANITIZE_ADDRESS)
 endif()
 
 if (ENABLE_TF)
-    # Install he-transformer to the python environment at `make install`
-    #execute_process(
-    #    COMMAND python -c "import os; print(os.environ['VIRTUAL_ENV'])"
-    #    OUTPUT_VARIABLE PYTHON_ENV
-    #    OUTPUT_STRIP_TRAILING_WHITESPACE
-    #)
-
-    #set (PY_NGRAPH_LIB_DIR ${PYTHON_ENV}/lib/python3.5/site-packages/ngraph_bridge)
-
     message("PY_NGRAPH_LIB_DIR ${PY_NGRAPH_LIB_DIR}")
     install(TARGETS he_backend DESTINATION ${PY_NGRAPH_LIB_DIR})
-
-    # Workaround to make pip package recognize he_seal_ckks and he_seal_bfv backends
-    # install(TARGETS he_backend EXPORT he_seal_ckks_backend DESTINATION ${PY_NGRAPH_LIB_DIR})
 
     install(DIRECTORY
         ${EXTERNAL_INSTALL_LIB_DIR}/
@@ -103,7 +91,6 @@ if (ENABLE_TF)
 endif()
 
 # Install he-transformer (the HE libraries are installed separately) at `make install`
-# By default, this installs to `~/ngraph_dist`
 message("NGRAPH_INSTALL_LIB_DIR" ${NGRAPH_INSTALL_LIB_DIR})
 
 install(TARGETS he_backend DESTINATION ${NGRAPH_INSTALL_LIB_DIR})

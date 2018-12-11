@@ -45,7 +45,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_0d) {
 
     copy_data(a, vector<float>{6});
 
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(
         all_close((vector<float>{6}), read_vector<float>(result), 1e-3f));
   }
@@ -69,7 +69,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_1d_nochange) {
 
     copy_data(a, vector<float>{0, 1, 2, 3, 4, 5, 6, 7});
 
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(all_close((vector<float>{0, 1, 2, 3, 4, 5, 6, 7}),
                           read_vector<float>(result), 1e-3f));
   }
@@ -93,7 +93,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_1d_0) {
 
     copy_data(a, vector<float>{0, 1, 2, 3, 4, 5, 6, 7});
 
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(all_close((vector<float>{7, 6, 5, 4, 3, 2, 1, 0}),
                           read_vector<float>(result), 1e-3f));
   }
@@ -119,7 +119,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_nochange) {
                      {{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}})
                      .get_vector());
 
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(all_close(
         (test::NDArray<float, 2>({{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}})
              .get_vector()),
@@ -147,7 +147,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_0) {
                      {{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}})
                      .get_vector());
 
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(all_close(
         (test::NDArray<float, 2>({{9, 10, 11}, {6, 7, 8}, {3, 4, 5}, {0, 1, 2}})
              .get_vector()),
@@ -175,7 +175,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_1) {
                      {{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}})
                      .get_vector());
 
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(all_close(
         (test::NDArray<float, 2>({{2, 1, 0}, {5, 4, 3}, {8, 7, 6}, {11, 10, 9}})
              .get_vector()),
@@ -203,7 +203,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_01) {
                      {{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}})
                      .get_vector());
 
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(all_close(
         (test::NDArray<float, 2>({{11, 10, 9}, {8, 7, 6}, {5, 4, 3}, {2, 1, 0}})
              .get_vector()),
@@ -232,7 +232,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_nochange) {
                       {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
                      .get_vector());
 
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(all_close(
         (test::NDArray<float, 3>(
              {{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
@@ -263,7 +263,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_0) {
                       {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
                      .get_vector());
 
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(all_close(
         (test::NDArray<float, 3>(
              {{{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}},
@@ -294,7 +294,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_1) {
                       {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
                      .get_vector());
 
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(all_close(
         (test::NDArray<float, 3>(
              {{{9, 10, 11}, {6, 7, 8}, {3, 4, 5}, {0, 1, 2}},
@@ -325,7 +325,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_2) {
                       {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
                      .get_vector());
 
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(all_close(
         (test::NDArray<float, 3>(
              {{{2, 1, 0}, {5, 4, 3}, {8, 7, 6}, {11, 10, 9}},
@@ -356,7 +356,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_01) {
                       {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
                      .get_vector());
 
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(all_close(
         (test::NDArray<float, 3>(
              {{{21, 22, 23}, {18, 19, 20}, {15, 16, 17}, {12, 13, 14}},
@@ -387,7 +387,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_02) {
                       {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
                      .get_vector());
 
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(all_close(
         (test::NDArray<float, 3>(
              {{{14, 13, 12}, {17, 16, 15}, {20, 19, 18}, {23, 22, 21}},
@@ -418,7 +418,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_12) {
                       {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
                      .get_vector());
 
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(all_close(
         (test::NDArray<float, 3>(
              {{{11, 10, 9}, {8, 7, 6}, {5, 4, 3}, {2, 1, 0}},
@@ -449,7 +449,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_012) {
                       {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
                      .get_vector());
 
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(all_close(
         (test::NDArray<float, 3>(
              {{{23, 22, 21}, {20, 19, 18}, {17, 16, 15}, {14, 13, 12}},
