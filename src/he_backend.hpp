@@ -148,7 +148,7 @@ class HEBackend : public runtime::Backend {
 
   bool compile(std::shared_ptr<Function> function) override;
 
-  bool call(
+  runtime::Handle call(
       std::shared_ptr<Function> function,
       const std::vector<std::shared_ptr<runtime::Tensor>>& outputs,
       const std::vector<std::shared_ptr<runtime::Tensor>>& inputs) override;
