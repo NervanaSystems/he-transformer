@@ -20,9 +20,8 @@ set(EXTERNAL_NGRAPH_INSTALL_DIR ${EXTERNAL_INSTALL_DIR})
 set(NGRAPH_CMAKE_PREFIX ext_ngraph)
 
 SET(NGRAPH_REPO_URL https://github.com/NervanaSystems/ngraph.git)
-SET(NGRAPH_GIT_LABEL fboemer/gnu_compiler_fix) #v0.10.1)
-
-message("CMAKE_CXX_COMPILER ${CMAKE_CXX_COMPILER}")
+# Note, must be after commit #2155 on Dec. 5 to avoid GCC 7.1 compiler error
+SET(NGRAPH_GIT_LABEL 8fc481a31e295641a42742fb825a82f3c92d3544) # Dec 6, 2018.
 
 ExternalProject_Add(
     ext_ngraph

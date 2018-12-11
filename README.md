@@ -21,11 +21,11 @@ The [examples](https://github.com/NervanaSystems/he-transformer/tree/master/exam
 ### Dependencies
 - We currently only support Ubuntu 16.04
 - CMake 3.12.3, although different versions may work
-- Clang version 6.0, although different versions may work
+- GCC version 7, although different versions may work
 - OpenMP is strongly suggested, though not strictly necessary. You may experience slow runtimes without OpenMP
 #### The following dependencies are built automatically
-- [nGraph](https://github.com/NervanaSystems/ngraph) version 0.10.1
-- [nGraph-tf](https://github.com/NervanaSystems/ngraph-tf) - For Tensorflow integration
+- [nGraph](https://github.com/NervanaSystems/ngraph) commit 8fc481a
+- [nGraph-tf](https://github.com/NervanaSystems/ngraph-tf) - For Tensorflow integration, commit a090ed8
 - [SEAL](https://github.com/Microsoft/SEAL) version 3.1
 
 The `docker` folder contains a script to build `he-transformer` through Docker for testing purposes, and requires only Docker.
