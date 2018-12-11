@@ -20,8 +20,7 @@ set(EXTERNAL_NGRAPH_INSTALL_DIR ${EXTERNAL_INSTALL_DIR})
 set(NGRAPH_CMAKE_PREFIX ext_ngraph)
 
 SET(NGRAPH_REPO_URL https://github.com/NervanaSystems/ngraph.git)
-# Note, must be after commit #2155 on Dec. 5 to avoid GCC 7.1 compiler error
-SET(NGRAPH_GIT_LABEL 8fc481a31e295641a42742fb825a82f3c92d3544) # Dec 6, 2018.
+SET(NGRAPH_GIT_LABEL v0.11.0-rc.1)
 
 ExternalProject_Add(
     ext_ngraph

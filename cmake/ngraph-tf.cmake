@@ -20,7 +20,7 @@ set(EXTERNAL_NGRAPH_TF_INSTALL_DIR ${EXTERNAL_INSTALL_DIR})
 set(NGRAPH_TF_CMAKE_PREFIX ext_ngraph_tf)
 
 set(NGRAPH_TF_REPO_URL https://github.com/NervanaSystems/ngraph-tf.git)
-set(NGRAPH_TF_GIT_LABEL fboemer/external_project_fix)
+set(NGRAPH_TF_GIT_LABEL master)
 set(COMPILE_FLAGS ${CMAKE_CXX_FLAGS})
 
 message("Compile flags ${COMPILE_FLAGS}")
@@ -51,12 +51,9 @@ ExternalProject_Add(
                -DNGRAPH_ARTIFACTS_DIR=${EXTERNAL_INSTALL_DIR}
 
    # TODO: try below instead; note, make install ensures we copy he_backend.so to the CreatePipWhl.cmake first.
-   #INSTALL_COMMAND make install && pip install ngraph-tensorflow-bridge
+   INSTALL_COMMAND pip install ngraph-tensorflow-bridge
    # Work-around for ngraph-tf to recognize backends. TODO: modify ngraph-tf instead
-   INSTALL_COMMAND pip install python/dist/ngraph_tensorflow_bridge-0.8.0-py2.py3-none-manylinux1_x86_64.whl
-                     && cp ${EXTERNAL_INSTALL_LIB_DIR}/libhe_backend.so ${PY_NGRAPH_LIB_DIR}/libhe_seal_ckks_backend.so
-                     && cp ${EXTERNAL_INSTALL_LIB_DIR}/libhe_backend.so ${PY_NGRAPH_LIB_DIR}/libhe_seal_bfv_backend.so
-                     # pip install ngraph-tensorflow-bridge
+   #INSTALL_COMMAND pip install python/dist/ngraph_tensorflow_bridge-0.8.0-py2.py3-none-manylinux1_x86_64.whl
    TEST_COMMAND python -c "import tensorflow as tf; print('TensorFlow version: r',tf.__version__);import ngraph_bridge; print(ngraph_bridge.__version__)"
    # BUILD_ALWAYS 1
 )
