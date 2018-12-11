@@ -146,9 +146,9 @@ class HEBackend : public runtime::Backend {
   std::shared_ptr<runtime::Tensor> create_valued_plain_tensor(
       float value, const element::Type& element_type, const Shape& shape) const;
 
-  bool compile(std::shared_ptr<Function> function) override;
+  runtime::Handle compile(std::shared_ptr<Function> function) override;
 
-  runtime::Handle call(
+  bool call(
       std::shared_ptr<Function> function,
       const std::vector<std::shared_ptr<runtime::Tensor>>& outputs,
       const std::vector<std::shared_ptr<runtime::Tensor>>& inputs) override;
