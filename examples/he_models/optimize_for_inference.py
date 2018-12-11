@@ -164,10 +164,12 @@ def serialize_model():
 
 
   XXX = graph.get_tensor_by_name('XXX:0')
+  training = graph.get_tensor_by_name('training:0')
   YYY = graph.get_tensor_by_name('YYY:0')
 
+  print("Serializing model")
   with tf.Session(graph=graph) as sess:
-    sess.run(YYY, feed_dict = {XXX: np.random.random((1, IMAGE_SIZE, IMAGE_SIZE, 3))})
+    sess.run(YYY, feed_dict = {XXX: np.random.random((1, IMAGE_SIZE, IMAGE_SIZE, 3)), training: False})
 
     print('YYY', YYY)
 

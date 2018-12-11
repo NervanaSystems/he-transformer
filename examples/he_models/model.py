@@ -10,15 +10,15 @@ WEIGHT_DECAY = 1e2
 
 class Model(object):
 
-    def __init__(self, model_name, wd=WEIGHT_DECAY, training=True, dropout=0.0):
+    def __init__(self, model_name, wd=WEIGHT_DECAY, dropout=0.0):
 
         self.wd = wd
         self.dropout = dropout
         self.sizes = []
         self.flops = []
         self.multiplcative_depth = 0
-        #self.training = tf.placeholder_with_default(False, shape=[], name="training")
-        self.training =training
+        self.training = tf.placeholder_with_default(False, shape=[], name="training")
+        #self.training =training
         self.model_name = model_name
         print("Creating model with decay", wd)
 

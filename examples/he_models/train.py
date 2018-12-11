@@ -62,7 +62,7 @@ def train_ops():
     images, labels = data.train_inputs(data_dir=data_dir)
 
     # Instantiate the model
-    model = select.by_name(FLAGS.model, training=True)
+    model = select.by_name(FLAGS.model) #, training=True)
 
     # Create a 'virtual' graph node based on images that represents the input
     # node to be used for graph retrieval
