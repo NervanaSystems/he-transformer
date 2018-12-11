@@ -59,6 +59,8 @@ def save_weights():
     variables_averages = tf.train.ExponentialMovingAverage(1.0) # 1.0 decay is unused
     variables_to_restore = variables_averages.variables_to_restore()
 
+    print('variables_to_restore', variables_to_restore)
+
     saver = tf.train.Saver(variables_to_restore)
 
     with tf.Session() as sess:
@@ -91,7 +93,7 @@ def save_weights():
       print('nodes', [n.name for n in tf.get_default_graph().as_graph_def().node])
       print('input graph', os.path.join(checkpoint_dir, 'graph.pbtxt'))
 
-      # Save graph, with variables as consatnts??
+      # Save graph, with variables as constants
       constant_graph = os.path.join(checkpoint_dir, 'graph_constants.pb')
       freeze_graph.freeze_graph(
           input_graph=os.path.join(checkpoint_dir, 'graph.pbtxt'),
