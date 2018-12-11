@@ -54,7 +54,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_1image) {
         a, test::NDArray<float, 3>{{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}}}
                .get_vector());
 
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(all_close(test::NDArray<float, 3>(
                               {{{1 / denom, 3 / denom, 3 / denom, 3 / denom,
                                  4 / denom, 5 / denom, 5 / denom, 2 / denom,
@@ -92,7 +92,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image) {
                       {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
                      .get_vector());
 
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(all_close(test::NDArray<float, 3>(
                               {{{1 / denom, 3 / denom, 3 / denom, 3 / denom,
                                  4 / denom, 5 / denom, 5 / denom, 2 / denom,
@@ -136,7 +136,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_2channel_2image) {
                        {2, 1, 0, 0, 1, 0, 2, 0, 0, 0, 1, 1, 2, 0}}})
                      .get_vector());
 
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(all_close(test::NDArray<float, 3>(
                               {{{1 / denom, 3 / denom, 3 / denom, 3 / denom,
                                  4 / denom, 5 / denom, 5 / denom, 2 / denom,
@@ -204,7 +204,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image) {
                                             {1, 0, 0, 0, 2}}}})
                      .get_vector());
 
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(
         all_close(test::NDArray<float, 4>(
                       {{{{6 / denom, 8 / denom, 5 / denom},  // img 0 chan 0
@@ -265,7 +265,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_1channel_1image_strided) {
                                             {1, 0, 2, 0, 0, 0, 1, 0}}}})
                      .get_vector());
 
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(all_close(
         test::NDArray<float, 4>({{{{6 / denom, 5 / denom, 4 / denom},
                                    {6 / denom, 5 / denom, 8 / denom},

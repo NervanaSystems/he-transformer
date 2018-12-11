@@ -143,7 +143,7 @@ shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_valued_plain_tensor(
   return tensor;
 }
 
-runtime::Handle runtime::he::HEBackend::compile(shared_ptr<Function> function) {
+bool runtime::he::HEBackend::compile(shared_ptr<Function> function) {
   FunctionInstance& instance = m_function_map[function];
   if (!instance.m_is_compiled) {
     instance.m_is_compiled = true;
@@ -157,7 +157,7 @@ runtime::Handle runtime::he::HEBackend::compile(shared_ptr<Function> function) {
       instance.m_nodes.emplace_back(node);
     }
   }
-  return function;
+  return true;
 }
 
 void runtime::he::HEBackend::validate_he_call(

@@ -116,7 +116,7 @@ static void run_cryptonets_benchmark(string backend_name,
   NGRAPH_INFO << "calling function";
   stopwatch sw_run_model;
   sw_run_model.start();
-  backend->call(f, result_tvs, parameter_tvs);
+  backend->call(backend->compile(f), result_tvs, parameter_tvs);
   sw_run_model.stop();
   NGRAPH_INFO << "sw_run_model: " << sw_run_model.get_milliseconds() << "ms";
 

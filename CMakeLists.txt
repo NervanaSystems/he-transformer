@@ -74,8 +74,6 @@ if (ENABLE_TF)
     )
 endif() # ENABLE TF
 
-message("PY_NGRAPH_LIB_DIR ${PY_ENV} OOO")
-
 # he-transformer headers
 set(HE_TRANSFORMER_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(HE_TRANSFORMER_TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test)

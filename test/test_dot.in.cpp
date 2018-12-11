@@ -49,7 +49,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot1d) {
 
     copy_data(t_a, vector<float>{1, 2, 3, 4});
     copy_data(t_b, vector<float>{5, 6, 7, 8});
-    backend->call(f, {t_result}, {t_a, t_b});
+    backend->call(backend->compile(f), {t_result}, {t_a, t_b});
     EXPECT_TRUE(
         all_close(read_vector<float>(t_result), vector<float>{70}, 1e-3f));
   }
@@ -81,7 +81,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot1d_optimized) {
 
     copy_data(t_a, vector<float>{1, 2, 3, 4});
     copy_data(t_b, vector<float>{-1, 0, 1, 2});
-    backend->call(f, {t_result}, {t_a, t_b});
+    backend->call(backend->compile(f), {t_result}, {t_a, t_b});
     EXPECT_TRUE(
         all_close(read_vector<float>(t_result), vector<float>{10}, 1e-1f));
   }
@@ -112,7 +112,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_matrix_vector) {
     copy_data(t_a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
                                  15, 16});
     copy_data(t_b, vector<float>{17, 18, 19, 20});
-    backend->call(f, {t_result}, {t_a, t_b});
+    backend->call(backend->compile(f), {t_result}, {t_a, t_b});
     EXPECT_TRUE(all_close(read_vector<float>(t_result),
                           (vector<float>{190, 486, 782, 1078}), 1e-3f));
   }
@@ -141,7 +141,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_scalar) {
 
     copy_data(t_a, vector<float>{8});
     copy_data(t_b, vector<float>{6});
-    backend->call(f, {t_result}, {t_a, t_b});
+    backend->call(backend->compile(f), {t_result}, {t_a, t_b});
     EXPECT_TRUE(
         all_close(read_vector<float>(t_result), (vector<float>{48}), 1e-3f));
   }
@@ -169,7 +169,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_batch) {
 
   copy_data(t_a, vector<float>{1, 2, 3});
   copy_data(t_b, vector<float>{4});
-  backend->call(f, {t_result}, {t_a, t_b});
+  backend->call(backend->compile(f), {t_result}, {t_a, t_b});
   EXPECT_TRUE(all_close((vector<float>{4, 8, 12}),
                         generalized_read_vector<float>(t_result), 1e-3f));
 }
