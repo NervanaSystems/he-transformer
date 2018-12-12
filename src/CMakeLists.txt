@@ -45,6 +45,8 @@ set (HE_SRC
     he_cipher_tensor.cpp
     he_plain_tensor.cpp
     he_tensor.cpp
+
+    node_wrapper.cpp
 )
 
 # Paths for the upstream ngraph

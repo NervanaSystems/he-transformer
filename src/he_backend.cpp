@@ -284,6 +284,8 @@ bool runtime::he::HEBackend::call(
     for (size_t i = 0; i < param->get_output_size(); ++i) {
       descriptor::Tensor* tv = param->get_output_tensor_ptr(i).get();
 
+      NGRAPH_INFO << "Processing parameter ";
+
       if (encrypt_data()) {
         auto plain_input = static_pointer_cast<runtime::he::HEPlainTensor>(
             he_inputs[input_count]);
@@ -319,7 +321,13 @@ bool runtime::he::HEBackend::call(
     NGRAPH_INFO << "\033[1;32m"
                 << "[ " << op->get_name() << " ]"
                 << "\033[0m";
-    if (op->description() == "Parameter") {
+
+    NGRAPH_INFO << "Description " << op->description();
+    NGRAPH_INFO << "Shape " << op->get_shape();
+    NGRAPH_INFO << "Name " << op->get_name();
+    NGRAPH_INFO << "Friendly name " << op->get_friendly_name();
+    if (op->description() == "Parameter" ||
+        op->get_name().substr(0, op->get_name().find("_")) == "Parameter") {
       NGRAPH_INFO << "Parameter shape {" << join(op->get_shape()) << "}";
       continue;
     }

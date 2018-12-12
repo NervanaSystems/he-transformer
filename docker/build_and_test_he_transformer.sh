@@ -39,15 +39,15 @@ test_cpp_build ()
     echo 'Testing cryptonets'
     NGRAPH_BATCH_DATA=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_13.json ./test/cryptonets_benchmark --gtest_filter="Cryptonets.CKKS_4096"
     NGRAPH_BATCH_DATA=1 NGRAPH_ENCRYPT_MODEL=1 NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_14.json ./test/cryptonets_benchmark --gtest_filter="Cryptonets.CKKS_4096"
-
+    cd /home
     echo 'Done testing C++ build.'
+
 }
 
 # Test python integration
 test_python_build ()
 {
     echo 'Testing python build'
-    cd ..
     rm -rf build
     mkdir build
     mkdir -p ~/venvs
@@ -60,11 +60,12 @@ test_python_build ()
     make install
 
     # Test c++ unit-tests under python
-    ./test/unit-test
+    #./test/unit-test
 
     # Test python unit-test
     cd ../examples
     #NGRAPH_TF_BACKEND=HE:SEAL:BFV python axpy.py
+    NGRAPH_TF_BACKEND=INTERPRETER python axpy.py
     NGRAPH_TF_BACKEND=HE_SEAL_CKKS python axpy.py
 
     # Test cryptonets under python
@@ -72,8 +73,10 @@ test_python_build ()
     NGRAPH_BATCH_DATA=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_BATCH_TF=1 NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_13.json python test.py --batch_size=4096 --report_accuracy=1
     NGRAPH_BATCH_DATA=1 NGRAPH_ENCRYPT_MODEL=1 NGRAPH_BATCH_TF=1 NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_13.json python test.py --batch_size=4096 --report_accuracy=1
 
+    cd /home
+
     echo 'Done testing python build'
 }
 
-test_cpp_build
+#test_cpp_build
 test_python_build
