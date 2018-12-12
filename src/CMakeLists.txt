@@ -80,18 +80,19 @@ if(NGRAPH_HE_SANITIZE_ADDRESS)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fsanitize=address -fno-omit-frame-pointer")
 endif()
 
-if (ENABLE_TF)
-    message("PY_NGRAPH_LIB_DIR ${PY_NGRAPH_LIB_DIR}")
-    install(TARGETS he_backend DESTINATION ${PY_NGRAPH_LIB_DIR})
-
-    install(DIRECTORY
-        ${EXTERNAL_INSTALL_LIB_DIR}/
-        DESTINATION ${PY_NGRAPH_LIB_DIR}
-    )
-endif()
+#if (ENABLE_TF)
+    #message("PY_NGRAPH_LIB_DIR ${PY_NGRAPH_LIB_DIR}")
+    #install(TARGETS he_backend DESTINATION ${PY_NGRAPH_LIB_DIR})
+    #
+    #install(DIRECTORY
+    #    ${EXTERNAL_INSTALL_LIB_DIR}/
+    #    DESTINATION ${PY_NGRAPH_LIB_DIR}
+    #)
+#endif()
 
 # Install he-transformer (the HE libraries are installed separately) at `make install`
 message("NGRAPH_INSTALL_LIB_DIR" ${NGRAPH_INSTALL_LIB_DIR})
+
 
 install(TARGETS he_backend DESTINATION ${NGRAPH_INSTALL_LIB_DIR})
 install(DIRECTORY
