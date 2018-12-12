@@ -51,7 +51,7 @@ ExternalProject_Add(
                -DNGRAPH_ARTIFACTS_DIR=${EXTERNAL_INSTALL_DIR}
 
    # TODO: try below instead; note, make install ensures we copy he_backend.so to the CreatePipWhl.cmake first.
-   INSTALL_COMMAND pip install ngraph-tensorflow-bridge
+   INSTALL_COMMAND make install && pip install ngraph-tensorflow-bridge
    # Work-around for ngraph-tf to recognize backends. TODO: modify ngraph-tf instead
    #INSTALL_COMMAND pip install python/dist/ngraph_tensorflow_bridge-0.8.0-py2.py3-none-manylinux1_x86_64.whl
    TEST_COMMAND python -c "import tensorflow as tf; print('TensorFlow version: r',tf.__version__);import ngraph_bridge; print(ngraph_bridge.__version__)"
