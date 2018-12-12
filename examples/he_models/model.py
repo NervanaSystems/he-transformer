@@ -17,8 +17,8 @@ class Model(object):
         self.sizes = []
         self.flops = []
         self.multiplcative_depth = 0
-        self.training = tf.placeholder_with_default(False, shape=[], name="training")
-        #self.training =training
+        #self.training = tf.placeholder_with_default(False, shape=[], name="training")
+        self.training = True
         self.model_name = model_name
         print("Creating model with decay", wd)
 
