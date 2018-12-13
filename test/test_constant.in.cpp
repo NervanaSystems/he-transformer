@@ -49,7 +49,7 @@ NGRAPH_TEST(${BACKEND_NAME}, constant_abc) {
   auto f = make_shared<Function>(t, ParameterVector{B, C});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {B, C}, backend);
+  auto tensors_list = generate_plain_cipher_tensors({t}, {B, C}, backend.get());
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);

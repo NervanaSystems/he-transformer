@@ -40,6 +40,7 @@ set(MULTI_TEST_SRC
     test_basics.in.cpp
     test_broadcast.in.cpp
     test_concat.in.cpp
+    test_constant.in.cpp
     test_layers.in.cpp
     test_convolution.in.cpp
     test_dot.in.cpp

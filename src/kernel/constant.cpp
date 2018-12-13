@@ -27,6 +27,7 @@ void runtime::he::kernel::constant(
   if (out.size() != count) {
     throw ngraph_error("out.size() != count for constant op");
   }
+  NGRAPH_INFO << "count " << count;
 
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {

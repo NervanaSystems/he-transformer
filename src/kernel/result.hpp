@@ -36,6 +36,7 @@ void result(const std::vector<std::shared_ptr<T>>& arg,
                 << " does not match result input size " << arg.size();
     throw ngraph_error("Wrong size in result");
   }
+  NGRAPH_INFO << "Result of same tyep";
   for (size_t i = 0; i < count; ++i) {
     out[i] = arg[i];
   }

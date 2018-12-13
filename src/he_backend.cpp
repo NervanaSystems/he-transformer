@@ -337,6 +337,12 @@ bool runtime::he::HEBackend::call(
       NGRAPH_INFO << "Parameter shape {" << join(op->get_shape()) << "}";
       continue;
     }
+    /* if (type_id == OP_TYPEID::Constant) {
+       const op::Constant* c = static_cast<const op::Constant*>(op);
+       descriptor::Tensor* tensor = op->get_output_tensor_ptr(0).get();
+       tensor_map.insert({tensor, const_cast<void*>(c->get_data_ptr())});
+       continue;
+     } */
 
     // get op inputs from map
     NGRAPH_INFO << "Getting op inputs from map";
@@ -376,12 +382,17 @@ bool runtime::he::HEBackend::call(
               element_type, shape, this, create_empty_plaintext(), batched_out,
               name);
           tensor_map.insert({tv, otv});
+          NGRAPH_INFO << "inserting plain out ";
         } else {
           auto otv = make_shared<runtime::he::HECipherTensor>(
               element_type, shape, this, create_empty_ciphertext(), batched_out,
               name);
           tensor_map.insert({tv, otv});
+          NGRAPH_INFO << "inserting cipher out ";
         }
+      }
+      if (op->is_constant()) {
+        NGRAPH_INFO << "inserted contant";
       }
       op_outputs.push_back(tensor_map.at(tv));
     }
@@ -597,14 +608,18 @@ void runtime::he::HEBackend::generate_calls(
     }
     case OP_TYPEID::Constant: {
       NGRAPH_INFO << "Consatnt op?!";
+      // NGRAPH_INFO << "skipping constant op";
+      // break;
       // TODO: move to main loop?
       const op::Constant* constant = static_cast<const op::Constant*>(&node);
 
       if (out0_plain != nullptr) {
+        NGRAPH_INFO << "out plain";
         runtime::he::kernel::constant(out0_plain->get_elements(), element_type,
                                       constant->get_data_ptr(), this,
                                       out0_plain->get_batched_element_count());
       } else if (out0_cipher != nullptr) {
+        NGRAPH_INFO << "out cipher";
         runtime::he::kernel::constant(out0_cipher->get_elements(), element_type,
                                       constant->get_data_ptr(), this,
                                       out0_cipher->get_batched_element_count());
@@ -822,6 +837,7 @@ void runtime::he::HEBackend::generate_calls(
         throw ngraph_error(
             "Input argument is neither plaintext nor ciphertext");
       }
+      NGRAPH_INFO << "Result op";
 
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
         runtime::he::kernel::result(arg0_cipher->get_elements(),
