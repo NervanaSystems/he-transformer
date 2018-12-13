@@ -33,7 +33,6 @@ endif()
 
 message("SEAL_USE_CXX17 ${SEAL_USE_CXX17}")
 
-
 ExternalProject_Add(
    ext_seal
    GIT_REPOSITORY ${SEAL_REPO_URL}

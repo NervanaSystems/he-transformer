@@ -76,13 +76,15 @@ if (ENABLE_TF)
     set (PY_NGRAPH_LIB_DIR ${PY_ENV}/lib/python3.5/site-packages/ngraph_bridge)
 
     execute_process(
-        COMMAND pip install -U tensorflow
+        COMMAND pip install -U tensorflow)
+    execute_process(
+        COMMAND pip install -U ngraph-tensorflow-bridge
+        COMMAND python -c "import tensorflow as tf; print('TensorFlow version: r',tf.__version__);import ngraph_bridge; print(ngraph_bridge.__version__)"
     )
 endif() # ENABLE TF
 
 # he-transformer headers
 set(HE_TRANSFORMER_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
-set(HE_TRANSFORMER_TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test)
 
 # External projects (ngraph, seal, etc. )
 set(EXTERNAL_INSTALL_DIR ${CMAKE_BINARY_DIR}/external)
@@ -105,7 +107,7 @@ add_subdirectory(test)
 
 # ngraph-tf depends on he_backend, which is defined in src directory,
 # so we put ngraph-tf.cmake here
-if (ENABLE_TF)
-    message("Building with Tensorflow integration through ngraph-tf")
-    include(cmake/ngraph-tf.cmake)
-endif() # ENABLE_TF
+#if (ENABLE_TF)
+#    message("Building with Tensorflow integration through ngraph-tf")
+#    include(cmake/ngraph-tf.cmake)
+#endif() # ENABLE_TF

@@ -82,15 +82,25 @@ if(NGRAPH_HE_SANITIZE_ADDRESS)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fsanitize=address -fno-omit-frame-pointer")
 endif()
 
-# Install he_backend to the python library where ng-tf will build from.
+# Install he_backend to the python library where ng-tf loads from
 if (ENABLE_TF)
     message("PY_NGRAPH_LIB_DIR ${PY_NGRAPH_LIB_DIR}")
     install(TARGETS he_backend DESTINATION ${PY_NGRAPH_LIB_DIR})
 
-    install(DIRECTORY
-        ${EXTERNAL_INSTALL_LIB_DIR}/
-        DESTINATION ${PY_NGRAPH_LIB_DIR}
-    )
+    # Workaround to ensure BFV and CKKS backends are recognized by ng-tf
+    # TODO: investigate use of backend configuration strings
+    set(HE_SEAL_CKKS_LIB_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}he_seal_ckks_backend${CMAKE_SHARED_LIBRARY_SUFFIX}")
+    set(HE_SEAL_BFV_LIB_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}he_seal_bfv_backend${CMAKE_SHARED_LIBRARY_SUFFIX}")
+    set(HE_BACKEND_LIB_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}he_backend${CMAKE_SHARED_LIBRARY_SUFFIX}")
+
+    install(FILES ${PY_NGRAPH_LIB_DIR}/${HE_BACKEND_LIB_NAME}
+            DESTINATION ${PY_NGRAPH_LIB_DIR}
+            RENAME ${HE_SEAL_CKKS_LIB_NAME})
+
+    install(FILES ${PY_NGRAPH_LIB_DIR}/${HE_BACKEND_LIB_NAME}
+            DESTINATION ${PY_NGRAPH_LIB_DIR}
+            RENAME ${HE_SEAL_BFV_LIB_NAME})
+
 endif()
 
 # Install he-transformer (the HE libraries are installed separately) at `make install`
