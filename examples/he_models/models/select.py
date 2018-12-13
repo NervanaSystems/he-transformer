@@ -9,9 +9,9 @@ tf.app.flags.DEFINE_string('model', 'CryptoDL',
 def by_name(name, training=False):
     name = name.lower()
     if name == 'cryptodl':
-        model = cryptodl.CryptoDL() #training=training)
+        model = cryptodl.CryptoDL(training=training)
     elif name == 'simple':
-        model = simple.Simple() #training=training)
+        model = simple.Simple(training=training)
     else:
         raise ValueError('No such model %s' % name)
     return model

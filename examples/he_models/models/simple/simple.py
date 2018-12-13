@@ -11,9 +11,9 @@ WEIGHT_DECAY = 1e2
 
 class Simple(model.Model):
 
-    def __init__(self, wd=WEIGHT_DECAY ):
+    def __init__(self, wd=WEIGHT_DECAY, training=True):
 
-        super(Simple, self).__init__(model_name='simple', wd=wd )
+        super(Simple, self).__init__(model_name='simple', wd=wd, training=training )
 
     def inference(self, images):
         #images = tf.identity(images, name='input')

@@ -10,15 +10,14 @@ WEIGHT_DECAY = 1e2
 
 class Model(object):
 
-    def __init__(self, model_name, wd=WEIGHT_DECAY, dropout=0.0):
+    def __init__(self, model_name, wd=WEIGHT_DECAY, dropout=0.0, training=True):
 
         self.wd = wd
         self.dropout = dropout
         self.sizes = []
         self.flops = []
         self.multiplcative_depth = 0
-        #self.training = tf.placeholder_with_default(False, shape=[], name="training")
-        self.training = True
+        self.training = training
         self.model_name = model_name
         print("Creating model with decay", wd)
 
@@ -76,10 +75,6 @@ class Model(object):
           return tf.constant(np.loadtxt(restore_filename, dtype=np.float32).reshape(shape))
 
     def conv_layer(self, inputs, size, filters, stride, decay, name, activation=True, bn=False):
-        #if bn:
-        #    # ng-tf graph will contain batch normalization nodes
-        #    raise NotImplementedError("Batch norm not implemented")
-
         channels = inputs.get_shape()[3]
         shape = [size, size, channels, filters]
         with tf.variable_scope(name + '/conv') as scope:
@@ -97,9 +92,7 @@ class Model(object):
 
             self.multiplcative_depth += 1
             if bn:
-                print('BN training? ', self.training)
                 conv = tf.layers.batch_normalization(conv, training=self.training)
-                self.multiplcative_depth += 1
             pre_activation = tf.nn.bias_add(conv, biases)
 
             if activation:
@@ -159,7 +152,6 @@ class Model(object):
 
             if bn:
                 x = tf.layers.batch_normalization(x, training=self.training)
-                self.multiplcative_depth += 1
             if activation:
                 outputs = self.poly_act(x)
             else:

@@ -62,7 +62,7 @@ def train_ops():
     images, labels = data.train_inputs(data_dir=data_dir)
 
     # Instantiate the model
-    model = select.by_name(FLAGS.model) #, training=True)
+    model = select.by_name(FLAGS.model, training=True)
 
     # Create a 'virtual' graph node based on images that represents the input
     # node to be used for graph retrieval
@@ -104,15 +104,15 @@ def train_ops():
     # Build yet another graph to evaluate moving averages of variables after
     # each step: these smoothed parameters will be loaded instead of the raw
     # trained values during evaluation
-    variable_averages = \
-        tf.train.ExponentialMovingAverage(MOVING_AVERAGE_DECAY, global_step)
-    variables_averages_op = variable_averages.apply(tf.trainable_variables())
+    #variable_averages = \
+    #    tf.train.ExponentialMovingAverage(MOVING_AVERAGE_DECAY, global_step)
+    #variables_averages_op = variable_averages.apply(tf.trainable_variables())
 
     # For batch normalization, we also need to update some variables
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
 
     # Create a meta-graph that includes sgd and variables moving average
-    with tf.control_dependencies([sgd_op, variables_averages_op] + update_ops):
+    with tf.control_dependencies([sgd_op] + update_ops): #, variables_averages_op
         train_op = tf.no_op(name='train')
 
     # Build another graph to provide training summary information
