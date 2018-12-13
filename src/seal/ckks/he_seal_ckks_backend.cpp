@@ -294,6 +294,7 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
   if (type_name == "float") {
     if (count == 1) {
       double value = (double)(*(float*)input);
+      NGRAPH_INFO << "Encoding " << value;
       if (m_plaintext_map.find(value) != m_plaintext_map.end()) {
         auto plain_value = static_pointer_cast<
             const runtime::he::he_seal::SealPlaintextWrapper>(

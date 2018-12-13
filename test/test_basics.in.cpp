@@ -38,7 +38,6 @@ NGRAPH_TEST(${BACKEND_NAME}, create_cipher_tensor) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
 
-
   Shape shape{2, 2};
   he_backend->create_cipher_tensor(element::f32, shape);
 }

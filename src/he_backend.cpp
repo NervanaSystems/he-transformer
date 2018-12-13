@@ -93,9 +93,11 @@ shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(
 
 shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(
     const element::Type& element_type, const Shape& shape) {
+  NGRAPH_INFO << "Creating tensor shape " << shape;
   if (batch_data()) {
     return create_batched_plain_tensor(element_type, shape);
   } else {
+    NGRAPH_INFO << "Tensor is plain";
     return create_plain_tensor(element_type, shape);
   }
 }
@@ -270,6 +272,7 @@ bool runtime::he::HEBackend::call(
   vector<shared_ptr<runtime::he::HETensor>> he_inputs;
   for (auto& tv : inputs) {
     he_inputs.push_back(static_pointer_cast<runtime::he::HETensor>(tv));
+    NGRAPH_INFO << "Pushing back he input";
   }
 
   // convert inputs to HETensor
@@ -337,12 +340,24 @@ bool runtime::he::HEBackend::call(
       NGRAPH_INFO << "Parameter shape {" << join(op->get_shape()) << "}";
       continue;
     }
-    /* if (type_id == OP_TYPEID::Constant) {
-       const op::Constant* c = static_cast<const op::Constant*>(op);
-       descriptor::Tensor* tensor = op->get_output_tensor_ptr(0).get();
-       tensor_map.insert({tensor, const_cast<void*>(c->get_data_ptr())});
-       continue;
-     } */
+    if (type_id == OP_TYPEID::Constant) {
+      const op::Constant* c = static_cast<const op::Constant*>(op);
+      NGRAPH_INFO << "Processing constant";
+
+      NGRAPH_INFO << "consant node " << c;
+
+      auto data = c->get_data_ptr();
+
+      NGRAPH_INFO << "data " << data;
+
+      descriptor::Tensor* tensor = op->get_output_tensor_ptr(0).get();
+
+      NGRAPH_INFO << "tensor " << tensor;
+
+      NGRAPH_INFO << "Done processing constant";
+
+      continue;
+    }
 
     // get op inputs from map
     NGRAPH_INFO << "Getting op inputs from map";
@@ -392,7 +407,7 @@ bool runtime::he::HEBackend::call(
         }
       }
       if (op->is_constant()) {
-        NGRAPH_INFO << "inserted contant";
+        NGRAPH_INFO << "inserted constant";
       }
       op_outputs.push_back(tensor_map.at(tv));
     }
@@ -548,14 +563,16 @@ void runtime::he::HEBackend::generate_calls(
     case OP_TYPEID::Broadcast: {
       const op::Broadcast* broadcast = static_cast<const op::Broadcast*>(&node);
       AxisSet broadcast_axes = broadcast->get_broadcast_axes();
-      Shape in_shape = node.get_input_shape(0);
-      Shape out_shape = node.get_output_shape(0);
 
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
+        Shape in_shape = arg0_cipher->get_shape();
+        Shape out_shape = out0_cipher->get_shape();
         runtime::he::kernel::broadcast(arg0_cipher->get_elements(),
                                        out0_cipher->get_elements(), in_shape,
                                        out_shape, broadcast_axes);
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
+        Shape in_shape = arg0_plain->get_shape();
+        Shape out_shape = out0_plain->get_shape();
         runtime::he::kernel::broadcast(arg0_plain->get_elements(),
                                        out0_plain->get_elements(), in_shape,
                                        out_shape, broadcast_axes);

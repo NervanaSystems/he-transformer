@@ -64,18 +64,17 @@ test_python_build ()
 
     # Test python unit-test
     cd ../examples
-    #NGRAPH_TF_BACKEND=HE:SEAL:BFV python axpy.py
-    NGRAPH_TF_BACKEND=INTERPRETER python axpy.py
+    NGRAPH_TF_BACKEND=HE:SEAL:BFV python axpy.py
     NGRAPH_TF_BACKEND=HE_SEAL_CKKS python axpy.py
 
     # Test cryptonets under python
     cd cryptonets
-    NGRAPH_BATCH_DATA=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_BATCH_TF=1 NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_13.json python test.py --batch_size=4096 --report_accuracy=1
-    NGRAPH_BATCH_DATA=1 NGRAPH_ENCRYPT_MODEL=1 NGRAPH_BATCH_TF=1 NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_13.json python test.py --batch_size=4096 --report_accuracy=1
+    NGRAPH_TF_BACKEND=HE_SEAL_CKKS NGRAPH_BATCH_DATA=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_BATCH_TF=1 NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_13.json python test.py --batch_size=4096 --report_accuracy=1
+    NGRAPH_TF_BACKEND=HE_SEAL_CKKS NGRAPH_BATCH_DATA=1 NGRAPH_ENCRYPT_MODEL=1 NGRAPH_BATCH_TF=1 NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_13.json python test.py --batch_size=4096 --report_accuracy=1
 
-    cd /home
+    #cd /home
 
-    echo 'Done testing python build'
+    #echo 'Done testing python build'
 }
 
 #test_cpp_build
