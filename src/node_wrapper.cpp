@@ -14,21 +14,20 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "ngraph/runtime/interpreter/node_wrapper.hpp"
+#include "node_wrapper.hpp"
 
 using namespace ngraph;
 using namespace std;
 
-runtime::interpreter::NodeWrapper::NodeWrapper(
-    const shared_ptr<const Node>& node)
+runtime::he::NodeWrapper::NodeWrapper(const shared_ptr<const Node>& node)
     : m_node{node} {
 // This expands the op list in op_tbl.hpp into a list of enumerations that look
 // like this:
-// {"Abs", runtime::interpreter::OP_TYPEID::Abs},
-// {"Acos", runtime::interpreter::OP_TYPEID::Acos},
+// {"Abs", runtime::he::OP_TYPEID::Abs},
+// {"Acos", runtime::he::OP_TYPEID::Acos},
 // ...
-#define NGRAPH_OP(a, b) {#a, runtime::interpreter::OP_TYPEID::a},
-  static unordered_map<string, runtime::interpreter::OP_TYPEID> typeid_map{
+#define NGRAPH_OP(a, b) {#a, runtime::he::OP_TYPEID::a},
+  static unordered_map<string, runtime::he::OP_TYPEID> typeid_map{
 #include "ngraph/op/op_tbl.hpp"
   };
 #undef NGRAPH_OP

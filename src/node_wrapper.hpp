@@ -22,10 +22,10 @@
 
 namespace ngraph {
 namespace runtime {
-namespace interpreter {
+namespace he {
 enum class OP_TYPEID;
 class NodeWrapper;
-}  // namespace interpreter
+}  // namespace he
 }  // namespace runtime
 }  // namespace ngraph
 
@@ -33,7 +33,7 @@ class NodeWrapper;
 // like this: Abs, Acos,
 // ...
 #define NGRAPH_OP(a, b) a,
-enum class ngraph::runtime::interpreter::OP_TYPEID {
+enum class ngraph::runtime::he::OP_TYPEID {
 #include "ngraph/op/op_tbl.hpp"
 };
 #undef NGRAPH_OP
@@ -41,14 +41,12 @@ enum class ngraph::runtime::interpreter::OP_TYPEID {
 /// \brief This class allows adding an enum typeid to each Node. This makes
 /// dealing with collections of Nodes a little easier and faster as we can use
 /// switch() instead of if/else statements
-class ngraph::runtime::interpreter::NodeWrapper {
+class ngraph::runtime::he::NodeWrapper {
  public:
   NodeWrapper(const std::shared_ptr<const ngraph::Node>& node);
 
   const Node& get_node() const { return *m_node; }
-  ngraph::runtime::interpreter::OP_TYPEID get_typeid() const {
-    return m_typeid;
-  }
+  ngraph::runtime::he::OP_TYPEID get_typeid() const { return m_typeid; }
 
  private:
   std::shared_ptr<const ngraph::Node> m_node;

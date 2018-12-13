@@ -115,10 +115,3 @@ include(cmake/seal.cmake)
 # HE transformer source and test directories
 add_subdirectory(src)
 add_subdirectory(test)
-
-# ngraph-tf depends on he_backend, which is defined in src directory,
-# so we put ngraph-tf.cmake here
-#if (ENABLE_TF)
-#    message("Building with Tensorflow integration through ngraph-tf")
-#    include(cmake/ngraph-tf.cmake)
-#endif() # ENABLE_TF
