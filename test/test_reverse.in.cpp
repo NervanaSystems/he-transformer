@@ -28,7 +28,7 @@ using namespace ngraph;
 static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, reverse_0d) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{};
   auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -52,7 +52,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_0d) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reverse_1d_nochange) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{8};
   auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -76,7 +76,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_1d_nochange) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reverse_1d_0) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{8};
   auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -100,7 +100,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_1d_0) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_nochange) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{4, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -128,7 +128,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_nochange) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_0) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{4, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -156,7 +156,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_0) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_1) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{4, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -184,7 +184,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_1) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_01) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{4, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -212,7 +212,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_01) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_nochange) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{2, 4, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -243,7 +243,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_nochange) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_0) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{2, 4, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -274,7 +274,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_0) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_1) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{2, 4, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -305,7 +305,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_1) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_2) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{2, 4, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -336,7 +336,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_2) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_01) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{2, 4, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -367,7 +367,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_01) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_02) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{2, 4, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -398,7 +398,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_02) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_12) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{2, 4, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -429,7 +429,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_12) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_012) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{2, 4, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape);

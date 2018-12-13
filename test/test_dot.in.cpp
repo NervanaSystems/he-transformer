@@ -28,7 +28,7 @@ using namespace ngraph;
 static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, dot1d) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{4};
   auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -56,7 +56,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot1d) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, dot1d_optimized) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
   ;
   he_backend->set_optimized_mult(true);
@@ -88,7 +88,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot1d_optimized) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, dot_matrix_vector) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{4, 4};
   Shape shape_b{4};
@@ -119,7 +119,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_matrix_vector) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, dot_scalar) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{};
 
@@ -148,7 +148,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_scalar) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_batch) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
   ;
 

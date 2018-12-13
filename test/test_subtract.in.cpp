@@ -28,7 +28,7 @@ using namespace ngraph;
 static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, sub_2_3) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{2, 3};
   auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -60,7 +60,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sub_2_3) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sub_zero_2_3) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
   he_backend->set_optimized_add(true);
 
@@ -93,7 +93,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sub_zero_2_3) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sub_from_zero_2_3) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
   he_backend->set_optimized_add(true);
 

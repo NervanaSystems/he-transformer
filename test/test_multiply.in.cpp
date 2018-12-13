@@ -28,7 +28,7 @@ using namespace ngraph;
 static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, multiply_2_3) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{2, 3};
   auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -60,7 +60,7 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_2_3) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, square_2_3) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{2, 3};
   auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -89,7 +89,7 @@ NGRAPH_TEST(${BACKEND_NAME}, square_2_3) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, multiply_optimized_2_3) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
   he_backend->set_optimized_add(true);
   he_backend->set_optimized_mult(true);
@@ -124,7 +124,7 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_optimized_2_3) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, multiply_4_3_batch) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
 
   Shape shape_a{4, 3};

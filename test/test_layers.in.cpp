@@ -29,7 +29,7 @@ static string s_manifest = "${MANIFEST}";
 
 // Test multiplying cipher with cipher at different layer
 NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_cipher) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
 
   Shape shape{2, 2};
@@ -66,7 +66,7 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_cipher) {
 
 // Test multiplying cipher with plain at different layer
 NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_plain) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
 
   Shape shape{2, 2};
@@ -103,7 +103,7 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_plain) {
 
 // Test multiplying plain with plain at different layer
 NGRAPH_TEST(${BACKEND_NAME}, mult_layer_plain_plain) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
 
   Shape shape{2, 2};
@@ -140,7 +140,7 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_plain_plain) {
 
 // Test adding cipher with cipher at different layer
 NGRAPH_TEST(${BACKEND_NAME}, add_layer_cipher_cipher) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
 
   Shape shape{2, 2};
@@ -167,7 +167,7 @@ NGRAPH_TEST(${BACKEND_NAME}, add_layer_cipher_cipher) {
 
 // Test adding cipher with plain at different layer
 NGRAPH_TEST(${BACKEND_NAME}, add_layer_cipher_plain) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
 
   Shape shape{2, 2};
@@ -194,7 +194,7 @@ NGRAPH_TEST(${BACKEND_NAME}, add_layer_cipher_plain) {
 
 // Test adding plain with plain at different layer
 NGRAPH_TEST(${BACKEND_NAME}, add_layer_plain_plain) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
 
   Shape shape{2, 2};

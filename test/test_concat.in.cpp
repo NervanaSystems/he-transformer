@@ -28,7 +28,7 @@ using namespace ngraph;
 static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_colwise) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   Shape shape_a{2, 2};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_b{2, 3};
@@ -64,7 +64,7 @@ NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_colwise) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_rowise) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   Shape shape_a{2, 2};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_b{3, 2};
@@ -100,7 +100,7 @@ NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_rowise) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, concat_vector) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   Shape shape_a{4};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_b{6};
@@ -136,7 +136,7 @@ NGRAPH_TEST(${BACKEND_NAME}, concat_vector) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, concat_4d_tensor) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   Shape shape{1, 1, 1, 1};
   auto A = make_shared<op::Parameter>(element::f32, shape);
   auto B = make_shared<op::Parameter>(element::f32, shape);
@@ -167,7 +167,7 @@ NGRAPH_TEST(${BACKEND_NAME}, concat_4d_tensor) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, concat_2d_tensor) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   Shape shape{1, 1};
   auto A = make_shared<op::Parameter>(element::f32, shape);
   auto B = make_shared<op::Parameter>(element::f32, shape);

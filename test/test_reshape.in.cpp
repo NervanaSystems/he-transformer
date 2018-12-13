@@ -28,7 +28,7 @@ using namespace ngraph;
 static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_t2v_012) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{2, 2, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -55,7 +55,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_t2v_012) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_t2s_012) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{1, 1, 1};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -80,7 +80,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_t2s_012) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_t2s_120) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{1, 1, 1};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -105,7 +105,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_t2s_120) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_s2t) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -130,7 +130,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_s2t) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_v2m_col) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{3};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -155,7 +155,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_v2m_col) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_v2m_row) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{3};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -180,7 +180,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_v2m_row) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_v2t_middle) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{3};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -205,7 +205,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_v2t_middle) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_same) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{3, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -230,7 +230,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_same) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_transpose) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{3, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -255,7 +255,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_transpose) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_dim_change_transpose) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{3, 2};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -321,7 +321,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_dim_change_transpose) {
 //         279.,  215.,  287.,  200.,  272.,  208.,  280.,  216.,  288.])
 //
 NGRAPH_TEST(${BACKEND_NAME}, reshape_6d) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   vector<float> a_data(2 * 2 * 3 * 3 * 2 * 4);
   for (int i = 0; i < 2 * 2 * 3 * 3 * 2 * 4; i++) {

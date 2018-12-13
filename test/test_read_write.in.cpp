@@ -28,13 +28,13 @@ using namespace ngraph;
 static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, backend_init) {
-  NGRAPH_INFO << "Initializing backend ${BACKEND_REGISTERED_NAME}";
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  NGRAPH_INFO << "Initializing backend ${BACKEND_NAME}";
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   EXPECT_EQ(1, 1);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_scalar) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{};
   auto a = backend->create_tensor(element::f32, shape);
@@ -43,7 +43,7 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_scalar) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_2) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{2};
   auto a = backend->create_tensor(element::f32, shape);
@@ -52,7 +52,7 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_2) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_2_3) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{2, 3};
   auto a = backend->create_tensor(element::f32, shape);
@@ -63,7 +63,7 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_2_3) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_5_5) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{5, 5};
   auto a = backend->create_tensor(element::f32, shape);
@@ -83,7 +83,7 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_5_5) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_scalar) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
 
   Shape shape{};
@@ -93,7 +93,7 @@ NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_scalar) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
 
   Shape shape{2};
@@ -103,7 +103,7 @@ NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2_3) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
 
   Shape shape{2, 3};
@@ -115,7 +115,7 @@ NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2_3) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_batch_write_read_2_3) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
 
   Shape shape{2, 3};
@@ -128,7 +128,7 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_batch_write_read_2_3) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, plain_tv_batch_write_read_2_3) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
 
   Shape shape{2, 3};

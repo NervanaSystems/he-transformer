@@ -28,7 +28,7 @@ using namespace ngraph;
 static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_1image) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   Shape shape_a{1, 1, 14};
   Shape window_shape{3};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -65,7 +65,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_1image) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   Shape shape_a{2, 1, 14};
   Shape window_shape{3};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -106,7 +106,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_2channel_2image) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   Shape shape_a{2, 2, 14};
   Shape window_shape{3};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -157,7 +157,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_2channel_2image) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   Shape shape_a{2, 2, 5, 5};
   Shape window_shape{2, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -232,7 +232,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_1channel_1image_strided) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   Shape shape_a{1, 1, 8, 8};
   Shape window_shape{2, 3};
   auto window_movement_strides = Strides{3, 2};

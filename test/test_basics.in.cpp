@@ -28,14 +28,14 @@ using namespace ngraph;
 static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, create_tensor) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{2, 2};
   backend->create_tensor(element::f32, shape);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, create_cipher_tensor) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
 
 
@@ -44,7 +44,7 @@ NGRAPH_TEST(${BACKEND_NAME}, create_cipher_tensor) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, create_plain_tensor) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
 
   Shape shape{2, 2};
@@ -52,7 +52,7 @@ NGRAPH_TEST(${BACKEND_NAME}, create_plain_tensor) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, validate_call_input_count) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{2, 2};
 
@@ -69,7 +69,7 @@ NGRAPH_TEST(${BACKEND_NAME}, validate_call_input_count) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, validate_call_input_type) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{2, 2};
 
@@ -86,7 +86,7 @@ NGRAPH_TEST(${BACKEND_NAME}, validate_call_input_type) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, validate_call_input_shape) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{2, 2};
 
@@ -103,7 +103,7 @@ NGRAPH_TEST(${BACKEND_NAME}, validate_call_input_shape) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, validate_call_output_count) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{2, 2};
 
@@ -121,7 +121,7 @@ NGRAPH_TEST(${BACKEND_NAME}, validate_call_output_count) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, validate_call_output_type) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{2, 2};
 
@@ -138,7 +138,7 @@ NGRAPH_TEST(${BACKEND_NAME}, validate_call_output_type) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, validate_call_output_shape) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{2, 2};
 

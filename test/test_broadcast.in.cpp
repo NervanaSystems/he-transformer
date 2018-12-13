@@ -28,7 +28,7 @@ using namespace ngraph;
 static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   Shape shape_a{};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{4};
@@ -55,7 +55,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_to_non_existent_axis) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   Shape shape_a{};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{4};
@@ -66,7 +66,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_to_non_existent_axis) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   Shape shape_a{};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{2, 2};
@@ -92,7 +92,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_tensor) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   Shape shape_a{};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{2, 2, 2};
@@ -118,7 +118,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_tensor) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_trivial) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   Shape shape{2, 2, 2};
   auto A = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Broadcast>(A, shape, AxisSet{});
@@ -143,7 +143,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_trivial) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_colwise) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{3};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -170,7 +170,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_colwise) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_rowwise) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{4};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -197,7 +197,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_rowwise) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_0) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{2, 2};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -223,7 +223,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_0) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_1) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{2, 2};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -249,7 +249,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_1) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_2) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{2, 2};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);

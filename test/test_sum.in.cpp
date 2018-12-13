@@ -28,7 +28,7 @@ using namespace ngraph;
 static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_trivial) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{2, 2};
   auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -55,7 +55,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_trivial) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_trivial_5d) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{2, 2, 2, 2, 2};
   auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -86,7 +86,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_trivial_5d) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_to_scalar) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{2, 2};
   auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -118,7 +118,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_to_scalar) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_columns) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{3, 2};
   auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -150,7 +150,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_columns) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_rows) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{3, 2};
   auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -182,7 +182,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_rows) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_rows_zero) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{3, 0};
   auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -214,7 +214,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_rows_zero) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_cols_zero) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{0, 2};
   auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -245,7 +245,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_cols_zero) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_vector_zero) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{0};
   auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -276,7 +276,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_vector_zero) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_to_scalar_zero_by_zero) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{0, 0};
   auto a = make_shared<op::Parameter>(element::f32, shape);

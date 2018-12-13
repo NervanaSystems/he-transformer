@@ -28,7 +28,7 @@ using namespace ngraph;
 static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, constant) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   Shape shape{2, 2};
   auto A = op::Constant::create(element::f32, shape, {0.1, 0.2, 0.3, 0.4});
   auto f = make_shared<Function>(A, ParameterVector{});
@@ -40,7 +40,7 @@ NGRAPH_TEST(${BACKEND_NAME}, constant) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, constant_abc) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   Shape shape{2, 2};
   auto A = op::Constant::create(element::f32, shape, {1, 2, 3, 4});
   auto B = make_shared<op::Parameter>(element::f32, shape);
