@@ -31,7 +31,7 @@ extern "C" const char* get_ngraph_version_string() {
 extern "C" runtime::Backend* new_backend(const char* configuration_chars) {
   string configuration_string = string(configuration_chars);
 
-  if (configuration_string == "HE:SEAL:BFV") {
+  if (configuration_string == "HE_SEAL_BFV") {
     return new runtime::he::he_seal::HESealBFVBackend();
   } else if (configuration_string == "HE_SEAL_CKKS") {
     return new runtime::he::he_seal::HESealCKKSBackend();
@@ -45,7 +45,7 @@ extern "C" void delete_backend(runtime::Backend* backend) { delete backend; }
 
 void runtime::he::he_seal::HESealBackend::assert_valid_seal_parameter(
     const shared_ptr<runtime::he::he_seal::HESealParameter> sp) const {
-  if (sp->m_scheme_name != "HE:SEAL:BFV" &&
+  if (sp->m_scheme_name != "HE_SEAL_BFV" &&
       sp->m_scheme_name != "HE_SEAL_CKKS") {
     throw ngraph_error("Invalid scheme name");
   }
