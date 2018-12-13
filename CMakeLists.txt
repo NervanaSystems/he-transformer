@@ -70,10 +70,21 @@ if (ENABLE_TF)
     if(PY_ENV_ERROR)
         message(FATAL_ERROR "Set python virtual environment when building with TF support.")
     endif()
-
     message("PYENV ${PY_ENV}")
 
-    set (PY_NGRAPH_LIB_DIR ${PY_ENV}/lib/python3.5/site-packages/ngraph_bridge)
+    execute_process(
+        COMMAND python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())"
+        RESULT_VARIABLE PY_LIB_ERROR
+        OUTPUT_VARIABLE PY_LIB_DIR
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    if (PY_LIB_ERROR)
+        message(FATAL_ERROR "Cannot find python site-packages folder.")
+    endif()
+
+    set (PY_NGRAPH_LIB_DIR ${PY_LIB_DIR}/ngraph_bridge)
+
+    message("PY_NGRAPH_LIB_DIR ${PY_NGRAPH_LIB_DIR}")
 
     execute_process(
         COMMAND pip install -U tensorflow)
