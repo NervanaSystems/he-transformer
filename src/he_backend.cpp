@@ -333,7 +333,7 @@ bool runtime::he::HEBackend::call(
     // NGRAPH_INFO << "Shape " << op->get_shape();
     // NGRAPH_INFO << "Name " << op->get_name();
     // NGRAPH_INFO << "Friendly name " << op->get_friendly_name();
-    if (type_id == OP_TYPEID::Constant) {
+    if (type_id == OP_TYPEID::Parameter) {
       NGRAPH_INFO << "Parameter shape {" << join(op->get_shape()) << "}";
       continue;
     }
@@ -596,6 +596,7 @@ void runtime::he::HEBackend::generate_calls(
       break;
     }
     case OP_TYPEID::Constant: {
+      NGRAPH_INFO << "Consatnt op?!";
       // TODO: move to main loop?
       const op::Constant* constant = static_cast<const op::Constant*>(&node);
 
@@ -614,9 +615,6 @@ void runtime::he::HEBackend::generate_calls(
     }
     case OP_TYPEID::Convolution: {
       const op::Convolution* c = static_cast<const op::Convolution*>(&node);
-      Shape in_shape_0 = node.get_input_shape(0);
-      Shape in_shape_1 = node.get_input_shape(1);
-      Shape out_shape = node.get_output_shape(0);
       auto window_movement_strides = c->get_window_movement_strides();
       auto window_dilation_strides = c->get_window_dilation_strides();
       auto padding_below = c->get_padding_below();
@@ -627,7 +625,8 @@ void runtime::he::HEBackend::generate_calls(
           out0_cipher != nullptr) {
         runtime::he::kernel::convolution(
             arg0_cipher->get_elements(), arg1_cipher->get_elements(),
-            out0_cipher->get_elements(), in_shape_0, in_shape_1, out_shape,
+            out0_cipher->get_elements(), arg0_cipher->get_shape(),
+            arg1_cipher->get_shape(), out0_cipher->get_shape(),
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false,
             element_type, batch_size, this);
@@ -635,7 +634,8 @@ void runtime::he::HEBackend::generate_calls(
                  out0_cipher != nullptr) {
         runtime::he::kernel::convolution(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
-            out0_cipher->get_elements(), in_shape_0, in_shape_1, out_shape,
+            out0_cipher->get_elements(), arg0_cipher->get_shape(),
+            arg1_plain->get_shape(), out0_cipher->get_shape(),
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false,
             element_type, batch_size, this);
@@ -643,7 +643,8 @@ void runtime::he::HEBackend::generate_calls(
                  out0_cipher != nullptr) {
         runtime::he::kernel::convolution(
             arg0_plain->get_elements(), arg1_cipher->get_elements(),
-            out0_cipher->get_elements(), in_shape_0, in_shape_1, out_shape,
+            out0_cipher->get_elements(), arg0_plain->get_shape(),
+            arg1_cipher->get_shape(), out0_cipher->get_shape(),
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false,
             element_type, batch_size, this);
@@ -651,7 +652,8 @@ void runtime::he::HEBackend::generate_calls(
                  out0_plain != nullptr) {
         runtime::he::kernel::convolution(
             arg0_plain->get_elements(), arg1_plain->get_elements(),
-            out0_plain->get_elements(), in_shape_0, in_shape_1, out_shape,
+            out0_plain->get_elements(), arg0_plain->get_shape(),
+            arg1_plain->get_shape(), out0_plain->get_shape(),
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false,
             element_type, batch_size, this);
@@ -662,9 +664,6 @@ void runtime::he::HEBackend::generate_calls(
     }
     case OP_TYPEID::Dot: {
       const op::Dot* dot = static_cast<const op::Dot*>(&node);
-      Shape in_shape_0 = node.get_input_shape(0);
-      Shape in_shape_1 = node.get_input_shape(1);
-      Shape out_shape = node.get_output_shape(0);
 
       NGRAPH_INFO << join(args[0]->get_shape(), "x") << " dot "
                   << join(args[1]->get_shape(), "x");
@@ -672,25 +671,29 @@ void runtime::he::HEBackend::generate_calls(
           out0_cipher != nullptr) {
         runtime::he::kernel::dot(
             arg0_cipher->get_elements(), arg1_cipher->get_elements(),
-            out0_cipher->get_elements(), in_shape_0, in_shape_1, out_shape,
+            out0_cipher->get_elements(), arg0_cipher->get_shape(),
+            arg1_cipher->get_shape(), out0_cipher->get_shape(),
             dot->get_reduction_axes_count(), element_type, this);
       } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                  out0_cipher != nullptr) {
         runtime::he::kernel::dot(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
-            out0_cipher->get_elements(), in_shape_0, in_shape_1, out_shape,
+            out0_cipher->get_elements(), arg0_cipher->get_shape(),
+            arg1_plain->get_shape(), out0_cipher->get_shape(),
             dot->get_reduction_axes_count(), element_type, this);
       } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
                  out0_cipher != nullptr) {
         runtime::he::kernel::dot(
             arg0_plain->get_elements(), arg1_cipher->get_elements(),
-            out0_cipher->get_elements(), in_shape_0, in_shape_1, out_shape,
+            out0_cipher->get_elements(), arg0_plain->get_shape(),
+            arg1_cipher->get_shape(), out0_cipher->get_shape(),
             dot->get_reduction_axes_count(), element_type, this);
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
         runtime::he::kernel::dot(
             arg0_plain->get_elements(), arg1_plain->get_elements(),
-            out0_plain->get_elements(), in_shape_0, in_shape_1, out_shape,
+            out0_plain->get_elements(), arg0_plain->get_shape(),
+            arg1_plain->get_shape(), out0_plain->get_shape(),
             dot->get_reduction_axes_count(), element_type, this);
       } else {
         throw ngraph_error("Dot types not supported.");
