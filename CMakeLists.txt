@@ -56,6 +56,13 @@ if(NOT DEFINED EXTERNAL_PROJECTS_ROOT)
 endif()
 
 # Build options
+# python version used in virtual environment
+if(NOT DEFINED PYTHON_VENV_VERSION)
+    set(PYTHON_VENV_VERSION "python3.5")
+endif()
+
+message("PYTHON_VENV_VERSION ${PYTHON_VENV_VERSION}")
+
 # TODO: enable skipping compilation of TF, to be passed to ngraph-tf.cmake build_ngtf.py.
 # If we do this, we need to check GLIB_CXX11_ABI
 # OPTION(USE_EXISTING_TF "Skip compilation of TF for faster build time" OFF)
@@ -64,6 +71,7 @@ include(cmake/gtest.cmake)
 include(cmake/json.cmake)
 include(cmake/openmp.cmake)
 include(cmake/seal.cmake)
+
 
 # Add ngraph library
 add_library(ngraph SHARED IMPORTED)

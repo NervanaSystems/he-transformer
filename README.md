@@ -23,10 +23,23 @@ The [examples](https://github.com/NervanaSystems/he-transformer/tree/master/exam
 - GCC version 7, although different versions may work
 - OpenMP is strongly suggested, though not strictly necessary. You may experience slow runtimes without OpenMP
 - virtualenv
+- bazel v0.16.0
 #### The following dependencies are built automatically
 - [nGraph](https://github.com/NervanaSystems/ngraph) - v0.11.0
 - [nGraph-tf](https://github.com/NervanaSystems/ngraph-tf) - v0.9.0
 - [SEAL](https://github.com/Microsoft/SEAL) version 3.1
+
+### To install bazel
+```bash
+ wget https://github.com/bazelbuild/bazel/releases/download/0.16.0/bazel-0.16.0-installer-linux-x86_64.sh
+ chmod +x bazel-0.16.0-installer-linux-x86_64.sh
+ ./bazel-0.16.0-installer-linux-x86_64.sh --user
+ ```
+ Make sure to add and source the bin path to your `~/.bashrc` file in order to be able to call bazel from the user's installation we set up:
+```bash
+ export PATH=$PATH:~/bin
+ source ~/.bashrc
+```
 
 ### 1. Build HE-Transformer
 Make sure you deactivate any active virtual environments (i.e. run `deactivate`)

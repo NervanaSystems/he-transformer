@@ -77,7 +77,7 @@ set(HE_SEAL_CKKS_LIB_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}he_seal_ckks_backend${C
 set(HE_SEAL_BFV_LIB_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}he_seal_bfv_backend${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
 # Install he-transformer (the HE libraries are installed separately) at `make install`
-message("NGRAPH_INSTALL_LIB_DIR " ${NGRAPH_INSTALL_LIB_DIR})
+message("NGRAPH_INSTALL_LIB_DIR ${NGRAPH_INSTALL_LIB_DIR}")
 message("NGRAPH_TF_VENV_LIB_DIR ${NGRAPH_TF_VENV_LIB_DIR}")
 
 install(TARGETS he_backend DESTINATION ${EXTERNAL_INSTALL_LIB_DIR})
