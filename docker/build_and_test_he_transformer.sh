@@ -28,6 +28,16 @@ echo ' '
 
 export HE_SRC_DIR=/home
 
+echo 'Argument'
+echo $1
+echo $2
+echo 'Done shows args'
+
+git pull
+git checkout fboemer/ngraph-tf-integration1
+
+
+
 build_he_transformer()
 {
     cd $HE_SRC_DIR
@@ -76,7 +86,7 @@ run_cryptonets_tests()
 }
 
 
-build_he_transformer
-run_unit_tests
-run_python_tests
+build_he_transformer &&
+run_unit_tests &&
+run_python_tests &&
 run_cryptonets_tests

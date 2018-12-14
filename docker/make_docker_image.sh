@@ -12,18 +12,6 @@ if [ -z $DOCKER_IMAGE_NAME ]; then
     DOCKER_IMAGE_NAME=${DOCKER_TAG}
 fi
 
-# Debugging to verify builds on CentOS 7.4 and Ubuntu 16.04
-if [ -f "/etc/centos-release" ]; then
-    cat /etc/centos-release
-fi
-
-if [ -f "/etc/lsb-release" ]; then
-    cat /etc/lsb-release
-fi
-
-uname -a
-cat /etc/os-release || true
-
 # If proxy settings are detected in the environment, make sure they are
 # included on the docker-build command-line.
 if [ ! -z "${http_proxy}" ] ; then
@@ -47,8 +35,9 @@ DIMAGE_ID="${DIMAGE_NAME}:${DIMAGE_VERSION}"
 echo "DOCKER_HTTP_PROXY ${DOCKER_HTTP_PROXY}"
 echo "DOCKER_HTTPS_PROXY ${DOCKER_HTTPS_PROXY}"
 
-# Set docker to he-transformer root directory
-CONTEXT='..'
+# Set docker to current directory
+# Use this rather than root directory, as root directory will contain large build files
+CONTEXT='.'
 
 # build the docker base image
 docker build  --rm=true \
