@@ -73,6 +73,7 @@ endforeach()
 
 add_executable(unit-test ${SRC})
 
+
 include_directories(SYSTEM
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${GTEST_INCLUDE_DIR}
@@ -80,11 +81,13 @@ include_directories(SYSTEM
     ${NGRAPH_TEST_DIR}
     ${HE_TRANSFORMER_SOURCE_DIR}
     ${EXTERNAL_INSTALL_INCLUDE_DIR}
+    ${NGRAPH_TEST_UTIL_INCLUDE_DIR}
 )
 
 link_directories(
     ${NGRAPH_LIB_DIR}
     ${EXTERNAL_INSTALL_LIB_DIR}
+    ${NGRAPH_TF_LIB_DIR}
 )
 
 target_include_directories(unit-test PRIVATE ".")
@@ -94,11 +97,13 @@ if(NGRAPH_HE_SANITIZE_ADDRESS)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fsanitize=address -fno-omit-frame-pointer")
 endif()
 
+find_library(ngraph_test_util protobuf HINTS ${NGRAPH_TF_LIB_DIR})
+
 target_link_libraries(unit-test libgtest)
 target_link_libraries(unit-test ngraph_test_util)
 target_link_libraries(unit-test he_backend seal pthread ${CMAKE_DL_LIBS})
 
-add_dependencies(unit-test he_backend ext_seal ext_ngraph ext_gtest)
+add_dependencies(unit-test he_backend ext_seal ext_ngraph_tf ext_gtest)
 
 # Cryptonets
 set (CRYPTONETS_SRC test_cryptonets.cpp test_util.cpp main_cryptonets.cpp)
@@ -111,16 +116,21 @@ include_directories(SYSTEM
     ${NGRAPH_TEST_DIR}
     ${HE_TRANSFORMER_SOURCE_DIR}
     ${EXTERNAL_INSTALL_INCLUDE_DIR}
+    ${NGRAPH_TF_INCLUDE_DIR}
+    ${NGRAPH_TEST_UTIL_INCLUDE_DIR}
 )
+
+message("Linking with NGRAPH_TF_LIB_DIR ${NGRAPH_TF_LIB_DIR}")
 
 link_directories(
     ${NGRAPH_LIB_DIR}
     ${EXTERNAL_INSTALL_LIB_DIR}
+    ${NGRAPH_TF_LIB_DIR}
 )
 
 target_include_directories(cryptonets_benchmark PRIVATE ".")
 
 target_link_libraries(cryptonets_benchmark libgtest)
-target_link_libraries(cryptonets_benchmark ngraph_test_util)
+#target_link_libraries(cryptonets_benchmark ngraph_test_util)
 target_link_libraries(cryptonets_benchmark he_backend seal pthread ${CMAKE_DL_LIBS})
-add_dependencies(cryptonets_benchmark he_backend ext_seal ext_ngraph ext_gtest)
+add_dependencies(cryptonets_benchmark he_backend ext_seal ext_gtest)

@@ -26,13 +26,12 @@ if(DEFINED CMAKE_CXX_CLAGS)
 else()
     set(CMAKE_CXX_FLAGS "-std=c++1z -std=gnu++1z -Wall")
 endif()
-message("CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS}")
 
 # Tensorflow pip package uses GCC 4.8, with older CXX11_ABI
 # SEAL requires GCC >= 6.0, with newer CX11_ABI.
 # For compatibility with TF, we use older CX11_ABI.
-set(CXX11_ABI 0)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=${CXX11_ABI}")
+#set(CXX11_ABI 0)
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=${CXX11_ABI}")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS} -g")
 set(CMAKE_CXX_FLAGS_DEBUG  "${CMAKE_CXX_FLAGS} -O0 -g")
 
@@ -55,45 +54,6 @@ set(NGRAPH_INSTALL_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/include")
 # This allows libhe_backend.so to find libraries in the same directory
 set(CMAKE_INSTALL_RPATH "\$ORIGIN")
 
-# Build options
-option(ENABLE_TF "Support Tensorflow integration through ngraph-tf" OFF)
-message(STATUS "ENABLE_TF: ${ENABLE_TF}")
-
-# Check python environment is active if TF is enabled
-if (ENABLE_TF)
-    execute_process(
-        COMMAND python -c "import os; print(os.environ['VIRTUAL_ENV'])"
-        RESULT_VARIABLE PY_ENV_ERROR
-        OUTPUT_VARIABLE PY_ENV
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-    if(PY_ENV_ERROR)
-        message(FATAL_ERROR "Set python virtual environment when building with TF support.")
-    endif()
-    message("PYENV ${PY_ENV}")
-
-    execute_process(
-        COMMAND python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())"
-        RESULT_VARIABLE PY_LIB_ERROR
-        OUTPUT_VARIABLE PY_LIB_DIR
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-    if (PY_LIB_ERROR)
-        message(FATAL_ERROR "Cannot find python site-packages folder.")
-    endif()
-
-    set (PY_NGRAPH_LIB_DIR ${PY_LIB_DIR}/ngraph_bridge)
-
-    message("PY_NGRAPH_LIB_DIR ${PY_NGRAPH_LIB_DIR}")
-
-    execute_process(
-        COMMAND pip install -U tensorflow)
-    execute_process(
-        COMMAND pip install -U ngraph-tensorflow-bridge
-        COMMAND python -c "import tensorflow as tf; print('TensorFlow version: r',tf.__version__);import ngraph_bridge; print(ngraph_bridge.__version__)"
-    )
-endif() # ENABLE TF
-
 # he-transformer headers
 set(HE_TRANSFORMER_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
@@ -106,11 +66,17 @@ if(NOT DEFINED EXTERNAL_PROJECTS_ROOT)
     set(EXTERNAL_PROJECTS_ROOT ${CMAKE_CURRENT_BINARY_DIR})
 endif()
 
+# Build options
+# TODO: enable skipping compilation of TF, to be passed to ngraph-tf.cmake build_ngtf.py.
+# If we do thos, we need to check GLIB_CXX11_ABI
+# OPTION(USE_EXISTING_TF "Skip compilation of TF for faster build time" OFF)
+
+
 include(cmake/gtest.cmake)
 include(cmake/json.cmake)
-include(cmake/ngraph.cmake)
 include(cmake/openmp.cmake)
 include(cmake/seal.cmake)
+include(cmake/ngraph-tf.cmake)
 
 # HE transformer source and test directories
 add_subdirectory(src)

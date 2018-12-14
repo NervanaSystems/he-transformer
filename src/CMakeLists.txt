@@ -57,18 +57,20 @@ include_directories(
     ${NGRAPH_INCLUDE_DIR}
     ${HE_TRANSFORMER_SOURCE_DIR}
     ${EXTERNAL_INSTALL_INCLUDE_DIR}
+    ${NGRAPH_TF_INCLUDE_DIR}
 )
 link_directories(
     ${NGRAPH_LIB_DIR}
     ${EXTERNAL_INSTALL_LIB_DIR}
+    ${NGRAPH_TF_LIB_DIR}
 )
 
 message("Linking directories: ${NGRAPH_LIB_DIR}, ${EXTERNAL_INSTALL_LIB_DIR}")
 
 # Target library
 add_library(he_backend SHARED ${HE_SRC})
-add_dependencies(he_backend ext_ngraph ext_seal)
-target_link_libraries(he_backend ngraph seal libjson)
+add_dependencies(he_backend ext_ngraph_tf ext_seal)
+target_link_libraries(he_backend seal libjson)
 
 set_target_properties(he_backend PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY
