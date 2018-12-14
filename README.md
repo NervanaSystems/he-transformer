@@ -15,7 +15,6 @@ Additionally, we integrate with the [**Intel® nGraph™ Compiler and runtime en
 ## Examples
 The [examples](https://github.com/NervanaSystems/he-transformer/tree/master/examples) directory contains a deep learning example which depends on the [**Intel® nGraph™ Compiler and runtime engine for TensorFlow**](https://github.com/NervanaSystems/ngraph-tf).
 
-
 ## Building HE Transformer
 
 ### Dependencies
@@ -28,8 +27,6 @@ The [examples](https://github.com/NervanaSystems/he-transformer/tree/master/exam
 - [nGraph](https://github.com/NervanaSystems/ngraph) - v0.11.0
 - [nGraph-tf](https://github.com/NervanaSystems/ngraph-tf) - v0.9.0
 - [SEAL](https://github.com/Microsoft/SEAL) version 3.1
-
-The `docker` folder contains a script to build `he-transformer` through Docker for testing purposes, and requires only Docker.
 
 ### 1. Build HE-Transformer
 ```bash
