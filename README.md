@@ -29,6 +29,7 @@ The [examples](https://github.com/NervanaSystems/he-transformer/tree/master/exam
 - [SEAL](https://github.com/Microsoft/SEAL) version 3.1
 
 ### 1. Build HE-Transformer
+Make sure you deactivate any active virtual environments (i.e. run `deactivate`)
 ```bash
 git clone https://github.com/NervanaSystems/he-transformer.git
 cd he-transformer
