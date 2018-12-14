@@ -26,56 +26,57 @@ echo 'Contents of /home:'
 ls -la /home
 echo ' '
 
-# Test C++ integration
-test_cpp_build ()
+export HE_SRC_DIR=/home
+
+build_he_transformer()
 {
-    echo 'Testing C++ build'
+    cd $HE_SRC_DIR
+    echo 'Building HE Transformer'
     rm -rf build
     mkdir build
     cd build
     cmake .. -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7
-    make -j
-    ./test/unit-test
-    echo 'Testing cryptonets'
-    NGRAPH_BATCH_DATA=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_13.json ./test/cryptonets_benchmark --gtest_filter="Cryptonets.CKKS_4096"
-    NGRAPH_BATCH_DATA=1 NGRAPH_ENCRYPT_MODEL=1 NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_14.json ./test/cryptonets_benchmark --gtest_filter="Cryptonets.CKKS_4096"
-    cd /home
-    echo 'Done testing C++ build.'
+    make -j install
 
+    source external/venv-tf-py3/bin/activate
+    cd $HE_SRC_DIR
 }
 
-# Test python integration
-test_python_build ()
+# Test C++ integration
+run_unit_tests()
 {
-    echo 'Testing python build'
-    rm -rf build
-    mkdir build
-    mkdir -p ~/venvs
-    python -m virtualenv venv
-    virtualenv ~/venvs/he3 -p python3
-    source ~/venvs/he3/bin/activate
-    cd build
-    cmake .. -DENABLE_TF=ON -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7
-    make -j
-    make install
+    echo 'Running unit-tests'
+    cd $HE_SRC_DIR/build
+    ./test/unit-test
+    # Cryptonets tests
+    # Encrypt data
+    NGRAPH_TF_BACKEND=HE_SEAL_CKKS NGRAPH_BATCH_DATA=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_13.json ./test/cryptonets_benchmark --gtest_filter="Cryptonets.CKKS_4096"
+    # Encrypt model
+    NGRAPH_TF_BACKEND=HE_SEAL_CKKS NGRAPH_BATCH_DATA=1 NGRAPH_ENCRYPT_MODEL=1 NGRAPH_HE_SEAL_CONFIG=../test/model/he_seal_ckks_config_13.json ./test/cryptonets_benchmark --gtest_filter="Cryptonets.CKKS_4096"
 
-    # Test c++ unit-tests under python
-    #./test/unit-test
+    echo "Done running unit-tests"
+    cd $HE_SRC_DIR
+}
 
-    # Test python unit-test
-    cd ../examples
-    NGRAPH_TF_BACKEND=HE:SEAL:BFV python axpy.py
+run_python_tests()
+{
+    cd $HE_SRC_DIR/examples
+    NGRAPH_TF_BACKEND=HE_SEAL_BFV python axpy.py
     NGRAPH_TF_BACKEND=HE_SEAL_CKKS python axpy.py
+    cd $HE_SRC_DIR
+}
+
+run_cryptonets_tests()
+{
+    cd $HE_SRC_DIR/examples/cryptonets
 
     # Test cryptonets under python
-    cd cryptonets
     NGRAPH_TF_BACKEND=HE_SEAL_CKKS NGRAPH_BATCH_DATA=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_BATCH_TF=1 NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_13.json python test.py --batch_size=4096 --report_accuracy=1
     NGRAPH_TF_BACKEND=HE_SEAL_CKKS NGRAPH_BATCH_DATA=1 NGRAPH_ENCRYPT_MODEL=1 NGRAPH_BATCH_TF=1 NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_13.json python test.py --batch_size=4096 --report_accuracy=1
-
-    #cd /home
-
-    #echo 'Done testing python build'
 }
 
-#test_cpp_build
-test_python_build
+
+build_he_transformer
+run_unit_tests
+run_python_tests
+run_cryptonets_tests

@@ -20,106 +20,50 @@ The [examples](https://github.com/NervanaSystems/he-transformer/tree/master/exam
 
 ### Dependencies
 - We currently only support Ubuntu 16.04
-- CMake 3.12.3, although different versions may work
+- CMake >= 3.10, although different versions may work
 - GCC version 7, although different versions may work
 - OpenMP is strongly suggested, though not strictly necessary. You may experience slow runtimes without OpenMP
+- virtualenv
 #### The following dependencies are built automatically
-- [nGraph](https://github.com/NervanaSystems/ngraph) commit 8fc481a
-- [nGraph-tf](https://github.com/NervanaSystems/ngraph-tf) - For Tensorflow integration, commit a090ed8
+- [nGraph](https://github.com/NervanaSystems/ngraph) - v0.11.0
+- [nGraph-tf](https://github.com/NervanaSystems/ngraph-tf) - v0.9.0
 - [SEAL](https://github.com/Microsoft/SEAL) version 3.1
 
 The `docker` folder contains a script to build `he-transformer` through Docker for testing purposes, and requires only Docker.
 
-### 1. If the setup has already been done
-TLDR, if the setup has already been done, here's the command to run the python example and C++ unit-tests.
-```bash
-# Replace ~/repos/he-transformer with wherever you installed he-transformer
-export HE_TRANSFORMER=~/repos/he-transformer
-```
-#### Without Tensorflow (TF)
-```bash
-cd $HE_TRANSFORMER/build
-./test/unit-test --gtest_filter="HE_SEAL_BFV.add_2_3"
-./test/unit-test --gtest_filter="HE_SEAL_CKKS.add_2_3"
-```
-
-#### With TF
-```bash
-# activate python environment with Tensorflow and nGraph installed
-source ~/repos/venvs/he3/bin/activate
-cd $HE_TRANSFORMER/examples/
-# run on SEAL BFV backend
-NGRAPH_TF_BACKEND=HE:SEAL:BFV python axpy.py
-# run on SEAL CKKS backend
-NGRAPH_TF_BACKEND=HE:SEAL:CKKS python axpy.py
-```
-
-### 2. Build `he-transformer`
-- Clone the repository
+### 1. Build HE-Transformer
 ```bash
 git clone https://github.com/NervanaSystems/he-transformer.git
 cd he-transformer
 export HE_TRANSFORMER=$(pwd)
-```
-- Create build directory
-```bash
-mkdir $HE_TRANSFORMER/build
+mkdir build
 cd $HE_TRANSFORMER/build
-```
-#### 2.1a Build HE Transformer without TF
--  To build without TF, run
-```bash
-cmake .. [-DCMAKE_CXX_COMPILER=clang++-6.0 -DCMAKE_C_COMPILER=clang-6.0]
-make -j
-```
-#### 2.1b Build HE Transformer with TF
- To build with TF, first create and activate python virtual environment
-```bash
-mkdir -p ~/venvs
-virtualenv ~/venvs/he3 -p python3
-source ~/venvs/he3/bin/activate
-```
-and then, with the python environment active, run
-```bash
-cmake .. -DENABLE_TF=ON [-DCMAKE_CXX_COMPILER=clang++-6.0 -DCMAKE_C_COMPILER=clang-6.0]
-make -j
+cmake .. [-DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7]
 make -j install
+source external/venv-tf-py3/bin/activate
 ```
 
-#### 2.2 Run C++ Native example
-Whether or not you built with TF support (2.1a or 2.1b), you can run the C++ unit-tests.
+### 2. Run C++ unit-tests
+Ensure the virtual environment is active, i.e. run `source $HE_TRANSFORMER /external/venv-tf-py3/bin/activate`
 ```bash
 cd $HE_TRANSFORMER/build
-./test/unit-test --gtest_filter="HE_SEAL_BFV.add_2_3"
-./test/unit-test --gtest_filter="HE_SEAL_CKKS.add_2_3"
-```
-This will run a basic addition unit-test with the SEAL BFV and SEAL CKKS backends. To run all the C++ unit tests,
-```bash
+# To run CKKS unit-test
+./test/unit-test --gtest_filter="HE_SEAL_CKKS.*abc*"
+# To run BFV unit-test
+./test/unit-test --gtest_filter="HE_SEAL_BFV.*abc*
 ./test/unit-test
 ```
 
-#### 2.3 Run TF python model
-
-Note: must be done inside the python virtual environment from step 2.1b.
-
+### 3. Run Simple python example
+Ensure the virtual environment is active, i.e. run `source $HE_TRANSFORMER /external/venv-tf-py3/bin/activate`
 ```bash
-# source activate virtualenv first
-source ~/venvs/he3/bin/activate
 cd $HE_TRANSFORMER/examples
-
-# run on ngraph-CPU
+# Run with CPU
 python axpy.py
-
-# run on SEAL:BFV
-NGRAPH_TF_BACKEND=HE:SEAL:BFV python axpy.py
-
-# run on SEAL:CKKS
-NGRAPH_TF_BACKEND=HE:SEAL:CKKS python axpy.py
+# To run CKKS unit-test
+NGRAPH_TF_BACKEND=HE_SEAL_CKKS python axpy.py
+# To run BFV unit-test
+NGRAPH_TF_BACKEND=HE_SEAL_BFV python axpy.py
 ```
 
 For a deep learning example, see [examples/cryptonets/](https://github.com/NervanaSystems/he-transformer/tree/master/examples/cryptonets).
-
-## Code formatting
-
-Please run `maint/apply-code-format.sh` before submitting a pull request.
-

@@ -49,7 +49,6 @@ ExternalProject_Add(
    -DSEAL_USE_CXX17=${SEAL_USE_CXX17}
 )
 
-
 add_custom_target(libseal ALL DEPENDS ext_seal ext_ngraph_tf
         COMMAND ${CMAKE_COMMAND} -E create_symlink
    ${EXTERNAL_INSTALL_LIB_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}seal${CMAKE_STATIC_LIBRARY_SUFFIX}

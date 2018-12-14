@@ -27,11 +27,6 @@ else()
     set(CMAKE_CXX_FLAGS "-std=c++1z -std=gnu++1z -Wall")
 endif()
 
-# Tensorflow pip package uses GCC 4.8, with older CXX11_ABI
-# SEAL requires GCC >= 6.0, with newer CX11_ABI.
-# For compatibility with TF, we use older CX11_ABI.
-#set(CXX11_ABI 0)
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=${CXX11_ABI}")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS} -g")
 set(CMAKE_CXX_FLAGS_DEBUG  "${CMAKE_CXX_FLAGS} -O0 -g")
 
