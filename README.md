@@ -64,3 +64,6 @@ NGRAPH_TF_BACKEND=HE_SEAL_BFV python axpy.py
 ```
 
 For a deep learning example, see [examples/cryptonets/](https://github.com/NervanaSystems/he-transformer/tree/master/examples/cryptonets).
+
+## Code formatting
+Please run `maint/apply-code-format.sh` before submitting a pull request.

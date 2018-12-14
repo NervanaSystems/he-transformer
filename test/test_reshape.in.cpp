@@ -75,7 +75,8 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_t2s_012) {
     copy_data(a, vector<float>{6});
 
     backend->call(backend->compile(f), {result}, {a});
-    EXPECT_TRUE(all_close((vector<float>{6}), read_vector<float>(result), 1e-3f));
+    EXPECT_TRUE(
+        all_close((vector<float>{6}), read_vector<float>(result), 1e-3f));
   }
 }
 
@@ -100,7 +101,8 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_t2s_120) {
     copy_data(a, vector<float>{6});
 
     backend->call(backend->compile(f), {result}, {a});
-    EXPECT_TRUE(all_close((vector<float>{6}), read_vector<float>(result), 1e-3f));
+    EXPECT_TRUE(
+        all_close((vector<float>{6}), read_vector<float>(result), 1e-3f));
   }
 }
 
@@ -125,7 +127,8 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_s2t) {
     copy_data(a, vector<float>{42});
 
     backend->call(backend->compile(f), {result}, {a});
-    EXPECT_TRUE(all_close((vector<float>{42}), read_vector<float>(result), 1e-3f));
+    EXPECT_TRUE(
+        all_close((vector<float>{42}), read_vector<float>(result), 1e-3f));
   }
 }
 

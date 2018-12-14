@@ -465,7 +465,7 @@ void runtime::he::HEBackend::generate_calls(
     NGRAPH_INFO << "Batch size " << batch_size;
   }
 
-  // We want to check that every OP_TYPEID enumeration is included in the list.
+// We want to check that every OP_TYPEID enumeration is included in the list.
 // These GCC flags enable compile-time checking so that if an enumeration
 // is not in the list an error is generated.
 #pragma GCC diagnostic push
@@ -991,7 +991,7 @@ void runtime::he::HEBackend::generate_calls(
       NGRAPH_INFO << "Supposedly unsupported op";
       NGRAPH_INFO << "node.get_friendly_name() " << node.get_friendly_name();
       NGRAPH_INFO << "node.get_name() " << node.get_name();
-      // throw unsupported_op("Unsupported op '" + node.description() + "'");
+// throw unsupported_op("Unsupported op '" + node.description() + "'");
 #pragma GCC diagnostic pop
   }
 }
