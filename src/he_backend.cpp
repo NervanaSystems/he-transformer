@@ -343,7 +343,6 @@ bool runtime::he::HEBackend::call(
     if (type_id == OP_TYPEID::Constant) {
       const op::Constant* c = static_cast<const op::Constant*>(op);
       NGRAPH_INFO << "Processing constant";
-
       NGRAPH_INFO << "consant node " << c;
 
       auto data = c->get_data_ptr();
@@ -353,10 +352,9 @@ bool runtime::he::HEBackend::call(
       descriptor::Tensor* tensor = op->get_output_tensor_ptr(0).get();
 
       NGRAPH_INFO << "tensor " << tensor;
-
       NGRAPH_INFO << "Done processing constant";
 
-      continue;
+      // continue;
     }
 
     // get op inputs from map

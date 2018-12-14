@@ -70,12 +70,12 @@ message("Linking directories: ${NGRAPH_LIB_DIR}, ${EXTERNAL_INSTALL_LIB_DIR}")
 # Target library
 add_library(he_backend SHARED ${HE_SRC})
 add_dependencies(he_backend ext_ngraph_tf ext_seal)
-target_link_libraries(he_backend seal libjson)
+target_link_libraries(he_backend seal libjson ngraph)
 
-set_target_properties(he_backend PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY
-    ${EXTERNAL_NGRAPH_INSTALL_DIR}/lib
-)
+#set_target_properties(he_backend PROPERTIES
+#    LIBRARY_OUTPUT_DIRECTORY
+#    ${EXTERNAL_NGRAPH_INSTALL_DIR}/lib
+#)
 
 # Note, this will flag many false positives near openmp parallel for loops.
 if(NGRAPH_HE_SANITIZE_ADDRESS)
@@ -88,38 +88,21 @@ set(HE_BACKEND_LIB_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}he_backend${CMAKE_SHARED_
 set(HE_SEAL_CKKS_LIB_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}he_seal_ckks_backend${CMAKE_SHARED_LIBRARY_SUFFIX}")
 set(HE_SEAL_BFV_LIB_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}he_seal_bfv_backend${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
-# Install he_backend to the python library where ng-tf loads from
-if (ENABLE_TF)
-    message("PY_NGRAPH_LIB_DIR ${PY_NGRAPH_LIB_DIR}")
-    install(TARGETS he_backend DESTINATION ${PY_NGRAPH_LIB_DIR})
-
-    # Workaround to ensure BFV and CKKS backends are recognized by ng-tf
-    # TODO: investigate use of backend configuration strings
-    install(FILES ${PY_NGRAPH_LIB_DIR}/${HE_BACKEND_LIB_NAME}
-            DESTINATION ${PY_NGRAPH_LIB_DIR}
-            RENAME ${HE_SEAL_CKKS_LIB_NAME})
-
-    install(FILES ${PY_NGRAPH_LIB_DIR}/${HE_BACKEND_LIB_NAME}
-            DESTINATION ${PY_NGRAPH_LIB_DIR}
-            RENAME ${HE_SEAL_BFV_LIB_NAME})
-
-endif()
+message("HE_SEAL_BFV_LIB_NAME ${HE_SEAL_BFV_LIB_NAME}")
 
 # Install he-transformer (the HE libraries are installed separately) at `make install`
-message("NGRAPH_INSTALL_LIB_DIR" ${NGRAPH_INSTALL_LIB_DIR})
+message("NGRAPH_INSTALL_LIB_DIR " ${NGRAPH_INSTALL_LIB_DIR})
+message("NGRAPH_TF_VENV_LIB_DIR ${NGRAPH_TF_VENV_LIB_DIR}")
 
-install(TARGETS he_backend DESTINATION ${NGRAPH_INSTALL_LIB_DIR} RENAME ${HE_SEAL_CKKS_LIB_NAME})
-install(TARGETS he_backend DESTINATION ${NGRAPH_INSTALL_LIB_DIR} RENAME ${HE_SEAL_BFV_LIB_NAME})
-install(DIRECTORY
-    ${CMAKE_CURRENT_SOURCE_DIR}/
-    DESTINATION ${NGRAPH_INSTALL_INCLUDE_DIR}
-    FILES_MATCHING PATTERN "*.hpp"
-)
-install(DIRECTORY
-    ${EXTERNAL_INSTALL_LIB_DIR}/
-    DESTINATION ${NGRAPH_INSTALL_LIB_DIR}
-)
-install(DIRECTORY
-    ${EXTERNAL_INSTALL_INCLUDE_DIR}/
-    DESTINATION ${NGRAPH_INSTALL_INCLUDE_DIR}
-)
+install(TARGETS he_backend DESTINATION ${EXTERNAL_INSTALL_LIB_DIR})
+
+# Create symbolic links for CKKS and BFV backends, to allow ng-tf to recognize these backends.
+add_custom_target(he_seal_ckks_backend ALL
+        COMMAND ${CMAKE_COMMAND} -E create_symlink
+            ${EXTERNAL_INSTALL_LIB_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}he_backend${CMAKE_SHARED_LIBRARY_SUFFIX}
+            ${NGRAPH_TF_VENV_LIB_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}he_seal_ckks_backend${CMAKE_SHARED_LIBRARY_SUFFIX})
+
+add_custom_target(he_seal_bfv_backend ALL
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
+        ${EXTERNAL_INSTALL_LIB_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}he_backend${CMAKE_SHARED_LIBRARY_SUFFIX}
+        ${NGRAPH_TF_VENV_LIB_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}he_seal_bfv_backend${CMAKE_SHARED_LIBRARY_SUFFIX})

@@ -100,21 +100,13 @@ endif()
 
 message("CMAKE_DL_LIBS ${CMAKE_DL_LIBS}")
 
+# Add ngraph test utils library
 add_library(ngraph_test_util SHARED IMPORTED)
 set_target_properties(
     ngraph_test_util
     PROPERTIES IMPORTED_LOCATION
     ${NGRAPH_TF_LIB_DIR}/libngraph_test_util.so
 )
-
-add_library(ngraph SHARED IMPORTED)
-set_target_properties(
-    ngraph
-    PROPERTIES IMPORTED_LOCATION
-    ${NGRAPH_TF_LIB_DIR}/libngraph.so
-)
-
-#find_library(ngraph_test_util PATH ${NGRAPH_TF_LIB_DIR})
 
 message("Found ngraph_test_util")
 

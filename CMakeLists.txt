@@ -45,12 +45,6 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
 add_definitions(-DPROJECT_ROOT_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 
-# Installation paths when `make install`
-message(STATUS "Installation directory: ${CMAKE_INSTALL_PREFIX}")
-
-set(NGRAPH_INSTALL_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib")
-set(NGRAPH_INSTALL_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/include")
-
 # This allows libhe_backend.so to find libraries in the same directory
 set(CMAKE_INSTALL_RPATH "\$ORIGIN")
 
@@ -68,15 +62,22 @@ endif()
 
 # Build options
 # TODO: enable skipping compilation of TF, to be passed to ngraph-tf.cmake build_ngtf.py.
-# If we do thos, we need to check GLIB_CXX11_ABI
+# If we do this, we need to check GLIB_CXX11_ABI
 # OPTION(USE_EXISTING_TF "Skip compilation of TF for faster build time" OFF)
-
-
+include(cmake/ngraph-tf.cmake)
 include(cmake/gtest.cmake)
 include(cmake/json.cmake)
 include(cmake/openmp.cmake)
 include(cmake/seal.cmake)
-include(cmake/ngraph-tf.cmake)
+
+# Add ngraph library
+add_library(ngraph SHARED IMPORTED)
+set_target_properties(
+    ngraph
+    PROPERTIES IMPORTED_LOCATION
+    ${NGRAPH_TF_LIB_DIR}/libngraph.so
+)
+
 
 # HE transformer source and test directories
 add_subdirectory(src)
