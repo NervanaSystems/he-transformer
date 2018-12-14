@@ -31,24 +31,10 @@ runtime::he::NodeWrapper::NodeWrapper(const shared_ptr<const Node>& node)
 #include "ngraph/op/op_tbl.hpp"
   };
 #undef NGRAPH_OP
-
-  // TODO: figure out why m_node->description() is empty.
-  // Probably related to using ngraph-tensorflow-bridge v0.8.0, and ng v0.11.0
-  auto name = m_node->get_name();
-  auto pos = name.rfind('_');
-  if (pos != std::string::npos) {
-    name.erase(pos);
-  }
-  NGRAPH_INFO << "New name " << name;
-  auto it = typeid_map.find(name);
+  auto it = typeid_map.find(m_node->description());
   if (it != typeid_map.end()) {
     m_typeid = it->second;
   } else {
-    NGRAPH_INFO << "unsupported op get_name()" << m_node->get_name();
-    NGRAPH_INFO << "m_node->get_friendly_name() "
-                << m_node->get_friendly_name();
-    NGRAPH_INFO << "m_node->get_friendly_name() "
-                << m_node->get_friendly_name();
     throw unsupported_op("Unsupported op '" + m_node->description() + "'");
   }
 }

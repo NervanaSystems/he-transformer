@@ -49,8 +49,6 @@ void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
   size_t type_byte_size = element_type.size();
   size_t dst_start_index = tensor_offset / type_byte_size;
   size_t num_elements_to_write = n / (type_byte_size * m_batch_size);
-  NGRAPH_INFO << "Writing to plain tensor " << num_elements_to_write
-              << " elements";
 
   if (num_elements_to_write == 1) {
     const void* src_with_offset = (void*)((char*)source);

@@ -93,11 +93,9 @@ shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(
 
 shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(
     const element::Type& element_type, const Shape& shape) {
-  NGRAPH_INFO << "Creating tensor shape " << shape;
   if (batch_data()) {
     return create_batched_plain_tensor(element_type, shape);
   } else {
-    NGRAPH_INFO << "Tensor is plain";
     return create_plain_tensor(element_type, shape);
   }
 }
@@ -260,8 +258,6 @@ bool runtime::he::HEBackend::call(
     NGRAPH_INFO << "Encrypting model";
   }
 
-  // TODO: remove this line once ng-tf has been updated to v0.9
-  compile(function);
   auto fit = m_function_map.find(function);
   if (fit == m_function_map.end()) {
     throw runtime_error("compile() must be called before call().");
@@ -272,7 +268,6 @@ bool runtime::he::HEBackend::call(
   vector<shared_ptr<runtime::he::HETensor>> he_inputs;
   for (auto& tv : inputs) {
     he_inputs.push_back(static_pointer_cast<runtime::he::HETensor>(tv));
-    NGRAPH_INFO << "Pushing back he input";
   }
 
   // convert inputs to HETensor
@@ -290,8 +285,6 @@ bool runtime::he::HEBackend::call(
   for (auto param : function->get_parameters()) {
     for (size_t i = 0; i < param->get_output_size(); ++i) {
       descriptor::Tensor* tv = param->get_output_tensor_ptr(i).get();
-
-      NGRAPH_INFO << "Processing parameter ";
 
       if (encrypt_data()) {
         auto plain_input = static_pointer_cast<runtime::he::HEPlainTensor>(
@@ -340,25 +333,8 @@ bool runtime::he::HEBackend::call(
       NGRAPH_INFO << "Parameter shape {" << join(op->get_shape()) << "}";
       continue;
     }
-    if (type_id == OP_TYPEID::Constant) {
-      const op::Constant* c = static_cast<const op::Constant*>(op);
-      NGRAPH_INFO << "Processing constant";
-      NGRAPH_INFO << "consant node " << c;
-
-      auto data = c->get_data_ptr();
-
-      NGRAPH_INFO << "data " << data;
-
-      descriptor::Tensor* tensor = op->get_output_tensor_ptr(0).get();
-
-      NGRAPH_INFO << "tensor " << tensor;
-      NGRAPH_INFO << "Done processing constant";
-
-      // continue;
-    }
 
     // get op inputs from map
-    NGRAPH_INFO << "Getting op inputs from map";
     vector<shared_ptr<runtime::he::HETensor>> op_inputs;
     for (const descriptor::Input& input : op->get_inputs()) {
       descriptor::Tensor* tv = input.get_output().get_tensor_ptr().get();
@@ -366,7 +342,6 @@ bool runtime::he::HEBackend::call(
     }
 
     // get op outputs from map or create
-    NGRAPH_INFO << "Getting op outputs from map";
     vector<shared_ptr<runtime::he::HETensor>> op_outputs;
     for (size_t i = 0; i < op->get_output_size(); ++i) {
       descriptor::Tensor* tv = op->get_output_tensor_ptr(i).get();
@@ -395,17 +370,12 @@ bool runtime::he::HEBackend::call(
               element_type, shape, this, create_empty_plaintext(), batched_out,
               name);
           tensor_map.insert({tv, otv});
-          NGRAPH_INFO << "inserting plain out ";
         } else {
           auto otv = make_shared<runtime::he::HECipherTensor>(
               element_type, shape, this, create_empty_ciphertext(), batched_out,
               name);
           tensor_map.insert({tv, otv});
-          NGRAPH_INFO << "inserting cipher out ";
         }
-      }
-      if (op->is_constant()) {
-        NGRAPH_INFO << "inserted constant";
       }
       op_outputs.push_back(tensor_map.at(tv));
     }
@@ -495,7 +465,6 @@ void runtime::he::HEBackend::generate_calls(
     NGRAPH_INFO << "Batch size " << batch_size;
   }
 
-  NGRAPH_INFO << "Preparing for call";
   // We want to check that every OP_TYPEID enumeration is included in the list.
 // These GCC flags enable compile-time checking so that if an enumeration
 // is not in the list an error is generated.
@@ -622,19 +591,13 @@ void runtime::he::HEBackend::generate_calls(
       break;
     }
     case OP_TYPEID::Constant: {
-      NGRAPH_INFO << "Consatnt op?!";
-      // NGRAPH_INFO << "skipping constant op";
-      // break;
-      // TODO: move to main loop?
       const op::Constant* constant = static_cast<const op::Constant*>(&node);
 
       if (out0_plain != nullptr) {
-        NGRAPH_INFO << "out plain";
         runtime::he::kernel::constant(out0_plain->get_elements(), element_type,
                                       constant->get_data_ptr(), this,
                                       out0_plain->get_batched_element_count());
       } else if (out0_cipher != nullptr) {
-        NGRAPH_INFO << "out cipher";
         runtime::he::kernel::constant(out0_cipher->get_elements(), element_type,
                                       constant->get_data_ptr(), this,
                                       out0_cipher->get_batched_element_count());
@@ -852,7 +815,6 @@ void runtime::he::HEBackend::generate_calls(
         throw ngraph_error(
             "Input argument is neither plaintext nor ciphertext");
       }
-      NGRAPH_INFO << "Result op";
 
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
         runtime::he::kernel::result(arg0_cipher->get_elements(),
