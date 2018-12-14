@@ -28,7 +28,7 @@ else()
 endif()
 
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS} -g")
-set(CMAKE_CXX_FLAGS_DEBUG  "${CMAKE_CXX_FLAGS} -O0 -g")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -O0 -g")
 
 set(CMAKE_INSTALL_MESSAGE LAZY)
 
@@ -72,7 +72,6 @@ set_target_properties(
     PROPERTIES IMPORTED_LOCATION
     ${NGRAPH_TF_LIB_DIR}/libngraph.so
 )
-
 
 # HE transformer source and test directories
 add_subdirectory(src)

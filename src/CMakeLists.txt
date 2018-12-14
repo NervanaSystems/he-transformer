@@ -47,20 +47,13 @@ set (HE_SRC
     he_tensor.cpp
     node_wrapper.cpp
 )
-
-# Paths for the upstream ngraph
-message(STATUS "NGRAPH_INCLUDE_DIR in parent scope: ${NGRAPH_INCLUDE_DIR}")
-message(STATUS "NGRAPH_LIB_DIR in parent scope: ${NGRAPH_LIB_DIR}")
-
 include_directories(
     SYSTEM
-    ${NGRAPH_INCLUDE_DIR}
     ${HE_TRANSFORMER_SOURCE_DIR}
     ${EXTERNAL_INSTALL_INCLUDE_DIR}
     ${NGRAPH_TF_INCLUDE_DIR}
 )
 link_directories(
-    ${NGRAPH_LIB_DIR}
     ${EXTERNAL_INSTALL_LIB_DIR}
     ${NGRAPH_TF_LIB_DIR}
 )
@@ -71,11 +64,6 @@ message("Linking directories: ${NGRAPH_LIB_DIR}, ${EXTERNAL_INSTALL_LIB_DIR}")
 add_library(he_backend SHARED ${HE_SRC})
 add_dependencies(he_backend ext_ngraph_tf ext_seal)
 target_link_libraries(he_backend seal libjson ngraph)
-
-#set_target_properties(he_backend PROPERTIES
-#    LIBRARY_OUTPUT_DIRECTORY
-#    ${EXTERNAL_NGRAPH_INSTALL_DIR}/lib
-#)
 
 # Note, this will flag many false positives near openmp parallel for loops.
 if(NGRAPH_HE_SANITIZE_ADDRESS)

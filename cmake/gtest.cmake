@@ -26,14 +26,11 @@ set(GTEST_GIT_LABEL release-1.8.1)
 
 set(COMPILE_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
-message("he-transfroemr COMPILE FFLAGS ${COMPILE_FLAGS}")
-
 ExternalProject_Add(
     ext_gtest
     PREFIX gtest
     GIT_REPOSITORY ${GTEST_GIT_REPO_URL}
     GIT_TAG ${GTEST_GIT_LABEL}
-    # Disable install step
     INSTALL_COMMAND ""
     UPDATE_COMMAND ""
     CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}

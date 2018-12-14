@@ -73,13 +73,8 @@ endforeach()
 
 add_executable(unit-test ${SRC})
 
-message("NGRAPH_TF_LIB_DIR ${NGRAPH_TF_LIB_DIR}")
-
 include_directories(SYSTEM
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${GTEST_INCLUDE_DIR}
-    ${NGRAPH_INCLUDE_DIR}
-    ${NGRAPH_TEST_DIR}
     ${HE_TRANSFORMER_SOURCE_DIR}
     ${EXTERNAL_INSTALL_INCLUDE_DIR}
     ${NGRAPH_TEST_UTIL_INCLUDE_DIR}
@@ -98,8 +93,6 @@ if(NGRAPH_HE_SANITIZE_ADDRESS)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fsanitize=address -fno-omit-frame-pointer")
 endif()
 
-message("CMAKE_DL_LIBS ${CMAKE_DL_LIBS}")
-
 # Add ngraph test utils library
 add_library(ngraph_test_util SHARED IMPORTED)
 set_target_properties(
@@ -108,13 +101,9 @@ set_target_properties(
     ${NGRAPH_TF_LIB_DIR}/libngraph_test_util.so
 )
 
-message("Found ngraph_test_util")
-
 target_link_libraries(unit-test libgtest ngraph)
 target_link_libraries(unit-test ngraph_test_util ${CMAKE_DL_LIBS})
 target_link_libraries(unit-test he_backend seal pthread )
-
-message("Linked ngraph_tesT_util")
 
 add_dependencies(unit-test he_backend ext_seal ext_ngraph_tf ext_gtest)
 
@@ -126,9 +115,6 @@ add_executable(cryptonets_benchmark ${CRYPTONETS_SRC})
 
 include_directories(SYSTEM
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${GTEST_INCLUDE_DIR}
-    ${NGRAPH_INCLUDE_DIR}
-    ${NGRAPH_TEST_DIR}
     ${HE_TRANSFORMER_SOURCE_DIR}
     ${EXTERNAL_INSTALL_INCLUDE_DIR}
     ${NGRAPH_TF_INCLUDE_DIR}
@@ -146,6 +132,5 @@ link_directories(
 target_include_directories(cryptonets_benchmark PRIVATE ".")
 
 target_link_libraries(cryptonets_benchmark libgtest ngraph ngraph_test_util)
-#target_link_libraries(cryptonets_benchmark ngraph_test_util)
 target_link_libraries(cryptonets_benchmark he_backend seal pthread ${CMAKE_DL_LIBS})
 add_dependencies(cryptonets_benchmark he_backend ext_seal ext_ngraph_tf ext_gtest)
