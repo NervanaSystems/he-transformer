@@ -325,10 +325,6 @@ bool runtime::he::HEBackend::call(
                 << "[ " << op->get_name() << " ]"
                 << "\033[0m";
 
-    // NGRAPH_INFO << "Description " << op->description();
-    // NGRAPH_INFO << "Shape " << op->get_shape();
-    // NGRAPH_INFO << "Name " << op->get_name();
-    // NGRAPH_INFO << "Friendly name " << op->get_friendly_name();
     if (type_id == OP_TYPEID::Parameter) {
       NGRAPH_INFO << "Parameter shape {" << join(op->get_shape()) << "}";
       continue;
