@@ -21,23 +21,16 @@ include(ExternalProject)
 # Download and install GoogleTest ...
 #------------------------------------------------------------------------------
 
-SET(GTEST_GIT_REPO_URL https://github.com/google/googletest.git)
-SET(GTEST_GIT_LABEL release-1.8.1)
+set(GTEST_GIT_REPO_URL https://github.com/google/googletest.git)
+set(GTEST_GIT_LABEL release-1.8.1)
 
-set(COMPILE_FLAGS -fPIC)
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    message("GNU compiler")
-    if (DEFINED NGRAPH_USE_CXX_ABI)
-        set(COMPILE_FLAGS "${COMPILE_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=${NGRAPH_USE_CXX_ABI}")
-    endif()
-endif()
+set(COMPILE_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
 ExternalProject_Add(
     ext_gtest
     PREFIX gtest
     GIT_REPOSITORY ${GTEST_GIT_REPO_URL}
     GIT_TAG ${GTEST_GIT_LABEL}
-    # Disable install step
     INSTALL_COMMAND ""
     UPDATE_COMMAND ""
     CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}

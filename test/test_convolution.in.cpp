@@ -30,7 +30,7 @@ using namespace ngraph;
 static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   auto shape_a = Shape{1, 1, 5, 5};
   auto a = make_shared<op::Parameter>(element::f32, shape_a);
@@ -55,14 +55,14 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image) {
                                  2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0});
     copy_data(t_b, vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5});
 
-    backend->call(f, {t_result}, {t_a, t_b});
+    backend->call(backend->compile(f), {t_result}, {t_a, t_b});
     EXPECT_TRUE(all_close(read_vector<float>(t_result),
                           vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}, 1e-1f));
   }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_2outputs) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   auto shape_a = Shape{1, 1, 3, 5};
   auto a = make_shared<op::Parameter>(element::f32, shape_a);
@@ -84,7 +84,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_2outputs) {
               vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15});
     copy_data(t_b, vector<float>{1, 2, 3, 4, 5, 6, 7, 8});
 
-    backend->call(f, {t_result}, {t_a, t_b});
+    backend->call(backend->compile(f), {t_result}, {t_a, t_b});
     EXPECT_TRUE(all_close(read_vector<float>(t_result),
                           vector<float>{51, 61, 71, 81, 101, 111, 121, 131, 115,
                                         141, 167, 193, 245, 271, 297, 323},
@@ -93,7 +93,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_2outputs) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
   he_backend->set_optimized_mult(true);
   he_backend->set_optimized_add(true);
@@ -123,7 +123,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item) {
     copy_data(t_a, vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f,
                                  -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f});
     copy_data(t_b, vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f});
-    backend->call(f, {t_result}, {t_a, t_b});
+    backend->call(backend->compile(f), {t_result}, {t_a, t_b});
     EXPECT_TRUE(
         all_close(read_vector<float>(t_result),
                   vector<float>{32.0f, -18.0f, 56.0f, 56.0f, -42.0f, -14.0f,
@@ -134,7 +134,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_1_1x1_1) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
   he_backend->set_optimized_mult(true);
   he_backend->set_optimized_add(true);
@@ -164,7 +164,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_1_1x1_1) {
     copy_data(t_a, vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f,
                                  -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f});
     copy_data(t_b, vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f});
-    backend->call(f, {t_result}, {t_a, t_b});
+    backend->call(backend->compile(f), {t_result}, {t_a, t_b});
     EXPECT_TRUE(all_close(
         read_vector<float>(t_result),
         vector<float>{16.0f,  28.0f,  0.0f,   20.0f,  -10.0f,  -36.0f, -34.0f,
@@ -179,7 +179,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_1_1x1_1) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
   he_backend->set_optimized_mult(true);
   he_backend->set_optimized_add(true);
@@ -209,7 +209,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5) {
     copy_data(t_a, vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f,
                                  -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f});
     copy_data(t_b, vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f});
-    backend->call(f, {t_result}, {t_a, t_b});
+    backend->call(backend->compile(f), {t_result}, {t_a, t_b});
     EXPECT_TRUE(all_close(
         read_vector<float>(t_result),
         vector<float>{
@@ -242,7 +242,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
   he_backend->set_optimized_mult(true);
   he_backend->set_optimized_add(true);
@@ -274,7 +274,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items) {
                                  9.f,  -7.f, 3.f,  0.f,  6.f,  -1.f, -4.f, -2.f,
                                  7.f,  -0.f, -1.f, 7.f,  -4.f, -9.f});
     copy_data(t_b, vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f});
-    backend->call(f, {t_result}, {t_a, t_b});
+    backend->call(backend->compile(f), {t_result}, {t_a, t_b});
     EXPECT_TRUE(all_close(
         read_vector<float>(t_result),
         vector<float>{32.0f,   -18.0f, 56.0f,  56.0f,  -42.0f, -14.0f, -16.0f,
@@ -287,7 +287,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_strided_padded) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
   he_backend->set_optimized_mult(true);
   he_backend->set_optimized_add(true);
@@ -319,7 +319,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_strided_padded) {
                                  9.f,  -7.f, 3.f,  0.f,  6.f,  -1.f, -4.f, -2.f,
                                  7.f,  -0.f, -1.f, 7.f,  -4.f, -9.f});
     copy_data(t_b, vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f});
-    backend->call(f, {t_result}, {t_a, t_b});
+    backend->call(backend->compile(f), {t_result}, {t_a, t_b});
     EXPECT_TRUE(all_close(
         read_vector<float>(t_result),
         vector<float>{

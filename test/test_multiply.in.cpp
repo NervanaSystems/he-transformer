@@ -28,7 +28,7 @@ using namespace ngraph;
 static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, multiply_2_3) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{2, 3};
   auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -51,7 +51,7 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_2_3) {
               test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector());
     copy_data(t_b,
               test::NDArray<float, 2>({{7, 8, 9}, {10, 11, 12}}).get_vector());
-    backend->call(f, {t_result}, {t_a, t_b});
+    backend->call(backend->compile(f), {t_result}, {t_a, t_b});
     EXPECT_TRUE(all_close(
         read_vector<float>(t_result),
         (test::NDArray<float, 2>({{7, 16, 27}, {40, 55, 72}})).get_vector(),
@@ -60,7 +60,7 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_2_3) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, square_2_3) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{2, 3};
   auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -80,7 +80,7 @@ NGRAPH_TEST(${BACKEND_NAME}, square_2_3) {
 
     copy_data(t_a,
               test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector());
-    backend->call(f, {t_result}, {t_a, t_b});
+    backend->call(backend->compile(f), {t_result}, {t_a, t_b});
     EXPECT_TRUE(all_close(
         read_vector<float>(t_result),
         (test::NDArray<float, 2>({{1, 4, 9}, {16, 25, 36}})).get_vector(),
@@ -89,7 +89,7 @@ NGRAPH_TEST(${BACKEND_NAME}, square_2_3) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, multiply_optimized_2_3) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
   he_backend->set_optimized_add(true);
   he_backend->set_optimized_mult(true);
@@ -115,7 +115,7 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_optimized_2_3) {
               test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector());
     copy_data(t_b,
               test::NDArray<float, 2>({{-1, 0, 1}, {-1, 0, 1}}).get_vector());
-    backend->call(f, {t_result}, {t_a, t_b});
+    backend->call(backend->compile(f), {t_result}, {t_a, t_b});
     EXPECT_TRUE(all_close(
         read_vector<float>(t_result),
         (test::NDArray<float, 2>({{-1, 0, 3}, {-4, 0, 6}})).get_vector(),
@@ -124,7 +124,7 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_optimized_2_3) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, multiply_4_3_batch) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
 
   Shape shape_a{4, 3};
@@ -144,7 +144,7 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_4_3_batch) {
 
   copy_data(t_a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
   copy_data(t_b, vector<float>{13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24});
-  backend->call(f, {t_result}, {t_a, t_b});
+  backend->call(backend->compile(f), {t_result}, {t_a, t_b});
   EXPECT_TRUE(all_close(
       (vector<float>{13, 28, 45, 64, 85, 108, 133, 160, 189, 220, 253, 288}),
       generalized_read_vector<float>(t_result), 1e-3f));

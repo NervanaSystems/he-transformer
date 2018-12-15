@@ -28,7 +28,7 @@ using namespace ngraph;
 static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, sub_2_3) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{2, 3};
   auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -51,7 +51,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sub_2_3) {
               test::NDArray<float, 2>({{1, 2, 3}, {10, 11, 12}}).get_vector());
     copy_data(t_b,
               test::NDArray<float, 2>({{7, 8, 9}, {4, 5, 6}}).get_vector());
-    backend->call(f, {t_result}, {t_a, t_b});
+    backend->call(backend->compile(f), {t_result}, {t_a, t_b});
     EXPECT_TRUE(all_close(
         read_vector<float>(t_result),
         (test::NDArray<float, 2>({{-6, -6, -6}, {6, 6, 6}})).get_vector(),
@@ -60,7 +60,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sub_2_3) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sub_zero_2_3) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
   he_backend->set_optimized_add(true);
 
@@ -85,7 +85,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sub_zero_2_3) {
               test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector());
     copy_data(t_b,
               test::NDArray<float, 2>({{0, 0, 0}, {0, 0, 0}}).get_vector());
-    backend->call(f, {t_result}, {t_a, t_b});
+    backend->call(backend->compile(f), {t_result}, {t_a, t_b});
     EXPECT_TRUE(all_close(
         read_vector<float>(t_result),
         (test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}})).get_vector(), 1e-3f));
@@ -93,7 +93,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sub_zero_2_3) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sub_from_zero_2_3) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
   he_backend->set_optimized_add(true);
 
@@ -118,7 +118,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sub_from_zero_2_3) {
               test::NDArray<float, 2>({{0, 0, 0}, {0, 0, 0}}).get_vector());
     copy_data(t_b,
               test::NDArray<float, 2>({{1, 2, 3}, {-1, -2, -3}}).get_vector());
-    backend->call(f, {t_result}, {t_a, t_b});
+    backend->call(backend->compile(f), {t_result}, {t_a, t_b});
     EXPECT_TRUE(all_close(
         read_vector<float>(t_result),
         (test::NDArray<float, 2>({{-1, -2, -3}, {1, 2, 3}})).get_vector(),

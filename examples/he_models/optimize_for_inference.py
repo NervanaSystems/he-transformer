@@ -20,7 +20,7 @@ from tensorflow.python.framework import dtypes
 from tensorflow.python.tools import freeze_graph
 from tensorflow.python.platform import gfile
 
-import ngraph_config
+import ngraph_bridge
 
 from train import get_run_dir
 

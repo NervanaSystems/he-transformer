@@ -28,7 +28,7 @@ using namespace ngraph;
 static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, dot1d) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{4};
   auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -49,14 +49,14 @@ NGRAPH_TEST(${BACKEND_NAME}, dot1d) {
 
     copy_data(t_a, vector<float>{1, 2, 3, 4});
     copy_data(t_b, vector<float>{5, 6, 7, 8});
-    backend->call(f, {t_result}, {t_a, t_b});
+    backend->call(backend->compile(f), {t_result}, {t_a, t_b});
     EXPECT_TRUE(
         all_close(read_vector<float>(t_result), vector<float>{70}, 1e-3f));
   }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, dot1d_optimized) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
   ;
   he_backend->set_optimized_mult(true);
@@ -81,14 +81,14 @@ NGRAPH_TEST(${BACKEND_NAME}, dot1d_optimized) {
 
     copy_data(t_a, vector<float>{1, 2, 3, 4});
     copy_data(t_b, vector<float>{-1, 0, 1, 2});
-    backend->call(f, {t_result}, {t_a, t_b});
+    backend->call(backend->compile(f), {t_result}, {t_a, t_b});
     EXPECT_TRUE(
         all_close(read_vector<float>(t_result), vector<float>{10}, 1e-1f));
   }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, dot_matrix_vector) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{4, 4};
   Shape shape_b{4};
@@ -112,14 +112,14 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_matrix_vector) {
     copy_data(t_a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
                                  15, 16});
     copy_data(t_b, vector<float>{17, 18, 19, 20});
-    backend->call(f, {t_result}, {t_a, t_b});
+    backend->call(backend->compile(f), {t_result}, {t_a, t_b});
     EXPECT_TRUE(all_close(read_vector<float>(t_result),
                           (vector<float>{190, 486, 782, 1078}), 1e-3f));
   }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, dot_scalar) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{};
 
@@ -141,14 +141,14 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_scalar) {
 
     copy_data(t_a, vector<float>{8});
     copy_data(t_b, vector<float>{6});
-    backend->call(f, {t_result}, {t_a, t_b});
+    backend->call(backend->compile(f), {t_result}, {t_a, t_b});
     EXPECT_TRUE(
         all_close(read_vector<float>(t_result), (vector<float>{48}), 1e-3f));
   }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_batch) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
   ;
 
@@ -169,7 +169,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_batch) {
 
   copy_data(t_a, vector<float>{1, 2, 3});
   copy_data(t_b, vector<float>{4});
-  backend->call(f, {t_result}, {t_a, t_b});
+  backend->call(backend->compile(f), {t_result}, {t_a, t_b});
   EXPECT_TRUE(all_close((vector<float>{4, 8, 12}),
                         generalized_read_vector<float>(t_result), 1e-3f));
 }

@@ -45,9 +45,7 @@ TEST(seal_example, seal_ckks_basics_i) {
   Encryptor encryptor(context, public_key);
   Evaluator evaluator(context);
   Decryptor decryptor(context, secret_key);
-
   CKKSEncoder encoder(context);
-  size_t slot_count = encoder.slot_count();
 
   vector<double> input{0.0, 1.1, 2.2, 3.3};
 

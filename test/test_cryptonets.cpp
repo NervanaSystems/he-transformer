@@ -116,7 +116,7 @@ static void run_cryptonets_benchmark(string backend_name,
   NGRAPH_INFO << "calling function";
   stopwatch sw_run_model;
   sw_run_model.start();
-  backend->call(f, result_tvs, parameter_tvs);
+  backend->call(backend->compile(f), result_tvs, parameter_tvs);
   sw_run_model.stop();
   NGRAPH_INFO << "sw_run_model: " << sw_run_model.get_milliseconds() << "ms";
 
@@ -167,46 +167,46 @@ static void run_cryptonets_benchmark(string backend_name,
   NGRAPH_INFO << "sw_global: " << sw_global.get_milliseconds() << "ms";
 };
 
-NGRAPH_TEST(Cryptonets, CKKS_1) { run_cryptonets_benchmark("HE:SEAL:CKKS", 1); }
+NGRAPH_TEST(Cryptonets, CKKS_1) { run_cryptonets_benchmark("HE_SEAL_CKKS", 1); }
 
-NGRAPH_TEST(Cryptonets, CKKS_2) { run_cryptonets_benchmark("HE:SEAL:CKKS", 2); }
+NGRAPH_TEST(Cryptonets, CKKS_2) { run_cryptonets_benchmark("HE_SEAL_CKKS", 2); }
 
-NGRAPH_TEST(Cryptonets, CKKS_4) { run_cryptonets_benchmark("HE:SEAL:CKKS", 4); }
+NGRAPH_TEST(Cryptonets, CKKS_4) { run_cryptonets_benchmark("HE_SEAL_CKKS", 4); }
 
-NGRAPH_TEST(Cryptonets, CKKS_8) { run_cryptonets_benchmark("HE:SEAL:CKKS", 8); }
+NGRAPH_TEST(Cryptonets, CKKS_8) { run_cryptonets_benchmark("HE_SEAL_CKKS", 8); }
 
 NGRAPH_TEST(Cryptonets, CKKS_16) {
-  run_cryptonets_benchmark("HE:SEAL:CKKS", 16);
+  run_cryptonets_benchmark("HE_SEAL_CKKS", 16);
 }
 
 NGRAPH_TEST(Cryptonets, CKKS_32) {
-  run_cryptonets_benchmark("HE:SEAL:CKKS", 32);
+  run_cryptonets_benchmark("HE_SEAL_CKKS", 32);
 }
 
 NGRAPH_TEST(Cryptonets, CKKS_64) {
-  run_cryptonets_benchmark("HE:SEAL:CKKS", 64);
+  run_cryptonets_benchmark("HE_SEAL_CKKS", 64);
 }
 
 NGRAPH_TEST(Cryptonets, CKKS_128) {
-  run_cryptonets_benchmark("HE:SEAL:CKKS", 128);
+  run_cryptonets_benchmark("HE_SEAL_CKKS", 128);
 }
 
 NGRAPH_TEST(Cryptonets, CKKS_256) {
-  run_cryptonets_benchmark("HE:SEAL:CKKS", 256);
+  run_cryptonets_benchmark("HE_SEAL_CKKS", 256);
 }
 
 NGRAPH_TEST(Cryptonets, CKKS_512) {
-  run_cryptonets_benchmark("HE:SEAL:CKKS", 512);
+  run_cryptonets_benchmark("HE_SEAL_CKKS", 512);
 }
 
 NGRAPH_TEST(Cryptonets, CKKS_1024) {
-  run_cryptonets_benchmark("HE:SEAL:CKKS", 1024);
+  run_cryptonets_benchmark("HE_SEAL_CKKS", 1024);
 }
 
 NGRAPH_TEST(Cryptonets, CKKS_2048) {
-  run_cryptonets_benchmark("HE:SEAL:CKKS", 2048);
+  run_cryptonets_benchmark("HE_SEAL_CKKS", 2048);
 }
 
 NGRAPH_TEST(Cryptonets, CKKS_4096) {
-  run_cryptonets_benchmark("HE:SEAL:CKKS", 4096);
+  run_cryptonets_benchmark("HE_SEAL_CKKS", 4096);
 }
