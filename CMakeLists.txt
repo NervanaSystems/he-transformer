@@ -72,7 +72,6 @@ include(cmake/json.cmake)
 include(cmake/openmp.cmake)
 include(cmake/seal.cmake)
 
-
 # Add ngraph library
 add_library(ngraph SHARED IMPORTED)
 set_target_properties(

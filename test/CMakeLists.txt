@@ -107,8 +107,6 @@ target_link_libraries(unit-test he_backend seal pthread )
 
 add_dependencies(unit-test he_backend ext_seal ext_ngraph_tf ext_gtest)
 
-
-
 # Cryptonets
 set (CRYPTONETS_SRC test_cryptonets.cpp test_util.cpp main_cryptonets.cpp)
 add_executable(cryptonets_benchmark ${CRYPTONETS_SRC})
