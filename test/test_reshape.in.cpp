@@ -28,7 +28,7 @@ using namespace ngraph;
 static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_t2v_012) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{2, 2, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -47,7 +47,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_t2v_012) {
 
     copy_data(a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
 
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(
         all_close((vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}),
                   read_vector<float>(result), 1e-3f));
@@ -55,7 +55,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_t2v_012) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_t2s_012) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{1, 1, 1};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -74,13 +74,14 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_t2s_012) {
 
     copy_data(a, vector<float>{6});
 
-    backend->call(f, {result}, {a});
-    EXPECT_TRUE(all_close((vector<float>{6}), read_vector<float>(result), 1e-3f));
+    backend->call(backend->compile(f), {result}, {a});
+    EXPECT_TRUE(
+        all_close((vector<float>{6}), read_vector<float>(result), 1e-3f));
   }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_t2s_120) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{1, 1, 1};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -99,13 +100,14 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_t2s_120) {
 
     copy_data(a, vector<float>{6});
 
-    backend->call(f, {result}, {a});
-    EXPECT_TRUE(all_close((vector<float>{6}), read_vector<float>(result), 1e-3f));
+    backend->call(backend->compile(f), {result}, {a});
+    EXPECT_TRUE(
+        all_close((vector<float>{6}), read_vector<float>(result), 1e-3f));
   }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_s2t) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -124,13 +126,14 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_s2t) {
 
     copy_data(a, vector<float>{42});
 
-    backend->call(f, {result}, {a});
-    EXPECT_TRUE(all_close((vector<float>{42}), read_vector<float>(result), 1e-3f));
+    backend->call(backend->compile(f), {result}, {a});
+    EXPECT_TRUE(
+        all_close((vector<float>{42}), read_vector<float>(result), 1e-3f));
   }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_v2m_col) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{3};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -148,14 +151,14 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_v2m_col) {
     auto result = results[0];
 
     copy_data(a, vector<float>{1, 2, 3});
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(
         all_close((vector<float>{1, 2, 3}), read_vector<float>(result), 1e-3f));
   }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_v2m_row) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{3};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -173,14 +176,14 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_v2m_row) {
     auto result = results[0];
 
     copy_data(a, vector<float>{1, 2, 3});
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(
         all_close((vector<float>{1, 2, 3}), read_vector<float>(result), 1e-3f));
   }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_v2t_middle) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{3};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -198,14 +201,14 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_v2t_middle) {
     auto result = results[0];
 
     copy_data(a, vector<float>{1, 2, 3});
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(
         all_close((vector<float>{1, 2, 3}), read_vector<float>(result), 1e-3f));
   }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_same) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{3, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -223,14 +226,14 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_same) {
     auto result = results[0];
 
     copy_data(a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9});
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(all_close((vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9}),
                           read_vector<float>(result), 1e-3f));
   }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_transpose) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{3, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -248,14 +251,14 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_transpose) {
     auto result = results[0];
 
     copy_data(a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9});
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(all_close((vector<float>{1, 4, 7, 2, 5, 8, 3, 6, 9}),
                           read_vector<float>(result), 1e-3f));
   }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_dim_change_transpose) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{3, 2};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -273,7 +276,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_dim_change_transpose) {
     auto result = results[0];
 
     copy_data(a, vector<float>{1, 2, 3, 4, 5, 6});
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(all_close((vector<float>{1, 3, 5, 2, 4, 6}),
                           read_vector<float>(result), 1e-3f));
   }
@@ -321,7 +324,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_dim_change_transpose) {
 //         279.,  215.,  287.,  200.,  272.,  208.,  280.,  216.,  288.])
 //
 NGRAPH_TEST(${BACKEND_NAME}, reshape_6d) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   vector<float> a_data(2 * 2 * 3 * 3 * 2 * 4);
   for (int i = 0; i < 2 * 2 * 3 * 3 * 2 * 4; i++) {
@@ -345,7 +348,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_6d) {
     auto result = results[0];
 
     copy_data(a, a_data);
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(all_close(
         (vector<float>{
             1.,   73.,  9.,   81.,  17.,  89.,  2.,   74.,  10.,  82.,  18.,

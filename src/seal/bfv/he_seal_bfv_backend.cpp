@@ -66,7 +66,7 @@ parse_seal_bfv_config_or_use_default() {
     }
   } catch (const exception& e) {
     return runtime::he::he_seal::HESealParameter(
-        "HE:SEAL:BFV",  // scheme name
+        "HE_SEAL_BFV",  // scheme name
         4096,           // poly_modulus_degree
         1 << 10,        // plain_modulus
         128,            // security_level
@@ -74,7 +74,7 @@ parse_seal_bfv_config_or_use_default() {
         64,             // fractional_encoder_integer_coeff_count
         32,             // fractional_encoder_fraction_coeff_count
         2               // fractional_encoder_base
-    );
+        );
   }
 }
 
@@ -133,7 +133,7 @@ shared_ptr<seal::SEALContext>
 runtime::he::he_seal::HESealBFVBackend::make_seal_context(
     const shared_ptr<runtime::he::he_seal::HESealParameter> sp) const {
   seal::EncryptionParameters parms =
-      (sp->m_scheme_name == "HE:SEAL:BFV"
+      (sp->m_scheme_name == "HE_SEAL_BFV"
            ? seal::scheme_type::BFV
            : throw ngraph_error("Invalid scheme name \"" + sp->m_scheme_name +
                                 "\""));
@@ -156,7 +156,7 @@ namespace {
 static class HESealBFVStaticInit {
  public:
   HESealBFVStaticInit() {
-    runtime::BackendManager::register_backend("HE:SEAL:BFV", new_bfv_backend);
+    runtime::BackendManager::register_backend("HE_SEAL_BFV", new_bfv_backend);
   }
   ~HESealBFVStaticInit() {}
 } s_he_seal_bfv_static_init;
@@ -165,7 +165,7 @@ static class HESealBFVStaticInit {
 void runtime::he::he_seal::HESealBFVBackend::assert_valid_seal_bfv_parameter(
     const shared_ptr<runtime::he::he_seal::HESealParameter>& sp) const {
   assert_valid_seal_parameter(sp);
-  if (sp->m_scheme_name != "HE:SEAL:BFV") {
+  if (sp->m_scheme_name != "HE_SEAL_BFV") {
     throw ngraph_error("Invalid scheme name");
   }
 }

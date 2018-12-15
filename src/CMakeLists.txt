@@ -45,34 +45,25 @@ set (HE_SRC
     he_cipher_tensor.cpp
     he_plain_tensor.cpp
     he_tensor.cpp
+    node_wrapper.cpp
 )
-
-# Paths for the upstream ngraph
-message(STATUS "NGRAPH_INCLUDE_DIR in parent scope: ${NGRAPH_INCLUDE_DIR}")
-message(STATUS "NGRAPH_LIB_DIR in parent scope: ${NGRAPH_LIB_DIR}")
-
 include_directories(
     SYSTEM
-    ${NGRAPH_INCLUDE_DIR}
     ${HE_TRANSFORMER_SOURCE_DIR}
     ${EXTERNAL_INSTALL_INCLUDE_DIR}
+    ${NGRAPH_TF_INCLUDE_DIR}
 )
 link_directories(
-    ${NGRAPH_LIB_DIR}
     ${EXTERNAL_INSTALL_LIB_DIR}
+    ${NGRAPH_TF_LIB_DIR}
 )
 
-message("Linking directories: ${NGRAPH_LIB_DIR}, ${EXTERNAL_INSTALL_LIB_DIR}")
+message("Linking directories: ${NGRAPH_TF_LIB_DIR}, ${EXTERNAL_INSTALL_LIB_DIR}")
 
 # Target library
 add_library(he_backend SHARED ${HE_SRC})
-add_dependencies(he_backend ext_ngraph ext_seal)
-target_link_libraries(he_backend ngraph seal libjson)
-
-set_target_properties(he_backend PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY
-    ${EXTERNAL_NGRAPH_INSTALL_DIR}/lib
-)
+add_dependencies(he_backend ext_ngraph_tf ext_seal)
+target_link_libraries(he_backend seal libjson ngraph)
 
 # Note, this will flag many false positives near openmp parallel for loops.
 if(NGRAPH_HE_SANITIZE_ADDRESS)
@@ -80,37 +71,24 @@ if(NGRAPH_HE_SANITIZE_ADDRESS)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fsanitize=address -fno-omit-frame-pointer")
 endif()
 
-if (ENABLE_TF)
-    # Install he-transformer to the python environment at `make install`
-    execute_process(
-        COMMAND python -c "import os; print(os.environ['VIRTUAL_ENV'])"
-        OUTPUT_VARIABLE PYTHON_ENV
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-
-    set (PY_NGRAPH_LIB_DIR ${PYTHON_ENV}/lib/python3.5/site-packages/ngraph)
-
-    message("PY_NGRAPH_LIB_DIR ${PY_NGRAPH_LIB_DIR}")
-    install(TARGETS he_backend DESTINATION ${PY_NGRAPH_LIB_DIR})
-    install(DIRECTORY
-        ${EXTERNAL_INSTALL_LIB_DIR}/
-        DESTINATION ${PY_NGRAPH_LIB_DIR}
-    )
-endif()
+# Get library names
+set(HE_BACKEND_LIB_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}he_backend${CMAKE_SHARED_LIBRARY_SUFFIX}")
+set(HE_SEAL_CKKS_LIB_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}he_seal_ckks_backend${CMAKE_SHARED_LIBRARY_SUFFIX}")
+set(HE_SEAL_BFV_LIB_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}he_seal_bfv_backend${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
 # Install he-transformer (the HE libraries are installed separately) at `make install`
-# By default, this installs to `~/ngraph_dist`
-install(TARGETS he_backend DESTINATION ${NGRAPH_INSTALL_LIB_DIR})
-install(DIRECTORY
-    ${CMAKE_CURRENT_SOURCE_DIR}/
-    DESTINATION ${NGRAPH_INSTALL_INCLUDE_DIR}
-    FILES_MATCHING PATTERN "*.hpp"
-)
-install(DIRECTORY
-    ${EXTERNAL_INSTALL_LIB_DIR}/
-    DESTINATION ${NGRAPH_INSTALL_LIB_DIR}
-)
-install(DIRECTORY
-    ${EXTERNAL_INSTALL_INCLUDE_DIR}/
-    DESTINATION ${NGRAPH_INSTALL_INCLUDE_DIR}
-)
+message("NGRAPH_INSTALL_LIB_DIR ${NGRAPH_INSTALL_LIB_DIR}")
+message("NGRAPH_TF_VENV_LIB_DIR ${NGRAPH_TF_VENV_LIB_DIR}")
+
+install(TARGETS he_backend DESTINATION ${EXTERNAL_INSTALL_LIB_DIR})
+
+# Create symbolic links for CKKS and BFV backends, to allow ng-tf to recognize these backends.
+add_custom_target(he_seal_ckks_backend ALL DEPENDS he_backend
+        COMMAND ${CMAKE_COMMAND} -E create_symlink
+            ${EXTERNAL_INSTALL_LIB_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}he_backend${CMAKE_SHARED_LIBRARY_SUFFIX}
+            ${NGRAPH_TF_VENV_LIB_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}he_seal_ckks_backend${CMAKE_SHARED_LIBRARY_SUFFIX})
+
+add_custom_target(he_seal_bfv_backend ALL DEPENDS he_backend
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
+        ${EXTERNAL_INSTALL_LIB_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}he_backend${CMAKE_SHARED_LIBRARY_SUFFIX}
+        ${NGRAPH_TF_VENV_LIB_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}he_seal_bfv_backend${CMAKE_SHARED_LIBRARY_SUFFIX})

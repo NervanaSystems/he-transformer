@@ -28,7 +28,7 @@ using namespace ngraph;
 static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_1image) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   Shape shape_a{1, 1, 14};
   Shape window_shape{3};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -54,7 +54,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_1image) {
         a, test::NDArray<float, 3>{{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}}}
                .get_vector());
 
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(all_close(test::NDArray<float, 3>(
                               {{{1 / denom, 3 / denom, 3 / denom, 3 / denom,
                                  4 / denom, 5 / denom, 5 / denom, 2 / denom,
@@ -65,7 +65,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_1image) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   Shape shape_a{2, 1, 14};
   Shape window_shape{3};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -92,7 +92,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image) {
                       {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
                      .get_vector());
 
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(all_close(test::NDArray<float, 3>(
                               {{{1 / denom, 3 / denom, 3 / denom, 3 / denom,
                                  4 / denom, 5 / denom, 5 / denom, 2 / denom,
@@ -106,7 +106,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_2channel_2image) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   Shape shape_a{2, 2, 14};
   Shape window_shape{3};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -136,7 +136,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_2channel_2image) {
                        {2, 1, 0, 0, 1, 0, 2, 0, 0, 0, 1, 1, 2, 0}}})
                      .get_vector());
 
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(all_close(test::NDArray<float, 3>(
                               {{{1 / denom, 3 / denom, 3 / denom, 3 / denom,
                                  4 / denom, 5 / denom, 5 / denom, 2 / denom,
@@ -157,7 +157,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_2channel_2image) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   Shape shape_a{2, 2, 5, 5};
   Shape window_shape{2, 3};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -204,7 +204,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image) {
                                             {1, 0, 0, 0, 2}}}})
                      .get_vector());
 
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(
         all_close(test::NDArray<float, 4>(
                       {{{{6 / denom, 8 / denom, 5 / denom},  // img 0 chan 0
@@ -232,7 +232,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_1channel_1image_strided) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   Shape shape_a{1, 1, 8, 8};
   Shape window_shape{2, 3};
   auto window_movement_strides = Strides{3, 2};
@@ -265,7 +265,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_1channel_1image_strided) {
                                             {1, 0, 2, 0, 0, 0, 1, 0}}}})
                      .get_vector());
 
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(all_close(
         test::NDArray<float, 4>({{{{6 / denom, 5 / denom, 4 / denom},
                                    {6 / denom, 5 / denom, 8 / denom},

@@ -28,7 +28,7 @@ using namespace ngraph;
 static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_colwise) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   Shape shape_a{2, 2};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_b{2, 3};
@@ -56,7 +56,7 @@ NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_colwise) {
     copy_data(b, vector<float>{1, 2, 4, 8, 16, 32});
     copy_data(c, vector<float>{2, 3, 5, 7, 11, 13});
 
-    backend->call(f, {result}, {a, b, c});
+    backend->call(backend->compile(f), {result}, {a, b, c});
     EXPECT_TRUE(all_close(
         vector<float>{2, 4, 1, 2, 4, 2, 3, 5, 8, 16, 8, 16, 32, 7, 11, 13},
         read_vector<float>(result)));
@@ -64,7 +64,7 @@ NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_colwise) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_rowise) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   Shape shape_a{2, 2};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_b{3, 2};
@@ -92,7 +92,7 @@ NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_rowise) {
     copy_data(b, vector<float>{1, 2, 4, 8, 16, 32});
     copy_data(c, vector<float>{2, 3, 5, 7, 11, 13});
 
-    backend->call(f, {result}, {a, b, c});
+    backend->call(backend->compile(f), {result}, {a, b, c});
     EXPECT_TRUE(all_close(
         vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 2, 3, 5, 7, 11, 13},
         read_vector<float>(result)));
@@ -100,7 +100,7 @@ NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_rowise) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, concat_vector) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   Shape shape_a{4};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_b{6};
@@ -128,7 +128,7 @@ NGRAPH_TEST(${BACKEND_NAME}, concat_vector) {
     copy_data(b, vector<float>{1, 2, 4, 8, 16, 32});
     copy_data(c, vector<float>{18, 19});
 
-    backend->call(f, {result}, {a, b, c});
+    backend->call(backend->compile(f), {result}, {a, b, c});
     EXPECT_TRUE(
         all_close(vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 18, 19},
                   read_vector<float>(result)));
@@ -136,7 +136,7 @@ NGRAPH_TEST(${BACKEND_NAME}, concat_vector) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, concat_4d_tensor) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   Shape shape{1, 1, 1, 1};
   auto A = make_shared<op::Parameter>(element::f32, shape);
   auto B = make_shared<op::Parameter>(element::f32, shape);
@@ -161,13 +161,13 @@ NGRAPH_TEST(${BACKEND_NAME}, concat_4d_tensor) {
     copy_data(b, vector<float>{2});
     copy_data(c, vector<float>{3});
 
-    backend->call(f, {result}, {a, b, c});
+    backend->call(backend->compile(f), {result}, {a, b, c});
     EXPECT_TRUE(all_close(vector<float>{1, 2, 3}, read_vector<float>(result)));
   }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, concat_2d_tensor) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
   Shape shape{1, 1};
   auto A = make_shared<op::Parameter>(element::f32, shape);
   auto B = make_shared<op::Parameter>(element::f32, shape);
@@ -192,7 +192,7 @@ NGRAPH_TEST(${BACKEND_NAME}, concat_2d_tensor) {
     copy_data(b, vector<float>{2});
     copy_data(c, vector<float>{3});
 
-    backend->call(f, {result}, {a, b, c});
+    backend->call(backend->compile(f), {result}, {a, b, c});
     EXPECT_TRUE(all_close(vector<float>{1, 2, 3}, read_vector<float>(result)));
   }
 }

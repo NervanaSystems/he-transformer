@@ -14,9 +14,10 @@
 #  limitations under the License.
 # ==============================================================================
 
-import ngraph_config
+import ngraph_bridge
 import numpy as np
 import tensorflow as tf
+
 
 a = tf.constant(np.array([[1, 2], [3, 4]]), dtype=np.float32)
 b = tf.placeholder(tf.float32, shape=(2, 2))
@@ -24,14 +25,5 @@ c = tf.placeholder(tf.float32, shape=())
 f = (a + b) * c
 
 with tf.Session() as sess:
-    f_val = sess.run(f, feed_dict={b: np.ones((2, 2)), c: np.array(5, )})
+    f_val = sess.run(f, feed_dict={b: np.ones((2, 2)), c: np.array(5,)})
     print("Result: ", f_val)
-
-a = tf.constant(2 * np.ones((2, 3)), dtype=np.float32)
-b = tf.placeholder(tf.float32, shape=(3, 4))
-f = tf.matmul(a, b)
-
-with tf.Session() as sess:
-    f_val = sess.run(f, feed_dict={b: 3 * np.ones((3, 4))})
-    print("Result: ", f_val)
-
