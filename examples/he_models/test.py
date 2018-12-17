@@ -26,6 +26,8 @@ from train import get_run_dir
 
 FLAGS = tf.app.flags.FLAGS
 
+tf.app.flags.DEFINE_bool('report_accuracy', True, "Whether or not to report accuracy")
+
 def save_weights():
   """Saves CIFAR10 weights"""
   FLAGS.resume = True # Get saved weights, not new ones
@@ -34,6 +36,10 @@ def save_weights():
   ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
   train_graph = os.path.join(checkpoint_dir, 'graph.pbtxt')
   frozen_graph = os.path.join(checkpoint_dir, 'graph_constants.pb')
+  fused_graph = os.path.join(checkpoint_dir, 'fused_graph.pb')
+  if os.path.isfile(fused_graph):
+    print("Graph already optimized")
+    return
 
   with tf.Session() as sess:
     # TODO this should be a placeholder, right?
@@ -118,16 +124,8 @@ def serialize_model():
   fused_graph_file = os.path.join(checkpoint_dir, 'fused_graph.pb')
   print('fused_graph_file', fused_graph_file)
 
-  batch_size = 100
-  eval_data, eval_labels = data.numpy_eval_inputs(True, FLAGS.data_dir, batch_size)
+  eval_data, eval_labels = data.numpy_eval_inputs(True, FLAGS.data_dir, FLAGS.batch_size)
 
-  # Print eval_data
-  #for dp, ind in enumerate(input_data):
-  #  print(dp, ind)
-
-
-  #with tf.Session() as sess:
-  #print('eval_data', eval_data)
 
   with gfile.FastGFile(fused_graph_file,'rb') as f:
     graph_def = tf.GraphDef()
@@ -141,16 +139,15 @@ def serialize_model():
   XXX = graph.get_tensor_by_name('XXX:0')
   YYY = graph.get_tensor_by_name('YYY:0')
 
-  print("Serializing model")
+  print("Running model")
   with tf.Session(graph=graph) as sess:
     eval_batch_data = eval_data[0]
     eval_batch_label = eval_labels[0]
 
-    YYY = sess.run(YYY, feed_dict = {XXX: eval_batch_data}) #np.random.random((1, IMAGE_SIZE, IMAGE_SIZE, 3))})
+    YYY = sess.run(YYY, feed_dict = {XXX: eval_batch_data})
 
-    report_accuracy(YYY, eval_batch_label)
-
-
+    if FLAGS.report_accuracy:
+      report_accuracy(YYY, eval_batch_label)
 
 
 def main(argv=None):

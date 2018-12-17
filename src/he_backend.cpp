@@ -414,6 +414,12 @@ bool runtime::he::HEBackend::call(
                 << instance.m_timer_map[op].get_milliseconds() << "ms"
                 << "\033[0m";
   }
+  size_t total_time = 0;
+  for (const auto& elem : instance.m_timer_map) {
+    total_time += elem.second.get_milliseconds();
+  }
+  NGRAPH_INFO << "\033[1;32m"
+              << "Total time " << total_time << " (ms) \033[0m";
   return true;
 }
 

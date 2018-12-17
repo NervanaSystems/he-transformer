@@ -1,25 +1,27 @@
 This directory provides a framework for developing new HE models and exporting them with ngraph-tf.
 
+`train.py` is used to train the models.
+`test.py` is used to perform inference.
+HE-transformer expects serialized models to have inputs as placeholders, and model weights stored as constants.
+`test.py` also performs this serialization. Finally, `test.py` also optimizes the model for inference, for example by folding batch norm weights into convolution weights to reduce the mutliplicative depth of the model.
+
 # 1 Train a model
-```
+```python
 python train.py --model=simple
 ```
 
-# Export model with ng-tf
+# 2. Run trained model:
+## Skip inference, just export serialize graph:
+```python
+NGRAPH_TF_BACKEND=NOP NGRAPH_ENABLE_SERIALIZE=1 python test.py --model=simple --batch_size=1 --report_accuracy=0
 ```
-NGRAPH_TF_BACKEND=NOP NGRAPH_ENABLE_SERIALIZE=1 python optimize_for_inference.py --model=simple
+
+## Run inference on CPU backend:
+```python
+python test.py --model=simple --batch_size=100
 ```
 
-This will export the model as `tf_function_ngraph_cluster_0.json` or similar.
-
-Currently, the BatchNorm node is a BatchNormTraining node, followed by a GetOutputElement.
-
-See `tf_function_ngraph_cluster_0.json.png`
-This is because the saved model is based on the training.
-Instead, I think we need to pass self.training as a boolean placeholder.
-
-For now, as a workaround, we should try:
-1) Register "GetOutputElementElimination" pass to eliminate the GetOutputElement node.
-2) Implement "BatchNormTraining" op in he_backend.
-
-Once BatchNorm node is used instead, implementing BatchNormInference op should be nearly identitcal to the BatchNorm op.
+## Run inference on HE backend
+```python
+NGRAPH_BATCH_DATA=1 NGRAPH_BATCH_TF=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_TF_BACKEND=HE_SEAL_CKKS python test.py --model=simple --batch_size=100
+```
