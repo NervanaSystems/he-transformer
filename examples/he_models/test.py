@@ -45,6 +45,9 @@ def save_weights():
     # Build a Graph that computes the logits predictions from the
     # inference model.
     logits = model.inference(images)
+    print('Multiplicative depth', model.mult_depth())
+    print('FLOPS:', model.get_flops())
+
     saver = tf.train.Saver()
 
     # TODO: use saved averages?

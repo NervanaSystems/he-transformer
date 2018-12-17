@@ -29,7 +29,9 @@ class Model(object):
       return 'weights/' + self.model_name + '/' + name
 
     def poly_act(self, x, scope):
-        self.multiplcative_depth += 1
+        self.multiplcative_depth += 2
+        print('poly activation, => mult. depth', self.multiplcative_depth)
+
 
         a = self._get_weights_var('a', [], initializer=tf.initializers.zeros, scope=scope)
         b = self._get_weights_var('b', [], initializer=tf.initializers.ones, scope=scope)
@@ -88,6 +90,10 @@ class Model(object):
     def conv_layer(self, inputs, size, filters, stride, decay, name, activation=True, bn=False):
         channels = inputs.get_shape()[3]
         shape = [size, size, channels, filters]
+
+        self.multiplcative_depth += 1
+        print('conv layer => mult. depth', self.multiplcative_depth)
+
         with tf.variable_scope(name + '/conv') as scope:
             weights = self._get_weights_var('weights',
                                             shape=shape,
@@ -101,7 +107,6 @@ class Model(object):
                                 strides=[1,stride,stride,1],
                                 padding='SAME')
 
-            self.multiplcative_depth += 1
             if bn:
                 conv = tf.layers.batch_normalization(conv, training=self.training)
             pre_activation = tf.nn.bias_add(conv, biases)
@@ -126,6 +131,9 @@ class Model(object):
         return outputs
 
     def pool_layer(self, inputs, size, stride, name):
+        self.multiplcative_depth += 1
+        print('pool layer => mult. depth', self.multiplcative_depth)
+        # TODO: add flops
         with tf.variable_scope(name) as scope:
             outputs = tf.nn.avg_pool(inputs,
                                      ksize=[1,size,size,1],
@@ -136,6 +144,10 @@ class Model(object):
         return outputs
 
     def fc_layer(self, inputs, neurons, decay, name, activation=True, bn=False):
+        self.multiplcative_depth += 1
+        print('FC layer => mult. depth', self.multiplcative_depth)
+
+
         with tf.variable_scope(name) as scope:
             if len(inputs.get_shape().as_list()) > 2:
                 # We need to reshape inputs:
@@ -155,7 +167,6 @@ class Model(object):
                                     shape=[neurons],
                                     initializer=tf.constant_initializer(0.0), scope=scope)
             x = tf.add(tf.matmul(reshaped, weights), biases)
-            self.multiplcative_depth += 1
 
             if bn:
                 x = tf.layers.batch_normalization(x, training=self.training)
@@ -201,6 +212,9 @@ class Model(object):
         return outputs
 
     def avg_layer(self, inputs, name):
+        print('avg layer => mult. depth', self.multiplcative_depth)
+        self.multiplcative_depth += 1
+
         w = inputs.get_shape().as_list()[1]
         h = inputs.get_shape().as_list()[2]
         c = inputs.get_shape().as_list()[3]
@@ -212,7 +226,6 @@ class Model(object):
                                  padding='VALID',
                                  name=scope.name)
         # Reshape output to remove spatial dimensions reduced to one
-        self.multiplcative_depth += 1
         return tf.reshape(avg, shape=[-1,c])
 
     def inference(self, images):

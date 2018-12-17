@@ -42,14 +42,6 @@ void avg_pool(const std::vector<std::shared_ptr<T>>& arg,
   CoordinateTransform output_transform(out_shape);
 
   for (const Coordinate& out_coord : output_transform) {
-    NGRAPH_INFO << "We will compute avg pool for index "
-                << output_transform.index(out_coord);
-  }
-
-  for (const Coordinate& out_coord : output_transform) {
-    NGRAPH_INFO << "Computing avg pool for index "
-                << output_transform.index(out_coord);
-
     // Our output coordinate O will have the form:
     //
     //   (N,chan,i_1,...,i_n)
@@ -128,37 +120,23 @@ void avg_pool(const std::vector<std::shared_ptr<T>>& arg,
     bool first_add = true;
 
     size_t n_elements = 0;
-    NGRAPH_INFO << "Stepping over input batch coords";
 
     for (const Coordinate& input_batch_coord : input_batch_transform) {
       bool in_bounds =
           input_batch_transform.has_source_coordinate(input_batch_coord);
 
       if (in_bounds || include_padding_in_avg_computation) {
-        if (include_padding_in_avg_computation) {
-          NGRAPH_INFO << "Include padding in computation!";
-        }
-        if (in_bounds) {
-          NGRAPH_INFO << "In bounds";
-        }
         // T v = in_bounds ?: 0;
         // result += v;
 
         if (first_add) {
-          NGRAPH_INFO << "Frist adding";
-          NGRAPH_INFO << "getting arg at "
-                      << input_batch_transform.index(input_batch_coord);
-          NGRAPH_INFO << "Size of arg " << arg.size();
           sum = arg[input_batch_transform.index(input_batch_coord)];
-          NGRAPH_INFO << "Done first addign";
           first_add = false;
         } else {
-          NGRAPH_INFO << "Scalar adding";
           runtime::he::kernel::scalar_add(
               sum.get(),
               arg[input_batch_transform.index(input_batch_coord)].get(), sum,
               element::f32, he_backend);
-          NGRAPH_INFO << "Done scalar adding";
         }
         n_elements++;
       }
@@ -168,14 +146,11 @@ void avg_pool(const std::vector<std::shared_ptr<T>>& arg,
       throw std::runtime_error("AvgPool elements == 0, must be non-zero");
     }
 
-    NGRAPH_INFO << "Creating inverse of " << n_elements;
     auto inv_n_elements =
         he_backend->create_valued_plaintext(1. / n_elements, element::f32);
-    NGRAPH_INFO << "Done creating inverse";
 
     runtime::he::kernel::scalar_multiply(sum.get(), inv_n_elements.get(), sum,
                                          element::f32, he_backend);
-    NGRAPH_INFO << "Scalar multiplied";
 
     out[output_transform.index(out_coord)] = sum;
   }

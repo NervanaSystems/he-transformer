@@ -4,6 +4,6 @@
     "security_level": 128,
     "evaluation_decomposition_bit_count": 60,
     "coeff_modulus": {
-        "small_mods_30bit": 3
+        "small_mods_30bit": 10
     }
 }
