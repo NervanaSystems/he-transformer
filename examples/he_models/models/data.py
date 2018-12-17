@@ -14,6 +14,8 @@ import os
 import sys
 import tarfile
 import multiprocessing
+import math
+import numpy as np
 
 IMAGE_WIDTH = 32
 IMAGE_HEIGHT = 32
@@ -136,6 +138,7 @@ def eval_inputs(test_data, data_dir, batch_size):
 
     # Transpose dimensions
     raw_image, label = get_raw_input_data(test_data, data_dir)
+    print("Get got raw inpout data")
 
     # If needed, perform data augmentation
     if tf.app.flags.FLAGS.data_aug:
@@ -146,6 +149,8 @@ def eval_inputs(test_data, data_dir, batch_size):
     # Normalize image (substract mean and divide by variance)
     float_image = tf.image.per_image_standardization(image)
 
+    print("Normalized eval inputs")
+
     # Create a queue to extract batch of samples
     images, labels = tf.train.batch([float_image,label],
                                      batch_size = batch_size,
@@ -153,7 +158,7 @@ def eval_inputs(test_data, data_dir, batch_size):
                                      capacity = 3 * batch_size)
 
     # Display the training images in the visualizer
-    tf.summary.image('images', images)
+    #tf.summary.image('images', images)
 
     return images, tf.reshape(labels, [batch_size])
 
@@ -194,4 +199,73 @@ def train_inputs(data_dir):
     tf.summary.image('images', images)
 
     return images, tf.reshape(labels, [-1])
+
+def numpy_eval_inputs(test_data, data_dir, batch_size):
+    """Construct numpy input for CIFAR evaluation.
+    Args:
+        test_data: bool, indicating if one should use the test or train set.
+        data_dir: Path to the CIFAR-10 data directory.
+        batch_size: Number of images per batch.
+    Returns:
+        images: . 4D tensor [batch_size, IMAGE_SIZE, IMAGE_SIZE, 3].
+        labels: Labels. 1D tensor [batch_size].
+    """
+    assert(test_data == True)
+    IMAGE_SIZE = 24 if FLAGS.data_aug else 32
+
+    num_examples = 10000 if test_data else 50000
+
+    data_filename = os.path.join(FLAGS.data_dir, 'eval_data_' + str(IMAGE_SIZE) + '.npy')
+    label_filename = os.path.join(FLAGS.data_dir, 'eval_label_' + str(IMAGE_SIZE) + '.npy')
+    print('data_filename', data_filename)
+    print('label_filename', label_filename)
+
+    if not os.path.isfile(data_filename) or not os.path.isfile(label_filename):
+
+        eval_data = eval_inputs(True, FLAGS.data_dir, batch_size)
+
+        np_eval_data_and_labels = []
+
+        coord = tf.train.Coordinator()
+        with tf.Session() as sess:
+            try:
+                threads = []
+                for qr in tf.get_collection(tf.GraphKeys.QUEUE_RUNNERS):
+                    threads.extend(qr.create_threads(sess, coord=coord, daemon=True,
+                                                    start=True))
+
+                num_iter = int(math.ceil(num_examples / batch_size))
+                true_count = 0  # Counts the number of correct predictions.
+                total_sample_count = num_iter * batch_size
+                step = 0
+                while step < num_iter and not coord.should_stop():
+                    data_in = sess.run([eval_data])
+                    np_eval_data_and_labels.extend(data_in)
+                    print('len(np_eval_data_and_labels)', len(np_eval_data_and_labels))
+                    step += 1
+
+            except Exception as e:  # pylint: disable=broad-except
+                coord.request_stop(e)
+
+                coord.request_stop()
+                coord.join(threads, stop_grace_period_secs=10)
+
+        np_eval_data = [xy[0] for xy in np_eval_data_and_labels]
+        np_eval_labels = [xy[1] for xy in np_eval_data_and_labels]
+
+        np.save(data_filename, np.vstack(np_eval_data).flatten())
+        np.save(label_filename,np.vstack(np_eval_labels).flatten())
+
+    np_eval_data = np.load(data_filename)
+    np_label_data = np.load(label_filename)
+    np_eval_data = np_eval_data.reshape(num_examples, IMAGE_SIZE, IMAGE_SIZE, 3)
+
+    # Split data into batch_size chunks
+    np_eval_data = np.split(np_eval_data, range(batch_size, np_eval_data.shape[0], batch_size))
+    np_label_data = np.split(np_label_data, range(batch_size, np_label_data.shape[0], batch_size))
+
+    # np_eval_data = [x.reshape([-1, IMAGE_SIZE, IMAGE_SIZE, 3]) for x in np_eval_data]
+
+    return np_eval_data, np_label_data
+
 

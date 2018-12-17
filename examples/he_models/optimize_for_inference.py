@@ -99,6 +99,15 @@ def save_weights():
 
     tf.io.write_graph(fused_graph_def, checkpoint_dir, name='fused_graph.pb', as_text=False)
 
+def report_accuracy(logits, labels):
+  print("predictions", np.argmax(logits, 1), 'labels', labels)
+  correct_prediction = np.equal(np.argmax(logits, 1), labels)
+  error_count = np.size(correct_prediction) - np.sum(correct_prediction)
+  test_accuracy = np.mean(correct_prediction)
+
+  print('Error count', error_count, 'of', len(labels), 'elements.')
+  print('Accuracy ', test_accuracy)
+
 
 def serialize_model():
   print('Serializing model')
@@ -109,9 +118,16 @@ def serialize_model():
   fused_graph_file = os.path.join(checkpoint_dir, 'fused_graph.pb')
   print('fused_graph_file', fused_graph_file)
 
-  IMAGE_SIZE = 24 if FLAGS.data_aug else 32
+  batch_size = 100
+  eval_data, eval_labels = data.numpy_eval_inputs(True, FLAGS.data_dir, batch_size)
+
+  # Print eval_data
+  #for dp, ind in enumerate(input_data):
+  #  print(dp, ind)
+
 
   #with tf.Session() as sess:
+  #print('eval_data', eval_data)
 
   with gfile.FastGFile(fused_graph_file,'rb') as f:
     graph_def = tf.GraphDef()
@@ -127,7 +143,14 @@ def serialize_model():
 
   print("Serializing model")
   with tf.Session(graph=graph) as sess:
-    sess.run(YYY, feed_dict = {XXX: np.random.random((1, IMAGE_SIZE, IMAGE_SIZE, 3))})
+    eval_batch_data = eval_data[0]
+    eval_batch_label = eval_labels[0]
+
+    YYY = sess.run(YYY, feed_dict = {XXX: eval_batch_data}) #np.random.random((1, IMAGE_SIZE, IMAGE_SIZE, 3))})
+
+    report_accuracy(YYY, eval_batch_label)
+
+
 
 
 def main(argv=None):
