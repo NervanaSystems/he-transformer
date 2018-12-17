@@ -70,6 +70,9 @@ std::pair<std::shared_ptr<S>, std::shared_ptr<T>> match_arguments(
                      ->chain_index();
     assert(chain_ind0 == chain_ind1);
   }
+  if (chain_ind0 <= 1) {
+    NGRAPH_INFO << "Chain ind " << chain_ind0 << " almost used up";
+  }
 
   return std::make_pair(arg0_scaled, arg1_scaled);
 }

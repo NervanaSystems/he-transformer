@@ -23,7 +23,7 @@ FLAGS = tf.app.flags.FLAGS
 
 tf.app.flags.DEFINE_integer('max_steps', 10000,
                             """Number of batches to run.""")
-tf.app.flags.DEFINE_float('learning_rate', 0.1,
+tf.app.flags.DEFINE_float('learning_rate', 0.01,
                             """Initial learning rate.""")
 tf.app.flags.DEFINE_integer('log_freq', 10,
                             """How often to log results (steps).""")

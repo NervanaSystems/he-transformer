@@ -32,7 +32,7 @@ class Model(object):
         self.multiplcative_depth += 1
 
         a = self._get_weights_var('a', [], initializer=tf.initializers.zeros, scope=scope)
-        b = self._get_weights_var('b', [], scope=scope)
+        b = self._get_weights_var('b', [], initializer=tf.initializers.ones, scope=scope)
 
         return a * x * x + b * x
 
@@ -76,7 +76,7 @@ class Model(object):
           return var
         else:
             restore_filename = self.name_to_filename(scope.name + '/' + name)
-            print('restoring variable: ', restore_filename, ' with shape', shape, '\n')
+            print('restoring variable: ', restore_filename, ' with shape', shape)
 
             if os.path.exists('./' + restore_filename):
                 return tf.constant(np.loadtxt(restore_filename, dtype=np.float32).reshape(shape))
@@ -127,7 +127,7 @@ class Model(object):
 
     def pool_layer(self, inputs, size, stride, name):
         with tf.variable_scope(name) as scope:
-            outputs = tf.nn.max_pool(inputs,
+            outputs = tf.nn.avg_pool(inputs,
                                      ksize=[1,size,size,1],
                                      strides=[1,stride,stride,1],
                                      padding='SAME',
@@ -136,10 +136,6 @@ class Model(object):
         return outputs
 
     def fc_layer(self, inputs, neurons, decay, name, activation=True, bn=False):
-        if bn:
-            # ng-tf graph will contain batch normalization nodes
-            raise NotImplementedError("Batch norm not implemented")
-
         with tf.variable_scope(name) as scope:
             if len(inputs.get_shape().as_list()) > 2:
                 # We need to reshape inputs:

@@ -338,7 +338,7 @@ bool runtime::he::HEBackend::call(
     }
 
     if (op->description() == "Constant") {
-      NGRAPH_INFO << "Constant shape { " << join(op->get_shape()) << "}";
+      NGRAPH_INFO << "Constant shape {" << join(op->get_shape()) << "}";
     }
 
     // get op inputs from map
@@ -517,10 +517,9 @@ void runtime::he::HEBackend::generate_calls(
     }
     case OP_TYPEID::AvgPool: {
       const op::AvgPool* avg_pool = static_cast<const op::AvgPool*>(&node);
-      Shape in_shape = node.get_input_shape(0);
-      Shape out_shape = node.get_output_shape(0);
-
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
+        Shape in_shape = arg0_cipher->get_shape();
+        Shape out_shape = out0_cipher->get_shape();
         runtime::he::kernel::avg_pool(
             arg0_cipher->get_elements(), out0_cipher->get_elements(), in_shape,
             out_shape, avg_pool->get_window_shape(),
@@ -529,6 +528,8 @@ void runtime::he::HEBackend::generate_calls(
             avg_pool->get_include_padding_in_avg_computation(), this);
 
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
+        Shape in_shape = arg0_plain->get_shape();
+        Shape out_shape = out0_plain->get_shape();
         runtime::he::kernel::avg_pool(
             arg0_plain->get_elements(), out0_plain->get_elements(), in_shape,
             out_shape, avg_pool->get_window_shape(),

@@ -84,9 +84,10 @@ def optimize_model_for_inference():
   train_graph = os.path.join(checkpoint_dir, 'graph.pbtxt')
   frozen_graph = os.path.join(checkpoint_dir, 'graph_constants.pb')
   fused_graph = os.path.join(checkpoint_dir, 'fused_graph.pb')
-  if os.path.isfile(fused_graph):
-    print("Graph already optimized")
-    return
+
+  #if os.path.isfile(fused_graph):
+  #  print("Graph already optimized")
+  #  return
 
   with tf.Session() as sess:
     # TODO this should be a placeholder, right?

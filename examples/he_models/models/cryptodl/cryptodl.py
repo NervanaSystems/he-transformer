@@ -93,7 +93,7 @@ class CryptoDL(model.Model):
                             neurons=10,
                             decay=True,
                             activation=False,
-                            bn=True,
+                            bn=False,
                             name='fc1')
 
-        return fc2
+        return fc1
