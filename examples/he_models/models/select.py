@@ -22,6 +22,8 @@ def by_name(name, training=False):
         model = simple3.Simple3(training=training)
     elif name == 'test_avg_pool':
         model = test_avg_pool.TestAvgPool(training=training)
+    elif name == 'simple4':
+        model = simple4.Simple4(training=training)
     else:
         raise ValueError('No such model %s' % name)
     return model
