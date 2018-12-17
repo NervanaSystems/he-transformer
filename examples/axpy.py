@@ -18,7 +18,6 @@ import ngraph_bridge
 import numpy as np
 import tensorflow as tf
 
-
 a = tf.constant(np.array([[1, 2], [3, 4]]), dtype=np.float32)
 b = tf.placeholder(tf.float32, shape=(2, 2))
 c = tf.placeholder(tf.float32, shape=())

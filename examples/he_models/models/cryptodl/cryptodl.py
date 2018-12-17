@@ -17,7 +17,6 @@ class CryptoDL(model.Model):
 
     def inference(self, images):
 
-        # conv1
         conv1 = self.conv_layer(images,
                                 size=5,
                                 filters=96,
@@ -90,12 +89,11 @@ class CryptoDL(model.Model):
                         bn=True,
                         name='conv8')
 
-        # local3
-        fc2 = self.fc_layer(conv8,
+        fc1 = self.fc_layer(conv8,
                             neurons=10,
                             decay=True,
                             activation=False,
                             bn=True,
-                            name='fc2')
+                            name='fc1')
 
         return fc2

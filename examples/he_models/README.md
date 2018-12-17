@@ -10,6 +10,11 @@ HE-transformer expects serialized models to have inputs as placeholders, and mod
 python train.py --model=simple
 ```
 
+## To resume training a model
+```python
+python train.py --model=simple --resume=True
+```
+
 # 2. Run trained model:
 ## Skip inference, just export serialize graph:
 ```python

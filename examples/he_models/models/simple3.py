@@ -9,23 +9,32 @@ import model
 
 WEIGHT_DECAY = 1e2
 
-class Simple2(model.Model):
+class Simple3(model.Model):
 
     def __init__(self, wd=WEIGHT_DECAY, training=True):
 
-        super(Simple2, self).__init__(model_name='simple2', wd=wd, training=training )
+        super(Simple3, self).__init__(model_name='simple3', wd=wd, training=training )
 
     def inference(self, images):
         conv1 = self.conv_layer(images,
                                 size=5,
-                                filters=40,
+                                filters=96,
                                 stride=2,
                                 decay=True,
-                                activation=True,
+                                activation=False,
                                 bn=True,
                                 name='conv1')
 
-        fc3 = self.fc_layer(conv1,
+        conv2 = self.conv_layer(conv1,
+                                size=5,
+                                filters=96,
+                                stride=1,
+                                decay=True,
+                                activation=True,
+                                bn=True,
+                                name='conv2')
+
+        fc3 = self.fc_layer(conv2,
                             neurons=10,
                             decay=True,
                             activation=False,

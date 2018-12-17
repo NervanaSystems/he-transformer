@@ -15,6 +15,8 @@ def by_name(name, training=False):
         model = simple.Simple(training=training)
     elif name == 'simple2':
         model = simple2.Simple2(training=training)
+    elif name == 'simple3':
+        model = simple3.Simple3(training=training)
     else:
         raise ValueError('No such model %s' % name)
     return model

@@ -28,14 +28,13 @@ class Model(object):
       name = name.replace(':0', '') + '.txt'
       return 'weights/' + self.model_name + '/' + name
 
-    def poly_act(self, x):
+    def poly_act(self, x, scope):
         self.multiplcative_depth += 1
 
-        a = self._get_weights_var('a', [], initializer=tf.initializers.zeros)
-        b = self._get_weights_var('b', [], initializer=tf.initializers.zeros)
+        a = self._get_weights_var('a', [], initializer=tf.initializers.zeros, scope=scope)
+        b = self._get_weights_var('b', [], scope=scope)
 
         return a * x * x + b * x
-        #return 0.1 * x * x + x
 
     def _get_weights_var(self, name, shape, decay=False, scope='',
             initializer=tf.contrib.layers.xavier_initializer(uniform=False,dtype=tf.float32)):
@@ -108,7 +107,7 @@ class Model(object):
             pre_activation = tf.nn.bias_add(conv, biases)
 
             if activation:
-                outputs= self.poly_act(pre_activation)
+                outputs= self.poly_act(pre_activation, scope=scope)
                  #tf.nn.relu(pre_activation, name=scope.name)
             else:
                 outputs = pre_activation
@@ -165,7 +164,7 @@ class Model(object):
             if bn:
                 x = tf.layers.batch_normalization(x, training=self.training)
             if activation:
-                outputs = self.poly_act(x)
+                outputs = self.poly_act(x, scope=scope)
             else:
                 outputs = x
 
