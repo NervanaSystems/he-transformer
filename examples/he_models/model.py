@@ -5,6 +5,7 @@ from __future__ import print_function
 
 import tensorflow as tf
 import numpy as np
+import os
 
 WEIGHT_DECAY = 1e2
 
@@ -29,7 +30,12 @@ class Model(object):
 
     def poly_act(self, x):
         self.multiplcative_depth += 1
-        return 0.1 * x * x + x
+
+        a = self._get_weights_var('a', [], initializer=tf.initializers.zeros)
+        b = self._get_weights_var('b', [], initializer=tf.initializers.zeros)
+
+        return a * x * x + b * x
+        #return 0.1 * x * x + x
 
     def _get_weights_var(self, name, shape, decay=False, scope='',
             initializer=tf.contrib.layers.xavier_initializer(uniform=False,dtype=tf.float32)):
@@ -70,9 +76,15 @@ class Model(object):
 
           return var
         else:
-          restore_filename = self.name_to_filename(scope.name + '/' + name)
-          print('restoring variable: ', restore_filename, ' with shape', shape, '\n')
-          return tf.constant(np.loadtxt(restore_filename, dtype=np.float32).reshape(shape))
+            restore_filename = self.name_to_filename(scope.name + '/' + name)
+            print('restoring variable: ', restore_filename, ' with shape', shape, '\n')
+
+            if os.path.exists('./' + restore_filename):
+                return tf.constant(np.loadtxt(restore_filename, dtype=np.float32).reshape(shape))
+            else:
+                print('Could not load ', restore_filename)
+                exit(1)
+                #return tf.constant(np.zeros(shape=shape, dtype=np.float32))
 
     def conv_layer(self, inputs, size, filters, stride, decay, name, activation=True, bn=False):
         channels = inputs.get_shape()[3]

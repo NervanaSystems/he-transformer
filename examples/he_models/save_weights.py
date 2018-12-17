@@ -31,7 +31,7 @@ def save_weights():
     print('data dir', FLAGS.data_dir)
     images, labels = data.train_inputs(data_dir=FLAGS.data_dir)
 
-    model = select.by_name(FLAGS.model)
+    model = select.by_name(FLAGS.model, training=True)
 
     print('FLAGS.model', FLAGS.model)
 
@@ -39,11 +39,7 @@ def save_weights():
     # inference model.
     logits = model.inference(images)
 
-    # Restore the moving average version of the learned variables for eval.
-    variables_averages = tf.train.ExponentialMovingAverage(1.0) # 1.0 decay is unused
-    variables_to_restore = variables_averages.variables_to_restore()
-
-    saver = tf.train.Saver(variables_to_restore)
+    saver = tf.train.Saver()
 
     with tf.Session() as sess:
       ckpt = tf.train.get_checkpoint_state(checkpoint_dir)

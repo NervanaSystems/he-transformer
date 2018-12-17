@@ -33,6 +33,53 @@ def save_weights():
   FLAGS.resume = True # Get saved weights, not new ones
   run_dir = get_run_dir(FLAGS.log_dir, FLAGS.model)
   checkpoint_dir = os.path.join(run_dir, 'train')
+
+  with tf.Graph().as_default() as g:
+    # Get images and labels for CIFAR-10.
+    print('data dir', FLAGS.data_dir)
+    images, labels = data.train_inputs(data_dir=FLAGS.data_dir)
+    model = select.by_name(FLAGS.model, training=True)
+
+    print('FLAGS.model', FLAGS.model)
+
+    # Build a Graph that computes the logits predictions from the
+    # inference model.
+    logits = model.inference(images)
+    saver = tf.train.Saver()
+
+    # TODO: use saved averages?
+
+    with tf.Session() as sess:
+      ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
+      if ckpt and ckpt.model_checkpoint_path:
+        # Restores from checkpoint
+        saver.restore(sess, ckpt.model_checkpoint_path)
+        # Assuming model_checkpoint_path looks something like:
+        #   /my-favorite-path/cifar10_train/model.ckpt-0,
+        # extract global_step from it.
+        global_step = ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1]
+      else:
+        print('No checkpoint file found')
+        print('ckpt_dir', checkpoint_dir)
+        print('ckpt.model_checkpoint_path', ckpt.model_checkpoint_path)
+        print('ckpt', ckpt)
+        return
+
+      # Save variables
+      for var in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES):
+        weight = (sess.run([var]))[0].flatten().tolist()
+        filename = model.name_to_filename(var.name)
+        dir_name = filename.rsplit('/',1)[0]
+        os.makedirs(dir_name, exist_ok=True)
+
+        print("saving", filename)
+        np.savetxt(str(filename), weight)
+
+def optimize_model_for_inference():
+  """Saves CIFAR10 weights"""
+  FLAGS.resume = True # Get saved weights, not new ones
+  run_dir = get_run_dir(FLAGS.log_dir, FLAGS.model)
+  checkpoint_dir = os.path.join(run_dir, 'train')
   ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
   train_graph = os.path.join(checkpoint_dir, 'graph.pbtxt')
   frozen_graph = os.path.join(checkpoint_dir, 'graph_constants.pb')
@@ -85,7 +132,6 @@ def save_weights():
         output_graph=os.path.join(checkpoint_dir, 'graph_constants.pb'),
         clear_devices=True)
 
-
 	# Load frozen graph into a graph_def for optimize_lib to use
     with gfile.FastGFile(constant_graph,'rb') as f:
       graph_def = tf.GraphDef()
@@ -126,7 +172,6 @@ def serialize_model():
 
   eval_data, eval_labels = data.numpy_eval_inputs(True, FLAGS.data_dir, FLAGS.batch_size)
 
-
   with gfile.FastGFile(fused_graph_file,'rb') as f:
     graph_def = tf.GraphDef()
     graph_def.ParseFromString(f.read())
@@ -152,7 +197,9 @@ def serialize_model():
 
 def main(argv=None):
   data.maybe_download_and_extract(FLAGS.data_dir)
+
   save_weights()
+  optimize_model_for_inference()
 
   serialize_model()
 
