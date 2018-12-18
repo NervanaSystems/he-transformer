@@ -11,7 +11,7 @@ WEIGHT_DECAY = 1e2
 
 class Model(object):
 
-    def __init__(self, model_name, wd=WEIGHT_DECAY, dropout=0.0, training=True):
+    def __init__(self, model_name, wd=WEIGHT_DECAY, dropout=0.0, training=True, train_poly_act=True):
 
         self.wd = wd
         self.dropout = dropout
@@ -20,6 +20,7 @@ class Model(object):
         self.multiplcative_depth = 0
         self.training = training
         self.model_name = model_name
+        self.train_poly_act = train_poly_act
         print("Creating model with decay", wd)
 
     def name_to_filename(self, name):
@@ -32,11 +33,18 @@ class Model(object):
         self.multiplcative_depth += 2
         print('poly activation, => mult. depth', self.multiplcative_depth)
 
+        print('x', x.shape)
 
-        a = self._get_weights_var('a', [], initializer=tf.initializers.zeros, scope=scope)
-        b = self._get_weights_var('b', [], initializer=tf.initializers.ones, scope=scope)
 
-        return a * x * x + b * x
+        if self.train_poly_act:
+            a = self._get_weights_var('a', [], initializer=tf.initializers.zeros, scope=scope)
+            b = self._get_weights_var('b', [], initializer=tf.initializers.ones, scope=scope)
+
+            return a * x * x + b * x
+
+        else:
+            return 0.125 * x * x + 0.5 * x + 0.25
+
 
     def _get_weights_var(self, name, shape, decay=False, scope='',
             initializer=tf.contrib.layers.xavier_initializer(uniform=False,dtype=tf.float32)):
@@ -124,9 +132,10 @@ class Model(object):
         N, w, h, c = outputs.get_shape()
         # Number of convolutions
         num_flops = (1+2*int(channels)*size*size)*filters*int(w)*int(h)
-        # Number of ReLU
-        num_flops += filters*int(w)*int(h)
+
         self.flops.append((name, num_flops))
+
+        print('conv flops', num_flops)
 
         return outputs
 

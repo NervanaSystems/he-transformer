@@ -93,9 +93,19 @@ def train_ops():
     # Build a graph that applies gradient descent to update model parameters
     optimizer = tf.train.GradientDescentOptimizer(learning_rate)
 
-    # Clip gradients to [-1, 1]
+    # Clip gradients to [-0.25, 0.25]
     gvs = optimizer.compute_gradients(loss)
-    capped_gvs = [(tf.clip_by_value(grad, -1., 1.), var) for grad, var in gvs if grad is not None]
+    capped_gvs = []
+    for grad, var in gvs:
+        if grad is None:
+            continue
+        var_name = var.name
+        var_name = var_name.strip(':0')
+        if var_name[-2:] in set(['a','b']):
+            print("Capping gradient ", var_name, " to 0.25")
+            capped_gvs.append((tf.clip_by_value(grad, -0.25, 0.25), var))
+        else:
+            capped_gvs.append((tf.clip_by_value(grad, -100, 1.0), var))
     sgd_op = optimizer.apply_gradients(capped_gvs, global_step = global_step)
 
     # sgd_op = optimizer.minimize(loss, global_step = global_step)

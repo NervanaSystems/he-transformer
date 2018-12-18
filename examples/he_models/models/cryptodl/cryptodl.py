@@ -13,39 +13,32 @@ class CryptoDL(model.Model):
 
     def __init__(self, wd=WEIGHT_DECAY, training=False):
 
-        super(CryptoDL, self).__init__(model_name='cryptodl', wd=wd, training=training)
+        super(CryptoDL, self).__init__(model_name='cryptodl', wd=wd, training=training, train_poly_act=True)
 
     def inference(self, images):
 
         conv1 = self.conv_layer(images,
-                                size=5,
+                                size=3,
                                 filters=96,
-                                stride=2,
+                                stride=1,
                                 decay=True,
                                 activation=False,
                                 bn=True,
                                 name='conv1')
 
         conv2 = self.conv_layer(conv1,
-                                size=5,
+                                size=3,
                                 filters=96,
                                 stride=1,
                                 decay=True,
-                                activation=False,
+                                activation=True,
                                 bn=True,
                                 name='conv2')
 
-        conv3 = self.conv_layer(conv2,
-                        size=5,
-                        filters=96,
-                        stride=1,
-                        decay=True,
-                        activation=True,
-                        bn=True,
-                        name='conv3')
+        pool1 = self.pool_layer(conv2, size=3, stride=1, name='pool1')
 
-        conv4 = self.conv_layer(conv3,
-                        size=5,
+        conv3 = self.conv_layer(pool1,
+                        size=3,
                         filters=192,
                         stride=1,
                         decay=True,
@@ -53,8 +46,8 @@ class CryptoDL(model.Model):
                         bn=True,
                         name='conv4')
 
-        conv5 = self.conv_layer(conv4,
-                        size=5,
+        conv4 = self.conv_layer(conv3,
+                        size=3,
                         filters=192,
                         stride=1,
                         decay=True,
@@ -62,8 +55,10 @@ class CryptoDL(model.Model):
                         bn=True,
                         name='conv5')
 
-        conv6 = self.conv_layer(conv5,
-                        size=5,
+        pool2 = self.pool_layer(conv4, size=3, stride=1, name='pool1')
+
+        conv5 = self.conv_layer(pool2,
+                        size=3,
                         filters=192,
                         stride=1,
                         decay=True,
@@ -71,17 +66,8 @@ class CryptoDL(model.Model):
                         bn=True,
                         name='conv6')
 
-        conv7 = self.conv_layer(conv5,
-                        size=5,
-                        filters=192,
-                        stride=1,
-                        decay=True,
-                        activation=False,
-                        bn=True,
-                        name='conv7')
-
-        conv8 = self.conv_layer(conv7,
-                        size=5,
+        conv6 = self.conv_layer(conv5,
+                        size=3,
                         filters=192,
                         stride=1,
                         decay=True,
@@ -89,11 +75,20 @@ class CryptoDL(model.Model):
                         bn=True,
                         name='conv8')
 
-        fc1 = self.fc_layer(conv8,
-                            neurons=10,
+        pool2 = self.pool_layer(conv6, size=3, stride=1, name='pool2')
+
+        fc1 = self.fc_layer(pool2,
+                            neurons=256,
                             decay=True,
                             activation=False,
                             bn=False,
                             name='fc1')
 
-        return fc1
+        fc2 = self.fc_layer(fc1,
+                            neurons=10,
+                            decay=True,
+                            activation=False,
+                            bn=False,
+                            name='fc2')
+
+        return fc2

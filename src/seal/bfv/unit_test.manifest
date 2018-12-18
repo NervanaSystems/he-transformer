@@ -7,3 +7,4 @@ add_4_3_batch_cipher # BFV doesn't support floating-point batching
 add_4_3_batch_plain # BFV doesn't support floating-point batching
 multiply_4_3_batch # BFV doesn't support floating-point batching
 dot_scalar_batch # BFV doesn't support floating-point batching
+avg_pool_1d_1channel_2image_batched # BFV doesn't support floating-point batching
