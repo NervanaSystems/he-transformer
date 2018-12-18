@@ -9,36 +9,40 @@ import model
 
 WEIGHT_DECAY = 1e2
 
-class Simple3(model.Model):
 
+class Simple3(model.Model):
     def __init__(self, wd=WEIGHT_DECAY, training=True):
 
-        super(Simple3, self).__init__(model_name='simple3', wd=wd, training=training )
+        super(Simple3, self).__init__(
+            model_name='simple3', wd=wd, training=training)
 
     def inference(self, images):
-        conv1 = self.conv_layer(images,
-                                size=5,
-                                filters=40,
-                                stride=2,
-                                decay=True,
-                                activation=True,
-                                bn=True,
-                                name='conv1')
+        conv1 = self.conv_layer(
+            images,
+            size=5,
+            filters=40,
+            stride=2,
+            decay=True,
+            activation=True,
+            bn=True,
+            name='conv1')
 
-        conv2 = self.conv_layer(conv1,
-                                size=3,
-                                filters=80,
-                                stride=1,
-                                decay=True,
-                                activation=True,
-                                bn=True,
-                                name='conv2')
+        conv2 = self.conv_layer(
+            conv1,
+            size=3,
+            filters=80,
+            stride=1,
+            decay=True,
+            activation=True,
+            bn=True,
+            name='conv2')
 
-        fc3 = self.fc_layer(conv2,
-                            neurons=10,
-                            decay=True,
-                            activation=False,
-                            bn=False,
-                            name='fc3')
+        fc3 = self.fc_layer(
+            conv2,
+            neurons=10,
+            decay=True,
+            activation=False,
+            bn=False,
+            name='fc3')
 
         return fc3

@@ -12,22 +12,21 @@ tf.app.flags.DEFINE_string('model', 'CryptoDL', """One of [CryptoDL].""")
 
 
 def by_name(name, training=False):
-            name = name.lower()
-            if name == 'cryptodl':
-                model = cryptodl.CryptoDL(training=training)
-            elif name == 'simple':
-                model = simple.Simple(training=training)
-            elif name == 'simple2':
-                model = simple2.Simple2(training=training)
-            elif name == 'simple3':
-                model = simple3.Simple3(training=training)
-            elif name == 'test_avg_pool':
-                model = test_avg_pool.TestAvgPool(training=training)
-            elif name == 'simple4':
-                model = simple4.Simple4(training=training)
-            elif name == 'simple5':
-                model = simple5.Simple5(training=training)
-            else:
-                raise ValueError('No such model %s' % name)
-            return model
-
+    name = name.lower()
+    if name == 'cryptodl':
+        model = cryptodl.CryptoDL(training=training)
+    elif name == 'simple':
+        model = simple.Simple(training=training)
+    elif name == 'simple2':
+        model = simple2.Simple2(training=training)
+    elif name == 'simple3':
+        model = simple3.Simple3(training=training)
+    elif name == 'test_avg_pool':
+        model = test_avg_pool.TestAvgPool(training=training)
+    elif name == 'simple4':
+        model = simple4.Simple4(training=training)
+    elif name == 'simple5':
+        model = simple5.Simple5(training=training)
+    else:
+        raise ValueError('No such model %s' % name)
+    return model

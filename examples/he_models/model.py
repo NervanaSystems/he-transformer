@@ -9,9 +9,14 @@ import os
 
 WEIGHT_DECAY = 1e2
 
-class Model(object):
 
-    def __init__(self, model_name, wd=WEIGHT_DECAY, dropout=0.0, training=True, train_poly_act=True):
+class Model(object):
+    def __init__(self,
+                 model_name,
+                 wd=WEIGHT_DECAY,
+                 dropout=0.0,
+                 training=True,
+                 train_poly_act=True):
 
         self.wd = wd
         self.dropout = dropout
@@ -24,10 +29,10 @@ class Model(object):
         print("Creating model with decay", wd)
 
     def name_to_filename(self, name):
-      """Given a variable name, returns the filename where to store it"""
-      name = name.replace('/','_')
-      name = name.replace(':0', '') + '.txt'
-      return 'weights/' + self.model_name + '/' + name
+        """Given a variable name, returns the filename where to store it"""
+        name = name.replace('/', '_')
+        name = name.replace(':0', '') + '.txt'
+        return 'weights/' + self.model_name + '/' + name
 
     def poly_act(self, x, scope):
         self.multiplcative_depth += 2
@@ -35,19 +40,24 @@ class Model(object):
 
         print('x', x.shape)
 
-
         if self.train_poly_act:
-            a = self._get_weights_var('a', [], initializer=tf.initializers.zeros, scope=scope)
-            b = self._get_weights_var('b', [], initializer=tf.initializers.ones, scope=scope)
+            a = self._get_weights_var(
+                'a', [], initializer=tf.initializers.zeros, scope=scope)
+            b = self._get_weights_var(
+                'b', [], initializer=tf.initializers.ones, scope=scope)
 
             return a * x * x + b * x
 
         else:
             return 0.125 * x * x + 0.5 * x + 0.25
 
-
-    def _get_weights_var(self, name, shape, decay=False, scope='',
-            initializer=tf.contrib.layers.xavier_initializer(uniform=False,dtype=tf.float32)):
+    def _get_weights_var(self,
+                         name,
+                         shape,
+                         decay=False,
+                         scope='',
+                         initializer=tf.contrib.layers.xavier_initializer(
+                             uniform=False, dtype=tf.float32)):
         """Helper to create an initialized Variable with weight decay.
 
         The Variable is initialized using a normal distribution whose variance
@@ -65,37 +75,48 @@ class Model(object):
             Variable Tensor
         """
         if self.training:
-          # Declare variable (it is trainable by default)
-          var = tf.get_variable(name=name,
-                                shape=shape,
-                                initializer=initializer,
-                                dtype=tf.float32)
-          if decay:
-              # We apply a weight decay to this tensor var that is equal to the
-              # model weight decay divided by the tensor size
-              weight_decay = self.wd
-              for x in shape:
-                  weight_decay /= int(x)
-              # Weight loss is L2 loss multiplied by weight decay
-              weight_loss = tf.multiply(tf.nn.l2_loss(var),
-                                        weight_decay,
-                                        name='weight_loss')
-              # Add weight loss for this variable to the global losses collection
-              tf.add_to_collection('losses', weight_loss)
+            # Declare variable (it is trainable by default)
+            var = tf.get_variable(
+                name=name,
+                shape=shape,
+                initializer=initializer,
+                dtype=tf.float32)
+            if decay:
+                # We apply a weight decay to this tensor var that is equal to the
+                # model weight decay divided by the tensor size
+                weight_decay = self.wd
+                for x in shape:
+                    weight_decay /= int(x)
+                # Weight loss is L2 loss multiplied by weight decay
+                weight_loss = tf.multiply(
+                    tf.nn.l2_loss(var), weight_decay, name='weight_loss')
+                # Add weight loss for this variable to the global losses collection
+                tf.add_to_collection('losses', weight_loss)
 
-          return var
+            return var
         else:
             restore_filename = self.name_to_filename(scope.name + '/' + name)
-            print('restoring variable: ', restore_filename, ' with shape', shape)
+            print('restoring variable: ', restore_filename, ' with shape',
+                  shape)
 
             if os.path.exists('./' + restore_filename):
-                return tf.constant(np.loadtxt(restore_filename, dtype=np.float32).reshape(shape))
+                return tf.constant(
+                    np.loadtxt(restore_filename,
+                               dtype=np.float32).reshape(shape))
             else:
                 print('Could not load ', restore_filename)
                 exit(1)
                 #return tf.constant(np.zeros(shape=shape, dtype=np.float32))
 
-    def conv_layer(self, inputs, size, filters, stride, decay, name, activation=True, bn=False):
+    def conv_layer(self,
+                   inputs,
+                   size,
+                   filters,
+                   stride,
+                   decay,
+                   name,
+                   activation=True,
+                   bn=False):
         channels = inputs.get_shape()[3]
         shape = [size, size, channels, filters]
 
@@ -103,35 +124,39 @@ class Model(object):
         print('conv layer => mult. depth', self.multiplcative_depth)
 
         with tf.variable_scope(name + '/conv') as scope:
-            weights = self._get_weights_var('weights',
-                                            shape=shape,
-                                            decay=decay, scope=scope)
+            weights = self._get_weights_var(
+                'weights', shape=shape, decay=decay, scope=scope)
 
-            biases = self._get_weights_var('biases',
-                                    shape=[filters],
-                                    initializer=tf.constant_initializer(0.0), scope=scope)
-            conv = tf.nn.conv2d(inputs,
-                                weights,
-                                strides=[1,stride,stride,1],
-                                padding='SAME')
+            biases = self._get_weights_var(
+                'biases',
+                shape=[filters],
+                initializer=tf.constant_initializer(0.0),
+                scope=scope)
+            conv = tf.nn.conv2d(
+                inputs,
+                weights,
+                strides=[1, stride, stride, 1],
+                padding='SAME')
 
             if bn:
-                conv = tf.layers.batch_normalization(conv, training=self.training)
+                conv = tf.layers.batch_normalization(
+                    conv, training=self.training)
             pre_activation = tf.nn.bias_add(conv, biases)
 
             if activation:
-                outputs= self.poly_act(pre_activation, scope=scope)
-                 #tf.nn.relu(pre_activation, name=scope.name)
+                outputs = self.poly_act(pre_activation, scope=scope)
+                #tf.nn.relu(pre_activation, name=scope.name)
             else:
                 outputs = pre_activation
 
         # Evaluate layer size
-        self.sizes.append((name,(1+size*size*int(channels))*filters))
+        self.sizes.append((name, (1 + size * size * int(channels)) * filters))
 
         # Evaluate number of operations
         N, w, h, c = outputs.get_shape()
         # Number of convolutions
-        num_flops = (1+2*int(channels)*size*size)*filters*int(w)*int(h)
+        num_flops = (
+            1 + 2 * int(channels) * size * size) * filters * int(w) * int(h)
 
         self.flops.append((name, num_flops))
 
@@ -144,18 +169,19 @@ class Model(object):
         print('pool layer => mult. depth', self.multiplcative_depth)
         # TODO: add flops
         with tf.variable_scope(name) as scope:
-            outputs = tf.nn.avg_pool(inputs,
-                                     ksize=[1,size,size,1],
-                                     strides=[1,stride,stride,1],
-                                     padding='SAME',
-                                     name=name)
+            outputs = tf.nn.avg_pool(
+                inputs,
+                ksize=[1, size, size, 1],
+                strides=[1, stride, stride, 1],
+                padding='SAME',
+                name=name)
 
         return outputs
 
-    def fc_layer(self, inputs, neurons, decay, name, activation=True, bn=False):
+    def fc_layer(self, inputs, neurons, decay, name, activation=True,
+                 bn=False):
         self.multiplcative_depth += 1
         print('FC layer => mult. depth', self.multiplcative_depth)
-
 
         with tf.variable_scope(name) as scope:
             if len(inputs.get_shape().as_list()) > 2:
@@ -169,12 +195,13 @@ class Model(object):
                 # No need to reshape inputs
                 reshaped = inputs
             dim = reshaped.get_shape().as_list()[1]
-            weights = self._get_weights_var('weights',
-                                            shape=[dim,neurons],
-                                            decay=decay, scope=scope)
-            biases = self._get_weights_var('biases',
-                                    shape=[neurons],
-                                    initializer=tf.constant_initializer(0.0), scope=scope)
+            weights = self._get_weights_var(
+                'weights', shape=[dim, neurons], decay=decay, scope=scope)
+            biases = self._get_weights_var(
+                'biases',
+                shape=[neurons],
+                initializer=tf.constant_initializer(0.0),
+                scope=scope)
             x = tf.add(tf.matmul(reshaped, weights), biases)
 
             if bn:
@@ -199,23 +226,24 @@ class Model(object):
 
     # Not supported by ngraph-tf
     def lrn_layer(self, inputs, name):
-        depth_radius=4
+        depth_radius = 4
         with tf.variable_scope(name) as scope:
-            outputs = tf.nn.lrn(inputs,
-                                depth_radius=depth_radius,
-                                bias=1.0,
-                                alpha=0.001/9.0,
-                                beta=0.75,
-                                name=scope.name)
+            outputs = tf.nn.lrn(
+                inputs,
+                depth_radius=depth_radius,
+                bias=1.0,
+                alpha=0.001 / 9.0,
+                beta=0.75,
+                name=scope.name)
 
         input_size = np.prod(inputs.get_shape().as_list()[1:])
 
         # Evaluate layer operations
         # First, cost to calculate normalizer (using local input squares sum)
         # norm = (1 + alpha/n*sum[n](local-input*local_input)
-        local_flops = 1 + 1 + 1 + 2*depth_radius*depth_radius
+        local_flops = 1 + 1 + 1 + 2 * depth_radius * depth_radius
         # Then cost to divide each input by the normalizer
-        num_flops = (local_flops + 1)*input_size
+        num_flops = (local_flops + 1) * input_size
         self.flops.append((name, num_flops))
 
         return outputs
@@ -229,16 +257,18 @@ class Model(object):
         c = inputs.get_shape().as_list()[3]
         with tf.variable_scope(name) as scope:
             # Use current spatial dimensions as Kernel size to produce a scalar
-            avg = tf.nn.avg_pool(inputs,
-                                 ksize=[1,w,h,1],
-                                 strides=[1,1,1,1],
-                                 padding='VALID',
-                                 name=scope.name)
+            avg = tf.nn.avg_pool(
+                inputs,
+                ksize=[1, w, h, 1],
+                strides=[1, 1, 1, 1],
+                padding='VALID',
+                name=scope.name)
         # Reshape output to remove spatial dimensions reduced to one
-        return tf.reshape(avg, shape=[-1,c])
+        return tf.reshape(avg, shape=[-1, c])
 
     def inference(self, images):
-        raise NotImplementedError('Model subclasses must implement this method')
+        raise NotImplementedError(
+            'Model subclasses must implement this method')
 
     def loss(self, logits, labels):
 
@@ -246,8 +276,8 @@ class Model(object):
         labels = tf.cast(labels, tf.int64)
         cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(
             labels=labels, logits=logits, name='cross_entropy_per_example')
-        cross_entropy_loss = tf.reduce_mean(cross_entropy,
-                                            name='cross_entropy_loss')
+        cross_entropy_loss = tf.reduce_mean(
+            cross_entropy, name='cross_entropy_loss')
         # We use a global collection to track losses
         tf.add_to_collection('losses', cross_entropy_loss)
 
@@ -262,7 +292,8 @@ class Model(object):
         # Evaluate predictions
         predictions_op = tf.nn.in_top_k(logits, labels, 1)
 
-        return tf.reduce_mean(tf.cast(predictions_op, tf.float32), name='accuracy')
+        return tf.reduce_mean(
+            tf.cast(predictions_op, tf.float32), name='accuracy')
 
     def get_flops(self):
         num_flops = 0
