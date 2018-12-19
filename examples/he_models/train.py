@@ -23,7 +23,7 @@ FLAGS = tf.app.flags.FLAGS
 
 tf.app.flags.DEFINE_integer('max_steps', 10000,
                             """Number of batches to run.""")
-tf.app.flags.DEFINE_float('learning_rate', 0.01, """Initial learning rate.""")
+tf.app.flags.DEFINE_float('learning_rate', 0.1, """Initial learning rate.""")
 tf.app.flags.DEFINE_integer('log_freq', 10,
                             """How often to log results (steps).""")
 tf.app.flags.DEFINE_integer('save_freq', 60,
@@ -33,9 +33,12 @@ tf.app.flags.DEFINE_boolean('resume', False,
 tf.app.flags.DEFINE_string('log_dir', './log/cifar10', "   "
                            "Directory where to write event logs."
                            "")
+tf.app.flags.DEFINE_boolean('clip_grads', True,
+                            """Clip gradients to [-0.25, 0.25] or not""")
+tf.app.flags.DEFINE_boolean('moving_averages', False,
+                            """Use moving averages for loss""")
 
 MOVING_AVERAGE_DECAY = 0.9999
-
 
 def get_run_dir(log_dir, model_name):
     model_dir = os.path.join(log_dir, model_name)
@@ -96,36 +99,48 @@ def train_ops():
     optimizer = tf.train.GradientDescentOptimizer(learning_rate)
 
     # Clip gradients to [-0.25, 0.25]
-    gvs = optimizer.compute_gradients(loss)
-    capped_gvs = []
-    for grad, var in gvs:
-        if grad is None:
-            continue
-        var_name = var.name
-        var_name = var_name.strip(':0')
-        if var_name[-2:] in set(['a', 'b']):
-            print("Capping gradient ", var_name, " to 0.25")
-            capped_gvs.append((tf.clip_by_value(grad, -0.25, 0.25), var))
-        else:
-            capped_gvs.append((tf.clip_by_value(grad, -100, 1.0), var))
-    sgd_op = optimizer.apply_gradients(capped_gvs, global_step=global_step)
-
-    # sgd_op = optimizer.minimize(loss, global_step = global_step)
+    if FLAGS.clip_grads:
+        print("Clipping gradients")
+        gvs = optimizer.compute_gradients(loss)
+        capped_gvs = []
+        for grad, var in gvs:
+            if grad is None:
+                continue
+            var_name = var.name
+            var_name = var_name.strip(':0')
+            if var_name[-2:] in set(['a', 'b']):
+                print("Capping gradient ", var_name, " to 0.25")
+                capped_gvs.append((tf.clip_by_value(grad, -0.25, 0.25), var))
+            else:
+                capped_gvs.append((tf.clip_by_value(grad, -0.25, 0.25), var))
+        sgd_op = optimizer.apply_gradients(capped_gvs, global_step=global_step)
+    else:
+        print("Not clipping gradients")
+        sgd_op = optimizer.minimize(loss, global_step = global_step)
 
     # Build yet another graph to evaluate moving averages of variables after
     # each step: these smoothed parameters will be loaded instead of the raw
     # trained values during evaluation
-    #variable_averages = \
-    #    tf.train.ExponentialMovingAverage(MOVING_AVERAGE_DECAY, global_step)
-    #variables_averages_op = variable_averages.apply(tf.trainable_variables())
 
-    # For batch normalization, we also need to update some variables
-    update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+    if FLAGS.moving_averages:
+        print("Moving averages")
+        variable_averages = \
+            tf.train.ExponentialMovingAverage(MOVING_AVERAGE_DECAY, global_step)
+        variables_averages_op = variable_averages.apply(tf.trainable_variables())
+        # For batch normalization, we also need to update some variables
+        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
 
-    # Create a meta-graph that includes sgd and variables moving average
-    with tf.control_dependencies([sgd_op] +
-                                 update_ops):  #, variables_averages_op
-        train_op = tf.no_op(name='train')
+        # Create a meta-graph that includes sgd and variables moving average
+        with tf.control_dependencies([sgd_op, variables_averages_op] + update_ops):
+            train_op = tf.no_op(name='train')
+    else:
+        # For batch normalization, we also need to update some variables
+        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+
+        # Create a meta-graph that includes sgd and variables moving average
+        with tf.control_dependencies([sgd_op] +
+                                    update_ops):  #, variables_averages_op
+            train_op = tf.no_op(name='train')
 
     # Build another graph to provide training summary information
     summary_op = tf.summary.merge_all()

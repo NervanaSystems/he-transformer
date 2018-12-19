@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
 """An MNIST classifier based on Cryptonets using convolutional layers. """
 
 from __future__ import absolute_import
@@ -30,6 +29,7 @@ import tensorflow as tf
 import common
 
 FLAGS = None
+
 
 def squash_layers():
     print("Squashing layers")

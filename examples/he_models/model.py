@@ -116,12 +116,20 @@ class Model(object):
                    decay,
                    name,
                    activation=True,
-                   bn=False):
+                   relu_act=False,
+                   bn_before_act=False,
+                   bn_after_act=False):
         channels = inputs.get_shape()[3]
         shape = [size, size, channels, filters]
 
+        if (relu_act and not activation):
+            print("Error: relu_act=True, activation=False")
+            exit(1)
+
         self.multiplcative_depth += 1
         print('conv layer => mult. depth', self.multiplcative_depth)
+
+        print('Conv shape: size:', size, 'channels:', channels, 'filters:', filters, ', shape: ', shape)
 
         with tf.variable_scope(name + '/conv') as scope:
             weights = self._get_weights_var(
@@ -138,16 +146,19 @@ class Model(object):
                 strides=[1, stride, stride, 1],
                 padding='SAME')
 
-            if bn:
+            if bn_before_act:
                 conv = tf.layers.batch_normalization(
                     conv, training=self.training)
-            pre_activation = tf.nn.bias_add(conv, biases)
+            outputs = tf.nn.bias_add(conv, biases)
 
             if activation:
-                outputs = self.poly_act(pre_activation, scope=scope)
-                #tf.nn.relu(pre_activation, name=scope.name)
-            else:
-                outputs = pre_activation
+                if relu_act:
+                    outputs = tf.nn.relu(outputs)
+                else:
+                    outputs = self.poly_act(outputs, scope=scope)
+
+            if bn_after_act:
+                outputs = tf.layers.batch_normalization(conv, training=self.training)
 
         # Evaluate layer size
         self.sizes.append((name, (1 + size * size * int(channels)) * filters))
@@ -164,22 +175,32 @@ class Model(object):
 
         return outputs
 
-    def pool_layer(self, inputs, size, stride, name):
+    def pool_layer(self, inputs, size, stride, name, max_pool=False):
         self.multiplcative_depth += 1
         print('pool layer => mult. depth', self.multiplcative_depth)
         # TODO: add flops
-        with tf.variable_scope(name) as scope:
-            outputs = tf.nn.avg_pool(
-                inputs,
-                ksize=[1, size, size, 1],
-                strides=[1, stride, stride, 1],
-                padding='SAME',
-                name=name)
+        if max_pool:
+            print("Max pooling")
+            with tf.variable_scope(name) as scope:
+                outputs = tf.nn.max_pool(
+                    inputs,
+                    ksize=[1, size, size, 1],
+                    strides=[1, stride, stride, 1],
+                    padding='SAME',
+                    name=name)
+        else:
+            with tf.variable_scope(name) as scope:
+                outputs = tf.nn.avg_pool(
+                    inputs,
+                    ksize=[1, size, size, 1],
+                    strides=[1, stride, stride, 1],
+                    padding='SAME',
+                    name=name)
 
         return outputs
 
     def fc_layer(self, inputs, neurons, decay, name, activation=True,
-                 bn=False):
+                 bn_before_act=False, bn_after_act=False, relu_act=False):
         self.multiplcative_depth += 1
         print('FC layer => mult. depth', self.multiplcative_depth)
 
@@ -204,12 +225,15 @@ class Model(object):
                 scope=scope)
             x = tf.add(tf.matmul(reshaped, weights), biases)
 
-            if bn:
+            if bn_before_act:
                 x = tf.layers.batch_normalization(x, training=self.training)
             if activation:
-                outputs = self.poly_act(x, scope=scope)
-            else:
-                outputs = x
+                if relu_act:
+                    x = tf.nn.relu(x)
+                else:
+                    x = self.poly_act(x, scope=scope)
+            if bn_after_act:
+                x = tf.layers.batch_normalization(x, training=self.training)
 
         # Evaluate layer size
         self.sizes.append((name, (dim + 1) * neurons))
@@ -222,7 +246,7 @@ class Model(object):
             num_flops += neurons
         self.flops.append((name, num_flops))
 
-        return outputs
+        return x
 
     # Not supported by ngraph-tf
     def lrn_layer(self, inputs, name):
@@ -265,6 +289,42 @@ class Model(object):
                 name=scope.name)
         # Reshape output to remove spatial dimensions reduced to one
         return tf.reshape(avg, shape=[-1, c])
+
+    def fire_layer(self, inputs, s1x1, e1x1, e3x3, name, decay=False, activation=True, relu_act=False):
+        with tf.variable_scope(name) as scope:
+
+            # Squeeze sub-layer
+            squeezed_inputs = self.conv_layer(inputs,
+                                              size=1,
+                                              filters=s1x1,
+                                              stride=1,
+                                              decay=decay,
+                                              activation=activation,
+                                              relu_act=relu_act,
+                                              name='s1x1')
+
+            # Expand 1x1 sub-layer
+            e1x1_outputs = self.conv_layer(squeezed_inputs,
+                                           size=1,
+                                           filters=e1x1,
+                                           stride=1,
+                                           decay=decay,
+                                           activation=activation,
+                                           relu_act=relu_act,
+                                           name='e1x1')
+
+            # Expand 3x3 sub-layer
+            e3x3_outputs = self.conv_layer(squeezed_inputs,
+                                           size=3,
+                                           filters=e3x3,
+                                           stride=1,
+                                           decay=decay,
+                                           activation=activation,
+                                           relu_act=relu_act,
+                                           name='e3x3')
+
+        # Concatenate outputs along the last dimension (channel)
+        return tf.concat([e1x1_outputs, e3x3_outputs], 3)
 
     def inference(self, images):
         raise NotImplementedError(

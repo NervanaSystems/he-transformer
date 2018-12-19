@@ -28,7 +28,7 @@ class CryptoDL(model.Model):
             stride=1,
             decay=True,
             activation=False,
-            bn=True,
+            bn_before_act=True,
             name='conv1')
 
         conv2 = self.conv_layer(
@@ -38,7 +38,7 @@ class CryptoDL(model.Model):
             stride=1,
             decay=True,
             activation=True,
-            bn=True,
+            bn_before_act=True,
             name='conv2')
 
         pool1 = self.pool_layer(conv2, size=3, stride=1, name='pool1')
@@ -50,7 +50,7 @@ class CryptoDL(model.Model):
             stride=1,
             decay=True,
             activation=False,
-            bn=True,
+            bn_before_act=True,
             name='conv4')
 
         conv4 = self.conv_layer(
@@ -60,7 +60,7 @@ class CryptoDL(model.Model):
             stride=1,
             decay=True,
             activation=True,
-            bn=True,
+            bn_before_act=True,
             name='conv5')
 
         pool2 = self.pool_layer(conv4, size=3, stride=1, name='pool1')
@@ -72,7 +72,7 @@ class CryptoDL(model.Model):
             stride=1,
             decay=True,
             activation=False,
-            bn=True,
+            bn_before_act=True,
             name='conv6')
 
         conv6 = self.conv_layer(
@@ -82,7 +82,7 @@ class CryptoDL(model.Model):
             stride=1,
             decay=True,
             activation=True,
-            bn=True,
+            bn_before_act=True,
             name='conv8')
 
         pool2 = self.pool_layer(conv6, size=3, stride=1, name='pool2')
@@ -92,7 +92,6 @@ class CryptoDL(model.Model):
             neurons=256,
             decay=True,
             activation=False,
-            bn=False,
             name='fc1')
 
         fc2 = self.fc_layer(
@@ -100,7 +99,6 @@ class CryptoDL(model.Model):
             neurons=10,
             decay=True,
             activation=False,
-            bn=False,
             name='fc2')
 
         return fc2
