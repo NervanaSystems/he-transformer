@@ -62,6 +62,7 @@ std::pair<std::shared_ptr<S>, std::shared_ptr<T>> match_arguments(
     chain_ind0 = he_seal_ckks_backend->get_context()
                      ->context_data(arg0_scaled->get_hetext().parms_id())
                      ->chain_index();
+    assert(chain_ind0 == chain_ind1);
   } else if (chain_ind1 > chain_ind0) {
     he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
         arg1_scaled->get_hetext(), arg0_scaled->get_hetext().parms_id());
@@ -70,9 +71,9 @@ std::pair<std::shared_ptr<S>, std::shared_ptr<T>> match_arguments(
                      ->chain_index();
     assert(chain_ind0 == chain_ind1);
   }
-  if (chain_ind0 <= 1) {
+  /*if (chain_ind0 <= 1) {
     NGRAPH_INFO << "Chain ind " << chain_ind0 << " almost used up";
-  }
+  }*/
 
   return std::make_pair(arg0_scaled, arg1_scaled);
 }

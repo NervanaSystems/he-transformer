@@ -27,21 +27,27 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
     const element::Type& element_type,
     const runtime::he::he_seal::HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
-  if ((arg0 == arg1) && (arg1 == out.get())) {
+  /*if ((arg0 == arg1) && (arg1 == out.get())) {
     he_seal_ckks_backend->get_evaluator()->square_inplace(out->m_ciphertext);
   } else if (arg1 == arg0) {
     he_seal_ckks_backend->get_evaluator()->square(arg1->m_ciphertext,
                                                   out->m_ciphertext);
-  } else {
-    auto argument_matching_pair =
-        match_arguments(arg0, arg1, he_seal_ckks_backend);
-    auto arg0_scaled = get<0>(argument_matching_pair);
-    auto arg1_scaled = get<1>(argument_matching_pair);
+  } else { */
+  auto argument_matching_pair =
+      match_arguments(arg0, arg1, he_seal_ckks_backend);
+  auto arg0_scaled = get<0>(argument_matching_pair);
+  auto arg1_scaled = get<1>(argument_matching_pair);
 
-    he_seal_ckks_backend->get_evaluator()->multiply(arg0_scaled->m_ciphertext,
-                                                    arg1_scaled->m_ciphertext,
-                                                    out->m_ciphertext);
-  }
+  size_t chain_ind0 = he_seal_ckks_backend->get_context()
+                          ->context_data(arg0_scaled->get_hetext().parms_id())
+                          ->chain_index();
+  size_t chain_ind1 = he_seal_ckks_backend->get_context()
+                          ->context_data(arg1_scaled->get_hetext().parms_id())
+                          ->chain_index();
+
+  he_seal_ckks_backend->get_evaluator()->multiply(
+      arg0_scaled->m_ciphertext, arg1_scaled->m_ciphertext, out->m_ciphertext);
+  //}
 
   he_seal_ckks_backend->get_evaluator()->relinearize_inplace(
       out->m_ciphertext, *(he_seal_ckks_backend->get_relin_keys()), pool);
@@ -59,8 +65,21 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
     const seal::MemoryPoolHandle& pool) {
   auto argument_matching_pair =
       match_arguments(arg0, arg1, he_seal_ckks_backend);
+
   auto arg0_scaled = get<0>(argument_matching_pair);
   auto arg1_scaled = get<1>(argument_matching_pair);
+
+  size_t chain_ind0 = he_seal_ckks_backend->get_context()
+                          ->context_data(arg0_scaled->get_hetext().parms_id())
+                          ->chain_index();
+  size_t chain_ind1 = he_seal_ckks_backend->get_context()
+                          ->context_data(arg1_scaled->get_hetext().parms_id())
+                          ->chain_index();
+
+  if (chain_ind0 == 0 || chain_ind1 == 0) {
+    NGRAPH_INFO << "Chain ind used up";
+    exit(1);
+  }
 
   he_seal_ckks_backend->get_evaluator()->multiply_plain(
       arg0_scaled->m_ciphertext, arg1_scaled->m_plaintext, out->m_ciphertext,
