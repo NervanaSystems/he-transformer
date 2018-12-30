@@ -61,7 +61,7 @@ cd $HE_TRANSFORMER/build
 # To run CKKS unit-test
 ./test/unit-test --gtest_filter="HE_SEAL_CKKS.*abc*"
 # To run BFV unit-test
-./test/unit-test --gtest_filter="HE_SEAL_BFV.*abc*
+./test/unit-test --gtest_filter="HE_SEAL_BFV.*abc*"
 # To run all C++ unit-tests
 ./test/unit-test
 ```
