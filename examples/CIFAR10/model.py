@@ -24,6 +24,7 @@ import os
 
 WEIGHT_DECAY = 1e2
 
+
 class Model(object):
     def __init__(self,
                  model_name,
@@ -117,7 +118,6 @@ class Model(object):
             else:
                 print('Could not load ', restore_filename)
                 exit(1)
-                #return tf.constant(np.zeros(shape=shape, dtype=np.float32))
 
     def conv_layer(self,
                    inputs,
@@ -140,7 +140,8 @@ class Model(object):
         self.multiplcative_depth += 1
         print('conv layer => mult. depth', self.multiplcative_depth)
 
-        print('Conv shape: size:', size, 'channels:', channels, 'filters:', filters, ', shape: ', shape)
+        print('Conv shape: size:', size, 'channels:', channels, 'filters:',
+              filters, ', shape: ', shape)
 
         with tf.variable_scope(name + '/conv') as scope:
             weights = self._get_weights_var(
@@ -169,7 +170,8 @@ class Model(object):
                     outputs = self._poly_act(outputs, scope=scope)
 
             if bn_after_act:
-                outputs = tf.layers.batch_normalization(conv, training=self.training)
+                outputs = tf.layers.batch_normalization(
+                    conv, training=self.training)
 
         # Evaluate layer size
         self.sizes.append((name, (1 + size * size * int(channels)) * filters))
@@ -199,15 +201,22 @@ class Model(object):
 
         return outputs
 
-    def fc_layer(self, inputs, neurons, decay, name, activation=True,
-                 bn_before_act=False, bn_after_act=False, relu_act=False):
+    def fc_layer(self,
+                 inputs,
+                 neurons,
+                 decay,
+                 name,
+                 activation=True,
+                 bn_before_act=False,
+                 bn_after_act=False,
+                 relu_act=False):
         self.multiplcative_depth += 1
         print('FC layer => mult. depth', self.multiplcative_depth)
 
         with tf.variable_scope(name) as scope:
             if len(inputs.get_shape().as_list()) > 2:
                 # We need to reshape inputs:
-                #   [ batch size , w, h, c ] -> [ batch size, w x h x c ]
+                # [ batch size , w, h, c ] -> [ batch size, w x h x c ]
                 # Batch size is a dynamic value, but w, h and c are static and
                 # can be used to specifiy the reshape operation
                 dim = np.prod(inputs.get_shape().as_list()[1:])
@@ -258,38 +267,49 @@ class Model(object):
         # Reshape output to remove spatial dimensions reduced to one
         return tf.reshape(avg, shape=[-1, c])
 
-    def fire_layer(self, inputs, s1x1, e1x1, e3x3, name, decay=False, activation=True, relu_act=False):
+    def fire_layer(self,
+                   inputs,
+                   s1x1,
+                   e1x1,
+                   e3x3,
+                   name,
+                   decay=False,
+                   activation=True,
+                   relu_act=False):
         with tf.variable_scope(name) as scope:
 
             # Squeeze sub-layer
-            squeezed_inputs = self.conv_layer(inputs,
-                                              size=1,
-                                              filters=s1x1,
-                                              stride=1,
-                                              decay=decay,
-                                              activation=activation,
-                                              relu_act=relu_act,
-                                              name='s1x1')
+            squeezed_inputs = self.conv_layer(
+                inputs,
+                size=1,
+                filters=s1x1,
+                stride=1,
+                decay=decay,
+                activation=activation,
+                relu_act=relu_act,
+                name='s1x1')
 
             # Expand 1x1 sub-layer
-            e1x1_outputs = self.conv_layer(squeezed_inputs,
-                                           size=1,
-                                           filters=e1x1,
-                                           stride=1,
-                                           decay=decay,
-                                           activation=activation,
-                                           relu_act=relu_act,
-                                           name='e1x1')
+            e1x1_outputs = self.conv_layer(
+                squeezed_inputs,
+                size=1,
+                filters=e1x1,
+                stride=1,
+                decay=decay,
+                activation=activation,
+                relu_act=relu_act,
+                name='e1x1')
 
             # Expand 3x3 sub-layer
-            e3x3_outputs = self.conv_layer(squeezed_inputs,
-                                           size=3,
-                                           filters=e3x3,
-                                           stride=1,
-                                           decay=decay,
-                                           activation=activation,
-                                           relu_act=relu_act,
-                                           name='e3x3')
+            e3x3_outputs = self.conv_layer(
+                squeezed_inputs,
+                size=3,
+                filters=e3x3,
+                stride=1,
+                decay=decay,
+                activation=activation,
+                relu_act=relu_act,
+                name='e3x3')
 
         # Concatenate outputs along the last dimension (channel)
         return tf.concat([e1x1_outputs, e3x3_outputs], 3)
