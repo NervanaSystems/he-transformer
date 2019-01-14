@@ -31,6 +31,7 @@ class Model(object):
                  wd=WEIGHT_DECAY,
                  dropout=0.0,
                  training=True,
+                 batch_norm=True,
                  train_poly_act=True):
 
         self.wd = wd
@@ -40,13 +41,21 @@ class Model(object):
         self.training = training
         self.model_name = model_name
         self.train_poly_act = train_poly_act
+        self.batch_norm = batch_norm
         print("Creating model with decay", wd)
 
-    def _name_to_filename(self, name):
+    def _name_to_filename(self, var_name):
         """Given a variable name, returns the filename where to store it"""
-        name = name.replace('/', '_')
-        name = name.replace(':0', '') + '.txt'
-        return 'weights/' + self.model_name + '/' + name
+        var_name = var_name.replace('/', '_')
+        var_name = var_name.replace(':0', '') + '.txt'
+        prefix = 'weights'
+        model_name = self.model_name
+        if self.batch_norm:
+            model_name += '_bn'
+        if self.train_poly_act:
+            model_name += '_train_poly_act'
+
+        return '/'.join([prefix, model_name, var_name])
 
     def _poly_act(self, x, scope):
         self.multiplcative_depth += 2
@@ -128,8 +137,7 @@ class Model(object):
                    name,
                    activation=True,
                    relu_act=False,
-                   bn_before_act=False,
-                   bn_after_act=False):
+                   batch_norm=False):
         channels = inputs.get_shape()[3]
         shape = [size, size, channels, filters]
 
@@ -143,7 +151,7 @@ class Model(object):
         print('Conv shape: size:', size, 'channels:', channels, 'filters:',
               filters, ', shape: ', shape)
 
-        with tf.variable_scope(name + '/conv') as scope:
+        with tf.variable_scope(name) as scope:
             weights = self._get_weights_var(
                 'weights', shape=shape, decay=decay, scope=scope)
 
@@ -158,7 +166,7 @@ class Model(object):
                 strides=[1, stride, stride, 1],
                 padding='SAME')
 
-            if bn_before_act:
+            if batch_norm:
                 conv = tf.layers.batch_normalization(
                     conv, training=self.training)
             outputs = tf.nn.bias_add(conv, biases)
@@ -168,10 +176,6 @@ class Model(object):
                     outputs = tf.nn.relu(outputs)
                 else:
                     outputs = self._poly_act(outputs, scope=scope)
-
-            if bn_after_act:
-                outputs = tf.layers.batch_normalization(
-                    conv, training=self.training)
 
         # Evaluate layer size
         self.sizes.append((name, (1 + size * size * int(channels)) * filters))
@@ -207,8 +211,7 @@ class Model(object):
                  decay,
                  name,
                  activation=True,
-                 bn_before_act=False,
-                 bn_after_act=False,
+                 batch_norm=False,
                  relu_act=False):
         self.multiplcative_depth += 1
         print('FC layer => mult. depth', self.multiplcative_depth)
@@ -234,15 +237,13 @@ class Model(object):
                 scope=scope)
             x = tf.add(tf.matmul(reshaped, weights), biases)
 
-            if bn_before_act:
+            if batch_norm:
                 x = tf.layers.batch_normalization(x, training=self.training)
             if activation:
                 if relu_act:
                     x = tf.nn.relu(x)
                 else:
                     x = self._poly_act(x, scope=scope)
-            if bn_after_act:
-                x = tf.layers.batch_normalization(x, training=self.training)
 
         # Evaluate layer size
         self.sizes.append((name, (dim + 1) * neurons))

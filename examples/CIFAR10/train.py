@@ -49,6 +49,10 @@ MOVING_AVERAGE_DECAY = 0.9999
 
 def get_run_dir(log_dir, model_name):
     model_dir = os.path.join(log_dir, model_name)
+    if FLAGS.batch_norm:
+        model_dir += '_bn'
+    if FLAGS.train_poly_act:
+        model_dir += '_train_poly_act'
     if os.path.isdir(model_dir):
         if FLAGS.resume:
             # Reuse the last directory
@@ -74,7 +78,7 @@ def train_ops():
     images, labels = data.train_inputs(data_dir=data_dir)
 
     # Instantiate the model
-    model = select.by_name(FLAGS.model, training=True)
+    model = select.by_name(FLAGS.model, FLAGS, training=True)
 
     # Create a 'virtual' graph node based on images that represents the input
     # node to be used for graph retrieval
@@ -197,7 +201,7 @@ def train_loop():
                 _LoggerHook()
             ]) as mon_sess:
         while not mon_sess.should_stop():
-            mon_sess.run(train_op)  #, feed_dict={'training:0': True})
+            mon_sess.run(train_op)
 
 
 def main(argv=None):

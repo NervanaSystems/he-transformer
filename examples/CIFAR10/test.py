@@ -40,21 +40,19 @@ from train import get_run_dir
 
 FLAGS = tf.app.flags.FLAGS
 
-tf.app.flags.DEFINE_bool('report_accuracy', True,
-                         "Whether or not to report accuracy")
-
 
 def save_weights():
     """Saves CIFAR10 weights"""
     FLAGS.resume = True  # Get saved weights, not new ones
     run_dir = get_run_dir(FLAGS.log_dir, FLAGS.model)
+    print('run_dir', run_dir)
     checkpoint_dir = os.path.join(run_dir, 'train')
 
     with tf.Graph().as_default() as g:
         # Get images and labels for CIFAR-10.
         print('data dir', FLAGS.data_dir)
         images, labels = data.train_inputs(data_dir=FLAGS.data_dir)
-        model = select.by_name(FLAGS.model, training=True)
+        model = select.by_name(FLAGS.model, FLAGS, training=True)
 
         print('FLAGS.model', FLAGS.model)
 
@@ -96,10 +94,12 @@ def save_weights():
 
 
 def optimize_model_for_inference():
-    """Saves CIFAR10 weights"""
+    """Optimizes CIFAR-10 model for inference"""
     FLAGS.resume = True  # Get saved weights, not new ones
     run_dir = get_run_dir(FLAGS.log_dir, FLAGS.model)
     checkpoint_dir = os.path.join(run_dir, 'train')
+    print('run_dir', run_dir)
+    print('checkpoint dir', checkpoint_dir)
     ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
     train_graph = os.path.join(checkpoint_dir, 'graph.pbtxt')
     frozen_graph = os.path.join(checkpoint_dir, 'graph_constants.pb')
@@ -110,70 +110,94 @@ def optimize_model_for_inference():
         # Build a new inference graph, with variables to be restored from
         # training graph.
         IMAGE_SIZE = 24 if FLAGS.data_aug else 32
-        images = tf.constant(
-            1, dtype=tf.float32, shape=[1, IMAGE_SIZE, IMAGE_SIZE, 3])
+        if FLAGS.batch_norm:
+            images = tf.constant(
+                1, dtype=tf.float32, shape=[1, IMAGE_SIZE, IMAGE_SIZE, 3])
+            print('BN Images shape, ',
+                  [FLAGS.batch_size, IMAGE_SIZE, IMAGE_SIZE, 3])
+        else:
+            images = tf.constant(
+                1,
+                dtype=tf.float32,
+                shape=[FLAGS.batch_size, IMAGE_SIZE, IMAGE_SIZE, 3])
+            print('No BN Images shape, ',
+                  [FLAGS.batch_size, IMAGE_SIZE, IMAGE_SIZE, 3])
 
-        model = select.by_name(FLAGS.model, training=False)
+        model = select.by_name(FLAGS.model, FLAGS, training=False)
         images = tf.identity(images, 'XXX')
         logits = model.inference(images)
         logits = tf.identity(logits, 'YYY')
 
-        # TODO we want to find the exponential mean/var computed during training
-        # and hook that up in place of the last batch mean/var in the inference graph
-        # but we don't want to create a new/uninitialized variable right?
+        print('batch stize', FLAGS.batch_size)
+        print('images size', images.shape)
 
-        # Restore values from the trained model into corresponding variables in the
-        # inference graph.
-        ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
-        assert ckpt and ckpt.model_checkpoint_path, "No checkpoint found in {}".format(
-            checkpoint_dir)
-        saver = tf.train.Saver()
-        saver.restore(sess, ckpt.model_checkpoint_path)
+        if FLAGS.batch_norm:
+            # TODO we want to find the exponential mean/var computed during training
+            # and hook that up in place of the last batch mean/var in the inference graph
+            # but we don't want to create a new/uninitialized variable right?
 
-        # Write fully-assembled inference graph to a file, so freeze_graph can use it
-        tf.io.write_graph(
-            sess.graph, checkpoint_dir, 'inference_graph.pbtxt', as_text=True)
+            # Restore values from the trained model into corresponding variables in the
+            # inference graph.
+            ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
+            print('ckpt.model_checkpoint_path', ckpt.model_checkpoint_path)
+            assert ckpt and ckpt.model_checkpoint_path, "No checkpoint found in {}".format(
+                checkpoint_dir)
 
-        # Freeze graph, converting variables to inline-constants in pb file
-        constant_graph = os.path.join(checkpoint_dir, 'graph_constants.pb')
-        freeze_graph.freeze_graph(
-            input_graph=os.path.join(checkpoint_dir, 'inference_graph.pbtxt'),
-            input_saver="",
-            input_binary=False,
-            input_checkpoint=ckpt.model_checkpoint_path,
-            output_node_names='YYY',
-            restore_op_name='save/restore_all',
-            filename_tensor_name='save/Const:0',
-            initializer_nodes=[],
-            output_graph=os.path.join(checkpoint_dir, 'graph_constants.pb'),
-            clear_devices=True)
+            saver = tf.train.Saver()
+            saver.restore(sess, ckpt.model_checkpoint_path)
 
-        # Load frozen graph into a graph_def for optimize_lib to use
-        with gfile.FastGFile(constant_graph, 'rb') as f:
-            graph_def = tf.GraphDef()
-            graph_def.ParseFromString(f.read())
-            sess.graph.as_default()
-            tf.import_graph_def(graph_def, name='')
+            # Write fully-assembled inference graph to a file, so freeze_graph can use it
+            tf.io.write_graph(
+                sess.graph,
+                checkpoint_dir,
+                'inference_graph.pbtxt',
+                as_text=True)
 
-        # Optimize graph for inference, folding Batch Norm ops into conv/MM
-        fused_graph_def = optimize_for_inference_lib.optimize_for_inference(
-            input_graph_def=graph_def,
-            input_node_names=['XXX'],
-            output_node_names=['YYY'],
-            placeholder_type_enum=dtypes.float32.as_datatype_enum,
-            toco_compatible=False)
+            # Freeze graph, converting variables to inline-constants in pb file
+            constant_graph = os.path.join(checkpoint_dir, 'graph_constants.pb')
+            freeze_graph.freeze_graph(
+                input_graph=os.path.join(checkpoint_dir,
+                                         'inference_graph.pbtxt'),
+                input_saver="",
+                input_binary=False,
+                input_checkpoint=ckpt.model_checkpoint_path,
+                output_node_names='YYY',
+                restore_op_name='save/restore_all',
+                filename_tensor_name='save/Const:0',
+                initializer_nodes=[],
+                output_graph=os.path.join(checkpoint_dir,
+                                          'graph_constants.pb'),
+                clear_devices=True)
 
-        print('Optimized for inference.')
+            # Load frozen graph into a graph_def for optimize_lib to use
+            with gfile.FastGFile(constant_graph, 'rb') as f:
+                graph_def = tf.GraphDef()
+                graph_def.ParseFromString(f.read())
+                sess.graph.as_default()
+                tf.import_graph_def(graph_def, name='')
 
-        tf.io.write_graph(
-            fused_graph_def,
-            checkpoint_dir,
-            name='fused_graph.pb',
-            as_text=False)
+            # Optimize graph for inference, folding Batch Norm ops into conv/MM
+            fused_graph_def = optimize_for_inference_lib.optimize_for_inference(
+                input_graph_def=graph_def,
+                input_node_names=['XXX'],
+                output_node_names=['YYY'],
+                placeholder_type_enum=dtypes.float32.as_datatype_enum,
+                toco_compatible=False)
+
+            print('Optimized for inference.')
+
+            tf.io.write_graph(
+                fused_graph_def,
+                checkpoint_dir,
+                name='fused_graph.pb',
+                as_text=False)
+        else:
+            tf.io.write_graph(
+                sess.graph, checkpoint_dir, 'fused_graph.pb', as_text=False)
 
 
 def report_accuracy(logits, labels):
-    print("predictions", np.argmax(logits, 1), 'labels', labels)
+    #print("predictions", np.argmax(logits, 1), 'labels', labels)
     correct_prediction = np.equal(np.argmax(logits, 1), labels)
     error_count = np.size(correct_prediction) - np.sum(correct_prediction)
     test_accuracy = np.mean(correct_prediction)
@@ -214,8 +238,7 @@ def serialize_model():
 
         YYY = sess.run(YYY, feed_dict={XXX: eval_batch_data})
 
-        if FLAGS.report_accuracy:
-            report_accuracy(YYY, eval_batch_label)
+    report_accuracy(YYY, eval_batch_label)
 
 
 def main(argv=None):

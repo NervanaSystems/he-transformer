@@ -240,13 +240,9 @@ def numpy_eval_inputs(test_data, data_dir, batch_size):
                                  'eval_data_' + str(IMAGE_SIZE) + '.npy')
     label_filename = os.path.join(FLAGS.data_dir,
                                   'eval_label_' + str(IMAGE_SIZE) + '.npy')
-    print('data_filename', data_filename)
-    print('label_filename', label_filename)
 
     if not os.path.isfile(data_filename) or not os.path.isfile(label_filename):
-
         eval_data = eval_inputs(True, FLAGS.data_dir, batch_size)
-
         np_eval_data_and_labels = []
 
         coord = tf.train.Coordinator()
@@ -259,8 +255,6 @@ def numpy_eval_inputs(test_data, data_dir, batch_size):
                             sess, coord=coord, daemon=True, start=True))
 
                 num_iter = int(math.ceil(num_examples / batch_size))
-                true_count = 0  # Counts the number of correct predictions.
-                total_sample_count = num_iter * batch_size
                 step = 0
                 while step < num_iter and not coord.should_stop():
                     data_in = sess.run([eval_data])
@@ -269,7 +263,6 @@ def numpy_eval_inputs(test_data, data_dir, batch_size):
 
             except Exception as e:  # pylint: disable=broad-except
                 coord.request_stop(e)
-
                 coord.request_stop()
                 coord.join(threads, stop_grace_period_secs=10)
 
