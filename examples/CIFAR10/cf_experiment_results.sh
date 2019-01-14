@@ -1,4 +1,3 @@
-
 # True, True
 echo 'True, True'
 cat exp/cnn_bn_train_poly_exp_*.txt | grep Accuracy | cut -c11- | python get_mean_std.py
