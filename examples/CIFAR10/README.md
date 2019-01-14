@@ -34,27 +34,3 @@ NGRAPH_HE_SEAL_CONFIG=ckks_config_13_depth12.json NGRAPH_BATCH_DATA=1 NGRAPH_BAT
 #  0.571% accuracy, 1072824ms; on CPU, 0.629% accuracy.
 # NGRAPH_BATCH_DATA=1 NGRAPH_BATCH_TF=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_TF_BACKEND=HE_SEAL_CKKS python test.py --model=CNN --batch_size=100
 ```
-
-
-
-
-### For paper expiriments:
-#### Training
-```python
-python train.py --model=cnn --batch_norm=True --train_poly_act=True --max_steps=10000
-python train.py --model=cnn --batch_norm=True --train_poly_act=False --max_steps=10000
-python train.py --model=cnn --batch_norm=False --train_poly_act=True --max_steps=10000
-python train.py --model=cnn --batch_norm=False --train_poly_act=False --max_steps=10000
-```
-
-
-#### Testing
-```python
-python test.py --model=cnn --batch_norm=True --train_poly_act=True --batch_size=10000
-python test.py --model=cnn --batch_norm=True --train_poly_act=False --batch_size=10000
-python test.py --model=cnn --batch_norm=False --train_poly_act=True --batch_size=10000
-python test.py --model=cnn --batch_norm=False --train_poly_act=False --batch_size=10000
-
-```
-
-
