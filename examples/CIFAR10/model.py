@@ -13,7 +13,6 @@
 # limitations under the License.
 # =============================================================================
 
-# Python 2 & 3 compatibility
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -29,13 +28,11 @@ class Model(object):
     def __init__(self,
                  model_name,
                  wd=WEIGHT_DECAY,
-                 dropout=0.0,
                  training=True,
                  batch_norm=True,
                  train_poly_act=True):
 
         self.wd = wd
-        self.dropout = dropout
         self.sizes = []
         self.multiplcative_depth = 0
         self.training = training
@@ -79,39 +76,19 @@ class Model(object):
                          scope='',
                          initializer=tf.contrib.layers.xavier_initializer(
                              uniform=False, dtype=tf.float32)):
-        """Helper to create an initialized Variable with weight decay.
-
-        The Variable is initialized using a normal distribution whose variance
-        is provided by the xavier formula (ie inversely proportional to the number
-        of inputs)
-
-        Args:
-            name: name of the tensor variable
-            shape: the tensor shape
-            decay: a boolean indicating if we apply decay to the tensor weights
-            using a regularization loss
-            restore_saved: a boolean, true if we should read saved weights
-
-        Returns:
-            Variable Tensor
-        """
         if self.training:
-            # Declare variable (it is trainable by default)
             var = tf.get_variable(
                 name=name,
                 shape=shape,
                 initializer=initializer,
                 dtype=tf.float32)
             if decay:
-                # We apply a weight decay to this tensor var that is equal to the
-                # model weight decay divided by the tensor size
                 weight_decay = self.wd
                 for x in shape:
                     weight_decay /= int(x)
                 # Weight loss is L2 loss multiplied by weight decay
                 weight_loss = tf.multiply(
                     tf.nn.l2_loss(var), weight_decay, name='weight_loss')
-                # Add weight loss for this variable to the global losses collection
                 tf.add_to_collection('losses', weight_loss)
 
             return var
@@ -268,86 +245,28 @@ class Model(object):
         # Reshape output to remove spatial dimensions reduced to one
         return tf.reshape(avg, shape=[-1, c])
 
-    def fire_layer(self,
-                   inputs,
-                   s1x1,
-                   e1x1,
-                   e3x3,
-                   name,
-                   decay=False,
-                   activation=True,
-                   relu_act=False):
-        with tf.variable_scope(name) as scope:
-
-            # Squeeze sub-layer
-            squeezed_inputs = self.conv_layer(
-                inputs,
-                size=1,
-                filters=s1x1,
-                stride=1,
-                decay=decay,
-                activation=activation,
-                relu_act=relu_act,
-                name='s1x1')
-
-            # Expand 1x1 sub-layer
-            e1x1_outputs = self.conv_layer(
-                squeezed_inputs,
-                size=1,
-                filters=e1x1,
-                stride=1,
-                decay=decay,
-                activation=activation,
-                relu_act=relu_act,
-                name='e1x1')
-
-            # Expand 3x3 sub-layer
-            e3x3_outputs = self.conv_layer(
-                squeezed_inputs,
-                size=3,
-                filters=e3x3,
-                stride=1,
-                decay=decay,
-                activation=activation,
-                relu_act=relu_act,
-                name='e3x3')
-
-        # Concatenate outputs along the last dimension (channel)
-        return tf.concat([e1x1_outputs, e3x3_outputs], 3)
-
     def inference(self, images):
         raise NotImplementedError(
             'Model subclasses must implement this method')
 
     def loss(self, logits, labels):
-
         # Calculate the average cross entropy loss across the batch.
         labels = tf.cast(labels, tf.int64)
         cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(
             labels=labels, logits=logits, name='cross_entropy_per_example')
         cross_entropy_loss = tf.reduce_mean(
             cross_entropy, name='cross_entropy_loss')
-        # We use a global collection to track losses
         tf.add_to_collection('losses', cross_entropy_loss)
 
-        # The total loss is the sum of all losses, including the cross entropy
-        # loss and all of the weight losses (see variables declarations)
         total_loss = tf.add_n(tf.get_collection('losses'), name='total_loss')
 
         return total_loss
 
     def accuracy(self, logits, labels):
-        # Evaluate predictions
         predictions_op = tf.nn.in_top_k(logits, labels, 1)
 
         return tf.reduce_mean(
             tf.cast(predictions_op, tf.float32), name='accuracy')
-
-    def get_size(self):
-        size = 0
-        for layer in self.sizes:
-            size += layer[1]
-        return size
 
     def mult_depth(self):
         return self.multiplcative_depth

@@ -1,0 +1,81 @@
+TensorFlow version installed: 1.12.0 (v1.12.0-0-ga6d8ffae09)
+nGraph bridge built with: 1.12.0 (v1.12.0-0-ga6d8ffae09)
+run_dir ./log/cifar10/deeper_cnn_bn_train_poly_act/9
+data dir ./data
+train poly? True
+bn? True
+Creating model with decay 100.0
+FLAGS.model deeper_cnn
+conv layer => mult. depth 1
+Conv shape: size: 5 channels: 3 filters: 40 , shape:  [5, 5, Dimension(3), 40]
+poly activation, => mult. depth 3
+conv layer => mult. depth 4
+Conv shape: size: 5 channels: 40 filters: 40 , shape:  [5, 5, Dimension(40), 40]
+poly activation, => mult. depth 6
+pool layer => mult. depth 7
+conv layer => mult. depth 8
+Conv shape: size: 3 channels: 40 filters: 80 , shape:  [3, 3, Dimension(40), 80]
+poly activation, => mult. depth 10
+FC layer => mult. depth 11
+Multiplicative depth 11
+saving weights/deeper_cnn_bn_train_poly_act/conv1_weights.txt
+saving weights/deeper_cnn_bn_train_poly_act/conv1_biases.txt
+saving weights/deeper_cnn_bn_train_poly_act/conv1_batch_normalization_gamma.txt
+saving weights/deeper_cnn_bn_train_poly_act/conv1_batch_normalization_beta.txt
+saving weights/deeper_cnn_bn_train_poly_act/conv1_a.txt
+saving weights/deeper_cnn_bn_train_poly_act/conv1_b.txt
+saving weights/deeper_cnn_bn_train_poly_act/conv2_weights.txt
+saving weights/deeper_cnn_bn_train_poly_act/conv2_biases.txt
+saving weights/deeper_cnn_bn_train_poly_act/conv2_batch_normalization_gamma.txt
+saving weights/deeper_cnn_bn_train_poly_act/conv2_batch_normalization_beta.txt
+saving weights/deeper_cnn_bn_train_poly_act/conv2_a.txt
+saving weights/deeper_cnn_bn_train_poly_act/conv2_b.txt
+saving weights/deeper_cnn_bn_train_poly_act/conv3_weights.txt
+saving weights/deeper_cnn_bn_train_poly_act/conv3_biases.txt
+saving weights/deeper_cnn_bn_train_poly_act/conv3_batch_normalization_gamma.txt
+saving weights/deeper_cnn_bn_train_poly_act/conv3_batch_normalization_beta.txt
+saving weights/deeper_cnn_bn_train_poly_act/conv3_a.txt
+saving weights/deeper_cnn_bn_train_poly_act/conv3_b.txt
+saving weights/deeper_cnn_bn_train_poly_act/fc1_weights.txt
+saving weights/deeper_cnn_bn_train_poly_act/fc1_biases.txt
+run_dir ./log/cifar10/deeper_cnn_bn_train_poly_act/9
+checkpoint dir ./log/cifar10/deeper_cnn_bn_train_poly_act/9/train
+BN Images shape,  [10000, 32, 32, 3]
+train poly? True
+bn? True
+Creating model with decay 100.0
+conv layer => mult. depth 1
+Conv shape: size: 5 channels: 3 filters: 40 , shape:  [5, 5, Dimension(3), 40]
+restoring variable:  weights/deeper_cnn_bn_train_poly_act/conv1_weights.txt  with shape [5, 5, Dimension(3), 40]
+restoring variable:  weights/deeper_cnn_bn_train_poly_act/conv1_biases.txt  with shape [40]
+poly activation, => mult. depth 3
+restoring variable:  weights/deeper_cnn_bn_train_poly_act/conv1_a.txt  with shape []
+restoring variable:  weights/deeper_cnn_bn_train_poly_act/conv1_b.txt  with shape []
+conv layer => mult. depth 4
+Conv shape: size: 5 channels: 40 filters: 40 , shape:  [5, 5, Dimension(40), 40]
+restoring variable:  weights/deeper_cnn_bn_train_poly_act/conv2_weights.txt  with shape [5, 5, Dimension(40), 40]
+restoring variable:  weights/deeper_cnn_bn_train_poly_act/conv2_biases.txt  with shape [40]
+poly activation, => mult. depth 6
+restoring variable:  weights/deeper_cnn_bn_train_poly_act/conv2_a.txt  with shape []
+restoring variable:  weights/deeper_cnn_bn_train_poly_act/conv2_b.txt  with shape []
+pool layer => mult. depth 7
+conv layer => mult. depth 8
+Conv shape: size: 3 channels: 40 filters: 80 , shape:  [3, 3, Dimension(40), 80]
+restoring variable:  weights/deeper_cnn_bn_train_poly_act/conv3_weights.txt  with shape [3, 3, Dimension(40), 80]
+restoring variable:  weights/deeper_cnn_bn_train_poly_act/conv3_biases.txt  with shape [80]
+poly activation, => mult. depth 10
+restoring variable:  weights/deeper_cnn_bn_train_poly_act/conv3_a.txt  with shape []
+restoring variable:  weights/deeper_cnn_bn_train_poly_act/conv3_b.txt  with shape []
+FC layer => mult. depth 11
+restoring variable:  weights/deeper_cnn_bn_train_poly_act/fc1_weights.txt  with shape [1280, 10]
+restoring variable:  weights/deeper_cnn_bn_train_poly_act/fc1_biases.txt  with shape [10]
+batch stize 10000
+images size (1, 32, 32, 3)
+ckpt.model_checkpoint_path ./log/cifar10/deeper_cnn_bn_train_poly_act/9/train/model.ckpt-10000
+Optimized for inference.
+Serializing model
+fused_graph_file ./log/cifar10/deeper_cnn_bn_train_poly_act/9/train/fused_graph.pb
+nodes ['XXX', 'conv1/Const_1', 'conv1/BiasAdd', 'conv1/Const_2', 'conv1/Const_3', 'conv1/mul', 'conv1/mul_1', 'conv1/mul_2', 'conv1/add', 'conv2/Const_1', 'conv2/BiasAdd', 'conv2/Const_2', 'conv2/Const_3', 'conv2/mul', 'conv2/mul_1', 'conv2/mul_2', 'conv2/add', 'pool1/pool1', 'conv3/Const_1', 'conv3/BiasAdd', 'conv3/Const_2', 'conv3/Const_3', 'conv3/mul', 'conv3/mul_1', 'conv3/mul_2', 'conv3/add', 'fc1/reshaped/shape', 'fc1/reshaped', 'fc1/Const', 'fc1/Const_1', 'fc1/MatMul', 'fc1/Add', 'YYY', 'conv1/Const', 'conv1/Conv2D', 'conv1/Conv2D_bn_offset', 'conv1/batch_normalization/FusedBatchNorm', 'conv2/Const', 'conv2/Conv2D', 'conv2/Conv2D_bn_offset', 'conv2/batch_normalization/FusedBatchNorm', 'conv3/Const', 'conv3/Conv2D', 'conv3/Conv2D_bn_offset', 'conv3/batch_normalization/FusedBatchNorm']
+Running model
+Error count 4733 of 10000 elements.
+Accuracy  0.5267

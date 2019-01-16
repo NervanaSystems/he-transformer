@@ -50,11 +50,8 @@ def save_weights():
 
     with tf.Graph().as_default() as g:
         # Get images and labels for CIFAR-10.
-        print('data dir', FLAGS.data_dir)
         images, labels = data.train_inputs(data_dir=FLAGS.data_dir)
         model = select.by_name(FLAGS.model, FLAGS, training=True)
-
-        print('FLAGS.model', FLAGS.model)
 
         # Build a Graph that computes the logits predictions from the
         # inference model.
@@ -63,16 +60,11 @@ def save_weights():
 
         saver = tf.train.Saver()
 
-        # TODO: use saved averages?
-
         with tf.Session() as sess:
             ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
             if ckpt and ckpt.model_checkpoint_path:
                 # Restores from checkpoint
                 saver.restore(sess, ckpt.model_checkpoint_path)
-                # Assuming model_checkpoint_path looks something like:
-                #   /my-favorite-path/cifar10_train/model.ckpt-0,
-                # extract global_step from it.
                 global_step = ckpt.model_checkpoint_path.split('/')[-1].split(
                     '-')[-1]
             else:
@@ -113,29 +105,19 @@ def optimize_model_for_inference():
         if FLAGS.batch_norm:
             images = tf.constant(
                 1, dtype=tf.float32, shape=[1, IMAGE_SIZE, IMAGE_SIZE, 3])
-            print('BN Images shape, ',
-                  [FLAGS.batch_size, IMAGE_SIZE, IMAGE_SIZE, 3])
         else:
             images = tf.constant(
                 1,
                 dtype=tf.float32,
                 shape=[FLAGS.batch_size, IMAGE_SIZE, IMAGE_SIZE, 3])
-            print('No BN Images shape, ',
-                  [FLAGS.batch_size, IMAGE_SIZE, IMAGE_SIZE, 3])
 
         model = select.by_name(FLAGS.model, FLAGS, training=False)
+        # Create dummy input and output nodes
         images = tf.identity(images, 'XXX')
         logits = model.inference(images)
         logits = tf.identity(logits, 'YYY')
 
-        print('batch stize', FLAGS.batch_size)
-        print('images size', images.shape)
-
         if FLAGS.batch_norm:
-            # TODO we want to find the exponential mean/var computed during training
-            # and hook that up in place of the last batch mean/var in the inference graph
-            # but we don't want to create a new/uninitialized variable right?
-
             # Restore values from the trained model into corresponding variables in the
             # inference graph.
             ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
@@ -197,7 +179,6 @@ def optimize_model_for_inference():
 
 
 def report_accuracy(logits, labels):
-    #print("predictions", np.argmax(logits, 1), 'labels', labels)
     correct_prediction = np.equal(np.argmax(logits, 1), labels)
     error_count = np.size(correct_prediction) - np.sum(correct_prediction)
     test_accuracy = np.mean(correct_prediction)
@@ -206,14 +187,13 @@ def report_accuracy(logits, labels):
     print('Accuracy ', test_accuracy)
 
 
-def serialize_model():
-    print('Serializing model')
+def perform_inference():
+    print('Performing inference')
 
     FLAGS.resume = True  # Get saved weights, not new ones
     run_dir = get_run_dir(FLAGS.log_dir, FLAGS.model)
     checkpoint_dir = os.path.join(run_dir, 'train')
     fused_graph_file = os.path.join(checkpoint_dir, 'fused_graph.pb')
-    print('fused_graph_file', fused_graph_file)
 
     eval_data, eval_labels = data.numpy_eval_inputs(True, FLAGS.data_dir,
                                                     FLAGS.batch_size)
@@ -235,7 +215,6 @@ def serialize_model():
     with tf.Session(graph=graph) as sess:
         eval_batch_data = eval_data[0]
         eval_batch_label = eval_labels[0]
-
         YYY = sess.run(YYY, feed_dict={XXX: eval_batch_data})
 
     report_accuracy(YYY, eval_batch_label)
@@ -246,8 +225,7 @@ def main(argv=None):
 
     save_weights()
     optimize_model_for_inference()
-
-    serialize_model()
+    perform_inference()
 
 
 if __name__ == '__main__':

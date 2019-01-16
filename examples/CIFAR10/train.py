@@ -29,7 +29,6 @@ FLAGS = tf.app.flags.FLAGS
 
 tf.app.flags.DEFINE_integer('max_steps', 10000,
                             """Number of batches to run.""")
-tf.app.flags.DEFINE_float('learning_rate', 0.1, """Initial learning rate.""")
 tf.app.flags.DEFINE_integer('log_freq', 10,
                             """How often to log results (steps).""")
 tf.app.flags.DEFINE_integer('save_freq', 60,
@@ -65,12 +64,12 @@ def get_run_dir(log_dir, model_name):
     return os.path.join(model_dir, '%d' % run)
 
 
-# Return train_op, loss, summary_op
+# Return train_op, loss,
 def train_ops():
     # Get training parameters
     data_dir = FLAGS.data_dir
     batch_size = FLAGS.batch_size
-    learning_rate = FLAGS.learning_rate
+
     # Create global step counter
     global_step = tf.Variable(0, name='global_step', trainable=False)
 
@@ -105,7 +104,7 @@ def train_ops():
     for l in tf.get_collection('losses'):
         tf.summary.scalar(l.op.name, l)
 
-    # Build a graph that applies gradient descent to update model parameters
+    learning_rate = 0.1
     optimizer = tf.train.GradientDescentOptimizer(learning_rate)
 
     # Clip gradients to [-0.25, 0.25]
@@ -122,41 +121,18 @@ def train_ops():
         print("Not clipping gradients")
         sgd_op = optimizer.minimize(loss, global_step=global_step)
 
-    # Build yet another graph to evaluate moving averages of variables after
-    # each step: these smoothed parameters will be loaded instead of the raw
-    # trained values during evaluation
-    if FLAGS.moving_averages:
-        print("Moving averages")
-        variable_averages = \
-            tf.train.ExponentialMovingAverage(MOVING_AVERAGE_DECAY, global_step)
-        variables_averages_op = variable_averages.apply(
-            tf.trainable_variables())
-        # For batch normalization, we also need to update some variables
-        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+    update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
 
-        # Create a meta-graph that includes sgd and variables moving average
-        with tf.control_dependencies([sgd_op, variables_averages_op] +
-                                     update_ops):
-            train_op = tf.no_op(name='train')
-    else:
-        # For batch normalization, we also need to update some variables
-        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+    # Create a meta-graph that includes sgd and variables moving average
+    with tf.control_dependencies([sgd_op] + update_ops):
+        train_op = tf.no_op(name='train')
 
-        # Create a meta-graph that includes sgd and variables moving average
-        with tf.control_dependencies([sgd_op] +
-                                     update_ops):  #, variables_averages_op
-            train_op = tf.no_op(name='train')
-
-    # Build another graph to provide training summary information
-    summary_op = tf.summary.merge_all()
-
-    return (train_op, loss, accuracy, summary_op)
+    return (train_op, loss, accuracy)
 
 
 def train_loop():
-    train_op, loss, accuracy, summary_op = train_ops()
+    train_op, loss, accuracy = train_ops()
 
-    # We use one log dir per run
     run_dir = get_run_dir(FLAGS.log_dir, FLAGS.model)
     checkpoint_dir = os.path.join(run_dir, 'train')
 
