@@ -32,13 +32,3 @@ python test.py --model=cnn --batch_norm=True --train_poly_act=True --batch_size=
 ```python
 NGRAPH_HE_SEAL_CONFIG=ckks_config_13_depth12.json NGRAPH_BATCH_DATA=1 NGRAPH_BATCH_TF=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_TF_BACKEND=HE_SEAL_CKKS python test.py --model=cnn --batch_size=1000
 ```
-
-#3. To run a complete set of timing results,
-```sh
-# Run 10 rounds of training and parse results
-./training_accuracies.sh
-./parse_training_accuracies_results.sh
-# Run 10 rounds of inference and parse results
-./inference_runtimes.sh
-python parse_inference_runtimes.py
-```
