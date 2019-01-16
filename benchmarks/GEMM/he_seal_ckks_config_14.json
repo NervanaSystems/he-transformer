@@ -1,5 +1,5 @@
 {
-    "scheme_name": "HE:SEAL:CKKS",
+    "scheme_name": "HE_SEAL_CKKS",
     "poly_modulus_degree": 16384,
     "security_level": 128,
     "evaluation_decomposition_bit_count": 60
