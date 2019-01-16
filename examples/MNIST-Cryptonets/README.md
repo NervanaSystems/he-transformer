@@ -4,7 +4,7 @@ Note: performance is greatly improved by use of parallelism. Make sure OpenMP is
 
 With `OMP_NUM_THREADS=4` and using the smaller of two parameter settings, `he_seal_config_13.json`, the model requires ~45GB of memory.
 
-This example depends on the [**Intel® nGraph™ Compiler and runtime engine for TensorFlow**](https://github.com/NervanaSystems/ngraph-tf). Make sure the python environment with ngraph-tf bridge is active, i.e. run `source ~/repos/venvs/he3/bin/activate`.
+This example depends on the [**Intel® nGraph™ Compiler and runtime engine for TensorFlow**](https://github.com/NervanaSystems/ngraph-tf). Make sure the python environment with ngraph-tf bridge is active, i.e. run `source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate`.
 
 # Train the network
 First, train the network using
