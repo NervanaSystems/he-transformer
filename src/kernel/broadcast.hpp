@@ -1,5 +1,5 @@
 //*****************************************************************************
-// Copyright 2018 Intel Corporation
+// Copyright 2018-2019 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,33 +22,26 @@
 #include "he_ciphertext.hpp"
 #include "he_plaintext.hpp"
 #include "ngraph/coordinate_transform.hpp"
+#include "ngraph/shape_util.hpp"
 
-namespace ngraph
-{
-    namespace runtime
-    {
-        namespace he
-        {
-            namespace kernel
-            {
-                template <typename S, typename T>
-                void broadcast(const std::vector<std::shared_ptr<S>>& arg,
-                               std::vector<std::shared_ptr<T>>& out,
-                               const Shape& in_shape,
-                               const Shape& out_shape,
-                               const AxisSet& broadcast_axes)
-                {
-                    CoordinateTransform input_transform(in_shape);
-                    CoordinateTransform output_transform(out_shape);
-                    for (const Coordinate& output_coord : output_transform)
-                    {
-                        Coordinate input_coord = reduce(output_coord, broadcast_axes);
+namespace ngraph {
+namespace runtime {
+namespace he {
+namespace kernel {
+template <typename T>
+void broadcast(const std::vector<std::shared_ptr<T>>& arg,
+               std::vector<std::shared_ptr<T>>& out, const Shape& in_shape,
+               const Shape& out_shape, const AxisSet& broadcast_axes) {
+  CoordinateTransform input_transform(in_shape);
+  CoordinateTransform output_transform(out_shape);
+  for (const Coordinate& output_coord : output_transform) {
+    Coordinate input_coord = reduce(output_coord, broadcast_axes);
 
-                        out[output_transform.index(output_coord)] =
-                            arg[input_transform.index(input_coord)];
-                    }
-                };
-            }
-        }
-    }
-}
+    out[output_transform.index(output_coord)] =
+        arg[input_transform.index(input_coord)];
+  }
+};
+}  // namespace kernel
+}  // namespace he
+}  // namespace runtime
+}  // namespace ngraph

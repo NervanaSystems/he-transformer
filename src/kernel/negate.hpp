@@ -1,5 +1,5 @@
 //*****************************************************************************
-// Copyright 2018 Intel Corporation
+// Copyright 2018-2019 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,46 +19,34 @@
 #include <memory>
 #include <vector>
 
-namespace ngraph
-{
-    namespace element
-    {
-        class Type;
-    }
-    namespace runtime
-    {
-        namespace he
-        {
-            class HEBackend;
-            class HECiphertext;
-            class HEPlaintext;
+#include "ngraph/type/element_type.hpp"
+#include "seal/he_seal_backend.hpp"
 
-            namespace kernel
-            {
-                void scalar_negate(const std::shared_ptr<runtime::he::HECiphertext>& arg,
-                                   std::shared_ptr<runtime::he::HECiphertext>& out,
-                                   const element::Type& element_type,
-                                   const runtime::he::HEBackend* he_backend);
+namespace ngraph {
+namespace runtime {
+namespace he {
+namespace kernel {
+void scalar_negate(const runtime::he::HECiphertext* arg,
+                   std::shared_ptr<runtime::he::HECiphertext>& out,
+                   const element::Type& element_type,
+                   const runtime::he::HEBackend* he_backend);
 
-                void scalar_negate(const std::shared_ptr<runtime::he::HEPlaintext>& arg,
-                                   std::shared_ptr<runtime::he::HEPlaintext>& out,
-                                   const element::Type& element_type,
-                                   const runtime::he::HEBackend* he_backend);
+void scalar_negate(const runtime::he::HEPlaintext* arg,
+                   std::shared_ptr<runtime::he::HEPlaintext>& out,
+                   const element::Type& element_type,
+                   const runtime::he::HEBackend* he_backend);
 
-                template <typename T>
-                void negate(const std::vector<std::shared_ptr<T>>& arg,
-                            std::vector<std::shared_ptr<T>>& out,
-                            const element::Type& element_type,
-                            const runtime::he::HEBackend* he_backend,
-                            size_t count)
-                {
+template <typename T>
+void negate(const std::vector<std::shared_ptr<T>>& arg,
+            std::vector<std::shared_ptr<T>>& out,
+            const element::Type& element_type,
+            const runtime::he::HEBackend* he_backend, size_t count) {
 #pragma omp parallel for
-                    for (size_t i = 0; i < count; ++i)
-                    {
-                        kernel::scalar_negate(arg[i], out[i], element_type, he_backend);
-                    }
-                }
-            }
-        }
-    }
+  for (size_t i = 0; i < count; ++i) {
+    kernel::scalar_negate(arg[i].get(), out[i], element_type, he_backend);
+  }
 }
+}  // namespace kernel
+}  // namespace he
+}  // namespace runtime
+}  // namespace ngraph

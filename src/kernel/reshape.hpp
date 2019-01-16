@@ -1,5 +1,5 @@
 //*****************************************************************************
-// Copyright 2018 Intel Corporation
+// Copyright 2018-2019 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,48 +22,40 @@
 #include "ngraph/axis_vector.hpp"
 #include "ngraph/coordinate_transform.hpp"
 
-namespace ngraph
-{
-    namespace runtime
-    {
-        namespace he
-        {
-            namespace kernel
-            {
-                template <typename T>
-                void reshape(const std::vector<std::shared_ptr<T>>& arg,
-                             std::vector<std::shared_ptr<T>>& out,
-                             const Shape& in_shape,
-                             const AxisVector& in_axis_order,
-                             const Shape& out_shape)
-                {
-                    // Unfortunately we don't yet have a constructor for CoordinateTransform that lets us pass only source_space_shape
-                    // and source_axis_order so we have to construct the defaults here.
-                    Shape in_start_corner(in_shape.size(), 0); // (0,...0)
-                    Strides in_strides(in_shape.size(), 1);    // (1,...,1)
+namespace ngraph {
+namespace runtime {
+namespace he {
+namespace kernel {
+template <typename T>
+void reshape(const std::vector<std::shared_ptr<T>>& arg,
+             std::vector<std::shared_ptr<T>>& out, const Shape& in_shape,
+             const AxisVector& in_axis_order, const Shape& out_shape) {
+  // Unfortunately we don't yet have a constructor for CoordinateTransform that
+  // lets us pass only source_space_shape and source_axis_order so we have to
+  // construct the defaults here.
+  Shape in_start_corner(in_shape.size(), 0);  // (0,...0)
+  Strides in_strides(in_shape.size(), 1);     // (1,...,1)
 
-                    CoordinateTransform input_transform(
-                        in_shape, in_start_corner, in_shape, in_strides, in_axis_order);
+  CoordinateTransform input_transform(in_shape, in_start_corner, in_shape,
+                                      in_strides, in_axis_order);
 
-                    CoordinateTransform output_transform(out_shape);
-                    CoordinateTransform::Iterator output_it = output_transform.begin();
+  CoordinateTransform output_transform(out_shape);
+  CoordinateTransform::Iterator output_it = output_transform.begin();
 
-                    if (output_it == output_transform.end())
-                    {
-                        return;
-                    }
+  if (output_it == output_transform.end()) {
+    return;
+  }
 
-                    for (const Coordinate& input_coord : input_transform)
-                    {
-                        const Coordinate& output_coord = *output_it;
+  for (const Coordinate& input_coord : input_transform) {
+    const Coordinate& output_coord = *output_it;
 
-                        out[output_transform.index(output_coord)] =
-                            arg[input_transform.index(input_coord)];
+    out[output_transform.index(output_coord)] =
+        arg[input_transform.index(input_coord)];
 
-                        ++output_it;
-                    }
-                }
-            }
-        }
-    }
+    ++output_it;
+  }
 }
+}  // namespace kernel
+}  // namespace he
+}  // namespace runtime
+}  // namespace ngraph

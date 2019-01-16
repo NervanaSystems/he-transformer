@@ -1,5 +1,5 @@
 //*****************************************************************************
-// Copyright 2018 Intel Corporation
+// Copyright 2018-2019 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,18 +16,14 @@
 
 #pragma once
 
-namespace ngraph
-{
-    namespace runtime
-    {
-        namespace he
-        {
-            class HECiphertext
-            {
-            public:
-                HECiphertext(){};
-                virtual ~HECiphertext(){};
-            };
-        }
-    }
-}
+namespace ngraph {
+namespace runtime {
+namespace he {
+class HECiphertext {
+ public:
+  HECiphertext(){};
+  virtual ~HECiphertext(){};
+};
+}  // namespace he
+}  // namespace runtime
+}  // namespace ngraph

@@ -27,3 +27,6 @@ modules.order
 .tmp_versions
 examples/*.js
 examples/cpu_codegen/
+data/
+log/
+weights/

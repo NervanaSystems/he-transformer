@@ -31,89 +31,69 @@
 
 using namespace ngraph;
 
-std::vector<float> read_binary_constant(const std::string filename, size_t num_elements);
+std::vector<float> read_binary_constant(const std::string filename,
+                                        size_t num_elements);
 std::vector<float> read_constant(const std::string filename);
 
 // ys is logits output, or one-hot encoded ground truth
 std::vector<int> batched_argmax(const std::vector<float>& ys);
 
-void write_constant(const std::vector<float>& values, const std::string filename);
-void write_binary_constant(const std::vector<float>& values, const std::string filename);
+void write_constant(const std::vector<float>& values,
+                    const std::string filename);
+void write_binary_constant(const std::vector<float>& values,
+                           const std::string filename);
 
-float get_accuracy(const std::vector<float>& pre_sigmoid, const std::vector<float>& y);
+float get_accuracy(const std::vector<float>& pre_sigmoid,
+                   const std::vector<float>& y);
 
 template <typename T>
 bool all_close(const std::vector<std::complex<T>>& a,
                const std::vector<std::complex<T>>& b,
-               T atol = static_cast<T>(1e-5))
-{
-    for (size_t i = 0; i < a.size(); ++i)
-    {
-        if ((std::abs(a[i].real() - b[i].real()) > atol) ||
-            std::abs(a[i].imag() - b[i].imag()) > atol)
-        {
-            return false;
-        }
+               T atol = static_cast<T>(1e-5)) {
+  for (size_t i = 0; i < a.size(); ++i) {
+    if ((std::abs(a[i].real() - b[i].real()) > atol) ||
+        std::abs(a[i].imag() - b[i].imag()) > atol) {
+      return false;
     }
-    return true;
+  }
+  return true;
 }
 
 template <typename T>
-bool all_close(const std::vector<T>& a, const std::vector<T>& b, T atol = static_cast<T>(1e-5))
-{
-    bool close = true;
-    for (size_t i = 0; i < a.size(); ++i)
-    {
-        if (std::abs(a[i] - b[i]) > atol)
-        {
-            NGRAPH_INFO << a[i] << " is not close to " << b[i] << " at index " << i;
-            close = false;
-        }
+bool all_close(const std::vector<T>& a, const std::vector<T>& b,
+               T atol = static_cast<T>(1e-3)) {
+  bool close = true;
+  for (size_t i = 0; i < a.size(); ++i) {
+    if (std::abs(a[i] - b[i]) > atol) {
+      NGRAPH_INFO << a[i] << " is not close to " << b[i] << " at index " << i;
+      close = false;
     }
-    return close;
+  }
+  return close;
 }
 
-std::vector<std::tuple<std::vector<std::shared_ptr<ngraph::runtime::Tensor>>,
-                       std::vector<std::shared_ptr<ngraph::runtime::Tensor>>>>
-    generate_plain_cipher_tensors(const std::vector<std::shared_ptr<Node>>& output,
-                                  const std::vector<std::shared_ptr<Node>>& input,
-                                  std::shared_ptr<ngraph::runtime::Backend> backend,
-                                  const bool consistent_type = false);
+std::vector<std::tuple<std::vector<std::shared_ptr<runtime::Tensor>>,
+                       std::vector<std::shared_ptr<runtime::Tensor>>>>
+generate_plain_cipher_tensors(const std::vector<std::shared_ptr<Node>>& output,
+                              const std::vector<std::shared_ptr<Node>>& input,
+                              const runtime::Backend* backend,
+                              const bool consistent_type = false);
 
 // Reads batched vector
 template <typename T>
-std::vector<T> generalized_read_vector(std::shared_ptr<ngraph::runtime::Tensor> tv)
-{
-    if (ngraph::element::from<T>() != tv->get_tensor_layout()->get_element_type())
-    {
-        throw std::invalid_argument("read_vector type must match Tensor type");
-    }
-    if (auto cipher_tv = std::dynamic_pointer_cast<ngraph::runtime::he::HECipherTensor>(tv))
-    {
-        size_t element_count;
-        if (cipher_tv->is_batched())
-        {
-            element_count = ngraph::shape_size(cipher_tv->get_expanded_shape());
-        }
-        else
-        {
-            element_count = ngraph::shape_size(cipher_tv->get_shape());
-        }
-        size_t size = element_count * sizeof(T);
-        std::vector<T> rc(element_count);
-        cipher_tv->read(rc.data(), 0, size);
-        return rc;
-    }
-    else if (auto hetv = std::dynamic_pointer_cast<ngraph::runtime::he::HETensor>(tv))
-    {
-        size_t element_count = ngraph::shape_size(tv->get_shape());
-        size_t size = element_count * sizeof(T);
-        std::vector<T> rc(element_count);
-        hetv->read(rc.data(), 0, size);
-        return rc;
-    }
-    else
-    {
-        throw ngraph_error("Tensor is not HETensor is generalized read vector");
-    }
+std::vector<T> generalized_read_vector(std::shared_ptr<runtime::Tensor> tv) {
+  if (element::from<T>() != tv->get_tensor_layout()->get_element_type()) {
+    throw std::invalid_argument("read_vector type must match Tensor type");
+  }
+  if (auto hetv = std::dynamic_pointer_cast<runtime::he::HETensor>(tv)) {
+    size_t element_count = shape_size(hetv->get_expanded_shape());
+
+    NGRAPH_INFO << "Element count " << element_count;
+    size_t size = element_count * sizeof(T);
+    std::vector<T> rc(element_count);
+    hetv->read(rc.data(), 0, size);
+    return rc;
+  } else {
+    throw ngraph_error("Tensor is not HETensor in generalized read vector");
+  }
 }

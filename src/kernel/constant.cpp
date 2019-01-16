@@ -1,5 +1,5 @@
 //*****************************************************************************
-// Copyright 2018 Intel Corporation
+// Copyright 2018-2019 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,22 +19,37 @@
 using namespace std;
 using namespace ngraph;
 
-void runtime::he::kernel::constant(vector<shared_ptr<runtime::he::HEPlaintext>>& out,
-                                   const element::Type& element_type,
-                                   const void* data_ptr,
-                                   const runtime::he::HEBackend* he_backend,
-                                   size_t count)
-{
-    size_t type_byte_size = element_type.size();
-    if (out.size() != count)
-    {
-        throw ngraph_error("out.size() != count for constant op");
-    }
+void runtime::he::kernel::constant(
+    vector<shared_ptr<runtime::he::HEPlaintext>>& out,
+    const element::Type& element_type, const void* data_ptr,
+    const runtime::he::HEBackend* he_backend, size_t count) {
+  size_t type_byte_size = element_type.size();
+  if (out.size() != count) {
+    throw ngraph_error("out.size() != count for constant op");
+  }
 
 #pragma omp parallel for
-    for (size_t i = 0; i < count; ++i)
-    {
-        const void* src_with_offset = (void*)((char*)data_ptr + i * type_byte_size);
-        he_backend->encode(out[i], src_with_offset, element_type);
-    }
+  for (size_t i = 0; i < count; ++i) {
+    const void* src_with_offset = (void*)((char*)data_ptr + i * type_byte_size);
+    he_backend->encode(out[i], src_with_offset, element_type);
+  }
+}
+
+void runtime::he::kernel::constant(
+    vector<shared_ptr<runtime::he::HECiphertext>>& out,
+    const element::Type& element_type, const void* data_ptr,
+    const runtime::he::HEBackend* he_backend, size_t count) {
+  size_t type_byte_size = element_type.size();
+  if (out.size() != count) {
+    throw ngraph_error("out.size() != count for constant op");
+  }
+
+#pragma omp parallel for
+  for (size_t i = 0; i < count; ++i) {
+    const void* src_with_offset = (void*)((char*)data_ptr + i * type_byte_size);
+    shared_ptr<runtime::he::HEPlaintext> plaintext =
+        he_backend->create_empty_plaintext();
+    he_backend->encode(plaintext, src_with_offset, element_type);
+    he_backend->encrypt(out[i], *plaintext);
+  }
 }

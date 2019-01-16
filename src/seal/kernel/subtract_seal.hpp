@@ -1,5 +1,5 @@
 //*****************************************************************************
-// Copyright 2018 Intel Corporation
+// Copyright 2018-2019 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,54 +19,45 @@
 #include <memory>
 #include <vector>
 
+#include "ngraph/type/element_type.hpp"
+#include "seal/he_seal_backend.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
 
-namespace ngraph
-{
-    namespace element
-    {
-        class Type;
-    }
-    namespace runtime
-    {
-        namespace he
-        {
-            namespace he_seal
-            {
-                class HESealBackend;
+namespace ngraph {
+namespace runtime {
+namespace he {
+namespace he_seal {
+namespace kernel {
+void scalar_subtract(
+    const runtime::he::he_seal::SealCiphertextWrapper* arg0,
+    const runtime::he::he_seal::SealCiphertextWrapper* arg1,
+    std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
+    const element::Type& element_type,
+    const runtime::he::he_seal::HESealBackend* he_seal_backend);
 
-                namespace kernel
-                {
-                    void scalar_subtract(
-                        const std::shared_ptr<const runtime::he::he_seal::SealCiphertextWrapper>& arg0,
-                        const std::shared_ptr<const runtime::he::he_seal::SealCiphertextWrapper>& arg1,
-                        std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
-                        const element::Type& element_type,
-                        const runtime::he::he_seal::HESealBackend* he_seal_backend);
+void scalar_subtract(
+    const runtime::he::he_seal::SealCiphertextWrapper* arg0,
+    const runtime::he::he_seal::SealPlaintextWrapper* arg1,
+    std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
+    const element::Type& element_type,
+    const runtime::he::he_seal::HESealBackend* he_seal_backend);
 
-                    void scalar_subtract(
-                        const std::shared_ptr<const runtime::he::he_seal::SealCiphertextWrapper>& arg0,
-                        const std::shared_ptr<const runtime::he::he_seal::SealPlaintextWrapper>& arg1,
-                        std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
-                        const element::Type& element_type,
-                        const runtime::he::he_seal::HESealBackend* he_seal_backend);
+void scalar_subtract(
+    const runtime::he::he_seal::SealPlaintextWrapper* arg0,
+    const runtime::he::he_seal::SealCiphertextWrapper* arg1,
+    std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
+    const element::Type& element_type,
+    const runtime::he::he_seal::HESealBackend* he_seal_backend);
 
-                    void scalar_subtract(
-                        const std::shared_ptr<const runtime::he::he_seal::SealPlaintextWrapper>& arg0,
-                        const std::shared_ptr<const runtime::he::he_seal::SealCiphertextWrapper>& arg1,
-                        std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
-                        const element::Type& element_type,
-                        const runtime::he::he_seal::HESealBackend* he_seal_backend);
-
-                    void scalar_subtract(
-                        const std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& arg0,
-                        const std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& arg1,
-                        std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& out,
-                        const element::Type& element_type,
-                        const runtime::he::he_seal::HESealBackend* he_seal_backend);
-                }
-            }
-        }
-    }
-}
+void scalar_subtract(
+    const runtime::he::he_seal::SealPlaintextWrapper* arg0,
+    const runtime::he::he_seal::SealPlaintextWrapper* arg1,
+    std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& out,
+    const element::Type& element_type,
+    const runtime::he::he_seal::HESealBackend* he_seal_backend);
+}  // namespace kernel
+}  // namespace he_seal
+}  // namespace he
+}  // namespace runtime
+}  // namespace ngraph

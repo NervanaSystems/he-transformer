@@ -1,5 +1,5 @@
 //*****************************************************************************
-// Copyright 2018 Intel Corporation
+// Copyright 2018-2019 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,15 +16,8 @@
 
 #include "seal_plaintext_wrapper.hpp"
 
-using namespace std;
 using namespace ngraph;
 
-runtime::he::he_seal::SealPlaintextWrapper::SealPlaintextWrapper()
-    : m_plaintext(seal::Plaintext())
-{
-}
-
-runtime::he::he_seal::SealPlaintextWrapper::SealPlaintextWrapper(seal::Plaintext plain)
-    : m_plaintext(plain)
-{
-}
+runtime::he::he_seal::SealPlaintextWrapper::SealPlaintextWrapper(
+    const seal::Plaintext& plain)
+    : m_plaintext(plain) {}

@@ -1,5 +1,5 @@
 //*****************************************************************************
-// Copyright 2018 Intel Corporation
+// Copyright 2018-2019 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,25 +19,19 @@
 #include "he_plaintext.hpp"
 #include "seal/seal.h"
 
-namespace ngraph
-{
-    namespace runtime
-    {
-        namespace he
-        {
-            class HEPlaintext;
+namespace ngraph {
+namespace runtime {
+namespace he {
+namespace he_seal {
+struct SealPlaintextWrapper : public HEPlaintext {
+  SealPlaintextWrapper(){};
+  SealPlaintextWrapper(const seal::Plaintext& plain);
 
-            namespace he_seal
-            {
-                struct SealPlaintextWrapper : public HEPlaintext
-                {
-                    SealPlaintextWrapper(seal::Plaintext plain);
-                    SealPlaintextWrapper();
-                    ~SealPlaintextWrapper(){};
+  seal::Plaintext& get_hetext() noexcept { return m_plaintext; }
 
-                    seal::Plaintext m_plaintext;
-                };
-            }
-        }
-    }
-}
+  seal::Plaintext m_plaintext;
+};
+}  // namespace he_seal
+}  // namespace he
+}  // namespace runtime
+}  // namespace ngraph
