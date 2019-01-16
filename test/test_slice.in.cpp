@@ -1,5 +1,5 @@
 //*****************************************************************************
-// Copyright 2018 Intel Corporation
+// Copyright 2018-2019 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,15 +28,16 @@ using namespace ngraph;
 static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, slice_scalar) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{};
   auto r = make_shared<op::Slice>(A, Coordinate{}, Coordinate{});
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -45,21 +46,22 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_scalar) {
     auto result = results[0];
 
     copy_data(a, vector<float>{312});
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_EQ((vector<float>{312}), read_vector<float>(result));
   }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, slice_matrix) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{4, 4};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{3, 2};
   auto r = make_shared<op::Slice>(A, Coordinate{0, 1}, Coordinate{3, 3});
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -69,22 +71,23 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_matrix) {
 
     copy_data(a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
                                15, 16});
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(all_close((vector<float>{2, 3, 6, 7, 10, 11}),
                           read_vector<float>(result)));
   }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, slice_vector) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{16};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{12};
   auto r = make_shared<op::Slice>(A, Coordinate{2}, Coordinate{14});
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -94,7 +97,7 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_vector) {
 
     copy_data(
         a, vector<float>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15});
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(
         all_close((vector<float>{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}),
                   read_vector<float>(result)));
@@ -102,16 +105,17 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_vector) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, slice_matrix_strided) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{4, 4};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{2, 2};
   auto r = make_shared<op::Slice>(A, Coordinate{1, 0}, Coordinate{4, 4},
                                   Strides{2, 3});
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -121,22 +125,23 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_matrix_strided) {
 
     copy_data(
         a, vector<float>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15});
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(
         all_close((vector<float>{4, 7, 12, 15}), read_vector<float>(result)));
   }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, slice_3d) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{4, 4, 4};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{2, 2, 2};
   auto r = make_shared<op::Slice>(A, Coordinate{1, 1, 1}, Coordinate{3, 3, 3});
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -150,23 +155,24 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_3d) {
                             26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
                             39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51,
                             52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63});
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(all_close((vector<float>{21, 22, 25, 26, 37, 38, 41, 42}),
                           read_vector<float>(result)));
   }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, slice_3d_strided) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{4, 4, 4};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{2, 2, 2};
   auto r = make_shared<op::Slice>(A, Coordinate{0, 0, 0}, Coordinate{4, 4, 4},
                                   Strides{2, 2, 2});
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -180,24 +186,25 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_3d_strided) {
                             27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
                             40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52,
                             53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64});
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(all_close((vector<float>{1, 3, 9, 11, 33, 35, 41, 43}),
                           read_vector<float>(result)));
   }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, slice_3d_strided_different_strides) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{4, 4, 4};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{2, 2, 2};
   auto r = make_shared<op::Slice>(A, Coordinate{0, 0, 0}, Coordinate{4, 4, 4},
                                   Strides{2, 2, 3});
-  auto f = make_shared<Function>(r, op::ParameterVector{A});
+  auto f = make_shared<Function>(r, ParameterVector{A});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({r}, {A}, backend, true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
@@ -211,7 +218,7 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_3d_strided_different_strides) {
                             27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
                             40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52,
                             53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64});
-    backend->call(f, {result}, {a});
+    backend->call(backend->compile(f), {result}, {a});
     EXPECT_TRUE(all_close((vector<float>{1, 4, 9, 12, 33, 36, 41, 44}),
                           read_vector<float>(result)));
   }

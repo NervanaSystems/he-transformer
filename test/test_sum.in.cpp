@@ -1,5 +1,5 @@
 //*****************************************************************************
-// Copyright 2018 Intel Corporation
+// Copyright 2018-2019 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,16 +28,17 @@ using namespace ngraph;
 static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_trivial) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{2, 2};
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Sum>(a, AxisSet{});
-  auto f = make_shared<Function>(t, op::ParameterVector{a});
+  auto f = make_shared<Function>(t, ParameterVector{a});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend, true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -47,23 +48,24 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_trivial) {
     auto t_result = results[0];
 
     copy_data(t_a, vector<float>{1, 2, 3, 4});
-    backend->call(f, {t_result}, {t_a});
+    backend->call(backend->compile(f), {t_result}, {t_a});
     EXPECT_TRUE(
         all_close((vector<float>{1, 2, 3, 4}), read_vector<float>(t_result)));
   }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_trivial_5d) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{2, 2, 2, 2, 2};
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Sum>(a, AxisSet{});
-  auto f = make_shared<Function>(t, op::ParameterVector{a});
+  auto f = make_shared<Function>(t, ParameterVector{a});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend, true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -75,7 +77,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_trivial_5d) {
     copy_data(t_a,
               vector<float>{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1});
-    backend->call(f, {t_result}, {t_a});
+    backend->call(backend->compile(f), {t_result}, {t_a});
     EXPECT_TRUE(all_close(
         (vector<float>{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}),
@@ -84,16 +86,17 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_trivial_5d) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_to_scalar) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{2, 2};
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Sum>(a, AxisSet{0, 1});
-  auto f = make_shared<Function>(t, op::ParameterVector{a});
+  auto f = make_shared<Function>(t, ParameterVector{a});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend, true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -103,7 +106,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_to_scalar) {
     auto t_result = results[0];
 
     copy_data(t_a, vector<float>{1, 2, 3, 4});
-    backend->call(f, {t_result}, {t_a});
+    backend->call(backend->compile(f), {t_result}, {t_a});
     EXPECT_TRUE(
         all_close((vector<float>{10}), read_vector<float>(t_result), 1e-3f));
 
@@ -115,16 +118,17 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_to_scalar) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_columns) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{3, 2};
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Sum>(a, AxisSet{0});
-  auto f = make_shared<Function>(t, op::ParameterVector{a});
+  auto f = make_shared<Function>(t, ParameterVector{a});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend, true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -134,7 +138,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_columns) {
     auto t_result = results[0];
 
     copy_data(t_a, vector<float>{1, 2, 3, 4, 5, 6});
-    backend->call(f, {t_result}, {t_a});
+    backend->call(backend->compile(f), {t_result}, {t_a});
     EXPECT_TRUE(
         all_close((vector<float>{9, 12}), read_vector<float>(t_result), 1e-3f));
 
@@ -146,16 +150,17 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_columns) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_rows) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{3, 2};
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Sum>(a, AxisSet{1});
-  auto f = make_shared<Function>(t, op::ParameterVector{a});
+  auto f = make_shared<Function>(t, ParameterVector{a});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend, true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -165,7 +170,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_rows) {
     auto t_result = results[0];
 
     copy_data(t_a, vector<float>{1, 2, 3, 4, 5, 6});
-    backend->call(f, {t_result}, {t_a});
+    backend->call(backend->compile(f), {t_result}, {t_a});
     EXPECT_TRUE(
         all_close((vector<float>{3, 7, 11}), read_vector<float>(t_result)));
 
@@ -177,16 +182,17 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_rows) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_rows_zero) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{3, 0};
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Sum>(a, AxisSet{1});
-  auto f = make_shared<Function>(t, op::ParameterVector{a});
+  auto f = make_shared<Function>(t, ParameterVector{a});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend, true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -197,7 +203,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_rows_zero) {
 
     copy_data(t_a, vector<float>{});
     copy_data(t_result, vector<float>({3, 3, 3}));
-    backend->call(f, {t_result}, {t_a});
+    backend->call(backend->compile(f), {t_result}, {t_a});
     EXPECT_TRUE(
         all_close((vector<float>{0, 0, 0}), read_vector<float>(t_result)));
 
@@ -208,16 +214,17 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_rows_zero) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_cols_zero) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{0, 2};
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Sum>(a, AxisSet{0});
-  auto f = make_shared<Function>(t, op::ParameterVector{a});
+  auto f = make_shared<Function>(t, ParameterVector{a});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend, true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -228,7 +235,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_cols_zero) {
 
     copy_data(t_a, vector<float>{});
     copy_data(t_result, vector<float>({3, 3}));
-    backend->call(f, {t_result}, {t_a});
+    backend->call(backend->compile(f), {t_result}, {t_a});
     EXPECT_TRUE(all_close((vector<float>{0, 0}), read_vector<float>(t_result)));
 
     // For some reason I'm feeling extra paranoid about making sure reduction
@@ -238,16 +245,17 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_cols_zero) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_vector_zero) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{0};
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Sum>(a, AxisSet{0});
-  auto f = make_shared<Function>(t, op::ParameterVector{a});
+  auto f = make_shared<Function>(t, ParameterVector{a});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend, true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -258,7 +266,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_vector_zero) {
 
     copy_data(t_a, vector<float>{});
     copy_data(t_result, vector<float>({3}));
-    backend->call(f, {t_result}, {t_a});
+    backend->call(backend->compile(f), {t_result}, {t_a});
     EXPECT_TRUE(all_close((vector<float>{0}), read_vector<float>(t_result)));
 
     // For some reason I'm feeling extra paranoid about making sure reduction
@@ -268,16 +276,17 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_vector_zero) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_to_scalar_zero_by_zero) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{0, 0};
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Sum>(a, AxisSet{0, 1});
-  auto f = make_shared<Function>(t, op::ParameterVector{a});
+  auto f = make_shared<Function>(t, ParameterVector{a});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a}, backend, true);
+  auto tensors_list =
+      generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -288,7 +297,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_to_scalar_zero_by_zero) {
 
     copy_data(t_a, vector<float>{});
     copy_data(t_result, vector<float>({3}));
-    backend->call(f, {t_result}, {t_a});
+    backend->call(backend->compile(f), {t_result}, {t_a});
     EXPECT_TRUE(all_close((vector<float>{0}), read_vector<float>(t_result)));
 
     // For some reason I'm feeling extra paranoid about making sure reduction

@@ -1,5 +1,5 @@
 //*****************************************************************************
-// Copyright 2018 Intel Corporation
+// Copyright 2018-2019 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
   if (ng_batch_tensor_value != nullptr) {
     n *= m_batch_size;
   }
+
   check_io_bounds(source, tensor_offset, n / m_batch_size);
   const element::Type& element_type = get_tensor_layout()->get_element_type();
   size_t type_byte_size = element_type.size();

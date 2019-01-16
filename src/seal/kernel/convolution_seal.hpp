@@ -1,5 +1,5 @@
 //*****************************************************************************
-// Copyright 2018 Intel Corporation
+// Copyright 2018-2019 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -82,6 +82,7 @@ void ngraph::runtime::he::he_seal::kernel::convolution_seal(
     out_coords.emplace_back(out_coord);
   }
   size_t out_transform_size = out_coords.size();
+  NGRAPH_INFO << "Convolution output size " << out_transform_size;
 
 #pragma omp parallel for
   for (size_t out_coord_idx = 0; out_coord_idx < out_transform_size;
@@ -251,6 +252,10 @@ void ngraph::runtime::he::he_seal::kernel::convolution_seal(
     } else {
       // Write the sum back.
       out[out_coord_idx] = sum;
+    }
+
+    if (out_coord_idx % 1000 == 0) {
+      NGRAPH_INFO << "Finished out coord " << out_coord_idx;
     }
   }
 }

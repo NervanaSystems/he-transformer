@@ -1,5 +1,5 @@
 //*****************************************************************************
-// Copyright 2018 Intel Corporation
+// Copyright 2018-2019 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,16 +28,16 @@ using namespace ngraph;
 static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, dot1d) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{4};
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Dot>(a, b);
-  auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend.get());
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -49,26 +49,27 @@ NGRAPH_TEST(${BACKEND_NAME}, dot1d) {
 
     copy_data(t_a, vector<float>{1, 2, 3, 4});
     copy_data(t_b, vector<float>{5, 6, 7, 8});
-    backend->call(f, {t_result}, {t_a, t_b});
+    backend->call(backend->compile(f), {t_result}, {t_a, t_b});
     EXPECT_TRUE(
         all_close(read_vector<float>(t_result), vector<float>{70}, 1e-3f));
   }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, dot1d_optimized) {
-  auto backend = static_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
-  backend->set_optimized_mult(true);
-  backend->set_optimized_add(true);
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+  ;
+  he_backend->set_optimized_mult(true);
+  he_backend->set_optimized_add(true);
 
   Shape shape{4};
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Dot>(a, b);
-  auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend.get());
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -80,14 +81,14 @@ NGRAPH_TEST(${BACKEND_NAME}, dot1d_optimized) {
 
     copy_data(t_a, vector<float>{1, 2, 3, 4});
     copy_data(t_b, vector<float>{-1, 0, 1, 2});
-    backend->call(f, {t_result}, {t_a, t_b});
+    backend->call(backend->compile(f), {t_result}, {t_a, t_b});
     EXPECT_TRUE(
         all_close(read_vector<float>(t_result), vector<float>{10}, 1e-1f));
   }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, dot_matrix_vector) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape_a{4, 4};
   Shape shape_b{4};
@@ -95,10 +96,10 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_matrix_vector) {
   auto a = make_shared<op::Parameter>(element::f32, shape_a);
   auto b = make_shared<op::Parameter>(element::f32, shape_b);
   auto t = make_shared<op::Dot>(a, b);
-  auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend.get());
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -111,24 +112,24 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_matrix_vector) {
     copy_data(t_a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
                                  15, 16});
     copy_data(t_b, vector<float>{17, 18, 19, 20});
-    backend->call(f, {t_result}, {t_a, t_b});
+    backend->call(backend->compile(f), {t_result}, {t_a, t_b});
     EXPECT_TRUE(all_close(read_vector<float>(t_result),
                           (vector<float>{190, 486, 782, 1078}), 1e-3f));
   }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, dot_scalar) {
-  auto backend = runtime::Backend::create("${BACKEND_REGISTERED_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
   Shape shape{};
 
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Dot>(a, b);
-  auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend);
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend.get());
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
@@ -140,15 +141,15 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_scalar) {
 
     copy_data(t_a, vector<float>{8});
     copy_data(t_b, vector<float>{6});
-    backend->call(f, {t_result}, {t_a, t_b});
+    backend->call(backend->compile(f), {t_result}, {t_a, t_b});
     EXPECT_TRUE(
         all_close(read_vector<float>(t_result), (vector<float>{48}), 1e-3f));
   }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_batch) {
-  auto backend = static_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
 
   Shape shape_a{3, 1};
   Shape shape_b{1};
@@ -157,47 +158,17 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_batch) {
   auto b = make_shared<op::Parameter>(element::f32, shape_b);
   auto t = make_shared<op::Dot>(a, b);
 
-  auto f = make_shared<Function>(t, op::ParameterVector{a, b});
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
-  auto t_a = backend->create_batched_plain_tensor(element::f32, shape_a);
-  auto t_b = backend->create_plain_tensor(element::f32, shape_b);
-  auto t_result = backend->create_batched_plain_tensor(element::f32, shape_r);
+  auto t_a = he_backend->create_batched_plain_tensor(element::f32, shape_a);
+  auto t_b = he_backend->create_plain_tensor(element::f32, shape_b);
+  auto t_result =
+      he_backend->create_batched_plain_tensor(element::f32, shape_r);
 
   copy_data(t_a, vector<float>{1, 2, 3});
   copy_data(t_b, vector<float>{4});
-  backend->call(f, {t_result}, {t_a, t_b});
+  backend->call(backend->compile(f), {t_result}, {t_a, t_b});
   EXPECT_TRUE(all_close((vector<float>{4, 8, 12}),
                         generalized_read_vector<float>(t_result), 1e-3f));
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, dot_perf) {
-  auto backend = static_pointer_cast<runtime::he::HEBackend>(
-      runtime::Backend::create("${BACKEND_REGISTERED_NAME}"));
-  backend->set_optimized_mult(false);
-  backend->set_optimized_add(false);
-
-  Shape shape_a{100, 100};
-  Shape shape_b{100, 100};
-  Shape shape_r{100, 100};
-  auto a = make_shared<op::Parameter>(element::f32, shape_a);
-  auto b = make_shared<op::Parameter>(element::f32, shape_b);
-  auto t = make_shared<op::Dot>(a, b);
-
-  auto f = make_shared<Function>(t, op::ParameterVector{a, b});
-
-  // Create some tensors for input/output
-  auto t_a = backend->create_cipher_tensor(element::f32, shape_a);
-  auto t_b = backend->create_plain_tensor(element::f32, shape_b);
-  auto t_result = backend->create_cipher_tensor(element::f32, shape_r);
-
-  vector<float> a_vals, b_vals;
-  for (size_t i = 0; i < 100 * 100; ++i) {
-    a_vals.emplace_back(i % 11 - 5);
-    b_vals.emplace_back((i + 1) % 11 - 5);
-  }
-
-  copy_data(t_a, a_vals);
-  copy_data(t_b, b_vals);
-  backend->call(f, {t_result}, {t_a, t_b});
 }

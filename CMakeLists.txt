@@ -1,5 +1,5 @@
 # *****************************************************************************
-# Copyright 2017-2018 Intel Corporation
+# Copyright 2018-2019 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,95 +14,71 @@
 # limitations under the License.
 # *****************************************************************************
 
-# To support BUILD_BYPRODUCTS
-cmake_minimum_required (VERSION 3.2)
+# SEAL requires >= 3.10
+cmake_minimum_required (VERSION 3.10)
+
+# Global project name
+project (he-transformer LANGUAGES CXX C)
+
+# CXX flags
+if(DEFINED CMAKE_CXX_CLAGS)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z -std=gnu++1z -Wall")
+else()
+    set(CMAKE_CXX_FLAGS "-std=c++1z -std=gnu++1z -Wall")
+endif()
+
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS} -g")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -O0 -g")
+
+set(CMAKE_INSTALL_MESSAGE LAZY)
+
+include(cmake/sdl.cmake)
 
 # These variables are undocumented but useful.
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
-# CXX flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z -std=gnu++1z")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0")
-
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g")
-set(CMAKE_CXX_FLAGS_DEBUG  "-O0 -g")
-
-set(CMAKE_INSTALL_MESSAGE LAZY)
-
-# Flags required for SDL-3
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -fPIE -D_FORTIFY_SOURCE=2")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wformat -Wformat-security")
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -z noexecstack")
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -z relro -z now")
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pie")
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.9)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fstack-protector")
-    else()
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fstack-protector-strong")
-    endif()
-endif()
-
-# Global project name
-project (he-transformer)
-
 add_definitions(-DPROJECT_ROOT_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
-
-# Installation paths when `make install`
-if (DEFINED NGRAPH_INSTALL_PREFIX)
-    set(CMAKE_INSTALL_PREFIX ${NGRAPH_INSTALL_PREFIX})
-else()
-    set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/ngraph_dist")
-endif()
-set(NGRAPH_INSTALL_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib")
-set(NGRAPH_INSTALL_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/include")
 
 # This allows libhe_backend.so to find libraries in the same directory
 set(CMAKE_INSTALL_RPATH "\$ORIGIN")
 
-option(ENABLE_TF "Support Tensorflow integration through ngraph-tf" OFF)
-
-message("ENABLE_TF ${ENABLE_TF}")
-
-# Check python environment is active if TF is enabled
-if (ENABLE_TF)
-    execute_process(
-        COMMAND python -c "import os; print(os.environ['VIRTUAL_ENV'])"
-        RESULT_VARIABLE PY_ENV_ERROR
-    )
-    if(PY_ENV_ERROR)
-        message(FATAL_ERROR "Set python virtual environment when building with TF support.")
-    endif()
-endif()
-
 # he-transformer headers
 set(HE_TRANSFORMER_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
-set(HE_TRANSFORMER_TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test)
 
 # External projects (ngraph, seal, etc. )
-include(ExternalProject)
 set(EXTERNAL_INSTALL_DIR ${CMAKE_BINARY_DIR}/external)
 set(EXTERNAL_INSTALL_LIB_DIR ${EXTERNAL_INSTALL_DIR}/lib)
 set(EXTERNAL_INSTALL_INCLUDE_DIR ${EXTERNAL_INSTALL_DIR}/include)
 
+if(NOT DEFINED EXTERNAL_PROJECTS_ROOT)
+    set(EXTERNAL_PROJECTS_ROOT ${CMAKE_CURRENT_BINARY_DIR})
+endif()
+
+# Build options
+# python version used in virtual environment
+if(NOT DEFINED PYTHON_VENV_VERSION)
+    set(PYTHON_VENV_VERSION "python3.5")
+endif()
+
+message("PYTHON_VENV_VERSION ${PYTHON_VENV_VERSION}")
+
+# TODO: enable skipping compilation of TF, to be passed to ngraph-tf.cmake build_ngtf.py.
+# If we do this, we need to check GLIB_CXX11_ABI
+# OPTION(USE_EXISTING_TF "Skip compilation of TF for faster build time" OFF)
+include(cmake/ngraph-tf.cmake)
 include(cmake/gtest.cmake)
 include(cmake/json.cmake)
-include(cmake/ngraph.cmake)
-
-if (ENABLE_TF)
-    message("Building with Tensorflow integration through ngraph-tf")
-
-    # Allows "make ext_ngraph_tf"
-    add_custom_target(
-        install_tensorflow
-        COMMAND pip install -U tensorflow
-    )
-    include(cmake/ngraph-tf.cmake)
-endif() # ENABLE_TF
-
 include(cmake/openmp.cmake)
 include(cmake/seal.cmake)
+
+# Add ngraph library
+add_library(ngraph SHARED IMPORTED)
+set_target_properties(
+    ngraph
+    PROPERTIES IMPORTED_LOCATION
+    ${NGRAPH_TF_LIB_DIR}/libngraph.so
+)
 
 # HE transformer source and test directories
 add_subdirectory(src)

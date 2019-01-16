@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <iomanip>
 #include <memory>
 #include <utility>
 
@@ -39,13 +40,9 @@ std::pair<std::shared_ptr<S>, std::shared_ptr<T>> match_arguments(
   auto scale1 = arg1_scaled->get_hetext().scale();
 
   if (scale0 < 0.99 * scale1 || scale0 > 1.01 * scale1) {
-    // NGRAPH_DEBUG isn't thread-safe until ngraph commit #1977
-    // https://github.com/NervanaSystems/ngraph/commit/ee6444ed39864776c8ce9a406eee9275382a88bb
-    // so we comment it out.
-    // TODO: use NGRAPH_DEBUG at next ngraph version
-    NGRAPH_WARN << "Scale " << std::setw(10) << scale0
-                << " does not match scale " << scale1
-                << " in scalar add, ratio is " << scale0 / scale1;
+    NGRAPH_DEBUG << "Scale " << std::setw(10) << scale0
+                 << " does not match scale " << scale1
+                 << " in scalar add, ratio is " << scale0 / scale1;
   }
   if (scale0 != scale1) {
     arg0_scaled->get_hetext().scale() = arg1_scaled->get_hetext().scale();
@@ -65,6 +62,7 @@ std::pair<std::shared_ptr<S>, std::shared_ptr<T>> match_arguments(
     chain_ind0 = he_seal_ckks_backend->get_context()
                      ->context_data(arg0_scaled->get_hetext().parms_id())
                      ->chain_index();
+    assert(chain_ind0 == chain_ind1);
   } else if (chain_ind1 > chain_ind0) {
     he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
         arg1_scaled->get_hetext(), arg0_scaled->get_hetext().parms_id());

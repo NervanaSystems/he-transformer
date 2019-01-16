@@ -1,5 +1,5 @@
 //*****************************************************************************
-// Copyright 2018 Intel Corporation
+// Copyright 2018-2019 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@
 #include "he_ciphertext.hpp"
 #include "he_plaintext.hpp"
 #include "ngraph/coordinate_transform.hpp"
+#include "ngraph/shape_util.hpp"
 
 namespace ngraph {
 namespace runtime {

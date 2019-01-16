@@ -1,5 +1,5 @@
 //*****************************************************************************
-// Copyright 2018 Intel Corporation
+// Copyright 2018-2019 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -31,26 +31,23 @@ namespace he {
 namespace he_seal {
 namespace bfv {
 namespace kernel {
-void scalar_add_bfv(
-    const he_seal::SealCiphertextWrapper* arg0,
-    const he_seal::SealCiphertextWrapper* arg1,
-    shared_ptr<he_seal::SealCiphertextWrapper>& out,
-    const element::Type& element_type,
-    const he_seal::HESealBFVBackend* he_seal_bfv_backend);
+void scalar_add_bfv(const he_seal::SealCiphertextWrapper* arg0,
+                    const he_seal::SealCiphertextWrapper* arg1,
+                    shared_ptr<he_seal::SealCiphertextWrapper>& out,
+                    const element::Type& element_type,
+                    const he_seal::HESealBFVBackend* he_seal_bfv_backend);
 
-void scalar_add_bfv(
-    const he_seal::SealCiphertextWrapper* arg0,
-    const he_seal::SealPlaintextWrapper* arg1,
-    shared_ptr<he_seal::SealCiphertextWrapper>& out,
-    const element::Type& element_type,
-    const he_seal::HESealBFVBackend* he_seal_bfv_backend);
+void scalar_add_bfv(const he_seal::SealCiphertextWrapper* arg0,
+                    const he_seal::SealPlaintextWrapper* arg1,
+                    shared_ptr<he_seal::SealCiphertextWrapper>& out,
+                    const element::Type& element_type,
+                    const he_seal::HESealBFVBackend* he_seal_bfv_backend);
 
-void scalar_add_bfv(
-    const he_seal::SealPlaintextWrapper* arg0,
-    const he_seal::SealCiphertextWrapper* arg1,
-    shared_ptr<he_seal::SealCiphertextWrapper>& out,
-    const element::Type& element_type,
-    const he_seal::HESealBFVBackend* he_seal_bfv_backend);
+void scalar_add_bfv(const he_seal::SealPlaintextWrapper* arg0,
+                    const he_seal::SealCiphertextWrapper* arg1,
+                    shared_ptr<he_seal::SealCiphertextWrapper>& out,
+                    const element::Type& element_type,
+                    const he_seal::HESealBFVBackend* he_seal_bfv_backend);
 }  // namespace kernel
 }  // namespace bfv
 }  // namespace he_seal

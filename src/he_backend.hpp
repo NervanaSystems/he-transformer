@@ -1,5 +1,5 @@
 //*****************************************************************************
-// Copyright 2018 Intel Corporation
+// Copyright 2018-2019 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@
 #include "ngraph/runtime/tensor.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "ngraph/util.hpp"
+#include "node_wrapper.hpp"
 
 namespace ngraph {
 namespace runtime {
@@ -146,7 +147,7 @@ class HEBackend : public runtime::Backend {
   std::shared_ptr<runtime::Tensor> create_valued_plain_tensor(
       float value, const element::Type& element_type, const Shape& shape) const;
 
-  bool compile(std::shared_ptr<Function> function) override;
+  runtime::Handle compile(std::shared_ptr<Function> function) override;
 
   bool call(
       std::shared_ptr<Function> function,
@@ -194,6 +195,7 @@ class HEBackend : public runtime::Backend {
 
   void enable_performance_data(std::shared_ptr<Function> function,
                                bool enable) override;
+
   std::vector<PerformanceCounter> get_performance_data(
       std::shared_ptr<Function> function) const override;
 
@@ -202,8 +204,8 @@ class HEBackend : public runtime::Backend {
   bool optimized_mult() const { return m_optimized_mult; };
 
   /// @brief Set scalar optimizations
-  bool set_optimized_add(bool enable) { m_optimized_add = enable; };
-  bool set_optimized_mult(bool enable) { m_optimized_mult = enable; };
+  void set_optimized_add(bool enable) { m_optimized_add = enable; };
+  void set_optimized_mult(bool enable) { m_optimized_mult = enable; };
 
   bool encrypt_data() const { return m_encrypt_data; };
   bool batch_data() const { return m_batch_data; };
@@ -216,7 +218,7 @@ class HEBackend : public runtime::Backend {
     bool m_nan_check_enabled = false;
     bool m_performance_counters_enabled = false;
     std::unordered_map<const Node*, stopwatch> m_timer_map;
-    std::vector<std::shared_ptr<Node>> m_nodes;
+    std::vector<NodeWrapper> m_wrapped_nodes;
   };
   std::map<std::shared_ptr<Function>, FunctionInstance> m_function_map;
 
@@ -227,9 +229,10 @@ class HEBackend : public runtime::Backend {
   bool m_encrypt_model{std::getenv("NGRAPH_ENCRYPT_MODEL") != nullptr};
 
   void generate_calls(
-      const element::Type& element_type, const std::shared_ptr<Node>& op,
+      const element::Type& element_type, const NodeWrapper& op,
       const std::vector<std::shared_ptr<runtime::he::HETensor>>& outputs,
-      const std::vector<std::shared_ptr<runtime::he::HETensor>>& inputs);
+      const std::vector<std::shared_ptr<runtime::he::HETensor>>& inputs,
+      FunctionInstance& instance);
 };
 }  // namespace he
 }  // namespace runtime
