@@ -64,35 +64,6 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_1image) {
   }
 }
 
-/*
-NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_batch) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
-  ;
-
-  Shape shape_a{3, 1};
-  Shape shape_b{1};
-  Shape shape_r{3};
-  auto a = make_shared<op::Parameter>(element::f32, shape_a);
-  auto b = make_shared<op::Parameter>(element::f32, shape_b);
-  auto t = make_shared<op::Dot>(a, b);
-
-  auto f = make_shared<Function>(t, ParameterVector{a, b});
-
-  // Create some tensors for input/output
-  auto t_a = he_backend->create_batched_plain_tensor(element::f32, shape_a);
-  auto t_b = he_backend->create_plain_tensor(element::f32, shape_b);
-  auto t_result =
-      he_backend->create_batched_plain_tensor(element::f32, shape_r);
-
-  copy_data(t_a, vector<float>{1, 2, 3});
-  copy_data(t_b, vector<float>{4});
-  backend->call(backend->compile(f), {t_result}, {t_a, t_b});
-  EXPECT_TRUE(all_close((vector<float>{4, 8, 12}),
-                        generalized_read_vector<float>(t_result), 1e-3f));
-}
-*/
-
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   Shape shape_a{2, 1, 14};

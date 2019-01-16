@@ -132,29 +132,3 @@ target_include_directories(cryptonets_benchmark PRIVATE ".")
 target_link_libraries(cryptonets_benchmark libgtest ngraph ngraph_test_util)
 target_link_libraries(cryptonets_benchmark he_backend seal pthread ${CMAKE_DL_LIBS})
 add_dependencies(cryptonets_benchmark he_backend ext_seal ext_ngraph_tf ext_gtest)
-
-# CIFAR-10
-set (CIFAR10_SRC test_cifar10.cpp test_util.cpp main_cifar10.cpp)
-add_executable(cifar10_benchmark ${CIFAR10_SRC})
-
-include_directories(SYSTEM
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${GTEST_INCLUDE_DIR}
-    ${NGRAPH_INCLUDE_DIR}
-    ${NGRAPH_TEST_DIR}
-    ${HE_TRANSFORMER_SOURCE_DIR}
-    ${EXTERNAL_INSTALL_INCLUDE_DIR}
-)
-
-link_directories(
-    ${NGRAPH_LIB_DIR}
-    ${EXTERNAL_INSTALL_LIB_DIR}
-)
-
-target_include_directories(cifar10_benchmark PRIVATE ".")
-
-target_link_libraries(cifar10_benchmark libgtest)
-target_link_libraries(cifar10_benchmark ngraph_test_util)
-target_link_libraries(cifar10_benchmark he_backend seal pthread ${CMAKE_DL_LIBS})
-add_dependencies(cifar10_benchmark he_backend ext_seal ext_ngraph_tf ext_gtest)
-
