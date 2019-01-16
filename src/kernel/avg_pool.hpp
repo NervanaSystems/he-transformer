@@ -145,7 +145,6 @@ void avg_pool(const std::vector<std::shared_ptr<T>>& arg,
     if (n_elements == 0) {
       throw std::runtime_error("AvgPool elements == 0, must be non-zero");
     }
-
     auto inv_n_elements =
         he_backend->create_valued_plaintext(1. / n_elements, element::f32);
 

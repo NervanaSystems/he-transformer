@@ -105,6 +105,41 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image) {
   }
 }
 
+NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image_batched) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+  Shape shape_a{2, 1, 14};
+  Shape window_shape{3};
+  auto A = make_shared<op::Parameter>(element::f32, shape_a);
+  Shape shape_r{2, 1, 12};
+
+  float denom = 3.0;
+
+  auto t = make_shared<op::AvgPool>(A, window_shape);
+  auto f = make_shared<Function>(t, ParameterVector{A});
+
+  // Create some tensors for input/output
+  auto t_a = he_backend->create_batched_cipher_tensor(element::f32, shape_a);
+  auto t_result =
+      he_backend->create_batched_cipher_tensor(element::f32, shape_r);
+
+  copy_data(t_a, test::NDArray<float, 3>(
+                     {{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
+                      {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
+                     .get_vector());
+
+  backend->call(backend->compile(f), {t_result}, {t_a});
+  EXPECT_TRUE(all_close(
+      test::NDArray<float, 3>(
+          {{{1 / denom, 3 / denom, 3 / denom, 3 / denom, 4 / denom, 5 / denom,
+             5 / denom, 2 / denom, 2 / denom, 2 / denom, 2 / denom, 0 / denom}},
+           {{3 / denom, 4 / denom, 2 / denom, 1 / denom, 0 / denom, 2 / denom,
+             2 / denom, 3 / denom, 1 / denom, 1 / denom, 1 / denom,
+             3 / denom}}})
+          .get_vector(),
+      generalized_read_vector<float>(t_result)));
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_2channel_2image) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   Shape shape_a{2, 2, 14};

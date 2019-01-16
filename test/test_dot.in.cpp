@@ -150,7 +150,6 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_scalar) {
 NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_batch) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
-  ;
 
   Shape shape_a{3, 1};
   Shape shape_b{1};

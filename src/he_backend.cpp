@@ -287,15 +287,22 @@ bool runtime::he::HEBackend::call(
       descriptor::Tensor* tv = param->get_output_tensor_ptr(i).get();
 
       if (encrypt_data()) {
+        NGRAPH_INFO << "Encrypting parameter " << i;
         auto plain_input = static_pointer_cast<runtime::he::HEPlainTensor>(
             he_inputs[input_count]);
+        assert(plain_input != nullptr);
         auto cipher_input = static_pointer_cast<runtime::he::HECipherTensor>(
             create_cipher_tensor(plain_input->get_element_type(),
                                  plain_input->get_shape(), batch_data()));
+
+        NGRAPH_INFO << "plain_input->get_batched_element_count() "
+                    << plain_input->get_batched_element_count();
 #pragma omp parallel for
         for (size_t i = 0; i < plain_input->get_batched_element_count(); ++i) {
           encrypt(cipher_input->get_element(i), *plain_input->get_element(i));
         }
+
+        NGRAPH_INFO << "Done encrypting parameter " << i;
 
         tensor_map.insert({tv, cipher_input});
         input_count++;
@@ -328,6 +335,10 @@ bool runtime::he::HEBackend::call(
     if (type_id == OP_TYPEID::Parameter) {
       NGRAPH_INFO << "Parameter shape {" << join(op->get_shape()) << "}";
       continue;
+    }
+
+    if (op->description() == "Constant") {
+      NGRAPH_INFO << "Constant shape {" << join(op->get_shape()) << "}";
     }
 
     // get op inputs from map
@@ -403,6 +414,12 @@ bool runtime::he::HEBackend::call(
                 << instance.m_timer_map[op].get_milliseconds() << "ms"
                 << "\033[0m";
   }
+  size_t total_time = 0;
+  for (const auto& elem : instance.m_timer_map) {
+    total_time += elem.second.get_milliseconds();
+  }
+  NGRAPH_INFO << "\033[1;32m"
+              << "Total time " << total_time << " (ms) \033[0m";
   return true;
 }
 
@@ -500,10 +517,9 @@ void runtime::he::HEBackend::generate_calls(
     }
     case OP_TYPEID::AvgPool: {
       const op::AvgPool* avg_pool = static_cast<const op::AvgPool*>(&node);
-      Shape in_shape = node.get_input_shape(0);
-      Shape out_shape = node.get_output_shape(0);
-
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
+        Shape in_shape = arg0_cipher->get_shape();
+        Shape out_shape = out0_cipher->get_shape();
         runtime::he::kernel::avg_pool(
             arg0_cipher->get_elements(), out0_cipher->get_elements(), in_shape,
             out_shape, avg_pool->get_window_shape(),
@@ -512,6 +528,8 @@ void runtime::he::HEBackend::generate_calls(
             avg_pool->get_include_padding_in_avg_computation(), this);
 
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
+        Shape in_shape = arg0_plain->get_shape();
+        Shape out_shape = out0_plain->get_shape();
         runtime::he::kernel::avg_pool(
             arg0_plain->get_elements(), out0_plain->get_elements(), in_shape,
             out_shape, avg_pool->get_window_shape(),
