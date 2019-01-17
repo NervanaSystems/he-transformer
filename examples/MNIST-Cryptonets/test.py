@@ -154,7 +154,7 @@ def test_mnist_cnn(FLAGS, network):
         y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
         elasped_time = time.time() - start_time
         print("total time warmup:", elasped_time)
-    '''
+
     # Avoid performing in a session, to allow he backends to report accuracy.
     if FLAGS.report_accuracy:
         y_label_batch = np.argmax(y_test_batch, 1)
@@ -164,7 +164,6 @@ def test_mnist_cnn(FLAGS, network):
 
         print('Error count', error_count, 'of', FLAGS.batch_size, 'elements.')
         print('Accuracy with ' + network + ': %g ' % test_accuracy)
-    '''
 
     with tf.Session() as sess:
         start_time = time.time()
@@ -172,18 +171,6 @@ def test_mnist_cnn(FLAGS, network):
         y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
         elasped_time = time.time() - start_time
         print("total time trial 1:", elasped_time)
-
-    # Avoid performing in a session, to allow he backends to report accuracy.
-    '''
-    if FLAGS.report_accuracy:
-        y_label_batch = np.argmax(y_test_batch, 1)
-        correct_prediction = np.equal(np.argmax(y_conv_val, 1), y_label_batch)
-        error_count = np.size(correct_prediction) - np.sum(correct_prediction)
-        test_accuracy = np.mean(correct_prediction)
-
-        print('Error count', error_count, 'of', FLAGS.batch_size, 'elements.')
-        print('Accuracy with ' + network + ': %g ' % test_accuracy)
-    '''
 
     with tf.Session() as sess:
         start_time = time.time()

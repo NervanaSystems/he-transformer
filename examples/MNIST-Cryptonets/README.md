@@ -9,9 +9,10 @@ This example depends on the [**Intel® nGraph™ Compiler and runtime engine for
 # Train the network
 First, train the network using
 ```
-python train.py
+python train.py [--train_loop_count=10000]
 ```
 This trains the network briefly and stores the network weights.
+To match the 98.95% accuracy of the original Cryptonets network, run for 100000 training loops.
 
 # Test the network
 ## Python
