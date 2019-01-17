@@ -240,7 +240,6 @@ def test_mnist_cnn(FLAGS, network):
         elasped_time = time.time() - start_time
         print("total time trial 10:", elasped_time)
 
-
     if FLAGS.save_batch:
         x_test_batch.tofile("x_test_" + str(FLAGS.batch_size) + ".bin")
         y_label_batch.astype('float32').tofile("y_label_" +

@@ -1,0 +1,1835 @@
+[INFO] 2019-01-16T23:40:48z src/seal/ckks/he_seal_ckks_backend.cpp 66	Using SEAL CKKS config with 7 30-bit coefficients
+[==========] Running 14 tests from 1 test case.
+[----------] Global test environment set-up.
+[----------] 14 tests from Cryptonets
+[ RUN      ] Cryptonets.CKKS_warmup
+[INFO] 2019-01-16T23:40:49z src/seal/he_seal_util.hpp 47	
+/ Encryption parameters:
+| scheme: HE:SEAL:CKKS
+| poly_modulus: 8192
+| coeff_modulus size: 210 bits
+\ noise_standard_deviation: 3.2
+[INFO] 2019-01-16T23:40:49z test/test_cryptonets.cpp 88	Deserialize graph
+[INFO] 2019-01-16T23:40:49z test/test_cryptonets.cpp 89	x size 784
+[INFO] 2019-01-16T23:40:49z test/test_cryptonets.cpp 90	Inputs loaded
+[INFO] 2019-01-16T23:40:49z test/test_cryptonets.cpp 92	sw_load_model: 80ms
+[INFO] 2019-01-16T23:40:49z src/seal/ckks/he_seal_ckks_backend.cpp 284	Creating batched plain tensor with shape 1, 784
+[INFO] 2019-01-16T23:40:49z test/test_cryptonets.cpp 106	Creating input shape: 1x784
+[INFO] 2019-01-16T23:40:49z test/test_cryptonets.cpp 109	Copying 784 elements
+[INFO] 2019-01-16T23:40:50z test/test_cryptonets.cpp 123	Creating output shape: 1x10
+[INFO] 2019-01-16T23:40:50z src/seal/ckks/he_seal_ckks_backend.cpp 284	Creating batched plain tensor with shape 1, 10
+[INFO] 2019-01-16T23:40:50z test/test_cryptonets.cpp 128	sw_encrypt_input: 365ms
+[INFO] 2019-01-16T23:40:50z test/test_cryptonets.cpp 132	calling function
+[INFO] 2019-01-16T23:40:50z src/he_backend.cpp 252	Encrypting data
+[INFO] 2019-01-16T23:40:50z src/he_backend.cpp 255	Batching data
+[INFO] 2019-01-16T23:40:50z src/he_backend.cpp 290	Encrypting parameter 0
+[INFO] 2019-01-16T23:40:50z src/he_backend.cpp 298	plain_input->get_batched_element_count() 784
+[INFO] 2019-01-16T23:40:50z src/he_backend.cpp 305	Done encrypting parameter 0
+[INFO] 2019-01-16T23:40:50z src/he_backend.cpp 331	[1;32m[ Parameter_0 ][0m
+[INFO] 2019-01-16T23:40:50z src/he_backend.cpp 336	Parameter shape {1, 784}
+[INFO] 2019-01-16T23:40:50z src/he_backend.cpp 331	[1;32m[ Constant_1 ][0m
+[INFO] 2019-01-16T23:40:50z src/he_backend.cpp 341	Constant shape {100, 10}
+[INFO] 2019-01-16T23:40:50z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:40:50z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:40:50z src/he_backend.cpp 413	[1;31mConstant_1 took 21ms[0m
+[INFO] 2019-01-16T23:40:50z src/he_backend.cpp 331	[1;32m[ Constant_2 ][0m
+[INFO] 2019-01-16T23:40:50z src/he_backend.cpp 341	Constant shape {845, 100}
+[INFO] 2019-01-16T23:40:50z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:40:50z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:40:52z src/he_backend.cpp 413	[1;31mConstant_2 took 1989ms[0m
+[INFO] 2019-01-16T23:40:52z src/he_backend.cpp 331	[1;32m[ Constant_3 ][0m
+[INFO] 2019-01-16T23:40:52z src/he_backend.cpp 341	Constant shape {}
+[INFO] 2019-01-16T23:40:52z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:40:52z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:40:52z src/he_backend.cpp 413	[1;31mConstant_3 took 0ms[0m
+[INFO] 2019-01-16T23:40:52z src/he_backend.cpp 331	[1;32m[ Constant_4 ][0m
+[INFO] 2019-01-16T23:40:52z src/he_backend.cpp 341	Constant shape {5, 5, 1, 5}
+[INFO] 2019-01-16T23:40:52z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:40:52z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:40:52z src/he_backend.cpp 413	[1;31mConstant_4 took 3ms[0m
+[INFO] 2019-01-16T23:40:52z src/he_backend.cpp 331	[1;32m[ Reshape_5 ][0m
+[INFO] 2019-01-16T23:40:52z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:40:52z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:40:52z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:40:52z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:40:52z src/he_backend.cpp 413	[1;31mReshape_5 took 0ms[0m
+[INFO] 2019-01-16T23:40:52z src/he_backend.cpp 331	[1;32m[ Reshape_6 ][0m
+[INFO] 2019-01-16T23:40:52z src/he_backend.cpp 467	Inputs: Plain
+[INFO] 2019-01-16T23:40:52z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:40:52z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:40:52z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:40:52z src/he_backend.cpp 413	[1;31mReshape_6 took 0ms[0m
+[INFO] 2019-01-16T23:40:52z src/he_backend.cpp 331	[1;32m[ Reshape_7 ][0m
+[INFO] 2019-01-16T23:40:52z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:40:52z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:40:52z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:40:52z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:40:52z src/he_backend.cpp 413	[1;31mReshape_7 took 0ms[0m
+[INFO] 2019-01-16T23:40:52z src/he_backend.cpp 331	[1;32m[ Convolution_8 ][0m
+[INFO] 2019-01-16T23:40:52z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:40:52z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:40:52z src/seal/kernel/convolution_seal.hpp 85	Convolution output size 720
+[INFO] 2019-01-16T23:40:52z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 0
+[INFO] 2019-01-16T23:40:55z src/he_backend.cpp 413	[1;31mConvolution_8 took 3480ms[0m
+[INFO] 2019-01-16T23:40:55z src/he_backend.cpp 331	[1;32m[ Reshape_9 ][0m
+[INFO] 2019-01-16T23:40:55z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:40:55z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:40:55z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:40:55z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:40:55z src/he_backend.cpp 413	[1;31mReshape_9 took 0ms[0m
+[INFO] 2019-01-16T23:40:55z src/he_backend.cpp 331	[1;32m[ Multiply_10 ][0m
+[INFO] 2019-01-16T23:40:55z src/he_backend.cpp 467	Inputs: Cipher, Cipher
+[INFO] 2019-01-16T23:40:55z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:40:56z src/he_backend.cpp 413	[1;31mMultiply_10 took 460ms[0m
+[INFO] 2019-01-16T23:40:56z src/he_backend.cpp 331	[1;32m[ Pad_11 ][0m
+[INFO] 2019-01-16T23:40:56z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:40:56z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:40:56z src/he_backend.cpp 413	[1;31mPad_11 took 8ms[0m
+[INFO] 2019-01-16T23:40:56z src/he_backend.cpp 331	[1;32m[ Reshape_12 ][0m
+[INFO] 2019-01-16T23:40:56z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:40:56z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:40:56z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:40:56z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:40:56z src/he_backend.cpp 413	[1;31mReshape_12 took 0ms[0m
+[INFO] 2019-01-16T23:40:56z src/he_backend.cpp 331	[1;32m[ Dot_13 ][0m
+[INFO] 2019-01-16T23:40:56z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:40:56z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:40:56z src/he_backend.cpp 675	1x845 dot 845x100
+[INFO] 2019-01-16T23:41:14z src/he_backend.cpp 413	[1;31mDot_13 took 18436ms[0m
+[INFO] 2019-01-16T23:41:14z src/he_backend.cpp 331	[1;32m[ Multiply_14 ][0m
+[INFO] 2019-01-16T23:41:14z src/he_backend.cpp 467	Inputs: Cipher, Cipher
+[INFO] 2019-01-16T23:41:14z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:41:15z src/he_backend.cpp 413	[1;31mMultiply_14 took 153ms[0m
+[INFO] 2019-01-16T23:41:15z src/he_backend.cpp 331	[1;32m[ Dot_15 ][0m
+[INFO] 2019-01-16T23:41:15z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:41:15z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:41:15z src/he_backend.cpp 675	1x100 dot 100x10
+[INFO] 2019-01-16T23:41:15z src/he_backend.cpp 413	[1;31mDot_15 took 267ms[0m
+[INFO] 2019-01-16T23:41:15z src/he_backend.cpp 331	[1;32m[ Result_16 ][0m
+[INFO] 2019-01-16T23:41:15z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:41:15z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:41:15z src/he_backend.cpp 413	[1;31mResult_16 took 1ms[0m
+[INFO] 2019-01-16T23:41:15z src/he_backend.cpp 421	[1;32mTotal time 24818 (ms) [0m
+[INFO] 2019-01-16T23:41:15z test/test_cryptonets.cpp 137	sw_run_model: 25188ms
+[INFO] 2019-01-16T23:41:15z test/test_util.hpp 91	Element count 10
+[INFO] 2019-01-16T23:41:15z test/test_cryptonets.cpp 146	sw_decrypt_output: 19ms
+[INFO] 2019-01-16T23:41:15z test/test_cryptonets.cpp 151	sw_global: 25653ms
+[INFO] 2019-01-16T23:41:15z test/test_cryptonets.cpp 166	Error count 0 of 1 elements.
+[INFO] 2019-01-16T23:41:15z test/test_cryptonets.cpp 169	Accuracy: 1
+[INFO] 2019-01-16T23:41:15z test/test_cryptonets.cpp 176	[Summary]
+[INFO] 2019-01-16T23:41:15z test/test_cryptonets.cpp 177	sw_load_model: 80ms
+[INFO] 2019-01-16T23:41:15z test/test_cryptonets.cpp 178	sw_encrypt_input: 365ms
+[INFO] 2019-01-16T23:41:15z test/test_cryptonets.cpp 180	sw_run_model: 25188ms
+[INFO] 2019-01-16T23:41:15z test/test_cryptonets.cpp 181	sw_decrypt_output: 19ms
+[INFO] 2019-01-16T23:41:15z test/test_cryptonets.cpp 183	sw_global: 25653ms
+[       OK ] Cryptonets.CKKS_warmup (27050 ms)
+[ RUN      ] Cryptonets.CKKS_1
+[INFO] 2019-01-16T23:41:16z src/seal/he_seal_util.hpp 47	
+/ Encryption parameters:
+| scheme: HE:SEAL:CKKS
+| poly_modulus: 8192
+| coeff_modulus size: 210 bits
+\ noise_standard_deviation: 3.2
+[INFO] 2019-01-16T23:41:16z test/test_cryptonets.cpp 88	Deserialize graph
+[INFO] 2019-01-16T23:41:16z test/test_cryptonets.cpp 89	x size 784
+[INFO] 2019-01-16T23:41:16z test/test_cryptonets.cpp 90	Inputs loaded
+[INFO] 2019-01-16T23:41:16z test/test_cryptonets.cpp 92	sw_load_model: 66ms
+[INFO] 2019-01-16T23:41:16z src/seal/ckks/he_seal_ckks_backend.cpp 284	Creating batched plain tensor with shape 1, 784
+[INFO] 2019-01-16T23:41:16z test/test_cryptonets.cpp 106	Creating input shape: 1x784
+[INFO] 2019-01-16T23:41:16z test/test_cryptonets.cpp 109	Copying 784 elements
+[INFO] 2019-01-16T23:41:16z test/test_cryptonets.cpp 123	Creating output shape: 1x10
+[INFO] 2019-01-16T23:41:16z src/seal/ckks/he_seal_ckks_backend.cpp 284	Creating batched plain tensor with shape 1, 10
+[INFO] 2019-01-16T23:41:16z test/test_cryptonets.cpp 128	sw_encrypt_input: 148ms
+[INFO] 2019-01-16T23:41:16z test/test_cryptonets.cpp 132	calling function
+[INFO] 2019-01-16T23:41:16z src/he_backend.cpp 252	Encrypting data
+[INFO] 2019-01-16T23:41:16z src/he_backend.cpp 255	Batching data
+[INFO] 2019-01-16T23:41:16z src/he_backend.cpp 290	Encrypting parameter 0
+[INFO] 2019-01-16T23:41:16z src/he_backend.cpp 298	plain_input->get_batched_element_count() 784
+[INFO] 2019-01-16T23:41:17z src/he_backend.cpp 305	Done encrypting parameter 0
+[INFO] 2019-01-16T23:41:17z src/he_backend.cpp 331	[1;32m[ Parameter_17 ][0m
+[INFO] 2019-01-16T23:41:17z src/he_backend.cpp 336	Parameter shape {1, 784}
+[INFO] 2019-01-16T23:41:17z src/he_backend.cpp 331	[1;32m[ Constant_18 ][0m
+[INFO] 2019-01-16T23:41:17z src/he_backend.cpp 341	Constant shape {100, 10}
+[INFO] 2019-01-16T23:41:17z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:41:17z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:41:17z src/he_backend.cpp 413	[1;31mConstant_18 took 42ms[0m
+[INFO] 2019-01-16T23:41:17z src/he_backend.cpp 331	[1;32m[ Constant_19 ][0m
+[INFO] 2019-01-16T23:41:17z src/he_backend.cpp 341	Constant shape {845, 100}
+[INFO] 2019-01-16T23:41:17z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:41:17z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:41:18z src/he_backend.cpp 413	[1;31mConstant_19 took 1601ms[0m
+[INFO] 2019-01-16T23:41:18z src/he_backend.cpp 331	[1;32m[ Constant_20 ][0m
+[INFO] 2019-01-16T23:41:18z src/he_backend.cpp 341	Constant shape {}
+[INFO] 2019-01-16T23:41:18z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:41:18z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:41:18z src/he_backend.cpp 413	[1;31mConstant_20 took 39ms[0m
+[INFO] 2019-01-16T23:41:18z src/he_backend.cpp 331	[1;32m[ Constant_21 ][0m
+[INFO] 2019-01-16T23:41:18z src/he_backend.cpp 341	Constant shape {5, 5, 1, 5}
+[INFO] 2019-01-16T23:41:18z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:41:18z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:41:19z src/he_backend.cpp 413	[1;31mConstant_21 took 28ms[0m
+[INFO] 2019-01-16T23:41:19z src/he_backend.cpp 331	[1;32m[ Reshape_22 ][0m
+[INFO] 2019-01-16T23:41:19z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:41:19z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:41:19z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:41:19z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:41:19z src/he_backend.cpp 413	[1;31mReshape_22 took 0ms[0m
+[INFO] 2019-01-16T23:41:19z src/he_backend.cpp 331	[1;32m[ Reshape_23 ][0m
+[INFO] 2019-01-16T23:41:19z src/he_backend.cpp 467	Inputs: Plain
+[INFO] 2019-01-16T23:41:19z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:41:19z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:41:19z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:41:19z src/he_backend.cpp 413	[1;31mReshape_23 took 0ms[0m
+[INFO] 2019-01-16T23:41:19z src/he_backend.cpp 331	[1;32m[ Reshape_24 ][0m
+[INFO] 2019-01-16T23:41:19z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:41:19z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:41:19z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:41:19z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:41:19z src/he_backend.cpp 413	[1;31mReshape_24 took 0ms[0m
+[INFO] 2019-01-16T23:41:19z src/he_backend.cpp 331	[1;32m[ Convolution_25 ][0m
+[INFO] 2019-01-16T23:41:19z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:41:19z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:41:19z src/seal/kernel/convolution_seal.hpp 85	Convolution output size 720
+[INFO] 2019-01-16T23:41:19z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 0
+[INFO] 2019-01-16T23:41:23z src/he_backend.cpp 413	[1;31mConvolution_25 took 3932ms[0m
+[INFO] 2019-01-16T23:41:23z src/he_backend.cpp 331	[1;32m[ Reshape_26 ][0m
+[INFO] 2019-01-16T23:41:23z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:41:23z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:41:23z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:41:23z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:41:23z src/he_backend.cpp 413	[1;31mReshape_26 took 0ms[0m
+[INFO] 2019-01-16T23:41:23z src/he_backend.cpp 331	[1;32m[ Multiply_27 ][0m
+[INFO] 2019-01-16T23:41:23z src/he_backend.cpp 467	Inputs: Cipher, Cipher
+[INFO] 2019-01-16T23:41:23z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:41:23z src/he_backend.cpp 413	[1;31mMultiply_27 took 429ms[0m
+[INFO] 2019-01-16T23:41:23z src/he_backend.cpp 331	[1;32m[ Pad_28 ][0m
+[INFO] 2019-01-16T23:41:23z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:41:23z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:41:23z src/he_backend.cpp 413	[1;31mPad_28 took 5ms[0m
+[INFO] 2019-01-16T23:41:23z src/he_backend.cpp 331	[1;32m[ Reshape_29 ][0m
+[INFO] 2019-01-16T23:41:23z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:41:23z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:41:23z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:41:23z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:41:23z src/he_backend.cpp 413	[1;31mReshape_29 took 0ms[0m
+[INFO] 2019-01-16T23:41:23z src/he_backend.cpp 331	[1;32m[ Dot_30 ][0m
+[INFO] 2019-01-16T23:41:23z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:41:23z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:41:23z src/he_backend.cpp 675	1x845 dot 845x100
+[INFO] 2019-01-16T23:41:34z src/he_backend.cpp 413	[1;31mDot_30 took 11082ms[0m
+[INFO] 2019-01-16T23:41:34z src/he_backend.cpp 331	[1;32m[ Multiply_31 ][0m
+[INFO] 2019-01-16T23:41:34z src/he_backend.cpp 467	Inputs: Cipher, Cipher
+[INFO] 2019-01-16T23:41:34z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:41:34z src/he_backend.cpp 413	[1;31mMultiply_31 took 71ms[0m
+[INFO] 2019-01-16T23:41:34z src/he_backend.cpp 331	[1;32m[ Dot_32 ][0m
+[INFO] 2019-01-16T23:41:34z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:41:34z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:41:34z src/he_backend.cpp 675	1x100 dot 100x10
+[INFO] 2019-01-16T23:41:35z src/he_backend.cpp 413	[1;31mDot_32 took 276ms[0m
+[INFO] 2019-01-16T23:41:35z src/he_backend.cpp 331	[1;32m[ Result_33 ][0m
+[INFO] 2019-01-16T23:41:35z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:41:35z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:41:35z src/he_backend.cpp 413	[1;31mResult_33 took 14ms[0m
+[INFO] 2019-01-16T23:41:35z src/he_backend.cpp 421	[1;32mTotal time 17519 (ms) [0m
+[INFO] 2019-01-16T23:41:35z test/test_cryptonets.cpp 137	sw_run_model: 18292ms
+[INFO] 2019-01-16T23:41:35z test/test_util.hpp 91	Element count 10
+[INFO] 2019-01-16T23:41:35z test/test_cryptonets.cpp 146	sw_decrypt_output: 14ms
+[INFO] 2019-01-16T23:41:35z test/test_cryptonets.cpp 151	sw_global: 18521ms
+[INFO] 2019-01-16T23:41:35z test/test_cryptonets.cpp 166	Error count 0 of 1 elements.
+[INFO] 2019-01-16T23:41:35z test/test_cryptonets.cpp 169	Accuracy: 1
+[INFO] 2019-01-16T23:41:35z test/test_cryptonets.cpp 176	[Summary]
+[INFO] 2019-01-16T23:41:35z test/test_cryptonets.cpp 177	sw_load_model: 66ms
+[INFO] 2019-01-16T23:41:35z test/test_cryptonets.cpp 178	sw_encrypt_input: 148ms
+[INFO] 2019-01-16T23:41:35z test/test_cryptonets.cpp 180	sw_run_model: 18292ms
+[INFO] 2019-01-16T23:41:35z test/test_cryptonets.cpp 181	sw_decrypt_output: 14ms
+[INFO] 2019-01-16T23:41:35z test/test_cryptonets.cpp 183	sw_global: 18521ms
+[       OK ] Cryptonets.CKKS_1 (19856 ms)
+[ RUN      ] Cryptonets.CKKS_2
+[INFO] 2019-01-16T23:41:36z src/seal/he_seal_util.hpp 47	
+/ Encryption parameters:
+| scheme: HE:SEAL:CKKS
+| poly_modulus: 8192
+| coeff_modulus size: 210 bits
+\ noise_standard_deviation: 3.2
+[INFO] 2019-01-16T23:41:36z test/test_cryptonets.cpp 88	Deserialize graph
+[INFO] 2019-01-16T23:41:36z test/test_cryptonets.cpp 89	x size 1568
+[INFO] 2019-01-16T23:41:36z test/test_cryptonets.cpp 90	Inputs loaded
+[INFO] 2019-01-16T23:41:36z test/test_cryptonets.cpp 92	sw_load_model: 73ms
+[INFO] 2019-01-16T23:41:36z src/seal/ckks/he_seal_ckks_backend.cpp 284	Creating batched plain tensor with shape 2, 784
+[INFO] 2019-01-16T23:41:36z test/test_cryptonets.cpp 106	Creating input shape: 2x784
+[INFO] 2019-01-16T23:41:36z test/test_cryptonets.cpp 109	Copying 1568 elements
+[INFO] 2019-01-16T23:41:36z test/test_cryptonets.cpp 123	Creating output shape: 2x10
+[INFO] 2019-01-16T23:41:36z src/seal/ckks/he_seal_ckks_backend.cpp 284	Creating batched plain tensor with shape 2, 10
+[INFO] 2019-01-16T23:41:36z test/test_cryptonets.cpp 128	sw_encrypt_input: 105ms
+[INFO] 2019-01-16T23:41:36z test/test_cryptonets.cpp 132	calling function
+[INFO] 2019-01-16T23:41:36z src/he_backend.cpp 252	Encrypting data
+[INFO] 2019-01-16T23:41:36z src/he_backend.cpp 255	Batching data
+[INFO] 2019-01-16T23:41:36z src/he_backend.cpp 290	Encrypting parameter 0
+[INFO] 2019-01-16T23:41:36z src/he_backend.cpp 298	plain_input->get_batched_element_count() 784
+[INFO] 2019-01-16T23:41:36z src/he_backend.cpp 305	Done encrypting parameter 0
+[INFO] 2019-01-16T23:41:36z src/he_backend.cpp 331	[1;32m[ Parameter_34 ][0m
+[INFO] 2019-01-16T23:41:36z src/he_backend.cpp 336	Parameter shape {2, 784}
+[INFO] 2019-01-16T23:41:36z src/he_backend.cpp 331	[1;32m[ Constant_35 ][0m
+[INFO] 2019-01-16T23:41:36z src/he_backend.cpp 341	Constant shape {100, 10}
+[INFO] 2019-01-16T23:41:36z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:41:36z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:41:36z src/he_backend.cpp 413	[1;31mConstant_35 took 34ms[0m
+[INFO] 2019-01-16T23:41:36z src/he_backend.cpp 331	[1;32m[ Constant_36 ][0m
+[INFO] 2019-01-16T23:41:36z src/he_backend.cpp 341	Constant shape {845, 100}
+[INFO] 2019-01-16T23:41:36z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:41:36z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 413	[1;31mConstant_36 took 1079ms[0m
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 331	[1;32m[ Constant_37 ][0m
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 341	Constant shape {}
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 413	[1;31mConstant_37 took 28ms[0m
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 331	[1;32m[ Constant_38 ][0m
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 341	Constant shape {5, 5, 1, 5}
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 413	[1;31mConstant_38 took 29ms[0m
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 331	[1;32m[ Reshape_39 ][0m
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 478	Batch size 2
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 413	[1;31mReshape_39 took 0ms[0m
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 331	[1;32m[ Reshape_40 ][0m
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 467	Inputs: Plain
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 413	[1;31mReshape_40 took 0ms[0m
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 331	[1;32m[ Reshape_41 ][0m
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 478	Batch size 2
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 413	[1;31mReshape_41 took 0ms[0m
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 331	[1;32m[ Convolution_42 ][0m
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:41:38z src/he_backend.cpp 478	Batch size 2
+[INFO] 2019-01-16T23:41:38z src/seal/kernel/convolution_seal.hpp 85	Convolution output size 720
+[INFO] 2019-01-16T23:41:38z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 0
+[INFO] 2019-01-16T23:41:42z src/he_backend.cpp 413	[1;31mConvolution_42 took 4042ms[0m
+[INFO] 2019-01-16T23:41:42z src/he_backend.cpp 331	[1;32m[ Reshape_43 ][0m
+[INFO] 2019-01-16T23:41:42z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:41:42z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:41:42z src/he_backend.cpp 478	Batch size 2
+[INFO] 2019-01-16T23:41:42z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:41:42z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:41:42z src/he_backend.cpp 413	[1;31mReshape_43 took 0ms[0m
+[INFO] 2019-01-16T23:41:42z src/he_backend.cpp 331	[1;32m[ Multiply_44 ][0m
+[INFO] 2019-01-16T23:41:42z src/he_backend.cpp 467	Inputs: Cipher, Cipher
+[INFO] 2019-01-16T23:41:42z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:41:42z src/he_backend.cpp 478	Batch size 2
+[INFO] 2019-01-16T23:41:42z src/he_backend.cpp 413	[1;31mMultiply_44 took 406ms[0m
+[INFO] 2019-01-16T23:41:42z src/he_backend.cpp 331	[1;32m[ Pad_45 ][0m
+[INFO] 2019-01-16T23:41:42z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:41:42z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:41:42z src/he_backend.cpp 478	Batch size 2
+[INFO] 2019-01-16T23:41:42z src/he_backend.cpp 413	[1;31mPad_45 took 6ms[0m
+[INFO] 2019-01-16T23:41:42z src/he_backend.cpp 331	[1;32m[ Reshape_46 ][0m
+[INFO] 2019-01-16T23:41:42z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:41:42z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:41:42z src/he_backend.cpp 478	Batch size 2
+[INFO] 2019-01-16T23:41:42z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:41:42z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:41:42z src/he_backend.cpp 413	[1;31mReshape_46 took 0ms[0m
+[INFO] 2019-01-16T23:41:42z src/he_backend.cpp 331	[1;32m[ Dot_47 ][0m
+[INFO] 2019-01-16T23:41:42z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:41:42z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:41:42z src/he_backend.cpp 478	Batch size 2
+[INFO] 2019-01-16T23:41:42z src/he_backend.cpp 675	1x845 dot 845x100
+[INFO] 2019-01-16T23:41:53z src/he_backend.cpp 413	[1;31mDot_47 took 10324ms[0m
+[INFO] 2019-01-16T23:41:53z src/he_backend.cpp 331	[1;32m[ Multiply_48 ][0m
+[INFO] 2019-01-16T23:41:53z src/he_backend.cpp 467	Inputs: Cipher, Cipher
+[INFO] 2019-01-16T23:41:53z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:41:53z src/he_backend.cpp 478	Batch size 2
+[INFO] 2019-01-16T23:41:53z src/he_backend.cpp 413	[1;31mMultiply_48 took 81ms[0m
+[INFO] 2019-01-16T23:41:53z src/he_backend.cpp 331	[1;32m[ Dot_49 ][0m
+[INFO] 2019-01-16T23:41:53z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:41:53z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:41:53z src/he_backend.cpp 478	Batch size 2
+[INFO] 2019-01-16T23:41:53z src/he_backend.cpp 675	1x100 dot 100x10
+[INFO] 2019-01-16T23:41:53z src/he_backend.cpp 413	[1;31mDot_49 took 323ms[0m
+[INFO] 2019-01-16T23:41:53z src/he_backend.cpp 331	[1;32m[ Result_50 ][0m
+[INFO] 2019-01-16T23:41:53z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:41:53z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:41:53z src/he_backend.cpp 478	Batch size 2
+[INFO] 2019-01-16T23:41:53z src/he_backend.cpp 413	[1;31mResult_50 took 2ms[0m
+[INFO] 2019-01-16T23:41:53z src/he_backend.cpp 421	[1;32mTotal time 16354 (ms) [0m
+[INFO] 2019-01-16T23:41:53z test/test_cryptonets.cpp 137	sw_run_model: 16917ms
+[INFO] 2019-01-16T23:41:53z test/test_util.hpp 91	Element count 20
+[INFO] 2019-01-16T23:41:53z test/test_cryptonets.cpp 146	sw_decrypt_output: 14ms
+[INFO] 2019-01-16T23:41:53z test/test_cryptonets.cpp 151	sw_global: 17110ms
+[INFO] 2019-01-16T23:41:53z test/test_cryptonets.cpp 166	Error count 0 of 2 elements.
+[INFO] 2019-01-16T23:41:53z test/test_cryptonets.cpp 169	Accuracy: 1
+[INFO] 2019-01-16T23:41:53z test/test_cryptonets.cpp 176	[Summary]
+[INFO] 2019-01-16T23:41:53z test/test_cryptonets.cpp 177	sw_load_model: 73ms
+[INFO] 2019-01-16T23:41:53z test/test_cryptonets.cpp 178	sw_encrypt_input: 105ms
+[INFO] 2019-01-16T23:41:53z test/test_cryptonets.cpp 180	sw_run_model: 16917ms
+[INFO] 2019-01-16T23:41:53z test/test_cryptonets.cpp 181	sw_decrypt_output: 14ms
+[INFO] 2019-01-16T23:41:53z test/test_cryptonets.cpp 183	sw_global: 17110ms
+[       OK ] Cryptonets.CKKS_2 (18441 ms)
+[ RUN      ] Cryptonets.CKKS_4
+[INFO] 2019-01-16T23:41:54z src/seal/he_seal_util.hpp 47	
+/ Encryption parameters:
+| scheme: HE:SEAL:CKKS
+| poly_modulus: 8192
+| coeff_modulus size: 210 bits
+\ noise_standard_deviation: 3.2
+[INFO] 2019-01-16T23:41:55z test/test_cryptonets.cpp 88	Deserialize graph
+[INFO] 2019-01-16T23:41:55z test/test_cryptonets.cpp 89	x size 3136
+[INFO] 2019-01-16T23:41:55z test/test_cryptonets.cpp 90	Inputs loaded
+[INFO] 2019-01-16T23:41:55z test/test_cryptonets.cpp 92	sw_load_model: 77ms
+[INFO] 2019-01-16T23:41:55z src/seal/ckks/he_seal_ckks_backend.cpp 284	Creating batched plain tensor with shape 4, 784
+[INFO] 2019-01-16T23:41:55z test/test_cryptonets.cpp 106	Creating input shape: 4x784
+[INFO] 2019-01-16T23:41:55z test/test_cryptonets.cpp 109	Copying 3136 elements
+[INFO] 2019-01-16T23:41:55z test/test_cryptonets.cpp 123	Creating output shape: 4x10
+[INFO] 2019-01-16T23:41:55z src/seal/ckks/he_seal_ckks_backend.cpp 284	Creating batched plain tensor with shape 4, 10
+[INFO] 2019-01-16T23:41:55z test/test_cryptonets.cpp 128	sw_encrypt_input: 109ms
+[INFO] 2019-01-16T23:41:55z test/test_cryptonets.cpp 132	calling function
+[INFO] 2019-01-16T23:41:55z src/he_backend.cpp 252	Encrypting data
+[INFO] 2019-01-16T23:41:55z src/he_backend.cpp 255	Batching data
+[INFO] 2019-01-16T23:41:55z src/he_backend.cpp 290	Encrypting parameter 0
+[INFO] 2019-01-16T23:41:55z src/he_backend.cpp 298	plain_input->get_batched_element_count() 784
+[INFO] 2019-01-16T23:41:55z src/he_backend.cpp 305	Done encrypting parameter 0
+[INFO] 2019-01-16T23:41:55z src/he_backend.cpp 331	[1;32m[ Parameter_51 ][0m
+[INFO] 2019-01-16T23:41:55z src/he_backend.cpp 336	Parameter shape {4, 784}
+[INFO] 2019-01-16T23:41:55z src/he_backend.cpp 331	[1;32m[ Constant_52 ][0m
+[INFO] 2019-01-16T23:41:55z src/he_backend.cpp 341	Constant shape {100, 10}
+[INFO] 2019-01-16T23:41:55z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:41:55z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:41:55z src/he_backend.cpp 413	[1;31mConstant_52 took 31ms[0m
+[INFO] 2019-01-16T23:41:55z src/he_backend.cpp 331	[1;32m[ Constant_53 ][0m
+[INFO] 2019-01-16T23:41:55z src/he_backend.cpp 341	Constant shape {845, 100}
+[INFO] 2019-01-16T23:41:55z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:41:55z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 413	[1;31mConstant_53 took 998ms[0m
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 331	[1;32m[ Constant_54 ][0m
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 341	Constant shape {}
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 413	[1;31mConstant_54 took 13ms[0m
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 331	[1;32m[ Constant_55 ][0m
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 341	Constant shape {5, 5, 1, 5}
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 413	[1;31mConstant_55 took 1ms[0m
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 331	[1;32m[ Reshape_56 ][0m
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 478	Batch size 4
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 413	[1;31mReshape_56 took 0ms[0m
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 331	[1;32m[ Reshape_57 ][0m
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 467	Inputs: Plain
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 413	[1;31mReshape_57 took 0ms[0m
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 331	[1;32m[ Reshape_58 ][0m
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 478	Batch size 4
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 413	[1;31mReshape_58 took 0ms[0m
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 331	[1;32m[ Convolution_59 ][0m
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:41:56z src/he_backend.cpp 478	Batch size 4
+[INFO] 2019-01-16T23:41:56z src/seal/kernel/convolution_seal.hpp 85	Convolution output size 720
+[INFO] 2019-01-16T23:41:56z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 0
+[INFO] 2019-01-16T23:42:00z src/he_backend.cpp 413	[1;31mConvolution_59 took 3958ms[0m
+[INFO] 2019-01-16T23:42:00z src/he_backend.cpp 331	[1;32m[ Reshape_60 ][0m
+[INFO] 2019-01-16T23:42:00z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:42:00z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:00z src/he_backend.cpp 478	Batch size 4
+[INFO] 2019-01-16T23:42:00z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:42:00z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:42:00z src/he_backend.cpp 413	[1;31mReshape_60 took 0ms[0m
+[INFO] 2019-01-16T23:42:00z src/he_backend.cpp 331	[1;32m[ Multiply_61 ][0m
+[INFO] 2019-01-16T23:42:00z src/he_backend.cpp 467	Inputs: Cipher, Cipher
+[INFO] 2019-01-16T23:42:00z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:00z src/he_backend.cpp 478	Batch size 4
+[INFO] 2019-01-16T23:42:00z src/he_backend.cpp 413	[1;31mMultiply_61 took 424ms[0m
+[INFO] 2019-01-16T23:42:00z src/he_backend.cpp 331	[1;32m[ Pad_62 ][0m
+[INFO] 2019-01-16T23:42:00z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:42:00z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:00z src/he_backend.cpp 478	Batch size 4
+[INFO] 2019-01-16T23:42:00z src/he_backend.cpp 413	[1;31mPad_62 took 6ms[0m
+[INFO] 2019-01-16T23:42:00z src/he_backend.cpp 331	[1;32m[ Reshape_63 ][0m
+[INFO] 2019-01-16T23:42:00z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:42:00z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:00z src/he_backend.cpp 478	Batch size 4
+[INFO] 2019-01-16T23:42:00z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:42:00z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:42:00z src/he_backend.cpp 413	[1;31mReshape_63 took 0ms[0m
+[INFO] 2019-01-16T23:42:00z src/he_backend.cpp 331	[1;32m[ Dot_64 ][0m
+[INFO] 2019-01-16T23:42:00z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:42:00z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:00z src/he_backend.cpp 478	Batch size 4
+[INFO] 2019-01-16T23:42:00z src/he_backend.cpp 675	1x845 dot 845x100
+[INFO] 2019-01-16T23:42:11z src/he_backend.cpp 413	[1;31mDot_64 took 10644ms[0m
+[INFO] 2019-01-16T23:42:11z src/he_backend.cpp 331	[1;32m[ Multiply_65 ][0m
+[INFO] 2019-01-16T23:42:11z src/he_backend.cpp 467	Inputs: Cipher, Cipher
+[INFO] 2019-01-16T23:42:11z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:11z src/he_backend.cpp 478	Batch size 4
+[INFO] 2019-01-16T23:42:11z src/he_backend.cpp 413	[1;31mMultiply_65 took 79ms[0m
+[INFO] 2019-01-16T23:42:11z src/he_backend.cpp 331	[1;32m[ Dot_66 ][0m
+[INFO] 2019-01-16T23:42:11z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:42:11z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:11z src/he_backend.cpp 478	Batch size 4
+[INFO] 2019-01-16T23:42:11z src/he_backend.cpp 675	1x100 dot 100x10
+[INFO] 2019-01-16T23:42:12z src/he_backend.cpp 413	[1;31mDot_66 took 313ms[0m
+[INFO] 2019-01-16T23:42:12z src/he_backend.cpp 331	[1;32m[ Result_67 ][0m
+[INFO] 2019-01-16T23:42:12z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:42:12z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:42:12z src/he_backend.cpp 478	Batch size 4
+[INFO] 2019-01-16T23:42:12z src/he_backend.cpp 413	[1;31mResult_67 took 3ms[0m
+[INFO] 2019-01-16T23:42:12z src/he_backend.cpp 421	[1;32mTotal time 16470 (ms) [0m
+[INFO] 2019-01-16T23:42:12z test/test_cryptonets.cpp 137	sw_run_model: 16865ms
+[INFO] 2019-01-16T23:42:12z test/test_util.hpp 91	Element count 40
+[INFO] 2019-01-16T23:42:12z test/test_cryptonets.cpp 146	sw_decrypt_output: 13ms
+[INFO] 2019-01-16T23:42:12z test/test_cryptonets.cpp 151	sw_global: 17065ms
+[INFO] 2019-01-16T23:42:12z test/test_cryptonets.cpp 166	Error count 0 of 4 elements.
+[INFO] 2019-01-16T23:42:12z test/test_cryptonets.cpp 169	Accuracy: 1
+[INFO] 2019-01-16T23:42:12z test/test_cryptonets.cpp 176	[Summary]
+[INFO] 2019-01-16T23:42:12z test/test_cryptonets.cpp 177	sw_load_model: 77ms
+[INFO] 2019-01-16T23:42:12z test/test_cryptonets.cpp 178	sw_encrypt_input: 109ms
+[INFO] 2019-01-16T23:42:12z test/test_cryptonets.cpp 180	sw_run_model: 16865ms
+[INFO] 2019-01-16T23:42:12z test/test_cryptonets.cpp 181	sw_decrypt_output: 13ms
+[INFO] 2019-01-16T23:42:12z test/test_cryptonets.cpp 183	sw_global: 17065ms
+[       OK ] Cryptonets.CKKS_4 (18408 ms)
+[ RUN      ] Cryptonets.CKKS_8
+[INFO] 2019-01-16T23:42:13z src/seal/he_seal_util.hpp 47	
+/ Encryption parameters:
+| scheme: HE:SEAL:CKKS
+| poly_modulus: 8192
+| coeff_modulus size: 210 bits
+\ noise_standard_deviation: 3.2
+[INFO] 2019-01-16T23:42:13z test/test_cryptonets.cpp 88	Deserialize graph
+[INFO] 2019-01-16T23:42:13z test/test_cryptonets.cpp 89	x size 6272
+[INFO] 2019-01-16T23:42:13z test/test_cryptonets.cpp 90	Inputs loaded
+[INFO] 2019-01-16T23:42:13z test/test_cryptonets.cpp 92	sw_load_model: 73ms
+[INFO] 2019-01-16T23:42:13z src/seal/ckks/he_seal_ckks_backend.cpp 284	Creating batched plain tensor with shape 8, 784
+[INFO] 2019-01-16T23:42:13z test/test_cryptonets.cpp 106	Creating input shape: 8x784
+[INFO] 2019-01-16T23:42:13z test/test_cryptonets.cpp 109	Copying 6272 elements
+[INFO] 2019-01-16T23:42:13z test/test_cryptonets.cpp 123	Creating output shape: 8x10
+[INFO] 2019-01-16T23:42:13z src/seal/ckks/he_seal_ckks_backend.cpp 284	Creating batched plain tensor with shape 8, 10
+[INFO] 2019-01-16T23:42:13z test/test_cryptonets.cpp 128	sw_encrypt_input: 100ms
+[INFO] 2019-01-16T23:42:13z test/test_cryptonets.cpp 132	calling function
+[INFO] 2019-01-16T23:42:13z src/he_backend.cpp 252	Encrypting data
+[INFO] 2019-01-16T23:42:13z src/he_backend.cpp 255	Batching data
+[INFO] 2019-01-16T23:42:13z src/he_backend.cpp 290	Encrypting parameter 0
+[INFO] 2019-01-16T23:42:13z src/he_backend.cpp 298	plain_input->get_batched_element_count() 784
+[INFO] 2019-01-16T23:42:13z src/he_backend.cpp 305	Done encrypting parameter 0
+[INFO] 2019-01-16T23:42:13z src/he_backend.cpp 331	[1;32m[ Parameter_68 ][0m
+[INFO] 2019-01-16T23:42:13z src/he_backend.cpp 336	Parameter shape {8, 784}
+[INFO] 2019-01-16T23:42:13z src/he_backend.cpp 331	[1;32m[ Constant_69 ][0m
+[INFO] 2019-01-16T23:42:13z src/he_backend.cpp 341	Constant shape {100, 10}
+[INFO] 2019-01-16T23:42:13z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:42:13z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:42:13z src/he_backend.cpp 413	[1;31mConstant_69 took 31ms[0m
+[INFO] 2019-01-16T23:42:13z src/he_backend.cpp 331	[1;32m[ Constant_70 ][0m
+[INFO] 2019-01-16T23:42:13z src/he_backend.cpp 341	Constant shape {845, 100}
+[INFO] 2019-01-16T23:42:13z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:42:13z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 413	[1;31mConstant_70 took 951ms[0m
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 331	[1;32m[ Constant_71 ][0m
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 341	Constant shape {}
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 413	[1;31mConstant_71 took 28ms[0m
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 331	[1;32m[ Constant_72 ][0m
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 341	Constant shape {5, 5, 1, 5}
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 413	[1;31mConstant_72 took 26ms[0m
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 331	[1;32m[ Reshape_73 ][0m
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 478	Batch size 8
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 413	[1;31mReshape_73 took 0ms[0m
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 331	[1;32m[ Reshape_74 ][0m
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 467	Inputs: Plain
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 413	[1;31mReshape_74 took 0ms[0m
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 331	[1;32m[ Reshape_75 ][0m
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 478	Batch size 8
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 413	[1;31mReshape_75 took 0ms[0m
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 331	[1;32m[ Convolution_76 ][0m
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:14z src/he_backend.cpp 478	Batch size 8
+[INFO] 2019-01-16T23:42:14z src/seal/kernel/convolution_seal.hpp 85	Convolution output size 720
+[INFO] 2019-01-16T23:42:15z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 0
+[INFO] 2019-01-16T23:42:18z src/he_backend.cpp 413	[1;31mConvolution_76 took 3935ms[0m
+[INFO] 2019-01-16T23:42:18z src/he_backend.cpp 331	[1;32m[ Reshape_77 ][0m
+[INFO] 2019-01-16T23:42:18z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:42:18z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:18z src/he_backend.cpp 478	Batch size 8
+[INFO] 2019-01-16T23:42:18z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:42:18z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:42:18z src/he_backend.cpp 413	[1;31mReshape_77 took 0ms[0m
+[INFO] 2019-01-16T23:42:18z src/he_backend.cpp 331	[1;32m[ Multiply_78 ][0m
+[INFO] 2019-01-16T23:42:18z src/he_backend.cpp 467	Inputs: Cipher, Cipher
+[INFO] 2019-01-16T23:42:18z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:18z src/he_backend.cpp 478	Batch size 8
+[INFO] 2019-01-16T23:42:19z src/he_backend.cpp 413	[1;31mMultiply_78 took 399ms[0m
+[INFO] 2019-01-16T23:42:19z src/he_backend.cpp 331	[1;32m[ Pad_79 ][0m
+[INFO] 2019-01-16T23:42:19z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:42:19z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:19z src/he_backend.cpp 478	Batch size 8
+[INFO] 2019-01-16T23:42:19z src/he_backend.cpp 413	[1;31mPad_79 took 7ms[0m
+[INFO] 2019-01-16T23:42:19z src/he_backend.cpp 331	[1;32m[ Reshape_80 ][0m
+[INFO] 2019-01-16T23:42:19z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:42:19z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:19z src/he_backend.cpp 478	Batch size 8
+[INFO] 2019-01-16T23:42:19z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:42:19z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:42:19z src/he_backend.cpp 413	[1;31mReshape_80 took 0ms[0m
+[INFO] 2019-01-16T23:42:19z src/he_backend.cpp 331	[1;32m[ Dot_81 ][0m
+[INFO] 2019-01-16T23:42:19z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:42:19z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:19z src/he_backend.cpp 478	Batch size 8
+[INFO] 2019-01-16T23:42:19z src/he_backend.cpp 675	1x845 dot 845x100
+[INFO] 2019-01-16T23:42:29z src/he_backend.cpp 413	[1;31mDot_81 took 10301ms[0m
+[INFO] 2019-01-16T23:42:29z src/he_backend.cpp 331	[1;32m[ Multiply_82 ][0m
+[INFO] 2019-01-16T23:42:29z src/he_backend.cpp 467	Inputs: Cipher, Cipher
+[INFO] 2019-01-16T23:42:29z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:29z src/he_backend.cpp 478	Batch size 8
+[INFO] 2019-01-16T23:42:29z src/he_backend.cpp 413	[1;31mMultiply_82 took 78ms[0m
+[INFO] 2019-01-16T23:42:29z src/he_backend.cpp 331	[1;32m[ Dot_83 ][0m
+[INFO] 2019-01-16T23:42:29z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:42:29z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:29z src/he_backend.cpp 478	Batch size 8
+[INFO] 2019-01-16T23:42:29z src/he_backend.cpp 675	1x100 dot 100x10
+[INFO] 2019-01-16T23:42:30z src/he_backend.cpp 413	[1;31mDot_83 took 277ms[0m
+[INFO] 2019-01-16T23:42:30z src/he_backend.cpp 331	[1;32m[ Result_84 ][0m
+[INFO] 2019-01-16T23:42:30z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:42:30z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:42:30z src/he_backend.cpp 478	Batch size 8
+[INFO] 2019-01-16T23:42:30z src/he_backend.cpp 413	[1;31mResult_84 took 3ms[0m
+[INFO] 2019-01-16T23:42:30z src/he_backend.cpp 421	[1;32mTotal time 16036 (ms) [0m
+[INFO] 2019-01-16T23:42:30z test/test_cryptonets.cpp 137	sw_run_model: 16511ms
+[INFO] 2019-01-16T23:42:30z test/test_util.hpp 91	Element count 80
+[INFO] 2019-01-16T23:42:30z test/test_cryptonets.cpp 146	sw_decrypt_output: 14ms
+[INFO] 2019-01-16T23:42:30z test/test_cryptonets.cpp 151	sw_global: 16699ms
+[INFO] 2019-01-16T23:42:30z test/test_cryptonets.cpp 166	Error count 0 of 8 elements.
+[INFO] 2019-01-16T23:42:30z test/test_cryptonets.cpp 169	Accuracy: 1
+[INFO] 2019-01-16T23:42:30z test/test_cryptonets.cpp 176	[Summary]
+[INFO] 2019-01-16T23:42:30z test/test_cryptonets.cpp 177	sw_load_model: 73ms
+[INFO] 2019-01-16T23:42:30z test/test_cryptonets.cpp 178	sw_encrypt_input: 100ms
+[INFO] 2019-01-16T23:42:30z test/test_cryptonets.cpp 180	sw_run_model: 16511ms
+[INFO] 2019-01-16T23:42:30z test/test_cryptonets.cpp 181	sw_decrypt_output: 14ms
+[INFO] 2019-01-16T23:42:30z test/test_cryptonets.cpp 183	sw_global: 16699ms
+[       OK ] Cryptonets.CKKS_8 (18022 ms)
+[ RUN      ] Cryptonets.CKKS_16
+[INFO] 2019-01-16T23:42:31z src/seal/he_seal_util.hpp 47	
+/ Encryption parameters:
+| scheme: HE:SEAL:CKKS
+| poly_modulus: 8192
+| coeff_modulus size: 210 bits
+\ noise_standard_deviation: 3.2
+[INFO] 2019-01-16T23:42:31z test/test_cryptonets.cpp 88	Deserialize graph
+[INFO] 2019-01-16T23:42:31z test/test_cryptonets.cpp 89	x size 12544
+[INFO] 2019-01-16T23:42:31z test/test_cryptonets.cpp 90	Inputs loaded
+[INFO] 2019-01-16T23:42:31z test/test_cryptonets.cpp 92	sw_load_model: 64ms
+[INFO] 2019-01-16T23:42:31z src/seal/ckks/he_seal_ckks_backend.cpp 284	Creating batched plain tensor with shape 16, 784
+[INFO] 2019-01-16T23:42:31z test/test_cryptonets.cpp 106	Creating input shape: 16x784
+[INFO] 2019-01-16T23:42:31z test/test_cryptonets.cpp 109	Copying 12544 elements
+[INFO] 2019-01-16T23:42:31z test/test_cryptonets.cpp 123	Creating output shape: 16x10
+[INFO] 2019-01-16T23:42:31z src/seal/ckks/he_seal_ckks_backend.cpp 284	Creating batched plain tensor with shape 16, 10
+[INFO] 2019-01-16T23:42:31z test/test_cryptonets.cpp 128	sw_encrypt_input: 100ms
+[INFO] 2019-01-16T23:42:31z test/test_cryptonets.cpp 132	calling function
+[INFO] 2019-01-16T23:42:31z src/he_backend.cpp 252	Encrypting data
+[INFO] 2019-01-16T23:42:31z src/he_backend.cpp 255	Batching data
+[INFO] 2019-01-16T23:42:31z src/he_backend.cpp 290	Encrypting parameter 0
+[INFO] 2019-01-16T23:42:31z src/he_backend.cpp 298	plain_input->get_batched_element_count() 784
+[INFO] 2019-01-16T23:42:31z src/he_backend.cpp 305	Done encrypting parameter 0
+[INFO] 2019-01-16T23:42:31z src/he_backend.cpp 331	[1;32m[ Parameter_85 ][0m
+[INFO] 2019-01-16T23:42:31z src/he_backend.cpp 336	Parameter shape {16, 784}
+[INFO] 2019-01-16T23:42:31z src/he_backend.cpp 331	[1;32m[ Constant_86 ][0m
+[INFO] 2019-01-16T23:42:31z src/he_backend.cpp 341	Constant shape {100, 10}
+[INFO] 2019-01-16T23:42:31z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:42:31z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:42:31z src/he_backend.cpp 413	[1;31mConstant_86 took 34ms[0m
+[INFO] 2019-01-16T23:42:31z src/he_backend.cpp 331	[1;32m[ Constant_87 ][0m
+[INFO] 2019-01-16T23:42:31z src/he_backend.cpp 341	Constant shape {845, 100}
+[INFO] 2019-01-16T23:42:31z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:42:31z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 413	[1;31mConstant_87 took 924ms[0m
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 331	[1;32m[ Constant_88 ][0m
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 341	Constant shape {}
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 413	[1;31mConstant_88 took 0ms[0m
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 331	[1;32m[ Constant_89 ][0m
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 341	Constant shape {5, 5, 1, 5}
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 413	[1;31mConstant_89 took 1ms[0m
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 331	[1;32m[ Reshape_90 ][0m
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 478	Batch size 16
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 413	[1;31mReshape_90 took 0ms[0m
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 331	[1;32m[ Reshape_91 ][0m
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 467	Inputs: Plain
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 413	[1;31mReshape_91 took 0ms[0m
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 331	[1;32m[ Reshape_92 ][0m
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 478	Batch size 16
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 413	[1;31mReshape_92 took 0ms[0m
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 331	[1;32m[ Convolution_93 ][0m
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:32z src/he_backend.cpp 478	Batch size 16
+[INFO] 2019-01-16T23:42:32z src/seal/kernel/convolution_seal.hpp 85	Convolution output size 720
+[INFO] 2019-01-16T23:42:33z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 0
+[INFO] 2019-01-16T23:42:36z src/he_backend.cpp 413	[1;31mConvolution_93 took 4072ms[0m
+[INFO] 2019-01-16T23:42:36z src/he_backend.cpp 331	[1;32m[ Reshape_94 ][0m
+[INFO] 2019-01-16T23:42:36z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:42:36z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:36z src/he_backend.cpp 478	Batch size 16
+[INFO] 2019-01-16T23:42:36z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:42:36z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:42:36z src/he_backend.cpp 413	[1;31mReshape_94 took 0ms[0m
+[INFO] 2019-01-16T23:42:36z src/he_backend.cpp 331	[1;32m[ Multiply_95 ][0m
+[INFO] 2019-01-16T23:42:36z src/he_backend.cpp 467	Inputs: Cipher, Cipher
+[INFO] 2019-01-16T23:42:36z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:36z src/he_backend.cpp 478	Batch size 16
+[INFO] 2019-01-16T23:42:37z src/he_backend.cpp 413	[1;31mMultiply_95 took 427ms[0m
+[INFO] 2019-01-16T23:42:37z src/he_backend.cpp 331	[1;32m[ Pad_96 ][0m
+[INFO] 2019-01-16T23:42:37z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:42:37z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:37z src/he_backend.cpp 478	Batch size 16
+[INFO] 2019-01-16T23:42:37z src/he_backend.cpp 413	[1;31mPad_96 took 7ms[0m
+[INFO] 2019-01-16T23:42:37z src/he_backend.cpp 331	[1;32m[ Reshape_97 ][0m
+[INFO] 2019-01-16T23:42:37z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:42:37z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:37z src/he_backend.cpp 478	Batch size 16
+[INFO] 2019-01-16T23:42:37z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:42:37z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:42:37z src/he_backend.cpp 413	[1;31mReshape_97 took 0ms[0m
+[INFO] 2019-01-16T23:42:37z src/he_backend.cpp 331	[1;32m[ Dot_98 ][0m
+[INFO] 2019-01-16T23:42:37z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:42:37z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:37z src/he_backend.cpp 478	Batch size 16
+[INFO] 2019-01-16T23:42:37z src/he_backend.cpp 675	1x845 dot 845x100
+[INFO] 2019-01-16T23:42:47z src/he_backend.cpp 413	[1;31mDot_98 took 10566ms[0m
+[INFO] 2019-01-16T23:42:47z src/he_backend.cpp 331	[1;32m[ Multiply_99 ][0m
+[INFO] 2019-01-16T23:42:48z src/he_backend.cpp 467	Inputs: Cipher, Cipher
+[INFO] 2019-01-16T23:42:48z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:48z src/he_backend.cpp 478	Batch size 16
+[INFO] 2019-01-16T23:42:48z src/he_backend.cpp 413	[1;31mMultiply_99 took 71ms[0m
+[INFO] 2019-01-16T23:42:48z src/he_backend.cpp 331	[1;32m[ Dot_100 ][0m
+[INFO] 2019-01-16T23:42:48z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:42:48z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:48z src/he_backend.cpp 478	Batch size 16
+[INFO] 2019-01-16T23:42:48z src/he_backend.cpp 675	1x100 dot 100x10
+[INFO] 2019-01-16T23:42:48z src/he_backend.cpp 413	[1;31mDot_100 took 302ms[0m
+[INFO] 2019-01-16T23:42:48z src/he_backend.cpp 331	[1;32m[ Result_101 ][0m
+[INFO] 2019-01-16T23:42:48z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:42:48z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:42:48z src/he_backend.cpp 478	Batch size 16
+[INFO] 2019-01-16T23:42:48z src/he_backend.cpp 413	[1;31mResult_101 took 2ms[0m
+[INFO] 2019-01-16T23:42:48z src/he_backend.cpp 421	[1;32mTotal time 16406 (ms) [0m
+[INFO] 2019-01-16T23:42:48z test/test_cryptonets.cpp 137	sw_run_model: 16861ms
+[INFO] 2019-01-16T23:42:48z test/test_util.hpp 91	Element count 160
+[INFO] 2019-01-16T23:42:48z test/test_cryptonets.cpp 146	sw_decrypt_output: 14ms
+[INFO] 2019-01-16T23:42:48z test/test_cryptonets.cpp 151	sw_global: 17040ms
+[INFO] 2019-01-16T23:42:48z test/test_cryptonets.cpp 166	Error count 0 of 16 elements.
+[INFO] 2019-01-16T23:42:48z test/test_cryptonets.cpp 169	Accuracy: 1
+[INFO] 2019-01-16T23:42:48z test/test_cryptonets.cpp 176	[Summary]
+[INFO] 2019-01-16T23:42:48z test/test_cryptonets.cpp 177	sw_load_model: 64ms
+[INFO] 2019-01-16T23:42:48z test/test_cryptonets.cpp 178	sw_encrypt_input: 100ms
+[INFO] 2019-01-16T23:42:48z test/test_cryptonets.cpp 180	sw_run_model: 16861ms
+[INFO] 2019-01-16T23:42:48z test/test_cryptonets.cpp 181	sw_decrypt_output: 14ms
+[INFO] 2019-01-16T23:42:48z test/test_cryptonets.cpp 183	sw_global: 17040ms
+[       OK ] Cryptonets.CKKS_16 (18361 ms)
+[ RUN      ] Cryptonets.CKKS_32
+[INFO] 2019-01-16T23:42:49z src/seal/he_seal_util.hpp 47	
+/ Encryption parameters:
+| scheme: HE:SEAL:CKKS
+| poly_modulus: 8192
+| coeff_modulus size: 210 bits
+\ noise_standard_deviation: 3.2
+[INFO] 2019-01-16T23:42:49z test/test_cryptonets.cpp 88	Deserialize graph
+[INFO] 2019-01-16T23:42:49z test/test_cryptonets.cpp 89	x size 25088
+[INFO] 2019-01-16T23:42:49z test/test_cryptonets.cpp 90	Inputs loaded
+[INFO] 2019-01-16T23:42:49z test/test_cryptonets.cpp 92	sw_load_model: 64ms
+[INFO] 2019-01-16T23:42:49z src/seal/ckks/he_seal_ckks_backend.cpp 284	Creating batched plain tensor with shape 32, 784
+[INFO] 2019-01-16T23:42:49z test/test_cryptonets.cpp 106	Creating input shape: 32x784
+[INFO] 2019-01-16T23:42:49z test/test_cryptonets.cpp 109	Copying 25088 elements
+[INFO] 2019-01-16T23:42:49z test/test_cryptonets.cpp 123	Creating output shape: 32x10
+[INFO] 2019-01-16T23:42:49z src/seal/ckks/he_seal_ckks_backend.cpp 284	Creating batched plain tensor with shape 32, 10
+[INFO] 2019-01-16T23:42:49z test/test_cryptonets.cpp 128	sw_encrypt_input: 122ms
+[INFO] 2019-01-16T23:42:49z test/test_cryptonets.cpp 132	calling function
+[INFO] 2019-01-16T23:42:49z src/he_backend.cpp 252	Encrypting data
+[INFO] 2019-01-16T23:42:49z src/he_backend.cpp 255	Batching data
+[INFO] 2019-01-16T23:42:49z src/he_backend.cpp 290	Encrypting parameter 0
+[INFO] 2019-01-16T23:42:49z src/he_backend.cpp 298	plain_input->get_batched_element_count() 784
+[INFO] 2019-01-16T23:42:50z src/he_backend.cpp 305	Done encrypting parameter 0
+[INFO] 2019-01-16T23:42:50z src/he_backend.cpp 331	[1;32m[ Parameter_102 ][0m
+[INFO] 2019-01-16T23:42:50z src/he_backend.cpp 336	Parameter shape {32, 784}
+[INFO] 2019-01-16T23:42:50z src/he_backend.cpp 331	[1;32m[ Constant_103 ][0m
+[INFO] 2019-01-16T23:42:50z src/he_backend.cpp 341	Constant shape {100, 10}
+[INFO] 2019-01-16T23:42:50z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:42:50z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:42:50z src/he_backend.cpp 413	[1;31mConstant_103 took 31ms[0m
+[INFO] 2019-01-16T23:42:50z src/he_backend.cpp 331	[1;32m[ Constant_104 ][0m
+[INFO] 2019-01-16T23:42:50z src/he_backend.cpp 341	Constant shape {845, 100}
+[INFO] 2019-01-16T23:42:50z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:42:50z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 413	[1;31mConstant_104 took 951ms[0m
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 331	[1;32m[ Constant_105 ][0m
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 341	Constant shape {}
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 413	[1;31mConstant_105 took 27ms[0m
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 331	[1;32m[ Constant_106 ][0m
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 341	Constant shape {5, 5, 1, 5}
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 413	[1;31mConstant_106 took 14ms[0m
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 331	[1;32m[ Reshape_107 ][0m
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 478	Batch size 32
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 413	[1;31mReshape_107 took 0ms[0m
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 331	[1;32m[ Reshape_108 ][0m
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 467	Inputs: Plain
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 413	[1;31mReshape_108 took 0ms[0m
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 331	[1;32m[ Reshape_109 ][0m
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 478	Batch size 32
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 413	[1;31mReshape_109 took 0ms[0m
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 331	[1;32m[ Convolution_110 ][0m
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:51z src/he_backend.cpp 478	Batch size 32
+[INFO] 2019-01-16T23:42:51z src/seal/kernel/convolution_seal.hpp 85	Convolution output size 720
+[INFO] 2019-01-16T23:42:51z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 0
+[INFO] 2019-01-16T23:42:55z src/he_backend.cpp 413	[1;31mConvolution_110 took 3916ms[0m
+[INFO] 2019-01-16T23:42:55z src/he_backend.cpp 331	[1;32m[ Reshape_111 ][0m
+[INFO] 2019-01-16T23:42:55z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:42:55z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:55z src/he_backend.cpp 478	Batch size 32
+[INFO] 2019-01-16T23:42:55z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:42:55z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:42:55z src/he_backend.cpp 413	[1;31mReshape_111 took 0ms[0m
+[INFO] 2019-01-16T23:42:55z src/he_backend.cpp 331	[1;32m[ Multiply_112 ][0m
+[INFO] 2019-01-16T23:42:55z src/he_backend.cpp 467	Inputs: Cipher, Cipher
+[INFO] 2019-01-16T23:42:55z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:55z src/he_backend.cpp 478	Batch size 32
+[INFO] 2019-01-16T23:42:55z src/he_backend.cpp 413	[1;31mMultiply_112 took 410ms[0m
+[INFO] 2019-01-16T23:42:55z src/he_backend.cpp 331	[1;32m[ Pad_113 ][0m
+[INFO] 2019-01-16T23:42:55z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:42:55z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:55z src/he_backend.cpp 478	Batch size 32
+[INFO] 2019-01-16T23:42:55z src/he_backend.cpp 413	[1;31mPad_113 took 5ms[0m
+[INFO] 2019-01-16T23:42:55z src/he_backend.cpp 331	[1;32m[ Reshape_114 ][0m
+[INFO] 2019-01-16T23:42:55z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:42:55z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:55z src/he_backend.cpp 478	Batch size 32
+[INFO] 2019-01-16T23:42:55z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:42:55z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:42:55z src/he_backend.cpp 413	[1;31mReshape_114 took 0ms[0m
+[INFO] 2019-01-16T23:42:55z src/he_backend.cpp 331	[1;32m[ Dot_115 ][0m
+[INFO] 2019-01-16T23:42:55z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:42:55z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:42:55z src/he_backend.cpp 478	Batch size 32
+[INFO] 2019-01-16T23:42:55z src/he_backend.cpp 675	1x845 dot 845x100
+[INFO] 2019-01-16T23:43:06z src/he_backend.cpp 413	[1;31mDot_115 took 10510ms[0m
+[INFO] 2019-01-16T23:43:06z src/he_backend.cpp 331	[1;32m[ Multiply_116 ][0m
+[INFO] 2019-01-16T23:43:06z src/he_backend.cpp 467	Inputs: Cipher, Cipher
+[INFO] 2019-01-16T23:43:06z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:43:06z src/he_backend.cpp 478	Batch size 32
+[INFO] 2019-01-16T23:43:06z src/he_backend.cpp 413	[1;31mMultiply_116 took 59ms[0m
+[INFO] 2019-01-16T23:43:06z src/he_backend.cpp 331	[1;32m[ Dot_117 ][0m
+[INFO] 2019-01-16T23:43:06z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:43:06z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:43:06z src/he_backend.cpp 478	Batch size 32
+[INFO] 2019-01-16T23:43:06z src/he_backend.cpp 675	1x100 dot 100x10
+[INFO] 2019-01-16T23:43:06z src/he_backend.cpp 413	[1;31mDot_117 took 283ms[0m
+[INFO] 2019-01-16T23:43:06z src/he_backend.cpp 331	[1;32m[ Result_118 ][0m
+[INFO] 2019-01-16T23:43:06z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:43:06z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:43:06z src/he_backend.cpp 478	Batch size 32
+[INFO] 2019-01-16T23:43:06z src/he_backend.cpp 413	[1;31mResult_118 took 3ms[0m
+[INFO] 2019-01-16T23:43:06z src/he_backend.cpp 421	[1;32mTotal time 16209 (ms) [0m
+[INFO] 2019-01-16T23:43:06z test/test_cryptonets.cpp 137	sw_run_model: 16723ms
+[INFO] 2019-01-16T23:43:06z test/test_util.hpp 91	Element count 320
+[INFO] 2019-01-16T23:43:06z test/test_cryptonets.cpp 146	sw_decrypt_output: 14ms
+[INFO] 2019-01-16T23:43:06z test/test_cryptonets.cpp 151	sw_global: 16924ms
+[INFO] 2019-01-16T23:43:06z test/test_cryptonets.cpp 166	Error count 0 of 32 elements.
+[INFO] 2019-01-16T23:43:06z test/test_cryptonets.cpp 169	Accuracy: 1
+[INFO] 2019-01-16T23:43:06z test/test_cryptonets.cpp 176	[Summary]
+[INFO] 2019-01-16T23:43:06z test/test_cryptonets.cpp 177	sw_load_model: 64ms
+[INFO] 2019-01-16T23:43:06z test/test_cryptonets.cpp 178	sw_encrypt_input: 122ms
+[INFO] 2019-01-16T23:43:06z test/test_cryptonets.cpp 180	sw_run_model: 16723ms
+[INFO] 2019-01-16T23:43:06z test/test_cryptonets.cpp 181	sw_decrypt_output: 14ms
+[INFO] 2019-01-16T23:43:06z test/test_cryptonets.cpp 183	sw_global: 16924ms
+[       OK ] Cryptonets.CKKS_32 (18244 ms)
+[ RUN      ] Cryptonets.CKKS_64
+[INFO] 2019-01-16T23:43:07z src/seal/he_seal_util.hpp 47	
+/ Encryption parameters:
+| scheme: HE:SEAL:CKKS
+| poly_modulus: 8192
+| coeff_modulus size: 210 bits
+\ noise_standard_deviation: 3.2
+[INFO] 2019-01-16T23:43:08z test/test_cryptonets.cpp 88	Deserialize graph
+[INFO] 2019-01-16T23:43:08z test/test_cryptonets.cpp 89	x size 50176
+[INFO] 2019-01-16T23:43:08z test/test_cryptonets.cpp 90	Inputs loaded
+[INFO] 2019-01-16T23:43:08z test/test_cryptonets.cpp 92	sw_load_model: 75ms
+[INFO] 2019-01-16T23:43:08z src/seal/ckks/he_seal_ckks_backend.cpp 284	Creating batched plain tensor with shape 64, 784
+[INFO] 2019-01-16T23:43:08z test/test_cryptonets.cpp 106	Creating input shape: 64x784
+[INFO] 2019-01-16T23:43:08z test/test_cryptonets.cpp 109	Copying 50176 elements
+[INFO] 2019-01-16T23:43:08z test/test_cryptonets.cpp 123	Creating output shape: 64x10
+[INFO] 2019-01-16T23:43:08z src/seal/ckks/he_seal_ckks_backend.cpp 284	Creating batched plain tensor with shape 64, 10
+[INFO] 2019-01-16T23:43:08z test/test_cryptonets.cpp 128	sw_encrypt_input: 99ms
+[INFO] 2019-01-16T23:43:08z test/test_cryptonets.cpp 132	calling function
+[INFO] 2019-01-16T23:43:08z src/he_backend.cpp 252	Encrypting data
+[INFO] 2019-01-16T23:43:08z src/he_backend.cpp 255	Batching data
+[INFO] 2019-01-16T23:43:08z src/he_backend.cpp 290	Encrypting parameter 0
+[INFO] 2019-01-16T23:43:08z src/he_backend.cpp 298	plain_input->get_batched_element_count() 784
+[INFO] 2019-01-16T23:43:08z src/he_backend.cpp 305	Done encrypting parameter 0
+[INFO] 2019-01-16T23:43:08z src/he_backend.cpp 331	[1;32m[ Parameter_119 ][0m
+[INFO] 2019-01-16T23:43:08z src/he_backend.cpp 336	Parameter shape {64, 784}
+[INFO] 2019-01-16T23:43:08z src/he_backend.cpp 331	[1;32m[ Constant_120 ][0m
+[INFO] 2019-01-16T23:43:08z src/he_backend.cpp 341	Constant shape {100, 10}
+[INFO] 2019-01-16T23:43:08z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:43:08z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:43:08z src/he_backend.cpp 413	[1;31mConstant_120 took 24ms[0m
+[INFO] 2019-01-16T23:43:08z src/he_backend.cpp 331	[1;32m[ Constant_121 ][0m
+[INFO] 2019-01-16T23:43:08z src/he_backend.cpp 341	Constant shape {845, 100}
+[INFO] 2019-01-16T23:43:08z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:43:08z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 413	[1;31mConstant_121 took 955ms[0m
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 331	[1;32m[ Constant_122 ][0m
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 341	Constant shape {}
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 413	[1;31mConstant_122 took 28ms[0m
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 331	[1;32m[ Constant_123 ][0m
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 341	Constant shape {5, 5, 1, 5}
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 413	[1;31mConstant_123 took 28ms[0m
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 331	[1;32m[ Reshape_124 ][0m
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 478	Batch size 64
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 413	[1;31mReshape_124 took 0ms[0m
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 331	[1;32m[ Reshape_125 ][0m
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 467	Inputs: Plain
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 413	[1;31mReshape_125 took 0ms[0m
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 331	[1;32m[ Reshape_126 ][0m
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 478	Batch size 64
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 413	[1;31mReshape_126 took 0ms[0m
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 331	[1;32m[ Convolution_127 ][0m
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:43:09z src/he_backend.cpp 478	Batch size 64
+[INFO] 2019-01-16T23:43:09z src/seal/kernel/convolution_seal.hpp 85	Convolution output size 720
+[INFO] 2019-01-16T23:43:10z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 0
+[INFO] 2019-01-16T23:43:13z src/he_backend.cpp 413	[1;31mConvolution_127 took 4015ms[0m
+[INFO] 2019-01-16T23:43:13z src/he_backend.cpp 331	[1;32m[ Reshape_128 ][0m
+[INFO] 2019-01-16T23:43:13z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:43:13z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:43:13z src/he_backend.cpp 478	Batch size 64
+[INFO] 2019-01-16T23:43:13z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:43:13z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:43:13z src/he_backend.cpp 413	[1;31mReshape_128 took 0ms[0m
+[INFO] 2019-01-16T23:43:13z src/he_backend.cpp 331	[1;32m[ Multiply_129 ][0m
+[INFO] 2019-01-16T23:43:13z src/he_backend.cpp 467	Inputs: Cipher, Cipher
+[INFO] 2019-01-16T23:43:13z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:43:13z src/he_backend.cpp 478	Batch size 64
+[INFO] 2019-01-16T23:43:14z src/he_backend.cpp 413	[1;31mMultiply_129 took 424ms[0m
+[INFO] 2019-01-16T23:43:14z src/he_backend.cpp 331	[1;32m[ Pad_130 ][0m
+[INFO] 2019-01-16T23:43:14z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:43:14z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:43:14z src/he_backend.cpp 478	Batch size 64
+[INFO] 2019-01-16T23:43:14z src/he_backend.cpp 413	[1;31mPad_130 took 6ms[0m
+[INFO] 2019-01-16T23:43:14z src/he_backend.cpp 331	[1;32m[ Reshape_131 ][0m
+[INFO] 2019-01-16T23:43:14z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:43:14z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:43:14z src/he_backend.cpp 478	Batch size 64
+[INFO] 2019-01-16T23:43:14z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:43:14z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:43:14z src/he_backend.cpp 413	[1;31mReshape_131 took 0ms[0m
+[INFO] 2019-01-16T23:43:14z src/he_backend.cpp 331	[1;32m[ Dot_132 ][0m
+[INFO] 2019-01-16T23:43:14z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:43:14z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:43:14z src/he_backend.cpp 478	Batch size 64
+[INFO] 2019-01-16T23:43:14z src/he_backend.cpp 675	1x845 dot 845x100
+[INFO] 2019-01-16T23:43:24z src/he_backend.cpp 413	[1;31mDot_132 took 10652ms[0m
+[INFO] 2019-01-16T23:43:24z src/he_backend.cpp 331	[1;32m[ Multiply_133 ][0m
+[INFO] 2019-01-16T23:43:24z src/he_backend.cpp 467	Inputs: Cipher, Cipher
+[INFO] 2019-01-16T23:43:24z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:43:24z src/he_backend.cpp 478	Batch size 64
+[INFO] 2019-01-16T23:43:24z src/he_backend.cpp 413	[1;31mMultiply_133 took 80ms[0m
+[INFO] 2019-01-16T23:43:24z src/he_backend.cpp 331	[1;32m[ Dot_134 ][0m
+[INFO] 2019-01-16T23:43:24z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:43:24z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:43:24z src/he_backend.cpp 478	Batch size 64
+[INFO] 2019-01-16T23:43:24z src/he_backend.cpp 675	1x100 dot 100x10
+[INFO] 2019-01-16T23:43:25z src/he_backend.cpp 413	[1;31mDot_134 took 275ms[0m
+[INFO] 2019-01-16T23:43:25z src/he_backend.cpp 331	[1;32m[ Result_135 ][0m
+[INFO] 2019-01-16T23:43:25z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:43:25z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:43:25z src/he_backend.cpp 478	Batch size 64
+[INFO] 2019-01-16T23:43:25z src/he_backend.cpp 413	[1;31mResult_135 took 2ms[0m
+[INFO] 2019-01-16T23:43:25z src/he_backend.cpp 421	[1;32mTotal time 16489 (ms) [0m
+[INFO] 2019-01-16T23:43:25z test/test_cryptonets.cpp 137	sw_run_model: 17036ms
+[INFO] 2019-01-16T23:43:25z test/test_util.hpp 91	Element count 640
+[INFO] 2019-01-16T23:43:25z test/test_cryptonets.cpp 146	sw_decrypt_output: 13ms
+[INFO] 2019-01-16T23:43:25z test/test_cryptonets.cpp 151	sw_global: 17225ms
+[INFO] 2019-01-16T23:43:25z test/test_cryptonets.cpp 166	Error count 0 of 64 elements.
+[INFO] 2019-01-16T23:43:25z test/test_cryptonets.cpp 169	Accuracy: 1
+[INFO] 2019-01-16T23:43:25z test/test_cryptonets.cpp 176	[Summary]
+[INFO] 2019-01-16T23:43:25z test/test_cryptonets.cpp 177	sw_load_model: 75ms
+[INFO] 2019-01-16T23:43:25z test/test_cryptonets.cpp 178	sw_encrypt_input: 99ms
+[INFO] 2019-01-16T23:43:25z test/test_cryptonets.cpp 180	sw_run_model: 17036ms
+[INFO] 2019-01-16T23:43:25z test/test_cryptonets.cpp 181	sw_decrypt_output: 13ms
+[INFO] 2019-01-16T23:43:25z test/test_cryptonets.cpp 183	sw_global: 17225ms
+[       OK ] Cryptonets.CKKS_64 (18555 ms)
+[ RUN      ] Cryptonets.CKKS_128
+[INFO] 2019-01-16T23:43:26z src/seal/he_seal_util.hpp 47	
+/ Encryption parameters:
+| scheme: HE:SEAL:CKKS
+| poly_modulus: 8192
+| coeff_modulus size: 210 bits
+\ noise_standard_deviation: 3.2
+[INFO] 2019-01-16T23:43:26z test/test_cryptonets.cpp 88	Deserialize graph
+[INFO] 2019-01-16T23:43:26z test/test_cryptonets.cpp 89	x size 100352
+[INFO] 2019-01-16T23:43:26z test/test_cryptonets.cpp 90	Inputs loaded
+[INFO] 2019-01-16T23:43:26z test/test_cryptonets.cpp 92	sw_load_model: 64ms
+[INFO] 2019-01-16T23:43:26z src/seal/ckks/he_seal_ckks_backend.cpp 284	Creating batched plain tensor with shape 128, 784
+[INFO] 2019-01-16T23:43:26z test/test_cryptonets.cpp 106	Creating input shape: 128x784
+[INFO] 2019-01-16T23:43:26z test/test_cryptonets.cpp 109	Copying 100352 elements
+[INFO] 2019-01-16T23:43:26z test/test_cryptonets.cpp 123	Creating output shape: 128x10
+[INFO] 2019-01-16T23:43:26z src/seal/ckks/he_seal_ckks_backend.cpp 284	Creating batched plain tensor with shape 128, 10
+[INFO] 2019-01-16T23:43:26z test/test_cryptonets.cpp 128	sw_encrypt_input: 122ms
+[INFO] 2019-01-16T23:43:26z test/test_cryptonets.cpp 132	calling function
+[INFO] 2019-01-16T23:43:26z src/he_backend.cpp 252	Encrypting data
+[INFO] 2019-01-16T23:43:26z src/he_backend.cpp 255	Batching data
+[INFO] 2019-01-16T23:43:26z src/he_backend.cpp 290	Encrypting parameter 0
+[INFO] 2019-01-16T23:43:26z src/he_backend.cpp 298	plain_input->get_batched_element_count() 784
+[INFO] 2019-01-16T23:43:26z src/he_backend.cpp 305	Done encrypting parameter 0
+[INFO] 2019-01-16T23:43:26z src/he_backend.cpp 331	[1;32m[ Parameter_136 ][0m
+[INFO] 2019-01-16T23:43:26z src/he_backend.cpp 336	Parameter shape {128, 784}
+[INFO] 2019-01-16T23:43:26z src/he_backend.cpp 331	[1;32m[ Constant_137 ][0m
+[INFO] 2019-01-16T23:43:26z src/he_backend.cpp 341	Constant shape {100, 10}
+[INFO] 2019-01-16T23:43:26z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:43:26z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:43:26z src/he_backend.cpp 413	[1;31mConstant_137 took 33ms[0m
+[INFO] 2019-01-16T23:43:26z src/he_backend.cpp 331	[1;32m[ Constant_138 ][0m
+[INFO] 2019-01-16T23:43:26z src/he_backend.cpp 341	Constant shape {845, 100}
+[INFO] 2019-01-16T23:43:26z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:43:26z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:43:27z src/he_backend.cpp 413	[1;31mConstant_138 took 929ms[0m
+[INFO] 2019-01-16T23:43:27z src/he_backend.cpp 331	[1;32m[ Constant_139 ][0m
+[INFO] 2019-01-16T23:43:27z src/he_backend.cpp 341	Constant shape {}
+[INFO] 2019-01-16T23:43:27z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:43:27z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:43:27z src/he_backend.cpp 413	[1;31mConstant_139 took 27ms[0m
+[INFO] 2019-01-16T23:43:27z src/he_backend.cpp 331	[1;32m[ Constant_140 ][0m
+[INFO] 2019-01-16T23:43:27z src/he_backend.cpp 341	Constant shape {5, 5, 1, 5}
+[INFO] 2019-01-16T23:43:27z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:43:27z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:43:28z src/he_backend.cpp 413	[1;31mConstant_140 took 27ms[0m
+[INFO] 2019-01-16T23:43:28z src/he_backend.cpp 331	[1;32m[ Reshape_141 ][0m
+[INFO] 2019-01-16T23:43:28z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:43:28z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:43:28z src/he_backend.cpp 478	Batch size 128
+[INFO] 2019-01-16T23:43:28z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:43:28z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:43:28z src/he_backend.cpp 413	[1;31mReshape_141 took 0ms[0m
+[INFO] 2019-01-16T23:43:28z src/he_backend.cpp 331	[1;32m[ Reshape_142 ][0m
+[INFO] 2019-01-16T23:43:28z src/he_backend.cpp 467	Inputs: Plain
+[INFO] 2019-01-16T23:43:28z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:43:28z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:43:28z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:43:28z src/he_backend.cpp 413	[1;31mReshape_142 took 0ms[0m
+[INFO] 2019-01-16T23:43:28z src/he_backend.cpp 331	[1;32m[ Reshape_143 ][0m
+[INFO] 2019-01-16T23:43:28z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:43:28z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:43:28z src/he_backend.cpp 478	Batch size 128
+[INFO] 2019-01-16T23:43:28z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:43:28z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:43:28z src/he_backend.cpp 413	[1;31mReshape_143 took 0ms[0m
+[INFO] 2019-01-16T23:43:28z src/he_backend.cpp 331	[1;32m[ Convolution_144 ][0m
+[INFO] 2019-01-16T23:43:28z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:43:28z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:43:28z src/he_backend.cpp 478	Batch size 128
+[INFO] 2019-01-16T23:43:28z src/seal/kernel/convolution_seal.hpp 85	Convolution output size 720
+[INFO] 2019-01-16T23:43:28z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 0
+[INFO] 2019-01-16T23:43:32z src/he_backend.cpp 413	[1;31mConvolution_144 took 4053ms[0m
+[INFO] 2019-01-16T23:43:32z src/he_backend.cpp 331	[1;32m[ Reshape_145 ][0m
+[INFO] 2019-01-16T23:43:32z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:43:32z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:43:32z src/he_backend.cpp 478	Batch size 128
+[INFO] 2019-01-16T23:43:32z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:43:32z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:43:32z src/he_backend.cpp 413	[1;31mReshape_145 took 0ms[0m
+[INFO] 2019-01-16T23:43:32z src/he_backend.cpp 331	[1;32m[ Multiply_146 ][0m
+[INFO] 2019-01-16T23:43:32z src/he_backend.cpp 467	Inputs: Cipher, Cipher
+[INFO] 2019-01-16T23:43:32z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:43:32z src/he_backend.cpp 478	Batch size 128
+[INFO] 2019-01-16T23:43:32z src/he_backend.cpp 413	[1;31mMultiply_146 took 440ms[0m
+[INFO] 2019-01-16T23:43:32z src/he_backend.cpp 331	[1;32m[ Pad_147 ][0m
+[INFO] 2019-01-16T23:43:32z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:43:32z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:43:32z src/he_backend.cpp 478	Batch size 128
+[INFO] 2019-01-16T23:43:32z src/he_backend.cpp 413	[1;31mPad_147 took 7ms[0m
+[INFO] 2019-01-16T23:43:32z src/he_backend.cpp 331	[1;32m[ Reshape_148 ][0m
+[INFO] 2019-01-16T23:43:32z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:43:32z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:43:32z src/he_backend.cpp 478	Batch size 128
+[INFO] 2019-01-16T23:43:32z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:43:32z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:43:32z src/he_backend.cpp 413	[1;31mReshape_148 took 0ms[0m
+[INFO] 2019-01-16T23:43:32z src/he_backend.cpp 331	[1;32m[ Dot_149 ][0m
+[INFO] 2019-01-16T23:43:32z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:43:32z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:43:32z src/he_backend.cpp 478	Batch size 128
+[INFO] 2019-01-16T23:43:32z src/he_backend.cpp 675	1x845 dot 845x100
+[INFO] 2019-01-16T23:43:43z src/he_backend.cpp 413	[1;31mDot_149 took 10699ms[0m
+[INFO] 2019-01-16T23:43:43z src/he_backend.cpp 331	[1;32m[ Multiply_150 ][0m
+[INFO] 2019-01-16T23:43:43z src/he_backend.cpp 467	Inputs: Cipher, Cipher
+[INFO] 2019-01-16T23:43:43z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:43:43z src/he_backend.cpp 478	Batch size 128
+[INFO] 2019-01-16T23:43:43z src/he_backend.cpp 413	[1;31mMultiply_150 took 72ms[0m
+[INFO] 2019-01-16T23:43:43z src/he_backend.cpp 331	[1;32m[ Dot_151 ][0m
+[INFO] 2019-01-16T23:43:43z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:43:43z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:43:43z src/he_backend.cpp 478	Batch size 128
+[INFO] 2019-01-16T23:43:43z src/he_backend.cpp 675	1x100 dot 100x10
+[INFO] 2019-01-16T23:43:43z src/he_backend.cpp 413	[1;31mDot_151 took 375ms[0m
+[INFO] 2019-01-16T23:43:43z src/he_backend.cpp 331	[1;32m[ Result_152 ][0m
+[INFO] 2019-01-16T23:43:43z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:43:43z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:43:43z src/he_backend.cpp 478	Batch size 128
+[INFO] 2019-01-16T23:43:43z src/he_backend.cpp 413	[1;31mResult_152 took 3ms[0m
+[INFO] 2019-01-16T23:43:43z src/he_backend.cpp 421	[1;32mTotal time 16665 (ms) [0m
+[INFO] 2019-01-16T23:43:43z test/test_cryptonets.cpp 137	sw_run_model: 17215ms
+[INFO] 2019-01-16T23:43:43z test/test_util.hpp 91	Element count 1280
+[INFO] 2019-01-16T23:43:43z test/test_cryptonets.cpp 146	sw_decrypt_output: 15ms
+[INFO] 2019-01-16T23:43:43z test/test_cryptonets.cpp 151	sw_global: 17418ms
+[INFO] 2019-01-16T23:43:43z test/test_cryptonets.cpp 166	Error count 0 of 128 elements.
+[INFO] 2019-01-16T23:43:43z test/test_cryptonets.cpp 169	Accuracy: 1
+[INFO] 2019-01-16T23:43:43z test/test_cryptonets.cpp 176	[Summary]
+[INFO] 2019-01-16T23:43:43z test/test_cryptonets.cpp 177	sw_load_model: 64ms
+[INFO] 2019-01-16T23:43:43z test/test_cryptonets.cpp 178	sw_encrypt_input: 122ms
+[INFO] 2019-01-16T23:43:43z test/test_cryptonets.cpp 180	sw_run_model: 17215ms
+[INFO] 2019-01-16T23:43:43z test/test_cryptonets.cpp 181	sw_decrypt_output: 15ms
+[INFO] 2019-01-16T23:43:43z test/test_cryptonets.cpp 183	sw_global: 17418ms
+[       OK ] Cryptonets.CKKS_128 (18740 ms)
+[ RUN      ] Cryptonets.CKKS_256
+[INFO] 2019-01-16T23:43:45z src/seal/he_seal_util.hpp 47	
+/ Encryption parameters:
+| scheme: HE:SEAL:CKKS
+| poly_modulus: 8192
+| coeff_modulus size: 210 bits
+\ noise_standard_deviation: 3.2
+[INFO] 2019-01-16T23:43:45z test/test_cryptonets.cpp 88	Deserialize graph
+[INFO] 2019-01-16T23:43:45z test/test_cryptonets.cpp 89	x size 200704
+[INFO] 2019-01-16T23:43:45z test/test_cryptonets.cpp 90	Inputs loaded
+[INFO] 2019-01-16T23:43:45z test/test_cryptonets.cpp 92	sw_load_model: 64ms
+[INFO] 2019-01-16T23:43:45z src/seal/ckks/he_seal_ckks_backend.cpp 284	Creating batched plain tensor with shape 256, 784
+[INFO] 2019-01-16T23:43:45z test/test_cryptonets.cpp 106	Creating input shape: 256x784
+[INFO] 2019-01-16T23:43:45z test/test_cryptonets.cpp 109	Copying 200704 elements
+[INFO] 2019-01-16T23:43:45z test/test_cryptonets.cpp 123	Creating output shape: 256x10
+[INFO] 2019-01-16T23:43:45z src/seal/ckks/he_seal_ckks_backend.cpp 284	Creating batched plain tensor with shape 256, 10
+[INFO] 2019-01-16T23:43:45z test/test_cryptonets.cpp 128	sw_encrypt_input: 106ms
+[INFO] 2019-01-16T23:43:45z test/test_cryptonets.cpp 132	calling function
+[INFO] 2019-01-16T23:43:45z src/he_backend.cpp 252	Encrypting data
+[INFO] 2019-01-16T23:43:45z src/he_backend.cpp 255	Batching data
+[INFO] 2019-01-16T23:43:45z src/he_backend.cpp 290	Encrypting parameter 0
+[INFO] 2019-01-16T23:43:45z src/he_backend.cpp 298	plain_input->get_batched_element_count() 784
+[INFO] 2019-01-16T23:43:45z src/he_backend.cpp 305	Done encrypting parameter 0
+[INFO] 2019-01-16T23:43:45z src/he_backend.cpp 331	[1;32m[ Parameter_153 ][0m
+[INFO] 2019-01-16T23:43:45z src/he_backend.cpp 336	Parameter shape {256, 784}
+[INFO] 2019-01-16T23:43:45z src/he_backend.cpp 331	[1;32m[ Constant_154 ][0m
+[INFO] 2019-01-16T23:43:45z src/he_backend.cpp 341	Constant shape {100, 10}
+[INFO] 2019-01-16T23:43:45z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:43:45z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:43:45z src/he_backend.cpp 413	[1;31mConstant_154 took 12ms[0m
+[INFO] 2019-01-16T23:43:45z src/he_backend.cpp 331	[1;32m[ Constant_155 ][0m
+[INFO] 2019-01-16T23:43:45z src/he_backend.cpp 341	Constant shape {845, 100}
+[INFO] 2019-01-16T23:43:45z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:43:45z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 413	[1;31mConstant_155 took 917ms[0m
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 331	[1;32m[ Constant_156 ][0m
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 341	Constant shape {}
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 413	[1;31mConstant_156 took 28ms[0m
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 331	[1;32m[ Constant_157 ][0m
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 341	Constant shape {5, 5, 1, 5}
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 413	[1;31mConstant_157 took 15ms[0m
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 331	[1;32m[ Reshape_158 ][0m
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 478	Batch size 256
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 413	[1;31mReshape_158 took 0ms[0m
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 331	[1;32m[ Reshape_159 ][0m
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 467	Inputs: Plain
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 413	[1;31mReshape_159 took 0ms[0m
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 331	[1;32m[ Reshape_160 ][0m
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 478	Batch size 256
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 413	[1;31mReshape_160 took 0ms[0m
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 331	[1;32m[ Convolution_161 ][0m
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:43:46z src/he_backend.cpp 478	Batch size 256
+[INFO] 2019-01-16T23:43:46z src/seal/kernel/convolution_seal.hpp 85	Convolution output size 720
+[INFO] 2019-01-16T23:43:47z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 0
+[INFO] 2019-01-16T23:43:50z src/he_backend.cpp 413	[1;31mConvolution_161 took 3931ms[0m
+[INFO] 2019-01-16T23:43:50z src/he_backend.cpp 331	[1;32m[ Reshape_162 ][0m
+[INFO] 2019-01-16T23:43:50z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:43:50z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:43:50z src/he_backend.cpp 478	Batch size 256
+[INFO] 2019-01-16T23:43:50z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:43:50z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:43:50z src/he_backend.cpp 413	[1;31mReshape_162 took 0ms[0m
+[INFO] 2019-01-16T23:43:50z src/he_backend.cpp 331	[1;32m[ Multiply_163 ][0m
+[INFO] 2019-01-16T23:43:50z src/he_backend.cpp 467	Inputs: Cipher, Cipher
+[INFO] 2019-01-16T23:43:50z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:43:50z src/he_backend.cpp 478	Batch size 256
+[INFO] 2019-01-16T23:43:51z src/he_backend.cpp 413	[1;31mMultiply_163 took 426ms[0m
+[INFO] 2019-01-16T23:43:51z src/he_backend.cpp 331	[1;32m[ Pad_164 ][0m
+[INFO] 2019-01-16T23:43:51z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:43:51z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:43:51z src/he_backend.cpp 478	Batch size 256
+[INFO] 2019-01-16T23:43:51z src/he_backend.cpp 413	[1;31mPad_164 took 7ms[0m
+[INFO] 2019-01-16T23:43:51z src/he_backend.cpp 331	[1;32m[ Reshape_165 ][0m
+[INFO] 2019-01-16T23:43:51z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:43:51z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:43:51z src/he_backend.cpp 478	Batch size 256
+[INFO] 2019-01-16T23:43:51z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:43:51z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:43:51z src/he_backend.cpp 413	[1;31mReshape_165 took 0ms[0m
+[INFO] 2019-01-16T23:43:51z src/he_backend.cpp 331	[1;32m[ Dot_166 ][0m
+[INFO] 2019-01-16T23:43:51z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:43:51z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:43:51z src/he_backend.cpp 478	Batch size 256
+[INFO] 2019-01-16T23:43:51z src/he_backend.cpp 675	1x845 dot 845x100
+[INFO] 2019-01-16T23:44:02z src/he_backend.cpp 413	[1;31mDot_166 took 10926ms[0m
+[INFO] 2019-01-16T23:44:02z src/he_backend.cpp 331	[1;32m[ Multiply_167 ][0m
+[INFO] 2019-01-16T23:44:02z src/he_backend.cpp 467	Inputs: Cipher, Cipher
+[INFO] 2019-01-16T23:44:02z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:44:02z src/he_backend.cpp 478	Batch size 256
+[INFO] 2019-01-16T23:44:02z src/he_backend.cpp 413	[1;31mMultiply_167 took 53ms[0m
+[INFO] 2019-01-16T23:44:02z src/he_backend.cpp 331	[1;32m[ Dot_168 ][0m
+[INFO] 2019-01-16T23:44:02z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:44:02z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:44:02z src/he_backend.cpp 478	Batch size 256
+[INFO] 2019-01-16T23:44:02z src/he_backend.cpp 675	1x100 dot 100x10
+[INFO] 2019-01-16T23:44:02z src/he_backend.cpp 413	[1;31mDot_168 took 270ms[0m
+[INFO] 2019-01-16T23:44:02z src/he_backend.cpp 331	[1;32m[ Result_169 ][0m
+[INFO] 2019-01-16T23:44:02z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:44:02z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:44:02z src/he_backend.cpp 478	Batch size 256
+[INFO] 2019-01-16T23:44:02z src/he_backend.cpp 413	[1;31mResult_169 took 2ms[0m
+[INFO] 2019-01-16T23:44:02z src/he_backend.cpp 421	[1;32mTotal time 16587 (ms) [0m
+[INFO] 2019-01-16T23:44:02z test/test_cryptonets.cpp 137	sw_run_model: 17098ms
+[INFO] 2019-01-16T23:44:02z test/test_util.hpp 91	Element count 2560
+[INFO] 2019-01-16T23:44:02z test/test_cryptonets.cpp 146	sw_decrypt_output: 15ms
+[INFO] 2019-01-16T23:44:02z test/test_cryptonets.cpp 151	sw_global: 17284ms
+[INFO] 2019-01-16T23:44:02z test/test_cryptonets.cpp 166	Error count 0 of 256 elements.
+[INFO] 2019-01-16T23:44:02z test/test_cryptonets.cpp 169	Accuracy: 1
+[INFO] 2019-01-16T23:44:02z test/test_cryptonets.cpp 176	[Summary]
+[INFO] 2019-01-16T23:44:02z test/test_cryptonets.cpp 177	sw_load_model: 64ms
+[INFO] 2019-01-16T23:44:02z test/test_cryptonets.cpp 178	sw_encrypt_input: 106ms
+[INFO] 2019-01-16T23:44:02z test/test_cryptonets.cpp 180	sw_run_model: 17098ms
+[INFO] 2019-01-16T23:44:02z test/test_cryptonets.cpp 181	sw_decrypt_output: 15ms
+[INFO] 2019-01-16T23:44:02z test/test_cryptonets.cpp 183	sw_global: 17284ms
+[       OK ] Cryptonets.CKKS_256 (18605 ms)
+[ RUN      ] Cryptonets.CKKS_512
+[INFO] 2019-01-16T23:44:03z src/seal/he_seal_util.hpp 47	
+/ Encryption parameters:
+| scheme: HE:SEAL:CKKS
+| poly_modulus: 8192
+| coeff_modulus size: 210 bits
+\ noise_standard_deviation: 3.2
+[INFO] 2019-01-16T23:44:03z test/test_cryptonets.cpp 88	Deserialize graph
+[INFO] 2019-01-16T23:44:03z test/test_cryptonets.cpp 89	x size 401408
+[INFO] 2019-01-16T23:44:03z test/test_cryptonets.cpp 90	Inputs loaded
+[INFO] 2019-01-16T23:44:03z test/test_cryptonets.cpp 92	sw_load_model: 78ms
+[INFO] 2019-01-16T23:44:03z src/seal/ckks/he_seal_ckks_backend.cpp 284	Creating batched plain tensor with shape 512, 784
+[INFO] 2019-01-16T23:44:04z test/test_cryptonets.cpp 106	Creating input shape: 512x784
+[INFO] 2019-01-16T23:44:04z test/test_cryptonets.cpp 109	Copying 401408 elements
+[INFO] 2019-01-16T23:44:04z test/test_cryptonets.cpp 123	Creating output shape: 512x10
+[INFO] 2019-01-16T23:44:04z src/seal/ckks/he_seal_ckks_backend.cpp 284	Creating batched plain tensor with shape 512, 10
+[INFO] 2019-01-16T23:44:04z test/test_cryptonets.cpp 128	sw_encrypt_input: 119ms
+[INFO] 2019-01-16T23:44:04z test/test_cryptonets.cpp 132	calling function
+[INFO] 2019-01-16T23:44:04z src/he_backend.cpp 252	Encrypting data
+[INFO] 2019-01-16T23:44:04z src/he_backend.cpp 255	Batching data
+[INFO] 2019-01-16T23:44:04z src/he_backend.cpp 290	Encrypting parameter 0
+[INFO] 2019-01-16T23:44:04z src/he_backend.cpp 298	plain_input->get_batched_element_count() 784
+[INFO] 2019-01-16T23:44:04z src/he_backend.cpp 305	Done encrypting parameter 0
+[INFO] 2019-01-16T23:44:04z src/he_backend.cpp 331	[1;32m[ Parameter_170 ][0m
+[INFO] 2019-01-16T23:44:04z src/he_backend.cpp 336	Parameter shape {512, 784}
+[INFO] 2019-01-16T23:44:04z src/he_backend.cpp 331	[1;32m[ Constant_171 ][0m
+[INFO] 2019-01-16T23:44:04z src/he_backend.cpp 341	Constant shape {100, 10}
+[INFO] 2019-01-16T23:44:04z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:44:04z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:44:04z src/he_backend.cpp 413	[1;31mConstant_171 took 8ms[0m
+[INFO] 2019-01-16T23:44:04z src/he_backend.cpp 331	[1;32m[ Constant_172 ][0m
+[INFO] 2019-01-16T23:44:04z src/he_backend.cpp 341	Constant shape {845, 100}
+[INFO] 2019-01-16T23:44:04z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:44:04z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 413	[1;31mConstant_172 took 896ms[0m
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 331	[1;32m[ Constant_173 ][0m
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 341	Constant shape {}
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 413	[1;31mConstant_173 took 26ms[0m
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 331	[1;32m[ Constant_174 ][0m
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 341	Constant shape {5, 5, 1, 5}
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 413	[1;31mConstant_174 took 1ms[0m
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 331	[1;32m[ Reshape_175 ][0m
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 478	Batch size 512
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 413	[1;31mReshape_175 took 0ms[0m
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 331	[1;32m[ Reshape_176 ][0m
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 467	Inputs: Plain
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 413	[1;31mReshape_176 took 0ms[0m
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 331	[1;32m[ Reshape_177 ][0m
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 478	Batch size 512
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 413	[1;31mReshape_177 took 0ms[0m
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 331	[1;32m[ Convolution_178 ][0m
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:44:05z src/he_backend.cpp 478	Batch size 512
+[INFO] 2019-01-16T23:44:05z src/seal/kernel/convolution_seal.hpp 85	Convolution output size 720
+[INFO] 2019-01-16T23:44:05z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 0
+[INFO] 2019-01-16T23:44:09z src/he_backend.cpp 413	[1;31mConvolution_178 took 3869ms[0m
+[INFO] 2019-01-16T23:44:09z src/he_backend.cpp 331	[1;32m[ Reshape_179 ][0m
+[INFO] 2019-01-16T23:44:09z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:44:09z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:44:09z src/he_backend.cpp 478	Batch size 512
+[INFO] 2019-01-16T23:44:09z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:44:09z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:44:09z src/he_backend.cpp 413	[1;31mReshape_179 took 0ms[0m
+[INFO] 2019-01-16T23:44:09z src/he_backend.cpp 331	[1;32m[ Multiply_180 ][0m
+[INFO] 2019-01-16T23:44:09z src/he_backend.cpp 467	Inputs: Cipher, Cipher
+[INFO] 2019-01-16T23:44:09z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:44:09z src/he_backend.cpp 478	Batch size 512
+[INFO] 2019-01-16T23:44:09z src/he_backend.cpp 413	[1;31mMultiply_180 took 409ms[0m
+[INFO] 2019-01-16T23:44:09z src/he_backend.cpp 331	[1;32m[ Pad_181 ][0m
+[INFO] 2019-01-16T23:44:09z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:44:09z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:44:09z src/he_backend.cpp 478	Batch size 512
+[INFO] 2019-01-16T23:44:09z src/he_backend.cpp 413	[1;31mPad_181 took 6ms[0m
+[INFO] 2019-01-16T23:44:09z src/he_backend.cpp 331	[1;32m[ Reshape_182 ][0m
+[INFO] 2019-01-16T23:44:09z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:44:09z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:44:09z src/he_backend.cpp 478	Batch size 512
+[INFO] 2019-01-16T23:44:09z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:44:09z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:44:09z src/he_backend.cpp 413	[1;31mReshape_182 took 0ms[0m
+[INFO] 2019-01-16T23:44:09z src/he_backend.cpp 331	[1;32m[ Dot_183 ][0m
+[INFO] 2019-01-16T23:44:09z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:44:09z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:44:09z src/he_backend.cpp 478	Batch size 512
+[INFO] 2019-01-16T23:44:09z src/he_backend.cpp 675	1x845 dot 845x100
+[INFO] 2019-01-16T23:44:20z src/he_backend.cpp 413	[1;31mDot_183 took 10915ms[0m
+[INFO] 2019-01-16T23:44:20z src/he_backend.cpp 331	[1;32m[ Multiply_184 ][0m
+[INFO] 2019-01-16T23:44:20z src/he_backend.cpp 467	Inputs: Cipher, Cipher
+[INFO] 2019-01-16T23:44:20z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:44:20z src/he_backend.cpp 478	Batch size 512
+[INFO] 2019-01-16T23:44:20z src/he_backend.cpp 413	[1;31mMultiply_184 took 67ms[0m
+[INFO] 2019-01-16T23:44:20z src/he_backend.cpp 331	[1;32m[ Dot_185 ][0m
+[INFO] 2019-01-16T23:44:20z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:44:20z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:44:20z src/he_backend.cpp 478	Batch size 512
+[INFO] 2019-01-16T23:44:20z src/he_backend.cpp 675	1x100 dot 100x10
+[INFO] 2019-01-16T23:44:20z src/he_backend.cpp 413	[1;31mDot_185 took 274ms[0m
+[INFO] 2019-01-16T23:44:20z src/he_backend.cpp 331	[1;32m[ Result_186 ][0m
+[INFO] 2019-01-16T23:44:20z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:44:20z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:44:20z src/he_backend.cpp 478	Batch size 512
+[INFO] 2019-01-16T23:44:20z src/he_backend.cpp 413	[1;31mResult_186 took 2ms[0m
+[INFO] 2019-01-16T23:44:20z src/he_backend.cpp 421	[1;32mTotal time 16473 (ms) [0m
+[INFO] 2019-01-16T23:44:20z test/test_cryptonets.cpp 137	sw_run_model: 16852ms
+[INFO] 2019-01-16T23:44:20z test/test_util.hpp 91	Element count 5120
+[INFO] 2019-01-16T23:44:20z test/test_cryptonets.cpp 146	sw_decrypt_output: 12ms
+[INFO] 2019-01-16T23:44:20z test/test_cryptonets.cpp 151	sw_global: 17062ms
+[INFO] 2019-01-16T23:44:20z test/test_cryptonets.cpp 166	Error count 8 of 512 elements.
+[INFO] 2019-01-16T23:44:20z test/test_cryptonets.cpp 169	Accuracy: 0.984375
+[INFO] 2019-01-16T23:44:20z test/test_cryptonets.cpp 176	[Summary]
+[INFO] 2019-01-16T23:44:20z test/test_cryptonets.cpp 177	sw_load_model: 78ms
+[INFO] 2019-01-16T23:44:20z test/test_cryptonets.cpp 178	sw_encrypt_input: 119ms
+[INFO] 2019-01-16T23:44:20z test/test_cryptonets.cpp 180	sw_run_model: 16852ms
+[INFO] 2019-01-16T23:44:20z test/test_cryptonets.cpp 181	sw_decrypt_output: 12ms
+[INFO] 2019-01-16T23:44:20z test/test_cryptonets.cpp 183	sw_global: 17062ms
+[       OK ] Cryptonets.CKKS_512 (18377 ms)
+[ RUN      ] Cryptonets.CKKS_1024
+[INFO] 2019-01-16T23:44:22z src/seal/he_seal_util.hpp 47	
+/ Encryption parameters:
+| scheme: HE:SEAL:CKKS
+| poly_modulus: 8192
+| coeff_modulus size: 210 bits
+\ noise_standard_deviation: 3.2
+[INFO] 2019-01-16T23:44:22z test/test_cryptonets.cpp 88	Deserialize graph
+[INFO] 2019-01-16T23:44:22z test/test_cryptonets.cpp 89	x size 802816
+[INFO] 2019-01-16T23:44:22z test/test_cryptonets.cpp 90	Inputs loaded
+[INFO] 2019-01-16T23:44:22z test/test_cryptonets.cpp 92	sw_load_model: 76ms
+[INFO] 2019-01-16T23:44:22z src/seal/ckks/he_seal_ckks_backend.cpp 284	Creating batched plain tensor with shape 1024, 784
+[INFO] 2019-01-16T23:44:22z test/test_cryptonets.cpp 106	Creating input shape: 1024x784
+[INFO] 2019-01-16T23:44:22z test/test_cryptonets.cpp 109	Copying 802816 elements
+[INFO] 2019-01-16T23:44:22z test/test_cryptonets.cpp 123	Creating output shape: 1024x10
+[INFO] 2019-01-16T23:44:22z src/seal/ckks/he_seal_ckks_backend.cpp 284	Creating batched plain tensor with shape 1024, 10
+[INFO] 2019-01-16T23:44:22z test/test_cryptonets.cpp 128	sw_encrypt_input: 103ms
+[INFO] 2019-01-16T23:44:22z test/test_cryptonets.cpp 132	calling function
+[INFO] 2019-01-16T23:44:22z src/he_backend.cpp 252	Encrypting data
+[INFO] 2019-01-16T23:44:22z src/he_backend.cpp 255	Batching data
+[INFO] 2019-01-16T23:44:22z src/he_backend.cpp 290	Encrypting parameter 0
+[INFO] 2019-01-16T23:44:22z src/he_backend.cpp 298	plain_input->get_batched_element_count() 784
+[INFO] 2019-01-16T23:44:22z src/he_backend.cpp 305	Done encrypting parameter 0
+[INFO] 2019-01-16T23:44:22z src/he_backend.cpp 331	[1;32m[ Parameter_187 ][0m
+[INFO] 2019-01-16T23:44:22z src/he_backend.cpp 336	Parameter shape {1024, 784}
+[INFO] 2019-01-16T23:44:22z src/he_backend.cpp 331	[1;32m[ Constant_188 ][0m
+[INFO] 2019-01-16T23:44:22z src/he_backend.cpp 341	Constant shape {100, 10}
+[INFO] 2019-01-16T23:44:22z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:44:22z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:44:22z src/he_backend.cpp 413	[1;31mConstant_188 took 34ms[0m
+[INFO] 2019-01-16T23:44:22z src/he_backend.cpp 331	[1;32m[ Constant_189 ][0m
+[INFO] 2019-01-16T23:44:22z src/he_backend.cpp 341	Constant shape {845, 100}
+[INFO] 2019-01-16T23:44:22z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:44:22z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 413	[1;31mConstant_189 took 944ms[0m
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 331	[1;32m[ Constant_190 ][0m
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 341	Constant shape {}
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 413	[1;31mConstant_190 took 27ms[0m
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 331	[1;32m[ Constant_191 ][0m
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 341	Constant shape {5, 5, 1, 5}
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 413	[1;31mConstant_191 took 22ms[0m
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 331	[1;32m[ Reshape_192 ][0m
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 478	Batch size 1024
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 413	[1;31mReshape_192 took 0ms[0m
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 331	[1;32m[ Reshape_193 ][0m
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 467	Inputs: Plain
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 413	[1;31mReshape_193 took 0ms[0m
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 331	[1;32m[ Reshape_194 ][0m
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 478	Batch size 1024
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 413	[1;31mReshape_194 took 0ms[0m
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 331	[1;32m[ Convolution_195 ][0m
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:44:23z src/he_backend.cpp 478	Batch size 1024
+[INFO] 2019-01-16T23:44:23z src/seal/kernel/convolution_seal.hpp 85	Convolution output size 720
+[INFO] 2019-01-16T23:44:24z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 0
+[INFO] 2019-01-16T23:44:27z src/he_backend.cpp 413	[1;31mConvolution_195 took 3918ms[0m
+[INFO] 2019-01-16T23:44:27z src/he_backend.cpp 331	[1;32m[ Reshape_196 ][0m
+[INFO] 2019-01-16T23:44:27z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:44:27z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:44:27z src/he_backend.cpp 478	Batch size 1024
+[INFO] 2019-01-16T23:44:27z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:44:27z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:44:27z src/he_backend.cpp 413	[1;31mReshape_196 took 0ms[0m
+[INFO] 2019-01-16T23:44:27z src/he_backend.cpp 331	[1;32m[ Multiply_197 ][0m
+[INFO] 2019-01-16T23:44:27z src/he_backend.cpp 467	Inputs: Cipher, Cipher
+[INFO] 2019-01-16T23:44:27z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:44:27z src/he_backend.cpp 478	Batch size 1024
+[INFO] 2019-01-16T23:44:28z src/he_backend.cpp 413	[1;31mMultiply_197 took 421ms[0m
+[INFO] 2019-01-16T23:44:28z src/he_backend.cpp 331	[1;32m[ Pad_198 ][0m
+[INFO] 2019-01-16T23:44:28z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:44:28z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:44:28z src/he_backend.cpp 478	Batch size 1024
+[INFO] 2019-01-16T23:44:28z src/he_backend.cpp 413	[1;31mPad_198 took 13ms[0m
+[INFO] 2019-01-16T23:44:28z src/he_backend.cpp 331	[1;32m[ Reshape_199 ][0m
+[INFO] 2019-01-16T23:44:28z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:44:28z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:44:28z src/he_backend.cpp 478	Batch size 1024
+[INFO] 2019-01-16T23:44:28z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:44:28z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:44:28z src/he_backend.cpp 413	[1;31mReshape_199 took 0ms[0m
+[INFO] 2019-01-16T23:44:28z src/he_backend.cpp 331	[1;32m[ Dot_200 ][0m
+[INFO] 2019-01-16T23:44:28z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:44:28z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:44:28z src/he_backend.cpp 478	Batch size 1024
+[INFO] 2019-01-16T23:44:28z src/he_backend.cpp 675	1x845 dot 845x100
+[INFO] 2019-01-16T23:44:39z src/he_backend.cpp 413	[1;31mDot_200 took 10723ms[0m
+[INFO] 2019-01-16T23:44:39z src/he_backend.cpp 331	[1;32m[ Multiply_201 ][0m
+[INFO] 2019-01-16T23:44:39z src/he_backend.cpp 467	Inputs: Cipher, Cipher
+[INFO] 2019-01-16T23:44:39z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:44:39z src/he_backend.cpp 478	Batch size 1024
+[INFO] 2019-01-16T23:44:39z src/he_backend.cpp 413	[1;31mMultiply_201 took 68ms[0m
+[INFO] 2019-01-16T23:44:39z src/he_backend.cpp 331	[1;32m[ Dot_202 ][0m
+[INFO] 2019-01-16T23:44:39z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:44:39z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:44:39z src/he_backend.cpp 478	Batch size 1024
+[INFO] 2019-01-16T23:44:39z src/he_backend.cpp 675	1x100 dot 100x10
+[INFO] 2019-01-16T23:44:39z src/he_backend.cpp 413	[1;31mDot_202 took 299ms[0m
+[INFO] 2019-01-16T23:44:39z src/he_backend.cpp 331	[1;32m[ Result_203 ][0m
+[INFO] 2019-01-16T23:44:39z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:44:39z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:44:39z src/he_backend.cpp 478	Batch size 1024
+[INFO] 2019-01-16T23:44:39z src/he_backend.cpp 413	[1;31mResult_203 took 2ms[0m
+[INFO] 2019-01-16T23:44:39z src/he_backend.cpp 421	[1;32mTotal time 16471 (ms) [0m
+[INFO] 2019-01-16T23:44:39z test/test_cryptonets.cpp 137	sw_run_model: 17004ms
+[INFO] 2019-01-16T23:44:39z test/test_util.hpp 91	Element count 10240
+[INFO] 2019-01-16T23:44:39z test/test_cryptonets.cpp 146	sw_decrypt_output: 13ms
+[INFO] 2019-01-16T23:44:39z test/test_cryptonets.cpp 151	sw_global: 17197ms
+[INFO] 2019-01-16T23:44:39z test/test_cryptonets.cpp 166	Error count 21 of 1024 elements.
+[INFO] 2019-01-16T23:44:39z test/test_cryptonets.cpp 169	Accuracy: 0.979492
+[INFO] 2019-01-16T23:44:39z test/test_cryptonets.cpp 176	[Summary]
+[INFO] 2019-01-16T23:44:39z test/test_cryptonets.cpp 177	sw_load_model: 76ms
+[INFO] 2019-01-16T23:44:39z test/test_cryptonets.cpp 178	sw_encrypt_input: 103ms
+[INFO] 2019-01-16T23:44:39z test/test_cryptonets.cpp 180	sw_run_model: 17004ms
+[INFO] 2019-01-16T23:44:39z test/test_cryptonets.cpp 181	sw_decrypt_output: 13ms
+[INFO] 2019-01-16T23:44:39z test/test_cryptonets.cpp 183	sw_global: 17197ms
+[       OK ] Cryptonets.CKKS_1024 (18522 ms)
+[ RUN      ] Cryptonets.CKKS_2048
+[INFO] 2019-01-16T23:44:40z src/seal/he_seal_util.hpp 47	
+/ Encryption parameters:
+| scheme: HE:SEAL:CKKS
+| poly_modulus: 8192
+| coeff_modulus size: 210 bits
+\ noise_standard_deviation: 3.2
+[INFO] 2019-01-16T23:44:40z test/test_cryptonets.cpp 88	Deserialize graph
+[INFO] 2019-01-16T23:44:40z test/test_cryptonets.cpp 89	x size 1605632
+[INFO] 2019-01-16T23:44:40z test/test_cryptonets.cpp 90	Inputs loaded
+[INFO] 2019-01-16T23:44:40z test/test_cryptonets.cpp 92	sw_load_model: 76ms
+[INFO] 2019-01-16T23:44:40z src/seal/ckks/he_seal_ckks_backend.cpp 284	Creating batched plain tensor with shape 2048, 784
+[INFO] 2019-01-16T23:44:40z test/test_cryptonets.cpp 106	Creating input shape: 2048x784
+[INFO] 2019-01-16T23:44:40z test/test_cryptonets.cpp 109	Copying 1605632 elements
+[INFO] 2019-01-16T23:44:40z test/test_cryptonets.cpp 123	Creating output shape: 2048x10
+[INFO] 2019-01-16T23:44:40z src/seal/ckks/he_seal_ckks_backend.cpp 284	Creating batched plain tensor with shape 2048, 10
+[INFO] 2019-01-16T23:44:41z test/test_cryptonets.cpp 128	sw_encrypt_input: 118ms
+[INFO] 2019-01-16T23:44:41z test/test_cryptonets.cpp 132	calling function
+[INFO] 2019-01-16T23:44:41z src/he_backend.cpp 252	Encrypting data
+[INFO] 2019-01-16T23:44:41z src/he_backend.cpp 255	Batching data
+[INFO] 2019-01-16T23:44:41z src/he_backend.cpp 290	Encrypting parameter 0
+[INFO] 2019-01-16T23:44:41z src/he_backend.cpp 298	plain_input->get_batched_element_count() 784
+[INFO] 2019-01-16T23:44:41z src/he_backend.cpp 305	Done encrypting parameter 0
+[INFO] 2019-01-16T23:44:41z src/he_backend.cpp 331	[1;32m[ Parameter_204 ][0m
+[INFO] 2019-01-16T23:44:41z src/he_backend.cpp 336	Parameter shape {2048, 784}
+[INFO] 2019-01-16T23:44:41z src/he_backend.cpp 331	[1;32m[ Constant_205 ][0m
+[INFO] 2019-01-16T23:44:41z src/he_backend.cpp 341	Constant shape {100, 10}
+[INFO] 2019-01-16T23:44:41z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:44:41z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:44:41z src/he_backend.cpp 413	[1;31mConstant_205 took 22ms[0m
+[INFO] 2019-01-16T23:44:41z src/he_backend.cpp 331	[1;32m[ Constant_206 ][0m
+[INFO] 2019-01-16T23:44:41z src/he_backend.cpp 341	Constant shape {845, 100}
+[INFO] 2019-01-16T23:44:41z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:44:41z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 413	[1;31mConstant_206 took 953ms[0m
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 331	[1;32m[ Constant_207 ][0m
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 341	Constant shape {}
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 413	[1;31mConstant_207 took 27ms[0m
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 331	[1;32m[ Constant_208 ][0m
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 341	Constant shape {5, 5, 1, 5}
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 413	[1;31mConstant_208 took 42ms[0m
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 331	[1;32m[ Reshape_209 ][0m
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 478	Batch size 2048
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 413	[1;31mReshape_209 took 0ms[0m
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 331	[1;32m[ Reshape_210 ][0m
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 467	Inputs: Plain
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 413	[1;31mReshape_210 took 0ms[0m
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 331	[1;32m[ Reshape_211 ][0m
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 478	Batch size 2048
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 413	[1;31mReshape_211 took 0ms[0m
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 331	[1;32m[ Convolution_212 ][0m
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:44:42z src/he_backend.cpp 478	Batch size 2048
+[INFO] 2019-01-16T23:44:42z src/seal/kernel/convolution_seal.hpp 85	Convolution output size 720
+[INFO] 2019-01-16T23:44:42z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 0
+[INFO] 2019-01-16T23:44:46z src/he_backend.cpp 413	[1;31mConvolution_212 took 3841ms[0m
+[INFO] 2019-01-16T23:44:46z src/he_backend.cpp 331	[1;32m[ Reshape_213 ][0m
+[INFO] 2019-01-16T23:44:46z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:44:46z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:44:46z src/he_backend.cpp 478	Batch size 2048
+[INFO] 2019-01-16T23:44:46z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:44:46z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:44:46z src/he_backend.cpp 413	[1;31mReshape_213 took 0ms[0m
+[INFO] 2019-01-16T23:44:46z src/he_backend.cpp 331	[1;32m[ Multiply_214 ][0m
+[INFO] 2019-01-16T23:44:46z src/he_backend.cpp 467	Inputs: Cipher, Cipher
+[INFO] 2019-01-16T23:44:46z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:44:46z src/he_backend.cpp 478	Batch size 2048
+[INFO] 2019-01-16T23:44:46z src/he_backend.cpp 413	[1;31mMultiply_214 took 420ms[0m
+[INFO] 2019-01-16T23:44:46z src/he_backend.cpp 331	[1;32m[ Pad_215 ][0m
+[INFO] 2019-01-16T23:44:46z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:44:46z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:44:46z src/he_backend.cpp 478	Batch size 2048
+[INFO] 2019-01-16T23:44:46z src/he_backend.cpp 413	[1;31mPad_215 took 6ms[0m
+[INFO] 2019-01-16T23:44:46z src/he_backend.cpp 331	[1;32m[ Reshape_216 ][0m
+[INFO] 2019-01-16T23:44:46z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:44:46z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:44:46z src/he_backend.cpp 478	Batch size 2048
+[INFO] 2019-01-16T23:44:46z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:44:46z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:44:46z src/he_backend.cpp 413	[1;31mReshape_216 took 0ms[0m
+[INFO] 2019-01-16T23:44:46z src/he_backend.cpp 331	[1;32m[ Dot_217 ][0m
+[INFO] 2019-01-16T23:44:46z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:44:46z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:44:46z src/he_backend.cpp 478	Batch size 2048
+[INFO] 2019-01-16T23:44:46z src/he_backend.cpp 675	1x845 dot 845x100
+[INFO] 2019-01-16T23:44:57z src/he_backend.cpp 413	[1;31mDot_217 took 10794ms[0m
+[INFO] 2019-01-16T23:44:57z src/he_backend.cpp 331	[1;32m[ Multiply_218 ][0m
+[INFO] 2019-01-16T23:44:57z src/he_backend.cpp 467	Inputs: Cipher, Cipher
+[INFO] 2019-01-16T23:44:57z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:44:57z src/he_backend.cpp 478	Batch size 2048
+[INFO] 2019-01-16T23:44:57z src/he_backend.cpp 413	[1;31mMultiply_218 took 69ms[0m
+[INFO] 2019-01-16T23:44:57z src/he_backend.cpp 331	[1;32m[ Dot_219 ][0m
+[INFO] 2019-01-16T23:44:57z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:44:57z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:44:57z src/he_backend.cpp 478	Batch size 2048
+[INFO] 2019-01-16T23:44:57z src/he_backend.cpp 675	1x100 dot 100x10
+[INFO] 2019-01-16T23:44:57z src/he_backend.cpp 413	[1;31mDot_219 took 276ms[0m
+[INFO] 2019-01-16T23:44:57z src/he_backend.cpp 331	[1;32m[ Result_220 ][0m
+[INFO] 2019-01-16T23:44:57z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:44:57z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:44:57z src/he_backend.cpp 478	Batch size 2048
+[INFO] 2019-01-16T23:44:57z src/he_backend.cpp 413	[1;31mResult_220 took 2ms[0m
+[INFO] 2019-01-16T23:44:57z src/he_backend.cpp 421	[1;32mTotal time 16452 (ms) [0m
+[INFO] 2019-01-16T23:44:57z test/test_cryptonets.cpp 137	sw_run_model: 16970ms
+[INFO] 2019-01-16T23:44:57z test/test_util.hpp 91	Element count 20480
+[INFO] 2019-01-16T23:44:58z test/test_cryptonets.cpp 146	sw_decrypt_output: 14ms
+[INFO] 2019-01-16T23:44:58z test/test_cryptonets.cpp 151	sw_global: 17180ms
+[INFO] 2019-01-16T23:44:58z test/test_cryptonets.cpp 166	Error count 54 of 2048 elements.
+[INFO] 2019-01-16T23:44:58z test/test_cryptonets.cpp 169	Accuracy: 0.973633
+[INFO] 2019-01-16T23:44:58z test/test_cryptonets.cpp 176	[Summary]
+[INFO] 2019-01-16T23:44:58z test/test_cryptonets.cpp 177	sw_load_model: 76ms
+[INFO] 2019-01-16T23:44:58z test/test_cryptonets.cpp 178	sw_encrypt_input: 118ms
+[INFO] 2019-01-16T23:44:58z test/test_cryptonets.cpp 180	sw_run_model: 16970ms
+[INFO] 2019-01-16T23:44:58z test/test_cryptonets.cpp 181	sw_decrypt_output: 14ms
+[INFO] 2019-01-16T23:44:58z test/test_cryptonets.cpp 183	sw_global: 17180ms
+[       OK ] Cryptonets.CKKS_2048 (18504 ms)
+[ RUN      ] Cryptonets.CKKS_4096
+[INFO] 2019-01-16T23:44:59z src/seal/he_seal_util.hpp 47	
+/ Encryption parameters:
+| scheme: HE:SEAL:CKKS
+| poly_modulus: 8192
+| coeff_modulus size: 210 bits
+\ noise_standard_deviation: 3.2
+[INFO] 2019-01-16T23:44:59z test/test_cryptonets.cpp 88	Deserialize graph
+[INFO] 2019-01-16T23:44:59z test/test_cryptonets.cpp 89	x size 3211264
+[INFO] 2019-01-16T23:44:59z test/test_cryptonets.cpp 90	Inputs loaded
+[INFO] 2019-01-16T23:44:59z test/test_cryptonets.cpp 92	sw_load_model: 83ms
+[INFO] 2019-01-16T23:44:59z src/seal/ckks/he_seal_ckks_backend.cpp 284	Creating batched plain tensor with shape 4096, 784
+[INFO] 2019-01-16T23:44:59z test/test_cryptonets.cpp 106	Creating input shape: 4096x784
+[INFO] 2019-01-16T23:44:59z test/test_cryptonets.cpp 109	Copying 3211264 elements
+[INFO] 2019-01-16T23:44:59z test/test_cryptonets.cpp 123	Creating output shape: 4096x10
+[INFO] 2019-01-16T23:44:59z src/seal/ckks/he_seal_ckks_backend.cpp 284	Creating batched plain tensor with shape 4096, 10
+[INFO] 2019-01-16T23:44:59z test/test_cryptonets.cpp 128	sw_encrypt_input: 104ms
+[INFO] 2019-01-16T23:44:59z test/test_cryptonets.cpp 132	calling function
+[INFO] 2019-01-16T23:44:59z src/he_backend.cpp 252	Encrypting data
+[INFO] 2019-01-16T23:44:59z src/he_backend.cpp 255	Batching data
+[INFO] 2019-01-16T23:44:59z src/he_backend.cpp 290	Encrypting parameter 0
+[INFO] 2019-01-16T23:44:59z src/he_backend.cpp 298	plain_input->get_batched_element_count() 784
+[INFO] 2019-01-16T23:44:59z src/he_backend.cpp 305	Done encrypting parameter 0
+[INFO] 2019-01-16T23:44:59z src/he_backend.cpp 331	[1;32m[ Parameter_221 ][0m
+[INFO] 2019-01-16T23:44:59z src/he_backend.cpp 336	Parameter shape {4096, 784}
+[INFO] 2019-01-16T23:44:59z src/he_backend.cpp 331	[1;32m[ Constant_222 ][0m
+[INFO] 2019-01-16T23:44:59z src/he_backend.cpp 341	Constant shape {100, 10}
+[INFO] 2019-01-16T23:44:59z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:44:59z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:44:59z src/he_backend.cpp 413	[1;31mConstant_222 took 34ms[0m
+[INFO] 2019-01-16T23:44:59z src/he_backend.cpp 331	[1;32m[ Constant_223 ][0m
+[INFO] 2019-01-16T23:44:59z src/he_backend.cpp 341	Constant shape {845, 100}
+[INFO] 2019-01-16T23:44:59z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:44:59z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 413	[1;31mConstant_223 took 947ms[0m
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 331	[1;32m[ Constant_224 ][0m
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 341	Constant shape {}
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 413	[1;31mConstant_224 took 27ms[0m
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 331	[1;32m[ Constant_225 ][0m
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 341	Constant shape {5, 5, 1, 5}
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 467	Inputs: 
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 413	[1;31mConstant_225 took 28ms[0m
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 331	[1;32m[ Reshape_226 ][0m
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 478	Batch size 4096
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 413	[1;31mReshape_226 took 0ms[0m
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 331	[1;32m[ Reshape_227 ][0m
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 467	Inputs: Plain
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 413	[1;31mReshape_227 took 0ms[0m
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 331	[1;32m[ Reshape_228 ][0m
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 478	Batch size 4096
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 413	[1;31mReshape_228 took 0ms[0m
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 331	[1;32m[ Convolution_229 ][0m
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:45:00z src/he_backend.cpp 478	Batch size 4096
+[INFO] 2019-01-16T23:45:00z src/seal/kernel/convolution_seal.hpp 85	Convolution output size 720
+[INFO] 2019-01-16T23:45:01z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 0
+[INFO] 2019-01-16T23:45:04z src/he_backend.cpp 413	[1;31mConvolution_229 took 3806ms[0m
+[INFO] 2019-01-16T23:45:04z src/he_backend.cpp 331	[1;32m[ Reshape_230 ][0m
+[INFO] 2019-01-16T23:45:04z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:45:04z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:45:04z src/he_backend.cpp 478	Batch size 4096
+[INFO] 2019-01-16T23:45:04z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:45:04z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:45:04z src/he_backend.cpp 413	[1;31mReshape_230 took 0ms[0m
+[INFO] 2019-01-16T23:45:04z src/he_backend.cpp 331	[1;32m[ Multiply_231 ][0m
+[INFO] 2019-01-16T23:45:04z src/he_backend.cpp 467	Inputs: Cipher, Cipher
+[INFO] 2019-01-16T23:45:04z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:45:04z src/he_backend.cpp 478	Batch size 4096
+[INFO] 2019-01-16T23:45:05z src/he_backend.cpp 413	[1;31mMultiply_231 took 411ms[0m
+[INFO] 2019-01-16T23:45:05z src/he_backend.cpp 331	[1;32m[ Pad_232 ][0m
+[INFO] 2019-01-16T23:45:05z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:45:05z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:45:05z src/he_backend.cpp 478	Batch size 4096
+[INFO] 2019-01-16T23:45:05z src/he_backend.cpp 413	[1;31mPad_232 took 7ms[0m
+[INFO] 2019-01-16T23:45:05z src/he_backend.cpp 331	[1;32m[ Reshape_233 ][0m
+[INFO] 2019-01-16T23:45:05z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:45:05z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:45:05z src/he_backend.cpp 478	Batch size 4096
+[INFO] 2019-01-16T23:45:05z src/he_backend.cpp 804	Reshape op
+[INFO] 2019-01-16T23:45:05z src/he_backend.cpp 819	Done with reshape op
+[INFO] 2019-01-16T23:45:05z src/he_backend.cpp 413	[1;31mReshape_233 took 0ms[0m
+[INFO] 2019-01-16T23:45:05z src/he_backend.cpp 331	[1;32m[ Dot_234 ][0m
+[INFO] 2019-01-16T23:45:05z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:45:05z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:45:05z src/he_backend.cpp 478	Batch size 4096
+[INFO] 2019-01-16T23:45:05z src/he_backend.cpp 675	1x845 dot 845x100
+[INFO] 2019-01-16T23:45:16z src/he_backend.cpp 413	[1;31mDot_234 took 10921ms[0m
+[INFO] 2019-01-16T23:45:16z src/he_backend.cpp 331	[1;32m[ Multiply_235 ][0m
+[INFO] 2019-01-16T23:45:16z src/he_backend.cpp 467	Inputs: Cipher, Cipher
+[INFO] 2019-01-16T23:45:16z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:45:16z src/he_backend.cpp 478	Batch size 4096
+[INFO] 2019-01-16T23:45:16z src/he_backend.cpp 413	[1;31mMultiply_235 took 85ms[0m
+[INFO] 2019-01-16T23:45:16z src/he_backend.cpp 331	[1;32m[ Dot_236 ][0m
+[INFO] 2019-01-16T23:45:16z src/he_backend.cpp 467	Inputs: Cipher, Plain
+[INFO] 2019-01-16T23:45:16z src/he_backend.cpp 475	Outputs: Cipher
+[INFO] 2019-01-16T23:45:16z src/he_backend.cpp 478	Batch size 4096
+[INFO] 2019-01-16T23:45:16z src/he_backend.cpp 675	1x100 dot 100x10
+[INFO] 2019-01-16T23:45:16z src/he_backend.cpp 413	[1;31mDot_236 took 269ms[0m
+[INFO] 2019-01-16T23:45:16z src/he_backend.cpp 331	[1;32m[ Result_237 ][0m
+[INFO] 2019-01-16T23:45:16z src/he_backend.cpp 467	Inputs: Cipher
+[INFO] 2019-01-16T23:45:16z src/he_backend.cpp 475	Outputs: Plain
+[INFO] 2019-01-16T23:45:16z src/he_backend.cpp 478	Batch size 4096
+[INFO] 2019-01-16T23:45:16z src/he_backend.cpp 413	[1;31mResult_237 took 2ms[0m
+[INFO] 2019-01-16T23:45:16z src/he_backend.cpp 421	[1;32mTotal time 16537 (ms) [0m
+[INFO] 2019-01-16T23:45:16z test/test_cryptonets.cpp 137	sw_run_model: 17014ms
+[INFO] 2019-01-16T23:45:16z test/test_util.hpp 91	Element count 40960
+[INFO] 2019-01-16T23:45:16z test/test_cryptonets.cpp 146	sw_decrypt_output: 14ms
+[INFO] 2019-01-16T23:45:16z test/test_cryptonets.cpp 151	sw_global: 17216ms
+[INFO] 2019-01-16T23:45:16z test/test_cryptonets.cpp 166	Error count 106 of 4096 elements.
+[INFO] 2019-01-16T23:45:16z test/test_cryptonets.cpp 169	Accuracy: 0.974121
+[INFO] 2019-01-16T23:45:16z test/test_cryptonets.cpp 176	[Summary]
+[INFO] 2019-01-16T23:45:16z test/test_cryptonets.cpp 177	sw_load_model: 83ms
+[INFO] 2019-01-16T23:45:16z test/test_cryptonets.cpp 178	sw_encrypt_input: 104ms
+[INFO] 2019-01-16T23:45:16z test/test_cryptonets.cpp 180	sw_run_model: 17014ms
+[INFO] 2019-01-16T23:45:16z test/test_cryptonets.cpp 181	sw_decrypt_output: 14ms
+[INFO] 2019-01-16T23:45:16z test/test_cryptonets.cpp 183	sw_global: 17216ms
+[       OK ] Cryptonets.CKKS_4096 (18560 ms)
+[----------] 14 tests from Cryptonets (268245 ms total)
+
+[----------] Global test environment tear-down
+[==========] 14 tests from 1 test case ran. (268245 ms total)
+[  PASSED  ] 14 tests.
