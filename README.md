@@ -55,7 +55,7 @@ source external/venv-tf-py3/bin/activate
 ```
 
 ### 2. Run C++ unit-tests
-Ensure the virtual environment is active, i.e. run `source $HE_TRANSFORMER /external/venv-tf-py3/bin/activate`
+Ensure the virtual environment is active, i.e. run `source $HE_TRANSFORMER/external/venv-tf-py3/bin/activate`
 ```bash
 cd $HE_TRANSFORMER/build
 # To run CKKS unit-test
@@ -67,7 +67,7 @@ cd $HE_TRANSFORMER/build
 ```
 
 ### 3. Run Simple python example
-Ensure the virtual environment is active, i.e. run `source $HE_TRANSFORMER /external/venv-tf-py3/bin/activate`
+Ensure the virtual environment is active, i.e. run `source $HE_TRANSFORMER/external/venv-tf-py3/bin/activate`
 ```bash
 cd $HE_TRANSFORMER/examples
 # Run with CPU
