@@ -1,0 +1,58 @@
+# ******************************************************************************
+# Copyright 2018-2019 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ******************************************************************************
+
+# Environment to build and unit-test he-transformer
+
+FROM ubuntu:16.04
+
+RUN apt-get update && apt-get install -y \
+        python3-pip virtualenv \
+        python3-numpy python3-dev python3-wheel \
+        git \
+        unzip wget \
+        sudo \
+        zlib1g zlib1g-dev bash-completion \
+        build-essential cmake \
+        software-properties-common \
+        clang-3.9 clang-format-3.9 \
+        git \
+        wget patch diffutils zlib1g-dev libtinfo-dev
+
+RUN apt-get clean autoclean && \
+    apt-get autoremove -y
+
+# For ngraph-tf integration testing
+RUN pip3 install --upgrade pip setuptools virtualenv==16.1.0
+
+# SEAL requires newer version of CMake
+RUN pip3 install cmake --upgrade
+
+# Get g++-7
+RUN add-apt-repository ppa:ubuntu-toolchain-r/test \
+       && apt update \
+       && apt install g++-7 -y
+
+# Set g++-7 to default
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 50
+RUN update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 50
+RUN update-alternatives --set g++ /usr/bin/g++-7
+RUN update-alternatives --set gcc /usr/bin/gcc-7
+
+# Get bazel
+RUN wget --no-verbose -c https://github.com/bazelbuild/bazel/releases/download/0.16.0/bazel_0.16.0-linux-x86_64.deb
+RUN dpkg -i bazel_0.16.0-linux-x86_64.deb || true
+
+WORKDIR /home
