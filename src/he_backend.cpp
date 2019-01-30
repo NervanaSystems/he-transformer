@@ -562,6 +562,8 @@ void runtime::he::HEBackend::generate_calls(
       }
       break;
     }
+    case OP_TYPEID::BroadcastLike:
+      break;
     case OP_TYPEID::Concat: {
       const op::Concat* concat = static_cast<const op::Concat*>(&node);
 
@@ -867,6 +869,8 @@ void runtime::he::HEBackend::generate_calls(
       }
       break;
     }
+    case OP_TYPEID::ScalarConstantLike:
+      break;
     case OP_TYPEID::Slice: {
       const op::Slice* slice = static_cast<const op::Slice*>(&node);
       Shape in_shape = node.get_input_shape(0);
@@ -938,8 +942,10 @@ void runtime::he::HEBackend::generate_calls(
     // Unsupported ops
     case OP_TYPEID::Abs:
     case OP_TYPEID::Acos:
+    case OP_TYPEID::All:
     case OP_TYPEID::AllReduce:
     case OP_TYPEID::And:
+    case OP_TYPEID::Any:
     case OP_TYPEID::ArgMax:
     case OP_TYPEID::ArgMin:
     case OP_TYPEID::Asin:
@@ -956,10 +962,10 @@ void runtime::he::HEBackend::generate_calls(
     case OP_TYPEID::Cosh:
     case OP_TYPEID::Dequantize:
     case OP_TYPEID::Divide:
+    case OP_TYPEID::EmbeddingLookup:
     case OP_TYPEID::Equal:
     case OP_TYPEID::Exp:
     case OP_TYPEID::Floor:
-    case OP_TYPEID::FunctionCall:
     case OP_TYPEID::GenerateMask:
     case OP_TYPEID::GetOutputElement:
     case OP_TYPEID::Greater:
@@ -981,14 +987,11 @@ void runtime::he::HEBackend::generate_calls(
     case OP_TYPEID::Power:
     case OP_TYPEID::Product:
     case OP_TYPEID::Quantize:
-    case OP_TYPEID::Reduce:
-    case OP_TYPEID::ReduceWindow:
     case OP_TYPEID::Relu:
     case OP_TYPEID::ReluBackprop:
     case OP_TYPEID::ReplaceSlice:
     case OP_TYPEID::ReverseSequence:
     case OP_TYPEID::Select:
-    case OP_TYPEID::SelectAndScatter:
     case OP_TYPEID::ShapeOf:
     case OP_TYPEID::Sigmoid:
     case OP_TYPEID::SigmoidBackprop:
