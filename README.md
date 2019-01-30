@@ -22,7 +22,8 @@ The [examples](https://github.com/NervanaSystems/he-transformer/tree/master/exam
 - CMake >= 3.10, although different versions may work
 - GCC version 7, although different versions may work
 - OpenMP is strongly suggested, though not strictly necessary. You may experience slow runtimes without OpenMP
-- virtualenv
+- python3.5 and pip3
+- virtualenv v16.1.0
 - bazel v0.16.0
 #### The following dependencies are built automatically
 - [nGraph](https://github.com/NervanaSystems/ngraph) - v0.12.0-rc1

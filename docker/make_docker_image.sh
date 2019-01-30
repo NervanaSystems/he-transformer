@@ -5,7 +5,7 @@ set -e
 set -o pipefail
 
 if [ -z $DOCKER_TAG ]; then
-    DOCKER_TAG=build_ngraph_he
+    DOCKER_TAG=he_transformer
 fi
 
 if [ -z $DOCKER_IMAGE_NAME ]; then
@@ -47,8 +47,8 @@ DIMAGE_ID="${DIMAGE_NAME}:${DIMAGE_VERSION}"
 echo "DOCKER_HTTP_PROXY ${DOCKER_HTTP_PROXY}"
 echo "DOCKER_HTTPS_PROXY ${DOCKER_HTTPS_PROXY}"
 
-# Set docker to he-transformer root directory
-CONTEXT='..'
+# Set docker to docker directory
+CONTEXT='.'
 
 # build the docker base image
 docker build  --rm=true \
