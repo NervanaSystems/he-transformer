@@ -94,11 +94,11 @@ if(NGRAPH_HE_SANITIZE_ADDRESS)
 endif()
 
 # Add ngraph test utils library
-add_library(ngraph_test_util SHARED IMPORTED)
+add_library(ngraph_test_util STATIC IMPORTED)
 set_target_properties(
     ngraph_test_util
     PROPERTIES IMPORTED_LOCATION
-    ${NGRAPH_TF_LIB_DIR}/libngraph_test_util.so
+    ${NGRAPH_TF_LIB_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}ngraph_test_util${CMAKE_STATIC_LIBRARY_SUFFIX}
 )
 
 target_link_libraries(unit-test libgtest ngraph)

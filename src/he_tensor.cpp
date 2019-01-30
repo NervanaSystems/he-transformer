@@ -27,7 +27,8 @@ runtime::he::HETensor::HETensor(const element::Type& element_type,
                                 const Shape& shape, const HEBackend* he_backend,
                                 bool batched, const string& name)
     : runtime::Tensor(std::make_shared<descriptor::Tensor>(
-          element_type, batch_shape(shape, 0, batched), name)),
+                          element_type, batch_shape(shape, 0, batched), name),
+                      he_backend),
       m_he_backend(he_backend),
       m_batched(batched) {
   m_descriptor->set_tensor_layout(

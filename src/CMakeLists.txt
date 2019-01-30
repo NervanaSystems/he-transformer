@@ -82,7 +82,7 @@ message("NGRAPH_TF_VENV_LIB_DIR ${NGRAPH_TF_VENV_LIB_DIR}")
 
 install(TARGETS he_backend DESTINATION ${EXTERNAL_INSTALL_LIB_DIR})
 
-# Create symbolic links for CKKS and BFV backends, to allow ng-tf to recognize these backends.
+# Create symbolic links for CKKS and BFV backends, to allow ngraph and ngraph-tf to recognize these backends.
 add_custom_target(he_seal_ckks_backend ALL DEPENDS he_backend
         COMMAND ${CMAKE_COMMAND} -E create_symlink
             ${EXTERNAL_INSTALL_LIB_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}he_backend${CMAKE_SHARED_LIBRARY_SUFFIX}
