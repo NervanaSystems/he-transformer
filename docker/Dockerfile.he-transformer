@@ -55,5 +55,4 @@ RUN update-alternatives --set gcc /usr/bin/gcc-7
 RUN wget --no-verbose -c https://github.com/bazelbuild/bazel/releases/download/0.16.0/bazel_0.16.0-linux-x86_64.deb
 RUN dpkg -i bazel_0.16.0-linux-x86_64.deb || true
 
-
 WORKDIR /home

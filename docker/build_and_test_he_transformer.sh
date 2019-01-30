@@ -52,9 +52,12 @@ python_integration()
     python axpy.py
     NG_TF_BACKEND=HE_SEAL_CKKS python axpy.py
     NG_TF_BACKEND=HE_SEAL_BFV python axpy.py
-    cd cryptonets
+    cd MNIST-Cryptonets
     NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_13.json \
-        NGRAPH_TF_BACKEND=HE_SEAL_CKKS python test.py --batch_size=1
+        NGRAPH_TF_BACKEND=HE_SEAL_CKKS \
+        NGRAPH_BATCH_TF=1 \
+        NGRAPH_ENCRYPT_DATA=1 \
+        python test.py --batch_size=128
 }
 
 build
