@@ -63,6 +63,9 @@ endif()
 
 message("PYTHON_VENV_VERSION ${PYTHON_VENV_VERSION}")
 
+# TODO: Better way to avoid TF from rebuilding
+OPTION(USE_PREBUILT_BINARIES "Skip re-compilation of ngraph/ngraph-tf/tensorflow" OFF)
+
 # TODO: enable skipping compilation of TF, to be passed to ngraph-tf.cmake build_ngtf.py.
 # If we do this, we need to check GLIB_CXX11_ABI
 # OPTION(USE_EXISTING_TF "Skip compilation of TF for faster build time" OFF)
