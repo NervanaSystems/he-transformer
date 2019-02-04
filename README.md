@@ -54,6 +54,10 @@ cmake .. [-DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7]
 make -j install
 source external/venv-tf-py3/bin/activate
 ```
+The first build will compile Tensorflow and the ng-tf bridge. To speed up subsequent builds, you can avoid compiling Tensorflow and ng-tf bridge by calling
+```bash
+cmake .. -DUSE_PREBUILT_BINARIES=ON [-DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7]
+```
 
 ### 2. Run C++ unit-tests
 Ensure the virtual environment is active, i.e. run `source $HE_TRANSFORMER/external/venv-tf-py3/bin/activate`

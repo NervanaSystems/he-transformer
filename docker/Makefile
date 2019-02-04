@@ -18,16 +18,13 @@ all: build_and_test_he_transformer
 build_and_test_he_transformer: build_docker_image
 	echo 'Building and testing he-transformer'
 	echo 'Git branch $(GIT_BRANCH)'
-	echo "So far so good"
 
-
-	# TODO: use --rm
-	docker run --tty --interactive \
+	docker run --rm --tty --interactive \
 		${DOCKER_RUN_ENV} \
 		he_transformer \
 		sh -c "git clone https://github.com/NervanaSystems/he-transformer.git && \
 					 cd he-transformer && \
-					 git checkout fboemer/docker2 && \
+					 git checkout $(GIT_BRANCH) && \
 					 chmod +x docker/build_and_test_he_transformer.sh && \
 					 docker/build_and_test_he_transformer.sh"
 
