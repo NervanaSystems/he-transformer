@@ -50,8 +50,8 @@ python_integration()
     echo 'Running python examples'
     cd examples
     python axpy.py
-    NG_TF_BACKEND=HE_SEAL_CKKS python axpy.py
-    NG_TF_BACKEND=HE_SEAL_BFV python axpy.py
+    NGRAPH_TF_BACKEND=HE_SEAL_CKKS python axpy.py
+    NGRAPH_TF_BACKEND=HE_SEAL_BFV python axpy.py
     cd MNIST-Cryptonets
     NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_13.json \
         NGRAPH_TF_BACKEND=HE_SEAL_CKKS \
