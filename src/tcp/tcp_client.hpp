@@ -36,6 +36,8 @@ class TCPClient {
     do_connect(endpoints);
   }
 
+  ~TCPClient() { close(); }
+
  private:
   void do_connect(const tcp::resolver::results_type& endpoints) {
     boost::asio::async_connect(
@@ -49,10 +51,14 @@ class TCPClient {
         });
   }
 
+  void close() {
+    std::cout << "Closing socket" << std::endl;
+    boost::asio::post(m_io_context, [this]() { m_socket.close(); });
+  }
+
   boost::asio::io_context& m_io_context;
   tcp::socket m_socket;
-};  // namespace he
-
+};
 }  // namespace he
 }  // namespace runtime
 }  // namespace ngraph

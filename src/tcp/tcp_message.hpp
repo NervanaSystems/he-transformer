@@ -17,7 +17,6 @@
 #pragma once
 
 #include <assert.h>
-#include <iostream>
 #include <memory>
 
 namespace ngraph {

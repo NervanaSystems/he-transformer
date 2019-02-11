@@ -18,7 +18,9 @@
 #include "boost/asio.hpp"
 #include "he_backend.hpp"
 #include "ngraph/ngraph.hpp"
+#include "seal/ckks/he_seal_ckks_backend.hpp"
 #include "tcp/tcp_client.hpp"
+#include "tcp/tcp_message.hpp"
 #include "tcp/tcp_server.hpp"
 #include "test_util.hpp"
 #include "util/all_close.hpp"
@@ -32,7 +34,7 @@ using namespace ngraph;
 static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init) {
-  size_t port = 34000;
+  size_t port = 35000;
 
   boost::asio::io_context io_context;
   tcp::resolver resolver(io_context);
@@ -41,7 +43,24 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init) {
 
   auto server = runtime::he::TCPServer(io_context, server_endpoints);
   auto client = runtime::he::TCPClient(io_context, client_endpoints);
-  io_context.run();
 
-  NGRAPH_INFO << "Tearing down";
+  io_context.run();
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init2) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_seal_ckks_backend =
+      static_cast<runtime::he::he_seal::HESealCKKSBackend*>(backend.get());
+
+  size_t port = he_seal_ckks_backend->get_port();
+  NGRAPH_INFO << "Port " << port;
+
+  boost::asio::io_context io_context;
+  tcp::resolver resolver(io_context);
+  auto client_endpoints = resolver.resolve("localhost", std::to_string(port));
+  tcp::endpoint server_endpoints(tcp::v4(), port);
+
+  auto client = runtime::he::TCPClient(io_context, client_endpoints);
+
+  io_context.run();
 }

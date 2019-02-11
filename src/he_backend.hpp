@@ -39,6 +39,7 @@
 #include "ngraph/type/element_type.hpp"
 #include "ngraph/util.hpp"
 #include "node_wrapper.hpp"
+#include "tcp/tcp_server.hpp"
 
 namespace ngraph {
 namespace runtime {
@@ -211,6 +212,8 @@ class HEBackend : public runtime::Backend {
   bool batch_data() const { return m_batch_data; };
   bool encrypt_model() const { return m_encrypt_model; };
 
+  size_t get_port() const { return m_port; };
+
  private:
   class FunctionInstance {
    public:
@@ -233,6 +236,10 @@ class HEBackend : public runtime::Backend {
       const std::vector<std::shared_ptr<runtime::he::HETensor>>& outputs,
       const std::vector<std::shared_ptr<runtime::he::HETensor>>& inputs,
       FunctionInstance& instance);
+
+ protected:
+  std::shared_ptr<TCPServer> m_tcp_server;
+  size_t m_port{34000};  // Which port the server is hosted at
 };
 }  // namespace he
 }  // namespace runtime
