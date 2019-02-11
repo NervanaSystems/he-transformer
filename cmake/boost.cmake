@@ -17,12 +17,14 @@
 # Enable ExternalProject CMake module
 include(ExternalProject)
 
-find_package(Boost 1.66)
+
+find_package(Boost 1.69)
 if(Boost_FOUND)
+  message(FATAL "Boost found")
   include_directories(${Boost_INCLUDE_DIRS})
 else()
   message(FATAL "Boost not found")
 endif()
-
+message("Boost dirs ${Boost_INCLUDE_DIRS}")
 add_library(boost INTERFACE)
-target_include_directories(libgtest SYSTEM INTERFACE ${Boost_INCLUDE_DIRS})
+# target_include_directories(libgtest SYSTEM INTERFACE ${Boost_INCLUDE_DIRS})

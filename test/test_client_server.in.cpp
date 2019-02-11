@@ -14,10 +14,12 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include <chrono>
+#include "boost/asio.hpp"
 #include "he_backend.hpp"
 #include "ngraph/ngraph.hpp"
-#include "tcpip/tcpip_client.hpp"
-#include "tcpip/tcpip_server.hpp"
+#include "tcp/tcp_client.hpp"
+#include "tcp/tcp_server.hpp"
 #include "test_util.hpp"
 #include "util/all_close.hpp"
 #include "util/ndarray.hpp"
@@ -29,34 +31,17 @@ using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
-NGRAPH_TEST(${BACKEND_NAME}, add_2_3) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init) {
+  size_t port = 34000;
 
-  Shape shape{2, 3};
-  auto a = make_shared<op::Parameter>(element::f32, shape);
-  auto b = make_shared<op::Parameter>(element::f32, shape);
-  auto t = make_shared<op::Add>(a, b);
-  auto f = make_shared<Function>(t, ParameterVector{a, b});
+  boost::asio::io_context io_context;
+  tcp::resolver resolver(io_context);
+  auto client_endpoints = resolver.resolve("localhost", std::to_string(port));
+  tcp::endpoint server_endpoints(tcp::v4(), port);
 
-  // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend.get());
+  auto server = runtime::he::TCPServer(io_context, server_endpoints);
+  auto client = runtime::he::TCPClient(io_context, client_endpoints);
+  io_context.run();
 
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
-
-    auto t_a = inputs[0];
-    auto t_b = inputs[1];
-    auto t_result = results[0];
-
-    copy_data(t_a,
-              test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector());
-    copy_data(t_b,
-              test::NDArray<float, 2>({{7, 8, 9}, {10, 11, 12}}).get_vector());
-    backend->call(backend->compile(f), {t_result}, {t_a, t_b});
-    EXPECT_TRUE(all_close(
-        read_vector<float>(t_result),
-        (test::NDArray<float, 2>({{8, 10, 12}, {14, 16, 18}})).get_vector(),
-        1e-3f));
-  }
+  NGRAPH_INFO << "Tearing down";
 }

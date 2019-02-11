@@ -14,35 +14,4 @@
 // limitations under the License.
 //*****************************************************************************
 
-#pragma once
-
-#include <boost/asio.hpp>
-#include <string>
-
-using boost::asio::ip::tcp;
-
-namespace ngraph {
-namespace runtime {
-namespace he {
-class TCPClient {
-  // Connects client to hostname:port
-  TCPClient(const std::string& hostname, const size_t port) {
-    boost::asio::io_service io_service;
-    tcp::resolver resolver(io_service);
-    tcp::resolver::query query(hostname, port);
-    tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
-
-    tcp::socket socket(io_service);
-
-    boost::system::error_code error;
-    socket.connect(endpoint_iterator, error);
-
-    if (error) {
-      throw boost::system::system_error(error);
-    }
-  }
-};
-
-}  // namespace he
-}  // namespace runtime
-}  // namespace ngraph
+#include "tcp/tcp_message.hpp"

@@ -14,24 +14,4 @@
 // limitations under the License.
 //*****************************************************************************
 
-#pragma once
-#include <boost/asio.hpp>
-
-using boost::asio::ip::tcp;
-
-namespace ngraph {
-namespace runtime {
-namespace he {
-class TCPServer {
-  TCPServer(const size_t port) : m_port(port) {
-    boost::asio::io_service io_service;
-    m_acceptor = acceptor(io_service, tcp::endpoint(tcp::v4(), port));
-  }
-
-  size_t m_port;
-  tcp::acceptor m_acceptor;
-};
-
-}  // namespace he
-}  // namespace runtime
-}  // namespace ngraph
+#include "tcp/tcp_server.hpp"

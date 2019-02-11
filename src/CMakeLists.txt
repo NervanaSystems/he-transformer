@@ -40,6 +40,11 @@ set (HE_SRC
     seal/ckks/kernel/add_seal_ckks.cpp
     seal/ckks/kernel/multiply_seal_ckks.cpp
 
+    # tcp
+    tcp/tcp_message.cpp
+    tcp/tcp_server.cpp
+    tcp/tcp_client.cpp
+
     # main
     he_backend.cpp
     he_cipher_tensor.cpp

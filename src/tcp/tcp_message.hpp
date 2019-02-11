@@ -16,38 +16,40 @@
 
 #pragma once
 
+#include <assert.h>
+#include <iostream>
 #include <memory>
-#include <unordered_map>
 
 namespace ngraph {
 namespace runtime {
 namespace he {
-enum class DataType { PUBLICKEY, CIPHERTEXT };
+enum class Datatype { PUBLIC_KEY, CIPHERTEXT };
 enum class Function { RELU, MAX, SOFTMAX, RESULT, NONE };
-template <size_t PKSIZE, size_t CIPHERSIZE>
+template <size_t PUBLIC_KEY_SIZE, size_t CIPHERSIZE>
 class TCPMessage {
  public:
   // @brief Describes TCP messages of the form: (bytes, function, datatype,
   // count, data)
-  TCPMessage(const DataType datatype, const size_t count, Function function)
+  TCPMessage(const Datatype datatype, const size_t count, Function function)
       : m_datatype(datatype), m_count(count), m_function(function) {
-    bytes = header_size;
+    bytes = m_header_length;
     bytes += sizeof(Function);
-    bytes += sizeof(DataType);
+    bytes += sizeof(Datatype);
 
     switch (datatype) {
-      case PUBLICKEY:
-        bytes += sizeof(count * PKSIZE);
+      case Datatype::PUBLIC_KEY:
+        assert(count == 1);
+        bytes += PUBLIC_KEY_SIZE;
         break;
 
-      case CIPHERTEXT:
+      case Datatype::CIPHERTEXT:
         bytes += sizeof(count * CIPHERSIZE);
         break;
     };
 
     void* data_ptr = malloc(bytes);
     if (!data_ptr) {
-      std::cout << "malloc failed to allocate memory of size " << size
+      std::cout << "malloc failed to allocate memory of size " << bytes
                 << std::endl;
       throw std::bad_alloc();
     }
@@ -60,11 +62,11 @@ class TCPMessage {
   }
 
   size_t bytes;         // How many bytes in the message
-  DataType m_datatype;  // What data is being transmitted
+  Datatype m_datatype;  // What data is being transmitted
   size_t m_count;       // Number of datatype in message
   Function m_function;  // What function to compute on the data
 
-  size_t header_length = sizeof(size_t);  // Bits for the header.
+  size_t m_header_length{sizeof(size_t)};  // Bits for the header.
 
   char* data;
 };
