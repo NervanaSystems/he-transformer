@@ -39,6 +39,7 @@ set(MULTI_TEST_SRC
     test_avg_pool.in.cpp
     test_basics.in.cpp
     test_broadcast.in.cpp
+    test_client_server.in.cpp
     test_concat.in.cpp
     test_constant.in.cpp
     test_layers.in.cpp
