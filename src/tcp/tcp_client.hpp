@@ -30,9 +30,13 @@ namespace he {
 class TCPClient {
  public:
   // Connects client to hostname:port
-  TCPClient(boost::asio::io_context& io_context,
-            const tcp::resolver::results_type& endpoints)
-      : m_io_context(io_context), m_socket(io_context) {
+  TCPClient(
+      boost::asio::io_context& io_context,
+      const tcp::resolver::results_type& endpoints,
+      std::function<TCPMessage(const runtime::he::TCPMessage&)> message_handler)
+      : m_io_context(io_context),
+        m_socket(io_context),
+        m_message_callback(std::bind(message_handler, std::placeholders::_1)) {
     std::cout << "Client starting async connection" << std::endl;
     do_connect(endpoints);
   }
@@ -91,7 +95,10 @@ class TCPClient {
 
             std::cout << "Body length " << m_read_message.body_length()
                       << std::endl;
-            do_read_header();
+            auto response = m_message_callback(m_read_message);
+            do_write(response);
+
+            // do_read_header();
           } else {
             m_socket.close();
           }
@@ -105,6 +112,7 @@ class TCPClient {
         [this](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
             std::cout << "Wrote message length " << length << std::endl;
+            do_read_header();
           } else {
             std::cout << "error writing message: " << ec.message() << std::endl;
           }
@@ -114,6 +122,10 @@ class TCPClient {
   boost::asio::io_context& m_io_context;
   TCPMessage m_read_message;
   tcp::socket m_socket;
+
+  // How to handle the message
+  std::function<runtime::he::TCPMessage(const runtime::he::TCPMessage&)>
+      m_message_callback;
 };
 }  // namespace he
 }  // namespace runtime

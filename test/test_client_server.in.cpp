@@ -48,7 +48,14 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init) {
 
   auto server =
       runtime::he::TCPServer(io_context, server_endpoints, server_callback);
-  auto client = runtime::he::TCPClient(io_context, client_endpoints);
+
+  auto client_callback = [](const runtime::he::TCPMessage& message) {
+    std::cout << "Client callback for message" << std::endl;
+    return message;
+  };
+
+  auto client =
+      runtime::he::TCPClient(io_context, client_endpoints, client_callback);
 
   io_context.run();
 }
@@ -66,7 +73,13 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init2) {
   auto client_endpoints = resolver.resolve("localhost", std::to_string(port));
   tcp::endpoint server_endpoints(tcp::v4(), port);
 
-  auto client = runtime::he::TCPClient(io_context, client_endpoints);
+  auto client_callback = [](const runtime::he::TCPMessage& message) {
+    std::cout << "Client callback for message" << std::endl;
+    return message;
+  };
+
+  auto client =
+      runtime::he::TCPClient(io_context, client_endpoints, client_callback);
 
   io_context.run();
 }
@@ -91,7 +104,13 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init3) {
     tcp::resolver resolver(io_context);
     auto client_endpoints = resolver.resolve("localhost", std::to_string(port));
 
-    auto client = runtime::he::TCPClient(io_context, client_endpoints);
+    auto client_callback = [](const runtime::he::TCPMessage& message) {
+      std::cout << "Client callback for message" << std::endl;
+      return message;
+    };
+
+    auto client =
+        runtime::he::TCPClient(io_context, client_endpoints, client_callback);
 
     sleep(2);  // Let connection happen
 
