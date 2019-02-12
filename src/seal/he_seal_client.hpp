@@ -20,6 +20,8 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include "seal/context.h"
+#include "tcp/tcp_client.hpp"
 #include "tcp/tcp_message.hpp"
 
 namespace ngraph {
@@ -27,11 +29,36 @@ namespace runtime {
 namespace he {
 class HESealClient {
  public:
-  HESealClient(std::string hostname, std::size_t port) {}
+  HESealClient(boost::asio::io_context& io_context,
+               const tcp::resolver::results_type& endpoints) {
+    auto client_callback = [](const runtime::he::TCPMessage& message) {
+      std::cout << "HESealClient callback for message" << std::endl;
+      return message;
+    };
+
+    m_tcp_client = std::make_shared<runtime::he::TCPClient>(
+        io_context, endpoints, client_callback);
+
+    sleep(2);  // wait for connection to happen
+
+    m_thread = std::thread([&io_context]() { io_context.run(); });
+  }
+
+  void write_message(const runtime::he::TCPMessage& message) {
+    std::cout << "HESealClient client writing tcp message" << std::endl;
+    m_tcp_client->write_message(message);
+  }
+
+  void close_connection() {
+    m_tcp_client->close();
+    m_thread.join();
+  }
 
  private:
-  TCPClient m_tcp_client;
+  std::shared_ptr<TCPClient> m_tcp_client;
   seal::PublicKey m_public_key;
+  std::shared_ptr<seal::SEALContext> m_context;
+  std::thread m_thread;
 };
 }  // namespace he
 }  // namespace runtime

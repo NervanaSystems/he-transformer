@@ -47,6 +47,8 @@ class TCPClient {
   }
 
   void write_message(const runtime::he::TCPMessage& message) {
+    std::cout << "TCPClient posting messsage " << std::endl;
+    std::cout << " of size " << message.size() << std::endl;
     boost::asio::post(m_io_context, [this, message]() { do_write(message); });
   }
 
@@ -106,7 +108,8 @@ class TCPClient {
   }
 
   void do_write(const runtime::he::TCPMessage& message) {
-    std::cout << "Writing message size " << message.size() << std::endl;
+    std::cout << "Writing message " << std::endl;
+    std::cout << " of size " << message.size() << std::endl;
     boost::asio::async_write(
         m_socket, boost::asio::buffer(message.data(), message.size()),
         [this](boost::system::error_code ec, std::size_t length) {

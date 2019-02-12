@@ -19,6 +19,7 @@
 #include "he_backend.hpp"
 #include "ngraph/ngraph.hpp"
 #include "seal/ckks/he_seal_ckks_backend.hpp"
+#include "seal/he_seal_client.hpp"
 #include "tcp/tcp_client.hpp"
 #include "tcp/tcp_message.hpp"
 #include "tcp/tcp_server.hpp"
@@ -104,17 +105,17 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init3) {
     tcp::resolver resolver(io_context);
     auto client_endpoints = resolver.resolve("localhost", std::to_string(port));
 
-    auto client_callback = [](const runtime::he::TCPMessage& message) {
+    /* auto client_callback = [](const runtime::he::TCPMessage& message) {
       std::cout << "Client callback for message" << std::endl;
       return message;
-    };
+    }; */
 
-    auto client =
-        runtime::he::TCPClient(io_context, client_endpoints, client_callback);
+    auto client = runtime::he::HESealClient(io_context, client_endpoints);
+    // runtime::he::TCPClient(io_context, client_endpoints, client_callback);
 
     sleep(2);  // Let connection happen
 
-    std::thread t([&io_context]() { io_context.run(); });
+    // std::thread t([&io_context]() { io_context.run(); });
 
     NGRAPH_INFO << "Writing message";
 
@@ -127,9 +128,9 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init3) {
     client.write_message(message);
 
     sleep(5);  // Let message be handled
-    client.close();
+    client.close_connection();
 
-    t.join();
+    // t.join();
     // io_context.run();
 
     // sleep(1);  // Let message arrive

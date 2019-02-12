@@ -59,10 +59,8 @@ class TCPMessage {
 
     m_body_length = m_bytes - header_length;
 
-    std::cout << "Encoding message header" << std::endl;
     encode_header();
     encode_body();
-    std::cout << "Done creating TCP message" << std::endl;
   }
 
   char* data() { return m_data; }
@@ -85,11 +83,7 @@ class TCPMessage {
 
   void encode_body() {
     // Copy message type
-    std::cout << "Encoding body " << std::endl;
-    std::cout << "sizeof(MessageType) " << sizeof(MessageType) << std::endl;
     std::memcpy(body(), &m_type, sizeof(MessageType));
-
-    std::cout << "encoded body " << std::endl;
   }
 
   void encode_header() {
@@ -99,14 +93,11 @@ class TCPMessage {
     std::sprintf(header, "%4d", static_cast<int>(m_body_length));
     std::memcpy(m_data, header, header_length);
 
-    std::cout << "Encoded header " << header << std::endl;
-
     assert(decode_header());
   }
 
   // Given m_data, parses to find m_datatype, m_count
   bool decode_body() {
-    std::cout << "Decode message body " << std::endl;
     MessageType type;
     std::memcpy(&type, msg_type_ptr(), sizeof(MessageType));
 
