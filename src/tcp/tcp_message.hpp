@@ -25,11 +25,11 @@ namespace ngraph {
 namespace runtime {
 namespace he {
 enum class MessageType {
+  none,
   public_key_request,
   public_key,
   relu_request,
-  relu,
-  none
+  relu
 };
 
 class TCPMessage {
@@ -73,9 +73,7 @@ class TCPMessage {
 
   MessageType get_message_type() const { return m_type; }
 
-  const char* msg_type_ptr() const {
-    return m_data + header_length + sizeof(MessageType);
-  }
+  const char* msg_type_ptr() const { return m_data + header_length; }
 
   std::size_t body_length() const { return m_body_length; }
 
@@ -127,9 +125,11 @@ class TCPMessage {
     m_body_length = std::atoi(header);
     if (m_body_length > max_body_length) {
       m_body_length = 0;
+      std::cout << "Body length " << m_body_length << " too large" << std::endl;
       return false;
     }
     std::cout << "Decoding header; message size " << m_body_length << std::endl;
+    std::cout << "header " << header << std::endl;
     return true;
 
     /*

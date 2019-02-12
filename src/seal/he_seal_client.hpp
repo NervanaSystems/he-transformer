@@ -31,9 +31,8 @@ class HESealClient {
  public:
   HESealClient(boost::asio::io_context& io_context,
                const tcp::resolver::results_type& endpoints) {
-    auto client_callback = [](const runtime::he::TCPMessage& message) {
-      std::cout << "HESealClient callback for message" << std::endl;
-      return message;
+    auto client_callback = [this](const runtime::he::TCPMessage& message) {
+      return handle_message(message);
     };
 
     m_tcp_client = std::make_shared<runtime::he::TCPClient>(
@@ -42,6 +41,21 @@ class HESealClient {
     sleep(2);  // wait for connection to happen
 
     m_thread = std::thread([&io_context]() { io_context.run(); });
+  }
+
+  const runtime::he::TCPMessage& handle_message(
+      const runtime::he::TCPMessage& message) {
+    std::cout << "HESealClient callback for message" << std::endl;
+
+    MessageType msg_type = message.get_message_type();
+
+    if (msg_type == MessageType::public_key_request) {
+      std::cout << "Got message public_key_request" << std::endl;
+    } else if (msg_type == MessageType::public_key) {
+      std::cout << "Got message public_key" << std::endl;
+    }
+
+    return TCPMessage();
   }
 
   void write_message(const runtime::he::TCPMessage& message) {

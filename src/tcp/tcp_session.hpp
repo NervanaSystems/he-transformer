@@ -38,23 +38,20 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
  private:
   void do_read_header() {
     auto self(shared_from_this());
-    std::cout << "Reading message header" << std::endl;
-    // std::cout << "runtime::he::TCPMessage::header_length "
-    //          << runtime::he::TCPMessage::header_length << std::endl;
+    std::cout << "Server reading message header" << std::endl;
     boost::asio::async_read(
         m_socket,
         boost::asio::buffer(m_message.data(),
                             runtime::he::TCPMessage::header_length),
         [this, self](boost::system::error_code ec, std::size_t length) {
           if (!ec & m_message.decode_header()) {
-            std::cout << "Read message header" << std::endl;
+            std::cout << "Server read message header" << std::endl;
             std::cout << "Length of message header is " << length << " bytes "
                       << std::endl;
             do_read_body();
           } else {
-            // std::cout << "Error reading message" << std::endl;
             if (ec) {
-              std::cout << "Error reading message: " << ec.message()
+              std::cout << "Server Error reading message: " << ec.message()
                         << std::endl;
               std::cout << "Closing TCP server by throwing exception"
                         << std::endl;  // TODO: see boost asio server example
@@ -69,14 +66,15 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
   }
 
   void do_read_body() {
-    std::cout << "Reading message body" << std::endl;
+    std::cout << "Server reading message body" << std::endl;
     auto self(shared_from_this());
     boost::asio::async_read(
         m_socket,
         boost::asio::buffer(m_message.body(), m_message.body_length()),
         [this, self](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
-            std::cout << "Read message body length " << length << std::endl;
+            std::cout << "Server read message body length " << length
+                      << std::endl;
 
             m_message.decode_body();
 
@@ -97,7 +95,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
         m_socket, boost::asio::buffer(message.data(), message.size()),
         [this, self](boost::system::error_code ec, std::size_t /*length*/) {
           if (!ec) {
-            std::cout << "Wrote message" << std::endl;
+            std::cout << "Server wrote message" << std::endl;
             do_read_header();
             // do_write();
           } else {

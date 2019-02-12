@@ -71,7 +71,9 @@ runtime::he::TCPMessage runtime::he::he_seal::HESealBackend::handle_message(
     const runtime::he::TCPMessage& message) {
   NGRAPH_INFO << "Handling TCP Message";
 
-  if (message.get_message_type() == MessageType::public_key_request) {
+  MessageType msg_type = message.get_message_type();
+
+  if (msg_type == MessageType::public_key_request) {
     NGRAPH_INFO << "Server got public_key_request message";
 
     seal::PublicKey pk = *m_public_key;
@@ -83,11 +85,21 @@ runtime::he::TCPMessage runtime::he::he_seal::HESealBackend::handle_message(
 
     NGRAPH_INFO << "Size of pk_cstr " << strlen(pk_cstr);
 
-    auto message = runtime::he::TCPMessage(MessageType::public_key, 1,
-                                           strlen(pk_cstr), pk_cstr);
+    auto return_message = runtime::he::TCPMessage(MessageType::public_key, 1,
+                                                  strlen(pk_cstr), pk_cstr);
 
     NGRAPH_INFO << "Sending PK message back";
-    return message;
+    return return_message;
+  } else if (msg_type == MessageType::none) {
+    NGRAPH_INFO << "Server got MessageType:none";
+  } else if (msg_type == MessageType::public_key) {
+    NGRAPH_INFO << "Server got MessageType:public_key";
+  } else if (msg_type == MessageType::relu) {
+    NGRAPH_INFO << "Server got MessageType:relu";
+  } else if (msg_type == MessageType::relu_request) {
+    NGRAPH_INFO << "Server got MessageType:relu_request";
+  } else {
+    throw ngraph_error("Unknown message type in server");
   }
 }
 

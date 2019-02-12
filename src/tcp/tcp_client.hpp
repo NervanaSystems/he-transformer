@@ -73,9 +73,10 @@ class TCPClient {
         m_socket,
         boost::asio::buffer(m_read_message.data(),
                             runtime::he::TCPMessage::header_length),
-        [this](boost::system::error_code ec, std::size_t) {
+        [this](boost::system::error_code ec, std::size_t length) {
           if (!ec && m_read_message.decode_header()) {
-            std::cout << "Read header" << std::endl;
+            std::cout << "Client read header" << std::endl;
+            std::cout << "Cleint header size " << length << std::endl;
             do_read_body();
           } else {
             m_socket.close();
@@ -93,31 +94,37 @@ class TCPClient {
             std::cout.write(m_read_message.body(),
                             m_read_message.body_length());
             std::cout << "\n";
-            std::cout << "Read body" << std::endl;
+            std::cout << "Client read body" << std::endl;
 
             std::cout << "Body length " << m_read_message.body_length()
                       << std::endl;
+
+            m_read_message.decode_body();
             auto response = m_message_callback(m_read_message);
             do_write(response);
 
             // do_read_header();
           } else {
+            std::cout << "Client error reading body; " << ec.message()
+                      << std::endl;
+            std::cout << "Closing socket" << std::endl;
             m_socket.close();
           }
         });
   }
 
   void do_write(const runtime::he::TCPMessage& message) {
-    std::cout << "Writing message " << std::endl;
+    std::cout << "Client writing message " << std::endl;
     std::cout << " of size " << message.size() << std::endl;
     boost::asio::async_write(
         m_socket, boost::asio::buffer(message.data(), message.size()),
         [this](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
-            std::cout << "Wrote message length " << length << std::endl;
+            std::cout << "Client wrote message length " << length << std::endl;
             do_read_header();
           } else {
-            std::cout << "error writing message: " << ec.message() << std::endl;
+            std::cout << "Client error writing message: " << ec.message()
+                      << std::endl;
           }
         });
   }
