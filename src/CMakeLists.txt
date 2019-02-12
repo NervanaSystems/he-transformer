@@ -43,6 +43,7 @@ set (HE_SRC
     # tcp
     tcp/tcp_message.cpp
     tcp/tcp_server.cpp
+    tcp/tcp_session.cpp
     tcp/tcp_client.cpp
 
     # main
@@ -81,10 +82,9 @@ set(HE_BACKEND_LIB_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}he_backend${CMAKE_SHARED_
 set(HE_SEAL_CKKS_LIB_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}he_seal_ckks_backend${CMAKE_SHARED_LIBRARY_SUFFIX}")
 set(HE_SEAL_BFV_LIB_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}he_seal_bfv_backend${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
-# Install he-transformer (the HE libraries are installed separately) at `make install`
-message("NGRAPH_INSTALL_LIB_DIR ${NGRAPH_INSTALL_LIB_DIR}")
 message("NGRAPH_TF_VENV_LIB_DIR ${NGRAPH_TF_VENV_LIB_DIR}")
 
+# Install he-transformer (the HE libraries are installed separately) at `make install`
 install(TARGETS he_backend DESTINATION ${EXTERNAL_INSTALL_LIB_DIR})
 
 # Create symbolic links for CKKS and BFV backends, to allow ngraph and ngraph-tf to recognize these backends.

@@ -16,39 +16,52 @@
 
 #pragma once
 #include <boost/asio.hpp>
-#include <iostream>
 #include <memory>
 #include "tcp/tcp_message.hpp"
-#include "tcp/tcp_session.hpp"
 
 using boost::asio::ip::tcp;
 
 namespace ngraph {
 namespace runtime {
 namespace he {
-class TCPServer {
+class TCPSession : public std::enable_shared_from_this<TCPSession> {
  public:
-  TCPServer(boost::asio::io_context& io_context, const tcp::endpoint& endpoint)
-      : m_acceptor(io_context, endpoint) {
-    accept_connection();
-  }
+  TCPSession(tcp::socket socket) : m_socket(std::move(socket)) {}
+
+  void start() { do_read_header(); }
 
  private:
-  void accept_connection() {
-    std::cout << "Server accepting connections" << std::endl;
-    m_acceptor.async_accept(
-        [this](boost::system::error_code ec, tcp::socket socket) {
-          if (!ec) {
-            std::cout << "Connection accepted" << std::endl;
-            std::make_shared<TCPSession>(std::move(socket))->start();
+  void do_read_header() {
+    auto self(shared_from_this());
+    boost::asio::async_read(
+        m_socket,
+        boost::asio::buffer(m_message.data(),
+                            runtime::he::TCPMessage::header_length),
+        [this, self](boost::system::error_code ec, std::size_t /*length*/) {
+          if (!ec && m_message.decode_header()) {
+            do_read_body();
           } else {
-            std::cout << "error " << ec << std::endl;
+            m_socket.close();
+          }
+        });
+  }
+
+  void do_read_body() { std::cout << "Reading message body" << std::endl; }
+
+  void read_message(const runtime::he::TCPMessage& message) {
+    boost::asio::async_write(
+        m_socket, boost::asio::buffer(message.data(), message.size()),
+        [this](boost::system::error_code ec, std::size_t length) {
+          if (!ec) {
+            std::cout << "Wrote message length " << length << std::endl;
+          } else {
+            std::cout << "error" << ec << std::endl;
           }
         });
   }
 
   TCPMessage m_message;
-  tcp::acceptor m_acceptor;
+  tcp::socket m_socket;
 };
 }  // namespace he
 }  // namespace runtime

@@ -20,6 +20,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include "tcp/tcp_message.hpp"
 
 using boost::asio::ip::tcp;
 
@@ -38,6 +39,19 @@ class TCPClient {
 
   ~TCPClient() { close(); }
 
+  void write_message(const runtime::he::TCPMessage& message) {
+    std::cout << "Writing message" << std::endl;
+    boost::asio::async_write(
+        m_socket, boost::asio::buffer(message.data(), message.size()),
+        [this](boost::system::error_code ec, std::size_t length) {
+          if (!ec) {
+            std::cout << "Wrote message length " << length << std::endl;
+          } else {
+            std::cout << "error writing message: " << ec << std::endl;
+          }
+        });
+  }
+
  private:
   void do_connect(const tcp::resolver::results_type& endpoints) {
     boost::asio::async_connect(
@@ -46,7 +60,7 @@ class TCPClient {
           if (!ec) {
             std::cout << "Connected to server" << std::endl;
           } else {
-            std::cout << "error " << ec << std::endl;
+            std::cout << "error connecting to server: " << ec << std::endl;
           }
         });
   }

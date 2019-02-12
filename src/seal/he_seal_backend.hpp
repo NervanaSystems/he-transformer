@@ -100,6 +100,11 @@ class HESealBackend : public HEBackend {
     return m_secret_key;
   }
 
+  const inline std::shared_ptr<seal::PublicKey> get_public_key() const
+      noexcept {
+    return m_public_key;
+  }
+
   const inline std::shared_ptr<seal::RelinKeys> get_relin_keys() const
       noexcept {
     return m_relin_keys;
