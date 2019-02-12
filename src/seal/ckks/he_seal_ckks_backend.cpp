@@ -157,10 +157,11 @@ runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend(
   m_plaintext_map[1] = plaintext_1;
 
   // Server
-  // boost::asio::io_context io_context;
-  // tcp::resolver resolver(io_context);
-  // tcp::endpoint server_endpoints(tcp::v4(), m_port);
-  // m_tcp_server = make_shared<TCPServer>(io_context, server_endpoints);
+  boost::asio::io_context io_context;
+  tcp::resolver resolver(io_context);
+  tcp::endpoint server_endpoints(tcp::v4(), m_port);
+  m_tcp_server = make_shared<TCPServer>(io_context, server_endpoints);
+  io_context.run();
 }
 
 extern "C" runtime::Backend* new_ckks_backend(

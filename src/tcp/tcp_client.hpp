@@ -37,19 +37,13 @@ class TCPClient {
     do_connect(endpoints);
   }
 
-  ~TCPClient() { close(); }
+  void close() {
+    std::cout << "Closing socket" << std::endl;
+    boost::asio::post(m_io_context, [this]() { m_socket.close(); });
+  }
 
   void write_message(const runtime::he::TCPMessage& message) {
-    std::cout << "Writing message" << std::endl;
-    boost::asio::async_write(
-        m_socket, boost::asio::buffer(message.data(), message.size()),
-        [this](boost::system::error_code ec, std::size_t length) {
-          if (!ec) {
-            std::cout << "Wrote message length " << length << std::endl;
-          } else {
-            std::cout << "error writing message: " << ec << std::endl;
-          }
-        });
+    boost::asio::post(m_io_context, [this, message]() { do_write(message); });
   }
 
  private:
@@ -59,18 +53,63 @@ class TCPClient {
         [this](boost::system::error_code ec, tcp::endpoint) {
           if (!ec) {
             std::cout << "Connected to server" << std::endl;
+            do_read_header();
           } else {
-            std::cout << "error connecting to server: " << ec << std::endl;
+            std::cout << "error connecting to server: " << ec.message()
+                      << std::endl;
           }
         });
   }
 
-  void close() {
-    std::cout << "Closing socket" << std::endl;
-    boost::asio::post(m_io_context, [this]() { m_socket.close(); });
+  void do_read_header() {
+    std::cout << "Client reading header" << std::endl;
+    /*  boost::asio::async_read(
+         m_socket,
+         boost::asio::buffer(m_read_message.data(),
+                             runtime::he::TCPMessage::header_length),
+         [this](boost::system::error_code ec, std::size_t ) {
+           if (!ec && m_read_message.decode_header()) {
+             std::cout << "Read header" << std::endl;
+             do_read_body();
+           } else {
+             m_socket.close();
+           }
+         }); */
+  }
+
+  void do_read_body() {
+    /*  boost::asio::async_read(
+         m_socket,
+         boost::asio::buffer(m_read_message.body(),
+                             m_read_message.body_length()),
+         [this](boost::system::error_code ec, std::size_t length) {
+           if (!ec) {
+             std::cout.write(m_read_message.body(),
+                              m_read_message.body_length());
+              std::cout << "\n";
+              std::cout << "Read body" << std::endl;
+              do_read_header();
+           } else {
+             m_socket.close();
+           }
+         }); */
+  }
+
+  void do_write(const runtime::he::TCPMessage& message) {
+    std::cout << "Writing message size " << message.size() << std::endl;
+    boost::asio::async_write(
+        m_socket, boost::asio::buffer(message.data(), message.size()),
+        [this](boost::system::error_code ec, std::size_t length) {
+          if (!ec) {
+            std::cout << "Wrote message length " << length << std::endl;
+          } else {
+            std::cout << "error writing message: " << ec.message() << std::endl;
+          }
+        });
   }
 
   boost::asio::io_context& m_io_context;
+  TCPMessage m_read_message;
   tcp::socket m_socket;
 };
 }  // namespace he

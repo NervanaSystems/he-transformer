@@ -42,12 +42,12 @@ class TCPServer {
             std::cout << "Connection accepted" << std::endl;
             std::make_shared<TCPSession>(std::move(socket))->start();
           } else {
-            std::cout << "error " << ec << std::endl;
+            std::cout << "error " << ec.message() << std::endl;
           }
+          accept_connection();
         });
   }
 
-  TCPMessage m_message;
   tcp::acceptor m_acceptor;
 };
 }  // namespace he

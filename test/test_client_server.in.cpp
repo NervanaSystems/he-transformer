@@ -66,37 +66,66 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init2) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init3) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_seal_ckks_backend =
-      static_cast<runtime::he::he_seal::HESealCKKSBackend*>(backend.get());
+  seal::PublicKey public_key;
 
-  size_t port = he_seal_ckks_backend->get_port();
-  NGRAPH_INFO << "Port " << port;
+  auto server_fun = [&public_key]() {
+    try {
+      auto backend = runtime::Backend::create("${BACKEND_NAME}");
+      auto he_seal_ckks_backend =
+          static_cast<runtime::he::he_seal::HESealCKKSBackend*>(backend.get());
+    } catch (int e) {
+      std::cout << "Exception in server" << std::endl;
+    }
+  };
 
-  boost::asio::io_context io_context;
-  tcp::resolver resolver(io_context);
-  auto client_endpoints = resolver.resolve("localhost", std::to_string(port));
-  tcp::endpoint server_endpoints(tcp::v4(), port);
+  auto client_fun = [&public_key]() {
+    sleep(2);  // Let server start
+    size_t port = 34000;
+    NGRAPH_INFO << "Client starting " << port;
 
-  auto client = runtime::he::TCPClient(io_context, client_endpoints);
+    boost::asio::io_context io_context;
+    tcp::resolver resolver(io_context);
+    auto client_endpoints = resolver.resolve("localhost", std::to_string(port));
 
-  seal::PublicKey public_key = *he_seal_ckks_backend->get_public_key();
+    auto client = runtime::he::TCPClient(io_context, client_endpoints);
 
-  stringstream stream;
-  public_key.save(stream);
+    sleep(2);  // Let connection happen
 
-  const std::string& pk_string = stream.str();
-  const char* pk_data = pk_string.c_str();
+    std::thread t([&io_context]() { io_context.run(); });
 
-  size_t pk_size = sizeof(pk_string);
+    NGRAPH_INFO << "Writing message";
 
-  NGRAPH_INFO << "pk_size " << pk_size;
+    size_t N = 100;
+    void* x = malloc(N);
+    memset(x, 0, N);
+    assert(x != nullptr);
+    auto message = runtime::he::TCPMessage(
+        runtime::he::MessageType::public_key_request, 0, N, (char*)x);
+    client.write_message(message);
+    client.close();
 
-  auto message =
-      runtime::he::TCPMessage(runtime::he::Datatype::PUBLIC_KEY, 1, pk_size,
-                              runtime::he::MPCFunction::NONE, pk_data);
+    t.join();
+    // io_context.run();
 
-  client.write_message(message);
+    // sleep(1);  // Let message arrive
+  };
 
-  io_context.run();
+  /*auto pid = fork();
+  if (pid == 0) {
+    sleep(1);
+    NGRAPH_INFO << "Client fun";
+    client_fun();
+    sleep(1);
+  } else {
+    NGRAPH_INFO << "SErver fun";
+    server_fun();
+  } */
+
+  std::thread t1(client_fun);
+  std::thread t2(server_fun);
+
+  sleep(1);
+
+  t1.join();
+  t2.join();
 }
