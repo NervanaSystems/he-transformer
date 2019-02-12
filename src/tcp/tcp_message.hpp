@@ -52,6 +52,7 @@ class TCPMessage {
     if (count != 0 && size % count != 0) {
       throw std::invalid_argument("Size must be a multiple of count");
     }
+    std::cout << "Creating message with data size " << size << std::endl;
 
     m_bytes = header_length;
     m_bytes += sizeof(MessageType);
@@ -81,23 +82,31 @@ class TCPMessage {
 
   void encode_body() {
     // Copy message type
+    if (m_type == MessageType::public_key) {
+      std::cout << "Encoding body type public_key" << std::endl;
+    } else if (m_type == MessageType::public_key_request) {
+      std::cout << "Encoding body type public_key_request" << std::endl;
+    } else {
+      std::cout << "Encoding unknown body type" << std::endl;
+    }
     std::memcpy(body(), &m_type, sizeof(MessageType));
   }
 
   void encode_header() {
     assert(header_length == sizeof(m_bytes));
+    std::cout << "Encoding header " << m_body_length << std::endl;
 
     char header[header_length + 1] = "";
     std::sprintf(header, "%4d", static_cast<int>(m_body_length));
     std::memcpy(m_data, header, header_length);
 
-    assert(decode_header());
+    //  assert(decode_header());
   }
 
   // Given m_data, parses to find m_datatype, m_count
   bool decode_body() {
     MessageType type;
-    std::memcpy(&type, msg_type_ptr(), sizeof(MessageType));
+    std::memcpy(&type, body(), sizeof(MessageType));
 
     switch (type) {
       case MessageType::none:
@@ -129,7 +138,8 @@ class TCPMessage {
       return false;
     }
     std::cout << "Decoding header; message size " << m_body_length << std::endl;
-    std::cout << "header " << header << std::endl;
+    std::cout << "Decoded header: " << header << std::endl;
+    std::cout << "Header length " << header_length << std::endl;
     return true;
 
     /*

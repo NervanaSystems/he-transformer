@@ -34,9 +34,15 @@ class HESealClient {
     auto client_callback = [this](const runtime::he::TCPMessage& message) {
       return handle_message(message);
     };
+    size_t N = 100;
+    void* x = malloc(N);
+    memset(x, 0, N);
+    assert(x != nullptr);
+    auto first_message = runtime::he::TCPMessage(
+        runtime::he::MessageType::public_key_request, 0, N, (char*)x);
 
     m_tcp_client = std::make_shared<runtime::he::TCPClient>(
-        io_context, endpoints, client_callback);
+        io_context, endpoints, first_message, client_callback);
 
     sleep(2);  // wait for connection to happen
 

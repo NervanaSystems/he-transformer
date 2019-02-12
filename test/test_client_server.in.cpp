@@ -34,57 +34,6 @@ using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
-NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init) {
-  size_t port = 35000;
-
-  boost::asio::io_context io_context;
-  tcp::resolver resolver(io_context);
-  auto client_endpoints = resolver.resolve("localhost", std::to_string(port));
-  tcp::endpoint server_endpoints(tcp::v4(), port);
-
-  auto server_callback = [](const runtime::he::TCPMessage& message) {
-    std::cout << "Server callback for message" << std::endl;
-    return message;
-  };
-
-  auto server =
-      runtime::he::TCPServer(io_context, server_endpoints, server_callback);
-
-  auto client_callback = [](const runtime::he::TCPMessage& message) {
-    std::cout << "Client callback for message" << std::endl;
-    return message;
-  };
-
-  auto client =
-      runtime::he::TCPClient(io_context, client_endpoints, client_callback);
-
-  io_context.run();
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init2) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_seal_ckks_backend =
-      static_cast<runtime::he::he_seal::HESealCKKSBackend*>(backend.get());
-
-  size_t port = he_seal_ckks_backend->get_port();
-  NGRAPH_INFO << "Port " << port;
-
-  boost::asio::io_context io_context;
-  tcp::resolver resolver(io_context);
-  auto client_endpoints = resolver.resolve("localhost", std::to_string(port));
-  tcp::endpoint server_endpoints(tcp::v4(), port);
-
-  auto client_callback = [](const runtime::he::TCPMessage& message) {
-    std::cout << "Client callback for message" << std::endl;
-    return message;
-  };
-
-  auto client =
-      runtime::he::TCPClient(io_context, client_endpoints, client_callback);
-
-  io_context.run();
-}
-
 NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init3) {
   auto server_fun = []() {
     try {

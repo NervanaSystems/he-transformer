@@ -29,13 +29,16 @@ namespace runtime {
 namespace he {
 class TCPClient {
  public:
-  // Connects client to hostname:port
+  // Connects client to hostname:port and sends first_message
+  // message_handler will handle responses from the server
   TCPClient(
       boost::asio::io_context& io_context,
       const tcp::resolver::results_type& endpoints,
+      const TCPMessage& first_message,
       std::function<TCPMessage(const runtime::he::TCPMessage&)> message_handler)
       : m_io_context(io_context),
         m_socket(io_context),
+        m_read_message(first_message),
         m_message_callback(std::bind(message_handler, std::placeholders::_1)) {
     std::cout << "Client starting async connection" << std::endl;
     do_connect(endpoints);
@@ -59,7 +62,9 @@ class TCPClient {
         [this](boost::system::error_code ec, tcp::endpoint) {
           if (!ec) {
             std::cout << "Connected to server" << std::endl;
-            do_read_header();
+
+            // do_read_header();
+            do_write(m_read_message);
           } else {
             std::cout << "error connecting to server: " << ec.message()
                       << std::endl;
@@ -79,6 +84,8 @@ class TCPClient {
             std::cout << "Cleint header size " << length << std::endl;
             do_read_body();
           } else {
+            std::cout << "Client error reading header: " << ec.message()
+                      << std::endl;
             m_socket.close();
           }
         });
@@ -91,6 +98,7 @@ class TCPClient {
                             m_read_message.body_length()),
         [this](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
+            std::cout << "Client read message length " << length << std::endl;
             std::cout.write(m_read_message.body(),
                             m_read_message.body_length());
             std::cout << "\n";
