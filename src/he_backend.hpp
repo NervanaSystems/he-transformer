@@ -150,6 +150,8 @@ class HEBackend : public runtime::Backend {
 
   runtime::Handle compile(std::shared_ptr<Function> function) override;
 
+  virtual TCPMessage handle_message(const TCPMessage& message) = 0;
+
   bool call(
       std::shared_ptr<Function> function,
       const std::vector<std::shared_ptr<runtime::Tensor>>& outputs,

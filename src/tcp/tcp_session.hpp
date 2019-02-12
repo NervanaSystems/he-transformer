@@ -29,7 +29,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
  public:
   TCPSession(
       tcp::socket socket,
-      std::function<void(const runtime::he::TCPMessage&)> message_handler)
+      std::function<TCPMessage(const runtime::he::TCPMessage&)> message_handler)
       : m_socket(std::move(socket)),
         m_message_callback(std::bind(message_handler, std::placeholders::_1)) {}
 
@@ -80,9 +80,10 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
 
             m_message.decode_body();
 
-            m_message_callback(m_message);
+            auto response = m_message_callback(m_message);
+            do_write(response);
 
-            do_read_header();
+            // do_read_header();
           } else {
             std::cout << "Error reading message body: " << ec.message()
                       << std::endl;
@@ -90,14 +91,18 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
         });
   }
 
-  void read_message(const runtime::he::TCPMessage& message) {
+  void do_write(const TCPMessage& message) {
+    auto self(shared_from_this());
     boost::asio::async_write(
         m_socket, boost::asio::buffer(message.data(), message.size()),
-        [this](boost::system::error_code ec, std::size_t length) {
+        [this, self](boost::system::error_code ec, std::size_t /*length*/) {
           if (!ec) {
-            std::cout << "Wrote message length " << length << std::endl;
+            std::cout << "Wrote message" << std::endl;
+            do_read_header();
+            // do_write();
           } else {
-            std::cout << "error" << ec << std::endl;
+            std::cout << "Error writing message in session: " << ec.message()
+                      << std::endl;
           }
         });
   }
@@ -106,8 +111,9 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
   tcp::socket m_socket;
 
   // How to handle the message
-  std::function<void(const runtime::he::TCPMessage&)> m_message_callback;
-};
+  std::function<runtime::he::TCPMessage(const runtime::he::TCPMessage&)>
+      m_message_callback;
+};  // namespace he
 }  // namespace he
 }  // namespace runtime
 }  // namespace ngraph

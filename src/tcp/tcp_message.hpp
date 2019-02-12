@@ -73,6 +73,8 @@ class TCPMessage {
 
   const char* body() const { return m_data + header_length; }
 
+  MessageType get_message_type() const { return m_type; }
+
   const char* msg_type_ptr() const {
     return m_data + header_length + sizeof(MessageType);
   }

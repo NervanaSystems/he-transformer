@@ -63,36 +63,39 @@ class TCPClient {
 
   void do_read_header() {
     std::cout << "Client reading header" << std::endl;
-    /*  boost::asio::async_read(
-         m_socket,
-         boost::asio::buffer(m_read_message.data(),
-                             runtime::he::TCPMessage::header_length),
-         [this](boost::system::error_code ec, std::size_t ) {
-           if (!ec && m_read_message.decode_header()) {
-             std::cout << "Read header" << std::endl;
-             do_read_body();
-           } else {
-             m_socket.close();
-           }
-         }); */
+    boost::asio::async_read(
+        m_socket,
+        boost::asio::buffer(m_read_message.data(),
+                            runtime::he::TCPMessage::header_length),
+        [this](boost::system::error_code ec, std::size_t) {
+          if (!ec && m_read_message.decode_header()) {
+            std::cout << "Read header" << std::endl;
+            do_read_body();
+          } else {
+            m_socket.close();
+          }
+        });
   }
 
   void do_read_body() {
-    /*  boost::asio::async_read(
-         m_socket,
-         boost::asio::buffer(m_read_message.body(),
-                             m_read_message.body_length()),
-         [this](boost::system::error_code ec, std::size_t length) {
-           if (!ec) {
-             std::cout.write(m_read_message.body(),
-                              m_read_message.body_length());
-              std::cout << "\n";
-              std::cout << "Read body" << std::endl;
-              do_read_header();
-           } else {
-             m_socket.close();
-           }
-         }); */
+    boost::asio::async_read(
+        m_socket,
+        boost::asio::buffer(m_read_message.body(),
+                            m_read_message.body_length()),
+        [this](boost::system::error_code ec, std::size_t length) {
+          if (!ec) {
+            std::cout.write(m_read_message.body(),
+                            m_read_message.body_length());
+            std::cout << "\n";
+            std::cout << "Read body" << std::endl;
+
+            std::cout << "Body length " << m_read_message.body_length()
+                      << std::endl;
+            do_read_header();
+          } else {
+            m_socket.close();
+          }
+        });
   }
 
   void do_write(const runtime::he::TCPMessage& message) {

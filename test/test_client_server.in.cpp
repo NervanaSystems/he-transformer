@@ -41,8 +41,9 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init) {
   auto client_endpoints = resolver.resolve("localhost", std::to_string(port));
   tcp::endpoint server_endpoints(tcp::v4(), port);
 
-  auto server_callback = [](const runtime::he::TCPMessage&) {
+  auto server_callback = [](const runtime::he::TCPMessage& message) {
     std::cout << "Server callback for message" << std::endl;
+    return message;
   };
 
   auto server =
@@ -105,6 +106,8 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init3) {
     auto message = runtime::he::TCPMessage(
         runtime::he::MessageType::public_key_request, 0, N, (char*)x);
     client.write_message(message);
+
+    sleep(5);  // Let message be handled
     client.close();
 
     t.join();

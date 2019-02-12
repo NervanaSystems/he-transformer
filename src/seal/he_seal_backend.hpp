@@ -36,6 +36,8 @@ class HESealBackend : public HEBackend {
       const std::shared_ptr<runtime::he::he_seal::HESealParameter> sp)
       const = 0;
 
+  TCPMessage handle_message(const TCPMessage& message) override;
+
   /// @brief Checks if parameter is valid for encoding.
   ///        Throws an error if parameter is not valid.
   void assert_valid_seal_parameter(

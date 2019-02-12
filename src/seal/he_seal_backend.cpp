@@ -67,6 +67,30 @@ void runtime::he::he_seal::HESealBackend::assert_valid_seal_parameter(
   }
 }
 
+runtime::he::TCPMessage runtime::he::he_seal::HESealBackend::handle_message(
+    const runtime::he::TCPMessage& message) {
+  NGRAPH_INFO << "Handling TCP Message";
+
+  if (message.get_message_type() == MessageType::public_key_request) {
+    NGRAPH_INFO << "Server got public_key_request message";
+
+    seal::PublicKey pk = *m_public_key;
+    stringstream stream;
+    pk.save(stream);
+
+    const std::string& pk_str = stream.str();
+    const char* pk_cstr = pk_str.c_str();
+
+    NGRAPH_INFO << "Size of pk_cstr " << strlen(pk_cstr);
+
+    auto message = runtime::he::TCPMessage(MessageType::public_key, 1,
+                                           strlen(pk_cstr), pk_cstr);
+
+    NGRAPH_INFO << "Sending PK message back";
+    return message;
+  }
+}
+
 shared_ptr<runtime::he::HECiphertext>
 runtime::he::he_seal::HESealBackend::create_empty_ciphertext() const {
   return make_shared<runtime::he::he_seal::SealCiphertextWrapper>();
