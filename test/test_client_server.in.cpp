@@ -41,7 +41,12 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init) {
   auto client_endpoints = resolver.resolve("localhost", std::to_string(port));
   tcp::endpoint server_endpoints(tcp::v4(), port);
 
-  auto server = runtime::he::TCPServer(io_context, server_endpoints);
+  auto server_callback = [](const runtime::he::TCPMessage&) {
+    std::cout << "Server callback for message" << std::endl;
+  };
+
+  auto server =
+      runtime::he::TCPServer(io_context, server_endpoints, server_callback);
   auto client = runtime::he::TCPClient(io_context, client_endpoints);
 
   io_context.run();
@@ -66,9 +71,7 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init2) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init3) {
-  seal::PublicKey public_key;
-
-  auto server_fun = [&public_key]() {
+  auto server_fun = []() {
     try {
       auto backend = runtime::Backend::create("${BACKEND_NAME}");
       auto he_seal_ckks_backend =
@@ -78,7 +81,7 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init3) {
     }
   };
 
-  auto client_fun = [&public_key]() {
+  auto client_fun = []() {
     sleep(2);  // Let server start
     size_t port = 34000;
     NGRAPH_INFO << "Client starting " << port;

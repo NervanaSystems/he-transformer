@@ -16,6 +16,7 @@
 
 #pragma once
 #include <boost/asio.hpp>
+#include <functional>
 #include <iostream>
 #include <memory>
 #include "tcp/tcp_message.hpp"
@@ -28,8 +29,10 @@ namespace runtime {
 namespace he {
 class TCPServer {
  public:
-  TCPServer(boost::asio::io_context& io_context, const tcp::endpoint& endpoint)
-      : m_acceptor(io_context, endpoint) {
+  TCPServer(boost::asio::io_context& io_context, const tcp::endpoint& endpoint,
+            std::function<void(const runtime::he::TCPMessage&)> message_handler)
+      : m_acceptor(io_context, endpoint),
+        m_message_callback(std::bind(message_handler, std::placeholders::_1)) {
     accept_connection();
   }
 
@@ -40,7 +43,8 @@ class TCPServer {
         [this](boost::system::error_code ec, tcp::socket socket) {
           if (!ec) {
             std::cout << "Connection accepted" << std::endl;
-            std::make_shared<TCPSession>(std::move(socket))->start();
+            std::make_shared<TCPSession>(std::move(socket), m_message_callback)
+                ->start();
           } else {
             std::cout << "error " << ec.message() << std::endl;
           }
@@ -49,6 +53,7 @@ class TCPServer {
   }
 
   tcp::acceptor m_acceptor;
+  std::function<void(const runtime::he::TCPMessage&)> m_message_callback;
 };
 }  // namespace he
 }  // namespace runtime

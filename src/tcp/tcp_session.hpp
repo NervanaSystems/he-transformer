@@ -16,6 +16,7 @@
 
 #pragma once
 #include <boost/asio.hpp>
+#include <functional>
 #include <memory>
 #include "tcp/tcp_message.hpp"
 
@@ -26,7 +27,11 @@ namespace runtime {
 namespace he {
 class TCPSession : public std::enable_shared_from_this<TCPSession> {
  public:
-  TCPSession(tcp::socket socket) : m_socket(std::move(socket)) {}
+  TCPSession(
+      tcp::socket socket,
+      std::function<void(const runtime::he::TCPMessage&)> message_handler)
+      : m_socket(std::move(socket)),
+        m_message_callback(std::bind(message_handler, std::placeholders::_1)) {}
 
   void start() { do_read_header(); }
 
@@ -74,6 +79,9 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
             std::cout << "Read message body length " << length << std::endl;
 
             m_message.decode_body();
+
+            m_message_callback(m_message);
+
             do_read_header();
           } else {
             std::cout << "Error reading message body: " << ec.message()
@@ -96,6 +104,9 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
 
   TCPMessage m_message;
   tcp::socket m_socket;
+
+  // How to handle the message
+  std::function<void(const runtime::he::TCPMessage&)> m_message_callback;
 };
 }  // namespace he
 }  // namespace runtime

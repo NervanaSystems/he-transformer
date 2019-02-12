@@ -24,6 +24,7 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_parameter.hpp"
 #include "seal/he_seal_util.hpp"
+#include "tcp/tcp_message.hpp"
 
 #include "seal/seal.h"
 
@@ -160,7 +161,11 @@ runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend(
   boost::asio::io_context io_context;
   tcp::resolver resolver(io_context);
   tcp::endpoint server_endpoints(tcp::v4(), m_port);
-  m_tcp_server = make_shared<TCPServer>(io_context, server_endpoints);
+  auto server_callback = [](const runtime::he::TCPMessage&) {
+    std::cout << "Server callback for message" << std::endl;
+  };
+  m_tcp_server =
+      make_shared<TCPServer>(io_context, server_endpoints, server_callback);
   io_context.run();
 }
 
