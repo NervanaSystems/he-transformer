@@ -39,6 +39,9 @@ inline std::string message_type_to_string(const MessageType& type) {
     case MessageType::none:
       return "none";
       break;
+    case MessageType::public_key:
+      return "public_key";
+      break;
     case MessageType::public_key_request:
       return "public_key_request";
       break;

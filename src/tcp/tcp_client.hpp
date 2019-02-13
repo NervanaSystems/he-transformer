@@ -100,6 +100,7 @@ class TCPClient {
             std::cout << "Client read body" << std::endl; */
 
             m_read_message.decode_body();
+            std::cout << "Calling message callback" << std::endl;
             runtime::he::TCPMessage response =
                 m_message_callback(m_read_message);
             std::cout << "Client writing response" << std::endl;

@@ -58,7 +58,7 @@ class HESealClient {
         m_context_data->parms().coeff_modulus().back().value());
   }
 
-  const runtime::he::TCPMessage& handle_message(
+  const runtime::he::TCPMessage handle_message(
       const runtime::he::TCPMessage& message) {
     std::cout << "HESealClient callback for message" << std::endl;
 
@@ -91,6 +91,8 @@ class HESealClient {
       seal::Ciphertext c;
 
       m_encryptor->encrypt(plain, c);
+
+      std::cout << "m_scale " << m_scale << std::endl;
 
       std::stringstream cipher_stream;
       c.save(cipher_stream);

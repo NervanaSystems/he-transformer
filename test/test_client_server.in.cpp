@@ -113,6 +113,14 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init) {
     auto client_endpoints = resolver.resolve("localhost", std::to_string(port));
     auto client = runtime::he::HESealClient(io_context, client_endpoints);
 
+    // client.request_public_key(); <-- handler processes response
+    // client.request_context();    <-- handler processes response
+    // encrypt_data();
+    // client.write_message("Perform inference"); <-- handler processes response
+    //                                                until Result
+    // client.print_results()
+    // client.close_connection()
+
     sleep(5);  // Let message be handled
     client.close_connection();
   };

@@ -37,6 +37,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
 
  private:
   void do_read_header() {
+    std::cout << "Server reading header" << std::endl;
     auto self(shared_from_this());
     boost::asio::async_read(
         m_socket,
@@ -66,8 +67,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
     auto self(shared_from_this());
     boost::asio::async_read(
         m_socket,
-        boost::asio::buffer(m_message.body_ptr(),
-                            m_message.body_length()),  // TODO: body_length()!?!
+        boost::asio::buffer(m_message.body_ptr(), m_message.body_length()),
         [this, self](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
             std::cout << "Server read message body length " << length
