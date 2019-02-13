@@ -71,7 +71,7 @@ runtime::he::TCPMessage runtime::he::he_seal::HESealBackend::handle_message(
     const runtime::he::TCPMessage& message) {
   NGRAPH_INFO << "Handling TCP Message";
 
-  MessageType msg_type = message.get_message_type();
+  MessageType msg_type = message.message_type();
 
   if (msg_type == MessageType::public_key_request) {
     NGRAPH_INFO << "Server got public_key_request message";
@@ -85,15 +85,8 @@ runtime::he::TCPMessage runtime::he::he_seal::HESealBackend::handle_message(
 
     NGRAPH_INFO << "Size of pk " << pk_str.size();
 
-    // auto return_message = runtime::he::TCPMessage(MessageType::public_key, 1,
-    //                                               pk_str.size(), pk_cstr);
-
-    size_t N = 100;
-    void* x = malloc(N);
-    memset(x, 0, N);
-    assert(x != nullptr);
-    auto return_message = runtime::he::TCPMessage(
-        runtime::he::MessageType::public_key_request, 0, N, (char*)x);
+    auto return_message = runtime::he::TCPMessage(MessageType::public_key, 1,
+                                                  pk_str.size(), pk_cstr);
 
     NGRAPH_INFO << "Sending PK message back";
     return return_message;

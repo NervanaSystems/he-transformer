@@ -34,7 +34,54 @@ using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
-NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init3) {
+NGRAPH_TEST(${BACKEND_NAME}, tcp_message_encode_request) {
+  auto message =
+      runtime::he::TCPMessage(runtime::he::MessageType::public_key_request);
+
+  runtime::he::TCPMessage message2 = message;
+  message2.decode_header();
+
+  EXPECT_EQ(message.message_type(), message2.message_type());
+  EXPECT_EQ(message.count(), message2.count());
+  EXPECT_EQ(message.num_bytes(), message2.num_bytes());
+  EXPECT_EQ(message.data_size(), message2.data_size());
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, tcp_message_encode) {
+  size_t count = 3;
+  size_t element_size = 10;
+  size_t size = count * element_size;
+  void* data = malloc(size);
+  std::memset(data, 7, size);  // Set data to have value 7
+  assert(data != nullptr);
+
+  auto message = runtime::he::TCPMessage(runtime::he::MessageType::none, count,
+                                         size, (char*)data);
+
+  runtime::he::TCPMessage message2 = message;
+  message2.decode_header();
+  message2.decode_body();
+
+  EXPECT_EQ(std::memcmp(message.data_ptr(), data, size), 0);
+
+  EXPECT_EQ(message.message_type(), message2.message_type());
+  EXPECT_EQ(message.count(), message2.count());
+  EXPECT_EQ(message.num_bytes(), message2.num_bytes());
+  EXPECT_EQ(message.data_size(), message2.data_size());
+
+  message = runtime::he::TCPMessage(runtime::he::MessageType::public_key, count,
+                                    size, (char*)data);
+  message2 = message;
+  message2.decode_header();
+  message2.decode_body();
+
+  EXPECT_EQ(message.message_type(), message2.message_type());
+  EXPECT_EQ(message.count(), message2.count());
+  EXPECT_EQ(message.num_bytes(), message2.num_bytes());
+  EXPECT_EQ(message.data_size(), message2.data_size());
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init) {
   auto server_fun = []() {
     try {
       NGRAPH_INFO << "Server starting";
@@ -55,18 +102,6 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init3) {
     tcp::resolver resolver(io_context);
     auto client_endpoints = resolver.resolve("localhost", std::to_string(port));
     auto client = runtime::he::HESealClient(io_context, client_endpoints);
-
-    // sleep(2);  // Let connection happen
-
-    /*NGRAPH_INFO << "Writing message";
-
-    size_t N = 100;
-    void* x = malloc(N);
-    memset(x, 0, N);
-    assert(x != nullptr);
-    auto message = runtime::he::TCPMessage(
-        runtime::he::MessageType::public_key_request, 0, N, (char*)x);
-    client.write_message(message); */
 
     sleep(5);  // Let message be handled
     client.close_connection();

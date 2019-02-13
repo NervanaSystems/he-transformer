@@ -50,8 +50,6 @@ class TCPClient {
   }
 
   void write_message(const runtime::he::TCPMessage& message) {
-    std::cout << "TCPClient posting messsage " << std::endl;
-    std::cout << " of size " << message.size() << std::endl;
     boost::asio::post(m_io_context, [this, message]() { do_write(message); });
   }
 
@@ -73,15 +71,12 @@ class TCPClient {
   }
 
   void do_read_header() {
-    std::cout << "Client reading header" << std::endl;
     boost::asio::async_read(
         m_socket,
         boost::asio::buffer(m_read_message.header_ptr(),
                             runtime::he::TCPMessage::header_length),
         [this](boost::system::error_code ec, std::size_t length) {
           if (!ec && m_read_message.decode_header()) {
-            std::cout << "Client read header" << std::endl;
-            std::cout << "Cleint header size " << length << std::endl;
             do_read_body();
           } else {
             std::cout << "Client error reading header: " << ec.message()
@@ -99,19 +94,14 @@ class TCPClient {
         [this](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
             std::cout << "Client read message length " << length << std::endl;
-            std::cout.write(m_read_message.body_ptr(),
+            /* std::cout.write(m_read_message.body_ptr(),
                             m_read_message.body_length());
             std::cout << "\n";
-            std::cout << "Client read body" << std::endl;
-
-            std::cout << "Body length " << m_read_message.body_length()
-                      << std::endl;
+            std::cout << "Client read body" << std::endl; */
 
             m_read_message.decode_body();
             auto response = m_message_callback(m_read_message);
             do_write(response);
-
-            // do_read_header();
           } else {
             std::cout << "Client error reading body; " << ec.message()
                       << std::endl;
@@ -122,10 +112,9 @@ class TCPClient {
   }
 
   void do_write(const runtime::he::TCPMessage& message) {
-    std::cout << "Client writing message " << std::endl;
-    std::cout << " of size " << message.size() << std::endl;
     boost::asio::async_write(
-        m_socket, boost::asio::buffer(message.header_ptr(), message.size()),
+        m_socket,
+        boost::asio::buffer(message.header_ptr(), message.num_bytes()),
         [this](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
             std::cout << "Client wrote message length " << length << std::endl;

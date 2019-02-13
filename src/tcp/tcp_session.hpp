@@ -38,7 +38,6 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
  private:
   void do_read_header() {
     auto self(shared_from_this());
-    std::cout << "Server reading message header" << std::endl;
     boost::asio::async_read(
         m_socket,
         boost::asio::buffer(m_message.header_ptr(),
@@ -46,8 +45,6 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
         [this, self](boost::system::error_code ec, std::size_t length) {
           if (!ec & m_message.decode_header()) {
             std::cout << "Server read message header" << std::endl;
-            std::cout << "Length of message header is " << length << " bytes "
-                      << std::endl;
             do_read_body();
           } else {
             if (ec) {
@@ -66,11 +63,11 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
   }
 
   void do_read_body() {
-    std::cout << "Server reading message body" << std::endl;
     auto self(shared_from_this());
     boost::asio::async_read(
         m_socket,
-        boost::asio::buffer(m_message.body_ptr(), m_message.body_length()),
+        boost::asio::buffer(m_message.body_ptr(),
+                            m_message.body_length()),  // TODO: body_length()!?!
         [this, self](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
             std::cout << "Server read message body length " << length
@@ -79,8 +76,6 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
             m_message.decode_body();
 
             auto response = m_message_callback(m_message);
-            std::cout << "Server about to write response" << std::endl;
-            std::cout << "response size " << response.size() << std::endl;
             do_write(response);
 
             // do_read_header();
@@ -93,14 +88,13 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
 
   void do_write(const TCPMessage& message) {
     auto self(shared_from_this());
-    std::cout << "Server about to write message of size " << message.size()
-              << std::endl;
     boost::asio::async_write(
-        m_socket, boost::asio::buffer(message.header_ptr(), message.size()),
+        m_socket,
+        boost::asio::buffer(message.header_ptr(), message.num_bytes()),
         [this, self](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
             std::cout << "Server wrote message size " << length << std::endl;
-            // do_read_header();
+            do_read_header();
           } else {
             std::cout << "Error writing message in session: " << ec.message()
                       << std::endl;
