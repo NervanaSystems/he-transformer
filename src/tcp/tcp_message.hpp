@@ -31,7 +31,8 @@ enum class MessageType {
   public_key,
   inference,
   relu_request,
-  relu
+  relu,
+  result
 };
 
 inline std::string message_type_to_string(const MessageType& type) {
@@ -47,6 +48,9 @@ inline std::string message_type_to_string(const MessageType& type) {
       break;
     case MessageType::inference:
       return "inference";
+      break;
+    case MessageType::result:
+      return "result";
       break;
     default:
       return "Unknown message type";

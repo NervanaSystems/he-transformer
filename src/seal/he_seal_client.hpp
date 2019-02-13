@@ -109,7 +109,12 @@ class HESealClient {
 
       std::cout << "Returning ciphertext " << std::endl;
       return return_message;
-    } else {
+    } else if (msg_type == MessageType::result) {
+      std::cout << "Cleint got result type" << std::endl;
+      throw std::domain_error("So far so good in client");
+    }
+
+    else {
       std::cout << "Returning empty TCP message" << std::endl;
       return TCPMessage();
     }

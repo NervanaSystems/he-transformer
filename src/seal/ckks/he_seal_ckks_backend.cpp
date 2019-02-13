@@ -443,13 +443,38 @@ runtime::he::TCPMessage runtime::he::he_seal::HESealCKKSBackend::handle_message(
     std::cout << "Calling function " << std::endl;
 
     call(function, outputs, inputs);
+
+    size_t output_size = outputs[0]->get_element_count();
+
+    NGRAPH_INFO << "output size " << output_size;
+
+    std::vector<seal::Ciphertext> seal_outputs;
+    for (const auto& output : outputs) {
+      for (const auto& element :
+           dynamic_pointer_cast<runtime::he::HECipherTensor>(output)
+               ->get_elements()) {
+        auto wrapper =
+            dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(
+                element);
+
+        seal::Ciphertext c = wrapper->m_ciphertext;
+        seal_outputs.emplace_back(c);
+      }
+    }
+
+    char* output_data = (char*)(seal_outputs.data());
+
+    auto return_message =
+        TCPMessage(MessageType::result, 1, ciphertext_size, output_data);
+
+    return return_message;
+
     throw ngraph_error("So far so good");
 
-    // create tensors for input to function (shape given by function map)
-
-    // store ciphertexs in tensor
-    // create outputs
-    // call function
+    // ** create tensors for input to function (shape given by function map)
+    // ** store ciphertexs in tensor
+    // ** create outputs
+    // ** call function
     // create message containing outputs
     // return message
   } else {
