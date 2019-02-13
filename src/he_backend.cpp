@@ -507,6 +507,7 @@ void runtime::he::HEBackend::generate_calls(
             out0_cipher->get_batched_element_count());
       } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                  out0_cipher != nullptr) {
+        NGRAPH_INFO << "Add cipher+plain";
         runtime::he::kernel::add(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
             out0_cipher->get_elements(), element_type, this,

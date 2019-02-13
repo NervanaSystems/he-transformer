@@ -402,6 +402,13 @@ runtime::he::TCPMessage runtime::he::he_seal::HESealCKKSBackend::handle_message(
       std::cout << "Loaded " << i << "'th ciphertext" << std::endl;
       ciphertexts.emplace_back(c);
     }
+    std::vector<std::shared_ptr<runtime::he::HECiphertext>> he_cipher_inputs;
+
+    for (const auto cipher : ciphertexts) {
+      auto wrapper =
+          make_shared<runtime::he::he_seal::SealCiphertextWrapper>(cipher);
+      he_cipher_inputs.emplace_back(wrapper);
+    }
 
     auto function = m_function_map.begin()->first;
     const ParameterVector& input_parameters = function->get_parameters();
@@ -417,6 +424,9 @@ runtime::he::TCPMessage runtime::he::he_seal::HESealCKKSBackend::handle_message(
 
     auto input_tensor = create_cipher_tensor(
         element_type, input_parameters[0]->get_shape(), batched);
+
+    dynamic_pointer_cast<runtime::he::HECipherTensor>(input_tensor)
+        ->set_elements(he_cipher_inputs);
 
     std::vector<shared_ptr<runtime::Tensor>> inputs{input_tensor};
     std::vector<shared_ptr<runtime::Tensor>> outputs;

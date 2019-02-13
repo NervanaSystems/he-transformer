@@ -143,3 +143,12 @@ void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset,
     }
   }
 }
+
+void runtime::he::HECipherTensor::set_elements(
+    const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& elements) {
+  if (elements.size() != get_element_count()) {
+    throw ngraph_error("Wrong number of elements set");
+  }
+
+  m_cipher_texts = elements;
+}

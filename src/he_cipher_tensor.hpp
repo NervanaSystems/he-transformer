@@ -53,6 +53,9 @@ class HECipherTensor : public HETensor {
 
   void read(void* target, size_t tensor_offset, size_t n) const override;
 
+  void set_elements(
+      const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& elements);
+
   inline std::vector<std::shared_ptr<runtime::he::HECiphertext>>&
   get_elements() noexcept {
     return m_cipher_texts;
