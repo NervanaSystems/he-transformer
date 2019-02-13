@@ -65,6 +65,8 @@ class HESealBFVBackend : public HESealBackend {
   void assert_valid_seal_bfv_parameter(
       const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp) const;
 
+  TCPMessage handle_message(const TCPMessage& message) override;
+
  private:
   std::shared_ptr<seal::FractionalEncoder> m_frac_encoder;
 };

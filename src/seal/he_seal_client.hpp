@@ -21,6 +21,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "he_seal_util.hpp"
 #include "seal/context.h"
 #include "seal/seal.h"
 #include "tcp/tcp_client.hpp"
@@ -79,30 +80,30 @@ class HESealClient {
       std::cout << "Wrote pk to stringstream" << std::endl;
 
       m_public_key.load(m_context, pk_stream);
+      assert(m_public_key.is_valid_for(m_context));
 
       std::cout << "Copied public key from server" << std::endl;
 
       m_encryptor = std::make_shared<seal::Encryptor>(m_context, m_public_key);
 
       std::vector<double> input{0.0, 1.1, 2.2, 3.3};
-
       seal::Plaintext plain;
       m_encoder->encode(input, m_scale, plain);
       seal::Ciphertext c;
-
       m_encryptor->encrypt(plain, c);
 
       std::cout << "m_scale " << m_scale << std::endl;
+      print_seal_context(*m_context);
 
       std::stringstream cipher_stream;
       c.save(cipher_stream);
       const std::string& cipher_str = cipher_stream.str();
       const char* cipher_cstr = cipher_str.c_str();
 
-      std::cout << "Ciphertext size " << sizeof(seal::Ciphertext) << std::endl;
+      size_t cipher_size = cipher_str.size();
 
-      auto return_message = TCPMessage(MessageType::inference, 1,
-                                       sizeof(seal::Ciphertext), cipher_cstr);
+      auto return_message =
+          TCPMessage(MessageType::inference, 1, cipher_size, cipher_cstr);
 
       std::cout << "Returning ciphertext " << std::endl;
       return return_message;

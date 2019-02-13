@@ -74,7 +74,7 @@ parse_seal_bfv_config_or_use_default() {
         64,             // fractional_encoder_integer_coeff_count
         32,             // fractional_encoder_fraction_coeff_count
         2               // fractional_encoder_base
-        );
+    );
   }
 }
 
@@ -228,4 +228,9 @@ void runtime::he::he_seal::HESealBFVBackend::decode(
   } else {
     throw ngraph_error("HESealBFVBackend::decode input is not seal plaintext");
   }
+}
+
+runtime::he::TCPMessage runtime::he::he_seal::HESealBFVBackend::handle_message(
+    const runtime::he::TCPMessage& message) {
+  throw ngraph_error("handle_message not implemented in BFV backend");
 }

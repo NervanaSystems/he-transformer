@@ -67,42 +67,6 @@ void runtime::he::he_seal::HESealBackend::assert_valid_seal_parameter(
   }
 }
 
-runtime::he::TCPMessage runtime::he::he_seal::HESealBackend::handle_message(
-    const runtime::he::TCPMessage& message) {
-  NGRAPH_INFO << "Handling TCP Message";
-
-  MessageType msg_type = message.message_type();
-
-  if (msg_type == MessageType::public_key_request) {
-    NGRAPH_INFO << "Server got public_key_request message";
-
-    seal::PublicKey pk = *m_public_key;
-    stringstream stream;
-    pk.save(stream);
-
-    const std::string& pk_str = stream.str();
-    const char* pk_cstr = pk_str.c_str();
-
-    NGRAPH_INFO << "Size of pk " << pk_str.size();
-
-    auto return_message = runtime::he::TCPMessage(MessageType::public_key, 1,
-                                                  pk_str.size(), pk_cstr);
-
-    NGRAPH_INFO << "Sending PK message back";
-    return return_message;
-  } else if (msg_type == MessageType::none) {
-    NGRAPH_INFO << "Server got MessageType:none";
-  } else if (msg_type == MessageType::public_key) {
-    NGRAPH_INFO << "Server got MessageType:public_key";
-  } else if (msg_type == MessageType::relu) {
-    NGRAPH_INFO << "Server got MessageType:relu";
-  } else if (msg_type == MessageType::relu_request) {
-    NGRAPH_INFO << "Server got MessageType:relu_request";
-  } else {
-    throw ngraph_error("Unknown message type in server");
-  }
-}
-
 shared_ptr<runtime::he::HECiphertext>
 runtime::he::he_seal::HESealBackend::create_empty_ciphertext() const {
   return make_shared<runtime::he::he_seal::SealCiphertextWrapper>();

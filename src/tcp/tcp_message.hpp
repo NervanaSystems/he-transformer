@@ -69,6 +69,7 @@ class TCPMessage {
     m_body_length = sizeof(MessageType);
     m_count = 0;
     m_data_size = 0;
+    m_element_size = 0;
 
     encode_header();
     encode_message_type();
@@ -78,6 +79,7 @@ class TCPMessage {
       : m_bytes(header_length),
         m_body_length(0),
         m_type(MessageType::none),
+        m_element_size(0),
         m_count(0) {}
 
   // @brief Describes TCP messages of the form:
@@ -101,12 +103,20 @@ class TCPMessage {
 
     m_body_length = m_bytes - header_length;
 
+    m_element_size = size / count;
+
     encode_header();
     encode_message_type();
     encode_count_and_data(data);
   }
 
   size_t count() { return m_count; }
+
+  const size_t count() const { return m_count; }
+
+  size_t element_size() { return m_element_size; }
+
+  const size_t element_size() const { return m_element_size; }
 
   size_t num_bytes() { return m_bytes; }
 
@@ -182,8 +192,11 @@ class TCPMessage {
       std::memcpy(&m_count, count_ptr(), sizeof(size_t));
       // Decode data size
       m_data_size = m_body_length - sizeof(MessageType) - sizeof(size_t);
+
+      m_element_size = m_data_size / m_count;
     } else {
       m_data_size = 0;
+      m_element_size = 0;
     }
   }
 
@@ -201,10 +214,11 @@ class TCPMessage {
   }
 
  private:
-  size_t m_bytes;        // How many bytes in the message
-  size_t m_body_length;  // How many bytes in message body
-  size_t m_count;        // Number of datatype in message
-  size_t m_data_size;    // Nubmer of bytes in data part of message
+  size_t m_bytes;         // How many bytes in the message
+  size_t m_body_length;   // How many bytes in message body
+  size_t m_count;         // Number of datatype in message
+  size_t m_data_size;     // Nubmer of bytes in data part of message
+  size_t m_element_size;  // How many bytes per datatype in message
 
   MessageType m_type;  // What data is being transmitted
   char m_data[header_length + max_body_length];
