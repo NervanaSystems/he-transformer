@@ -47,6 +47,9 @@ namespace he {
 class HETensor;
 class HEBackend : public runtime::Backend {
  public:
+  /// @brief starts the server
+  void start_server();
+
   /// @brief Creates ciphertext of unspecified value
   /// @return Shared pointer to created ciphertext
   virtual std::shared_ptr<runtime::he::HECiphertext> create_empty_ciphertext()

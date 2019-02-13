@@ -20,6 +20,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <vector>
 #include "seal/context.h"
 #include "seal/seal.h"
 #include "tcp/tcp_client.hpp"
@@ -49,8 +50,12 @@ class HESealClient {
          seal::util::global_variables::small_mods_30bit.begin() + 4});
 
     m_context = seal::SEALContext::Create(parms);
-
+    m_encoder = std::make_shared<seal::CKKSEncoder>(m_context);
     m_thread = std::thread([&io_context]() { io_context.run(); });
+
+    auto m_context_data = m_context->context_data();
+    m_scale = static_cast<double>(
+        m_context_data->parms().coeff_modulus().back().value());
   }
 
   const runtime::he::TCPMessage& handle_message(
@@ -76,9 +81,33 @@ class HESealClient {
       m_public_key.load(m_context, pk_stream);
 
       std::cout << "Copied public key from server" << std::endl;
-    }
 
-    return TCPMessage();
+      m_encryptor = std::make_shared<seal::Encryptor>(m_context, m_public_key);
+
+      std::vector<double> input{0.0, 1.1, 2.2, 3.3};
+
+      seal::Plaintext plain;
+      m_encoder->encode(input, m_scale, plain);
+      seal::Ciphertext c;
+
+      m_encryptor->encrypt(plain, c);
+
+      std::stringstream cipher_stream;
+      c.save(cipher_stream);
+      const std::string& cipher_str = cipher_stream.str();
+      const char* cipher_cstr = cipher_str.c_str();
+
+      std::cout << "Ciphertext size " << sizeof(seal::Ciphertext) << std::endl;
+
+      auto return_message = TCPMessage(MessageType::inference, 1,
+                                       sizeof(seal::Ciphertext), cipher_cstr);
+
+      std::cout << "Returning ciphertext " << std::endl;
+      return return_message;
+    } else {
+      std::cout << "Returning empty TCP message" << std::endl;
+      return TCPMessage();
+    }
   }
 
   void write_message(const runtime::he::TCPMessage& message) {
@@ -96,6 +125,9 @@ class HESealClient {
   seal::PublicKey m_public_key;
   std::shared_ptr<seal::SEALContext> m_context;
   std::thread m_thread;
+  std::shared_ptr<seal::Encryptor> m_encryptor;
+  std::shared_ptr<seal::CKKSEncoder> m_encoder;
+  double m_scale;
 };
 }  // namespace he
 }  // namespace runtime

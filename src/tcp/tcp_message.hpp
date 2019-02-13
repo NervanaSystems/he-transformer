@@ -29,9 +29,26 @@ enum class MessageType {
   none,
   public_key_request,
   public_key,
+  inference,
   relu_request,
   relu
 };
+
+inline std::string message_type_to_string(const MessageType& type) {
+  switch (type) {
+    case MessageType::none:
+      return "none";
+      break;
+    case MessageType::public_key_request:
+      return "public_key_request";
+      break;
+    case MessageType::inference:
+      return "inference";
+      break;
+    default:
+      return "Unknown message type";
+  }
+}
 
 class TCPMessage {
  public:
@@ -134,14 +151,9 @@ class TCPMessage {
   }
 
   void encode_message_type() {
-    // Copy message type
-    if (m_type == MessageType::public_key) {
-      std::cout << "Encoding body type public_key" << std::endl;
-    } else if (m_type == MessageType::public_key_request) {
-      std::cout << "Encoding body type public_key_request" << std::endl;
-    } else {
-      std::cout << "Encoding unknown body type" << std::endl;
-    }
+    std::cout << "Encoding message type "
+              << message_type_to_string(m_type).c_str() << std::endl;
+
     std::memcpy(body_ptr(), &m_type, sizeof(MessageType));
   }
 
@@ -158,22 +170,8 @@ class TCPMessage {
     MessageType type;
     // Decode message type
     std::memcpy(&type, body_ptr(), sizeof(MessageType));
-    switch (type) {
-      case MessageType::none:
-        std::cout << "Decoded body type: none" << std::endl;
-        break;
-
-      case MessageType::public_key:
-        std::cout << "Decoded body type: public_key " << std::endl;
-        break;
-
-      case MessageType::public_key_request:
-        std::cout << "Decoded body type: public_key_request " << std::endl;
-        break;
-
-      default:
-        std::cout << "Error decoding message type" << std::endl;
-    }
+    std::cout << "Decoded message type " << message_type_to_string(type).c_str()
+              << std::endl;
     m_type = type;
 
     if (m_body_length > sizeof(MessageType)) {

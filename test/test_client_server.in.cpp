@@ -82,12 +82,22 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_message_encode) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init) {
-  auto server_fun = []() {
+  Shape shape{2, 3};
+  auto a = make_shared<op::Parameter>(element::f32, shape);
+  auto b = make_shared<op::Parameter>(element::f32, shape);
+  auto t = make_shared<op::Add>(a, b);
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
+
+  auto server_fun = [&f]() {
     try {
       NGRAPH_INFO << "Server starting";
       auto backend = runtime::Backend::create("${BACKEND_NAME}");
-      auto he_seal_ckks_backend =
-          static_cast<runtime::he::he_seal::HESealCKKSBackend*>(backend.get());
+      auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+
+      auto handle = backend->compile(f);
+
+      he_backend->start_server();
+
     } catch (int e) {
       std::cout << "Exception in server" << std::endl;
     }
