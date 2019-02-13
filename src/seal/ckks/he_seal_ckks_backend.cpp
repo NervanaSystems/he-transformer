@@ -403,15 +403,45 @@ runtime::he::TCPMessage runtime::he::he_seal::HESealCKKSBackend::handle_message(
       ciphertexts.emplace_back(c);
     }
 
+    auto function = m_function_map.begin()->first;
+    const ParameterVector& input_parameters = function->get_parameters();
+
+    for (auto input_param : input_parameters) {
+      std::cout << "Parameter shape " << join(input_param->get_shape(), "x")
+                << std::endl;
+    }
+
+    auto element_type = input_parameters[0]->get_element_type();
+
+    bool batched = false;
+
+    auto input_tensor = create_cipher_tensor(
+        element_type, input_parameters[0]->get_shape(), batched);
+
+    std::vector<shared_ptr<runtime::Tensor>> inputs{input_tensor};
+    std::vector<shared_ptr<runtime::Tensor>> outputs;
+
+    for (size_t i = 0; i < function->get_output_size(); i++) {
+      auto output_type = function->get_output_element_type(i);
+      auto out_shape = function->get_output_shape(i);
+
+      auto tensor = create_cipher_tensor(output_type, out_shape, batched);
+
+      outputs.emplace_back(tensor);
+    }
+
+    std::cout << "Calling function " << std::endl;
+
+    call(function, outputs, inputs);
     throw ngraph_error("So far so good");
 
     // create tensors for input to function (shape given by function map)
+
     // store ciphertexs in tensor
     // create outputs
     // call function
     // create message containing outputs
     // return message
-
   } else {
     throw ngraph_error("Unknown message type in server");
   }

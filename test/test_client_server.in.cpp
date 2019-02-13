@@ -82,11 +82,12 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_message_encode) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init) {
-  Shape shape{2, 3};
+  Shape shape{1};
   auto a = make_shared<op::Parameter>(element::f32, shape);
-  auto b = make_shared<op::Parameter>(element::f32, shape);
+  auto b =
+      make_shared<op::Constant>(element::f32, shape, std::vector<float>{2.3});
   auto t = make_shared<op::Add>(a, b);
-  auto f = make_shared<Function>(t, ParameterVector{a, b});
+  auto f = make_shared<Function>(t, ParameterVector{a});
 
   auto server_fun = [&f]() {
     try {

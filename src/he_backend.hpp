@@ -219,7 +219,7 @@ class HEBackend : public runtime::Backend {
 
   size_t get_port() const { return m_port; };
 
- private:
+ protected:
   class FunctionInstance {
    public:
     bool m_is_compiled = false;
@@ -242,7 +242,6 @@ class HEBackend : public runtime::Backend {
       const std::vector<std::shared_ptr<runtime::he::HETensor>>& inputs,
       FunctionInstance& instance);
 
- protected:
   std::shared_ptr<TCPServer> m_tcp_server;
   size_t m_port{34000};  // Which port the server is hosted at
 };

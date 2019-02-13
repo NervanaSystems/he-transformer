@@ -86,7 +86,9 @@ class HESealClient {
 
       m_encryptor = std::make_shared<seal::Encryptor>(m_context, m_public_key);
 
-      std::vector<double> input{0.0, 1.1, 2.2, 3.3};
+      std::vector<seal::Ciphertext> ciphers;
+
+      std::vector<double> input{1.1};
       seal::Plaintext plain;
       m_encoder->encode(input, m_scale, plain);
       seal::Ciphertext c;
