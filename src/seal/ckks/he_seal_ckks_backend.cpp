@@ -376,6 +376,18 @@ runtime::he::TCPMessage runtime::he::he_seal::HESealCKKSBackend::handle_message(
     NGRAPH_INFO << "Server got MessageType:none";
   } else if (msg_type == MessageType::public_key) {
     NGRAPH_INFO << "Server got MessageType:public_key";
+
+    size_t pk_size = message.data_size();
+    std::stringstream pk_stream;
+    pk_stream.write(message.data_ptr(), pk_size);
+    m_public_key->load(m_context, pk_stream);
+
+    NGRAPH_INFO << "Server loaded public key";
+
+    auto return_message = runtime::he::TCPMessage(MessageType::public_key_ack);
+
+    return return_message;
+
   } else if (msg_type == MessageType::relu) {
     NGRAPH_INFO << "Server got MessageType:relu";
   } else if (msg_type == MessageType::relu_request) {

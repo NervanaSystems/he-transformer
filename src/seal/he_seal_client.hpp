@@ -37,11 +37,6 @@ class HESealClient {
     auto client_callback = [this](const runtime::he::TCPMessage& message) {
       return handle_message(message);
     };
-    auto first_message =
-        runtime::he::TCPMessage(runtime::he::MessageType::public_key_request);
-
-    m_tcp_client = std::make_shared<runtime::he::TCPClient>(
-        io_context, endpoints, first_message, client_callback);
 
     seal::EncryptionParameters parms(
         seal::scheme_type::CKKS);  // TODO: enable BFV
@@ -51,12 +46,37 @@ class HESealClient {
          seal::util::global_variables::small_mods_30bit.begin() + 4});
 
     m_context = seal::SEALContext::Create(parms);
-    m_encoder = std::make_shared<seal::CKKSEncoder>(m_context);
+
+    m_keygen = std::make_shared<seal::KeyGenerator>(m_context);
+    m_relin_keys = std::make_shared<seal::RelinKeys>(m_keygen->relin_keys(60));
+    m_public_key = std::make_shared<seal::PublicKey>(m_keygen->public_key());
+    m_secret_key = std::make_shared<seal::SecretKey>(m_keygen->secret_key());
+    m_encryptor = std::make_shared<seal::Encryptor>(m_context, *m_public_key);
+    m_decryptor = std::make_shared<seal::Decryptor>(m_context, *m_secret_key);
+
+    // Evaluator
+    m_evaluator = std::make_shared<seal::Evaluator>(m_context);
+
+    // Encoder
+    m_ckks_encoder = std::make_shared<seal::CKKSEncoder>(m_context);
+
     m_thread = std::thread([&io_context]() { io_context.run(); });
 
     auto m_context_data = m_context->context_data();
     m_scale = static_cast<double>(
         m_context_data->parms().coeff_modulus().back().value());
+
+    std::stringstream stream;
+    m_public_key->save(stream);
+    const std::string& pk_str = stream.str();
+    const char* pk_cstr = pk_str.c_str();
+    NGRAPH_INFO << "Size of pk " << pk_str.size();
+
+    auto first_message = runtime::he::TCPMessage(MessageType::public_key, 1,
+                                                 pk_str.size(), pk_cstr);
+
+    m_tcp_client = std::make_shared<runtime::he::TCPClient>(
+        io_context, endpoints, first_message, client_callback);
   }
 
   const runtime::he::TCPMessage handle_message(
@@ -67,30 +87,25 @@ class HESealClient {
 
     if (msg_type == MessageType::public_key_request) {
       std::cout << "Got message public_key_request" << std::endl;
-    } else if (msg_type == MessageType::public_key) {
-      std::cout << "Got message public_key" << std::endl;
+    } else if (msg_type == MessageType::public_key_ack) {
+      std::cout << "Got message public_key_ack" << std::endl;
 
-      size_t pk_size = message.data_size();
-      std::cout << "pk_size " << pk_size << std::endl;
-
+      /* size_t pk_size = message.data_size();
       std::stringstream pk_stream;
-
       pk_stream.write(message.data_ptr(), pk_size);
-
-      std::cout << "Wrote pk to stringstream" << std::endl;
-
       m_public_key.load(m_context, pk_stream);
       assert(m_public_key.is_valid_for(m_context));
 
-      std::cout << "Copied public key from server" << std::endl;
+      std::cout << "Copied public key from server" << std::endl; */
 
-      m_encryptor = std::make_shared<seal::Encryptor>(m_context, m_public_key);
+      // m_encryptor = std::make_shared<seal::Encryptor>(m_context,
+      // m_public_key);
 
       std::vector<seal::Ciphertext> ciphers;
 
       std::vector<double> input{1.1};
       seal::Plaintext plain;
-      m_encoder->encode(input, m_scale, plain);
+      m_ckks_encoder->encode(input, m_scale, plain);
       seal::Ciphertext c;
       m_encryptor->encrypt(plain, c);
 
@@ -114,6 +129,9 @@ class HESealClient {
       throw std::domain_error("So far so good in client");
     }
 
+    else if (msg_type == MessageType::public_key_ack) {
+    }
+
     else {
       std::cout << "Returning empty TCP message" << std::endl;
       return TCPMessage();
@@ -132,11 +150,16 @@ class HESealClient {
 
  private:
   std::shared_ptr<TCPClient> m_tcp_client;
-  seal::PublicKey m_public_key;
+  std::shared_ptr<seal::PublicKey> m_public_key;
+  std::shared_ptr<seal::SecretKey> m_secret_key;
   std::shared_ptr<seal::SEALContext> m_context;
-  std::thread m_thread;
   std::shared_ptr<seal::Encryptor> m_encryptor;
-  std::shared_ptr<seal::CKKSEncoder> m_encoder;
+  std::shared_ptr<seal::CKKSEncoder> m_ckks_encoder;
+  std::shared_ptr<seal::Decryptor> m_decryptor;
+  std::shared_ptr<seal::Evaluator> m_evaluator;
+  std::shared_ptr<seal::KeyGenerator> m_keygen;
+  std::shared_ptr<seal::RelinKeys> m_relin_keys;
+  std::thread m_thread;
   double m_scale;
 };
 }  // namespace he

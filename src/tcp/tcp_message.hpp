@@ -29,6 +29,7 @@ enum class MessageType {
   none,
   public_key_request,
   public_key,
+  public_key_ack,
   inference,
   relu_request,
   relu,
@@ -42,6 +43,9 @@ inline std::string message_type_to_string(const MessageType& type) {
       break;
     case MessageType::public_key:
       return "public_key";
+      break;
+    case MessageType::public_key_ack:
+      return "public_key_ack";
       break;
     case MessageType::public_key_request:
       return "public_key_request";
