@@ -44,8 +44,6 @@ class HESealClient {
     m_tcp_client = std::make_shared<runtime::he::TCPClient>(
         io_context, endpoints, first_message, client_callback);
 
-    sleep(2);  // wait for connection to happen
-
     m_thread = std::thread([&io_context]() { io_context.run(); });
   }
 

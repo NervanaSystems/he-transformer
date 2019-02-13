@@ -76,7 +76,7 @@ class TCPClient {
     std::cout << "Client reading header" << std::endl;
     boost::asio::async_read(
         m_socket,
-        boost::asio::buffer(m_read_message.data(),
+        boost::asio::buffer(m_read_message.header_ptr(),
                             runtime::he::TCPMessage::header_length),
         [this](boost::system::error_code ec, std::size_t length) {
           if (!ec && m_read_message.decode_header()) {
@@ -94,12 +94,12 @@ class TCPClient {
   void do_read_body() {
     boost::asio::async_read(
         m_socket,
-        boost::asio::buffer(m_read_message.body(),
+        boost::asio::buffer(m_read_message.body_ptr(),
                             m_read_message.body_length()),
         [this](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
             std::cout << "Client read message length " << length << std::endl;
-            std::cout.write(m_read_message.body(),
+            std::cout.write(m_read_message.body_ptr(),
                             m_read_message.body_length());
             std::cout << "\n";
             std::cout << "Client read body" << std::endl;
@@ -125,7 +125,7 @@ class TCPClient {
     std::cout << "Client writing message " << std::endl;
     std::cout << " of size " << message.size() << std::endl;
     boost::asio::async_write(
-        m_socket, boost::asio::buffer(message.data(), message.size()),
+        m_socket, boost::asio::buffer(message.header_ptr(), message.size()),
         [this](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
             std::cout << "Client wrote message length " << length << std::endl;

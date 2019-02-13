@@ -37,6 +37,7 @@ static string s_manifest = "${MANIFEST}";
 NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init3) {
   auto server_fun = []() {
     try {
+      NGRAPH_INFO << "Server starting";
       auto backend = runtime::Backend::create("${BACKEND_NAME}");
       auto he_seal_ckks_backend =
           static_cast<runtime::he::he_seal::HESealCKKSBackend*>(backend.get());
@@ -53,20 +54,11 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init3) {
     boost::asio::io_context io_context;
     tcp::resolver resolver(io_context);
     auto client_endpoints = resolver.resolve("localhost", std::to_string(port));
-
-    /* auto client_callback = [](const runtime::he::TCPMessage& message) {
-      std::cout << "Client callback for message" << std::endl;
-      return message;
-    }; */
-
     auto client = runtime::he::HESealClient(io_context, client_endpoints);
-    // runtime::he::TCPClient(io_context, client_endpoints, client_callback);
 
-    sleep(2);  // Let connection happen
+    // sleep(2);  // Let connection happen
 
-    // std::thread t([&io_context]() { io_context.run(); });
-
-    NGRAPH_INFO << "Writing message";
+    /*NGRAPH_INFO << "Writing message";
 
     size_t N = 100;
     void* x = malloc(N);
@@ -74,32 +66,15 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init3) {
     assert(x != nullptr);
     auto message = runtime::he::TCPMessage(
         runtime::he::MessageType::public_key_request, 0, N, (char*)x);
-    client.write_message(message);
+    client.write_message(message); */
 
     sleep(5);  // Let message be handled
     client.close_connection();
-
-    // t.join();
-    // io_context.run();
-
-    // sleep(1);  // Let message arrive
   };
-
-  /*auto pid = fork();
-  if (pid == 0) {
-    sleep(1);
-    NGRAPH_INFO << "Client fun";
-    client_fun();
-    sleep(1);
-  } else {
-    NGRAPH_INFO << "SErver fun";
-    server_fun();
-  } */
-
   std::thread t1(client_fun);
   std::thread t2(server_fun);
 
-  sleep(1);
+  sleep(5);
 
   t1.join();
   t2.join();

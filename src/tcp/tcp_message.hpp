@@ -35,7 +35,7 @@ enum class MessageType {
 class TCPMessage {
  public:
   enum { header_length = sizeof(size_t) };
-  enum { max_body_length = 1000 };
+  enum { max_body_length = 100000 };
 
   TCPMessage()
       : m_bytes(header_length),
@@ -64,13 +64,27 @@ class TCPMessage {
     encode_body();
   }
 
-  char* data() { return m_data; }
+  char* header_ptr() { return m_data; }
 
-  const char* data() const { return m_data; }
+  const char* header_ptr() const { return m_data; }
 
-  char* body() { return m_data + header_length; }
+  char* body_ptr() { return m_data + header_length; }
 
-  const char* body() const { return m_data + header_length; }
+  const char* body_ptr() const { return m_data + header_length; }
+
+  char* count_ptr() { return m_data + header_length + sizeof(MessageType); }
+
+  const char* count_ptr() const {
+    return m_data + header_length + sizeof(MessageType);
+  }
+
+  char* data_ptr() {
+    return m_data + header_length + sizeof(MessageType) + sizeof(size_t);
+  }
+
+  const char* data_ptr() const {
+    return m_data + header_length + sizeof(MessageType) + sizeof(size_t);
+  }
 
   MessageType get_message_type() const { return m_type; }
 
@@ -89,7 +103,7 @@ class TCPMessage {
     } else {
       std::cout << "Encoding unknown body type" << std::endl;
     }
-    std::memcpy(body(), &m_type, sizeof(MessageType));
+    std::memcpy(body_ptr(), &m_type, sizeof(MessageType));
   }
 
   void encode_header() {
@@ -106,7 +120,7 @@ class TCPMessage {
   // Given m_data, parses to find m_datatype, m_count
   bool decode_body() {
     MessageType type;
-    std::memcpy(&type, body(), sizeof(MessageType));
+    std::memcpy(&type, body_ptr(), sizeof(MessageType));
 
     switch (type) {
       case MessageType::none:
