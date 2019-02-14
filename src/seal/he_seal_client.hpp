@@ -33,7 +33,9 @@ namespace he {
 class HESealClient {
  public:
   HESealClient(boost::asio::io_context& io_context,
-               const tcp::resolver::results_type& endpoints) {
+               const tcp::resolver::results_type& endpoints,
+               std::vector<float> inputs)
+      : m_inputs{inputs} {
     auto client_callback = [this](const runtime::he::TCPMessage& message) {
       return handle_message(message);
     };
@@ -109,16 +111,13 @@ class HESealClient {
 
       std::vector<seal::Ciphertext> ciphers;
 
-      std::vector<double> inputs;
-      for (size_t i = 0; i < shape_size; ++i) {
-        inputs.push_back(1 + i / 10.);
-      }
+      assert(m_inputs.size() == shape_size);
 
       std::stringstream cipher_stream;
 
       for (size_t i = 0; i < shape_size; ++i) {
         seal::Plaintext plain;
-        m_ckks_encoder->encode(inputs[i], m_scale, plain);
+        m_ckks_encoder->encode(m_inputs[i], m_scale, plain);
         seal::Ciphertext c;
         m_encryptor->encrypt(plain, c);
         c.save(cipher_stream);
@@ -157,6 +156,7 @@ class HESealClient {
         m_ckks_encoder->decode(plain, output);
 
         std::cout << "output " << output[0] << std::endl;
+        m_results.push_back((float)output[0]);
       }
 
       // sleep(10);  // Wait
@@ -178,6 +178,8 @@ class HESealClient {
   }
 
   bool is_done() { return m_is_done; }
+
+  std::vector<float> get_results() { return m_results; }
 
   void close_connection() {
     std::cout << "Closing connectiong" << std::endl;
@@ -201,6 +203,9 @@ class HESealClient {
   std::thread m_thread;
   double m_scale;
   bool m_is_done{false};
+  std::vector<float> m_inputs;   // Function inputs
+  std::vector<float> m_results;  // Function outputs
+
 };  // namespace he
 }  // namespace he
 }  // namespace runtime

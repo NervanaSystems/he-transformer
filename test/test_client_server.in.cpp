@@ -106,28 +106,25 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init) {
     }
   };
 
-  auto client_fun = []() {
+  std::vector<float> results;
+
+  auto client_fun = [&results]() {
     try {
       sleep(3);  // Let server start
       size_t port = 34000;
+
+      std::vector<float> inputs{1, 2, 3, 4, 5, 6};
       boost::asio::io_context io_context;
       tcp::resolver resolver(io_context);
       auto client_endpoints =
           resolver.resolve("localhost", std::to_string(port));
-      auto client = runtime::he::HESealClient(io_context, client_endpoints);
-
-      // client.request_public_key(); <-- handler processes response
-      // client.request_context();    <-- handler processes response
-      // encrypt_data();
-      // client.write_message("Perform inference"); <-- handler processes
-      // response
-      //                                                until Result
-      // client.print_results()
-      // client.close_connection()
+      auto client =
+          runtime::he::HESealClient(io_context, client_endpoints, inputs);
 
       while (!client.is_done()) {
         sleep(1);
       }
+      results = client.get_results();
 
     } catch (std::system_error& e) {
       std::cout << "Exception in client" << std::endl;
@@ -135,7 +132,15 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init) {
   };
   std::thread t1(client_fun);
   std::thread t2(server_fun);
-
   t1.join();
   t2.join();
+
+  std::cout << "results " << std::endl;
+  for (const auto& elem : results) {
+    std::cout << elem << " ";
+  }
+
+  EXPECT_TRUE(
+      all_close(results, std::vector<float>{2.1, 3.2, 4.3, 5.4, 6.5, 7.6}));
+  std::cout << std::endl;
 }
