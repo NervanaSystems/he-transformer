@@ -141,23 +141,19 @@ class HESealClient {
       std::vector<seal::Ciphertext> result;
 
       for (size_t i = 0; i < count; ++i) {
-        seal::Ciphertext c;
+        seal::Ciphertext cipher;
         std::stringstream cipher_stream;
 
         cipher_stream.write(message.data_ptr() + i * element_size,
                             element_size);
 
-        c.load(m_context, cipher_stream);
-        result.push_back(c);
-      }
-
-      for (const auto& cipher : result) {
+        cipher.load(m_context, cipher_stream);
+        result.push_back(cipher);
         seal::Plaintext plain;
         m_decryptor->decrypt(cipher, plain);
-
         std::vector<double> output;
-
         m_ckks_encoder->decode(plain, output);
+
         std::cout << "output " << output[0] << std::endl;
       }
 

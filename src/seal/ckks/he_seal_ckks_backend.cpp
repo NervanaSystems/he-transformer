@@ -422,8 +422,9 @@ runtime::he::TCPMessage runtime::he::he_seal::HESealCKKSBackend::handle_message(
 
     // Save outputs to stringstream
     std::vector<seal::Ciphertext> seal_outputs;
-    std::vector<std::stringstream> cipher_streams(output_size);
-    size_t i = 0;
+    // std::vector<std::stringstream> cipher_streams(0output_size);
+
+    std::stringstream cipher_stream;
     for (const auto& output : outputs) {
       for (const auto& element :
            dynamic_pointer_cast<runtime::he::HECipherTensor>(output)
@@ -435,19 +436,15 @@ runtime::he::TCPMessage runtime::he::he_seal::HESealCKKSBackend::handle_message(
         seal::Ciphertext c = wrapper->m_ciphertext;
         seal_outputs.emplace_back(c);
 
-        // std::stringstream cipher_stream;
-        c.save(cipher_streams[i]);
-        ++i;
+        c.save(cipher_stream);
       }
     }
-    std::stringstream cipher_stream;
-    seal_outputs[0].save(cipher_stream);
     const std::string& cipher_str = cipher_stream.str();
     const char* cipher_cstr = cipher_str.c_str();
     std::cout << "Cipher size " << cipher_str.size() << std::endl;
 
-    auto return_message =
-        TCPMessage(MessageType::result, 1, ciphertext_size, cipher_cstr);
+    auto return_message = TCPMessage(MessageType::result, output_size,
+                                     cipher_str.size(), cipher_cstr);
 
     return return_message;
   } else if (msg_type == MessageType::parameter_shape_request) {

@@ -72,7 +72,7 @@ inline std::string message_type_to_string(const MessageType& type) {
 class TCPMessage {
  public:
   enum { header_length = sizeof(size_t) };
-  enum { max_body_length = 100000 };
+  enum { max_body_length = 400000 };
 
   TCPMessage(const MessageType type) : m_type(type) {
     std::set<MessageType> request_types{
@@ -109,6 +109,7 @@ class TCPMessage {
              const char* data)
       : m_type(type), m_count(count), m_data_size(size) {
     if (count != 0 && size % count != 0) {
+      std::cout << "size " << size << " count " << count << std::endl;
       throw std::invalid_argument("Size must be a multiple of count");
     }
     std::cout << "Creating message with data size " << size << std::endl;
@@ -119,6 +120,11 @@ class TCPMessage {
     m_bytes += size;
 
     m_body_length = m_bytes - header_length;
+
+    if (m_body_length > max_body_length) {
+      throw std::invalid_argument("Size " + std::to_string(m_body_length) +
+                                  " too large");
+    }
 
     m_element_size = size / count;
 
