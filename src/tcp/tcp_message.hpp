@@ -77,7 +77,8 @@ class TCPMessage {
   TCPMessage(const MessageType type) : m_type(type) {
     std::set<MessageType> request_types{
         MessageType::public_key_request, MessageType::relu_request,
-        MessageType::public_key_ack, MessageType::parameter_shape_request};
+        MessageType::public_key_ack, MessageType::parameter_shape_request,
+        MessageType::none};
 
     if (request_types.find(type) == request_types.end()) {
       throw std::invalid_argument("Request type not valid");
@@ -92,12 +93,7 @@ class TCPMessage {
     encode_message_type();
   }
 
-  TCPMessage()
-      : m_bytes(header_length),
-        m_body_length(0),
-        m_type(MessageType::none),
-        m_element_size(0),
-        m_count(0) {}
+  TCPMessage() : TCPMessage(MessageType::none) {}
 
   // @brief Describes TCP messages of the form:
   // header        | message_type | count        | data

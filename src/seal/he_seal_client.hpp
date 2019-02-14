@@ -78,6 +78,8 @@ class HESealClient {
     m_thread = std::thread([&io_context]() { io_context.run(); });
   }
 
+  ~HESealClient() {}
+
   const runtime::he::TCPMessage handle_message(
       const runtime::he::TCPMessage& message) {
     MessageType msg_type = message.message_type();
@@ -157,7 +159,14 @@ class HESealClient {
         std::cout << "output " << output[0] << std::endl;
       }
 
-      throw std::domain_error("So far so good in client");
+      // sleep(10);  // Wait
+
+      // close_connection();
+      // std::cout << "Returning empty TCP message" << std::endl;
+      return TCPMessage(MessageType::none);
+
+    } else if (msg_type == MessageType::none) {
+      close_connection();
     } else {
       std::cout << "Returning empty TCP message" << std::endl;
       return TCPMessage();
@@ -168,9 +177,14 @@ class HESealClient {
     m_tcp_client->write_message(message);
   }
 
+  bool is_done() { return m_is_done; }
+
   void close_connection() {
+    std::cout << "Closing connectiong" << std::endl;
+
     m_tcp_client->close();
-    m_thread.join();
+    m_thread.detach();
+    m_is_done = true;
   }
 
  private:
@@ -186,6 +200,7 @@ class HESealClient {
   std::shared_ptr<seal::RelinKeys> m_relin_keys;
   std::thread m_thread;
   double m_scale;
+  bool m_is_done{false};
 };  // namespace he
 }  // namespace he
 }  // namespace runtime

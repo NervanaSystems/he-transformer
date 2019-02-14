@@ -46,6 +46,7 @@ class TCPClient {
 
   void close() {
     std::cout << "Closing socket" << std::endl;
+    m_socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
     boost::asio::post(m_io_context, [this]() { m_socket.close(); });
   }
 

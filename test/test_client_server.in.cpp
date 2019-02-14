@@ -101,35 +101,40 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init) {
 
       he_backend->start_server();
 
-    } catch (int e) {
+    } catch (std::system_error& e) {
       std::cout << "Exception in server" << std::endl;
     }
   };
 
   auto client_fun = []() {
-    sleep(3);  // Let server start
-    size_t port = 34000;
-    boost::asio::io_context io_context;
-    tcp::resolver resolver(io_context);
-    auto client_endpoints = resolver.resolve("localhost", std::to_string(port));
-    auto client = runtime::he::HESealClient(io_context, client_endpoints);
+    try {
+      sleep(3);  // Let server start
+      size_t port = 34000;
+      boost::asio::io_context io_context;
+      tcp::resolver resolver(io_context);
+      auto client_endpoints =
+          resolver.resolve("localhost", std::to_string(port));
+      auto client = runtime::he::HESealClient(io_context, client_endpoints);
 
-    // client.request_public_key(); <-- handler processes response
-    // client.request_context();    <-- handler processes response
-    // encrypt_data();
-    // client.write_message("Perform inference"); <-- handler processes response
-    //                                                until Result
-    // client.print_results()
-    // client.close_connection()
+      // client.request_public_key(); <-- handler processes response
+      // client.request_context();    <-- handler processes response
+      // encrypt_data();
+      // client.write_message("Perform inference"); <-- handler processes
+      // response
+      //                                                until Result
+      // client.print_results()
+      // client.close_connection()
 
-    sleep(5);  // Let message be handled
-    NGRAPH_INFO << "Closing connection";
-    client.close_connection();
+      while (!client.is_done()) {
+        sleep(1);
+      }
+
+    } catch (std::system_error& e) {
+      std::cout << "Exception in client" << std::endl;
+    }
   };
   std::thread t1(client_fun);
   std::thread t2(server_fun);
-
-  sleep(5);
 
   t1.join();
   t2.join();

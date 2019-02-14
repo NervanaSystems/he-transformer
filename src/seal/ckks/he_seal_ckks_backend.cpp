@@ -487,6 +487,9 @@ runtime::he::TCPMessage runtime::he::he_seal::HESealCKKSBackend::handle_message(
 
     auto return_message = runtime::he::TCPMessage(MessageType::public_key_ack);
     return return_message;
+  } else if (msg_type == MessageType::none) {
+    NGRAPH_INFO << "Server replying with none mssage";
+    return message;
   } else {
     NGRAPH_INFO << "Unsupported message type in server:  "
                 << message_type_to_string(msg_type);

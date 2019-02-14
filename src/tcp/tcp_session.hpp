@@ -49,13 +49,10 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
             if (ec) {
               std::cout << "Server Error reading message: " << ec.message()
                         << std::endl;
-              std::cout << "Closing TCP server by throwing exception"
-                        << std::endl;  // TODO: see boost asio server example
-                                       // for better stopping of server
-              throw std::exception();
-            }
-            if (!m_message.decode_header()) {
-              std::cout << "Cant decode message header" << std::endl;
+              // std::cout << "Closing TCP server by throwing exception"
+              //          << std::endl;  // TODO: see boost asio server example
+              // for better stopping of server
+              // throw std::exception();
             }
           }
         });
