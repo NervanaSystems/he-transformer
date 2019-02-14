@@ -135,11 +135,6 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init) {
   t1.join();
   t2.join();
 
-  std::cout << "results " << std::endl;
-  for (const auto& elem : results) {
-    std::cout << elem << " ";
-  }
-
   EXPECT_TRUE(
       all_close(results, std::vector<float>{2.1, 3.2, 4.3, 5.4, 6.5, 7.6}));
   std::cout << std::endl;

@@ -20,6 +20,19 @@
 
 #include "seal/seal.h"
 
+template <typename T>
+std::string join(const T& v, const std::string& sep = ", ") {
+  std::ostringstream ss;
+  size_t count = 0;
+  for (const auto& x : v) {
+    if (count++ > 0) {
+      ss << sep;
+    }
+    ss << x;
+  }
+  return ss.str();
+}
+
 static void print_seal_context(const seal::SEALContext& context) {
   auto context_data = context.context_data();
   auto scheme_parms = context_data->parms();
@@ -30,30 +43,30 @@ static void print_seal_context(const seal::SEALContext& context) {
                                                                : "";
 
   if (scheme_name == "HE:SEAL:BFV") {
-    NGRAPH_INFO << std::endl
-                << "/ Encryption parameters:" << std::endl
-                << "| scheme: " << scheme_name << std::endl
-                << "| poly_modulus: " << scheme_parms.poly_modulus_degree()
-                << std::endl
-                // Print the size of the true (product) coefficient modulus
-                << "| coeff_modulus size: "
-                << context_data->total_coeff_modulus_bit_count() << " bits"
-                << std::endl
-                << "| plain_modulus: " << scheme_parms.plain_modulus().value()
-                << std::endl
-                << "\\ noise_standard_deviation: "
-                << scheme_parms.noise_standard_deviation();
+    std::cout << std::endl
+              << "/ Encryption parameters:" << std::endl
+              << "| scheme: " << scheme_name << std::endl
+              << "| poly_modulus: " << scheme_parms.poly_modulus_degree()
+              << std::endl
+              // Print the size of the true (product) coefficient modulus
+              << "| coeff_modulus size: "
+              << context_data->total_coeff_modulus_bit_count() << " bits"
+              << std::endl
+              << "| plain_modulus: " << scheme_parms.plain_modulus().value()
+              << std::endl
+              << "\\ noise_standard_deviation: "
+              << scheme_parms.noise_standard_deviation();
   } else if (scheme_name == "HE:SEAL:CKKS") {
-    NGRAPH_INFO << std::endl
-                << "/ Encryption parameters:" << std::endl
-                << "| scheme: " << scheme_name << std::endl
-                << "| poly_modulus: " << scheme_parms.poly_modulus_degree()
-                << std::endl
-                // Print the size of the true (product) coefficient modulus
-                << "| coeff_modulus size: "
-                << context_data->total_coeff_modulus_bit_count() << " bits"
-                << std::endl
-                << "\\ noise_standard_deviation: "
-                << scheme_parms.noise_standard_deviation();
+    std::cout << std::endl
+              << "/ Encryption parameters:" << std::endl
+              << "| scheme: " << scheme_name << std::endl
+              << "| poly_modulus: " << scheme_parms.poly_modulus_degree()
+              << std::endl
+              // Print the size of the true (product) coefficient modulus
+              << "| coeff_modulus size: "
+              << context_data->total_coeff_modulus_bit_count() << " bits"
+              << std::endl
+              << "\\ noise_standard_deviation: "
+              << scheme_parms.noise_standard_deviation();
   }
 }
