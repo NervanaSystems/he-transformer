@@ -82,33 +82,59 @@ class HESealClient {
       const runtime::he::TCPMessage& message) {
     MessageType msg_type = message.message_type();
 
+    std::cout << "Client got message: "
+              << message_type_to_string(msg_type).c_str() << std::endl;
+
     if (msg_type == MessageType::public_key_request) {
-      std::cout << "Client got message public_key_request" << std::endl;
     } else if (msg_type == MessageType::public_key_ack) {
-      std::cout << "Client got message public_key_ack" << std::endl;
+      auto return_message = TCPMessage(MessageType::parameter_shape_request);
+
+      return return_message;
+    } else if (msg_type == MessageType::parameter_shape) {
+      std::vector<size_t> shape(message.count());
+
+      std::cout << "element size " << message.element_size() << std::endl;
+      std::cout << "element count " << message.count() << std::endl;
+
+      std::memcpy(shape.data(), message.data_ptr(), message.data_size());
+
+      std::cout << "Shape " << join(shape, "x") << std::endl;
+
+      auto shape_size = std::accumulate(begin(shape), end(shape), 1,
+                                        std::multiplies<size_t>());
+
+      std::cout << "shape size " << shape_size << std::endl;
 
       std::vector<seal::Ciphertext> ciphers;
 
-      std::vector<double> input{1.1};
-      seal::Plaintext plain;
-      m_ckks_encoder->encode(input, m_scale, plain);
-      seal::Ciphertext c;
-      m_encryptor->encrypt(plain, c);
+      std::vector<double> inputs;
+      for (size_t i = 0; i < shape_size; ++i) {
+        inputs.push_back(1 + i / 10.);
+      }
 
       std::stringstream cipher_stream;
-      c.save(cipher_stream);
+
+      for (size_t i = 0; i < shape_size; ++i) {
+        seal::Plaintext plain;
+        m_ckks_encoder->encode(inputs[i], m_scale, plain);
+        seal::Ciphertext c;
+        m_encryptor->encrypt(plain, c);
+        c.save(cipher_stream);
+      }
+
+      // c.save(cipher_stream);
       const std::string& cipher_str = cipher_stream.str();
       const char* cipher_cstr = cipher_str.c_str();
 
       size_t cipher_size = cipher_str.size();
 
-      auto return_message =
-          TCPMessage(MessageType::inference, 1, cipher_size, cipher_cstr);
+      std::cout << "Cipher size " << cipher_size << std::endl;
+
+      auto return_message = TCPMessage(MessageType::execute, shape_size,
+                                       cipher_size, cipher_cstr);
 
       return return_message;
     } else if (msg_type == MessageType::result) {
-      std::cout << "Client got message: result" << std::endl;
-
       size_t count = message.count();
       size_t element_size = message.element_size();
 
@@ -136,12 +162,7 @@ class HESealClient {
       }
 
       throw std::domain_error("So far so good in client");
-    }
-
-    else if (msg_type == MessageType::public_key_ack) {
-    }
-
-    else {
+    } else {
       std::cout << "Returning empty TCP message" << std::endl;
       return TCPMessage();
     }
@@ -169,7 +190,7 @@ class HESealClient {
   std::shared_ptr<seal::RelinKeys> m_relin_keys;
   std::thread m_thread;
   double m_scale;
-};
+};  // namespace he
 }  // namespace he
 }  // namespace runtime
 }  // namespace ngraph

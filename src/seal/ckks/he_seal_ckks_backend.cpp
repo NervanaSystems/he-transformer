@@ -355,44 +355,10 @@ runtime::he::TCPMessage runtime::he::he_seal::HESealCKKSBackend::handle_message(
 
   MessageType msg_type = message.message_type();
 
-  if (msg_type == MessageType::public_key_request) {
-    NGRAPH_INFO << "Server got public_key_request message";
+  NGRAPH_INFO << "Server got " << message_type_to_string(msg_type)
+              << " message";
 
-    seal::PublicKey pk = *m_public_key;
-    stringstream stream;
-    pk.save(stream);
-
-    const std::string& pk_str = stream.str();
-    const char* pk_cstr = pk_str.c_str();
-
-    auto return_message = runtime::he::TCPMessage(MessageType::public_key, 1,
-                                                  pk_str.size(), pk_cstr);
-
-    NGRAPH_INFO << "Sending PK message back";
-    return return_message;
-  } else if (msg_type == MessageType::none) {
-    NGRAPH_INFO << "Server got MessageType:none";
-  } else if (msg_type == MessageType::public_key) {
-    NGRAPH_INFO << "Server got MessageType:public_key";
-
-    size_t pk_size = message.data_size();
-    std::stringstream pk_stream;
-    pk_stream.write(message.data_ptr(), pk_size);
-    m_public_key->load(m_context, pk_stream);
-
-    NGRAPH_INFO << "Server loaded public key";
-
-    auto return_message = runtime::he::TCPMessage(MessageType::public_key_ack);
-
-    return return_message;
-
-  } else if (msg_type == MessageType::relu) {
-    NGRAPH_INFO << "Server got MessageType:relu";
-  } else if (msg_type == MessageType::relu_request) {
-    NGRAPH_INFO << "Server got MessageType:relu_request";
-  } else if (msg_type == MessageType::inference) {
-    NGRAPH_INFO << "Server got MessageType:inference";
-
+  if (msg_type == MessageType::execute) {
     // Get Ciphertexts from message
     std::size_t count = message.count();
     std::cout << "Got " << count << " ciphertexts " << std::endl;
@@ -400,7 +366,6 @@ runtime::he::TCPMessage runtime::he::he_seal::HESealCKKSBackend::handle_message(
     std::cout << "message body size " << message.body_length() << std::endl;
     std::vector<seal::Ciphertext> ciphertexts;
     size_t ciphertext_size = message.element_size();
-
     std::cout << "ciphertext_size" << ciphertext_size << std::endl;
 
     for (size_t i = 0; i < count; ++i) {
@@ -420,6 +385,7 @@ runtime::he::TCPMessage runtime::he::he_seal::HESealCKKSBackend::handle_message(
       he_cipher_inputs.emplace_back(wrapper);
     }
 
+    // Load function with parameters
     auto function = m_function_map.begin()->first;
     const ParameterVector& input_parameters = function->get_parameters();
 
@@ -427,11 +393,11 @@ runtime::he::TCPMessage runtime::he::he_seal::HESealCKKSBackend::handle_message(
       std::cout << "Parameter shape " << join(input_param->get_shape(), "x")
                 << std::endl;
     }
+    // only support parameter size 1 for now
+    assert(input_parameters.size() == 1);
 
     auto element_type = input_parameters[0]->get_element_type();
-
     bool batched = false;
-
     auto input_tensor = create_cipher_tensor(
         element_type, input_parameters[0]->get_shape(), batched);
 
@@ -444,20 +410,17 @@ runtime::he::TCPMessage runtime::he::he_seal::HESealCKKSBackend::handle_message(
     for (size_t i = 0; i < function->get_output_size(); i++) {
       auto output_type = function->get_output_element_type(i);
       auto out_shape = function->get_output_shape(i);
-
       auto tensor = create_cipher_tensor(output_type, out_shape, batched);
-
       outputs.emplace_back(tensor);
     }
 
+    // Call function
     std::cout << "Calling function " << std::endl;
-
     call(function, outputs, inputs);
-
     size_t output_size = outputs[0]->get_element_count();
-
     NGRAPH_INFO << "output size " << output_size;
 
+    // Save outputs to stringstream
     std::vector<seal::Ciphertext> seal_outputs;
     std::vector<std::stringstream> cipher_streams(output_size);
     size_t i = 0;
@@ -477,32 +440,59 @@ runtime::he::TCPMessage runtime::he::he_seal::HESealCKKSBackend::handle_message(
         ++i;
       }
     }
-
     std::stringstream cipher_stream;
     seal_outputs[0].save(cipher_stream);
     const std::string& cipher_str = cipher_stream.str();
     const char* cipher_cstr = cipher_str.c_str();
-
     std::cout << "Cipher size " << cipher_str.size() << std::endl;
-
-    // char* output_data = (char*)(cipher_streams.data());
-
-    // char* output_data = (char*)(seal_outputs.data());
 
     auto return_message =
         TCPMessage(MessageType::result, 1, ciphertext_size, cipher_cstr);
 
     return return_message;
+  } else if (msg_type == MessageType::parameter_shape_request) {
+    auto function = m_function_map.begin()->first;
+    const ParameterVector& input_parameters = function->get_parameters();
 
-    throw ngraph_error("So far so good");
+    assert(input_parameters.size() ==
+           1);  // Only support single parameter for now
 
-    // ** create tensors for input to function (shape given by function map)
-    // ** store ciphertexs in tensor
-    // ** create outputs
-    // ** call function
-    // create message containing outputs
-    // return message
+    auto shape = input_parameters[0]->get_shape();
+
+    NGRAPH_INFO << "Returning parameter shape: " << join(shape, "x");
+    ;
+    return TCPMessage(MessageType::parameter_shape, shape.size(),
+                      sizeof(size_t) * shape.size(), (char*)shape.data());
+
+  }
+
+  else if (msg_type == MessageType::public_key_request) {
+    seal::PublicKey pk = *m_public_key;
+    stringstream stream;
+    pk.save(stream);
+
+    const std::string& pk_str = stream.str();
+    const char* pk_cstr = pk_str.c_str();
+
+    auto return_message = runtime::he::TCPMessage(MessageType::public_key, 1,
+                                                  pk_str.size(), pk_cstr);
+
+    NGRAPH_INFO << "Sending PK message back";
+    return return_message;
+
+  } else if (msg_type == MessageType::public_key) {
+    size_t pk_size = message.data_size();
+    std::stringstream pk_stream;
+    pk_stream.write(message.data_ptr(), pk_size);
+    m_public_key->load(m_context, pk_stream);
+
+    NGRAPH_INFO << "Server loaded public key";
+
+    auto return_message = runtime::he::TCPMessage(MessageType::public_key_ack);
+    return return_message;
   } else {
+    NGRAPH_INFO << "Unsupported message type in server:  "
+                << message_type_to_string(msg_type);
     throw ngraph_error("Unknown message type in server");
   }
 }

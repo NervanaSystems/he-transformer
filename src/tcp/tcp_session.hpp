@@ -68,15 +68,12 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
         boost::asio::buffer(m_message.body_ptr(), m_message.body_length()),
         [this, self](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
-            std::cout << "Server read message body length " << length
-                      << std::endl;
-
             m_message.decode_body();
+            std::cout << "Server read message length " << m_message.num_bytes()
+                      << std::endl;
 
             auto response = m_message_callback(m_message);
             do_write(response);
-
-            // do_read_header();
           } else {
             std::cout << "Error reading message body: " << ec.message()
                       << std::endl;

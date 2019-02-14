@@ -93,13 +93,9 @@ class TCPClient {
                             m_read_message.body_length()),
         [this](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
-            std::cout << "Client read message length " << length << std::endl;
-            /* std::cout.write(m_read_message.body_ptr(),
-                            m_read_message.body_length());
-            std::cout << "\n";
-            std::cout << "Client read body" << std::endl; */
-
             m_read_message.decode_body();
+            std::cout << "Client read message length "
+                      << m_read_message.num_bytes() << std::endl;
             runtime::he::TCPMessage response =
                 m_message_callback(m_read_message);
             do_write(response);

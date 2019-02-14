@@ -27,10 +27,12 @@ namespace runtime {
 namespace he {
 enum class MessageType {
   none,
-  public_key_request,
-  public_key,
   public_key_ack,
-  inference,
+  public_key,
+  public_key_request,
+  execute,
+  parameter_shape_request,
+  parameter_shape,
   relu_request,
   relu,
   result
@@ -41,17 +43,23 @@ inline std::string message_type_to_string(const MessageType& type) {
     case MessageType::none:
       return "none";
       break;
-    case MessageType::public_key:
-      return "public_key";
-      break;
     case MessageType::public_key_ack:
       return "public_key_ack";
+      break;
+    case MessageType::public_key:
+      return "public_key";
       break;
     case MessageType::public_key_request:
       return "public_key_request";
       break;
-    case MessageType::inference:
-      return "inference";
+    case MessageType::execute:
+      return "execute";
+      break;
+    case MessageType::parameter_shape:
+      return "parameter_shape";
+      break;
+    case MessageType::parameter_shape_request:
+      return "parameter_shape_request";
       break;
     case MessageType::result:
       return "result";
@@ -67,9 +75,9 @@ class TCPMessage {
   enum { max_body_length = 100000 };
 
   TCPMessage(const MessageType type) : m_type(type) {
-    std::set<MessageType> request_types{MessageType::public_key_request,
-                                        MessageType::relu_request,
-                                        MessageType::public_key_ack};
+    std::set<MessageType> request_types{
+        MessageType::public_key_request, MessageType::relu_request,
+        MessageType::public_key_ack, MessageType::parameter_shape_request};
 
     if (request_types.find(type) == request_types.end()) {
       throw std::invalid_argument("Request type not valid");
