@@ -67,6 +67,6 @@ static void print_seal_context(const seal::SEALContext& context) {
               << context_data->total_coeff_modulus_bit_count() << " bits"
               << std::endl
               << "\\ noise_standard_deviation: "
-              << scheme_parms.noise_standard_deviation();
+              << scheme_parms.noise_standard_deviation() << std::endl;
   }
 }

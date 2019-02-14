@@ -81,7 +81,7 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_message_encode) {
   EXPECT_EQ(message.data_size(), message2.data_size());
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init) {
+NGRAPH_TEST(${BACKEND_NAME}, client_server_add_2_3) {
   Shape shape{2, 3};
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = make_shared<op::Constant>(
@@ -91,14 +91,10 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init) {
 
   auto server_fun = [&f]() {
     try {
-      NGRAPH_INFO << "Creating backend";
       auto backend = runtime::Backend::create("${BACKEND_NAME}");
       auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
 
       auto handle = backend->compile(f);
-
-      NGRAPH_INFO << "Starting server";
-
       he_backend->start_server();
 
     } catch (std::system_error& e) {
@@ -107,7 +103,6 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init) {
   };
 
   std::vector<float> results;
-
   auto client_fun = [&results]() {
     try {
       sleep(3);  // Let server start
@@ -137,5 +132,120 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init) {
 
   EXPECT_TRUE(
       all_close(results, std::vector<float>{2.1, 3.2, 4.3, 5.4, 6.5, 7.6}));
+  std::cout << std::endl;
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, client_server_mult_2_3) {
+  Shape shape{2, 3};
+  auto a = make_shared<op::Parameter>(element::f32, shape);
+  auto b = make_shared<op::Constant>(
+      element::f32, shape, std::vector<float>{1.1, 1.2, 1.3, 1.4, 1.5, 1.6});
+  auto t = a * b;
+  auto f = make_shared<Function>(t, ParameterVector{a});
+
+  auto server_fun = [&f]() {
+    try {
+      auto backend = runtime::Backend::create("${BACKEND_NAME}");
+      auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+
+      auto handle = backend->compile(f);
+      he_backend->start_server();
+
+    } catch (std::system_error& e) {
+      std::cout << "Exception in server" << std::endl;
+    }
+  };
+
+  std::vector<float> results;
+  auto client_fun = [&results]() {
+    try {
+      sleep(3);  // Let server start
+      size_t port = 34000;
+
+      std::vector<float> inputs{1, 2, 3, 4, 5, 6};
+      boost::asio::io_context io_context;
+      tcp::resolver resolver(io_context);
+      auto client_endpoints =
+          resolver.resolve("localhost", std::to_string(port));
+      auto client =
+          runtime::he::HESealClient(io_context, client_endpoints, inputs);
+
+      while (!client.is_done()) {
+        sleep(1);
+      }
+      results = client.get_results();
+
+    } catch (std::system_error& e) {
+      std::cout << "Exception in client" << std::endl;
+    }
+  };
+  std::thread t1(client_fun);
+  std::thread t2(server_fun);
+  t1.join();
+  t2.join();
+
+  EXPECT_TRUE(
+      all_close(results, std::vector<float>{1.1, 2.4, 3.9, 5.6, 7.5, 9.6}));
+  std::cout << std::endl;
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, client_server_mult_784) {
+  Shape shape{784};
+  auto a = make_shared<op::Parameter>(element::f32, shape);
+  std::vector<float> constant_vec(784, 2.0);
+  auto b = make_shared<op::Constant>(element::f32, shape, constant_vec);
+  auto t = a * b;
+  auto f = make_shared<Function>(t, ParameterVector{a});
+
+  auto server_fun = [&f]() {
+    try {
+      auto backend = runtime::Backend::create("${BACKEND_NAME}");
+      auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+
+      auto handle = backend->compile(f);
+      he_backend->start_server();
+
+    } catch (std::system_error& e) {
+      std::cout << "Exception in server" << std::endl;
+    }
+  };
+
+  std::vector<float> results;
+  auto client_fun = [&results]() {
+    try {
+      sleep(3);  // Let server start
+      size_t port = 34000;
+
+      std::vector<float> inputs;
+      for (size_t i = 0; i < 784; ++i) {
+        inputs.push_back(i);
+      }
+      boost::asio::io_context io_context;
+      tcp::resolver resolver(io_context);
+      auto client_endpoints =
+          resolver.resolve("localhost", std::to_string(port));
+      auto client =
+          runtime::he::HESealClient(io_context, client_endpoints, inputs);
+
+      while (!client.is_done()) {
+        sleep(1);
+      }
+      results = client.get_results();
+
+    } catch (std::system_error& e) {
+      std::cout << "Exception in client" << std::endl;
+    }
+  };
+  std::thread t1(client_fun);
+  std::thread t2(server_fun);
+  t1.join();
+  t2.join();
+
+  std::vector<float> exp_result;
+  for (size_t i = 0; i < 784; ++i) {
+    exp_result.push_back(2 * i);
+  }
+
+  EXPECT_TRUE(all_close(results, exp_result));
   std::cout << std::endl;
 }
