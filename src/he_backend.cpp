@@ -64,7 +64,7 @@ void runtime::he::HEBackend::start_server() {
   boost::asio::io_context io_context;
   tcp::resolver resolver(io_context);
   tcp::endpoint server_endpoints(tcp::v4(), m_port);
-  auto server_callback = [this](const runtime::he::TCPMessage& message) {
+  auto server_callback = [this](const runtime::he::TCPMessage message) {
     return handle_message(message);
   };
   m_tcp_server =

@@ -91,11 +91,13 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init) {
 
   auto server_fun = [&f]() {
     try {
-      NGRAPH_INFO << "Server starting";
+      NGRAPH_INFO << "Creating backend";
       auto backend = runtime::Backend::create("${BACKEND_NAME}");
       auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
 
       auto handle = backend->compile(f);
+
+      NGRAPH_INFO << "Starting server";
 
       he_backend->start_server();
 
@@ -105,10 +107,8 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init) {
   };
 
   auto client_fun = []() {
-    sleep(2);  // Let server start
+    sleep(3);  // Let server start
     size_t port = 34000;
-    NGRAPH_INFO << "Client starting " << port;
-
     boost::asio::io_context io_context;
     tcp::resolver resolver(io_context);
     auto client_endpoints = resolver.resolve("localhost", std::to_string(port));
@@ -123,6 +123,7 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init) {
     // client.close_connection()
 
     sleep(5);  // Let message be handled
+    NGRAPH_INFO << "Closing connection";
     client.close_connection();
   };
   std::thread t1(client_fun);

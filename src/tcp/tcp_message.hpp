@@ -68,7 +68,8 @@ class TCPMessage {
 
   TCPMessage(const MessageType type) : m_type(type) {
     std::set<MessageType> request_types{MessageType::public_key_request,
-                                        MessageType::relu_request};
+                                        MessageType::relu_request,
+                                        MessageType::public_key_ack};
 
     if (request_types.find(type) == request_types.end()) {
       throw std::invalid_argument("Request type not valid");
@@ -172,8 +173,8 @@ class TCPMessage {
   }
 
   void encode_message_type() {
-    std::cout << "Encoding message type "
-              << message_type_to_string(m_type).c_str() << std::endl;
+    // std::cout << "Encoding message type "
+    //          << message_type_to_string(m_type).c_str() << std::endl;
 
     std::memcpy(body_ptr(), &m_type, sizeof(MessageType));
   }
@@ -191,8 +192,9 @@ class TCPMessage {
     MessageType type;
     // Decode message type
     std::memcpy(&type, body_ptr(), sizeof(MessageType));
-    std::cout << "Decoded message type " << message_type_to_string(type).c_str()
-              << std::endl;
+    // std::cout << "Decoded message type " <<
+    // message_type_to_string(type).c_str()
+    //          << std::endl;
     m_type = type;
 
     if (m_body_length > sizeof(MessageType)) {
@@ -202,6 +204,9 @@ class TCPMessage {
       m_data_size = m_body_length - sizeof(MessageType) - sizeof(size_t);
 
       m_element_size = m_data_size / m_count;
+
+      // std::cout << "Decoded message count " << m_count << std::endl;
+      // std::cout << "Decoded m_data_size " << m_data_size << std::endl;
     } else {
       m_data_size = 0;
       m_element_size = 0;
@@ -217,7 +222,8 @@ class TCPMessage {
       std::cout << "Body length " << m_body_length << " too large" << std::endl;
       return false;
     }
-    std::cout << "Decoding header; message size " << m_body_length << std::endl;
+    // std::cout << "Decoding header; message size " << m_body_length <<
+    // std::endl;
     return true;
   }
 

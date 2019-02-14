@@ -60,8 +60,6 @@ class HESealClient {
     // Encoder
     m_ckks_encoder = std::make_shared<seal::CKKSEncoder>(m_context);
 
-    m_thread = std::thread([&io_context]() { io_context.run(); });
-
     auto m_context_data = m_context->context_data();
     m_scale = static_cast<double>(
         m_context_data->parms().coeff_modulus().back().value());
@@ -70,36 +68,24 @@ class HESealClient {
     m_public_key->save(stream);
     const std::string& pk_str = stream.str();
     const char* pk_cstr = pk_str.c_str();
-    NGRAPH_INFO << "Size of pk " << pk_str.size();
 
     auto first_message = runtime::he::TCPMessage(MessageType::public_key, 1,
                                                  pk_str.size(), pk_cstr);
 
     m_tcp_client = std::make_shared<runtime::he::TCPClient>(
         io_context, endpoints, first_message, client_callback);
+
+    m_thread = std::thread([&io_context]() { io_context.run(); });
   }
 
   const runtime::he::TCPMessage handle_message(
       const runtime::he::TCPMessage& message) {
-    std::cout << "HESealClient callback for message" << std::endl;
-
     MessageType msg_type = message.message_type();
 
     if (msg_type == MessageType::public_key_request) {
-      std::cout << "Got message public_key_request" << std::endl;
+      std::cout << "Client got message public_key_request" << std::endl;
     } else if (msg_type == MessageType::public_key_ack) {
-      std::cout << "Got message public_key_ack" << std::endl;
-
-      /* size_t pk_size = message.data_size();
-      std::stringstream pk_stream;
-      pk_stream.write(message.data_ptr(), pk_size);
-      m_public_key.load(m_context, pk_stream);
-      assert(m_public_key.is_valid_for(m_context));
-
-      std::cout << "Copied public key from server" << std::endl; */
-
-      // m_encryptor = std::make_shared<seal::Encryptor>(m_context,
-      // m_public_key);
+      std::cout << "Client got message public_key_ack" << std::endl;
 
       std::vector<seal::Ciphertext> ciphers;
 
@@ -108,9 +94,6 @@ class HESealClient {
       m_ckks_encoder->encode(input, m_scale, plain);
       seal::Ciphertext c;
       m_encryptor->encrypt(plain, c);
-
-      std::cout << "m_scale " << m_scale << std::endl;
-      print_seal_context(*m_context);
 
       std::stringstream cipher_stream;
       c.save(cipher_stream);
@@ -122,10 +105,36 @@ class HESealClient {
       auto return_message =
           TCPMessage(MessageType::inference, 1, cipher_size, cipher_cstr);
 
-      std::cout << "Returning ciphertext " << std::endl;
       return return_message;
     } else if (msg_type == MessageType::result) {
-      std::cout << "Cleint got result type" << std::endl;
+      std::cout << "Client got message: result" << std::endl;
+
+      size_t count = message.count();
+      size_t element_size = message.element_size();
+
+      std::vector<seal::Ciphertext> result;
+
+      for (size_t i = 0; i < count; ++i) {
+        seal::Ciphertext c;
+        std::stringstream cipher_stream;
+
+        cipher_stream.write(message.data_ptr() + i * element_size,
+                            element_size);
+
+        c.load(m_context, cipher_stream);
+        result.push_back(c);
+      }
+
+      for (const auto& cipher : result) {
+        seal::Plaintext plain;
+        m_decryptor->decrypt(cipher, plain);
+
+        std::vector<double> output;
+
+        m_ckks_encoder->decode(plain, output);
+        std::cout << "output " << output[0] << std::endl;
+      }
+
       throw std::domain_error("So far so good in client");
     }
 
@@ -139,7 +148,6 @@ class HESealClient {
   }
 
   void write_message(const runtime::he::TCPMessage& message) {
-    std::cout << "HESealClient client writing tcp message" << std::endl;
     m_tcp_client->write_message(message);
   }
 

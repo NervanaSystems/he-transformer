@@ -37,7 +37,6 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
 
  private:
   void do_read_header() {
-    std::cout << "Server reading header" << std::endl;
     auto self(shared_from_this());
     boost::asio::async_read(
         m_socket,
@@ -45,7 +44,6 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
                             runtime::he::TCPMessage::header_length),
         [this, self](boost::system::error_code ec, std::size_t length) {
           if (!ec & m_message.decode_header()) {
-            std::cout << "Server read message header" << std::endl;
             do_read_body();
           } else {
             if (ec) {

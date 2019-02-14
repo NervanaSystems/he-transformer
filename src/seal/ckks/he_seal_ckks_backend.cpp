@@ -351,7 +351,7 @@ void runtime::he::he_seal::HESealCKKSBackend::decode(
 
 runtime::he::TCPMessage runtime::he::he_seal::HESealCKKSBackend::handle_message(
     const runtime::he::TCPMessage& message) {
-  NGRAPH_INFO << "Handling TCP Message";
+  // NGRAPH_INFO << "Handling TCP Message";
 
   MessageType msg_type = message.message_type();
 
@@ -364,8 +364,6 @@ runtime::he::TCPMessage runtime::he::he_seal::HESealCKKSBackend::handle_message(
 
     const std::string& pk_str = stream.str();
     const char* pk_cstr = pk_str.c_str();
-
-    NGRAPH_INFO << "Size of pk " << pk_str.size();
 
     auto return_message = runtime::he::TCPMessage(MessageType::public_key, 1,
                                                   pk_str.size(), pk_cstr);
@@ -461,6 +459,8 @@ runtime::he::TCPMessage runtime::he::he_seal::HESealCKKSBackend::handle_message(
     NGRAPH_INFO << "output size " << output_size;
 
     std::vector<seal::Ciphertext> seal_outputs;
+    std::vector<std::stringstream> cipher_streams(output_size);
+    size_t i = 0;
     for (const auto& output : outputs) {
       for (const auto& element :
            dynamic_pointer_cast<runtime::he::HECipherTensor>(output)
@@ -471,13 +471,26 @@ runtime::he::TCPMessage runtime::he::he_seal::HESealCKKSBackend::handle_message(
 
         seal::Ciphertext c = wrapper->m_ciphertext;
         seal_outputs.emplace_back(c);
+
+        // std::stringstream cipher_stream;
+        c.save(cipher_streams[i]);
+        ++i;
       }
     }
 
-    char* output_data = (char*)(seal_outputs.data());
+    std::stringstream cipher_stream;
+    seal_outputs[0].save(cipher_stream);
+    const std::string& cipher_str = cipher_stream.str();
+    const char* cipher_cstr = cipher_str.c_str();
+
+    std::cout << "Cipher size " << cipher_str.size() << std::endl;
+
+    // char* output_data = (char*)(cipher_streams.data());
+
+    // char* output_data = (char*)(seal_outputs.data());
 
     auto return_message =
-        TCPMessage(MessageType::result, 1, ciphertext_size, output_data);
+        TCPMessage(MessageType::result, 1, ciphertext_size, cipher_cstr);
 
     return return_message;
 
