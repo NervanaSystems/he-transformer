@@ -234,7 +234,7 @@ def numpy_eval_inputs(test_data, data_dir, batch_size):
     assert (test_data == True)
     IMAGE_SIZE = 24 if FLAGS.data_aug else 32
 
-    num_examples = 10000 if test_data else 50000
+    num_examples = 10112 if test_data else 50000
 
     data_filename = os.path.join(FLAGS.data_dir,
                                  'eval_data_' + str(IMAGE_SIZE) + '.npy')
