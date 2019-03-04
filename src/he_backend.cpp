@@ -987,6 +987,13 @@ void runtime::he::HEBackend::generate_calls(
     case OP_TYPEID::Power:
     case OP_TYPEID::Product:
     case OP_TYPEID::Quantize:
+    case OP_TYPEID::QuantizedAvgPool:
+    case OP_TYPEID::QuantizedConvolutionBias:
+    case OP_TYPEID::QuantizedConvolutionBiasAdd:
+    case OP_TYPEID::QuantizedConvolutionBiasSignedAdd:
+    case OP_TYPEID::QuantizedConvolutionRelu:
+    case OP_TYPEID::QuantizedConvolution:
+    case OP_TYPEID::QuantizedMaxPool:
     case OP_TYPEID::Relu:
     case OP_TYPEID::ReluBackprop:
     case OP_TYPEID::ReplaceSlice:
@@ -1005,10 +1012,7 @@ void runtime::he::HEBackend::generate_calls(
     case OP_TYPEID::Tanh:
     case OP_TYPEID::TopK:
     default:
-      NGRAPH_INFO << "Supposedly unsupported op";
-      NGRAPH_INFO << "node.get_friendly_name() " << node.get_friendly_name();
-      NGRAPH_INFO << "node.get_name() " << node.get_name();
-// throw unsupported_op("Unsupported op '" + node.description() + "'");
+      throw unsupported_op("Unsupported op '" + node.description() + "'");
 #pragma GCC diagnostic pop
   }
 }
