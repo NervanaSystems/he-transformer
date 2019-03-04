@@ -25,7 +25,6 @@
 #include "seal/he_seal_parameter.hpp"
 #include "seal/he_seal_util.hpp"
 #include "seal/seal.h"
-#include "util/fixed_point.hpp"
 
 using namespace ngraph;
 using namespace std;
@@ -117,17 +116,12 @@ runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend(
   m_integer_encoder = make_shared<seal::IntegerEncoder>(m_context);
 
   // Plaintext constants
-  FixedPoint fp_neg1{-1.0f};
-  m_plaintext_map[-1] = make_shared<SealPlaintextWrapper>(
-      m_integer_encoder->encode(fp_neg1.as_int()));
-
-  FixedPoint fp_0{0.0f};
-  m_plaintext_map[0] = make_shared<SealPlaintextWrapper>(
-      m_integer_encoder->encode(fp_0.as_int()));
-
-  FixedPoint fp_1{1.0f};
-  m_plaintext_map[1] = make_shared<SealPlaintextWrapper>(
-      m_integer_encoder->encode(fp_1.as_int()));
+  m_plaintext_map[-1] =
+      make_shared<SealPlaintextWrapper>(m_integer_encoder->encode(-1));
+  m_plaintext_map[0] =
+      make_shared<SealPlaintextWrapper>(m_integer_encoder->encode(0));
+  m_plaintext_map[1] =
+      make_shared<SealPlaintextWrapper>(m_integer_encoder->encode(1));
 }
 
 extern "C" runtime::Backend* new_bfv_backend(const char* configuration_string) {
@@ -210,12 +204,16 @@ void runtime::he::he_seal::HESealBFVBackend::encode(
           make_shared<runtime::he::he_seal::SealPlaintextWrapper>(*plain_value);
     } else {
       float float_val = *(float*)input;
-      FixedPoint fp{float_val};
-      NGRAPH_INFO << "Encoding float val " << float_val << ", as int "
-                  << fp.as_int();
-      seal::Plaintext p;
-      m_integer_encoder->encode(fp.as_int(), p);
-      output = make_shared<runtime::he::he_seal::SealPlaintextWrapper>(p);
+      int32_t int_val;
+      if (ceilf(float_val) == float_val) {
+        int_val = static_cast<int32_t>(float_val);
+      } else {
+        NGRAPH_INFO << "BFV float only supported for int32_t";
+        throw ngraph_error("BFV float only supported for int32_t");
+      }
+
+      output = make_shared<runtime::he::he_seal::SealPlaintextWrapper>(
+          m_integer_encoder->encode(int_val));
     }
   } else {
     NGRAPH_INFO << "Unsupported element type in decode " << type_name;
@@ -233,11 +231,9 @@ void runtime::he::he_seal::HESealBFVBackend::decode(
 
   if (auto seal_input = dynamic_cast<const SealPlaintextWrapper*>(input)) {
     if (type_name == "float") {
-      uint32_t x = m_integer_encoder->decode_uint32(seal_input->m_plaintext);
-      FixedPoint fp{x};
-      float fl_x = fp.as_float();
-      NGRAPH_INFO << "Decoded integer " << x << " as float = " << fl_x;
-      memcpy(output, &fl_x, element_type.size());
+      int32_t val = m_integer_encoder->decode_int32(seal_input->m_plaintext);
+      float fl_val{val};
+      memcpy(output, &fl_val, element_type.size());
     } else {
       NGRAPH_INFO << "Unsupported element type in decode " << type_name;
       throw ngraph_error("Unsupported element type " + type_name);
