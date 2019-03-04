@@ -94,10 +94,7 @@ runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend(
   m_context = make_seal_context(sp);
   print_seal_context(*m_context);
 
-  auto m_context_data = m_context->context_data();
-
-  auto poly_modulus = m_context_data->parms().poly_modulus_degree();
-  auto plain_modulus = m_context_data->parms().plain_modulus().value();
+  auto context_data = m_context->context_data();
 
   // Keygen, encryptor and decryptor
   m_keygen = make_shared<seal::KeyGenerator>(m_context);
@@ -112,16 +109,25 @@ runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend(
   m_evaluator = make_shared<seal::Evaluator>(m_context);
 
   // Encoders
-  m_batch_encoder = make_shared<seal::BatchEncoder>(m_context);
+  if (context_data->qualifiers().using_batching) {
+    m_batch_encoder = make_shared<seal::BatchEncoder>(m_context);
+  } else {
+    NGRAPH_WARN << "BFV encryption parameters not valid for batching";
+  }
   m_integer_encoder = make_shared<seal::IntegerEncoder>(m_context);
 
   // Plaintext constants
-  m_plaintext_map[-1] =
-      make_shared<SealPlaintextWrapper>(m_integer_encoder->encode(-1));
-  m_plaintext_map[0] =
-      make_shared<SealPlaintextWrapper>(m_integer_encoder->encode(0));
-  m_plaintext_map[1] =
-      make_shared<SealPlaintextWrapper>(m_integer_encoder->encode(1));
+  FixedPoint fp_neg1{-1.0f};
+  m_plaintext_map[-1] = make_shared<SealPlaintextWrapper>(
+      m_integer_encoder->encode(fp_neg1.as_int()));
+
+  FixedPoint fp_0{0.0f};
+  m_plaintext_map[0] = make_shared<SealPlaintextWrapper>(
+      m_integer_encoder->encode(fp_0.as_int()));
+
+  FixedPoint fp_1{1.0f};
+  m_plaintext_map[1] = make_shared<SealPlaintextWrapper>(
+      m_integer_encoder->encode(fp_1.as_int()));
 }
 
 extern "C" runtime::Backend* new_bfv_backend(const char* configuration_string) {
