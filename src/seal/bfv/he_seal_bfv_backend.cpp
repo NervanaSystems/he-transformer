@@ -46,20 +46,13 @@ parse_seal_bfv_config_or_use_default() {
       uint64_t poly_modulus_degree = js["poly_modulus_degree"];
       uint64_t plain_modulus = js["plain_modulus"];
       uint64_t security_level = js["security_level"];
-      uint64_t fractional_encoder_integer_coeff_count =
-          js["fractional_encoder_integer_coeff_count"];
-      uint64_t fractional_encoder_fraction_coeff_count =
-          js["fractional_encoder_fraction_coeff_count"];
-      uint64_t fractional_encoder_base = js["fractional_encoder_base"];
       uint64_t evaluation_decomposition_bit_count =
           js["evaluation_decomposition_bit_count"];
 
       NGRAPH_INFO << "Using SEAL BFV config for parameters: " << config_path;
       return runtime::he::he_seal::HESealParameter(
           scheme_name, poly_modulus_degree, plain_modulus, security_level,
-          evaluation_decomposition_bit_count,
-          fractional_encoder_integer_coeff_count,
-          fractional_encoder_fraction_coeff_count, fractional_encoder_base);
+          evaluation_decomposition_bit_count);
     } else {
       NGRAPH_INFO << "Using SEAL BFV default parameters" << config_path;
       throw runtime_error("config_path is NULL");
@@ -70,10 +63,7 @@ parse_seal_bfv_config_or_use_default() {
         4096,           // poly_modulus_degree
         1 << 10,        // plain_modulus
         128,            // security_level
-        16,             // evaluation_decomposition_bit_count
-        64,             // fractional_encoder_integer_coeff_count
-        32,             // fractional_encoder_fraction_coeff_count
-        2               // fractional_encoder_base
+        16              // evaluation_decomposition_bit_count
     );
   }
 }
