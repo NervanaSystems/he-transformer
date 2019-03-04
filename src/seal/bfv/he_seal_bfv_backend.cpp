@@ -25,6 +25,7 @@
 #include "seal/he_seal_parameter.hpp"
 #include "seal/he_seal_util.hpp"
 #include "seal/seal.h"
+#include "util/fixed_point.hpp"
 
 using namespace ngraph;
 using namespace std;
@@ -74,7 +75,7 @@ parse_seal_bfv_config_or_use_default() {
         64,             // fractional_encoder_integer_coeff_count
         32,             // fractional_encoder_fraction_coeff_count
         2               // fractional_encoder_base
-        );
+    );
   }
 }
 
@@ -110,19 +111,17 @@ runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend(
   // Evaluator
   m_evaluator = make_shared<seal::Evaluator>(m_context);
 
-  // Encoder
-  m_frac_encoder = make_shared<seal::FractionalEncoder>(
-      plain_modulus, poly_modulus, sp->m_fractional_encoder_integer_coeff_count,
-      sp->m_fractional_encoder_fraction_coeff_count,
-      sp->m_fractional_encoder_base);
+  // Encoders
+  m_batch_encoder = make_shared<seal::BatchEncoder>(m_context);
+  m_integer_encoder = make_shared<seal::IntegerEncoder>(m_context);
 
   // Plaintext constants
   m_plaintext_map[-1] =
-      make_shared<SealPlaintextWrapper>(m_frac_encoder->encode(-1.));
+      make_shared<SealPlaintextWrapper>(m_integer_encoder->encode(-1));
   m_plaintext_map[0] =
-      make_shared<SealPlaintextWrapper>(m_frac_encoder->encode(0.));
+      make_shared<SealPlaintextWrapper>(m_integer_encoder->encode(0));
   m_plaintext_map[1] =
-      make_shared<SealPlaintextWrapper>(m_frac_encoder->encode(1.));
+      make_shared<SealPlaintextWrapper>(m_integer_encoder->encode(1));
 }
 
 extern "C" runtime::Backend* new_bfv_backend(const char* configuration_string) {
@@ -141,11 +140,16 @@ runtime::he::he_seal::HESealBFVBackend::make_seal_context(
   parms.set_poly_modulus_degree(sp->m_poly_modulus_degree);
 
   if (sp->m_security_level == 128) {
-    parms.set_coeff_modulus(seal::coeff_modulus_128(sp->m_poly_modulus_degree));
+    parms.set_coeff_modulus(
+        seal::DefaultParams::coeff_modulus_128(sp->m_poly_modulus_degree));
   } else if (sp->m_security_level == 192) {
-    parms.set_coeff_modulus(seal::coeff_modulus_192(sp->m_poly_modulus_degree));
+    parms.set_coeff_modulus(
+        seal::DefaultParams::coeff_modulus_192(sp->m_poly_modulus_degree));
+  } else if (sp->m_security_level == 256) {
+    parms.set_coeff_modulus(
+        seal::DefaultParams::coeff_modulus_256(sp->m_poly_modulus_degree));
   } else {
-    throw ngraph_error("sp.security_level must be 128, 192");
+    throw ngraph_error("sp.security_level must be 128, 192, or 256");
   }
   parms.set_plain_modulus(sp->m_plain_modulus);
 
@@ -198,10 +202,14 @@ void runtime::he::he_seal::HESealBFVBackend::encode(
               get_valued_plaintext(value));
       output =
           make_shared<runtime::he::he_seal::SealPlaintextWrapper>(*plain_value);
-      ;
     } else {
-      output = make_shared<runtime::he::he_seal::SealPlaintextWrapper>(
-          m_frac_encoder->encode(*(float*)input));
+      float float_val = *(float*)input;
+      FixedPoint fp{float_val};
+      NGRAPH_INFO << "Encoding float val " << float_val << ", as int "
+                  << fp.as_int();
+      seal::Plaintext p;
+      m_integer_encoder->encode(fp.as_int(), p);
+      output = make_shared<runtime::he::he_seal::SealPlaintextWrapper>(p);
     }
   } else {
     NGRAPH_INFO << "Unsupported element type in decode " << type_name;
@@ -219,8 +227,11 @@ void runtime::he::he_seal::HESealBFVBackend::decode(
 
   if (auto seal_input = dynamic_cast<const SealPlaintextWrapper*>(input)) {
     if (type_name == "float") {
-      float x = m_frac_encoder->decode(seal_input->m_plaintext);
-      memcpy(output, &x, element_type.size());
+      uint32_t x = m_integer_encoder->decode_uint32(seal_input->m_plaintext);
+      FixedPoint fp{x};
+      float fl_x = fp.as_float();
+      NGRAPH_INFO << "Decoded integer " << x << " as float = " << fl_x;
+      memcpy(output, &fl_x, element_type.size());
     } else {
       NGRAPH_INFO << "Unsupported element type in decode " << type_name;
       throw ngraph_error("Unsupported element type " + type_name);
