@@ -8,3 +8,5 @@ To run on the BFV backend,
 ```bash
 NGRAPH_TF_BACKEND=HE_SEAL_BFV python axpy.py
 ```
+
+Note, the BFV encryption scheme suports only integers. For floating-point support, use the CKKS encryption scheme.

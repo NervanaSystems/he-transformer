@@ -32,7 +32,7 @@ TEST(seal_example, seal_ckks_basics_i) {
 
   EncryptionParameters parms(scheme_type::CKKS);
   parms.set_poly_modulus_degree(8192);
-  parms.set_coeff_modulus(coeff_modulus_128(8192));
+  parms.set_coeff_modulus(DefaultParams::coeff_modulus_128(8192));
 
   auto context = SEALContext::Create(parms);
   // print_parameters(context);
@@ -78,14 +78,14 @@ TEST(seal_example, seal_bfv_basics_i) {
   // Parameter
   EncryptionParameters parms(seal::scheme_type::BFV);
   parms.set_poly_modulus_degree(2048);
-  parms.set_coeff_modulus(coeff_modulus_128(2048));
+  parms.set_coeff_modulus(DefaultParams::coeff_modulus_128(2048));
   parms.set_plain_modulus(1 << 8);
 
   // Context: print with print_parameters(context);
   auto context = SEALContext::Create(parms);
 
   // Objects from context
-  IntegerEncoder encoder(parms.plain_modulus());
+  IntegerEncoder encoder(context);
   KeyGenerator keygen(context);
   PublicKey public_key = keygen.public_key();
   SecretKey secret_key = keygen.secret_key();
@@ -125,14 +125,12 @@ TEST(seal_example, seal_bfv_shared_ptr_encrypt) {
   // Parameter
   EncryptionParameters parms(seal::scheme_type::BFV);
   parms.set_poly_modulus_degree(2048);
-  parms.set_coeff_modulus(coeff_modulus_128(2048));
+  parms.set_coeff_modulus(DefaultParams::coeff_modulus_128(2048));
   parms.set_plain_modulus(1 << 8);
 
-  // Context: print with print_parameters(context);
   auto context = SEALContext::Create(parms);
 
-  // Objects from context
-  IntegerEncoder encoder(parms.plain_modulus());
+  IntegerEncoder encoder(context);
   KeyGenerator keygen(context);
   PublicKey public_key = keygen.public_key();
   SecretKey secret_key = keygen.secret_key();

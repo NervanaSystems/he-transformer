@@ -57,16 +57,21 @@ class HESealBFVBackend : public HESealBackend {
               const element::Type& element_type,
               size_t count = 1) const override;
 
-  const inline std::shared_ptr<seal::FractionalEncoder> get_frac_encoder()
+  const inline std::shared_ptr<seal::BatchEncoder> get_batch_encoder() const {
+    return m_batch_encoder;
+  }
+
+  const inline std::shared_ptr<seal::IntegerEncoder> get_integer_encoder()
       const {
-    return m_frac_encoder;
+    return m_integer_encoder;
   }
 
   void assert_valid_seal_bfv_parameter(
       const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp) const;
 
  private:
-  std::shared_ptr<seal::FractionalEncoder> m_frac_encoder;
+  std::shared_ptr<seal::BatchEncoder> m_batch_encoder;
+  std::shared_ptr<seal::IntegerEncoder> m_integer_encoder;
 };
 }  // namespace he_seal
 }  // namespace he

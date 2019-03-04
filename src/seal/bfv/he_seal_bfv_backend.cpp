@@ -46,20 +46,13 @@ parse_seal_bfv_config_or_use_default() {
       uint64_t poly_modulus_degree = js["poly_modulus_degree"];
       uint64_t plain_modulus = js["plain_modulus"];
       uint64_t security_level = js["security_level"];
-      uint64_t fractional_encoder_integer_coeff_count =
-          js["fractional_encoder_integer_coeff_count"];
-      uint64_t fractional_encoder_fraction_coeff_count =
-          js["fractional_encoder_fraction_coeff_count"];
-      uint64_t fractional_encoder_base = js["fractional_encoder_base"];
       uint64_t evaluation_decomposition_bit_count =
           js["evaluation_decomposition_bit_count"];
 
       NGRAPH_INFO << "Using SEAL BFV config for parameters: " << config_path;
       return runtime::he::he_seal::HESealParameter(
           scheme_name, poly_modulus_degree, plain_modulus, security_level,
-          evaluation_decomposition_bit_count,
-          fractional_encoder_integer_coeff_count,
-          fractional_encoder_fraction_coeff_count, fractional_encoder_base);
+          evaluation_decomposition_bit_count);
     } else {
       NGRAPH_INFO << "Using SEAL BFV default parameters" << config_path;
       throw runtime_error("config_path is NULL");
@@ -70,11 +63,8 @@ parse_seal_bfv_config_or_use_default() {
         4096,           // poly_modulus_degree
         1 << 10,        // plain_modulus
         128,            // security_level
-        16,             // evaluation_decomposition_bit_count
-        64,             // fractional_encoder_integer_coeff_count
-        32,             // fractional_encoder_fraction_coeff_count
-        2               // fractional_encoder_base
-        );
+        16              // evaluation_decomposition_bit_count
+    );
   }
 }
 
@@ -93,10 +83,7 @@ runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend(
   m_context = make_seal_context(sp);
   print_seal_context(*m_context);
 
-  auto m_context_data = m_context->context_data();
-
-  auto poly_modulus = m_context_data->parms().poly_modulus_degree();
-  auto plain_modulus = m_context_data->parms().plain_modulus().value();
+  auto context_data = m_context->context_data();
 
   // Keygen, encryptor and decryptor
   m_keygen = make_shared<seal::KeyGenerator>(m_context);
@@ -110,19 +97,21 @@ runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend(
   // Evaluator
   m_evaluator = make_shared<seal::Evaluator>(m_context);
 
-  // Encoder
-  m_frac_encoder = make_shared<seal::FractionalEncoder>(
-      plain_modulus, poly_modulus, sp->m_fractional_encoder_integer_coeff_count,
-      sp->m_fractional_encoder_fraction_coeff_count,
-      sp->m_fractional_encoder_base);
+  // Encoders
+  if (context_data->qualifiers().using_batching) {
+    m_batch_encoder = make_shared<seal::BatchEncoder>(m_context);
+  } else {
+    NGRAPH_WARN << "BFV encryption parameters not valid for batching";
+  }
+  m_integer_encoder = make_shared<seal::IntegerEncoder>(m_context);
 
   // Plaintext constants
   m_plaintext_map[-1] =
-      make_shared<SealPlaintextWrapper>(m_frac_encoder->encode(-1.));
+      make_shared<SealPlaintextWrapper>(m_integer_encoder->encode(-1));
   m_plaintext_map[0] =
-      make_shared<SealPlaintextWrapper>(m_frac_encoder->encode(0.));
+      make_shared<SealPlaintextWrapper>(m_integer_encoder->encode(0));
   m_plaintext_map[1] =
-      make_shared<SealPlaintextWrapper>(m_frac_encoder->encode(1.));
+      make_shared<SealPlaintextWrapper>(m_integer_encoder->encode(1));
 }
 
 extern "C" runtime::Backend* new_bfv_backend(const char* configuration_string) {
@@ -141,11 +130,16 @@ runtime::he::he_seal::HESealBFVBackend::make_seal_context(
   parms.set_poly_modulus_degree(sp->m_poly_modulus_degree);
 
   if (sp->m_security_level == 128) {
-    parms.set_coeff_modulus(seal::coeff_modulus_128(sp->m_poly_modulus_degree));
+    parms.set_coeff_modulus(
+        seal::DefaultParams::coeff_modulus_128(sp->m_poly_modulus_degree));
   } else if (sp->m_security_level == 192) {
-    parms.set_coeff_modulus(seal::coeff_modulus_192(sp->m_poly_modulus_degree));
+    parms.set_coeff_modulus(
+        seal::DefaultParams::coeff_modulus_192(sp->m_poly_modulus_degree));
+  } else if (sp->m_security_level == 256) {
+    parms.set_coeff_modulus(
+        seal::DefaultParams::coeff_modulus_256(sp->m_poly_modulus_degree));
   } else {
-    throw ngraph_error("sp.security_level must be 128, 192");
+    throw ngraph_error("sp.security_level must be 128, 192, or 256");
   }
   parms.set_plain_modulus(sp->m_plain_modulus);
 
@@ -198,10 +192,18 @@ void runtime::he::he_seal::HESealBFVBackend::encode(
               get_valued_plaintext(value));
       output =
           make_shared<runtime::he::he_seal::SealPlaintextWrapper>(*plain_value);
-      ;
     } else {
+      float float_val = *(float*)input;
+      int32_t int_val;
+      if (ceilf(float_val) == float_val) {
+        int_val = static_cast<int32_t>(float_val);
+      } else {
+        NGRAPH_INFO << "BFV float only supported for int32_t";
+        throw ngraph_error("BFV float only supported for int32_t");
+      }
+
       output = make_shared<runtime::he::he_seal::SealPlaintextWrapper>(
-          m_frac_encoder->encode(*(float*)input));
+          m_integer_encoder->encode(int_val));
     }
   } else {
     NGRAPH_INFO << "Unsupported element type in decode " << type_name;
@@ -219,8 +221,9 @@ void runtime::he::he_seal::HESealBFVBackend::decode(
 
   if (auto seal_input = dynamic_cast<const SealPlaintextWrapper*>(input)) {
     if (type_name == "float") {
-      float x = m_frac_encoder->decode(seal_input->m_plaintext);
-      memcpy(output, &x, element_type.size());
+      int32_t val = m_integer_encoder->decode_int32(seal_input->m_plaintext);
+      float fl_val{val};
+      memcpy(output, &fl_val, element_type.size());
     } else {
       NGRAPH_INFO << "Unsupported element type in decode " << type_name;
       throw ngraph_error("Unsupported element type " + type_name);

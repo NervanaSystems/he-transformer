@@ -19,9 +19,9 @@ include(ExternalProject)
 # ${CMAKE_CURRENT_BINARY_DIR} is he-transformer/build
 
 set(SEAL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ext_seal)
-set(SEAL_SRC_DIR ${SEAL_PREFIX}/src/ext_seal/src)
+set(SEAL_SRC_DIR ${SEAL_PREFIX}/src/ext_seal/native/src)
 SET(SEAL_REPO_URL https://github.com/Microsoft/SEAL.git)
-SET(SEAL_GIT_TAG origin/3.1.0)
+SET(SEAL_GIT_TAG origin/3.2.0)
 set(SEAL_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
 set(SEAL_USE_CXX17 ON)
@@ -38,6 +38,7 @@ ExternalProject_Add(
    GIT_REPOSITORY ${SEAL_REPO_URL}
    GIT_TAG ${SEAL_GIT_TAG}
    PREFIX ${SEAL_PREFIX}
+   INSTALL_DIR ${EXTERNAL_INSTALL_DIR}
    CONFIGURE_COMMAND cmake ${SEAL_SRC_DIR}
    -DCMAKE_INSTALL_PREFIX=${EXTERNAL_INSTALL_DIR}
    -DCMAKE_CXX_FLAGS=${SEAL_CXX_FLAGS}
@@ -52,4 +53,3 @@ add_custom_target(libseal ALL DEPENDS ext_seal ext_ngraph_tf
         COMMAND ${CMAKE_COMMAND} -E create_symlink
    ${EXTERNAL_INSTALL_LIB_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}seal${CMAKE_STATIC_LIBRARY_SUFFIX}
             ${NGRAPH_TF_VENV_LIB_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}seal${CMAKE_STATIC_LIBRARY_SUFFIX})
-

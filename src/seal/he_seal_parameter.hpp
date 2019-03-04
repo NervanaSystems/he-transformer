@@ -38,21 +38,13 @@ class HESealParameter {
   // For BFV
   HESealParameter(std::string scheme_name, std::uint64_t poly_modulus_degree,
                   std::uint64_t plain_modulus, std::uint64_t security_level,
-                  std::uint64_t evaluation_decomposition_bit_count,
-                  std::uint64_t fractional_encoder_integer_coeff_count,
-                  std::uint64_t fractional_encoder_fraction_coeff_count,
-                  std::uint64_t fractional_encoder_base)
+                  std::uint64_t evaluation_decomposition_bit_count)
       : m_scheme_name(scheme_name),
         m_poly_modulus_degree(poly_modulus_degree),
         m_plain_modulus(plain_modulus),
         m_security_level(security_level),
         m_evaluation_decomposition_bit_count(
-            evaluation_decomposition_bit_count),
-        m_fractional_encoder_integer_coeff_count(
-            fractional_encoder_integer_coeff_count),
-        m_fractional_encoder_fraction_coeff_count(
-            fractional_encoder_fraction_coeff_count),
-        m_fractional_encoder_base(fractional_encoder_base) {}
+            evaluation_decomposition_bit_count) {}
 
   // For CKKS
   HESealParameter(std::string scheme_name, std::uint64_t poly_modulus_degree,
@@ -98,11 +90,6 @@ class HESealParameter {
     std::uint64_t coeff_count;
   };
   CoeffModulus m_coeff_modulus;
-
-  // For BFV FractionalEncoder
-  std::uint64_t m_fractional_encoder_integer_coeff_count;
-  std::uint64_t m_fractional_encoder_fraction_coeff_count;
-  std::uint64_t m_fractional_encoder_base;
 };
 }  // namespace he_seal
 }  // namespace he

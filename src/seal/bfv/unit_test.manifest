@@ -1,10 +1,28 @@
-convolution_2d_1image_2outputs # Needs larger parameters => slow
-convolution_2d_1item_padded_2_3x4_5 # Needs larger parameters => slow
-convolution_2d_1item_padded_1_1x1_1 # Needs larger parameters => slow
-cipher_tv_batch_write_read_2_3 # BFV doesn't support floating-point batching
-plain_tv_batch_write_read_2_3 # BFV doesn't support floating-point batching
-add_4_3_batch_cipher # BFV doesn't support floating-point batching
-add_4_3_batch_plain # BFV doesn't support floating-point batching
-multiply_4_3_batch # BFV doesn't support floating-point batching
-dot_scalar_batch # BFV doesn't support floating-point batching
-avg_pool_1d_1channel_2image_batched # BFV doesn't support floating-point batching
+# BFV doesn't support floating-point values
+avg_pool_1d_1channel_1image
+avg_pool_1d_1channel_2image
+avg_pool_1d_2channel_2image
+avg_pool_2d_2channel_2image
+avg_pool_2d_1channel_1image_strided
+
+convolution_2d_1image_2outputs
+convolution_2d_1item_padded_2_3x4_5
+convolution_2d_1item_padded_1_1x1_1
+convolution_2d_1image
+convolution_2d_1image_2outputs
+convolution_2d_1item
+convolution_2d_1item_padded_1_1x1_1
+convolution_2d_1item_padded_2_3x4_5
+convolution_2d_2items
+convolution_2d_2items_strided_padded
+
+constant
+
+# BFV doesn't support floating-point batching
+cipher_tv_batch_write_read_2_3
+plain_tv_batch_write_read_2_3
+add_4_3_batch_cipher
+add_4_3_batch_plain
+multiply_4_3_batch
+dot_scalar_batch
+avg_pool_1d_1channel_2image_batched
