@@ -80,7 +80,7 @@ class HESealClient {
     m_thread = std::thread([&io_context]() { io_context.run(); });
   }
 
-  ~HESealClient() {}
+  //~HESealClient() {}
 
   const runtime::he::TCPMessage handle_message(
       const runtime::he::TCPMessage& message) {

@@ -243,6 +243,7 @@ class HEBackend : public runtime::Backend {
       FunctionInstance& instance);
 
   std::shared_ptr<TCPServer> m_tcp_server;
+  std::thread m_thread;
   size_t m_port{34000};  // Which port the server is hosted at
 };
 }  // namespace he

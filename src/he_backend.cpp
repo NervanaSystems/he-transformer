@@ -69,7 +69,8 @@ void runtime::he::HEBackend::start_server() {
   };
   m_tcp_server =
       make_shared<TCPServer>(io_context, server_endpoints, server_callback);
-  io_context.run();
+  m_thread = std::thread([&io_context]() { io_context.run(); });
+  // io_context.run();
 }
 
 shared_ptr<runtime::he::HEPlaintext>
@@ -156,6 +157,7 @@ shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_valued_plain_tensor(
 }
 
 runtime::Handle runtime::he::HEBackend::compile(shared_ptr<Function> function) {
+  NGRAPH_INFO << "Compiling function";
   FunctionInstance& instance = m_function_map[function];
   if (!instance.m_is_compiled) {
     instance.m_is_compiled = true;
@@ -169,6 +171,7 @@ runtime::Handle runtime::he::HEBackend::compile(shared_ptr<Function> function) {
       instance.m_wrapped_nodes.emplace_back(node);
     }
   }
+  NGRAPH_INFO << "Compiled function";
   return function;
 }
 

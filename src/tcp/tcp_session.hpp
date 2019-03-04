@@ -35,7 +35,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
 
   void start() { do_read_header(); }
 
- private:
+ public:
   void do_read_header() {
     auto self(shared_from_this());
     boost::asio::async_read(

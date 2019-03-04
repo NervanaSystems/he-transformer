@@ -28,6 +28,7 @@ namespace runtime {
 namespace he {
 enum class MessageType {
   none,
+  encryption_parameters,
   public_key_ack,
   public_key,
   public_key_request,
@@ -43,6 +44,9 @@ inline std::string message_type_to_string(const MessageType& type) {
   switch (type) {
     case MessageType::none:
       return "none";
+      break;
+    case MessageType::encryption_parameters:
+      return "encryption_parameters";
       break;
     case MessageType::public_key_ack:
       return "public_key_ack";
@@ -103,13 +107,13 @@ class TCPMessage {
       throw std::invalid_argument("Request type not valid");
     }
 
-    // if (type == MessageType::none) {
-    m_data = new char[header_length + max_body_length];
-    std::cout << "Allocated large" << std::endl;
-    /* } else {
-       std::cout << "Allocated small" << std::endl;
-       m_data = new char[header_length + body_length()];
-     } */
+    if (type == MessageType::none) {
+      m_data = new char[header_length + max_body_length];
+      std::cout << "Allocated large" << std::endl;
+    } else {
+      std::cout << "Allocated small" << std::endl;
+      m_data = new char[header_length + body_length()];
+    }
 
     encode_header();
     encode_message_type();
@@ -150,7 +154,7 @@ class TCPMessage {
   ~TCPMessage() {
     if (m_data) {
       std::cout << "~TCPMessage()" << std::endl;
-      // delete[] m_data;
+      delete[] m_data;
     }
   }
 

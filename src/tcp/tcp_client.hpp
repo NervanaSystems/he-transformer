@@ -29,7 +29,7 @@ namespace runtime {
 namespace he {
 class TCPClient {
  public:
-  // Connects client to hostname:port and sends first_message
+  // Connects client to hostname:port and reads message
   // message_handler will handle responses from the server
   TCPClient(
       boost::asio::io_context& io_context,
@@ -62,8 +62,8 @@ class TCPClient {
           if (!ec) {
             std::cout << "Connected to server" << std::endl;
 
-            // do_read_header();
-            do_write(m_read_message);
+            do_read_header();
+            // do_write(m_read_message);
           } else {
             std::cout << "error connecting to server: " << ec.message()
                       << std::endl;
