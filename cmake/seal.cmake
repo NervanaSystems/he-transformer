@@ -19,9 +19,9 @@ include(ExternalProject)
 # ${CMAKE_CURRENT_BINARY_DIR} is he-transformer/build
 
 set(SEAL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ext_seal)
-set(SEAL_SRC_DIR ${SEAL_PREFIX}/src/ext_seal/src)
+set(SEAL_SRC_DIR ${SEAL_PREFIX}/src/ext_seal/native/src)
 SET(SEAL_REPO_URL https://github.com/Microsoft/SEAL.git)
-SET(SEAL_GIT_TAG v3.1)
+SET(SEAL_GIT_TAG origin/3.2.0)
 set(SEAL_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
 set(SEAL_USE_CXX17 ON)
@@ -41,9 +41,9 @@ message("NGRAPH_TF_VENV_LIB_DIR ${NGRAPH_TF_VENV_LIB_DIR}")
 ExternalProject_Add(
    ext_seal
    GIT_REPOSITORY ${SEAL_REPO_URL}
-   GIT_TAG ${SEAL_GIT_LABEL}
+   GIT_TAG ${SEAL_GIT_TAG}
    PREFIX ${SEAL_PREFIX}
-   UPDATE_COMMAND ""
+   INSTALL_DIR ${EXTERNAL_INSTALL_DIR}
    CONFIGURE_COMMAND cmake ${SEAL_SRC_DIR}
    -DCMAKE_INSTALL_PREFIX=${EXTERNAL_INSTALL_DIR}
    -DCMAKE_CXX_FLAGS=${SEAL_CXX_FLAGS}

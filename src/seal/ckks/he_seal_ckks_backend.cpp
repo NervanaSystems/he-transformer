@@ -179,25 +179,25 @@ runtime::he::he_seal::HESealCKKSBackend::make_seal_context(
   if (custom_coeff_modulus) {
     if (sp->m_coeff_modulus.bit_count == 30) {
       std::vector<seal::SmallModulus> small_mods_30_bit =
-          seal::util::global_variables::small_mods_30bit;
+          seal::util::global_variables::default_small_mods_30bit;
       parms.set_coeff_modulus(
           {small_mods_30_bit.begin(),
            small_mods_30_bit.begin() + sp->m_coeff_modulus.coeff_count});
     } else if (sp->m_coeff_modulus.bit_count == 40) {
       std::vector<seal::SmallModulus> small_mods_40_bit =
-          seal::util::global_variables::small_mods_40bit;
+          seal::util::global_variables::default_small_mods_40bit;
       parms.set_coeff_modulus(
           {small_mods_40_bit.begin(),
            small_mods_40_bit.begin() + sp->m_coeff_modulus.coeff_count});
     } else if (sp->m_coeff_modulus.bit_count == 50) {
       std::vector<seal::SmallModulus> small_mods_50_bit =
-          seal::util::global_variables::small_mods_50bit;
+          seal::util::global_variables::default_small_mods_50bit;
       parms.set_coeff_modulus(
           {small_mods_50_bit.begin(),
            small_mods_50_bit.begin() + sp->m_coeff_modulus.coeff_count});
     } else if (sp->m_coeff_modulus.bit_count == 60) {
       std::vector<seal::SmallModulus> small_mods_60_bit =
-          seal::util::global_variables::small_mods_60bit;
+          seal::util::global_variables::default_small_mods_60bit;
       parms.set_coeff_modulus(
           {small_mods_60_bit.begin(),
            small_mods_60_bit.begin() + sp->m_coeff_modulus.coeff_count});
@@ -214,7 +214,7 @@ runtime::he::he_seal::HESealCKKSBackend::make_seal_context(
     if (custom_coeff_modulus) {
       uint64_t default_coeff_bit_count = 0;
       for (auto small_modulus :
-           seal::coeff_modulus_128(sp->m_poly_modulus_degree)) {
+           seal::DefaultParams::coeff_modulus_128(sp->m_poly_modulus_degree)) {
         default_coeff_bit_count += small_modulus.bit_count();
       }
       if (default_coeff_bit_count < coeff_bit_count) {
@@ -226,13 +226,13 @@ runtime::he::he_seal::HESealCKKSBackend::make_seal_context(
       }
     } else {
       parms.set_coeff_modulus(
-          seal::coeff_modulus_128(sp->m_poly_modulus_degree));
+          seal::DefaultParams::coeff_modulus_128(sp->m_poly_modulus_degree));
     }
   } else if (sp->m_security_level == 192) {
     if (custom_coeff_modulus) {
       uint64_t default_coeff_bit_count = 0;
       for (auto small_modulus :
-           seal::coeff_modulus_192(sp->m_poly_modulus_degree)) {
+           seal::DefaultParams::coeff_modulus_192(sp->m_poly_modulus_degree)) {
         default_coeff_bit_count += small_modulus.bit_count();
       }
       if (default_coeff_bit_count < coeff_bit_count) {
@@ -244,10 +244,28 @@ runtime::he::he_seal::HESealCKKSBackend::make_seal_context(
       }
     } else {
       parms.set_coeff_modulus(
-          seal::coeff_modulus_192(sp->m_poly_modulus_degree));
+          seal::DefaultParams::coeff_modulus_192(sp->m_poly_modulus_degree));
+    }
+  } else if (sp->m_security_level == 256) {
+    if (custom_coeff_modulus) {
+      uint64_t default_coeff_bit_count = 0;
+      for (auto small_modulus :
+           seal::DefaultParams::coeff_modulus_256(sp->m_poly_modulus_degree)) {
+        default_coeff_bit_count += small_modulus.bit_count();
+      }
+      if (default_coeff_bit_count < coeff_bit_count) {
+        NGRAPH_WARN << "Custom coefficient modulus has total bit count "
+                    << coeff_bit_count
+                    << " which is greater than the default bit count "
+                    << default_coeff_bit_count
+                    << ", resulting in lower security";
+      }
+    } else {
+      parms.set_coeff_modulus(
+          seal::DefaultParams::coeff_modulus_256(sp->m_poly_modulus_degree));
     }
   } else {
-    throw ngraph_error("sp.security_level must be 128, 192");
+    throw ngraph_error("sp.security_level must be 128, 192, or 256");
   }
   return seal::SEALContext::Create(parms);
 }
