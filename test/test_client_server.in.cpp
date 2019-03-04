@@ -15,6 +15,8 @@
 //*****************************************************************************
 
 #include <chrono>
+#include <thread>
+
 #include "boost/asio.hpp"
 #include "he_backend.hpp"
 #include "ngraph/ngraph.hpp"
@@ -35,16 +37,73 @@ using namespace ngraph;
 static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, tcp_message_encode_request) {
-  auto message =
+  auto m =
       runtime::he::TCPMessage(runtime::he::MessageType::public_key_request);
 
-  runtime::he::TCPMessage message2 = message;
-  message2.decode_header();
+  runtime::he::TCPMessage m2;
+  // read header
+  std::memcpy(m2.header_ptr(), m.header_ptr(),
+              runtime::he::TCPMessage::header_length);
+  m2.decode_header();
+  // read body
+  std::memcpy(m2.body_ptr(), m.body_ptr(), m2.body_length());
+  m2.decode_body();
 
-  EXPECT_EQ(message.message_type(), message2.message_type());
-  EXPECT_EQ(message.count(), message2.count());
-  EXPECT_EQ(message.num_bytes(), message2.num_bytes());
-  EXPECT_EQ(message.data_size(), message2.data_size());
+  EXPECT_EQ(std::memcmp(m.header_ptr(), m2.header_ptr(),
+                        runtime::he::TCPMessage::header_length),
+            0);
+  EXPECT_EQ(std::memcmp(m.header_ptr(), m2.header_ptr(), m2.num_bytes()), 0);
+  EXPECT_EQ(m.message_type(), m2.message_type());
+  EXPECT_EQ(m.count(), m2.count());
+  EXPECT_EQ(m.num_bytes(), m2.num_bytes());
+  EXPECT_EQ(m.data_size(), m2.data_size());
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, tcp_message_copy) {
+  size_t count = 3;
+  size_t element_size = 10;
+  size_t size = count * element_size;
+  void* data = malloc(size);
+  std::memset(data, 7, size);  // Set data to have value 7
+  assert(data != nullptr);
+
+  auto m = runtime::he::TCPMessage(runtime::he::MessageType::public_key, count,
+                                   size, (char*)data);
+  runtime::he::TCPMessage m2{m};
+
+  EXPECT_EQ(m.message_type(), m2.message_type());
+  EXPECT_EQ(m.count(), m2.count());
+  EXPECT_EQ(m.num_bytes(), m2.num_bytes());
+  EXPECT_EQ(m.data_size(), m2.data_size());
+
+  EXPECT_EQ(std::memcmp(m.header_ptr(), m2.header_ptr(),
+                        runtime::he::TCPMessage::header_length),
+            0);
+  EXPECT_EQ(std::memcmp(m.header_ptr(), m2.header_ptr(), m2.num_bytes()), 0);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, tcp_message_move) {
+  size_t count = 3;
+  size_t element_size = 10;
+  size_t size = count * element_size;
+  void* data = malloc(size);
+  std::memset(data, 7, size);  // Set data to have value 7
+  assert(data != nullptr);
+
+  // m constructed via move constructor
+  runtime::he::TCPMessage m{std::move(runtime::he::TCPMessage(
+      runtime::he::MessageType::public_key, count, size, (char*)data))};
+  runtime::he::TCPMessage m2 = runtime::he::TCPMessage(
+      runtime::he::MessageType::public_key, count, size, (char*)data);
+
+  EXPECT_EQ(std::memcmp(m.header_ptr(), m2.header_ptr(),
+                        runtime::he::TCPMessage::header_length),
+            0);
+  EXPECT_EQ(m.num_bytes(), m2.num_bytes());
+  EXPECT_EQ(m.message_type(), m2.message_type());
+  EXPECT_EQ(m.count(), m2.count());
+  EXPECT_EQ(m.data_size(), m2.data_size());
+  EXPECT_EQ(std::memcmp(m.header_ptr(), m2.header_ptr(), m2.num_bytes()), 0);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, tcp_message_encode) {
@@ -55,33 +114,62 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_message_encode) {
   std::memset(data, 7, size);  // Set data to have value 7
   assert(data != nullptr);
 
-  auto message = runtime::he::TCPMessage(runtime::he::MessageType::none, count,
-                                         size, (char*)data);
+  auto m = runtime::he::TCPMessage(runtime::he::MessageType::none, count, size,
+                                   (char*)data);
 
-  runtime::he::TCPMessage message2 = message;
-  message2.decode_header();
-  message2.decode_body();
+  runtime::he::TCPMessage m2;
+  // read header
+  std::memcpy(m2.header_ptr(), m.header_ptr(),
+              runtime::he::TCPMessage::header_length);
+  m2.decode_header();
+  // read body
+  std::memcpy(m2.body_ptr(), m.body_ptr(), m2.body_length());
+  m2.decode_body();
 
-  EXPECT_EQ(std::memcmp(message.data_ptr(), data, size), 0);
-
-  EXPECT_EQ(message.message_type(), message2.message_type());
-  EXPECT_EQ(message.count(), message2.count());
-  EXPECT_EQ(message.num_bytes(), message2.num_bytes());
-  EXPECT_EQ(message.data_size(), message2.data_size());
-
-  message = runtime::he::TCPMessage(runtime::he::MessageType::public_key, count,
-                                    size, (char*)data);
-  message2 = message;
-  message2.decode_header();
-  message2.decode_body();
-
-  EXPECT_EQ(message.message_type(), message2.message_type());
-  EXPECT_EQ(message.count(), message2.count());
-  EXPECT_EQ(message.num_bytes(), message2.num_bytes());
-  EXPECT_EQ(message.data_size(), message2.data_size());
+  EXPECT_EQ(std::memcmp(m.header_ptr(), m2.header_ptr(),
+                        runtime::he::TCPMessage::header_length),
+            0);
+  EXPECT_EQ(std::memcmp(m.header_ptr(), m2.header_ptr(), m2.num_bytes()), 0);
+  EXPECT_EQ(m.message_type(), m2.message_type());
+  EXPECT_EQ(m.count(), m2.count());
+  EXPECT_EQ(m.num_bytes(), m2.num_bytes());
+  EXPECT_EQ(m.data_size(), m2.data_size());
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, client_server_add_2_3) {
+NGRAPH_TEST(${BACKEND_NAME}, tcp_message_encode_large) {
+  size_t count = 784;
+  size_t element_size = 262217;
+  size_t size = count * element_size;
+  void* data = malloc(size);
+  std::memset(data, 7, size);  // Set data to have value 7
+  assert(data != nullptr);
+
+  NGRAPH_INFO << "Size " << size;
+
+  auto m = runtime::he::TCPMessage(runtime::he::MessageType::none, count, size,
+                                   (char*)data);
+  NGRAPH_INFO << "Made message";
+
+  runtime::he::TCPMessage m2;
+  // read header
+  std::memcpy(m2.header_ptr(), m.header_ptr(),
+              runtime::he::TCPMessage::header_length);
+  m2.decode_header();
+  // read body
+  std::memcpy(m2.body_ptr(), m.body_ptr(), m2.body_length());
+  m2.decode_body();
+
+  EXPECT_EQ(std::memcmp(m.header_ptr(), m2.header_ptr(),
+                        runtime::he::TCPMessage::header_length),
+            0);
+  EXPECT_EQ(std::memcmp(m.header_ptr(), m2.header_ptr(), m2.num_bytes()), 0);
+  EXPECT_EQ(m.message_type(), m2.message_type());
+  EXPECT_EQ(m.count(), m2.count());
+  EXPECT_EQ(m.num_bytes(), m2.num_bytes());
+  EXPECT_EQ(m.data_size(), m2.data_size());
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init) {
   Shape shape{2, 3};
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = make_shared<op::Constant>(
@@ -91,12 +179,12 @@ NGRAPH_TEST(${BACKEND_NAME}, client_server_add_2_3) {
 
   auto server_fun = [&f]() {
     try {
+      NGRAPH_INFO << "Creating backend";
       auto backend = runtime::Backend::create("${BACKEND_NAME}");
       auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
-
       auto handle = backend->compile(f);
+      NGRAPH_INFO << "Starting server";
       he_backend->start_server();
-
     } catch (std::system_error& e) {
       std::cout << "Exception in server" << std::endl;
     }
@@ -105,9 +193,8 @@ NGRAPH_TEST(${BACKEND_NAME}, client_server_add_2_3) {
   std::vector<float> results;
   auto client_fun = [&results]() {
     try {
-      sleep(3);  // Let server start
+      sleep(1);  // Let server start
       size_t port = 34000;
-
       std::vector<float> inputs{1, 2, 3, 4, 5, 6};
       boost::asio::io_context io_context;
       tcp::resolver resolver(io_context);
@@ -115,12 +202,10 @@ NGRAPH_TEST(${BACKEND_NAME}, client_server_add_2_3) {
           resolver.resolve("localhost", std::to_string(port));
       auto client =
           runtime::he::HESealClient(io_context, client_endpoints, inputs);
-
       while (!client.is_done()) {
         sleep(1);
       }
       results = client.get_results();
-
     } catch (std::system_error& e) {
       std::cout << "Exception in client" << std::endl;
     }
@@ -135,46 +220,62 @@ NGRAPH_TEST(${BACKEND_NAME}, client_server_add_2_3) {
   std::cout << std::endl;
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, client_server_mult_2_3) {
-  Shape shape{2, 3};
+NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_relu) {
+  int N = 100;
+  std::vector<float> inputs;
+  for (int i = 0; i < N; ++i) {
+    if (i % 2 == 0) {
+      inputs.emplace_back(i);
+    } else {
+      inputs.emplace_back(-i);
+    }
+  }
+
+  std::vector<float> expected_results;
+  std::transform(inputs.begin(), inputs.end(),
+                 std::back_inserter(expected_results), [](float x) -> float {
+                   if (x > 0) {
+                     return x;
+                   } else {
+                     return 0.f;
+                   }
+                 });
+  Shape shape{inputs.size()};
+
   auto a = make_shared<op::Parameter>(element::f32, shape);
-  auto b = make_shared<op::Constant>(
-      element::f32, shape, std::vector<float>{1.1, 1.2, 1.3, 1.4, 1.5, 1.6});
-  auto t = a * b;
+  auto t = make_shared<op::Relu>(a);
   auto f = make_shared<Function>(t, ParameterVector{a});
 
   auto server_fun = [&f]() {
     try {
+      NGRAPH_INFO << "Creating backend";
       auto backend = runtime::Backend::create("${BACKEND_NAME}");
       auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
-
       auto handle = backend->compile(f);
+      NGRAPH_INFO << "Starting server";
       he_backend->start_server();
-
     } catch (std::system_error& e) {
       std::cout << "Exception in server" << std::endl;
     }
   };
 
   std::vector<float> results;
-  auto client_fun = [&results]() {
+  auto client_fun = [&inputs, &results]() {
     try {
-      sleep(3);  // Let server start
+      // Wait for server to start
+      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
       size_t port = 34000;
 
-      std::vector<float> inputs{1, 2, 3, 4, 5, 6};
       boost::asio::io_context io_context;
       tcp::resolver resolver(io_context);
       auto client_endpoints =
           resolver.resolve("localhost", std::to_string(port));
       auto client =
           runtime::he::HESealClient(io_context, client_endpoints, inputs);
-
       while (!client.is_done()) {
-        sleep(1);
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
       }
       results = client.get_results();
-
     } catch (std::system_error& e) {
       std::cout << "Exception in client" << std::endl;
     }
@@ -184,54 +285,79 @@ NGRAPH_TEST(${BACKEND_NAME}, client_server_mult_2_3) {
   t1.join();
   t2.join();
 
-  EXPECT_TRUE(
-      all_close(results, std::vector<float>{1.1, 2.4, 3.9, 5.6, 7.5, 9.6}));
+  EXPECT_TRUE(all_close(results, expected_results));
   std::cout << std::endl;
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, client_server_mult_784) {
-  Shape shape{784};
-  auto a = make_shared<op::Parameter>(element::f32, shape);
-  std::vector<float> constant_vec(784, 2.0);
-  auto b = make_shared<op::Constant>(element::f32, shape, constant_vec);
-  auto t = a * b;
-  auto f = make_shared<Function>(t, ParameterVector{a});
+NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_relu2) {
+  int N = 6;
+  std::vector<float> inputs;
+  std::vector<float> const_a;
+  std::vector<float> const_b;
+  std::vector<float> expected_results;
+  auto relu = [](float x) -> float { return x > 0 ? x : 0.f; };
+
+  for (int i = 0; i < N; ++i) {
+    float x;
+    if (i % 2 == 0) {
+      x = i;
+      inputs.emplace_back(i);
+    } else {
+      x = -i;
+      inputs.emplace_back(-i);
+    }
+    float a = i + 0.1;
+    float b = i + 1;
+    const_a.emplace_back(a);
+    const_b.emplace_back(b);
+
+    expected_results.emplace_back(relu(relu(x + a) + b));
+  }
+
+  Shape shape{inputs.size()};
+
+  NGRAPH_INFO << "Expected results";
+  for (const auto& elem : expected_results) {
+    NGRAPH_INFO << elem;
+  }
+
+  auto x = make_shared<op::Parameter>(element::f32, shape);
+  auto a = make_shared<op::Constant>(element::f32, shape, const_a);
+  auto b = make_shared<op::Constant>(element::f32, shape, const_b);
+  auto relu1 = make_shared<op::Relu>(x + a);
+  auto t = make_shared<op::Relu>(relu1 + b);
+  auto f = make_shared<Function>(t, ParameterVector{x});
 
   auto server_fun = [&f]() {
     try {
+      NGRAPH_INFO << "Creating backend";
       auto backend = runtime::Backend::create("${BACKEND_NAME}");
       auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
-
       auto handle = backend->compile(f);
+      NGRAPH_INFO << "Starting server";
       he_backend->start_server();
-
     } catch (std::system_error& e) {
       std::cout << "Exception in server" << std::endl;
     }
   };
 
   std::vector<float> results;
-  auto client_fun = [&results]() {
+  auto client_fun = [&inputs, &results]() {
     try {
-      sleep(3);  // Let server start
+      // Wait for server to start
+      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
       size_t port = 34000;
 
-      std::vector<float> inputs;
-      for (size_t i = 0; i < 784; ++i) {
-        inputs.push_back(i);
-      }
       boost::asio::io_context io_context;
       tcp::resolver resolver(io_context);
       auto client_endpoints =
           resolver.resolve("localhost", std::to_string(port));
       auto client =
           runtime::he::HESealClient(io_context, client_endpoints, inputs);
-
       while (!client.is_done()) {
-        sleep(1);
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
       }
       results = client.get_results();
-
     } catch (std::system_error& e) {
       std::cout << "Exception in client" << std::endl;
     }
@@ -241,11 +367,6 @@ NGRAPH_TEST(${BACKEND_NAME}, client_server_mult_784) {
   t1.join();
   t2.join();
 
-  std::vector<float> exp_result;
-  for (size_t i = 0; i < 784; ++i) {
-    exp_result.push_back(2 * i);
-  }
-
-  EXPECT_TRUE(all_close(results, exp_result));
+  EXPECT_TRUE(all_close(results, expected_results));
   std::cout << std::endl;
 }

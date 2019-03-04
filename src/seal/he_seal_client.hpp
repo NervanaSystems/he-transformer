@@ -44,8 +44,8 @@ class HESealClient {
         seal::scheme_type::CKKS);  // TODO: enable BFV
     parms.set_poly_modulus_degree(1024);
     parms.set_coeff_modulus(
-        {seal::util::global_variables::small_mods_30bit.begin(),
-         seal::util::global_variables::small_mods_30bit.begin() + 4});
+        {seal::util::global_variables::default_small_mods_30bit.begin(),
+         seal::util::global_variables::default_small_mods_30bit.begin() + 4});
 
     m_context = seal::SEALContext::Create(parms);
 

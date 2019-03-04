@@ -17,6 +17,7 @@
 #pragma once
 
 #include <assert.h>
+#include <algorithm>
 #include <cstring>
 #include <iostream>
 #include <memory>
@@ -61,6 +62,12 @@ inline std::string message_type_to_string(const MessageType& type) {
     case MessageType::parameter_shape_request:
       return "parameter_shape_request";
       break;
+    case MessageType::relu:
+      return "relu";
+      break;
+    case MessageType::relu_request:
+      return "relu_request";
+      break;
     case MessageType::result:
       return "result";
       break;
@@ -69,12 +76,24 @@ inline std::string message_type_to_string(const MessageType& type) {
   }
 }
 
+// @brief Describes TCP messages of the form:
+// header        | message_type | count        | data  |
+// ^- header_ptr   ^- body_ptr    ^- count_ptr   ^- data_ptr
+//               | ---------------  body  ------------ |
+// @param count number of elements of data
+// @param size number of bytes of data in message. Must be a multiple of
+// count
+// MessageType::none indicates message may store data in the future, and so
+// max_body_length bytes are allocated for the body.
 class TCPMessage {
  public:
-  enum { header_length = sizeof(size_t) };
-  enum { max_body_length = 51437456 };
+  enum { header_length = 15 };
+  enum { max_body_length = 450000000 };
+  enum { message_type_length = sizeof(MessageType) };
+  enum { message_count_length = sizeof(size_t) };
 
-  TCPMessage(const MessageType type) : m_type(type) {
+  TCPMessage(const MessageType type)
+      : m_type(type), m_count(0), m_data_size(0) {
     std::set<MessageType> request_types{
         MessageType::public_key_request, MessageType::relu_request,
         MessageType::public_key_ack, MessageType::parameter_shape_request,
@@ -83,24 +102,60 @@ class TCPMessage {
     if (request_types.find(type) == request_types.end()) {
       throw std::invalid_argument("Request type not valid");
     }
-    m_bytes = header_length + sizeof(MessageType);
-    m_body_length = sizeof(MessageType);
-    m_count = 0;
-    m_data_size = 0;
-    m_element_size = 0;
+
+    // if (type == MessageType::none) {
+    m_data = new char[header_length + max_body_length];
+    std::cout << "Allocated large" << std::endl;
+    /* } else {
+       std::cout << "Allocated small" << std::endl;
+       m_data = new char[header_length + body_length()];
+     } */
 
     encode_header();
     encode_message_type();
+    encode_count();
+  }
+
+  // copy assignment. TODO: enable as needed
+  TCPMessage& operator=(const TCPMessage& other) = delete;
+
+  // move assignment. TODO: enable as needed
+  TCPMessage& operator=(TCPMessage&& other) = delete;
+
+  // copy constructor
+  TCPMessage(const TCPMessage& other) {
+    m_type = other.m_type;
+    m_count = other.m_count;
+    m_data_size = other.m_data_size;
+
+    m_data = new char[header_length + body_length()];
+    std::memcpy(m_data, other.m_data, num_bytes());
+
+    std::cout << "copy constructor" << std::endl;
+    std::cout << "m_count " << m_count << std::endl;
+    std::cout << "m_data_size " << m_data_size << std::endl;
+    std::cout << "m_type " << message_type_to_string(m_type) << std::endl;
+  }
+
+  // move constructor
+  TCPMessage(TCPMessage&& other) noexcept
+      : m_type(other.m_type),
+        m_count(other.m_count),
+        m_data_size(other.m_data_size) {
+    m_data = new char[header_length + body_length()];
+    std::memcpy(m_data, other.m_data, num_bytes());
+    std::cout << "move constructor" << std::endl;
+  }
+
+  ~TCPMessage() {
+    if (m_data) {
+      std::cout << "~TCPMessage()" << std::endl;
+      // delete[] m_data;
+    }
   }
 
   TCPMessage() : TCPMessage(MessageType::none) {}
 
-  // @brief Describes TCP messages of the form:
-  // header        | message_type | count        | data
-  // ^- header_ptr   ^- body_ptr    ^- count_ptr   ^- data_ptr
-  // @param count number of elements of data
-  // @param size number of bytes of data in message. Must be a multiple of
-  // count
   TCPMessage(const MessageType type, const size_t count, const size_t size,
              const char* data)
       : m_type(type), m_count(count), m_data_size(size) {
@@ -108,146 +163,126 @@ class TCPMessage {
       std::cout << "size " << size << " count " << count << std::endl;
       throw std::invalid_argument("Size must be a multiple of count");
     }
-    std::cout << "Creating message with data size " << size << std::endl;
 
-    m_bytes = header_length;
-    m_bytes += sizeof(MessageType);
-    m_bytes += sizeof(count);
-    m_bytes += size;
-
-    m_body_length = m_bytes - header_length;
-
-    if (m_body_length > max_body_length) {
-      throw std::invalid_argument("Size " + std::to_string(m_body_length) +
+    if (body_length() > max_body_length) {
+      throw std::invalid_argument("Size " + std::to_string(body_length()) +
                                   " too large");
     }
 
-    m_element_size = size / count;
+    std::cout << "TCPMessage( with args) " << std::endl;
+
+    m_data = new char[header_length + max_body_length];
+
+    std::cout << "Creating new message size " << header_length + max_body_length
+              << std::endl;
 
     encode_header();
+
+    std::cout << "Encoded header" << std::endl;
     encode_message_type();
-    encode_count_and_data(data);
+    encode_count();
+    encode_data(data);
   }
 
   size_t count() { return m_count; }
-
   const size_t count() const { return m_count; }
 
-  size_t element_size() { return m_element_size; }
+  size_t element_size() {
+    if (m_count == 0 || m_data_size % m_count != 0) {
+      throw std::invalid_argument(
+          "m_count == 0 or does not divide m_data_size");
+    }
+    return m_data_size / m_count;
+  }
+  const size_t element_size() const {
+    if (m_count == 0 || m_data_size % m_count != 0) {
+      throw std::invalid_argument(
+          "m_count == 0 or does not divide m_data_size");
+    }
+    return m_data_size / m_count;
+  }
 
-  const size_t element_size() const { return m_element_size; }
-
-  size_t num_bytes() { return m_bytes; }
-
-  const size_t num_bytes() const { return m_bytes; }
+  size_t num_bytes() { return header_length + body_length(); }
+  const size_t num_bytes() const { return header_length + body_length(); }
 
   size_t data_size() { return m_data_size; }
-
   const size_t data_size() const { return m_data_size; }
 
-  size_t body_length() const { return m_body_length; }
+  size_t body_length() const {
+    return message_type_length + message_count_length + m_data_size;
+  }
 
   MessageType message_type() { return m_type; }
-
   const MessageType message_type() const { return m_type; }
 
   char* header_ptr() { return m_data; }
-
   const char* header_ptr() const { return m_data; }
 
-  char* body_ptr() { return m_data + header_length; }
+  char* body_ptr() { return header_ptr() + header_length; }
+  const char* body_ptr() const { return header_ptr() + header_length; }
 
-  const char* body_ptr() const { return m_data + header_length; }
+  char* count_ptr() { return body_ptr() + message_type_length; }
+  const char* count_ptr() const { return body_ptr() + message_type_length; }
 
-  char* count_ptr() { return m_data + header_length + sizeof(MessageType); }
+  char* data_ptr() { return count_ptr() + message_count_length; }
+  const char* data_ptr() const { return count_ptr() + message_count_length; }
 
-  const char* count_ptr() const {
-    return m_data + header_length + sizeof(MessageType);
-  }
-
-  char* data_ptr() {
-    return m_data + header_length + sizeof(MessageType) + sizeof(size_t);
-  }
-
-  const char* data_ptr() const {
-    return m_data + header_length + sizeof(MessageType) + sizeof(size_t);
-  }
-
+  // Given
   void encode_header() {
-    assert(header_length == sizeof(m_bytes));
-    // std::cout << "Encoding header " << m_body_length << std::endl;
-
     char header[header_length + 1] = "";
-    std::sprintf(header, "%4d", static_cast<int>(m_body_length));
-    std::memcpy(m_data, header, header_length);
-  }
-
-  void encode_message_type() {
-    // std::cout << "Encoding message type "
-    //          << message_type_to_string(m_type).c_str() << std::endl;
-
-    std::memcpy(body_ptr(), &m_type, sizeof(MessageType));
-  }
-
-  void encode_count_and_data(const char* data) {
-    // Copy count
-    std::memcpy(count_ptr(), &m_count, sizeof(size_t));
-
-    // Copy data
-    std::memcpy(data_ptr(), data, m_data_size);
-  }
-
-  // Given m_data, parses to find m_datatype, m_count
-  bool decode_body() {
-    MessageType type;
-    // Decode message type
-    std::memcpy(&type, body_ptr(), sizeof(MessageType));
-    // std::cout << "Decoded message type " <<
-    // message_type_to_string(type).c_str()
-    //          << std::endl;
-    m_type = type;
-
-    if (m_body_length > sizeof(MessageType)) {
-      // Decode message count
-      std::memcpy(&m_count, count_ptr(), sizeof(size_t));
-      // Decode data size
-      m_data_size = m_body_length - sizeof(MessageType) - sizeof(size_t);
-
-      m_element_size = m_data_size / m_count;
-
-      // std::cout << "Decoded message count " << m_count << std::endl;
-      // std::cout << "Decoded m_data_size " << m_data_size << std::endl;
-    } else {
-      m_data_size = 0;
-      m_element_size = 0;
+    int to_encode = static_cast<int>(body_length());
+    int ret = std::snprintf(header, sizeof(header), "%d", to_encode);
+    if (ret < 0 || ret > sizeof(header)) {
+      throw std::invalid_argument("Error encoding header");
     }
+    std::memcpy(m_data, header, header_length);
   }
 
   bool decode_header() {
     char header[header_length + 1] = "";
     std::strncat(header, m_data, header_length);
-    m_body_length = std::atoi(header);
-    if (m_body_length > max_body_length) {
-      m_body_length = 0;
-      std::cout << "Body length " << m_body_length << " too large" << std::endl;
-      return false;
+    size_t body_length = std::atoi(header);
+    if (body_length > max_body_length) {
+      std::cout << "Body length " << body_length << " too large" << std::endl;
+      throw std::invalid_argument("Cannot decode header");
     }
-    // std::cout << "Decoding header; message size " << m_body_length <<
-    // std::endl;
+    m_data_size = body_length - message_type_length - message_count_length;
+    return true;
+  }
+
+  void encode_message_type() {
+    std::memcpy(body_ptr(), &m_type, message_type_length);
+  }
+
+  void decode_message_type() {
+    std::memcpy(&m_type, body_ptr(), message_type_length);
+  }
+
+  void encode_count() {
+    std::memcpy(count_ptr(), &m_count, message_count_length);
+  }
+
+  void decode_count() {
+    std::memcpy(&m_count, count_ptr(), message_count_length);
+  }
+
+  void encode_data(const char* data) {
+    std::memcpy(data_ptr(), data, m_data_size);
+  }
+
+  // Given m_data, parses to find m_datatype, m_count
+  bool decode_body() {
+    decode_message_type();
+    decode_count();
     return true;
   }
 
  private:
-  size_t m_bytes;         // How many bytes in the message
-  size_t m_body_length;   // How many bytes in message body
-  size_t m_count;         // Number of datatype in message
-  size_t m_data_size;     // Nubmer of bytes in data part of message
-  size_t m_element_size;  // How many bytes per datatype in message
-
   MessageType m_type;  // What data is being transmitted
-  char m_data[header_length + max_body_length];
+  size_t m_count;      // Number of datatype in message
+  size_t m_data_size;  // Nubmer of bytes in data part of message
+  char* m_data;
 
-  // void* m_data_ptr;
 };  // namespace he
 }  // namespace he
 }  // namespace runtime
