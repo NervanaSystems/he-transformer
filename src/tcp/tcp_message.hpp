@@ -208,6 +208,7 @@ class TCPMessage {
     if (m_data) {
       std::cout << "~TCPMessage()" << std::endl;
       delete[] m_data;
+      std::cout << "Done with ~TCPMessage() " << std::endl;
     }
   }
 

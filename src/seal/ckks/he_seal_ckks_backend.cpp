@@ -159,7 +159,7 @@ runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend(
 
   // Start server
   NGRAPH_INFO << "Starting CKKS server";
-  // start_server();
+  start_server();
   NGRAPH_INFO << "Started CKKS server";
 
   /*
