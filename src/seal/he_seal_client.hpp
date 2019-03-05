@@ -66,21 +66,23 @@ class HESealClient {
     m_scale = static_cast<double>(
         m_context_data->parms().coeff_modulus().back().value());
 
-    std::stringstream stream;
+    /*std::stringstream stream;
     m_public_key->save(stream);
     const std::string& pk_str = stream.str();
     const char* pk_cstr = pk_str.c_str();
 
     auto first_message = runtime::he::TCPMessage(MessageType::public_key, 1,
-                                                 pk_str.size(), pk_cstr);
+                                                 pk_str.size(), pk_cstr); */
 
     m_tcp_client = std::make_shared<runtime::he::TCPClient>(
-        io_context, endpoints, first_message, client_callback);
+        io_context, endpoints, client_callback);
+
+    std::cout << "Created TCP client. Starting io_context" << std::endl;
 
     m_thread = std::thread([&io_context]() { io_context.run(); });
   }
 
-  //~HESealClient() {}
+  ~HESealClient() { std::cout << "~HESealClient" << std::endl; }
 
   const runtime::he::TCPMessage handle_message(
       const runtime::he::TCPMessage& message) {

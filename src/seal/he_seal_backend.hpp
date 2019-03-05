@@ -33,8 +33,7 @@ class HESealBackend : public HEBackend {
   /// @param sp SEAL Parameter from which to construct context
   /// @return Pointer to constructed context
   virtual std::shared_ptr<seal::SEALContext> make_seal_context(
-      const std::shared_ptr<runtime::he::he_seal::HESealParameter> sp)
-      const = 0;
+      const std::shared_ptr<runtime::he::he_seal::HESealParameter> sp) = 0;
 
   virtual TCPMessage handle_message(const TCPMessage& message) override = 0;
 

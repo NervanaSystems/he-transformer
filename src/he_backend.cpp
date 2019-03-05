@@ -61,16 +61,15 @@ using descriptor::layout::DenseTensorLayout;
 
 void runtime::he::HEBackend::start_server() {
   // Server
-  boost::asio::io_context io_context;
-  tcp::resolver resolver(io_context);
+  tcp::resolver resolver(m_io_context);
   tcp::endpoint server_endpoints(tcp::v4(), m_port);
   auto server_callback = [this](const runtime::he::TCPMessage message) {
-    return handle_message(message);
+    handle_message(message);
   };
   m_tcp_server =
-      make_shared<TCPServer>(io_context, server_endpoints, server_callback);
-  m_thread = std::thread([&io_context]() { io_context.run(); });
-  // io_context.run();
+      make_shared<TCPServer>(m_io_context, server_endpoints, server_callback);
+  // m_thread = std::thread([&io_context]() { io_context.run(); });
+  m_io_context.run();  // Actually start the server
 }
 
 shared_ptr<runtime::he::HEPlaintext>

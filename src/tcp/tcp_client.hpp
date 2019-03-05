@@ -31,14 +31,11 @@ class TCPClient {
  public:
   // Connects client to hostname:port and reads message
   // message_handler will handle responses from the server
-  TCPClient(
-      boost::asio::io_context& io_context,
-      const tcp::resolver::results_type& endpoints,
-      const TCPMessage& first_message,
-      std::function<TCPMessage(const runtime::he::TCPMessage&)> message_handler)
+  TCPClient(boost::asio::io_context& io_context,
+            const tcp::resolver::results_type& endpoints,
+            std::function<void(const runtime::he::TCPMessage&)> message_handler)
       : m_io_context(io_context),
         m_socket(io_context),
-        m_read_message(first_message),
         m_message_callback(std::bind(message_handler, std::placeholders::_1)) {
     std::cout << "Client starting async connection" << std::endl;
     do_connect(endpoints);
@@ -51,6 +48,7 @@ class TCPClient {
   }
 
   void write_message(const runtime::he::TCPMessage& message) {
+    std::cout << "Client writing message" << std::endl;
     boost::asio::post(m_io_context, [this, message]() { do_write(message); });
   }
 
@@ -72,6 +70,7 @@ class TCPClient {
   }
 
   void do_read_header() {
+    std::cout << "Client reading header " << std::endl;
     boost::asio::async_read(
         m_socket,
         boost::asio::buffer(m_read_message.header_ptr(),
@@ -83,11 +82,14 @@ class TCPClient {
             std::cout << "Client error reading header: " << ec.message()
                       << std::endl;
             m_socket.close();
+            std::cout << "Closed socket" << std::endl;
           }
         });
   }
 
   void do_read_body() {
+    std::cout << "Client reading body length " << std::endl;
+    std::cout << "Body length " << m_read_message.body_length() << std::endl;
     boost::asio::async_read(
         m_socket,
         boost::asio::buffer(m_read_message.body_ptr(),
@@ -97,14 +99,15 @@ class TCPClient {
             m_read_message.decode_body();
             std::cout << "Client read message length "
                       << m_read_message.num_bytes() << std::endl;
-            runtime::he::TCPMessage response =
-                m_message_callback(m_read_message);
-            do_write(response);
+
+            m_message_callback(m_read_message);
+            do_read_header();
           } else {
             std::cout << "Client error reading body; " << ec.message()
                       << std::endl;
             std::cout << "Closing socket" << std::endl;
             m_socket.close();
+            std::cout << "Closed socket" << std::endl;
           }
         });
   }
@@ -129,8 +132,7 @@ class TCPClient {
   tcp::socket m_socket;
 
   // How to handle the message
-  std::function<runtime::he::TCPMessage(const runtime::he::TCPMessage&)>
-      m_message_callback;
+  std::function<void(const runtime::he::TCPMessage&)> m_message_callback;
 };
 }  // namespace he
 }  // namespace runtime

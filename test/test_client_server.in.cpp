@@ -186,7 +186,7 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init) {
       NGRAPH_INFO << "Starting server";
       he_backend->start_server();
     } catch (std::system_error& e) {
-      std::cout << "Exception in server" << std::endl;
+      NGRAPH_INFO<< "Exception in server";
     }
   };
 
@@ -207,7 +207,7 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init) {
       }
       results = client.get_results();
     } catch (std::system_error& e) {
-      std::cout << "Exception in client" << std::endl;
+      NGRAPH_INFO<< "Exception in client";
     }
   };
   std::thread t1(client_fun);
@@ -217,7 +217,7 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_init) {
 
   EXPECT_TRUE(
       all_close(results, std::vector<float>{2.1, 3.2, 4.3, 5.4, 6.5, 7.6}));
-  std::cout << std::endl;
+  std::cout;
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_relu) {
@@ -255,7 +255,7 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_relu) {
       NGRAPH_INFO << "Starting server";
       he_backend->start_server();
     } catch (std::system_error& e) {
-      std::cout << "Exception in server" << std::endl;
+      NGRAPH_INFO<< "Exception in server";
     }
   };
 
@@ -277,7 +277,7 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_relu) {
       }
       results = client.get_results();
     } catch (std::system_error& e) {
-      std::cout << "Exception in client" << std::endl;
+      NGRAPH_INFO<< "Exception in client";
     }
   };
   std::thread t1(client_fun);
@@ -286,7 +286,7 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_relu) {
   t2.join();
 
   EXPECT_TRUE(all_close(results, expected_results));
-  std::cout << std::endl;
+  std::cout;
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_relu2) {
@@ -337,7 +337,7 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_relu2) {
       NGRAPH_INFO << "Starting server";
       he_backend->start_server();
     } catch (std::system_error& e) {
-      std::cout << "Exception in server" << std::endl;
+      NGRAPH_INFO<< "Exception in server";
     }
   };
 
@@ -359,7 +359,7 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_relu2) {
       }
       results = client.get_results();
     } catch (std::system_error& e) {
-      std::cout << "Exception in client" << std::endl;
+      NGRAPH_INFO<< "Exception in client";
     }
   };
   std::thread t1(client_fun);
@@ -368,7 +368,7 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_relu2) {
   t2.join();
 
   EXPECT_TRUE(all_close(results, expected_results));
-  std::cout << std::endl;
+  std::cout;
 }
 */
 
@@ -397,8 +397,10 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_ng_tf) {
 
       sleep(10);
 
+      NGRAPH_INFO << "Destructing server";
+
     } catch (std::system_error& e) {
-      std::cout << "Exception in server" << std::endl;
+      NGRAPH_INFO << "Exception in server";
     }
   };
 
@@ -412,14 +414,18 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_ng_tf) {
       tcp::resolver resolver(io_context);
       auto client_endpoints =
           resolver.resolve("localhost", std::to_string(port));
+      NGRAPH_INFO << "Creating client";
       auto client =
           runtime::he::HESealClient(io_context, client_endpoints, inputs);
+
+      NGRAPH_INFO << "Waiting for client results";
       while (!client.is_done()) {
         sleep(1);
       }
+      NGRAPH_INFO << "Getting client results";
       results = client.get_results();
     } catch (std::system_error& e) {
-      std::cout << "Exception in client" << std::endl;
+      NGRAPH_INFO << "Exception in client";
     }
   };
   std::thread t1(client_fun);
@@ -429,5 +435,5 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_ng_tf) {
 
   EXPECT_TRUE(
       all_close(results, std::vector<float>{2.1, 3.2, 4.3, 5.4, 6.5, 7.6}));
-  std::cout << std::endl;
+  std::cout;
 }

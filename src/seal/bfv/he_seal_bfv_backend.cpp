@@ -120,7 +120,7 @@ extern "C" runtime::Backend* new_bfv_backend(const char* configuration_string) {
 
 shared_ptr<seal::SEALContext>
 runtime::he::he_seal::HESealBFVBackend::make_seal_context(
-    const shared_ptr<runtime::he::he_seal::HESealParameter> sp) const {
+    const shared_ptr<runtime::he::he_seal::HESealParameter> sp) {
   seal::EncryptionParameters parms =
       (sp->m_scheme_name == "HE_SEAL_BFV"
            ? seal::scheme_type::BFV

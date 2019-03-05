@@ -47,8 +47,7 @@ class HESealBFVBackend : public HESealBackend {
       const element::Type& element_type, const Shape& shape) override;
 
   std::shared_ptr<seal::SEALContext> make_seal_context(
-      const std::shared_ptr<runtime::he::he_seal::HESealParameter> sp)
-      const override;
+      const std::shared_ptr<runtime::he::he_seal::HESealParameter> sp) override;
 
   void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
               const void* input, const element::Type& element_type,

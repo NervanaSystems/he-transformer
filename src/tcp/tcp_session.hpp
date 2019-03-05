@@ -29,15 +29,19 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
  public:
   TCPSession(
       tcp::socket socket,
-      std::function<TCPMessage(const runtime::he::TCPMessage&)> message_handler)
+      std::function<void(const runtime::he::TCPMessage&)> message_handler)
       : m_socket(std::move(socket)),
         m_message_callback(std::bind(message_handler, std::placeholders::_1)) {}
 
-  void start() { do_read_header(); }
+  void start() {
+    std::cout << "Session started" << std::endl; /*do_read_header();*/
+  }
 
  public:
   void do_read_header() {
+    std::cout << "Server reading header" << std::endl;
     auto self(shared_from_this());
+
     boost::asio::async_read(
         m_socket,
         boost::asio::buffer(m_message.header_ptr(),
@@ -69,8 +73,8 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
             std::cout << "Server read message length " << m_message.num_bytes()
                       << std::endl;
 
-            auto response = m_message_callback(m_message);
-            do_write(response);
+            m_message_callback(m_message);
+            do_read_header();
           } else {
             std::cout << "Error reading message body: " << ec.message()
                       << std::endl;
@@ -79,7 +83,9 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
   }
 
   void do_write(const TCPMessage& message) {
+    std::cout << "Writing message size " << message.num_bytes() << std::endl;
     auto self(shared_from_this());
+    std::cout << "Got self " << std::endl;
     boost::asio::async_write(
         m_socket,
         boost::asio::buffer(message.header_ptr(), message.num_bytes()),
@@ -98,8 +104,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
   tcp::socket m_socket;
 
   // How to handle the message
-  std::function<runtime::he::TCPMessage(const runtime::he::TCPMessage&)>
-      m_message_callback;
+  std::function<void(const runtime::he::TCPMessage&)> m_message_callback;
 };  // namespace he
 }  // namespace he
 }  // namespace runtime
