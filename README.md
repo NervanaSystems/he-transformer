@@ -59,6 +59,14 @@ The first build will compile Tensorflow and the ng-tf bridge. To speed up subseq
 cmake .. -DUSE_PREBUILT_BINARIES=ON [-DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7]
 ```
 
+# Building HE-Transformer with Intel Compiler
+After the above steps have been completed, run
+```bash
+cmake .. -DCMAKE_CXX_COMPILER=icpc -DCMAKE_C_COMPILER=icc -DSEAL_USE_CXX17=OFF -DCMAKE_CXX_FLAGS=-march=corei7 -DSEAL_USE_AES_NI_PRNG=OFF
+make -j ext_seal
+```
+This will recompile SEAL with ICC for additional performance benefit.
+
 ### 2. Run C++ unit-tests
 Ensure the virtual environment is active, i.e. run `source $HE_TRANSFORMER/external/venv-tf-py3/bin/activate`
 ```bash

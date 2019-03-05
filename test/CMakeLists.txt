@@ -129,6 +129,7 @@ link_directories(
 
 target_include_directories(cryptonets_benchmark PRIVATE ".")
 
-target_link_libraries(cryptonets_benchmark libgtest ngraph ngraph_test_util)
-target_link_libraries(cryptonets_benchmark he_backend seal pthread ${CMAKE_DL_LIBS})
+target_link_libraries(cryptonets_benchmark libgtest ngraph ngraph_test_util ${CMAKE_DL_LIBS})
+target_link_libraries(cryptonets_benchmark he_backend seal pthread)
+
 add_dependencies(cryptonets_benchmark he_backend ext_seal ext_ngraph_tf ext_gtest)

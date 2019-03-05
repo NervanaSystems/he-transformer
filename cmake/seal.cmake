@@ -23,6 +23,7 @@ set(SEAL_SRC_DIR ${SEAL_PREFIX}/src/ext_seal/native/src)
 SET(SEAL_REPO_URL https://github.com/Microsoft/SEAL.git)
 SET(SEAL_GIT_TAG origin/3.2.0)
 
+set(SEAL_USE_AES_NI_PRNG ON)
 set(SEAL_USE_CXX17 ON)
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0)
@@ -30,7 +31,18 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
    endif()
 endif()
 
+message("CMAKE_CXX_COMPILER_ID ${CMAKE_CXX_COMPILER_ID}")
+
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Intel")
+   set (SEAL_USE_AES_NI_PRNG OFF)
+   set(SEAL_USE_CXX17 OFF)
+   message("SEAL_USE_AES_NI_PRNG ${SEAL_USE_AES_NI_PRNG}")
+   message("SEAL_USE_CXX17 ${SEAL_USE_CXX17}")
+endif()
+
 message("SEAL_USE_CXX17 ${SEAL_USE_CXX17}")
+
+message("INSTALL DIR ${EXTERNAL_INSTALL_DIR}")
 
 ExternalProject_Add(
    ext_seal
@@ -46,6 +58,7 @@ ExternalProject_Add(
    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
    -DCMAKE_INSTALL_MESSAGE=LAZY
    -DSEAL_USE_CXX17=${SEAL_USE_CXX17}
+   -DSEAL_USE_AES_NI_PRNG=${SEAL_USE_AES_NI_PRNG}
 )
 
 add_custom_target(libseal ALL DEPENDS ext_seal ext_ngraph_tf
