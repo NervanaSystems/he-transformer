@@ -28,10 +28,11 @@ namespace he {
 class TCPSession : public std::enable_shared_from_this<TCPSession> {
  public:
   TCPSession(
-      tcp::socket socket,
-      std::function<void(const runtime::he::TCPMessage&)> message_handler)
-      : m_socket(std::move(socket)),
-        m_message_callback(std::bind(message_handler, std::placeholders::_1)) {}
+      tcp::socket socket /*,
+      std::function<void(const runtime::he::TCPMessage&)> message_handler */)
+      : m_socket(std::move(socket)) /* ,
+  m_message_callback(std::bind(message_handler, std::placeholders::_1))*/
+  {}
 
   void start() {
     std::cout << "Session started" << std::endl; /*do_read_header();*/
