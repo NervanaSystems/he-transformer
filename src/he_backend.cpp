@@ -67,9 +67,7 @@ void runtime::he::HEBackend::start_server() {
     handle_message(message);
   };
   m_tcp_server =
-      //      make_shared<TCPServer>(m_io_context, server_endpoints,
-      //      server_callback);
-      make_shared<TCPServer>(m_io_context, server_endpoints);
+      make_shared<TCPServer>(m_io_context, server_endpoints, server_callback);
   // m_io_context.run();  // Actually start the server
 }
 

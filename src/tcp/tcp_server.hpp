@@ -30,15 +30,11 @@ namespace runtime {
 namespace he {
 class TCPServer {
  public:
-  TCPServer(boost::asio::io_context& io_context,
-            const tcp::endpoint&
-                endpoint)  // std::function<void(const
-                           // runtime::he::TCPMessage&)> message_handler)
-      : m_acceptor(
-            io_context,
-            endpoint) {  //     m_message_callback(std::bind(message_handler,
-                         //     std::placeholders::_1)) {
-                         // accept_connection();
+  TCPServer(boost::asio::io_context& io_context, const tcp::endpoint& endpoint,
+            std::function<void(const runtime::he::TCPMessage&)> message_handler)
+      : m_acceptor(io_context, endpoint),
+        m_message_callback(std::bind(message_handler, std::placeholders::_1)) {
+    // accept_connection();
   }
 
   ~TCPServer() {
