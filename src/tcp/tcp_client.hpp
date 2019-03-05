@@ -113,6 +113,8 @@ class TCPClient {
   }
 
   void do_write(const runtime::he::TCPMessage& message) {
+    std::cout << "Client writing message length " << message.num_bytes()
+              << std::endl;
     boost::asio::async_write(
         m_socket,
         boost::asio::buffer(message.header_ptr(), message.num_bytes()),

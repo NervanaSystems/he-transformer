@@ -164,7 +164,10 @@ runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend(
 
   std::stringstream param_stream;
   seal::EncryptionParameters::Save(*m_encryption_parms, param_stream);
-  const std::string& param_str = param_stream.str();
+
+  auto context_message =
+      TCPMessage(MessageType::encryption_parameters, param_stream);
+  /*const std::string& param_str = param_stream.str();
   const char* param_cstr = param_str.c_str();
   size_t parm_size = param_str.size();
 
@@ -172,6 +175,7 @@ runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend(
 
   auto context_message =
       TCPMessage(MessageType::encryption_parameters, 1, parm_size, param_cstr);
+*/
 
   // Send
   NGRAPH_INFO << "Server about to write message";

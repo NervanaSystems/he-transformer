@@ -22,6 +22,7 @@
 #include <iostream>
 #include <memory>
 #include <set>
+#include <sstream>
 
 namespace ngraph {
 namespace runtime {
@@ -123,11 +124,30 @@ class TCPMessage {
 
   TCPMessage() : TCPMessage(MessageType::none) {}
 
-  TCPMessage(const MessageType type, const size_t count, const size_t size,
-             const char* data)
-      : m_type(type), m_count(count), m_data_size(size) {
-    if (count != 0 && size % count != 0) {
-      std::cout << "size " << size << " count " << count << std::endl;
+  // Encodes message of 1 element, using data in stream
+  TCPMessage(const MessageType type, const std::stringstream& stream)
+      : m_type(type), m_count(1) {
+    const std::string& pk_str = stream.str();
+    const char* pk_cstr = pk_str.c_str();
+    m_data_size = pk_str.size();
+    std::cout << "Creating message from stream, size " << m_data_size
+              << std::endl;
+
+    check_arguments();
+    m_data = new char[header_length + max_body_length];
+
+    encode_header();
+    encode_message_type();
+    encode_count();
+    encode_data(pk_cstr);
+  }
+
+  void check_arguments() {
+    if (m_count < 0) {
+      throw std::invalid_argument("m_count must be non-negative");
+    }
+    if (m_count != 0 && m_data_size % m_count != 0) {
+      std::cout << "size " << m_data_size << " count " << m_count << std::endl;
       throw std::invalid_argument("Size must be a multiple of count");
     }
 
@@ -135,16 +155,17 @@ class TCPMessage {
       throw std::invalid_argument("Size " + std::to_string(body_length()) +
                                   " too large");
     }
+  }
 
-    std::cout << "TCPMessage( with args) " << std::endl;
-
+  TCPMessage(const MessageType type, const size_t count, const size_t size,
+             const char* data)
+      : m_type(type), m_count(count), m_data_size(size) {
+    check_arguments();
     m_data = new char[header_length + max_body_length];
-
     std::cout << "Creating new message size " << header_length + max_body_length
               << std::endl;
 
     encode_header();
-
     std::cout << "Encoded header" << std::endl;
     encode_message_type();
     encode_count();

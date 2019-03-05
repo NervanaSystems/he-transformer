@@ -40,14 +40,16 @@ class HESealClient {
       return handle_message(message);
     };
 
-    seal::EncryptionParameters parms(
-        seal::scheme_type::CKKS);  // TODO: enable BFV
-    parms.set_poly_modulus_degree(1024);
-    parms.set_coeff_modulus(
-        {seal::util::global_variables::default_small_mods_30bit.begin(),
-         seal::util::global_variables::default_small_mods_30bit.begin() + 4});
+    m_tcp_client = std::make_shared<runtime::he::TCPClient>(
+        io_context, endpoints, client_callback);
 
-    m_context = seal::SEALContext::Create(parms);
+    std::cout << "Created TCP client. Starting io_context" << std::endl;
+
+    m_thread = std::thread([&io_context]() { io_context.run(); });
+  }
+
+  void set_seal_context() {
+    m_context = seal::SEALContext::Create(m_encryption_params);
 
     m_keygen = std::make_shared<seal::KeyGenerator>(m_context);
     m_relin_keys = std::make_shared<seal::RelinKeys>(m_keygen->relin_keys(60));
@@ -65,27 +67,11 @@ class HESealClient {
     auto m_context_data = m_context->context_data();
     m_scale = static_cast<double>(
         m_context_data->parms().coeff_modulus().back().value());
-
-    /*std::stringstream stream;
-    m_public_key->save(stream);
-    const std::string& pk_str = stream.str();
-    const char* pk_cstr = pk_str.c_str();
-
-    auto first_message = runtime::he::TCPMessage(MessageType::public_key, 1,
-                                                 pk_str.size(), pk_cstr); */
-
-    m_tcp_client = std::make_shared<runtime::he::TCPClient>(
-        io_context, endpoints, client_callback);
-
-    std::cout << "Created TCP client. Starting io_context" << std::endl;
-
-    m_thread = std::thread([&io_context]() { io_context.run(); });
   }
 
-  ~HESealClient() { std::cout << "~HESealClient" << std::endl; }
+  ~HESealClient() { std::cout << "~HESealClient()" << std::endl; }
 
-  const runtime::he::TCPMessage handle_message(
-      const runtime::he::TCPMessage& message) {
+  const void handle_message(const runtime::he::TCPMessage& message) {
     MessageType msg_type = message.message_type();
 
     std::cout << "Client got message: "
@@ -95,7 +81,7 @@ class HESealClient {
     } else if (msg_type == MessageType::public_key_ack) {
       auto return_message = TCPMessage(MessageType::parameter_shape_request);
 
-      return return_message;
+      // return return_message;
     } else if (msg_type == MessageType::parameter_shape) {
       std::vector<size_t> shape(message.count());
 
@@ -136,7 +122,7 @@ class HESealClient {
       auto return_message = TCPMessage(MessageType::execute, shape_size,
                                        cipher_size, cipher_cstr);
 
-      return return_message;
+      // return return_message;
     } else if (msg_type == MessageType::result) {
       size_t count = message.count();
       size_t element_size = message.element_size();
@@ -165,13 +151,30 @@ class HESealClient {
 
       // close_connection();
       // std::cout << "Returning empty TCP message" << std::endl;
-      return TCPMessage(MessageType::none);
+      // return TCPMessage(MessageType::none);
 
     } else if (msg_type == MessageType::none) {
       close_connection();
+    } else if (msg_type == MessageType::encryption_parameters) {
+      std::cout << "message.element_size " << message.element_size()
+                << std::endl;
+      std::stringstream param_stream;
+      param_stream.write(message.data_ptr(), message.element_size());
+      std::cout << "Write to param steram" << std::endl;
+      m_encryption_params = seal::EncryptionParameters::Load(param_stream);
+      std::cout << "Loaded encryption parms" << std::endl;
+
+      set_seal_context();
+
+      std::cout << "Set seal context" << std::endl;
+
+      std::stringstream pk_stream;
+      m_public_key->save(pk_stream);
+      auto pk_message = TCPMessage(MessageType::public_key, pk_stream);
+
     } else {
       std::cout << "Returning empty TCP message" << std::endl;
-      return TCPMessage();
+      // return TCPMessage();
     }
   }
 
@@ -193,6 +196,7 @@ class HESealClient {
 
  private:
   std::shared_ptr<TCPClient> m_tcp_client;
+  seal::EncryptionParameters m_encryption_params{seal::scheme_type::CKKS};
   std::shared_ptr<seal::PublicKey> m_public_key;
   std::shared_ptr<seal::SecretKey> m_secret_key;
   std::shared_ptr<seal::SEALContext> m_context;

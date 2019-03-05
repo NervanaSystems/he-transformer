@@ -384,7 +384,6 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_ng_tf) {
     try {
       NGRAPH_INFO << "Creating backend";
       auto backend = runtime::Backend::create("${BACKEND_NAME}");
-      auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
 
       NGRAPH_INFO << "Compiling function";
 
@@ -435,5 +434,4 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_ng_tf) {
 
   EXPECT_TRUE(
       all_close(results, std::vector<float>{2.1, 3.2, 4.3, 5.4, 6.5, 7.6}));
-  std::cout;
 }
