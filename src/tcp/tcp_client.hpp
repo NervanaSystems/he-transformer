@@ -81,8 +81,8 @@ class TCPClient {
           } else {
             std::cout << "Client error reading header: " << ec.message()
                       << std::endl;
-            m_socket.close();
-            std::cout << "Closed socket" << std::endl;
+            // m_socket.close();
+            // std::cout << "Closed socket" << std::endl;
           }
         });
   }
@@ -106,8 +106,8 @@ class TCPClient {
             std::cout << "Client error reading body; " << ec.message()
                       << std::endl;
             std::cout << "Closing socket" << std::endl;
-            m_socket.close();
-            std::cout << "Closed socket" << std::endl;
+            // m_socket.close();
+            // std::cout << "Closed socket" << std::endl;
           }
         });
   }

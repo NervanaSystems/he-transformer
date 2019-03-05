@@ -48,6 +48,11 @@ class HESealClient {
     m_thread = std::thread([&io_context]() { io_context.run(); });
   }
 
+  ~HESealClient() {
+    std::cout << "~HESealClient()" << std::endl;
+    m_thread.detach();
+  }
+
   void set_seal_context() {
     m_context = seal::SEALContext::Create(m_encryption_params);
 
@@ -68,8 +73,6 @@ class HESealClient {
     m_scale = static_cast<double>(
         m_context_data->parms().coeff_modulus().back().value());
   }
-
-  ~HESealClient() { std::cout << "~HESealClient()" << std::endl; }
 
   const void handle_message(const runtime::he::TCPMessage& message) {
     MessageType msg_type = message.message_type();

@@ -37,7 +37,7 @@ class TCPServer {
     accept_connection();
   }
 
-  ~TCPServer() {}
+  ~TCPServer() { std::cout << "~TCPServer()" << std::endl; }
 
   void write_message(const runtime::he::TCPMessage& msg) {
     std::lock_guard<std::mutex> guard(m_session_mutex);

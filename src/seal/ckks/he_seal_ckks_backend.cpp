@@ -159,29 +159,20 @@ runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend(
 
   // Start server
   NGRAPH_INFO << "Starting CKKS server";
-  start_server();
+  // start_server();
   NGRAPH_INFO << "Started CKKS server";
 
+  /*
   std::stringstream param_stream;
   seal::EncryptionParameters::Save(*m_encryption_parms, param_stream);
-
   auto context_message =
       TCPMessage(MessageType::encryption_parameters, param_stream);
-  /*const std::string& param_str = param_stream.str();
-  const char* param_cstr = param_str.c_str();
-  size_t parm_size = param_str.size();
-
-  NGRAPH_INFO << "parm size " << parm_size;
-
-  auto context_message =
-      TCPMessage(MessageType::encryption_parameters, 1, parm_size, param_cstr);
-*/
 
   // Send
   NGRAPH_INFO << "Server about to write message";
   m_tcp_server->write_message(context_message);
-  // m_tcp_server->get_session()->do_write(context_message);
-  // NGRAPH_INFO << "Server wrote message";
+  NGRAPH_INFO << "Server wrote message";
+  */
 }
 
 extern "C" runtime::Backend* new_ckks_backend(

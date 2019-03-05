@@ -387,14 +387,11 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_ng_tf) {
 
       NGRAPH_INFO << "Compiling function";
 
-      auto handle = backend->compile(f);
-
+      /* auto handle = backend->compile(f);
       NGRAPH_INFO << "Creating tensor";
       auto result = backend->create_tensor(element::f32, shape);
-
-      NGRAPH_INFO << "Created tensor";
-
-      sleep(10);
+      NGRAPH_INFO << "Created tensor"; */
+      sleep(5);
 
       NGRAPH_INFO << "Destructing server";
 
@@ -418,11 +415,16 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_ng_tf) {
           runtime::he::HESealClient(io_context, client_endpoints, inputs);
 
       NGRAPH_INFO << "Waiting for client results";
-      while (!client.is_done()) {
+
+      sleep(1);
+      /*while (!client.is_done()) {
         sleep(1);
       }
       NGRAPH_INFO << "Getting client results";
-      results = client.get_results();
+      results = client.get_results();*/
+
+      NGRAPH_INFO << "Closing client";
+
     } catch (std::system_error& e) {
       NGRAPH_INFO << "Exception in client";
     }
@@ -430,7 +432,9 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_ng_tf) {
   std::thread t1(client_fun);
   std::thread t2(server_fun);
   t1.join();
+  NGRAPH_INFO << "Client function ended";
   t2.join();
+  NGRAPH_INFO << "Server function ended";
 
   EXPECT_TRUE(
       all_close(results, std::vector<float>{2.1, 3.2, 4.3, 5.4, 6.5, 7.6}));
