@@ -63,9 +63,10 @@ void runtime::he::HEBackend::start_server() {
   // Server
   tcp::resolver resolver(m_io_context);
   tcp::endpoint server_endpoints(tcp::v4(), m_port);
-  auto server_callback = [this](const runtime::he::TCPMessage message) {
+  auto server_callback = [this](const runtime::he::TCPMessage& message) {
     handle_message(message);
   };
+
   m_tcp_server =
       make_shared<TCPServer>(m_io_context, server_endpoints, server_callback);
   // m_io_context.run();  // Actually start the server

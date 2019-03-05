@@ -372,6 +372,10 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_client_server_relu2) {
 }
 */
 
+NGRAPH_TEST(${BACKEND_NAME}, tcp_init) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, tcp_ng_tf) {
   Shape shape{2, 3};
   auto a = make_shared<op::Parameter>(element::f32, shape);

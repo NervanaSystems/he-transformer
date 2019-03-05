@@ -47,7 +47,7 @@ namespace he {
 class HETensor;
 class HEBackend : public runtime::Backend {
  public:
-  virtual ~HEBackend() = default;
+  virtual ~HEBackend(){};
 
   /// @brief starts the server
   void start_server();

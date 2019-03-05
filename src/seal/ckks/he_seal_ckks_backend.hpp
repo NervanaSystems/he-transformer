@@ -38,7 +38,7 @@ class HESealCKKSBackend : public HESealBackend {
   HESealCKKSBackend(
       const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp);
   HESealCKKSBackend(HESealCKKSBackend& he_backend) = default;
-  ~HESealCKKSBackend() = default;
+  ~HESealCKKSBackend(){};
 
   std::shared_ptr<runtime::Tensor> create_batched_cipher_tensor(
       const element::Type& element_type, const Shape& shape) override;

@@ -93,7 +93,7 @@ inline std::string message_type_to_string(const MessageType& type) {
 class TCPMessage {
  public:
   enum { header_length = 15 };
-  enum { max_body_length = 450000000 };
+  enum { max_body_length = 100000 };
   enum { message_type_length = sizeof(MessageType) };
   enum { message_count_length = sizeof(size_t) };
 
@@ -108,13 +108,7 @@ class TCPMessage {
       throw std::invalid_argument("Request type not valid");
     }
 
-    if (type == MessageType::none) {
-      m_data = new char[header_length + max_body_length];
-      std::cout << "Allocated large" << std::endl;
-    } else {
-      std::cout << "Allocated small" << std::endl;
-      m_data = new char[header_length + body_length()];
-    }
+    m_data = new char[header_length + max_body_length];
 
     encode_header();
     encode_message_type();
@@ -205,11 +199,12 @@ class TCPMessage {
   }
 
   ~TCPMessage() {
-    if (m_data) {
+    std::cout << "~TCPMessage()" << std::endl;
+    /*if (m_data) {
       std::cout << "~TCPMessage()" << std::endl;
       delete[] m_data;
       std::cout << "Done with ~TCPMessage() " << std::endl;
-    }
+    }*/
   }
 
   size_t count() { return m_count; }

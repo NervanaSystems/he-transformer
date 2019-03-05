@@ -111,6 +111,8 @@ runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend(
   m_context = make_seal_context(sp);
   print_seal_context(*m_context);
 
+  /*
+
   auto m_context_data = m_context->context_data();
 
   // Keygen, encryptor and decryptor
@@ -156,6 +158,7 @@ runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend(
   m_plaintext_map[-1] = plaintext_neg1;
   m_plaintext_map[0] = plaintext_0;
   m_plaintext_map[1] = plaintext_1;
+  */
 
   // Start server
   NGRAPH_INFO << "Starting CKKS server";
