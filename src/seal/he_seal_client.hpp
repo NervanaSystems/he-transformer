@@ -130,8 +130,9 @@ class HESealClient {
                                         cipher_size, cipher_cstr);
       write_message(execute_message);
 
-      std::cout << "Writing result_request message" << std::endl;
-
+      // TODO: add message queue instead
+      // sleep(5);
+      // std::cout << "Writing result_request message" << std::endl;
       // auto results_request_msg = TCPMessage(MessageType::result_request);
       // write_message(results_request_msg);
 

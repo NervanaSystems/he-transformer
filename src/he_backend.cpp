@@ -362,18 +362,19 @@ bool runtime::he::HEBackend::call(
     }
     else { */
       sleep(10);
-      while (m_inputs.size() != he_inputs.size()) {
+      NGRAPH_INFO << "Waiting on inputs until " << m_inputs.size() << " => "
+                  << inputs.size();
+      while (m_inputs.size() != inputs.size()) {
         size_t seconds = 0;
-        NGRAPH_INFO << "Waiting on inputs (t=" << seconds << "); until "
-                    << m_inputs.size() << " => " << he_inputs.size();
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        NGRAPH_INFO << "Waiting (t=" << seconds << ")";
         seconds++;
       }
       NGRAPH_INFO << "Sleepign 3 seconds extra just to be safe";
       std::this_thread::sleep_for(std::chrono::milliseconds(3000));
       NGRAPH_INFO << "Done sleeping 3 seconds extra just to be safe";
 
-      assert(m_inputs.size() == he_inputs.size());
+      assert(m_inputs.size() == inputs.size());
       tensor_map.insert({tv, m_inputs[input_count++]});
 
       // TODO: revert to original if needed
@@ -496,6 +497,31 @@ bool runtime::he::HEBackend::call(
   m_outputs = outputs;
 
   NGRAPH_INFO << "Set output size " << m_outputs.size();
+
+  // Send result to client
+  size_t output_size = m_outputs[0]->get_element_count();
+  NGRAPH_INFO << "output size " << output_size;
+
+  // Save outputs to stringstream
+  // std::vector<seal::Ciphertext> seal_outputs;
+  std::stringstream cipher_stream;
+  for (const auto& output : m_outputs) {
+    for (const auto& element :
+         dynamic_pointer_cast<runtime::he::HECipherTensor>(output)
+             ->get_elements()) {
+      auto wrapper =
+          dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(
+              element);
+      seal::Ciphertext c = wrapper->m_ciphertext;
+      // seal_outputs.emplace_back(c);
+      c.save(cipher_stream);
+    }
+  }
+
+  auto result_message =
+      TCPMessage(MessageType::result, output_size, cipher_stream);
+
+  m_session->do_write(result_message);
 
   return true;
 }
