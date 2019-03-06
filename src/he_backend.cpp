@@ -90,9 +90,12 @@ void runtime::he::HEBackend::accept_connection() {
                                                    tcp::socket socket) {
     if (!ec) {
       std::cout << "Connection accepted" << std::endl;
+      // TODO: use make_shared here without causing seg-fault
       m_session =
           std::make_unique<TCPSession>(std::move(socket), server_callback);
       m_session->start();
+
+      m_session_started = true;  // TODO: cleaner way to process this
       std::cout << "TCP session started" << std::endl;
     } else {
       std::cout << "error " << ec.message() << std::endl;

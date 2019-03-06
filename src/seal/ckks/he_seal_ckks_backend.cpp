@@ -14,7 +14,9 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include <chrono>
 #include <limits>
+#include <thread>
 
 #include "he_cipher_tensor.hpp"
 #include "he_plain_tensor.hpp"
@@ -165,17 +167,21 @@ runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend(
   start_server();
   NGRAPH_INFO << "Started CKKS server";
 
-  /*
   std::stringstream param_stream;
+  NGRAPH_INFO << "Saving EncryptionParms";
   seal::EncryptionParameters::Save(*m_encryption_parms, param_stream);
+  NGRAPH_INFO << "Saved EncryptionParms";
+
   auto context_message =
       TCPMessage(MessageType::encryption_parameters, param_stream);
 
   // Send
+  while (!m_session_started) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
   NGRAPH_INFO << "Server about to write message";
-  m_tcp_server->write_message(context_message);
-  NGRAPH_INFO << "Server wrote message";
-  */
+  m_session->do_write(context_message);
+  NGRAPH_INFO << "Server posted write_message()";
 }
 
 extern "C" runtime::Backend* new_ckks_backend(
@@ -186,14 +192,14 @@ extern "C" runtime::Backend* new_ckks_backend(
 shared_ptr<seal::SEALContext>
 runtime::he::he_seal::HESealCKKSBackend::make_seal_context(
     const shared_ptr<runtime::he::he_seal::HESealParameter> sp) {
-  auto encryption_parms =
+  m_encryption_parms =
       make_shared<seal::EncryptionParameters>(seal::scheme_type::CKKS);
 
   if (sp->m_scheme_name != "HE_SEAL_CKKS") {
     throw ngraph_error("Invalid scheme name \"" + sp->m_scheme_name + "\"");
   }
 
-  encryption_parms->set_poly_modulus_degree(sp->m_poly_modulus_degree);
+  m_encryption_parms->set_poly_modulus_degree(sp->m_poly_modulus_degree);
 
   bool custom_coeff_modulus = (sp->m_coeff_modulus.bit_count != 0);
 
@@ -201,25 +207,25 @@ runtime::he::he_seal::HESealCKKSBackend::make_seal_context(
     if (sp->m_coeff_modulus.bit_count == 30) {
       std::vector<seal::SmallModulus> small_mods_30_bit =
           seal::util::global_variables::default_small_mods_30bit;
-      encryption_parms->set_coeff_modulus(
+      m_encryption_parms->set_coeff_modulus(
           {small_mods_30_bit.begin(),
            small_mods_30_bit.begin() + sp->m_coeff_modulus.coeff_count});
     } else if (sp->m_coeff_modulus.bit_count == 40) {
       std::vector<seal::SmallModulus> small_mods_40_bit =
           seal::util::global_variables::default_small_mods_40bit;
-      encryption_parms->set_coeff_modulus(
+      m_encryption_parms->set_coeff_modulus(
           {small_mods_40_bit.begin(),
            small_mods_40_bit.begin() + sp->m_coeff_modulus.coeff_count});
     } else if (sp->m_coeff_modulus.bit_count == 50) {
       std::vector<seal::SmallModulus> small_mods_50_bit =
           seal::util::global_variables::default_small_mods_50bit;
-      encryption_parms->set_coeff_modulus(
+      m_encryption_parms->set_coeff_modulus(
           {small_mods_50_bit.begin(),
            small_mods_50_bit.begin() + sp->m_coeff_modulus.coeff_count});
     } else if (sp->m_coeff_modulus.bit_count == 60) {
       std::vector<seal::SmallModulus> small_mods_60_bit =
           seal::util::global_variables::default_small_mods_60bit;
-      encryption_parms->set_coeff_modulus(
+      m_encryption_parms->set_coeff_modulus(
           {small_mods_60_bit.begin(),
            small_mods_60_bit.begin() + sp->m_coeff_modulus.coeff_count});
     } else {
@@ -246,7 +252,7 @@ runtime::he::he_seal::HESealCKKSBackend::make_seal_context(
                     << ", resulting in lower security";
       }
     } else {
-      encryption_parms->set_coeff_modulus(
+      m_encryption_parms->set_coeff_modulus(
           seal::DefaultParams::coeff_modulus_128(sp->m_poly_modulus_degree));
     }
   } else if (sp->m_security_level == 192) {
@@ -264,7 +270,7 @@ runtime::he::he_seal::HESealCKKSBackend::make_seal_context(
                     << ", resulting in lower security";
       }
     } else {
-      encryption_parms->set_coeff_modulus(
+      m_encryption_parms->set_coeff_modulus(
           seal::DefaultParams::coeff_modulus_192(sp->m_poly_modulus_degree));
     }
   } else if (sp->m_security_level == 256) {
@@ -282,13 +288,13 @@ runtime::he::he_seal::HESealCKKSBackend::make_seal_context(
                     << ", resulting in lower security";
       }
     } else {
-      encryption_parms->set_coeff_modulus(
+      m_encryption_parms->set_coeff_modulus(
           seal::DefaultParams::coeff_modulus_256(sp->m_poly_modulus_degree));
     }
   } else {
     throw ngraph_error("sp.security_level must be 128, 192, or 256");
   }
-  return seal::SEALContext::Create(*encryption_parms);
+  return seal::SEALContext::Create(*m_encryption_parms);
 }
 
 namespace {

@@ -255,6 +255,7 @@ class HEBackend : public runtime::Backend {
   std::shared_ptr<TCPServer> m_tcp_server;
   std::thread m_thread;
   boost::asio::io_context m_io_context;
+  bool m_session_started{false};
 
   size_t m_port{34000};  // Which port the server is hosted at
 };
