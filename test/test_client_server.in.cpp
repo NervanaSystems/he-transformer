@@ -400,7 +400,8 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_ng_tf) {
 
       NGRAPH_INFO << "Compiling function";
 
-      /* auto handle = backend->compile(f);
+      auto handle = backend->compile(f);
+      /*
       NGRAPH_INFO << "Creating tensor";
       auto result = backend->create_tensor(element::f32, shape);
       NGRAPH_INFO << "Created tensor"; */

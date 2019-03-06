@@ -394,7 +394,7 @@ void runtime::he::he_seal::HESealCKKSBackend::decode(
   }
 }
 
-runtime::he::TCPMessage runtime::he::he_seal::HESealCKKSBackend::handle_message(
+void runtime::he::he_seal::HESealCKKSBackend::handle_message(
     const runtime::he::TCPMessage& message) {
   NGRAPH_INFO << "Handling TCP Message";
 
@@ -491,7 +491,7 @@ runtime::he::TCPMessage runtime::he::he_seal::HESealCKKSBackend::handle_message(
     auto return_message = TCPMessage(MessageType::result, output_size,
                                      cipher_str.size(), cipher_cstr);
 
-    return return_message;
+    // return return_message;
   } else if (msg_type == MessageType::parameter_shape_request) {
     auto function = m_function_map.begin()->first;
     const ParameterVector& input_parameters = function->get_parameters();
@@ -503,8 +503,8 @@ runtime::he::TCPMessage runtime::he::he_seal::HESealCKKSBackend::handle_message(
 
     NGRAPH_INFO << "Returning parameter shape: " << join(shape, "x");
     ;
-    return TCPMessage(MessageType::parameter_shape, shape.size(),
-                      sizeof(size_t) * shape.size(), (char*)shape.data());
+    // return TCPMessage(MessageType::parameter_shape, shape.size(),
+    //                  sizeof(size_t) * shape.size(), (char*)shape.data());
 
   }
 
@@ -520,9 +520,10 @@ runtime::he::TCPMessage runtime::he::he_seal::HESealCKKSBackend::handle_message(
                                                   pk_str.size(), pk_cstr);
 
     NGRAPH_INFO << "Sending PK message back";
-    return return_message;
+    // return return_message;
 
   } else if (msg_type == MessageType::public_key) {
+    // Load public key
     size_t pk_size = message.data_size();
     std::stringstream pk_stream;
     pk_stream.write(message.data_ptr(), pk_size);
@@ -530,11 +531,27 @@ runtime::he::TCPMessage runtime::he::he_seal::HESealCKKSBackend::handle_message(
 
     NGRAPH_INFO << "Server loaded public key";
 
+    /*
+    // Send inference parameter shape
+    auto function = m_function_map.begin()->first;
+    const ParameterVector& input_parameters = function->get_parameters();
+
+    assert(input_parameters.size() ==
+           1);  // Only support single parameter for now
+
+    auto shape = input_parameters[0]->get_shape();
+
+    NGRAPH_INFO << "Returning parameter shape: " << join(shape, "x");
+    ;
+    return TCPMessage(MessageType::parameter_shape, shape.size(),
+                      sizeof(size_t) * shape.size(), (char*)shape.data());
+
     auto return_message = runtime::he::TCPMessage(MessageType::public_key_ack);
-    return return_message;
+    return return_message; */
+
   } else if (msg_type == MessageType::none) {
     NGRAPH_INFO << "Server replying with none mssage";
-    return message;
+    // return message;
   } else {
     NGRAPH_INFO << "Unsupported message type in server:  "
                 << message_type_to_string(msg_type);

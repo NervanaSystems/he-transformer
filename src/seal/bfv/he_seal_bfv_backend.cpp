@@ -233,7 +233,7 @@ void runtime::he::he_seal::HESealBFVBackend::decode(
   }
 }
 
-runtime::he::TCPMessage runtime::he::he_seal::HESealBFVBackend::handle_message(
+void runtime::he::he_seal::HESealBFVBackend::handle_message(
     const runtime::he::TCPMessage& message) {
   throw ngraph_error("handle_message not implemented in BFV backend");
 }

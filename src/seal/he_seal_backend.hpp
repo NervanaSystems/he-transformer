@@ -35,7 +35,7 @@ class HESealBackend : public HEBackend {
   virtual std::shared_ptr<seal::SEALContext> make_seal_context(
       const std::shared_ptr<runtime::he::he_seal::HESealParameter> sp) = 0;
 
-  virtual TCPMessage handle_message(const TCPMessage& message) override = 0;
+  virtual void handle_message(const TCPMessage& message) override = 0;
 
   virtual ~HESealBackend() { std::cout << "~HESEalBackend()" << std::endl; };
 

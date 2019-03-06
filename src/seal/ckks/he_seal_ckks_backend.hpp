@@ -63,7 +63,7 @@ class HESealCKKSBackend : public HESealBackend {
   void assert_valid_seal_ckks_parameter(
       const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp) const;
 
-  TCPMessage handle_message(const TCPMessage& message) override;
+  void handle_message(const TCPMessage& message) override;
 
  private:
   std::shared_ptr<seal::CKKSEncoder> m_ckks_encoder;
