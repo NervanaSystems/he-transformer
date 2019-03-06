@@ -34,11 +34,13 @@ enum class MessageType {
   public_key,
   public_key_request,
   execute,
+  execute_done,
   parameter_shape_request,
   parameter_shape,
   relu_request,
   relu,
-  result
+  result,
+  result_request
 };
 
 inline std::string message_type_to_string(const MessageType& type) {
@@ -60,6 +62,9 @@ inline std::string message_type_to_string(const MessageType& type) {
       break;
     case MessageType::execute:
       return "execute";
+      break;
+    case MessageType::execute_done:
+      return "execute_done";
       break;
     case MessageType::parameter_shape:
       return "parameter_shape";
@@ -101,8 +106,8 @@ class TCPMessage {
       : m_type(type), m_count(0), m_data_size(0) {
     std::set<MessageType> request_types{
         MessageType::public_key_request, MessageType::relu_request,
-        MessageType::public_key_ack, MessageType::parameter_shape_request,
-        MessageType::none};
+        MessageType::public_key_ack,     MessageType::parameter_shape_request,
+        MessageType::result_request,     MessageType::none};
 
     if (request_types.find(type) == request_types.end()) {
       throw std::invalid_argument("Request type not valid");
@@ -118,9 +123,10 @@ class TCPMessage {
 
   TCPMessage() : TCPMessage(MessageType::none) {}
 
-  // Encodes message of 1 element, using data in stream
-  TCPMessage(const MessageType type, const std::stringstream& stream)
-      : m_type(type), m_count(1) {
+  // Encodes message of count elements using data in stream
+  TCPMessage(const MessageType type, size_t count,
+             const std::stringstream& stream)
+      : m_type(type), m_count(count) {
     const std::string& pk_str = stream.str();
     const char* pk_cstr = pk_str.c_str();
     m_data_size = pk_str.size();

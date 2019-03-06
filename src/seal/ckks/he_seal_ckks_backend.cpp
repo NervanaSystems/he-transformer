@@ -173,7 +173,7 @@ runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend(
   NGRAPH_INFO << "Saved EncryptionParms";
 
   auto context_message =
-      TCPMessage(MessageType::encryption_parameters, param_stream);
+      TCPMessage(MessageType::encryption_parameters, 1, param_stream);
 
   // Send
   NGRAPH_INFO << "Waiting until client is connected";
@@ -441,6 +441,8 @@ void runtime::he::he_seal::HESealCKKSBackend::handle_message(
     }
     // only support parameter size 1 for now
     assert(input_parameters.size() == 1);
+    // only support function output size 1 for now
+    assert(function->get_output_size() == 1);
 
     auto element_type = input_parameters[0]->get_element_type();
     bool batched = false;
@@ -453,56 +455,41 @@ void runtime::he::he_seal::HESealCKKSBackend::handle_message(
     m_inputs = {
         dynamic_pointer_cast<runtime::he::HECipherTensor>(input_tensor)};
 
-    /*m_inputs.clear();
-    for (auto input : input_tensor) {
-      m_inputs.emplace_back(
-          dynamic_pointer_cast<runtime::he::HECiphertext>(input));
-    } */
-    // m_inputs = input_tensor;
+    // auto stall_message = TCPMessage(MessageType::execute_done);
+    // m_session->do_write(stall_message);
 
     /*
-    std::vector<shared_ptr<runtime::Tensor>> outputs;
-
-    for (size_t i = 0; i < function->get_output_size(); i++) {
-      auto output_type = function->get_output_element_type(i);
-      auto out_shape = function->get_output_shape(i);
-      auto tensor = create_cipher_tensor(output_type, out_shape, batched);
-      outputs.emplace_back(tensor);
+    // Wait until inputs have been processed
+    for (size_t seconds = 0; seconds < 10; seconds++) {
+      NGRAPH_INFO << "Waiting on outputs (t=" << seconds << "); until "
+                  << m_outputs.size() << " => " << function->get_output_size();
+      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 
-    // Call function
-    std::cout << "Calling function " << std::endl;
-    call(function, outputs, inputs);
-    size_t output_size = outputs[0]->get_element_count();
+    // Send outputs to client
+    size_t output_size = m_outputs[0]->get_element_count();
     NGRAPH_INFO << "output size " << output_size;
 
     // Save outputs to stringstream
-    std::vector<seal::Ciphertext> seal_outputs;
-    // std::vector<std::stringstream> cipher_streams(0output_size);
-
+    // std::vector<seal::Ciphertext> seal_outputs;
     std::stringstream cipher_stream;
-    for (const auto& output : outputs) {
+    for (const auto& output : m_outputs) {
       for (const auto& element :
            dynamic_pointer_cast<runtime::he::HECipherTensor>(output)
                ->get_elements()) {
         auto wrapper =
             dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(
                 element);
-
         seal::Ciphertext c = wrapper->m_ciphertext;
-        seal_outputs.emplace_back(c);
-
+        // seal_outputs.emplace_back(c);
         c.save(cipher_stream);
       }
     }
-    const std::string& cipher_str = cipher_stream.str();
-    const char* cipher_cstr = cipher_str.c_str();
-    std::cout << "Cipher size " << cipher_str.size() << std::endl;
 
-    auto return_message = TCPMessage(MessageType::result, output_size,
-                                     cipher_str.size(), cipher_cstr);
+    auto result_message =
+        TCPMessage(MessageType::result, output_size, cipher_stream);
 
-                                     */
+    m_session->do_write(result_message); */
 
     // return return_message;
   } else if (msg_type == MessageType::parameter_shape_request) {
@@ -515,7 +502,6 @@ void runtime::he::he_seal::HESealCKKSBackend::handle_message(
     auto shape = input_parameters[0]->get_shape();
 
     NGRAPH_INFO << "Returning parameter shape: " << join(shape, "x");
-    ;
     // return TCPMessage(MessageType::parameter_shape, shape.size(),
     //                  sizeof(size_t) * shape.size(), (char*)shape.data());
 
@@ -565,7 +551,12 @@ void runtime::he::he_seal::HESealCKKSBackend::handle_message(
   } else if (msg_type == MessageType::none) {
     NGRAPH_INFO << "Server replying with none mssage";
     // return message;
-  } else {
+  } else if (msg_type == MessageType::result_request) {
+    NGRAPH_INFO << "Server got MessageType::result_request ";
+
+  }
+
+  else {
     NGRAPH_INFO << "Unsupported message type in server:  "
                 << message_type_to_string(msg_type);
     throw ngraph_error("Unknown message type in server");

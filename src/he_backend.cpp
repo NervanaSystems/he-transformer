@@ -315,13 +315,13 @@ bool runtime::he::HEBackend::call(
   }
   FunctionInstance& instance = fit->second;
 
-  // convert outputs to HETensor
+  // convert inputs to HETensor
   vector<shared_ptr<runtime::he::HETensor>> he_inputs;
   for (auto& tv : inputs) {
     he_inputs.push_back(static_pointer_cast<runtime::he::HETensor>(tv));
   }
 
-  // convert inputs to HETensor
+  // convert outputs to HETensor
   vector<shared_ptr<runtime::he::HETensor>> he_outputs;
   for (auto& tv : outputs) {
     he_outputs.push_back(static_pointer_cast<runtime::he::HETensor>(tv));
@@ -361,11 +361,16 @@ bool runtime::he::HEBackend::call(
          input_count++;
     }
     else { */
-      for (size_t seconds = 0; seconds < 10; seconds++) {
+      while (m_inputs.size() != he_inputs.size()) {
+        size_t seconds = 0;
         NGRAPH_INFO << "Waiting on inputs (t=" << seconds << "); until "
                     << m_inputs.size() << " => " << he_inputs.size();
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        seconds++;
       }
+      NGRAPH_INFO << "Sleepign 3 seconds extra just to be safe";
+      std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+      NGRAPH_INFO << "Done sleeping 3 seconds extra just to be safe";
 
       assert(m_inputs.size() == he_inputs.size());
       tensor_map.insert({tv, m_inputs[input_count++]});
@@ -486,6 +491,11 @@ bool runtime::he::HEBackend::call(
   }
   NGRAPH_INFO << "\033[1;32m"
               << "Total time " << total_time << " (ms) \033[0m";
+
+  m_outputs = outputs;
+
+  NGRAPH_INFO << "Set output size " << m_outputs.size();
+
   return true;
 }
 

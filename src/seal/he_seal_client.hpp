@@ -128,6 +128,9 @@ class HESealClient {
                                         cipher_size, cipher_cstr);
       write_message(execute_message);
 
+      auto results_request_msg = TCPMessage(MessageType::result_request);
+      write_message(results_request_msg);
+
       // return return_message;
     } else if (msg_type == MessageType::result) {
       size_t count = message.count();
@@ -176,7 +179,7 @@ class HESealClient {
 
       std::stringstream pk_stream;
       m_public_key->save(pk_stream);
-      auto pk_message = TCPMessage(MessageType::public_key, pk_stream);
+      auto pk_message = TCPMessage(MessageType::public_key, 1, pk_stream);
       std::cout << "Writing pk message" << std::endl;
 
       write_message(pk_message);
