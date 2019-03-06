@@ -34,13 +34,15 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
         m_message_callback(std::bind(message_handler, std::placeholders::_1)) {}
 
   void start() {
-    std::cout << "Session started" << std::endl; /*do_read_header();*/
+    std::cout << "Session started" << std::endl;
+    do_read_header();
   }
 
  public:
   void do_read_header() {
     std::cout << "Server reading header" << std::endl;
     auto self(shared_from_this());
+    std::cout << "Shared from this okay" << std::endl;
 
     boost::asio::async_read(
         m_socket,
