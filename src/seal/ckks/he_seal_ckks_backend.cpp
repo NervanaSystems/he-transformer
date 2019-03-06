@@ -450,6 +450,10 @@ void runtime::he::he_seal::HESealCKKSBackend::handle_message(
         ->set_elements(he_cipher_inputs);
 
     std::vector<shared_ptr<runtime::Tensor>> inputs{input_tensor};
+
+    m_inputs = inputs;
+
+    /*
     std::vector<shared_ptr<runtime::Tensor>> outputs;
 
     for (size_t i = 0; i < function->get_output_size(); i++) {
@@ -490,6 +494,8 @@ void runtime::he::he_seal::HESealCKKSBackend::handle_message(
 
     auto return_message = TCPMessage(MessageType::result, output_size,
                                      cipher_str.size(), cipher_cstr);
+
+                                     */
 
     // return return_message;
   } else if (msg_type == MessageType::parameter_shape_request) {

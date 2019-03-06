@@ -138,6 +138,7 @@ shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(
 
 shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(
     const element::Type& element_type, const Shape& shape) {
+  NGRAPH_INFO << "Creating tensor shape " << join(shape, "x");
   if (batch_data()) {
     return create_batched_plain_tensor(element_type, shape);
   } else {
@@ -156,6 +157,8 @@ shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_plain_tensor(
 shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_cipher_tensor(
     const element::Type& element_type, const Shape& shape,
     const bool batched) const {
+  NGRAPH_INFO << "runtime::he::HEBackend::create_cipher_tensor shape "
+              << join(shape, "x");
   auto rc = make_shared<runtime::he::HECipherTensor>(
       element_type, shape, this, create_empty_ciphertext(), batched);
   return static_pointer_cast<runtime::Tensor>(rc);

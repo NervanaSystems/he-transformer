@@ -198,13 +198,13 @@ class TCPMessage {
   }
 
   ~TCPMessage() {
-    std::cout << "~TCPMessage() of type " << message_type_to_string(m_type)
-              << std::endl;
+    // std::cout << "~TCPMessage() of type " << message_type_to_string(m_type)
+    //          << std::endl;
     if (m_data) {
-      std::cout << "delete[] m_data" << std::endl;
+      // std::cout << "delete[] m_data" << std::endl;
       delete[] m_data;
     }
-    std::cout << "Done with ~TCPMessage() " << std::endl;
+    // std::cout << "Done with ~TCPMessage() " << std::endl;
   }
 
   size_t count() { return m_count; }

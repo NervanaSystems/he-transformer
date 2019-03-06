@@ -117,7 +117,6 @@ class HESealClient {
         c.save(cipher_stream);
       }
 
-      // c.save(cipher_stream);
       const std::string& cipher_str = cipher_stream.str();
       const char* cipher_cstr = cipher_str.c_str();
 
@@ -125,8 +124,9 @@ class HESealClient {
 
       std::cout << "Cipher size " << cipher_size << std::endl;
 
-      auto return_message = TCPMessage(MessageType::execute, shape_size,
-                                       cipher_size, cipher_cstr);
+      auto execute_message = TCPMessage(MessageType::execute, shape_size,
+                                        cipher_size, cipher_cstr);
+      write_message(execute_message);
 
       // return return_message;
     } else if (msg_type == MessageType::result) {
@@ -177,13 +177,8 @@ class HESealClient {
       std::stringstream pk_stream;
       m_public_key->save(pk_stream);
       auto pk_message = TCPMessage(MessageType::public_key, pk_stream);
-
-      // TODO: remove
-      // auto tmp = malloc(10);
-      // auto pk_message =
-      //    TCPMessage(MessageType::public_key, 1, 10, (const char*)tmp);
-
       std::cout << "Writing pk message" << std::endl;
+
       write_message(pk_message);
 
     } else {

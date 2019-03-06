@@ -37,7 +37,7 @@ class HESealBackend : public HEBackend {
 
   virtual void handle_message(const TCPMessage& message) override = 0;
 
-  virtual ~HESealBackend() { std::cout << "~HESEalBackend()" << std::endl; };
+  virtual ~HESealBackend() { std::cout << "~HESealBackend()" << std::endl; };
 
   /// @brief Checks if parameter is valid for encoding.
   ///        Throws an error if parameter is not valid.
