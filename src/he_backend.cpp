@@ -63,9 +63,6 @@ void runtime::he::HEBackend::start_server() {
   // Server
   tcp::resolver resolver(m_io_context);
   tcp::endpoint server_endpoints(tcp::v4(), m_port);
-  auto server_callback = [this](const runtime::he::TCPMessage& message) {
-    handle_message(message);
-  };
 
   m_acceptor = make_shared<tcp::acceptor>(m_io_context, server_endpoints);
 
@@ -73,26 +70,35 @@ void runtime::he::HEBackend::start_server() {
 
   // m_tcp_server =
   //    make_shared<TCPServer>(m_io_context, server_endpoints, server_callback);
-  m_io_context.run();  // Actually start the server
+  m_thread = std::thread([this]() { m_io_context.run(); });
+  // m_thread =
+  // m_io_context.run();  // Actually start the server
 }
 
 void runtime::he::HEBackend::accept_connection() {
   // std::lock_guard<std::mutex> guard(m_session_mutex);
   std::cout << "Server accepting connections" << std::endl;
-  m_acceptor->async_accept(
-      [this](boost::system::error_code ec, tcp::socket socket) {
-        if (!ec) {
-          std::cout << "Connection accepted" << std::endl;
-          // m_session =
-          //    std::make_shared<TCPSession>(std::move(socket),
-          //    m_message_callback);
-          // m_session->start();
-          std::cout << "TCP session started" << std::endl;
-        } else {
-          std::cout << "error " << ec.message() << std::endl;
-        }
-        // accept_connection();
-      });
+
+  auto server_callback = std::bind(&runtime::he::HEBackend::handle_message,
+                                   this, std::placeholders::_1);
+
+  /*auto server_callback = [this](const runtime::he::TCPMessage& message) {
+    this->handle_message(message);
+  };*/
+
+  m_acceptor->async_accept([this, server_callback](boost::system::error_code ec,
+                                                   tcp::socket socket) {
+    if (!ec) {
+      std::cout << "Connection accepted" << std::endl;
+      m_session =
+          std::make_unique<TCPSession>(std::move(socket), server_callback);
+      m_session->start();
+      std::cout << "TCP session started" << std::endl;
+    } else {
+      std::cout << "error " << ec.message() << std::endl;
+    }
+    // accept_connection();
+  });
 }
 
 shared_ptr<runtime::he::HEPlaintext>

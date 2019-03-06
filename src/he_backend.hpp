@@ -47,7 +47,11 @@ namespace he {
 class HETensor;
 class HEBackend : public runtime::Backend {
  public:
-  virtual ~HEBackend(){};
+  virtual ~HEBackend() {
+    NGRAPH_INFO << "~HEBackend()";
+    m_thread.detach();
+    NGRAPH_INFO << "~HEBackend()";
+  };
 
   /// @brief starts the server
   void start_server();
@@ -247,9 +251,9 @@ class HEBackend : public runtime::Backend {
       FunctionInstance& instance);
 
   std::shared_ptr<tcp::acceptor> m_acceptor;
-
+  std::unique_ptr<TCPSession> m_session;
   std::shared_ptr<TCPServer> m_tcp_server;
-  // std::thread m_thread;
+  std::thread m_thread;
   boost::asio::io_context m_io_context;
 
   size_t m_port{34000};  // Which port the server is hosted at
