@@ -176,6 +176,7 @@ runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend(
       TCPMessage(MessageType::encryption_parameters, param_stream);
 
   // Send
+  NGRAPH_INFO << "Waiting until client is connected";
   while (!m_session_started) {
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
@@ -449,9 +450,15 @@ void runtime::he::he_seal::HESealCKKSBackend::handle_message(
     dynamic_pointer_cast<runtime::he::HECipherTensor>(input_tensor)
         ->set_elements(he_cipher_inputs);
 
-    std::vector<shared_ptr<runtime::Tensor>> inputs{input_tensor};
+    m_inputs = {
+        dynamic_pointer_cast<runtime::he::HECipherTensor>(input_tensor)};
 
-    m_inputs = inputs;
+    /*m_inputs.clear();
+    for (auto input : input_tensor) {
+      m_inputs.emplace_back(
+          dynamic_pointer_cast<runtime::he::HECiphertext>(input));
+    } */
+    // m_inputs = input_tensor;
 
     /*
     std::vector<shared_ptr<runtime::Tensor>> outputs;

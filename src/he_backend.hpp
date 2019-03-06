@@ -256,7 +256,7 @@ class HEBackend : public runtime::Backend {
   std::thread m_thread;
   boost::asio::io_context m_io_context;
   bool m_session_started{false};
-  std::vector<std::shared_ptr<runtime::Tensor>>
+  std::vector<std::shared_ptr<runtime::he::HETensor>>
       m_inputs;  // (Encrypted) inputs to compiled function
 
   size_t m_port{34000};  // Which port the server is hosted at

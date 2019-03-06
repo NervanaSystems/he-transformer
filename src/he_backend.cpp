@@ -14,7 +14,9 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include <chrono>
 #include <limits>
+#include <thread>
 
 #include "he_backend.hpp"
 #include "he_cipher_tensor.hpp"
@@ -140,9 +142,9 @@ shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(
     const element::Type& element_type, const Shape& shape) {
   NGRAPH_INFO << "Creating tensor shape " << join(shape, "x");
   if (batch_data()) {
-    return create_batched_plain_tensor(element_type, shape);
+    return create_batched_cipher_tensor(element_type, shape);
   } else {
-    return create_plain_tensor(element_type, shape);
+    return create_cipher_tensor(element_type, shape);
   }
 }
 
@@ -327,6 +329,8 @@ bool runtime::he::HEBackend::call(
 
   validate_he_call(function, he_outputs, he_inputs);
 
+  NGRAPH_INFO << "mapping function params -> HETensor";
+
   // map function params -> HETensor
   unordered_map<descriptor::Tensor*, shared_ptr<runtime::he::HETensor>>
       tensor_map;
@@ -335,31 +339,44 @@ bool runtime::he::HEBackend::call(
     for (size_t i = 0; i < param->get_output_size(); ++i) {
       descriptor::Tensor* tv = param->get_output_tensor_ptr(i).get();
 
-      if (encrypt_data()) {
-        NGRAPH_INFO << "Encrypting parameter " << i;
-        auto plain_input = static_pointer_cast<runtime::he::HEPlainTensor>(
-            he_inputs[input_count]);
-        assert(plain_input != nullptr);
-        auto cipher_input = static_pointer_cast<runtime::he::HECipherTensor>(
-            create_cipher_tensor(plain_input->get_element_type(),
-                                 plain_input->get_shape(), batch_data()));
+      /*  if (encrypt_data()) {
+         NGRAPH_INFO << "Encrypting parameter " << i;
+         auto plain_input = static_pointer_cast<runtime::he::HEPlainTensor>(
+             he_inputs[input_count]);
+         assert(plain_input != nullptr);
+         auto cipher_input = static_pointer_cast<runtime::he::HECipherTensor>(
+             create_cipher_tensor(plain_input->get_element_type(),
+                                  plain_input->get_shape(), batch_data()));
 
-        NGRAPH_INFO << "plain_input->get_batched_element_count() "
-                    << plain_input->get_batched_element_count();
-#pragma omp parallel for
-        for (size_t i = 0; i < plain_input->get_batched_element_count(); ++i) {
-          encrypt(cipher_input->get_element(i), *plain_input->get_element(i));
-        }
+         NGRAPH_INFO << "plain_input->get_batched_element_count() "
+                     << plain_input->get_batched_element_count();
+ #pragma omp parallel for
+         for (size_t i = 0; i < plain_input->get_batched_element_count(); ++i) {
+           encrypt(cipher_input->get_element(i), *plain_input->get_element(i));
+         }
 
-        NGRAPH_INFO << "Done encrypting parameter " << i;
+         NGRAPH_INFO << "Done encrypting parameter " << i;
 
-        tensor_map.insert({tv, cipher_input});
-        input_count++;
-      } else {
-        tensor_map.insert({tv, he_inputs[input_count++]});
+         tensor_map.insert({tv, cipher_input});
+         input_count++;
+    }
+    else { */
+      for (size_t seconds = 0; seconds < 10; seconds++) {
+        NGRAPH_INFO << "Waiting on inputs (t=" << seconds << "); until "
+                    << m_inputs.size() << " => " << he_inputs.size();
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
       }
+
+      assert(m_inputs.size() == he_inputs.size());
+      tensor_map.insert({tv, m_inputs[input_count++]});
+
+      // TODO: revert to original if needed
+      // tensor_map.insert({tv, he_inputs[input_count++]});
+      // }
     }
   }
+
+  NGRAPH_INFO << "map function outputs -> HostTensor";
 
   // map function outputs -> HostTensor
   for (size_t output_count = 0; output_count < function->get_output_size();
