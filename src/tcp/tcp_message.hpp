@@ -81,6 +81,9 @@ inline std::string message_type_to_string(const MessageType& type) {
     case MessageType::result:
       return "result";
       break;
+    case MessageType::result_request:
+      return "result_request";
+      break;
     default:
       return "Unknown message type";
   }

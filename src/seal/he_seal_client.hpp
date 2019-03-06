@@ -124,12 +124,16 @@ class HESealClient {
 
       std::cout << "Cipher size " << cipher_size << std::endl;
 
+      std::cout << "Writing execute message" << std::endl;
+
       auto execute_message = TCPMessage(MessageType::execute, shape_size,
                                         cipher_size, cipher_cstr);
       write_message(execute_message);
 
-      auto results_request_msg = TCPMessage(MessageType::result_request);
-      write_message(results_request_msg);
+      std::cout << "Writing result_request message" << std::endl;
+
+      // auto results_request_msg = TCPMessage(MessageType::result_request);
+      // write_message(results_request_msg);
 
       // return return_message;
     } else if (msg_type == MessageType::result) {

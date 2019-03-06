@@ -412,7 +412,7 @@ void runtime::he::he_seal::HESealCKKSBackend::handle_message(
     std::cout << "message body size " << message.body_length() << std::endl;
     std::vector<seal::Ciphertext> ciphertexts;
     size_t ciphertext_size = message.element_size();
-    std::cout << "ciphertext_size" << ciphertext_size << std::endl;
+    std::cout << "ciphertext_size " << ciphertext_size << std::endl;
 
     for (size_t i = 0; i < count; ++i) {
       stringstream stream;

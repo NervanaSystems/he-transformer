@@ -361,6 +361,7 @@ bool runtime::he::HEBackend::call(
          input_count++;
     }
     else { */
+      sleep(10);
       while (m_inputs.size() != he_inputs.size()) {
         size_t seconds = 0;
         NGRAPH_INFO << "Waiting on inputs (t=" << seconds << "); until "
