@@ -221,6 +221,8 @@ class HEBackend : public runtime::Backend {
 
   size_t get_port() const { return m_port; };
 
+  void accept_connection();
+
  protected:
   class FunctionInstance {
    public:
@@ -243,6 +245,8 @@ class HEBackend : public runtime::Backend {
       const std::vector<std::shared_ptr<runtime::he::HETensor>>& outputs,
       const std::vector<std::shared_ptr<runtime::he::HETensor>>& inputs,
       FunctionInstance& instance);
+
+  std::shared_ptr<tcp::acceptor> m_acceptor;
 
   std::shared_ptr<TCPServer> m_tcp_server;
   // std::thread m_thread;

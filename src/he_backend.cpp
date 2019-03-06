@@ -67,9 +67,32 @@ void runtime::he::HEBackend::start_server() {
     handle_message(message);
   };
 
-  m_tcp_server =
-      make_shared<TCPServer>(m_io_context, server_endpoints, server_callback);
-  // m_io_context.run();  // Actually start the server
+  m_acceptor = make_shared<tcp::acceptor>(m_io_context, server_endpoints);
+
+  accept_connection();
+
+  // m_tcp_server =
+  //    make_shared<TCPServer>(m_io_context, server_endpoints, server_callback);
+  m_io_context.run();  // Actually start the server
+}
+
+void runtime::he::HEBackend::accept_connection() {
+  // std::lock_guard<std::mutex> guard(m_session_mutex);
+  std::cout << "Server accepting connections" << std::endl;
+  m_acceptor->async_accept(
+      [this](boost::system::error_code ec, tcp::socket socket) {
+        if (!ec) {
+          std::cout << "Connection accepted" << std::endl;
+          // m_session =
+          //    std::make_shared<TCPSession>(std::move(socket),
+          //    m_message_callback);
+          // m_session->start();
+          std::cout << "TCP session started" << std::endl;
+        } else {
+          std::cout << "error " << ec.message() << std::endl;
+        }
+        // accept_connection();
+      });
 }
 
 shared_ptr<runtime::he::HEPlaintext>

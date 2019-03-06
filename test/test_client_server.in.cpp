@@ -377,13 +377,11 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_init) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, tcp_init2) {
-  auto server_fun = [&]() {
+  auto server_fun = []() {
     auto backend = runtime::Backend::create("${BACKEND_NAME}");
-    sleep(1);
   };
 
   std::thread t2(server_fun);
-  sleep(1);
   t2.join();
 }
 

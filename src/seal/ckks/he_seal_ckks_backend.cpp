@@ -151,18 +151,16 @@ runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend(
           ->m_plaintext);
 
   m_ckks_encoder->encode(
-      0, m_scale,
+      1, m_scale,
       dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(
-          plaintext_0)
-          ->m_plaintext,
-      seal::MemoryPoolHandle::ThreadLocal());
+          plaintext_1)
+          ->m_plaintext);
 
-  /* m_plaintext_map[-1] = plaintext_neg1;
-   m_plaintext_map[0] = plaintext_0;
-   m_plaintext_map[1] = plaintext_1;*/
+  m_plaintext_map[-1] = plaintext_neg1;
+  m_plaintext_map[0] = plaintext_0;
+  m_plaintext_map[1] = plaintext_1;
 
   // Start server
-  sleep(1);
   NGRAPH_INFO << "Starting CKKS server";
   start_server();
   NGRAPH_INFO << "Started CKKS server";
