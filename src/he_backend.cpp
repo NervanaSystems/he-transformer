@@ -361,7 +361,6 @@ bool runtime::he::HEBackend::call(
          input_count++;
     }
     else { */
-      sleep(10);
       NGRAPH_INFO << "Waiting on inputs until " << m_inputs.size() << " => "
                   << inputs.size();
       while (m_inputs.size() != inputs.size()) {
@@ -503,7 +502,6 @@ bool runtime::he::HEBackend::call(
   NGRAPH_INFO << "output size " << output_size;
 
   // Save outputs to stringstream
-  // std::vector<seal::Ciphertext> seal_outputs;
   std::stringstream cipher_stream;
   for (const auto& output : m_outputs) {
     for (const auto& element :
@@ -513,7 +511,6 @@ bool runtime::he::HEBackend::call(
           dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(
               element);
       seal::Ciphertext c = wrapper->m_ciphertext;
-      // seal_outputs.emplace_back(c);
       c.save(cipher_stream);
     }
   }

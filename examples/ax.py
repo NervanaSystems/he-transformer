@@ -20,9 +20,8 @@ import tensorflow as tf
 
 a = tf.constant(np.array([[1, 2], [3, 4]]), dtype=np.float32)
 b = tf.placeholder(tf.float32, shape=(2, 2))
-c = tf.placeholder(tf.float32, shape=())
-f = (a + b) * b
+f = (a + b) * a
 
 with tf.Session() as sess:
-    f_val = sess.run(f, feed_dict={b: np.ones((2, 2)), c: np.array(5, )})
+    f_val = sess.run(f, feed_dict={b: np.ones((2, 2))})
     print("Result: ", f_val)
