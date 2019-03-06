@@ -98,7 +98,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
         [this, self](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
             std::cout << "Server wrote message size " << length << std::endl;
-            do_read_header();
+            // do_read_header();
           } else {
             std::cout << "Error writing message in session: " << ec.message()
                       << std::endl;
