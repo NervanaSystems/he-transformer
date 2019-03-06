@@ -202,23 +202,6 @@ runtime::Handle runtime::he::HEBackend::compile(shared_ptr<Function> function) {
       instance.m_wrapped_nodes.emplace_back(node);
     }
   }
-  NGRAPH_INFO << "Compiled function; waiting until m_session_started";
-  while (!m_session_started) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-  }
-  // Send parameter shape to server
-  // TODO: wait until connection has been made
-  assert(m_function_map.size() == 1);  // Only compile single function for now
-  const ParameterVector& input_parameters = function->get_parameters();
-  // Only support single parameter for now
-  assert(input_parameters.size() == 1);
-  auto shape = input_parameters[0]->get_shape();
-  NGRAPH_INFO << "Returning parameter shape: " << join(shape, "x");
-  auto param_message =
-      TCPMessage(MessageType::parameter_shape, shape.size(),
-                 sizeof(size_t) * shape.size(), (char*)shape.data());
-  m_session->do_write(param_message);
-
   return function;
 }
 

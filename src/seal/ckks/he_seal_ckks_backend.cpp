@@ -531,24 +531,24 @@ void runtime::he::he_seal::HESealCKKSBackend::handle_message(
 
     NGRAPH_INFO << "Server loaded public key";
 
-    /*
     // Send inference parameter shape
+    NGRAPH_INFO << "Waiting until function is compiled";
+    while (m_function_map.size() == 0) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
     auto function = m_function_map.begin()->first;
     const ParameterVector& input_parameters = function->get_parameters();
-
-    assert(input_parameters.size() ==
-           1);  // Only support single parameter for now
-
+    // Only support single parameter for now
+    assert(input_parameters.size() == 1);
     auto shape = input_parameters[0]->get_shape();
-
     NGRAPH_INFO << "Returning parameter shape: " << join(shape, "x");
-    ;
-    return TCPMessage(MessageType::parameter_shape, shape.size(),
-                      sizeof(size_t) * shape.size(), (char*)shape.data());
 
-    auto return_message = runtime::he::TCPMessage(MessageType::public_key_ack);
-    return return_message; */
+    runtime::he::TCPMessage parameter_message{
+        MessageType::parameter_shape, shape.size(),
+        sizeof(size_t) * shape.size(), (char*)shape.data()};
 
+    m_session->do_write(parameter_message);
   } else if (msg_type == MessageType::none) {
     NGRAPH_INFO << "Server replying with none mssage";
     // return message;
