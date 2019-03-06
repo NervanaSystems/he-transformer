@@ -176,7 +176,15 @@ class HESealClient {
 
       std::stringstream pk_stream;
       m_public_key->save(pk_stream);
-      auto pk_message = TCPMessage(MessageType::public_key, pk_stream);
+      // auto pk_message = TCPMessage(MessageType::public_key, pk_stream);
+
+      // TODO: remove
+      auto tmp = malloc(10);
+      auto pk_message =
+          TCPMessage(MessageType::public_key, 1, 10, (const char*)tmp);
+
+      std::cout << "Writing pk message" << std::endl;
+      write_message(pk_message);
 
     } else {
       std::cout << "Returning empty TCP message" << std::endl;

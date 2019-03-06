@@ -396,7 +396,7 @@ void runtime::he::he_seal::HESealCKKSBackend::decode(
 
 runtime::he::TCPMessage runtime::he::he_seal::HESealCKKSBackend::handle_message(
     const runtime::he::TCPMessage& message) {
-  // NGRAPH_INFO << "Handling TCP Message";
+  NGRAPH_INFO << "Handling TCP Message";
 
   MessageType msg_type = message.message_type();
 

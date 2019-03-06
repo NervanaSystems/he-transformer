@@ -182,10 +182,10 @@ class TCPMessage {
     m_data = new char[header_length + body_length()];
     std::memcpy(m_data, other.m_data, num_bytes());
 
-    std::cout << "copy constructor" << std::endl;
+    /*std::cout << "copy constructor" << std::endl;
     std::cout << "m_count " << m_count << std::endl;
     std::cout << "m_data_size " << m_data_size << std::endl;
-    std::cout << "m_type " << message_type_to_string(m_type) << std::endl;
+    std::cout << "m_type " << message_type_to_string(m_type) << std::endl; */
   }
 
   // move constructor
@@ -195,7 +195,6 @@ class TCPMessage {
         m_data_size(other.m_data_size) {
     m_data = new char[header_length + body_length()];
     std::memcpy(m_data, other.m_data, num_bytes());
-    std::cout << "move constructor" << std::endl;
   }
 
   ~TCPMessage() {
@@ -258,13 +257,16 @@ class TCPMessage {
     if (ret < 0 || ret > sizeof(header)) {
       throw std::invalid_argument("Error encoding header");
     }
+    std::cout << "Encoded header: body_length " << to_encode << std::endl;
     std::memcpy(m_data, header, header_length);
   }
 
   bool decode_header() {
+    std::cout << "Decoding header " << std::endl;
     char header[header_length + 1] = "";
     std::strncat(header, m_data, header_length);
     size_t body_length = std::atoi(header);
+    std::cout << "body_length " << body_length << std::endl;
     if (body_length > max_body_length) {
       std::cout << "Body length " << body_length << " too large" << std::endl;
       throw std::invalid_argument("Cannot decode header");

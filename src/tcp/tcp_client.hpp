@@ -48,7 +48,6 @@ class TCPClient {
   }
 
   void write_message(const runtime::he::TCPMessage& message) {
-    std::cout << "Client writing message" << std::endl;
     boost::asio::post(m_io_context, [this, message]() { do_write(message); });
   }
 
@@ -81,8 +80,9 @@ class TCPClient {
           } else {
             std::cout << "Client error reading header: " << ec.message()
                       << std::endl;
-            // m_socket.close();
-            // std::cout << "Closed socket" << std::endl;
+            std::cout << "Closing socket" << std::endl;
+            m_socket.close();
+            std::cout << "Closed socket" << std::endl;
           }
         });
   }
@@ -106,8 +106,8 @@ class TCPClient {
             std::cout << "Client error reading body; " << ec.message()
                       << std::endl;
             std::cout << "Closing socket" << std::endl;
-            // m_socket.close();
-            // std::cout << "Closed socket" << std::endl;
+            m_socket.close();
+            std::cout << "Closed socket" << std::endl;
           }
         });
   }
@@ -121,10 +121,13 @@ class TCPClient {
         [this](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
             std::cout << "Client wrote message length " << length << std::endl;
-            do_read_header();
+            // do_read_header();
           } else {
             std::cout << "Client error writing message: " << ec.message()
                       << std::endl;
+            std::cout << "Closing socket" << std::endl;
+            m_socket.close();
+            std::cout << "Closed socket" << std::endl;
           }
         });
   }
