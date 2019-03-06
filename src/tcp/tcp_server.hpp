@@ -39,7 +39,7 @@ class TCPServer {
 
   ~TCPServer() {
     std::cout << "~TCPServer()" << std::endl;
-    // m_acceptor.close();
+    m_acceptor.close();
     std::cout << "Done with ~TCPServer()" << std::endl;
   }
 

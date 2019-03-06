@@ -109,11 +109,10 @@ runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend(
   assert_valid_seal_ckks_parameter(sp);
 
   m_context = make_seal_context(sp);
+
   print_seal_context(*m_context);
 
-  /*
-
-  auto m_context_data = m_context->context_data();
+  auto context_data = m_context->context_data();
 
   // Keygen, encryptor and decryptor
   m_keygen = make_shared<seal::KeyGenerator>(m_context);
@@ -127,8 +126,8 @@ runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend(
   // Evaluator
   m_evaluator = make_shared<seal::Evaluator>(m_context);
 
-  m_scale = static_cast<double>(
-      m_context_data->parms().coeff_modulus().back().value());
+  m_scale =
+      static_cast<double>(context_data->parms().coeff_modulus().back().value());
 
   // Encoder
   m_ckks_encoder = make_shared<seal::CKKSEncoder>(m_context);
@@ -144,23 +143,26 @@ runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend(
       dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(
           plaintext_neg1)
           ->m_plaintext);
+
   m_ckks_encoder->encode(
       0, m_scale,
       dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(
           plaintext_0)
           ->m_plaintext);
-  m_ckks_encoder->encode(
-      1, m_scale,
-      dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(
-          plaintext_1)
-          ->m_plaintext);
 
-  m_plaintext_map[-1] = plaintext_neg1;
-  m_plaintext_map[0] = plaintext_0;
-  m_plaintext_map[1] = plaintext_1;
-  */
+  m_ckks_encoder->encode(
+      0, m_scale,
+      dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(
+          plaintext_0)
+          ->m_plaintext,
+      seal::MemoryPoolHandle::ThreadLocal());
+
+  /* m_plaintext_map[-1] = plaintext_neg1;
+   m_plaintext_map[0] = plaintext_0;
+   m_plaintext_map[1] = plaintext_1;*/
 
   // Start server
+  sleep(1);
   NGRAPH_INFO << "Starting CKKS server";
   start_server();
   NGRAPH_INFO << "Started CKKS server";
@@ -186,14 +188,14 @@ extern "C" runtime::Backend* new_ckks_backend(
 shared_ptr<seal::SEALContext>
 runtime::he::he_seal::HESealCKKSBackend::make_seal_context(
     const shared_ptr<runtime::he::he_seal::HESealParameter> sp) {
-  m_encryption_parms =
+  auto encryption_parms =
       make_shared<seal::EncryptionParameters>(seal::scheme_type::CKKS);
 
   if (sp->m_scheme_name != "HE_SEAL_CKKS") {
     throw ngraph_error("Invalid scheme name \"" + sp->m_scheme_name + "\"");
   }
 
-  m_encryption_parms->set_poly_modulus_degree(sp->m_poly_modulus_degree);
+  encryption_parms->set_poly_modulus_degree(sp->m_poly_modulus_degree);
 
   bool custom_coeff_modulus = (sp->m_coeff_modulus.bit_count != 0);
 
@@ -201,25 +203,25 @@ runtime::he::he_seal::HESealCKKSBackend::make_seal_context(
     if (sp->m_coeff_modulus.bit_count == 30) {
       std::vector<seal::SmallModulus> small_mods_30_bit =
           seal::util::global_variables::default_small_mods_30bit;
-      m_encryption_parms->set_coeff_modulus(
+      encryption_parms->set_coeff_modulus(
           {small_mods_30_bit.begin(),
            small_mods_30_bit.begin() + sp->m_coeff_modulus.coeff_count});
     } else if (sp->m_coeff_modulus.bit_count == 40) {
       std::vector<seal::SmallModulus> small_mods_40_bit =
           seal::util::global_variables::default_small_mods_40bit;
-      m_encryption_parms->set_coeff_modulus(
+      encryption_parms->set_coeff_modulus(
           {small_mods_40_bit.begin(),
            small_mods_40_bit.begin() + sp->m_coeff_modulus.coeff_count});
     } else if (sp->m_coeff_modulus.bit_count == 50) {
       std::vector<seal::SmallModulus> small_mods_50_bit =
           seal::util::global_variables::default_small_mods_50bit;
-      m_encryption_parms->set_coeff_modulus(
+      encryption_parms->set_coeff_modulus(
           {small_mods_50_bit.begin(),
            small_mods_50_bit.begin() + sp->m_coeff_modulus.coeff_count});
     } else if (sp->m_coeff_modulus.bit_count == 60) {
       std::vector<seal::SmallModulus> small_mods_60_bit =
           seal::util::global_variables::default_small_mods_60bit;
-      m_encryption_parms->set_coeff_modulus(
+      encryption_parms->set_coeff_modulus(
           {small_mods_60_bit.begin(),
            small_mods_60_bit.begin() + sp->m_coeff_modulus.coeff_count});
     } else {
@@ -246,7 +248,7 @@ runtime::he::he_seal::HESealCKKSBackend::make_seal_context(
                     << ", resulting in lower security";
       }
     } else {
-      m_encryption_parms->set_coeff_modulus(
+      encryption_parms->set_coeff_modulus(
           seal::DefaultParams::coeff_modulus_128(sp->m_poly_modulus_degree));
     }
   } else if (sp->m_security_level == 192) {
@@ -264,7 +266,7 @@ runtime::he::he_seal::HESealCKKSBackend::make_seal_context(
                     << ", resulting in lower security";
       }
     } else {
-      m_encryption_parms->set_coeff_modulus(
+      encryption_parms->set_coeff_modulus(
           seal::DefaultParams::coeff_modulus_192(sp->m_poly_modulus_degree));
     }
   } else if (sp->m_security_level == 256) {
@@ -282,13 +284,13 @@ runtime::he::he_seal::HESealCKKSBackend::make_seal_context(
                     << ", resulting in lower security";
       }
     } else {
-      m_encryption_parms->set_coeff_modulus(
+      encryption_parms->set_coeff_modulus(
           seal::DefaultParams::coeff_modulus_256(sp->m_poly_modulus_degree));
     }
   } else {
     throw ngraph_error("sp.security_level must be 128, 192, or 256");
   }
-  return seal::SEALContext::Create(*m_encryption_parms);
+  return seal::SEALContext::Create(*encryption_parms);
 }
 
 namespace {

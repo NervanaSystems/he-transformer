@@ -45,12 +45,15 @@ class HESealClient {
 
     std::cout << "Created TCP client. Starting io_context" << std::endl;
 
-    m_thread = std::thread([&io_context]() { io_context.run(); });
+    io_context.run();
+
+    // m_thread = std::thread([&io_context]() { io_context.run(); });
   }
 
   ~HESealClient() {
     std::cout << "~HESealClient()" << std::endl;
-    m_thread.detach();
+    // m_thread.detach();
+    std::cout << "Done with ~HESealClient()" << std::endl;
   }
 
   void set_seal_context() {
