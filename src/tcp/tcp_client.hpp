@@ -69,7 +69,6 @@ class TCPClient {
   }
 
   void do_read_header() {
-    std::cout << "Client reading header " << std::endl;
     boost::asio::async_read(
         m_socket,
         boost::asio::buffer(m_read_message.header_ptr(),
@@ -88,8 +87,6 @@ class TCPClient {
   }
 
   void do_read_body() {
-    std::cout << "Client reading body length " << std::endl;
-    std::cout << "Body length " << m_read_message.body_length() << std::endl;
     boost::asio::async_read(
         m_socket,
         boost::asio::buffer(m_read_message.body_ptr(),
@@ -113,15 +110,12 @@ class TCPClient {
   }
 
   void do_write(const runtime::he::TCPMessage& message) {
-    std::cout << "Client writing message length " << message.num_bytes()
-              << std::endl;
     boost::asio::async_write(
         m_socket,
         boost::asio::buffer(message.header_ptr(), message.num_bytes()),
         [this](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
             std::cout << "Client wrote message length " << length << std::endl;
-            // do_read_header();
           } else {
             std::cout << "Client error writing message: " << ec.message()
                       << std::endl;

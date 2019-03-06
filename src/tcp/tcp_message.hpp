@@ -121,7 +121,6 @@ class TCPMessage {
     encode_header();
     encode_message_type();
     encode_count();
-    std::cout << "Done creating messge " << std::endl;
   }
 
   TCPMessage() : TCPMessage(MessageType::none) {}
@@ -133,9 +132,6 @@ class TCPMessage {
     const std::string& pk_str = stream.str();
     const char* pk_cstr = pk_str.c_str();
     m_data_size = pk_str.size();
-    std::cout << "Creating message from stream, size " << m_data_size
-              << std::endl;
-
     check_arguments();
     m_data = new char[header_length + max_body_length];
 
@@ -165,15 +161,10 @@ class TCPMessage {
       : m_type(type), m_count(count), m_data_size(size) {
     check_arguments();
     m_data = new char[header_length + max_body_length];
-    std::cout << "Creating new message size " << header_length + max_body_length
-              << std::endl;
-
     encode_header();
-    std::cout << "Encoded header" << std::endl;
     encode_message_type();
     encode_count();
     encode_data(data);
-    std::cout << "Done creating messge " << std::endl;
   }
 
   // copy assignment. TODO: enable as needed
@@ -190,11 +181,6 @@ class TCPMessage {
 
     m_data = new char[header_length + body_length()];
     std::memcpy(m_data, other.m_data, num_bytes());
-
-    /*std::cout << "copy constructor" << std::endl;
-    std::cout << "m_count " << m_count << std::endl;
-    std::cout << "m_data_size " << m_data_size << std::endl;
-    std::cout << "m_type " << message_type_to_string(m_type) << std::endl; */
   }
 
   // move constructor
@@ -267,7 +253,6 @@ class TCPMessage {
     if (ret < 0 || ret > sizeof(header)) {
       throw std::invalid_argument("Error encoding header");
     }
-    std::cout << "Encoded header: body_length " << to_encode << std::endl;
     std::memcpy(m_data, header, header_length);
   }
 
@@ -276,7 +261,6 @@ class TCPMessage {
     char header[header_length + 1] = "";
     std::strncat(header, m_data, header_length);
     size_t body_length = std::atoi(header);
-    std::cout << "body_length " << body_length << std::endl;
     if (body_length > max_body_length) {
       std::cout << "Body length " << body_length << " too large" << std::endl;
       throw std::invalid_argument("Cannot decode header");
@@ -287,8 +271,6 @@ class TCPMessage {
 
   void encode_message_type() {
     std::memcpy(body_ptr(), &m_type, message_type_length);
-    std::cout << "Encoded message type " << message_type_to_string(m_type)
-              << std::endl;
   }
 
   void decode_message_type() {
@@ -297,7 +279,6 @@ class TCPMessage {
 
   void encode_count() {
     std::memcpy(count_ptr(), &m_count, message_count_length);
-    std::cout << "Encoded count " << m_count << std::endl;
   }
 
   void decode_count() {
@@ -306,7 +287,6 @@ class TCPMessage {
 
   void encode_data(const char* data) {
     std::memcpy(data_ptr(), data, m_data_size);
-    std::cout << "Encoded data size " << m_data_size << std::endl;
   }
 
   // Given m_data, parses to find m_datatype, m_count

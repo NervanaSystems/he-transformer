@@ -53,6 +53,8 @@ void runtime::he::HECipherTensor::write(const void* source,
   size_t dst_start_index = tensor_offset / type_byte_size;
   size_t num_elements_to_write = n / (type_byte_size * m_batch_size);
 
+  sleep(1);
+
   NGRAPH_INFO << "HECipherTensor::write(), num elemnts "
               << num_elements_to_write;
 

@@ -140,7 +140,6 @@ shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(
 
 shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(
     const element::Type& element_type, const Shape& shape) {
-  NGRAPH_INFO << "Creating tensor shape " << join(shape, "x");
   if (batch_data()) {
     return create_batched_cipher_tensor(element_type, shape);
   } else {
@@ -159,8 +158,6 @@ shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_plain_tensor(
 shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_cipher_tensor(
     const element::Type& element_type, const Shape& shape,
     const bool batched) const {
-  NGRAPH_INFO << "runtime::he::HEBackend::create_cipher_tensor shape "
-              << join(shape, "x");
   auto rc = make_shared<runtime::he::HECipherTensor>(
       element_type, shape, this, create_empty_ciphertext(), batched);
   return static_pointer_cast<runtime::Tensor>(rc);
@@ -329,8 +326,6 @@ bool runtime::he::HEBackend::call(
 
   validate_he_call(function, he_outputs, he_inputs);
 
-  NGRAPH_INFO << "mapping function params -> HETensor";
-
   // map function params -> HETensor
   unordered_map<descriptor::Tensor*, shared_ptr<runtime::he::HETensor>>
       tensor_map;
@@ -378,8 +373,6 @@ bool runtime::he::HEBackend::call(
       // }
     }
   }
-
-  NGRAPH_INFO << "map function outputs -> HostTensor";
 
   // map function outputs -> HostTensor
   for (size_t output_count = 0; output_count < function->get_output_size();
@@ -514,7 +507,6 @@ bool runtime::he::HEBackend::call(
 
   auto result_message =
       TCPMessage(MessageType::result, output_size, cipher_stream);
-
   m_session->do_write(result_message);
 
   return true;

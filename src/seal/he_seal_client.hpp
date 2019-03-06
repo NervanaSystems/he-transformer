@@ -43,8 +43,6 @@ class HESealClient {
     m_tcp_client = std::make_shared<runtime::he::TCPClient>(
         io_context, endpoints, client_callback);
 
-    std::cout << "Created TCP client. Starting io_context" << std::endl;
-
     io_context.run();
 
     // m_thread = std::thread([&io_context]() { io_context.run(); });
@@ -91,17 +89,10 @@ class HESealClient {
     } else if (msg_type == MessageType::parameter_shape) {
       std::vector<size_t> shape(message.count());
 
-      std::cout << "element size " << message.element_size() << std::endl;
-      std::cout << "element count " << message.count() << std::endl;
-
       std::memcpy(shape.data(), message.data_ptr(), message.data_size());
-
-      std::cout << "Shape " << join(shape, "x") << std::endl;
 
       auto shape_size = std::accumulate(begin(shape), end(shape), 1,
                                         std::multiplies<size_t>());
-
-      std::cout << "shape size " << shape_size << std::endl;
 
       std::vector<seal::Ciphertext> ciphers;
 
@@ -122,21 +113,9 @@ class HESealClient {
 
       size_t cipher_size = cipher_str.size();
 
-      std::cout << "Cipher size " << cipher_size << std::endl;
-
-      std::cout << "Writing execute message" << std::endl;
-
       auto execute_message = TCPMessage(MessageType::execute, shape_size,
                                         cipher_size, cipher_cstr);
       write_message(execute_message);
-
-      // TODO: add message queue instead
-      // sleep(5);
-      // std::cout << "Writing result_request message" << std::endl;
-      // auto results_request_msg = TCPMessage(MessageType::result_request);
-      // write_message(results_request_msg);
-
-      // return return_message;
     } else if (msg_type == MessageType::result) {
       size_t count = message.count();
       size_t element_size = message.element_size();
@@ -170,28 +149,24 @@ class HESealClient {
     } else if (msg_type == MessageType::none) {
       close_connection();
     } else if (msg_type == MessageType::encryption_parameters) {
-      std::cout << "message.element_size " << message.element_size()
-                << std::endl;
       std::stringstream param_stream;
       param_stream.write(message.data_ptr(), message.element_size());
-      std::cout << "Write to param steram" << std::endl;
       m_encryption_params = seal::EncryptionParameters::Load(param_stream);
       std::cout << "Loaded encryption parms" << std::endl;
 
       set_seal_context();
-
       std::cout << "Set seal context" << std::endl;
 
       std::stringstream pk_stream;
       m_public_key->save(pk_stream);
       auto pk_message = TCPMessage(MessageType::public_key, 1, pk_stream);
-      std::cout << "Writing pk message" << std::endl;
+      std::cout << "Writing public key message" << std::endl;
 
       write_message(pk_message);
 
     } else {
-      std::cout << "Returning empty TCP message" << std::endl;
-      // return TCPMessage();
+      std::cout << "Unsupported message type "
+                << message_type_to_string(msg_type).c_str() << std::endl;
     }
   }
 
@@ -204,7 +179,7 @@ class HESealClient {
   std::vector<float> get_results() { return m_results; }
 
   void close_connection() {
-    std::cout << "Closing connectiong" << std::endl;
+    std::cout << "Closing connection" << std::endl;
 
     m_tcp_client->close();
     m_thread.detach();

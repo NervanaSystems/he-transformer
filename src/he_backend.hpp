@@ -50,7 +50,7 @@ class HEBackend : public runtime::Backend {
   virtual ~HEBackend() {
     NGRAPH_INFO << "~HEBackend()";
     m_thread.detach();
-    NGRAPH_INFO << "~HEBackend()";
+    NGRAPH_INFO << "Done with ~HEBackend()";
   };
 
   /// @brief starts the server
