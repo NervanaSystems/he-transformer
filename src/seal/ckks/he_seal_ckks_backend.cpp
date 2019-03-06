@@ -528,9 +528,9 @@ void runtime::he::he_seal::HESealCKKSBackend::handle_message(
     pk_stream.write(message.data_ptr(), pk_size);
 
     // TODO: load public key
-    NGRAPH_WARN << "Server skipping public key load";
-    // m_public_key->load(m_context, pk_stream);
-    // NGRAPH_INFO << "Server loaded public key";
+    // NGRAPH_WARN << "Server skipping public key load";
+    m_public_key->load(m_context, pk_stream);
+    NGRAPH_INFO << "Server loaded public key";
 
     // Send inference parameter shape
     NGRAPH_INFO << "Waiting until function is compiled";

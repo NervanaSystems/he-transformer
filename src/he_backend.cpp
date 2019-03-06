@@ -369,9 +369,6 @@ bool runtime::he::HEBackend::call(
         NGRAPH_INFO << "Waiting (t=" << seconds << ")";
         seconds++;
       }
-      NGRAPH_INFO << "Sleepign 3 seconds extra just to be safe";
-      std::this_thread::sleep_for(std::chrono::milliseconds(3000));
-      NGRAPH_INFO << "Done sleeping 3 seconds extra just to be safe";
 
       assert(m_inputs.size() == inputs.size());
       tensor_map.insert({tv, m_inputs[input_count++]});
