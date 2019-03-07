@@ -31,120 +31,40 @@ import common
 FLAGS = None
 
 
-def squash_layers():
-    print("Squashing layers")
+# Forward pass = bai
+# Backward pass = dy.
+@tf.custom_gradient
+def straight_through_estimator(x):
+    def grad(dy):
+        return dy
 
-    tf.reset_default_graph()
-
-    # Input from h_conv1 squaring
-    x = tf.placeholder(tf.float32, [None, 13, 13, 5])
-
-    # Pooling layer
-    h_pool1 = common.avg_pool_3x3_same_size(x)  # To N x 13 x 13 x 5
-
-    # Second convolution
-    W_conv2 = np.loadtxt(
-        'W_conv2.txt', dtype=np.float32).reshape([5, 5, 5, 50])
-    h_conv2 = common.conv2d_stride_2_valid(h_pool1, W_conv2)
-
-    # Second pooling layer.
-    h_pool2 = common.avg_pool_3x3_same_size(h_conv2)
-
-    # Fully connected layer 1
-    # Input: N x 5 x 5 x 50
-    # Output: N x 100
-    W_fc1 = np.loadtxt(
-        'W_fc1.txt', dtype=np.float32).reshape([5 * 5 * 50, 100])
-    h_pool2_flat = tf.reshape(h_pool2, [-1, 5 * 5 * 50])
-    pre_square = tf.matmul(h_pool2_flat, W_fc1)
-
-    with tf.Session() as sess:
-        x_in = np.eye(13 * 13 * 5)
-        x_in = x_in.reshape([13 * 13 * 5, 13, 13, 5])
-        W = (sess.run([pre_square], feed_dict={x: x_in}))[0]
-        squashed_file_name = "W_squash.txt"
-        np.savetxt(squashed_file_name, W)
-        print("Saved to", squashed_file_name)
-
-        # Sanity check
-        x_in = np.random.rand(100, 13, 13, 5)
-        network_out = (sess.run([pre_square], feed_dict={x: x_in}))[0]
-        linear_out = x_in.reshape(100, 13 * 13 * 5).dot(W)
-        assert (np.max(np.abs(linear_out - network_out)) < 1e-5)
-
-    print("Squashed layers")
+    return tf.sign(x), grad
 
 
 def cryptonets_train(x):
-    """Builds the graph for classifying digits based on Cryptonets
-
-    Args:
-        x: an input tensor with the dimensions (N_examples, 784), where 784 is
-        the number of pixels in a standard MNIST image.
-
-    Returns:
-        A tuple (y, a scalar placeholder). y is a tensor of shape
-        (N_examples, 10), with values equal to the logits of classifying the
-        digit into one of 10 classes (the digits 0-9).
-    """
-    # Reshape to use within a conv neural net.
-    # Last dimension is for "features" - there is only one here, since images
-    # are grayscale -- it would be 3 for an RGB image, 4 for RGBA, etc.
     with tf.name_scope('reshape'):
         x_image = tf.reshape(x, [-1, 28, 28, 1])
 
-    # First conv layer
-    # CryptoNets's output of the first conv layer has feature map size 13 x 13,
-    # therefore, we manually add paddings.
-    # Input: N x 28 x 28 x 1
-    # Filter: 5 x 5 x 1 x 5
-    # Output: N x 12 x 12 x 5
-    # Output after padding: N x 13 x 13 x 5
     with tf.name_scope('conv1'):
         W_conv1 = tf.get_variable("W_conv1", [5, 5, 1, 5])
-        h_conv1_no_pad = tf.square(
-            common.conv2d_stride_2_valid(x_image, W_conv1))
-        paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]],
-                               name='pad_const')
-        h_conv1 = tf.pad(h_conv1_no_pad, paddings)
+        W_conv1 = tf.clip_by_value(W_conv1, -1, 1)
+        W_conv1 = straight_through_estimator(W_conv1)
+        h_conv1 = tf.square(common.conv2d_stride_2_valid(x_image, W_conv1))
+        h_conv1 = tf.reshape(h_conv1, [-1, 720])  # 12 * 12 * 5
 
-    # Pooling layer
-    # Input: N x 13 x 13 x 5
-    # Output: N x 13 x 13 x 5
-    with tf.name_scope('pool1'):
-        h_pool1 = common.avg_pool_3x3_same_size(h_conv1)
-
-    # Second convolution
-    # Input: N x 13 x 13 x 5
-    # Filter: 5 x 5 x 5 x 50
-    # Output: N x 5 x 5 x 50
-    with tf.name_scope('conv2'):
-        W_conv2 = tf.get_variable("W_conv2", [5, 5, 5, 50])
-        h_conv2 = common.conv2d_stride_2_valid(h_pool1, W_conv2)
-
-    # Second pooling layer
-    # Input: N x 5 x 5 x 50
-    # Output: N x 5 x 5 x 50
-    with tf.name_scope('pool2'):
-        h_pool2 = common.avg_pool_3x3_same_size(h_conv2)
-
-    # Fully connected layer 1
-    # Input: N x 5 x 5 x 50
-    # Input flattened: N x 1250
-    # Weight: 1250 x 100
-    # Output: N x 100
     with tf.name_scope('fc1'):
-        h_pool2_flat = tf.reshape(h_pool2, [-1, 5 * 5 * 50])
-        W_fc1 = tf.get_variable("W_fc1", [5 * 5 * 50, 100])
-        h_fc1 = tf.square(tf.matmul(h_pool2_flat, W_fc1))
+        W_fc1 = tf.get_variable("W_fc1", [720, 100])
+        W_fc1 = tf.clip_by_value(W_fc1, -1, 1)
+        W_fc1 = straight_through_estimator(W_fc1)
+        h_fc1 = tf.matmul(h_conv1, W_fc1)
+        h_fc1 = tf.reshape(h_fc1, [-1, 100])
 
-    # Map the 100 features to 10 classes, one for each digit
-    # Input: N x 100
-    # Weight: 100 x 10
-    # Output: N x 10
     with tf.name_scope('fc2'):
         W_fc2 = tf.get_variable("W_fc2", [100, 10])
+        W_fc2 = tf.clip_by_value(W_fc2, -1, 1)
+        W_fc2 = straight_through_estimator(W_fc2)
         y_conv = tf.matmul(h_fc1, W_fc2)
+
     return y_conv
 
 
@@ -214,11 +134,9 @@ def main(_):
             filename = (str(var).split())[1].replace('/', '_')
             filename = filename.replace("'", "").replace(':0', '') + '.txt'
 
+            weight = np.sign(weight)
             print("saving", filename)
             np.savetxt(str(filename), weight)
-
-    # Squash weights and save as W_squash.txt
-    squash_layers()
 
 
 if __name__ == '__main__':
