@@ -28,6 +28,7 @@ import glob
 from tensorflow.examples.tutorials.mnist import input_data
 import tensorflow as tf
 import common
+from common import SCALING, NUM_KERNELS, FC1_SIZE, FC2_SIZE
 import ngraph_bridge
 
 import os
@@ -44,26 +45,28 @@ def cryptonets_test(x):
         x_image = tf.reshape(x, [-1, 28, 28, 1])
 
     with tf.name_scope('conv1'):
-        W_conv1 = load_variable("W_conv1", [5, 5, 1, 5])
-        W_conv1 = tf.clip_by_value(W_conv1, -1, 1)
-        h_conv1 = tf.square(common.conv2d_stride_2_valid(x_image, W_conv1))
-        h_conv1 = tf.reshape(h_conv1, [-1, 720])  # 12 * 12 * 5
+        W_conv1 = load_variable("W_conv1", [5, 5, 1, NUM_KERNELS])
+        h_conv1 = common.conv2d_stride_2_valid(x_image, W_conv1)
+        h_conv1 = tf.reshape(h_conv1, [-1, FC1_SIZE])
+        h_conv1 = tf.layers.batch_normalization(h_conv1, training=False)
+        h_conv1 = tf.square(h_conv1)
 
     with tf.name_scope('fc1'):
-        W_fc1 = load_variable("W_fc1", [720, 100])
-        W_fc1 = tf.clip_by_value(W_fc1, -1, 1)
+        W_fc1 = load_variable("W_fc1", [FC1_SIZE, FC2_SIZE])
         h_fc1 = tf.matmul(h_conv1, W_fc1)
-        h_fc1 = tf.reshape(h_fc1, [-1, 100])
+        h_fc1 = tf.layers.batch_normalization(h_fc1, training=False)
+        h_fc1 = tf.square(h_fc1)
+        h_fc1 = tf.reshape(h_fc1, [-1, FC2_SIZE])
 
     with tf.name_scope('fc2'):
-        W_fc2 = load_variable("W_fc2", [100, 10])
-        W_fc2 = tf.clip_by_value(W_fc2, -1, 1)
+        W_fc2 = load_variable("W_fc2", [FC2_SIZE, 10])
         y_conv = tf.matmul(h_fc1, W_fc2)
+        y_conv = tf.layers.batch_normalization(y_conv, training=False)
 
     return y_conv
 
 
-def test_mnist_cnn(FLAGS, network):
+def test_mnist_cnn(FLAGS):
 
     # Import data
     mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=True)
@@ -105,7 +108,7 @@ def test_mnist_cnn(FLAGS, network):
         test_accuracy = np.mean(correct_prediction)
 
         print('Error count', error_count, 'of', FLAGS.batch_size, 'elements.')
-        print('Accuracy with ' + network + ': %g ' % test_accuracy)
+        print('Accuracy : %g ' % test_accuracy)
 
     # Rename serialized graph
     try:
@@ -124,11 +127,7 @@ def main(_):
     # Disable mnist dataset deprecation warning
     tf.logging.set_verbosity(tf.logging.ERROR)
 
-    # Test using the original graph
-    # test_mnist_cnn(FLAGS, 'orig')
-
-    # Test using squashed graph
-    test_mnist_cnn(FLAGS, 'squash')
+    test_mnist_cnn(FLAGS)
 
 
 if __name__ == '__main__':

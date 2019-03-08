@@ -27,6 +27,7 @@ import itertools
 from tensorflow.examples.tutorials.mnist import input_data
 import tensorflow as tf
 import common
+from common import SCALING, NUM_KERNELS, FC1_SIZE, FC2_SIZE
 
 FLAGS = None
 
@@ -41,29 +42,42 @@ def straight_through_estimator(x):
     return tf.sign(x), grad
 
 
-def cryptonets_train(x):
+def load_variable(filename, shape):
+    return tf.constant(
+        np.loadtxt(filename + '.txt', dtype=np.float32).reshape(shape))
+
+
+def cryptonets_train(x, is_training):
     with tf.name_scope('reshape'):
         x_image = tf.reshape(x, [-1, 28, 28, 1])
 
     with tf.name_scope('conv1'):
-        W_conv1 = tf.get_variable("W_conv1", [5, 5, 1, 5])
+        W_conv1 = tf.get_variable("W_conv1", [5, 5, 1, NUM_KERNELS])
         W_conv1 = tf.clip_by_value(W_conv1, -1, 1)
         W_conv1 = straight_through_estimator(W_conv1)
-        h_conv1 = tf.square(common.conv2d_stride_2_valid(x_image, W_conv1))
-        h_conv1 = tf.reshape(h_conv1, [-1, 720])  # 12 * 12 * 5
+        h_conv1 = common.conv2d_stride_2_valid(x_image, W_conv1)
+        h_conv1 = tf.reshape(h_conv1, [-1, FC1_SIZE])
+        h_conv1 = tf.layers.batch_normalization(h_conv1, training=is_training)
+        h_conv1 = tf.square(h_conv1)
 
     with tf.name_scope('fc1'):
-        W_fc1 = tf.get_variable("W_fc1", [720, 100])
+        W_fc1 = tf.get_variable("W_fc1", [FC1_SIZE, FC2_SIZE])
         W_fc1 = tf.clip_by_value(W_fc1, -1, 1)
         W_fc1 = straight_through_estimator(W_fc1)
         h_fc1 = tf.matmul(h_conv1, W_fc1)
-        h_fc1 = tf.reshape(h_fc1, [-1, 100])
+
+        h_fc1 = tf.layers.batch_normalization(h_fc1, training=is_training)
+        h_fc1 = tf.square(h_fc1)
+
+        h_fc1 = tf.reshape(h_fc1, [-1, FC2_SIZE])
 
     with tf.name_scope('fc2'):
-        W_fc2 = tf.get_variable("W_fc2", [100, 10])
+        W_fc2 = tf.get_variable("W_fc2", [FC2_SIZE, 10])
         W_fc2 = tf.clip_by_value(W_fc2, -1, 1)
         W_fc2 = straight_through_estimator(W_fc2)
         y_conv = tf.matmul(h_fc1, W_fc2)
+
+        y_conv = tf.layers.batch_normalization(y_conv, training=is_training)
 
     return y_conv
 
@@ -75,14 +89,21 @@ def main(_):
     # Import data
     mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=True)
 
+    train_images = mnist.train.images
+    mu_train = np.mean(train_images, axis=0)
+    std_train = np.std(train_images, axis=0)
+    std_train[std_train == 0] = 1
+
     # Create the model
     x = tf.placeholder(tf.float32, [None, 784])
 
     # Define loss and optimizer
     y_ = tf.placeholder(tf.float32, [None, 10])
 
+    train_phase = tf.placeholder(tf.bool, name="is_training")
+
     # Build the graph for the deep net
-    y_conv = cryptonets_train(x)
+    y_conv = cryptonets_train(x, train_phase)
 
     with tf.name_scope('loss'):
         cross_entropy = tf.nn.softmax_cross_entropy_with_logits(
@@ -91,6 +112,7 @@ def main(_):
 
     with tf.name_scope('adam_optimizer'):
         train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
+    update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
 
     with tf.name_scope('accuracy'):
         correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
@@ -102,29 +124,34 @@ def main(_):
         loss_values = []
         for i in range(FLAGS.train_loop_count):
             batch = mnist.train.next_batch(FLAGS.batch_size)
+            x_train = (batch[0] - mu_train) / std_train
             if i % 100 == 0:
                 t = time.time()
                 train_accuracy = accuracy.eval(feed_dict={
-                    x: batch[0],
-                    y_: batch[1]
+                    x: x_train,
+                    y_: batch[1],
+                    train_phase: True
                 })
                 print('step %d, training accuracy %g, %g msec to evaluate' %
                       (i, train_accuracy, 1000 * (time.time() - t)))
             t = time.time()
-            _, loss = sess.run([train_step, cross_entropy],
-                               feed_dict={
-                                   x: batch[0],
-                                   y_: batch[1]
-                               })
+            _, _, loss = sess.run([train_step, update_ops, cross_entropy],
+                                  feed_dict={
+                                      x: x_train,
+                                      y_: batch[1],
+                                      train_phase: True
+                                  })
             loss_values.append(loss)
 
             if i % 1000 == 999 or i == FLAGS.train_loop_count - 1:
                 x_test = mnist.test.images[:FLAGS.test_image_count]
+                x_test = (x_test - mu_train) / std_train
                 y_test = mnist.test.labels[:FLAGS.test_image_count]
 
                 test_accuracy = accuracy.eval(feed_dict={
                     x: x_test,
-                    y_: y_test
+                    y_: y_test,
+                    train_phase: False
                 })
                 print('test accuracy %g' % test_accuracy)
 
@@ -134,7 +161,8 @@ def main(_):
             filename = (str(var).split())[1].replace('/', '_')
             filename = filename.replace("'", "").replace(':0', '') + '.txt'
 
-            weight = np.sign(weight)
+            if 'normalization' not in filename:
+                weight = np.sign(weight)
             print("saving", filename)
             np.savetxt(str(filename), weight)
 
