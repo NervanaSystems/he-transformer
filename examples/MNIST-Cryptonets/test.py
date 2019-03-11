@@ -171,8 +171,7 @@ def test_mnist_cnn(FLAGS, network):
         y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
         elasped_time = time.time() - start_time
         print("total time trial 1:", elasped_time)
-
-    with tf.Session() as sess:
+    '''with tf.Session() as sess:
         start_time = time.time()
         # Run model
         y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
@@ -225,7 +224,7 @@ def test_mnist_cnn(FLAGS, network):
         # Run model
         y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
         elasped_time = time.time() - start_time
-        print("total time trial 10:", elasped_time)
+        print("total time trial 10:", elasped_time)'''
 
     if FLAGS.save_batch:
         x_test_batch.tofile("x_test_" + str(FLAGS.batch_size) + ".bin")
