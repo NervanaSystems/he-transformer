@@ -43,7 +43,20 @@ void batch_norm_inference(double eps,
                           const Shape& input_shape,
                           const HEBackend* he_backend) {
   CoordinateTransform input_transform(input_shape);
-  for (Coordinate input_coord : input_transform) {
+
+  // Store input coordinates for parallelization
+  std::vector<ngraph::Coordinate> input_coords;
+  for (const Coordinate& in_coord : input_transform) {
+    input_coords.emplace_back(in_coord);
+  }
+  size_t input_transform_size = input_coords.size();
+
+  NGRAPH_INFO << "input_transform_size" << input_transform_size;
+
+#pragma omp parallel for
+  for (size_t i = 0; i < input_transform_size; ++i) {
+    Coordinate input_coord = input_coords[i];
+    // for (Coordinate input_coord : input_transform) {
     auto channel_num = input_coord[1];
     auto channel_gamma = gamma[channel_num];
     auto channel_beta = beta[channel_num];
