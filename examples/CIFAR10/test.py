@@ -22,6 +22,7 @@ import datetime
 import math
 import sys
 import time
+from shutil import copyfile
 
 import numpy as np
 import tensorflow as tf
@@ -29,7 +30,10 @@ import tensorflow as tf
 import models.data as data
 import models.select as select
 import os
+
+from tensorflow.python.framework import graph_util
 from tensorflow.python.tools import optimize_for_inference_lib
+from tensorflow.python.tools.optimize_for_inference_lib import ensure_graph_is_valid, strip_unused_lib, graph_util, fuse_resize_and_conv
 from tensorflow.python.framework import dtypes
 from tensorflow.python.tools import freeze_graph
 from tensorflow.python.platform import gfile
@@ -112,8 +116,8 @@ def optimize_model_for_inference():
                 shape=[FLAGS.batch_size, IMAGE_SIZE, IMAGE_SIZE, 3])
 
         model = select.by_name(FLAGS.model, FLAGS, training=False)
-        # Create dummy input and output nodes
         images = tf.identity(images, 'XXX')
+        # Create dummy input and output nodes
         logits = model.inference(images)
         logits = tf.identity(logits, 'YYY')
 
@@ -136,6 +140,8 @@ def optimize_model_for_inference():
                 as_text=True)
 
             # Freeze graph, converting variables to inline-constants in pb file
+            print('Freezing graph')
+            print('names', [n.name for n in sess.graph.as_graph_def().node])
             constant_graph = os.path.join(checkpoint_dir, 'graph_constants.pb')
             freeze_graph.freeze_graph(
                 input_graph=os.path.join(checkpoint_dir,
@@ -147,32 +153,76 @@ def optimize_model_for_inference():
                 restore_op_name='save/restore_all',
                 filename_tensor_name='save/Const:0',
                 initializer_nodes=[],
+                #variable_names_blacklist=['conv1/batch_normalization/FusedBatchNorm'],
                 output_graph=os.path.join(checkpoint_dir,
                                           'graph_constants.pb'),
                 clear_devices=True)
+            print('Done freezing graph')
 
             # Load frozen graph into a graph_def for optimize_lib to use
+            print('Loading frozing graph')
             with gfile.FastGFile(constant_graph, 'rb') as f:
                 graph_def = tf.GraphDef()
                 graph_def.ParseFromString(f.read())
                 sess.graph.as_default()
                 tf.import_graph_def(graph_def, name='')
 
-            # Optimize graph for inference, folding Batch Norm ops into conv/MM
-            fused_graph_def = optimize_for_inference_lib.optimize_for_inference(
-                input_graph_def=graph_def,
-                input_node_names=['XXX'],
-                output_node_names=['YYY'],
-                placeholder_type_enum=dtypes.float32.as_datatype_enum,
-                toco_compatible=False)
+            print('Loaded forzen graph')
+            print('names', [n.name for n in graph_def.node])
 
-            print('Optimized for inference.')
+            if FLAGS.optimize_inference:
+                print('Optimizing for inference.')
+                # Optimize graph for inference, folding Batch Norm ops into conv/MM
+                fused_graph_def = optimize_for_inference_lib.optimize_for_inference(
+                    input_graph_def=graph_def,
+                    input_node_names=['XXX'],
+                    output_node_names=['YYY'],
+                    placeholder_type_enum=dtypes.float32.as_datatype_enum,
+                    toco_compatible=False)
+                print('Writing fused wgraph')
+                tf.io.write_graph(
+                    fused_graph_def,
+                    checkpoint_dir,
+                    name='fused_graph.pb',
+                    as_text=False)
+            else:
+                print('Not optimizing for inference')
+                # Do same thing, except don't fold bath norms
+                input_graph_def = graph_def
+                input_node_names = ['XXX']
+                output_node_names = ['YYY']
+                placeholder_type_enum = dtypes.float32.as_datatype_enum
+                toco_compatible = False
 
-            tf.io.write_graph(
-                fused_graph_def,
-                checkpoint_dir,
-                name='fused_graph.pb',
-                as_text=False)
+                ensure_graph_is_valid(input_graph_def)
+                optimized_graph_def = input_graph_def
+
+                print('input_graph_def nodes',
+                      [n.name for n in optimized_graph_def.node])
+
+                #print('optimized_graph_def', optimized_graph_def)
+                optimized_graph_def = strip_unused_lib.strip_unused(
+                    optimized_graph_def, input_node_names, output_node_names,
+                    placeholder_type_enum)
+                optimized_graph_def = graph_util.remove_training_nodes(
+                    optimized_graph_def, output_node_names)
+                #optimized_graph_def = fold_batch_norms(optimized_graph_def)
+                if not toco_compatible:
+                    optimized_graph_def = fuse_resize_and_conv(
+                        optimized_graph_def, output_node_names)
+                ensure_graph_is_valid(optimized_graph_def)
+
+                fused_graph_def = optimized_graph_def
+                print('Writing fused wgraph')
+                tf.io.write_graph(
+                    fused_graph_def,
+                    checkpoint_dir,
+                    name='fused_graph.pb',
+                    as_text=False)
+
+                #copyfile(checkpoint_dir + '/graph_constants.pb',
+                #         checkpoint_dir + '/fused_graph.pb')
+
         else:
             tf.io.write_graph(
                 sess.graph, checkpoint_dir, 'fused_graph.pb', as_text=False)
@@ -193,7 +243,13 @@ def perform_inference():
     FLAGS.resume = True  # Get saved weights, not new ones
     run_dir = get_run_dir(FLAGS.log_dir, FLAGS.model)
     checkpoint_dir = os.path.join(run_dir, 'train')
-    fused_graph_file = os.path.join(checkpoint_dir, 'fused_graph.pb')
+
+    if FLAGS.optimize_inference:
+        print('Inference on fused_graph.pb')
+        fused_graph_file = os.path.join(checkpoint_dir, 'fused_graph.pb')
+    else:
+        print('Inference on graph_constants.pb')
+        fused_graph_file = os.path.join(checkpoint_dir, 'graph_constants.pb')
 
     eval_data, eval_labels = data.numpy_eval_inputs(True, FLAGS.data_dir,
                                                     FLAGS.batch_size)
@@ -207,12 +263,15 @@ def perform_inference():
         )) == 0, "Assuming an empty graph here to populate with fused graph"
         tf.import_graph_def(graph_def, name='')
 
-    print('nodes', [n.name for n in graph_def.node])
-    XXX = graph.get_tensor_by_name('XXX:0')
-    YYY = graph.get_tensor_by_name('YYY:0')
+    input_node_name = 'XXX:0'
+    output_node_name = 'YYY:0'
+
+    XXX = graph.get_tensor_by_name(input_node_name)
+    YYY = graph.get_tensor_by_name(output_node_name)
 
     print("Running model")
     with tf.Session(graph=graph) as sess:
+
         eval_batch_data = eval_data[0]
         eval_batch_label = eval_labels[0]
         YYY = sess.run(YYY, feed_dict={XXX: eval_batch_data})
@@ -222,6 +281,8 @@ def perform_inference():
 
 def main(argv=None):
     data.maybe_download_and_extract(FLAGS.data_dir)
+
+    print('FLAGS.optimize_inference', FLAGS.optimize_inference)
 
     save_weights()
     optimize_model_for_inference()

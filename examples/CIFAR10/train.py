@@ -43,6 +43,11 @@ tf.app.flags.DEFINE_boolean('clip_grads', True,
 tf.app.flags.DEFINE_boolean('moving_averages', False,
                             """Use moving averages for loss""")
 
+tf.app.flags.DEFINE_boolean(
+    'optimize_inference', False,
+    """Whether or not to reduce multiplicative depth by optimizing for inference"""
+)
+
 MOVING_AVERAGE_DECAY = 0.9999
 
 
@@ -82,6 +87,9 @@ def train_ops():
     # Create a 'virtual' graph node based on images that represents the input
     # node to be used for graph retrieval
     inputs = tf.identity(images, 'XXX')
+
+    nodes = [n.name for n in tf.get_default_graph().as_graph_def().node]
+    print('nodes', nodes)
 
     # Build a Graph that computes the logits predictions from the
     # inference model
