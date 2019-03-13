@@ -30,6 +30,25 @@ namespace he_seal {
 namespace ckks {
 namespace kernel {
 template <typename S, typename T>
+bool arguments_valid(const S* arg0, const T* arg1,
+                     const HESealCKKSBackend* he_seal_ckks_backend) {
+  assert(arg0 != nullptr && arg1 != nullptr);
+
+  auto scale0 = arg0->get_hetext().scale();
+  auto scale1 = arg1->get_hetext().scale();
+
+  const size_t chain_ind0 = he_seal_ckks_backend->get_context()
+                                ->context_data(arg0->get_hetext().parms_id())
+                                ->chain_index();
+
+  const size_t chain_ind1 = he_seal_ckks_backend->get_context()
+                                ->context_data(arg1->get_hetext().parms_id())
+                                ->chain_index();
+
+  return (scale0 != scale1) || (chain_ind0 != chain_ind1);
+}
+
+template <typename S, typename T>
 std::pair<std::shared_ptr<S>, std::shared_ptr<T>> match_arguments(
     const S* arg0, const T* arg1,
     const HESealCKKSBackend* he_seal_ckks_backend) {

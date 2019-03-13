@@ -28,6 +28,7 @@ struct SealCiphertextWrapper : public HECiphertext {
   SealCiphertextWrapper(const seal::Ciphertext& cipher);
 
   seal::Ciphertext& get_hetext() noexcept { return m_ciphertext; }
+  const seal::Ciphertext& get_hetext() const noexcept { return m_ciphertext; }
 
   seal::Ciphertext m_ciphertext;
 };

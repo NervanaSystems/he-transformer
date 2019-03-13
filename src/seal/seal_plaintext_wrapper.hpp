@@ -28,6 +28,7 @@ struct SealPlaintextWrapper : public HEPlaintext {
   SealPlaintextWrapper(const seal::Plaintext& plain);
 
   seal::Plaintext& get_hetext() noexcept { return m_plaintext; }
+  const seal::Plaintext& get_hetext() const noexcept { return m_plaintext; }
 
   seal::Plaintext m_plaintext;
 };

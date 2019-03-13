@@ -29,12 +29,13 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
     const seal::MemoryPoolHandle& pool) {
   auto argument_matching_pair =
       match_arguments(arg0, arg1, he_seal_ckks_backend);
-  auto arg0_scaled = get<0>(argument_matching_pair);
-  auto arg1_scaled = get<1>(argument_matching_pair);
+  auto arg0_scaled = get<0>(argument_matching_pair).get();
+  auto arg1_scaled = get<1>(argument_matching_pair).get();
 
   size_t chain_ind0 = he_seal_ckks_backend->get_context()
                           ->context_data(arg0_scaled->get_hetext().parms_id())
                           ->chain_index();
+
   size_t chain_ind1 = he_seal_ckks_backend->get_context()
                           ->context_data(arg1_scaled->get_hetext().parms_id())
                           ->chain_index();
@@ -63,9 +64,9 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
     const seal::MemoryPoolHandle& pool) {
   auto argument_matching_pair =
       match_arguments(arg0, arg1, he_seal_ckks_backend);
-
-  auto arg0_scaled = get<0>(argument_matching_pair);
-  auto arg1_scaled = get<1>(argument_matching_pair);
+  auto arg0_scaled = get<0>(argument_matching_pair).get();
+  auto arg1_scaled = get<1>(argument_matching_pair).get();
+  //};
 
   size_t chain_ind0 = he_seal_ckks_backend->get_context()
                           ->context_data(arg0_scaled->get_hetext().parms_id())
