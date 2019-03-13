@@ -407,3 +407,93 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he) {
   EXPECT_TRUE(test::all_close(read_vector<float>(t_orig_result),
                               read_vector<float>(t_opt_result)));
 }
+
+NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he_large) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  std::unique_ptr<ngraph::runtime::he::HEBackend> he_backend;
+  auto he_backend_tmp = static_cast<runtime::he::HEBackend*>(backend.get());
+  backend.release();
+  he_backend.reset(he_backend_tmp);
+
+  he_backend->set_optimized_mult(true);
+
+  /* Shape shape_input{1, 8, 3, 3};
+   Shape shape_weights{2, 8, 1, 1};
+   Shape shape_norm{2}; */
+  Shape shape_input{1, 3, 32, 32};
+  Shape shape_weights{40, 3, 5, 5};
+  Shape shape_norm{40};
+  Shape result_shape{1, 40, 28, 28};
+
+  std::vector<float> input(3 * 32 * 32, 1.1);
+  std::vector<float> weight_vals(40 * 3 * 5 * 5, 1.1);
+
+  std::vector<float> gamma_vals(40, 1.1);  // 40
+  std::vector<float> beta_vals(40, 1.1);   // 40
+  std::vector<float> mean_vals(40, 1.1);   // 40
+  std::vector<float> var_vals(40, 1.1);    // 40
+
+  auto et = element::f32;
+
+  auto make_function = [shape_input, shape_weights, shape_norm, gamma_vals,
+                        weight_vals, beta_vals, mean_vals, var_vals, et]() {
+    auto input = std::make_shared<op::Parameter>(et, shape_input);
+    auto weights =
+        std::make_shared<op::Constant>(et, shape_weights, weight_vals);
+    double eps = 0.001;
+    auto gamma = std::make_shared<op::Constant>(et, shape_norm, gamma_vals);
+    auto beta = std::make_shared<op::Constant>(et, shape_norm, beta_vals);
+    auto mean = std::make_shared<op::Constant>(et, shape_norm, mean_vals);
+    auto var = std::make_shared<op::Constant>(et, shape_norm, var_vals);
+    auto conv = std::make_shared<op::Convolution>(input, weights, Strides{1, 1},
+                                                  Strides{1, 1});
+    auto bn = std::make_shared<op::BatchNormInference>(conv, gamma, beta, mean,
+                                                       var, eps);
+    auto f = make_shared<Function>(NodeVector{bn}, ParameterVector{input});
+    return f;
+  };
+
+  auto orig_f = make_function();
+  auto opt_f = make_function();
+
+  pass::Manager pass_manager_orig;
+  pass::Manager pass_manager_opt;
+
+  pass_manager_orig.register_pass<pass::VisualizeTree>("before.png");
+  pass_manager_orig.run_passes(orig_f);
+
+  pass_manager_opt.register_pass<pass::CoreFusion>();
+  pass_manager_opt.register_pass<pass::VisualizeTree>("during.png");
+  pass_manager_opt.register_pass<pass::HEConstantFolding>();
+  pass_manager_opt.register_pass<pass::VisualizeTree>("after.png");
+  pass_manager_opt.run_passes(opt_f);
+
+  auto orig_ops = orig_f->get_ordered_ops();
+  auto new_ops = opt_f->get_ordered_ops();
+
+  NGRAPH_INFO << "orig ops";
+  for (auto op : orig_ops) {
+    NGRAPH_INFO << op->get_friendly_name();
+  }
+
+  NGRAPH_INFO << "optimized ops";
+  for (auto op : new_ops) {
+    NGRAPH_INFO << op->get_friendly_name();
+  }
+  auto t_orig_result =
+      he_backend->create_cipher_tensor(element::f32, result_shape);
+  auto t_opt_result =
+      he_backend->create_cipher_tensor(element::f32, result_shape);
+  auto t_input = he_backend->create_cipher_tensor(element::f32, shape_input);
+
+  copy_data(t_input, input);
+
+  auto orig_handle = he_backend->compile(orig_f);
+  auto new_handle = he_backend->compile(opt_f);
+
+  he_backend->call(orig_handle, {t_orig_result}, {t_input});
+  he_backend->call(new_handle, {t_opt_result}, {t_input});
+
+  EXPECT_TRUE(test::all_close(read_vector<float>(t_orig_result),
+                              read_vector<float>(t_opt_result)));
+}
