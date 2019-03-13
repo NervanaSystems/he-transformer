@@ -60,7 +60,7 @@ void batch_norm_inference(
   }
   size_t input_transform_size = input_coords.size();
 
-  NGRAPH_INFO << "input_transform_size " << input_transform_size;
+  NGRAPH_DEBUG << "input_transform_size " << input_transform_size;
 
 #pragma omp parallel for
   for (size_t i = 0; i < input_transform_size; ++i) {
@@ -88,17 +88,17 @@ void batch_norm_inference(
     he_seal_backend->decode((void*)(channel_var_fl.data()), channel_var.get(),
                             element::f32, 1);
 
-    NGRAPH_INFO << "channel_gamma_fl " << channel_gamma_fl[0];
-    NGRAPH_INFO << "channel_beta_fl " << channel_beta_fl[0];
-    NGRAPH_INFO << "channel_mean_fl " << channel_mean_fl[0];
-    NGRAPH_INFO << "channel_var_fl " << channel_var_fl[0];
+    NGRAPH_DEBUG << "channel_gamma_fl " << channel_gamma_fl[0];
+    NGRAPH_DEBUG << "channel_beta_fl " << channel_beta_fl[0];
+    NGRAPH_DEBUG << "channel_mean_fl " << channel_mean_fl[0];
+    NGRAPH_DEBUG << "channel_var_fl " << channel_var_fl[0];
 
     float scale = channel_gamma_fl[0] / std::sqrt(channel_var_fl[0] + eps);
     float bias = channel_beta_fl[0] -
                  channel_mean_fl[0] / std::sqrt(channel_var_fl[0] + eps);
 
-    NGRAPH_INFO << "scale " << scale;
-    NGRAPH_INFO << "bias " << bias;
+    NGRAPH_DEBUG << "scale " << scale;
+    NGRAPH_DEBUG << "bias " << bias;
 
     auto plain_scale = he_backend->create_empty_plaintext();
     he_seal_backend->encode(plain_scale, &scale, element::f32);
@@ -131,13 +131,13 @@ void batch_norm_inference(
     //                               normalized, element::f32, he_backend);
     // To simulate multiplicative depth, multiply instead of divide
     // TODO: make values correct.
-    // NGRAPH_INFO << "Multiplying";
+    // NGRAPH_DEBUG << "Multiplying";
 
-    // NGRAPH_INFO << "Multiplying again";
+    // NGRAPH_DEBUG << "Multiplying again";
     // runtime::he::kernel::scalar_multiply(normalized.get(),
     // channel_gamma.get(),
     //   normalized, element::f32, he_backend);
-    // NGRAPH_INFO << "Adding";
+    // NGRAPH_DEBUG << "Adding";
     // runtime::he::kernel::scalar_add(normalized.get(), channel_beta.get(),
     //                                normalized, element::f32, he_backend);
 
