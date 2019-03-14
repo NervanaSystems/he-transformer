@@ -415,23 +415,21 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he_large) {
   backend.release();
   he_backend.reset(he_backend_tmp);
 
-  he_backend->set_optimized_mult(true);
+  he_backend->set_optimized_mult(false);
+  size_t image_size = 10;
+  size_t num_kernels = 4;
+  Shape shape_input{1, 3, image_size, image_size};
+  Shape shape_weights{num_kernels, 3, 5, 5};
+  Shape shape_norm{num_kernels};
+  Shape result_shape{1, num_kernels, image_size - 4, image_size - 4};
 
-  /* Shape shape_input{1, 8, 3, 3};
-   Shape shape_weights{2, 8, 1, 1};
-   Shape shape_norm{2}; */
-  Shape shape_input{1, 3, 32, 32};
-  Shape shape_weights{40, 3, 5, 5};
-  Shape shape_norm{40};
-  Shape result_shape{1, 40, 28, 28};
+  std::vector<float> input(3 * image_size * image_size, 1.1);
+  std::vector<float> weight_vals(num_kernels * 3 * 5 * 5, 1.1);
 
-  std::vector<float> input(3 * 32 * 32, 1.1);
-  std::vector<float> weight_vals(40 * 3 * 5 * 5, 1.1);
-
-  std::vector<float> gamma_vals(40, 1.1);  // 40
-  std::vector<float> beta_vals(40, 1.1);   // 40
-  std::vector<float> mean_vals(40, 1.1);   // 40
-  std::vector<float> var_vals(40, 1.1);    // 40
+  std::vector<float> gamma_vals(num_kernels, 1.1);
+  std::vector<float> beta_vals(num_kernels, 1.1);
+  std::vector<float> mean_vals(num_kernels, 1.1);
+  std::vector<float> var_vals(num_kernels, 1.1);
 
   auto et = element::f32;
 
@@ -471,15 +469,6 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he_large) {
   auto orig_ops = orig_f->get_ordered_ops();
   auto new_ops = opt_f->get_ordered_ops();
 
-  NGRAPH_INFO << "orig ops";
-  for (auto op : orig_ops) {
-    NGRAPH_INFO << op->get_friendly_name();
-  }
-
-  NGRAPH_INFO << "optimized ops";
-  for (auto op : new_ops) {
-    NGRAPH_INFO << op->get_friendly_name();
-  }
   auto t_orig_result =
       he_backend->create_cipher_tensor(element::f32, result_shape);
   auto t_opt_result =
