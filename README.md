@@ -26,8 +26,8 @@ The [examples](https://github.com/NervanaSystems/he-transformer/tree/master/exam
 - virtualenv v16.1.0
 - bazel v0.16.0
 #### The following dependencies are built automatically
-- [nGraph](https://github.com/NervanaSystems/ngraph) - v0.14.0
-- [nGraph-tf](https://github.com/NervanaSystems/ngraph-tf) - v0.11.0
+- [nGraph](https://github.com/NervanaSystems/ngraph) - v0.15.1-rc.2
+- [nGraph-tf](https://github.com/NervanaSystems/ngraph-tf) - v0.12-rc0
 - [SEAL](https://github.com/Microsoft/SEAL) - version 3.2
 
 ### To install bazel
