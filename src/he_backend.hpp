@@ -185,9 +185,6 @@ class HEBackend : public runtime::Backend {
   virtual void decrypt(std::shared_ptr<runtime::he::HEPlaintext>& output,
                        const runtime::he::HECiphertext& input) const = 0;
 
-  /*  std::vector<PerformanceCounter> get_performance_data(
-        std::shared_ptr<Function> function) const override; */
-
   /// @brief Return whether or not scalar optimizations are enabled
   bool optimized_add() const { return m_optimized_add; };
   bool optimized_mult() const { return m_optimized_mult; };
