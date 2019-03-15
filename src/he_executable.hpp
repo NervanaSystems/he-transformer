@@ -32,8 +32,9 @@ namespace he {
 class HEExecutable : public Executable {
  public:
   HEExecutable(const std::shared_ptr<Function>& function,
-               bool enable_performance_collection = false,
-               const runtime::he::HEBackend* he_backend = nullptr);
+               bool enable_performance_collection,
+               const runtime::he::HEBackend* he_backend, bool encrypt_data,
+               bool encrypt_model, bool batch_data);
 
   bool call(const std::vector<std::shared_ptr<Tensor>>& outputs,
             const std::vector<std::shared_ptr<Tensor>>& inputs) override;
@@ -45,9 +46,9 @@ class HEExecutable : public Executable {
   std::vector<PerformanceCounter> get_performance_data() const override;
 
  private:
-  bool m_encrypt_data{std::getenv("NGRAPH_ENCRYPT_DATA") != nullptr};
-  bool m_batch_data{std::getenv("NGRAPH_BATCH_DATA") != nullptr};
-  bool m_encrypt_model{std::getenv("NGRAPH_ENCRYPT_MODEL") != nullptr};
+  bool m_encrypt_data;
+  bool m_batch_data;
+  bool m_encrypt_model;
   bool m_is_compiled = false;
   const HEBackend* m_he_backend = nullptr;  // TODO: replace with context
   std::unordered_map<const Node*, stopwatch> m_timer_map;

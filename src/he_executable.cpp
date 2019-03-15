@@ -67,8 +67,13 @@ using descriptor::layout::DenseTensorLayout;
 
 runtime::he::HEExecutable::HEExecutable(const shared_ptr<Function>& function,
                                         bool enable_performance_collection,
-                                        const HEBackend* he_backend)
-    : m_he_backend(he_backend) {
+                                        const HEBackend* he_backend,
+                                        bool encrypt_data, bool encrypt_model,
+                                        bool batch_data)
+    : m_he_backend(he_backend),
+      m_encrypt_data(encrypt_data),
+      m_encrypt_model(encrypt_model),
+      m_batch_data(batch_data) {
   NGRAPH_INFO << "Compiling function";
   NGRAPH_ASSERT(he_backend != nullptr) << "he_backend == nullptr";
 
@@ -186,7 +191,32 @@ bool runtime::he::HEExecutable::call(
   for (auto param : get_parameters()) {
     for (size_t i = 0; i < param->get_output_size(); ++i) {
       descriptor::Tensor* tv = param->get_output_tensor_ptr(i).get();
-      tensor_map.insert({tv, he_inputs[input_count++]});
+
+      if (m_encrypt_data) {
+        NGRAPH_INFO << "Encrypting parameter " << i;
+        auto plain_input = static_pointer_cast<runtime::he::HEPlainTensor>(
+            he_inputs[input_count]);
+        assert(plain_input != nullptr);
+        auto cipher_input = static_pointer_cast<runtime::he::HECipherTensor>(
+            m_he_backend->create_cipher_tensor(plain_input->get_element_type(),
+                                               plain_input->get_shape(),
+                                               m_batch_data));
+
+        NGRAPH_INFO << "plain_input->get_batched_element_count() "
+                    << plain_input->get_batched_element_count();
+#pragma omp parallel for
+        for (size_t i = 0; i < plain_input->get_batched_element_count(); ++i) {
+          m_he_backend->encrypt(cipher_input->get_element(i),
+                                *plain_input->get_element(i));
+        }
+
+        NGRAPH_INFO << "Done encrypting parameter " << i;
+
+        tensor_map.insert({tv, cipher_input});
+        input_count++;
+      } else {
+        tensor_map.insert({tv, he_inputs[input_count++]});
+      }
     }
   }
 

@@ -196,12 +196,16 @@ class HEBackend : public runtime::Backend {
   void set_optimized_add(bool enable) { m_optimized_add = enable; };
   void set_optimized_mult(bool enable) { m_optimized_mult = enable; };
 
+  bool encrypt_data() const { return m_encrypt_data; };
   bool batch_data() const { return m_batch_data; };
+  bool encrypt_model() const { return m_encrypt_model; };
 
  private:
   bool m_optimized_add{std::getenv("NGRAPH_OPTIMIZED_ADD") != nullptr};
   bool m_optimized_mult{std::getenv("NGRAPH_OPTIMIZED_MULT") != nullptr};
+  bool m_encrypt_data{std::getenv("NGRAPH_ENCRYPT_DATA") != nullptr};
   bool m_batch_data{std::getenv("NGRAPH_BATCH_DATA") != nullptr};
+  bool m_encrypt_model{std::getenv("NGRAPH_ENCRYPT_MODEL") != nullptr};
 };
 }  // namespace he
 }  // namespace runtime

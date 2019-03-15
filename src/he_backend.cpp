@@ -113,5 +113,6 @@ shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_valued_plain_tensor(
 std::shared_ptr<runtime::Executable> runtime::he::HEBackend::compile(
     shared_ptr<Function> function, bool enable_performance_collection) {
   return make_shared<HEExecutable>(function, enable_performance_collection,
-                                   this);
+                                   this, m_encrypt_data, m_encrypt_model,
+                                   m_batch_data);
 }
