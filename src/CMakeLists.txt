@@ -42,6 +42,7 @@ set (HE_SRC
 
     # main
     he_backend.cpp
+    he_executable.cpp
     he_cipher_tensor.cpp
     he_plain_tensor.cpp
     he_tensor.cpp

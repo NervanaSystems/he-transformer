@@ -224,19 +224,6 @@ void runtime::he::HEBackend::clear_function_instance() {
   m_function_map.clear();
 }
 
-/* vector<runtime::PerformanceCounter>
-runtime::he::HEBackend::get_performance_data(
-    shared_ptr<Function> function) const {
-  vector<runtime::PerformanceCounter> rc;
-  const FunctionInstance& instance = m_function_map.at(function);
-  for (const pair<const Node*, stopwatch> p : instance.m_timer_map) {
-    rc.emplace_back(p.first->get_name().c_str(),
-                    p.second.get_total_microseconds(),
-                    p.second.get_call_count());
-  }
-  return rc;
-} */
-
 /* bool runtime::he::HEBackend::call(
     shared_ptr<Function> function,
     const vector<shared_ptr<runtime::Tensor>>& outputs,
