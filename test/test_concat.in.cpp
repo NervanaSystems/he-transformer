@@ -56,7 +56,8 @@ NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_colwise) {
     copy_data(b, vector<float>{1, 2, 4, 8, 16, 32});
     copy_data(c, vector<float>{2, 3, 5, 7, 11, 13});
 
-    backend->call(backend->compile(f), {result}, {a, b, c});
+    auto handle = backend->compile(f);
+    handle->call({result}, {a, b, c});
     EXPECT_TRUE(all_close(
         vector<float>{2, 4, 1, 2, 4, 2, 3, 5, 8, 16, 8, 16, 32, 7, 11, 13},
         read_vector<float>(result)));
@@ -92,7 +93,8 @@ NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_rowise) {
     copy_data(b, vector<float>{1, 2, 4, 8, 16, 32});
     copy_data(c, vector<float>{2, 3, 5, 7, 11, 13});
 
-    backend->call(backend->compile(f), {result}, {a, b, c});
+    auto handle = backend->compile(f);
+    handle->call({result}, {a, b, c});
     EXPECT_TRUE(all_close(
         vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 2, 3, 5, 7, 11, 13},
         read_vector<float>(result)));
@@ -128,7 +130,8 @@ NGRAPH_TEST(${BACKEND_NAME}, concat_vector) {
     copy_data(b, vector<float>{1, 2, 4, 8, 16, 32});
     copy_data(c, vector<float>{18, 19});
 
-    backend->call(backend->compile(f), {result}, {a, b, c});
+    auto handle = backend->compile(f);
+    handle->call({result}, {a, b, c});
     EXPECT_TRUE(
         all_close(vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 18, 19},
                   read_vector<float>(result)));
@@ -161,7 +164,8 @@ NGRAPH_TEST(${BACKEND_NAME}, concat_4d_tensor) {
     copy_data(b, vector<float>{2});
     copy_data(c, vector<float>{3});
 
-    backend->call(backend->compile(f), {result}, {a, b, c});
+    auto handle = backend->compile(f);
+    handle->call({result}, {a, b, c});
     EXPECT_TRUE(all_close(vector<float>{1, 2, 3}, read_vector<float>(result)));
   }
 }
@@ -192,7 +196,8 @@ NGRAPH_TEST(${BACKEND_NAME}, concat_2d_tensor) {
     copy_data(b, vector<float>{2});
     copy_data(c, vector<float>{3});
 
-    backend->call(backend->compile(f), {result}, {a, b, c});
+    auto handle = backend->compile(f);
+    handle->call({result}, {a, b, c});
     EXPECT_TRUE(all_close(vector<float>{1, 2, 3}, read_vector<float>(result)));
   }
 }

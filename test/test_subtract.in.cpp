@@ -51,7 +51,8 @@ NGRAPH_TEST(${BACKEND_NAME}, sub_2_3) {
               test::NDArray<float, 2>({{1, 2, 3}, {10, 11, 12}}).get_vector());
     copy_data(t_b,
               test::NDArray<float, 2>({{7, 8, 9}, {4, 5, 6}}).get_vector());
-    backend->call(backend->compile(f), {t_result}, {t_a, t_b});
+    auto handle = backend->compile(f);
+    handle->call({t_result}, {t_a, t_b});
     EXPECT_TRUE(all_close(
         read_vector<float>(t_result),
         (test::NDArray<float, 2>({{-6, -6, -6}, {6, 6, 6}})).get_vector(),
@@ -85,7 +86,8 @@ NGRAPH_TEST(${BACKEND_NAME}, sub_zero_2_3) {
               test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector());
     copy_data(t_b,
               test::NDArray<float, 2>({{0, 0, 0}, {0, 0, 0}}).get_vector());
-    backend->call(backend->compile(f), {t_result}, {t_a, t_b});
+    auto handle = backend->compile(f);
+    handle->call({t_result}, {t_a, t_b});
     EXPECT_TRUE(all_close(
         read_vector<float>(t_result),
         (test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}})).get_vector(), 1e-3f));
@@ -118,7 +120,8 @@ NGRAPH_TEST(${BACKEND_NAME}, sub_from_zero_2_3) {
               test::NDArray<float, 2>({{0, 0, 0}, {0, 0, 0}}).get_vector());
     copy_data(t_b,
               test::NDArray<float, 2>({{1, 2, 3}, {-1, -2, -3}}).get_vector());
-    backend->call(backend->compile(f), {t_result}, {t_a, t_b});
+    auto handle = backend->compile(f);
+    handle->call({t_result}, {t_a, t_b});
     EXPECT_TRUE(all_close(
         read_vector<float>(t_result),
         (test::NDArray<float, 2>({{-1, -2, -3}, {1, 2, 3}})).get_vector(),

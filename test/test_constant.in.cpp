@@ -34,7 +34,8 @@ NGRAPH_TEST(${BACKEND_NAME}, constant) {
   auto f = make_shared<Function>(A, ParameterVector{});
 
   auto result = backend->create_tensor(element::f32, shape);
-  backend->call(backend->compile(f), {result}, {});
+  auto handle = backend->compile(f);
+  handle->call({result}, {});
   EXPECT_TRUE(all_close((vector<float>{0.1, 0.2, 0.3, 0.4}),
                         read_vector<float>(result)));
 }
@@ -62,7 +63,8 @@ NGRAPH_TEST(${BACKEND_NAME}, constant_abc) {
     copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
     copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
 
-    backend->call(backend->compile(f), {result}, {b, c});
+    auto handle = backend->compile(f);
+    handle->call({result}, {b, c});
 
     EXPECT_TRUE(all_close(
         read_vector<float>(result),
