@@ -142,21 +142,24 @@ shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_valued_plain_tensor(
   return tensor;
 }
 
-runtime::Handle runtime::he::HEBackend::compile(shared_ptr<Function> function) {
-  FunctionInstance& instance = m_function_map[function];
-  if (!instance.m_is_compiled) {
-    instance.m_is_compiled = true;
-    pass::Manager pass_manager;
-    pass_manager.register_pass<pass::LikeReplacement>();
-    pass_manager.register_pass<pass::AssignLayout<DenseTensorLayout>>();
-    pass_manager.register_pass<pass::Liveness>();
-    pass_manager.run_passes(function);
+std::shared_ptr<runtime::Executable> runtime::he::HEBackend::compile(
+    shared_ptr<Function> function, bool enable_performance_collection) {
+  /*
+FunctionInstance& instance = m_function_map[function];
+if (!instance.m_is_compiled) {
+instance.m_is_compiled = true;
+pass::Manager pass_manager;
+pass_manager.register_pass<pass::LikeReplacement>();
+pass_manager.register_pass<pass::AssignLayout<DenseTensorLayout>>();
+pass_manager.register_pass<pass::Liveness>();
+pass_manager.run_passes(function);
 
-    for (const shared_ptr<Node>& node : function->get_ordered_ops()) {
-      instance.m_wrapped_nodes.emplace_back(node);
-    }
-  }
-  return function;
+for (const shared_ptr<Node>& node : function->get_ordered_ops()) {
+  instance.m_wrapped_nodes.emplace_back(node);
+}
+}
+return function; */
+  return nullptr;
 }
 
 void runtime::he::HEBackend::validate_he_call(
@@ -221,17 +224,7 @@ void runtime::he::HEBackend::clear_function_instance() {
   m_function_map.clear();
 }
 
-void runtime::he::HEBackend::remove_compiled_function(
-    shared_ptr<Function> function) {
-  m_function_map.erase(function);
-}
-
-void runtime::he::HEBackend::enable_performance_data(
-    shared_ptr<Function> function, bool enable) {
-  // Enabled by default
-}
-
-vector<runtime::PerformanceCounter>
+/* vector<runtime::PerformanceCounter>
 runtime::he::HEBackend::get_performance_data(
     shared_ptr<Function> function) const {
   vector<runtime::PerformanceCounter> rc;
@@ -242,9 +235,9 @@ runtime::he::HEBackend::get_performance_data(
                     p.second.get_call_count());
   }
   return rc;
-}
+} */
 
-bool runtime::he::HEBackend::call(
+/* bool runtime::he::HEBackend::call(
     shared_ptr<Function> function,
     const vector<shared_ptr<runtime::Tensor>>& outputs,
     const vector<shared_ptr<runtime::Tensor>>& inputs) {
@@ -1015,4 +1008,4 @@ void runtime::he::HEBackend::generate_calls(
       throw unsupported_op("Unsupported op '" + node.description() + "'");
 #pragma GCC diagnostic pop
   }
-}
+} */

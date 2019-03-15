@@ -120,7 +120,6 @@ class HEBackend : public runtime::Backend {
   virtual std::shared_ptr<runtime::Tensor> create_batched_plain_tensor(
       const element::Type& element_type, const Shape& shape) = 0;
 
-  /// @brief Return a handle for a tensor for given mem on backend device
   std::shared_ptr<runtime::Tensor> create_tensor(
       const element::Type& element_type, const Shape& shape,
       void* memory_pointer) override;
@@ -147,12 +146,9 @@ class HEBackend : public runtime::Backend {
   std::shared_ptr<runtime::Tensor> create_valued_plain_tensor(
       float value, const element::Type& element_type, const Shape& shape) const;
 
-  runtime::Handle compile(std::shared_ptr<Function> function) override;
-
-  bool call(
-      std::shared_ptr<Function> function,
-      const std::vector<std::shared_ptr<runtime::Tensor>>& outputs,
-      const std::vector<std::shared_ptr<runtime::Tensor>>& inputs) override;
+  std::shared_ptr<Executable> compile(
+      std::shared_ptr<Function> func,
+      bool enable_performance_data = false) override;
 
   void validate_he_call(
       std::shared_ptr<const Function> function,
@@ -160,8 +156,6 @@ class HEBackend : public runtime::Backend {
       const std::vector<std::shared_ptr<runtime::he::HETensor>>& inputs);
 
   void clear_function_instance();
-
-  void remove_compiled_function(std::shared_ptr<Function> function) override;
 
   /// @brief Encodes bytes to a plaintext polynomial
   /// @param output Pointer to plaintext to write to
@@ -193,11 +187,8 @@ class HEBackend : public runtime::Backend {
   virtual void decrypt(std::shared_ptr<runtime::he::HEPlaintext>& output,
                        const runtime::he::HECiphertext& input) const = 0;
 
-  void enable_performance_data(std::shared_ptr<Function> function,
-                               bool enable) override;
-
-  std::vector<PerformanceCounter> get_performance_data(
-      std::shared_ptr<Function> function) const override;
+  /*  std::vector<PerformanceCounter> get_performance_data(
+        std::shared_ptr<Function> function) const override; */
 
   /// @brief Return whether or not scalar optimizations are enabled
   bool optimized_add() const { return m_optimized_add; };
