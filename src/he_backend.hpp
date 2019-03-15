@@ -155,8 +155,6 @@ class HEBackend : public runtime::Backend {
       const std::vector<std::shared_ptr<runtime::he::HETensor>>& outputs,
       const std::vector<std::shared_ptr<runtime::he::HETensor>>& inputs);
 
-  void clear_function_instance();
-
   /// @brief Encodes bytes to a plaintext polynomial
   /// @param output Pointer to plaintext to write to
   /// @param input Pointer to memory to encode
@@ -198,32 +196,12 @@ class HEBackend : public runtime::Backend {
   void set_optimized_add(bool enable) { m_optimized_add = enable; };
   void set_optimized_mult(bool enable) { m_optimized_mult = enable; };
 
-  bool encrypt_data() const { return m_encrypt_data; };
   bool batch_data() const { return m_batch_data; };
-  bool encrypt_model() const { return m_encrypt_model; };
 
  private:
-  class FunctionInstance {
-   public:
-    bool m_is_compiled = false;
-    bool m_nan_check_enabled = false;
-    bool m_performance_counters_enabled = false;
-    std::unordered_map<const Node*, stopwatch> m_timer_map;
-    std::vector<NodeWrapper> m_wrapped_nodes;
-  };
-  std::map<std::shared_ptr<Function>, FunctionInstance> m_function_map;
-
   bool m_optimized_add{std::getenv("NGRAPH_OPTIMIZED_ADD") != nullptr};
   bool m_optimized_mult{std::getenv("NGRAPH_OPTIMIZED_MULT") != nullptr};
-  bool m_encrypt_data{std::getenv("NGRAPH_ENCRYPT_DATA") != nullptr};
   bool m_batch_data{std::getenv("NGRAPH_BATCH_DATA") != nullptr};
-  bool m_encrypt_model{std::getenv("NGRAPH_ENCRYPT_MODEL") != nullptr};
-
-  void generate_calls(
-      const element::Type& element_type, const NodeWrapper& op,
-      const std::vector<std::shared_ptr<runtime::he::HETensor>>& outputs,
-      const std::vector<std::shared_ptr<runtime::he::HETensor>>& inputs,
-      FunctionInstance& instance);
 };
 }  // namespace he
 }  // namespace runtime

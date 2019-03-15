@@ -19,8 +19,11 @@
 #include <memory>
 #include <vector>
 
+#include "he_backend.hpp"
+#include "he_tensor.hpp"
 #include "ngraph/runtime/backend.hpp"
 #include "ngraph/util.hpp"
+#include "node_wrapper.hpp"
 
 namespace ngraph {
 namespace runtime {
@@ -29,15 +32,30 @@ namespace he {
 class HEExecutable : public Executable {
  public:
   HEExecutable(const std::shared_ptr<Function>& function,
-               bool enable_performance_collection = false);
+               bool enable_performance_collection = false,
+               const runtime::he::HEBackend* he_backend = nullptr);
 
   bool call(const std::vector<std::shared_ptr<Tensor>>& outputs,
-            const std::vector<std::shared_ptr<Tensor>>& intputs) override;
+            const std::vector<std::shared_ptr<Tensor>>& inputs) override;
+
+  void he_validate(
+      const std::vector<std::shared_ptr<runtime::he::HETensor>>& outputs,
+      const std::vector<std::shared_ptr<runtime::he::HETensor>>& inputs);
 
   std::vector<PerformanceCounter> get_performance_data() const override;
 
  private:
+  bool m_encrypt_data{std::getenv("NGRAPH_ENCRYPT_DATA") != nullptr};
+  bool m_batch_data{std::getenv("NGRAPH_BATCH_DATA") != nullptr};
+  bool m_encrypt_model{std::getenv("NGRAPH_ENCRYPT_MODEL") != nullptr};
+  bool m_is_compiled = false;
+  const HEBackend* m_he_backend = nullptr;  // TODO: replace with context
   std::unordered_map<const Node*, stopwatch> m_timer_map;
+  std::vector<NodeWrapper> m_wrapped_nodes;
+
+  void generate_calls(const element::Type& type, const NodeWrapper& op,
+                      const std::vector<std::shared_ptr<HETensor>>& outputs,
+                      const std::vector<std::shared_ptr<HETensor>>& inputs);
 };
 
 }  // namespace he

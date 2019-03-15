@@ -28,10 +28,10 @@ runtime::he::HEPlainTensor::HEPlainTensor(
     const bool batched, const string& name)
     : runtime::he::HETensor(element_type, shape, he_backend, batched, name) {
   m_num_elements = m_descriptor->get_tensor_layout()->get_size();
-  m_plain_texts.resize(m_num_elements);
+  m_plaintexts.resize(m_num_elements);
 #pragma omp parallel for
   for (size_t i = 0; i < m_num_elements; ++i) {
-    m_plain_texts[i] = he_backend->create_empty_plaintext();
+    m_plaintexts[i] = he_backend->create_empty_plaintext();
   }
 }
 
@@ -53,7 +53,7 @@ void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
   if (num_elements_to_write == 1) {
     const void* src_with_offset = (void*)((char*)source);
     size_t dst_index = dst_start_index;
-    m_he_backend->encode(m_plain_texts[dst_index], src_with_offset,
+    m_he_backend->encode(m_plaintexts[dst_index], src_with_offset,
                          element_type);
   } else {
 #pragma omp parallel for
@@ -74,12 +74,12 @@ void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
                       type_byte_size * (i + j * num_elements_to_write));
           memcpy(destination, src, type_byte_size);
         }
-        m_he_backend->encode(m_plain_texts[dst_index], batch_src, element_type,
+        m_he_backend->encode(m_plaintexts[dst_index], batch_src, element_type,
                              m_batch_size);
         free((void*)batch_src);
 
       } else {
-        m_he_backend->encode(m_plain_texts[dst_index], src_with_offset,
+        m_he_backend->encode(m_plaintexts[dst_index], src_with_offset,
                              element_type);
       }
     }
@@ -103,7 +103,7 @@ void runtime::he::HEPlainTensor::read(void* target, size_t tensor_offset,
   if (num_elements_to_read == 1) {
     void* dst_with_offset = (void*)((char*)target);
     size_t src_index = src_start_index;
-    m_he_backend->decode(dst_with_offset, m_plain_texts[src_index].get(),
+    m_he_backend->decode(dst_with_offset, m_plaintexts[src_index].get(),
                          element_type, m_batch_size);
   } else {
 #pragma omp parallel for
@@ -113,7 +113,7 @@ void runtime::he::HEPlainTensor::read(void* target, size_t tensor_offset,
         throw ngraph_error("Error allocating HE Cipher Tensor memory");
       }
       size_t src_index = src_start_index + i;
-      m_he_backend->decode(dst, m_plain_texts[src_index].get(), element_type,
+      m_he_backend->decode(dst, m_plaintexts[src_index].get(), element_type,
                            m_batch_size);
 
       for (size_t j = 0; j < m_batch_size; ++j) {
