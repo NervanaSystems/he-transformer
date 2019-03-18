@@ -119,7 +119,7 @@ class HESealBackend : public HEBackend {
       double value) const;
 
  protected:
-  std::shared_ptr<seal::EncryptionParameters> m_encryption_parms;
+  // std::shared_ptr<seal::EncryptionParameters> m_encryption_parms;
   std::shared_ptr<seal::SecretKey> m_secret_key;
   std::shared_ptr<seal::PublicKey> m_public_key;
   std::shared_ptr<seal::RelinKeys> m_relin_keys;

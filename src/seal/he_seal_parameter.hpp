@@ -34,7 +34,7 @@ namespace he {
 namespace he_seal {
 class HESealParameter : public HEEncryptionParameters {
  public:
-  struct CoeffModulus;
+  // struct CoeffModulus;
 
   // For BFV
   HESealParameter(std::string scheme_name, std::uint64_t poly_modulus_degree,
@@ -73,6 +73,12 @@ class HESealParameter : public HEEncryptionParameters {
 
   void save(std::ostream& stream) const override {}
 
+  void set_poly_modulus_degree(std::size_t poly_modulus_degree)
+      : m_poly_modulus_degree(poly_modulus_degree) override {}
+
+  void set_coeff_modulus(const std::vector<std::uint64_t> coeff_modulus)
+      : m_coeff_modulus(coeff_modulus) override {}
+
   // Must be "BFV" or "CKKS"
   std::string m_scheme_name;
 
@@ -89,11 +95,13 @@ class HESealParameter : public HEEncryptionParameters {
   double m_scale;
 
   // Size and number of coefficient modulus.
-  typedef struct CoeffModulus {
-    std::uint64_t bit_count;
-    std::uint64_t coeff_count;
-  };
-  CoeffModulus m_coeff_modulus;
+  /* typedef struct CoeffModulus {
+     std::uint64_t bit_count;
+     std::uint64_t coeff_count;
+   };
+   CoeffModulus m_coeff_modulus; */
+
+  std::vector<std::uint64_t> m_coeff_modulus;
 };
 }  // namespace he_seal
 }  // namespace he

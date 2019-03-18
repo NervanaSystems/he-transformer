@@ -199,7 +199,7 @@ class HEBackend : public runtime::Backend {
 
   const std::shared_ptr<HEEncryptionParameters> get_encryption_parameters()
       const {
-    return m_he_encryption_params;
+    return m_encryption_params;
   };
 
   bool encrypt_data() const { return m_encrypt_data; };
@@ -213,7 +213,7 @@ class HEBackend : public runtime::Backend {
   bool m_batch_data{std::getenv("NGRAPH_BATCH_DATA") != nullptr};
   bool m_encrypt_model{std::getenv("NGRAPH_ENCRYPT_MODEL") != nullptr};
 
-  std::shared_ptr<HEEncryptionParameters> m_he_encryption_params;
+  std::shared_ptr<HEEncryptionParameters> m_encryption_params;
 };
 }  // namespace he
 }  // namespace runtime

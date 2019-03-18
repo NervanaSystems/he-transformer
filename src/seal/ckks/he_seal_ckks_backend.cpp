@@ -171,14 +171,14 @@ extern "C" runtime::Backend* new_ckks_backend(
 shared_ptr<seal::SEALContext>
 runtime::he::he_seal::HESealCKKSBackend::make_seal_context(
     const shared_ptr<runtime::he::he_seal::HESealParameter> sp) {
-  m_encryption_parms =
+  m_encryption_params =
       make_shared<seal::EncryptionParameters>(seal::scheme_type::CKKS);
 
   if (sp->m_scheme_name != "HE_SEAL_CKKS") {
     throw ngraph_error("Invalid scheme name \"" + sp->m_scheme_name + "\"");
   }
 
-  m_encryption_parms->set_poly_modulus_degree(sp->m_poly_modulus_degree);
+  m_encryption_params->set_poly_modulus_degree(sp->m_poly_modulus_degree);
 
   bool custom_coeff_modulus = (sp->m_coeff_modulus.bit_count != 0);
 
@@ -186,25 +186,25 @@ runtime::he::he_seal::HESealCKKSBackend::make_seal_context(
     if (sp->m_coeff_modulus.bit_count == 30) {
       std::vector<seal::SmallModulus> small_mods_30_bit =
           seal::util::global_variables::default_small_mods_30bit;
-      m_encryption_parms->set_coeff_modulus(
+      m_encryption_params->set_coeff_modulus(
           {small_mods_30_bit.begin(),
            small_mods_30_bit.begin() + sp->m_coeff_modulus.coeff_count});
     } else if (sp->m_coeff_modulus.bit_count == 40) {
       std::vector<seal::SmallModulus> small_mods_40_bit =
           seal::util::global_variables::default_small_mods_40bit;
-      m_encryption_parms->set_coeff_modulus(
+      m_encryption_params->set_coeff_modulus(
           {small_mods_40_bit.begin(),
            small_mods_40_bit.begin() + sp->m_coeff_modulus.coeff_count});
     } else if (sp->m_coeff_modulus.bit_count == 50) {
       std::vector<seal::SmallModulus> small_mods_50_bit =
           seal::util::global_variables::default_small_mods_50bit;
-      m_encryption_parms->set_coeff_modulus(
+      m_encryption_params->set_coeff_modulus(
           {small_mods_50_bit.begin(),
            small_mods_50_bit.begin() + sp->m_coeff_modulus.coeff_count});
     } else if (sp->m_coeff_modulus.bit_count == 60) {
       std::vector<seal::SmallModulus> small_mods_60_bit =
           seal::util::global_variables::default_small_mods_60bit;
-      m_encryption_parms->set_coeff_modulus(
+      m_encryption_params->set_coeff_modulus(
           {small_mods_60_bit.begin(),
            small_mods_60_bit.begin() + sp->m_coeff_modulus.coeff_count});
     } else {

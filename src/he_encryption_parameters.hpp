@@ -27,6 +27,11 @@ class HEEncryptionParameters {
   virtual ~HEEncryptionParameters(){};
 
   virtual void save(std::ostream& stream) const = 0;
+
+  virtual void set_poly_modulus_degree(size_t poly_modulus_degree) = 0;
+
+  virtual void set_coeff_modulus(
+      const std::vector<std::uint64_t>& coeff_modulus) = 0;
 };
 }  // namespace he
 }  // namespace runtime
