@@ -42,7 +42,8 @@ void batch_norm_inference(
     const std::vector<std::shared_ptr<HEPlaintext>>& mean,
     const std::vector<std::shared_ptr<HEPlaintext>>& variance,
     std::vector<std::shared_ptr<HECiphertext>>& normed_input,
-    const Shape& input_shape, const HEBackend* he_backend) {
+    const Shape& input_shape, const size_t batch_size,
+    const HEBackend* he_backend) {
   CoordinateTransform input_transform(input_shape);
 
   auto he_seal_backend =
@@ -59,8 +60,6 @@ void batch_norm_inference(
     input_coords.emplace_back(in_coord);
   }
   size_t input_transform_size = input_coords.size();
-
-  NGRAPH_DEBUG << "input_transform_size " << input_transform_size;
 
 #pragma omp parallel for
   for (size_t i = 0; i < input_transform_size; ++i) {
@@ -88,23 +87,21 @@ void batch_norm_inference(
     he_seal_backend->decode((void*)(channel_var_fl.data()), channel_var.get(),
                             element::f32, 1);
 
-    NGRAPH_DEBUG << "channel_gamma_fl " << channel_gamma_fl[0];
-    NGRAPH_DEBUG << "channel_beta_fl " << channel_beta_fl[0];
-    NGRAPH_DEBUG << "channel_mean_fl " << channel_mean_fl[0];
-    NGRAPH_DEBUG << "channel_var_fl " << channel_var_fl[0];
-
     float scale = channel_gamma_fl[0] / std::sqrt(channel_var_fl[0] + eps);
-    float bias = channel_beta_fl[0] -
-                 channel_mean_fl[0] / std::sqrt(channel_var_fl[0] + eps);
+    float bias =
+        channel_beta_fl[0] - (channel_gamma_fl[0] * channel_mean_fl[0]) /
+                                 std::sqrt(channel_var_fl[0] + eps);
 
-    NGRAPH_DEBUG << "scale " << scale;
-    NGRAPH_DEBUG << "bias " << bias;
+    std::vector<float> scale_vec(batch_size, scale);
+    std::vector<float> bias_vec(batch_size, bias);
 
     auto plain_scale = he_backend->create_empty_plaintext();
-    he_seal_backend->encode(plain_scale, &scale, element::f32);
+    he_seal_backend->encode(plain_scale, scale_vec.data(), element::f32,
+                            batch_size);
 
     auto plain_bias = he_backend->create_empty_plaintext();
-    he_seal_backend->encode(plain_bias, &bias, element::f32);
+    he_seal_backend->encode(plain_bias, bias_vec.data(), element::f32,
+                            batch_size);
 
     std::shared_ptr<HECiphertext> output =
         he_backend->create_empty_ciphertext();
@@ -115,7 +112,6 @@ void batch_norm_inference(
 
     runtime::he::kernel::scalar_add(output.get(), plain_bias.get(), output,
                                     element::f32, he_backend);
-
     normed_input[input_index] = output;
   }
 };

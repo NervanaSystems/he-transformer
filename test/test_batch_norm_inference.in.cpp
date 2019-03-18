@@ -321,10 +321,10 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he) {
                                  3.25f, -4.25f, 7.25f, 8.25f, -1.25f, 0.f,
                                  0.f,   0.f,    0.f,   -2.f};
 
-  std::vector<float> gamma_vals{-0.9384f, 0.01875f};
-  std::vector<float> beta_vals{11.0f, 1.3f};
-  std::vector<float> mean_vals{0.12f, 0.31f};
-  std::vector<float> var_vals{0.01f, 0.11f};
+  std::vector<float> gamma_vals{-0.25f, 0.01875f};
+  std::vector<float> beta_vals{11.0f, 1.25f};
+  std::vector<float> mean_vals{0.125f, 0.25f};
+  std::vector<float> var_vals{0.25f, 0.125f};
 
   auto et = element::f32;
 
@@ -372,7 +372,94 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he) {
   orig_handle->call({t_orig_result}, {t_input});
   new_handle->call({t_opt_result}, {t_input});
 
-  // TODO: tighter precision
   EXPECT_TRUE(test::all_close(read_vector<float>(t_orig_result),
-                              read_vector<float>(t_opt_result), 2.0f));
+                              read_vector<float>(t_opt_result), 0.1f));
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he_batch) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  std::unique_ptr<ngraph::runtime::he::HEBackend> he_backend;
+  auto he_backend_tmp = static_cast<runtime::he::HEBackend*>(backend.get());
+  backend.release();
+  he_backend.reset(he_backend_tmp);
+
+  he_backend->set_optimized_mult(true);
+  size_t batch_size = 1;
+
+  Shape shape_input{batch_size, 8, 3, 3};
+  Shape shape_weights{2, 8, 1, 1};
+  Shape shape_norm{2};
+
+  std::vector<float> input{
+      1.25f,  2.25f,  5.25f,  6.25f,  -1.25f, -1.25f, 3.25f, -4.25f, 7.25f,
+      8.25f,  -1.25f, -1.25f, 1.25f,  2.25f,  -3.25f, 2.25f, 4.25f,  4.25f,
+      1.25f,  2.25f,  -4.25f, 2.25f,  4.25f,  4.25f,  0.f,   0.f,    -1.f,
+      0.f,    2.f,    2.f,    0.f,    0.f,    0.f,    0.f,   2.f,    2.f,
+      1.25f,  2.25f,  5.25f,  6.25f,  1.25f,  1.25f,  3.25f, 4.25f,  -7.25f,
+      8.25f,  1.25f,  -1.25f, -1.25f, 2.25f,  3.25f,  2.25f, -4.25f, -4.25f,
+      -1.25f, -2.25f, 4.25f,  2.25f,  4.25f,  4.25f,  0.f,   0.f,    1.f,
+      0.f,    -2.f,   2.f,    0.f,    0.f,    0.f,    0.f,   -2.f,   -2.f};
+  for (size_t i = 1; i < batch_size; ++i) {
+    copy(input.begin(), input.end(), std::back_inserter(input));
+  }
+
+  std::vector<float> weight_vals{1.25f, 2.25f,  5.25f, 6.25f, -1.25f, -1.25f,
+                                 3.25f, -4.25f, 7.25f, 8.25f, -1.25f, 0.f,
+                                 0.f,   0.f,    0.f,   -2.f};
+
+  std::vector<float> gamma_vals{-0.25f, 0.01875f};
+  std::vector<float> beta_vals{11.0f, 1.25f};
+  std::vector<float> mean_vals{0.125f, 0.25f};
+  std::vector<float> var_vals{0.25f, 0.125f};
+
+  auto et = element::f32;
+
+  auto make_function = [shape_input, shape_weights, shape_norm, gamma_vals,
+                        weight_vals, beta_vals, mean_vals, var_vals, et]() {
+    auto input = std::make_shared<op::Parameter>(et, shape_input);
+    auto weights =
+        std::make_shared<op::Constant>(et, shape_weights, weight_vals);
+    double eps = 0.001;
+    auto gamma = std::make_shared<op::Constant>(et, shape_norm, gamma_vals);
+    auto beta = std::make_shared<op::Constant>(et, shape_norm, beta_vals);
+    auto mean = std::make_shared<op::Constant>(et, shape_norm, mean_vals);
+    auto var = std::make_shared<op::Constant>(et, shape_norm, var_vals);
+    auto conv = std::make_shared<op::Convolution>(input, weights, Strides{1, 1},
+                                                  Strides{1, 1});
+    auto bn = std::make_shared<op::BatchNormInference>(conv, gamma, beta, mean,
+                                                       var, eps);
+    auto f = make_shared<Function>(NodeVector{bn}, ParameterVector{input});
+    return f;
+  };
+
+  auto orig_f = make_function();
+  auto opt_f = make_function();
+
+  pass::Manager pass_manager_opt;
+
+  pass_manager_opt.register_pass<pass::CoreFusion>();
+  pass_manager_opt.register_pass<pass::HEConstantFolding>();
+  pass_manager_opt.run_passes(opt_f);
+
+  auto orig_ops = orig_f->get_ordered_ops();
+  auto new_ops = opt_f->get_ordered_ops();
+
+  auto t_orig_result = he_backend->create_batched_cipher_tensor(
+      element::f32, {batch_size, 2, 3, 3});
+  auto t_opt_result = he_backend->create_batched_cipher_tensor(
+      element::f32, {batch_size, 2, 3, 3});
+  auto t_input =
+      he_backend->create_batched_cipher_tensor(element::f32, shape_input);
+
+  copy_data(t_input, input);
+
+  auto orig_handle = he_backend->compile(orig_f);
+  auto new_handle = he_backend->compile(opt_f);
+
+  orig_handle->call({t_orig_result}, {t_input});
+  new_handle->call({t_opt_result}, {t_input});
+
+  EXPECT_TRUE(test::all_close(generalized_read_vector<float>(t_orig_result),
+                              generalized_read_vector<float>(t_opt_result),
+                              0.1f));
 }
