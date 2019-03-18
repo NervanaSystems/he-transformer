@@ -40,8 +40,12 @@ set (HE_SRC
     seal/ckks/kernel/add_seal_ckks.cpp
     seal/ckks/kernel/multiply_seal_ckks.cpp
 
+    # pass
+    pass/he_constant_folding.cpp
+
     # main
     he_backend.cpp
+    he_executable.cpp
     he_cipher_tensor.cpp
     he_plain_tensor.cpp
     he_tensor.cpp

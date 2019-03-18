@@ -4,7 +4,11 @@ avg_pool_1d_1channel_2image
 avg_pool_1d_2channel_2image
 avg_pool_2d_2channel_2image
 avg_pool_2d_1channel_1image_strided
-
+batch_norm_inference_0eps_f32
+batch_norm_inference_f32
+batch_norm_fusion
+batch_norm_fusion_he
+batch_norm_fusion_he_batch
 convolution_2d_1image_2outputs
 convolution_2d_1item_padded_2_3x4_5
 convolution_2d_1item_padded_1_1x1_1
@@ -15,7 +19,6 @@ convolution_2d_1item_padded_1_1x1_1
 convolution_2d_1item_padded_2_3x4_5
 convolution_2d_2items
 convolution_2d_2items_strided_padded
-
 constant
 
 # BFV doesn't support floating-point batching

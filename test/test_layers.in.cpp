@@ -48,17 +48,20 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_cipher) {
   copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
   copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
 
-  backend->call(backend->compile(f), {result}, {a, b, c});
+  auto handle1 = backend->compile(f);
+  handle1->call({result}, {a, b, c});
   EXPECT_TRUE(all_close(
       read_vector<float>(result),
       (test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(), 1e-1f));
 
-  backend->call(backend->compile(f), {result}, {b, a, c});
+  auto handle2 = backend->compile(f);
+  handle2->call({result}, {b, a, c});
   EXPECT_TRUE(all_close(
       read_vector<float>(result),
       (test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(), 1e-1f));
 
-  backend->call(backend->compile(f), {result}, {c, a, b});
+  auto handle3 = backend->compile(f);
+  handle3->call({result}, {c, a, b});
   EXPECT_TRUE(all_close(
       read_vector<float>(result),
       (test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(), 1e-1f));
@@ -85,17 +88,20 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_plain) {
   copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
   copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
 
-  backend->call(backend->compile(f), {result}, {a, b, c});
+  auto handle1 = backend->compile(f);
+  handle1->call({result}, {a, b, c});
   EXPECT_TRUE(all_close(
       read_vector<float>(result),
       (test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(), 1e-1f));
 
-  backend->call(backend->compile(f), {result}, {b, a, c});
+  auto handle2 = backend->compile(f);
+  handle2->call({result}, {b, a, c});
   EXPECT_TRUE(all_close(
       read_vector<float>(result),
       (test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(), 1e-1f));
 
-  backend->call(backend->compile(f), {result}, {c, a, b});
+  auto handle3 = backend->compile(f);
+  handle3->call({result}, {c, a, b});
   EXPECT_TRUE(all_close(
       read_vector<float>(result),
       (test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(), 1e-1f));
@@ -122,17 +128,20 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_plain_plain) {
   copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
   copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
 
-  backend->call(backend->compile(f), {result}, {a, b, c});
+  auto handle1 = backend->compile(f);
+  handle1->call({result}, {a, b, c});
   EXPECT_TRUE(all_close(
       read_vector<float>(result),
       (test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(), 1e-1f));
 
-  backend->call(backend->compile(f), {result}, {b, a, c});
+  auto handle2 = backend->compile(f);
+  handle2->call({result}, {b, a, c});
   EXPECT_TRUE(all_close(
       read_vector<float>(result),
       (test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(), 1e-1f));
 
-  backend->call(backend->compile(f), {result}, {c, a, b});
+  auto handle3 = backend->compile(f);
+  handle3->call({result}, {c, a, b});
   EXPECT_TRUE(all_close(
       read_vector<float>(result),
       (test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(), 1e-1f));
@@ -159,7 +168,8 @@ NGRAPH_TEST(${BACKEND_NAME}, add_layer_cipher_cipher) {
   copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
   copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
 
-  backend->call(backend->compile(f), {result}, {a, b, c});
+  auto handle = backend->compile(f);
+  handle->call({result}, {a, b, c});
   EXPECT_TRUE(all_close(
       read_vector<float>(result),
       (test::NDArray<float, 2>({{14, 22}, {32, 44}})).get_vector(), 1e-1f));
@@ -186,7 +196,8 @@ NGRAPH_TEST(${BACKEND_NAME}, add_layer_cipher_plain) {
   copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
   copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
 
-  backend->call(backend->compile(f), {result}, {a, b, c});
+  auto handle = backend->compile(f);
+  handle->call({result}, {a, b, c});
   EXPECT_TRUE(all_close(
       read_vector<float>(result),
       (test::NDArray<float, 2>({{14, 22}, {32, 44}})).get_vector(), 1e-1f));
@@ -213,7 +224,8 @@ NGRAPH_TEST(${BACKEND_NAME}, add_layer_plain_plain) {
   copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
   copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
 
-  backend->call(backend->compile(f), {result}, {a, b, c});
+  auto handle = backend->compile(f);
+  handle->call({result}, {a, b, c});
   EXPECT_TRUE(all_close(
       read_vector<float>(result),
       (test::NDArray<float, 2>({{14, 22}, {32, 44}})).get_vector(), 1e-1f));

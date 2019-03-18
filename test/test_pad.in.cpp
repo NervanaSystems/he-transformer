@@ -51,7 +51,41 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_interior_1d) {
   copy_data(b, vector<float>{2112});
   auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
-  backend->call(backend->compile(f), {result}, {a, b});
+  auto handle = backend->compile(f);
+  handle->call({result}, {a, b});
+  EXPECT_TRUE(all_close(
+      (test::NDArray<float, 1>({1, 2112, 2112, 2, 2112, 2112, 3, 2112, 2112, 4,
+                                2112, 2112, 5, 2112, 2112, 6})
+           .get_vector()),
+      read_vector<float>(result), 1e-3f));
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, pad_interior_1d_plain) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+
+  Shape shape_a{6};
+  auto A = make_shared<op::Parameter>(element::f32, shape_a);
+  Shape shape_b{};
+  auto B = make_shared<op::Parameter>(element::f32, shape_b);
+  Shape shape_r{16};
+  Shape padding_below{0};
+  Shape padding_above{0};
+  Shape padding_interior{2};
+  auto f = make_shared<Function>(
+      make_shared<op::Pad>(A, B, padding_below, padding_above,
+                           padding_interior),
+      ParameterVector{A, B});
+
+  // Create some tensors for input/output
+  auto a = he_backend->create_plain_tensor(element::f32, shape_a);
+  copy_data(a, test::NDArray<float, 1>({1, 2, 3, 4, 5, 6}).get_vector());
+  auto b = he_backend->create_plain_tensor(element::f32, shape_b);
+  copy_data(b, vector<float>{2112});
+  auto result = he_backend->create_plain_tensor(element::f32, shape_r);
+
+  auto handle = backend->compile(f);
+  handle->call({result}, {a, b});
   EXPECT_TRUE(all_close(
       (test::NDArray<float, 1>({1, 2112, 2112, 2, 2112, 2112, 3, 2112, 2112, 4,
                                 2112, 2112, 5, 2112, 2112, 6})
@@ -83,7 +117,8 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_1d) {
   copy_data(b, vector<float>{2112});
   auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
-  backend->call(backend->compile(f), {result}, {a, b});
+  auto handle = backend->compile(f);
+  handle->call({result}, {a, b});
   EXPECT_TRUE(
       all_close((test::NDArray<float, 1>({2112, 2112, 2112, 2112, 1, 2, 3, 4, 5,
                                           6, 2112, 2112, 2112, 2112, 2112})
@@ -115,7 +150,8 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_interior_exterior_1d) {
   copy_data(b, vector<float>{2112});
   auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
-  he_backend->call(backend->compile(f), {result}, {a, b});
+  auto handle = backend->compile(f);
+  handle->call({result}, {a, b});
   EXPECT_TRUE(all_close((test::NDArray<float, 1>(
                              {2112, 2112, 2112, 2112, 1,    2112, 2112, 2, 2112,
                               2112, 3,    2112, 2112, 4,    2112, 2112, 5, 2112,
@@ -148,7 +184,8 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_interior_exterior_2d) {
   copy_data(b, vector<float>{9});
   auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
-  backend->call(backend->compile(f), {result}, {a, b});
+  auto handle = backend->compile(f);
+  handle->call({result}, {a, b});
   EXPECT_TRUE(all_close((test::NDArray<float, 2>({{9, 9, 9, 9, 9, 9},
                                                   {1, 9, 2, 9, 3, 9},
                                                   {9, 9, 9, 9, 9, 9},
@@ -184,7 +221,8 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_0x0) {
   copy_data(b, vector<float>{2112});
   auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
-  backend->call(backend->compile(f), {result}, {a, b});
+  auto handle = backend->compile(f);
+  handle->call({result}, {a, b});
   EXPECT_TRUE(
       all_close((test::NDArray<float, 2>({{2112, 2112, 2112, 2112, 2112},
                                           {2112, 2112, 2112, 2112, 2112},
@@ -219,7 +257,8 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_0x3) {
   copy_data(b, vector<float>{2112});
   auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
-  backend->call(backend->compile(f), {result}, {a, b});
+  auto handle = backend->compile(f);
+  handle->call({result}, {a, b});
   EXPECT_TRUE(
       all_close((test::NDArray<float, 2>({{2112, 2112, 2112, 2112, 2112},
                                           {2112, 2112, 2112, 2112, 2112},
@@ -254,7 +293,8 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_3x0) {
   copy_data(b, vector<float>{2112});
   auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
-  backend->call(backend->compile(f), {result}, {a, b});
+  auto handle = backend->compile(f);
+  handle->call({result}, {a, b});
   EXPECT_TRUE(
       all_close((test::NDArray<float, 2>({{2112, 2112, 2112, 2112, 2112},
                                           {2112, 2112, 2112, 2112, 2112},
@@ -305,7 +345,8 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_4d_1x2x2x2) {
 
   auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
-  backend->call(backend->compile(f), {result}, {a, b});
+  auto handle = backend->compile(f);
+  handle->call({result}, {a, b});
   // clang-format off
     EXPECT_TRUE(all_close((test::NDArray<float, 4>(
         {
@@ -359,7 +400,8 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_interior_exterior_4d_2x0x3x2) {
 
   vector<float> expected(5 * 2 * 3 * 2, 2112);
 
-  backend->call(backend->compile(f), {result}, {a, b});
+  auto handle = backend->compile(f);
+  handle->call({result}, {a, b});
   EXPECT_TRUE(all_close(expected, read_vector<float>(result), 1e-3f));
 }
 
@@ -385,7 +427,8 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_1d) {
   copy_data(a, test::NDArray<float, 1>({1, 2, 3, 4, 5, 6}).get_vector());
   auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
-  backend->call(backend->compile(f), {result}, {a});
+  auto handle = backend->compile(f);
+  handle->call({result}, {a});
   EXPECT_TRUE(
       all_close((test::NDArray<float, 1>({1, 123, 123, 2, 123, 123, 3, 123, 123,
                                           4, 123, 123, 5, 123, 123, 6})
@@ -415,7 +458,8 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_1d) {
   copy_data(a, test::NDArray<float, 1>({1, 2, 3, 4, 5, 6}).get_vector());
   auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
-  backend->call(backend->compile(f), {result}, {a});
+  auto handle = backend->compile(f);
+  handle->call({result}, {a});
   EXPECT_TRUE(
       all_close((test::NDArray<float, 1>({123, 123, 123, 123, 1, 2, 3, 4, 5, 6,
                                           123, 123, 123, 123, 123})
@@ -445,7 +489,8 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_exterior_1d) {
   copy_data(a, test::NDArray<float, 1>({1, 2, 3, 4, 5, 6}).get_vector());
   auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
-  backend->call(backend->compile(f), {result}, {a});
+  auto handle = backend->compile(f);
+  handle->call({result}, {a});
   EXPECT_TRUE(all_close(
       (test::NDArray<float, 1>({123, 123, 123, 123, 1,   123, 123, 2, 123,
                                 123, 3,   123, 123, 4,   123, 123, 5, 123,
@@ -476,7 +521,8 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_exterior_2d) {
   copy_data(a, test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector());
   auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
-  backend->call(backend->compile(f), {result}, {a});
+  auto handle = backend->compile(f);
+  handle->call({result}, {a});
   EXPECT_TRUE(
       all_close((test::NDArray<float, 2>({{123, 123, 123, 123, 123, 123},
                                           {1, 123, 2, 123, 3, 123},
@@ -511,7 +557,8 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_2d_0x0) {
   // copy_data(a, test::NDArray<float, 2>({{}}).get_vector(), backend);
   auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
-  backend->call(backend->compile(f), {result}, {a});
+  auto handle = backend->compile(f);
+  handle->call({result}, {a});
   EXPECT_TRUE(all_close((test::NDArray<float, 2>({{123, 123, 123, 123, 123},
                                                   {123, 123, 123, 123, 123},
                                                   {123, 123, 123, 123, 123},
@@ -543,7 +590,8 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_2d_0x3) {
   // copy_data(a, test::NDArray<float, 2>({}).get_vector(), backend);
   auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
-  backend->call(backend->compile(f), {result}, {a});
+  auto handle = backend->compile(f);
+  handle->call({result}, {a});
   EXPECT_TRUE(all_close((test::NDArray<float, 2>({{123, 123, 123, 123, 123},
                                                   {123, 123, 123, 123, 123},
                                                   {123, 123, 123, 123, 123},
@@ -575,7 +623,8 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_2d_3x0) {
   // copy_data(a, test::NDArray<float, 2>({}).get_vector(), backend);
   auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
-  backend->call(backend->compile(f), {result}, {a});
+  auto handle = backend->compile(f);
+  handle->call({result}, {a});
   EXPECT_TRUE(all_close((test::NDArray<float, 2>({{123, 123, 123, 123, 123},
                                                   {123, 123, 123, 123, 123},
                                                   {123, 123, 123, 123, 123},
@@ -622,7 +671,8 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_exterior_4d_1x2x2x2) {
 
   auto result = he_backend->create_cipher_tensor(element::f32, shape_r);
 
-  backend->call(backend->compile(f), {result}, {a});
+  auto handle = backend->compile(f);
+  handle->call({result}, {a});
   // clang-format off
     EXPECT_TRUE(all_close((test::NDArray<float, 4>(
         {
@@ -674,6 +724,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_const_interior_exterior_4d_2x0x3x2) {
 
   vector<float> expected(5 * 2 * 3 * 2, 123);
 
-  backend->call(backend->compile(f), {result}, {a});
+  auto handle = backend->compile(f);
+  handle->call({result}, {a});
   EXPECT_TRUE(all_close(expected, read_vector<float>(result), 1e-3f));
 }

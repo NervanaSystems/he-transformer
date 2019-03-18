@@ -37,6 +37,7 @@ set(ACTIVE_BACKEND_LIST HE_SEAL_BFV HE_SEAL_CKKS)
 set(MULTI_TEST_SRC
     test_add.in.cpp
     test_avg_pool.in.cpp
+    test_batch_norm_inference.in.cpp
     test_basics.in.cpp
     test_broadcast.in.cpp
     test_client_server.in.cpp

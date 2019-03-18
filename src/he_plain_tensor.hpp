@@ -55,15 +55,15 @@ class HEPlainTensor : public HETensor {
 
   inline std::vector<std::shared_ptr<runtime::he::HEPlaintext>>&
   get_elements() noexcept {
-    return m_plain_texts;
+    return m_plaintexts;
   }
 
   inline std::shared_ptr<runtime::he::HEPlaintext>& get_element(size_t i) {
-    return m_plain_texts[i];
+    return m_plaintexts[i];
   }
 
  private:
-  std::vector<std::shared_ptr<runtime::he::HEPlaintext>> m_plain_texts;
+  std::vector<std::shared_ptr<runtime::he::HEPlaintext>> m_plaintexts;
   size_t m_num_elements;
 };
 }  // namespace he
