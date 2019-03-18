@@ -18,7 +18,6 @@
 #include "seal/bfv/kernel/multiply_seal_bfv.hpp"
 #include "seal/ckks/he_seal_ckks_backend.hpp"
 #include "seal/ckks/kernel/multiply_seal_ckks.hpp"
-#include "seal/kernel/multiply_seal.hpp"
 #include "seal/kernel/negate_seal.hpp"
 
 using namespace std;

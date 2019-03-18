@@ -87,10 +87,6 @@ void kernel::scalar_multiply(const HECiphertext* arg0, const HEPlaintext* arg1,
                                        element_type, he_seal_backend);
       out = dynamic_pointer_cast<HECiphertext>(out_seal);
     } else {
-      NGRAPH_INFO << "c*p";
-      NGRAPH_INFO << "arg0_seal " << (arg0_seal != nullptr);
-      NGRAPH_INFO << "arg1_seal " << (arg1_seal != nullptr);
-      NGRAPH_INFO << "out_seal " << (out_seal != nullptr);
       throw ngraph_error(
           "multiply backend is SEAL, but arguments or outputs are not "
           "SealPlaintextWrapper.");

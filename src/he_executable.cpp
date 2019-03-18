@@ -740,8 +740,15 @@ void runtime::he::HEExecutable::generate_calls(
             out0_cipher->get_elements(), arg0_shape, out_shape,
             pad->get_padding_below(), pad->get_padding_above(),
             pad->get_padding_interior(), batch_size, m_he_backend);
+      } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
+                 out0_plain != nullptr) {
+        runtime::he::kernel::pad(
+            arg0_plain->get_elements(), arg1_plain->get_elements(),
+            out0_plain->get_elements(), arg0_shape, out_shape,
+            pad->get_padding_below(), pad->get_padding_above(),
+            pad->get_padding_interior(), batch_size, m_he_backend);
       } else {
-        throw ngraph_error("Pad cipher vs plain types not supported.");
+        throw ngraph_error("Pad cipher vs. plain types not supported.");
       }
       break;
     }

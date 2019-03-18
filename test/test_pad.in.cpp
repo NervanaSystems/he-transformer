@@ -60,6 +60,39 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_interior_1d) {
       read_vector<float>(result), 1e-3f));
 }
 
+NGRAPH_TEST(${BACKEND_NAME}, pad_interior_1d_plain) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+
+  Shape shape_a{6};
+  auto A = make_shared<op::Parameter>(element::f32, shape_a);
+  Shape shape_b{};
+  auto B = make_shared<op::Parameter>(element::f32, shape_b);
+  Shape shape_r{16};
+  Shape padding_below{0};
+  Shape padding_above{0};
+  Shape padding_interior{2};
+  auto f = make_shared<Function>(
+      make_shared<op::Pad>(A, B, padding_below, padding_above,
+                           padding_interior),
+      ParameterVector{A, B});
+
+  // Create some tensors for input/output
+  auto a = he_backend->create_plain_tensor(element::f32, shape_a);
+  copy_data(a, test::NDArray<float, 1>({1, 2, 3, 4, 5, 6}).get_vector());
+  auto b = he_backend->create_plain_tensor(element::f32, shape_b);
+  copy_data(b, vector<float>{2112});
+  auto result = he_backend->create_plain_tensor(element::f32, shape_r);
+
+  auto handle = backend->compile(f);
+  handle->call({result}, {a, b});
+  EXPECT_TRUE(all_close(
+      (test::NDArray<float, 1>({1, 2112, 2112, 2, 2112, 2112, 3, 2112, 2112, 4,
+                                2112, 2112, 5, 2112, 2112, 6})
+           .get_vector()),
+      read_vector<float>(result), 1e-3f));
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_1d) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
