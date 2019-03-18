@@ -90,6 +90,168 @@ runtime::he::HEExecutable::HEExecutable(const shared_ptr<Function>& function,
     m_wrapped_nodes.emplace_back(node);
   }
   set_parameters_and_results(*function);
+
+  // Start server
+  NGRAPH_INFO << "Starting CKKS server";
+  start_server();
+  NGRAPH_INFO << "Started CKKS server";
+
+  std::stringstream param_stream;
+  NGRAPH_INFO << "Saving EncryptionParms";
+
+  he_backend->get_encryption_parameters()->save(param_stream);
+
+  // seal::EncryptionParameters::Save(he_backend->get_encryption_parameters()
+  //                                     param_stream);
+  NGRAPH_INFO << "Saved EncryptionParms";
+
+  auto context_message =
+      TCPMessage(MessageType::encryption_parameters, 1, param_stream);
+
+  // Send
+  NGRAPH_INFO << "Waiting until client is connected";
+  while (!m_session_started) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
+  NGRAPH_INFO << "Server about to write message";
+  m_session->do_write(context_message);
+  NGRAPH_INFO << "Server posted write_message()";
+}
+
+void runtime::he::HEExecutable::accept_connection() {
+  // std::lock_guard<std::mutex> guard(m_session_mutex);
+  std::cout << "Server accepting connections" << std::endl;
+
+  auto server_callback = std::bind(&runtime::he::HEExecutable::handle_message,
+                                   this, std::placeholders::_1);
+
+  /*auto server_callback = [this](const runtime::he::TCPMessage& message) {
+    this->handle_message(message);
+  };*/
+
+  m_acceptor->async_accept([this, server_callback](boost::system::error_code ec,
+                                                   tcp::socket socket) {
+    if (!ec) {
+      std::cout << "Connection accepted" << std::endl;
+      // TODO: use make_shared here without causing seg-fault
+      m_session =
+          std::make_unique<TCPSession>(std::move(socket), server_callback);
+      m_session->start();
+
+      m_session_started = true;  // TODO: cleaner way to process this
+      std::cout << "TCP session started" << std::endl;
+    } else {
+      std::cout << "error " << ec.message() << std::endl;
+    }
+    // accept_connection();
+  });
+}
+
+void runtime::he::HEExecutable::start_server() {
+  // Server
+  tcp::resolver resolver(m_io_context);
+  tcp::endpoint server_endpoints(tcp::v4(), m_port);
+
+  m_acceptor = make_shared<tcp::acceptor>(m_io_context, server_endpoints);
+
+  accept_connection();
+
+  // m_tcp_server =
+  //    make_shared<TCPServer>(m_io_context, server_endpoints, server_callback);
+  m_thread = std::thread([this]() { m_io_context.run(); });
+  // m_thread =
+  // m_io_context.run();  // Actually start the server
+}
+
+void runtime::he::HEExecutable::handle_message(
+    const runtime::he::TCPMessage& message) {
+  NGRAPH_INFO << "Handling TCP Message";
+
+  MessageType msg_type = message.message_type();
+
+  NGRAPH_INFO << "Server got " << message_type_to_string(msg_type)
+              << " message";
+
+  if (msg_type == MessageType::execute) {
+    // Get Ciphertexts from message
+    std::size_t count = message.count();
+    std::vector<seal::Ciphertext> ciphertexts;
+    size_t ciphertext_size = message.element_size();
+
+    for (size_t i = 0; i < count; ++i) {
+      stringstream stream;
+      stream.write(message.data_ptr() + i * ciphertext_size, ciphertext_size);
+      seal::Ciphertext c;
+
+      c.load(m_context, stream);
+      std::cout << "Loaded " << i << "'th ciphertext" << std::endl;
+      ciphertexts.emplace_back(c);
+    }
+    std::vector<std::shared_ptr<runtime::he::HECiphertext>> he_cipher_inputs;
+
+    for (const auto cipher : ciphertexts) {
+      auto wrapper =
+          make_shared<runtime::he::he_seal::SealCiphertextWrapper>(cipher);
+      he_cipher_inputs.emplace_back(wrapper);
+    }
+
+    // Load function with parameters
+    const ParameterVector& input_parameters = get_parameters();
+    for (auto input_param : input_parameters) {
+      std::cout << "Parameter shape " << join(input_param->get_shape(), "x")
+                << std::endl;
+    }
+    // only support parameter size 1 for now
+    NGRAPH_ASSERT(input_parameters.size() == 1)
+        << "HEExecutable only supports parameter size 1 (got "
+        << input_parameters.size() << ")";
+    // only support function output size 1 for now
+    NGRAPH_ASSERT(get_results().size() == 1)
+        << "HEExecutable only supports output size 1 (got "
+        << get_results().size() << "";
+
+    auto element_type = input_parameters[0]->get_element_type();
+    bool batched = false;
+    auto input_tensor = m_he_backend->create_cipher_tensor(
+        element_type, input_parameters[0]->get_shape(), batched);
+
+    dynamic_pointer_cast<runtime::he::HECipherTensor>(input_tensor)
+        ->set_elements(he_cipher_inputs);
+
+    m_inputs = {
+        dynamic_pointer_cast<runtime::he::HECipherTensor>(input_tensor)};
+  } else if (msg_type == MessageType::public_key) {
+    // Load public key
+    size_t pk_size = message.data_size();
+    std::stringstream pk_stream;
+    pk_stream.write(message.data_ptr(), pk_size);
+
+    // TODO: load public key if needed
+    // NGRAPH_WARN << "Server skipping public key load";
+    /*
+    m_public_key->load(m_context, pk_stream);
+    NGRAPH_INFO << "Server loaded public key";
+    m_encryptor = make_shared<seal::Encryptor>(m_context, *m_public_key);
+    NGRAPH_INFO << "Server created new encryptor from loaded public key";
+    */
+
+    // Send inference parameter shape
+    const ParameterVector& input_parameters = get_parameters();
+    // Only support single parameter for now
+    assert(input_parameters.size() == 1);
+    auto shape = input_parameters[0]->get_shape();
+    NGRAPH_INFO << "Returning parameter shape: " << join(shape, "x");
+
+    runtime::he::TCPMessage parameter_message{
+        MessageType::parameter_shape, shape.size(),
+        sizeof(size_t) * shape.size(), (char*)shape.data()};
+
+    m_session->do_write(parameter_message);
+  } else {
+    NGRAPH_INFO << "Unsupported message type in server:  "
+                << message_type_to_string(msg_type);
+    throw ngraph_error("Unknown message type in server");
+  }
 }
 
 vector<runtime::PerformanceCounter>

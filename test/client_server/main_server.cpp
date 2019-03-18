@@ -18,6 +18,7 @@
 #include <memory>
 #include <vector>
 #include "he_backend.hpp"
+#include "he_executable.hpp"
 #include "ngraph/ngraph.hpp"
 #include "seal/ckks/he_seal_ckks_backend.hpp"
 
@@ -36,11 +37,9 @@ int main() {
   auto backend = runtime::Backend::create("HE_SEAL_CKKS");
   auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
 
-  auto handle = backend->compile(f);
-
+  auto handle = he_backend->compile(f);
   NGRAPH_INFO << "Starting server";
-
-  he_backend->start_server();
+  std::dynamic_pointer_cast<runtime::he::HEExecutable>(handle)->start_server();
 
   return 0;
 }

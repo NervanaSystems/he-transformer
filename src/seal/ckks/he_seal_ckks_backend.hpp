@@ -63,8 +63,6 @@ class HESealCKKSBackend : public HESealBackend {
   void assert_valid_seal_ckks_parameter(
       const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp) const;
 
-  void handle_message(const TCPMessage& message) override;
-
  private:
   std::shared_ptr<seal::CKKSEncoder> m_ckks_encoder;
   // Scale with which to encode new ciphertexts

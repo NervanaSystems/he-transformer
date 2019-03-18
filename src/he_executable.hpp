@@ -24,6 +24,7 @@
 #include "ngraph/runtime/backend.hpp"
 #include "ngraph/util.hpp"
 #include "node_wrapper.hpp"
+#include "seal/seal.h"
 
 namespace ngraph {
 namespace runtime {
@@ -36,6 +37,9 @@ class HEExecutable : public Executable {
                const runtime::he::HEBackend* he_backend, bool encrypt_data,
                bool encrypt_model, bool batch_data);
 
+  /// @brief starts the server
+  void start_server();
+
   bool call(const std::vector<std::shared_ptr<Tensor>>& outputs,
             const std::vector<std::shared_ptr<Tensor>>& inputs) override;
 
@@ -45,6 +49,12 @@ class HEExecutable : public Executable {
 
   std::vector<PerformanceCounter> get_performance_data() const override;
 
+  size_t get_port() const { return m_port; };
+
+  void accept_connection();
+
+  void handle_message(const TCPMessage& message);
+
  private:
   bool m_encrypt_data;
   bool m_batch_data;
@@ -53,6 +63,22 @@ class HEExecutable : public Executable {
   const HEBackend* m_he_backend = nullptr;  // TODO: replace with context
   std::unordered_map<const Node*, stopwatch> m_timer_map;
   std::vector<NodeWrapper> m_wrapped_nodes;
+
+  std::shared_ptr<tcp::acceptor> m_acceptor;
+  std::shared_ptr<TCPSession> m_session;
+  std::shared_ptr<TCPServer> m_tcp_server;
+  std::thread m_thread;
+  boost::asio::io_context m_io_context;
+  bool m_session_started{false};
+  std::vector<std::shared_ptr<runtime::he::HETensor>>
+      m_inputs;  // (Encrypted) inputs to compiled function
+  std::vector<std::shared_ptr<runtime::Tensor>>
+      m_outputs;  // (Encrypted) outputs of compiled function
+
+  size_t m_port{34000};  // Which port the server is hosted at
+
+  std::shared_ptr<seal::SEALContext>
+      m_context;  // TODO: move to he_seal_executable.hpp
 
   void generate_calls(const element::Type& type, const NodeWrapper& op,
                       const std::vector<std::shared_ptr<HETensor>>& outputs,

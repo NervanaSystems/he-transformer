@@ -14,16 +14,15 @@
 # limitations under the License.
 # ******************************************************************************
 
-# Enable ExternalProject CMake module
 include(ExternalProject)
-
 
 find_package(Boost 1.69)
 if(Boost_FOUND)
+  message("Boost_INCLUDE_DIRS ${Boost_INCLUDE_DIRS}")
   include_directories(${Boost_INCLUDE_DIRS})
 else()
   message(FATAL_ERROR "Boost not found")
 endif()
 message("Boost dirs ${Boost_INCLUDE_DIRS}")
 add_library(boost INTERFACE)
-# target_include_directories(libgtest SYSTEM INTERFACE ${Boost_INCLUDE_DIRS})
+# target_include_directories(libboost SYSTEM INTERFACE ${Boost_INCLUDE_DIRS})

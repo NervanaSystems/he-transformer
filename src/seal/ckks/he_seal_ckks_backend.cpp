@@ -161,28 +161,6 @@ runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend(
   m_plaintext_map[-1] = plaintext_neg1;
   m_plaintext_map[0] = plaintext_0;
   m_plaintext_map[1] = plaintext_1;
-
-  // Start server
-  NGRAPH_INFO << "Starting CKKS server";
-  start_server();
-  NGRAPH_INFO << "Started CKKS server";
-
-  std::stringstream param_stream;
-  NGRAPH_INFO << "Saving EncryptionParms";
-  seal::EncryptionParameters::Save(*m_encryption_parms, param_stream);
-  NGRAPH_INFO << "Saved EncryptionParms";
-
-  auto context_message =
-      TCPMessage(MessageType::encryption_parameters, 1, param_stream);
-
-  // Send
-  NGRAPH_INFO << "Waiting until client is connected";
-  while (!m_session_started) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-  }
-  NGRAPH_INFO << "Server about to write message";
-  m_session->do_write(context_message);
-  NGRAPH_INFO << "Server posted write_message()";
 }
 
 extern "C" runtime::Backend* new_ckks_backend(
@@ -392,100 +370,5 @@ void runtime::he::he_seal::HESealCKKSBackend::decode(
     memcpy(output, &xs_float[0], element_type.size() * count);
   } else {
     throw ngraph_error("Unsupported element type " + type_name);
-  }
-}
-
-void runtime::he::he_seal::HESealCKKSBackend::handle_message(
-    const runtime::he::TCPMessage& message) {
-  NGRAPH_INFO << "Handling TCP Message";
-
-  MessageType msg_type = message.message_type();
-
-  NGRAPH_INFO << "Server got " << message_type_to_string(msg_type)
-              << " message";
-
-  if (msg_type == MessageType::execute) {
-    // Get Ciphertexts from message
-    std::size_t count = message.count();
-    std::vector<seal::Ciphertext> ciphertexts;
-    size_t ciphertext_size = message.element_size();
-
-    for (size_t i = 0; i < count; ++i) {
-      stringstream stream;
-      stream.write(message.data_ptr() + i * ciphertext_size, ciphertext_size);
-      seal::Ciphertext c;
-
-      c.load(m_context, stream);
-      std::cout << "Loaded " << i << "'th ciphertext" << std::endl;
-      ciphertexts.emplace_back(c);
-    }
-    std::vector<std::shared_ptr<runtime::he::HECiphertext>> he_cipher_inputs;
-
-    for (const auto cipher : ciphertexts) {
-      auto wrapper =
-          make_shared<runtime::he::he_seal::SealCiphertextWrapper>(cipher);
-      he_cipher_inputs.emplace_back(wrapper);
-    }
-
-    // Load function with parameters
-    auto function = m_function_map.begin()->first;
-    const ParameterVector& input_parameters = function->get_parameters();
-
-    for (auto input_param : input_parameters) {
-      std::cout << "Parameter shape " << join(input_param->get_shape(), "x")
-                << std::endl;
-    }
-    // only support parameter size 1 for now
-    assert(input_parameters.size() == 1);
-    // only support function output size 1 for now
-    assert(function->get_output_size() == 1);
-
-    auto element_type = input_parameters[0]->get_element_type();
-    bool batched = false;
-    auto input_tensor = create_cipher_tensor(
-        element_type, input_parameters[0]->get_shape(), batched);
-
-    dynamic_pointer_cast<runtime::he::HECipherTensor>(input_tensor)
-        ->set_elements(he_cipher_inputs);
-
-    m_inputs = {
-        dynamic_pointer_cast<runtime::he::HECipherTensor>(input_tensor)};
-  } else if (msg_type == MessageType::public_key) {
-    // Load public key
-    size_t pk_size = message.data_size();
-    std::stringstream pk_stream;
-    pk_stream.write(message.data_ptr(), pk_size);
-
-    // TODO: load public key if needed
-    // NGRAPH_WARN << "Server skipping public key load";
-    /*
-    m_public_key->load(m_context, pk_stream);
-    NGRAPH_INFO << "Server loaded public key";
-    m_encryptor = make_shared<seal::Encryptor>(m_context, *m_public_key);
-    NGRAPH_INFO << "Server created new encryptor from loaded public key";
-    */
-
-    // Send inference parameter shape
-    NGRAPH_INFO << "Waiting until function is compiled";
-    while (m_function_map.size() == 0) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
-
-    auto function = m_function_map.begin()->first;
-    const ParameterVector& input_parameters = function->get_parameters();
-    // Only support single parameter for now
-    assert(input_parameters.size() == 1);
-    auto shape = input_parameters[0]->get_shape();
-    NGRAPH_INFO << "Returning parameter shape: " << join(shape, "x");
-
-    runtime::he::TCPMessage parameter_message{
-        MessageType::parameter_shape, shape.size(),
-        sizeof(size_t) * shape.size(), (char*)shape.data()};
-
-    m_session->do_write(parameter_message);
-  } else {
-    NGRAPH_INFO << "Unsupported message type in server:  "
-                << message_type_to_string(msg_type);
-    throw ngraph_error("Unknown message type in server");
   }
 }

@@ -68,8 +68,6 @@ class HESealBFVBackend : public HESealBackend {
   void assert_valid_seal_bfv_parameter(
       const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp) const;
 
-  void handle_message(const TCPMessage& message) override;
-
  private:
   std::shared_ptr<seal::BatchEncoder> m_batch_encoder;
   std::shared_ptr<seal::IntegerEncoder> m_integer_encoder;

@@ -31,51 +31,6 @@ using namespace std;
 
 using descriptor::layout::DenseTensorLayout;
 
-void runtime::he::HEBackend::start_server() {
-  // Server
-  tcp::resolver resolver(m_io_context);
-  tcp::endpoint server_endpoints(tcp::v4(), m_port);
-
-  m_acceptor = make_shared<tcp::acceptor>(m_io_context, server_endpoints);
-
-  accept_connection();
-
-  // m_tcp_server =
-  //    make_shared<TCPServer>(m_io_context, server_endpoints, server_callback);
-  m_thread = std::thread([this]() { m_io_context.run(); });
-  // m_thread =
-  // m_io_context.run();  // Actually start the server
-}
-
-void runtime::he::HEBackend::accept_connection() {
-  // std::lock_guard<std::mutex> guard(m_session_mutex);
-  std::cout << "Server accepting connections" << std::endl;
-
-  auto server_callback = std::bind(&runtime::he::HEBackend::handle_message,
-                                   this, std::placeholders::_1);
-
-  /*auto server_callback = [this](const runtime::he::TCPMessage& message) {
-    this->handle_message(message);
-  };*/
-
-  m_acceptor->async_accept([this, server_callback](boost::system::error_code ec,
-                                                   tcp::socket socket) {
-    if (!ec) {
-      std::cout << "Connection accepted" << std::endl;
-      // TODO: use make_shared here without causing seg-fault
-      m_session =
-          std::make_unique<TCPSession>(std::move(socket), server_callback);
-      m_session->start();
-
-      m_session_started = true;  // TODO: cleaner way to process this
-      std::cout << "TCP session started" << std::endl;
-    } else {
-      std::cout << "error " << ec.message() << std::endl;
-    }
-    // accept_connection();
-  });
-}
-
 shared_ptr<runtime::he::HEPlaintext>
 runtime::he::HEBackend::create_valued_plaintext(
     float value, const element::Type& element_type) const {

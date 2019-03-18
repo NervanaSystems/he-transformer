@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "he_ciphertext.hpp"
+#include "he_encryption_parameters.hpp"
 #include "he_plaintext.hpp"
 #include "he_tensor.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
@@ -47,14 +48,7 @@ namespace he {
 class HETensor;
 class HEBackend : public runtime::Backend {
  public:
-  virtual ~HEBackend() {
-    NGRAPH_INFO << "~HEBackend()";
-    m_thread.detach();
-    NGRAPH_INFO << "Done with ~HEBackend()";
-  };
-
-  /// @brief starts the server
-  void start_server();
+  virtual ~HEBackend(){};
 
   /// @brief Creates ciphertext of unspecified value
   /// @return Shared pointer to created ciphertext
@@ -203,43 +197,23 @@ class HEBackend : public runtime::Backend {
   void set_optimized_add(bool enable) { m_optimized_add = enable; };
   void set_optimized_mult(bool enable) { m_optimized_mult = enable; };
 
+  const std::shared_ptr<HEEncryptionParameters> get_encryption_parameters()
+      const {
+    return m_he_encryption_params;
+  };
+
   bool encrypt_data() const { return m_encrypt_data; };
   bool batch_data() const { return m_batch_data; };
   bool encrypt_model() const { return m_encrypt_model; };
 
-  size_t get_port() const { return m_port; };
-
-  void accept_connection();
-
  protected:
-  class FunctionInstance {
-   public:
-    bool m_is_compiled = false;
-    bool m_nan_check_enabled = false;
-    bool m_performance_counters_enabled = false;
-    std::unordered_map<const Node*, stopwatch> m_timer_map;
-    std::vector<NodeWrapper> m_wrapped_nodes;
-  };
-  std::map<std::shared_ptr<Function>, FunctionInstance> m_function_map;
-
   bool m_optimized_add{std::getenv("NGRAPH_OPTIMIZED_ADD") != nullptr};
   bool m_optimized_mult{std::getenv("NGRAPH_OPTIMIZED_MULT") != nullptr};
   bool m_encrypt_data{std::getenv("NGRAPH_ENCRYPT_DATA") != nullptr};
   bool m_batch_data{std::getenv("NGRAPH_BATCH_DATA") != nullptr};
   bool m_encrypt_model{std::getenv("NGRAPH_ENCRYPT_MODEL") != nullptr};
 
-  std::shared_ptr<tcp::acceptor> m_acceptor;
-  std::shared_ptr<TCPSession> m_session;
-  std::shared_ptr<TCPServer> m_tcp_server;
-  std::thread m_thread;
-  boost::asio::io_context m_io_context;
-  bool m_session_started{false};
-  std::vector<std::shared_ptr<runtime::he::HETensor>>
-      m_inputs;  // (Encrypted) inputs to compiled function
-  std::vector<std::shared_ptr<runtime::Tensor>>
-      m_outputs;  // (Encrypted) outputs of compiled function
-
-  size_t m_port{34000};  // Which port the server is hosted at
+  std::shared_ptr<HEEncryptionParameters> m_he_encryption_params;
 };
 }  // namespace he
 }  // namespace runtime

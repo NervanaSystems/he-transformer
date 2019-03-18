@@ -232,8 +232,3 @@ void runtime::he::he_seal::HESealBFVBackend::decode(
     throw ngraph_error("HESealBFVBackend::decode input is not seal plaintext");
   }
 }
-
-void runtime::he::he_seal::HESealBFVBackend::handle_message(
-    const runtime::he::TCPMessage& message) {
-  throw ngraph_error("handle_message not implemented in BFV backend");
-}

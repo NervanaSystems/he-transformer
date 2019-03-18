@@ -24,6 +24,7 @@
 #include <stdexcept>
 #include <string>
 
+#include "he_encryption_parameters.hpp"
 #include "ngraph/log.hpp"
 #include "nlohmann/json.hpp"
 
@@ -31,7 +32,7 @@ namespace ngraph {
 namespace runtime {
 namespace he {
 namespace he_seal {
-class HESealParameter {
+class HESealParameter : public HEEncryptionParameters {
  public:
   struct CoeffModulus;
 
@@ -69,6 +70,9 @@ class HESealParameter {
         m_coeff_modulus(coeff_modulus) {}
 
   ~HESealParameter() {}
+
+  void save(std::ostream& stream) const override {}
+
   // Must be "BFV" or "CKKS"
   std::string m_scheme_name;
 
