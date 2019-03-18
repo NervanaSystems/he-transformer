@@ -71,11 +71,6 @@ class BatchNormInferenceTester {
     handle->call({m_normed_input},
                  {m_input, m_gamma, m_beta, m_mean, m_variance});
     auto res_normed_input = read_vector<T>(m_normed_input);
-
-    for (const auto& res : res_normed_input) {
-      NGRAPH_INFO << "res " << res;
-    }
-
     return all_close(normed_input, res_normed_input);
   }
 
@@ -274,30 +269,15 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion) {
   auto orig_f = make_function();
   auto opt_f = make_function();
 
-  pass::Manager pass_manager_orig;
   pass::Manager pass_manager_opt;
 
-  pass_manager_orig.register_pass<pass::VisualizeTree>("before.png");
-  pass_manager_orig.run_passes(orig_f);
-
   pass_manager_opt.register_pass<pass::CoreFusion>();
-  pass_manager_opt.register_pass<pass::VisualizeTree>("during.png");
   pass_manager_opt.register_pass<pass::HEConstantFolding>();
-  pass_manager_opt.register_pass<pass::VisualizeTree>("after.png");
   pass_manager_opt.run_passes(opt_f);
 
   auto orig_ops = orig_f->get_ordered_ops();
   auto new_ops = opt_f->get_ordered_ops();
 
-  NGRAPH_INFO << "orig ops";
-  for (auto op : orig_ops) {
-    NGRAPH_INFO << op->get_friendly_name();
-  }
-
-  NGRAPH_INFO << "optimized ops";
-  for (auto op : new_ops) {
-    NGRAPH_INFO << op->get_friendly_name();
-  }
   auto t_orig_result = backend->create_tensor(element::f32, {1, 2, 3, 3});
   auto t_opt_result = backend->create_tensor(element::f32, {1, 2, 3, 3});
   auto t_input = backend->create_tensor(element::f32, shape_input);
