@@ -23,6 +23,7 @@
 #include "he_tensor.hpp"
 #include "kernel/add.hpp"
 #include "kernel/avg_pool.hpp"
+#include "kernel/batch_norm_inference.hpp"
 #include "kernel/broadcast.hpp"
 #include "kernel/concat.hpp"
 #include "kernel/constant.hpp"
@@ -40,6 +41,7 @@
 #include "ngraph/assertion.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
 #include "ngraph/op/avg_pool.hpp"
+#include "ngraph/op/batch_norm.hpp"
 #include "ngraph/op/broadcast.hpp"
 #include "ngraph/op/concat.hpp"
 #include "ngraph/op/constant.hpp"
@@ -447,6 +449,39 @@ void runtime::he::HEExecutable::generate_calls(
       } else {
         throw ngraph_error("Broadcast types not supported.");
       }
+      break;
+    }
+    case OP_TYPEID::BatchNormInference: {
+      const ngraph::op::BatchNormInference* bn =
+          static_cast<const ngraph::op::BatchNormInference*>(&node);
+      double eps = bn->get_eps_value();
+      NGRAPH_ASSERT(args.size() == 5)
+          << "BatchNormInference has " << args.size()
+          << "arguments (expected 5).";
+
+      auto shape = node.get_input_shape(2);
+      // TODO: cleanup
+      if (batch_size != 1) {
+        shape[0] = shape[0] / batch_size;
+      }
+
+      auto gamma = dynamic_pointer_cast<HEPlainTensor>(args[0]);
+      auto beta = dynamic_pointer_cast<HEPlainTensor>(args[1]);
+      auto input = dynamic_pointer_cast<HECipherTensor>(args[2]);
+      auto mean = dynamic_pointer_cast<HEPlainTensor>(args[3]);
+      auto variance = dynamic_pointer_cast<HEPlainTensor>(args[4]);
+
+      NGRAPH_ASSERT(out0_cipher != nullptr) << "BatchNorm output not cipher";
+      NGRAPH_ASSERT(gamma != nullptr) << "BatchNorm gamma not plain";
+      NGRAPH_ASSERT(beta != nullptr) << "BatchNorm beta not plain";
+      NGRAPH_ASSERT(input != nullptr) << "BatchNorm input not cipher";
+      NGRAPH_ASSERT(mean != nullptr) << "BatchNorm mean not plaintext";
+      NGRAPH_ASSERT(variance != nullptr) << "BatchNorm variance not plaintext";
+
+      runtime::he::kernel::batch_norm_inference(
+          eps, gamma->get_elements(), beta->get_elements(),
+          input->get_elements(), mean->get_elements(), variance->get_elements(),
+          out0_cipher->get_elements(), shape, batch_size, m_he_backend);
       break;
     }
     case OP_TYPEID::Broadcast: {
@@ -865,7 +900,6 @@ void runtime::he::HEExecutable::generate_calls(
     case OP_TYPEID::Asin:
     case OP_TYPEID::Atan:
     case OP_TYPEID::AvgPoolBackprop:
-    case OP_TYPEID::BatchNormInference:
     case OP_TYPEID::BatchNormTraining:
     case OP_TYPEID::BatchNormTrainingBackprop:
     case OP_TYPEID::Ceiling:
