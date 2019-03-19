@@ -1,0 +1,87 @@
+[INFO] 2019-03-19T18:15:12z src/seal/ckks/he_seal_ckks_backend.cpp 66	Using SEAL CKKS config with 7 50-bit coefficients
+Note: Google Test filter = HE_SEAL_CKKS.batch_norm_fusion_he_large
+[==========] Running 1 test from 1 test case.
+[----------] Global test environment set-up.
+[----------] 1 test from HE_SEAL_CKKS
+[ RUN      ] HE_SEAL_CKKS.batch_norm_fusion_he_large
+[INFO] 2019-03-19T18:15:14z src/seal/he_seal_util.hpp 47	
+/ Encryption parameters:
+| scheme: HE:SEAL:CKKS
+| poly_modulus: 16384
+| coeff_modulus size: 350 bits
+\ noise_standard_deviation: 3.2
+[INFO] 2019-03-19T18:15:17z src/he_backend.cpp 333	[1;32m[ Parameter_0 ][0m
+[INFO] 2019-03-19T18:15:17z src/he_backend.cpp 338	Parameter shape {1, 3, 10, 10}
+[INFO] 2019-03-19T18:15:17z src/he_backend.cpp 333	[1;32m[ Constant_5 ][0m
+[INFO] 2019-03-19T18:15:17z src/he_backend.cpp 343	Constant shape {4}
+[INFO] 2019-03-19T18:15:17z src/he_backend.cpp 469	Inputs: 
+[INFO] 2019-03-19T18:15:17z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-19T18:15:17z src/he_backend.cpp 415	[1;31mConstant_5 took 0ms[0m
+[INFO] 2019-03-19T18:15:17z src/he_backend.cpp 333	[1;32m[ Constant_4 ][0m
+[INFO] 2019-03-19T18:15:17z src/he_backend.cpp 343	Constant shape {4}
+[INFO] 2019-03-19T18:15:17z src/he_backend.cpp 469	Inputs: 
+[INFO] 2019-03-19T18:15:17z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-19T18:15:17z src/he_backend.cpp 415	[1;31mConstant_4 took 1ms[0m
+[INFO] 2019-03-19T18:15:17z src/he_backend.cpp 333	[1;32m[ Constant_1 ][0m
+[INFO] 2019-03-19T18:15:17z src/he_backend.cpp 343	Constant shape {4, 3, 5, 5}
+[INFO] 2019-03-19T18:15:17z src/he_backend.cpp 469	Inputs: 
+[INFO] 2019-03-19T18:15:17z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-19T18:15:17z src/he_backend.cpp 415	[1;31mConstant_1 took 131ms[0m
+[INFO] 2019-03-19T18:15:17z src/he_backend.cpp 333	[1;32m[ Constant_3 ][0m
+[INFO] 2019-03-19T18:15:17z src/he_backend.cpp 343	Constant shape {4}
+[INFO] 2019-03-19T18:15:17z src/he_backend.cpp 469	Inputs: 
+[INFO] 2019-03-19T18:15:17z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-19T18:15:17z src/he_backend.cpp 415	[1;31mConstant_3 took 1ms[0m
+[INFO] 2019-03-19T18:15:17z src/he_backend.cpp 333	[1;32m[ Constant_2 ][0m
+[INFO] 2019-03-19T18:15:17z src/he_backend.cpp 343	Constant shape {4}
+[INFO] 2019-03-19T18:15:17z src/he_backend.cpp 469	Inputs: 
+[INFO] 2019-03-19T18:15:17z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-19T18:15:17z src/he_backend.cpp 415	[1;31mConstant_2 took 1ms[0m
+[INFO] 2019-03-19T18:15:17z src/he_backend.cpp 333	[1;32m[ Convolution_6 ][0m
+[INFO] 2019-03-19T18:15:17z src/he_backend.cpp 469	Inputs: Cipher, Plain
+[INFO] 2019-03-19T18:15:17z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-19T18:15:17z src/seal/kernel/convolution_seal.hpp 85	Convolution output size 144
+[INFO] 2019-03-19T18:15:18z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 0
+[INFO] 2019-03-19T18:17:26z src/he_backend.cpp 415	[1;31mConvolution_6 took 129138ms[0m
+[INFO] 2019-03-19T18:17:26z src/he_backend.cpp 333	[1;32m[ BatchNormInference_7 ][0m
+[INFO] 2019-03-19T18:17:26z src/he_backend.cpp 469	Inputs: Plain, Plain
+[INFO] 2019-03-19T18:17:26z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-19T18:17:33z src/he_backend.cpp 415	[1;31mBatchNormInference_7 took 6088ms[0m
+[INFO] 2019-03-19T18:17:33z src/he_backend.cpp 333	[1;32m[ Result_8 ][0m
+[INFO] 2019-03-19T18:17:33z src/he_backend.cpp 469	Inputs: Cipher
+[INFO] 2019-03-19T18:17:33z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-19T18:17:33z src/he_backend.cpp 415	[1;31mResult_8 took 0ms[0m
+[INFO] 2019-03-19T18:17:33z src/he_backend.cpp 423	[1;32mTotal time 135360 (ms) [0m
+[INFO] 2019-03-19T18:17:33z src/he_backend.cpp 333	[1;32m[ Parameter_9 ][0m
+[INFO] 2019-03-19T18:17:33z src/he_backend.cpp 338	Parameter shape {1, 3, 10, 10}
+[INFO] 2019-03-19T18:17:33z src/he_backend.cpp 333	[1;32m[ Constant_124 ][0m
+[INFO] 2019-03-19T18:17:33z src/he_backend.cpp 343	Constant shape {1, 4, 6, 6}
+[INFO] 2019-03-19T18:17:33z src/he_backend.cpp 469	Inputs: 
+[INFO] 2019-03-19T18:17:33z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-19T18:17:33z src/he_backend.cpp 415	[1;31mConstant_124 took 24ms[0m
+[INFO] 2019-03-19T18:17:33z src/he_backend.cpp 333	[1;32m[ Constant_125 ][0m
+[INFO] 2019-03-19T18:17:33z src/he_backend.cpp 343	Constant shape {4, 3, 5, 5}
+[INFO] 2019-03-19T18:17:33z src/he_backend.cpp 469	Inputs: 
+[INFO] 2019-03-19T18:17:33z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-19T18:17:33z src/he_backend.cpp 415	[1;31mConstant_125 took 116ms[0m
+[INFO] 2019-03-19T18:17:33z src/he_backend.cpp 333	[1;32m[ Convolution_113 ][0m
+[INFO] 2019-03-19T18:17:33z src/he_backend.cpp 469	Inputs: Cipher, Plain
+[INFO] 2019-03-19T18:17:33z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-19T18:17:33z src/seal/kernel/convolution_seal.hpp 85	Convolution output size 144
+[INFO] 2019-03-19T18:17:34z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 0
+[INFO] 2019-03-19T18:19:41z src/he_backend.cpp 415	[1;31mConvolution_113 took 128721ms[0m
+[INFO] 2019-03-19T18:19:41z src/he_backend.cpp 333	[1;32m[ Add_115 ][0m
+[INFO] 2019-03-19T18:19:41z src/he_backend.cpp 469	Inputs: Cipher, Plain
+[INFO] 2019-03-19T18:19:41z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-19T18:19:42z src/he_backend.cpp 415	[1;31mAdd_115 took 247ms[0m
+[INFO] 2019-03-19T18:19:42z src/he_backend.cpp 333	[1;32m[ Result_17 ][0m
+[INFO] 2019-03-19T18:19:42z src/he_backend.cpp 469	Inputs: Cipher
+[INFO] 2019-03-19T18:19:42z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-19T18:19:42z src/he_backend.cpp 415	[1;31mResult_17 took 0ms[0m
+[INFO] 2019-03-19T18:19:42z src/he_backend.cpp 423	[1;32mTotal time 129108 (ms) [0m
+[       OK ] HE_SEAL_CKKS.batch_norm_fusion_he_large (272663 ms)
+[----------] 1 test from HE_SEAL_CKKS (272663 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test case ran. (272663 ms total)
+[  PASSED  ] 1 test.
