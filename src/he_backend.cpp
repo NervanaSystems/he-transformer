@@ -547,33 +547,33 @@ void runtime::he::HEBackend::generate_calls(
       const ngraph::op::BatchNormInference* bn =
           static_cast<const ngraph::op::BatchNormInference*>(&node);
       double eps = bn->get_eps_value();
-      NGRAPH_INFO << "eps " << eps;
-      NGRAPH_INFO << "args.size() " << args.size();
-      assert(args.size() == 5);
+      NGRAPH_ASSERT(args.size() == 5)
+          << "BatchNormInference has " << args.size()
+          << "arguments (expected 5).";
 
       auto shape = node.get_input_shape(2);
-      NGRAPH_INFO << "Input shape " << join(shape, "x");
+      // TODO: cleanup
+      if (batch_size != 1) {
+        shape[0] = shape[0] / batch_size;
+      }
 
       auto gamma = dynamic_pointer_cast<HEPlainTensor>(args[0]);
       auto beta = dynamic_pointer_cast<HEPlainTensor>(args[1]);
       auto input = dynamic_pointer_cast<HECipherTensor>(args[2]);
-
       auto mean = dynamic_pointer_cast<HEPlainTensor>(args[3]);
       auto variance = dynamic_pointer_cast<HEPlainTensor>(args[4]);
 
-      assert(out0_cipher != nullptr);
-      assert(gamma != nullptr);
-      assert(beta != nullptr);
-      assert(input != nullptr);
-      assert(mean != nullptr);
-      assert(variance != nullptr);
+      NGRAPH_ASSERT(out0_cipher != nullptr) << "BatchNorm output not cipher";
+      NGRAPH_ASSERT(gamma != nullptr) << "BatchNorm gamma not plain";
+      NGRAPH_ASSERT(beta != nullptr) << "BatchNorm beta not plain";
+      NGRAPH_ASSERT(input != nullptr) << "BatchNorm input not cipher";
+      NGRAPH_ASSERT(mean != nullptr) << "BatchNorm mean not plaintext";
+      NGRAPH_ASSERT(variance != nullptr) << "BatchNorm variance not plaintext";
 
       runtime::he::kernel::batch_norm_inference(
           eps, gamma->get_elements(), beta->get_elements(),
           input->get_elements(), mean->get_elements(), variance->get_elements(),
-          out0_cipher->get_elements(), shape, this);
-
-      NGRAPH_INFO << "Done with BatchNormInference";
+          out0_cipher->get_elements(), shape, batch_size, this);
       break;
     }
     case OP_TYPEID::Broadcast: {
