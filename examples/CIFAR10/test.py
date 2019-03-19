@@ -108,7 +108,9 @@ def optimize_model_for_inference():
         IMAGE_SIZE = 24 if FLAGS.data_aug else 32
         if FLAGS.batch_norm:
             images = tf.constant(
-                1, dtype=tf.float32, shape=[1, IMAGE_SIZE, IMAGE_SIZE, 3])
+                1,
+                dtype=tf.float32,
+                shape=[FLAGS.batch_size, IMAGE_SIZE, IMAGE_SIZE, 3])
         else:
             images = tf.constant(
                 1,
