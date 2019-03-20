@@ -47,10 +47,13 @@ def cryptonets_test(x):
     with tf.name_scope('conv1'):
         W_conv1 = load_variable("W_conv1", [5, 5, 1, NUM_KERNELS])
         h_conv1 = common.conv2d_stride_2_valid(x_image, W_conv1)
+        paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]],
+                               name='pad_const')
+        h_conv1 = tf.pad(h_conv1, paddings)
         h_conv1 = tf.reshape(h_conv1, [-1, FC1_SIZE])
-
         bn_beta = load_variable('batch_normalization_beta', [FC1_SIZE])
         bn_gamma = load_variable('batch_normalization_gamma', [FC1_SIZE])
+        # Placeholder. TODO: replace with actual values
         h_conv1 = h_conv1 * bn_gamma + bn_beta
 
         #h_conv1 = tf.layers.batch_normalization(h_conv1, training=False)
@@ -96,24 +99,25 @@ def test_mnist_cnn(FLAGS):
     y_conv = cryptonets_test(x)
 
     with tf.Session() as sess:
-        start_time = time.time()
+
         x_test = mnist.test.images[:FLAGS.batch_size]
         y_test = mnist.test.labels[:FLAGS.batch_size]
-        # Run model
+        # Warmup
+        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
+        # Trials
+        start_time = time.time()
         y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
         y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
-        #y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
-        #y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
-        #y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
-        #y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
-        #y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
-        #y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
-        #y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
-        #y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
+        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
+        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
+        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
+        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
+        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
+        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
+        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
+        y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
         elasped_time = time.time() - start_time
-        print("total time(s)", elasped_time)
-
-    exit(1)
+        print("total time (1 trial) (s)", elasped_time)
 
     x_test_batch = mnist.test.images[:FLAGS.batch_size]
     y_test_batch = mnist.test.labels[:FLAGS.batch_size]
@@ -121,12 +125,12 @@ def test_mnist_cnn(FLAGS):
     y_test = mnist.test.labels
 
     # Run warm-up and 10 trials
-    with tf.Session() as sess:
+    '''with tf.Session() as sess:
         start_time = time.time()
         # Run model
         y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
         elasped_time = time.time() - start_time
-        print("total time warmup:", elasped_time)
+        print("total time warmup:", elasped_time)'''
 
     # Avoid performing in a session, to allow he backends to report accuracy.
     if FLAGS.report_accuracy:
@@ -136,28 +140,12 @@ def test_mnist_cnn(FLAGS):
         test_accuracy = np.mean(correct_prediction)
 
         print('Error count', error_count, 'of', FLAGS.batch_size, 'elements.')
-        print('Accuracy with ' + network + ': %g ' % test_accuracy)
+        print('Accuracy with ' + ': %g ' % test_accuracy)
 
     if FLAGS.save_batch:
         x_test_batch.tofile("x_test_" + str(FLAGS.batch_size) + ".bin")
         y_label_batch.astype('float32').tofile("y_label_" +
                                                str(FLAGS.batch_size) + ".bin")
-
-    y_label_batch = np.argmax(y_test_batch, 1)
-
-    if FLAGS.save_batch:
-        x_test_batch.tofile("x_test_" + str(FLAGS.batch_size) + ".bin")
-        y_label_batch.astype('float32').tofile("y_label_" +
-                                               str(FLAGS.batch_size) + ".bin")
-
-    # Avoid performing in a session, to allow he backends to report accuracy.
-    if FLAGS.report_accuracy:
-        correct_prediction = np.equal(np.argmax(y_conv_val, 1), y_label_batch)
-        error_count = np.size(correct_prediction) - np.sum(correct_prediction)
-        test_accuracy = np.mean(correct_prediction)
-
-        print('Error count', error_count, 'of', FLAGS.batch_size, 'elements.')
-        print('Accuracy : %g ' % test_accuracy)
 
     # Rename serialized graph
     try:
@@ -204,4 +192,6 @@ if __name__ == '__main__':
         help='Whether or not to save the compute the test accuracy.')
 
     FLAGS, unparsed = parser.parse_known_args()
+
+    print('FLAGS.report_accuracy', FLAGS.report_accuracy)
     tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)

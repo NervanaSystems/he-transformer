@@ -56,8 +56,16 @@ def cryptonets_train(x, is_training):
         W_conv1 = tf.clip_by_value(W_conv1, -1, 1)
         W_conv1 = straight_through_estimator(W_conv1)
         h_conv1 = common.conv2d_stride_2_valid(x_image, W_conv1)
+        paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]],
+                               name='pad_const')
+        h_conv1 = tf.pad(h_conv1, paddings)
         h_conv1 = tf.reshape(h_conv1, [-1, FC1_SIZE])
+
+        # use object version to get variables
+        #bn_instance = tf.layers.BatchNormalization(trainable=True)
+        #h_conv1 = bn_instance.apply(h_conv1)
         h_conv1 = tf.layers.batch_normalization(h_conv1, training=is_training)
+
         h_conv1 = tf.square(h_conv1)
 
     with tf.name_scope('fc1'):
@@ -103,7 +111,10 @@ def main(_):
     train_phase = tf.placeholder(tf.bool, name="is_training")
 
     # Build the graph for the deep net
-    y_conv = cryptonets_train(x, train_phase)
+    y_conv, bn_instance = cryptonets_train(x, train_phase)
+
+    print('tf.trainable_variables', tf.trainable_variables())
+    print('tf.all_variables', tf.all_variables())
 
     with tf.name_scope('loss'):
         cross_entropy = tf.nn.softmax_cross_entropy_with_logits(

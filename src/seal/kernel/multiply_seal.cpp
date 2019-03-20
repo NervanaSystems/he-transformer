@@ -18,7 +18,6 @@
 #include "seal/bfv/kernel/multiply_seal_bfv.hpp"
 #include "seal/ckks/he_seal_ckks_backend.hpp"
 #include "seal/ckks/kernel/multiply_seal_ckks.hpp"
-#include "seal/kernel/multiply_seal.hpp"
 #include "seal/kernel/negate_seal.hpp"
 
 using namespace std;
@@ -90,9 +89,10 @@ void he_seal::kernel::scalar_multiply(
               he_seal_backend->get_valued_plaintext(-1))
               ->m_plaintext;
 
-      if (arg1_plaintext == seal_0_plaintext) {
+      /* if (arg1_plaintext == seal_0_plaintext) {
         optimization = Optimization::mult_zero;
-      } else if ((arg1_plaintext == seal_1_plaintext)) {
+      } else */
+      if ((arg1_plaintext == seal_1_plaintext)) {
         optimization = Optimization::mult_one;
       } else if ((arg1_plaintext == seal_neg1_plaintext)) {
         optimization = Optimization::mult_neg_one;

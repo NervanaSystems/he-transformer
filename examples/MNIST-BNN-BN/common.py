@@ -13,7 +13,7 @@ def avg_pool_3x3_same_size(x):
 
 
 SCALING = 1
-FC1_SIZE = int(720 * SCALING)
+FC1_SIZE = int(845 * SCALING)
 FC2_SIZE = int(100 * SCALING)
 NUM_KERNELS = int(5 * SCALING)
 
