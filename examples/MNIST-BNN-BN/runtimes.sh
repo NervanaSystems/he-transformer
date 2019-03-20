@@ -1,7 +1,4 @@
-
-
 mkdir -p runtimes
-
 
 # BNN-BN row 1 ~54s * 11 trials
 NGRAPH_ENCRYPT_DATA=1 \

@@ -111,7 +111,7 @@ def main(_):
     train_phase = tf.placeholder(tf.bool, name="is_training")
 
     # Build the graph for the deep net
-    y_conv, bn_instance = cryptonets_train(x, train_phase)
+    y_conv = cryptonets_train(x, train_phase)
 
     print('tf.trainable_variables', tf.trainable_variables())
     print('tf.all_variables', tf.all_variables())

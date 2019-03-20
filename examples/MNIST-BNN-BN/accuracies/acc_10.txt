@@ -1,0 +1,1119 @@
+NUM_KERNELS 5
+FC1_SIZE 845
+FC2_SIZE 100
+Extracting /tmp/tensorflow/mnist/input_data/train-images-idx3-ubyte.gz
+Extracting /tmp/tensorflow/mnist/input_data/train-labels-idx1-ubyte.gz
+Extracting /tmp/tensorflow/mnist/input_data/t10k-images-idx3-ubyte.gz
+Extracting /tmp/tensorflow/mnist/input_data/t10k-labels-idx1-ubyte.gz
+tf.trainable_variables [<tf.Variable 'W_conv1:0' shape=(5, 5, 1, 5) dtype=float32_ref>, <tf.Variable 'batch_normalization/gamma:0' shape=(845,) dtype=float32_ref>, <tf.Variable 'batch_normalization/beta:0' shape=(845,) dtype=float32_ref>, <tf.Variable 'W_fc1:0' shape=(845, 100) dtype=float32_ref>, <tf.Variable 'batch_normalization_1/gamma:0' shape=(100,) dtype=float32_ref>, <tf.Variable 'batch_normalization_1/beta:0' shape=(100,) dtype=float32_ref>, <tf.Variable 'W_fc2:0' shape=(100, 10) dtype=float32_ref>, <tf.Variable 'batch_normalization_2/gamma:0' shape=(10,) dtype=float32_ref>, <tf.Variable 'batch_normalization_2/beta:0' shape=(10,) dtype=float32_ref>]
+tf.all_variables [<tf.Variable 'W_conv1:0' shape=(5, 5, 1, 5) dtype=float32_ref>, <tf.Variable 'batch_normalization/gamma:0' shape=(845,) dtype=float32_ref>, <tf.Variable 'batch_normalization/beta:0' shape=(845,) dtype=float32_ref>, <tf.Variable 'batch_normalization/moving_mean:0' shape=(845,) dtype=float32_ref>, <tf.Variable 'batch_normalization/moving_variance:0' shape=(845,) dtype=float32_ref>, <tf.Variable 'W_fc1:0' shape=(845, 100) dtype=float32_ref>, <tf.Variable 'batch_normalization_1/gamma:0' shape=(100,) dtype=float32_ref>, <tf.Variable 'batch_normalization_1/beta:0' shape=(100,) dtype=float32_ref>, <tf.Variable 'batch_normalization_1/moving_mean:0' shape=(100,) dtype=float32_ref>, <tf.Variable 'batch_normalization_1/moving_variance:0' shape=(100,) dtype=float32_ref>, <tf.Variable 'W_fc2:0' shape=(100, 10) dtype=float32_ref>, <tf.Variable 'batch_normalization_2/gamma:0' shape=(10,) dtype=float32_ref>, <tf.Variable 'batch_normalization_2/beta:0' shape=(10,) dtype=float32_ref>, <tf.Variable 'batch_normalization_2/moving_mean:0' shape=(10,) dtype=float32_ref>, <tf.Variable 'batch_normalization_2/moving_variance:0' shape=(10,) dtype=float32_ref>]
+step 0, training accuracy 0.1, 47.5545 msec to evaluate
+step 100, training accuracy 0.1, 3.93748 msec to evaluate
+step 200, training accuracy 0.28, 4.05526 msec to evaluate
+step 300, training accuracy 0.4, 3.68381 msec to evaluate
+step 400, training accuracy 0.28, 3.32117 msec to evaluate
+step 500, training accuracy 0.34, 3.98779 msec to evaluate
+step 600, training accuracy 0.3, 4.60029 msec to evaluate
+step 700, training accuracy 0.3, 4.24957 msec to evaluate
+step 800, training accuracy 0.46, 4.05169 msec to evaluate
+step 900, training accuracy 0.44, 4.14705 msec to evaluate
+test accuracy 0.5179
+step 1000, training accuracy 0.46, 4.00472 msec to evaluate
+step 1100, training accuracy 0.56, 3.42226 msec to evaluate
+step 1200, training accuracy 0.62, 4.44078 msec to evaluate
+step 1300, training accuracy 0.52, 3.88098 msec to evaluate
+step 1400, training accuracy 0.46, 4.56142 msec to evaluate
+step 1500, training accuracy 0.68, 3.92294 msec to evaluate
+step 1600, training accuracy 0.68, 4.13108 msec to evaluate
+step 1700, training accuracy 0.72, 3.93915 msec to evaluate
+step 1800, training accuracy 0.76, 4.26364 msec to evaluate
+step 1900, training accuracy 0.58, 3.79348 msec to evaluate
+test accuracy 0.7418
+step 2000, training accuracy 0.68, 3.92032 msec to evaluate
+step 2100, training accuracy 0.72, 4.06623 msec to evaluate
+step 2200, training accuracy 0.8, 3.60155 msec to evaluate
+step 2300, training accuracy 0.7, 4.60672 msec to evaluate
+step 2400, training accuracy 0.66, 3.72815 msec to evaluate
+step 2500, training accuracy 0.66, 4.46177 msec to evaluate
+step 2600, training accuracy 0.76, 3.84688 msec to evaluate
+step 2700, training accuracy 0.82, 4.34136 msec to evaluate
+step 2800, training accuracy 0.8, 4.56882 msec to evaluate
+step 2900, training accuracy 0.74, 3.48997 msec to evaluate
+test accuracy 0.8226
+step 3000, training accuracy 0.82, 3.08299 msec to evaluate
+step 3100, training accuracy 0.8, 3.83377 msec to evaluate
+step 3200, training accuracy 0.74, 3.90339 msec to evaluate
+step 3300, training accuracy 0.92, 3.67498 msec to evaluate
+step 3400, training accuracy 0.82, 3.99804 msec to evaluate
+step 3500, training accuracy 0.84, 4.0586 msec to evaluate
+step 3600, training accuracy 0.8, 4.48227 msec to evaluate
+step 3700, training accuracy 0.86, 3.93605 msec to evaluate
+step 3800, training accuracy 0.8, 4.28891 msec to evaluate
+step 3900, training accuracy 0.86, 4.38833 msec to evaluate
+test accuracy 0.8535
+step 4000, training accuracy 0.82, 3.00074 msec to evaluate
+step 4100, training accuracy 0.84, 3.94964 msec to evaluate
+step 4200, training accuracy 0.92, 4.19641 msec to evaluate
+step 4300, training accuracy 0.84, 3.98874 msec to evaluate
+step 4400, training accuracy 0.86, 3.94797 msec to evaluate
+step 4500, training accuracy 0.82, 4.28438 msec to evaluate
+step 4600, training accuracy 0.84, 3.8836 msec to evaluate
+step 4700, training accuracy 0.8, 3.66116 msec to evaluate
+step 4800, training accuracy 1, 3.61753 msec to evaluate
+step 4900, training accuracy 0.84, 3.9556 msec to evaluate
+test accuracy 0.8948
+step 5000, training accuracy 0.88, 3.14736 msec to evaluate
+step 5100, training accuracy 0.8, 4.32658 msec to evaluate
+step 5200, training accuracy 0.9, 4.01163 msec to evaluate
+step 5300, training accuracy 0.86, 4.08959 msec to evaluate
+step 5400, training accuracy 0.9, 4.15063 msec to evaluate
+step 5500, training accuracy 0.86, 3.5646 msec to evaluate
+step 5600, training accuracy 0.94, 4.04835 msec to evaluate
+step 5700, training accuracy 0.92, 3.79992 msec to evaluate
+step 5800, training accuracy 0.8, 4.81606 msec to evaluate
+step 5900, training accuracy 0.88, 4.08411 msec to evaluate
+test accuracy 0.9071
+step 6000, training accuracy 0.94, 4.33898 msec to evaluate
+step 6100, training accuracy 0.86, 3.74985 msec to evaluate
+step 6200, training accuracy 0.88, 4.41241 msec to evaluate
+step 6300, training accuracy 0.92, 3.7024 msec to evaluate
+step 6400, training accuracy 0.86, 3.82185 msec to evaluate
+step 6500, training accuracy 0.84, 3.75867 msec to evaluate
+step 6600, training accuracy 0.94, 4.51589 msec to evaluate
+step 6700, training accuracy 0.9, 4.66681 msec to evaluate
+step 6800, training accuracy 0.88, 3.99947 msec to evaluate
+step 6900, training accuracy 0.94, 4.08769 msec to evaluate
+test accuracy 0.9083
+step 7000, training accuracy 0.92, 4.22645 msec to evaluate
+step 7100, training accuracy 0.98, 3.98302 msec to evaluate
+step 7200, training accuracy 0.86, 4.20284 msec to evaluate
+step 7300, training accuracy 0.94, 4.39477 msec to evaluate
+step 7400, training accuracy 0.94, 3.97944 msec to evaluate
+step 7500, training accuracy 0.86, 4.02141 msec to evaluate
+step 7600, training accuracy 0.84, 4.83823 msec to evaluate
+step 7700, training accuracy 0.86, 3.24297 msec to evaluate
+step 7800, training accuracy 0.9, 4.83012 msec to evaluate
+step 7900, training accuracy 0.96, 4.84443 msec to evaluate
+test accuracy 0.9212
+step 8000, training accuracy 0.88, 3.59583 msec to evaluate
+step 8100, training accuracy 0.9, 4.86732 msec to evaluate
+step 8200, training accuracy 0.94, 4.76623 msec to evaluate
+step 8300, training accuracy 1, 4.09603 msec to evaluate
+step 8400, training accuracy 0.9, 4.05717 msec to evaluate
+step 8500, training accuracy 0.96, 4.30298 msec to evaluate
+step 8600, training accuracy 0.88, 4.66442 msec to evaluate
+step 8700, training accuracy 0.94, 4.19235 msec to evaluate
+step 8800, training accuracy 0.9, 3.32189 msec to evaluate
+step 8900, training accuracy 0.9, 4.42624 msec to evaluate
+test accuracy 0.9257
+step 9000, training accuracy 0.94, 3.73054 msec to evaluate
+step 9100, training accuracy 0.94, 4.2336 msec to evaluate
+step 9200, training accuracy 0.98, 4.64892 msec to evaluate
+step 9300, training accuracy 0.92, 4.5979 msec to evaluate
+step 9400, training accuracy 0.94, 3.67284 msec to evaluate
+step 9500, training accuracy 0.96, 4.64153 msec to evaluate
+step 9600, training accuracy 0.96, 3.5212 msec to evaluate
+step 9700, training accuracy 0.9, 3.9432 msec to evaluate
+step 9800, training accuracy 0.92, 4.75693 msec to evaluate
+step 9900, training accuracy 0.9, 3.57056 msec to evaluate
+test accuracy 0.921
+step 10000, training accuracy 1, 3.56221 msec to evaluate
+step 10100, training accuracy 0.96, 3.99733 msec to evaluate
+step 10200, training accuracy 0.98, 3.61276 msec to evaluate
+step 10300, training accuracy 0.92, 4.51207 msec to evaluate
+step 10400, training accuracy 0.92, 4.51398 msec to evaluate
+step 10500, training accuracy 0.9, 3.73006 msec to evaluate
+step 10600, training accuracy 0.94, 4.23265 msec to evaluate
+step 10700, training accuracy 0.88, 3.81851 msec to evaluate
+step 10800, training accuracy 0.9, 3.88455 msec to evaluate
+step 10900, training accuracy 0.9, 3.88622 msec to evaluate
+test accuracy 0.93
+step 11000, training accuracy 0.98, 3.57628 msec to evaluate
+step 11100, training accuracy 0.9, 3.85952 msec to evaluate
+step 11200, training accuracy 0.9, 3.93748 msec to evaluate
+step 11300, training accuracy 0.98, 4.33064 msec to evaluate
+step 11400, training accuracy 0.92, 4.86684 msec to evaluate
+step 11500, training accuracy 0.9, 3.72958 msec to evaluate
+step 11600, training accuracy 0.9, 3.60227 msec to evaluate
+step 11700, training accuracy 0.92, 3.76534 msec to evaluate
+step 11800, training accuracy 0.92, 3.94225 msec to evaluate
+step 11900, training accuracy 0.92, 5.65648 msec to evaluate
+test accuracy 0.9299
+step 12000, training accuracy 1, 2.64907 msec to evaluate
+step 12100, training accuracy 0.9, 3.9103 msec to evaluate
+step 12200, training accuracy 0.98, 4.00972 msec to evaluate
+step 12300, training accuracy 0.98, 4.02093 msec to evaluate
+step 12400, training accuracy 0.84, 4.1883 msec to evaluate
+step 12500, training accuracy 0.94, 3.72148 msec to evaluate
+step 12600, training accuracy 0.92, 3.77703 msec to evaluate
+step 12700, training accuracy 0.98, 4.17495 msec to evaluate
+step 12800, training accuracy 0.96, 4.09746 msec to evaluate
+step 12900, training accuracy 0.92, 4.02951 msec to evaluate
+test accuracy 0.9374
+step 13000, training accuracy 0.94, 4.48918 msec to evaluate
+step 13100, training accuracy 0.96, 4.0977 msec to evaluate
+step 13200, training accuracy 0.96, 3.83377 msec to evaluate
+step 13300, training accuracy 0.92, 4.06289 msec to evaluate
+step 13400, training accuracy 0.94, 3.81017 msec to evaluate
+step 13500, training accuracy 0.92, 4.22215 msec to evaluate
+step 13600, training accuracy 0.88, 4.2069 msec to evaluate
+step 13700, training accuracy 0.94, 3.94154 msec to evaluate
+step 13800, training accuracy 0.94, 3.55744 msec to evaluate
+step 13900, training accuracy 0.96, 4.06551 msec to evaluate
+test accuracy 0.9179
+step 14000, training accuracy 0.98, 3.56555 msec to evaluate
+step 14100, training accuracy 0.96, 4.05383 msec to evaluate
+step 14200, training accuracy 0.88, 4.20475 msec to evaluate
+step 14300, training accuracy 0.92, 3.56174 msec to evaluate
+step 14400, training accuracy 0.9, 3.9041 msec to evaluate
+step 14500, training accuracy 0.96, 3.4852 msec to evaluate
+step 14600, training accuracy 0.98, 4.14348 msec to evaluate
+step 14700, training accuracy 0.96, 4.3385 msec to evaluate
+step 14800, training accuracy 0.96, 3.94654 msec to evaluate
+step 14900, training accuracy 0.88, 3.49212 msec to evaluate
+test accuracy 0.9429
+step 15000, training accuracy 0.94, 3.39317 msec to evaluate
+step 15100, training accuracy 1, 4.21548 msec to evaluate
+step 15200, training accuracy 0.94, 4.11534 msec to evaluate
+step 15300, training accuracy 0.96, 4.06122 msec to evaluate
+step 15400, training accuracy 0.92, 3.78799 msec to evaluate
+step 15500, training accuracy 0.94, 3.64542 msec to evaluate
+step 15600, training accuracy 0.98, 4.44961 msec to evaluate
+step 15700, training accuracy 0.98, 4.00877 msec to evaluate
+step 15800, training accuracy 0.96, 3.76177 msec to evaluate
+step 15900, training accuracy 0.94, 4.10986 msec to evaluate
+test accuracy 0.9401
+step 16000, training accuracy 0.96, 2.9726 msec to evaluate
+step 16100, training accuracy 0.98, 3.63731 msec to evaluate
+step 16200, training accuracy 0.98, 4.35781 msec to evaluate
+step 16300, training accuracy 0.9, 3.96872 msec to evaluate
+step 16400, training accuracy 0.96, 4.42362 msec to evaluate
+step 16500, training accuracy 1, 3.38793 msec to evaluate
+step 16600, training accuracy 1, 3.73268 msec to evaluate
+step 16700, training accuracy 0.92, 4.30799 msec to evaluate
+step 16800, training accuracy 0.98, 3.86763 msec to evaluate
+step 16900, training accuracy 1, 4.32062 msec to evaluate
+test accuracy 0.9455
+step 17000, training accuracy 0.96, 4.2727 msec to evaluate
+step 17100, training accuracy 0.96, 4.22382 msec to evaluate
+step 17200, training accuracy 0.98, 3.92723 msec to evaluate
+step 17300, training accuracy 0.98, 5.10049 msec to evaluate
+step 17400, training accuracy 0.96, 3.50022 msec to evaluate
+step 17500, training accuracy 0.94, 3.58868 msec to evaluate
+step 17600, training accuracy 0.98, 3.7415 msec to evaluate
+step 17700, training accuracy 0.98, 4.4558 msec to evaluate
+step 17800, training accuracy 1, 3.79515 msec to evaluate
+step 17900, training accuracy 0.94, 3.60894 msec to evaluate
+test accuracy 0.9496
+step 18000, training accuracy 0.96, 3.75724 msec to evaluate
+step 18100, training accuracy 0.98, 3.76034 msec to evaluate
+step 18200, training accuracy 0.98, 3.97515 msec to evaluate
+step 18300, training accuracy 0.92, 4.49014 msec to evaluate
+step 18400, training accuracy 0.92, 3.66712 msec to evaluate
+step 18500, training accuracy 0.98, 3.80301 msec to evaluate
+step 18600, training accuracy 0.96, 3.74699 msec to evaluate
+step 18700, training accuracy 0.94, 3.5038 msec to evaluate
+step 18800, training accuracy 0.96, 4.19092 msec to evaluate
+step 18900, training accuracy 0.96, 3.88598 msec to evaluate
+test accuracy 0.9466
+step 19000, training accuracy 0.94, 3.52669 msec to evaluate
+step 19100, training accuracy 1, 5.42569 msec to evaluate
+step 19200, training accuracy 1, 4.39072 msec to evaluate
+step 19300, training accuracy 0.92, 3.84498 msec to evaluate
+step 19400, training accuracy 0.96, 3.99327 msec to evaluate
+step 19500, training accuracy 0.94, 4.02379 msec to evaluate
+step 19600, training accuracy 0.96, 3.90816 msec to evaluate
+step 19700, training accuracy 0.96, 4.26888 msec to evaluate
+step 19800, training accuracy 0.94, 3.73697 msec to evaluate
+step 19900, training accuracy 0.94, 4.08173 msec to evaluate
+test accuracy 0.9407
+step 20000, training accuracy 0.9, 2.92563 msec to evaluate
+step 20100, training accuracy 0.98, 4.31395 msec to evaluate
+step 20200, training accuracy 0.94, 3.63255 msec to evaluate
+step 20300, training accuracy 0.96, 3.79348 msec to evaluate
+step 20400, training accuracy 0.94, 4.10843 msec to evaluate
+step 20500, training accuracy 0.96, 4.51016 msec to evaluate
+step 20600, training accuracy 0.9, 3.28517 msec to evaluate
+step 20700, training accuracy 0.98, 4.02927 msec to evaluate
+step 20800, training accuracy 0.92, 4.22072 msec to evaluate
+step 20900, training accuracy 0.96, 7.08747 msec to evaluate
+test accuracy 0.944
+step 21000, training accuracy 1, 3.9494 msec to evaluate
+step 21100, training accuracy 0.98, 4.73428 msec to evaluate
+step 21200, training accuracy 0.9, 4.10676 msec to evaluate
+step 21300, training accuracy 0.96, 3.90148 msec to evaluate
+step 21400, training accuracy 0.98, 4.36974 msec to evaluate
+step 21500, training accuracy 0.98, 4.21453 msec to evaluate
+step 21600, training accuracy 0.88, 4.40311 msec to evaluate
+step 21700, training accuracy 0.9, 3.81994 msec to evaluate
+step 21800, training accuracy 0.94, 3.45492 msec to evaluate
+step 21900, training accuracy 0.94, 3.32189 msec to evaluate
+test accuracy 0.9527
+step 22000, training accuracy 0.94, 3.48067 msec to evaluate
+step 22100, training accuracy 0.98, 4.32467 msec to evaluate
+step 22200, training accuracy 0.92, 4.40836 msec to evaluate
+step 22300, training accuracy 0.98, 4.06885 msec to evaluate
+step 22400, training accuracy 0.98, 4.13299 msec to evaluate
+step 22500, training accuracy 0.88, 3.89481 msec to evaluate
+step 22600, training accuracy 0.98, 4.05002 msec to evaluate
+step 22700, training accuracy 0.98, 3.88503 msec to evaluate
+step 22800, training accuracy 0.94, 4.03309 msec to evaluate
+step 22900, training accuracy 0.9, 3.84474 msec to evaluate
+test accuracy 0.9558
+step 23000, training accuracy 0.9, 4.11201 msec to evaluate
+step 23100, training accuracy 0.98, 3.49975 msec to evaluate
+step 23200, training accuracy 0.98, 4.29416 msec to evaluate
+step 23300, training accuracy 0.96, 4.06408 msec to evaluate
+step 23400, training accuracy 0.98, 3.56269 msec to evaluate
+step 23500, training accuracy 0.92, 4.29988 msec to evaluate
+step 23600, training accuracy 0.92, 3.87478 msec to evaluate
+step 23700, training accuracy 0.94, 3.9866 msec to evaluate
+step 23800, training accuracy 0.98, 5.12624 msec to evaluate
+step 23900, training accuracy 0.94, 4.0009 msec to evaluate
+test accuracy 0.9572
+step 24000, training accuracy 0.96, 3.8991 msec to evaluate
+step 24100, training accuracy 0.96, 4.14491 msec to evaluate
+step 24200, training accuracy 0.98, 4.82988 msec to evaluate
+step 24300, training accuracy 0.96, 4.04263 msec to evaluate
+step 24400, training accuracy 0.98, 4.23384 msec to evaluate
+step 24500, training accuracy 0.96, 3.89147 msec to evaluate
+step 24600, training accuracy 0.96, 4.26817 msec to evaluate
+step 24700, training accuracy 0.94, 3.42083 msec to evaluate
+step 24800, training accuracy 0.98, 4.36473 msec to evaluate
+step 24900, training accuracy 0.96, 3.85761 msec to evaluate
+test accuracy 0.9575
+step 25000, training accuracy 0.96, 3.67141 msec to evaluate
+step 25100, training accuracy 0.92, 3.64041 msec to evaluate
+step 25200, training accuracy 0.98, 3.89719 msec to evaluate
+step 25300, training accuracy 0.96, 3.55244 msec to evaluate
+step 25400, training accuracy 0.96, 3.97539 msec to evaluate
+step 25500, training accuracy 0.98, 4.09389 msec to evaluate
+step 25600, training accuracy 0.98, 3.8867 msec to evaluate
+step 25700, training accuracy 0.96, 3.94845 msec to evaluate
+step 25800, training accuracy 0.98, 4.18806 msec to evaluate
+step 25900, training accuracy 1, 4.82631 msec to evaluate
+test accuracy 0.9597
+step 26000, training accuracy 0.98, 4.78578 msec to evaluate
+step 26100, training accuracy 0.98, 4.10128 msec to evaluate
+step 26200, training accuracy 1, 4.1585 msec to evaluate
+step 26300, training accuracy 1, 3.91245 msec to evaluate
+step 26400, training accuracy 1, 3.2258 msec to evaluate
+step 26500, training accuracy 0.96, 4.34113 msec to evaluate
+step 26600, training accuracy 0.94, 4.55308 msec to evaluate
+step 26700, training accuracy 0.98, 3.66402 msec to evaluate
+step 26800, training accuracy 0.98, 4.2727 msec to evaluate
+step 26900, training accuracy 0.98, 4.54307 msec to evaluate
+test accuracy 0.9503
+step 27000, training accuracy 0.96, 3.72195 msec to evaluate
+step 27100, training accuracy 0.98, 4.44555 msec to evaluate
+step 27200, training accuracy 0.94, 4.01568 msec to evaluate
+step 27300, training accuracy 0.96, 3.96085 msec to evaluate
+step 27400, training accuracy 1, 4.02164 msec to evaluate
+step 27500, training accuracy 0.96, 2.93636 msec to evaluate
+step 27600, training accuracy 0.94, 4.12369 msec to evaluate
+step 27700, training accuracy 0.98, 4.10295 msec to evaluate
+step 27800, training accuracy 0.94, 4.14515 msec to evaluate
+step 27900, training accuracy 1, 6.29091 msec to evaluate
+test accuracy 0.9573
+step 28000, training accuracy 0.94, 4.47822 msec to evaluate
+step 28100, training accuracy 0.98, 3.77965 msec to evaluate
+step 28200, training accuracy 0.98, 3.95489 msec to evaluate
+step 28300, training accuracy 0.98, 3.77917 msec to evaluate
+step 28400, training accuracy 0.94, 4.00567 msec to evaluate
+step 28500, training accuracy 1, 4.46868 msec to evaluate
+step 28600, training accuracy 0.88, 3.6149 msec to evaluate
+step 28700, training accuracy 0.98, 4.29153 msec to evaluate
+step 28800, training accuracy 0.98, 4.70996 msec to evaluate
+step 28900, training accuracy 0.96, 4.99129 msec to evaluate
+test accuracy 0.9558
+step 29000, training accuracy 0.96, 4.96769 msec to evaluate
+step 29100, training accuracy 0.92, 4.41122 msec to evaluate
+step 29200, training accuracy 0.98, 4.43292 msec to evaluate
+step 29300, training accuracy 0.92, 4.40502 msec to evaluate
+step 29400, training accuracy 0.94, 3.69024 msec to evaluate
+step 29500, training accuracy 0.94, 3.98231 msec to evaluate
+step 29600, training accuracy 0.96, 4.27103 msec to evaluate
+step 29700, training accuracy 0.98, 3.45397 msec to evaluate
+step 29800, training accuracy 1, 4.25887 msec to evaluate
+step 29900, training accuracy 0.94, 4.18305 msec to evaluate
+test accuracy 0.9575
+step 30000, training accuracy 0.96, 4.47249 msec to evaluate
+step 30100, training accuracy 0.92, 3.85475 msec to evaluate
+step 30200, training accuracy 0.96, 3.84188 msec to evaluate
+step 30300, training accuracy 0.94, 3.7272 msec to evaluate
+step 30400, training accuracy 0.96, 3.49236 msec to evaluate
+step 30500, training accuracy 0.94, 3.92842 msec to evaluate
+step 30600, training accuracy 0.94, 4.2212 msec to evaluate
+step 30700, training accuracy 0.98, 3.77154 msec to evaluate
+step 30800, training accuracy 0.94, 3.56245 msec to evaluate
+step 30900, training accuracy 0.98, 3.92556 msec to evaluate
+test accuracy 0.9604
+step 31000, training accuracy 0.94, 4.1225 msec to evaluate
+step 31100, training accuracy 0.94, 3.96395 msec to evaluate
+step 31200, training accuracy 0.94, 4.09484 msec to evaluate
+step 31300, training accuracy 0.98, 4.67539 msec to evaluate
+step 31400, training accuracy 0.96, 4.06694 msec to evaluate
+step 31500, training accuracy 0.96, 4.19497 msec to evaluate
+step 31600, training accuracy 0.96, 3.42441 msec to evaluate
+step 31700, training accuracy 0.98, 3.84092 msec to evaluate
+step 31800, training accuracy 0.98, 4.43792 msec to evaluate
+step 31900, training accuracy 0.98, 4.32944 msec to evaluate
+test accuracy 0.9581
+step 32000, training accuracy 0.92, 2.45309 msec to evaluate
+step 32100, training accuracy 1, 4.21 msec to evaluate
+step 32200, training accuracy 0.98, 3.64423 msec to evaluate
+step 32300, training accuracy 0.98, 3.90291 msec to evaluate
+step 32400, training accuracy 1, 4.18162 msec to evaluate
+step 32500, training accuracy 0.94, 4.54807 msec to evaluate
+step 32600, training accuracy 0.96, 3.81374 msec to evaluate
+step 32700, training accuracy 0.98, 4.02451 msec to evaluate
+step 32800, training accuracy 1, 4.35305 msec to evaluate
+step 32900, training accuracy 0.92, 4.30632 msec to evaluate
+test accuracy 0.9634
+step 33000, training accuracy 1, 4.49395 msec to evaluate
+step 33100, training accuracy 0.98, 4.12655 msec to evaluate
+step 33200, training accuracy 0.96, 5.02276 msec to evaluate
+step 33300, training accuracy 0.96, 3.78585 msec to evaluate
+step 33400, training accuracy 0.92, 3.78084 msec to evaluate
+step 33500, training accuracy 0.96, 4.62532 msec to evaluate
+step 33600, training accuracy 1, 4.17399 msec to evaluate
+step 33700, training accuracy 0.92, 4.07863 msec to evaluate
+step 33800, training accuracy 1, 4.23789 msec to evaluate
+step 33900, training accuracy 0.98, 5.16248 msec to evaluate
+test accuracy 0.9652
+step 34000, training accuracy 1, 4.10771 msec to evaluate
+step 34100, training accuracy 0.98, 4.44913 msec to evaluate
+step 34200, training accuracy 0.92, 3.89576 msec to evaluate
+step 34300, training accuracy 1, 4.09031 msec to evaluate
+step 34400, training accuracy 0.96, 4.00853 msec to evaluate
+step 34500, training accuracy 0.92, 3.84259 msec to evaluate
+step 34600, training accuracy 0.96, 4.04 msec to evaluate
+step 34700, training accuracy 0.98, 4.10318 msec to evaluate
+step 34800, training accuracy 0.96, 3.58415 msec to evaluate
+step 34900, training accuracy 0.96, 4.1852 msec to evaluate
+test accuracy 0.9598
+step 35000, training accuracy 0.98, 5.12552 msec to evaluate
+step 35100, training accuracy 0.94, 3.80874 msec to evaluate
+step 35200, training accuracy 0.98, 3.65186 msec to evaluate
+step 35300, training accuracy 0.96, 3.76296 msec to evaluate
+step 35400, training accuracy 1, 3.62229 msec to evaluate
+step 35500, training accuracy 0.96, 4.79102 msec to evaluate
+step 35600, training accuracy 0.98, 4.32611 msec to evaluate
+step 35700, training accuracy 0.9, 3.61872 msec to evaluate
+step 35800, training accuracy 0.98, 3.93844 msec to evaluate
+step 35900, training accuracy 1, 3.92652 msec to evaluate
+test accuracy 0.9593
+step 36000, training accuracy 0.94, 3.46255 msec to evaluate
+step 36100, training accuracy 0.98, 4.80747 msec to evaluate
+step 36200, training accuracy 0.96, 3.80278 msec to evaluate
+step 36300, training accuracy 0.94, 3.95441 msec to evaluate
+step 36400, training accuracy 0.96, 3.54576 msec to evaluate
+step 36500, training accuracy 1, 4.01402 msec to evaluate
+step 36600, training accuracy 0.94, 3.80778 msec to evaluate
+step 36700, training accuracy 0.96, 4.91524 msec to evaluate
+step 36800, training accuracy 0.96, 3.93939 msec to evaluate
+step 36900, training accuracy 0.96, 4.98319 msec to evaluate
+test accuracy 0.9575
+step 37000, training accuracy 0.94, 3.92389 msec to evaluate
+step 37100, training accuracy 0.98, 3.80397 msec to evaluate
+step 37200, training accuracy 1, 4.00829 msec to evaluate
+step 37300, training accuracy 0.96, 3.9227 msec to evaluate
+step 37400, training accuracy 1, 3.5007 msec to evaluate
+step 37500, training accuracy 0.96, 3.90029 msec to evaluate
+step 37600, training accuracy 0.92, 3.71289 msec to evaluate
+step 37700, training accuracy 0.98, 4.24004 msec to evaluate
+step 37800, training accuracy 0.96, 4.46916 msec to evaluate
+step 37900, training accuracy 0.94, 4.2274 msec to evaluate
+test accuracy 0.9609
+step 38000, training accuracy 0.92, 3.94845 msec to evaluate
+step 38100, training accuracy 0.92, 4.31275 msec to evaluate
+step 38200, training accuracy 0.98, 3.98374 msec to evaluate
+step 38300, training accuracy 0.96, 4.0741 msec to evaluate
+step 38400, training accuracy 0.98, 4.39858 msec to evaluate
+step 38500, training accuracy 0.98, 3.54886 msec to evaluate
+step 38600, training accuracy 0.92, 4.59719 msec to evaluate
+step 38700, training accuracy 1, 3.78609 msec to evaluate
+step 38800, training accuracy 0.92, 4.01521 msec to evaluate
+step 38900, training accuracy 0.98, 4.37284 msec to evaluate
+test accuracy 0.9646
+step 39000, training accuracy 0.98, 4.56357 msec to evaluate
+step 39100, training accuracy 1, 4.40097 msec to evaluate
+step 39200, training accuracy 1, 3.68428 msec to evaluate
+step 39300, training accuracy 1, 4.14228 msec to evaluate
+step 39400, training accuracy 1, 4.27651 msec to evaluate
+step 39500, training accuracy 0.96, 3.98755 msec to evaluate
+step 39600, training accuracy 0.96, 3.45564 msec to evaluate
+step 39700, training accuracy 0.94, 4.14777 msec to evaluate
+step 39800, training accuracy 0.94, 3.68762 msec to evaluate
+step 39900, training accuracy 0.98, 3.97182 msec to evaluate
+test accuracy 0.9586
+step 40000, training accuracy 0.96, 3.63469 msec to evaluate
+step 40100, training accuracy 0.94, 3.92294 msec to evaluate
+step 40200, training accuracy 0.98, 4.09126 msec to evaluate
+step 40300, training accuracy 0.98, 4.1461 msec to evaluate
+step 40400, training accuracy 0.96, 4.30632 msec to evaluate
+step 40500, training accuracy 0.98, 4.28963 msec to evaluate
+step 40600, training accuracy 0.96, 4.67253 msec to evaluate
+step 40700, training accuracy 0.96, 5.57375 msec to evaluate
+step 40800, training accuracy 0.96, 3.65186 msec to evaluate
+step 40900, training accuracy 0.94, 4.19569 msec to evaluate
+test accuracy 0.9638
+step 41000, training accuracy 1, 4.25506 msec to evaluate
+step 41100, training accuracy 1, 4.4589 msec to evaluate
+step 41200, training accuracy 0.98, 3.63541 msec to evaluate
+step 41300, training accuracy 0.94, 4.05407 msec to evaluate
+step 41400, training accuracy 0.98, 3.96609 msec to evaluate
+step 41500, training accuracy 0.92, 4.05931 msec to evaluate
+step 41600, training accuracy 0.98, 3.8445 msec to evaluate
+step 41700, training accuracy 0.96, 4.30083 msec to evaluate
+step 41800, training accuracy 0.92, 2.97499 msec to evaluate
+step 41900, training accuracy 0.96, 4.1678 msec to evaluate
+test accuracy 0.9607
+step 42000, training accuracy 0.96, 4.44341 msec to evaluate
+step 42100, training accuracy 0.96, 3.6149 msec to evaluate
+step 42200, training accuracy 0.96, 3.76916 msec to evaluate
+step 42300, training accuracy 0.96, 4.09317 msec to evaluate
+step 42400, training accuracy 0.94, 4.18854 msec to evaluate
+step 42500, training accuracy 0.9, 4.21619 msec to evaluate
+step 42600, training accuracy 1, 4.04334 msec to evaluate
+step 42700, training accuracy 0.96, 4.17471 msec to evaluate
+step 42800, training accuracy 1, 5.05209 msec to evaluate
+step 42900, training accuracy 0.94, 3.58939 msec to evaluate
+test accuracy 0.9647
+step 43000, training accuracy 0.94, 3.82161 msec to evaluate
+step 43100, training accuracy 0.96, 3.98254 msec to evaluate
+step 43200, training accuracy 0.98, 4.15087 msec to evaluate
+step 43300, training accuracy 0.98, 3.64041 msec to evaluate
+step 43400, training accuracy 0.98, 3.54075 msec to evaluate
+step 43500, training accuracy 0.92, 4.36592 msec to evaluate
+step 43600, training accuracy 1, 6.25873 msec to evaluate
+step 43700, training accuracy 0.98, 3.70145 msec to evaluate
+step 43800, training accuracy 1, 4.04286 msec to evaluate
+step 43900, training accuracy 1, 3.67856 msec to evaluate
+test accuracy 0.9618
+step 44000, training accuracy 1, 3.13735 msec to evaluate
+step 44100, training accuracy 1, 3.83615 msec to evaluate
+step 44200, training accuracy 0.96, 4.09102 msec to evaluate
+step 44300, training accuracy 0.96, 4.10628 msec to evaluate
+step 44400, training accuracy 0.96, 3.98874 msec to evaluate
+step 44500, training accuracy 0.9, 4.74954 msec to evaluate
+step 44600, training accuracy 1, 4.11987 msec to evaluate
+step 44700, training accuracy 1, 4.32968 msec to evaluate
+step 44800, training accuracy 0.94, 8.55565 msec to evaluate
+step 44900, training accuracy 0.98, 3.79419 msec to evaluate
+test accuracy 0.9624
+step 45000, training accuracy 0.94, 3.72815 msec to evaluate
+step 45100, training accuracy 1, 3.89743 msec to evaluate
+step 45200, training accuracy 0.96, 4.01855 msec to evaluate
+step 45300, training accuracy 1, 3.81136 msec to evaluate
+step 45400, training accuracy 0.98, 3.57533 msec to evaluate
+step 45500, training accuracy 0.94, 4.03309 msec to evaluate
+step 45600, training accuracy 1, 3.91912 msec to evaluate
+step 45700, training accuracy 0.98, 4.21715 msec to evaluate
+step 45800, training accuracy 1, 4.03452 msec to evaluate
+step 45900, training accuracy 1, 3.9072 msec to evaluate
+test accuracy 0.9632
+step 46000, training accuracy 0.98, 3.07894 msec to evaluate
+step 46100, training accuracy 1, 3.84903 msec to evaluate
+step 46200, training accuracy 0.98, 4.01497 msec to evaluate
+step 46300, training accuracy 0.98, 6.6998 msec to evaluate
+step 46400, training accuracy 0.98, 3.62039 msec to evaluate
+step 46500, training accuracy 1, 3.3536 msec to evaluate
+step 46600, training accuracy 0.98, 4.6227 msec to evaluate
+step 46700, training accuracy 0.96, 3.85499 msec to evaluate
+step 46800, training accuracy 0.96, 4.33874 msec to evaluate
+step 46900, training accuracy 0.98, 5.90992 msec to evaluate
+test accuracy 0.9626
+step 47000, training accuracy 0.98, 3.72076 msec to evaluate
+step 47100, training accuracy 0.96, 3.65257 msec to evaluate
+step 47200, training accuracy 1, 3.63803 msec to evaluate
+step 47300, training accuracy 0.94, 3.40104 msec to evaluate
+step 47400, training accuracy 1, 4.12822 msec to evaluate
+step 47500, training accuracy 0.98, 3.96848 msec to evaluate
+step 47600, training accuracy 0.98, 4.48966 msec to evaluate
+step 47700, training accuracy 0.96, 3.67141 msec to evaluate
+step 47800, training accuracy 0.98, 4.30775 msec to evaluate
+step 47900, training accuracy 0.98, 3.53289 msec to evaluate
+test accuracy 0.9616
+step 48000, training accuracy 0.96, 3.27086 msec to evaluate
+step 48100, training accuracy 0.96, 4.4415 msec to evaluate
+step 48200, training accuracy 0.98, 3.90911 msec to evaluate
+step 48300, training accuracy 0.94, 4.04358 msec to evaluate
+step 48400, training accuracy 0.96, 5.1074 msec to evaluate
+step 48500, training accuracy 0.96, 4.34542 msec to evaluate
+step 48600, training accuracy 0.98, 3.9351 msec to evaluate
+step 48700, training accuracy 1, 3.68166 msec to evaluate
+step 48800, training accuracy 0.98, 3.97229 msec to evaluate
+step 48900, training accuracy 0.98, 3.70622 msec to evaluate
+test accuracy 0.9703
+step 49000, training accuracy 1, 3.46828 msec to evaluate
+step 49100, training accuracy 1, 3.87931 msec to evaluate
+step 49200, training accuracy 0.96, 4.7195 msec to evaluate
+step 49300, training accuracy 0.96, 4.05598 msec to evaluate
+step 49400, training accuracy 0.94, 3.91269 msec to evaluate
+step 49500, training accuracy 0.94, 4.01235 msec to evaluate
+step 49600, training accuracy 1, 4.31871 msec to evaluate
+step 49700, training accuracy 1, 4.21953 msec to evaluate
+step 49800, training accuracy 0.98, 4.10485 msec to evaluate
+step 49900, training accuracy 1, 3.89242 msec to evaluate
+test accuracy 0.9665
+step 50000, training accuracy 1, 3.37052 msec to evaluate
+step 50100, training accuracy 1, 4.27914 msec to evaluate
+step 50200, training accuracy 0.98, 6.23345 msec to evaluate
+step 50300, training accuracy 0.98, 3.79968 msec to evaluate
+step 50400, training accuracy 0.94, 3.99613 msec to evaluate
+step 50500, training accuracy 1, 4.21691 msec to evaluate
+step 50600, training accuracy 0.96, 4.13299 msec to evaluate
+step 50700, training accuracy 1, 3.83472 msec to evaluate
+step 50800, training accuracy 0.94, 3.46899 msec to evaluate
+step 50900, training accuracy 1, 3.8445 msec to evaluate
+test accuracy 0.9679
+step 51000, training accuracy 1, 3.80588 msec to evaluate
+step 51100, training accuracy 0.96, 3.67904 msec to evaluate
+step 51200, training accuracy 0.96, 4.05288 msec to evaluate
+step 51300, training accuracy 1, 3.95465 msec to evaluate
+step 51400, training accuracy 0.98, 4.20904 msec to evaluate
+step 51500, training accuracy 0.94, 4.16899 msec to evaluate
+step 51600, training accuracy 1, 3.73054 msec to evaluate
+step 51700, training accuracy 1, 3.48544 msec to evaluate
+step 51800, training accuracy 0.92, 4.3664 msec to evaluate
+step 51900, training accuracy 0.98, 4.44651 msec to evaluate
+test accuracy 0.9654
+step 52000, training accuracy 0.96, 4.50325 msec to evaluate
+step 52100, training accuracy 0.98, 3.99566 msec to evaluate
+step 52200, training accuracy 0.98, 4.22311 msec to evaluate
+step 52300, training accuracy 0.98, 4.04525 msec to evaluate
+step 52400, training accuracy 0.96, 3.76701 msec to evaluate
+step 52500, training accuracy 1, 4.26674 msec to evaluate
+step 52600, training accuracy 0.98, 4.27103 msec to evaluate
+step 52700, training accuracy 0.96, 4.1461 msec to evaluate
+step 52800, training accuracy 0.98, 3.80683 msec to evaluate
+step 52900, training accuracy 0.96, 3.94607 msec to evaluate
+test accuracy 0.9696
+step 53000, training accuracy 0.98, 4.86875 msec to evaluate
+step 53100, training accuracy 0.98, 4.47512 msec to evaluate
+step 53200, training accuracy 1, 4.28391 msec to evaluate
+step 53300, training accuracy 0.98, 3.61419 msec to evaluate
+step 53400, training accuracy 0.98, 3.67475 msec to evaluate
+step 53500, training accuracy 0.96, 4.26483 msec to evaluate
+step 53600, training accuracy 0.96, 4.01616 msec to evaluate
+step 53700, training accuracy 1, 4.35615 msec to evaluate
+step 53800, training accuracy 0.96, 3.85118 msec to evaluate
+step 53900, training accuracy 0.96, 4.143 msec to evaluate
+test accuracy 0.9694
+step 54000, training accuracy 0.96, 4.34923 msec to evaluate
+step 54100, training accuracy 1, 5.41329 msec to evaluate
+step 54200, training accuracy 0.98, 3.61204 msec to evaluate
+step 54300, training accuracy 0.94, 3.98803 msec to evaluate
+step 54400, training accuracy 0.96, 4.17972 msec to evaluate
+step 54500, training accuracy 0.96, 4.02069 msec to evaluate
+step 54600, training accuracy 0.96, 5.22351 msec to evaluate
+step 54700, training accuracy 1, 4.57597 msec to evaluate
+step 54800, training accuracy 0.98, 3.73363 msec to evaluate
+step 54900, training accuracy 1, 3.64399 msec to evaluate
+test accuracy 0.9684
+step 55000, training accuracy 0.96, 3.50952 msec to evaluate
+step 55100, training accuracy 0.94, 3.66569 msec to evaluate
+step 55200, training accuracy 1, 4.29726 msec to evaluate
+step 55300, training accuracy 0.98, 3.9773 msec to evaluate
+step 55400, training accuracy 0.98, 3.6478 msec to evaluate
+step 55500, training accuracy 0.98, 5.1291 msec to evaluate
+step 55600, training accuracy 0.94, 3.87144 msec to evaluate
+step 55700, training accuracy 1, 4.37498 msec to evaluate
+step 55800, training accuracy 0.96, 4.93789 msec to evaluate
+step 55900, training accuracy 0.98, 4.31347 msec to evaluate
+test accuracy 0.9644
+step 56000, training accuracy 0.94, 3.68357 msec to evaluate
+step 56100, training accuracy 1, 3.49689 msec to evaluate
+step 56200, training accuracy 0.92, 4.10509 msec to evaluate
+step 56300, training accuracy 0.98, 3.87716 msec to evaluate
+step 56400, training accuracy 0.98, 3.85356 msec to evaluate
+step 56500, training accuracy 1, 4.30417 msec to evaluate
+step 56600, training accuracy 0.98, 3.93867 msec to evaluate
+step 56700, training accuracy 1, 3.79395 msec to evaluate
+step 56800, training accuracy 0.98, 3.98302 msec to evaluate
+step 56900, training accuracy 1, 4.02451 msec to evaluate
+test accuracy 0.9708
+step 57000, training accuracy 1, 3.90697 msec to evaluate
+step 57100, training accuracy 0.98, 4.21453 msec to evaluate
+step 57200, training accuracy 0.98, 3.96371 msec to evaluate
+step 57300, training accuracy 1, 4.52137 msec to evaluate
+step 57400, training accuracy 0.98, 3.59559 msec to evaluate
+step 57500, training accuracy 0.98, 4.05979 msec to evaluate
+step 57600, training accuracy 0.96, 4.01425 msec to evaluate
+step 57700, training accuracy 1, 3.73125 msec to evaluate
+step 57800, training accuracy 0.92, 4.83894 msec to evaluate
+step 57900, training accuracy 0.98, 4.54259 msec to evaluate
+test accuracy 0.9677
+step 58000, training accuracy 0.98, 3.05176 msec to evaluate
+step 58100, training accuracy 0.98, 4.65894 msec to evaluate
+step 58200, training accuracy 0.98, 4.38476 msec to evaluate
+step 58300, training accuracy 0.9, 3.73125 msec to evaluate
+step 58400, training accuracy 0.98, 3.86453 msec to evaluate
+step 58500, training accuracy 1, 6.7203 msec to evaluate
+step 58600, training accuracy 0.96, 4.7071 msec to evaluate
+step 58700, training accuracy 1, 4.24075 msec to evaluate
+step 58800, training accuracy 1, 4.30155 msec to evaluate
+step 58900, training accuracy 0.96, 3.55625 msec to evaluate
+test accuracy 0.9678
+step 59000, training accuracy 0.96, 4.92024 msec to evaluate
+step 59100, training accuracy 1, 3.99733 msec to evaluate
+step 59200, training accuracy 0.98, 4.07934 msec to evaluate
+step 59300, training accuracy 1, 3.52192 msec to evaluate
+step 59400, training accuracy 1, 3.6478 msec to evaluate
+step 59500, training accuracy 0.98, 4.08936 msec to evaluate
+step 59600, training accuracy 1, 3.55935 msec to evaluate
+step 59700, training accuracy 0.98, 3.67904 msec to evaluate
+step 59800, training accuracy 0.96, 3.9742 msec to evaluate
+step 59900, training accuracy 0.98, 4.37737 msec to evaluate
+test accuracy 0.9697
+step 60000, training accuracy 0.98, 4.03786 msec to evaluate
+step 60100, training accuracy 0.98, 4.12297 msec to evaluate
+step 60200, training accuracy 0.96, 4.2491 msec to evaluate
+step 60300, training accuracy 0.96, 4.37665 msec to evaluate
+step 60400, training accuracy 0.96, 4.83513 msec to evaluate
+step 60500, training accuracy 1, 3.78656 msec to evaluate
+step 60600, training accuracy 0.96, 4.63009 msec to evaluate
+step 60700, training accuracy 0.98, 5.28312 msec to evaluate
+step 60800, training accuracy 1, 3.82113 msec to evaluate
+step 60900, training accuracy 0.96, 4.83418 msec to evaluate
+test accuracy 0.9668
+step 61000, training accuracy 0.96, 3.74198 msec to evaluate
+step 61100, training accuracy 1, 4.15134 msec to evaluate
+step 61200, training accuracy 0.96, 4.55785 msec to evaluate
+step 61300, training accuracy 1, 4.41432 msec to evaluate
+step 61400, training accuracy 1, 3.77393 msec to evaluate
+step 61500, training accuracy 0.98, 4.15206 msec to evaluate
+step 61600, training accuracy 0.98, 3.5243 msec to evaluate
+step 61700, training accuracy 0.9, 3.73387 msec to evaluate
+step 61800, training accuracy 0.92, 4.06027 msec to evaluate
+step 61900, training accuracy 1, 4.20094 msec to evaluate
+test accuracy 0.9673
+step 62000, training accuracy 0.98, 5.07355 msec to evaluate
+step 62100, training accuracy 1, 4.24719 msec to evaluate
+step 62200, training accuracy 0.98, 4.96244 msec to evaluate
+step 62300, training accuracy 0.98, 4.21071 msec to evaluate
+step 62400, training accuracy 0.98, 4.3447 msec to evaluate
+step 62500, training accuracy 1, 3.96466 msec to evaluate
+step 62600, training accuracy 0.96, 3.7868 msec to evaluate
+step 62700, training accuracy 0.96, 3.48592 msec to evaluate
+step 62800, training accuracy 1, 3.66163 msec to evaluate
+step 62900, training accuracy 0.98, 4.2994 msec to evaluate
+test accuracy 0.9688
+step 63000, training accuracy 0.94, 3.59225 msec to evaluate
+step 63100, training accuracy 1, 3.86477 msec to evaluate
+step 63200, training accuracy 0.96, 3.61443 msec to evaluate
+step 63300, training accuracy 0.96, 4.32158 msec to evaluate
+step 63400, training accuracy 0.92, 4.48966 msec to evaluate
+step 63500, training accuracy 0.98, 4.17352 msec to evaluate
+step 63600, training accuracy 0.96, 3.8898 msec to evaluate
+step 63700, training accuracy 0.98, 4.04572 msec to evaluate
+step 63800, training accuracy 0.98, 4.02761 msec to evaluate
+step 63900, training accuracy 0.98, 4.56929 msec to evaluate
+test accuracy 0.969
+step 64000, training accuracy 0.98, 3.41868 msec to evaluate
+step 64100, training accuracy 1, 4.13537 msec to evaluate
+step 64200, training accuracy 1, 4.50516 msec to evaluate
+step 64300, training accuracy 0.96, 5.45454 msec to evaluate
+step 64400, training accuracy 1, 4.14801 msec to evaluate
+step 64500, training accuracy 0.98, 4.68898 msec to evaluate
+step 64600, training accuracy 0.96, 4.07171 msec to evaluate
+step 64700, training accuracy 1, 4.01974 msec to evaluate
+step 64800, training accuracy 0.96, 5.16462 msec to evaluate
+step 64900, training accuracy 0.96, 3.5584 msec to evaluate
+test accuracy 0.9703
+step 65000, training accuracy 0.94, 3.2692 msec to evaluate
+step 65100, training accuracy 0.98, 4.11892 msec to evaluate
+step 65200, training accuracy 1, 3.56221 msec to evaluate
+step 65300, training accuracy 0.94, 4.14562 msec to evaluate
+step 65400, training accuracy 0.88, 4.03786 msec to evaluate
+step 65500, training accuracy 0.98, 3.93581 msec to evaluate
+step 65600, training accuracy 0.96, 3.96252 msec to evaluate
+step 65700, training accuracy 0.98, 3.89314 msec to evaluate
+step 65800, training accuracy 0.98, 5.39446 msec to evaluate
+step 65900, training accuracy 0.98, 4.8759 msec to evaluate
+test accuracy 0.9711
+step 66000, training accuracy 0.94, 3.99065 msec to evaluate
+step 66100, training accuracy 0.98, 4.31347 msec to evaluate
+step 66200, training accuracy 0.96, 5.81789 msec to evaluate
+step 66300, training accuracy 0.98, 4.13585 msec to evaluate
+step 66400, training accuracy 0.98, 3.92938 msec to evaluate
+step 66500, training accuracy 1, 3.721 msec to evaluate
+step 66600, training accuracy 1, 3.91078 msec to evaluate
+step 66700, training accuracy 0.98, 4.2026 msec to evaluate
+step 66800, training accuracy 0.96, 3.98445 msec to evaluate
+step 66900, training accuracy 0.92, 4.52065 msec to evaluate
+test accuracy 0.9677
+step 67000, training accuracy 0.98, 3.38626 msec to evaluate
+step 67100, training accuracy 1, 9.53555 msec to evaluate
+step 67200, training accuracy 1, 3.84998 msec to evaluate
+step 67300, training accuracy 0.98, 4.65941 msec to evaluate
+step 67400, training accuracy 0.98, 3.76225 msec to evaluate
+step 67500, training accuracy 0.92, 3.75628 msec to evaluate
+step 67600, training accuracy 1, 3.96085 msec to evaluate
+step 67700, training accuracy 0.98, 3.69143 msec to evaluate
+step 67800, training accuracy 1, 3.88384 msec to evaluate
+step 67900, training accuracy 0.96, 3.68166 msec to evaluate
+test accuracy 0.9623
+step 68000, training accuracy 0.98, 3.93057 msec to evaluate
+step 68100, training accuracy 0.98, 4.69518 msec to evaluate
+step 68200, training accuracy 1, 3.4523 msec to evaluate
+step 68300, training accuracy 0.98, 4.64487 msec to evaluate
+step 68400, training accuracy 0.98, 4.24528 msec to evaluate
+step 68500, training accuracy 1, 4.30918 msec to evaluate
+step 68600, training accuracy 0.96, 4.04382 msec to evaluate
+step 68700, training accuracy 0.98, 4.3571 msec to evaluate
+step 68800, training accuracy 1, 4.79054 msec to evaluate
+step 68900, training accuracy 1, 3.94797 msec to evaluate
+test accuracy 0.9612
+step 69000, training accuracy 0.96, 3.12114 msec to evaluate
+step 69100, training accuracy 0.98, 3.95966 msec to evaluate
+step 69200, training accuracy 1, 3.62778 msec to evaluate
+step 69300, training accuracy 1, 3.63183 msec to evaluate
+step 69400, training accuracy 0.98, 3.84235 msec to evaluate
+step 69500, training accuracy 1, 3.70002 msec to evaluate
+step 69600, training accuracy 1, 4.32706 msec to evaluate
+step 69700, training accuracy 0.96, 4.29225 msec to evaluate
+step 69800, training accuracy 0.98, 4.67157 msec to evaluate
+step 69900, training accuracy 0.92, 4.14586 msec to evaluate
+test accuracy 0.9685
+step 70000, training accuracy 1, 3.79872 msec to evaluate
+step 70100, training accuracy 1, 4.36115 msec to evaluate
+step 70200, training accuracy 0.96, 3.49927 msec to evaluate
+step 70300, training accuracy 1, 3.97229 msec to evaluate
+step 70400, training accuracy 0.98, 3.25084 msec to evaluate
+step 70500, training accuracy 0.98, 4.87876 msec to evaluate
+step 70600, training accuracy 0.98, 4.07362 msec to evaluate
+step 70700, training accuracy 1, 3.92914 msec to evaluate
+step 70800, training accuracy 0.98, 4.19188 msec to evaluate
+step 70900, training accuracy 1, 4.06814 msec to evaluate
+test accuracy 0.965
+step 71000, training accuracy 0.94, 4.42004 msec to evaluate
+step 71100, training accuracy 1, 3.87168 msec to evaluate
+step 71200, training accuracy 0.98, 4.17161 msec to evaluate
+step 71300, training accuracy 0.98, 3.49545 msec to evaluate
+step 71400, training accuracy 1, 4.02641 msec to evaluate
+step 71500, training accuracy 1, 3.27516 msec to evaluate
+step 71600, training accuracy 0.98, 4.27985 msec to evaluate
+step 71700, training accuracy 1, 4.36163 msec to evaluate
+step 71800, training accuracy 1, 3.79229 msec to evaluate
+step 71900, training accuracy 0.98, 4.30226 msec to evaluate
+test accuracy 0.9647
+step 72000, training accuracy 1, 4.61102 msec to evaluate
+step 72100, training accuracy 0.98, 3.93534 msec to evaluate
+step 72200, training accuracy 0.98, 4.01139 msec to evaluate
+step 72300, training accuracy 0.96, 3.67522 msec to evaluate
+step 72400, training accuracy 1, 4.36449 msec to evaluate
+step 72500, training accuracy 1, 4.61769 msec to evaluate
+step 72600, training accuracy 0.98, 3.19529 msec to evaluate
+step 72700, training accuracy 0.96, 3.93271 msec to evaluate
+step 72800, training accuracy 0.96, 3.83115 msec to evaluate
+step 72900, training accuracy 1, 4.32563 msec to evaluate
+test accuracy 0.9677
+step 73000, training accuracy 0.96, 4.91118 msec to evaluate
+step 73100, training accuracy 0.96, 4.00639 msec to evaluate
+step 73200, training accuracy 1, 4.10986 msec to evaluate
+step 73300, training accuracy 1, 4.64916 msec to evaluate
+step 73400, training accuracy 1, 3.6118 msec to evaluate
+step 73500, training accuracy 0.98, 3.91459 msec to evaluate
+step 73600, training accuracy 0.96, 4.30751 msec to evaluate
+step 73700, training accuracy 1, 5.29146 msec to evaluate
+step 73800, training accuracy 1, 4.66776 msec to evaluate
+step 73900, training accuracy 1, 3.90768 msec to evaluate
+test accuracy 0.9665
+step 74000, training accuracy 1, 3.36909 msec to evaluate
+step 74100, training accuracy 0.98, 4.07338 msec to evaluate
+step 74200, training accuracy 1, 4.46558 msec to evaluate
+step 74300, training accuracy 0.98, 4.02617 msec to evaluate
+step 74400, training accuracy 0.96, 4.77672 msec to evaluate
+step 74500, training accuracy 1, 4.18401 msec to evaluate
+step 74600, training accuracy 1, 4.48728 msec to evaluate
+step 74700, training accuracy 0.96, 5.29432 msec to evaluate
+step 74800, training accuracy 0.96, 3.41725 msec to evaluate
+step 74900, training accuracy 0.98, 4.1647 msec to evaluate
+test accuracy 0.9665
+step 75000, training accuracy 0.98, 4.96864 msec to evaluate
+step 75100, training accuracy 0.96, 4.08602 msec to evaluate
+step 75200, training accuracy 0.98, 4.86231 msec to evaluate
+step 75300, training accuracy 0.98, 4.02832 msec to evaluate
+step 75400, training accuracy 0.96, 4.55689 msec to evaluate
+step 75500, training accuracy 1, 4.42386 msec to evaluate
+step 75600, training accuracy 0.96, 4.24075 msec to evaluate
+step 75700, training accuracy 0.96, 3.56936 msec to evaluate
+step 75800, training accuracy 1, 4.00615 msec to evaluate
+step 75900, training accuracy 1, 5.17321 msec to evaluate
+test accuracy 0.9697
+step 76000, training accuracy 1, 4.39763 msec to evaluate
+step 76100, training accuracy 0.98, 4.0257 msec to evaluate
+step 76200, training accuracy 1, 3.47733 msec to evaluate
+step 76300, training accuracy 0.98, 4.2417 msec to evaluate
+step 76400, training accuracy 0.96, 4.4055 msec to evaluate
+step 76500, training accuracy 0.98, 3.98946 msec to evaluate
+step 76600, training accuracy 1, 4.31323 msec to evaluate
+step 76700, training accuracy 1, 4.04668 msec to evaluate
+step 76800, training accuracy 1, 4.10533 msec to evaluate
+step 76900, training accuracy 0.98, 3.90148 msec to evaluate
+test accuracy 0.9661
+step 77000, training accuracy 0.9, 3.22223 msec to evaluate
+step 77100, training accuracy 0.96, 4.24623 msec to evaluate
+step 77200, training accuracy 0.98, 4.57239 msec to evaluate
+step 77300, training accuracy 1, 3.79491 msec to evaluate
+step 77400, training accuracy 1, 3.49641 msec to evaluate
+step 77500, training accuracy 0.98, 3.59631 msec to evaluate
+step 77600, training accuracy 0.94, 4.66061 msec to evaluate
+step 77700, training accuracy 0.98, 4.20761 msec to evaluate
+step 77800, training accuracy 0.98, 3.87979 msec to evaluate
+step 77900, training accuracy 1, 4.14944 msec to evaluate
+test accuracy 0.9717
+step 78000, training accuracy 0.98, 4.05669 msec to evaluate
+step 78100, training accuracy 1, 4.04596 msec to evaluate
+step 78200, training accuracy 1, 3.86643 msec to evaluate
+step 78300, training accuracy 1, 4.6742 msec to evaluate
+step 78400, training accuracy 0.98, 4.06027 msec to evaluate
+step 78500, training accuracy 0.98, 4.2367 msec to evaluate
+step 78600, training accuracy 0.94, 4.49991 msec to evaluate
+step 78700, training accuracy 1, 4.27651 msec to evaluate
+step 78800, training accuracy 0.96, 3.95894 msec to evaluate
+step 78900, training accuracy 1, 4.1728 msec to evaluate
+test accuracy 0.9709
+step 79000, training accuracy 0.98, 3.88551 msec to evaluate
+step 79100, training accuracy 0.96, 3.95083 msec to evaluate
+step 79200, training accuracy 0.98, 3.45087 msec to evaluate
+step 79300, training accuracy 1, 4.31538 msec to evaluate
+step 79400, training accuracy 1, 3.51214 msec to evaluate
+step 79500, training accuracy 0.98, 3.88122 msec to evaluate
+step 79600, training accuracy 0.98, 4.30846 msec to evaluate
+step 79700, training accuracy 1, 3.68285 msec to evaluate
+step 79800, training accuracy 1, 4.08292 msec to evaluate
+step 79900, training accuracy 1, 3.81279 msec to evaluate
+test accuracy 0.9712
+step 80000, training accuracy 0.96, 3.11494 msec to evaluate
+step 80100, training accuracy 1, 4.64177 msec to evaluate
+step 80200, training accuracy 0.94, 3.61061 msec to evaluate
+step 80300, training accuracy 1, 3.22747 msec to evaluate
+step 80400, training accuracy 1, 4.46177 msec to evaluate
+step 80500, training accuracy 0.98, 4.27127 msec to evaluate
+step 80600, training accuracy 0.9, 4.82035 msec to evaluate
+step 80700, training accuracy 0.96, 4.0009 msec to evaluate
+step 80800, training accuracy 0.98, 3.46732 msec to evaluate
+step 80900, training accuracy 1, 3.61967 msec to evaluate
+test accuracy 0.969
+step 81000, training accuracy 1, 3.86882 msec to evaluate
+step 81100, training accuracy 0.98, 5.06759 msec to evaluate
+step 81200, training accuracy 0.96, 5.02992 msec to evaluate
+step 81300, training accuracy 0.98, 4.38643 msec to evaluate
+step 81400, training accuracy 0.98, 4.61316 msec to evaluate
+step 81500, training accuracy 0.96, 4.15826 msec to evaluate
+step 81600, training accuracy 0.98, 4.57311 msec to evaluate
+step 81700, training accuracy 1, 3.49975 msec to evaluate
+step 81800, training accuracy 0.96, 4.21858 msec to evaluate
+step 81900, training accuracy 0.98, 3.89767 msec to evaluate
+test accuracy 0.9644
+step 82000, training accuracy 1, 3.51882 msec to evaluate
+step 82100, training accuracy 1, 4.26078 msec to evaluate
+step 82200, training accuracy 1, 4.67443 msec to evaluate
+step 82300, training accuracy 0.98, 3.49903 msec to evaluate
+step 82400, training accuracy 1, 4.06432 msec to evaluate
+step 82500, training accuracy 0.96, 4.34804 msec to evaluate
+step 82600, training accuracy 0.98, 3.46947 msec to evaluate
+step 82700, training accuracy 1, 4.05836 msec to evaluate
+step 82800, training accuracy 0.96, 4.69685 msec to evaluate
+step 82900, training accuracy 1, 4.28391 msec to evaluate
+test accuracy 0.9633
+step 83000, training accuracy 1, 2.99835 msec to evaluate
+step 83100, training accuracy 0.94, 4.26936 msec to evaluate
+step 83200, training accuracy 0.98, 3.89314 msec to evaluate
+step 83300, training accuracy 1, 3.6757 msec to evaluate
+step 83400, training accuracy 1, 4.04954 msec to evaluate
+step 83500, training accuracy 1, 4.07672 msec to evaluate
+step 83600, training accuracy 1, 3.73483 msec to evaluate
+step 83700, training accuracy 0.96, 4.0586 msec to evaluate
+step 83800, training accuracy 1, 4.09651 msec to evaluate
+step 83900, training accuracy 0.94, 3.76129 msec to evaluate
+test accuracy 0.9717
+step 84000, training accuracy 0.98, 3.01385 msec to evaluate
+step 84100, training accuracy 1, 4.79555 msec to evaluate
+step 84200, training accuracy 0.98, 4.23622 msec to evaluate
+step 84300, training accuracy 0.94, 4.1275 msec to evaluate
+step 84400, training accuracy 1, 4.1728 msec to evaluate
+step 84500, training accuracy 1, 3.84283 msec to evaluate
+step 84600, training accuracy 1, 4.19354 msec to evaluate
+step 84700, training accuracy 1, 3.63493 msec to evaluate
+step 84800, training accuracy 0.98, 4.76956 msec to evaluate
+step 84900, training accuracy 1, 4.15754 msec to evaluate
+test accuracy 0.9707
+step 85000, training accuracy 1, 3.68309 msec to evaluate
+step 85100, training accuracy 1, 4.60148 msec to evaluate
+step 85200, training accuracy 0.98, 3.99232 msec to evaluate
+step 85300, training accuracy 0.92, 4.05812 msec to evaluate
+step 85400, training accuracy 1, 3.99923 msec to evaluate
+step 85500, training accuracy 1, 4.73738 msec to evaluate
+step 85600, training accuracy 1, 4.8902 msec to evaluate
+step 85700, training accuracy 0.98, 4.21429 msec to evaluate
+step 85800, training accuracy 1, 3.53837 msec to evaluate
+step 85900, training accuracy 0.96, 4.26722 msec to evaluate
+test accuracy 0.9719
+step 86000, training accuracy 1, 4.21262 msec to evaluate
+step 86100, training accuracy 0.94, 4.43721 msec to evaluate
+step 86200, training accuracy 0.98, 4.37784 msec to evaluate
+step 86300, training accuracy 0.98, 3.84974 msec to evaluate
+step 86400, training accuracy 0.96, 4.56595 msec to evaluate
+step 86500, training accuracy 0.98, 3.71242 msec to evaluate
+step 86600, training accuracy 0.98, 4.04024 msec to evaluate
+step 86700, training accuracy 0.98, 4.15206 msec to evaluate
+step 86800, training accuracy 0.98, 3.90553 msec to evaluate
+step 86900, training accuracy 1, 3.96156 msec to evaluate
+test accuracy 0.9633
+step 87000, training accuracy 1, 3.28755 msec to evaluate
+step 87100, training accuracy 0.98, 4.68111 msec to evaluate
+step 87200, training accuracy 0.98, 3.61347 msec to evaluate
+step 87300, training accuracy 1, 4.02498 msec to evaluate
+step 87400, training accuracy 1, 4.16923 msec to evaluate
+step 87500, training accuracy 1, 3.57652 msec to evaluate
+step 87600, training accuracy 1, 4.22812 msec to evaluate
+step 87700, training accuracy 0.96, 4.14848 msec to evaluate
+step 87800, training accuracy 0.92, 4.16827 msec to evaluate
+step 87900, training accuracy 0.98, 3.72934 msec to evaluate
+test accuracy 0.9691
+step 88000, training accuracy 0.98, 3.87311 msec to evaluate
+step 88100, training accuracy 0.98, 4.22502 msec to evaluate
+step 88200, training accuracy 1, 4.11487 msec to evaluate
+step 88300, training accuracy 0.96, 4.01378 msec to evaluate
+step 88400, training accuracy 0.94, 4.29225 msec to evaluate
+step 88500, training accuracy 0.92, 4.15206 msec to evaluate
+step 88600, training accuracy 0.98, 4.3807 msec to evaluate
+step 88700, training accuracy 1, 4.18496 msec to evaluate
+step 88800, training accuracy 1, 4.15444 msec to evaluate
+step 88900, training accuracy 1, 3.55601 msec to evaluate
+test accuracy 0.9706
+step 89000, training accuracy 1, 3.3927 msec to evaluate
+step 89100, training accuracy 0.98, 4.20403 msec to evaluate
+step 89200, training accuracy 0.98, 3.42965 msec to evaluate
+step 89300, training accuracy 1, 3.77822 msec to evaluate
+step 89400, training accuracy 1, 4.48799 msec to evaluate
+step 89500, training accuracy 0.98, 4.11606 msec to evaluate
+step 89600, training accuracy 1, 4.27842 msec to evaluate
+step 89700, training accuracy 1, 4.13013 msec to evaluate
+step 89800, training accuracy 0.96, 4.40812 msec to evaluate
+step 89900, training accuracy 0.94, 3.32713 msec to evaluate
+test accuracy 0.9692
+step 90000, training accuracy 0.98, 4.74167 msec to evaluate
+step 90100, training accuracy 0.96, 4.1976 msec to evaluate
+step 90200, training accuracy 0.96, 5.83863 msec to evaluate
+step 90300, training accuracy 0.96, 5.13172 msec to evaluate
+step 90400, training accuracy 0.98, 3.59797 msec to evaluate
+step 90500, training accuracy 1, 4.99415 msec to evaluate
+step 90600, training accuracy 1, 4.06623 msec to evaluate
+step 90700, training accuracy 0.98, 4.47726 msec to evaluate
+step 90800, training accuracy 1, 5.2371 msec to evaluate
+step 90900, training accuracy 0.96, 3.45922 msec to evaluate
+test accuracy 0.9695
+step 91000, training accuracy 0.98, 4.3602 msec to evaluate
+step 91100, training accuracy 1, 4.5011 msec to evaluate
+step 91200, training accuracy 1, 3.68977 msec to evaluate
+step 91300, training accuracy 0.94, 3.38697 msec to evaluate
+step 91400, training accuracy 0.96, 3.70812 msec to evaluate
+step 91500, training accuracy 0.94, 3.97086 msec to evaluate
+step 91600, training accuracy 0.98, 4.26507 msec to evaluate
+step 91700, training accuracy 1, 4.1101 msec to evaluate
+step 91800, training accuracy 1, 4.00114 msec to evaluate
+step 91900, training accuracy 0.98, 4.22192 msec to evaluate
+test accuracy 0.9683
+step 92000, training accuracy 1, 4.3714 msec to evaluate
+step 92100, training accuracy 0.94, 4.04382 msec to evaluate
+step 92200, training accuracy 0.98, 3.85451 msec to evaluate
+step 92300, training accuracy 0.98, 4.49491 msec to evaluate
+step 92400, training accuracy 1, 3.91889 msec to evaluate
+step 92500, training accuracy 0.98, 4.18091 msec to evaluate
+step 92600, training accuracy 1, 4.44674 msec to evaluate
+step 92700, training accuracy 0.98, 3.86167 msec to evaluate
+step 92800, training accuracy 0.98, 4.27008 msec to evaluate
+step 92900, training accuracy 0.98, 4.02355 msec to evaluate
+test accuracy 0.9702
+step 93000, training accuracy 0.98, 3.39413 msec to evaluate
+step 93100, training accuracy 1, 4.32253 msec to evaluate
+step 93200, training accuracy 1, 3.71599 msec to evaluate
+step 93300, training accuracy 0.98, 3.83544 msec to evaluate
+step 93400, training accuracy 1, 4.12536 msec to evaluate
+step 93500, training accuracy 0.96, 4.2522 msec to evaluate
+step 93600, training accuracy 0.96, 3.98064 msec to evaluate
+step 93700, training accuracy 0.96, 4.0338 msec to evaluate
+step 93800, training accuracy 0.94, 4.7555 msec to evaluate
+step 93900, training accuracy 0.98, 4.72522 msec to evaluate
+test accuracy 0.9707
+step 94000, training accuracy 0.98, 4.74691 msec to evaluate
+step 94100, training accuracy 0.98, 5.6169 msec to evaluate
+step 94200, training accuracy 0.94, 4.02761 msec to evaluate
+step 94300, training accuracy 1, 4.49371 msec to evaluate
+step 94400, training accuracy 0.98, 3.53646 msec to evaluate
+step 94500, training accuracy 0.96, 3.71027 msec to evaluate
+step 94600, training accuracy 0.98, 3.66664 msec to evaluate
+step 94700, training accuracy 0.98, 4.04882 msec to evaluate
+step 94800, training accuracy 1, 4.91047 msec to evaluate
+step 94900, training accuracy 0.96, 3.55625 msec to evaluate
+test accuracy 0.9699
+step 95000, training accuracy 1, 3.901 msec to evaluate
+step 95100, training accuracy 0.96, 3.92199 msec to evaluate
+step 95200, training accuracy 0.98, 4.32324 msec to evaluate
+step 95300, training accuracy 0.96, 3.8352 msec to evaluate
+step 95400, training accuracy 1, 4.12059 msec to evaluate
+step 95500, training accuracy 1, 3.90649 msec to evaluate
+step 95600, training accuracy 0.98, 3.76964 msec to evaluate
+step 95700, training accuracy 0.96, 3.47447 msec to evaluate
+step 95800, training accuracy 0.96, 4.21715 msec to evaluate
+step 95900, training accuracy 1, 3.91865 msec to evaluate
+test accuracy 0.9706
+step 96000, training accuracy 1, 4.30751 msec to evaluate
+step 96100, training accuracy 0.92, 4.05669 msec to evaluate
+step 96200, training accuracy 1, 4.32611 msec to evaluate
+step 96300, training accuracy 0.96, 5.65648 msec to evaluate
+step 96400, training accuracy 0.94, 4.12869 msec to evaluate
+step 96500, training accuracy 0.98, 4.27699 msec to evaluate
+step 96600, training accuracy 1, 4.57191 msec to evaluate
+step 96700, training accuracy 0.98, 4.45104 msec to evaluate
+step 96800, training accuracy 0.98, 4.08506 msec to evaluate
+step 96900, training accuracy 1, 4.16994 msec to evaluate
+test accuracy 0.9702
+step 97000, training accuracy 0.98, 3.44229 msec to evaluate
+step 97100, training accuracy 1, 4.37713 msec to evaluate
+step 97200, training accuracy 1, 4.13013 msec to evaluate
+step 97300, training accuracy 0.98, 3.94225 msec to evaluate
+step 97400, training accuracy 0.96, 3.47638 msec to evaluate
+step 97500, training accuracy 0.98, 4.95386 msec to evaluate
+step 97600, training accuracy 0.98, 3.94273 msec to evaluate
+step 97700, training accuracy 0.98, 3.75128 msec to evaluate
+step 97800, training accuracy 0.98, 3.76034 msec to evaluate
+step 97900, training accuracy 1, 3.59964 msec to evaluate
+test accuracy 0.9644
+step 98000, training accuracy 1, 3.84378 msec to evaluate
+step 98100, training accuracy 0.98, 3.97611 msec to evaluate
+step 98200, training accuracy 0.98, 4.37188 msec to evaluate
+step 98300, training accuracy 0.96, 4.19807 msec to evaluate
+step 98400, training accuracy 0.98, 4.03595 msec to evaluate
+step 98500, training accuracy 0.96, 4.45104 msec to evaluate
+step 98600, training accuracy 1, 3.99971 msec to evaluate
+step 98700, training accuracy 1, 4.62842 msec to evaluate
+step 98800, training accuracy 1, 3.74317 msec to evaluate
+step 98900, training accuracy 0.96, 3.97682 msec to evaluate
+test accuracy 0.9697
+step 99000, training accuracy 1, 3.42011 msec to evaluate
+step 99100, training accuracy 0.98, 3.88455 msec to evaluate
+step 99200, training accuracy 0.98, 4.11487 msec to evaluate
+step 99300, training accuracy 1, 4.07624 msec to evaluate
+step 99400, training accuracy 1, 4.53115 msec to evaluate
+step 99500, training accuracy 1, 3.98302 msec to evaluate
+step 99600, training accuracy 1, 3.8991 msec to evaluate
+step 99700, training accuracy 1, 4.12631 msec to evaluate
+step 99800, training accuracy 0.98, 3.78275 msec to evaluate
+step 99900, training accuracy 1, 4.19307 msec to evaluate
+test accuracy 0.9725
+Training finished. Saving variables.
+saving W_conv1.txt
+saving batch_normalization_gamma.txt
+saving batch_normalization_beta.txt
+saving W_fc1.txt
+saving batch_normalization_1_gamma.txt
+saving batch_normalization_1_beta.txt
+saving W_fc2.txt
+saving batch_normalization_2_gamma.txt
+saving batch_normalization_2_beta.txt
