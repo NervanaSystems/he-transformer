@@ -207,6 +207,7 @@ class Model(object):
             dim = reshaped.get_shape().as_list()[1]
             weights = self._get_weights_var(
                 'weights', shape=[dim, neurons], decay=decay, scope=scope)
+
             biases = self._get_weights_var(
                 'biases',
                 shape=[neurons],
