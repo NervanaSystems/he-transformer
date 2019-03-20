@@ -1,0 +1,341 @@
+[INFO] 2019-03-20T00:25:56z src/seal/ckks/he_seal_ckks_backend.cpp 66	Using SEAL CKKS config with 11 30-bit coefficients
+[INFO] 2019-03-20T00:26:01z src/seal/he_seal_util.hpp 47	
+/ Encryption parameters:
+| scheme: HE:SEAL:CKKS
+| poly_modulus: 16384
+| coeff_modulus size: 330 bits
+\ noise_standard_deviation: 3.2
+[INFO] 2019-03-20T00:26:01z src/seal/ckks/he_seal_ckks_backend.cpp 284	Creating batched plain tensor with shape 4096, 32, 32, 3
+[INFO] 2019-03-20T00:26:02z src/seal/ckks/he_seal_ckks_backend.cpp 284	Creating batched plain tensor with shape 4096, 10
+[INFO] 2019-03-20T00:26:02z src/he_backend.cpp 254	Encrypting data
+[INFO] 2019-03-20T00:26:02z src/he_backend.cpp 257	Batching data
+[INFO] 2019-03-20T00:26:02z src/he_backend.cpp 292	Encrypting parameter 0
+[INFO] 2019-03-20T00:26:02z src/he_backend.cpp 300	plain_input->get_batched_element_count() 3072
+[INFO] 2019-03-20T00:26:03z src/he_backend.cpp 307	Done encrypting parameter 0
+[INFO] 2019-03-20T00:26:03z src/he_backend.cpp 333	[1;32m[ Parameter_0 ][0m
+[INFO] 2019-03-20T00:26:03z src/he_backend.cpp 338	Parameter shape {4096, 32, 32, 3}
+[INFO] 2019-03-20T00:26:03z src/he_backend.cpp 333	[1;32m[ Constant_44 ][0m
+[INFO] 2019-03-20T00:26:03z src/he_backend.cpp 343	Constant shape {10}
+[INFO] 2019-03-20T00:26:03z src/he_backend.cpp 469	Inputs: 
+[INFO] 2019-03-20T00:26:03z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-20T00:26:03z src/he_backend.cpp 415	[1;31mConstant_44 took 23ms[0m
+[INFO] 2019-03-20T00:26:03z src/he_backend.cpp 333	[1;32m[ Constant_42 ][0m
+[INFO] 2019-03-20T00:26:03z src/he_backend.cpp 343	Constant shape {5120, 10}
+[INFO] 2019-03-20T00:26:03z src/he_backend.cpp 469	Inputs: 
+[INFO] 2019-03-20T00:26:03z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-20T00:26:07z src/he_backend.cpp 415	[1;31mConstant_42 took 3687ms[0m
+[INFO] 2019-03-20T00:26:07z src/he_backend.cpp 333	[1;32m[ Constant_36 ][0m
+[INFO] 2019-03-20T00:26:07z src/he_backend.cpp 343	Constant shape {}
+[INFO] 2019-03-20T00:26:07z src/he_backend.cpp 469	Inputs: 
+[INFO] 2019-03-20T00:26:07z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-20T00:26:07z src/he_backend.cpp 415	[1;31mConstant_36 took 15ms[0m
+[INFO] 2019-03-20T00:26:07z src/he_backend.cpp 333	[1;32m[ Constant_31 ][0m
+[INFO] 2019-03-20T00:26:07z src/he_backend.cpp 343	Constant shape {80}
+[INFO] 2019-03-20T00:26:07z src/he_backend.cpp 469	Inputs: 
+[INFO] 2019-03-20T00:26:07z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-20T00:26:07z src/he_backend.cpp 415	[1;31mConstant_31 took 16ms[0m
+[INFO] 2019-03-20T00:26:07z src/he_backend.cpp 333	[1;32m[ Constant_28 ][0m
+[INFO] 2019-03-20T00:26:07z src/he_backend.cpp 343	Constant shape {80}
+[INFO] 2019-03-20T00:26:07z src/he_backend.cpp 469	Inputs: 
+[INFO] 2019-03-20T00:26:07z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-20T00:26:07z src/he_backend.cpp 415	[1;31mConstant_28 took 16ms[0m
+[INFO] 2019-03-20T00:26:07z src/he_backend.cpp 333	[1;32m[ Constant_23 ][0m
+[INFO] 2019-03-20T00:26:07z src/he_backend.cpp 343	Constant shape {3, 3, 40, 80}
+[INFO] 2019-03-20T00:26:07z src/he_backend.cpp 469	Inputs: 
+[INFO] 2019-03-20T00:26:07z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 415	[1;31mConstant_23 took 2035ms[0m
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 333	[1;32m[ Constant_16 ][0m
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 343	Constant shape {}
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 469	Inputs: 
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 415	[1;31mConstant_16 took 1ms[0m
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 333	[1;32m[ Constant_11 ][0m
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 343	Constant shape {40}
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 469	Inputs: 
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 415	[1;31mConstant_11 took 7ms[0m
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 333	[1;32m[ Constant_8 ][0m
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 343	Constant shape {40}
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 469	Inputs: 
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 415	[1;31mConstant_8 took 16ms[0m
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 333	[1;32m[ Constant_3 ][0m
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 343	Constant shape {5, 5, 3, 40}
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 469	Inputs: 
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 415	[1;31mConstant_3 took 517ms[0m
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 333	[1;32m[ Constant_2 ][0m
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 343	Constant shape {}
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 469	Inputs: 
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 415	[1;31mConstant_2 took 23ms[0m
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 333	[1;32m[ Constant_1 ][0m
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 343	Constant shape {}
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 469	Inputs: 
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 415	[1;31mConstant_1 took 0ms[0m
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 333	[1;32m[ Reshape_4 ][0m
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 469	Inputs: Cipher
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 480	Batch size 4096
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 839	Reshape op
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 854	Done with reshape op
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 415	[1;31mReshape_4 took 6ms[0m
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 333	[1;32m[ Broadcast_45 ][0m
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 469	Inputs: Plain
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 415	[1;31mBroadcast_45 took 23ms[0m
+[INFO] 2019-03-20T00:26:09z src/he_backend.cpp 333	[1;32m[ Broadcast_37 ][0m
+[INFO] 2019-03-20T00:26:20z src/he_backend.cpp 469	Inputs: Plain
+[INFO] 2019-03-20T00:26:20z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-20T00:26:22z src/he_backend.cpp 415	[1;31mBroadcast_37 took 2893ms[0m
+[INFO] 2019-03-20T00:26:22z src/he_backend.cpp 333	[1;32m[ Broadcast_32 ][0m
+[INFO] 2019-03-20T00:26:23z src/he_backend.cpp 469	Inputs: Plain
+[INFO] 2019-03-20T00:26:23z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-20T00:26:29z src/he_backend.cpp 415	[1;31mBroadcast_32 took 5915ms[0m
+[INFO] 2019-03-20T00:26:29z src/he_backend.cpp 333	[1;32m[ Broadcast_29 ][0m
+[INFO] 2019-03-20T00:26:29z src/he_backend.cpp 469	Inputs: Plain
+[INFO] 2019-03-20T00:26:29z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-20T00:26:35z src/he_backend.cpp 415	[1;31mBroadcast_29 took 5908ms[0m
+[INFO] 2019-03-20T00:26:35z src/he_backend.cpp 333	[1;32m[ Reshape_25 ][0m
+[INFO] 2019-03-20T00:26:35z src/he_backend.cpp 469	Inputs: Plain
+[INFO] 2019-03-20T00:26:35z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-20T00:26:35z src/he_backend.cpp 839	Reshape op
+[INFO] 2019-03-20T00:26:35z src/he_backend.cpp 854	Done with reshape op
+[INFO] 2019-03-20T00:26:35z src/he_backend.cpp 415	[1;31mReshape_25 took 11ms[0m
+[INFO] 2019-03-20T00:26:35z src/he_backend.cpp 333	[1;32m[ Broadcast_17 ][0m
+[INFO] 2019-03-20T00:26:45z src/he_backend.cpp 469	Inputs: Plain
+[INFO] 2019-03-20T00:26:45z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-20T00:26:51z src/he_backend.cpp 415	[1;31mBroadcast_17 took 5901ms[0m
+[INFO] 2019-03-20T00:26:51z src/he_backend.cpp 333	[1;32m[ Broadcast_12 ][0m
+[INFO] 2019-03-20T00:26:51z src/he_backend.cpp 469	Inputs: Plain
+[INFO] 2019-03-20T00:26:51z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-20T00:27:03z src/he_backend.cpp 415	[1;31mBroadcast_12 took 12197ms[0m
+[INFO] 2019-03-20T00:27:03z src/he_backend.cpp 333	[1;32m[ Broadcast_9 ][0m
+[INFO] 2019-03-20T00:27:07z src/he_backend.cpp 469	Inputs: Plain
+[INFO] 2019-03-20T00:27:07z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-20T00:27:20z src/he_backend.cpp 415	[1;31mBroadcast_9 took 13148ms[0m
+[INFO] 2019-03-20T00:27:20z src/he_backend.cpp 333	[1;32m[ Reshape_5 ][0m
+[INFO] 2019-03-20T00:27:20z src/he_backend.cpp 469	Inputs: Plain
+[INFO] 2019-03-20T00:27:20z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-20T00:27:20z src/he_backend.cpp 839	Reshape op
+[INFO] 2019-03-20T00:27:20z src/he_backend.cpp 854	Done with reshape op
+[INFO] 2019-03-20T00:27:20z src/he_backend.cpp 415	[1;31mReshape_5 took 3ms[0m
+[INFO] 2019-03-20T00:27:20z src/he_backend.cpp 333	[1;32m[ Broadcast_14 ][0m
+[INFO] 2019-03-20T00:27:21z src/he_backend.cpp 469	Inputs: Plain
+[INFO] 2019-03-20T00:27:21z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-20T00:27:27z src/he_backend.cpp 415	[1;31mBroadcast_14 took 5989ms[0m
+[INFO] 2019-03-20T00:27:27z src/he_backend.cpp 333	[1;32m[ Broadcast_34 ][0m
+[INFO] 2019-03-20T00:27:27z src/he_backend.cpp 469	Inputs: Plain
+[INFO] 2019-03-20T00:27:27z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-20T00:27:31z src/he_backend.cpp 415	[1;31mBroadcast_34 took 3292ms[0m
+[INFO] 2019-03-20T00:27:31z src/he_backend.cpp 333	[1;32m[ Convolution_6 ][0m
+[INFO] 2019-03-20T00:27:31z src/he_backend.cpp 469	Inputs: Cipher, Plain
+[INFO] 2019-03-20T00:27:31z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-20T00:27:31z src/he_backend.cpp 480	Batch size 4096
+[INFO] 2019-03-20T00:27:31z src/seal/kernel/convolution_seal.hpp 85	Convolution output size 10240
+[INFO] 2019-03-20T00:27:37z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 0
+[INFO] 2019-03-20T00:30:26z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 10000
+[INFO] 2019-03-20T00:31:21z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 9000
+[INFO] 2019-03-20T00:31:39z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 8000
+[INFO] 2019-03-20T00:31:52z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 6000
+[INFO] 2019-03-20T00:31:56z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 7000
+[INFO] 2019-03-20T00:32:05z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 5000
+[INFO] 2019-03-20T00:32:48z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 4000
+[INFO] 2019-03-20T00:34:19z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 3000
+[INFO] 2019-03-20T00:35:28z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 2000
+[INFO] 2019-03-20T00:36:49z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 1000
+[INFO] 2019-03-20T00:37:46z src/he_backend.cpp 415	[1;31mConvolution_6 took 614902ms[0m
+[INFO] 2019-03-20T00:37:46z src/he_backend.cpp 333	[1;32m[ Reshape_7 ][0m
+[INFO] 2019-03-20T00:37:46z src/he_backend.cpp 469	Inputs: Cipher
+[INFO] 2019-03-20T00:37:46z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-20T00:37:46z src/he_backend.cpp 480	Batch size 4096
+[INFO] 2019-03-20T00:37:46z src/he_backend.cpp 839	Reshape op
+[INFO] 2019-03-20T00:37:46z src/he_backend.cpp 854	Done with reshape op
+[INFO] 2019-03-20T00:37:46z src/he_backend.cpp 415	[1;31mReshape_7 took 5ms[0m
+[INFO] 2019-03-20T00:37:46z src/he_backend.cpp 333	[1;32m[ Add_10 ][0m
+[INFO] 2019-03-20T00:37:46z src/he_backend.cpp 469	Inputs: Cipher, Plain
+[INFO] 2019-03-20T00:37:46z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-20T00:37:46z src/he_backend.cpp 480	Batch size 4096
+[INFO] 2019-03-20T00:37:49z src/he_backend.cpp 415	[1;31mAdd_10 took 3391ms[0m
+[INFO] 2019-03-20T00:37:50z src/he_backend.cpp 333	[1;32m[ Add_13 ][0m
+[INFO] 2019-03-20T00:37:50z src/he_backend.cpp 469	Inputs: Cipher, Plain
+[INFO] 2019-03-20T00:37:50z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-20T00:37:50z src/he_backend.cpp 480	Batch size 4096
+[INFO] 2019-03-20T00:37:52z src/he_backend.cpp 415	[1;31mAdd_13 took 2654ms[0m
+[INFO] 2019-03-20T00:37:53z src/he_backend.cpp 333	[1;32m[ Multiply_15 ][0m
+[INFO] 2019-03-20T00:37:53z src/he_backend.cpp 469	Inputs: Plain, Cipher
+[INFO] 2019-03-20T00:37:53z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-20T00:37:53z src/he_backend.cpp 480	Batch size 4096
+[INFO] 2019-03-20T00:37:59z src/he_backend.cpp 415	[1;31mMultiply_15 took 6298ms[0m
+[INFO] 2019-03-20T00:38:00z src/he_backend.cpp 333	[1;32m[ Add_18 ][0m
+[INFO] 2019-03-20T00:38:00z src/he_backend.cpp 469	Inputs: Cipher, Plain
+[INFO] 2019-03-20T00:38:00z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-20T00:38:00z src/he_backend.cpp 480	Batch size 4096
+[INFO] 2019-03-20T00:38:02z src/he_backend.cpp 415	[1;31mAdd_18 took 2450ms[0m
+[INFO] 2019-03-20T00:38:02z src/he_backend.cpp 333	[1;32m[ Multiply_19 ][0m
+[INFO] 2019-03-20T00:38:02z src/he_backend.cpp 469	Inputs: Cipher, Cipher
+[INFO] 2019-03-20T00:38:02z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-20T00:38:02z src/he_backend.cpp 480	Batch size 4096
+[INFO] 2019-03-20T00:38:23z src/he_backend.cpp 415	[1;31mMultiply_19 took 20824ms[0m
+[INFO] 2019-03-20T00:38:23z src/he_backend.cpp 333	[1;32m[ Reshape_20 ][0m
+[INFO] 2019-03-20T00:38:23z src/he_backend.cpp 469	Inputs: Cipher
+[INFO] 2019-03-20T00:38:23z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-20T00:38:23z src/he_backend.cpp 480	Batch size 4096
+[INFO] 2019-03-20T00:38:23z src/he_backend.cpp 839	Reshape op
+[INFO] 2019-03-20T00:38:23z src/he_backend.cpp 854	Done with reshape op
+[INFO] 2019-03-20T00:38:23z src/he_backend.cpp 415	[1;31mReshape_20 took 4ms[0m
+[INFO] 2019-03-20T00:38:23z src/he_backend.cpp 333	[1;32m[ AvgPool_21 ][0m
+[INFO] 2019-03-20T00:38:23z src/he_backend.cpp 469	Inputs: Cipher
+[INFO] 2019-03-20T00:38:23z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-20T00:38:23z src/he_backend.cpp 480	Batch size 4096
+[INFO] 2019-03-20T00:40:02z src/he_backend.cpp 415	[1;31mAvgPool_21 took 98267ms[0m
+[INFO] 2019-03-20T00:40:02z src/he_backend.cpp 333	[1;32m[ Reshape_22 ][0m
+[INFO] 2019-03-20T00:40:02z src/he_backend.cpp 469	Inputs: Cipher
+[INFO] 2019-03-20T00:40:02z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-20T00:40:02z src/he_backend.cpp 480	Batch size 4096
+[INFO] 2019-03-20T00:40:02z src/he_backend.cpp 839	Reshape op
+[INFO] 2019-03-20T00:40:02z src/he_backend.cpp 854	Done with reshape op
+[INFO] 2019-03-20T00:40:02z src/he_backend.cpp 415	[1;31mReshape_22 took 1ms[0m
+[INFO] 2019-03-20T00:40:02z src/he_backend.cpp 333	[1;32m[ Reshape_24 ][0m
+[INFO] 2019-03-20T00:40:02z src/he_backend.cpp 469	Inputs: Cipher
+[INFO] 2019-03-20T00:40:02z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-20T00:40:02z src/he_backend.cpp 480	Batch size 4096
+[INFO] 2019-03-20T00:40:02z src/he_backend.cpp 839	Reshape op
+[INFO] 2019-03-20T00:40:02z src/he_backend.cpp 854	Done with reshape op
+[INFO] 2019-03-20T00:40:02z src/he_backend.cpp 415	[1;31mReshape_24 took 1ms[0m
+[INFO] 2019-03-20T00:40:02z src/he_backend.cpp 333	[1;32m[ Convolution_26 ][0m
+[INFO] 2019-03-20T00:40:02z src/he_backend.cpp 469	Inputs: Cipher, Plain
+[INFO] 2019-03-20T00:40:02z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-20T00:40:02z src/he_backend.cpp 480	Batch size 4096
+[INFO] 2019-03-20T00:40:02z src/seal/kernel/convolution_seal.hpp 85	Convolution output size 5120
+[INFO] 2019-03-20T00:40:19z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 0
+[INFO] 2019-03-20T00:42:04z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 4000
+[INFO] 2019-03-20T00:43:23z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 5000
+[INFO] 2019-03-20T00:43:31z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 3000
+[INFO] 2019-03-20T00:46:10z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 2000
+[INFO] 2019-03-20T00:51:34z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 1000
+[INFO] 2019-03-20T00:53:56z src/he_backend.cpp 415	[1;31mConvolution_26 took 834363ms[0m
+[INFO] 2019-03-20T00:53:56z src/he_backend.cpp 333	[1;32m[ Reshape_27 ][0m
+[INFO] 2019-03-20T00:53:56z src/he_backend.cpp 469	Inputs: Cipher
+[INFO] 2019-03-20T00:53:56z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-20T00:53:56z src/he_backend.cpp 480	Batch size 4096
+[INFO] 2019-03-20T00:53:56z src/he_backend.cpp 839	Reshape op
+[INFO] 2019-03-20T00:53:56z src/he_backend.cpp 854	Done with reshape op
+[INFO] 2019-03-20T00:53:56z src/he_backend.cpp 415	[1;31mReshape_27 took 2ms[0m
+[INFO] 2019-03-20T00:53:56z src/he_backend.cpp 333	[1;32m[ Add_30 ][0m
+[INFO] 2019-03-20T00:53:56z src/he_backend.cpp 469	Inputs: Cipher, Plain
+[INFO] 2019-03-20T00:53:56z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-20T00:53:56z src/he_backend.cpp 480	Batch size 4096
+[INFO] 2019-03-20T00:53:57z src/he_backend.cpp 415	[1;31mAdd_30 took 1028ms[0m
+[INFO] 2019-03-20T00:53:57z src/he_backend.cpp 333	[1;32m[ Add_33 ][0m
+[INFO] 2019-03-20T00:53:57z src/he_backend.cpp 469	Inputs: Cipher, Plain
+[INFO] 2019-03-20T00:53:57z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-20T00:53:57z src/he_backend.cpp 480	Batch size 4096
+[INFO] 2019-03-20T00:53:58z src/he_backend.cpp 415	[1;31mAdd_33 took 851ms[0m
+[INFO] 2019-03-20T00:53:58z src/he_backend.cpp 333	[1;32m[ Multiply_35 ][0m
+[INFO] 2019-03-20T00:53:58z src/he_backend.cpp 469	Inputs: Plain, Cipher
+[INFO] 2019-03-20T00:53:58z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-20T00:53:58z src/he_backend.cpp 480	Batch size 4096
+[INFO] 2019-03-20T00:54:00z src/he_backend.cpp 415	[1;31mMultiply_35 took 1517ms[0m
+[INFO] 2019-03-20T00:54:00z src/he_backend.cpp 333	[1;32m[ Add_38 ][0m
+[INFO] 2019-03-20T00:54:00z src/he_backend.cpp 469	Inputs: Cipher, Plain
+[INFO] 2019-03-20T00:54:00z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-20T00:54:00z src/he_backend.cpp 480	Batch size 4096
+[INFO] 2019-03-20T00:54:03z src/he_backend.cpp 415	[1;31mAdd_38 took 3151ms[0m
+[INFO] 2019-03-20T00:54:04z src/he_backend.cpp 333	[1;32m[ Multiply_39 ][0m
+[INFO] 2019-03-20T00:54:04z src/he_backend.cpp 469	Inputs: Cipher, Cipher
+[INFO] 2019-03-20T00:54:04z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-20T00:54:04z src/he_backend.cpp 480	Batch size 4096
+[INFO] 2019-03-20T00:54:10z src/he_backend.cpp 415	[1;31mMultiply_39 took 6435ms[0m
+[INFO] 2019-03-20T00:54:10z src/he_backend.cpp 333	[1;32m[ Reshape_41 ][0m
+[INFO] 2019-03-20T00:54:10z src/he_backend.cpp 469	Inputs: Cipher
+[INFO] 2019-03-20T00:54:10z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-20T00:54:10z src/he_backend.cpp 480	Batch size 4096
+[INFO] 2019-03-20T00:54:10z src/he_backend.cpp 839	Reshape op
+[INFO] 2019-03-20T00:54:10z src/he_backend.cpp 854	Done with reshape op
+[INFO] 2019-03-20T00:54:10z src/he_backend.cpp 415	[1;31mReshape_41 took 2ms[0m
+[INFO] 2019-03-20T00:54:10z src/he_backend.cpp 333	[1;32m[ Dot_43 ][0m
+[INFO] 2019-03-20T00:54:10z src/he_backend.cpp 469	Inputs: Cipher, Plain
+[INFO] 2019-03-20T00:54:10z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-20T00:54:10z src/he_backend.cpp 480	Batch size 4096
+[INFO] 2019-03-20T00:54:10z src/he_backend.cpp 710	1x5120 dot 5120x10
+[INFO] 2019-03-20T00:54:51z src/he_backend.cpp 415	[1;31mDot_43 took 40751ms[0m
+[INFO] 2019-03-20T00:54:51z src/he_backend.cpp 333	[1;32m[ Add_46 ][0m
+[INFO] 2019-03-20T00:54:51z src/he_backend.cpp 469	Inputs: Cipher, Plain
+[INFO] 2019-03-20T00:54:51z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-20T00:54:51z src/he_backend.cpp 480	Batch size 4096
+[INFO] 2019-03-20T00:54:51z src/he_backend.cpp 415	[1;31mAdd_46 took 26ms[0m
+[INFO] 2019-03-20T00:54:51z src/he_backend.cpp 333	[1;32m[ Result_47 ][0m
+[INFO] 2019-03-20T00:54:51z src/he_backend.cpp 469	Inputs: Cipher
+[INFO] 2019-03-20T00:54:51z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-20T00:54:51z src/he_backend.cpp 480	Batch size 4096
+[INFO] 2019-03-20T00:54:51z src/he_backend.cpp 415	[1;31mResult_47 took 5ms[0m
+[INFO] 2019-03-20T00:54:51z src/he_backend.cpp 423	[1;32mTotal time 1698570 (ms) [0m
+TensorFlow version installed: 1.12.0 (v1.12.0-0-ga6d8ffae09)
+nGraph bridge built with: 1.12.0 (v1.12.0-0-ga6d8ffae09)
+FLAGS.optimize_inference True
+run_dir ./log/cifar10/cnn_bn_train_poly_act/0
+train polynomial activations? True
+batch norm? True
+Creating model with decay 100.0
+conv layer => mult. depth 1
+Conv shape: size: 5 channels: 3 filters: 40 , shape:  [5, 5, Dimension(3), 40]
+poly activation, => mult. depth 3
+pool layer => mult. depth 4
+conv layer => mult. depth 5
+Conv shape: size: 3 channels: 40 filters: 80 , shape:  [3, 3, Dimension(40), 80]
+poly activation, => mult. depth 7
+FC layer => mult. depth 8
+Multiplicative depth 8
+saving weights/cnn_bn_train_poly_act/conv1_weights.txt
+saving weights/cnn_bn_train_poly_act/conv1_biases.txt
+saving weights/cnn_bn_train_poly_act/conv1_batch_normalization_gamma.txt
+saving weights/cnn_bn_train_poly_act/conv1_batch_normalization_beta.txt
+saving weights/cnn_bn_train_poly_act/conv1_a.txt
+saving weights/cnn_bn_train_poly_act/conv1_b.txt
+saving weights/cnn_bn_train_poly_act/conv2_weights.txt
+saving weights/cnn_bn_train_poly_act/conv2_biases.txt
+saving weights/cnn_bn_train_poly_act/conv2_batch_normalization_gamma.txt
+saving weights/cnn_bn_train_poly_act/conv2_batch_normalization_beta.txt
+saving weights/cnn_bn_train_poly_act/conv2_a.txt
+saving weights/cnn_bn_train_poly_act/conv2_b.txt
+saving weights/cnn_bn_train_poly_act/fc1_weights.txt
+saving weights/cnn_bn_train_poly_act/fc1_biases.txt
+run_dir ./log/cifar10/cnn_bn_train_poly_act/0
+checkpoint dir ./log/cifar10/cnn_bn_train_poly_act/0/train
+train polynomial activations? True
+batch norm? True
+Creating model with decay 100.0
+conv layer => mult. depth 1
+Conv shape: size: 5 channels: 3 filters: 40 , shape:  [5, 5, Dimension(3), 40]
+restoring variable:  weights/cnn_bn_train_poly_act/conv1_weights.txt  with shape [5, 5, Dimension(3), 40]
+restoring variable:  weights/cnn_bn_train_poly_act/conv1_biases.txt  with shape [40]
+poly activation, => mult. depth 3
+restoring variable:  weights/cnn_bn_train_poly_act/conv1_a.txt  with shape []
+restoring variable:  weights/cnn_bn_train_poly_act/conv1_b.txt  with shape []
+pool layer => mult. depth 4
+conv layer => mult. depth 5
+Conv shape: size: 3 channels: 40 filters: 80 , shape:  [3, 3, Dimension(40), 80]
+restoring variable:  weights/cnn_bn_train_poly_act/conv2_weights.txt  with shape [3, 3, Dimension(40), 80]
+restoring variable:  weights/cnn_bn_train_poly_act/conv2_biases.txt  with shape [80]
+poly activation, => mult. depth 7
+restoring variable:  weights/cnn_bn_train_poly_act/conv2_a.txt  with shape []
+restoring variable:  weights/cnn_bn_train_poly_act/conv2_b.txt  with shape []
+FC layer => mult. depth 8
+restoring variable:  weights/cnn_bn_train_poly_act/fc1_weights.txt  with shape [5120, 10]
+restoring variable:  weights/cnn_bn_train_poly_act/fc1_biases.txt  with shape [10]
+ckpt.model_checkpoint_path ./log/cifar10/cnn_bn_train_poly_act/0/train/model.ckpt-100
+Freezing graph
+names ['Const', 'XXX', 'conv1/Const', 'conv1/Const_1', 'conv1/Conv2D', 'conv1/batch_normalization/gamma/Initializer/ones', 'conv1/batch_normalization/gamma', 'conv1/batch_normalization/gamma/Assign', 'conv1/batch_normalization/gamma/read', 'conv1/batch_normalization/beta/Initializer/zeros', 'conv1/batch_normalization/beta', 'conv1/batch_normalization/beta/Assign', 'conv1/batch_normalization/beta/read', 'conv1/batch_normalization/moving_mean/Initializer/zeros', 'conv1/batch_normalization/moving_mean', 'conv1/batch_normalization/moving_mean/Assign', 'conv1/batch_normalization/moving_mean/read', 'conv1/batch_normalization/moving_variance/Initializer/ones', 'conv1/batch_normalization/moving_variance', 'conv1/batch_normalization/moving_variance/Assign', 'conv1/batch_normalization/moving_variance/read', 'conv1/batch_normalization/FusedBatchNorm', 'conv1/batch_normalization/Const', 'conv1/BiasAdd', 'conv1/Const_2', 'conv1/Const_3', 'conv1/mul', 'conv1/mul_1', 'conv1/mul_2', 'conv1/add', 'pool1/pool1', 'conv2/Const', 'conv2/Const_1', 'conv2/Conv2D', 'conv2/batch_normalization/gamma/Initializer/ones', 'conv2/batch_normalization/gamma', 'conv2/batch_normalization/gamma/Assign', 'conv2/batch_normalization/gamma/read', 'conv2/batch_normalization/beta/Initializer/zeros', 'conv2/batch_normalization/beta', 'conv2/batch_normalization/beta/Assign', 'conv2/batch_normalization/beta/read', 'conv2/batch_normalization/moving_mean/Initializer/zeros', 'conv2/batch_normalization/moving_mean', 'conv2/batch_normalization/moving_mean/Assign', 'conv2/batch_normalization/moving_mean/read', 'conv2/batch_normalization/moving_variance/Initializer/ones', 'conv2/batch_normalization/moving_variance', 'conv2/batch_normalization/moving_variance/Assign', 'conv2/batch_normalization/moving_variance/read', 'conv2/batch_normalization/FusedBatchNorm', 'conv2/batch_normalization/Const', 'conv2/BiasAdd', 'conv2/Const_2', 'conv2/Const_3', 'conv2/mul', 'conv2/mul_1', 'conv2/mul_2', 'conv2/add', 'fc1/reshaped/shape', 'fc1/reshaped', 'fc1/Const', 'fc1/Const_1', 'fc1/MatMul', 'fc1/Add', 'YYY', 'save/Const', 'save/SaveV2/tensor_names', 'save/SaveV2/shape_and_slices', 'save/SaveV2', 'save/control_dependency', 'save/RestoreV2/tensor_names', 'save/RestoreV2/shape_and_slices', 'save/RestoreV2', 'save/Assign', 'save/Assign_1', 'save/Assign_2', 'save/Assign_3', 'save/Assign_4', 'save/Assign_5', 'save/Assign_6', 'save/Assign_7', 'save/restore_all']
+Done freezing graph
+Loading frozing graph
+Loaded forzen graph
+names ['Const', 'XXX', 'conv1/Const', 'conv1/Const_1', 'conv1/Conv2D', 'conv1/batch_normalization/gamma', 'conv1/batch_normalization/gamma/read', 'conv1/batch_normalization/beta', 'conv1/batch_normalization/beta/read', 'conv1/batch_normalization/moving_mean', 'conv1/batch_normalization/moving_mean/read', 'conv1/batch_normalization/moving_variance', 'conv1/batch_normalization/moving_variance/read', 'conv1/batch_normalization/FusedBatchNorm', 'conv1/BiasAdd', 'conv1/Const_2', 'conv1/Const_3', 'conv1/mul', 'conv1/mul_1', 'conv1/mul_2', 'conv1/add', 'pool1/pool1', 'conv2/Const', 'conv2/Const_1', 'conv2/Conv2D', 'conv2/batch_normalization/gamma', 'conv2/batch_normalization/gamma/read', 'conv2/batch_normalization/beta', 'conv2/batch_normalization/beta/read', 'conv2/batch_normalization/moving_mean', 'conv2/batch_normalization/moving_mean/read', 'conv2/batch_normalization/moving_variance', 'conv2/batch_normalization/moving_variance/read', 'conv2/batch_normalization/FusedBatchNorm', 'conv2/BiasAdd', 'conv2/Const_2', 'conv2/Const_3', 'conv2/mul', 'conv2/mul_1', 'conv2/mul_2', 'conv2/add', 'fc1/reshaped/shape', 'fc1/reshaped', 'fc1/Const', 'fc1/Const_1', 'fc1/MatMul', 'fc1/Add', 'YYY']
+Optimizing for inference.
+Writing fused wgraph
+Performing inference
+Inference on fused_graph.pb
+Running model
+Error count 2493 of 4096 elements.
+Accuracy  0.391357421875
