@@ -19,5 +19,5 @@
 using namespace ngraph;
 
 runtime::he::he_seal::SealPlaintextWrapper::SealPlaintextWrapper(
-    const seal::Plaintext& plain)
-    : m_plaintext(plain) {}
+    const seal::Plaintext& plain, bool is_one, bool is_neg1)
+    : m_plaintext(plain), m_is_one(is_one), m_is_neg1(is_neg1) {}

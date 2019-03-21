@@ -14,10 +14,10 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "seal/kernel/multiply_seal.hpp"
 #include "seal/bfv/kernel/multiply_seal_bfv.hpp"
 #include "seal/ckks/he_seal_ckks_backend.hpp"
 #include "seal/ckks/kernel/multiply_seal_ckks.hpp"
+#include "seal/kernel/multiply_seal.hpp"
 #include "seal/kernel/negate_seal.hpp"
 
 using namespace std;
@@ -76,27 +76,35 @@ void he_seal::kernel::scalar_multiply(
   if (type_name == "float") {
     if (he_seal_backend->optimized_mult()) {
       auto arg1_plaintext = arg1->m_plaintext;
-      auto seal_0_plaintext =
-          static_pointer_cast<const he_seal::SealPlaintextWrapper>(
-              he_seal_backend->get_valued_plaintext(0))
-              ->m_plaintext;
-      auto seal_1_plaintext =
-          static_pointer_cast<const he_seal::SealPlaintextWrapper>(
-              he_seal_backend->get_valued_plaintext(1))
-              ->m_plaintext;
-      auto seal_neg1_plaintext =
-          static_pointer_cast<const he_seal::SealPlaintextWrapper>(
-              he_seal_backend->get_valued_plaintext(-1))
-              ->m_plaintext;
+      /*  auto seal_0_plaintext =
+           static_pointer_cast<const he_seal::SealPlaintextWrapper>(
+               he_seal_backend->get_valued_plaintext(0))
+               ->m_plaintext;
+       auto seal_1_plaintext =
+           static_pointer_cast<const he_seal::SealPlaintextWrapper>(
+               he_seal_backend->get_valued_plaintext(1))
+               ->m_plaintext;
+       auto seal_neg1_plaintext =
+           static_pointer_cast<const he_seal::SealPlaintextWrapper>(
+               he_seal_backend->get_valued_plaintext(-1))
+               ->m_plaintext; */
 
       /* if (arg1_plaintext == seal_0_plaintext) {
         optimization = Optimization::mult_zero;
       } else */
-      if ((arg1_plaintext == seal_1_plaintext)) {
+      if (arg1->is_one()) {
+        // NGRAPH_INFO << "1 multiply bypass";
+        optimization = Optimization::mult_one;
+      } else if (arg1->is_neg_one()) {
+        // NGRAPH_INFO << "-1 multiply bypass";
+        optimization = Optimization::mult_neg_one;
+      }
+
+      /* if ((arg1_plaintext == seal_1_plaintext)) {
         optimization = Optimization::mult_one;
       } else if ((arg1_plaintext == seal_neg1_plaintext)) {
         optimization = Optimization::mult_neg_one;
-      }
+      } */
     }
   }
 

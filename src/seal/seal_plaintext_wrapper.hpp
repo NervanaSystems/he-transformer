@@ -25,10 +25,17 @@ namespace he {
 namespace he_seal {
 struct SealPlaintextWrapper : public HEPlaintext {
   SealPlaintextWrapper(){};
-  SealPlaintextWrapper(const seal::Plaintext& plain);
+  SealPlaintextWrapper(const seal::Plaintext& plain, bool is_one = false,
+                       bool is_neg1 = false);
 
   seal::Plaintext& get_hetext() noexcept { return m_plaintext; }
   const seal::Plaintext& get_hetext() const noexcept { return m_plaintext; }
+
+  const bool is_one() const { return m_is_one; }
+  const bool is_neg_one() const { return m_is_neg1; }
+
+  bool m_is_one;
+  bool m_is_neg1;
 
   seal::Plaintext m_plaintext;
 };

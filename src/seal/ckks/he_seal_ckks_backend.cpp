@@ -294,12 +294,18 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
   if (type_name == "float") {
     if (count == 1) {
       double value = (double)(*(float*)input);
+      // NGRAPH_INFO << "value " << value;
+      bool is_one = (value == 1);
+      bool is_neg_one = (value == -1);
+
+      // NGRAPH_INFO << "(value == 1):" << (value == 1);
+      // NGRAPH_INFO << "(value == -1):" << (value == -1);
       if (m_plaintext_map.find(value) != m_plaintext_map.end()) {
         auto plain_value = static_pointer_cast<
             const runtime::he::he_seal::SealPlaintextWrapper>(
             get_valued_plaintext(value));
         output = make_shared<runtime::he::he_seal::SealPlaintextWrapper>(
-            *plain_value);
+            plain_value->m_plaintext, is_one, is_neg_one);
       } else {
         m_ckks_encoder->encode(
             value, m_scale,
