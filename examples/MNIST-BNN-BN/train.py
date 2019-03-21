@@ -65,7 +65,6 @@ def cryptonets_train(x, is_training):
         #bn_instance = tf.layers.BatchNormalization(trainable=True)
         #h_conv1 = bn_instance.apply(h_conv1)
         h_conv1 = tf.layers.batch_normalization(h_conv1, training=is_training)
-
         h_conv1 = tf.square(h_conv1)
 
     with tf.name_scope('fc1'):
@@ -73,10 +72,8 @@ def cryptonets_train(x, is_training):
         W_fc1 = tf.clip_by_value(W_fc1, -1, 1)
         W_fc1 = straight_through_estimator(W_fc1)
         h_fc1 = tf.matmul(h_conv1, W_fc1)
-
         h_fc1 = tf.layers.batch_normalization(h_fc1, training=is_training)
         h_fc1 = tf.square(h_fc1)
-
         h_fc1 = tf.reshape(h_fc1, [-1, FC2_SIZE])
 
     with tf.name_scope('fc2'):
@@ -84,7 +81,6 @@ def cryptonets_train(x, is_training):
         W_fc2 = tf.clip_by_value(W_fc2, -1, 1)
         W_fc2 = straight_through_estimator(W_fc2)
         y_conv = tf.matmul(h_fc1, W_fc2)
-
         y_conv = tf.layers.batch_normalization(y_conv, training=is_training)
 
     return y_conv
