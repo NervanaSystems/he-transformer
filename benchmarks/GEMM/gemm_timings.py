@@ -37,8 +37,8 @@ def gemm_trial(n, p_ones=0, fname="./results.txt"):
         col = i % n
         ra[row, col] = 1.
 
-    print('ra', ra)
-    print('rb', rb)
+    #print('ra', ra)
+    #print('rb', rb)
 
     a = tf.constant(ra, dtype=np.float32)
     b = tf.placeholder(tf.float32, shape=(n, n))
@@ -50,7 +50,7 @@ def gemm_trial(n, p_ones=0, fname="./results.txt"):
         t0 = time.time()
         f_val = sess.run(f, feed_dict={b: rb, c: 3.})
         t1 = time.time() - t0
-        print("Result: ", f_val)
+        #print("Result: ", f_val)
         print("Time: ", t1)
         fp = open(fname, 'a')
         fp.write('%d, %f, %f\n' % (n, p_ones, t1))
@@ -69,5 +69,5 @@ if __name__ == "__main__":
 
     ns = [5, 10, 15, 20, 25, 30, 35, 40, 45]
     for n in ns:
-        for p_ones in [0, 0.5, 0.8]:
+        for p_ones in [0]:  #[0, 0.5, 0.8]:
             gemm_trial(n=n, p_ones=p_ones, fname=fname)
