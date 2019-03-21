@@ -12,7 +12,7 @@ def avg_pool_3x3_same_size(x):
         x, ksize=[1, 3, 3, 1], strides=[1, 1, 1, 1], padding='SAME')
 
 
-SCALING = 2
+SCALING = 1
 FC1_SIZE = int(720 * SCALING)
 FC2_SIZE = int(100 * SCALING)
 NUM_KERNELS = int(5 * SCALING)
