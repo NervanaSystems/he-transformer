@@ -1,4 +1,9 @@
+#!/bin/bash
+
 mkdir -p NEW
+
+for i in {1..10}
+do
 
 # Table row 1
 NGRAPH_HE_SEAL_CONFIG=ckks_config_14_depth11.json \
@@ -11,7 +16,7 @@ python test.py --model=cnn \
 --batch_size=4096 \
 --batch_norm=True \
 --train_poly_act=True \
---optimize_inference=False > NEW/cifar_L11_bnT_actT_optF.txt
+--optimize_inference=False > NEW/cifar_L11_bnT_actT_optF_trial_${i}.txt
 mv tf_function_ngraph_cluster_0.json cifar_bnT_actT_optF.json
 
 # Table row 2
@@ -25,7 +30,7 @@ python test.py --model=cnn \
 --batch_size=4096 \
 --batch_norm=True \
 --train_poly_act=True \
---optimize_inference=True > NEW/cifar_L11_bnT_actT_optT.txt
+--optimize_inference=True > NEW/cifar_L11_bnT_actT_optT_trial_${i}.txt
 mv tf_function_ngraph_cluster_0.json cifar_bnT_actT_optT.json
 
 # Table row 3
@@ -39,7 +44,7 @@ python test.py --model=cnn \
 --batch_size=4096 \
 --batch_norm=True \
 --train_poly_act=True \
---optimize_inference=True > NEW/cifar_L10_bnT_actT_optT.txt
+--optimize_inference=True > NEW/cifar_L10_bnT_actT_optT_trial_${i}.txt
 
 # Table row 4
 NGRAPH_HE_SEAL_CONFIG=ckks_config_14_depth11.json \
@@ -52,7 +57,7 @@ python test.py --model=cnn \
 --batch_size=4096 \
 --batch_norm=True \
 --train_poly_act=False \
---optimize_inference=False > NEW/cifar_L11_bnT_actF_optF.txt
+--optimize_inference=False > NEW/cifar_L11_bnT_actF_optF_trial_${i}.txt
 mv tf_function_ngraph_cluster_0.json cifar_bnT_actF_optF.json
 
 # Table row 5
@@ -66,7 +71,7 @@ python test.py --model=cnn \
 --batch_size=4096 \
 --batch_norm=True \
 --train_poly_act=False \
---optimize_inference=True > NEW/cifar_L11_bnT_actF_optT.txt
+--optimize_inference=True > NEW/cifar_L11_bnT_actF_optT_trial_${i}.txt
 mv tf_function_ngraph_cluster_0.json cifar_bnT_actF_optT.json
 
 # Table row 6
@@ -80,10 +85,12 @@ python test.py --model=cnn \
 --batch_size=4096 \
 --batch_norm=True \
 --train_poly_act=False \
---optimize_inference=True > NEW/cifar_L10_bnT_actF_optT.txt
+--optimize_inference=True > NEW/cifar_L10_bnT_actF_optT_trial_${i}.txt
+
+done
 
 # Table row 7
-NGRAPH_HE_SEAL_CONFIG=ckks_config_14_depth10.json \
+'NGRAPH_HE_SEAL_CONFIG=ckks_config_14_depth10.json \
 NGRAPH_BATCH_DATA=1 \
 NGRAPH_BATCH_TF=1 \
 NGRAPH_ENCRYPT_DATA=1 \
@@ -93,10 +100,10 @@ python test.py --model=cnn \
 --batch_size=4096 \
 --batch_norm=False \
 --train_poly_act=True \
---optimize_inference=False > NEW/cifar_L10_bnF_actT_optF.txt
+--optimize_inference=False > NEW/cifar_L10_bnF_actT_optF.txt'
 
 # Table row 8
-NGRAPH_HE_SEAL_CONFIG=ckks_config_14_depth10.json \
+'NGRAPH_HE_SEAL_CONFIG=ckks_config_14_depth10.json \
 NGRAPH_BATCH_DATA=1 \
 NGRAPH_BATCH_TF=1 \
 NGRAPH_ENCRYPT_DATA=1 \
@@ -106,6 +113,4 @@ python test.py --model=cnn \
 --batch_size=4096 \
 --batch_norm=False \
 --train_poly_act=False \
---optimize_inference=False > NEW/cifar_L10_bnF_actF_optF.txt
-
-
+--optimize_inference=False > NEW/cifar_L10_bnF_actF_optF.txt'

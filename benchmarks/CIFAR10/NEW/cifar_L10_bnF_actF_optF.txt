@@ -1,0 +1,17 @@
+TensorFlow version installed: 1.12.0 (v1.12.0-0-ga6d8ffae09)
+nGraph bridge built with: 1.12.0 (v1.12.0-0-ga6d8ffae09)
+run_dir ./log/cifar10/cnn/0
+train polynomial activations? False
+batch norm? False
+Creating model with decay 100.0
+conv layer => mult. depth 1
+Conv shape: size: 5 channels: 3 filters: 40 , shape:  [5, 5, Dimension(3), 40]
+poly activation, => mult. depth 3
+pool layer => mult. depth 4
+conv layer => mult. depth 5
+Conv shape: size: 3 channels: 40 filters: 80 , shape:  [3, 3, Dimension(40), 80]
+poly activation, => mult. depth 7
+FC layer => mult. depth 8
+Multiplicative depth 8
+No checkpoint file found
+ckpt_dir ./log/cifar10/cnn/0/train
