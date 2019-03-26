@@ -19,7 +19,6 @@
 #include "ngraph/pass/constant_folding.hpp"
 #include "ngraph/pass/core_fusion.hpp"
 #include "ngraph/pass/visualize_tree.hpp"
-#include "pass/he_constant_folding.hpp"
 #include "test_util.hpp"
 #include "util/all_close.hpp"
 #include "util/ndarray.hpp"
@@ -272,7 +271,7 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion) {
   pass::Manager pass_manager_opt;
 
   pass_manager_opt.register_pass<pass::CoreFusion>();
-  pass_manager_opt.register_pass<pass::HEConstantFolding>();
+  pass_manager_opt.register_pass<pass::ConstantFolding>();
   pass_manager_opt.run_passes(opt_f);
 
   auto orig_ops = orig_f->get_ordered_ops();
@@ -352,7 +351,7 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he) {
   pass::Manager pass_manager_opt;
 
   pass_manager_opt.register_pass<pass::CoreFusion>();
-  pass_manager_opt.register_pass<pass::HEConstantFolding>();
+  pass_manager_opt.register_pass<pass::ConstantFolding>();
   pass_manager_opt.run_passes(opt_f);
 
   auto orig_ops = orig_f->get_ordered_ops();
@@ -438,7 +437,7 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he_batch) {
   pass::Manager pass_manager_opt;
 
   pass_manager_opt.register_pass<pass::CoreFusion>();
-  pass_manager_opt.register_pass<pass::HEConstantFolding>();
+  pass_manager_opt.register_pass<pass::ConstantFolding>();
   pass_manager_opt.run_passes(opt_f);
 
   auto orig_ops = orig_f->get_ordered_ops();
