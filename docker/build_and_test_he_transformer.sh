@@ -33,7 +33,7 @@ build()
    cd build
    cmake .. -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7
    make -j install
-   source ext_ngraph_tf/src/ext_ngraph_tf/build/venv-tf-py3/bin/activate
+   source external/venv-tf-py3/bin/activate
    cd -
 }
 
