@@ -54,6 +54,8 @@ runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend(
   m_context = seal::SEALContext::Create(
       *(he_seal_encryption_parms->seal_encryption_parameters()));
 
+  m_encryption_params = sp;
+
   print_seal_context(*m_context);
 
   auto context_data = m_context->context_data();

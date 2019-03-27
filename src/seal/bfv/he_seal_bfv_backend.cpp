@@ -36,6 +36,8 @@ runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend()
 
 runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend(
     const shared_ptr<runtime::he::HEEncryptionParameters>& sp) {
+  m_encryption_params = sp;
+
   auto he_seal_encryption_parms =
       static_pointer_cast<runtime::he::he_seal::HESealEncryptionParameters>(sp);
   NGRAPH_ASSERT(he_seal_encryption_parms != nullptr)

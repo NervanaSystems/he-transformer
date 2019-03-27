@@ -66,7 +66,10 @@ class HESealEncryptionParameters : public HEEncryptionParameters {
   virtual ~HESealEncryptionParameters(){};
 
   void save(std::ostream& stream) const override {
-    seal::EncryptionParameters::Save(*m_seal_encryption_parameters, stream);
+    NGRAPH_INFO << "Saving params";
+    auto deref = *m_seal_encryption_parameters;
+    seal::EncryptionParameters::Save(deref, stream);
+    NGRAPH_INFO << "Saved";
   }
 
   std::shared_ptr<seal::EncryptionParameters> seal_encryption_parameters() {

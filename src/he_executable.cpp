@@ -97,9 +97,16 @@ runtime::he::HEExecutable::HEExecutable(const shared_ptr<Function>& function,
   NGRAPH_INFO << "Started CKKS server";
 
   std::stringstream param_stream;
+  NGRAPH_INFO << "Got EncryptionParms";
+
+  shared_ptr<HEEncryptionParameters> parms =
+      he_backend->get_encryption_parameters();
+
+  assert(parms != nullptr);
+
   NGRAPH_INFO << "Saving EncryptionParms";
 
-  he_backend->get_encryption_parameters()->save(param_stream);
+  parms->save(param_stream);
   // seal::EncryptionParameters::Save(he_backend->get_encryption_parameters(),
   //                                 param_stream);
   NGRAPH_INFO << "Saved EncryptionParms";
