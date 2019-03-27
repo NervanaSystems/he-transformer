@@ -100,9 +100,8 @@ runtime::he::HEExecutable::HEExecutable(const shared_ptr<Function>& function,
   NGRAPH_INFO << "Saving EncryptionParms";
 
   he_backend->get_encryption_parameters()->save(param_stream);
-
-  // seal::EncryptionParameters::Save(he_backend->get_encryption_parameters()
-  //                                     param_stream);
+  // seal::EncryptionParameters::Save(he_backend->get_encryption_parameters(),
+  //                                 param_stream);
   NGRAPH_INFO << "Saved EncryptionParms";
 
   auto context_message =

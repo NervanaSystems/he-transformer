@@ -16,23 +16,56 @@
 
 #pragma once
 
+#include <cstdint>
 #include <ostream>
+#include <string>
+#include <vector>
 
 namespace ngraph {
 namespace runtime {
 namespace he {
 class HEEncryptionParameters {
  public:
-  HEEncryptionParameters(){};
+  HEEncryptionParameters() = delete;
+  HEEncryptionParameters(std::string scheme_name,
+                         std::uint64_t poly_modulus_degree,
+                         std::uint64_t security_level,
+                         std::uint64_t evaluation_decomposition_bit_count,
+                         std::vector<std::uint64_t> coeff_modulus,
+                         std::uint64_t plain_modulus = 0)
+      : m_scheme_name(scheme_name),
+        m_poly_modulus_degree(poly_modulus_degree),
+        m_security_level(security_level),
+        m_evaluation_decomposition_bit_count(
+            evaluation_decomposition_bit_count),
+        m_coeff_modulus(coeff_modulus),
+        m_plain_modulus(plain_modulus) {}
+
   virtual ~HEEncryptionParameters(){};
 
   virtual void save(std::ostream& stream) const = 0;
 
-  virtual void set_poly_modulus_degree(size_t poly_modulus_degree) = 0;
+  inline const std::string& scheme_name() const { return m_scheme_name; }
 
-  virtual void set_coeff_modulus(
-      const std::vector<std::uint64_t>& coeff_modulus) = 0;
-};
+  inline std::uint64_t poly_modulus_degree() { return m_poly_modulus_degree; }
+
+  inline std::uint64_t security_level() { return m_security_level; }
+
+  inline std::uint64_t evaluation_decomposition_bit_count() {
+    return m_evaluation_decomposition_bit_count;
+  }
+  inline const std::vector<std::uint64_t>& coeff_modulus() {
+    return m_coeff_modulus;
+  }
+
+ protected:
+  std::string m_scheme_name;
+  std::uint64_t m_poly_modulus_degree;
+  std::uint64_t m_security_level;
+  std::uint64_t m_evaluation_decomposition_bit_count;
+  std::vector<std::uint64_t> m_coeff_modulus;
+  std::uint64_t m_plain_modulus;
+};  // namespace he
 }  // namespace he
 }  // namespace runtime
 }  // namespace ngraph

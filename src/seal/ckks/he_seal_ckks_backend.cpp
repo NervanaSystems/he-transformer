@@ -15,102 +15,44 @@
 //*****************************************************************************
 
 #include <chrono>
+#include <cstdint>
+#include <cstdlib>
+#include <fstream>
+#include <iostream>
 #include <limits>
+#include <sstream>
+#include <string>
 #include <thread>
 
 #include "he_cipher_tensor.hpp"
 #include "he_plain_tensor.hpp"
 #include "he_tensor.hpp"
+#include "ngraph/log.hpp"
 #include "ngraph/runtime/backend_manager.hpp"
+
 #include "seal/ckks/he_seal_ckks_backend.hpp"
 #include "seal/he_seal_backend.hpp"
-#include "seal/he_seal_parameter.hpp"
+#include "seal/he_seal_encryption_parameters.hpp"
 #include "seal/he_seal_util.hpp"
-#include "tcp/tcp_message.hpp"
-
 #include "seal/seal.h"
+#include "tcp/tcp_message.hpp"
 
 using namespace ngraph;
 using namespace std;
 
-const static runtime::he::he_seal::HESealParameter
-parse_seal_ckks_config_or_use_default() {
-  try {
-    const char* config_path = getenv("NGRAPH_HE_SEAL_CONFIG");
-    if (config_path != nullptr) {
-      // Read file to string
-      ifstream f(config_path);
-      stringstream ss;
-      ss << f.rdbuf();
-      string s = ss.str();
-
-      // Parse json
-      nlohmann::json js = nlohmann::json::parse(s);
-      string scheme_name = js["scheme_name"];
-      uint64_t poly_modulus_degree = js["poly_modulus_degree"];
-      uint64_t security_level = js["security_level"];
-      uint64_t evaluation_decomposition_bit_count =
-          js["evaluation_decomposition_bit_count"];
-
-      auto coeff_mod = js.find("coeff_modulus");
-      if (coeff_mod != js.end()) {
-        string coeff_mod_name = coeff_mod->begin().key();
-
-        set<string> valid_coeff_mods{"small_mods_30bit", "small_mods_40bit",
-                                     "small_mods_50bit", "small_mods_60bit"};
-
-        auto valid_coeff_mod = valid_coeff_mods.find(coeff_mod_name);
-        if (valid_coeff_mod == valid_coeff_mods.end()) {
-          throw ngraph_error("Coeff modulus " + coeff_mod_name + " not valid");
-        }
-        std::uint64_t bit_count = std::stoi(coeff_mod_name.substr(11, 2));
-        std::uint64_t coeff_count = coeff_mod->begin().value();
-
-        NGRAPH_INFO << "Using SEAL CKKS config with " << coeff_count << " "
-                    << bit_count << "-bit coefficients";
-
-        runtime::he::he_seal::HESealParameter::CoeffModulus coeff_modulus{
-            bit_count, coeff_count};
-
-        return runtime::he::he_seal::HESealParameter(
-            scheme_name, poly_modulus_degree, security_level,
-            evaluation_decomposition_bit_count, coeff_modulus);
-      }
-
-      NGRAPH_INFO << "Using SEAL CKKS config for parameters: " << config_path;
-      return runtime::he::he_seal::HESealParameter(
-          scheme_name, poly_modulus_degree, security_level,
-          evaluation_decomposition_bit_count);
-    } else {
-      NGRAPH_INFO << "Using SEAL CKKS default parameters" << config_path;
-      throw runtime_error("config_path is NULL");
-    }
-  } catch (const exception& e) {
-    NGRAPH_INFO << "Error " << e.what();
-    NGRAPH_INFO << "Error using NGRAPH_HE_SEAL_CONFIG. Using default ";
-    return runtime::he::he_seal::HESealParameter(
-        "HE_SEAL_CKKS",  // scheme name
-        1024,            // poly_modulus_degree
-        128,             // security_level
-        60,              // evaluation_decomposition_bit_count
-                         // Coefficient modulus
-        runtime::he::he_seal::HESealParameter::CoeffModulus{30, 4});
-  }
-}
-
-const static runtime::he::he_seal::HESealParameter default_seal_ckks_parameter =
-    parse_seal_ckks_config_or_use_default();
-
 runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend()
     : runtime::he::he_seal::HESealCKKSBackend(
-          make_shared<runtime::he::he_seal::HESealParameter>(
-              default_seal_ckks_parameter)) {}
+          runtime::he::he_seal::parse_config_or_use_default("HE_SEAL_CKKS")) {}
 
 runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend(
-    const shared_ptr<runtime::he::he_seal::HESealParameter>& sp) {
-  assert_valid_seal_ckks_parameter(sp);
+    const shared_ptr<runtime::he::HEEncryptionParameters>& sp) {
+  auto he_seal_encryption_parms =
+      static_pointer_cast<runtime::he::he_seal::HESealEncryptionParameters>(sp);
 
-  m_context = make_seal_context(sp);
+  NGRAPH_ASSERT(he_seal_encryption_parms != nullptr)
+      << "HE_SEAL_CKKS backend passed invalid encryption parameters";
+  m_context = seal::SEALContext::Create(
+      *(he_seal_encryption_parms->seal_encryption_parameters()));
 
   print_seal_context(*m_context);
 
@@ -119,7 +61,7 @@ runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend(
   // Keygen, encryptor and decryptor
   m_keygen = make_shared<seal::KeyGenerator>(m_context);
   m_relin_keys = make_shared<seal::RelinKeys>(
-      m_keygen->relin_keys(sp->m_evaluation_decomposition_bit_count));
+      m_keygen->relin_keys(sp->evaluation_decomposition_bit_count()));
   m_public_key = make_shared<seal::PublicKey>(m_keygen->public_key());
   m_secret_key = make_shared<seal::SecretKey>(m_keygen->secret_key());
   m_encryptor = make_shared<seal::Encryptor>(m_context, *m_public_key);
@@ -170,110 +112,8 @@ extern "C" runtime::Backend* new_ckks_backend(
 
 shared_ptr<seal::SEALContext>
 runtime::he::he_seal::HESealCKKSBackend::make_seal_context(
-    const shared_ptr<runtime::he::he_seal::HESealParameter> sp) {
-  m_encryption_params =
-      make_shared<seal::EncryptionParameters>(seal::scheme_type::CKKS);
-
-  if (sp->m_scheme_name != "HE_SEAL_CKKS") {
-    throw ngraph_error("Invalid scheme name \"" + sp->m_scheme_name + "\"");
-  }
-
-  m_encryption_params->set_poly_modulus_degree(sp->m_poly_modulus_degree);
-
-  bool custom_coeff_modulus = (sp->m_coeff_modulus.bit_count != 0);
-
-  if (custom_coeff_modulus) {
-    if (sp->m_coeff_modulus.bit_count == 30) {
-      std::vector<seal::SmallModulus> small_mods_30_bit =
-          seal::util::global_variables::default_small_mods_30bit;
-      m_encryption_params->set_coeff_modulus(
-          {small_mods_30_bit.begin(),
-           small_mods_30_bit.begin() + sp->m_coeff_modulus.coeff_count});
-    } else if (sp->m_coeff_modulus.bit_count == 40) {
-      std::vector<seal::SmallModulus> small_mods_40_bit =
-          seal::util::global_variables::default_small_mods_40bit;
-      m_encryption_params->set_coeff_modulus(
-          {small_mods_40_bit.begin(),
-           small_mods_40_bit.begin() + sp->m_coeff_modulus.coeff_count});
-    } else if (sp->m_coeff_modulus.bit_count == 50) {
-      std::vector<seal::SmallModulus> small_mods_50_bit =
-          seal::util::global_variables::default_small_mods_50bit;
-      m_encryption_params->set_coeff_modulus(
-          {small_mods_50_bit.begin(),
-           small_mods_50_bit.begin() + sp->m_coeff_modulus.coeff_count});
-    } else if (sp->m_coeff_modulus.bit_count == 60) {
-      std::vector<seal::SmallModulus> small_mods_60_bit =
-          seal::util::global_variables::default_small_mods_60bit;
-      m_encryption_params->set_coeff_modulus(
-          {small_mods_60_bit.begin(),
-           small_mods_60_bit.begin() + sp->m_coeff_modulus.coeff_count});
-    } else {
-      throw ngraph_error("Invalid coefficient bit count " +
-                         to_string(sp->m_coeff_modulus.bit_count));
-    }
-  }
-
-  uint64_t coeff_bit_count =
-      sp->m_coeff_modulus.bit_count * sp->m_coeff_modulus.coeff_count;
-
-  if (sp->m_security_level == 128) {
-    if (custom_coeff_modulus) {
-      uint64_t default_coeff_bit_count = 0;
-      for (auto small_modulus :
-           seal::DefaultParams::coeff_modulus_128(sp->m_poly_modulus_degree)) {
-        default_coeff_bit_count += small_modulus.bit_count();
-      }
-      if (default_coeff_bit_count < coeff_bit_count) {
-        NGRAPH_WARN << "Custom coefficient modulus has total bit count "
-                    << coeff_bit_count
-                    << " which is greater than the default bit count "
-                    << default_coeff_bit_count
-                    << ", resulting in lower security";
-      }
-    } else {
-      m_encryption_parms->set_coeff_modulus(
-          seal::DefaultParams::coeff_modulus_128(sp->m_poly_modulus_degree));
-    }
-  } else if (sp->m_security_level == 192) {
-    if (custom_coeff_modulus) {
-      uint64_t default_coeff_bit_count = 0;
-      for (auto small_modulus :
-           seal::DefaultParams::coeff_modulus_192(sp->m_poly_modulus_degree)) {
-        default_coeff_bit_count += small_modulus.bit_count();
-      }
-      if (default_coeff_bit_count < coeff_bit_count) {
-        NGRAPH_WARN << "Custom coefficient modulus has total bit count "
-                    << coeff_bit_count
-                    << " which is greater than the default bit count "
-                    << default_coeff_bit_count
-                    << ", resulting in lower security";
-      }
-    } else {
-      m_encryption_parms->set_coeff_modulus(
-          seal::DefaultParams::coeff_modulus_192(sp->m_poly_modulus_degree));
-    }
-  } else if (sp->m_security_level == 256) {
-    if (custom_coeff_modulus) {
-      uint64_t default_coeff_bit_count = 0;
-      for (auto small_modulus :
-           seal::DefaultParams::coeff_modulus_256(sp->m_poly_modulus_degree)) {
-        default_coeff_bit_count += small_modulus.bit_count();
-      }
-      if (default_coeff_bit_count < coeff_bit_count) {
-        NGRAPH_WARN << "Custom coefficient modulus has total bit count "
-                    << coeff_bit_count
-                    << " which is greater than the default bit count "
-                    << default_coeff_bit_count
-                    << ", resulting in lower security";
-      }
-    } else {
-      m_encryption_parms->set_coeff_modulus(
-          seal::DefaultParams::coeff_modulus_256(sp->m_poly_modulus_degree));
-    }
-  } else {
-    throw ngraph_error("sp.security_level must be 128, 192, or 256");
-  }
-  return seal::SEALContext::Create(*m_encryption_parms);
+    const shared_ptr<runtime::he::HEEncryptionParameters> sp) {
+  throw ngraph_error("make SEAL context unimplemented");
 }
 
 namespace {
@@ -285,14 +125,6 @@ static class HESealCKKSStaticInit {
   ~HESealCKKSStaticInit() {}
 } s_he_seal_ckks_static_init;
 }  // namespace
-
-void runtime::he::he_seal::HESealCKKSBackend::assert_valid_seal_ckks_parameter(
-    const shared_ptr<runtime::he::he_seal::HESealParameter>& sp) const {
-  assert_valid_seal_parameter(sp);
-  if (sp->m_scheme_name != "HE_SEAL_CKKS") {
-    throw ngraph_error("Invalid scheme name");
-  }
-}
 
 shared_ptr<runtime::Tensor>
 runtime::he::he_seal::HESealCKKSBackend::create_batched_cipher_tensor(

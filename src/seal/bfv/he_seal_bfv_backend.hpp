@@ -23,7 +23,7 @@
 #include "he_tensor.hpp"
 #include "ngraph/runtime/backend.hpp"
 #include "seal/he_seal_backend.hpp"
-#include "seal/he_seal_parameter.hpp"
+#include "seal/he_seal_encryption_parameters.hpp"
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
@@ -36,7 +36,7 @@ class HESealBFVBackend : public HESealBackend {
  public:
   HESealBFVBackend();
   HESealBFVBackend(
-      const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp);
+      const std::shared_ptr<runtime::he::HEEncryptionParameters>& sp);
   HESealBFVBackend(HESealBFVBackend& he_backend) = default;
   ~HESealBFVBackend(){};
 
@@ -47,7 +47,7 @@ class HESealBFVBackend : public HESealBackend {
       const element::Type& element_type, const Shape& shape) override;
 
   std::shared_ptr<seal::SEALContext> make_seal_context(
-      const std::shared_ptr<runtime::he::he_seal::HESealParameter> sp) override;
+      const std::shared_ptr<runtime::he::HEEncryptionParameters> sp) override;
 
   void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
               const void* input, const element::Type& element_type,
@@ -64,9 +64,6 @@ class HESealBFVBackend : public HESealBackend {
       const {
     return m_integer_encoder;
   }
-
-  void assert_valid_seal_bfv_parameter(
-      const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp) const;
 
  private:
   std::shared_ptr<seal::BatchEncoder> m_batch_encoder;

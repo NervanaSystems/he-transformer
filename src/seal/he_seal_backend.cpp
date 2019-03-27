@@ -43,30 +43,6 @@ extern "C" runtime::Backend* new_backend(const char* configuration_chars) {
 
 extern "C" void delete_backend(runtime::Backend* backend) { delete backend; }
 
-void runtime::he::he_seal::HESealBackend::assert_valid_seal_parameter(
-    const shared_ptr<runtime::he::he_seal::HESealParameter> sp) const {
-  if (sp->m_scheme_name != "HE_SEAL_BFV" &&
-      sp->m_scheme_name != "HE_SEAL_CKKS") {
-    throw ngraph_error("Invalid scheme name");
-  }
-  static unordered_set<uint64_t> valid_poly_modulus{1024, 2048,  4096,
-                                                    8192, 16384, 32768};
-  if (valid_poly_modulus.count(sp->m_poly_modulus_degree) == 0) {
-    throw ngraph_error(
-        "m_poly_modulus must be 1024, 2048, 4096, 8192, 16384, 32768");
-  }
-
-  if (sp->m_security_level != 128 && sp->m_security_level != 192) {
-    throw ngraph_error("sp.security_level must be 128, 192");
-  }
-
-  if (sp->m_evaluation_decomposition_bit_count > 60 ||
-      sp->m_evaluation_decomposition_bit_count < 1) {
-    throw ngraph_error(
-        "sp.m_evaluation_decomposition_bit_count must be between 1 and 60");
-  }
-}
-
 shared_ptr<runtime::he::HECiphertext>
 runtime::he::he_seal::HESealBackend::create_empty_ciphertext() const {
   return make_shared<runtime::he::he_seal::SealCiphertextWrapper>();

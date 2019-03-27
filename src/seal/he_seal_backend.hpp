@@ -20,7 +20,7 @@
 #include <unordered_map>
 
 #include "he_backend.hpp"
-#include "seal/he_seal_parameter.hpp"
+#include "seal/he_seal_encryption_parameters.hpp"
 #include "seal/seal.h"
 
 namespace ngraph {
@@ -33,14 +33,9 @@ class HESealBackend : public HEBackend {
   /// @param sp SEAL Parameter from which to construct context
   /// @return Pointer to constructed context
   virtual std::shared_ptr<seal::SEALContext> make_seal_context(
-      const std::shared_ptr<runtime::he::he_seal::HESealParameter> sp) = 0;
+      const std::shared_ptr<runtime::he::HEEncryptionParameters> sp) = 0;
 
   virtual ~HESealBackend() { std::cout << "~HESealBackend()" << std::endl; };
-
-  /// @brief Checks if parameter is valid for encoding.
-  ///        Throws an error if parameter is not valid.
-  void assert_valid_seal_parameter(
-      const std::shared_ptr<runtime::he::he_seal::HESealParameter> sp) const;
 
   virtual std::shared_ptr<runtime::Tensor> create_batched_cipher_tensor(
       const element::Type& element_type, const Shape& shape) override = 0;
