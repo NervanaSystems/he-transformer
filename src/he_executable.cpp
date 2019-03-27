@@ -62,6 +62,8 @@
 #include "ngraph/pass/visualize_tree.hpp"
 #include "ngraph/runtime/backend.hpp"
 #include "ngraph/util.hpp"
+#include "seal/he_seal_backend.hpp"
+#include "seal/he_seal_util.hpp"
 
 using namespace std;
 using namespace ngraph;
@@ -91,45 +93,66 @@ runtime::he::HEExecutable::HEExecutable(const shared_ptr<Function>& function,
   }
   set_parameters_and_results(*function);
 
+  // only support parameter size 1 for now
+  NGRAPH_ASSERT(get_parameters().size() == 1)
+      << "HEExecutable only supports parameter size 1 (got "
+      << get_parameters().size() << ")";
+  // only support function output size 1 for now
+  NGRAPH_ASSERT(get_results().size() == 1)
+      << "HEExecutable only supports output size 1 (got "
+      << get_results().size() << "";
+
   // Start server
   NGRAPH_INFO << "Starting CKKS server";
   start_server();
   NGRAPH_INFO << "Started CKKS server";
 
-  std::stringstream param_stream;
+  stringstream param_stream;
   NGRAPH_INFO << "Got EncryptionParms";
 
   shared_ptr<HEEncryptionParameters> parms =
       he_backend->get_encryption_parameters();
 
-  assert(parms != nullptr);
+  // TODO: move get_context to HEBackend
+  auto he_seal_backend = (runtime::he::he_seal::HESealBackend*)he_backend;
+  m_context = he_seal_backend->get_context();
 
+  NGRAPH_ASSERT(parms != nullptr) << "HEEncryptionParameters == nullptr";
   NGRAPH_INFO << "Saving EncryptionParms";
-
   parms->save(param_stream);
-  // seal::EncryptionParameters::Save(he_backend->get_encryption_parameters(),
-  //                                 param_stream);
-  NGRAPH_INFO << "Saved EncryptionParms";
 
-  auto context_message =
+  auto parms_message =
       TCPMessage(MessageType::encryption_parameters, 1, param_stream);
 
   // Send
   NGRAPH_INFO << "Waiting until client is connected";
   while (!m_session_started) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    this_thread::sleep_for(chrono::milliseconds(10));
   }
-  NGRAPH_INFO << "Server about to write message";
-  m_session->do_write(context_message);
-  NGRAPH_INFO << "Server posted write_message()";
+  NGRAPH_INFO << "Server about to write EncryptionParms size"
+              << parms_message.num_bytes();
+  m_session->do_write(parms_message);
+  NGRAPH_INFO << "Server posted EncryptionParms message";
+
+  // Send inference parameter shape
+  const ParameterVector& input_parameters = get_parameters();
+  auto shape = input_parameters[0]->get_shape();
+  NGRAPH_INFO << "Returning parameter shape: " << join(shape, "x");
+  runtime::he::TCPMessage parameter_message{
+      MessageType::parameter_shape, shape.size(), sizeof(size_t) * shape.size(),
+      (char*)shape.data()};
+
+  NGRAPH_INFO << "Server about to write parameter_message size "
+              << parameter_message.num_bytes();
+  m_session->do_write(parameter_message);
 }
 
 void runtime::he::HEExecutable::accept_connection() {
-  // std::lock_guard<std::mutex> guard(m_session_mutex);
-  std::cout << "Server accepting connections" << std::endl;
+  // lock_guard<mutex> guard(m_session_mutex);
+  NGRAPH_INFO << "Server accepting connections";
 
-  auto server_callback = std::bind(&runtime::he::HEExecutable::handle_message,
-                                   this, std::placeholders::_1);
+  auto server_callback =
+      bind(&runtime::he::HEExecutable::handle_message, this, placeholders::_1);
 
   /*auto server_callback = [this](const runtime::he::TCPMessage& message) {
     this->handle_message(message);
@@ -138,16 +161,15 @@ void runtime::he::HEExecutable::accept_connection() {
   m_acceptor->async_accept([this, server_callback](boost::system::error_code ec,
                                                    tcp::socket socket) {
     if (!ec) {
-      std::cout << "Connection accepted" << std::endl;
+      NGRAPH_INFO << "Connection accepted";
       // TODO: use make_shared here without causing seg-fault
-      m_session =
-          std::make_unique<TCPSession>(std::move(socket), server_callback);
+      m_session = make_unique<TCPSession>(move(socket), server_callback);
       m_session->start();
 
       m_session_started = true;  // TODO: cleaner way to process this
-      std::cout << "TCP session started" << std::endl;
+      NGRAPH_INFO << "TCP session started";
     } else {
-      std::cout << "error " << ec.message() << std::endl;
+      NGRAPH_INFO << "error " << ec.message();
     }
     // accept_connection();
   });
@@ -164,7 +186,7 @@ void runtime::he::HEExecutable::start_server() {
 
   // m_tcp_server =
   //    make_shared<TCPServer>(m_io_context, server_endpoints, server_callback);
-  m_thread = std::thread([this]() { m_io_context.run(); });
+  m_thread = thread([this]() { m_io_context.run(); });
   // m_thread =
   // m_io_context.run();  // Actually start the server
 }
@@ -180,20 +202,26 @@ void runtime::he::HEExecutable::handle_message(
 
   if (msg_type == MessageType::execute) {
     // Get Ciphertexts from message
-    std::size_t count = message.count();
-    std::vector<seal::Ciphertext> ciphertexts;
+    size_t count = message.count();
+    vector<seal::Ciphertext> ciphertexts;
     size_t ciphertext_size = message.element_size();
+
+    NGRAPH_INFO << "ciphertext_size " << ciphertext_size;
+
+    assert(m_context != nullptr);
+
+    NGRAPH_INFO << "About to load ciphers into context ";
+    print_seal_context(*m_context);
 
     for (size_t i = 0; i < count; ++i) {
       stringstream stream;
       stream.write(message.data_ptr() + i * ciphertext_size, ciphertext_size);
       seal::Ciphertext c;
-
       c.load(m_context, stream);
-      std::cout << "Loaded " << i << "'th ciphertext" << std::endl;
+      NGRAPH_INFO << "Loaded " << i << "'th ciphertext";
       ciphertexts.emplace_back(c);
     }
-    std::vector<std::shared_ptr<runtime::he::HECiphertext>> he_cipher_inputs;
+    vector<shared_ptr<runtime::he::HECiphertext>> he_cipher_inputs;
 
     for (const auto cipher : ciphertexts) {
       auto wrapper =
@@ -204,8 +232,7 @@ void runtime::he::HEExecutable::handle_message(
     // Load function with parameters
     const ParameterVector& input_parameters = get_parameters();
     for (auto input_param : input_parameters) {
-      std::cout << "Parameter shape " << join(input_param->get_shape(), "x")
-                << std::endl;
+      NGRAPH_INFO << "Parameter shape " << join(input_param->get_shape(), "x");
     }
     // only support parameter size 1 for now
     NGRAPH_ASSERT(input_parameters.size() == 1)
@@ -224,12 +251,14 @@ void runtime::he::HEExecutable::handle_message(
     dynamic_pointer_cast<runtime::he::HECipherTensor>(input_tensor)
         ->set_elements(he_cipher_inputs);
 
+    NGRAPH_INFO << "Setting m_inputs";
+
     m_inputs = {
         dynamic_pointer_cast<runtime::he::HECipherTensor>(input_tensor)};
   } else if (msg_type == MessageType::public_key) {
     // Load public key
     size_t pk_size = message.data_size();
-    std::stringstream pk_stream;
+    stringstream pk_stream;
     pk_stream.write(message.data_ptr(), pk_size);
 
     // TODO: load public key if needed
@@ -241,18 +270,7 @@ void runtime::he::HEExecutable::handle_message(
     NGRAPH_INFO << "Server created new encryptor from loaded public key";
     */
 
-    // Send inference parameter shape
-    const ParameterVector& input_parameters = get_parameters();
-    // Only support single parameter for now
-    assert(input_parameters.size() == 1);
-    auto shape = input_parameters[0]->get_shape();
-    NGRAPH_INFO << "Returning parameter shape: " << join(shape, "x");
-
-    runtime::he::TCPMessage parameter_message{
-        MessageType::parameter_shape, shape.size(),
-        sizeof(size_t) * shape.size(), (char*)shape.data()};
-
-    m_session->do_write(parameter_message);
+    ;
   } else {
     NGRAPH_INFO << "Unsupported message type in server:  "
                 << message_type_to_string(msg_type);
@@ -330,6 +348,9 @@ bool runtime::he::HEExecutable::call(
     const vector<shared_ptr<runtime::Tensor>>& inputs) {
   NGRAPH_INFO << "HEExecutable::call";
 
+  NGRAPH_INFO << "Inputs.size() " << inputs.size();
+  NGRAPH_INFO << "m_inputs.size() " << m_inputs.size();
+
   if (m_encrypt_data) {
     NGRAPH_INFO << "Encrypting data";
   }
@@ -340,13 +361,13 @@ bool runtime::he::HEExecutable::call(
     NGRAPH_INFO << "Encrypting model";
   }
 
-  // convert outputs to HETensor
+  // convert inputs to HETensor
   vector<shared_ptr<runtime::he::HETensor>> he_inputs;
   for (auto& tv : inputs) {
     he_inputs.push_back(static_pointer_cast<runtime::he::HETensor>(tv));
   }
 
-  // convert inputs to HETensor
+  // convert outputs to HETensor
   vector<shared_ptr<runtime::he::HETensor>> he_outputs;
   for (auto& tv : outputs) {
     he_outputs.push_back(static_pointer_cast<runtime::he::HETensor>(tv));
@@ -679,8 +700,8 @@ void runtime::he::HEExecutable::generate_calls(
       const op::Concat* concat = static_cast<const op::Concat*>(&node);
 
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
-        std::vector<Shape> in_shapes;
-        std::vector<std::vector<std::shared_ptr<HECiphertext>>> in_args;
+        vector<Shape> in_shapes;
+        vector<vector<shared_ptr<HECiphertext>>> in_args;
 
         for (shared_ptr<HETensor> arg : args) {
           shared_ptr<HECipherTensor> arg_cipher =
@@ -696,8 +717,8 @@ void runtime::he::HEExecutable::generate_calls(
                                       concat->get_concatenation_axis());
         }
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
-        std::vector<Shape> in_shapes;
-        std::vector<std::vector<std::shared_ptr<HEPlaintext>>> in_args;
+        vector<Shape> in_shapes;
+        vector<vector<shared_ptr<HEPlaintext>>> in_args;
 
         for (shared_ptr<HETensor> arg : args) {
           shared_ptr<HEPlainTensor> arg_plain =

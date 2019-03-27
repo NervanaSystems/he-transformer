@@ -66,10 +66,7 @@ class HESealEncryptionParameters : public HEEncryptionParameters {
   virtual ~HESealEncryptionParameters(){};
 
   void save(std::ostream& stream) const override {
-    NGRAPH_INFO << "Saving params";
-    auto deref = *m_seal_encryption_parameters;
-    seal::EncryptionParameters::Save(deref, stream);
-    NGRAPH_INFO << "Saved";
+    seal::EncryptionParameters::Save(*m_seal_encryption_parameters, stream);
   }
 
   std::shared_ptr<seal::EncryptionParameters> seal_encryption_parameters() {
@@ -84,7 +81,7 @@ const static std::shared_ptr<runtime::he::HEEncryptionParameters>
 default_ckks_parameters() {
   std::vector<std::uint64_t> coeff_modulus;
   auto small_mods = seal::util::global_variables::default_small_mods_30bit;
-  for (size_t i = 0; i < 5; ++i) {
+  for (size_t i = 0; i < 4; ++i) {
     const auto& small_mod = small_mods[i];
     coeff_modulus.emplace_back(small_mod.value());
   }

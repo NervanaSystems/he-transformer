@@ -57,6 +57,8 @@ class HESealClient {
   void set_seal_context() {
     m_context = seal::SEALContext::Create(m_encryption_params);
 
+    print_seal_context(*m_context);
+
     m_keygen = std::make_shared<seal::KeyGenerator>(m_context);
     m_relin_keys = std::make_shared<seal::RelinKeys>(m_keygen->relin_keys(60));
     m_public_key = std::make_shared<seal::PublicKey>(m_keygen->public_key());
@@ -93,9 +95,7 @@ class HESealClient {
 
       auto shape_size = std::accumulate(begin(shape), end(shape), 1,
                                         std::multiplies<size_t>());
-
       std::vector<seal::Ciphertext> ciphers;
-
       assert(m_inputs.size() == shape_size);
 
       std::stringstream cipher_stream;
@@ -108,11 +108,12 @@ class HESealClient {
         c.save(cipher_stream);
       }
 
+      std::cout << "Cleint saved " << shape_size << " ciphertexts" << std::endl;
       const std::string& cipher_str = cipher_stream.str();
       const char* cipher_cstr = cipher_str.c_str();
-
       size_t cipher_size = cipher_str.size();
 
+      std::cout << "Writing Execute message" << std::endl;
       auto execute_message = TCPMessage(MessageType::execute, shape_size,
                                         cipher_size, cipher_cstr);
       write_message(execute_message);
@@ -157,12 +158,11 @@ class HESealClient {
       set_seal_context();
       std::cout << "Set seal context" << std::endl;
 
-      std::stringstream pk_stream;
-      m_public_key->save(pk_stream);
-      auto pk_message = TCPMessage(MessageType::public_key, 1, pk_stream);
-      std::cout << "Writing public key message" << std::endl;
-
-      write_message(pk_message);
+      // std::stringstream pk_stream;
+      // m_public_key->save(pk_stream);
+      // auto pk_message = TCPMessage(MessageType::public_key, 1, pk_stream);
+      // std::cout << "Writing public key message" << std::endl;
+      // write_message(pk_message);
 
     } else {
       std::cout << "Unsupported message type "
