@@ -371,8 +371,9 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he) {
   orig_handle->call({t_orig_result}, {t_input});
   new_handle->call({t_opt_result}, {t_input});
 
+  // TODO: more precision
   EXPECT_TRUE(test::all_close(read_vector<float>(t_orig_result),
-                              read_vector<float>(t_opt_result), 0.1f));
+                              read_vector<float>(t_opt_result), 1e-5f, 0.2f));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he_batch) {
@@ -458,7 +459,8 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he_batch) {
   orig_handle->call({t_orig_result}, {t_input});
   new_handle->call({t_opt_result}, {t_input});
 
+  // TODO: more precision
   EXPECT_TRUE(test::all_close(generalized_read_vector<float>(t_orig_result),
                               generalized_read_vector<float>(t_opt_result),
-                              0.1f));
+                              0.6f));
 }
