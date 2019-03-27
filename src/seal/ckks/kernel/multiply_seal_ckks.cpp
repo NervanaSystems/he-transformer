@@ -44,8 +44,14 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
     exit(1);
   }
 
-  he_seal_ckks_backend->get_evaluator()->multiply(
-      arg0_scaled->m_ciphertext, arg1_scaled->m_ciphertext, out->m_ciphertext);
+  if (arg0 == arg1) {
+    he_seal_ckks_backend->get_evaluator()->square(arg0_scaled->m_ciphertext,
+                                                  out->m_ciphertext);
+  } else {
+    he_seal_ckks_backend->get_evaluator()->multiply(arg0_scaled->m_ciphertext,
+                                                    arg1_scaled->m_ciphertext,
+                                                    out->m_ciphertext);
+  }
 
   he_seal_ckks_backend->get_evaluator()->relinearize_inplace(
       out->m_ciphertext, *(he_seal_ckks_backend->get_relin_keys()), pool);
