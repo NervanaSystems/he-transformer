@@ -269,8 +269,6 @@ void runtime::he::HEExecutable::handle_message(
     m_encryptor = make_shared<seal::Encryptor>(m_context, *m_public_key);
     NGRAPH_INFO << "Server created new encryptor from loaded public key";
     */
-
-    ;
   } else {
     NGRAPH_INFO << "Unsupported message type in server:  "
                 << message_type_to_string(msg_type);
@@ -345,10 +343,10 @@ void runtime::he::HEExecutable::he_validate(
 
 bool runtime::he::HEExecutable::call(
     const vector<shared_ptr<runtime::Tensor>>& outputs,
-    const vector<shared_ptr<runtime::Tensor>>& inputs) {
+    const vector<shared_ptr<runtime::Tensor>>& dummy_inputs) {
   NGRAPH_INFO << "HEExecutable::call";
 
-  NGRAPH_INFO << "Inputs.size() " << inputs.size();
+  NGRAPH_INFO << "Inputs.size() " << dummy_inputs.size();
   NGRAPH_INFO << "m_inputs.size() " << m_inputs.size();
 
   if (m_encrypt_data) {
@@ -363,7 +361,7 @@ bool runtime::he::HEExecutable::call(
 
   // convert inputs to HETensor
   vector<shared_ptr<runtime::he::HETensor>> he_inputs;
-  for (auto& tv : inputs) {
+  for (auto& tv : m_inputs) {
     he_inputs.push_back(static_pointer_cast<runtime::he::HETensor>(tv));
   }
 
@@ -375,15 +373,16 @@ bool runtime::he::HEExecutable::call(
 
   he_validate(he_outputs, he_inputs);
 
-  // map function params -> HETensor
   unordered_map<descriptor::Tensor*, shared_ptr<runtime::he::HETensor>>
       tensor_map;
+
+  // map function params -> HETensor
   size_t input_count = 0;
   for (auto param : get_parameters()) {
     for (size_t i = 0; i < param->get_output_size(); ++i) {
       descriptor::Tensor* tv = param->get_output_tensor_ptr(i).get();
 
-      if (m_encrypt_data) {
+      /*if (m_encrypt_data) {
         NGRAPH_INFO << "Encrypting parameter " << i;
         auto plain_input = static_pointer_cast<runtime::he::HEPlainTensor>(
             he_inputs[input_count]);
@@ -405,9 +404,9 @@ bool runtime::he::HEExecutable::call(
 
         tensor_map.insert({tv, cipher_input});
         input_count++;
-      } else {
-        tensor_map.insert({tv, he_inputs[input_count++]});
-      }
+      } else { */
+      tensor_map.insert({tv, m_inputs[input_count++]});
+      //}
     }
   }
 
@@ -436,17 +435,19 @@ bool runtime::he::HEExecutable::call(
       continue;
     }
 
-    if (op->description() == "Constant") {
+    if (type_id == OP_TYPEID::Constant) {
       NGRAPH_INFO << "Constant shape {" << join(op->get_shape()) << "}";
     }
 
     // get op inputs from map
+    NGRAPH_INFO << "Getting op inputs";
     vector<shared_ptr<runtime::he::HETensor>> op_inputs;
     for (const descriptor::Input& input : op->get_inputs()) {
       descriptor::Tensor* tv = input.get_output().get_tensor_ptr().get();
       op_inputs.push_back(tensor_map.at(tv));
     }
 
+    NGRAPH_INFO << "Getting out outputs";
     // get op outputs from map or create
     vector<shared_ptr<runtime::he::HETensor>> op_outputs;
     for (size_t i = 0; i < op->get_output_size(); ++i) {
@@ -519,6 +520,46 @@ bool runtime::he::HEExecutable::call(
   }
   NGRAPH_INFO << "\033[1;32m"
               << "Total time " << total_time << " (ms) \033[0m";
+
+  m_outputs = outputs;
+
+  // Send outputs to client.
+  NGRAPH_INFO << "Server about to write outputs ";
+
+  NGRAPH_ASSERT(m_outputs.size() == 1)
+      << "HEExecutable only supports output size 1 (got "
+      << get_results().size() << "";
+
+  std::vector<seal::Ciphertext> seal_output;
+
+  const ResultVector& results = get_results();
+  auto output_shape = results[0]->get_shape();
+  auto out_size = shape_size(output_shape);
+
+  NGRAPH_INFO << "Output shape " << join(output_shape, "x");
+
+  auto output_cipher_tensor =
+      dynamic_pointer_cast<runtime::he::HECipherTensor>(m_outputs[0]);
+
+  std::stringstream cipher_stream;
+  for (auto he_ciphertext : output_cipher_tensor->get_elements()) {
+    auto c = dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(
+                 he_ciphertext)
+                 ->m_ciphertext;
+    c.save(cipher_stream);
+  }
+
+  std::cout << "Exercutable saved " << out_size << " ciphertexts" << std::endl;
+  const std::string& cipher_str = cipher_stream.str();
+  const char* cipher_cstr = cipher_str.c_str();
+  size_t cipher_size = cipher_str.size();
+
+  std::cout << "Writing Result message" << std::endl;
+  auto result_message =
+      TCPMessage(MessageType::result, out_size, cipher_size, cipher_cstr);
+
+  m_session->do_write(result_message);
+
   return true;
 }
 
