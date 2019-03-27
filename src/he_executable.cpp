@@ -948,6 +948,8 @@ void runtime::he::HEExecutable::generate_calls(
     case OP_TYPEID::QuantizedConvolutionBiasSignedAdd:
     case OP_TYPEID::QuantizedConvolutionRelu:
     case OP_TYPEID::QuantizedConvolution:
+    case OP_TYPEID::QuantizedDot:
+    case OP_TYPEID::QuantizedDotBias:
     case OP_TYPEID::QuantizedMaxPool:
     case OP_TYPEID::Relu:
     case OP_TYPEID::ReluBackprop:
@@ -966,6 +968,7 @@ void runtime::he::HEExecutable::generate_calls(
     case OP_TYPEID::Tan:
     case OP_TYPEID::Tanh:
     case OP_TYPEID::TopK:
+    case OP_TYPEID::Transpose:
     default:
       throw unsupported_op("Unsupported op '" + node.description() + "'");
 #pragma GCC diagnostic pop
