@@ -17,9 +17,11 @@
 #pragma once
 
 #include <boost/asio.hpp>
+#include <deque>
 #include <iostream>
 #include <memory>
 #include <string>
+
 #include "tcp/tcp_message.hpp"
 
 using boost::asio::ip::tcp;
@@ -48,7 +50,9 @@ class TCPClient {
   }
 
   void write_message(const runtime::he::TCPMessage& message) {
-    boost::asio::post(m_io_context, [this, message]() { do_write(message); });
+    bool write_in_progress = !m_message_queue.empty();
+    m_message_queue.push_back(message);
+    boost::asio::post(m_io_context, [this]() { do_write(); });
   }
 
  private:
@@ -109,13 +113,18 @@ class TCPClient {
         });
   }
 
-  void do_write(const runtime::he::TCPMessage& message) {
+  void do_write() {
     boost::asio::async_write(
         m_socket,
-        boost::asio::buffer(message.header_ptr(), message.num_bytes()),
+        boost::asio::buffer(m_message_queue.front().header_ptr(),
+                            m_message_queue.front().num_bytes()),
         [this](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
             std::cout << "Client wrote message length " << length << std::endl;
+            m_message_queue.pop_front();
+            if (!m_message_queue.empty()) {
+              do_write();
+            }
           } else {
             std::cout << "Client error writing message: " << ec.message()
                       << std::endl;
@@ -129,6 +138,8 @@ class TCPClient {
   boost::asio::io_context& m_io_context;
   TCPMessage m_read_message;
   tcp::socket m_socket;
+
+  std::deque<runtime::he::TCPMessage> m_message_queue;
 
   // How to handle the message
   std::function<void(const runtime::he::TCPMessage&)> m_message_callback;

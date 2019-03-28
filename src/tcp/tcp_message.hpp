@@ -94,7 +94,7 @@ inline std::string message_type_to_string(const MessageType& type) {
 class TCPMessage {
  public:
   enum { header_length = 15 };
-  enum { max_body_length = 1000000 };
+  enum { max_body_length = 400000000 };  // 1000000 };
   enum { message_type_length = sizeof(MessageType) };
   enum { message_count_length = sizeof(size_t) };
 
@@ -196,7 +196,7 @@ class TCPMessage {
     // std::cout << "delete[] m_data" << std::endl;
     // std::cout << "m_data " << (void*)m_data << std::endl;
     // TODO: delete[] m_data; make sure message has been sent before deleting
-    // delete[] m_data;
+    delete[] m_data;
     //}
     std::cout << "Done with ~TCPMessage() " << std::endl;
   }
