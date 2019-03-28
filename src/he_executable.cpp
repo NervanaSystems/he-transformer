@@ -345,9 +345,13 @@ bool runtime::he::HEExecutable::call(
     const vector<shared_ptr<runtime::Tensor>>& outputs,
     const vector<shared_ptr<runtime::Tensor>>& dummy_inputs) {
   NGRAPH_INFO << "HEExecutable::call";
-
   NGRAPH_INFO << "Inputs.size() " << dummy_inputs.size();
-  NGRAPH_INFO << "m_inputs.size() " << m_inputs.size();
+
+  while (m_inputs.size() != dummy_inputs.size()) {
+    NGRAPH_INFO << "Waiting until m_inputs.size() " << m_inputs.size()
+                << " == " << dummy_inputs.size();
+    this_thread::sleep_for(chrono::milliseconds(100));
+  }
 
   if (m_encrypt_data) {
     NGRAPH_INFO << "Encrypting data";
@@ -559,6 +563,9 @@ bool runtime::he::HEExecutable::call(
       TCPMessage(MessageType::result, out_size, cipher_size, cipher_cstr);
 
   m_session->do_write(result_message);
+
+  std::cout << "Sleepiung while message is righting" << std::endl;
+  this_thread::sleep_for(chrono::milliseconds(3000));
 
   return true;
 }

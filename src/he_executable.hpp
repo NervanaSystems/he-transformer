@@ -16,7 +16,9 @@
 
 #pragma once
 
+#include <chrono>
 #include <memory>
+#include <thread>
 #include <vector>
 
 #include "he_backend.hpp"
@@ -39,16 +41,18 @@ class HEExecutable : public Executable {
 
   ~HEExecutable() {
     NGRAPH_INFO << "~HEExecutable()";
+    /*NGRAPH_INFO << "Waiting until write completes";
+    while (!m_is_writing) {
+
+    }
+    NGRAPH_INFO << "Write complete"; */
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
     std::cout << "Stopping session" << std::endl;
     boost::asio::post(m_io_context, [this]() { m_session->socket().close(); });
     std::cout << "Stopped session" << std::endl;
 
     m_thread.join();
-
-    // m_session->stop();
-
-    // m_thread.detach();
     NGRAPH_INFO << "done with ~HEExecutable() ";
   }
 
@@ -85,6 +89,7 @@ class HEExecutable : public Executable {
   std::thread m_thread;
   boost::asio::io_context m_io_context;
   bool m_session_started{false};
+  bool m_is_writing{false};
   std::vector<std::shared_ptr<runtime::he::HETensor>>
       m_inputs;  // (Encrypted) inputs to compiled function
   std::vector<std::shared_ptr<runtime::Tensor>>

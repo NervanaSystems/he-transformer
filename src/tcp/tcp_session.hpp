@@ -90,7 +90,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
         });
   }
 
-  void do_write(const TCPMessage& message) {
+  bool do_write(const TCPMessage& message) {
     auto self(shared_from_this());
     boost::asio::async_write(
         m_socket,
@@ -98,6 +98,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
         [this, self](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
             std::cout << "Server wrote message size " << length << std::endl;
+            return true;
           } else {
             std::cout << "Error writing message in session: " << ec.message()
                       << std::endl;
