@@ -106,6 +106,10 @@ class HESealBackend : public HEBackend {
     return m_relin_keys;
   }
 
+  void set_relin_keys(const seal::RelinKeys& keys) {
+    m_relin_keys = std::make_shared<seal::RelinKeys>(keys);
+  }
+
   const inline std::shared_ptr<seal::Evaluator> get_evaluator() const noexcept {
     return m_evaluator;
   }

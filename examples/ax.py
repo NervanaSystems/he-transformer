@@ -20,7 +20,7 @@ import tensorflow as tf
 
 a = tf.constant(np.array([[1, 2], [3, 4]]), dtype=np.float32)
 b = tf.placeholder(tf.float32, shape=(2, 2))
-f = (a + b) * a
+f = (a + b) * a * b
 
 with tf.Session() as sess:
     f_val = sess.run(f, feed_dict={b: np.ones((2, 2))})

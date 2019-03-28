@@ -37,8 +37,7 @@ using namespace ngraph;
 static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, tcp_message_encode_request) {
-  auto m =
-      runtime::he::TCPMessage(runtime::he::MessageType::public_key_request);
+  auto m = runtime::he::TCPMessage(runtime::he::MessageType::result_request);
 
   runtime::he::TCPMessage m2;
   // read header
@@ -67,7 +66,7 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_message_copy) {
   std::memset(data, 7, size);  // Set data to have value 7
   assert(data != nullptr);
 
-  auto m = runtime::he::TCPMessage(runtime::he::MessageType::public_key, count,
+  auto m = runtime::he::TCPMessage(runtime::he::MessageType::eval_key, count,
                                    size, (char*)data);
   runtime::he::TCPMessage m2{m};
 
@@ -92,9 +91,9 @@ NGRAPH_TEST(${BACKEND_NAME}, tcp_message_move) {
 
   // m constructed via move constructor
   runtime::he::TCPMessage m{std::move(runtime::he::TCPMessage(
-      runtime::he::MessageType::public_key, count, size, (char*)data))};
+      runtime::he::MessageType::eval_key, count, size, (char*)data))};
   runtime::he::TCPMessage m2 = runtime::he::TCPMessage(
-      runtime::he::MessageType::public_key, count, size, (char*)data);
+      runtime::he::MessageType::eval_key, count, size, (char*)data);
 
   EXPECT_EQ(std::memcmp(m.header_ptr(), m2.header_ptr(),
                         runtime::he::TCPMessage::header_length),

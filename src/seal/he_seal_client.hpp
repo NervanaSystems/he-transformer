@@ -83,12 +83,7 @@ class HESealClient {
     std::cout << "Client got message: "
               << message_type_to_string(msg_type).c_str() << std::endl;
 
-    if (msg_type == MessageType::public_key_request) {
-    } else if (msg_type == MessageType::public_key_ack) {
-      auto return_message = TCPMessage(MessageType::parameter_shape_request);
-
-      // return return_message;
-    } else if (msg_type == MessageType::parameter_shape) {
+    if (msg_type == MessageType::parameter_shape) {
       std::vector<size_t> shape(message.count());
 
       std::memcpy(shape.data(), message.data_ptr(), message.data_size());
@@ -126,11 +121,10 @@ class HESealClient {
       for (size_t i = 0; i < count; ++i) {
         seal::Ciphertext cipher;
         std::stringstream cipher_stream;
-
         cipher_stream.write(message.data_ptr() + i * element_size,
                             element_size);
-
         cipher.load(m_context, cipher_stream);
+
         result.push_back(cipher);
         seal::Plaintext plain;
         m_decryptor->decrypt(cipher, plain);
@@ -158,11 +152,11 @@ class HESealClient {
       set_seal_context();
       std::cout << "Set seal context" << std::endl;
 
-      // std::stringstream pk_stream;
-      // m_public_key->save(pk_stream);
-      // auto pk_message = TCPMessage(MessageType::public_key, 1, pk_stream);
-      // std::cout << "Writing public key message" << std::endl;
-      // write_message(pk_message);
+      std::stringstream evk_stream;
+      m_relin_keys->save(evk_stream);
+      auto evk_message = TCPMessage(MessageType::eval_key, 1, evk_stream);
+      std::cout << "Writing relin key message" << std::endl;
+      write_message(evk_message);
 
     } else {
       std::cout << "Unsupported message type "

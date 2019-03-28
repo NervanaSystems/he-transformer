@@ -133,18 +133,6 @@ runtime::he::HEExecutable::HEExecutable(const shared_ptr<Function>& function,
               << parms_message.num_bytes();
   m_session->do_write(parms_message);
   NGRAPH_INFO << "Server posted EncryptionParms message";
-
-  // Send inference parameter shape
-  const ParameterVector& input_parameters = get_parameters();
-  auto shape = input_parameters[0]->get_shape();
-  NGRAPH_INFO << "Returning parameter shape: " << join(shape, "x");
-  runtime::he::TCPMessage parameter_message{
-      MessageType::parameter_shape, shape.size(), sizeof(size_t) * shape.size(),
-      (char*)shape.data()};
-
-  NGRAPH_INFO << "Server about to write parameter_message size "
-              << parameter_message.num_bytes();
-  m_session->do_write(parameter_message);
 }
 
 void runtime::he::HEExecutable::accept_connection() {
@@ -255,20 +243,36 @@ void runtime::he::HEExecutable::handle_message(
 
     m_inputs = {
         dynamic_pointer_cast<runtime::he::HECipherTensor>(input_tensor)};
-  } else if (msg_type == MessageType::public_key) {
-    // Load public key
-    size_t pk_size = message.data_size();
-    stringstream pk_stream;
-    pk_stream.write(message.data_ptr(), pk_size);
+  } else if (msg_type == MessageType::eval_key) {
+    NGRAPH_INFO << "Got eval_key";
+    NGRAPH_INFO << "Size of key " << message.element_size();
 
-    // TODO: load public key if needed
-    // NGRAPH_WARN << "Server skipping public key load";
-    /*
-    m_public_key->load(m_context, pk_stream);
-    NGRAPH_INFO << "Server loaded public key";
-    m_encryptor = make_shared<seal::Encryptor>(m_context, *m_public_key);
-    NGRAPH_INFO << "Server created new encryptor from loaded public key";
-    */
+    seal::RelinKeys keys;
+    std::stringstream key_stream;
+    key_stream.write(message.data_ptr(), message.element_size());
+    NGRAPH_INFO << "Loading eval key";
+    keys.load(m_context, key_stream);
+
+    NGRAPH_INFO << "Loaded eval key";
+
+    // TODO: move set_relin_keys to HEBackend
+    auto he_seal_backend = (runtime::he::he_seal::HESealBackend*)m_he_backend;
+    he_seal_backend->set_relin_keys(keys);
+
+    NGRAPH_INFO << "Set eval key in backend";
+
+    // Send inference parameter shape
+    const ParameterVector& input_parameters = get_parameters();
+    auto shape = input_parameters[0]->get_shape();
+    NGRAPH_INFO << "Returning parameter shape: " << join(shape, "x");
+    runtime::he::TCPMessage parameter_message{
+        MessageType::parameter_shape, shape.size(),
+        sizeof(size_t) * shape.size(), (char*)shape.data()};
+
+    NGRAPH_INFO << "Server about to write parameter_message size "
+                << parameter_message.num_bytes();
+    m_session->do_write(parameter_message);
+
   } else {
     NGRAPH_INFO << "Unsupported message type in server:  "
                 << message_type_to_string(msg_type);
@@ -350,8 +354,9 @@ bool runtime::he::HEExecutable::call(
   while (m_inputs.size() != dummy_inputs.size()) {
     NGRAPH_INFO << "Waiting until m_inputs.size() " << m_inputs.size()
                 << " == " << dummy_inputs.size();
-    this_thread::sleep_for(chrono::milliseconds(100));
+    this_thread::sleep_for(chrono::milliseconds(300));
   }
+  NGRAPH_INFO << "Done waiting for m_inputs";
 
   if (m_encrypt_data) {
     NGRAPH_INFO << "Encrypting data";
@@ -399,8 +404,8 @@ bool runtime::he::HEExecutable::call(
         NGRAPH_INFO << "plain_input->get_batched_element_count() "
                     << plain_input->get_batched_element_count();
 #pragma omp parallel for
-        for (size_t i = 0; i < plain_input->get_batched_element_count(); ++i) {
-          m_he_backend->encrypt(cipher_input->get_element(i),
+        for (size_t i = 0; i < plain_input->get_batched_element_count(); ++i)
+{ m_he_backend->encrypt(cipher_input->get_element(i),
                                 *plain_input->get_element(i));
         }
 

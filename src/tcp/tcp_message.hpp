@@ -30,9 +30,7 @@ namespace he {
 enum class MessageType {
   none,
   encryption_parameters,
-  public_key_ack,
-  public_key,
-  public_key_request,
+  eval_key,
   execute,
   execute_done,
   parameter_shape_request,
@@ -51,14 +49,8 @@ inline std::string message_type_to_string(const MessageType& type) {
     case MessageType::encryption_parameters:
       return "encryption_parameters";
       break;
-    case MessageType::public_key_ack:
-      return "public_key_ack";
-      break;
-    case MessageType::public_key:
-      return "public_key";
-      break;
-    case MessageType::public_key_request:
-      return "public_key_request";
+    case MessageType::eval_key:
+      return "eval_key";
       break;
     case MessageType::execute:
       return "execute";
@@ -108,9 +100,8 @@ class TCPMessage {
   TCPMessage(const MessageType type)
       : m_type(type), m_count(0), m_data_size(0) {
     std::set<MessageType> request_types{
-        MessageType::public_key_request, MessageType::relu_request,
-        MessageType::public_key_ack,     MessageType::parameter_shape_request,
-        MessageType::result_request,     MessageType::none};
+        MessageType::relu_request, MessageType::parameter_shape_request,
+        MessageType::result_request, MessageType::none};
 
     if (request_types.find(type) == request_types.end()) {
       throw std::invalid_argument("Request type not valid");
