@@ -35,7 +35,7 @@ int main() {
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = make_shared<op::Constant>(element::f32, shape,
                                      std::vector<float>{1.1, 1.2, 1.3, 1.4});
-  auto t = make_shared<op::Add>(a, b);
+  auto t = (a + b) * a;
   auto f = make_shared<Function>(t, ParameterVector{a});
 
   NGRAPH_INFO << "Creating backend";

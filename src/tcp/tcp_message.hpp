@@ -23,6 +23,7 @@
 #include <memory>
 #include <set>
 #include <sstream>
+#include <string>
 
 namespace ngraph {
 namespace runtime {
@@ -123,6 +124,8 @@ class TCPMessage {
     const std::string& pk_str = stream.str();
     const char* pk_cstr = pk_str.c_str();
     m_data_size = pk_str.size();
+
+    std::cout << "Message from stream size " << m_data_size << std::endl;
     check_arguments();
     m_data = new char[header_length + max_body_length];
 
@@ -171,26 +174,31 @@ class TCPMessage {
     m_data_size = other.m_data_size;
 
     m_data = new char[header_length + body_length()];
+
+    std::cout << "copying from size " << std::endl;
+    std::cout << m_data_size << std::endl;
+    std::cout << "header_length + body_length " << std::endl;
+    std::cout << header_length + body_length() << std::endl;
+    std::cout << "num_bytes " << std::endl;
+    std::cout << num_bytes() << std::endl;
+
     std::memcpy(m_data, other.m_data, num_bytes());
   }
 
   // move constructor
-  TCPMessage(TCPMessage&& other) noexcept
-      : m_type(other.m_type),
-        m_count(other.m_count),
-        m_data_size(other.m_data_size) {
-    m_data = new char[header_length + body_length()];
-    std::memcpy(m_data, other.m_data, num_bytes());
-  }
+  // TODO: implement
+  TCPMessage(TCPMessage&& other) = delete;
 
   ~TCPMessage() {
-    // std::cout << "~TCPMessage() of type " << message_type_to_string(m_type)
-    //          << std::endl;
-    if (m_data) {
-      // std::cout << "delete[] m_data" << std::endl;
-      delete[] m_data;
-    }
-    // std::cout << "Done with ~TCPMessage() " << std::endl;
+    std::cout << "~TCPMessage() of type " << message_type_to_string(m_type)
+              << std::endl;
+    // if (m_data) {
+    // std::cout << "delete[] m_data" << std::endl;
+    // std::cout << "m_data " << (void*)m_data << std::endl;
+    // TODO: delete[] m_data; make sure message has been sent before deleting
+    // delete[] m_data;
+    //}
+    std::cout << "Done with ~TCPMessage() " << std::endl;
   }
 
   size_t count() { return m_count; }

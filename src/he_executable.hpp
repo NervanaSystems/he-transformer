@@ -50,6 +50,9 @@ class HEExecutable : public Executable {
 
     std::cout << "Stopping session" << std::endl;
     boost::asio::post(m_io_context, [this]() { m_session->socket().close(); });
+
+    // TODO: cleaner way to prevent m_acceptor from double-freeing
+    m_acceptor = nullptr;
     std::cout << "Stopped session" << std::endl;
 
     m_thread.join();
