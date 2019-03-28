@@ -37,6 +37,21 @@ class HEExecutable : public Executable {
                const runtime::he::HEBackend* he_backend, bool encrypt_data,
                bool encrypt_model, bool batch_data);
 
+  ~HEExecutable() {
+    NGRAPH_INFO << "~HEExecutable()";
+
+    std::cout << "Stopping session" << std::endl;
+    boost::asio::post(m_io_context, [this]() { m_session->socket().close(); });
+    std::cout << "Stopped session" << std::endl;
+
+    m_thread.join();
+
+    // m_session->stop();
+
+    // m_thread.detach();
+    NGRAPH_INFO << "done with ~HEExecutable() ";
+  }
+
   /// @brief starts the server
   void start_server();
 

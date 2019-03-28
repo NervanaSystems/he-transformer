@@ -38,6 +38,8 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
     do_read_header();
   }
 
+  tcp::socket& socket() { return m_socket; }
+
  public:
   void do_read_header() {
     std::cout << "Server reading header" << std::endl;
