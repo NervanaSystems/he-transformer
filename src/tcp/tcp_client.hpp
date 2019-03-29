@@ -62,9 +62,7 @@ class TCPClient {
         [this](boost::system::error_code ec, tcp::endpoint) {
           if (!ec) {
             std::cout << "Connected to server" << std::endl;
-
             do_read_header();
-            // do_write(m_read_message);
           } else {
             std::cout << "error connecting to server: " << ec.message()
                       << std::endl;
@@ -98,9 +96,6 @@ class TCPClient {
         [this](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
             m_read_message.decode_body();
-            std::cout << "Client read message length "
-                      << m_read_message.num_bytes() << std::endl;
-
             m_message_callback(m_read_message);
             do_read_header();
           } else {
@@ -120,7 +115,6 @@ class TCPClient {
                             m_message_queue.front().num_bytes()),
         [this](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
-            std::cout << "Client wrote message length " << length << std::endl;
             m_message_queue.pop_front();
             if (!m_message_queue.empty()) {
               do_write();

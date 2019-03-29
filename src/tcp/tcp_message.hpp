@@ -85,12 +85,12 @@ inline std::string message_type_to_string(const MessageType& type) {
 // @param count number of elements of data
 // @param size number of bytes of data in message. Must be a multiple of
 // count
-// MessageType::none indicates message may store data in the future, and so
-// max_body_length bytes are allocated for the body.
+// TODO: Currently, max_body_length bytes are allocated for each message, which
+// is really inefficient
 class TCPMessage {
  public:
   enum { header_length = 15 };
-  enum { max_body_length = 400000000 };  // 1000000 };
+  enum { max_body_length = 400000000 };
   enum { message_type_length = sizeof(MessageType) };
   enum { message_count_length = sizeof(size_t) };
 
@@ -233,7 +233,7 @@ class TCPMessage {
     char header[header_length + 1] = "";
     int to_encode = static_cast<int>(body_length());
     int ret = std::snprintf(header, sizeof(header), "%d", to_encode);
-    if (ret < 0 || ret > sizeof(header)) {
+    if (ret < 0 || (size_t)ret > sizeof(header)) {
       throw std::invalid_argument("Error encoding header");
     }
     std::memcpy(m_data, header, header_length);
@@ -271,7 +271,6 @@ class TCPMessage {
     std::memcpy(data_ptr(), data, m_data_size);
   }
 
-  // Given m_data, parses to find m_datatype, m_count
   bool decode_body() {
     decode_message_type();
     decode_count();

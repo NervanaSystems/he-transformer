@@ -72,13 +72,14 @@ class HEExecutable : public Executable {
   void handle_message(const TCPMessage& message);
 
  private:
+  const HEBackend* m_he_backend;  // TODO: replace with context
   bool m_encrypt_data;
-  bool m_batch_data;
   bool m_encrypt_model;
+  bool m_batch_data;
   bool m_is_compiled;
   bool m_session_started;
   bool m_enable_client;
-  const HEBackend* m_he_backend;  // TODO: replace with context
+
   std::unordered_map<const Node*, stopwatch> m_timer_map;
   std::vector<NodeWrapper> m_wrapped_nodes;
 
