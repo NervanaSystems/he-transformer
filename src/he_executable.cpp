@@ -512,7 +512,6 @@ bool runtime::he::HEExecutable::call(
     }
 
     m_timer_map[op].start();
-
     generate_calls(base_type, wrapped, op_outputs, op_inputs);
     m_timer_map[op].stop();
 

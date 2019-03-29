@@ -178,7 +178,7 @@ parse_config_or_use_default(const std::string& scheme_name) {
     std::vector<seal::SmallModulus> small_mods;
     uint64_t coeff_count;
     auto coeff_mod = js.find("coeff_modulus");
-    if (coeff_mod == js.end()) {
+    if (coeff_mod != js.end()) {
       // Use given coeff mods
       std::string coeff_mod_name = coeff_mod->begin().key();
 
