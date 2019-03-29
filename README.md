@@ -25,6 +25,7 @@ The [examples](https://github.com/NervanaSystems/he-transformer/tree/master/exam
 - python3.5 and pip3
 - virtualenv v16.1.0
 - bazel v0.21.0
+- Boost 1.69
 #### The following dependencies are built automatically
 - [nGraph](https://github.com/NervanaSystems/ngraph) - v0.16.0-rc.2
 - [nGraph-tf](https://github.com/NervanaSystems/ngraph-tf) - v0.12-rc1
