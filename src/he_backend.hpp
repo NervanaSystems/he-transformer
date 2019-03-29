@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "he_ciphertext.hpp"
+#include "he_encryption_parameters.hpp"
 #include "he_plaintext.hpp"
 #include "he_tensor.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
@@ -46,6 +47,8 @@ namespace he {
 class HETensor;
 class HEBackend : public runtime::Backend {
  public:
+  virtual ~HEBackend(){};
+
   /// @brief Creates ciphertext of unspecified value
   /// @return Shared pointer to created ciphertext
   virtual std::shared_ptr<runtime::he::HECiphertext> create_empty_ciphertext()
@@ -193,16 +196,23 @@ class HEBackend : public runtime::Backend {
   void set_optimized_add(bool enable) { m_optimized_add = enable; };
   void set_optimized_mult(bool enable) { m_optimized_mult = enable; };
 
+  const std::shared_ptr<HEEncryptionParameters> get_encryption_parameters()
+      const {
+    return m_encryption_params;
+  };
+
   bool encrypt_data() const { return m_encrypt_data; };
   bool batch_data() const { return m_batch_data; };
   bool encrypt_model() const { return m_encrypt_model; };
 
- private:
+ protected:
   bool m_optimized_add{std::getenv("NGRAPH_OPTIMIZED_ADD") != nullptr};
   bool m_optimized_mult{std::getenv("NGRAPH_OPTIMIZED_MULT") != nullptr};
   bool m_encrypt_data{std::getenv("NGRAPH_ENCRYPT_DATA") != nullptr};
   bool m_batch_data{std::getenv("NGRAPH_BATCH_DATA") != nullptr};
   bool m_encrypt_model{std::getenv("NGRAPH_ENCRYPT_MODEL") != nullptr};
+
+  std::shared_ptr<HEEncryptionParameters> m_encryption_params;
 };
 }  // namespace he
 }  // namespace runtime

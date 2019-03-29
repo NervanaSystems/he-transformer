@@ -17,70 +17,33 @@
 #include <limits>
 
 #include "he_cipher_tensor.hpp"
+#include "he_encryption_parameters.hpp"
 #include "he_plain_tensor.hpp"
 #include "he_tensor.hpp"
 #include "ngraph/runtime/backend_manager.hpp"
 #include "seal/bfv/he_seal_bfv_backend.hpp"
 #include "seal/he_seal_backend.hpp"
-#include "seal/he_seal_parameter.hpp"
+#include "seal/he_seal_encryption_parameters.hpp"
 #include "seal/he_seal_util.hpp"
 #include "seal/seal.h"
 
 using namespace ngraph;
 using namespace std;
 
-const static runtime::he::he_seal::HESealParameter
-parse_seal_bfv_config_or_use_default() {
-  try {
-    const char* config_path = getenv("NGRAPH_HE_SEAL_CONFIG");
-    if (config_path != nullptr) {
-      // Read file to string
-      ifstream f(config_path);
-      stringstream ss;
-      ss << f.rdbuf();
-      string s = ss.str();
-
-      // Parse json
-      nlohmann::json js = nlohmann::json::parse(s);
-      string scheme_name = js["scheme_name"];
-      uint64_t poly_modulus_degree = js["poly_modulus_degree"];
-      uint64_t plain_modulus = js["plain_modulus"];
-      uint64_t security_level = js["security_level"];
-      uint64_t evaluation_decomposition_bit_count =
-          js["evaluation_decomposition_bit_count"];
-
-      NGRAPH_INFO << "Using SEAL BFV config for parameters: " << config_path;
-      return runtime::he::he_seal::HESealParameter(
-          scheme_name, poly_modulus_degree, plain_modulus, security_level,
-          evaluation_decomposition_bit_count);
-    } else {
-      NGRAPH_INFO << "Using SEAL BFV default parameters" << config_path;
-      throw runtime_error("config_path is NULL");
-    }
-  } catch (const exception& e) {
-    return runtime::he::he_seal::HESealParameter(
-        "HE_SEAL_BFV",  // scheme name
-        4096,           // poly_modulus_degree
-        1 << 10,        // plain_modulus
-        128,            // security_level
-        16              // evaluation_decomposition_bit_count
-    );
-  }
-}
-
-const static runtime::he::he_seal::HESealParameter default_seal_bfv_parameter =
-    parse_seal_bfv_config_or_use_default();
-
 runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend()
     : runtime::he::he_seal::HESealBFVBackend(
-          make_shared<runtime::he::he_seal::HESealParameter>(
-              default_seal_bfv_parameter)) {}
+          runtime::he::he_seal::parse_config_or_use_default("HE_SEAL_BFV")) {}
 
 runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend(
-    const shared_ptr<runtime::he::he_seal::HESealParameter>& sp) {
-  assert_valid_seal_bfv_parameter(sp);
+    const shared_ptr<runtime::he::HEEncryptionParameters>& sp) {
+  m_encryption_params = sp;
 
-  m_context = make_seal_context(sp);
+  auto he_seal_encryption_parms =
+      static_pointer_cast<runtime::he::he_seal::HESealEncryptionParameters>(sp);
+  NGRAPH_ASSERT(he_seal_encryption_parms != nullptr)
+      << "HE_SEAL_BFV backend passed invalid encryption parameters";
+  m_context = seal::SEALContext::Create(
+      *(he_seal_encryption_parms->seal_encryption_parameters()));
   print_seal_context(*m_context);
 
   auto context_data = m_context->context_data();
@@ -88,7 +51,7 @@ runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend(
   // Keygen, encryptor and decryptor
   m_keygen = make_shared<seal::KeyGenerator>(m_context);
   m_relin_keys = make_shared<seal::RelinKeys>(
-      m_keygen->relin_keys(sp->m_evaluation_decomposition_bit_count));
+      m_keygen->relin_keys(sp->evaluation_decomposition_bit_count()));
   m_public_key = make_shared<seal::PublicKey>(m_keygen->public_key());
   m_secret_key = make_shared<seal::SecretKey>(m_keygen->secret_key());
   m_encryptor = make_shared<seal::Encryptor>(m_context, *m_public_key);
@@ -120,30 +83,8 @@ extern "C" runtime::Backend* new_bfv_backend(const char* configuration_string) {
 
 shared_ptr<seal::SEALContext>
 runtime::he::he_seal::HESealBFVBackend::make_seal_context(
-    const shared_ptr<runtime::he::he_seal::HESealParameter> sp) const {
-  seal::EncryptionParameters parms =
-      (sp->m_scheme_name == "HE_SEAL_BFV"
-           ? seal::scheme_type::BFV
-           : throw ngraph_error("Invalid scheme name \"" + sp->m_scheme_name +
-                                "\""));
-
-  parms.set_poly_modulus_degree(sp->m_poly_modulus_degree);
-
-  if (sp->m_security_level == 128) {
-    parms.set_coeff_modulus(
-        seal::DefaultParams::coeff_modulus_128(sp->m_poly_modulus_degree));
-  } else if (sp->m_security_level == 192) {
-    parms.set_coeff_modulus(
-        seal::DefaultParams::coeff_modulus_192(sp->m_poly_modulus_degree));
-  } else if (sp->m_security_level == 256) {
-    parms.set_coeff_modulus(
-        seal::DefaultParams::coeff_modulus_256(sp->m_poly_modulus_degree));
-  } else {
-    throw ngraph_error("sp.security_level must be 128, 192, or 256");
-  }
-  parms.set_plain_modulus(sp->m_plain_modulus);
-
-  return seal::SEALContext::Create(parms);
+    const shared_ptr<runtime::he::HEEncryptionParameters> sp) {
+  throw ngraph_error("make_seal_context unimplementend");
 }
 
 namespace {
@@ -155,14 +96,6 @@ static class HESealBFVStaticInit {
   ~HESealBFVStaticInit() {}
 } s_he_seal_bfv_static_init;
 }  // namespace
-
-void runtime::he::he_seal::HESealBFVBackend::assert_valid_seal_bfv_parameter(
-    const shared_ptr<runtime::he::he_seal::HESealParameter>& sp) const {
-  assert_valid_seal_parameter(sp);
-  if (sp->m_scheme_name != "HE_SEAL_BFV") {
-    throw ngraph_error("Invalid scheme name");
-  }
-}
 
 shared_ptr<runtime::Tensor>
 runtime::he::he_seal::HESealBFVBackend::create_batched_cipher_tensor(

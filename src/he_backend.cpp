@@ -14,7 +14,9 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include <chrono>
 #include <limits>
+#include <thread>
 
 #include "he_backend.hpp"
 #include "he_cipher_tensor.hpp"
@@ -26,6 +28,8 @@
 
 using namespace ngraph;
 using namespace std;
+
+using descriptor::layout::DenseTensorLayout;
 
 shared_ptr<runtime::he::HEPlaintext>
 runtime::he::HEBackend::create_valued_plaintext(

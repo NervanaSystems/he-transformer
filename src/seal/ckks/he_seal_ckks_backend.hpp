@@ -19,11 +19,12 @@
 #include <memory>
 
 #include "he_cipher_tensor.hpp"
+#include "he_encryption_parameters.hpp"
 #include "he_plain_tensor.hpp"
 #include "he_tensor.hpp"
 #include "ngraph/runtime/backend.hpp"
 #include "seal/he_seal_backend.hpp"
-#include "seal/he_seal_parameter.hpp"
+#include "seal/he_seal_encryption_parameters.hpp"
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
@@ -36,7 +37,7 @@ class HESealCKKSBackend : public HESealBackend {
  public:
   HESealCKKSBackend();
   HESealCKKSBackend(
-      const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp);
+      const std::shared_ptr<runtime::he::HEEncryptionParameters>& sp);
   HESealCKKSBackend(HESealCKKSBackend& he_backend) = default;
   ~HESealCKKSBackend(){};
 
@@ -47,8 +48,7 @@ class HESealCKKSBackend : public HESealBackend {
       const element::Type& element_type, const Shape& shape) override;
 
   std::shared_ptr<seal::SEALContext> make_seal_context(
-      const std::shared_ptr<runtime::he::he_seal::HESealParameter> sp)
-      const override;
+      const std::shared_ptr<runtime::he::HEEncryptionParameters> sp) override;
 
   void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
               const void* input, const element::Type& element_type,
@@ -60,9 +60,6 @@ class HESealCKKSBackend : public HESealBackend {
   const inline std::shared_ptr<seal::CKKSEncoder> get_ckks_encoder() const {
     return m_ckks_encoder;
   }
-
-  void assert_valid_seal_ckks_parameter(
-      const std::shared_ptr<runtime::he::he_seal::HESealParameter>& sp) const;
 
  private:
   std::shared_ptr<seal::CKKSEncoder> m_ckks_encoder;

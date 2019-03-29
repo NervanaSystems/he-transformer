@@ -20,7 +20,7 @@
 #include <unordered_map>
 
 #include "he_backend.hpp"
-#include "seal/he_seal_parameter.hpp"
+#include "seal/he_seal_encryption_parameters.hpp"
 #include "seal/seal.h"
 
 namespace ngraph {
@@ -33,13 +33,9 @@ class HESealBackend : public HEBackend {
   /// @param sp SEAL Parameter from which to construct context
   /// @return Pointer to constructed context
   virtual std::shared_ptr<seal::SEALContext> make_seal_context(
-      const std::shared_ptr<runtime::he::he_seal::HESealParameter> sp)
-      const = 0;
+      const std::shared_ptr<runtime::he::HEEncryptionParameters> sp) = 0;
 
-  /// @brief Checks if parameter is valid for encoding.
-  ///        Throws an error if parameter is not valid.
-  void assert_valid_seal_parameter(
-      const std::shared_ptr<runtime::he::he_seal::HESealParameter> sp) const;
+  virtual ~HESealBackend(){};
 
   virtual std::shared_ptr<runtime::Tensor> create_batched_cipher_tensor(
       const element::Type& element_type, const Shape& shape) override = 0;
@@ -100,9 +96,18 @@ class HESealBackend : public HEBackend {
     return m_secret_key;
   }
 
+  const inline std::shared_ptr<seal::PublicKey> get_public_key() const
+      noexcept {
+    return m_public_key;
+  }
+
   const inline std::shared_ptr<seal::RelinKeys> get_relin_keys() const
       noexcept {
     return m_relin_keys;
+  }
+
+  void set_relin_keys(const seal::RelinKeys& keys) {
+    m_relin_keys = std::make_shared<seal::RelinKeys>(keys);
   }
 
   const inline std::shared_ptr<seal::Evaluator> get_evaluator() const noexcept {
