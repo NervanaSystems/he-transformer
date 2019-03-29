@@ -33,10 +33,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
       : m_socket(std::move(socket)),
         m_message_callback(std::bind(message_handler, std::placeholders::_1)) {}
 
-  void start() {
-    std::cout << "Session started" << std::endl;
-    do_read_header();
-  }
+  void start() { do_read_header(); }
 
   tcp::socket& socket() { return m_socket; }
 
@@ -44,8 +41,6 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
   void do_read_header() {
     std::cout << "Server reading header" << std::endl;
     auto self(shared_from_this());
-    std::cout << "Shared from this okay" << std::endl;
-
     boost::asio::async_read(
         m_socket,
         boost::asio::buffer(m_message.header_ptr(),
@@ -57,12 +52,8 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
             do_read_body();
           } else {
             if (ec) {
-              std::cout << "Server Error reading message: " << ec.message()
+              std::cout << "Server error reading message: " << ec.message()
                         << std::endl;
-              // std::cout << "Closing TCP server by throwing exception"
-              //          << std::endl;  // TODO: see boost asio server example
-              // for better stopping of server
-              // throw std::exception();
             }
           }
         });

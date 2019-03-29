@@ -66,9 +66,9 @@ shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(
 shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(
     const element::Type& element_type, const Shape& shape) {
   if (batch_data()) {
-    return create_batched_cipher_tensor(element_type, shape);
+    return create_batched_plain_tensor(element_type, shape);
   } else {
-    return create_cipher_tensor(element_type, shape);
+    return create_plain_tensor(element_type, shape);
   }
 }
 

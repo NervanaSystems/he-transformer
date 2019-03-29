@@ -44,13 +44,10 @@ class HESealClient {
         io_context, endpoints, client_callback);
 
     io_context.run();
-
-    // m_thread = std::thread([&io_context]() { io_context.run(); });
   }
 
   ~HESealClient() {
     std::cout << "~HESealClient()" << std::endl;
-    // m_thread.detach();
     std::cout << "Done with ~HESealClient()" << std::endl;
   }
 
@@ -135,13 +132,7 @@ class HESealClient {
         m_results.push_back((float)output[0]);
       }
 
-      // sleep(10);  // Wait
-
       close_connection();
-      /* std::cout << "Returning done TCP message" << std::endl;
-       auto done_message = TCPMessage(MessageType::done);
-       write_message(none_message); */
-
     } else if (msg_type == MessageType::none) {
       close_connection();
     } else if (msg_type == MessageType::encryption_parameters) {
@@ -181,9 +172,7 @@ class HESealClient {
 
   void close_connection() {
     std::cout << "Closing connection" << std::endl;
-
     m_tcp_client->close();
-    // m_thread.detach();
     m_is_done = true;
   }
 
@@ -199,7 +188,6 @@ class HESealClient {
   std::shared_ptr<seal::Evaluator> m_evaluator;
   std::shared_ptr<seal::KeyGenerator> m_keygen;
   std::shared_ptr<seal::RelinKeys> m_relin_keys;
-  std::thread m_thread;
   double m_scale;
   bool m_is_done{false};
   std::vector<float> m_inputs;   // Function inputs

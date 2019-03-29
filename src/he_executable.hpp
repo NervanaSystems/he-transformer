@@ -41,23 +41,12 @@ class HEExecutable : public Executable {
 
   ~HEExecutable() {
     NGRAPH_INFO << "~HEExecutable()";
-    /*NGRAPH_INFO << "Waiting until write completes";
-    while (!m_is_writing) {
-
+    if (m_enable_client) {
+      // TODO: cleaner way to prevent m_acceptor from double-freeing
+      m_acceptor = nullptr;
+      m_session = nullptr;
+      m_thread.join();
     }
-    NGRAPH_INFO << "Write complete"; */
-    // std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-
-    // std::cout << "Stopping session" << std::endl;
-    // boost::asio::post(m_io_context, [this]() { m_session->socket().close();
-    // });
-
-    // TODO: cleaner way to prevent m_acceptor from double-freeing
-    m_acceptor = nullptr;
-    m_session = nullptr;
-    // std::cout << "Stopped session" << std::endl;
-
-    m_thread.join();
     NGRAPH_INFO << "done with ~HEExecutable() ";
   }
 
@@ -83,8 +72,10 @@ class HEExecutable : public Executable {
   bool m_encrypt_data;
   bool m_batch_data;
   bool m_encrypt_model;
-  bool m_is_compiled = false;
-  const HEBackend* m_he_backend = nullptr;  // TODO: replace with context
+  bool m_is_compiled;
+  bool m_session_started;
+  bool m_enable_client;
+  const HEBackend* m_he_backend;  // TODO: replace with context
   std::unordered_map<const Node*, stopwatch> m_timer_map;
   std::vector<NodeWrapper> m_wrapped_nodes;
 
@@ -93,14 +84,13 @@ class HEExecutable : public Executable {
   std::shared_ptr<TCPServer> m_tcp_server;
   std::thread m_thread;
   boost::asio::io_context m_io_context;
-  bool m_session_started{false};
-  bool m_is_writing{false};
-  std::vector<std::shared_ptr<runtime::he::HETensor>>
-      m_inputs;  // (Encrypted) inputs to compiled function
-  std::vector<std::shared_ptr<runtime::Tensor>>
-      m_outputs;  // (Encrypted) outputs of compiled function
 
-  size_t m_port{34000};  // Which port the server is hosted at
+  // (Encrypted) inputs to compiled function
+  std::vector<std::shared_ptr<runtime::he::HETensor>> m_client_inputs;
+  // (Encrypted) outputs of compiled function
+  std::vector<std::shared_ptr<runtime::he::HETensor>> m_client_outputs;
+
+  size_t m_port;  // Which port the server is hosted at
 
   std::shared_ptr<seal::SEALContext>
       m_context;  // TODO: move to he_seal_executable.hpp
