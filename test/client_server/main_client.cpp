@@ -23,7 +23,7 @@ using namespace ngraph;
 int main() {
   size_t port = 34000;
 
-  std::vector<float> inputs{1, 2, 3, 4};
+  std::vector<float> inputs{1, 2, 3, 4, 5};
   boost::asio::io_context io_context;
   tcp::resolver resolver(io_context);
   auto client_endpoints = resolver.resolve("localhost", std::to_string(port));

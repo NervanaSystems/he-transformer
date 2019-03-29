@@ -87,10 +87,6 @@ runtime::he::HEExecutable::HEExecutable(const shared_ptr<Function>& function,
   NGRAPH_ASSERT(he_seal_backend != nullptr) << "he_seal_backend == nullptr";
   m_context = he_seal_backend->get_context();
 
-  if (m_enable_client) {
-    NGRAPH_INFO << "Enable client";
-  }
-
   m_is_compiled = true;
   pass::Manager pass_manager;
   pass_manager.register_pass<pass::LikeReplacement>();
@@ -104,6 +100,8 @@ runtime::he::HEExecutable::HEExecutable(const shared_ptr<Function>& function,
   set_parameters_and_results(*function);
 
   if (m_enable_client) {
+    NGRAPH_INFO << "Enable client";
+
     // only support parameter size 1 for now
     NGRAPH_ASSERT(get_parameters().size() == 1)
         << "HEExecutable only supports parameter size 1 (got "
@@ -116,16 +114,16 @@ runtime::he::HEExecutable::HEExecutable(const shared_ptr<Function>& function,
     // Start server
     NGRAPH_INFO << "Starting CKKS server";
     start_server();
+
+    // Send encryption parameters
     stringstream param_stream;
     shared_ptr<HEEncryptionParameters> parms =
         he_backend->get_encryption_parameters();
     NGRAPH_ASSERT(parms != nullptr) << "HEEncryptionParameters == nullptr";
-
     parms->save(param_stream);
     auto parms_message =
         TCPMessage(MessageType::encryption_parameters, 1, param_stream);
 
-    // Send
     NGRAPH_INFO << "Waiting until client is connected";
     while (!m_session_started) {
       this_thread::sleep_for(chrono::milliseconds(10));
@@ -135,15 +133,10 @@ runtime::he::HEExecutable::HEExecutable(const shared_ptr<Function>& function,
 }
 
 void runtime::he::HEExecutable::accept_connection() {
-  // lock_guard<mutex> guard(m_session_mutex);
   NGRAPH_INFO << "Server accepting connections";
 
   auto server_callback =
       bind(&runtime::he::HEExecutable::handle_message, this, placeholders::_1);
-
-  /*auto server_callback = [this](const runtime::he::TCPMessage& message) {
-    this->handle_message(message);
-  };*/
 
   m_acceptor->async_accept([this, server_callback](boost::system::error_code ec,
                                                    tcp::socket socket) {
@@ -166,26 +159,17 @@ void runtime::he::HEExecutable::start_server() {
   // Server
   tcp::resolver resolver(m_io_context);
   tcp::endpoint server_endpoints(tcp::v4(), m_port);
-
   m_acceptor = make_shared<tcp::acceptor>(m_io_context, server_endpoints);
 
   accept_connection();
-
-  // m_tcp_server =
-  //    make_shared<TCPServer>(m_io_context, server_endpoints, server_callback);
   m_thread = thread([this]() { m_io_context.run(); });
-  // m_thread =
-  // m_io_context.run();  // Actually start the server
 }
 
 void runtime::he::HEExecutable::handle_message(
     const runtime::he::TCPMessage& message) {
-  NGRAPH_INFO << "Handling TCP Message";
-
   MessageType msg_type = message.message_type();
 
-  NGRAPH_INFO << "Server got " << message_type_to_string(msg_type)
-              << " message";
+  NGRAPH_INFO << "Server got message: " << message_type_to_string(msg_type);
 
   if (msg_type == MessageType::execute) {
     // Get Ciphertexts from message
@@ -216,32 +200,56 @@ void runtime::he::HEExecutable::handle_message(
       he_cipher_inputs.emplace_back(wrapper);
     }
 
-    // Load function with parameters
-    const ParameterVector& input_parameters = get_parameters();
-    for (auto input_param : input_parameters) {
-      NGRAPH_INFO << "Parameter shape " << join(input_param->get_shape(), "x");
-    }
     // only support parameter size 1 for now
-    NGRAPH_ASSERT(input_parameters.size() == 1)
+    NGRAPH_ASSERT(get_parameters().size() == 1)
         << "HEExecutable only supports parameter size 1 (got "
-        << input_parameters.size() << ")";
+        << get_parameters().size() << ")";
+
     // only support function output size 1 for now
     NGRAPH_ASSERT(get_results().size() == 1)
         << "HEExecutable only supports output size 1 (got "
         << get_results().size() << "";
 
-    auto element_type = input_parameters[0]->get_element_type();
-    bool batched = false;
-    auto input_tensor = m_he_backend->create_cipher_tensor(
-        element_type, input_parameters[0]->get_shape(), batched);
-
-    dynamic_pointer_cast<runtime::he::HECipherTensor>(input_tensor)
-        ->set_elements(he_cipher_inputs);
+    // Load function with parameters
+    size_t num_param_elements = 0;
+    const ParameterVector& input_parameters = get_parameters();
+    for (auto input_param : input_parameters) {
+      num_param_elements += shape_size(input_param->get_shape());
+    }
+    NGRAPH_INFO << "num_param_elements " << num_param_elements;
+    NGRAPH_ASSERT(count == num_param_elements)
+        << "Count " << count
+        << " does not match number of parameter elements ( "
+        << num_param_elements << ")";
 
     NGRAPH_INFO << "Setting m_client_inputs";
+    size_t parameter_size_index = 0;
+    for (auto input_param : input_parameters) {
+      const auto& shape = input_param->get_shape();
+      size_t param_size = shape_size(shape);
 
-    m_client_inputs = {
-        dynamic_pointer_cast<runtime::he::HECipherTensor>(input_tensor)};
+      auto element_type = input_param->get_element_type();
+      bool batched = false;
+      auto input_tensor = dynamic_pointer_cast<runtime::he::HECipherTensor>(
+          m_he_backend->create_cipher_tensor(
+              element_type, input_param->get_shape(), batched));
+
+      vector<shared_ptr<runtime::he::HECiphertext>> cipher_elements{
+          he_cipher_inputs.begin() + parameter_size_index,
+          he_cipher_inputs.begin() + parameter_size_index + param_size};
+
+      NGRAPH_ASSERT(cipher_elements.size() == param_size)
+          << "Incorrect number of elements for parameter";
+
+      input_tensor->set_elements(cipher_elements);
+      m_client_inputs.emplace_back(input_tensor);
+      parameter_size_index += param_size;
+    }
+
+    NGRAPH_ASSERT(m_client_inputs.size() == get_parameters().size())
+        << "Client inputs size " << m_client_inputs.size() << "; expected "
+        << get_parameters().size();
+
   } else if (msg_type == MessageType::eval_key) {
     NGRAPH_INFO << "Got eval_key";
     NGRAPH_INFO << "Size of key " << message.element_size();
@@ -262,11 +270,18 @@ void runtime::he::HEExecutable::handle_message(
 
     // Send inference parameter shape
     const ParameterVector& input_parameters = get_parameters();
-    auto shape = input_parameters[0]->get_shape();
-    NGRAPH_INFO << "Returning parameter shape: " << join(shape, "x");
-    runtime::he::TCPMessage parameter_message{
-        MessageType::parameter_shape, shape.size(),
-        sizeof(size_t) * shape.size(), (char*)shape.data()};
+    size_t num_param_elements = 0;
+    for (const auto& param : input_parameters) {
+      auto& shape = param->get_shape();
+      num_param_elements += shape_size(shape);
+      NGRAPH_INFO << "Parameter shape " << join(shape, "x");
+    }
+
+    NGRAPH_INFO << "Requesting total  of " << num_param_elements
+                << " parameter elements";
+    runtime::he::TCPMessage parameter_message{MessageType::parameter_shape, 1,
+                                              sizeof(num_param_elements),
+                                              (char*)&num_param_elements};
 
     NGRAPH_INFO << "Server about to write parameter_message size "
                 << parameter_message.num_bytes();
@@ -551,8 +566,6 @@ bool runtime::he::HEExecutable::call(
   NGRAPH_INFO << "\033[1;32m"
               << "Total time " << total_time << " (ms) \033[0m";
 
-
-
   // Send outputs to client.
   if (m_enable_client) {
     NGRAPH_INFO << "Server about to write outputs ";
@@ -570,9 +583,10 @@ bool runtime::he::HEExecutable::call(
     NGRAPH_INFO << "Output shape " << join(output_shape, "x");
 
     auto output_cipher_tensor =
-      dynamic_pointer_cast<runtime::he::HECipherTensor>(m_client_outputs[0]);
+        dynamic_pointer_cast<runtime::he::HECipherTensor>(m_client_outputs[0]);
 
-    NGRAPH_ASSERT(output_cipher_tensor != nullptr) << "Client outputs are not HECipherTensor";
+    NGRAPH_ASSERT(output_cipher_tensor != nullptr)
+        << "Client outputs are not HECipherTensor";
 
     std::stringstream cipher_stream;
     for (auto he_ciphertext : output_cipher_tensor->get_elements()) {

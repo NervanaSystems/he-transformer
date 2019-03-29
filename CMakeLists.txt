@@ -40,8 +40,6 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
 add_definitions(-DPROJECT_ROOT_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 
-message("CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}")
-
 # This allows libhe_backend.so to find libraries in the same directory
 set(CMAKE_INSTALL_RPATH "\$ORIGIN")
 

@@ -31,7 +31,6 @@ void he_seal::kernel::scalar_add(
     const seal::MemoryPoolHandle& pool) {
   if (auto he_seal_ckks_backend =
           dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend)) {
-    NGRAPH_INFO << "Scalar adding CKKS ";
     he_seal::ckks::kernel::scalar_add_ckks(arg0, arg1, out, element_type,
                                            he_seal_ckks_backend);
   } else if (auto he_seal_bfv_backend =
