@@ -162,20 +162,15 @@ class TCPMessage {
 
   // move assignment. TODO: clean up
   TCPMessage& operator=(TCPMessage&& other) {
-    m_type = other.m_type;
-    m_count = other.m_count;
-    m_data_size = other.m_data_size;
-
-    m_data = new char[header_length + body_length()];
-
-    std::cout << "copying from size " << std::endl;
-    std::cout << m_data_size << std::endl;
-    std::cout << "header_length + body_length " << std::endl;
-    std::cout << header_length + body_length() << std::endl;
-    std::cout << "num_bytes " << std::endl;
-    std::cout << num_bytes() << std::endl;
-
-    std::memcpy(m_data, other.m_data, num_bytes());
+    if (this != &other) {
+      delete[] m_data;
+      m_data = other.header_ptr();
+      m_type = other.m_type;
+      m_count = other.m_count;
+      m_data_size = other.m_data_size;
+      other.m_data = nullptr;
+    }
+    return *this;
   };
 
   // copy constructor
