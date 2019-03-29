@@ -40,7 +40,6 @@
 #include "ngraph/type/element_type.hpp"
 #include "ngraph/util.hpp"
 #include "node_wrapper.hpp"
-#include "tcp/tcp_server.hpp"
 
 namespace ngraph {
 namespace runtime {

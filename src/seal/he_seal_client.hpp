@@ -35,7 +35,7 @@ class HESealClient {
   HESealClient(boost::asio::io_context& io_context,
                const tcp::resolver::results_type& endpoints,
                std::vector<float> inputs)
-      : m_inputs{inputs} {
+      : m_inputs{inputs}, m_is_done(false) {
     auto client_callback = [this](const runtime::he::TCPMessage& message) {
       return handle_message(message);
     };
@@ -46,10 +46,7 @@ class HESealClient {
     io_context.run();
   }
 
-  ~HESealClient() {
-    std::cout << "~HESealClient()" << std::endl;
-    std::cout << "Done with ~HESealClient()" << std::endl;
-  }
+  ~HESealClient() {}
 
   void set_seal_context() {
     m_context = seal::SEALContext::Create(m_encryption_params);
@@ -77,22 +74,23 @@ class HESealClient {
   const void handle_message(const runtime::he::TCPMessage& message) {
     MessageType msg_type = message.message_type();
 
-    std::cout << "Client got message: "
+    std::cout << "Client received message type: "
               << message_type_to_string(msg_type).c_str() << std::endl;
 
-    if (msg_type == MessageType::parameter_shape) {
-      std::vector<size_t> shape(message.count());
+    if (msg_type == MessageType::parameter_size) {
+      size_t parameter_size;
+      std::memcpy(&parameter_size, message.data_ptr(), message.data_size());
 
-      std::memcpy(shape.data(), message.data_ptr(), message.data_size());
+      std::cout << "Parameter size " << parameter_size << std::endl;
 
-      auto shape_size = std::accumulate(begin(shape), end(shape), 1,
-                                        std::multiplies<size_t>());
+      /*auto parameter_ize = std::accumulate(begin(shape), end(shape), 1,
+                                           std::multiplies<size_t>()); */
       std::vector<seal::Ciphertext> ciphers;
       assert(m_inputs.size() == shape_size);
 
       std::stringstream cipher_stream;
 
-      for (size_t i = 0; i < shape_size; ++i) {
+      for (size_t i = 0; i < parameter_size; ++i) {
         seal::Plaintext plain;
         m_ckks_encoder->encode(m_inputs[i], m_scale, plain);
         seal::Ciphertext c;
@@ -100,13 +98,12 @@ class HESealClient {
         c.save(cipher_stream);
       }
 
-      std::cout << "Cleint saved " << shape_size << " ciphertexts" << std::endl;
       const std::string& cipher_str = cipher_stream.str();
       const char* cipher_cstr = cipher_str.c_str();
       size_t cipher_size = cipher_str.size();
-
-      std::cout << "Writing Execute message" << std::endl;
-      auto execute_message = TCPMessage(MessageType::execute, shape_size,
+      std::cout << "Sending execute message with " << parameter_size
+                << " ciphertexts" << std::endl;
+      auto execute_message = TCPMessage(MessageType::execute, parameter_size,
                                         cipher_size, cipher_cstr);
       write_message(execute_message);
     } else if (msg_type == MessageType::result) {
@@ -142,7 +139,6 @@ class HESealClient {
       std::cout << "Loaded encryption parms" << std::endl;
 
       set_seal_context();
-      std::cout << "Set seal context" << std::endl;
 
       std::stringstream evk_stream;
       m_relin_keys->save(evk_stream);
@@ -151,10 +147,9 @@ class HESealClient {
       size_t m_data_size = evk_str.size();
       auto evk_message =
           TCPMessage(MessageType::eval_key, 1, m_data_size, evk_cstr);
-      std::cout << "Writing relin key message" << std::endl;
+      std::cout << "Sending evaluation key" << std::endl;
 
       write_message(evk_message);
-      std::cout << "Posted relin key message" << std::endl;
 
     } else {
       std::cout << "Unsupported message type"
@@ -189,7 +184,7 @@ class HESealClient {
   std::shared_ptr<seal::KeyGenerator> m_keygen;
   std::shared_ptr<seal::RelinKeys> m_relin_keys;
   double m_scale;
-  bool m_is_done{false};
+  bool m_is_done;
   std::vector<float> m_inputs;   // Function inputs
   std::vector<float> m_results;  // Function outputs
 

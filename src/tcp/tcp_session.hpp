@@ -39,7 +39,6 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
 
  public:
   void do_read_header() {
-    std::cout << "Server reading header" << std::endl;
     auto self(shared_from_this());
     boost::asio::async_read(
         m_socket,
@@ -47,8 +46,6 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
                             runtime::he::TCPMessage::header_length),
         [this, self](boost::system::error_code ec, std::size_t length) {
           if (!ec & m_message.decode_header()) {
-            std::cout << "Server read header (length " << length
-                      << "): " << m_message.body_length() << std::endl;
             do_read_body();
           } else {
             if (ec) {
@@ -60,8 +57,6 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
   }
 
   void do_read_body() {
-    std::cout << "Server reading message.body_length() "
-              << m_message.body_length() << std::endl;
     auto self(shared_from_this());
     boost::asio::async_read(
         m_socket,
@@ -69,9 +64,6 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
         [this, self](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
             m_message.decode_body();
-            std::cout << "Server read message.num_bytes() "
-                      << m_message.num_bytes() << std::endl;
-
             m_message_callback(m_message);
             do_read_header();
           } else {
@@ -88,7 +80,6 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
         boost::asio::buffer(message.header_ptr(), message.num_bytes()),
         [this, self](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
-            std::cout << "Server wrote message size " << length << std::endl;
             return true;
           } else {
             std::cout << "Error writing message in session: " << ec.message()
@@ -100,7 +91,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
   TCPMessage m_message;
   tcp::socket m_socket;
 
-  // How to handle the message
+  // Called after message is received
   std::function<void(const runtime::he::TCPMessage&)> m_message_callback;
 };  // namespace he
 }  // namespace he

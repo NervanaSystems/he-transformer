@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <boost/asio.hpp>
 #include <chrono>
 #include <memory>
 #include <thread>
@@ -27,6 +28,10 @@
 #include "ngraph/util.hpp"
 #include "node_wrapper.hpp"
 #include "seal/seal.h"
+#include "tcp/tcp_message.hpp"
+#include "tcp/tcp_session.hpp"
+
+using boost::asio::ip::tcp;
 
 namespace ngraph {
 namespace runtime {
@@ -40,14 +45,12 @@ class HEExecutable : public Executable {
                bool encrypt_model, bool batch_data);
 
   ~HEExecutable() {
-    NGRAPH_INFO << "~HEExecutable()";
     if (m_enable_client) {
       // TODO: cleaner way to prevent m_acceptor from double-freeing
       m_acceptor = nullptr;
       m_session = nullptr;
       m_thread.join();
     }
-    NGRAPH_INFO << "done with ~HEExecutable() ";
   }
 
   /// @brief starts the server
@@ -81,7 +84,6 @@ class HEExecutable : public Executable {
 
   std::shared_ptr<tcp::acceptor> m_acceptor;
   std::shared_ptr<TCPSession> m_session;
-  std::shared_ptr<TCPServer> m_tcp_server;
   std::thread m_thread;
   boost::asio::io_context m_io_context;
 
@@ -101,7 +103,6 @@ class HEExecutable : public Executable {
                       const std::vector<std::shared_ptr<HETensor>>& outputs,
                       const std::vector<std::shared_ptr<HETensor>>& inputs);
 };
-
 }  // namespace he
 }  // namespace runtime
 }  // namespace ngraph

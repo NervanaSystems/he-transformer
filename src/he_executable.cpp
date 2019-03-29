@@ -112,7 +112,7 @@ runtime::he::HEExecutable::HEExecutable(const shared_ptr<Function>& function,
         << get_results().size() << "";
 
     // Start server
-    NGRAPH_INFO << "Starting CKKS server";
+    NGRAPH_INFO << "Starting server";
     start_server();
 
     // Send encryption parameters
@@ -145,9 +145,7 @@ void runtime::he::HEExecutable::accept_connection() {
       // TODO: use make_shared here without causing seg-fault
       m_session = make_unique<TCPSession>(move(socket), server_callback);
       m_session->start();
-
       m_session_started = true;  // TODO: cleaner way to process this
-      NGRAPH_INFO << "TCP session started";
     } else {
       NGRAPH_INFO << "error " << ec.message();
     }
@@ -169,7 +167,8 @@ void runtime::he::HEExecutable::handle_message(
     const runtime::he::TCPMessage& message) {
   MessageType msg_type = message.message_type();
 
-  NGRAPH_INFO << "Server got message: " << message_type_to_string(msg_type);
+  NGRAPH_INFO << "Server received message type: "
+              << message_type_to_string(msg_type);
 
   if (msg_type == MessageType::execute) {
     // Get Ciphertexts from message
@@ -177,11 +176,7 @@ void runtime::he::HEExecutable::handle_message(
     vector<seal::Ciphertext> ciphertexts;
     size_t ciphertext_size = message.element_size();
 
-    NGRAPH_INFO << "ciphertext_size " << ciphertext_size;
-
     assert(m_context != nullptr);
-
-    NGRAPH_INFO << "About to load ciphers into context ";
     print_seal_context(*m_context);
 
     for (size_t i = 0; i < count; ++i) {
@@ -216,7 +211,6 @@ void runtime::he::HEExecutable::handle_message(
     for (auto input_param : input_parameters) {
       num_param_elements += shape_size(input_param->get_shape());
     }
-    NGRAPH_INFO << "num_param_elements " << num_param_elements;
     NGRAPH_ASSERT(count == num_param_elements)
         << "Count " << count
         << " does not match number of parameter elements ( "
@@ -251,22 +245,14 @@ void runtime::he::HEExecutable::handle_message(
         << get_parameters().size();
 
   } else if (msg_type == MessageType::eval_key) {
-    NGRAPH_INFO << "Got eval_key";
-    NGRAPH_INFO << "Size of key " << message.element_size();
-
     seal::RelinKeys keys;
     std::stringstream key_stream;
     key_stream.write(message.data_ptr(), message.element_size());
-    NGRAPH_INFO << "Loading eval key";
     keys.load(m_context, key_stream);
-
-    NGRAPH_INFO << "Loaded eval key";
 
     // TODO: move set_relin_keys to HEBackend
     auto he_seal_backend = (runtime::he::he_seal::HESealBackend*)m_he_backend;
     he_seal_backend->set_relin_keys(keys);
-
-    NGRAPH_INFO << "Set eval key in backend";
 
     // Send inference parameter shape
     const ParameterVector& input_parameters = get_parameters();
@@ -277,20 +263,19 @@ void runtime::he::HEExecutable::handle_message(
       NGRAPH_INFO << "Parameter shape " << join(shape, "x");
     }
 
-    NGRAPH_INFO << "Requesting total  of " << num_param_elements
+    NGRAPH_INFO << "Requesting total of " << num_param_elements
                 << " parameter elements";
-    runtime::he::TCPMessage parameter_message{MessageType::parameter_shape, 1,
+    runtime::he::TCPMessage parameter_message{MessageType::parameter_size, 1,
                                               sizeof(num_param_elements),
                                               (char*)&num_param_elements};
 
-    NGRAPH_INFO << "Server about to write parameter_message size "
-                << parameter_message.num_bytes();
+    NGRAPH_INFO << "Server sending message of type: parameter_size";
     m_session->do_write(parameter_message);
-
   } else {
-    NGRAPH_INFO << "Unsupported message type in server:  "
-                << message_type_to_string(msg_type);
-    throw ngraph_error("Unknown message type in server");
+    stringstream ss;
+    ss << "Unsupported message type in server:  "
+       << message_type_to_string(msg_type);
+    throw ngraph_error(ss.str());
   }
 }
 

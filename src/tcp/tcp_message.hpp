@@ -34,7 +34,7 @@ enum class MessageType {
   eval_key,
   execute,
   parameter_shape_request,
-  parameter_shape,
+  parameter_size,
   relu_request,
   relu,
   result,
@@ -55,8 +55,8 @@ inline std::string message_type_to_string(const MessageType& type) {
     case MessageType::execute:
       return "execute";
       break;
-    case MessageType::parameter_shape:
-      return "parameter_shape";
+    case MessageType::parameter_size:
+      return "parameter_size";
       break;
     case MessageType::parameter_shape_request:
       return "parameter_shape_request";
@@ -121,7 +121,6 @@ class TCPMessage {
     const char* pk_cstr = pk_str.c_str();
     m_data_size = pk_str.size();
 
-    std::cout << "Message from stream size " << m_data_size << std::endl;
     check_arguments();
     m_data = new char[header_length + max_body_length];
 
@@ -157,10 +156,6 @@ class TCPMessage {
     encode_data(data);
   }
 
-  // copy assignment. TODO: enable as needed
-  TCPMessage& operator=(const TCPMessage& other) = delete;
-
-  // move assignment. TODO: clean up
   TCPMessage& operator=(TCPMessage&& other) {
     if (this != &other) {
       delete[] m_data;
@@ -173,39 +168,22 @@ class TCPMessage {
     return *this;
   };
 
-  // copy constructor
   TCPMessage(const TCPMessage& other) {
     m_type = other.m_type;
     m_count = other.m_count;
     m_data_size = other.m_data_size;
-
     m_data = new char[header_length + body_length()];
-
-    std::cout << "copying from size " << std::endl;
-    std::cout << m_data_size << std::endl;
-    std::cout << "header_length + body_length " << std::endl;
-    std::cout << header_length + body_length() << std::endl;
-    std::cout << "num_bytes " << std::endl;
-    std::cout << num_bytes() << std::endl;
 
     std::memcpy(m_data, other.m_data, num_bytes());
   }
 
-  // move constructor
-  // TODO: implement
+  // TODO: implement as needed
   TCPMessage(TCPMessage&& other) = delete;
 
-  ~TCPMessage() {
-    std::cout << "~TCPMessage() of type " << message_type_to_string(m_type)
-              << std::endl;
-    // if (m_data) {
-    // std::cout << "delete[] m_data" << std::endl;
-    // std::cout << "m_data " << (void*)m_data << std::endl;
-    // TODO: delete[] m_data; make sure message has been sent before deleting
-    delete[] m_data;
-    //}
-    std::cout << "Done with ~TCPMessage() " << std::endl;
-  }
+  // TODO: implement as needed
+  TCPMessage& operator=(const TCPMessage& other) = delete;
+
+  ~TCPMessage() { delete[] m_data; }
 
   size_t count() { return m_count; }
   const size_t count() const { return m_count; }
@@ -262,7 +240,6 @@ class TCPMessage {
   }
 
   bool decode_header() {
-    std::cout << "Decoding header " << std::endl;
     char header[header_length + 1] = "";
     std::strncat(header, m_data, header_length);
     size_t body_length = std::atoi(header);
