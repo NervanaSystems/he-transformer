@@ -142,8 +142,7 @@ void runtime::he::HEExecutable::accept_connection() {
                                                    tcp::socket socket) {
     if (!ec) {
       NGRAPH_INFO << "Connection accepted";
-      // TODO: use make_shared here without causing seg-fault
-      m_session = make_unique<TCPSession>(move(socket), server_callback);
+      m_session = make_shared<TCPSession>(move(socket), server_callback);
       m_session->start();
       m_session_started = true;  // TODO: cleaner way to process this
     } else {

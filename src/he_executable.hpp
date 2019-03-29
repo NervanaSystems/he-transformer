@@ -46,14 +46,12 @@ class HEExecutable : public Executable {
 
   ~HEExecutable() {
     if (m_enable_client) {
-      // TODO: cleaner way to prevent m_acceptor from double-freeing
+      // TODO: why is this needed to prevent m_acceptor from double-freeing?
       m_acceptor = nullptr;
-      m_session = nullptr;
       m_thread.join();
     }
   }
 
-  /// @brief starts the server
   void start_server();
 
   bool call(const std::vector<std::shared_ptr<Tensor>>& outputs,
