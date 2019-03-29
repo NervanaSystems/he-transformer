@@ -46,14 +46,16 @@ class HEExecutable : public Executable {
 
     }
     NGRAPH_INFO << "Write complete"; */
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    // std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-    std::cout << "Stopping session" << std::endl;
-    boost::asio::post(m_io_context, [this]() { m_session->socket().close(); });
+    // std::cout << "Stopping session" << std::endl;
+    // boost::asio::post(m_io_context, [this]() { m_session->socket().close();
+    // });
 
     // TODO: cleaner way to prevent m_acceptor from double-freeing
     m_acceptor = nullptr;
-    std::cout << "Stopped session" << std::endl;
+    m_session = nullptr;
+    // std::cout << "Stopped session" << std::endl;
 
     m_thread.join();
     NGRAPH_INFO << "done with ~HEExecutable() ";
@@ -102,6 +104,8 @@ class HEExecutable : public Executable {
 
   std::shared_ptr<seal::SEALContext>
       m_context;  // TODO: move to he_seal_executable.hpp
+
+  TCPMessage m_result_message;
 
   void generate_calls(const element::Type& type, const NodeWrapper& op,
                       const std::vector<std::shared_ptr<HETensor>>& outputs,

@@ -33,7 +33,6 @@ enum class MessageType {
   encryption_parameters,
   eval_key,
   execute,
-  execute_done,
   parameter_shape_request,
   parameter_shape,
   relu_request,
@@ -55,9 +54,6 @@ inline std::string message_type_to_string(const MessageType& type) {
       break;
     case MessageType::execute:
       return "execute";
-      break;
-    case MessageType::execute_done:
-      return "execute_done";
       break;
     case MessageType::parameter_shape:
       return "parameter_shape";
@@ -164,8 +160,23 @@ class TCPMessage {
   // copy assignment. TODO: enable as needed
   TCPMessage& operator=(const TCPMessage& other) = delete;
 
-  // move assignment. TODO: enable as needed
-  TCPMessage& operator=(TCPMessage&& other) = delete;
+  // move assignment. TODO: clean up
+  TCPMessage& operator=(TCPMessage&& other) {
+    m_type = other.m_type;
+    m_count = other.m_count;
+    m_data_size = other.m_data_size;
+
+    m_data = new char[header_length + body_length()];
+
+    std::cout << "copying from size " << std::endl;
+    std::cout << m_data_size << std::endl;
+    std::cout << "header_length + body_length " << std::endl;
+    std::cout << header_length + body_length() << std::endl;
+    std::cout << "num_bytes " << std::endl;
+    std::cout << num_bytes() << std::endl;
+
+    std::memcpy(m_data, other.m_data, num_bytes());
+  };
 
   // copy constructor
   TCPMessage(const TCPMessage& other) {

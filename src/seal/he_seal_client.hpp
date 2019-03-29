@@ -137,9 +137,10 @@ class HESealClient {
 
       // sleep(10);  // Wait
 
-      // close_connection();
-      // std::cout << "Returning empty TCP message" << std::endl;
-      // return TCPMessage(MessageType::none);
+      close_connection();
+      /* std::cout << "Returning done TCP message" << std::endl;
+       auto done_message = TCPMessage(MessageType::done);
+       write_message(none_message); */
 
     } else if (msg_type == MessageType::none) {
       close_connection();
@@ -182,7 +183,7 @@ class HESealClient {
     std::cout << "Closing connection" << std::endl;
 
     m_tcp_client->close();
-    m_thread.detach();
+    // m_thread.detach();
     m_is_done = true;
   }
 

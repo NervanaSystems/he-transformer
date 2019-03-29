@@ -564,13 +564,13 @@ bool runtime::he::HEExecutable::call(
   size_t cipher_size = cipher_str.size();
 
   std::cout << "Writing Result message" << std::endl;
-  auto result_message =
+  m_result_message =
       TCPMessage(MessageType::result, out_size, cipher_size, cipher_cstr);
 
-  m_session->do_write(result_message);
+  m_session->do_write(m_result_message);
 
-  std::cout << "Sleepiung while message is righting" << std::endl;
-  this_thread::sleep_for(chrono::milliseconds(3000));
+  // std::cout << "Sleepiung while message is righting" << std::endl;
+  // this_thread::sleep_for(chrono::milliseconds(3000));
 
   return true;
 }
