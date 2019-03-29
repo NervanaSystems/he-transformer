@@ -16,16 +16,10 @@
 
 # Client depends only on seal
 add_executable(main_client main_client.cpp)
+add_dependencies(main_client ext_seal)
 target_link_libraries(main_client seal)
 
 # Server
 add_executable(main_server main_server.cpp)
+add_dependencies(main_server ext_ngraph_tf ext_seal)
 target_link_libraries(main_server ngraph seal he_backend)
-
-link_directories(
-    ${NGRAPH_LIB_DIR}
-    ${EXTERNAL_INSTALL_LIB_DIR}
-    ${NGRAPH_TF_LIB_DIR}
-)
-
-

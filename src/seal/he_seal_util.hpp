@@ -43,8 +43,7 @@ static void print_seal_context(const seal::SEALContext& context) {
                                                                : "";
 
   if (scheme_name == "HE:SEAL:BFV") {
-    std::cout << std::endl
-              << "/ Encryption parameters:" << std::endl
+    std::cout << "/ Encryption parameters:" << std::endl
               << "| scheme: " << scheme_name << std::endl
               << "| poly_modulus: " << scheme_parms.poly_modulus_degree()
               << std::endl
@@ -57,8 +56,7 @@ static void print_seal_context(const seal::SEALContext& context) {
               << "\\ noise_standard_deviation: "
               << scheme_parms.noise_standard_deviation();
   } else if (scheme_name == "HE:SEAL:CKKS") {
-    std::cout << std::endl
-              << "/ Encryption parameters:" << std::endl
+    std::cout << "/ Encryption parameters:" << std::endl
               << "| scheme: " << scheme_name << std::endl
               << "| poly_modulus: " << scheme_parms.poly_modulus_degree()
               << std::endl

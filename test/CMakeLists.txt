@@ -30,6 +30,7 @@ set (SRC
     main.cpp
     test_seal.cpp
     test_util.cpp
+    test_tcp_message.cpp
 )
 
 set(ACTIVE_BACKEND_LIST HE_SEAL_BFV HE_SEAL_CKKS)
@@ -40,7 +41,6 @@ set(MULTI_TEST_SRC
     test_batch_norm_inference.in.cpp
     test_basics.in.cpp
     test_broadcast.in.cpp
-    test_client_server.in.cpp
     test_concat.in.cpp
     test_constant.in.cpp
     test_layers.in.cpp

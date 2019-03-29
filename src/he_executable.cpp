@@ -347,9 +347,6 @@ void runtime::he::HEExecutable::he_validate(
 bool runtime::he::HEExecutable::call(
     const vector<shared_ptr<runtime::Tensor>>& outputs,
     const vector<shared_ptr<runtime::Tensor>>& server_inputs) {
-  NGRAPH_INFO << "HEExecutable::call";
-  NGRAPH_INFO << "server_inputs.size() " << server_inputs.size();
-
   if (m_enable_client) {
     NGRAPH_INFO << "Waiting until m_client_inputs.size() "
                 << m_client_inputs.size() << " == " << server_inputs.size();
@@ -372,12 +369,12 @@ bool runtime::he::HEExecutable::call(
   // convert inputs to HETensor
   vector<shared_ptr<runtime::he::HETensor>> he_inputs;
   if (m_enable_client) {
-    NGRAPH_INFO << "Converting client inputs";
+    NGRAPH_INFO << "Processing client inputs";
     for (auto& tv : m_client_inputs) {
       he_inputs.push_back(static_pointer_cast<runtime::he::HETensor>(tv));
     }
   } else {
-    NGRAPH_INFO << "Converting server inputs";
+    NGRAPH_INFO << "Processing server inputs";
     for (auto& tv : server_inputs) {
       auto he_input = dynamic_pointer_cast<runtime::he::HETensor>(tv);
       NGRAPH_ASSERT(he_input != nullptr) << "server input is not he tensor";
@@ -385,14 +382,12 @@ bool runtime::he::HEExecutable::call(
     }
   }
 
-  NGRAPH_INFO << "Converting outputs";
   // convert outputs to HETensor
   vector<shared_ptr<runtime::he::HETensor>> he_outputs;
   for (auto& tv : outputs) {
     he_outputs.push_back(static_pointer_cast<runtime::he::HETensor>(tv));
   }
 
-  NGRAPH_INFO << "Validating inputs";
   he_validate(he_outputs, he_inputs);
 
   unordered_map<descriptor::Tensor*, shared_ptr<runtime::he::HETensor>>
@@ -414,17 +409,11 @@ bool runtime::he::HEExecutable::call(
                                                plain_input->get_shape(),
                                                m_batch_data));
 
-        NGRAPH_INFO << "plain_input->get_batched_element_count() "
-                    << plain_input->get_batched_element_count();
 #pragma omp parallel for
         for (size_t i = 0; i < plain_input->get_batched_element_count(); ++i) {
-          NGRAPH_INFO << "Encrypting input " << i;
           m_he_backend->encrypt(cipher_input->get_element(i),
                                 *plain_input->get_element(i));
         }
-
-        NGRAPH_INFO << "Done encrypting parameter " << i;
-
         tensor_map.insert({tv, cipher_input});
         input_count++;
       } else {
@@ -463,7 +452,6 @@ bool runtime::he::HEExecutable::call(
     }
 
     // get op inputs from map
-    NGRAPH_INFO << "Getting op inputs";
     vector<shared_ptr<runtime::he::HETensor>> op_inputs;
     for (const descriptor::Input& input : op->get_inputs()) {
       descriptor::Tensor* tv = input.get_output().get_tensor_ptr().get();
@@ -475,7 +463,6 @@ bool runtime::he::HEExecutable::call(
       m_client_outputs = op_inputs;
     }
 
-    NGRAPH_INFO << "Getting out outputs";
     // get op outputs from map or create
     vector<shared_ptr<runtime::he::HETensor>> op_outputs;
     for (size_t i = 0; i < op->get_output_size(); ++i) {
@@ -553,19 +540,13 @@ bool runtime::he::HEExecutable::call(
 
   // Send outputs to client.
   if (m_enable_client) {
-    NGRAPH_INFO << "Server about to write outputs ";
-
     NGRAPH_ASSERT(m_client_outputs.size() == 1)
         << "HEExecutable only supports output size 1 (got "
         << get_results().size() << "";
 
     std::vector<seal::Ciphertext> seal_output;
 
-    const ResultVector& results = get_results();
-    auto output_shape = results[0]->get_shape();
-    auto out_size = shape_size(output_shape);
-
-    NGRAPH_INFO << "Output shape " << join(output_shape, "x");
+    size_t output_shape_size = shape_size(get_results()[0]->get_shape());
 
     auto output_cipher_tensor =
         dynamic_pointer_cast<runtime::he::HECipherTensor>(m_client_outputs[0]);
@@ -582,15 +563,13 @@ bool runtime::he::HEExecutable::call(
       c.save(cipher_stream);
     }
 
-    std::cout << "Executable saved " << out_size << " ciphertexts" << std::endl;
     const std::string& cipher_str = cipher_stream.str();
     const char* cipher_cstr = cipher_str.c_str();
     size_t cipher_size = cipher_str.size();
-
-    std::cout << "Writing Result message" << std::endl;
-    m_result_message =
-        TCPMessage(MessageType::result, out_size, cipher_size, cipher_cstr);
-
+    m_result_message = TCPMessage(MessageType::result, output_shape_size,
+                                  cipher_size, cipher_cstr);
+    std::cout << "Writing Result message with " << output_shape_size
+              << " ciphertexts " << std::endl;
     m_session->do_write(m_result_message);
   }
 

@@ -35,7 +35,7 @@ class HESealBackend : public HEBackend {
   virtual std::shared_ptr<seal::SEALContext> make_seal_context(
       const std::shared_ptr<runtime::he::HEEncryptionParameters> sp) = 0;
 
-  virtual ~HESealBackend() { std::cout << "~HESealBackend()" << std::endl; };
+  virtual ~HESealBackend(){};
 
   virtual std::shared_ptr<runtime::Tensor> create_batched_cipher_tensor(
       const element::Type& element_type, const Shape& shape) override = 0;

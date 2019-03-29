@@ -21,8 +21,8 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "he_seal_util.hpp"
-#include "seal/context.h"
+
+#include "seal/he_seal_util.hpp"
 #include "seal/seal.h"
 #include "tcp/tcp_client.hpp"
 #include "tcp/tcp_message.hpp"
@@ -125,7 +125,6 @@ class HESealClient {
         std::vector<double> output;
         m_ckks_encoder->decode(plain, output);
 
-        std::cout << "output " << output[0] << std::endl;
         m_results.push_back((float)output[0]);
       }
 
@@ -136,7 +135,7 @@ class HESealClient {
       std::stringstream param_stream;
       param_stream.write(message.data_ptr(), message.element_size());
       m_encryption_params = seal::EncryptionParameters::Load(param_stream);
-      std::cout << "Loaded encryption parms" << std::endl;
+      std::cout << "Loaded encryption parmeters" << std::endl;
 
       set_seal_context();
 
