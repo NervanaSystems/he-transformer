@@ -30,9 +30,10 @@ void regclass_pyhetransformer_HESealClient(py::module m)
 {
 
   py::class_<ngraph::runtime::he::HESealClient> he_seal_client(m, "HESealClient");
-
   he_seal_client.doc() = "he_seal_client doc";
 
-  he_seal_client.def(py::init<const std::vector<size_t>&>());
+  he_seal_client.def(py::init<boost::asio::io_context&,
+                             const tcp::resolver::results_type& ,
+                            std::vector<float>>());
 
 }

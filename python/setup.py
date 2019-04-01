@@ -44,7 +44,9 @@ class get_pybind_include(object):
 NGRAPH_HE_DIST_DIR = find_he_transformer_dist_dir()
 NGRAPH_HE_INCLUDE_DIR = NGRAPH_HE_DIST_DIR + '/include'
 # TODO: configure with CMake
-BOOST_INCLUDE_DIR = '/nfs/site/home/fboemer/bin/boost_1_69_0'
+home_dir = os.getenv("HOME")
+BOOST_INCLUDE_DIR = home_dir + '/bin/boost_1_69_0'
+print('BOOST_INCLUDE_DIR', BOOST_INCLUDE_DIR)
 
 # TODO: use CMakeLists CXX Compiler
 os.environ["CC"] = "g++-7"
@@ -52,7 +54,7 @@ os.environ["CXX"] = "g++-7"
 
 ext_modules = [
     Extension(
-        'python_example',
+        'he_seal_client',
         ['he_seal_client.cpp'],
         include_dirs=[
             NGRAPH_HE_INCLUDE_DIR,
@@ -142,15 +144,13 @@ class BuildExt(build_ext):
 
 
 setup(
-    name='python_example',
+    name='he_seal_client',
     version=__version__,
-    author='Sylvain Corlay',
-    author_email='sylvain.corlay@gmail.com',
-    url='https://github.com/pybind/python_example',
-    description='A test project using pybind11',
+    author='Intel Corporation',
+    url='https://github.com/NervanaSystems/he-transformer',
+    description='Client for HE-transformer',
     long_description='',
     ext_modules=ext_modules,
     install_requires=['pybind11>=2.2'],
     cmdclass={'build_ext': BuildExt},
-    zip_safe=False,
-)
+    zip_safe=False)
