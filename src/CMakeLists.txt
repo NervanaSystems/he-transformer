@@ -82,6 +82,12 @@ message("NGRAPH_TF_VENV_LIB_DIR ${NGRAPH_TF_VENV_LIB_DIR}")
 # Install he-transformer (the HE libraries are installed separately) at `make install`
 install(TARGETS he_backend DESTINATION ${EXTERNAL_INSTALL_LIB_DIR})
 
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+        DESTINATION ${HE_INSTALL_INCLUDE}
+        FILES_MATCHING
+        PATTERN "*.hpp"
+        PATTERN "*.h")
+
 # Create symbolic links for CKKS and BFV backends, to allow ngraph and ngraph-tf to recognize these backends.
 add_custom_target(he_seal_ckks_backend ALL DEPENDS he_backend
         COMMAND ${CMAKE_COMMAND} -E create_symlink

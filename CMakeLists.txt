@@ -51,6 +51,12 @@ set(EXTERNAL_INSTALL_DIR ${CMAKE_BINARY_DIR}/external)
 set(EXTERNAL_INSTALL_LIB_DIR ${EXTERNAL_INSTALL_DIR}/lib)
 set(EXTERNAL_INSTALL_INCLUDE_DIR ${EXTERNAL_INSTALL_DIR}/include)
 
+# Install for he-transformer
+set(HE_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/he_transformer)
+message("HE_INSTALL_DIR ${HE_INSTALL_DIR}")
+set(HE_INSTALL_INCLUDE "${HE_INSTALL_DIR}/include")
+
+
 if(NOT DEFINED EXTERNAL_PROJECTS_ROOT)
     set(EXTERNAL_PROJECTS_ROOT ${CMAKE_CURRENT_BINARY_DIR})
 endif()
@@ -82,3 +88,12 @@ set_target_properties(
 # HE transformer source and test directories
 add_subdirectory(src)
 add_subdirectory(test)
+
+install(DIRECTORY ${EXTERNAL_INSTALL_INCLUDE_DIR}/
+   DESTINATION ${HE_INSTALL_INCLUDE}
+   FILES_MATCHING
+   PATTERN "*.hpp"
+   PATTERN "*.h")
+
+# For python bindings
+# add_subdirectory(python)
