@@ -43,6 +43,12 @@ class get_pybind_include(object):
 
 NGRAPH_HE_DIST_DIR = find_he_transformer_dist_dir()
 NGRAPH_HE_INCLUDE_DIR = NGRAPH_HE_DIST_DIR + '/include'
+# TODO: configure with CMake
+BOOST_INCLUDE_DIR = '/nfs/site/home/fboemer/bin/boost_1_69_0'
+
+# TODO: use CMakeLists CXX Compiler
+os.environ["CC"] = "g++-7"
+os.environ["CXX"] = "g++-7"
 
 ext_modules = [
     Extension(
@@ -50,6 +56,7 @@ ext_modules = [
         ['he_seal_client.cpp'],
         include_dirs=[
             NGRAPH_HE_INCLUDE_DIR,
+            BOOST_INCLUDE_DIR,
             # Path to pybind11 headers
             get_pybind_include(),
             get_pybind_include(user=True)
@@ -78,7 +85,9 @@ def cpp_flag(compiler):
     """Return the -std=c++[11/14] compiler flag.
     The c++14 is prefered over c++11 (when it is available).
     """
-    if has_flag(compiler, '-std=c++14'):
+    if has_flag(compiler, '-std=c++1z'):
+        return '-std=c++1z'
+    elif has_flag(compiler, '-std=c++14'):
         return '-std=c++14'
     elif has_flag(compiler, '-std=c++11'):
         return '-std=c++11'
@@ -87,30 +96,48 @@ def cpp_flag(compiler):
                            'is needed!')
 
 
+def add_platform_specific_link_args(link_args):
+    """Add linker flags specific for actual OS."""
+    if sys.platform.startswith('linux'):
+        link_args += ['-Wl,-rpath,$ORIGIN/../..']
+        link_args += ['-z', 'noexecstack']
+        link_args += ['-z', 'relro']
+        link_args += ['-z', 'now']
+
+
 class BuildExt(build_ext):
     """A custom build extension for adding compiler-specific options."""
-    c_opts = {
-        'msvc': ['/EHsc'],
-        'unix': [],
-    }
 
-    if sys.platform == 'darwin':
-        c_opts['unix'] += ['-stdlib=libc++', '-mmacosx-version-min=10.7']
+    def _add_extra_compile_arg(self, flag, compile_args):
+        """Return True if successfully added given flag to compiler args."""
+        if has_flag(self.compiler, flag):
+            compile_args += [flag]
+            return True
+        return False
 
     def build_extensions(self):
-        ct = self.compiler.compiler_type
-        opts = self.c_opts.get(ct, [])
-        if ct == 'unix':
-            opts.append(
-                '-DVERSION_INFO="%s"' % self.distribution.get_version())
-            opts.append(cpp_flag(self.compiler))
-            if has_flag(self.compiler, '-fvisibility=hidden'):
-                opts.append('-fvisibility=hidden')
-        elif ct == 'msvc':
-            opts.append(
-                '/DVERSION_INFO=\\"%s\\"' % self.distribution.get_version())
+        """Build extension providing extra compiler flags."""
+        # -Wstrict-prototypes is not a valid option for c++
+        try:
+            self.compiler.compiler_so.remove('-Wstrict-prototypes')
+        except (AttributeError, ValueError):
+            pass
         for ext in self.extensions:
-            ext.extra_compile_args = opts
+            ext.extra_compile_args += [cpp_flag(self.compiler)]
+
+            if not self._add_extra_compile_arg('-fstack-protector-strong',
+                                               ext.extra_compile_args):
+                self._add_extra_compile_arg('-fstack-protector',
+                                            ext.extra_compile_args)
+
+            self._add_extra_compile_arg('-fvisibility=hidden',
+                                        ext.extra_compile_args)
+            self._add_extra_compile_arg('-flto', ext.extra_compile_args)
+            self._add_extra_compile_arg('-fPIC', ext.extra_compile_args)
+            add_platform_specific_link_args(ext.extra_link_args)
+
+            ext.extra_compile_args += ['-Wformat', '-Wformat-security']
+            ext.extra_compile_args += ['-O2', '-D_FORTIFY_SOURCE=2']
         build_ext.build_extensions(self)
 
 
