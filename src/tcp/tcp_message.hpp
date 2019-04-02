@@ -248,6 +248,7 @@ class TCPMessage {
       throw std::invalid_argument("Cannot decode header");
     }
     m_data_size = body_length - message_type_length - message_count_length;
+    std::cout << "Decoded header " << body_length << std::endl;
     return true;
   }
 

@@ -26,14 +26,12 @@
 
 namespace py = pybind11;
 
-void regclass_pyhetransformer_HESealClient(py::module m)
-{
-
-  py::class_<ngraph::runtime::he::HESealClient> he_seal_client(m, "HESealClient");
+void regclass_pyhetransformer_HESealClient(py::module m) {
+  py::class_<ngraph::runtime::he::HESealClient> he_seal_client(m,
+                                                               "HESealClient");
   he_seal_client.doc() = "he_seal_client doc";
 
-  he_seal_client.def(py::init<boost::asio::io_context&,
-                             const tcp::resolver::results_type& ,
-                            std::vector<float>>());
-
+  he_seal_client.def(
+      py::init<boost::asio::io_context&, const tcp::resolver::results_type&,
+               std::vector<float>>());
 }

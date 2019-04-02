@@ -48,21 +48,22 @@ home_dir = os.getenv("HOME")
 BOOST_INCLUDE_DIR = home_dir + '/bin/boost_1_69_0'
 print('BOOST_INCLUDE_DIR', BOOST_INCLUDE_DIR)
 
+include_dirs = [
+    NGRAPH_HE_INCLUDE_DIR, BOOST_INCLUDE_DIR,
+    get_pybind_include(),
+    get_pybind_include(user=True)
+]
+
 # TODO: use CMakeLists CXX Compiler
 os.environ["CC"] = "g++-7"
 os.environ["CXX"] = "g++-7"
+sources = ['he_seal_client.cpp']
 
 ext_modules = [
     Extension(
         'he_seal_client',
-        ['he_seal_client.cpp'],
-        include_dirs=[
-            NGRAPH_HE_INCLUDE_DIR,
-            BOOST_INCLUDE_DIR,
-            # Path to pybind11 headers
-            get_pybind_include(),
-            get_pybind_include(user=True)
-        ],
+        sources=sources,
+        include_dirs=include_dirs,
         language='c++'),
 ]
 
