@@ -14,10 +14,13 @@
 // limitations under the License.
 //*****************************************************************************
 
+// TODO: remove thread and chrono
 #include <boost/asio.hpp>
+#include <chrono>
 #include <iostream>
 #include <memory>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "seal/he_seal_client.hpp"
@@ -104,6 +107,10 @@ void runtime::he::HESealClient::handle_message(
     auto execute_message = TCPMessage(runtime::he::MessageType::execute,
                                       parameter_size, cipher_size, cipher_cstr);
     write_message(execute_message);
+
+    std::cout << "Waiting for 10 seconds until message sent" << std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(10));
+
   } else if (msg_type == runtime::he::MessageType::result) {
     size_t count = message.count();
     size_t element_size = message.element_size();

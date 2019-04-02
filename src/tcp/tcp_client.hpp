@@ -52,7 +52,9 @@ class TCPClient {
   void write_message(const runtime::he::TCPMessage& message) {
     bool write_in_progress = !m_message_queue.empty();
     m_message_queue.push_back(message);
-    boost::asio::post(m_io_context, [this]() { do_write(); });
+    if (!write_in_progress) {
+      boost::asio::post(m_io_context, [this]() { do_write(); });
+    }
   }
 
  private:

@@ -49,8 +49,10 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
             do_read_body();
           } else {
             if (ec) {
-              std::cout << "Server error reading message: " << ec.message()
-                        << std::endl;
+              std::stringstream ss;
+              ss << "Server error reading message: " << ec.message()
+                 << std::endl;
+              throw std::runtime_error(ss.str());
             }
           }
         });
@@ -67,8 +69,9 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
             m_message_callback(m_message);
             do_read_header();
           } else {
-            std::cout << "Error reading message body: " << ec.message()
-                      << std::endl;
+            std::stringstream ss;
+            ss << "Error reading message body: " << ec.message() << std::endl;
+            throw std::runtime_error(ss.str());
           }
         });
   }

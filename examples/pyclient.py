@@ -1,8 +1,5 @@
-import socket
 import he_seal_client
 import time
-
-s = socket.socket()
 
 data = (1, 2, 3, 4)
 
