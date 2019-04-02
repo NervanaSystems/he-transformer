@@ -1,27 +1,19 @@
 import socket
-import sys
+import he_seal_client
 import time
 
-# Create a TCP/IP socket
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s = socket.socket()
 
-# Connect the socket to the port where the server is listening
-server_address = ('localhost', 34000)
-print >> sys.stderr, 'connecting to %s port %s' % server_address
-sock.connect(server_address)
-'''header        | message_type | count        | data  |'''
+data = (1, 2, 3, 4)
 
-msg = bytearray()
-msg.append(15)  # For header
+hostname = 'localhost'
+port = 34000
 
-msg = bytes('99')
+client = he_seal_client.HESealClient(hostname, port, data)
 
-print(msg)
+while not client.is_done():
+    time.sleep(1)
 
-time.sleep(3)
+results = client.get_results()
 
-sock.sendall(msg)
-
-print('sent message')
-
-time.sleep(5)
+print('results', results)

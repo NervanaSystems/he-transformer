@@ -4,7 +4,8 @@ import sys
 import setuptools
 import os
 
-__version__ = '0.0.1'
+# TODO: get from environment
+__version__ = '0.0.0-dev'
 
 PYNGRAPH_ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
 

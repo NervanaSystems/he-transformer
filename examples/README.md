@@ -12,14 +12,14 @@ NGRAPH_TF_BACKEND=HE_SEAL_BFV python axpy.py
 Note, the BFV encryption scheme suports only integers. For floating-point support, use the CKKS encryption scheme.
 
 #  Client-server model
-In pratice, the public key and secet should will not reside on the same object.
+In pratice, the public key and secret key will not reside on the same object.
 
 For a simple demonstration of a server-client approach, run
 `NGRAPH_ENABLE_CLIENT=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_TF_BACKEND=HE_SEAL_CKKS python ax.py`
 
 This will discard the Tensorflow inputs and instead wait for a client to connect and provide encrypted inputs.
 
-To connect the client and pass inputs, in a separate terminal on the same host, run `./test/client_server/main_client`.
+To connect the client and pass inputs, in a separate terminal on the same host, run `./test/client_server/main_client`. For a python version of the client, see the `python` folder.
 
 This will provide encrypted inputs to the HEBackend. Once the computation is complete, the output will be returned to the client and decrypted. As expected, the output from the server (on `ax.py`) will be nonsense.
 
