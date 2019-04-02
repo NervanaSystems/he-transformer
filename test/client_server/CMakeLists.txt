@@ -15,7 +15,16 @@
 # ******************************************************************************
 
 # Client depends only on seal
-add_executable(main_client main_client.cpp)
+include_directories(
+    SYSTEM
+    ${HE_TRANSFORMER_SOURCE_DIR}
+    ${EXTERNAL_INSTALL_INCLUDE_DIR}
+    ${NGRAPH_TF_INCLUDE_DIR}
+)
+message("HE_TRANSFORMER_SOURCE_DIR ${HE_TRANSFORMER_SOURCE_DIR}")
+message("CMAKE_CURRENT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}")
+add_executable(main_client main_client.cpp ../../src/seal/he_seal_client.cpp)
+
 add_dependencies(main_client ext_seal)
 target_link_libraries(main_client seal)
 
