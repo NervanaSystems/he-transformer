@@ -24,10 +24,8 @@ NGRAPH_ENABLE_CLIENT=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_TF_BACKEND=HE_SEAL_CKKS pyth
 
   This will start the server, which will wait for encrypted inputs from a client.
 
-  2. Once the server is running, in another terminal, from `$HE_TRANSFORMER/build` folder, run
+  2. Once the server is running, in another terminal, from `$HE_TRANSFORMER/examples` folder, run
   ```bash
-  source external/venv-tf-py3/bin/activate
-  cd $HE_TRANSFORMER/examples
   python pyclient.py
   ```
 
