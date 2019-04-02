@@ -21,13 +21,15 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <boost/asio.hpp>
 
 #include "he_seal_client.hpp"
 #include "seal/he_seal_client.hpp"
 
 namespace py = pybind11;
 
-void regclass_pyhetransformer_HESealClient(py::module m) {
+/* PYBIND11_MODULE(he_seal_client, m) {
+  // void regclass_he_seal_client(py::module m) {
   py::class_<ngraph::runtime::he::HESealClient> he_seal_client(m,
                                                                "HESealClient");
   he_seal_client.doc() = "he_seal_client doc";
@@ -35,7 +37,7 @@ void regclass_pyhetransformer_HESealClient(py::module m) {
   he_seal_client.def(
       py::init<boost::asio::io_context&, const tcp::resolver::results_type&,
                std::vector<float>>());
-}
+} */
 
 /* std::vector<double> modify(const std::vector<double>& input) {
   std::vector<double> output;

@@ -51,7 +51,6 @@ def find_pybind_headers_dir():
 
 
 PYBIND11_INCLUDE_DIR = find_pybind_headers_dir() + '/include'
-
 NGRAPH_HE_DIST_DIR = find_he_transformer_dist_dir()
 NGRAPH_HE_INCLUDE_DIR = NGRAPH_HE_DIST_DIR + '/include'
 NGRAPH_HE_LIB_DIR = NGRAPH_HE_DIST_DIR + '/lib'
@@ -63,9 +62,21 @@ home_dir = os.getenv("HOME")
 BOOST_INCLUDE_DIR = home_dir + '/bin/boost_1_69_0'
 print('BOOST_INCLUDE_DIR', BOOST_INCLUDE_DIR)
 
-include_dirs = [NGRAPH_HE_INCLUDE_DIR, BOOST_INCLUDE_DIR, PYBIND11_INCLUDE_DIR]
+include_dirs = [
+    PYNGRAPH_ROOT_DIR, NGRAPH_HE_INCLUDE_DIR, BOOST_INCLUDE_DIR,
+    PYBIND11_INCLUDE_DIR
+]
 library_dirs = [NGRAPH_HE_LIB_DIR]
+
 libraries = ['he_seal_client']
+
+print('library_dirs', library_dirs)
+
+# TODO: remove double // before it happens
+data_files = [('lib', [(NGRAPH_HE_LIB_DIR + '/' + library).replace('//', '/')
+                       for library in os.listdir(NGRAPH_HE_LIB_DIR)])]
+
+print('data_files', data_files)
 
 # TODO: use CMakeLists CXX Compiler
 os.environ["CC"] = "g++-7"
@@ -171,6 +182,7 @@ setup(
     description='Client for HE-transformer',
     long_description='',
     ext_modules=ext_modules,
+    data_files=data_files,
     install_requires=['pybind11>=2.2'],
     cmdclass={'build_ext': BuildExt},
     zip_safe=False)
