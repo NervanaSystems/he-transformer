@@ -29,10 +29,14 @@
 using namespace ngraph;
 using namespace std;
 
-runtime::he::HESealClient::HESealClient(
-    boost::asio::io_context& io_context,
-    const tcp::resolver::results_type& endpoints, std::vector<float> inputs)
+runtime::he::HESealClient::HESealClient(const std::string& hostname,
+                                        const size_t port,
+                                        const std::vector<float>& inputs)
     : m_inputs{inputs}, m_is_done(false) {
+  boost::asio::io_context io_context;
+  tcp::resolver resolver(io_context);
+  auto endpoints = resolver.resolve(hostname, std::to_string(port));
+
   auto client_callback = [this](const runtime::he::TCPMessage& message) {
     return handle_message(message);
   };

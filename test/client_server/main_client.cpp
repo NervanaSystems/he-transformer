@@ -21,13 +21,13 @@
 using namespace ngraph;
 
 int main() {
-  size_t port = 34000;
-
   std::vector<float> inputs{1, 2, 3, 4, 5};
+
+  std::string hostname = "localhost";
+  std::size_t port = 34000;
   boost::asio::io_context io_context;
   tcp::resolver resolver(io_context);
-  auto client_endpoints = resolver.resolve("localhost", std::to_string(port));
-  auto client = runtime::he::HESealClient(io_context, client_endpoints, inputs);
+  auto client = runtime::he::HESealClient(hostname, port, inputs);
 
   while (!client.is_done()) {
     sleep(1);

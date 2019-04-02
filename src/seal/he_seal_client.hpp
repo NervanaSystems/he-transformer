@@ -34,9 +34,8 @@ namespace runtime {
 namespace he {
 class HESealClient {
  public:
-  HESealClient(boost::asio::io_context& io_context,
-               const tcp::resolver::results_type& endpoints,
-               std::vector<float> inputs);
+  HESealClient(const std::string& hostname, const size_t port,
+               const std::vector<float>& inputs);
 
   ~HESealClient() = default;
 
