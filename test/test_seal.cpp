@@ -16,7 +16,6 @@
 
 #include <memory>
 
-#include <iostream>
 #include "gtest/gtest.h"
 #include "seal/seal.h"
 
@@ -154,52 +153,4 @@ TEST(seal_example, seal_bfv_shared_ptr_encrypt) {
   // Decode
   int result = encoder.decode_int32(plain_result);
   EXPECT_EQ(5, result);
-}
-
-TEST(seal_example, seal_ckks_size) {
-  using namespace seal;
-
-  EncryptionParameters parms(scheme_type::CKKS);
-
-  size_t N = 8192;
-  parms.set_poly_modulus_degree(N);
-
-  auto def_60 = util::global_variables::default_small_mods_60bit;
-
-  size_t L = 3;
-
-  vector<SmallModulus> vec30{def_60.begin(), def_60.begin() + L};
-  assert(vec30.size() == L);
-
-  parms.set_coeff_modulus(vec30);
-
-  auto context = SEALContext::Create(parms);
-
-  KeyGenerator keygen(context);
-  auto public_key = keygen.public_key();
-  auto secret_key = keygen.secret_key();
-  auto relin_keys = keygen.relin_keys(60);
-  Encryptor encryptor(context, public_key);
-  Evaluator evaluator(context);
-  Decryptor decryptor(context, secret_key);
-  CKKSEncoder encoder(context);
-
-  vector<double> input(N / 2, 1.132);
-
-  Plaintext plain;
-  double scale = pow(2.0, 60);
-  encoder.encode(input, scale, plain);
-
-  Ciphertext encrypted;
-  encryptor.encrypt(plain, encrypted);
-
-  std::stringstream ss;
-  encrypted.save(ss);
-
-  const std::string& pk_str = ss.str();
-  const char* pk_cstr = pk_str.c_str();
-  size_t m_data_size = pk_str.size();
-
-  std::cout << "stream size " << m_data_size << std::endl;
-  std::cout << "cipher size " << sizeof(encrypted) << std::endl;
 }
