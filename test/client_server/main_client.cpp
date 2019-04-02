@@ -31,8 +31,10 @@ int main() {
   std::string hostname = "localhost";
   std::size_t port = 34000;
   boost::asio::io_context io_context;
+  size_t batch_size = 1;
+
   tcp::resolver resolver(io_context);
-  auto client = runtime::he::HESealClient(hostname, port, inputs);
+  auto client = runtime::he::HESealClient(hostname, port, batch_size, inputs);
 
   while (!client.is_done()) {
     sleep(1);

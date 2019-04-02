@@ -92,6 +92,7 @@ class HEExecutable : public Executable {
   std::vector<std::shared_ptr<runtime::he::HETensor>> m_client_outputs;
 
   size_t m_port;  // Which port the server is hosted at
+  size_t m_batch_size;
 
   std::shared_ptr<seal::SEALContext>
       m_context;  // TODO: move to he_seal_executable.hpp

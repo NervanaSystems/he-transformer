@@ -78,6 +78,7 @@ runtime::he::HEExecutable::HEExecutable(const shared_ptr<Function>& function,
       m_encrypt_data(encrypt_data),
       m_encrypt_model(encrypt_model),
       m_batch_data(batch_data),
+      m_batch_size(1),
       m_session_started(false),
       m_enable_client(std::getenv("NGRAPH_ENABLE_CLIENT") != nullptr),
       m_port(34000) {
@@ -120,6 +121,18 @@ runtime::he::HEExecutable::HEExecutable(const shared_ptr<Function>& function,
     shared_ptr<HEEncryptionParameters> parms =
         he_backend->get_encryption_parameters();
     NGRAPH_ASSERT(parms != nullptr) << "HEEncryptionParameters == nullptr";
+
+    // only support parameter size 1 for now
+    NGRAPH_ASSERT(get_parameters().size() == 1)
+        << "HEExecutable only supports parameter size 1 (got "
+        << get_parameters().size() << ")";
+
+    const Shape& shape = (get_parameters()[0])->get_shape();
+    if (m_batch_data) {
+      m_batch_size = shape[0];
+      NGRAPH_INFO << "Setting batch_size " << m_batch_size;
+    }
+
     parms->save(param_stream);
     auto parms_message =
         TCPMessage(MessageType::encryption_parameters, 1, param_stream);
@@ -210,6 +223,7 @@ void runtime::he::HEExecutable::handle_message(
     for (auto input_param : input_parameters) {
       num_param_elements += shape_size(input_param->get_shape());
     }
+    num_param_elements /= m_batch_size;
     NGRAPH_ASSERT(count == num_param_elements)
         << "Count " << count
         << " does not match number of parameter elements ( "
@@ -219,13 +233,14 @@ void runtime::he::HEExecutable::handle_message(
     size_t parameter_size_index = 0;
     for (auto input_param : input_parameters) {
       const auto& shape = input_param->get_shape();
-      size_t param_size = shape_size(shape);
+      size_t param_size = shape_size(shape) / m_batch_size;
+      NGRAPH_INFO << "shape " << join(shape, "x");
+      NGRAPH_INFO << "param_size " << param_size;
 
       auto element_type = input_param->get_element_type();
-      bool batched = false;
       auto input_tensor = dynamic_pointer_cast<runtime::he::HECipherTensor>(
           m_he_backend->create_cipher_tensor(
-              element_type, input_param->get_shape(), batched));
+              element_type, input_param->get_shape(), m_batch_data));
 
       vector<shared_ptr<runtime::he::HECiphertext>> cipher_elements{
           he_cipher_inputs.begin() + parameter_size_index,
@@ -260,6 +275,14 @@ void runtime::he::HEExecutable::handle_message(
       auto& shape = param->get_shape();
       num_param_elements += shape_size(shape);
       NGRAPH_INFO << "Parameter shape " << join(shape, "x");
+    }
+
+    if (m_batch_data) {
+      NGRAPH_INFO << "num_param_elements before batch size divide "
+                  << num_param_elements;
+      num_param_elements /= m_batch_size;
+      NGRAPH_INFO << "num_param_elements after batch size divide "
+                  << num_param_elements;
     }
 
     NGRAPH_INFO << "Requesting total of " << num_param_elements
@@ -544,7 +567,9 @@ bool runtime::he::HEExecutable::call(
 
     std::vector<seal::Ciphertext> seal_output;
 
-    size_t output_shape_size = shape_size(get_results()[0]->get_shape());
+    const Shape& output_shape = get_results()[0]->get_shape();
+    NGRAPH_INFO << "output shape size " << join(output_shape, "x");
+    size_t output_shape_size = shape_size(output_shape) / m_batch_size;
 
     auto output_cipher_tensor =
         dynamic_pointer_cast<runtime::he::HECipherTensor>(m_client_outputs[0]);

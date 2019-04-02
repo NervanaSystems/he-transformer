@@ -135,7 +135,8 @@ class TCPMessage {
       throw std::invalid_argument("m_count must be non-negative");
     }
     if (m_count != 0 && m_data_size % m_count != 0) {
-      std::cout << "size " << m_data_size << " count " << m_count << std::endl;
+      std::cout << "Error: size " << m_data_size << " not a multiple of count "
+                << m_count << std::endl;
       throw std::invalid_argument("Size must be a multiple of count");
     }
 
@@ -189,16 +190,27 @@ class TCPMessage {
   const size_t count() const { return m_count; }
 
   size_t element_size() {
-    if (m_count == 0 || m_data_size % m_count != 0) {
-      throw std::invalid_argument(
-          "m_count == 0 or does not divide m_data_size");
+    if (m_count == 0) {
+      throw std::invalid_argument("m_count == 0");
+    }
+    if (m_data_size % m_count != 0) {
+      std::stringstream ss;
+      ss << "m_count " << m_count << " does not divide m_data_size "
+         << m_data_size << std::endl;
+      throw std::invalid_argument(ss.str());
     }
     return m_data_size / m_count;
   }
+
   const size_t element_size() const {
-    if (m_count == 0 || m_data_size % m_count != 0) {
-      throw std::invalid_argument(
-          "m_count == 0 or does not divide m_data_size");
+    if (m_count == 0) {
+      throw std::invalid_argument("m_count == 0");
+    }
+    if (m_data_size % m_count != 0) {
+      std::stringstream ss;
+      ss << "m_count " << m_count << " does not divide m_data_size "
+         << m_data_size << std::endl;
+      throw std::invalid_argument(ss.str());
     }
     return m_data_size / m_count;
   }
