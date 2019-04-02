@@ -14,29 +14,4 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include <iostream>
-#include <vector>
-#include "seal/he_seal_client.hpp"
-
-using namespace ngraph;
-
-int main() {
-  std::vector<float> inputs{1, 2, 3, 4, 5};
-
-  std::string hostname = "localhost";
-  std::size_t port = 34000;
-  boost::asio::io_context io_context;
-  tcp::resolver resolver(io_context);
-  auto client = runtime::he::HESealClient(hostname, port, inputs);
-
-  while (!client.is_done()) {
-    sleep(1);
-  }
-  std::vector<float> results = client.get_results();
-
-  std::cout << "Result " << std::endl;
-  for (const auto& elem : results) {
-    std::cout << elem << " ";
-  }
-  std::cout << std::endl;
-}
+#include "he_seal_client.hpp"
