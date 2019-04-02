@@ -6,6 +6,8 @@ import os
 
 __version__ = '0.0.1'
 
+PYNGRAPH_ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
+
 
 def find_he_transformer_dist_dir():
     """Return location of he-transformer library home"""
@@ -16,6 +18,8 @@ def find_he_transformer_dist_dir():
         print('Must set NGRAPH_HE_BUILD_PATH')
 
     found = os.path.exists(os.path.join(ngraph_he_dist_dir, 'include/'))
+    # and \
+    #        os.path.exists(os.path.join(ngraph_he_dist_dir, 'lib/'))
 
     if not found:
         print(
@@ -27,43 +31,58 @@ def find_he_transformer_dist_dir():
         return ngraph_he_dist_dir
 
 
-class get_pybind_include(object):
-    """Helper class to determine the pybind11 include path
-    The purpose of this class is to postpone importing pybind11
-    until it is actually installed, so that the ``get_include()``
-    method can be invoked. """
+def find_pybind_headers_dir():
+    """Return location of pybind11 headers."""
+    if os.environ.get('PYBIND_HEADERS_PATH'):
+        pybind_headers_dir = os.environ.get('PYBIND_HEADERS_PATH')
+    else:
+        pybind_headers_dir = os.path.join(PYNGRAPH_ROOT_DIR, 'pybind11')
 
-    def __init__(self, user=False):
-        self.user = user
+    found = os.path.exists(
+        os.path.join(pybind_headers_dir, 'include/pybind11'))
+    if not found:
+        print(
+            'Cannot find pybind11 library in {} make sure that '
+            'PYBIND_HEADERS_PATH is set correctly'.format(pybind_headers_dir))
+        sys.exit(1)
+    else:
+        print('pybind11 library found in {}'.format(pybind_headers_dir))
+        return pybind_headers_dir
 
-    def __str__(self):
-        import pybind11
-        return pybind11.get_include(self.user)
 
+PYBIND11_INCLUDE_DIR = find_pybind_headers_dir() + '/include'
 
 NGRAPH_HE_DIST_DIR = find_he_transformer_dist_dir()
 NGRAPH_HE_INCLUDE_DIR = NGRAPH_HE_DIST_DIR + '/include'
+NGRAPH_HE_LIB_DIR = NGRAPH_HE_DIST_DIR + '/lib'
+
+print('NGRAPH_HE_LIB_DIR', NGRAPH_HE_LIB_DIR)
+print('NGRAPH_HE_INCLUDE_DIR', NGRAPH_HE_INCLUDE_DIR)
 # TODO: configure with CMake
 home_dir = os.getenv("HOME")
 BOOST_INCLUDE_DIR = home_dir + '/bin/boost_1_69_0'
 print('BOOST_INCLUDE_DIR', BOOST_INCLUDE_DIR)
 
-include_dirs = [
-    NGRAPH_HE_INCLUDE_DIR, BOOST_INCLUDE_DIR,
-    get_pybind_include(),
-    get_pybind_include(user=True)
-]
+include_dirs = [NGRAPH_HE_INCLUDE_DIR, BOOST_INCLUDE_DIR, PYBIND11_INCLUDE_DIR]
+library_dirs = [NGRAPH_HE_LIB_DIR]
+libraries = ['he_seal_client']
 
 # TODO: use CMakeLists CXX Compiler
 os.environ["CC"] = "g++-7"
 os.environ["CXX"] = "g++-7"
-sources = ['he_seal_client.cpp']
+sources = ['py_he_seal_client/he_seal_client.cpp']
+
+sources = [PYNGRAPH_ROOT_DIR + '/' + source for source in sources]
+
+print('sources', sources)
 
 ext_modules = [
     Extension(
         'he_seal_client',
         sources=sources,
         include_dirs=include_dirs,
+        library_dirs=library_dirs,
+        libraries=libraries,
         language='c++'),
 ]
 
