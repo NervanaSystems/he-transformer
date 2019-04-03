@@ -92,9 +92,6 @@ void runtime::he::HESealClient::handle_message(
     std::vector<seal::Ciphertext> ciphers;
     assert(m_inputs.size() == parameter_size * m_batch_size);
 
-    std::cout << "parameter_size " << parameter_size << std::endl;
-    std::cout << "m_batch_size " << m_batch_size << std::endl;
-
     std::stringstream cipher_stream;
     for (size_t data_idx = 0; data_idx < parameter_size; ++data_idx) {
       seal::Plaintext plain;
@@ -117,9 +114,6 @@ void runtime::he::HESealClient::handle_message(
     auto execute_message = TCPMessage(runtime::he::MessageType::execute,
                                       parameter_size, cipher_size, cipher_cstr);
     write_message(execute_message);
-
-    /* std::cout << "Waiting for 20 seconds until message sent" << std::endl;
-     std::this_thread::sleep_for(std::chrono::seconds(20)); */
 
   } else if (msg_type == runtime::he::MessageType::result) {
     size_t result_count = message.count();
