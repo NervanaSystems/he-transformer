@@ -161,8 +161,8 @@ void runtime::he::HEExecutable::accept_connection() {
       m_session_started = true;  // TODO: cleaner way to process this
     } else {
       NGRAPH_INFO << "error " << ec.message();
+      // accept_connection();
     }
-    // accept_connection();
   });
 }
 

@@ -19,8 +19,6 @@ def find_he_transformer_dist_dir():
         print('Must set NGRAPH_HE_BUILD_PATH')
 
     found = os.path.exists(os.path.join(ngraph_he_dist_dir, 'include/'))
-    # and \
-    #        os.path.exists(os.path.join(ngraph_he_dist_dir, 'lib/'))
 
     if not found:
         print(
