@@ -147,6 +147,7 @@ runtime::he::HEExecutable::HEExecutable(const shared_ptr<Function>& function,
 
 void runtime::he::HEExecutable::accept_connection() {
   NGRAPH_INFO << "Server accepting connections";
+  m_session_started = false;
 
   auto server_callback =
       bind(&runtime::he::HEExecutable::handle_message, this, placeholders::_1);
@@ -166,7 +167,6 @@ void runtime::he::HEExecutable::accept_connection() {
 }
 
 void runtime::he::HEExecutable::start_server() {
-  // Server
   tcp::resolver resolver(m_io_context);
   tcp::endpoint server_endpoints(tcp::v4(), m_port);
   m_acceptor = make_shared<tcp::acceptor>(m_io_context, server_endpoints);
@@ -191,16 +191,17 @@ void runtime::he::HEExecutable::handle_message(
     assert(m_context != nullptr);
     print_seal_context(*m_context);
 
+    NGRAPH_INFO << "Loading " << count << " ciphertexts";
     for (size_t i = 0; i < count; ++i) {
       stringstream stream;
       stream.write(message.data_ptr() + i * ciphertext_size, ciphertext_size);
       seal::Ciphertext c;
       c.load(m_context, stream);
-      NGRAPH_INFO << "Loaded " << i << "'th ciphertext";
       ciphertexts.emplace_back(c);
     }
-    vector<shared_ptr<runtime::he::HECiphertext>> he_cipher_inputs;
+    NGRAPH_INFO << "Done loading " << count << " ciphertexts";
 
+    vector<shared_ptr<runtime::he::HECiphertext>> he_cipher_inputs;
     for (const auto cipher : ciphertexts) {
       auto wrapper =
           make_shared<runtime::he::he_seal::SealCiphertextWrapper>(cipher);
