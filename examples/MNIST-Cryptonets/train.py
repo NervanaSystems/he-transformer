@@ -37,14 +37,14 @@ def squash_layers():
     tf.reset_default_graph()
 
     # Input from h_conv1 squaring
-    x = tf.placeholder(tf.float32, [None, 13, 13, 5])
+    x = tf.placeholder(tf.float32, [None, 12, 12, 5])
 
     # Pooling layer
     h_pool1 = common.avg_pool_3x3_same_size(x)  # To N x 13 x 13 x 5
 
     # Second convolution
     W_conv2 = np.loadtxt(
-        'W_conv2.txt', dtype=np.float32).reshape([5, 5, 5, 50])
+        'W_conv2.txt', dtype=np.float32).reshape([5, 5, 5, 32])
     h_conv2 = common.conv2d_stride_2_valid(h_pool1, W_conv2)
 
     # Second pooling layer.
@@ -54,22 +54,22 @@ def squash_layers():
     # Input: N x 5 x 5 x 50
     # Output: N x 100
     W_fc1 = np.loadtxt(
-        'W_fc1.txt', dtype=np.float32).reshape([5 * 5 * 50, 100])
-    h_pool2_flat = tf.reshape(h_pool2, [-1, 5 * 5 * 50])
+        'W_fc1.txt', dtype=np.float32).reshape([4 * 4 * 32, 100])
+    h_pool2_flat = tf.reshape(h_pool2, [-1, 4 * 4 * 32])
     pre_square = tf.matmul(h_pool2_flat, W_fc1)
 
     with tf.Session() as sess:
-        x_in = np.eye(13 * 13 * 5)
-        x_in = x_in.reshape([13 * 13 * 5, 13, 13, 5])
+        x_in = np.eye(12 * 12 * 5)
+        x_in = x_in.reshape([12 * 12 * 5, 12, 12, 5])
         W = (sess.run([pre_square], feed_dict={x: x_in}))[0]
         squashed_file_name = "W_squash.txt"
         np.savetxt(squashed_file_name, W)
         print("Saved to", squashed_file_name)
 
         # Sanity check
-        x_in = np.random.rand(100, 13, 13, 5)
+        x_in = np.random.rand(100, 12, 12, 5)
         network_out = (sess.run([pre_square], feed_dict={x: x_in}))[0]
-        linear_out = x_in.reshape(100, 13 * 13 * 5).dot(W)
+        linear_out = x_in.reshape(100, 12 * 12 * 5).dot(W)
         assert (np.max(np.abs(linear_out - network_out)) < 1e-5)
 
     print("Squashed layers")
@@ -102,31 +102,34 @@ def cryptonets_train(x):
     # Output after padding: N x 13 x 13 x 5
     with tf.name_scope('conv1'):
         W_conv1 = tf.get_variable("W_conv1", [5, 5, 1, 5])
-        h_conv1_no_pad = tf.square(
-            common.conv2d_stride_2_valid(x_image, W_conv1))
-        paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]],
-                               name='pad_const')
-        h_conv1 = tf.pad(h_conv1_no_pad, paddings)
+        h_conv1 = tf.square(common.conv2d_stride_2_valid(x_image, W_conv1))
+        #paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]],
+        #                       name='pad_const')
+        #h_conv1 = tf.pad(h_conv1, paddings)
+        print('h_conv1', h_conv1.shape)
 
     # Pooling layer
     # Input: N x 13 x 13 x 5
     # Output: N x 13 x 13 x 5
     with tf.name_scope('pool1'):
         h_pool1 = common.avg_pool_3x3_same_size(h_conv1)
+        print('h_pool1', h_pool1.shape)
 
     # Second convolution
     # Input: N x 13 x 13 x 5
     # Filter: 5 x 5 x 5 x 50
     # Output: N x 5 x 5 x 50
     with tf.name_scope('conv2'):
-        W_conv2 = tf.get_variable("W_conv2", [5, 5, 5, 50])
+        W_conv2 = tf.get_variable("W_conv2", [5, 5, 5, 32])
         h_conv2 = common.conv2d_stride_2_valid(h_pool1, W_conv2)
+        print('h_conv2', h_conv2.shape)
 
     # Second pooling layer
     # Input: N x 5 x 5 x 50
     # Output: N x 5 x 5 x 50
     with tf.name_scope('pool2'):
         h_pool2 = common.avg_pool_3x3_same_size(h_conv2)
+        print('h_pool2', h_pool2.shape)
 
     # Fully connected layer 1
     # Input: N x 5 x 5 x 50
@@ -134,8 +137,8 @@ def cryptonets_train(x):
     # Weight: 1250 x 100
     # Output: N x 100
     with tf.name_scope('fc1'):
-        h_pool2_flat = tf.reshape(h_pool2, [-1, 5 * 5 * 50])
-        W_fc1 = tf.get_variable("W_fc1", [5 * 5 * 50, 100])
+        h_pool2_flat = tf.reshape(h_pool2, [-1, 4 * 4 * 32])
+        W_fc1 = tf.get_variable("W_fc1", [4 * 4 * 32, 100])
         h_fc1 = tf.square(tf.matmul(h_pool2_flat, W_fc1))
 
     # Map the 100 features to 10 classes, one for each digit

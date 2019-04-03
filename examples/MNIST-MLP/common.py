@@ -13,21 +13,36 @@ def avg_pool_3x3_same_size(x):
         x, ksize=[1, 3, 3, 1], strides=[1, 1, 1, 1], padding='SAME')
 
 
+def get_variable(name, shape, mode):
+    if mode not in set(['train', 'test']):
+        print('mode should be train or test')
+        raise Exception()
+
+    if mode == 'train':
+        return tf.get_variable(name, shape)
+    else:
+        return tf.constant(
+            np.loadtxt(name + '.txt', dtype=np.float32).reshape(shape))
+
+
 def mlp_model(x, mode):
     if mode not in set(['train', 'test']):
         print('mode should be train or test')
         raise Exception()
 
     with tf.name_scope('reshape'):
-        x_image = tf.reshape(x, [-1, 784])
+        x_image = tf.reshape(x, [-1, 28, 28, 1])
+
+    with tf.name_scope('conv1'):
+        W_conv1 = get_variable('W_conv1', [5, 5, 1, 5], mode)
+        h_conv1 = conv2d_stride_2_valid(x_image, W_conv1)
+        paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]],
+                               name='pad_const')
+        h_conv1 = tf.pad(h_conv1, paddings)
+        h_conv1 = tf.reshape(h_conv1, [-1, 13 * 13 * 5])
 
     with tf.name_scope('fc1'):
-        if mode == 'train':
-            W_fc1 = tf.get_variable("W_fc1", [784, 10])
-        else:
-            W_fc1 = tf.constant(
-                np.loadtxt('W_fc1.txt', dtype=np.float32).reshape([784, 10]))
-
-        y_conv = tf.matmul(x_image, W_fc1)
-        y_conv = tf.square(y_conv)
+        W_fc1 = get_variable('W_fc1', [13 * 13 * 5, 10], mode)
+        y_conv = tf.matmul(h_conv1, W_fc1)
+        #y_conv = tf.square(y_conv)
     return y_conv
