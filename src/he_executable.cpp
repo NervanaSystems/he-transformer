@@ -1123,7 +1123,8 @@ void runtime::he::HEExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Relu: {
-      size_t element_count = shape_size(node.get_output_shape(0));
+      size_t element_count =
+          shape_size(node.get_output_shape(0)) / m_batch_size;
       NGRAPH_INFO << "element count " << element_count;
 
       if (arg0_cipher == nullptr || out0_cipher == nullptr) {
