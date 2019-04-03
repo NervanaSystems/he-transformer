@@ -29,4 +29,5 @@ def mlp_model(x, mode):
                 np.loadtxt('W_fc1.txt', dtype=np.float32).reshape([784, 10]))
 
         y_conv = tf.matmul(x_image, W_fc1)
+        y_conv = tf.square(y_conv)
     return y_conv
