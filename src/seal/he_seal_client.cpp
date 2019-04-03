@@ -101,7 +101,7 @@ void runtime::he::HESealClient::handle_message(
       std::vector<double> encode_vals;
       for (size_t batch_idx = 0; batch_idx < m_batch_size; ++batch_idx) {
         encode_vals.emplace_back(
-            (double)(m_inputs[data_idx * parameter_size + batch_idx]));
+            (double)(m_inputs[data_idx * m_batch_size + batch_idx]));
       }
       m_ckks_encoder->encode(encode_vals, m_scale, plain);
       seal::Ciphertext c;
@@ -118,19 +118,20 @@ void runtime::he::HESealClient::handle_message(
                                       parameter_size, cipher_size, cipher_cstr);
     write_message(execute_message);
 
-    std::cout << "Waiting for 20 seconds until message sent" << std::endl;
-    std::this_thread::sleep_for(std::chrono::seconds(20));
+    /* std::cout << "Waiting for 20 seconds until message sent" << std::endl;
+     std::this_thread::sleep_for(std::chrono::seconds(20)); */
 
   } else if (msg_type == runtime::he::MessageType::result) {
-    size_t count = message.count();
+    size_t result_count = message.count();
     size_t element_size = message.element_size();
 
     std::vector<seal::Ciphertext> result;
-    m_results.reserve(count * m_batch_size);
-    for (size_t i = 0; i < count; ++i) {
+    m_results.reserve(result_count * m_batch_size);
+    for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
       seal::Ciphertext cipher;
       std::stringstream cipher_stream;
-      cipher_stream.write(message.data_ptr() + i * element_size, element_size);
+      cipher_stream.write(message.data_ptr() + result_idx * element_size,
+                          element_size);
       cipher.load(m_context, cipher_stream);
 
       result.push_back(cipher);
@@ -139,8 +140,10 @@ void runtime::he::HESealClient::handle_message(
       std::vector<double> output;
       m_ckks_encoder->decode(plain, output);
 
-      for (size_t i = 0; i < m_batch_size; ++i) {
-        m_results.emplace_back(output[i]);
+      assert(m_batch_size <= output.size());
+
+      for (size_t batch_idx = 0; batch_idx < m_batch_size; ++batch_idx) {
+        m_results.emplace_back((float)output[batch_idx]);
       }
     }
 

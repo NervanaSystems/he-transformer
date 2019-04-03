@@ -20,7 +20,7 @@ def test_mnist_cnn(FLAGS):
 
     print('x_test_batch', x_test_batch.shape)
 
-    data = x_test_batch.flatten()
+    data = x_test_batch.flatten('A')
 
     print('data', data.shape)
 

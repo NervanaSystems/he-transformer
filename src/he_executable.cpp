@@ -236,6 +236,7 @@ void runtime::he::HEExecutable::handle_message(
       size_t param_size = shape_size(shape) / m_batch_size;
       NGRAPH_INFO << "shape " << join(shape, "x");
       NGRAPH_INFO << "param_size " << param_size;
+      NGRAPH_INFO << "m_batch_data? " << m_batch_data;
 
       auto element_type = input_param->get_element_type();
       auto input_tensor = dynamic_pointer_cast<runtime::he::HECipherTensor>(
