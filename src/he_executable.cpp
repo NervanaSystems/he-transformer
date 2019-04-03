@@ -335,8 +335,7 @@ void runtime::he::HEExecutable::handle_message(
 
       m_relu_ciphertexts.emplace_back(he_ciphertext);
     }
-    NGRAPH_INFO << "Done loading relu ciphertexts";
-    NGRAPH_INFO << "m_relu_ciphertexts.size() " << m_relu_ciphertexts.size();
+    NGRAPH_INFO << "Done loading Relu ciphertexts";
 
     // Notify condition variable
     m_relu_done = true;
@@ -1125,7 +1124,7 @@ void runtime::he::HEExecutable::generate_calls(
     case OP_TYPEID::Relu: {
       size_t element_count =
           shape_size(node.get_output_shape(0)) / m_batch_size;
-      NGRAPH_INFO << "element count " << element_count;
+      NGRAPH_INFO << "Relu element count " << element_count;
 
       if (arg0_cipher == nullptr || out0_cipher == nullptr) {
         NGRAPH_INFO << "Relu types not supported ";
@@ -1142,16 +1141,13 @@ void runtime::he::HEExecutable::generate_calls(
         c.save(cipher_stream);
       }
       const string& cipher_str = cipher_stream.str();
-      const char* cipher_cstr = cipher_str.c_str();
       NGRAPH_INFO << "Cipher size " << cipher_str.size();
 
       // Send output to client
-      NGRAPH_INFO << "Sending RELU ciphertexts to client";
-      auto relu_message = TCPMessage(MessageType::relu_request, element_count,
-                                     cipher_str.size(), cipher_cstr);
-      NGRAPH_INFO << "Created Relu message";
+      NGRAPH_INFO << "Sending Relu ciphertexts to client";
+      auto relu_message =
+          TCPMessage(MessageType::relu_request, element_count, cipher_stream);
       m_session->do_write(relu_message);
-      NGRAPH_INFO << "Writing relu message";
 
       // Acquire lock
       unique_lock<mutex> mlock(m_relu_mutex);
@@ -1162,8 +1158,6 @@ void runtime::he::HEExecutable::generate_calls(
 
       // Reset for next Relu call
       m_relu_done = false;
-      NGRAPH_INFO << "Setting output relu elements";
-      NGRAPH_INFO << "m_relu_ciphertexts.size() " << m_relu_ciphertexts.size();
       out0_cipher->set_elements(m_relu_ciphertexts);
       break;
     }

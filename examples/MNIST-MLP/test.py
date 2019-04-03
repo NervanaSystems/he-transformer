@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""An MNIST classifier using convolutional layers. """
+"""An MNIST classifier using convolutional layers and relu activations. """
 
 from __future__ import absolute_import
 from __future__ import division

@@ -25,9 +25,6 @@ def get_variable(name, shape, mode):
             np.loadtxt(name + '.txt', dtype=np.float32).reshape(shape))
 
 
-PAD = True
-
-
 def mlp_model(x, mode):
     if mode not in set(['train', 'test']):
         print('mode should be train or test')
@@ -39,19 +36,13 @@ def mlp_model(x, mode):
     with tf.name_scope('conv1'):
         W_conv1 = get_variable('W_conv1', [5, 5, 1, 5], mode)
         h_conv1 = conv2d_stride_2_valid(x_image, W_conv1)
-        if PAD:
-            paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]],
-                                   name='pad_const')
-            h_conv1 = tf.pad(h_conv1, paddings)
-            h_conv1 = tf.reshape(h_conv1, [-1, 13 * 13 * 5])
-        else:
-            h_conv1 = tf.reshape(h_conv1, [-1, 12 * 12 * 5])
+        paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]],
+                               name='pad_const')
+        h_conv1 = tf.pad(h_conv1, paddings)
+        h_conv1 = tf.reshape(h_conv1, [-1, 13 * 13 * 5])
 
     with tf.name_scope('fc1'):
-        if PAD:
-            W_fc1 = get_variable('W_fc1', [13 * 13 * 5, 10], mode)
-        else:
-            W_fc1 = get_variable('W_fc1', [12 * 12 * 5, 10], mode)
+        W_fc1 = get_variable('W_fc1', [13 * 13 * 5, 10], mode)
         y_conv = tf.matmul(h_conv1, W_fc1)
-        #y_conv = tf.square(y_conv)
+        y_conv = tf.nn.relu(y_conv)
     return y_conv

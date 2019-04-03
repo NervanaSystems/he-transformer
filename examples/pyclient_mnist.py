@@ -13,9 +13,7 @@ FLAGS = None
 
 def test_mnist_cnn(FLAGS):
     mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=True)
-
     batch_size = FLAGS.batch_size
-
     x_test_batch = mnist.test.images[:batch_size]
     y_test_batch = mnist.test.labels[:batch_size]
 
@@ -37,9 +35,7 @@ def test_mnist_cnn(FLAGS):
     results = np.round(results, 2)
     print('results', results)
 
-    results = np.array(results).reshape(10, batch_size)
-    y_pred = results.argmax(axis=0)
-
+    y_pred = np.array(results).reshape(10, batch_size).argmax(axis=0)
     print('y_pred', y_pred)
     y_true = y_test_batch.argmax(axis=1)
     print('y_true', y_true)
