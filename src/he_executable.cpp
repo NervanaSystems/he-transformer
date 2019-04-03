@@ -14,8 +14,7 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include <memory>
-#include <vector>
+#include <functional>
 
 #include "he_cipher_tensor.hpp"
 #include "he_executable.hpp"
@@ -81,7 +80,8 @@ runtime::he::HEExecutable::HEExecutable(const shared_ptr<Function>& function,
       m_session_started(false),
       m_enable_client(std::getenv("NGRAPH_ENABLE_CLIENT") != nullptr),
       m_batch_size(1),
-      m_port(34000) {
+      m_port(34000),
+      m_relu_done(false) {
   NGRAPH_ASSERT(he_backend != nullptr) << "he_backend == nullptr";
   // TODO: move get_context to HEBackend
   auto he_seal_backend = (runtime::he::he_seal::HESealBackend*)he_backend;
@@ -297,9 +297,40 @@ void runtime::he::HEExecutable::handle_message(
     m_session->do_write(parameter_message);
   } else if (msg_type == MessageType::relu_result) {
     // TODO: process relu result
-  }
+    std::lock_guard<mutex> guard(m_relu_mutex);
 
-  else {
+    size_t element_count = message.count();
+    size_t element_size = message.element_size();
+    m_relu_ciphertexts.clear();
+
+    NGRAPH_INFO << "Got " << element_count << " ciphertexts";
+    NGRAPH_INFO << "element_size " << element_size;
+
+    for (size_t element_idx = 0; element_idx < element_count; ++element_idx) {
+      seal::Ciphertext cipher;
+      stringstream cipher_stream;
+      cipher_stream.write(message.data_ptr() + element_idx * element_size,
+                          element_size);
+      cipher.load(m_context, cipher_stream);
+
+      auto wrapper =
+          make_shared<runtime::he::he_seal::SealCiphertextWrapper>(cipher);
+      auto he_ciphertext =
+          dynamic_pointer_cast<runtime::he::HECiphertext>(wrapper);
+
+      NGRAPH_ASSERT(he_ciphertext != nullptr)
+          << "HECiphertext is not SealPlaintextWrapper";
+
+      m_relu_ciphertexts.emplace_back(he_ciphertext);
+    }
+    NGRAPH_INFO << "Done loading relu ciphertexts";
+    NGRAPH_INFO << "m_relu_ciphertexts.size() " << m_relu_ciphertexts.size();
+
+    // Notify condition variable
+    m_relu_done = true;
+    m_relu_cond.notify_all();
+
+  } else {
     stringstream ss;
     ss << "Unsupported message type in server:  "
        << message_type_to_string(msg_type);
@@ -486,9 +517,11 @@ bool runtime::he::HEExecutable::call(
       op_inputs.push_back(tensor_map.at(tv));
     }
 
-    if (type_id == OP_TYPEID::Result) {
+    if (m_enable_client && type_id == OP_TYPEID::Result) {
       // Client outputs remain ciphertexts, so don't perform result op on them
+      NGRAPH_INFO << "Setting client outputs";
       m_client_outputs = op_inputs;
+      break;
     }
 
     // get op outputs from map or create
@@ -1109,7 +1142,19 @@ void runtime::he::HEExecutable::generate_calls(
       m_session->do_write(relu_message);
       NGRAPH_INFO << "Writing relu message";
 
-      // TODO: wait until response.
+      // Acquire lock
+      unique_lock<mutex> mlock(m_relu_mutex);
+
+      // Wait until Relu is done
+      m_relu_cond.wait(mlock, std::bind(&HEExecutable::relu_done, this));
+      NGRAPH_INFO << "Relu is done";
+
+      // Reset for next Relu call
+      m_relu_done = false;
+      NGRAPH_INFO << "Setting output relu elements";
+      NGRAPH_INFO << "m_relu_ciphertexts.size() " << m_relu_ciphertexts.size();
+      out0_cipher->set_elements(m_relu_ciphertexts);
+      break;
     }
     case OP_TYPEID::Reverse: {
       const op::Reverse* reverse = static_cast<const op::Reverse*>(&node);

@@ -169,34 +169,43 @@ void runtime::he::HESealClient::handle_message(
     size_t result_count = message.count();
     size_t element_size = message.element_size();
 
-    std::vector<seal::Ciphertext> result;
     m_results.reserve(result_count * m_batch_size);
     std::stringstream post_relu_stream;
     for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
-      seal::Ciphertext cipher;
-      std::stringstream cipher_stream;
-      cipher_stream.write(message.data_ptr() + result_idx * element_size,
-                          element_size);
-      cipher.load(m_context, cipher_stream);
+      seal::Ciphertext pre_relu_cipher;
+      seal::Plaintext pre_relu_plain;
 
-      result.push_back(cipher);
-      seal::Plaintext plain;
-      m_decryptor->decrypt(cipher, plain);
+      seal::Ciphertext post_relu_cipher;
+      seal::Plaintext post_relu_plain;
+
+      // Load cipher from stream
+      std::stringstream pre_relu_cipher_stream;
+      pre_relu_cipher_stream.write(
+          message.data_ptr() + result_idx * element_size, element_size);
+      pre_relu_cipher.load(m_context, pre_relu_cipher_stream);
+
+      // Decrypt cipher
+      m_decryptor->decrypt(pre_relu_cipher, pre_relu_plain);
       std::vector<double> pre_relu;
-      m_ckks_encoder->decode(plain, pre_relu);
+      m_ckks_encoder->decode(pre_relu_plain, pre_relu);
 
+      // Perform relu
       std::vector<double> post_relu(m_batch_size);
       for (size_t batch_idx = 0; batch_idx < m_batch_size; ++batch_idx) {
         double pre_relu_val = pre_relu[batch_idx];
         double post_relu_val = pre_relu_val > 0 ? pre_relu_val : 0;
-        post_relu.emplace_back(post_relu_val);
+        std::cout << "relu(" << pre_relu_val << ") = " << post_relu_val
+                  << std::endl;
+        post_relu[batch_idx] = post_relu_val;
       }
 
-      m_ckks_encoder->encode(post_relu, m_scale, plain);
-      seal::Ciphertext c;
-      m_encryptor->encrypt(plain, c);
-      c.save(post_relu_stream);
+      // Encrypt post-relu result
+      m_ckks_encoder->encode(post_relu, m_scale, post_relu_plain);
+      m_encryptor->encrypt(post_relu_plain, post_relu_cipher);
+      post_relu_cipher.save(post_relu_stream);
     }
+    std::cout << "Writing relu_result message with " << result_count
+              << " ciphertexts" << std::endl;
 
     auto relu_result_msg = TCPMessage(runtime::he::MessageType::relu_result,
                                       result_count, post_relu_stream);

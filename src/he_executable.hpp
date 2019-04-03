@@ -16,9 +16,12 @@
 
 #pragma once
 
+#include <atomic>
 #include <boost/asio.hpp>
 #include <chrono>
+#include <condition_variable>
 #include <memory>
+#include <mutex>
 #include <thread>
 #include <vector>
 
@@ -65,6 +68,8 @@ class HEExecutable : public Executable {
 
   size_t get_port() const { return m_port; };
 
+  bool relu_done() const { return m_relu_done; };
+
   void accept_connection();
 
   void handle_message(const TCPMessage& message);
@@ -93,8 +98,14 @@ class HEExecutable : public Executable {
   // (Encrypted) outputs of compiled function
   std::vector<std::shared_ptr<runtime::he::HETensor>> m_client_outputs;
 
+  std::vector<std::shared_ptr<runtime::he::HECiphertext>> m_relu_ciphertexts;
+
   std::shared_ptr<seal::SEALContext>
       m_context;  // TODO: move to he_seal_executable.hpp
+
+  std::mutex m_relu_mutex;
+  std::condition_variable m_relu_cond;
+  bool m_relu_done;
 
   TCPMessage m_result_message;
 
