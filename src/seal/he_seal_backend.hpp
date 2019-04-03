@@ -112,6 +112,7 @@ class HESealBackend : public HEBackend {
 
   void set_public_key(const seal::PublicKey& key) {
     m_public_key = std::make_shared<seal::PublicKey>(key);
+    m_encryptor = std::make_shared<seal::Encryptor>(m_context, *m_public_key);
   }
 
   const inline std::shared_ptr<seal::Evaluator> get_evaluator() const noexcept {

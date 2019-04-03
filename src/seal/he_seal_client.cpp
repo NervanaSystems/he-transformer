@@ -152,19 +152,21 @@ void runtime::he::HESealClient::handle_message(
 
     set_seal_context();
 
-    std::stringstream evk_stream;
-    m_relin_keys->save(evk_stream);
-    auto evk_message =
-        TCPMessage(runtime::he::MessageType::eval_key, 1, evk_stream);
-    std::cout << "Sending evaluation key" << std::endl;
-    write_message(evk_message);
-
+    // Send public key
     std::stringstream pk_stream;
     m_public_key->save(pk_stream);
     auto pk_message =
         TCPMessage(runtime::he::MessageType::public_key, 1, pk_stream);
     std::cout << "Sending public key" << std::endl;
     write_message(pk_message);
+
+    // Send evaluation key
+    std::stringstream evk_stream;
+    m_relin_keys->save(evk_stream);
+    auto evk_message =
+        TCPMessage(runtime::he::MessageType::eval_key, 1, evk_stream);
+    std::cout << "Sending evaluation key" << std::endl;
+    write_message(evk_message);
 
   } else if (msg_type == runtime::he::MessageType::relu_request) {
     size_t result_count = message.count();
