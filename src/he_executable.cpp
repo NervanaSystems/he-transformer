@@ -77,11 +77,12 @@ runtime::he::HEExecutable::HEExecutable(const shared_ptr<Function>& function,
       m_encrypt_data(encrypt_data),
       m_encrypt_model(encrypt_model),
       m_batch_data(batch_data),
-      m_session_started(false),
       m_enable_client(std::getenv("NGRAPH_ENABLE_CLIENT") != nullptr),
       m_batch_size(1),
       m_port(34000),
-      m_relu_done(false) {
+      m_relu_done(false),
+      m_session_started(false),
+      m_client_inputs_received(false) {
   NGRAPH_ASSERT(he_backend != nullptr) << "he_backend == nullptr";
   // TODO: move get_context to HEBackend
   auto he_seal_backend = (runtime::he::he_seal::HESealBackend*)he_backend;
@@ -137,18 +138,17 @@ runtime::he::HEExecutable::HEExecutable(const shared_ptr<Function>& function,
     auto parms_message =
         TCPMessage(MessageType::encryption_parameters, 1, param_stream);
 
+    unique_lock<mutex> mlock(m_session_mutex);
     NGRAPH_INFO << "Waiting until client is connected";
-    while (!m_session_started) {
-      this_thread::sleep_for(chrono::milliseconds(10));
-    }
+    m_session_cond.wait(mlock, std::bind(&HEExecutable::session_started, this));
+    NGRAPH_INFO << "Session started";
+
     m_session->do_write(parms_message);
   }
 }
 
 void runtime::he::HEExecutable::accept_connection() {
   NGRAPH_INFO << "Server accepting connections";
-  m_session_started = false;
-
   auto server_callback =
       bind(&runtime::he::HEExecutable::handle_message, this, placeholders::_1);
 
@@ -158,7 +158,10 @@ void runtime::he::HEExecutable::accept_connection() {
       NGRAPH_INFO << "Connection accepted";
       m_session = make_shared<TCPSession>(move(socket), server_callback);
       m_session->start();
-      m_session_started = true;  // TODO: cleaner way to process this
+
+      std::lock_guard<mutex> guard(m_session_mutex);
+      m_session_started = true;
+      m_session_cond.notify_all();
     } else {
       NGRAPH_INFO << "error " << ec.message();
       // accept_connection();
@@ -260,6 +263,10 @@ void runtime::he::HEExecutable::handle_message(
         << "Client inputs size " << m_client_inputs.size() << "; expected "
         << get_parameters().size();
 
+    std::lock_guard<mutex> guard(m_client_inputs_mutex);
+    m_client_inputs_received = true;
+    m_client_inputs_cond.notify_all();
+
   } else if (msg_type == MessageType::public_key) {
     seal::PublicKey key;
     std::stringstream key_stream;
@@ -308,7 +315,6 @@ void runtime::he::HEExecutable::handle_message(
     NGRAPH_INFO << "Server sending message of type: parameter_size";
     m_session->do_write(parameter_message);
   } else if (msg_type == MessageType::relu_result) {
-    // TODO: process relu result
     std::lock_guard<mutex> guard(m_relu_mutex);
 
     size_t element_count = message.count();
@@ -419,11 +425,17 @@ bool runtime::he::HEExecutable::call(
   if (m_enable_client) {
     NGRAPH_INFO << "Waiting until m_client_inputs.size() "
                 << m_client_inputs.size() << " == " << server_inputs.size();
-    while (m_client_inputs.size() != server_inputs.size()) {
-      this_thread::sleep_for(chrono::milliseconds(100));
-    }
-    NGRAPH_INFO << "Done waiting for m_client_inputs";
+
+    unique_lock<mutex> mlock(m_client_inputs_mutex);
+    m_client_inputs_cond.wait(
+        mlock, std::bind(&HEExecutable::client_inputs_received, this));
+    NGRAPH_INFO << "client_inputs_received";
+
+    NGRAPH_ASSERT(m_client_inputs.size() == server_inputs.size())
+        << "Recieved incorrect number of inputs from client (got "
+        << m_client_inputs.size() << ", expectd " << server_inputs.size();
   }
+  NGRAPH_INFO << "Done waiting for m_client_inputs";
 
   if (m_encrypt_data) {
     NGRAPH_INFO << "Encrypting data";

@@ -70,6 +70,10 @@ class HEExecutable : public Executable {
 
   bool relu_done() const { return m_relu_done; };
 
+  bool session_started() const { return m_session_started; };
+
+  bool client_inputs_received() const { return m_client_inputs_received; };
+
   void accept_connection();
 
   void handle_message(const TCPMessage& message);
@@ -80,7 +84,7 @@ class HEExecutable : public Executable {
   bool m_encrypt_model;
   bool m_batch_data;
   bool m_is_compiled;
-  bool m_session_started;
+
   bool m_enable_client;
   size_t m_batch_size;
   size_t m_port;  // Which port the server is hosted at
@@ -103,9 +107,20 @@ class HEExecutable : public Executable {
   std::shared_ptr<seal::SEALContext>
       m_context;  // TODO: move to he_seal_executable.hpp
 
+  // To trigger when relu is done
   std::mutex m_relu_mutex;
   std::condition_variable m_relu_cond;
   bool m_relu_done;
+
+  // To trigger when session has started
+  std::mutex m_session_mutex;
+  std::condition_variable m_session_cond;
+  bool m_session_started;
+
+  // To trigger when client inputs have been received
+  std::mutex m_client_inputs_mutex;
+  std::condition_variable m_client_inputs_cond;
+  bool m_client_inputs_received;
 
   TCPMessage m_result_message;
 
