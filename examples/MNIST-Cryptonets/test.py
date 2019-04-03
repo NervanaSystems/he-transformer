@@ -44,22 +44,23 @@ def cryptonets_test_squashed(x):
     with tf.name_scope('reshape'):
         x_image = tf.reshape(x, [-1, 28, 28, 1])
 
-    # First conv layer: maps one grayscale image to 5 feature maps of 12 x12
+    # First conv layer: maps one grayscale image to 5 feature maps of 13 x 13
     with tf.name_scope('conv1'):
         W_conv1 = tf.constant(
             np.loadtxt('W_conv1.txt', dtype=np.float32).reshape([5, 5, 1, 5]))
-        h_conv1 = tf.square(common.conv2d_stride_2_valid(x_image, W_conv1))
-        #paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]],
-        #                       name='pad_const')
-        #h_conv1 = tf.pad(h_conv1, paddings)
+        h_conv1_no_pad = tf.square(
+            common.conv2d_stride_2_valid(x_image, W_conv1))
+        paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]],
+                               name='pad_const')
+        h_conv1 = tf.pad(h_conv1_no_pad, paddings)
 
     with tf.name_scope('squash'):
         W_squash = tf.constant(
             np.loadtxt("W_squash.txt",
-                       dtype=np.float32).reshape([5 * 12 * 12, 100]))
+                       dtype=np.float32).reshape([5 * 13 * 13, 100]))
 
     with tf.name_scope('fc1'):
-        h_pool2_flat = tf.reshape(h_conv1, [-1, 5 * 12 * 12])
+        h_pool2_flat = tf.reshape(h_conv1, [-1, 5 * 13 * 13])
         h_fc1 = tf.matmul(h_pool2_flat, W_squash)
         # h_fc1 = tf.Print(h_fc1, [h_fc1], summarize=200,  message="After dot\n")
         h_fc1 = tf.square(h_fc1)
@@ -82,23 +83,24 @@ def cryptonets_test_original(x):
     with tf.name_scope('reshape'):
         x_image = tf.reshape(x, [-1, 28, 28, 1])
 
-    # First conv layer - maps one grayscale image to 5 feature maps of 12 x12
+    # First conv layer - maps one grayscale image to 5 feature maps of 13 x 13
     with tf.name_scope('conv1'):
         W_conv1 = tf.constant(
             np.loadtxt('W_conv1.txt', dtype=np.float32).reshape([5, 5, 1, 5]))
-        h_conv1 = tf.square(common.conv2d_stride_2_valid(x_image, W_conv1))
-        #paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]],
-        #                       name='pad_const')
-        # h_conv1 = tf.pad(h_conv1, paddings)
+        h_conv1_no_pad = tf.square(
+            common.conv2d_stride_2_valid(x_image, W_conv1))
+        paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]],
+                               name='pad_const')
+        h_conv1 = tf.pad(h_conv1_no_pad, paddings)
 
     # Pooling layer
     with tf.name_scope('pool1'):
-        h_pool1 = common.avg_pool_3x3_same_size(h_conv1)  # To 5 x 12 x12
+        h_pool1 = common.avg_pool_3x3_same_size(h_conv1)  # To 5 x 13 x 13
 
     # Second convolution
     with tf.name_scope('conv2'):
         W_conv2 = tf.constant(
-            np.loadtxt('W_conv2.txt', dtype=np.float32).reshape([5, 4, 4, 32]))
+            np.loadtxt('W_conv2.txt', dtype=np.float32).reshape([5, 5, 5, 50]))
         h_conv2 = common.conv2d_stride_2_valid(h_pool1, W_conv2)
 
     # Second pooling layer.
@@ -111,8 +113,8 @@ def cryptonets_test_original(x):
     with tf.name_scope('fc1'):
         W_fc1 = tf.constant(
             np.loadtxt('W_fc1.txt',
-                       dtype=np.float32).reshape([4 * 4 * 32, 100]))
-        h_pool2_flat = tf.reshape(h_pool2, [-1, 4 * 4 * 32])
+                       dtype=np.float32).reshape([5 * 5 * 50, 100]))
+        h_pool2_flat = tf.reshape(h_pool2, [-1, 5 * 5 * 50])
         h_fc1 = tf.square(tf.matmul(h_pool2_flat, W_fc1))
 
     # Map the 100 features to 10 classes, one for each digit
