@@ -35,14 +35,20 @@ def mlp_model(x, mode):
 
     with tf.name_scope('conv1'):
         W_conv1 = get_variable('W_conv1', [5, 5, 1, 5], mode)
-        h_conv1 = conv2d_stride_2_valid(x_image, W_conv1)
+        y_conv1 = conv2d_stride_2_valid(x_image, W_conv1)
         paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]],
                                name='pad_const')
-        h_conv1 = tf.pad(h_conv1, paddings)
-        h_conv1 = tf.reshape(h_conv1, [-1, 13 * 13 * 5])
+        y_conv1 = tf.pad(y_conv1, paddings)
+        y_conv1 = tf.reshape(y_conv1, [-1, 13 * 13 * 5])
+        y_conv1 = tf.nn.relu(y_conv1)
 
     with tf.name_scope('fc1'):
-        W_fc1 = get_variable('W_fc1', [13 * 13 * 5, 10], mode)
-        y_conv = tf.matmul(h_conv1, W_fc1)
+        W_fc1 = get_variable('W_fc1', [13 * 13 * 5, 100], mode)
+        y_conv = tf.matmul(y_conv1, W_fc1)
+        y_conv = tf.nn.relu(y_conv)
+
+    with tf.name_scope('fc2'):
+        W_fc1 = get_variable('W_fc2', [100, 10], mode)
+        y_conv = tf.matmul(y_conv, W_fc1)
         y_conv = tf.nn.relu(y_conv)
     return y_conv

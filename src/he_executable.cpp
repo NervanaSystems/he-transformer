@@ -1145,20 +1145,36 @@ void runtime::he::HEExecutable::generate_calls(
       NGRAPH_INFO << "Relu types are supported ";
 
       stringstream cipher_stream;
+      size_t cipher_count = 0;
+      size_t prev_size = 0;
       for (const auto& he_ciphertext : arg0_cipher->get_elements()) {
         auto wrapper =
             dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(
                 he_ciphertext);
         seal::Ciphertext c = wrapper->m_ciphertext;
         c.save(cipher_stream);
+        cipher_count++;
+
+        // TODO: remove
+        const string& tmp_str = cipher_stream.str();
+        const char* tmp_cstr = tmp_str.c_str();
+        size_t new_size = tmp_str.size();
+        NGRAPH_INFO << "cipher_count " << cipher_count << " size "
+                    << (new_size - prev_size);
+        prev_size = new_size;
       }
       const string& cipher_str = cipher_stream.str();
+      const char* cipher_cstr = cipher_str.c_str();
       NGRAPH_INFO << "Cipher size " << cipher_str.size();
+      NGRAPH_INFO << "Cipher count " << cipher_count;
 
       // Send output to client
       NGRAPH_INFO << "Sending Relu ciphertexts to client";
-      auto relu_message =
+      auto relu_message = TCPMessage(MessageType::relu_request, element_count,
+                                     cipher_str.size(), cipher_cstr);
+      /*auto relu_message =
           TCPMessage(MessageType::relu_request, element_count, cipher_stream);
+       */
       m_session->do_write(relu_message);
 
       // Acquire lock
