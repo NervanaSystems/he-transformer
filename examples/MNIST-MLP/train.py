@@ -31,47 +31,6 @@ import common
 FLAGS = None
 
 
-def cryptonets_train(x):
-    """Builds the graph for classifying digits based on Cryptonets
-
-    Args:
-        x: an input tensor with the dimensions (N_examples, 784), where 784 is
-        the number of pixels in a standard MNIST image.
-
-    Returns:
-        A tuple (y, a scalar placeholder). y is a tensor of shape
-        (N_examples, 10), with values equal to the logits of classifying the
-        digit into one of 10 classes (the digits 0-9).
-    """
-    # Reshape to use within a conv neural net.
-    # Last dimension is for "features" - there is only one here, since images
-    # are grayscale -- it would be 3 for an RGB image, 4 for RGBA, etc.
-    with tf.name_scope('reshape'):
-        #x_image = tf.reshape(x, [-1, 28, 28, 1])
-        x_image = tf.reshape(x, [-1, 784])
-
-    # First conv layer
-    # CryptoNets's output of the first conv layer has feature map size 13 x 13,
-    # therefore, we manually add paddings.
-    # Input: N x 28 x 28 x 1
-    # Filter: 5 x 5 x 1 x 5
-    # Output: N x 12 x 12 x 5
-    # Output after padding: N x 13 x 13 x 5
-    #with tf.name_scope('conv1'):
-    #    W_conv1 = tf.get_variable("W_conv1", [5, 5, 1, 5])
-    #    h_conv1_no_pad = tf.square(
-    #        common.conv2d_stride_2_valid(x_image, W_conv1))
-    #    paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]],
-    #                           name='pad_const')
-    #    h_conv1 = tf.pad(h_conv1_no_pad, paddings)
-    #    h_conv1 = tf.reshape(h_conv1, [-1, 13 * 13 * 5])
-
-    with tf.name_scope('fc1'):
-        W_fc1 = tf.get_variable("W_fc1", [784, 10])
-        y_conv = tf.matmul(x_image, W_fc1)
-    return y_conv
-
-
 def main(_):
     # Disable mnist dataset deprecation warning
     tf.logging.set_verbosity(tf.logging.ERROR)
@@ -86,7 +45,7 @@ def main(_):
     y_ = tf.placeholder(tf.float32, [None, 10])
 
     # Build the graph for the deep net
-    y_conv = cryptonets_train(x)
+    y_conv = common.mlp_model(x, 'train')
 
     with tf.name_scope('loss'):
         cross_entropy = tf.nn.softmax_cross_entropy_with_logits(

@@ -34,36 +34,6 @@ import os
 FLAGS = None
 
 
-def mlp_test(x):
-    """Constructs test network for MLP using saved weights."""
-
-    # Reshape to use within a convolutional neural net.
-    # Last dimension is for "features" - there is only one here, since images are
-    # grayscale -- it would be 3 for an RGB image, 4 for RGBA, etc.
-    with tf.name_scope('reshape'):
-        #x_image = tf.reshape(x, [-1, 28, 28, 1])
-        x_image = tf.reshape(x, [-1, 784])
-
-    # First conv layer: maps one grayscale image to 5 feature maps of 13 x 13
-    #with tf.name_scope('conv1'):
-    #    W_conv1 = tf.constant(
-    #        np.loadtxt('W_conv1.txt', dtype=np.float32).reshape([5, 5, 1, 5]))
-    #    h_conv1_no_pad = tf.square(
-    #        common.conv2d_stride_2_valid(x_image, W_conv1))
-    #    paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]],
-    #                           name='pad_const')
-    #    h_conv1 = tf.pad(h_conv1_no_pad, paddings)
-    #    h_conv1 = tf.reshape(h_conv1, [-1, 13 * 13 * 5])
-
-    # Map the 100 features to 10 classes, one for each digit
-    with tf.name_scope('fc1'):
-        W_fc1 = tf.constant(
-            np.loadtxt('W_fc1.txt', dtype=np.float32).reshape([784, 10]))
-        y_conv = tf.matmul(x_image, W_fc1)
-        y_conv = tf.Print(y_conv, [y_conv], summarize=100, message="Result\n")
-    return y_conv
-
-
 def test_mnist_mlp(FLAGS):
 
     # Import data
@@ -75,7 +45,7 @@ def test_mnist_mlp(FLAGS):
     # Define loss and optimizer
     y_ = tf.placeholder(tf.float32, [None, 10])
 
-    y_conv = mlp_test(x)
+    y_conv = common.mlp_model(x, 'test')
 
     with tf.Session() as sess:
         start_time = time.time()
