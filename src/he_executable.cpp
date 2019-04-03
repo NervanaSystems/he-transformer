@@ -78,9 +78,9 @@ runtime::he::HEExecutable::HEExecutable(const shared_ptr<Function>& function,
       m_encrypt_data(encrypt_data),
       m_encrypt_model(encrypt_model),
       m_batch_data(batch_data),
-      m_batch_size(1),
       m_session_started(false),
       m_enable_client(std::getenv("NGRAPH_ENABLE_CLIENT") != nullptr),
+      m_batch_size(1),
       m_port(34000) {
   NGRAPH_ASSERT(he_backend != nullptr) << "he_backend == nullptr";
   // TODO: move get_context to HEBackend
@@ -295,7 +295,11 @@ void runtime::he::HEExecutable::handle_message(
 
     NGRAPH_INFO << "Server sending message of type: parameter_size";
     m_session->do_write(parameter_message);
-  } else {
+  } else if (msg_type == MessageType::relu_result) {
+    // TODO: process relu result
+  }
+
+  else {
     stringstream ss;
     ss << "Unsupported message type in server:  "
        << message_type_to_string(msg_type);
@@ -1075,6 +1079,38 @@ void runtime::he::HEExecutable::generate_calls(
       }
       break;
     }
+    case OP_TYPEID::Relu: {
+      size_t element_count = shape_size(node.get_output_shape(0));
+      NGRAPH_INFO << "element count " << element_count;
+
+      if (arg0_cipher == nullptr || out0_cipher == nullptr) {
+        NGRAPH_INFO << "Relu types not supported ";
+        throw ngraph_error("Relu types not supported.");
+      }
+      NGRAPH_INFO << "Relu types are supported ";
+
+      stringstream cipher_stream;
+      for (const auto& he_ciphertext : arg0_cipher->get_elements()) {
+        auto wrapper =
+            dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(
+                he_ciphertext);
+        seal::Ciphertext c = wrapper->m_ciphertext;
+        c.save(cipher_stream);
+      }
+      const string& cipher_str = cipher_stream.str();
+      const char* cipher_cstr = cipher_str.c_str();
+      NGRAPH_INFO << "Cipher size " << cipher_str.size();
+
+      // Send output to client
+      NGRAPH_INFO << "Sending RELU ciphertexts to client";
+      auto relu_message = TCPMessage(MessageType::relu_request, element_count,
+                                     cipher_str.size(), cipher_cstr);
+      NGRAPH_INFO << "Created Relu message";
+      m_session->do_write(relu_message);
+      NGRAPH_INFO << "Writing relu message";
+
+      // TODO: wait until response.
+    }
     case OP_TYPEID::Reverse: {
       const op::Reverse* reverse = static_cast<const op::Reverse*>(&node);
       Shape in_shape = node.get_input_shape(0);
@@ -1219,7 +1255,7 @@ void runtime::he::HEExecutable::generate_calls(
     case OP_TYPEID::QuantizedDot:
     case OP_TYPEID::QuantizedDotBias:
     case OP_TYPEID::QuantizedMaxPool:
-    case OP_TYPEID::Relu:
+
     case OP_TYPEID::ReluBackprop:
     case OP_TYPEID::ReplaceSlice:
     case OP_TYPEID::ReverseSequence:

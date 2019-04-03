@@ -36,7 +36,7 @@ enum class MessageType {
   parameter_shape_request,
   parameter_size,
   relu_request,
-  relu,
+  relu_result,
   result,
   result_request
 };
@@ -61,8 +61,8 @@ inline std::string message_type_to_string(const MessageType& type) {
     case MessageType::parameter_shape_request:
       return "parameter_shape_request";
       break;
-    case MessageType::relu:
-      return "relu";
+    case MessageType::relu_result:
+      return "relu_result";
       break;
     case MessageType::relu_request:
       return "relu_request";

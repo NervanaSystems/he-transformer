@@ -36,7 +36,7 @@ runtime::he::HESealClient::HESealClient(const std::string& hostname,
                                         const size_t port,
                                         const size_t batch_size,
                                         const std::vector<float>& inputs)
-    : m_batch_size{batch_size}, m_inputs{inputs}, m_is_done(false) {
+    : m_is_done(false), m_batch_size{batch_size}, m_inputs{inputs} {
   boost::asio::io_context io_context;
   tcp::resolver resolver(io_context);
   auto endpoints = resolver.resolve(hostname, std::to_string(port));
@@ -154,17 +154,57 @@ void runtime::he::HESealClient::handle_message(
 
     std::stringstream evk_stream;
     m_relin_keys->save(evk_stream);
-    const std::string& evk_str = evk_stream.str();
-    const char* evk_cstr = evk_str.c_str();
-    size_t m_data_size = evk_str.size();
-    auto evk_message = TCPMessage(runtime::he::MessageType::eval_key, 1,
-                                  m_data_size, evk_cstr);
+    // const std::string& evk_str = evk_stream.str();
+    // const char* evk_cstr = evk_str.c_str();
+    // size_t m_data_size = evk_str.size();
+    // auto evk_message = TCPMessage(runtime::he::MessageType::eval_key, 1,
+    //                              m_data_size, evk_cstr);
+    auto evk_message =
+        TCPMessage(runtime::he::MessageType::eval_key, 1, evk_stream);
     std::cout << "Sending evaluation key" << std::endl;
 
     write_message(evk_message);
 
-  } else {
-    std::cout << "Unsupported message type"
+  } else if (msg_type == runtime::he::MessageType::relu_request) {
+    size_t result_count = message.count();
+    size_t element_size = message.element_size();
+
+    std::vector<seal::Ciphertext> result;
+    m_results.reserve(result_count * m_batch_size);
+    std::stringstream post_relu_stream;
+    for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
+      seal::Ciphertext cipher;
+      std::stringstream cipher_stream;
+      cipher_stream.write(message.data_ptr() + result_idx * element_size,
+                          element_size);
+      cipher.load(m_context, cipher_stream);
+
+      result.push_back(cipher);
+      seal::Plaintext plain;
+      m_decryptor->decrypt(cipher, plain);
+      std::vector<double> pre_relu;
+      m_ckks_encoder->decode(plain, pre_relu);
+
+      std::vector<double> post_relu(m_batch_size);
+      for (size_t batch_idx = 0; batch_idx < m_batch_size; ++batch_idx) {
+        double pre_relu_val = pre_relu[batch_idx];
+        double post_relu_val = pre_relu_val > 0 ? pre_relu_val : 0;
+        post_relu.emplace_back(post_relu_val);
+      }
+
+      m_ckks_encoder->encode(post_relu, m_scale, plain);
+      seal::Ciphertext c;
+      m_encryptor->encrypt(plain, c);
+      c.save(post_relu_stream);
+    }
+
+    auto relu_result_msg = TCPMessage(runtime::he::MessageType::relu_result,
+                                      result_count, post_relu_stream);
+    write_message(relu_result_msg);
+  }
+
+  else {
+    std::cout << "Unsupported message type: "
               << message_type_to_string(msg_type).c_str() << std::endl;
   }
 }
