@@ -260,6 +260,18 @@ void runtime::he::HEExecutable::handle_message(
         << "Client inputs size " << m_client_inputs.size() << "; expected "
         << get_parameters().size();
 
+  } else if (msg_type == MessageType::public_key) {
+    seal::PublicKey key;
+    std::stringstream key_stream;
+    key_stream.write(message.data_ptr(), message.element_size());
+    key.load(m_context, key_stream);
+
+    // TODO: move set_public_key to HEBackend
+    auto he_seal_backend = (runtime::he::he_seal::HESealBackend*)m_he_backend;
+    he_seal_backend->set_public_key(key);
+
+    NGRAPH_INFO << "Server set public key";
+
   } else if (msg_type == MessageType::eval_key) {
     seal::RelinKeys keys;
     std::stringstream key_stream;
@@ -329,7 +341,6 @@ void runtime::he::HEExecutable::handle_message(
     // Notify condition variable
     m_relu_done = true;
     m_relu_cond.notify_all();
-
   } else {
     stringstream ss;
     ss << "Unsupported message type in server:  "
@@ -521,7 +532,6 @@ bool runtime::he::HEExecutable::call(
       // Client outputs remain ciphertexts, so don't perform result op on them
       NGRAPH_INFO << "Setting client outputs";
       m_client_outputs = op_inputs;
-      break;
     }
 
     // get op outputs from map or create

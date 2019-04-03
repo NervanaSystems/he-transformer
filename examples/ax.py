@@ -21,8 +21,9 @@ import tensorflow as tf
 a = tf.constant(np.array([[-1, 2], [-5, 6]]), dtype=np.float32)
 b = tf.placeholder(tf.float32, shape=(2, 2))
 f = tf.nn.relu(a + b)
+f2 = tf.nn.relu(f + a)
 #f = (a + b) * a * b
 
 with tf.Session() as sess:
-    f_val = sess.run(f, feed_dict={b: np.ones((2, 2))})
+    f_val = sess.run(f2, feed_dict={b: np.ones((2, 2))})
     print("Result: ", f_val)

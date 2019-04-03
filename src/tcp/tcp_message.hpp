@@ -35,6 +35,7 @@ enum class MessageType {
   execute,
   parameter_shape_request,
   parameter_size,
+  public_key,
   relu_request,
   relu_result,
   result,
@@ -51,6 +52,9 @@ inline std::string message_type_to_string(const MessageType& type) {
       break;
     case MessageType::eval_key:
       return "eval_key";
+      break;
+    case MessageType::public_key:
+      return "public_key";
       break;
     case MessageType::execute:
       return "execute";
