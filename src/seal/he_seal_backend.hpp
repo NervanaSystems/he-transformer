@@ -47,6 +47,9 @@ class HESealBackend : public HEBackend {
       const override;
 
   std::shared_ptr<runtime::he::HECiphertext> create_empty_ciphertext(
+      seal::parms_id_type parms_id) const;
+
+  std::shared_ptr<runtime::he::HECiphertext> create_empty_ciphertext(
       const seal::MemoryPoolHandle& pool) const;
 
   std::shared_ptr<runtime::he::HEPlaintext> create_empty_plaintext()
@@ -108,6 +111,11 @@ class HESealBackend : public HEBackend {
 
   void set_relin_keys(const seal::RelinKeys& keys) {
     m_relin_keys = std::make_shared<seal::RelinKeys>(keys);
+  }
+
+  void set_public_key(const seal::PublicKey& key) {
+    m_public_key = std::make_shared<seal::PublicKey>(key);
+    m_encryptor = std::make_shared<seal::Encryptor>(m_context, *m_public_key);
   }
 
   const inline std::shared_ptr<seal::Evaluator> get_evaluator() const noexcept {

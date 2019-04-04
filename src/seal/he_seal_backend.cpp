@@ -50,6 +50,13 @@ runtime::he::he_seal::HESealBackend::create_empty_ciphertext() const {
 
 shared_ptr<runtime::he::HECiphertext>
 runtime::he::he_seal::HESealBackend::create_empty_ciphertext(
+    seal::parms_id_type parms_id) const {
+  return make_shared<runtime::he::he_seal::SealCiphertextWrapper>(
+      seal::Ciphertext(m_context, parms_id));
+}
+
+shared_ptr<runtime::he::HECiphertext>
+runtime::he::he_seal::HESealBackend::create_empty_ciphertext(
     const seal::MemoryPoolHandle& pool) const {
   return make_shared<runtime::he::he_seal::SealCiphertextWrapper>(pool);
 }

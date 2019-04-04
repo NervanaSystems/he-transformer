@@ -35,8 +35,9 @@ enum class MessageType {
   execute,
   parameter_shape_request,
   parameter_size,
+  public_key,
   relu_request,
-  relu,
+  relu_result,
   result,
   result_request
 };
@@ -52,6 +53,9 @@ inline std::string message_type_to_string(const MessageType& type) {
     case MessageType::eval_key:
       return "eval_key";
       break;
+    case MessageType::public_key:
+      return "public_key";
+      break;
     case MessageType::execute:
       return "execute";
       break;
@@ -61,8 +65,8 @@ inline std::string message_type_to_string(const MessageType& type) {
     case MessageType::parameter_shape_request:
       return "parameter_shape_request";
       break;
-    case MessageType::relu:
-      return "relu";
+    case MessageType::relu_result:
+      return "relu_result";
       break;
     case MessageType::relu_request:
       return "relu_request";
@@ -85,8 +89,6 @@ inline std::string message_type_to_string(const MessageType& type) {
 // @param count number of elements of data
 // @param size number of bytes of data in message. Must be a multiple of
 // count
-// TODO: Currently, max_body_length bytes are allocated for each message, which
-// is really inefficient
 class TCPMessage {
  public:
   enum { header_length = 15 };
@@ -94,6 +96,9 @@ class TCPMessage {
   enum { message_type_length = sizeof(MessageType) };
   enum { message_count_length = sizeof(size_t) };
 
+  // Creates message with data buffer large enough to store max_body_length
+  // Note: this requires a lot of memory and should be avoided where possible
+  // TODO: more scalable solution
   TCPMessage(const MessageType type)
       : m_type(type), m_count(0), m_data_size(0) {
     std::set<MessageType> request_types{
@@ -103,9 +108,8 @@ class TCPMessage {
     if (request_types.find(type) == request_types.end()) {
       throw std::invalid_argument("Request type not valid");
     }
-
+    check_arguments();
     m_data = new char[header_length + max_body_length];
-
     encode_header();
     encode_message_type();
     encode_count();
@@ -122,34 +126,18 @@ class TCPMessage {
     m_data_size = pk_str.size();
 
     check_arguments();
-    m_data = new char[header_length + max_body_length];
-
+    m_data = new char[header_length + body_length()];
     encode_header();
     encode_message_type();
     encode_count();
     encode_data(pk_cstr);
   }
 
-  void check_arguments() {
-    if (m_count < 0) {
-      throw std::invalid_argument("m_count must be non-negative");
-    }
-    if (m_count != 0 && m_data_size % m_count != 0) {
-      std::cout << "size " << m_data_size << " count " << m_count << std::endl;
-      throw std::invalid_argument("Size must be a multiple of count");
-    }
-
-    if (body_length() > max_body_length) {
-      throw std::invalid_argument("Size " + std::to_string(body_length()) +
-                                  " too large");
-    }
-  }
-
   TCPMessage(const MessageType type, const size_t count, const size_t size,
              const char* data)
       : m_type(type), m_count(count), m_data_size(size) {
     check_arguments();
-    m_data = new char[header_length + max_body_length];
+    m_data = new char[header_length + body_length()];
     encode_header();
     encode_message_type();
     encode_count();
@@ -185,20 +173,47 @@ class TCPMessage {
 
   ~TCPMessage() { delete[] m_data; }
 
+  void check_arguments() {
+    if (m_count < 0) {
+      throw std::invalid_argument("m_count must be non-negative");
+    }
+    if (m_count != 0 && m_data_size % m_count != 0) {
+      std::cout << "Error: size " << m_data_size << " not a multiple of count "
+                << m_count << std::endl;
+      throw std::invalid_argument("Size must be a multiple of count");
+    }
+
+    if (body_length() > max_body_length) {
+      throw std::invalid_argument("Size " + std::to_string(body_length()) +
+                                  " too large");
+    }
+  }
+
   size_t count() { return m_count; }
   const size_t count() const { return m_count; }
 
   size_t element_size() {
-    if (m_count == 0 || m_data_size % m_count != 0) {
-      throw std::invalid_argument(
-          "m_count == 0 or does not divide m_data_size");
+    if (m_count == 0) {
+      throw std::invalid_argument("m_count == 0");
+    }
+    if (m_data_size % m_count != 0) {
+      std::stringstream ss;
+      ss << "m_count " << m_count << " does not divide m_data_size "
+         << m_data_size << std::endl;
+      throw std::invalid_argument(ss.str());
     }
     return m_data_size / m_count;
   }
+
   const size_t element_size() const {
-    if (m_count == 0 || m_data_size % m_count != 0) {
-      throw std::invalid_argument(
-          "m_count == 0 or does not divide m_data_size");
+    if (m_count == 0) {
+      throw std::invalid_argument("m_count == 0");
+    }
+    if (m_data_size % m_count != 0) {
+      std::stringstream ss;
+      ss << "m_count " << m_count << " does not divide m_data_size "
+         << m_data_size << std::endl;
+      throw std::invalid_argument(ss.str());
     }
     return m_data_size / m_count;
   }

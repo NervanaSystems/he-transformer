@@ -66,7 +66,6 @@ add_library(he_backend SHARED ${HE_SRC})
 add_dependencies(he_backend ext_ngraph_tf ext_seal)
 target_link_libraries(he_backend seal libjson ngraph)
 
-# Note, this will flag many false positives near openmp parallel for loops.
 if(NGRAPH_HE_SANITIZE_ADDRESS)
     message(STATUS "Enable Address Sanitizer")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fsanitize=address -fno-omit-frame-pointer")

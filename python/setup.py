@@ -8,6 +8,7 @@ import os
 __version__ = '0.0.0-dev'
 
 PYNGRAPH_ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
+BOOST_ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
 
 
 def find_he_transformer_dist_dir():
@@ -17,10 +18,9 @@ def find_he_transformer_dist_dir():
         ngraph_he_dist_dir = os.environ.get('NGRAPH_HE_BUILD_PATH')
     else:
         print('Must set NGRAPH_HE_BUILD_PATH')
+        sys.exit(1)
 
-    found = os.path.exists(os.path.join(ngraph_he_dist_dir, 'include/'))
-    # and \
-    #        os.path.exists(os.path.join(ngraph_he_dist_dir, 'lib/'))
+    found = os.path.exists(os.path.join(ngraph_he_dist_dir, 'include'))
 
     if not found:
         print(
@@ -51,16 +51,53 @@ def find_pybind_headers_dir():
         return pybind_headers_dir
 
 
+def find_boost_headers_dir():
+    """Return location of boost headers."""
+    if os.environ.get('BOOST_HEADERS_PATH'):
+        boost_headers_dir = os.environ.get('BOOST_HEADERS_PATH')
+    else:
+        boost_headers_dir = os.path.join(BOOST_ROOT_DIR)
+
+    found = os.path.exists(os.path.join(boost_headers_dir, 'boost/asio'))
+    if not found:
+        print('Cannot find boost library in {} make sure that '
+              'BOOST_HEADERS_PATH is set correctly'.format(boost_headers_dir))
+        sys.exit(1)
+    else:
+        print('boost library found in {}'.format(boost_headers_dir))
+        return boost_headers_dir
+
+
+def find_cxx_compiler():
+    """Returns C++ compiler."""
+    if os.environ.get('CXX_COMPILER'):
+        print('CXX_COMPILER', os.environ.get('CXX_COMPILER'))
+        return os.environ.get('CXX_COMPILER')
+    else:
+        return 'CXX'
+
+
+def find_c_compiler():
+    """Returns C compiler."""
+    if os.environ.get('C_COMPILER'):
+        print('C_COMPILER', os.environ.get('C_COMPILER'))
+        return os.environ.get('C_COMPILER')
+    else:
+        return 'CC'
+
+
+os.environ["CXX"] = find_cxx_compiler()
+os.environ["CC"] = find_c_compiler()
+
 PYBIND11_INCLUDE_DIR = find_pybind_headers_dir() + '/include'
 NGRAPH_HE_DIST_DIR = find_he_transformer_dist_dir()
-NGRAPH_HE_INCLUDE_DIR = NGRAPH_HE_DIST_DIR + '/include'
-NGRAPH_HE_LIB_DIR = NGRAPH_HE_DIST_DIR + '/lib'
+NGRAPH_HE_INCLUDE_DIR = os.path.join(NGRAPH_HE_DIST_DIR, 'include')
+NGRAPH_HE_LIB_DIR = os.path.join(NGRAPH_HE_DIST_DIR, 'lib')
+BOOST_INCLUDE_DIR = find_boost_headers_dir()
 
-print('NGRAPH_HE_LIB_DIR', NGRAPH_HE_LIB_DIR)
+print('NGRAPH_HE_DIST_DIR', NGRAPH_HE_DIST_DIR)
+print('NGRAPH_HE_LIB_DIR ', NGRAPH_HE_LIB_DIR)
 print('NGRAPH_HE_INCLUDE_DIR', NGRAPH_HE_INCLUDE_DIR)
-# TODO: configure with CMake
-home_dir = os.getenv("HOME")
-BOOST_INCLUDE_DIR = home_dir + '/bin/boost_1_69_0'
 print('BOOST_INCLUDE_DIR', BOOST_INCLUDE_DIR)
 
 include_dirs = [
@@ -71,17 +108,9 @@ library_dirs = [NGRAPH_HE_LIB_DIR]
 
 libraries = ['he_seal_client']
 
-print('library_dirs', library_dirs)
-
-# TODO: remove double // before it happens
-data_files = [('lib', [(NGRAPH_HE_LIB_DIR + '/' + library).replace('//', '/')
+data_files = [('lib', [(NGRAPH_HE_LIB_DIR + '/' + library)
                        for library in os.listdir(NGRAPH_HE_LIB_DIR)])]
 
-print('data_files', data_files)
-
-# TODO: use CMakeLists CXX Compiler
-os.environ["CC"] = "g++-7"
-os.environ["CXX"] = "g++-7"
 sources = ['py_he_seal_client/he_seal_client.cpp']
 
 sources = [PYNGRAPH_ROOT_DIR + '/' + source for source in sources]

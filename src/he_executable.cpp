@@ -14,8 +14,7 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include <memory>
-#include <vector>
+#include <functional>
 
 #include "he_cipher_tensor.hpp"
 #include "he_executable.hpp"
@@ -78,9 +77,12 @@ runtime::he::HEExecutable::HEExecutable(const shared_ptr<Function>& function,
       m_encrypt_data(encrypt_data),
       m_encrypt_model(encrypt_model),
       m_batch_data(batch_data),
-      m_session_started(false),
       m_enable_client(std::getenv("NGRAPH_ENABLE_CLIENT") != nullptr),
-      m_port(34000) {
+      m_batch_size(1),
+      m_port(34000),
+      m_relu_done(false),
+      m_session_started(false),
+      m_client_inputs_received(false) {
   NGRAPH_ASSERT(he_backend != nullptr) << "he_backend == nullptr";
   // TODO: move get_context to HEBackend
   auto he_seal_backend = (runtime::he::he_seal::HESealBackend*)he_backend;
@@ -120,21 +122,33 @@ runtime::he::HEExecutable::HEExecutable(const shared_ptr<Function>& function,
     shared_ptr<HEEncryptionParameters> parms =
         he_backend->get_encryption_parameters();
     NGRAPH_ASSERT(parms != nullptr) << "HEEncryptionParameters == nullptr";
+
+    // only support parameter size 1 for now
+    NGRAPH_ASSERT(get_parameters().size() == 1)
+        << "HEExecutable only supports parameter size 1 (got "
+        << get_parameters().size() << ")";
+
+    const Shape& shape = (get_parameters()[0])->get_shape();
+    if (m_batch_data) {
+      m_batch_size = shape[0];
+      NGRAPH_INFO << "Setting batch_size " << m_batch_size;
+    }
+
     parms->save(param_stream);
     auto parms_message =
         TCPMessage(MessageType::encryption_parameters, 1, param_stream);
 
+    unique_lock<mutex> mlock(m_session_mutex);
     NGRAPH_INFO << "Waiting until client is connected";
-    while (!m_session_started) {
-      this_thread::sleep_for(chrono::milliseconds(10));
-    }
+    m_session_cond.wait(mlock, std::bind(&HEExecutable::session_started, this));
+    NGRAPH_INFO << "Session started";
+
     m_session->do_write(parms_message);
   }
 }
 
 void runtime::he::HEExecutable::accept_connection() {
   NGRAPH_INFO << "Server accepting connections";
-
   auto server_callback =
       bind(&runtime::he::HEExecutable::handle_message, this, placeholders::_1);
 
@@ -144,16 +158,18 @@ void runtime::he::HEExecutable::accept_connection() {
       NGRAPH_INFO << "Connection accepted";
       m_session = make_shared<TCPSession>(move(socket), server_callback);
       m_session->start();
-      m_session_started = true;  // TODO: cleaner way to process this
+
+      std::lock_guard<mutex> guard(m_session_mutex);
+      m_session_started = true;
+      m_session_cond.notify_all();
     } else {
       NGRAPH_INFO << "error " << ec.message();
+      // accept_connection();
     }
-    // accept_connection();
   });
 }
 
 void runtime::he::HEExecutable::start_server() {
-  // Server
   tcp::resolver resolver(m_io_context);
   tcp::endpoint server_endpoints(tcp::v4(), m_port);
   m_acceptor = make_shared<tcp::acceptor>(m_io_context, server_endpoints);
@@ -178,16 +194,17 @@ void runtime::he::HEExecutable::handle_message(
     assert(m_context != nullptr);
     print_seal_context(*m_context);
 
+    NGRAPH_INFO << "Loading " << count << " ciphertexts";
     for (size_t i = 0; i < count; ++i) {
       stringstream stream;
       stream.write(message.data_ptr() + i * ciphertext_size, ciphertext_size);
       seal::Ciphertext c;
       c.load(m_context, stream);
-      NGRAPH_INFO << "Loaded " << i << "'th ciphertext";
       ciphertexts.emplace_back(c);
     }
-    vector<shared_ptr<runtime::he::HECiphertext>> he_cipher_inputs;
+    NGRAPH_INFO << "Done loading " << count << " ciphertexts";
 
+    vector<shared_ptr<runtime::he::HECiphertext>> he_cipher_inputs;
     for (const auto cipher : ciphertexts) {
       auto wrapper =
           make_shared<runtime::he::he_seal::SealCiphertextWrapper>(cipher);
@@ -210,6 +227,7 @@ void runtime::he::HEExecutable::handle_message(
     for (auto input_param : input_parameters) {
       num_param_elements += shape_size(input_param->get_shape());
     }
+    num_param_elements /= m_batch_size;
     NGRAPH_ASSERT(count == num_param_elements)
         << "Count " << count
         << " does not match number of parameter elements ( "
@@ -219,13 +237,15 @@ void runtime::he::HEExecutable::handle_message(
     size_t parameter_size_index = 0;
     for (auto input_param : input_parameters) {
       const auto& shape = input_param->get_shape();
-      size_t param_size = shape_size(shape);
+      size_t param_size = shape_size(shape) / m_batch_size;
+      NGRAPH_INFO << "shape " << join(shape, "x");
+      NGRAPH_INFO << "param_size " << param_size;
+      NGRAPH_INFO << "m_batch_data? " << m_batch_data;
 
       auto element_type = input_param->get_element_type();
-      bool batched = false;
       auto input_tensor = dynamic_pointer_cast<runtime::he::HECipherTensor>(
           m_he_backend->create_cipher_tensor(
-              element_type, input_param->get_shape(), batched));
+              element_type, input_param->get_shape(), m_batch_data));
 
       vector<shared_ptr<runtime::he::HECiphertext>> cipher_elements{
           he_cipher_inputs.begin() + parameter_size_index,
@@ -242,6 +262,22 @@ void runtime::he::HEExecutable::handle_message(
     NGRAPH_ASSERT(m_client_inputs.size() == get_parameters().size())
         << "Client inputs size " << m_client_inputs.size() << "; expected "
         << get_parameters().size();
+
+    std::lock_guard<mutex> guard(m_client_inputs_mutex);
+    m_client_inputs_received = true;
+    m_client_inputs_cond.notify_all();
+
+  } else if (msg_type == MessageType::public_key) {
+    seal::PublicKey key;
+    std::stringstream key_stream;
+    key_stream.write(message.data_ptr(), message.element_size());
+    key.load(m_context, key_stream);
+
+    // TODO: move set_public_key to HEBackend
+    auto he_seal_backend = (runtime::he::he_seal::HESealBackend*)m_he_backend;
+    he_seal_backend->set_public_key(key);
+
+    NGRAPH_INFO << "Server set public key";
 
   } else if (msg_type == MessageType::eval_key) {
     seal::RelinKeys keys;
@@ -262,6 +298,14 @@ void runtime::he::HEExecutable::handle_message(
       NGRAPH_INFO << "Parameter shape " << join(shape, "x");
     }
 
+    if (m_batch_data) {
+      NGRAPH_INFO << "num_param_elements before batch size divide "
+                  << num_param_elements;
+      num_param_elements /= m_batch_size;
+      NGRAPH_INFO << "num_param_elements after batch size divide "
+                  << num_param_elements;
+    }
+
     NGRAPH_INFO << "Requesting total of " << num_param_elements
                 << " parameter elements";
     runtime::he::TCPMessage parameter_message{MessageType::parameter_size, 1,
@@ -270,6 +314,38 @@ void runtime::he::HEExecutable::handle_message(
 
     NGRAPH_INFO << "Server sending message of type: parameter_size";
     m_session->do_write(parameter_message);
+  } else if (msg_type == MessageType::relu_result) {
+    std::lock_guard<mutex> guard(m_relu_mutex);
+
+    size_t element_count = message.count();
+    size_t element_size = message.element_size();
+    m_relu_ciphertexts.clear();
+
+    NGRAPH_INFO << "Got " << element_count << " ciphertexts";
+    NGRAPH_INFO << "element_size " << element_size;
+
+    for (size_t element_idx = 0; element_idx < element_count; ++element_idx) {
+      seal::Ciphertext cipher;
+      stringstream cipher_stream;
+      cipher_stream.write(message.data_ptr() + element_idx * element_size,
+                          element_size);
+      cipher.load(m_context, cipher_stream);
+
+      auto wrapper =
+          make_shared<runtime::he::he_seal::SealCiphertextWrapper>(cipher);
+      auto he_ciphertext =
+          dynamic_pointer_cast<runtime::he::HECiphertext>(wrapper);
+
+      NGRAPH_ASSERT(he_ciphertext != nullptr)
+          << "HECiphertext is not SealPlaintextWrapper";
+
+      m_relu_ciphertexts.emplace_back(he_ciphertext);
+    }
+    NGRAPH_INFO << "Done loading Relu ciphertexts";
+
+    // Notify condition variable
+    m_relu_done = true;
+    m_relu_cond.notify_all();
   } else {
     stringstream ss;
     ss << "Unsupported message type in server:  "
@@ -349,11 +425,17 @@ bool runtime::he::HEExecutable::call(
   if (m_enable_client) {
     NGRAPH_INFO << "Waiting until m_client_inputs.size() "
                 << m_client_inputs.size() << " == " << server_inputs.size();
-    while (m_client_inputs.size() != server_inputs.size()) {
-      this_thread::sleep_for(chrono::milliseconds(100));
-    }
-    NGRAPH_INFO << "Done waiting for m_client_inputs";
+
+    unique_lock<mutex> mlock(m_client_inputs_mutex);
+    m_client_inputs_cond.wait(
+        mlock, std::bind(&HEExecutable::client_inputs_received, this));
+    NGRAPH_INFO << "client_inputs_received";
+
+    NGRAPH_ASSERT(m_client_inputs.size() == server_inputs.size())
+        << "Recieved incorrect number of inputs from client (got "
+        << m_client_inputs.size() << ", expectd " << server_inputs.size();
   }
+  NGRAPH_INFO << "Done waiting for m_client_inputs";
 
   if (m_encrypt_data) {
     NGRAPH_INFO << "Encrypting data";
@@ -457,8 +539,9 @@ bool runtime::he::HEExecutable::call(
       op_inputs.push_back(tensor_map.at(tv));
     }
 
-    if (type_id == OP_TYPEID::Result) {
+    if (m_enable_client && type_id == OP_TYPEID::Result) {
       // Client outputs remain ciphertexts, so don't perform result op on them
+      NGRAPH_INFO << "Setting client outputs";
       m_client_outputs = op_inputs;
     }
 
@@ -544,7 +627,9 @@ bool runtime::he::HEExecutable::call(
 
     std::vector<seal::Ciphertext> seal_output;
 
-    size_t output_shape_size = shape_size(get_results()[0]->get_shape());
+    const Shape& output_shape = get_results()[0]->get_shape();
+    NGRAPH_INFO << "output shape size " << join(output_shape, "x");
+    size_t output_shape_size = shape_size(output_shape) / m_batch_size;
 
     auto output_cipher_tensor =
         dynamic_pointer_cast<runtime::he::HECipherTensor>(m_client_outputs[0]);
@@ -1048,6 +1133,54 @@ void runtime::he::HEExecutable::generate_calls(
       }
       break;
     }
+    case OP_TYPEID::Relu: {
+      if (!m_enable_client) {
+        throw ngraph_error(
+            "Relu op unsupported unless client is enabled. Try setting "
+            "NGRAPH_ENABLE_CLIENT=1");
+      }
+
+      size_t element_count =
+          shape_size(node.get_output_shape(0)) / m_batch_size;
+
+      if (arg0_cipher == nullptr || out0_cipher == nullptr) {
+        NGRAPH_INFO << "Relu types not supported ";
+        throw ngraph_error("Relu types not supported.");
+      }
+
+      stringstream cipher_stream;
+      size_t cipher_count = 0;
+      for (const auto& he_ciphertext : arg0_cipher->get_elements()) {
+        auto wrapper =
+            dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(
+                he_ciphertext);
+        seal::Ciphertext c = wrapper->m_ciphertext;
+        c.save(cipher_stream);
+        cipher_count++;
+      }
+      NGRAPH_ASSERT(element_count == cipher_count)
+          << "Incorrect number of elements in ciphertext";
+
+      // Send output to client
+      NGRAPH_INFO << "Sending " << element_count << " Relu ciphertexts (size "
+                  << cipher_stream.str().size() << ") to client";
+      auto relu_message =
+          TCPMessage(MessageType::relu_request, element_count, cipher_stream);
+
+      m_session->do_write(relu_message);
+
+      // Acquire lock
+      unique_lock<mutex> mlock(m_relu_mutex);
+
+      // Wait until Relu is done
+      m_relu_cond.wait(mlock, std::bind(&HEExecutable::relu_done, this));
+      NGRAPH_INFO << "Relu is done";
+
+      // Reset for next Relu call
+      m_relu_done = false;
+      out0_cipher->set_elements(m_relu_ciphertexts);
+      break;
+    }
     case OP_TYPEID::Reverse: {
       const op::Reverse* reverse = static_cast<const op::Reverse*>(&node);
       Shape in_shape = node.get_input_shape(0);
@@ -1192,7 +1325,6 @@ void runtime::he::HEExecutable::generate_calls(
     case OP_TYPEID::QuantizedDot:
     case OP_TYPEID::QuantizedDotBias:
     case OP_TYPEID::QuantizedMaxPool:
-    case OP_TYPEID::Relu:
     case OP_TYPEID::ReluBackprop:
     case OP_TYPEID::ReplaceSlice:
     case OP_TYPEID::ReverseSequence:

@@ -35,7 +35,7 @@ namespace he {
 class HESealClient {
  public:
   HESealClient(const std::string& hostname, const size_t port,
-               const std::vector<float>& inputs);
+               const size_t batch_size, const std::vector<float>& inputs);
 
   ~HESealClient() = default;
 
@@ -64,6 +64,7 @@ class HESealClient {
   std::shared_ptr<seal::KeyGenerator> m_keygen;
   std::shared_ptr<seal::RelinKeys> m_relin_keys;
   double m_scale;
+  size_t m_batch_size;
   bool m_is_done;
   std::vector<float> m_inputs;   // Function inputs
   std::vector<float> m_results;  // Function outputs

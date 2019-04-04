@@ -20,6 +20,9 @@
 #include "ngraph/axis_vector.hpp"
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/except.hpp"
+#include "seal/he_seal_backend.hpp"
+#include "seal/seal.h"
+#include "seal/seal_ciphertext_wrapper.hpp"
 
 using namespace std;
 using namespace ngraph;
@@ -35,9 +38,53 @@ void runtime::he::kernel::pad(
     throw ngraph_error("Padding element must be scalar");
   }
 
-  shared_ptr<runtime::he::HECiphertext> arg1_encrypted =
-      he_backend->create_empty_ciphertext();
+  auto he_seal_backend =
+      dynamic_cast<const runtime::he::he_seal::HESealBackend*>(he_backend);
+
+  if (he_seal_backend == nullptr) {
+    throw ngraph_error("Pad supports only SEAL backend");
+  }
+
+  shared_ptr<runtime::he::HECiphertext> arg1_encrypted;
+  arg1_encrypted = he_seal_backend->create_empty_ciphertext();
+
   he_backend->encrypt(arg1_encrypted, *arg1[0]);
+
+  // Change output modulus to match other ciphertexts in vector
+  if (arg0.size() > 0) {
+    auto arg0_wrapper =
+        dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(
+            arg0[0]);
+    assert(arg0_wrapper != nullptr);
+    size_t chain_ind0 =
+        he_seal_backend->get_context()
+            ->context_data(arg0_wrapper->get_hetext().parms_id())
+            ->chain_index();
+
+    auto arg1_wrapper =
+        dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(
+            arg1_encrypted);
+    assert(arg1_wrapper != nullptr);
+
+    size_t chain_ind_out =
+        he_seal_backend->get_context()
+            ->context_data(arg1_wrapper->get_hetext().parms_id())
+            ->chain_index();
+
+    NGRAPH_ASSERT(chain_ind_out >= chain_ind0)
+        << "Encrypted pad value has smaller chain index that input";
+
+    if (chain_ind_out > chain_ind0) {
+      he_seal_backend->get_evaluator()->mod_switch_to_inplace(
+          arg1_wrapper->get_hetext(), arg0_wrapper->get_hetext().parms_id());
+      chain_ind_out = he_seal_backend->get_context()
+                          ->context_data(arg1_wrapper->get_hetext().parms_id())
+                          ->chain_index();
+      assert(chain_ind_out == chain_ind0);
+
+      arg1_wrapper->get_hetext().scale() = arg0_wrapper->get_hetext().scale();
+    }
+  }
 
   vector<shared_ptr<runtime::he::HECiphertext>> arg1_encrypted_vector{
       arg1_encrypted};
