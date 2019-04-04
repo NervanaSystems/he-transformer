@@ -348,6 +348,38 @@ void runtime::he::HEExecutable::handle_message(
     // Notify condition variable
     m_relu_done = true;
     m_relu_cond.notify_all();
+  } else if (msg_type == MessageType::sort_result) {
+    std::lock_guard<mutex> guard(m_relu_mutex);
+
+    size_t element_count = message.count();
+    size_t element_size = message.element_size();
+    m_sort_ciphertexts.clear();
+
+    NGRAPH_INFO << "Got " << element_count << " ciphertexts";
+    NGRAPH_INFO << "element_size " << element_size;
+
+    for (size_t element_idx = 0; element_idx < element_count; ++element_idx) {
+      seal::Ciphertext cipher;
+      stringstream cipher_stream;
+      cipher_stream.write(message.data_ptr() + element_idx * element_size,
+                          element_size);
+      cipher.load(m_context, cipher_stream);
+
+      auto wrapper =
+          make_shared<runtime::he::he_seal::SealCiphertextWrapper>(cipher);
+      auto he_ciphertext =
+          dynamic_pointer_cast<runtime::he::HECiphertext>(wrapper);
+
+      NGRAPH_ASSERT(he_ciphertext != nullptr)
+          << "HECiphertext is not SealPlaintextWrapper";
+
+      m_sort_ciphertexts.emplace_back(he_ciphertext);
+    }
+    NGRAPH_INFO << "Done loading sorted ciphertexts";
+
+    // Notify condition variable
+    m_sort_done = true;
+    m_sort_cond.notify_all();
   } else {
     stringstream ss;
     ss << "Unsupported message type in server:  "
@@ -1037,7 +1069,6 @@ void runtime::he::HEExecutable::generate_calls(
           max_pool->get_window_movement_strides(),
           max_pool->get_padding_below(), max_pool->get_padding_above());
 
-      out0_cipher->set_elements(m_sort_ciphertexts);
       break;
     }
     case OP_TYPEID::Multiply: {
