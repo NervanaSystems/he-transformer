@@ -1325,7 +1325,6 @@ void runtime::he::HEExecutable::generate_calls(
     case OP_TYPEID::QuantizedDot:
     case OP_TYPEID::QuantizedDotBias:
     case OP_TYPEID::QuantizedMaxPool:
-
     case OP_TYPEID::ReluBackprop:
     case OP_TYPEID::ReplaceSlice:
     case OP_TYPEID::ReverseSequence:
