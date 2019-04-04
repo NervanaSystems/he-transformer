@@ -17,14 +17,10 @@ def test_mnist_cnn(FLAGS):
     x_test_batch = mnist.test.images[:batch_size]
     y_test_batch = mnist.test.labels[:batch_size]
 
-    print('x_test_batch.shape', x_test_batch.shape)
     data = x_test_batch.flatten('F')
-
-    print('batch size', batch_size)
 
     hostname = 'localhost'
     port = 34000
-
     client = he_seal_client.HESealClient(hostname, port, batch_size, data)
 
     print('Sleeping until client is done')
@@ -41,7 +37,7 @@ def test_mnist_cnn(FLAGS):
     correct = np.sum(np.equal(y_pred, y_true))
     acc = correct / float(batch_size)
     print('correct', correct)
-    print('Accuracy (batch size ', batch_size, ') =', acc * 100., '%')
+    print('Accuracy (batch size', batch_size, ') =', acc * 100., '%')
 
 
 if __name__ == '__main__':
