@@ -176,7 +176,6 @@ void runtime::he::HESealClient::handle_message(
     for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
       seal::Ciphertext pre_relu_cipher;
       seal::Plaintext pre_relu_plain;
-
       seal::Plaintext post_relu_plain;
 
       // Load cipher from stream
@@ -213,9 +212,85 @@ void runtime::he::HESealClient::handle_message(
     auto relu_result_msg = TCPMessage(runtime::he::MessageType::relu_result,
                                       result_count, post_relu_stream);
     write_message(relu_result_msg);
-  }
+  } else if (msg_type == runtime::he::MessageType::sort_request) {
+    size_t result_count = message.count();
+    size_t element_size = message.element_size();
 
-  else {
+    std::cout << "result count " << result_count << std::endl;
+    std::cout << "element_size " << element_size << std::endl;
+    std::cout << " m_batch_size " << m_batch_size << std::endl;
+
+    m_results.reserve(result_count * m_batch_size);
+    std::stringstream post_sort_stream;
+
+    std::vector<std::vector<double>> pre_sort_values(
+        result_count, vector<double>(m_batch_size));
+    std::vector<std::vector<double>> post_sort_values(
+        result_count, vector<double>(m_batch_size));
+    std::cout << " Starting sorting" << std::endl;
+#pragma omp parallel for
+    for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
+      std::cout << "Sorting index " << result_idx << std::endl;
+      seal::Ciphertext pre_sort_cipher;
+      seal::Plaintext pre_sort_plain;
+      seal::Plaintext post_sort_plain;
+
+      // Load cipher from stream
+      std::stringstream pre_sort_cipher_stream;
+      pre_sort_cipher_stream.write(
+          message.data_ptr() + result_idx * element_size, element_size);
+      pre_sort_cipher.load(m_context, pre_sort_cipher_stream);
+
+      // Decrypt cipher
+      m_decryptor->decrypt(pre_sort_cipher, pre_sort_plain);
+      std::vector<double> pre_sort_value;
+      m_ckks_encoder->decode(pre_sort_plain, pre_sort_value);
+
+      // Discard extra values
+      pre_sort_value.resize(m_batch_size);
+
+      for (size_t value_idx = 0; value_idx < m_batch_size; value_idx++) {
+        pre_sort_values[value_idx][result_idx] = pre_sort_value[value_idx];
+      }
+    }
+
+    // Sort each vector of values
+    for (auto& pixel_values : pre_sort_values) {
+      std::sort(pixel_values.begin(), pixel_values.end());
+    }
+    for (const auto& pixel_values : pre_sort_values) {
+      if (!std::is_sorted(pixel_values.begin(), pixel_values.end())) {
+        std::cout << "Values are unsorted" << std::endl;
+        throw std::exception();
+      }
+    }
+    // Transpose sorted values
+    for (size_t i = 0; i < pre_sort_values.size(); ++i) {
+      for (size_t j = 0; j < m_batch_size; ++j) {
+        post_sort_values[j][i] = pre_sort_values[i][j];
+      }
+    }
+
+    // Encrypt sorted values
+    std::vector<seal::Ciphertext> post_sort_ciphers(result_count);
+#pragma omp parallel for
+    for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
+      seal::Plaintext post_sort_plain;
+      m_ckks_encoder->encode(post_sort_values[result_idx], m_scale,
+                             post_sort_plain);
+      m_encryptor->encrypt(post_sort_plain, post_sort_ciphers[result_idx]);
+    }
+
+    for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
+      post_sort_ciphers[result_idx].save(post_sort_stream);
+    }
+    std::cout << "Writing sort_result message with " << result_count
+              << " ciphertexts" << std::endl;
+
+    auto sort_result_msg = TCPMessage(runtime::he::MessageType::sort_result,
+                                      result_count, post_sort_stream);
+    write_message(sort_result_msg);
+  } else {
     std::cout << "Unsupported message type: "
               << message_type_to_string(msg_type).c_str() << std::endl;
   }

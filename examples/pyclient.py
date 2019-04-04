@@ -1,7 +1,7 @@
 import he_seal_client
 import time
 
-data = (1, 2, 3, 4)
+data = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
 
 hostname = 'localhost'
 port = 34000

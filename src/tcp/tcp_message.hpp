@@ -33,6 +33,8 @@ enum class MessageType {
   encryption_parameters,
   eval_key,
   execute,
+  sort_request,
+  sort_result,
   parameter_shape_request,
   parameter_size,
   public_key,
@@ -58,6 +60,12 @@ inline std::string message_type_to_string(const MessageType& type) {
       break;
     case MessageType::execute:
       return "execute";
+      break;
+    case MessageType::sort_request:
+      return "sort_request";
+      break;
+    case MessageType::sort_result:
+      return "sort_result";
       break;
     case MessageType::parameter_size:
       return "parameter_size";

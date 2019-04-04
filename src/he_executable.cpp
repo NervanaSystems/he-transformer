@@ -28,6 +28,7 @@
 #include "kernel/constant.hpp"
 #include "kernel/convolution.hpp"
 #include "kernel/dot.hpp"
+#include "kernel/max_pool.hpp"
 #include "kernel/multiply.hpp"
 #include "kernel/negate.hpp"
 #include "kernel/pad.hpp"
@@ -46,6 +47,7 @@
 #include "ngraph/op/constant.hpp"
 #include "ngraph/op/convolution.hpp"
 #include "ngraph/op/dot.hpp"
+#include "ngraph/op/max_pool.hpp"
 #include "ngraph/op/pad.hpp"
 #include "ngraph/op/passthrough.hpp"
 #include "ngraph/op/reshape.hpp"
@@ -978,6 +980,66 @@ void runtime::he::HEExecutable::generate_calls(
       }
       break;
     }
+    case OP_TYPEID::MaxPool: {
+      if (!m_enable_client) {
+        throw ngraph_error(
+            "MaxPool op unsupported unless client is enabled. Try setting "
+            "NGRAPH_ENABLE_CLIENT=1");
+      }
+      if (arg0_cipher == nullptr || out0_cipher == nullptr) {
+        NGRAPH_INFO << "MaxPool types not supported ";
+        throw ngraph_error("MaxPool supports only Cipher, Cipher");
+      }
+
+      NGRAPH_INFO << "MaxPool shape " << join(node.get_output_shape(0), "x");
+      NGRAPH_INFO << "m_batch_size " << m_batch_size;
+
+      stringstream cipher_stream;
+      size_t cipher_count = 0;
+      for (const auto& he_ciphertext : arg0_cipher->get_elements()) {
+        auto wrapper =
+            dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(
+                he_ciphertext);
+        seal::Ciphertext c = wrapper->m_ciphertext;
+        c.save(cipher_stream);
+        cipher_count++;
+      }
+      NGRAPH_INFO << "cipher_count " << cipher_count;
+
+      // Send output to client
+      NGRAPH_INFO << "Sending " << cipher_count << " Maxpool ciphertexts (size "
+                  << cipher_stream.str().size() << ") to client";
+      auto sort_message =
+          TCPMessage(MessageType::sort_request, cipher_count, cipher_stream);
+
+      m_session->do_write(sort_message);
+
+      // Acquire lock
+      unique_lock<mutex> mlock(m_sort_mutex);
+
+      // Wait until Sorting is done
+      m_sort_cond.wait(mlock, std::bind(&HEExecutable::sort_done, this));
+      NGRAPH_INFO << "Sort is done";
+
+      // Reset for next sort call
+      m_sort_done = false;
+
+      const op::MaxPool* max_pool = static_cast<const op::MaxPool*>(&node);
+      // TODO: cleanup
+      Shape arg0_shape = node.get_inputs().at(0).get_shape();
+      arg0_shape[0] /= m_batch_size;
+      Shape out_shape = node.get_output_shape(0);
+      out_shape[0] /= m_batch_size;
+
+      runtime::he::kernel::max_pool(
+          m_sort_ciphertexts, out0_cipher->get_elements(), arg0_shape,
+          out_shape, max_pool->get_window_shape(),
+          max_pool->get_window_movement_strides(),
+          max_pool->get_padding_below(), max_pool->get_padding_above());
+
+      out0_cipher->set_elements(m_sort_ciphertexts);
+      break;
+    }
     case OP_TYPEID::Multiply: {
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
@@ -1305,7 +1367,6 @@ void runtime::he::HEExecutable::generate_calls(
     case OP_TYPEID::LRN:
     case OP_TYPEID::Max:
     case OP_TYPEID::Maximum:
-    case OP_TYPEID::MaxPool:
     case OP_TYPEID::MaxPoolBackprop:
     case OP_TYPEID::Min:
     case OP_TYPEID::Minimum:
