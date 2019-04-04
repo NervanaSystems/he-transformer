@@ -38,22 +38,21 @@ def mlp_model(x, mode):
         W_conv1 = get_variable('W_conv1', [7, 7, 1, 5], mode)
         y = conv2d_stride_2_valid(x_image, W_conv1)
         # y = tf.Print(y, [y], message='pre-max pool\n', summarize=1000)
-        # y_conv1 = tf.reshape(y_conv1, [-1, 12 * 12 * 5])
         y = tf.nn.max_pool(
             y,
             ksize=[1, POOL_SIZE, POOL_SIZE, 1],
             strides=[1, POOL_SIZE, POOL_SIZE, 1],
             padding='SAME')
         #y = tf.Print(y, [y], message='post-max pool\n', summarize=1000)
-        #y_conv1 = tf.nn.relu(y_conv1)
+        y = tf.nn.relu(y)
         y = tf.reshape(y, [-1, 6 * 6 * 5])
 
     with tf.name_scope('fc1'):
-        W_fc1 = get_variable('W_fc1', [6 * 6 * 5, 10], mode)
+        W_fc1 = get_variable('W_fc1', [6 * 6 * 5, 100], mode)
         y = tf.matmul(y, W_fc1)
-        #y_conv = tf.nn.relu(y_conv)
+        y = tf.nn.relu(y)
 
-    #with tf.name_scope('fc2'):
-    #    W_fc1 = get_variable('W_fc2', [100, 10], mode)
-    #    y_conv = tf.matmul(y_conv, W_fc1)
+    with tf.name_scope('fc2'):
+        W_fc1 = get_variable('W_fc2', [100, 10], mode)
+        y = tf.matmul(y, W_fc1)
     return y
