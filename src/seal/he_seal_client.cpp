@@ -14,13 +14,10 @@
 // limitations under the License.
 //*****************************************************************************
 
-// TODO: remove thread and chrono
 #include <boost/asio.hpp>
-#include <chrono>
 #include <iostream>
 #include <memory>
 #include <string>
-#include <thread>
 #include <vector>
 
 #include "seal/he_seal_client.hpp"
@@ -174,7 +171,6 @@ void runtime::he::HESealClient::handle_message(
 
     m_results.reserve(result_count * m_batch_size);
     std::stringstream post_relu_stream;
-    // TODO: parallelize this
     std::vector<seal::Ciphertext> post_relu_ciphers(result_count);
 #pragma omp parallel for
     for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
