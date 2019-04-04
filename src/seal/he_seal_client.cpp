@@ -175,11 +175,12 @@ void runtime::he::HESealClient::handle_message(
     m_results.reserve(result_count * m_batch_size);
     std::stringstream post_relu_stream;
     // TODO: parallelize this
+    std::vector<seal::Ciphertext> post_relu_ciphers(result_count);
+#pragma omp parallel for
     for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
       seal::Ciphertext pre_relu_cipher;
       seal::Plaintext pre_relu_plain;
 
-      seal::Ciphertext post_relu_cipher;
       seal::Plaintext post_relu_plain;
 
       // Load cipher from stream
@@ -205,8 +206,10 @@ void runtime::he::HESealClient::handle_message(
 
       // Encrypt post-relu result
       m_ckks_encoder->encode(post_relu, m_scale, post_relu_plain);
-      m_encryptor->encrypt(post_relu_plain, post_relu_cipher);
-      post_relu_cipher.save(post_relu_stream);
+      m_encryptor->encrypt(post_relu_plain, post_relu_ciphers[result_idx]);
+    }
+    for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
+      post_relu_ciphers[result_idx].save(post_relu_stream);
     }
     std::cout << "Writing relu_result message with " << result_count
               << " ciphertexts" << std::endl;
