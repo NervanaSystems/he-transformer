@@ -1160,7 +1160,6 @@ void runtime::he::HEExecutable::generate_calls(
       }
       NGRAPH_ASSERT(element_count == cipher_count)
           << "Incorrect number of elements in ciphertext";
-      // const string& cipher_str = cipher_stream.str();
 
       // Send output to client
       NGRAPH_INFO << "Sending " << element_count << " Relu ciphertexts (size "

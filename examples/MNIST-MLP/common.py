@@ -50,5 +50,5 @@ def mlp_model(x, mode):
     with tf.name_scope('fc2'):
         W_fc1 = get_variable('W_fc2', [100, 10], mode)
         y_conv = tf.matmul(y_conv, W_fc1)
-        y_conv = tf.nn.relu(y_conv)
+        #y_conv = tf.nn.relu(y_conv)
     return y_conv

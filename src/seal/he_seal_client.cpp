@@ -174,6 +174,7 @@ void runtime::he::HESealClient::handle_message(
 
     m_results.reserve(result_count * m_batch_size);
     std::stringstream post_relu_stream;
+    // TODO: parallelize this
     for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
       seal::Ciphertext pre_relu_cipher;
       seal::Plaintext pre_relu_plain;
