@@ -33,8 +33,8 @@ enum class MessageType {
   encryption_parameters,
   eval_key,
   execute,
-  sort_request,
-  sort_result,
+  max_request,
+  max_result,
   parameter_shape_request,
   parameter_size,
   public_key,
@@ -61,11 +61,11 @@ inline std::string message_type_to_string(const MessageType& type) {
     case MessageType::execute:
       return "execute";
       break;
-    case MessageType::sort_request:
-      return "sort_request";
+    case MessageType::max_request:
+      return "max_request";
       break;
-    case MessageType::sort_result:
-      return "sort_result";
+    case MessageType::max_result:
+      return "max_result";
       break;
     case MessageType::parameter_size:
       return "parameter_size";
@@ -100,7 +100,7 @@ inline std::string message_type_to_string(const MessageType& type) {
 class TCPMessage {
  public:
   enum { header_length = 15 };
-  enum { max_body_length = 400000000 };
+  enum { max_body_length = 800000000 };
   enum { message_type_length = sizeof(MessageType) };
   enum { message_count_length = sizeof(size_t) };
 

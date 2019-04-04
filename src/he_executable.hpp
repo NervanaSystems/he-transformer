@@ -70,7 +70,7 @@ class HEExecutable : public Executable {
 
   // TODO: merge two _done() methods
   bool relu_done() const { return m_relu_done; };
-  bool sort_done() const { return m_sort_done; };
+  bool max_done() const { return m_max_done; };
 
   bool session_started() const { return m_session_started; };
 
@@ -105,7 +105,7 @@ class HEExecutable : public Executable {
   std::vector<std::shared_ptr<runtime::he::HETensor>> m_client_outputs;
 
   std::vector<std::shared_ptr<runtime::he::HECiphertext>> m_relu_ciphertexts;
-  std::vector<std::shared_ptr<runtime::he::HECiphertext>> m_sort_ciphertexts;
+  std::vector<std::shared_ptr<runtime::he::HECiphertext>> m_max_ciphertexts;
 
   std::shared_ptr<seal::SEALContext>
       m_context;  // TODO: move to he_seal_executable.hpp
@@ -115,10 +115,10 @@ class HEExecutable : public Executable {
   std::condition_variable m_relu_cond;
   bool m_relu_done;
 
-  // To trigger when sorting is done
-  std::mutex m_sort_mutex;
-  std::condition_variable m_sort_cond;
-  bool m_sort_done;
+  // To trigger when maxpool is done
+  std::mutex m_max_mutex;
+  std::condition_variable m_max_cond;
+  bool m_max_done;
 
   // To trigger when session has started
   std::mutex m_session_mutex;

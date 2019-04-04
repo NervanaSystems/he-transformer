@@ -27,15 +27,23 @@ namespace ngraph {
 namespace runtime {
 namespace he {
 namespace kernel {
-template <typename T>
-// Assumes arg has already been sorted
-void max_pool(const std::vector<std::shared_ptr<T>>& arg,
-              std::vector<std::shared_ptr<T>>& out, const Shape& arg_shape,
-              const Shape& out_shape, const Shape& window_shape,
-              const Strides& window_movement_strides,
-              const Shape& padding_below, const Shape& padding_above) {
+// Returns list where L[i] is the list of input indices to maximize over.
+std::vector<std::vector<size_t>> max_pool(
+    const Shape& arg_shape, const Shape& out_shape, const Shape& window_shape,
+    const Strides& window_movement_strides, const Shape& padding_below,
+    const Shape& padding_above) {
   // At the outermost level we will walk over every output coordinate O.
   CoordinateTransform output_transform(out_shape);
+
+  size_t out_size = 0;
+  for (const Coordinate& out_coord : output_transform) {
+    out_size++;
+  }
+  NGRAPH_ASSERT(out_size == shape_size(out_shape))
+      << "out size " << out_size << " != shape_size(out_shape) "
+      << join(out_shape, "x");
+
+  std::vector<std::vector<size_t>> maximize_list(shape_size(out_shape));
 
   for (const Coordinate& out_coord : output_transform) {
     // Our output coordinate O will have the form:
@@ -53,12 +61,13 @@ void max_pool(const std::vector<std::shared_ptr<T>>& arg,
     //
     //   (N,chan,s_1*i_1,s_2*i_2,...,s_n*i_n) ->
     //
-    //     (N+1,chan+1,s_1*i_1 + window_shape_1,...,s_n*i_n + window_shape_n)
+    //     (N+1,chan+1,s_1*i_1 + window_shape_1,...,s_n*i_n +
+    //     window_shape_n)
     //
     // with unit stride.
     //
-    // We iterate this over the *padded* data, so below we will need to check
-    // for coordinates that fall in the padding area.
+    // We iterate this over the *padded* data, so below we will need to
+    // check for coordinates that fall in the padding area.
 
     size_t n_spatial_dimensions = arg_shape.size() - 2;
 
@@ -107,18 +116,17 @@ void max_pool(const std::vector<std::shared_ptr<T>>& arg,
     //
     //   output[O] = max(output[O],arg[I])
 
-    // Since we assume arg has already been sorted, we only need to track the
-    // largest index
-    int largest_index = -1;
+    size_t out_index = output_transform.index(out_coord);
     for (const Coordinate& input_batch_coord : input_batch_transform) {
       if (input_batch_transform.has_source_coordinate(input_batch_coord)) {
         int new_index = input_batch_transform.index(input_batch_coord);
-        largest_index = largest_index > new_index ? largest_index : new_index;
+        maximize_list[out_index].emplace_back(new_index);
       }
     }
-    NGRAPH_ASSERT(largest_index > 0) << "Input has no coordinates";
-    out[output_transform.index(out_coord)] = arg[largest_index];
+    // NGRAPH_ASSERT(largest_index > 0) << "Input has no coordinates";
+    // out[output_transform.index(out_coord)] = arg[largest_index];
   }
+  return maximize_list;
 }
 }  // namespace kernel
 }  // namespace he

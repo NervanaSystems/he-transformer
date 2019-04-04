@@ -348,12 +348,11 @@ void runtime::he::HEExecutable::handle_message(
     // Notify condition variable
     m_relu_done = true;
     m_relu_cond.notify_all();
-  } else if (msg_type == MessageType::sort_result) {
+  } else if (msg_type == MessageType::max_result) {
     std::lock_guard<mutex> guard(m_relu_mutex);
 
     size_t element_count = message.count();
     size_t element_size = message.element_size();
-    m_sort_ciphertexts.clear();
 
     NGRAPH_INFO << "Got " << element_count << " ciphertexts";
     NGRAPH_INFO << "element_size " << element_size;
@@ -373,13 +372,13 @@ void runtime::he::HEExecutable::handle_message(
       NGRAPH_ASSERT(he_ciphertext != nullptr)
           << "HECiphertext is not SealPlaintextWrapper";
 
-      m_sort_ciphertexts.emplace_back(he_ciphertext);
+      m_max_ciphertexts.emplace_back(he_ciphertext);
     }
-    NGRAPH_INFO << "Done loading sorted ciphertexts";
+    NGRAPH_INFO << "Done loading max ciphertext";
 
     // Notify condition variable
-    m_sort_done = true;
-    m_sort_cond.notify_all();
+    m_max_done = true;
+    m_max_cond.notify_all();
   } else {
     stringstream ss;
     ss << "Unsupported message type in server:  "
@@ -1022,39 +1021,10 @@ void runtime::he::HEExecutable::generate_calls(
         NGRAPH_INFO << "MaxPool types not supported ";
         throw ngraph_error("MaxPool supports only Cipher, Cipher");
       }
+      m_max_ciphertexts.clear();
 
       NGRAPH_INFO << "MaxPool shape " << join(node.get_output_shape(0), "x");
       NGRAPH_INFO << "m_batch_size " << m_batch_size;
-
-      stringstream cipher_stream;
-      size_t cipher_count = 0;
-      for (const auto& he_ciphertext : arg0_cipher->get_elements()) {
-        auto wrapper =
-            dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(
-                he_ciphertext);
-        seal::Ciphertext c = wrapper->m_ciphertext;
-        c.save(cipher_stream);
-        cipher_count++;
-      }
-      NGRAPH_INFO << "cipher_count " << cipher_count;
-
-      // Send output to client
-      NGRAPH_INFO << "Sending " << cipher_count << " Maxpool ciphertexts (size "
-                  << cipher_stream.str().size() << ") to client";
-      auto sort_message =
-          TCPMessage(MessageType::sort_request, cipher_count, cipher_stream);
-
-      m_session->do_write(sort_message);
-
-      // Acquire lock
-      unique_lock<mutex> mlock(m_sort_mutex);
-
-      // Wait until Sorting is done
-      m_sort_cond.wait(mlock, std::bind(&HEExecutable::sort_done, this));
-      NGRAPH_INFO << "Sort is done";
-
-      // Reset for next sort call
-      m_sort_done = false;
 
       const op::MaxPool* max_pool = static_cast<const op::MaxPool*>(&node);
       // TODO: cleanup
@@ -1063,11 +1033,46 @@ void runtime::he::HEExecutable::generate_calls(
       Shape out_shape = node.get_output_shape(0);
       out_shape[0] /= m_batch_size;
 
-      runtime::he::kernel::max_pool(
-          m_sort_ciphertexts, out0_cipher->get_elements(), arg0_shape,
-          out_shape, max_pool->get_window_shape(),
+      vector<vector<size_t>> maximize_list = runtime::he::kernel::max_pool(
+          arg0_shape, out_shape, max_pool->get_window_shape(),
           max_pool->get_window_movement_strides(),
           max_pool->get_padding_below(), max_pool->get_padding_above());
+
+      for (size_t list_ind = 0; list_ind < maximize_list.size(); list_ind++) {
+        stringstream cipher_stream;
+        size_t cipher_count = 0;
+
+        for (const size_t max_ind : maximize_list[list_ind]) {
+          auto he_ciphertext = arg0_cipher->get_element(max_ind);
+          auto wrapper =
+              dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(
+                  he_ciphertext);
+          seal::Ciphertext c = wrapper->m_ciphertext;
+          c.save(cipher_stream);
+          cipher_count++;
+        }
+        // Send list of ciphertexts to maximize over to client
+        NGRAPH_INFO << "Sending " << cipher_count
+                    << " Maxpool ciphertexts (size "
+                    << cipher_stream.str().size() << ") to client";
+        auto max_message =
+            TCPMessage(MessageType::max_request, cipher_count, cipher_stream);
+
+        m_session->do_write(max_message);
+
+        // Acquire lock
+        unique_lock<mutex> mlock(m_max_mutex);
+
+        // Wait until max is done
+        m_max_cond.wait(mlock, std::bind(&HEExecutable::max_done, this));
+        NGRAPH_INFO << "max is done";
+
+        // Reset for next max call
+        m_max_done = false;
+      }
+
+      out0_cipher->set_elements(m_max_ciphertexts);
+      break;
 
       break;
     }
