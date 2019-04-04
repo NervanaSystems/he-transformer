@@ -47,6 +47,9 @@ class HESealBackend : public HEBackend {
       const override;
 
   std::shared_ptr<runtime::he::HECiphertext> create_empty_ciphertext(
+      seal::parms_id_type parms_id) const;
+
+  std::shared_ptr<runtime::he::HECiphertext> create_empty_ciphertext(
       const seal::MemoryPoolHandle& pool) const;
 
   std::shared_ptr<runtime::he::HEPlaintext> create_empty_plaintext()

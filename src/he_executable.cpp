@@ -1134,19 +1134,22 @@ void runtime::he::HEExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Relu: {
+      if (!m_enable_client) {
+        throw ngraph_error(
+            "Relu op unsupported unless client is enabled. Try setting "
+            "NGRAPH_ENABLE_CLIENT=1");
+      }
+
       size_t element_count =
           shape_size(node.get_output_shape(0)) / m_batch_size;
-      NGRAPH_INFO << "Relu element count " << element_count;
 
       if (arg0_cipher == nullptr || out0_cipher == nullptr) {
         NGRAPH_INFO << "Relu types not supported ";
         throw ngraph_error("Relu types not supported.");
       }
-      NGRAPH_INFO << "Relu types are supported ";
 
       stringstream cipher_stream;
       size_t cipher_count = 0;
-      size_t prev_size = 0;
       for (const auto& he_ciphertext : arg0_cipher->get_elements()) {
         auto wrapper =
             dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(
@@ -1154,27 +1157,17 @@ void runtime::he::HEExecutable::generate_calls(
         seal::Ciphertext c = wrapper->m_ciphertext;
         c.save(cipher_stream);
         cipher_count++;
-
-        // TODO: remove
-        const string& tmp_str = cipher_stream.str();
-        const char* tmp_cstr = tmp_str.c_str();
-        size_t new_size = tmp_str.size();
-        NGRAPH_INFO << "cipher_count " << cipher_count << " size "
-                    << (new_size - prev_size);
-        prev_size = new_size;
       }
-      const string& cipher_str = cipher_stream.str();
-      const char* cipher_cstr = cipher_str.c_str();
-      NGRAPH_INFO << "Cipher size " << cipher_str.size();
-      NGRAPH_INFO << "Cipher count " << cipher_count;
+      NGRAPH_ASSERT(element_count == cipher_count)
+          << "Incorrect number of elements in ciphertext";
+      // const string& cipher_str = cipher_stream.str();
 
       // Send output to client
-      NGRAPH_INFO << "Sending Relu ciphertexts to client";
-      auto relu_message = TCPMessage(MessageType::relu_request, element_count,
-                                     cipher_str.size(), cipher_cstr);
-      /*auto relu_message =
+      NGRAPH_INFO << "Sending " << element_count << " Relu ciphertexts (size "
+                  << cipher_stream.str().size() << ") to client";
+      auto relu_message =
           TCPMessage(MessageType::relu_request, element_count, cipher_stream);
-       */
+
       m_session->do_write(relu_message);
 
       // Acquire lock
