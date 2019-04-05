@@ -1150,21 +1150,21 @@ void runtime::he::HEExecutable::generate_calls(
             arg0_cipher->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), arg0_shape, out_shape,
             pad->get_padding_below(), pad->get_padding_above(),
-            pad->get_padding_interior(), batch_size, m_he_backend);
+            pad->get_pad_mode(), batch_size, m_he_backend);
       } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                  out0_cipher != nullptr) {
         runtime::he::kernel::pad(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
             out0_cipher->get_elements(), arg0_shape, out_shape,
             pad->get_padding_below(), pad->get_padding_above(),
-            pad->get_padding_interior(), batch_size, m_he_backend);
+            pad->get_pad_mode(), batch_size, m_he_backend);
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
         runtime::he::kernel::pad(
             arg0_plain->get_elements(), arg1_plain->get_elements(),
             out0_plain->get_elements(), arg0_shape, out_shape,
             pad->get_padding_below(), pad->get_padding_above(),
-            pad->get_padding_interior(), batch_size, m_he_backend);
+            pad->get_pad_mode(), batch_size, m_he_backend);
       } else {
         throw ngraph_error("Pad cipher vs. plain types not supported.");
       }
@@ -1375,6 +1375,7 @@ void runtime::he::HEExecutable::generate_calls(
     case OP_TYPEID::AvgPoolBackprop:
     case OP_TYPEID::BatchNormTraining:
     case OP_TYPEID::BatchNormTrainingBackprop:
+    case OP_TYPEID::BroadcastDistributed:
     case OP_TYPEID::Ceiling:
     case OP_TYPEID::Convert:
     case OP_TYPEID::ConvolutionBackpropData:
@@ -1383,8 +1384,13 @@ void runtime::he::HEExecutable::generate_calls(
     case OP_TYPEID::Cosh:
     case OP_TYPEID::Dequantize:
     case OP_TYPEID::Divide:
+    case OP_TYPEID::DynBroadcast:
+    case OP_TYPEID::DynPad:
+    case OP_TYPEID::DynReshape:
+    case OP_TYPEID::DynSlice:
     case OP_TYPEID::EmbeddingLookup:
     case OP_TYPEID::Equal:
+    case OP_TYPEID::Erf:
     case OP_TYPEID::Exp:
     case OP_TYPEID::Floor:
     case OP_TYPEID::GenerateMask:

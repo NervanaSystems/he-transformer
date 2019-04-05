@@ -31,8 +31,8 @@ void runtime::he::kernel::pad(
     const vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
     const vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,  // scalar
     vector<shared_ptr<runtime::he::HECiphertext>>& out, const Shape& arg0_shape,
-    const Shape& out_shape, const Shape& padding_below,
-    const Shape& padding_above, const Shape& padding_interior,
+    const Shape& out_shape, const CoordinateDiff& padding_below,
+    const CoordinateDiff& padding_above, op::PadMode pad_mode,
     size_t batch_size, const runtime::he::HEBackend* he_backend) {
   if (arg1.size() != 1) {
     throw ngraph_error("Padding element must be scalar");
@@ -90,6 +90,6 @@ void runtime::he::kernel::pad(
       arg1_encrypted};
 
   runtime::he::kernel::pad(arg0, arg1_encrypted_vector, out, arg0_shape,
-                           out_shape, padding_below, padding_above,
-                           padding_interior, batch_size, he_backend);
+                           out_shape, padding_below, padding_above, pad_mode,
+                           batch_size, he_backend);
 }

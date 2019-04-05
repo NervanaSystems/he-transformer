@@ -20,7 +20,7 @@ set(EXTERNAL_NGRAPH_INSTALL_DIR ${EXTERNAL_INSTALL_DIR})
 set(NGRAPH_TF_CMAKE_PREFIX ext_ngraph_tf)
 
 SET(NGRAPH_TF_REPO_URL https://github.com/NervanaSystems/ngraph-tf.git)
-SET(NGRAPH_TF_GIT_LABEL v0.12.0-rc1)
+SET(NGRAPH_TF_GIT_LABEL v0.12.0-rc3)
 
 SET(NGRAPH_TF_SRC_DIR ${CMAKE_BINARY_DIR}/${NGRAPH_TF_CMAKE_PREFIX}/src/${NGRAPH_TF_CMAKE_PREFIX})
 SET(NGRAPH_TF_BUILD_DIR ${NGRAPH_TF_SRC_DIR}/build_cmake)
@@ -34,8 +34,8 @@ SET(NGRAPH_TF_LIB_DIR ${NGRAPH_TF_ARTIFACTS_DIR}/lib)
 
 SET(NGRAPH_TEST_UTIL_INCLUDE_DIR ${NGRAPH_TF_BUILD_DIR}/ngraph/test)
 
-if (USE_PREBUILT_BINARIES)
-    message(STATUS "Using prebuilt ng/ng-tf/tf binaries")
+if (USE_PREBUILT_TF)
+    message(STATUS "Using prebuilt TF")
     ExternalProject_Add(
         ext_ngraph_tf
         GIT_REPOSITORY ${NGRAPH_TF_REPO_URL}
@@ -45,11 +45,11 @@ if (USE_PREBUILT_BINARIES)
         CONFIGURE_COMMAND ""
         BUILD_IN_SOURCE 1
         BUILD_BYPRODUCTS ${NGRAPH_TF_CMAKE_PREFIX}
-        BUILD_COMMAND python3 ${NGRAPH_TF_SRC_DIR}/build_ngtf.py --use_prebuilt_binaries
+        BUILD_COMMAND python3 ${NGRAPH_TF_SRC_DIR}/build_ngtf.py --use_prebuilt_tensorflow
         INSTALL_COMMAND ln -fs ${NGRAPH_TF_VENV_DIR} ${EXTERNAL_INSTALL_DIR}
 )
 else()
-    message(STATUS "Rebuilding ng/ng-tf/tf binaries")
+    message(STATUS "Rebuilding TF")
     ExternalProject_Add(
         ext_ngraph_tf
         GIT_REPOSITORY ${NGRAPH_TF_REPO_URL}
