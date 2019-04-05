@@ -36,13 +36,16 @@ def mlp_model(x, mode):
     with tf.name_scope('conv1'):
         W_conv1 = get_variable('W_conv1', [5, 5, 1, 5], mode)
         y = conv2d_stride_2_valid(x_image, W_conv1)
+        paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]],
+                               name='pad_const')
+        y = tf.pad(y, paddings)
         y = tf.nn.relu(y)
         y = tf.nn.max_pool(
             y, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
     with tf.name_scope('fc1'):
-        y = tf.reshape(y, [-1, 6 * 6 * 5])
-        W_fc1 = get_variable('W_fc1', [6 * 6 * 5, 100], mode)
+        y = tf.reshape(y, [-1, 7 * 7 * 5])
+        W_fc1 = get_variable('W_fc1', [7 * 7 * 5, 100], mode)
         y = tf.matmul(y, W_fc1)
         y = tf.nn.relu(y)
 
