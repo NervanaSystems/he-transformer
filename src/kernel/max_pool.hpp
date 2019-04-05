@@ -123,8 +123,6 @@ std::vector<std::vector<size_t>> max_pool(
         maximize_list[out_index].emplace_back(new_index);
       }
     }
-    // NGRAPH_ASSERT(largest_index > 0) << "Input has no coordinates";
-    // out[output_transform.index(out_coord)] = arg[largest_index];
   }
   return maximize_list;
 }
