@@ -14,9 +14,11 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include <algorithm>
 #include <boost/asio.hpp>
 #include <iostream>
 #include <memory>
+#include <numeric>
 #include <string>
 #include <vector>
 
@@ -169,7 +171,6 @@ void runtime::he::HESealClient::handle_message(
     size_t result_count = message.count();
     size_t element_size = message.element_size();
 
-    m_results.reserve(result_count * m_batch_size);
     std::stringstream post_relu_stream;
     std::vector<seal::Ciphertext> post_relu_ciphers(result_count);
 #pragma omp parallel for
@@ -213,29 +214,19 @@ void runtime::he::HESealClient::handle_message(
                                       result_count, post_relu_stream);
     write_message(relu_result_msg);
   } else if (msg_type == runtime::he::MessageType::max_request) {
-    // TODO: simplify to max
-
     size_t cipher_count = message.count();
     size_t element_size = message.element_size();
 
-    std::cout << "result count " << cipher_count << std::endl;
-    std::cout << "element_size " << element_size << std::endl;
-    std::cout << " m_batch_size " << m_batch_size << std::endl;
-
-    m_results.reserve(cipher_count * m_batch_size);
-    std::stringstream post_sort_stream;
-
-    std::vector<std::vector<double>> pre_sort_values(
+    std::vector<std::vector<double>> input_cipher_values(
         m_batch_size, vector<double>(cipher_count, 0));
-    std::vector<std::vector<double>> post_sort_values(
-        cipher_count, vector<double>(m_batch_size, 0));
-    std::cout << " Starting sorting" << std::endl;
+
+    std::vector<double> max_values(m_batch_size,
+                                   std::numeric_limits<double>::lowest());
+
 #pragma omp parallel for
     for (size_t cipher_idx = 0; cipher_idx < cipher_count; ++cipher_idx) {
-      // std::cout << "Sorting index " << cipher_idx << std::endl;
       seal::Ciphertext pre_sort_cipher;
       seal::Plaintext pre_sort_plain;
-      seal::Plaintext post_sort_plain;
 
       // Load cipher from stream
       std::stringstream pre_sort_cipher_stream;
@@ -251,55 +242,31 @@ void runtime::he::HESealClient::handle_message(
       // Discard extra values
       pre_sort_value.resize(m_batch_size);
 
-      for (size_t value_idx = 0; value_idx < m_batch_size; value_idx++) {
-        pre_sort_values[value_idx][cipher_idx] = pre_sort_value[value_idx];
-      }
-    }
-
-    // Sort each vector of values
-    for (auto& pixel_values : pre_sort_values) {
-      std::sort(pixel_values.begin(), pixel_values.end());
-    }
-    for (const auto& pixel_values : pre_sort_values) {
-      if (!std::is_sorted(pixel_values.begin(), pixel_values.end())) {
-        std::cout << "Values are unsorted" << std::endl;
-        throw std::exception();
-      }
-    }
-    // Transpose sorted values
-    for (size_t batch_idx = 0; batch_idx < m_batch_size; ++batch_idx) {
-      for (size_t cipher_idx = 0; cipher_idx < cipher_count; ++cipher_idx) {
-        post_sort_values[cipher_idx][batch_idx] =
-            pre_sort_values[batch_idx][cipher_idx];
-      }
-    }
-
-    for (size_t cipher_idx = 0; cipher_idx < cipher_count; ++cipher_idx) {
-      std::cout << "post_sort_values[" << cipher_idx << "]" << std::endl;
       for (size_t batch_idx = 0; batch_idx < m_batch_size; ++batch_idx) {
-        std::cout << post_sort_values[cipher_idx][batch_idx] << std::endl;
+        input_cipher_values[batch_idx][cipher_idx] = pre_sort_value[batch_idx];
       }
     }
 
-    // Encrypt sorted values
-    std::vector<seal::Ciphertext> post_sort_ciphers(cipher_count);
-    size_t cipher_idx = cipher_count - 1;
-    // for (size_t cipher_idx = 0; cipher_idx < cipher_count; ++cipher_idx) {
-    seal::Plaintext post_sort_plain;
-    m_ckks_encoder->encode(post_sort_values[cipher_idx], m_scale,
-                           post_sort_plain);
-    m_encryptor->encrypt(post_sort_plain, post_sort_ciphers[cipher_idx]);
-    //}
+    // Get max of each vector of values
+    for (size_t batch_idx = 0; batch_idx < m_batch_size; ++batch_idx) {
+      max_values[batch_idx] =
+          *std::max_element(input_cipher_values[batch_idx].begin(),
+                            input_cipher_values[batch_idx].end());
+    }
 
-    // for (size_t cipher_idx = 0; cipher_idx < cipher_count; ++cipher_idx) {
-    post_sort_ciphers[cipher_idx].save(post_sort_stream);
-    //}
-    std::cout << "Writing sort_result message with " << 1 << " ciphertexts"
+    // Encrypt maximum values
+    seal::Ciphertext cipher_max;
+    seal::Plaintext plain_max;
+    std::stringstream max_stream;
+    m_ckks_encoder->encode(max_values, m_scale, plain_max);
+    m_encryptor->encrypt(plain_max, cipher_max);
+    cipher_max.save(max_stream);
+    std::cout << "Writing max_result message with " << 1 << " ciphertexts"
               << std::endl;
 
-    auto sort_result_msg =
-        TCPMessage(runtime::he::MessageType::max_result, 1, post_sort_stream);
-    write_message(sort_result_msg);
+    auto max_result_msg =
+        TCPMessage(runtime::he::MessageType::max_result, 1, max_stream);
+    write_message(max_result_msg);
   } else {
     std::cout << "Unsupported message type: "
               << message_type_to_string(msg_type).c_str() << std::endl;

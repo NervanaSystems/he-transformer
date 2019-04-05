@@ -354,9 +354,6 @@ void runtime::he::HEExecutable::handle_message(
     size_t element_count = message.count();
     size_t element_size = message.element_size();
 
-    NGRAPH_INFO << "Got " << element_count << " ciphertexts";
-    NGRAPH_INFO << "element_size " << element_size;
-
     for (size_t element_idx = 0; element_idx < element_count; ++element_idx) {
       seal::Ciphertext cipher;
       stringstream cipher_stream;
@@ -374,8 +371,6 @@ void runtime::he::HEExecutable::handle_message(
 
       m_max_ciphertexts.emplace_back(he_ciphertext);
     }
-    NGRAPH_INFO << "Done loading max ciphertext";
-
     // Notify condition variable
     m_max_done = true;
     m_max_cond.notify_all();
@@ -1065,7 +1060,6 @@ void runtime::he::HEExecutable::generate_calls(
 
         // Wait until max is done
         m_max_cond.wait(mlock, std::bind(&HEExecutable::max_done, this));
-        NGRAPH_INFO << "max is done";
 
         // Reset for next max call
         m_max_done = false;

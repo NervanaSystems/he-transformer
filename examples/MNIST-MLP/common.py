@@ -35,19 +35,18 @@ def mlp_model(x, mode):
 
     with tf.name_scope('conv1'):
         W_conv1 = get_variable('W_conv1', [5, 5, 1, 5], mode)
-        y_conv1 = conv2d_stride_2_valid(x_image, W_conv1)
-        paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]],
-                               name='pad_const')
-        y_conv1 = tf.pad(y_conv1, paddings)
-        y_conv1 = tf.reshape(y_conv1, [-1, 13 * 13 * 5])
-        y_conv1 = tf.nn.relu(y_conv1)
+        y = conv2d_stride_2_valid(x_image, W_conv1)
+        y = tf.nn.relu(y)
+        y = tf.nn.max_pool(
+            y, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
     with tf.name_scope('fc1'):
-        W_fc1 = get_variable('W_fc1', [13 * 13 * 5, 100], mode)
-        y_conv = tf.matmul(y_conv1, W_fc1)
-        y_conv = tf.nn.relu(y_conv)
+        y = tf.reshape(y, [-1, 6 * 6 * 5])
+        W_fc1 = get_variable('W_fc1', [6 * 6 * 5, 100], mode)
+        y = tf.matmul(y, W_fc1)
+        y = tf.nn.relu(y)
 
     with tf.name_scope('fc2'):
-        W_fc1 = get_variable('W_fc2', [100, 10], mode)
-        y_conv = tf.matmul(y_conv, W_fc1)
-    return y_conv
+        W_fc2 = get_variable('W_fc2', [100, 10], mode)
+        y = tf.matmul(y, W_fc2)
+    return y
