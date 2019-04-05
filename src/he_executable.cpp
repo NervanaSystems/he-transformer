@@ -28,6 +28,7 @@
 #include "kernel/constant.hpp"
 #include "kernel/convolution.hpp"
 #include "kernel/dot.hpp"
+#include "kernel/max_pool.hpp"
 #include "kernel/multiply.hpp"
 #include "kernel/negate.hpp"
 #include "kernel/pad.hpp"
@@ -46,6 +47,7 @@
 #include "ngraph/op/constant.hpp"
 #include "ngraph/op/convolution.hpp"
 #include "ngraph/op/dot.hpp"
+#include "ngraph/op/max_pool.hpp"
 #include "ngraph/op/pad.hpp"
 #include "ngraph/op/passthrough.hpp"
 #include "ngraph/op/reshape.hpp"
@@ -346,6 +348,32 @@ void runtime::he::HEExecutable::handle_message(
     // Notify condition variable
     m_relu_done = true;
     m_relu_cond.notify_all();
+  } else if (msg_type == MessageType::max_result) {
+    std::lock_guard<mutex> guard(m_relu_mutex);
+
+    size_t element_count = message.count();
+    size_t element_size = message.element_size();
+
+    for (size_t element_idx = 0; element_idx < element_count; ++element_idx) {
+      seal::Ciphertext cipher;
+      stringstream cipher_stream;
+      cipher_stream.write(message.data_ptr() + element_idx * element_size,
+                          element_size);
+      cipher.load(m_context, cipher_stream);
+
+      auto wrapper =
+          make_shared<runtime::he::he_seal::SealCiphertextWrapper>(cipher);
+      auto he_ciphertext =
+          dynamic_pointer_cast<runtime::he::HECiphertext>(wrapper);
+
+      NGRAPH_ASSERT(he_ciphertext != nullptr)
+          << "HECiphertext is not SealPlaintextWrapper";
+
+      m_max_ciphertexts.emplace_back(he_ciphertext);
+    }
+    // Notify condition variable
+    m_max_done = true;
+    m_max_cond.notify_all();
   } else {
     stringstream ss;
     ss << "Unsupported message type in server:  "
@@ -978,6 +1006,70 @@ void runtime::he::HEExecutable::generate_calls(
       }
       break;
     }
+    case OP_TYPEID::MaxPool: {
+      if (!m_enable_client) {
+        throw ngraph_error(
+            "MaxPool op unsupported unless client is enabled. Try setting "
+            "NGRAPH_ENABLE_CLIENT=1");
+      }
+      if (arg0_cipher == nullptr || out0_cipher == nullptr) {
+        NGRAPH_INFO << "MaxPool types not supported ";
+        throw ngraph_error("MaxPool supports only Cipher, Cipher");
+      }
+      m_max_ciphertexts.clear();
+
+      NGRAPH_INFO << "MaxPool shape " << join(node.get_output_shape(0), "x");
+      NGRAPH_INFO << "m_batch_size " << m_batch_size;
+
+      const op::MaxPool* max_pool = static_cast<const op::MaxPool*>(&node);
+      // TODO: cleanup
+      Shape arg0_shape = node.get_inputs().at(0).get_shape();
+      arg0_shape[0] /= m_batch_size;
+      Shape out_shape = node.get_output_shape(0);
+      out_shape[0] /= m_batch_size;
+
+      vector<vector<size_t>> maximize_list = runtime::he::kernel::max_pool(
+          arg0_shape, out_shape, max_pool->get_window_shape(),
+          max_pool->get_window_movement_strides(),
+          max_pool->get_padding_below(), max_pool->get_padding_above());
+
+      for (size_t list_ind = 0; list_ind < maximize_list.size(); list_ind++) {
+        stringstream cipher_stream;
+        size_t cipher_count = 0;
+
+        for (const size_t max_ind : maximize_list[list_ind]) {
+          auto he_ciphertext = arg0_cipher->get_element(max_ind);
+          auto wrapper =
+              dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(
+                  he_ciphertext);
+          seal::Ciphertext c = wrapper->m_ciphertext;
+          c.save(cipher_stream);
+          cipher_count++;
+        }
+        // Send list of ciphertexts to maximize over to client
+        NGRAPH_INFO << "Sending " << cipher_count
+                    << " Maxpool ciphertexts (size "
+                    << cipher_stream.str().size() << ") to client";
+        auto max_message =
+            TCPMessage(MessageType::max_request, cipher_count, cipher_stream);
+
+        m_session->do_write(max_message);
+
+        // Acquire lock
+        unique_lock<mutex> mlock(m_max_mutex);
+
+        // Wait until max is done
+        m_max_cond.wait(mlock, std::bind(&HEExecutable::max_done, this));
+
+        // Reset for next max call
+        m_max_done = false;
+      }
+
+      out0_cipher->set_elements(m_max_ciphertexts);
+      break;
+
+      break;
+    }
     case OP_TYPEID::Multiply: {
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
@@ -1305,7 +1397,6 @@ void runtime::he::HEExecutable::generate_calls(
     case OP_TYPEID::LRN:
     case OP_TYPEID::Max:
     case OP_TYPEID::Maximum:
-    case OP_TYPEID::MaxPool:
     case OP_TYPEID::MaxPoolBackprop:
     case OP_TYPEID::Min:
     case OP_TYPEID::Minimum:
