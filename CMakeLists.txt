@@ -68,7 +68,7 @@ if(NOT DEFINED PYTHON_VENV_VERSION)
 endif()
 message("PYTHON_VENV_VERSION ${PYTHON_VENV_VERSION}")
 
-OPTION(USE_PREBUILT_BINARIES "Skip re-compilation of ngraph/ngraph-tf/tensorflow" OFF)
+OPTION(USE_PREBUILT_TF "Skip re-compilation of Tensorflow" OFF)
 
 include(cmake/ngraph-tf.cmake)
 include(cmake/gtest.cmake)
