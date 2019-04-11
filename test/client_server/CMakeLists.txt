@@ -32,8 +32,3 @@ install(TARGETS he_seal_client DESTINATION ${HE_INSTALL_LIB_DIR})
 add_executable(main_client main_client.cpp)
 add_dependencies(main_client ext_seal he_seal_client)
 target_link_libraries(main_client seal he_seal_client)
-
-# Server
-add_executable(main_server main_server.cpp)
-add_dependencies(main_server ext_ngraph_tf ext_seal)
-target_link_libraries(main_server ngraph seal he_backend)
