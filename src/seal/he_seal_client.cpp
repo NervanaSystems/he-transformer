@@ -88,10 +88,12 @@ void runtime::he::HESealClient::handle_message(
     std::cout << "Parameter size " << parameter_size << std::endl;
     std::cout << "Client batch size " << m_batch_size << std::endl;
 
-    std::vector<seal::Ciphertext> ciphers;
+    std::vector<seal::Ciphertext> ciphers(parameter_size);
     assert(m_inputs.size() == parameter_size * m_batch_size);
 
     std::stringstream cipher_stream;
+
+#pragma omp parallel for
     for (size_t data_idx = 0; data_idx < parameter_size; ++data_idx) {
       seal::Plaintext plain;
       std::vector<double> encode_vals;
@@ -101,8 +103,10 @@ void runtime::he::HESealClient::handle_message(
       }
       m_ckks_encoder->encode(encode_vals, m_scale, plain);
       seal::Ciphertext c;
-      m_encryptor->encrypt(plain, c);
-      c.save(cipher_stream);
+      m_encryptor->encrypt(plain, ciphers[data_idx]);
+    }
+    for (const auto& cipher : ciphers) {
+      cipher.save(cipher_stream);
     }
 
     const std::string& cipher_str = cipher_stream.str();

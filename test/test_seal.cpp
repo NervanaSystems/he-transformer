@@ -14,6 +14,7 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include <iostream>
 #include <memory>
 
 #include "gtest/gtest.h"
@@ -153,4 +154,103 @@ TEST(seal_example, seal_bfv_shared_ptr_encrypt) {
   // Decode
   int result = encoder.decode_int32(plain_result);
   EXPECT_EQ(5, result);
+}
+
+TEST(seal_example, seal_ckks_complex) {
+  using namespace seal;
+
+  EncryptionParameters parms(scheme_type::CKKS);
+  parms.set_poly_modulus_degree(8192);
+  parms.set_coeff_modulus(DefaultParams::coeff_modulus_128(8192));
+
+  auto context = SEALContext::Create(parms);
+  // print_parameters(context);
+
+  KeyGenerator keygen(context);
+  auto public_key = keygen.public_key();
+  auto secret_key = keygen.secret_key();
+  auto relin_keys = keygen.relin_keys(60);
+
+  Encryptor encryptor(context, public_key);
+  Evaluator evaluator(context);
+  Decryptor decryptor(context, secret_key);
+  CKKSEncoder encoder(context);
+
+  // Test double size
+  {
+    vector<double> input{0.0, 1.1, 2.2, 3.3, 4.4};
+    Plaintext plain;
+    double scale = pow(2.0, 60);
+    encoder.encode(input, scale, plain);
+    Ciphertext cipher;
+    encryptor.encrypt(plain, cipher);
+    vector<double> w{1.0, 2.0, 3.0, 4.0};
+    Plaintext plain2;
+    encoder.encode(w, scale, plain2);
+    evaluator.multiply_plain_inplace(cipher, plain2);
+    decryptor.decrypt(cipher, plain);
+    encoder.decode(plain, input);
+    std::cout << "output " << std::endl;
+    for (size_t i = 0; i < 4; ++i) {
+      std::cout << input[i] << std::endl;
+    }
+    std::stringstream p2_stream;
+    std::stringstream cipher_stream;
+    plain2.save(p2_stream);
+    cipher.save(cipher_stream);
+    std::cout << "Plain size" << p2_stream.str().size() << std::endl;
+    std::cout << "Cipher size" << cipher_stream.str().size() << std::endl;
+  }
+  // Test complex mult size
+  {
+    vector<complex<double>> input{
+        {0.0, 1.1}, {2.2, 3.3}, {4.4, 5.5}, {6.6, 7.7}};
+    Plaintext plain;
+    double scale = pow(2.0, 60);
+    encoder.encode(input, scale, plain);
+    Ciphertext cipher;
+    encryptor.encrypt(plain, cipher);
+    vector<double> w{1.0, 2.0, 3.0, 4.0};
+    Plaintext plain2;
+    encoder.encode(w, scale, plain2);
+    evaluator.multiply_plain_inplace(cipher, plain2);
+    decryptor.decrypt(cipher, plain);
+    encoder.decode(plain, input);
+    std::cout << "output " << std::endl;
+    for (size_t i = 0; i < 4; ++i) {
+      std::cout << input[i] << std::endl;
+    }
+    std::stringstream p2_stream;
+    std::stringstream cipher_stream;
+    plain2.save(p2_stream);
+    cipher.save(cipher_stream);
+    std::cout << "Plain size" << p2_stream.str().size() << std::endl;
+    std::cout << "Cipher size" << cipher_stream.str().size() << std::endl;
+  }
+  // Test complex add size
+  {
+    vector<complex<double>> input{
+        {0.0, 1.1}, {2.2, 3.3}, {4.4, 5.5}, {6.6, 7.7}};
+    Plaintext plain;
+    double scale = pow(2.0, 60);
+    encoder.encode(input, scale, plain);
+    Ciphertext cipher;
+    encryptor.encrypt(plain, cipher);
+    vector<complex<double>> w{{1.0, 1.0}, {2.0, 2.0}, {3.0, 3.0}, {4.0, 4.0}};
+    Plaintext plain2;
+    encoder.encode(w, scale, plain2);
+    evaluator.add_plain_inplace(cipher, plain2);
+    decryptor.decrypt(cipher, plain);
+    encoder.decode(plain, input);
+    std::cout << "output " << std::endl;
+    for (size_t i = 0; i < 4; ++i) {
+      std::cout << input[i] << std::endl;
+    }
+    std::stringstream p2_stream;
+    std::stringstream cipher_stream;
+    plain2.save(p2_stream);
+    cipher.save(cipher_stream);
+    std::cout << "Plain size" << p2_stream.str().size() << std::endl;
+    std::cout << "Cipher size" << cipher_stream.str().size() << std::endl;
+  }
 }
