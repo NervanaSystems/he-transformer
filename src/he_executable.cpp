@@ -1117,19 +1117,15 @@ void runtime::he::HEExecutable::generate_calls(
 
       size_t element_count =
           shape_size(node.get_output_shape(0)) / m_batch_size;
-      NGRAPH_INFO << "element_count " << element_count;
 
       if (arg0_plain != nullptr) {
         // arg0_plain doesn't have a tensor layout, so we use
         const element::Type& element_type =
             out0_cipher->get_tensor_layout()->get_element_type();
-        NGRAPH_INFO << " got elemnt type";
         arg0_cipher = dynamic_pointer_cast<HECipherTensor>(
             m_he_backend->create_cipher_tensor(
                 element_type, arg0_plain->get_shape(), m_batch_data));
-        NGRAPH_INFO << " got elemnt type";
         for (size_t elem_idx = 0; elem_idx < element_count; ++elem_idx) {
-          NGRAPH_INFO << "Encrypting elem " << elem_idx;
           m_he_backend->encrypt(arg0_cipher->get_element(elem_idx),
                                 *(arg0_plain->get_element(elem_idx)));
         }
@@ -1138,27 +1134,20 @@ void runtime::he::HEExecutable::generate_calls(
         // arg0_plain doesn't have a tensor layout, so we use
         const element::Type& element_type =
             out0_cipher->get_tensor_layout()->get_element_type();
-        NGRAPH_INFO << " got elemnt type";
         arg1_cipher = dynamic_pointer_cast<HECipherTensor>(
             m_he_backend->create_cipher_tensor(
                 element_type, arg1_plain->get_shape(), m_batch_data));
-        NGRAPH_INFO << " got elemnt type";
         for (size_t elem_idx = 0; elem_idx < element_count; ++elem_idx) {
-          NGRAPH_INFO << "Encrypting elem " << elem_idx;
           m_he_backend->encrypt(arg1_cipher->get_element(elem_idx),
                                 *(arg1_plain->get_element(elem_idx)));
-          NGRAPH_INFO << "Done encrypting";
         }
       }
-      NGRAPH_INFO << "arg0_cipher != nullptr " << (arg0_cipher != nullptr);
-      NGRAPH_INFO << "arg1_cipher != nullptr " << (arg1_cipher != nullptr);
       NGRAPH_ASSERT(arg0_cipher != nullptr) << "arg0_cipher is nullptr";
       NGRAPH_ASSERT(arg1_cipher != nullptr) << "arg1_cipher is nullptr";
 
       m_minimum_ciphertexts.clear();
 
       NGRAPH_INFO << "Min shape " << join(node.get_output_shape(0), "x");
-      NGRAPH_INFO << "m_batch_size " << m_batch_size;
 
       // TODO: cleanup
       Shape arg0_shape = node.get_inputs().at(0).get_shape();

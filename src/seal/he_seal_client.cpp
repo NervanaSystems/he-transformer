@@ -277,7 +277,7 @@ void runtime::he::HESealClient::handle_message(
     std::vector<std::vector<double>> input_cipher_values(
         cipher_count, vector<double>(m_batch_size, 0));
 
-    std::vector<double> min_values(cipher_count / 2,
+    std::vector<double> min_values(m_batch_size,
                                    std::numeric_limits<double>::max());
 
 #pragma omp parallel for
@@ -306,10 +306,9 @@ void runtime::he::HESealClient::handle_message(
 
     // Get minimum of each vector of values
     std::stringstream minimum_stream;
-
     for (size_t cipher_idx = 0; cipher_idx < cipher_count; cipher_idx += 2) {
       for (size_t batch_idx = 0; batch_idx < m_batch_size; ++batch_idx) {
-        min_values[cipher_idx / 2] =
+        min_values[batch_idx] =
             min(input_cipher_values[cipher_idx][batch_idx],
                 input_cipher_values[cipher_idx + 1][batch_idx]);
       }
