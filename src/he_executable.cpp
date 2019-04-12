@@ -63,6 +63,7 @@
 #include "ngraph/pass/visualize_tree.hpp"
 #include "ngraph/runtime/backend.hpp"
 #include "ngraph/util.hpp"
+#include "seal/ckks/kernel/seal_ckks_util.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_util.hpp"
 
@@ -245,7 +246,7 @@ void runtime::he::HEExecutable::handle_message(
       NGRAPH_INFO << "m_batch_data? " << m_batch_data;
 
       auto element_type = input_param->get_element_type();
-      auto input_tensor = dynamic_pointer_cast<runtime::he::HECipherTensor>(
+      auto input_tensor = dynamic_pointer_cast<HECipherTensor>(
           m_he_backend->create_cipher_tensor(
               element_type, input_param->get_shape(), m_batch_data));
 
@@ -349,7 +350,7 @@ void runtime::he::HEExecutable::handle_message(
     m_relu_done = true;
     m_relu_cond.notify_all();
   } else if (msg_type == MessageType::max_result) {
-    std::lock_guard<mutex> guard(m_relu_mutex);
+    std::lock_guard<mutex> guard(m_max_mutex);
 
     size_t element_count = message.count();
     size_t element_size = message.element_size();
@@ -374,6 +375,32 @@ void runtime::he::HEExecutable::handle_message(
     // Notify condition variable
     m_max_done = true;
     m_max_cond.notify_all();
+  } else if (msg_type == MessageType::minimum_result) {
+    std::lock_guard<mutex> guard(m_minimum_mutex);
+
+    size_t element_count = message.count();
+    size_t element_size = message.element_size();
+
+    for (size_t element_idx = 0; element_idx < element_count; ++element_idx) {
+      seal::Ciphertext cipher;
+      stringstream cipher_stream;
+      cipher_stream.write(message.data_ptr() + element_idx * element_size,
+                          element_size);
+      cipher.load(m_context, cipher_stream);
+
+      auto wrapper =
+          make_shared<runtime::he::he_seal::SealCiphertextWrapper>(cipher);
+      auto he_ciphertext =
+          dynamic_pointer_cast<runtime::he::HECiphertext>(wrapper);
+
+      NGRAPH_ASSERT(he_ciphertext != nullptr)
+          << "HECiphertext is not SealPlaintextWrapper";
+
+      m_minimum_ciphertexts.emplace_back(he_ciphertext);
+    }
+    // Notify condition variable
+    m_minimum_done = true;
+    m_minimum_cond.notify_all();
   } else {
     stringstream ss;
     ss << "Unsupported message type in server:  "
@@ -513,7 +540,7 @@ bool runtime::he::HEExecutable::call(
         auto plain_input = dynamic_pointer_cast<runtime::he::HEPlainTensor>(
             he_inputs[input_count]);
         NGRAPH_ASSERT(plain_input != nullptr) << "Input is not plain tensor";
-        auto cipher_input = dynamic_pointer_cast<runtime::he::HECipherTensor>(
+        auto cipher_input = dynamic_pointer_cast<HECipherTensor>(
             m_he_backend->create_cipher_tensor(plain_input->get_element_type(),
                                                plain_input->get_shape(),
                                                m_batch_data));
@@ -660,7 +687,7 @@ bool runtime::he::HEExecutable::call(
     size_t output_shape_size = shape_size(output_shape) / m_batch_size;
 
     auto output_cipher_tensor =
-        dynamic_pointer_cast<runtime::he::HECipherTensor>(m_client_outputs[0]);
+        dynamic_pointer_cast<HECipherTensor>(m_client_outputs[0]);
 
     NGRAPH_ASSERT(output_cipher_tensor != nullptr)
         << "Client outputs are not HECipherTensor";
@@ -703,12 +730,19 @@ void runtime::he::HEExecutable::generate_calls(
   if (args.size() > 0) {
     arg0_cipher = dynamic_pointer_cast<HECipherTensor>(args[0]);
     arg0_plain = dynamic_pointer_cast<HEPlainTensor>(args[0]);
+    NGRAPH_ASSERT(arg0_cipher == nullptr || arg0_plain == nullptr)
+        << "arg0 is netiher cipher nor plain";
+    NGRAPH_ASSERT(!(arg0_cipher != nullptr && arg0_plain != nullptr))
+        << "arg0 is both cipher and plain?";
   }
   if (args.size() > 1) {
     arg1_cipher = dynamic_pointer_cast<HECipherTensor>(args[1]);
     arg1_plain = dynamic_pointer_cast<HEPlainTensor>(args[1]);
+    NGRAPH_ASSERT(arg1_cipher == nullptr || arg1_plain == nullptr)
+        << "arg1 is neither cipher nor plain";
+    NGRAPH_ASSERT(!(arg1_cipher != nullptr && arg1_plain != nullptr))
+        << "arg1 is both cipher and plain?";
   }
-
   size_t batch_size = 1;
   if (out0_cipher != nullptr) {
     batch_size = out0_cipher->get_batch_size();
@@ -1067,7 +1101,109 @@ void runtime::he::HEExecutable::generate_calls(
 
       out0_cipher->set_elements(m_max_ciphertexts);
       break;
+    }
+    case OP_TYPEID::Minimum: {
+      NGRAPH_INFO << "Minimum op";
+      if (!m_enable_client) {
+        throw ngraph_error(
+            "Minimum op unsupported unless client is enabled. Try setting "
+            "NGRAPH_ENABLE_CLIENT=1");
+      }
+      NGRAPH_INFO << "out0_cipher == nullptr" << (out0_cipher == nullptr);
+      if (out0_cipher == nullptr) {
+        NGRAPH_INFO << "Minimum types not supported ";
+        throw ngraph_error("Minimum supports only output cipher");
+      }
 
+      size_t element_count =
+          shape_size(node.get_output_shape(0)) / m_batch_size;
+
+      if (arg0_plain != nullptr) {
+        // arg0_plain doesn't have a tensor layout, so we use
+        const element::Type& element_type =
+            out0_cipher->get_tensor_layout()->get_element_type();
+        arg0_cipher = dynamic_pointer_cast<HECipherTensor>(
+            m_he_backend->create_cipher_tensor(
+                element_type, arg0_plain->get_shape(), m_batch_data));
+        for (size_t elem_idx = 0; elem_idx < element_count; ++elem_idx) {
+          m_he_backend->encrypt(arg0_cipher->get_element(elem_idx),
+                                *(arg0_plain->get_element(elem_idx)));
+        }
+      }
+      if (arg1_plain != nullptr) {
+        // arg0_plain doesn't have a tensor layout, so we use
+        const element::Type& element_type =
+            out0_cipher->get_tensor_layout()->get_element_type();
+        arg1_cipher = dynamic_pointer_cast<HECipherTensor>(
+            m_he_backend->create_cipher_tensor(
+                element_type, arg1_plain->get_shape(), m_batch_data));
+        for (size_t elem_idx = 0; elem_idx < element_count; ++elem_idx) {
+          m_he_backend->encrypt(arg1_cipher->get_element(elem_idx),
+                                *(arg1_plain->get_element(elem_idx)));
+        }
+      }
+      NGRAPH_ASSERT(arg0_cipher != nullptr) << "arg0_cipher is nullptr";
+      NGRAPH_ASSERT(arg1_cipher != nullptr) << "arg1_cipher is nullptr";
+
+      m_minimum_ciphertexts.clear();
+
+      NGRAPH_INFO << "Min shape " << join(node.get_output_shape(0), "x");
+
+      // TODO: cleanup
+      Shape arg0_shape = node.get_inputs().at(0).get_shape();
+      arg0_shape[0] /= m_batch_size;
+      Shape out_shape = node.get_output_shape(0);
+      out_shape[0] /= m_batch_size;
+
+      NGRAPH_ASSERT(arg0_cipher->get_elements().size() ==
+                    arg1_cipher->get_elements().size())
+          << "Element counts " << arg0_cipher->get_elements().size() << ",  "
+          << arg1_cipher->get_elements().size() << "do not match";
+
+      stringstream cipher_stream;
+      size_t cipher_count = 0;
+      auto he_ckks_backend =
+          (runtime::he::he_seal::HESealCKKSBackend*)m_he_backend;
+      NGRAPH_ASSERT(he_ckks_backend != nullptr)
+          << "HEBackend is not CKKS in Minimum Op";
+      for (size_t min_ind = 0; min_ind < element_count; ++min_ind) {
+        auto cipher0 = arg0_cipher->get_element(min_ind);
+        auto cipher1 = arg1_cipher->get_element(min_ind);
+
+        auto wrapper0 =
+            dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(
+                cipher0);
+        auto wrapper1 =
+            dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(
+                cipher1);
+        runtime::he::he_seal::ckks::kernel::match_modulus_inplace(
+            wrapper0.get(), wrapper1.get(), he_ckks_backend);
+
+        seal::Ciphertext c0 = wrapper0->m_ciphertext;
+        seal::Ciphertext c1 = wrapper1->m_ciphertext;
+        c0.save(cipher_stream);
+        c1.save(cipher_stream);
+        cipher_count += 2;
+      }
+
+      // Send list of ciphertexts to minimum over to client
+      NGRAPH_INFO << "Sending " << cipher_count << " Minimum ciphertexts (size "
+                  << cipher_stream.str().size() << ") to client";
+      auto minimum_message =
+          TCPMessage(MessageType::minimum_request, cipher_count, cipher_stream);
+
+      m_session->do_write(minimum_message);
+
+      // Acquire lock
+      unique_lock<mutex> mlock(m_minimum_mutex);
+
+      // Wait until minimum is done
+      m_minimum_cond.wait(mlock, std::bind(&HEExecutable::minimum_done, this));
+
+      // Reset for next max call
+      m_minimum_done = false;
+
+      out0_cipher->set_elements(m_minimum_ciphertexts);
       break;
     }
     case OP_TYPEID::Multiply: {
@@ -1405,7 +1541,6 @@ void runtime::he::HEExecutable::generate_calls(
     case OP_TYPEID::Maximum:
     case OP_TYPEID::MaxPoolBackprop:
     case OP_TYPEID::Min:
-    case OP_TYPEID::Minimum:
     case OP_TYPEID::Not:
     case OP_TYPEID::NotEqual:
     case OP_TYPEID::OneHot:

@@ -29,8 +29,10 @@ namespace he {
 namespace he_seal {
 namespace ckks {
 namespace kernel {
+// Matches the scale and modulus chain for the two elements
+// Returns a pair of the modifies elements
 template <typename S, typename T>
-std::pair<std::shared_ptr<S>, std::shared_ptr<T>> match_arguments(
+std::pair<std::shared_ptr<S>, std::shared_ptr<T>> match_modulus(
     const S* arg0, const T* arg1,
     const HESealCKKSBackend* he_seal_ckks_backend) {
   auto arg0_scaled = std::make_shared<S>(*arg0);
@@ -73,6 +75,48 @@ std::pair<std::shared_ptr<S>, std::shared_ptr<T>> match_arguments(
   }
 
   return std::make_pair(arg0_scaled, arg1_scaled);
+}
+
+// Matches the scale and modulus chain for the two elements in-place
+// The elements are modified if necessary
+template <typename S, typename T>
+void match_modulus_inplace(S* arg0, T* arg1,
+                           const HESealCKKSBackend* he_seal_ckks_backend) {
+  auto scale0 = arg0->get_hetext().scale();
+  auto scale1 = arg1->get_hetext().scale();
+
+  if (scale0 < 0.99 * scale1 || scale0 > 1.01 * scale1) {
+    NGRAPH_DEBUG << "Scale " << std::setw(10) << scale0
+                 << " does not match scale " << scale1
+                 << " in scalar add, ratio is " << scale0 / scale1;
+  }
+  if (scale0 != scale1) {
+    arg0->get_hetext().scale() = arg1->get_hetext().scale();
+  }
+
+  size_t chain_ind0 = he_seal_ckks_backend->get_context()
+                          ->context_data(arg0->get_hetext().parms_id())
+                          ->chain_index();
+
+  size_t chain_ind1 = he_seal_ckks_backend->get_context()
+                          ->context_data(arg1->get_hetext().parms_id())
+                          ->chain_index();
+
+  if (chain_ind0 > chain_ind1) {
+    he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
+        arg0->get_hetext(), arg1->get_hetext().parms_id());
+    chain_ind0 = he_seal_ckks_backend->get_context()
+                     ->context_data(arg0->get_hetext().parms_id())
+                     ->chain_index();
+    assert(chain_ind0 == chain_ind1);
+  } else if (chain_ind1 > chain_ind0) {
+    he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
+        arg1->get_hetext(), arg0->get_hetext().parms_id());
+    chain_ind1 = he_seal_ckks_backend->get_context()
+                     ->context_data(arg1->get_hetext().parms_id())
+                     ->chain_index();
+    assert(chain_ind0 == chain_ind1);
+  }
 }
 }  // namespace kernel
 }  // namespace ckks

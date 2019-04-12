@@ -27,8 +27,7 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
     const element::Type& element_type,
     const runtime::he::he_seal::HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
-  auto argument_matching_pair =
-      match_arguments(arg0, arg1, he_seal_ckks_backend);
+  auto argument_matching_pair = match_modulus(arg0, arg1, he_seal_ckks_backend);
   auto arg0_scaled = get<0>(argument_matching_pair);
   auto arg1_scaled = get<1>(argument_matching_pair);
 
@@ -67,8 +66,7 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
     const element::Type& element_type,
     const runtime::he::he_seal::HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
-  auto argument_matching_pair =
-      match_arguments(arg0, arg1, he_seal_ckks_backend);
+  auto argument_matching_pair = match_modulus(arg0, arg1, he_seal_ckks_backend);
 
   auto arg0_scaled = get<0>(argument_matching_pair);
   auto arg1_scaled = get<1>(argument_matching_pair);

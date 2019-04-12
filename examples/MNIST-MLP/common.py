@@ -40,6 +40,7 @@ def mlp_model(x, mode):
                                name='pad_const')
         y = tf.pad(y, paddings)
         y = tf.nn.relu(y)
+        y = tf.math.minimum(y, 6)  # Use ReLU6 op
         y = tf.nn.max_pool(
             y, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 

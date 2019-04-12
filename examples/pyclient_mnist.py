@@ -18,6 +18,7 @@ def test_mnist_cnn(FLAGS):
     y_test_batch = mnist.test.labels[:batch_size]
 
     data = x_test_batch.flatten('F')
+    print('Client batch size from FLAG: ', batch_size)
 
     hostname = 'localhost'
     port = 34000
