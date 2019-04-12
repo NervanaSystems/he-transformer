@@ -64,6 +64,10 @@ def main():
     output_tensor = sess.graph.get_tensor_by_name(
         'average_pooling2d/AvgPool:0')
 
+    flops = tf.profiler.profile(
+        sess.graph, options=tf.profiler.ProfileOptionBuilder.float_operation())
+    print('FLOP = ', flops.total_float_ops)
+
     print('input_tensor', input_tensor)
     print('output_tensor', output_tensor)
 
