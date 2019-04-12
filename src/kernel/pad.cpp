@@ -50,6 +50,7 @@ void runtime::he::kernel::pad(
 
   he_backend->encrypt(arg1_encrypted, *arg1[0]);
 
+  // TODO: replace with match_arguments
   // Change output modulus to match other ciphertexts in vector
   if (arg0.size() > 0) {
     auto arg0_wrapper =

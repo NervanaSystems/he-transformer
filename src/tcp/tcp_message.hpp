@@ -35,6 +35,8 @@ enum class MessageType {
   execute,
   max_request,
   max_result,
+  minimum_request,
+  minimum_result,
   parameter_shape_request,
   parameter_size,
   public_key,
@@ -60,6 +62,12 @@ inline std::string message_type_to_string(const MessageType& type) {
       break;
     case MessageType::execute:
       return "execute";
+      break;
+    case MessageType::minimum_request:
+      return "minimum_request";
+      break;
+    case MessageType::minimum_result:
+      return "minimum_result";
       break;
     case MessageType::max_request:
       return "max_request";
