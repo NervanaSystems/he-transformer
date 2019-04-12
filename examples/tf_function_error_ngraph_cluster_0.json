@@ -1,0 +1,99 @@
+[
+    {
+        "name": "Function_0",
+        "ops": [
+            {
+                "cacheable": false,
+                "control_deps": [],
+                "element_type": "float",
+                "inputs": [],
+                "name": "Parameter_0",
+                "op": "Parameter",
+                "outputs": [
+                    "Parameter_0_0"
+                ],
+                "shape": [
+                    2,
+                    2
+                ]
+            },
+            {
+                "control_deps": [],
+                "element_type": "float",
+                "friendly_name": "Const",
+                "inputs": [],
+                "name": "Constant_1",
+                "op": "Constant",
+                "outputs": [
+                    "Constant_1_0"
+                ],
+                "shape": [
+                    2,
+                    2
+                ],
+                "value": [
+                    "1",
+                    "2",
+                    "3",
+                    "4"
+                ]
+            },
+            {
+                "control_deps": [],
+                "friendly_name": "add",
+                "inputs": [
+                    "Constant_1",
+                    "Parameter_0"
+                ],
+                "name": "Add_2",
+                "op": "Add",
+                "outputs": [
+                    "Add_2_0"
+                ]
+            },
+            {
+                "control_deps": [],
+                "friendly_name": "mul",
+                "inputs": [
+                    "Add_2",
+                    "Constant_1"
+                ],
+                "name": "Multiply_3",
+                "op": "Multiply",
+                "outputs": [
+                    "Multiply_3_0"
+                ]
+            },
+            {
+                "control_deps": [],
+                "friendly_name": "mul_1",
+                "inputs": [
+                    "Multiply_3",
+                    "Parameter_0"
+                ],
+                "name": "Multiply_4",
+                "op": "Multiply",
+                "outputs": [
+                    "Multiply_4_0"
+                ]
+            },
+            {
+                "control_deps": [],
+                "inputs": [
+                    "Multiply_4"
+                ],
+                "name": "Result_5",
+                "op": "Result",
+                "outputs": [
+                    "Result_5_0"
+                ]
+            }
+        ],
+        "parameters": [
+            "Parameter_0"
+        ],
+        "result": [
+            "Result_5"
+        ]
+    }
+]
