@@ -1110,6 +1110,7 @@ void runtime::he::HEExecutable::generate_calls(
         arg0_cipher = dynamic_pointer_cast<HECipherTensor>(
             m_he_backend->create_cipher_tensor(
                 element_type, arg0_plain->get_shape(), m_batch_data));
+#pragma omp parallel for
         for (size_t elem_idx = 0; elem_idx < element_count; ++elem_idx) {
           m_he_backend->encrypt(arg0_cipher->get_element(elem_idx),
                                 *(arg0_plain->get_element(elem_idx)));
@@ -1122,6 +1123,7 @@ void runtime::he::HEExecutable::generate_calls(
         arg1_cipher = dynamic_pointer_cast<HECipherTensor>(
             m_he_backend->create_cipher_tensor(
                 element_type, arg1_plain->get_shape(), m_batch_data));
+#pragma omp parallel for
         for (size_t elem_idx = 0; elem_idx < element_count; ++elem_idx) {
           m_he_backend->encrypt(arg1_cipher->get_element(elem_idx),
                                 *(arg1_plain->get_element(elem_idx)));
@@ -1145,36 +1147,44 @@ void runtime::he::HEExecutable::generate_calls(
           << "Element counts " << arg0_cipher->get_elements().size() << ",  "
           << arg1_cipher->get_elements().size() << "do not match";
 
-      stringstream cipher_stream;
       size_t cipher_count = 0;
       auto he_ckks_backend =
           (runtime::he::he_seal::HESealCKKSBackend*)m_he_backend;
       NGRAPH_ASSERT(he_ckks_backend != nullptr)
           << "HEBackend is not CKKS in Minimum Op";
+      stringstream cipher_stream;
       for (size_t min_ind = 0; min_ind < element_count; ++min_ind) {
         auto cipher0 = arg0_cipher->get_element(min_ind);
         auto cipher1 = arg1_cipher->get_element(min_ind);
         cipher0->save(cipher_stream);
         cipher1->save(cipher_stream);
         cipher_count += 2;
+
+        if ((min_ind > 0 && min_ind % 100 == 0) ||
+            min_ind == element_count - 1) {
+          // Send list of ciphertexts to minimum over to client
+          NGRAPH_INFO << "Sending " << cipher_count
+                      << " Minimum ciphertexts (size "
+                      << cipher_stream.str().size() << ") to client";
+          auto minimum_message = TCPMessage(MessageType::minimum_request,
+                                            cipher_count, cipher_stream);
+
+          m_session->do_write(minimum_message);
+
+          // Acquire lock
+          unique_lock<mutex> mlock(m_minimum_mutex);
+
+          // Wait until minimum is done
+          m_minimum_cond.wait(mlock,
+                              std::bind(&HEExecutable::minimum_done, this));
+
+          // Reset for next minimum call
+          m_minimum_done = false;
+
+          cipher_stream.str("");
+          cipher_count = 0;
+        }
       }
-
-      // Send list of ciphertexts to minimum over to client
-      NGRAPH_INFO << "Sending " << cipher_count << " Minimum ciphertexts (size "
-                  << cipher_stream.str().size() << ") to client";
-      auto minimum_message =
-          TCPMessage(MessageType::minimum_request, cipher_count, cipher_stream);
-
-      m_session->do_write(minimum_message);
-
-      // Acquire lock
-      unique_lock<mutex> mlock(m_minimum_mutex);
-
-      // Wait until minimum is done
-      m_minimum_cond.wait(mlock, std::bind(&HEExecutable::minimum_done, this));
-
-      // Reset for next max call
-      m_minimum_done = false;
 
       out0_cipher->set_elements(m_minimum_ciphertexts);
       break;
