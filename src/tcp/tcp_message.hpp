@@ -140,6 +140,8 @@ class TCPMessage {
     const std::string& pk_str = stream.str();
     const char* pk_cstr = pk_str.c_str();
     m_data_size = pk_str.size();
+    std::cout << "Creating message of " << count << " elemnts from stream size "
+              << m_data_size << std::endl;
 
     check_arguments();
     m_data = new char[header_length + body_length()];
@@ -152,6 +154,8 @@ class TCPMessage {
   TCPMessage(const MessageType type, const size_t count, const size_t size,
              const char* data)
       : m_type(type), m_count(count), m_data_size(size) {
+    std::cout << "Creating message of " << m_count
+              << " elemnts from stream size " << m_data_size << std::endl;
     check_arguments();
     m_data = new char[header_length + body_length()];
     encode_header();
@@ -262,18 +266,25 @@ class TCPMessage {
   // Given
   void encode_header() {
     char header[header_length + 1] = "";
-    int to_encode = static_cast<int>(body_length());
-    int ret = std::snprintf(header, sizeof(header), "%d", to_encode);
+    size_t to_encode = body_length();
+    int ret = std::snprintf(header, sizeof(header), "%zu", to_encode);
     if (ret < 0 || (size_t)ret > sizeof(header)) {
       throw std::invalid_argument("Error encoding header");
     }
+    std::cout << "Encoded header size " << to_encode << std::endl;
+
     std::memcpy(m_data, header, header_length);
   }
 
   bool decode_header() {
     char header[header_length + 1] = "";
     std::strncat(header, m_data, header_length);
-    size_t body_length = std::atoi(header);
+    std::string header_str(header);
+    std::stringstream sstream(header_str);
+    std::cout << "header_str" << header_str << std::endl;
+    size_t body_length;
+    sstream >> body_length;
+    std::cout << "decoded header body length " << body_length << std::endl;
     if (body_length > max_body_length) {
       std::cout << "Body length " << body_length << " too large" << std::endl;
       throw std::invalid_argument("Cannot decode header");

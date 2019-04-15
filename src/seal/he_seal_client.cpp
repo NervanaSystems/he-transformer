@@ -113,7 +113,7 @@ void runtime::he::HESealClient::handle_message(
     const char* cipher_cstr = cipher_str.c_str();
     size_t cipher_size = cipher_str.size();
     std::cout << "Sending execute message with " << parameter_size
-              << " ciphertexts" << std::endl;
+              << " ciphertexts, message size " << cipher_size << std::endl;
     auto execute_message = TCPMessage(runtime::he::MessageType::execute,
                                       parameter_size, cipher_size, cipher_cstr);
     write_message(execute_message);

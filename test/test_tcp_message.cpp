@@ -109,7 +109,7 @@ NGRAPH_TEST(tcp_message, encode) {
 }
 
 NGRAPH_TEST(tcp_message, encode_large) {
-  size_t count = 784;
+  size_t count = 22000;
   size_t element_size = 262217;
   size_t size = count * element_size;
   void* data = malloc(size);

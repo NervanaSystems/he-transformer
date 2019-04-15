@@ -46,6 +46,8 @@ ExternalProject_Add(
    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
    -DCMAKE_INSTALL_MESSAGE=LAZY
    -DSEAL_USE_CXX17=${SEAL_USE_CXX17}
+   # TODO: investigate further
+   -DSEAL_THROW_ON_TRANSPARENT_CIPHERTEXT_STR=OFF
 )
 
 add_custom_target(libseal ALL DEPENDS ext_seal ext_ngraph_tf
