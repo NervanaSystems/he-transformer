@@ -33,7 +33,7 @@ def get_test_image():
     # https://www.tensorflow.org/tutorials/images/hub_with_keras
     # https://storage.googleapis.com/download.tensorflow.org/example_images/grace_hopper.jpg
     filename = './images/grace_hopper.jpg'
-    grace_hopper = Image.open(filename).resize((128, 128))
+    grace_hopper = Image.open(filename).resize((84, 84))
     grace_hopper = np.array(grace_hopper) / 255.0
     print(grace_hopper.shape)
 
@@ -74,11 +74,11 @@ def main():
     y_test = np.squeeze(y_test)
     print(y_test.shape)
 
-    top3 = y_test.argsort()[-3:][::-1]
+    top5 = y_test.argsort()[-5:][::-1]
 
-    print('top3', top3)
+    print('top5', top5)
 
-    preds = imagenet_labels[top3]
+    preds = imagenet_labels[top5]
     print(preds)
 
 
