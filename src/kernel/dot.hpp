@@ -139,7 +139,7 @@ void ngraph::runtime::he::kernel::dot(
     auto arg0_it = std::copy(arg0_projected_coord.begin(),
                              arg0_projected_coord.end(), arg0_coord.begin());
 
-    std::shared_ptr<V> sum = he_backend->create_empty_hetext<V>(V{});
+    std::shared_ptr<V> sum = he_backend->create_empty_hetext<V>();
 
     bool first_add = true;
 
@@ -159,7 +159,7 @@ void ngraph::runtime::he::kernel::dot(
       auto arg0_text = arg0[arg0_transform.index(arg0_coord)];
       auto arg1_text = arg1[arg1_transform.index(arg1_coord)];
 
-      std::shared_ptr<V> prod = he_backend->create_empty_hetext<V>(V{});
+      std::shared_ptr<V> prod = he_backend->create_empty_hetext<V>();
       runtime::he::kernel::scalar_multiply(arg0_text.get(), arg1_text.get(),
                                            prod, element_type, he_backend);
       if (first_add) {

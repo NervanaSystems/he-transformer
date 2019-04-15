@@ -116,7 +116,7 @@ void avg_pool(const std::vector<std::shared_ptr<T>>& arg,
     //   n_elements := n_elements + 1
 
     // T result = 0;
-    std::shared_ptr<T> sum = he_backend->create_empty_hetext<T>(T{});
+    std::shared_ptr<T> sum;
     bool first_add = true;
 
     size_t n_elements = 0;

@@ -217,7 +217,7 @@ void ngraph::runtime::he::kernel::convolution(
     CoordinateTransform::Iterator input_end = input_batch_transform.end();
     CoordinateTransform::Iterator filter_end = filter_transform.end();
 
-    std::shared_ptr<V> sum = he_backend->create_empty_hetext<V>(V{});
+    std::shared_ptr<V> sum = he_backend->create_empty_hetext<V>();
     bool first_add = true;
 
     while (input_it != input_end && filter_it != filter_end) {
@@ -240,7 +240,7 @@ void ngraph::runtime::he::kernel::convolution(
         std::shared_ptr<T> arg1_multiplicand =
             arg1[filter_transform.index(filter_coord)];
 
-        std::shared_ptr<V> prod = he_backend->create_empty_hetext<V>(V{});
+        std::shared_ptr<V> prod = he_backend->create_empty_hetext<V>();
         runtime::he::kernel::scalar_multiply(arg0_multiplicand.get(),
                                              arg1_multiplicand.get(), prod,
                                              element_type, he_backend);
@@ -258,7 +258,7 @@ void ngraph::runtime::he::kernel::convolution(
     }
     if (first_add) {
       out[out_coord_idx] =
-          he_backend->create_valued_hetext<V>(0.f, element_type, V{});
+          he_backend->create_valued_hetext<V>(0.f, element_type);
     } else {
       // Write the sum back.
       out[out_coord_idx] = sum;
