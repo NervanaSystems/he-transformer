@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#pragma once
+
 #include <iomanip>
 #include <memory>
 #include <utility>
@@ -29,6 +31,11 @@ namespace he {
 namespace he_seal {
 namespace ckks {
 namespace kernel {
+// Matches the scale and modulus chain for all elements in the vector
+void match_modulus_inplace(std::vector<std::shared_ptr<HECiphertext>>& elements,
+                           const HESealCKKSBackend* he_seal_ckks_backend);
+;
+
 // Matches the scale and modulus chain for the two elements
 // Returns a pair of the modifies elements
 template <typename S, typename T>

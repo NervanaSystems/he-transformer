@@ -1349,8 +1349,31 @@ void runtime::he::HEExecutable::generate_calls(
         throw ngraph_error("Relu types not supported.");
       }
 
+      auto he_seal_ckks_backend =
+          (runtime::he::he_seal::HESealCKKSBackend*)m_he_backend;
+      NGRAPH_ASSERT(he_seal_ckks_backend != nullptr)
+          << "he_seal_ckks_backend == nullptr";
+
+      runtime::he::he_seal::ckks::kernel::match_modulus_inplace(
+          arg0_cipher->get_elements(), he_seal_ckks_backend);
+
       stringstream cipher_stream;
-      arg0_cipher->save_elements(cipher_stream);
+      stringstream cipher0_stream;
+      auto cipher0 = arg0_cipher->get_element(0);
+      cipher0->save(cipher0_stream);
+      size_t elem_size = cipher0_stream.str().size();
+
+      NGRAPH_INFO << "elem size " << elem_size;
+      for (const auto& elem : arg0_cipher->get_elements()) {
+        stringstream elem_stream;
+        elem->save(elem_stream);
+        size_t new_elem_size = elem_stream.str().size();
+        NGRAPH_ASSERT(elem_size == new_elem_size)
+            << "Elem sizes " << elem_size << ", " << new_elem_size
+            << "don't match";
+        elem->save(cipher_stream);
+      }
+      NGRAPH_INFO << "elem size " << elem_size;
 
       // Send output to client
       NGRAPH_INFO << "Sending " << element_count << " Relu ciphertexts (size "

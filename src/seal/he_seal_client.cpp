@@ -208,9 +208,23 @@ void runtime::he::HESealClient::handle_message(
       m_ckks_encoder->encode(post_relu, m_scale, post_relu_plain);
       m_encryptor->encrypt(post_relu_plain, post_relu_ciphers[result_idx]);
     }
+    std::stringstream cipher_stream;
+    post_relu_ciphers[0].save(cipher_stream);
+    size_t cipher_size = cipher_stream.str().size();
+
     for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
       post_relu_ciphers[result_idx].save(post_relu_stream);
+
+      std::stringstream cipher_stream;
+      post_relu_ciphers[0].save(cipher_stream);
+      size_t cipher_size2 = cipher_stream.str().size();
+      if (cipher_size != cipher_size2) {
+        std::cout << "Cipher sizes " << cipher_size << ", " << cipher_size2
+                  << "don't match" << std::endl;
+        throw std::exception();
+      }
     }
+    std::cout << "Cipher size " << cipher_size << std::endl;
     std::cout << "Writing relu_result message with " << result_count
               << " ciphertexts" << std::endl;
 
