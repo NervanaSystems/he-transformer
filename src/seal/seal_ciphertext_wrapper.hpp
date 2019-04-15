@@ -29,6 +29,8 @@ struct SealCiphertextWrapper : public HECiphertext {
 
   seal::Ciphertext& get_hetext() noexcept { return m_ciphertext; }
 
+  void save(std::ostream& stream) const override { m_ciphertext.save(stream); }
+
   seal::Ciphertext m_ciphertext;
 };
 }  // namespace he_seal

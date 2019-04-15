@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <iostream>
+
 namespace ngraph {
 namespace runtime {
 namespace he {
@@ -23,6 +25,8 @@ class HECiphertext {
  public:
   HECiphertext(){};
   virtual ~HECiphertext(){};
+
+  virtual void save(std::ostream& stream) const = 0;
 };
 }  // namespace he
 }  // namespace runtime
