@@ -37,7 +37,7 @@ void sum(const std::vector<std::shared_ptr<T>>& arg,
 
   for (const Coordinate& output_coord : output_transform) {
     out[output_transform.index(output_coord)] =
-        he_backend->create_valued_hetext<T>(0.f, element_type, T{});
+        he_backend->create_valued_hetext<T>(0.f, element_type);
   }
 
   CoordinateTransform input_transform(in_shape);

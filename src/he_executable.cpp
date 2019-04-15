@@ -693,24 +693,14 @@ bool runtime::he::HEExecutable::call(
         << "Client outputs are not HECipherTensor";
 
     std::stringstream cipher_stream;
-    for (auto he_ciphertext : output_cipher_tensor->get_elements()) {
-      auto c =
-          dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(
-              he_ciphertext)
-              ->m_ciphertext;
-      c.save(cipher_stream);
-    }
+    output_cipher_tensor->save_elements(cipher_stream);
+    m_result_message =
+        TCPMessage(MessageType::result, output_shape_size, cipher_stream);
 
-    const std::string& cipher_str = cipher_stream.str();
-    const char* cipher_cstr = cipher_str.c_str();
-    size_t cipher_size = cipher_str.size();
-    m_result_message = TCPMessage(MessageType::result, output_shape_size,
-                                  cipher_size, cipher_cstr);
     std::cout << "Writing Result message with " << output_shape_size
               << " ciphertexts " << std::endl;
     m_session->do_write(m_result_message);
   }
-
   return true;
 }
 
@@ -1073,11 +1063,7 @@ void runtime::he::HEExecutable::generate_calls(
 
         for (const size_t max_ind : maximize_list[list_ind]) {
           auto he_ciphertext = arg0_cipher->get_element(max_ind);
-          auto wrapper =
-              dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(
-                  he_ciphertext);
-          seal::Ciphertext c = wrapper->m_ciphertext;
-          c.save(cipher_stream);
+          he_ciphertext->save(cipher_stream);
           cipher_count++;
         }
         // Send list of ciphertexts to maximize over to client
@@ -1109,7 +1095,6 @@ void runtime::he::HEExecutable::generate_calls(
             "Minimum op unsupported unless client is enabled. Try setting "
             "NGRAPH_ENABLE_CLIENT=1");
       }
-      NGRAPH_INFO << "out0_cipher == nullptr" << (out0_cipher == nullptr);
       if (out0_cipher == nullptr) {
         NGRAPH_INFO << "Minimum types not supported ";
         throw ngraph_error("Minimum supports only output cipher");
@@ -1169,20 +1154,8 @@ void runtime::he::HEExecutable::generate_calls(
       for (size_t min_ind = 0; min_ind < element_count; ++min_ind) {
         auto cipher0 = arg0_cipher->get_element(min_ind);
         auto cipher1 = arg1_cipher->get_element(min_ind);
-
-        auto wrapper0 =
-            dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(
-                cipher0);
-        auto wrapper1 =
-            dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(
-                cipher1);
-        runtime::he::he_seal::ckks::kernel::match_modulus_inplace(
-            wrapper0.get(), wrapper1.get(), he_ckks_backend);
-
-        seal::Ciphertext c0 = wrapper0->m_ciphertext;
-        seal::Ciphertext c1 = wrapper1->m_ciphertext;
-        c0.save(cipher_stream);
-        c1.save(cipher_stream);
+        cipher0->save(cipher_stream);
+        cipher1->save(cipher_stream);
         cipher_count += 2;
       }
 
@@ -1377,17 +1350,7 @@ void runtime::he::HEExecutable::generate_calls(
       }
 
       stringstream cipher_stream;
-      size_t cipher_count = 0;
-      for (const auto& he_ciphertext : arg0_cipher->get_elements()) {
-        auto wrapper =
-            dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(
-                he_ciphertext);
-        seal::Ciphertext c = wrapper->m_ciphertext;
-        c.save(cipher_stream);
-        cipher_count++;
-      }
-      NGRAPH_ASSERT(element_count == cipher_count)
-          << "Incorrect number of elements in ciphertext";
+      arg0_cipher->save_elements(cipher_stream);
 
       // Send output to client
       NGRAPH_INFO << "Sending " << element_count << " Relu ciphertexts (size "
