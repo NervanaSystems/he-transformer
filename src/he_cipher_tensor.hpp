@@ -52,6 +52,12 @@ class HECipherTensor : public HETensor {
   void set_elements(
       const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& elements);
 
+  void save_elements(std::ostream& stream) const {
+    for (auto& ciphertext : m_cipher_texts) {
+      ciphertext->save(stream);
+    }
+  }
+
   inline std::vector<std::shared_ptr<runtime::he::HECiphertext>>&
   get_elements() noexcept {
     return m_cipher_texts;
