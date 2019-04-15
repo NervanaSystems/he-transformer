@@ -116,6 +116,7 @@ class HEExecutable : public Executable {
   std::mutex m_relu_mutex;
   std::condition_variable m_relu_cond;
   bool m_relu_done;
+  size_t m_relu_count;
 
   // To trigger when maxpool is done
   std::mutex m_max_mutex;

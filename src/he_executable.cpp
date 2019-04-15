@@ -85,7 +85,8 @@ runtime::he::HEExecutable::HEExecutable(const shared_ptr<Function>& function,
       m_port(34000),
       m_relu_done(false),
       m_session_started(false),
-      m_client_inputs_received(false) {
+      m_client_inputs_received(false),
+      m_relu_count(0) {
   NGRAPH_ASSERT(he_backend != nullptr) << "he_backend == nullptr";
   // TODO: move get_context to HEBackend
   auto he_seal_backend = (runtime::he::he_seal::HESealBackend*)he_backend;
@@ -322,7 +323,6 @@ void runtime::he::HEExecutable::handle_message(
 
     size_t element_count = message.count();
     size_t element_size = message.element_size();
-    m_relu_ciphertexts.clear();
 
     NGRAPH_INFO << "Got " << element_count << " ciphertexts";
     NGRAPH_INFO << "element_size " << element_size;
@@ -338,17 +338,19 @@ void runtime::he::HEExecutable::handle_message(
           make_shared<runtime::he::he_seal::SealCiphertextWrapper>(cipher);
       auto he_ciphertext =
           dynamic_pointer_cast<runtime::he::HECiphertext>(wrapper);
-
-      NGRAPH_ASSERT(he_ciphertext != nullptr)
-          << "HECiphertext is not SealPlaintextWrapper";
-
       m_relu_ciphertexts.emplace_back(he_ciphertext);
     }
-    NGRAPH_INFO << "Done loading Relu ciphertexts";
 
-    // Notify condition variable
-    m_relu_done = true;
-    m_relu_cond.notify_all();
+    if (m_relu_ciphertexts.size() != m_relu_count) {
+      NGRAPH_INFO << "Got " << m_relu_ciphertexts.size()
+                  << " relu result ciphertexts; waiting until we have "
+                  << m_relu_count;
+    } else {
+      NGRAPH_INFO << "Done loading Relu ciphertexts";
+      // Notify condition variable
+      m_relu_done = true;
+      m_relu_cond.notify_all();
+    }
   } else if (msg_type == MessageType::max_result) {
     std::lock_guard<mutex> guard(m_max_mutex);
 
@@ -1390,6 +1392,7 @@ void runtime::he::HEExecutable::generate_calls(
                   << cipher_stream.str().size() << ") to client";
       auto relu_message =
           TCPMessage(MessageType::relu_request, element_count, cipher_stream);
+      m_relu_count = element_count;
 
       m_session->do_write(relu_message);
 
@@ -1403,6 +1406,7 @@ void runtime::he::HEExecutable::generate_calls(
       // Reset for next Relu call
       m_relu_done = false;
       out0_cipher->set_elements(m_relu_ciphertexts);
+      m_relu_ciphertexts.clear();
       break;
     }
     case OP_TYPEID::Reverse: {

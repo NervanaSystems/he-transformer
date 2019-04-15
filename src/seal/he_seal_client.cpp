@@ -175,7 +175,6 @@ void runtime::he::HESealClient::handle_message(
     size_t result_count = message.count();
     size_t element_size = message.element_size();
 
-    std::stringstream post_relu_stream;
     std::vector<seal::Ciphertext> post_relu_ciphers(result_count);
 #pragma omp parallel for
     for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
@@ -212,25 +211,35 @@ void runtime::he::HESealClient::handle_message(
     post_relu_ciphers[0].save(cipher_stream);
     size_t cipher_size = cipher_stream.str().size();
 
+    size_t result_message_cnt = 0;
+    std::stringstream post_relu_stream;
     for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
       post_relu_ciphers[result_idx].save(post_relu_stream);
 
       std::stringstream cipher_stream;
       post_relu_ciphers[0].save(cipher_stream);
+      result_message_cnt++;
       size_t cipher_size2 = cipher_stream.str().size();
       if (cipher_size != cipher_size2) {
         std::cout << "Cipher sizes " << cipher_size << ", " << cipher_size2
                   << "don't match" << std::endl;
         throw std::exception();
       }
-    }
-    std::cout << "Cipher size " << cipher_size << std::endl;
-    std::cout << "Writing relu_result message with " << result_count
-              << " ciphertexts" << std::endl;
 
-    auto relu_result_msg = TCPMessage(runtime::he::MessageType::relu_result,
-                                      result_count, post_relu_stream);
-    write_message(relu_result_msg);
+      if ((result_idx > 0 && result_idx % 1000 == 0) ||
+          result_idx == result_count - 1) {
+        std::cout << "Cipher size " << cipher_size << std::endl;
+        std::cout << "Writing relu_result message with " << result_count
+                  << " ciphertexts" << std::endl;
+
+        auto relu_result_msg = TCPMessage(runtime::he::MessageType::relu_result,
+                                          result_message_cnt, post_relu_stream);
+        write_message(relu_result_msg);
+        post_relu_stream.str("");
+        result_message_cnt = 0;
+      }
+    }
+
   } else if (msg_type == runtime::he::MessageType::max_request) {
     size_t cipher_count = message.count();
     size_t element_size = message.element_size();
