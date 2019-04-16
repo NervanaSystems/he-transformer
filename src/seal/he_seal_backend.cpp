@@ -25,7 +25,7 @@ using namespace ngraph;
 using namespace std;
 
 extern "C" const char* get_ngraph_version_string() {
-  return "v0.9.1";  // TODO: move to CMakeLists
+  return "DUMMY_VERSION";  // TODO: move to CMakeList
 }
 
 extern "C" runtime::Backend* new_backend(const char* configuration_chars) {

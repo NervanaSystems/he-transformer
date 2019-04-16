@@ -77,34 +77,6 @@ runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend(
 
   // Encoder
   m_ckks_encoder = make_shared<seal::CKKSEncoder>(m_context);
-
-  // Plaintext constants
-  /*shared_ptr<runtime::he::HEPlaintext> plaintext_neg1 =
-      create_empty_plaintext();
-  shared_ptr<runtime::he::HEPlaintext> plaintext_0 = create_empty_plaintext();
-  shared_ptr<runtime::he::HEPlaintext> plaintext_1 = create_empty_plaintext();
-
-  m_ckks_encoder->encode(
-      -1, m_scale,
-      dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(
-          plaintext_neg1)
-          ->m_plaintext);
-
-  m_ckks_encoder->encode(
-      0, m_scale,
-      dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(
-          plaintext_0)
-          ->m_plaintext);
-
-  m_ckks_encoder->encode(
-      1, m_scale,
-      dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(
-          plaintext_1)
-          ->m_plaintext);
-
-  m_plaintext_map[-1] = plaintext_neg1;
-  m_plaintext_map[0] = plaintext_0;
-  m_plaintext_map[1] = plaintext_1; */
 }
 
 extern "C" runtime::Backend* new_ckks_backend(

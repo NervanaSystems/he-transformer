@@ -123,9 +123,6 @@ class HESealBackend : public HEBackend {
     return m_evaluator;
   }
 
-  /*  const std::shared_ptr<const runtime::he::HEPlaintext>
-     get_valued_plaintext( double value) const; */
-
  protected:
   std::shared_ptr<seal::SecretKey> m_secret_key;
   std::shared_ptr<seal::PublicKey> m_public_key;
@@ -135,9 +132,6 @@ class HESealBackend : public HEBackend {
   std::shared_ptr<seal::SEALContext> m_context;
   std::shared_ptr<seal::Evaluator> m_evaluator;
   std::shared_ptr<seal::KeyGenerator> m_keygen;
-
-  /*std::unordered_map<double, std::shared_ptr<runtime::he::HEPlaintext>>
-      m_plaintext_map; */
 };
 }  // namespace he_seal
 }  // namespace he
