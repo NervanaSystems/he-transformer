@@ -25,7 +25,7 @@ using namespace ngraph;
 using namespace std;
 
 extern "C" const char* get_ngraph_version_string() {
-  return "v0.9.1";  // TODO: move to CMakeLists
+  return "DUMMY_VERSION";  // TODO: move to CMakeList
 }
 
 extern "C" runtime::Backend* new_backend(const char* configuration_chars) {
@@ -74,27 +74,20 @@ runtime::he::he_seal::HESealBackend::create_empty_plaintext(
 
 void runtime::he::he_seal::HESealBackend::encrypt(
     shared_ptr<runtime::he::HECiphertext>& output,
-    const runtime::he::HEPlaintext& input) const {
+    const runtime::he::HEPlaintext* input) const {
   auto seal_output =
       static_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(output);
   auto seal_input =
-      static_cast<const runtime::he::he_seal::SealPlaintextWrapper&>(input);
-  m_encryptor->encrypt(seal_input.m_plaintext, seal_output->m_ciphertext);
+      static_cast<const runtime::he::he_seal::SealPlaintextWrapper*>(input);
+  m_encryptor->encrypt(seal_input->get_plaintext(), seal_output->m_ciphertext);
 }
 
 void runtime::he::he_seal::HESealBackend::decrypt(
     shared_ptr<runtime::he::HEPlaintext>& output,
-    const runtime::he::HECiphertext& input) const {
+    const runtime::he::HECiphertext* input) const {
   auto seal_output =
       dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(output);
   auto seal_input =
-      static_cast<const runtime::he::he_seal::SealCiphertextWrapper&>(input);
-  m_decryptor->decrypt(seal_input.m_ciphertext, seal_output->m_plaintext);
-}
-
-const shared_ptr<const runtime::he::HEPlaintext>
-runtime::he::he_seal::HESealBackend::get_valued_plaintext(double value) const {
-  NGRAPH_ASSERT(m_plaintext_map.find(value) != m_plaintext_map.end())
-      << "Plaintext value " << value << " not found";
-  return m_plaintext_map.at(value);
+      static_cast<const runtime::he::he_seal::SealCiphertextWrapper*>(input);
+  m_decryptor->decrypt(seal_input->m_ciphertext, seal_output->get_plaintext());
 }

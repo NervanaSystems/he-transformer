@@ -20,8 +20,7 @@ using namespace std;
 using namespace ngraph;
 
 void runtime::he::he_seal::kernel::scalar_subtract(
-    const he_seal::SealCiphertextWrapper* arg0,
-    const he_seal::SealCiphertextWrapper* arg1,
+    he_seal::SealCiphertextWrapper* arg0, he_seal::SealCiphertextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend) {
@@ -38,37 +37,32 @@ void runtime::he::he_seal::kernel::scalar_subtract(
 }
 
 void runtime::he::he_seal::kernel::scalar_subtract(
-    const he_seal::SealCiphertextWrapper* arg0,
-    const he_seal::SealPlaintextWrapper* arg1,
+    he_seal::SealCiphertextWrapper* arg0, he_seal::SealPlaintextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend) {
   if (arg0 == out.get()) {
     he_seal_backend->get_evaluator()->sub_plain_inplace(out->m_ciphertext,
-                                                        arg1->m_plaintext);
+                                                        arg1->get_plaintext());
   } else {
     he_seal_backend->get_evaluator()->sub_plain(
-        arg0->m_ciphertext, arg1->m_plaintext, out->m_ciphertext);
+        arg0->m_ciphertext, arg1->get_plaintext(), out->m_ciphertext);
   }
 }
 
 void runtime::he::he_seal::kernel::scalar_subtract(
-    const he_seal::SealPlaintextWrapper* arg0,
-    const he_seal::SealPlaintextWrapper* arg1,
+    he_seal::SealPlaintextWrapper* arg0, he_seal::SealPlaintextWrapper* arg1,
     shared_ptr<he_seal::SealPlaintextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend) {
   shared_ptr<HEPlaintext> out_he = dynamic_pointer_cast<HEPlaintext>(out);
-  const string type_name = element_type.c_type_string();
-  if (type_name == "float") {
-    float x, y;
-    he_seal_backend->decode(&x, arg0, element_type);
-    he_seal_backend->decode(&y, arg1, element_type);
-    float r = x - y;
-    he_seal_backend->encode(out_he, &r, element_type);
-  } else {
-    throw ngraph_error("Unsupported element type " + type_name +
-                       " in subtract");
-  }
+
+  NGRAPH_ASSERT(element_type == element::f32);
+
+  float x, y;
+  he_seal_backend->decode(&x, arg0, element_type);
+  he_seal_backend->decode(&y, arg1, element_type);
+  float r = x - y;
+  he_seal_backend->encode(out_he, &r, element_type);
   out = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(out_he);
 }

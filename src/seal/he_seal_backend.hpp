@@ -38,10 +38,10 @@ class HESealBackend : public HEBackend {
   virtual ~HESealBackend(){};
 
   virtual std::shared_ptr<runtime::Tensor> create_batched_cipher_tensor(
-      const element::Type& element_type, const Shape& shape) override = 0;
+      const element::Type& type, const Shape& shape) override = 0;
 
   virtual std::shared_ptr<runtime::Tensor> create_batched_plain_tensor(
-      const element::Type& element_type, const Shape& shape) override = 0;
+      const element::Type& type, const Shape& shape) override = 0;
 
   std::shared_ptr<runtime::he::HECiphertext> create_empty_ciphertext()
       const override;
@@ -79,18 +79,17 @@ class HESealBackend : public HEBackend {
   };
 
   virtual void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
-                      const void* input, const element::Type& element_type,
+                      const void* input, const element::Type& type,
                       size_t count = 1) const = 0;
 
   virtual void decode(void* output, const runtime::he::HEPlaintext* input,
-                      const element::Type& element_type,
-                      size_t count = 1) const = 0;
+                      const element::Type& type, size_t count = 1) const = 0;
 
   void encrypt(std::shared_ptr<runtime::he::HECiphertext>& output,
-               const runtime::he::HEPlaintext& input) const override;
+               const runtime::he::HEPlaintext* input) const override;
 
   void decrypt(std::shared_ptr<runtime::he::HEPlaintext>& output,
-               const runtime::he::HECiphertext& input) const override;
+               const runtime::he::HECiphertext* input) const override;
 
   const inline std::shared_ptr<seal::SEALContext> get_context() const noexcept {
     return m_context;
@@ -124,9 +123,6 @@ class HESealBackend : public HEBackend {
     return m_evaluator;
   }
 
-  const std::shared_ptr<const runtime::he::HEPlaintext> get_valued_plaintext(
-      double value) const;
-
  protected:
   std::shared_ptr<seal::SecretKey> m_secret_key;
   std::shared_ptr<seal::PublicKey> m_public_key;
@@ -136,9 +132,6 @@ class HESealBackend : public HEBackend {
   std::shared_ptr<seal::SEALContext> m_context;
   std::shared_ptr<seal::Evaluator> m_evaluator;
   std::shared_ptr<seal::KeyGenerator> m_keygen;
-
-  std::unordered_map<double, std::shared_ptr<runtime::he::HEPlaintext>>
-      m_plaintext_map;
 };
 }  // namespace he_seal
 }  // namespace he

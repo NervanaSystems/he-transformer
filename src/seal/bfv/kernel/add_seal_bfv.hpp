@@ -31,20 +31,20 @@ namespace he {
 namespace he_seal {
 namespace bfv {
 namespace kernel {
-void scalar_add_bfv(const he_seal::SealCiphertextWrapper* arg0,
-                    const he_seal::SealCiphertextWrapper* arg1,
+void scalar_add_bfv(he_seal::SealCiphertextWrapper* arg0,
+                    he_seal::SealCiphertextWrapper* arg1,
                     shared_ptr<he_seal::SealCiphertextWrapper>& out,
                     const element::Type& element_type,
                     const he_seal::HESealBFVBackend* he_seal_bfv_backend);
 
-void scalar_add_bfv(const he_seal::SealCiphertextWrapper* arg0,
-                    const he_seal::SealPlaintextWrapper* arg1,
+void scalar_add_bfv(he_seal::SealCiphertextWrapper* arg0,
+                    he_seal::SealPlaintextWrapper* arg1,
                     shared_ptr<he_seal::SealCiphertextWrapper>& out,
                     const element::Type& element_type,
                     const he_seal::HESealBFVBackend* he_seal_bfv_backend);
 
-void scalar_add_bfv(const he_seal::SealPlaintextWrapper* arg0,
-                    const he_seal::SealCiphertextWrapper* arg1,
+void scalar_add_bfv(he_seal::SealPlaintextWrapper* arg0,
+                    he_seal::SealCiphertextWrapper* arg1,
                     shared_ptr<he_seal::SealCiphertextWrapper>& out,
                     const element::Type& element_type,
                     const he_seal::HESealBFVBackend* he_seal_bfv_backend);

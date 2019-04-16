@@ -163,14 +163,12 @@ def test_mnist_cnn(FLAGS, network):
         y_label_batch.astype('float32').tofile("y_label_" +
                                                str(FLAGS.batch_size) + ".bin")
 
-    # Avoid performing in a session, to allow he backends to report accuracy.
-    if FLAGS.report_accuracy:
-        correct_prediction = np.equal(np.argmax(y_conv_val, 1), y_label_batch)
-        error_count = np.size(correct_prediction) - np.sum(correct_prediction)
-        test_accuracy = np.mean(correct_prediction)
+    correct_prediction = np.equal(np.argmax(y_conv_val, 1), y_label_batch)
+    error_count = np.size(correct_prediction) - np.sum(correct_prediction)
+    test_accuracy = np.mean(correct_prediction)
 
-        print('Error count', error_count, 'of', FLAGS.batch_size, 'elements.')
-        print('Accuracy with ' + network + ': %g ' % test_accuracy)
+    print('Error count', error_count, 'of', FLAGS.batch_size, 'elements.')
+    print('Accuracy with ' + network + ': %g ' % test_accuracy)
 
     # Rename serialized graph
     try:
@@ -214,11 +212,6 @@ if __name__ == '__main__':
         type=bool,
         default=False,
         help='Whether or not to save the test image and label.')
-    parser.add_argument(
-        '--report_accuracy',
-        type=bool,
-        default=False,
-        help='Whether or not to save the compute the test accuracy.')
 
     FLAGS, unparsed = parser.parse_known_args()
     tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)

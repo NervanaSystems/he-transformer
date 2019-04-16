@@ -23,6 +23,12 @@ class HEPlaintext {
  public:
   HEPlaintext(){};
   virtual ~HEPlaintext(){};
+
+  // Returns true if plaintext encodes single value
+  virtual bool is_single_value() = 0;
+
+  // Returns value plaintext encodes
+  virtual float get_value() = 0;
 };
 }  // namespace he
 }  // namespace runtime

@@ -33,61 +33,60 @@ namespace he {
 namespace he_seal {
 namespace kernel {
 void scalar_multiply(
-    const runtime::he::he_seal::SealCiphertextWrapper* arg0,
-    const runtime::he::he_seal::SealCiphertextWrapper* arg1,
+    runtime::he::he_seal::SealCiphertextWrapper* arg0,
+    runtime::he::he_seal::SealCiphertextWrapper* arg1,
     std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const runtime::he::he_seal::HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
 void scalar_multiply(
-    const runtime::he::HECiphertext* arg0,
-    const runtime::he::HECiphertext* arg1,
+    runtime::he::HECiphertext* arg0, runtime::he::HECiphertext* arg1,
     std::shared_ptr<runtime::he::HECiphertext>& out,
     const element::Type& element_type,
     const runtime::he::he_seal::HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
 void scalar_multiply(
-    const runtime::he::he_seal::SealCiphertextWrapper* arg0,
-    const runtime::he::he_seal::SealPlaintextWrapper* arg1,
+    runtime::he::he_seal::SealCiphertextWrapper* arg0,
+    runtime::he::he_seal::SealPlaintextWrapper* arg1,
     std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const runtime::he::he_seal::HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
 void scalar_multiply(
-    const runtime::he::HECiphertext* arg0, const runtime::he::HEPlaintext* arg1,
+    runtime::he::HECiphertext* arg0, runtime::he::HEPlaintext* arg1,
     std::shared_ptr<runtime::he::HECiphertext>& out,
     const element::Type& element_type,
     const runtime::he::he_seal::HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
 void scalar_multiply(
-    const runtime::he::he_seal::SealPlaintextWrapper* arg0,
-    const runtime::he::he_seal::SealCiphertextWrapper* arg1,
+    runtime::he::he_seal::SealPlaintextWrapper* arg0,
+    runtime::he::he_seal::SealCiphertextWrapper* arg1,
     std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const runtime::he::he_seal::HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
 void scalar_multiply(
-    const runtime::he::HEPlaintext* arg0, const runtime::he::HECiphertext* arg1,
+    runtime::he::HEPlaintext* arg0, runtime::he::HECiphertext* arg1,
     std::shared_ptr<runtime::he::HECiphertext>& out,
     const element::Type& element_type,
     const runtime::he::he_seal::HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
 void scalar_multiply(
-    const runtime::he::he_seal::SealPlaintextWrapper* arg0,
-    const runtime::he::he_seal::SealPlaintextWrapper* arg1,
+    runtime::he::he_seal::SealPlaintextWrapper* arg0,
+    runtime::he::he_seal::SealPlaintextWrapper* arg1,
     std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& out,
     const element::Type& element_type,
     const runtime::he::he_seal::HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
 void scalar_multiply(
-    const runtime::he::HEPlaintext* arg0, const runtime::he::HEPlaintext* arg1,
+    runtime::he::HEPlaintext* arg0, runtime::he::HEPlaintext* arg1,
     std::shared_ptr<runtime::he::HEPlaintext>& out,
     const element::Type& element_type,
     const runtime::he::he_seal::HESealBackend* he_seal_backend,

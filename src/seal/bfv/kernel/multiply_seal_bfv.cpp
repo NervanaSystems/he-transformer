@@ -20,8 +20,7 @@ using namespace std;
 using namespace ngraph::runtime::he;
 
 void he_seal::bfv::kernel::scalar_multiply_bfv(
-    const he_seal::SealCiphertextWrapper* arg0,
-    const he_seal::SealCiphertextWrapper* arg1,
+    he_seal::SealCiphertextWrapper* arg0, he_seal::SealCiphertextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const runtime::he::he_seal::HESealBFVBackend* he_seal_bfv_backend) {
@@ -46,17 +45,16 @@ void he_seal::bfv::kernel::scalar_multiply_bfv(
 }
 
 void he_seal::bfv::kernel::scalar_multiply_bfv(
-    const he_seal::SealCiphertextWrapper* arg0,
-    const he_seal::SealPlaintextWrapper* arg1,
+    he_seal::SealCiphertextWrapper* arg0, he_seal::SealPlaintextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const runtime::he::he_seal::HESealBFVBackend* he_seal_bfv_backend) {
   if (arg0 == out.get()) {
     he_seal_bfv_backend->get_evaluator()->multiply_plain_inplace(
-        out->m_ciphertext, arg1->m_plaintext);
+        out->m_ciphertext, arg1->get_plaintext());
   } else {
     he_seal_bfv_backend->get_evaluator()->multiply_plain(
-        arg0->m_ciphertext, arg1->m_plaintext, out->m_ciphertext);
+        arg0->m_ciphertext, arg1->get_plaintext(), out->m_ciphertext);
   }
 
   he_seal_bfv_backend->get_evaluator()->relinearize_inplace(
@@ -64,8 +62,7 @@ void he_seal::bfv::kernel::scalar_multiply_bfv(
 }
 
 void he_seal::bfv::kernel::scalar_multiply_bfv(
-    const he_seal::SealPlaintextWrapper* arg0,
-    const he_seal::SealCiphertextWrapper* arg1,
+    he_seal::SealPlaintextWrapper* arg0, he_seal::SealCiphertextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const runtime::he::he_seal::HESealBFVBackend* he_seal_bfv_backend) {
