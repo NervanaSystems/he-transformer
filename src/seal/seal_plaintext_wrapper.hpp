@@ -29,6 +29,9 @@ struct SealPlaintextWrapper : public HEPlaintext {
   SealPlaintextWrapper(const seal::Plaintext& plain)
       : m_plaintext(plain), m_single_value(false) {}
 
+  SealPlaintextWrapper(const seal::Plaintext& plain, float f)
+      : m_plaintext(plain), m_value(f), m_single_value(true) {}
+
   inline seal::Plaintext& get_hetext() { return m_plaintext; }
   inline seal::Plaintext& get_plaintext() { return m_plaintext; }
   inline const seal::Plaintext& get_plaintext() const { return m_plaintext; }

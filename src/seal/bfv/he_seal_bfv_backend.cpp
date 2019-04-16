@@ -67,14 +67,6 @@ runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend(
     NGRAPH_WARN << "BFV encryption parameters not valid for batching";
   }
   m_integer_encoder = make_shared<seal::IntegerEncoder>(m_context);
-
-  // Plaintext constants
-  /*m_plaintext_map[-1] =
-      make_shared<SealPlaintextWrapper>(m_integer_encoder->encode(-1));
-  m_plaintext_map[0] =
-      make_shared<SealPlaintextWrapper>(m_integer_encoder->encode(0));
-  m_plaintext_map[1] =
-      make_shared<SealPlaintextWrapper>(m_integer_encoder->encode(1)); */
 }
 
 extern "C" runtime::Backend* new_bfv_backend(const char* configuration_string) {
@@ -128,7 +120,7 @@ void runtime::he::he_seal::HESealBFVBackend::encode(
   }
 
   output = make_shared<runtime::he::he_seal::SealPlaintextWrapper>(
-      m_integer_encoder->encode(int_val));
+      m_integer_encoder->encode(int_val), int_val);
 }
 
 void runtime::he::he_seal::HESealBFVBackend::decode(

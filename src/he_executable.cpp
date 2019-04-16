@@ -489,8 +489,9 @@ bool runtime::he::HEExecutable::call(
     NGRAPH_ASSERT(m_client_inputs.size() == server_inputs.size())
         << "Recieved incorrect number of inputs from client (got "
         << m_client_inputs.size() << ", expectd " << server_inputs.size();
+
+    NGRAPH_INFO << "Done waiting for m_client_inputs";
   }
-  NGRAPH_INFO << "Done waiting for m_client_inputs";
 
   if (m_encrypt_data) {
     NGRAPH_INFO << "Encrypting data";
