@@ -65,7 +65,7 @@
 #include "ngraph/runtime/cpu/op/bounded_relu.hpp"
 #include "ngraph/util.hpp"
 #include "pass/bounded_relu.hpp"
-#include "seal/ckks/kernel/seal_ckks_util.hpp"
+#include "seal/ckks/seal_ckks_util.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_util.hpp"
 
@@ -1371,7 +1371,7 @@ void runtime::he::HEExecutable::generate_calls(
       NGRAPH_ASSERT(he_seal_ckks_backend != nullptr)
           << "he_seal_ckks_backend == nullptr";
 
-      runtime::he::he_seal::ckks::kernel::match_modulus_inplace(
+      runtime::he::he_seal::ckks::match_modulus_inplace(
           arg0_cipher->get_elements(), he_seal_ckks_backend);
 
       stringstream cipher_stream;

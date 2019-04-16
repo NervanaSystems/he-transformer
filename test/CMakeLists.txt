@@ -74,19 +74,20 @@ foreach(BACKEND_NAME ${ACTIVE_BACKEND_LIST})
     message(STATUS "Adding unit test for backend ${BACKEND_NAME}")
 endforeach()
 
+link_directories(
+    ${NGRAPH_LIB_DIR}
+    ${EXTERNAL_INSTALL_LIB_DIR}
+    ${NGRAPH_TF_LIB_DIR}
+)
+
 add_executable(unit-test ${SRC})
+
 
 include_directories(SYSTEM
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${HE_TRANSFORMER_SOURCE_DIR}
     ${EXTERNAL_INSTALL_INCLUDE_DIR}
     ${NGRAPH_TEST_UTIL_INCLUDE_DIR}
-)
-
-link_directories(
-    ${NGRAPH_LIB_DIR}
-    ${EXTERNAL_INSTALL_LIB_DIR}
-    ${NGRAPH_TF_LIB_DIR}
 )
 
 target_include_directories(unit-test PRIVATE ".")
@@ -106,7 +107,10 @@ set_target_properties(
 
 target_link_libraries(unit-test libgtest ngraph)
 target_link_libraries(unit-test ngraph_test_util ${CMAKE_DL_LIBS})
-target_link_libraries(unit-test he_backend seal pthread )
+target_link_libraries(unit-test he_backend seal pthread)
+# For bounded relu op
+# TODO: remove once BoundedRelu has merged into ngraph core
+target_link_libraries(unit-test cpu_backend)
 
 add_dependencies(unit-test he_backend ext_seal ext_ngraph_tf ext_gtest)
 

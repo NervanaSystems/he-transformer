@@ -30,6 +30,11 @@ namespace runtime {
 namespace he {
 namespace he_seal {
 namespace ckks {
+// Matches the scale and modulus chain for the elements in-place
+void match_modulus_inplace(
+    std::vector<std::shared_ptr<runtime::he::HECiphertext>>& elements,
+    const runtime::he::he_seal::HESealCKKSBackend* he_seal_ckks_backend);
+
 // Matches the scale and modulus chain for the two elements in-place
 // The elements are modified if necessary
 template <typename S, typename T>

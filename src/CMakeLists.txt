@@ -37,7 +37,7 @@ set (HE_SRC
     seal/ckks/he_seal_ckks_backend.cpp
     seal/ckks/kernel/add_seal_ckks.cpp
     seal/ckks/kernel/multiply_seal_ckks.cpp
-    seal/ckks/kernel/seal_ckks_util.cpp
+    seal/ckks/seal_ckks_util.cpp
 
     # pass
     pass/bounded_relu.cpp

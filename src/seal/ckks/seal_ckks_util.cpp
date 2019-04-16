@@ -19,14 +19,14 @@
 
 #include "ngraph/type/element_type.hpp"
 #include "seal/ckks/he_seal_ckks_backend.hpp"
-#include "seal/ckks/kernel/seal_ckks_util.hpp"
+#include "seal/ckks/seal_ckks_util.hpp"
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
 
 using namespace ngraph;
 
-void ngraph::runtime::he::he_seal::ckks::kernel::match_modulus_inplace(
+void ngraph::runtime::he::he_seal::ckks::match_modulus_inplace(
     std::vector<std::shared_ptr<runtime::he::HECiphertext>>& elements,
     const runtime::he::he_seal::HESealCKKSBackend* he_seal_ckks_backend) {
   NGRAPH_ASSERT(elements.size() > 0) << "elements.size() == 0)";
