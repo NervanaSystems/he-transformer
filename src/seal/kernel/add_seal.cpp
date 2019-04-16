@@ -128,17 +128,14 @@ void he_seal::kernel::scalar_add(he_seal::SealPlaintextWrapper* arg0,
                                  const he_seal::HESealBackend* he_seal_backend,
                                  const seal::MemoryPoolHandle& pool) {
   auto out_he = static_pointer_cast<HEPlaintext>(out);
-  const string type_name = element_type.c_type_string();
+
+  NGRAPH_ASSERT(element_type == element::f32);
   // TODO: generalize to multiple batch sizes
-  if (type_name == "float") {
-    float x, y;
-    he_seal_backend->decode(&x, arg0, element_type);
-    he_seal_backend->decode(&y, arg1, element_type);
-    float r = x + y;
-    he_seal_backend->encode(out_he, &r, element_type);
-  } else {
-    throw ngraph_error("Unsupported element type " + type_name + " in add");
-  }
+  float x, y;
+  he_seal_backend->decode(&x, arg0, element_type);
+  he_seal_backend->decode(&y, arg1, element_type);
+  float r = x + y;
+  he_seal_backend->encode(out_he, &r, element_type);
   out = static_pointer_cast<he_seal::SealPlaintextWrapper>(out_he);
 }
 

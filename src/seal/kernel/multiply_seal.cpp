@@ -147,8 +147,6 @@ void he_seal::kernel::scalar_multiply(
   // TODO: generalize to multiple batch sizes
   shared_ptr<runtime::he::HEPlaintext> out_he =
       dynamic_pointer_cast<runtime::he::HEPlaintext>(out);
-  const string type_name = element_type.c_type_string();
-
   NGRAPH_ASSERT(element_type == element::f32)
       << "Element type " << element_type << " is not float";
 
