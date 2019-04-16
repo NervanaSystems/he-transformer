@@ -140,8 +140,8 @@ class TCPMessage {
     const std::string& pk_str = stream.str();
     const char* pk_cstr = pk_str.c_str();
     m_data_size = pk_str.size();
-    std::cout << "Creating message of " << count << " elemnts from stream size "
-              << m_data_size << std::endl;
+    std::cout << "Creating message of " << count
+              << " elements from stream size " << m_data_size << std::endl;
 
     check_arguments();
     m_data = new char[header_length + body_length()];

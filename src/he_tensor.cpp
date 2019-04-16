@@ -43,9 +43,9 @@ runtime::he::HETensor::HETensor(const element::Type& element_type,
   m_expanded_shape = shape;
 }
 
-static const Shape runtime::he::HETensor::batch_shape(const Shape& shape,
-                                                      size_t batch_axis,
-                                                      bool batched) const {
+const Shape runtime::he::HETensor::batch_shape(const Shape& shape,
+                                               size_t batch_axis,
+                                               bool batched) {
   if (batched) {
     if (batch_axis != 0) {
       throw ngraph_error("Batching only supported along axis 0");

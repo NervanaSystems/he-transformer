@@ -1,4 +1,5 @@
 
+mkdir -p model
 cd model
 wget http://download.tensorflow.org/models/mobilenet_v1_2018_02_22/mobilenet_v1_0.25_128.tgz
 

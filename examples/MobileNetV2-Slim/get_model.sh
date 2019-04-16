@@ -1,4 +1,5 @@
 
+mkdir -p model
 cd model
 wget https://storage.googleapis.com/mobilenet_v2/checkpoints/mobilenet_v2_0.35_96.tgz
 

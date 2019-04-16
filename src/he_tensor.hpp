@@ -54,7 +54,7 @@ class HETensor : public runtime::Tensor {
   /// @param batched Whether or not batching is enabled
   /// @return Shape after batching along batch axis
   static const Shape batch_shape(const Shape& shape, size_t batch_axis = 0,
-                                 bool batched = false) const;
+                                 bool batched = false);
 
   /// @brief Returns the shape of the un-expanded (batched) tensor.
   const Shape& get_batched_shape() const { return m_batched_shape; };
