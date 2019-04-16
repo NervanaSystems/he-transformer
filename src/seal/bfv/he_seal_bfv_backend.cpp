@@ -67,14 +67,6 @@ runtime::he::he_seal::HESealBFVBackend::HESealBFVBackend(
     NGRAPH_WARN << "BFV encryption parameters not valid for batching";
   }
   m_integer_encoder = make_shared<seal::IntegerEncoder>(m_context);
-
-  // Plaintext constants
-  m_plaintext_map[-1] =
-      make_shared<SealPlaintextWrapper>(m_integer_encoder->encode(-1));
-  m_plaintext_map[0] =
-      make_shared<SealPlaintextWrapper>(m_integer_encoder->encode(0));
-  m_plaintext_map[1] =
-      make_shared<SealPlaintextWrapper>(m_integer_encoder->encode(1));
 }
 
 extern "C" runtime::Backend* new_bfv_backend(const char* configuration_string) {
@@ -99,69 +91,53 @@ static class HESealBFVStaticInit {
 
 shared_ptr<runtime::Tensor>
 runtime::he::he_seal::HESealBFVBackend::create_batched_cipher_tensor(
-    const element::Type& element_type, const Shape& shape) {
+    const element::Type& type, const Shape& shape) {
   throw ngraph_error("HESealBFVBackend::create_batched_tensor unimplemented");
 }
 
 shared_ptr<runtime::Tensor>
 runtime::he::he_seal::HESealBFVBackend::create_batched_plain_tensor(
-    const element::Type& element_type, const Shape& shape) {
+    const element::Type& type, const Shape& shape) {
   throw ngraph_error("HESealBFVBackend::create_batched_tensor unimplemented");
 }
 
 void runtime::he::he_seal::HESealBFVBackend::encode(
     shared_ptr<runtime::he::HEPlaintext>& output, const void* input,
-    const element::Type& element_type, size_t count) const {
+    const element::Type& type, size_t count) const {
   if (count != 1) {
     throw ngraph_error("Batching not enabled for SEAL in encode");
   }
-  const string type_name = element_type.c_type_string();
 
-  if (type_name == "float") {
-    double value = (double)(*(float*)input);
-    if (m_plaintext_map.find(value) != m_plaintext_map.end()) {
-      auto plain_value =
-          static_pointer_cast<const runtime::he::he_seal::SealPlaintextWrapper>(
-              get_valued_plaintext(value));
-      output =
-          make_shared<runtime::he::he_seal::SealPlaintextWrapper>(*plain_value);
-    } else {
-      float float_val = *(float*)input;
-      int32_t int_val;
-      if (ceilf(float_val) == float_val) {
-        int_val = static_cast<int32_t>(float_val);
-      } else {
-        NGRAPH_INFO << "BFV float only supported for int32_t";
-        throw ngraph_error("BFV float only supported for int32_t");
-      }
+  NGRAPH_ASSERT(type == element::f32)
+      << "BFV encode supports only float encoding, received type " << type;
 
-      output = make_shared<runtime::he::he_seal::SealPlaintextWrapper>(
-          m_integer_encoder->encode(int_val));
-    }
+  float float_val = *(float*)input;
+  int32_t int_val;
+  if (ceilf(float_val) == float_val) {
+    int_val = static_cast<int32_t>(float_val);
   } else {
-    NGRAPH_INFO << "Unsupported element type in decode " << type_name;
-    throw ngraph_error("Unsupported element type " + type_name);
+    throw ngraph_error("BFV float only supported for underlying int32_t type");
   }
+
+  output = make_shared<runtime::he::he_seal::SealPlaintextWrapper>(
+      m_integer_encoder->encode(int_val), int_val);
 }
 
 void runtime::he::he_seal::HESealBFVBackend::decode(
     void* output, const runtime::he::HEPlaintext* input,
-    const element::Type& element_type, size_t count) const {
+    const element::Type& type, size_t count) const {
   if (count != 1) {
-    throw ngraph_error("Batching not enabled for SEAL in decode");
+    throw ngraph_error("Batching not enabled for SEAL BFV decode");
   }
-  const string type_name = element_type.c_type_string();
+  NGRAPH_ASSERT(type == element::f32)
+      << "BFV decode supports only float decoding, received type " << type;
 
-  if (auto seal_input = dynamic_cast<const SealPlaintextWrapper*>(input)) {
-    if (type_name == "float") {
-      int32_t val = m_integer_encoder->decode_int32(seal_input->m_plaintext);
-      float fl_val{val};
-      memcpy(output, &fl_val, element_type.size());
-    } else {
-      NGRAPH_INFO << "Unsupported element type in decode " << type_name;
-      throw ngraph_error("Unsupported element type " + type_name);
-    }
-  } else {
-    throw ngraph_error("HESealBFVBackend::decode input is not seal plaintext");
-  }
+  auto seal_input = dynamic_cast<const SealPlaintextWrapper*>(input);
+
+  NGRAPH_ASSERT(seal_input != nullptr)
+      << "HESealBFVBackend::decode input is not seal plaintext";
+
+  int32_t val = m_integer_encoder->decode_int32(seal_input->get_plaintext());
+  float fl_val{val};
+  memcpy(output, &fl_val, type.size());
 }

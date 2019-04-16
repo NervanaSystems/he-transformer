@@ -16,6 +16,7 @@
 
 #include "he_backend.hpp"
 #include "ngraph/ngraph.hpp"
+#include "ngraph/pass/visualize_tree.hpp"
 #include "test_util.hpp"
 #include "util/all_close.hpp"
 #include "util/ndarray.hpp"
@@ -54,11 +55,19 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_cipher) {
       read_vector<float>(result),
       (test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(), 1e-1f));
 
+  copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
+  copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
+  copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
+
   auto handle2 = backend->compile(f);
   handle2->call({result}, {b, a, c});
   EXPECT_TRUE(all_close(
       read_vector<float>(result),
       (test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(), 1e-1f));
+
+  copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
+  copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
+  copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
 
   auto handle3 = backend->compile(f);
   handle3->call({result}, {c, a, b});
@@ -94,11 +103,19 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_plain) {
       read_vector<float>(result),
       (test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(), 1e-1f));
 
+  copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
+  copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
+  copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
+
   auto handle2 = backend->compile(f);
   handle2->call({result}, {b, a, c});
   EXPECT_TRUE(all_close(
       read_vector<float>(result),
       (test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(), 1e-1f));
+
+  copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
+  copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
+  copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
 
   auto handle3 = backend->compile(f);
   handle3->call({result}, {c, a, b});

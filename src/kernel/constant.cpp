@@ -50,6 +50,6 @@ void runtime::he::kernel::constant(
     shared_ptr<runtime::he::HEPlaintext> plaintext =
         he_backend->create_empty_plaintext();
     he_backend->encode(plaintext, src_with_offset, element_type);
-    he_backend->encrypt(out[i], *plaintext);
+    he_backend->encrypt(out[i], plaintext.get());
   }
 }

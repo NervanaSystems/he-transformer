@@ -28,26 +28,23 @@ namespace ngraph {
 namespace runtime {
 namespace he {
 namespace kernel {
-void scalar_add(const runtime::he::HECiphertext* arg0,
-                const runtime::he::HECiphertext* arg1,
+void scalar_add(runtime::he::HECiphertext* arg0,
+                runtime::he::HECiphertext* arg1,
                 std::shared_ptr<runtime::he::HECiphertext>& out,
                 const element::Type& element_type,
                 const runtime::he::HEBackend* he_backend);
 
-void scalar_add(const runtime::he::HECiphertext* arg0,
-                const runtime::he::HEPlaintext* arg1,
+void scalar_add(runtime::he::HECiphertext* arg0, runtime::he::HEPlaintext* arg1,
                 std::shared_ptr<runtime::he::HECiphertext>& out,
                 const element::Type& element_type,
                 const runtime::he::HEBackend* he_backend);
 
-void scalar_add(const runtime::he::HEPlaintext* arg0,
-                const runtime::he::HECiphertext* arg1,
+void scalar_add(runtime::he::HEPlaintext* arg0, runtime::he::HECiphertext* arg1,
                 std::shared_ptr<runtime::he::HECiphertext>& out,
                 const element::Type& element_type,
                 const runtime::he::HEBackend* he_backend);
 
-void scalar_add(const runtime::he::HEPlaintext* arg0,
-                const runtime::he::HEPlaintext* arg1,
+void scalar_add(runtime::he::HEPlaintext* arg0, runtime::he::HEPlaintext* arg1,
                 std::shared_ptr<runtime::he::HEPlaintext>& out,
                 const element::Type& element_type,
                 const runtime::he::HEBackend* he_backend);

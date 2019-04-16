@@ -77,34 +77,6 @@ runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend(
 
   // Encoder
   m_ckks_encoder = make_shared<seal::CKKSEncoder>(m_context);
-
-  // Plaintext constants
-  shared_ptr<runtime::he::HEPlaintext> plaintext_neg1 =
-      create_empty_plaintext();
-  shared_ptr<runtime::he::HEPlaintext> plaintext_0 = create_empty_plaintext();
-  shared_ptr<runtime::he::HEPlaintext> plaintext_1 = create_empty_plaintext();
-
-  m_ckks_encoder->encode(
-      -1, m_scale,
-      dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(
-          plaintext_neg1)
-          ->m_plaintext);
-
-  m_ckks_encoder->encode(
-      0, m_scale,
-      dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(
-          plaintext_0)
-          ->m_plaintext);
-
-  m_ckks_encoder->encode(
-      1, m_scale,
-      dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(
-          plaintext_1)
-          ->m_plaintext);
-
-  m_plaintext_map[-1] = plaintext_neg1;
-  m_plaintext_map[0] = plaintext_0;
-  m_plaintext_map[1] = plaintext_1;
 }
 
 extern "C" runtime::Backend* new_ckks_backend(
@@ -130,79 +102,62 @@ static class HESealCKKSStaticInit {
 
 shared_ptr<runtime::Tensor>
 runtime::he::he_seal::HESealCKKSBackend::create_batched_cipher_tensor(
-    const element::Type& element_type, const Shape& shape) {
+    const element::Type& type, const Shape& shape) {
   NGRAPH_INFO << "Creating batched cipher tensor with shape " << join(shape);
   auto rc = make_shared<runtime::he::HECipherTensor>(
-      element_type, shape, this, create_empty_ciphertext(), true);
+      type, shape, this, create_empty_ciphertext(), true);
   return static_pointer_cast<runtime::Tensor>(rc);
 }
 
 shared_ptr<runtime::Tensor>
 runtime::he::he_seal::HESealCKKSBackend::create_batched_plain_tensor(
-    const element::Type& element_type, const Shape& shape) {
+    const element::Type& type, const Shape& shape) {
   NGRAPH_INFO << "Creating batched plain tensor with shape " << join(shape);
   auto rc = make_shared<runtime::he::HEPlainTensor>(
-      element_type, shape, this, create_empty_plaintext(), true);
+      type, shape, this, create_empty_plaintext(), true);
   return static_pointer_cast<runtime::Tensor>(rc);
 }
 
 void runtime::he::he_seal::HESealCKKSBackend::encode(
     shared_ptr<runtime::he::HEPlaintext>& output, const void* input,
-    const element::Type& element_type, size_t count) const {
-  const string type_name = element_type.c_type_string();
-  if (type_name == "float") {
-    if (count == 1) {
-      double value = (double)(*(float*)input);
-      if (m_plaintext_map.find(value) != m_plaintext_map.end()) {
-        auto plain_value = static_pointer_cast<
-            const runtime::he::he_seal::SealPlaintextWrapper>(
-            get_valued_plaintext(value));
-        output = make_shared<runtime::he::he_seal::SealPlaintextWrapper>(
-            *plain_value);
-      } else {
-        m_ckks_encoder->encode(
-            value, m_scale,
-            dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(
-                output)
-                ->m_plaintext);
-      }
-    } else {
-      vector<float> values{(float*)input, (float*)input + count};
-      vector<double> double_values(values.begin(), values.end());
+    const element::Type& type, size_t count) const {
+  auto seal_plaintext_wrapper =
+      dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(output);
 
-      m_ckks_encoder->encode(
-          double_values, m_scale,
-          dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(
-              output)
-              ->m_plaintext);
-    }
+  NGRAPH_ASSERT(seal_plaintext_wrapper != nullptr)
+      << "HEPlaintext is not SealPlaintextWrapper";
+
+  NGRAPH_ASSERT(type == element::f32)
+      << "CKKS encode supports only float encoding, received type " << type;
+
+  if (count == 1) {
+    double value = (double)(*(float*)input);
+    seal_plaintext_wrapper->set_value(*(float*)input);
+    m_ckks_encoder->encode(value, m_scale,
+                           seal_plaintext_wrapper->get_plaintext());
   } else {
-    NGRAPH_INFO << "Unsupported element type in encode " << type_name;
-    throw ngraph_error("Unsupported element type " + type_name);
+    vector<float> values{(float*)input, (float*)input + count};
+    vector<double> double_values(values.begin(), values.end());
+
+    m_ckks_encoder->encode(double_values, m_scale,
+                           seal_plaintext_wrapper->get_plaintext());
   }
 }
 
 void runtime::he::he_seal::HESealCKKSBackend::decode(
     void* output, const runtime::he::HEPlaintext* input,
-    const element::Type& element_type, size_t count) const {
-  const string type_name = element_type.c_type_string();
+    const element::Type& type, size_t count) const {
+  NGRAPH_ASSERT(count != 0) << "Decode called on 0 elements";
+  NGRAPH_ASSERT(type == element::f32)
+      << "CKKS encode supports only float encoding, received type " << type;
 
-  if (count == 0) {
-    throw ngraph_error("Decode called on 0 elements");
+  auto seal_input = dynamic_cast<const SealPlaintextWrapper*>(input);
+  if (!seal_input) {
+    throw ngraph_error("HESealCKKSBackend::decode input is not seal plaintext");
   }
+  vector<double> xs;
+  m_ckks_encoder->decode(seal_input->get_plaintext(), xs);
+  vector<float> xs_float(xs.begin(), xs.end());
 
-  if (type_name == "float") {
-    auto seal_input = dynamic_cast<const SealPlaintextWrapper*>(input);
-    if (!seal_input) {
-      throw ngraph_error(
-          "HESealCKKSBackend::decode input is not seal plaintext");
-    }
-    vector<double> xs;
-    m_ckks_encoder->decode(seal_input->m_plaintext, xs);
-    vector<float> xs_float(xs.begin(), xs.end());
-
-    memcpy(output, &xs_float[0], element_type.size() * count);
-  } else {
-    throw ngraph_error("Unsupported element type " + type_name);
-  }
+  memcpy(output, &xs_float[0], type.size() * count);
 }

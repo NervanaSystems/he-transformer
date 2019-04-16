@@ -181,13 +181,13 @@ class HEBackend : public runtime::Backend {
   /// @param output Pointer to ciphertext to encrypt to
   /// @param input Pointer to plaintext to encrypt
   virtual void encrypt(std::shared_ptr<runtime::he::HECiphertext>& output,
-                       const runtime::he::HEPlaintext& input) const = 0;
+                       const runtime::he::HEPlaintext* input) const = 0;
 
   /// @brief Decrypts ciphertext to plaintext polynomial
   /// @param output Pointer to plaintext to decrypt to
   /// @param input Pointer to ciphertext to decrypt
   virtual void decrypt(std::shared_ptr<runtime::he::HEPlaintext>& output,
-                       const runtime::he::HECiphertext& input) const = 0;
+                       const runtime::he::HECiphertext* input) const = 0;
 
   /// @brief Return whether or not scalar optimizations are enabled
   bool optimized_add() const { return m_optimized_add; };
