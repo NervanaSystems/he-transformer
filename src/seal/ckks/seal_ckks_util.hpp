@@ -28,7 +28,6 @@ namespace runtime {
 namespace he {
 namespace he_seal {
 namespace ckks {
-namespace kernel {
 // Matches the scale and modulus chain for the two elements in-place
 // The elements are modified if necessary
 template <typename S, typename T>
@@ -70,7 +69,6 @@ void match_modulus_inplace(S* arg0, T* arg1,
     assert(chain_ind0 == chain_ind1);
   }
 }
-}  // namespace kernel
 }  // namespace ckks
 }  // namespace he_seal
 }  // namespace he

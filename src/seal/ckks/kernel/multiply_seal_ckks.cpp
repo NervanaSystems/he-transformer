@@ -15,7 +15,7 @@
 //*****************************************************************************
 
 #include "seal/ckks/kernel/multiply_seal_ckks.hpp"
-#include "seal_ckks_util.hpp"
+#include "seal/ckks/seal_ckks_util.hpp"
 
 using namespace std;
 using namespace ngraph::runtime::he;
