@@ -31,8 +31,6 @@ set (HE_SRC
     seal/kernel/negate_seal.cpp
     seal/kernel/subtract_seal.cpp
     seal/he_seal_backend.cpp
-    seal/seal_plaintext_wrapper.cpp
-    seal/seal_ciphertext_wrapper.cpp
     seal/bfv/he_seal_bfv_backend.cpp
     seal/bfv/kernel/add_seal_bfv.cpp
     seal/bfv/kernel/multiply_seal_bfv.cpp

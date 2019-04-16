@@ -16,6 +16,7 @@
 
 #include "he_backend.hpp"
 #include "ngraph/ngraph.hpp"
+#include "ngraph/pass/visualize_tree.hpp"
 #include "test_util.hpp"
 #include "util/all_close.hpp"
 #include "util/ndarray.hpp"
@@ -226,6 +227,36 @@ NGRAPH_TEST(${BACKEND_NAME}, add_layer_plain_plain) {
 
   auto handle = backend->compile(f);
   handle->call({result}, {a, b, c});
+  EXPECT_TRUE(all_close(
+      read_vector<float>(result),
+      (test::NDArray<float, 2>({{14, 22}, {32, 44}})).get_vector(), 1e-1f));
+}
+
+// Test adding cipher with plain re-using outputs
+NGRAPH_TEST(${BACKEND_NAME}, add_two_outputs) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+
+  Shape shape{2, 2};
+  auto A = make_shared<op::Parameter>(element::f32, shape);
+  auto B = make_shared<op::Parameter>(element::f32, shape);
+  auto f = make_shared<Function>((A * B) * A + A, ParameterVector{A, B});
+
+  // Create some tensors for input/output
+  auto a = he_backend->create_cipher_tensor(element::f32, shape);
+  auto b = he_backend->create_cipher_tensor(element::f32, shape);
+  auto result = he_backend->create_cipher_tensor(element::f32, shape);
+
+  copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
+  copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
+
+  auto handle = backend->compile(f);
+
+  pass::Manager pass_manager;
+  pass_manager.register_pass<pass::VisualizeTree>("fun.png");
+  pass_manager.run_passes(f);
+
+  handle->call({result}, {a, b});
   EXPECT_TRUE(all_close(
       read_vector<float>(result),
       (test::NDArray<float, 2>({{14, 22}, {32, 44}})).get_vector(), 1e-1f));

@@ -548,7 +548,7 @@ bool runtime::he::HEExecutable::call(
 #pragma omp parallel for
         for (size_t i = 0; i < plain_input->get_batched_element_count(); ++i) {
           m_he_backend->encrypt(cipher_input->get_element(i),
-                                *plain_input->get_element(i));
+                                plain_input->get_element(i).get());
         }
         tensor_map.insert({tv, cipher_input});
         input_count++;
@@ -1112,7 +1112,7 @@ void runtime::he::HEExecutable::generate_calls(
                 element_type, arg0_plain->get_shape(), m_batch_data));
         for (size_t elem_idx = 0; elem_idx < element_count; ++elem_idx) {
           m_he_backend->encrypt(arg0_cipher->get_element(elem_idx),
-                                *(arg0_plain->get_element(elem_idx)));
+                                (arg0_plain->get_element(elem_idx).get()));
         }
       }
       if (arg1_plain != nullptr) {
@@ -1124,7 +1124,7 @@ void runtime::he::HEExecutable::generate_calls(
                 element_type, arg1_plain->get_shape(), m_batch_data));
         for (size_t elem_idx = 0; elem_idx < element_count; ++elem_idx) {
           m_he_backend->encrypt(arg1_cipher->get_element(elem_idx),
-                                *(arg1_plain->get_element(elem_idx)));
+                                (arg1_plain->get_element(elem_idx).get()));
         }
       }
       NGRAPH_ASSERT(arg0_cipher != nullptr) << "arg0_cipher is nullptr";

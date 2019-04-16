@@ -25,9 +25,10 @@ namespace he {
 namespace he_seal {
 struct SealCiphertextWrapper : public HECiphertext {
   SealCiphertextWrapper(){};
-  SealCiphertextWrapper(const seal::Ciphertext& cipher);
+  SealCiphertextWrapper(const seal::Ciphertext& cipher)
+      : m_ciphertext(cipher) {}
 
-  seal::Ciphertext& get_hetext() noexcept { return m_ciphertext; }
+  seal::Ciphertext& get_hetext() { return m_ciphertext; }
 
   void save(std::ostream& stream) const override { m_ciphertext.save(stream); }
 

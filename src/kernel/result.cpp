@@ -29,7 +29,7 @@ void runtime::he::kernel::result(
     throw ngraph_error("Wrong size in result");
   }
   for (size_t i = 0; i < count; ++i) {
-    he_backend->encrypt(out[i], *arg[i]);
+    he_backend->encrypt(out[i], arg[i].get());
   }
 }
 
@@ -43,6 +43,6 @@ void runtime::he::kernel::result(
     throw ngraph_error("Wrong size in result");
   }
   for (size_t i = 0; i < count; ++i) {
-    he_backend->decrypt(out[i], *arg[i]);
+    he_backend->decrypt(out[i], arg[i].get());
   }
 }

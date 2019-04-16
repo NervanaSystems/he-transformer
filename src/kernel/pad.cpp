@@ -48,7 +48,7 @@ void runtime::he::kernel::pad(
   shared_ptr<runtime::he::HECiphertext> arg1_encrypted;
   arg1_encrypted = he_seal_backend->create_empty_ciphertext();
 
-  he_backend->encrypt(arg1_encrypted, *arg1[0]);
+  he_backend->encrypt(arg1_encrypted, arg1[0].get());
 
   // TODO: replace with match_arguments
   // Change output modulus to match other ciphertexts in vector

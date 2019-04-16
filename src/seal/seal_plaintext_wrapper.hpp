@@ -24,12 +24,28 @@ namespace runtime {
 namespace he {
 namespace he_seal {
 struct SealPlaintextWrapper : public HEPlaintext {
+ public:
   SealPlaintextWrapper(){};
-  SealPlaintextWrapper(const seal::Plaintext& plain);
+  SealPlaintextWrapper(const seal::Plaintext& plain)
+      : m_plaintext(plain), m_single_value(false) {}
 
-  seal::Plaintext& get_hetext() noexcept { return m_plaintext; }
+  inline seal::Plaintext& get_hetext() { return m_plaintext; }
+  inline seal::Plaintext& get_plaintext() { return m_plaintext; }
+  inline const seal::Plaintext& get_plaintext() const { return m_plaintext; }
 
+  void set_value(float f) {
+    m_value = f;
+    m_single_value = true;
+  }
+
+  bool is_single_value() override { return m_single_value; }
+
+  inline float get_value() override { return m_value; }
+
+ private:
   seal::Plaintext m_plaintext;
+  float m_value;
+  bool m_single_value;
 };
 }  // namespace he_seal
 }  // namespace he

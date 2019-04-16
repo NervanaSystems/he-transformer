@@ -21,21 +21,17 @@ using namespace std;
 using namespace ngraph::runtime::he;
 
 void he_seal::ckks::kernel::scalar_multiply_ckks(
-    const he_seal::SealCiphertextWrapper* arg0,
-    const he_seal::SealCiphertextWrapper* arg1,
+    he_seal::SealCiphertextWrapper* arg0, he_seal::SealCiphertextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const runtime::he::he_seal::HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
-  auto argument_matching_pair = match_modulus(arg0, arg1, he_seal_ckks_backend);
-  auto arg0_scaled = get<0>(argument_matching_pair);
-  auto arg1_scaled = get<1>(argument_matching_pair);
-
+  match_modulus_inplace(arg0, arg1, he_seal_ckks_backend);
   size_t chain_ind0 = he_seal_ckks_backend->get_context()
-                          ->context_data(arg0_scaled->get_hetext().parms_id())
+                          ->context_data(arg0->get_hetext().parms_id())
                           ->chain_index();
   size_t chain_ind1 = he_seal_ckks_backend->get_context()
-                          ->context_data(arg1_scaled->get_hetext().parms_id())
+                          ->context_data(arg1->get_hetext().parms_id())
                           ->chain_index();
 
   if (chain_ind0 == 0 || chain_ind1 == 0) {
@@ -44,12 +40,11 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
   }
 
   if (arg0 == arg1) {
-    he_seal_ckks_backend->get_evaluator()->square(arg0_scaled->m_ciphertext,
+    he_seal_ckks_backend->get_evaluator()->square(arg0->m_ciphertext,
                                                   out->m_ciphertext);
   } else {
-    he_seal_ckks_backend->get_evaluator()->multiply(arg0_scaled->m_ciphertext,
-                                                    arg1_scaled->m_ciphertext,
-                                                    out->m_ciphertext);
+    he_seal_ckks_backend->get_evaluator()->multiply(
+        arg0->m_ciphertext, arg1->m_ciphertext, out->m_ciphertext);
   }
 
   he_seal_ckks_backend->get_evaluator()->relinearize_inplace(
@@ -60,22 +55,18 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
 }
 
 void he_seal::ckks::kernel::scalar_multiply_ckks(
-    const he_seal::SealCiphertextWrapper* arg0,
-    const he_seal::SealPlaintextWrapper* arg1,
+    he_seal::SealCiphertextWrapper* arg0, he_seal::SealPlaintextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const runtime::he::he_seal::HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
-  auto argument_matching_pair = match_modulus(arg0, arg1, he_seal_ckks_backend);
-
-  auto arg0_scaled = get<0>(argument_matching_pair);
-  auto arg1_scaled = get<1>(argument_matching_pair);
+  match_modulus_inplace(arg0, arg1, he_seal_ckks_backend);
 
   size_t chain_ind0 = he_seal_ckks_backend->get_context()
-                          ->context_data(arg0_scaled->get_hetext().parms_id())
+                          ->context_data(arg0->get_hetext().parms_id())
                           ->chain_index();
   size_t chain_ind1 = he_seal_ckks_backend->get_context()
-                          ->context_data(arg1_scaled->get_hetext().parms_id())
+                          ->context_data(arg1->get_hetext().parms_id())
                           ->chain_index();
 
   if (chain_ind0 == 0 || chain_ind1 == 0) {
@@ -84,8 +75,7 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
   }
 
   he_seal_ckks_backend->get_evaluator()->multiply_plain(
-      arg0_scaled->m_ciphertext, arg1_scaled->m_plaintext, out->m_ciphertext,
-      pool);
+      arg0->m_ciphertext, arg1->get_plaintext(), out->m_ciphertext, pool);
 
   he_seal_ckks_backend->get_evaluator()->relinearize_inplace(
       out->m_ciphertext, *(he_seal_ckks_backend->get_relin_keys()), pool);
@@ -95,8 +85,7 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
 }
 
 void he_seal::ckks::kernel::scalar_multiply_ckks(
-    const he_seal::SealPlaintextWrapper* arg0,
-    const he_seal::SealCiphertextWrapper* arg1,
+    he_seal::SealPlaintextWrapper* arg0, he_seal::SealCiphertextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const runtime::he::he_seal::HESealCKKSBackend* he_seal_ckks_backend,

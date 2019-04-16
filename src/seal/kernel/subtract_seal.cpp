@@ -20,8 +20,7 @@ using namespace std;
 using namespace ngraph;
 
 void runtime::he::he_seal::kernel::scalar_subtract(
-    const he_seal::SealCiphertextWrapper* arg0,
-    const he_seal::SealCiphertextWrapper* arg1,
+    he_seal::SealCiphertextWrapper* arg0, he_seal::SealCiphertextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend) {
@@ -38,23 +37,21 @@ void runtime::he::he_seal::kernel::scalar_subtract(
 }
 
 void runtime::he::he_seal::kernel::scalar_subtract(
-    const he_seal::SealCiphertextWrapper* arg0,
-    const he_seal::SealPlaintextWrapper* arg1,
+    he_seal::SealCiphertextWrapper* arg0, he_seal::SealPlaintextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend) {
   if (arg0 == out.get()) {
     he_seal_backend->get_evaluator()->sub_plain_inplace(out->m_ciphertext,
-                                                        arg1->m_plaintext);
+                                                        arg1->get_plaintext());
   } else {
     he_seal_backend->get_evaluator()->sub_plain(
-        arg0->m_ciphertext, arg1->m_plaintext, out->m_ciphertext);
+        arg0->m_ciphertext, arg1->get_plaintext(), out->m_ciphertext);
   }
 }
 
 void runtime::he::he_seal::kernel::scalar_subtract(
-    const he_seal::SealPlaintextWrapper* arg0,
-    const he_seal::SealPlaintextWrapper* arg1,
+    he_seal::SealPlaintextWrapper* arg0, he_seal::SealPlaintextWrapper* arg1,
     shared_ptr<he_seal::SealPlaintextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend) {
