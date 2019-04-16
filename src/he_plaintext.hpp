@@ -29,6 +29,9 @@ class HEPlaintext {
 
   // Returns value plaintext encodes
   virtual float get_value() = 0;
+
+  // Sets single value
+  virtual void set_value(float f) = 0;
 };
 }  // namespace he
 }  // namespace runtime

@@ -38,6 +38,7 @@ runtime::he::HEBackend::create_valued_plaintext(
       << "element type " << element_type << "unsupported";
 
   shared_ptr<runtime::he::HEPlaintext> plaintext = create_empty_plaintext();
+  plaintext->set_value(value);
 
   encode(plaintext, (void*)(&value), element_type, 1);
   return plaintext;

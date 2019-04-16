@@ -36,7 +36,7 @@ struct SealPlaintextWrapper : public HEPlaintext {
   inline seal::Plaintext& get_plaintext() { return m_plaintext; }
   inline const seal::Plaintext& get_plaintext() const { return m_plaintext; }
 
-  void set_value(float f) {
+  void set_value(float f) override {
     m_value = f;
     m_single_value = true;
   }

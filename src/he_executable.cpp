@@ -100,7 +100,7 @@ runtime::he::HEExecutable::HEExecutable(const shared_ptr<Function>& function,
   pass_manager.register_pass<ngraph::pass::LikeReplacement>();
   pass_manager.register_pass<ngraph::pass::AssignLayout<DenseTensorLayout>>();
   pass_manager.register_pass<ngraph::pass::Liveness>();
-  pass_manager.register_pass<ngraph::runtime::he::pass::BoundedRelu>();
+  // pass_manager.register_pass<ngraph::runtime::he::pass::BoundedRelu>();
   NGRAPH_INFO << "Running passes";
   pass_manager.run_passes(function);
 

@@ -281,7 +281,7 @@ class TCPMessage {
     std::strncat(header, m_data, header_length);
     std::string header_str(header);
     std::stringstream sstream(header_str);
-    std::cout << "header_str" << header_str << std::endl;
+    std::cout << "header_str " << header_str << std::endl;
     size_t body_length;
     sstream >> body_length;
     std::cout << "decoded header body length " << body_length << std::endl;

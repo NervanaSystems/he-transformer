@@ -74,6 +74,8 @@ void he_seal::kernel::scalar_multiply(
       << "Element type " << element_type << " is not float";
 
   if (he_seal_backend->optimized_mult()) {
+    // TODO: less hacky way of checking for 0 in case of small floating-point
+    // weights
     if (arg1->is_single_value() && arg1->get_value() == 0.0f) {
       optimization = Optimization::mult_zero;
     } else if (arg1->is_single_value() && arg1->get_value() == 1.0f) {
