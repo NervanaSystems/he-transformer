@@ -185,8 +185,8 @@ void runtime::he::HEExecutable::handle_message(
     const runtime::he::TCPMessage& message) {
   MessageType msg_type = message.message_type();
 
-  NGRAPH_INFO << "Server received message type: "
-              << message_type_to_string(msg_type);
+  // NGRAPH_INFO << "Server received message type: "
+  //            << message_type_to_string(msg_type);
 
   if (msg_type == MessageType::execute) {
     // Get Ciphertexts from message
@@ -1068,9 +1068,9 @@ void runtime::he::HEExecutable::generate_calls(
           cipher_count++;
         }
         // Send list of ciphertexts to maximize over to client
-        NGRAPH_INFO << "Sending " << cipher_count
+        /*NGRAPH_INFO << "Sending " << cipher_count
                     << " Maxpool ciphertexts (size "
-                    << cipher_stream.str().size() << ") to client";
+                    << cipher_stream.str().size() << ") to client"; */
         auto max_message =
             TCPMessage(MessageType::max_request, cipher_count, cipher_stream);
 

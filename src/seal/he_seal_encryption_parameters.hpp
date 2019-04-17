@@ -57,7 +57,8 @@ class HESealEncryptionParameters : public HEEncryptionParameters {
     m_seal_encryption_parameters->set_poly_modulus_degree(poly_modulus_degree);
 
     std::vector<seal::SmallModulus> seal_coeff_modulus;
-    for (const auto value : coeff_modulus) {
+    for (const auto& value : coeff_modulus) {
+      NGRAPH_INFO << "Setting coeff mod " << value;
       seal_coeff_modulus.emplace_back(seal::SmallModulus(value));
     }
     m_seal_encryption_parameters->set_coeff_modulus(seal_coeff_modulus);
@@ -183,32 +184,45 @@ parse_config_or_use_default(const std::string& scheme_name) {
       std::string coeff_mod_name = coeff_mod->begin().key();
 
       static std::unordered_set<std::string> valid_coeff_mods{
-          "small_mods_30bit", "small_mods_40bit", "small_mods_50bit",
-          "small_mods_60bit"};
+          "custom_mods",      "small_mods_20bit", "small_mods_30bit",
+          "small_mods_40bit", "small_mods_50bit", "small_mods_60bit"};
 
       auto valid_coeff_mod = valid_coeff_mods.find(coeff_mod_name);
       if (valid_coeff_mod == valid_coeff_mods.end()) {
         throw ngraph_error("Coeff modulus " + coeff_mod_name + " not valid");
       }
-      uint64_t bit_count = stoi(coeff_mod_name.substr(11, 2));
-      coeff_count = coeff_mod->begin().value();
 
-      NGRAPH_INFO << "Using SEAL CKKS config with " << coeff_count << " "
-                  << bit_count << "-bit coefficients";
+      if (coeff_mod_name == "custom_mods") {
+        auto custom_mods =
+            coeff_mod->begin()
+                .value()
+                .get<std::vector<uint64_t>>();  //->begin().value();
 
-      if (bit_count == 30) {
-        small_mods = seal::util::global_variables::default_small_mods_30bit;
-      } else if (bit_count == 40) {
-        small_mods = seal::util::global_variables::default_small_mods_40bit;
-      } else if (bit_count == 50) {
-        small_mods = seal::util::global_variables::default_small_mods_50bit;
-      } else if (bit_count == 60) {
-        small_mods = seal::util::global_variables::default_small_mods_60bit;
-      }
-      if (coeff_count > small_mods.size()) {
-        std::stringstream ss;
-        ss << "Coefficient modulus count " << coeff_count << " too large";
-        throw ngraph_error(ss.str());
+        for (const auto custom_mod : custom_mods) {
+          small_mods.emplace_back(custom_mod);
+        }
+        coeff_count = small_mods.size();
+      } else {
+        uint64_t bit_count = stoi(coeff_mod_name.substr(11, 2));
+        coeff_count = coeff_mod->begin().value();
+
+        NGRAPH_INFO << "Using SEAL CKKS config with " << coeff_count << " "
+                    << bit_count << "-bit coefficients";
+
+        if (bit_count == 30) {
+          small_mods = seal::util::global_variables::default_small_mods_30bit;
+        } else if (bit_count == 40) {
+          small_mods = seal::util::global_variables::default_small_mods_40bit;
+        } else if (bit_count == 50) {
+          small_mods = seal::util::global_variables::default_small_mods_50bit;
+        } else if (bit_count == 60) {
+          small_mods = seal::util::global_variables::default_small_mods_60bit;
+        }
+        if (coeff_count > small_mods.size()) {
+          std::stringstream ss;
+          ss << "Coefficient modulus count " << coeff_count << " too large";
+          throw ngraph_error(ss.str());
+        }
       }
     } else {  // Use default coefficient modulus
       if (security_level == 128) {

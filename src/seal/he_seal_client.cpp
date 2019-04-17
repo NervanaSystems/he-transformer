@@ -77,8 +77,8 @@ void runtime::he::HESealClient::handle_message(
     const runtime::he::TCPMessage& message) {
   runtime::he::MessageType msg_type = message.message_type();
 
-  std::cout << "Client received message type: "
-            << message_type_to_string(msg_type).c_str() << std::endl;
+  // std::cout << "Client received message type: "
+  //          << message_type_to_string(msg_type).c_str() << std::endl;
 
   if (msg_type == runtime::he::MessageType::parameter_size) {
     // Number of (packed) ciphertexts to perform inference on
@@ -207,8 +207,8 @@ void runtime::he::HESealClient::handle_message(
     for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
       post_relu_ciphers[result_idx].save(post_relu_stream);
     }
-    std::cout << "Writing relu_result message with " << result_count
-              << " ciphertexts" << std::endl;
+    // std::cout << "Writing relu_result message with " << result_count
+    //          << " ciphertexts" << std::endl;
 
     auto relu_result_msg = TCPMessage(runtime::he::MessageType::relu_result,
                                       result_count, post_relu_stream);
@@ -261,8 +261,8 @@ void runtime::he::HESealClient::handle_message(
     m_ckks_encoder->encode(max_values, m_scale, plain_max);
     m_encryptor->encrypt(plain_max, cipher_max);
     cipher_max.save(max_stream);
-    std::cout << "Writing max_result message with " << 1 << " ciphertexts"
-              << std::endl;
+    // std::cout << "Writing max_result message with " << 1 << " ciphertexts"
+    //          << std::endl;
 
     auto max_result_msg =
         TCPMessage(runtime::he::MessageType::max_result, 1, max_stream);
@@ -320,8 +320,8 @@ void runtime::he::HESealClient::handle_message(
       cipher_minimum.save(minimum_stream);
     }
 
-    std::cout << "Writing minimum_result message with " << (cipher_count / 2)
-              << " ciphertexts" << std::endl;
+    // std::cout << "Writing minimum_result message with " << (cipher_count / 2)
+    //          << " ciphertexts" << std::endl;
 
     auto minimum_result_msg =
         TCPMessage(runtime::he::MessageType::minimum_result, cipher_count / 2,

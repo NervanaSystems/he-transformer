@@ -29,3 +29,23 @@ source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate
 cd $HE_TRANSFORMER/examples
 python pyclient_mnist.py --batch_size=2048
 ```
+
+# Custom coefficient moduli
+For improved performance at the cost of lower precision, you may select custom coefficient moduli smaller than 30 bits. This enables the selection of a smaller polynomial modulus degree N=2^11 reducing the maximum batch size to N/2=1024
+
+For an example of this, in one terminal run
+```
+source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate
+cd $HE_TRANSFORMER/examples/MNIST-MLP
+NGRAPH_ENABLE_CLIENT=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_BATCH_DATA=1 NGRAPH_BATCH_TF=1 NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N11_L3_18bits.json NGRAPH_TF_BACKEND=HE_SEAL_CKKS python test.py --batch_size=1024 --report_accuracy=1
+```
+
+In another terminal, run
+```
+source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate
+cd $HE_TRANSFORMER/examples
+python pyclient_mnist.py --batch_size=1024
+```
+
+Note: `src/get_primes.py` can be used to generate custom coefficient moduli
+
