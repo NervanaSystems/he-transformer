@@ -32,6 +32,8 @@ class HEPlaintext {
 
   // Sets single value
   virtual void set_value(float f) = 0;
+
+  virtual void set_multiple_value() = 0;
 };
 }  // namespace he
 }  // namespace runtime

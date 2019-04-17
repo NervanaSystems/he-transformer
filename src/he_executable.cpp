@@ -576,14 +576,18 @@ bool runtime::he::HEExecutable::call(
     tensor_map.insert({tv, he_outputs[output_count++]});
   }
 
+  std::set<string> nonverbose_ops{"Slice", "Broadcast", "Reshape"};
+
   // for each ordered op in the graph
   for (const NodeWrapper& wrapped : m_wrapped_nodes) {
     const Node* op = &wrapped.get_node();
     auto type_id = wrapped.get_typeid();
 
-    NGRAPH_INFO << "\033[1;32m"
-                << "[ " << op->get_name() << " ]"
-                << "\033[0m";
+    if (nonverbose_ops.find(op->description()) == nonverbose_ops.end()) {
+      NGRAPH_INFO << "\033[1;32m"
+                  << "[ " << op->get_name() << " ]"
+                  << "\033[0m";
+    }
 
     if (type_id == OP_TYPEID::Parameter) {
       NGRAPH_INFO << "Parameter shape {" << join(op->get_shape()) << "}";
@@ -670,9 +674,11 @@ bool runtime::he::HEExecutable::call(
         }
       }
     }
-    NGRAPH_INFO << "\033[1;31m" << op->get_name() << " took "
-                << m_timer_map[op].get_milliseconds() << "ms"
-                << "\033[0m";
+    if (nonverbose_ops.find(op->description()) == nonverbose_ops.end()) {
+      NGRAPH_INFO << "\033[1;31m" << op->get_name() << " took "
+                  << m_timer_map[op].get_milliseconds() << "ms"
+                  << "\033[0m";
+    }
   }
   size_t total_time = 0;
   for (const auto& elem : m_timer_map) {
@@ -747,27 +753,29 @@ void runtime::he::HEExecutable::generate_calls(
     batch_size = out0_plain->get_batch_size();
   }
 
-  stringstream ss;
-  ss << "Inputs: ";
-  if (arg0_cipher != nullptr) {
-    ss << "Cipher";
-  } else if (arg0_plain != nullptr) {
-    ss << "Plain";
+  if (node_op != "Slice" && node_op != "Broadcast" && node_op != "Reshape") {
+    stringstream ss;
+    ss << "Inputs: ";
+    if (arg0_cipher != nullptr) {
+      ss << "Cipher";
+    } else if (arg0_plain != nullptr) {
+      ss << "Plain";
+    }
+    if (arg1_cipher != nullptr) {
+      ss << ", Cipher";
+    } else if (arg1_plain != nullptr) {
+      ss << ", Plain";
+    }
+    NGRAPH_INFO << ss.str();
+    ss.str("");
+    ss << "Outputs: ";
+    if (out0_cipher != nullptr) {
+      ss << "Cipher";
+    } else if (out0_plain != nullptr) {
+      ss << "Plain";
+    }
+    NGRAPH_INFO << ss.str();
   }
-  if (arg1_cipher != nullptr) {
-    ss << ", Cipher";
-  } else if (arg1_plain != nullptr) {
-    ss << ", Plain";
-  }
-  NGRAPH_INFO << ss.str();
-  ss.str("");
-  ss << "Outputs: ";
-  if (out0_cipher != nullptr) {
-    ss << "Cipher";
-  } else if (out0_plain != nullptr) {
-    ss << "Plain";
-  }
-  NGRAPH_INFO << ss.str();
 
   if (batch_size != 1) {
     NGRAPH_INFO << "Batch size " << batch_size;
@@ -936,11 +944,37 @@ void runtime::he::HEExecutable::generate_calls(
     }
     case OP_TYPEID::Constant: {
       const op::Constant* constant = static_cast<const op::Constant*>(&node);
-
       if (out0_plain != nullptr) {
+        NGRAPH_INFO << "Constant size "
+                    << out0_plain->get_batched_element_count();
+
         runtime::he::kernel::constant(out0_plain->get_elements(), type,
                                       constant->get_data_ptr(), m_he_backend,
                                       out0_plain->get_batched_element_count());
+
+        for (size_t i = 0; i < out0_plain->get_batched_element_count(); ++i) {
+          auto elem_i = out0_plain->get_element(i);
+          auto seal_plaintext_wrapper =
+              dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(
+                  elem_i);
+
+          NGRAPH_ASSERT(seal_plaintext_wrapper != nullptr)
+              << "HEPlaintext is not SealPlaintextWrapper";
+
+          auto he_seal_ckks_backend =
+              dynamic_cast<const he_seal::HESealCKKSBackend*>(m_he_backend);
+
+          size_t constant_out_ind =
+              he_seal_ckks_backend->get_context()
+                  ->context_data(
+                      seal_plaintext_wrapper->get_hetext().parms_id())
+                  ->chain_index();
+          if (constant_out_ind != 2) {
+            NGRAPH_INFO << "constant_out_ind: " << constant_out_ind;
+            exit(1);
+          }
+        }
+
       } else if (out0_cipher != nullptr) {
         runtime::he::kernel::constant(out0_cipher->get_elements(), type,
                                       constant->get_data_ptr(), m_he_backend,
@@ -1303,7 +1337,6 @@ void runtime::he::HEExecutable::generate_calls(
                            passthrough->language()};
     }
     case OP_TYPEID::Reshape: {
-      NGRAPH_INFO << "Reshape op";
       const op::Reshape* reshape = static_cast<const op::Reshape*>(&node);
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
         runtime::he::kernel::reshape(
@@ -1318,7 +1351,6 @@ void runtime::he::HEExecutable::generate_calls(
       } else {
         throw ngraph_error("Reshape types not supported.");
       }
-      NGRAPH_INFO << "Done with reshape op";
       break;
     }
     case OP_TYPEID::Result: {

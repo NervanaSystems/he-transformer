@@ -26,13 +26,25 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
     const element::Type& element_type,
     const runtime::he::he_seal::HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
-  match_modulus_inplace(arg0, arg1, he_seal_ckks_backend);
   size_t chain_ind0 = he_seal_ckks_backend->get_context()
                           ->context_data(arg0->get_hetext().parms_id())
                           ->chain_index();
   size_t chain_ind1 = he_seal_ckks_backend->get_context()
                           ->context_data(arg1->get_hetext().parms_id())
                           ->chain_index();
+
+  if (chain_ind0 != 2 || chain_ind1 != 2) {
+    NGRAPH_INFO << "Chaind inds " << chain_ind0 << ", " << chain_ind1;
+    exit(1);
+  }
+
+  match_modulus_inplace(arg0, arg1, he_seal_ckks_backend);
+  chain_ind0 = he_seal_ckks_backend->get_context()
+                   ->context_data(arg0->get_hetext().parms_id())
+                   ->chain_index();
+  chain_ind1 = he_seal_ckks_backend->get_context()
+                   ->context_data(arg1->get_hetext().parms_id())
+                   ->chain_index();
 
   if (chain_ind0 == 0 || chain_ind1 == 0) {
     NGRAPH_INFO << "Multiplicative depth limit reached";
@@ -74,6 +86,8 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
     exit(1);
   }
 
+  // NGRAPH_INFO << "arg1->get_plaintext() " << arg1->get_value();
+
   he_seal_ckks_backend->get_evaluator()->multiply_plain(
       arg0->m_ciphertext, arg1->get_plaintext(), out->m_ciphertext, pool);
 
@@ -82,6 +96,15 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
 
   he_seal_ckks_backend->get_evaluator()->rescale_to_next_inplace(
       out->m_ciphertext, pool);
+
+  size_t chain_ind_out = he_seal_ckks_backend->get_context()
+                             ->context_data(out->get_hetext().parms_id())
+                             ->chain_index();
+
+  if (chain_ind_out != 1) {
+    NGRAPH_INFO << "Chain ind after mult: " << chain_ind_out;
+    exit(1);
+  }
 }
 
 void he_seal::ckks::kernel::scalar_multiply_ckks(

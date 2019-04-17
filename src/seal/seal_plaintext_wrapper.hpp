@@ -27,7 +27,8 @@ struct SealPlaintextWrapper : public HEPlaintext {
  public:
   SealPlaintextWrapper(){};
   SealPlaintextWrapper(const seal::Plaintext& plain)
-      : m_plaintext(plain), m_single_value(false) {}
+      // TODO: don't use dummy value
+      : m_plaintext(plain), m_single_value(false), m_value(999.99) {}
 
   SealPlaintextWrapper(const seal::Plaintext& plain, float f)
       : m_plaintext(plain), m_value(f), m_single_value(true) {}
@@ -40,6 +41,8 @@ struct SealPlaintextWrapper : public HEPlaintext {
     m_value = f;
     m_single_value = true;
   }
+
+  void set_multiple_value() override { m_single_value = false; }
 
   bool is_single_value() override { return m_single_value; }
 

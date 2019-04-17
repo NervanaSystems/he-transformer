@@ -74,9 +74,9 @@ void he_seal::kernel::scalar_multiply(
       << "Element type " << element_type << " is not float";
 
   if (he_seal_backend->optimized_mult()) {
-    // TODO: less hacky way of checking for 0 in case of small floating-point
-    // weights
-    if (arg1->is_single_value() && arg1->get_value() == 0.0f) {
+    // Multiplying by small values result in transparent ciphertext (i.e. equal
+    // to 0)
+    if (arg1->is_single_value() && std::abs(arg1->get_value() < 1e-15f)) {
       optimization = Optimization::mult_zero;
     } else if (arg1->is_single_value() && arg1->get_value() == 1.0f) {
       optimization = Optimization::mult_one;
@@ -86,11 +86,26 @@ void he_seal::kernel::scalar_multiply(
   }
 
   if (optimization == Optimization::mult_zero) {
+    // NGRAPH_INFO << "opt * 0";
     out = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(
         he_seal_backend->create_valued_ciphertext(0, element_type));
+
+    auto he_seal_ckks_backend =
+        dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend);
+
+    size_t zero_chain_ind = he_seal_ckks_backend->get_context()
+                                ->context_data(out->get_hetext().parms_id())
+                                ->chain_index();
+
+    if (zero_chain_ind != 2) {
+      NGRAPH_INFO << "0 chain ind " << zero_chain_ind;
+      exit(1);
+    }
   } else if (optimization == Optimization::mult_one) {
+    NGRAPH_INFO << "opt * 1";
     out = make_shared<he_seal::SealCiphertextWrapper>(*arg0);
   } else if (optimization == Optimization::mult_neg_one) {
+    NGRAPH_INFO << "opt * (-1)";
     he_seal::kernel::scalar_negate(arg0, out, element_type, he_seal_backend);
   } else {
     if (auto he_seal_ckks_backend =

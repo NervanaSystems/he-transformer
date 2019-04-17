@@ -22,9 +22,11 @@
 #include "he_backend.hpp"
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/type/element_type.hpp"
+#include "seal/ckks/he_seal_ckks_backend.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/kernel/add_seal.hpp"
 #include "seal/kernel/multiply_seal.hpp"
+#include "seal/seal_ciphertext_wrapper.hpp"
 
 namespace ngraph {
 namespace runtime {
@@ -206,7 +208,7 @@ void ngraph::runtime::he::he_seal::kernel::convolution_seal(
     CoordinateTransform::Iterator input_end = input_batch_transform.end();
     CoordinateTransform::Iterator filter_end = filter_transform.end();
 
-    std::shared_ptr<V> sum;
+    std::shared_ptr<V> sum = he_seal_backend->create_empty_hetext<V>(pool);
     bool first_add = true;
 
     while (input_it != input_end && filter_it != filter_end) {
@@ -234,6 +236,22 @@ void ngraph::runtime::he::he_seal::kernel::convolution_seal(
             arg0_multiplicand.get(), arg1_multiplicand.get(), prod,
             element_type, he_seal_backend, pool);
 
+        auto he_seal_ckks_backend =
+            dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend);
+
+        auto seal_prod = std::dynamic_pointer_cast<
+            runtime::he::he_seal::SealCiphertextWrapper>(prod);
+
+        size_t mult_out_chain_ind =
+            he_seal_ckks_backend->get_context()
+                ->context_data(seal_prod->get_hetext().parms_id())
+                ->chain_index();
+
+        if (mult_out_chain_ind < 1) {
+          NGRAPH_INFO << "mult out chain ind: " << mult_out_chain_ind;
+          exit(1);
+        }
+
         if (first_add) {
           sum = prod;
           first_add = false;
@@ -246,11 +264,28 @@ void ngraph::runtime::he::he_seal::kernel::convolution_seal(
       ++filter_it;
     }
     if (first_add) {
+      NGRAPH_INFO << "First add!?";
+      exit(1);
       out[out_coord_idx] =
           he_seal_backend->create_valued_hetext<V>(0.f, element_type);
     } else {
       // Write the sum back.
       out[out_coord_idx] = sum;
+
+      auto seal_sum = std::dynamic_pointer_cast<
+          runtime::he::he_seal::SealCiphertextWrapper>(sum);
+      auto he_seal_ckks_backend =
+          dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend);
+
+      size_t sum_out_chain_ind =
+          he_seal_ckks_backend->get_context()
+              ->context_data(seal_sum->get_hetext().parms_id())
+              ->chain_index();
+
+      if (sum_out_chain_ind < 1) {
+        NGRAPH_INFO << "sum_out_chain_ind: " << sum_out_chain_ind;
+        exit(1);
+      }
     }
 
     if (out_coord_idx % 1000 == 0) {

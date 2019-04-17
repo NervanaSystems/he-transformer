@@ -59,6 +59,10 @@ void match_modulus_inplace(S* arg0, T* arg1,
   size_t chain_ind1 = he_seal_ckks_backend->get_context()
                           ->context_data(arg1->get_hetext().parms_id())
                           ->chain_index();
+  if (chain_ind0 == 0 || chain_ind1 == 0) {
+    NGRAPH_INFO << "Chain inds " << chain_ind0 << " ,  " << chain_ind1;
+    exit(1);
+  }
 
   if (chain_ind0 > chain_ind1) {
     he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
@@ -66,16 +70,21 @@ void match_modulus_inplace(S* arg0, T* arg1,
     chain_ind0 = he_seal_ckks_backend->get_context()
                      ->context_data(arg0->get_hetext().parms_id())
                      ->chain_index();
+
     assert(chain_ind0 == chain_ind1);
-  } else if (chain_ind1 > chain_ind0) {
+    return;
+  }
+  if (chain_ind1 > chain_ind0) {
     he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
         arg1->get_hetext(), arg0->get_hetext().parms_id());
     chain_ind1 = he_seal_ckks_backend->get_context()
                      ->context_data(arg1->get_hetext().parms_id())
                      ->chain_index();
     assert(chain_ind0 == chain_ind1);
+    return;
   }
-}
+
+}  // namespace ckks
 }  // namespace ckks
 }  // namespace he_seal
 }  // namespace he

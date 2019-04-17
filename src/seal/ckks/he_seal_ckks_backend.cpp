@@ -135,9 +135,23 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
     seal_plaintext_wrapper->set_value(*(float*)input);
     m_ckks_encoder->encode(value, m_scale,
                            seal_plaintext_wrapper->get_plaintext());
+
+    size_t chain_ind0 =
+        get_context()
+            ->context_data(seal_plaintext_wrapper->get_hetext().parms_id())
+            ->chain_index();
+
+    if (chain_ind0 != 2) {
+      NGRAPH_INFO << "Chain ind of newly-encoded single value: " << chain_ind0;
+      exit(1);
+    }
+
   } else {
     vector<float> values{(float*)input, (float*)input + count};
     vector<double> double_values(values.begin(), values.end());
+    seal_plaintext_wrapper->set_multiple_value();
+
+    NGRAPH_INFO << "Encoded many values";
 
     m_ckks_encoder->encode(double_values, m_scale,
                            seal_plaintext_wrapper->get_plaintext());

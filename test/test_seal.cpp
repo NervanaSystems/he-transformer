@@ -300,3 +300,55 @@ TEST(seal_example, seal_ckks_add) {
     }
   }
 }
+
+TEST(seal_example, seal_ckks_small_vals) {
+  using namespace seal;
+
+  EncryptionParameters parms(scheme_type::CKKS);
+  parms.set_poly_modulus_degree(8192);
+  parms.set_coeff_modulus(DefaultParams::coeff_modulus_128(8192));
+
+  auto context = SEALContext::Create(parms);
+  // print_parameters(context);
+
+  KeyGenerator keygen(context);
+  auto public_key = keygen.public_key();
+  auto secret_key = keygen.secret_key();
+  auto relin_keys = keygen.relin_keys(60);
+
+  Encryptor encryptor(context, public_key);
+  Evaluator evaluator(context);
+  Decryptor decryptor(context, secret_key);
+  CKKSEncoder encoder(context);
+
+  vector<double> input{1, 2, 3, 4};
+  Plaintext plain;
+  double scale = pow(2.0, 60);
+  encoder.encode(input, scale, plain);
+  Ciphertext cipher;
+  Ciphertext cipher2;
+  encryptor.encrypt(plain, cipher);
+  encryptor.encrypt(plain, cipher2);
+  vector<double> w{1e-17, 1e-17, 1e-17, 1e-17};
+  Plaintext plain2;
+  encoder.encode(w, scale, plain2);
+  evaluator.multiply_plain_inplace(cipher, plain2);
+  decryptor.decrypt(cipher, plain);
+  encoder.decode(plain, input);
+  std::cout << "output " << std::endl;
+  for (size_t i = 0; i < 4; ++i) {
+    std::cout << std::fixed << std::setprecision(20) << input[i] << std::endl;
+  }
+}
+
+TEST(seal_example, if) {
+  int x = 10;
+  if (x == 10) {
+    std::cout << "x == 10";
+    x = 11;
+  } else if (x == 11) {
+    std::cout << "11";
+  } else {
+    std::cout << "neither" << std::endl;
+  }
+}
