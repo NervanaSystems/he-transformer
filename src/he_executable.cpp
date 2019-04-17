@@ -1131,6 +1131,8 @@ void runtime::he::HEExecutable::generate_calls(
     }
     case OP_TYPEID::Minimum: {
       NGRAPH_INFO << "Minimum op";
+      // TODO: don't skip this!
+      break;
       if (!m_enable_client) {
         throw ngraph_error(
             "Minimum op unsupported unless client is enabled. Try setting "

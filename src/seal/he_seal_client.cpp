@@ -198,6 +198,8 @@ void runtime::he::HESealClient::handle_message(
       for (size_t batch_idx = 0; batch_idx < m_batch_size; ++batch_idx) {
         double pre_relu_val = pre_relu[batch_idx];
         double post_relu_val = pre_relu_val > 0 ? pre_relu_val : 0;
+        // TODO: don't do relu6 by default!
+        post_relu_val = post_relu_val > 6 ? 6.f : post_relu_val;
         // std::cout << "relu(" << pre_relu_val << ") = " << post_relu_val
         //          << std::endl;
         post_relu[batch_idx] = post_relu_val;

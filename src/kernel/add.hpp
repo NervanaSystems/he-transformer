@@ -58,7 +58,6 @@ void add(const std::vector<std::shared_ptr<S>>& arg0,
   //#pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
     scalar_add(arg0[i].get(), arg1[i].get(), out[i], element_type, he_backend);
-    NGRAPH_INFO << "Add " << i << "ok";
   }
 }
 }  // namespace kernel
