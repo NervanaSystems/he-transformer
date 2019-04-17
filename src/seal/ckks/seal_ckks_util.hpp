@@ -52,37 +52,44 @@ void match_modulus_inplace(S* arg0, T* arg1,
     arg0->get_hetext().scale() = arg1->get_hetext().scale();
   }
 
-  size_t chain_ind0 = he_seal_ckks_backend->get_context()
-                          ->context_data(arg0->get_hetext().parms_id())
-                          ->chain_index();
+#pragma omp critical
+  {
+    auto& arg0_he = arg0->get_hetext();
+    auto& arg1_he = arg1->get_hetext();
+    auto arg0_parms = arg0_he.parms_id();
+    auto arg1_parms = arg1_he.parms_id();
 
-  size_t chain_ind1 = he_seal_ckks_backend->get_context()
-                          ->context_data(arg1->get_hetext().parms_id())
-                          ->chain_index();
-  if (chain_ind0 == 0 || chain_ind1 == 0) {
-    NGRAPH_INFO << "Chain inds " << chain_ind0 << " ,  " << chain_ind1;
-    exit(1);
-  }
+    size_t chain_ind0 = he_seal_ckks_backend->get_context()
+                            ->context_data(arg0_parms)
+                            ->chain_index();
 
-  if (chain_ind0 > chain_ind1) {
-    he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
-        arg0->get_hetext(), arg1->get_hetext().parms_id());
-    chain_ind0 = he_seal_ckks_backend->get_context()
-                     ->context_data(arg0->get_hetext().parms_id())
-                     ->chain_index();
+    size_t chain_ind1 = he_seal_ckks_backend->get_context()
+                            ->context_data(arg1_parms)
+                            ->chain_index();
+    if (chain_ind0 == 0 || chain_ind1 == 0) {
+      NGRAPH_INFO << "Chain inds " << chain_ind0 << " ,  " << chain_ind1;
+      exit(1);
+    }
 
-    assert(chain_ind0 == chain_ind1);
-    return;
+    if (chain_ind0 > chain_ind1) {
+      he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(arg0_he,
+                                                                   arg1_parms);
+      chain_ind0 = he_seal_ckks_backend->get_context()
+                       ->context_data(arg0_he.parms_id())
+                       ->chain_index();
+
+      assert(chain_ind0 == chain_ind1);
+    }
+    if (chain_ind1 > chain_ind0) {
+      he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(arg1_he,
+                                                                   arg0_parms);
+      chain_ind1 = he_seal_ckks_backend->get_context()
+                       ->context_data(arg1_he.parms_id())
+                       ->chain_index();
+      assert(chain_ind0 == chain_ind1);
+    }
   }
-  if (chain_ind1 > chain_ind0) {
-    he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
-        arg1->get_hetext(), arg0->get_hetext().parms_id());
-    chain_ind1 = he_seal_ckks_backend->get_context()
-                     ->context_data(arg1->get_hetext().parms_id())
-                     ->chain_index();
-    assert(chain_ind0 == chain_ind1);
-    return;
-  }
+  return;
 
 }  // namespace ckks
 }  // namespace ckks
