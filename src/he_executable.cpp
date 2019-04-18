@@ -867,10 +867,6 @@ void runtime::he::HEExecutable::generate_calls(
           << "BatchNormInference has " << args.size()
           << "arguments (expected 5).";
 
-      auto shape = node.get_input_shape(2);
-      // TODO: cleanup
-      shape[0] = shape[0] / m_batch_size;
-
       auto gamma = dynamic_pointer_cast<HEPlainTensor>(args[0]);
       auto beta = dynamic_pointer_cast<HEPlainTensor>(args[1]);
       auto input = dynamic_pointer_cast<HECipherTensor>(args[2]);
@@ -887,7 +883,8 @@ void runtime::he::HEExecutable::generate_calls(
       runtime::he::kernel::batch_norm_inference(
           eps, gamma->get_elements(), beta->get_elements(),
           input->get_elements(), mean->get_elements(), variance->get_elements(),
-          out0_cipher->get_elements(), shape, m_batch_size, m_he_backend);
+          out0_cipher->get_elements(), arg_shapes[2], m_batch_size,
+          m_he_backend);
       break;
     }
     case OP_TYPEID::Broadcast: {
