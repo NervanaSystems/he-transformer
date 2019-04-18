@@ -49,7 +49,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector) {
     copy_data(a, vector<float>{6});
 
     auto handle = backend->compile(f);
-    handle->call({result}, {a});
+    handle->call_with_validate({result}, {a});
     EXPECT_TRUE(
         all_close((vector<float>{6, 6, 6, 6}), read_vector<float>(result)));
   }
@@ -87,7 +87,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix) {
     copy_data(a, vector<float>{6});
 
     auto handle = backend->compile(f);
-    handle->call({result}, {a});
+    handle->call_with_validate({result}, {a});
     EXPECT_TRUE(
         all_close((vector<float>{6, 6, 6, 6}), read_vector<float>(result)));
   }
@@ -114,7 +114,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_tensor) {
     copy_data(a, vector<float>{6});
 
     auto handle = backend->compile(f);
-    handle->call({result}, {a});
+    handle->call_with_validate({result}, {a});
     EXPECT_TRUE(all_close((vector<float>{6, 6, 6, 6, 6, 6, 6, 6}),
                           read_vector<float>(result)));
   }
@@ -140,7 +140,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_trivial) {
     copy_data(a, vector<float>{2, 4, 6, 8, 16, 32, 64, 128});
 
     auto handle = backend->compile(f);
-    handle->call({result}, {a});
+    handle->call_with_validate({result}, {a});
     EXPECT_TRUE(all_close((vector<float>{2, 4, 6, 8, 16, 32, 64, 128}),
                           read_vector<float>(result)));
   }
@@ -168,7 +168,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_colwise) {
     copy_data(a, vector<float>{1, 2, 3});
 
     auto handle = backend->compile(f);
-    handle->call({result}, {a});
+    handle->call_with_validate({result}, {a});
     EXPECT_TRUE(all_close((vector<float>{1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3}),
                           read_vector<float>(result)));
   }
@@ -196,7 +196,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_rowwise) {
     copy_data(a, vector<float>{1, 2, 3, 4});
 
     auto handle = backend->compile(f);
-    handle->call({result}, {a});
+    handle->call_with_validate({result}, {a});
     EXPECT_TRUE(all_close((vector<float>{1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4}),
                           read_vector<float>(result)));
   }
@@ -223,7 +223,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_0) {
     copy_data(a, vector<float>{1, 2, 3, 4});
 
     auto handle = backend->compile(f);
-    handle->call({result}, {a});
+    handle->call_with_validate({result}, {a});
     EXPECT_TRUE(all_close((vector<float>{1, 2, 3, 4, 1, 2, 3, 4}),
                           read_vector<float>(result)));
   }
@@ -250,7 +250,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_1) {
     copy_data(a, vector<float>{1, 2, 3, 4});
 
     auto handle = backend->compile(f);
-    handle->call({result}, {a});
+    handle->call_with_validate({result}, {a});
     EXPECT_TRUE(all_close((vector<float>{1, 2, 1, 2, 3, 4, 3, 4}),
                           read_vector<float>(result)));
   }
@@ -277,7 +277,7 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_2) {
     copy_data(a, vector<float>{1, 2, 3, 4});
 
     auto handle = backend->compile(f);
-    handle->call({result}, {a});
+    handle->call_with_validate({result}, {a});
     EXPECT_TRUE(all_close((vector<float>{1, 1, 2, 2, 3, 3, 4, 4}),
                           read_vector<float>(result)));
   }

@@ -62,35 +62,20 @@ void he_seal::kernel::scalar_multiply(
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
-  enum class Optimization {
-    mult_zero,
-    mult_one,
-    mult_neg_one,
-    no_optimization
-  };
-  Optimization optimization = Optimization::no_optimization;
 
   NGRAPH_ASSERT(element_type == element::f32)
       << "Element type " << element_type << " is not float";
 
-  if (he_seal_backend->optimized_mult()) {
     if (arg1->is_single_value() && arg1->get_value() == 0.0f) {
-      optimization = Optimization::mult_zero;
-    } else if (arg1->is_single_value() && arg1->get_value() == 1.0f) {
-      optimization = Optimization::mult_one;
-    } else if (arg1->is_single_value() && arg1->get_value() == -1.0f) {
-      optimization = Optimization::mult_neg_one;
-    }
-  }
-
-  if (optimization == Optimization::mult_zero) {
-    out = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(
+      out = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(
         he_seal_backend->create_valued_ciphertext(0, element_type));
-  } else if (optimization == Optimization::mult_one) {
-    out = make_shared<he_seal::SealCiphertextWrapper>(*arg0);
-  } else if (optimization == Optimization::mult_neg_one) {
-    he_seal::kernel::scalar_negate(arg0, out, element_type, he_seal_backend);
-  } else {
+    } else if (arg1->is_single_value() && arg1->get_value() == 1.0f) {
+      // TODO: make copy only if needed
+      out = make_shared<he_seal::SealCiphertextWrapper>(*arg0);
+    } else if (arg1->is_single_value() && arg1->get_value() == -1.0f) {
+      he_seal::kernel::scalar_negate(arg0, out, element_type, he_seal_backend);
+    }
+    else {
     if (auto he_seal_ckks_backend =
             dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend)) {
       he_seal::ckks::kernel::scalar_multiply_ckks(arg0, arg1, out, element_type,

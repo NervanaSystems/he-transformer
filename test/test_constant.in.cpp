@@ -35,7 +35,7 @@ NGRAPH_TEST(${BACKEND_NAME}, constant) {
 
   auto result = backend->create_tensor(element::f32, shape);
   auto handle = backend->compile(f);
-  handle->call({result}, {});
+  handle->call_with_validate({result}, {});
   EXPECT_TRUE(all_close((vector<float>{0.1, 0.2, 0.3, 0.4}),
                         read_vector<float>(result)));
 }
@@ -64,7 +64,7 @@ NGRAPH_TEST(${BACKEND_NAME}, constant_abc) {
     copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
 
     auto handle = backend->compile(f);
-    handle->call({result}, {b, c});
+    handle->call_with_validate({result}, {b, c});
 
     EXPECT_TRUE(all_close(
         read_vector<float>(result),

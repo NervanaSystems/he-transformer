@@ -55,7 +55,7 @@ int main() {
   sleep(1);
   NGRAPH_INFO << "Calling function";
 
-  handle->call({t_result}, {t_a});
+  handle->call_with_validate({t_result}, {t_a});
 
   NGRAPH_INFO << "Sleeping";
   sleep(1);
