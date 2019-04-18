@@ -1253,25 +1253,27 @@ void runtime::he::HEExecutable::generate_calls(
       break;
     case OP_TYPEID::Pad: {
       const op::Pad* pad = static_cast<const op::Pad*>(&node);
+      const Shape arg0_shape = arg_shapes[0];
+
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
         runtime::he::kernel::pad(
             arg0_cipher->get_elements(), arg1_cipher->get_elements(),
-            out0_cipher->get_elements(), arg0_cipher->get_batched_shape(),
-            out_shape, pad->get_padding_below(), pad->get_padding_above(),
+            out0_cipher->get_elements(), arg0_shape, out_shape,
+            pad->get_padding_below(), pad->get_padding_above(),
             pad->get_pad_mode(), m_batch_size, m_he_backend);
       } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                  out0_cipher != nullptr) {
         runtime::he::kernel::pad(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
-            out0_cipher->get_elements(), arg0_cipher->get_batched_shape(),
-            out_shape, pad->get_padding_below(), pad->get_padding_above(),
+            out0_cipher->get_elements(), arg0_shape, out_shape,
+            pad->get_padding_below(), pad->get_padding_above(),
             pad->get_pad_mode(), m_batch_size, m_he_backend);
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
         runtime::he::kernel::pad(
             arg0_plain->get_elements(), arg1_plain->get_elements(),
-            out0_plain->get_elements(), arg0_plain->get_batched_shape(),
+            out0_plain->get_elements(), arg0_shape,
             out0_plain->get_batched_shape(), pad->get_padding_below(),
             pad->get_padding_above(), pad->get_pad_mode(), m_batch_size,
             m_he_backend);
