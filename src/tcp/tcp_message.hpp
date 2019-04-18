@@ -108,7 +108,7 @@ inline std::string message_type_to_string(const MessageType& type) {
 class TCPMessage {
  public:
   enum { header_length = 15 };
-  enum { max_body_length = 8000000000l };
+  enum { max_body_length = 800000000UL };
   enum { message_type_length = sizeof(MessageType) };
   enum { message_count_length = sizeof(size_t) };
 
@@ -281,10 +281,8 @@ class TCPMessage {
     std::strncat(header, m_data, header_length);
     std::string header_str(header);
     std::stringstream sstream(header_str);
-    std::cout << "header_str " << header_str << std::endl;
     size_t body_length;
     sstream >> body_length;
-    std::cout << "decoded header body length " << body_length << std::endl;
     if (body_length > max_body_length) {
       std::cout << "Body length " << body_length << " too large" << std::endl;
       throw std::invalid_argument("Cannot decode header");

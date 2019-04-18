@@ -37,61 +37,40 @@ void match_modulus_inplace(
 
 // Matches the scale and modulus chain for the two elements in-place
 // The elements are modified if necessary
+
 template <typename S, typename T>
-void match_modulus_inplace(S* arg0, T* arg1,
-                           const HESealCKKSBackend* he_seal_ckks_backend) {
+void match_scale(S* arg0, T* arg1,
+                 const HESealCKKSBackend* he_seal_ckks_backend) {
   auto scale0 = arg0->get_hetext().scale();
   auto scale1 = arg1->get_hetext().scale();
 
-  if (scale0 < 0.99 * scale1 || scale0 > 1.01 * scale1) {
-    NGRAPH_DEBUG << "Scale " << std::setw(10) << scale0
-                 << " does not match scale " << scale1
-                 << " in scalar add, ratio is " << scale0 / scale1;
-  }
-  if (scale0 != scale1) {
-    arg0->get_hetext().scale() = arg1->get_hetext().scale();
-  }
+  NGRAPH_ASSERT(scale0 >= 0.97 * scale1 && scale0 <= 1.02 * scale1)
+      << "Scale " << std::setw(10) << scale0 << " does not match scale "
+      << scale1 << " in scalar add, ratio is " << scale0 / scale1;
+  arg0->get_hetext().scale() = arg1->get_hetext().scale();
+}
 
-#pragma omp critical
-  {
-    auto& arg0_he = arg0->get_hetext();
-    auto& arg1_he = arg1->get_hetext();
-    auto arg0_parms = arg0_he.parms_id();
-    auto arg1_parms = arg1_he.parms_id();
+void match_modulus_inplace(
+    SealPlaintextWrapper* arg0, SealPlaintextWrapper* arg1,
+    const HESealCKKSBackend* he_seal_ckks_backend,
+    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
-    size_t chain_ind0 = he_seal_ckks_backend->get_context()
-                            ->context_data(arg0_parms)
-                            ->chain_index();
+void match_modulus_inplace(
+    SealPlaintextWrapper* arg0, SealCiphertextWrapper* arg1,
+    const HESealCKKSBackend* he_seal_ckks_backend,
+    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
-    size_t chain_ind1 = he_seal_ckks_backend->get_context()
-                            ->context_data(arg1_parms)
-                            ->chain_index();
-    if (chain_ind0 == 0 || chain_ind1 == 0) {
-      NGRAPH_INFO << "Chain inds " << chain_ind0 << " ,  " << chain_ind1;
-      exit(1);
-    }
+void match_modulus_inplace(
+    SealCiphertextWrapper* arg0, SealPlaintextWrapper* arg1,
+    const HESealCKKSBackend* he_seal_ckks_backend,
+    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
-    if (chain_ind0 > chain_ind1) {
-      he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(arg0_he,
-                                                                   arg1_parms);
-      chain_ind0 = he_seal_ckks_backend->get_context()
-                       ->context_data(arg0_he.parms_id())
-                       ->chain_index();
+void match_modulus_inplace(
+    SealCiphertextWrapper* arg0, SealCiphertextWrapper* arg1,
+    const HESealCKKSBackend* he_seal_ckks_backend,
+    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
-      assert(chain_ind0 == chain_ind1);
-    }
-    if (chain_ind1 > chain_ind0) {
-      he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(arg1_he,
-                                                                   arg0_parms);
-      chain_ind1 = he_seal_ckks_backend->get_context()
-                       ->context_data(arg1_he.parms_id())
-                       ->chain_index();
-      assert(chain_ind0 == chain_ind1);
-    }
-  }
-  return;
 
-}  // namespace ckks
 }  // namespace ckks
 }  // namespace he_seal
 }  // namespace he
