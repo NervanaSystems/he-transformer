@@ -1229,52 +1229,30 @@ void runtime::he::HEExecutable::generate_calls(
       break;
     case OP_TYPEID::Pad: {
       const op::Pad* pad = static_cast<const op::Pad*>(&node);
-
-      // TODO: clean up
-      Shape arg0_shape = node.get_inputs().at(0).get_shape();
-      Shape out_shape = node.get_output_shape(0);
-      if (arg0_cipher != nullptr && out0_cipher != nullptr) {
-        NGRAPH_DEBUG << "arg0_cipher->is_batched(): "
-                     << arg0_cipher->is_batched();
-        NGRAPH_DEBUG << "arg0_cipher->get_batch_size(): "
-                     << arg0_cipher->get_batch_size();
-        if (arg0_cipher->is_batched()) {
-          arg0_shape[0] = arg0_shape[0] / arg0_cipher->get_batch_size();
-        }
-
-        NGRAPH_DEBUG << "out0_cipher->is_batched(): "
-                     << out0_cipher->is_batched();
-        NGRAPH_DEBUG << "arg0_cipher->get_batch_size(): "
-                     << out0_cipher->get_batch_size();
-        if (out0_cipher->is_batched()) {
-          out_shape[0] = out_shape[0] / out0_cipher->get_batch_size();
-        }
-      }
-
-      NGRAPH_DEBUG << "arg0_shape after batching: " << join(arg0_shape);
-      NGRAPH_DEBUG << "out_shape after batching: " << join(out_shape);
-
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
         runtime::he::kernel::pad(
             arg0_cipher->get_elements(), arg1_cipher->get_elements(),
-            out0_cipher->get_elements(), arg0_shape, out_shape,
-            pad->get_padding_below(), pad->get_padding_above(),
-            pad->get_pad_mode(), batch_size, m_he_backend);
+            out0_cipher->get_elements(), arg0_cipher->get_batched_shape(),
+            out0_cipher->get_batched_shape(), pad->get_padding_below(),
+            pad->get_padding_above(), pad->get_pad_mode(), batch_size,
+            m_he_backend);
       } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                  out0_cipher != nullptr) {
         runtime::he::kernel::pad(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
-            out0_cipher->get_elements(), arg0_shape, out_shape,
-            pad->get_padding_below(), pad->get_padding_above(),
-            pad->get_pad_mode(), batch_size, m_he_backend);
+            out0_cipher->get_elements(), arg0_cipher->get_batched_shape(),
+            out0_cipher->get_batched_shape(), pad->get_padding_below(),
+            pad->get_padding_above(), pad->get_pad_mode(), batch_size,
+            m_he_backend);
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
         runtime::he::kernel::pad(
             arg0_plain->get_elements(), arg1_plain->get_elements(),
-            out0_plain->get_elements(), arg0_shape, out_shape,
-            pad->get_padding_below(), pad->get_padding_above(),
-            pad->get_pad_mode(), batch_size, m_he_backend);
+            out0_plain->get_elements(), arg0_plain->get_batched_shape(),
+            out0_plain->get_batched_shape(), pad->get_padding_below(),
+            pad->get_padding_above(), pad->get_pad_mode(), batch_size,
+            m_he_backend);
       } else {
         throw ngraph_error("Pad cipher vs. plain types not supported.");
       }
