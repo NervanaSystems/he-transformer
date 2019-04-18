@@ -1021,37 +1021,35 @@ void runtime::he::HEExecutable::generate_calls(
     }
     case OP_TYPEID::Dot: {
       const op::Dot* dot = static_cast<const op::Dot*>(&node);
+      Shape in_shape0 = arg_shapes[0];
+      Shape in_shape1 = unbatched_arg_shapes[1];
 
-      NGRAPH_INFO << join(args[0]->get_batched_shape(), "x") << " dot "
-                  << join(args[1]->get_batched_shape(), "x");
+      NGRAPH_INFO << join(in_shape0, "x") << " dot " << join(in_shape1, "x");
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
         runtime::he::kernel::dot(
             arg0_cipher->get_elements(), arg1_cipher->get_elements(),
-            out0_cipher->get_elements(), arg0_cipher->get_batched_shape(),
-            arg1_cipher->get_batched_shape(), out_shape,
+            out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
             dot->get_reduction_axes_count(), type, m_he_backend);
       } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                  out0_cipher != nullptr) {
         runtime::he::kernel::dot(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
-            out0_cipher->get_elements(), arg0_cipher->get_batched_shape(),
-            arg1_plain->get_batched_shape(), out_shape,
+            out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
             dot->get_reduction_axes_count(), type, m_he_backend);
       } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
                  out0_cipher != nullptr) {
         runtime::he::kernel::dot(
             arg0_plain->get_elements(), arg1_cipher->get_elements(),
-            out0_cipher->get_elements(), arg0_plain->get_batched_shape(),
-            arg1_cipher->get_batched_shape(), out_shape,
+            out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
             dot->get_reduction_axes_count(), type, m_he_backend);
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
         runtime::he::kernel::dot(
             arg0_plain->get_elements(), arg1_plain->get_elements(),
-            out0_plain->get_elements(), arg0_plain->get_batched_shape(),
-            arg1_plain->get_batched_shape(), out0_plain->get_batched_shape(),
-            dot->get_reduction_axes_count(), type, m_he_backend);
+            out0_plain->get_elements(), in_shape0, in_shape1,
+            out0_plain->get_batched_shape(), dot->get_reduction_axes_count(),
+            type, m_he_backend);
       } else {
         throw ngraph_error("Dot types not supported.");
       }
