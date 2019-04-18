@@ -47,5 +47,5 @@ cd $HE_TRANSFORMER/examples
 python pyclient_mnist.py --batch_size=1024
 ```
 
-Note: `src/get_primes.py` can be used to generate custom coefficient moduli
+Note: `src/get_coefficient_moduli.py` can be used to generate custom coefficient moduli
 

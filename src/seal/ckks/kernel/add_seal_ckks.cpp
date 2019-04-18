@@ -27,8 +27,10 @@ void he_seal::ckks::kernel::scalar_add_ckks(
     he_seal::SealCiphertextWrapper* arg0, he_seal::SealCiphertextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
-    const he_seal::HESealCKKSBackend* he_seal_ckks_backend) {
-  match_modulus_inplace(arg0, arg1, he_seal_ckks_backend);
+    const he_seal::HESealCKKSBackend* he_seal_ckks_backend,
+    const seal::MemoryPoolHandle& pool) {
+  match_modulus_inplace(arg0, arg1, he_seal_ckks_backend, pool);
+  match_scale(arg0, arg1, he_seal_ckks_backend);
 
   he_seal_ckks_backend->get_evaluator()->add(
       arg0->m_ciphertext, arg1->m_ciphertext, out->m_ciphertext);
@@ -38,8 +40,10 @@ void he_seal::ckks::kernel::scalar_add_ckks(
     he_seal::SealCiphertextWrapper* arg0, he_seal::SealPlaintextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
-    const he_seal::HESealCKKSBackend* he_seal_ckks_backend) {
-  match_modulus_inplace(arg0, arg1, he_seal_ckks_backend);
+    const he_seal::HESealCKKSBackend* he_seal_ckks_backend,
+    const seal::MemoryPoolHandle& pool) {
+  match_modulus_inplace(arg0, arg1, he_seal_ckks_backend, pool);
+  match_scale(arg0, arg1, he_seal_ckks_backend);
 
   he_seal_ckks_backend->get_evaluator()->add_plain(
       arg0->m_ciphertext, arg1->get_plaintext(), out->m_ciphertext);
@@ -49,7 +53,8 @@ void he_seal::ckks::kernel::scalar_add_ckks(
     he_seal::SealPlaintextWrapper* arg0, he_seal::SealCiphertextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
-    const he_seal::HESealCKKSBackend* he_seal_ckks_backend) {
+    const he_seal::HESealCKKSBackend* he_seal_ckks_backend,
+    const seal::MemoryPoolHandle& pool) {
   he_seal::ckks::kernel::scalar_add_ckks(arg1, arg0, out, element_type,
-                                         he_seal_ckks_backend);
+                                         he_seal_ckks_backend, pool);
 }
