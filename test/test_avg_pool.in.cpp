@@ -55,7 +55,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_1image) {
                .get_vector());
 
     auto handle = backend->compile(f);
-    handle->call({result}, {a});
+    handle->call_with_validate({result}, {a});
     EXPECT_TRUE(all_close(test::NDArray<float, 3>(
                               {{{1 / denom, 3 / denom, 3 / denom, 3 / denom,
                                  4 / denom, 5 / denom, 5 / denom, 2 / denom,
@@ -94,7 +94,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image) {
                      .get_vector());
 
     auto handle = backend->compile(f);
-    handle->call({result}, {a});
+    handle->call_with_validate({result}, {a});
     EXPECT_TRUE(all_close(test::NDArray<float, 3>(
                               {{{1 / denom, 3 / denom, 3 / denom, 3 / denom,
                                  4 / denom, 5 / denom, 5 / denom, 2 / denom,
@@ -131,7 +131,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image_batched) {
                      .get_vector());
 
   auto handle = backend->compile(f);
-  handle->call({t_result}, {t_a});
+  handle->call_with_validate({t_result}, {t_a});
   EXPECT_TRUE(all_close(
       test::NDArray<float, 3>(
           {{{1 / denom, 3 / denom, 3 / denom, 3 / denom, 4 / denom, 5 / denom,
@@ -175,7 +175,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_2channel_2image) {
                      .get_vector());
 
     auto handle = backend->compile(f);
-    handle->call({result}, {a});
+    handle->call_with_validate({result}, {a});
     EXPECT_TRUE(all_close(test::NDArray<float, 3>(
                               {{{1 / denom, 3 / denom, 3 / denom, 3 / denom,
                                  4 / denom, 5 / denom, 5 / denom, 2 / denom,
@@ -244,7 +244,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image) {
                      .get_vector());
 
     auto handle = backend->compile(f);
-    handle->call({result}, {a});
+    handle->call_with_validate({result}, {a});
     EXPECT_TRUE(
         all_close(test::NDArray<float, 4>(
                       {{{{6 / denom, 8 / denom, 5 / denom},  // img 0 chan 0
@@ -306,7 +306,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_1channel_1image_strided) {
                      .get_vector());
 
     auto handle = backend->compile(f);
-    handle->call({result}, {a});
+    handle->call_with_validate({result}, {a});
     EXPECT_TRUE(all_close(
         test::NDArray<float, 4>({{{{6 / denom, 5 / denom, 4 / denom},
                                    {6 / denom, 5 / denom, 8 / denom},

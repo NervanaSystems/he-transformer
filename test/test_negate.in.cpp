@@ -49,7 +49,7 @@ NGRAPH_TEST(${BACKEND_NAME}, negate_2_3) {
     copy_data(t_a,
               test::NDArray<float, 2>({{-3, -2, -1}, {0, 1, 2}}).get_vector());
     auto handle = backend->compile(f);
-    handle->call({t_result}, {t_a});
+    handle->call_with_validate({t_result}, {t_a});
     EXPECT_TRUE(all_close(
         read_vector<float>(t_result),
         (test::NDArray<float, 2>({{3, 2, 1}, {0, -1, -2}})).get_vector()));

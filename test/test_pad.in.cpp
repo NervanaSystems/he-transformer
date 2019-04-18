@@ -49,7 +49,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_1d_plain) {
   auto result = he_backend->create_plain_tensor(element::f32, shape_r);
 
   auto handle = backend->compile(f);
-  handle->call({result}, {a, b});
+  handle->call_with_validate({result}, {a, b});
   EXPECT_TRUE(
       all_close((test::NDArray<float, 1>({2112, 2112, 2112, 2112, 1, 2, 3, 4, 5,
                                           6, 2112, 2112, 2112, 2112, 2112}))

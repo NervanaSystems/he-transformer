@@ -63,7 +63,7 @@ NGRAPH_TEST(${BACKEND_NAME}, perf_add) {
     copy_data(t_a, vec_a);
     copy_data(t_b, vec_b);
     auto handle = backend->compile(f);
-    handle->call({t_result}, {t_a, t_b});
+    handle->call_with_validate({t_result}, {t_a, t_b});
   }
 }
 
@@ -103,6 +103,6 @@ NGRAPH_TEST(${BACKEND_NAME}, perf_square) {
     copy_data(t_a, vec_a);
     copy_data(t_b, vec_b);
     auto handle = backend->compile(f);
-    handle->call({t_result}, {t_a, t_b});
+    handle->call_with_validate({t_result}, {t_a, t_b});
   }
 }

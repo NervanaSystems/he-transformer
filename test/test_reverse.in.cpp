@@ -47,7 +47,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_0d) {
     copy_data(a, vector<float>{6});
 
     auto handle = backend->compile(f);
-    handle->call({result}, {a});
+    handle->call_with_validate({result}, {a});
     EXPECT_TRUE(
         all_close((vector<float>{6}), read_vector<float>(result), 1e-3f));
   }
@@ -73,7 +73,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_1d_nochange) {
     copy_data(a, vector<float>{0, 1, 2, 3, 4, 5, 6, 7});
 
     auto handle = backend->compile(f);
-    handle->call({result}, {a});
+    handle->call_with_validate({result}, {a});
     EXPECT_TRUE(all_close((vector<float>{0, 1, 2, 3, 4, 5, 6, 7}),
                           read_vector<float>(result), 1e-3f));
   }
@@ -99,7 +99,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_1d_0) {
     copy_data(a, vector<float>{0, 1, 2, 3, 4, 5, 6, 7});
 
     auto handle = backend->compile(f);
-    handle->call({result}, {a});
+    handle->call_with_validate({result}, {a});
     EXPECT_TRUE(all_close((vector<float>{7, 6, 5, 4, 3, 2, 1, 0}),
                           read_vector<float>(result), 1e-3f));
   }
@@ -127,7 +127,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_nochange) {
                      .get_vector());
 
     auto handle = backend->compile(f);
-    handle->call({result}, {a});
+    handle->call_with_validate({result}, {a});
     EXPECT_TRUE(all_close(
         (test::NDArray<float, 2>({{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}})
              .get_vector()),
@@ -157,7 +157,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_0) {
                      .get_vector());
 
     auto handle = backend->compile(f);
-    handle->call({result}, {a});
+    handle->call_with_validate({result}, {a});
     EXPECT_TRUE(all_close(
         (test::NDArray<float, 2>({{9, 10, 11}, {6, 7, 8}, {3, 4, 5}, {0, 1, 2}})
              .get_vector()),
@@ -187,7 +187,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_1) {
                      .get_vector());
 
     auto handle = backend->compile(f);
-    handle->call({result}, {a});
+    handle->call_with_validate({result}, {a});
     EXPECT_TRUE(all_close(
         (test::NDArray<float, 2>({{2, 1, 0}, {5, 4, 3}, {8, 7, 6}, {11, 10, 9}})
              .get_vector()),
@@ -217,7 +217,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_01) {
                      .get_vector());
 
     auto handle = backend->compile(f);
-    handle->call({result}, {a});
+    handle->call_with_validate({result}, {a});
     EXPECT_TRUE(all_close(
         (test::NDArray<float, 2>({{11, 10, 9}, {8, 7, 6}, {5, 4, 3}, {2, 1, 0}})
              .get_vector()),
@@ -248,7 +248,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_nochange) {
                      .get_vector());
 
     auto handle = backend->compile(f);
-    handle->call({result}, {a});
+    handle->call_with_validate({result}, {a});
     EXPECT_TRUE(all_close(
         (test::NDArray<float, 3>(
              {{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
@@ -281,7 +281,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_0) {
                      .get_vector());
 
     auto handle = backend->compile(f);
-    handle->call({result}, {a});
+    handle->call_with_validate({result}, {a});
     EXPECT_TRUE(all_close(
         (test::NDArray<float, 3>(
              {{{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}},
@@ -314,7 +314,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_1) {
                      .get_vector());
 
     auto handle = backend->compile(f);
-    handle->call({result}, {a});
+    handle->call_with_validate({result}, {a});
     EXPECT_TRUE(all_close(
         (test::NDArray<float, 3>(
              {{{9, 10, 11}, {6, 7, 8}, {3, 4, 5}, {0, 1, 2}},
@@ -347,7 +347,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_2) {
                      .get_vector());
 
     auto handle = backend->compile(f);
-    handle->call({result}, {a});
+    handle->call_with_validate({result}, {a});
     EXPECT_TRUE(all_close(
         (test::NDArray<float, 3>(
              {{{2, 1, 0}, {5, 4, 3}, {8, 7, 6}, {11, 10, 9}},
@@ -380,7 +380,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_01) {
                      .get_vector());
 
     auto handle = backend->compile(f);
-    handle->call({result}, {a});
+    handle->call_with_validate({result}, {a});
     EXPECT_TRUE(all_close(
         (test::NDArray<float, 3>(
              {{{21, 22, 23}, {18, 19, 20}, {15, 16, 17}, {12, 13, 14}},
@@ -413,7 +413,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_02) {
                      .get_vector());
 
     auto handle = backend->compile(f);
-    handle->call({result}, {a});
+    handle->call_with_validate({result}, {a});
     EXPECT_TRUE(all_close(
         (test::NDArray<float, 3>(
              {{{14, 13, 12}, {17, 16, 15}, {20, 19, 18}, {23, 22, 21}},
@@ -446,7 +446,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_12) {
                      .get_vector());
 
     auto handle = backend->compile(f);
-    handle->call({result}, {a});
+    handle->call_with_validate({result}, {a});
     EXPECT_TRUE(all_close(
         (test::NDArray<float, 3>(
              {{{11, 10, 9}, {8, 7, 6}, {5, 4, 3}, {2, 1, 0}},
@@ -479,7 +479,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_012) {
                      .get_vector());
 
     auto handle = backend->compile(f);
-    handle->call({result}, {a});
+    handle->call_with_validate({result}, {a});
     EXPECT_TRUE(all_close(
         (test::NDArray<float, 3>(
              {{{23, 22, 21}, {20, 19, 18}, {17, 16, 15}, {14, 13, 12}},
