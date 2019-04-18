@@ -245,10 +245,6 @@ void runtime::he::HEExecutable::handle_message(
     for (auto input_param : input_parameters) {
       const auto& shape = input_param->get_shape();
       size_t param_size = shape_size(shape) / m_batch_size;
-      NGRAPH_INFO << "shape " << join(shape, "x");
-      NGRAPH_INFO << "param_size " << param_size;
-      NGRAPH_INFO << "m_batch_data? " << m_batch_data;
-
       auto element_type = input_param->get_element_type();
       auto input_tensor = dynamic_pointer_cast<HECipherTensor>(
           m_he_backend->create_cipher_tensor(
@@ -670,9 +666,7 @@ void runtime::he::HEExecutable::generate_calls(
 
   std::vector<Shape> arg_shapes{};
   std::vector<Shape> unbatched_arg_shapes{};
-  NGRAPH_INFO << "args size " << args.size();
   for (size_t arg_idx = 0; arg_idx < args.size(); ++arg_idx) {
-    NGRAPH_INFO << "input shape";
     Shape arg_shape = node.get_input_shape(arg_idx);
     unbatched_arg_shapes.emplace_back(arg_shape);
     if (m_batch_data) {
@@ -681,29 +675,16 @@ void runtime::he::HEExecutable::generate_calls(
     arg_shapes.emplace_back(arg_shape);
   }
 
-  NGRAPH_INFO << "Getting out shape";
   Shape out_shape{};
   Shape unbatched_out_shape{};
   if (node.get_output_size() > 0) {
-    NGRAPH_INFO << "Getting output shape (size " << node.get_output_size();
     NGRAPH_ASSERT(node.get_output_size() == 1)
         << "Only support single-output functions";
     out_shape = node.get_output_shape(0);
     unbatched_out_shape = out_shape;
-    NGRAPH_INFO << "Got shape, about to batch";
-    NGRAPH_INFO << "shape " << join(out_shape, "x");
     if (m_batch_data) {
       out_shape = ngraph::runtime::he::HETensor::batch_shape(out_shape);
     }
-    NGRAPH_INFO << "Batched";
-  }
-  NGRAPH_INFO << "out shape " << join(out_shape, "x");
-  NGRAPH_INFO << "unbatched_out_shape " << join(unbatched_out_shape, "x");
-  for (const auto& arg_shape : arg_shapes) {
-    NGRAPH_INFO << "Arg shape " << join(arg_shape, "x");
-  }
-  for (const auto& arg_shape : unbatched_arg_shapes) {
-    NGRAPH_INFO << "Unbatched arg shape " << join(arg_shape, "x");
   }
 
   if (args.size() > 0) {
