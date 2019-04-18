@@ -737,11 +737,13 @@ void runtime::he::HEExecutable::generate_calls(
 
   NGRAPH_INFO << "Getting out shape";
   Shape out_shape{};
+  Shape unbatched_out_shape{};
   if (node.get_output_size() > 0) {
     NGRAPH_INFO << "Getting output shape (size " << node.get_output_size();
     NGRAPH_ASSERT(node.get_output_size() == 1)
         << "Only support single-output functions";
     out_shape = node.get_output_shape(0);
+    unbatched_out_shape = out_shape;
     NGRAPH_INFO << "Got shape, about to batch";
     NGRAPH_INFO << "shape " << join(out_shape, "x");
     if (m_batch_data) {
@@ -750,6 +752,7 @@ void runtime::he::HEExecutable::generate_calls(
     NGRAPH_INFO << "Batched";
   }
   NGRAPH_INFO << "out shape " << join(out_shape, "x");
+  NGRAPH_INFO << "unbatched_out_shape " << join(unbatched_out_shape, "x");
   for (const auto& arg_shape : arg_shapes) {
     NGRAPH_INFO << "Arg shape " << join(arg_shape, "x");
   }
@@ -1291,16 +1294,17 @@ void runtime::he::HEExecutable::generate_calls(
     case OP_TYPEID::Reshape: {
       NGRAPH_INFO << "Reshape op";
       const op::Reshape* reshape = static_cast<const op::Reshape*>(&node);
+
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
-        runtime::he::kernel::reshape(arg0_cipher->get_elements(),
-                                     out0_cipher->get_elements(),
-                                     arg0_cipher->get_batched_shape(),
-                                     reshape->get_input_order(), out_shape);
+        runtime::he::kernel::reshape(
+            arg0_cipher->get_elements(), out0_cipher->get_elements(),
+            arg0_cipher->get_batched_shape(), reshape->get_input_order(),
+            unbatched_out_shape);
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
         runtime::he::kernel::reshape(
             arg0_plain->get_elements(), out0_plain->get_elements(),
             arg0_plain->get_batched_shape(), reshape->get_input_order(),
-            out0_plain->get_batched_shape());
+            unbatched_out_shape);
       } else {
         throw ngraph_error("Reshape types not supported.");
       }
