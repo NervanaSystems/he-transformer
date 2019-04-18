@@ -66,6 +66,8 @@ void ngraph::runtime::he::he_seal::ckks::match_modulus_inplace(
                    << current_scale / min_elem_scale;
     }
     cipher_wrapper->get_hetext().scale() = min_elem_scale;
+  }
+}
 
 // Matches the modulus chain for the two elements in-place
 // The elements are modified if necessary
