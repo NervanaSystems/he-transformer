@@ -891,15 +891,12 @@ void runtime::he::HEExecutable::generate_calls(
       const op::Broadcast* broadcast = static_cast<const op::Broadcast*>(&node);
       AxisSet broadcast_axes = broadcast->get_broadcast_axes();
 
+      Shape in_shape = arg_shapes[0];
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
-        Shape in_shape = arg0_cipher->get_shape();
-        Shape out_shape = out0_cipher->get_shape();
         runtime::he::kernel::broadcast(arg0_cipher->get_elements(),
                                        out0_cipher->get_elements(), in_shape,
                                        out_shape, broadcast_axes);
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
-        Shape in_shape = arg0_plain->get_shape();
-        Shape out_shape = out0_plain->get_shape();
         runtime::he::kernel::broadcast(arg0_plain->get_elements(),
                                        out0_plain->get_elements(), in_shape,
                                        out_shape, broadcast_axes);
