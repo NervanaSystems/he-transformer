@@ -27,7 +27,7 @@ runtime::he::HEPlainTensor::HEPlainTensor(
     const HEBackend* he_backend, const shared_ptr<HEPlaintext> he_plaintext,
     const bool batched, const string& name)
     : runtime::he::HETensor(element_type, shape, he_backend, batched, name) {
-  m_num_elements = m_descriptor->get_tensor_layout()->get_size();
+  m_num_elements = m_descriptor->get_tensor_layout()->get_size() / m_batch_size;
   m_plaintexts.resize(m_num_elements);
 #pragma omp parallel for
   for (size_t i = 0; i < m_num_elements; ++i) {

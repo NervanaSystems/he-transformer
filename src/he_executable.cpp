@@ -956,8 +956,8 @@ void runtime::he::HEExecutable::generate_calls(
           out0_cipher != nullptr) {
         runtime::he::kernel::convolution(
             arg0_cipher->get_elements(), arg1_cipher->get_elements(),
-            out0_cipher->get_elements(), arg0_cipher->get_shape(),
-            arg1_cipher->get_shape(), out0_cipher->get_shape(),
+            out0_cipher->get_elements(), arg0_cipher->get_batched_shape(),
+            arg1_cipher->get_batched_shape(), out0_cipher->get_batched_shape(),
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
             batch_size, m_he_backend);
@@ -965,8 +965,8 @@ void runtime::he::HEExecutable::generate_calls(
                  out0_cipher != nullptr) {
         runtime::he::kernel::convolution(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
-            out0_cipher->get_elements(), arg0_cipher->get_shape(),
-            arg1_plain->get_shape(), out0_cipher->get_shape(),
+            out0_cipher->get_elements(), arg0_cipher->get_batched_shape(),
+            arg1_plain->get_batched_shape(), out0_cipher->get_batched_shape(),
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
             batch_size, m_he_backend);
@@ -974,8 +974,8 @@ void runtime::he::HEExecutable::generate_calls(
                  out0_cipher != nullptr) {
         runtime::he::kernel::convolution(
             arg0_plain->get_elements(), arg1_cipher->get_elements(),
-            out0_cipher->get_elements(), arg0_plain->get_shape(),
-            arg1_cipher->get_shape(), out0_cipher->get_shape(),
+            out0_cipher->get_elements(), arg0_plain->get_batched_shape(),
+            arg1_cipher->get_batched_shape(), out0_cipher->get_batched_shape(),
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
             batch_size, m_he_backend);
@@ -983,8 +983,8 @@ void runtime::he::HEExecutable::generate_calls(
                  out0_plain != nullptr) {
         runtime::he::kernel::convolution(
             arg0_plain->get_elements(), arg1_plain->get_elements(),
-            out0_plain->get_elements(), arg0_plain->get_shape(),
-            arg1_plain->get_shape(), out0_plain->get_shape(),
+            out0_plain->get_elements(), arg0_plain->get_batched_shape(),
+            arg1_plain->get_batched_shape(), out0_plain->get_batched_shape(),
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
             batch_size, m_he_backend);
@@ -996,35 +996,35 @@ void runtime::he::HEExecutable::generate_calls(
     case OP_TYPEID::Dot: {
       const op::Dot* dot = static_cast<const op::Dot*>(&node);
 
-      NGRAPH_INFO << join(args[0]->get_shape(), "x") << " dot "
-                  << join(args[1]->get_shape(), "x");
+      NGRAPH_INFO << join(args[0]->get_batched_shape(), "x") << " dot "
+                  << join(args[1]->get_batched_shape(), "x");
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
         runtime::he::kernel::dot(
             arg0_cipher->get_elements(), arg1_cipher->get_elements(),
-            out0_cipher->get_elements(), arg0_cipher->get_shape(),
-            arg1_cipher->get_shape(), out0_cipher->get_shape(),
+            out0_cipher->get_elements(), arg0_cipher->get_batched_shape(),
+            arg1_cipher->get_batched_shape(), out0_cipher->get_batched_shape(),
             dot->get_reduction_axes_count(), type, m_he_backend);
       } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                  out0_cipher != nullptr) {
         runtime::he::kernel::dot(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
-            out0_cipher->get_elements(), arg0_cipher->get_shape(),
-            arg1_plain->get_shape(), out0_cipher->get_shape(),
+            out0_cipher->get_elements(), arg0_cipher->get_batched_shape(),
+            arg1_plain->get_batched_shape(), out0_cipher->get_batched_shape(),
             dot->get_reduction_axes_count(), type, m_he_backend);
       } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
                  out0_cipher != nullptr) {
         runtime::he::kernel::dot(
             arg0_plain->get_elements(), arg1_cipher->get_elements(),
-            out0_cipher->get_elements(), arg0_plain->get_shape(),
-            arg1_cipher->get_shape(), out0_cipher->get_shape(),
+            out0_cipher->get_elements(), arg0_plain->get_batched_shape(),
+            arg1_cipher->get_batched_shape(), out0_cipher->get_batched_shape(),
             dot->get_reduction_axes_count(), type, m_he_backend);
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
         runtime::he::kernel::dot(
             arg0_plain->get_elements(), arg1_plain->get_elements(),
-            out0_plain->get_elements(), arg0_plain->get_shape(),
-            arg1_plain->get_shape(), out0_plain->get_shape(),
+            out0_plain->get_elements(), arg0_plain->get_batched_shape(),
+            arg1_plain->get_batched_shape(), out0_plain->get_batched_shape(),
             dot->get_reduction_axes_count(), type, m_he_backend);
       } else {
         throw ngraph_error("Dot types not supported.");
@@ -1292,13 +1292,13 @@ void runtime::he::HEExecutable::generate_calls(
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
         runtime::he::kernel::reshape(
             arg0_cipher->get_elements(), out0_cipher->get_elements(),
-            arg0_cipher->get_shape(), reshape->get_input_order(),
-            out0_cipher->get_shape());
+            arg0_cipher->get_batched_shape(), reshape->get_input_order(),
+            out0_cipher->get_batched_shape());
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
         runtime::he::kernel::reshape(
             arg0_plain->get_elements(), out0_plain->get_elements(),
-            arg0_plain->get_shape(), reshape->get_input_order(),
-            out0_plain->get_shape());
+            arg0_plain->get_batched_shape(), reshape->get_input_order(),
+            out0_plain->get_batched_shape());
       } else {
         throw ngraph_error("Reshape types not supported.");
       }
@@ -1315,7 +1315,6 @@ void runtime::he::HEExecutable::generate_calls(
         throw ngraph_error(
             "Input argument is neither plaintext nor ciphertext");
       }
-      NGRAPH_INFO << "Result count " << output_size;
 
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
         runtime::he::kernel::result(arg0_cipher->get_elements(),
