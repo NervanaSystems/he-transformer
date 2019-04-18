@@ -53,22 +53,19 @@ class HETensor : public runtime::Tensor {
   /// @param batch_dim Axis along which to batch
   /// @param batched Whether or not batching is enabled
   /// @return Shape after batching along batch axis
-  static const Shape batch_shape(const Shape& shape, size_t batch_axis = 0,
-                                 bool batched = false);
+  static Shape batch_shape(const Shape& shape, size_t batch_axis = 0);
 
   /// @brief Returns the shape of the un-expanded (batched) tensor.
   const Shape& get_batched_shape() const { return m_batched_shape; };
 
   /// @brief Returns the shape of the expanded (batched) tensor.
-  const Shape& get_expanded_shape() const { return m_expanded_shape; };
-
-  /// @brief Returns number of elements in the expanded (unbatched) tensor.
-  size_t get_element_count() const;
-
-  /// @brief Returns the number of elements in the un-expanded (batched) tensor.
-  size_t get_batched_element_count() const;
+  const Shape& get_expanded_shape() const { return get_shape(); };
 
   inline size_t get_batch_size() noexcept { return m_batch_size; }
+
+  inline size_t get_batched_element_count() {
+    return get_element_count() / get_batch_size();
+  }
 
   inline bool is_batched() noexcept { return m_batched; }
 
@@ -79,7 +76,6 @@ class HETensor : public runtime::Tensor {
                    // than one scalar per element.
   size_t m_batch_size;  // If m_batched, corresponds to first shape dimesion.
   Shape m_batched_shape;
-  Shape m_expanded_shape;
 
   const HEBackend* m_he_backend;
 };

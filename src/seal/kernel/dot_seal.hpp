@@ -101,11 +101,12 @@ void ngraph::runtime::he::he_seal::kernel::dot_seal(
   size_t arg1_projected_size = arg1_projected_coords.size();
   size_t global_projected_size = arg0_projected_size * arg1_projected_size;
 
+  // TODO: don't create new thread for every loop index, only one per thread
 #pragma omp parallel for
   for (size_t global_projected_idx = 0;
        global_projected_idx < global_projected_size; ++global_projected_idx) {
     // Init thread-local memory pool for each thread
-    seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New();
+    seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::ThreadLocal();
 
     // Compute outer and inner index
     size_t arg0_projected_idx = global_projected_idx / arg1_projected_size;

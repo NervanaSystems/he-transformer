@@ -33,21 +33,24 @@ void scalar_add_ckks(
     runtime::he::he_seal::SealCiphertextWrapper* arg1,
     std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
-    const he_seal::HESealCKKSBackend* he_seal_ckks_backend);
+    const he_seal::HESealCKKSBackend* he_seal_ckks_backend,
+    const seal::MemoryPoolHandle& pool);
 
 void scalar_add_ckks(
     runtime::he::he_seal::SealCiphertextWrapper* arg0,
     runtime::he::he_seal::SealPlaintextWrapper* arg1,
     std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
-    const he_seal::HESealCKKSBackend* he_seal_ckks_backend);
+    const he_seal::HESealCKKSBackend* he_seal_ckks_backend,
+    const seal::MemoryPoolHandle& pool);
 
 void scalar_add_ckks(
     runtime::he::he_seal::SealPlaintextWrapper* arg0,
     runtime::he::he_seal::SealCiphertextWrapper* arg1,
     std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
-    const he_seal::HESealCKKSBackend* he_seal_ckks_backend);
+    const he_seal::HESealCKKSBackend* he_seal_ckks_backend,
+    const seal::MemoryPoolHandle& pool);
 }  // namespace kernel
 }  // namespace ckks
 }  // namespace he_seal

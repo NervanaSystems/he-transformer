@@ -60,10 +60,6 @@ class HEExecutable : public Executable {
   bool call(const std::vector<std::shared_ptr<Tensor>>& outputs,
             const std::vector<std::shared_ptr<Tensor>>& inputs) override;
 
-  void he_validate(
-      const std::vector<std::shared_ptr<runtime::he::HETensor>>& outputs,
-      const std::vector<std::shared_ptr<runtime::he::HETensor>>& inputs);
-
   std::vector<PerformanceCounter> get_performance_data() const override;
 
   size_t get_port() const { return m_port; };

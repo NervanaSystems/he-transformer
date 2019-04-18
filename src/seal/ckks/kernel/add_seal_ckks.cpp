@@ -27,8 +27,10 @@ void he_seal::ckks::kernel::scalar_add_ckks(
     he_seal::SealCiphertextWrapper* arg0, he_seal::SealCiphertextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
-    const he_seal::HESealCKKSBackend* he_seal_ckks_backend) {
-  match_modulus_inplace(arg0, arg1, he_seal_ckks_backend);
+    const he_seal::HESealCKKSBackend* he_seal_ckks_backend,
+    const seal::MemoryPoolHandle& pool) {
+  match_modulus_inplace(arg0, arg1, he_seal_ckks_backend, pool);
+  match_scale(arg0, arg1, he_seal_ckks_backend);
 
   he_seal_ckks_backend->get_evaluator()->add(
       arg0->m_ciphertext, arg1->m_ciphertext, out->m_ciphertext);
@@ -38,22 +40,10 @@ void he_seal::ckks::kernel::scalar_add_ckks(
     he_seal::SealCiphertextWrapper* arg0, he_seal::SealPlaintextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
-    const he_seal::HESealCKKSBackend* he_seal_ckks_backend) {
-  size_t chain_ind0 = he_seal_ckks_backend->get_context()
-                          ->context_data(arg0->get_hetext().parms_id())
-                          ->chain_index();
-
-  size_t chain_ind1 = he_seal_ckks_backend->get_context()
-                          ->context_data(arg1->get_hetext().parms_id())
-                          ->chain_index();
-
-  if (chain_ind0 == 0 || chain_ind1 == 0) {
-    NGRAPH_INFO << "Add Chain ind is zero: " << chain_ind0 << ", "
-                << chain_ind1;
-    exit(1);
-  }
-
-  match_modulus_inplace(arg0, arg1, he_seal_ckks_backend);
+    const he_seal::HESealCKKSBackend* he_seal_ckks_backend,
+    const seal::MemoryPoolHandle& pool) {
+  match_modulus_inplace(arg0, arg1, he_seal_ckks_backend, pool);
+  match_scale(arg0, arg1, he_seal_ckks_backend);
 
   chain_ind0 = he_seal_ckks_backend->get_context()
                    ->context_data(arg0->get_hetext().parms_id())
@@ -81,7 +71,8 @@ void he_seal::ckks::kernel::scalar_add_ckks(
     he_seal::SealPlaintextWrapper* arg0, he_seal::SealCiphertextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
-    const he_seal::HESealCKKSBackend* he_seal_ckks_backend) {
+    const he_seal::HESealCKKSBackend* he_seal_ckks_backend,
+    const seal::MemoryPoolHandle& pool) {
   he_seal::ckks::kernel::scalar_add_ckks(arg1, arg0, out, element_type,
-                                         he_seal_ckks_backend);
+                                         he_seal_ckks_backend, pool);
 }

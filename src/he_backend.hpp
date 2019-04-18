@@ -189,13 +189,7 @@ class HEBackend : public runtime::Backend {
   virtual void decrypt(std::shared_ptr<runtime::he::HEPlaintext>& output,
                        const runtime::he::HECiphertext* input) const = 0;
 
-  /// @brief Return whether or not scalar optimizations are enabled
-  bool optimized_add() const { return m_optimized_add; };
-  bool optimized_mult() const { return m_optimized_mult; };
-
-  /// @brief Set scalar optimizations
-  void set_optimized_add(bool enable) { m_optimized_add = enable; };
-  void set_optimized_mult(bool enable) { m_optimized_mult = enable; };
+  void set_batch_data(bool batch) { m_batch_data = batch; };
 
   const std::shared_ptr<HEEncryptionParameters> get_encryption_parameters()
       const {
@@ -207,8 +201,6 @@ class HEBackend : public runtime::Backend {
   bool encrypt_model() const { return m_encrypt_model; };
 
  protected:
-  bool m_optimized_add{std::getenv("NGRAPH_OPTIMIZED_ADD") != nullptr};
-  bool m_optimized_mult{std::getenv("NGRAPH_OPTIMIZED_MULT") != nullptr};
   bool m_encrypt_data{std::getenv("NGRAPH_ENCRYPT_DATA") != nullptr};
   bool m_batch_data{std::getenv("NGRAPH_BATCH_DATA") != nullptr};
   bool m_encrypt_model{std::getenv("NGRAPH_ENCRYPT_MODEL") != nullptr};

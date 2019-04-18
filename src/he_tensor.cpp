@@ -26,9 +26,9 @@ using namespace ngraph;
 runtime::he::HETensor::HETensor(const element::Type& element_type,
                                 const Shape& shape, const HEBackend* he_backend,
                                 bool batched, const string& name)
-    : runtime::Tensor(std::make_shared<descriptor::Tensor>(
-                          element_type, batch_shape(shape, 0, batched), name),
-                      he_backend),
+    : runtime::Tensor(
+          std::make_shared<descriptor::Tensor>(element_type, shape, name),
+          he_backend),
       m_he_backend(he_backend),
       m_batched(batched) {
   m_descriptor->set_tensor_layout(
@@ -36,26 +36,24 @@ runtime::he::HETensor::HETensor(const element::Type& element_type,
 
   if (batched) {
     m_batch_size = shape[0];
+    m_batched_shape = batch_shape(shape, 0);
   } else {
     m_batch_size = 1;
+    m_batched_shape = shape;
   }
-  m_batched_shape = batch_shape(shape, 0, batched);
-  m_expanded_shape = shape;
 }
 
-const Shape runtime::he::HETensor::batch_shape(const Shape& shape,
-                                               size_t batch_axis,
-                                               bool batched) {
-  if (batched) {
-    if (batch_axis != 0) {
-      throw ngraph_error("Batching only supported along axis 0");
-    }
-    Shape ret(shape);
-    ret[batch_axis] = 1;
 
-    return ret;
+Shape runtime::he::HETensor::batch_shape(const Shape& shape,
+                                         size_t batch_axis) {
+  if (batch_axis != 0) {
+    throw ngraph_error("Batching only supported along axis 0");
   }
-  return shape;
+  Shape batched_shape(shape);
+  if (shape.size() > 0) {
+    batched_shape[0] = 1;
+  }
+  return batched_shape;
 }
 
 void runtime::he::HETensor::check_io_bounds(const void* source,
@@ -74,12 +72,4 @@ void runtime::he::HETensor::check_io_bounds(const void* source,
   if ((tensor_offset + n) / type_byte_size > get_element_count()) {
     throw out_of_range("I/O access past end of tensor");
   }
-}
-
-size_t runtime::he::HETensor::get_element_count() const {
-  return get_tensor_layout()->get_size() * m_batch_size;
-}
-
-size_t runtime::he::HETensor::get_batched_element_count() const {
-  return get_tensor_layout()->get_size();
 }

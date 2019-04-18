@@ -19,8 +19,8 @@ include(ExternalProject)
 set(EXTERNAL_NGRAPH_INSTALL_DIR ${EXTERNAL_INSTALL_DIR})
 set(NGRAPH_TF_CMAKE_PREFIX ext_ngraph_tf)
 
-SET(NGRAPH_TF_REPO_URL https://github.com/NervanaSystems/ngraph-tf.git)
-SET(NGRAPH_TF_GIT_LABEL v0.12.0-rc3)
+SET(NGRAPH_TF_REPO_URL https://github.com/tensorflow/ngraph-bridge.git)
+SET(NGRAPH_TF_GIT_LABEL v0.12.0)
 
 SET(NGRAPH_TF_SRC_DIR ${CMAKE_BINARY_DIR}/${NGRAPH_TF_CMAKE_PREFIX}/src/${NGRAPH_TF_CMAKE_PREFIX})
 SET(NGRAPH_TF_BUILD_DIR ${NGRAPH_TF_SRC_DIR}/build_cmake)

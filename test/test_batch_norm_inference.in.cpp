@@ -67,8 +67,8 @@ class BatchNormInferenceTester {
     copy_data(m_mean, mean);
     copy_data(m_variance, variance);
     auto handle = m_he_backend->compile(m_function);
-    handle->call({m_normed_input},
-                 {m_input, m_gamma, m_beta, m_mean, m_variance});
+    handle->call_with_validate({m_normed_input},
+                               {m_input, m_gamma, m_beta, m_mean, m_variance});
     auto res_normed_input = read_vector<T>(m_normed_input);
     return all_close(normed_input, res_normed_input);
   }
@@ -286,8 +286,8 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion) {
   auto orig_exec = backend->compile(orig_f);
   auto opt_exec = backend->compile(opt_f);
 
-  orig_exec->call({t_orig_result}, {t_input});
-  opt_exec->call({t_opt_result}, {t_input});
+  orig_exec->call_with_validate({t_orig_result}, {t_input});
+  opt_exec->call_with_validate({t_opt_result}, {t_input});
 
   EXPECT_TRUE(test::all_close(read_vector<float>(t_orig_result),
                               read_vector<float>(t_opt_result)));
@@ -299,8 +299,6 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he) {
   auto he_backend_tmp = static_cast<runtime::he::HEBackend*>(backend.get());
   backend.release();
   he_backend.reset(he_backend_tmp);
-
-  he_backend->set_optimized_mult(true);
 
   Shape shape_input{1, 8, 3, 3};
   Shape shape_weights{2, 8, 1, 1};
@@ -368,8 +366,8 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he) {
   auto orig_handle = he_backend->compile(orig_f);
   auto new_handle = he_backend->compile(opt_f);
 
-  orig_handle->call({t_orig_result}, {t_input});
-  new_handle->call({t_opt_result}, {t_input});
+  orig_handle->call_with_validate({t_orig_result}, {t_input});
+  new_handle->call_with_validate({t_opt_result}, {t_input});
 
   // TODO: more precision
   EXPECT_TRUE(test::all_close(read_vector<float>(t_orig_result),
@@ -383,7 +381,6 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he_batch) {
   backend.release();
   he_backend.reset(he_backend_tmp);
 
-  he_backend->set_optimized_mult(true);
   size_t batch_size = 1;
 
   Shape shape_input{batch_size, 8, 3, 3};
@@ -456,8 +453,8 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he_batch) {
   auto orig_handle = he_backend->compile(orig_f);
   auto new_handle = he_backend->compile(opt_f);
 
-  orig_handle->call({t_orig_result}, {t_input});
-  new_handle->call({t_opt_result}, {t_input});
+  orig_handle->call_with_validate({t_orig_result}, {t_input});
+  new_handle->call_with_validate({t_opt_result}, {t_input});
 
   // TODO: more precision
   EXPECT_TRUE(test::all_close(generalized_read_vector<float>(t_orig_result),

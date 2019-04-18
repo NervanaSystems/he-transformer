@@ -86,11 +86,12 @@ void ngraph::runtime::he::he_seal::kernel::convolution_seal(
   size_t out_transform_size = out_coords.size();
   NGRAPH_INFO << "Convolution output size " << out_transform_size;
 
+  // TODO: don't create new thread for every loop index, only one per thread
 #pragma omp parallel for
   for (size_t out_coord_idx = 0; out_coord_idx < out_transform_size;
        ++out_coord_idx) {
     // Init thread-local memory pool for each thread
-    seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New();
+    seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::ThreadLocal();
 
     const Coordinate& out_coord = out_coords[out_coord_idx];
 
