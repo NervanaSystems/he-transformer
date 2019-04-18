@@ -45,24 +45,6 @@ void he_seal::ckks::kernel::scalar_add_ckks(
   match_modulus_inplace(arg0, arg1, he_seal_ckks_backend, pool);
   match_scale(arg0, arg1, he_seal_ckks_backend);
 
-  chain_ind0 = he_seal_ckks_backend->get_context()
-                   ->context_data(arg0->get_hetext().parms_id())
-                   ->chain_index();
-
-  chain_ind1 = he_seal_ckks_backend->get_context()
-                   ->context_data(arg1->get_hetext().parms_id())
-                   ->chain_index();
-
-  NGRAPH_ASSERT(arg0->m_ciphertext.parms_id() ==
-                arg1->get_plaintext().parms_id())
-      << "parm ids don't match";
-  /*#pragma omp critical
-    { NGRAPH_INFO << "chain inds " << chain_ind0 << ",  " << chain_ind1; } */
-
-  if (chain_ind0 != chain_ind1) {
-    throw ngraph_error("Chaind inds don't match");
-  }
-
   he_seal_ckks_backend->get_evaluator()->add_plain(
       arg0->m_ciphertext, arg1->get_plaintext(), out->m_ciphertext);
 }

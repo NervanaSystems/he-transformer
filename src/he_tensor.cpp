@@ -43,7 +43,6 @@ runtime::he::HETensor::HETensor(const element::Type& element_type,
   }
 }
 
-
 Shape runtime::he::HETensor::batch_shape(const Shape& shape,
                                          size_t batch_axis) {
   if (batch_axis != 0) {

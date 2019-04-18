@@ -15,8 +15,6 @@
 //*****************************************************************************
 
 #include "kernel/constant.hpp"
-#include "seal/ckks/he_seal_ckks_backend.hpp"
-#include "seal/seal_plaintext_wrapper.hpp"
 
 using namespace std;
 using namespace ngraph;
@@ -34,26 +32,6 @@ void runtime::he::kernel::constant(
   for (size_t i = 0; i < count; ++i) {
     const void* src_with_offset = (void*)((char*)data_ptr + i * type_byte_size);
     he_backend->encode(out[i], src_with_offset, element_type);
-  }
-
-  for (size_t i = 0; i < count; ++i) {
-    auto he_seal_ckks_backend =
-        dynamic_cast<const he_seal::HESealCKKSBackend*>(he_backend);
-
-    auto seal_plain =
-        dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(
-            out[i]);
-
-    size_t new_chain_ind =
-        he_seal_ckks_backend->get_context()
-            ->context_data(seal_plain->get_hetext().parms_id())
-            ->chain_index();
-
-    if (new_chain_ind != 2) {
-      NGRAPH_INFO << "Chain ind of newly-encoded single value: "
-                  << new_chain_ind;
-      exit(1);
-    }
   }
 }
 
