@@ -547,7 +547,7 @@ bool runtime::he::HEExecutable::call(
                                                m_batch_data));
 
 #pragma omp parallel for
-        for (size_t i = 0; i < plain_input->get_batched_element_count(); ++i) {
+        for (size_t i = 0; i < plain_input->get_element_count(); ++i) {
           m_he_backend->encrypt(cipher_input->get_element(i),
                                 plain_input->get_element(i).get());
         }
@@ -780,25 +780,25 @@ void runtime::he::HEExecutable::generate_calls(
         runtime::he::kernel::add(
             arg0_cipher->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), type, m_he_backend,
-            out0_cipher->get_batched_element_count());
+            out0_cipher->get_element_count());
       } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                  out0_cipher != nullptr) {
         runtime::he::kernel::add(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
             out0_cipher->get_elements(), type, m_he_backend,
-            out0_cipher->get_batched_element_count());
+            out0_cipher->get_element_count());
       } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
                  out0_cipher != nullptr) {
         runtime::he::kernel::add(
             arg0_plain->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), type, m_he_backend,
-            out0_cipher->get_batched_element_count());
+            out0_cipher->get_element_count());
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
         runtime::he::kernel::add(arg0_plain->get_elements(),
                                  arg1_plain->get_elements(),
                                  out0_plain->get_elements(), type, m_he_backend,
-                                 out0_plain->get_batched_element_count());
+                                 out0_plain->get_element_count());
       } else {
         throw ngraph_error("Add types not supported.");
       }
@@ -934,11 +934,11 @@ void runtime::he::HEExecutable::generate_calls(
       if (out0_plain != nullptr) {
         runtime::he::kernel::constant(out0_plain->get_elements(), type,
                                       constant->get_data_ptr(), m_he_backend,
-                                      out0_plain->get_batched_element_count());
+                                      out0_plain->get_element_count());
       } else if (out0_cipher != nullptr) {
         runtime::he::kernel::constant(out0_cipher->get_elements(), type,
                                       constant->get_data_ptr(), m_he_backend,
-                                      out0_cipher->get_batched_element_count());
+                                      out0_cipher->get_element_count());
       } else {
         throw ngraph_error("Constant type not supported.");
       }
@@ -1186,25 +1186,25 @@ void runtime::he::HEExecutable::generate_calls(
         runtime::he::kernel::multiply(
             arg0_cipher->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), type, m_he_backend,
-            out0_cipher->get_batched_element_count());
+            out0_cipher->get_element_count());
       } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                  out0_cipher != nullptr) {
         runtime::he::kernel::multiply(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
             out0_cipher->get_elements(), type, m_he_backend,
-            out0_cipher->get_batched_element_count());
+            out0_cipher->get_element_count());
       } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
                  out0_cipher != nullptr) {
         runtime::he::kernel::multiply(
             arg0_plain->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), type, m_he_backend,
-            out0_cipher->get_batched_element_count());
+            out0_cipher->get_element_count());
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
         runtime::he::kernel::multiply(
             arg0_plain->get_elements(), arg1_plain->get_elements(),
             out0_plain->get_elements(), type, m_he_backend,
-            out0_plain->get_batched_element_count());
+            out0_plain->get_element_count());
       } else {
         throw ngraph_error("Multiply types not supported.");
       }
@@ -1214,11 +1214,11 @@ void runtime::he::HEExecutable::generate_calls(
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
         runtime::he::kernel::negate(
             arg0_cipher->get_elements(), out0_cipher->get_elements(), type,
-            m_he_backend, out0_cipher->get_batched_element_count());
+            m_he_backend, out0_cipher->get_element_count());
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
         runtime::he::kernel::negate(
             arg0_plain->get_elements(), out0_plain->get_elements(), type,
-            m_he_backend, out0_plain->get_batched_element_count());
+            m_he_backend, out0_plain->get_element_count());
       } else {
         throw ngraph_error("Negative types not supported.");
       }
@@ -1308,9 +1308,9 @@ void runtime::he::HEExecutable::generate_calls(
     case OP_TYPEID::Result: {
       size_t output_size;
       if (arg0_plain != nullptr) {
-        output_size = arg0_plain->get_batched_element_count();
+        output_size = arg0_plain->get_element_count();
       } else if (arg0_cipher != nullptr) {
-        output_size = arg0_cipher->get_batched_element_count();
+        output_size = arg0_cipher->get_element_count();
       } else {
         throw ngraph_error(
             "Input argument is neither plaintext nor ciphertext");
@@ -1419,25 +1419,25 @@ void runtime::he::HEExecutable::generate_calls(
         runtime::he::kernel::subtract(
             arg0_cipher->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), type, m_he_backend,
-            out0_cipher->get_batched_element_count());
+            out0_cipher->get_element_count());
       } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                  out0_cipher != nullptr) {
         runtime::he::kernel::subtract(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
             out0_cipher->get_elements(), type, m_he_backend,
-            out0_cipher->get_batched_element_count());
+            out0_cipher->get_element_count());
       } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
                  out0_cipher != nullptr) {
         runtime::he::kernel::subtract(
             arg0_plain->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), type, m_he_backend,
-            out0_cipher->get_batched_element_count());
+            out0_cipher->get_element_count());
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
         runtime::he::kernel::subtract(
             arg0_plain->get_elements(), arg1_plain->get_elements(),
             out0_plain->get_elements(), type, m_he_backend,
-            out0_plain->get_batched_element_count());
+            out0_plain->get_element_count());
       } else {
         throw ngraph_error("Subtract types not supported.");
       }
