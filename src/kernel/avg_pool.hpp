@@ -39,7 +39,6 @@ void avg_pool(const std::vector<std::shared_ptr<T>>& arg,
               bool include_padding_in_avg_computation,
               const HEBackend* he_backend) {
   // At the outermost level we will walk over every output coordinate O.
-
   CoordinateTransform output_transform(out_shape);
 
   for (const Coordinate& out_coord : output_transform) {

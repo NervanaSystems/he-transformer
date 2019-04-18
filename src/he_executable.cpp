@@ -481,6 +481,8 @@ void runtime::he::HEExecutable::he_validate(
 bool runtime::he::HEExecutable::call(
     const vector<shared_ptr<runtime::Tensor>>& outputs,
     const vector<shared_ptr<runtime::Tensor>>& server_inputs) {
+  validate(outputs, server_inputs);
+
   if (m_enable_client) {
     NGRAPH_INFO << "Waiting until m_client_inputs.size() "
                 << m_client_inputs.size() << " == " << server_inputs.size();
@@ -529,7 +531,7 @@ bool runtime::he::HEExecutable::call(
     he_outputs.push_back(static_pointer_cast<runtime::he::HETensor>(tv));
   }
 
-  he_validate(he_outputs, he_inputs);
+  // he_validate(he_outputs, he_inputs);
 
   unordered_map<descriptor::Tensor*, shared_ptr<runtime::he::HETensor>>
       tensor_map;
