@@ -778,15 +778,6 @@ void runtime::he::HEExecutable::generate_calls(
     NGRAPH_ASSERT(!(arg1_cipher != nullptr && arg1_plain != nullptr))
         << "arg1 is both cipher and plain?";
   }
-  /* size_t batch_size = 1;
-   if (out0_cipher != nullptr) {
-     batch_size = out0_cipher->get_batch_size();
-   } else if (out0_plain != nullptr) {
-     batch_size = out0_plain->get_batch_size();
-   } */
-
-  // Shape arg0_shape = batch_shape(node.get_inputs().at(0).get_shape());
-  // Shape out_shape = batch_shape(node.get_inputs().at(0).get_shape());
 
   stringstream ss;
   ss << "Inputs: ";
