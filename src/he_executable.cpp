@@ -189,8 +189,8 @@ void runtime::he::HEExecutable::handle_message(
     const runtime::he::TCPMessage& message) {
   MessageType msg_type = message.message_type();
 
-  // NGRAPH_INFO << "Server received message type: "
-  //            << message_type_to_string(msg_type);
+  //NGRAPH_INFO << "Server received message type: "
+  //           << message_type_to_string(msg_type);
 
   if (msg_type == MessageType::execute) {
     // Get Ciphertexts from message
