@@ -300,8 +300,6 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he) {
   backend.release();
   he_backend.reset(he_backend_tmp);
 
-  he_backend->set_optimized_mult(true);
-
   Shape shape_input{1, 8, 3, 3};
   Shape shape_weights{2, 8, 1, 1};
   Shape shape_norm{2};
@@ -383,7 +381,6 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he_batch) {
   backend.release();
   he_backend.reset(he_backend_tmp);
 
-  he_backend->set_optimized_mult(true);
   size_t batch_size = 1;
 
   Shape shape_input{batch_size, 8, 3, 3};

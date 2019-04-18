@@ -41,14 +41,6 @@ static void run_cryptonets_benchmark(string backend_name,
   }
   auto backend = runtime::Backend::create(backend_name);
   auto he_backend = dynamic_cast<runtime::he::HEBackend*>(backend.get());
-  if (he_backend) {
-    // Avoid multiplication by plaintext 0 when data is plaintext.
-    bool encrypt_data = (std::getenv("NGRAPH_ENCRYPT_DATA") != nullptr);
-    if (!encrypt_data) {
-      he_backend->set_optimized_add(true);
-      he_backend->set_optimized_mult(true);
-    }
-  }
 
   vector<float> x = read_binary_constant(
       file_util::path_join(HE_SERIALIZED_ZOO, "x_test_4096.bin"),
