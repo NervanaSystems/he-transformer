@@ -63,6 +63,10 @@ class HETensor : public runtime::Tensor {
 
   inline size_t get_batch_size() noexcept { return m_batch_size; }
 
+  inline size_t get_batched_element_count() {
+    return get_element_count() / get_batch_size();
+  }
+
   inline bool is_batched() noexcept { return m_batched; }
 
  protected:

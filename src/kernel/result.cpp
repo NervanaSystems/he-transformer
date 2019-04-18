@@ -28,6 +28,7 @@ void runtime::he::kernel::result(
                 << " does not match result input size " << arg.size();
     throw ngraph_error("Wrong size in result");
   }
+  NGRAPH_INFO << "result count " << count;
   for (size_t i = 0; i < count; ++i) {
     he_backend->encrypt(out[i], arg[i].get());
   }

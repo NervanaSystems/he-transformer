@@ -30,7 +30,10 @@ runtime::he::HECipherTensor::HECipherTensor(
     const std::shared_ptr<HECiphertext> he_ciphertext, const bool batched,
     const string& name)
     : runtime::he::HETensor(element_type, shape, he_backend, batched, name) {
-  m_num_elements = m_descriptor->get_tensor_layout()->get_size();
+  m_num_elements = m_descriptor->get_tensor_layout()->get_size() / m_batch_size;
+  NGRAPH_INFO << "CipherTensor batched? " << (batched);
+  NGRAPH_INFO << "Shape " << join(shape, "x");
+  NGRAPH_INFO << "n_num_elements " << m_num_elements;
   m_cipher_texts.resize(m_num_elements);
 #pragma omp parallel for
   for (size_t i = 0; i < m_num_elements; ++i) {
