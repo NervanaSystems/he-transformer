@@ -106,9 +106,13 @@ void batch_norm_inference(
     std::shared_ptr<HECiphertext> output =
         he_backend->create_empty_ciphertext();
 
+    NGRAPH_INFO << "Mult in BNI";
+
     runtime::he::kernel::scalar_multiply(input[input_index].get(),
                                          plain_scale.get(), output,
                                          element::f32, he_backend);
+
+    NGRAPH_INFO << "Add in BNI";
 
     runtime::he::kernel::scalar_add(output.get(), plain_bias.get(), output,
                                     element::f32, he_backend);

@@ -37,6 +37,7 @@ set (HE_SRC
     seal/ckks/he_seal_ckks_backend.cpp
     seal/ckks/kernel/add_seal_ckks.cpp
     seal/ckks/kernel/multiply_seal_ckks.cpp
+    seal/ckks/seal_ckks_util.cpp
 
     # main
     he_backend.cpp

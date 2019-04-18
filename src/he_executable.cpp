@@ -63,7 +63,7 @@
 #include "ngraph/pass/visualize_tree.hpp"
 #include "ngraph/runtime/backend.hpp"
 #include "ngraph/util.hpp"
-#include "seal/ckks/kernel/seal_ckks_util.hpp"
+#include "seal/ckks/seal_ckks_util.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_util.hpp"
 

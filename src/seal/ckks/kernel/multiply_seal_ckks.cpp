@@ -26,7 +26,8 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
     const element::Type& element_type,
     const runtime::he::he_seal::HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
-  match_modulus_inplace(arg0, arg1, he_seal_ckks_backend);
+  match_modulus_inplace(arg0, arg1, he_seal_ckks_backend, pool);
+  match_scale(arg0, arg1, he_seal_ckks_backend);
   size_t chain_ind0 = he_seal_ckks_backend->get_context()
                           ->context_data(arg0->get_hetext().parms_id())
                           ->chain_index();
@@ -41,10 +42,10 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
 
   if (arg0 == arg1) {
     he_seal_ckks_backend->get_evaluator()->square(arg0->m_ciphertext,
-                                                  out->m_ciphertext);
+                                                  out->m_ciphertext, pool);
   } else {
     he_seal_ckks_backend->get_evaluator()->multiply(
-        arg0->m_ciphertext, arg1->m_ciphertext, out->m_ciphertext);
+        arg0->m_ciphertext, arg1->m_ciphertext, out->m_ciphertext, pool);
   }
 
   he_seal_ckks_backend->get_evaluator()->relinearize_inplace(
@@ -60,7 +61,8 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
     const element::Type& element_type,
     const runtime::he::he_seal::HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
-  match_modulus_inplace(arg0, arg1, he_seal_ckks_backend);
+  match_modulus_inplace(arg0, arg1, he_seal_ckks_backend, pool);
+  match_scale(arg0, arg1, he_seal_ckks_backend);
 
   size_t chain_ind0 = he_seal_ckks_backend->get_context()
                           ->context_data(arg0->get_hetext().parms_id())

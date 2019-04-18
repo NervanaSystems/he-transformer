@@ -88,6 +88,7 @@ void ngraph::runtime::he::he_seal::kernel::convolution_seal(
   for (size_t out_coord_idx = 0; out_coord_idx < out_transform_size;
        ++out_coord_idx) {
     // Init thread-local memory pool for each thread
+    // TODO: ThreadLocal pool!
     seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New();
 
     const Coordinate& out_coord = out_coords[out_coord_idx];

@@ -31,7 +31,7 @@ void he_seal::kernel::scalar_add(
   if (auto he_seal_ckks_backend =
           dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend)) {
     he_seal::ckks::kernel::scalar_add_ckks(arg0, arg1, out, element_type,
-                                           he_seal_ckks_backend);
+                                           he_seal_ckks_backend, pool);
   } else if (auto he_seal_bfv_backend =
                  dynamic_cast<const he_seal::HESealBFVBackend*>(
                      he_seal_backend)) {
@@ -76,7 +76,7 @@ void he_seal::kernel::scalar_add(
     if (auto he_seal_ckks_backend =
             dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend)) {
       he_seal::ckks::kernel::scalar_add_ckks(arg0, arg1, out, element_type,
-                                             he_seal_ckks_backend);
+                                             he_seal_ckks_backend, pool);
     } else if (auto he_seal_bfv_backend =
                    dynamic_cast<const he_seal::HESealBFVBackend*>(
                        he_seal_backend)) {
