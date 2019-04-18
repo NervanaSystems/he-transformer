@@ -104,6 +104,16 @@ runtime::he::HEExecutable::HEExecutable(const shared_ptr<Function>& function,
   }
   set_parameters_and_results(*function);
 
+  // Constant, for example, cannot be batched
+  if (get_parameters().size() > 0) {
+    const Shape& shape = (get_parameters()[0])->get_shape();
+    if (m_batch_data) {
+      m_batch_size = shape[0];
+    }
+  }
+
+  NGRAPH_INFO << "Setting batch_size " << m_batch_size;
+
   if (m_enable_client) {
     NGRAPH_INFO << "Enable client";
 
@@ -130,12 +140,6 @@ runtime::he::HEExecutable::HEExecutable(const shared_ptr<Function>& function,
     NGRAPH_ASSERT(get_parameters().size() == 1)
         << "HEExecutable only supports parameter size 1 (got "
         << get_parameters().size() << ")";
-
-    const Shape& shape = (get_parameters()[0])->get_shape();
-    if (m_batch_data) {
-      m_batch_size = shape[0];
-      NGRAPH_INFO << "Setting batch_size " << m_batch_size;
-    }
 
     parms->save(param_stream);
     auto parms_message =
@@ -718,6 +722,35 @@ void runtime::he::HEExecutable::generate_calls(
   auto out0_cipher = dynamic_pointer_cast<HECipherTensor>(out[0]);
   auto out0_plain = dynamic_pointer_cast<HEPlainTensor>(out[0]);
 
+  std::vector<Shape> arg_shapes{};
+  NGRAPH_INFO << "args size " << args.size();
+  for (size_t arg_idx = 0; arg_idx < args.size(); ++arg_idx) {
+    NGRAPH_INFO << "input shape";
+    Shape arg_shape = node.get_input_shape(arg_idx);
+    if (m_batch_data) {
+      arg_shape = ngraph::runtime::he::HETensor::batch_shape(arg_shape);
+    }
+    arg_shapes.emplace_back(arg_shape);
+  }
+  NGRAPH_INFO << "Getting out shape";
+  Shape out_shape{};
+  if (node.get_output_size() > 0) {
+    NGRAPH_INFO << "Getting output shape (size " << node.get_output_size();
+    NGRAPH_ASSERT(node.get_output_size() == 1)
+        << "Only support single-output functions";
+    out_shape = node.get_output_shape(0);
+    NGRAPH_INFO << "Got shape, about to batch";
+    NGRAPH_INFO << "shape " << join(out_shape, "x");
+    if (m_batch_data) {
+      out_shape = ngraph::runtime::he::HETensor::batch_shape(out_shape);
+    }
+    NGRAPH_INFO << "Batched";
+  }
+  NGRAPH_INFO << "out shape " << join(out_shape, "x");
+  for (const auto& arg_shape : arg_shapes) {
+    NGRAPH_INFO << "Arg shape " << join(arg_shape, "x");
+  }
+
   if (args.size() > 0) {
     arg0_cipher = dynamic_pointer_cast<HECipherTensor>(args[0]);
     arg0_plain = dynamic_pointer_cast<HEPlainTensor>(args[0]);
@@ -734,12 +767,15 @@ void runtime::he::HEExecutable::generate_calls(
     NGRAPH_ASSERT(!(arg1_cipher != nullptr && arg1_plain != nullptr))
         << "arg1 is both cipher and plain?";
   }
-  size_t batch_size = 1;
-  if (out0_cipher != nullptr) {
-    batch_size = out0_cipher->get_batch_size();
-  } else if (out0_plain != nullptr) {
-    batch_size = out0_plain->get_batch_size();
-  }
+  /* size_t batch_size = 1;
+   if (out0_cipher != nullptr) {
+     batch_size = out0_cipher->get_batch_size();
+   } else if (out0_plain != nullptr) {
+     batch_size = out0_plain->get_batch_size();
+   } */
+
+  // Shape arg0_shape = batch_shape(node.get_inputs().at(0).get_shape());
+  // Shape out_shape = batch_shape(node.get_inputs().at(0).get_shape());
 
   stringstream ss;
   ss << "Inputs: ";
@@ -762,10 +798,6 @@ void runtime::he::HEExecutable::generate_calls(
     ss << "Plain";
   }
   NGRAPH_INFO << ss.str();
-
-  if (batch_size != 1) {
-    NGRAPH_INFO << "Batch size " << batch_size;
-  }
 
 // We want to check that every OP_TYPEID enumeration is included in the list.
 // These GCC flags enable compile-time checking so that if an enumeration
@@ -806,9 +838,8 @@ void runtime::he::HEExecutable::generate_calls(
     }
     case OP_TYPEID::AvgPool: {
       const op::AvgPool* avg_pool = static_cast<const op::AvgPool*>(&node);
+      Shape in_shape = arg_shapes[0];
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
-        Shape in_shape = arg0_cipher->get_batched_shape();
-        Shape out_shape = out0_cipher->get_batched_shape();
         runtime::he::kernel::avg_pool(
             arg0_cipher->get_elements(), out0_cipher->get_elements(), in_shape,
             out_shape, avg_pool->get_window_shape(),
@@ -817,8 +848,6 @@ void runtime::he::HEExecutable::generate_calls(
             avg_pool->get_include_padding_in_avg_computation(), m_he_backend);
 
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
-        Shape in_shape = arg0_plain->get_batched_shape();
-        Shape out_shape = out0_plain->get_batched_shape();
         runtime::he::kernel::avg_pool(
             arg0_plain->get_elements(), out0_plain->get_elements(), in_shape,
             out_shape, avg_pool->get_window_shape(),
@@ -840,9 +869,7 @@ void runtime::he::HEExecutable::generate_calls(
 
       auto shape = node.get_input_shape(2);
       // TODO: cleanup
-      if (batch_size != 1) {
-        shape[0] = shape[0] / batch_size;
-      }
+      shape[0] = shape[0] / m_batch_size;
 
       auto gamma = dynamic_pointer_cast<HEPlainTensor>(args[0]);
       auto beta = dynamic_pointer_cast<HEPlainTensor>(args[1]);
@@ -860,7 +887,7 @@ void runtime::he::HEExecutable::generate_calls(
       runtime::he::kernel::batch_norm_inference(
           eps, gamma->get_elements(), beta->get_elements(),
           input->get_elements(), mean->get_elements(), variance->get_elements(),
-          out0_cipher->get_elements(), shape, batch_size, m_he_backend);
+          out0_cipher->get_elements(), shape, m_batch_size, m_he_backend);
       break;
     }
     case OP_TYPEID::Broadcast: {
@@ -960,7 +987,7 @@ void runtime::he::HEExecutable::generate_calls(
             arg1_cipher->get_batched_shape(), out0_cipher->get_batched_shape(),
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
-            batch_size, m_he_backend);
+            m_batch_size, m_he_backend);
       } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                  out0_cipher != nullptr) {
         runtime::he::kernel::convolution(
@@ -969,7 +996,7 @@ void runtime::he::HEExecutable::generate_calls(
             arg1_plain->get_batched_shape(), out0_cipher->get_batched_shape(),
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
-            batch_size, m_he_backend);
+            m_batch_size, m_he_backend);
       } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
                  out0_cipher != nullptr) {
         runtime::he::kernel::convolution(
@@ -978,7 +1005,7 @@ void runtime::he::HEExecutable::generate_calls(
             arg1_cipher->get_batched_shape(), out0_cipher->get_batched_shape(),
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
-            batch_size, m_he_backend);
+            m_batch_size, m_he_backend);
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
         runtime::he::kernel::convolution(
@@ -987,7 +1014,7 @@ void runtime::he::HEExecutable::generate_calls(
             arg1_plain->get_batched_shape(), out0_plain->get_batched_shape(),
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
-            batch_size, m_he_backend);
+            m_batch_size, m_he_backend);
       } else {
         throw ngraph_error("Convolution types not supported.");
       }
@@ -1235,7 +1262,7 @@ void runtime::he::HEExecutable::generate_calls(
             arg0_cipher->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), arg0_cipher->get_batched_shape(),
             out0_cipher->get_batched_shape(), pad->get_padding_below(),
-            pad->get_padding_above(), pad->get_pad_mode(), batch_size,
+            pad->get_padding_above(), pad->get_pad_mode(), m_batch_size,
             m_he_backend);
       } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                  out0_cipher != nullptr) {
@@ -1243,7 +1270,7 @@ void runtime::he::HEExecutable::generate_calls(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
             out0_cipher->get_elements(), arg0_cipher->get_batched_shape(),
             out0_cipher->get_batched_shape(), pad->get_padding_below(),
-            pad->get_padding_above(), pad->get_pad_mode(), batch_size,
+            pad->get_padding_above(), pad->get_pad_mode(), m_batch_size,
             m_he_backend);
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
@@ -1251,7 +1278,7 @@ void runtime::he::HEExecutable::generate_calls(
             arg0_plain->get_elements(), arg1_plain->get_elements(),
             out0_plain->get_elements(), arg0_plain->get_batched_shape(),
             out0_plain->get_batched_shape(), pad->get_padding_below(),
-            pad->get_padding_above(), pad->get_pad_mode(), batch_size,
+            pad->get_padding_above(), pad->get_pad_mode(), m_batch_size,
             m_he_backend);
       } else {
         throw ngraph_error("Pad cipher vs. plain types not supported.");

@@ -194,8 +194,11 @@ class HEBackend : public runtime::Backend {
   bool optimized_mult() const { return m_optimized_mult; };
 
   /// @brief Set scalar optimizations
+  /// TODO: enable always
   void set_optimized_add(bool enable) { m_optimized_add = enable; };
   void set_optimized_mult(bool enable) { m_optimized_mult = enable; };
+
+  void set_batch_data(bool batch) { m_batch_data = batch; };
 
   const std::shared_ptr<HEEncryptionParameters> get_encryption_parameters()
       const {

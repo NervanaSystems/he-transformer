@@ -49,7 +49,9 @@ Shape runtime::he::HETensor::batch_shape(const Shape& shape,
     throw ngraph_error("Batching only supported along axis 0");
   }
   Shape batched_shape(shape);
-  batched_shape[batch_axis] = 1;
+  if (shape.size() > 0) {
+    batched_shape[0] = 1;
+  }
   return batched_shape;
 }
 

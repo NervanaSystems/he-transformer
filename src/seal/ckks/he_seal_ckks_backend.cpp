@@ -106,6 +106,7 @@ runtime::he::he_seal::HESealCKKSBackend::create_batched_cipher_tensor(
   NGRAPH_INFO << "Creating batched cipher tensor with shape " << join(shape);
   auto rc = make_shared<runtime::he::HECipherTensor>(
       type, shape, this, create_empty_ciphertext(), true);
+  set_batch_data(true);
   return static_pointer_cast<runtime::Tensor>(rc);
 }
 
@@ -115,6 +116,7 @@ runtime::he::he_seal::HESealCKKSBackend::create_batched_plain_tensor(
   NGRAPH_INFO << "Creating batched plain tensor with shape " << join(shape);
   auto rc = make_shared<runtime::he::HEPlainTensor>(
       type, shape, this, create_empty_plaintext(), true);
+  set_batch_data(true);
   return static_pointer_cast<runtime::Tensor>(rc);
 }
 
