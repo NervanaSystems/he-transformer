@@ -424,60 +424,6 @@ runtime::he::HEExecutable::get_performance_data() const {
   return rc;
 }
 
-void runtime::he::HEExecutable::he_validate(
-    const vector<shared_ptr<runtime::he::HETensor>>& outputs,
-    const vector<shared_ptr<runtime::he::HETensor>>& inputs) {
-  const ParameterVector& parameters = get_parameters();
-  const ResultVector& results = get_results();
-  if (parameters.size() != inputs.size()) {
-    stringstream ss;
-    ss << "Call input count " << inputs.size()
-       << " does not match Function's Parameter count " << parameters.size();
-    throw runtime_error(ss.str());
-  }
-  if (results.size() != outputs.size()) {
-    stringstream ss;
-    ss << "Call output count " << outputs.size()
-       << " does not match Function's Result count " << results.size();
-    throw runtime_error(ss.str());
-  }
-
-  for (size_t i = 0; i < parameters.size(); i++) {
-    if (parameters[i]->get_element_type() != inputs[i]->get_element_type()) {
-      stringstream ss;
-      ss << "Input " << i << " type '" << inputs[i]->get_element_type()
-         << "' does not match Parameter type '"
-         << parameters[i]->get_element_type() << "'";
-      throw runtime_error(ss.str());
-    }
-    if (inputs[i]->get_expanded_shape() != parameters[i]->get_shape()) {
-      stringstream ss;
-      ss << "Input " << i << " shape {" << join(inputs[i]->get_expanded_shape())
-         << "} does not match Parameter shape {"
-         << join(parameters[i]->get_shape()) << "}";
-      throw runtime_error(ss.str());
-    }
-  }
-
-  for (size_t i = 0; i < results.size(); i++) {
-    if (results[i]->get_element_type() != outputs[i]->get_element_type()) {
-      stringstream ss;
-      ss << "Output " << i << " type '" << outputs[i]->get_element_type()
-         << "' does not match Result type '" << results[i]->get_element_type()
-         << "'";
-      throw runtime_error(ss.str());
-    }
-    if (results[i]->get_shape() != outputs[i]->get_expanded_shape()) {
-      stringstream ss;
-      ss << "Output " << i << " shape {"
-         << join(outputs[i]->get_expanded_shape())
-         << "} does not match Result shape {" << join(results[i]->get_shape())
-         << "}";
-      throw runtime_error(ss.str());
-    }
-  }
-}
-
 bool runtime::he::HEExecutable::call(
     const vector<shared_ptr<runtime::Tensor>>& outputs,
     const vector<shared_ptr<runtime::Tensor>>& server_inputs) {
@@ -530,8 +476,6 @@ bool runtime::he::HEExecutable::call(
   for (auto& tv : outputs) {
     he_outputs.push_back(static_pointer_cast<runtime::he::HETensor>(tv));
   }
-
-  // he_validate(he_outputs, he_inputs);
 
   unordered_map<descriptor::Tensor*, shared_ptr<runtime::he::HETensor>>
       tensor_map;
