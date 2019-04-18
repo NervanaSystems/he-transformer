@@ -723,15 +723,18 @@ void runtime::he::HEExecutable::generate_calls(
   auto out0_plain = dynamic_pointer_cast<HEPlainTensor>(out[0]);
 
   std::vector<Shape> arg_shapes{};
+  std::vector<Shape> unbatched_arg_shapes{};
   NGRAPH_INFO << "args size " << args.size();
   for (size_t arg_idx = 0; arg_idx < args.size(); ++arg_idx) {
     NGRAPH_INFO << "input shape";
     Shape arg_shape = node.get_input_shape(arg_idx);
+    unbatched_arg_shapes.emplace_back(arg_shape);
     if (m_batch_data) {
       arg_shape = ngraph::runtime::he::HETensor::batch_shape(arg_shape);
     }
     arg_shapes.emplace_back(arg_shape);
   }
+
   NGRAPH_INFO << "Getting out shape";
   Shape out_shape{};
   if (node.get_output_size() > 0) {
@@ -749,6 +752,9 @@ void runtime::he::HEExecutable::generate_calls(
   NGRAPH_INFO << "out shape " << join(out_shape, "x");
   for (const auto& arg_shape : arg_shapes) {
     NGRAPH_INFO << "Arg shape " << join(arg_shape, "x");
+  }
+  for (const auto& arg_shape : unbatched_arg_shapes) {
+    NGRAPH_INFO << "Unbatched arg shape " << join(arg_shape, "x");
   }
 
   if (args.size() > 0) {
@@ -973,12 +979,14 @@ void runtime::he::HEExecutable::generate_calls(
       auto padding_above = c->get_padding_above();
       auto data_dilation_strides = c->get_data_dilation_strides();
 
+      Shape in_shape0 = arg_shapes[0];
+      Shape in_shape1 = unbatched_arg_shapes[1];
+
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
         runtime::he::kernel::convolution(
             arg0_cipher->get_elements(), arg1_cipher->get_elements(),
-            out0_cipher->get_elements(), arg0_cipher->get_batched_shape(),
-            arg1_cipher->get_batched_shape(), out0_cipher->get_batched_shape(),
+            out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
             m_batch_size, m_he_backend);
@@ -986,8 +994,7 @@ void runtime::he::HEExecutable::generate_calls(
                  out0_cipher != nullptr) {
         runtime::he::kernel::convolution(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
-            out0_cipher->get_elements(), arg0_cipher->get_batched_shape(),
-            arg1_plain->get_batched_shape(), out0_cipher->get_batched_shape(),
+            out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
             m_batch_size, m_he_backend);
@@ -995,8 +1002,7 @@ void runtime::he::HEExecutable::generate_calls(
                  out0_cipher != nullptr) {
         runtime::he::kernel::convolution(
             arg0_plain->get_elements(), arg1_cipher->get_elements(),
-            out0_cipher->get_elements(), arg0_plain->get_batched_shape(),
-            arg1_cipher->get_batched_shape(), out0_cipher->get_batched_shape(),
+            out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
             m_batch_size, m_he_backend);
@@ -1004,8 +1010,7 @@ void runtime::he::HEExecutable::generate_calls(
                  out0_plain != nullptr) {
         runtime::he::kernel::convolution(
             arg0_plain->get_elements(), arg1_plain->get_elements(),
-            out0_plain->get_elements(), arg0_plain->get_batched_shape(),
-            arg1_plain->get_batched_shape(), out0_plain->get_batched_shape(),
+            out0_plain->get_elements(), in_shape0, in_shape1, out_shape,
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
             m_batch_size, m_he_backend);
