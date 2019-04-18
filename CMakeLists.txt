@@ -85,14 +85,6 @@ set_target_properties(
     ${NGRAPH_TF_LIB_DIR}/libngraph.so
 )
 
-# Add cpu backend
-add_library(cpu_backend SHARED IMPORTED)
-set_target_properties(
-    cpu_backend
-    PROPERTIES IMPORTED_LOCATION
-    ${NGRAPH_TF_LIB_DIR}/libcpu_backend.so
-)
-
 # HE transformer source and test directories
 add_subdirectory(src)
 add_subdirectory(test)
