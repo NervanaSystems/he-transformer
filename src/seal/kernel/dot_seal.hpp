@@ -105,7 +105,7 @@ void ngraph::runtime::he::he_seal::kernel::dot_seal(
   for (size_t global_projected_idx = 0;
        global_projected_idx < global_projected_size; ++global_projected_idx) {
     // Init thread-local memory pool for each thread
-    seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::New();
+    seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::ThreadLocal();
 
     // Compute outer and inner index
     size_t arg0_projected_idx = global_projected_idx / arg1_projected_size;
