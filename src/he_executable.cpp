@@ -1243,15 +1243,16 @@ void runtime::he::HEExecutable::generate_calls(
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
         runtime::he::kernel::result(arg0_cipher->get_elements(),
                                     out0_cipher->get_elements(), output_size);
-      } else if (arg0_plain != nullptr && out0_cipher != nullptr) {
-        runtime::he::kernel::result(arg0_plain->get_elements(),
-                                    out0_cipher->get_elements(), output_size,
-                                    m_he_backend);
-      } else if (arg0_cipher != nullptr && out0_plain != nullptr) {
-        runtime::he::kernel::result(arg0_cipher->get_elements(),
-                                    out0_plain->get_elements(), output_size,
-                                    m_he_backend);
-      } else if (arg0_plain != nullptr && out0_plain != nullptr) {
+      } /* else if (arg0_plain != nullptr && out0_cipher != nullptr) {
+         runtime::he::kernel::result(arg0_plain->get_elements(),
+                                     out0_cipher->get_elements(), output_size,
+                                     m_he_backend);
+       } else if (arg0_cipher != nullptr && out0_plain != nullptr) {
+         runtime::he::kernel::result(arg0_cipher->get_elements(),
+                                     out0_plain->get_elements(), output_size,
+                                     m_he_backend);
+    } */
+      else if (arg0_plain != nullptr && out0_plain != nullptr) {
         runtime::he::kernel::result(arg0_plain->get_elements(),
                                     out0_plain->get_elements(), output_size);
       } else {

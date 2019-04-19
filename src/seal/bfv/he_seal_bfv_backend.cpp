@@ -125,6 +125,7 @@ void runtime::he::he_seal::HESealBFVBackend::encode(
 
 void runtime::he::he_seal::HESealBFVBackend::encode(
     runtime::he::he_seal::SealPlaintextWrapper* plaintext) {
+  std::lock_guard<std::mutex> encode_lock(m_encode_mutex);
   if (plaintext->is_encoded()) {
     return;
   }

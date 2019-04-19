@@ -72,31 +72,26 @@ void batch_norm_inference(
 
     auto input_index = input_transform.index(input_coord);
 
-    std::vector<float> channel_gamma_fl(1, 0);
-    std::vector<float> channel_beta_fl(1, 0);
-    std::vector<float> channel_mean_fl(1, 0);
-    std::vector<float> channel_var_fl(1, 0);
+    std::vector<float> channel_gamma_vals = channel_gamma->get_values();
+    std::vector<float> channel_beta_vals = channel_beta->get_values();
+    std::vector<float> channel_mean_vals = channel_mean->get_values();
+    std::vector<float> channel_var_vals = channel_var->get_values();
 
-    // TODO: make more efficient
+    NGRAPH_ASSERT(channel_gamma_vals.size() == 1);
+    NGRAPH_ASSERT(channel_beta_vals.size() == 1);
+    NGRAPH_ASSERT(channel_mean_vals.size() == 1);
+    NGRAPH_ASSERT(channel_var_vals.size() == 1);
 
-    he_seal_backend->decode((void*)(channel_gamma_fl.data()),
-                            channel_gamma.get(), element::f32, 1);
-    he_seal_backend->decode((void*)(channel_beta_fl.data()), channel_beta.get(),
-                            element::f32, 1);
-    he_seal_backend->decode((void*)(channel_mean_fl.data()), channel_mean.get(),
-                            element::f32, 1);
-    he_seal_backend->decode((void*)(channel_var_fl.data()), channel_var.get(),
-                            element::f32, 1);
-
-    float scale = channel_gamma_fl[0] / std::sqrt(channel_var_fl[0] + eps);
+    float scale = channel_gamma_vals[0] / std::sqrt(channel_var_vals[0] + eps);
     float bias =
-        channel_beta_fl[0] - (channel_gamma_fl[0] * channel_mean_fl[0]) /
-                                 std::sqrt(channel_var_fl[0] + eps);
+        channel_beta_vals[0] - (channel_gamma_vals[0] * channel_mean_vals[0]) /
+                                   std::sqrt(channel_var_vals[0] + eps);
 
     std::vector<float> scale_vec(batch_size, scale);
     std::vector<float> bias_vec(batch_size, bias);
 
     auto plain_scale = he_backend->create_empty_plaintext();
+
     he_seal_backend->encode(plain_scale, scale_vec.data(), element::f32,
                             batch_size);
 

@@ -70,6 +70,7 @@ class HESealBFVBackend : public HESealBackend {
  private:
   std::shared_ptr<seal::BatchEncoder> m_batch_encoder;
   std::shared_ptr<seal::IntegerEncoder> m_integer_encoder;
+  std::mutex m_encode_mutex;
 };
 }  // namespace he_seal
 }  // namespace he

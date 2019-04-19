@@ -19,6 +19,7 @@
 using namespace std;
 using namespace ngraph;
 
+// TODO: remove
 void runtime::he::kernel::result(
     const vector<shared_ptr<runtime::he::HEPlaintext>>& arg,
     vector<shared_ptr<runtime::he::HECiphertext>>& out, size_t count,

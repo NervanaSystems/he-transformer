@@ -79,6 +79,7 @@ void runtime::he::he_seal::HESealBackend::encrypt(
       static_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(output);
   auto seal_input =
       static_cast<const runtime::he::he_seal::SealPlaintextWrapper*>(input);
+
   m_encryptor->encrypt(seal_input->get_plaintext(), seal_output->m_ciphertext);
 }
 
