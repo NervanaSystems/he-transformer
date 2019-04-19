@@ -18,6 +18,7 @@
 
 #include <memory>
 #include <mutex>
+#include <vector>
 
 #include "he_cipher_tensor.hpp"
 #include "he_encryption_parameters.hpp"
@@ -52,6 +53,10 @@ class HESealCKKSBackend : public HESealBackend {
       const std::shared_ptr<runtime::he::HEEncryptionParameters> sp) override;
 
   void encode(runtime::he::he_seal::SealPlaintextWrapper* plaintext) override;
+
+  void encode(
+      std::vector<std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>>&
+          plaintexts) override;
 
   void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
               const void* input, const element::Type& element_type,

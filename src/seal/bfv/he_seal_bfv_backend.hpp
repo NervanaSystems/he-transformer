@@ -51,6 +51,12 @@ class HESealBFVBackend : public HESealBackend {
 
   void encode(runtime::he::he_seal::SealPlaintextWrapper* plaintext) override;
 
+  void encode(
+      std::vector<std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>>&
+          plaintexts) override {
+    throw ngraph_error("Unimplemented");
+  }
+
   void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
               const void* input, const element::Type& element_type,
               size_t count = 1) const override;

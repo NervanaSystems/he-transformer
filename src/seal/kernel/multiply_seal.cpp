@@ -62,7 +62,8 @@ void he_seal::kernel::scalar_multiply(
   NGRAPH_ASSERT(element_type == element::f32)
       << "Element type " << element_type << " is not float";
 
-  if (arg1->is_single_value() && arg1->get_values()[0] == 0.0f) {
+  // TODO: check behavior more thoroughly
+  if (arg1->is_single_value() && std::abs(arg1->get_values()[0] < 1e-5f)) {
     out = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(
         he_seal_backend->create_valued_ciphertext(0, element_type));
   } else if (arg1->is_single_value() && arg1->get_values()[0] == 1.0f) {

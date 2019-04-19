@@ -121,6 +121,25 @@ runtime::he::he_seal::HESealCKKSBackend::create_batched_plain_tensor(
 }
 
 void runtime::he::he_seal::HESealCKKSBackend::encode(
+    std::vector<std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>>&
+        plaintexts) {
+  std::lock_guard<std::mutex> encode_lock(m_encode_mutex);
+  // TODO: check all plaintexts are different!
+
+#pragma omp parallel for
+  for (size_t i = 0; i < plaintexts.size(); ++i) {
+    auto plaintext = plaintexts[i];
+    if (!plaintext->is_encoded()) {
+      vector<double> double_vals(plaintext->get_values().begin(),
+                                 plaintext->get_values().end());
+
+      m_ckks_encoder->encode(double_vals, m_scale, plaintext->get_plaintext());
+      plaintext->set_encoded(true);
+    }
+  }
+}
+
+void runtime::he::he_seal::HESealCKKSBackend::encode(
     runtime::he::he_seal::SealPlaintextWrapper* plaintext) {
   std::lock_guard<std::mutex> encode_lock(m_encode_mutex);
   if (plaintext->is_encoded()) {
@@ -128,11 +147,6 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
   }
   vector<double> double_vals(plaintext->get_values().begin(),
                              plaintext->get_values().end());
-
-  /*NGRAPH_INFO << "JIT Encoding values ";
-  for (auto elem : double_vals) {
-    NGRAPH_INFO << elem;
-  } */
 
   m_ckks_encoder->encode(double_vals, m_scale, plaintext->get_plaintext());
   plaintext->set_encoded(true);
@@ -149,7 +163,6 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
 
   NGRAPH_ASSERT(type == element::f32)
       << "CKKS encode supports only float encoding, received type " << type;
-  NGRAPH_INFO << "Encoding plaintext";
 
   if (count == 1) {
     double value = (double)(*(float*)input);
