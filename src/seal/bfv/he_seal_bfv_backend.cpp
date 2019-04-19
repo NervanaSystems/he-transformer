@@ -125,6 +125,10 @@ void runtime::he::he_seal::HESealBFVBackend::encode(
 
 void runtime::he::he_seal::HESealBFVBackend::encode(
     runtime::he::he_seal::SealPlaintextWrapper* plaintext) const {
+  if (plaintext->is_encoded()) {
+    return;
+  }
+
   vector<double> double_vals(plaintext->get_values().begin(),
                              plaintext->get_values().end());
 
@@ -143,6 +147,7 @@ void runtime::he::he_seal::HESealBFVBackend::encode(
   NGRAPH_INFO << "JIT Encoding value " << float_val;
 
   plaintext->get_plaintext() = m_integer_encoder->encode(int_val);
+  plaintext->set_encoded(true);
 }
 
 void runtime::he::he_seal::HESealBFVBackend::decode(

@@ -122,6 +122,9 @@ runtime::he::he_seal::HESealCKKSBackend::create_batched_plain_tensor(
 
 void runtime::he::he_seal::HESealCKKSBackend::encode(
     runtime::he::he_seal::SealPlaintextWrapper* plaintext) const {
+  if (plaintext->is_encoded()) {
+    return;
+  }
   vector<double> double_vals(plaintext->get_values().begin(),
                              plaintext->get_values().end());
 
@@ -131,6 +134,7 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
   }
 
   m_ckks_encoder->encode(double_vals, m_scale, plaintext->get_plaintext());
+  plaintext->set_encoded(true);
 }
 
 void runtime::he::he_seal::HESealCKKSBackend::encode(

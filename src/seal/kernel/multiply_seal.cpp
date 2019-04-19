@@ -127,18 +127,15 @@ void he_seal::kernel::scalar_multiply(
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
-  // TODO: generalize to multiple batch sizes
-  shared_ptr<runtime::he::HEPlaintext> out_he =
-      dynamic_pointer_cast<runtime::he::HEPlaintext>(out);
-  NGRAPH_ASSERT(element_type == element::f32)
-      << "Element type " << element_type << " is not float";
+  NGRAPH_ASSERT(element_type == element::f32);
 
-  float x, y;
-  he_seal_backend->decode(&x, arg0, element_type);
-  he_seal_backend->decode(&y, arg1, element_type);
-  float r = x * y;
-  he_seal_backend->encode(out_he, &r, element_type);
-  out = static_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(out_he);
+  std::vector<float> arg0_vals = arg0->get_values();
+  std::vector<float> arg1_vals = arg1->get_values();
+  std::vector<float> out_vals(arg0->num_values());
+
+  std::transform(arg0_vals.begin(), arg0_vals.end(), arg1_vals.begin(),
+                 out_vals.begin(), std::multiplies<float>());
+  out->set_values(out_vals);
 }
 
 void he_seal::kernel::scalar_multiply(
