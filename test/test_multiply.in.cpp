@@ -91,7 +91,6 @@ NGRAPH_TEST(${BACKEND_NAME}, square_2_3) {
 
 NGRAPH_TEST(${BACKEND_NAME}, multiply_optimized_2_3) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
 
   Shape shape{2, 3};
   auto a = make_shared<op::Parameter>(element::f32, shape);

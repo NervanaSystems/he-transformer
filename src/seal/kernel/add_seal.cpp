@@ -127,9 +127,13 @@ void he_seal::kernel::scalar_add(he_seal::SealPlaintextWrapper* arg0,
   const std::vector<float>& arg1_vals = arg1->get_values();
   std::vector<float> out_vals(arg0->num_values());
 
+  NGRAPH_INFO << "Adding num values " << arg0->num_values();
+
   std::transform(arg0_vals.begin(), arg0_vals.end(), arg1_vals.begin(),
                  out_vals.begin(), std::plus<float>());
   out->set_values(out_vals);
+
+  NGRAPH_INFO << "Done adding values";
 }
 
 void he_seal::kernel::scalar_add(runtime::he::HEPlaintext* arg0,
