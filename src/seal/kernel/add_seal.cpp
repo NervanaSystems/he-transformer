@@ -129,13 +129,23 @@ void he_seal::kernel::scalar_add(he_seal::SealPlaintextWrapper* arg0,
   auto out_he = static_pointer_cast<HEPlaintext>(out);
 
   NGRAPH_ASSERT(element_type == element::f32);
+
+  std::vector<float> arg0_vals = arg0->get_values();
+  std::vector<float> arg1_vals = arg1->get_values();
+  std::vector<float> out_vals(arg0->num_values());
+
+  std::transform(arg0_vals.begin(), arg0_vals.end(), arg1_vals.begin(),
+                 out_vals.begin(), std::plus<float>());
+
+  out->set_values(out_vals);
+
   // TODO: generalize to multiple batch sizes
-  float x, y;
+  /*float x, y;
   he_seal_backend->decode(&x, arg0, element_type);
   he_seal_backend->decode(&y, arg1, element_type);
   float r = x + y;
   he_seal_backend->encode(out_he, &r, element_type);
-  out = static_pointer_cast<he_seal::SealPlaintextWrapper>(out_he);
+  out = static_pointer_cast<he_seal::SealPlaintextWrapper>(out_he); */
 }
 
 void he_seal::kernel::scalar_add(runtime::he::HEPlaintext* arg0,

@@ -63,6 +63,7 @@ runtime::he::he_seal::HESealBackend::create_empty_ciphertext(
 
 shared_ptr<runtime::he::HEPlaintext>
 runtime::he::he_seal::HESealBackend::create_empty_plaintext() const {
+  NGRAPH_INFO << "Ceating empy plaintext";
   return make_shared<runtime::he::he_seal::SealPlaintextWrapper>();
 }
 

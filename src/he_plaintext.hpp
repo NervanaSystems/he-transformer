@@ -37,6 +37,8 @@ class HEPlaintext {
     return m_values.size() == 1;
   }
 
+  size_t num_values() { return m_values.size(); }
+
  protected:
   std::vector<float> m_values;
 };

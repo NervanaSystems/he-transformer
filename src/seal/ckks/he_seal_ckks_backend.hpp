@@ -50,6 +50,8 @@ class HESealCKKSBackend : public HESealBackend {
   std::shared_ptr<seal::SEALContext> make_seal_context(
       const std::shared_ptr<runtime::he::HEEncryptionParameters> sp) override;
 
+  void encode(runtime::he::he_seal::SealPlaintextWrapper* plaintext) const;
+
   void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
               const void* input, const element::Type& element_type,
               size_t count = 1) const override;
