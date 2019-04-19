@@ -16,19 +16,29 @@
 
 #pragma once
 
+#include <vector>
+
+#include "ngraph/assertion.hpp"
+
 namespace ngraph {
 namespace runtime {
 namespace he {
 class HEPlaintext {
  public:
   HEPlaintext(){};
+  HEPlaintext(const std::vector<float> values) : m_values(values){};
   virtual ~HEPlaintext(){};
 
-  // Returns true if plaintext encodes single value
-  virtual bool is_single_value() = 0;
+  void set_values(const std::vector<float>& values) { m_values = values; }
+  std::vector<float>& get_values() { return m_values; }
 
-  // Returns value plaintext encodes
-  virtual float get_value() = 0;
+  bool is_single_value() {
+    NGRAPH_ASSERT(m_values.size() != 0) << "Plaintext not initialized";
+    return m_values.size() == 1;
+  }
+
+ protected:
+  std::vector<float> m_values;
 };
 }  // namespace he
 }  // namespace runtime

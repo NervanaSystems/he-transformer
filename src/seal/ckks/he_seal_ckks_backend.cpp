@@ -134,11 +134,12 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
 
   if (count == 1) {
     double value = (double)(*(float*)input);
-    seal_plaintext_wrapper->set_value(*(float*)input);
+    seal_plaintext_wrapper->set_values({float(value)});
     m_ckks_encoder->encode(value, m_scale,
                            seal_plaintext_wrapper->get_plaintext());
   } else {
     vector<float> values{(float*)input, (float*)input + count};
+    seal_plaintext_wrapper->set_values(values);
     vector<double> double_values(values.begin(), values.end());
 
     m_ckks_encoder->encode(double_values, m_scale,

@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <vector>
+
 #include "he_plaintext.hpp"
 #include "seal/seal.h"
 
@@ -25,30 +27,25 @@ namespace he {
 namespace he_seal {
 struct SealPlaintextWrapper : public HEPlaintext {
  public:
-  SealPlaintextWrapper(){};
-  SealPlaintextWrapper(const seal::Plaintext& plain)
-      : m_plaintext(plain), m_single_value(false) {}
+  SealPlaintextWrapper(
+      seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool())
+      : m_is_encoded(false){};
+  SealPlaintextWrapper(const seal::Plaintext& plain, bool is_encoded)
+      : m_plaintext(plain), m_is_encoded(is_encoded) {}
 
-  SealPlaintextWrapper(const seal::Plaintext& plain, float f)
-      : m_plaintext(plain), m_value(f), m_single_value(true) {}
+  SealPlaintextWrapper(const seal::Plaintext& plain,
+                       const std::vector<float>& values)
+      : HEPlaintext(values), m_plaintext(plain) {}
 
   inline seal::Plaintext& get_hetext() { return m_plaintext; }
   inline seal::Plaintext& get_plaintext() { return m_plaintext; }
   inline const seal::Plaintext& get_plaintext() const { return m_plaintext; }
 
-  void set_value(float f) {
-    m_value = f;
-    m_single_value = true;
-  }
-
-  bool is_single_value() override { return m_single_value; }
-
-  inline float get_value() override { return m_value; }
+  bool is_encoded() { return m_is_encoded; }
 
  private:
   seal::Plaintext m_plaintext;
-  float m_value;
-  bool m_single_value;
+  bool m_is_encoded;
 };
 }  // namespace he_seal
 }  // namespace he

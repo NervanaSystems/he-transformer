@@ -93,7 +93,7 @@ void kernel::scalar_subtract(HECiphertext* arg0, HEPlaintext* arg1,
   NGRAPH_ASSERT(out_seal != nullptr) << "out is not Seal Ciphertext";
 
   bool sub_zero =
-      arg1_seal->is_single_value() && (arg1_seal->get_value() == 0.0f);
+      arg1_seal->is_single_value() && (arg1_seal->get_values()[0] == 0.0f);
 
   if (sub_zero) {
     // Make copy of input

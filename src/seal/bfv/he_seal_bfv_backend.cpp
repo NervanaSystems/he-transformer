@@ -120,7 +120,7 @@ void runtime::he::he_seal::HESealBFVBackend::encode(
   }
 
   output = make_shared<runtime::he::he_seal::SealPlaintextWrapper>(
-      m_integer_encoder->encode(int_val), int_val);
+      m_integer_encoder->encode(int_val), float_val);
 }
 
 void runtime::he::he_seal::HESealBFVBackend::decode(
