@@ -34,7 +34,6 @@ void runtime::he::kernel::constant(
   for (size_t i = 0; i < count; ++i) {
     const void* src_with_offset = (void*)((char*)data_ptr + i * type_byte_size);
     float f = *(float*)src_with_offset;
-    NGRAPH_INFO << "Constant value " << f;
     out[i]->set_values({f});
     // he_backend->encode(out[i], src_with_offset, element_type);
   }

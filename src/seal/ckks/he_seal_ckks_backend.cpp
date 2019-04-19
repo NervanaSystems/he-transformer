@@ -129,10 +129,10 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
   vector<double> double_vals(plaintext->get_values().begin(),
                              plaintext->get_values().end());
 
-  NGRAPH_INFO << "JIT Encoding values ";
+  /*NGRAPH_INFO << "JIT Encoding values ";
   for (auto elem : double_vals) {
     NGRAPH_INFO << elem;
-  }
+  } */
 
   m_ckks_encoder->encode(double_vals, m_scale, plaintext->get_plaintext());
   plaintext->set_encoded(true);
