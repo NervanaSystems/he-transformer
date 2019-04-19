@@ -51,26 +51,38 @@ void kernel::scalar_subtract(HECiphertext* arg0, HECiphertext* arg1,
 
 void kernel::scalar_subtract(HEPlaintext* arg0, HEPlaintext* arg1,
                              shared_ptr<HEPlaintext>& out,
-                             const element::Type& type,
+                             const element::Type& element_type,
                              const HEBackend* he_backend) {
-  if (auto he_seal_backend =
-          dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
-    auto arg0_seal = dynamic_cast<he_seal::SealPlaintextWrapper*>(arg0);
-    auto arg1_seal = dynamic_cast<he_seal::SealPlaintextWrapper*>(arg1);
-    auto out_seal = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(out);
+  NGRAPH_ASSERT(element_type == element::f32);
 
-    if (arg0_seal && arg1_seal && out_seal) {
-      he_seal::kernel::scalar_subtract(arg0_seal, arg1_seal, out_seal, type,
-                                       he_seal_backend);
-      out = dynamic_pointer_cast<HEPlaintext>(out_seal);
+  std::vector<float> arg0_vals = arg0->get_values();
+  std::vector<float> arg1_vals = arg1->get_values();
+  std::vector<float> out_vals(arg0->num_values());
+
+  std::transform(arg0_vals.begin(), arg0_vals.end(), arg1_vals.begin(),
+                 out_vals.begin(), std::minus<float>());
+
+  out->set_values(out_vals);
+
+  /*
+    if (auto he_seal_backend =
+            dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
+      auto arg0_seal = dynamic_cast<he_seal::SealPlaintextWrapper*>(arg0);
+      auto arg1_seal = dynamic_cast<he_seal::SealPlaintextWrapper*>(arg1);
+      auto out_seal = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(out);
+
+      if (arg0_seal && arg1_seal && out_seal) {
+        he_seal::kernel::scalar_subtract(arg0_seal, arg1_seal, out_seal, type,
+                                         he_seal_backend);
+        out = dynamic_pointer_cast<HEPlaintext>(out_seal);
+      } else {
+        throw ngraph_error(
+            "subtract backend is SEAL, but arguments or outputs are not "
+            "SealPlaintextWrapper");
+      }
     } else {
-      throw ngraph_error(
-          "subtract backend is SEAL, but arguments or outputs are not "
-          "SealPlaintextWrapper");
-    }
-  } else {
-    throw ngraph_error("subtract backend is not SEAL.");
-  }
+      throw ngraph_error("subtract backend is not SEAL.");
+    } */
 }
 
 void kernel::scalar_subtract(HECiphertext* arg0, HEPlaintext* arg1,

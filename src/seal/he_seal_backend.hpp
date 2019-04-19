@@ -22,6 +22,8 @@
 #include "he_backend.hpp"
 #include "seal/he_seal_encryption_parameters.hpp"
 #include "seal/seal.h"
+#include "seal/seal_ciphertext_wrapper.hpp"
+#include "seal/seal_plaintext_wrapper.hpp"
 
 namespace ngraph {
 namespace runtime {
@@ -77,6 +79,9 @@ class HESealBackend : public HEBackend {
       const seal::MemoryPoolHandle& pool) const {
     return create_empty_plaintext(pool);
   };
+
+  virtual void encode(
+      runtime::he::he_seal::SealPlaintextWrapper* plaintext) const = 0;
 
   virtual void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
                       const void* input, const element::Type& type,
