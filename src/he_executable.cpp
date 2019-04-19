@@ -193,7 +193,7 @@ void runtime::he::HEExecutable::handle_message(
     const runtime::he::TCPMessage& message) {
   MessageType msg_type = message.message_type();
 
-  //NGRAPH_INFO << "Server received message type: "
+  // NGRAPH_INFO << "Server received message type: "
   //           << message_type_to_string(msg_type);
 
   if (msg_type == MessageType::execute) {
@@ -521,7 +521,7 @@ bool runtime::he::HEExecutable::call(
     tensor_map.insert({tv, he_outputs[output_count++]});
   }
 
-  std::set<string> nonverbose_ops{"Slice", "Broadcast", "Reshape"};
+  std::set<string> nonverbose_ops{"Broadcast", "Reshape"};
 
   // for each ordered op in the graph
   for (const NodeWrapper& wrapped : m_wrapped_nodes) {
@@ -715,7 +715,7 @@ void runtime::he::HEExecutable::generate_calls(
         << "arg1 is both cipher and plain?";
   }
 
-  if (node_op != "Slice" && node_op != "Broadcast" && node_op != "Reshape") {
+  if (node_op != "Broadcast" && node_op != "Reshape") {
     stringstream ss;
     ss << "Inputs: ";
     if (arg0_cipher != nullptr) {

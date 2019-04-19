@@ -30,6 +30,9 @@ void slice(const std::vector<std::shared_ptr<T>>& arg,
            std::vector<std::shared_ptr<T>>& out, const Shape& arg_shape,
            const Coordinate& lower_bounds, const Coordinate& upper_bounds,
            const Strides& strides, const Shape& out_shape) {
+  NGRAPH_INFO << "Slicing shape " << join(arg_shape, "x") << " to "
+              << join(out_shape, "x");
+
   CoordinateTransform input_transform(arg_shape, lower_bounds, upper_bounds,
                                       strides);
   CoordinateTransform output_transform(out_shape);
