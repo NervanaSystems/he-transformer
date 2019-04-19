@@ -64,8 +64,7 @@ void he_seal::kernel::scalar_add(
     const seal::MemoryPoolHandle& pool) {
   NGRAPH_ASSERT(element_type == element::f32);
 
-  bool add_zero = arg1->is_single_value() &&
-                  (arg1->get_value() == 0.0f);
+  bool add_zero = arg1->is_single_value() && (arg1->get_value() == 0.0f);
 
   if (add_zero) {
     NGRAPH_INFO << "Optimized add by 0";
