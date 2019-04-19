@@ -66,23 +66,22 @@ NGRAPH_TEST(${BACKEND_NAME}, square_2_3) {
   Shape shape{2, 3};
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Multiply>(a, a);
-  auto f = make_shared<Function>(t, ParameterVector{a, a});
+  auto f = make_shared<Function>(t, ParameterVector{a});
 
-  // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a, a}, backend.get());
+  auto tensors_list =
+      generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
 
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
 
     auto t_a = inputs[0];
-    auto t_b = inputs[1];
     auto t_result = results[0];
 
     copy_data(t_a,
               test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector());
     auto handle = backend->compile(f);
-    handle->call_with_validate({t_result}, {t_a, t_b});
+    handle->call_with_validate({t_result}, {t_a});
     EXPECT_TRUE(all_close(
         read_vector<float>(t_result),
         (test::NDArray<float, 2>({{1, 4, 9}, {16, 25, 36}})).get_vector(),
