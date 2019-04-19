@@ -30,7 +30,7 @@ namespace he {
 class HECipherTensor : public HETensor {
  public:
   HECipherTensor(const element::Type& element_type, const Shape& shape,
-                 const HEBackend* he_backend,
+                 HEBackend* he_backend,
                  const std::shared_ptr<HECiphertext> he_ciphertext,
                  const bool batched = false,
                  const std::string& name = "external");

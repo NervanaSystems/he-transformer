@@ -91,7 +91,7 @@ class HESealBackend : public HEBackend {
                       const element::Type& type, size_t count = 1) const = 0;
 
   void encrypt(std::shared_ptr<runtime::he::HECiphertext>& output,
-               const runtime::he::HEPlaintext* input) const override;
+               runtime::he::HEPlaintext* input) override;
 
   void decrypt(std::shared_ptr<runtime::he::HEPlaintext>& output,
                const runtime::he::HECiphertext* input) const override;

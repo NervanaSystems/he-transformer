@@ -26,21 +26,22 @@ namespace he {
 class HEPlaintext {
  public:
   HEPlaintext(){};
-  HEPlaintext(const std::vector<float> values) : m_values(values){};
+  HEPlaintext(const std::vector<float> values)
+      : m_values(values), m_is_encoded(false){};
   virtual ~HEPlaintext(){};
 
   void set_values(const std::vector<float>& values) { m_values = values; }
   const std::vector<float>& get_values() const { return m_values; }
 
-  bool is_single_value() {
-    NGRAPH_ASSERT(m_values.size() != 0) << "Plaintext not initialized";
-    return m_values.size() == 1;
-  }
-
+  bool is_single_value() { return num_values() == 1; }
   size_t num_values() const { return m_values.size(); }
+
+  bool is_encoded() const { return m_is_encoded; }
+  void set_encoded(bool encoded) { m_is_encoded = encoded; }
 
  protected:
   std::vector<float> m_values;
+  bool m_is_encoded;
 };
 }  // namespace he
 }  // namespace runtime

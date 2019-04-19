@@ -74,11 +74,15 @@ runtime::he::he_seal::HESealBackend::create_empty_plaintext(
 
 void runtime::he::he_seal::HESealBackend::encrypt(
     shared_ptr<runtime::he::HECiphertext>& output,
-    const runtime::he::HEPlaintext* input) const {
+    runtime::he::HEPlaintext* input) {
   auto seal_output =
       static_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(output);
   auto seal_input =
-      static_cast<const runtime::he::he_seal::SealPlaintextWrapper*>(input);
+      static_cast<runtime::he::he_seal::SealPlaintextWrapper*>(input);
+
+  if (!input->is_encoded()) {
+    encode(seal_input);
+  }
 
   m_encryptor->encrypt(seal_input->get_plaintext(), seal_output->m_ciphertext);
 }

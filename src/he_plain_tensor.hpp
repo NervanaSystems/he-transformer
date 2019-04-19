@@ -30,7 +30,7 @@ namespace he {
 class HEPlainTensor : public HETensor {
  public:
   HEPlainTensor(const element::Type& element_type, const Shape& shape,
-                const HEBackend* he_backend,
+                HEBackend* he_backend,
                 const std::shared_ptr<HEPlaintext> he_plaintext,
                 const bool batched = false,
                 const std::string& name = "external");

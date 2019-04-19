@@ -64,7 +64,7 @@ class HEBackend : public runtime::Backend {
   /// @return Shared pointer to created ciphertext
   template <typename T, typename = std::enable_if_t<
                             std::is_same<T, runtime::he::HECiphertext>::value>>
-  std::shared_ptr<runtime::he::HECiphertext> create_empty_hetext() const {
+  std::shared_ptr<runtime::he::HECiphertext> create_empty_hetext() {
     return create_empty_ciphertext();
   };
 
@@ -73,7 +73,7 @@ class HEBackend : public runtime::Backend {
   /// @return Shared pointer to created plaintext
   template <typename T, typename = std::enable_if_t<
                             std::is_same<T, runtime::he::HEPlaintext>::value>>
-  std::shared_ptr<runtime::he::HEPlaintext> create_empty_hetext() const {
+  std::shared_ptr<runtime::he::HEPlaintext> create_empty_hetext() {
     return create_empty_plaintext();
   };
 
@@ -84,15 +84,14 @@ class HEBackend : public runtime::Backend {
   ///        > 1 indicates batching
   /// @return Shared pointer to created ciphertext
   std::shared_ptr<runtime::he::HECiphertext> create_valued_ciphertext(
-      float value, const element::Type& element_type,
-      size_t batch_size = 1) const;
+      float value, const element::Type& element_type, size_t batch_size = 1);
 
   /// @brief Creates plaintext of specified value
   /// @param value Scalar which to encode
   /// @param element_type Type to encode
   /// @return Shared pointer to created plaintext
   std::shared_ptr<runtime::he::HEPlaintext> create_valued_plaintext(
-      float value, const element::Type& element_type) const;
+      float value, const element::Type& element_type);
 
   /// @brief Creates ciphertext of specified value
   /// Alias for create_valued_ciphertext()
@@ -100,8 +99,7 @@ class HEBackend : public runtime::Backend {
   template <typename T, typename = std::enable_if_t<
                             std::is_same<T, runtime::he::HECiphertext>::value>>
   std::shared_ptr<runtime::he::HECiphertext> create_valued_hetext(
-      float value, const element::Type& element_type,
-      size_t batch_size = 1) const {
+      float value, const element::Type& element_type, size_t batch_size = 1) {
     return create_valued_ciphertext(value, element_type, batch_size);
   };
 
@@ -111,7 +109,7 @@ class HEBackend : public runtime::Backend {
   template <typename T, typename = std::enable_if_t<
                             std::is_same<T, runtime::he::HEPlaintext>::value>>
   std::shared_ptr<runtime::he::HEPlaintext> create_valued_hetext(
-      float value, const element::Type& element_type) const {
+      float value, const element::Type& element_type) {
     return create_valued_plaintext(value, element_type);
   };
 
@@ -130,25 +128,25 @@ class HEBackend : public runtime::Backend {
 
   std::shared_ptr<runtime::Tensor> create_plain_tensor(
       const element::Type& element_type, const Shape& shape,
-      const bool batched = false) const;
+      const bool batched = false);
 
   std::shared_ptr<runtime::Tensor> create_cipher_tensor(
       const element::Type& element_type, const Shape& shape,
-      const bool batched = false) const;
+      const bool batched = false);
 
   /// @brief Creates ciphertext Tensor of the same value
   /// @param value Scalar which to enrypt
   /// @param element_type Type to encrypt
   /// @param shape Shape of created Tensor
   std::shared_ptr<runtime::Tensor> create_valued_cipher_tensor(
-      float value, const element::Type& element_type, const Shape& shape) const;
+      float value, const element::Type& element_type, const Shape& shape);
 
   // Creates plaintext Tensor of the same value
   /// @param value Scalar which to encode
   /// @param element_type Type to encode
   /// @param shape Shape of created Tensor
   std::shared_ptr<runtime::Tensor> create_valued_plain_tensor(
-      float value, const element::Type& element_type, const Shape& shape) const;
+      float value, const element::Type& element_type, const Shape& shape);
 
   std::shared_ptr<Executable> compile(
       std::shared_ptr<Function> func,
@@ -181,7 +179,7 @@ class HEBackend : public runtime::Backend {
   /// @param output Pointer to ciphertext to encrypt to
   /// @param input Pointer to plaintext to encrypt
   virtual void encrypt(std::shared_ptr<runtime::he::HECiphertext>& output,
-                       const runtime::he::HEPlaintext* input) const = 0;
+                       runtime::he::HEPlaintext* input) = 0;
 
   /// @brief Decrypts ciphertext to plaintext polynomial
   /// @param output Pointer to plaintext to decrypt to

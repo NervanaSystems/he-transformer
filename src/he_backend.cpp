@@ -33,7 +33,7 @@ using descriptor::layout::DenseTensorLayout;
 
 shared_ptr<runtime::he::HEPlaintext>
 runtime::he::HEBackend::create_valued_plaintext(
-    float value, const element::Type& element_type) const {
+    float value, const element::Type& element_type) {
   NGRAPH_ASSERT(element_type == element::f32)
       << "element type " << element_type << "unsupported";
 
@@ -45,7 +45,7 @@ runtime::he::HEBackend::create_valued_plaintext(
 
 shared_ptr<runtime::he::HECiphertext>
 runtime::he::HEBackend::create_valued_ciphertext(
-    float value, const element::Type& element_type, size_t batch_size) const {
+    float value, const element::Type& element_type, size_t batch_size) {
   NGRAPH_ASSERT(element_type == element::f32)
       << "element type " << element_type << "unsupported";
   if (batch_size != 1) {
@@ -76,23 +76,21 @@ shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(
 }
 
 shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_plain_tensor(
-    const element::Type& element_type, const Shape& shape,
-    const bool batched) const {
+    const element::Type& element_type, const Shape& shape, const bool batched) {
   auto rc = make_shared<runtime::he::HEPlainTensor>(
       element_type, shape, this, create_empty_plaintext(), batched);
   return static_pointer_cast<runtime::Tensor>(rc);
 }
 
 shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_cipher_tensor(
-    const element::Type& element_type, const Shape& shape,
-    const bool batched) const {
+    const element::Type& element_type, const Shape& shape, const bool batched) {
   auto rc = make_shared<runtime::he::HECipherTensor>(
       element_type, shape, this, create_empty_ciphertext(), batched);
   return static_pointer_cast<runtime::Tensor>(rc);
 }
 
 shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_valued_cipher_tensor(
-    float value, const element::Type& element_type, const Shape& shape) const {
+    float value, const element::Type& element_type, const Shape& shape) {
   auto tensor = static_pointer_cast<HECipherTensor>(
       create_cipher_tensor(element_type, shape));
   vector<shared_ptr<runtime::he::HECiphertext>>& cipher_texts =
@@ -105,7 +103,7 @@ shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_valued_cipher_tensor(
 }
 
 shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_valued_plain_tensor(
-    float value, const element::Type& element_type, const Shape& shape) const {
+    float value, const element::Type& element_type, const Shape& shape) {
   auto tensor = static_pointer_cast<HEPlainTensor>(
       create_plain_tensor(element_type, shape));
   vector<shared_ptr<runtime::he::HEPlaintext>>& plain_texts =

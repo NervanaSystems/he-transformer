@@ -24,7 +24,7 @@ using namespace std;
 
 runtime::he::HEPlainTensor::HEPlainTensor(
     const element::Type& element_type, const Shape& shape,
-    const HEBackend* he_backend, const shared_ptr<HEPlaintext> he_plaintext,
+    HEBackend* he_backend, const shared_ptr<HEPlaintext> he_plaintext,
     const bool batched, const string& name)
     : runtime::he::HETensor(element_type, shape, he_backend, batched, name) {
   m_num_elements = m_descriptor->get_tensor_layout()->get_size() / m_batch_size;
@@ -50,6 +50,7 @@ void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
     NGRAPH_INFO << "Writing float " << f;
     m_plaintexts[dst_index]->set_values({f});
   } else {
+    NGRAPH_INFO << "Writing " << m_batch_size << "floats";
 #pragma omp parallel for
     for (size_t i = 0; i < num_elements_to_write; ++i) {
       const void* src_with_offset = (void*)((char*)source + i * type_byte_size);
@@ -57,7 +58,7 @@ void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
 
       if (m_batch_size > 1) {
         std::vector<float> values(m_batch_size);
-        NGRAPH_INFO << "Writing floats";
+
         for (size_t j = 0; j < m_batch_size; ++j) {
           const void* src =
               (void*)((char*)source +
@@ -65,8 +66,6 @@ void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
 
           float val = *(float*)(src);
           values[j] = val;
-
-          NGRAPH_INFO << j << ": " << val;
         }
         m_plaintexts[dst_index]->set_values(values);
 

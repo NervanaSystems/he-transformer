@@ -29,7 +29,7 @@ class HEBackend;
 class HETensor : public runtime::Tensor {
  public:
   HETensor(const element::Type& element_type, const Shape& shape,
-           const HEBackend* he_backend, bool batched = false,
+           HEBackend* he_backend, bool batched = false,
            const std::string& name = "external");
   virtual ~HETensor(){};
 
@@ -77,7 +77,7 @@ class HETensor : public runtime::Tensor {
   size_t m_batch_size;  // If m_batched, corresponds to first shape dimesion.
   Shape m_batched_shape;
 
-  const HEBackend* m_he_backend;
+  HEBackend* m_he_backend;
 };
 }  // namespace he
 }  // namespace runtime
