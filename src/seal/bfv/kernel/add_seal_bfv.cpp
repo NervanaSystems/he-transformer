@@ -23,7 +23,7 @@ void he_seal::bfv::kernel::scalar_add_bfv(
     he_seal::SealCiphertextWrapper* arg0, he_seal::SealCiphertextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
-    const he_seal::HESealBFVBackend* he_seal_bfv_backend) {
+    he_seal::HESealBFVBackend* he_seal_bfv_backend) {
   if (arg0 == out.get()) {
     he_seal_bfv_backend->get_evaluator()->add_inplace(out->m_ciphertext,
                                                       arg1->m_ciphertext);
@@ -40,8 +40,10 @@ void he_seal::bfv::kernel::scalar_add_bfv(
     he_seal::SealCiphertextWrapper* arg0, he_seal::SealPlaintextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
-    const he_seal::HESealBFVBackend* he_seal_bfv_backend) {
-  he_seal_bfv_backend->encode(arg1);
+    he_seal::HESealBFVBackend* he_seal_bfv_backend) {
+  if (!arg1->is_encoded()) {
+    he_seal_bfv_backend->encode(arg1);
+  }
   if (arg0 == out.get()) {
     he_seal_bfv_backend->get_evaluator()->add_plain_inplace(
         out->m_ciphertext, arg1->get_plaintext());
@@ -55,7 +57,7 @@ void he_seal::bfv::kernel::scalar_add_bfv(
     he_seal::SealPlaintextWrapper* arg0, he_seal::SealCiphertextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
-    const he_seal::HESealBFVBackend* he_seal_bfv_backend) {
+    he_seal::HESealBFVBackend* he_seal_bfv_backend) {
   he_seal::bfv::kernel::scalar_add_bfv(arg1, arg0, out, element_type,
                                        he_seal_bfv_backend);
 }

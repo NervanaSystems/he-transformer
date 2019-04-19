@@ -27,9 +27,9 @@ using namespace ngraph::runtime::he;
 void kernel::scalar_multiply(HECiphertext* arg0, HECiphertext* arg1,
                              shared_ptr<HECiphertext>& out,
                              const element::Type& element_type,
-                             const HEBackend* he_backend) {
+                             HEBackend* he_backend) {
   if (auto he_seal_backend =
-          dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
+          dynamic_cast<he_seal::HESealBackend*>(he_backend)) {
     auto arg0_seal = dynamic_cast<he_seal::SealCiphertextWrapper*>(arg0);
     auto arg1_seal = dynamic_cast<he_seal::SealCiphertextWrapper*>(arg1);
     auto out_seal = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(out);
@@ -51,9 +51,9 @@ void kernel::scalar_multiply(HECiphertext* arg0, HECiphertext* arg1,
 void kernel::scalar_multiply(HEPlaintext* arg0, HEPlaintext* arg1,
                              shared_ptr<HEPlaintext>& out,
                              const element::Type& element_type,
-                             const HEBackend* he_backend) {
+                             HEBackend* he_backend) {
   if (auto he_seal_backend =
-          dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
+          dynamic_cast<he_seal::HESealBackend*>(he_backend)) {
     auto arg0_seal = dynamic_cast<he_seal::SealPlaintextWrapper*>(arg0);
     auto arg1_seal = dynamic_cast<he_seal::SealPlaintextWrapper*>(arg1);
     auto out_seal = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(out);
@@ -75,9 +75,9 @@ void kernel::scalar_multiply(HEPlaintext* arg0, HEPlaintext* arg1,
 void kernel::scalar_multiply(HECiphertext* arg0, HEPlaintext* arg1,
                              shared_ptr<HECiphertext>& out,
                              const element::Type& element_type,
-                             const HEBackend* he_backend) {
+                             HEBackend* he_backend) {
   if (auto he_seal_backend =
-          dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
+          dynamic_cast<he_seal::HESealBackend*>(he_backend)) {
     auto arg0_seal = dynamic_cast<he_seal::SealCiphertextWrapper*>(arg0);
     auto arg1_seal = dynamic_cast<he_seal::SealPlaintextWrapper*>(arg1);
     auto out_seal = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(out);
@@ -99,6 +99,6 @@ void kernel::scalar_multiply(HECiphertext* arg0, HEPlaintext* arg1,
 void kernel::scalar_multiply(HEPlaintext* arg0, HECiphertext* arg1,
                              shared_ptr<HECiphertext>& out,
                              const element::Type& element_type,
-                             const HEBackend* he_backend) {
+                             HEBackend* he_backend) {
   scalar_multiply(arg1, arg0, out, element_type, he_backend);
 }

@@ -121,7 +121,8 @@ runtime::he::he_seal::HESealCKKSBackend::create_batched_plain_tensor(
 }
 
 void runtime::he::he_seal::HESealCKKSBackend::encode(
-    runtime::he::he_seal::SealPlaintextWrapper* plaintext) const {
+    runtime::he::he_seal::SealPlaintextWrapper* plaintext) {
+  std::lock_guard<std::mutex> encode_lock(m_encode_mutex);
   if (plaintext->is_encoded()) {
     return;
   }

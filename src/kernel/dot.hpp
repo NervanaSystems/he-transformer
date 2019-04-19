@@ -36,7 +36,7 @@ void dot(const std::vector<std::shared_ptr<S>>& arg0,
          std::vector<std::shared_ptr<V>>& out, const Shape& arg0_shape,
          const Shape& arg1_shape, const Shape& out_shape,
          size_t reduction_axes_count, const element::Type& element_type,
-         const runtime::he::HEBackend* he_backend);
+         runtime::he::HEBackend* he_backend);
 }
 }  // namespace he
 }  // namespace runtime
@@ -49,11 +49,10 @@ void ngraph::runtime::he::kernel::dot(
     std::vector<std::shared_ptr<V>>& out, const Shape& arg0_shape,
     const Shape& arg1_shape, const Shape& out_shape,
     size_t reduction_axes_count, const element::Type& element_type,
-    const runtime::he::HEBackend* he_backend) {
+    runtime::he::HEBackend* he_backend) {
   // Use optimized SEAL dot if possible
   if (auto he_seal_backend =
-          dynamic_cast<const runtime::he::he_seal::HESealBackend*>(
-              he_backend)) {
+          dynamic_cast<runtime::he::he_seal::HESealBackend*>(he_backend)) {
     runtime::he::he_seal::kernel::dot_seal(
         arg0, arg1, out, arg0_shape, arg1_shape, out_shape,
         reduction_axes_count, element_type, he_seal_backend);

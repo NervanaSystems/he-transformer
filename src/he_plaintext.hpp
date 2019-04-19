@@ -30,7 +30,6 @@ class HEPlaintext {
   virtual ~HEPlaintext(){};
 
   void set_values(const std::vector<float>& values) { m_values = values; }
-  std::vector<float>& get_values() { return m_values; }
   const std::vector<float>& get_values() const { return m_values; }
 
   bool is_single_value() {

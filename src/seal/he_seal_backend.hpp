@@ -81,7 +81,7 @@ class HESealBackend : public HEBackend {
   };
 
   virtual void encode(
-      runtime::he::he_seal::SealPlaintextWrapper* plaintext) const = 0;
+      runtime::he::he_seal::SealPlaintextWrapper* plaintext) = 0;
 
   virtual void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
                       const void* input, const element::Type& type,

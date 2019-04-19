@@ -32,7 +32,7 @@ void sum(const std::vector<std::shared_ptr<T>>& arg,
          std::vector<std::shared_ptr<T>>& out, const Shape& in_shape,
          const Shape& out_shape, const AxisSet& reduction_axes,
          const element::Type& element_type,
-         const runtime::he::HEBackend* he_backend) {
+         runtime::he::HEBackend* he_backend) {
   CoordinateTransform output_transform(out_shape);
 
   for (const Coordinate& output_coord : output_transform) {

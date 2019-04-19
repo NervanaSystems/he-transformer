@@ -42,12 +42,11 @@ void batch_norm_inference(
     const std::vector<std::shared_ptr<HEPlaintext>>& mean,
     const std::vector<std::shared_ptr<HEPlaintext>>& variance,
     std::vector<std::shared_ptr<HECiphertext>>& normed_input,
-    const Shape& input_shape, const size_t batch_size,
-    const HEBackend* he_backend) {
+    const Shape& input_shape, const size_t batch_size, HEBackend* he_backend) {
   CoordinateTransform input_transform(input_shape);
 
   auto he_seal_backend =
-      dynamic_cast<const runtime::he::he_seal::HESealBackend*>(he_backend);
+      dynamic_cast<runtime::he::he_seal::HESealBackend*>(he_backend);
 
   if (he_seal_backend == nullptr) {
     throw ngraph_error(
@@ -77,6 +76,8 @@ void batch_norm_inference(
     std::vector<float> channel_beta_fl(1, 0);
     std::vector<float> channel_mean_fl(1, 0);
     std::vector<float> channel_var_fl(1, 0);
+
+    // TODO: make more efficient
 
     he_seal_backend->decode((void*)(channel_gamma_fl.data()),
                             channel_gamma.get(), element::f32, 1);

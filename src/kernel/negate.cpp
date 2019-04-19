@@ -25,9 +25,9 @@ using namespace ngraph::runtime::he;
 void kernel::scalar_negate(const HECiphertext* arg,
                            shared_ptr<HECiphertext>& out,
                            const element::Type& element_type,
-                           const HEBackend* he_backend) {
+                           HEBackend* he_backend) {
   if (auto he_seal_backend =
-          dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
+          dynamic_cast<he_seal::HESealBackend*>(he_backend)) {
     auto arg_seal = static_cast<const he_seal::SealCiphertextWrapper*>(arg);
     auto out_seal = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(out);
 
@@ -47,9 +47,9 @@ void kernel::scalar_negate(const HECiphertext* arg,
 
 void kernel::scalar_negate(const HEPlaintext* arg, shared_ptr<HEPlaintext>& out,
                            const element::Type& element_type,
-                           const HEBackend* he_backend) {
+                           HEBackend* he_backend) {
   if (auto he_seal_backend =
-          dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
+          dynamic_cast<he_seal::HESealBackend*>(he_backend)) {
     auto arg_seal = static_cast<const he_seal::SealPlaintextWrapper*>(arg);
     auto out_seal = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(out);
 

@@ -29,11 +29,11 @@ namespace he {
 namespace kernel {
 void constant(std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
               const element::Type& element_type, const void* data_ptr,
-              const runtime::he::HEBackend* he_backend, size_t count);
+              runtime::he::HEBackend* he_backend, size_t count);
 
 void constant(std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
               const element::Type& element_type, const void* data_ptr,
-              const runtime::he::HEBackend* he_backend, size_t count);
+              runtime::he::HEBackend* he_backend, size_t count);
 }  // namespace kernel
 }  // namespace he
 }  // namespace runtime

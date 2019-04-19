@@ -32,29 +32,29 @@ void scalar_add(runtime::he::HECiphertext* arg0,
                 runtime::he::HECiphertext* arg1,
                 std::shared_ptr<runtime::he::HECiphertext>& out,
                 const element::Type& element_type,
-                const runtime::he::HEBackend* he_backend);
+                runtime::he::HEBackend* he_backend);
 
 void scalar_add(runtime::he::HECiphertext* arg0, runtime::he::HEPlaintext* arg1,
                 std::shared_ptr<runtime::he::HECiphertext>& out,
                 const element::Type& element_type,
-                const runtime::he::HEBackend* he_backend);
+                runtime::he::HEBackend* he_backend);
 
 void scalar_add(runtime::he::HEPlaintext* arg0, runtime::he::HECiphertext* arg1,
                 std::shared_ptr<runtime::he::HECiphertext>& out,
                 const element::Type& element_type,
-                const runtime::he::HEBackend* he_backend);
+                runtime::he::HEBackend* he_backend);
 
 void scalar_add(runtime::he::HEPlaintext* arg0, runtime::he::HEPlaintext* arg1,
                 std::shared_ptr<runtime::he::HEPlaintext>& out,
                 const element::Type& element_type,
-                const runtime::he::HEBackend* he_backend);
+                runtime::he::HEBackend* he_backend);
 
 template <typename S, typename T, typename V>
 void add(const std::vector<std::shared_ptr<S>>& arg0,
          const std::vector<std::shared_ptr<T>>& arg1,
          std::vector<std::shared_ptr<V>>& out,
-         const element::Type& element_type,
-         const runtime::he::HEBackend* he_backend, size_t count) {
+         const element::Type& element_type, runtime::he::HEBackend* he_backend,
+         size_t count) {
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
     scalar_add(arg0[i].get(), arg1[i].get(), out[i], element_type, he_backend);

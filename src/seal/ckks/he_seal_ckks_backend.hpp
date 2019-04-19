@@ -17,6 +17,7 @@
 #pragma once
 
 #include <memory>
+#include <mutex>
 
 #include "he_cipher_tensor.hpp"
 #include "he_encryption_parameters.hpp"
@@ -50,8 +51,7 @@ class HESealCKKSBackend : public HESealBackend {
   std::shared_ptr<seal::SEALContext> make_seal_context(
       const std::shared_ptr<runtime::he::HEEncryptionParameters> sp) override;
 
-  void encode(
-      runtime::he::he_seal::SealPlaintextWrapper* plaintext) const override;
+  void encode(runtime::he::he_seal::SealPlaintextWrapper* plaintext) override;
 
   void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
               const void* input, const element::Type& element_type,
@@ -68,6 +68,8 @@ class HESealCKKSBackend : public HESealBackend {
   std::shared_ptr<seal::CKKSEncoder> m_ckks_encoder;
   // Scale with which to encode new ciphertexts
   double m_scale;
+
+  std::mutex m_encode_mutex;
 };
 }  // namespace he_seal
 }  // namespace he

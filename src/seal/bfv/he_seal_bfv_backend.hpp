@@ -49,8 +49,7 @@ class HESealBFVBackend : public HESealBackend {
   std::shared_ptr<seal::SEALContext> make_seal_context(
       const std::shared_ptr<runtime::he::HEEncryptionParameters> sp) override;
 
-  void encode(
-      runtime::he::he_seal::SealPlaintextWrapper* plaintext) const override;
+  void encode(runtime::he::he_seal::SealPlaintextWrapper* plaintext) override;
 
   void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
               const void* input, const element::Type& element_type,

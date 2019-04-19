@@ -28,26 +28,26 @@ namespace he {
 namespace he_seal {
 namespace ckks {
 namespace kernel {
-void scalar_multiply_ckks(
-    he_seal::SealCiphertextWrapper* arg0, he_seal::SealCiphertextWrapper* arg1,
-    std::shared_ptr<he_seal::SealCiphertextWrapper>& out,
-    const element::Type& element_type,
-    const he_seal::HESealCKKSBackend* he_seal_ckks_backend,
-    const seal::MemoryPoolHandle& pool);
+void scalar_multiply_ckks(he_seal::SealCiphertextWrapper* arg0,
+                          he_seal::SealCiphertextWrapper* arg1,
+                          std::shared_ptr<he_seal::SealCiphertextWrapper>& out,
+                          const element::Type& element_type,
+                          he_seal::HESealCKKSBackend* he_seal_ckks_backend,
+                          const seal::MemoryPoolHandle& pool);
 
-void scalar_multiply_ckks(
-    he_seal::SealCiphertextWrapper* arg0, he_seal::SealPlaintextWrapper* arg1,
-    std::shared_ptr<he_seal::SealCiphertextWrapper>& out,
-    const element::Type& element_type,
-    const he_seal::HESealCKKSBackend* he_seal_ckks_backend,
-    const seal::MemoryPoolHandle& pool);
+void scalar_multiply_ckks(he_seal::SealCiphertextWrapper* arg0,
+                          he_seal::SealPlaintextWrapper* arg1,
+                          std::shared_ptr<he_seal::SealCiphertextWrapper>& out,
+                          const element::Type& element_type,
+                          he_seal::HESealCKKSBackend* he_seal_ckks_backend,
+                          const seal::MemoryPoolHandle& pool);
 
-void scalar_multiply_ckks(
-    he_seal::SealPlaintextWrapper* arg0, he_seal::SealCiphertextWrapper* arg1,
-    std::shared_ptr<he_seal::SealCiphertextWrapper>& out,
-    const element::Type& element_type,
-    const he_seal::HESealCKKSBackend* he_seal_ckks_backend,
-    const seal::MemoryPoolHandle& pool);
+void scalar_multiply_ckks(he_seal::SealPlaintextWrapper* arg0,
+                          he_seal::SealCiphertextWrapper* arg1,
+                          std::shared_ptr<he_seal::SealCiphertextWrapper>& out,
+                          const element::Type& element_type,
+                          he_seal::HESealCKKSBackend* he_seal_ckks_backend,
+                          const seal::MemoryPoolHandle& pool);
 }  // namespace kernel
 }  // namespace ckks
 }  // namespace he_seal

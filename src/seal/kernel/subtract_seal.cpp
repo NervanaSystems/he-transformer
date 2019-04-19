@@ -23,7 +23,7 @@ void runtime::he::he_seal::kernel::scalar_subtract(
     he_seal::SealCiphertextWrapper* arg0, he_seal::SealCiphertextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
-    const he_seal::HESealBackend* he_seal_backend) {
+    he_seal::HESealBackend* he_seal_backend) {
   if (arg0 == out.get()) {
     he_seal_backend->get_evaluator()->sub_inplace(out->m_ciphertext,
                                                   arg1->m_ciphertext);
@@ -40,7 +40,7 @@ void runtime::he::he_seal::kernel::scalar_subtract(
     he_seal::SealCiphertextWrapper* arg0, he_seal::SealPlaintextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
-    const he_seal::HESealBackend* he_seal_backend) {
+    he_seal::HESealBackend* he_seal_backend) {
   he_seal_backend->encode(arg1);
   if (arg0 == out.get()) {
     he_seal_backend->get_evaluator()->sub_plain_inplace(out->m_ciphertext,
@@ -55,7 +55,7 @@ void runtime::he::he_seal::kernel::scalar_subtract(
     he_seal::SealPlaintextWrapper* arg0, he_seal::SealPlaintextWrapper* arg1,
     shared_ptr<he_seal::SealPlaintextWrapper>& out,
     const element::Type& element_type,
-    const he_seal::HESealBackend* he_seal_backend) {
+    he_seal::HESealBackend* he_seal_backend) {
   NGRAPH_ASSERT(element_type == element::f32);
 
   const std::vector<float>& arg0_vals = arg0->get_values();

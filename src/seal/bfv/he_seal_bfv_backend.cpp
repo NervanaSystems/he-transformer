@@ -124,7 +124,7 @@ void runtime::he::he_seal::HESealBFVBackend::encode(
 }
 
 void runtime::he::he_seal::HESealBFVBackend::encode(
-    runtime::he::he_seal::SealPlaintextWrapper* plaintext) const {
+    runtime::he::he_seal::SealPlaintextWrapper* plaintext) {
   if (plaintext->is_encoded()) {
     return;
   }
