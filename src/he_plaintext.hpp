@@ -31,13 +31,14 @@ class HEPlaintext {
 
   void set_values(const std::vector<float>& values) { m_values = values; }
   std::vector<float>& get_values() { return m_values; }
+  const std::vector<float>& get_values() const { return m_values; }
 
   bool is_single_value() {
     NGRAPH_ASSERT(m_values.size() != 0) << "Plaintext not initialized";
     return m_values.size() == 1;
   }
 
-  size_t num_values() { return m_values.size(); }
+  size_t num_values() const { return m_values.size(); }
 
  protected:
   std::vector<float> m_values;

@@ -128,8 +128,8 @@ void he_seal::kernel::scalar_add(he_seal::SealPlaintextWrapper* arg0,
                                  const seal::MemoryPoolHandle& pool) {
   NGRAPH_ASSERT(element_type == element::f32);
 
-  std::vector<float> arg0_vals = arg0->get_values();
-  std::vector<float> arg1_vals = arg1->get_values();
+  const std::vector<float>& arg0_vals = arg0->get_values();
+  const std::vector<float>& arg1_vals = arg1->get_values();
   std::vector<float> out_vals(arg0->num_values());
 
   std::transform(arg0_vals.begin(), arg0_vals.end(), arg1_vals.begin(),
