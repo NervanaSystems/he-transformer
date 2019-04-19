@@ -123,6 +123,28 @@ void runtime::he::he_seal::HESealBFVBackend::encode(
       m_integer_encoder->encode(int_val), float_val);
 }
 
+void runtime::he::he_seal::HESealBFVBackend::encode(
+    runtime::he::he_seal::SealPlaintextWrapper* plaintext) const {
+  vector<double> double_vals(plaintext->get_values().begin(),
+                             plaintext->get_values().end());
+
+  NGRAPH_ASSERT(plaintext->num_values() == 1)
+      << "BFV backend doesn't support batched encoding";
+
+  float float_val = plaintext->get_values()[0];
+
+  int32_t int_val;
+  if (ceilf(float_val) == float_val) {
+    int_val = static_cast<int32_t>(float_val);
+  } else {
+    throw ngraph_error("BFV float only supported for underlying int32_t type");
+  }
+
+  NGRAPH_INFO << "JIT Encoding value " << float_val;
+
+  plaintext->get_plaintext() = m_integer_encoder->encode(int_val);
+}
+
 void runtime::he::he_seal::HESealBFVBackend::decode(
     void* output, const runtime::he::HEPlaintext* input,
     const element::Type& type, size_t count) const {
