@@ -26,8 +26,9 @@ using namespace std;
 
 runtime::he::HECipherTensor::HECipherTensor(
     const element::Type& element_type, const Shape& shape,
-    HEBackend* he_backend, const std::shared_ptr<HECiphertext> he_ciphertext,
-    const bool batched, const string& name)
+    const HEBackend* he_backend,
+    const std::shared_ptr<HECiphertext> he_ciphertext, const bool batched,
+    const string& name)
     : runtime::he::HETensor(element_type, shape, he_backend, batched, name) {
   m_num_elements = m_descriptor->get_tensor_layout()->get_size() / m_batch_size;
   m_cipher_texts.resize(m_num_elements);

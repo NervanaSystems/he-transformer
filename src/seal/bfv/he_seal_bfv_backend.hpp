@@ -49,11 +49,12 @@ class HESealBFVBackend : public HESealBackend {
   std::shared_ptr<seal::SEALContext> make_seal_context(
       const std::shared_ptr<runtime::he::HEEncryptionParameters> sp) override;
 
-  void encode(runtime::he::he_seal::SealPlaintextWrapper* plaintext) override;
+  void encode(
+      runtime::he::he_seal::SealPlaintextWrapper* plaintext) const override;
 
   void encode(
       std::vector<std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>>&
-          plaintexts) override {
+          plaintexts) const override {
     throw ngraph_error("Unimplemented");
   }
 
@@ -76,7 +77,7 @@ class HESealBFVBackend : public HESealBackend {
  private:
   std::shared_ptr<seal::BatchEncoder> m_batch_encoder;
   std::shared_ptr<seal::IntegerEncoder> m_integer_encoder;
-  std::mutex m_encode_mutex;
+  mutable std::mutex m_encode_mutex;
 };
 }  // namespace he_seal
 }  // namespace he

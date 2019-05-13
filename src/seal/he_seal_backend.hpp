@@ -81,11 +81,11 @@ class HESealBackend : public HEBackend {
   };
 
   virtual void encode(
-      runtime::he::he_seal::SealPlaintextWrapper* plaintext) = 0;
+      runtime::he::he_seal::SealPlaintextWrapper* plaintext) const = 0;
 
   virtual void encode(
       std::vector<std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>>&
-          plaintext) = 0;
+          plaintext) const = 0;
 
   virtual void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
                       const void* input, const element::Type& type,
@@ -95,7 +95,7 @@ class HESealBackend : public HEBackend {
                       const element::Type& type, size_t count = 1) const = 0;
 
   void encrypt(std::shared_ptr<runtime::he::HECiphertext>& output,
-               runtime::he::HEPlaintext* input) override;
+               runtime::he::HEPlaintext* input) const override;
 
   void decrypt(std::shared_ptr<runtime::he::HEPlaintext>& output,
                const runtime::he::HECiphertext* input) const override;

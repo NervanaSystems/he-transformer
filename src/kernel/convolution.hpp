@@ -46,7 +46,7 @@ void convolution(const std::vector<std::shared_ptr<S>>& arg0,
                  size_t output_channel_axis_filters, size_t batch_axis_result,
                  size_t output_channel_axis_result, bool rotate_filter,
                  const element::Type& element_type, size_t batch_size,
-                 runtime::he::HEBackend* he_backend);
+                 const runtime::he::HEBackend* he_backend);
 }
 }  // namespace he
 }  // namespace runtime
@@ -65,10 +65,11 @@ void ngraph::runtime::he::kernel::convolution(
     size_t input_channel_axis_filters, size_t output_channel_axis_filters,
     size_t batch_axis_result, size_t output_channel_axis_result,
     bool rotate_filter, const element::Type& element_type, size_t batch_size,
-    runtime::he::HEBackend* he_backend) {
+    const runtime::he::HEBackend* he_backend) {
   // Use optimized SEAL conv if possible
   if (auto he_seal_backend =
-          dynamic_cast<runtime::he::he_seal::HESealBackend*>(he_backend)) {
+          dynamic_cast<const runtime::he::he_seal::HESealBackend*>(
+              he_backend)) {
     runtime::he::he_seal::kernel::convolution_seal(
         arg0, arg1, out, arg0_shape, arg1_shape, out_shape,
         window_movement_strides, window_dilation_strides, padding_below,

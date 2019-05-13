@@ -44,7 +44,7 @@ class HEExecutable : public Executable {
  public:
   HEExecutable(const std::shared_ptr<Function>& function,
                bool enable_performance_collection,
-               runtime::he::HEBackend* he_backend, bool encrypt_data,
+               const runtime::he::HEBackend* he_backend, bool encrypt_data,
                bool encrypt_model, bool batch_data);
 
   ~HEExecutable() {
@@ -78,7 +78,7 @@ class HEExecutable : public Executable {
   void handle_message(const TCPMessage& message);
 
  private:
-  HEBackend* m_he_backend;  // TODO: replace with context
+  const HEBackend* m_he_backend;  // TODO: replace with context
   bool m_encrypt_data;
   bool m_encrypt_model;
   bool m_batch_data;

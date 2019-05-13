@@ -23,7 +23,7 @@ void he_seal::bfv::kernel::scalar_multiply_bfv(
     he_seal::SealCiphertextWrapper* arg0, he_seal::SealCiphertextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
-    runtime::he::he_seal::HESealBFVBackend* he_seal_bfv_backend) {
+    const runtime::he::he_seal::HESealBFVBackend* he_seal_bfv_backend) {
   if ((arg0 == arg1) && (arg1 == out.get())) {
     he_seal_bfv_backend->get_evaluator()->square_inplace(out->m_ciphertext);
   } else if (arg1 == arg0) {
@@ -48,7 +48,7 @@ void he_seal::bfv::kernel::scalar_multiply_bfv(
     he_seal::SealCiphertextWrapper* arg0, he_seal::SealPlaintextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
-    runtime::he::he_seal::HESealBFVBackend* he_seal_bfv_backend) {
+    const runtime::he::he_seal::HESealBFVBackend* he_seal_bfv_backend) {
   he_seal_bfv_backend->encode(arg1);
   if (arg0 == out.get()) {
     he_seal_bfv_backend->get_evaluator()->multiply_plain_inplace(
@@ -66,6 +66,6 @@ void he_seal::bfv::kernel::scalar_multiply_bfv(
     he_seal::SealPlaintextWrapper* arg0, he_seal::SealCiphertextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
-    runtime::he::he_seal::HESealBFVBackend* he_seal_bfv_backend) {
+    const runtime::he::he_seal::HESealBFVBackend* he_seal_bfv_backend) {
   scalar_multiply_bfv(arg1, arg0, out, element_type, he_seal_bfv_backend);
 }

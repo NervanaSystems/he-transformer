@@ -73,7 +73,7 @@ using descriptor::layout::DenseTensorLayout;
 
 runtime::he::HEExecutable::HEExecutable(const shared_ptr<Function>& function,
                                         bool enable_performance_collection,
-                                        HEBackend* he_backend,
+                                        const HEBackend* he_backend,
                                         bool encrypt_data, bool encrypt_model,
                                         bool batch_data)
     : m_he_backend(he_backend),

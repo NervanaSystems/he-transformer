@@ -27,9 +27,10 @@ using namespace ngraph::runtime::he;
 
 void kernel::scalar_subtract(HECiphertext* arg0, HECiphertext* arg1,
                              shared_ptr<HECiphertext>& out,
-                             const element::Type& type, HEBackend* he_backend) {
+                             const element::Type& type,
+                             const HEBackend* he_backend) {
   if (auto he_seal_backend =
-          dynamic_cast<he_seal::HESealBackend*>(he_backend)) {
+          dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
     auto arg0_seal = dynamic_cast<he_seal::SealCiphertextWrapper*>(arg0);
     auto arg1_seal = dynamic_cast<he_seal::SealCiphertextWrapper*>(arg1);
     auto out_seal = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(out);
@@ -51,7 +52,7 @@ void kernel::scalar_subtract(HECiphertext* arg0, HECiphertext* arg1,
 void kernel::scalar_subtract(HEPlaintext* arg0, HEPlaintext* arg1,
                              shared_ptr<HEPlaintext>& out,
                              const element::Type& element_type,
-                             HEBackend* he_backend) {
+                             const HEBackend* he_backend) {
   NGRAPH_ASSERT(element_type == element::f32);
 
   std::vector<float> arg0_vals = arg0->get_values();
@@ -62,34 +63,16 @@ void kernel::scalar_subtract(HEPlaintext* arg0, HEPlaintext* arg1,
                  out_vals.begin(), std::minus<float>());
 
   out->set_values(out_vals);
-
-  /*
-    if (auto he_seal_backend =
-            dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
-      auto arg0_seal = dynamic_cast<he_seal::SealPlaintextWrapper*>(arg0);
-      auto arg1_seal = dynamic_cast<he_seal::SealPlaintextWrapper*>(arg1);
-      auto out_seal = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(out);
-
-      if (arg0_seal && arg1_seal && out_seal) {
-        he_seal::kernel::scalar_subtract(arg0_seal, arg1_seal, out_seal, type,
-                                         he_seal_backend);
-        out = dynamic_pointer_cast<HEPlaintext>(out_seal);
-      } else {
-        throw ngraph_error(
-            "subtract backend is SEAL, but arguments or outputs are not "
-            "SealPlaintextWrapper");
-      }
-    } else {
-      throw ngraph_error("subtract backend is not SEAL.");
-    } */
 }
 
 void kernel::scalar_subtract(HECiphertext* arg0, HEPlaintext* arg1,
                              shared_ptr<HECiphertext>& out,
-                             const element::Type& type, HEBackend* he_backend) {
+                             const element::Type& type,
+                             const HEBackend* he_backend) {
   NGRAPH_ASSERT(type == element::f32) << "Only type float32 supported";
 
-  auto he_seal_backend = dynamic_cast<he_seal::HESealBackend*>(he_backend);
+  auto he_seal_backend =
+      dynamic_cast<const he_seal::HESealBackend*>(he_backend);
 
   NGRAPH_ASSERT(he_seal_backend != nullptr) << "HEBackend is not HESealBackend";
 
@@ -119,7 +102,8 @@ void kernel::scalar_subtract(HECiphertext* arg0, HEPlaintext* arg1,
 
 void kernel::scalar_subtract(HEPlaintext* arg0, HECiphertext* arg1,
                              shared_ptr<HECiphertext>& out,
-                             const element::Type& type, HEBackend* he_backend) {
+                             const element::Type& type,
+                             const HEBackend* he_backend) {
   scalar_negate(arg1, out, type, he_backend);
   scalar_add(arg0, out.get(), out, type, he_backend);
 }

@@ -35,7 +35,7 @@ void pad(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
          const Shape& arg0_shape, const Shape& out_shape,
          const CoordinateDiff& padding_below,
          const CoordinateDiff& padding_above, op::PadMode pad_mode,
-         size_t batch_size, runtime::he::HEBackend* he_backend);
+         size_t batch_size, const runtime::he::HEBackend* he_backend);
 
 template <typename S>
 void pad(const std::vector<std::shared_ptr<S>>& arg0,
@@ -43,7 +43,7 @@ void pad(const std::vector<std::shared_ptr<S>>& arg0,
          std::vector<std::shared_ptr<S>>& out, const Shape& arg0_shape,
          const Shape& out_shape, const CoordinateDiff& padding_below,
          const CoordinateDiff& padding_above, op::PadMode pad_mode,
-         size_t batch_size, runtime::he::HEBackend* he_backend) {
+         size_t batch_size, const runtime::he::HEBackend* he_backend) {
   if (arg1.size() != 1) {
     throw ngraph_error("Padding element must be scalar");
   }

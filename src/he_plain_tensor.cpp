@@ -24,7 +24,7 @@ using namespace std;
 
 runtime::he::HEPlainTensor::HEPlainTensor(
     const element::Type& element_type, const Shape& shape,
-    HEBackend* he_backend, const shared_ptr<HEPlaintext> he_plaintext,
+    const HEBackend* he_backend, const shared_ptr<HEPlaintext> he_plaintext,
     const bool batched, const string& name)
     : runtime::he::HETensor(element_type, shape, he_backend, batched, name) {
   m_num_elements = m_descriptor->get_tensor_layout()->get_size() / m_batch_size;

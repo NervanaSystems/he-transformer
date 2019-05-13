@@ -44,12 +44,12 @@ void result(const std::vector<std::shared_ptr<T>>& arg,
 // TODO: remove
 void result(const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg,
             std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
-            size_t count, runtime::he::HEBackend* he_backend);
+            size_t count, const runtime::he::HEBackend* he_backend);
 
 // TODO: remove
 void result(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg,
             std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
-            size_t count, runtime::he::HEBackend* he_backend);
+            size_t count, const runtime::he::HEBackend* he_backend);
 }  // namespace kernel
 }  // namespace he
 }  // namespace runtime

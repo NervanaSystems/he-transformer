@@ -24,8 +24,8 @@ using namespace std;
 using namespace ngraph;
 
 runtime::he::HETensor::HETensor(const element::Type& element_type,
-                                const Shape& shape, HEBackend* he_backend,
-                                bool batched, const string& name)
+                                const Shape& shape, const HEBackend* he_backend,
+                                const bool batched, const string& name)
     : runtime::Tensor(
           std::make_shared<descriptor::Tensor>(element_type, shape, name),
           he_backend),

@@ -74,7 +74,7 @@ runtime::he::he_seal::HESealBackend::create_empty_plaintext(
 
 void runtime::he::he_seal::HESealBackend::encrypt(
     shared_ptr<runtime::he::HECiphertext>& output,
-    runtime::he::HEPlaintext* input) {
+    runtime::he::HEPlaintext* input) const {
   auto seal_output =
       static_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(output);
   auto seal_input =

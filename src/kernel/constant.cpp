@@ -22,7 +22,7 @@ using namespace ngraph;
 void runtime::he::kernel::constant(
     vector<shared_ptr<runtime::he::HEPlaintext>>& out,
     const element::Type& element_type, const void* data_ptr,
-    runtime::he::HEBackend* he_backend, size_t count) {
+    const runtime::he::HEBackend* he_backend, size_t count) {
   NGRAPH_ASSERT(element_type == element::f32)
       << "Constant supports only f32 type";
   size_t type_byte_size = element_type.size();
@@ -42,7 +42,7 @@ void runtime::he::kernel::constant(
 void runtime::he::kernel::constant(
     vector<shared_ptr<runtime::he::HECiphertext>>& out,
     const element::Type& element_type, const void* data_ptr,
-    runtime::he::HEBackend* he_backend, size_t count) {
+    const runtime::he::HEBackend* he_backend, size_t count) {
   NGRAPH_ASSERT(element_type == element::f32)
       << "Constant supports only f32 type";
   size_t type_byte_size = element_type.size();

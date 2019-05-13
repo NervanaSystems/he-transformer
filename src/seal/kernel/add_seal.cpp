@@ -25,14 +25,16 @@ using namespace ngraph::runtime::he;
 void he_seal::kernel::scalar_add(
     he_seal::SealCiphertextWrapper* arg0, he_seal::SealCiphertextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
-    const element::Type& element_type, he_seal::HESealBackend* he_seal_backend,
+    const element::Type& element_type,
+    const he_seal::HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
   if (auto he_seal_ckks_backend =
-          dynamic_cast<he_seal::HESealCKKSBackend*>(he_seal_backend)) {
+          dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend)) {
     he_seal::ckks::kernel::scalar_add_ckks(arg0, arg1, out, element_type,
                                            he_seal_ckks_backend, pool);
   } else if (auto he_seal_bfv_backend =
-                 dynamic_cast<he_seal::HESealBFVBackend*>(he_seal_backend)) {
+                 dynamic_cast<const he_seal::HESealBFVBackend*>(
+                     he_seal_backend)) {
     he_seal::bfv::kernel::scalar_add_bfv(arg0, arg1, out, element_type,
                                          he_seal_bfv_backend);
   } else {
@@ -44,7 +46,7 @@ void he_seal::kernel::scalar_add(runtime::he::HECiphertext* arg0,
                                  runtime::he::HECiphertext* arg1,
                                  shared_ptr<runtime::he::HECiphertext>& out,
                                  const element::Type& element_type,
-                                 he_seal::HESealBackend* he_seal_backend,
+                                 const he_seal::HESealBackend* he_seal_backend,
                                  const seal::MemoryPoolHandle& pool) {
   auto arg0_seal = static_cast<he_seal::SealCiphertextWrapper*>(arg0);
   auto arg1_seal = static_cast<he_seal::SealCiphertextWrapper*>(arg1);
@@ -57,7 +59,8 @@ void he_seal::kernel::scalar_add(runtime::he::HECiphertext* arg0,
 void he_seal::kernel::scalar_add(
     he_seal::SealCiphertextWrapper* arg0, he_seal::SealPlaintextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
-    const element::Type& element_type, he_seal::HESealBackend* he_seal_backend,
+    const element::Type& element_type,
+    const he_seal::HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
   NGRAPH_ASSERT(element_type == element::f32);
 
@@ -70,11 +73,12 @@ void he_seal::kernel::scalar_add(
     out = make_shared<he_seal::SealCiphertextWrapper>(*arg0);
   } else {
     if (auto he_seal_ckks_backend =
-            dynamic_cast<he_seal::HESealCKKSBackend*>(he_seal_backend)) {
+            dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend)) {
       he_seal::ckks::kernel::scalar_add_ckks(arg0, arg1, out, element_type,
                                              he_seal_ckks_backend, pool);
     } else if (auto he_seal_bfv_backend =
-                   dynamic_cast<he_seal::HESealBFVBackend*>(he_seal_backend)) {
+                   dynamic_cast<const he_seal::HESealBFVBackend*>(
+                       he_seal_backend)) {
       he_seal::bfv::kernel::scalar_add_bfv(arg0, arg1, out, element_type,
                                            he_seal_bfv_backend);
     } else {
@@ -87,7 +91,7 @@ void he_seal::kernel::scalar_add(runtime::he::HECiphertext* arg0,
                                  runtime::he::HEPlaintext* arg1,
                                  shared_ptr<runtime::he::HECiphertext>& out,
                                  const element::Type& element_type,
-                                 he_seal::HESealBackend* he_seal_backend,
+                                 const he_seal::HESealBackend* he_seal_backend,
                                  const seal::MemoryPoolHandle& pool) {
   auto arg0_seal = static_cast<he_seal::SealCiphertextWrapper*>(arg0);
   auto arg1_seal = static_cast<he_seal::SealPlaintextWrapper*>(arg1);
@@ -100,7 +104,8 @@ void he_seal::kernel::scalar_add(runtime::he::HECiphertext* arg0,
 void he_seal::kernel::scalar_add(
     he_seal::SealPlaintextWrapper* arg0, he_seal::SealCiphertextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
-    const element::Type& element_type, he_seal::HESealBackend* he_seal_backend,
+    const element::Type& element_type,
+    const he_seal::HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
   he_seal::kernel::scalar_add(arg1, arg0, out, element_type, he_seal_backend);
 }
@@ -109,7 +114,7 @@ void he_seal::kernel::scalar_add(runtime::he::HEPlaintext* arg0,
                                  runtime::he::HECiphertext* arg1,
                                  shared_ptr<runtime::he::HECiphertext>& out,
                                  const element::Type& element_type,
-                                 he_seal::HESealBackend* he_seal_backend,
+                                 const he_seal::HESealBackend* he_seal_backend,
                                  const seal::MemoryPoolHandle& pool) {
   he_seal::kernel::scalar_add(arg1, arg0, out, element_type, he_seal_backend,
                               pool);
@@ -119,7 +124,7 @@ void he_seal::kernel::scalar_add(he_seal::SealPlaintextWrapper* arg0,
                                  he_seal::SealPlaintextWrapper* arg1,
                                  shared_ptr<he_seal::SealPlaintextWrapper>& out,
                                  const element::Type& element_type,
-                                 he_seal::HESealBackend* he_seal_backend,
+                                 const he_seal::HESealBackend* he_seal_backend,
                                  const seal::MemoryPoolHandle& pool) {
   NGRAPH_ASSERT(element_type == element::f32);
 
@@ -140,7 +145,7 @@ void he_seal::kernel::scalar_add(runtime::he::HEPlaintext* arg0,
                                  runtime::he::HEPlaintext* arg1,
                                  shared_ptr<runtime::he::HEPlaintext>& out,
                                  const element::Type& element_type,
-                                 he_seal::HESealBackend* he_seal_backend,
+                                 const he_seal::HESealBackend* he_seal_backend,
                                  const seal::MemoryPoolHandle& pool) {
   auto arg0_seal = static_cast<he_seal::SealPlaintextWrapper*>(arg0);
   auto arg1_seal = static_cast<he_seal::SealPlaintextWrapper*>(arg1);

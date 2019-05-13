@@ -35,15 +35,15 @@ void runtime::he::kernel::pad(
     vector<shared_ptr<runtime::he::HECiphertext>>& out, const Shape& arg0_shape,
     const Shape& out_shape, const CoordinateDiff& padding_below,
     const CoordinateDiff& padding_above, op::PadMode pad_mode,
-    size_t batch_size, runtime::he::HEBackend* he_backend) {
+    size_t batch_size, const runtime::he::HEBackend* he_backend) {
   if (arg1.size() != 1) {
     throw ngraph_error("Padding element must be scalar");
   }
 
   auto he_seal_backend =
-      dynamic_cast<runtime::he::he_seal::HESealBackend*>(he_backend);
+      dynamic_cast<const runtime::he::he_seal::HESealBackend*>(he_backend);
   auto he_seal_ckks_backend =
-      dynamic_cast<runtime::he::he_seal::HESealCKKSBackend*>(he_backend);
+      dynamic_cast<const runtime::he::he_seal::HESealCKKSBackend*>(he_backend);
 
   NGRAPH_ASSERT(he_seal_backend != nullptr) << "pad supports only Seal backend";
   NGRAPH_ASSERT(he_seal_ckks_backend != nullptr)
