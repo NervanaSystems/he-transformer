@@ -183,19 +183,25 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
 }
 
 void runtime::he::he_seal::HESealCKKSBackend::decode(
-    void* output, const runtime::he::HEPlaintext* input,
-    const element::Type& type, size_t count) const {
+    void* output, runtime::he::HEPlaintext* input, const element::Type& type,
+    size_t count) const {
   NGRAPH_ASSERT(count != 0) << "Decode called on 0 elements";
   NGRAPH_ASSERT(type == element::f32)
       << "CKKS encode supports only float encoding, received type " << type;
 
+  decode(input);
+
+  vector<float> xs_float = input->get_values();
+  memcpy(output, &xs_float[0], type.size() * count);
+}
+
+void runtime::he::he_seal::HESealCKKSBackend::decode(
+    runtime::he::HEPlaintext* input) const {
   auto seal_input = dynamic_cast<const SealPlaintextWrapper*>(input);
-  if (!seal_input) {
-    throw ngraph_error("HESealCKKSBackend::decode input is not seal plaintext");
-  }
+  NGRAPH_ASSERT(seal_input != nullptr)
+      << "HESealCKKSBackend::decode input is not seal plaintext";
   vector<double> xs;
   m_ckks_encoder->decode(seal_input->get_plaintext(), xs);
   vector<float> xs_float(xs.begin(), xs.end());
-
-  memcpy(output, &xs_float[0], type.size() * count);
+  input->set_values(xs_float);
 }

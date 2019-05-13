@@ -61,9 +61,11 @@ class HESealBFVBackend : public HESealBackend {
   void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
               const void* input, const element::Type& element_type,
               size_t count = 1) const override;
-  void decode(void* output, const runtime::he::HEPlaintext* input,
+  void decode(void* output, runtime::he::HEPlaintext* input,
               const element::Type& element_type,
               size_t count = 1) const override;
+
+  void decode(runtime::he::HEPlaintext* input) const override;
 
   const inline std::shared_ptr<seal::BatchEncoder> get_batch_encoder() const {
     return m_batch_encoder;

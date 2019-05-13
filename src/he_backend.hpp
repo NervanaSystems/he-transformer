@@ -173,9 +173,18 @@ class HEBackend : public runtime::Backend {
   /// @param input Pointer to plaintext to decode
   /// @param type Type of scalar to encode
   /// @param count Number of elements to decode, count > 1 indicates batching
-  virtual void decode(void* output, const runtime::he::HEPlaintext* input,
+  virtual void decode(void* output, runtime::he::HEPlaintext* input,
                       const element::Type& element_type,
                       size_t count = 1) const = 0;
+
+  virtual void decode(std::vector<std::shared_ptr<runtime::he::HEPlaintext>>&
+                          plaintexts) const {
+    for (std::shared_ptr<runtime::he::HEPlaintext> plaintext : plaintexts) {
+      decode(plaintext.get());
+    }
+  }
+
+  virtual void decode(runtime::he::HEPlaintext* input) const = 0;
 
   /// @brief Encrypts plaintext polynomial to ciphertext
   /// @param output Pointer to ciphertext to encrypt to

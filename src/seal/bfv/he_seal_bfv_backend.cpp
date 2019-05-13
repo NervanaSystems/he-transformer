@@ -152,14 +152,18 @@ void runtime::he::he_seal::HESealBFVBackend::encode(
 }
 
 void runtime::he::he_seal::HESealBFVBackend::decode(
-    void* output, const runtime::he::HEPlaintext* input,
-    const element::Type& type, size_t count) const {
+    void* output, runtime::he::HEPlaintext* input, const element::Type& type,
+    size_t count) const {
   if (count != 1) {
     throw ngraph_error("Batching not enabled for SEAL BFV decode");
   }
-  NGRAPH_ASSERT(type == element::f32)
-      << "BFV decode supports only float decoding, received type " << type;
+  decode(input);
+  float fl_val = input->get_values()[0];
+  memcpy(output, &fl_val, type.size());
+}
 
+void runtime::he::he_seal::HESealBFVBackend::decode(
+    runtime::he::HEPlaintext* input) const {
   auto seal_input = dynamic_cast<const SealPlaintextWrapper*>(input);
 
   NGRAPH_ASSERT(seal_input != nullptr)
@@ -167,5 +171,5 @@ void runtime::he::he_seal::HESealBFVBackend::decode(
 
   int32_t val = m_integer_encoder->decode_int32(seal_input->get_plaintext());
   float fl_val{val};
-  memcpy(output, &fl_val, type.size());
+  input->set_values({fl_val});
 }

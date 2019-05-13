@@ -91,8 +91,18 @@ class HESealBackend : public HEBackend {
                       const void* input, const element::Type& type,
                       size_t count = 1) const = 0;
 
-  virtual void decode(void* output, const runtime::he::HEPlaintext* input,
-                      const element::Type& type, size_t count = 1) const = 0;
+  virtual void decode(void* output, runtime::he::HEPlaintext* input,
+                      const element::Type& type,
+                      size_t count = 1) const override = 0;
+
+  virtual void decode(runtime::he::HEPlaintext* input) const override = 0;
+
+  virtual void decode(std::vector<std::shared_ptr<runtime::he::HEPlaintext>>&
+                          plaintexts) const override {
+    for (size_t i = 0; i < plaintexts.size(); ++i) {
+      decode(plaintexts[i].get());
+    }
+  }
 
   void encrypt(std::shared_ptr<runtime::he::HECiphertext>& output,
                runtime::he::HEPlaintext* input) const override;
