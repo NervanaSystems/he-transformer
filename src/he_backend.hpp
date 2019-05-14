@@ -166,7 +166,7 @@ class HEBackend : public runtime::Backend {
   /// @param count Number of elements to encode, count > 1 indicates batching
   virtual void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
                       const void* input, const element::Type& element_type,
-                      size_t count = 1) const = 0;
+                      bool complex = false, size_t count = 1) const = 0;
 
   /// @brief Decodes plaintext polynomial to bytes
   /// @param output Pointer to memory to write to

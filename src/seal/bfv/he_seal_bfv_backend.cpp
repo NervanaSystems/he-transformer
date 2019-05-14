@@ -103,7 +103,7 @@ runtime::he::he_seal::HESealBFVBackend::create_batched_plain_tensor(
 
 void runtime::he::he_seal::HESealBFVBackend::encode(
     shared_ptr<runtime::he::HEPlaintext>& output, const void* input,
-    const element::Type& type, size_t count) const {
+    const element::Type& type, bool complex, size_t count) const {
   if (count != 1) {
     throw ngraph_error("Batching not enabled for SEAL in encode");
   }
@@ -124,7 +124,7 @@ void runtime::he::he_seal::HESealBFVBackend::encode(
 }
 
 void runtime::he::he_seal::HESealBFVBackend::encode(
-    runtime::he::he_seal::SealPlaintextWrapper* plaintext) const {
+    runtime::he::he_seal::SealPlaintextWrapper* plaintext, bool complex) const {
   std::lock_guard<std::mutex> encode_lock(m_encode_mutex);
   if (plaintext->is_encoded()) {
     return;

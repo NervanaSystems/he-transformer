@@ -15,6 +15,7 @@
 //*****************************************************************************
 
 #include <chrono>
+#include <complex>
 #include <cstdint>
 #include <cstdlib>
 #include <fstream>
@@ -122,7 +123,8 @@ runtime::he::he_seal::HESealCKKSBackend::create_batched_plain_tensor(
 
 void runtime::he::he_seal::HESealCKKSBackend::encode(
     std::vector<std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>>&
-        plaintexts) const {
+        plaintexts,
+    bool complex) const {
   std::lock_guard<std::mutex> encode_lock(m_encode_mutex);
   // TODO: check all plaintexts are different!
 
@@ -145,7 +147,7 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
 }
 
 void runtime::he::he_seal::HESealCKKSBackend::encode(
-    runtime::he::he_seal::SealPlaintextWrapper* plaintext) const {
+    runtime::he::he_seal::SealPlaintextWrapper* plaintext, bool complex) const {
   std::lock_guard<std::mutex> encode_lock(m_encode_mutex);
   if (plaintext->is_encoded()) {
     return;
@@ -162,7 +164,7 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
 
 void runtime::he::he_seal::HESealCKKSBackend::encode(
     shared_ptr<runtime::he::HEPlaintext>& output, const void* input,
-    const element::Type& type, size_t count) const {
+    const element::Type& type, bool complex, size_t count) const {
   auto seal_plaintext_wrapper =
       dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(output);
 
@@ -175,16 +177,36 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
   if (count == 1) {
     double value = (double)(*(float*)input);
     seal_plaintext_wrapper->set_values({float(value)});
-    m_ckks_encoder->encode(value, m_scale,
-                           seal_plaintext_wrapper->get_plaintext());
+    if (complex) {
+      m_ckks_encoder->encode(std::complex<double>(value, value), m_scale,
+                             seal_plaintext_wrapper->get_plaintext());
+      seal_plaintext_wrapper->set_complex(true);
+    } else {
+      m_ckks_encoder->encode(value, m_scale,
+                             seal_plaintext_wrapper->get_plaintext());
+      seal_plaintext_wrapper->set_complex(false);
+    }
     seal_plaintext_wrapper->set_encoded(true);
   } else {
     vector<float> values{(float*)input, (float*)input + count};
     NGRAPH_ASSERT(values.size() == count);
     seal_plaintext_wrapper->set_values(values);
     vector<double> double_values(values.begin(), values.end());
-    m_ckks_encoder->encode(double_values, m_scale,
-                           seal_plaintext_wrapper->get_plaintext());
+    if (complex) {
+      vector<std::complex<double>> complex_values;
+      for (const double value : double_values) {
+        complex_values.emplace_back((value, value));
+      }
+
+      m_ckks_encoder->encode(complex_values, m_scale,
+                             seal_plaintext_wrapper->get_plaintext());
+      seal_plaintext_wrapper->set_complex(true);
+    } else {
+      m_ckks_encoder->encode(double_values, m_scale,
+                             seal_plaintext_wrapper->get_plaintext());
+      seal_plaintext_wrapper->set_complex(false);
+    }
+
     seal_plaintext_wrapper->set_encoded(true);
   }
 }
@@ -207,8 +229,21 @@ void runtime::he::he_seal::HESealCKKSBackend::decode(
   auto seal_input = dynamic_cast<const SealPlaintextWrapper*>(input);
   NGRAPH_ASSERT(seal_input != nullptr)
       << "HESealCKKSBackend::decode input is not seal plaintext";
-  vector<double> xs;
-  m_ckks_encoder->decode(seal_input->get_plaintext(), xs);
-  vector<float> xs_float(xs.begin(), xs.end());
-  input->set_values(xs_float);
+
+  if (input->is_complex()) {
+    vector<complex<double>> xs;
+    m_ckks_encoder->decode(seal_input->get_plaintext(), xs);
+    vector<float> xs_float(xs.size() * 2);
+
+    for (size_t i = 0; i < xs.size(); ++i) {
+      xs_float[2 * i] = (float)(xs[i].real());
+      xs_float[2 * i + 1] = (float)(xs[i].imag());
+    }
+    input->set_values(xs_float);
+  } else {
+    vector<double> xs;
+    m_ckks_encoder->decode(seal_input->get_plaintext(), xs);
+    vector<float> xs_float(xs.begin(), xs.end());
+    input->set_values(xs_float);
+  }
 }

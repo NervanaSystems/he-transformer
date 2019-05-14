@@ -27,6 +27,10 @@ class HECiphertext {
   virtual ~HECiphertext(){};
 
   virtual void save(std::ostream& stream) const = 0;
+
+  virtual bool complex_packing() const = 0;
+
+  virtual void set_complex_packing(bool toggle) = 0;
 };
 }  // namespace he
 }  // namespace runtime

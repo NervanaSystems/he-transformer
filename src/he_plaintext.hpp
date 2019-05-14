@@ -27,7 +27,7 @@ class HEPlaintext {
  public:
   HEPlaintext(){};
   HEPlaintext(const std::vector<float> values)
-      : m_values(values), m_is_encoded(false){};
+      : m_values(values), m_is_encoded(false), m_is_complex(false){};
   virtual ~HEPlaintext(){};
 
   void set_values(const std::vector<float>& values) { m_values = values; }
@@ -39,9 +39,13 @@ class HEPlaintext {
   bool is_encoded() const { return m_is_encoded; }
   void set_encoded(bool encoded) { m_is_encoded = encoded; }
 
+  bool is_complex() const { return m_is_complex; }
+  void set_complex(bool toggle) { m_is_complex = toggle; }
+
  protected:
   std::vector<float> m_values;
   bool m_is_encoded;
+  bool m_is_complex;
 };
 }  // namespace he
 }  // namespace runtime
