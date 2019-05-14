@@ -45,8 +45,6 @@ void runtime::he::kernel::result(
   }
   for (size_t i = 0; i < count; ++i) {
     he_backend->decrypt(out[i], arg[i].get());
-    NGRAPH_INFO << "Decoding result " << i;
     he_backend->decode(out[i].get());
-    NGRAPH_INFO << "Done decoding result " << i;
   }
 }
