@@ -67,7 +67,8 @@ void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
       m_plaintexts[dst_index]->set_values({f});
     }
   } else {
-    NGRAPH_INFO << "Writing " << m_batch_size << "floats";
+    NGRAPH_INFO << "Writing " << num_elements_to_write
+                << " floats with batch size " << m_batch_size;
 #pragma omp parallel for
     for (size_t i = 0; i < num_elements_to_write; ++i) {
       const void* src_with_offset = (void*)((char*)source + i * type_byte_size);

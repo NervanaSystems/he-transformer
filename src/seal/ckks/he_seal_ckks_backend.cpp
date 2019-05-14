@@ -147,7 +147,6 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
   }
   vector<double> double_vals(plaintext->get_values().begin(),
                              plaintext->get_values().end());
-
   m_ckks_encoder->encode(double_vals, m_scale, plaintext->get_plaintext());
   plaintext->set_encoded(true);
 }
@@ -192,7 +191,10 @@ void runtime::he::he_seal::HESealCKKSBackend::decode(
   decode(input);
 
   vector<float> xs_float = input->get_values();
-  NGRAPH_INFO << "Memcpying " << xs_float[0];
+  NGRAPH_INFO << "Memcpying ";
+  for (size_t i = 0; i < count; ++i) {
+    NGRAPH_INFO << xs_float[i];
+  }
   memcpy(output, &xs_float[0], type.size() * count);
 }
 

@@ -66,7 +66,7 @@ void he_seal::kernel::scalar_multiply(
       << "Element type " << element_type << " is not float";
 
   // TODO: check behavior more thoroughly
-  if (arg1->is_single_value() && std::abs(arg1->get_values()[0] < 1e-5f)) {
+  if (arg1->is_single_value() && std::abs(arg1->get_values()[0]) < 1e-5f) {
     out = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(
         he_seal_backend->create_valued_ciphertext(0, element_type));
   } else if (arg1->is_single_value() && arg1->get_values()[0] == 1.0f) {
@@ -132,8 +132,6 @@ void he_seal::kernel::scalar_multiply(
 
   std::vector<float> arg0_vals = arg0->get_values();
   std::vector<float> arg1_vals = arg1->get_values();
-  NGRAPH_INFO << "arg0_vals.size() " << arg0_vals.size();
-  NGRAPH_INFO << "arg1_vals.size() " << arg1_vals.size();
   std::vector<float> out_vals(arg0->num_values());
 
   NGRAPH_ASSERT(arg0_vals.size() > 0)
@@ -145,24 +143,13 @@ void he_seal::kernel::scalar_multiply(
     std::transform(arg1_vals.begin(), arg1_vals.end(), out_vals.begin(),
                    std::bind(std::multiplies<float>(), std::placeholders::_1,
                              arg0_vals[0]));
-    NGRAPH_INFO << "out_vals " << out_vals[0] << ", " << out_vals[1] << ", "
-                << out_vals[2];
-
   } else if (arg1_vals.size() == 1) {
     std::transform(arg0_vals.begin(), arg0_vals.end(), out_vals.begin(),
                    std::bind(std::multiplies<float>(), std::placeholders::_1,
                              arg1_vals[0]));
-    NGRAPH_INFO << "out_vals " << out_vals[0] << ", " << out_vals[1] << ", "
-                << out_vals[2];
   } else {
     std::transform(arg0_vals.begin(), arg0_vals.end(), arg1_vals.begin(),
                    out_vals.begin(), std::multiplies<float>());
-    NGRAPH_INFO << "arg0_vals " << arg0_vals[0] << ", " << arg0_vals[1] << ", "
-                << arg0_vals[2];
-    NGRAPH_INFO << "arg1_vals " << arg1_vals[0] << ", " << arg1_vals[1] << ", "
-                << arg1_vals[2];
-    NGRAPH_INFO << "out_vals " << out_vals[0] << ", " << out_vals[1] << ", "
-                << out_vals[2];
   }
   out->set_values(out_vals);
 }
