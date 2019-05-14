@@ -42,6 +42,9 @@ void he_seal::ckks::kernel::scalar_add_ckks(
     const element::Type& element_type,
     const he_seal::HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
+  if (!arg1->is_encoded()) {
+    he_seal_ckks_backend->encode(arg1);
+  }
   match_modulus_inplace(arg0, arg1, he_seal_ckks_backend, pool);
   match_scale(arg0, arg1, he_seal_ckks_backend);
 

@@ -61,6 +61,9 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
     const element::Type& element_type,
     const runtime::he::he_seal::HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
+  if (!arg1->is_encoded()) {
+    he_seal_ckks_backend->encode(arg1);
+  }
   match_modulus_inplace(arg0, arg1, he_seal_ckks_backend, pool);
   match_scale(arg0, arg1, he_seal_ckks_backend);
 
@@ -76,8 +79,17 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
     exit(1);
   }
 
-  he_seal_ckks_backend->get_evaluator()->multiply_plain(
-      arg0->m_ciphertext, arg1->get_plaintext(), out->m_ciphertext, pool);
+  try {
+    he_seal_ckks_backend->get_evaluator()->multiply_plain(
+        arg0->m_ciphertext, arg1->get_plaintext(), out->m_ciphertext, pool);
+  } catch (const std::exception& e) {
+    NGRAPH_INFO << "Error multiplying plain " << e.what();
+    NGRAPH_INFO << "arg1->get_values().size() " << arg1->get_values().size();
+    auto& values = arg1->get_values();
+    for (const auto& elem : values) {
+      NGRAPH_INFO << elem;
+    }
+  }
 
   he_seal_ckks_backend->get_evaluator()->relinearize_inplace(
       out->m_ciphertext, *(he_seal_ckks_backend->get_relin_keys()), pool);

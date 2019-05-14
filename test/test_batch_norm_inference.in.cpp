@@ -54,7 +54,7 @@ class BatchNormInferenceTester {
     m_beta = backend->create_plain_tensor(etype, channel_shape);
     m_mean = backend->create_plain_tensor(etype, channel_shape);
     m_variance = backend->create_plain_tensor(etype, channel_shape);
-    m_normed_input = backend->create_tensor(etype, input_shape);
+    m_normed_input = backend->create_cipher_tensor(etype, input_shape);
   }
 
   bool call(const std::vector<T>& input, const std::vector<T>& gamma,

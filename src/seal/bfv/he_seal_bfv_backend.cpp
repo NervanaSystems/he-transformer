@@ -120,18 +120,48 @@ void runtime::he::he_seal::HESealBFVBackend::encode(
   }
 
   output = make_shared<runtime::he::he_seal::SealPlaintextWrapper>(
-      m_integer_encoder->encode(int_val), int_val);
+      m_integer_encoder->encode(int_val), float_val);
+}
+
+void runtime::he::he_seal::HESealBFVBackend::encode(
+    runtime::he::he_seal::SealPlaintextWrapper* plaintext) const {
+  std::lock_guard<std::mutex> encode_lock(m_encode_mutex);
+  if (plaintext->is_encoded()) {
+    return;
+  }
+
+  vector<double> double_vals(plaintext->get_values().begin(),
+                             plaintext->get_values().end());
+
+  NGRAPH_ASSERT(plaintext->num_values() == 1)
+      << "BFV backend doesn't support batched encoding";
+
+  float float_val = plaintext->get_values()[0];
+
+  int32_t int_val;
+  if (ceilf(float_val) == float_val) {
+    int_val = static_cast<int32_t>(float_val);
+  } else {
+    throw ngraph_error("BFV float only supported for underlying int32_t type");
+  }
+
+  plaintext->get_plaintext() = m_integer_encoder->encode(int_val);
+  plaintext->set_encoded(true);
 }
 
 void runtime::he::he_seal::HESealBFVBackend::decode(
-    void* output, const runtime::he::HEPlaintext* input,
-    const element::Type& type, size_t count) const {
+    void* output, runtime::he::HEPlaintext* input, const element::Type& type,
+    size_t count) const {
   if (count != 1) {
     throw ngraph_error("Batching not enabled for SEAL BFV decode");
   }
-  NGRAPH_ASSERT(type == element::f32)
-      << "BFV decode supports only float decoding, received type " << type;
+  decode(input);
+  float fl_val = input->get_values()[0];
+  memcpy(output, &fl_val, type.size());
+}
 
+void runtime::he::he_seal::HESealBFVBackend::decode(
+    runtime::he::HEPlaintext* input) const {
   auto seal_input = dynamic_cast<const SealPlaintextWrapper*>(input);
 
   NGRAPH_ASSERT(seal_input != nullptr)
@@ -139,5 +169,5 @@ void runtime::he::he_seal::HESealBFVBackend::decode(
 
   int32_t val = m_integer_encoder->decode_int32(seal_input->get_plaintext());
   float fl_val{val};
-  memcpy(output, &fl_val, type.size());
+  input->set_values({fl_val});
 }

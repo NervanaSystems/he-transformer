@@ -49,24 +49,14 @@ void kernel::scalar_add(HEPlaintext* arg0, HEPlaintext* arg1,
                         shared_ptr<HEPlaintext>& out,
                         const element::Type& element_type,
                         const HEBackend* he_backend) {
-  if (auto he_seal_backend =
-          dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
-    auto arg0_seal = static_cast<he_seal::SealPlaintextWrapper*>(arg0);
-    auto arg1_seal = static_cast<he_seal::SealPlaintextWrapper*>(arg1);
-    auto out_seal = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(out);
+  std::vector<float> arg0_vals = arg0->get_values();
+  std::vector<float> arg1_vals = arg1->get_values();
+  std::vector<float> out_vals(arg0->num_values());
 
-    if (out_seal) {
-      he_seal::kernel::scalar_add(arg0_seal, arg1_seal, out_seal, element_type,
-                                  he_seal_backend);
-      out = dynamic_pointer_cast<HEPlaintext>(out_seal);
-    } else {
-      throw ngraph_error(
-          "Add backend is SEAL, but arguments or outputs are not "
-          "SealPlaintextWrapper.");
-    }
-  } else {
-    throw ngraph_error("Add backend is not SEAL.");
-  }
+  std::transform(arg0_vals.begin(), arg0_vals.end(), arg1_vals.begin(),
+                 out_vals.begin(), std::plus<float>());
+
+  out->set_values(out_vals);
 }
 
 void kernel::scalar_add(HECiphertext* arg0, HEPlaintext* arg1,

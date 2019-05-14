@@ -46,8 +46,22 @@ void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
   if (num_elements_to_write == 1) {
     const void* src_with_offset = (void*)((char*)source);
     size_t dst_index = dst_start_index;
-    m_he_backend->encode(m_plaintexts[dst_index], src_with_offset,
-                         element_type);
+    if (m_batch_size > 1 && is_batched()) {
+      std::vector<float> values(m_batch_size);
+
+      for (size_t j = 0; j < m_batch_size; ++j) {
+        const void* src = (void*)((char*)source +
+                                  type_byte_size * (j * num_elements_to_write));
+
+        float val = *(float*)(src);
+        values[j] = val;
+      }
+      m_plaintexts[dst_index]->set_values(values);
+
+    } else {
+      float f = *(float*)(src_with_offset);
+      m_plaintexts[dst_index]->set_values({f});
+    }
   } else {
 #pragma omp parallel for
     for (size_t i = 0; i < num_elements_to_write; ++i) {
@@ -55,25 +69,21 @@ void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
       size_t dst_index = dst_start_index + i;
 
       if (m_batch_size > 1) {
-        size_t allocation_size = type_byte_size * m_batch_size;
-        const void* batch_src = malloc(allocation_size);
-        if (!batch_src) {
-          throw ngraph_error("Error allocating HE Cipher Tensor View memory");
-        }
+        std::vector<float> values(m_batch_size);
+
         for (size_t j = 0; j < m_batch_size; ++j) {
-          void* destination = (void*)((char*)batch_src + j * type_byte_size);
           const void* src =
               (void*)((char*)source +
                       type_byte_size * (i + j * num_elements_to_write));
-          memcpy(destination, src, type_byte_size);
+
+          float val = *(float*)(src);
+          values[j] = val;
         }
-        m_he_backend->encode(m_plaintexts[dst_index], batch_src, element_type,
-                             m_batch_size);
-        free((void*)batch_src);
+        m_plaintexts[dst_index]->set_values(values);
 
       } else {
-        m_he_backend->encode(m_plaintexts[dst_index], src_with_offset,
-                             element_type);
+        float f = *(float*)(src_with_offset);
+        m_plaintexts[dst_index]->set_values({f});
       }
     }
   }
@@ -81,8 +91,12 @@ void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
 
 void runtime::he::HEPlainTensor::read(void* target, size_t tensor_offset,
                                       size_t n) const {
+  NGRAPH_ASSERT(tensor_offset == 0)
+      << "Only support reading from beginning of tensor";
+
   check_io_bounds(target, tensor_offset, n);
   const element::Type& element_type = get_tensor_layout()->get_element_type();
+  NGRAPH_ASSERT(element_type == element::f32) << "Only support float32";
   size_t type_byte_size = element_type.size();
   size_t src_start_index = tensor_offset / type_byte_size;
   size_t num_elements_to_read = n / (type_byte_size * m_batch_size);
@@ -90,27 +104,24 @@ void runtime::he::HEPlainTensor::read(void* target, size_t tensor_offset,
   if (num_elements_to_read == 1) {
     void* dst_with_offset = (void*)((char*)target);
     size_t src_index = src_start_index;
-    m_he_backend->decode(dst_with_offset, m_plaintexts[src_index].get(),
-                         element_type, m_batch_size);
+    std::vector<float> values = m_plaintexts[src_index]->get_values();
+    memcpy(dst_with_offset, &values[0], type_byte_size * m_batch_size);
   } else {
 #pragma omp parallel for
     for (size_t i = 0; i < num_elements_to_read; ++i) {
-      void* dst = malloc(type_byte_size * m_batch_size);
-      if (!dst) {
-        throw ngraph_error("Error allocating HE Cipher Tensor memory");
-      }
       size_t src_index = src_start_index + i;
-      m_he_backend->decode(dst, m_plaintexts[src_index].get(), element_type,
-                           m_batch_size);
+      std::vector<float> values = m_plaintexts[src_index]->get_values();
+      NGRAPH_ASSERT(values.size() >= m_batch_size)
+          << "values size " << values.size() << " is smaller than batch size "
+          << m_batch_size;
 
       for (size_t j = 0; j < m_batch_size; ++j) {
         void* dst_with_offset =
             (void*)((char*)target +
                     type_byte_size * (i + j * num_elements_to_read));
-        const void* src = (void*)((char*)dst + j * type_byte_size);
+        const void* src = (void*)(&values[j]);
         memcpy(dst_with_offset, src, type_byte_size);
       }
-      free(dst);
     }
   }
 }

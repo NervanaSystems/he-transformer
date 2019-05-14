@@ -49,6 +49,7 @@ void he_seal::bfv::kernel::scalar_multiply_bfv(
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const runtime::he::he_seal::HESealBFVBackend* he_seal_bfv_backend) {
+  he_seal_bfv_backend->encode(arg1);
   if (arg0 == out.get()) {
     he_seal_bfv_backend->get_evaluator()->multiply_plain_inplace(
         out->m_ciphertext, arg1->get_plaintext());
