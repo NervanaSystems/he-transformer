@@ -29,3 +29,6 @@ add_4_3_batch_plain
 multiply_4_3_batch
 dot_scalar_batch
 avg_pool_1d_1channel_2image_batched
+
+# Segfault
+sum_trivial

@@ -132,8 +132,16 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
     if (!plaintext->is_encoded()) {
       vector<double> double_vals(plaintext->get_values().begin(),
                                  plaintext->get_values().end());
-
-      m_ckks_encoder->encode(double_vals, m_scale, plaintext->get_plaintext());
+      NGRAPH_INFO << "Encoding " << double_vals.size();
+      if (double_vals.size() == 1) {
+        m_ckks_encoder->encode(double_vals[0], m_scale,
+                               plaintext->get_plaintext());
+      } else {
+        NGRAPH_INFO << double_vals[0];
+        NGRAPH_INFO << double_vals[1];
+        m_ckks_encoder->encode(double_vals, m_scale,
+                               plaintext->get_plaintext());
+      }
       plaintext->set_encoded(true);
     }
   }
@@ -147,7 +155,14 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
   }
   vector<double> double_vals(plaintext->get_values().begin(),
                              plaintext->get_values().end());
-  m_ckks_encoder->encode(double_vals, m_scale, plaintext->get_plaintext());
+  NGRAPH_INFO << "Encoding " << double_vals.size() << " values";
+  if (double_vals.size() == 1) {
+    m_ckks_encoder->encode(double_vals[0], m_scale, plaintext->get_plaintext());
+  } else {
+    NGRAPH_INFO << double_vals[0];
+    NGRAPH_INFO << double_vals[1];
+    m_ckks_encoder->encode(double_vals, m_scale, plaintext->get_plaintext());
+  }
   plaintext->set_encoded(true);
 }
 
@@ -162,6 +177,7 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
 
   NGRAPH_ASSERT(type == element::f32)
       << "CKKS encode supports only float encoding, received type " << type;
+  NGRAPH_INFO << "Encoding num values " << count;
 
   if (count == 1) {
     double value = (double)(*(float*)input);
@@ -171,10 +187,9 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
     seal_plaintext_wrapper->set_encoded(true);
   } else {
     vector<float> values{(float*)input, (float*)input + count};
+    NGRAPH_ASSERT(values.size() == count);
     seal_plaintext_wrapper->set_values(values);
-    NGRAPH_INFO << "Encoding num values " << values.size();
     vector<double> double_values(values.begin(), values.end());
-
     m_ckks_encoder->encode(double_values, m_scale,
                            seal_plaintext_wrapper->get_plaintext());
     seal_plaintext_wrapper->set_encoded(true);
@@ -206,6 +221,10 @@ void runtime::he::he_seal::HESealCKKSBackend::decode(
   vector<double> xs;
   m_ckks_encoder->decode(seal_input->get_plaintext(), xs);
   vector<float> xs_float(xs.begin(), xs.end());
-  NGRAPH_INFO << "Setting values " << xs_float[0];
+  NGRAPH_INFO << "Setting " << xs_float.size() << " values ";
+
+  for (size_t i = 0; i < 2; ++i) {
+    NGRAPH_INFO << xs_float[i];
+  }
   input->set_values(xs_float);
 }
