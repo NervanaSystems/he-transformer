@@ -83,8 +83,12 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
     he_seal_ckks_backend->get_evaluator()->multiply_plain(
         arg0->m_ciphertext, arg1->get_plaintext(), out->m_ciphertext, pool);
   } catch (const std::exception& e) {
-    NGRAPH_INFO << "Error multiplying plain" << arg1->get_values()[0];
-    exit(1);
+    NGRAPH_INFO << "Error multiplying plain " << e.what();
+    NGRAPH_INFO << "arg1->get_values().size() " << arg1->get_values().size();
+    auto& values = arg1->get_values();
+    for (const auto& elem : values) {
+      NGRAPH_INFO << elem;
+    }
   }
 
   he_seal_ckks_backend->get_evaluator()->relinearize_inplace(

@@ -65,14 +65,18 @@ void he_seal::kernel::scalar_multiply(
   NGRAPH_ASSERT(element_type == element::f32)
       << "Element type " << element_type << " is not float";
 
-  // TODO: check behavior more thoroughly
-  if (arg1->is_single_value() && std::abs(arg1->get_values()[0]) < 1e-5f) {
+  const auto& values = arg1->get_values();
+  // TODO: check multiplying by small numbers behavior more thoroughly
+  if (std::all_of(values.begin(), values.end(),
+                  [](float f) { return std::abs(f) < 1e-5f; })) {
     out = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(
         he_seal_backend->create_valued_ciphertext(0, element_type));
-  } else if (arg1->is_single_value() && arg1->get_values()[0] == 1.0f) {
+  } else if (std::all_of(values.begin(), values.end(),
+                         [](float f) { return std::abs(f) == 1.0f; })) {
     // TODO: make copy only if needed
     out = make_shared<he_seal::SealCiphertextWrapper>(*arg0);
-  } else if (arg1->is_single_value() && arg1->get_values()[0] == -1.0f) {
+  } else if (std::all_of(values.begin(), values.end(),
+                         [](float f) { return std::abs(f) == -1.0f; })) {
     he_seal::kernel::scalar_negate(arg0, out, element_type, he_seal_backend);
   } else {
     if (auto he_seal_ckks_backend =
