@@ -87,10 +87,11 @@ std::vector<T> generalized_read_vector(std::shared_ptr<runtime::Tensor> tv) {
     throw std::invalid_argument("read_vector type must match Tensor type");
   }
   if (auto hetv = std::dynamic_pointer_cast<runtime::he::HETensor>(tv)) {
-    size_t element_count = shape_size(hetv->get_expanded_shape());
+    size_t element_count = shape_size(hetv->get_shape());
 
     NGRAPH_INFO << "Element count " << element_count;
     size_t size = element_count * sizeof(T);
+    NGRAPH_INFO << "Size " << size;
     std::vector<T> rc(element_count);
     hetv->read(rc.data(), 0, size);
     return rc;

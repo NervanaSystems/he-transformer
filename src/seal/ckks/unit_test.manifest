@@ -1,7 +1,4 @@
 reshape_6d # Slow
 convolution_2d_1item_padded_1_1x1_1 # Needs larger parameters => slow
-convolution_2d_1image_2outputs # Needs larger parameters => slow
+# convolution_2d_1image_2outputs # Needs larger parameters => slow
 convolution_2d_1item_padded_2_3x4_5 # Needs larger parameters => slow
-multiply_4_3_batch # Need to enable plaintext batch decoding
-dot_scalar_batch  # Need to enable plaintext batch decoding
-add_4_3_batch_plain # Need to enable plaintext batch decoding

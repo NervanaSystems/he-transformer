@@ -69,8 +69,10 @@ shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(
 shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(
     const element::Type& element_type, const Shape& shape) {
   if (batch_data()) {
+    NGRAPH_INFO << "Creating tensor == batched";
     return create_batched_plain_tensor(element_type, shape);
   } else {
+    NGRAPH_INFO << "Creating tensor == unbatched";
     return create_plain_tensor(element_type, shape);
   }
 }
@@ -78,6 +80,8 @@ shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_tensor(
 shared_ptr<runtime::Tensor> runtime::he::HEBackend::create_plain_tensor(
     const element::Type& element_type, const Shape& shape,
     const bool batched) const {
+  NGRAPH_INFO << "Creating plain tensor shape {" << join(shape, "x")
+              << "}: batched? " << batched;
   auto rc = make_shared<runtime::he::HEPlainTensor>(
       element_type, shape, this, create_empty_plaintext(), batched);
   return static_pointer_cast<runtime::Tensor>(rc);

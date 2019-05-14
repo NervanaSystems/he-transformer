@@ -116,6 +116,7 @@ void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset,
       shared_ptr<runtime::he::HEPlaintext> p =
           m_he_backend->create_empty_plaintext();
       m_he_backend->decrypt(p, m_cipher_texts[src_index].get());
+      // m_he_backend->decode(p.get());
       m_he_backend->decode(dst, p.get(), element_type, m_batch_size);
 
       for (size_t j = 0; j < m_batch_size; ++j) {

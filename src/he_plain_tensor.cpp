@@ -43,12 +43,29 @@ void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
   size_t dst_start_index = tensor_offset / type_byte_size;
   size_t num_elements_to_write = n / (type_byte_size * m_batch_size);
 
+  NGRAPH_INFO << "m_batch_size " << m_batch_size;
+  NGRAPH_INFO << "is_batched() " << is_batched();
+
   if (num_elements_to_write == 1) {
     const void* src_with_offset = (void*)((char*)source);
     size_t dst_index = dst_start_index;
-    float f = *(float*)(src_with_offset);
-    NGRAPH_INFO << "Writing float " << f;
-    m_plaintexts[dst_index]->set_values({f});
+    if (m_batch_size > 1 && is_batched()) {
+      std::vector<float> values(m_batch_size);
+
+      for (size_t j = 0; j < m_batch_size; ++j) {
+        const void* src = (void*)((char*)source +
+                                  type_byte_size * (j * num_elements_to_write));
+
+        float val = *(float*)(src);
+        values[j] = val;
+      }
+      m_plaintexts[dst_index]->set_values(values);
+
+    } else {
+      float f = *(float*)(src_with_offset);
+      NGRAPH_INFO << "Writing float " << f;
+      m_plaintexts[dst_index]->set_values({f});
+    }
   } else {
     NGRAPH_INFO << "Writing " << m_batch_size << "floats";
 #pragma omp parallel for
@@ -90,30 +107,29 @@ void runtime::he::HEPlainTensor::read(void* target, size_t tensor_offset,
   size_t src_start_index = tensor_offset / type_byte_size;
   size_t num_elements_to_read = n / (type_byte_size * m_batch_size);
 
+  NGRAPH_INFO << "Num elememnts to read" << num_elements_to_read;
+
   if (num_elements_to_read == 1) {
     void* dst_with_offset = (void*)((char*)target);
     size_t src_index = src_start_index;
 
-    float f = m_plaintexts[src_index]->get_values()[0];
-
-    NGRAPH_INFO << "Reading float " << f;
+    std::vector<float> values = m_plaintexts[src_index]->get_values();
+    NGRAPH_INFO << "batch size " << m_batch_size;
+    NGRAPH_INFO << "values ";
+    for (size_t i = 0; i < m_batch_size; ++i) {
+      NGRAPH_INFO << values[i];
+    }
 
     // TODO: use elemnt_type_size
-    memcpy(dst_with_offset, &f, sizeof(float));
+    memcpy(dst_with_offset, &values[0], sizeof(float) * m_batch_size);
   } else {
 #pragma omp parallel for
     for (size_t i = 0; i < num_elements_to_read; ++i) {
       size_t src_index = src_start_index + i;
       std::vector<float> values = m_plaintexts[src_index]->get_values();
-      NGRAPH_ASSERT(values.size() == m_batch_size)
-          << "values size " << values.size() << " doesn't match batch size "
+      NGRAPH_ASSERT(values.size() >= m_batch_size)
+          << "values size " << values.size() << " is smaller than batch size "
           << m_batch_size;
-
-      NGRAPH_INFO << "Reading floats";
-      for (const auto& elem : values) {
-        NGRAPH_INFO << elem;
-      }
-      NGRAPH_INFO << "m_batch_size " << m_batch_size;
 
       for (size_t j = 0; j < m_batch_size; ++j) {
         void* dst_with_offset =
