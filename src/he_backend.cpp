@@ -39,7 +39,7 @@ runtime::he::HEBackend::create_valued_plaintext(
 
   shared_ptr<runtime::he::HEPlaintext> plaintext = create_empty_plaintext();
 
-  encode(plaintext, (void*)(&value), element_type, 1);
+  encode(plaintext, (void*)(&value), element_type, m_complex_packing, 1);
   return plaintext;
 }
 

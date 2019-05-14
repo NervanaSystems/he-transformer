@@ -208,11 +208,13 @@ class HEBackend : public runtime::Backend {
   bool encrypt_data() const { return m_encrypt_data; };
   bool batch_data() const { return m_batch_data; };
   bool encrypt_model() const { return m_encrypt_model; };
+  bool complex_packing() const { return m_complex_packing; };
 
  protected:
   bool m_encrypt_data{std::getenv("NGRAPH_ENCRYPT_DATA") != nullptr};
   bool m_batch_data{std::getenv("NGRAPH_BATCH_DATA") != nullptr};
   bool m_encrypt_model{std::getenv("NGRAPH_ENCRYPT_MODEL") != nullptr};
+  bool m_complex_packing{std::getenv("NGRAPH_COMPLEX_PACK") != nullptr};
 
   std::shared_ptr<HEEncryptionParameters> m_encryption_params;
 };

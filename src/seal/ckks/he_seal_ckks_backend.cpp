@@ -121,6 +121,7 @@ runtime::he::he_seal::HESealCKKSBackend::create_batched_plain_tensor(
   return static_pointer_cast<runtime::Tensor>(rc);
 }
 
+// TODO: call encode function without lock guard
 void runtime::he::he_seal::HESealCKKSBackend::encode(
     std::vector<std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>>&
         plaintexts,
@@ -134,12 +135,23 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
     if (!plaintext->is_encoded()) {
       vector<double> double_vals(plaintext->get_values().begin(),
                                  plaintext->get_values().end());
-      if (double_vals.size() == 1) {
-        m_ckks_encoder->encode(double_vals[0], m_scale,
+      if (complex) {
+        vector<std::complex<double>> complex_values;
+        for (const double value : double_vals) {
+          complex_values.emplace_back((value, value));
+        }
+        m_ckks_encoder->encode(complex_values, m_scale,
                                plaintext->get_plaintext());
+        plaintext->set_complex(true);
       } else {
-        m_ckks_encoder->encode(double_vals, m_scale,
-                               plaintext->get_plaintext());
+        if (double_vals.size() == 1) {
+          m_ckks_encoder->encode(double_vals[0], m_scale,
+                                 plaintext->get_plaintext());
+        } else {
+          m_ckks_encoder->encode(double_vals, m_scale,
+                                 plaintext->get_plaintext());
+        }
+        plaintext->set_complex(true);
       }
       plaintext->set_encoded(true);
     }
@@ -154,10 +166,22 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
   }
   vector<double> double_vals(plaintext->get_values().begin(),
                              plaintext->get_values().end());
-  if (double_vals.size() == 1) {
-    m_ckks_encoder->encode(double_vals[0], m_scale, plaintext->get_plaintext());
+
+  if (complex) {
+    vector<std::complex<double>> complex_values;
+    for (const double value : double_vals) {
+      complex_values.emplace_back((value, value));
+    }
+    m_ckks_encoder->encode(complex_values, m_scale, plaintext->get_plaintext());
+    plaintext->set_complex(true);
   } else {
-    m_ckks_encoder->encode(double_vals, m_scale, plaintext->get_plaintext());
+    if (double_vals.size() == 1) {
+      m_ckks_encoder->encode(double_vals[0], m_scale,
+                             plaintext->get_plaintext());
+    } else {
+      m_ckks_encoder->encode(double_vals, m_scale, plaintext->get_plaintext());
+    }
+    plaintext->set_complex(true);
   }
   plaintext->set_encoded(true);
 }
