@@ -63,8 +63,6 @@ void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
       m_plaintexts[dst_index]->set_values({f});
     }
   } else {
-    NGRAPH_INFO << "Writing " << num_elements_to_write
-                << " floats with batch size " << m_batch_size;
 #pragma omp parallel for
     for (size_t i = 0; i < num_elements_to_write; ++i) {
       const void* src_with_offset = (void*)((char*)source + i * type_byte_size);
@@ -85,7 +83,6 @@ void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
 
       } else {
         float f = *(float*)(src_with_offset);
-        NGRAPH_INFO << "Writing float " << f;
         m_plaintexts[dst_index]->set_values({f});
       }
     }
@@ -111,7 +108,7 @@ void runtime::he::HEPlainTensor::read(void* target, size_t tensor_offset,
     std::vector<float> values = m_plaintexts[src_index]->get_values();
 
     // TODO: use element_type_size
-    memcpy(dst_with_offset, &values[0], sizeof(float) * m_batch_size);
+    memcpy(dst_with_offset, &values[0], type_byte_size * m_batch_size);
   } else {
 #pragma omp parallel for
     for (size_t i = 0; i < num_elements_to_read; ++i) {

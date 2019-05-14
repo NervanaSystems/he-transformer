@@ -145,8 +145,6 @@ void runtime::he::he_seal::HESealBFVBackend::encode(
     throw ngraph_error("BFV float only supported for underlying int32_t type");
   }
 
-  NGRAPH_INFO << "JIT Encoding value " << float_val;
-
   plaintext->get_plaintext() = m_integer_encoder->encode(int_val);
   plaintext->set_encoded(true);
 }
