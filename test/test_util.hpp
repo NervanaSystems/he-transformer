@@ -76,11 +76,12 @@ std::vector<std::tuple<std::vector<std::shared_ptr<runtime::Tensor>>,
                        std::vector<std::shared_ptr<runtime::Tensor>>>>
 generate_plain_cipher_tensors(const std::vector<std::shared_ptr<Node>>& output,
                               const std::vector<std::shared_ptr<Node>>& input,
-                              runtime::Backend* backend,
+                              const runtime::Backend* backend,
                               const bool consistent_type = false,
                               const bool skip_plain_plain = false);
 
 // Reads batched vector
+// TODO: remove
 template <typename T>
 std::vector<T> generalized_read_vector(std::shared_ptr<runtime::Tensor> tv) {
   if (element::from<T>() != tv->get_tensor_layout()->get_element_type()) {

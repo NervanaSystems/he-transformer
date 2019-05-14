@@ -104,10 +104,7 @@ void runtime::he::HEPlainTensor::read(void* target, size_t tensor_offset,
   if (num_elements_to_read == 1) {
     void* dst_with_offset = (void*)((char*)target);
     size_t src_index = src_start_index;
-
     std::vector<float> values = m_plaintexts[src_index]->get_values();
-
-    // TODO: use element_type_size
     memcpy(dst_with_offset, &values[0], type_byte_size * m_batch_size);
   } else {
 #pragma omp parallel for
@@ -122,7 +119,6 @@ void runtime::he::HEPlainTensor::read(void* target, size_t tensor_offset,
         void* dst_with_offset =
             (void*)((char*)target +
                     type_byte_size * (i + j * num_elements_to_read));
-
         const void* src = (void*)(&values[j]);
         memcpy(dst_with_offset, src, type_byte_size);
       }

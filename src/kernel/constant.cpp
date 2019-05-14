@@ -35,7 +35,7 @@ void runtime::he::kernel::constant(
     const void* src_with_offset = (void*)((char*)data_ptr + i * type_byte_size);
     float f = *(float*)src_with_offset;
     out[i]->set_values({f});
-    // he_backend->encode(out[i], src_with_offset, element_type);
+    // Avoid encoding here (just-in-time encoding)
   }
 }
 
