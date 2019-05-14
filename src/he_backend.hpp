@@ -198,12 +198,13 @@ class HEBackend : public runtime::Backend {
   virtual void decrypt(std::shared_ptr<runtime::he::HEPlaintext>& output,
                        const runtime::he::HECiphertext* input) const = 0;
 
-  void set_batch_data(bool batch) { m_batch_data = batch; };
-
   const std::shared_ptr<HEEncryptionParameters> get_encryption_parameters()
       const {
     return m_encryption_params;
   };
+
+  void set_batch_data(bool batch) { m_batch_data = batch; };
+  void set_complex_batching(bool toggle) { m_complex_packing = toggle; }
 
   bool encrypt_data() const { return m_encrypt_data; };
   bool batch_data() const { return m_batch_data; };

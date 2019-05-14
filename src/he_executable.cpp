@@ -450,6 +450,9 @@ bool runtime::he::HEExecutable::call(
   if (m_encrypt_model) {
     NGRAPH_INFO << "Encrypting model";
   }
+  if (m_he_backend->complex_packing()) {
+    NGRAPH_INFO << "Complex packing";
+  }
 
   // convert inputs to HETensor
   vector<shared_ptr<runtime::he::HETensor>> he_inputs;
@@ -497,6 +500,8 @@ bool runtime::he::HEExecutable::call(
           // Enable complex batching!
           plain_input->get_element(i)->set_complex(
               m_he_backend->complex_packing());
+          NGRAPH_INFO << "complex?"
+                      << plain_input->get_element(i)->is_complex();
           m_he_backend->encrypt(cipher_input->get_element(i),
                                 plain_input->get_element(i).get());
         }

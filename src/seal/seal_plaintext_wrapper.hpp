@@ -30,16 +30,19 @@ struct SealPlaintextWrapper : public HEPlaintext {
   SealPlaintextWrapper(
       seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool()) {
     set_encoded(false);
+    set_complex(false);
   }
   SealPlaintextWrapper(const seal::Plaintext& plain, bool encoded)
       : m_plaintext(plain) {
     set_encoded(encoded);
+    set_complex(false);
   }
 
   SealPlaintextWrapper(const seal::Plaintext& plain,
                        const std::vector<float>& values)
       : HEPlaintext(values), m_plaintext(plain) {
     set_encoded(false);
+    set_complex(false);
   }
 
   inline seal::Plaintext& get_hetext() { return m_plaintext; }

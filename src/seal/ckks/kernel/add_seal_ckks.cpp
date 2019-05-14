@@ -42,12 +42,18 @@ void he_seal::ckks::kernel::scalar_add_ckks(
     const element::Type& element_type,
     const he_seal::HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
+  NGRAPH_INFO << "Adding plain+cipher";
+  if (arg0->complex_packing()) {
+    NGRAPH_INFO << "Adding with complex!";
+  }
   if (!arg1->is_encoded()) {
+    NGRAPH_INFO << "Encoding plaintext add";
     if (arg0->complex_packing()) {
       NGRAPH_INFO << "Encoding complex";
     }
     he_seal_ckks_backend->encode(arg1, arg0->complex_packing());
   }
+
   match_modulus_inplace(arg0, arg1, he_seal_ckks_backend, pool);
   match_scale(arg0, arg1, he_seal_ckks_backend);
 

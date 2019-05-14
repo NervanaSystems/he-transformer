@@ -64,6 +64,7 @@ void he_seal::kernel::scalar_add(
     const seal::MemoryPoolHandle& pool) {
   NGRAPH_ASSERT(element_type == element::f32);
 
+  // TODO: handle case where arg1 = {0, 0, 0, 0, ...}
   bool add_zero = arg1->is_single_value() && (arg1->get_values()[0] == 0.0f);
 
   if (add_zero) {

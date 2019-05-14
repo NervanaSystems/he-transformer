@@ -86,6 +86,8 @@ void runtime::he::he_seal::HESealBackend::encrypt(
 
   m_encryptor->encrypt(seal_input->get_plaintext(), seal_output->m_ciphertext);
   output->set_complex_packing(input->is_complex());
+  NGRAPH_INFO << "Input complex?" << input->is_complex();
+  NGRAPH_INFO << "Encrypted complex? " << output->complex_packing();
 }
 
 void runtime::he::he_seal::HESealBackend::decrypt(
