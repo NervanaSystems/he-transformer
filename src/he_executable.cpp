@@ -258,6 +258,12 @@ void runtime::he::HEExecutable::handle_message(
           << "Incorrect number of elements for parameter";
 
       input_tensor->set_elements(cipher_elements);
+      for (auto& cipher_elem : cipher_elements) {
+        cipher_elem->set_complex_packing(true);
+      }
+      for (auto& cipher_elem : cipher_elements) {
+        NGRAPH_ASSERT(cipher_elem->complex_packing());
+      }
       m_client_inputs.emplace_back(input_tensor);
       parameter_size_index += param_size;
     }
@@ -979,7 +985,7 @@ void runtime::he::HEExecutable::generate_calls(
         }
         auto he_seal_backend =
             (runtime::he::he_seal::HESealBackend*)m_he_backend;
-        he_seal_backend->encode(seal_plain);
+        he_seal_backend->encode(seal_plain, false);
 
         runtime::he::kernel::dot(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),

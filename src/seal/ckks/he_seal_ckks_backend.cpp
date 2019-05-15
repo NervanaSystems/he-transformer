@@ -129,6 +129,9 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
   std::lock_guard<std::mutex> encode_lock(m_encode_mutex);
   // TODO: check all plaintexts are different!
 
+  size_t slots = m_context->context_data()->parms().poly_modulus_degree();
+  NGRAPH_INFO << "slots" << slots;
+
 #pragma omp parallel for
   for (size_t i = 0; i < plaintexts.size(); ++i) {
     auto plaintext = plaintexts[i];
@@ -137,9 +140,16 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
                                  plaintext->get_values().end());
       if (complex) {
         vector<std::complex<double>> complex_values;
-        for (const double value : double_vals) {
-          complex_values.emplace_back((value, value));
+        if (double_vals.size() == 1) {
+          std::complex<double> val(double_vals[0], double_vals[0]);
+          complex_values = std::vector<std::complex<double>>(slots / 2, val);
+        } else {
+          for (const double value : double_vals) {
+            complex_values.emplace_back(std::complex<double>(value, value));
+          }
+          std::cout << "Encoding " << complex_values.size() << " complex vals";
         }
+
         m_ckks_encoder->encode(complex_values, m_scale,
                                plaintext->get_plaintext());
         plaintext->set_complex(true);
@@ -167,11 +177,21 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
   vector<double> double_vals(plaintext->get_values().begin(),
                              plaintext->get_values().end());
 
+  size_t slots = m_context->context_data()->parms().poly_modulus_degree();
+  NGRAPH_INFO << "slots" << slots;
+
   if (complex) {
     vector<std::complex<double>> complex_values;
-    for (const double value : double_vals) {
-      complex_values.emplace_back((value, value));
+    if (double_vals.size() == 1) {
+      std::complex<double> val(double_vals[0], double_vals[0]);
+      complex_values = std::vector<std::complex<double>>(slots / 2, val);
+    } else {
+      for (const double value : double_vals) {
+        complex_values.emplace_back(std::complex<double>(value, value));
+      }
+      std::cout << "Encoding " << complex_values.size() << " complex vals";
     }
+
     m_ckks_encoder->encode(complex_values, m_scale, plaintext->get_plaintext());
     plaintext->set_complex(true);
   } else {
@@ -192,6 +212,9 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
   auto seal_plaintext_wrapper =
       dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(output);
 
+  size_t slots = m_context->context_data()->parms().poly_modulus_degree();
+  NGRAPH_INFO << "slots" << slots;
+
   NGRAPH_ASSERT(seal_plaintext_wrapper != nullptr)
       << "HEPlaintext is not SealPlaintextWrapper";
 
@@ -202,7 +225,11 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
     double value = (double)(*(float*)input);
     seal_plaintext_wrapper->set_values({float(value)});
     if (complex) {
-      m_ckks_encoder->encode(std::complex<double>(value, value), m_scale,
+      std::cout << "Encoding one complex val";
+      if (value != 0.0) {
+        NGRAPH_ASSERT(false) << "One complex val shouldn't be encoded?";
+      }
+      m_ckks_encoder->encode(std::complex<double>{value, value}, m_scale,
                              seal_plaintext_wrapper->get_plaintext());
       seal_plaintext_wrapper->set_complex(true);
     } else {
@@ -218,9 +245,15 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
     vector<double> double_values(values.begin(), values.end());
     if (complex) {
       vector<std::complex<double>> complex_values;
-      for (const double value : double_values) {
-        complex_values.emplace_back((value, value));
+      if (double_values.size() == 1) {
+        std::complex<double> val(double_values[0], double_values[0]);
+        complex_values = std::vector<std::complex<double>>(slots / 2, val);
+      } else {
+        for (const double value : double_values) {
+          complex_values.emplace_back(std::complex<double>{value, value});
+        }
       }
+      std::cout << "Encoding " << complex_values.size() << " complex vals";
 
       m_ckks_encoder->encode(complex_values, m_scale,
                              seal_plaintext_wrapper->get_plaintext());

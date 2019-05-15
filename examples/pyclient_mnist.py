@@ -46,7 +46,10 @@ def test_mnist_cnn(FLAGS):
     results = np.round(results, 2)
     print('results', results)
 
-    y_pred = np.array(results).reshape(10, batch_size).argmax(axis=0)
+    y_pred_reshape = np.array(results).reshape(10, batch_size)
+    print('y_pred_reshape', y_pred_reshape.T)
+
+    y_pred = y_pred_reshape.argmax(axis=0)
     print('y_pred', y_pred)
     y_true = y_test_batch.argmax(axis=1)
 

@@ -33,6 +33,18 @@ def mlp_model(x, mode):
     with tf.name_scope('reshape'):
         x_image = tf.reshape(x, [-1, 28, 28, 1])
 
+        # TODO: remove
+        W1 = np.zeros((784, 10), dtype=np.float32)
+        #W1 = get_variable('W1', [784, 10], mode)
+        y = tf.matmul(x, W1)
+        #W2 = get_variable('W2', [10], mode)
+        W2 = np.array([1.1, 2.2, 3.3, 4.4, 5, 6, 7, 8, 9, 10])
+        #W2 = np.ones((10), dtype=np.float32)
+        y = y + W2
+        #y = tf.nn.relu(y)
+
+        return y
+
     with tf.name_scope('conv1'):
         W_conv1 = get_variable('W_conv1', [5, 5, 1, 5], mode)
         y = conv2d_stride_2_valid(x_image, W_conv1)
@@ -46,11 +58,11 @@ def mlp_model(x, mode):
 
     with tf.name_scope('fc1'):
         y = tf.reshape(y, [-1, 7 * 7 * 5])
-        W_fc1 = get_variable('W_fc1', [7 * 7 * 5, 100], mode)
+        W_fc1 = get_variable('W_fc1', [7 * 7 * 5, 10], mode)
         y = tf.matmul(y, W_fc1)
-        y = tf.nn.relu(y)
+    #    y = tf.nn.relu(y)
 
-    with tf.name_scope('fc2'):
-        W_fc2 = get_variable('W_fc2', [100, 10], mode)
-        y = tf.matmul(y, W_fc2)
+    #with tf.name_scope('fc2'):
+    #    W_fc2 = get_variable('W_fc2', [100, 10], mode)
+    #    y = tf.matmul(y, W_fc2)
     return y

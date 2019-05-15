@@ -42,7 +42,7 @@ void he_seal::bfv::kernel::scalar_add_bfv(
     const element::Type& element_type,
     const he_seal::HESealBFVBackend* he_seal_bfv_backend) {
   if (!arg1->is_encoded()) {
-    he_seal_bfv_backend->encode(arg1);
+    he_seal_bfv_backend->encode(arg1, false);
   }
   if (arg0 == out.get()) {
     he_seal_bfv_backend->get_evaluator()->add_plain_inplace(

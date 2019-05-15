@@ -121,9 +121,6 @@ void runtime::he::HESealClient::handle_message(
               (double)(m_inputs[data_idx * m_batch_size + batch_idx]));
         }
         m_ckks_encoder->encode(encode_vals, m_scale, plain);
-        std::cout << "Sending inference on " << m_inputs.size()
-                  << " data points encoded as " << encode_vals.size()
-                  << " plaintexts" << std::endl;
       }
       seal::Ciphertext c;
       m_encryptor->encrypt(plain, c);
@@ -291,9 +288,6 @@ void runtime::he::HESealClient::handle_message(
     size_t complex_scale_factor = complex_packing() ? 2 : 1;
     size_t cipher_count = message.count();
 
-    std::cout << "Max complex scaling factor " << complex_scale_factor
-              << std::endl;
-
     size_t element_size = message.element_size();
 
     std::vector<std::vector<double>> input_cipher_values(
@@ -344,7 +338,6 @@ void runtime::he::HESealClient::handle_message(
           *std::max_element(input_cipher_values[batch_idx].begin(),
                             input_cipher_values[batch_idx].end());
     }
-    std::cout << "done max values" << std::endl;
 
     // Encrypt maximum values
     seal::Ciphertext cipher_max;

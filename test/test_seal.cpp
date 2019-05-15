@@ -118,3 +118,47 @@ TEST(seal_example, seal_bfv_basics_i) {
   int result = encoder.decode_int32(plain_result);
   EXPECT_EQ(84, result);
 }
+
+TEST(seal_example, seal_ckks_test) {
+  using namespace seal;
+
+  EncryptionParameters parms(scheme_type::CKKS);
+  parms.set_poly_modulus_degree(8192);
+  parms.set_coeff_modulus(DefaultParams::coeff_modulus_128(8192));
+
+  auto context = SEALContext::Create(parms);
+  // print_parameters(context);
+
+  KeyGenerator keygen(context);
+  auto public_key = keygen.public_key();
+  auto secret_key = keygen.secret_key();
+  auto relin_keys = keygen.relin_keys(60);
+
+  Encryptor encryptor(context, public_key);
+  Evaluator evaluator(context);
+  Decryptor decryptor(context, secret_key);
+  CKKSEncoder encoder(context);
+
+  // Test complex add
+  // vector<double> input{1, 2, 3, 4};
+  vector<complex<double>> input{{1, 2}, {3, 4}};
+
+  Plaintext plain;
+  double scale = pow(2.0, 60);
+  encoder.encode(input, scale, plain);
+  input.clear();
+  Ciphertext encrypted;
+  encryptor.encrypt(plain, encrypted);
+
+  Plaintext plain2;
+  complex<double> factor_val{{5, 6}};
+  vector<complex<double>> factor{factor_val, factor_val};
+
+  encoder.encode(factor, scale, plain2);
+
+  evaluator.add_plain_inplace(encrypted, plain2);
+  Plaintext plain3;
+  decryptor.decrypt(encrypted, plain3);
+  encoder.decode(plain3, input);
+  std::cout << input[0] << ", " << input[1] << std::endl;
+}
