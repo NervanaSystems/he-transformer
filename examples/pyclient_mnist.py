@@ -18,6 +18,7 @@ def test_mnist_cnn(FLAGS):
     x_test_batch = mnist.test.images[:batch_size]
     y_test_batch = mnist.test.labels[:batch_size]
 
+    print('data', np.sum(x_test_batch, axis=1))
     data = x_test_batch.flatten('F')
     print('Client batch size from FLAG: ', batch_size)
 

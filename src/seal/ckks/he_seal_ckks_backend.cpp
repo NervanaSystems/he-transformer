@@ -147,22 +147,23 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
           for (const double value : double_vals) {
             complex_values.emplace_back(std::complex<double>(value, value));
           }
-          std::cout << "Encoding " << complex_values.size() << " complex vals";
         }
+        NGRAPH_INFO << "Encoding " << complex_values.size() << " complex vals";
 
         m_ckks_encoder->encode(complex_values, m_scale,
                                plaintext->get_plaintext());
-        plaintext->set_complex(true);
       } else {
         if (double_vals.size() == 1) {
-          m_ckks_encoder->encode(double_vals[0], m_scale,
+          std::vector<double> double_vals_slots(double_vals[0], slots / 2);
+          NGRAPH_INFO << "Encoding value " << double_vals[0];
+          m_ckks_encoder->encode(double_vals_slots, m_scale,
                                  plaintext->get_plaintext());
         } else {
           m_ckks_encoder->encode(double_vals, m_scale,
                                  plaintext->get_plaintext());
         }
-        plaintext->set_complex(true);
       }
+      plaintext->set_complex(complex);
       plaintext->set_encoded(true);
     }
   }
@@ -193,7 +194,6 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
     }
 
     m_ckks_encoder->encode(complex_values, m_scale, plaintext->get_plaintext());
-    plaintext->set_complex(true);
   } else {
     if (double_vals.size() == 1) {
       m_ckks_encoder->encode(double_vals[0], m_scale,
@@ -201,8 +201,8 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
     } else {
       m_ckks_encoder->encode(double_vals, m_scale, plaintext->get_plaintext());
     }
-    plaintext->set_complex(true);
   }
+  plaintext->set_complex(complex);
   plaintext->set_encoded(true);
 }
 
@@ -231,11 +231,10 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
       }
       m_ckks_encoder->encode(std::complex<double>{value, value}, m_scale,
                              seal_plaintext_wrapper->get_plaintext());
-      seal_plaintext_wrapper->set_complex(true);
+
     } else {
       m_ckks_encoder->encode(value, m_scale,
                              seal_plaintext_wrapper->get_plaintext());
-      seal_plaintext_wrapper->set_complex(false);
     }
     seal_plaintext_wrapper->set_encoded(true);
   } else {
@@ -257,13 +256,11 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
 
       m_ckks_encoder->encode(complex_values, m_scale,
                              seal_plaintext_wrapper->get_plaintext());
-      seal_plaintext_wrapper->set_complex(true);
     } else {
       m_ckks_encoder->encode(double_values, m_scale,
                              seal_plaintext_wrapper->get_plaintext());
-      seal_plaintext_wrapper->set_complex(false);
     }
-
+    seal_plaintext_wrapper->set_complex(complex);
     seal_plaintext_wrapper->set_encoded(true);
   }
 }
