@@ -30,6 +30,8 @@ class HECiphertext {
 
   virtual bool complex_packing() const = 0;
 
+  virtual size_t size() const = 0;
+
   virtual void set_complex_packing(bool toggle) = 0;
 };
 }  // namespace he

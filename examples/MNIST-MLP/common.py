@@ -33,12 +33,17 @@ def mlp_model(x, mode):
     with tf.name_scope('reshape'):
         x_image = tf.reshape(x, [-1, 28, 28, 1])
 
+        # Avoid optimizations which change size of messages
+        W1 = np.array(range(2, 786), dtype=np.float32)
+
         # TODO: remove
-        W1 = np.full((784, 10), 2, dtype=np.float32)
+        #W1 = np.full((784, 10), 2, dtype=np.float32)
         #W1 = get_variable('W1', [784, 10], mode)
-        y = tf.matmul(x, W1)
+        #y = tf.matmul(x, W1)
+
+        y = x * W1
         #W2 = get_variable('W2', [10], mode)
-        W2 = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+        W2 = np.array(range(784))
         #W2 = np.ones((10), dtype=np.float32)
         y = y + W2
         #y = tf.nn.relu(y)

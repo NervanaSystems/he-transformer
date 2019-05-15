@@ -32,6 +32,8 @@ struct SealCiphertextWrapper : public HECiphertext {
 
   void save(std::ostream& stream) const override { m_ciphertext.save(stream); }
 
+  size_t size() const override { return m_ciphertext.size(); }
+
   bool complex_packing() const override { return m_complex_packed; }
 
   void set_complex_packing(bool toggle) override { m_complex_packed = toggle; }

@@ -153,15 +153,15 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
         m_ckks_encoder->encode(complex_values, m_scale,
                                plaintext->get_plaintext());
       } else {
-        if (double_vals.size() == 1) {
+        /*if (double_vals.size() == 1) {
           std::vector<double> double_vals_slots(double_vals[0], slots / 2);
           NGRAPH_INFO << "Encoding value " << double_vals[0];
           m_ckks_encoder->encode(double_vals_slots, m_scale,
                                  plaintext->get_plaintext());
-        } else {
-          m_ckks_encoder->encode(double_vals, m_scale,
-                                 plaintext->get_plaintext());
-        }
+        } else { */
+        m_ckks_encoder->encode(double_vals, m_scale,
+                               plaintext->get_plaintext());
+        //}
       }
       plaintext->set_complex(complex);
       plaintext->set_encoded(true);
@@ -195,12 +195,12 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
 
     m_ckks_encoder->encode(complex_values, m_scale, plaintext->get_plaintext());
   } else {
-    if (double_vals.size() == 1) {
+    /*if (double_vals.size() == 1) {
       m_ckks_encoder->encode(double_vals[0], m_scale,
                              plaintext->get_plaintext());
-    } else {
-      m_ckks_encoder->encode(double_vals, m_scale, plaintext->get_plaintext());
-    }
+    } else { */
+    m_ckks_encoder->encode(double_vals, m_scale, plaintext->get_plaintext());
+    //}
   }
   plaintext->set_complex(complex);
   plaintext->set_encoded(true);
@@ -286,7 +286,6 @@ void runtime::he::he_seal::HESealCKKSBackend::decode(
       << "HESealCKKSBackend::decode input is not seal plaintext";
 
   if (input->is_complex()) {
-    NGRAPH_INFO << "Decoding complex";
     vector<complex<double>> xs;
     m_ckks_encoder->decode(seal_input->get_plaintext(), xs);
     vector<float> xs_float(xs.size() * 2);
@@ -296,7 +295,6 @@ void runtime::he::he_seal::HESealCKKSBackend::decode(
       xs_float[2 * i + 1] = (float)(xs[i].imag());
     }
     input->set_values(xs_float);
-    NGRAPH_INFO << "Set values size " << xs_float.size();
   } else {
     NGRAPH_INFO << "Decoding real";
     vector<double> xs;

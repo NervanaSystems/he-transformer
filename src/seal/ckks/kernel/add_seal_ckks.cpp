@@ -34,6 +34,11 @@ void he_seal::ckks::kernel::scalar_add_ckks(
 
   he_seal_ckks_backend->get_evaluator()->add(
       arg0->m_ciphertext, arg1->m_ciphertext, out->m_ciphertext);
+
+  NGRAPH_ASSERT(arg0->complex_packing() == arg1->complex_packing());
+
+  out->set_complex_packing(arg1->complex_packing());
+  NGRAPH_INFO << "Add output complex? " << arg1->complex_packing();
 }
 
 void he_seal::ckks::kernel::scalar_add_ckks(
@@ -59,6 +64,7 @@ void he_seal::ckks::kernel::scalar_add_ckks(
 
   he_seal_ckks_backend->get_evaluator()->add_plain(
       arg0->m_ciphertext, arg1->get_plaintext(), out->m_ciphertext);
+  out->set_complex_packing(arg0->complex_packing());
 }
 
 void he_seal::ckks::kernel::scalar_add_ckks(

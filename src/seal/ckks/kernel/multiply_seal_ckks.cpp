@@ -90,6 +90,8 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
       NGRAPH_INFO << elem;
     }
   }
+  out->set_complex_packing(arg0->complex_packing());
+  NGRAPH_INFO << "Mult output complex? " << arg0->complex_packing();
 
   he_seal_ckks_backend->get_evaluator()->relinearize_inplace(
       out->m_ciphertext, *(he_seal_ckks_backend->get_relin_keys()), pool);
