@@ -44,13 +44,14 @@ def test_mnist_cnn(FLAGS):
 
     results = client.get_results()
     results = np.round(results, 2)
-    #print('results', results)
+    print('results', results)
 
     y_pred = np.array(results).reshape(10, batch_size).argmax(axis=0)
     y_true = y_test_batch.argmax(axis=1)
 
     correct = np.sum(np.equal(y_pred, y_true))
     acc = correct / float(batch_size)
+    print('pred size', len(y_pred))
     print('correct', correct)
     print('Accuracy (batch size', batch_size, ') =', acc * 100., '%')
 

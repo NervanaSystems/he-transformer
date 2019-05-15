@@ -338,6 +338,9 @@ void runtime::he::HEExecutable::handle_message(
           make_shared<runtime::he::he_seal::SealCiphertextWrapper>(cipher);
       auto he_ciphertext =
           dynamic_pointer_cast<runtime::he::HECiphertext>(wrapper);
+      if (m_he_backend->complex_packing()) {
+        he_ciphertext->set_complex(true);
+      }
 
       NGRAPH_ASSERT(he_ciphertext != nullptr)
           << "HECiphertext is not SealPlaintextWrapper";
@@ -366,6 +369,9 @@ void runtime::he::HEExecutable::handle_message(
           make_shared<runtime::he::he_seal::SealCiphertextWrapper>(cipher);
       auto he_ciphertext =
           dynamic_pointer_cast<runtime::he::HECiphertext>(wrapper);
+      if (m_he_backend->complex_packing()) {
+        he_ciphertext->set_complex(true);
+      }
 
       NGRAPH_ASSERT(he_ciphertext != nullptr)
           << "HECiphertext is not SealPlaintextWrapper";
