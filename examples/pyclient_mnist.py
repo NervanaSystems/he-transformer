@@ -47,6 +47,7 @@ def test_mnist_cnn(FLAGS):
     print('results', results)
 
     y_pred = np.array(results).reshape(10, batch_size).argmax(axis=0)
+    print('y_pred', y_pred)
     y_true = y_test_batch.argmax(axis=1)
 
     correct = np.sum(np.equal(y_pred, y_true))

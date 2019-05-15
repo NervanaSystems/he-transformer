@@ -143,6 +143,8 @@ void runtime::he::HESealClient::handle_message(
     size_t result_count = message.count();
     size_t element_size = message.element_size();
 
+    std::cout << "Client got " << result_count << " results " << std::endl;
+
     std::vector<seal::Ciphertext> result;
     m_results.reserve(result_count * m_batch_size);
     for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
@@ -157,14 +159,24 @@ void runtime::he::HESealClient::handle_message(
       m_decryptor->decrypt(cipher, plain);
 
       if (complex_packing()) {
+        std::cout << std::endl
+                  << "Got complex result " << result_idx << std::endl;
         std::vector<complex<double>> outputs;
         m_ckks_encoder->decode(plain, outputs);
 
+        std::cout << "outputs.size() " << outputs.size() << std::endl;
+        std::cout << "m_batch_size " << m_batch_size << std::endl;
+
         assert(m_batch_size <= outputs.size());
 
-        for (size_t batch_idx = 0; batch_idx < outputs.size(); ++batch_idx) {
-          m_results.emplace_back((float)outputs[batch_idx].real());
-          m_results.emplace_back((float)outputs[batch_idx].imag());
+        for (size_t batch_idx = 0;
+             batch_idx < m_batch_size /* outputs.size() */; ++batch_idx) {
+          float re = (float)outputs[batch_idx].real();
+          float im = (float)outputs[batch_idx].imag();
+          m_results.emplace_back(re);
+          m_results.emplace_back(im);
+
+          std::cout << "re " << re << " imag " << im << std::endl;
         }
       } else {
         std::vector<double> outputs;
@@ -323,9 +335,7 @@ void runtime::he::HESealClient::handle_message(
            batch_idx < m_batch_size * complex_scale_factor; ++batch_idx) {
         input_cipher_values[batch_idx][cipher_idx] = pre_sort_value[batch_idx];
       }
-      std::cout << "done getting values index " << cipher_idx << std::endl;
     }
-    std::cout << "done gettign values" << std::endl;
 
     // Get max of each vector of values
     for (size_t batch_idx = 0; batch_idx < m_batch_size * complex_scale_factor;
@@ -346,7 +356,6 @@ void runtime::he::HESealClient::handle_message(
       assert(max_values.size() % 2 == 0);
       std::vector<std::complex<double>> max_complex_vals;
       for (size_t max_idx = 0; max_idx < max_values.size() / 2; max_idx += 2) {
-        std::cout << "max_idx " << max_idx << std::endl;
         assert(2 * max_idx + 1 < max_values.size());
         double re = max_values[2 * max_idx];
         double imag = max_values[2 * max_idx + 1];

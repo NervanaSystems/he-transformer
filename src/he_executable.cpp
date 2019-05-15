@@ -339,7 +339,7 @@ void runtime::he::HEExecutable::handle_message(
       auto he_ciphertext =
           dynamic_pointer_cast<runtime::he::HECiphertext>(wrapper);
       if (m_he_backend->complex_packing()) {
-        he_ciphertext->set_complex(true);
+        he_ciphertext->set_complex_packing(true);
       }
 
       NGRAPH_ASSERT(he_ciphertext != nullptr)
@@ -370,7 +370,7 @@ void runtime::he::HEExecutable::handle_message(
       auto he_ciphertext =
           dynamic_pointer_cast<runtime::he::HECiphertext>(wrapper);
       if (m_he_backend->complex_packing()) {
-        he_ciphertext->set_complex(true);
+        he_ciphertext->set_complex_packing(true);
       }
 
       NGRAPH_ASSERT(he_ciphertext != nullptr)

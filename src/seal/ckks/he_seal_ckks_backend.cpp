@@ -241,6 +241,7 @@ void runtime::he::he_seal::HESealCKKSBackend::decode(
   NGRAPH_ASSERT(count != 0) << "Decode called on 0 elements";
   NGRAPH_ASSERT(type == element::f32)
       << "CKKS encode supports only float encoding, received type " << type;
+  NGRAPH_INFO << "Decoding " << count << " elements";
 
   decode(input);
 
@@ -255,6 +256,7 @@ void runtime::he::he_seal::HESealCKKSBackend::decode(
       << "HESealCKKSBackend::decode input is not seal plaintext";
 
   if (input->is_complex()) {
+    NGRAPH_INFO << "Decoding complex";
     vector<complex<double>> xs;
     m_ckks_encoder->decode(seal_input->get_plaintext(), xs);
     vector<float> xs_float(xs.size() * 2);
@@ -264,10 +266,13 @@ void runtime::he::he_seal::HESealCKKSBackend::decode(
       xs_float[2 * i + 1] = (float)(xs[i].imag());
     }
     input->set_values(xs_float);
+    NGRAPH_INFO << "Set values size " << xs_float.size();
   } else {
+    NGRAPH_INFO << "Decoding real";
     vector<double> xs;
     m_ckks_encoder->decode(seal_input->get_plaintext(), xs);
     vector<float> xs_float(xs.begin(), xs.end());
     input->set_values(xs_float);
+    NGRAPH_INFO << "Set values size " << xs_float.size();
   }
 }

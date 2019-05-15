@@ -55,7 +55,7 @@ def test_mnist_mlp(FLAGS):
         y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
         elasped_time = time.time() - start_time
         print("total time(s)", elasped_time)
-        # print('result', y_conv_val)
+        print('result', y_conv_val)
 
     x_test_batch = mnist.test.images[:FLAGS.batch_size]
     y_test_batch = mnist.test.labels[:FLAGS.batch_size]
@@ -71,7 +71,9 @@ def test_mnist_mlp(FLAGS):
 
     # Avoid performing in a session, to allow he backends to report accuracy.
     if FLAGS.report_accuracy:
-        correct_prediction = np.equal(np.argmax(y_conv_val, 1), y_label_batch)
+        y_pred = np.argmax(y_conv_val, 1)
+        print('y_pred', y_pred)
+        correct_prediction = np.equal(y_pred, y_label_batch)
         error_count = np.size(correct_prediction) - np.sum(correct_prediction)
         test_accuracy = np.mean(correct_prediction)
 
