@@ -142,7 +142,8 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
   vector<double> double_vals(plaintext->get_values().begin(),
                              plaintext->get_values().end());
 
-  size_t slots = m_context->context_data()->parms().poly_modulus_degree() / 2;
+  const size_t slots =
+      m_context->context_data()->parms().poly_modulus_degree() / 2;
   if (complex) {
     vector<std::complex<double>> complex_vals;
     if (double_vals.size() == 1) {
@@ -151,11 +152,9 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
     } else {
       real_vec_to_complex_vec(complex_vals, double_vals);
     }
-    NGRAPH_ASSERT(complex_vals.size() <=
-                  m_context->context_data()->parms().poly_modulus_degree() / 2)
+    NGRAPH_ASSERT(complex_vals.size() <= slots)
         << "Cannot encode " << complex_vals.size()
-        << " elements, maximum size is "
-        << m_context->context_data()->parms().poly_modulus_degree() / 2;
+        << " elements, maximum size is " << slots;
     m_ckks_encoder->encode(complex_vals, m_scale, plaintext->get_plaintext());
   } else {
     // TODO: why different cases?
@@ -163,12 +162,9 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
       m_ckks_encoder->encode(double_vals[0], m_scale,
                              plaintext->get_plaintext());
     } else {
-      NGRAPH_ASSERT(double_vals.size() <=
-                    m_context->context_data()->parms().poly_modulus_degree() /
-                        2)
+      NGRAPH_ASSERT(double_vals.size() <= slots)
           << "Cannot encode " << double_vals.size()
-          << " elements, maximum size is "
-          << m_context->context_data()->parms().poly_modulus_degree() / 2;
+          << " elements, maximum size is " << slots;
       m_ckks_encoder->encode(double_vals, m_scale, plaintext->get_plaintext());
     }
   }

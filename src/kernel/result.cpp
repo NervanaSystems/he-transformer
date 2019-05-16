@@ -43,7 +43,6 @@ void runtime::he::kernel::result(
     throw ngraph_error("Wrong size in result");
   }
   for (size_t i = 0; i < count; ++i) {
-    // arg[i].get()->set_complex_packing(he_backend->complex_packing());
     he_backend->decrypt(out[i], arg[i].get());
     he_backend->decode(out[i].get());
   }

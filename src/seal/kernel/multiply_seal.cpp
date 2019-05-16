@@ -73,7 +73,6 @@ void he_seal::kernel::scalar_multiply(
         he_seal_backend->create_valued_ciphertext(0, element_type));
   } else if (std::all_of(values.begin(), values.end(),
                          [](float f) { return f == 1.0f; })) {
-    NGRAPH_INFO << "Optimized mult by 1";
     // TODO: make copy only if needed
     out = make_shared<he_seal::SealCiphertextWrapper>(*arg0);
   } else if (std::all_of(values.begin(), values.end(),
