@@ -22,7 +22,7 @@ def test_mnist_cnn(FLAGS):
     print('Client batch size from FLAG: ', batch_size)
 
     # TODO: remove
-    data = np.array(range(2 * 2 * 12))
+    data = np.array(range(2 * 12))
     #data = np.array(range(data.size))
 
     complex_scale_factor = 1

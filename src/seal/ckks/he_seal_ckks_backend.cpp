@@ -179,12 +179,16 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
     m_ckks_encoder->encode(complex_values, m_scale, plaintext->get_plaintext());
   } else {
     NGRAPH_INFO << "Encoding " << double_vals.size() << " real vals";
-    /*if (double_vals.size() == 1) {
+    for (const auto& elem : double_vals) {
+      NGRAPH_INFO << elem;
+    }
+    // TODO: why different cases?
+    if (double_vals.size() == 1) {
       m_ckks_encoder->encode(double_vals[0], m_scale,
                              plaintext->get_plaintext());
-    } else { */
-    m_ckks_encoder->encode(double_vals, m_scale, plaintext->get_plaintext());
-    //}
+    } else {
+      m_ckks_encoder->encode(double_vals, m_scale, plaintext->get_plaintext());
+    }
   }
   plaintext->set_complex(complex);
   plaintext->set_encoded(true);

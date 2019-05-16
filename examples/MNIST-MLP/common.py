@@ -31,12 +31,12 @@ def mlp_model(x, mode):
         raise Exception()
 
     with tf.name_scope('reshape'):
-        x_image = tf.reshape(x, [-1, 28, 28, 1])
+        # x_image = tf.reshape(x, [-1, 28, 28, 1])
 
-        data_size = 12
+        data_size = 6
 
         # Avoid optimizations which change size of messages
-        W1 = np.array(range(2, 14), dtype=np.float32)
+        W1 = np.array(range(2, 2 + data_size), dtype=np.float32)
 
         # TODO: remove
         #W1 = np.full((784, 10), 2, dtype=np.float32)
@@ -45,7 +45,7 @@ def mlp_model(x, mode):
 
         y = x * W1
         #W2 = get_variable('W2', [10], mode)
-        W2 = np.array(range(3, 15))
+        W2 = np.array(range(3, 3 + data_size))
         #W2 = np.ones((10), dtype=np.float32)
         y = y + W2
         #y = tf.nn.relu(y)

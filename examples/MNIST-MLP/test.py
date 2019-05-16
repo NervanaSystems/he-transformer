@@ -39,9 +39,11 @@ def test_mnist_mlp(FLAGS):
     # Import data
     mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=True)
 
+    data_size = 6
+
     # Create the model
     #x = tf.placeholder(tf.float32, [None, 784])
-    x = tf.placeholder(tf.float32, [None, 12])
+    x = tf.placeholder(tf.float32, [None, data_size])
 
     # Define loss and optimizer
     y_ = tf.placeholder(tf.float32, [None, 10])
@@ -54,7 +56,7 @@ def test_mnist_mlp(FLAGS):
         y_test = mnist.test.labels[:FLAGS.batch_size]
 
         # TODO: remove
-        x_test = np.full((2, 12), 99)
+        x_test = np.full((2, data_size), 99)
         # Run model
         y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
         elasped_time = time.time() - start_time
