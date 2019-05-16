@@ -237,6 +237,13 @@ void runtime::he::HESealClient::handle_message(
     write_message(evk_message);
 
   } else if (msg_type == runtime::he::MessageType::relu_request) {
+    auto relu = [](double d) { return d > 0 ? d : 0; };
+
+    // Performs relu on real and imaginary parts of complex number
+    auto complex_relu = [&relu](std::complex<double> c) {
+      return std::complex<double>(relu(c.real()), relu(c.imag()));
+    };
+
     size_t result_count = message.count();
     size_t element_size = message.element_size();
 
@@ -263,34 +270,16 @@ void runtime::he::HESealClient::handle_message(
         // Perform relu
         std::vector<complex<double>> post_relu(m_batch_size);
         for (size_t batch_idx = 0; batch_idx < m_batch_size; ++batch_idx) {
-          complex<double> pre_relu_val = pre_relu[batch_idx];
-
-          double post_relu_real =
-              pre_relu_val.real() > 0 ? pre_relu_val.real() : 0;
-          double post_relu_imag =
-              pre_relu_val.imag() > 0 ? pre_relu_val.imag() : 0;
-
-          complex<double> post_relu_value(post_relu_real, post_relu_imag);
-
-          // std::cout << "relu(" << pre_relu_val << ") = " << post_relu_value
-          //          << std::endl;
-          post_relu[batch_idx] = post_relu_value;
+          post_relu[batch_idx] = complex_relu(pre_relu[batch_idx]);
         }
         m_ckks_encoder->encode(post_relu, m_scale, post_relu_plain);
       } else {
         std::vector<double> pre_relu;
         m_ckks_encoder->decode(pre_relu_plain, pre_relu);
-
-        // Perform relu
         std::vector<double> post_relu(m_batch_size);
         for (size_t batch_idx = 0; batch_idx < m_batch_size; ++batch_idx) {
-          double pre_relu_val = pre_relu[batch_idx];
-          double post_relu_val = pre_relu_val > 0 ? pre_relu_val : 0;
-          // std::cout << "relu(" << pre_relu_val << ") = " << post_relu_val
-          //          << std::endl;
-          post_relu[batch_idx] = post_relu_val;
+          post_relu[batch_idx] = relu(pre_relu[batch_idx]);
         }
-
         m_ckks_encoder->encode(post_relu, m_scale, post_relu_plain);
       }
       // Encrypt post-relu result
