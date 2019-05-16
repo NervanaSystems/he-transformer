@@ -80,39 +80,8 @@ void runtime::he::HESealClient::handle_message(
   // std::cout << "Client received message type: "
   //          << message_type_to_string(msg_type).c_str() << std::endl;
 
-  // Packs elements of input into real values
-  // (a+bi, c+di) => (a,b,c,d)
-  auto complex_vec_to_real_vec =
-      [](std::vector<double>& output,
-         const std::vector<std::complex<double>>& input) {
-        assert(output.size() == 0);
-        for (const std::complex<double>& value : input) {
-          output.emplace_back(value.real());
-          output.emplace_back(value.imag());
-        }
-      };
-
-  // Packs elements of input into complex values
-  // (a,b,c,d) => (a+bi, c+di)
-  // (a,b,c) => (a+bi, c+0i)
-  auto real_vec_to_complex_vec = [](std::vector<std::complex<double>>& output,
-                                    const std::vector<double>& input) {
-    assert(output.size() == 0);
-    vector<double> complex_parts(2, 0);
-    for (size_t i = 0; i < input.size(); ++i) {
-      complex_parts[i % 2] = input[i];
-
-      if (i % 2 == 1 || i == input.size() - 1) {
-        output.emplace_back(
-            std::complex<double>(complex_parts[0], complex_parts[1]));
-        complex_parts = {0, 0};
-      }
-    }
-  };
-
-  auto decode_to_real_vec = [&complex_vec_to_real_vec, this](
-                                const seal::Plaintext& plain,
-                                std::vector<double>& output, bool complex) {
+  auto decode_to_real_vec = [this](const seal::Plaintext& plain,
+                                   std::vector<double>& output, bool complex) {
     static size_t complex_scale_factor = 2;
     assert(output.size() == 0);
     if (complex) {
@@ -398,10 +367,6 @@ void runtime::he::HESealClient::handle_message(
       m_encryptor->encrypt(plain_minimum, cipher_minimum);
       cipher_minimum.save(minimum_stream);
     }
-
-    // std::cout << "Writing minimum_result message with " << (cipher_count /
-    // 2)
-    //          << " ciphertexts" << std::endl;
 
     auto minimum_result_msg =
         TCPMessage(runtime::he::MessageType::minimum_result, cipher_count / 2,

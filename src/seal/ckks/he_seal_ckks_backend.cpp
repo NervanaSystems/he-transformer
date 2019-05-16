@@ -138,35 +138,6 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
   if (plaintext->is_encoded()) {
     return;
   }
-  // Packs elements of input into real values
-  // (a+bi, c+di) => (a,b,c,d)
-  auto complex_vec_to_real_vec =
-      [](std::vector<double>& output,
-         const std::vector<std::complex<double>>& input) {
-        assert(output.size() == 0);
-        for (const std::complex<double>& value : input) {
-          output.emplace_back(value.real());
-          output.emplace_back(value.imag());
-        }
-      };
-
-  // Packs elements of input into complex values
-  // (a,b,c,d) => (a+bi, c+di)
-  // (a,b,c) => (a+bi, c+0i)
-  auto real_vec_to_complex_vec = [](std::vector<std::complex<double>>& output,
-                                    const std::vector<double>& input) {
-    assert(output.size() == 0);
-    vector<double> complex_parts(2, 0);
-    for (size_t i = 0; i < input.size(); ++i) {
-      complex_parts[i % 2] = input[i];
-
-      if (i % 2 == 1 || i == input.size() - 1) {
-        output.emplace_back(
-            std::complex<double>(complex_parts[0], complex_parts[1]));
-        complex_parts = {0, 0};
-      }
-    }
-  };
 
   vector<double> double_vals(plaintext->get_values().begin(),
                              plaintext->get_values().end());
@@ -243,20 +214,14 @@ void runtime::he::he_seal::HESealCKKSBackend::decode(
   NGRAPH_ASSERT(seal_input != nullptr)
       << "HESealCKKSBackend::decode input is not seal plaintext";
 
+  vector<double> real_vals;
   if (input->complex_packing()) {
-    vector<complex<double>> xs;
-    m_ckks_encoder->decode(seal_input->get_plaintext(), xs);
-    vector<float> xs_float(xs.size() * 2);
-
-    for (size_t i = 0; i < 2; ++i) {
-      xs_float[2 * i] = (float)(xs[i].real());
-      xs_float[2 * i + 1] = (float)(xs[i].imag());
-    }
-    input->set_values(xs_float);
+    vector<std::complex<double>> complex_vals;
+    m_ckks_encoder->decode(seal_input->get_plaintext(), complex_vals);
+    complex_vec_to_real_vec(real_vals, complex_vals);
   } else {
-    vector<double> xs;
-    m_ckks_encoder->decode(seal_input->get_plaintext(), xs);
-    vector<float> xs_float(xs.begin(), xs.end());
-    input->set_values(xs_float);
+    m_ckks_encoder->decode(seal_input->get_plaintext(), real_vals);
   }
+  vector<float> float_vals{real_vals.begin(), real_vals.end()};
+  input->set_values(float_vals);
 }
