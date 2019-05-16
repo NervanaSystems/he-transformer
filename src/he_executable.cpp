@@ -510,7 +510,7 @@ bool runtime::he::HEExecutable::call(
 #pragma omp parallel for
         for (size_t i = 0; i < plain_input->get_batched_element_count(); ++i) {
           // Enable complex batching!
-          plain_input->get_element(i)->set_complex(
+          plain_input->get_element(i)->set_complex_packing(
               m_he_backend->complex_packing());
           m_he_backend->encrypt(cipher_input->get_element(i),
                                 plain_input->get_element(i).get());

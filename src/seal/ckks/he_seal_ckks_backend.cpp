@@ -187,7 +187,7 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
       m_ckks_encoder->encode(double_vals, m_scale, plaintext->get_plaintext());
     }
   }
-  plaintext->set_complex(complex);
+  plaintext->set_complex_packing(complex);
   plaintext->set_encoded(true);
 }
 
@@ -229,7 +229,7 @@ void runtime::he::he_seal::HESealCKKSBackend::decode(
   NGRAPH_ASSERT(seal_input != nullptr)
       << "HESealCKKSBackend::decode input is not seal plaintext";
 
-  if (input->is_complex()) {
+  if (input->complex_packing()) {
     vector<complex<double>> xs;
     m_ckks_encoder->decode(seal_input->get_plaintext(), xs);
     vector<float> xs_float(xs.size() * 2);

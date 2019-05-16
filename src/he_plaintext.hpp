@@ -28,7 +28,7 @@ class HEPlaintext {
  public:
   HEPlaintext(){};
   HEPlaintext(const std::vector<float> values)
-      : m_values(values), m_is_encoded(false), m_is_complex(false){};
+      : m_values(values), m_is_encoded(false), m_complex_packing(false){};
   virtual ~HEPlaintext(){};
 
   void set_values(const std::vector<float>& values) { m_values = values; }
@@ -40,8 +40,8 @@ class HEPlaintext {
   bool is_encoded() const { return m_is_encoded; }
   void set_encoded(bool encoded) { m_is_encoded = encoded; }
 
-  bool is_complex() const { return m_is_complex; }
-  void set_complex(bool toggle) { m_is_complex = toggle; }
+  bool complex_packing() const { return m_complex_packing; }
+  void set_complex_packing(bool toggle) { m_complex_packing = toggle; }
 
   std::mutex& get_encode_mutex() { return m_encode_mutex; }
 
@@ -50,7 +50,7 @@ class HEPlaintext {
 
   // TODO: use atomic bool?
   bool m_is_encoded;
-  bool m_is_complex;
+  bool m_complex_packing;
 
   std::mutex m_encode_mutex;
 };

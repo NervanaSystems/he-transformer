@@ -24,9 +24,11 @@ namespace runtime {
 namespace he {
 namespace he_seal {
 struct SealCiphertextWrapper : public HECiphertext {
-  SealCiphertextWrapper() : m_complex_packed(false){};
-  SealCiphertextWrapper(const seal::Ciphertext& cipher)
-      : m_ciphertext(cipher), m_complex_packed(false) {}
+  SealCiphertextWrapper() { set_complex_packing(false); }
+
+  SealCiphertextWrapper(const seal::Ciphertext& cipher) : m_ciphertext(cipher) {
+    set_complex_packing(false);
+  }
 
   seal::Ciphertext& get_hetext() { return m_ciphertext; }
 
@@ -34,12 +36,7 @@ struct SealCiphertextWrapper : public HECiphertext {
 
   size_t size() const override { return m_ciphertext.size(); }
 
-  bool complex_packing() const override { return m_complex_packed; }
-
-  void set_complex_packing(bool toggle) override { m_complex_packed = toggle; }
-
   seal::Ciphertext m_ciphertext;
-  bool m_complex_packed;
 };
 }  // namespace he_seal
 }  // namespace he

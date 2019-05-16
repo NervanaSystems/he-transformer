@@ -204,7 +204,7 @@ class HEBackend : public runtime::Backend {
   };
 
   void set_batch_data(bool batch) { m_batch_data = batch; };
-  void set_complex_batching(bool toggle) { m_complex_packing = toggle; }
+  void set_complex_packing(bool toggle) { m_complex_packing = toggle; }
 
   bool encrypt_data() const { return m_encrypt_data; };
   bool batch_data() const { return m_batch_data; };
