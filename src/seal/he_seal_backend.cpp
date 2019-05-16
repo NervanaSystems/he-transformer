@@ -80,13 +80,17 @@ void runtime::he::he_seal::HESealBackend::encrypt(
   auto seal_input =
       static_cast<runtime::he::he_seal::SealPlaintextWrapper*>(input);
 
-  if (!input->is_encoded()) {
-    encode(seal_input, input->is_complex());
+  if (input->is_complex()) {
+    NGRAPH_INFO << "Encrypting complex";
+  } else {
+    NGRAPH_INFO << "Encrypting real";
   }
+
+  encode(seal_input, input->is_complex());
   m_encryptor->encrypt(seal_input->get_plaintext(), seal_output->m_ciphertext);
   output->set_complex_packing(input->is_complex());
-  NGRAPH_INFO << "Input complex?" << input->is_complex();
-  NGRAPH_INFO << "Encrypted complex? " << output->complex_packing();
+
+  NGRAPH_ASSERT(output->complex_packing() == input->is_complex());
 }
 
 void runtime::he::he_seal::HESealBackend::decrypt(
@@ -98,4 +102,7 @@ void runtime::he::he_seal::HESealBackend::decrypt(
       static_cast<const runtime::he::he_seal::SealCiphertextWrapper*>(input);
   m_decryptor->decrypt(seal_input->m_ciphertext, seal_output->get_plaintext());
   output->set_complex(input->complex_packing());
+  NGRAPH_ASSERT(output->is_complex() == input->complex_packing());
+
+  NGRAPH_INFO << "Decrypted complex? " << input->complex_packing();
 }

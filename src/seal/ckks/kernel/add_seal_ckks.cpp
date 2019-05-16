@@ -47,9 +47,10 @@ void he_seal::ckks::kernel::scalar_add_ckks(
     const element::Type& element_type,
     const he_seal::HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
-  NGRAPH_INFO << "Adding plain+cipher";
   if (arg0->complex_packing()) {
-    NGRAPH_INFO << "Adding with complex!";
+    NGRAPH_INFO << "Adding complex!";
+  } else {
+    NGRAPH_INFO << "Adding real";
   }
   if (!arg1->is_encoded()) {
     NGRAPH_INFO << "Encoding plaintext add";
@@ -65,6 +66,7 @@ void he_seal::ckks::kernel::scalar_add_ckks(
   he_seal_ckks_backend->get_evaluator()->add_plain(
       arg0->m_ciphertext, arg1->get_plaintext(), out->m_ciphertext);
   out->set_complex_packing(arg0->complex_packing());
+  NGRAPH_INFO << "Add output complex? " << arg0->complex_packing();
 }
 
 void he_seal::ckks::kernel::scalar_add_ckks(

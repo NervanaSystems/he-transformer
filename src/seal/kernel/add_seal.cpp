@@ -14,10 +14,10 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "seal/kernel/add_seal.hpp"
 #include "seal/bfv/kernel/add_seal_bfv.hpp"
 #include "seal/ckks/he_seal_ckks_backend.hpp"
 #include "seal/ckks/kernel/add_seal_ckks.hpp"
+#include "seal/kernel/add_seal.hpp"
 
 using namespace std;
 using namespace ngraph::runtime::he;

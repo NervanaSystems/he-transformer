@@ -44,10 +44,11 @@ def test_mnist_cnn(FLAGS):
 
     results = client.get_results()
     results = np.round(results, 2)
-    print('results', results)
+    with np.printoptions(precision=3, suppress=True):
+        print(results)
 
     y_pred_reshape = np.array(results).reshape(10, batch_size)
-    print('y_pred_reshape', y_pred_reshape)
+    #print('y_pred_reshape', y_pred_reshape)
 
     y_pred = y_pred_reshape.argmax(axis=0)
     print('y_pred', y_pred)

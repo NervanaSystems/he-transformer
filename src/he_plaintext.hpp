@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <mutex>
 #include <vector>
 
 #include "ngraph/assertion.hpp"
@@ -42,10 +43,16 @@ class HEPlaintext {
   bool is_complex() const { return m_is_complex; }
   void set_complex(bool toggle) { m_is_complex = toggle; }
 
+  std::mutex& get_encode_mutex() { return m_encode_mutex; }
+
  protected:
   std::vector<float> m_values;
+
+  // TODO: use atomic bool?
   bool m_is_encoded;
   bool m_is_complex;
+
+  std::mutex m_encode_mutex;
 };
 }  // namespace he
 }  // namespace runtime

@@ -78,7 +78,7 @@ class HESealCKKSBackend : public HESealBackend {
   // Scale with which to encode new ciphertexts
   double m_scale;
 
-  mutable std::mutex m_encode_mutex;
+  // mutable std::mutex m_encode_mutex;
 };
 }  // namespace he_seal
 }  // namespace he
