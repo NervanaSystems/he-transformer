@@ -11,6 +11,8 @@ import he_seal_client
 
 FLAGS = None
 
+DEBUG = False
+
 
 def test_mnist_cnn(FLAGS):
     mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=True)
@@ -22,8 +24,9 @@ def test_mnist_cnn(FLAGS):
     print('Client batch size from FLAG: ', batch_size)
 
     # TODO: remove
-    data = np.array(range(2 * 12))
-    #data = np.array(range(data.size))
+    if DEBUG:
+        data = np.array(range(2 * 12))
+        #data = np.array(range(data.size))
 
     complex_scale_factor = 1
     if ('NGRAPH_COMPLEX_PACK' in os.environ):

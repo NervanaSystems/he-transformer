@@ -25,32 +25,36 @@ def get_variable(name, shape, mode):
             np.loadtxt(name + '.txt', dtype=np.float32).reshape(shape))
 
 
+DEBUG = False
+
+
 def mlp_model(x, mode):
     if mode not in set(['train', 'test']):
         print('mode should be train or test')
         raise Exception()
 
     with tf.name_scope('reshape'):
-        # x_image = tf.reshape(x, [-1, 28, 28, 1])
+        if DEBUG:
+            data_size = 6
+            # Avoid optimizations which change size of messages
+            W1 = np.array(range(2, 2 + data_size), dtype=np.float32)
+            y = x * W1
+            W2 = np.array(range(3, 3 + data_size))
+            y = y + W2
+            return y
 
-        data_size = 6
+        else:
+            x_image = tf.reshape(x, [-1, 28, 28, 1])
+            W1 = np.full((784, 10), 2, dtype=np.float32)
+            #W1 = get_variable('W1', [784, 10], mode)
+            y = tf.matmul(x, W1)
+            #y = x * W1
+            #W2 = get_variable('W2', [10], mode)
+            W2 = np.ones((10), dtype=np.float32)
+            y = y + W2
+            #y = tf.nn.relu(y)
 
-        # Avoid optimizations which change size of messages
-        W1 = np.array(range(2, 2 + data_size), dtype=np.float32)
-
-        # TODO: remove
-        #W1 = np.full((784, 10), 2, dtype=np.float32)
-        #W1 = get_variable('W1', [784, 10], mode)
-        #y = tf.matmul(x, W1)
-
-        y = x * W1
-        #W2 = get_variable('W2', [10], mode)
-        W2 = np.array(range(3, 3 + data_size))
-        #W2 = np.ones((10), dtype=np.float32)
-        y = y + W2
-        #y = tf.nn.relu(y)
-
-        return y
+            return y
 
     with tf.name_scope('conv1'):
         W_conv1 = get_variable('W_conv1', [5, 5, 1, 5], mode)
