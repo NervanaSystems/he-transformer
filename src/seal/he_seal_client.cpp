@@ -317,6 +317,8 @@ void runtime::he::HESealClient::handle_message(
       seal::Ciphertext pre_sort_cipher;
       seal::Plaintext pre_sort_plain;
 
+      std::cout << "cipher_idx " << cipher_idx << std::endl;
+
       // Load cipher from stream
       std::stringstream pre_sort_cipher_stream;
       pre_sort_cipher_stream.write(
@@ -325,25 +327,29 @@ void runtime::he::HESealClient::handle_message(
 
       // Decrypt cipher
       m_decryptor->decrypt(pre_sort_cipher, pre_sort_plain);
-      std::vector<double> pre_sort_value;
+      std::vector<double> pre_max_value;
       if (complex_packing()) {
         std::vector<complex<double>> complex_pre_sort_vals;
         m_ckks_encoder->decode(pre_sort_plain, complex_pre_sort_vals);
 
         for (const auto& val : complex_pre_sort_vals) {
-          pre_sort_value.emplace_back(val.real());
-          pre_sort_value.emplace_back(val.imag());
+          pre_max_value.emplace_back(val.real());
+          pre_max_value.emplace_back(val.imag());
         }
       } else {
-        m_ckks_encoder->decode(pre_sort_plain, pre_sort_value);
+        m_ckks_encoder->decode(pre_sort_plain, pre_max_value);
       }
 
       // Discard extra values
-      pre_sort_value.resize(m_batch_size * complex_scale_factor);
+      pre_max_value.resize(m_batch_size * complex_scale_factor);
+
+      std::cout << "m_batch_size " << m_batch_size << std::endl;
+      std::cout << "input_cipher_values.size() " << input_cipher_values.size()
+                << std::endl;
 
       for (size_t batch_idx = 0;
            batch_idx < m_batch_size * complex_scale_factor; ++batch_idx) {
-        input_cipher_values[batch_idx][cipher_idx] = pre_sort_value[batch_idx];
+        input_cipher_values[batch_idx][cipher_idx] = pre_max_value[batch_idx];
       }
     }
 
@@ -364,14 +370,17 @@ void runtime::he::HESealClient::handle_message(
       std::cout << "max_values size " << max_values.size() << std::endl;
       assert(max_values.size() % 2 == 0);
       std::vector<std::complex<double>> max_complex_vals;
-      for (size_t max_idx = 0; max_idx < max_values.size() / 2; max_idx += 2) {
+      for (size_t max_idx = 0; max_idx < max_values.size() / 2; max_idx++) {
         assert(2 * max_idx + 1 < max_values.size());
         double re = max_values[2 * max_idx];
         double imag = max_values[2 * max_idx + 1];
         max_complex_vals.push_back(std::complex<double>(re, imag));
       }
+      std::cout << "Encoding max vals" << std::endl;
+      for (auto elem : max_complex_vals) {
+        std::cout << elem << std::endl;
+      }
       m_ckks_encoder->encode(max_complex_vals, m_scale, plain_max);
-
     } else {
       m_ckks_encoder->encode(max_values, m_scale, plain_max);
     }

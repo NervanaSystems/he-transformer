@@ -407,6 +407,9 @@ void runtime::he::HEExecutable::handle_message(
 
       NGRAPH_ASSERT(he_ciphertext != nullptr)
           << "HECiphertext is not SealPlaintextWrapper";
+      if (m_he_backend->complex_packing()) {
+        he_ciphertext->set_complex_packing(true);
+      }
 
       m_minimum_ciphertexts.emplace_back(he_ciphertext);
     }

@@ -32,8 +32,7 @@ def mlp_model(x, mode):
     if mode not in set(['train', 'test']):
         print('mode should be train or test')
         raise Exception()
-
-    with tf.name_scope('reshape'):
+    '''with tf.name_scope('reshape'):
         if DEBUG:
             data_size = 6
             # Avoid optimizations which change size of messages
@@ -46,17 +45,20 @@ def mlp_model(x, mode):
         else:
             x_image = tf.reshape(x, [-1, 28, 28, 1])
             #W1 = np.full((784, 10), 2, dtype=np.float32)
-            W1 = get_variable('W1', [784, 10], mode)
+            W1 = get_variable('W1', [784, 100], mode)
             y = tf.matmul(x, W1)
+            y = tf.nn.relu(y)
             #y = x * W1
-            W2 = get_variable('W2', [10], mode)
+            W2 = get_variable('W2', [100, 10], mode)
             # W2 = np.ones((10), dtype=np.float32)
-            y = y + W2
-            #y = tf.nn.relu(y)
+            y = tf.matmul(y, W2)
+            y = tf.nn.relu(y)
 
             return y
+    '''
 
     with tf.name_scope('conv1'):
+        x_image = tf.reshape(x, [-1, 28, 28, 1])
         W_conv1 = get_variable('W_conv1', [5, 5, 1, 5], mode)
         y = conv2d_stride_2_valid(x_image, W_conv1)
         paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]],
