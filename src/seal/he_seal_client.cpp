@@ -290,7 +290,6 @@ void runtime::he::HESealClient::handle_message(
   } else if (msg_type == runtime::he::MessageType::max_request) {
     size_t complex_scale_factor = complex_packing() ? 2 : 1;
     size_t cipher_count = message.count();
-
     size_t element_size = message.element_size();
 
     std::vector<std::vector<double>> input_cipher_values(
@@ -314,8 +313,6 @@ void runtime::he::HESealClient::handle_message(
       m_decryptor->decrypt(pre_sort_cipher, pre_sort_plain);
       std::vector<double> pre_max_value;
       decode_to_real_vec(pre_sort_plain, pre_max_value, complex_packing());
-      // Discard extra values
-      pre_max_value.resize(m_batch_size * complex_scale_factor);
 
       for (size_t batch_idx = 0;
            batch_idx < m_batch_size * complex_scale_factor; ++batch_idx) {
@@ -339,26 +336,19 @@ void runtime::he::HESealClient::handle_message(
     if (complex_packing()) {
       assert(max_values.size() % 2 == 0);
       std::vector<std::complex<double>> max_complex_vals;
-      for (size_t max_idx = 0; max_idx < max_values.size() / 2; max_idx++) {
-        assert(2 * max_idx + 1 < max_values.size());
-        double re = max_values[2 * max_idx];
-        double imag = max_values[2 * max_idx + 1];
-        max_complex_vals.push_back(std::complex<double>(re, imag));
-      }
+      real_vec_to_complex_vec(max_complex_vals, max_values);
       m_ckks_encoder->encode(max_complex_vals, m_scale, plain_max);
     } else {
       m_ckks_encoder->encode(max_values, m_scale, plain_max);
     }
     m_encryptor->encrypt(plain_max, cipher_max);
     cipher_max.save(max_stream);
-    // std::cout << "Writing max_result message with " << 1 << " ciphertexts"
-    //          << std::endl;
     auto max_result_msg =
         TCPMessage(runtime::he::MessageType::max_result, 1, max_stream);
     write_message(max_result_msg);
   } else if (msg_type == runtime::he::MessageType::minimum_request) {
     // Stores (c_1a, c_1b, c_2a, c_b, ..., c_na, c_nb)
-    // prints mesage (min(c_1a, c_1b), min(c_2a, c_2b), ..., min(c_na, c_nb))
+    // prints messsge (min(c_1a, c_1b), min(c_2a, c_2b), ..., min(c_na, c_nb))
     size_t cipher_count = message.count();
     assert(cipher_count % 2 == 0);
     size_t element_size = message.element_size();
