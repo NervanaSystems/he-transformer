@@ -71,11 +71,11 @@ def mlp_model(x, mode):
 
     with tf.name_scope('fc1'):
         y = tf.reshape(y, [-1, 7 * 7 * 5])
-        W_fc1 = get_variable('W_fc1', [7 * 7 * 5, 10], mode)
+        W_fc1 = get_variable('W_fc1', [7 * 7 * 5, 100], mode)
         y = tf.matmul(y, W_fc1)
-    #    y = tf.nn.relu(y)
+        y = tf.nn.relu(y)
 
-    #with tf.name_scope('fc2'):
-    #    W_fc2 = get_variable('W_fc2', [100, 10], mode)
-    #    y = tf.matmul(y, W_fc2)
+    with tf.name_scope('fc2'):
+        W_fc2 = get_variable('W_fc2', [100, 10], mode)
+        y = tf.matmul(y, W_fc2)
     return y

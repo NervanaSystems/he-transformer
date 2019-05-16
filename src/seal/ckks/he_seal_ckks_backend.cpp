@@ -140,8 +140,6 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
     NGRAPH_INFO << valutes[0] << ", " << valutes[1];
     return;
   }
-  NGRAPH_INFO << "Encoding new!";
-
   std::lock_guard<std::mutex> encode_lock(plaintext->get_encode_mutex());
   vector<double> double_vals(plaintext->get_values().begin(),
                              plaintext->get_values().end());
@@ -150,12 +148,10 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
 
   if (complex) {
     vector<std::complex<double>> complex_values;
-    NGRAPH_INFO << "Encoding complex";
     if (double_vals.size() == 1) {
       std::complex<double> val(double_vals[0], double_vals[0]);
-      NGRAPH_INFO << "Complex val " << val;
       complex_values = std::vector<std::complex<double>>(slots / 2, val);
-      NGRAPH_INFO << "Encoding 1 complex vals?";
+      NGRAPH_INFO << "Encoding complex vals " << val;
     } else {
       std::complex<double> encode_val;
       double real_part{0};
@@ -178,15 +174,16 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
     }
     m_ckks_encoder->encode(complex_values, m_scale, plaintext->get_plaintext());
   } else {
-    NGRAPH_INFO << "Encoding " << double_vals.size() << " real vals";
-    for (const auto& elem : double_vals) {
-      NGRAPH_INFO << elem;
-    }
     // TODO: why different cases?
     if (double_vals.size() == 1) {
+      NGRAPH_INFO << "Encoding 1 real val: " << double_vals[0];
       m_ckks_encoder->encode(double_vals[0], m_scale,
                              plaintext->get_plaintext());
     } else {
+      NGRAPH_INFO << "Encoding " << double_vals.size() << " real vals";
+      for (const auto& elem : double_vals) {
+        NGRAPH_INFO << elem;
+      }
       m_ckks_encoder->encode(double_vals, m_scale, plaintext->get_plaintext());
     }
   }

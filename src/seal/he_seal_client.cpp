@@ -101,9 +101,6 @@ void runtime::he::HESealClient::handle_message(
     } else {
       assert(m_inputs.size() == parameter_size * m_batch_size);
     }
-    /*for (auto& elem : m_inputs) {
-      std::cout << elem << std::endl;
-    }*/
 
     std::stringstream cipher_stream;
     for (size_t data_idx = 0; data_idx < parameter_size; ++data_idx) {
@@ -122,13 +119,11 @@ void runtime::he::HESealClient::handle_message(
           } else {
             imag_part = m_inputs[batch_start_idx + batch_idx];
             std::complex<double> encode_val(real_part, imag_part);
-            std::cout << "encode val " << encode_val << std::endl;
             encode_vals.emplace_back(encode_val);
             imag_part = 0;
             real_part = 0;
           }
         }
-        std::cout << "Encoding encode vals" << std::endl;
         m_ckks_encoder->encode(encode_vals, m_scale, plain);
       } else {
         std::vector<double> encode_vals;
