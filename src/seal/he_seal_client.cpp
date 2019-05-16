@@ -167,13 +167,8 @@ void runtime::he::HESealClient::handle_message(
       m_decryptor->decrypt(cipher, plain);
 
       if (complex_packing()) {
-        std::cout << std::endl
-                  << "Got complex result " << result_idx << std::endl;
         std::vector<complex<double>> outputs;
         m_ckks_encoder->decode(plain, outputs);
-
-        std::cout << "outputs.size() " << outputs.size() << std::endl;
-        std::cout << "m_batch_size " << m_batch_size << std::endl;
 
         assert(m_batch_size <= outputs.size());
 
@@ -183,8 +178,6 @@ void runtime::he::HESealClient::handle_message(
           float im = (float)outputs[batch_idx].imag();
           m_results.emplace_back(re);
           m_results.emplace_back(im);
-
-          std::cout << "re " << re << " imag " << im << std::endl;
         }
       } else {
         std::vector<double> outputs;
@@ -312,8 +305,6 @@ void runtime::he::HESealClient::handle_message(
       seal::Ciphertext pre_sort_cipher;
       seal::Plaintext pre_sort_plain;
 
-      std::cout << "cipher_idx " << cipher_idx << std::endl;
-
       // Load cipher from stream
       std::stringstream pre_sort_cipher_stream;
       pre_sort_cipher_stream.write(
@@ -338,10 +329,6 @@ void runtime::he::HESealClient::handle_message(
       // Discard extra values
       pre_max_value.resize(m_batch_size * complex_scale_factor);
 
-      std::cout << "m_batch_size " << m_batch_size << std::endl;
-      std::cout << "input_cipher_values.size() " << input_cipher_values.size()
-                << std::endl;
-
       for (size_t batch_idx = 0;
            batch_idx < m_batch_size * complex_scale_factor; ++batch_idx) {
         input_cipher_values[batch_idx][cipher_idx] = pre_max_value[batch_idx];
@@ -362,7 +349,6 @@ void runtime::he::HESealClient::handle_message(
     std::stringstream max_stream;
 
     if (complex_packing()) {
-      std::cout << "max_values size " << max_values.size() << std::endl;
       assert(max_values.size() % 2 == 0);
       std::vector<std::complex<double>> max_complex_vals;
       for (size_t max_idx = 0; max_idx < max_values.size() / 2; max_idx++) {
@@ -370,10 +356,6 @@ void runtime::he::HESealClient::handle_message(
         double re = max_values[2 * max_idx];
         double imag = max_values[2 * max_idx + 1];
         max_complex_vals.push_back(std::complex<double>(re, imag));
-      }
-      std::cout << "Encoding max vals" << std::endl;
-      for (auto elem : max_complex_vals) {
-        std::cout << elem << std::endl;
       }
       m_ckks_encoder->encode(max_complex_vals, m_scale, plain_max);
     } else {
@@ -383,7 +365,6 @@ void runtime::he::HESealClient::handle_message(
     cipher_max.save(max_stream);
     // std::cout << "Writing max_result message with " << 1 << " ciphertexts"
     //          << std::endl;
-
     auto max_result_msg =
         TCPMessage(runtime::he::MessageType::max_result, 1, max_stream);
     write_message(max_result_msg);
