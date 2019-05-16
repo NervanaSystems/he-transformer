@@ -126,38 +126,32 @@ void runtime::he::HESealClient::handle_message(
     std::stringstream cipher_stream;
     for (size_t data_idx = 0; data_idx < parameter_size; ++data_idx) {
       seal::Plaintext plain;
+
+      size_t complex_scale_factor = complex_packing() ? 2 : 1;
+      size_t batch_start_idx = data_idx * m_batch_size * complex_scale_factor;
+      size_t batch_end_idx =
+          batch_start_idx + m_batch_size * complex_scale_factor;
+
+      std::vector<double> real_vals{m_inputs.begin() + batch_start_idx,
+                                    m_inputs.begin() + batch_end_idx};
+
       if (complex_packing()) {
-        size_t complex_scale_factor = 2;
-
-        size_t batch_start_idx = data_idx * m_batch_size * complex_scale_factor;
-        size_t batch_end_idx =
-            batch_start_idx + m_batch_size * complex_scale_factor;
-
-        std::vector<double> real_vals{m_inputs.begin() + batch_start_idx,
-                                      m_inputs.begin() + batch_end_idx};
         std::vector<complex<double>> complex_vals;
         real_vec_to_complex_vec(complex_vals, real_vals);
         m_ckks_encoder->encode(complex_vals, m_scale, plain);
       } else {
-        std::vector<double> encode_vals;
-        for (size_t batch_idx = 0; batch_idx < m_batch_size; ++batch_idx) {
-          encode_vals.emplace_back(
-              (double)(m_inputs[data_idx * m_batch_size + batch_idx]));
-        }
-        m_ckks_encoder->encode(encode_vals, m_scale, plain);
+        m_ckks_encoder->encode(real_vals, m_scale, plain);
       }
-      seal::Ciphertext c;
-      m_encryptor->encrypt(plain, c);
-      c.save(cipher_stream);
+      seal::Ciphertext cipher;
+      m_encryptor->encrypt(plain, cipher);
+      cipher.save(cipher_stream);
     }
 
-    const std::string& cipher_str = cipher_stream.str();
-    const char* cipher_cstr = cipher_str.c_str();
-    size_t cipher_size = cipher_str.size();
+    auto execute_message = TCPMessage(runtime::he::MessageType::execute,
+                                      parameter_size, cipher_stream);
     std::cout << "Sending execute message with " << parameter_size
               << " ciphertexts" << std::endl;
-    auto execute_message = TCPMessage(runtime::he::MessageType::execute,
-                                      parameter_size, cipher_size, cipher_cstr);
+
     write_message(execute_message);
   } else if (msg_type == runtime::he::MessageType::result) {
     size_t result_count = message.count();
