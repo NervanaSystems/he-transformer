@@ -49,8 +49,8 @@ def mlp_model(x, mode):
             W1 = get_variable('W1', [784, 10], mode)
             y = tf.matmul(x, W1)
             #y = x * W1
-            #W2 = get_variable('W2', [10], mode)
-            W2 = np.ones((10), dtype=np.float32)
+            W2 = get_variable('W2', [10], mode)
+            # W2 = np.ones((10), dtype=np.float32)
             y = y + W2
             #y = tf.nn.relu(y)
 
