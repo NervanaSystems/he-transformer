@@ -136,19 +136,17 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
     runtime::he::he_seal::SealPlaintextWrapper* plaintext, bool complex) const {
   std::lock_guard<std::mutex> encode_lock(plaintext->get_encode_mutex());
   if (plaintext->is_encoded()) {
-    auto valutes = plaintext->get_values();
     return;
   }
   vector<double> double_vals(plaintext->get_values().begin(),
                              plaintext->get_values().end());
 
-  size_t slots = m_context->context_data()->parms().poly_modulus_degree();
-
+  size_t slots = m_context->context_data()->parms().poly_modulus_degree() / 2;
   if (complex) {
     vector<std::complex<double>> complex_values;
     if (double_vals.size() == 1) {
       std::complex<double> val(double_vals[0], double_vals[0]);
-      complex_values = std::vector<std::complex<double>>(slots / 2, val);
+      complex_values = std::vector<std::complex<double>>(slots, val);
     } else {
       std::complex<double> encode_val;
       double real_part{0};
@@ -168,6 +166,11 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
         NGRAPH_INFO << value;
       }
     }
+    NGRAPH_ASSERT(complex_values.size() <=
+                  m_context->context_data()->parms().poly_modulus_degree() / 2)
+        << "Cannot encode " << complex_values.size()
+        << " elements, maximum size is "
+        << m_context->context_data()->parms().poly_modulus_degree() / 2;
     m_ckks_encoder->encode(complex_values, m_scale, plaintext->get_plaintext());
   } else {
     // TODO: why different cases?
@@ -175,6 +178,12 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
       m_ckks_encoder->encode(double_vals[0], m_scale,
                              plaintext->get_plaintext());
     } else {
+      NGRAPH_ASSERT(double_vals.size() <=
+                    m_context->context_data()->parms().poly_modulus_degree() /
+                        2)
+          << "Cannot encode " << double_vals.size()
+          << " elements, maximum size is "
+          << m_context->context_data()->parms().poly_modulus_degree() / 2;
       m_ckks_encoder->encode(double_vals, m_scale, plaintext->get_plaintext());
     }
   }
