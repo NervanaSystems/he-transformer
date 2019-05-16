@@ -242,9 +242,9 @@ void runtime::he::he_seal::HESealCKKSBackend::decode(
 
     for (size_t i = 0; i < 2; ++i) {
       xs_float[2 * i] = (float)(xs[i].real());
-      NGRAPH_INFO << "re" << xs_float[2 * i];
+      // NGRAPH_INFO << "re" << xs_float[2 * i];
       xs_float[2 * i + 1] = (float)(xs[i].imag());
-      NGRAPH_INFO << "im" << xs_float[2 * i + 1];
+      // NGRAPH_INFO << "im" << xs_float[2 * i + 1];
     }
     input->set_values(xs_float);
   } else {
