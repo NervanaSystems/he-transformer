@@ -45,8 +45,8 @@ def mlp_model(x, mode):
 
         else:
             x_image = tf.reshape(x, [-1, 28, 28, 1])
-            W1 = np.full((784, 10), 2, dtype=np.float32)
-            #W1 = get_variable('W1', [784, 10], mode)
+            #W1 = np.full((784, 10), 2, dtype=np.float32)
+            W1 = get_variable('W1', [784, 10], mode)
             y = tf.matmul(x, W1)
             #y = x * W1
             #W2 = get_variable('W2', [10], mode)
