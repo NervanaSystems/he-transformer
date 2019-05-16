@@ -97,11 +97,7 @@ void runtime::he::HESealClient::handle_message(
   // (a,b,c) => (a+bi, c+0i)
   auto real_vec_to_complex_vec = [](std::vector<std::complex<double>>& output,
                                     const std::vector<double>& input) {
-    std::cout << "double_vec_to_complex_vec" << std::endl;
     assert(output.size() == 0);
-    /*for (auto elem : input) {
-      std::cout << elem << std::endl;
-    }*/
     vector<double> complex_parts(2, 0);
     for (size_t i = 0; i < input.size(); ++i) {
       complex_parts[i % 2] = input[i];
@@ -112,23 +108,7 @@ void runtime::he::HESealClient::handle_message(
         complex_parts = {0, 0};
       }
     }
-    /*for (auto elem : output) {
-      std::cout << elem << std::endl;
-    } */
   };
-
-  // TODO: remove
-  /*
-   std::vector<std::complex<double>> complex_vec;
-   std::vector<double> real_vec = {1, 2, 3};
-   std::vector<double> real2_vec = {1, 2, 3, 4, 5, 6, 7};
-   std::vector<double> real3_vec = {1, 2, 3, 4, 5, 6};
-  real_vec_to_complex_vec(complex_vec, real_vec);
-  complex_vec.clear();
-  real_vec_to_complex_vec(complex_vec, real2_vec);
-  complex_vec.clear();
-  real_vec_to_complex_vec(complex_vec, real3_vec);
-  complex_vec.clear();*/
 
   if (msg_type == runtime::he::MessageType::parameter_size) {
     // Number of (packed) ciphertexts to perform inference on
@@ -171,27 +151,6 @@ void runtime::he::HESealClient::handle_message(
         std::vector<complex<double>> complex_vals;
         real_vec_to_complex_vec(complex_vals, real_vals);
         m_ckks_encoder->encode(complex_vals, m_scale, plain);
-
-        /*
-
-        std::vector<complex<double>> encode_vals;
-        double real_part = 0;
-        double imag_part = 0;
-
-        for (size_t batch_idx = 0;
-             batch_idx < m_batch_size * complex_scale_factor; ++batch_idx) {
-          if (batch_idx % 2 == 0) {
-            real_part = m_inputs[batch_start_idx + batch_idx];
-          } else {
-            imag_part = m_inputs[batch_start_idx + batch_idx];
-            std::complex<double> encode_val(real_part, imag_part);
-            encode_vals.emplace_back(encode_val);
-            imag_part = 0;
-            real_part = 0;
-          }
-        }
-        m_ckks_encoder->encode(encode_vals, m_scale, plain);
-        */
       } else {
         std::vector<double> encode_vals;
         for (size_t batch_idx = 0; batch_idx < m_batch_size; ++batch_idx) {
@@ -233,30 +192,20 @@ void runtime::he::HESealClient::handle_message(
       seal::Plaintext plain;
       m_decryptor->decrypt(cipher, plain);
 
+      std::vector<double> outputs;
       if (complex_packing()) {
-        std::vector<complex<double>> outputs;
-        m_ckks_encoder->decode(plain, outputs);
+        std::vector<complex<double>> complex_outputs;
+        m_ckks_encoder->decode(plain, complex_outputs);
 
-        assert(m_batch_size <= outputs.size());
-
-        for (size_t batch_idx = 0; batch_idx < m_batch_size /* outputs.size() */
-             ;
-             ++batch_idx) {
-          float re = (float)outputs[batch_idx].real();
-          float im = (float)outputs[batch_idx].imag();
-          m_results.emplace_back(re);
-          m_results.emplace_back(im);
-        }
+        assert(m_batch_size <= complex_outputs.size());
+        complex_outputs.resize(m_batch_size);
+        complex_vec_to_real_vec(outputs, complex_outputs);
       } else {
-        std::vector<double> outputs;
         m_ckks_encoder->decode(plain, outputs);
-
         assert(m_batch_size <= outputs.size());
-
-        for (size_t batch_idx = 0; batch_idx < m_batch_size; ++batch_idx) {
-          m_results.emplace_back((float)outputs[batch_idx]);
-        }
+        outputs.resize(m_batch_size);
       }
+      m_results.insert(m_results.end(), outputs.begin(), outputs.end());
     }
     std::cout << "Results size " << m_results.size() << std::endl;
 
