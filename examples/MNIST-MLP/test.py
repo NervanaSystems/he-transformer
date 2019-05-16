@@ -70,7 +70,6 @@ def test_mnist_mlp(FLAGS):
         y_label_batch.astype('float32').tofile("y_label_" +
                                                str(FLAGS.batch_size) + ".bin")
 
-    # Avoid performing in a session, to allow he backends to report accuracy.
     y_pred = np.argmax(y_conv_val, 1)
     print('y_pred', y_pred)
     correct_prediction = np.equal(y_pred, y_label_batch)

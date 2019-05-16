@@ -30,8 +30,10 @@ def mlp_model(x, mode):
         print('mode should be train or test')
         raise Exception()
 
-    with tf.name_scope('conv1'):
+    with tf.name_scope('reshape'):
         x_image = tf.reshape(x, [-1, 28, 28, 1])
+
+    with tf.name_scope('conv1'):
         W_conv1 = get_variable('W_conv1', [5, 5, 1, 5], mode)
         y = conv2d_stride_2_valid(x_image, W_conv1)
         paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]],

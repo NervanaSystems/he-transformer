@@ -103,6 +103,4 @@ void runtime::he::he_seal::HESealBackend::decrypt(
   m_decryptor->decrypt(seal_input->m_ciphertext, seal_output->get_plaintext());
   output->set_complex(input->complex_packing());
   NGRAPH_ASSERT(output->is_complex() == input->complex_packing());
-
-  NGRAPH_INFO << "Decrypted complex? " << input->complex_packing();
 }

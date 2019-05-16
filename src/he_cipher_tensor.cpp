@@ -46,8 +46,6 @@ void runtime::he::HECipherTensor::write(const void* source,
   size_t dst_start_index = tensor_offset / type_byte_size;
   size_t num_elements_to_write = n / (type_byte_size * m_batch_size);
 
-  NGRAPH_INFO << "num_elements_to_write " << num_elements_to_write;
-
   const bool complex_batching = m_he_backend->complex_packing();
 
   if (num_elements_to_write == 1) {
@@ -82,7 +80,6 @@ void runtime::he::HECipherTensor::write(const void* source,
           memcpy(destination, src, type_byte_size);
         }
 
-        NGRAPH_INFO << "Encoding cipher " << i << " for first time?";
         m_he_backend->encode(plaintext, batch_src, element_type,
                              complex_batching, m_batch_size);
         free((void*)batch_src);
@@ -102,8 +99,6 @@ void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset,
   size_t type_byte_size = element_type.size();
   size_t src_start_index = tensor_offset / type_byte_size;
   size_t num_elements_to_read = n / (type_byte_size * m_batch_size);
-
-  NGRAPH_INFO << "num_elements_to_read " << num_elements_to_read;
 
   if (num_elements_to_read == 1) {
     void* dst_with_offset = (void*)((char*)target);
