@@ -138,40 +138,54 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
   if (plaintext->is_encoded()) {
     return;
   }
+  // Packs elements of input into real values
+  // (a+bi, c+di) => (a,b,c,d)
+  auto complex_vec_to_real_vec =
+      [](std::vector<double>& output,
+         const std::vector<std::complex<double>>& input) {
+        assert(output.size() == 0);
+        for (const std::complex<double>& value : input) {
+          output.emplace_back(value.real());
+          output.emplace_back(value.imag());
+        }
+      };
+
+  // Packs elements of input into complex values
+  // (a,b,c,d) => (a+bi, c+di)
+  // (a,b,c) => (a+bi, c+0i)
+  auto real_vec_to_complex_vec = [](std::vector<std::complex<double>>& output,
+                                    const std::vector<double>& input) {
+    assert(output.size() == 0);
+    vector<double> complex_parts(2, 0);
+    for (size_t i = 0; i < input.size(); ++i) {
+      complex_parts[i % 2] = input[i];
+
+      if (i % 2 == 1 || i == input.size() - 1) {
+        output.emplace_back(
+            std::complex<double>(complex_parts[0], complex_parts[1]));
+        complex_parts = {0, 0};
+      }
+    }
+  };
+
   vector<double> double_vals(plaintext->get_values().begin(),
                              plaintext->get_values().end());
 
   size_t slots = m_context->context_data()->parms().poly_modulus_degree() / 2;
   if (complex) {
-    vector<std::complex<double>> complex_values;
+    vector<std::complex<double>> complex_vals;
     if (double_vals.size() == 1) {
       std::complex<double> val(double_vals[0], double_vals[0]);
-      complex_values = std::vector<std::complex<double>>(slots, val);
+      complex_vals = std::vector<std::complex<double>>(slots, val);
     } else {
-      std::complex<double> encode_val;
-      double real_part{0};
-      double imag_part{0};
-      for (size_t i = 0; i < double_vals.size(); ++i) {
-        if (i % 2 == 0) {
-          real_part = double_vals[i];
-        } else {
-          imag_part = double_vals[i];
-          complex_values.emplace_back(
-              std::complex<double>(real_part, imag_part));
-          real_part = 0;
-          imag_part = 0;
-        }
-      }
-      for (auto& value : complex_values) {
-        NGRAPH_INFO << value;
-      }
+      real_vec_to_complex_vec(complex_vals, double_vals);
     }
-    NGRAPH_ASSERT(complex_values.size() <=
+    NGRAPH_ASSERT(complex_vals.size() <=
                   m_context->context_data()->parms().poly_modulus_degree() / 2)
-        << "Cannot encode " << complex_values.size()
+        << "Cannot encode " << complex_vals.size()
         << " elements, maximum size is "
         << m_context->context_data()->parms().poly_modulus_degree() / 2;
-    m_ckks_encoder->encode(complex_values, m_scale, plaintext->get_plaintext());
+    m_ckks_encoder->encode(complex_vals, m_scale, plaintext->get_plaintext());
   } else {
     // TODO: why different cases?
     if (double_vals.size() == 1) {
