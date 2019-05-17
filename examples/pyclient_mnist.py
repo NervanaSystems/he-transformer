@@ -2,6 +2,7 @@ import time
 import argparse
 import numpy as np
 import sys
+import os
 
 np.set_printoptions(threshold=sys.maxsize)
 
@@ -20,9 +21,22 @@ def test_mnist_cnn(FLAGS):
     data = x_test_batch.flatten('F')
     print('Client batch size from FLAG: ', batch_size)
 
+    complex_scale_factor = 1
+    if ('NGRAPH_COMPLEX_PACK' in os.environ):
+        complex_scale_factor = 2
+
+    print('complex_scale_factor', complex_scale_factor)
+
+    # TODO: support even batch sizes
+    assert (batch_size % complex_scale_factor == 0)
+
     hostname = 'localhost'
     port = 34000
-    client = he_seal_client.HESealClient(hostname, port, batch_size, data)
+
+    new_batch_size = batch_size // complex_scale_factor
+    print('new_batch_size', new_batch_size)
+
+    client = he_seal_client.HESealClient(hostname, port, new_batch_size, data)
 
     print('Sleeping until client is done')
     while not client.is_done():
@@ -30,13 +44,18 @@ def test_mnist_cnn(FLAGS):
 
     results = client.get_results()
     results = np.round(results, 2)
-    #print('results', results)
 
-    y_pred = np.array(results).reshape(10, batch_size).argmax(axis=0)
+    y_pred_reshape = np.array(results).reshape(10, batch_size)
+    with np.printoptions(precision=3, suppress=True):
+        print(y_pred_reshape.T)
+
+    y_pred = y_pred_reshape.argmax(axis=0)
+    print('y_pred', y_pred)
     y_true = y_test_batch.argmax(axis=1)
 
     correct = np.sum(np.equal(y_pred, y_true))
     acc = correct / float(batch_size)
+    print('pred size', len(y_pred))
     print('correct', correct)
     print('Accuracy (batch size', batch_size, ') =', acc * 100., '%')
 

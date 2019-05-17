@@ -189,7 +189,7 @@ void runtime::he::HEExecutable::handle_message(
     const runtime::he::TCPMessage& message) {
   MessageType msg_type = message.message_type();
 
-  //NGRAPH_INFO << "Server received message type: "
+  // NGRAPH_INFO << "Server received message type: "
   //           << message_type_to_string(msg_type);
 
   if (msg_type == MessageType::execute) {
@@ -258,6 +258,9 @@ void runtime::he::HEExecutable::handle_message(
           << "Incorrect number of elements for parameter";
 
       input_tensor->set_elements(cipher_elements);
+      for (auto& cipher_elem : cipher_elements) {
+        cipher_elem->set_complex_packing(true);
+      }
       m_client_inputs.emplace_back(input_tensor);
       parameter_size_index += param_size;
     }
@@ -338,6 +341,9 @@ void runtime::he::HEExecutable::handle_message(
           make_shared<runtime::he::he_seal::SealCiphertextWrapper>(cipher);
       auto he_ciphertext =
           dynamic_pointer_cast<runtime::he::HECiphertext>(wrapper);
+      if (m_he_backend->complex_packing()) {
+        he_ciphertext->set_complex_packing(true);
+      }
 
       NGRAPH_ASSERT(he_ciphertext != nullptr)
           << "HECiphertext is not SealPlaintextWrapper";
@@ -366,6 +372,9 @@ void runtime::he::HEExecutable::handle_message(
           make_shared<runtime::he::he_seal::SealCiphertextWrapper>(cipher);
       auto he_ciphertext =
           dynamic_pointer_cast<runtime::he::HECiphertext>(wrapper);
+      if (m_he_backend->complex_packing()) {
+        he_ciphertext->set_complex_packing(true);
+      }
 
       NGRAPH_ASSERT(he_ciphertext != nullptr)
           << "HECiphertext is not SealPlaintextWrapper";
@@ -395,6 +404,9 @@ void runtime::he::HEExecutable::handle_message(
 
       NGRAPH_ASSERT(he_ciphertext != nullptr)
           << "HECiphertext is not SealPlaintextWrapper";
+      if (m_he_backend->complex_packing()) {
+        he_ciphertext->set_complex_packing(true);
+      }
 
       m_minimum_ciphertexts.emplace_back(he_ciphertext);
     }
@@ -450,6 +462,9 @@ bool runtime::he::HEExecutable::call(
   if (m_encrypt_model) {
     NGRAPH_INFO << "Encrypting model";
   }
+  if (m_he_backend->complex_packing()) {
+    NGRAPH_INFO << "Complex packing";
+  }
 
   // convert inputs to HETensor
   vector<shared_ptr<runtime::he::HETensor>> he_inputs;
@@ -494,6 +509,9 @@ bool runtime::he::HEExecutable::call(
 
 #pragma omp parallel for
         for (size_t i = 0; i < plain_input->get_batched_element_count(); ++i) {
+          // Enable complex batching!
+          plain_input->get_element(i)->set_complex_packing(
+              m_he_backend->complex_packing());
           m_he_backend->encrypt(cipher_input->get_element(i),
                                 plain_input->get_element(i).get());
         }
@@ -954,6 +972,19 @@ void runtime::he::HEExecutable::generate_calls(
             dot->get_reduction_axes_count(), type, m_he_backend);
       } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                  out0_cipher != nullptr) {
+        // TODO: move to dot
+        std::vector<std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>>
+            seal_plain;
+        for (auto elem : arg1_plain->get_elements()) {
+          auto wrapper =
+              dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(
+                  elem);
+          seal_plain.emplace_back(wrapper);
+        }
+        auto he_seal_backend =
+            (runtime::he::he_seal::HESealBackend*)m_he_backend;
+        he_seal_backend->encode(seal_plain, false);
+
         runtime::he::kernel::dot(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
             out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,

@@ -46,6 +46,8 @@ void runtime::he::HECipherTensor::write(const void* source,
   size_t dst_start_index = tensor_offset / type_byte_size;
   size_t num_elements_to_write = n / (type_byte_size * m_batch_size);
 
+  const bool complex_batching = m_he_backend->complex_packing();
+
   if (num_elements_to_write == 1) {
     const void* src_with_offset = (void*)((char*)source);
     size_t dst_index = dst_start_index;
@@ -53,7 +55,7 @@ void runtime::he::HECipherTensor::write(const void* source,
     shared_ptr<runtime::he::HEPlaintext> plaintext =
         m_he_backend->create_empty_plaintext();
     m_he_backend->encode(plaintext, src_with_offset, element_type,
-                         m_batch_size);
+                         complex_batching, m_batch_size);
     m_he_backend->encrypt(m_cipher_texts[dst_index], plaintext.get());
   } else {
 #pragma omp parallel for
@@ -78,11 +80,12 @@ void runtime::he::HECipherTensor::write(const void* source,
           memcpy(destination, src, type_byte_size);
         }
 
-        m_he_backend->encode(plaintext, batch_src, element_type, m_batch_size);
+        m_he_backend->encode(plaintext, batch_src, element_type,
+                             complex_batching, m_batch_size);
         free((void*)batch_src);
       } else {
         m_he_backend->encode(plaintext, src_with_offset, element_type,
-                             m_batch_size);
+                             complex_batching, m_batch_size);
       }
       m_he_backend->encrypt(m_cipher_texts[dst_index], plaintext.get());
     }

@@ -14,10 +14,10 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "seal/kernel/add_seal.hpp"
 #include "seal/bfv/kernel/add_seal_bfv.hpp"
 #include "seal/ckks/he_seal_ckks_backend.hpp"
 #include "seal/ckks/kernel/add_seal_ckks.hpp"
+#include "seal/kernel/add_seal.hpp"
 
 using namespace std;
 using namespace ngraph::runtime::he;
@@ -64,8 +64,8 @@ void he_seal::kernel::scalar_add(
     const seal::MemoryPoolHandle& pool) {
   NGRAPH_ASSERT(element_type == element::f32);
 
-  bool add_zero = arg1->is_single_value() &&
-                  (arg1->get_value() == 0.0f);
+  // TODO: handle case where arg1 = {0, 0, 0, 0, ...}
+  bool add_zero = arg1->is_single_value() && (arg1->get_values()[0] == 0.0f);
 
   if (add_zero) {
     NGRAPH_INFO << "Optimized add by 0";
@@ -127,16 +127,15 @@ void he_seal::kernel::scalar_add(he_seal::SealPlaintextWrapper* arg0,
                                  const element::Type& element_type,
                                  const he_seal::HESealBackend* he_seal_backend,
                                  const seal::MemoryPoolHandle& pool) {
-  auto out_he = static_pointer_cast<HEPlaintext>(out);
-
   NGRAPH_ASSERT(element_type == element::f32);
-  // TODO: generalize to multiple batch sizes
-  float x, y;
-  he_seal_backend->decode(&x, arg0, element_type);
-  he_seal_backend->decode(&y, arg1, element_type);
-  float r = x + y;
-  he_seal_backend->encode(out_he, &r, element_type);
-  out = static_pointer_cast<he_seal::SealPlaintextWrapper>(out_he);
+
+  const std::vector<float>& arg0_vals = arg0->get_values();
+  const std::vector<float>& arg1_vals = arg1->get_values();
+  std::vector<float> out_vals(arg0->num_values());
+
+  std::transform(arg0_vals.begin(), arg0_vals.end(), arg1_vals.begin(),
+                 out_vals.begin(), std::plus<float>());
+  out->set_values(out_vals);
 }
 
 void he_seal::kernel::scalar_add(runtime::he::HEPlaintext* arg0,

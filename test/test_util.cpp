@@ -99,7 +99,8 @@ vector<tuple<vector<shared_ptr<runtime::Tensor>>,
 generate_plain_cipher_tensors(const vector<shared_ptr<Node>>& output,
                               const vector<shared_ptr<Node>>& input,
                               const runtime::Backend* backend,
-                              bool consistent_type, bool skip_plain_plain) {
+                              const bool consistent_type,
+                              const bool skip_plain_plain) {
   auto he_backend = static_cast<const runtime::he::HEBackend*>(backend);
 
   using TupleOfInputOutputs =
@@ -181,6 +182,5 @@ generate_plain_cipher_tensors(const vector<shared_ptr<Node>>& output,
       ret.push_back(cipher_plain_cipher());
     }
   }
-
   return ret;
 }

@@ -53,7 +53,13 @@ class HECipherTensor : public HETensor {
       const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& elements);
 
   void save_elements(std::ostream& stream) const {
+    NGRAPH_ASSERT(m_cipher_texts.size() > 0) << "Cannot save 0 ciphertexts";
+
+    size_t cipher_size = m_cipher_texts[0]->size();
     for (auto& ciphertext : m_cipher_texts) {
+      NGRAPH_ASSERT(cipher_size == ciphertext->size())
+          << "Cipher size " << ciphertext->size() << " doesn't match expected "
+          << cipher_size;
       ciphertext->save(stream);
     }
   }

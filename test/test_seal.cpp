@@ -118,39 +118,3 @@ TEST(seal_example, seal_bfv_basics_i) {
   int result = encoder.decode_int32(plain_result);
   EXPECT_EQ(84, result);
 }
-
-TEST(seal_example, seal_bfv_shared_ptr_encrypt) {
-  using namespace seal;
-
-  // Parameter
-  EncryptionParameters parms(seal::scheme_type::BFV);
-  parms.set_poly_modulus_degree(2048);
-  parms.set_coeff_modulus(DefaultParams::coeff_modulus_128(2048));
-  parms.set_plain_modulus(1 << 8);
-
-  auto context = SEALContext::Create(parms);
-
-  IntegerEncoder encoder(context);
-  KeyGenerator keygen(context);
-  PublicKey public_key = keygen.public_key();
-  SecretKey secret_key = keygen.secret_key();
-  Encryptor encryptor(context, public_key);
-  Evaluator evaluator(context);
-  Decryptor decryptor(context, secret_key);
-
-  // Encode
-  int value1 = 5;
-  Plaintext plain = encoder.encode(value1);
-
-  // Encrypt
-  auto encrypted_ptr = make_shared<Ciphertext>();
-  encryptor.encrypt(plain, *encrypted_ptr);
-
-  // Decrypt
-  Plaintext plain_result;
-  decryptor.decrypt(*encrypted_ptr, plain_result);
-
-  // Decode
-  int result = encoder.decode_int32(plain_result);
-  EXPECT_EQ(5, result);
-}

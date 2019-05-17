@@ -87,41 +87,60 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_plain) {
   auto C = make_shared<op::Parameter>(element::f32, shape);
   auto f = make_shared<Function>((A * B) * C, ParameterVector{A, B, C});
 
-  // Create some tensors for input/output
-  auto a = he_backend->create_cipher_tensor(element::f32, shape);
-  auto b = he_backend->create_cipher_tensor(element::f32, shape);
-  auto c = he_backend->create_plain_tensor(element::f32, shape);
-  auto result = he_backend->create_cipher_tensor(element::f32, shape);
+  // A B C order
+  {
+    auto a = he_backend->create_cipher_tensor(element::f32, shape);
+    auto b = he_backend->create_cipher_tensor(element::f32, shape);
+    auto c = he_backend->create_plain_tensor(element::f32, shape);
+    auto result = he_backend->create_cipher_tensor(element::f32, shape);
 
-  copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
-  copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
-  copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
+    copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
+    copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
+    copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
 
-  auto handle1 = backend->compile(f);
-  handle1->call_with_validate({result}, {a, b, c});
-  EXPECT_TRUE(all_close(
-      read_vector<float>(result),
-      (test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(), 1e-1f));
+    auto handle = backend->compile(f);
+    handle->call_with_validate({result}, {a, b, c});
+    EXPECT_TRUE(all_close(
+        read_vector<float>(result),
+        (test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(),
+        1e-1f));
+  }
+  // B A C order
+  {
+    auto a = he_backend->create_cipher_tensor(element::f32, shape);
+    auto b = he_backend->create_cipher_tensor(element::f32, shape);
+    auto c = he_backend->create_plain_tensor(element::f32, shape);
+    auto result = he_backend->create_cipher_tensor(element::f32, shape);
 
-  copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
-  copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
-  copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
+    copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
+    copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
+    copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
 
-  auto handle2 = backend->compile(f);
-  handle2->call_with_validate({result}, {b, a, c});
-  EXPECT_TRUE(all_close(
-      read_vector<float>(result),
-      (test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(), 1e-1f));
+    auto handle = backend->compile(f);
+    handle->call_with_validate({result}, {b, a, c});
+    EXPECT_TRUE(all_close(
+        read_vector<float>(result),
+        (test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(),
+        1e-1f));
+  }
+  // C A B order
+  {
+    auto a = he_backend->create_cipher_tensor(element::f32, shape);
+    auto b = he_backend->create_cipher_tensor(element::f32, shape);
+    auto c = he_backend->create_plain_tensor(element::f32, shape);
+    auto result = he_backend->create_cipher_tensor(element::f32, shape);
 
-  copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
-  copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
-  copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
+    copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
+    copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
+    copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
 
-  auto handle3 = backend->compile(f);
-  handle3->call_with_validate({result}, {c, a, b});
-  EXPECT_TRUE(all_close(
-      read_vector<float>(result),
-      (test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(), 1e-1f));
+    auto handle = backend->compile(f);
+    handle->call_with_validate({result}, {c, a, b});
+    EXPECT_TRUE(all_close(
+        read_vector<float>(result),
+        (test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(),
+        1e-1f));
+  }
 }
 
 // Test multiplying plain with plain at different layer
@@ -235,7 +254,7 @@ NGRAPH_TEST(${BACKEND_NAME}, add_layer_plain_plain) {
   auto a = he_backend->create_plain_tensor(element::f32, shape);
   auto b = he_backend->create_plain_tensor(element::f32, shape);
   auto c = he_backend->create_plain_tensor(element::f32, shape);
-  auto result = he_backend->create_cipher_tensor(element::f32, shape);
+  auto result = he_backend->create_plain_tensor(element::f32, shape);
 
   copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
   copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());

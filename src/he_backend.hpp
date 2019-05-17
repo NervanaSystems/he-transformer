@@ -166,22 +166,31 @@ class HEBackend : public runtime::Backend {
   /// @param count Number of elements to encode, count > 1 indicates batching
   virtual void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
                       const void* input, const element::Type& element_type,
-                      size_t count = 1) const = 0;
+                      bool complex = false, size_t count = 1) const = 0;
 
   /// @brief Decodes plaintext polynomial to bytes
   /// @param output Pointer to memory to write to
   /// @param input Pointer to plaintext to decode
   /// @param type Type of scalar to encode
   /// @param count Number of elements to decode, count > 1 indicates batching
-  virtual void decode(void* output, const runtime::he::HEPlaintext* input,
+  virtual void decode(void* output, runtime::he::HEPlaintext* input,
                       const element::Type& element_type,
                       size_t count = 1) const = 0;
+
+  virtual void decode(std::vector<std::shared_ptr<runtime::he::HEPlaintext>>&
+                          plaintexts) const {
+    for (std::shared_ptr<runtime::he::HEPlaintext> plaintext : plaintexts) {
+      decode(plaintext.get());
+    }
+  }
+
+  virtual void decode(runtime::he::HEPlaintext* input) const = 0;
 
   /// @brief Encrypts plaintext polynomial to ciphertext
   /// @param output Pointer to ciphertext to encrypt to
   /// @param input Pointer to plaintext to encrypt
   virtual void encrypt(std::shared_ptr<runtime::he::HECiphertext>& output,
-                       const runtime::he::HEPlaintext* input) const = 0;
+                       runtime::he::HEPlaintext* input) const = 0;
 
   /// @brief Decrypts ciphertext to plaintext polynomial
   /// @param output Pointer to plaintext to decrypt to
@@ -189,21 +198,24 @@ class HEBackend : public runtime::Backend {
   virtual void decrypt(std::shared_ptr<runtime::he::HEPlaintext>& output,
                        const runtime::he::HECiphertext* input) const = 0;
 
-  void set_batch_data(bool batch) { m_batch_data = batch; };
-
   const std::shared_ptr<HEEncryptionParameters> get_encryption_parameters()
       const {
     return m_encryption_params;
   };
 
+  void set_batch_data(bool batch) { m_batch_data = batch; };
+  void set_complex_packing(bool toggle) { m_complex_packing = toggle; }
+
   bool encrypt_data() const { return m_encrypt_data; };
   bool batch_data() const { return m_batch_data; };
   bool encrypt_model() const { return m_encrypt_model; };
+  bool complex_packing() const { return m_complex_packing; };
 
  protected:
   bool m_encrypt_data{std::getenv("NGRAPH_ENCRYPT_DATA") != nullptr};
   bool m_batch_data{std::getenv("NGRAPH_BATCH_DATA") != nullptr};
   bool m_encrypt_model{std::getenv("NGRAPH_ENCRYPT_MODEL") != nullptr};
+  bool m_complex_packing{std::getenv("NGRAPH_COMPLEX_PACK") != nullptr};
 
   std::shared_ptr<HEEncryptionParameters> m_encryption_params;
 };

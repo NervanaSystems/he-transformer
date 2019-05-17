@@ -117,7 +117,7 @@ NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_cipher) {
   handle->call_with_validate({t_result}, {t_a, t_b});
   EXPECT_TRUE(
       all_close((vector<float>{14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36}),
-                generalized_read_vector<float>(t_result), 1e-3f));
+                read_vector<float>(t_result), 1e-3f));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_plain) {
@@ -145,7 +145,7 @@ NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_plain) {
   handle->call_with_validate({t_result}, {t_a, t_b});
   EXPECT_TRUE(
       all_close((vector<float>{14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36}),
-                generalized_read_vector<float>(t_result), 1e-3f));
+                read_vector<float>(t_result), 1e-3f));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, add_optimized_2_3) {

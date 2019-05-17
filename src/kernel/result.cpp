@@ -44,5 +44,6 @@ void runtime::he::kernel::result(
   }
   for (size_t i = 0; i < count; ++i) {
     he_backend->decrypt(out[i], arg[i].get());
+    he_backend->decode(out[i].get());
   }
 }
