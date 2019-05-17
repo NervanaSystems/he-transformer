@@ -84,20 +84,17 @@ void kernel::scalar_subtract(HECiphertext* arg0, HEPlaintext* arg1,
   NGRAPH_ASSERT(arg1_seal != nullptr) << "arg1 is not Seal Plaintext";
   NGRAPH_ASSERT(out_seal != nullptr) << "out is not Seal Ciphertext";
 
-  bool sub_zero =
-      arg1_seal->is_single_value() && (arg1_seal->get_values()[0] == 0.0f);
+  // TODO: test more thoroughly
+  /* bool sub_zero =
+       arg1_seal->is_single_value() && (arg1_seal->get_values()[0] == 0.0f);
 
-  if (sub_zero) {
-    // Make copy of input
-    // TODO: make copy only if necessary
-    NGRAPH_INFO << "Sub 0 optimization";
-    out = static_pointer_cast<HECiphertext>(
-        make_shared<he_seal::SealCiphertextWrapper>(*arg0_seal));
-  } else {
-    he_seal::kernel::scalar_subtract(arg0_seal, arg1_seal, out_seal, type,
-                                     he_seal_backend);
-    out = dynamic_pointer_cast<HECiphertext>(out_seal);
-  }
+   if (sub_zero) {
+     NGRAPH_INFO << "Sub 0 optimization";
+     out = arg0;
+   } else { */
+  he_seal::kernel::scalar_subtract(arg0_seal, arg1_seal, out_seal, type,
+                                   he_seal_backend);
+  //}
 }
 
 void kernel::scalar_subtract(HEPlaintext* arg0, HECiphertext* arg1,

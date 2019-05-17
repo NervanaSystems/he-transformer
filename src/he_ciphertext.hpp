@@ -17,6 +17,7 @@
 #pragma once
 
 #include <iostream>
+#include <mutex>
 
 namespace ngraph {
 namespace runtime {
@@ -33,8 +34,12 @@ class HECiphertext {
   bool complex_packing() const { return m_complex_packing; }
   void set_complex_packing(bool toggle) { m_complex_packing = toggle; }
 
+  std::mutex& get_mutex() { return m_mutex; }
+
  protected:
   bool m_complex_packing;
+
+  std::mutex m_mutex;
 };
 }  // namespace he
 }  // namespace runtime

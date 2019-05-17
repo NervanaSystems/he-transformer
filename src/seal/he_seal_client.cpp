@@ -123,7 +123,8 @@ void runtime::he::HESealClient::handle_message(
       assert(m_inputs.size() == parameter_size * m_batch_size);
     }
 
-    std::stringstream cipher_stream;
+    std::vector<std::stringstream> cipher_streams(parameter_size);
+#pragma omp parallel for
     for (size_t data_idx = 0; data_idx < parameter_size; ++data_idx) {
       seal::Plaintext plain;
 
@@ -144,11 +145,16 @@ void runtime::he::HESealClient::handle_message(
       }
       seal::Ciphertext cipher;
       m_encryptor->encrypt(plain, cipher);
-      cipher.save(cipher_stream);
+      cipher.save(cipher_streams[data_idx]);  // cipher_stream);
+    }
+
+    std::stringstream concat_cipher_stream;
+    for (size_t data_idx = 0; data_idx < parameter_size; ++data_idx) {
+      concat_cipher_stream << cipher_streams[data_idx].str();
     }
 
     auto execute_message = TCPMessage(runtime::he::MessageType::execute,
-                                      parameter_size, cipher_stream);
+                                      parameter_size, concat_cipher_stream);
     std::cout << "Sending execute message with " << parameter_size
               << " ciphertexts" << std::endl;
 

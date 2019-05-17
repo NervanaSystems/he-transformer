@@ -539,9 +539,11 @@ bool runtime::he::HEExecutable::call(
     const Node* op = &wrapped.get_node();
     auto type_id = wrapped.get_typeid();
 
-    NGRAPH_INFO << "\033[1;32m"
-                << "[ " << op->get_name() << " ]"
-                << "\033[0m";
+    if (m_silent_ops.find(op->description()) == m_silent_ops.end()) {
+      NGRAPH_INFO << "\033[1;32m"
+                  << "[ " << op->get_name() << " ]"
+                  << "\033[0m";
+    }
 
     if (type_id == OP_TYPEID::Parameter) {
       NGRAPH_INFO << "Parameter shape {" << join(op->get_shape()) << "}";
@@ -617,8 +619,6 @@ bool runtime::he::HEExecutable::call(
     generate_calls(base_type, wrapped, op_outputs, op_inputs);
     m_timer_map[op].stop();
 
-    const string op_name = op->description();
-
     // delete any obsolete tensors
     for (const descriptor::Tensor* t : op->liveness_free_list) {
       for (auto it = tensor_map.begin(); it != tensor_map.end(); ++it) {
@@ -628,9 +628,11 @@ bool runtime::he::HEExecutable::call(
         }
       }
     }
-    NGRAPH_INFO << "\033[1;31m" << op->get_name() << " took "
-                << m_timer_map[op].get_milliseconds() << "ms"
-                << "\033[0m";
+    if (m_silent_ops.find(op->description()) == m_silent_ops.end()) {
+      NGRAPH_INFO << "\033[1;31m" << op->get_name() << " took "
+                  << m_timer_map[op].get_milliseconds() << "ms"
+                  << "\033[0m";
+    }
   }
   size_t total_time = 0;
   for (const auto& elem : m_timer_map) {
@@ -674,7 +676,6 @@ void runtime::he::HEExecutable::generate_calls(
     const vector<shared_ptr<HETensor>>& out,
     const vector<shared_ptr<HETensor>>& args) {
   const Node& node = node_wrapper.get_node();
-  string node_op = node.description();
   shared_ptr<HECipherTensor> arg0_cipher = nullptr;
   shared_ptr<HEPlainTensor> arg0_plain = nullptr;
   shared_ptr<HECipherTensor> arg1_cipher = nullptr;
@@ -722,27 +723,29 @@ void runtime::he::HEExecutable::generate_calls(
         << "arg1 is both cipher and plain?";
   }
 
-  stringstream ss;
-  ss << "Inputs: ";
-  if (arg0_cipher != nullptr) {
-    ss << "Cipher";
-  } else if (arg0_plain != nullptr) {
-    ss << "Plain";
+  if (m_silent_ops.find(node.description()) == m_silent_ops.end()) {
+    stringstream ss;
+    ss << "Inputs: ";
+    if (arg0_cipher != nullptr) {
+      ss << "Cipher";
+    } else if (arg0_plain != nullptr) {
+      ss << "Plain";
+    }
+    if (arg1_cipher != nullptr) {
+      ss << ", Cipher";
+    } else if (arg1_plain != nullptr) {
+      ss << ", Plain";
+    }
+    NGRAPH_INFO << ss.str();
+    ss.str("");
+    ss << "Outputs: ";
+    if (out0_cipher != nullptr) {
+      ss << "Cipher";
+    } else if (out0_plain != nullptr) {
+      ss << "Plain";
+    }
+    NGRAPH_INFO << ss.str();
   }
-  if (arg1_cipher != nullptr) {
-    ss << ", Cipher";
-  } else if (arg1_plain != nullptr) {
-    ss << ", Plain";
-  }
-  NGRAPH_INFO << ss.str();
-  ss.str("");
-  ss << "Outputs: ";
-  if (out0_cipher != nullptr) {
-    ss << "Cipher";
-  } else if (out0_plain != nullptr) {
-    ss << "Plain";
-  }
-  NGRAPH_INFO << ss.str();
 
 // We want to check that every OP_TYPEID enumeration is included in the list.
 // These GCC flags enable compile-time checking so that if an enumeration
@@ -1241,7 +1244,6 @@ void runtime::he::HEExecutable::generate_calls(
                            passthrough->language()};
     }
     case OP_TYPEID::Reshape: {
-      NGRAPH_INFO << "Reshape op";
       const op::Reshape* reshape = static_cast<const op::Reshape*>(&node);
 
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
@@ -1257,7 +1259,6 @@ void runtime::he::HEExecutable::generate_calls(
       } else {
         throw ngraph_error("Reshape types not supported.");
       }
-      NGRAPH_INFO << "Done with reshape op";
       break;
     }
     case OP_TYPEID::Result: {

@@ -64,6 +64,17 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
   if (!arg1->is_encoded()) {
     he_seal_ckks_backend->encode(arg1, false);
   }
+
+  size_t pre_chain_ind0 = he_seal_ckks_backend->get_context()
+                              ->context_data(arg0->get_hetext().parms_id())
+                              ->chain_index();
+
+  size_t pre_chain_ind1 = he_seal_ckks_backend->get_context()
+                              ->context_data(arg1->get_hetext().parms_id())
+                              ->chain_index();
+  NGRAPH_INFO << "Multiplying with chain inds(" << pre_chain_ind0 << ",  "
+              << pre_chain_ind1;
+
   match_modulus_inplace(arg0, arg1, he_seal_ckks_backend, pool);
   match_scale(arg0, arg1, he_seal_ckks_backend);
 

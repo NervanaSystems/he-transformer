@@ -46,7 +46,7 @@ void scalar_add(
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
 void scalar_add(
-    runtime::he::he_seal::SealCiphertextWrapper* arg0,
+    std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& arg0,
     runtime::he::he_seal::SealPlaintextWrapper* arg1,
     std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
@@ -54,7 +54,8 @@ void scalar_add(
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
 void scalar_add(
-    runtime::he::HECiphertext* arg0, runtime::he::HEPlaintext* arg1,
+    std::shared_ptr<runtime::he::HECiphertext>& arg0,
+    runtime::he::HEPlaintext* arg1,
     std::shared_ptr<runtime::he::HECiphertext>& out,
     const element::Type& element_type,
     const runtime::he::he_seal::HESealBackend* he_seal_backend,
@@ -69,7 +70,8 @@ void scalar_add(
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
 void scalar_add(
-    runtime::he::HEPlaintext* arg0, runtime::he::HECiphertext* arg1,
+    runtime::he::HEPlaintext* arg0,
+    std::shared_ptr<runtime::he::HECiphertext>& arg1,
     std::shared_ptr<runtime::he::HECiphertext>& out,
     const element::Type& element_type,
     const runtime::he::he_seal::HESealBackend* he_seal_backend,

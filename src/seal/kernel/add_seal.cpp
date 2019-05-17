@@ -14,10 +14,10 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "seal/kernel/add_seal.hpp"
 #include "seal/bfv/kernel/add_seal_bfv.hpp"
 #include "seal/ckks/he_seal_ckks_backend.hpp"
 #include "seal/ckks/kernel/add_seal_ckks.hpp"
-#include "seal/kernel/add_seal.hpp"
 
 using namespace std;
 using namespace ngraph::runtime::he;
@@ -57,7 +57,8 @@ void he_seal::kernel::scalar_add(runtime::he::HECiphertext* arg0,
 }
 
 void he_seal::kernel::scalar_add(
-    he_seal::SealCiphertextWrapper* arg0, he_seal::SealPlaintextWrapper* arg1,
+    shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
+    he_seal::SealPlaintextWrapper* arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend,
@@ -69,9 +70,7 @@ void he_seal::kernel::scalar_add(
 
   if (add_zero) {
     NGRAPH_INFO << "Optimized add by 0";
-    // Make copy of input
-    // TODO: make copy only if necessarsy
-    out = make_shared<he_seal::SealCiphertextWrapper>(*arg0);
+    out = arg0;
   } else {
     if (auto he_seal_ckks_backend =
             dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend)) {
@@ -111,12 +110,13 @@ void he_seal::kernel::scalar_add(
   he_seal::kernel::scalar_add(arg1, arg0, out, element_type, he_seal_backend);
 }
 
-void he_seal::kernel::scalar_add(runtime::he::HEPlaintext* arg0,
-                                 runtime::he::HECiphertext* arg1,
-                                 shared_ptr<runtime::he::HECiphertext>& out,
-                                 const element::Type& element_type,
-                                 const he_seal::HESealBackend* he_seal_backend,
-                                 const seal::MemoryPoolHandle& pool) {
+void he_seal::kernel::scalar_add(
+    runtime::he::HEPlaintext* arg0,
+    std::shared_ptr<runtime::he::HECiphertext>& arg1,
+    shared_ptr<runtime::he::HECiphertext>& out,
+    const element::Type& element_type,
+    const he_seal::HESealBackend* he_seal_backend,
+    const seal::MemoryPoolHandle& pool) {
   he_seal::kernel::scalar_add(arg1, arg0, out, element_type, he_seal_backend,
                               pool);
 }

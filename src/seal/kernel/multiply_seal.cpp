@@ -73,8 +73,7 @@ void he_seal::kernel::scalar_multiply(
         he_seal_backend->create_valued_ciphertext(0, element_type));
   } else if (std::all_of(values.begin(), values.end(),
                          [](float f) { return f == 1.0f; })) {
-    // TODO: make copy only if needed
-    out = make_shared<he_seal::SealCiphertextWrapper>(*arg0);
+    out = make_shared<he_seal::SealCiphertextWrapper>(arg0);
   } else if (std::all_of(values.begin(), values.end(),
                          [](float f) { return f == -1.0f; })) {
     he_seal::kernel::scalar_negate(arg0, out, element_type, he_seal_backend);
