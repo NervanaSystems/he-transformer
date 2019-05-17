@@ -23,6 +23,8 @@ void runtime::he::kernel::constant(
     vector<shared_ptr<runtime::he::HEPlaintext>>& out,
     const element::Type& element_type, const void* data_ptr,
     const runtime::he::HEBackend* he_backend, size_t count) {
+  NGRAPH_ASSERT(element_type == element::f32)
+      << "Constant supports only f32 type";
   size_t type_byte_size = element_type.size();
   if (out.size() != count) {
     throw ngraph_error("out.size() != count for constant op");
@@ -31,7 +33,9 @@ void runtime::he::kernel::constant(
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
     const void* src_with_offset = (void*)((char*)data_ptr + i * type_byte_size);
-    he_backend->encode(out[i], src_with_offset, element_type);
+    float f = *(float*)src_with_offset;
+    out[i]->set_values({f});
+    // Avoid encoding here (just-in-time encoding)
   }
 }
 
@@ -39,6 +43,8 @@ void runtime::he::kernel::constant(
     vector<shared_ptr<runtime::he::HECiphertext>>& out,
     const element::Type& element_type, const void* data_ptr,
     const runtime::he::HEBackend* he_backend, size_t count) {
+  NGRAPH_ASSERT(element_type == element::f32)
+      << "Constant supports only f32 type";
   size_t type_byte_size = element_type.size();
   if (out.size() != count) {
     throw ngraph_error("out.size() != count for constant op");

@@ -51,11 +51,12 @@ def test_mnist_mlp(FLAGS):
         start_time = time.time()
         x_test = mnist.test.images[:FLAGS.batch_size]
         y_test = mnist.test.labels[:FLAGS.batch_size]
+
         # Run model
         y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
         elasped_time = time.time() - start_time
         print("total time(s)", elasped_time)
-        # print('result', y_conv_val)
+        print('result', np.round(y_conv_val, 2))
 
     x_test_batch = mnist.test.images[:FLAGS.batch_size]
     y_test_batch = mnist.test.labels[:FLAGS.batch_size]
@@ -69,14 +70,14 @@ def test_mnist_mlp(FLAGS):
         y_label_batch.astype('float32').tofile("y_label_" +
                                                str(FLAGS.batch_size) + ".bin")
 
-    # Avoid performing in a session, to allow he backends to report accuracy.
-    if FLAGS.report_accuracy:
-        correct_prediction = np.equal(np.argmax(y_conv_val, 1), y_label_batch)
-        error_count = np.size(correct_prediction) - np.sum(correct_prediction)
-        test_accuracy = np.mean(correct_prediction)
+    y_pred = np.argmax(y_conv_val, 1)
+    print('y_pred', y_pred)
+    correct_prediction = np.equal(y_pred, y_label_batch)
+    error_count = np.size(correct_prediction) - np.sum(correct_prediction)
+    test_accuracy = np.mean(correct_prediction)
 
-        print('Error count', error_count, 'of', FLAGS.batch_size, 'elements.')
-        print('Accuracy: %g ' % test_accuracy)
+    print('Error count', error_count, 'of', FLAGS.batch_size, 'elements.')
+    print('Accuracy: %g ' % test_accuracy)
 
     # Rename serialized graph
     try:

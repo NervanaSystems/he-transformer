@@ -80,6 +80,23 @@ void runtime::he::HESealClient::handle_message(
   // std::cout << "Client received message type: "
   //          << message_type_to_string(msg_type).c_str() << std::endl;
 
+  auto decode_to_real_vec = [this](const seal::Plaintext& plain,
+                                   std::vector<double>& output, bool complex) {
+    static size_t complex_scale_factor = 2;
+    assert(output.size() == 0);
+    if (complex) {
+      std::vector<std::complex<double>> complex_outputs;
+      m_ckks_encoder->decode(plain, complex_outputs);
+      assert(complex_outputs.size() >= m_batch_size);
+      complex_outputs.resize(m_batch_size);
+      complex_vec_to_real_vec(output, complex_outputs);
+    } else {
+      m_ckks_encoder->decode(plain, output);
+      assert(m_batch_size <= output.size());
+      output.resize(m_batch_size);
+    }
+  };
+
   if (msg_type == runtime::he::MessageType::parameter_size) {
     // Number of (packed) ciphertexts to perform inference on
     size_t parameter_size;
@@ -87,40 +104,62 @@ void runtime::he::HESealClient::handle_message(
 
     std::cout << "Parameter size " << parameter_size << std::endl;
     std::cout << "Client batch size " << m_batch_size << std::endl;
+    if (complex_packing()) {
+      std::cout << "Client complex packing? " << complex_packing() << std::endl;
+    }
 
-    std::vector<seal::Ciphertext> ciphers(parameter_size);
-    assert(m_inputs.size() == parameter_size * m_batch_size);
+    // TODO: support odd batch sizes
+    assert(m_batch_size % 2 == 0);
+
+    std::vector<seal::Ciphertext> ciphers;
+    if (complex_packing()) {
+      if (m_inputs.size() != parameter_size * m_batch_size * 2) {
+        std::cout << "m_inputs.size() " << m_inputs.size() << std::endl;
+        std::cout << "parameter_size " << parameter_size << std::endl;
+        std::cout << "m_batch_size " << m_batch_size << std::endl;
+      }
+      assert(m_inputs.size() == parameter_size * m_batch_size * 2);
+    } else {
+      assert(m_inputs.size() == parameter_size * m_batch_size);
+    }
 
     std::stringstream cipher_stream;
 
 #pragma omp parallel for
     for (size_t data_idx = 0; data_idx < parameter_size; ++data_idx) {
       seal::Plaintext plain;
-      std::vector<double> encode_vals;
-      for (size_t batch_idx = 0; batch_idx < m_batch_size; ++batch_idx) {
-        encode_vals.emplace_back(
-            (double)(m_inputs[data_idx * m_batch_size + batch_idx]));
+
+      size_t complex_scale_factor = complex_packing() ? 2 : 1;
+      size_t batch_start_idx = data_idx * m_batch_size * complex_scale_factor;
+      size_t batch_end_idx =
+          batch_start_idx + m_batch_size * complex_scale_factor;
+
+      std::vector<double> real_vals{m_inputs.begin() + batch_start_idx,
+                                    m_inputs.begin() + batch_end_idx};
+
+      if (complex_packing()) {
+        std::vector<complex<double>> complex_vals;
+        real_vec_to_complex_vec(complex_vals, real_vals);
+        m_ckks_encoder->encode(complex_vals, m_scale, plain);
+      } else {
+        m_ckks_encoder->encode(real_vals, m_scale, plain);
       }
-      m_ckks_encoder->encode(encode_vals, m_scale, plain);
-      seal::Ciphertext c;
-      m_encryptor->encrypt(plain, ciphers[data_idx]);
-    }
-    for (const auto& cipher : ciphers) {
+      seal::Ciphertext cipher;
+      m_encryptor->encrypt(plain, cipher);
       cipher.save(cipher_stream);
     }
 
-    const std::string& cipher_str = cipher_stream.str();
-    const char* cipher_cstr = cipher_str.c_str();
-    size_t cipher_size = cipher_str.size();
-    std::cout << "Sending execute message with " << parameter_size
-              << " ciphertexts, message size " << cipher_size << std::endl;
     auto execute_message = TCPMessage(runtime::he::MessageType::execute,
-                                      parameter_size, cipher_size, cipher_cstr);
-    write_message(execute_message);
+                                      parameter_size, cipher_stream);
+    std::cout << "Sending execute message with " << parameter_size
+              << " ciphertexts" << std::endl;
 
+    write_message(execute_message);
   } else if (msg_type == runtime::he::MessageType::result) {
     size_t result_count = message.count();
     size_t element_size = message.element_size();
+
+    std::cout << "Client got " << result_count << " results " << std::endl;
 
     std::vector<seal::Ciphertext> result;
     m_results.reserve(result_count * m_batch_size);
@@ -134,15 +173,12 @@ void runtime::he::HESealClient::handle_message(
       result.push_back(cipher);
       seal::Plaintext plain;
       m_decryptor->decrypt(cipher, plain);
-      std::vector<double> output;
-      m_ckks_encoder->decode(plain, output);
 
-      assert(m_batch_size <= output.size());
-
-      for (size_t batch_idx = 0; batch_idx < m_batch_size; ++batch_idx) {
-        m_results.emplace_back((float)output[batch_idx]);
-      }
+      std::vector<double> outputs;
+      decode_to_real_vec(plain, outputs, complex_packing());
+      m_results.insert(m_results.end(), outputs.begin(), outputs.end());
     }
+    std::cout << "Results size " << m_results.size() << std::endl;
 
     close_connection();
   } else if (msg_type == runtime::he::MessageType::none) {
@@ -170,8 +206,8 @@ void runtime::he::HESealClient::handle_message(
         TCPMessage(runtime::he::MessageType::eval_key, 1, evk_stream);
     std::cout << "Sending evaluation key" << std::endl;
     write_message(evk_message);
-
   } else if (msg_type == runtime::he::MessageType::relu_request) {
+    auto relu = [](double d) { return d > 0 ? d : 0; };
     size_t result_count = message.count();
     size_t element_size = message.element_size();
 
@@ -179,8 +215,7 @@ void runtime::he::HESealClient::handle_message(
 #pragma omp parallel for
     for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
       seal::Ciphertext pre_relu_cipher;
-      seal::Plaintext pre_relu_plain;
-      seal::Plaintext post_relu_plain;
+      seal::Plaintext relu_plain;
 
       // Load cipher from stream
       std::stringstream pre_relu_cipher_stream;
@@ -189,25 +224,23 @@ void runtime::he::HESealClient::handle_message(
       pre_relu_cipher.load(m_context, pre_relu_cipher_stream);
 
       // Decrypt cipher
-      m_decryptor->decrypt(pre_relu_cipher, pre_relu_plain);
-      std::vector<double> pre_relu;
-      m_ckks_encoder->decode(pre_relu_plain, pre_relu);
+      m_decryptor->decrypt(pre_relu_cipher, relu_plain);
+
+      std::vector<double> relu_vals;
+      decode_to_real_vec(relu_plain, relu_vals, complex_packing());
 
       // Perform relu
-      std::vector<double> post_relu(m_batch_size);
-      for (size_t batch_idx = 0; batch_idx < m_batch_size; ++batch_idx) {
-        double pre_relu_val = pre_relu[batch_idx];
-        double post_relu_val = pre_relu_val > 0 ? pre_relu_val : 0;
-        // TODO: don't do relu6 by default!
-        post_relu_val = post_relu_val > 6 ? 6.f : post_relu_val;
-        // std::cout << "relu(" << pre_relu_val << ") = " << post_relu_val
-        //          << std::endl;
-        post_relu[batch_idx] = post_relu_val;
-      }
+      std::transform(relu_vals.begin(), relu_vals.end(), relu_vals.begin(),
+                     relu);
 
-      // Encrypt post-relu result
-      m_ckks_encoder->encode(post_relu, m_scale, post_relu_plain);
-      m_encryptor->encrypt(post_relu_plain, post_relu_ciphers[result_idx]);
+      if (complex_packing()) {
+        std::vector<std::complex<double>> complex_relu_vals;
+        real_vec_to_complex_vec(complex_relu_vals, relu_vals);
+        m_ckks_encoder->encode(complex_relu_vals, m_scale, relu_plain);
+      } else {
+        m_ckks_encoder->encode(relu_vals, m_scale, relu_plain);
+      }
+      m_encryptor->encrypt(relu_plain, post_relu_ciphers[result_idx]);
     }
     std::stringstream cipher_stream;
     post_relu_ciphers[0].save(cipher_stream);
@@ -241,15 +274,18 @@ void runtime::he::HESealClient::handle_message(
         result_message_cnt = 0;
       }
     }
+    std::cout << "Writing relu_result message with " << result_count
+              << " ciphertexts" << std::endl;
 
   } else if (msg_type == runtime::he::MessageType::max_request) {
+    size_t complex_scale_factor = complex_packing() ? 2 : 1;
     size_t cipher_count = message.count();
     size_t element_size = message.element_size();
 
     std::vector<std::vector<double>> input_cipher_values(
-        m_batch_size, vector<double>(cipher_count, 0));
+        m_batch_size * complex_scale_factor, vector<double>(cipher_count, 0));
 
-    std::vector<double> max_values(m_batch_size,
+    std::vector<double> max_values(m_batch_size * complex_scale_factor,
                                    std::numeric_limits<double>::lowest());
 
 #pragma omp parallel for
@@ -265,19 +301,18 @@ void runtime::he::HESealClient::handle_message(
 
       // Decrypt cipher
       m_decryptor->decrypt(pre_sort_cipher, pre_sort_plain);
-      std::vector<double> pre_sort_value;
-      m_ckks_encoder->decode(pre_sort_plain, pre_sort_value);
+      std::vector<double> pre_max_value;
+      decode_to_real_vec(pre_sort_plain, pre_max_value, complex_packing());
 
-      // Discard extra values
-      pre_sort_value.resize(m_batch_size);
-
-      for (size_t batch_idx = 0; batch_idx < m_batch_size; ++batch_idx) {
-        input_cipher_values[batch_idx][cipher_idx] = pre_sort_value[batch_idx];
+      for (size_t batch_idx = 0;
+           batch_idx < m_batch_size * complex_scale_factor; ++batch_idx) {
+        input_cipher_values[batch_idx][cipher_idx] = pre_max_value[batch_idx];
       }
     }
 
     // Get max of each vector of values
-    for (size_t batch_idx = 0; batch_idx < m_batch_size; ++batch_idx) {
+    for (size_t batch_idx = 0; batch_idx < m_batch_size * complex_scale_factor;
+         ++batch_idx) {
       max_values[batch_idx] =
           *std::max_element(input_cipher_values[batch_idx].begin(),
                             input_cipher_values[batch_idx].end());
@@ -287,18 +322,23 @@ void runtime::he::HESealClient::handle_message(
     seal::Ciphertext cipher_max;
     seal::Plaintext plain_max;
     std::stringstream max_stream;
-    m_ckks_encoder->encode(max_values, m_scale, plain_max);
+
+    if (complex_packing()) {
+      assert(max_values.size() % 2 == 0);
+      std::vector<std::complex<double>> max_complex_vals;
+      real_vec_to_complex_vec(max_complex_vals, max_values);
+      m_ckks_encoder->encode(max_complex_vals, m_scale, plain_max);
+    } else {
+      m_ckks_encoder->encode(max_values, m_scale, plain_max);
+    }
     m_encryptor->encrypt(plain_max, cipher_max);
     cipher_max.save(max_stream);
-    // std::cout << "Writing max_result message with " << 1 << " ciphertexts"
-    //          << std::endl;
-
     auto max_result_msg =
         TCPMessage(runtime::he::MessageType::max_result, 1, max_stream);
     write_message(max_result_msg);
   } else if (msg_type == runtime::he::MessageType::minimum_request) {
     // Stores (c_1a, c_1b, c_2a, c_b, ..., c_na, c_nb)
-    // prints mesage (min(c_1a, c_1b), min(c_2a, c_2b), ..., min(c_na, c_nb))
+    // prints messsge (min(c_1a, c_1b), min(c_2a, c_2b), ..., min(c_na, c_nb))
     size_t cipher_count = message.count();
     assert(cipher_count % 2 == 0);
     size_t element_size = message.element_size();
@@ -348,9 +388,6 @@ void runtime::he::HESealClient::handle_message(
       m_encryptor->encrypt(plain_minimum, cipher_minimum);
       cipher_minimum.save(minimum_stream);
     }
-
-    // std::cout << "Writing minimum_result message with " << (cipher_count / 2)
-    //          << " ciphertexts" << std::endl;
 
     auto minimum_result_msg =
         TCPMessage(runtime::he::MessageType::minimum_result, cipher_count / 2,

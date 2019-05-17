@@ -16,24 +16,43 @@
 
 #pragma once
 
+#include <mutex>
+#include <vector>
+
+#include "ngraph/assertion.hpp"
+
 namespace ngraph {
 namespace runtime {
 namespace he {
 class HEPlaintext {
  public:
   HEPlaintext(){};
+  HEPlaintext(const std::vector<float> values)
+      : m_values(values), m_is_encoded(false), m_complex_packing(false){};
   virtual ~HEPlaintext(){};
 
-  // Returns true if plaintext encodes single value
-  virtual bool is_single_value() = 0;
+  void set_values(const std::vector<float>& values) { m_values = values; }
+  const std::vector<float>& get_values() const { return m_values; }
 
-  // Returns value plaintext encodes
-  virtual float get_value() = 0;
+  bool is_single_value() { return num_values() == 1; }
+  size_t num_values() const { return m_values.size(); }
 
-  // Sets single value
-  virtual void set_value(float f) = 0;
+  bool is_encoded() const { return m_is_encoded; }
+  void set_encoded(bool encoded) { m_is_encoded = encoded; }
 
-  virtual void set_multiple_value() = 0;
+  bool complex_packing() const { return m_complex_packing; }
+  void set_complex_packing(bool toggle) { m_complex_packing = toggle; }
+
+  std::mutex& get_encode_mutex() { return m_encode_mutex; }
+
+ protected:
+  std::vector<float> m_values;
+
+  // TODO: use atomic bool?
+  bool m_is_encoded;
+  bool m_complex_packing;
+
+  std::mutex m_encode_mutex;
 };
 }  // namespace he
 }  // namespace runtime

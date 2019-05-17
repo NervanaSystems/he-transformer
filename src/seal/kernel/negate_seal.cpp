@@ -38,11 +38,12 @@ void he_seal::kernel::scalar_negate(
     shared_ptr<he_seal::SealPlaintextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend) {
-  shared_ptr<HEPlaintext> out_he = dynamic_pointer_cast<HEPlaintext>(out);
   NGRAPH_ASSERT(element_type == element::f32);
-  float x;
-  he_seal_backend->decode(&x, arg, element_type);
-  float r = -x;
-  he_seal_backend->encode(out_he, &r, element_type);
-  out = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(out_he);
+
+  const std::vector<float>& arg_vals = arg->get_values();
+  std::vector<float> out_vals(arg->num_values());
+
+  std::transform(arg_vals.begin(), arg_vals.end(), out_vals.begin(),
+                 std::negate<float>());
+  out->set_values(out_vals);
 }
