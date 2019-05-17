@@ -237,22 +237,6 @@ void ngraph::runtime::he::he_seal::kernel::convolution_seal(
             arg0_multiplicand.get(), arg1_multiplicand.get(), prod,
             element_type, he_seal_backend, pool);
 
-        auto he_seal_ckks_backend =
-            dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend);
-
-        auto seal_prod = std::dynamic_pointer_cast<
-            runtime::he::he_seal::SealCiphertextWrapper>(prod);
-
-        size_t mult_out_chain_ind =
-            he_seal_ckks_backend->get_context()
-                ->context_data(seal_prod->get_hetext().parms_id())
-                ->chain_index();
-
-        if (mult_out_chain_ind < 1) {
-          NGRAPH_INFO << "mult out chain ind: " << mult_out_chain_ind;
-          exit(1);
-        }
-
         if (first_add) {
           sum = prod;
           first_add = false;
@@ -272,21 +256,6 @@ void ngraph::runtime::he::he_seal::kernel::convolution_seal(
     } else {
       // Write the sum back.
       out[out_coord_idx] = sum;
-
-      auto seal_sum = std::dynamic_pointer_cast<
-          runtime::he::he_seal::SealCiphertextWrapper>(sum);
-      auto he_seal_ckks_backend =
-          dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend);
-
-      size_t sum_out_chain_ind =
-          he_seal_ckks_backend->get_context()
-              ->context_data(seal_sum->get_hetext().parms_id())
-              ->chain_index();
-
-      if (sum_out_chain_ind < 1) {
-        NGRAPH_INFO << "sum_out_chain_ind: " << sum_out_chain_ind;
-        exit(1);
-      }
     }
 
     if (out_coord_idx % 1000 == 0) {
