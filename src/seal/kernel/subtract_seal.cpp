@@ -41,7 +41,7 @@ void runtime::he::he_seal::kernel::scalar_subtract(
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend) {
-  he_seal_backend->encode(arg1);
+  he_seal_backend->encode(arg1, arg0->complex_packing());
   if (arg0 == out.get()) {
     he_seal_backend->get_evaluator()->sub_plain_inplace(out->m_ciphertext,
                                                         arg1->get_plaintext());

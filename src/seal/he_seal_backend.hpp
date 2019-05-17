@@ -80,16 +80,17 @@ class HESealBackend : public HEBackend {
     return create_empty_plaintext(pool);
   };
 
-  virtual void encode(
-      runtime::he::he_seal::SealPlaintextWrapper* plaintext) const = 0;
+  virtual void encode(runtime::he::he_seal::SealPlaintextWrapper* plaintext,
+                      bool complex) const = 0;
 
   virtual void encode(
       std::vector<std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>>&
-          plaintext) const = 0;
+          plaintext,
+      bool complex) const = 0;
 
   virtual void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
                       const void* input, const element::Type& type,
-                      size_t count = 1) const = 0;
+                      bool complex, size_t count = 1) const = 0;
 
   virtual void decode(void* output, runtime::he::HEPlaintext* input,
                       const element::Type& type,

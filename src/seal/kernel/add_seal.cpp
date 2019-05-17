@@ -14,10 +14,10 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "seal/kernel/add_seal.hpp"
 #include "seal/bfv/kernel/add_seal_bfv.hpp"
 #include "seal/ckks/he_seal_ckks_backend.hpp"
 #include "seal/ckks/kernel/add_seal_ckks.hpp"
+#include "seal/kernel/add_seal.hpp"
 
 using namespace std;
 using namespace ngraph::runtime::he;
@@ -64,6 +64,7 @@ void he_seal::kernel::scalar_add(
     const seal::MemoryPoolHandle& pool) {
   NGRAPH_ASSERT(element_type == element::f32);
 
+  // TODO: handle case where arg1 = {0, 0, 0, 0, ...}
   bool add_zero = arg1->is_single_value() && (arg1->get_values()[0] == 0.0f);
 
   if (add_zero) {

@@ -51,6 +51,8 @@ class HESealClient {
 
   void close_connection();
 
+  bool complex_packing() const { return m_complex_packing; }
+
  private:
   std::shared_ptr<TCPClient> m_tcp_client;
   seal::EncryptionParameters m_encryption_params{seal::scheme_type::CKKS};
@@ -68,6 +70,8 @@ class HESealClient {
   bool m_is_done;
   std::vector<float> m_inputs;   // Function inputs
   std::vector<float> m_results;  // Function outputs
+
+  bool m_complex_packing{std::getenv("NGRAPH_COMPLEX_PACK") != nullptr};
 };
 }  // namespace he
 }  // namespace runtime

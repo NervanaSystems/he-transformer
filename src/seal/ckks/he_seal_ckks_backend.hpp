@@ -52,16 +52,17 @@ class HESealCKKSBackend : public HESealBackend {
   std::shared_ptr<seal::SEALContext> make_seal_context(
       const std::shared_ptr<runtime::he::HEEncryptionParameters> sp) override;
 
-  void encode(
-      runtime::he::he_seal::SealPlaintextWrapper* plaintext) const override;
+  void encode(runtime::he::he_seal::SealPlaintextWrapper* plaintext,
+              bool complex) const override;
 
   void encode(
       std::vector<std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>>&
-          plaintexts) const override;
+          plaintexts,
+      bool complex) const override;
 
   void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
               const void* input, const element::Type& element_type,
-              size_t count = 1) const override;
+              bool complex, size_t count = 1) const override;
   void decode(void* output, runtime::he::HEPlaintext* input,
               const element::Type& element_type,
               size_t count = 1) const override;
@@ -77,7 +78,7 @@ class HESealCKKSBackend : public HESealBackend {
   // Scale with which to encode new ciphertexts
   double m_scale;
 
-  mutable std::mutex m_encode_mutex;
+  // mutable std::mutex m_encode_mutex;
 };
 }  // namespace he_seal
 }  // namespace he
