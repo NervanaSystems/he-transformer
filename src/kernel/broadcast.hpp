@@ -40,9 +40,10 @@ void broadcast(const std::vector<std::shared_ptr<HEPlaintext>>& arg,
     Coordinate input_coord = reduce(output_coord, broadcast_axes);
 
     out[output_transform.index(output_coord)] =
-        std::make_shared<he_seal::SealPlaintextWrapper>(
+        arg[input_transform.index(input_coord)];
+    /*    std::make_shared<he_seal::SealPlaintextWrapper>(
             *std::dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(
-                arg[input_transform.index(input_coord)]));
+                arg[input_transform.index(input_coord)])); */
   }
 };
 
@@ -56,9 +57,10 @@ void broadcast(const std::vector<std::shared_ptr<HECiphertext>>& arg,
     Coordinate input_coord = reduce(output_coord, broadcast_axes);
 
     out[output_transform.index(output_coord)] =
-        std::make_shared<he_seal::SealCiphertextWrapper>(
-            *std::dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(
-                arg[input_transform.index(input_coord)]));
+        arg[input_transform.index(input_coord)];
+    /*   std::make_shared<he_seal::SealCiphertextWrapper>(
+           *std::dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(
+               arg[input_transform.index(input_coord)])); */
   }
 };
 }  // namespace kernel
