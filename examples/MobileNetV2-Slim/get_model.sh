@@ -17,5 +17,5 @@ transform_graph --in_graph=model/mobilenet_v2_0.35_96_frozen.pb \
                               fold_constants(ignore_errors=true)
                               fold_batch_norms'
 
-# For iamge processing
+# For image processing
 pip install pillow

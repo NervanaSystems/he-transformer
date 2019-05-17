@@ -108,11 +108,11 @@ void runtime::he::HESealClient::handle_message(
       std::cout << "Client complex packing? " << complex_packing() << std::endl;
     }
 
-    // TODO: support odd batch sizes
-    assert(m_batch_size % 2 == 0);
-
     std::vector<seal::Ciphertext> ciphers;
     if (complex_packing()) {
+      // TODO: support odd batch sizes
+      assert(m_batch_size % 2 == 0);
+
       if (m_inputs.size() != parameter_size * m_batch_size * 2) {
         std::cout << "m_inputs.size() " << m_inputs.size() << std::endl;
         std::cout << "parameter_size " << parameter_size << std::endl;
