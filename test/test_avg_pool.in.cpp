@@ -140,7 +140,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image_batched) {
              2 / denom, 3 / denom, 1 / denom, 1 / denom, 1 / denom,
              3 / denom}}})
           .get_vector(),
-      generalized_read_vector<float>(t_result)));
+      read_vector<float>(t_result)));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_2channel_2image) {
