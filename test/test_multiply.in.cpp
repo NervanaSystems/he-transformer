@@ -147,5 +147,5 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_4_3_batch) {
   handle->call_with_validate({t_result}, {t_a, t_b});
   EXPECT_TRUE(all_close(
       (vector<float>{13, 28, 45, 64, 85, 108, 133, 160, 189, 220, 253, 288}),
-      generalized_read_vector<float>(t_result), 1e-3f));
+      read_vector<float>(t_result), 1e-3f));
 }

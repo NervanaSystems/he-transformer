@@ -170,6 +170,6 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_batch) {
   copy_data(t_b, vector<float>{4});
   auto handle = backend->compile(f);
   handle->call_with_validate({t_result}, {t_a, t_b});
-  EXPECT_TRUE(all_close((vector<float>{4, 8, 12}),
-                        generalized_read_vector<float>(t_result), 1e-3f));
+  EXPECT_TRUE(all_close((vector<float>{4, 8, 12}), read_vector<float>(t_result),
+                        1e-3f));
 }

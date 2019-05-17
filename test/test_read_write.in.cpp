@@ -123,7 +123,7 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_batch_write_read_2_3) {
   copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector());
 
   EXPECT_TRUE(all_close(
-      generalized_read_vector<float>(a),
+      read_vector<float>(a),
       (test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector()));
 }
 
@@ -135,7 +135,7 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_batch_write_read_2_1) {
   auto a = he_backend->create_batched_cipher_tensor(element::f32, shape);
   copy_data(a, test::NDArray<float, 2>({{1, 2}}).get_vector());
 
-  EXPECT_TRUE(all_close(generalized_read_vector<float>(a),
+  EXPECT_TRUE(all_close(read_vector<float>(a),
                         (test::NDArray<float, 2>({{1, 2}})).get_vector()));
 }
 
@@ -148,6 +148,6 @@ NGRAPH_TEST(${BACKEND_NAME}, plain_tv_batch_write_read_2_3) {
   copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector());
 
   EXPECT_TRUE(all_close(
-      generalized_read_vector<float>(a),
+      read_vector<float>(a),
       (test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector()));
 }
