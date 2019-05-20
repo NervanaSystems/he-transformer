@@ -31,7 +31,7 @@ namespace runtime {
 namespace he {
 namespace kernel {
 template <typename T>
-void avg_pool(const std::vector<std::shared_ptr<T>>& arg,
+void avg_pool(std::vector<std::shared_ptr<T>>& arg,
               std::vector<std::shared_ptr<T>>& out, const Shape& arg_shape,
               const Shape& out_shape, const Shape& window_shape,
               const Strides& window_movement_strides,
@@ -134,8 +134,7 @@ void avg_pool(const std::vector<std::shared_ptr<T>>& arg,
           first_add = false;
         } else {
           runtime::he::kernel::scalar_add(
-              sum.get(),
-              arg[input_batch_transform.index(input_batch_coord)].get(), sum,
+              sum, arg[input_batch_transform.index(input_batch_coord)], sum,
               element::f32, he_backend);
         }
         n_elements++;

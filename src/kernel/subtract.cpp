@@ -105,5 +105,6 @@ void kernel::scalar_subtract(HEPlaintext* arg0, HECiphertext* arg1,
                              const element::Type& type,
                              const HEBackend* he_backend) {
   scalar_negate(arg1, out, type, he_backend);
-  scalar_add(arg0, out.get(), out, type, he_backend);
+  // TODO: enable
+  // scalar_add(arg0, out.get(), out, type, he_backend);
 }

@@ -107,8 +107,9 @@ void batch_norm_inference(
                                          plain_scale.get(), output,
                                          element::f32, he_backend);
 
-    runtime::he::kernel::scalar_add(output.get(), plain_bias.get(), output,
-                                    element::f32, he_backend);
+    // TODO: enable!
+    // runtime::he::kernel::scalar_add(output.get(), plain_bias.get(), output,
+    //                                element::f32, he_backend);
     normed_input[input_index] = output;
   }
 };

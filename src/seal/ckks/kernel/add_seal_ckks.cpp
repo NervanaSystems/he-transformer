@@ -24,25 +24,30 @@ using namespace std;
 using namespace ngraph::runtime::he;
 
 void he_seal::ckks::kernel::scalar_add_ckks(
-    he_seal::SealCiphertextWrapper* arg0, he_seal::SealCiphertextWrapper* arg1,
+    shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
+    shared_ptr<he_seal::SealCiphertextWrapper>& arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
-  match_modulus_inplace(arg0, arg1, he_seal_ckks_backend, pool);
-  match_scale(arg0, arg1, he_seal_ckks_backend);
+  NGRAPH_ASSERT(arg0->complex_packing() == arg1->complex_packing());
+
+  match_modulus_inplace(arg0.get(), arg1.get(), he_seal_ckks_backend, pool);
+  NGRAPH_INFO << "Matched mods";
+  match_scale(arg0.get(), arg1.get(), he_seal_ckks_backend);
+  NGRAPH_INFO << "Matched scales";
 
   he_seal_ckks_backend->get_evaluator()->add(
       arg0->m_ciphertext, arg1->m_ciphertext, out->m_ciphertext);
-
-  NGRAPH_ASSERT(arg0->complex_packing() == arg1->complex_packing());
+  NGRAPH_INFO << "Added";
 
   out->set_complex_packing(arg1->complex_packing());
   // NGRAPH_INFO << "Add output complex? " << arg1->complex_packing();
 }
 
 void he_seal::ckks::kernel::scalar_add_ckks(
-    he_seal::SealCiphertextWrapper* arg0, he_seal::SealPlaintextWrapper* arg1,
+    shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
+    shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealCKKSBackend* he_seal_ckks_backend,
@@ -57,11 +62,11 @@ void he_seal::ckks::kernel::scalar_add_ckks(
     /*if (arg0->complex_packing()) {
       NGRAPH_INFO << "Encoding complex";
     } */
-    he_seal_ckks_backend->encode(arg1, arg0->complex_packing());
+    he_seal_ckks_backend->encode(arg1.get(), arg0->complex_packing());
   }
 
-  match_modulus_inplace(arg0, arg1, he_seal_ckks_backend, pool);
-  match_scale(arg0, arg1, he_seal_ckks_backend);
+  match_modulus_inplace(arg0.get(), arg1.get(), he_seal_ckks_backend, pool);
+  match_scale(arg0.get(), arg1.get(), he_seal_ckks_backend);
 
   he_seal_ckks_backend->get_evaluator()->add_plain(
       arg0->m_ciphertext, arg1->get_plaintext(), out->m_ciphertext);
@@ -70,7 +75,8 @@ void he_seal::ckks::kernel::scalar_add_ckks(
 }
 
 void he_seal::ckks::kernel::scalar_add_ckks(
-    he_seal::SealPlaintextWrapper* arg0, he_seal::SealCiphertextWrapper* arg1,
+    shared_ptr<he_seal::SealPlaintextWrapper>& arg0,
+    shared_ptr<he_seal::SealCiphertextWrapper>& arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealCKKSBackend* he_seal_ckks_backend,
