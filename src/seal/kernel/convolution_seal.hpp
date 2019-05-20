@@ -25,6 +25,8 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/kernel/add_seal.hpp"
 #include "seal/kernel/multiply_seal.hpp"
+#include "seal/seal_ciphertext_wrapper.hpp"
+#include "seal/seal_plaintext_wrapper.hpp"
 
 namespace ngraph {
 namespace runtime {
@@ -239,7 +241,10 @@ void ngraph::runtime::he::he_seal::kernel::convolution_seal(
           sum = prod;
           first_add = false;
         } else {
-          runtime::he::he_seal::kernel::scalar_add(sum, prod, sum, element_type,
+          auto seal_sum = runtime::he::he_seal::cast_to_seal_hetext(sum);
+          auto seal_prod = runtime::he::he_seal::cast_to_seal_hetext(prod);
+          runtime::he::he_seal::kernel::scalar_add(seal_sum, seal_prod,
+                                                   seal_sum, element_type,
                                                    he_seal_backend, pool);
         }
       }

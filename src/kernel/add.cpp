@@ -26,37 +26,15 @@ void kernel::scalar_add(shared_ptr<HECiphertext>& arg0,
                         shared_ptr<HECiphertext>& out,
                         const element::Type& element_type,
                         const HEBackend* he_backend) {
-  NGRAPH_INFO << "Add C+C=>C";
-  if (auto he_seal_backend =
-          dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
-    auto arg0_seal = he_seal::cast_to_seal_hetext(arg0);
-    NGRAPH_INFO << "Cast0 okay";
-    auto arg1_seal = he_seal::cast_to_seal_hetext(arg1);
-    NGRAPH_INFO << "Cast1 okay";
-    auto out_seal = he_seal::cast_to_seal_hetext(out);
+  auto he_seal_backend =
+      dynamic_cast<const he_seal::HESealBackend*>(he_backend);
+  NGRAPH_ASSERT(he_seal_backend != nullptr);
+  auto arg0_seal = he_seal::cast_to_seal_hetext(arg0);
+  auto arg1_seal = he_seal::cast_to_seal_hetext(arg1);
+  auto out_seal = he_seal::cast_to_seal_hetext(out);
 
-    NGRAPH_INFO << "Cast okay";
-
-    he_seal::kernel::scalar_add(arg0_seal, arg1_seal, out_seal, element_type,
-                                he_seal_backend);
-    NGRAPH_INFO << "Done adding";
-
-    /*auto arg0_seal = static_cast<he_seal::SealCiphertextWrapper*>(arg0);
-    auto arg1_seal = static_cast<he_seal::SealCiphertextWrapper*>(arg1);
-    auto out_seal = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(out);
-
-    if (arg0_seal && arg1_seal && out_seal) {
-      he_seal::kernel::scalar_add(arg0_seal, arg1_seal, out_seal, element_type,
-                                  he_seal_backend);
-      out = dynamic_pointer_cast<HECiphertext>(out_seal);
-    } else {
-      throw ngraph_error(
-          "Add backend is SEAL, but arguments or outputs are not "
-          "SealCiphertextWrapper");
-    } */
-  } else {
-    throw ngraph_error("Add backend is not SEAL.");
-  }
+  he_seal::kernel::scalar_add(arg0_seal, arg1_seal, out_seal, element_type,
+                              he_seal_backend);
 }
 
 void kernel::scalar_add(shared_ptr<HEPlaintext>& arg0,
@@ -79,17 +57,15 @@ void kernel::scalar_add(shared_ptr<HECiphertext>& arg0,
                         shared_ptr<HECiphertext>& out,
                         const element::Type& element_type,
                         const HEBackend* he_backend) {
-  if (auto he_seal_backend =
-          dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
-    auto arg0_seal = he_seal::cast_to_seal_hetext(arg0);
-    auto arg1_seal = he_seal::cast_to_seal_hetext(arg1);
-    auto out_seal = he_seal::cast_to_seal_hetext(out);
+  auto he_seal_backend =
+      dynamic_cast<const he_seal::HESealBackend*>(he_backend);
+  NGRAPH_ASSERT(he_seal_backend != nullptr);
+  auto arg0_seal = he_seal::cast_to_seal_hetext(arg0);
+  auto arg1_seal = he_seal::cast_to_seal_hetext(arg1);
+  auto out_seal = he_seal::cast_to_seal_hetext(out);
 
-    he_seal::kernel::scalar_add(arg0_seal, arg1_seal, out_seal, element_type,
-                                he_seal_backend);
-  } else {
-    throw ngraph_error("Add backend is not SEAL.");
-  }
+  he_seal::kernel::scalar_add(arg0_seal, arg1_seal, out_seal, element_type,
+                              he_seal_backend);
 }
 
 void kernel::scalar_add(shared_ptr<HEPlaintext>& arg0,

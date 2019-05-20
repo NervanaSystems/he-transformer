@@ -43,20 +43,6 @@ void he_seal::kernel::scalar_add(
   }
 }
 
-void he_seal::kernel::scalar_add(shared_ptr<runtime::he::HECiphertext>& arg0,
-                                 shared_ptr<runtime::he::HECiphertext>& arg1,
-                                 shared_ptr<runtime::he::HECiphertext>& out,
-                                 const element::Type& element_type,
-                                 const he_seal::HESealBackend* he_seal_backend,
-                                 const seal::MemoryPoolHandle& pool) {
-  auto arg0_seal = he_seal::cast_to_seal_hetext(arg0);
-  auto arg1_seal = he_seal::cast_to_seal_hetext(arg1);
-  auto out_seal = he_seal::cast_to_seal_hetext(out);
-  he_seal::kernel::scalar_add(arg0_seal, arg1_seal, out_seal, element_type,
-                              he_seal_backend, pool);
-  // out = static_pointer_cast<HECiphertext>(out_seal);
-}
-
 void he_seal::kernel::scalar_add(
     shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
     shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
@@ -90,19 +76,6 @@ void he_seal::kernel::scalar_add(
   }
 }
 
-void he_seal::kernel::scalar_add(shared_ptr<runtime::he::HECiphertext>& arg0,
-                                 shared_ptr<runtime::he::HEPlaintext>& arg1,
-                                 shared_ptr<runtime::he::HECiphertext>& out,
-                                 const element::Type& element_type,
-                                 const he_seal::HESealBackend* he_seal_backend,
-                                 const seal::MemoryPoolHandle& pool) {
-  auto arg0_seal = he_seal::cast_to_seal_hetext(arg0);
-  auto arg1_seal = he_seal::cast_to_seal_hetext(arg1);
-  auto out_seal = he_seal::cast_to_seal_hetext(out);
-  he_seal::kernel::scalar_add(arg0_seal, arg1_seal, out_seal, element_type,
-                              he_seal_backend, pool);
-}
-
 void he_seal::kernel::scalar_add(
     shared_ptr<he_seal::SealPlaintextWrapper>& arg0,
     shared_ptr<he_seal::SealCiphertextWrapper>& arg1,
@@ -111,16 +84,6 @@ void he_seal::kernel::scalar_add(
     const he_seal::HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
   he_seal::kernel::scalar_add(arg1, arg0, out, element_type, he_seal_backend);
-}
-
-void he_seal::kernel::scalar_add(shared_ptr<runtime::he::HEPlaintext>& arg0,
-                                 shared_ptr<runtime::he::HECiphertext>& arg1,
-                                 shared_ptr<runtime::he::HECiphertext>& out,
-                                 const element::Type& element_type,
-                                 const he_seal::HESealBackend* he_seal_backend,
-                                 const seal::MemoryPoolHandle& pool) {
-  he_seal::kernel::scalar_add(arg1, arg0, out, element_type, he_seal_backend,
-                              pool);
 }
 
 void he_seal::kernel::scalar_add(
@@ -139,19 +102,4 @@ void he_seal::kernel::scalar_add(
   std::transform(arg0_vals.begin(), arg0_vals.end(), arg1_vals.begin(),
                  out_vals.begin(), std::plus<float>());
   out->set_values(out_vals);
-}
-
-void he_seal::kernel::scalar_add(shared_ptr<runtime::he::HEPlaintext>& arg0,
-                                 shared_ptr<runtime::he::HEPlaintext>& arg1,
-                                 shared_ptr<runtime::he::HEPlaintext>& out,
-                                 const element::Type& element_type,
-                                 const he_seal::HESealBackend* he_seal_backend,
-                                 const seal::MemoryPoolHandle& pool) {
-  auto arg0_seal = he_seal::cast_to_seal_hetext(arg0);
-  auto arg1_seal = he_seal::cast_to_seal_hetext(arg1);
-  auto out_seal = he_seal::cast_to_seal_hetext(out);
-
-  he_seal::kernel::scalar_add(arg0_seal, arg1_seal, out_seal, element_type,
-                              he_seal_backend, pool);
-  //  out = static_pointer_cast<HEPlaintext>(out_seal);
 }
