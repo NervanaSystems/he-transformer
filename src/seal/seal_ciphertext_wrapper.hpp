@@ -46,7 +46,6 @@ cast_to_seal_hetext(std::shared_ptr<runtime::he::HECiphertext>& cipher) {
   auto seal_ciphertext_wrapper =
       std::dynamic_pointer_cast<SealCiphertextWrapper>(cipher);
   NGRAPH_ASSERT(seal_ciphertext_wrapper != nullptr) << "Ciphertext is not Seal";
-  NGRAPH_INFO << "Cast okay";
   return seal_ciphertext_wrapper;
 };
 }  // namespace he_seal

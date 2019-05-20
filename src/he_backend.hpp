@@ -219,6 +219,7 @@ class HEBackend : public runtime::Backend {
 
   std::shared_ptr<HEEncryptionParameters> m_encryption_params;
 };
+
 }  // namespace he
 }  // namespace runtime
 }  // namespace ngraph

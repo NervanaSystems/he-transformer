@@ -52,16 +52,7 @@ void he_seal::ckks::kernel::scalar_add_ckks(
     const element::Type& element_type,
     const he_seal::HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
-  /*if (arg0->complex_packing()) {
-    NGRAPH_INFO << "Adding complex!";
-  } else {
-    NGRAPH_INFO << "Adding real";
-  } */
   if (!arg1->is_encoded()) {
-    // NGRAPH_INFO << "Encoding plaintext add";
-    /*if (arg0->complex_packing()) {
-      NGRAPH_INFO << "Encoding complex";
-    } */
     he_seal_ckks_backend->encode(arg1.get(), arg0->complex_packing());
   }
 

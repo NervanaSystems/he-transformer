@@ -31,8 +31,8 @@ namespace runtime {
 namespace he {
 namespace kernel {
 template <typename S, typename T, typename V>
-void dot(const std::vector<std::shared_ptr<S>>& arg0,
-         const std::vector<std::shared_ptr<T>>& arg1,
+void dot(std::vector<std::shared_ptr<S>>& arg0,
+         std::vector<std::shared_ptr<T>>& arg1,
          std::vector<std::shared_ptr<V>>& out, const Shape& arg0_shape,
          const Shape& arg1_shape, const Shape& out_shape,
          size_t reduction_axes_count, const element::Type& element_type,
@@ -44,10 +44,9 @@ void dot(const std::vector<std::shared_ptr<S>>& arg0,
 
 template <typename S, typename T, typename V>
 void ngraph::runtime::he::kernel::dot(
-    const std::vector<std::shared_ptr<S>>& arg0,
-    const std::vector<std::shared_ptr<T>>& arg1,
-    std::vector<std::shared_ptr<V>>& out, const Shape& arg0_shape,
-    const Shape& arg1_shape, const Shape& out_shape,
+    std::vector<std::shared_ptr<S>>& arg0,
+    std::vector<std::shared_ptr<T>>& arg1, std::vector<std::shared_ptr<V>>& out,
+    const Shape& arg0_shape, const Shape& arg1_shape, const Shape& out_shape,
     size_t reduction_axes_count, const element::Type& element_type,
     const runtime::he::HEBackend* he_backend) {
   // Use optimized SEAL dot if possible
@@ -160,8 +159,8 @@ void ngraph::runtime::he::kernel::dot(
       auto arg1_text = arg1[arg1_transform.index(arg1_coord)];
 
       std::shared_ptr<V> prod = he_backend->create_empty_hetext<V>();
-      runtime::he::kernel::scalar_multiply(arg0_text.get(), arg1_text.get(),
-                                           prod, element_type, he_backend);
+      runtime::he::kernel::scalar_multiply(arg0_text, arg1_text, prod,
+                                           element_type, he_backend);
       if (first_add) {
         sum = prod;
         first_add = false;

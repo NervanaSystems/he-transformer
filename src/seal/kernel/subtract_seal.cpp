@@ -20,14 +20,15 @@ using namespace std;
 using namespace ngraph;
 
 void runtime::he::he_seal::kernel::scalar_subtract(
-    he_seal::SealCiphertextWrapper* arg0, he_seal::SealCiphertextWrapper* arg1,
+    shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
+    shared_ptr<he_seal::SealCiphertextWrapper>& arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend) {
-  if (arg0 == out.get()) {
+  if (arg0.get() == out.get()) {
     he_seal_backend->get_evaluator()->sub_inplace(out->m_ciphertext,
                                                   arg1->m_ciphertext);
-  } else if (arg1 == out.get()) {
+  } else if (arg1.get() == out.get()) {
     he_seal_backend->get_evaluator()->sub_inplace(out->m_ciphertext,
                                                   arg0->m_ciphertext);
   } else {
@@ -37,12 +38,13 @@ void runtime::he::he_seal::kernel::scalar_subtract(
 }
 
 void runtime::he::he_seal::kernel::scalar_subtract(
-    he_seal::SealCiphertextWrapper* arg0, he_seal::SealPlaintextWrapper* arg1,
+    shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
+    shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend) {
-  he_seal_backend->encode(arg1, arg0->complex_packing());
-  if (arg0 == out.get()) {
+  he_seal_backend->encode(arg1.get(), arg0->complex_packing());
+  if (arg0.get() == out.get()) {
     he_seal_backend->get_evaluator()->sub_plain_inplace(out->m_ciphertext,
                                                         arg1->get_plaintext());
   } else {
@@ -52,7 +54,8 @@ void runtime::he::he_seal::kernel::scalar_subtract(
 }
 
 void runtime::he::he_seal::kernel::scalar_subtract(
-    he_seal::SealPlaintextWrapper* arg0, he_seal::SealPlaintextWrapper* arg1,
+    shared_ptr<he_seal::SealPlaintextWrapper>& arg0,
+    shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
     shared_ptr<he_seal::SealPlaintextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend) {

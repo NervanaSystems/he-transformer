@@ -147,8 +147,8 @@ void avg_pool(std::vector<std::shared_ptr<T>>& arg,
     auto inv_n_elements =
         he_backend->create_valued_plaintext(1. / n_elements, element::f32);
 
-    runtime::he::kernel::scalar_multiply(sum.get(), inv_n_elements.get(), sum,
-                                         element::f32, he_backend);
+    runtime::he::kernel::scalar_multiply(sum, inv_n_elements, sum, element::f32,
+                                         he_backend);
 
     out[output_transform.index(out_coord)] = sum;
   }

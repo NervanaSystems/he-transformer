@@ -25,31 +25,24 @@
 using namespace std;
 using namespace ngraph::runtime::he;
 
-void kernel::scalar_subtract(HECiphertext* arg0, HECiphertext* arg1,
+void kernel::scalar_subtract(shared_ptr<HECiphertext>& arg0,
+                             shared_ptr<HECiphertext>& arg1,
                              shared_ptr<HECiphertext>& out,
-                             const element::Type& type,
+                             const element::Type& element_type,
                              const HEBackend* he_backend) {
-  if (auto he_seal_backend =
-          dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
-    auto arg0_seal = dynamic_cast<he_seal::SealCiphertextWrapper*>(arg0);
-    auto arg1_seal = dynamic_cast<he_seal::SealCiphertextWrapper*>(arg1);
-    auto out_seal = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(out);
+  auto he_seal_backend =
+      dynamic_cast<const he_seal::HESealBackend*>(he_backend);
+  NGRAPH_ASSERT(he_seal_backend != nullptr);
+  auto arg0_seal = he_seal::cast_to_seal_hetext(arg0);
+  auto arg1_seal = he_seal::cast_to_seal_hetext(arg1);
+  auto out_seal = he_seal::cast_to_seal_hetext(out);
 
-    if (arg0_seal && arg1_seal && out_seal) {
-      he_seal::kernel::scalar_subtract(arg0_seal, arg1_seal, out_seal, type,
-                                       he_seal_backend);
-      out = dynamic_pointer_cast<HECiphertext>(out_seal);
-    } else {
-      throw ngraph_error(
-          "subtract backend is SEAL, but arguments or outputs are not "
-          "SealCiphertextWrapper");
-    }
-  } else {
-    throw ngraph_error("subtract backend is not SEAL.");
-  }
+  he_seal::kernel::scalar_subtract(arg0_seal, arg1_seal, out_seal, element_type,
+                                   he_seal_backend);
 }
 
-void kernel::scalar_subtract(HEPlaintext* arg0, HEPlaintext* arg1,
+void kernel::scalar_subtract(shared_ptr<HEPlaintext>& arg0,
+                             shared_ptr<HEPlaintext>& arg1,
                              shared_ptr<HEPlaintext>& out,
                              const element::Type& element_type,
                              const HEBackend* he_backend) {
@@ -65,7 +58,8 @@ void kernel::scalar_subtract(HEPlaintext* arg0, HEPlaintext* arg1,
   out->set_values(out_vals);
 }
 
-void kernel::scalar_subtract(HECiphertext* arg0, HEPlaintext* arg1,
+void kernel::scalar_subtract(shared_ptr<HECiphertext>& arg0,
+                             shared_ptr<HEPlaintext>& arg1,
                              shared_ptr<HECiphertext>& out,
                              const element::Type& type,
                              const HEBackend* he_backend) {
@@ -76,13 +70,9 @@ void kernel::scalar_subtract(HECiphertext* arg0, HEPlaintext* arg1,
 
   NGRAPH_ASSERT(he_seal_backend != nullptr) << "HEBackend is not HESealBackend";
 
-  auto arg0_seal = dynamic_cast<he_seal::SealCiphertextWrapper*>(arg0);
-  auto arg1_seal = dynamic_cast<he_seal::SealPlaintextWrapper*>(arg1);
-  auto out_seal = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(out);
-
-  NGRAPH_ASSERT(arg0_seal != nullptr) << "arg0 is not Seal Ciphertext";
-  NGRAPH_ASSERT(arg1_seal != nullptr) << "arg1 is not Seal Plaintext";
-  NGRAPH_ASSERT(out_seal != nullptr) << "out is not Seal Ciphertext";
+  auto arg0_seal = he_seal::cast_to_seal_hetext(arg0);
+  auto arg1_seal = he_seal::cast_to_seal_hetext(arg1);
+  auto out_seal = he_seal::cast_to_seal_hetext(out);
 
   bool sub_zero =
       arg1_seal->is_single_value() && (arg1_seal->get_values()[0] == 0.0f);
@@ -96,15 +86,14 @@ void kernel::scalar_subtract(HECiphertext* arg0, HEPlaintext* arg1,
   } else {
     he_seal::kernel::scalar_subtract(arg0_seal, arg1_seal, out_seal, type,
                                      he_seal_backend);
-    out = dynamic_pointer_cast<HECiphertext>(out_seal);
   }
 }
 
-void kernel::scalar_subtract(HEPlaintext* arg0, HECiphertext* arg1,
+void kernel::scalar_subtract(shared_ptr<HEPlaintext>& arg0,
+                             shared_ptr<HECiphertext>& arg1,
                              shared_ptr<HECiphertext>& out,
                              const element::Type& type,
                              const HEBackend* he_backend) {
   scalar_negate(arg1, out, type, he_backend);
-  // TODO: enable
-  // scalar_add(arg0, out.get(), out, type, he_backend);
+  scalar_add(arg0, out, out, type, he_backend);
 }

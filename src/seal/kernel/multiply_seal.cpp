@@ -24,7 +24,8 @@ using namespace std;
 using namespace ngraph::runtime::he;
 
 void he_seal::kernel::scalar_multiply(
-    he_seal::SealCiphertextWrapper* arg0, he_seal::SealCiphertextWrapper* arg1,
+    shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
+    shared_ptr<he_seal::SealCiphertextWrapper>& arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend,
@@ -44,20 +45,8 @@ void he_seal::kernel::scalar_multiply(
 }
 
 void he_seal::kernel::scalar_multiply(
-    HECiphertext* arg0, HECiphertext* arg1, shared_ptr<HECiphertext>& out,
-    const element::Type& element_type,
-    const he_seal::HESealBackend* he_seal_backend,
-    const seal::MemoryPoolHandle& pool) {
-  auto arg0_seal = static_cast<he_seal::SealCiphertextWrapper*>(arg0);
-  auto arg1_seal = static_cast<he_seal::SealCiphertextWrapper*>(arg1);
-  auto out_seal = static_pointer_cast<he_seal::SealCiphertextWrapper>(out);
-  he_seal::kernel::scalar_multiply(arg0_seal, arg1_seal, out_seal, element_type,
-                                   he_seal_backend, pool);
-  out = static_pointer_cast<HECiphertext>(out_seal);
-}
-
-void he_seal::kernel::scalar_multiply(
-    he_seal::SealCiphertextWrapper* arg0, he_seal::SealPlaintextWrapper* arg1,
+    shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
+    shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend,
@@ -95,29 +84,8 @@ void he_seal::kernel::scalar_multiply(
 }
 
 void he_seal::kernel::scalar_multiply(
-    HECiphertext* arg0, HEPlaintext* arg1, shared_ptr<HECiphertext>& out,
-    const element::Type& element_type,
-    const he_seal::HESealBackend* he_seal_backend,
-    const seal::MemoryPoolHandle& pool) {
-  auto arg0_seal = static_cast<he_seal::SealCiphertextWrapper*>(arg0);
-  auto arg1_seal = static_cast<he_seal::SealPlaintextWrapper*>(arg1);
-  auto out_seal = static_pointer_cast<he_seal::SealCiphertextWrapper>(out);
-  he_seal::kernel::scalar_multiply(arg0_seal, arg1_seal, out_seal, element_type,
-                                   he_seal_backend, pool);
-  out = static_pointer_cast<HECiphertext>(out_seal);
-}
-
-void he_seal::kernel::scalar_multiply(
-    HEPlaintext* arg0, HECiphertext* arg1, shared_ptr<HECiphertext>& out,
-    const element::Type& element_type,
-    const he_seal::HESealBackend* he_seal_backend,
-    const seal::MemoryPoolHandle& pool) {
-  he_seal::kernel::scalar_multiply(arg1, arg0, out, element_type,
-                                   he_seal_backend, pool);
-}
-
-void he_seal::kernel::scalar_multiply(
-    he_seal::SealPlaintextWrapper* arg0, he_seal::SealCiphertextWrapper* arg1,
+    shared_ptr<he_seal::SealPlaintextWrapper>& arg0,
+    shared_ptr<he_seal::SealCiphertextWrapper>& arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend,
@@ -127,7 +95,8 @@ void he_seal::kernel::scalar_multiply(
 }
 
 void he_seal::kernel::scalar_multiply(
-    he_seal::SealPlaintextWrapper* arg0, he_seal::SealPlaintextWrapper* arg1,
+    shared_ptr<he_seal::SealPlaintextWrapper>& arg0,
+    shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
     shared_ptr<he_seal::SealPlaintextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend,
@@ -156,17 +125,4 @@ void he_seal::kernel::scalar_multiply(
                    out_vals.begin(), std::multiplies<float>());
   }
   out->set_values(out_vals);
-}
-
-void he_seal::kernel::scalar_multiply(
-    HEPlaintext* arg0, HEPlaintext* arg1, shared_ptr<HEPlaintext>& out,
-    const element::Type& element_type,
-    const he_seal::HESealBackend* he_seal_backend,
-    const seal::MemoryPoolHandle& pool) {
-  auto arg0_seal = static_cast<he_seal::SealPlaintextWrapper*>(arg0);
-  auto arg1_seal = static_cast<he_seal::SealPlaintextWrapper*>(arg1);
-  auto out_seal = static_pointer_cast<he_seal::SealPlaintextWrapper>(out);
-  he_seal::kernel::scalar_multiply(arg0_seal, arg1_seal, out_seal, element_type,
-                                   he_seal_backend, pool);
-  out = static_pointer_cast<HEPlaintext>(out_seal);
 }

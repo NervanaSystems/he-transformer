@@ -58,7 +58,7 @@ inline std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>
 cast_to_seal_hetext(std::shared_ptr<runtime::he::HEPlaintext>& plain) {
   auto seal_plaintext_wrapper =
       std::dynamic_pointer_cast<SealPlaintextWrapper>(plain);
-  assert(seal_plaintext_wrapper != nullptr);
+  NGRAPH_ASSERT(seal_plaintext_wrapper != nullptr) << "Plaintext is not Seal";
   return seal_plaintext_wrapper;
 };
 }  // namespace he_seal

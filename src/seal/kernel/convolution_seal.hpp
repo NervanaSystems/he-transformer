@@ -227,15 +227,20 @@ void ngraph::runtime::he::he_seal::kernel::convolution_seal(
       }
 
       if (input_batch_transform.has_source_coordinate(input_batch_coord)) {
-        std::shared_ptr<S> arg0_multiplicand =
+        std::shared_ptr<S> arg0_mult =
             arg0[input_batch_transform.index(input_batch_coord)];
-        std::shared_ptr<T> arg1_multiplicand =
+        std::shared_ptr<T> arg1_mult =
             arg1[filter_transform.index(filter_coord)];
 
         std::shared_ptr<V> prod = he_seal_backend->create_empty_hetext<V>(pool);
+        auto seal_arg0_mult =
+            runtime::he::he_seal::cast_to_seal_hetext(arg0_mult);
+        auto seal_arg1_mult =
+            runtime::he::he_seal::cast_to_seal_hetext(arg1_mult);
+        auto seal_prod = runtime::he::he_seal::cast_to_seal_hetext(prod);
         runtime::he::he_seal::kernel::scalar_multiply(
-            arg0_multiplicand.get(), arg1_multiplicand.get(), prod,
-            element_type, he_seal_backend, pool);
+            seal_arg0_mult, seal_arg1_mult, seal_prod, element_type,
+            he_seal_backend, pool);
 
         if (first_add) {
           sum = prod;

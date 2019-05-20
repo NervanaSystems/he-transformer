@@ -35,8 +35,8 @@ namespace he {
 namespace he_seal {
 namespace kernel {
 template <typename S, typename T, typename V>
-void dot_seal(const std::vector<std::shared_ptr<S>>& arg0,
-              const std::vector<std::shared_ptr<T>>& arg1,
+void dot_seal(std::vector<std::shared_ptr<S>>& arg0,
+              std::vector<std::shared_ptr<T>>& arg1,
               std::vector<std::shared_ptr<V>>& out, const Shape& arg0_shape,
               const Shape& arg1_shape, const Shape& out_shape,
               size_t reduction_axes_count, const element::Type& element_type,
@@ -49,10 +49,9 @@ void dot_seal(const std::vector<std::shared_ptr<S>>& arg0,
 
 template <typename S, typename T, typename V>
 void ngraph::runtime::he::he_seal::kernel::dot_seal(
-    const std::vector<std::shared_ptr<S>>& arg0,
-    const std::vector<std::shared_ptr<T>>& arg1,
-    std::vector<std::shared_ptr<V>>& out, const Shape& arg0_shape,
-    const Shape& arg1_shape, const Shape& out_shape,
+    std::vector<std::shared_ptr<S>>& arg0,
+    std::vector<std::shared_ptr<T>>& arg1, std::vector<std::shared_ptr<V>>& out,
+    const Shape& arg0_shape, const Shape& arg1_shape, const Shape& out_shape,
     size_t reduction_axes_count, const element::Type& element_type,
     const runtime::he::he_seal::HESealBackend* he_seal_backend) {
   // Get the sizes of the dot axes. It's easiest to pull them from arg1 because
@@ -155,13 +154,16 @@ void ngraph::runtime::he::he_seal::kernel::dot_seal(
                 arg1_it);
 
       // Multiply and add to the summands.
-      auto arg0_text = arg0[arg0_transform.index(arg0_coord)];
-      auto arg1_text = arg1[arg1_transform.index(arg1_coord)];
+      auto arg0_seal_text = runtime::he::he_seal::cast_to_seal_hetext(
+          arg0[arg0_transform.index(arg0_coord)]);
+      auto arg1_seal_text = runtime::he::he_seal::cast_to_seal_hetext(
+          arg1[arg1_transform.index(arg1_coord)]);
 
       std::shared_ptr<V> prod = he_seal_backend->create_empty_hetext<V>(pool);
+      auto seal_prod = runtime::he::he_seal::cast_to_seal_hetext(prod);
       runtime::he::he_seal::kernel::scalar_multiply(
-          arg0_text.get(), arg1_text.get(), prod, element_type, he_seal_backend,
-          pool);
+          arg0_seal_text, arg1_seal_text, seal_prod, element_type,
+          he_seal_backend, pool);
       if (first_add) {
         sum = prod;
         first_add = false;

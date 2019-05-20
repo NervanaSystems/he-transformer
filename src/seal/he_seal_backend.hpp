@@ -153,6 +153,14 @@ class HESealBackend : public HEBackend {
   std::shared_ptr<seal::Evaluator> m_evaluator;
   std::shared_ptr<seal::KeyGenerator> m_keygen;
 };
+
+inline const runtime::he::he_seal::HESealBackend* cast_to_seal_backend(
+    const runtime::he::HEBackend* he_backend) {
+  auto seal_he_backend =
+      dynamic_cast<const runtime::he::he_seal::HESealBackend*>(he_backend);
+  NGRAPH_ASSERT(seal_he_backend != nullptr);
+  return seal_he_backend;
+};
 }  // namespace he_seal
 }  // namespace he
 }  // namespace runtime

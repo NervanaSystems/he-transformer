@@ -54,7 +54,6 @@ void scalar_add(
     const runtime::he::he_seal::HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
-
 void scalar_add(
     std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& arg0,
     std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& arg1,
