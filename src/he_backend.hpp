@@ -173,30 +173,34 @@ class HEBackend : public runtime::Backend {
   /// @param input Pointer to plaintext to decode
   /// @param type Type of scalar to encode
   /// @param count Number of elements to decode, count > 1 indicates batching
-  virtual void decode(void* output, runtime::he::HEPlaintext* input,
+  virtual void decode(void* output,
+                      std::shared_ptr<runtime::he::HEPlaintext>& input,
                       const element::Type& element_type,
                       size_t count = 1) const = 0;
 
   virtual void decode(std::vector<std::shared_ptr<runtime::he::HEPlaintext>>&
                           plaintexts) const {
     for (std::shared_ptr<runtime::he::HEPlaintext> plaintext : plaintexts) {
-      decode(plaintext.get());
+      decode(plaintext);
     }
   }
 
-  virtual void decode(runtime::he::HEPlaintext* input) const = 0;
+  virtual void decode(
+      std::shared_ptr<runtime::he::HEPlaintext>& input) const = 0;
 
   /// @brief Encrypts plaintext polynomial to ciphertext
   /// @param output Pointer to ciphertext to encrypt to
   /// @param input Pointer to plaintext to encrypt
-  virtual void encrypt(std::shared_ptr<runtime::he::HECiphertext>& output,
-                       runtime::he::HEPlaintext* input) const = 0;
+  virtual void encrypt(
+      std::shared_ptr<runtime::he::HECiphertext>& output,
+      std::shared_ptr<runtime::he::HEPlaintext>& input) const = 0;
 
   /// @brief Decrypts ciphertext to plaintext polynomial
   /// @param output Pointer to plaintext to decrypt to
   /// @param input Pointer to ciphertext to decrypt
-  virtual void decrypt(std::shared_ptr<runtime::he::HEPlaintext>& output,
-                       const runtime::he::HECiphertext* input) const = 0;
+  virtual void decrypt(
+      std::shared_ptr<runtime::he::HEPlaintext>& output,
+      const std::shared_ptr<runtime::he::HECiphertext>& input) const = 0;
 
   const std::shared_ptr<HEEncryptionParameters> get_encryption_parameters()
       const {

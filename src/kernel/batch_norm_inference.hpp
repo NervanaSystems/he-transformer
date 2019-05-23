@@ -36,11 +36,11 @@ namespace runtime {
 namespace he {
 namespace kernel {
 void batch_norm_inference(
-    double eps, const std::vector<std::shared_ptr<HEPlaintext>>& gamma,
-    const std::vector<std::shared_ptr<HEPlaintext>>& beta,
-    const std::vector<std::shared_ptr<HECiphertext>>& input,
-    const std::vector<std::shared_ptr<HEPlaintext>>& mean,
-    const std::vector<std::shared_ptr<HEPlaintext>>& variance,
+    double eps, std::vector<std::shared_ptr<HEPlaintext>>& gamma,
+    std::vector<std::shared_ptr<HEPlaintext>>& beta,
+    std::vector<std::shared_ptr<HECiphertext>>& input,
+    std::vector<std::shared_ptr<HEPlaintext>>& mean,
+    std::vector<std::shared_ptr<HEPlaintext>>& variance,
     std::vector<std::shared_ptr<HECiphertext>>& normed_input,
     const Shape& input_shape, const size_t batch_size,
     const HEBackend* he_backend) {
@@ -103,12 +103,12 @@ void batch_norm_inference(
     std::shared_ptr<HECiphertext> output =
         he_backend->create_empty_ciphertext();
 
-    runtime::he::kernel::scalar_multiply(input[input_index].get(),
-                                         plain_scale.get(), output,
-                                         element::f32, he_backend);
+    runtime::he::kernel::scalar_multiply(input[input_index], plain_scale,
+                                         output, element::f32, he_backend);
 
-    runtime::he::kernel::scalar_add(output.get(), plain_bias.get(), output,
-                                    element::f32, he_backend);
+    // TODO: enable!
+    runtime::he::kernel::scalar_add(output, plain_bias, output, element::f32,
+                                    he_backend);
     normed_input[input_index] = output;
   }
 };

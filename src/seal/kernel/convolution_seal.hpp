@@ -25,6 +25,8 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/kernel/add_seal.hpp"
 #include "seal/kernel/multiply_seal.hpp"
+#include "seal/seal_ciphertext_wrapper.hpp"
+#include "seal/seal_plaintext_wrapper.hpp"
 
 namespace ngraph {
 namespace runtime {
@@ -207,7 +209,8 @@ void ngraph::runtime::he::he_seal::kernel::convolution_seal(
     CoordinateTransform::Iterator input_end = input_batch_transform.end();
     CoordinateTransform::Iterator filter_end = filter_transform.end();
 
-    std::shared_ptr<V> sum;
+    std::shared_ptr<V> sum = he_seal_backend->create_empty_hetext<V>(pool);
+    auto seal_sum = runtime::he::he_seal::cast_to_seal_hetext(sum);
     bool first_add = true;
 
     while (input_it != input_end && filter_it != filter_end) {
@@ -225,22 +228,29 @@ void ngraph::runtime::he::he_seal::kernel::convolution_seal(
       }
 
       if (input_batch_transform.has_source_coordinate(input_batch_coord)) {
-        std::shared_ptr<S> arg0_multiplicand =
+        std::shared_ptr<S> arg0_mult =
             arg0[input_batch_transform.index(input_batch_coord)];
-        std::shared_ptr<T> arg1_multiplicand =
+        auto seal_arg0_mult =
+            runtime::he::he_seal::cast_to_seal_hetext(arg0_mult);
+
+        std::shared_ptr<T> arg1_mult =
             arg1[filter_transform.index(filter_coord)];
+        auto seal_arg1_mult =
+            runtime::he::he_seal::cast_to_seal_hetext(arg1_mult);
 
         std::shared_ptr<V> prod = he_seal_backend->create_empty_hetext<V>(pool);
-        runtime::he::he_seal::kernel::scalar_multiply(
-            arg0_multiplicand.get(), arg1_multiplicand.get(), prod,
-            element_type, he_seal_backend, pool);
+        auto seal_prod = runtime::he::he_seal::cast_to_seal_hetext(prod);
 
+        runtime::he::he_seal::kernel::scalar_multiply(
+            seal_arg0_mult, seal_arg1_mult, seal_prod, element_type,
+            he_seal_backend, pool);
         if (first_add) {
-          sum = prod;
+          seal_sum = seal_prod;
           first_add = false;
         } else {
-          runtime::he::he_seal::kernel::scalar_add(
-              sum.get(), prod.get(), sum, element_type, he_seal_backend, pool);
+          runtime::he::he_seal::kernel::scalar_add(seal_sum, seal_prod,
+                                                   seal_sum, element_type,
+                                                   he_seal_backend, pool);
         }
       }
       ++input_it;
@@ -251,7 +261,7 @@ void ngraph::runtime::he::he_seal::kernel::convolution_seal(
           he_seal_backend->create_valued_hetext<V>(0.f, element_type);
     } else {
       // Write the sum back.
-      out[out_coord_idx] = sum;
+      out[out_coord_idx] = std::dynamic_pointer_cast<V>(seal_sum);
     }
 
     if (out_coord_idx % 1000 == 0) {

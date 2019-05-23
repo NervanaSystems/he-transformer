@@ -124,7 +124,8 @@ void runtime::he::he_seal::HESealBFVBackend::encode(
 }
 
 void runtime::he::he_seal::HESealBFVBackend::encode(
-    runtime::he::he_seal::SealPlaintextWrapper* plaintext, bool complex) const {
+    std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& plaintext,
+    bool complex) const {
   std::lock_guard<std::mutex> encode_lock(m_encode_mutex);
   if (plaintext->is_encoded()) {
     return;
@@ -150,8 +151,8 @@ void runtime::he::he_seal::HESealBFVBackend::encode(
 }
 
 void runtime::he::he_seal::HESealBFVBackend::decode(
-    void* output, runtime::he::HEPlaintext* input, const element::Type& type,
-    size_t count) const {
+    void* output, shared_ptr<runtime::he::HEPlaintext>& input,
+    const element::Type& type, size_t count) const {
   if (count != 1) {
     throw ngraph_error("Batching not enabled for SEAL BFV decode");
   }
@@ -161,12 +162,8 @@ void runtime::he::he_seal::HESealBFVBackend::decode(
 }
 
 void runtime::he::he_seal::HESealBFVBackend::decode(
-    runtime::he::HEPlaintext* input) const {
-  auto seal_input = dynamic_cast<const SealPlaintextWrapper*>(input);
-
-  NGRAPH_ASSERT(seal_input != nullptr)
-      << "HESealBFVBackend::decode input is not seal plaintext";
-
+    shared_ptr<runtime::he::HEPlaintext>& input) const {
+  auto seal_input = cast_to_seal_hetext(input);
   int32_t val = m_integer_encoder->decode_int32(seal_input->get_plaintext());
   float fl_val{val};
   input->set_values({fl_val});

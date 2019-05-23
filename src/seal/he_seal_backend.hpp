@@ -80,8 +80,9 @@ class HESealBackend : public HEBackend {
     return create_empty_plaintext(pool);
   };
 
-  virtual void encode(runtime::he::he_seal::SealPlaintextWrapper* plaintext,
-                      bool complex) const = 0;
+  virtual void encode(
+      std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& plaintext,
+      bool complex) const = 0;
 
   virtual void encode(
       std::vector<std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>>&
@@ -92,24 +93,27 @@ class HESealBackend : public HEBackend {
                       const void* input, const element::Type& type,
                       bool complex, size_t count = 1) const = 0;
 
-  virtual void decode(void* output, runtime::he::HEPlaintext* input,
+  virtual void decode(void* output,
+                      std::shared_ptr<runtime::he::HEPlaintext>& input,
                       const element::Type& type,
                       size_t count = 1) const override = 0;
 
-  virtual void decode(runtime::he::HEPlaintext* input) const override = 0;
+  virtual void decode(
+      std::shared_ptr<runtime::he::HEPlaintext>& input) const override = 0;
 
   virtual void decode(std::vector<std::shared_ptr<runtime::he::HEPlaintext>>&
                           plaintexts) const override {
     for (size_t i = 0; i < plaintexts.size(); ++i) {
-      decode(plaintexts[i].get());
+      decode(plaintexts[i]);
     }
   }
 
   void encrypt(std::shared_ptr<runtime::he::HECiphertext>& output,
-               runtime::he::HEPlaintext* input) const override;
+               std::shared_ptr<runtime::he::HEPlaintext>& input) const override;
 
-  void decrypt(std::shared_ptr<runtime::he::HEPlaintext>& output,
-               const runtime::he::HECiphertext* input) const override;
+  void decrypt(
+      std::shared_ptr<runtime::he::HEPlaintext>& output,
+      const std::shared_ptr<runtime::he::HECiphertext>& input) const override;
 
   const inline std::shared_ptr<seal::SEALContext> get_context() const noexcept {
     return m_context;
@@ -152,6 +156,14 @@ class HESealBackend : public HEBackend {
   std::shared_ptr<seal::SEALContext> m_context;
   std::shared_ptr<seal::Evaluator> m_evaluator;
   std::shared_ptr<seal::KeyGenerator> m_keygen;
+};
+
+inline const runtime::he::he_seal::HESealBackend* cast_to_seal_backend(
+    const runtime::he::HEBackend* he_backend) {
+  auto seal_he_backend =
+      dynamic_cast<const runtime::he::he_seal::HESealBackend*>(he_backend);
+  NGRAPH_ASSERT(seal_he_backend != nullptr);
+  return seal_he_backend;
 };
 }  // namespace he_seal
 }  // namespace he

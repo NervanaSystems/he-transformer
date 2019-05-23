@@ -30,8 +30,8 @@ using namespace std;
 using namespace ngraph;
 
 void runtime::he::kernel::pad(
-    const vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
-    const vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,  // scalar
+    vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
+    vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,  // scalar
     vector<shared_ptr<runtime::he::HECiphertext>>& out, const Shape& arg0_shape,
     const Shape& out_shape, const CoordinateDiff& padding_below,
     const CoordinateDiff& padding_above, op::PadMode pad_mode,
@@ -52,7 +52,7 @@ void runtime::he::kernel::pad(
   shared_ptr<runtime::he::HECiphertext> arg1_encrypted;
   arg1_encrypted = he_seal_backend->create_empty_ciphertext();
 
-  he_backend->encrypt(arg1_encrypted, arg1[0].get());
+  he_backend->encrypt(arg1_encrypted, arg1[0]);
 
   auto arg1_seal_cipher =
       dynamic_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(

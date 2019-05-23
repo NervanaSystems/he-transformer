@@ -56,7 +56,7 @@ runtime::he::HEBackend::create_valued_ciphertext(
       create_valued_plaintext(value, element_type);
   shared_ptr<runtime::he::HECiphertext> ciphertext = create_empty_ciphertext();
 
-  encrypt(ciphertext, plaintext.get());
+  encrypt(ciphertext, plaintext);
   return ciphertext;
 }
 

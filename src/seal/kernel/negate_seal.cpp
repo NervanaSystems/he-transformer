@@ -20,12 +20,12 @@ using namespace std;
 using namespace ngraph::runtime::he;
 
 void he_seal::kernel::scalar_negate(
-    const he_seal::SealCiphertextWrapper* arg,
+    shared_ptr<he_seal::SealCiphertextWrapper>& arg,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend) {
   NGRAPH_ASSERT(element_type == element::f32);
-  if (arg == out.get()) {
+  if (arg.get() == out.get()) {
     he_seal_backend->get_evaluator()->negate_inplace(out->m_ciphertext);
   } else {
     he_seal_backend->get_evaluator()->negate(arg->m_ciphertext,
@@ -34,7 +34,7 @@ void he_seal::kernel::scalar_negate(
 }
 
 void he_seal::kernel::scalar_negate(
-    const he_seal::SealPlaintextWrapper* arg,
+    shared_ptr<he_seal::SealPlaintextWrapper>& arg,
     shared_ptr<he_seal::SealPlaintextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend) {
