@@ -54,12 +54,14 @@ class HESealCKKSBackend : public HESealBackend {
 
   void encode(
       std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& plaintext,
-      bool complex) const override;
+      seal::parms_id_type parms_id, double scale, bool complex) const override;
 
   void encode(
-      std::vector<std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>>&
-          plaintexts,
-      bool complex) const override;
+      std::shared_ptr<ngraph::runtime::he::he_seal::SealPlaintextWrapper>&
+          plaintext,
+      bool complex) const override {
+    encode(plaintext, m_context->first_parms_id(), m_scale, complex);
+  }
 
   void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
               const void* input, const element::Type& element_type,

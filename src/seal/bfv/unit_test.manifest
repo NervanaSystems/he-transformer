@@ -76,4 +76,6 @@ dot_matrix_vector
 add_zero_2_3
 add_optimized_2_3
 
+sub_2_3
+
 cipher_tv_batch_write_read_2_1

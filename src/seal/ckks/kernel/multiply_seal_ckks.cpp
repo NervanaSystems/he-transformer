@@ -64,22 +64,29 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
     const runtime::he::he_seal::HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
   if (!arg1->is_encoded()) {
-    he_seal_ckks_backend->encode(arg1, false);
+    // Just-in-time encoding at the right scale and modulus
+    he_seal_ckks_backend->encode(arg1, arg0->m_ciphertext.parms_id(),
+                                 arg0->m_ciphertext.scale(), false);
+  } else {
+    match_modulus_inplace(arg0.get(), arg1.get(), he_seal_ckks_backend, pool);
+    match_scale(arg0.get(), arg1.get(), he_seal_ckks_backend);
   }
-  match_modulus_inplace(arg0.get(), arg1.get(), he_seal_ckks_backend, pool);
-  match_scale(arg0.get(), arg1.get(), he_seal_ckks_backend);
+  NGRAPH_ASSERT(arg0->get_hetext().scale() == arg1->get_hetext().scale())
+      << "arg0_scale " << arg0->get_hetext().scale() << " != arg1_scale "
+      << arg1->get_hetext().scale();
 
   size_t chain_ind0 = he_seal_ckks_backend->get_context()
                           ->context_data(arg0->get_hetext().parms_id())
                           ->chain_index();
+
   size_t chain_ind1 = he_seal_ckks_backend->get_context()
                           ->context_data(arg1->get_hetext().parms_id())
                           ->chain_index();
 
-  if (chain_ind0 == 0 || chain_ind1 == 0) {
-    NGRAPH_INFO << "Multiplicative depth limit reached";
-    exit(1);
-  }
+  NGRAPH_ASSERT(chain_ind0 == chain_ind1)
+      << "Chain_ind0 " << chain_ind0 << " != chain_ind1 " << chain_ind1;
+  NGRAPH_ASSERT(chain_ind0 > 0) << "Multiplicative depth exceeded for arg0";
+  NGRAPH_ASSERT(chain_ind1 > 0) << "Multiplicative depth exceeded for arg1";
 
   try {
     he_seal_ckks_backend->get_evaluator()->multiply_plain(
@@ -93,7 +100,6 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
     }
   }
   out->set_complex_packing(arg0->complex_packing());
-  //  NGRAPH_INFO << "Mult output complex? " << arg0->complex_packing();
 
   he_seal_ckks_backend->get_evaluator()->relinearize_inplace(
       out->m_ciphertext, *(he_seal_ckks_backend->get_relin_keys()), pool);
