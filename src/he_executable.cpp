@@ -66,7 +66,6 @@
 #include "seal/ckks/seal_ckks_util.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_util.hpp"
-#include "seal/seal_ciphertext_wrapper.hpp"
 
 using namespace std;
 using namespace ngraph;
