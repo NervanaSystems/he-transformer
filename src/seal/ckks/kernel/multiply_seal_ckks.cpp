@@ -64,11 +64,10 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
     const runtime::he::he_seal::HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
   if (!arg1->is_encoded()) {
-    // Just-in-time encoding at the right scale!
+    // Just-in-time encoding at the right scale and modulus
     he_seal_ckks_backend->encode(arg1, arg0->m_ciphertext.parms_id(),
                                  arg0->m_ciphertext.scale(), false);
   } else {
-    // No need to match arguments, since we encoded them correctly
     match_modulus_inplace(arg0.get(), arg1.get(), he_seal_ckks_backend, pool);
     match_scale(arg0.get(), arg1.get(), he_seal_ckks_backend);
   }
