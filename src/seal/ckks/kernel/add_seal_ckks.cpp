@@ -33,16 +33,10 @@ void he_seal::ckks::kernel::scalar_add_ckks(
   NGRAPH_ASSERT(arg0->complex_packing() == arg1->complex_packing());
 
   match_modulus_inplace(arg0.get(), arg1.get(), he_seal_ckks_backend, pool);
-  NGRAPH_INFO << "Matched mods";
   match_scale(arg0.get(), arg1.get(), he_seal_ckks_backend);
-  NGRAPH_INFO << "Matched scales";
-
   he_seal_ckks_backend->get_evaluator()->add(
       arg0->m_ciphertext, arg1->m_ciphertext, out->m_ciphertext);
-  NGRAPH_INFO << "Added";
-
   out->set_complex_packing(arg1->complex_packing());
-  // NGRAPH_INFO << "Add output complex? " << arg1->complex_packing();
 }
 
 void he_seal::ckks::kernel::scalar_add_ckks(
@@ -62,7 +56,6 @@ void he_seal::ckks::kernel::scalar_add_ckks(
   he_seal_ckks_backend->get_evaluator()->add_plain(
       arg0->m_ciphertext, arg1->get_plaintext(), out->m_ciphertext);
   out->set_complex_packing(arg0->complex_packing());
-  // NGRAPH_INFO << "Add output complex? " << arg0->complex_packing();
 }
 
 void he_seal::ckks::kernel::scalar_add_ckks(

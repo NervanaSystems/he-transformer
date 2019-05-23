@@ -1271,12 +1271,6 @@ void runtime::he::HEExecutable::generate_calls(
         throw ngraph_error(
             "Input argument is neither plaintext nor ciphertext");
       }
-      NGRAPH_INFO << "output size " << output_size;
-
-      auto he_seal_backend =
-          dynamic_cast<const runtime::he::he_seal::HESealBackend*>(
-              m_he_backend);
-
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
         runtime::he::kernel::result(arg0_cipher->get_elements(),
                                     out0_cipher->get_elements(), output_size);

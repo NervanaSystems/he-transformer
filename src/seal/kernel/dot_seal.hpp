@@ -138,6 +138,7 @@ void ngraph::runtime::he::he_seal::kernel::dot_seal(
                              arg0_projected_coord.end(), arg0_coord.begin());
 
     std::shared_ptr<V> sum = he_seal_backend->create_empty_hetext<V>(pool);
+    auto seal_sum = runtime::he::he_seal::cast_to_seal_hetext(sum);
 
     bool first_add = true;
 
@@ -165,16 +166,14 @@ void ngraph::runtime::he::he_seal::kernel::dot_seal(
           arg0_seal_text, arg1_seal_text, seal_prod, element_type,
           he_seal_backend, pool);
       if (first_add) {
-        sum = prod;
+        seal_sum = seal_prod;
         first_add = false;
       } else {
-        auto seal_sum = runtime::he::he_seal::cast_to_seal_hetext(sum);
-        auto seal_prod = runtime::he::he_seal::cast_to_seal_hetext(prod);
         runtime::he::he_seal::kernel::scalar_add(
             seal_sum, seal_prod, seal_sum, element_type, he_seal_backend, pool);
       }
     }
     // Write the sum back.
-    out[out_index] = sum;
+    out[out_index] = std::dynamic_pointer_cast<V>(seal_sum);
   }
 }

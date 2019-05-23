@@ -101,28 +101,12 @@ void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset,
   size_t type_byte_size = element_type.size();
   size_t src_start_index = tensor_offset / type_byte_size;
   size_t num_elements_to_read = n / (type_byte_size * m_batch_size);
-  NGRAPH_INFO << "Reading " << num_elements_to_read;
 
   if (num_elements_to_read == 1) {
     void* dst_with_offset = (void*)((char*)target);
     size_t src_index = src_start_index;
     shared_ptr<runtime::he::HEPlaintext> p =
         m_he_backend->create_empty_plaintext();
-
-    NGRAPH_INFO << "m_ciphertexts.size " << m_cipher_texts.size();
-    NGRAPH_ASSERT(src_index <= m_cipher_texts.size());
-    auto cipher = m_cipher_texts[src_index];
-    auto seal_cipher = runtime::he::he_seal::cast_to_seal_hetext(cipher);
-    NGRAPH_INFO << "output size " << seal_cipher->m_ciphertext.size();
-    NGRAPH_INFO << "output poly_modulus_degree "
-                << seal_cipher->m_ciphertext.poly_modulus_degree();
-
-    auto seal_he_backend =
-        dynamic_cast<const runtime::he::he_seal::HESealBackend*>(m_he_backend);
-    NGRAPH_INFO << "is_valid_for context? "
-                << seal_cipher->m_ciphertext.is_valid_for(
-                       seal_he_backend->get_context());
-
     m_he_backend->decrypt(p, m_cipher_texts[src_index]);
     m_he_backend->decode(dst_with_offset, p, element_type, m_batch_size);
   } else {

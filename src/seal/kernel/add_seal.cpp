@@ -55,25 +55,24 @@ void he_seal::kernel::scalar_add(
   // TODO: handle case where arg1 = {0, 0, 0, 0, ...}
   bool add_zero = arg1->is_single_value() && (arg1->get_values()[0] == 0.0f);
 
-  /*if (add_zero) {
-    NGRAPH_INFO << "Optimized add by 0";
+  if (add_zero) {
     // Make copy of input
     // TODO: make copy only if necessarsy
     out = make_shared<he_seal::SealCiphertextWrapper>(*arg0);
-  } else { */
-  if (auto he_seal_ckks_backend =
-          dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend)) {
-    he_seal::ckks::kernel::scalar_add_ckks(arg0, arg1, out, element_type,
-                                           he_seal_ckks_backend, pool);
-  } else if (auto he_seal_bfv_backend =
-                 dynamic_cast<const he_seal::HESealBFVBackend*>(
-                     he_seal_backend)) {
-    he_seal::bfv::kernel::scalar_add_bfv(arg0, arg1, out, element_type,
-                                         he_seal_bfv_backend);
   } else {
-    throw ngraph_error("HESealBackend is neither BFV nor CKKS");
+    if (auto he_seal_ckks_backend =
+            dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend)) {
+      he_seal::ckks::kernel::scalar_add_ckks(arg0, arg1, out, element_type,
+                                             he_seal_ckks_backend, pool);
+    } else if (auto he_seal_bfv_backend =
+                   dynamic_cast<const he_seal::HESealBFVBackend*>(
+                       he_seal_backend)) {
+      he_seal::bfv::kernel::scalar_add_bfv(arg0, arg1, out, element_type,
+                                           he_seal_bfv_backend);
+    } else {
+      throw ngraph_error("HESealBackend is neither BFV nor CKKS");
+    }
   }
-  // }
 }
 
 void he_seal::kernel::scalar_add(
