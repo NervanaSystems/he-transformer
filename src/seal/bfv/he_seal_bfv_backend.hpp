@@ -55,13 +55,8 @@ class HESealBFVBackend : public HESealBackend {
 
   void encode(
       std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& plaintext,
-      seal::parms_id_type parms_id, double scale, bool complex) const;
-
-  void encode(
-      std::vector<std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>>&
-          plaintexts,
-      bool complex) const override {
-    throw ngraph_error("Unimplemented");
+      seal::parms_id_type parms_id, double scale, bool complex) const {
+    throw ngraph_error("Unimplemeneted");
   }
 
   void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,

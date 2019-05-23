@@ -15,7 +15,7 @@
 //*****************************************************************************
 
 #include "seal/kernel/multiply_seal.hpp"
-// #include "seal/bfv/kernel/multiply_seal_bfv.hpp"
+#include "seal/bfv/kernel/multiply_seal_bfv.hpp"
 #include "seal/ckks/he_seal_ckks_backend.hpp"
 #include "seal/ckks/kernel/multiply_seal_ckks.hpp"
 #include "seal/kernel/negate_seal.hpp"
@@ -34,13 +34,12 @@ void he_seal::kernel::scalar_multiply(
           dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend)) {
     he_seal::ckks::kernel::scalar_multiply_ckks(arg0, arg1, out, element_type,
                                                 he_seal_ckks_backend, pool);
-  } /*else if (auto he_seal_bfv_backend =
+  } else if (auto he_seal_bfv_backend =
                  dynamic_cast<const he_seal::HESealBFVBackend*>(
                      he_seal_backend)) {
     he_seal::bfv::kernel::scalar_multiply_bfv(arg0, arg1, out, element_type,
                                               he_seal_bfv_backend);
-} */
-  else {
+  } else {
     throw ngraph_error("HESealBackend is neither BFV nor CKKS");
   }
 }
@@ -73,13 +72,12 @@ void he_seal::kernel::scalar_multiply(
             dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend)) {
       he_seal::ckks::kernel::scalar_multiply_ckks(arg0, arg1, out, element_type,
                                                   he_seal_ckks_backend, pool);
-    } /*else if (auto he_seal_bfv_backend =
+    } else if (auto he_seal_bfv_backend =
                    dynamic_cast<const he_seal::HESealBFVBackend*>(
                        he_seal_backend)) {
       he_seal::bfv::kernel::scalar_multiply_bfv(arg0, arg1, out, element_type,
                                                 he_seal_bfv_backend);
-    } */
-    else {
+    } else {
       throw ngraph_error("HESealBackend is neither BFV nor CKKS");
     }
   }

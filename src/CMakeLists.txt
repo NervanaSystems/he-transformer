@@ -30,9 +30,9 @@ set (HE_SRC
     seal/kernel/negate_seal.cpp
     seal/kernel/subtract_seal.cpp
     seal/he_seal_backend.cpp
-    #seal/bfv/he_seal_bfv_backend.cpp
-    #seal/bfv/kernel/add_seal_bfv.cpp
-    #seal/bfv/kernel/multiply_seal_bfv.cpp
+    seal/bfv/he_seal_bfv_backend.cpp
+    seal/bfv/kernel/add_seal_bfv.cpp
+    seal/bfv/kernel/multiply_seal_bfv.cpp
     seal/ckks/he_seal_ckks_backend.cpp
     seal/ckks/kernel/add_seal_ckks.cpp
     seal/ckks/kernel/multiply_seal_ckks.cpp
@@ -91,7 +91,7 @@ add_custom_target(he_seal_ckks_backend ALL DEPENDS he_backend
             ${EXTERNAL_INSTALL_LIB_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}he_backend${CMAKE_SHARED_LIBRARY_SUFFIX}
             ${NGRAPH_TF_VENV_LIB_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}he_seal_ckks_backend${CMAKE_SHARED_LIBRARY_SUFFIX})
 
-#add_custom_target(he_seal_bfv_backend ALL DEPENDS he_backend
-#    COMMAND ${CMAKE_COMMAND} -E create_symlink
-#        ${EXTERNAL_INSTALL_LIB_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}he_backend${CMAKE_SHARED_LIBRARY_SUFFIX}
-#        ${NGRAPH_TF_VENV_LIB_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}he_seal_bfv_backend${CMAKE_SHARED_LIBRARY_SUFFIX})
+add_custom_target(he_seal_bfv_backend ALL DEPENDS he_backend
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
+        ${EXTERNAL_INSTALL_LIB_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}he_backend${CMAKE_SHARED_LIBRARY_SUFFIX}
+        ${NGRAPH_TF_VENV_LIB_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}he_seal_bfv_backend${CMAKE_SHARED_LIBRARY_SUFFIX})

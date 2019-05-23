@@ -31,10 +31,9 @@ extern "C" const char* get_ngraph_version_string() {
 extern "C" runtime::Backend* new_backend(const char* configuration_chars) {
   string configuration_string = string(configuration_chars);
 
-  /*if (configuration_string == "HE_SEAL_BFV") {
+  if (configuration_string == "HE_SEAL_BFV") {
     return new runtime::he::he_seal::HESealBFVBackend();
-  } else */
-  if (configuration_string == "HE_SEAL_CKKS") {
+  } else if (configuration_string == "HE_SEAL_CKKS") {
     return new runtime::he::he_seal::HESealCKKSBackend();
   } else {
     throw ngraph_error("Invalid configuration string \"" +
