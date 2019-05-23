@@ -16,7 +16,7 @@
 
 #include <limits>
 
-// #include "seal/bfv/he_seal_bfv_backend.hpp"
+#include "seal/bfv/he_seal_bfv_backend.hpp"
 #include "seal/ckks/he_seal_ckks_backend.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal.h"
