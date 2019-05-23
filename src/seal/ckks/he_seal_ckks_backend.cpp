@@ -122,19 +122,8 @@ runtime::he::he_seal::HESealCKKSBackend::create_batched_plain_tensor(
 }
 
 void runtime::he::he_seal::HESealCKKSBackend::encode(
-    std::vector<std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>>&
-        plaintexts,
-    bool complex) const {
-#pragma omp parallel for
-  for (size_t i = 0; i < plaintexts.size(); ++i) {
-    auto plaintext = plaintexts[i];
-    encode(plaintext, complex);
-  }
-}
-
-void runtime::he::he_seal::HESealCKKSBackend::encode(
     std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& plaintext,
-    bool complex) const {
+    seal::parms_id_type parms_id, double scale, bool complex) const {
   std::lock_guard<std::mutex> encode_lock(plaintext->get_encode_mutex());
   if (plaintext->is_encoded()) {
     return;
@@ -156,17 +145,19 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
     NGRAPH_ASSERT(complex_vals.size() <= slots)
         << "Cannot encode " << complex_vals.size()
         << " elements, maximum size is " << slots;
-    m_ckks_encoder->encode(complex_vals, m_scale, plaintext->get_plaintext());
+    m_ckks_encoder->encode(complex_vals, parms_id, scale,
+                           plaintext->get_plaintext());
   } else {
     // TODO: why different cases?
     if (double_vals.size() == 1) {
-      m_ckks_encoder->encode(double_vals[0], m_scale,
+      m_ckks_encoder->encode(double_vals[0], parms_id, scale,
                              plaintext->get_plaintext());
     } else {
       NGRAPH_ASSERT(double_vals.size() <= slots)
           << "Cannot encode " << double_vals.size()
           << " elements, maximum size is " << slots;
-      m_ckks_encoder->encode(double_vals, m_scale, plaintext->get_plaintext());
+      m_ckks_encoder->encode(double_vals, parms_id, scale,
+                             plaintext->get_plaintext());
     }
   }
   plaintext->set_complex_packing(complex);

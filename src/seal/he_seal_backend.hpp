@@ -82,11 +82,10 @@ class HESealBackend : public HEBackend {
 
   virtual void encode(
       std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& plaintext,
-      bool complex) const = 0;
+      seal::parms_id_type parms_id, double scale, bool complex) const = 0;
 
   virtual void encode(
-      std::vector<std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>>&
-          plaintext,
+      std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& plaintext,
       bool complex) const = 0;
 
   virtual void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
