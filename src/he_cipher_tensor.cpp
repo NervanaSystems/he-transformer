@@ -20,6 +20,8 @@
 #include "he_cipher_tensor.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
 #include "ngraph/util.hpp"
+#include "seal/he_seal_backend.hpp"
+#include "seal/seal_ciphertext_wrapper.hpp"
 
 using namespace ngraph;
 using namespace std;
@@ -56,7 +58,7 @@ void runtime::he::HECipherTensor::write(const void* source,
         m_he_backend->create_empty_plaintext();
     m_he_backend->encode(plaintext, src_with_offset, element_type,
                          complex_batching, m_batch_size);
-    m_he_backend->encrypt(m_cipher_texts[dst_index], plaintext.get());
+    m_he_backend->encrypt(m_cipher_texts[dst_index], plaintext);
   } else {
 #pragma omp parallel for
     for (size_t i = 0; i < num_elements_to_write; ++i) {
@@ -87,7 +89,7 @@ void runtime::he::HECipherTensor::write(const void* source,
         m_he_backend->encode(plaintext, src_with_offset, element_type,
                              complex_batching, m_batch_size);
       }
-      m_he_backend->encrypt(m_cipher_texts[dst_index], plaintext.get());
+      m_he_backend->encrypt(m_cipher_texts[dst_index], plaintext);
     }
   }
 }
@@ -105,8 +107,8 @@ void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset,
     size_t src_index = src_start_index;
     shared_ptr<runtime::he::HEPlaintext> p =
         m_he_backend->create_empty_plaintext();
-    m_he_backend->decrypt(p, m_cipher_texts[src_index].get());
-    m_he_backend->decode(dst_with_offset, p.get(), element_type, m_batch_size);
+    m_he_backend->decrypt(p, m_cipher_texts[src_index]);
+    m_he_backend->decode(dst_with_offset, p, element_type, m_batch_size);
   } else {
 #pragma omp parallel for
     for (size_t i = 0; i < num_elements_to_read; ++i) {
@@ -118,8 +120,8 @@ void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset,
       size_t src_index = src_start_index + i;
       shared_ptr<runtime::he::HEPlaintext> p =
           m_he_backend->create_empty_plaintext();
-      m_he_backend->decrypt(p, m_cipher_texts[src_index].get());
-      m_he_backend->decode(dst, p.get(), element_type, m_batch_size);
+      m_he_backend->decrypt(p, m_cipher_texts[src_index]);
+      m_he_backend->decode(dst, p, element_type, m_batch_size);
 
       for (size_t j = 0; j < m_batch_size; ++j) {
         void* dst_with_offset =

@@ -20,39 +20,30 @@ using namespace std;
 using namespace ngraph;
 
 void runtime::he::he_seal::kernel::scalar_subtract(
-    he_seal::SealCiphertextWrapper* arg0, he_seal::SealCiphertextWrapper* arg1,
+    shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
+    shared_ptr<he_seal::SealCiphertextWrapper>& arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend) {
-  if (arg0 == out.get()) {
-    he_seal_backend->get_evaluator()->sub_inplace(out->m_ciphertext,
-                                                  arg1->m_ciphertext);
-  } else if (arg1 == out.get()) {
-    he_seal_backend->get_evaluator()->sub_inplace(out->m_ciphertext,
-                                                  arg0->m_ciphertext);
-  } else {
-    he_seal_backend->get_evaluator()->sub(
-        arg0->m_ciphertext, arg1->m_ciphertext, out->m_ciphertext);
-  }
+  he_seal_backend->get_evaluator()->sub(arg0->m_ciphertext, arg1->m_ciphertext,
+                                        out->m_ciphertext);
 }
 
 void runtime::he::he_seal::kernel::scalar_subtract(
-    he_seal::SealCiphertextWrapper* arg0, he_seal::SealPlaintextWrapper* arg1,
+    shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
+    shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
     shared_ptr<he_seal::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend) {
-  he_seal_backend->encode(arg1, arg0->complex_packing());
-  if (arg0 == out.get()) {
-    he_seal_backend->get_evaluator()->sub_plain_inplace(out->m_ciphertext,
-                                                        arg1->get_plaintext());
-  } else {
-    he_seal_backend->get_evaluator()->sub_plain(
-        arg0->m_ciphertext, arg1->get_plaintext(), out->m_ciphertext);
-  }
+  he_seal_backend->encode(arg1, arg0->m_ciphertext.parms_id(),
+                          arg0->m_ciphertext.scale(), arg0->complex_packing());
+  he_seal_backend->get_evaluator()->sub_plain(
+      arg0->m_ciphertext, arg1->get_plaintext(), out->m_ciphertext);
 }
 
 void runtime::he::he_seal::kernel::scalar_subtract(
-    he_seal::SealPlaintextWrapper* arg0, he_seal::SealPlaintextWrapper* arg1,
+    shared_ptr<he_seal::SealPlaintextWrapper>& arg0,
+    shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
     shared_ptr<he_seal::SealPlaintextWrapper>& out,
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend) {

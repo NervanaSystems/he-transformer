@@ -513,7 +513,7 @@ bool runtime::he::HEExecutable::call(
           plain_input->get_element(i)->set_complex_packing(
               m_he_backend->complex_packing());
           m_he_backend->encrypt(cipher_input->get_element(i),
-                                plain_input->get_element(i).get());
+                                plain_input->get_element(i));
         }
         tensor_map.insert({tv, cipher_input});
         input_count++;
@@ -975,19 +975,6 @@ void runtime::he::HEExecutable::generate_calls(
             dot->get_reduction_axes_count(), type, m_he_backend);
       } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                  out0_cipher != nullptr) {
-        // TODO: move to dot
-        std::vector<std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>>
-            seal_plain;
-        for (auto elem : arg1_plain->get_elements()) {
-          auto wrapper =
-              dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(
-                  elem);
-          seal_plain.emplace_back(wrapper);
-        }
-        auto he_seal_backend =
-            (runtime::he::he_seal::HESealBackend*)m_he_backend;
-        he_seal_backend->encode(seal_plain, false);
-
         runtime::he::kernel::dot(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
             out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
@@ -1092,7 +1079,7 @@ void runtime::he::HEExecutable::generate_calls(
                 element_type, arg0_plain->get_shape(), m_batch_data));
         for (size_t elem_idx = 0; elem_idx < element_count; ++elem_idx) {
           m_he_backend->encrypt(arg0_cipher->get_element(elem_idx),
-                                (arg0_plain->get_element(elem_idx).get()));
+                                (arg0_plain->get_element(elem_idx)));
         }
       }
       if (arg1_plain != nullptr) {
@@ -1104,7 +1091,7 @@ void runtime::he::HEExecutable::generate_calls(
                 element_type, arg1_plain->get_shape(), m_batch_data));
         for (size_t elem_idx = 0; elem_idx < element_count; ++elem_idx) {
           m_he_backend->encrypt(arg1_cipher->get_element(elem_idx),
-                                (arg1_plain->get_element(elem_idx).get()));
+                                (arg1_plain->get_element(elem_idx)));
         }
       }
       NGRAPH_ASSERT(arg0_cipher != nullptr) << "arg0_cipher is nullptr";
@@ -1271,7 +1258,6 @@ void runtime::he::HEExecutable::generate_calls(
         throw ngraph_error(
             "Input argument is neither plaintext nor ciphertext");
       }
-
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
         runtime::he::kernel::result(arg0_cipher->get_elements(),
                                     out0_cipher->get_elements(), output_size);

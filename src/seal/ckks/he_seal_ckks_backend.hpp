@@ -52,22 +52,25 @@ class HESealCKKSBackend : public HESealBackend {
   std::shared_ptr<seal::SEALContext> make_seal_context(
       const std::shared_ptr<runtime::he::HEEncryptionParameters> sp) override;
 
-  void encode(runtime::he::he_seal::SealPlaintextWrapper* plaintext,
-              bool complex) const override;
+  void encode(
+      std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& plaintext,
+      seal::parms_id_type parms_id, double scale, bool complex) const override;
 
   void encode(
-      std::vector<std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>>&
-          plaintexts,
-      bool complex) const override;
+      std::shared_ptr<ngraph::runtime::he::he_seal::SealPlaintextWrapper>&
+          plaintext,
+      bool complex) const override {
+    encode(plaintext, m_context->first_parms_id(), m_scale, complex);
+  }
 
   void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
               const void* input, const element::Type& element_type,
               bool complex, size_t count = 1) const override;
-  void decode(void* output, runtime::he::HEPlaintext* input,
+  void decode(void* output, std::shared_ptr<runtime::he::HEPlaintext>& input,
               const element::Type& element_type,
               size_t count = 1) const override;
 
-  void decode(runtime::he::HEPlaintext* input) const override;
+  void decode(std::shared_ptr<runtime::he::HEPlaintext>& input) const override;
 
   const inline std::shared_ptr<seal::CKKSEncoder> get_ckks_encoder() const {
     return m_ckks_encoder;

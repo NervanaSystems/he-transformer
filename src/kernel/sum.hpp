@@ -28,7 +28,7 @@ namespace runtime {
 namespace he {
 namespace kernel {
 template <typename T>
-void sum(const std::vector<std::shared_ptr<T>>& arg,
+void sum(std::vector<std::shared_ptr<T>>& arg,
          std::vector<std::shared_ptr<T>>& out, const Shape& in_shape,
          const Shape& out_shape, const AxisSet& reduction_axes,
          const element::Type& element_type,
@@ -47,8 +47,8 @@ void sum(const std::vector<std::shared_ptr<T>>& arg,
 
     auto& input = arg[input_transform.index(input_coord)];
     auto& output = out[output_transform.index(output_coord)];
-    runtime::he::kernel::scalar_add(input.get(), output.get(), output,
-                                    element_type, he_backend);
+    runtime::he::kernel::scalar_add(input, output, output, element_type,
+                                    he_backend);
   }
 }
 }  // namespace kernel

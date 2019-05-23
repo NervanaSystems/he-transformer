@@ -122,18 +122,8 @@ runtime::he::he_seal::HESealCKKSBackend::create_batched_plain_tensor(
 }
 
 void runtime::he::he_seal::HESealCKKSBackend::encode(
-    std::vector<std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>>&
-        plaintexts,
-    bool complex) const {
-#pragma omp parallel for
-  for (size_t i = 0; i < plaintexts.size(); ++i) {
-    auto plaintext = plaintexts[i];
-    encode(plaintext.get(), complex);
-  }
-}
-
-void runtime::he::he_seal::HESealCKKSBackend::encode(
-    runtime::he::he_seal::SealPlaintextWrapper* plaintext, bool complex) const {
+    std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& plaintext,
+    seal::parms_id_type parms_id, double scale, bool complex) const {
   std::lock_guard<std::mutex> encode_lock(plaintext->get_encode_mutex());
   if (plaintext->is_encoded()) {
     return;
@@ -155,17 +145,19 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
     NGRAPH_ASSERT(complex_vals.size() <= slots)
         << "Cannot encode " << complex_vals.size()
         << " elements, maximum size is " << slots;
-    m_ckks_encoder->encode(complex_vals, m_scale, plaintext->get_plaintext());
+    m_ckks_encoder->encode(complex_vals, parms_id, scale,
+                           plaintext->get_plaintext());
   } else {
     // TODO: why different cases?
     if (double_vals.size() == 1) {
-      m_ckks_encoder->encode(double_vals[0], m_scale,
+      m_ckks_encoder->encode(double_vals[0], parms_id, scale,
                              plaintext->get_plaintext());
     } else {
       NGRAPH_ASSERT(double_vals.size() <= slots)
           << "Cannot encode " << double_vals.size()
           << " elements, maximum size is " << slots;
-      m_ckks_encoder->encode(double_vals, m_scale, plaintext->get_plaintext());
+      m_ckks_encoder->encode(double_vals, parms_id, scale,
+                             plaintext->get_plaintext());
     }
   }
   plaintext->set_complex_packing(complex);
@@ -175,11 +167,7 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
 void runtime::he::he_seal::HESealCKKSBackend::encode(
     shared_ptr<runtime::he::HEPlaintext>& output, const void* input,
     const element::Type& type, bool complex, size_t count) const {
-  auto seal_plaintext_wrapper =
-      dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(output);
-
-  NGRAPH_ASSERT(seal_plaintext_wrapper != nullptr)
-      << "HEPlaintext is not SealPlaintextWrapper";
+  auto seal_plaintext_wrapper = cast_to_seal_hetext(output);
 
   NGRAPH_ASSERT(type == element::f32)
       << "CKKS encode supports only float encoding, received type " << type;
@@ -187,12 +175,12 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
   vector<float> values{(float*)input, (float*)input + count};
   seal_plaintext_wrapper->set_values(values);
 
-  encode(seal_plaintext_wrapper.get(), complex);
+  encode(seal_plaintext_wrapper, complex);
 }
 
 void runtime::he::he_seal::HESealCKKSBackend::decode(
-    void* output, runtime::he::HEPlaintext* input, const element::Type& type,
-    size_t count) const {
+    void* output, std::shared_ptr<runtime::he::HEPlaintext>& input,
+    const element::Type& type, size_t count) const {
   NGRAPH_ASSERT(count != 0) << "Decode called on 0 elements";
   NGRAPH_ASSERT(type == element::f32)
       << "CKKS encode supports only float encoding, received type " << type;
@@ -205,10 +193,8 @@ void runtime::he::he_seal::HESealCKKSBackend::decode(
 }
 
 void runtime::he::he_seal::HESealCKKSBackend::decode(
-    runtime::he::HEPlaintext* input) const {
-  auto seal_input = dynamic_cast<const SealPlaintextWrapper*>(input);
-  NGRAPH_ASSERT(seal_input != nullptr)
-      << "HESealCKKSBackend::decode input is not seal plaintext";
+    std::shared_ptr<runtime::he::HEPlaintext>& input) const {
+  auto seal_input = cast_to_seal_hetext(input);
 
   vector<double> real_vals;
   if (input->complex_packing()) {

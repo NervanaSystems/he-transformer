@@ -24,79 +24,51 @@
 using namespace std;
 using namespace ngraph::runtime::he;
 
-void kernel::scalar_multiply(HECiphertext* arg0, HECiphertext* arg1,
+void kernel::scalar_multiply(shared_ptr<HECiphertext>& arg0,
+                             shared_ptr<HECiphertext>& arg1,
                              shared_ptr<HECiphertext>& out,
                              const element::Type& element_type,
                              const HEBackend* he_backend) {
-  if (auto he_seal_backend =
-          dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
-    auto arg0_seal = dynamic_cast<he_seal::SealCiphertextWrapper*>(arg0);
-    auto arg1_seal = dynamic_cast<he_seal::SealCiphertextWrapper*>(arg1);
-    auto out_seal = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(out);
-
-    if (arg0_seal && arg1_seal && out_seal) {
-      he_seal::kernel::scalar_multiply(arg0_seal, arg1_seal, out_seal,
-                                       element_type, he_seal_backend);
-      out = dynamic_pointer_cast<HECiphertext>(out_seal);
-    } else {
-      throw ngraph_error(
-          "multiply backend is SEAL, but arguments or outputs are not "
-          "SealCiphertextWrapper");
-    }
-  } else {
-    throw ngraph_error("multiply backend is not SEAL.");
-  }
+  auto he_seal_backend = he_seal::cast_to_seal_backend(he_backend);
+  auto arg0_seal = he_seal::cast_to_seal_hetext(arg0);
+  auto arg1_seal = he_seal::cast_to_seal_hetext(arg1);
+  auto out_seal = he_seal::cast_to_seal_hetext(out);
+  he_seal::kernel::scalar_multiply(arg0_seal, arg1_seal, out_seal, element_type,
+                                   he_seal_backend);
+  out = dynamic_pointer_cast<HECiphertext>(out_seal);
 }
 
-void kernel::scalar_multiply(HEPlaintext* arg0, HEPlaintext* arg1,
+void kernel::scalar_multiply(shared_ptr<HEPlaintext>& arg0,
+                             shared_ptr<HEPlaintext>& arg1,
                              shared_ptr<HEPlaintext>& out,
                              const element::Type& element_type,
                              const HEBackend* he_backend) {
-  if (auto he_seal_backend =
-          dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
-    auto arg0_seal = dynamic_cast<he_seal::SealPlaintextWrapper*>(arg0);
-    auto arg1_seal = dynamic_cast<he_seal::SealPlaintextWrapper*>(arg1);
-    auto out_seal = dynamic_pointer_cast<he_seal::SealPlaintextWrapper>(out);
-
-    if (arg0_seal && arg1_seal && out_seal) {
-      he_seal::kernel::scalar_multiply(arg0_seal, arg1_seal, out_seal,
-                                       element_type, he_seal_backend);
-      out = dynamic_pointer_cast<HEPlaintext>(out_seal);
-    } else {
-      throw ngraph_error(
-          "multiply backend is SEAL, but arguments or outputs are not "
-          "SealPlaintextWrapper.");
-    }
-  } else {
-    throw ngraph_error("Multiply backend is not SEAL.");
-  }
+  auto he_seal_backend = he_seal::cast_to_seal_backend(he_backend);
+  auto arg0_seal = he_seal::cast_to_seal_hetext(arg0);
+  auto arg1_seal = he_seal::cast_to_seal_hetext(arg1);
+  auto out_seal = he_seal::cast_to_seal_hetext(out);
+  he_seal::kernel::scalar_multiply(arg0_seal, arg1_seal, out_seal, element_type,
+                                   he_seal_backend);
+  out = dynamic_pointer_cast<HEPlaintext>(out_seal);
 }
 
-void kernel::scalar_multiply(HECiphertext* arg0, HEPlaintext* arg1,
+void kernel::scalar_multiply(shared_ptr<HECiphertext>& arg0,
+                             shared_ptr<HEPlaintext>& arg1,
                              shared_ptr<HECiphertext>& out,
                              const element::Type& element_type,
                              const HEBackend* he_backend) {
-  if (auto he_seal_backend =
-          dynamic_cast<const he_seal::HESealBackend*>(he_backend)) {
-    auto arg0_seal = dynamic_cast<he_seal::SealCiphertextWrapper*>(arg0);
-    auto arg1_seal = dynamic_cast<he_seal::SealPlaintextWrapper*>(arg1);
-    auto out_seal = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(out);
+  auto he_seal_backend = he_seal::cast_to_seal_backend(he_backend);
+  auto arg0_seal = he_seal::cast_to_seal_hetext(arg0);
+  auto arg1_seal = he_seal::cast_to_seal_hetext(arg1);
+  auto out_seal = he_seal::cast_to_seal_hetext(out);
 
-    if (arg0_seal && arg1_seal && out_seal) {
-      he_seal::kernel::scalar_multiply(arg0_seal, arg1_seal, out_seal,
-                                       element_type, he_seal_backend);
-      out = dynamic_pointer_cast<HECiphertext>(out_seal);
-    } else {
-      throw ngraph_error(
-          "multiply backend is SEAL, but arguments or outputs are not "
-          "SealPlaintextWrapper.");
-    }
-  } else {
-    throw ngraph_error("Multiply backend is not SEAL.");
-  }
+  he_seal::kernel::scalar_multiply(arg0_seal, arg1_seal, out_seal, element_type,
+                                   he_seal_backend);
+  out = dynamic_pointer_cast<HECiphertext>(out_seal);
 }
 
-void kernel::scalar_multiply(HEPlaintext* arg0, HECiphertext* arg1,
+void kernel::scalar_multiply(shared_ptr<HEPlaintext>& arg0,
+                             shared_ptr<HECiphertext>& arg1,
                              shared_ptr<HECiphertext>& out,
                              const element::Type& element_type,
                              const HEBackend* he_backend) {

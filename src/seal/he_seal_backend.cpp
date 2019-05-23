@@ -74,26 +74,21 @@ runtime::he::he_seal::HESealBackend::create_empty_plaintext(
 
 void runtime::he::he_seal::HESealBackend::encrypt(
     shared_ptr<runtime::he::HECiphertext>& output,
-    runtime::he::HEPlaintext* input) const {
-  auto seal_output =
-      static_pointer_cast<runtime::he::he_seal::SealCiphertextWrapper>(output);
-  auto seal_input =
-      static_cast<runtime::he::he_seal::SealPlaintextWrapper*>(input);
+    shared_ptr<runtime::he::HEPlaintext>& input) const {
+  auto seal_output = runtime::he::he_seal::cast_to_seal_hetext(output);
+  auto seal_input = runtime::he::he_seal::cast_to_seal_hetext(input);
 
   encode(seal_input, input->complex_packing());
   m_encryptor->encrypt(seal_input->get_plaintext(), seal_output->m_ciphertext);
   output->set_complex_packing(input->complex_packing());
-
   NGRAPH_ASSERT(output->complex_packing() == input->complex_packing());
 }
 
 void runtime::he::he_seal::HESealBackend::decrypt(
     shared_ptr<runtime::he::HEPlaintext>& output,
-    const runtime::he::HECiphertext* input) const {
-  auto seal_output =
-      dynamic_pointer_cast<runtime::he::he_seal::SealPlaintextWrapper>(output);
-  auto seal_input =
-      static_cast<const runtime::he::he_seal::SealCiphertextWrapper*>(input);
+    const shared_ptr<runtime::he::HECiphertext>& input) const {
+  auto seal_output = runtime::he::he_seal::cast_to_seal_hetext(output);
+  auto seal_input = runtime::he::he_seal::cast_to_seal_hetext(input);
   m_decryptor->decrypt(seal_input->m_ciphertext, seal_output->get_plaintext());
   output->set_complex_packing(input->complex_packing());
   NGRAPH_ASSERT(output->complex_packing() == input->complex_packing());

@@ -20,7 +20,6 @@ set (HE_SRC
     kernel/add.cpp
     kernel/constant.cpp
     kernel/multiply.cpp
-    kernel/negate.cpp
     kernel/pad.cpp
     kernel/subtract.cpp
     kernel/result.cpp
