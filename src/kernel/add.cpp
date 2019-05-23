@@ -35,6 +35,7 @@ void kernel::scalar_add(shared_ptr<HECiphertext>& arg0,
 
   he_seal::kernel::scalar_add(arg0_seal, arg1_seal, out_seal, element_type,
                               he_seal_backend);
+  out = dynamic_pointer_cast<HECiphertext>(out_seal);
 }
 
 void kernel::scalar_add(shared_ptr<HEPlaintext>& arg0,
@@ -66,6 +67,7 @@ void kernel::scalar_add(shared_ptr<HECiphertext>& arg0,
 
   he_seal::kernel::scalar_add(arg0_seal, arg1_seal, out_seal, element_type,
                               he_seal_backend);
+  out = dynamic_pointer_cast<HECiphertext>(out_seal);
 }
 
 void kernel::scalar_add(shared_ptr<HEPlaintext>& arg0,

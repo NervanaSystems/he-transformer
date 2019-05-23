@@ -28,18 +28,18 @@ namespace ngraph {
 namespace runtime {
 namespace he {
 namespace kernel {
-void pad(const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
-         const std::vector<std::shared_ptr<runtime::he::HEPlaintext>>&
-             arg1,  // scalar
-         std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
-         const Shape& arg0_shape, const Shape& out_shape,
-         const CoordinateDiff& padding_below,
-         const CoordinateDiff& padding_above, op::PadMode pad_mode,
-         size_t batch_size, const runtime::he::HEBackend* he_backend);
+void pad(
+    std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
+    std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg1,  // scalar
+    std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
+    const Shape& arg0_shape, const Shape& out_shape,
+    const CoordinateDiff& padding_below, const CoordinateDiff& padding_above,
+    op::PadMode pad_mode, size_t batch_size,
+    const runtime::he::HEBackend* he_backend);
 
 template <typename S>
-void pad(const std::vector<std::shared_ptr<S>>& arg0,
-         const std::vector<std::shared_ptr<S>>& arg1,  // scalar
+void pad(std::vector<std::shared_ptr<S>>& arg0,
+         std::vector<std::shared_ptr<S>>& arg1,  // scalar
          std::vector<std::shared_ptr<S>>& out, const Shape& arg0_shape,
          const Shape& out_shape, const CoordinateDiff& padding_below,
          const CoordinateDiff& padding_above, op::PadMode pad_mode,

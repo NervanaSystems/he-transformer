@@ -35,6 +35,7 @@ void kernel::scalar_multiply(shared_ptr<HECiphertext>& arg0,
   auto out_seal = he_seal::cast_to_seal_hetext(out);
   he_seal::kernel::scalar_multiply(arg0_seal, arg1_seal, out_seal, element_type,
                                    he_seal_backend);
+  out = dynamic_pointer_cast<HECiphertext>(out_seal);
 }
 
 void kernel::scalar_multiply(shared_ptr<HEPlaintext>& arg0,
@@ -48,6 +49,7 @@ void kernel::scalar_multiply(shared_ptr<HEPlaintext>& arg0,
   auto out_seal = he_seal::cast_to_seal_hetext(out);
   he_seal::kernel::scalar_multiply(arg0_seal, arg1_seal, out_seal, element_type,
                                    he_seal_backend);
+  out = dynamic_pointer_cast<HEPlaintext>(out_seal);
 }
 
 void kernel::scalar_multiply(shared_ptr<HECiphertext>& arg0,
@@ -62,6 +64,7 @@ void kernel::scalar_multiply(shared_ptr<HECiphertext>& arg0,
 
   he_seal::kernel::scalar_multiply(arg0_seal, arg1_seal, out_seal, element_type,
                                    he_seal_backend);
+  out = dynamic_pointer_cast<HECiphertext>(out_seal);
 }
 
 void kernel::scalar_multiply(shared_ptr<HEPlaintext>& arg0,

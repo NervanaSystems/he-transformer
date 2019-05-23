@@ -53,7 +53,7 @@ void he_seal::ckks::kernel::scalar_add_ckks(
     const he_seal::HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
   if (!arg1->is_encoded()) {
-    he_seal_ckks_backend->encode(arg1.get(), arg0->complex_packing());
+    he_seal_ckks_backend->encode(arg1, arg0->complex_packing());
   }
 
   match_modulus_inplace(arg0.get(), arg1.get(), he_seal_ckks_backend, pool);

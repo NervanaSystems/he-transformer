@@ -47,6 +47,14 @@ cast_to_seal_hetext(std::shared_ptr<runtime::he::HECiphertext>& cipher) {
       std::dynamic_pointer_cast<SealCiphertextWrapper>(cipher);
   NGRAPH_ASSERT(seal_ciphertext_wrapper != nullptr) << "Ciphertext is not Seal";
   return seal_ciphertext_wrapper;
+}
+
+inline const std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>
+cast_to_seal_hetext(const std::shared_ptr<runtime::he::HECiphertext>& cipher) {
+  auto seal_ciphertext_wrapper =
+      std::dynamic_pointer_cast<SealCiphertextWrapper>(cipher);
+  NGRAPH_ASSERT(seal_ciphertext_wrapper != nullptr) << "Ciphertext is not Seal";
+  return seal_ciphertext_wrapper;
 };
 }  // namespace he_seal
 }  // namespace he

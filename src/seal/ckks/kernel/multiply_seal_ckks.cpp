@@ -63,9 +63,8 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
     const element::Type& element_type,
     const runtime::he::he_seal::HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
-  NGRAPH_INFO << "Mult cipher / plain";
   if (!arg1->is_encoded()) {
-    he_seal_ckks_backend->encode(arg1.get(), false);
+    he_seal_ckks_backend->encode(arg1, false);
   }
   match_modulus_inplace(arg0.get(), arg1.get(), he_seal_ckks_backend, pool);
   match_scale(arg0.get(), arg1.get(), he_seal_ckks_backend);
