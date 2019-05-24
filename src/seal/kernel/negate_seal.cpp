@@ -25,12 +25,15 @@ void he_seal::kernel::scalar_negate(
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend) {
   NGRAPH_ASSERT(element_type == element::f32);
-  if (arg.get() == out.get()) {
-    he_seal_backend->get_evaluator()->negate_inplace(out->m_ciphertext);
-  } else {
-    he_seal_backend->get_evaluator()->negate(arg->m_ciphertext,
-                                             out->m_ciphertext);
+
+  if (arg->is_zero()) {
+    NGRAPH_INFO << "Arg is 0 in negate(C)";
+    out->set_zero(true);
+    return;
   }
+
+  he_seal_backend->get_evaluator()->negate(arg->m_ciphertext,
+                                           out->m_ciphertext);
 }
 
 void he_seal::kernel::scalar_negate(
