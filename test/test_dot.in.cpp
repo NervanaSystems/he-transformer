@@ -47,12 +47,12 @@ NGRAPH_TEST(${BACKEND_NAME}, dot1d) {
     auto t_b = inputs[1];
     auto t_result = results[0];
 
-    copy_data(t_a, vector<float>{1, 2, 3, 4});
+    copy_data(t_a, vector<float>{2, 2, 3, 4});
     copy_data(t_b, vector<float>{5, 6, 7, 8});
     auto handle = backend->compile(f);
     handle->call_with_validate({t_result}, {t_a, t_b});
     EXPECT_TRUE(
-        all_close(read_vector<float>(t_result), vector<float>{70}, 1e-3f));
+        all_close(read_vector<float>(t_result), vector<float>{75}, 1e-3f));
   }
 }
 

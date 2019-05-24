@@ -30,17 +30,23 @@ void he_seal::kernel::scalar_multiply(
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
-  if (auto he_seal_ckks_backend =
-          dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend)) {
-    he_seal::ckks::kernel::scalar_multiply_ckks(arg0, arg1, out, element_type,
-                                                he_seal_ckks_backend, pool);
-  } else if (auto he_seal_bfv_backend =
-                 dynamic_cast<const he_seal::HESealBFVBackend*>(
-                     he_seal_backend)) {
-    he_seal::bfv::kernel::scalar_multiply_bfv(arg0, arg1, out, element_type,
-                                              he_seal_bfv_backend);
+  if (arg0->is_zero()) {
+    out->set_zero(true);
+  } else if (arg1->is_zero()) {
+    out->set_zero(true);
   } else {
-    throw ngraph_error("HESealBackend is neither BFV nor CKKS");
+    if (auto he_seal_ckks_backend =
+            dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend)) {
+      he_seal::ckks::kernel::scalar_multiply_ckks(arg0, arg1, out, element_type,
+                                                  he_seal_ckks_backend, pool);
+    } else if (auto he_seal_bfv_backend =
+                   dynamic_cast<const he_seal::HESealBFVBackend*>(
+                       he_seal_backend)) {
+      he_seal::bfv::kernel::scalar_multiply_bfv(arg0, arg1, out, element_type,
+                                                he_seal_bfv_backend);
+    } else {
+      throw ngraph_error("HESealBackend is neither BFV nor CKKS");
+    }
   }
 }
 
@@ -53,21 +59,32 @@ void he_seal::kernel::scalar_multiply(
     const seal::MemoryPoolHandle& pool) {
   NGRAPH_ASSERT(element_type == element::f32)
       << "Element type " << element_type << " is not float";
+  if (arg0->is_zero()) {
+    out->set_zero(true);
+    return;
+  }
 
   const auto& values = arg1->get_values();
   // TODO: check multiplying by small numbers behavior more thoroughly
   if (std::all_of(values.begin(), values.end(),
                   [](float f) { return std::abs(f) < 1e-5f; })) {
+    out->set_zero(true);
     out = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(
         he_seal_backend->create_valued_ciphertext(0, element_type));
-  } else if (std::all_of(values.begin(), values.end(),
+  }
+
+  // We can't just do these scalar +/-1 optimizations, unless all the weights
+  // are +/-1 in this layer, since we expect the scale of the ciphertext to
+  // square. For instance, if we are computing c1*p(1) + c2 *p(2), the latter
+  // sum will have larger scale than the former
+  /*else if (std::all_of(values.begin(), values.end(),
                          [](float f) { return f == 1.0f; })) {
-    // TODO: make copy only if needed
     out = make_shared<he_seal::SealCiphertextWrapper>(*arg0);
   } else if (std::all_of(values.begin(), values.end(),
                          [](float f) { return f == -1.0f; })) {
     he_seal::kernel::scalar_negate(arg0, out, element_type, he_seal_backend);
-  } else {
+  } */
+  else {
     if (auto he_seal_ckks_backend =
             dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend)) {
       he_seal::ckks::kernel::scalar_multiply_ckks(arg0, arg1, out, element_type,

@@ -26,13 +26,18 @@ namespace runtime {
 namespace he {
 namespace he_seal {
 struct SealCiphertextWrapper : public HECiphertext {
-  SealCiphertextWrapper() { set_complex_packing(false); }
+  SealCiphertextWrapper() {
+    set_complex_packing(false);
+    set_zero(false);
+  }
 
   SealCiphertextWrapper(const seal::Ciphertext& cipher) : m_ciphertext(cipher) {
     set_complex_packing(false);
+    set_zero(false);
   }
 
   seal::Ciphertext& get_hetext() { return m_ciphertext; }
+  const seal::Ciphertext& get_hetext() const { return m_ciphertext; }
 
   void save(std::ostream& stream) const override { m_ciphertext.save(stream); }
 

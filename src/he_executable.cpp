@@ -66,6 +66,7 @@
 #include "seal/ckks/seal_ckks_util.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_util.hpp"
+#include "seal/seal_ciphertext_wrapper.hpp"
 
 using namespace std;
 using namespace ngraph;
@@ -682,6 +683,21 @@ void runtime::he::HEExecutable::generate_calls(
   auto out0_cipher = dynamic_pointer_cast<HECipherTensor>(out[0]);
   auto out0_plain = dynamic_pointer_cast<HEPlainTensor>(out[0]);
 
+  // TODO: move to static function
+  auto lazy_rescaling = [this](auto& cipher) {
+    auto he_seal_backend =
+        runtime::he::he_seal::cast_to_seal_backend(m_he_backend);
+#pragma omp parallel for
+    for (size_t i = 0; i < cipher->get_elements().size(); ++i) {
+      auto seal_cipher =
+          runtime::he::he_seal::cast_to_seal_hetext(cipher->get_element(i));
+      if (!seal_cipher->is_zero()) {
+        he_seal_backend->get_evaluator()->rescale_to_next_inplace(
+            seal_cipher->m_ciphertext);
+      }
+    }
+  };
+
   std::vector<Shape> arg_shapes{};
   std::vector<Shape> unbatched_arg_shapes{};
   for (size_t arg_idx = 0; arg_idx < args.size(); ++arg_idx) {
@@ -937,6 +953,9 @@ void runtime::he::HEExecutable::generate_calls(
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
             m_batch_size, m_he_backend);
+
+        lazy_rescaling(out0_cipher);
+
       } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
                  out0_cipher != nullptr) {
         runtime::he::kernel::convolution(
@@ -945,6 +964,9 @@ void runtime::he::HEExecutable::generate_calls(
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
             m_batch_size, m_he_backend);
+
+        lazy_rescaling(out0_cipher);
+
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
         runtime::he::kernel::convolution(
@@ -976,12 +998,15 @@ void runtime::he::HEExecutable::generate_calls(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
             out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
             dot->get_reduction_axes_count(), type, m_he_backend);
+
+        lazy_rescaling(out0_cipher);
       } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
                  out0_cipher != nullptr) {
         runtime::he::kernel::dot(
             arg0_plain->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
             dot->get_reduction_axes_count(), type, m_he_backend);
+        lazy_rescaling(out0_cipher);
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
         runtime::he::kernel::dot(

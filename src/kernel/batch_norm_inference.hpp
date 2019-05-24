@@ -93,20 +93,22 @@ void batch_norm_inference(
 
     auto plain_scale = he_backend->create_empty_plaintext();
 
-    he_seal_backend->encode(plain_scale, scale_vec.data(), element::f32,
-                            batch_size);
+    plain_scale->set_values(scale_vec);
+    // Lazy encoding
+    // he_seal_backend->encode(plain_scale, scale_vec.data(), element::f32,
+    //                        batch_size);
 
     auto plain_bias = he_backend->create_empty_plaintext();
-    he_seal_backend->encode(plain_bias, bias_vec.data(), element::f32,
-                            batch_size);
+    plain_bias->set_values(bias_vec);
+    // Lazy encoding
+    // he_seal_backend->encode(plain_bias, bias_vec.data(), element::f32,
+    //                        batch_size);
 
-    std::shared_ptr<HECiphertext> output =
-        he_backend->create_empty_ciphertext();
+    auto output = he_backend->create_empty_ciphertext();
 
     runtime::he::kernel::scalar_multiply(input[input_index], plain_scale,
                                          output, element::f32, he_backend);
 
-    // TODO: enable!
     runtime::he::kernel::scalar_add(output, plain_bias, output, element::f32,
                                     he_backend);
     normed_input[input_index] = output;

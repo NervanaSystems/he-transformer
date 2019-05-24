@@ -30,12 +30,16 @@ class HECiphertext {
 
   virtual size_t size() const = 0;
 
+  bool is_zero() const { return m_is_zero; }
+  void set_zero(bool toggle) { m_is_zero = toggle; }
+
   bool complex_packing() const { return m_complex_packing; }
   void set_complex_packing(bool toggle) { m_complex_packing = toggle; }
 
  protected:
   bool m_complex_packing;
-};
+  bool m_is_zero;
+};  // namespace he
 }  // namespace he
 }  // namespace runtime
 }  // namespace ngraph

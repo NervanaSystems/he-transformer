@@ -22,6 +22,7 @@
 
 using namespace std;
 using namespace ngraph::runtime::he;
+using namespace ngraph::runtime::he::he_seal::ckks;
 
 void he_seal::ckks::kernel::scalar_add_ckks(
     shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
@@ -32,8 +33,8 @@ void he_seal::ckks::kernel::scalar_add_ckks(
     const seal::MemoryPoolHandle& pool) {
   NGRAPH_ASSERT(arg0->complex_packing() == arg1->complex_packing());
 
-  match_modulus_inplace(arg0.get(), arg1.get(), he_seal_ckks_backend, pool);
-  match_scale(arg0.get(), arg1.get(), he_seal_ckks_backend);
+  match_modulus_and_scale_inplace(arg0.get(), arg1.get(), he_seal_ckks_backend,
+                                  pool);
   he_seal_ckks_backend->get_evaluator()->add(
       arg0->m_ciphertext, arg1->m_ciphertext, out->m_ciphertext);
   out->set_complex_packing(arg1->complex_packing());
@@ -52,24 +53,15 @@ void he_seal::ckks::kernel::scalar_add_ckks(
                                  arg0->m_ciphertext.scale(),
                                  arg0->complex_packing());
   } else {
-    match_modulus_inplace(arg0.get(), arg1.get(), he_seal_ckks_backend, pool);
+    // Shouldn't be needed?
+    // match_modulus_inplace(arg0.get(), arg1.get(), he_seal_ckks_backend,
+    // pool);
     match_scale(arg0.get(), arg1.get(), he_seal_ckks_backend);
   }
-
-  NGRAPH_ASSERT(arg0->get_hetext().scale() == arg1->get_hetext().scale())
-      << "arg0_scale " << arg0->get_hetext().scale() << " != arg1_scale "
-      << arg1->get_hetext().scale();
-
-  size_t chain_ind0 = he_seal_ckks_backend->get_context()
-                          ->context_data(arg0->get_hetext().parms_id())
-                          ->chain_index();
-
-  size_t chain_ind1 = he_seal_ckks_backend->get_context()
-                          ->context_data(arg1->get_hetext().parms_id())
-                          ->chain_index();
-
+  size_t chain_ind0 = get_chain_index(arg0.get(), he_seal_ckks_backend);
+  size_t chain_ind1 = get_chain_index(arg1.get(), he_seal_ckks_backend);
   NGRAPH_ASSERT(chain_ind0 == chain_ind1)
-      << "Chain_ind0 " << chain_ind0 << " != chain_ind1 " << chain_ind1;
+      << "Chain inds " << chain_ind0 << ",  " << chain_ind1 << " don't match";
 
   he_seal_ckks_backend->get_evaluator()->add_plain(
       arg0->m_ciphertext, arg1->get_plaintext(), out->m_ciphertext);

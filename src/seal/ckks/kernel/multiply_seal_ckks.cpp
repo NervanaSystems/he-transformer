@@ -19,6 +19,7 @@
 
 using namespace std;
 using namespace ngraph::runtime::he;
+using namespace ngraph::runtime::he::he_seal::ckks;
 
 void he_seal::ckks::kernel::scalar_multiply_ckks(
     shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
@@ -27,14 +28,11 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
     const element::Type& element_type,
     const runtime::he::he_seal::HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
-  match_modulus_inplace(arg0.get(), arg1.get(), he_seal_ckks_backend, pool);
+  match_modulus_and_scale_inplace(arg0.get(), arg1.get(), he_seal_ckks_backend,
+                                  pool);
   match_scale(arg0.get(), arg1.get(), he_seal_ckks_backend);
-  size_t chain_ind0 = he_seal_ckks_backend->get_context()
-                          ->context_data(arg0->get_hetext().parms_id())
-                          ->chain_index();
-  size_t chain_ind1 = he_seal_ckks_backend->get_context()
-                          ->context_data(arg1->get_hetext().parms_id())
-                          ->chain_index();
+  size_t chain_ind0 = get_chain_index(arg0.get(), he_seal_ckks_backend);
+  size_t chain_ind1 = get_chain_index(arg1.get(), he_seal_ckks_backend);
 
   if (chain_ind0 == 0 || chain_ind1 == 0) {
     NGRAPH_INFO << "Multiplicative depth limit reached";
@@ -68,20 +66,14 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
     he_seal_ckks_backend->encode(arg1, arg0->m_ciphertext.parms_id(),
                                  arg0->m_ciphertext.scale(), false);
   } else {
-    match_modulus_inplace(arg0.get(), arg1.get(), he_seal_ckks_backend, pool);
+    // Shouldn't need to match modulus unless encoding went wrong
+    // match_modulus_inplace(arg0.get(), arg1.get(), he_seal_ckks_backend,
+    // pool);
     match_scale(arg0.get(), arg1.get(), he_seal_ckks_backend);
   }
-  NGRAPH_ASSERT(arg0->get_hetext().scale() == arg1->get_hetext().scale())
-      << "arg0_scale " << arg0->get_hetext().scale() << " != arg1_scale "
-      << arg1->get_hetext().scale();
 
-  size_t chain_ind0 = he_seal_ckks_backend->get_context()
-                          ->context_data(arg0->get_hetext().parms_id())
-                          ->chain_index();
-
-  size_t chain_ind1 = he_seal_ckks_backend->get_context()
-                          ->context_data(arg1->get_hetext().parms_id())
-                          ->chain_index();
+  size_t chain_ind0 = get_chain_index(arg0.get(), he_seal_ckks_backend);
+  size_t chain_ind1 = get_chain_index(arg1.get(), he_seal_ckks_backend);
 
   NGRAPH_ASSERT(chain_ind0 == chain_ind1)
       << "Chain_ind0 " << chain_ind0 << " != chain_ind1 " << chain_ind1;
@@ -100,12 +92,15 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
     }
   }
   out->set_complex_packing(arg0->complex_packing());
+  // NGRAPH_INFO << "Skipping relin and rescale!";
 
-  he_seal_ckks_backend->get_evaluator()->relinearize_inplace(
-      out->m_ciphertext, *(he_seal_ckks_backend->get_relin_keys()), pool);
+  // Don't relinearize after plain multiply!
+  // he_seal_ckks_backend->get_evaluator()->relinearize_inplace(
+  //    out->m_ciphertext, *(he_seal_ckks_backend->get_relin_keys()), pool);
 
-  he_seal_ckks_backend->get_evaluator()->rescale_to_next_inplace(
-      out->m_ciphertext, pool);
+  // Don't rescale after every mult! Only after dot / conv
+  // he_seal_ckks_backend->get_evaluator()->rescale_to_next_inplace(
+  //    out->m_ciphertext, pool);
 }
 
 void he_seal::ckks::kernel::scalar_multiply_ckks(
