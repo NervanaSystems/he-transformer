@@ -64,6 +64,12 @@ void kernel::scalar_subtract(shared_ptr<HECiphertext>& arg0,
                              const HEBackend* he_backend) {
   NGRAPH_ASSERT(type == element::f32) << "Only type float32 supported";
 
+  if (arg0->is_zero()) {
+    scalar_negate(arg1, arg1, type, he_backend);
+    he_backend->encrypt(out, arg1);
+    return;
+  }
+
   auto he_seal_backend = he_seal::cast_to_seal_backend(he_backend);
   auto arg0_seal = he_seal::cast_to_seal_hetext(arg0);
   auto arg1_seal = he_seal::cast_to_seal_hetext(arg1);
