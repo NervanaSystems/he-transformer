@@ -922,6 +922,9 @@ void runtime::he::HEExecutable::generate_calls(
       Shape in_shape0 = arg_shapes[0];
       Shape in_shape1 = unbatched_arg_shapes[1];
 
+      auto he_seal_backend =
+          runtime::he::he_seal::cast_to_seal_backend(m_he_backend);
+
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
         runtime::he::kernel::convolution(
@@ -938,12 +941,11 @@ void runtime::he::HEExecutable::generate_calls(
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
             m_batch_size, m_he_backend);
-        // Lazy rescaling
-        for (auto& out_cipher : out0_cipher->get_elements()) {
-          auto seal_cipher =
-              runtime::he::he_seal::cast_to_seal_hetext(out_cipher);
-          auto he_seal_backend =
-              runtime::he::he_seal::cast_to_seal_backend(m_he_backend);
+// Lazy rescaling
+#pragma omp parallel for
+        for (size_t i = 0; i < out0_cipher->get_elements().size(); ++i) {
+          auto seal_cipher = runtime::he::he_seal::cast_to_seal_hetext(
+              out0_cipher->get_element(i));
           he_seal_backend->get_evaluator()->rescale_to_next_inplace(
               seal_cipher->m_ciphertext);
         }
@@ -955,12 +957,12 @@ void runtime::he::HEExecutable::generate_calls(
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
             m_batch_size, m_he_backend);
-        // Lazy rescaling
-        for (auto& out_cipher : out0_cipher->get_elements()) {
-          auto seal_cipher =
-              runtime::he::he_seal::cast_to_seal_hetext(out_cipher);
-          auto he_seal_backend =
-              runtime::he::he_seal::cast_to_seal_backend(m_he_backend);
+
+// Lazy rescaling
+#pragma omp parallel for
+        for (size_t i = 0; i < out0_cipher->get_elements().size(); ++i) {
+          auto seal_cipher = runtime::he::he_seal::cast_to_seal_hetext(
+              out0_cipher->get_element(i));
           he_seal_backend->get_evaluator()->rescale_to_next_inplace(
               seal_cipher->m_ciphertext);
         }
@@ -982,6 +984,9 @@ void runtime::he::HEExecutable::generate_calls(
       Shape in_shape0 = arg_shapes[0];
       Shape in_shape1 = unbatched_arg_shapes[1];
 
+      auto he_seal_backend =
+          runtime::he::he_seal::cast_to_seal_backend(m_he_backend);
+
       NGRAPH_INFO << join(in_shape0, "x") << " dot " << join(in_shape1, "x");
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
@@ -994,13 +999,12 @@ void runtime::he::HEExecutable::generate_calls(
         runtime::he::kernel::dot(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
             out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
-            dot->get_reduction_axes_count(), type,
-            m_he_backend);  // Lazy rescaling
-        for (auto& out_cipher : out0_cipher->get_elements()) {
-          auto seal_cipher =
-              runtime::he::he_seal::cast_to_seal_hetext(out_cipher);
-          auto he_seal_backend =
-              runtime::he::he_seal::cast_to_seal_backend(m_he_backend);
+            dot->get_reduction_axes_count(), type, m_he_backend);
+// Lazy rescaling
+#pragma omp parallel for
+        for (size_t i = 0; i < out0_cipher->get_elements().size(); ++i) {
+          auto seal_cipher = runtime::he::he_seal::cast_to_seal_hetext(
+              out0_cipher->get_element(i));
           he_seal_backend->get_evaluator()->rescale_to_next_inplace(
               seal_cipher->m_ciphertext);
         }
@@ -1010,12 +1014,11 @@ void runtime::he::HEExecutable::generate_calls(
             arg0_plain->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
             dot->get_reduction_axes_count(), type, m_he_backend);
-        // Lazy rescaling
-        for (auto& out_cipher : out0_cipher->get_elements()) {
-          auto seal_cipher =
-              runtime::he::he_seal::cast_to_seal_hetext(out_cipher);
-          auto he_seal_backend =
-              runtime::he::he_seal::cast_to_seal_backend(m_he_backend);
+// Lazy rescaling
+#pragma omp parallel for
+        for (size_t i = 0; i < out0_cipher->get_elements().size(); ++i) {
+          auto seal_cipher = runtime::he::he_seal::cast_to_seal_hetext(
+              out0_cipher->get_element(i));
           he_seal_backend->get_evaluator()->rescale_to_next_inplace(
               seal_cipher->m_ciphertext);
         }
