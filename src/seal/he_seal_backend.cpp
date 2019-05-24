@@ -81,7 +81,6 @@ void runtime::he::he_seal::HESealBackend::encrypt(
   encode(seal_input, input->complex_packing());
   // No need to encrypt zero
   if (input->is_single_value() && input->get_values()[0] == 0) {
-    NGRAPH_INFO << "Skipping encrypt 0?!";
     seal_output->set_zero(true);
   } else {
     m_encryptor->encrypt(seal_input->get_plaintext(),
@@ -98,13 +97,12 @@ void runtime::he::he_seal::HESealBackend::decrypt(
   auto seal_input = runtime::he::he_seal::cast_to_seal_hetext(input);
 
   if (input->is_zero()) {
-    NGRAPH_INFO << "decrypting 0";
     const size_t slots =
         m_context->context_data()->parms().poly_modulus_degree() / 2;
     output->set_values(std::vector<float>(slots, 0));
 
     // TODO: placeholder until we figure out how to decode/encode plaintexts
-    NGRAPH_INFO << "Encoding 0 during decrypt";
+    // properly
     encode(seal_output, input->complex_packing());
     output->set_encoded(true);
   } else {
