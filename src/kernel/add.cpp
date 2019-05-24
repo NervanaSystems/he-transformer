@@ -58,6 +58,10 @@ void kernel::scalar_add(shared_ptr<HECiphertext>& arg0,
                         shared_ptr<HECiphertext>& out,
                         const element::Type& element_type,
                         const HEBackend* he_backend) {
+  if (arg0->is_zero()) {
+    he_backend->encrypt(out, arg1);
+    return;
+  }
   auto he_seal_backend =
       dynamic_cast<const he_seal::HESealBackend*>(he_backend);
   NGRAPH_ASSERT(he_seal_backend != nullptr);

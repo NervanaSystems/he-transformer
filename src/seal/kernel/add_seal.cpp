@@ -29,17 +29,23 @@ void he_seal::kernel::scalar_add(
     const element::Type& element_type,
     const he_seal::HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
-  if (auto he_seal_ckks_backend =
-          dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend)) {
-    he_seal::ckks::kernel::scalar_add_ckks(arg0, arg1, out, element_type,
-                                           he_seal_ckks_backend, pool);
-  } else if (auto he_seal_bfv_backend =
-                 dynamic_cast<const he_seal::HESealBFVBackend*>(
-                     he_seal_backend)) {
-    he_seal::bfv::kernel::scalar_add_bfv(arg0, arg1, out, element_type,
-                                         he_seal_bfv_backend);
+  if (arg0->is_zero()) {
+    out = arg1;
+  } else if (arg1->is_zero()) {
+    out = arg0;
   } else {
-    throw ngraph_error("HESealBackend is neither BFV nor CKKS");
+    if (auto he_seal_ckks_backend =
+            dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend)) {
+      he_seal::ckks::kernel::scalar_add_ckks(arg0, arg1, out, element_type,
+                                             he_seal_ckks_backend, pool);
+    } else if (auto he_seal_bfv_backend =
+                   dynamic_cast<const he_seal::HESealBFVBackend*>(
+                       he_seal_backend)) {
+      he_seal::bfv::kernel::scalar_add_bfv(arg0, arg1, out, element_type,
+                                           he_seal_bfv_backend);
+    } else {
+      throw ngraph_error("HESealBackend is neither BFV nor CKKS");
+    }
   }
 }
 
@@ -51,6 +57,14 @@ void he_seal::kernel::scalar_add(
     const he_seal::HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
   NGRAPH_ASSERT(element_type == element::f32);
+
+  if (arg0->is_zero()) {
+    auto arg1_hetext = dynamic_pointer_cast<runtime::he::HEPlaintext>(arg1);
+    auto out_hetext = dynamic_pointer_cast<runtime::he::HECiphertext>(out);
+    he_seal_backend->encrypt(out_hetext, arg1_hetext);
+    out = runtime::he::he_seal::cast_to_seal_hetext(out_hetext);
+    return;
+  }
 
   // TODO: handle case where arg1 = {0, 0, 0, 0, ...}
   bool add_zero = arg1->is_single_value() && (arg1->get_values()[0] == 0.0f);

@@ -79,7 +79,13 @@ void runtime::he::he_seal::HESealBackend::encrypt(
   auto seal_input = runtime::he::he_seal::cast_to_seal_hetext(input);
 
   encode(seal_input, input->complex_packing());
-  m_encryptor->encrypt(seal_input->get_plaintext(), seal_output->m_ciphertext);
+  // No need to encrypt zero
+  if (input->is_single_value() && input->get_values()[0] == 0) {
+    seal_output->set_zero(true);
+  } else {
+    m_encryptor->encrypt(seal_input->get_plaintext(),
+                         seal_output->m_ciphertext);
+  }
   output->set_complex_packing(input->complex_packing());
   NGRAPH_ASSERT(output->complex_packing() == input->complex_packing());
 }
@@ -89,7 +95,21 @@ void runtime::he::he_seal::HESealBackend::decrypt(
     const shared_ptr<runtime::he::HECiphertext>& input) const {
   auto seal_output = runtime::he::he_seal::cast_to_seal_hetext(output);
   auto seal_input = runtime::he::he_seal::cast_to_seal_hetext(input);
-  m_decryptor->decrypt(seal_input->m_ciphertext, seal_output->get_plaintext());
+
+  if (input->is_zero()) {
+    NGRAPH_INFO << "decrypting 0";
+    const size_t slots =
+        m_context->context_data()->parms().poly_modulus_degree() / 2;
+    output->set_values(std::vector<float>(slots, 0));
+
+    // TODO: placeholder until we figure out how to decode/encode plaintexts
+    NGRAPH_INFO << "Encoding 0 during decrypt";
+    encode(seal_output, input->complex_packing());
+    output->set_encoded(true);
+  } else {
+    m_decryptor->decrypt(seal_input->m_ciphertext,
+                         seal_output->get_plaintext());
+  }
   output->set_complex_packing(input->complex_packing());
   NGRAPH_ASSERT(output->complex_packing() == input->complex_packing());
 }

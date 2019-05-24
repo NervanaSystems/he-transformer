@@ -26,10 +26,14 @@ namespace runtime {
 namespace he {
 namespace he_seal {
 struct SealCiphertextWrapper : public HECiphertext {
-  SealCiphertextWrapper() { set_complex_packing(false); }
+  SealCiphertextWrapper() {
+    set_complex_packing(false);
+    set_zero(false);
+  }
 
   SealCiphertextWrapper(const seal::Ciphertext& cipher) : m_ciphertext(cipher) {
     set_complex_packing(false);
+    set_zero(false);
   }
 
   seal::Ciphertext& get_hetext() { return m_ciphertext; }
