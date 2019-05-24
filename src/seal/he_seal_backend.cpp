@@ -81,6 +81,7 @@ void runtime::he::he_seal::HESealBackend::encrypt(
   encode(seal_input, input->complex_packing());
   // No need to encrypt zero
   if (input->is_single_value() && input->get_values()[0] == 0) {
+    NGRAPH_INFO << "Skipping encrypt 0?!";
     seal_output->set_zero(true);
   } else {
     m_encryptor->encrypt(seal_input->get_plaintext(),

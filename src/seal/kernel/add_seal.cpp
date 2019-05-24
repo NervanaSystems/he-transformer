@@ -30,9 +30,11 @@ void he_seal::kernel::scalar_add(
     const he_seal::HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
   if (arg0->is_zero()) {
-    out = arg1;
+    NGRAPH_INFO << "Arg0 is 0 in add C+C";
+    out = make_shared<he_seal::SealCiphertextWrapper>(*arg1);
   } else if (arg1->is_zero()) {
-    out = arg0;
+    NGRAPH_INFO << "Arg1 is 0 in add C+C";
+    out = make_shared<he_seal::SealCiphertextWrapper>(*arg0);
   } else {
     if (auto he_seal_ckks_backend =
             dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend)) {
