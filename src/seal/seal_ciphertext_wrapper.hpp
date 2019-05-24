@@ -37,6 +37,7 @@ struct SealCiphertextWrapper : public HECiphertext {
   }
 
   seal::Ciphertext& get_hetext() { return m_ciphertext; }
+  const seal::Ciphertext& get_hetext() const { return m_ciphertext; }
 
   void save(std::ostream& stream) const override { m_ciphertext.save(stream); }
 

@@ -47,6 +47,7 @@ struct SealPlaintextWrapper : public HEPlaintext {
   }
 
   inline seal::Plaintext& get_hetext() { return m_plaintext; }
+  inline const seal::Plaintext& get_hetext() const { return m_plaintext; }
   inline seal::Plaintext& get_plaintext() { return m_plaintext; }
   inline const seal::Plaintext& get_plaintext() const { return m_plaintext; }
 

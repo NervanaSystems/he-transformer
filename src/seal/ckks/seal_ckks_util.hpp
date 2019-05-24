@@ -30,34 +30,38 @@ namespace runtime {
 namespace he {
 namespace he_seal {
 namespace ckks {
+template <typename S>
+size_t get_chain_index(S* hetext,
+                       const HESealCKKSBackend* he_seal_ckks_backend) {
+  size_t chain_ind = he_seal_ckks_backend->get_context()
+                         ->context_data(hetext->get_hetext().parms_id())
+                         ->chain_index();
+  return chain_ind;
+}
+
+template <typename S, typename T>
+bool within_rescale_tolerance(const S* arg0, const T* arg1,
+                              double factor = 1.02) {
+  const auto scale0 = arg0->get_hetext().scale();
+  const auto scale1 = arg1->get_hetext().scale();
+
+  bool within_tolerance =
+      (scale0 / scale1 <= factor && scale1 / scale0 <= factor);
+  return within_tolerance;
+}
+
 template <typename S, typename T>
 void match_scale(S* arg0, T* arg1,
                  const HESealCKKSBackend* he_seal_ckks_backend) {
   auto scale0 = arg0->get_hetext().scale();
   auto scale1 = arg1->get_hetext().scale();
-
-  // NGRAPH_ASSERT(scale0 >= 0.97 * scale1 && scale0 <= 1.02 * scale1)
-  //    << "Scale " << std::setw(10) << scale0 << " does not match scale "
-  //    << scale1 << " in scalar add, ratio is " << scale0 / scale1;
+  NGRAPH_ASSERT(within_rescale_tolerance(arg0, arg1))
+      << "Scale " << std::setw(10) << scale0 << " does not match scale "
+      << scale1 << " in scalar add, ratio is " << scale0 / scale1;
   arg0->get_hetext().scale() = arg1->get_hetext().scale();
 }
 
-void match_modulus_inplace(
-    SealPlaintextWrapper* arg0, SealPlaintextWrapper* arg1,
-    const HESealCKKSBackend* he_seal_ckks_backend,
-    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
-
-void match_modulus_inplace(
-    SealPlaintextWrapper* arg0, SealCiphertextWrapper* arg1,
-    const HESealCKKSBackend* he_seal_ckks_backend,
-    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
-
-void match_modulus_inplace(
-    SealCiphertextWrapper* arg0, SealPlaintextWrapper* arg1,
-    const HESealCKKSBackend* he_seal_ckks_backend,
-    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
-
-void match_modulus_inplace(
+void match_modulus_and_scale_inplace(
     SealCiphertextWrapper* arg0, SealCiphertextWrapper* arg1,
     const HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());

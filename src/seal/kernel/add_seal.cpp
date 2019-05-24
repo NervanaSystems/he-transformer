@@ -36,6 +36,7 @@ void he_seal::kernel::scalar_add(
     NGRAPH_INFO << "Arg1 is 0 in add C+C";
     out = make_shared<he_seal::SealCiphertextWrapper>(*arg0);
   } else {
+    NGRAPH_INFO << "regular add C+C";
     if (auto he_seal_ckks_backend =
             dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend)) {
       he_seal::ckks::kernel::scalar_add_ckks(arg0, arg1, out, element_type,
@@ -61,6 +62,7 @@ void he_seal::kernel::scalar_add(
   NGRAPH_ASSERT(element_type == element::f32);
 
   if (arg0->is_zero()) {
+    NGRAPH_INFO << "arg0 is 0 in C+P";
     auto arg1_hetext = dynamic_pointer_cast<runtime::he::HEPlaintext>(arg1);
     auto out_hetext = dynamic_pointer_cast<runtime::he::HECiphertext>(out);
     he_seal_backend->encrypt(out_hetext, arg1_hetext);
@@ -72,8 +74,7 @@ void he_seal::kernel::scalar_add(
   bool add_zero = arg1->is_single_value() && (arg1->get_values()[0] == 0.0f);
 
   if (add_zero) {
-    // Make copy of input
-    // TODO: make copy only if necessarsy
+    NGRAPH_INFO << "arg1 is zero in C+P";
     out = make_shared<he_seal::SealCiphertextWrapper>(*arg0);
   } else {
     if (auto he_seal_ckks_backend =

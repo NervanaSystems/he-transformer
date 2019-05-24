@@ -52,20 +52,10 @@ void runtime::he::kernel::pad(
   shared_ptr<runtime::he::HECiphertext> arg1_encrypted;
   arg1_encrypted = he_seal_backend->create_empty_ciphertext();
 
-  if (arg1[0]->is_single_value() && arg1[0]->get_values()[0] == 0.) {
-    arg1_encrypted->set_zero(true);
-  } else {
-    he_backend->encrypt(arg1_encrypted, arg1[0]);
-  }
-
-  auto arg1_seal_cipher =
-      runtime::he::he_seal::cast_to_seal_hetext(arg1_encrypted);
-  auto arg0_seal_cipher = runtime::he::he_seal::cast_to_seal_hetext(arg0[0]);
-
-  if (!arg1_encrypted->is_zero()) {
-    runtime::he::he_seal::ckks::match_modulus_inplace(
-        arg1_seal_cipher.get(), arg0_seal_cipher.get(), he_seal_ckks_backend);
-  }
+  bool is_pad_value_zero =
+      arg1[0]->is_single_value() && arg1[0]->get_values()[0] == 0.;
+  NGRAPH_ASSERT(is_pad_value_zero) << "Non-zero pad values not supported";
+  arg1_encrypted->set_zero(true);
 
   vector<shared_ptr<runtime::he::HECiphertext>> arg1_encrypted_vector{
       arg1_encrypted};

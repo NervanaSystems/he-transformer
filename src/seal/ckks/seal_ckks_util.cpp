@@ -19,101 +19,48 @@ using namespace ngraph;
 
 // Matches the modulus chain for the two elements in-place
 // The elements are modified if necessary
-void runtime::he::he_seal::ckks::match_modulus_inplace(
-    SealPlaintextWrapper* arg0, SealPlaintextWrapper* arg1,
-    const HESealCKKSBackend* he_seal_ckks_backend,
-    const seal::MemoryPoolHandle& pool) {
-  size_t chain_ind0 = he_seal_ckks_backend->get_context()
-                          ->context_data(arg0->get_hetext().parms_id())
-                          ->chain_index();
-
-  size_t chain_ind1 = he_seal_ckks_backend->get_context()
-                          ->context_data(arg1->get_hetext().parms_id())
-                          ->chain_index();
-
-  if (chain_ind0 > chain_ind1) {
-    he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
-        arg0->get_hetext(), arg1->get_hetext().parms_id());
-    chain_ind0 = he_seal_ckks_backend->get_context()
-                     ->context_data(arg0->get_hetext().parms_id())
-                     ->chain_index();
-    NGRAPH_ASSERT(chain_ind0 == chain_ind1);
-  } else if (chain_ind1 > chain_ind0) {
-    he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
-        arg1->get_hetext(), arg0->get_hetext().parms_id());
-    chain_ind1 = he_seal_ckks_backend->get_context()
-                     ->context_data(arg1->get_hetext().parms_id())
-                     ->chain_index();
-    NGRAPH_ASSERT(chain_ind0 == chain_ind1);
-  }
-}
-
-// Matches the modulus chain for the two elements in-place
-// The elements are modified if necessary
-void runtime::he::he_seal::ckks::match_modulus_inplace(
-    SealPlaintextWrapper* arg0, SealCiphertextWrapper* arg1,
-    const HESealCKKSBackend* he_seal_ckks_backend,
-    const seal::MemoryPoolHandle& pool) {
-  size_t chain_ind0 = he_seal_ckks_backend->get_context()
-                          ->context_data(arg0->get_hetext().parms_id())
-                          ->chain_index();
-
-  size_t chain_ind1 = he_seal_ckks_backend->get_context()
-                          ->context_data(arg1->get_hetext().parms_id())
-                          ->chain_index();
-
-  if (chain_ind0 > chain_ind1) {
-    he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
-        arg0->get_hetext(), arg1->get_hetext().parms_id());
-    chain_ind0 = he_seal_ckks_backend->get_context()
-                     ->context_data(arg0->get_hetext().parms_id())
-                     ->chain_index();
-    NGRAPH_ASSERT(chain_ind0 == chain_ind1);
-  } else if (chain_ind1 > chain_ind0) {
-    he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
-        arg1->get_hetext(), arg0->get_hetext().parms_id(), pool);
-    chain_ind1 = he_seal_ckks_backend->get_context()
-                     ->context_data(arg1->get_hetext().parms_id())
-                     ->chain_index();
-    NGRAPH_ASSERT(chain_ind0 == chain_ind1);
-  }
-}
-
-// Matches the modulus chain for the two elements in-place
-// The elements are modified if necessary
-void runtime::he::he_seal::ckks::match_modulus_inplace(
-    SealCiphertextWrapper* arg0, SealPlaintextWrapper* arg1,
-    const HESealCKKSBackend* he_seal_ckks_backend,
-    const seal::MemoryPoolHandle& pool) {
-  runtime::he::he_seal::ckks::match_modulus_inplace(arg1, arg0,
-                                                    he_seal_ckks_backend, pool);
-}
-
-void runtime::he::he_seal::ckks::match_modulus_inplace(
+void runtime::he::he_seal::ckks::match_modulus_and_scale_inplace(
     SealCiphertextWrapper* arg0, SealCiphertextWrapper* arg1,
     const HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
-  size_t chain_ind0 = he_seal_ckks_backend->get_context()
-                          ->context_data(arg0->get_hetext().parms_id())
-                          ->chain_index();
+  size_t chain_ind0 =
+      runtime::he::he_seal::ckks::get_chain_index(arg0, he_seal_ckks_backend);
+  size_t chain_ind1 =
+      runtime::he::he_seal::ckks::get_chain_index(arg1, he_seal_ckks_backend);
 
-  size_t chain_ind1 = he_seal_ckks_backend->get_context()
-                          ->context_data(arg1->get_hetext().parms_id())
-                          ->chain_index();
+  if (chain_ind0 == chain_ind1) {
+    NGRAPH_INFO << "chaind inds bopth at " << chain_ind0
+                << ", no need to match modulus";
+    return;
+  }
+
+  if (chain_ind0 < chain_ind1) {
+    match_modulus_and_scale_inplace(arg1, arg0, he_seal_ckks_backend, pool);
+  }
+
+  bool rescale =
+      !runtime::he::he_seal::ckks::within_rescale_tolerance(arg0, arg1);
 
   if (chain_ind0 > chain_ind1) {
-    he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
-        arg0->get_hetext(), arg1->get_hetext().parms_id(), pool);
-    chain_ind0 = he_seal_ckks_backend->get_context()
-                     ->context_data(arg0->get_hetext().parms_id())
-                     ->chain_index();
+    auto arg1_parms_id = arg1->get_hetext().parms_id();
+    auto scale_before = arg0->get_hetext().scale();
+    if (rescale) {
+      NGRAPH_INFO << "Rescaling arg0";
+      he_seal_ckks_backend->get_evaluator()->rescale_to_inplace(
+          arg0->get_hetext(), arg1_parms_id);
+    } else {
+      NGRAPH_INFO << "Mod-switching arg0";
+      he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
+          arg0->get_hetext(), arg1_parms_id);
+    }
+    chain_ind0 =
+        runtime::he::he_seal::ckks::get_chain_index(arg0, he_seal_ckks_backend);
     NGRAPH_ASSERT(chain_ind0 == chain_ind1);
-  } else if (chain_ind1 > chain_ind0) {
-    he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
-        arg1->get_hetext(), arg0->get_hetext().parms_id(), pool);
-    chain_ind1 = he_seal_ckks_backend->get_context()
-                     ->context_data(arg1->get_hetext().parms_id())
-                     ->chain_index();
-    NGRAPH_ASSERT(chain_ind0 == chain_ind1);
+
+    auto scale_after = arg0->get_hetext().scale();
+    NGRAPH_INFO << "scale switched from " << scale_before << " to "
+                << scale_after;
+
+    runtime::he::he_seal::ckks::match_scale(arg0, arg1, he_seal_ckks_backend);
   }
 }
