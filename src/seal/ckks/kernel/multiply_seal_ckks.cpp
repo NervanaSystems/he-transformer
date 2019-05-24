@@ -100,12 +100,15 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
     }
   }
   out->set_complex_packing(arg0->complex_packing());
+  // NGRAPH_INFO << "Skipping relin and rescale!";
 
-  he_seal_ckks_backend->get_evaluator()->relinearize_inplace(
-      out->m_ciphertext, *(he_seal_ckks_backend->get_relin_keys()), pool);
+  // Don't relinearize after plain-plain multiply!
+  // he_seal_ckks_backend->get_evaluator()->relinearize_inplace(
+  //    out->m_ciphertext, *(he_seal_ckks_backend->get_relin_keys()), pool);
 
-  he_seal_ckks_backend->get_evaluator()->rescale_to_next_inplace(
-      out->m_ciphertext, pool);
+  // Don't rescale after every mult! Only after dot / conv
+  // he_seal_ckks_backend->get_evaluator()->rescale_to_next_inplace(
+  //    out->m_ciphertext, pool);
 }
 
 void he_seal::ckks::kernel::scalar_multiply_ckks(

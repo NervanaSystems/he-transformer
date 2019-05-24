@@ -36,9 +36,9 @@ void match_scale(S* arg0, T* arg1,
   auto scale0 = arg0->get_hetext().scale();
   auto scale1 = arg1->get_hetext().scale();
 
-  NGRAPH_ASSERT(scale0 >= 0.97 * scale1 && scale0 <= 1.02 * scale1)
-      << "Scale " << std::setw(10) << scale0 << " does not match scale "
-      << scale1 << " in scalar add, ratio is " << scale0 / scale1;
+  // NGRAPH_ASSERT(scale0 >= 0.97 * scale1 && scale0 <= 1.02 * scale1)
+  //    << "Scale " << std::setw(10) << scale0 << " does not match scale "
+  //    << scale1 << " in scalar add, ratio is " << scale0 / scale1;
   arg0->get_hetext().scale() = arg1->get_hetext().scale();
 }
 
