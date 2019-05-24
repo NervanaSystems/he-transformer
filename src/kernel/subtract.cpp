@@ -30,15 +30,14 @@ void kernel::scalar_subtract(shared_ptr<HECiphertext>& arg0,
                              shared_ptr<HECiphertext>& out,
                              const element::Type& element_type,
                              const HEBackend* he_backend) {
-  auto he_seal_backend =
-      dynamic_cast<const he_seal::HESealBackend*>(he_backend);
-  NGRAPH_ASSERT(he_seal_backend != nullptr);
+  auto he_seal_backend = he_seal::cast_to_seal_backend(he_backend);
   auto arg0_seal = he_seal::cast_to_seal_hetext(arg0);
   auto arg1_seal = he_seal::cast_to_seal_hetext(arg1);
   auto out_seal = he_seal::cast_to_seal_hetext(out);
 
   he_seal::kernel::scalar_subtract(arg0_seal, arg1_seal, out_seal, element_type,
                                    he_seal_backend);
+  out = dynamic_pointer_cast<HECiphertext>(out_seal);
 }
 
 void kernel::scalar_subtract(shared_ptr<HEPlaintext>& arg0,
@@ -65,11 +64,7 @@ void kernel::scalar_subtract(shared_ptr<HECiphertext>& arg0,
                              const HEBackend* he_backend) {
   NGRAPH_ASSERT(type == element::f32) << "Only type float32 supported";
 
-  auto he_seal_backend =
-      dynamic_cast<const he_seal::HESealBackend*>(he_backend);
-
-  NGRAPH_ASSERT(he_seal_backend != nullptr) << "HEBackend is not HESealBackend";
-
+  auto he_seal_backend = he_seal::cast_to_seal_backend(he_backend);
   auto arg0_seal = he_seal::cast_to_seal_hetext(arg0);
   auto arg1_seal = he_seal::cast_to_seal_hetext(arg1);
   auto out_seal = he_seal::cast_to_seal_hetext(out);
@@ -94,6 +89,10 @@ void kernel::scalar_subtract(shared_ptr<HEPlaintext>& arg0,
                              shared_ptr<HECiphertext>& out,
                              const element::Type& type,
                              const HEBackend* he_backend) {
-  scalar_negate(arg1, out, type, he_backend);
-  scalar_add(arg0, out, out, type, he_backend);
+  if (arg1->is_zero()) {
+    he_backend->encrypt(out, arg0);
+  } else {
+    scalar_negate(arg1, out, type, he_backend);
+    scalar_add(arg0, out, out, type, he_backend);
+  }
 }

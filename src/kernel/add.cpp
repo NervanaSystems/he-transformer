@@ -26,9 +26,7 @@ void kernel::scalar_add(shared_ptr<HECiphertext>& arg0,
                         shared_ptr<HECiphertext>& out,
                         const element::Type& element_type,
                         const HEBackend* he_backend) {
-  auto he_seal_backend =
-      dynamic_cast<const he_seal::HESealBackend*>(he_backend);
-  NGRAPH_ASSERT(he_seal_backend != nullptr);
+  auto he_seal_backend = he_seal::cast_to_seal_backend(he_backend);
   auto arg0_seal = he_seal::cast_to_seal_hetext(arg0);
   auto arg1_seal = he_seal::cast_to_seal_hetext(arg1);
   auto out_seal = he_seal::cast_to_seal_hetext(out);
@@ -62,9 +60,7 @@ void kernel::scalar_add(shared_ptr<HECiphertext>& arg0,
     he_backend->encrypt(out, arg1);
     return;
   }
-  auto he_seal_backend =
-      dynamic_cast<const he_seal::HESealBackend*>(he_backend);
-  NGRAPH_ASSERT(he_seal_backend != nullptr);
+  auto he_seal_backend = he_seal::cast_to_seal_backend(he_backend);
   auto arg0_seal = he_seal::cast_to_seal_hetext(arg0);
   auto arg1_seal = he_seal::cast_to_seal_hetext(arg1);
   auto out_seal = he_seal::cast_to_seal_hetext(out);
