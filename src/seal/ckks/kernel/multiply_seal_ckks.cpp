@@ -71,24 +71,9 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
     // pool);
     match_scale(arg0.get(), arg1.get(), he_seal_ckks_backend);
   }
-  NGRAPH_INFO << "Mult chain inds before mult matching";
-  NGRAPH_INFO << "arg0: (" << get_chain_index(arg0.get(), he_seal_ckks_backend)
-              << ", " << arg0->get_hetext().scale() << "), "
-              << "arg1: (" << get_chain_index(arg1.get(), he_seal_ckks_backend)
-              << ", " << arg1->get_hetext().scale() << ")";
-
-  NGRAPH_ASSERT(arg0->get_hetext().scale() == arg1->get_hetext().scale())
-      << "arg0_scale " << arg0->get_hetext().scale() << " != arg1_scale "
-      << arg1->get_hetext().scale();
 
   size_t chain_ind0 = get_chain_index(arg0.get(), he_seal_ckks_backend);
   size_t chain_ind1 = get_chain_index(arg1.get(), he_seal_ckks_backend);
-
-  NGRAPH_INFO << "Mult chain inds after mult matching";
-  NGRAPH_INFO << "arg0: (" << get_chain_index(arg0.get(), he_seal_ckks_backend)
-              << ", " << arg0->get_hetext().scale() << "), "
-              << "arg1: (" << get_chain_index(arg1.get(), he_seal_ckks_backend)
-              << ", " << arg1->get_hetext().scale() << ")";
 
   NGRAPH_ASSERT(chain_ind0 == chain_ind1)
       << "Chain_ind0 " << chain_ind0 << " != chain_ind1 " << chain_ind1;
@@ -116,12 +101,6 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
   // Don't rescale after every mult! Only after dot / conv
   // he_seal_ckks_backend->get_evaluator()->rescale_to_next_inplace(
   //    out->m_ciphertext, pool);
-
-  NGRAPH_INFO << "Mult chain inds after mult";
-  NGRAPH_INFO << "arg0: (" << get_chain_index(arg0.get(), he_seal_ckks_backend)
-              << ", " << arg0->get_hetext().scale() << "), "
-              << "out: (" << get_chain_index(out.get(), he_seal_ckks_backend)
-              << ", " << out->get_hetext().scale() << ")";
 }
 
 void he_seal::ckks::kernel::scalar_multiply_ckks(

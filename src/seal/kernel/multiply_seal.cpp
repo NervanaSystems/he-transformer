@@ -61,7 +61,6 @@ void he_seal::kernel::scalar_multiply(
       << "Element type " << element_type << " is not float";
   if (arg0->is_zero()) {
     out->set_zero(true);
-    NGRAPH_INFO << "arg0 is 0 in mult C*P";
     return;
   }
 
@@ -70,14 +69,14 @@ void he_seal::kernel::scalar_multiply(
   if (std::all_of(values.begin(), values.end(),
                   [](float f) { return std::abs(f) < 1e-5f; })) {
     out->set_zero(true);
-    NGRAPH_INFO << "arg1 is 0 in mult C*P";
     out = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(
         he_seal_backend->create_valued_ciphertext(0, element_type));
   }
-  // We can't just do this, unless all the weights are +/-1 in this layer,
-  // since we expect the scale of the ciphertext to square.
-  // For instance, if we are computing
-  // c1*p(1) + c2 *p(2), the latter sum will have larger scale than the former
+
+  // We can't just do these scalar +/-1 optimizations, unless all the weights
+  // are +/-1 in this layer, since we expect the scale of the ciphertext to
+  // square. For instance, if we are computing c1*p(1) + c2 *p(2), the latter
+  // sum will have larger scale than the former
   /*else if (std::all_of(values.begin(), values.end(),
                          [](float f) { return f == 1.0f; })) {
     out = make_shared<he_seal::SealCiphertextWrapper>(*arg0);

@@ -29,8 +29,6 @@ void runtime::he::he_seal::ckks::match_modulus_and_scale_inplace(
       runtime::he::he_seal::ckks::get_chain_index(arg1, he_seal_ckks_backend);
 
   if (chain_ind0 == chain_ind1) {
-    NGRAPH_INFO << "chaind inds bopth at " << chain_ind0
-                << ", no need to match modulus";
     return;
   }
 
@@ -43,23 +41,16 @@ void runtime::he::he_seal::ckks::match_modulus_and_scale_inplace(
 
   if (chain_ind0 > chain_ind1) {
     auto arg1_parms_id = arg1->get_hetext().parms_id();
-    auto scale_before = arg0->get_hetext().scale();
     if (rescale) {
-      NGRAPH_INFO << "Rescaling arg0";
       he_seal_ckks_backend->get_evaluator()->rescale_to_inplace(
           arg0->get_hetext(), arg1_parms_id);
     } else {
-      NGRAPH_INFO << "Mod-switching arg0";
       he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
           arg0->get_hetext(), arg1_parms_id);
     }
     chain_ind0 =
         runtime::he::he_seal::ckks::get_chain_index(arg0, he_seal_ckks_backend);
     NGRAPH_ASSERT(chain_ind0 == chain_ind1);
-
-    auto scale_after = arg0->get_hetext().scale();
-    NGRAPH_INFO << "scale switched from " << scale_before << " to "
-                << scale_after;
 
     runtime::he::he_seal::ckks::match_scale(arg0, arg1, he_seal_ckks_backend);
   }

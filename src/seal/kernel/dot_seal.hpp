@@ -109,8 +109,6 @@ void ngraph::runtime::he::he_seal::kernel::dot_seal(
     // Init thread-local memory pool for each thread
     seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::ThreadLocal();
 
-    NGRAPH_INFO << "global_projected_idx" << global_projected_idx;
-
     // Compute outer and inner index
     size_t arg0_projected_idx = global_projected_idx / arg1_projected_size;
     size_t arg1_projected_idx = global_projected_idx % arg1_projected_size;
@@ -164,7 +162,6 @@ void ngraph::runtime::he::he_seal::kernel::dot_seal(
 
       std::shared_ptr<V> prod = he_seal_backend->create_empty_hetext<V>(pool);
       auto seal_prod = runtime::he::he_seal::cast_to_seal_hetext(prod);
-      NGRAPH_INFO << "multing";
       runtime::he::he_seal::kernel::scalar_multiply(
           arg0_seal_text, arg1_seal_text, seal_prod, element_type,
           he_seal_backend, pool);
@@ -172,7 +169,6 @@ void ngraph::runtime::he::he_seal::kernel::dot_seal(
         seal_sum = seal_prod;
         first_add = false;
       } else {
-        NGRAPH_INFO << "adding";
         runtime::he::he_seal::kernel::scalar_add(
             seal_sum, seal_prod, seal_sum, element_type, he_seal_backend, pool);
       }

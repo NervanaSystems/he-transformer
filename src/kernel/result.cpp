@@ -43,9 +43,7 @@ void runtime::he::kernel::result(
     throw ngraph_error("Wrong size in result");
   }
   for (size_t i = 0; i < count; ++i) {
-    NGRAPH_INFO << "Decrypting result " << i;
     he_backend->decrypt(out[i], arg[i]);
-    NGRAPH_INFO << "Decoding result " << i;
     he_backend->decode(out[i]);
   }
 }
