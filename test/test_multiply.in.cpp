@@ -60,6 +60,41 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_2_3) {
   }
 }
 
+NGRAPH_TEST(${BACKEND_NAME}, multiply_2_3_halves) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+
+  Shape shape{2, 3};
+  auto a = make_shared<op::Parameter>(element::f32, shape);
+  auto b = make_shared<op::Parameter>(element::f32, shape);
+  auto t = make_shared<op::Multiply>(a, b);
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
+
+  // Create some tensors for input/output
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend.get());
+
+  for (auto tensors : tensors_list) {
+    auto results = get<0>(tensors);
+    auto inputs = get<1>(tensors);
+
+    auto t_a = inputs[0];
+    auto t_b = inputs[1];
+    auto t_result = results[0];
+
+    copy_data(t_a, test::NDArray<float, 2>({{1.5, 2.5, 3.5}, {4.5, 5.5, 6.5}})
+                       .get_vector());
+    copy_data(t_b,
+              test::NDArray<float, 2>({{7.5, 8.5, 9.5}, {10.5, 11.5, 12.5}})
+                  .get_vector());
+    auto handle = backend->compile(f);
+    handle->call_with_validate({t_result}, {t_a, t_b});
+    EXPECT_TRUE(all_close(read_vector<float>(t_result),
+                          (test::NDArray<float, 2>(
+                               {{11.25, 21.25, 33.25}, {47.25, 63.25, 81.25}}))
+                              .get_vector(),
+                          1e-3f));
+  }
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, square_2_3) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
 

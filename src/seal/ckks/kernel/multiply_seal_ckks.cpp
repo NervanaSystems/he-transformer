@@ -62,22 +62,18 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
     const element::Type& element_type,
     const runtime::he::he_seal::HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
+  // TODO: activate!
   if (arg1->is_single_value()) {
-    NGRAPH_INFO << "Multiply by double";
     float value = arg1->get_values()[0];
-    multiply_by_double(arg0->m_ciphertext, double(value), out->m_ciphertext,
-                       he_seal_ckks_backend, pool);
-    NGRAPH_INFO << "Done multiplying by double";
+    double double_val = double(value);
+    NGRAPH_INFO << "Multiply by double " << double_val << " at scale "
+                << arg0->m_ciphertext.scale();
+    multiply_plain(arg0->m_ciphertext, double_val, out->m_ciphertext,
+                   he_seal_ckks_backend, pool);
+    NGRAPH_INFO << "Done multiplying by double. out scale "
+                << out->m_ciphertext.scale();
   } else {
     NGRAPH_INFO << "Multiply by plain";
-    size_t chain_ind0 = get_chain_index(arg0.get(), he_seal_ckks_backend);
-    size_t chain_ind1 = get_chain_index(arg1.get(), he_seal_ckks_backend);
-
-    NGRAPH_ASSERT(chain_ind0 == chain_ind1)
-        << "Chain_ind0 " << chain_ind0 << " != chain_ind1 " << chain_ind1;
-    NGRAPH_ASSERT(chain_ind0 > 0) << "Multiplicative depth exceeded for arg0";
-    NGRAPH_ASSERT(chain_ind1 > 0) << "Multiplicative depth exceeded for arg1";
-
     if (!arg1->is_encoded()) {
       // Just-in-time encoding at the right scale and modulus
       he_seal_ckks_backend->encode(arg1, arg0->m_ciphertext.parms_id(),
@@ -88,6 +84,14 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
       // pool);
       match_scale(arg0.get(), arg1.get(), he_seal_ckks_backend);
     }
+    size_t chain_ind0 = get_chain_index(arg0.get(), he_seal_ckks_backend);
+    size_t chain_ind1 = get_chain_index(arg1.get(), he_seal_ckks_backend);
+
+    NGRAPH_ASSERT(chain_ind0 == chain_ind1)
+        << "Chain_ind0 " << chain_ind0 << " != chain_ind1 " << chain_ind1;
+    NGRAPH_ASSERT(chain_ind0 > 0) << "Multiplicative depth exceeded for arg0";
+    NGRAPH_ASSERT(chain_ind1 > 0) << "Multiplicative depth exceeded for arg1";
+
     try {
       he_seal_ckks_backend->get_evaluator()->multiply_plain(
           arg0->m_ciphertext, arg1->get_plaintext(), out->m_ciphertext, pool);
