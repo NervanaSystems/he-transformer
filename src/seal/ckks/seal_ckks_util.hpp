@@ -90,7 +90,6 @@ inline void add_poly_scalar_coeffmod(const std::uint64_t* poly,
                                      const seal::SmallModulus& modulus,
                                      std::uint64_t* result) {
   const uint64_t modulus_value = modulus.value();
-  NGRAPH_INFO << "Adding coeff_count " << coeff_count;
 #ifdef SEAL_DEBUG
   if (poly == nullptr && coeff_count > 0) {
     throw ngraph_error("poly");

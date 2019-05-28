@@ -255,7 +255,6 @@ void runtime::he::he_seal::ckks::add_plain_inplace(
     throw ngraph_error("invalid parameters");
   }
 
-  NGRAPH_INFO << "Adding double " << value << " at scale " << encrypted.scale();
   NGRAPH_ASSERT(encrypted.data() != nullptr) << "Encrypted data == nullptr";
 
   // Encode
@@ -265,7 +264,6 @@ void runtime::he::he_seal::ckks::add_plain_inplace(
                                      plaintext_vals, he_seal_ckks_backend);
 
   for (size_t j = 0; j < coeff_mod_count; j++) {
-    NGRAPH_INFO << "Adding poly coeff " << j;
     // Add poly scalar instead of poly poly
     runtime::he::he_seal::ckks::add_poly_scalar_coeffmod(
         encrypted.data() + (j * coeff_count), coeff_count, plaintext_vals[j],
