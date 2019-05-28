@@ -83,6 +83,15 @@ class HESealCKKSBackend : public HESealBackend {
 
   // mutable std::mutex m_encode_mutex;
 };
+
+inline const runtime::he::he_seal::HESealCKKSBackend* cast_to_seal_ckks_backend(
+    const runtime::he::HEBackend* he_seal_backend) {
+  auto he_seal_ckks_backend =
+      dynamic_cast<const runtime::he::he_seal::HESealCKKSBackend*>(
+          he_seal_backend);
+  NGRAPH_ASSERT(he_seal_ckks_backend != nullptr);
+  return he_seal_ckks_backend;
+};
 }  // namespace he_seal
 }  // namespace he
 }  // namespace runtime

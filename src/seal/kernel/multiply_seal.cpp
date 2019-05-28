@@ -35,18 +35,9 @@ void he_seal::kernel::scalar_multiply(
   } else if (arg1->is_zero()) {
     out->set_zero(true);
   } else {
-    if (auto he_seal_ckks_backend =
-            dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend)) {
-      he_seal::ckks::kernel::scalar_multiply_ckks(arg0, arg1, out, element_type,
-                                                  he_seal_ckks_backend, pool);
-    } else if (auto he_seal_bfv_backend =
-                   dynamic_cast<const he_seal::HESealBFVBackend*>(
-                       he_seal_backend)) {
-      he_seal::bfv::kernel::scalar_multiply_bfv(arg0, arg1, out, element_type,
-                                                he_seal_bfv_backend);
-    } else {
-      throw ngraph_error("HESealBackend is neither BFV nor CKKS");
-    }
+    auto he_seal_ckks_backend = cast_to_seal_ckks_backend(he_seal_backend);
+    he_seal::ckks::kernel::scalar_multiply_ckks(arg0, arg1, out, element_type,
+                                                he_seal_ckks_backend, pool);
   }
 }
 
@@ -85,18 +76,9 @@ void he_seal::kernel::scalar_multiply(
     he_seal::kernel::scalar_negate(arg0, out, element_type, he_seal_backend);
   } */
   else {
-    if (auto he_seal_ckks_backend =
-            dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend)) {
-      he_seal::ckks::kernel::scalar_multiply_ckks(arg0, arg1, out, element_type,
-                                                  he_seal_ckks_backend, pool);
-    } else if (auto he_seal_bfv_backend =
-                   dynamic_cast<const he_seal::HESealBFVBackend*>(
-                       he_seal_backend)) {
-      he_seal::bfv::kernel::scalar_multiply_bfv(arg0, arg1, out, element_type,
-                                                he_seal_bfv_backend);
-    } else {
-      throw ngraph_error("HESealBackend is neither BFV nor CKKS");
-    }
+    auto he_seal_ckks_backend = cast_to_seal_ckks_backend(he_seal_backend);
+    he_seal::ckks::kernel::scalar_multiply_ckks(arg0, arg1, out, element_type,
+                                                he_seal_ckks_backend, pool);
   }
 }
 

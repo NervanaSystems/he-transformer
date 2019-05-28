@@ -30,9 +30,6 @@ set (HE_SRC
     seal/kernel/negate_seal.cpp
     seal/kernel/subtract_seal.cpp
     seal/he_seal_backend.cpp
-    seal/bfv/he_seal_bfv_backend.cpp
-    seal/bfv/kernel/add_seal_bfv.cpp
-    seal/bfv/kernel/multiply_seal_bfv.cpp
     seal/ckks/he_seal_ckks_backend.cpp
     seal/ckks/kernel/add_seal_ckks.cpp
     seal/ckks/kernel/multiply_seal_ckks.cpp
@@ -72,7 +69,6 @@ endif()
 # Get library names
 set(HE_BACKEND_LIB_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}he_backend${CMAKE_SHARED_LIBRARY_SUFFIX}")
 set(HE_SEAL_CKKS_LIB_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}he_seal_ckks_backend${CMAKE_SHARED_LIBRARY_SUFFIX}")
-set(HE_SEAL_BFV_LIB_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}he_seal_bfv_backend${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
 message("NGRAPH_TF_VENV_LIB_DIR ${NGRAPH_TF_VENV_LIB_DIR}")
 
@@ -85,13 +81,8 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
         PATTERN "*.hpp"
         PATTERN "*.h")
 
-# Create symbolic links for CKKS and BFV backends, to allow ngraph and ngraph-tf to recognize these backends.
+# Create symbolic links for CKKS backend, to allow ngraph and ngraph-tf to recognize these backends.
 add_custom_target(he_seal_ckks_backend ALL DEPENDS he_backend
         COMMAND ${CMAKE_COMMAND} -E create_symlink
             ${EXTERNAL_INSTALL_LIB_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}he_backend${CMAKE_SHARED_LIBRARY_SUFFIX}
             ${NGRAPH_TF_VENV_LIB_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}he_seal_ckks_backend${CMAKE_SHARED_LIBRARY_SUFFIX})
-
-add_custom_target(he_seal_bfv_backend ALL DEPENDS he_backend
-    COMMAND ${CMAKE_COMMAND} -E create_symlink
-        ${EXTERNAL_INSTALL_LIB_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}he_backend${CMAKE_SHARED_LIBRARY_SUFFIX}
-        ${NGRAPH_TF_VENV_LIB_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}he_seal_bfv_backend${CMAKE_SHARED_LIBRARY_SUFFIX})
