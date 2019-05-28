@@ -16,10 +16,8 @@
 
 #include "node_wrapper.hpp"
 
-
-
-
-ngraph::he::NodeWrapper::NodeWrapper(conststd::shared_ptr<const Node>& node)
+ngraph::he::NodeWrapper::NodeWrapper(
+    const std::shared_ptr<const ngraph::Node>& node)
     : m_node{node} {
 // This expands the op list in op_tbl.hpp into a list of enumerations that look
 // like this:
@@ -27,7 +25,7 @@ ngraph::he::NodeWrapper::NodeWrapper(conststd::shared_ptr<const Node>& node)
 // {"Acos", ngraph::he::OP_TYPEID::Acos},
 // ...
 #define NGRAPH_OP(a, b) {#a, ngraph::he::OP_TYPEID::a},
-  static unordered_map<string, ngraph::he::OP_TYPEID> typeid_map{
+  static std::unordered_map<std::string, ngraph::he::OP_TYPEID> typeid_map{
 #include "ngraph/op/op_tbl.hpp"
   };
 #undef NGRAPH_OP

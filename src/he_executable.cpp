@@ -68,13 +68,12 @@
 #include "seal/he_seal_util.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 
-using descriptor::layout::DenseTensorLayout;
+using ngraph::descriptor::layout::DenseTensorLayout;
 
-ngraph::he::HEExecutable::HEExecutable(conststd::shared_ptr<Function>& function,
-                                       bool enable_performance_collection,
-                                       const HEBackend* he_backend,
-                                       bool encrypt_data, bool encrypt_model,
-                                       bool batch_data)
+ngraph::he::HEExecutable::HEExecutable(
+    const std::shared_ptr<Function>& function,
+    bool enable_performance_collection, const HEBackend* he_backend,
+    bool encrypt_data, bool encrypt_model, bool batch_data)
     : m_he_backend(he_backend),
       m_encrypt_data(encrypt_data),
       m_encrypt_model(encrypt_model),
@@ -98,7 +97,7 @@ ngraph::he::HEExecutable::HEExecutable(conststd::shared_ptr<Function>& function,
   pass_manager.register_pass<pass::Liveness>();
   pass_manager.run_passes(function);
 
-  for (conststd::shared_ptr<Node>& node : function->get_ordered_ops()) {
+  for (const std::shared_ptr<Node>& node : function->get_ordered_ops()) {
     m_wrapped_nodes.emplace_back(node);
   }
   set_parameters_and_results(*function);
@@ -130,8 +129,8 @@ ngraph::he::HEExecutable::HEExecutable(conststd::shared_ptr<Function>& function,
     start_server();
 
     // Send encryption parameters
-    stringstream param_stream;
-    std::shared_ptr<HEEncryptionParameters> parms =
+    std::stringstream param_stream;
+    std::shared_ptr<ngraph::he::HEEncryptionParameters> parms =
         he_backend->get_encryption_parameters();
     NGRAPH_ASSERT(parms != nullptr) << "HEEncryptionParameters == nullptr";
 
@@ -144,7 +143,7 @@ ngraph::he::HEExecutable::HEExecutable(conststd::shared_ptr<Function>& function,
     auto parms_message =
         TCPMessage(MessageType::encryption_parameters, 1, param_stream);
 
-    unique_lock<mutex> mlock(m_session_mutex);
+    std::unique_lock<std::mutex> mlock(m_session_mutex);
     NGRAPH_INFO << "Waiting until client is connected";
     m_session_cond.wait(mlock, std::bind(&HEExecutable::session_started, this));
     NGRAPH_INFO << "Session started";
@@ -155,17 +154,18 @@ ngraph::he::HEExecutable::HEExecutable(conststd::shared_ptr<Function>& function,
 
 void ngraph::he::HEExecutable::accept_connection() {
   NGRAPH_INFO << "Server accepting connections";
-  auto server_callback =
-      bind(&ngraph::he::HEExecutable::handle_message, this, placeholders::_1);
+  auto server_callback = bind(&ngraph::he::HEExecutable::handle_message, this,
+                              std::placeholders::_1);
 
   m_acceptor->async_accept([this, server_callback](boost::system::error_code ec,
                                                    tcp::socket socket) {
     if (!ec) {
       NGRAPH_INFO << "Connection accepted";
-      m_session = std::make_shared<TCPSession>(move(socket), server_callback);
+      m_session =
+          std::make_shared<TCPSession>(std::move(socket), server_callback);
       m_session->start();
 
-      std::lock_guard<mutex> guard(m_session_mutex);
+      std::lock_guard<std::mutex> guard(m_session_mutex);
       m_session_started = true;
       m_session_cond.notify_all();
     } else {
@@ -181,7 +181,7 @@ void ngraph::he::HEExecutable::start_server() {
   m_acceptor = std::make_shared<tcp::acceptor>(m_io_context, server_endpoints);
 
   accept_connection();
-  m_thread = thread([this]() { m_io_context.run(); });
+  m_thread = std::thread([this]() { m_io_context.run(); });
 }
 
 void ngraph::he::HEExecutable::handle_message(
@@ -194,7 +194,7 @@ void ngraph::he::HEExecutable::handle_message(
   if (msg_type == MessageType::execute) {
     // Get Ciphertexts from message
     size_t count = message.count();
-    vector<seal::Ciphertext> ciphertexts;
+    std::vector<seal::Ciphertext> ciphertexts;
     size_t ciphertext_size = message.element_size();
 
     assert(m_context != nullptr);
@@ -202,19 +202,17 @@ void ngraph::he::HEExecutable::handle_message(
 
     NGRAPH_INFO << "Loading " << count << " ciphertexts";
     for (size_t i = 0; i < count; ++i) {
-      stringstream stream;
+      std::stringstream stream;
       stream.write(message.data_ptr() + i * ciphertext_size, ciphertext_size);
       seal::Ciphertext c;
       c.load(m_context, stream);
       ciphertexts.emplace_back(c);
     }
     NGRAPH_INFO << "Done loading " << count << " ciphertexts";
-
     std::vector<std::shared_ptr<ngraph::he::HECiphertext>> he_cipher_inputs;
     for (const auto cipher : ciphertexts) {
       auto wrapper =
-          std::make_shared<ngraph::he::ngraph::he::SealCiphertextWrapper>(
-              cipher);
+          std::make_shared<ngraph::he::SealCiphertextWrapper>(cipher);
       he_cipher_inputs.emplace_back(wrapper);
     }
 
@@ -246,7 +244,7 @@ void ngraph::he::HEExecutable::handle_message(
       const auto& shape = input_param->get_shape();
       size_t param_size = shape_size(shape) / m_batch_size;
       auto element_type = input_param->get_element_type();
-      auto input_tensor = std::dynamic_pointer_cast<HECipherTensor>(
+      auto input_tensor = std::dynamic_pointer_cast<ngraph::he::HECipherTensor>(
           m_he_backend->create_cipher_tensor(
               element_type, input_param->get_shape(), m_batch_data));
 
@@ -269,7 +267,7 @@ void ngraph::he::HEExecutable::handle_message(
         << "Client inputs size " << m_client_inputs.size() << "; expected "
         << get_parameters().size();
 
-    std::lock_guard<mutex> guard(m_client_inputs_mutex);
+    std::lock_guard<std::mutex> guard(m_client_inputs_mutex);
     m_client_inputs_received = true;
     m_client_inputs_cond.notify_all();
 
@@ -321,7 +319,7 @@ void ngraph::he::HEExecutable::handle_message(
     NGRAPH_INFO << "Server sending message of type: parameter_size";
     m_session->do_write(parameter_message);
   } else if (msg_type == MessageType::relu_result) {
-    std::lock_guard<mutex> guard(m_relu_mutex);
+    std::lock_guard<std::mutex> guard(m_relu_mutex);
 
     size_t element_count = message.count();
     size_t element_size = message.element_size();
@@ -332,16 +330,14 @@ void ngraph::he::HEExecutable::handle_message(
 
     for (size_t element_idx = 0; element_idx < element_count; ++element_idx) {
       seal::Ciphertext cipher;
-      stringstream cipher_stream;
+      std::stringstream cipher_stream;
       cipher_stream.write(message.data_ptr() + element_idx * element_size,
                           element_size);
       cipher.load(m_context, cipher_stream);
 
-      auto wrapper =
-          std::make_shared<ngraph::he::ngraph::he::SealCiphertextWrapper>(
-              cipher);
+      auto wrapper = std::make_shared<SealCiphertextWrapper>(cipher);
       auto he_ciphertext =
-          dynamic_pointer_cast<ngraph::he::HECiphertext>(wrapper);
+          std::dynamic_pointer_cast<ngraph::he::HECiphertext>(wrapper);
       if (m_he_backend->complex_packing()) {
         he_ciphertext->set_complex_packing(true);
       }
@@ -357,23 +353,21 @@ void ngraph::he::HEExecutable::handle_message(
     m_relu_done = true;
     m_relu_cond.notify_all();
   } else if (msg_type == MessageType::max_result) {
-    std::lock_guard<mutex> guard(m_max_mutex);
+    std::lock_guard<std::mutex> guard(m_max_mutex);
 
     size_t element_count = message.count();
     size_t element_size = message.element_size();
 
     for (size_t element_idx = 0; element_idx < element_count; ++element_idx) {
       seal::Ciphertext cipher;
-      stringstream cipher_stream;
+      std::stringstream cipher_stream;
       cipher_stream.write(message.data_ptr() + element_idx * element_size,
                           element_size);
       cipher.load(m_context, cipher_stream);
 
-      auto wrapper =
-          std::make_shared<ngraph::he::ngraph::he::SealCiphertextWrapper>(
-              cipher);
+      auto wrapper = std::make_shared<SealCiphertextWrapper>(cipher);
       auto he_ciphertext =
-          dynamic_pointer_cast<ngraph::he::HECiphertext>(wrapper);
+          std::dynamic_pointer_cast<ngraph::he::HECiphertext>(wrapper);
       if (m_he_backend->complex_packing()) {
         he_ciphertext->set_complex_packing(true);
       }
@@ -387,23 +381,21 @@ void ngraph::he::HEExecutable::handle_message(
     m_max_done = true;
     m_max_cond.notify_all();
   } else if (msg_type == MessageType::minimum_result) {
-    std::lock_guard<mutex> guard(m_minimum_mutex);
+    std::lock_guard<std::mutex> guard(m_minimum_mutex);
 
     size_t element_count = message.count();
     size_t element_size = message.element_size();
 
     for (size_t element_idx = 0; element_idx < element_count; ++element_idx) {
       seal::Ciphertext cipher;
-      stringstream cipher_stream;
+      std::stringstream cipher_stream;
       cipher_stream.write(message.data_ptr() + element_idx * element_size,
                           element_size);
       cipher.load(m_context, cipher_stream);
 
-      auto wrapper =
-          std::make_shared<ngraph::he::ngraph::he::SealCiphertextWrapper>(
-              cipher);
+      auto wrapper = std::make_shared<SealCiphertextWrapper>(cipher);
       auto he_ciphertext =
-          dynamic_pointer_cast<ngraph::he::HECiphertext>(wrapper);
+          std::dynamic_pointer_cast<ngraph::he::HECiphertext>(wrapper);
 
       NGRAPH_ASSERT(he_ciphertext != nullptr)
           << "HECiphertext is not SealPlaintextWrapper";
@@ -417,17 +409,17 @@ void ngraph::he::HEExecutable::handle_message(
     m_minimum_done = true;
     m_minimum_cond.notify_all();
   } else {
-    stringstream ss;
+    std::stringstream ss;
     ss << "Unsupported message type in server:  "
        << message_type_to_string(msg_type);
     throw ngraph_error(ss.str());
   }
 }
 
-vector<runtime::PerformanceCounter>
+std::vector<ngraph::runtime::PerformanceCounter>
 ngraph::he::HEExecutable::get_performance_data() const {
-  vector<runtime::PerformanceCounter> rc;
-  for (const pair<const Node*, stopwatch> p : m_timer_map) {
+  std::vector<runtime::PerformanceCounter> rc;
+  for (const std::pair<const Node*, stopwatch> p : m_timer_map) {
     rc.emplace_back(p.first->get_name().c_str(),
                     p.second.get_total_microseconds(),
                     p.second.get_call_count());
@@ -444,7 +436,7 @@ bool ngraph::he::HEExecutable::call(
     NGRAPH_INFO << "Waiting until m_client_inputs.size() "
                 << m_client_inputs.size() << " == " << server_inputs.size();
 
-    unique_lock<mutex> mlock(m_client_inputs_mutex);
+    std::unique_lock<std::mutex> mlock(m_client_inputs_mutex);
     m_client_inputs_cond.wait(
         mlock, std::bind(&HEExecutable::client_inputs_received, this));
     NGRAPH_INFO << "client_inputs_received";
@@ -474,7 +466,7 @@ bool ngraph::he::HEExecutable::call(
   if (m_enable_client) {
     NGRAPH_INFO << "Processing client inputs";
     for (auto& tv : m_client_inputs) {
-      he_inputs.push_back(static_pointer_cast<ngraph::he::HETensor>(tv));
+      he_inputs.push_back(std::static_pointer_cast<ngraph::he::HETensor>(tv));
     }
   } else {
     NGRAPH_INFO << "Processing server inputs";
@@ -488,10 +480,11 @@ bool ngraph::he::HEExecutable::call(
   // convert outputs to HETensor
   std::vector<std::shared_ptr<ngraph::he::HETensor>> he_outputs;
   for (auto& tv : outputs) {
-    he_outputs.push_back(static_pointer_cast<ngraph::he::HETensor>(tv));
+    he_outputs.push_back(std::static_pointer_cast<ngraph::he::HETensor>(tv));
   }
 
-  unordered_map<descriptor::Tensor*, std::shared_ptr<ngraph::he::HETensor>>
+  std::unordered_map<ngraph::descriptor::Tensor*,
+                     std::shared_ptr<ngraph::he::HETensor>>
       tensor_map;
 
   // map function params -> HETensor
@@ -530,10 +523,10 @@ bool ngraph::he::HEExecutable::call(
   for (size_t output_count = 0; output_count < get_results().size();
        ++output_count) {
     auto output = get_results()[output_count];
-    if (!dynamic_pointer_cast<op::Result>(output)) {
+    if (!std::dynamic_pointer_cast<op::Result>(output)) {
       throw ngraph_error("One of function's outputs isn't op::Result");
     }
-    descriptor::Tensor* tv = output->get_output_tensor_ptr(0).get();
+    ngraph::descriptor::Tensor* tv = output->get_output_tensor_ptr(0).get();
     tensor_map.insert({tv, he_outputs[output_count++]});
   }
 
@@ -577,22 +570,24 @@ bool ngraph::he::HEExecutable::call(
         // The output tensor is not in the tensor map so create a new tensor
         const Shape& shape = op->get_output_shape(i);
         const element::Type& element_type = op->get_output_element_type(i);
-        string name = op->get_output_tensor(i).get_name();
+        std::string name = op->get_output_tensor(i).get_name();
 
         // Plaintext output only if all inputs are plaintext
         bool plain_out = all_of(
             op_inputs.begin(), op_inputs.end(),
-            [](shared_ptr<ngraph::he::HETensor> op_input) {
-              return dynamic_pointer_cast<HEPlainTensor>(op_input) != nullptr;
+            [](std::shared_ptr<ngraph::he::HETensor> op_input) {
+              return std::dynamic_pointer_cast<HEPlainTensor>(op_input) !=
+                     nullptr;
             });
         if (op->is_constant()) {
           plain_out = !m_encrypt_model;
         }
 
-        bool batched_out = any_of(op_inputs.begin(), op_inputs.end(),
-                                  [](shared_ptr<ngraph::he::HETensor> he_tv) {
-                                    return he_tv->is_batched();
-                                  });
+        bool batched_out =
+            std::any_of(op_inputs.begin(), op_inputs.end(),
+                        [](std::shared_ptr<ngraph::he::HETensor> he_tv) {
+                          return he_tv->is_batched();
+                        });
         if (plain_out) {
           auto otv = std::make_shared<ngraph::he::HEPlainTensor>(
               element_type, shape, m_he_backend,
@@ -620,7 +615,7 @@ bool ngraph::he::HEExecutable::call(
     generate_calls(base_type, wrapped, op_outputs, op_inputs);
     m_timer_map[op].stop();
 
-    const string op_name = op->description();
+    const std::string op_name = op->description();
 
     // delete any obsolete tensors
     for (const descriptor::Tensor* t : op->liveness_free_list) {
@@ -655,7 +650,7 @@ bool ngraph::he::HEExecutable::call(
     size_t output_shape_size = shape_size(output_shape) / m_batch_size;
 
     auto output_cipher_tensor =
-        dynamic_pointer_cast<HECipherTensor>(m_client_outputs[0]);
+        std::dynamic_pointer_cast<HECipherTensor>(m_client_outputs[0]);
 
     NGRAPH_ASSERT(output_cipher_tensor != nullptr)
         << "Client outputs are not HECipherTensor";
@@ -677,7 +672,7 @@ void ngraph::he::HEExecutable::generate_calls(
     const std::vector<std::shared_ptr<HETensor>>& out,
     const std::vector<std::shared_ptr<HETensor>>& args) {
   const Node& node = node_wrapper.get_node();
-  string node_op = node.description();
+  std::string node_op = node.description();
   std::shared_ptr<HECipherTensor> arg0_cipher = nullptr;
   std::shared_ptr<HEPlainTensor> arg0_plain = nullptr;
   std::shared_ptr<HECipherTensor> arg1_cipher = nullptr;
@@ -740,7 +735,7 @@ void ngraph::he::HEExecutable::generate_calls(
         << "arg1 is both cipher and plain?";
   }
 
-  stringstream ss;
+  std::stringstream ss;
   ss << "Inputs: ";
   if (arg0_cipher != nullptr) {
     ss << "Cipher";
@@ -871,12 +866,13 @@ void ngraph::he::HEExecutable::generate_calls(
       const op::Concat* concat = static_cast<const op::Concat*>(&node);
 
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
-        vector<Shape> in_shapes;
-        vector<std::vector<std::shared_ptr<ngraph::he::HECiphertext>>> in_args;
+        std::vector<Shape> in_shapes;
+        std::vector<std::vector<std::shared_ptr<ngraph::he::HECiphertext>>>
+            in_args;
 
-        for (shared_ptr<HETensor> arg : args) {
+        for (std::shared_ptr<HETensor> arg : args) {
           std::shared_ptr<HECipherTensor> arg_cipher =
-              dynamic_pointer_cast<HECipherTensor>(arg);
+              std::dynamic_pointer_cast<HECipherTensor>(arg);
           if (arg_cipher == nullptr) {
             throw ngraph_error("Concat type not consistent");
           }
@@ -888,12 +884,12 @@ void ngraph::he::HEExecutable::generate_calls(
                              concat->get_concatenation_axis());
         }
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
-        vector<Shape> in_shapes;
-        vector<std::vector<std::shared_ptr<HEPlaintext>>> in_args;
+        std::vector<Shape> in_shapes;
+        std::vector<std::vector<std::shared_ptr<HEPlaintext>>> in_args;
 
-        for (shared_ptr<HETensor> arg : args) {
+        for (std::shared_ptr<HETensor> arg : args) {
           std::shared_ptr<HEPlainTensor> arg_plain =
-              dynamic_pointer_cast<HEPlainTensor>(arg);
+              std::dynamic_pointer_cast<HEPlainTensor>(arg);
           if (arg_plain == nullptr) {
             throw ngraph_error("Concat type not consistent");
           }
@@ -1039,13 +1035,13 @@ void ngraph::he::HEExecutable::generate_calls(
       Shape out_shape = node.get_output_shape(0);
       out_shape[0] /= m_batch_size;
 
-      vector<vector<size_t>> maximize_list = ngraph::he::max_pool(
+      std::vector<std::vector<size_t>> maximize_list = ngraph::he::max_pool(
           arg0_shape, out_shape, max_pool->get_window_shape(),
           max_pool->get_window_movement_strides(),
           max_pool->get_padding_below(), max_pool->get_padding_above());
 
       for (size_t list_ind = 0; list_ind < maximize_list.size(); list_ind++) {
-        stringstream cipher_stream;
+        std::stringstream cipher_stream;
         size_t cipher_count = 0;
 
         for (const size_t max_ind : maximize_list[list_ind]) {
@@ -1063,7 +1059,7 @@ void ngraph::he::HEExecutable::generate_calls(
         m_session->do_write(max_message);
 
         // Acquire lock
-        unique_lock<mutex> mlock(m_max_mutex);
+        std::unique_lock<std::mutex> mlock(m_max_mutex);
 
         // Wait until max is done
         m_max_cond.wait(mlock, std::bind(&HEExecutable::max_done, this));
@@ -1132,7 +1128,7 @@ void ngraph::he::HEExecutable::generate_calls(
           << "Element counts " << arg0_cipher->get_elements().size() << ",  "
           << arg1_cipher->get_elements().size() << "do not match";
 
-      stringstream cipher_stream;
+      std::stringstream cipher_stream;
       size_t cipher_count = 0;
       auto he_ckks_backend = (ngraph::he::HESealCKKSBackend*)m_he_backend;
       NGRAPH_ASSERT(he_ckks_backend != nullptr)
@@ -1154,7 +1150,7 @@ void ngraph::he::HEExecutable::generate_calls(
       m_session->do_write(minimum_message);
 
       // Acquire lock
-      unique_lock<mutex> mlock(m_minimum_mutex);
+      std::unique_lock<std::mutex> mlock(m_minimum_mutex);
 
       // Wait until minimum is done
       m_minimum_cond.wait(mlock, std::bind(&HEExecutable::minimum_done, this));
@@ -1311,7 +1307,7 @@ void ngraph::he::HEExecutable::generate_calls(
         throw ngraph_error("Relu types not supported.");
       }
 
-      stringstream cipher_stream;
+      std::stringstream cipher_stream;
       arg0_cipher->save_elements(cipher_stream);
 
       // Send output to client
@@ -1323,7 +1319,7 @@ void ngraph::he::HEExecutable::generate_calls(
       m_session->do_write(relu_message);
 
       // Acquire lock
-      unique_lock<mutex> mlock(m_relu_mutex);
+      std::unique_lock<std::mutex> mlock(m_relu_mutex);
 
       // Wait until Relu is done
       m_relu_cond.wait(mlock, std::bind(&HEExecutable::relu_done, this));

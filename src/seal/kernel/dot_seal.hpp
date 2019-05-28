@@ -157,15 +157,14 @@ void ngraph::he::dot_seal(std::vector<std::shared_ptr<S>>& arg0,
 
       std::shared_ptr<V> prod = he_seal_backend->create_empty_hetext<V>(pool);
       auto seal_prod = ngraph::he::cast_to_seal_hetext(prod);
-      ngraph::he::kernel::scalar_multiply(arg0_seal_text, arg1_seal_text,
-                                          seal_prod, element_type,
-                                          he_seal_backend, pool);
+      ngraph::he::scalar_multiply(arg0_seal_text, arg1_seal_text, seal_prod,
+                                  element_type, he_seal_backend, pool);
       if (first_add) {
         seal_sum = seal_prod;
         first_add = false;
       } else {
-        ngraph::he::kernel::scalar_add(seal_sum, seal_prod, seal_sum,
-                                       element_type, he_seal_backend, pool);
+        ngraph::he::scalar_add(seal_sum, seal_prod, seal_sum, element_type,
+                               he_seal_backend, pool);
       }
     }
     // Write the sum back.

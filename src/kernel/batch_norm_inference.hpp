@@ -44,8 +44,6 @@ void batch_norm_inference(
     const HEBackend* he_backend) {
   CoordinateTransform input_transform(input_shape);
 
-  auto he_seal_backend = ngraph::he::cast_to_seal_backend(he_backend);
-
   // Store input coordinates for parallelization
   std::vector<ngraph::Coordinate> input_coords;
   for (const Coordinate& in_coord : input_transform) {
