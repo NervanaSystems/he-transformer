@@ -47,25 +47,32 @@ void he_seal::ckks::kernel::scalar_add_ckks(
     const element::Type& element_type,
     const he_seal::HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
-  if (!arg1->is_encoded()) {
-    // Just-in-time encoding at the right scale and modulus
-    he_seal_ckks_backend->encode(arg1, arg0->m_ciphertext.parms_id(),
-                                 arg0->m_ciphertext.scale(),
-                                 arg0->complex_packing());
+  if (arg1->is_single_value()) {
+    float value = arg1->get_values()[0];
+    double double_val = double(value);
+    add_plain(arg0->m_ciphertext, double_val, out->m_ciphertext,
+              he_seal_ckks_backend);
   } else {
-    // Shouldn't be needed?
-    // match_modulus_inplace(arg0.get(), arg1.get(), he_seal_ckks_backend,
-    // pool);
-    match_scale(arg0.get(), arg1.get(), he_seal_ckks_backend);
-  }
-  size_t chain_ind0 = get_chain_index(arg0.get(), he_seal_ckks_backend);
-  size_t chain_ind1 = get_chain_index(arg1.get(), he_seal_ckks_backend);
-  NGRAPH_ASSERT(chain_ind0 == chain_ind1)
-      << "Chain inds " << chain_ind0 << ",  " << chain_ind1 << " don't match";
+    if (!arg1->is_encoded()) {
+      // Just-in-time encoding at the right scale and modulus
+      he_seal_ckks_backend->encode(arg1, arg0->m_ciphertext.parms_id(),
+                                   arg0->m_ciphertext.scale(),
+                                   arg0->complex_packing());
+    } else {
+      // Shouldn't be needed?
+      // match_modulus_inplace(arg0.get(), arg1.get(), he_seal_ckks_backend,
+      // pool);
+      match_scale(arg0.get(), arg1.get(), he_seal_ckks_backend);
+    }
+    size_t chain_ind0 = get_chain_index(arg0.get(), he_seal_ckks_backend);
+    size_t chain_ind1 = get_chain_index(arg1.get(), he_seal_ckks_backend);
+    NGRAPH_ASSERT(chain_ind0 == chain_ind1)
+        << "Chain inds " << chain_ind0 << ",  " << chain_ind1 << " don't match";
 
-  he_seal_ckks_backend->get_evaluator()->add_plain(
-      arg0->m_ciphertext, arg1->get_plaintext(), out->m_ciphertext);
-  out->set_complex_packing(arg0->complex_packing());
+    he_seal_ckks_backend->get_evaluator()->add_plain(
+        arg0->m_ciphertext, arg1->get_plaintext(), out->m_ciphertext);
+    out->set_complex_packing(arg0->complex_packing());
+  }
 }
 
 void he_seal::ckks::kernel::scalar_add_ckks(

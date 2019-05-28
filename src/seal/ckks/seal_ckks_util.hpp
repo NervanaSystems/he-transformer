@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include <cmath>
 #include <iomanip>
 #include <memory>
 #include <utility>
@@ -64,8 +65,76 @@ void match_scale(S* arg0, T* arg1,
 void match_modulus_and_scale_inplace(
     SealCiphertextWrapper* arg0, SealCiphertextWrapper* arg1,
     const HESealCKKSBackend* he_seal_ckks_backend,
-    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
+    seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool());
 
+void encode(double value, double scale, seal::parms_id_type parms_id,
+            std::vector<std::uint64_t>& destination,
+            const HESealCKKSBackend* he_seal_ckks_backend,
+            seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool());
+
+void add_plain_inplace(seal::Ciphertext& encrypted, double value,
+                       const HESealCKKSBackend* he_seal_ckks_backend);
+
+inline void add_plain(const seal::Ciphertext& encrypted, double value,
+                      seal::Ciphertext& destination,
+                      const HESealCKKSBackend* he_seal_ckks_backend) {
+  destination = encrypted;
+  ngraph::runtime::he::he_seal::ckks::add_plain_inplace(destination, value,
+                                                        he_seal_ckks_backend);
+}
+
+// Like add_poly_poly_coeffmod, but with a scalar for operand2
+inline void add_poly_scalar_coeffmod(const std::uint64_t* poly,
+                                     std::size_t coeff_count,
+                                     std::uint64_t scalar,
+                                     const seal::SmallModulus& modulus,
+                                     std::uint64_t* result) {
+  const uint64_t modulus_value = modulus.value();
+#ifdef SEAL_DEBUG
+  if (poly == nullptr && coeff_count > 0) {
+    throw ngraph_error("poly");
+  }
+  if (scalar >= modulus_value) {
+    throw ngraph_error("scalar");
+  }
+  if (modulus.is_zero()) {
+    throw ngraph_error("modulus");
+  }
+  if (result == nullptr && coeff_count > 0) {
+    throw ngraph_error("result");
+  }
+#endif
+
+  for (; coeff_count--; result++, poly++) {
+    // Explicit inline
+    // result[i] = add_uint_uint_mod(poly[i], scalar, modulus);
+#ifdef SEAL_DEBUG
+    if (*poly >= modulus_value) {
+      throw ngraph_error("poly > modulus_value");
+    }
+
+#endif
+    std::uint64_t sum = *poly + scalar;
+    *result = sum - (modulus_value &
+                     static_cast<std::uint64_t>(
+                         -static_cast<std::int64_t>(sum >= modulus_value)));
+  }
+}
+
+void multiply_plain_inplace(
+    seal::Ciphertext& encrypted, double value,
+    const HESealCKKSBackend* he_seal_ckks_backend,
+    seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool());
+
+inline void multiply_plain(
+    const seal::Ciphertext& encrypted, double value,
+    seal::Ciphertext& destination,
+    const HESealCKKSBackend* he_seal_ckks_backend,
+    seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool()) {
+  destination = encrypted;
+  ngraph::runtime::he::he_seal::ckks::multiply_plain_inplace(
+      destination, value, he_seal_ckks_backend, std::move(pool));
+}
 }  // namespace ckks
 }  // namespace he_seal
 }  // namespace he
