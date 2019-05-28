@@ -17,7 +17,6 @@
 #pragma once
 
 #include <memory>
-#include <mutex>
 #include <vector>
 
 #include "he_cipher_tensor.hpp"
@@ -80,8 +79,6 @@ class HESealCKKSBackend : public HESealBackend {
   std::shared_ptr<seal::CKKSEncoder> m_ckks_encoder;
   // Scale with which to encode new ciphertexts
   double m_scale;
-
-  // mutable std::mutex m_encode_mutex;
 };
 
 inline const runtime::he::he_seal::HESealCKKSBackend* cast_to_seal_ckks_backend(
