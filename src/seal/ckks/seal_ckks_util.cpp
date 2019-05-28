@@ -339,12 +339,6 @@ void runtime::he::he_seal::ckks::multiply_plain_inplace(
     throw ngraph_error("scale out of bounds");
   }
 
-  // Done doing "encoding"
-  NGRAPH_INFO << "Done fake encoding " << value << " at scale " << scale;
-  for (const auto& elem : plaintext_vals) {
-    NGRAPH_INFO << elem;
-  }
-
   for (size_t i = 0; i < encrypted_ntt_size; i++) {
     for (size_t j = 0; j < coeff_mod_count; j++) {
       // Multiply by scalar instead of doing dyadic product

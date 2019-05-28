@@ -33,6 +33,9 @@ void he_seal::ckks::kernel::scalar_add_ckks(
     const seal::MemoryPoolHandle& pool) {
   NGRAPH_ASSERT(arg0->complex_packing() == arg1->complex_packing());
 
+  NGRAPH_INFO << "Adding C+C at scale " << arg0->m_ciphertext.scale() << ",  "
+              << arg1->m_ciphertext.scale();
+
   match_modulus_and_scale_inplace(arg0.get(), arg1.get(), he_seal_ckks_backend,
                                   pool);
   he_seal_ckks_backend->get_evaluator()->add(

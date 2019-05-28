@@ -685,6 +685,7 @@ void runtime::he::HEExecutable::generate_calls(
 
   // TODO: move to static function
   auto lazy_rescaling = [this](auto& cipher) {
+    // NGRAPH_INFO << "Lazy rescaling";
     auto he_seal_backend =
         runtime::he::he_seal::cast_to_seal_backend(m_he_backend);
 #pragma omp parallel for
