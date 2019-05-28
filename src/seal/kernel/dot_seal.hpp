@@ -38,8 +38,7 @@ void dot_seal(std::vector<std::shared_ptr<S>>& arg0,
               const Shape& arg1_shape, const Shape& out_shape,
               size_t reduction_axes_count, const element::Type& element_type,
               const ngraph::he::HESealBackend* he_seal_backend);
-}
-}  // namespace ngraph
+}  // namespace he
 }  // namespace ngraph
 
 template <typename S, typename T, typename V>

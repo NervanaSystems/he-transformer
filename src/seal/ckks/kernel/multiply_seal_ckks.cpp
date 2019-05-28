@@ -18,7 +18,7 @@
 #include "seal/ckks/seal_ckks_util.hpp"
 #include "seal/seal.h"
 
-void ckks::kernel::scalar_multiply_ckks(
+void ngraph::he::scalar_multiply_ckks(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
@@ -51,7 +51,7 @@ void ckks::kernel::scalar_multiply_ckks(
       out->m_ciphertext, pool);
 }
 
-void ckks::kernel::scalar_multiply_ckks(
+void ngraph::he::scalar_multiply_ckks(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
     std::shared_ptr<ngraph::he::SealPlaintextWrapper>& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
@@ -107,13 +107,13 @@ void ckks::kernel::scalar_multiply_ckks(
   //    out->m_ciphertext, pool);
 }
 
-void ckks::kernel::scalar_multiply_ckks(
+void ngraph::he::scalar_multiply_ckks(
     std::shared_ptr<ngraph::he::SealPlaintextWrapper>& arg0,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const ngraph::he::HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
-  scalar_multiply_ckks(arg1, arg0, out, element_type, he_seal_ckks_backend,
-                       pool);
+  ngraph::he::scalar_multiply_ckks(arg1, arg0, out, element_type,
+                                   he_seal_ckks_backend, pool);
 }

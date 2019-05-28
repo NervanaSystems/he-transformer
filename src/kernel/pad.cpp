@@ -26,7 +26,7 @@
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 
-void ngraph::he::kernel::pad(
+void ngraph::he::pad(
     std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& arg0,
     std::vector<std::shared_ptr<ngraph::he::HEPlaintext>>& arg1,  // scalar
     std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& out,
@@ -38,9 +38,7 @@ void ngraph::he::kernel::pad(
     throw ngraph_error("Padding element must be scalar");
   }
 
-  auto he_seal_backend = ngraph::he::cast_to_sael_backend(he_backend);
-  auto he_seal_ckks_backend =
-      ngraph::he::cast_to_seal_ckks_backend(he_seal_backend);
+  auto he_seal_backend = ngraph::he::cast_to_seal_backend(he_backend);
 
   std::shared_ptr<ngraph::he::HECiphertext> arg1_encrypted;
   arg1_encrypted = he_seal_backend->create_empty_ciphertext();
@@ -53,7 +51,7 @@ void ngraph::he::kernel::pad(
   std::vector<std::shared_ptr<ngraph::he::HECiphertext>> arg1_encrypted_vector{
       arg1_encrypted};
 
-  ngraph::he::kernel::pad(arg0, arg1_encrypted_vector, out, arg0_shape,
-                          out_shape, padding_below, padding_above, pad_mode,
-                          batch_size, he_backend);
+  ngraph::he::pad(arg0, arg1_encrypted_vector, out, arg0_shape, out_shape,
+                  padding_below, padding_above, pad_mode, batch_size,
+                  he_backend);
 }

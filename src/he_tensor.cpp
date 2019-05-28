@@ -20,19 +20,16 @@
 #include "ngraph/descriptor/tensor.hpp"
 #include "ngraph/util.hpp"
 
-
-
-
 ngraph::he::HETensor::HETensor(const element::Type& element_type,
-                                const Shape& shape, const HEBackend* he_backend,
-                                const bool batched, const string& name)
+                               const Shape& shape, const HEBackend* he_backend,
+                               const bool batched, const string& name)
     : runtime::Tensor(
           std::make_shared<descriptor::Tensor>(element_type, shape, name),
           he_backend),
       m_he_backend(he_backend),
       m_batched(batched) {
   m_descriptor->set_tensor_layout(
-      make_shared<descriptor::layout::DenseTensorLayout>(*m_descriptor));
+      std::make_shared<descriptor::layout::DenseTensorLayout>(*m_descriptor));
 
   if (batched) {
     m_batch_size = shape[0];
@@ -43,8 +40,7 @@ ngraph::he::HETensor::HETensor(const element::Type& element_type,
   }
 }
 
-Shape ngraph::he::HETensor::batch_shape(const Shape& shape,
-                                         size_t batch_axis) {
+Shape ngraph::he::HETensor::batch_shape(const Shape& shape, size_t batch_axis) {
   if (batch_axis != 0) {
     throw ngraph_error("Batching only supported along axis 0");
   }
@@ -56,8 +52,8 @@ Shape ngraph::he::HETensor::batch_shape(const Shape& shape,
 }
 
 void ngraph::he::HETensor::check_io_bounds(const void* source,
-                                            size_t tensor_offset,
-                                            size_t n) const {
+                                           size_t tensor_offset,
+                                           size_t n) const {
   const element::Type& element_type = get_tensor_layout()->get_element_type();
   size_t type_byte_size = element_type.size();
 

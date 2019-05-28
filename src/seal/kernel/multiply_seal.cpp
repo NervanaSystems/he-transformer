@@ -15,12 +15,11 @@
 //*****************************************************************************
 
 #include "seal/kernel/multiply_seal.hpp"
-#include "seal/bfv/kernel/multiply_seal_bfv.hpp"
 #include "seal/ckks/he_seal_ckks_backend.hpp"
 #include "seal/ckks/kernel/multiply_seal_ckks.hpp"
 #include "seal/kernel/negate_seal.hpp"
 
-void kernel::scalar_multiply(
+void ngraph::he::scalar_multiply(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
@@ -31,13 +30,14 @@ void kernel::scalar_multiply(
   } else if (arg1->is_zero()) {
     out->set_zero(true);
   } else {
-    auto he_seal_ckks_backend = cast_to_seal_ckks_backend(he_seal_backend);
-    ckks::kernel::scalar_multiply_ckks(arg0, arg1, out, element_type,
-                                       he_seal_ckks_backend, pool);
+    auto he_seal_ckks_backend =
+        ngraph::he::cast_to_seal_ckks_backend(he_seal_backend);
+    ngraph::he::scalar_multiply_ckks(arg0, arg1, out, element_type,
+                                     he_seal_ckks_backend, pool);
   }
 }
 
-void kernel::scalar_multiply(
+void ngraph::he::scalar_multiply(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
     std::shared_ptr<SealPlaintextWrapper>& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
@@ -55,7 +55,7 @@ void kernel::scalar_multiply(
   if (std::all_of(values.begin(), values.end(),
                   [](float f) { return std::abs(f) < 1e-5f; })) {
     out->set_zero(true);
-    out = dynamic_pointer_cast<ngraph::he::SealCiphertextWrapper>(
+    out = std::dynamic_pointer_cast<ngraph::he::SealCiphertextWrapper>(
         he_seal_backend->create_valued_ciphertext(0, element_type));
   }
 
@@ -68,30 +68,32 @@ void kernel::scalar_multiply(
     out = make_shared<ngraph::he::SealCiphertextWrapper>(*arg0);
   } else if (std::all_of(values.begin(), values.end(),
                          [](float f) { return f == -1.0f; })) {
-    kernel::scalar_negate(arg0, out, element_type, he_seal_backend);
+    scalar_negate(arg0, out, element_type, he_seal_backend);
   } */
   else {
-    auto he_seal_ckks_backend = cast_to_seal_ckks_backend(he_seal_backend);
-    ckks::kernel::scalar_multiply_ckks(arg0, arg1, out, element_type,
-                                       he_seal_ckks_backend, pool);
+    auto he_seal_ckks_backend =
+        ngraph::he::cast_to_seal_ckks_backend(he_seal_backend);
+    ngraph::he::scalar_multiply_ckks(arg0, arg1, out, element_type,
+                                     he_seal_ckks_backend, pool);
   }
 }
 
-void kernel::scalar_multiply(
+void ngraph::he::scalar_multiply(
     std::shared_ptr<SealPlaintextWrapper>& arg0,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type, const HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
-  kernel::scalar_multiply(arg1, arg0, out, element_type, he_seal_backend, pool);
+  ngraph::he::scalar_multiply(arg1, arg0, out, element_type, he_seal_backend,
+                              pool);
 }
 
-void kernel::scalar_multiply(std::shared_ptr<SealPlaintextWrapper>& arg0,
-                             std::shared_ptr<SealPlaintextWrapper>& arg1,
-                             std::shared_ptr<SealPlaintextWrapper>& out,
-                             const element::Type& element_type,
-                             const HESealBackend* he_seal_backend,
-                             const seal::MemoryPoolHandle& pool) {
+void ngraph::he::scalar_multiply(std::shared_ptr<SealPlaintextWrapper>& arg0,
+                                 std::shared_ptr<SealPlaintextWrapper>& arg1,
+                                 std::shared_ptr<SealPlaintextWrapper>& out,
+                                 const element::Type& element_type,
+                                 const HESealBackend* he_seal_backend,
+                                 const seal::MemoryPoolHandle& pool) {
   NGRAPH_ASSERT(element_type == element::f32);
 
   std::vector<float> arg0_vals = arg0->get_values();

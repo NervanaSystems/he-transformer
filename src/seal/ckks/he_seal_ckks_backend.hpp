@@ -53,9 +53,8 @@ class HESealCKKSBackend : public HESealBackend {
               seal::parms_id_type parms_id, double scale,
               bool complex) const override;
 
-  void encode(
-      std::shared_ptr<ngraph::ngraph::he::SealPlaintextWrapper>& plaintext,
-      bool complex) const override {
+  void encode(std::shared_ptr<ngraph::he::SealPlaintextWrapper>& plaintext,
+              bool complex) const override {
     encode(plaintext, m_context->first_parms_id(), m_scale, complex);
   }
 

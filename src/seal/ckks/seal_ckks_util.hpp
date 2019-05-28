@@ -76,8 +76,7 @@ inline void add_plain(const seal::Ciphertext& encrypted, double value,
                       seal::Ciphertext& destination,
                       const HESealCKKSBackend* he_seal_ckks_backend) {
   destination = encrypted;
-  ngraph::ngraph::he::ckks::add_plain_inplace(destination, value,
-                                              he_seal_ckks_backend);
+  ngraph::he::add_plain_inplace(destination, value, he_seal_ckks_backend);
 }
 
 // Like add_poly_poly_coeffmod, but with a scalar for operand2
@@ -129,8 +128,8 @@ inline void multiply_plain(
     const HESealCKKSBackend* he_seal_ckks_backend,
     seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool()) {
   destination = encrypted;
-  ngraph::ngraph::he::ckks::multiply_plain_inplace(
-      destination, value, he_seal_ckks_backend, std::move(pool));
+  ngraph::he::multiply_plain_inplace(destination, value, he_seal_ckks_backend,
+                                     std::move(pool));
 }
 }  // namespace he
 }  // namespace ngraph

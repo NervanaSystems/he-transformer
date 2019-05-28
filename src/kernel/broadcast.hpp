@@ -39,5 +39,5 @@ void broadcast(const std::vector<std::shared_ptr<T>>& arg,
         arg[input_transform.index(input_coord)];
   }
 };
-}  // namespace kernel
 }  // namespace he
+}  // namespace ngraph

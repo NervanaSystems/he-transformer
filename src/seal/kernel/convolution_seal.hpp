@@ -44,9 +44,8 @@ void convolution_seal(
     size_t batch_axis_result, size_t output_channel_axis_result,
     bool rotate_filter, const element::Type& element_type, size_t batch_size,
     const ngraph::he::HESealBackend* he_seal_backend);
-}
-}  // namespace ngraph
 }  // namespace he
+}  // namespace ngraph
 
 template <typename S, typename T, typename V>
 void ngraph::he::convolution_seal(

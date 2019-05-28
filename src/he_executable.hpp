@@ -38,8 +38,7 @@ using boost::asio::ip::tcp;
 
 namespace ngraph {
 namespace he {
-
-class HEExecutable : public Executable {
+class HEExecutable : public runtime::Executable {
  public:
   HEExecutable(const std::shared_ptr<Function>& function,
                bool enable_performance_collection,
@@ -56,10 +55,12 @@ class HEExecutable : public Executable {
 
   void start_server();
 
-  bool call(const std::vector<std::shared_ptr<Tensor>>& outputs,
-            const std::vector<std::shared_ptr<Tensor>>& inputs) override;
+  bool call(
+      const std::vector<std::shared_ptr<runtime::Tensor>>& outputs,
+      const std::vector<std::shared_ptr<runtime::Tensor>>& inputs) override;
 
-  std::vector<PerformanceCounter> get_performance_data() const override;
+  std::vector<runtime::PerformanceCounter> get_performance_data()
+      const override;
 
   size_t get_port() const { return m_port; };
 

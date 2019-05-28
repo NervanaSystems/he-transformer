@@ -16,7 +16,7 @@
 
 #include "seal/kernel/negate_seal.hpp"
 
-void kernel::scalar_negate(
+void ngraph::he::scalar_negate(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type, const HESealBackend* he_seal_backend) {
@@ -32,10 +32,10 @@ void kernel::scalar_negate(
                                            out->m_ciphertext);
 }
 
-void kernel::scalar_negate(std::shared_ptr<SealPlaintextWrapper>& arg,
-                           std::shared_ptr<SealPlaintextWrapper>& out,
-                           const element::Type& element_type,
-                           const HESealBackend* he_seal_backend) {
+void ngraph::he::scalar_negate(std::shared_ptr<SealPlaintextWrapper>& arg,
+                               std::shared_ptr<SealPlaintextWrapper>& out,
+                               const element::Type& element_type,
+                               const HESealBackend* he_seal_backend) {
   NGRAPH_ASSERT(element_type == element::f32);
 
   const std::vector<float>& arg_vals = arg->get_values();

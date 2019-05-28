@@ -15,22 +15,17 @@
 
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
-
 #include "seal/ckks/seal_ckks_util.hpp"
 #include "seal/util/polyarithsmallmod.h"
 
-
-
 // Matches the modulus chain for the two elements in-place
 // The elements are modified if necessary
-void ngraph::he::ckks::match_modulus_and_scale_inplace(
+void ngraph::he::match_modulus_and_scale_inplace(
     SealCiphertextWrapper* arg0, SealCiphertextWrapper* arg1,
     const HESealCKKSBackend* he_seal_ckks_backend,
     seal::MemoryPoolHandle pool) {
-  size_t chain_ind0 =
-      ngraph::he::ckks::get_chain_index(arg0, he_seal_ckks_backend);
-  size_t chain_ind1 =
-      ngraph::he::ckks::get_chain_index(arg1, he_seal_ckks_backend);
+  size_t chain_ind0 = ngraph::he::get_chain_index(arg0, he_seal_ckks_backend);
+  size_t chain_ind1 = ngraph::he::get_chain_index(arg1, he_seal_ckks_backend);
 
   if (chain_ind0 == chain_ind1) {
     return;
@@ -40,8 +35,7 @@ void ngraph::he::ckks::match_modulus_and_scale_inplace(
     match_modulus_and_scale_inplace(arg1, arg0, he_seal_ckks_backend, pool);
   }
 
-  bool rescale =
-      !ngraph::he::ckks::within_rescale_tolerance(arg0, arg1);
+  bool rescale = !ngraph::he::within_rescale_tolerance(arg0, arg1);
 
   if (chain_ind0 > chain_ind1) {
     auto arg1_parms_id = arg1->get_hetext().parms_id();
@@ -52,20 +46,19 @@ void ngraph::he::ckks::match_modulus_and_scale_inplace(
       he_seal_ckks_backend->get_evaluator()->mod_switch_to_inplace(
           arg0->get_hetext(), arg1_parms_id);
     }
-    chain_ind0 =
-        ngraph::he::ckks::get_chain_index(arg0, he_seal_ckks_backend);
+    chain_ind0 = ngraph::he::get_chain_index(arg0, he_seal_ckks_backend);
     NGRAPH_ASSERT(chain_ind0 == chain_ind1);
 
-    ngraph::he::ckks::match_scale(arg0, arg1, he_seal_ckks_backend);
+    ngraph::he::match_scale(arg0, arg1, he_seal_ckks_backend);
   }
 }
 
 // Encode value into vector of coefficients
-void ngraph::he::ckks::encode(
-    double value, double scale, seal::parms_id_type parms_id,
-    std::vector<std::uint64_t>& destination,
-    const HESealCKKSBackend* he_seal_ckks_backend,
-    seal::MemoryPoolHandle pool) {
+void ngraph::he::encode(double value, double scale,
+                        seal::parms_id_type parms_id,
+                        std::vector<std::uint64_t>& destination,
+                        const HESealCKKSBackend* he_seal_ckks_backend,
+                        seal::MemoryPoolHandle pool) {
   // Verify parameters.
   auto context = he_seal_ckks_backend->get_context();
   auto context_data_ptr = context->context_data(parms_id);
@@ -228,7 +221,7 @@ void ngraph::he::ckks::encode(
   }
 }
 
-void ngraph::he::ckks::add_plain_inplace(
+void ngraph::he::add_plain_inplace(
     seal::Ciphertext& encrypted, double value,
     const HESealCKKSBackend* he_seal_ckks_backend) {
   // Verify parameters.
@@ -260,12 +253,12 @@ void ngraph::he::ckks::add_plain_inplace(
   // Encode
   std::vector<std::uint64_t> plaintext_vals(coeff_mod_count, 0);
   double scale = encrypted.scale();
-  ngraph::he::ckks::encode(value, scale, parms.parms_id(),
-                                     plaintext_vals, he_seal_ckks_backend);
+  ngraph::he::encode(value, scale, parms.parms_id(), plaintext_vals,
+                     he_seal_ckks_backend);
 
   for (size_t j = 0; j < coeff_mod_count; j++) {
     // Add poly scalar instead of poly poly
-    ngraph::he::ckks::add_poly_scalar_coeffmod(
+    ngraph::he::add_poly_scalar_coeffmod(
         encrypted.data() + (j * coeff_count), coeff_count, plaintext_vals[j],
         coeff_modulus[j], encrypted.data() + (j * coeff_count));
     // seal::util::add_poly_poly_coeffmod(
@@ -282,7 +275,7 @@ void ngraph::he::ckks::add_plain_inplace(
 #endif
 }
 
-void ngraph::he::ckks::multiply_plain_inplace(
+void ngraph::he::multiply_plain_inplace(
     seal::Ciphertext& encrypted, double value,
     const HESealCKKSBackend* he_seal_ckks_backend,
     seal::MemoryPoolHandle pool) {
@@ -319,8 +312,8 @@ void ngraph::he::ckks::multiply_plain_inplace(
   // TODO: explore using different scales! Smaller scales might reduce # of
   // rescalings
   double scale = encrypted.scale();
-  ngraph::he::ckks::encode(value, scale, parms.parms_id(),
-                                     plaintext_vals, he_seal_ckks_backend);
+  ngraph::he::encode(value, scale, parms.parms_id(), plaintext_vals,
+                     he_seal_ckks_backend);
 
   double new_scale = scale * scale;
   // Check that scale is positive and not too large
