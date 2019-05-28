@@ -419,9 +419,9 @@ void ngraph::he::HEExecutable::handle_message(
 std::vector<ngraph::runtime::PerformanceCounter>
 ngraph::he::HEExecutable::get_performance_data() const {
   std::vector<runtime::PerformanceCounter> rc;
-  for (const std::pair<const Node*, stopwatch> p : m_timer_map) {
-    rc.emplace_back(p.first->get_name().c_str(),
-                    p.second.get_total_microseconds(),
+  for (const std::pair<std::shared_ptr<const Node>, stopwatch> p :
+       m_timer_map) {
+    rc.emplace_back(p.first, p.second.get_total_microseconds(),
                     p.second.get_call_count());
   }
   return rc;
@@ -532,7 +532,7 @@ bool ngraph::he::HEExecutable::call(
 
   // for each ordered op in the graph
   for (const NodeWrapper& wrapped : m_wrapped_nodes) {
-    const Node* op = &wrapped.get_node();
+    auto op = wrapped.get_node();
     auto type_id = wrapped.get_typeid();
 
     NGRAPH_INFO << "\033[1;32m"
@@ -550,9 +550,9 @@ bool ngraph::he::HEExecutable::call(
 
     // get op inputs from map
     std::vector<std::shared_ptr<ngraph::he::HETensor>> op_inputs;
-    for (const descriptor::Input& input : op->get_inputs()) {
-      descriptor::Tensor* tv = input.get_output().get_tensor_ptr().get();
-      op_inputs.push_back(tensor_map.at(tv));
+    for (auto input : op->inputs()) {
+      descriptor::Tensor* tensor = &input.get_tensor();
+      op_inputs.push_back(tensor_map.at(tensor));
     }
 
     if (m_enable_client && type_id == OP_TYPEID::Result) {
@@ -564,13 +564,13 @@ bool ngraph::he::HEExecutable::call(
     // get op outputs from map or create
     std::vector<std::shared_ptr<ngraph::he::HETensor>> op_outputs;
     for (size_t i = 0; i < op->get_output_size(); ++i) {
-      descriptor::Tensor* tv = op->get_output_tensor_ptr(i).get();
-      auto it = tensor_map.find(tv);
+      auto tensor = &op->output(i).get_tensor();
+      auto it = tensor_map.find(tensor);
       if (it == tensor_map.end()) {
         // The output tensor is not in the tensor map so create a new tensor
         const Shape& shape = op->get_output_shape(i);
         const element::Type& element_type = op->get_output_element_type(i);
-        std::string name = op->get_output_tensor(i).get_name();
+        std::string name = op->output(i).get_tensor().get_name();
 
         // Plaintext output only if all inputs are plaintext
         bool plain_out = all_of(
@@ -582,25 +582,24 @@ bool ngraph::he::HEExecutable::call(
         if (op->is_constant()) {
           plain_out = !m_encrypt_model;
         }
-
         bool batched_out =
             std::any_of(op_inputs.begin(), op_inputs.end(),
-                        [](std::shared_ptr<ngraph::he::HETensor> he_tv) {
-                          return he_tv->is_batched();
+                        [](std::shared_ptr<ngraph::he::HETensor> he_tensor) {
+                          return he_tensor->is_batched();
                         });
         if (plain_out) {
-          auto otv = std::make_shared<ngraph::he::HEPlainTensor>(
+          auto out_tensor = std::make_shared<ngraph::he::HEPlainTensor>(
               element_type, shape, m_he_backend,
               m_he_backend->create_empty_plaintext(), batched_out, name);
-          tensor_map.insert({tv, otv});
+          tensor_map.insert({tensor, out_tensor});
         } else {
-          auto otv = std::make_shared<ngraph::he::HECipherTensor>(
+          auto out_tensor = std::make_shared<ngraph::he::HECipherTensor>(
               element_type, shape, m_he_backend,
               m_he_backend->create_empty_ciphertext(), batched_out, name);
-          tensor_map.insert({tv, otv});
+          tensor_map.insert({tensor, out_tensor});
         }
       }
-      op_outputs.push_back(tensor_map.at(tv));
+      op_outputs.push_back(tensor_map.at(tensor));
     }
 
     // get op type
@@ -671,7 +670,7 @@ void ngraph::he::HEExecutable::generate_calls(
     const element::Type& type, const NodeWrapper& node_wrapper,
     const std::vector<std::shared_ptr<HETensor>>& out,
     const std::vector<std::shared_ptr<HETensor>>& args) {
-  const Node& node = node_wrapper.get_node();
+  const Node& node = *node_wrapper.get_node();
   std::string node_op = node.description();
   std::shared_ptr<HECipherTensor> arg0_cipher = nullptr;
   std::shared_ptr<HEPlainTensor> arg0_plain = nullptr;
@@ -1039,6 +1038,14 @@ void ngraph::he::HEExecutable::generate_calls(
           arg0_shape, out_shape, max_pool->get_window_shape(),
           max_pool->get_window_movement_strides(),
           max_pool->get_padding_below(), max_pool->get_padding_above());
+
+      std::stringstream first_cipher;
+      NGRAPH_ASSERT(maximize_list.size() > 0);
+      NGRAPH_ASSERT(maximize_list[0].size() > 0);
+      auto he_ciphertext = arg0_cipher->get_element(maximize_list[0][0]);
+      he_ciphertext->save(first_cipher);
+      const size_t first_cipher_size = first_cipher.str().size();
+      NGRAPH_INFO << "first_cipher_size " << first_cipher_size;
 
       for (size_t list_ind = 0; list_ind < maximize_list.size(); list_ind++) {
         std::stringstream cipher_stream;
@@ -1430,6 +1437,7 @@ void ngraph::he::HEExecutable::generate_calls(
     case OP_TYPEID::Asin:
     case OP_TYPEID::Atan:
     case OP_TYPEID::AvgPoolBackprop:
+    case OP_TYPEID::BatchMatMul:
     case OP_TYPEID::BatchNormTraining:
     case OP_TYPEID::BatchNormTrainingBackprop:
     case OP_TYPEID::BroadcastDistributed:
@@ -1450,6 +1458,8 @@ void ngraph::he::HEExecutable::generate_calls(
     case OP_TYPEID::Erf:
     case OP_TYPEID::Exp:
     case OP_TYPEID::Floor:
+    case OP_TYPEID::Gather:
+    case OP_TYPEID::GatherND:
     case OP_TYPEID::GenerateMask:
     case OP_TYPEID::GetOutputElement:
     case OP_TYPEID::Greater:

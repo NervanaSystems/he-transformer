@@ -88,7 +88,7 @@ class HEExecutable : public runtime::Executable {
   size_t m_batch_size;
   size_t m_port;  // Which port the server is hosted at
 
-  std::unordered_map<const Node*, stopwatch> m_timer_map;
+  std::unordered_map<std::shared_ptr<const Node>, stopwatch> m_timer_map;
   std::vector<NodeWrapper> m_wrapped_nodes;
 
   std::shared_ptr<tcp::acceptor> m_acceptor;
