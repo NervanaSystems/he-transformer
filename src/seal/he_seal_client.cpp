@@ -28,9 +28,6 @@
 #include "tcp/tcp_client.hpp"
 #include "tcp/tcp_message.hpp"
 
-
-
-
 ngraph::he::HESealClient::HESealClient(const std::string& hostname,
                                         const size_t port,
                                         const size_t batch_size,
@@ -82,7 +79,6 @@ void ngraph::he::HESealClient::handle_message(
 
   auto decode_to_real_vec = [this](const seal::Plaintext& plain,
                                    std::vector<double>& output, bool complex) {
-    static size_t complex_scale_factor = 2;
     assert(output.size() == 0);
     if (complex) {
       std::vector<std::complex<double>> complex_outputs;
@@ -136,7 +132,7 @@ void ngraph::he::HESealClient::handle_message(
                                     m_inputs.begin() + batch_end_idx};
 
       if (complex_packing()) {
-        std::vector<complex<double>> complex_vals;
+        std::vector<std::complex<double>> complex_vals;
         real_vec_to_complex_vec(complex_vals, real_vals);
         m_ckks_encoder->encode(complex_vals, m_scale, plain);
       } else {
@@ -256,7 +252,7 @@ void ngraph::he::HESealClient::handle_message(
     size_t element_size = message.element_size();
 
     std::vector<std::vector<double>> input_cipher_values(
-        m_batch_size * complex_scale_factor, vector<double>(cipher_count, 0));
+        m_batch_size * complex_scale_factor,std::vector<double>(cipher_count, 0));
 
     std::vector<double> max_values(m_batch_size * complex_scale_factor,
                                    std::numeric_limits<double>::lowest());
@@ -283,7 +279,7 @@ void ngraph::he::HESealClient::handle_message(
       }
     }
 
-    // Get max of each vector of values
+    // Get max of eachstd::vector of values
     for (size_t batch_idx = 0; batch_idx < m_batch_size * complex_scale_factor;
          ++batch_idx) {
       max_values[batch_idx] =
@@ -317,7 +313,7 @@ void ngraph::he::HESealClient::handle_message(
     size_t element_size = message.element_size();
 
     std::vector<std::vector<double>> input_cipher_values(
-        cipher_count, vector<double>(m_batch_size, 0));
+        cipher_count,std::vector<double>(m_batch_size, 0));
 
     std::vector<double> min_values(m_batch_size,
                                    std::numeric_limits<double>::max());
@@ -346,12 +342,12 @@ void ngraph::he::HESealClient::handle_message(
       }
     }
 
-    // Get minimum of each vector of values
+    // Get minimum of eachstd::vector of values
     std::stringstream minimum_stream;
     for (size_t cipher_idx = 0; cipher_idx < cipher_count; cipher_idx += 2) {
       for (size_t batch_idx = 0; batch_idx < m_batch_size; ++batch_idx) {
         min_values[batch_idx] =
-            min(input_cipher_values[cipher_idx][batch_idx],
+            std::min(input_cipher_values[cipher_idx][batch_idx],
                 input_cipher_values[cipher_idx + 1][batch_idx]);
       }
       // Encrypt minimum values
