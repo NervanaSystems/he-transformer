@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include <cmath>
 #include <iomanip>
 #include <memory>
 #include <utility>
@@ -64,8 +65,22 @@ void match_scale(S* arg0, T* arg1,
 void match_modulus_and_scale_inplace(
     SealCiphertextWrapper* arg0, SealCiphertextWrapper* arg1,
     const HESealCKKSBackend* he_seal_ckks_backend,
-    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
+    seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool());
 
+void multiply_by_double_inplace(
+    seal::Ciphertext& encrypted, double value,
+    const HESealCKKSBackend* he_seal_ckks_backend,
+    seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool());
+
+inline void multiply_by_double(
+    const seal::Ciphertext& encrypted, double value,
+    seal::Ciphertext& destination,
+    const HESealCKKSBackend* he_seal_ckks_backend,
+    seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool()) {
+  destination = encrypted;
+  ngraph::runtime::he::he_seal::ckks::multiply_by_double_inplace(
+      destination, value, he_seal_ckks_backend, std::move(pool));
+}
 }  // namespace ckks
 }  // namespace he_seal
 }  // namespace he

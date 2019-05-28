@@ -13,7 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
+
 #include "seal/ckks/seal_ckks_util.hpp"
+#include "seal/util/polyarithsmallmod.h"
 
 using namespace ngraph;
 
@@ -22,7 +26,7 @@ using namespace ngraph;
 void runtime::he::he_seal::ckks::match_modulus_and_scale_inplace(
     SealCiphertextWrapper* arg0, SealCiphertextWrapper* arg1,
     const HESealCKKSBackend* he_seal_ckks_backend,
-    const seal::MemoryPoolHandle& pool) {
+    seal::MemoryPoolHandle pool) {
   size_t chain_ind0 =
       runtime::he::he_seal::ckks::get_chain_index(arg0, he_seal_ckks_backend);
   size_t chain_ind1 =
@@ -54,4 +58,202 @@ void runtime::he::he_seal::ckks::match_modulus_and_scale_inplace(
 
     runtime::he::he_seal::ckks::match_scale(arg0, arg1, he_seal_ckks_backend);
   }
+}
+
+void runtime::he::he_seal::ckks::multiply_by_double_inplace(
+    seal::Ciphertext& encrypted, double value,
+    const HESealCKKSBackend* he_seal_ckks_backend,
+    seal::MemoryPoolHandle pool) {
+  // Verify parameters.
+  auto context = he_seal_ckks_backend->get_context();
+  if (!encrypted.is_metadata_valid_for(context)) {
+    throw ngraph_error("encrypted is not valid for encryption parameters");
+  }
+  if (!context->context_data(encrypted.parms_id())) {
+    throw ngraph_error("encrypted is not valid for encryption parameters");
+  }
+  if (!encrypted.is_ntt_form()) {
+    throw ngraph_error("encrypted is not NTT form");
+  }
+  if (!pool) {
+    throw ngraph_error("pool is uninitialized");
+  }
+
+  // Extract encryption parameters.
+  auto& context_data = *context->context_data(encrypted.parms_id());
+  auto& parms = context_data.parms();
+  auto& coeff_modulus = parms.coeff_modulus();
+  size_t coeff_count = parms.poly_modulus_degree();
+  size_t coeff_mod_count = coeff_modulus.size();
+  size_t encrypted_ntt_size = encrypted.size();
+
+  // Size check
+  if (!seal::util::product_fits_in(encrypted_ntt_size, coeff_count,
+                                   coeff_mod_count)) {
+    throw ngraph_error("invalid parameters");
+  }
+  // Quick sanity check
+  if (!seal::util::product_fits_in(coeff_mod_count, coeff_count)) {
+    throw ngraph_error("invalid parameters");
+  }
+
+  // TODO: explore using different scales! Smaller scales might reduce # of
+  // rescalings
+  double scale = encrypted.scale();
+  double new_scale = scale * scale;
+
+  // "Encode" the double at same scale
+  std::vector<std::int64_t> plaintext_vals(coeff_mod_count, 0);
+
+  // Compute the scaled value
+  value *= scale;
+  int coeff_bit_count = static_cast<int>(log2(fabs(value))) + 2;
+  if (coeff_bit_count >= context_data.total_coeff_modulus_bit_count()) {
+    throw ngraph_error("encoded value is too large");
+  }
+
+  double two_pow_64 = pow(2.0, 64);
+  double coeffd = round(value);
+  bool is_negative = std::signbit(coeffd);
+  coeffd = fabs(coeffd);
+
+  // Use faster decomposition methods when possible
+  if (coeff_bit_count <= 64) {
+    uint64_t coeffu = static_cast<uint64_t>(fabs(coeffd));
+
+    if (is_negative) {
+      for (size_t j = 0; j < coeff_mod_count; j++) {
+        plaintext_vals[j] = seal::util::negate_uint_mod(
+            coeffu % coeff_modulus[j].value(), coeff_modulus[j]);
+        // fill_n(destination.data() + (j * coeff_count), coeff_count,
+        //       negate_uint_mod(coeffu % coeff_modulus[j].value(),
+        //                       coeff_modulus[j]));
+      }
+    } else {
+      for (size_t j = 0; j < coeff_mod_count; j++) {
+        plaintext_vals[j] = coeffu % coeff_modulus[j].value();
+        // fill_n(destination.data() + (j * coeff_count), coeff_count,
+        //       coeffu % coeff_modulus[j].value());
+      }
+    }
+  } else if (coeff_bit_count <= 128) {
+    uint64_t coeffu[2]{static_cast<uint64_t>(fmod(coeffd, two_pow_64)),
+                       static_cast<uint64_t>(coeffd / two_pow_64)};
+
+    if (is_negative) {
+      for (size_t j = 0; j < coeff_mod_count; j++) {
+        plaintext_vals[j] = seal::util::negate_uint_mod(
+            seal::util::barrett_reduce_128(coeffu, coeff_modulus[j]),
+            coeff_modulus[j]);
+        // fill_n(destination.data() + (j * coeff_count), coeff_count,
+        //       negate_uint_mod(barrett_reduce_128(coeffu, coeff_modulus[j]),
+        //                       coeff_modulus[j]));
+      }
+    } else {
+      for (size_t j = 0; j < coeff_mod_count; j++) {
+        plaintext_vals[j] =
+            seal::util::barrett_reduce_128(coeffu, coeff_modulus[j]);
+        // fill_n(destination.data() + (j * coeff_count), coeff_count,
+        //        barrett_reduce_128(coeffu, coeff_modulus[j]));
+      }
+    }
+  } else {
+    // From evaluator.h
+    auto decompose_single_coeff =
+        [](const seal::SEALContext::ContextData& context_data,
+           const std::uint64_t* value, std::uint64_t* destination,
+           seal::util::MemoryPool& pool) {
+          auto& parms = context_data.parms();
+          auto& coeff_modulus = parms.coeff_modulus();
+          std::size_t coeff_mod_count = coeff_modulus.size();
+#ifdef SEAL_DEBUG
+          if (value == nullptr) {
+            throw std::invalid_argument("value cannot be null");
+          }
+          if (destination == nullptr) {
+            throw std::invalid_argument("destination cannot be null");
+          }
+          if (destination == value) {
+            throw std::invalid_argument(
+                "value cannot be the same as destination");
+          }
+#endif
+          if (coeff_mod_count == 1) {
+            seal::util::set_uint_uint(value, coeff_mod_count, destination);
+            return;
+          }
+
+          auto value_copy(seal::util::allocate_uint(coeff_mod_count, pool));
+          for (std::size_t j = 0; j < coeff_mod_count; j++) {
+            // destination[j] = util::modulo_uint(
+            //    value, coeff_mod_count, coeff_modulus_[j], pool);
+
+            // Manually inlined for efficiency
+            // Make a fresh copy of value
+            seal::util::set_uint_uint(value, coeff_mod_count, value_copy.get());
+
+            // Starting from the top, reduce always 128-bit blocks
+            for (std::size_t k = coeff_mod_count - 1; k--;) {
+              value_copy[k] = seal::util::barrett_reduce_128(
+                  value_copy.get() + k, coeff_modulus[j]);
+            }
+            destination[j] = value_copy[0];
+          }
+        };
+
+    // Slow case
+    auto coeffu(seal::util::allocate_uint(coeff_mod_count, pool));
+    auto decomp_coeffu(seal::util::allocate_uint(coeff_mod_count, pool));
+
+    // We are at this point guaranteed to fit in the allocated space
+    seal::util::set_zero_uint(coeff_mod_count, coeffu.get());
+    auto coeffu_ptr = coeffu.get();
+    while (coeffd >= 1) {
+      *coeffu_ptr++ = static_cast<uint64_t>(fmod(coeffd, two_pow_64));
+      coeffd /= two_pow_64;
+    }
+
+    // Next decompose this coefficient
+    decompose_single_coeff(context_data, coeffu.get(), decomp_coeffu.get(),
+                           pool);
+
+    // Finally replace the sign if necessary
+    if (is_negative) {
+      for (size_t j = 0; j < coeff_mod_count; j++) {
+        plaintext_vals[j] =
+            seal::util::negate_uint_mod(decomp_coeffu[j], coeff_modulus[j]);
+        // fill_n(destination.data() + (j * coeff_count), coeff_count,
+        //       negate_uint_mod(decomp_coeffu[j], coeff_modulus[j]));
+      }
+    } else {
+      for (size_t j = 0; j < coeff_mod_count; j++) {
+        plaintext_vals[j] = decomp_coeffu[j];
+        // fill_n(destination.data() + (j * coeff_count), coeff_count,
+        //       decomp_coeffu[j]);
+      }
+    }
+  }
+  // Done doing "encoding"
+
+  // Check that scale is positive and not too large
+  if (new_scale <= 0 || (static_cast<int>(log2(new_scale)) >=
+                         context_data.total_coeff_modulus_bit_count())) {
+    throw ngraph_error("scale out of bounds");
+  }
+
+  for (size_t i = 0; i < encrypted_ntt_size; i++) {
+    for (size_t j = 0; j < coeff_mod_count; j++) {
+      // Multiply by scalar instead of doing dyadic product
+      seal::util::multiply_poly_scalar_coeffmod(
+          encrypted.data(i) + (j * coeff_count), coeff_count, plaintext_vals[j],
+          coeff_modulus[j], encrypted.data(i) + (j * coeff_count));
+      // dyadic_product_coeffmod(encrypted.data(i) + (j * coeff_count),
+      //                        plain_ntt.data() + (j * coeff_count),
+      //                        coeff_count, coeff_modulus[j],
+      //                       encrypted.data(i) + (j * coeff_count));
+    }
+  }
+
+  // Set the scale
+  encrypted.scale() = new_scale;
 }
