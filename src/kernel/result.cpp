@@ -16,13 +16,13 @@
 
 #include "kernel/result.hpp"
 
-using namespace std;
-using namespace ngraph;
 
-void runtime::he::kernel::result(
-    vector<shared_ptr<runtime::he::HEPlaintext>>& arg,
-    vector<shared_ptr<runtime::he::HECiphertext>>& out, size_t count,
-    const runtime::he::HEBackend* he_backend) {
+
+
+void ngraph::he::kernel::result(
+    vector<shared_ptr<ngraph::he::HEPlaintext>>& arg,
+    vector<shared_ptr<ngraph::he::HECiphertext>>& out, size_t count,
+    const ngraph::he::HEBackend* he_backend) {
   if (out.size() != arg.size()) {
     NGRAPH_INFO << "Result output size " << out.size()
                 << " does not match result input size " << arg.size();
@@ -33,10 +33,10 @@ void runtime::he::kernel::result(
   }
 }
 
-void runtime::he::kernel::result(
-    vector<shared_ptr<runtime::he::HECiphertext>>& arg,
-    vector<shared_ptr<runtime::he::HEPlaintext>>& out, size_t count,
-    const runtime::he::HEBackend* he_backend) {
+void ngraph::he::kernel::result(
+    vector<shared_ptr<ngraph::he::HECiphertext>>& arg,
+    vector<shared_ptr<ngraph::he::HEPlaintext>>& out, size_t count,
+    const ngraph::he::HEBackend* he_backend) {
   if (out.size() != arg.size()) {
     NGRAPH_INFO << "Result output size " << out.size()
                 << " does not match result input size " << arg.size();

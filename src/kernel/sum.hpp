@@ -32,7 +32,7 @@ void sum(std::vector<std::shared_ptr<T>>& arg,
          std::vector<std::shared_ptr<T>>& out, const Shape& in_shape,
          const Shape& out_shape, const AxisSet& reduction_axes,
          const element::Type& element_type,
-         const runtime::he::HEBackend* he_backend) {
+         const ngraph::he::HEBackend* he_backend) {
   CoordinateTransform output_transform(out_shape);
 
   for (const Coordinate& output_coord : output_transform) {
@@ -47,7 +47,7 @@ void sum(std::vector<std::shared_ptr<T>>& arg,
 
     auto& input = arg[input_transform.index(input_coord)];
     auto& output = out[output_transform.index(output_coord)];
-    runtime::he::kernel::scalar_add(input, output, output, element_type,
+    ngraph::he::scalar_add(input, output, output, element_type,
                                     he_backend);
   }
 }

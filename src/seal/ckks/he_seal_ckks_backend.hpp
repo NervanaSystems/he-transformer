@@ -31,14 +31,12 @@
 #include "seal/seal_plaintext_wrapper.hpp"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
-namespace he_seal {
 class HESealCKKSBackend : public HESealBackend {
  public:
   HESealCKKSBackend();
   HESealCKKSBackend(
-      const std::shared_ptr<runtime::he::HEEncryptionParameters>& sp);
+      const std::shared_ptr<ngraph::he::HEEncryptionParameters>& sp);
   HESealCKKSBackend(HESealCKKSBackend& he_backend) = default;
   ~HESealCKKSBackend(){};
 
@@ -49,27 +47,27 @@ class HESealCKKSBackend : public HESealBackend {
       const element::Type& element_type, const Shape& shape) override;
 
   std::shared_ptr<seal::SEALContext> make_seal_context(
-      const std::shared_ptr<runtime::he::HEEncryptionParameters> sp) override;
+      const std::shared_ptr<ngraph::he::HEEncryptionParameters> sp) override;
 
   void encode(
-      std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& plaintext,
+      std::shared_ptr<ngraph::he::SealPlaintextWrapper>& plaintext,
       seal::parms_id_type parms_id, double scale, bool complex) const override;
 
   void encode(
-      std::shared_ptr<ngraph::runtime::he::he_seal::SealPlaintextWrapper>&
+      std::shared_ptr<ngraph::ngraph::he::SealPlaintextWrapper>&
           plaintext,
       bool complex) const override {
     encode(plaintext, m_context->first_parms_id(), m_scale, complex);
   }
 
-  void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
+  void encode(std::shared_ptr<ngraph::he::HEPlaintext>& output,
               const void* input, const element::Type& element_type,
               bool complex, size_t count = 1) const override;
-  void decode(void* output, std::shared_ptr<runtime::he::HEPlaintext>& input,
+  void decode(void* output, std::shared_ptr<ngraph::he::HEPlaintext>& input,
               const element::Type& element_type,
               size_t count = 1) const override;
 
-  void decode(std::shared_ptr<runtime::he::HEPlaintext>& input) const override;
+  void decode(std::shared_ptr<ngraph::he::HEPlaintext>& input) const override;
 
   const inline std::shared_ptr<seal::CKKSEncoder> get_ckks_encoder() const {
     return m_ckks_encoder;
@@ -81,15 +79,13 @@ class HESealCKKSBackend : public HESealBackend {
   double m_scale;
 };
 
-inline const runtime::he::he_seal::HESealCKKSBackend* cast_to_seal_ckks_backend(
-    const runtime::he::HEBackend* he_seal_backend) {
+inline const ngraph::he::HESealCKKSBackend* cast_to_seal_ckks_backend(
+    const ngraph::he::HEBackend* he_seal_backend) {
   auto he_seal_ckks_backend =
-      dynamic_cast<const runtime::he::he_seal::HESealCKKSBackend*>(
+      dynamic_cast<const ngraph::he::HESealCKKSBackend*>(
           he_seal_backend);
   NGRAPH_ASSERT(he_seal_ckks_backend != nullptr);
   return he_seal_ckks_backend;
 };
-}  // namespace he_seal
-}  // namespace he
 }  // namespace runtime
 }  // namespace ngraph

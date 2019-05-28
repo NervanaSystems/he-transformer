@@ -16,46 +16,40 @@
 
 #include "seal/kernel/subtract_seal.hpp"
 
-using namespace std;
-using namespace ngraph;
-
-void runtime::he::he_seal::kernel::scalar_subtract(
-    shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
-    shared_ptr<he_seal::SealCiphertextWrapper>& arg1,
-    shared_ptr<he_seal::SealCiphertextWrapper>& out,
-    const element::Type& element_type,
-    const he_seal::HESealBackend* he_seal_backend) {
+void ngraph::he::kernel::scalar_subtract(
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
+    const element::Type& element_type, const HESealBackend* he_seal_backend) {
   if (arg0->is_zero()) {
     NGRAPH_INFO << "Arg0 is 0 in sub C-C";
     he_seal_backend->get_evaluator()->negate(arg1->m_ciphertext,
                                              out->m_ciphertext);
   } else if (arg1->is_zero()) {
     NGRAPH_INFO << "Arg1 is 0 in sub C-C";
-    out = make_shared<he_seal::SealCiphertextWrapper>(*arg0);
+    out = make_shared<ngraph::he::SealCiphertextWrapper>(*arg0);
   } else {
     he_seal_backend->get_evaluator()->sub(
         arg0->m_ciphertext, arg1->m_ciphertext, out->m_ciphertext);
   }
 }
 
-void runtime::he::he_seal::kernel::scalar_subtract(
-    shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
-    shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
-    shared_ptr<he_seal::SealCiphertextWrapper>& out,
-    const element::Type& element_type,
-    const he_seal::HESealBackend* he_seal_backend) {
+void ngraph::he::kernel::scalar_subtract(
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
+    std::shared_ptr<SealPlaintextWrapper>& arg1,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
+    const element::Type& element_type, const HESealBackend* he_seal_backend) {
   he_seal_backend->encode(arg1, arg0->m_ciphertext.parms_id(),
                           arg0->m_ciphertext.scale(), arg0->complex_packing());
   he_seal_backend->get_evaluator()->sub_plain(
       arg0->m_ciphertext, arg1->get_plaintext(), out->m_ciphertext);
 }
 
-void runtime::he::he_seal::kernel::scalar_subtract(
-    shared_ptr<he_seal::SealPlaintextWrapper>& arg0,
-    shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
-    shared_ptr<he_seal::SealPlaintextWrapper>& out,
-    const element::Type& element_type,
-    const he_seal::HESealBackend* he_seal_backend) {
+void ngraph::he::kernel::scalar_subtract(
+    std::shared_ptr<SealPlaintextWrapper>& arg0,
+    std::shared_ptr<SealPlaintextWrapper>& arg1,
+    std::shared_ptr<SealPlaintextWrapper>& out,
+    const element::Type& element_type, const HESealBackend* he_seal_backend) {
   NGRAPH_ASSERT(element_type == element::f32);
 
   const std::vector<float>& arg0_vals = arg0->get_values();

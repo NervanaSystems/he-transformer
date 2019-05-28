@@ -19,7 +19,6 @@
 #include <iostream>
 
 namespace ngraph {
-namespace runtime {
 namespace he {
 class HECiphertext {
  public:
@@ -41,5 +40,4 @@ class HECiphertext {
   bool m_is_zero;
 };  // namespace he
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

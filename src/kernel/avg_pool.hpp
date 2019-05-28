@@ -133,7 +133,7 @@ void avg_pool(std::vector<std::shared_ptr<T>>& arg,
           sum = arg[input_batch_transform.index(input_batch_coord)];
           first_add = false;
         } else {
-          runtime::he::kernel::scalar_add(
+          ngraph::he::scalar_add(
               sum, arg[input_batch_transform.index(input_batch_coord)], sum,
               element::f32, he_backend);
         }
@@ -147,7 +147,7 @@ void avg_pool(std::vector<std::shared_ptr<T>>& arg,
     auto inv_n_elements =
         he_backend->create_valued_plaintext(1. / n_elements, element::f32);
 
-    runtime::he::kernel::scalar_multiply(sum, inv_n_elements, sum, element::f32,
+    ngraph::he::scalar_multiply(sum, inv_n_elements, sum, element::f32,
                                          he_backend);
 
     out[output_transform.index(out_coord)] = sum;

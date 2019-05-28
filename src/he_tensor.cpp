@@ -20,10 +20,10 @@
 #include "ngraph/descriptor/tensor.hpp"
 #include "ngraph/util.hpp"
 
-using namespace std;
-using namespace ngraph;
 
-runtime::he::HETensor::HETensor(const element::Type& element_type,
+
+
+ngraph::he::HETensor::HETensor(const element::Type& element_type,
                                 const Shape& shape, const HEBackend* he_backend,
                                 const bool batched, const string& name)
     : runtime::Tensor(
@@ -43,7 +43,7 @@ runtime::he::HETensor::HETensor(const element::Type& element_type,
   }
 }
 
-Shape runtime::he::HETensor::batch_shape(const Shape& shape,
+Shape ngraph::he::HETensor::batch_shape(const Shape& shape,
                                          size_t batch_axis) {
   if (batch_axis != 0) {
     throw ngraph_error("Batching only supported along axis 0");
@@ -55,7 +55,7 @@ Shape runtime::he::HETensor::batch_shape(const Shape& shape,
   return batched_shape;
 }
 
-void runtime::he::HETensor::check_io_bounds(const void* source,
+void ngraph::he::HETensor::check_io_bounds(const void* source,
                                             size_t tensor_offset,
                                             size_t n) const {
   const element::Type& element_type = get_tensor_layout()->get_element_type();

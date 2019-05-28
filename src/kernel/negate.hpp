@@ -32,11 +32,11 @@ namespace kernel {
 template <typename T>
 void scalar_negate(std::shared_ptr<T>& arg, std::shared_ptr<T>& out,
                    const element::Type& element_type,
-                   const runtime::he::HEBackend* he_backend) {
-  auto he_seal_backend = he_seal::cast_to_seal_backend(he_backend);
-  auto arg_seal = he_seal::cast_to_seal_hetext(arg);
-  auto out_seal = he_seal::cast_to_seal_hetext(out);
-  he_seal::kernel::scalar_negate(arg_seal, out_seal, element_type,
+                   const ngraph::he::HEBackend* he_backend) {
+  auto he_seal_backend = cast_to_seal_backend(he_backend);
+  auto arg_seal = cast_to_seal_hetext(arg);
+  auto out_seal = cast_to_seal_hetext(out);
+  scalar_negate(arg_seal, out_seal, element_type,
                                  he_seal_backend);
 }
 
@@ -44,10 +44,10 @@ template <typename T>
 void negate(std::vector<std::shared_ptr<T>>& arg,
             std::vector<std::shared_ptr<T>>& out,
             const element::Type& element_type,
-            const runtime::he::HEBackend* he_backend, size_t count) {
+            const ngraph::he::HEBackend* he_backend, size_t count) {
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
-    kernel::scalar_negate(arg[i], out[i], element_type, he_backend);
+    scalar_negate(arg[i], out[i], element_type, he_backend);
   }
 }
 }  // namespace kernel

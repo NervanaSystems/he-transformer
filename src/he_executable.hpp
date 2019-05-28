@@ -44,7 +44,7 @@ class HEExecutable : public Executable {
  public:
   HEExecutable(const std::shared_ptr<Function>& function,
                bool enable_performance_collection,
-               const runtime::he::HEBackend* he_backend, bool encrypt_data,
+               const ngraph::he::HEBackend* he_backend, bool encrypt_data,
                bool encrypt_model, bool batch_data);
 
   ~HEExecutable() {
@@ -97,13 +97,13 @@ class HEExecutable : public Executable {
   boost::asio::io_context m_io_context;
 
   // (Encrypted) inputs to compiled function
-  std::vector<std::shared_ptr<runtime::he::HETensor>> m_client_inputs;
+  std::vector<std::shared_ptr<ngraph::he::HETensor>> m_client_inputs;
   // (Encrypted) outputs of compiled function
-  std::vector<std::shared_ptr<runtime::he::HETensor>> m_client_outputs;
+  std::vector<std::shared_ptr<ngraph::he::HETensor>> m_client_outputs;
 
-  std::vector<std::shared_ptr<runtime::he::HECiphertext>> m_relu_ciphertexts;
-  std::vector<std::shared_ptr<runtime::he::HECiphertext>> m_max_ciphertexts;
-  std::vector<std::shared_ptr<runtime::he::HECiphertext>> m_minimum_ciphertexts;
+  std::vector<std::shared_ptr<ngraph::he::HECiphertext>> m_relu_ciphertexts;
+  std::vector<std::shared_ptr<ngraph::he::HECiphertext>> m_max_ciphertexts;
+  std::vector<std::shared_ptr<ngraph::he::HECiphertext>> m_minimum_ciphertexts;
 
   std::shared_ptr<seal::SEALContext>
       m_context;  // TODO: move to he_seal_executable.hpp

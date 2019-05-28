@@ -21,56 +21,53 @@
 #include "seal/kernel/multiply_seal.hpp"
 #include "seal/kernel/negate_seal.hpp"
 
-using namespace std;
-using namespace ngraph::runtime::he;
-
-void kernel::scalar_multiply(shared_ptr<HECiphertext>& arg0,
-                             shared_ptr<HECiphertext>& arg1,
-                             shared_ptr<HECiphertext>& out,
+void kernel::scalar_multiply(std::shared_ptr<ngraph::he::HECiphertext>& arg0,
+                             std::shared_ptr<ngraph::he::HECiphertext>& arg1,
+                             std::shared_ptr<ngraph::he::HECiphertext>& out,
                              const element::Type& element_type,
                              const HEBackend* he_backend) {
-  auto he_seal_backend = he_seal::cast_to_seal_backend(he_backend);
-  auto arg0_seal = he_seal::cast_to_seal_hetext(arg0);
-  auto arg1_seal = he_seal::cast_to_seal_hetext(arg1);
-  auto out_seal = he_seal::cast_to_seal_hetext(out);
-  he_seal::kernel::scalar_multiply(arg0_seal, arg1_seal, out_seal, element_type,
-                                   he_seal_backend);
-  out = dynamic_pointer_cast<HECiphertext>(out_seal);
+  auto he_seal_backend = cast_to_seal_backend(he_backend);
+  auto arg0_seal = cast_to_seal_hetext(arg0);
+  auto arg1_seal = cast_to_seal_hetext(arg1);
+  auto out_seal = cast_to_seal_hetext(out);
+  kernel::scalar_multiply(arg0_seal, arg1_seal, out_seal, element_type,
+                          he_seal_backend);
+  out = dynamic_pointer_cast<ngraph::he::HECiphertext>(out_seal);
 }
 
-void kernel::scalar_multiply(shared_ptr<HEPlaintext>& arg0,
-                             shared_ptr<HEPlaintext>& arg1,
-                             shared_ptr<HEPlaintext>& out,
+void kernel::scalar_multiply(std::shared_ptr<HEPlaintext>& arg0,
+                             std::shared_ptr<HEPlaintext>& arg1,
+                             std::shared_ptr<HEPlaintext>& out,
                              const element::Type& element_type,
                              const HEBackend* he_backend) {
-  auto he_seal_backend = he_seal::cast_to_seal_backend(he_backend);
-  auto arg0_seal = he_seal::cast_to_seal_hetext(arg0);
-  auto arg1_seal = he_seal::cast_to_seal_hetext(arg1);
-  auto out_seal = he_seal::cast_to_seal_hetext(out);
-  he_seal::kernel::scalar_multiply(arg0_seal, arg1_seal, out_seal, element_type,
-                                   he_seal_backend);
+  auto he_seal_backend = cast_to_seal_backend(he_backend);
+  auto arg0_seal = cast_to_seal_hetext(arg0);
+  auto arg1_seal = cast_to_seal_hetext(arg1);
+  auto out_seal = cast_to_seal_hetext(out);
+  kernel::scalar_multiply(arg0_seal, arg1_seal, out_seal, element_type,
+                          he_seal_backend);
   out = dynamic_pointer_cast<HEPlaintext>(out_seal);
 }
 
-void kernel::scalar_multiply(shared_ptr<HECiphertext>& arg0,
-                             shared_ptr<HEPlaintext>& arg1,
-                             shared_ptr<HECiphertext>& out,
+void kernel::scalar_multiply(std::shared_ptr<ngraph::he::HECiphertext>& arg0,
+                             std::shared_ptr<HEPlaintext>& arg1,
+                             std::shared_ptr<ngraph::he::HECiphertext>& out,
                              const element::Type& element_type,
                              const HEBackend* he_backend) {
-  auto he_seal_backend = he_seal::cast_to_seal_backend(he_backend);
-  auto arg0_seal = he_seal::cast_to_seal_hetext(arg0);
-  auto arg1_seal = he_seal::cast_to_seal_hetext(arg1);
-  auto out_seal = he_seal::cast_to_seal_hetext(out);
+  auto he_seal_backend = cast_to_seal_backend(he_backend);
+  auto arg0_seal = cast_to_seal_hetext(arg0);
+  auto arg1_seal = cast_to_seal_hetext(arg1);
+  auto out_seal = cast_to_seal_hetext(out);
 
-  he_seal::kernel::scalar_multiply(arg0_seal, arg1_seal, out_seal, element_type,
-                                   he_seal_backend);
-  out = dynamic_pointer_cast<HECiphertext>(out_seal);
+  kernel::scalar_multiply(arg0_seal, arg1_seal, out_seal, element_type,
+                          he_seal_backend);
+  out = dynamic_pointer_cast<ngraph::he::HECiphertext>(out_seal);
 }
 
-void kernel::scalar_multiply(shared_ptr<HEPlaintext>& arg0,
-                             shared_ptr<HECiphertext>& arg1,
-                             shared_ptr<HECiphertext>& out,
+void kernel::scalar_multiply(std::shared_ptr<HEPlaintext>& arg0,
+                             std::shared_ptr<ngraph::he::HECiphertext>& arg1,
+                             std::shared_ptr<ngraph::he::HECiphertext>& out,
                              const element::Type& element_type,
-                             const HEBackend* he_backend) {
+                             const ngraph::he::HEBackend* he_backend) {
   scalar_multiply(arg1, arg0, out, element_type, he_backend);
 }

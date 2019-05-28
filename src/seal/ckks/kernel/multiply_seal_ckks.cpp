@@ -18,16 +18,12 @@
 #include "seal/ckks/seal_ckks_util.hpp"
 #include "seal/seal.h"
 
-using namespace std;
-using namespace ngraph::runtime::he;
-using namespace ngraph::runtime::he::he_seal::ckks;
-
-void he_seal::ckks::kernel::scalar_multiply_ckks(
-    shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
-    shared_ptr<he_seal::SealCiphertextWrapper>& arg1,
-    shared_ptr<he_seal::SealCiphertextWrapper>& out,
+void ckks::kernel::scalar_multiply_ckks(
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type,
-    const runtime::he::he_seal::HESealCKKSBackend* he_seal_ckks_backend,
+    const ngraph::he::HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
   match_modulus_and_scale_inplace(arg0.get(), arg1.get(), he_seal_ckks_backend,
                                   pool);
@@ -55,12 +51,12 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
       out->m_ciphertext, pool);
 }
 
-void he_seal::ckks::kernel::scalar_multiply_ckks(
-    shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
-    shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
-    shared_ptr<he_seal::SealCiphertextWrapper>& out,
+void ckks::kernel::scalar_multiply_ckks(
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
+    std::shared_ptr<ngraph::he::SealPlaintextWrapper>& arg1,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type,
-    const runtime::he::he_seal::HESealCKKSBackend* he_seal_ckks_backend,
+    const ngraph::he::HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
   // TODO: activate!
   if (arg1->is_single_value()) {
@@ -111,12 +107,12 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
   //    out->m_ciphertext, pool);
 }
 
-void he_seal::ckks::kernel::scalar_multiply_ckks(
-    shared_ptr<he_seal::SealPlaintextWrapper>& arg0,
-    shared_ptr<he_seal::SealCiphertextWrapper>& arg1,
-    shared_ptr<he_seal::SealCiphertextWrapper>& out,
+void ckks::kernel::scalar_multiply_ckks(
+    std::shared_ptr<ngraph::he::SealPlaintextWrapper>& arg0,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type,
-    const runtime::he::he_seal::HESealCKKSBackend* he_seal_ckks_backend,
+    const ngraph::he::HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
   scalar_multiply_ckks(arg1, arg0, out, element_type, he_seal_ckks_backend,
                        pool);

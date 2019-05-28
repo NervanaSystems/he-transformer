@@ -22,7 +22,6 @@
 #include <vector>
 
 namespace ngraph {
-namespace runtime {
 namespace he {
 class HEEncryptionParameters {
  public:
@@ -65,7 +64,6 @@ class HEEncryptionParameters {
   std::uint64_t m_evaluation_decomposition_bit_count;
   std::vector<std::uint64_t> m_coeff_modulus;
   std::uint64_t m_plain_modulus;
-};  // namespace he
+};
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

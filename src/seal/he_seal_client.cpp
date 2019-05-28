@@ -28,10 +28,10 @@
 #include "tcp/tcp_client.hpp"
 #include "tcp/tcp_message.hpp"
 
-using namespace ngraph;
-using namespace std;
 
-runtime::he::HESealClient::HESealClient(const std::string& hostname,
+
+
+ngraph::he::HESealClient::HESealClient(const std::string& hostname,
                                         const size_t port,
                                         const size_t batch_size,
                                         const std::vector<float>& inputs)
@@ -40,17 +40,17 @@ runtime::he::HESealClient::HESealClient(const std::string& hostname,
   tcp::resolver resolver(io_context);
   auto endpoints = resolver.resolve(hostname, std::to_string(port));
 
-  auto client_callback = [this](const runtime::he::TCPMessage& message) {
+  auto client_callback = [this](const ngraph::he::TCPMessage& message) {
     return handle_message(message);
   };
 
-  m_tcp_client = std::make_shared<runtime::he::TCPClient>(io_context, endpoints,
+  m_tcp_client = std::make_shared<ngraph::he::TCPClient>(io_context, endpoints,
                                                           client_callback);
 
   io_context.run();
 }
 
-void runtime::he::HESealClient::set_seal_context() {
+void ngraph::he::HESealClient::set_seal_context() {
   m_context = seal::SEALContext::Create(m_encryption_params);
 
   print_seal_context(*m_context);
@@ -73,9 +73,9 @@ void runtime::he::HESealClient::set_seal_context() {
       m_context_data->parms().coeff_modulus().back().value());
 }
 
-void runtime::he::HESealClient::handle_message(
-    const runtime::he::TCPMessage& message) {
-  runtime::he::MessageType msg_type = message.message_type();
+void ngraph::he::HESealClient::handle_message(
+    const ngraph::he::TCPMessage& message) {
+  ngraph::he::MessageType msg_type = message.message_type();
 
   // std::cout << "Client received message type: "
   //          << message_type_to_string(msg_type).c_str() << std::endl;
@@ -97,7 +97,7 @@ void runtime::he::HESealClient::handle_message(
     }
   };
 
-  if (msg_type == runtime::he::MessageType::parameter_size) {
+  if (msg_type == ngraph::he::MessageType::parameter_size) {
     // Number of (packed) ciphertexts to perform inference on
     size_t parameter_size;
     std::memcpy(&parameter_size, message.data_ptr(), message.data_size());
@@ -147,13 +147,13 @@ void runtime::he::HESealClient::handle_message(
       cipher.save(cipher_stream);
     }
 
-    auto execute_message = TCPMessage(runtime::he::MessageType::execute,
+    auto execute_message = TCPMessage(ngraph::he::MessageType::execute,
                                       parameter_size, cipher_stream);
     std::cout << "Sending execute message with " << parameter_size
               << " ciphertexts" << std::endl;
 
     write_message(execute_message);
-  } else if (msg_type == runtime::he::MessageType::result) {
+  } else if (msg_type == ngraph::he::MessageType::result) {
     size_t result_count = message.count();
     size_t element_size = message.element_size();
 
@@ -179,9 +179,9 @@ void runtime::he::HESealClient::handle_message(
     std::cout << "Results size " << m_results.size() << std::endl;
 
     close_connection();
-  } else if (msg_type == runtime::he::MessageType::none) {
+  } else if (msg_type == ngraph::he::MessageType::none) {
     close_connection();
-  } else if (msg_type == runtime::he::MessageType::encryption_parameters) {
+  } else if (msg_type == ngraph::he::MessageType::encryption_parameters) {
     std::stringstream param_stream;
     param_stream.write(message.data_ptr(), message.element_size());
     m_encryption_params = seal::EncryptionParameters::Load(param_stream);
@@ -193,7 +193,7 @@ void runtime::he::HESealClient::handle_message(
     std::stringstream pk_stream;
     m_public_key->save(pk_stream);
     auto pk_message =
-        TCPMessage(runtime::he::MessageType::public_key, 1, pk_stream);
+        TCPMessage(ngraph::he::MessageType::public_key, 1, pk_stream);
     std::cout << "Sending public key" << std::endl;
     write_message(pk_message);
 
@@ -201,10 +201,10 @@ void runtime::he::HESealClient::handle_message(
     std::stringstream evk_stream;
     m_relin_keys->save(evk_stream);
     auto evk_message =
-        TCPMessage(runtime::he::MessageType::eval_key, 1, evk_stream);
+        TCPMessage(ngraph::he::MessageType::eval_key, 1, evk_stream);
     std::cout << "Sending evaluation key" << std::endl;
     write_message(evk_message);
-  } else if (msg_type == runtime::he::MessageType::relu_request) {
+  } else if (msg_type == ngraph::he::MessageType::relu_request) {
     auto relu = [](double d) { return d > 0 ? d : 0; };
     size_t result_count = message.count();
     size_t element_size = message.element_size();
@@ -247,10 +247,10 @@ void runtime::he::HESealClient::handle_message(
     std::cout << "Writing relu_result message with " << result_count
               << " ciphertexts" << std::endl;
 
-    auto relu_result_msg = TCPMessage(runtime::he::MessageType::relu_result,
+    auto relu_result_msg = TCPMessage(ngraph::he::MessageType::relu_result,
                                       result_count, post_relu_stream);
     write_message(relu_result_msg);
-  } else if (msg_type == runtime::he::MessageType::max_request) {
+  } else if (msg_type == ngraph::he::MessageType::max_request) {
     size_t complex_scale_factor = complex_packing() ? 2 : 1;
     size_t cipher_count = message.count();
     size_t element_size = message.element_size();
@@ -307,9 +307,9 @@ void runtime::he::HESealClient::handle_message(
     m_encryptor->encrypt(plain_max, cipher_max);
     cipher_max.save(max_stream);
     auto max_result_msg =
-        TCPMessage(runtime::he::MessageType::max_result, 1, max_stream);
+        TCPMessage(ngraph::he::MessageType::max_result, 1, max_stream);
     write_message(max_result_msg);
-  } else if (msg_type == runtime::he::MessageType::minimum_request) {
+  } else if (msg_type == ngraph::he::MessageType::minimum_request) {
     // Stores (c_1a, c_1b, c_2a, c_b, ..., c_na, c_nb)
     // prints messsge (min(c_1a, c_1b), min(c_2a, c_2b), ..., min(c_na, c_nb))
     size_t cipher_count = message.count();
@@ -363,7 +363,7 @@ void runtime::he::HESealClient::handle_message(
     }
 
     auto minimum_result_msg =
-        TCPMessage(runtime::he::MessageType::minimum_result, cipher_count / 2,
+        TCPMessage(ngraph::he::MessageType::minimum_result, cipher_count / 2,
                    minimum_stream);
     write_message(minimum_result_msg);
   } else {
@@ -372,18 +372,18 @@ void runtime::he::HESealClient::handle_message(
   }
 }
 
-void runtime::he::HESealClient::write_message(
-    const runtime::he::TCPMessage& message) {
+void ngraph::he::HESealClient::write_message(
+    const ngraph::he::TCPMessage& message) {
   m_tcp_client->write_message(message);
 }
 
-bool runtime::he::HESealClient::is_done() { return m_is_done; }
+bool ngraph::he::HESealClient::is_done() { return m_is_done; }
 
-std::vector<float> runtime::he::HESealClient::get_results() {
+std::vector<float> ngraph::he::HESealClient::get_results() {
   return m_results;
 }
 
-void runtime::he::HESealClient::close_connection() {
+void ngraph::he::HESealClient::close_connection() {
   std::cout << "Closing connection" << std::endl;
   m_tcp_client->close();
   m_is_done = true;

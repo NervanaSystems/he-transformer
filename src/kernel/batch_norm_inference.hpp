@@ -47,7 +47,7 @@ void batch_norm_inference(
   CoordinateTransform input_transform(input_shape);
 
   auto he_seal_backend =
-      dynamic_cast<const runtime::he::he_seal::HESealBackend*>(he_backend);
+      dynamic_cast<const ngraph::he::HESealBackend*>(he_backend);
 
   if (he_seal_backend == nullptr) {
     throw ngraph_error(
@@ -106,10 +106,10 @@ void batch_norm_inference(
 
     auto output = he_backend->create_empty_ciphertext();
 
-    runtime::he::kernel::scalar_multiply(input[input_index], plain_scale,
+    ngraph::he::scalar_multiply(input[input_index], plain_scale,
                                          output, element::f32, he_backend);
 
-    runtime::he::kernel::scalar_add(output, plain_bias, output, element::f32,
+    ngraph::he::scalar_add(output, plain_bias, output, element::f32,
                                     he_backend);
     normed_input[input_index] = output;
   }

@@ -25,17 +25,14 @@
 #include "ngraph/op/pad.hpp"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
-namespace kernel {
-void pad(
-    std::vector<std::shared_ptr<runtime::he::HECiphertext>>& arg0,
-    std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& arg1,  // scalar
-    std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
-    const Shape& arg0_shape, const Shape& out_shape,
-    const CoordinateDiff& padding_below, const CoordinateDiff& padding_above,
-    op::PadMode pad_mode, size_t batch_size,
-    const runtime::he::HEBackend* he_backend);
+void pad(std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& arg0,
+         std::vector<std::shared_ptr<ngraph::he::HEPlaintext>>& arg1,  // scalar
+         std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& out,
+         const Shape& arg0_shape, const Shape& out_shape,
+         const CoordinateDiff& padding_below,
+         const CoordinateDiff& padding_above, op::PadMode pad_mode,
+         size_t batch_size, const ngraph::he::HEBackend* he_backend);
 
 template <typename S>
 void pad(std::vector<std::shared_ptr<S>>& arg0,
@@ -43,7 +40,7 @@ void pad(std::vector<std::shared_ptr<S>>& arg0,
          std::vector<std::shared_ptr<S>>& out, const Shape& arg0_shape,
          const Shape& out_shape, const CoordinateDiff& padding_below,
          const CoordinateDiff& padding_above, op::PadMode pad_mode,
-         size_t batch_size, const runtime::he::HEBackend* he_backend) {
+         size_t batch_size, const ngraph::he::HEBackend* he_backend) {
   if (arg1.size() != 1) {
     throw ngraph_error("Padding element must be scalar");
   }
@@ -165,7 +162,7 @@ void pad(std::vector<std::shared_ptr<S>>& arg0,
     ++output_it;
   }
 }
-}  // namespace kernel
 }  // namespace he
+}  // namespace ngraph
 }  // namespace runtime
 }  // namespace ngraph

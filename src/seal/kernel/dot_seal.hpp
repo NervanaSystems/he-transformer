@@ -30,30 +30,26 @@
 #include "seal/seal_plaintext_wrapper.hpp"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
-namespace he_seal {
-namespace kernel {
 template <typename S, typename T, typename V>
 void dot_seal(std::vector<std::shared_ptr<S>>& arg0,
               std::vector<std::shared_ptr<T>>& arg1,
               std::vector<std::shared_ptr<V>>& out, const Shape& arg0_shape,
               const Shape& arg1_shape, const Shape& out_shape,
               size_t reduction_axes_count, const element::Type& element_type,
-              const runtime::he::he_seal::HESealBackend* he_seal_backend);
+              const ngraph::he::HESealBackend* he_seal_backend);
 }
-}  // namespace he_seal
-}  // namespace he
-}  // namespace runtime
+}  // namespace ngraph
 }  // namespace ngraph
 
 template <typename S, typename T, typename V>
-void ngraph::runtime::he::he_seal::kernel::dot_seal(
-    std::vector<std::shared_ptr<S>>& arg0,
-    std::vector<std::shared_ptr<T>>& arg1, std::vector<std::shared_ptr<V>>& out,
-    const Shape& arg0_shape, const Shape& arg1_shape, const Shape& out_shape,
-    size_t reduction_axes_count, const element::Type& element_type,
-    const runtime::he::he_seal::HESealBackend* he_seal_backend) {
+void ngraph::he::dot_seal(std::vector<std::shared_ptr<S>>& arg0,
+                          std::vector<std::shared_ptr<T>>& arg1,
+                          std::vector<std::shared_ptr<V>>& out,
+                          const Shape& arg0_shape, const Shape& arg1_shape,
+                          const Shape& out_shape, size_t reduction_axes_count,
+                          const element::Type& element_type,
+                          const ngraph::he::HESealBackend* he_seal_backend) {
   // Get the sizes of the dot axes. It's easiest to pull them from arg1 because
   // they're
   // right up front.
@@ -138,7 +134,7 @@ void ngraph::runtime::he::he_seal::kernel::dot_seal(
                              arg0_projected_coord.end(), arg0_coord.begin());
 
     std::shared_ptr<V> sum = he_seal_backend->create_empty_hetext<V>(pool);
-    auto seal_sum = runtime::he::he_seal::cast_to_seal_hetext(sum);
+    auto seal_sum = ngraph::he::cast_to_seal_hetext(sum);
 
     bool first_add = true;
 
@@ -155,22 +151,22 @@ void ngraph::runtime::he::he_seal::kernel::dot_seal(
                 arg1_it);
 
       // Multiply and add to the summands.
-      auto arg0_seal_text = runtime::he::he_seal::cast_to_seal_hetext(
+      auto arg0_seal_text = ngraph::he::cast_to_seal_hetext(
           arg0[arg0_transform.index(arg0_coord)]);
-      auto arg1_seal_text = runtime::he::he_seal::cast_to_seal_hetext(
+      auto arg1_seal_text = ngraph::he::cast_to_seal_hetext(
           arg1[arg1_transform.index(arg1_coord)]);
 
       std::shared_ptr<V> prod = he_seal_backend->create_empty_hetext<V>(pool);
-      auto seal_prod = runtime::he::he_seal::cast_to_seal_hetext(prod);
-      runtime::he::he_seal::kernel::scalar_multiply(
-          arg0_seal_text, arg1_seal_text, seal_prod, element_type,
-          he_seal_backend, pool);
+      auto seal_prod = ngraph::he::cast_to_seal_hetext(prod);
+      ngraph::he::kernel::scalar_multiply(arg0_seal_text, arg1_seal_text,
+                                          seal_prod, element_type,
+                                          he_seal_backend, pool);
       if (first_add) {
         seal_sum = seal_prod;
         first_add = false;
       } else {
-        runtime::he::he_seal::kernel::scalar_add(
-            seal_sum, seal_prod, seal_sum, element_type, he_seal_backend, pool);
+        ngraph::he::kernel::scalar_add(seal_sum, seal_prod, seal_sum,
+                                       element_type, he_seal_backend, pool);
       }
     }
     // Write the sum back.

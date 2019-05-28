@@ -38,17 +38,17 @@
 #include "seal/seal.h"
 #include "tcp/tcp_message.hpp"
 
-using namespace ngraph;
-using namespace std;
 
-runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend()
-    : runtime::he::he_seal::HESealCKKSBackend(
-          runtime::he::he_seal::parse_config_or_use_default("HE_SEAL_CKKS")) {}
 
-runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend(
-    const shared_ptr<runtime::he::HEEncryptionParameters>& sp) {
+
+ngraph::he::HESealCKKSBackend::HESealCKKSBackend()
+    : ngraph::he::HESealCKKSBackend(
+          ngraph::he::parse_config_or_use_default("HE_SEAL_CKKS")) {}
+
+ngraph::he::HESealCKKSBackend::HESealCKKSBackend(
+    conststd::shared_ptr<ngraph::he::HEEncryptionParameters>& sp) {
   auto he_seal_encryption_parms =
-      static_pointer_cast<runtime::he::he_seal::HESealEncryptionParameters>(sp);
+      static_pointer_cast<ngraph::he::HESealEncryptionParameters>(sp);
 
   NGRAPH_ASSERT(he_seal_encryption_parms != nullptr)
       << "HE_SEAL_CKKS backend passed invalid encryption parameters";
@@ -82,12 +82,12 @@ runtime::he::he_seal::HESealCKKSBackend::HESealCKKSBackend(
 
 extern "C" runtime::Backend* new_ckks_backend(
     const char* configuration_string) {
-  return new runtime::he::he_seal::HESealCKKSBackend();
+  return new ngraph::he::HESealCKKSBackend();
 }
 
 shared_ptr<seal::SEALContext>
-runtime::he::he_seal::HESealCKKSBackend::make_seal_context(
-    const shared_ptr<runtime::he::HEEncryptionParameters> sp) {
+ngraph::he::HESealCKKSBackend::make_seal_context(
+    conststd::shared_ptr<ngraph::he::HEEncryptionParameters> sp) {
   throw ngraph_error("make SEAL context unimplemented");
 }
 
@@ -102,27 +102,27 @@ static class HESealCKKSStaticInit {
 }  // namespace
 
 shared_ptr<runtime::Tensor>
-runtime::he::he_seal::HESealCKKSBackend::create_batched_cipher_tensor(
+ngraph::he::HESealCKKSBackend::create_batched_cipher_tensor(
     const element::Type& type, const Shape& shape) {
   NGRAPH_INFO << "Creating batched cipher tensor with shape " << join(shape);
-  auto rc = make_shared<runtime::he::HECipherTensor>(
+  auto rc = make_shared<ngraph::he::HECipherTensor>(
       type, shape, this, create_empty_ciphertext(), true);
   set_batch_data(true);
   return static_pointer_cast<runtime::Tensor>(rc);
 }
 
 shared_ptr<runtime::Tensor>
-runtime::he::he_seal::HESealCKKSBackend::create_batched_plain_tensor(
+ngraph::he::HESealCKKSBackend::create_batched_plain_tensor(
     const element::Type& type, const Shape& shape) {
   NGRAPH_INFO << "Creating batched plain tensor with shape " << join(shape);
-  auto rc = make_shared<runtime::he::HEPlainTensor>(
+  auto rc = make_shared<ngraph::he::HEPlainTensor>(
       type, shape, this, create_empty_plaintext(), true);
   set_batch_data(true);
   return static_pointer_cast<runtime::Tensor>(rc);
 }
 
-void runtime::he::he_seal::HESealCKKSBackend::encode(
-    std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& plaintext,
+void ngraph::he::HESealCKKSBackend::encode(
+    std::shared_ptr<ngraph::he::SealPlaintextWrapper>& plaintext,
     seal::parms_id_type parms_id, double scale, bool complex) const {
   std::lock_guard<std::mutex> encode_lock(plaintext->get_encode_mutex());
   if (plaintext->is_encoded()) {
@@ -164,8 +164,8 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
   plaintext->set_encoded(true);
 }
 
-void runtime::he::he_seal::HESealCKKSBackend::encode(
-    shared_ptr<runtime::he::HEPlaintext>& output, const void* input,
+void ngraph::he::HESealCKKSBackend::encode(
+   std::shared_ptr<ngraph::he::HEPlaintext>& output, const void* input,
     const element::Type& type, bool complex, size_t count) const {
   auto seal_plaintext_wrapper = cast_to_seal_hetext(output);
 
@@ -178,8 +178,8 @@ void runtime::he::he_seal::HESealCKKSBackend::encode(
   encode(seal_plaintext_wrapper, complex);
 }
 
-void runtime::he::he_seal::HESealCKKSBackend::decode(
-    void* output, std::shared_ptr<runtime::he::HEPlaintext>& input,
+void ngraph::he::HESealCKKSBackend::decode(
+    void* output, std::shared_ptr<ngraph::he::HEPlaintext>& input,
     const element::Type& type, size_t count) const {
   NGRAPH_ASSERT(count != 0) << "Decode called on 0 elements";
   NGRAPH_ASSERT(type == element::f32)
@@ -192,8 +192,8 @@ void runtime::he::he_seal::HESealCKKSBackend::decode(
   memcpy(output, &xs_float[0], type.size() * count);
 }
 
-void runtime::he::he_seal::HESealCKKSBackend::decode(
-    std::shared_ptr<runtime::he::HEPlaintext>& input) const {
+void ngraph::he::HESealCKKSBackend::decode(
+    std::shared_ptr<ngraph::he::HEPlaintext>& input) const {
   auto seal_input = cast_to_seal_hetext(input);
 
   vector<double> real_vals;

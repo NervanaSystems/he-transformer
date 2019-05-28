@@ -36,21 +36,21 @@ void dot(std::vector<std::shared_ptr<S>>& arg0,
          std::vector<std::shared_ptr<V>>& out, const Shape& arg0_shape,
          const Shape& arg1_shape, const Shape& out_shape,
          size_t reduction_axes_count, const element::Type& element_type,
-         const runtime::he::HEBackend* he_backend);
+         const ngraph::he::HEBackend* he_backend);
 }
 }  // namespace he
 }  // namespace runtime
 }  // namespace ngraph
 
 template <typename S, typename T, typename V>
-void ngraph::runtime::he::kernel::dot(
+void ngraph::ngraph::he::dot(
     std::vector<std::shared_ptr<S>>& arg0,
     std::vector<std::shared_ptr<T>>& arg1, std::vector<std::shared_ptr<V>>& out,
     const Shape& arg0_shape, const Shape& arg1_shape, const Shape& out_shape,
     size_t reduction_axes_count, const element::Type& element_type,
-    const runtime::he::HEBackend* he_backend) {
-  auto he_seal_backend = runtime::he::he_seal::cast_to_seal_backend(he_backend);
-  runtime::he::he_seal::kernel::dot_seal(
+    const ngraph::he::HEBackend* he_backend) {
+  auto he_seal_backend = ngraph::he::cast_to_seal_backend(he_backend);
+  ngraph::he::dot_seal(
       arg0, arg1, out, arg0_shape, arg1_shape, out_shape, reduction_axes_count,
       element_type, he_seal_backend);
 }

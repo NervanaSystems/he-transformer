@@ -29,7 +29,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
  public:
   TCPSession(
       tcp::socket socket,
-      std::function<void(const runtime::he::TCPMessage&)> message_handler)
+      std::function<void(const ngraph::he::TCPMessage&)> message_handler)
       : m_socket(std::move(socket)),
         m_message_callback(std::bind(message_handler, std::placeholders::_1)) {}
 
@@ -43,7 +43,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
     boost::asio::async_read(
         m_socket,
         boost::asio::buffer(m_message.header_ptr(),
-                            runtime::he::TCPMessage::header_length),
+                            ngraph::he::TCPMessage::header_length),
         [this, self](boost::system::error_code ec, std::size_t length) {
           if (!ec & m_message.decode_header()) {
             do_read_body();
@@ -93,7 +93,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
   tcp::socket m_socket;
 
   // Called after message is received
-  std::function<void(const runtime::he::TCPMessage&)> m_message_callback;
+  std::function<void(const ngraph::he::TCPMessage&)> m_message_callback;
 };  // namespace he
 }  // namespace he
 }  // namespace runtime

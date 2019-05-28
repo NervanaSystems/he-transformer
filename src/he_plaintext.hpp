@@ -22,7 +22,6 @@
 #include "ngraph/assertion.hpp"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
 class HEPlaintext {
  public:
@@ -55,5 +54,4 @@ class HEPlaintext {
   std::mutex m_encode_mutex;
 };
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

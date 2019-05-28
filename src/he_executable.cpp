@@ -68,11 +68,11 @@
 #include "seal/he_seal_util.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 
-using namespace std;
-using namespace ngraph;
+
+
 using descriptor::layout::DenseTensorLayout;
 
-runtime::he::HEExecutable::HEExecutable(const shared_ptr<Function>& function,
+ngraph::he::HEExecutable::HEExecutable(conststd::shared_ptr<Function>& function,
                                         bool enable_performance_collection,
                                         const HEBackend* he_backend,
                                         bool encrypt_data, bool encrypt_model,
@@ -89,7 +89,7 @@ runtime::he::HEExecutable::HEExecutable(const shared_ptr<Function>& function,
       m_client_inputs_received(false) {
   NGRAPH_ASSERT(he_backend != nullptr) << "he_backend == nullptr";
   // TODO: move get_context to HEBackend
-  auto he_seal_backend = (runtime::he::he_seal::HESealBackend*)he_backend;
+  auto he_seal_backend = (ngraph::he::HESealBackend*)he_backend;
   NGRAPH_ASSERT(he_seal_backend != nullptr) << "he_seal_backend == nullptr";
   m_context = he_seal_backend->get_context();
 
@@ -100,7 +100,7 @@ runtime::he::HEExecutable::HEExecutable(const shared_ptr<Function>& function,
   pass_manager.register_pass<pass::Liveness>();
   pass_manager.run_passes(function);
 
-  for (const shared_ptr<Node>& node : function->get_ordered_ops()) {
+  for (conststd::shared_ptr<Node>& node : function->get_ordered_ops()) {
     m_wrapped_nodes.emplace_back(node);
   }
   set_parameters_and_results(*function);
@@ -133,7 +133,7 @@ runtime::he::HEExecutable::HEExecutable(const shared_ptr<Function>& function,
 
     // Send encryption parameters
     stringstream param_stream;
-    shared_ptr<HEEncryptionParameters> parms =
+   std::shared_ptr<HEEncryptionParameters> parms =
         he_backend->get_encryption_parameters();
     NGRAPH_ASSERT(parms != nullptr) << "HEEncryptionParameters == nullptr";
 
@@ -155,10 +155,10 @@ runtime::he::HEExecutable::HEExecutable(const shared_ptr<Function>& function,
   }
 }
 
-void runtime::he::HEExecutable::accept_connection() {
+void ngraph::he::HEExecutable::accept_connection() {
   NGRAPH_INFO << "Server accepting connections";
   auto server_callback =
-      bind(&runtime::he::HEExecutable::handle_message, this, placeholders::_1);
+      bind(&ngraph::he::HEExecutable::handle_message, this, placeholders::_1);
 
   m_acceptor->async_accept([this, server_callback](boost::system::error_code ec,
                                                    tcp::socket socket) {
@@ -177,7 +177,7 @@ void runtime::he::HEExecutable::accept_connection() {
   });
 }
 
-void runtime::he::HEExecutable::start_server() {
+void ngraph::he::HEExecutable::start_server() {
   tcp::resolver resolver(m_io_context);
   tcp::endpoint server_endpoints(tcp::v4(), m_port);
   m_acceptor = make_shared<tcp::acceptor>(m_io_context, server_endpoints);
@@ -186,8 +186,8 @@ void runtime::he::HEExecutable::start_server() {
   m_thread = thread([this]() { m_io_context.run(); });
 }
 
-void runtime::he::HEExecutable::handle_message(
-    const runtime::he::TCPMessage& message) {
+void ngraph::he::HEExecutable::handle_message(
+    const ngraph::he::TCPMessage& message) {
   MessageType msg_type = message.message_type();
 
   // NGRAPH_INFO << "Server received message type: "
@@ -212,10 +212,10 @@ void runtime::he::HEExecutable::handle_message(
     }
     NGRAPH_INFO << "Done loading " << count << " ciphertexts";
 
-    vector<shared_ptr<runtime::he::HECiphertext>> he_cipher_inputs;
+    vector<shared_ptr<ngraph::he::HECiphertext>> he_cipher_inputs;
     for (const auto cipher : ciphertexts) {
       auto wrapper =
-          make_shared<runtime::he::he_seal::SealCiphertextWrapper>(cipher);
+          make_shared<ngraph::he::ngraph::he::SealCiphertextWrapper>(cipher);
       he_cipher_inputs.emplace_back(wrapper);
     }
 
@@ -251,7 +251,7 @@ void runtime::he::HEExecutable::handle_message(
           m_he_backend->create_cipher_tensor(
               element_type, input_param->get_shape(), m_batch_data));
 
-      vector<shared_ptr<runtime::he::HECiphertext>> cipher_elements{
+      vector<shared_ptr<ngraph::he::HECiphertext>> cipher_elements{
           he_cipher_inputs.begin() + parameter_size_index,
           he_cipher_inputs.begin() + parameter_size_index + param_size};
 
@@ -281,7 +281,7 @@ void runtime::he::HEExecutable::handle_message(
     key.load(m_context, key_stream);
 
     // TODO: move set_public_key to HEBackend
-    auto he_seal_backend = (runtime::he::he_seal::HESealBackend*)m_he_backend;
+    auto he_seal_backend = (ngraph::he::HESealBackend*)m_he_backend;
     he_seal_backend->set_public_key(key);
 
     NGRAPH_INFO << "Server set public key";
@@ -293,7 +293,7 @@ void runtime::he::HEExecutable::handle_message(
     keys.load(m_context, key_stream);
 
     // TODO: move set_relin_keys to HEBackend
-    auto he_seal_backend = (runtime::he::he_seal::HESealBackend*)m_he_backend;
+    auto he_seal_backend = (ngraph::he::HESealBackend*)m_he_backend;
     he_seal_backend->set_relin_keys(keys);
 
     // Send inference parameter shape
@@ -315,7 +315,7 @@ void runtime::he::HEExecutable::handle_message(
 
     NGRAPH_INFO << "Requesting total of " << num_param_elements
                 << " parameter elements";
-    runtime::he::TCPMessage parameter_message{MessageType::parameter_size, 1,
+    ngraph::he::TCPMessage parameter_message{MessageType::parameter_size, 1,
                                               sizeof(num_param_elements),
                                               (char*)&num_param_elements};
 
@@ -339,9 +339,9 @@ void runtime::he::HEExecutable::handle_message(
       cipher.load(m_context, cipher_stream);
 
       auto wrapper =
-          make_shared<runtime::he::he_seal::SealCiphertextWrapper>(cipher);
+          make_shared<ngraph::he::ngraph::he::SealCiphertextWrapper>(cipher);
       auto he_ciphertext =
-          dynamic_pointer_cast<runtime::he::HECiphertext>(wrapper);
+          dynamic_pointer_cast<ngraph::he::HECiphertext>(wrapper);
       if (m_he_backend->complex_packing()) {
         he_ciphertext->set_complex_packing(true);
       }
@@ -370,9 +370,9 @@ void runtime::he::HEExecutable::handle_message(
       cipher.load(m_context, cipher_stream);
 
       auto wrapper =
-          make_shared<runtime::he::he_seal::SealCiphertextWrapper>(cipher);
+          make_shared<ngraph::he::ngraph::he::SealCiphertextWrapper>(cipher);
       auto he_ciphertext =
-          dynamic_pointer_cast<runtime::he::HECiphertext>(wrapper);
+          dynamic_pointer_cast<ngraph::he::HECiphertext>(wrapper);
       if (m_he_backend->complex_packing()) {
         he_ciphertext->set_complex_packing(true);
       }
@@ -399,9 +399,9 @@ void runtime::he::HEExecutable::handle_message(
       cipher.load(m_context, cipher_stream);
 
       auto wrapper =
-          make_shared<runtime::he::he_seal::SealCiphertextWrapper>(cipher);
+          make_shared<ngraph::he::ngraph::he::SealCiphertextWrapper>(cipher);
       auto he_ciphertext =
-          dynamic_pointer_cast<runtime::he::HECiphertext>(wrapper);
+          dynamic_pointer_cast<ngraph::he::HECiphertext>(wrapper);
 
       NGRAPH_ASSERT(he_ciphertext != nullptr)
           << "HECiphertext is not SealPlaintextWrapper";
@@ -423,7 +423,7 @@ void runtime::he::HEExecutable::handle_message(
 }
 
 vector<runtime::PerformanceCounter>
-runtime::he::HEExecutable::get_performance_data() const {
+ngraph::he::HEExecutable::get_performance_data() const {
   vector<runtime::PerformanceCounter> rc;
   for (const pair<const Node*, stopwatch> p : m_timer_map) {
     rc.emplace_back(p.first->get_name().c_str(),
@@ -433,7 +433,7 @@ runtime::he::HEExecutable::get_performance_data() const {
   return rc;
 }
 
-bool runtime::he::HEExecutable::call(
+bool ngraph::he::HEExecutable::call(
     const vector<shared_ptr<runtime::Tensor>>& outputs,
     const vector<shared_ptr<runtime::Tensor>>& server_inputs) {
   validate(outputs, server_inputs);
@@ -468,28 +468,28 @@ bool runtime::he::HEExecutable::call(
   }
 
   // convert inputs to HETensor
-  vector<shared_ptr<runtime::he::HETensor>> he_inputs;
+  vector<shared_ptr<ngraph::he::HETensor>> he_inputs;
   if (m_enable_client) {
     NGRAPH_INFO << "Processing client inputs";
     for (auto& tv : m_client_inputs) {
-      he_inputs.push_back(static_pointer_cast<runtime::he::HETensor>(tv));
+      he_inputs.push_back(static_pointer_cast<ngraph::he::HETensor>(tv));
     }
   } else {
     NGRAPH_INFO << "Processing server inputs";
     for (auto& tv : server_inputs) {
-      auto he_input = dynamic_pointer_cast<runtime::he::HETensor>(tv);
+      auto he_input = dynamic_pointer_cast<ngraph::he::HETensor>(tv);
       NGRAPH_ASSERT(he_input != nullptr) << "server input is not he tensor";
       he_inputs.push_back(he_input);
     }
   }
 
   // convert outputs to HETensor
-  vector<shared_ptr<runtime::he::HETensor>> he_outputs;
+  vector<shared_ptr<ngraph::he::HETensor>> he_outputs;
   for (auto& tv : outputs) {
-    he_outputs.push_back(static_pointer_cast<runtime::he::HETensor>(tv));
+    he_outputs.push_back(static_pointer_cast<ngraph::he::HETensor>(tv));
   }
 
-  unordered_map<descriptor::Tensor*, shared_ptr<runtime::he::HETensor>>
+  unordered_map<descriptor::Tensor*,std::shared_ptr<ngraph::he::HETensor>>
       tensor_map;
 
   // map function params -> HETensor
@@ -500,7 +500,7 @@ bool runtime::he::HEExecutable::call(
 
       if (!m_enable_client && m_encrypt_data) {
         NGRAPH_INFO << "Encrypting parameter " << i;
-        auto plain_input = dynamic_pointer_cast<runtime::he::HEPlainTensor>(
+        auto plain_input = dynamic_pointer_cast<ngraph::he::HEPlainTensor>(
             he_inputs[input_count]);
         NGRAPH_ASSERT(plain_input != nullptr) << "Input is not plain tensor";
         auto cipher_input = dynamic_pointer_cast<HECipherTensor>(
@@ -554,7 +554,7 @@ bool runtime::he::HEExecutable::call(
     }
 
     // get op inputs from map
-    vector<shared_ptr<runtime::he::HETensor>> op_inputs;
+    vector<shared_ptr<ngraph::he::HETensor>> op_inputs;
     for (const descriptor::Input& input : op->get_inputs()) {
       descriptor::Tensor* tv = input.get_output().get_tensor_ptr().get();
       op_inputs.push_back(tensor_map.at(tv));
@@ -567,7 +567,7 @@ bool runtime::he::HEExecutable::call(
     }
 
     // get op outputs from map or create
-    vector<shared_ptr<runtime::he::HETensor>> op_outputs;
+    vector<shared_ptr<ngraph::he::HETensor>> op_outputs;
     for (size_t i = 0; i < op->get_output_size(); ++i) {
       descriptor::Tensor* tv = op->get_output_tensor_ptr(i).get();
       auto it = tensor_map.find(tv);
@@ -580,7 +580,7 @@ bool runtime::he::HEExecutable::call(
         // Plaintext output only if all inputs are plaintext
         bool plain_out = all_of(
             op_inputs.begin(), op_inputs.end(),
-            [](shared_ptr<runtime::he::HETensor> op_input) {
+            [](shared_ptr<ngraph::he::HETensor> op_input) {
               return dynamic_pointer_cast<HEPlainTensor>(op_input) != nullptr;
             });
         if (op->is_constant()) {
@@ -588,16 +588,16 @@ bool runtime::he::HEExecutable::call(
         }
 
         bool batched_out = any_of(op_inputs.begin(), op_inputs.end(),
-                                  [](shared_ptr<runtime::he::HETensor> he_tv) {
+                                  [](shared_ptr<ngraph::he::HETensor> he_tv) {
                                     return he_tv->is_batched();
                                   });
         if (plain_out) {
-          auto otv = make_shared<runtime::he::HEPlainTensor>(
+          auto otv = make_shared<ngraph::he::HEPlainTensor>(
               element_type, shape, m_he_backend,
               m_he_backend->create_empty_plaintext(), batched_out, name);
           tensor_map.insert({tv, otv});
         } else {
-          auto otv = make_shared<runtime::he::HECipherTensor>(
+          auto otv = make_shared<ngraph::he::HECipherTensor>(
               element_type, shape, m_he_backend,
               m_he_backend->create_empty_ciphertext(), batched_out, name);
           tensor_map.insert({tv, otv});
@@ -670,16 +670,16 @@ bool runtime::he::HEExecutable::call(
   return true;
 }
 
-void runtime::he::HEExecutable::generate_calls(
+void ngraph::he::HEExecutable::generate_calls(
     const element::Type& type, const NodeWrapper& node_wrapper,
     const vector<shared_ptr<HETensor>>& out,
     const vector<shared_ptr<HETensor>>& args) {
   const Node& node = node_wrapper.get_node();
   string node_op = node.description();
-  shared_ptr<HECipherTensor> arg0_cipher = nullptr;
-  shared_ptr<HEPlainTensor> arg0_plain = nullptr;
-  shared_ptr<HECipherTensor> arg1_cipher = nullptr;
-  shared_ptr<HEPlainTensor> arg1_plain = nullptr;
+ std::shared_ptr<HECipherTensor> arg0_cipher = nullptr;
+ std::shared_ptr<HEPlainTensor> arg0_plain = nullptr;
+ std::shared_ptr<HECipherTensor> arg1_cipher = nullptr;
+ std::shared_ptr<HEPlainTensor> arg1_plain = nullptr;
   auto out0_cipher = dynamic_pointer_cast<HECipherTensor>(out[0]);
   auto out0_plain = dynamic_pointer_cast<HEPlainTensor>(out[0]);
 
@@ -687,11 +687,11 @@ void runtime::he::HEExecutable::generate_calls(
   auto lazy_rescaling = [this](auto& cipher) {
     // NGRAPH_INFO << "Lazy rescaling";
     auto he_seal_backend =
-        runtime::he::he_seal::cast_to_seal_backend(m_he_backend);
+        ngraph::he::cast_to_seal_backend(m_he_backend);
 #pragma omp parallel for
     for (size_t i = 0; i < cipher->get_elements().size(); ++i) {
       auto seal_cipher =
-          runtime::he::he_seal::cast_to_seal_hetext(cipher->get_element(i));
+          ngraph::he::cast_to_seal_hetext(cipher->get_element(i));
       if (!seal_cipher->is_zero()) {
         he_seal_backend->get_evaluator()->rescale_to_next_inplace(
             seal_cipher->m_ciphertext);
@@ -705,7 +705,7 @@ void runtime::he::HEExecutable::generate_calls(
     Shape arg_shape = node.get_input_shape(arg_idx);
     unbatched_arg_shapes.emplace_back(arg_shape);
     if (m_batch_data) {
-      arg_shape = ngraph::runtime::he::HETensor::batch_shape(arg_shape);
+      arg_shape = ngraph::ngraph::he::HETensor::batch_shape(arg_shape);
     }
     arg_shapes.emplace_back(arg_shape);
   }
@@ -718,7 +718,7 @@ void runtime::he::HEExecutable::generate_calls(
     out_shape = node.get_output_shape(0);
     unbatched_out_shape = out_shape;
     if (m_batch_data) {
-      out_shape = ngraph::runtime::he::HETensor::batch_shape(out_shape);
+      out_shape = ngraph::ngraph::he::HETensor::batch_shape(out_shape);
     }
   }
 
@@ -771,25 +771,25 @@ void runtime::he::HEExecutable::generate_calls(
     case OP_TYPEID::Add: {
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
-        runtime::he::kernel::add(
+        ngraph::he::add(
             arg0_cipher->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), type, m_he_backend,
             out0_cipher->get_batched_element_count());
       } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                  out0_cipher != nullptr) {
-        runtime::he::kernel::add(
+        ngraph::he::add(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
             out0_cipher->get_elements(), type, m_he_backend,
             out0_cipher->get_batched_element_count());
       } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
                  out0_cipher != nullptr) {
-        runtime::he::kernel::add(
+        ngraph::he::add(
             arg0_plain->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), type, m_he_backend,
             out0_cipher->get_batched_element_count());
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
-        runtime::he::kernel::add(arg0_plain->get_elements(),
+        ngraph::he::add(arg0_plain->get_elements(),
                                  arg1_plain->get_elements(),
                                  out0_plain->get_elements(), type, m_he_backend,
                                  out0_plain->get_batched_element_count());
@@ -802,7 +802,7 @@ void runtime::he::HEExecutable::generate_calls(
       const op::AvgPool* avg_pool = static_cast<const op::AvgPool*>(&node);
       Shape in_shape = arg_shapes[0];
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
-        runtime::he::kernel::avg_pool(
+        ngraph::he::avg_pool(
             arg0_cipher->get_elements(), out0_cipher->get_elements(), in_shape,
             out_shape, avg_pool->get_window_shape(),
             avg_pool->get_window_movement_strides(),
@@ -810,7 +810,7 @@ void runtime::he::HEExecutable::generate_calls(
             avg_pool->get_include_padding_in_avg_computation(), m_he_backend);
 
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
-        runtime::he::kernel::avg_pool(
+        ngraph::he::avg_pool(
             arg0_plain->get_elements(), out0_plain->get_elements(), in_shape,
             out_shape, avg_pool->get_window_shape(),
             avg_pool->get_window_movement_strides(),
@@ -842,7 +842,7 @@ void runtime::he::HEExecutable::generate_calls(
       NGRAPH_ASSERT(mean != nullptr) << "BatchNorm mean not plaintext";
       NGRAPH_ASSERT(variance != nullptr) << "BatchNorm variance not plaintext";
 
-      runtime::he::kernel::batch_norm_inference(
+      ngraph::he::batch_norm_inference(
           eps, gamma->get_elements(), beta->get_elements(),
           input->get_elements(), mean->get_elements(), variance->get_elements(),
           out0_cipher->get_elements(), arg_shapes[2], m_batch_size,
@@ -855,11 +855,11 @@ void runtime::he::HEExecutable::generate_calls(
 
       Shape in_shape = arg_shapes[0];
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
-        runtime::he::kernel::broadcast(arg0_cipher->get_elements(),
+        ngraph::he::broadcast(arg0_cipher->get_elements(),
                                        out0_cipher->get_elements(), in_shape,
                                        out_shape, broadcast_axes);
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
-        runtime::he::kernel::broadcast(arg0_plain->get_elements(),
+        ngraph::he::broadcast(arg0_plain->get_elements(),
                                        out0_plain->get_elements(), in_shape,
                                        out_shape, broadcast_axes);
       } else {
@@ -874,10 +874,10 @@ void runtime::he::HEExecutable::generate_calls(
 
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
         vector<Shape> in_shapes;
-        vector<vector<shared_ptr<HECiphertext>>> in_args;
+        vector<vector<shared_ptr<ngraph::he::HECiphertext>>> in_args;
 
         for (shared_ptr<HETensor> arg : args) {
-          shared_ptr<HECipherTensor> arg_cipher =
+         std::shared_ptr<HECipherTensor> arg_cipher =
               dynamic_pointer_cast<HECipherTensor>(arg);
           if (arg_cipher == nullptr) {
             throw ngraph_error("Concat type not consistent");
@@ -885,7 +885,7 @@ void runtime::he::HEExecutable::generate_calls(
           in_args.push_back(arg_cipher->get_elements());
           in_shapes.push_back(arg_cipher->get_shape());
 
-          runtime::he::kernel::concat(in_args, out0_cipher->get_elements(),
+          ngraph::he::concat(in_args, out0_cipher->get_elements(),
                                       in_shapes, node.get_output_shape(0),
                                       concat->get_concatenation_axis());
         }
@@ -894,7 +894,7 @@ void runtime::he::HEExecutable::generate_calls(
         vector<vector<shared_ptr<HEPlaintext>>> in_args;
 
         for (shared_ptr<HETensor> arg : args) {
-          shared_ptr<HEPlainTensor> arg_plain =
+         std::shared_ptr<HEPlainTensor> arg_plain =
               dynamic_pointer_cast<HEPlainTensor>(arg);
           if (arg_plain == nullptr) {
             throw ngraph_error("Concat type not consistent");
@@ -902,7 +902,7 @@ void runtime::he::HEExecutable::generate_calls(
           in_args.push_back(arg_plain->get_elements());
           in_shapes.push_back(arg_plain->get_shape());
 
-          runtime::he::kernel::concat(in_args, out0_plain->get_elements(),
+          ngraph::he::concat(in_args, out0_plain->get_elements(),
                                       in_shapes, node.get_output_shape(0),
                                       concat->get_concatenation_axis());
         }
@@ -915,11 +915,11 @@ void runtime::he::HEExecutable::generate_calls(
       const op::Constant* constant = static_cast<const op::Constant*>(&node);
 
       if (out0_plain != nullptr) {
-        runtime::he::kernel::constant(out0_plain->get_elements(), type,
+        ngraph::he::constant(out0_plain->get_elements(), type,
                                       constant->get_data_ptr(), m_he_backend,
                                       out0_plain->get_batched_element_count());
       } else if (out0_cipher != nullptr) {
-        runtime::he::kernel::constant(out0_cipher->get_elements(), type,
+        ngraph::he::constant(out0_cipher->get_elements(), type,
                                       constant->get_data_ptr(), m_he_backend,
                                       out0_cipher->get_batched_element_count());
       } else {
@@ -940,7 +940,7 @@ void runtime::he::HEExecutable::generate_calls(
 
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
-        runtime::he::kernel::convolution(
+        ngraph::he::convolution(
             arg0_cipher->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
             window_movement_strides, window_dilation_strides, padding_below,
@@ -948,7 +948,7 @@ void runtime::he::HEExecutable::generate_calls(
             m_batch_size, m_he_backend);
       } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                  out0_cipher != nullptr) {
-        runtime::he::kernel::convolution(
+        ngraph::he::convolution(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
             out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
             window_movement_strides, window_dilation_strides, padding_below,
@@ -959,7 +959,7 @@ void runtime::he::HEExecutable::generate_calls(
 
       } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
                  out0_cipher != nullptr) {
-        runtime::he::kernel::convolution(
+        ngraph::he::convolution(
             arg0_plain->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
             window_movement_strides, window_dilation_strides, padding_below,
@@ -970,7 +970,7 @@ void runtime::he::HEExecutable::generate_calls(
 
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
-        runtime::he::kernel::convolution(
+        ngraph::he::convolution(
             arg0_plain->get_elements(), arg1_plain->get_elements(),
             out0_plain->get_elements(), in_shape0, in_shape1, out_shape,
             window_movement_strides, window_dilation_strides, padding_below,
@@ -989,13 +989,13 @@ void runtime::he::HEExecutable::generate_calls(
       NGRAPH_INFO << join(in_shape0, "x") << " dot " << join(in_shape1, "x");
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
-        runtime::he::kernel::dot(
+        ngraph::he::dot(
             arg0_cipher->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
             dot->get_reduction_axes_count(), type, m_he_backend);
       } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                  out0_cipher != nullptr) {
-        runtime::he::kernel::dot(
+        ngraph::he::dot(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
             out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
             dot->get_reduction_axes_count(), type, m_he_backend);
@@ -1003,14 +1003,14 @@ void runtime::he::HEExecutable::generate_calls(
         lazy_rescaling(out0_cipher);
       } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
                  out0_cipher != nullptr) {
-        runtime::he::kernel::dot(
+        ngraph::he::dot(
             arg0_plain->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
             dot->get_reduction_axes_count(), type, m_he_backend);
         lazy_rescaling(out0_cipher);
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
-        runtime::he::kernel::dot(
+        ngraph::he::dot(
             arg0_plain->get_elements(), arg1_plain->get_elements(),
             out0_plain->get_elements(), in_shape0, in_shape1,
             out0_plain->get_batched_shape(), dot->get_reduction_axes_count(),
@@ -1042,7 +1042,7 @@ void runtime::he::HEExecutable::generate_calls(
       Shape out_shape = node.get_output_shape(0);
       out_shape[0] /= m_batch_size;
 
-      vector<vector<size_t>> maximize_list = runtime::he::kernel::max_pool(
+      vector<vector<size_t>> maximize_list = ngraph::he::max_pool(
           arg0_shape, out_shape, max_pool->get_window_shape(),
           max_pool->get_window_movement_strides(),
           max_pool->get_padding_below(), max_pool->get_padding_above());
@@ -1138,7 +1138,7 @@ void runtime::he::HEExecutable::generate_calls(
       stringstream cipher_stream;
       size_t cipher_count = 0;
       auto he_ckks_backend =
-          (runtime::he::he_seal::HESealCKKSBackend*)m_he_backend;
+          (ngraph::he::HESealCKKSBackend*)m_he_backend;
       NGRAPH_ASSERT(he_ckks_backend != nullptr)
           << "HEBackend is not CKKS in Minimum Op";
       for (size_t min_ind = 0; min_ind < element_count; ++min_ind) {
@@ -1172,25 +1172,25 @@ void runtime::he::HEExecutable::generate_calls(
     case OP_TYPEID::Multiply: {
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
-        runtime::he::kernel::multiply(
+        ngraph::he::multiply(
             arg0_cipher->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), type, m_he_backend,
             out0_cipher->get_batched_element_count());
       } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                  out0_cipher != nullptr) {
-        runtime::he::kernel::multiply(
+        ngraph::he::multiply(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
             out0_cipher->get_elements(), type, m_he_backend,
             out0_cipher->get_batched_element_count());
       } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
                  out0_cipher != nullptr) {
-        runtime::he::kernel::multiply(
+        ngraph::he::multiply(
             arg0_plain->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), type, m_he_backend,
             out0_cipher->get_batched_element_count());
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
-        runtime::he::kernel::multiply(
+        ngraph::he::multiply(
             arg0_plain->get_elements(), arg1_plain->get_elements(),
             out0_plain->get_elements(), type, m_he_backend,
             out0_plain->get_batched_element_count());
@@ -1201,11 +1201,11 @@ void runtime::he::HEExecutable::generate_calls(
     }
     case OP_TYPEID::Negative: {
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
-        runtime::he::kernel::negate(
+        ngraph::he::negate(
             arg0_cipher->get_elements(), out0_cipher->get_elements(), type,
             m_he_backend, out0_cipher->get_batched_element_count());
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
-        runtime::he::kernel::negate(
+        ngraph::he::negate(
             arg0_plain->get_elements(), out0_plain->get_elements(), type,
             m_he_backend, out0_plain->get_batched_element_count());
       } else {
@@ -1222,21 +1222,21 @@ void runtime::he::HEExecutable::generate_calls(
 
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
-        runtime::he::kernel::pad(
+        ngraph::he::pad(
             arg0_cipher->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), arg0_shape, out_shape,
             pad->get_padding_below(), pad->get_padding_above(),
             pad->get_pad_mode(), m_batch_size, m_he_backend);
       } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                  out0_cipher != nullptr) {
-        runtime::he::kernel::pad(
+        ngraph::he::pad(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
             out0_cipher->get_elements(), arg0_shape, out_shape,
             pad->get_padding_below(), pad->get_padding_above(),
             pad->get_pad_mode(), m_batch_size, m_he_backend);
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
-        runtime::he::kernel::pad(
+        ngraph::he::pad(
             arg0_plain->get_elements(), arg1_plain->get_elements(),
             out0_plain->get_elements(), arg0_shape,
             out0_plain->get_batched_shape(), pad->get_padding_below(),
@@ -1258,12 +1258,12 @@ void runtime::he::HEExecutable::generate_calls(
       const op::Reshape* reshape = static_cast<const op::Reshape*>(&node);
 
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
-        runtime::he::kernel::reshape(
+        ngraph::he::reshape(
             arg0_cipher->get_elements(), out0_cipher->get_elements(),
             arg0_cipher->get_batched_shape(), reshape->get_input_order(),
             unbatched_out_shape);
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
-        runtime::he::kernel::reshape(
+        ngraph::he::reshape(
             arg0_plain->get_elements(), out0_plain->get_elements(),
             arg0_plain->get_batched_shape(), reshape->get_input_order(),
             unbatched_out_shape);
@@ -1284,18 +1284,18 @@ void runtime::he::HEExecutable::generate_calls(
             "Input argument is neither plaintext nor ciphertext");
       }
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
-        runtime::he::kernel::result(arg0_cipher->get_elements(),
+        ngraph::he::result(arg0_cipher->get_elements(),
                                     out0_cipher->get_elements(), output_size);
       } else if (arg0_plain != nullptr && out0_cipher != nullptr) {
-        runtime::he::kernel::result(arg0_plain->get_elements(),
+        ngraph::he::result(arg0_plain->get_elements(),
                                     out0_cipher->get_elements(), output_size,
                                     m_he_backend);
       } else if (arg0_cipher != nullptr && out0_plain != nullptr) {
-        runtime::he::kernel::result(arg0_cipher->get_elements(),
+        ngraph::he::result(arg0_cipher->get_elements(),
                                     out0_plain->get_elements(), output_size,
                                     m_he_backend);
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
-        runtime::he::kernel::result(arg0_plain->get_elements(),
+        ngraph::he::result(arg0_plain->get_elements(),
                                     out0_plain->get_elements(), output_size);
       } else {
         throw ngraph_error("Result types not supported.");
@@ -1346,11 +1346,11 @@ void runtime::he::HEExecutable::generate_calls(
       Shape out_shape = node.get_output_shape(0);
 
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
-        runtime::he::kernel::reverse(arg0_cipher->get_elements(),
+        ngraph::he::reverse(arg0_cipher->get_elements(),
                                      out0_cipher->get_elements(), in_shape,
                                      out_shape, reverse->get_reversed_axes());
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
-        runtime::he::kernel::reverse(arg0_plain->get_elements(),
+        ngraph::he::reverse(arg0_plain->get_elements(),
                                      out0_plain->get_elements(), in_shape,
                                      out_shape, reverse->get_reversed_axes());
       } else {
@@ -1366,12 +1366,12 @@ void runtime::he::HEExecutable::generate_calls(
       Shape out_shape = node.get_output_shape(0);
 
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
-        runtime::he::kernel::slice(
+        ngraph::he::slice(
             arg0_cipher->get_elements(), out0_cipher->get_elements(), in_shape,
             slice->get_lower_bounds(), slice->get_upper_bounds(),
             slice->get_strides(), out_shape);
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
-        runtime::he::kernel::slice(
+        ngraph::he::slice(
             arg0_plain->get_elements(), out0_plain->get_elements(), in_shape,
             slice->get_lower_bounds(), slice->get_upper_bounds(),
             slice->get_strides(), out_shape);
@@ -1383,25 +1383,25 @@ void runtime::he::HEExecutable::generate_calls(
     case OP_TYPEID::Subtract: {
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
-        runtime::he::kernel::subtract(
+        ngraph::he::subtract(
             arg0_cipher->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), type, m_he_backend,
             out0_cipher->get_batched_element_count());
       } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                  out0_cipher != nullptr) {
-        runtime::he::kernel::subtract(
+        ngraph::he::subtract(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
             out0_cipher->get_elements(), type, m_he_backend,
             out0_cipher->get_batched_element_count());
       } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
                  out0_cipher != nullptr) {
-        runtime::he::kernel::subtract(
+        ngraph::he::subtract(
             arg0_plain->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), type, m_he_backend,
             out0_cipher->get_batched_element_count());
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
-        runtime::he::kernel::subtract(
+        ngraph::he::subtract(
             arg0_plain->get_elements(), arg1_plain->get_elements(),
             out0_plain->get_elements(), type, m_he_backend,
             out0_plain->get_batched_element_count());
@@ -1416,11 +1416,11 @@ void runtime::he::HEExecutable::generate_calls(
       Shape out_shape = node.get_output_shape(0);
 
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
-        runtime::he::kernel::sum(
+        ngraph::he::sum(
             arg0_cipher->get_elements(), out0_cipher->get_elements(), in_shape,
             out_shape, sum->get_reduction_axes(), type, m_he_backend);
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
-        runtime::he::kernel::sum(
+        ngraph::he::sum(
             arg0_plain->get_elements(), out0_plain->get_elements(), in_shape,
             out_shape, sum->get_reduction_axes(), type, m_he_backend);
       } else {

@@ -23,15 +23,15 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 
-using namespace ngraph;
-using namespace std;
 
-runtime::he::HECipherTensor::HECipherTensor(
+
+
+ngraph::he::HECipherTensor::HECipherTensor(
     const element::Type& element_type, const Shape& shape,
     const HEBackend* he_backend,
-    const std::shared_ptr<HECiphertext> he_ciphertext, const bool batched,
+    const std::shared_ptr<ngraph::he::HECiphertext> he_ciphertext, const bool batched,
     const string& name)
-    : runtime::he::HETensor(element_type, shape, he_backend, batched, name) {
+    : ngraph::he::HETensor(element_type, shape, he_backend, batched, name) {
   m_num_elements = m_descriptor->get_tensor_layout()->get_size() / m_batch_size;
   m_cipher_texts.resize(m_num_elements);
 #pragma omp parallel for
@@ -40,7 +40,7 @@ runtime::he::HECipherTensor::HECipherTensor(
   }
 }
 
-void runtime::he::HECipherTensor::write(const void* source,
+void ngraph::he::HECipherTensor::write(const void* source,
                                         size_t tensor_offset, size_t n) {
   check_io_bounds(source, tensor_offset, n / m_batch_size);
   const element::Type& element_type = get_tensor_layout()->get_element_type();
@@ -54,7 +54,7 @@ void runtime::he::HECipherTensor::write(const void* source,
     const void* src_with_offset = (void*)((char*)source);
     size_t dst_index = dst_start_index;
 
-    shared_ptr<runtime::he::HEPlaintext> plaintext =
+   std::shared_ptr<ngraph::he::HEPlaintext> plaintext =
         m_he_backend->create_empty_plaintext();
     m_he_backend->encode(plaintext, src_with_offset, element_type,
                          complex_batching, m_batch_size);
@@ -66,7 +66,7 @@ void runtime::he::HECipherTensor::write(const void* source,
           (void*)((char*)source + i * type_byte_size * m_batch_size);
       size_t dst_index = dst_start_index + i;
 
-      shared_ptr<runtime::he::HEPlaintext> plaintext =
+     std::shared_ptr<ngraph::he::HEPlaintext> plaintext =
           m_he_backend->create_empty_plaintext();
       if (m_batch_size > 1) {
         size_t allocation_size = type_byte_size * m_batch_size;
@@ -94,7 +94,7 @@ void runtime::he::HECipherTensor::write(const void* source,
   }
 }
 
-void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset,
+void ngraph::he::HECipherTensor::read(void* target, size_t tensor_offset,
                                        size_t n) const {
   check_io_bounds(target, tensor_offset, n / m_batch_size);
   const element::Type& element_type = get_tensor_layout()->get_element_type();
@@ -105,7 +105,7 @@ void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset,
   if (num_elements_to_read == 1) {
     void* dst_with_offset = (void*)((char*)target);
     size_t src_index = src_start_index;
-    shared_ptr<runtime::he::HEPlaintext> p =
+   std::shared_ptr<ngraph::he::HEPlaintext> p =
         m_he_backend->create_empty_plaintext();
     m_he_backend->decrypt(p, m_cipher_texts[src_index]);
     m_he_backend->decode(dst_with_offset, p, element_type, m_batch_size);
@@ -118,7 +118,7 @@ void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset,
       }
 
       size_t src_index = src_start_index + i;
-      shared_ptr<runtime::he::HEPlaintext> p =
+     std::shared_ptr<ngraph::he::HEPlaintext> p =
           m_he_backend->create_empty_plaintext();
       m_he_backend->decrypt(p, m_cipher_texts[src_index]);
       m_he_backend->decode(dst, p, element_type, m_batch_size);
@@ -135,8 +135,8 @@ void runtime::he::HECipherTensor::read(void* target, size_t tensor_offset,
   }
 }
 
-void runtime::he::HECipherTensor::set_elements(
-    const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& elements) {
+void ngraph::he::HECipherTensor::set_elements(
+    const std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& elements) {
   if (elements.size() != get_element_count() / m_batch_size) {
     NGRAPH_INFO << "m_batch_size " << m_batch_size;
     NGRAPH_INFO << "get_element_count " << get_element_count();

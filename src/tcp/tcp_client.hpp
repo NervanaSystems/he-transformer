@@ -27,7 +27,6 @@
 using boost::asio::ip::tcp;
 
 namespace ngraph {
-namespace runtime {
 namespace he {
 class TCPClient {
  public:
@@ -35,7 +34,7 @@ class TCPClient {
   // message_handler will handle responses from the server
   TCPClient(boost::asio::io_context& io_context,
             const tcp::resolver::results_type& endpoints,
-            std::function<void(const runtime::he::TCPMessage&)> message_handler)
+            std::function<void(const ngraph::he::TCPMessage&)> message_handler)
       : m_io_context(io_context),
         m_socket(io_context),
         m_message_callback(std::bind(message_handler, std::placeholders::_1)) {
@@ -49,7 +48,7 @@ class TCPClient {
     boost::asio::post(m_io_context, [this]() { m_socket.close(); });
   }
 
-  void write_message(const runtime::he::TCPMessage& message) {
+  void write_message(const ngraph::he::TCPMessage& message) {
     bool write_in_progress = !m_message_queue.empty();
     m_message_queue.push_back(message);
     if (!write_in_progress) {
@@ -76,7 +75,7 @@ class TCPClient {
     boost::asio::async_read(
         m_socket,
         boost::asio::buffer(m_read_message.header_ptr(),
-                            runtime::he::TCPMessage::header_length),
+                            ngraph::he::TCPMessage::header_length),
         [this](boost::system::error_code ec, std::size_t length) {
           if (!ec && m_read_message.decode_header()) {
             do_read_body();
@@ -135,11 +134,10 @@ class TCPClient {
   TCPMessage m_read_message;
   tcp::socket m_socket;
 
-  std::deque<runtime::he::TCPMessage> m_message_queue;
+  std::deque<ngraph::he::TCPMessage> m_message_queue;
 
   // How to handle the message
-  std::function<void(const runtime::he::TCPMessage&)> m_message_callback;
+  std::function<void(const ngraph::he::TCPMessage&)> m_message_callback;
 };
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

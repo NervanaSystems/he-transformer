@@ -42,29 +42,28 @@
 #include "node_wrapper.hpp"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
 class HETensor;
-class HEBackend : public runtime::Backend {
+class HEBackend : public ngraph::runtime::Backend {
  public:
   virtual ~HEBackend(){};
 
   /// @brief Creates ciphertext of unspecified value
   /// @return Shared pointer to created ciphertext
-  virtual std::shared_ptr<runtime::he::HECiphertext> create_empty_ciphertext()
+  virtual std::shared_ptr<ngraph::he::HECiphertext> create_empty_ciphertext()
       const = 0;
 
   /// @brief Creates plaintext of unspecified value
   /// @return Shared pointer to created plaintext
-  virtual std::shared_ptr<runtime::he::HEPlaintext> create_empty_plaintext()
+  virtual std::shared_ptr<ngraph::he::HEPlaintext> create_empty_plaintext()
       const = 0;
 
   /// @brief Creates ciphertext of unspecified value
   /// Alias for create_empty_ciphertext()
   /// @return Shared pointer to created ciphertext
   template <typename T, typename = std::enable_if_t<
-                            std::is_same<T, runtime::he::HECiphertext>::value>>
-  std::shared_ptr<runtime::he::HECiphertext> create_empty_hetext() const {
+                            std::is_same<T, ngraph::he::HECiphertext>::value>>
+  std::shared_ptr<ngraph::he::HECiphertext> create_empty_hetext() const {
     return create_empty_ciphertext();
   };
 
@@ -72,8 +71,8 @@ class HEBackend : public runtime::Backend {
   /// Alias for create_empty_plaintext()
   /// @return Shared pointer to created plaintext
   template <typename T, typename = std::enable_if_t<
-                            std::is_same<T, runtime::he::HEPlaintext>::value>>
-  std::shared_ptr<runtime::he::HEPlaintext> create_empty_hetext() const {
+                            std::is_same<T, ngraph::he::HEPlaintext>::value>>
+  std::shared_ptr<ngraph::he::HEPlaintext> create_empty_hetext() const {
     return create_empty_plaintext();
   };
 
@@ -83,7 +82,7 @@ class HEBackend : public runtime::Backend {
   /// @param batch_size Number of elements to encrypt
   ///        > 1 indicates batching
   /// @return Shared pointer to created ciphertext
-  std::shared_ptr<runtime::he::HECiphertext> create_valued_ciphertext(
+  std::shared_ptr<ngraph::he::HECiphertext> create_valued_ciphertext(
       float value, const element::Type& element_type,
       size_t batch_size = 1) const;
 
@@ -91,15 +90,15 @@ class HEBackend : public runtime::Backend {
   /// @param value Scalar which to encode
   /// @param element_type Type to encode
   /// @return Shared pointer to created plaintext
-  std::shared_ptr<runtime::he::HEPlaintext> create_valued_plaintext(
+  std::shared_ptr<ngraph::he::HEPlaintext> create_valued_plaintext(
       float value, const element::Type& element_type) const;
 
   /// @brief Creates ciphertext of specified value
   /// Alias for create_valued_ciphertext()
   /// @return Shared pointer to created ciphertext
   template <typename T, typename = std::enable_if_t<
-                            std::is_same<T, runtime::he::HECiphertext>::value>>
-  std::shared_ptr<runtime::he::HECiphertext> create_valued_hetext(
+                            std::is_same<T, ngraph::he::HECiphertext>::value>>
+  std::shared_ptr<ngraph::he::HECiphertext> create_valued_hetext(
       float value, const element::Type& element_type,
       size_t batch_size = 1) const {
     return create_valued_ciphertext(value, element_type, batch_size);
@@ -109,8 +108,8 @@ class HEBackend : public runtime::Backend {
   /// Alias for create_valued_plaintext()
   /// @return Shared pointer to created plaintext
   template <typename T, typename = std::enable_if_t<
-                            std::is_same<T, runtime::he::HEPlaintext>::value>>
-  std::shared_ptr<runtime::he::HEPlaintext> create_valued_hetext(
+                            std::is_same<T, ngraph::he::HEPlaintext>::value>>
+  std::shared_ptr<ngraph::he::HEPlaintext> create_valued_hetext(
       float value, const element::Type& element_type) const {
     return create_valued_plaintext(value, element_type);
   };
@@ -150,21 +149,21 @@ class HEBackend : public runtime::Backend {
   std::shared_ptr<runtime::Tensor> create_valued_plain_tensor(
       float value, const element::Type& element_type, const Shape& shape) const;
 
-  std::shared_ptr<Executable> compile(
+  std::shared_ptr<ngraph::runtime::Executable> compile(
       std::shared_ptr<Function> func,
       bool enable_performance_data = false) override;
 
   void validate_he_call(
       std::shared_ptr<const Function> function,
-      const std::vector<std::shared_ptr<runtime::he::HETensor>>& outputs,
-      const std::vector<std::shared_ptr<runtime::he::HETensor>>& inputs);
+      const std::vector<std::shared_ptr<ngraph::he::HETensor>>& outputs,
+      const std::vector<std::shared_ptr<ngraph::he::HETensor>>& inputs);
 
   /// @brief Encodes bytes to a plaintext polynomial
   /// @param output Pointer to plaintext to write to
   /// @param input Pointer to memory to encode
   /// @param type Type of scalar to encode
   /// @param count Number of elements to encode, count > 1 indicates batching
-  virtual void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
+  virtual void encode(std::shared_ptr<ngraph::he::HEPlaintext>& output,
                       const void* input, const element::Type& element_type,
                       bool complex = false, size_t count = 1) const = 0;
 
@@ -174,35 +173,35 @@ class HEBackend : public runtime::Backend {
   /// @param type Type of scalar to encode
   /// @param count Number of elements to decode, count > 1 indicates batching
   virtual void decode(void* output,
-                      std::shared_ptr<runtime::he::HEPlaintext>& input,
+                      std::shared_ptr<ngraph::he::HEPlaintext>& input,
                       const element::Type& element_type,
                       size_t count = 1) const = 0;
 
-  virtual void decode(std::vector<std::shared_ptr<runtime::he::HEPlaintext>>&
-                          plaintexts) const {
-    for (std::shared_ptr<runtime::he::HEPlaintext> plaintext : plaintexts) {
+  virtual void decode(
+      std::vector<std::shared_ptr<ngraph::he::HEPlaintext>>& plaintexts) const {
+    for (std::shared_ptr<ngraph::he::HEPlaintext> plaintext : plaintexts) {
       decode(plaintext);
     }
   }
 
   virtual void decode(
-      std::shared_ptr<runtime::he::HEPlaintext>& input) const = 0;
+      std::shared_ptr<ngraph::he::HEPlaintext>& input) const = 0;
 
   /// @brief Encrypts plaintext polynomial to ciphertext
   /// @param output Pointer to ciphertext to encrypt to
   /// @param input Pointer to plaintext to encrypt
   virtual void encrypt(
-      std::shared_ptr<runtime::he::HECiphertext>& output,
-      std::shared_ptr<runtime::he::HEPlaintext>& input) const = 0;
+      std::shared_ptr<ngraph::he::HECiphertext>& output,
+      std::shared_ptr<ngraph::he::HEPlaintext>& input) const = 0;
 
   /// @brief Decrypts ciphertext to plaintext polynomial
   /// @param output Pointer to plaintext to decrypt to
   /// @param input Pointer to ciphertext to decrypt
   virtual void decrypt(
-      std::shared_ptr<runtime::he::HEPlaintext>& output,
-      const std::shared_ptr<runtime::he::HECiphertext>& input) const = 0;
+      std::shared_ptr<ngraph::he::HEPlaintext>& output,
+      const std::shared_ptr<ngraph::he::HECiphertext>& input) const = 0;
 
-  const std::shared_ptr<HEEncryptionParameters> get_encryption_parameters()
+  const std::shared_ptr<ngraph::he::HEEncryptionParameters> get_encryption_parameters()
       const {
     return m_encryption_params;
   };
@@ -224,5 +223,4 @@ class HEBackend : public runtime::Backend {
   std::shared_ptr<HEEncryptionParameters> m_encryption_params;
 };
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph
