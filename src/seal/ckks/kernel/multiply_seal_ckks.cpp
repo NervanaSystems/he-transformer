@@ -69,7 +69,6 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
     multiply_plain(arg0->m_ciphertext, double_val, out->m_ciphertext,
                    he_seal_ckks_backend, pool);
   } else {
-    NGRAPH_INFO << "Multiply by plain";
     if (!arg1->is_encoded()) {
       // Just-in-time encoding at the right scale and modulus
       he_seal_ckks_backend->encode(arg1, arg0->m_ciphertext.parms_id(),
