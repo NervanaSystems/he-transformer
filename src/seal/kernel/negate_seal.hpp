@@ -25,23 +25,15 @@
 #include "seal/seal_plaintext_wrapper.hpp"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
-namespace he_seal {
-namespace kernel {
-void scalar_negate(
-    std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& arg,
-    std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
-    const element::Type& element_type,
-    const runtime::he::he_seal::HESealBackend* he_seal_backend);
+void scalar_negate(std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg,
+                   std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
+                   const element::Type& element_type,
+                   const ngraph::he::HESealBackend* he_seal_backend);
 
-void scalar_negate(
-    std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& arg,
-    std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& out,
-    const element::Type& element_type,
-    const runtime::he::he_seal::HESealBackend* he_seal_backend);
-}  // namespace kernel
-}  // namespace he_seal
+void scalar_negate(std::shared_ptr<ngraph::he::SealPlaintextWrapper>& arg,
+                   std::shared_ptr<ngraph::he::SealPlaintextWrapper>& out,
+                   const element::Type& element_type,
+                   const ngraph::he::HESealBackend* he_seal_backend);
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

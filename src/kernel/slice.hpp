@@ -22,9 +22,7 @@
 #include "ngraph/coordinate_transform.hpp"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
-namespace kernel {
 template <typename T>
 void slice(const std::vector<std::shared_ptr<T>>& arg,
            std::vector<std::shared_ptr<T>>& out, const Shape& arg_shape,
@@ -45,7 +43,5 @@ void slice(const std::vector<std::shared_ptr<T>>& arg,
     ++output_it;
   }
 }
-}  // namespace kernel
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

@@ -28,9 +28,7 @@
 #include "seal/seal.h"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
-namespace he_seal {
 class HESealEncryptionParameters : public HEEncryptionParameters {
  public:
   HESealEncryptionParameters() = delete;
@@ -72,7 +70,7 @@ class HESealEncryptionParameters : public HEEncryptionParameters {
   std::shared_ptr<seal::EncryptionParameters> m_seal_encryption_parameters;
 };
 
-const static std::shared_ptr<runtime::he::HEEncryptionParameters>
+const static std::shared_ptr<ngraph::he::HEEncryptionParameters>
 default_ckks_parameters() {
   std::vector<std::uint64_t> coeff_modulus;
   auto small_mods = seal::util::global_variables::default_small_mods_30bit;
@@ -81,17 +79,16 @@ default_ckks_parameters() {
     coeff_modulus.emplace_back(small_mod.value());
   }
 
-  auto params =
-      std::make_shared<runtime::he::he_seal::HESealEncryptionParameters>(
-          "HE_SEAL_CKKS",
-          1024,  // poly_modulus_degree
-          128,   // security_level
-          60,    // evaluation_decomposition_bit_count
-          coeff_modulus);
-  return std::dynamic_pointer_cast<runtime::he::HEEncryptionParameters>(params);
+  auto params = std::make_shared<ngraph::he::HESealEncryptionParameters>(
+      "HE_SEAL_CKKS",
+      1024,  // poly_modulus_degree
+      128,   // security_level
+      60,    // evaluation_decomposition_bit_count
+      coeff_modulus);
+  return std::dynamic_pointer_cast<ngraph::he::HEEncryptionParameters>(params);
 }
 
-const static std::shared_ptr<runtime::he::HEEncryptionParameters>
+const static std::shared_ptr<ngraph::he::HEEncryptionParameters>
 parse_config_or_use_default(const std::string& scheme_name) {
   static std::unordered_set<std::string> valid_scheme_names{"HE_SEAL_CKKS"};
   if (valid_scheme_names.find(scheme_name) == valid_scheme_names.end()) {
@@ -208,12 +205,11 @@ parse_config_or_use_default(const std::string& scheme_name) {
     for (size_t i = 0; i < coeff_count; ++i) {
       coeff_modulus.emplace_back(small_mods[i].value());
     }
-    auto params =
-        std::make_shared<runtime::he::he_seal::HESealEncryptionParameters>(
-            scheme_name, poly_modulus_degree, security_level,
-            evaluation_decomposition_bit_count, coeff_modulus);
+    auto params = std::make_shared<ngraph::he::HESealEncryptionParameters>(
+        scheme_name, poly_modulus_degree, security_level,
+        evaluation_decomposition_bit_count, coeff_modulus);
 
-    return std::dynamic_pointer_cast<runtime::he::HEEncryptionParameters>(
+    return std::dynamic_pointer_cast<ngraph::he::HEEncryptionParameters>(
         params);
   } catch (const std::exception& e) {
     std::stringstream ss;
@@ -221,7 +217,5 @@ parse_config_or_use_default(const std::string& scheme_name) {
     throw ngraph_error(ss.str());
   }
 }
-}  // namespace he_seal
 }  // namespace he
-}  // namespace runtime
-}
+}  // namespace ngraph

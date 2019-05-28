@@ -28,47 +28,44 @@
 #include "seal/seal_plaintext_wrapper.hpp"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
-namespace he_seal {
-namespace kernel {
 void scalar_multiply(
-    std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& arg0,
-    std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& arg1,
-    std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type,
-    const runtime::he::he_seal::HESealBackend* he_seal_backend,
+    const ngraph::he::HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
 void scalar_multiply(
-    std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& arg0,
-    std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& arg1,
-    std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
+    std::shared_ptr<ngraph::he::SealPlaintextWrapper>& arg1,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type,
-    const runtime::he::he_seal::HESealBackend* he_seal_backend,
+    const ngraph::he::HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
 void scalar_multiply(
-    std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& arg0,
-    std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& arg1,
-    std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
+    std::shared_ptr<ngraph::he::SealPlaintextWrapper>& arg0,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type,
-    const runtime::he::he_seal::HESealBackend* he_seal_backend,
+    const ngraph::he::HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
 void scalar_multiply(
-    std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& arg0,
-    std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& arg1,
-    std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& out,
+    std::shared_ptr<ngraph::he::SealPlaintextWrapper>& arg0,
+    std::shared_ptr<ngraph::he::SealPlaintextWrapper>& arg1,
+    std::shared_ptr<ngraph::he::SealPlaintextWrapper>& out,
     const element::Type& element_type,
-    const runtime::he::he_seal::HESealBackend* he_seal_backend,
+    const ngraph::he::HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
 template <typename S, typename T, typename V>
 void scalar_multiply(
     std::vector<std::shared_ptr<S>>& arg0,
     std::vector<std::shared_ptr<T>>& arg1, std::vector<std::shared_ptr<V>>& out,
-    const element::Type& element_type, const runtime::he::HEBackend* he_backend,
+    const element::Type& element_type, const ngraph::he::HEBackend* he_backend,
     size_t count,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool()) {
 #pragma omp parallel for
@@ -76,8 +73,5 @@ void scalar_multiply(
     scalar_multiply(arg0[i], arg1[i], out[i], element_type, he_backend, pool);
   }
 }
-}  // namespace kernel
-}  // namespace he_seal
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

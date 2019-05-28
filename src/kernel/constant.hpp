@@ -20,21 +20,18 @@
 #include <vector>
 
 #include "he_backend.hpp"
+#include "he_ciphertext.hpp"
 #include "he_plaintext.hpp"
 #include "ngraph/type/element_type.hpp"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
-namespace kernel {
-void constant(std::vector<std::shared_ptr<runtime::he::HEPlaintext>>& out,
+void constant(std::vector<std::shared_ptr<ngraph::he::HEPlaintext>>& out,
               const element::Type& element_type, const void* data_ptr,
-              const runtime::he::HEBackend* he_backend, size_t count);
+              const ngraph::he::HEBackend* he_backend, size_t count);
 
-void constant(std::vector<std::shared_ptr<runtime::he::HECiphertext>>& out,
+void constant(std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& out,
               const element::Type& element_type, const void* data_ptr,
-              const runtime::he::HEBackend* he_backend, size_t count);
-}  // namespace kernel
+              const ngraph::he::HEBackend* he_backend, size_t count);
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

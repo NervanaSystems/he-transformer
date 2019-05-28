@@ -23,9 +23,7 @@
 #include "seal/seal.h"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
-namespace he_seal {
 struct SealPlaintextWrapper : public HEPlaintext {
  public:
   SealPlaintextWrapper(
@@ -55,14 +53,12 @@ struct SealPlaintextWrapper : public HEPlaintext {
   seal::Plaintext m_plaintext;
 };
 
-inline std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>
-cast_to_seal_hetext(std::shared_ptr<runtime::he::HEPlaintext>& plain) {
+inline std::shared_ptr<ngraph::he::SealPlaintextWrapper> cast_to_seal_hetext(
+    std::shared_ptr<ngraph::he::HEPlaintext>& plain) {
   auto seal_plaintext_wrapper =
       std::dynamic_pointer_cast<SealPlaintextWrapper>(plain);
   NGRAPH_ASSERT(seal_plaintext_wrapper != nullptr) << "Plaintext is not Seal";
   return seal_plaintext_wrapper;
 };
-}  // namespace he_seal
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

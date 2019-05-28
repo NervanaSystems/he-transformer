@@ -23,7 +23,6 @@
 #include "ngraph/type/element_type.hpp"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
 class HEBackend;
 class HETensor : public runtime::Tensor {
@@ -80,5 +79,4 @@ class HETensor : public runtime::Tensor {
   const HEBackend* m_he_backend;
 };
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

@@ -27,10 +27,7 @@
 #include "seal/seal_plaintext_wrapper.hpp"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
-namespace he_seal {
-namespace ckks {
 template <typename S>
 size_t get_chain_index(S* hetext,
                        const HESealCKKSBackend* he_seal_ckks_backend) {
@@ -79,8 +76,7 @@ inline void add_plain(const seal::Ciphertext& encrypted, double value,
                       seal::Ciphertext& destination,
                       const HESealCKKSBackend* he_seal_ckks_backend) {
   destination = encrypted;
-  ngraph::runtime::he::he_seal::ckks::add_plain_inplace(destination, value,
-                                                        he_seal_ckks_backend);
+  ngraph::he::add_plain_inplace(destination, value, he_seal_ckks_backend);
 }
 
 // Like add_poly_poly_coeffmod, but with a scalar for operand2
@@ -132,11 +128,8 @@ inline void multiply_plain(
     const HESealCKKSBackend* he_seal_ckks_backend,
     seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool()) {
   destination = encrypted;
-  ngraph::runtime::he::he_seal::ckks::multiply_plain_inplace(
-      destination, value, he_seal_ckks_backend, std::move(pool));
+  ngraph::he::multiply_plain_inplace(destination, value, he_seal_ckks_backend,
+                                     std::move(pool));
 }
-}  // namespace ckks
-}  // namespace he_seal
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

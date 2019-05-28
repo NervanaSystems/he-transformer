@@ -15,46 +15,40 @@
 //*****************************************************************************
 
 #include "seal/kernel/add_seal.hpp"
-#include "seal/bfv/kernel/add_seal_bfv.hpp"
 #include "seal/ckks/he_seal_ckks_backend.hpp"
 #include "seal/ckks/kernel/add_seal_ckks.hpp"
 
-using namespace std;
-using namespace ngraph::runtime::he;
-
-void he_seal::kernel::scalar_add(
-    shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
-    shared_ptr<he_seal::SealCiphertextWrapper>& arg1,
-    shared_ptr<he_seal::SealCiphertextWrapper>& out,
-    const element::Type& element_type,
-    const he_seal::HESealBackend* he_seal_backend,
+void ngraph::he::scalar_add(
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
+    const element::Type& element_type, const HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
   if (arg0->is_zero()) {
-    out = make_shared<he_seal::SealCiphertextWrapper>(*arg1);
+    out = std::make_shared<ngraph::he::SealCiphertextWrapper>(*arg1);
   } else if (arg1->is_zero()) {
-    out = make_shared<he_seal::SealCiphertextWrapper>(*arg0);
+    out = std::make_shared<ngraph::he::SealCiphertextWrapper>(*arg0);
   } else {
     auto const he_seal_ckks_backend =
-        he_seal::cast_to_seal_ckks_backend(he_seal_backend);
-    he_seal::ckks::kernel::scalar_add_ckks(arg0, arg1, out, element_type,
-                                           he_seal_ckks_backend, pool);
+        cast_to_seal_ckks_backend(he_seal_backend);
+    ngraph::he::scalar_add_ckks(arg0, arg1, out, element_type,
+                                he_seal_ckks_backend, pool);
   }
 }
 
-void he_seal::kernel::scalar_add(
-    shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
-    shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
-    shared_ptr<he_seal::SealCiphertextWrapper>& out,
-    const element::Type& element_type,
-    const he_seal::HESealBackend* he_seal_backend,
+void ngraph::he::scalar_add(
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
+    std::shared_ptr<SealPlaintextWrapper>& arg1,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
+    const element::Type& element_type, const HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
   NGRAPH_ASSERT(element_type == element::f32);
 
   if (arg0->is_zero()) {
-    auto arg1_hetext = dynamic_pointer_cast<runtime::he::HEPlaintext>(arg1);
-    auto out_hetext = dynamic_pointer_cast<runtime::he::HECiphertext>(out);
+    auto arg1_hetext = std::dynamic_pointer_cast<ngraph::he::HEPlaintext>(arg1);
+    auto out_hetext = std::dynamic_pointer_cast<ngraph::he::HECiphertext>(out);
     he_seal_backend->encrypt(out_hetext, arg1_hetext);
-    out = runtime::he::he_seal::cast_to_seal_hetext(out_hetext);
+    out = ngraph::he::cast_to_seal_hetext(out_hetext);
     return;
   }
 
@@ -62,32 +56,29 @@ void he_seal::kernel::scalar_add(
   bool add_zero = arg1->is_single_value() && (arg1->get_values()[0] == 0.0f);
 
   if (add_zero) {
-    out = make_shared<he_seal::SealCiphertextWrapper>(*arg0);
+    out = std::make_shared<ngraph::he::SealCiphertextWrapper>(*arg0);
   } else {
-    auto he_seal_ckks_backend =
-        he_seal::cast_to_seal_ckks_backend(he_seal_backend);
-    he_seal::ckks::kernel::scalar_add_ckks(arg0, arg1, out, element_type,
-                                           he_seal_ckks_backend, pool);
+    auto he_seal_ckks_backend = cast_to_seal_ckks_backend(he_seal_backend);
+    ngraph::he::scalar_add_ckks(arg0, arg1, out, element_type,
+                                he_seal_ckks_backend, pool);
   }
 }
 
-void he_seal::kernel::scalar_add(
-    shared_ptr<he_seal::SealPlaintextWrapper>& arg0,
-    shared_ptr<he_seal::SealCiphertextWrapper>& arg1,
-    shared_ptr<he_seal::SealCiphertextWrapper>& out,
-    const element::Type& element_type,
-    const he_seal::HESealBackend* he_seal_backend,
+void ngraph::he::scalar_add(
+    std::shared_ptr<SealPlaintextWrapper>& arg0,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
+    const element::Type& element_type, const HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
-  he_seal::kernel::scalar_add(arg1, arg0, out, element_type, he_seal_backend);
+  ngraph::he::scalar_add(arg1, arg0, out, element_type, he_seal_backend);
 }
 
-void he_seal::kernel::scalar_add(
-    shared_ptr<he_seal::SealPlaintextWrapper>& arg0,
-    shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
-    shared_ptr<he_seal::SealPlaintextWrapper>& out,
-    const element::Type& element_type,
-    const he_seal::HESealBackend* he_seal_backend,
-    const seal::MemoryPoolHandle& pool) {
+void ngraph::he::scalar_add(std::shared_ptr<SealPlaintextWrapper>& arg0,
+                            std::shared_ptr<SealPlaintextWrapper>& arg1,
+                            std::shared_ptr<SealPlaintextWrapper>& out,
+                            const element::Type& element_type,
+                            const HESealBackend* he_seal_backend,
+                            const seal::MemoryPoolHandle& pool) {
   NGRAPH_ASSERT(element_type == element::f32);
 
   const std::vector<float>& arg0_vals = arg0->get_values();

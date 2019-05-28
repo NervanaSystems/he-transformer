@@ -29,10 +29,7 @@
 #include "seal/seal_plaintext_wrapper.hpp"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
-namespace he_seal {
-namespace kernel {
 template <typename S, typename T, typename V>
 void convolution_seal(
     const std::vector<std::shared_ptr<S>>& arg0,
@@ -46,15 +43,12 @@ void convolution_seal(
     size_t input_channel_axis_filters, size_t output_channel_axis_filters,
     size_t batch_axis_result, size_t output_channel_axis_result,
     bool rotate_filter, const element::Type& element_type, size_t batch_size,
-    const runtime::he::he_seal::HESealBackend* he_seal_backend);
-}
-}  // namespace he_seal
+    const ngraph::he::HESealBackend* he_seal_backend);
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph
 
 template <typename S, typename T, typename V>
-void ngraph::runtime::he::he_seal::kernel::convolution_seal(
+void ngraph::he::convolution_seal(
     const std::vector<std::shared_ptr<S>>& arg0,
     const std::vector<std::shared_ptr<T>>& arg1,
     std::vector<std::shared_ptr<V>>& out, const Shape& arg0_shape,
@@ -66,7 +60,7 @@ void ngraph::runtime::he::he_seal::kernel::convolution_seal(
     size_t input_channel_axis_filters, size_t output_channel_axis_filters,
     size_t batch_axis_result, size_t output_channel_axis_result,
     bool rotate_filter, const element::Type& element_type, size_t batch_size,
-    const runtime::he::he_seal::HESealBackend* he_seal_backend) {
+    const ngraph::he::HESealBackend* he_seal_backend) {
   // Comments throughout assume without loss of generality that:
   //
   // * batch axes for both input data and output data are 0
@@ -210,7 +204,7 @@ void ngraph::runtime::he::he_seal::kernel::convolution_seal(
     CoordinateTransform::Iterator filter_end = filter_transform.end();
 
     std::shared_ptr<V> sum = he_seal_backend->create_empty_hetext<V>(pool);
-    auto seal_sum = runtime::he::he_seal::cast_to_seal_hetext(sum);
+    auto seal_sum = ngraph::he::cast_to_seal_hetext(sum);
     bool first_add = true;
 
     while (input_it != input_end && filter_it != filter_end) {
@@ -230,27 +224,23 @@ void ngraph::runtime::he::he_seal::kernel::convolution_seal(
       if (input_batch_transform.has_source_coordinate(input_batch_coord)) {
         std::shared_ptr<S> arg0_mult =
             arg0[input_batch_transform.index(input_batch_coord)];
-        auto seal_arg0_mult =
-            runtime::he::he_seal::cast_to_seal_hetext(arg0_mult);
+        auto seal_arg0_mult = ngraph::he::cast_to_seal_hetext(arg0_mult);
 
         std::shared_ptr<T> arg1_mult =
             arg1[filter_transform.index(filter_coord)];
-        auto seal_arg1_mult =
-            runtime::he::he_seal::cast_to_seal_hetext(arg1_mult);
+        auto seal_arg1_mult = ngraph::he::cast_to_seal_hetext(arg1_mult);
 
         std::shared_ptr<V> prod = he_seal_backend->create_empty_hetext<V>(pool);
-        auto seal_prod = runtime::he::he_seal::cast_to_seal_hetext(prod);
+        auto seal_prod = ngraph::he::cast_to_seal_hetext(prod);
 
-        runtime::he::he_seal::kernel::scalar_multiply(
-            seal_arg0_mult, seal_arg1_mult, seal_prod, element_type,
-            he_seal_backend, pool);
+        ngraph::he::scalar_multiply(seal_arg0_mult, seal_arg1_mult, seal_prod,
+                                    element_type, he_seal_backend, pool);
         if (first_add) {
           seal_sum = seal_prod;
           first_add = false;
         } else {
-          runtime::he::he_seal::kernel::scalar_add(seal_sum, seal_prod,
-                                                   seal_sum, element_type,
-                                                   he_seal_backend, pool);
+          ngraph::he::scalar_add(seal_sum, seal_prod, seal_sum, element_type,
+                                 he_seal_backend, pool);
         }
       }
       ++input_it;

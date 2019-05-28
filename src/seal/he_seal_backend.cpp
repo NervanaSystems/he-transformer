@@ -16,62 +16,61 @@
 
 #include <limits>
 
-#include "seal/bfv/he_seal_bfv_backend.hpp"
 #include "seal/ckks/he_seal_ckks_backend.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal.h"
-
-using namespace ngraph;
-using namespace std;
 
 extern "C" const char* get_ngraph_version_string() {
   return "DUMMY_VERSION";  // TODO: move to CMakeList
 }
 
-extern "C" runtime::Backend* new_backend(const char* configuration_chars) {
-  string configuration_string = string(configuration_chars);
+extern "C" ngraph::runtime::Backend* new_backend(
+    const char* configuration_chars) {
+  std::string configuration_string = std::string(configuration_chars);
 
   NGRAPH_ASSERT(configuration_string == "HE_SEAL_CKKS")
       << "Invalid configuration string " << configuration_string;
-  return new runtime::he::he_seal::HESealCKKSBackend();
+  return new ngraph::he::HESealCKKSBackend();
 }
 
-extern "C" void delete_backend(runtime::Backend* backend) { delete backend; }
-
-shared_ptr<runtime::he::HECiphertext>
-runtime::he::he_seal::HESealBackend::create_empty_ciphertext() const {
-  return make_shared<runtime::he::he_seal::SealCiphertextWrapper>();
+extern "C" void delete_backend(ngraph::runtime::Backend* backend) {
+  delete backend;
 }
 
-shared_ptr<runtime::he::HECiphertext>
-runtime::he::he_seal::HESealBackend::create_empty_ciphertext(
+std::shared_ptr<ngraph::he::HECiphertext>
+ngraph::he::HESealBackend::create_empty_ciphertext() const {
+  return std::make_shared<ngraph::he::SealCiphertextWrapper>();
+}
+
+std::shared_ptr<ngraph::he::HECiphertext>
+ngraph::he::HESealBackend::create_empty_ciphertext(
     seal::parms_id_type parms_id) const {
-  return make_shared<runtime::he::he_seal::SealCiphertextWrapper>(
+  return std::make_shared<ngraph::he::SealCiphertextWrapper>(
       seal::Ciphertext(m_context, parms_id));
 }
 
-shared_ptr<runtime::he::HECiphertext>
-runtime::he::he_seal::HESealBackend::create_empty_ciphertext(
+std::shared_ptr<ngraph::he::HECiphertext>
+ngraph::he::HESealBackend::create_empty_ciphertext(
     const seal::MemoryPoolHandle& pool) const {
-  return make_shared<runtime::he::he_seal::SealCiphertextWrapper>(pool);
+  return std::make_shared<ngraph::he::SealCiphertextWrapper>(pool);
 }
 
-shared_ptr<runtime::he::HEPlaintext>
-runtime::he::he_seal::HESealBackend::create_empty_plaintext() const {
-  return make_shared<runtime::he::he_seal::SealPlaintextWrapper>();
+std::shared_ptr<ngraph::he::HEPlaintext>
+ngraph::he::HESealBackend::create_empty_plaintext() const {
+  return std::make_shared<ngraph::he::SealPlaintextWrapper>();
 }
 
-shared_ptr<runtime::he::HEPlaintext>
-runtime::he::he_seal::HESealBackend::create_empty_plaintext(
+std::shared_ptr<ngraph::he::HEPlaintext>
+ngraph::he::HESealBackend::create_empty_plaintext(
     const seal::MemoryPoolHandle& pool) const {
-  return make_shared<runtime::he::he_seal::SealPlaintextWrapper>(pool);
+  return std::make_shared<ngraph::he::SealPlaintextWrapper>(pool);
 }
 
-void runtime::he::he_seal::HESealBackend::encrypt(
-    shared_ptr<runtime::he::HECiphertext>& output,
-    shared_ptr<runtime::he::HEPlaintext>& input) const {
-  auto seal_output = runtime::he::he_seal::cast_to_seal_hetext(output);
-  auto seal_input = runtime::he::he_seal::cast_to_seal_hetext(input);
+void ngraph::he::HESealBackend::encrypt(
+    std::shared_ptr<ngraph::he::HECiphertext>& output,
+    std::shared_ptr<ngraph::he::HEPlaintext>& input) const {
+  auto seal_output = ngraph::he::cast_to_seal_hetext(output);
+  auto seal_input = ngraph::he::cast_to_seal_hetext(input);
 
   encode(seal_input, input->complex_packing());
   // No need to encrypt zero
@@ -85,11 +84,11 @@ void runtime::he::he_seal::HESealBackend::encrypt(
   NGRAPH_ASSERT(output->complex_packing() == input->complex_packing());
 }
 
-void runtime::he::he_seal::HESealBackend::decrypt(
-    shared_ptr<runtime::he::HEPlaintext>& output,
-    const shared_ptr<runtime::he::HECiphertext>& input) const {
-  auto seal_output = runtime::he::he_seal::cast_to_seal_hetext(output);
-  auto seal_input = runtime::he::he_seal::cast_to_seal_hetext(input);
+void ngraph::he::HESealBackend::decrypt(
+    std::shared_ptr<ngraph::he::HEPlaintext>& output,
+    const std::shared_ptr<ngraph::he::HECiphertext>& input) const {
+  auto seal_output = ngraph::he::cast_to_seal_hetext(output);
+  auto seal_input = ngraph::he::cast_to_seal_hetext(input);
 
   if (input->is_zero()) {
     const size_t slots =

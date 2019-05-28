@@ -26,30 +26,21 @@
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 
-using namespace std;
-using namespace ngraph;
-
-void runtime::he::kernel::pad(
-    vector<shared_ptr<runtime::he::HECiphertext>>& arg0,
-    vector<shared_ptr<runtime::he::HEPlaintext>>& arg1,  // scalar
-    vector<shared_ptr<runtime::he::HECiphertext>>& out, const Shape& arg0_shape,
-    const Shape& out_shape, const CoordinateDiff& padding_below,
-    const CoordinateDiff& padding_above, op::PadMode pad_mode,
-    size_t batch_size, const runtime::he::HEBackend* he_backend) {
+void ngraph::he::pad(
+    std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& arg0,
+    std::vector<std::shared_ptr<ngraph::he::HEPlaintext>>& arg1,  // scalar
+    std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& out,
+    const Shape& arg0_shape, const Shape& out_shape,
+    const CoordinateDiff& padding_below, const CoordinateDiff& padding_above,
+    op::PadMode pad_mode, size_t batch_size,
+    const ngraph::he::HEBackend* he_backend) {
   if (arg1.size() != 1) {
     throw ngraph_error("Padding element must be scalar");
   }
 
-  auto he_seal_backend =
-      dynamic_cast<const runtime::he::he_seal::HESealBackend*>(he_backend);
-  auto he_seal_ckks_backend =
-      dynamic_cast<const runtime::he::he_seal::HESealCKKSBackend*>(he_backend);
+  auto he_seal_backend = ngraph::he::cast_to_seal_backend(he_backend);
 
-  NGRAPH_ASSERT(he_seal_backend != nullptr) << "pad supports only Seal backend";
-  NGRAPH_ASSERT(he_seal_ckks_backend != nullptr)
-      << "pad supports only CKKS backend";
-
-  shared_ptr<runtime::he::HECiphertext> arg1_encrypted;
+  std::shared_ptr<ngraph::he::HECiphertext> arg1_encrypted;
   arg1_encrypted = he_seal_backend->create_empty_ciphertext();
 
   bool is_pad_value_zero =
@@ -57,10 +48,10 @@ void runtime::he::kernel::pad(
   NGRAPH_ASSERT(is_pad_value_zero) << "Non-zero pad values not supported";
   arg1_encrypted->set_zero(true);
 
-  vector<shared_ptr<runtime::he::HECiphertext>> arg1_encrypted_vector{
+  std::vector<std::shared_ptr<ngraph::he::HECiphertext>> arg1_encrypted_vector{
       arg1_encrypted};
 
-  runtime::he::kernel::pad(arg0, arg1_encrypted_vector, out, arg0_shape,
-                           out_shape, padding_below, padding_above, pad_mode,
-                           batch_size, he_backend);
+  ngraph::he::pad(arg0, arg1_encrypted_vector, out, arg0_shape, out_shape,
+                  padding_below, padding_above, pad_mode, batch_size,
+                  he_backend);
 }

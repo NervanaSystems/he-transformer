@@ -18,29 +18,26 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/kernel/add_seal.hpp"
 
-using namespace std;
-using namespace ngraph::runtime::he;
+void ngraph::he::scalar_add(std::shared_ptr<ngraph::he::HECiphertext>& arg0,
+                            std::shared_ptr<ngraph::he::HECiphertext>& arg1,
+                            std::shared_ptr<ngraph::he::HECiphertext>& out,
+                            const element::Type& element_type,
+                            const ngraph::he::HEBackend* he_backend) {
+  auto he_seal_backend = ngraph::he::cast_to_seal_backend(he_backend);
+  auto arg0_seal = ngraph::he::cast_to_seal_hetext(arg0);
+  auto arg1_seal = ngraph::he::cast_to_seal_hetext(arg1);
+  auto out_seal = ngraph::he::cast_to_seal_hetext(out);
 
-void kernel::scalar_add(shared_ptr<HECiphertext>& arg0,
-                        shared_ptr<HECiphertext>& arg1,
-                        shared_ptr<HECiphertext>& out,
-                        const element::Type& element_type,
-                        const HEBackend* he_backend) {
-  auto he_seal_backend = he_seal::cast_to_seal_backend(he_backend);
-  auto arg0_seal = he_seal::cast_to_seal_hetext(arg0);
-  auto arg1_seal = he_seal::cast_to_seal_hetext(arg1);
-  auto out_seal = he_seal::cast_to_seal_hetext(out);
-
-  he_seal::kernel::scalar_add(arg0_seal, arg1_seal, out_seal, element_type,
-                              he_seal_backend);
-  out = dynamic_pointer_cast<HECiphertext>(out_seal);
+  ngraph::he::scalar_add(arg0_seal, arg1_seal, out_seal, element_type,
+                         he_seal_backend);
+  out = std::dynamic_pointer_cast<ngraph::he::HECiphertext>(out_seal);
 }
 
-void kernel::scalar_add(shared_ptr<HEPlaintext>& arg0,
-                        shared_ptr<HEPlaintext>& arg1,
-                        shared_ptr<HEPlaintext>& out,
-                        const element::Type& element_type,
-                        const HEBackend* he_backend) {
+void ngraph::he::scalar_add(std::shared_ptr<HEPlaintext>& arg0,
+                            std::shared_ptr<HEPlaintext>& arg1,
+                            std::shared_ptr<HEPlaintext>& out,
+                            const element::Type& element_type,
+                            const ngraph::he::HEBackend* he_backend) {
   std::vector<float> arg0_vals = arg0->get_values();
   std::vector<float> arg1_vals = arg1->get_values();
   std::vector<float> out_vals(arg0->num_values());
@@ -51,29 +48,29 @@ void kernel::scalar_add(shared_ptr<HEPlaintext>& arg0,
   out->set_values(out_vals);
 }
 
-void kernel::scalar_add(shared_ptr<HECiphertext>& arg0,
-                        shared_ptr<HEPlaintext>& arg1,
-                        shared_ptr<HECiphertext>& out,
-                        const element::Type& element_type,
-                        const HEBackend* he_backend) {
+void ngraph::he::scalar_add(std::shared_ptr<HECiphertext>& arg0,
+                            std::shared_ptr<HEPlaintext>& arg1,
+                            std::shared_ptr<HECiphertext>& out,
+                            const element::Type& element_type,
+                            const ngraph::he::HEBackend* he_backend) {
   if (arg0->is_zero()) {
     he_backend->encrypt(out, arg1);
     return;
   }
-  auto he_seal_backend = he_seal::cast_to_seal_backend(he_backend);
-  auto arg0_seal = he_seal::cast_to_seal_hetext(arg0);
-  auto arg1_seal = he_seal::cast_to_seal_hetext(arg1);
-  auto out_seal = he_seal::cast_to_seal_hetext(out);
+  auto he_seal_backend = cast_to_seal_backend(he_backend);
+  auto arg0_seal = ngraph::he::cast_to_seal_hetext(arg0);
+  auto arg1_seal = ngraph::he::cast_to_seal_hetext(arg1);
+  auto out_seal = ngraph::he::cast_to_seal_hetext(out);
 
-  he_seal::kernel::scalar_add(arg0_seal, arg1_seal, out_seal, element_type,
-                              he_seal_backend);
-  out = dynamic_pointer_cast<HECiphertext>(out_seal);
+  ngraph::he::scalar_add(arg0_seal, arg1_seal, out_seal, element_type,
+                         he_seal_backend);
+  out = std::dynamic_pointer_cast<HECiphertext>(out_seal);
 }
 
-void kernel::scalar_add(shared_ptr<HEPlaintext>& arg0,
-                        shared_ptr<HECiphertext>& arg1,
-                        shared_ptr<HECiphertext>& out,
-                        const element::Type& element_type,
-                        const HEBackend* he_backend) {
-  scalar_add(arg1, arg0, out, element_type, he_backend);
+void ngraph::he::scalar_add(std::shared_ptr<HEPlaintext>& arg0,
+                            std::shared_ptr<HECiphertext>& arg1,
+                            std::shared_ptr<HECiphertext>& out,
+                            const element::Type& element_type,
+                            const ngraph::he::HEBackend* he_backend) {
+  ngraph::he::scalar_add(arg1, arg0, out, element_type, he_backend);
 }

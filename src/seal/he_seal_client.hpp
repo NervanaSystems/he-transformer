@@ -27,10 +27,7 @@
 #include "tcp/tcp_client.hpp"
 #include "tcp/tcp_message.hpp"
 
-using namespace ngraph;
-
 namespace ngraph {
-namespace runtime {
 namespace he {
 class HESealClient {
  public:
@@ -41,9 +38,9 @@ class HESealClient {
 
   void set_seal_context();
 
-  void handle_message(const runtime::he::TCPMessage& message);
+  void handle_message(const ngraph::he::TCPMessage& message);
 
-  void write_message(const runtime::he::TCPMessage& message);
+  void write_message(const ngraph::he::TCPMessage& message);
 
   bool is_done();
 
@@ -74,5 +71,4 @@ class HESealClient {
   bool m_complex_packing{std::getenv("NGRAPH_COMPLEX_PACK") != nullptr};
 };
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

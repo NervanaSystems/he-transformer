@@ -19,14 +19,12 @@
 #include "he_backend.hpp"
 #include "he_plain_tensor.hpp"
 
-using namespace ngraph;
-using namespace std;
-
-runtime::he::HEPlainTensor::HEPlainTensor(
+ngraph::he::HEPlainTensor::HEPlainTensor(
     const element::Type& element_type, const Shape& shape,
-    const HEBackend* he_backend, const shared_ptr<HEPlaintext> he_plaintext,
-    const bool batched, const string& name)
-    : runtime::he::HETensor(element_type, shape, he_backend, batched, name) {
+    const HEBackend* he_backend,
+    const std::shared_ptr<ngraph::he::HEPlaintext> he_plaintext,
+    const bool batched, const std::string& name)
+    : ngraph::he::HETensor(element_type, shape, he_backend, batched, name) {
   m_num_elements = m_descriptor->get_tensor_layout()->get_size() / m_batch_size;
   m_plaintexts.resize(m_num_elements);
 #pragma omp parallel for
@@ -35,8 +33,8 @@ runtime::he::HEPlainTensor::HEPlainTensor(
   }
 }
 
-void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
-                                       size_t n) {
+void ngraph::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
+                                      size_t n) {
   check_io_bounds(source, tensor_offset, n / m_batch_size);
   const element::Type& element_type = get_tensor_layout()->get_element_type();
   size_t type_byte_size = element_type.size();
@@ -89,8 +87,8 @@ void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
   }
 }
 
-void runtime::he::HEPlainTensor::read(void* target, size_t tensor_offset,
-                                      size_t n) const {
+void ngraph::he::HEPlainTensor::read(void* target, size_t tensor_offset,
+                                     size_t n) const {
   NGRAPH_ASSERT(tensor_offset == 0)
       << "Only support reading from beginning of tensor";
 
