@@ -27,9 +27,7 @@
 #include "ngraph/type/element_type.hpp"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
-namespace kernel {
 template <typename T>
 void avg_pool(std::vector<std::shared_ptr<T>>& arg,
               std::vector<std::shared_ptr<T>>& out, const Shape& arg_shape,
@@ -154,6 +152,4 @@ void avg_pool(std::vector<std::shared_ptr<T>>& arg,
   }
 };  // namespace kernel
 }  // namespace kernel
-}  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

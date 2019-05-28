@@ -25,9 +25,7 @@
 #include "ngraph/type/element_type.hpp"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
-namespace kernel {
 void scalar_subtract(std::shared_ptr<ngraph::he::HECiphertext>& arg0,
                      std::shared_ptr<ngraph::he::HECiphertext>& arg1,
                      std::shared_ptr<ngraph::he::HECiphertext>& out,
@@ -63,7 +61,5 @@ void subtract(std::vector<std::shared_ptr<S>>& arg0,
     scalar_subtract(arg0[i], arg1[i], out[i], element_type, he_backend);
   }
 };
-}  // namespace kernel
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

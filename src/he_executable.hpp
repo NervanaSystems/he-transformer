@@ -37,7 +37,6 @@
 using boost::asio::ip::tcp;
 
 namespace ngraph {
-namespace runtime {
 namespace he {
 
 class HEExecutable : public Executable {
@@ -140,5 +139,4 @@ class HEExecutable : public Executable {
                       const std::vector<std::shared_ptr<HETensor>>& inputs);
 };
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

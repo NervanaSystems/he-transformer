@@ -21,12 +21,11 @@
 #include "ngraph/node.hpp"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
 enum class OP_TYPEID;
 class NodeWrapper;
 }  // namespace he
-}  // namespace runtime
+}  // namespace ngraph
 }  // namespace ngraph
 
 // This expands the op list in op_tbl.hpp into a list of enumerations that look

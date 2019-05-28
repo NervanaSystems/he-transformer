@@ -49,13 +49,12 @@ class HESealCKKSBackend : public HESealBackend {
   std::shared_ptr<seal::SEALContext> make_seal_context(
       const std::shared_ptr<ngraph::he::HEEncryptionParameters> sp) override;
 
-  void encode(
-      std::shared_ptr<ngraph::he::SealPlaintextWrapper>& plaintext,
-      seal::parms_id_type parms_id, double scale, bool complex) const override;
+  void encode(std::shared_ptr<ngraph::he::SealPlaintextWrapper>& plaintext,
+              seal::parms_id_type parms_id, double scale,
+              bool complex) const override;
 
   void encode(
-      std::shared_ptr<ngraph::ngraph::he::SealPlaintextWrapper>&
-          plaintext,
+      std::shared_ptr<ngraph::ngraph::he::SealPlaintextWrapper>& plaintext,
       bool complex) const override {
     encode(plaintext, m_context->first_parms_id(), m_scale, complex);
   }
@@ -82,10 +81,9 @@ class HESealCKKSBackend : public HESealBackend {
 inline const ngraph::he::HESealCKKSBackend* cast_to_seal_ckks_backend(
     const ngraph::he::HEBackend* he_seal_backend) {
   auto he_seal_ckks_backend =
-      dynamic_cast<const ngraph::he::HESealCKKSBackend*>(
-          he_seal_backend);
+      dynamic_cast<const ngraph::he::HESealCKKSBackend*>(he_seal_backend);
   NGRAPH_ASSERT(he_seal_ckks_backend != nullptr);
   return he_seal_ckks_backend;
 };
-}  // namespace runtime
+}  // namespace he
 }  // namespace ngraph

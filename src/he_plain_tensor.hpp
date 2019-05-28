@@ -25,7 +25,6 @@
 #include "ngraph/type/element_type.hpp"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
 class HEPlainTensor : public HETensor {
  public:
@@ -63,5 +62,4 @@ class HEPlainTensor : public HETensor {
   size_t m_num_elements;
 };
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

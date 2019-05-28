@@ -23,13 +23,11 @@
 using boost::asio::ip::tcp;
 
 namespace ngraph {
-namespace runtime {
 namespace he {
 class TCPSession : public std::enable_shared_from_this<TCPSession> {
  public:
-  TCPSession(
-      tcp::socket socket,
-      std::function<void(const ngraph::he::TCPMessage&)> message_handler)
+  TCPSession(tcp::socket socket,
+             std::function<void(const ngraph::he::TCPMessage&)> message_handler)
       : m_socket(std::move(socket)),
         m_message_callback(std::bind(message_handler, std::placeholders::_1)) {}
 
@@ -94,7 +92,6 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
 
   // Called after message is received
   std::function<void(const ngraph::he::TCPMessage&)> m_message_callback;
-};  // namespace he
+};
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

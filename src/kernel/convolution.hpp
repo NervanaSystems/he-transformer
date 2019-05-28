@@ -28,9 +28,7 @@
 #include "seal/kernel/convolution_seal.hpp"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
-namespace kernel {
 template <typename S, typename T, typename V>
 void convolution(const std::vector<std::shared_ptr<S>>& arg0,
                  const std::vector<std::shared_ptr<T>>& arg1,
@@ -47,13 +45,11 @@ void convolution(const std::vector<std::shared_ptr<S>>& arg0,
                  size_t output_channel_axis_result, bool rotate_filter,
                  const element::Type& element_type, size_t batch_size,
                  const ngraph::he::HEBackend* he_backend);
-}
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph
 
 template <typename S, typename T, typename V>
-void ngraph::ngraph::he::convolution(
+void ngraph::he::convolution(
     const std::vector<std::shared_ptr<S>>& arg0,
     const std::vector<std::shared_ptr<T>>& arg1,
     std::vector<std::shared_ptr<V>>& out, const Shape& arg0_shape,
@@ -68,8 +64,7 @@ void ngraph::ngraph::he::convolution(
     const ngraph::he::HEBackend* he_backend) {
   // Use optimized SEAL conv if possible
   if (auto he_seal_backend =
-          dynamic_cast<const ngraph::he::HESealBackend*>(
-              he_backend)) {
+          dynamic_cast<const ngraph::he::HESealBackend*>(he_backend)) {
     ngraph::he::convolution_seal(
         arg0, arg1, out, arg0_shape, arg1_shape, out_shape,
         window_movement_strides, window_dilation_strides, padding_below,

@@ -25,9 +25,7 @@
 #include "ngraph/coordinate_transform.hpp"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
-namespace kernel {
 template <typename T>
 void reverse(const std::vector<std::shared_ptr<T>>& arg,
              std::vector<std::shared_ptr<T>>& out, const Shape& arg_shape,
@@ -50,7 +48,5 @@ void reverse(const std::vector<std::shared_ptr<T>>& arg,
         arg[arg_transform.index(arg_coord)];
   }
 }
-}  // namespace kernel
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

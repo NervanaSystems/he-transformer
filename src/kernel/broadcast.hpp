@@ -25,9 +25,7 @@
 #include "ngraph/shape_util.hpp"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
-namespace kernel {
 template <typename T>
 void broadcast(const std::vector<std::shared_ptr<T>>& arg,
                std::vector<std::shared_ptr<T>>& out, const Shape& in_shape,
@@ -43,5 +41,3 @@ void broadcast(const std::vector<std::shared_ptr<T>>& arg,
 };
 }  // namespace kernel
 }  // namespace he
-}  // namespace runtime
-}  // namespace ngraph

@@ -164,5 +164,3 @@ void pad(std::vector<std::shared_ptr<S>>& arg0,
 }
 }  // namespace he
 }  // namespace ngraph
-}  // namespace runtime
-}  // namespace ngraph

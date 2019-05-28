@@ -24,9 +24,7 @@
 #include "ngraph/type/element_type.hpp"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
-namespace kernel {
 template <typename T>
 void sum(std::vector<std::shared_ptr<T>>& arg,
          std::vector<std::shared_ptr<T>>& out, const Shape& in_shape,
@@ -47,11 +45,8 @@ void sum(std::vector<std::shared_ptr<T>>& arg,
 
     auto& input = arg[input_transform.index(input_coord)];
     auto& output = out[output_transform.index(output_coord)];
-    ngraph::he::scalar_add(input, output, output, element_type,
-                                    he_backend);
+    ngraph::he::scalar_add(input, output, output, element_type, he_backend);
   }
 }
-}  // namespace kernel
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

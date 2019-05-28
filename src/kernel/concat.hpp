@@ -25,9 +25,7 @@
 #include "ngraph/shape_util.hpp"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
-namespace kernel {
 template <typename T>
 void concat(const std::vector<std::vector<std::shared_ptr<T>>>& args,
             std::vector<std::shared_ptr<T>>& out,
@@ -76,8 +74,6 @@ void concat(const std::vector<std::vector<std::shared_ptr<T>>>& args,
 
     concatenation_pos += in_shapes[i][concatenation_axis];
   }
-};  // namespace kernel
-}  // namespace kernel
+};
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

@@ -26,9 +26,7 @@
 #include "seal/kernel/negate_seal.hpp"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
-namespace kernel {
 template <typename T>
 void scalar_negate(std::shared_ptr<T>& arg, std::shared_ptr<T>& out,
                    const element::Type& element_type,
@@ -36,8 +34,7 @@ void scalar_negate(std::shared_ptr<T>& arg, std::shared_ptr<T>& out,
   auto he_seal_backend = cast_to_seal_backend(he_backend);
   auto arg_seal = cast_to_seal_hetext(arg);
   auto out_seal = cast_to_seal_hetext(out);
-  scalar_negate(arg_seal, out_seal, element_type,
-                                 he_seal_backend);
+  scalar_negate(arg_seal, out_seal, element_type, he_seal_backend);
 }
 
 template <typename T>
@@ -50,7 +47,5 @@ void negate(std::vector<std::shared_ptr<T>>& arg,
     scalar_negate(arg[i], out[i], element_type, he_backend);
   }
 }
-}  // namespace kernel
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

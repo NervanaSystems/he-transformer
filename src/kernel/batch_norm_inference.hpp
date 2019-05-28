@@ -32,9 +32,7 @@
 #include "seal/seal_plaintext_wrapper.hpp"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
-namespace kernel {
 void batch_norm_inference(
     double eps, std::vector<std::shared_ptr<HEPlaintext>>& gamma,
     std::vector<std::shared_ptr<HEPlaintext>>& beta,
@@ -46,13 +44,7 @@ void batch_norm_inference(
     const HEBackend* he_backend) {
   CoordinateTransform input_transform(input_shape);
 
-  auto he_seal_backend =
-      dynamic_cast<const ngraph::he::HESealBackend*>(he_backend);
-
-  if (he_seal_backend == nullptr) {
-    throw ngraph_error(
-        "BatchNormInference unimplemented for non-seal backends");
-  }
+  auto he_seal_backend = ngraph::he::cast_to_seal_backend(he_backend);
 
   // Store input coordinates for parallelization
   std::vector<ngraph::Coordinate> input_coords;
@@ -94,27 +86,19 @@ void batch_norm_inference(
     auto plain_scale = he_backend->create_empty_plaintext();
 
     plain_scale->set_values(scale_vec);
-    // Lazy encoding
-    // he_seal_backend->encode(plain_scale, scale_vec.data(), element::f32,
-    //                        batch_size);
 
     auto plain_bias = he_backend->create_empty_plaintext();
     plain_bias->set_values(bias_vec);
-    // Lazy encoding
-    // he_seal_backend->encode(plain_bias, bias_vec.data(), element::f32,
-    //                        batch_size);
 
     auto output = he_backend->create_empty_ciphertext();
 
-    ngraph::he::scalar_multiply(input[input_index], plain_scale,
-                                         output, element::f32, he_backend);
+    ngraph::he::scalar_multiply(input[input_index], plain_scale, output,
+                                element::f32, he_backend);
 
     ngraph::he::scalar_add(output, plain_bias, output, element::f32,
-                                    he_backend);
+                           he_backend);
     normed_input[input_index] = output;
   }
 };
-}  // namespace kernel
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

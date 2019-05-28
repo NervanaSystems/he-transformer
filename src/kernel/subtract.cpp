@@ -27,7 +27,7 @@ void kernel::scalar_subtract(shared_ptr<HECiphertext>& arg0,
                             std::shared_ptr<HECiphertext>& arg1,
                             std::shared_ptr<HECiphertext>& out,
                              const element::Type& element_type,
-                             const HEBackend* he_backend) {
+                             const ngraph::he::HEBackend* he_backend) {
   auto he_seal_backend = cast_to_seal_backend(he_backend);
   auto arg0_seal = cast_to_seal_hetext(arg0);
   auto arg1_seal = cast_to_seal_hetext(arg1);
@@ -42,7 +42,7 @@ void kernel::scalar_subtract(shared_ptr<HEPlaintext>& arg0,
                             std::shared_ptr<HEPlaintext>& arg1,
                             std::shared_ptr<HEPlaintext>& out,
                              const element::Type& element_type,
-                             const HEBackend* he_backend) {
+                             const ngraph::he::HEBackend* he_backend) {
   NGRAPH_ASSERT(element_type == element::f32);
 
   std::vector<float> arg0_vals = arg0->get_values();
@@ -59,7 +59,7 @@ void kernel::scalar_subtract(shared_ptr<HECiphertext>& arg0,
                             std::shared_ptr<HEPlaintext>& arg1,
                             std::shared_ptr<HECiphertext>& out,
                              const element::Type& type,
-                             const HEBackend* he_backend) {
+                             const ngraph::he::HEBackend* he_backend) {
   NGRAPH_ASSERT(type == element::f32) << "Only type float32 supported";
 
   if (arg0->is_zero()) {
@@ -92,7 +92,7 @@ void kernel::scalar_subtract(shared_ptr<HEPlaintext>& arg0,
                             std::shared_ptr<HECiphertext>& arg1,
                             std::shared_ptr<HECiphertext>& out,
                              const element::Type& type,
-                             const HEBackend* he_backend) {
+                             const ngraph::he::HEBackend* he_backend) {
   if (arg1->is_zero()) {
     he_backend->encrypt(out, arg0);
   } else {
