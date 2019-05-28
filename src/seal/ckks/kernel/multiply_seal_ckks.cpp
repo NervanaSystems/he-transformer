@@ -66,12 +66,8 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
   if (arg1->is_single_value()) {
     float value = arg1->get_values()[0];
     double double_val = double(value);
-    NGRAPH_INFO << "Multiply by double " << double_val << " at scale "
-                << arg0->m_ciphertext.scale();
     multiply_plain(arg0->m_ciphertext, double_val, out->m_ciphertext,
                    he_seal_ckks_backend, pool);
-    NGRAPH_INFO << "Done multiplying by double. out scale "
-                << out->m_ciphertext.scale();
   } else {
     NGRAPH_INFO << "Multiply by plain";
     if (!arg1->is_encoded()) {

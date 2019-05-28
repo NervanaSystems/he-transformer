@@ -33,9 +33,6 @@ void he_seal::ckks::kernel::scalar_add_ckks(
     const seal::MemoryPoolHandle& pool) {
   NGRAPH_ASSERT(arg0->complex_packing() == arg1->complex_packing());
 
-  NGRAPH_INFO << "Adding C+C at scale " << arg0->m_ciphertext.scale() << ",  "
-              << arg1->m_ciphertext.scale();
-
   match_modulus_and_scale_inplace(arg0.get(), arg1.get(), he_seal_ckks_backend,
                                   pool);
   he_seal_ckks_backend->get_evaluator()->add(
@@ -53,12 +50,8 @@ void he_seal::ckks::kernel::scalar_add_ckks(
   if (arg1->is_single_value()) {
     float value = arg1->get_values()[0];
     double double_val = double(value);
-    NGRAPH_INFO << "Adding by double " << double_val << " at scale "
-                << arg0->m_ciphertext.scale();
     add_plain(arg0->m_ciphertext, double_val, out->m_ciphertext,
               he_seal_ckks_backend);
-    NGRAPH_INFO << "Done adding by double. out scale "
-                << out->m_ciphertext.scale();
   } else {
     if (!arg1->is_encoded()) {
       // Just-in-time encoding at the right scale and modulus

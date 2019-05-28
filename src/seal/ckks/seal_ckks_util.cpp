@@ -111,9 +111,6 @@ void runtime::he::he_seal::ckks::encode(
   bool is_negative = std::signbit(coeffd);
   coeffd = fabs(coeffd);
 
-  NGRAPH_INFO << "Encoding double " << value << " at scale " << scale
-              << " => coeffd = " << coeffd;
-
   // Use faster decomposition methods when possible
   if (coeff_bit_count <= 64) {
     uint64_t coeffu = static_cast<uint64_t>(fabs(coeffd));
@@ -229,10 +226,6 @@ void runtime::he::he_seal::ckks::encode(
       }
     }
   }
-  NGRAPH_INFO << "Encoded vals ";
-  for (const auto& elem : destination) {
-    NGRAPH_INFO << elem;
-  }
 }
 
 void runtime::he::he_seal::ckks::add_plain_inplace(
@@ -263,7 +256,6 @@ void runtime::he::he_seal::ckks::add_plain_inplace(
   }
 
   NGRAPH_INFO << "Adding double " << value << " at scale " << encrypted.scale();
-  NGRAPH_INFO << "coeff_count " << coeff_count;
   NGRAPH_ASSERT(encrypted.data() != nullptr) << "Encrypted data == nullptr";
 
   // Encode
@@ -354,7 +346,6 @@ void runtime::he::he_seal::ckks::multiply_plain_inplace(
 
   // Set the scale
   encrypted.scale() = new_scale;
-  NGRAPH_INFO << "encrypted scale after mult " << encrypted.scale();
 
 #ifndef SEAL_ALLOW_TRANSPARENT_CIPHERTEXT
   // Transparent ciphertext output is not allowed.
