@@ -20,19 +20,17 @@
 #include "ngraph/descriptor/tensor.hpp"
 #include "ngraph/util.hpp"
 
-using namespace std;
-using namespace ngraph;
-
-runtime::he::HETensor::HETensor(const element::Type& element_type,
-                                const Shape& shape, const HEBackend* he_backend,
-                                const bool batched, const string& name)
-    : runtime::Tensor(
-          std::make_shared<descriptor::Tensor>(element_type, shape, name),
-          he_backend),
+ngraph::he::HETensor::HETensor(const element::Type& element_type,
+                               const Shape& shape,
+                               const ngraph::he::HEBackend* he_backend,
+                               const bool batched, const std::string& name)
+    : ngraph::runtime::Tensor(std::make_shared<ngraph::descriptor::Tensor>(
+          element_type, shape, name)),
       m_he_backend(he_backend),
       m_batched(batched) {
   m_descriptor->set_tensor_layout(
-      make_shared<descriptor::layout::DenseTensorLayout>(*m_descriptor));
+      std::make_shared<ngraph::descriptor::layout::DenseTensorLayout>(
+          *m_descriptor));
 
   if (batched) {
     m_batch_size = shape[0];
@@ -43,32 +41,32 @@ runtime::he::HETensor::HETensor(const element::Type& element_type,
   }
 }
 
-Shape runtime::he::HETensor::batch_shape(const Shape& shape,
-                                         size_t batch_axis) {
+ngraph::Shape ngraph::he::HETensor::batch_shape(const ngraph::Shape& shape,
+                                                size_t batch_axis) {
   if (batch_axis != 0) {
-    throw ngraph_error("Batching only supported along axis 0");
+    throw ngraph::ngraph_error("Batching only supported along axis 0");
   }
-  Shape batched_shape(shape);
+  ngraph::Shape batched_shape(shape);
   if (shape.size() > 0) {
     batched_shape[0] = 1;
   }
   return batched_shape;
 }
 
-void runtime::he::HETensor::check_io_bounds(const void* source,
-                                            size_t tensor_offset,
-                                            size_t n) const {
+void ngraph::he::HETensor::check_io_bounds(const void* source,
+                                           size_t tensor_offset,
+                                           size_t n) const {
   const element::Type& element_type = get_tensor_layout()->get_element_type();
   size_t type_byte_size = element_type.size();
 
   // Memory must be byte-aligned to type_byte_size
   // tensor_offset and n are all in bytes
   if (tensor_offset % type_byte_size != 0 || n % type_byte_size != 0) {
-    throw ngraph_error(
+    throw ngraph::ngraph_error(
         "tensor_offset and n must be divisible by type_byte_size.");
   }
   // Check out-of-range
   if ((tensor_offset + n) / type_byte_size > get_element_count()) {
-    throw out_of_range("I/O access past end of tensor");
+    throw std::out_of_range("I/O access past end of tensor");
   }
 }

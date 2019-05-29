@@ -24,9 +24,7 @@
 #include "ngraph/coordinate_transform.hpp"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
-namespace kernel {
 // Returns list where L[i] is the list of input indices to maximize over.
 std::vector<std::vector<size_t>> max_pool(
     const Shape& arg_shape, const Shape& out_shape, const Shape& window_shape,
@@ -39,9 +37,8 @@ std::vector<std::vector<size_t>> max_pool(
   for (const Coordinate& out_coord : output_transform) {
     out_size++;
   }
-  NGRAPH_ASSERT(out_size == shape_size(out_shape))
-      << "out size " << out_size << " != shape_size(out_shape) "
-      << join(out_shape, "x");
+  NGRAPH_CHECK(out_size == shape_size(out_shape), "out size ", out_size,
+               " != shape_size(out_shape) ", join(out_shape, "x"));
 
   std::vector<std::vector<size_t>> maximize_list(shape_size(out_shape));
 
@@ -126,7 +123,5 @@ std::vector<std::vector<size_t>> max_pool(
   }
   return maximize_list;
 }
-}  // namespace kernel
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

@@ -15,101 +15,93 @@
 //*****************************************************************************
 
 #include "seal/kernel/multiply_seal.hpp"
-#include "seal/bfv/kernel/multiply_seal_bfv.hpp"
 #include "seal/ckks/he_seal_ckks_backend.hpp"
 #include "seal/ckks/kernel/multiply_seal_ckks.hpp"
 #include "seal/kernel/negate_seal.hpp"
 
-using namespace std;
-using namespace ngraph::runtime::he;
-
-void he_seal::kernel::scalar_multiply(
-    shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
-    shared_ptr<he_seal::SealCiphertextWrapper>& arg1,
-    shared_ptr<he_seal::SealCiphertextWrapper>& out,
-    const element::Type& element_type,
-    const he_seal::HESealBackend* he_seal_backend,
+void ngraph::he::scalar_multiply(
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
+    const element::Type& element_type, const HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
-  if (auto he_seal_ckks_backend =
-          dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend)) {
-    he_seal::ckks::kernel::scalar_multiply_ckks(arg0, arg1, out, element_type,
-                                                he_seal_ckks_backend, pool);
-  } else if (auto he_seal_bfv_backend =
-                 dynamic_cast<const he_seal::HESealBFVBackend*>(
-                     he_seal_backend)) {
-    he_seal::bfv::kernel::scalar_multiply_bfv(arg0, arg1, out, element_type,
-                                              he_seal_bfv_backend);
+  if (arg0->is_zero()) {
+    out->set_zero(true);
+  } else if (arg1->is_zero()) {
+    out->set_zero(true);
   } else {
-    throw ngraph_error("HESealBackend is neither BFV nor CKKS");
+    auto he_seal_ckks_backend =
+        ngraph::he::cast_to_seal_ckks_backend(he_seal_backend);
+    ngraph::he::scalar_multiply_ckks(arg0, arg1, out, element_type,
+                                     he_seal_ckks_backend, pool);
   }
 }
 
-void he_seal::kernel::scalar_multiply(
-    shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
-    shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
-    shared_ptr<he_seal::SealCiphertextWrapper>& out,
-    const element::Type& element_type,
-    const he_seal::HESealBackend* he_seal_backend,
+void ngraph::he::scalar_multiply(
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
+    std::shared_ptr<SealPlaintextWrapper>& arg1,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
+    const element::Type& element_type, const HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
-  NGRAPH_ASSERT(element_type == element::f32)
-      << "Element type " << element_type << " is not float";
+  NGRAPH_CHECK(element_type == element::f32, "Element type ", element_type,
+               " is not float");
+  if (arg0->is_zero()) {
+    out->set_zero(true);
+    return;
+  }
 
   const auto& values = arg1->get_values();
   // TODO: check multiplying by small numbers behavior more thoroughly
   if (std::all_of(values.begin(), values.end(),
                   [](float f) { return std::abs(f) < 1e-5f; })) {
-    out = dynamic_pointer_cast<he_seal::SealCiphertextWrapper>(
+    out->set_zero(true);
+    out = std::dynamic_pointer_cast<ngraph::he::SealCiphertextWrapper>(
         he_seal_backend->create_valued_ciphertext(0, element_type));
-  } else if (std::all_of(values.begin(), values.end(),
+  }
+
+  // We can't just do these scalar +/-1 optimizations, unless all the weights
+  // are +/-1 in this layer, since we expect the scale of the ciphertext to
+  // square. For instance, if we are computing c1*p(1) + c2 *p(2), the latter
+  // sum will have larger scale than the former
+  /*else if (std::all_of(values.begin(), values.end(),
                          [](float f) { return f == 1.0f; })) {
-    out = make_shared<he_seal::SealCiphertextWrapper>(arg0);
+    out = make_shared<ngraph::he::SealCiphertextWrapper>(*arg0);
   } else if (std::all_of(values.begin(), values.end(),
                          [](float f) { return f == -1.0f; })) {
-    he_seal::kernel::scalar_negate(arg0, out, element_type, he_seal_backend);
-  } else {
-    if (auto he_seal_ckks_backend =
-            dynamic_cast<const he_seal::HESealCKKSBackend*>(he_seal_backend)) {
-      he_seal::ckks::kernel::scalar_multiply_ckks(arg0, arg1, out, element_type,
-                                                  he_seal_ckks_backend, pool);
-    } else if (auto he_seal_bfv_backend =
-                   dynamic_cast<const he_seal::HESealBFVBackend*>(
-                       he_seal_backend)) {
-      he_seal::bfv::kernel::scalar_multiply_bfv(arg0, arg1, out, element_type,
-                                                he_seal_bfv_backend);
-    } else {
-      throw ngraph_error("HESealBackend is neither BFV nor CKKS");
-    }
+    scalar_negate(arg0, out, element_type, he_seal_backend);
+  } */
+  else {
+    auto he_seal_ckks_backend =
+        ngraph::he::cast_to_seal_ckks_backend(he_seal_backend);
+    ngraph::he::scalar_multiply_ckks(arg0, arg1, out, element_type,
+                                     he_seal_ckks_backend, pool);
   }
 }
 
-void he_seal::kernel::scalar_multiply(
-    shared_ptr<he_seal::SealPlaintextWrapper>& arg0,
-    shared_ptr<he_seal::SealCiphertextWrapper>& arg1,
-    shared_ptr<he_seal::SealCiphertextWrapper>& out,
-    const element::Type& element_type,
-    const he_seal::HESealBackend* he_seal_backend,
+void ngraph::he::scalar_multiply(
+    std::shared_ptr<SealPlaintextWrapper>& arg0,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
+    const element::Type& element_type, const HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
-  he_seal::kernel::scalar_multiply(arg1, arg0, out, element_type,
-                                   he_seal_backend, pool);
+  ngraph::he::scalar_multiply(arg1, arg0, out, element_type, he_seal_backend,
+                              pool);
 }
 
-void he_seal::kernel::scalar_multiply(
-    shared_ptr<he_seal::SealPlaintextWrapper>& arg0,
-    shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
-    shared_ptr<he_seal::SealPlaintextWrapper>& out,
-    const element::Type& element_type,
-    const he_seal::HESealBackend* he_seal_backend,
-    const seal::MemoryPoolHandle& pool) {
-  NGRAPH_ASSERT(element_type == element::f32);
+void ngraph::he::scalar_multiply(std::shared_ptr<SealPlaintextWrapper>& arg0,
+                                 std::shared_ptr<SealPlaintextWrapper>& arg1,
+                                 std::shared_ptr<SealPlaintextWrapper>& out,
+                                 const element::Type& element_type,
+                                 const HESealBackend* he_seal_backend,
+                                 const seal::MemoryPoolHandle& pool) {
+  NGRAPH_CHECK(element_type == element::f32);
 
   std::vector<float> arg0_vals = arg0->get_values();
   std::vector<float> arg1_vals = arg1->get_values();
   std::vector<float> out_vals(arg0->num_values());
 
-  NGRAPH_ASSERT(arg0_vals.size() > 0)
-      << "Multiplying plaintext arg0 has 0 values";
-  NGRAPH_ASSERT(arg1_vals.size() > 0)
-      << "Multiplying plaintext arg1 has 0 values";
+  NGRAPH_CHECK(arg0_vals.size() > 0, "Multiplying plaintext arg0 has 0 values");
+  NGRAPH_CHECK(arg1_vals.size() > 0, "Multiplying plaintext arg1 has 0 values");
 
   if (arg0_vals.size() == 1) {
     std::transform(arg1_vals.begin(), arg1_vals.end(), out_vals.begin(),

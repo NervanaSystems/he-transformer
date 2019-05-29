@@ -32,9 +32,7 @@
 #include "seal/seal_plaintext_wrapper.hpp"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
-namespace kernel {
 void batch_norm_inference(
     double eps, std::vector<std::shared_ptr<HEPlaintext>>& gamma,
     std::vector<std::shared_ptr<HEPlaintext>>& beta,
@@ -45,14 +43,6 @@ void batch_norm_inference(
     const Shape& input_shape, const size_t batch_size,
     const HEBackend* he_backend) {
   CoordinateTransform input_transform(input_shape);
-
-  auto he_seal_backend =
-      dynamic_cast<const runtime::he::he_seal::HESealBackend*>(he_backend);
-
-  if (he_seal_backend == nullptr) {
-    throw ngraph_error(
-        "BatchNormInference unimplemented for non-seal backends");
-  }
 
   // Store input coordinates for parallelization
   std::vector<ngraph::Coordinate> input_coords;
@@ -78,10 +68,10 @@ void batch_norm_inference(
     std::vector<float> channel_mean_vals = channel_mean->get_values();
     std::vector<float> channel_var_vals = channel_var->get_values();
 
-    NGRAPH_ASSERT(channel_gamma_vals.size() == 1);
-    NGRAPH_ASSERT(channel_beta_vals.size() == 1);
-    NGRAPH_ASSERT(channel_mean_vals.size() == 1);
-    NGRAPH_ASSERT(channel_var_vals.size() == 1);
+    NGRAPH_CHECK(channel_gamma_vals.size() == 1);
+    NGRAPH_CHECK(channel_beta_vals.size() == 1);
+    NGRAPH_CHECK(channel_mean_vals.size() == 1);
+    NGRAPH_CHECK(channel_var_vals.size() == 1);
 
     float scale = channel_gamma_vals[0] / std::sqrt(channel_var_vals[0] + eps);
     float bias =
@@ -93,26 +83,20 @@ void batch_norm_inference(
 
     auto plain_scale = he_backend->create_empty_plaintext();
 
-    he_seal_backend->encode(plain_scale, scale_vec.data(), element::f32,
-                            batch_size);
+    plain_scale->set_values(scale_vec);
 
     auto plain_bias = he_backend->create_empty_plaintext();
-    he_seal_backend->encode(plain_bias, bias_vec.data(), element::f32,
-                            batch_size);
+    plain_bias->set_values(bias_vec);
 
-    std::shared_ptr<HECiphertext> output =
-        he_backend->create_empty_ciphertext();
+    auto output = he_backend->create_empty_ciphertext();
 
-    runtime::he::kernel::scalar_multiply(input[input_index], plain_scale,
-                                         output, element::f32, he_backend);
+    ngraph::he::scalar_multiply(input[input_index], plain_scale, output,
+                                element::f32, he_backend);
 
-    // TODO: enable!
-    runtime::he::kernel::scalar_add(output, plain_bias, output, element::f32,
-                                    he_backend);
+    ngraph::he::scalar_add(output, plain_bias, output, element::f32,
+                           he_backend);
     normed_input[input_index] = output;
   }
 };
-}  // namespace kernel
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

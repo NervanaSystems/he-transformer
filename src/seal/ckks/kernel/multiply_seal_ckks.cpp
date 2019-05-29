@@ -16,25 +16,20 @@
 
 #include "seal/ckks/kernel/multiply_seal_ckks.hpp"
 #include "seal/ckks/seal_ckks_util.hpp"
+#include "seal/seal.h"
 
-using namespace std;
-using namespace ngraph::runtime::he;
-
-void he_seal::ckks::kernel::scalar_multiply_ckks(
-    shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
-    shared_ptr<he_seal::SealCiphertextWrapper>& arg1,
-    shared_ptr<he_seal::SealCiphertextWrapper>& out,
+void ngraph::he::scalar_multiply_ckks(
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type,
-    const runtime::he::he_seal::HESealCKKSBackend* he_seal_ckks_backend,
+    const ngraph::he::HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
-  match_modulus_inplace(arg0.get(), arg1.get(), he_seal_ckks_backend, pool);
+  match_modulus_and_scale_inplace(arg0.get(), arg1.get(), he_seal_ckks_backend,
+                                  pool);
   match_scale(arg0.get(), arg1.get(), he_seal_ckks_backend);
-  size_t chain_ind0 = he_seal_ckks_backend->get_context()
-                          ->context_data(arg0->get_hetext().parms_id())
-                          ->chain_index();
-  size_t chain_ind1 = he_seal_ckks_backend->get_context()
-                          ->context_data(arg1->get_hetext().parms_id())
-                          ->chain_index();
+  size_t chain_ind0 = get_chain_index(arg0.get(), he_seal_ckks_backend);
+  size_t chain_ind1 = get_chain_index(arg1.get(), he_seal_ckks_backend);
 
   if (chain_ind0 == 0 || chain_ind1 == 0) {
     NGRAPH_INFO << "Multiplicative depth limit reached";
@@ -56,65 +51,69 @@ void he_seal::ckks::kernel::scalar_multiply_ckks(
       out->m_ciphertext, pool);
 }
 
-void he_seal::ckks::kernel::scalar_multiply_ckks(
-    shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
-    shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
-    shared_ptr<he_seal::SealCiphertextWrapper>& out,
+void ngraph::he::scalar_multiply_ckks(
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
+    std::shared_ptr<ngraph::he::SealPlaintextWrapper>& arg1,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type,
-    const runtime::he::he_seal::HESealCKKSBackend* he_seal_ckks_backend,
+    const ngraph::he::HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
-  if (!arg1->is_encoded()) {
-    // Just-in-time encoding at the right scale and modulus
-    he_seal_ckks_backend->encode(arg1, arg0->m_ciphertext.parms_id(),
-                                 arg0->m_ciphertext.scale(), false);
+  // TODO: activate!
+  if (arg1->is_single_value()) {
+    float value = arg1->get_values()[0];
+    double double_val = double(value);
+    multiply_plain(arg0->m_ciphertext, double_val, out->m_ciphertext,
+                   he_seal_ckks_backend, pool);
   } else {
-    match_modulus_inplace(arg0.get(), arg1.get(), he_seal_ckks_backend, pool);
-    match_scale(arg0.get(), arg1.get(), he_seal_ckks_backend);
-  }
-  NGRAPH_ASSERT(arg0->get_hetext().scale() == arg1->get_hetext().scale())
-      << "arg0_scale " << arg0->get_hetext().scale() << " != arg1_scale "
-      << arg1->get_hetext().scale();
+    if (!arg1->is_encoded()) {
+      // Just-in-time encoding at the right scale and modulus
+      he_seal_ckks_backend->encode(arg1, arg0->m_ciphertext.parms_id(),
+                                   arg0->m_ciphertext.scale(), false);
+    } else {
+      // Shouldn't need to match modulus unless encoding went wrong
+      // match_modulus_inplace(arg0.get(), arg1.get(), he_seal_ckks_backend,
+      // pool);
+      match_scale(arg0.get(), arg1.get(), he_seal_ckks_backend);
+    }
+    size_t chain_ind0 = get_chain_index(arg0.get(), he_seal_ckks_backend);
+    size_t chain_ind1 = get_chain_index(arg1.get(), he_seal_ckks_backend);
 
-  size_t chain_ind0 = he_seal_ckks_backend->get_context()
-                          ->context_data(arg0->get_hetext().parms_id())
-                          ->chain_index();
+    NGRAPH_CHECK(chain_ind0 == chain_ind1, "Chain_ind0 ", chain_ind0,
+                 " != chain_ind1 ", chain_ind1);
+    NGRAPH_CHECK(chain_ind0 > 0, "Multiplicative depth exceeded for arg0");
+    NGRAPH_CHECK(chain_ind1 > 0, "Multiplicative depth exceeded for arg1");
 
-  size_t chain_ind1 = he_seal_ckks_backend->get_context()
-                          ->context_data(arg1->get_hetext().parms_id())
-                          ->chain_index();
-
-  NGRAPH_ASSERT(chain_ind0 == chain_ind1)
-      << "Chain_ind0 " << chain_ind0 << " != chain_ind1 " << chain_ind1;
-  NGRAPH_ASSERT(chain_ind0 > 0) << "Multiplicative depth exceeded for arg0";
-  NGRAPH_ASSERT(chain_ind1 > 0) << "Multiplicative depth exceeded for arg1";
-
-  try {
-    he_seal_ckks_backend->get_evaluator()->multiply_plain(
-        arg0->m_ciphertext, arg1->get_plaintext(), out->m_ciphertext, pool);
-  } catch (const std::exception& e) {
-    NGRAPH_INFO << "Error multiplying plain " << e.what();
-    NGRAPH_INFO << "arg1->get_values().size() " << arg1->get_values().size();
-    auto& values = arg1->get_values();
-    for (const auto& elem : values) {
-      NGRAPH_INFO << elem;
+    try {
+      he_seal_ckks_backend->get_evaluator()->multiply_plain(
+          arg0->m_ciphertext, arg1->get_plaintext(), out->m_ciphertext, pool);
+    } catch (const std::exception& e) {
+      NGRAPH_INFO << "Error multiplying plain " << e.what();
+      NGRAPH_INFO << "arg1->get_values().size() " << arg1->get_values().size();
+      auto& values = arg1->get_values();
+      for (const auto& elem : values) {
+        NGRAPH_INFO << elem;
+      }
     }
   }
   out->set_complex_packing(arg0->complex_packing());
+  // NGRAPH_INFO << "Skipping relin and rescale!";
 
-  he_seal_ckks_backend->get_evaluator()->relinearize_inplace(
-      out->m_ciphertext, *(he_seal_ckks_backend->get_relin_keys()), pool);
+  // Don't relinearize after plain multiply!
+  // he_seal_ckks_backend->get_evaluator()->relinearize_inplace(
+  //    out->m_ciphertext, *(he_seal_ckks_backend->get_relin_keys()), pool);
 
-  he_seal_ckks_backend->get_evaluator()->rescale_to_next_inplace(
-      out->m_ciphertext, pool);
+  // Don't rescale after every mult! Only after dot / conv
+  // he_seal_ckks_backend->get_evaluator()->rescale_to_next_inplace(
+  //    out->m_ciphertext, pool);
 }
 
-void he_seal::ckks::kernel::scalar_multiply_ckks(
-    shared_ptr<he_seal::SealPlaintextWrapper>& arg0,
-    shared_ptr<he_seal::SealCiphertextWrapper>& arg1,
-    shared_ptr<he_seal::SealCiphertextWrapper>& out,
+void ngraph::he::scalar_multiply_ckks(
+    std::shared_ptr<ngraph::he::SealPlaintextWrapper>& arg0,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type,
-    const runtime::he::he_seal::HESealCKKSBackend* he_seal_ckks_backend,
+    const ngraph::he::HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
-  scalar_multiply_ckks(arg1, arg0, out, element_type, he_seal_ckks_backend,
-                       pool);
+  ngraph::he::scalar_multiply_ckks(arg1, arg0, out, element_type,
+                                   he_seal_ckks_backend, pool);
 }

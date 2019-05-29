@@ -6,9 +6,7 @@ Homomorphic encryption is a form of encryption that allows computation on encryp
 
 This project is meant as a proof-of-concept to demonstrate the feasibility of HE  on local machines. The goal is to measure performance of various HE schemes for deep learning. This is  **not** intended to be a production-ready product, but rather a research tool.
 
-Currently, we support two encryption schemes, implemented by the [Simple Encrypted Arithmetic Library (SEAL)](https://github.com/Microsoft/SEAL) from Microsoft Research:
-  * [BFV](https://eprint.iacr.org/2016/510.pdf)
-  * [CKKS](https://eprint.iacr.org/2018/931.pdf)
+Currently, we support the [CKKS](https://eprint.iacr.org/2018/931.pdf) encryption scheme, implemented by the [Simple Encrypted Arithmetic Library (SEAL)](https://github.com/Microsoft/SEAL) from Microsoft Research.
 
 Additionally, we integrate with the [**Intel® nGraph™ Compiler and runtime engine for TensorFlow**](https://github.com/NervanaSystems/ngraph-tf) to allow users to run inference on trained neural networks through Tensorflow.
 
@@ -27,8 +25,8 @@ The [examples](https://github.com/NervanaSystems/he-transformer/tree/master/exam
 - bazel v0.21.0
 - Boost 1.69
 #### The following dependencies are built automatically
-- [nGraph](https://github.com/NervanaSystems/ngraph) - v0.18.0
-- [nGraph-tf](https://github.com/tensorflow/ngraph-bridge) - v0.12.0
+- [nGraph](https://github.com/NervanaSystems/ngraph) - v0.19.1
+- [nGraph-tf](https://github.com/tensorflow/ngraph-bridge) - v0.14.0
 - [SEAL](https://github.com/Microsoft/SEAL) - v3.2
 - [TensorFlow](https://github.com/tensorflow/tensorflow) - v1.13.1
 
@@ -72,8 +70,6 @@ Ensure the virtual environment is active, i.e. run `source $HE_TRANSFORMER/exter
 cd $HE_TRANSFORMER/build
 # To run CKKS unit-test
 ./test/unit-test --gtest_filter="HE_SEAL_CKKS.*abc*"
-# To run BFV unit-test
-./test/unit-test --gtest_filter="HE_SEAL_BFV.*abc*"
 # To run all C++ unit-tests
 ./test/unit-test
 ```
@@ -86,8 +82,6 @@ cd $HE_TRANSFORMER/examples
 python axpy.py
 # To run CKKS unit-test
 NGRAPH_TF_BACKEND=HE_SEAL_CKKS python axpy.py
-# To run BFV unit-test
-NGRAPH_TF_BACKEND=HE_SEAL_BFV python axpy.py
 ```
 
 For a deep learning example, see [examples/cryptonets/](https://github.com/NervanaSystems/he-transformer/tree/master/examples/cryptonets).

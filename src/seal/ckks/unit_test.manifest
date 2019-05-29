@@ -2,3 +2,5 @@ reshape_6d # Slow
 convolution_2d_1item_padded_1_1x1_1 # Needs larger parameters => slow
 # convolution_2d_1image_2outputs # Needs larger parameters => slow
 convolution_2d_1item_padded_2_3x4_5 # Needs larger parameters => slow
+
+mult_layer_cipher_plain # Lazy rescaling means rescaling doesn't happen after multiply...

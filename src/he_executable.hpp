@@ -38,14 +38,12 @@
 using boost::asio::ip::tcp;
 
 namespace ngraph {
-namespace runtime {
 namespace he {
-
-class HEExecutable : public Executable {
+class HEExecutable : public runtime::Executable {
  public:
   HEExecutable(const std::shared_ptr<Function>& function,
                bool enable_performance_collection,
-               const runtime::he::HEBackend* he_backend, bool encrypt_data,
+               const ngraph::he::HEBackend* he_backend, bool encrypt_data,
                bool encrypt_model, bool batch_data);
 
   ~HEExecutable() {
@@ -58,10 +56,12 @@ class HEExecutable : public Executable {
 
   void start_server();
 
-  bool call(const std::vector<std::shared_ptr<Tensor>>& outputs,
-            const std::vector<std::shared_ptr<Tensor>>& inputs) override;
+  bool call(
+      const std::vector<std::shared_ptr<runtime::Tensor>>& outputs,
+      const std::vector<std::shared_ptr<runtime::Tensor>>& inputs) override;
 
-  std::vector<PerformanceCounter> get_performance_data() const override;
+  std::vector<runtime::PerformanceCounter> get_performance_data()
+      const override;
 
   size_t get_port() const { return m_port; };
 
@@ -89,7 +89,7 @@ class HEExecutable : public Executable {
   size_t m_batch_size;
   size_t m_port;  // Which port the server is hosted at
 
-  std::unordered_map<const Node*, stopwatch> m_timer_map;
+  std::unordered_map<std::shared_ptr<const Node>, stopwatch> m_timer_map;
   std::vector<NodeWrapper> m_wrapped_nodes;
 
   std::shared_ptr<tcp::acceptor> m_acceptor;
@@ -98,13 +98,13 @@ class HEExecutable : public Executable {
   boost::asio::io_context m_io_context;
 
   // (Encrypted) inputs to compiled function
-  std::vector<std::shared_ptr<runtime::he::HETensor>> m_client_inputs;
+  std::vector<std::shared_ptr<ngraph::he::HETensor>> m_client_inputs;
   // (Encrypted) outputs of compiled function
-  std::vector<std::shared_ptr<runtime::he::HETensor>> m_client_outputs;
+  std::vector<std::shared_ptr<ngraph::he::HETensor>> m_client_outputs;
 
-  std::vector<std::shared_ptr<runtime::he::HECiphertext>> m_relu_ciphertexts;
-  std::vector<std::shared_ptr<runtime::he::HECiphertext>> m_max_ciphertexts;
-  std::vector<std::shared_ptr<runtime::he::HECiphertext>> m_minimum_ciphertexts;
+  std::vector<std::shared_ptr<ngraph::he::HECiphertext>> m_relu_ciphertexts;
+  std::vector<std::shared_ptr<ngraph::he::HECiphertext>> m_max_ciphertexts;
+  std::vector<std::shared_ptr<ngraph::he::HECiphertext>> m_minimum_ciphertexts;
 
   std::set<std::string> m_silent_ops{"Slice", "Broadcast"};
 
@@ -143,5 +143,4 @@ class HEExecutable : public Executable {
                       const std::vector<std::shared_ptr<HETensor>>& inputs);
 };
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

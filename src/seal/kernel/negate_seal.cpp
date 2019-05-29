@@ -16,29 +16,27 @@
 
 #include "seal/kernel/negate_seal.hpp"
 
-using namespace std;
-using namespace ngraph::runtime::he;
+void ngraph::he::scalar_negate(
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
+    const element::Type& element_type, const HESealBackend* he_seal_backend) {
+  NGRAPH_CHECK(element_type == element::f32);
 
-void he_seal::kernel::scalar_negate(
-    shared_ptr<he_seal::SealCiphertextWrapper>& arg,
-    shared_ptr<he_seal::SealCiphertextWrapper>& out,
-    const element::Type& element_type,
-    const he_seal::HESealBackend* he_seal_backend) {
-  NGRAPH_ASSERT(element_type == element::f32);
-  if (arg.get() == out.get()) {
-    he_seal_backend->get_evaluator()->negate_inplace(out->m_ciphertext);
-  } else {
-    he_seal_backend->get_evaluator()->negate(arg->m_ciphertext,
-                                             out->m_ciphertext);
+  if (arg->is_zero()) {
+    NGRAPH_INFO << "Arg is 0 in negate(C)";
+    out->set_zero(true);
+    return;
   }
+
+  he_seal_backend->get_evaluator()->negate(arg->m_ciphertext,
+                                           out->m_ciphertext);
 }
 
-void he_seal::kernel::scalar_negate(
-    shared_ptr<he_seal::SealPlaintextWrapper>& arg,
-    shared_ptr<he_seal::SealPlaintextWrapper>& out,
-    const element::Type& element_type,
-    const he_seal::HESealBackend* he_seal_backend) {
-  NGRAPH_ASSERT(element_type == element::f32);
+void ngraph::he::scalar_negate(std::shared_ptr<SealPlaintextWrapper>& arg,
+                               std::shared_ptr<SealPlaintextWrapper>& out,
+                               const element::Type& element_type,
+                               const HESealBackend* he_seal_backend) {
+  NGRAPH_CHECK(element_type == element::f32);
 
   const std::vector<float>& arg_vals = arg->get_values();
   std::vector<float> out_vals(arg->num_values());

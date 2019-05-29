@@ -26,16 +26,14 @@
 #include "seal/seal_plaintext_wrapper.hpp"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
-namespace he_seal {
 class HESealBackend : public HEBackend {
  public:
   /// @brief Constructs SEAL context from SEAL parameter
   /// @param sp SEAL Parameter from which to construct context
   /// @return Pointer to constructed context
   virtual std::shared_ptr<seal::SEALContext> make_seal_context(
-      const std::shared_ptr<runtime::he::HEEncryptionParameters> sp) = 0;
+      const std::shared_ptr<ngraph::he::HEEncryptionParameters> sp) = 0;
 
   virtual ~HESealBackend(){};
 
@@ -45,27 +43,27 @@ class HESealBackend : public HEBackend {
   virtual std::shared_ptr<runtime::Tensor> create_batched_plain_tensor(
       const element::Type& type, const Shape& shape) override = 0;
 
-  std::shared_ptr<runtime::he::HECiphertext> create_empty_ciphertext()
+  std::shared_ptr<ngraph::he::HECiphertext> create_empty_ciphertext()
       const override;
 
-  std::shared_ptr<runtime::he::HECiphertext> create_empty_ciphertext(
+  std::shared_ptr<ngraph::he::HECiphertext> create_empty_ciphertext(
       seal::parms_id_type parms_id) const;
 
-  std::shared_ptr<runtime::he::HECiphertext> create_empty_ciphertext(
+  std::shared_ptr<ngraph::he::HECiphertext> create_empty_ciphertext(
       const seal::MemoryPoolHandle& pool) const;
 
-  std::shared_ptr<runtime::he::HEPlaintext> create_empty_plaintext()
+  std::shared_ptr<ngraph::he::HEPlaintext> create_empty_plaintext()
       const override;
 
-  std::shared_ptr<runtime::he::HEPlaintext> create_empty_plaintext(
+  std::shared_ptr<ngraph::he::HEPlaintext> create_empty_plaintext(
       const seal::MemoryPoolHandle& pool) const;
 
   /// @brief Creates ciphertext of unspecified value using memory pool
   /// Alias for create_empty_ciphertext()
   /// @return Shared pointer to created ciphertext
   template <typename T, typename = std::enable_if_t<
-                            std::is_same<T, runtime::he::HECiphertext>::value>>
-  std::shared_ptr<runtime::he::HECiphertext> create_empty_hetext(
+                            std::is_same<T, ngraph::he::HECiphertext>::value>>
+  std::shared_ptr<ngraph::he::HECiphertext> create_empty_hetext(
       const seal::MemoryPoolHandle& pool) const {
     return create_empty_ciphertext(pool);
   };
@@ -74,45 +72,45 @@ class HESealBackend : public HEBackend {
   /// Alias for create_empty_plaintext()
   /// @return Shared pointer to created plaintext
   template <typename T, typename = std::enable_if_t<
-                            std::is_same<T, runtime::he::HEPlaintext>::value>>
-  std::shared_ptr<runtime::he::HEPlaintext> create_empty_hetext(
+                            std::is_same<T, ngraph::he::HEPlaintext>::value>>
+  std::shared_ptr<ngraph::he::HEPlaintext> create_empty_hetext(
       const seal::MemoryPoolHandle& pool) const {
     return create_empty_plaintext(pool);
   };
 
   virtual void encode(
-      std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& plaintext,
+      std::shared_ptr<ngraph::he::SealPlaintextWrapper>& plaintext,
       seal::parms_id_type parms_id, double scale, bool complex) const = 0;
 
   virtual void encode(
-      std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& plaintext,
+      std::shared_ptr<ngraph::he::SealPlaintextWrapper>& plaintext,
       bool complex) const = 0;
 
-  virtual void encode(std::shared_ptr<runtime::he::HEPlaintext>& output,
+  virtual void encode(std::shared_ptr<ngraph::he::HEPlaintext>& output,
                       const void* input, const element::Type& type,
                       bool complex, size_t count = 1) const = 0;
 
   virtual void decode(void* output,
-                      std::shared_ptr<runtime::he::HEPlaintext>& input,
+                      std::shared_ptr<ngraph::he::HEPlaintext>& input,
                       const element::Type& type,
                       size_t count = 1) const override = 0;
 
   virtual void decode(
-      std::shared_ptr<runtime::he::HEPlaintext>& input) const override = 0;
+      std::shared_ptr<ngraph::he::HEPlaintext>& input) const override = 0;
 
-  virtual void decode(std::vector<std::shared_ptr<runtime::he::HEPlaintext>>&
+  virtual void decode(std::vector<std::shared_ptr<ngraph::he::HEPlaintext>>&
                           plaintexts) const override {
     for (size_t i = 0; i < plaintexts.size(); ++i) {
       decode(plaintexts[i]);
     }
   }
 
-  void encrypt(std::shared_ptr<runtime::he::HECiphertext>& output,
-               std::shared_ptr<runtime::he::HEPlaintext>& input) const override;
+  void encrypt(std::shared_ptr<ngraph::he::HECiphertext>& output,
+               std::shared_ptr<ngraph::he::HEPlaintext>& input) const override;
 
   void decrypt(
-      std::shared_ptr<runtime::he::HEPlaintext>& output,
-      const std::shared_ptr<runtime::he::HECiphertext>& input) const override;
+      std::shared_ptr<ngraph::he::HEPlaintext>& output,
+      const std::shared_ptr<ngraph::he::HECiphertext>& input) const override;
 
   const inline std::shared_ptr<seal::SEALContext> get_context() const noexcept {
     return m_context;
@@ -157,14 +155,12 @@ class HESealBackend : public HEBackend {
   std::shared_ptr<seal::KeyGenerator> m_keygen;
 };
 
-inline const runtime::he::he_seal::HESealBackend* cast_to_seal_backend(
-    const runtime::he::HEBackend* he_backend) {
+inline const ngraph::he::HESealBackend* cast_to_seal_backend(
+    const ngraph::he::HEBackend* he_backend) {
   auto seal_he_backend =
-      dynamic_cast<const runtime::he::he_seal::HESealBackend*>(he_backend);
-  NGRAPH_ASSERT(seal_he_backend != nullptr);
+      dynamic_cast<const ngraph::he::HESealBackend*>(he_backend);
+  NGRAPH_CHECK(seal_he_backend != nullptr);
   return seal_he_backend;
 };
-}  // namespace he_seal
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

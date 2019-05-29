@@ -22,17 +22,20 @@
 #include "seal/seal.h"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
-namespace he_seal {
 struct SealCiphertextWrapper : public HECiphertext {
-  SealCiphertextWrapper() { set_complex_packing(false); }
+  SealCiphertextWrapper() {
+    set_complex_packing(false);
+    set_zero(false);
+  }
 
   SealCiphertextWrapper(const seal::Ciphertext& cipher) : m_ciphertext(cipher) {
     set_complex_packing(false);
+    set_zero(false);
   }
 
   seal::Ciphertext& get_hetext() { return m_ciphertext; }
+  const seal::Ciphertext& get_hetext() const { return m_ciphertext; }
 
   void save(std::ostream& stream) const override { m_ciphertext.save(stream); }
 
@@ -41,22 +44,20 @@ struct SealCiphertextWrapper : public HECiphertext {
   seal::Ciphertext m_ciphertext;
 };
 
-inline std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>
-cast_to_seal_hetext(std::shared_ptr<runtime::he::HECiphertext>& cipher) {
+inline std::shared_ptr<ngraph::he::SealCiphertextWrapper> cast_to_seal_hetext(
+    std::shared_ptr<ngraph::he::HECiphertext>& cipher) {
   auto seal_ciphertext_wrapper =
       std::dynamic_pointer_cast<SealCiphertextWrapper>(cipher);
-  NGRAPH_ASSERT(seal_ciphertext_wrapper != nullptr) << "Ciphertext is not Seal";
+  NGRAPH_CHECK(seal_ciphertext_wrapper != nullptr, "Ciphertext is not Seal");
   return seal_ciphertext_wrapper;
 }
 
-inline const std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>
-cast_to_seal_hetext(const std::shared_ptr<runtime::he::HECiphertext>& cipher) {
+inline const std::shared_ptr<ngraph::he::SealCiphertextWrapper>
+cast_to_seal_hetext(const std::shared_ptr<ngraph::he::HECiphertext>& cipher) {
   auto seal_ciphertext_wrapper =
       std::dynamic_pointer_cast<SealCiphertextWrapper>(cipher);
-  NGRAPH_ASSERT(seal_ciphertext_wrapper != nullptr) << "Ciphertext is not Seal";
+  NGRAPH_CHECK(seal_ciphertext_wrapper != nullptr, "Ciphertext is not Seal");
   return seal_ciphertext_wrapper;
 };
-}  // namespace he_seal
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

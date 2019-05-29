@@ -19,14 +19,12 @@
 #include "he_backend.hpp"
 #include "he_plain_tensor.hpp"
 
-using namespace ngraph;
-using namespace std;
-
-runtime::he::HEPlainTensor::HEPlainTensor(
+ngraph::he::HEPlainTensor::HEPlainTensor(
     const element::Type& element_type, const Shape& shape,
-    const HEBackend* he_backend, const shared_ptr<HEPlaintext> he_plaintext,
-    const bool batched, const string& name)
-    : runtime::he::HETensor(element_type, shape, he_backend, batched, name) {
+    const HEBackend* he_backend,
+    const std::shared_ptr<ngraph::he::HEPlaintext> he_plaintext,
+    const bool batched, const std::string& name)
+    : ngraph::he::HETensor(element_type, shape, he_backend, batched, name) {
   m_num_elements = m_descriptor->get_tensor_layout()->get_size() / m_batch_size;
   m_plaintexts.resize(m_num_elements);
 #pragma omp parallel for
@@ -35,8 +33,8 @@ runtime::he::HEPlainTensor::HEPlainTensor(
   }
 }
 
-void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
-                                       size_t n) {
+void ngraph::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
+                                      size_t n) {
   check_io_bounds(source, tensor_offset, n / m_batch_size);
   const element::Type& element_type = get_tensor_layout()->get_element_type();
   size_t type_byte_size = element_type.size();
@@ -89,14 +87,14 @@ void runtime::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
   }
 }
 
-void runtime::he::HEPlainTensor::read(void* target, size_t tensor_offset,
-                                      size_t n) const {
-  NGRAPH_ASSERT(tensor_offset == 0)
-      << "Only support reading from beginning of tensor";
+void ngraph::he::HEPlainTensor::read(void* target, size_t tensor_offset,
+                                     size_t n) const {
+  NGRAPH_CHECK(tensor_offset == 0,
+               "Only support reading from beginning of tensor");
 
   check_io_bounds(target, tensor_offset, n);
   const element::Type& element_type = get_tensor_layout()->get_element_type();
-  NGRAPH_ASSERT(element_type == element::f32) << "Only support float32";
+  NGRAPH_CHECK(element_type == element::f32, "Only support float32");
   size_t type_byte_size = element_type.size();
   size_t src_start_index = tensor_offset / type_byte_size;
   size_t num_elements_to_read = n / (type_byte_size * m_batch_size);
@@ -111,9 +109,8 @@ void runtime::he::HEPlainTensor::read(void* target, size_t tensor_offset,
     for (size_t i = 0; i < num_elements_to_read; ++i) {
       size_t src_index = src_start_index + i;
       std::vector<float> values = m_plaintexts[src_index]->get_values();
-      NGRAPH_ASSERT(values.size() >= m_batch_size)
-          << "values size " << values.size() << " is smaller than batch size "
-          << m_batch_size;
+      NGRAPH_CHECK(values.size() >= m_batch_size, "values size ", values.size(),
+                   " is smaller than batch size ", m_batch_size);
 
       for (size_t j = 0; j < m_batch_size; ++j) {
         void* dst_with_offset =

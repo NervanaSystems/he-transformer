@@ -26,7 +26,6 @@
 #include <string>
 
 namespace ngraph {
-namespace runtime {
 namespace he {
 enum class MessageType {
   none,
@@ -316,8 +315,6 @@ class TCPMessage {
   size_t m_count;      // Number of datatype in message
   size_t m_data_size;  // Nubmer of bytes in data part of message
   char* m_data;
-
-};  // namespace he
+};
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

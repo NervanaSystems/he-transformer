@@ -23,37 +23,26 @@
 #include "seal/seal_plaintext_wrapper.hpp"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
-namespace he_seal {
-namespace ckks {
-namespace kernel {
-void scalar_multiply_ckks(
-    std::shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
-    std::shared_ptr<he_seal::SealCiphertextWrapper>& arg1,
-    std::shared_ptr<he_seal::SealCiphertextWrapper>& out,
-    const element::Type& element_type,
-    const he_seal::HESealCKKSBackend* he_seal_ckks_backend,
-    const seal::MemoryPoolHandle& pool);
+void scalar_multiply_ckks(std::shared_ptr<SealCiphertextWrapper>& arg0,
+                          std::shared_ptr<SealCiphertextWrapper>& arg1,
+                          std::shared_ptr<SealCiphertextWrapper>& out,
+                          const element::Type& element_type,
+                          const HESealCKKSBackend* he_seal_ckks_backend,
+                          const seal::MemoryPoolHandle& pool);
 
-void scalar_multiply_ckks(
-    std::shared_ptr<he_seal::SealCiphertextWrapper>& arg0,
-    std::shared_ptr<he_seal::SealPlaintextWrapper>& arg1,
-    std::shared_ptr<he_seal::SealCiphertextWrapper>& out,
-    const element::Type& element_type,
-    const he_seal::HESealCKKSBackend* he_seal_ckks_backend,
-    const seal::MemoryPoolHandle& pool);
+void scalar_multiply_ckks(std::shared_ptr<SealCiphertextWrapper>& arg0,
+                          std::shared_ptr<SealPlaintextWrapper>& arg1,
+                          std::shared_ptr<SealCiphertextWrapper>& out,
+                          const element::Type& element_type,
+                          const HESealCKKSBackend* he_seal_ckks_backend,
+                          const seal::MemoryPoolHandle& pool);
 
-void scalar_multiply_ckks(
-    std::shared_ptr<he_seal::SealPlaintextWrapper>& arg0,
-    std::shared_ptr<he_seal::SealCiphertextWrapper>& arg1,
-    std::shared_ptr<he_seal::SealCiphertextWrapper>& out,
-    const element::Type& element_type,
-    const he_seal::HESealCKKSBackend* he_seal_ckks_backend,
-    const seal::MemoryPoolHandle& pool);
-}  // namespace kernel
-}  // namespace ckks
-}  // namespace he_seal
+void scalar_multiply_ckks(std::shared_ptr<SealPlaintextWrapper>& arg0,
+                          std::shared_ptr<SealCiphertextWrapper>& arg1,
+                          std::shared_ptr<SealCiphertextWrapper>& out,
+                          const element::Type& element_type,
+                          const HESealCKKSBackend* he_seal_ckks_backend,
+                          const seal::MemoryPoolHandle& pool);
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

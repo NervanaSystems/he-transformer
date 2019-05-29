@@ -23,9 +23,7 @@
 #include "ngraph/coordinate_transform.hpp"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
-namespace kernel {
 template <typename T>
 void reshape(const std::vector<std::shared_ptr<T>>& arg,
              std::vector<std::shared_ptr<T>>& out, const Shape& in_shape,
@@ -55,7 +53,5 @@ void reshape(const std::vector<std::shared_ptr<T>>& arg,
     ++output_it;
   }
 }
-}  // namespace kernel
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

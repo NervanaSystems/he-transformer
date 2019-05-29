@@ -33,7 +33,7 @@ set (SRC
     test_tcp_message.cpp
 )
 
-set(ACTIVE_BACKEND_LIST HE_SEAL_BFV HE_SEAL_CKKS)
+set(ACTIVE_BACKEND_LIST HE_SEAL_CKKS)
 
 set(MULTI_TEST_SRC
     test_add.in.cpp
@@ -135,6 +135,3 @@ target_include_directories(cryptonets_benchmark PRIVATE ".")
 target_link_libraries(cryptonets_benchmark libgtest ngraph ngraph_test_util)
 target_link_libraries(cryptonets_benchmark he_backend seal pthread ${CMAKE_DL_LIBS})
 add_dependencies(cryptonets_benchmark he_backend ext_seal ext_ngraph_tf ext_gtest)
-
-# Client / server demo
-add_subdirectory(client_server)

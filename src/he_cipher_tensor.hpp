@@ -25,13 +25,12 @@
 #include "ngraph/type/element_type.hpp"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
 class HECipherTensor : public HETensor {
  public:
   HECipherTensor(const element::Type& element_type, const Shape& shape,
                  const HEBackend* he_backend,
-                 const std::shared_ptr<HECiphertext> he_ciphertext,
+                 const std::shared_ptr<ngraph::he::HECiphertext> he_ciphertext,
                  const bool batched = false,
                  const std::string& name = "external");
 
@@ -50,33 +49,31 @@ class HECipherTensor : public HETensor {
   void read(void* target, size_t tensor_offset, size_t n) const override;
 
   void set_elements(
-      const std::vector<std::shared_ptr<runtime::he::HECiphertext>>& elements);
+      const std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& elements);
 
   void save_elements(std::ostream& stream) const {
-    NGRAPH_ASSERT(m_cipher_texts.size() > 0) << "Cannot save 0 ciphertexts";
+    NGRAPH_CHECK(m_cipher_texts.size() > 0, "Cannot save 0 ciphertexts");
 
     size_t cipher_size = m_cipher_texts[0]->size();
     for (auto& ciphertext : m_cipher_texts) {
-      NGRAPH_ASSERT(cipher_size == ciphertext->size())
-          << "Cipher size " << ciphertext->size() << " doesn't match expected "
-          << cipher_size;
+      NGRAPH_CHECK(cipher_size == ciphertext->size(), "Cipher size ",
+                   ciphertext->size(), " doesn't match expected ", cipher_size);
       ciphertext->save(stream);
     }
   }
 
-  inline std::vector<std::shared_ptr<runtime::he::HECiphertext>>&
+  inline std::vector<std::shared_ptr<ngraph::he::HECiphertext>>&
   get_elements() noexcept {
     return m_cipher_texts;
   }
 
-  inline std::shared_ptr<runtime::he::HECiphertext>& get_element(size_t i) {
+  inline std::shared_ptr<ngraph::he::HECiphertext>& get_element(size_t i) {
     return m_cipher_texts[i];
   }
 
  private:
-  std::vector<std::shared_ptr<runtime::he::HECiphertext>> m_cipher_texts;
+  std::vector<std::shared_ptr<ngraph::he::HECiphertext>> m_cipher_texts;
   size_t m_num_elements;
 };
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

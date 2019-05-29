@@ -28,9 +28,7 @@
 #include "seal/kernel/convolution_seal.hpp"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
-namespace kernel {
 template <typename S, typename T, typename V>
 void convolution(const std::vector<std::shared_ptr<S>>& arg0,
                  const std::vector<std::shared_ptr<T>>& arg1,
@@ -46,14 +44,12 @@ void convolution(const std::vector<std::shared_ptr<S>>& arg0,
                  size_t output_channel_axis_filters, size_t batch_axis_result,
                  size_t output_channel_axis_result, bool rotate_filter,
                  const element::Type& element_type, size_t batch_size,
-                 const runtime::he::HEBackend* he_backend);
-}
+                 const ngraph::he::HEBackend* he_backend);
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph
 
 template <typename S, typename T, typename V>
-void ngraph::runtime::he::kernel::convolution(
+void ngraph::he::convolution(
     const std::vector<std::shared_ptr<S>>& arg0,
     const std::vector<std::shared_ptr<T>>& arg1,
     std::vector<std::shared_ptr<V>>& out, const Shape& arg0_shape,
@@ -65,22 +61,14 @@ void ngraph::runtime::he::kernel::convolution(
     size_t input_channel_axis_filters, size_t output_channel_axis_filters,
     size_t batch_axis_result, size_t output_channel_axis_result,
     bool rotate_filter, const element::Type& element_type, size_t batch_size,
-    const runtime::he::HEBackend* he_backend) {
-  // Use optimized SEAL conv if possible
-  if (auto he_seal_backend =
-          dynamic_cast<const runtime::he::he_seal::HESealBackend*>(
-              he_backend)) {
-    runtime::he::he_seal::kernel::convolution_seal(
-        arg0, arg1, out, arg0_shape, arg1_shape, out_shape,
-        window_movement_strides, window_dilation_strides, padding_below,
-        padding_above, data_dilation_strides, batch_axis_data,
-        input_channel_axis_data, input_channel_axis_filters,
-        output_channel_axis_filters, batch_axis_result,
-        output_channel_axis_result, rotate_filter, element_type, batch_size,
-        he_seal_backend);
-    return;
-  } else {
-    throw ngraph_error(
-        "Non-seal backend doesn't have convolution implementation");
-  }
+    const ngraph::he::HEBackend* he_backend) {
+  auto he_seal_backend = cast_to_seal_backend(he_backend);
+  ngraph::he::convolution_seal(
+      arg0, arg1, out, arg0_shape, arg1_shape, out_shape,
+      window_movement_strides, window_dilation_strides, padding_below,
+      padding_above, data_dilation_strides, batch_axis_data,
+      input_channel_axis_data, input_channel_axis_filters,
+      output_channel_axis_filters, batch_axis_result,
+      output_channel_axis_result, rotate_filter, element_type, batch_size,
+      he_seal_backend);
 }
