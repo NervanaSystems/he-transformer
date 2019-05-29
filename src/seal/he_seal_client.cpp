@@ -207,9 +207,12 @@ void ngraph::he::HESealClient::handle_message(
     std::cout << "Sending evaluation key" << std::endl;
     write_message(evk_message);
   } else if (msg_type == ngraph::he::MessageType::relu_request) {
+    std::cout << "Received Relu request" << std::endl;
     auto relu = [](double d) { return d > 0 ? d : 0; };
     size_t result_count = message.count();
     size_t element_size = message.element_size();
+    std::cout << "Received Relu request with " << result_count << " elements"
+              << " of size " << element_size << std::endl;
 
     std::stringstream post_relu_stream;
     std::vector<seal::Ciphertext> post_relu_ciphers(result_count);
