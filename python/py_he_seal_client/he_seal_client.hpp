@@ -30,23 +30,19 @@
 namespace py = pybind11;
 
 PYBIND11_MODULE(he_seal_client, m) {
-  py::class_<ngraph::runtime::he::HESealClient> he_seal_client(m,
-                                                               "HESealClient");
-  he_seal_client.doc() =
-      "he_seal_client wraps ngraph::runtime::he::HESealClient";
+  py::class_<ngraph::he::HESealClient> he_seal_client(m, "HESealClient");
+  he_seal_client.doc() = "he_seal_client wraps ngraph::he::HESealClient";
 
   he_seal_client.def(py::init<const std::string&, const std::size_t,
                               const size_t, const std::vector<float>&>());
 
   he_seal_client.def("set_seal_context",
-                     &ngraph::runtime::he::HESealClient::set_seal_context);
+                     &ngraph::he::HESealClient::set_seal_context);
   he_seal_client.def("handle_message",
-                     &ngraph::runtime::he::HESealClient::handle_message);
-  he_seal_client.def("write_message",
-                     &ngraph::runtime::he::HESealClient::write_message);
-  he_seal_client.def("is_done", &ngraph::runtime::he::HESealClient::is_done);
-  he_seal_client.def("get_results",
-                     &ngraph::runtime::he::HESealClient::get_results);
+                     &ngraph::he::HESealClient::handle_message);
+  he_seal_client.def("write_message", &ngraph::he::HESealClient::write_message);
+  he_seal_client.def("is_done", &ngraph::he::HESealClient::is_done);
+  he_seal_client.def("get_results", &ngraph::he::HESealClient::get_results);
   he_seal_client.def("close_connection",
-                     &ngraph::runtime::he::HESealClient::close_connection);
+                     &ngraph::he::HESealClient::close_connection);
 }
