@@ -728,25 +728,27 @@ void ngraph::he::HEExecutable::generate_calls(
                  "arg1 is both cipher and plain?");
   }
 
-  std::stringstream ss;
-  ss << "Inputs: ";
-  if (arg0_cipher != nullptr) {
-    ss << "Cipher";
-  } else if (arg0_plain != nullptr) {
-    ss << "Plain";
-  }
-  if (arg1_cipher != nullptr) {
-    ss << ", Cipher";
-  } else if (arg1_plain != nullptr) {
-    ss << ", Plain";
-  }
-  NGRAPH_INFO << ss.str();
-  ss.str("");
-  ss << "Outputs: ";
-  if (out0_cipher != nullptr) {
-    ss << "Cipher";
-  } else if (out0_plain != nullptr) {
-    ss << "Plain";
+  if (m_silent_ops.find(node.description()) == m_silent_ops.end()) {
+    std::stringstream ss;
+    ss << "Inputs: ";
+    if (arg0_cipher != nullptr) {
+      ss << "Cipher";
+    } else if (arg0_plain != nullptr) {
+      ss << "Plain";
+    }
+    if (arg1_cipher != nullptr) {
+      ss << ", Cipher";
+    } else if (arg1_plain != nullptr) {
+      ss << ", Plain";
+    }
+    NGRAPH_INFO << ss.str();
+    ss.str("");
+    ss << "Outputs: ";
+    if (out0_cipher != nullptr) {
+      ss << "Cipher";
+    } else if (out0_plain != nullptr) {
+      ss << "Plain";
+    }
   }
 
 // We want to check that every OP_TYPEID enumeration is included in the list.
