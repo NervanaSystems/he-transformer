@@ -33,6 +33,8 @@ def freeze_session(session,
                 keep_var_names or []))
         output_names = output_names or []
         output_names += [v.op.name for v in tf.global_variables()]
+
+        print('output_names', output_names)
         # Graph -> GraphDef ProtoBuf
         input_graph_def = graph.as_graph_def()
         if clear_devices:

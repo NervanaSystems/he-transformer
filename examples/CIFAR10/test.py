@@ -8,11 +8,13 @@ print(ngraph_bridge.get_currently_set_backend_name())
 
 
 def parse_graph():
-    f = gfile.FastGFile("./model/tf_model.pb", 'rb')
+    f = gfile.FastGFile("./model/opt1.pb", 'rb')
     graph_def = tf.GraphDef()
     # Parses a serialized binary message into the current message.
     graph_def.ParseFromString(f.read())
     f.close()
+    names = [n.name for n in graph_def.node]
+    print('names', names)
     return graph_def
 
 
@@ -30,8 +32,8 @@ def run_inference():
     x_train /= 255
     x_test /= 255
 
-    output_tensor = sess.graph.get_tensor_by_name('import/dense_2/BiasAdd:0')
-    input_tensor = sess.graph.get_tensor_by_name('import/input_1:0')
+    input_tensor = sess.graph.get_tensor_by_name('import/input:0')
+    output_tensor = sess.graph.get_tensor_by_name('import/output/BiasAdd:0')
     y_pred = sess.run(output_tensor, {input_tensor: x_test})
 
     y_pred = np.argmax(y_pred, axis=1)

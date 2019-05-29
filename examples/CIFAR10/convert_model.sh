@@ -1,7 +1,12 @@
+
+# Turn from Keras to Tensorflow pb
+python convert.py
+
+# Remove unused nodes, fold constants, batch norms, etc.
 transform_graph --in_graph=model/tf_model.pb \
                 --out_graph=model/opt1.pb \
-                --inputs="Placeholder" \
-                --outputs="MobilenetV2/Logits/Conv2d_1c_1x1/BiasAdd" \
+                --inputs="import/input_1" \
+                --outputs="output/BiasAdd" \
                 --transforms='strip_unused_nodes
                               remove_nodes(op=Identity)
                               fold_constants(ignore_errors=true)
