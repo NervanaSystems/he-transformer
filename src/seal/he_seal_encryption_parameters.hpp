@@ -41,8 +41,8 @@ class HESealEncryptionParameters : public HEEncryptionParameters {
       : HEEncryptionParameters(scheme_name, poly_modulus_degree, security_level,
                                evaluation_decomposition_bit_count,
                                coeff_modulus, plain_modulus) {
-    NGRAPH_ASSERT(scheme_name == "HE_SEAL_CKKS")
-        << "Invalid scheme name " << scheme_name;
+    NGRAPH_CHECK(scheme_name == "HE_SEAL_CKKS", "Invalid scheme name ",
+                 scheme_name);
     m_seal_encryption_parameters =
         std::make_shared<seal::EncryptionParameters>(seal::scheme_type::CKKS);
 

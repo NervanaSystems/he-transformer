@@ -15,6 +15,7 @@
 //*****************************************************************************
 
 #include <limits>
+#include <memory>
 
 #include "seal/ckks/he_seal_ckks_backend.hpp"
 #include "seal/he_seal_backend.hpp"
@@ -28,8 +29,8 @@ extern "C" ngraph::runtime::Backend* new_backend(
     const char* configuration_chars) {
   std::string configuration_string = std::string(configuration_chars);
 
-  NGRAPH_ASSERT(configuration_string == "HE_SEAL_CKKS")
-      << "Invalid configuration string " << configuration_string;
+  NGRAPH_CHECK(configuration_string == "HE_SEAL_CKKS",
+               "Invalid configuration string ", configuration_string);
   return new ngraph::he::HESealCKKSBackend();
 }
 
@@ -81,7 +82,7 @@ void ngraph::he::HESealBackend::encrypt(
                          seal_output->m_ciphertext);
   }
   output->set_complex_packing(input->complex_packing());
-  NGRAPH_ASSERT(output->complex_packing() == input->complex_packing());
+  NGRAPH_CHECK(output->complex_packing() == input->complex_packing());
 }
 
 void ngraph::he::HESealBackend::decrypt(
@@ -104,5 +105,5 @@ void ngraph::he::HESealBackend::decrypt(
                          seal_output->get_plaintext());
   }
   output->set_complex_packing(input->complex_packing());
-  NGRAPH_ASSERT(output->complex_packing() == input->complex_packing());
+  NGRAPH_CHECK(output->complex_packing() == input->complex_packing());
 }

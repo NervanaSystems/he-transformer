@@ -48,7 +48,7 @@ inline std::shared_ptr<ngraph::he::SealCiphertextWrapper> cast_to_seal_hetext(
     std::shared_ptr<ngraph::he::HECiphertext>& cipher) {
   auto seal_ciphertext_wrapper =
       std::dynamic_pointer_cast<SealCiphertextWrapper>(cipher);
-  NGRAPH_ASSERT(seal_ciphertext_wrapper != nullptr) << "Ciphertext is not Seal";
+  NGRAPH_CHECK(seal_ciphertext_wrapper != nullptr, "Ciphertext is not Seal");
   return seal_ciphertext_wrapper;
 }
 
@@ -56,7 +56,7 @@ inline const std::shared_ptr<ngraph::he::SealCiphertextWrapper>
 cast_to_seal_hetext(const std::shared_ptr<ngraph::he::HECiphertext>& cipher) {
   auto seal_ciphertext_wrapper =
       std::dynamic_pointer_cast<SealCiphertextWrapper>(cipher);
-  NGRAPH_ASSERT(seal_ciphertext_wrapper != nullptr) << "Ciphertext is not Seal";
+  NGRAPH_CHECK(seal_ciphertext_wrapper != nullptr, "Ciphertext is not Seal");
   return seal_ciphertext_wrapper;
 };
 }  // namespace he

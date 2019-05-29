@@ -89,12 +89,12 @@ void ngraph::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
 
 void ngraph::he::HEPlainTensor::read(void* target, size_t tensor_offset,
                                      size_t n) const {
-  NGRAPH_ASSERT(tensor_offset == 0)
-      << "Only support reading from beginning of tensor";
+  NGRAPH_CHECK(tensor_offset == 0,
+               "Only support reading from beginning of tensor");
 
   check_io_bounds(target, tensor_offset, n);
   const element::Type& element_type = get_tensor_layout()->get_element_type();
-  NGRAPH_ASSERT(element_type == element::f32) << "Only support float32";
+  NGRAPH_CHECK(element_type == element::f32, "Only support float32");
   size_t type_byte_size = element_type.size();
   size_t src_start_index = tensor_offset / type_byte_size;
   size_t num_elements_to_read = n / (type_byte_size * m_batch_size);
@@ -109,9 +109,8 @@ void ngraph::he::HEPlainTensor::read(void* target, size_t tensor_offset,
     for (size_t i = 0; i < num_elements_to_read; ++i) {
       size_t src_index = src_start_index + i;
       std::vector<float> values = m_plaintexts[src_index]->get_values();
-      NGRAPH_ASSERT(values.size() >= m_batch_size)
-          << "values size " << values.size() << " is smaller than batch size "
-          << m_batch_size;
+      NGRAPH_CHECK(values.size() >= m_batch_size, "values size ", values.size(),
+                   " is smaller than batch size ", m_batch_size);
 
       for (size_t j = 0; j < m_batch_size; ++j) {
         void* dst_with_offset =

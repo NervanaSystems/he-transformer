@@ -57,7 +57,7 @@ void concat(const std::vector<std::vector<std::shared_ptr<T>>>& args,
     CoordinateTransform output_chunk_transform(out_shape, out_start_coord,
                                                out_end_coord);
 
-    NGRAPH_ASSERT(shape_size(input_transform.get_target_shape()) ==
+    NGRAPH_CHECK(shape_size(input_transform.get_target_shape()) ==
                   shape_size(output_chunk_transform.get_target_shape()));
 
     CoordinateTransform::Iterator output_chunk_it =

@@ -47,7 +47,7 @@ void ngraph::he::match_modulus_and_scale_inplace(
           arg0->get_hetext(), arg1_parms_id);
     }
     chain_ind0 = ngraph::he::get_chain_index(arg0, he_seal_ckks_backend);
-    NGRAPH_ASSERT(chain_ind0 == chain_ind1);
+    NGRAPH_CHECK(chain_ind0 == chain_ind1);
 
     ngraph::he::match_scale(arg0, arg1, he_seal_ckks_backend);
   }
@@ -232,8 +232,8 @@ void ngraph::he::add_plain_inplace(
   auto& context_data = *context->context_data(encrypted.parms_id());
   auto& parms = context_data.parms();
 
-  NGRAPH_ASSERT(parms.scheme() == seal::scheme_type::CKKS)
-      << "Scheme type must be CKKS";
+  NGRAPH_CHECK(parms.scheme() == seal::scheme_type::CKKS,
+               "Scheme type must be CKKS");
   if (parms.scheme() == seal::scheme_type::CKKS && !encrypted.is_ntt_form()) {
     throw ngraph_error("CKKS encrypted must be in NTT form");
   }
@@ -248,7 +248,7 @@ void ngraph::he::add_plain_inplace(
     throw ngraph_error("invalid parameters");
   }
 
-  NGRAPH_ASSERT(encrypted.data() != nullptr) << "Encrypted data == nullptr";
+  NGRAPH_CHECK(encrypted.data() != nullptr, "Encrypted data == nullptr");
 
   // Encode
   std::vector<std::uint64_t> plaintext_vals(coeff_mod_count, 0);

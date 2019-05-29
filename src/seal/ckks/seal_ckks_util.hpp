@@ -53,9 +53,9 @@ void match_scale(S* arg0, T* arg1,
                  const HESealCKKSBackend* he_seal_ckks_backend) {
   auto scale0 = arg0->get_hetext().scale();
   auto scale1 = arg1->get_hetext().scale();
-  NGRAPH_ASSERT(within_rescale_tolerance(arg0, arg1))
-      << "Scale " << std::setw(10) << scale0 << " does not match scale "
-      << scale1 << " in scalar add, ratio is " << scale0 / scale1;
+  bool scale_ok = within_rescale_tolerance(arg0, arg1);
+  NGRAPH_CHECK(scale_ok, "Scale ", scale0, "does not match scale ", scale1,
+               " in scalar add");
   arg0->get_hetext().scale() = arg1->get_hetext().scale();
 }
 

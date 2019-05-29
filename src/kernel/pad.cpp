@@ -45,7 +45,7 @@ void ngraph::he::pad(
 
   bool is_pad_value_zero =
       arg1[0]->is_single_value() && arg1[0]->get_values()[0] == 0.;
-  NGRAPH_ASSERT(is_pad_value_zero) << "Non-zero pad values not supported";
+  NGRAPH_CHECK(is_pad_value_zero, "Non-zero pad values not supported");
   arg1_encrypted->set_zero(true);
 
   std::vector<std::shared_ptr<ngraph::he::HECiphertext>> arg1_encrypted_vector{

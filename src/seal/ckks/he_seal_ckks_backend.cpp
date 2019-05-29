@@ -46,8 +46,8 @@ ngraph::he::HESealCKKSBackend::HESealCKKSBackend(
   auto he_seal_encryption_parms =
       std::static_pointer_cast<ngraph::he::HESealEncryptionParameters>(sp);
 
-  NGRAPH_ASSERT(he_seal_encryption_parms != nullptr)
-      << "HE_SEAL_CKKS backend passed invalid encryption parameters";
+  NGRAPH_CHECK(he_seal_encryption_parms != nullptr,
+               "HE_SEAL_CKKS backend passed invalid encryption parameters");
   m_context = seal::SEALContext::Create(
       *(he_seal_encryption_parms->seal_encryption_parameters()));
 
@@ -139,9 +139,8 @@ void ngraph::he::HESealCKKSBackend::encode(
     } else {
       real_vec_to_complex_vec(complex_vals, double_vals);
     }
-    NGRAPH_ASSERT(complex_vals.size() <= slots)
-        << "Cannot encode " << complex_vals.size()
-        << " elements, maximum size is " << slots;
+    NGRAPH_CHECK(complex_vals.size() <= slots, "Cannot encode ",
+                 complex_vals.size(), " elements, maximum size is ", slots);
     m_ckks_encoder->encode(complex_vals, parms_id, scale,
                            plaintext->get_plaintext());
   } else {
@@ -150,9 +149,8 @@ void ngraph::he::HESealCKKSBackend::encode(
       m_ckks_encoder->encode(double_vals[0], parms_id, scale,
                              plaintext->get_plaintext());
     } else {
-      NGRAPH_ASSERT(double_vals.size() <= slots)
-          << "Cannot encode " << double_vals.size()
-          << " elements, maximum size is " << slots;
+      NGRAPH_CHECK(double_vals.size() <= slots, "Cannot encode ",
+                   double_vals.size(), " elements, maximum size is ", slots);
       m_ckks_encoder->encode(double_vals, parms_id, scale,
                              plaintext->get_plaintext());
     }
@@ -166,8 +164,9 @@ void ngraph::he::HESealCKKSBackend::encode(
     const element::Type& type, bool complex, size_t count) const {
   auto seal_plaintext_wrapper = cast_to_seal_hetext(output);
 
-  NGRAPH_ASSERT(type == element::f32)
-      << "CKKS encode supports only float encoding, received type " << type;
+  NGRAPH_CHECK(type == element::f32,
+               "CKKS encode supports only float encoding, received type ",
+               type);
 
   std::vector<float> values{(float*)input, (float*)input + count};
   seal_plaintext_wrapper->set_values(values);
@@ -178,14 +177,15 @@ void ngraph::he::HESealCKKSBackend::encode(
 void ngraph::he::HESealCKKSBackend::decode(
     void* output, std::shared_ptr<ngraph::he::HEPlaintext>& input,
     const element::Type& type, size_t count) const {
-  NGRAPH_ASSERT(count != 0) << "Decode called on 0 elements";
-  NGRAPH_ASSERT(type == element::f32)
-      << "CKKS encode supports only float encoding, received type " << type;
+  NGRAPH_CHECK(count != 0, "Decode called on 0 elements");
+  NGRAPH_CHECK(type == element::f32,
+               "CKKS encode supports only float encoding, received type ",
+               type);
   decode(input);
 
   std::vector<float> xs_float = input->get_values();
 
-  NGRAPH_ASSERT(xs_float.size() >= count);
+  NGRAPH_CHECK(xs_float.size() >= count);
   std::memcpy(output, &xs_float[0], type.size() * count);
 }
 

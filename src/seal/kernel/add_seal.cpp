@@ -42,7 +42,7 @@ void ngraph::he::scalar_add(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type, const HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
-  NGRAPH_ASSERT(element_type == element::f32);
+  NGRAPH_CHECK(element_type == element::f32);
 
   if (arg0->is_zero()) {
     auto arg1_hetext = std::dynamic_pointer_cast<ngraph::he::HEPlaintext>(arg1);
@@ -79,7 +79,7 @@ void ngraph::he::scalar_add(std::shared_ptr<SealPlaintextWrapper>& arg0,
                             const element::Type& element_type,
                             const HESealBackend* he_seal_backend,
                             const seal::MemoryPoolHandle& pool) {
-  NGRAPH_ASSERT(element_type == element::f32);
+  NGRAPH_CHECK(element_type == element::f32);
 
   const std::vector<float>& arg0_vals = arg0->get_values();
   const std::vector<float>& arg1_vals = arg1->get_values();

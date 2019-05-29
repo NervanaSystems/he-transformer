@@ -50,7 +50,7 @@ void ngraph::he::scalar_subtract(std::shared_ptr<SealPlaintextWrapper>& arg0,
                                  std::shared_ptr<SealPlaintextWrapper>& out,
                                  const element::Type& element_type,
                                  const HESealBackend* he_seal_backend) {
-  NGRAPH_ASSERT(element_type == element::f32);
+  NGRAPH_CHECK(element_type == element::f32);
 
   const std::vector<float>& arg0_vals = arg0->get_values();
   const std::vector<float>& arg1_vals = arg1->get_values();
