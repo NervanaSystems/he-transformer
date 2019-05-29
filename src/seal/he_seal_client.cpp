@@ -150,7 +150,7 @@ void ngraph::he::HESealClient::handle_message(
     }
 
     auto execute_message = TCPMessage(ngraph::he::MessageType::execute,
-                                      parameter_size, cipher_stream);
+                                      parameter_size, concat_cipher_stream);
     std::cout << "Sending execute message with " << parameter_size
               << " ciphertexts" << std::endl;
 

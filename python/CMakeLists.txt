@@ -38,6 +38,26 @@ set(BUILD_SH_IN "${CMAKE_SOURCE_DIR}/python/build_wheel.sh.in")
 set(BUILD_SH    "${CMAKE_BINARY_DIR}/python/build_wheel.sh")
 configure_file(${BUILD_SH_IN} ${BUILD_SH} @ONLY)
 
+# he_seal_client
+include_directories(
+    SYSTEM
+    ${HE_TRANSFORMER_SOURCE_DIR}
+    ${EXTERNAL_INSTALL_INCLUDE_DIR}
+    ${NGRAPH_TF_INCLUDE_DIR}
+)
+link_directories(
+    ${EXTERNAL_INSTALL_LIB_DIR}
+    ${NGRAPH_TF_LIB_DIR}
+)
+message("HE_TRANSFORMER_SOURCE_DIR ${HE_TRANSFORMER_SOURCE_DIR}")
+message("EXTERNAL_INSTALL_INCLUDE_DIR ${EXTERNAL_INSTALL_INCLUDE_DIR}")
+message("EXTERNAL_INSTALL_LIB_DIR ${EXTERNAL_INSTALL_LIB_DIR}")
+
+add_library(he_seal_client SHARED ${CMAKE_SOURCE_DIR}/src/seal/he_seal_client.cpp)
+add_dependencies(he_seal_client ext_seal)
+target_link_libraries(he_seal_client seal)
+install(TARGETS he_seal_client DESTINATION ${HE_INSTALL_LIB_DIR})
+
 add_custom_command(
         OUTPUT ${CMAKE_BINARY_DIR}/python/dist/
         POST_BUILD
