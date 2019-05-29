@@ -81,7 +81,7 @@ inline const ngraph::he::HESealCKKSBackend* cast_to_seal_ckks_backend(
     const ngraph::he::HEBackend* he_seal_backend) {
   auto he_seal_ckks_backend =
       dynamic_cast<const ngraph::he::HESealCKKSBackend*>(he_seal_backend);
-  NGRAPH_ASSERT(he_seal_ckks_backend != nullptr);
+  NGRAPH_CHECK(he_seal_ckks_backend != nullptr);
   return he_seal_ckks_backend;
 };
 }  // namespace he

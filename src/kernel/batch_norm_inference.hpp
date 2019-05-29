@@ -68,10 +68,10 @@ void batch_norm_inference(
     std::vector<float> channel_mean_vals = channel_mean->get_values();
     std::vector<float> channel_var_vals = channel_var->get_values();
 
-    NGRAPH_ASSERT(channel_gamma_vals.size() == 1);
-    NGRAPH_ASSERT(channel_beta_vals.size() == 1);
-    NGRAPH_ASSERT(channel_mean_vals.size() == 1);
-    NGRAPH_ASSERT(channel_var_vals.size() == 1);
+    NGRAPH_CHECK(channel_gamma_vals.size() == 1);
+    NGRAPH_CHECK(channel_beta_vals.size() == 1);
+    NGRAPH_CHECK(channel_mean_vals.size() == 1);
+    NGRAPH_CHECK(channel_var_vals.size() == 1);
 
     float scale = channel_gamma_vals[0] / std::sqrt(channel_var_vals[0] + eps);
     float bias =

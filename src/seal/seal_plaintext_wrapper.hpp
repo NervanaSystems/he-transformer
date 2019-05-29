@@ -57,7 +57,7 @@ inline std::shared_ptr<ngraph::he::SealPlaintextWrapper> cast_to_seal_hetext(
     std::shared_ptr<ngraph::he::HEPlaintext>& plain) {
   auto seal_plaintext_wrapper =
       std::dynamic_pointer_cast<SealPlaintextWrapper>(plain);
-  NGRAPH_ASSERT(seal_plaintext_wrapper != nullptr) << "Plaintext is not Seal";
+  NGRAPH_CHECK(seal_plaintext_wrapper != nullptr, "Plaintext is not Seal");
   return seal_plaintext_wrapper;
 };
 }  // namespace he

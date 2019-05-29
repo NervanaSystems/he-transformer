@@ -20,7 +20,7 @@ void ngraph::he::scalar_negate(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type, const HESealBackend* he_seal_backend) {
-  NGRAPH_ASSERT(element_type == element::f32);
+  NGRAPH_CHECK(element_type == element::f32);
 
   if (arg->is_zero()) {
     NGRAPH_INFO << "Arg is 0 in negate(C)";
@@ -36,7 +36,7 @@ void ngraph::he::scalar_negate(std::shared_ptr<SealPlaintextWrapper>& arg,
                                std::shared_ptr<SealPlaintextWrapper>& out,
                                const element::Type& element_type,
                                const HESealBackend* he_seal_backend) {
-  NGRAPH_ASSERT(element_type == element::f32);
+  NGRAPH_CHECK(element_type == element::f32);
 
   const std::vector<float>& arg_vals = arg->get_values();
   std::vector<float> out_vals(arg->num_values());

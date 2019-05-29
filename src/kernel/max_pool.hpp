@@ -37,9 +37,8 @@ std::vector<std::vector<size_t>> max_pool(
   for (const Coordinate& out_coord : output_transform) {
     out_size++;
   }
-  NGRAPH_ASSERT(out_size == shape_size(out_shape))
-      << "out size " << out_size << " != shape_size(out_shape) "
-      << join(out_shape, "x");
+  NGRAPH_CHECK(out_size == shape_size(out_shape), "out size ", out_size,
+               " != shape_size(out_shape) ", join(out_shape, "x"));
 
   std::vector<std::vector<size_t>> maximize_list(shape_size(out_shape));
 

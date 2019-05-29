@@ -43,7 +43,7 @@ void ngraph::he::scalar_subtract(std::shared_ptr<HEPlaintext>& arg0,
                                  std::shared_ptr<HEPlaintext>& out,
                                  const element::Type& element_type,
                                  const ngraph::he::HEBackend* he_backend) {
-  NGRAPH_ASSERT(element_type == element::f32);
+  NGRAPH_CHECK(element_type == element::f32);
 
   std::vector<float> arg0_vals = arg0->get_values();
   std::vector<float> arg1_vals = arg1->get_values();
@@ -60,7 +60,7 @@ void ngraph::he::scalar_subtract(std::shared_ptr<HECiphertext>& arg0,
                                  std::shared_ptr<HECiphertext>& out,
                                  const element::Type& type,
                                  const ngraph::he::HEBackend* he_backend) {
-  NGRAPH_ASSERT(type == element::f32) << "Only type float32 supported";
+  NGRAPH_CHECK(type == element::f32);
 
   if (arg0->is_zero()) {
     ngraph::he::scalar_negate(arg1, arg1, type, he_backend);

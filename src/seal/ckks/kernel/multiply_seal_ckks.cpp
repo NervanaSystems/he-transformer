@@ -78,10 +78,10 @@ void ngraph::he::scalar_multiply_ckks(
     size_t chain_ind0 = get_chain_index(arg0.get(), he_seal_ckks_backend);
     size_t chain_ind1 = get_chain_index(arg1.get(), he_seal_ckks_backend);
 
-    NGRAPH_ASSERT(chain_ind0 == chain_ind1)
-        << "Chain_ind0 " << chain_ind0 << " != chain_ind1 " << chain_ind1;
-    NGRAPH_ASSERT(chain_ind0 > 0) << "Multiplicative depth exceeded for arg0";
-    NGRAPH_ASSERT(chain_ind1 > 0) << "Multiplicative depth exceeded for arg1";
+    NGRAPH_CHECK(chain_ind0 == chain_ind1, "Chain_ind0 ", chain_ind0,
+                 " != chain_ind1 ", chain_ind1);
+    NGRAPH_CHECK(chain_ind0 > 0, "Multiplicative depth exceeded for arg0");
+    NGRAPH_CHECK(chain_ind1 > 0, "Multiplicative depth exceeded for arg1");
 
     try {
       he_seal_ckks_backend->get_evaluator()->multiply_plain(
