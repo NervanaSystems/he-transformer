@@ -81,12 +81,9 @@ void batch_norm_inference(
     std::vector<float> scale_vec(batch_size, scale);
     std::vector<float> bias_vec(batch_size, bias);
 
-    auto plain_scale = he_backend->create_empty_plaintext();
-
-    plain_scale->set_values(scale_vec);
-
-    auto plain_bias = he_backend->create_empty_plaintext();
-    plain_bias->set_values(bias_vec);
+    // TODO: enable complex packing?
+    auto plain_scale = create_empty_plaintext({scale_vec});
+    auto plain_bias = create_empty_plaintext({bias_vec});
 
     auto output = he_backend->create_empty_ciphertext();
 

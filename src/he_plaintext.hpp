@@ -47,8 +47,10 @@ class HEPlaintext {
   bool m_complex_packing;
 };
 
-inline std::unique_ptr<ngraph::he::HEPlaintext> create_empty_plaintext() {
-  return std::make_unique<ngraph::he::HEPlaintext>();
+inline std::unique_ptr<ngraph::he::HEPlaintext> create_empty_plaintext(
+    bool complex_packing = false) {
+  return std::make_unique<ngraph::he::HEPlaintext>(std::vector<float>{},
+                                                   complex_packing);
 }
 
 inline std::unique_ptr<ngraph::he::HEPlaintext> create_valued_plaintext(
