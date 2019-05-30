@@ -49,12 +49,12 @@ class HESealCKKSBackend : public HESealBackend {
   std::shared_ptr<seal::SEALContext> make_seal_context(
       const std::shared_ptr<ngraph::he::HEEncryptionParameters> sp) override;
 
-  void encode(const ngraph::he::HEPlaintext& plaintext,
-              ngraph::he::SealPlaintextWrapper& destination,
+  void encode(ngraph::he::SealPlaintextWrapper& destination,
+              const ngraph::he::HEPlaintext& plaintext,
               seal::parms_id_type parms_id, double scale) const override;
 
-  void encode(const ngraph::he::HEPlaintext& plaintext,
-              ngraph::he::SealPlaintextWrapper& destination) const override;
+  void encode(ngraph::he::SealPlaintextWrapper& destination,
+              const ngraph::he::HEPlaintext& plaintext) const override;
 
   void encode(ngraph::he::HEPlaintext& output, const void* input,
               const element::Type& type, bool complex,

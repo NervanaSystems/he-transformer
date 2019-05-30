@@ -30,7 +30,7 @@ class HEPlainTensor : public HETensor {
  public:
   HEPlainTensor(const element::Type& element_type, const Shape& shape,
                 const HEBackend* he_backend,
-                const ngraph::he::HEPlaintext& he_plaintext,
+                const std::unique_ptr<ngraph::he::HEPlaintext> he_plaintext,
                 const bool batched = false,
                 const std::string& name = "external");
 

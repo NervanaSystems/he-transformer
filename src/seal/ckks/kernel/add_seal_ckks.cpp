@@ -43,16 +43,18 @@ void ngraph::he::scalar_add_ckks(
     const element::Type& element_type,
     const HESealCKKSBackend* he_seal_ckks_backend,
     const seal::MemoryPoolHandle& pool) {
-  if (arg1->is_single_value()) {
-    float value = arg1->get_values()[0];
+  NGRAPH_CHECK(arg1.complex_packing() == arg0->complex_packing(),
+               "cipher/plain complex packing args differ");
+
+  if (arg1.is_single_value()) {
+    float value = arg1.get_values()[0];
     double double_val = double(value);
     add_plain(arg0->m_ciphertext, double_val, out->m_ciphertext,
               he_seal_ckks_backend);
   } else {
     seal::Plaintext p(pool);
     he_seal_ckks_backend->encode(arg1, p, arg0->m_ciphertext.parms_id(),
-                                 arg0->m_ciphertext.scale(),
-                                 arg0->complex_packing());
+                                 arg0->m_ciphertext.scale());
 
     /* if (!arg1->is_encoded()) {
        // Just-in-time encoding at the right scale and modulus

@@ -113,7 +113,7 @@ ngraph::he::HESealCKKSBackend::create_batched_plain_tensor(
     const element::Type& type, const Shape& shape) {
   NGRAPH_INFO << "Creating batched plain tensor with shape " << join(shape);
   auto rc = std::make_shared<ngraph::he::HEPlainTensor>(
-      type, shape, this, create_empty_plaintext(), true);
+      type, shape, this, std::move(create_empty_plaintext()), true);
   set_batch_data(true);
   return std::static_pointer_cast<ngraph::runtime::Tensor>(rc);
 }
@@ -216,10 +216,10 @@ void ngraph::he::HESealCKKSBackend::decode(void* output,
 }
 
 void ngraph::he::HESealCKKSBackend::decode(
-    ngraph::he::HEPlaintext& output, const ngraph::he::SealPlaintextWrapper&,
-    input) const {
+    ngraph::he::HEPlaintext& output,
+    const ngraph::he::SealPlaintextWrapper& input) const {
   std::vector<double> real_vals;
-  if (input.complex_packing) {
+  if (input.m_complex_packing) {
     std::vector<std::complex<double>> complex_vals;
     m_ckks_encoder->decode(input.m_plaintext, complex_vals);
     complex_vec_to_real_vec(real_vals, complex_vals);
@@ -228,5 +228,5 @@ void ngraph::he::HESealCKKSBackend::decode(
   }
   std::vector<float> float_vals{real_vals.begin(), real_vals.end()};
   output.set_values(float_vals);
-  output.set_complex_packing(input.complex_packing);
+  output.set_complex_packing(input.m_complex_packing);
 }
