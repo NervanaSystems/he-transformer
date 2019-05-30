@@ -107,7 +107,7 @@ inline std::string message_type_to_string(const MessageType& type) {
 class TCPMessage {
  public:
   enum { header_length = 15 };
-  enum { max_body_length = 9000000000UL };
+  enum { max_body_length = 12000000000UL };
   enum { message_type_length = sizeof(MessageType) };
   enum { message_count_length = sizeof(size_t) };
 
