@@ -322,7 +322,6 @@ void ngraph::he::HEExecutable::handle_message(
 
     size_t element_count = message.count();
     size_t element_size = message.element_size();
-    m_relu_ciphertexts.clear();
 
     NGRAPH_INFO << "Got " << element_count << " ciphertexts";
     NGRAPH_INFO << "element_size " << element_size;
@@ -1297,6 +1296,7 @@ void ngraph::he::HEExecutable::generate_calls(
             "Relu op unsupported unless client is enabled. Try setting "
             "NGRAPH_ENABLE_CLIENT=1");
       }
+      m_relu_ciphertexts.clear();
 
       size_t element_count =
           shape_size(node.get_output_shape(0)) / m_batch_size;
@@ -1306,26 +1306,37 @@ void ngraph::he::HEExecutable::generate_calls(
         throw ngraph_error("Relu types not supported.");
       }
 
-      std::stringstream cipher_stream;
-      arg0_cipher->save_elements(cipher_stream);
+      for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
+        auto& cipher = arg0_cipher->get_element(relu_idx);
 
-      // Send output to client
-      NGRAPH_INFO << "Sending " << element_count << " Relu ciphertexts (size "
-                  << cipher_stream.str().size() << ") to client";
-      auto relu_message =
-          TCPMessage(MessageType::relu_request, element_count, cipher_stream);
+        // relu(0) = 0
+        if (cipher->is_zero()) {
+          m_relu_ciphertexts.emplace_back(cipher);
+        } else {
+          std::stringstream cipher_stream;
+          cipher->save(cipher_stream);
+          // Send output to client
+          NGRAPH_INFO << "Sending " << element_count
+                      << " Relu ciphertexts (size "
+                      << cipher_stream.str().size() << ") to client ("
+                      << relu_idx << " of " << element_count;
+          auto relu_message =
+              TCPMessage(MessageType::relu_request, 1, cipher_stream);
 
-      m_session->do_write(relu_message);
+          m_session->do_write(relu_message);
 
-      // Acquire lock
-      std::unique_lock<std::mutex> mlock(m_relu_mutex);
+          // Acquire lock
+          std::unique_lock<std::mutex> mlock(m_relu_mutex);
 
-      // Wait until Relu is done
-      m_relu_cond.wait(mlock, std::bind(&HEExecutable::relu_done, this));
-      NGRAPH_INFO << "Relu is done";
+          // Wait until Relu is done
+          m_relu_cond.wait(mlock, std::bind(&HEExecutable::relu_done, this));
+          NGRAPH_INFO << "Relu is done";
 
-      // Reset for next Relu call
-      m_relu_done = false;
+          // Reset for next Relu call
+          m_relu_done = false;
+        }
+      }
+
       out0_cipher->set_elements(m_relu_ciphertexts);
       break;
     }
