@@ -100,7 +100,6 @@ void ngraph::he::scalar_multiply_ckks(
   out->set_complex_packing(arg0->complex_packing());
 
   size_t chain_ind_out = get_chain_index(out.get(), he_seal_ckks_backend);
-  NGRAPH_CHECK(chain_ind_out == 2, "Mult chaind ind out ", chain_ind_out);
 
   // NGRAPH_INFO << "Skipping relin and rescale!";
 

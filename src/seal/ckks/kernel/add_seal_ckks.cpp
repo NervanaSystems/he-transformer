@@ -44,8 +44,6 @@ void ngraph::he::scalar_add_ckks(
   chain_ind0 = get_chain_index(arg0.get(), he_seal_ckks_backend);
   chain_ind1 = get_chain_index(arg1.get(), he_seal_ckks_backend);
   size_t chain_ind_out = get_chain_index(out.get(), he_seal_ckks_backend);
-  NGRAPH_CHECK(chain_ind_out == 2, "add chain inds : ", chain_ind0, " ",
-               chain_ind1, " => ", chain_ind_out);
 }
 
 void ngraph::he::scalar_add_ckks(
