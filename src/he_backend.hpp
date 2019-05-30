@@ -56,8 +56,11 @@ class HEBackend : public ngraph::runtime::Backend {
   /// @brief Creates ciphertext of unspecified value
   /// Alias for create_empty_ciphertext()
   /// @return Shared pointer to created ciphertext
-  template <typename T, typename = std::enable_if_t<
-                            std::is_same<T, ngraph::he::HECiphertext>::value>>
+  template <
+      typename T,
+      typename = std::enable_if_t<
+          std::is_same<T, ngraph::he::HECiphertext>::value ||
+          std::is_same<T, std::shared_ptr<ngraph::he::HECiphertext>>::value>>
   std::shared_ptr<ngraph::he::HECiphertext> create_empty_hetext() const {
     return create_empty_ciphertext();
   };

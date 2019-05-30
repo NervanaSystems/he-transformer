@@ -52,14 +52,16 @@ class HESealBackend : public HEBackend {
   std::shared_ptr<ngraph::he::HECiphertext> create_empty_ciphertext(
       const seal::MemoryPoolHandle& pool) const;
 
-  /// @brief Creates ciphertext of unspecified value using memory pool
+  /// @brief Creates ciphertext of unspecified value
   /// Alias for create_empty_ciphertext()
   /// @return Shared pointer to created ciphertext
-  template <typename T, typename = std::enable_if_t<
-                            std::is_same<T, ngraph::he::HECiphertext>::value>>
-  std::shared_ptr<ngraph::he::HECiphertext> create_empty_hetext(
-      const seal::MemoryPoolHandle& pool) const {
-    return create_empty_ciphertext(pool);
+  template <
+      typename T,
+      typename = std::enable_if_t<
+          std::is_same<T, ngraph::he::HECiphertext>::value ||
+          std::is_same<T, std::shared_ptr<ngraph::he::HECiphertext>>::value>>
+  std::shared_ptr<ngraph::he::HECiphertext> create_empty_hetext() const {
+    return create_empty_ciphertext();
   };
 
   /// @brief Creates plaintext of unspecified value using memory pool
@@ -68,7 +70,7 @@ class HESealBackend : public HEBackend {
   template <typename T, typename = std::enable_if_t<
                             std::is_same<T, ngraph::he::HEPlaintext>::value>>
   std::unique_ptr<ngraph::he::HEPlaintext> create_empty_hetext(
-      const seal::MemoryPoolHandle& pool) const {
+      ) const {
     return ngraph::he::create_empty_plaintext();
   };
 

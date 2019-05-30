@@ -57,5 +57,12 @@ inline std::unique_ptr<ngraph::he::HEPlaintext> create_valued_plaintext(
     const std::vector<float>& values, bool complex_packing) {
   return std::make_unique<ngraph::he::HEPlaintext>(values, complex_packing);
 }
+
+// This function is used only to make templating easier in dot / convolution
+// TODO: cleaner!
+inline std::unique_ptr<ngraph::he::HEPlaintext> cast_to_seal_hetext(
+    const std::unique_ptr<HEPlaintext>& plain) {
+  return std::make_unique<ngraph::he::HEPlaintext>(*plain);
+}
 }  // namespace he
 }  // namespace ngraph
