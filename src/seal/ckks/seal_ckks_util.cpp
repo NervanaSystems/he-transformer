@@ -92,6 +92,9 @@ void ngraph::he::encode(double value, double scale,
 
   int coeff_bit_count = static_cast<int>(log2(fabs(value))) + 2;
   if (coeff_bit_count >= context_data.total_coeff_modulus_bit_count()) {
+    NGRAPH_INFO << "coeff_bit_count " << coeff_bit_count;
+    NGRAPH_INFO << "total coeff modulus bit count "
+                << context_data.total_coeff_modulus_bit_count();
     throw ngraph_error("encoded value is too large");
   }
 
