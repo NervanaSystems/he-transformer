@@ -35,11 +35,11 @@ struct SealPlaintextWrapper {
   seal::Plaintext m_plaintext;
 };
 
-std::unique_ptr<SealPlaintextWrapper> make_seal_plaintext_wrapper() {
+inline std::unique_ptr<SealPlaintextWrapper> make_seal_plaintext_wrapper() {
   return std::make_unique<SealPlaintextWrapper>();
 }
 
-std::unique_ptr<SealPlaintextWrapper> make_seal_plaintext_wrapper(
+inline std::unique_ptr<SealPlaintextWrapper> make_seal_plaintext_wrapper(
     bool complex_packing) {
   return std::make_unique<SealPlaintextWrapper>(complex_packing);
 }

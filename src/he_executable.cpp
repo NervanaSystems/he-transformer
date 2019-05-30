@@ -872,14 +872,13 @@ void ngraph::he::HEExecutable::generate_calls(
           }
           in_args.push_back(arg_cipher->get_elements());
           in_shapes.push_back(arg_cipher->get_shape());
-
-          ngraph::he::concat(in_args, out0_cipher->get_elements(), in_shapes,
-                             node.get_output_shape(0),
-                             concat->get_concatenation_axis());
         }
+        ngraph::he::concat(in_args, out0_cipher->get_elements(), in_shapes,
+                           node.get_output_shape(0),
+                           concat->get_concatenation_axis());
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
         std::vector<Shape> in_shapes;
-        std::vector<std::vector<std::unique_ptr<HEPlaintext>>> in_args;
+        std::vector<std::vector<ngraph::he::HEPlaintext*>> in_args;
 
         for (std::shared_ptr<HETensor> arg : args) {
           std::shared_ptr<HEPlainTensor> arg_plain =
@@ -887,7 +886,13 @@ void ngraph::he::HEExecutable::generate_calls(
           if (arg_plain == nullptr) {
             throw ngraph_error("Concat type not consistent");
           }
-          in_args.emplace_back(arg_plain->get_elements());
+
+          std::vector<HEPlaintext*> arg_plains;
+          for (size_t plain_idx = 0; plain_idx < arg_plain->num_plaintexts();
+               ++plain_idx) {
+            arg_plains.emplace_back(arg_plain->get_element(plain_idx).get());
+          }
+          in_args.emplace_back(arg_plains);
           in_shapes.push_back(arg_plain->get_shape());
         }
         ngraph::he::concat(in_args, out0_plain->get_elements(), in_shapes,

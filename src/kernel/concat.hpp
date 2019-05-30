@@ -76,7 +76,7 @@ void concat(const std::vector<std::vector<std::shared_ptr<T>>>& args,
   }
 };
 
-void concat(const std::vector<std::vector<std::unique_ptr<HEPlaintext>>>& args,
+void concat(const std::vector<std::vector<HEPlaintext*>>& args,
             std::vector<std::unique_ptr<HEPlaintext>>& out,
             const std::vector<Shape>& in_shapes, const Shape& out_shape,
             size_t concatenation_axis) {
