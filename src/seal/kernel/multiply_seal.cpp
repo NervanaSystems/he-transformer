@@ -39,7 +39,7 @@ void ngraph::he::scalar_multiply(
 
 void ngraph::he::scalar_multiply(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
-    std::shared_ptr<SealPlaintextWrapper>& arg1,
+    std::shared_ptr<ngraph::he::HEPlaintext>& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type, const HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
@@ -79,7 +79,7 @@ void ngraph::he::scalar_multiply(
 }
 
 void ngraph::he::scalar_multiply(
-    std::shared_ptr<SealPlaintextWrapper>& arg0,
+    std::shared_ptr<ngraph::he::HEPlaintext>& arg0,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type, const HESealBackend* he_seal_backend,
@@ -88,9 +88,9 @@ void ngraph::he::scalar_multiply(
                               pool);
 }
 
-void ngraph::he::scalar_multiply(std::shared_ptr<SealPlaintextWrapper>& arg0,
-                                 std::shared_ptr<SealPlaintextWrapper>& arg1,
-                                 std::shared_ptr<SealPlaintextWrapper>& out,
+void ngraph::he::scalar_multiply(std::shared_ptr<ngraph::he::HEPlaintext>& arg0,
+                                 std::shared_ptr<ngraph::he::HEPlaintext>& arg1,
+                                 std::shared_ptr<ngraph::he::HEPlaintext>& out,
                                  const element::Type& element_type,
                                  const HESealBackend* he_seal_backend,
                                  const seal::MemoryPoolHandle& pool) {

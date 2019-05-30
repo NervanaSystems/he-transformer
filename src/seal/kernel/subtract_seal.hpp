@@ -33,21 +33,19 @@ void scalar_subtract(std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
                      const ngraph::he::HESealBackend* he_seal_backend);
 
 void scalar_subtract(std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
-                     std::shared_ptr<ngraph::he::SealPlaintextWrapper>& arg1,
+                     const HEPlaintext& arg1,
                      std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
                      const element::Type& element_type,
                      const ngraph::he::HESealBackend* he_seal_backend);
 
-void scalar_subtract(std::shared_ptr<ngraph::he::SealPlaintextWrapper>& arg0,
+void scalar_subtract(const HEPlaintext& arg0,
                      std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
                      std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
                      const element::Type& element_type,
                      const ngraph::he::HESealBackend* he_seal_backend);
 
-void scalar_subtract(std::shared_ptr<ngraph::he::SealPlaintextWrapper>& arg0,
-                     std::shared_ptr<ngraph::he::SealPlaintextWrapper>& arg1,
-                     std::shared_ptr<ngraph::he::SealPlaintextWrapper>& out,
-                     const element::Type& element_type,
+void scalar_subtract(const HEPlaintext& arg0, const HEPlaintext& arg1,
+                     HEPlaintext& out, const element::Type& element_type,
                      const ngraph::he::HESealBackend* he_seal_backend);
 }  // namespace he
 }  // namespace ngraph

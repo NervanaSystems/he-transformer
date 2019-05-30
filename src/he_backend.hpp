@@ -55,7 +55,7 @@ class HEBackend : public ngraph::runtime::Backend {
 
   /// @brief Creates plaintext of unspecified value
   /// @return Shared pointer to created plaintext
-  virtual std::shared_ptr<ngraph::he::HEPlaintext> create_empty_plaintext()
+  virtual std::unique_ptr<ngraph::he::HEPlaintext> create_empty_plaintext()
       const = 0;
 
   /// @brief Creates ciphertext of unspecified value
@@ -72,7 +72,7 @@ class HEBackend : public ngraph::runtime::Backend {
   /// @return Shared pointer to created plaintext
   template <typename T, typename = std::enable_if_t<
                             std::is_same<T, ngraph::he::HEPlaintext>::value>>
-  std::shared_ptr<ngraph::he::HEPlaintext> create_empty_hetext() const {
+  std::unique_ptr<ngraph::he::HEPlaintext> create_empty_hetext() const {
     return create_empty_plaintext();
   };
 
@@ -90,7 +90,7 @@ class HEBackend : public ngraph::runtime::Backend {
   /// @param value Scalar which to encode
   /// @param element_type Type to encode
   /// @return Shared pointer to created plaintext
-  std::shared_ptr<ngraph::he::HEPlaintext> create_valued_plaintext(
+  std::unique_ptr<ngraph::he::HEPlaintext> create_valued_plaintext(
       float value, const element::Type& element_type) const;
 
   /// @brief Creates ciphertext of specified value
@@ -109,7 +109,7 @@ class HEBackend : public ngraph::runtime::Backend {
   /// @return Shared pointer to created plaintext
   template <typename T, typename = std::enable_if_t<
                             std::is_same<T, ngraph::he::HEPlaintext>::value>>
-  std::shared_ptr<ngraph::he::HEPlaintext> create_valued_hetext(
+  std::unique_ptr<ngraph::he::HEPlaintext> create_valued_hetext(
       float value, const element::Type& element_type) const {
     return create_valued_plaintext(value, element_type);
   };
@@ -163,46 +163,42 @@ class HEBackend : public ngraph::runtime::Backend {
   /// @param input Pointer to memory to encode
   /// @param type Type of scalar to encode
   /// @param count Number of elements to encode, count > 1 indicates batching
-  virtual void encode(std::shared_ptr<ngraph::he::HEPlaintext>& output,
-                      const void* input, const element::Type& element_type,
-                      bool complex = false, size_t count = 1) const = 0;
+  virtual void encode(ngraph::he::HEPlaintext& output, const void* input,
+                      const element::Type& element_type, bool complex = false,
+                      size_t count = 1) const = 0;
 
   /// @brief Decodes plaintext polynomial to bytes
   /// @param output Pointer to memory to write to
   /// @param input Pointer to plaintext to decode
   /// @param type Type of scalar to encode
   /// @param count Number of elements to decode, count > 1 indicates batching
-  virtual void decode(void* output,
-                      std::shared_ptr<ngraph::he::HEPlaintext>& input,
+  virtual void decode(void* output, ngraph::he::HEPlaintext& input,
                       const element::Type& element_type,
                       size_t count = 1) const = 0;
 
-  virtual void decode(
-      std::vector<std::shared_ptr<ngraph::he::HEPlaintext>>& plaintexts) const {
-    for (std::shared_ptr<ngraph::he::HEPlaintext> plaintext : plaintexts) {
-      decode(plaintext);
+  void decode(std::vector<ngraph::he::HEPlaintext*>& plaintexts) const {
+    for (auto plaintext : plaintexts) {
+      decode(*plaintext);
     }
   }
 
-  virtual void decode(
-      std::shared_ptr<ngraph::he::HEPlaintext>& input) const = 0;
+  virtual void decode(ngraph::he::HEPlaintext& input) const = 0;
 
   /// @brief Encrypts plaintext polynomial to ciphertext
   /// @param output Pointer to ciphertext to encrypt to
   /// @param input Pointer to plaintext to encrypt
-  virtual void encrypt(
-      std::shared_ptr<ngraph::he::HECiphertext>& output,
-      std::shared_ptr<ngraph::he::HEPlaintext>& input) const = 0;
+  virtual void encrypt(std::shared_ptr<ngraph::he::HECiphertext>& output,
+                       const ngraph::he::HEPlaintext& input) const = 0;
 
   /// @brief Decrypts ciphertext to plaintext polynomial
   /// @param output Pointer to plaintext to decrypt to
   /// @param input Pointer to ciphertext to decrypt
   virtual void decrypt(
-      std::shared_ptr<ngraph::he::HEPlaintext>& output,
+      ngraph::he::HEPlaintext& output,
       const std::shared_ptr<ngraph::he::HECiphertext>& input) const = 0;
 
-  const std::shared_ptr<ngraph::he::HEEncryptionParameters> get_encryption_parameters()
-      const {
+  const std::shared_ptr<ngraph::he::HEEncryptionParameters>
+  get_encryption_parameters() const {
     return m_encryption_params;
   };
 

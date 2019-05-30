@@ -36,27 +36,27 @@ void ngraph::he::scalar_subtract(
 
 void ngraph::he::scalar_subtract(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
-    std::shared_ptr<SealPlaintextWrapper>& arg1,
+    const HEPlaintext& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type, const HESealBackend* he_seal_backend) {
-  he_seal_backend->encode(arg1, arg0->m_ciphertext.parms_id(),
+  SealPlaintextWrapper p;
+  he_seal_backend->encode(arg1, p, arg0->m_ciphertext.parms_id(),
                           arg0->m_ciphertext.scale(), arg0->complex_packing());
-  he_seal_backend->get_evaluator()->sub_plain(
-      arg0->m_ciphertext, arg1->get_plaintext(), out->m_ciphertext);
+  he_seal_backend->get_evaluator()->sub_plain(arg0->m_ciphertext, p,
+                                              out->m_ciphertext);
 }
 
-void ngraph::he::scalar_subtract(std::shared_ptr<SealPlaintextWrapper>& arg0,
-                                 std::shared_ptr<SealPlaintextWrapper>& arg1,
-                                 std::shared_ptr<SealPlaintextWrapper>& out,
+void ngraph::he::scalar_subtract(const HEPlaintext& arg0,
+                                 const HEPlaintext& arg1, HEPlaintext& out,
                                  const element::Type& element_type,
                                  const HESealBackend* he_seal_backend) {
   NGRAPH_CHECK(element_type == element::f32);
 
-  const std::vector<float>& arg0_vals = arg0->get_values();
-  const std::vector<float>& arg1_vals = arg1->get_values();
-  std::vector<float> out_vals(arg0->num_values());
+  const std::vector<float>& arg0_vals = arg0.get_values();
+  const std::vector<float>& arg1_vals = arg1.get_values();
+  std::vector<float> out_vals(arg0.num_values());
 
   std::transform(arg0_vals.begin(), arg0_vals.end(), arg1_vals.begin(),
                  out_vals.begin(), std::minus<float>());
-  out->set_values(out_vals);
+  out.set_values(out_vals);
 }

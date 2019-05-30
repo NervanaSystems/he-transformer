@@ -58,13 +58,13 @@ ngraph::he::HESealBackend::create_empty_ciphertext(
 
 std::shared_ptr<ngraph::he::HEPlaintext>
 ngraph::he::HESealBackend::create_empty_plaintext() const {
-  return std::make_shared<ngraph::he::SealPlaintextWrapper>();
+  return std::make_shared<ngraph::he::HEPlaintext>();
 }
 
 std::shared_ptr<ngraph::he::HEPlaintext>
 ngraph::he::HESealBackend::create_empty_plaintext(
     const seal::MemoryPoolHandle& pool) const {
-  return std::make_shared<ngraph::he::SealPlaintextWrapper>(pool);
+  return std::make_shared<ngraph::he::HEPlaintext>(pool);
 }
 
 void ngraph::he::HESealBackend::encrypt(

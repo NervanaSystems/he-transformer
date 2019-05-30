@@ -49,23 +49,24 @@ class HESealCKKSBackend : public HESealBackend {
   std::shared_ptr<seal::SEALContext> make_seal_context(
       const std::shared_ptr<ngraph::he::HEEncryptionParameters> sp) override;
 
-  void encode(std::shared_ptr<ngraph::he::SealPlaintextWrapper>& plaintext,
+  void encode(const ngraph::he::HEPlaintext& plaintext,
+              ngraph::he::SealPlaintextWrapper& destination,
               seal::parms_id_type parms_id, double scale,
               bool complex) const override;
 
-  void encode(std::shared_ptr<ngraph::he::SealPlaintextWrapper>& plaintext,
-              bool complex) const override {
-    encode(plaintext, m_context->first_parms_id(), m_scale, complex);
-  }
+  void encode(const ngraph::he::HEPlaintext& plaintext,
+              ngraph::he::SealPlaintextWrapper& destination,
+              bool complex) const override;
 
-  void encode(std::shared_ptr<ngraph::he::HEPlaintext>& output,
-              const void* input, const element::Type& element_type,
-              bool complex, size_t count = 1) const override;
-  void decode(void* output, std::shared_ptr<ngraph::he::HEPlaintext>& input,
+  void encode(ngraph::he::HEPlaintext& output, const void* input,
+              const element::Type& type, bool complex,
+              size_t count = 1) const override;
+
+  void decode(void* output, ngraph::he::HEPlaintext& input,
               const element::Type& element_type,
               size_t count = 1) const override;
 
-  void decode(std::shared_ptr<ngraph::he::HEPlaintext>& input) const override;
+  void decode(ngraph::he::HEPlaintext& input) const override;
 
   const inline std::shared_ptr<seal::CKKSEncoder> get_ckks_encoder() const {
     return m_ckks_encoder;

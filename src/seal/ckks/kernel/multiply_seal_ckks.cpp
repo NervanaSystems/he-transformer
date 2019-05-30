@@ -53,7 +53,7 @@ void ngraph::he::scalar_multiply_ckks(
 
 void ngraph::he::scalar_multiply_ckks(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
-    std::shared_ptr<ngraph::he::SealPlaintextWrapper>& arg1,
+    std::shared_ptr<ngraph::he::HEPlaintext>& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const ngraph::he::HESealCKKSBackend* he_seal_ckks_backend,
@@ -108,7 +108,7 @@ void ngraph::he::scalar_multiply_ckks(
 }
 
 void ngraph::he::scalar_multiply_ckks(
-    std::shared_ptr<ngraph::he::SealPlaintextWrapper>& arg0,
+    std::shared_ptr<ngraph::he::HEPlaintext>& arg0,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type,

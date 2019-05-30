@@ -31,8 +31,8 @@ void scalar_negate(std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg,
                    const element::Type& element_type,
                    const ngraph::he::HESealBackend* he_seal_backend);
 
-void scalar_negate(std::shared_ptr<ngraph::he::SealPlaintextWrapper>& arg,
-                   std::shared_ptr<ngraph::he::SealPlaintextWrapper>& out,
+void scalar_negate(std::shared_ptr<ngraph::he::HEPlaintext>& arg,
+                   std::shared_ptr<ngraph::he::HEPlaintext>& out,
                    const element::Type& element_type,
                    const ngraph::he::HESealBackend* he_seal_backend);
 }  // namespace he

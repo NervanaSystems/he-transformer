@@ -52,10 +52,10 @@ class HESealBackend : public HEBackend {
   std::shared_ptr<ngraph::he::HECiphertext> create_empty_ciphertext(
       const seal::MemoryPoolHandle& pool) const;
 
-  std::shared_ptr<ngraph::he::HEPlaintext> create_empty_plaintext()
+  std::unique_ptr<ngraph::he::HEPlaintext> create_empty_plaintext()
       const override;
 
-  std::shared_ptr<ngraph::he::HEPlaintext> create_empty_plaintext(
+  std::unique_ptr<ngraph::he::HEPlaintext> create_empty_plaintext(
       const seal::MemoryPoolHandle& pool) const;
 
   /// @brief Creates ciphertext of unspecified value using memory pool
@@ -73,43 +73,35 @@ class HESealBackend : public HEBackend {
   /// @return Shared pointer to created plaintext
   template <typename T, typename = std::enable_if_t<
                             std::is_same<T, ngraph::he::HEPlaintext>::value>>
-  std::shared_ptr<ngraph::he::HEPlaintext> create_empty_hetext(
+  std::unique_ptr<ngraph::he::HEPlaintext> create_empty_hetext(
       const seal::MemoryPoolHandle& pool) const {
     return create_empty_plaintext(pool);
   };
 
-  virtual void encode(
-      std::shared_ptr<ngraph::he::SealPlaintextWrapper>& plaintext,
-      seal::parms_id_type parms_id, double scale, bool complex) const = 0;
+  virtual void encode(const ngraph::he::HEPlaintext& plaintext,
+                      ngraph::he::SealPlaintextWrapper& destination,
+                      seal::parms_id_type parms_id, double scale,
+                      bool complex) const = 0;
 
-  virtual void encode(
-      std::shared_ptr<ngraph::he::SealPlaintextWrapper>& plaintext,
-      bool complex) const = 0;
+  virtual void encode(const ngraph::he::HEPlaintext& plaintext,
+                      ngraph::he::SealPlaintextWrapper& destination,
+                      bool complex) const = 0;
 
-  virtual void encode(std::shared_ptr<ngraph::he::HEPlaintext>& output,
-                      const void* input, const element::Type& type,
-                      bool complex, size_t count = 1) const = 0;
+  virtual void encode(ngraph::he::HEPlaintext& output, const void* input,
+                      const element::Type& type, bool complex,
+                      size_t count = 1) const = 0;
 
-  virtual void decode(void* output,
-                      std::shared_ptr<ngraph::he::HEPlaintext>& input,
+  virtual void decode(void* output, ngraph::he::HEPlaintext& input,
                       const element::Type& type,
                       size_t count = 1) const override = 0;
 
-  virtual void decode(
-      std::shared_ptr<ngraph::he::HEPlaintext>& input) const override = 0;
-
-  virtual void decode(std::vector<std::shared_ptr<ngraph::he::HEPlaintext>>&
-                          plaintexts) const override {
-    for (size_t i = 0; i < plaintexts.size(); ++i) {
-      decode(plaintexts[i]);
-    }
-  }
+  virtual void decode(ngraph::he::HEPlaintext& input) const override = 0;
 
   void encrypt(std::shared_ptr<ngraph::he::HECiphertext>& output,
-               std::shared_ptr<ngraph::he::HEPlaintext>& input) const override;
+               const ngraph::he::HEPlaintext& input) const override;
 
   void decrypt(
-      std::shared_ptr<ngraph::he::HEPlaintext>& output,
+      ngraph::he::HEPlaintext& output,
       const std::shared_ptr<ngraph::he::HECiphertext>& input) const override;
 
   const inline std::shared_ptr<seal::SEALContext> get_context() const noexcept {

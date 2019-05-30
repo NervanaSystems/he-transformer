@@ -27,8 +27,7 @@
 namespace ngraph {
 namespace he {
 template <typename T>
-void result(const std::vector<std::shared_ptr<T>>& arg,
-            std::vector<std::shared_ptr<T>>& out, size_t count) {
+void result(const std::vector<T>& arg, std::vector<T>& out, size_t count) {
   if (out.size() != arg.size()) {
     NGRAPH_INFO << "Result output size " << out.size()
                 << " does not match result input size " << arg.size();
@@ -39,12 +38,12 @@ void result(const std::vector<std::shared_ptr<T>>& arg,
   }
 }
 
-void result(std::vector<std::shared_ptr<ngraph::he::HEPlaintext>>& arg,
+void result(const std::vector<std::unique_ptr<ngraph::he::HEPlaintext>>& arg,
             std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& out,
             size_t count, const ngraph::he::HEBackend* he_backend);
 
-void result(std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& arg,
-            std::vector<std::shared_ptr<ngraph::he::HEPlaintext>>& out,
+void result(const std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& arg,
+            std::vector<std::unique_ptr<ngraph::he::HEPlaintext>>& out,
             size_t count, const ngraph::he::HEBackend* he_backend);
 }  // namespace he
 }  // namespace ngraph

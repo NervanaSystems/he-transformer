@@ -32,21 +32,18 @@ void scalar_add(std::shared_ptr<ngraph::he::HECiphertext>& arg0,
                 const element::Type& element_type, const HEBackend* he_backend);
 
 void scalar_add(std::shared_ptr<ngraph::he::HECiphertext>& arg0,
-                std::shared_ptr<ngraph::he::HEPlaintext>& arg1,
+                const HEPlaintext& arg1,
                 std::shared_ptr<ngraph::he::HECiphertext>& out,
                 const element::Type& element_type,
                 const ngraph::he::HEBackend* he_backend);
 
-void scalar_add(std::shared_ptr<ngraph::he::HEPlaintext>& arg0,
-                std::shared_ptr<HECiphertext>& arg1,
+void scalar_add(const HEPlaintext& arg0, std::shared_ptr<HECiphertext>& arg1,
                 std::shared_ptr<ngraph::he::HECiphertext>& out,
                 const element::Type& element_type,
                 const ngraph::he::HEBackend* he_backend);
 
-void scalar_add(std::shared_ptr<ngraph::he::HEPlaintext>& arg0,
-                std::shared_ptr<ngraph::he::HEPlaintext>& arg1,
-                std::shared_ptr<ngraph::he::HEPlaintext>& out,
-                const element::Type& element_type,
+void scalar_add(const HEPlaintext& arg0, const HEPlaintext& arg1,
+                HEPlaintext& out, const element::Type& element_type,
                 const ngraph::he::HEBackend* he_backend);
 
 template <typename S, typename T, typename V>

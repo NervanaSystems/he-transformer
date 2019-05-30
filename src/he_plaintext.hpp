@@ -33,7 +33,7 @@ class HEPlaintext {
   void set_values(const std::vector<float>& values) { m_values = values; }
   const std::vector<float>& get_values() const { return m_values; }
 
-  bool is_single_value() { return num_values() == 1; }
+  bool is_single_value() const { return num_values() == 1; }
   size_t num_values() const { return m_values.size(); }
 
   bool is_encoded() const { return m_is_encoded; }
@@ -42,7 +42,7 @@ class HEPlaintext {
   bool complex_packing() const { return m_complex_packing; }
   void set_complex_packing(bool toggle) { m_complex_packing = toggle; }
 
-  std::mutex& get_encode_mutex() { return m_encode_mutex; }
+  // std::mutex& get_encode_mutex() { return m_encode_mutex; }
 
  protected:
   std::vector<float> m_values;
@@ -51,7 +51,7 @@ class HEPlaintext {
   bool m_is_encoded;
   bool m_complex_packing;
 
-  std::mutex m_encode_mutex;
+  // std::mutex m_encode_mutex;
 };
 }  // namespace he
 }  // namespace ngraph

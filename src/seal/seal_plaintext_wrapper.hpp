@@ -17,48 +17,19 @@
 #pragma once
 
 #include <memory>
-#include <vector>
 
-#include "he_plaintext.hpp"
+#include "he_ciphertext.hpp"
 #include "seal/seal.h"
 
 namespace ngraph {
 namespace he {
-struct SealPlaintextWrapper : public HEPlaintext {
- public:
-  SealPlaintextWrapper(
-      seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool()) {
-    set_encoded(false);
-    set_complex_packing(false);
-  }
-  SealPlaintextWrapper(const seal::Plaintext& plain, bool encoded)
-      : m_plaintext(plain) {
-    set_encoded(encoded);
-    set_complex_packing(false);
-  }
-
-  SealPlaintextWrapper(const seal::Plaintext& plain,
-                       const std::vector<float>& values)
-      : HEPlaintext(values), m_plaintext(plain) {
-    set_encoded(false);
-    set_complex_packing(false);
-  }
-
-  inline seal::Plaintext& get_hetext() { return m_plaintext; }
-  inline const seal::Plaintext& get_hetext() const { return m_plaintext; }
-  inline seal::Plaintext& get_plaintext() { return m_plaintext; }
-  inline const seal::Plaintext& get_plaintext() const { return m_plaintext; }
-
- private:
+struct SealPlaintextWrapper {
+  bool is_complex_packing;
   seal::Plaintext m_plaintext;
 };
 
-inline std::shared_ptr<ngraph::he::SealPlaintextWrapper> cast_to_seal_hetext(
-    std::shared_ptr<ngraph::he::HEPlaintext>& plain) {
-  auto seal_plaintext_wrapper =
-      std::dynamic_pointer_cast<SealPlaintextWrapper>(plain);
-  NGRAPH_CHECK(seal_plaintext_wrapper != nullptr, "Plaintext is not Seal");
-  return seal_plaintext_wrapper;
-};
+std::unique_ptr<SealPlaintextWrapper> make_plaintext_wrapper() {
+  return std::make_unique<SealPlaintextWrapper>();
+}
 }  // namespace he
 }  // namespace ngraph

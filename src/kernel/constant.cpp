@@ -48,9 +48,9 @@ void ngraph::he::constant(
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
     const void* src_with_offset = (void*)((char*)data_ptr + i * type_byte_size);
-    std::shared_ptr<ngraph::he::HEPlaintext> plaintext =
+    std::unique_ptr<ngraph::he::HEPlaintext> plaintext =
         he_backend->create_empty_plaintext();
-    he_backend->encode(plaintext, src_with_offset, element_type);
-    he_backend->encrypt(out[i], plaintext);
+    he_backend->encode(*plaintext, src_with_offset, element_type);
+    he_backend->encrypt(out[i], *plaintext);
   }
 }

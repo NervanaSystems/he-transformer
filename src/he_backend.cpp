@@ -28,13 +28,13 @@
 
 using ngraph::descriptor::layout::DenseTensorLayout;
 
-std::shared_ptr<ngraph::he::HEPlaintext>
+std::unique_ptr<ngraph::he::HEPlaintext>
 ngraph::he::HEBackend::create_valued_plaintext(
     float value, const element::Type& element_type) const {
   NGRAPH_CHECK(element_type == element::f32, "element type ", element_type,
                "unsupported");
 
-  std::shared_ptr<ngraph::he::HEPlaintext> plaintext = create_empty_plaintext();
+  std::unique_ptr<ngraph::he::HEPlaintext> plaintext = create_empty_plaintext();
 
   encode(plaintext, (void*)(&value), element_type, m_complex_packing, 1);
   return plaintext;
@@ -49,7 +49,7 @@ ngraph::he::HEBackend::create_valued_ciphertext(
     throw ngraph_error(
         "HEBackend::create_valued_ciphertext only supports batch size 1");
   }
-  std::shared_ptr<ngraph::he::HEPlaintext> plaintext =
+  std::unique_ptr<ngraph::he::HEPlaintext> plaintext =
       create_valued_plaintext(value, element_type);
   std::shared_ptr<ngraph::he::HECiphertext> ciphertext =
       create_empty_ciphertext();

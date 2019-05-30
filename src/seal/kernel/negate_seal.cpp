@@ -31,17 +31,3 @@ void ngraph::he::scalar_negate(
   he_seal_backend->get_evaluator()->negate(arg->m_ciphertext,
                                            out->m_ciphertext);
 }
-
-void ngraph::he::scalar_negate(std::shared_ptr<SealPlaintextWrapper>& arg,
-                               std::shared_ptr<SealPlaintextWrapper>& out,
-                               const element::Type& element_type,
-                               const HESealBackend* he_seal_backend) {
-  NGRAPH_CHECK(element_type == element::f32);
-
-  const std::vector<float>& arg_vals = arg->get_values();
-  std::vector<float> out_vals(arg->num_values());
-
-  std::transform(arg_vals.begin(), arg_vals.end(), out_vals.begin(),
-                 std::negate<float>());
-  out->set_values(out_vals);
-}

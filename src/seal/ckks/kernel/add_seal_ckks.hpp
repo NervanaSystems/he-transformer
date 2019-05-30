@@ -32,13 +32,13 @@ void scalar_add_ckks(std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
                      const seal::MemoryPoolHandle& pool);
 
 void scalar_add_ckks(std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
-                     std::shared_ptr<ngraph::he::SealPlaintextWrapper>& arg1,
+                     const HEPlaintext& arg1,
                      std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
                      const element::Type& element_type,
                      const ngraph::he::HESealCKKSBackend* he_seal_ckks_backend,
                      const seal::MemoryPoolHandle& pool);
 
-void scalar_add_ckks(std::shared_ptr<ngraph::he::SealPlaintextWrapper>& arg0,
+void scalar_add_ckks(const HEPlaintext& arg0,
                      std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
                      std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
                      const element::Type& element_type,

@@ -27,14 +27,44 @@
 
 namespace ngraph {
 namespace he {
-template <typename T>
-void scalar_negate(std::shared_ptr<T>& arg, std::shared_ptr<T>& out,
-                   const element::Type& element_type,
-                   const ngraph::he::HEBackend* he_backend) {
+inline void scalar_negate(const HEPlaintext& arg, HEPlaintext& out,
+                          const element::Type& element_type,
+                          const ngraph::he::HEBackend* he_backend) {
+  auto he_seal_backend = cast_to_seal_backend(he_backend);
+  scalar_negate(arg, out, element_type, he_seal_backend);
+}
+
+inline void scalar_negate(std::shared_ptr<HECiphertext>& arg,
+                          std::shared_ptr<HECiphertext>& out,
+                          const element::Type& element_type,
+                          const ngraph::he::HEBackend* he_backend) {
   auto he_seal_backend = cast_to_seal_backend(he_backend);
   auto arg_seal = cast_to_seal_hetext(arg);
   auto out_seal = cast_to_seal_hetext(out);
   scalar_negate(arg_seal, out_seal, element_type, he_seal_backend);
+}
+
+inline void scalar_negate(std::shared_ptr<HEPlaintext>& arg,
+                          std::shared_ptr<HEPlaintext>& out,
+                          const element::Type& element_type,
+                          const HESealBackend* he_seal_backend) {
+  NGRAPH_CHECK(element_type == element::f32);
+
+  const std::vector<float>& arg_vals = arg->get_values();
+  std::vector<float> out_vals(arg->num_values());
+
+  std::transform(arg_vals.begin(), arg_vals.end(), out_vals.begin(),
+                 std::negate<float>());
+  out->set_values(out_vals);
+}
+
+inline void negate(const std::vector<HEPlaintext>& arg,
+                   std::vector<HEPlaintext>& out,
+                   const element::Type& element_type,
+                   const HEBackend* he_backend, size_t count) {
+  for (size_t i = 0; i < count; ++i) {
+    scalar_negate(arg[i], out[i], element_type, he_backend);
+  }
 }
 
 template <typename T>

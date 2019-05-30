@@ -38,43 +38,41 @@ void ngraph::he::scalar_subtract(std::shared_ptr<HECiphertext>& arg0,
   out = std::dynamic_pointer_cast<HECiphertext>(out_seal);
 }
 
-void ngraph::he::scalar_subtract(std::shared_ptr<HEPlaintext>& arg0,
-                                 std::shared_ptr<HEPlaintext>& arg1,
-                                 std::shared_ptr<HEPlaintext>& out,
+void ngraph::he::scalar_subtract(const HEPlaintext& arg0,
+                                 const HEPlaintext& arg1, HEPlaintext& out,
                                  const element::Type& element_type,
                                  const ngraph::he::HEBackend* he_backend) {
   NGRAPH_CHECK(element_type == element::f32);
 
-  std::vector<float> arg0_vals = arg0->get_values();
-  std::vector<float> arg1_vals = arg1->get_values();
-  std::vector<float> out_vals(arg0->num_values());
+  std::vector<float> arg0_vals = arg0.get_values();
+  std::vector<float> arg1_vals = arg1.get_values();
+  std::vector<float> out_vals(arg0.num_values());
 
   std::transform(arg0_vals.begin(), arg0_vals.end(), arg1_vals.begin(),
                  out_vals.begin(), std::minus<float>());
 
-  out->set_values(out_vals);
+  out.set_values(out_vals);
 }
 
 void ngraph::he::scalar_subtract(std::shared_ptr<HECiphertext>& arg0,
-                                 std::shared_ptr<HEPlaintext>& arg1,
+                                 const HEPlaintext& arg1,
                                  std::shared_ptr<HECiphertext>& out,
                                  const element::Type& type,
                                  const ngraph::he::HEBackend* he_backend) {
   NGRAPH_CHECK(type == element::f32);
 
   if (arg0->is_zero()) {
-    ngraph::he::scalar_negate(arg1, arg1, type, he_backend);
-    he_backend->encrypt(out, arg1);
+    HEPlaintext tmp;
+    ngraph::he::scalar_negate(arg1, tmp, type, he_backend);
+    he_backend->encrypt(out, tmp);
     return;
   }
 
   auto he_seal_backend = ngraph::he::cast_to_seal_backend(he_backend);
   auto arg0_seal = ngraph::he::cast_to_seal_hetext(arg0);
-  auto arg1_seal = ngraph::he::cast_to_seal_hetext(arg1);
   auto out_seal = ngraph::he::cast_to_seal_hetext(out);
 
-  bool sub_zero =
-      arg1_seal->is_single_value() && (arg1_seal->get_values()[0] == 0.0f);
+  bool sub_zero = arg1.is_single_value() && (arg1.get_values()[0] == 0.0f);
 
   if (sub_zero) {
     // Make copy of input
@@ -83,11 +81,11 @@ void ngraph::he::scalar_subtract(std::shared_ptr<HECiphertext>& arg0,
     out = std::static_pointer_cast<HECiphertext>(
         std::make_shared<ngraph::he::SealCiphertextWrapper>(*arg0_seal));
   } else {
-    scalar_subtract(arg0_seal, arg1_seal, out_seal, type, he_seal_backend);
+    scalar_subtract(arg0_seal, arg1, out_seal, type, he_seal_backend);
   }
 }
 
-void ngraph::he::scalar_subtract(std::shared_ptr<HEPlaintext>& arg0,
+void ngraph::he::scalar_subtract(const HEPlaintext& arg0,
                                  std::shared_ptr<HECiphertext>& arg1,
                                  std::shared_ptr<HECiphertext>& out,
                                  const element::Type& type,
