@@ -121,7 +121,8 @@ ngraph::he::HESealCKKSBackend::create_batched_plain_tensor(
 void ngraph::he::HESealCKKSBackend::encode(
     std::shared_ptr<ngraph::he::SealPlaintextWrapper>& plaintext,
     seal::parms_id_type parms_id, double scale, bool complex) const {
-  std::lock_guard<std::mutex> encode_lock(plaintext->get_encode_mutex());
+  // TODO: use unique_ptr to avoid race consitions
+  // std::lock_guard<std::mutex> encode_lock(plaintext->get_encode_mutex());
   if (plaintext->is_encoded()) {
     return;
   }

@@ -46,6 +46,7 @@ void ngraph::he::scalar_multiply(
   NGRAPH_CHECK(element_type == element::f32, "Element type ", element_type,
                " is not float");
   if (arg0->is_zero()) {
+    NGRAPH_INFO << "Skipping multiplying by c(0)";
     out->set_zero(true);
     return;
   }

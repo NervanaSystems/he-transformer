@@ -29,11 +29,23 @@ void ngraph::he::scalar_add_ckks(
     const seal::MemoryPoolHandle& pool) {
   NGRAPH_CHECK(arg0->complex_packing() == arg1->complex_packing());
 
+  size_t chain_ind0 = get_chain_index(arg0.get(), he_seal_ckks_backend);
+  size_t chain_ind1 = get_chain_index(arg1.get(), he_seal_ckks_backend);
+
   match_modulus_and_scale_inplace(arg0.get(), arg1.get(), he_seal_ckks_backend,
                                   pool);
+  chain_ind0 = get_chain_index(arg0.get(), he_seal_ckks_backend);
+  chain_ind1 = get_chain_index(arg1.get(), he_seal_ckks_backend);
+
   he_seal_ckks_backend->get_evaluator()->add(
       arg0->m_ciphertext, arg1->m_ciphertext, out->m_ciphertext);
   out->set_complex_packing(arg1->complex_packing());
+
+  chain_ind0 = get_chain_index(arg0.get(), he_seal_ckks_backend);
+  chain_ind1 = get_chain_index(arg1.get(), he_seal_ckks_backend);
+  size_t chain_ind_out = get_chain_index(out.get(), he_seal_ckks_backend);
+  NGRAPH_CHECK(chain_ind_out == 2, "add chain inds : ", chain_ind0, " ",
+               chain_ind1, " => ", chain_ind_out);
 }
 
 void ngraph::he::scalar_add_ckks(
@@ -49,6 +61,7 @@ void ngraph::he::scalar_add_ckks(
     add_plain(arg0->m_ciphertext, double_val, out->m_ciphertext,
               he_seal_ckks_backend);
   } else {
+    NGRAPH_INFO << "Adding non-single value?";
     if (!arg1->is_encoded()) {
       // Just-in-time encoding at the right scale and modulus
       he_seal_ckks_backend->encode(arg1, arg0->m_ciphertext.parms_id(),
@@ -67,8 +80,8 @@ void ngraph::he::scalar_add_ckks(
 
     he_seal_ckks_backend->get_evaluator()->add_plain(
         arg0->m_ciphertext, arg1->get_plaintext(), out->m_ciphertext);
-    out->set_complex_packing(arg0->complex_packing());
   }
+  out->set_complex_packing(arg0->complex_packing());
 }
 
 void ngraph::he::scalar_add_ckks(

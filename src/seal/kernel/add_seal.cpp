@@ -24,6 +24,9 @@ void ngraph::he::scalar_add(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type, const HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
+  if (arg0->is_zero() && arg1->is_zero()) {
+    out->set_zero(true);
+  }
   if (arg0->is_zero()) {
     out = std::make_shared<ngraph::he::SealCiphertextWrapper>(*arg1);
   } else if (arg1->is_zero()) {

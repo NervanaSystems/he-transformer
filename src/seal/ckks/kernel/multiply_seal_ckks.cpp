@@ -65,6 +65,8 @@ void ngraph::he::scalar_multiply_ckks(
     multiply_plain(arg0->m_ciphertext, double_val, out->m_ciphertext,
                    he_seal_ckks_backend, pool);
   } else {
+    NGRAPH_INFO << "Multiplying single value?";
+
     if (!arg1->is_encoded()) {
       // Just-in-time encoding at the right scale and modulus
       he_seal_ckks_backend->encode(arg1, arg0->m_ciphertext.parms_id(),
@@ -96,6 +98,10 @@ void ngraph::he::scalar_multiply_ckks(
     }
   }
   out->set_complex_packing(arg0->complex_packing());
+
+  size_t chain_ind_out = get_chain_index(out.get(), he_seal_ckks_backend);
+  NGRAPH_CHECK(chain_ind_out == 2, "Mult chaind ind out ", chain_ind_out);
+
   // NGRAPH_INFO << "Skipping relin and rescale!";
 
   // Don't relinearize after plain multiply!

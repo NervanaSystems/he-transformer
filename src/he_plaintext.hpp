@@ -42,7 +42,7 @@ class HEPlaintext {
   bool complex_packing() const { return m_complex_packing; }
   void set_complex_packing(bool toggle) { m_complex_packing = toggle; }
 
-  std::mutex& get_encode_mutex() { return m_encode_mutex; }
+  // std::mutex& get_encode_mutex() { return m_encode_mutex; }
 
  protected:
   std::vector<float> m_values;
@@ -51,7 +51,7 @@ class HEPlaintext {
   bool m_is_encoded;
   bool m_complex_packing;
 
-  std::mutex m_encode_mutex;
+  // std::mutex m_encode_mutex;
 };
 }  // namespace he
 }  // namespace ngraph

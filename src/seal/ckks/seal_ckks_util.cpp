@@ -38,11 +38,6 @@ void ngraph::he::match_modulus_and_scale_inplace(
 
   bool rescale = !ngraph::he::within_rescale_tolerance(arg0, arg1);
 
-  if (chain_ind0 != chain_ind1) {
-    NGRAPH_INFO << "Chain inds " << chain_ind0 << ", " << chain_ind1
-                << " do not match";
-  }
-
   if (chain_ind0 > chain_ind1) {
     auto arg1_parms_id = arg1->get_hetext().parms_id();
     if (rescale) {

@@ -63,6 +63,7 @@
 #include "ngraph/pass/visualize_tree.hpp"
 #include "ngraph/runtime/backend.hpp"
 #include "ngraph/util.hpp"
+#include "seal/ckks/he_seal_ckks_backend.hpp"
 #include "seal/ckks/seal_ckks_util.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_util.hpp"
@@ -674,16 +675,25 @@ void ngraph::he::HEExecutable::generate_calls(
 
   // TODO: move to static function
   auto lazy_rescaling = [this](auto& cipher) {
-    // NGRAPH_INFO << "Lazy rescaling";
+    size_t num_elements = cipher->get_elements().size();
+    NGRAPH_INFO << "Lazy rescaling " << num_elements << " elements";
     auto he_seal_backend = ngraph::he::cast_to_seal_backend(m_he_backend);
+    auto he_seal_ckks_backend =
+        ngraph::he::cast_to_seal_ckks_backend(he_seal_backend);
 #pragma omp parallel for
-    for (size_t i = 0; i < cipher->get_elements().size(); ++i) {
-      auto seal_cipher =
-          ngraph::he::cast_to_seal_hetext(cipher->get_element(i));
-      if (!seal_cipher->is_zero()) {
-        he_seal_backend->get_evaluator()->rescale_to_next_inplace(
-            seal_cipher->m_ciphertext);
+    for (size_t i = 0; i < num_elements; ++i) {
+      auto cipher_elem = cipher->get_element(i);
+      if (cipher_elem->is_zero()) {
+        continue;
       }
+      auto seal_cipher = ngraph::he::cast_to_seal_hetext(cipher_elem);
+      size_t chain_ind_before =
+          ngraph::he::get_chain_index(seal_cipher.get(), he_seal_ckks_backend);
+
+      he_seal_backend->get_evaluator()->rescale_to_next_inplace(
+          seal_cipher->m_ciphertext);
+      size_t chain_ind_after =
+          ngraph::he::get_chain_index(seal_cipher.get(), he_seal_ckks_backend);
     }
   };
 
@@ -803,7 +813,7 @@ void ngraph::he::HEExecutable::generate_calls(
             avg_pool->get_padding_below(), avg_pool->get_padding_above(),
             avg_pool->get_include_padding_in_avg_computation(), m_he_backend);
       } else {
-        throw ngraph_error("Broadcast types not supported.");
+        throw ngraph_error("AvgPool types not supported.");
       }
       break;
     }
@@ -839,11 +849,12 @@ void ngraph::he::HEExecutable::generate_calls(
       AxisSet broadcast_axes = broadcast->get_broadcast_axes();
 
       Shape in_shape = arg_shapes[0];
-      if (arg0_cipher != nullptr && out0_cipher != nullptr) {
-        ngraph::he::broadcast(arg0_cipher->get_elements(),
-                              out0_cipher->get_elements(), in_shape, out_shape,
-                              broadcast_axes);
-      } else if (arg0_plain != nullptr && out0_plain != nullptr) {
+      /* if (arg0_cipher != nullptr && out0_cipher != nullptr) {
+         ngraph::he::broadcast(arg0_cipher->get_elements(),
+                               out0_cipher->get_elements(), in_shape, out_shape,
+                               broadcast_axes);
+       } else */
+      if (arg0_plain != nullptr && out0_plain != nullptr) {
         ngraph::he::broadcast(arg0_plain->get_elements(),
                               out0_plain->get_elements(), in_shape, out_shape,
                               broadcast_axes);
@@ -1073,6 +1084,14 @@ void ngraph::he::HEExecutable::generate_calls(
     }
     case OP_TYPEID::Minimum: {
       NGRAPH_INFO << "Minimum op";
+
+      NGRAPH_CHECK(arg0_cipher != nullptr,
+                   "Minimum supports only arg0 == cipher");
+
+      out0_cipher->set_elements(arg0_cipher->get_elements());
+      NGRAPH_INFO << "Skipping minimum op";
+      break;
+
       if (!m_enable_client) {
         throw ngraph_error(
             "Minimum op unsupported unless client is enabled. Try setting "
@@ -1296,7 +1315,6 @@ void ngraph::he::HEExecutable::generate_calls(
             "Relu op unsupported unless client is enabled. Try setting "
             "NGRAPH_ENABLE_CLIENT=1");
       }
-      m_relu_ciphertexts.clear();
 
       size_t element_count =
           shape_size(node.get_output_shape(0)) / m_batch_size;
@@ -1305,35 +1323,83 @@ void ngraph::he::HEExecutable::generate_calls(
         NGRAPH_INFO << "Relu types not supported ";
         throw ngraph_error("Relu types not supported.");
       }
+      auto he_seal_backend = ngraph::he::cast_to_seal_backend(m_he_backend);
+      auto he_seal_ckks_backend =
+          ngraph::he::cast_to_seal_ckks_backend(he_seal_backend);
 
+      // TODO: infinity
+      size_t smallest_chain_ind = 9999999;
+      size_t smallest_relu_ind = 0;
       for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
         auto& cipher = arg0_cipher->get_element(relu_idx);
+        if (!cipher->is_zero()) {
+          auto cipher_wrapper = cast_to_seal_hetext(cipher);
+          size_t chain_ind = ngraph::he::get_chain_index(cipher_wrapper.get(),
+                                                         he_seal_ckks_backend);
+          if (chain_ind < smallest_chain_ind) {
+            smallest_chain_ind = chain_ind;
+            smallest_relu_ind = relu_idx;
+          }
+        }
+      }
+      NGRAPH_CHECK(smallest_chain_ind != 9999999);
+      NGRAPH_INFO << "Smallest chain ind " << smallest_chain_ind << " at "
+                  << smallest_relu_ind;
+      auto smallest_cipher = arg0_cipher->get_element(smallest_relu_ind);
+      auto smallest_cipher_wrapper = cast_to_seal_hetext(smallest_cipher);
+#pragma omp parallel for
+      for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
+        auto& cipher = arg0_cipher->get_element(relu_idx);
+        if (!cipher->is_zero() && relu_idx != smallest_relu_ind) {
+          auto cipher_wrapper = cast_to_seal_hetext(cipher);
+          match_modulus_and_scale_inplace(smallest_cipher_wrapper.get(),
+                                          cipher_wrapper.get(),
+                                          he_seal_ckks_backend);
+          size_t chain_ind = ngraph::he::get_chain_index(cipher_wrapper.get(),
+                                                         he_seal_ckks_backend);
+          NGRAPH_CHECK(chain_ind == smallest_chain_ind, "chain_ind", chain_ind,
+                       " does not match smallest ", smallest_chain_ind);
+        }
+      }
 
+      m_relu_ciphertexts.clear();
+      std::stringstream cipher_stream;
+      size_t stream_count = 0;
+      for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
+        auto& cipher = arg0_cipher->get_element(relu_idx);
+        auto cipher_wrapper = cast_to_seal_hetext(cipher);
+        size_t chain_ind = ngraph::he::get_chain_index(cipher_wrapper.get(),
+                                                       he_seal_ckks_backend);
         // relu(0) = 0
         if (cipher->is_zero()) {
+          NGRAPH_INFO << "Skipping relu(0) at index " << relu_idx;
           m_relu_ciphertexts.emplace_back(cipher);
         } else {
-          std::stringstream cipher_stream;
           cipher->save(cipher_stream);
-          // Send output to client
-          NGRAPH_INFO << "Sending " << element_count
-                      << " Relu ciphertexts (size "
-                      << cipher_stream.str().size() << ") to client ("
-                      << relu_idx << " of " << element_count;
-          auto relu_message =
-              TCPMessage(MessageType::relu_request, 1, cipher_stream);
+          stream_count++;
+          if (stream_count % 10001 == 10000 || relu_idx == element_count - 1) {
+            // Send output to client
+            NGRAPH_INFO << "Sending " << stream_count
+                        << " Relu ciphertexts (size "
+                        << cipher_stream.str().size() << ") to client ("
+                        << relu_idx << " of " << element_count;
+            auto relu_message = TCPMessage(MessageType::relu_request,
+                                           stream_count, cipher_stream);
+            m_session->do_write(relu_message);
 
-          m_session->do_write(relu_message);
+            // Acquire lock
+            std::unique_lock<std::mutex> mlock(m_relu_mutex);
 
-          // Acquire lock
-          std::unique_lock<std::mutex> mlock(m_relu_mutex);
+            // Wait until Relu is done
+            m_relu_cond.wait(mlock, std::bind(&HEExecutable::relu_done, this));
+            NGRAPH_INFO << "Relu is done";
 
-          // Wait until Relu is done
-          m_relu_cond.wait(mlock, std::bind(&HEExecutable::relu_done, this));
-          NGRAPH_INFO << "Relu is done";
+            // Reset for next Relu call
+            m_relu_done = false;
 
-          // Reset for next Relu call
-          m_relu_done = false;
+            stream_count = 0;
+            cipher_stream.str(std::string());
+          }
         }
       }
 

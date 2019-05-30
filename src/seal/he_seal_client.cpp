@@ -209,11 +209,21 @@ void ngraph::he::HESealClient::handle_message(
   } else if (msg_type == ngraph::he::MessageType::relu_request) {
     std::cout << "Received Relu request" << std::endl;
     auto relu = [](double d) { return d > 0 ? d : 0; };
+    auto relu6 = [](double d) {
+      if (d < 0) {
+        return 0.0;
+      }
+      if (d > 6) {
+        return 6.0;
+      }
+      return d;
+    };
     size_t result_count = message.count();
     size_t element_size = message.element_size();
     std::cout << "Received Relu request with " << result_count << " elements"
               << " of size " << element_size << std::endl;
 
+    // TODO: reserve for efficiency
     std::stringstream post_relu_stream;
     std::vector<seal::Ciphertext> post_relu_ciphers(result_count);
 #pragma omp parallel for
@@ -233,9 +243,10 @@ void ngraph::he::HESealClient::handle_message(
       std::vector<double> relu_vals;
       decode_to_real_vec(relu_plain, relu_vals, complex_packing());
 
-      // Perform relu
+      // Perform relu6
+      // TODO: do relu instaed of relu 6
       std::transform(relu_vals.begin(), relu_vals.end(), relu_vals.begin(),
-                     relu);
+                     relu6);
 
       if (complex_packing()) {
         std::vector<std::complex<double>> complex_relu_vals;
