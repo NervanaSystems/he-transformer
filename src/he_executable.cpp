@@ -804,7 +804,7 @@ void ngraph::he::HEExecutable::generate_calls(
             avg_pool->get_window_movement_strides(),
             avg_pool->get_padding_below(), avg_pool->get_padding_above(),
             avg_pool->get_include_padding_in_avg_computation(), m_he_backend);
-
+        lazy_rescaling(out0_cipher);
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
         ngraph::he::avg_pool(
             arg0_plain->get_elements(), out0_plain->get_elements(), in_shape,
@@ -996,7 +996,6 @@ void ngraph::he::HEExecutable::generate_calls(
                         out0_cipher->get_elements(), in_shape0, in_shape1,
                         out_shape, dot->get_reduction_axes_count(), type,
                         m_he_backend);
-
         lazy_rescaling(out0_cipher);
       } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
                  out0_cipher != nullptr) {
@@ -1193,12 +1192,14 @@ void ngraph::he::HEExecutable::generate_calls(
                              arg1_plain->get_elements(),
                              out0_cipher->get_elements(), type, m_he_backend,
                              out0_cipher->get_batched_element_count());
+        lazy_rescaling(out0_cipher);
       } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
                  out0_cipher != nullptr) {
         ngraph::he::multiply(arg0_plain->get_elements(),
                              arg1_cipher->get_elements(),
                              out0_cipher->get_elements(), type, m_he_backend,
                              out0_cipher->get_batched_element_count());
+        lazy_rescaling(out0_cipher);
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
         ngraph::he::multiply(arg0_plain->get_elements(),

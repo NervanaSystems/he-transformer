@@ -96,6 +96,7 @@ void ngraph::he::encode(double value, double scale,
     {
       NGRAPH_INFO << "Failed to encode " << value << " at scale " << scale;
       NGRAPH_INFO << "coeff_bit_count " << coeff_bit_count;
+      NGRAPH_INFO << "coeff_mod_count " << coeff_mod_count;
       NGRAPH_INFO << "total coeff modulus bit count "
                   << context_data.total_coeff_modulus_bit_count();
       throw ngraph_error("encoded value is too large");
