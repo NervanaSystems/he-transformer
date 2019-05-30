@@ -119,15 +119,15 @@ ngraph::he::HESealCKKSBackend::create_batched_plain_tensor(
 }
 
 void ngraph::he::HESealCKKSBackend::encode(
-    const ngraph::he::HEPlaintext& plaintext,
-    ngraph::he::SealPlaintextWrapper& destination, seal::parms_id_type parms_id,
+    ngraph::he::SealPlaintextWrapper& destination,
+    const ngraph::he::HEPlaintext& plaintext, seal::parms_id_type parms_id,
     double scale) const {
   throw ngraph_error("Uimplemented");
 }
 
 void ngraph::he::HESealCKKSBackend::encode(
-    const ngraph::he::HEPlaintext& plaintext,
-    ngraph::he::SealPlaintextWrapper& destination) const {
+    ngraph::he::SealPlaintextWrapper& destination,
+    const ngraph::he::HEPlaintext& plaintext) const {
   throw ngraph_error("Uimplemented");
 }
 

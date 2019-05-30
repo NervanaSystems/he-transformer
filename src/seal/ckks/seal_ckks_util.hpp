@@ -37,6 +37,14 @@ size_t get_chain_index(S* hetext,
   return chain_ind;
 }
 
+size_t get_chain_index(const SealPlaintextWrapper& plain,
+                       const HESealCKKSBackend* he_seal_ckks_backend) {
+  size_t chain_ind = he_seal_ckks_backend->get_context()
+                         ->context_data(plain.m_plaintext.parms_id())
+                         ->chain_index();
+  return chain_ind;
+}
+
 template <typename S, typename T>
 bool within_rescale_tolerance(const S* arg0, const T* arg1,
                               double factor = 1.02) {

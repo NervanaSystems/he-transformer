@@ -146,10 +146,10 @@ void avg_pool(std::vector<std::shared_ptr<T>>& arg,
         he_backend->create_valued_plaintext(1. / n_elements, element::f32);
 
     ngraph::he::scalar_multiply(sum, inv_n_elements, sum, element::f32,
-                                         he_backend);
+                                he_backend);
 
     out[output_transform.index(out_coord)] = sum;
   }
 };  // namespace kernel
-}  // namespace kernel
+}  // namespace he
 }  // namespace ngraph

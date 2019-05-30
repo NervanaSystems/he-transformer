@@ -39,7 +39,7 @@ void ngraph::he::scalar_multiply(
 
 void ngraph::he::scalar_multiply(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
-    std::shared_ptr<ngraph::he::HEPlaintext>& arg1,
+    const ngraph::he::HEPlaintext& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type, const HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
@@ -50,7 +50,7 @@ void ngraph::he::scalar_multiply(
     return;
   }
 
-  const auto& values = arg1->get_values();
+  const auto& values = arg1.get_values();
   // TODO: check multiplying by small numbers behavior more thoroughly
   if (std::all_of(values.begin(), values.end(),
                   [](float f) { return std::abs(f) < 1e-5f; })) {
@@ -79,7 +79,7 @@ void ngraph::he::scalar_multiply(
 }
 
 void ngraph::he::scalar_multiply(
-    std::shared_ptr<ngraph::he::HEPlaintext>& arg0,
+    const ngraph::he::HEPlaintext& arg0,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type, const HESealBackend* he_seal_backend,
@@ -88,17 +88,17 @@ void ngraph::he::scalar_multiply(
                               pool);
 }
 
-void ngraph::he::scalar_multiply(std::shared_ptr<ngraph::he::HEPlaintext>& arg0,
-                                 std::shared_ptr<ngraph::he::HEPlaintext>& arg1,
-                                 std::shared_ptr<ngraph::he::HEPlaintext>& out,
+void ngraph::he::scalar_multiply(const ngraph::he::HEPlaintext& arg0,
+                                 const ngraph::he::HEPlaintext& arg1,
+                                 ngraph::he::HEPlaintext& out,
                                  const element::Type& element_type,
                                  const HESealBackend* he_seal_backend,
                                  const seal::MemoryPoolHandle& pool) {
   NGRAPH_CHECK(element_type == element::f32);
 
-  std::vector<float> arg0_vals = arg0->get_values();
-  std::vector<float> arg1_vals = arg1->get_values();
-  std::vector<float> out_vals(arg0->num_values());
+  std::vector<float> arg0_vals = arg0.get_values();
+  std::vector<float> arg1_vals = arg1.get_values();
+  std::vector<float> out_vals(arg0.num_values());
 
   NGRAPH_CHECK(arg0_vals.size() > 0, "Multiplying plaintext arg0 has 0 values");
   NGRAPH_CHECK(arg1_vals.size() > 0, "Multiplying plaintext arg1 has 0 values");
@@ -115,5 +115,5 @@ void ngraph::he::scalar_multiply(std::shared_ptr<ngraph::he::HEPlaintext>& arg0,
     std::transform(arg0_vals.begin(), arg0_vals.end(), arg1_vals.begin(),
                    out_vals.begin(), std::multiplies<float>());
   }
-  out->set_values(out_vals);
+  out.set_values(out_vals);
 }

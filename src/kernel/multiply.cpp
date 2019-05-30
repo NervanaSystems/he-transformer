@@ -36,9 +36,9 @@ void ngraph::he::scalar_multiply(
   out = std::dynamic_pointer_cast<ngraph::he::HECiphertext>(out_seal);
 }
 
-void ngraph::he::scalar_multiply(std::shared_ptr<ngraph::he::HEPlaintext>& arg0,
-                                 std::shared_ptr<ngraph::he::HEPlaintext>& arg1,
-                                 std::shared_ptr<ngraph::he::HEPlaintext>& out,
+void ngraph::he::scalar_multiply(const ngraph::he::HEPlaintext& arg0,
+                                 const ngraph::he::HEPlaintext& arg1,
+                                 ngraph::he::HEPlaintext& out,
                                  const element::Type& element_type,
                                  const ngraph::he::HEBackend* he_backend) {
   auto he_seal_backend = cast_to_seal_backend(he_backend);
@@ -47,7 +47,7 @@ void ngraph::he::scalar_multiply(std::shared_ptr<ngraph::he::HEPlaintext>& arg0,
 
 void ngraph::he::scalar_multiply(
     std::shared_ptr<ngraph::he::HECiphertext>& arg0,
-    std::shared_ptr<ngraph::he::HEPlaintext>& arg1,
+    const ngraph::he::HEPlaintext& arg1,
     std::shared_ptr<ngraph::he::HECiphertext>& out,
     const element::Type& element_type,
     const ngraph::he::HEBackend* he_backend) {
@@ -61,7 +61,7 @@ void ngraph::he::scalar_multiply(
 }
 
 void ngraph::he::scalar_multiply(
-    std::shared_ptr<ngraph::he::HEPlaintext>& arg0,
+    const ngraph::he::HEPlaintext& arg0,
     std::shared_ptr<ngraph::he::HECiphertext>& arg1,
     std::shared_ptr<ngraph::he::HECiphertext>& out,
     const element::Type& element_type,

@@ -62,7 +62,7 @@ void ngraph::he::HESealBackend::encrypt(
   auto seal_output = ngraph::he::cast_to_seal_hetext(output);
   auto seal_wrapper = make_seal_plaintext_wrapper(input.complex_packing());
 
-  encode(input, *seal_wrapper);
+  encode(*seal_wrapper, input);
   // No need to encrypt zero
   if (input.is_single_value() && input.get_values()[0] == 0) {
     seal_output->set_zero(true);

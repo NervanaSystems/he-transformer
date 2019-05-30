@@ -52,8 +52,8 @@ void ngraph::he::scalar_add_ckks(
     add_plain(arg0->m_ciphertext, double_val, out->m_ciphertext,
               he_seal_ckks_backend);
   } else {
-    seal::Plaintext p(pool);
-    he_seal_ckks_backend->encode(arg1, p, arg0->m_ciphertext.parms_id(),
+    auto p = make_seal_plaintext_wrapper(arg1.complex_packing());
+    he_seal_ckks_backend->encode(*p, arg1, arg0->m_ciphertext.parms_id(),
                                  arg0->m_ciphertext.scale());
 
     /* if (!arg1->is_encoded()) {
@@ -68,12 +68,12 @@ void ngraph::he::scalar_add_ckks(
        match_scale(arg0.get(), arg1.get(), he_seal_ckks_backend);
      } */
     size_t chain_ind0 = get_chain_index(arg0.get(), he_seal_ckks_backend);
-    size_t chain_ind1 = get_chain_index(arg1.get(), he_seal_ckks_backend);
+    size_t chain_ind1 = get_chain_index(p->m_plaintext, he_seal_ckks_backend);
     NGRAPH_CHECK(chain_ind0 == chain_ind1, "Chain inds ", chain_ind0, ",  ",
                  chain_ind1, " don't match");
 
     he_seal_ckks_backend->get_evaluator()->add_plain(
-        arg0->m_ciphertext, p.m_plaintext, out->m_ciphertext);
+        arg0->m_ciphertext, p->m_plaintext, out->m_ciphertext);
     out->set_complex_packing(arg0->complex_packing());
   }
 }

@@ -39,14 +39,14 @@ void scalar_multiply(
 
 void scalar_multiply(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
-    std::shared_ptr<ngraph::he::HEPlaintext>& arg1,
+    const HEPlaintext& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const ngraph::he::HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
 void scalar_multiply(
-    std::shared_ptr<ngraph::he::HEPlaintext>& arg0,
+    const HEPlaintext& arg0,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type,
@@ -54,9 +54,7 @@ void scalar_multiply(
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
 void scalar_multiply(
-    std::shared_ptr<ngraph::he::HEPlaintext>& arg0,
-    std::shared_ptr<ngraph::he::HEPlaintext>& arg1,
-    std::shared_ptr<ngraph::he::HEPlaintext>& out,
+    const HEPlaintext& arg0, const HEPlaintext& arg1, HEPlaintext& out,
     const element::Type& element_type,
     const ngraph::he::HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());

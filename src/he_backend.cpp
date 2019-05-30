@@ -16,6 +16,7 @@
 
 #include <chrono>
 #include <limits>
+#include <memory>
 #include <thread>
 
 #include "he_backend.hpp"
@@ -28,18 +29,6 @@
 
 using ngraph::descriptor::layout::DenseTensorLayout;
 
-std::unique_ptr<ngraph::he::HEPlaintext>
-ngraph::he::HEBackend::create_valued_plaintext(
-    float value, const element::Type& element_type) const {
-  NGRAPH_CHECK(element_type == element::f32, "element type ", element_type,
-               "unsupported");
-
-  std::unique_ptr<ngraph::he::HEPlaintext> plaintext = create_empty_plaintext();
-
-  encode(plaintext, (void*)(&value), element_type, m_complex_packing, 1);
-  return plaintext;
-}
-
 std::shared_ptr<ngraph::he::HECiphertext>
 ngraph::he::HEBackend::create_valued_ciphertext(
     float value, const element::Type& element_type, size_t batch_size) const {
@@ -50,11 +39,11 @@ ngraph::he::HEBackend::create_valued_ciphertext(
         "HEBackend::create_valued_ciphertext only supports batch size 1");
   }
   std::unique_ptr<ngraph::he::HEPlaintext> plaintext =
-      create_valued_plaintext(value, element_type);
+      create_valued_plaintext({value}, m_complex_packing);
   std::shared_ptr<ngraph::he::HECiphertext> ciphertext =
       create_empty_ciphertext();
 
-  encrypt(ciphertext, plaintext);
+  encrypt(ciphertext, *plaintext);
   return ciphertext;
 }
 
@@ -110,11 +99,11 @@ ngraph::he::HEBackend::create_valued_plain_tensor(
     float value, const element::Type& element_type, const Shape& shape) const {
   auto tensor = std::static_pointer_cast<HEPlainTensor>(
       create_plain_tensor(element_type, shape));
-  std::vector<std::shared_ptr<ngraph::he::HEPlaintext>>& plain_texts =
-      tensor->get_elements();
-#pragma omp parallel for
-  for (size_t i = 0; i < plain_texts.size(); ++i) {
-    plain_texts[i] = create_valued_plaintext(value, element_type);
+  //#pragma omp parallel for
+  // TODO: check it's fast
+  for (size_t i = 0; i < tensor->num_plaintexts(); ++i) {
+    tensor->get_element(i) =
+        std::move(create_valued_plaintext({value}, m_complex_packing));
   }
   return tensor;
 }

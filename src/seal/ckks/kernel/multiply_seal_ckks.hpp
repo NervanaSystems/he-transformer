@@ -32,13 +32,13 @@ void scalar_multiply_ckks(std::shared_ptr<SealCiphertextWrapper>& arg0,
                           const seal::MemoryPoolHandle& pool);
 
 void scalar_multiply_ckks(std::shared_ptr<SealCiphertextWrapper>& arg0,
-                          std::shared_ptr<HEPlaintext>& arg1,
+                          const HEPlaintext& arg1,
                           std::shared_ptr<SealCiphertextWrapper>& out,
                           const element::Type& element_type,
                           const HESealCKKSBackend* he_seal_ckks_backend,
                           const seal::MemoryPoolHandle& pool);
 
-void scalar_multiply_ckks(std::shared_ptr<HEPlaintext>& arg0,
+void scalar_multiply_ckks(const HEPlaintext& arg0,
                           std::shared_ptr<SealCiphertextWrapper>& arg1,
                           std::shared_ptr<SealCiphertextWrapper>& out,
                           const element::Type& element_type,
