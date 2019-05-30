@@ -64,6 +64,7 @@ inline void subtract(std::vector<std::shared_ptr<HECiphertext>>& arg0,
                      std::vector<std::shared_ptr<HECiphertext>>& out,
                      const element::Type& element_type,
                      const ngraph::he::HEBackend* he_backend, size_t count) {
+  NGRAPH_INFO << "Sub plain size " << count;
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
     scalar_subtract(arg0[i], *arg1[i], out[i], element_type, he_backend);

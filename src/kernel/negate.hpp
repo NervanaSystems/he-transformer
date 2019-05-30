@@ -28,10 +28,14 @@
 namespace ngraph {
 namespace he {
 inline void scalar_negate(const HEPlaintext& arg, HEPlaintext& out,
-                          const element::Type& element_type,
-                          const ngraph::he::HEBackend* he_backend) {
-  auto he_seal_backend = cast_to_seal_backend(he_backend);
-  scalar_negate(arg, out, element_type, he_seal_backend);
+                          const element::Type& element_type) {
+  NGRAPH_INFO << "Scalar negate plains";
+  const std::vector<float>& arg_vals = arg.get_values();
+  std::vector<float> out_vals(arg.num_values());
+
+  std::transform(arg_vals.begin(), arg_vals.end(), out_vals.begin(),
+                 std::negate<float>());
+  out.set_values(out_vals);
 }
 
 inline void scalar_negate(std::shared_ptr<HECiphertext>& arg,
@@ -44,25 +48,12 @@ inline void scalar_negate(std::shared_ptr<HECiphertext>& arg,
   scalar_negate(arg_seal, out_seal, element_type, he_seal_backend);
 }
 
-inline void scalar_negate(const HEPlaintext& arg, HEPlaintext& out,
-                          const element::Type& element_type,
-                          const HESealBackend* he_seal_backend) {
-  NGRAPH_CHECK(element_type == element::f32);
-
-  const std::vector<float>& arg_vals = arg.get_values();
-  std::vector<float> out_vals(arg.num_values());
-
-  std::transform(arg_vals.begin(), arg_vals.end(), out_vals.begin(),
-                 std::negate<float>());
-  out.set_values(out_vals);
-}
-
 inline void negate(const std::vector<std::unique_ptr<HEPlaintext>>& arg,
                    std::vector<std::unique_ptr<HEPlaintext>>& out,
                    const element::Type& element_type,
                    const HEBackend* he_backend, size_t count) {
   for (size_t i = 0; i < count; ++i) {
-    scalar_negate(*arg[i], *out[i], element_type, he_backend);
+    scalar_negate(*arg[i], *out[i], element_type);
   }
 }
 

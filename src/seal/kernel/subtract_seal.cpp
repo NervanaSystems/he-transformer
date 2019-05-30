@@ -39,6 +39,7 @@ void ngraph::he::scalar_subtract(
     const HEPlaintext& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type, const HESealBackend* he_seal_backend) {
+  NGRAPH_INFO << "seal C -P";
   auto p = make_seal_plaintext_wrapper(arg0->complex_packing());
   he_seal_backend->encode(*p, arg1, arg0->m_ciphertext.parms_id(),
                           arg0->m_ciphertext.scale());

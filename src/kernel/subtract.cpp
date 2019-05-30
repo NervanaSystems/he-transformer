@@ -60,11 +60,14 @@ void ngraph::he::scalar_subtract(std::shared_ptr<HECiphertext>& arg0,
                                  const element::Type& type,
                                  const ngraph::he::HEBackend* he_backend) {
   NGRAPH_CHECK(type == element::f32);
+  NGRAPH_INFO << "cipher - plain";
 
   if (arg0->is_zero()) {
+    NGRAPH_INFO << "arg0 is zero";
     HEPlaintext tmp;
-    ngraph::he::scalar_negate(arg1, tmp, type, he_backend);
+    ngraph::he::scalar_negate(arg1, tmp, type);
     he_backend->encrypt(out, tmp);
+
     return;
   }
 
@@ -81,6 +84,7 @@ void ngraph::he::scalar_subtract(std::shared_ptr<HECiphertext>& arg0,
     out = std::static_pointer_cast<HECiphertext>(
         std::make_shared<ngraph::he::SealCiphertextWrapper>(*arg0_seal));
   } else {
+    NGRAPH_INFO << "normal sub";
     scalar_subtract(arg0_seal, arg1, out_seal, type, he_seal_backend);
   }
 }
