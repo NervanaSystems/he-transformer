@@ -28,7 +28,7 @@
 #include "seal/kernel/multiply_seal.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
-
+/*
 namespace ngraph {
 namespace he {
 template <typename S, typename T, typename V>
@@ -171,3 +171,4 @@ void ngraph::he::dot_seal(std::vector<std::shared_ptr<S>>& arg0,
     out[out_index] = std::dynamic_pointer_cast<V>(seal_sum);
   }
 }
+*/

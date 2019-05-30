@@ -25,34 +25,13 @@
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
-#include "seal/kernel/convolution_seal.hpp"
 
 namespace ngraph {
 namespace he {
-template <typename S, typename T, typename V>
-void convolution(const std::vector<std::shared_ptr<S>>& arg0,
-                 const std::vector<std::shared_ptr<T>>& arg1,
-                 std::vector<std::shared_ptr<V>>& out, const Shape& arg0_shape,
-                 const Shape& arg1_shape, const Shape& out_shape,
-                 const Strides& window_movement_strides,
-                 const Strides& window_dilation_strides,
-                 const CoordinateDiff& padding_below,
-                 const CoordinateDiff& padding_above,
-                 const Strides& data_dilation_strides, size_t batch_axis_data,
-                 size_t input_channel_axis_data,
-                 size_t input_channel_axis_filters,
-                 size_t output_channel_axis_filters, size_t batch_axis_result,
-                 size_t output_channel_axis_result, bool rotate_filter,
-                 const element::Type& element_type, size_t batch_size,
-                 const ngraph::he::HEBackend* he_backend);
-}  // namespace he
-}  // namespace ngraph
-
-template <typename S, typename T, typename V>
-void ngraph::he::convolution(
-    const std::vector<std::shared_ptr<S>>& arg0,
-    const std::vector<std::shared_ptr<T>>& arg1,
-    std::vector<std::shared_ptr<V>>& out, const Shape& arg0_shape,
+inline void convolution(
+    const std::vector<std::shared_ptr<HECiphertext>>& arg0,
+    const std::vector<std::shared_ptr<HECiphertext>>& arg1,
+    std::vector<std::shared_ptr<HECiphertext>>& out, const Shape& arg0_shape,
     const Shape& arg1_shape, const Shape& out_shape,
     const Strides& window_movement_strides,
     const Strides& window_dilation_strides, const CoordinateDiff& padding_below,
@@ -62,13 +41,54 @@ void ngraph::he::convolution(
     size_t batch_axis_result, size_t output_channel_axis_result,
     bool rotate_filter, const element::Type& element_type, size_t batch_size,
     const ngraph::he::HEBackend* he_backend) {
-  auto he_seal_backend = cast_to_seal_backend(he_backend);
-  ngraph::he::convolution_seal(
-      arg0, arg1, out, arg0_shape, arg1_shape, out_shape,
-      window_movement_strides, window_dilation_strides, padding_below,
-      padding_above, data_dilation_strides, batch_axis_data,
-      input_channel_axis_data, input_channel_axis_filters,
-      output_channel_axis_filters, batch_axis_result,
-      output_channel_axis_result, rotate_filter, element_type, batch_size,
-      he_seal_backend);
+  throw ngraph_error("conv unimplemented");
 }
+
+inline void convolution(
+    const std::vector<std::unique_ptr<HEPlaintext>>& arg0,
+    const std::vector<std::unique_ptr<HEPlaintext>>& arg1,
+    std::vector<std::unique_ptr<HEPlaintext>>& out, const Shape& arg0_shape,
+    const Shape& arg1_shape, const Shape& out_shape,
+    const Strides& window_movement_strides,
+    const Strides& window_dilation_strides, const CoordinateDiff& padding_below,
+    const CoordinateDiff& padding_above, const Strides& data_dilation_strides,
+    size_t batch_axis_data, size_t input_channel_axis_data,
+    size_t input_channel_axis_filters, size_t output_channel_axis_filters,
+    size_t batch_axis_result, size_t output_channel_axis_result,
+    bool rotate_filter, const element::Type& element_type, size_t batch_size,
+    const ngraph::he::HEBackend* he_backend) {
+  throw ngraph_error("conv unimplemented");
+}
+
+inline void convolution(
+    const std::vector<std::unique_ptr<HEPlaintext>>& arg0,
+    const std::vector<std::shared_ptr<HECiphertext>>& arg1,
+    std::vector<std::shared_ptr<HECiphertext>>& out, const Shape& arg0_shape,
+    const Shape& arg1_shape, const Shape& out_shape,
+    const Strides& window_movement_strides,
+    const Strides& window_dilation_strides, const CoordinateDiff& padding_below,
+    const CoordinateDiff& padding_above, const Strides& data_dilation_strides,
+    size_t batch_axis_data, size_t input_channel_axis_data,
+    size_t input_channel_axis_filters, size_t output_channel_axis_filters,
+    size_t batch_axis_result, size_t output_channel_axis_result,
+    bool rotate_filter, const element::Type& element_type, size_t batch_size,
+    const ngraph::he::HEBackend* he_backend) {
+  throw ngraph_error("conv unimplemented");
+}
+inline void convolution(
+    const std::vector<std::shared_ptr<HECiphertext>>& arg0,
+    const std::vector<std::unique_ptr<HEPlaintext>>& arg1,
+    std::vector<std::shared_ptr<HECiphertext>>& out, const Shape& arg0_shape,
+    const Shape& arg1_shape, const Shape& out_shape,
+    const Strides& window_movement_strides,
+    const Strides& window_dilation_strides, const CoordinateDiff& padding_below,
+    const CoordinateDiff& padding_above, const Strides& data_dilation_strides,
+    size_t batch_axis_data, size_t input_channel_axis_data,
+    size_t input_channel_axis_filters, size_t output_channel_axis_filters,
+    size_t batch_axis_result, size_t output_channel_axis_result,
+    bool rotate_filter, const element::Type& element_type, size_t batch_size,
+    const ngraph::he::HEBackend* he_backend) {
+  throw ngraph_error("conv unimplemented");
+}
+}  // namespace he
+}  // namespace ngraph

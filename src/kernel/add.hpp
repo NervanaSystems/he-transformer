@@ -46,15 +46,44 @@ void scalar_add(const HEPlaintext& arg0, const HEPlaintext& arg1,
                 HEPlaintext& out, const element::Type& element_type,
                 const ngraph::he::HEBackend* he_backend);
 
-template <typename S, typename T, typename V>
-void add(std::vector<std::shared_ptr<S>>& arg0,
-         std::vector<std::shared_ptr<T>>& arg1,
-         std::vector<std::shared_ptr<V>>& out,
-         const element::Type& element_type,
-         const ngraph::he::HEBackend* he_backend, size_t count) {
+inline void add(std::vector<std::shared_ptr<HECiphertext>>& arg0,
+                std::vector<std::shared_ptr<HECiphertext>>& arg1,
+                std::vector<std::shared_ptr<HECiphertext>>& out,
+                const element::Type& element_type,
+                const ngraph::he::HEBackend* he_backend, size_t count) {
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
     scalar_add(arg0[i], arg1[i], out[i], element_type, he_backend);
+  }
+}
+
+inline void add(std::vector<std::shared_ptr<HECiphertext>>& arg0,
+                const std::vector<std::unique_ptr<HEPlaintext>>& arg1,
+                std::vector<std::shared_ptr<HECiphertext>>& out,
+                const element::Type& element_type,
+                const ngraph::he::HEBackend* he_backend, size_t count) {
+#pragma omp parallel for
+  for (size_t i = 0; i < count; ++i) {
+    scalar_add(arg0[i], *arg1[i], out[i], element_type, he_backend);
+  }
+}
+
+inline void add(const std::vector<std::unique_ptr<HEPlaintext>>& arg0,
+                std::vector<std::shared_ptr<HECiphertext>>& arg1,
+                std::vector<std::shared_ptr<HECiphertext>>& out,
+                const element::Type& element_type,
+                const ngraph::he::HEBackend* he_backend, size_t count) {
+  add(arg1, arg0, out, element_type, he_backend, count);
+}
+
+inline void add(std::vector<std::unique_ptr<HEPlaintext>>& arg0,
+                std::vector<std::unique_ptr<HEPlaintext>>& arg1,
+                std::vector<std::unique_ptr<HEPlaintext>>& out,
+                const element::Type& element_type,
+                const ngraph::he::HEBackend* he_backend, size_t count) {
+#pragma omp parallel for
+  for (size_t i = 0; i < count; ++i) {
+    scalar_add(*arg0[i], *arg1[i], *out[i], element_type, he_backend);
   }
 }
 }  // namespace he

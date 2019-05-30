@@ -26,8 +26,9 @@
 
 namespace ngraph {
 namespace he {
-template <typename T>
-void result(const std::vector<T>& arg, std::vector<T>& out, size_t count) {
+inline void result(const std::vector<std::shared_ptr<HECiphertext>>& arg,
+                   std::vector<std::shared_ptr<HECiphertext>>& out,
+                   size_t count) {
   if (out.size() != arg.size()) {
     NGRAPH_INFO << "Result output size " << out.size()
                 << " does not match result input size " << arg.size();
@@ -35,6 +36,19 @@ void result(const std::vector<T>& arg, std::vector<T>& out, size_t count) {
   }
   for (size_t i = 0; i < count; ++i) {
     out[i] = arg[i];
+  }
+}
+
+inline void result(const std::vector<std::unique_ptr<HEPlaintext>>& arg,
+                   std::vector<std::unique_ptr<HEPlaintext>>& out,
+                   size_t count) {
+  if (out.size() != arg.size()) {
+    NGRAPH_INFO << "Result output size " << out.size()
+                << " does not match result input size " << arg.size();
+    throw ngraph_error("Wrong size in result");
+  }
+  for (size_t i = 0; i < count; ++i) {
+    out[i] = std::make_unique<HEPlaintext>(*arg[i]);
   }
 }
 

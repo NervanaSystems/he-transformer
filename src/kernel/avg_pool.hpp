@@ -143,7 +143,7 @@ void avg_pool(std::vector<std::shared_ptr<T>>& arg,
       throw std::runtime_error("AvgPool elements == 0, must be non-zero");
     }
     auto inv_n_elements = create_valued_plaintext(
-        {1. / n_elements}, he_backend->complex_packing());
+        {1.f / n_elements}, he_backend->complex_packing());
 
     ngraph::he::scalar_multiply(sum, *inv_n_elements, sum, element::f32,
                                 he_backend);

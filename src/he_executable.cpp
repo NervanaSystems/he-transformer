@@ -792,19 +792,24 @@ void ngraph::he::HEExecutable::generate_calls(
             avg_pool->get_include_padding_in_avg_computation(), m_he_backend);
         lazy_rescaling(out0_cipher);
 
-      } else if (arg0_plain != nullptr && out0_plain != nullptr) {
+      } /*else if (arg0_plain != nullptr && out0_plain != nullptr) {
         ngraph::he::avg_pool(
             arg0_plain->get_elements(), out0_plain->get_elements(), in_shape,
             out_shape, avg_pool->get_window_shape(),
             avg_pool->get_window_movement_strides(),
             avg_pool->get_padding_below(), avg_pool->get_padding_above(),
             avg_pool->get_include_padding_in_avg_computation(), m_he_backend);
-      } else {
-        throw ngraph_error("Broadcast types not supported.");
+
+    } */
+      else {
+        throw ngraph_error("AvgPool types not supported.");
       }
       break;
     }
     case OP_TYPEID::BatchNormInference: {
+      // TODO: enable
+      throw ngraph_error("BatchNormInference not supported.");
+
       const ngraph::op::BatchNormInference* bn =
           static_cast<const ngraph::op::BatchNormInference*>(&node);
       double eps = bn->get_eps_value();
@@ -824,11 +829,11 @@ void ngraph::he::HEExecutable::generate_calls(
       NGRAPH_CHECK(mean != nullptr, "BatchNorm mean not plaintext");
       NGRAPH_CHECK(variance != nullptr, "BatchNorm variance not plaintext");
 
-      ngraph::he::batch_norm_inference(
-          eps, gamma->get_elements(), beta->get_elements(),
-          input->get_elements(), mean->get_elements(), variance->get_elements(),
-          out0_cipher->get_elements(), arg_shapes[2], m_batch_size,
-          m_he_backend);
+      /* ngraph::he::batch_norm_inference(
+           eps, gamma->get_elements(), beta->get_elements(),
+           input->get_elements(), mean->get_elements(),
+         variance->get_elements(), out0_cipher->get_elements(), arg_shapes[2],
+         m_batch_size, m_he_backend); */
       break;
     }
     case OP_TYPEID::Broadcast: {
@@ -874,7 +879,7 @@ void ngraph::he::HEExecutable::generate_calls(
         }
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
         std::vector<Shape> in_shapes;
-        std::vector<std::vector<std::shared_ptr<HEPlaintext>>> in_args;
+        std::vector<std::vector<std::unique_ptr<HEPlaintext>>> in_args;
 
         for (std::shared_ptr<HETensor> arg : args) {
           std::shared_ptr<HEPlainTensor> arg_plain =
@@ -882,13 +887,12 @@ void ngraph::he::HEExecutable::generate_calls(
           if (arg_plain == nullptr) {
             throw ngraph_error("Concat type not consistent");
           }
-          in_args.push_back(arg_plain->get_elements());
+          in_args.emplace_back(arg_plain->get_elements());
           in_shapes.push_back(arg_plain->get_shape());
-
-          ngraph::he::concat(in_args, out0_plain->get_elements(), in_shapes,
-                             node.get_output_shape(0),
-                             concat->get_concatenation_axis());
         }
+        ngraph::he::concat(in_args, out0_plain->get_elements(), in_shapes,
+                           node.get_output_shape(0),
+                           concat->get_concatenation_axis());
       } else {
         throw ngraph_error("Concat types not supported.");
       }
@@ -1092,7 +1096,7 @@ void ngraph::he::HEExecutable::generate_calls(
                 element_type, arg0_plain->get_shape(), m_batch_data));
         for (size_t elem_idx = 0; elem_idx < element_count; ++elem_idx) {
           m_he_backend->encrypt(arg0_cipher->get_element(elem_idx),
-                                (arg0_plain->get_element(elem_idx)));
+                                *(arg0_plain->get_element(elem_idx)));
         }
       }
       if (arg1_plain != nullptr) {
@@ -1104,7 +1108,7 @@ void ngraph::he::HEExecutable::generate_calls(
                 element_type, arg1_plain->get_shape(), m_batch_data));
         for (size_t elem_idx = 0; elem_idx < element_count; ++elem_idx) {
           m_he_backend->encrypt(arg1_cipher->get_element(elem_idx),
-                                (arg1_plain->get_element(elem_idx)));
+                                *(arg1_plain->get_element(elem_idx)));
         }
       }
       NGRAPH_CHECK(arg0_cipher != nullptr, "arg0_cipher is nullptr");
@@ -1208,10 +1212,11 @@ void ngraph::he::HEExecutable::generate_calls(
       NGRAPH_INFO << "Skipping parameter";
       break;
     case OP_TYPEID::Pad: {
+      throw ngraph_error("Pad unimplemnented");
       const op::Pad* pad = static_cast<const op::Pad*>(&node);
       const Shape arg0_shape = arg_shapes[0];
 
-      if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
+      /*if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
         ngraph::he::pad(arg0_cipher->get_elements(),
                         arg1_cipher->get_elements(),
@@ -1233,7 +1238,7 @@ void ngraph::he::HEExecutable::generate_calls(
                         pad->get_pad_mode(), m_batch_size, m_he_backend);
       } else {
         throw ngraph_error("Pad cipher vs. plain types not supported.");
-      }
+      }*/
       break;
     }
     case OP_TYPEID::Passthrough: {

@@ -27,13 +27,13 @@
 #include "seal/kernel/multiply_seal.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
-
+/*
 namespace ngraph {
 namespace he {
 template <typename S, typename T, typename V>
 void convolution_seal(
     const std::vector<std::shared_ptr<S>>& arg0,
-    const std::vector<std::shared_ptr<T>>& arg1,
+    const std::vector<std::unique_ptr<T>>& arg1,
     std::vector<std::shared_ptr<V>>& out, const Shape& arg0_shape,
     const Shape& arg1_shape, const Shape& out_shape,
     const Strides& window_movement_strides,
@@ -49,8 +49,7 @@ void convolution_seal(
 
 template <typename S, typename T, typename V>
 void ngraph::he::convolution_seal(
-    const std::vector<std::shared_ptr<S>>& arg0,
-    const std::vector<std::shared_ptr<T>>& arg1,
+    const std::vector<S>> &arg0, const std::vector<T>> &arg1,
     std::vector<std::shared_ptr<V>>& out, const Shape& arg0_shape,
     const Shape& arg1_shape, const Shape& out_shape,
     const Strides& window_movement_strides,
@@ -259,3 +258,4 @@ void ngraph::he::convolution_seal(
     }
   }
 }
+*/
