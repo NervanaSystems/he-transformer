@@ -694,6 +694,8 @@ void ngraph::he::HEExecutable::generate_calls(
           seal_cipher->m_ciphertext);
       size_t chain_ind_after =
           ngraph::he::get_chain_index(seal_cipher.get(), he_seal_ckks_backend);
+      // NGRAPH_INFO << "chain inds in rescaling " << chain_ind_before << " => "
+      //            << chain_ind_after;
     }
   };
 
