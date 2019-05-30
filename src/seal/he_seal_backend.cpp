@@ -85,10 +85,12 @@ void ngraph::he::HESealBackend::decrypt(
         m_context->context_data()->parms().poly_modulus_degree() / 2;
     output.set_values(std::vector<float>(slots, 0));
   } else {
-    seal::Plaintext p;
-    m_decryptor->decrypt(seal_input->m_ciphertext, p);
-    decode(p, output.get_values());
+    auto plaintext_wrapper = make_seal_plaintext_wrapper();
+    m_decryptor->decrypt(seal_input->m_ciphertext,
+                         plaintext_wrapper->m_plaintext);
+    plaintext_wrapper->complex_packing = input->complex_packing();
+    decode(output, *plaintext_wrapper);
   }
-  output->set_complex_packing(input.complex_packing());
+  output.set_complex_packing(input->complex_packing());
   NGRAPH_CHECK(output.complex_packing() == input->complex_packing());
 }

@@ -74,12 +74,10 @@ class HESealBackend : public HEBackend {
 
   virtual void encode(const ngraph::he::HEPlaintext& plaintext,
                       ngraph::he::SealPlaintextWrapper& destination,
-                      seal::parms_id_type parms_id, double scale,
-                      bool complex) const = 0;
+                      seal::parms_id_type parms_id, double scale) const = 0;
 
   virtual void encode(const ngraph::he::HEPlaintext& plaintext,
-                      ngraph::he::SealPlaintextWrapper& destination,
-                      bool complex) const = 0;
+                      ngraph::he::SealPlaintextWrapper& destination) const = 0;
 
   virtual void encode(ngraph::he::HEPlaintext& output, const void* input,
                       const element::Type& type, bool complex,

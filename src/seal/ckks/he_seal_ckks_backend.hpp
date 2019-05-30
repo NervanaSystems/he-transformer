@@ -51,12 +51,12 @@ class HESealCKKSBackend : public HESealBackend {
 
   void encode(const ngraph::he::HEPlaintext& plaintext,
               ngraph::he::SealPlaintextWrapper& destination,
-              seal::parms_id_type parms_id, double scale,
-              bool complex) const override;
+              seal::parms_id_type parms_id, double scale
+              ) const override;
 
   void encode(const ngraph::he::HEPlaintext& plaintext,
-              ngraph::he::SealPlaintextWrapper& destination,
-              bool complex) const override;
+              ngraph::he::SealPlaintextWrapper& destination
+              ) const override;
 
   void encode(ngraph::he::HEPlaintext& output, const void* input,
               const element::Type& type, bool complex,
@@ -66,8 +66,8 @@ class HESealCKKSBackend : public HESealBackend {
               const element::Type& element_type,
               size_t count = 1) const override;
 
-  void decode(ngraph::he::HEPlaintext& output, const SealCiphertextWrapper&,
-              input) const override;
+  void decode(ngraph::he::HEPlaintext& output,
+              const ngraph::he::SealPlaintextWrapper& input) const override;
 
   const inline std::shared_ptr<seal::CKKSEncoder> get_ckks_encoder() const {
     return m_ckks_encoder;
