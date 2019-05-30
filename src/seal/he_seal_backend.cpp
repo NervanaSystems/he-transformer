@@ -60,10 +60,9 @@ void ngraph::he::HESealBackend::encrypt(
     std::shared_ptr<ngraph::he::HECiphertext>& output,
     const ngraph::he::HEPlaintext& input) const {
   auto seal_output = ngraph::he::cast_to_seal_hetext(output);
+  auto seal_wrapper = make_seal_plaintext_wrapper(input.complex_packing());
 
-  auto seal_wrapper = make_seal_plaintext_wrapper();
-
-  encode(input, *seal_wrapper, input.complex_packing());
+  encode(input, *seal_wrapper);
   // No need to encrypt zero
   if (input.is_single_value() && input.get_values()[0] == 0) {
     seal_output->set_zero(true);
@@ -85,10 +84,10 @@ void ngraph::he::HESealBackend::decrypt(
         m_context->context_data()->parms().poly_modulus_degree() / 2;
     output.set_values(std::vector<float>(slots, 0));
   } else {
-    auto plaintext_wrapper = make_seal_plaintext_wrapper();
+    auto plaintext_wrapper =
+        make_seal_plaintext_wrapper(input->complex_packing());
     m_decryptor->decrypt(seal_input->m_ciphertext,
                          plaintext_wrapper->m_plaintext);
-    plaintext_wrapper->complex_packing = input->complex_packing();
     decode(output, *plaintext_wrapper);
   }
   output.set_complex_packing(input->complex_packing());

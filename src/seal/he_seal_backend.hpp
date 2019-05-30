@@ -83,7 +83,7 @@ class HESealBackend : public HEBackend {
                       const element::Type& type, bool complex,
                       size_t count = 1) const = 0;
 
-  virtual void decode(void* output, ngraph::he::HEPlaintext& input,
+  virtual void decode(void* output, const ngraph::he::HEPlaintext& input,
                       const element::Type& type,
                       size_t count = 1) const override = 0;
 

@@ -51,18 +51,16 @@ class HESealCKKSBackend : public HESealBackend {
 
   void encode(const ngraph::he::HEPlaintext& plaintext,
               ngraph::he::SealPlaintextWrapper& destination,
-              seal::parms_id_type parms_id, double scale
-              ) const override;
+              seal::parms_id_type parms_id, double scale) const override;
 
   void encode(const ngraph::he::HEPlaintext& plaintext,
-              ngraph::he::SealPlaintextWrapper& destination
-              ) const override;
+              ngraph::he::SealPlaintextWrapper& destination) const override;
 
   void encode(ngraph::he::HEPlaintext& output, const void* input,
               const element::Type& type, bool complex,
               size_t count = 1) const override;
 
-  void decode(void* output, ngraph::he::HEPlaintext& input,
+  void decode(void* output, const ngraph::he::HEPlaintext& input,
               const element::Type& element_type,
               size_t count = 1) const override;
 

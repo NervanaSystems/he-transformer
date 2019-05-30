@@ -134,8 +134,7 @@ void ngraph::he::HESealCKKSBackend::encode(
 void ngraph::he::HESealCKKSBackend::encode(ngraph::he::HEPlaintext& output,
                                            const void* input,
                                            const element::Type& type,
-                                           bool complex,
-                                           size_t count = 1) const {
+                                           bool complex, size_t count) const {
   throw ngraph_error("Uimplemented");
 }
 /*
@@ -189,7 +188,7 @@ void ngraph::he::HESealCKKSBackend::encode(
     const element::Type& type, bool complex, size_t count) const {
   NGRAPH_INFO << "Encode";
   throw ngraph_error("Unimplemented");
-  /* auto seal_plaintext_wrapper = cast_to_seal_hetext(output);
+  auto seal_plaintext_wrapper = cast_to_seal_hetext(output);
 
    NGRAPH_CHECK(type == element::f32,
                 "CKKS encode supports only float encoding, received type ",
@@ -203,16 +202,14 @@ void ngraph::he::HESealCKKSBackend::encode(
 */
 
 void ngraph::he::HESealCKKSBackend::decode(void* output,
-                                           ngraph::he::HEPlaintext& input,
+                                           const ngraph::he::HEPlaintext& input,
                                            const element::Type& type,
                                            size_t count) const {
   NGRAPH_CHECK(count != 0, "Decode called on 0 elements");
   NGRAPH_CHECK(type == element::f32,
                "CKKS encode supports only float encoding, received type ",
                type);
-  decode(input);
-
-  std::vector<float> xs_float = input->get_values();
+  std::vector<float> xs_float = input.get_values();
 
   NGRAPH_CHECK(xs_float.size() >= count);
   std::memcpy(output, &xs_float[0], type.size() * count);

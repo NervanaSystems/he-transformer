@@ -24,12 +24,24 @@
 namespace ngraph {
 namespace he {
 struct SealPlaintextWrapper {
-  bool complex_packing;
+  SealPlaintextWrapper(const seal::Plaintext& plain,
+                       bool complex_packing = false)
+      : m_plaintext(plain), m_complex_packing(complex_packing) {}
+
+  SealPlaintextWrapper(bool complex_packing = false)
+      : m_complex_packing(complex_packing) {}
+
+  bool m_complex_packing;
   seal::Plaintext m_plaintext;
 };
 
 std::unique_ptr<SealPlaintextWrapper> make_seal_plaintext_wrapper() {
   return std::make_unique<SealPlaintextWrapper>();
+}
+
+std::unique_ptr<SealPlaintextWrapper> make_seal_plaintext_wrapper(
+    bool complex_packing) {
+  return std::make_unique<SealPlaintextWrapper>(complex_packing);
 }
 }  // namespace he
 }  // namespace ngraph

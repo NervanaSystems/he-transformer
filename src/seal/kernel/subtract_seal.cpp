@@ -39,11 +39,11 @@ void ngraph::he::scalar_subtract(
     const HEPlaintext& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type, const HESealBackend* he_seal_backend) {
-  SealPlaintextWrapper p;
-  he_seal_backend->encode(arg1, p, arg0->m_ciphertext.parms_id(),
-                          arg0->m_ciphertext.scale(), arg0->complex_packing());
-  he_seal_backend->get_evaluator()->sub_plain(arg0->m_ciphertext, p.m_plaintext,
-                                              out->m_ciphertext);
+  auto p = make_seal_plaintext_wrapper(arg0->complex_packing());
+  he_seal_backend->encode(arg1, *p, arg0->m_ciphertext.parms_id(),
+                          arg0->m_ciphertext.scale());
+  he_seal_backend->get_evaluator()->sub_plain(
+      arg0->m_ciphertext, p->m_plaintext, out->m_ciphertext);
 }
 
 void ngraph::he::scalar_subtract(const HEPlaintext& arg0,
