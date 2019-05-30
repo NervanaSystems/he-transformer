@@ -152,15 +152,11 @@ void ngraph::he::HESealCKKSBackend::encode(
     }
   }
   destination.m_complex_packing = plaintext.complex_packing();
-
-  NGRAPH_INFO << "Enc1 ok";
 }
 
 void ngraph::he::HESealCKKSBackend::encode(
     ngraph::he::SealPlaintextWrapper& destination,
     const ngraph::he::HEPlaintext& plaintext) const {
-  NGRAPH_INFO << "Encode 2";
-
   double scale = m_scale;
   auto parms_id = m_context->first_parms_id();
 
@@ -178,72 +174,7 @@ void ngraph::he::HESealCKKSBackend::encode(ngraph::he::HEPlaintext& output,
   std::vector<float> values{(float*)input, (float*)input + count};
   output.set_values(values);
   output.set_complex_packing(complex);
-
-  NGRAPH_INFO << "Encode ok";
 }
-/*
-void ngraph::he::HESealCKKSBackend::encode(
-    ngraph::he::HEPlaintext& output, const void* input,
-    const element::Type& type, bool complex, size_t count) const {
-  NGRAPH_INFO << "Encode";
-  throw ngraph_error("Unimplemented");
-  auto seal_plaintext_wrapper = cast_to_seal_hetext(output);
-
-   NGRAPH_CHECK(type == element::f32,
-                "CKKS encode supports only float encoding, received type ",
-                type);
-
-   std::vector<float> values{(float*)input, (float*)input + count};
-   seal_plaintext_wrapper->set_values(values);
-
-   encode(seal_plaintext_wrapper, complex);
-}
-*/
-
-/*
-void ngraph::he::HESealCKKSBackend::encode(
-    ngraph::he::HEPlaintext& plaintext,
-    seal::parms_id_type parms_id, double scale, bool complex) const {
-  NGRAPH_INFO << "Encode";
-  throw ngraph_error("Uimplemented");
-   std::lock_guard<std::mutex> encode_lock(plaintext->get_encode_mutex());
-  if (plaintext->is_encoded()) {
-    return;
-  }
-
-   std::vector<double> double_vals(plaintext->get_values().begin(),
-                                   plaintext->get_values().end());
-
-   const size_t slots =
-       m_context->context_data()->parms().poly_modulus_degree() / 2;
-   if (complex) {
-     std::vector<std::complex<double>> complex_vals;
-     if (double_vals.size() == 1) {
-       std::complex<double> val(double_vals[0], double_vals[0]);
-       complex_vals = std::vector<std::complex<double>>(slots, val);
-     } else {
-       real_vec_to_complex_vec(complex_vals, double_vals);
-     }
-     NGRAPH_CHECK(complex_vals.size() <= slots, "Cannot encode ",
-                  complex_vals.size(), " elements, maximum size is ", slots);
-     m_ckks_encoder->encode(complex_vals, parms_id, scale,
-                            plaintext->get_plaintext());
-   } else {
-     // TODO: why different cases?
-     if (double_vals.size() == 1) {
-       m_ckks_encoder->encode(double_vals[0], parms_id, scale,
-                              plaintext->get_plaintext());
-     } else {
-       NGRAPH_CHECK(double_vals.size() <= slots, "Cannot encode ",
-                    double_vals.size(), " elements, maximum size is ", slots);
-       m_ckks_encoder->encode(double_vals, parms_id, scale,
-                              plaintext->get_plaintext());
-     }
-   }
-   plaintext->set_complex_packing(complex);
-   plaintext->set_encoded(true);
-}
-*/
 
 void ngraph::he::HESealCKKSBackend::decode(void* output,
                                            const ngraph::he::HEPlaintext& input,
