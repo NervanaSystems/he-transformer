@@ -53,11 +53,6 @@ class HEBackend : public ngraph::runtime::Backend {
   virtual std::shared_ptr<ngraph::he::HECiphertext> create_empty_ciphertext()
       const = 0;
 
-  /// @brief Creates plaintext of unspecified value
-  /// @return Shared pointer to created plaintext
-  virtual std::unique_ptr<ngraph::he::HEPlaintext> create_empty_plaintext()
-      const = 0;
-
   /// @brief Creates ciphertext of unspecified value
   /// Alias for create_empty_ciphertext()
   /// @return Shared pointer to created ciphertext
@@ -65,15 +60,6 @@ class HEBackend : public ngraph::runtime::Backend {
                             std::is_same<T, ngraph::he::HECiphertext>::value>>
   std::shared_ptr<ngraph::he::HECiphertext> create_empty_hetext() const {
     return create_empty_ciphertext();
-  };
-
-  /// @brief Creates plaintext of unspecified value
-  /// Alias for create_empty_plaintext()
-  /// @return Shared pointer to created plaintext
-  template <typename T, typename = std::enable_if_t<
-                            std::is_same<T, ngraph::he::HEPlaintext>::value>>
-  std::unique_ptr<ngraph::he::HEPlaintext> create_empty_hetext() const {
-    return create_empty_plaintext();
   };
 
   /// @brief Creates ciphertext of specified value
@@ -86,13 +72,6 @@ class HEBackend : public ngraph::runtime::Backend {
       float value, const element::Type& element_type,
       size_t batch_size = 1) const;
 
-  /// @brief Creates plaintext of specified value
-  /// @param value Scalar which to encode
-  /// @param element_type Type to encode
-  /// @return Shared pointer to created plaintext
-  std::unique_ptr<ngraph::he::HEPlaintext> create_valued_plaintext(
-      float value, const element::Type& element_type) const;
-
   /// @brief Creates ciphertext of specified value
   /// Alias for create_valued_ciphertext()
   /// @return Shared pointer to created ciphertext
@@ -102,16 +81,6 @@ class HEBackend : public ngraph::runtime::Backend {
       float value, const element::Type& element_type,
       size_t batch_size = 1) const {
     return create_valued_ciphertext(value, element_type, batch_size);
-  };
-
-  /// @brief Creates plaintext of specified value
-  /// Alias for create_valued_plaintext()
-  /// @return Shared pointer to created plaintext
-  template <typename T, typename = std::enable_if_t<
-                            std::is_same<T, ngraph::he::HEPlaintext>::value>>
-  std::unique_ptr<ngraph::he::HEPlaintext> create_valued_hetext(
-      float value, const element::Type& element_type) const {
-    return create_valued_plaintext(value, element_type);
   };
 
   std::shared_ptr<runtime::Tensor> create_tensor(
@@ -175,14 +144,6 @@ class HEBackend : public ngraph::runtime::Backend {
   virtual void decode(void* output, ngraph::he::HEPlaintext& input,
                       const element::Type& element_type,
                       size_t count = 1) const = 0;
-
-  void decode(std::vector<ngraph::he::HEPlaintext*>& plaintexts) const {
-    for (auto plaintext : plaintexts) {
-      decode(*plaintext);
-    }
-  }
-
-  virtual void decode(ngraph::he::HEPlaintext& input) const = 0;
 
   /// @brief Encrypts plaintext polynomial to ciphertext
   /// @param output Pointer to ciphertext to encrypt to

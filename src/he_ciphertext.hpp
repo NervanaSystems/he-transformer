@@ -38,6 +38,7 @@ class HECiphertext {
  protected:
   bool m_complex_packing;
   bool m_is_zero;
-};  // namespace he
+};
+
 }  // namespace he
 }  // namespace ngraph

@@ -52,12 +52,6 @@ class HESealBackend : public HEBackend {
   std::shared_ptr<ngraph::he::HECiphertext> create_empty_ciphertext(
       const seal::MemoryPoolHandle& pool) const;
 
-  std::unique_ptr<ngraph::he::HEPlaintext> create_empty_plaintext()
-      const override;
-
-  std::unique_ptr<ngraph::he::HEPlaintext> create_empty_plaintext(
-      const seal::MemoryPoolHandle& pool) const;
-
   /// @brief Creates ciphertext of unspecified value using memory pool
   /// Alias for create_empty_ciphertext()
   /// @return Shared pointer to created ciphertext
@@ -75,7 +69,7 @@ class HESealBackend : public HEBackend {
                             std::is_same<T, ngraph::he::HEPlaintext>::value>>
   std::unique_ptr<ngraph::he::HEPlaintext> create_empty_hetext(
       const seal::MemoryPoolHandle& pool) const {
-    return create_empty_plaintext(pool);
+    return ngraph::he::create_empty_plaintext();
   };
 
   virtual void encode(const ngraph::he::HEPlaintext& plaintext,
@@ -95,7 +89,8 @@ class HESealBackend : public HEBackend {
                       const element::Type& type,
                       size_t count = 1) const override = 0;
 
-  virtual void decode(ngraph::he::HEPlaintext& input) const override = 0;
+  virtual void decode(ngraph::he::HEPlaintext& output,
+                      const ngraph::he::SealPlaintextWrapper& input) const = 0;
 
   void encrypt(std::shared_ptr<ngraph::he::HECiphertext>& output,
                const ngraph::he::HEPlaintext& input) const override;

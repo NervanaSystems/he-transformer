@@ -42,7 +42,7 @@ void ngraph::he::scalar_subtract(
   SealPlaintextWrapper p;
   he_seal_backend->encode(arg1, p, arg0->m_ciphertext.parms_id(),
                           arg0->m_ciphertext.scale(), arg0->complex_packing());
-  he_seal_backend->get_evaluator()->sub_plain(arg0->m_ciphertext, p,
+  he_seal_backend->get_evaluator()->sub_plain(arg0->m_ciphertext, p.m_plaintext,
                                               out->m_ciphertext);
 }
 

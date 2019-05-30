@@ -26,7 +26,7 @@
 
 namespace ngraph {
 namespace he {
-void constant(std::vector<std::shared_ptr<ngraph::he::HEPlaintext>>& out,
+void constant(std::vector<std::unique_ptr<ngraph::he::HEPlaintext>>& out,
               const element::Type& element_type, const void* data_ptr,
               const ngraph::he::HEBackend* he_backend, size_t count);
 

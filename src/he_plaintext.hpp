@@ -16,18 +16,19 @@
 
 #pragma once
 
-#include <mutex>
+#include <memory>
 #include <vector>
 
 #include "ngraph/assertion.hpp"
+#include "seal/seal.h"
 
 namespace ngraph {
 namespace he {
 class HEPlaintext {
  public:
   HEPlaintext(){};
-  HEPlaintext(const std::vector<float> values)
-      : m_values(values), m_is_encoded(false), m_complex_packing(false){};
+  HEPlaintext(const std::vector<float> values, bool complex_packing=false)
+      : m_values(values),  m_complex_packing(complex_packing){};
   virtual ~HEPlaintext(){};
 
   void set_values(const std::vector<float>& values) { m_values = values; }
@@ -36,22 +37,22 @@ class HEPlaintext {
   bool is_single_value() const { return num_values() == 1; }
   size_t num_values() const { return m_values.size(); }
 
-  bool is_encoded() const { return m_is_encoded; }
-  void set_encoded(bool encoded) { m_is_encoded = encoded; }
-
   bool complex_packing() const { return m_complex_packing; }
   void set_complex_packing(bool toggle) { m_complex_packing = toggle; }
-
-  // std::mutex& get_encode_mutex() { return m_encode_mutex; }
 
  protected:
   std::vector<float> m_values;
 
-  // TODO: use atomic bool?
   bool m_is_encoded;
   bool m_complex_packing;
-
-  // std::mutex m_encode_mutex;
 };
+
+inline std::unique_ptr<ngraph::he::HEPlaintext> create_empty_plaintext() {
+  return std::make_unique<ngraph::he::HEPlaintext>();
+}
+
+inline std::unique_ptr<ngraph::he::HEPlaintext> create_valued_plaintext(const std::vector<float>& values, bool complex_packing) {
+  return std::make_unique<ngraph::he::HEPlaintext>(values, complex_packing);
+}
 }  // namespace he
 }  // namespace ngraph

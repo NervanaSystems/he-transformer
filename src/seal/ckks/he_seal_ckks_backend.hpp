@@ -66,7 +66,8 @@ class HESealCKKSBackend : public HESealBackend {
               const element::Type& element_type,
               size_t count = 1) const override;
 
-  void decode(ngraph::he::HEPlaintext& input) const override;
+  void decode(ngraph::he::HEPlaintext& output, const SealCiphertextWrapper&,
+              input) const override;
 
   const inline std::shared_ptr<seal::CKKSEncoder> get_ckks_encoder() const {
     return m_ckks_encoder;

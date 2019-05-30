@@ -24,11 +24,11 @@
 namespace ngraph {
 namespace he {
 struct SealPlaintextWrapper {
-  bool is_complex_packing;
+  bool complex_packing;
   seal::Plaintext m_plaintext;
 };
 
-std::unique_ptr<SealPlaintextWrapper> make_plaintext_wrapper() {
+std::unique_ptr<SealPlaintextWrapper> make_seal_plaintext_wrapper() {
   return std::make_unique<SealPlaintextWrapper>();
 }
 }  // namespace he

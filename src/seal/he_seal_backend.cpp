@@ -56,54 +56,39 @@ ngraph::he::HESealBackend::create_empty_ciphertext(
   return std::make_shared<ngraph::he::SealCiphertextWrapper>(pool);
 }
 
-std::shared_ptr<ngraph::he::HEPlaintext>
-ngraph::he::HESealBackend::create_empty_plaintext() const {
-  return std::make_shared<ngraph::he::HEPlaintext>();
-}
-
-std::shared_ptr<ngraph::he::HEPlaintext>
-ngraph::he::HESealBackend::create_empty_plaintext(
-    const seal::MemoryPoolHandle& pool) const {
-  return std::make_shared<ngraph::he::HEPlaintext>(pool);
-}
-
 void ngraph::he::HESealBackend::encrypt(
     std::shared_ptr<ngraph::he::HECiphertext>& output,
-    std::shared_ptr<ngraph::he::HEPlaintext>& input) const {
+    const ngraph::he::HEPlaintext& input) const {
   auto seal_output = ngraph::he::cast_to_seal_hetext(output);
-  auto seal_input = ngraph::he::cast_to_seal_hetext(input);
 
-  encode(seal_input, input->complex_packing());
+  auto seal_wrapper = make_seal_plaintext_wrapper();
+
+  encode(input, *seal_wrapper, input.complex_packing());
   // No need to encrypt zero
-  if (input->is_single_value() && input->get_values()[0] == 0) {
+  if (input.is_single_value() && input.get_values()[0] == 0) {
     seal_output->set_zero(true);
   } else {
-    m_encryptor->encrypt(seal_input->get_plaintext(),
-                         seal_output->m_ciphertext);
+    m_encryptor->encrypt(seal_wrapper->m_plaintext, seal_output->m_ciphertext);
   }
-  output->set_complex_packing(input->complex_packing());
-  NGRAPH_CHECK(output->complex_packing() == input->complex_packing());
+  output->set_complex_packing(input.complex_packing());
+  NGRAPH_CHECK(output->complex_packing() == input.complex_packing());
 }
 
 void ngraph::he::HESealBackend::decrypt(
-    std::shared_ptr<ngraph::he::HEPlaintext>& output,
+    ngraph::he::HEPlaintext& output,
     const std::shared_ptr<ngraph::he::HECiphertext>& input) const {
-  auto seal_output = ngraph::he::cast_to_seal_hetext(output);
   auto seal_input = ngraph::he::cast_to_seal_hetext(input);
 
   if (input->is_zero()) {
+    // TOOD: refine?
     const size_t slots =
         m_context->context_data()->parms().poly_modulus_degree() / 2;
-    output->set_values(std::vector<float>(slots, 0));
-
-    // TODO: placeholder until we figure out how to decode/encode plaintexts
-    // properly
-    encode(seal_output, input->complex_packing());
-    output->set_encoded(true);
+    output.set_values(std::vector<float>(slots, 0));
   } else {
-    m_decryptor->decrypt(seal_input->m_ciphertext,
-                         seal_output->get_plaintext());
+    seal::Plaintext p;
+    m_decryptor->decrypt(seal_input->m_ciphertext, p);
+    decode(p, output.get_values());
   }
-  output->set_complex_packing(input->complex_packing());
-  NGRAPH_CHECK(output->complex_packing() == input->complex_packing());
+  output->set_complex_packing(input.complex_packing());
+  NGRAPH_CHECK(output.complex_packing() == input->complex_packing());
 }

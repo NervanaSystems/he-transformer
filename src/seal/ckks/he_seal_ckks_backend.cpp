@@ -218,17 +218,17 @@ void ngraph::he::HESealCKKSBackend::decode(void* output,
 }
 
 void ngraph::he::HESealCKKSBackend::decode(
-    ngraph::he::HEPlaintext& input) const {
-  auto seal_input = cast_to_seal_hetext(input);
-
+    ngraph::he::HEPlaintext& output, const ngraph::he::SealPlaintextWrapper&,
+    input) const {
   std::vector<double> real_vals;
-  if (input->complex_packing()) {
+  if (input.complex_packing) {
     std::vector<std::complex<double>> complex_vals;
-    m_ckks_encoder->decode(seal_input->get_plaintext(), complex_vals);
+    m_ckks_encoder->decode(input.m_plaintext, complex_vals);
     complex_vec_to_real_vec(real_vals, complex_vals);
   } else {
-    m_ckks_encoder->decode(seal_input->get_plaintext(), real_vals);
+    m_ckks_encoder->decode(input.m_plaintext, real_vals);
   }
   std::vector<float> float_vals{real_vals.begin(), real_vals.end()};
-  input->set_values(float_vals);
+  output.set_values(float_vals);
+  output.set_complex_packing(input.complex_packing);
 }
