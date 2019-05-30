@@ -82,15 +82,17 @@ void batch_norm_inference(
     std::vector<float> bias_vec(batch_size, bias);
 
     // TODO: enable complex packing?
-    auto plain_scale = create_empty_plaintext({scale_vec});
-    auto plain_bias = create_empty_plaintext({bias_vec});
+    auto plain_scale =
+        create_valued_plaintext(std::vector<float>{scale_vec}, false);
+    auto plain_bias =
+        create_valued_plaintext(std::vector<float>{bias_vec}, false);
 
     auto output = he_backend->create_empty_ciphertext();
 
-    ngraph::he::scalar_multiply(input[input_index], plain_scale, output,
+    ngraph::he::scalar_multiply(input[input_index], *plain_scale, output,
                                 element::f32, he_backend);
 
-    ngraph::he::scalar_add(output, plain_bias, output, element::f32,
+    ngraph::he::scalar_add(output, *plain_bias, output, element::f32,
                            he_backend);
     normed_input[input_index] = output;
   }

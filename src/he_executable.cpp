@@ -499,7 +499,7 @@ bool ngraph::he::HEExecutable::call(
           plain_input->get_element(i)->set_complex_packing(
               m_he_backend->complex_packing());
           m_he_backend->encrypt(cipher_input->get_element(i),
-                                plain_input->get_element(i));
+                                *plain_input->get_element(i));
         }
         tensor_map.insert({tv, cipher_input});
         input_count++;
@@ -580,7 +580,7 @@ bool ngraph::he::HEExecutable::call(
         if (plain_out) {
           auto out_tensor = std::make_shared<ngraph::he::HEPlainTensor>(
               element_type, shape, m_he_backend,
-              m_he_backend->create_empty_plaintext(), batched_out, name);
+              std::move(create_empty_plaintext()), batched_out, name);
           tensor_map.insert({tensor, out_tensor});
         } else {
           auto out_tensor = std::make_shared<ngraph::he::HECipherTensor>(
