@@ -28,8 +28,6 @@ print(x_train.shape[0], 'test samples')
 Y_train = np_utils.to_categorical(y_train, nb_classes)
 Y_test = np_utils.to_categorical(y_test, nb_classes)
 
-print(x_train[0])
-
 model = models.get_cnn(10)
 
 print(model.summary())

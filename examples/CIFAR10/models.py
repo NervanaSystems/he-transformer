@@ -4,7 +4,7 @@ from keras.layers import Input, AveragePooling2D
 from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D
 from keras.layers.core import Dense, Dropout, Activation, Flatten
 from keras.layers.merge import concatenate
-from keras.layers import Activation, Dense
+from keras.layers import Activation, Dense, Reshape
 
 
 def get_cnn(nb_classes=10):
@@ -15,7 +15,8 @@ def get_cnn(nb_classes=10):
         10, kernel_size=(2, 2), strides=1, padding='valid',
         activation=None)(input_img)
     x = Activation('relu')(x)
-    x = Flatten()(x)
+    x = Reshape((31 * 31 * 10, ))(x)
+    #x = Flatten()(x)
 
     x = Dense(100)(x)
     x = Activation('relu')(x)
