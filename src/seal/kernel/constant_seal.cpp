@@ -14,12 +14,12 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "kernel/constant.hpp"
+#include "kernel/constant_seal.hpp"
 
-void ngraph::he::constant(
+void ngraph::he::constant_seal(
     std::vector<std::unique_ptr<ngraph::he::HEPlaintext>>& out,
     const element::Type& element_type, const void* data_ptr,
-    const ngraph::he::HEBackend* he_backend, size_t count) {
+    const ngraph::he::HESealBackend* he_seal_backend, size_t count) {
   NGRAPH_CHECK(element_type == element::f32, "Constant supports only f32 type");
   size_t type_byte_size = element_type.size();
   if (out.size() != count) {
@@ -35,10 +35,10 @@ void ngraph::he::constant(
   }
 }
 
-void ngraph::he::constant(
+void ngraph::he::constant_seal(
     std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& out,
     const element::Type& element_type, const void* data_ptr,
-    const ngraph::he::HEBackend* he_backend, size_t count) {
+    const ngraph::he::HESealBackend* he_seal_backend, size_t count) {
   NGRAPH_CHECK(element_type == element::f32, "Constant supports only f32 type");
   size_t type_byte_size = element_type.size();
   if (out.size() != count) {
@@ -49,7 +49,7 @@ void ngraph::he::constant(
   for (size_t i = 0; i < count; ++i) {
     const void* src_with_offset = (void*)((char*)data_ptr + i * type_byte_size);
     auto plaintext = create_empty_plaintext();
-    he_backend->encode(*plaintext, src_with_offset, element_type);
-    he_backend->encrypt(out[i], *plaintext);
+    he_seal_backend->encode(*plaintext, src_with_offset, element_type);
+    he_seal_backend->encrypt(out[i], *plaintext);
   }
 }

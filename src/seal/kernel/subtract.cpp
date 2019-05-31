@@ -27,7 +27,7 @@ void ngraph::he::scalar_subtract(std::shared_ptr<HECiphertext>& arg0,
                                  std::shared_ptr<HECiphertext>& arg1,
                                  std::shared_ptr<HECiphertext>& out,
                                  const element::Type& element_type,
-                                 const ngraph::he::HEBackend* he_backend) {
+                                 const ngraph::he::HESealBasckend* he_backend) {
   auto he_seal_backend = ngraph::he::cast_to_seal_backend(he_backend);
   auto arg0_seal = ngraph::he::cast_to_seal_hetext(arg0);
   auto arg1_seal = ngraph::he::cast_to_seal_hetext(arg1);
@@ -41,7 +41,7 @@ void ngraph::he::scalar_subtract(std::shared_ptr<HECiphertext>& arg0,
 void ngraph::he::scalar_subtract(const HEPlaintext& arg0,
                                  const HEPlaintext& arg1, HEPlaintext& out,
                                  const element::Type& element_type,
-                                 const ngraph::he::HEBackend* he_backend) {
+                                 const ngraph::he::HESealBasckend* he_backend) {
   NGRAPH_CHECK(element_type == element::f32);
 
   std::vector<float> arg0_vals = arg0.get_values();
@@ -58,7 +58,7 @@ void ngraph::he::scalar_subtract(std::shared_ptr<HECiphertext>& arg0,
                                  const HEPlaintext& arg1,
                                  std::shared_ptr<HECiphertext>& out,
                                  const element::Type& type,
-                                 const ngraph::he::HEBackend* he_backend) {
+                                 const ngraph::he::HESealBasckend* he_backend) {
   NGRAPH_CHECK(type == element::f32);
   NGRAPH_INFO << "cipher - plain";
 
@@ -93,7 +93,7 @@ void ngraph::he::scalar_subtract(const HEPlaintext& arg0,
                                  std::shared_ptr<HECiphertext>& arg1,
                                  std::shared_ptr<HECiphertext>& out,
                                  const element::Type& type,
-                                 const ngraph::he::HEBackend* he_backend) {
+                                 const ngraph::he::HESealBasckend* he_backend) {
   if (arg1->is_zero()) {
     he_backend->encrypt(out, arg0);
   } else {

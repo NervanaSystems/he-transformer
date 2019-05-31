@@ -19,7 +19,7 @@
 #include <memory>
 #include <vector>
 
-#include "he_backend.hpp"
+#include "he_seal_backend.hpp"
 #include "ngraph/axis_vector.hpp"
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/op/pad.hpp"
@@ -32,7 +32,7 @@ void pad(std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& arg0,
          const Shape& arg0_shape, const Shape& out_shape,
          const CoordinateDiff& padding_below,
          const CoordinateDiff& padding_above, op::PadMode pad_mode,
-         size_t batch_size, const ngraph::he::HEBackend* he_backend);
+         size_t batch_size, const ngraph::he::HESealBasckend* he_seal_backend);
 
 template <typename S>
 void pad(std::vector<std::shared_ptr<S>>& arg0,
@@ -40,7 +40,7 @@ void pad(std::vector<std::shared_ptr<S>>& arg0,
          std::vector<std::shared_ptr<S>>& out, const Shape& arg0_shape,
          const Shape& out_shape, const CoordinateDiff& padding_below,
          const CoordinateDiff& padding_above, op::PadMode pad_mode,
-         size_t batch_size, const ngraph::he::HEBackend* he_backend) {
+         size_t batch_size, const ngraph::he::HESealBasckend* he_seal_backend) {
   if (arg1.size() != 1) {
     throw ngraph_error("Padding element must be scalar");
   }

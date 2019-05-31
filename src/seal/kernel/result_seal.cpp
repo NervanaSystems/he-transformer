@@ -19,7 +19,7 @@
 void ngraph::he::result(
     const std::vector<std::unique_ptr<ngraph::he::HEPlaintext>>& arg,
     std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& out, size_t count,
-    const ngraph::he::HEBackend* he_backend) {
+    const ngraph::he::HESealBasckend* he_backend) {
   if (out.size() != arg.size()) {
     NGRAPH_INFO << "Result output size " << out.size()
                 << " does not match result input size " << arg.size();
@@ -33,7 +33,7 @@ void ngraph::he::result(
 void ngraph::he::result(
     const std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& arg,
     std::vector<std::unique_ptr<ngraph::he::HEPlaintext>>& out, size_t count,
-    const ngraph::he::HEBackend* he_backend) {
+    const ngraph::he::HESealBasckend* he_backend) {
   if (out.size() != arg.size()) {
     NGRAPH_INFO << "Result output size " << out.size()
                 << " does not match result input size " << arg.size();

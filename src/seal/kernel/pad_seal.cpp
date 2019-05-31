@@ -33,7 +33,7 @@ void ngraph::he::pad(
     const Shape& arg0_shape, const Shape& out_shape,
     const CoordinateDiff& padding_below, const CoordinateDiff& padding_above,
     op::PadMode pad_mode, size_t batch_size,
-    const ngraph::he::HEBackend* he_backend) {
+    const ngraph::he::HESealBasckend* he_backend) {
   if (arg1.size() != 1) {
     throw ngraph_error("Padding element must be scalar");
   }

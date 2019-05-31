@@ -35,7 +35,7 @@ void avg_pool(std::vector<std::shared_ptr<T>>& arg,
               const Strides& window_movement_strides,
               const Shape& padding_below, const Shape& padding_above,
               bool include_padding_in_avg_computation,
-              const HEBackend* he_backend) {
+              const HESealBasckend* he_seal_backend) {
   // At the outermost level we will walk over every output coordinate O.
   CoordinateTransform output_transform(out_shape);
 
@@ -133,7 +133,7 @@ void avg_pool(std::vector<std::shared_ptr<T>>& arg,
         } else {
           ngraph::he::scalar_add(
               sum, arg[input_batch_transform.index(input_batch_coord)], sum,
-              element::f32, he_backend);
+              element::f32, he_seal_backend);
         }
         n_elements++;
       }
@@ -143,10 +143,10 @@ void avg_pool(std::vector<std::shared_ptr<T>>& arg,
       throw std::runtime_error("AvgPool elements == 0, must be non-zero");
     }
     auto inv_n_elements = create_valued_plaintext(
-        {1.f / n_elements}, he_backend->complex_packing());
+        {1.f / n_elements}, he_seal_backend->complex_packing());
 
     ngraph::he::scalar_multiply(sum, *inv_n_elements, sum, element::f32,
-                                he_backend);
+                                he_seal_backend);
 
     out[output_transform.index(out_coord)] = sum;
   }

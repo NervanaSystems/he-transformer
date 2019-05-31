@@ -63,12 +63,12 @@ template <typename S, typename T, typename V>
 void scalar_multiply(
     std::vector<std::shared_ptr<S>>& arg0,
     std::vector<std::shared_ptr<T>>& arg1, std::vector<std::shared_ptr<V>>& out,
-    const element::Type& element_type, const ngraph::he::HEBackend* he_backend,
+    const element::Type& element_type, const ngraph::he::HESealBasckend* he_seal_backend,
     size_t count,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool()) {
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
-    scalar_multiply(arg0[i], arg1[i], out[i], element_type, he_backend, pool);
+    scalar_multiply(arg0[i], arg1[i], out[i], element_type, he_seal_backend, pool);
   }
 }
 }  // namespace he

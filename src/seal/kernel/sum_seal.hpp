@@ -19,7 +19,7 @@
 #include <memory>
 #include <vector>
 
-#include "he_backend.hpp"
+#include "he_seal_backend.hpp"
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/type/element_type.hpp"
 
@@ -30,12 +30,12 @@ inline void sum(std::vector<std::shared_ptr<HECiphertext>>& arg,
                 const Shape& in_shape, const Shape& out_shape,
                 const AxisSet& reduction_axes,
                 const element::Type& element_type,
-                const ngraph::he::HEBackend* he_backend) {
+                const ngraph::he::HESealBasckend* he_seal_backend) {
   CoordinateTransform output_transform(out_shape);
 
   for (const Coordinate& output_coord : output_transform) {
     out[output_transform.index(output_coord)] =
-        he_backend->create_valued_hetext<HECiphertext>(0.f, element_type);
+        he_seal_backend->create_valued_hetext<HECiphertext>(0.f, element_type);
   }
 
   CoordinateTransform input_transform(in_shape);
@@ -45,7 +45,7 @@ inline void sum(std::vector<std::shared_ptr<HECiphertext>>& arg,
 
     auto& input = arg[input_transform.index(input_coord)];
     auto& output = out[output_transform.index(output_coord)];
-    ngraph::he::scalar_add(input, output, output, element_type, he_backend);
+    ngraph::he::scalar_add(input, output, output, element_type, he_seal_backend);
   }
 }
 
@@ -54,7 +54,7 @@ inline void sum(std::vector<std::unique_ptr<HEPlaintext>>& arg,
                 const Shape& in_shape, const Shape& out_shape,
                 const AxisSet& reduction_axes,
                 const element::Type& element_type,
-                const ngraph::he::HEBackend* he_backend) {
+                const ngraph::he::HESealBasckend* he_seal_backend) {
   CoordinateTransform output_transform(out_shape);
 
   bool complex_packing = arg[0]->complex_packing();
@@ -73,7 +73,7 @@ inline void sum(std::vector<std::unique_ptr<HEPlaintext>>& arg,
     auto& output = out[output_transform.index(output_coord)];
 
     auto tmp = HEPlaintext(output->get_values(), complex_packing);
-    ngraph::he::scalar_add(*input, tmp, *output, element_type, he_backend);
+    ngraph::he::scalar_add(*input, tmp, *output, element_type, he_seal_backend);
   }
 }
 }  // namespace he

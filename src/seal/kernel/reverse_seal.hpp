@@ -19,7 +19,7 @@
 #include <memory>
 #include <vector>
 
-#include "he_backend.hpp"
+#include "he_seal_backend.hpp"
 #include "he_ciphertext.hpp"
 #include "he_plaintext.hpp"
 #include "ngraph/coordinate_transform.hpp"

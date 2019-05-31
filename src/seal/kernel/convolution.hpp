@@ -19,7 +19,7 @@
 #include <memory>
 #include <vector>
 
-#include "he_backend.hpp"
+#include "he_seal_backend.hpp"
 #include "kernel/add.hpp"
 #include "kernel/multiply.hpp"
 #include "ngraph/coordinate_transform.hpp"
@@ -40,7 +40,7 @@ inline void convolution(
     size_t input_channel_axis_filters, size_t output_channel_axis_filters,
     size_t batch_axis_result, size_t output_channel_axis_result,
     bool rotate_filter, const element::Type& element_type, size_t batch_size,
-    const ngraph::he::HEBackend* he_backend) {
+    const ngraph::he::HESealBasckend* he_seal_backend) {
   throw ngraph_error("conv unimplemented");
 }
 
@@ -56,7 +56,7 @@ inline void convolution(
     size_t input_channel_axis_filters, size_t output_channel_axis_filters,
     size_t batch_axis_result, size_t output_channel_axis_result,
     bool rotate_filter, const element::Type& element_type, size_t batch_size,
-    const ngraph::he::HEBackend* he_backend) {
+    const ngraph::he::HESealBasckend* he_seal_backend) {
   throw ngraph_error("conv unimplemented");
 }
 
@@ -72,7 +72,7 @@ inline void convolution(
     size_t input_channel_axis_filters, size_t output_channel_axis_filters,
     size_t batch_axis_result, size_t output_channel_axis_result,
     bool rotate_filter, const element::Type& element_type, size_t batch_size,
-    const ngraph::he::HEBackend* he_backend) {
+    const ngraph::he::HESealBasckend* he_seal_backend) {
   throw ngraph_error("conv unimplemented");
 }
 inline void convolution(
@@ -87,7 +87,7 @@ inline void convolution(
     size_t input_channel_axis_filters, size_t output_channel_axis_filters,
     size_t batch_axis_result, size_t output_channel_axis_result,
     bool rotate_filter, const element::Type& element_type, size_t batch_size,
-    const ngraph::he::HEBackend* he_backend) {
+    const ngraph::he::HESealBasckend* he_seal_backend) {
   throw ngraph_error("conv unimplemented");
 }
 }  // namespace he

@@ -41,7 +41,7 @@ void batch_norm_inference(
     std::vector<std::shared_ptr<HEPlaintext>>& variance,
     std::vector<std::shared_ptr<HECiphertext>>& normed_input,
     const Shape& input_shape, const size_t batch_size,
-    const HEBackend* he_backend) {
+    const HESealBasckend* he_seal_backend) {
   CoordinateTransform input_transform(input_shape);
 
   // Store input coordinates for parallelization
@@ -87,13 +87,13 @@ void batch_norm_inference(
     auto plain_bias =
         create_valued_plaintext(std::vector<float>{bias_vec}, false);
 
-    auto output = he_backend->create_empty_ciphertext();
+    auto output = he_seal_backend->create_empty_ciphertext();
 
     ngraph::he::scalar_multiply(input[input_index], *plain_scale, output,
-                                element::f32, he_backend);
+                                element::f32, he_seal_backend);
 
     ngraph::he::scalar_add(output, *plain_bias, output, element::f32,
-                           he_backend);
+                           he_seal_backend);
     normed_input[input_index] = output;
   }
 };

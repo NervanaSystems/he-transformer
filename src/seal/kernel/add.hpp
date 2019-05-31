@@ -19,7 +19,7 @@
 #include <memory>
 #include <vector>
 
-#include "he_backend.hpp"
+#include "he_seal_backend.hpp"
 #include "he_ciphertext.hpp"
 #include "he_plaintext.hpp"
 #include "ngraph/type/element_type.hpp"
@@ -29,31 +29,31 @@ namespace he {
 void scalar_add(std::shared_ptr<ngraph::he::HECiphertext>& arg0,
                 std::shared_ptr<ngraph::he::HECiphertext>& arg1,
                 std::shared_ptr<ngraph::he::HECiphertext>& out,
-                const element::Type& element_type, const HEBackend* he_backend);
+                const element::Type& element_type, const HESealBasckend* he_seal_backend);
 
 void scalar_add(std::shared_ptr<ngraph::he::HECiphertext>& arg0,
                 const HEPlaintext& arg1,
                 std::shared_ptr<ngraph::he::HECiphertext>& out,
                 const element::Type& element_type,
-                const ngraph::he::HEBackend* he_backend);
+                const ngraph::he::HESealBasckend* he_seal_backend);
 
 void scalar_add(const HEPlaintext& arg0, std::shared_ptr<HECiphertext>& arg1,
                 std::shared_ptr<ngraph::he::HECiphertext>& out,
                 const element::Type& element_type,
-                const ngraph::he::HEBackend* he_backend);
+                const ngraph::he::HESealBasckend* he_seal_backend);
 
 void scalar_add(const HEPlaintext& arg0, const HEPlaintext& arg1,
                 HEPlaintext& out, const element::Type& element_type,
-                const ngraph::he::HEBackend* he_backend);
+                const ngraph::he::HESealBasckend* he_seal_backend);
 
 inline void add(std::vector<std::shared_ptr<HECiphertext>>& arg0,
                 std::vector<std::shared_ptr<HECiphertext>>& arg1,
                 std::vector<std::shared_ptr<HECiphertext>>& out,
                 const element::Type& element_type,
-                const ngraph::he::HEBackend* he_backend, size_t count) {
+                const ngraph::he::HESealBasckend* he_seal_backend, size_t count) {
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
-    scalar_add(arg0[i], arg1[i], out[i], element_type, he_backend);
+    scalar_add(arg0[i], arg1[i], out[i], element_type, he_seal_backend);
   }
 }
 
@@ -61,10 +61,10 @@ inline void add(std::vector<std::shared_ptr<HECiphertext>>& arg0,
                 const std::vector<std::unique_ptr<HEPlaintext>>& arg1,
                 std::vector<std::shared_ptr<HECiphertext>>& out,
                 const element::Type& element_type,
-                const ngraph::he::HEBackend* he_backend, size_t count) {
+                const ngraph::he::HESealBasckend* he_seal_backend, size_t count) {
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
-    scalar_add(arg0[i], *arg1[i], out[i], element_type, he_backend);
+    scalar_add(arg0[i], *arg1[i], out[i], element_type, he_seal_backend);
   }
 }
 
@@ -72,18 +72,18 @@ inline void add(const std::vector<std::unique_ptr<HEPlaintext>>& arg0,
                 std::vector<std::shared_ptr<HECiphertext>>& arg1,
                 std::vector<std::shared_ptr<HECiphertext>>& out,
                 const element::Type& element_type,
-                const ngraph::he::HEBackend* he_backend, size_t count) {
-  add(arg1, arg0, out, element_type, he_backend, count);
+                const ngraph::he::HESealBasckend* he_seal_backend, size_t count) {
+  add(arg1, arg0, out, element_type, he_seal_backend, count);
 }
 
 inline void add(std::vector<std::unique_ptr<HEPlaintext>>& arg0,
                 std::vector<std::unique_ptr<HEPlaintext>>& arg1,
                 std::vector<std::unique_ptr<HEPlaintext>>& out,
                 const element::Type& element_type,
-                const ngraph::he::HEBackend* he_backend, size_t count) {
+                const ngraph::he::HESealBasckend* he_seal_backend, size_t count) {
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
-    scalar_add(*arg0[i], *arg1[i], *out[i], element_type, he_backend);
+    scalar_add(*arg0[i], *arg1[i], *out[i], element_type, he_seal_backend);
   }
 }
 }  // namespace he
