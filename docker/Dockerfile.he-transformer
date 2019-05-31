@@ -56,8 +56,8 @@ RUN wget --no-verbose -c https://github.com/bazelbuild/bazel/releases/download/0
 RUN dpkg -i bazel_0.21.0-linux-x86_64.deb || true
 
 # Get boost
-RUN wget https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.tar.gz
-RUN tar -zxvf boost_1_69_0.tar.gz
-ENV PATH="/boost_1_69_0/:${PATH}"
+#RUN wget https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.tar.gz
+#RUN tar -zxvf boost_1_69_0.tar.gz
+#ENV PATH="/boost_1_69_0/:${PATH}"
 
 WORKDIR /home
