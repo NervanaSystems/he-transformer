@@ -122,7 +122,6 @@ print('BOOST_INCLUDE_DIRS', BOOST_INCLUDE_DIRS)
 
 include_dirs = [PYNGRAPH_ROOT_DIR, NGRAPH_HE_INCLUDE_DIR, PYBIND11_INCLUDE_DIR]
 include_dirs.extend(BOOST_INCLUDE_DIRS)
-print('include_dirs', include_dirs)
 
 library_dirs = [NGRAPH_HE_LIB_DIR]
 
