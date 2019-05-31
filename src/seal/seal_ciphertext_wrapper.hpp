@@ -33,8 +33,8 @@ struct SealCiphertextWrapper {
     set_zero(false);
   }
 
-  seal::Ciphertext& get_hetext() { return m_ciphertext; }
-  const seal::Ciphertext& get_hetext() const { return m_ciphertext; }
+  seal::Ciphertext& ciphertext() { return m_ciphertext; }
+  const seal::Ciphertext& ciphertext() const { return m_ciphertext; }
 
   void save(std::ostream& stream) const { m_ciphertext.save(stream); }
 

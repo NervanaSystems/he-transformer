@@ -25,12 +25,13 @@
 #include <thread>
 #include <vector>
 
-#include "he_seal_backend.hpp"
 #include "he_tensor.hpp"
 #include "ngraph/runtime/backend.hpp"
 #include "ngraph/util.hpp"
 #include "node_wrapper.hpp"
+#include "seal/he_seal_backend.hpp"
 #include "seal/seal.h"
+#include "seal/seal_ciphertext_wrapper.hpp"
 #include "tcp/tcp_message.hpp"
 #include "tcp/tcp_session.hpp"
 
@@ -101,9 +102,12 @@ class HESealExecutable : public runtime::Executable {
   // (Encrypted) outputs of compiled function
   std::vector<std::shared_ptr<ngraph::he::HETensor>> m_client_outputs;
 
-  std::vector<std::shared_ptr<ngraph::he::HECiphertext>> m_relu_ciphertexts;
-  std::vector<std::shared_ptr<ngraph::he::HECiphertext>> m_max_ciphertexts;
-  std::vector<std::shared_ptr<ngraph::he::HECiphertext>> m_minimum_ciphertexts;
+  std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
+      m_relu_ciphertexts;
+  std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
+      m_max_ciphertexts;
+  std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
+      m_minimum_ciphertexts;
 
   std::shared_ptr<seal::SEALContext>
       m_context;  // TODO: move to he_seal_executable.hpp

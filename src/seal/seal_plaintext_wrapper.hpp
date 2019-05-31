@@ -22,14 +22,20 @@
 
 namespace ngraph {
 namespace he {
-struct SealPlaintextWrapper {
-  SealPlaintextWrapper(const seal::Plaintext& plain,
-                       bool complex_packing = false)
-      : m_plaintext(plain), m_complex_packing(complex_packing) {}
+class SealPlaintextWrapper {
+  public:
+    SealPlaintextWrapper(const seal::Plaintext& plain,
+                        bool complex_packing = false)
+        : m_plaintext(plain), m_complex_packing(complex_packing) {}
 
-  SealPlaintextWrapper(bool complex_packing = false)
-      : m_complex_packing(complex_packing) {}
+    SealPlaintextWrapper(bool complex_packing = false)
+        : m_complex_packing(complex_packing) {}
 
+    bool complex_packing() const { return m_complex_packing; }
+    seal::Plaintext& plaintext() { return m_plaintext; }
+    const seal::Plaintext& plaintext() const { return m_plaintext; }
+
+ private:
   bool m_complex_packing;
   seal::Plaintext m_plaintext;
 };

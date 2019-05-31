@@ -47,43 +47,42 @@ ngraph::he::HESealBackend::create_tensor(const element::Type& element_type,
   }
 }
 
-std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HEBackend::compile(
+std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
     std::shared_ptr<Function> function, bool enable_performance_collection) {
-  return std::make_shared<HEExecutable>(function, enable_performance_collection,
-                                        this, m_encrypt_data, m_encrypt_model,
-                                        m_batch_data);
+  return std::make_shared<HESealExecutable>(
+      function, enable_performance_collection, this, m_encrypt_data,
+      m_encrypt_model, m_batch_data);
 }
 
-std::shared_ptr<ngraph::he::HECiphertext>
+std::shared_ptr<ngraph::he::SealCiphertextWrapper>
 ngraph::he::HESealBackend::create_empty_ciphertext() const {
   return std::make_shared<ngraph::he::SealCiphertextWrapper>();
 }
 
-std::shared_ptr<ngraph::he::HECiphertext>
+std::shared_ptr<ngraph::he::SealCiphertextWrapper>
 ngraph::he::HESealBackend::create_empty_ciphertext(
     seal::parms_id_type parms_id) const {
   return std::make_shared<ngraph::he::SealCiphertextWrapper>(
       seal::Ciphertext(m_context, parms_id));
 }
 
-std::shared_ptr<ngraph::he::HECiphertext>
+std::shared_ptr<ngraph::he::SealCiphertextWrapper>
 ngraph::he::HESealBackend::create_empty_ciphertext(
     const seal::MemoryPoolHandle& pool) const {
   return std::make_shared<ngraph::he::SealCiphertextWrapper>(pool);
 }
 
 void ngraph::he::HESealBackend::encrypt(
-    std::shared_ptr<ngraph::he::HECiphertext>& output,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& output,
     const ngraph::he::HEPlaintext& input) const {
-  auto seal_output = ngraph::he::cast_to_seal_hetext(output);
   auto seal_wrapper = make_seal_plaintext_wrapper(input.complex_packing());
 
   encode(*seal_wrapper, input);
   // No need to encrypt zero
   if (input.is_single_value() && input.get_values()[0] == 0) {
-    seal_output->set_zero(true);
+    output->set_zero(true);
   } else {
-    m_encryptor->encrypt(seal_wrapper->m_plaintext, seal_output->m_ciphertext);
+    m_encryptor->encrypt(seal_wrapper->plaintext(), output->ciphertext());
   }
   output->set_complex_packing(input.complex_packing());
   NGRAPH_CHECK(output->complex_packing() == input.complex_packing());
@@ -91,9 +90,7 @@ void ngraph::he::HESealBackend::encrypt(
 
 void ngraph::he::HESealBackend::decrypt(
     ngraph::he::HEPlaintext& output,
-    const std::shared_ptr<ngraph::he::HECiphertext>& input) const {
-  auto seal_input = ngraph::he::cast_to_seal_hetext(input);
-
+    const std::shared_ptr<ngraph::he::SealCiphertextWrapper>& input) const {
   if (input->is_zero()) {
     // TOOD: refine?
     const size_t slots =
@@ -102,8 +99,8 @@ void ngraph::he::HESealBackend::decrypt(
   } else {
     auto plaintext_wrapper =
         make_seal_plaintext_wrapper(input->complex_packing());
-    m_decryptor->decrypt(seal_input->m_ciphertext,
-                         plaintext_wrapper->m_plaintext);
+    m_decryptor->decrypt(input->ciphertext(),
+                         plaintext_wrapper->plaintext());
     decode(output, *plaintext_wrapper);
   }
   output.set_complex_packing(input->complex_packing());

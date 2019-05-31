@@ -16,6 +16,7 @@
 
 # HE transformer sources
 set (HE_SRC
+    seal/he_seal_backend.cpp
     # main
     he_plain_tensor.cpp
     he_tensor.cpp
@@ -24,7 +25,7 @@ set (HE_SRC
     seal/seal_util.cpp
     seal/he_seal_cipher_tensor.cpp
 
-    seal/he_seal_backend.cpp
+
     seal/he_seal_executable.cpp
 
     # seal kernels

@@ -40,14 +40,19 @@
 #include "ngraph/util.hpp"
 #include "node_wrapper.hpp"
 #include "seal/he_seal_encryption_parameters.hpp"
+#include "seal/he_seal_executable.hpp"
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
 
 namespace ngraph {
 namespace he {
+class HETensor;
 class HESealBackend : public ngraph::runtime::Backend {
  public:
+  //
+  // ngraph backend overrides
+  //
   std::shared_ptr<runtime::Tensor> create_tensor(
       const element::Type& element_type, const Shape& shape) override;
 
@@ -61,16 +66,22 @@ class HESealBackend : public ngraph::runtime::Backend {
       std::shared_ptr<Function> func,
       bool enable_performance_data = false) override;
 
-  void validate_he_call(
-      std::shared_ptr<const Function> function,
-      const std::vector<std::shared_ptr<ngraph::he::HETensor>>& outputs,
-      const std::vector<std::shared_ptr<ngraph::he::HETensor>>& inputs);
+  void validate_he_call(std::shared_ptr<const Function> function,
+                        const std::vector<std::shared_ptr<HETensor>>& outputs,
+                        const std::vector<std::shared_ptr<HETensor>>& inputs);
 
+  //
+  // Tensor creation
+  //
   std::shared_ptr<runtime::Tensor> create_batched_cipher_tensor(
       const element::Type& element_type, const Shape& shape);
 
   std::shared_ptr<runtime::Tensor> create_batched_plain_tensor(
       const element::Type& element_type, const Shape& shape);
+
+  std::shared_ptr<runtime::Tensor> create_plain_tensor(
+      const element::Type& element_type, const Shape& shape,
+      const bool batched = false) const;
 
   /// @brief Constructs SEAL context from SEAL parameter
   /// @param sp SEAL Parameter from which to construct context
