@@ -75,7 +75,8 @@ include(cmake/gtest.cmake)
 include(cmake/json.cmake)
 include(cmake/openmp.cmake)
 include(cmake/seal.cmake)
-include(cmake/boost.cmake)
+# TODO: build automatically
+#include(cmake/boost.cmake)
 
 # Add ngraph library
 add_library(ngraph SHARED IMPORTED)
