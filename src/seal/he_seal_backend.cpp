@@ -17,6 +17,7 @@
 #include <limits>
 #include <memory>
 
+#include "he_seal_cipher_tensor.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_executable.hpp"
 #include "seal/seal.h"
@@ -48,11 +49,50 @@ ngraph::he::HESealBackend::create_tensor(const element::Type& element_type,
   }
 }
 
+std::shared_ptr<ngraph::runtime::Tensor>
+ngraph::he::HESealBackend::create_cipher_tensor(
+    const element::Type& element_type, const Shape& shape,
+    const bool batched) const {
+  auto rc = std::make_shared<ngraph::he::HESealCipherTensor>(
+      element_type, shape, this, create_empty_ciphertext(), batched);
+  return std::static_pointer_cast<ngraph::runtime::Tensor>(rc);
+}
+
+std::shared_ptr<ngraph::runtime::Tensor>
+ngraph::he::HESealBackend::create_valued_cipher_tensor(
+    float value, const element::Type& element_type, const Shape& shape) const {
+  auto tensor = std::static_pointer_cast<HESealCipherTensor>(
+      create_cipher_tensor(element_type, shape));
+  std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>&
+      cipher_texts = tensor->get_elements();
+#pragma omp parallel for
+  for (size_t i = 0; i < cipher_texts.size(); ++i) {
+    cipher_texts[i] = create_valued_ciphertext(value, element_type);
+  }
+  return tensor;
+}
+
 std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
     std::shared_ptr<Function> function, bool enable_performance_collection) {
   return std::make_shared<HESealExecutable>(
       function, enable_performance_collection, this, m_encrypt_data,
       m_encrypt_model, m_batch_data);
+}
+
+std::shared_ptr<ngraph::he::SealCiphertextWrapper>
+ngraph::he::HESealBackend::create_valued_ciphertext(
+    float value, const element::Type& element_type, size_t batch_size) const {
+  NGRAPH_CHECK(element_type == element::f32, "element type ", element_type,
+               "unsupported");
+  if (batch_size != 1) {
+    throw ngraph_error(
+        "HESealBackend::create_valued_ciphertext only supports batch size 1");
+  }
+  auto plaintext = create_valued_plaintext({value}, m_complex_packing);
+  auto ciphertext = create_empty_ciphertext();
+
+  encrypt(ciphertext, *plaintext);
+  return ciphertext;
 }
 
 std::shared_ptr<ngraph::he::SealCiphertextWrapper>

@@ -18,7 +18,7 @@
 #include "seal/ckks/he_seal_ckks_backend.hpp"
 #include "seal/ckks/kernel/add_seal_ckks.hpp"
 
-void ngraph::he::scalar_add(
+void ngraph::he::scalar_add_seal(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
@@ -39,7 +39,7 @@ void ngraph::he::scalar_add(
   }
 }
 
-void ngraph::he::scalar_add(
+void ngraph::he::scalar_add_seal(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
     const HEPlaintext& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
@@ -84,19 +84,20 @@ void ngraph::he::scalar_add(
   }
 }
 
-void ngraph::he::scalar_add(
+void ngraph::he::scalar_add_seal(
     const HEPlaintext& arg0,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type, const HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
-  ngraph::he::scalar_add(arg1, arg0, out, element_type, he_seal_backend);
+  ngraph::he::scalar_add_seal(arg1, arg0, out, element_type, he_seal_backend);
 }
 
-void ngraph::he::scalar_add(const HEPlaintext& arg0, const HEPlaintext& arg1,
-                            HEPlaintext& out, const element::Type& element_type,
-                            const HESealBackend* he_seal_backend,
-                            const seal::MemoryPoolHandle& pool) {
+void ngraph::he::scalar_add_seal(const HEPlaintext& arg0,
+                                 const HEPlaintext& arg1, HEPlaintext& out,
+                                 const element::Type& element_type,
+                                 const HESealBackend* he_seal_backend,
+                                 const seal::MemoryPoolHandle& pool) {
   NGRAPH_CHECK(element_type == element::f32);
 
   const std::vector<float>& arg0_vals = arg0.get_values();

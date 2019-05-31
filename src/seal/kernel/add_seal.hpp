@@ -27,35 +27,72 @@
 
 namespace ngraph {
 namespace he {
-void scalar_add(
+void scalar_add_seal(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
-    const element::Type& element_type,
-    const ngraph::he::HESealBackend* he_seal_backend,
+    const element::Type& element_type, const HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
-void scalar_add(
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
-    const ngraph::he::HEPlaintext& arg1,
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
-    const element::Type& element_type,
-    const ngraph::he::HESealBackend* he_seal_backend,
-    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
+void scalar_add_seal(std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
+                     const HEPlaintext& arg1,
+                     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
+                     const element::Type& element_type,
+                     const ngraph::he::HESealBackend* he_seal_backend);
 
-void scalar_add(
-    const ngraph::he::HEPlaintext& arg0,
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
-    const element::Type& element_type,
-    const ngraph::he::HESealBackend* he_seal_backend,
-    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
+void scalar_add_seal(const HEPlaintext& arg0,
+                     std::shared_ptr<SealCiphertextWrapper>& arg1,
+                     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
+                     const element::Type& element_type,
+                     const ngraph::he::HESealBackend* he_seal_backend);
 
-void scalar_add(
-    const ngraph::he::HEPlaintext& arg0, const ngraph::he::HEPlaintext& arg1,
-    ngraph::he::HEPlaintext& out, const element::Type& element_type,
-    const ngraph::he::HESealBackend* he_seal_backend,
-    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
+void scalar_add_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
+                     HEPlaintext& out, const element::Type& element_type,
+                     const ngraph::he::HESealBackend* he_seal_backend);
 
+inline void add_seal(std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg0,
+                     std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg1,
+                     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
+                     const element::Type& element_type,
+                     const ngraph::he::HESealBackend* he_seal_backend,
+                     size_t count) {
+#pragma omp parallel for
+  for (size_t i = 0; i < count; ++i) {
+    scalar_add_seal(arg0[i], arg1[i], out[i], element_type, he_seal_backend);
+  }
+}
+
+inline void add_seal(std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg0,
+                     const std::vector<std::unique_ptr<HEPlaintext>>& arg1,
+                     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
+                     const element::Type& element_type,
+                     const ngraph::he::HESealBackend* he_seal_backend,
+                     size_t count) {
+#pragma omp parallel for
+  for (size_t i = 0; i < count; ++i) {
+    scalar_add_seal(arg0[i], *arg1[i], out[i], element_type, he_seal_backend);
+  }
+}
+
+inline void add_seal(const std::vector<std::unique_ptr<HEPlaintext>>& arg0,
+                     std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg1,
+                     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
+                     const element::Type& element_type,
+                     const ngraph::he::HESealBackend* he_seal_backend,
+                     size_t count) {
+  add_seal(arg1, arg0, out, element_type, he_seal_backend, count);
+}
+
+inline void add_seal(std::vector<std::unique_ptr<HEPlaintext>>& arg0,
+                     std::vector<std::unique_ptr<HEPlaintext>>& arg1,
+                     std::vector<std::unique_ptr<HEPlaintext>>& out,
+                     const element::Type& element_type,
+                     const ngraph::he::HESealBackend* he_seal_backend,
+                     size_t count) {
+#pragma omp parallel for
+  for (size_t i = 0; i < count; ++i) {
+    scalar_add_seal(*arg0[i], *arg1[i], *out[i], element_type, he_seal_backend);
+  }
+}
 }  // namespace he
 }  // namespace ngraph

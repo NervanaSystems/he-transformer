@@ -46,6 +46,7 @@
 
 namespace ngraph {
 namespace he {
+class HESealCipherTensor;
 class HESealBackend : public ngraph::runtime::Backend {
  public:
   //
@@ -81,11 +82,23 @@ class HESealBackend : public ngraph::runtime::Backend {
       const element::Type& element_type, const Shape& shape,
       const bool batched = false) const;
 
-  /// @brief Constructs SEAL context from SEAL parameter
-  /// @param sp SEAL Parameter from which to construct context
-  /// @return Pointer to constructed context
-  std::shared_ptr<seal::SEALContext> make_seal_context(
-      const std::shared_ptr<ngraph::he::HEEncryptionParameters> sp);
+  std::shared_ptr<runtime::Tensor> create_cipher_tensor(
+      const element::Type& element_type, const Shape& shape,
+      const bool batched = false) const;
+
+  /// @brief Creates ciphertext Tensor of the same value
+  /// @param value Scalar which to enrypt
+  /// @param element_type Type to encrypt
+  /// @param shape Shape of created Tensor
+  std::shared_ptr<runtime::Tensor> create_valued_cipher_tensor(
+      float value, const element::Type& element_type, const Shape& shape) const;
+
+  //
+  // Cipher/plaintext creation
+  //
+  std::shared_ptr<ngraph::he::SealCiphertextWrapper> create_valued_ciphertext(
+      float value, const element::Type& element_type,
+      size_t batch_size = 1) const;
 
   std::shared_ptr<ngraph::he::SealCiphertextWrapper> create_empty_ciphertext()
       const;
@@ -117,6 +130,12 @@ class HESealBackend : public ngraph::runtime::Backend {
   std::unique_ptr<ngraph::he::HEPlaintext> create_empty_hetext() const {
     return ngraph::he::create_empty_plaintext();
   };
+
+  /// @brief Constructs SEAL context from SEAL parameter
+  /// @param sp SEAL Parameter from which to construct context
+  /// @return Pointer to constructed context
+  std::shared_ptr<seal::SEALContext> make_seal_context(
+      const std::shared_ptr<ngraph::he::HEEncryptionParameters> sp);
 
   void encode(ngraph::he::SealPlaintextWrapper& destination,
               const ngraph::he::HEPlaintext& plaintext,

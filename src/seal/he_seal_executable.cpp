@@ -16,11 +16,11 @@
 
 #include <functional>
 
-#include "he_executable.hpp"
 #include "he_plain_tensor.hpp"
 #include "he_seal_cipher_tensor.hpp"
 #include "he_tensor.hpp"
 #include "kernel/add_seal.hpp"
+#include "seal/he_seal_executable.hpp"
 /*#include "kernel/avg_pool.hpp"
 #include "kernel/batch_norm_inference.hpp"
 #include "kernel/broadcast.hpp"
@@ -37,7 +37,7 @@
 #include "kernel/reverse.hpp"
 #include "kernel/slice.hpp"
 #include "kernel/subtract.hpp"
-#include "kernel/sum.hpp"
+#include "kernel/sum.hpp"*/
 #include "ngraph/assertion.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
 #include "ngraph/op/avg_pool.hpp"
@@ -63,17 +63,15 @@
 #include "ngraph/pass/visualize_tree.hpp"
 #include "ngraph/runtime/backend.hpp"
 #include "ngraph/util.hpp"
-#include "seal/ckks/seal_ckks_util.hpp"
 #include "seal/he_seal_backend.hpp"
-#include "seal/he_seal_util.hpp"
-*/
 #include "seal/seal_ciphertext_wrapper.hpp"
+#include "seal/seal_util.hpp"
 
 using ngraph::descriptor::layout::DenseTensorLayout;
 
 ngraph::he::HESealExecutable::HESealExecutable(
     const std::shared_ptr<Function>& function,
-    bool enable_performance_collection, const HEBackend* he_seal_backend,
+    bool enable_performance_collection, const HESealBackend* he_seal_backend,
     bool encrypt_data, bool encrypt_model, bool batch_data)
     : m_he_seal_backend(he_seal_backend),
       m_encrypt_data(encrypt_data),
@@ -86,9 +84,8 @@ ngraph::he::HESealExecutable::HESealExecutable(
       m_session_started(false),
       m_client_inputs_received(false) {
   NGRAPH_CHECK(he_seal_backend != nullptr, "he_seal_backend == nullptr");
-  // TODO: move get_context to HEBackend
+  // TODO: move get_context to HESealBackend
 
-  auto he_seal_backend = ngraph::he::cast_to_seal_backend(he_seal_backend);
   m_context = he_seal_backend->get_context();
 
   m_is_compiled = true;
@@ -246,9 +243,10 @@ void ngraph::he::HESealExecutable::handle_message(
       const auto& shape = input_param->get_shape();
       size_t param_size = shape_size(shape) / m_batch_size;
       auto element_type = input_param->get_element_type();
-      auto input_tensor = std::dynamic_pointer_cast<ngraph::he::HECipherTensor>(
-          m_he_seal_backend->create_cipher_tensor(
-              element_type, input_param->get_shape(), m_batch_data));
+      auto input_tensor =
+          std::dynamic_pointer_cast<ngraph::he::HESealCipherTensor>(
+              m_he_seal_backend->create_cipher_tensor(
+                  element_type, input_param->get_shape(), m_batch_data));
 
       std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
           cipher_elements{
@@ -280,7 +278,7 @@ void ngraph::he::HESealExecutable::handle_message(
     key_stream.write(message.data_ptr(), message.element_size());
     key.load(m_context, key_stream);
 
-    // TODO: move set_public_key to HEBackend
+    // TODO: move set_public_key to HESealBackend
     auto he_seal_backend = (ngraph::he::HESealBackend*)m_he_seal_backend;
     he_seal_backend->set_public_key(key);
 
@@ -292,7 +290,7 @@ void ngraph::he::HESealExecutable::handle_message(
     key_stream.write(message.data_ptr(), message.element_size());
     keys.load(m_context, key_stream);
 
-    // TODO: move set_relin_keys to HEBackend
+    // TODO: move set_relin_keys to HESealBackend
     auto he_seal_backend = (ngraph::he::HESealBackend*)m_he_seal_backend;
     he_seal_backend->set_relin_keys(keys);
 
@@ -492,7 +490,7 @@ bool ngraph::he::HESealExecutable::call(
         auto plain_input = std::dynamic_pointer_cast<ngraph::he::HEPlainTensor>(
             he_inputs[input_count]);
         NGRAPH_CHECK(plain_input != nullptr, "Input is not plain tensor");
-        auto cipher_input = std::dynamic_pointer_cast<HECipherTensor>(
+        auto cipher_input = std::dynamic_pointer_cast<HESealCipherTensor>(
             m_he_seal_backend->create_cipher_tensor(
                 plain_input->get_element_type(), plain_input->get_shape(),
                 m_batch_data));
@@ -587,7 +585,7 @@ bool ngraph::he::HESealExecutable::call(
               std::move(create_empty_plaintext()), batched_out, name);
           tensor_map.insert({tensor, out_tensor});
         } else {
-          auto out_tensor = std::make_shared<ngraph::he::HECipherTensor>(
+          auto out_tensor = std::make_shared<ngraph::he::HESealCipherTensor>(
               element_type, shape, m_he_seal_backend,
               m_he_seal_backend->create_empty_ciphertext(), batched_out, name);
           tensor_map.insert({tensor, out_tensor});
@@ -643,10 +641,10 @@ bool ngraph::he::HESealExecutable::call(
     size_t output_shape_size = shape_size(output_shape) / m_batch_size;
 
     auto output_cipher_tensor =
-        std::dynamic_pointer_cast<HECipherTensor>(m_client_outputs[0]);
+        std::dynamic_pointer_cast<HESealCipherTensor>(m_client_outputs[0]);
 
     NGRAPH_CHECK(output_cipher_tensor != nullptr,
-                 "Client outputs are not HECipherTensor");
+                 "Client outputs are not HESealCipherTensor");
 
     std::stringstream cipher_stream;
     output_cipher_tensor->save_elements(cipher_stream);
@@ -666,23 +664,22 @@ void ngraph::he::HESealExecutable::generate_calls(
     const std::vector<std::shared_ptr<HETensor>>& args) {
   const Node& node = *node_wrapper.get_node();
   std::string node_op = node.description();
-  std::shared_ptr<HECipherTensor> arg0_cipher = nullptr;
+  std::shared_ptr<HESealCipherTensor> arg0_cipher = nullptr;
   std::shared_ptr<HEPlainTensor> arg0_plain = nullptr;
-  std::shared_ptr<HECipherTensor> arg1_cipher = nullptr;
+  std::shared_ptr<HESealCipherTensor> arg1_cipher = nullptr;
   std::shared_ptr<HEPlainTensor> arg1_plain = nullptr;
-  auto out0_cipher = std::dynamic_pointer_cast<HECipherTensor>(out[0]);
+  auto out0_cipher = std::dynamic_pointer_cast<HESealCipherTensor>(out[0]);
   auto out0_plain = std::dynamic_pointer_cast<HEPlainTensor>(out[0]);
 
   // TODO: move to static function
   auto lazy_rescaling = [this](auto& cipher) {
-    // NGRAPH_INFO << "Lazy rescaling";
-    auto he_seal_backend = ngraph::he::cast_to_seal_backend(m_he_seal_backend);
+  // NGRAPH_INFO << "Lazy rescaling";
 #pragma omp parallel for
     for (size_t i = 0; i < cipher->get_elements().size(); ++i) {
       auto seal_cipher =
           ngraph::he::cast_to_seal_hetext(cipher->get_element(i));
       if (!seal_cipher->is_zero()) {
-        he_seal_backend->get_evaluator()->rescale_to_next_inplace(
+        m_he_seal_backend->get_evaluator()->rescale_to_next_inplace(
             seal_cipher->m_ciphertext);
       }
     }
@@ -712,7 +709,7 @@ void ngraph::he::HESealExecutable::generate_calls(
   }
 
   if (args.size() > 0) {
-    arg0_cipher = std::dynamic_pointer_cast<HECipherTensor>(args[0]);
+    arg0_cipher = std::dynamic_pointer_cast<HESealCipherTensor>(args[0]);
     arg0_plain = std::dynamic_pointer_cast<HEPlainTensor>(args[0]);
     NGRAPH_CHECK(arg0_cipher == nullptr || arg0_plain == nullptr,
                  "arg0 is netiher cipher nor plain");
@@ -720,7 +717,7 @@ void ngraph::he::HESealExecutable::generate_calls(
                  "arg0 is both cipher and plain?");
   }
   if (args.size() > 1) {
-    arg1_cipher = std::dynamic_pointer_cast<HECipherTensor>(args[1]);
+    arg1_cipher = std::dynamic_pointer_cast<HESealCipherTensor>(args[1]);
     arg1_plain = std::dynamic_pointer_cast<HEPlainTensor>(args[1]);
     NGRAPH_CHECK(arg1_cipher == nullptr || arg1_plain == nullptr,
                  "arg1 is neither cipher nor plain");
@@ -760,25 +757,28 @@ void ngraph::he::HESealExecutable::generate_calls(
     case OP_TYPEID::Add: {
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
-        ngraph::he::add(arg0_cipher->get_elements(),
-                        arg1_cipher->get_elements(),
-                        out0_cipher->get_elements(), type, m_he_seal_backend,
-                        out0_cipher->get_batched_element_count());
+        ngraph::he::add_seal(
+            arg0_cipher->get_elements(), arg1_cipher->get_elements(),
+            out0_cipher->get_elements(), type, m_he_seal_backend,
+            out0_cipher->get_batched_element_count());
       } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                  out0_cipher != nullptr) {
-        ngraph::he::add(arg0_cipher->get_elements(), arg1_plain->get_elements(),
-                        out0_cipher->get_elements(), type, m_he_seal_backend,
-                        out0_cipher->get_batched_element_count());
+        ngraph::he::add_seal(
+            arg0_cipher->get_elements(), arg1_plain->get_elements(),
+            out0_cipher->get_elements(), type, m_he_seal_backend,
+            out0_cipher->get_batched_element_count());
       } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
                  out0_cipher != nullptr) {
-        ngraph::he::add(arg0_plain->get_elements(), arg1_cipher->get_elements(),
-                        out0_cipher->get_elements(), type, m_he_seal_backend,
-                        out0_cipher->get_batched_element_count());
+        ngraph::he::add_seal(
+            arg0_plain->get_elements(), arg1_cipher->get_elements(),
+            out0_cipher->get_elements(), type, m_he_seal_backend,
+            out0_cipher->get_batched_element_count());
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
-        ngraph::he::add(arg0_plain->get_elements(), arg1_plain->get_elements(),
-                        out0_plain->get_elements(), type, m_he_seal_backend,
-                        out0_plain->get_batched_element_count());
+        ngraph::he::add_seal(
+            arg0_plain->get_elements(), arg1_plain->get_elements(),
+            out0_plain->get_elements(), type, m_he_seal_backend,
+            out0_plain->get_batched_element_count());
       } else {
         throw ngraph_error("Add types not supported.");
       }
@@ -824,7 +824,7 @@ void ngraph::he::HESealExecutable::generate_calls(
 
       auto gamma = std::dynamic_pointer_cast<HEPlainTensor>(args[0]);
       auto beta = std::dynamic_pointer_cast<HEPlainTensor>(args[1]);
-      auto input = std::dynamic_pointer_cast<HECipherTensor>(args[2]);
+      auto input = std::dynamic_pointer_cast<HESealCipherTensor>(args[2]);
       auto mean = std::dynamic_pointer_cast<HEPlainTensor>(args[3]);
       auto variance = std::dynamic_pointer_cast<HEPlainTensor>(args[4]);
 
@@ -872,8 +872,8 @@ void ngraph::he::HESealExecutable::generate_calls(
             in_args;
 
         for (std::shared_ptr<HETensor> arg : args) {
-          std::shared_ptr<HECipherTensor> arg_cipher =
-              std::dynamic_pointer_cast<HECipherTensor>(arg);
+          std::shared_ptr<HESealCipherTensor> arg_cipher =
+              std::dynamic_pointer_cast<HESealCipherTensor>(arg);
           if (arg_cipher == nullptr) {
             throw ngraph_error("Concat type not consistent");
           }
@@ -1104,7 +1104,7 @@ void ngraph::he::HESealExecutable::generate_calls(
         // arg0_plain doesn't have a tensor layout, so we use
         const element::Type& element_type =
             out0_cipher->get_tensor_layout()->get_element_type();
-        arg0_cipher = std::dynamic_pointer_cast<HECipherTensor>(
+        arg0_cipher = std::dynamic_pointer_cast<HESealCipherTensor>(
             m_he_seal_backend->create_cipher_tensor(
                 element_type, arg0_plain->get_shape(), m_batch_data));
         for (size_t elem_idx = 0; elem_idx < element_count; ++elem_idx) {
@@ -1116,7 +1116,7 @@ void ngraph::he::HESealExecutable::generate_calls(
         // arg0_plain doesn't have a tensor layout, so we use
         const element::Type& element_type =
             out0_cipher->get_tensor_layout()->get_element_type();
-        arg1_cipher = std::dynamic_pointer_cast<HECipherTensor>(
+        arg1_cipher = std::dynamic_pointer_cast<HESealCipherTensor>(
             m_he_seal_backend->create_cipher_tensor(
                 element_type, arg1_plain->get_shape(), m_batch_data));
         for (size_t elem_idx = 0; elem_idx < element_count; ++elem_idx) {
@@ -1146,7 +1146,7 @@ void ngraph::he::HESealExecutable::generate_calls(
       size_t cipher_count = 0;
       auto he_ckks_backend = (ngraph::he::HESealCKKSBackend*)m_he_seal_backend;
       NGRAPH_CHECK(he_ckks_backend != nullptr,
-                   "HEBackend is not CKKS in Minimum Op");
+                   "HESealBackend is not CKKS in Minimum Op");
       for (size_t min_ind = 0; min_ind < element_count; ++min_ind) {
         auto cipher0 = arg0_cipher->get_element(min_ind);
         auto cipher1 = arg1_cipher->get_element(min_ind);
