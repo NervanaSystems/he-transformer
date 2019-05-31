@@ -122,6 +122,26 @@ ngraph::he::HESealBackend::create_valued_cipher_tensor(
   return tensor;
 }
 
+std::shared_ptr<ngraph::runtime::Tensor>
+ngraph::he::HESealBackend::create_batched_cipher_tensor(
+    const element::Type& type, const Shape& shape) {
+  NGRAPH_INFO << "Creating batched cipher tensor with shape " << join(shape);
+  auto rc = std::make_shared<ngraph::he::HESealCipherTensor>(
+      type, shape, this, create_empty_ciphertext(), true);
+  set_batch_data(true);
+  return std::static_pointer_cast<ngraph::runtime::Tensor>(rc);
+}
+
+std::shared_ptr<ngraph::runtime::Tensor>
+ngraph::he::HESealBackend::create_batched_plain_tensor(
+    const element::Type& type, const Shape& shape) {
+  NGRAPH_INFO << "Creating batched plain tensor with shape " << join(shape);
+  auto rc = std::make_shared<ngraph::he::HEPlainTensor>(
+      type, shape, this, std::move(create_empty_plaintext()), true);
+  set_batch_data(true);
+  return std::static_pointer_cast<ngraph::runtime::Tensor>(rc);
+}
+
 std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
     std::shared_ptr<Function> function, bool enable_performance_collection) {
   return std::make_shared<HESealExecutable>(
