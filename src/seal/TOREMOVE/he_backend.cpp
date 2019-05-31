@@ -29,7 +29,7 @@
 
 using ngraph::descriptor::layout::DenseTensorLayout;
 
-std::shared_ptr<ngraph::he::HECiphertext>
+std::shared_ptr<ngraph::he::SealCiphertextWrapper>
 ngraph::he::HEBackend::create_valued_ciphertext(
     float value, const element::Type& element_type, size_t batch_size) const {
   NGRAPH_CHECK(element_type == element::f32, "element type ", element_type,
@@ -40,7 +40,7 @@ ngraph::he::HEBackend::create_valued_ciphertext(
   }
   std::unique_ptr<ngraph::he::HEPlaintext> plaintext =
       create_valued_plaintext({value}, m_complex_packing);
-  std::shared_ptr<ngraph::he::HECiphertext> ciphertext =
+  std::shared_ptr<ngraph::he::SealCiphertextWrapper> ciphertext =
       create_empty_ciphertext();
 
   encrypt(ciphertext, *plaintext);
@@ -85,7 +85,7 @@ ngraph::he::HEBackend::create_valued_cipher_tensor(
     float value, const element::Type& element_type, const Shape& shape) const {
   auto tensor = std::static_pointer_cast<HECipherTensor>(
       create_cipher_tensor(element_type, shape));
-  std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& cipher_texts =
+  std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>& cipher_texts =
       tensor->get_elements();
 #pragma omp parallel for
   for (size_t i = 0; i < cipher_texts.size(); ++i) {

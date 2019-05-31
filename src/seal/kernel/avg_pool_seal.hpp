@@ -19,23 +19,24 @@
 #include <memory>
 #include <vector>
 
-#include "he_ciphertext.hpp"
 #include "he_plaintext.hpp"
-#include "kernel/multiply.hpp"
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/shape_util.hpp"
 #include "ngraph/type/element_type.hpp"
+#include "seal/kernel/add_seal.hpp"
+#include "seal/kernel/multiply_seal.hpp"
+#include "seal/seal_ciphertext_wrapper.hpp"
 
 namespace ngraph {
 namespace he {
 template <typename T>
-void avg_pool(std::vector<std::shared_ptr<T>>& arg,
-              std::vector<std::shared_ptr<T>>& out, const Shape& arg_shape,
-              const Shape& out_shape, const Shape& window_shape,
-              const Strides& window_movement_strides,
-              const Shape& padding_below, const Shape& padding_above,
-              bool include_padding_in_avg_computation,
-              const HESealBackend* he_seal_backend) {
+void avg_pool_seal(std::vector<std::shared_ptr<T>>& arg,
+                   std::vector<std::shared_ptr<T>>& out, const Shape& arg_shape,
+                   const Shape& out_shape, const Shape& window_shape,
+                   const Strides& window_movement_strides,
+                   const Shape& padding_below, const Shape& padding_above,
+                   bool include_padding_in_avg_computation,
+                   const HESealBackend* he_seal_backend) {
   // At the outermost level we will walk over every output coordinate O.
   CoordinateTransform output_transform(out_shape);
 

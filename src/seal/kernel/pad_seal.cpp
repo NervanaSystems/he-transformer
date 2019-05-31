@@ -27,9 +27,9 @@
 #include "seal/seal_ciphertext_wrapper.hpp"
 
 void ngraph::he::pad(
-    std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& arg0,
+    std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>& arg0,
     std::vector<std::shared_ptr<ngraph::he::HEPlaintext>>& arg1,  // scalar
-    std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& out,
+    std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>& out,
     const Shape& arg0_shape, const Shape& out_shape,
     const CoordinateDiff& padding_below, const CoordinateDiff& padding_above,
     op::PadMode pad_mode, size_t batch_size,
@@ -40,7 +40,7 @@ void ngraph::he::pad(
 
   auto he_seal_backend = ngraph::he::cast_to_seal_backend(he_seal_backend);
 
-  std::shared_ptr<ngraph::he::HECiphertext> arg1_encrypted;
+  std::shared_ptr<ngraph::he::SealCiphertextWrapper> arg1_encrypted;
   arg1_encrypted = he_seal_backend->create_empty_ciphertext();
 
   bool is_pad_value_zero =
@@ -48,7 +48,7 @@ void ngraph::he::pad(
   NGRAPH_CHECK(is_pad_value_zero, "Non-zero pad values not supported");
   arg1_encrypted->set_zero(true);
 
-  std::vector<std::shared_ptr<ngraph::he::HECiphertext>> arg1_encrypted_vector{
+  std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>> arg1_encrypted_vector{
       arg1_encrypted};
 
   ngraph::he::pad(arg0, arg1_encrypted_vector, out, arg0_shape, out_shape,

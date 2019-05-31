@@ -49,6 +49,10 @@ namespace he {
 class HESealCipherTensor;
 class HESealBackend : public ngraph::runtime::Backend {
  public:
+  HESealBackend();
+  HESealBackend(const std::shared_ptr<ngraph::he::HEEncryptionParameters>& sp);
+  HESealBackend(HESealBackend& he_backend) = default;
+  ~HESealBackend(){};
   //
   // ngraph backend overrides
   //
@@ -220,6 +224,9 @@ class HESealBackend : public ngraph::runtime::Backend {
   std::shared_ptr<seal::Evaluator> m_evaluator;
   std::shared_ptr<seal::KeyGenerator> m_keygen;
   std::shared_ptr<HEEncryptionParameters> m_encryption_params;
+  std::shared_ptr<seal::CKKSEncoder> m_ckks_encoder;
+  // Scale with which to encode new ciphertexts
+  double m_scale;
 };
 
 }  // namespace he

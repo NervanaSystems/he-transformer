@@ -24,8 +24,8 @@
 
 namespace ngraph {
 namespace he {
-inline void reshape(const std::vector<std::shared_ptr<HECiphertext>>& arg,
-                    std::vector<std::shared_ptr<HECiphertext>>& out,
+inline void reshape(const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
+                    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
                     const Shape& in_shape, const AxisVector& in_axis_order,
                     const Shape& out_shape) {
   // Unfortunately we don't yet have a constructor for CoordinateTransform that

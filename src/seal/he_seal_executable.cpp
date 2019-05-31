@@ -21,8 +21,8 @@
 #include "he_tensor.hpp"
 #include "kernel/add_seal.hpp"
 #include "seal/he_seal_executable.hpp"
-/*#include "kernel/avg_pool.hpp"
-#include "kernel/batch_norm_inference.hpp"
+// #include "kernel/avg_pool_seal.hpp"
+/*#include "kernel/batch_norm_inference.hpp"
 #include "kernel/broadcast.hpp"
 #include "kernel/concat.hpp"
 #include "kernel/constant.hpp"
@@ -785,7 +785,7 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::AvgPool: {
-      const op::AvgPool* avg_pool = static_cast<const op::AvgPool*>(&node);
+      /*const op::AvgPool* avg_pool = static_cast<const op::AvgPool*>(&node);
       Shape in_shape = arg_shapes[0];
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
         ngraph::he::avg_pool(
@@ -797,7 +797,7 @@ void ngraph::he::HESealExecutable::generate_calls(
             m_he_seal_backend);
         lazy_rescaling(out0_cipher);
 
-      } /*else if (arg0_plain != nullptr && out0_plain != nullptr) {
+      } else if (arg0_plain != nullptr && out0_plain != nullptr) {
         ngraph::he::avg_pool(
             arg0_plain->get_elements(), out0_plain->get_elements(), in_shape,
             out_shape, avg_pool->get_window_shape(),
@@ -806,17 +806,17 @@ void ngraph::he::HESealExecutable::generate_calls(
             avg_pool->get_include_padding_in_avg_computation(),
     m_he_seal_backend);
 
-    } */
+    }
       else {
         throw ngraph_error("AvgPool types not supported.");
-      }
+      }*/
       break;
     }
     case OP_TYPEID::BatchNormInference: {
       // TODO: enable
       throw ngraph_error("BatchNormInference not supported.");
 
-      const ngraph::op::BatchNormInference* bn =
+      /*const ngraph::op::BatchNormInference* bn =
           static_cast<const ngraph::op::BatchNormInference*>(&node);
       double eps = bn->get_eps_value();
       NGRAPH_CHECK(args.size() == 5, "BatchNormInference has ", args.size(),
@@ -833,7 +833,7 @@ void ngraph::he::HESealExecutable::generate_calls(
       NGRAPH_CHECK(beta != nullptr, "BatchNorm beta not plain");
       NGRAPH_CHECK(input != nullptr, "BatchNorm input not cipher");
       NGRAPH_CHECK(mean != nullptr, "BatchNorm mean not plaintext");
-      NGRAPH_CHECK(variance != nullptr, "BatchNorm variance not plaintext");
+      NGRAPH_CHECK(variance != nullptr, "BatchNorm variance not plaintext"); */
 
       /* ngraph::he::batch_norm_inference(
            eps, gamma->get_elements(), beta->get_elements(),
@@ -843,27 +843,28 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Broadcast: {
-      const op::Broadcast* broadcast = static_cast<const op::Broadcast*>(&node);
-      AxisSet broadcast_axes = broadcast->get_broadcast_axes();
+      /* const op::Broadcast* broadcast = static_cast<const
+       op::Broadcast*>(&node); AxisSet broadcast_axes =
+       broadcast->get_broadcast_axes();
 
-      Shape in_shape = arg_shapes[0];
-      if (arg0_cipher != nullptr && out0_cipher != nullptr) {
-        ngraph::he::broadcast(arg0_cipher->get_elements(),
-                              out0_cipher->get_elements(), in_shape, out_shape,
-                              broadcast_axes);
-      } else if (arg0_plain != nullptr && out0_plain != nullptr) {
-        ngraph::he::broadcast(arg0_plain->get_elements(),
-                              out0_plain->get_elements(), in_shape, out_shape,
-                              broadcast_axes);
-      } else {
-        throw ngraph_error("Broadcast types not supported.");
-      }
+       Shape in_shape = arg_shapes[0];
+       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
+         ngraph::he::broadcast(arg0_cipher->get_elements(),
+                               out0_cipher->get_elements(), in_shape, out_shape,
+                               broadcast_axes);
+       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
+         ngraph::he::broadcast(arg0_plain->get_elements(),
+                               out0_plain->get_elements(), in_shape, out_shape,
+                               broadcast_axes);
+       } else {
+         throw ngraph_error("Broadcast types not supported.");
+       } */
       break;
     }
     case OP_TYPEID::BroadcastLike:
       break;
     case OP_TYPEID::Concat: {
-      const op::Concat* concat = static_cast<const op::Concat*>(&node);
+      /*const op::Concat* concat = static_cast<const op::Concat*>(&node);
 
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
         std::vector<Shape> in_shapes;
@@ -907,11 +908,11 @@ void ngraph::he::HESealExecutable::generate_calls(
                            concat->get_concatenation_axis());
       } else {
         throw ngraph_error("Concat types not supported.");
-      }
+      } */
       break;
     }
     case OP_TYPEID::Constant: {
-      const op::Constant* constant = static_cast<const op::Constant*>(&node);
+      /*const op::Constant* constant = static_cast<const op::Constant*>(&node);
 
       if (out0_plain != nullptr) {
         ngraph::he::constant(out0_plain->get_elements(), type,
@@ -923,11 +924,11 @@ void ngraph::he::HESealExecutable::generate_calls(
                              out0_cipher->get_batched_element_count());
       } else {
         throw ngraph_error("Constant type not supported.");
-      }
+      }*/
       break;
     }
     case OP_TYPEID::Convolution: {
-      const op::Convolution* c = static_cast<const op::Convolution*>(&node);
+      /*const op::Convolution* c = static_cast<const op::Convolution*>(&node);
       auto window_movement_strides = c->get_window_movement_strides();
       auto window_dilation_strides = c->get_window_dilation_strides();
       auto padding_below = c->get_padding_below();
@@ -977,11 +978,11 @@ void ngraph::he::HESealExecutable::generate_calls(
             m_batch_size, m_he_seal_backend);
       } else {
         throw ngraph_error("Convolution types not supported.");
-      }
+      }*/
       break;
     }
     case OP_TYPEID::Dot: {
-      const op::Dot* dot = static_cast<const op::Dot*>(&node);
+      /*const op::Dot* dot = static_cast<const op::Dot*>(&node);
       Shape in_shape0 = arg_shapes[0];
       Shape in_shape1 = unbatched_arg_shapes[1];
 
@@ -1016,11 +1017,11 @@ void ngraph::he::HESealExecutable::generate_calls(
                         m_he_seal_backend);
       } else {
         throw ngraph_error("Dot types not supported.");
-      }
+      }*/
       break;
     }
     case OP_TYPEID::MaxPool: {
-      if (!m_enable_client) {
+      /*if (!m_enable_client) {
         throw ngraph_error(
             "MaxPool op unsupported unless client is enabled. Try setting "
             "NGRAPH_ENABLE_CLIENT=1");
@@ -1062,31 +1063,31 @@ void ngraph::he::HESealExecutable::generate_calls(
           auto he_ciphertext = arg0_cipher->get_element(max_ind);
           he_ciphertext->save(cipher_stream);
           cipher_count++;
-        }
-        // Send list of ciphertexts to maximize over to client
-        /*NGRAPH_INFO << "Sending " << cipher_count
-                    << " Maxpool ciphertexts (size "
-                    << cipher_stream.str().size() << ") to client"; */
-        auto max_message =
-            TCPMessage(MessageType::max_request, cipher_count, cipher_stream);
+        }*/
+      // Send list of ciphertexts to maximize over to client
+      /*NGRAPH_INFO << "Sending " << cipher_count
+                  << " Maxpool ciphertexts (size "
+                  << cipher_stream.str().size() << ") to client"; */
+      /* auto max_message =
+           TCPMessage(MessageType::max_request, cipher_count, cipher_stream);
 
-        m_session->do_write(max_message);
+       m_session->do_write(max_message);
 
-        // Acquire lock
-        std::unique_lock<std::mutex> mlock(m_max_mutex);
+       // Acquire lock
+       std::unique_lock<std::mutex> mlock(m_max_mutex);
 
-        // Wait until max is done
-        m_max_cond.wait(mlock, std::bind(&HESealExecutable::max_done, this));
+       // Wait until max is done
+       m_max_cond.wait(mlock, std::bind(&HESealExecutable::max_done, this));
 
-        // Reset for next max call
-        m_max_done = false;
-      }
+       // Reset for next max call
+       m_max_done = false;
+     }
 
-      out0_cipher->set_elements(m_max_ciphertexts);
+     out0_cipher->set_elements(m_max_ciphertexts);*/
       break;
     }
     case OP_TYPEID::Minimum: {
-      NGRAPH_INFO << "Minimum op";
+      /*NGRAPH_INFO << "Minimum op";
       if (!m_enable_client) {
         throw ngraph_error(
             "Minimum op unsupported unless client is enabled. Try setting "
@@ -1173,11 +1174,11 @@ void ngraph::he::HESealExecutable::generate_calls(
       // Reset for next max call
       m_minimum_done = false;
 
-      out0_cipher->set_elements(m_minimum_ciphertexts);
+      out0_cipher->set_elements(m_minimum_ciphertexts);*/
       break;
     }
     case OP_TYPEID::Multiply: {
-      if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
+      /*if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
         ngraph::he::multiply(
             arg0_cipher->get_elements(), arg1_cipher->get_elements(),
@@ -1205,21 +1206,21 @@ void ngraph::he::HESealExecutable::generate_calls(
             out0_plain->get_batched_element_count());
       } else {
         throw ngraph_error("Multiply types not supported.");
-      }
+      }*/
       break;
     }
     case OP_TYPEID::Negative: {
-      if (arg0_cipher != nullptr && out0_cipher != nullptr) {
-        ngraph::he::negate(arg0_cipher->get_elements(),
-                           out0_cipher->get_elements(), type, m_he_seal_backend,
-                           out0_cipher->get_batched_element_count());
-      } else if (arg0_plain != nullptr && out0_plain != nullptr) {
-        ngraph::he::negate(arg0_plain->get_elements(),
-                           out0_plain->get_elements(), type, m_he_seal_backend,
-                           out0_plain->get_batched_element_count());
-      } else {
-        throw ngraph_error("Negative types not supported.");
-      }
+      /* if (arg0_cipher != nullptr && out0_cipher != nullptr) {
+         ngraph::he::negate(arg0_cipher->get_elements(),
+                            out0_cipher->get_elements(), type,
+       m_he_seal_backend, out0_cipher->get_batched_element_count()); } else if
+       (arg0_plain != nullptr && out0_plain != nullptr) {
+         ngraph::he::negate(arg0_plain->get_elements(),
+                            out0_plain->get_elements(), type, m_he_seal_backend,
+                            out0_plain->get_batched_element_count());
+       } else {
+         throw ngraph_error("Negative types not supported.");
+       }*/
       break;
     }
     case OP_TYPEID::Parameter:
@@ -1227,10 +1228,10 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     case OP_TYPEID::Pad: {
       throw ngraph_error("Pad unimplemnented");
-      const op::Pad* pad = static_cast<const op::Pad*>(&node);
+      /*const op::Pad* pad = static_cast<const op::Pad*>(&node);
       const Shape arg0_shape = arg_shapes[0];
 
-      /*if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
+      if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
         ngraph::he::pad(arg0_cipher->get_elements(),
                         arg1_cipher->get_elements(),
@@ -1262,7 +1263,7 @@ void ngraph::he::HESealExecutable::generate_calls(
                            passthrough->language()};
     }
     case OP_TYPEID::Reshape: {
-      NGRAPH_INFO << "Reshape op";
+      /*NGRAPH_INFO << "Reshape op";
       const op::Reshape* reshape = static_cast<const op::Reshape*>(&node);
 
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
@@ -1278,11 +1279,11 @@ void ngraph::he::HESealExecutable::generate_calls(
       } else {
         throw ngraph_error("Reshape types not supported.");
       }
-      NGRAPH_INFO << "Done with reshape op";
+      NGRAPH_INFO << "Done with reshape op";*/
       break;
     }
     case OP_TYPEID::Result: {
-      size_t output_size;
+      /*size_t output_size;
       if (arg0_plain != nullptr) {
         output_size = arg0_plain->get_batched_element_count();
       } else if (arg0_cipher != nullptr) {
@@ -1307,11 +1308,11 @@ void ngraph::he::HESealExecutable::generate_calls(
                            out0_plain->get_elements(), output_size);
       } else {
         throw ngraph_error("Result types not supported.");
-      }
+      }*/
       break;
     }
     case OP_TYPEID::Relu: {
-      if (!m_enable_client) {
+      /*if (!m_enable_client) {
         throw ngraph_error(
             "Relu op unsupported unless client is enabled. Try setting "
             "NGRAPH_ENABLE_CLIENT=1");
@@ -1345,31 +1346,31 @@ void ngraph::he::HESealExecutable::generate_calls(
 
       // Reset for next Relu call
       m_relu_done = false;
-      out0_cipher->set_elements(m_relu_ciphertexts);
+      out0_cipher->set_elements(m_relu_ciphertexts);*/
       break;
     }
     case OP_TYPEID::Reverse: {
-      const op::Reverse* reverse = static_cast<const op::Reverse*>(&node);
-      Shape in_shape = node.get_input_shape(0);
-      Shape out_shape = node.get_output_shape(0);
+      /* const op::Reverse* reverse = static_cast<const op::Reverse*>(&node);
+       Shape in_shape = node.get_input_shape(0);
+       Shape out_shape = node.get_output_shape(0);
 
-      if (arg0_cipher != nullptr && out0_cipher != nullptr) {
-        ngraph::he::reverse(arg0_cipher->get_elements(),
-                            out0_cipher->get_elements(), in_shape, out_shape,
-                            reverse->get_reversed_axes());
-      } else if (arg0_plain != nullptr && out0_plain != nullptr) {
-        ngraph::he::reverse(arg0_plain->get_elements(),
-                            out0_plain->get_elements(), in_shape, out_shape,
-                            reverse->get_reversed_axes());
-      } else {
-        throw ngraph_error("Reverse types not supported.");
-      }
+       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
+         ngraph::he::reverse(arg0_cipher->get_elements(),
+                             out0_cipher->get_elements(), in_shape, out_shape,
+                             reverse->get_reversed_axes());
+       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
+         ngraph::he::reverse(arg0_plain->get_elements(),
+                             out0_plain->get_elements(), in_shape, out_shape,
+                             reverse->get_reversed_axes());
+       } else {
+         throw ngraph_error("Reverse types not supported.");
+       } */
       break;
     }
     case OP_TYPEID::ScalarConstantLike:
       break;
     case OP_TYPEID::Slice: {
-      const op::Slice* slice = static_cast<const op::Slice*>(&node);
+      /*const op::Slice* slice = static_cast<const op::Slice*>(&node);
       Shape in_shape = node.get_input_shape(0);
       Shape out_shape = node.get_output_shape(0);
 
@@ -1385,11 +1386,11 @@ void ngraph::he::HESealExecutable::generate_calls(
                           slice->get_strides(), out_shape);
       } else {
         throw ngraph_error("Slice types not supported.");
-      }
+      }*/
       break;
     }
     case OP_TYPEID::Subtract: {
-      if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
+      /*if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
         ngraph::he::subtract(
             arg0_cipher->get_elements(), arg1_cipher->get_elements(),
@@ -1415,11 +1416,11 @@ void ngraph::he::HESealExecutable::generate_calls(
             out0_plain->get_batched_element_count());
       } else {
         throw ngraph_error("Subtract types not supported.");
-      }
+      } */
       break;
     }
     case OP_TYPEID::Sum: {
-      const op::Sum* sum = static_cast<const op::Sum*>(&node);
+      /*const op::Sum* sum = static_cast<const op::Sum*>(&node);
       Shape in_shape = node.get_input_shape(0);
       Shape out_shape = node.get_output_shape(0);
 
@@ -1433,7 +1434,7 @@ void ngraph::he::HESealExecutable::generate_calls(
                         m_he_seal_backend);
       } else {
         throw ngraph_error("Sum types not supported.");
-      }
+      }*/
       break;
     }
     // Unsupported ops

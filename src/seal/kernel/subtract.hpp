@@ -26,21 +26,21 @@
 
 namespace ngraph {
 namespace he {
-void scalar_subtract(std::shared_ptr<ngraph::he::HECiphertext>& arg0,
-                     std::shared_ptr<ngraph::he::HECiphertext>& arg1,
-                     std::shared_ptr<ngraph::he::HECiphertext>& out,
+void scalar_subtract(std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
+                     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
+                     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
                      const element::Type& element_type,
                      const ngraph::he::HESealBackend* he_seal_backend);
 
-void scalar_subtract(std::shared_ptr<ngraph::he::HECiphertext>& arg0,
+void scalar_subtract(std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
                      const HEPlaintext& arg1,
-                     std::shared_ptr<ngraph::he::HECiphertext>& out,
+                     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
                      const element::Type& element_type,
                      const ngraph::he::HESealBackend* he_seal_backend);
 
 void scalar_subtract(const HEPlaintext& arg0,
-                     std::shared_ptr<ngraph::he::HECiphertext>& arg1,
-                     std::shared_ptr<ngraph::he::HECiphertext>& out,
+                     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
+                     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
                      const element::Type& element_type,
                      const ngraph::he::HESealBackend* he_seal_backend);
 
@@ -48,9 +48,9 @@ void scalar_subtract(const HEPlaintext& arg0, const HEPlaintext& arg1,
                      HEPlaintext& out, const element::Type& element_type,
                      const ngraph::he::HESealBackend* he_seal_backend);
 
-inline void subtract(std::vector<std::shared_ptr<HECiphertext>>& arg0,
-                     std::vector<std::shared_ptr<HECiphertext>>& arg1,
-                     std::vector<std::shared_ptr<HECiphertext>>& out,
+inline void subtract(std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg0,
+                     std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg1,
+                     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
                      const element::Type& element_type,
                      const ngraph::he::HESealBackend* he_seal_backend, size_t count) {
 #pragma omp parallel for
@@ -59,9 +59,9 @@ inline void subtract(std::vector<std::shared_ptr<HECiphertext>>& arg0,
   }
 }
 
-inline void subtract(std::vector<std::shared_ptr<HECiphertext>>& arg0,
+inline void subtract(std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg0,
                      const std::vector<std::unique_ptr<HEPlaintext>>& arg1,
-                     std::vector<std::shared_ptr<HECiphertext>>& out,
+                     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
                      const element::Type& element_type,
                      const ngraph::he::HESealBackend* he_seal_backend, size_t count) {
   NGRAPH_INFO << "Sub plain size " << count;
@@ -72,8 +72,8 @@ inline void subtract(std::vector<std::shared_ptr<HECiphertext>>& arg0,
 }
 
 inline void subtract(const std::vector<std::unique_ptr<HEPlaintext>>& arg0,
-                     std::vector<std::shared_ptr<HECiphertext>>& arg1,
-                     std::vector<std::shared_ptr<HECiphertext>>& out,
+                     std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg1,
+                     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
                      const element::Type& element_type,
                      const ngraph::he::HESealBackend* he_seal_backend, size_t count) {
 #pragma omp parallel for

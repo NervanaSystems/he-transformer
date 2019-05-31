@@ -20,10 +20,10 @@
 
 namespace ngraph {
 namespace he {
-class HECiphertext {
+class SealCiphertextWrapper {
  public:
-  HECiphertext(){};
-  virtual ~HECiphertext(){};
+  SealCiphertextWrapper(){};
+  virtual ~SealCiphertextWrapper(){};
 
   virtual void save(std::ostream& stream) const = 0;
 

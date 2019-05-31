@@ -26,8 +26,8 @@
 
 namespace ngraph {
 namespace he {
-inline void result(const std::vector<std::shared_ptr<HECiphertext>>& arg,
-                   std::vector<std::shared_ptr<HECiphertext>>& out,
+inline void result(const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
+                   std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
                    size_t count) {
   if (out.size() != arg.size()) {
     NGRAPH_INFO << "Result output size " << out.size()
@@ -53,10 +53,10 @@ inline void result(const std::vector<std::unique_ptr<HEPlaintext>>& arg,
 }
 
 void result(const std::vector<std::unique_ptr<ngraph::he::HEPlaintext>>& arg,
-            std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& out,
+            std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>& out,
             size_t count, const ngraph::he::HESealBackend* he_seal_backend);
 
-void result(const std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& arg,
+void result(const std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>& arg,
             std::vector<std::unique_ptr<ngraph::he::HEPlaintext>>& out,
             size_t count, const ngraph::he::HESealBackend* he_seal_backend);
 }  // namespace he

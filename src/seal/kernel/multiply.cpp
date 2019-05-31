@@ -22,9 +22,9 @@
 #include "seal/kernel/negate_seal.hpp"
 
 void ngraph::he::scalar_multiply(
-    std::shared_ptr<ngraph::he::HECiphertext>& arg0,
-    std::shared_ptr<ngraph::he::HECiphertext>& arg1,
-    std::shared_ptr<ngraph::he::HECiphertext>& out,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const ngraph::he::HESealBackend* he_seal_backend) {
   auto he_seal_backend = cast_to_seal_backend(he_seal_backend);
@@ -33,7 +33,7 @@ void ngraph::he::scalar_multiply(
   auto out_seal = cast_to_seal_hetext(out);
   ngraph::he::scalar_multiply(arg0_seal, arg1_seal, out_seal, element_type,
                               he_seal_backend);
-  out = std::dynamic_pointer_cast<ngraph::he::HECiphertext>(out_seal);
+  out = std::dynamic_pointer_cast<ngraph::he::SealCiphertextWrapper>(out_seal);
 }
 
 void ngraph::he::scalar_multiply(const ngraph::he::HEPlaintext& arg0,
@@ -46,9 +46,9 @@ void ngraph::he::scalar_multiply(const ngraph::he::HEPlaintext& arg0,
 }
 
 void ngraph::he::scalar_multiply(
-    std::shared_ptr<ngraph::he::HECiphertext>& arg0,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
     const ngraph::he::HEPlaintext& arg1,
-    std::shared_ptr<ngraph::he::HECiphertext>& out,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const ngraph::he::HESealBackend* he_seal_backend) {
   auto he_seal_backend = cast_to_seal_backend(he_seal_backend);
@@ -57,13 +57,13 @@ void ngraph::he::scalar_multiply(
 
   ngraph::he::scalar_multiply(arg0_seal, arg1, out_seal, element_type,
                               he_seal_backend);
-  out = std::dynamic_pointer_cast<ngraph::he::HECiphertext>(out_seal);
+  out = std::dynamic_pointer_cast<ngraph::he::SealCiphertextWrapper>(out_seal);
 }
 
 void ngraph::he::scalar_multiply(
     const ngraph::he::HEPlaintext& arg0,
-    std::shared_ptr<ngraph::he::HECiphertext>& arg1,
-    std::shared_ptr<ngraph::he::HECiphertext>& out,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type,
     const ngraph::he::HESealBackend* he_seal_backend) {
   scalar_multiply(arg1, arg0, out, element_type, he_seal_backend);

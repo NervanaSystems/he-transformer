@@ -26,9 +26,9 @@
 
 namespace ngraph {
 namespace he {
-void pad(std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& arg0,
+void pad(std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>& arg0,
          std::vector<std::shared_ptr<ngraph::he::HEPlaintext>>& arg1,  // scalar
-         std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& out,
+         std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>& out,
          const Shape& arg0_shape, const Shape& out_shape,
          const CoordinateDiff& padding_below,
          const CoordinateDiff& padding_above, op::PadMode pad_mode,

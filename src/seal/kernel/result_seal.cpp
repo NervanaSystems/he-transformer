@@ -18,7 +18,7 @@
 
 void ngraph::he::result(
     const std::vector<std::unique_ptr<ngraph::he::HEPlaintext>>& arg,
-    std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& out, size_t count,
+    std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>& out, size_t count,
     const ngraph::he::HESealBackend* he_seal_backend) {
   if (out.size() != arg.size()) {
     NGRAPH_INFO << "Result output size " << out.size()
@@ -31,7 +31,7 @@ void ngraph::he::result(
 }
 
 void ngraph::he::result(
-    const std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& arg,
+    const std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>& arg,
     std::vector<std::unique_ptr<ngraph::he::HEPlaintext>>& out, size_t count,
     const ngraph::he::HESealBackend* he_seal_backend) {
   if (out.size() != arg.size()) {

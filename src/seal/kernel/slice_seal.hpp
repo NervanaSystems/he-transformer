@@ -23,8 +23,8 @@
 
 namespace ngraph {
 namespace he {
-void slice(const std::vector<std::shared_ptr<HECiphertext>>& arg,
-           std::vector<std::shared_ptr<HECiphertext>>& out,
+void slice(const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
+           std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
            const Shape& arg_shape, const Coordinate& lower_bounds,
            const Coordinate& upper_bounds, const Strides& strides,
            const Shape& out_shape) {

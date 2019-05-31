@@ -32,6 +32,8 @@ class SealPlaintextWrapper {
       : m_complex_packing(complex_packing) {}
 
   bool complex_packing() const { return m_complex_packing; }
+  bool& complex_packing() { return m_complex_packing; }
+
   seal::Plaintext& plaintext() { return m_plaintext; }
   const seal::Plaintext& plaintext() const { return m_plaintext; }
 

@@ -26,8 +26,8 @@
 
 namespace ngraph {
 namespace he {
-inline void reverse(const std::vector<std::shared_ptr<HECiphertext>>& arg,
-                    std::vector<std::shared_ptr<HECiphertext>>& out,
+inline void reverse(const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
+                    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
                     const Shape& arg_shape, const Shape& out_shape,
                     const AxisSet& reversed_axes) {
   // In fact arg_shape == out_shape, but we'll use both for stylistic

@@ -23,9 +23,9 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/kernel/subtract_seal.hpp"
 
-void ngraph::he::scalar_subtract(std::shared_ptr<HECiphertext>& arg0,
-                                 std::shared_ptr<HECiphertext>& arg1,
-                                 std::shared_ptr<HECiphertext>& out,
+void ngraph::he::scalar_subtract(std::shared_ptr<SealCiphertextWrapper>& arg0,
+                                 std::shared_ptr<SealCiphertextWrapper>& arg1,
+                                 std::shared_ptr<SealCiphertextWrapper>& out,
                                  const element::Type& element_type,
                                  const ngraph::he::HESealBackend* he_seal_backend) {
   auto he_seal_backend = ngraph::he::cast_to_seal_backend(he_seal_backend);
@@ -35,7 +35,7 @@ void ngraph::he::scalar_subtract(std::shared_ptr<HECiphertext>& arg0,
 
   ngraph::he::scalar_subtract(arg0_seal, arg1_seal, out_seal, element_type,
                               he_seal_backend);
-  out = std::dynamic_pointer_cast<HECiphertext>(out_seal);
+  out = std::dynamic_pointer_cast<SealCiphertextWrapper>(out_seal);
 }
 
 void ngraph::he::scalar_subtract(const HEPlaintext& arg0,
@@ -54,9 +54,9 @@ void ngraph::he::scalar_subtract(const HEPlaintext& arg0,
   out.set_values(out_vals);
 }
 
-void ngraph::he::scalar_subtract(std::shared_ptr<HECiphertext>& arg0,
+void ngraph::he::scalar_subtract(std::shared_ptr<SealCiphertextWrapper>& arg0,
                                  const HEPlaintext& arg1,
-                                 std::shared_ptr<HECiphertext>& out,
+                                 std::shared_ptr<SealCiphertextWrapper>& out,
                                  const element::Type& type,
                                  const ngraph::he::HESealBackend* he_seal_backend) {
   NGRAPH_CHECK(type == element::f32);
@@ -81,7 +81,7 @@ void ngraph::he::scalar_subtract(std::shared_ptr<HECiphertext>& arg0,
     // Make copy of input
     // TODO: make copy only if necessary
     NGRAPH_INFO << "Sub 0 optimization";
-    out = std::static_pointer_cast<HECiphertext>(
+    out = std::static_pointer_cast<SealCiphertextWrapper>(
         std::make_shared<ngraph::he::SealCiphertextWrapper>(*arg0_seal));
   } else {
     NGRAPH_INFO << "normal sub";
@@ -90,8 +90,8 @@ void ngraph::he::scalar_subtract(std::shared_ptr<HECiphertext>& arg0,
 }
 
 void ngraph::he::scalar_subtract(const HEPlaintext& arg0,
-                                 std::shared_ptr<HECiphertext>& arg1,
-                                 std::shared_ptr<HECiphertext>& out,
+                                 std::shared_ptr<SealCiphertextWrapper>& arg1,
+                                 std::shared_ptr<SealCiphertextWrapper>& out,
                                  const element::Type& type,
                                  const ngraph::he::HESealBackend* he_seal_backend) {
   if (arg1->is_zero()) {

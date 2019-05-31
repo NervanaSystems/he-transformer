@@ -25,8 +25,8 @@
 
 namespace ngraph {
 namespace he {
-inline void sum(std::vector<std::shared_ptr<HECiphertext>>& arg,
-                std::vector<std::shared_ptr<HECiphertext>>& out,
+inline void sum(std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
+                std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
                 const Shape& in_shape, const Shape& out_shape,
                 const AxisSet& reduction_axes,
                 const element::Type& element_type,
@@ -35,7 +35,7 @@ inline void sum(std::vector<std::shared_ptr<HECiphertext>>& arg,
 
   for (const Coordinate& output_coord : output_transform) {
     out[output_transform.index(output_coord)] =
-        he_seal_backend->create_valued_hetext<HECiphertext>(0.f, element_type);
+        he_seal_backend->create_valued_hetext<SealCiphertextWrapper>(0.f, element_type);
   }
 
   CoordinateTransform input_transform(in_shape);

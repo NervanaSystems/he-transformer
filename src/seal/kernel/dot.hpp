@@ -31,9 +31,9 @@ namespace ngraph {
 namespace he {
 // TODO: templatize?
 inline void dot_seal(
-    const std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& arg0,
-    const std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& arg1,
-    std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& out,
+    const std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>& arg0,
+    const std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>& arg1,
+    std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>& out,
     const Shape& arg0_shape, const Shape& arg1_shape, const Shape& out_shape,
     size_t reduction_axes_count, const element::Type& element_type,
     const ngraph::he::HESealBackend* he_seal_backend) {
@@ -155,13 +155,13 @@ inline void dot_seal(
     }
     // Write the sum back.
     out[out_index] =
-        std::dynamic_pointer_cast<ngraph::he::HECiphertext>(seal_sum);
+        std::dynamic_pointer_cast<ngraph::he::SealCiphertextWrapper>(seal_sum);
   }
 }
 
-inline void dot(const std::vector<std::shared_ptr<HECiphertext>>& arg0,
-                const std::vector<std::shared_ptr<HECiphertext>>& arg1,
-                std::vector<std::shared_ptr<HECiphertext>>& out,
+inline void dot(const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg0,
+                const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg1,
+                std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
                 const Shape& arg0_shape, const Shape& arg1_shape,
                 const Shape& out_shape, size_t reduction_axes_count,
                 const element::Type& element_type,
@@ -172,8 +172,8 @@ inline void dot(const std::vector<std::shared_ptr<HECiphertext>>& arg0,
 }
 
 inline void dot(const std::vector<std::unique_ptr<HEPlaintext>>& arg0,
-                const std::vector<std::shared_ptr<HECiphertext>>& arg1,
-                std::vector<std::shared_ptr<HECiphertext>>& out,
+                const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg1,
+                std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
                 const Shape& arg0_shape, const Shape& arg1_shape,
                 const Shape& out_shape, size_t reduction_axes_count,
                 const element::Type& element_type,
@@ -183,9 +183,9 @@ inline void dot(const std::vector<std::unique_ptr<HEPlaintext>>& arg0,
   //          reduction_axes_count, element_type, he_seal_backend);
   throw ngraph_error("dot unimplemented");
 }
-inline void dot(const std::vector<std::shared_ptr<HECiphertext>>& arg0,
+inline void dot(const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg0,
                 const std::vector<std::unique_ptr<HEPlaintext>>& arg1,
-                std::vector<std::shared_ptr<HECiphertext>>& out,
+                std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
                 const Shape& arg0_shape, const Shape& arg1_shape,
                 const Shape& out_shape, size_t reduction_axes_count,
                 const element::Type& element_type,

@@ -50,7 +50,7 @@ class HEBackend : public ngraph::runtime::Backend {
 
   /// @brief Creates ciphertext of unspecified value
   /// @return Shared pointer to created ciphertext
-  virtual std::shared_ptr<ngraph::he::HECiphertext> create_empty_ciphertext()
+  virtual std::shared_ptr<ngraph::he::SealCiphertextWrapper> create_empty_ciphertext()
       const = 0;
 
   /// @brief Creates ciphertext of unspecified value
@@ -59,9 +59,9 @@ class HEBackend : public ngraph::runtime::Backend {
   template <
       typename T,
       typename = std::enable_if_t<
-          std::is_same<T, ngraph::he::HECiphertext>::value ||
-          std::is_same<T, std::shared_ptr<ngraph::he::HECiphertext>>::value>>
-  std::shared_ptr<ngraph::he::HECiphertext> create_empty_hetext() const {
+          std::is_same<T, ngraph::he::SealCiphertextWrapper>::value ||
+          std::is_same<T, std::shared_ptr<ngraph::he::SealCiphertextWrapper>>::value>>
+  std::shared_ptr<ngraph::he::SealCiphertextWrapper> create_empty_hetext() const {
     return create_empty_ciphertext();
   };
 
@@ -71,7 +71,7 @@ class HEBackend : public ngraph::runtime::Backend {
   /// @param batch_size Number of elements to encrypt
   ///        > 1 indicates batching
   /// @return Shared pointer to created ciphertext
-  std::shared_ptr<ngraph::he::HECiphertext> create_valued_ciphertext(
+  std::shared_ptr<ngraph::he::SealCiphertextWrapper> create_valued_ciphertext(
       float value, const element::Type& element_type,
       size_t batch_size = 1) const;
 
@@ -79,8 +79,8 @@ class HEBackend : public ngraph::runtime::Backend {
   /// Alias for create_valued_ciphertext()
   /// @return Shared pointer to created ciphertext
   template <typename T, typename = std::enable_if_t<
-                            std::is_same<T, ngraph::he::HECiphertext>::value>>
-  std::shared_ptr<ngraph::he::HECiphertext> create_valued_hetext(
+                            std::is_same<T, ngraph::he::SealCiphertextWrapper>::value>>
+  std::shared_ptr<ngraph::he::SealCiphertextWrapper> create_valued_hetext(
       float value, const element::Type& element_type,
       size_t batch_size = 1) const {
     return create_valued_ciphertext(value, element_type, batch_size);
@@ -151,7 +151,7 @@ class HEBackend : public ngraph::runtime::Backend {
   /// @brief Encrypts plaintext polynomial to ciphertext
   /// @param output Pointer to ciphertext to encrypt to
   /// @param input Pointer to plaintext to encrypt
-  virtual void encrypt(std::shared_ptr<ngraph::he::HECiphertext>& output,
+  virtual void encrypt(std::shared_ptr<ngraph::he::SealCiphertextWrapper>& output,
                        const ngraph::he::HEPlaintext& input) const = 0;
 
   /// @brief Decrypts ciphertext to plaintext polynomial
@@ -159,7 +159,7 @@ class HEBackend : public ngraph::runtime::Backend {
   /// @param input Pointer to ciphertext to decrypt
   virtual void decrypt(
       ngraph::he::HEPlaintext& output,
-      const std::shared_ptr<ngraph::he::HECiphertext>& input) const = 0;
+      const std::shared_ptr<ngraph::he::SealCiphertextWrapper>& input) const = 0;
 
   const std::shared_ptr<ngraph::he::HEEncryptionParameters>
   get_encryption_parameters() const {

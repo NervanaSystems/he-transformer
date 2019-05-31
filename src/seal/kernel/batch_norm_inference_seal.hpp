@@ -36,10 +36,10 @@ namespace he {
 void batch_norm_inference(
     double eps, std::vector<std::shared_ptr<HEPlaintext>>& gamma,
     std::vector<std::shared_ptr<HEPlaintext>>& beta,
-    std::vector<std::shared_ptr<HECiphertext>>& input,
+    std::vector<std::shared_ptr<SealCiphertextWrapper>>& input,
     std::vector<std::shared_ptr<HEPlaintext>>& mean,
     std::vector<std::shared_ptr<HEPlaintext>>& variance,
-    std::vector<std::shared_ptr<HECiphertext>>& normed_input,
+    std::vector<std::shared_ptr<SealCiphertextWrapper>>& normed_input,
     const Shape& input_shape, const size_t batch_size,
     const HESealBackend* he_seal_backend) {
   CoordinateTransform input_transform(input_shape);

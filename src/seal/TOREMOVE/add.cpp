@@ -76,9 +76,9 @@ void ngraph::he::scalar_add(
   ngraph::he::scalar_add(arg1, arg0, out, element_type, he_seal_backend, pool);
 }
 
-void ngraph::he::scalar_add(std::shared_ptr<ngraph::he::HECiphertext>& arg0,
-                            std::shared_ptr<ngraph::he::HECiphertext>& arg1,
-                            std::shared_ptr<ngraph::he::HECiphertext>& out,
+void ngraph::he::scalar_add(std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
+                            std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
+                            std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
                             const element::Type& element_type,
                             const ngraph::he::HESealBackend* he_seal_backend) {
   auto he_seal_backend = ngraph::he::cast_to_seal_backend(he_seal_backend);

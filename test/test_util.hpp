@@ -20,14 +20,14 @@
 #include <string>
 #include <vector>
 
-#include "he_backend.hpp"
-#include "he_cipher_tensor.hpp"
 #include "he_tensor.hpp"
 #include "ngraph/descriptor/layout/tensor_layout.hpp"
 #include "ngraph/file_util.hpp"
 #include "ngraph/node.hpp"
 #include "ngraph/runtime/tensor.hpp"
 #include "ngraph/type/element_type.hpp"
+#include "seal/he_seal_backend.hpp"
+#include "seal/he_seal_cipher_tensor.hpp"
 
 using namespace ngraph;
 

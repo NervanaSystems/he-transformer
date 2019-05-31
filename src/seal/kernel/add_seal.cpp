@@ -48,7 +48,7 @@ void ngraph::he::scalar_add_seal(
   NGRAPH_CHECK(element_type == element::f32);
 
   if (arg0->is_zero()) {
-    auto out_hetext = std::dynamic_pointer_cast<ngraph::he::HECiphertext>(out);
+    auto out_hetext = std::dynamic_pointer_cast<ngraph::he::SealCiphertextWrapper>(out);
     he_seal_backend->encrypt(out_hetext, arg1);
     out = ngraph::he::cast_to_seal_hetext(out_hetext);
     return;

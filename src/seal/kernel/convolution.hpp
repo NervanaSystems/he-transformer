@@ -29,9 +29,9 @@
 namespace ngraph {
 namespace he {
 inline void convolution(
-    const std::vector<std::shared_ptr<HECiphertext>>& arg0,
-    const std::vector<std::shared_ptr<HECiphertext>>& arg1,
-    std::vector<std::shared_ptr<HECiphertext>>& out, const Shape& arg0_shape,
+    const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg0,
+    const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg1,
+    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out, const Shape& arg0_shape,
     const Shape& arg1_shape, const Shape& out_shape,
     const Strides& window_movement_strides,
     const Strides& window_dilation_strides, const CoordinateDiff& padding_below,
@@ -62,8 +62,8 @@ inline void convolution(
 
 inline void convolution(
     const std::vector<std::unique_ptr<HEPlaintext>>& arg0,
-    const std::vector<std::shared_ptr<HECiphertext>>& arg1,
-    std::vector<std::shared_ptr<HECiphertext>>& out, const Shape& arg0_shape,
+    const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg1,
+    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out, const Shape& arg0_shape,
     const Shape& arg1_shape, const Shape& out_shape,
     const Strides& window_movement_strides,
     const Strides& window_dilation_strides, const CoordinateDiff& padding_below,
@@ -76,9 +76,9 @@ inline void convolution(
   throw ngraph_error("conv unimplemented");
 }
 inline void convolution(
-    const std::vector<std::shared_ptr<HECiphertext>>& arg0,
+    const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg0,
     const std::vector<std::unique_ptr<HEPlaintext>>& arg1,
-    std::vector<std::shared_ptr<HECiphertext>>& out, const Shape& arg0_shape,
+    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out, const Shape& arg0_shape,
     const Shape& arg1_shape, const Shape& out_shape,
     const Strides& window_movement_strides,
     const Strides& window_dilation_strides, const CoordinateDiff& padding_below,

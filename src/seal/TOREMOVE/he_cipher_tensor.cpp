@@ -26,7 +26,7 @@
 ngraph::he::HECipherTensor::HECipherTensor(
     const element::Type& element_type, const Shape& shape,
     const ngraph::he::HEBackend* he_seal_backend,
-    const std::shared_ptr<ngraph::he::HECiphertext> he_ciphertext,
+    const std::shared_ptr<ngraph::he::SealCiphertextWrapper> he_ciphertext,
     const bool batched, const std::string& name)
     : ngraph::he::HETensor(element_type, shape, he_seal_backend, batched, name) {
   m_num_elements = m_descriptor->get_tensor_layout()->get_size() / m_batch_size;
@@ -130,7 +130,7 @@ void ngraph::he::HECipherTensor::read(void* target, size_t tensor_offset,
 }
 
 void ngraph::he::HECipherTensor::set_elements(
-    const std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& elements) {
+    const std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>& elements) {
   if (elements.size() != get_element_count() / m_batch_size) {
     NGRAPH_INFO << "m_batch_size " << m_batch_size;
     NGRAPH_INFO << "get_element_count " << get_element_count();
