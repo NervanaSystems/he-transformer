@@ -54,10 +54,10 @@ inline void result(const std::vector<std::unique_ptr<HEPlaintext>>& arg,
 
 void result(const std::vector<std::unique_ptr<ngraph::he::HEPlaintext>>& arg,
             std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& out,
-            size_t count, const ngraph::he::HESealBasckend* he_seal_backend);
+            size_t count, const ngraph::he::HESealBackend* he_seal_backend);
 
 void result(const std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& arg,
             std::vector<std::unique_ptr<ngraph::he::HEPlaintext>>& out,
-            size_t count, const ngraph::he::HESealBasckend* he_seal_backend);
+            size_t count, const ngraph::he::HESealBackend* he_seal_backend);
 }  // namespace he
 }  // namespace ngraph

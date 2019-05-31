@@ -17,7 +17,6 @@
 #include <limits>
 #include <memory>
 
-#include "seal/ckks/he_seal_ckks_backend.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal.h"
 
@@ -31,11 +30,28 @@ extern "C" ngraph::runtime::Backend* new_backend(
 
   NGRAPH_CHECK(configuration_string == "HE_SEAL_CKKS",
                "Invalid configuration string ", configuration_string);
-  return new ngraph::he::HESealCKKSBackend();
+  return new ngraph::he::HESealBackend();
 }
 
 extern "C" void delete_backend(ngraph::runtime::Backend* backend) {
   delete backend;
+}
+
+std::shared_ptr<ngraph::runtime::Tensor>
+ngraph::he::HESealBackend::create_tensor(const element::Type& element_type,
+                                         const Shape& shape) {
+  if (batch_data()) {
+    return create_batched_plain_tensor(element_type, shape);
+  } else {
+    return create_plain_tensor(element_type, shape);
+  }
+}
+
+std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HEBackend::compile(
+    std::shared_ptr<Function> function, bool enable_performance_collection) {
+  return std::make_shared<HEExecutable>(function, enable_performance_collection,
+                                        this, m_encrypt_data, m_encrypt_model,
+                                        m_batch_data);
 }
 
 std::shared_ptr<ngraph::he::HECiphertext>

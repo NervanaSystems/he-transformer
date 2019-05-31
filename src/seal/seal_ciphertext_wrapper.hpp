@@ -18,12 +18,11 @@
 
 #include <memory>
 
-#include "he_ciphertext.hpp"
 #include "seal/seal.h"
 
 namespace ngraph {
 namespace he {
-struct SealCiphertextWrapper : public HECiphertext {
+struct SealCiphertextWrapper {
   SealCiphertextWrapper() {
     set_complex_packing(false);
     set_zero(false);
@@ -37,27 +36,21 @@ struct SealCiphertextWrapper : public HECiphertext {
   seal::Ciphertext& get_hetext() { return m_ciphertext; }
   const seal::Ciphertext& get_hetext() const { return m_ciphertext; }
 
-  void save(std::ostream& stream) const override { m_ciphertext.save(stream); }
+  void save(std::ostream& stream) const { m_ciphertext.save(stream); }
 
-  size_t size() const override { return m_ciphertext.size(); }
+  size_t size() const { return m_ciphertext.size(); }
 
+  bool is_zero() const { return m_is_zero; }
+  void set_zero(bool toggle) { m_is_zero = toggle; }
+
+  bool complex_packing() const { return m_complex_packing; }
+  void set_complex_packing(bool toggle) { m_complex_packing = toggle; }
+
+ private:
+  bool m_complex_packing;
+  bool m_is_zero;
   seal::Ciphertext m_ciphertext;
 };
 
-inline std::shared_ptr<ngraph::he::SealCiphertextWrapper> cast_to_seal_hetext(
-    std::shared_ptr<ngraph::he::HECiphertext>& cipher) {
-  auto seal_ciphertext_wrapper =
-      std::dynamic_pointer_cast<SealCiphertextWrapper>(cipher);
-  NGRAPH_CHECK(seal_ciphertext_wrapper != nullptr, "Ciphertext is not Seal");
-  return seal_ciphertext_wrapper;
-}
-
-inline const std::shared_ptr<ngraph::he::SealCiphertextWrapper>
-cast_to_seal_hetext(const std::shared_ptr<ngraph::he::HECiphertext>& cipher) {
-  auto seal_ciphertext_wrapper =
-      std::dynamic_pointer_cast<SealCiphertextWrapper>(cipher);
-  NGRAPH_CHECK(seal_ciphertext_wrapper != nullptr, "Ciphertext is not Seal");
-  return seal_ciphertext_wrapper;
-};
 }  // namespace he
 }  // namespace ngraph

@@ -30,7 +30,7 @@ inline void sum(std::vector<std::shared_ptr<HECiphertext>>& arg,
                 const Shape& in_shape, const Shape& out_shape,
                 const AxisSet& reduction_axes,
                 const element::Type& element_type,
-                const ngraph::he::HESealBasckend* he_seal_backend) {
+                const ngraph::he::HESealBackend* he_seal_backend) {
   CoordinateTransform output_transform(out_shape);
 
   for (const Coordinate& output_coord : output_transform) {
@@ -54,7 +54,7 @@ inline void sum(std::vector<std::unique_ptr<HEPlaintext>>& arg,
                 const Shape& in_shape, const Shape& out_shape,
                 const AxisSet& reduction_axes,
                 const element::Type& element_type,
-                const ngraph::he::HESealBasckend* he_seal_backend) {
+                const ngraph::he::HESealBackend* he_seal_backend) {
   CoordinateTransform output_transform(out_shape);
 
   bool complex_packing = arg[0]->complex_packing();

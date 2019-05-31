@@ -19,7 +19,7 @@
 #include <memory>
 #include <thread>
 
-#include "he_backend.hpp"
+#include "he_seal_backend.hpp"
 #include "he_cipher_tensor.hpp"
 #include "he_executable.hpp"
 #include "he_plain_tensor.hpp"

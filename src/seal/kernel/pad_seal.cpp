@@ -33,12 +33,12 @@ void ngraph::he::pad(
     const Shape& arg0_shape, const Shape& out_shape,
     const CoordinateDiff& padding_below, const CoordinateDiff& padding_above,
     op::PadMode pad_mode, size_t batch_size,
-    const ngraph::he::HESealBasckend* he_backend) {
+    const ngraph::he::HESealBackend* he_seal_backend) {
   if (arg1.size() != 1) {
     throw ngraph_error("Padding element must be scalar");
   }
 
-  auto he_seal_backend = ngraph::he::cast_to_seal_backend(he_backend);
+  auto he_seal_backend = ngraph::he::cast_to_seal_backend(he_seal_backend);
 
   std::shared_ptr<ngraph::he::HECiphertext> arg1_encrypted;
   arg1_encrypted = he_seal_backend->create_empty_ciphertext();
@@ -53,5 +53,5 @@ void ngraph::he::pad(
 
   ngraph::he::pad(arg0, arg1_encrypted_vector, out, arg0_shape, out_shape,
                   padding_below, padding_above, pad_mode, batch_size,
-                  he_backend);
+                  he_seal_backend);
 }

@@ -41,7 +41,7 @@ void batch_norm_inference(
     std::vector<std::shared_ptr<HEPlaintext>>& variance,
     std::vector<std::shared_ptr<HECiphertext>>& normed_input,
     const Shape& input_shape, const size_t batch_size,
-    const HESealBasckend* he_seal_backend) {
+    const HESealBackend* he_seal_backend) {
   CoordinateTransform input_transform(input_shape);
 
   // Store input coordinates for parallelization

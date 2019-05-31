@@ -25,7 +25,7 @@
 #include <thread>
 #include <vector>
 
-#include "he_backend.hpp"
+#include "he_seal_backend.hpp"
 #include "he_tensor.hpp"
 #include "ngraph/runtime/backend.hpp"
 #include "ngraph/util.hpp"
@@ -38,14 +38,14 @@ using boost::asio::ip::tcp;
 
 namespace ngraph {
 namespace he {
-class HEExecutable : public runtime::Executable {
+class HESealExecutable : public runtime::Executable {
  public:
-  HEExecutable(const std::shared_ptr<Function>& function,
-               bool enable_performance_collection,
-               const ngraph::he::HEBackend* he_backend, bool encrypt_data,
-               bool encrypt_model, bool batch_data);
+  HESealExecutable(const std::shared_ptr<Function>& function,
+                   bool enable_performance_collection,
+                   const ngraph::he::HESealBackend* he_seal_backend,
+                   bool encrypt_data, bool encrypt_model, bool batch_data);
 
-  ~HEExecutable() {
+  ~HESealExecutable() {
     if (m_enable_client) {
       // TODO: why is this needed to prevent m_acceptor from double-freeing?
       m_acceptor = nullptr;
@@ -78,7 +78,7 @@ class HEExecutable : public runtime::Executable {
   void handle_message(const TCPMessage& message);
 
  private:
-  const HEBackend* m_he_backend;  // TODO: replace with context
+  const HESealBackend* m_he_seal_backend;  // TODO: replace with context
   bool m_encrypt_data;
   bool m_encrypt_model;
   bool m_batch_data;

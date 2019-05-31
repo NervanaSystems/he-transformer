@@ -20,19 +20,20 @@
 #include <string>
 #include <vector>
 
-#include "he_ciphertext.hpp"
 #include "he_tensor.hpp"
 #include "ngraph/type/element_type.hpp"
+#include "seal/he_seal_backend.hpp"
+#include "seal/seal_ciphertext_wrapper.hpp"
 
 namespace ngraph {
 namespace he {
-class HECipherTensor : public HETensor {
+class HESealCipherTensor : public HETensor {
  public:
-  HECipherTensor(const element::Type& element_type, const Shape& shape,
-                 const HEBackend* he_backend,
-                 const std::shared_ptr<ngraph::he::HECiphertext> he_ciphertext,
-                 const bool batched = false,
-                 const std::string& name = "external");
+  HESealCipherTensor(
+      const element::Type& element_type, const Shape& shape,
+      const HESealBackend* he_seal_backend,
+      const std::shared_ptr<ngraph::he::SealCiphertextWrapper> he_ciphertext,
+      const bool batched = false, const std::string& name = "external");
 
   /// @brief Write bytes directly into the tensor after encoding and encrypting
   /// @param p Pointer to source of data
@@ -49,7 +50,8 @@ class HECipherTensor : public HETensor {
   void read(void* target, size_t tensor_offset, size_t n) const override;
 
   void set_elements(
-      const std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& elements);
+      const std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>&
+          elements);
 
   void save_elements(std::ostream& stream) const {
     NGRAPH_CHECK(m_cipher_texts.size() > 0, "Cannot save 0 ciphertexts");
@@ -62,17 +64,19 @@ class HECipherTensor : public HETensor {
     }
   }
 
-  inline std::vector<std::shared_ptr<ngraph::he::HECiphertext>>&
+  inline std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>&
   get_elements() noexcept {
     return m_cipher_texts;
   }
 
-  inline std::shared_ptr<ngraph::he::HECiphertext>& get_element(size_t i) {
+  inline std::shared_ptr<ngraph::he::SealCiphertextWrapper>& get_element(
+      size_t i) {
     return m_cipher_texts[i];
   }
 
  private:
-  std::vector<std::shared_ptr<ngraph::he::HECiphertext>> m_cipher_texts;
+  std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
+      m_cipher_texts;
   size_t m_num_elements;
 };
 }  // namespace he

@@ -63,7 +63,7 @@ template <typename S, typename T, typename V>
 void scalar_multiply(
     std::vector<std::shared_ptr<S>>& arg0,
     std::vector<std::shared_ptr<T>>& arg1, std::vector<std::shared_ptr<V>>& out,
-    const element::Type& element_type, const ngraph::he::HESealBasckend* he_seal_backend,
+    const element::Type& element_type, const ngraph::he::HESealBackend* he_seal_backend,
     size_t count,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool()) {
 #pragma omp parallel for

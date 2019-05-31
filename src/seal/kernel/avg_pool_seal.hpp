@@ -35,7 +35,7 @@ void avg_pool(std::vector<std::shared_ptr<T>>& arg,
               const Strides& window_movement_strides,
               const Shape& padding_below, const Shape& padding_above,
               bool include_padding_in_avg_computation,
-              const HESealBasckend* he_seal_backend) {
+              const HESealBackend* he_seal_backend) {
   // At the outermost level we will walk over every output coordinate O.
   CoordinateTransform output_transform(out_shape);
 

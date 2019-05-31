@@ -165,7 +165,7 @@ inline void dot(const std::vector<std::shared_ptr<HECiphertext>>& arg0,
                 const Shape& arg0_shape, const Shape& arg1_shape,
                 const Shape& out_shape, size_t reduction_axes_count,
                 const element::Type& element_type,
-                const ngraph::he::HESealBasckend* he_seal_backend) {
+                const ngraph::he::HESealBackend* he_seal_backend) {
   auto he_seal_backend = cast_to_seal_backend(he_seal_backend);
   dot_seal(arg0, arg1, out, arg0_shape, arg1_shape, out_shape,
            reduction_axes_count, element_type, he_seal_backend);
@@ -177,7 +177,7 @@ inline void dot(const std::vector<std::unique_ptr<HEPlaintext>>& arg0,
                 const Shape& arg0_shape, const Shape& arg1_shape,
                 const Shape& out_shape, size_t reduction_axes_count,
                 const element::Type& element_type,
-                const ngraph::he::HESealBasckend* he_seal_backend) {
+                const ngraph::he::HESealBackend* he_seal_backend) {
   auto he_seal_backend = cast_to_seal_backend(he_seal_backend);
   // dot_seal(arg0, arg1, out, arg0_shape, arg1_shape, out_shape,
   //          reduction_axes_count, element_type, he_seal_backend);
@@ -189,7 +189,7 @@ inline void dot(const std::vector<std::shared_ptr<HECiphertext>>& arg0,
                 const Shape& arg0_shape, const Shape& arg1_shape,
                 const Shape& out_shape, size_t reduction_axes_count,
                 const element::Type& element_type,
-                const ngraph::he::HESealBasckend* he_seal_backend) {
+                const ngraph::he::HESealBackend* he_seal_backend) {
   auto he_seal_backend = cast_to_seal_backend(he_seal_backend);
   // dot_seal(arg0, arg1, out, arg0_shape, arg1_shape, out_shape,
   //         reduction_axes_count, element_type, he_seal_backend);
@@ -202,7 +202,7 @@ inline void dot(const std::vector<std::unique_ptr<HEPlaintext>>& arg0,
                 const Shape& arg0_shape, const Shape& arg1_shape,
                 const Shape& out_shape, size_t reduction_axes_count,
                 const element::Type& element_type,
-                const ngraph::he::HESealBasckend* he_seal_backend) {
+                const ngraph::he::HESealBackend* he_seal_backend) {
   throw ngraph_error("plainplain dot unimplemented");
 }
 }  // namespace he

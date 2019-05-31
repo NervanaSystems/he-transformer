@@ -18,17 +18,17 @@
 
 #include <memory>
 
-#include "he_backend.hpp"
 #include "ngraph/runtime/tensor.hpp"
 #include "ngraph/type/element_type.hpp"
+#include "seal/he_seal_backend.hpp"
 
 namespace ngraph {
 namespace he {
-class HEBackend;
+class HESealBackend;
 class HETensor : public runtime::Tensor {
  public:
   HETensor(const element::Type& element_type, const Shape& shape,
-           const HEBackend* he_backend, const bool batched = false,
+           const HESealBackend* he_seal_backend, const bool batched = false,
            const std::string& name = "external");
   virtual ~HETensor(){};
 
@@ -76,7 +76,7 @@ class HETensor : public runtime::Tensor {
   size_t m_batch_size;  // If m_batched, corresponds to first shape dimesion.
   Shape m_batched_shape;
 
-  const HEBackend* m_he_backend;
+  const HESealBackend* m_he_seal_backend;
 };
 }  // namespace he
 }  // namespace ngraph

@@ -16,6 +16,17 @@
 
 # HE transformer sources
 set (HE_SRC
+    # main
+    he_plain_tensor.cpp
+    he_tensor.cpp
+    node_wrapper.cpp
+
+    seal/seal_util.cpp
+    seal/he_seal_cipher_tensor.cpp
+
+    seal/he_seal_backend.cpp
+    seal/he_seal_executable.cpp
+
     # seal kernels
     seal/kernel/constant_seal.cpp
     seal/kernel/pad_seal.cpp
@@ -27,15 +38,11 @@ set (HE_SRC
     seal/kernel/subtract_seal.cpp
 
     # seal backend
-    seal/he_seal_backend.cpp
-    seal/he_seal_executable.cpp
-    seal/he_seal_cipher_tensor.cpp
-    seal/seal_util.cpp
 
-    # main
-    he_plain_tensor.cpp
-    he_tensor.cpp
-    node_wrapper.cpp
+
+
+
+
 )
 include_directories(
     SYSTEM

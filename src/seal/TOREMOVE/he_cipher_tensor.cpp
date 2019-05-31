@@ -16,7 +16,7 @@
 
 #include <cstring>
 
-#include "he_backend.hpp"
+#include "he_seal_backend.hpp"
 #include "he_cipher_tensor.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
 #include "ngraph/util.hpp"
@@ -25,15 +25,15 @@
 
 ngraph::he::HECipherTensor::HECipherTensor(
     const element::Type& element_type, const Shape& shape,
-    const ngraph::he::HEBackend* he_backend,
+    const ngraph::he::HEBackend* he_seal_backend,
     const std::shared_ptr<ngraph::he::HECiphertext> he_ciphertext,
     const bool batched, const std::string& name)
-    : ngraph::he::HETensor(element_type, shape, he_backend, batched, name) {
+    : ngraph::he::HETensor(element_type, shape, he_seal_backend, batched, name) {
   m_num_elements = m_descriptor->get_tensor_layout()->get_size() / m_batch_size;
   m_cipher_texts.resize(m_num_elements);
 #pragma omp parallel for
   for (size_t i = 0; i < m_num_elements; ++i) {
-    m_cipher_texts[i] = he_backend->create_empty_ciphertext();
+    m_cipher_texts[i] = he_seal_backend->create_empty_ciphertext();
   }
 }
 
@@ -45,7 +45,7 @@ void ngraph::he::HECipherTensor::write(const void* source, size_t tensor_offset,
   size_t dst_start_idx = tensor_offset / type_byte_size;
   size_t num_elements_to_write = n / (type_byte_size * m_batch_size);
 
-  const bool complex_batching = m_he_backend->complex_packing();
+  const bool complex_batching = m_he_seal_backend->complex_packing();
 
   if (num_elements_to_write == 1) {
     const void* src_with_offset = (void*)((char*)source);
@@ -53,9 +53,9 @@ void ngraph::he::HECipherTensor::write(const void* source, size_t tensor_offset,
 
     auto plaintext = create_empty_plaintext();
 
-    m_he_backend->encode(*plaintext, src_with_offset, element_type,
+    m_he_seal_backend->encode(*plaintext, src_with_offset, element_type,
                          complex_batching, m_batch_size);
-    m_he_backend->encrypt(m_cipher_texts[dst_idx], *plaintext);
+    m_he_seal_backend->encrypt(m_cipher_texts[dst_idx], *plaintext);
   } else {
 #pragma omp parallel for
     for (size_t i = 0; i < num_elements_to_write; ++i) {
@@ -77,14 +77,14 @@ void ngraph::he::HECipherTensor::write(const void* source, size_t tensor_offset,
                       type_byte_size * (i + j * num_elements_to_write));
           memcpy(destination, src, type_byte_size);
         }
-        m_he_backend->encode(*plaintext, batch_src, element_type,
+        m_he_seal_backend->encode(*plaintext, batch_src, element_type,
                              complex_batching, m_batch_size);
         free((void*)batch_src);
       } else {
-        m_he_backend->encode(*plaintext, src_with_offset, element_type,
+        m_he_seal_backend->encode(*plaintext, src_with_offset, element_type,
                              complex_batching, m_batch_size);
       }
-      m_he_backend->encrypt(m_cipher_texts[dst_idx], *plaintext);
+      m_he_seal_backend->encrypt(m_cipher_texts[dst_idx], *plaintext);
     }
   }
 }
@@ -101,8 +101,8 @@ void ngraph::he::HECipherTensor::read(void* target, size_t tensor_offset,
     void* dst_with_offset = (void*)((char*)target);
     size_t src_idx = src_start_idx;
     auto p = create_empty_plaintext(m_cipher_texts[src_idx]->complex_packing());
-    m_he_backend->decrypt(*p, m_cipher_texts[src_idx]);
-    m_he_backend->decode(dst_with_offset, *p, element_type, m_batch_size);
+    m_he_seal_backend->decrypt(*p, m_cipher_texts[src_idx]);
+    m_he_seal_backend->decode(dst_with_offset, *p, element_type, m_batch_size);
   } else {
 #pragma omp parallel for
     for (size_t i = 0; i < num_elements_to_read; ++i) {
@@ -114,8 +114,8 @@ void ngraph::he::HECipherTensor::read(void* target, size_t tensor_offset,
       size_t src_idx = src_start_idx + i;
       auto p =
           create_empty_plaintext(m_cipher_texts[src_idx]->complex_packing());
-      m_he_backend->decrypt(*p, m_cipher_texts[src_idx]);
-      m_he_backend->decode(dst, *p, element_type, m_batch_size);
+      m_he_seal_backend->decrypt(*p, m_cipher_texts[src_idx]);
+      m_he_seal_backend->decode(dst, *p, element_type, m_batch_size);
 
       for (size_t j = 0; j < m_batch_size; ++j) {
         void* dst_with_offset =

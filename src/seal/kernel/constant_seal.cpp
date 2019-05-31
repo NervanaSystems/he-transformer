@@ -14,7 +14,7 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "kernel/constant_seal.hpp"
+#include "seal/kernel/constant_seal.hpp"
 
 void ngraph::he::constant_seal(
     std::vector<std::unique_ptr<ngraph::he::HEPlaintext>>& out,

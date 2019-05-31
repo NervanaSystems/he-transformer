@@ -19,19 +19,21 @@
 #include <memory>
 #include <vector>
 
-#include "he_seal_backend.hpp"
-#include "he_ciphertext.hpp"
 #include "he_plaintext.hpp"
 #include "ngraph/type/element_type.hpp"
+#include "seal/he_seal_backend.hpp"
+#include "seal/seal_ciphertext_wrapper.hpp"
 
 namespace ngraph {
 namespace he {
-void constant(std::vector<std::unique_ptr<ngraph::he::HEPlaintext>>& out,
-              const element::Type& element_type, const void* data_ptr,
-              const ngraph::he::HESealBasckend* he_seal_backend, size_t count);
+void constant_seal(std::vector<std::unique_ptr<ngraph::he::HEPlaintext>>& out,
+                   const element::Type& element_type, const void* data_ptr,
+                   const ngraph::he::HESealBackend* he_seal_backend,
+                   size_t count);
 
-void constant(std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& out,
-              const element::Type& element_type, const void* data_ptr,
-              const ngraph::he::HESealBasckend* he_seal_backend, size_t count);
+void constant_seal(std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& out,
+                   const element::Type& element_type, const void* data_ptr,
+                   const ngraph::he::HESealBackend* he_seal_backend,
+                   size_t count);
 }  // namespace he
 }  // namespace ngraph

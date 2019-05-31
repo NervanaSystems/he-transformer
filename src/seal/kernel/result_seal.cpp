@@ -19,28 +19,28 @@
 void ngraph::he::result(
     const std::vector<std::unique_ptr<ngraph::he::HEPlaintext>>& arg,
     std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& out, size_t count,
-    const ngraph::he::HESealBasckend* he_backend) {
+    const ngraph::he::HESealBackend* he_seal_backend) {
   if (out.size() != arg.size()) {
     NGRAPH_INFO << "Result output size " << out.size()
                 << " does not match result input size " << arg.size();
     throw ngraph_error("Wrong size in result");
   }
   for (size_t i = 0; i < count; ++i) {
-    he_backend->encrypt(out[i], *arg[i]);
+    he_seal_backend->encrypt(out[i], *arg[i]);
   }
 }
 
 void ngraph::he::result(
     const std::vector<std::shared_ptr<ngraph::he::HECiphertext>>& arg,
     std::vector<std::unique_ptr<ngraph::he::HEPlaintext>>& out, size_t count,
-    const ngraph::he::HESealBasckend* he_backend) {
+    const ngraph::he::HESealBackend* he_seal_backend) {
   if (out.size() != arg.size()) {
     NGRAPH_INFO << "Result output size " << out.size()
                 << " does not match result input size " << arg.size();
     throw ngraph_error("Wrong size in result");
   }
   for (size_t i = 0; i < count; ++i) {
-    he_backend->decrypt(*out[i], arg[i]);
-    // he_backend->decode(*out[i]);
+    he_seal_backend->decrypt(*out[i], arg[i]);
+    // he_seal_backend->decode(*out[i]);
   }
 }

@@ -18,7 +18,6 @@
 
 #include <memory>
 
-#include "he_ciphertext.hpp"
 #include "seal/seal.h"
 
 namespace ngraph {

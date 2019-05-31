@@ -41,7 +41,7 @@ inline void scalar_negate(const HEPlaintext& arg, HEPlaintext& out,
 inline void scalar_negate(std::shared_ptr<HECiphertext>& arg,
                           std::shared_ptr<HECiphertext>& out,
                           const element::Type& element_type,
-                          const ngraph::he::HESealBasckend* he_seal_backend) {
+                          const ngraph::he::HESealBackend* he_seal_backend) {
   auto he_seal_backend = cast_to_seal_backend(he_seal_backend);
   auto arg_seal = cast_to_seal_hetext(arg);
   auto out_seal = cast_to_seal_hetext(out);
@@ -51,7 +51,7 @@ inline void scalar_negate(std::shared_ptr<HECiphertext>& arg,
 inline void negate(const std::vector<std::unique_ptr<HEPlaintext>>& arg,
                    std::vector<std::unique_ptr<HEPlaintext>>& out,
                    const element::Type& element_type,
-                   const HESealBasckend* he_seal_backend, size_t count) {
+                   const HESealBackend* he_seal_backend, size_t count) {
   for (size_t i = 0; i < count; ++i) {
     scalar_negate(*arg[i], *out[i], element_type);
   }
@@ -60,7 +60,7 @@ inline void negate(const std::vector<std::unique_ptr<HEPlaintext>>& arg,
 inline void negate(std::vector<std::shared_ptr<HECiphertext>>& arg,
                    std::vector<std::shared_ptr<HECiphertext>>& out,
                    const element::Type& element_type,
-                   const ngraph::he::HESealBasckend* he_seal_backend, size_t count) {
+                   const ngraph::he::HESealBackend* he_seal_backend, size_t count) {
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
     scalar_negate(arg[i], out[i], element_type, he_seal_backend);
