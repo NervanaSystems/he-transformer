@@ -189,8 +189,11 @@ void ngraph::he::HESealBackend::encrypt(
   // No need to encrypt zero
   if (input.is_single_value() && input.get_values()[0] == 0) {
     output->set_zero(true);
+    NGRAPH_INFO << "Encrypting 0";
   } else {
+    NGRAPH_INFO << "Encrypting plaintext";
     m_encryptor->encrypt(seal_wrapper->plaintext(), output->ciphertext());
+    NGRAPH_INFO << "output scale " << output->ciphertext().scale();
   }
   output->set_complex_packing(input.complex_packing());
   NGRAPH_CHECK(output->complex_packing() == input.complex_packing());
@@ -250,7 +253,6 @@ void ngraph::he::HESealBackend::encode(
     double scale) const {
   std::vector<double> double_vals(plaintext.get_values().begin(),
                                   plaintext.get_values().end());
-
   const size_t slots =
       m_context->context_data()->parms().poly_modulus_degree() / 2;
   if (plaintext.complex_packing()) {
@@ -268,8 +270,10 @@ void ngraph::he::HESealBackend::encode(
   } else {
     // TODO: why different cases?
     if (double_vals.size() == 1) {
+      NGRAPH_INFO << "Encoding " << double_vals[0] << " at scale " << scale;
       m_ckks_encoder->encode(double_vals[0], parms_id, scale,
                              destination.plaintext());
+      NGRAPH_INFO << "plaintext scale " << destination.plaintext().scale();
     } else {
       NGRAPH_CHECK(double_vals.size() <= slots, "Cannot encode ",
                    double_vals.size(), " elements, maximum size is ", slots);

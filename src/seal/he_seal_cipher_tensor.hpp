@@ -54,10 +54,10 @@ class HESealCipherTensor : public HETensor {
           elements);
 
   void save_elements(std::ostream& stream) const {
-    NGRAPH_CHECK(m_cipher_texts.size() > 0, "Cannot save 0 ciphertexts");
+    NGRAPH_CHECK(m_ciphertexts.size() > 0, "Cannot save 0 ciphertexts");
 
-    size_t cipher_size = m_cipher_texts[0]->size();
-    for (auto& ciphertext : m_cipher_texts) {
+    size_t cipher_size = m_ciphertexts[0]->size();
+    for (auto& ciphertext : m_ciphertexts) {
       NGRAPH_CHECK(cipher_size == ciphertext->size(), "Cipher size ",
                    ciphertext->size(), " doesn't match expected ", cipher_size);
       ciphertext->save(stream);
@@ -66,17 +66,16 @@ class HESealCipherTensor : public HETensor {
 
   inline std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>&
   get_elements() noexcept {
-    return m_cipher_texts;
+    return m_ciphertexts;
   }
 
   inline std::shared_ptr<ngraph::he::SealCiphertextWrapper>& get_element(
       size_t i) {
-    return m_cipher_texts[i];
+    return m_ciphertexts[i];
   }
 
  private:
-  std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
-      m_cipher_texts;
+  std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>> m_ciphertexts;
   size_t m_num_elements;
 };
 }  // namespace he
