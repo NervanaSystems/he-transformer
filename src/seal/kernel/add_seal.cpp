@@ -15,8 +15,8 @@
 //*****************************************************************************
 
 #include "seal/kernel/add_seal.hpp"
-#include "seal/ckks/he_seal_ckks_backend.hpp"
-#include "seal/ckks/kernel/add_seal_ckks.hpp"
+#include "seal/he_seal_backend.hpp"
+#include "seal/seal_util.hpp"
 
 void ngraph::he::scalar_add_seal(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
@@ -34,8 +34,8 @@ void ngraph::he::scalar_add_seal(
     match_modulus_and_scale_inplace(arg0.get(), arg1.get(), he_seal_backend,
                                     pool);
     he_seal_backend->get_evaluator()->add(
-        arg0->m_ciphertext, arg1->m_ciphertext, out->m_ciphertext);
-    out->set_complex_packing(arg1->complex_packing())
+        arg0->ciphertext(), arg1->ciphertext(), out->ciphertext());
+    out->set_complex_packing(arg1->complex_packing());
   }
 }
 
@@ -48,9 +48,7 @@ void ngraph::he::scalar_add_seal(
   NGRAPH_CHECK(element_type == element::f32);
 
   if (arg0->is_zero()) {
-    auto out_hetext = std::dynamic_pointer_cast<ngraph::he::SealCiphertextWrapper>(out);
-    he_seal_backend->encrypt(out_hetext, arg1);
-    out = ngraph::he::cast_to_seal_hetext(out_hetext);
+    he_seal_backend->encrypt(out, arg1);
     return;
   }
 
@@ -66,19 +64,19 @@ void ngraph::he::scalar_add_seal(
     if (arg1.is_single_value()) {
       float value = arg1.get_values()[0];
       double double_val = double(value);
-      add_plain(arg0->m_ciphertext, double_val, out->m_ciphertext,
+      add_plain(arg0->ciphertext(), double_val, out->ciphertext(),
                 he_seal_backend);
     } else {
       auto p = make_seal_plaintext_wrapper(arg1.complex_packing());
-      he_seal_backend->encode(*p, arg1, arg0->m_ciphertext.parms_id(),
-                              arg0->m_ciphertext.scale());
+      he_seal_backend->encode(*p, arg1, arg0->ciphertext().parms_id(),
+                              arg0->ciphertext().scale());
       size_t chain_ind0 = get_chain_index(arg0.get(), he_seal_backend);
-      size_t chain_ind1 = get_chain_index(p->m_plaintext, he_seal_backend);
+      size_t chain_ind1 = get_chain_index(p->plaintext(), he_seal_backend);
       NGRAPH_CHECK(chain_ind0 == chain_ind1, "Chain inds ", chain_ind0, ",  ",
                    chain_ind1, " don't match");
 
       he_seal_backend->get_evaluator()->add_plain(
-          arg0->m_ciphertext, p->m_plaintext, out->m_ciphertext);
+          arg0->ciphertext(), p->plaintext(), out->ciphertext());
       out->set_complex_packing(arg0->complex_packing());
     }
   }

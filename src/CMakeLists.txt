@@ -33,7 +33,7 @@ set (HE_SRC
     #seal/kernel/pad_seal.cpp
     #seal/kernel/subtract_seal.cpp
     #seal/kernel/result_seal.cpp
-    #seal/kernel/add_seal.cpp
+    seal/kernel/add_seal.cpp
     #seal/kernel/multiply_seal.cpp
     #seal/kernel/negate_seal.cpp
     #seal/kernel/subtract_seal.cpp

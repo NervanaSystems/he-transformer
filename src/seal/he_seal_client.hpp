@@ -22,8 +22,8 @@
 #include <string>
 #include <vector>
 
-#include "seal/he_seal_util.hpp"
 #include "seal/seal.h"
+#include "seal/seal_util.hpp"
 #include "tcp/tcp_client.hpp"
 #include "tcp/tcp_message.hpp"
 

@@ -14,7 +14,7 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "he_backend.hpp"
+#include "seal/he_seal_backend.hpp"
 #include "ngraph/ngraph.hpp"
 #include "ngraph/pass/constant_folding.hpp"
 #include "ngraph/pass/core_fusion.hpp"
