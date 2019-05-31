@@ -33,6 +33,7 @@
 #include "ngraph/pass/liveness.hpp"
 #include "ngraph/pass/manager.hpp"
 #include "ngraph/runtime/backend.hpp"
+#include "ngraph/runtime/backend_manager.hpp"
 #include "ngraph/runtime/host_tensor.hpp"
 #include "ngraph/runtime/performance_counter.hpp"
 #include "ngraph/runtime/tensor.hpp"
@@ -45,6 +46,9 @@
 #include "seal/seal_plaintext_wrapper.hpp"
 
 namespace ngraph {
+namespace runtime {
+class BackendConstructor;
+}
 namespace he {
 class HESealCipherTensor;
 class HESealBackend : public ngraph::runtime::Backend {

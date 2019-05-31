@@ -29,22 +29,13 @@ extern "C" const char* get_ngraph_version_string() {
   return "DUMMY_VERSION";  // TODO: move to CMakeList
 }
 
-extern "C" runtime::BackendConstructor* get_backend_constructor_pointer() {
-  class LocalBackendConstructor : public runtime::BackendConstructor {
-   public:
-    std::shared_ptr<runtime::Backend> create(
-        const std::string& config) override {
-      std::string configuration_string = std::string(configuration_chars);
+// TODO: replace with new backend constructor once switching to new ngraph
+extern "C" ngraph::runtime::Backend* new_backend(const char* config) {
+  std::string configuration_string = std::string(config);
 
-      NGRAPH_CHECK(configuration_string == "HE_SEAL",
-                   "Invalid configuration string ", configuration_string);
-      return std::make_shared<ngraph::he::HESealBackend>();
-    }
-  };
-
-  static unique_ptr<runtime::BackendConstructor> s_backend_constructor(
-      new LocalBackendConstructor());
-  return s_backend_constructor.get();
+  NGRAPH_CHECK(configuration_string == "HE_SEAL",
+               "Invalid configuration string ", configuration_string);
+  return new ngraph::he::HESealBackend();
 }
 
 ngraph::he::HESealBackend::HESealBackend()

@@ -37,8 +37,6 @@ set (HE_SRC
     #seal/kernel/multiply_seal.cpp
     #seal/kernel/negate_seal.cpp
     #seal/kernel/subtract_seal.cpp
-
-    # seal backend
 )
 include_directories(
     SYSTEM
