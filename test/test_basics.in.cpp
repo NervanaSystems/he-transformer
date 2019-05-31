@@ -14,8 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "seal/he_seal_backend.hpp"
 #include "ngraph/ngraph.hpp"
+#include "seal/he_seal_backend.hpp"
 #include "test_util.hpp"
 #include "util/all_close.hpp"
 #include "util/ndarray.hpp"
@@ -26,6 +26,10 @@ using namespace std;
 using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
+
+NGRAPH_TEST(${BACKEND_NAME}, create_backend) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+}
 
 NGRAPH_TEST(${BACKEND_NAME}, create_tensor) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");

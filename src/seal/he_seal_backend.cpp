@@ -19,6 +19,7 @@
 
 #include "he_plain_tensor.hpp"
 #include "he_seal_cipher_tensor.hpp"
+#include "ngraph/runtime/backend_manager.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_executable.hpp"
 #include "seal/seal.h"
@@ -28,18 +29,33 @@ extern "C" const char* get_ngraph_version_string() {
   return "DUMMY_VERSION";  // TODO: move to CMakeList
 }
 
-extern "C" ngraph::runtime::Backend* new_backend(
-    const char* configuration_chars) {
-  std::string configuration_string = std::string(configuration_chars);
+extern "C" runtime::BackendConstructor* get_backend_constructor_pointer() {
+  class LocalBackendConstructor : public runtime::BackendConstructor {
+   public:
+    std::shared_ptr<runtime::Backend> create(
+        const std::string& config) override {
+      std::string configuration_string = std::string(configuration_chars);
 
-  NGRAPH_CHECK(configuration_string == "HE_SEAL",
-               "Invalid configuration string ", configuration_string);
-  return new ngraph::he::HESealBackend();
+      NGRAPH_CHECK(configuration_string == "HE_SEAL",
+                   "Invalid configuration string ", configuration_string);
+      return std::make_shared<runtime::nop::HESealBackend>();
+    }
+  };
+
+  static unique_ptr<runtime::BackendConstructor> s_backend_constructor(
+      new LocalBackendConstructor());
+  return s_backend_constructor.get();
 }
 
-extern "C" void delete_backend(ngraph::runtime::Backend* backend) {
-  delete backend;
-}
+namespace {
+static class HESealStaticInit {
+ public:
+  HESealStaticInit() {
+    ngraph::runtime::BackendManager::register_backend("HE_SEAL", new_backend);
+  }
+  ~HESealCKKSStaticInit() {}
+} s_he_seal_static_init;
+}  // namespace
 
 ngraph::he::HESealBackend::HESealBackend()
     : ngraph::he::HESealBackend(
