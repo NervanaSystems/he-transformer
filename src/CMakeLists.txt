@@ -52,9 +52,9 @@ link_directories(
 message("Linking directories: ${NGRAPH_TF_LIB_DIR}, ${EXTERNAL_INSTALL_LIB_DIR}")
 
 # Target library
-add_library(he_backend SHARED ${HE_SRC})
-add_dependencies(he_backend ext_ngraph_tf ext_seal)
-target_link_libraries(he_backend seal libjson ngraph libboost)
+add_library(he_seal_backend SHARED ${HE_SRC})
+add_dependencies(he_seal_backend ext_ngraph_tf ext_seal)
+target_link_libraries(he_seal_backend seal libjson ngraph libboost)
 
 if(NGRAPH_HE_SANITIZE_ADDRESS)
     message(STATUS "Enable Address Sanitizer")
