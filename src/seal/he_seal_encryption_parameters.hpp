@@ -126,7 +126,7 @@ inline ngraph::he::HESealEncryptionParameters default_ckks_parameters() {
 
 inline ngraph::he::HESealEncryptionParameters parse_config_or_use_default(
     const std::string& scheme_name) {
-  static std::unordered_set<std::string> valid_scheme_names{"HE_SEAL"};
+  std::unordered_set<std::string> valid_scheme_names{"HE_SEAL"};
   if (valid_scheme_names.find(scheme_name) == valid_scheme_names.end()) {
     throw ngraph_error("Invalid scheme name " + scheme_name);
   }
@@ -156,15 +156,15 @@ inline ngraph::he::HESealEncryptionParameters parse_config_or_use_default(
     uint64_t security_level = js["security_level"];
     uint64_t evaluation_decomposition_bit_count =
         js["evaluation_decomposition_bit_count"];
-    static std::unordered_set<uint64_t> valid_poly_modulus{1024, 2048,  4096,
-                                                           8192, 16384, 32768};
+    std::unordered_set<uint64_t> valid_poly_modulus{1024, 2048,  4096,
+                                                    8192, 16384, 32768};
     if (valid_poly_modulus.count(poly_modulus_degree) == 0) {
       throw ngraph_error(
           "poly_modulus_degree must be 1024, 2048, 4096, 8192, 16384, "
           "32768");
     }
 
-    static std::unordered_set<uint64_t> valid_security_level{128, 192, 256};
+    std::unordered_set<uint64_t> valid_security_level{128, 192, 256};
     if (valid_security_level.count(security_level) == 0) {
       throw ngraph_error("security_level must be 128, 192, 256");
     }
@@ -184,7 +184,7 @@ inline ngraph::he::HESealEncryptionParameters parse_config_or_use_default(
       // Use given coeff mods
       std::string coeff_mod_name = coeff_mod->begin().key();
 
-      static std::unordered_set<std::string> valid_coeff_mods{
+      std::unordered_set<std::string> valid_coeff_mods{
           "custom_mods",      "small_mods_20bit", "small_mods_30bit",
           "small_mods_40bit", "small_mods_50bit", "small_mods_60bit"};
 
@@ -226,7 +226,7 @@ inline ngraph::he::HESealEncryptionParameters parse_config_or_use_default(
         }
       }
     } else {  // Use default coefficient modulus
-      if (security_level == 128) {
+      /*if (security_level == 128) {
         small_mods =
             seal::DefaultParams::coeff_modulus_128(poly_modulus_degree);
       } else if (security_level == 192) {
@@ -236,7 +236,7 @@ inline ngraph::he::HESealEncryptionParameters parse_config_or_use_default(
         small_mods =
             seal::DefaultParams::coeff_modulus_256(poly_modulus_degree);
       }
-      coeff_count = small_mods.size();
+      coeff_count = small_mods.size();*/
     }
     for (size_t i = 0; i < coeff_count; ++i) {
       coeff_modulus.emplace_back(small_mods[i].value());
