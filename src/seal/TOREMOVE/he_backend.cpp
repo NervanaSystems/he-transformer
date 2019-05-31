@@ -19,10 +19,10 @@
 #include <memory>
 #include <thread>
 
-#include "he_seal_backend.hpp"
 #include "he_cipher_tensor.hpp"
 #include "he_executable.hpp"
 #include "he_plain_tensor.hpp"
+#include "he_seal_backend.hpp"
 #include "he_tensor.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
 #include "ngraph/function.hpp"
@@ -85,8 +85,8 @@ ngraph::he::HEBackend::create_valued_cipher_tensor(
     float value, const element::Type& element_type, const Shape& shape) const {
   auto tensor = std::static_pointer_cast<HECipherTensor>(
       create_cipher_tensor(element_type, shape));
-  std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>& cipher_texts =
-      tensor->get_elements();
+  std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>&
+      cipher_texts = tensor->get_elements();
 #pragma omp parallel for
   for (size_t i = 0; i < cipher_texts.size(); ++i) {
     cipher_texts[i] = create_valued_ciphertext(value, element_type);

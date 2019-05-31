@@ -21,7 +21,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "he_encryption_parameters.hpp"
 #include "he_plaintext.hpp"
 #include "he_tensor.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
@@ -54,8 +53,7 @@ class HESealCipherTensor;
 class HESealBackend : public ngraph::runtime::Backend {
  public:
   HESealBackend();
-  HESealBackend(const std::shared_ptr<ngraph::he::HEEncryptionParameters>& sp);
-
+  HESealBackend(const ngraph::he::HESealEncryptionParameters& sp);
   HESealBackend(const HESealBackend&) = delete;
   HESealBackend(HESealBackend&&) = delete;
   HESealBackend& operator=(const HESealBackend&) = delete;
@@ -147,7 +145,7 @@ class HESealBackend : public ngraph::runtime::Backend {
   /// @param sp SEAL Parameter from which to construct context
   /// @return Pointer to constructed context
   std::shared_ptr<seal::SEALContext> make_seal_context(
-      const std::shared_ptr<ngraph::he::HEEncryptionParameters> sp);
+      const std::shared_ptr<ngraph::he::HESealEncryptionParameters> sp);
 
   void encode(ngraph::he::SealPlaintextWrapper& destination,
               const ngraph::he::HEPlaintext& plaintext,
@@ -204,8 +202,8 @@ class HESealBackend : public ngraph::runtime::Backend {
     return m_evaluator;
   }
 
-  const std::shared_ptr<ngraph::he::HEEncryptionParameters>
-  get_encryption_parameters() const {
+  const ngraph::he::HESealEncryptionParameters& get_encryption_parameters()
+      const {
     return m_encryption_params;
   };
 
@@ -231,7 +229,7 @@ class HESealBackend : public ngraph::runtime::Backend {
   std::shared_ptr<seal::SEALContext> m_context;
   std::shared_ptr<seal::Evaluator> m_evaluator;
   std::shared_ptr<seal::KeyGenerator> m_keygen;
-  std::shared_ptr<HEEncryptionParameters> m_encryption_params;
+  HESealEncryptionParameters m_encryption_params;
   std::shared_ptr<seal::CKKSEncoder> m_ckks_encoder;
   // Scale with which to encode new ciphertexts
   double m_scale;

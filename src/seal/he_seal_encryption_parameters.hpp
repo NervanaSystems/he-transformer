@@ -23,72 +23,109 @@
 #include <stdexcept>
 #include <unordered_set>
 
-#include "he_encryption_parameters.hpp"
 #include "nlohmann/json.hpp"
 #include "seal/seal.h"
 
 namespace ngraph {
 namespace he {
-class HESealEncryptionParameters : public HEEncryptionParameters {
+class HESealEncryptionParameters {
  public:
-  HESealEncryptionParameters() = delete;
+  HESealEncryptionParameters();
   HESealEncryptionParameters(const std::string& scheme_name,
                              std::uint64_t poly_modulus_degree,
                              std::uint64_t security_level,
                              std::uint64_t evaluation_decomposition_bit_count,
                              std::vector<std::uint64_t> coeff_modulus,
                              std::uint64_t plain_modulus = 0)
-      : HEEncryptionParameters(scheme_name, poly_modulus_degree, security_level,
-                               evaluation_decomposition_bit_count,
-                               coeff_modulus, plain_modulus) {
+      : m_scheme_name(scheme_name),
+        m_poly_modulus_degree(poly_modulus_degree),
+        m_security_level(security_level),
+        m_evaluation_decomposition_bit_count(
+            evaluation_decomposition_bit_count),
+        m_coeff_modulus(coeff_modulus),
+        m_plain_modulus(plain_modulus) {
     NGRAPH_CHECK(scheme_name == "HE_SEAL", "Invalid scheme name ", scheme_name);
     m_seal_encryption_parameters =
-        std::make_shared<seal::EncryptionParameters>(seal::scheme_type::CKKS);
+        seal::EncryptionParameters(seal::scheme_type::CKKS);
 
-    m_seal_encryption_parameters->set_poly_modulus_degree(poly_modulus_degree);
+    m_seal_encryption_parameters.set_poly_modulus_degree(poly_modulus_degree);
 
     std::vector<seal::SmallModulus> seal_coeff_modulus;
     for (const auto& value : coeff_modulus) {
       NGRAPH_INFO << "Setting coeff mod " << value;
       seal_coeff_modulus.emplace_back(seal::SmallModulus(value));
     }
-    m_seal_encryption_parameters->set_coeff_modulus(seal_coeff_modulus);
+    m_seal_encryption_parameters.set_coeff_modulus(seal_coeff_modulus);
   }
 
-  virtual ~HESealEncryptionParameters(){};
-
-  void save(std::ostream& stream) const override {
-    seal::EncryptionParameters::Save(*m_seal_encryption_parameters, stream);
+  void save(std::ostream& stream) const {
+    seal::EncryptionParameters::Save(m_seal_encryption_parameters, stream);
   }
 
-  std::shared_ptr<seal::EncryptionParameters> seal_encryption_parameters() {
+  seal::EncryptionParameters& seal_encryption_parameters() {
+    return m_seal_encryption_parameters;
+  }
+  const seal::EncryptionParameters& seal_encryption_parameters() const {
     return m_seal_encryption_parameters;
   }
 
+  inline const std::string& scheme_name() const { return m_scheme_name; }
+
+  inline std::uint64_t poly_modulus_degree() { return m_poly_modulus_degree; }
+
+  inline std::uint64_t security_level() { return m_security_level; }
+
+  inline std::uint64_t evaluation_decomposition_bit_count() {
+    return m_evaluation_decomposition_bit_count;
+  }
+  inline const std::vector<std::uint64_t>& coeff_modulus() {
+    return m_coeff_modulus;
+  }
+
  private:
-  std::shared_ptr<seal::EncryptionParameters> m_seal_encryption_parameters;
+  seal::EncryptionParameters m_seal_encryption_parameters{
+      seal::scheme_type::CKKS};
+  std::string m_scheme_name;
+  std::uint64_t m_poly_modulus_degree;
+  std::uint64_t m_security_level;
+  std::uint64_t m_evaluation_decomposition_bit_count;
+  std::vector<std::uint64_t> m_coeff_modulus;
+  std::uint64_t m_plain_modulus;
 };
 
-const static std::shared_ptr<ngraph::he::HEEncryptionParameters>
-default_ckks_parameters() {
+inline ngraph::he::HESealEncryptionParameters default_ckks_parameters() {
   std::vector<std::uint64_t> coeff_modulus;
-  auto small_mods = seal::util::global_variables::default_small_mods_30bit;
+  // auto small_mods = seal::util::global_variables::default_small_mods_30bit;
+
+  std::vector<seal::SmallModulus> small_mods{
+      0x3ffc0001, 0x3fac0001, 0x3f540001, 0x3ef80001, 0x3ef40001, 0x3ed00001,
+      0x3ebc0001, 0x3eb00001, 0x3e880001, 0x3e500001, 0x3dd40001, 0x3dcc0001,
+      0x3cfc0001, 0x3cc40001, 0x3cb40001, 0x3c840001, 0x3c600001, 0x3c3c0001,
+      0x3c100001, 0x3bf80001, 0x3be80001, 0x3be00001, 0x3b800001, 0x3b580001,
+      0x3b340001, 0x3ac00001, 0x3aa40001, 0x3a6c0001, 0x3a5c0001, 0x3a440001,
+      0x3a300001, 0x3a200001, 0x39f00001, 0x39e40001, 0x39c40001, 0x39640001,
+      0x39600001, 0x39280001, 0x391c0001, 0x39100001, 0x38b80001, 0x38a00001,
+      0x388c0001, 0x38680001, 0x38400001, 0x38100001, 0x37f00001, 0x37c00001,
+      0x379c0001, 0x37300001, 0x37200001, 0x36d00001, 0x36cc0001, 0x36c00001,
+      0x367c0001, 0x36700001, 0x36340001, 0x36240001, 0x361c0001, 0x36180001,
+      0x36100001, 0x35d40001, 0x35ac0001, 0x35a00001};
+
   for (size_t i = 0; i < 4; ++i) {
-    const auto& small_mod = small_mods[i];
+    const auto small_mod = small_mods[i];
     coeff_modulus.emplace_back(small_mod.value());
   }
 
-  auto params = std::make_shared<ngraph::he::HESealEncryptionParameters>(
+  auto params = ngraph::he::HESealEncryptionParameters(
       "HE_SEAL",
       1024,  // poly_modulus_degree
       128,   // security_level
       60,    // evaluation_decomposition_bit_count
       coeff_modulus);
-  return std::dynamic_pointer_cast<ngraph::he::HEEncryptionParameters>(params);
+  return params;
 }
 
-const static std::shared_ptr<ngraph::he::HEEncryptionParameters>
-parse_config_or_use_default(const std::string& scheme_name) {
+inline ngraph::he::HESealEncryptionParameters parse_config_or_use_default(
+    const std::string& scheme_name) {
   static std::unordered_set<std::string> valid_scheme_names{"HE_SEAL"};
   if (valid_scheme_names.find(scheme_name) == valid_scheme_names.end()) {
     throw ngraph_error("Invalid scheme name " + scheme_name);
@@ -173,7 +210,7 @@ parse_config_or_use_default(const std::string& scheme_name) {
         NGRAPH_INFO << "Using SEAL CKKS config with " << coeff_count << " "
                     << bit_count << "-bit coefficients";
 
-        if (bit_count == 30) {
+        /*if (bit_count == 30) {
           small_mods = seal::util::global_variables::default_small_mods_30bit;
         } else if (bit_count == 40) {
           small_mods = seal::util::global_variables::default_small_mods_40bit;
@@ -181,7 +218,7 @@ parse_config_or_use_default(const std::string& scheme_name) {
           small_mods = seal::util::global_variables::default_small_mods_50bit;
         } else if (bit_count == 60) {
           small_mods = seal::util::global_variables::default_small_mods_60bit;
-        }
+        }*/
         if (coeff_count > small_mods.size()) {
           std::stringstream ss;
           ss << "Coefficient modulus count " << coeff_count << " too large";
@@ -204,12 +241,12 @@ parse_config_or_use_default(const std::string& scheme_name) {
     for (size_t i = 0; i < coeff_count; ++i) {
       coeff_modulus.emplace_back(small_mods[i].value());
     }
-    auto params = std::make_shared<ngraph::he::HESealEncryptionParameters>(
+    auto params = ngraph::he::HESealEncryptionParameters(
         scheme_name, poly_modulus_degree, security_level,
         evaluation_decomposition_bit_count, coeff_modulus);
 
-    return std::dynamic_pointer_cast<ngraph::he::HEEncryptionParameters>(
-        params);
+    return params;
+
   } catch (const std::exception& e) {
     std::stringstream ss;
     ss << "Error parsing NGRAPH_HE_SEAL_CONFIG: " << e.what();

@@ -35,6 +35,7 @@ extern "C" ngraph::runtime::Backend* new_backend(const char* config) {
 
   NGRAPH_CHECK(configuration_string == "HE_SEAL",
                "Invalid configuration string ", configuration_string);
+  NGRAPH_INFO << "Creating new backend";
   return new ngraph::he::HESealBackend();
 }
 
@@ -43,16 +44,9 @@ ngraph::he::HESealBackend::HESealBackend()
           ngraph::he::parse_config_or_use_default("HE_SEAL")) {}
 
 ngraph::he::HESealBackend::HESealBackend(
-    const std::shared_ptr<ngraph::he::HEEncryptionParameters>& sp) {
-  auto he_seal_encryption_parms =
-      std::static_pointer_cast<ngraph::he::HESealEncryptionParameters>(sp);
-
-  NGRAPH_CHECK(he_seal_encryption_parms != nullptr,
-               "HE_SEAL backend passed invalid encryption parameters");
-  m_context = seal::SEALContext::Create(
-      *(he_seal_encryption_parms->seal_encryption_parameters()));
-
-  m_encryption_params = sp;
+    const ngraph::he::HESealEncryptionParameters& parms)
+    : m_encryption_params(parms) {
+  m_context = seal::SEALContext::Create(parms.seal_encryption_parameters());
 
   print_seal_context(*m_context);
 
@@ -60,8 +54,8 @@ ngraph::he::HESealBackend::HESealBackend(
 
   // Keygen, encryptor and decryptor
   m_keygen = std::make_shared<seal::KeyGenerator>(m_context);
-  m_relin_keys = std::make_shared<seal::RelinKeys>(
-      m_keygen->relin_keys(sp->evaluation_decomposition_bit_count()));
+  m_relin_keys = std::make_shared<seal::RelinKeys>(m_keygen->relin_keys(
+      m_encryption_params.evaluation_decomposition_bit_count()));
   m_public_key = std::make_shared<seal::PublicKey>(m_keygen->public_key());
   m_secret_key = std::make_shared<seal::SecretKey>(m_keygen->secret_key());
   m_encryptor = std::make_shared<seal::Encryptor>(m_context, *m_public_key);

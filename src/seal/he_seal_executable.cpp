@@ -126,18 +126,15 @@ ngraph::he::HESealExecutable::HESealExecutable(
     NGRAPH_INFO << "Starting server";
     start_server();
 
-    // Send encryption parameters
-    std::stringstream param_stream;
-    std::shared_ptr<ngraph::he::HEEncryptionParameters> parms =
-        he_seal_backend->get_encryption_parameters();
-    NGRAPH_CHECK(parms != nullptr, "HEEncryptionParameters == nullptr");
-
     // only support parameter size 1 for now
     NGRAPH_CHECK(get_parameters().size() == 1,
                  "HESealExecutable only supports parameter size 1 (got ",
                  get_parameters().size(), ")");
 
-    parms->save(param_stream);
+    // Send encryption parameters
+    std::stringstream param_stream;
+
+    he_seal_backend->get_encryption_parameters().save(param_stream);
     auto parms_message =
         TCPMessage(MessageType::encryption_parameters, 1, param_stream);
 

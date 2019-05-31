@@ -39,7 +39,7 @@ std::string join(const T& v, const std::string& sep = ", ") {
   return ss.str();
 }
 
-static void print_seal_context(const seal::SEALContext& context) {
+inline void print_seal_context(const seal::SEALContext& context) {
   auto context_data = context.context_data();
   auto scheme_parms = context_data->parms();
 
