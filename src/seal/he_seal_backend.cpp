@@ -38,7 +38,7 @@ extern "C" runtime::BackendConstructor* get_backend_constructor_pointer() {
 
       NGRAPH_CHECK(configuration_string == "HE_SEAL",
                    "Invalid configuration string ", configuration_string);
-      return std::make_shared<runtime::nop::HESealBackend>();
+      return std::make_shared<ngraph::he::HESealBackend>();
     }
   };
 
@@ -46,16 +46,6 @@ extern "C" runtime::BackendConstructor* get_backend_constructor_pointer() {
       new LocalBackendConstructor());
   return s_backend_constructor.get();
 }
-
-namespace {
-static class HESealStaticInit {
- public:
-  HESealStaticInit() {
-    ngraph::runtime::BackendManager::register_backend("HE_SEAL", new_backend);
-  }
-  ~HESealCKKSStaticInit() {}
-} s_he_seal_static_init;
-}  // namespace
 
 ngraph::he::HESealBackend::HESealBackend()
     : ngraph::he::HESealBackend(
