@@ -23,15 +23,15 @@
 #include <vector>
 
 #include "seal/he_seal_client.hpp"
-#include "seal/he_seal_util.hpp"
 #include "seal/seal.h"
+#include "seal/seal_util.hpp"
 #include "tcp/tcp_client.hpp"
 #include "tcp/tcp_message.hpp"
 
 ngraph::he::HESealClient::HESealClient(const std::string& hostname,
-                                        const size_t port,
-                                        const size_t batch_size,
-                                        const std::vector<float>& inputs)
+                                       const size_t port,
+                                       const size_t batch_size,
+                                       const std::vector<float>& inputs)
     : m_is_done(false), m_batch_size{batch_size}, m_inputs{inputs} {
   boost::asio::io_context io_context;
   tcp::resolver resolver(io_context);
@@ -42,7 +42,7 @@ ngraph::he::HESealClient::HESealClient(const std::string& hostname,
   };
 
   m_tcp_client = std::make_shared<ngraph::he::TCPClient>(io_context, endpoints,
-                                                          client_callback);
+                                                         client_callback);
 
   io_context.run();
 }
@@ -252,7 +252,8 @@ void ngraph::he::HESealClient::handle_message(
     size_t element_size = message.element_size();
 
     std::vector<std::vector<double>> input_cipher_values(
-        m_batch_size * complex_scale_factor,std::vector<double>(cipher_count, 0));
+        m_batch_size * complex_scale_factor,
+        std::vector<double>(cipher_count, 0));
 
     std::vector<double> max_values(m_batch_size * complex_scale_factor,
                                    std::numeric_limits<double>::lowest());
@@ -313,7 +314,7 @@ void ngraph::he::HESealClient::handle_message(
     size_t element_size = message.element_size();
 
     std::vector<std::vector<double>> input_cipher_values(
-        cipher_count,std::vector<double>(m_batch_size, 0));
+        cipher_count, std::vector<double>(m_batch_size, 0));
 
     std::vector<double> min_values(m_batch_size,
                                    std::numeric_limits<double>::max());
@@ -348,7 +349,7 @@ void ngraph::he::HESealClient::handle_message(
       for (size_t batch_idx = 0; batch_idx < m_batch_size; ++batch_idx) {
         min_values[batch_idx] =
             std::min(input_cipher_values[cipher_idx][batch_idx],
-                input_cipher_values[cipher_idx + 1][batch_idx]);
+                     input_cipher_values[cipher_idx + 1][batch_idx]);
       }
       // Encrypt minimum values
       seal::Ciphertext cipher_minimum;
@@ -375,9 +376,7 @@ void ngraph::he::HESealClient::write_message(
 
 bool ngraph::he::HESealClient::is_done() { return m_is_done; }
 
-std::vector<float> ngraph::he::HESealClient::get_results() {
-  return m_results;
-}
+std::vector<float> ngraph::he::HESealClient::get_results() { return m_results; }
 
 void ngraph::he::HESealClient::close_connection() {
   std::cout << "Closing connection" << std::endl;

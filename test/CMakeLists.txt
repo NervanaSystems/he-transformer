@@ -33,7 +33,7 @@ set (SRC
     test_tcp_message.cpp
 )
 
-set(ACTIVE_BACKEND_LIST HE_SEAL_CKKS)
+set(ACTIVE_BACKEND_LIST HE_SEAL)
 
 set(MULTI_TEST_SRC
     test_add.in.cpp

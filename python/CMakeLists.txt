@@ -49,13 +49,14 @@ link_directories(
     ${EXTERNAL_INSTALL_LIB_DIR}
     ${NGRAPH_TF_LIB_DIR}
 )
+message("Client infos")
 message("HE_TRANSFORMER_SOURCE_DIR ${HE_TRANSFORMER_SOURCE_DIR}")
 message("EXTERNAL_INSTALL_INCLUDE_DIR ${EXTERNAL_INSTALL_INCLUDE_DIR}")
 message("EXTERNAL_INSTALL_LIB_DIR ${EXTERNAL_INSTALL_LIB_DIR}")
 
 add_library(he_seal_client SHARED ${CMAKE_SOURCE_DIR}/src/seal/he_seal_client.cpp)
 add_dependencies(he_seal_client ext_seal)
-target_link_libraries(he_seal_client seal)
+target_link_libraries(he_seal_client seal libjson)
 install(TARGETS he_seal_client DESTINATION ${HE_INSTALL_LIB_DIR})
 
 add_custom_command(

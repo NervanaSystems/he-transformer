@@ -32,7 +32,7 @@ extern "C" ngraph::runtime::Backend* new_backend(
     const char* configuration_chars) {
   std::string configuration_string = std::string(configuration_chars);
 
-  NGRAPH_CHECK(configuration_string == "HE_SEAL_CKKS",
+  NGRAPH_CHECK(configuration_string == "HE_SEAL",
                "Invalid configuration string ", configuration_string);
   return new ngraph::he::HESealBackend();
 }
@@ -43,7 +43,7 @@ extern "C" void delete_backend(ngraph::runtime::Backend* backend) {
 
 ngraph::he::HESealBackend::HESealBackend()
     : ngraph::he::HESealBackend(
-          ngraph::he::parse_config_or_use_default("HE_SEAL_CKKS")) {}
+          ngraph::he::parse_config_or_use_default("HE_SEAL")) {}
 
 ngraph::he::HESealBackend::HESealBackend(
     const std::shared_ptr<ngraph::he::HEEncryptionParameters>& sp) {
@@ -51,7 +51,7 @@ ngraph::he::HESealBackend::HESealBackend(
       std::static_pointer_cast<ngraph::he::HESealEncryptionParameters>(sp);
 
   NGRAPH_CHECK(he_seal_encryption_parms != nullptr,
-               "HE_SEAL_CKKS backend passed invalid encryption parameters");
+               "HE_SEAL backend passed invalid encryption parameters");
   m_context = seal::SEALContext::Create(
       *(he_seal_encryption_parms->seal_encryption_parameters()));
 

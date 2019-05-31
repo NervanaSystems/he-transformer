@@ -39,11 +39,6 @@ set (HE_SRC
     #seal/kernel/subtract_seal.cpp
 
     # seal backend
-
-
-
-
-
 )
 include_directories(
     SYSTEM
@@ -55,6 +50,7 @@ link_directories(
     ${EXTERNAL_INSTALL_LIB_DIR}
     ${NGRAPH_TF_LIB_DIR}
 )
+
 
 message("Linking directories: ${NGRAPH_TF_LIB_DIR}, ${EXTERNAL_INSTALL_LIB_DIR}")
 
@@ -72,6 +68,8 @@ endif()
 set(HE_SEAL_BACKEND_LIB_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}he_seal_backend${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
 message("NGRAPH_TF_VENV_LIB_DIR ${NGRAPH_TF_VENV_LIB_DIR}")
+
+message("Installing he_seal_Backend to ${EXTERNAL_INSTALL_LIB_DIR}")
 
 # Install he-transformer (the HE libraries are installed separately) at `make install`
 install(TARGETS he_seal_backend DESTINATION ${EXTERNAL_INSTALL_LIB_DIR})
