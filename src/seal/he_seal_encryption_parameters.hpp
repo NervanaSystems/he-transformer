@@ -41,8 +41,7 @@ class HESealEncryptionParameters : public HEEncryptionParameters {
       : HEEncryptionParameters(scheme_name, poly_modulus_degree, security_level,
                                evaluation_decomposition_bit_count,
                                coeff_modulus, plain_modulus) {
-    NGRAPH_CHECK(scheme_name == "HE_SEAL_CKKS", "Invalid scheme name ",
-                 scheme_name);
+    NGRAPH_CHECK(scheme_name == "HE_SEAL", "Invalid scheme name ", scheme_name);
     m_seal_encryption_parameters =
         std::make_shared<seal::EncryptionParameters>(seal::scheme_type::CKKS);
 
@@ -80,7 +79,7 @@ default_ckks_parameters() {
   }
 
   auto params = std::make_shared<ngraph::he::HESealEncryptionParameters>(
-      "HE_SEAL_CKKS",
+      "HE_SEAL",
       1024,  // poly_modulus_degree
       128,   // security_level
       60,    // evaluation_decomposition_bit_count
@@ -90,7 +89,7 @@ default_ckks_parameters() {
 
 const static std::shared_ptr<ngraph::he::HEEncryptionParameters>
 parse_config_or_use_default(const std::string& scheme_name) {
-  static std::unordered_set<std::string> valid_scheme_names{"HE_SEAL_CKKS"};
+  static std::unordered_set<std::string> valid_scheme_names{"HE_SEAL"};
   if (valid_scheme_names.find(scheme_name) == valid_scheme_names.end()) {
     throw ngraph_error("Invalid scheme name " + scheme_name);
   }

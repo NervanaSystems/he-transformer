@@ -51,7 +51,6 @@ link_directories(
     ${NGRAPH_TF_LIB_DIR}
 )
 
-
 message("Linking directories: ${NGRAPH_TF_LIB_DIR}, ${EXTERNAL_INSTALL_LIB_DIR}")
 
 # Target library
@@ -65,11 +64,13 @@ if(NGRAPH_HE_SANITIZE_ADDRESS)
 endif()
 
 # Get library names
-set(HE_SEAL_BACKEND_LIB_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}he_seal_backend${CMAKE_SHARED_LIBRARY_SUFFIX}")
+set(HE_SEAL_BACKEND_LIB_NAME "libhe_seal_backend${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
 message("NGRAPH_TF_VENV_LIB_DIR ${NGRAPH_TF_VENV_LIB_DIR}")
 
 message("Installing he_seal_Backend to ${EXTERNAL_INSTALL_LIB_DIR}")
+
+message("NGRAPH_TF_LIB_DIR" ${NGRAPH_TF_LIB_DIR})
 
 # Install he-transformer (the HE libraries are installed separately) at `make install`
 install(TARGETS he_seal_backend DESTINATION ${EXTERNAL_INSTALL_LIB_DIR})
@@ -79,3 +80,14 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
         FILES_MATCHING
         PATTERN "*.hpp"
         PATTERN "*.h")
+
+# Create symbolic links for he_seal_backend, to allow ngraph and ngraph-tf
+#  to recognize find it.
+add_custom_target(he_seal_backend_soft_link ALL DEPENDS he_seal_backend
+COMMAND ${CMAKE_COMMAND} -E create_symlink
+    ${EXTERNAL_INSTALL_LIB_DIR}/libhe_seal_backend${CMAKE_SHARED_LIBRARY_SUFFIX}
+    ${NGRAPH_TF_VENV_LIB_DIR}/libhe_seal_backend${CMAKE_SHARED_LIBRARY_SUFFIX}
+COMMAND ${CMAKE_COMMAND} -E create_symlink
+    ${EXTERNAL_INSTALL_LIB_DIR}/libhe_seal_backend${CMAKE_SHARED_LIBRARY_SUFFIX}
+    ${NGRAPH_TF_LIB_DIR}/libhe_seal_backend${CMAKE_SHARED_LIBRARY_SUFFIX}
+    )
