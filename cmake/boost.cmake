@@ -16,11 +16,30 @@
 
 include(ExternalProject)
 
-find_package(Boost 1.69)
-if(Boost_FOUND)
-  message("Boost_INCLUDE_DIRS ${Boost_INCLUDE_DIRS}")
-  include_directories(${Boost_INCLUDE_DIRS})
-else()
-  message(FATAL_ERROR "Boost not found")
-endif()
-add_library(boost INTERFACE)
+SET(BOOST_REPO_URL https://github.com/boostorg/boost)
+SET(BOOST_GIT_LABEL boost-1.69.0)
+
+ExternalProject_Add(
+    ext_boost
+    PREFIX boost
+    GIT_REPOSITORY ${BOOST_REPO_URL}
+    GIT_TAG ${BOOST_GIT_LABEL}
+    # Disable install step
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ""
+    INSTALL_COMMAND ""
+    UPDATE_COMMAND ""
+    EXCLUDE_FROM_ALL TRUE
+    )
+
+
+
+
+#find_package(Boost 1.69)
+#if(Boost_FOUND)
+#  message("Boost_INCLUDE_DIRS ${Boost_INCLUDE_DIRS}")
+#  include_directories(${Boost_INCLUDE_DIRS})
+#else()
+#  message(FATAL_ERROR "Boost not found")
+#endif()
+#add_library(boost INTERFACE)
