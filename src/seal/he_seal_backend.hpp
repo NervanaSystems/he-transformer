@@ -40,14 +40,12 @@
 #include "ngraph/util.hpp"
 #include "node_wrapper.hpp"
 #include "seal/he_seal_encryption_parameters.hpp"
-#include "seal/he_seal_executable.hpp"
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
 
 namespace ngraph {
 namespace he {
-class HETensor;
 class HESealBackend : public ngraph::runtime::Backend {
  public:
   //

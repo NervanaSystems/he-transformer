@@ -22,7 +22,8 @@
 
 namespace ngraph {
 namespace he {
-struct SealCiphertextWrapper {
+class SealCiphertextWrapper {
+ public:
   SealCiphertextWrapper() {
     set_complex_packing(false);
     set_zero(false);
@@ -42,6 +43,9 @@ struct SealCiphertextWrapper {
 
   bool is_zero() const { return m_is_zero; }
   void set_zero(bool toggle) { m_is_zero = toggle; }
+
+  double& scale() { return m_ciphertext.scale(); }
+  const double scale() const { return m_ciphertext.scale(); }
 
   bool complex_packing() const { return m_complex_packing; }
   void set_complex_packing(bool toggle) { m_complex_packing = toggle; }

@@ -89,10 +89,10 @@ auto real_vec_to_complex_vec = [](std::vector<std::complex<double>>& output,
 
 namespace ngraph {
 namespace he {
-template <typename S>
-size_t get_chain_index(S* hetext, const HESealBackend* he_seal_backend) {
+inline size_t get_chain_index(const SealCiphertextWrapper& cipher,
+                              const HESealBackend* he_seal_backend) {
   size_t chain_ind = he_seal_backend->get_context()
-                         ->context_data(hetext->get_hetext().parms_id())
+                         ->context_data(cipher.ciphertext().parms_id())
                          ->chain_index();
   return chain_ind;
 }
@@ -100,7 +100,7 @@ size_t get_chain_index(S* hetext, const HESealBackend* he_seal_backend) {
 inline size_t get_chain_index(const SealPlaintextWrapper& plain,
                               const HESealBackend* he_seal_backend) {
   size_t chain_ind = he_seal_backend->get_context()
-                         ->context_data(plain.m_plaintext.parms_id())
+                         ->context_data(plain.plaintext().parms_id())
                          ->chain_index();
   return chain_ind;
 }
@@ -108,8 +108,9 @@ inline size_t get_chain_index(const SealPlaintextWrapper& plain,
 template <typename S, typename T>
 bool within_rescale_tolerance(const S* arg0, const T* arg1,
                               double factor = 1.02) {
-  const auto scale0 = arg0->get_hetext().scale();
-  const auto scale1 = arg1->get_hetext().scale();
+  return false;
+  const auto scale0 = arg0->scale();
+  const auto scale1 = arg1->scale();
 
   bool within_tolerance =
       (scale0 / scale1 <= factor && scale1 / scale0 <= factor);
@@ -118,12 +119,12 @@ bool within_rescale_tolerance(const S* arg0, const T* arg1,
 
 template <typename S, typename T>
 void match_scale(S* arg0, T* arg1, const HESealBackend* he_seal_backend) {
-  auto scale0 = arg0->get_hetext().scale();
-  auto scale1 = arg1->get_hetext().scale();
+  auto scale0 = arg0->scale();
+  auto scale1 = arg1->scale();
   bool scale_ok = within_rescale_tolerance(arg0, arg1);
   NGRAPH_CHECK(scale_ok, "Scale ", scale0, "does not match scale ", scale1,
                " in scalar add");
-  arg0->get_hetext().scale() = arg1->get_hetext().scale();
+  arg0->scale() = arg1->scale();
 }
 
 void match_modulus_and_scale_inplace(

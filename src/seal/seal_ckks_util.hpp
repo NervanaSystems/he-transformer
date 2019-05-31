@@ -1,5 +1,5 @@
 //*****************************************************************************
-// Copyright 2018 Intel Corporation
+// Copyright 2018-2019 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +12,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//*****************************************************************************
 
 #pragma once
 
@@ -40,7 +41,7 @@ size_t get_chain_index(S* hetext,
 inline size_t get_chain_index(const SealPlaintextWrapper& plain,
                               const HESealCKKSBackend* he_seal_ckks_backend) {
   size_t chain_ind = he_seal_ckks_backend->get_context()
-                         ->context_data(plain.m_plaintext.parms_id())
+                         ->context_data(plain.plaintext().parms_id())
                          ->chain_index();
   return chain_ind;
 }

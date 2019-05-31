@@ -18,6 +18,7 @@
 #include <memory>
 
 #include "seal/he_seal_backend.hpp"
+#include "seal/he_seal_executable.hpp"
 #include "seal/seal.h"
 
 extern "C" const char* get_ngraph_version_string() {
@@ -99,8 +100,7 @@ void ngraph::he::HESealBackend::decrypt(
   } else {
     auto plaintext_wrapper =
         make_seal_plaintext_wrapper(input->complex_packing());
-    m_decryptor->decrypt(input->ciphertext(),
-                         plaintext_wrapper->plaintext());
+    m_decryptor->decrypt(input->ciphertext(), plaintext_wrapper->plaintext());
     decode(output, *plaintext_wrapper);
   }
   output.set_complex_packing(input->complex_packing());

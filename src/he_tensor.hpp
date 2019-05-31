@@ -20,7 +20,6 @@
 
 #include "ngraph/runtime/tensor.hpp"
 #include "ngraph/type/element_type.hpp"
-#include "seal/he_seal_backend.hpp"
 
 namespace ngraph {
 namespace he {
