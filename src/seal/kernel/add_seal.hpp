@@ -28,8 +28,7 @@
 namespace ngraph {
 namespace he {
 void scalar_add_seal(
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
+    SealCiphertextWrapper& arg0, SealCiphertextWrapper& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type, const HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
@@ -59,9 +58,10 @@ inline void add_seal(
     const element::Type& element_type, const HESealBackend* he_seal_backend,
     size_t count,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool()) {
+  NGRAPH_INFO << "Adding vecC + vecC => vecC";
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
-    scalar_add_seal(arg0[i], arg1[i], out[i], element_type, he_seal_backend);
+    scalar_add_seal(*arg0[i], *arg1[i], out[i], element_type, he_seal_backend);
   }
 }
 

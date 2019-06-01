@@ -14,7 +14,7 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "kernel/result.hpp"
+#include "seal/kernel/result_seal.hpp"
 
 void ngraph::he::result(
     const std::vector<std::unique_ptr<ngraph::he::HEPlaintext>>& arg,

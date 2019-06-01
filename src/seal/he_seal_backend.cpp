@@ -197,6 +197,7 @@ void ngraph::he::HESealBackend::decrypt(
     ngraph::he::HEPlaintext& output,
     const std::shared_ptr<ngraph::he::SealCiphertextWrapper>& input) const {
   if (input->is_zero()) {
+    NGRAPH_INFO << "decrypting 0";
     // TOOD: refine?
     const size_t slots =
         m_context->context_data()->parms().poly_modulus_degree() / 2;
@@ -204,6 +205,10 @@ void ngraph::he::HESealBackend::decrypt(
   } else {
     auto plaintext_wrapper =
         make_seal_plaintext_wrapper(input->complex_packing());
+    NGRAPH_INFO << "Calling decrypt";
+
+    size_t chain_ind0 = get_chain_index(input->ciphertext(), this);
+    NGRAPH_INFO << "decrypting chain ind " << chain_ind0;
     m_decryptor->decrypt(input->ciphertext(), plaintext_wrapper->plaintext());
     decode(output, *plaintext_wrapper);
   }

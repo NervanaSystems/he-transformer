@@ -20,7 +20,9 @@
 #include "he_seal_cipher_tensor.hpp"
 #include "he_tensor.hpp"
 #include "kernel/add_seal.hpp"
+#include "kernel/result_seal.hpp"
 #include "seal/he_seal_executable.hpp"
+
 // #include "kernel/avg_pool_seal.hpp"
 /*#include "kernel/batch_norm_inference.hpp"
 #include "kernel/broadcast.hpp"
@@ -33,7 +35,6 @@
 #include "kernel/negate.hpp"
 #include "kernel/pad.hpp"
 #include "kernel/reshape.hpp"
-#include "kernel/result.hpp"
 #include "kernel/reverse.hpp"
 #include "kernel/slice.hpp"
 #include "kernel/subtract.hpp"
@@ -754,6 +755,12 @@ void ngraph::he::HESealExecutable::generate_calls(
     case OP_TYPEID::Add: {
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
+        auto cipher1 = arg0_cipher->get_element(0);
+        NGRAPH_INFO << "got cipher 1";
+        size_t chain_ind0 =
+            ngraph::he::get_chain_index(*cipher1, m_he_seal_backend);
+        NGRAPH_INFO << "chaind ind 0 " << chain_ind0;
+
         ngraph::he::add_seal(
             arg0_cipher->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), type, m_he_seal_backend,
@@ -1280,7 +1287,7 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Result: {
-      /*size_t output_size;
+      size_t output_size;
       if (arg0_plain != nullptr) {
         output_size = arg0_plain->get_batched_element_count();
       } else if (arg0_cipher != nullptr) {
@@ -1305,7 +1312,7 @@ void ngraph::he::HESealExecutable::generate_calls(
                            out0_plain->get_elements(), output_size);
       } else {
         throw ngraph_error("Result types not supported.");
-      }*/
+      }
       break;
     }
     case OP_TYPEID::Relu: {
