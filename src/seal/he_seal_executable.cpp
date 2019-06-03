@@ -145,7 +145,7 @@ ngraph::he::HESealExecutable::HESealExecutable(
                         std::bind(&HESealExecutable::session_started, this));
     NGRAPH_INFO << "Session started";
 
-    m_session->do_write(parms_message);
+    m_session->do_write(std::move(parms_message));
   }
 }
 
@@ -316,7 +316,7 @@ void ngraph::he::HESealExecutable::handle_message(
                                              (char*)&num_param_elements};
 
     NGRAPH_INFO << "Server sending message of type: parameter_size";
-    m_session->do_write(parameter_message);
+    m_session->do_write(std::move(parameter_message));
   } else if (msg_type == MessageType::relu_result) {
     std::lock_guard<std::mutex> guard(m_relu_mutex);
 
@@ -652,7 +652,7 @@ bool ngraph::he::HESealExecutable::call(
 
     std::cout << "Writing Result message with " << output_shape_size
               << " ciphertexts " << std::endl;
-    m_session->do_write(m_result_message);
+    m_session->do_write(std::move(m_result_message));
   }
   return true;
 }
@@ -1061,7 +1061,7 @@ void ngraph::he::HESealExecutable::generate_calls(
         auto max_message =
             TCPMessage(MessageType::max_request, cipher_count, cipher_stream);
 
-        m_session->do_write(max_message);
+        m_session->do_write(std::move(max_message));
 
         // Acquire lock
         std::unique_lock<std::mutex> mlock(m_max_mutex);
@@ -1157,7 +1157,7 @@ void ngraph::he::HESealExecutable::generate_calls(
       auto minimum_message =
           TCPMessage(MessageType::minimum_request, cipher_count, cipher_stream);
 
-      m_session->do_write(minimum_message);
+      m_session->do_write(std::move(minimum_message));
 
       // Acquire lock
       std::unique_lock<std::mutex> mlock(m_minimum_mutex);
@@ -1371,7 +1371,7 @@ void ngraph::he::HESealExecutable::generate_calls(
                         << relu_idx << " of " << element_count;
             auto relu_message = TCPMessage(MessageType::relu_request,
                                            stream_count, cipher_stream);
-            m_session->do_write(relu_message);
+            m_session->do_write(std::move(relu_message));
 
             // Acquire lock
             std::unique_lock<std::mutex> mlock(m_relu_mutex);

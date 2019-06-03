@@ -179,19 +179,10 @@ class TCPMessage {
         m_count(other.m_count),
         m_data_size(other.m_data_size) {
     other.m_data = nullptr;
-    std::cout << "TCPMessage move constructor!" << std::endl;
   };
+
   TCPMessage& operator=(const TCPMessage&) = delete;
-
-  TCPMessage(const TCPMessage& other) = delete; /* {
-    std::cout << "TCPMessage copy constructo!" << std::endl;
-    m_type = other.m_type;
-    m_count = other.m_count;
-    m_data_size = other.m_data_size;
-    m_data = new char[header_length + body_length()];
-
-    std::memcpy(m_data, other.m_data, num_bytes());
-  }*/
+  TCPMessage(const TCPMessage& other) = delete;
 
   ~TCPMessage() {
     if (m_data != nullptr) {
