@@ -136,8 +136,8 @@ ngraph::he::HESealExecutable::HESealExecutable(
     std::stringstream param_stream;
 
     he_seal_backend->get_encryption_parameters().save(param_stream);
-    auto parms_message =
-        TCPMessage(MessageType::encryption_parameters, 1, param_stream);
+    auto parms_message = TCPMessage(MessageType::encryption_parameters, 1,
+                                    std::move(param_stream));
 
     std::unique_lock<std::mutex> mlock(m_session_mutex);
     NGRAPH_INFO << "Waiting until client is connected";
@@ -657,8 +657,8 @@ bool ngraph::he::HESealExecutable::call(
 
     std::stringstream cipher_stream;
     output_cipher_tensor->save_elements(cipher_stream);
-    m_result_message =
-        TCPMessage(MessageType::result, output_shape_size, cipher_stream);
+    m_result_message = TCPMessage(MessageType::result, output_shape_size,
+                                  std::move(cipher_stream));
 
     std::cout << "Writing Result message with " << output_shape_size
               << " ciphertexts " << std::endl;
@@ -1068,8 +1068,8 @@ void ngraph::he::HESealExecutable::generate_calls(
         NGRAPH_INFO << "Sending " << cipher_count
                     << " Maxpool ciphertexts (size "
                     << cipher_stream.str().size() << ") to client";
-        auto max_message =
-            TCPMessage(MessageType::max_request, cipher_count, cipher_stream);
+        auto max_message = TCPMessage(MessageType::max_request, cipher_count,
+                                      std::move(cipher_stream));
 
         m_session->do_write(std::move(max_message));
 
@@ -1164,8 +1164,8 @@ void ngraph::he::HESealExecutable::generate_calls(
       // Send list of ciphertexts to minimum over to client
       NGRAPH_INFO << "Sending " << cipher_count << " Minimum ciphertexts (size "
                   << cipher_stream.str().size() << ") to client";
-      auto minimum_message =
-          TCPMessage(MessageType::minimum_request, cipher_count, cipher_stream);
+      auto minimum_message = TCPMessage(MessageType::minimum_request,
+                                        cipher_count, std::move(cipher_stream));
 
       m_session->do_write(std::move(minimum_message));
 
@@ -1379,8 +1379,9 @@ void ngraph::he::HESealExecutable::generate_calls(
                         << " Relu ciphertexts (size "
                         << cipher_stream.str().size() << ") to client ("
                         << relu_idx << " of " << element_count;
-            auto relu_message = TCPMessage(MessageType::relu_request,
-                                           stream_count, cipher_stream);
+            auto relu_message =
+                TCPMessage(MessageType::relu_request, stream_count,
+                           std::move(cipher_stream));
             m_session->do_write(std::move(relu_message));
 
             // Acquire lock

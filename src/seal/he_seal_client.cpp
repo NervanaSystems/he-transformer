@@ -144,13 +144,16 @@ void ngraph::he::HESealClient::handle_message(
       cipher.save(cipher_streams[data_idx]);  // cipher_stream);
     }
 
+    NGRAPH_INFO << "Encrypted ciphertexts; saving to stream";
     std::stringstream concat_cipher_stream;
     for (size_t data_idx = 0; data_idx < parameter_size; ++data_idx) {
       concat_cipher_stream << cipher_streams[data_idx].str();
     }
+    NGRAPH_INFO << "Creating execute message";
 
-    auto execute_message = TCPMessage(ngraph::he::MessageType::execute,
-                                      parameter_size, concat_cipher_stream);
+    auto execute_message =
+        TCPMessage(ngraph::he::MessageType::execute, parameter_size,
+                   std::move(concat_cipher_stream));
     std::cout << "Sending execute message with " << parameter_size
               << " ciphertexts" << std::endl;
     write_message(std::move(execute_message));
@@ -193,8 +196,8 @@ void ngraph::he::HESealClient::handle_message(
     // Send public key
     std::stringstream pk_stream;
     m_public_key->save(pk_stream);
-    auto pk_message =
-        TCPMessage(ngraph::he::MessageType::public_key, 1, pk_stream);
+    auto pk_message = TCPMessage(ngraph::he::MessageType::public_key, 1,
+                                 std::move(pk_stream));
     std::cout << "Sending public key" << std::endl;
     write_message(std::move(pk_message));
 
@@ -202,7 +205,7 @@ void ngraph::he::HESealClient::handle_message(
     std::stringstream evk_stream;
     m_relin_keys->save(evk_stream);
     auto evk_message =
-        TCPMessage(ngraph::he::MessageType::eval_key, 1, evk_stream);
+        TCPMessage(ngraph::he::MessageType::eval_key, 1, std::move(evk_stream));
     std::cout << "Sending evaluation key" << std::endl;
     write_message(std::move(evk_message));
   } else if (msg_type == ngraph::he::MessageType::relu_request) {
@@ -262,8 +265,9 @@ void ngraph::he::HESealClient::handle_message(
     std::cout << "Writing relu_result message with " << result_count
               << " ciphertexts" << std::endl;
 
-    auto relu_result_msg = TCPMessage(ngraph::he::MessageType::relu_result,
-                                      result_count, post_relu_stream);
+    auto relu_result_msg =
+        TCPMessage(ngraph::he::MessageType::relu_result, result_count,
+                   std::move(post_relu_stream));
     write_message(std::move(relu_result_msg));
   } else if (msg_type == ngraph::he::MessageType::max_request) {
     size_t complex_scale_factor = complex_packing() ? 2 : 1;
@@ -322,8 +326,8 @@ void ngraph::he::HESealClient::handle_message(
     }
     m_encryptor->encrypt(plain_max, cipher_max);
     cipher_max.save(max_stream);
-    auto max_result_msg =
-        TCPMessage(ngraph::he::MessageType::max_result, 1, max_stream);
+    auto max_result_msg = TCPMessage(ngraph::he::MessageType::max_result, 1,
+                                     std::move(max_stream));
     write_message(std::move(max_result_msg));
   } else if (msg_type == ngraph::he::MessageType::minimum_request) {
     // Stores (c_1a, c_1b, c_2a, c_b, ..., c_na, c_nb)
@@ -380,7 +384,7 @@ void ngraph::he::HESealClient::handle_message(
 
     auto minimum_result_msg =
         TCPMessage(ngraph::he::MessageType::minimum_result, cipher_count / 2,
-                   minimum_stream);
+                   std::move(minimum_stream));
     write_message(std::move(minimum_result_msg));
   } else {
     std::cout << "Unsupported message type: "

@@ -134,7 +134,7 @@ class TCPMessage {
 
   // Encodes message of count elements using data in stream
   TCPMessage(const MessageType type, size_t count,
-             const std::stringstream& stream)
+             const std::stringstream&& stream)
       : m_type(type), m_count(count) {
     const std::string& pk_str = stream.str();
     const char* pk_cstr = pk_str.c_str();
