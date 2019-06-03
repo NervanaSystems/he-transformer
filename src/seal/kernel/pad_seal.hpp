@@ -19,32 +19,32 @@
 #include <memory>
 #include <vector>
 
-#include "he_seal_backend.hpp"
 #include "ngraph/axis_vector.hpp"
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/op/pad.hpp"
+#include "seal/he_seal_backend.hpp"
 
 namespace ngraph {
 namespace he {
-void pad(std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>& arg0,
-         std::vector<std::shared_ptr<ngraph::he::HEPlaintext>>& arg1,  // scalar
-         std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>& out,
-         const Shape& arg0_shape, const Shape& out_shape,
-         const CoordinateDiff& padding_below,
-         const CoordinateDiff& padding_above, op::PadMode pad_mode,
-         size_t batch_size, const ngraph::he::HESealBackend* he_seal_backend);
+void pad_seal(std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg0,
+              std::vector<HEPlaintext>& arg1,  // scalar
+              std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
+              const Shape& arg0_shape, const Shape& out_shape,
+              const CoordinateDiff& padding_below,
+              const CoordinateDiff& padding_above, op::PadMode pad_mode,
+              size_t batch_size, const HESealBackend* he_seal_backend);
 
 template <typename S>
-void pad(std::vector<std::shared_ptr<S>>& arg0,
-         std::vector<std::shared_ptr<S>>& arg1,  // scalar
-         std::vector<std::shared_ptr<S>>& out, const Shape& arg0_shape,
-         const Shape& out_shape, const CoordinateDiff& padding_below,
-         const CoordinateDiff& padding_above, op::PadMode pad_mode,
-         size_t batch_size, const ngraph::he::HESealBackend* he_seal_backend) {
+void pad_seal(std::vector<S>& arg0,
+              std::vector<S>& arg1,  // scalar
+              std::vector<S>& out, const Shape& arg0_shape,
+              const Shape& out_shape, const CoordinateDiff& padding_below,
+              const CoordinateDiff& padding_above, op::PadMode pad_mode,
+              size_t batch_size, const HESealBackend* he_seal_backend) {
   if (arg1.size() != 1) {
     throw ngraph_error("Padding element must be scalar");
   }
-  std::shared_ptr<S> pad_val = arg1[0];
+  S pad_val = arg1[0];
 
   // start at (0,0,...,0)
   Coordinate input_start(arg0_shape.size(), 0);
@@ -71,7 +71,7 @@ void pad(std::vector<std::shared_ptr<S>>& arg0,
   for (const Coordinate& in_coord : input_transform) {
     const Coordinate& out_coord = *output_it;
 
-    std::shared_ptr<S> v;
+    S v;
 
     switch (pad_mode) {
       case op::PadMode::CONSTANT:

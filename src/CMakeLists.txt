@@ -28,7 +28,7 @@ set (HE_SRC
 
     # seal kernels
     seal/kernel/constant_seal.cpp
-    #seal/kernel/pad_seal.cpp
+    seal/kernel/pad_seal.cpp
     seal/kernel/subtract_seal.cpp
     seal/kernel/result_seal.cpp
     seal/kernel/add_seal.cpp
