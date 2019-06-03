@@ -19,26 +19,22 @@
 #include <memory>
 #include <vector>
 
-#include "he_ciphertext.hpp"
 #include "he_plaintext.hpp"
-#include "kernel/add.hpp"
-#include "kernel/multiply.hpp"
-#include "kernel/subtract.hpp"
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/shape_util.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
+#include "seal/kernel/add_seal.hpp"
+#include "seal/kernel/multiply_seal.hpp"
+#include "seal/kernel/subtract_seal.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
-#include "seal/seal_plaintext_wrapper.hpp"
 
 namespace ngraph {
 namespace he {
-void batch_norm_inference(
-    double eps, std::vector<std::shared_ptr<HEPlaintext>>& gamma,
-    std::vector<std::shared_ptr<HEPlaintext>>& beta,
+void batch_norm_inference_seal(
+    double eps, std::vector<HEPlaintext>& gamma, std::vector<HEPlaintext>& beta,
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& input,
-    std::vector<std::shared_ptr<HEPlaintext>>& mean,
-    std::vector<std::shared_ptr<HEPlaintext>>& variance,
+    std::vector<HEPlaintext>& mean, std::vector<HEPlaintext>& variance,
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& normed_input,
     const Shape& input_shape, const size_t batch_size,
     const HESealBackend* he_seal_backend) {
@@ -63,10 +59,10 @@ void batch_norm_inference(
 
     auto input_index = input_transform.index(input_coord);
 
-    std::vector<float> channel_gamma_vals = channel_gamma->get_values();
-    std::vector<float> channel_beta_vals = channel_beta->get_values();
-    std::vector<float> channel_mean_vals = channel_mean->get_values();
-    std::vector<float> channel_var_vals = channel_var->get_values();
+    std::vector<float> channel_gamma_vals = channel_gamma.get_values();
+    std::vector<float> channel_beta_vals = channel_beta.get_values();
+    std::vector<float> channel_mean_vals = channel_mean.get_values();
+    std::vector<float> channel_var_vals = channel_var.get_values();
 
     NGRAPH_CHECK(channel_gamma_vals.size() == 1);
     NGRAPH_CHECK(channel_beta_vals.size() == 1);
@@ -82,18 +78,16 @@ void batch_norm_inference(
     std::vector<float> bias_vec(batch_size, bias);
 
     // TODO: enable complex packing?
-    auto plain_scale =
-        create_valued_plaintext(std::vector<float>{scale_vec}, false);
-    auto plain_bias =
-        create_valued_plaintext(std::vector<float>{bias_vec}, false);
+    auto plain_scale = HEPlaintext(scale_vec, false);
+    auto plain_bias = HEPlaintext(bias_vec, false);
 
     auto output = he_seal_backend->create_empty_ciphertext();
 
-    ngraph::he::scalar_multiply(input[input_index], *plain_scale, output,
-                                element::f32, he_seal_backend);
+    ngraph::he::scalar_multiply_seal(*input[input_index], plain_scale, output,
+                                     element::f32, he_seal_backend);
 
-    ngraph::he::scalar_add(output, *plain_bias, output, element::f32,
-                           he_seal_backend);
+    ngraph::he::scalar_add_seal(*output, plain_bias, output, element::f32,
+                                he_seal_backend);
     normed_input[input_index] = output;
   }
 };

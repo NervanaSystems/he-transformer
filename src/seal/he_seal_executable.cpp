@@ -20,6 +20,7 @@
 #include "he_seal_cipher_tensor.hpp"
 #include "he_tensor.hpp"
 #include "kernel/add_seal.hpp"
+#include "kernel/batch_norm_inference_seal.hpp"
 #include "kernel/broadcast_seal.hpp"
 #include "kernel/concat_seal.hpp"
 #include "kernel/constant_seal.hpp"
@@ -36,9 +37,7 @@
 #include "kernel/sum_seal.hpp"
 #include "seal/he_seal_executable.hpp"
 // #include "kernel/avg_pool_seal.hpp"
-/*#include "kernel/batch_norm_inference.hpp"
-#include "kernel/max_pool.hpp"
-*/
+//#include "kernel/max_pool.hpp"
 #include "ngraph/assertion.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
 #include "ngraph/op/avg_pool.hpp"
@@ -815,9 +814,8 @@ void ngraph::he::HESealExecutable::generate_calls(
     }
     case OP_TYPEID::BatchNormInference: {
       // TODO: enable
-      throw ngraph_error("BatchNormInference not supported.");
 
-      /*const ngraph::op::BatchNormInference* bn =
+      const ngraph::op::BatchNormInference* bn =
           static_cast<const ngraph::op::BatchNormInference*>(&node);
       double eps = bn->get_eps_value();
       NGRAPH_CHECK(args.size() == 5, "BatchNormInference has ", args.size(),
@@ -834,13 +832,13 @@ void ngraph::he::HESealExecutable::generate_calls(
       NGRAPH_CHECK(beta != nullptr, "BatchNorm beta not plain");
       NGRAPH_CHECK(input != nullptr, "BatchNorm input not cipher");
       NGRAPH_CHECK(mean != nullptr, "BatchNorm mean not plaintext");
-      NGRAPH_CHECK(variance != nullptr, "BatchNorm variance not plaintext"); */
+      NGRAPH_CHECK(variance != nullptr, "BatchNorm variance not plaintext");
 
-      /* ngraph::he::batch_norm_inference(
-           eps, gamma->get_elements(), beta->get_elements(),
-           input->get_elements(), mean->get_elements(),
-         variance->get_elements(), out0_cipher->get_elements(), arg_shapes[2],
-         m_batch_size, m_he_seal_backend); */
+      ngraph::he::batch_norm_inference_seal(
+          eps, gamma->get_elements(), beta->get_elements(),
+          input->get_elements(), mean->get_elements(), variance->get_elements(),
+          out0_cipher->get_elements(), arg_shapes[2], m_batch_size,
+          m_he_seal_backend);
       break;
     }
     case OP_TYPEID::Broadcast: {
