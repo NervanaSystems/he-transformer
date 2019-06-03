@@ -19,7 +19,9 @@
 #include <memory>
 #include <vector>
 
+#include "he_plaintext.hpp"
 #include "ngraph/coordinate_transform.hpp"
+#include "seal/seal_ciphertext_wrapper.hpp"
 
 namespace ngraph {
 namespace he {
@@ -44,8 +46,7 @@ void slice(const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
   }
 }
 
-void slice(const std::vector<std::unique_ptr<HEPlaintext>>& arg,
-           std::vector<std::unique_ptr<HEPlaintext>>& out,
+void slice(const std::vector<HEPlaintext>& arg, std::vector<HEPlaintext>& out,
            const Shape& arg_shape, const Coordinate& lower_bounds,
            const Coordinate& upper_bounds, const Strides& strides,
            const Shape& out_shape) {
@@ -59,7 +60,7 @@ void slice(const std::vector<std::unique_ptr<HEPlaintext>>& arg,
     const Coordinate& out_coord = *output_it;
 
     out[output_transform.index(out_coord)] =
-        std::make_unique<HEPlaintext>(*arg[input_transform.index(in_coord)]);
+        arg[input_transform.index(in_coord)];
 
     ++output_it;
   }

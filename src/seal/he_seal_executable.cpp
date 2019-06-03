@@ -25,6 +25,7 @@
 #include "kernel/reshape_seal.hpp"
 #include "kernel/result_seal.hpp"
 #include "kernel/reverse_seal.hpp"
+#include "kernel/slice_seal.hpp"
 #include "kernel/subtract_seal.hpp"
 #include "seal/he_seal_executable.hpp"
 // #include "kernel/avg_pool_seal.hpp"
@@ -38,7 +39,6 @@
 
 #include "kernel/pad.hpp"
 
-#include "kernel/slice.hpp"
 #include "kernel/sum.hpp"*/
 #include "ngraph/assertion.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
@@ -1372,22 +1372,23 @@ void ngraph::he::HESealExecutable::generate_calls(
     case OP_TYPEID::ScalarConstantLike:
       break;
     case OP_TYPEID::Slice: {
-      /*const op::Slice* slice = static_cast<const op::Slice*>(&node);
+      const op::Slice* slice = static_cast<const op::Slice*>(&node);
       Shape in_shape = node.get_input_shape(0);
       Shape out_shape = node.get_output_shape(0);
 
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
         ngraph::he::slice(arg0_cipher->get_elements(),
                           out0_cipher->get_elements(), in_shape,
-                          slice->get_lower_bounds(),
-      slice->get_upper_bounds(), slice->get_strides(), out_shape); } else if
-      (arg0_plain != nullptr && out0_plain != nullptr) {
+                          slice->get_lower_bounds(), slice->get_upper_bounds(),
+                          slice->get_strides(), out_shape);
+      } else if (arg0_plain != nullptr && out0_plain != nullptr) {
         ngraph::he::slice(arg0_plain->get_elements(),
                           out0_plain->get_elements(), in_shape,
-                          slice->get_lower_bounds(),
-      slice->get_upper_bounds(), slice->get_strides(), out_shape); } else {
+                          slice->get_lower_bounds(), slice->get_upper_bounds(),
+                          slice->get_strides(), out_shape);
+      } else {
         throw ngraph_error("Slice types not supported.");
-      }*/
+      }
       break;
     }
     case OP_TYPEID::Subtract: {
