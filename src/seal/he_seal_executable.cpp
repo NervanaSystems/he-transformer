@@ -20,6 +20,7 @@
 #include "he_seal_cipher_tensor.hpp"
 #include "he_tensor.hpp"
 #include "kernel/add_seal.hpp"
+#include "kernel/avg_pool_seal.hpp"
 #include "kernel/batch_norm_inference_seal.hpp"
 #include "kernel/broadcast_seal.hpp"
 #include "kernel/concat_seal.hpp"
@@ -36,7 +37,6 @@
 #include "kernel/subtract_seal.hpp"
 #include "kernel/sum_seal.hpp"
 #include "seal/he_seal_executable.hpp"
-// #include "kernel/avg_pool_seal.hpp"
 //#include "kernel/max_pool.hpp"
 #include "ngraph/assertion.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
@@ -785,10 +785,10 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::AvgPool: {
-      /*const op::AvgPool* avg_pool = static_cast<const op::AvgPool*>(&node);
+      const op::AvgPool* avg_pool = static_cast<const op::AvgPool*>(&node);
       Shape in_shape = arg_shapes[0];
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
-        ngraph::he::avg_pool(
+        ngraph::he::avg_pool_seal(
             arg0_cipher->get_elements(), out0_cipher->get_elements(), in_shape,
             out_shape, avg_pool->get_window_shape(),
             avg_pool->get_window_movement_strides(),
@@ -798,18 +798,17 @@ void ngraph::he::HESealExecutable::generate_calls(
         lazy_rescaling(out0_cipher);
 
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
-        ngraph::he::avg_pool(
+        ngraph::he::avg_pool_seal(
             arg0_plain->get_elements(), out0_plain->get_elements(), in_shape,
             out_shape, avg_pool->get_window_shape(),
             avg_pool->get_window_movement_strides(),
             avg_pool->get_padding_below(), avg_pool->get_padding_above(),
             avg_pool->get_include_padding_in_avg_computation(),
-    m_he_seal_backend);
+            m_he_seal_backend);
 
-    }
-      else {
+      } else {
         throw ngraph_error("AvgPool types not supported.");
-      }*/
+      }
       break;
     }
     case OP_TYPEID::BatchNormInference: {
