@@ -28,7 +28,7 @@
 #include "kernel/constant_seal.hpp"
 #include "kernel/convolution_seal.hpp"
 #include "kernel/dot_seal.hpp"
-#include "kernel/max_pool.hpp"
+#include "kernel/max_pool_seal.hpp"
 #include "kernel/multiply_seal.hpp"
 #include "kernel/negate_seal.hpp"
 #include "kernel/pad_seal.hpp"
@@ -1031,10 +1031,11 @@ void ngraph::he::HESealExecutable::generate_calls(
       Shape out_shape = node.get_output_shape(0);
       out_shape[0] /= m_batch_size;
 
-      std::vector<std::vector<size_t>> maximize_list = ngraph::he::max_pool(
-          arg0_shape, out_shape, max_pool->get_window_shape(),
-          max_pool->get_window_movement_strides(),
-          max_pool->get_padding_below(), max_pool->get_padding_above());
+      std::vector<std::vector<size_t>> maximize_list =
+          ngraph::he::max_pool_seal(
+              arg0_shape, out_shape, max_pool->get_window_shape(),
+              max_pool->get_window_movement_strides(),
+              max_pool->get_padding_below(), max_pool->get_padding_above());
 
       std::stringstream first_cipher;
       NGRAPH_CHECK(maximize_list.size() > 0);
@@ -1318,9 +1319,6 @@ void ngraph::he::HESealExecutable::generate_calls(
         NGRAPH_INFO << "Relu types not supported ";
         throw ngraph_error("Relu types not supported.");
       }
-      auto he_seal_backend = ngraph::he::cast_to_seal_backend(m_he_backend);
-      auto he_seal_ckks_backend =
-          ngraph::he::cast_to_seal_ckks_backend(he_seal_backend);
 
       // TODO: infinity
       size_t smallest_chain_ind = 9999999;
@@ -1328,9 +1326,8 @@ void ngraph::he::HESealExecutable::generate_calls(
       for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
         auto& cipher = arg0_cipher->get_element(relu_idx);
         if (!cipher->is_zero()) {
-          auto cipher_wrapper = cast_to_seal_hetext(cipher);
-          size_t chain_ind = ngraph::he::get_chain_index(cipher_wrapper.get(),
-                                                         he_seal_ckks_backend);
+          size_t chain_ind =
+              ngraph::he::get_chain_index(*cipher, m_he_seal_backend);
           if (chain_ind < smallest_chain_ind) {
             smallest_chain_ind = chain_ind;
             smallest_relu_ind = relu_idx;
@@ -1341,17 +1338,14 @@ void ngraph::he::HESealExecutable::generate_calls(
       NGRAPH_INFO << "Smallest chain ind " << smallest_chain_ind << " at "
                   << smallest_relu_ind;
       auto smallest_cipher = arg0_cipher->get_element(smallest_relu_ind);
-      auto smallest_cipher_wrapper = cast_to_seal_hetext(smallest_cipher);
 #pragma omp parallel for
       for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
         auto& cipher = arg0_cipher->get_element(relu_idx);
         if (!cipher->is_zero() && relu_idx != smallest_relu_ind) {
-          auto cipher_wrapper = cast_to_seal_hetext(cipher);
-          match_modulus_and_scale_inplace(smallest_cipher_wrapper.get(),
-                                          cipher_wrapper.get(),
-                                          he_seal_ckks_backend);
-          size_t chain_ind = ngraph::he::get_chain_index(cipher_wrapper.get(),
-                                                         he_seal_ckks_backend);
+          match_modulus_and_scale_inplace(*smallest_cipher, *cipher,
+                                          m_he_seal_backend);
+          size_t chain_ind =
+              ngraph::he::get_chain_index(*cipher, m_he_seal_backend);
           NGRAPH_CHECK(chain_ind == smallest_chain_ind, "chain_ind", chain_ind,
                        " does not match smallest ", smallest_chain_ind);
         }
@@ -1362,9 +1356,6 @@ void ngraph::he::HESealExecutable::generate_calls(
       size_t stream_count = 0;
       for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
         auto& cipher = arg0_cipher->get_element(relu_idx);
-        auto cipher_wrapper = cast_to_seal_hetext(cipher);
-        size_t chain_ind = ngraph::he::get_chain_index(cipher_wrapper.get(),
-                                                       he_seal_ckks_backend);
         // relu(0) = 0
         if (cipher->is_zero()) {
           NGRAPH_INFO << "Skipping relu(0) at index " << relu_idx;
@@ -1386,7 +1377,8 @@ void ngraph::he::HESealExecutable::generate_calls(
             std::unique_lock<std::mutex> mlock(m_relu_mutex);
 
             // Wait until Relu is done
-            m_relu_cond.wait(mlock, std::bind(&HEExecutable::relu_done, this));
+            m_relu_cond.wait(mlock,
+                             std::bind(&HESealExecutable::relu_done, this));
             NGRAPH_INFO << "Relu is done";
 
             // Reset for next Relu call

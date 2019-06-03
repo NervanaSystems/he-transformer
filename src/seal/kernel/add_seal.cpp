@@ -24,12 +24,12 @@ void ngraph::he::scalar_add_seal(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type, const HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
-  if (arg0->is_zero() && arg1->is_zero()) {
+  if (arg0.is_zero() && arg0.is_zero()) {
     out->set_zero(true);
-  } else if (arg0->is_zero()) {
-    out = std::make_shared<ngraph::he::SealCiphertextWrapper>(*arg1);
-  } else if (arg1->is_zero()) {
-    out = std::make_shared<ngraph::he::SealCiphertextWrapper>(*arg0);
+  } else if (arg0.is_zero()) {
+    out = std::make_shared<ngraph::he::SealCiphertextWrapper>(arg1);
+  } else if (arg1.is_zero()) {
+    out = std::make_shared<ngraph::he::SealCiphertextWrapper>(arg0);
   } else {
     NGRAPH_CHECK(arg0.complex_packing() == arg1.complex_packing());
 
