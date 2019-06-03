@@ -16,6 +16,7 @@
 
 #include "seal/kernel/subtract_seal.hpp"
 #include "seal/kernel/negate_seal.hpp"
+#include "seal/kernel/add_seal.hpp"
 
 void ngraph::he::scalar_subtract_seal(
     ngraph::he::SealCiphertextWrapper& arg0,
@@ -40,7 +41,7 @@ void ngraph::he::scalar_subtract_seal(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type, const HESealBackend* he_seal_backend) {
   NGRAPH_INFO << "seal C -P";
-  auto p = make_seal_plaintext_wrapper(arg0.complex_packing());
+  auto p = SealPlaintextWrapper(arg0.complex_packing());
   he_seal_backend->encode(p, arg1, arg0.ciphertext().parms_id(),
                           arg0.ciphertext().scale());
   he_seal_backend->get_evaluator()->sub_plain(arg0.ciphertext(), p.plaintext(),
@@ -54,8 +55,9 @@ void ngraph::he::scalar_subtract_seal(
   if (arg1.is_zero()) {
     he_seal_backend->encrypt(out, arg0);
   } else {
-    ngraph::he::scalar_negate_seal(arg1, out, type, he_seal_backend);
-    ngraph::he::scalar_add_seal(arg0, out, out, type, he_seal_backend);
+    auto tmp = std::make_shared<ngraph::he::SealCiphertextWrapper>();
+    ngraph::he::scalar_negate_seal(arg1, tmp, type, he_seal_backend);
+    ngraph::he::scalar_add_seal(arg0, *tmp, out, type, he_seal_backend);
   }
 }
 

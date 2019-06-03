@@ -16,18 +16,17 @@
 
 #include "seal/kernel/negate_seal.hpp"
 
-void ngraph::he::scalar_negate(
-    ngraph::he::SealCiphertextWrapper > &arg,
+void ngraph::he::scalar_negate_seal(
+    const ngraph::he::SealCiphertextWrapper& arg,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type, const HESealBackend* he_seal_backend) {
   NGRAPH_CHECK(element_type == element::f32);
 
-  if (arg->is_zero()) {
+  if (arg.is_zero()) {
     NGRAPH_INFO << "Arg is 0 in negate(C)";
     out->set_zero(true);
     return;
   }
 
-  he_seal_backend->get_evaluator()->negate(arg->m_ciphertext,
-                                           out->m_ciphertext);
+  he_seal_backend->get_evaluator()->negate(arg.ciphertext(), out->ciphertext());
 }

@@ -26,12 +26,12 @@
 
 namespace ngraph {
 namespace he {
-void scalar_negate(const SealCiphertextWrapper& arg,
+void scalar_negate_seal(const SealCiphertextWrapper& arg,
                    std::shared_ptr<SealCiphertextWrapper>& out,
                    const element::Type& element_type,
                    const HESealBackend* he_seal_backend);
 
-void scalar_negate(const HEPlaintext& arg, HEPlaintext& out,
+void scalar_negate_seal(const HEPlaintext& arg, HEPlaintext& out,
                    const element::Type& element_type,
                    const HESealBackend* he_seal_backend);
 }  // namespace he
