@@ -95,20 +95,7 @@ class HESealEncryptionParameters {
 
 inline ngraph::he::HESealEncryptionParameters default_ckks_parameters() {
   std::vector<std::uint64_t> coeff_modulus;
-  // auto small_mods = seal::util::global_variables::default_small_mods_30bit;
-
-  std::vector<seal::SmallModulus> small_mods{
-      0x3ffc0001, 0x3fac0001, 0x3f540001, 0x3ef80001, 0x3ef40001, 0x3ed00001,
-      0x3ebc0001, 0x3eb00001, 0x3e880001, 0x3e500001, 0x3dd40001, 0x3dcc0001,
-      0x3cfc0001, 0x3cc40001, 0x3cb40001, 0x3c840001, 0x3c600001, 0x3c3c0001,
-      0x3c100001, 0x3bf80001, 0x3be80001, 0x3be00001, 0x3b800001, 0x3b580001,
-      0x3b340001, 0x3ac00001, 0x3aa40001, 0x3a6c0001, 0x3a5c0001, 0x3a440001,
-      0x3a300001, 0x3a200001, 0x39f00001, 0x39e40001, 0x39c40001, 0x39640001,
-      0x39600001, 0x39280001, 0x391c0001, 0x39100001, 0x38b80001, 0x38a00001,
-      0x388c0001, 0x38680001, 0x38400001, 0x38100001, 0x37f00001, 0x37c00001,
-      0x379c0001, 0x37300001, 0x37200001, 0x36d00001, 0x36cc0001, 0x36c00001,
-      0x367c0001, 0x36700001, 0x36340001, 0x36240001, 0x361c0001, 0x36180001,
-      0x36100001, 0x35d40001, 0x35ac0001, 0x35a00001};
+  auto small_mods = seal::util::global_variables::default_small_mods_30bit;
 
   for (size_t i = 0; i < 4; ++i) {
     const auto small_mod = small_mods[i];
@@ -210,7 +197,7 @@ inline ngraph::he::HESealEncryptionParameters parse_config_or_use_default(
         NGRAPH_INFO << "Using SEAL CKKS config with " << coeff_count << " "
                     << bit_count << "-bit coefficients";
 
-        /*if (bit_count == 30) {
+        if (bit_count == 30) {
           small_mods = seal::util::global_variables::default_small_mods_30bit;
         } else if (bit_count == 40) {
           small_mods = seal::util::global_variables::default_small_mods_40bit;
@@ -218,7 +205,7 @@ inline ngraph::he::HESealEncryptionParameters parse_config_or_use_default(
           small_mods = seal::util::global_variables::default_small_mods_50bit;
         } else if (bit_count == 60) {
           small_mods = seal::util::global_variables::default_small_mods_60bit;
-        }*/
+        }
         if (coeff_count > small_mods.size()) {
           std::stringstream ss;
           ss << "Coefficient modulus count " << coeff_count << " too large";
@@ -226,7 +213,7 @@ inline ngraph::he::HESealEncryptionParameters parse_config_or_use_default(
         }
       }
     } else {  // Use default coefficient modulus
-      /*if (security_level == 128) {
+      if (security_level == 128) {
         small_mods =
             seal::DefaultParams::coeff_modulus_128(poly_modulus_degree);
       } else if (security_level == 192) {
@@ -236,7 +223,7 @@ inline ngraph::he::HESealEncryptionParameters parse_config_or_use_default(
         small_mods =
             seal::DefaultParams::coeff_modulus_256(poly_modulus_degree);
       }
-      coeff_count = small_mods.size();*/
+      coeff_count = small_mods.size();
     }
     for (size_t i = 0; i < coeff_count; ++i) {
       coeff_modulus.emplace_back(small_mods[i].value());

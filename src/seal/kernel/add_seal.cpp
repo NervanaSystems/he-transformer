@@ -24,21 +24,14 @@ void ngraph::he::scalar_add_seal(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type, const HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
-  NGRAPH_INFO << "Add C+C=>C=====";
-  NGRAPH_INFO << "???";
   if (arg0.is_zero()) {
-    NGRAPH_INFO << "Add 0";
     out = std::make_shared<ngraph::he::SealCiphertextWrapper>(arg1);
   } else if (arg1.is_zero()) {
-    NGRAPH_INFO << "Add arg1 is 0";
     out = std::make_shared<ngraph::he::SealCiphertextWrapper>(arg0);
   } else {
     NGRAPH_CHECK(arg0.complex_packing() == arg1.complex_packing());
 
-    NGRAPH_INFO << "matching mods";
-
     match_modulus_and_scale_inplace(arg0, arg1, he_seal_backend, pool);
-    NGRAPH_INFO << "adding";
     he_seal_backend->get_evaluator()->add(arg0.ciphertext(), arg1.ciphertext(),
                                           out->ciphertext());
     out->set_complex_packing(arg1.complex_packing());

@@ -58,7 +58,6 @@ inline void multiply_seal(
     const element::Type& element_type, const HESealBackend* he_seal_backend,
     size_t count,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool()) {
-  NGRAPH_INFO << "multiplying vecC * vecC => vecC";
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
     scalar_multiply_seal(*arg0[i], *arg1[i], out[i], element_type,

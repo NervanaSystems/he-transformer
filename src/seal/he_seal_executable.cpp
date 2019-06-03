@@ -751,12 +751,6 @@ void ngraph::he::HESealExecutable::generate_calls(
     case OP_TYPEID::Add: {
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
-        auto cipher1 = arg0_cipher->get_element(0);
-        NGRAPH_INFO << "got cipher 1";
-        size_t chain_ind0 =
-            ngraph::he::get_chain_index(*cipher1, m_he_seal_backend);
-        NGRAPH_INFO << "chaind ind 0 " << chain_ind0;
-
         ngraph::he::add_seal(
             arg0_cipher->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), type, m_he_seal_backend,

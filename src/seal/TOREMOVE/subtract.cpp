@@ -60,8 +60,6 @@ void ngraph::he::scalar_subtract(
     std::shared_ptr<SealCiphertextWrapper>& out, const element::Type& type,
     const ngraph::he::HESealBackend* he_seal_backend) {
   NGRAPH_CHECK(type == element::f32);
-  NGRAPH_INFO << "cipher - plain";
-
   if (arg0->is_zero()) {
     NGRAPH_INFO << "arg0 is zero";
     HEPlaintext tmp;
@@ -80,11 +78,9 @@ void ngraph::he::scalar_subtract(
   if (sub_zero) {
     // Make copy of input
     // TODO: make copy only if necessary
-    NGRAPH_INFO << "Sub 0 optimization";
     out = std::static_pointer_cast<SealCiphertextWrapper>(
         std::make_shared<ngraph::he::SealCiphertextWrapper>(*arg0_seal));
   } else {
-    NGRAPH_INFO << "normal sub";
     scalar_subtract(arg0_seal, arg1, out_seal, type, he_seal_backend);
   }
 }

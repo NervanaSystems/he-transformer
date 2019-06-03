@@ -187,11 +187,8 @@ void ngraph::he::HESealBackend::encrypt(
     // TODO: enable below?
     // output->ciphertext() = seal::Ciphertext(m_context);
 
-    NGRAPH_INFO << "Encrypting 0";
   } else {
-    // NGRAPH_INFO << "Encrypting plaintext";
     m_encryptor->encrypt(plaintext.plaintext(), output->ciphertext());
-    // NGRAPH_INFO << "output scale " << output->ciphertext().scale();
   }
   output->set_complex_packing(input.complex_packing());
   NGRAPH_CHECK(output->complex_packing() == input.complex_packing());
