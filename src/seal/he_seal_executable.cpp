@@ -22,6 +22,7 @@
 #include "kernel/add_seal.hpp"
 #include "kernel/broadcast_seal.hpp"
 #include "kernel/concat_seal.hpp"
+#include "kernel/dot_seal.hpp"
 #include "kernel/multiply_seal.hpp"
 #include "kernel/negate_seal.hpp"
 #include "kernel/reshape_seal.hpp"
@@ -34,7 +35,6 @@
 /*#include "kernel/batch_norm_inference.hpp"
 #include "kernel/constant.hpp"
 #include "kernel/convolution.hpp"
-#include "kernel/dot.hpp"
 #include "kernel/max_pool.hpp"
 
 #include "kernel/pad.hpp"
@@ -976,42 +976,42 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Dot: {
-      /*const op::Dot* dot = static_cast<const op::Dot*>(&node);
+      const op::Dot* dot = static_cast<const op::Dot*>(&node);
       Shape in_shape0 = arg_shapes[0];
       Shape in_shape1 = unbatched_arg_shapes[1];
 
       NGRAPH_INFO << join(in_shape0, "x") << " dot " << join(in_shape1, "x");
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
-        ngraph::he::dot(
+        ngraph::he::dot_seal(
             arg0_cipher->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
             dot->get_reduction_axes_count(), type, m_he_seal_backend);
       } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                  out0_cipher != nullptr) {
-        ngraph::he::dot(arg0_cipher->get_elements(), arg1_plain->get_elements(),
-                        out0_cipher->get_elements(), in_shape0, in_shape1,
-                        out_shape, dot->get_reduction_axes_count(), type,
-                        m_he_seal_backend);
+        ngraph::he::dot_seal(
+            arg0_cipher->get_elements(), arg1_plain->get_elements(),
+            out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
+            dot->get_reduction_axes_count(), type, m_he_seal_backend);
 
         lazy_rescaling(out0_cipher);
       } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
                  out0_cipher != nullptr) {
-        ngraph::he::dot(arg0_plain->get_elements(), arg1_cipher->get_elements(),
-                        out0_cipher->get_elements(), in_shape0, in_shape1,
-                        out_shape, dot->get_reduction_axes_count(), type,
-                        m_he_seal_backend);
+        ngraph::he::dot_seal(
+            arg0_plain->get_elements(), arg1_cipher->get_elements(),
+            out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
+            dot->get_reduction_axes_count(), type, m_he_seal_backend);
         lazy_rescaling(out0_cipher);
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
-        ngraph::he::dot(arg0_plain->get_elements(), arg1_plain->get_elements(),
-                        out0_plain->get_elements(), in_shape0, in_shape1,
-                        out0_plain->get_batched_shape(),
-                        dot->get_reduction_axes_count(), type,
-                        m_he_seal_backend);
+        ngraph::he::dot_seal(
+            arg0_plain->get_elements(), arg1_plain->get_elements(),
+            out0_plain->get_elements(), in_shape0, in_shape1,
+            out0_plain->get_batched_shape(), dot->get_reduction_axes_count(),
+            type, m_he_seal_backend);
       } else {
         throw ngraph_error("Dot types not supported.");
-      }*/
+      }
       break;
     }
     case OP_TYPEID::MaxPool: {
