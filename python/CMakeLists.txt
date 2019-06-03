@@ -48,16 +48,31 @@ include_directories(
 link_directories(
     ${EXTERNAL_INSTALL_LIB_DIR}
     ${NGRAPH_TF_LIB_DIR}
+    ${NGRAPH_TF_VENV_LIB_DIR}
 )
 message("Client infos")
+message("NGRAPH_TF_LIB_DIR' ${NGRAPH_TF_LIB_DIR}")
 message("HE_TRANSFORMER_SOURCE_DIR ${HE_TRANSFORMER_SOURCE_DIR}")
 message("EXTERNAL_INSTALL_INCLUDE_DIR ${EXTERNAL_INSTALL_INCLUDE_DIR}")
 message("EXTERNAL_INSTALL_LIB_DIR ${EXTERNAL_INSTALL_LIB_DIR}")
+message("HE_INSTALL_LIB_DIR ${HE_INSTALL_LIB_DIR}")
+
+SET(PYTHON_LIB_DIR ${CMAKE_BINARY_DIR}/python/_install${CMAKE_INSTALL_PREFIX})
+message("PYTHON_LIB_DIR ${PYTHON_LIB_DIR}")
+
+message("Copying files from ${CMAKE_INSTALL_PREFIX} to ${PYTHON_LIB_DIR}")
+
+install(DIRECTORY ${CMAKE_INSTALL_PREFIX}/
+        DESTINATION ${PYTHON_LIB_DIR}
+        FILES_MATCHING
+        PATTERN "*.so"
+        PATTERN "*.so.*"
+        PATTERN "*.a")
 
 add_library(he_seal_client SHARED ${CMAKE_SOURCE_DIR}/src/seal/he_seal_client.cpp)
 # TODO: remove he_seal_backend dependencty?
 add_dependencies(he_seal_client ext_seal he_seal_backend)
-target_link_libraries(he_seal_client seal libjson libboost)
+target_link_libraries(he_seal_client seal libjson libboost ngraph)
 install(TARGETS he_seal_client DESTINATION ${HE_INSTALL_LIB_DIR})
 
 add_custom_command(
@@ -67,4 +82,4 @@ add_custom_command(
         COMMAND make -C ../ DESTDIR=python/_install install && bash build_wheel.sh
 )
 
-add_custom_target(python_wheel DEPENDS he_seal_client ${CMAKE_BINARY_DIR}/python/dist/)
+add_custom_target(python_wheel DEPENDS he_seal_client he_seal_backend ${CMAKE_BINARY_DIR}/python/dist/)

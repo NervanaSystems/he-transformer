@@ -129,6 +129,8 @@ libraries = ['he_seal_client']
 
 data_files = [('lib', [(NGRAPH_HE_LIB_DIR + '/' + library)
                        for library in os.listdir(NGRAPH_HE_LIB_DIR)])]
+print('data files', data_files)
+print('NGRAPH_HE_LIB_DIR', NGRAPH_HE_LIB_DIR)
 
 sources = ['py_he_seal_client/he_seal_client.cpp']
 
