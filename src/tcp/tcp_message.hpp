@@ -133,19 +133,23 @@ class TCPMessage {
   TCPMessage() : TCPMessage(MessageType::none) {}
 
   // Encodes message of count elements using data in stream
-  TCPMessage(const MessageType type, size_t count,
-             const std::stringstream&& stream)
+  TCPMessage(const MessageType type, size_t count, std::stringstream&& stream)
       : m_type(type), m_count(count) {
-    const std::string& pk_str = stream.str();
-    const char* pk_cstr = pk_str.c_str();
-    m_data_size = pk_str.size();
+    // const std::string& pk_str = stream.str();
+    // const char* pk_cstr = pk_str.c_str();
+    // m_data_size = pk_str.size();
+
+    // std::cout << "m_data_size " << m_data_size << std::endl;
+    stream.seekp(0, std::ios::end);
+    const std::stringstream::pos_type offset = m_data_size = stream.tellp();
+    std::cout << "m_data_size stream " << m_data_size << std::endl;
 
     check_arguments();
     m_data = new char[header_length + body_length()];
     encode_header();
     encode_message_type();
     encode_count();
-    encode_data(pk_cstr);
+    encode_data(std::move(stream));
   }
 
   TCPMessage(const MessageType type, const size_t count, const size_t size,
@@ -153,6 +157,7 @@ class TCPMessage {
       : m_type(type), m_count(count), m_data_size(size) {
     check_arguments();
     m_data = new char[header_length + body_length()];
+    std::cout << "TCPMessage from pointer" << std::endl;
     encode_header();
     encode_message_type();
     encode_count();
@@ -303,7 +308,18 @@ class TCPMessage {
   }
 
   void encode_data(const char* data) {
+    std::cout << "Encoding data from char* size " << m_data_size << std::endl;
     std::memcpy(data_ptr(), data, m_data_size);
+    std::cout << "done with memcpy " << std::endl;
+  }
+
+  void encode_data(const std::stringstream&& data) {
+    std::cout << "Encoding data from stream size " << m_data_size << std::endl;
+    std::stringbuf* pbuf = data.rdbuf();
+    pbuf->sgetn(data_ptr(), m_data_size);
+    // const void* data_buf = (const void*)(data.rdbuf()->data());
+    // std::memcpy(data_ptr(), data_buf, m_data_size);
+    std::cout << "done with memcpy " << std::endl;
   }
 
   bool decode_body() {
