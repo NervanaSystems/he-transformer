@@ -16,15 +16,11 @@
 
 # HE transformer sources
 set (HE_SRC
-    seal/he_seal_backend.cpp
+
     # main
     he_plain_tensor.cpp
     he_tensor.cpp
     node_wrapper.cpp
-
-    seal/seal_util.cpp
-    seal/he_seal_cipher_tensor.cpp
-    seal/he_seal_executable.cpp
 
     # seal kernels
     seal/kernel/constant_seal.cpp
@@ -34,6 +30,12 @@ set (HE_SRC
     seal/kernel/add_seal.cpp
     seal/kernel/multiply_seal.cpp
     seal/kernel/negate_seal.cpp
+
+    # seal backend
+    seal/seal_util.cpp
+    seal/he_seal_cipher_tensor.cpp
+    seal/he_seal_executable.cpp
+    seal/he_seal_backend.cpp
 )
 include_directories(
     SYSTEM
