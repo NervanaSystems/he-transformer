@@ -191,19 +191,21 @@ void ngraph::he::HESealExecutable::handle_message(
   if (msg_type == MessageType::execute) {
     // Get Ciphertexts from message
     size_t count = message.count();
-    std::vector<seal::Ciphertext> ciphertexts;
+    std::vector<seal::Ciphertext> ciphertexts(count);
     size_t ciphertext_size = message.element_size();
 
     NGRAPH_CHECK(m_context != nullptr);
     print_seal_context(*m_context);
 
     NGRAPH_INFO << "Loading " << count << " ciphertexts";
+#pragma omp parallel for
     for (size_t i = 0; i < count; ++i) {
+      seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::ThreadLocal();
       std::stringstream stream;
       stream.write(message.data_ptr() + i * ciphertext_size, ciphertext_size);
-      seal::Ciphertext c;
+      seal::Ciphertext c(pool);
       c.load(m_context, stream);
-      ciphertexts.emplace_back(c);
+      ciphertexts[i] = c;
     }
     NGRAPH_INFO << "Done loading " << count << " ciphertexts";
     std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>

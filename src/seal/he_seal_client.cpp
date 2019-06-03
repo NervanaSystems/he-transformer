@@ -153,7 +153,6 @@ void ngraph::he::HESealClient::handle_message(
                                       parameter_size, concat_cipher_stream);
     std::cout << "Sending execute message with " << parameter_size
               << " ciphertexts" << std::endl;
-
     write_message(std::move(execute_message));
   } else if (msg_type == ngraph::he::MessageType::result) {
     size_t result_count = message.count();
