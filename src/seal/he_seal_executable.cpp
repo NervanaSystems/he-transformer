@@ -24,6 +24,7 @@
 #include "kernel/negate_seal.hpp"
 #include "kernel/reshape_seal.hpp"
 #include "kernel/result_seal.hpp"
+#include "kernel/reverse_seal.hpp"
 #include "kernel/subtract_seal.hpp"
 #include "seal/he_seal_executable.hpp"
 // #include "kernel/avg_pool_seal.hpp"
@@ -37,7 +38,6 @@
 
 #include "kernel/pad.hpp"
 
-#include "kernel/reverse.hpp"
 #include "kernel/slice.hpp"
 #include "kernel/sum.hpp"*/
 #include "ngraph/assertion.hpp"
@@ -1352,21 +1352,21 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Reverse: {
-      /* const op::Reverse* reverse = static_cast<const op::Reverse*>(&node);
-       Shape in_shape = node.get_input_shape(0);
-       Shape out_shape = node.get_output_shape(0);
+      const op::Reverse* reverse = static_cast<const op::Reverse*>(&node);
+      Shape in_shape = node.get_input_shape(0);
+      Shape out_shape = node.get_output_shape(0);
 
-       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
-         ngraph::he::reverse(arg0_cipher->get_elements(),
-                             out0_cipher->get_elements(), in_shape, out_shape,
-                             reverse->get_reversed_axes());
-       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
-         ngraph::he::reverse(arg0_plain->get_elements(),
-                             out0_plain->get_elements(), in_shape, out_shape,
-                             reverse->get_reversed_axes());
-       } else {
-         throw ngraph_error("Reverse types not supported.");
-       } */
+      if (arg0_cipher != nullptr && out0_cipher != nullptr) {
+        ngraph::he::reverse(arg0_cipher->get_elements(),
+                            out0_cipher->get_elements(), in_shape, out_shape,
+                            reverse->get_reversed_axes());
+      } else if (arg0_plain != nullptr && out0_plain != nullptr) {
+        ngraph::he::reverse(arg0_plain->get_elements(),
+                            out0_plain->get_elements(), in_shape, out_shape,
+                            reverse->get_reversed_axes());
+      } else {
+        throw ngraph_error("Reverse types not supported.");
+      }
       break;
     }
     case OP_TYPEID::ScalarConstantLike:
