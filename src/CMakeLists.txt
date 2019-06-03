@@ -24,8 +24,6 @@ set (HE_SRC
 
     seal/seal_util.cpp
     seal/he_seal_cipher_tensor.cpp
-
-
     seal/he_seal_executable.cpp
 
     # seal kernels
@@ -34,9 +32,8 @@ set (HE_SRC
     seal/kernel/subtract_seal.cpp
     seal/kernel/result_seal.cpp
     seal/kernel/add_seal.cpp
-    #seal/kernel/multiply_seal.cpp
+    seal/kernel/multiply_seal.cpp
     seal/kernel/negate_seal.cpp
-    #seal/kernel/subtract_seal.cpp
 )
 include_directories(
     SYSTEM

@@ -19,7 +19,6 @@
 #include <memory>
 #include <vector>
 
-#include "he_ciphertext.hpp"
 #include "he_plaintext.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
@@ -29,46 +28,77 @@
 
 namespace ngraph {
 namespace he {
-void scalar_multiply(
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
-    const element::Type& element_type,
-    const ngraph::he::HESealBackend* he_seal_backend,
+void scalar_multiply_seal(
+    SealCiphertextWrapper& arg0, SealCiphertextWrapper& arg1,
+    std::shared_ptr<SealCiphertextWrapper>& out,
+    const element::Type& element_type, const HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
-void scalar_multiply(
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
-    const HEPlaintext& arg1,
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
-    const element::Type& element_type,
-    const ngraph::he::HESealBackend* he_seal_backend,
+void scalar_multiply_seal(
+    SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
+    std::shared_ptr<SealCiphertextWrapper>& out,
+    const element::Type& element_type, const HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
-void scalar_multiply(
-    const HEPlaintext& arg0,
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
-    const element::Type& element_type,
-    const ngraph::he::HESealBackend* he_seal_backend,
+void scalar_multiply_seal(
+    const HEPlaintext& arg0, SealCiphertextWrapper& arg1,
+    std::shared_ptr<SealCiphertextWrapper>& out,
+    const element::Type& element_type, const HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
-void scalar_multiply(
+void scalar_multiply_seal(
     const HEPlaintext& arg0, const HEPlaintext& arg1, HEPlaintext& out,
-    const element::Type& element_type,
-    const ngraph::he::HESealBackend* he_seal_backend,
+    const element::Type& element_type, const HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
-template <typename S, typename T, typename V>
-void scalar_multiply(
-    std::vector<std::shared_ptr<S>>& arg0,
-    std::vector<std::shared_ptr<T>>& arg1, std::vector<std::shared_ptr<V>>& out,
-    const element::Type& element_type, const ngraph::he::HESealBackend* he_seal_backend,
+inline void multiply_seal(
+    std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg0,
+    std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg1,
+    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
+    const element::Type& element_type, const HESealBackend* he_seal_backend,
+    size_t count,
+    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool()) {
+  NGRAPH_INFO << "multiplying vecC * vecC => vecC";
+#pragma omp parallel for
+  for (size_t i = 0; i < count; ++i) {
+    scalar_multiply_seal(*arg0[i], *arg1[i], out[i], element_type,
+                         he_seal_backend);
+  }
+}
+
+inline void multiply_seal(
+    std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg0,
+    const std::vector<HEPlaintext>& arg1,
+    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
+    const element::Type& element_type, const HESealBackend* he_seal_backend,
     size_t count,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool()) {
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
-    scalar_multiply(arg0[i], arg1[i], out[i], element_type, he_seal_backend, pool);
+    scalar_multiply_seal(*arg0[i], arg1[i], out[i], element_type,
+                         he_seal_backend, pool);
+  }
+}
+
+inline void multiply_seal(
+    const std::vector<HEPlaintext>& arg0,
+    std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg1,
+    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
+    const element::Type& element_type, const HESealBackend* he_seal_backend,
+    size_t count,
+    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool()) {
+  multiply_seal(arg1, arg0, out, element_type, he_seal_backend, count, pool);
+}
+
+inline void multiply_seal(
+    const std::vector<HEPlaintext>& arg0, const std::vector<HEPlaintext>& arg1,
+    std::vector<HEPlaintext>& out, const element::Type& element_type,
+    const HESealBackend* he_seal_backend, size_t count,
+    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool()) {
+#pragma omp parallel for
+  for (size_t i = 0; i < count; ++i) {
+    scalar_multiply_seal(arg0[i], arg1[i], out[i], element_type,
+                         he_seal_backend);
   }
 }
 }  // namespace he
