@@ -16,6 +16,7 @@
 
 #include <functional>
 
+#include "client_util.hpp"
 #include "he_plain_tensor.hpp"
 #include "he_seal_cipher_tensor.hpp"
 #include "he_tensor.hpp"

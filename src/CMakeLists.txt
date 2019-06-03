@@ -78,6 +78,21 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
         PATTERN "*.hpp"
         PATTERN "*.h")
 
+message("Installing TF fiels from ${NGRAPH_TF_INCLUDE_DIR} to ${HE_INSTALL_INCLUDE_DIR}")
+install(DIRECTORY ${NGRAPH_TF_INCLUDE_DIR}/
+        DESTINATION ${HE_INSTALL_INCLUDE_DIR}
+        FILES_MATCHING
+        PATTERN "*.hpp"
+        PATTERN "*.h")
+
+# TODO: cleanup
+message("Install json files from ${JSON_INCLUDE_DIR} to ${HE_INSTALL_INCLUDE_DIR}")
+install(DIRECTORY ${JSON_INCLUDE_DIR}/
+        DESTINATION ${HE_INSTALL_INCLUDE_DIR}
+        FILES_MATCHING
+        PATTERN "*.hpp"
+        PATTERN "*.h")
+
 # Create symbolic links for he_seal_backend, to allow ngraph and ngraph-tf
 #  to recognize find it.
 add_custom_target(he_seal_backend_soft_link ALL DEPENDS he_seal_backend
