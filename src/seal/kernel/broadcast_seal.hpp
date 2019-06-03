@@ -19,17 +19,17 @@
 #include <memory>
 #include <vector>
 
-#include "he_ciphertext.hpp"
 #include "he_plaintext.hpp"
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/shape_util.hpp"
+#include "seal/seal_ciphertext_wrapper.hpp"
 
 namespace ngraph {
 namespace he {
 template <typename T>
-void broadcast(const std::vector<std::shared_ptr<T>>& arg,
-               std::vector<std::shared_ptr<T>>& out, const Shape& in_shape,
-               const Shape& out_shape, const AxisSet& broadcast_axes) {
+void broadcast_seal(const std::vector<T>& arg, std::vector<T>& out,
+                    const Shape& in_shape, const Shape& out_shape,
+                    const AxisSet& broadcast_axes) {
   CoordinateTransform input_transform(in_shape);
   CoordinateTransform output_transform(out_shape);
   for (const Coordinate& output_coord : output_transform) {
@@ -40,18 +40,5 @@ void broadcast(const std::vector<std::shared_ptr<T>>& arg,
   }
 };
 
-inline void broadcast(const std::vector<std::unique_ptr<HEPlaintext>>& arg,
-                      std::vector<std::unique_ptr<HEPlaintext>>& out,
-                      const Shape& in_shape, const Shape& out_shape,
-                      const AxisSet& broadcast_axes) {
-  CoordinateTransform input_transform(in_shape);
-  CoordinateTransform output_transform(out_shape);
-  for (const Coordinate& output_coord : output_transform) {
-    Coordinate input_coord = reduce(output_coord, broadcast_axes);
-
-    out[output_transform.index(output_coord)] =
-        std::make_unique<HEPlaintext>(*arg[input_transform.index(input_coord)]);
-  }
-};
 }  // namespace he
 }  // namespace ngraph

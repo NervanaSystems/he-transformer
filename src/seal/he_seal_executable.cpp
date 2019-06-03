@@ -20,6 +20,7 @@
 #include "he_seal_cipher_tensor.hpp"
 #include "he_tensor.hpp"
 #include "kernel/add_seal.hpp"
+#include "kernel/broadcast_seal.hpp"
 #include "kernel/concat_seal.hpp"
 #include "kernel/multiply_seal.hpp"
 #include "kernel/negate_seal.hpp"
@@ -31,7 +32,6 @@
 #include "seal/he_seal_executable.hpp"
 // #include "kernel/avg_pool_seal.hpp"
 /*#include "kernel/batch_norm_inference.hpp"
-#include "kernel/broadcast.hpp"
 #include "kernel/constant.hpp"
 #include "kernel/convolution.hpp"
 #include "kernel/dot.hpp"
@@ -845,22 +845,21 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Broadcast: {
-      /* const op::Broadcast* broadcast = static_cast<const
-       op::Broadcast*>(&node); AxisSet broadcast_axes =
-       broadcast->get_broadcast_axes();
+      const op::Broadcast* broadcast = static_cast<const op::Broadcast*>(&node);
+      AxisSet broadcast_axes = broadcast->get_broadcast_axes();
 
-       Shape in_shape = arg_shapes[0];
-       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
-         ngraph::he::broadcast(arg0_cipher->get_elements(),
-                               out0_cipher->get_elements(), in_shape, out_shape,
-                               broadcast_axes);
-       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
-         ngraph::he::broadcast(arg0_plain->get_elements(),
-                               out0_plain->get_elements(), in_shape, out_shape,
-                               broadcast_axes);
-       } else {
-         throw ngraph_error("Broadcast types not supported.");
-       } */
+      Shape in_shape = arg_shapes[0];
+      if (arg0_cipher != nullptr && out0_cipher != nullptr) {
+        ngraph::he::broadcast_seal(arg0_cipher->get_elements(),
+                                   out0_cipher->get_elements(), in_shape,
+                                   out_shape, broadcast_axes);
+      } else if (arg0_plain != nullptr && out0_plain != nullptr) {
+        ngraph::he::broadcast_seal(arg0_plain->get_elements(),
+                                   out0_plain->get_elements(), in_shape,
+                                   out_shape, broadcast_axes);
+      } else {
+        throw ngraph_error("Broadcast types not supported.");
+      }
       break;
     }
     case OP_TYPEID::BroadcastLike:
