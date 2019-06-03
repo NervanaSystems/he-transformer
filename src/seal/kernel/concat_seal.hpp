@@ -19,18 +19,19 @@
 #include <memory>
 #include <vector>
 
-#include "he_ciphertext.hpp"
 #include "he_plaintext.hpp"
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/shape_util.hpp"
+#include "seal/seal_ciphertext_wrapper.hpp"
 
 namespace ngraph {
 namespace he {
-template <typename T>
-void concat(const std::vector<std::vector<std::shared_ptr<T>>>& args,
-            std::vector<std::shared_ptr<T>>& out,
-            const std::vector<Shape>& in_shapes, const Shape& out_shape,
-            size_t concatenation_axis) {
+inline void concat_seal(
+    const std::vector<std::vector<std::shared_ptr<SealCiphertextWrapper>>>&
+        args,
+    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
+    const std::vector<Shape>& in_shapes, const Shape& out_shape,
+    size_t concatenation_axis) {
   // We will copy the inputs to the output one at a time. As we go, we will move
   // out along the concatenation axis, starting at 0.
   size_t concatenation_pos = 0;
@@ -76,10 +77,10 @@ void concat(const std::vector<std::vector<std::shared_ptr<T>>>& args,
   }
 };
 
-void concat(const std::vector<std::vector<HEPlaintext*>>& args,
-            std::vector<std::unique_ptr<HEPlaintext>>& out,
-            const std::vector<Shape>& in_shapes, const Shape& out_shape,
-            size_t concatenation_axis) {
+void concat_seal(const std::vector<std::vector<HEPlaintext>>& args,
+                 std::vector<HEPlaintext>& out,
+                 const std::vector<Shape>& in_shapes, const Shape& out_shape,
+                 size_t concatenation_axis) {
   // We will copy the inputs to the output one at a time. As we go, we will move
   // out along the concatenation axis, starting at 0.
   size_t concatenation_pos = 0;
@@ -118,9 +119,7 @@ void concat(const std::vector<std::vector<HEPlaintext*>>& args,
           output_chunk_transform.index(*output_chunk_it);
       ++output_chunk_it;
 
-      // TODO: move?
-      out[output_chunk_index] =
-          std::make_unique<HEPlaintext>(*args[i][input_index]);
+      out[output_chunk_index] = args[i][input_index];
     }
 
     concatenation_pos += in_shapes[i][concatenation_axis];

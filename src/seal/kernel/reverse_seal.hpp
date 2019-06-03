@@ -25,7 +25,7 @@
 
 namespace ngraph {
 namespace he {
-inline void reverse(
+inline void reverse_seal(
     const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
     const Shape& arg_shape, const Shape& out_shape,
@@ -49,9 +49,9 @@ inline void reverse(
   }
 }
 
-inline void reverse(const std::vector<HEPlaintext>& arg,
-                    std::vector<HEPlaintext>& out, const Shape& arg_shape,
-                    const Shape& out_shape, const AxisSet& reversed_axes) {
+inline void reverse_seal(const std::vector<HEPlaintext>& arg,
+                         std::vector<HEPlaintext>& out, const Shape& arg_shape,
+                         const Shape& out_shape, const AxisSet& reversed_axes) {
   // In fact arg_shape == out_shape, but we'll use both for stylistic
   // consistency with other kernels.
   CoordinateTransform arg_transform(arg_shape);

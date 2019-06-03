@@ -25,11 +25,11 @@
 
 namespace ngraph {
 namespace he {
-void slice(const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
-           std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
-           const Shape& arg_shape, const Coordinate& lower_bounds,
-           const Coordinate& upper_bounds, const Strides& strides,
-           const Shape& out_shape) {
+void slice_seal(const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
+                std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
+                const Shape& arg_shape, const Coordinate& lower_bounds,
+                const Coordinate& upper_bounds, const Strides& strides,
+                const Shape& out_shape) {
   CoordinateTransform input_transform(arg_shape, lower_bounds, upper_bounds,
                                       strides);
   CoordinateTransform output_transform(out_shape);
@@ -46,10 +46,10 @@ void slice(const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
   }
 }
 
-void slice(const std::vector<HEPlaintext>& arg, std::vector<HEPlaintext>& out,
-           const Shape& arg_shape, const Coordinate& lower_bounds,
-           const Coordinate& upper_bounds, const Strides& strides,
-           const Shape& out_shape) {
+void slice_seal(const std::vector<HEPlaintext>& arg,
+                std::vector<HEPlaintext>& out, const Shape& arg_shape,
+                const Coordinate& lower_bounds, const Coordinate& upper_bounds,
+                const Strides& strides, const Shape& out_shape) {
   CoordinateTransform input_transform(arg_shape, lower_bounds, upper_bounds,
                                       strides);
   CoordinateTransform output_transform(out_shape);
