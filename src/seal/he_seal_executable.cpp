@@ -1360,45 +1360,54 @@ void ngraph::he::HESealExecutable::generate_calls(
                        " does not match smallest ", smallest_chain_ind);
         }
       }
-
+      NGRAPH_INFO << "Matched moduli for relu";
       m_relu_ciphertexts.clear();
       std::stringstream cipher_stream;
+      const size_t max_relu_message_cnt = 10000;
+      size_t num_relu_batches = element_count / max_relu_message_cnt;
+      if (element_count % max_relu_message_cnt != 0) {
+        num_relu_batches++;
+      }
+      std::vector<seal::Ciphertext> relu_ciphers(max_relu_message_cnt);
       size_t stream_count = 0;
-      for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
-        auto& cipher = arg0_cipher->get_element(relu_idx);
-        // relu(0) = 0
-        if (cipher->is_zero()) {
-          NGRAPH_INFO << "Skipping relu(0) at index " << relu_idx;
-          m_relu_ciphertexts.emplace_back(cipher);
-        } else {
-          cipher->save(cipher_stream);
-          stream_count++;
-          if (stream_count % 10001 == 10000 || relu_idx == element_count - 1) {
-            // Send output to client
-            NGRAPH_INFO << "Sending " << stream_count
-                        << " Relu ciphertexts (size "
-                        << cipher_stream.str().size() << ") to client ("
-                        << relu_idx << " of " << element_count;
-            auto relu_message =
-                TCPMessage(MessageType::relu_request, stream_count,
-                           std::move(cipher_stream));
-            m_session->do_write(std::move(relu_message));
-
-            // Acquire lock
-            std::unique_lock<std::mutex> mlock(m_relu_mutex);
-
-            // Wait until Relu is done
-            m_relu_cond.wait(mlock,
-                             std::bind(&HESealExecutable::relu_done, this));
-            NGRAPH_INFO << "Relu is done";
-
-            // Reset for next Relu call
-            m_relu_done = false;
-
-            stream_count = 0;
-            cipher_stream.str(std::string());
+      NGRAPH_INFO << "element_count " << element_count;
+      NGRAPH_INFO << "num_relu_batches " << num_relu_batches;
+      for (size_t relu_batch = 0; relu_batch < num_relu_batches; ++relu_batch) {
+        size_t relu_start_idx = relu_batch * max_relu_message_cnt;
+        size_t relu_end_idx = (relu_batch + 1) * max_relu_message_cnt;
+        if (relu_end_idx > element_count) {
+          relu_end_idx = element_count;
+        }
+        relu_ciphers.resize(relu_end_idx - relu_start_idx);
+        NGRAPH_INFO << "relu cipher size " << relu_ciphers.size();
+        NGRAPH_INFO << "relu_start_idx " << relu_start_idx;
+        NGRAPH_INFO << "relu_end_idx " << relu_end_idx;
+#pragma omp parallel for
+        for (size_t relu_idx = relu_start_idx; relu_idx < relu_end_idx;
+             ++relu_idx) {
+          auto& cipher = arg0_cipher->get_element(relu_idx);
+          // relu(0) = 0
+          if (cipher->is_zero()) {
+            // TODO: parallelize with 0s removed
+            throw ngraph_error("relu(0) not allowed");
+            // NGRAPH_INFO << "Skipping relu(0) at index " << relu_idx;
+            // m_relu_ciphertexts.emplace_back(cipher);
+          } else {
+            relu_ciphers[relu_idx] = cipher->ciphertext();
           }
         }
+        auto relu_message = TCPMessage(MessageType::relu_request, relu_ciphers);
+        m_session->do_write(std::move(relu_message));
+
+        // Acquire lock
+        std::unique_lock<std::mutex> mlock(m_relu_mutex);
+
+        // Wait until Relu is done
+        m_relu_cond.wait(mlock, std::bind(&HESealExecutable::relu_done, this));
+        NGRAPH_INFO << "Relu is done";
+
+        // Reset for next Relu call
+        m_relu_done = false;
       }
 
       out0_cipher->set_elements(m_relu_ciphertexts);

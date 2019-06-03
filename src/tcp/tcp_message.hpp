@@ -28,6 +28,7 @@
 // TODO: better way to include log
 #define PROJECT_ROOT_DIR "test_root_macro"
 
+#include "ngraph/check.hpp"
 #include "ngraph/log.hpp"
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
@@ -159,7 +160,8 @@ class TCPMessage {
   TCPMessage(const MessageType type,
              const std::vector<seal::Ciphertext>& ciphers)
       : m_type(type), m_count(ciphers.size()) {
-    NGRAPH_INFO << "Creating message from seal ciphertexts";
+    NGRAPH_INFO << "Creating message from " << ciphers.size()
+                << " seal ciphertexts";
 
     std::stringstream first;
     ciphers[0].save(first);
@@ -183,10 +185,14 @@ class TCPMessage {
       std::stringstream ss;
       // TODO: save directly to buffer
       ciphers[i].save(ss);
+      ss.seekp(0, std::ios::end);
+      size_t cipher_size = ss.tellp();
+      NGRAPH_CHECK(cipher_size == first_cipher_size, "cipher size ",
+                   cipher_size, "doesn't match first", first_cipher_size);
+
       std::stringbuf* pbuf = ss.rdbuf();
       pbuf->sgetn(data_ptr() + offset, first_cipher_size);
     }
-
     NGRAPH_INFO << "first_cipher_size " << first_cipher_size;
   }
 

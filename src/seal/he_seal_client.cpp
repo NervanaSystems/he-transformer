@@ -131,7 +131,6 @@ void ngraph::he::HESealClient::handle_message(
 
       std::vector<double> real_vals{m_inputs.begin() + batch_start_idx,
                                     m_inputs.begin() + batch_end_idx};
-
       if (complex_packing()) {
         std::vector<std::complex<double>> complex_vals;
         real_vec_to_complex_vec(complex_vals, real_vals);
