@@ -96,8 +96,6 @@ void ngraph::he::HESealCipherTensor::read(void* target, size_t tensor_offset,
   size_t src_start_idx = tensor_offset / type_byte_size;
   size_t num_elements_to_read = n / (type_byte_size * m_batch_size);
 
-  NGRAPH_INFO << "Reading from cipher " << num_elements_to_read << " elements";
-
   if (num_elements_to_read == 1) {
     void* dst_with_offset = (void*)((char*)target);
     size_t src_idx = src_start_idx;
@@ -111,7 +109,6 @@ void ngraph::he::HESealCipherTensor::read(void* target, size_t tensor_offset,
       if (!dst) {
         throw ngraph_error("Error allocating HE Cipher Tensor memory");
       }
-      NGRAPH_INFO << "Reading elem " << i;
 
       size_t src_idx = src_start_idx + i;
       auto p = HEPlaintext(m_ciphertexts[src_idx]->complex_packing());

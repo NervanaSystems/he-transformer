@@ -206,10 +206,6 @@ void ngraph::he::HESealBackend::decrypt(
     output.set_values(std::vector<float>(slots, 0));
   } else {
     auto plaintext_wrapper = SealPlaintextWrapper(input.complex_packing());
-    // NGRAPH_INFO << "Calling decrypt";
-
-    size_t chain_ind0 = get_chain_index(input.ciphertext(), this);
-    // NGRAPH_INFO << "decrypting chain ind " << chain_ind0;
     m_decryptor->decrypt(input.ciphertext(), plaintext_wrapper.plaintext());
     decode(output, plaintext_wrapper);
   }
@@ -270,10 +266,8 @@ void ngraph::he::HESealBackend::encode(
   } else {
     // TODO: why different cases?
     if (double_vals.size() == 1) {
-      NGRAPH_INFO << "Encoding " << double_vals[0] << " at scale " << scale;
       m_ckks_encoder->encode(double_vals[0], parms_id, scale,
                              destination.plaintext());
-      NGRAPH_INFO << "plaintext scale " << destination.plaintext().scale();
     } else {
       NGRAPH_CHECK(double_vals.size() <= slots, "Cannot encode ",
                    double_vals.size(), " elements, maximum size is ", slots);

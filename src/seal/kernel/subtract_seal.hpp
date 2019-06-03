@@ -53,7 +53,6 @@ inline void subtract_seal(
     const element::Type& element_type, const HESealBackend* he_seal_backend,
     size_t count,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool()) {
-  NGRAPH_INFO << "subtracting vecC + vecC => vecC";
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
     scalar_subtract_seal(*arg0[i], *arg1[i], out[i], element_type,

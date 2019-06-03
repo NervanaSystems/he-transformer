@@ -20,7 +20,7 @@
 #include <vector>
 
 #include "he_plaintext.hpp"
-#include "ngraph/log.hpp"
+#include "ngraph/check.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_util.hpp"
@@ -30,12 +30,8 @@ namespace he {
 inline void result_seal(
     const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out, size_t count) {
-  NGRAPH_INFO << "Cipher result size " << count;
-  if (out.size() != arg.size()) {
-    NGRAPH_INFO << "Result output size " << out.size()
-                << " does not match result input size " << arg.size();
-    throw ngraph_error("Wrong size in result");
-  }
+  NGRAPH_CHECK(out.size() == arg.size(), "Result output size ", out.size(),
+               " does not match result input size ", arg.size());
   for (size_t i = 0; i < count; ++i) {
     out[i] = arg[i];
   }
@@ -43,11 +39,8 @@ inline void result_seal(
 
 inline void result_seal(const std::vector<HEPlaintext>& arg,
                         std::vector<HEPlaintext>& out, size_t count) {
-  if (out.size() != arg.size()) {
-    NGRAPH_INFO << "Result output size " << out.size()
-                << " does not match result input size " << arg.size();
-    throw ngraph_error("Wrong size in result");
-  }
+  NGRAPH_CHECK(out.size() == arg.size(), "Result output size ", out.size(),
+               " does not match result input size ", arg.size());
   for (size_t i = 0; i < count; ++i) {
     out[i] = arg[i];
   }

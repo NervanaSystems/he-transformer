@@ -20,11 +20,8 @@ void ngraph::he::result_seal(
     const std::vector<HEPlaintext>& arg,
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out, size_t count,
     const HESealBackend* he_seal_backend) {
-  if (out.size() != arg.size()) {
-    NGRAPH_INFO << "Result output size " << out.size()
-                << " does not match result input size " << arg.size();
-    throw ngraph_error("Wrong size in result");
-  }
+  NGRAPH_CHECK(out.size() == arg.size(), "Result output size ", out.size(),
+               " does not match result input size ", arg.size());
   for (size_t i = 0; i < count; ++i) {
     he_seal_backend->encrypt(out[i], arg[i]);
   }
@@ -34,11 +31,8 @@ void ngraph::he::result_seal(
     const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
     std::vector<HEPlaintext>& out, size_t count,
     const HESealBackend* he_seal_backend) {
-  if (out.size() != arg.size()) {
-    NGRAPH_INFO << "Result output size " << out.size()
-                << " does not match result input size " << arg.size();
-    throw ngraph_error("Wrong size in result");
-  }
+  NGRAPH_CHECK(out.size() == arg.size(), "Result output size ", out.size(),
+               " does not match result input size ", arg.size());
   for (size_t i = 0; i < count; ++i) {
     he_seal_backend->decrypt(out[i], *arg[i]);
     // he_seal_backend->decode(*out[i]);
