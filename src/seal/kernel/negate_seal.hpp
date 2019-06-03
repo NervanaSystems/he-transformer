@@ -26,14 +26,13 @@
 
 namespace ngraph {
 namespace he {
-void scalar_negate(std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg,
-                   std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
+void scalar_negate(const SealCiphertextWrapper& arg,
+                   std::shared_ptr<SealCiphertextWrapper>& out,
                    const element::Type& element_type,
-                   const ngraph::he::HESealBackend* he_seal_backend);
+                   const HESealBackend* he_seal_backend);
 
-void scalar_negate(std::shared_ptr<ngraph::he::HEPlaintext>& arg,
-                   std::shared_ptr<ngraph::he::HEPlaintext>& out,
+void scalar_negate(const HEPlaintext& arg, HEPlaintext& out,
                    const element::Type& element_type,
-                   const ngraph::he::HESealBackend* he_seal_backend);
+                   const HESealBackend* he_seal_backend);
 }  // namespace he
 }  // namespace ngraph

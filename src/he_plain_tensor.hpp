@@ -30,7 +30,6 @@ class HEPlainTensor : public HETensor {
  public:
   HEPlainTensor(const element::Type& element_type, const Shape& shape,
                 const HESealBackend* he_seal_backend,
-                const std::unique_ptr<ngraph::he::HEPlaintext> he_plaintext,
                 const bool batched = false,
                 const std::string& name = "external");
 
@@ -48,18 +47,18 @@ class HEPlainTensor : public HETensor {
   /// @param n Number of bytes to read, must be integral number of elements.
   void read(void* target, size_t tensor_offset, size_t n) const override;
 
-  inline std::vector<std::unique_ptr<ngraph::he::HEPlaintext>>& get_elements() {
+  inline std::vector<ngraph::he::HEPlaintext>& get_elements() {
     return m_plaintexts;
   }
 
-  inline std::unique_ptr<ngraph::he::HEPlaintext>& get_element(size_t i) {
+  inline ngraph::he::HEPlaintext& get_element(size_t i) {
     return m_plaintexts[i];
   }
 
   inline size_t num_plaintexts() { return m_plaintexts.size(); }
 
  private:
-  std::vector<std::unique_ptr<ngraph::he::HEPlaintext>> m_plaintexts;
+  std::vector<ngraph::he::HEPlaintext> m_plaintexts;
   size_t m_num_elements;
 };
 }  // namespace he

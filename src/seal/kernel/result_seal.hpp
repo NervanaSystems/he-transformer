@@ -27,7 +27,7 @@
 
 namespace ngraph {
 namespace he {
-inline void result(
+inline void result_seal(
     const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out, size_t count) {
   NGRAPH_INFO << "Cipher result size " << count;
@@ -41,27 +41,24 @@ inline void result(
   }
 }
 
-inline void result(const std::vector<std::unique_ptr<HEPlaintext>>& arg,
-                   std::vector<std::unique_ptr<HEPlaintext>>& out,
-                   size_t count) {
+inline void result_seal(const std::vector<HEPlaintext>& arg,
+                        std::vector<HEPlaintext>& out, size_t count) {
   if (out.size() != arg.size()) {
     NGRAPH_INFO << "Result output size " << out.size()
                 << " does not match result input size " << arg.size();
     throw ngraph_error("Wrong size in result");
   }
   for (size_t i = 0; i < count; ++i) {
-    out[i] = std::make_unique<HEPlaintext>(*arg[i]);
+    out[i] = arg[i];
   }
 }
 
-void result(
-    const std::vector<std::unique_ptr<ngraph::he::HEPlaintext>>& arg,
-    std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>& out,
-    size_t count, const ngraph::he::HESealBackend* he_seal_backend);
+void result_seal(const std::vector<HEPlaintext>& arg,
+                 std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
+                 size_t count, const HESealBackend* he_seal_backend);
 
-void result(
-    const std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>& arg,
-    std::vector<std::unique_ptr<ngraph::he::HEPlaintext>>& out, size_t count,
-    const ngraph::he::HESealBackend* he_seal_backend);
+void result_seal(const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
+                 std::vector<HEPlaintext>& out, size_t count,
+                 const HESealBackend* he_seal_backend);
 }  // namespace he
 }  // namespace ngraph

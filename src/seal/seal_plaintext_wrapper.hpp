@@ -44,14 +44,5 @@ class SealPlaintextWrapper {
   bool m_complex_packing;
   seal::Plaintext m_plaintext;
 };
-
-inline std::unique_ptr<SealPlaintextWrapper> make_seal_plaintext_wrapper() {
-  return std::make_unique<SealPlaintextWrapper>();
-}
-
-inline std::unique_ptr<SealPlaintextWrapper> make_seal_plaintext_wrapper(
-    bool complex_packing) {
-  return std::make_unique<SealPlaintextWrapper>(complex_packing);
-}
 }  // namespace he
 }  // namespace ngraph

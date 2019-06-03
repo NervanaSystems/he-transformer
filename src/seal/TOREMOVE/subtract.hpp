@@ -19,9 +19,9 @@
 #include <memory>
 #include <vector>
 
-#include "he_seal_backend.hpp"
 #include "he_ciphertext.hpp"
 #include "he_plaintext.hpp"
+#include "he_seal_backend.hpp"
 #include "ngraph/type/element_type.hpp"
 
 namespace ngraph {
@@ -52,7 +52,8 @@ inline void subtract(std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg0,
                      std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg1,
                      std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
                      const element::Type& element_type,
-                     const ngraph::he::HESealBackend* he_seal_backend, size_t count) {
+                     const ngraph::he::HESealBackend* he_seal_backend,
+                     size_t count) {
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
     scalar_subtract(arg0[i], arg1[i], out[i], element_type, he_seal_backend);
@@ -63,7 +64,8 @@ inline void subtract(std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg0,
                      const std::vector<std::unique_ptr<HEPlaintext>>& arg1,
                      std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
                      const element::Type& element_type,
-                     const ngraph::he::HESealBackend* he_seal_backend, size_t count) {
+                     const ngraph::he::HESealBackend* he_seal_backend,
+                     size_t count) {
   NGRAPH_INFO << "Sub plain size " << count;
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
@@ -75,7 +77,8 @@ inline void subtract(const std::vector<std::unique_ptr<HEPlaintext>>& arg0,
                      std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg1,
                      std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
                      const element::Type& element_type,
-                     const ngraph::he::HESealBackend* he_seal_backend, size_t count) {
+                     const ngraph::he::HESealBackend* he_seal_backend,
+                     size_t count) {
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
     scalar_subtract(*arg0[i], arg1[i], out[i], element_type, he_seal_backend);
@@ -86,7 +89,8 @@ inline void subtract(std::vector<std::unique_ptr<HEPlaintext>>& arg0,
                      std::vector<std::unique_ptr<HEPlaintext>>& arg1,
                      std::vector<std::unique_ptr<HEPlaintext>>& out,
                      const element::Type& element_type,
-                     const ngraph::he::HESealBackend* he_seal_backend, size_t count) {
+                     const ngraph::he::HESealBackend* he_seal_backend,
+                     size_t count) {
 #pragma omp `parallel for
   for (size_t i = 0; i < count; ++i) {
     scalar_subtract(*arg0[i], *arg1[i], *out[i], element_type, he_seal_backend);

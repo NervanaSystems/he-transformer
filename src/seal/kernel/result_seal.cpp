@@ -16,10 +16,10 @@
 
 #include "seal/kernel/result_seal.hpp"
 
-void ngraph::he::result(
-    const std::vector<std::unique_ptr<ngraph::he::HEPlaintext>>& arg,
-    std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>& out,
-    size_t count, const ngraph::he::HESealBackend* he_seal_backend) {
+void ngraph::he::result_seal(
+    const std::vector<HEPlaintext>& arg,
+    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out, size_t count,
+    const HESealBackend* he_seal_backend) {
   if (out.size() != arg.size()) {
     NGRAPH_INFO << "Result output size " << out.size()
                 << " does not match result input size " << arg.size();
@@ -30,10 +30,10 @@ void ngraph::he::result(
   }
 }
 
-void ngraph::he::result(
-    const std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>& arg,
-    std::vector<std::unique_ptr<ngraph::he::HEPlaintext>>& out, size_t count,
-    const ngraph::he::HESealBackend* he_seal_backend) {
+void ngraph::he::result_seal(
+    const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
+    std::vector<HEPlaintext>& out, size_t count,
+    const HESealBackend* he_seal_backend) {
   if (out.size() != arg.size()) {
     NGRAPH_INFO << "Result output size " << out.size()
                 << " does not match result input size " << arg.size();

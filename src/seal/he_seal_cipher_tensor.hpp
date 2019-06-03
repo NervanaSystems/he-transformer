@@ -29,11 +29,10 @@ namespace ngraph {
 namespace he {
 class HESealCipherTensor : public HETensor {
  public:
-  HESealCipherTensor(
-      const element::Type& element_type, const Shape& shape,
-      const HESealBackend* he_seal_backend,
-      const std::shared_ptr<ngraph::he::SealCiphertextWrapper> he_ciphertext,
-      const bool batched = false, const std::string& name = "external");
+  HESealCipherTensor(const element::Type& element_type, const Shape& shape,
+                     const HESealBackend* he_seal_backend,
+                     const bool batched = false,
+                     const std::string& name = "external");
 
   /// @brief Write bytes directly into the tensor after encoding and encrypting
   /// @param p Pointer to source of data

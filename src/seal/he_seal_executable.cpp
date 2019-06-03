@@ -20,7 +20,9 @@
 #include "he_seal_cipher_tensor.hpp"
 #include "he_tensor.hpp"
 #include "kernel/add_seal.hpp"
+#include "kernel/negate_seal.hpp"
 #include "kernel/result_seal.hpp"
+#include "kernel/subtract_seal.hpp"
 #include "seal/he_seal_executable.hpp"
 
 // #include "kernel/avg_pool_seal.hpp"
@@ -32,12 +34,10 @@
 #include "kernel/dot.hpp"
 #include "kernel/max_pool.hpp"
 #include "kernel/multiply.hpp"
-#include "kernel/negate.hpp"
 #include "kernel/pad.hpp"
 #include "kernel/reshape.hpp"
 #include "kernel/reverse.hpp"
 #include "kernel/slice.hpp"
-#include "kernel/subtract.hpp"
 #include "kernel/sum.hpp"*/
 #include "ngraph/assertion.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
@@ -496,10 +496,10 @@ bool ngraph::he::HESealExecutable::call(
 #pragma omp parallel for
         for (size_t i = 0; i < plain_input->get_batched_element_count(); ++i) {
           // Enable complex batching!
-          plain_input->get_element(i)->set_complex_packing(
+          plain_input->get_element(i).set_complex_packing(
               m_he_seal_backend->complex_packing());
           m_he_seal_backend->encrypt(cipher_input->get_element(i),
-                                     *plain_input->get_element(i));
+                                     plain_input->get_element(i));
         }
         tensor_map.insert({tv, cipher_input});
         input_count++;
@@ -579,13 +579,11 @@ bool ngraph::he::HESealExecutable::call(
                         });
         if (plain_out) {
           auto out_tensor = std::make_shared<ngraph::he::HEPlainTensor>(
-              element_type, shape, m_he_seal_backend,
-              std::move(create_empty_plaintext()), batched_out, name);
+              element_type, shape, m_he_seal_backend, batched_out, name);
           tensor_map.insert({tensor, out_tensor});
         } else {
           auto out_tensor = std::make_shared<ngraph::he::HESealCipherTensor>(
-              element_type, shape, m_he_seal_backend,
-              m_he_seal_backend->create_empty_ciphertext(), batched_out, name);
+              element_type, shape, m_he_seal_backend, batched_out, name);
           tensor_map.insert({tensor, out_tensor});
         }
       }
@@ -674,11 +672,9 @@ void ngraph::he::HESealExecutable::generate_calls(
   // NGRAPH_INFO << "Lazy rescaling";
 #pragma omp parallel for
     for (size_t i = 0; i < cipher->get_elements().size(); ++i) {
-      auto seal_cipher =
-          ngraph::he::cast_to_seal_hetext(cipher->get_element(i));
-      if (!seal_cipher->is_zero()) {
+      if (!cipher->is_zero()) {
         m_he_seal_backend->get_evaluator()->rescale_to_next_inplace(
-            seal_cipher->m_ciphertext);
+            cipher.ciphertext());
       }
     }
   };
@@ -1297,19 +1293,19 @@ void ngraph::he::HESealExecutable::generate_calls(
             "Input argument is neither plaintext nor ciphertext");
       }
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
-        ngraph::he::result(arg0_cipher->get_elements(),
-                           out0_cipher->get_elements(), output_size);
+        ngraph::he::result_seal(arg0_cipher->get_elements(),
+                                out0_cipher->get_elements(), output_size);
       } else if (arg0_plain != nullptr && out0_cipher != nullptr) {
-        ngraph::he::result(arg0_plain->get_elements(),
-                           out0_cipher->get_elements(), output_size,
-                           m_he_seal_backend);
+        ngraph::he::result_seal(arg0_plain->get_elements(),
+                                out0_cipher->get_elements(), output_size,
+                                m_he_seal_backend);
       } else if (arg0_cipher != nullptr && out0_plain != nullptr) {
-        ngraph::he::result(arg0_cipher->get_elements(),
-                           out0_plain->get_elements(), output_size,
-                           m_he_seal_backend);
+        ngraph::he::result_seal(arg0_cipher->get_elements(),
+                                out0_plain->get_elements(), output_size,
+                                m_he_seal_backend);
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
-        ngraph::he::result(arg0_plain->get_elements(),
-                           out0_plain->get_elements(), output_size);
+        ngraph::he::result_seal(arg0_plain->get_elements(),
+                                out0_plain->get_elements(), output_size);
       } else {
         throw ngraph_error("Result types not supported.");
       }
@@ -1394,33 +1390,33 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Subtract: {
-      /*if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
+      if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
-        ngraph::he::subtract(
+        ngraph::he::subtract_seal(
             arg0_cipher->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), type, m_he_seal_backend,
             out0_cipher->get_batched_element_count());
       } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                  out0_cipher != nullptr) {
-        ngraph::he::subtract(
+        ngraph::he::subtract_seal(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
             out0_cipher->get_elements(), type, m_he_seal_backend,
             out0_cipher->get_batched_element_count());
       } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
                  out0_cipher != nullptr) {
-        ngraph::he::subtract(
+        ngraph::he::subtract_seal(
             arg0_plain->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), type, m_he_seal_backend,
             out0_cipher->get_batched_element_count());
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
-        ngraph::he::subtract(
+        ngraph::he::subtract_seal(
             arg0_plain->get_elements(), arg1_plain->get_elements(),
             out0_plain->get_elements(), type, m_he_seal_backend,
             out0_plain->get_batched_element_count());
       } else {
         throw ngraph_error("Subtract types not supported.");
-      } */
+      }
       break;
     }
     case OP_TYPEID::Sum: {

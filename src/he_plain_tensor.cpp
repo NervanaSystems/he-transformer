@@ -19,18 +19,18 @@
 #include "he_plain_tensor.hpp"
 #include "seal/he_seal_backend.hpp"
 
-ngraph::he::HEPlainTensor::HEPlainTensor(
-    const element::Type& element_type, const Shape& shape,
-    const HESealBackend* he_seal_backend,
-    const std::unique_ptr<ngraph::he::HEPlaintext> he_plaintext,
-    const bool batched, const std::string& name)
+ngraph::he::HEPlainTensor::HEPlainTensor(const element::Type& element_type,
+                                         const Shape& shape,
+                                         const HESealBackend* he_seal_backend,
+                                         const bool batched,
+                                         const std::string& name)
     : ngraph::he::HETensor(element_type, shape, he_seal_backend, batched,
                            name) {
   m_num_elements = m_descriptor->get_tensor_layout()->get_size() / m_batch_size;
   m_plaintexts.resize(m_num_elements);
 #pragma omp parallel for
   for (size_t i = 0; i < m_num_elements; ++i) {
-    m_plaintexts[i] = std::move(create_empty_plaintext());
+    m_plaintexts[i] = create_empty_plaintext();
   }
 }
 
@@ -55,11 +55,11 @@ void ngraph::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
         float val = *(float*)(src);
         values[j] = val;
       }
-      m_plaintexts[dst_idx]->set_values(values);
+      m_plaintexts[dst_idx].set_values(values);
 
     } else {
       float f = *(float*)(src_with_offset);
-      m_plaintexts[dst_idx]->set_values({f});
+      m_plaintexts[dst_idx].set_values({f});
     }
   } else {
 #pragma omp parallel for
@@ -78,11 +78,11 @@ void ngraph::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
           float val = *(float*)(src);
           values[j] = val;
         }
-        m_plaintexts[dst_idx]->set_values(values);
+        m_plaintexts[dst_idx].set_values(values);
 
       } else {
         float f = *(float*)(src_with_offset);
-        m_plaintexts[dst_idx]->set_values({f});
+        m_plaintexts[dst_idx].set_values({f});
       }
     }
   }
@@ -103,13 +103,13 @@ void ngraph::he::HEPlainTensor::read(void* target, size_t tensor_offset,
   if (num_elements_to_read == 1) {
     void* dst_with_offset = (void*)((char*)target);
     size_t src_idx = src_start_idx;
-    std::vector<float> values = m_plaintexts[src_idx]->get_values();
+    std::vector<float> values = m_plaintexts[src_idx].get_values();
     memcpy(dst_with_offset, &values[0], type_byte_size * m_batch_size);
   } else {
 #pragma omp parallel for
     for (size_t i = 0; i < num_elements_to_read; ++i) {
       size_t src_idx = src_start_idx + i;
-      std::vector<float> values = m_plaintexts[src_idx]->get_values();
+      std::vector<float> values = m_plaintexts[src_idx].get_values();
       NGRAPH_CHECK(values.size() >= m_batch_size, "values size ", values.size(),
                    " is smaller than batch size ", m_batch_size);
 

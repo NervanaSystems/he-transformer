@@ -85,8 +85,8 @@ std::shared_ptr<ngraph::runtime::Tensor>
 ngraph::he::HESealBackend::create_plain_tensor(
     const element::Type& element_type, const Shape& shape,
     const bool batched) const {
-  auto rc = std::make_shared<ngraph::he::HEPlainTensor>(
-      element_type, shape, this, create_empty_plaintext(), batched);
+  auto rc = std::make_shared<ngraph::he::HEPlainTensor>(element_type, shape,
+                                                        this, batched);
   return std::static_pointer_cast<ngraph::runtime::Tensor>(rc);
 }
 
@@ -95,7 +95,7 @@ ngraph::he::HESealBackend::create_cipher_tensor(
     const element::Type& element_type, const Shape& shape,
     const bool batched) const {
   auto rc = std::make_shared<ngraph::he::HESealCipherTensor>(
-      element_type, shape, this, create_empty_ciphertext(), batched);
+      element_type, shape, this, batched);
   return std::static_pointer_cast<ngraph::runtime::Tensor>(rc);
 }
 
@@ -117,8 +117,8 @@ std::shared_ptr<ngraph::runtime::Tensor>
 ngraph::he::HESealBackend::create_batched_cipher_tensor(
     const element::Type& type, const Shape& shape) {
   NGRAPH_INFO << "Creating batched cipher tensor with shape " << join(shape);
-  auto rc = std::make_shared<ngraph::he::HESealCipherTensor>(
-      type, shape, this, create_empty_ciphertext(), true);
+  auto rc =
+      std::make_shared<ngraph::he::HESealCipherTensor>(type, shape, this, true);
   set_batch_data(true);
   return std::static_pointer_cast<ngraph::runtime::Tensor>(rc);
 }
@@ -127,8 +127,8 @@ std::shared_ptr<ngraph::runtime::Tensor>
 ngraph::he::HESealBackend::create_batched_plain_tensor(
     const element::Type& type, const Shape& shape) {
   NGRAPH_INFO << "Creating batched plain tensor with shape " << join(shape);
-  auto rc = std::make_shared<ngraph::he::HEPlainTensor>(
-      type, shape, this, std::move(create_empty_plaintext()), true);
+  auto rc =
+      std::make_shared<ngraph::he::HEPlainTensor>(type, shape, this, true);
   set_batch_data(true);
   return std::static_pointer_cast<ngraph::runtime::Tensor>(rc);
 }
@@ -152,7 +152,7 @@ ngraph::he::HESealBackend::create_valued_ciphertext(
   auto plaintext = create_valued_plaintext({value}, complex_packing());
   auto ciphertext = create_empty_ciphertext();
 
-  encrypt(ciphertext, *plaintext);
+  encrypt(ciphertext, plaintext);
   return ciphertext;
 }
 
@@ -177,16 +177,16 @@ ngraph::he::HESealBackend::create_empty_ciphertext(
 void ngraph::he::HESealBackend::encrypt(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& output,
     const ngraph::he::HEPlaintext& input) const {
-  auto seal_wrapper = make_seal_plaintext_wrapper(input.complex_packing());
+  auto plaintext = SealPlaintextWrapper(input.complex_packing());
 
-  encode(*seal_wrapper, input);
+  encode(plaintext, input);
   // No need to encrypt zero
   if (input.is_single_value() && input.get_values()[0] == 0) {
     output->set_zero(true);
     NGRAPH_INFO << "Encrypting 0";
   } else {
     NGRAPH_INFO << "Encrypting plaintext";
-    m_encryptor->encrypt(seal_wrapper->plaintext(), output->ciphertext());
+    m_encryptor->encrypt(plaintext.plaintext(), output->ciphertext());
     NGRAPH_INFO << "output scale " << output->ciphertext().scale();
   }
   output->set_complex_packing(input.complex_packing());
@@ -195,25 +195,24 @@ void ngraph::he::HESealBackend::encrypt(
 
 void ngraph::he::HESealBackend::decrypt(
     ngraph::he::HEPlaintext& output,
-    const std::shared_ptr<ngraph::he::SealCiphertextWrapper>& input) const {
-  if (input->is_zero()) {
+    const ngraph::he::SealCiphertextWrapper& input) const {
+  if (input.is_zero()) {
     NGRAPH_INFO << "decrypting 0";
     // TOOD: refine?
     const size_t slots =
         m_context->context_data()->parms().poly_modulus_degree() / 2;
     output.set_values(std::vector<float>(slots, 0));
   } else {
-    auto plaintext_wrapper =
-        make_seal_plaintext_wrapper(input->complex_packing());
+    auto plaintext_wrapper = SealPlaintextWrapper(input.complex_packing());
     NGRAPH_INFO << "Calling decrypt";
 
-    size_t chain_ind0 = get_chain_index(input->ciphertext(), this);
+    size_t chain_ind0 = get_chain_index(input.ciphertext(), this);
     NGRAPH_INFO << "decrypting chain ind " << chain_ind0;
-    m_decryptor->decrypt(input->ciphertext(), plaintext_wrapper->plaintext());
-    decode(output, *plaintext_wrapper);
+    m_decryptor->decrypt(input.ciphertext(), plaintext_wrapper.plaintext());
+    decode(output, plaintext_wrapper);
   }
-  output.set_complex_packing(input->complex_packing());
-  NGRAPH_CHECK(output.complex_packing() == input->complex_packing());
+  output.set_complex_packing(input.complex_packing());
+  NGRAPH_CHECK(output.complex_packing() == input.complex_packing());
 }
 
 void ngraph::he::HESealBackend::decode(void* output,

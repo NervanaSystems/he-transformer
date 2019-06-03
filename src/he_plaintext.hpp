@@ -26,8 +26,8 @@ namespace ngraph {
 namespace he {
 class HEPlaintext {
  public:
-  HEPlaintext(){};
-  HEPlaintext(const std::vector<float> values, bool complex_packing = false)
+  HEPlaintext(const std::vector<float> values = std::vector<float>{},
+              bool complex_packing = false)
       : m_values(values), m_complex_packing(complex_packing){};
   virtual ~HEPlaintext(){};
 
@@ -42,27 +42,17 @@ class HEPlaintext {
 
  protected:
   std::vector<float> m_values;
-
-  bool m_is_encoded;
+  // TODO: move to plain tensor
   bool m_complex_packing;
 };
 
-inline std::unique_ptr<ngraph::he::HEPlaintext> create_empty_plaintext(
-    bool complex_packing = false) {
-  return std::make_unique<ngraph::he::HEPlaintext>(std::vector<float>{},
-                                                   complex_packing);
+inline HEPlaintext create_empty_plaintext(bool complex_packing = false) {
+  return HEPlaintext(std::vector<float>{}, complex_packing);
 }
 
-inline std::unique_ptr<ngraph::he::HEPlaintext> create_valued_plaintext(
-    const std::vector<float>& values, bool complex_packing) {
-  return std::make_unique<ngraph::he::HEPlaintext>(values, complex_packing);
-}
-
-// This function is used only to make templating easier in dot / convolution
-// TODO: cleaner!
-inline std::unique_ptr<ngraph::he::HEPlaintext> cast_to_seal_hetext(
-    const std::unique_ptr<HEPlaintext>& plain) {
-  return std::make_unique<ngraph::he::HEPlaintext>(*plain);
+inline HEPlaintext create_valued_plaintext(const std::vector<float>& values,
+                                           bool complex_packing) {
+  return HEPlaintext(values, complex_packing);
 }
 }  // namespace he
 }  // namespace ngraph

@@ -46,14 +46,13 @@ void ngraph::he::scalar_add_seal(
 }
 
 void ngraph::he::scalar_add_seal(
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg0,
-    const HEPlaintext& arg1,
+    ngraph::he::SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type, const HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
   NGRAPH_CHECK(element_type == element::f32);
 
-  if (arg0->is_zero()) {
+  if (arg0.is_zero()) {
     he_seal_backend->encrypt(out, arg1);
     return;
   }
@@ -64,7 +63,7 @@ void ngraph::he::scalar_add_seal(
   if (add_zero) {
     out = std::make_shared<ngraph::he::SealCiphertextWrapper>(*arg0);
   } else {
-    NGRAPH_CHECK(arg1.complex_packing() == arg0->complex_packing(),
+    NGRAPH_CHECK(arg1.complex_packing() == arg0.complex_packing(),
                  "cipher/plain complex packing args differ");
 
     if (arg1.is_single_value()) {
@@ -74,23 +73,22 @@ void ngraph::he::scalar_add_seal(
                 he_seal_backend);
     } else {
       auto p = make_seal_plaintext_wrapper(arg1.complex_packing());
-      he_seal_backend->encode(*p, arg1, arg0->ciphertext().parms_id(),
-                              arg0->ciphertext().scale());
+      he_seal_backend->encode(p, arg1, arg0.ciphertext().parms_id(),
+                              arg0.ciphertext().scale());
       size_t chain_ind0 = get_chain_index(arg0.get(), he_seal_backend);
       size_t chain_ind1 = get_chain_index(p->plaintext(), he_seal_backend);
       NGRAPH_CHECK(chain_ind0 == chain_ind1, "Chain inds ", chain_ind0, ",  ",
                    chain_ind1, " don't match");
 
       he_seal_backend->get_evaluator()->add_plain(
-          arg0->ciphertext(), p->plaintext(), out->ciphertext());
-      out->set_complex_packing(arg0->complex_packing());
+          arg0.ciphertext(), p->plaintext(), out->ciphertext());
+      out->set_complex_packing(arg0.complex_packing());
     }
   }
 }
 
 void ngraph::he::scalar_add_seal(
-    const HEPlaintext& arg0,
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& arg1,
+    const HEPlaintext& arg0, ngraph::he::SealCiphertextWrapper& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type, const HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool) {

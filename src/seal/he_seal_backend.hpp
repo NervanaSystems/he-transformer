@@ -168,7 +168,7 @@ class HESealBackend : public ngraph::runtime::Backend {
 
   void decrypt(
       ngraph::he::HEPlaintext& output,
-      const std::shared_ptr<ngraph::he::SealCiphertextWrapper>& input) const;
+      const SealCiphertextWrapper& input) const;
 
   const inline std::shared_ptr<seal::SEALContext> get_context() const noexcept {
     return m_context;
