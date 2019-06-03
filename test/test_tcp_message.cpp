@@ -55,7 +55,7 @@ NGRAPH_TEST(tcp_message, encode_request) {
   EXPECT_EQ(m.data_size(), m2.data_size());
 }
 
-NGRAPH_TEST(tcp_message, copy) {
+/*NGRAPH_TEST(tcp_message, copy) {
   size_t count = 3;
   size_t element_size = 10;
   size_t size = count * element_size;
@@ -76,7 +76,7 @@ NGRAPH_TEST(tcp_message, copy) {
                         ngraph::he::TCPMessage::header_length),
             0);
   EXPECT_EQ(std::memcmp(m.header_ptr(), m2.header_ptr(), m2.num_bytes()), 0);
-}
+} */
 
 NGRAPH_TEST(tcp_message, encode) {
   size_t count = 3;
@@ -87,7 +87,7 @@ NGRAPH_TEST(tcp_message, encode) {
   assert(data != nullptr);
 
   auto m = ngraph::he::TCPMessage(ngraph::he::MessageType::none, count, size,
-                                   (char*)data);
+                                  (char*)data);
 
   ngraph::he::TCPMessage m2;
   // read header
@@ -117,7 +117,7 @@ NGRAPH_TEST(tcp_message, encode_large) {
   assert(data != nullptr);
 
   auto m = ngraph::he::TCPMessage(ngraph::he::MessageType::none, count, size,
-                                   (char*)data);
+                                  (char*)data);
 
   ngraph::he::TCPMessage m2;
   std::memcpy(m2.header_ptr(), m.header_ptr(),

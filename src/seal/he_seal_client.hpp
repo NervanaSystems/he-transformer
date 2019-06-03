@@ -40,11 +40,13 @@ class HESealClient {
 
   void handle_message(const ngraph::he::TCPMessage& message);
 
-  void write_message(const ngraph::he::TCPMessage& message);
+  inline void write_message(ngraph::he::TCPMessage&& message) {
+    m_tcp_client->write_message(std::move(message));
+  }
 
-  bool is_done();
+  inline bool is_done() { return m_is_done; }
 
-  std::vector<float> get_results();
+  inline std::vector<float> get_results() { return m_results; }
 
   void close_connection();
 

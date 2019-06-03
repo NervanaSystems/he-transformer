@@ -154,7 +154,7 @@ void ngraph::he::HESealClient::handle_message(
     std::cout << "Sending execute message with " << parameter_size
               << " ciphertexts" << std::endl;
 
-    write_message(execute_message);
+    write_message(std::move(execute_message));
   } else if (msg_type == ngraph::he::MessageType::result) {
     size_t result_count = message.count();
     size_t element_size = message.element_size();
@@ -197,7 +197,7 @@ void ngraph::he::HESealClient::handle_message(
     auto pk_message =
         TCPMessage(ngraph::he::MessageType::public_key, 1, pk_stream);
     std::cout << "Sending public key" << std::endl;
-    write_message(pk_message);
+    write_message(std::move(pk_message));
 
     // Send evaluation key
     std::stringstream evk_stream;
@@ -205,7 +205,7 @@ void ngraph::he::HESealClient::handle_message(
     auto evk_message =
         TCPMessage(ngraph::he::MessageType::eval_key, 1, evk_stream);
     std::cout << "Sending evaluation key" << std::endl;
-    write_message(evk_message);
+    write_message(std::move(evk_message));
   } else if (msg_type == ngraph::he::MessageType::relu_request) {
     std::cout << "Received Relu request" << std::endl;
     auto relu = [](double d) { return d > 0 ? d : 0; };
@@ -265,7 +265,7 @@ void ngraph::he::HESealClient::handle_message(
 
     auto relu_result_msg = TCPMessage(ngraph::he::MessageType::relu_result,
                                       result_count, post_relu_stream);
-    write_message(relu_result_msg);
+    write_message(std::move(relu_result_msg));
   } else if (msg_type == ngraph::he::MessageType::max_request) {
     size_t complex_scale_factor = complex_packing() ? 2 : 1;
     size_t cipher_count = message.count();
@@ -325,7 +325,7 @@ void ngraph::he::HESealClient::handle_message(
     cipher_max.save(max_stream);
     auto max_result_msg =
         TCPMessage(ngraph::he::MessageType::max_result, 1, max_stream);
-    write_message(max_result_msg);
+    write_message(std::move(max_result_msg));
   } else if (msg_type == ngraph::he::MessageType::minimum_request) {
     // Stores (c_1a, c_1b, c_2a, c_b, ..., c_na, c_nb)
     // prints messsge (min(c_1a, c_1b), min(c_2a, c_2b), ..., min(c_na, c_nb))
@@ -382,21 +382,12 @@ void ngraph::he::HESealClient::handle_message(
     auto minimum_result_msg =
         TCPMessage(ngraph::he::MessageType::minimum_result, cipher_count / 2,
                    minimum_stream);
-    write_message(minimum_result_msg);
+    write_message(std::move(minimum_result_msg));
   } else {
     std::cout << "Unsupported message type: "
               << message_type_to_string(msg_type).c_str() << std::endl;
   }
 }
-
-void ngraph::he::HESealClient::write_message(
-    const ngraph::he::TCPMessage& message) {
-  m_tcp_client->write_message(message);
-}
-
-bool ngraph::he::HESealClient::is_done() { return m_is_done; }
-
-std::vector<float> ngraph::he::HESealClient::get_results() { return m_results; }
 
 void ngraph::he::HESealClient::close_connection() {
   std::cout << "Closing connection" << std::endl;

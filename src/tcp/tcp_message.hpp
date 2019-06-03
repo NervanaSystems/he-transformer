@@ -161,32 +161,43 @@ class TCPMessage {
 
   TCPMessage& operator=(TCPMessage&& other) {
     if (this != &other) {
-      delete[] m_data;
-      m_data = other.header_ptr();
+      m_data = other.m_data;
       m_type = other.m_type;
       m_count = other.m_count;
       m_data_size = other.m_data_size;
       other.m_data = nullptr;
+      other.m_data_size = 0;
+      other.m_count = 0;
+      other.m_type = MessageType::none;
     }
     return *this;
   };
 
-  TCPMessage(const TCPMessage& other) {
+  TCPMessage(TCPMessage&& other)
+      : m_data(other.m_data),
+        m_type(other.m_type),
+        m_count(other.m_count),
+        m_data_size(other.m_data_size) {
+    other.m_data = nullptr;
+    std::cout << "TCPMessage move constructor!" << std::endl;
+  };
+  TCPMessage& operator=(const TCPMessage&) = delete;
+
+  TCPMessage(const TCPMessage& other) = delete; /* {
+    std::cout << "TCPMessage copy constructo!" << std::endl;
     m_type = other.m_type;
     m_count = other.m_count;
     m_data_size = other.m_data_size;
     m_data = new char[header_length + body_length()];
 
     std::memcpy(m_data, other.m_data, num_bytes());
+  }*/
+
+  ~TCPMessage() {
+    if (m_data != nullptr) {
+      delete[] m_data;
+    }
   }
-
-  // TODO: implement as needed
-  TCPMessage(TCPMessage&& other) = delete;
-
-  // TODO: implement as needed
-  TCPMessage& operator=(const TCPMessage& other) = delete;
-
-  ~TCPMessage() { delete[] m_data; }
 
   void check_arguments() {
     if (m_count < 0) {

@@ -58,8 +58,8 @@ void ngraph::he::scalar_add_seal(
   if (add_zero) {
     out = std::make_shared<ngraph::he::SealCiphertextWrapper>(arg0);
   } else {
-    NGRAPH_CHECK(arg1.complex_packing() == arg0.complex_packing(),
-                 "cipher/plain complex packing args differ");
+    // NGRAPH_CHECK(arg1.complex_packing() == arg0.complex_packing(),
+    //             "cipher/plain complex packing args differ");
 
     if (arg1.is_single_value()) {
       float value = arg1.get_values()[0];
