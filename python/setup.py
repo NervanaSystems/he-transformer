@@ -54,18 +54,38 @@ def find_pybind_headers_dir():
 def find_boost_headers_dir():
     """Return location of boost headers."""
     if os.environ.get('BOOST_HEADERS_PATH'):
-        boost_headers_dir = os.environ.get('BOOST_HEADERS_PATH')
+        boost_headers_dirs = os.environ.get('BOOST_HEADERS_PATH')
+        boost_headers_dirs = boost_headers_dirs.split(';')
+        boost_headers_dirs = [x + '/include' for x in boost_headers_dirs]
     else:
-        boost_headers_dir = os.path.join(BOOST_ROOT_DIR)
+        boost_headers_dirs = [os.path.join(BOOST_ROOT_DIR)]
 
-    found = os.path.exists(os.path.join(boost_headers_dir, 'boost/asio'))
-    if not found:
-        print('Cannot find boost library in {} make sure that '
-              'BOOST_HEADERS_PATH is set correctly'.format(boost_headers_dir))
+    found_asio = any([
+        os.path.exists(os.path.join(header_dir, 'boost/asio'))
+        for header_dir in boost_headers_dirs
+    ])
+    found_system = any([
+        os.path.exists(os.path.join(header_dir, 'boost/system'))
+        for header_dir in boost_headers_dirs
+    ])
+    found_config = any([
+        os.path.exists(os.path.join(header_dir, 'boost/config'))
+        for header_dir in boost_headers_dirs
+    ])
+    if not found_asio:
+        print('Cannot find boost asio library in {} make sure that '
+              'BOOST_HEADERS_PATH is set correctly'.format(boost_headers_dirs))
         sys.exit(1)
-    else:
-        print('boost library found in {}'.format(boost_headers_dir))
-        return boost_headers_dir
+    if not found_system:
+        print('Cannot find boost system library in {} make sure that '
+              'BOOST_HEADERS_PATH is set correctly'.format(boost_headers_dirs))
+        sys.exit(1)
+    if not found_config:
+        print('Cannot find boost config library in {} make sure that '
+              'BOOST_HEADERS_PATH is set correctly'.format(boost_headers_dirs))
+        sys.exit(1)
+    print('boost library found in {}'.format(boost_headers_dirs))
+    return boost_headers_dirs
 
 
 def find_cxx_compiler():
@@ -93,17 +113,16 @@ PYBIND11_INCLUDE_DIR = find_pybind_headers_dir() + '/include'
 NGRAPH_HE_DIST_DIR = find_he_transformer_dist_dir()
 NGRAPH_HE_INCLUDE_DIR = os.path.join(NGRAPH_HE_DIST_DIR, 'include')
 NGRAPH_HE_LIB_DIR = os.path.join(NGRAPH_HE_DIST_DIR, 'lib')
-BOOST_INCLUDE_DIR = find_boost_headers_dir()
+BOOST_INCLUDE_DIRS = find_boost_headers_dir()
 
 print('NGRAPH_HE_DIST_DIR', NGRAPH_HE_DIST_DIR)
 print('NGRAPH_HE_LIB_DIR ', NGRAPH_HE_LIB_DIR)
 print('NGRAPH_HE_INCLUDE_DIR', NGRAPH_HE_INCLUDE_DIR)
-print('BOOST_INCLUDE_DIR', BOOST_INCLUDE_DIR)
+print('BOOST_INCLUDE_DIRS', BOOST_INCLUDE_DIRS)
 
-include_dirs = [
-    PYNGRAPH_ROOT_DIR, NGRAPH_HE_INCLUDE_DIR, BOOST_INCLUDE_DIR,
-    PYBIND11_INCLUDE_DIR
-]
+include_dirs = [PYNGRAPH_ROOT_DIR, NGRAPH_HE_INCLUDE_DIR, PYBIND11_INCLUDE_DIR]
+include_dirs.extend(BOOST_INCLUDE_DIRS)
+
 library_dirs = [NGRAPH_HE_LIB_DIR]
 
 libraries = ['he_seal_client']

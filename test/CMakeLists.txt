@@ -33,7 +33,7 @@ set (SRC
     test_tcp_message.cpp
 )
 
-set(ACTIVE_BACKEND_LIST HE_SEAL_CKKS)
+set(ACTIVE_BACKEND_LIST HE_SEAL)
 
 set(MULTI_TEST_SRC
     test_add.in.cpp
@@ -106,9 +106,9 @@ set_target_properties(
 
 target_link_libraries(unit-test libgtest ngraph)
 target_link_libraries(unit-test ngraph_test_util ${CMAKE_DL_LIBS})
-target_link_libraries(unit-test he_backend seal pthread )
+target_link_libraries(unit-test he_seal_backend seal pthread )
 
-add_dependencies(unit-test he_backend ext_seal ext_ngraph_tf ext_gtest)
+add_dependencies(unit-test he_seal_backend ext_seal ext_ngraph_tf ext_gtest)
 
 # Cryptonets
 set (CRYPTONETS_SRC test_cryptonets.cpp test_util.cpp main_cryptonets.cpp)
@@ -133,5 +133,5 @@ link_directories(
 target_include_directories(cryptonets_benchmark PRIVATE ".")
 
 target_link_libraries(cryptonets_benchmark libgtest ngraph ngraph_test_util)
-target_link_libraries(cryptonets_benchmark he_backend seal pthread ${CMAKE_DL_LIBS})
-add_dependencies(cryptonets_benchmark he_backend ext_seal ext_ngraph_tf ext_gtest)
+target_link_libraries(cryptonets_benchmark he_seal_backend seal pthread ${CMAKE_DL_LIBS})
+add_dependencies(cryptonets_benchmark he_seal_backend ext_seal ext_ngraph_tf ext_gtest)

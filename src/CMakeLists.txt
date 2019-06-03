@@ -16,32 +16,26 @@
 
 # HE transformer sources
 set (HE_SRC
-    # kernels
-    kernel/add.cpp
-    kernel/constant.cpp
-    kernel/multiply.cpp
-    kernel/pad.cpp
-    kernel/subtract.cpp
-    kernel/result.cpp
-
-    # seal
-    seal/kernel/add_seal.cpp
-    seal/kernel/multiply_seal.cpp
-    seal/kernel/negate_seal.cpp
-    seal/kernel/subtract_seal.cpp
-    seal/he_seal_backend.cpp
-    seal/ckks/he_seal_ckks_backend.cpp
-    seal/ckks/kernel/add_seal_ckks.cpp
-    seal/ckks/kernel/multiply_seal_ckks.cpp
-    seal/ckks/seal_ckks_util.cpp
 
     # main
-    he_backend.cpp
-    he_executable.cpp
-    he_cipher_tensor.cpp
     he_plain_tensor.cpp
     he_tensor.cpp
     node_wrapper.cpp
+
+    # seal kernels
+    seal/kernel/constant_seal.cpp
+    seal/kernel/pad_seal.cpp
+    seal/kernel/subtract_seal.cpp
+    seal/kernel/result_seal.cpp
+    seal/kernel/add_seal.cpp
+    seal/kernel/multiply_seal.cpp
+    seal/kernel/negate_seal.cpp
+
+    # seal backend
+    seal/seal_util.cpp
+    seal/he_seal_cipher_tensor.cpp
+    seal/he_seal_executable.cpp
+    seal/he_seal_backend.cpp
 )
 include_directories(
     SYSTEM
@@ -57,9 +51,9 @@ link_directories(
 message("Linking directories: ${NGRAPH_TF_LIB_DIR}, ${EXTERNAL_INSTALL_LIB_DIR}")
 
 # Target library
-add_library(he_backend SHARED ${HE_SRC})
-add_dependencies(he_backend ext_ngraph_tf ext_seal)
-target_link_libraries(he_backend seal libjson ngraph)
+add_library(he_seal_backend SHARED ${HE_SRC})
+add_dependencies(he_seal_backend ext_ngraph_tf ext_seal)
+target_link_libraries(he_seal_backend seal libjson ngraph libboost)
 
 if(NGRAPH_HE_SANITIZE_ADDRESS)
     message(STATUS "Enable Address Sanitizer")
@@ -67,13 +61,16 @@ if(NGRAPH_HE_SANITIZE_ADDRESS)
 endif()
 
 # Get library names
-set(HE_BACKEND_LIB_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}he_backend${CMAKE_SHARED_LIBRARY_SUFFIX}")
-set(HE_SEAL_CKKS_LIB_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}he_seal_ckks_backend${CMAKE_SHARED_LIBRARY_SUFFIX}")
+set(HE_SEAL_BACKEND_LIB_NAME "libhe_seal_backend${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
 message("NGRAPH_TF_VENV_LIB_DIR ${NGRAPH_TF_VENV_LIB_DIR}")
 
+message("Installing he_seal_Backend to ${EXTERNAL_INSTALL_LIB_DIR}")
+
+message("NGRAPH_TF_LIB_DIR" ${NGRAPH_TF_LIB_DIR})
+
 # Install he-transformer (the HE libraries are installed separately) at `make install`
-install(TARGETS he_backend DESTINATION ${EXTERNAL_INSTALL_LIB_DIR})
+install(TARGETS he_seal_backend DESTINATION ${EXTERNAL_INSTALL_LIB_DIR})
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
         DESTINATION ${HE_INSTALL_INCLUDE_DIR}
@@ -81,8 +78,28 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
         PATTERN "*.hpp"
         PATTERN "*.h")
 
-# Create symbolic links for CKKS backend, to allow ngraph and ngraph-tf to recognize these backends.
-add_custom_target(he_seal_ckks_backend ALL DEPENDS he_backend
-        COMMAND ${CMAKE_COMMAND} -E create_symlink
-            ${EXTERNAL_INSTALL_LIB_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}he_backend${CMAKE_SHARED_LIBRARY_SUFFIX}
-            ${NGRAPH_TF_VENV_LIB_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}he_seal_ckks_backend${CMAKE_SHARED_LIBRARY_SUFFIX})
+message("Installing TF fiels from ${NGRAPH_TF_INCLUDE_DIR} to ${HE_INSTALL_INCLUDE_DIR}")
+install(DIRECTORY ${NGRAPH_TF_INCLUDE_DIR}/
+        DESTINATION ${HE_INSTALL_INCLUDE_DIR}
+        FILES_MATCHING
+        PATTERN "*.hpp"
+        PATTERN "*.h")
+
+# TODO: cleanup
+message("Install json files from ${JSON_INCLUDE_DIR} to ${HE_INSTALL_INCLUDE_DIR}")
+install(DIRECTORY ${JSON_INCLUDE_DIR}/
+        DESTINATION ${HE_INSTALL_INCLUDE_DIR}
+        FILES_MATCHING
+        PATTERN "*.hpp"
+        PATTERN "*.h")
+
+# Create symbolic links for he_seal_backend, to allow ngraph and ngraph-tf
+#  to recognize find it.
+add_custom_target(he_seal_backend_soft_link ALL DEPENDS he_seal_backend
+COMMAND ${CMAKE_COMMAND} -E create_symlink
+    ${EXTERNAL_INSTALL_LIB_DIR}/libhe_seal_backend${CMAKE_SHARED_LIBRARY_SUFFIX}
+    ${NGRAPH_TF_VENV_LIB_DIR}/libhe_seal_backend${CMAKE_SHARED_LIBRARY_SUFFIX}
+COMMAND ${CMAKE_COMMAND} -E create_symlink
+    ${EXTERNAL_INSTALL_LIB_DIR}/libhe_seal_backend${CMAKE_SHARED_LIBRARY_SUFFIX}
+    ${NGRAPH_TF_LIB_DIR}/libhe_seal_backend${CMAKE_SHARED_LIBRARY_SUFFIX}
+    )

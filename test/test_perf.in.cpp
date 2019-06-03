@@ -14,8 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "he_backend.hpp"
 #include "ngraph/ngraph.hpp"
+#include "seal/he_seal_backend.hpp"
 #include "test_util.hpp"
 #include "util/all_close.hpp"
 #include "util/ndarray.hpp"
@@ -43,8 +43,8 @@ NGRAPH_TEST(${BACKEND_NAME}, perf_add) {
   vector<float> vec_result(N, 0);
 
   for (size_t i = 0; i < N; ++i) {
-    vec_a[i] = i;
-    vec_b[i] = i;
+    vec_a[i] = i + 1;
+    vec_b[i] = i + 1;
     vec_result[i] = vec_a[i] + vec_b[i];
   }
 

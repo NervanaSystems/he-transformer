@@ -16,42 +16,40 @@
 
 #pragma once
 
-#include <mutex>
+#include <memory>
 #include <vector>
 
 #include "ngraph/assertion.hpp"
+#include "seal/seal.h"
 
 namespace ngraph {
 namespace he {
 class HEPlaintext {
  public:
-  HEPlaintext(){};
-  HEPlaintext(const std::vector<float> values)
-      : m_values(values), m_is_encoded(false), m_complex_packing(false){};
+  HEPlaintext(const std::vector<float> values = std::vector<float>{},
+              bool complex_packing = false)
+      : m_values(values), m_complex_packing(complex_packing){};
+  HEPlaintext(const float value, bool complex_packing = false)
+      : m_values{std::vector<float>{value}},
+        m_complex_packing(complex_packing){};
+
+  HEPlaintext(bool complex_packing)
+      : m_values(std::vector<float>{}), m_complex_packing(complex_packing){};
   virtual ~HEPlaintext(){};
 
   void set_values(const std::vector<float>& values) { m_values = values; }
   const std::vector<float>& get_values() const { return m_values; }
 
-  bool is_single_value() { return num_values() == 1; }
+  bool is_single_value() const { return num_values() == 1; }
   size_t num_values() const { return m_values.size(); }
-
-  bool is_encoded() const { return m_is_encoded; }
-  void set_encoded(bool encoded) { m_is_encoded = encoded; }
 
   bool complex_packing() const { return m_complex_packing; }
   void set_complex_packing(bool toggle) { m_complex_packing = toggle; }
 
-  // std::mutex& get_encode_mutex() { return m_encode_mutex; }
-
  protected:
   std::vector<float> m_values;
-
-  // TODO: use atomic bool?
-  bool m_is_encoded;
+  // TODO: move to plain tensor
   bool m_complex_packing;
-
-  // std::mutex m_encode_mutex;
 };
 }  // namespace he
 }  // namespace ngraph
