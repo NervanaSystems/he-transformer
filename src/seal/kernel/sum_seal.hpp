@@ -19,23 +19,25 @@
 #include <memory>
 #include <vector>
 
-#include "he_seal_backend.hpp"
+#include "he_plaintext.hpp"
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/type/element_type.hpp"
+#include "seal/he_seal_backend.hpp"
+#include "seal/kernel/add_seal.hpp"
 
 namespace ngraph {
 namespace he {
-inline void sum(std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
-                std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
-                const Shape& in_shape, const Shape& out_shape,
-                const AxisSet& reduction_axes,
-                const element::Type& element_type,
-                const ngraph::he::HESealBackend* he_seal_backend) {
+inline void sum_seal(std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
+                     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
+                     const Shape& in_shape, const Shape& out_shape,
+                     const AxisSet& reduction_axes,
+                     const element::Type& element_type,
+                     const ngraph::he::HESealBackend* he_seal_backend) {
   CoordinateTransform output_transform(out_shape);
 
   for (const Coordinate& output_coord : output_transform) {
     out[output_transform.index(output_coord)] =
-        he_seal_backend->create_valued_hetext<SealCiphertextWrapper>(0.f, element_type);
+        he_seal_backend->create_valued_ciphertext(0.f, element_type);
   }
 
   CoordinateTransform input_transform(in_shape);
@@ -45,23 +47,23 @@ inline void sum(std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
 
     auto& input = arg[input_transform.index(input_coord)];
     auto& output = out[output_transform.index(output_coord)];
-    ngraph::he::scalar_add(input, output, output, element_type, he_seal_backend);
+    ngraph::he::scalar_add_seal(*input, *output, output, element_type,
+                                he_seal_backend);
   }
 }
 
-inline void sum(std::vector<std::unique_ptr<HEPlaintext>>& arg,
-                std::vector<std::unique_ptr<HEPlaintext>>& out,
-                const Shape& in_shape, const Shape& out_shape,
-                const AxisSet& reduction_axes,
-                const element::Type& element_type,
-                const ngraph::he::HESealBackend* he_seal_backend) {
+inline void sum_seal(std::vector<HEPlaintext>& arg,
+                     std::vector<HEPlaintext>& out, const Shape& in_shape,
+                     const Shape& out_shape, const AxisSet& reduction_axes,
+                     const element::Type& element_type,
+                     const ngraph::he::HESealBackend* he_seal_backend) {
   CoordinateTransform output_transform(out_shape);
 
-  bool complex_packing = arg[0]->complex_packing();
+  bool complex_packing = arg[0].complex_packing();
 
   for (const Coordinate& output_coord : output_transform) {
-    out[output_transform.index(output_coord)] = std::move(
-        create_valued_plaintext(std::vector<float>{0.f}, complex_packing));
+    out[output_transform.index(output_coord)] =
+        HEPlaintext(0.f, complex_packing);
   }
 
   CoordinateTransform input_transform(in_shape);
@@ -72,8 +74,9 @@ inline void sum(std::vector<std::unique_ptr<HEPlaintext>>& arg,
     auto& input = arg[input_transform.index(input_coord)];
     auto& output = out[output_transform.index(output_coord)];
 
-    auto tmp = HEPlaintext(output->get_values(), complex_packing);
-    ngraph::he::scalar_add(*input, tmp, *output, element_type, he_seal_backend);
+    auto tmp = HEPlaintext(output.get_values(), complex_packing);
+    ngraph::he::scalar_add_seal(input, tmp, output, element_type,
+                                he_seal_backend);
   }
 }
 }  // namespace he

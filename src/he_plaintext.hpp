@@ -29,6 +29,9 @@ class HEPlaintext {
   HEPlaintext(const std::vector<float> values = std::vector<float>{},
               bool complex_packing = false)
       : m_values(values), m_complex_packing(complex_packing){};
+  HEPlaintext(const float value, bool complex_packing = false)
+      : m_values{std::vector<float>{value}},
+        m_complex_packing(complex_packing){};
 
   HEPlaintext(bool complex_packing)
       : m_values(std::vector<float>{}), m_complex_packing(complex_packing){};

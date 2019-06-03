@@ -4,3 +4,8 @@ convolution_2d_1item_padded_1_1x1_1 # Needs larger parameters => slow
 convolution_2d_1item_padded_2_3x4_5 # Needs larger parameters => slow
 
 mult_layer_cipher_plain # Lazy rescaling means rescaling doesn't happen after multiply...
+
+sum_matrix_rows_zero
+sum_matrix_cols_zero
+sum_matrix_vector_zero
+sum_matrix_to_scalar_zero_by_zero

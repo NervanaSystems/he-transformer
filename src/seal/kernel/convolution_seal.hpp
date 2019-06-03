@@ -667,7 +667,7 @@ inline void convolution_seal(
     }
     if (first_add) {
       // TODO: enable complex packing?
-      out[out_coord_idx] = HEPlaintext(std::vector<float>{0}, false);
+      out[out_coord_idx] = HEPlaintext(0.f, false);
     } else {
       // Write the sum back.
       out[out_coord_idx] = sum;

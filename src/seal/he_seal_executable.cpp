@@ -33,11 +33,12 @@
 #include "kernel/reverse_seal.hpp"
 #include "kernel/slice_seal.hpp"
 #include "kernel/subtract_seal.hpp"
+#include "kernel/sum_seal.hpp"
 #include "seal/he_seal_executable.hpp"
 // #include "kernel/avg_pool_seal.hpp"
 /*#include "kernel/batch_norm_inference.hpp"
 #include "kernel/max_pool.hpp"
-#include "kernel/sum.hpp"*/
+*/
 #include "ngraph/assertion.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
 #include "ngraph/op/avg_pool.hpp"
@@ -1413,20 +1414,21 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Sum: {
-      /*const op::Sum* sum = static_cast<const op::Sum*>(&node);
+      const op::Sum* sum = static_cast<const op::Sum*>(&node);
       Shape in_shape = node.get_input_shape(0);
       Shape out_shape = node.get_output_shape(0);
 
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
-        ngraph::he::sum(arg0_cipher->get_elements(),
-                        out0_cipher->get_elements(), in_shape, out_shape,
-                        sum->get_reduction_axes(), type, m_he_seal_backend);
+        ngraph::he::sum_seal(
+            arg0_cipher->get_elements(), out0_cipher->get_elements(), in_shape,
+            out_shape, sum->get_reduction_axes(), type, m_he_seal_backend);
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
-        ngraph::he::sum(arg0_plain->get_elements(),
-      out0_plain->get_elements(), in_shape, out_shape,
-      sum->get_reduction_axes(), type, m_he_seal_backend); } else { throw
-      ngraph_error("Sum types not supported.");
-      }*/
+        ngraph::he::sum_seal(
+            arg0_plain->get_elements(), out0_plain->get_elements(), in_shape,
+            out_shape, sum->get_reduction_axes(), type, m_he_seal_backend);
+      } else {
+        throw ngraph_error("Sum types not supported.");
+      }
       break;
     }
     // Unsupported ops

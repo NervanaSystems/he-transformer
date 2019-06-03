@@ -31,8 +31,8 @@ namespace he {
 inline void convolution(
     const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg0,
     const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg1,
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out, const Shape& arg0_shape,
-    const Shape& arg1_shape, const Shape& out_shape,
+    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
+    const Shape& arg0_shape, const Shape& arg1_shape, const Shape& out_shape,
     const Strides& window_movement_strides,
     const Strides& window_dilation_strides, const CoordinateDiff& padding_below,
     const CoordinateDiff& padding_above, const Strides& data_dilation_strides,
@@ -63,8 +63,8 @@ inline void convolution(
 inline void convolution(
     const std::vector<std::unique_ptr<HEPlaintext>>& arg0,
     const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg1,
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out, const Shape& arg0_shape,
-    const Shape& arg1_shape, const Shape& out_shape,
+    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
+    const Shape& arg0_shape, const Shape& arg1_shape, const Shape& out_shape,
     const Strides& window_movement_strides,
     const Strides& window_dilation_strides, const CoordinateDiff& padding_below,
     const CoordinateDiff& padding_above, const Strides& data_dilation_strides,
@@ -78,8 +78,8 @@ inline void convolution(
 inline void convolution(
     const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg0,
     const std::vector<std::unique_ptr<HEPlaintext>>& arg1,
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out, const Shape& arg0_shape,
-    const Shape& arg1_shape, const Shape& out_shape,
+    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
+    const Shape& arg0_shape, const Shape& arg1_shape, const Shape& out_shape,
     const Strides& window_movement_strides,
     const Strides& window_dilation_strides, const CoordinateDiff& padding_below,
     const CoordinateDiff& padding_above, const Strides& data_dilation_strides,
