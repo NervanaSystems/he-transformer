@@ -27,6 +27,7 @@
 #include "kernel/constant_seal.hpp"
 #include "kernel/convolution_seal.hpp"
 #include "kernel/dot_seal.hpp"
+#include "kernel/max_pool.hpp"
 #include "kernel/multiply_seal.hpp"
 #include "kernel/negate_seal.hpp"
 #include "kernel/pad_seal.hpp"
@@ -36,8 +37,6 @@
 #include "kernel/slice_seal.hpp"
 #include "kernel/subtract_seal.hpp"
 #include "kernel/sum_seal.hpp"
-#include "seal/he_seal_executable.hpp"
-//#include "kernel/max_pool.hpp"
 #include "ngraph/assertion.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
 #include "ngraph/op/avg_pool.hpp"
@@ -64,6 +63,7 @@
 #include "ngraph/runtime/backend.hpp"
 #include "ngraph/util.hpp"
 #include "seal/he_seal_backend.hpp"
+#include "seal/he_seal_executable.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_util.hpp"
 
@@ -1011,7 +1011,7 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::MaxPool: {
-      /*if (!m_enable_client) {
+      if (!m_enable_client) {
         throw ngraph_error(
             "MaxPool op unsupported unless client is enabled. Try setting "
             "NGRAPH_ENABLE_CLIENT=1");
@@ -1053,31 +1053,31 @@ void ngraph::he::HESealExecutable::generate_calls(
           auto he_ciphertext = arg0_cipher->get_element(max_ind);
           he_ciphertext->save(cipher_stream);
           cipher_count++;
-        }*/
-      // Send list of ciphertexts to maximize over to client
-      /*NGRAPH_INFO << "Sending " << cipher_count
-                  << " Maxpool ciphertexts (size "
-                  << cipher_stream.str().size() << ") to client"; */
-      /* auto max_message =
-           TCPMessage(MessageType::max_request, cipher_count, cipher_stream);
+        }
+        // Send list of ciphertexts to maximize over to client
+        NGRAPH_INFO << "Sending " << cipher_count
+                    << " Maxpool ciphertexts (size "
+                    << cipher_stream.str().size() << ") to client";
+        auto max_message =
+            TCPMessage(MessageType::max_request, cipher_count, cipher_stream);
 
-       m_session->do_write(max_message);
+        m_session->do_write(max_message);
 
-       // Acquire lock
-       std::unique_lock<std::mutex> mlock(m_max_mutex);
+        // Acquire lock
+        std::unique_lock<std::mutex> mlock(m_max_mutex);
 
-       // Wait until max is done
-       m_max_cond.wait(mlock, std::bind(&HESealExecutable::max_done, this));
+        // Wait until max is done
+        m_max_cond.wait(mlock, std::bind(&HESealExecutable::max_done, this));
 
-       // Reset for next max call
-       m_max_done = false;
-     }
+        // Reset for next max call
+        m_max_done = false;
+      }
 
-     out0_cipher->set_elements(m_max_ciphertexts);*/
+      out0_cipher->set_elements(m_max_ciphertexts);
       break;
     }
     case OP_TYPEID::Minimum: {
-      /*NGRAPH_INFO << "Minimum op";
+      NGRAPH_INFO << "Minimum op";
       if (!m_enable_client) {
         throw ngraph_error(
             "Minimum op unsupported unless client is enabled. Try setting "
@@ -1100,7 +1100,7 @@ void ngraph::he::HESealExecutable::generate_calls(
                 element_type, arg0_plain->get_shape(), m_batch_data));
         for (size_t elem_idx = 0; elem_idx < element_count; ++elem_idx) {
           m_he_seal_backend->encrypt(arg0_cipher->get_element(elem_idx),
-                                     *(arg0_plain->get_element(elem_idx)));
+                                     arg0_plain->get_element(elem_idx));
         }
       }
       if (arg1_plain != nullptr) {
@@ -1112,7 +1112,7 @@ void ngraph::he::HESealExecutable::generate_calls(
                 element_type, arg1_plain->get_shape(), m_batch_data));
         for (size_t elem_idx = 0; elem_idx < element_count; ++elem_idx) {
           m_he_seal_backend->encrypt(arg1_cipher->get_element(elem_idx),
-                                     *(arg1_plain->get_element(elem_idx)));
+                                     arg1_plain->get_element(elem_idx));
         }
       }
       NGRAPH_CHECK(arg0_cipher != nullptr, "arg0_cipher is nullptr");
@@ -1135,9 +1135,6 @@ void ngraph::he::HESealExecutable::generate_calls(
 
       std::stringstream cipher_stream;
       size_t cipher_count = 0;
-      auto he_ckks_backend = (ngraph::he::HESealCKKSBackend*)m_he_seal_backend;
-      NGRAPH_CHECK(he_ckks_backend != nullptr,
-                   "HESealBackend is not CKKS in Minimum Op");
       for (size_t min_ind = 0; min_ind < element_count; ++min_ind) {
         auto cipher0 = arg0_cipher->get_element(min_ind);
         auto cipher1 = arg1_cipher->get_element(min_ind);
@@ -1164,7 +1161,7 @@ void ngraph::he::HESealExecutable::generate_calls(
       // Reset for next max call
       m_minimum_done = false;
 
-      out0_cipher->set_elements(m_minimum_ciphertexts);*/
+      out0_cipher->set_elements(m_minimum_ciphertexts);
       break;
     }
     case OP_TYPEID::Multiply: {
@@ -1303,7 +1300,7 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Relu: {
-      /*if (!m_enable_client) {
+      if (!m_enable_client) {
         throw ngraph_error(
             "Relu op unsupported unless client is enabled. Try setting "
             "NGRAPH_ENABLE_CLIENT=1");
@@ -1337,7 +1334,7 @@ void ngraph::he::HESealExecutable::generate_calls(
 
       // Reset for next Relu call
       m_relu_done = false;
-      out0_cipher->set_elements(m_relu_ciphertexts);*/
+      out0_cipher->set_elements(m_relu_ciphertexts);
       break;
     }
     case OP_TYPEID::Reverse: {

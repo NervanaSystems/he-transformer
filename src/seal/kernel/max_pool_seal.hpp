@@ -26,7 +26,7 @@
 namespace ngraph {
 namespace he {
 // Returns list where L[i] is the list of input indices to maximize over.
-std::vector<std::vector<size_t>> max_pool(
+std::vector<std::vector<size_t>> max_pool_seal(
     const Shape& arg_shape, const Shape& out_shape, const Shape& window_shape,
     const Strides& window_movement_strides, const Shape& padding_below,
     const Shape& padding_above) {
