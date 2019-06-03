@@ -24,10 +24,11 @@
 
 namespace ngraph {
 namespace he {
-inline void reshape(const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
-                    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
-                    const Shape& in_shape, const AxisVector& in_axis_order,
-                    const Shape& out_shape) {
+inline void reshape(
+    const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
+    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
+    const Shape& in_shape, const AxisVector& in_axis_order,
+    const Shape& out_shape) {
   // Unfortunately we don't yet have a constructor for CoordinateTransform that
   // lets us pass only source_space_shape and source_axis_order so we have to
   // construct the defaults here.
@@ -54,10 +55,9 @@ inline void reshape(const std::vector<std::shared_ptr<SealCiphertextWrapper>>& a
   }
 }
 
-inline void reshape(const std::vector<std::unique_ptr<HEPlaintext>>& arg,
-                    std::vector<std::unique_ptr<HEPlaintext>>& out,
-                    const Shape& in_shape, const AxisVector& in_axis_order,
-                    const Shape& out_shape) {
+inline void reshape(const std::vector<HEPlaintext>& arg,
+                    std::vector<HEPlaintext>& out, const Shape& in_shape,
+                    const AxisVector& in_axis_order, const Shape& out_shape) {
   // Unfortunately we don't yet have a constructor for CoordinateTransform that
   // lets us pass only source_space_shape and source_axis_order so we have to
   // construct the defaults here.
@@ -77,9 +77,8 @@ inline void reshape(const std::vector<std::unique_ptr<HEPlaintext>>& arg,
   for (const Coordinate& input_coord : input_transform) {
     const Coordinate& output_coord = *output_it;
 
-    // TODO: move?
     out[output_transform.index(output_coord)] =
-        std::make_unique<HEPlaintext>(*arg[input_transform.index(input_coord)]);
+        arg[input_transform.index(input_coord)];
 
     ++output_it;
   }

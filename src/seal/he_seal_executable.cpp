@@ -22,10 +22,10 @@
 #include "kernel/add_seal.hpp"
 #include "kernel/multiply_seal.hpp"
 #include "kernel/negate_seal.hpp"
+#include "kernel/reshape_seal.hpp"
 #include "kernel/result_seal.hpp"
 #include "kernel/subtract_seal.hpp"
 #include "seal/he_seal_executable.hpp"
-
 // #include "kernel/avg_pool_seal.hpp"
 /*#include "kernel/batch_norm_inference.hpp"
 #include "kernel/broadcast.hpp"
@@ -36,7 +36,7 @@
 #include "kernel/max_pool.hpp"
 
 #include "kernel/pad.hpp"
-#include "kernel/reshape.hpp"
+
 #include "kernel/reverse.hpp"
 #include "kernel/slice.hpp"
 #include "kernel/sum.hpp"*/
@@ -1265,7 +1265,7 @@ void ngraph::he::HESealExecutable::generate_calls(
                            passthrough->language()};
     }
     case OP_TYPEID::Reshape: {
-      /*NGRAPH_INFO << "Reshape op";
+      NGRAPH_INFO << "Reshape op";
       const op::Reshape* reshape = static_cast<const op::Reshape*>(&node);
 
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
@@ -1281,7 +1281,7 @@ void ngraph::he::HESealExecutable::generate_calls(
       } else {
         throw ngraph_error("Reshape types not supported.");
       }
-      NGRAPH_INFO << "Done with reshape op";*/
+      NGRAPH_INFO << "Done with reshape op";
       break;
     }
     case OP_TYPEID::Result: {
