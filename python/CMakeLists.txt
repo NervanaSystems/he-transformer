@@ -16,7 +16,7 @@
 
 cmake_minimum_required (VERSION 3.1)
 
-project (py_he_seal_client)
+#project (py_he_seal_client)
 
 include(ExternalProject)
 
@@ -56,6 +56,9 @@ message("HE_TRANSFORMER_SOURCE_DIR ${HE_TRANSFORMER_SOURCE_DIR}")
 message("EXTERNAL_INSTALL_INCLUDE_DIR ${EXTERNAL_INSTALL_INCLUDE_DIR}")
 message("EXTERNAL_INSTALL_LIB_DIR ${EXTERNAL_INSTALL_LIB_DIR}")
 message("HE_INSTALL_LIB_DIR ${HE_INSTALL_LIB_DIR}")
+message("PROJECT_ROOT_DIR ${PROJECT_ROOT_DIR}")
+
+set(PROJECT_ROOT_DIR "test_root_dir")
 
 SET(PYTHON_LIB_DIR ${CMAKE_BINARY_DIR}/python/_install${CMAKE_INSTALL_PREFIX})
 message("PYTHON_LIB_DIR ${PYTHON_LIB_DIR}")
@@ -69,7 +72,8 @@ install(DIRECTORY ${CMAKE_INSTALL_PREFIX}/
         PATTERN "*.so.*"
         PATTERN "*.a")
 
-add_library(he_seal_client SHARED ${CMAKE_SOURCE_DIR}/src/seal/he_seal_client.cpp)
+add_library(he_seal_client SHARED ${CMAKE_SOURCE_DIR}/src/seal/he_seal_client.cpp
+                                  ${CMAKE_SOURCE_DIR}/src/tcp/tcp_message.hpp)
 # TODO: remove he_seal_backend dependencty?
 add_dependencies(he_seal_client ext_seal he_seal_backend)
 target_link_libraries(he_seal_client seal libjson libboost ngraph)

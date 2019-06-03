@@ -105,7 +105,6 @@ void ngraph::he::HESealClient::handle_message(
       NGRAPH_INFO << "Client complex packing? " << complex_packing();
     }
 
-    std::vector<seal::Ciphertext> ciphers;
     if (complex_packing()) {
       // TODO: support odd batch sizes
       assert(m_batch_size % 2 == 0);
@@ -120,7 +119,7 @@ void ngraph::he::HESealClient::handle_message(
       assert(m_inputs.size() == parameter_size * m_batch_size);
     }
 
-    std::vector<std::stringstream> cipher_streams(parameter_size);
+    std::vector<seal::Ciphertext> ciphers(parameter_size);
 #pragma omp parallel for
     for (size_t data_idx = 0; data_idx < parameter_size; ++data_idx) {
       seal::Plaintext plain;
@@ -140,21 +139,11 @@ void ngraph::he::HESealClient::handle_message(
       } else {
         m_ckks_encoder->encode(real_vals, m_scale, plain);
       }
-      seal::Ciphertext cipher;
-      m_encryptor->encrypt(plain, cipher);
-      cipher.save(cipher_streams[data_idx]);  // cipher_stream);
-    }
-
-    NGRAPH_INFO << "Encrypted ciphertexts; saving to stream";
-    std::stringstream concat_cipher_stream;
-    for (size_t data_idx = 0; data_idx < parameter_size; ++data_idx) {
-      concat_cipher_stream << cipher_streams[data_idx].str();
+      m_encryptor->encrypt(plain, ciphers[data_idx]);
     }
     NGRAPH_INFO << "Creating execute message";
-
     auto execute_message =
-        TCPMessage(ngraph::he::MessageType::execute, parameter_size,
-                   std::move(concat_cipher_stream));
+        TCPMessage(ngraph::he::MessageType::execute, ciphers);
     NGRAPH_INFO << "Sending execute message with " << parameter_size
                 << " ciphertexts";
     write_message(std::move(execute_message));
@@ -247,7 +236,7 @@ void ngraph::he::HESealClient::handle_message(
       decode_to_real_vec(relu_plain, relu_vals, complex_packing());
 
       // Perform relu6
-      // TODO: do relu instaed of relu 6
+      // TODO: do relu instead of relu 6
       std::transform(relu_vals.begin(), relu_vals.end(), relu_vals.begin(),
                      relu6);
 
@@ -260,6 +249,7 @@ void ngraph::he::HESealClient::handle_message(
       }
       m_encryptor->encrypt(relu_plain, post_relu_ciphers[result_idx]);
     }
+    NGRAPH_INFO << "Performed relu, saving ciphers to stream ";
     for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
       post_relu_ciphers[result_idx].save(post_relu_stream);
     }
