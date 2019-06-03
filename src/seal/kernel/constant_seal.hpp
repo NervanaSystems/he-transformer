@@ -26,7 +26,7 @@
 
 namespace ngraph {
 namespace he {
-void constant_seal(std::vector<std::unique_ptr<ngraph::he::HEPlaintext>>& out,
+void constant_seal(std::vector<ngraph::he::HEPlaintext>& out,
                    const element::Type& element_type, const void* data_ptr,
                    const ngraph::he::HESealBackend* he_seal_backend,
                    size_t count);

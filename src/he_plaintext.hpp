@@ -29,6 +29,9 @@ class HEPlaintext {
   HEPlaintext(const std::vector<float> values = std::vector<float>{},
               bool complex_packing = false)
       : m_values(values), m_complex_packing(complex_packing){};
+
+  HEPlaintext(bool complex_packing)
+      : m_values(std::vector<float>{}), m_complex_packing(complex_packing){};
   virtual ~HEPlaintext(){};
 
   void set_values(const std::vector<float>& values) { m_values = values; }
@@ -45,14 +48,5 @@ class HEPlaintext {
   // TODO: move to plain tensor
   bool m_complex_packing;
 };
-
-inline HEPlaintext create_empty_plaintext(bool complex_packing = false) {
-  return HEPlaintext(std::vector<float>{}, complex_packing);
-}
-
-inline HEPlaintext create_valued_plaintext(const std::vector<float>& values,
-                                           bool complex_packing) {
-  return HEPlaintext(values, complex_packing);
-}
 }  // namespace he
 }  // namespace ngraph

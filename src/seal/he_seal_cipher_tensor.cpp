@@ -50,7 +50,7 @@ void ngraph::he::HESealCipherTensor::write(const void* source,
     const void* src_with_offset = (void*)((char*)source);
     size_t dst_idx = dst_start_idx;
 
-    auto plaintext = create_empty_plaintext();
+    auto plaintext = HEPlaintext();
 
     m_he_seal_backend->encode(plaintext, src_with_offset, element_type,
                               complex_batching, m_batch_size);
@@ -62,7 +62,7 @@ void ngraph::he::HESealCipherTensor::write(const void* source,
           (void*)((char*)source + i * type_byte_size * m_batch_size);
       size_t dst_idx = dst_start_idx + i;
 
-      auto plaintext = create_empty_plaintext();
+      auto plaintext = HEPlaintext();
       if (m_batch_size > 1) {
         size_t allocation_size = type_byte_size * m_batch_size;
         const void* batch_src = malloc(allocation_size);
@@ -101,7 +101,7 @@ void ngraph::he::HESealCipherTensor::read(void* target, size_t tensor_offset,
   if (num_elements_to_read == 1) {
     void* dst_with_offset = (void*)((char*)target);
     size_t src_idx = src_start_idx;
-    auto p = create_empty_plaintext(m_ciphertexts[src_idx]->complex_packing());
+    auto p = HEPlaintext(m_ciphertexts[src_idx]->complex_packing());
     m_he_seal_backend->decrypt(p, *m_ciphertexts[src_idx]);
     m_he_seal_backend->decode(dst_with_offset, p, element_type, m_batch_size);
   } else {
@@ -114,8 +114,7 @@ void ngraph::he::HESealCipherTensor::read(void* target, size_t tensor_offset,
       NGRAPH_INFO << "Reading elem " << i;
 
       size_t src_idx = src_start_idx + i;
-      auto p =
-          create_empty_plaintext(m_ciphertexts[src_idx]->complex_packing());
+      auto p = HEPlaintext(m_ciphertexts[src_idx]->complex_packing());
       NGRAPH_INFO << "Creatied emply plain";
       m_he_seal_backend->decrypt(p, *m_ciphertexts[src_idx]);
       NGRAPH_INFO << "decrypted";

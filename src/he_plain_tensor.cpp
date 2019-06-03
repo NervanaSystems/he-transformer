@@ -28,10 +28,6 @@ ngraph::he::HEPlainTensor::HEPlainTensor(const element::Type& element_type,
                            name) {
   m_num_elements = m_descriptor->get_tensor_layout()->get_size() / m_batch_size;
   m_plaintexts.resize(m_num_elements);
-#pragma omp parallel for
-  for (size_t i = 0; i < m_num_elements; ++i) {
-    m_plaintexts[i] = create_empty_plaintext();
-  }
 }
 
 void ngraph::he::HEPlainTensor::write(const void* source, size_t tensor_offset,

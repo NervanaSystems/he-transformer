@@ -22,6 +22,7 @@
 #include "kernel/add_seal.hpp"
 #include "kernel/broadcast_seal.hpp"
 #include "kernel/concat_seal.hpp"
+#include "kernel/convolution_seal.hpp"
 #include "kernel/dot_seal.hpp"
 #include "kernel/multiply_seal.hpp"
 #include "kernel/negate_seal.hpp"
@@ -34,11 +35,8 @@
 // #include "kernel/avg_pool_seal.hpp"
 /*#include "kernel/batch_norm_inference.hpp"
 #include "kernel/constant.hpp"
-#include "kernel/convolution.hpp"
 #include "kernel/max_pool.hpp"
-
 #include "kernel/pad.hpp"
-
 #include "kernel/sum.hpp"*/
 #include "ngraph/assertion.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
@@ -922,7 +920,7 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Convolution: {
-      /*const op::Convolution* c = static_cast<const op::Convolution*>(&node);
+      const op::Convolution* c = static_cast<const op::Convolution*>(&node);
       auto window_movement_strides = c->get_window_movement_strides();
       auto window_dilation_strides = c->get_window_dilation_strides();
       auto padding_below = c->get_padding_below();
@@ -934,7 +932,7 @@ void ngraph::he::HESealExecutable::generate_calls(
 
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
-        ngraph::he::convolution(
+        ngraph::he::convolution_seal(
             arg0_cipher->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
             window_movement_strides, window_dilation_strides, padding_below,
@@ -942,7 +940,7 @@ void ngraph::he::HESealExecutable::generate_calls(
             m_batch_size, m_he_seal_backend);
       } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                  out0_cipher != nullptr) {
-        ngraph::he::convolution(
+        ngraph::he::convolution_seal(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
             out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
             window_movement_strides, window_dilation_strides, padding_below,
@@ -953,7 +951,7 @@ void ngraph::he::HESealExecutable::generate_calls(
 
       } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
                  out0_cipher != nullptr) {
-        ngraph::he::convolution(
+        ngraph::he::convolution_seal(
             arg0_plain->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
             window_movement_strides, window_dilation_strides, padding_below,
@@ -964,7 +962,7 @@ void ngraph::he::HESealExecutable::generate_calls(
 
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
-        ngraph::he::convolution(
+        ngraph::he::convolution_seal(
             arg0_plain->get_elements(), arg1_plain->get_elements(),
             out0_plain->get_elements(), in_shape0, in_shape1, out_shape,
             window_movement_strides, window_dilation_strides, padding_below,
@@ -972,7 +970,7 @@ void ngraph::he::HESealExecutable::generate_calls(
             m_batch_size, m_he_seal_backend);
       } else {
         throw ngraph_error("Convolution types not supported.");
-      }*/
+      }
       break;
     }
     case OP_TYPEID::Dot: {

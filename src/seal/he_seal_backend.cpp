@@ -149,7 +149,7 @@ ngraph::he::HESealBackend::create_valued_ciphertext(
     throw ngraph_error(
         "HESealBackend::create_valued_ciphertext only supports batch size 1");
   }
-  auto plaintext = create_valued_plaintext({value}, complex_packing());
+  auto plaintext = HEPlaintext({value}, complex_packing());
   auto ciphertext = create_empty_ciphertext();
 
   encrypt(ciphertext, plaintext);

@@ -132,15 +132,6 @@ class HESealBackend : public ngraph::runtime::Backend {
     return create_empty_ciphertext();
   };
 
-  /// @brief Creates plaintext of unspecified value using memory pool
-  /// Alias for create_empty_plaintext()
-  /// @return Shared pointer to created plaintext
-  template <typename T, typename = std::enable_if_t<
-                            std::is_same<T, ngraph::he::HEPlaintext>::value>>
-  std::unique_ptr<ngraph::he::HEPlaintext> create_empty_hetext() const {
-    return ngraph::he::create_empty_plaintext();
-  };
-
   /// @brief Constructs SEAL context from SEAL parameter
   /// @param sp SEAL Parameter from which to construct context
   /// @return Pointer to constructed context
@@ -166,9 +157,8 @@ class HESealBackend : public ngraph::runtime::Backend {
   void encrypt(std::shared_ptr<ngraph::he::SealCiphertextWrapper>& output,
                const ngraph::he::HEPlaintext& input) const;
 
-  void decrypt(
-      ngraph::he::HEPlaintext& output,
-      const SealCiphertextWrapper& input) const;
+  void decrypt(ngraph::he::HEPlaintext& output,
+               const SealCiphertextWrapper& input) const;
 
   const inline std::shared_ptr<seal::SEALContext> get_context() const noexcept {
     return m_context;
