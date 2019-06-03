@@ -115,11 +115,8 @@ void ngraph::he::HESealCipherTensor::read(void* target, size_t tensor_offset,
 
       size_t src_idx = src_start_idx + i;
       auto p = HEPlaintext(m_ciphertexts[src_idx]->complex_packing());
-      NGRAPH_INFO << "Creatied emply plain";
       m_he_seal_backend->decrypt(p, *m_ciphertexts[src_idx]);
-      NGRAPH_INFO << "decrypted";
       m_he_seal_backend->decode(dst, p, element_type, m_batch_size);
-      NGRAPH_INFO << "decoded";
 
       for (size_t j = 0; j < m_batch_size; ++j) {
         void* dst_with_offset =

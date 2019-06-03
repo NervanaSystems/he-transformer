@@ -23,11 +23,12 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/kernel/subtract_seal.hpp"
 
-void ngraph::he::scalar_subtract(std::shared_ptr<SealCiphertextWrapper>& arg0,
-                                 std::shared_ptr<SealCiphertextWrapper>& arg1,
-                                 std::shared_ptr<SealCiphertextWrapper>& out,
-                                 const element::Type& element_type,
-                                 const ngraph::he::HESealBackend* he_seal_backend) {
+void ngraph::he::scalar_subtract(
+    std::shared_ptr<SealCiphertextWrapper>& arg0,
+    std::shared_ptr<SealCiphertextWrapper>& arg1,
+    std::shared_ptr<SealCiphertextWrapper>& out,
+    const element::Type& element_type,
+    const ngraph::he::HESealBackend* he_seal_backend) {
   auto he_seal_backend = ngraph::he::cast_to_seal_backend(he_seal_backend);
   auto arg0_seal = ngraph::he::cast_to_seal_hetext(arg0);
   auto arg1_seal = ngraph::he::cast_to_seal_hetext(arg1);
@@ -38,10 +39,10 @@ void ngraph::he::scalar_subtract(std::shared_ptr<SealCiphertextWrapper>& arg0,
   out = std::dynamic_pointer_cast<SealCiphertextWrapper>(out_seal);
 }
 
-void ngraph::he::scalar_subtract(const HEPlaintext& arg0,
-                                 const HEPlaintext& arg1, HEPlaintext& out,
-                                 const element::Type& element_type,
-                                 const ngraph::he::HESealBackend* he_seal_backend) {
+void ngraph::he::scalar_subtract(
+    const HEPlaintext& arg0, const HEPlaintext& arg1, HEPlaintext& out,
+    const element::Type& element_type,
+    const ngraph::he::HESealBackend* he_seal_backend) {
   NGRAPH_CHECK(element_type == element::f32);
 
   std::vector<float> arg0_vals = arg0.get_values();
@@ -54,11 +55,10 @@ void ngraph::he::scalar_subtract(const HEPlaintext& arg0,
   out.set_values(out_vals);
 }
 
-void ngraph::he::scalar_subtract(std::shared_ptr<SealCiphertextWrapper>& arg0,
-                                 const HEPlaintext& arg1,
-                                 std::shared_ptr<SealCiphertextWrapper>& out,
-                                 const element::Type& type,
-                                 const ngraph::he::HESealBackend* he_seal_backend) {
+void ngraph::he::scalar_subtract(
+    std::shared_ptr<SealCiphertextWrapper>& arg0, const HEPlaintext& arg1,
+    std::shared_ptr<SealCiphertextWrapper>& out, const element::Type& type,
+    const ngraph::he::HESealBackend* he_seal_backend) {
   NGRAPH_CHECK(type == element::f32);
   NGRAPH_INFO << "cipher - plain";
 
@@ -89,11 +89,10 @@ void ngraph::he::scalar_subtract(std::shared_ptr<SealCiphertextWrapper>& arg0,
   }
 }
 
-void ngraph::he::scalar_subtract(const HEPlaintext& arg0,
-                                 std::shared_ptr<SealCiphertextWrapper>& arg1,
-                                 std::shared_ptr<SealCiphertextWrapper>& out,
-                                 const element::Type& type,
-                                 const ngraph::he::HESealBackend* he_seal_backend) {
+void ngraph::he::scalar_subtract(
+    const HEPlaintext& arg0, std::shared_ptr<SealCiphertextWrapper>& arg1,
+    std::shared_ptr<SealCiphertextWrapper>& out, const element::Type& type,
+    const ngraph::he::HESealBackend* he_seal_backend) {
   if (arg1->is_zero()) {
     he_seal_backend->encrypt(out, arg0);
   } else {

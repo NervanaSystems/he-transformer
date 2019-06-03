@@ -903,19 +903,19 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Constant: {
-      /*const op::Constant* constant = static_cast<const op::Constant*>(&node);
+      const op::Constant* constant = static_cast<const op::Constant*>(&node);
 
       if (out0_plain != nullptr) {
-        ngraph::he::constant(out0_plain->get_elements(), type,
-                             constant->get_data_ptr(), m_he_seal_backend,
-                             out0_plain->get_batched_element_count());
+        ngraph::he::constant_seal(out0_plain->get_elements(), type,
+                                  constant->get_data_ptr(), m_he_seal_backend,
+                                  out0_plain->get_batched_element_count());
       } else if (out0_cipher != nullptr) {
-        ngraph::he::constant(out0_cipher->get_elements(), type,
-                             constant->get_data_ptr(), m_he_seal_backend,
-                             out0_cipher->get_batched_element_count());
+        ngraph::he::constant_seal(out0_cipher->get_elements(), type,
+                                  constant->get_data_ptr(), m_he_seal_backend,
+                                  out0_cipher->get_batched_element_count());
       } else {
         throw ngraph_error("Constant type not supported.");
-      }*/
+      }
       break;
     }
     case OP_TYPEID::Convolution: {

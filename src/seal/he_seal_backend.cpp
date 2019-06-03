@@ -183,11 +183,15 @@ void ngraph::he::HESealBackend::encrypt(
   // No need to encrypt zero
   if (input.is_single_value() && input.get_values()[0] == 0) {
     output->set_zero(true);
+
+    // TODO: enable below?
+    // output->ciphertext() = seal::Ciphertext(m_context);
+
     NGRAPH_INFO << "Encrypting 0";
   } else {
-    NGRAPH_INFO << "Encrypting plaintext";
+    // NGRAPH_INFO << "Encrypting plaintext";
     m_encryptor->encrypt(plaintext.plaintext(), output->ciphertext());
-    NGRAPH_INFO << "output scale " << output->ciphertext().scale();
+    // NGRAPH_INFO << "output scale " << output->ciphertext().scale();
   }
   output->set_complex_packing(input.complex_packing());
   NGRAPH_CHECK(output->complex_packing() == input.complex_packing());
@@ -204,10 +208,10 @@ void ngraph::he::HESealBackend::decrypt(
     output.set_values(std::vector<float>(slots, 0));
   } else {
     auto plaintext_wrapper = SealPlaintextWrapper(input.complex_packing());
-    NGRAPH_INFO << "Calling decrypt";
+    // NGRAPH_INFO << "Calling decrypt";
 
     size_t chain_ind0 = get_chain_index(input.ciphertext(), this);
-    NGRAPH_INFO << "decrypting chain ind " << chain_ind0;
+    // NGRAPH_INFO << "decrypting chain ind " << chain_ind0;
     m_decryptor->decrypt(input.ciphertext(), plaintext_wrapper.plaintext());
     decode(output, plaintext_wrapper);
   }

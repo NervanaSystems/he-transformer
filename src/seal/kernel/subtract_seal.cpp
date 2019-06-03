@@ -15,8 +15,8 @@
 //*****************************************************************************
 
 #include "seal/kernel/subtract_seal.hpp"
-#include "seal/kernel/negate_seal.hpp"
 #include "seal/kernel/add_seal.hpp"
+#include "seal/kernel/negate_seal.hpp"
 
 void ngraph::he::scalar_subtract_seal(
     ngraph::he::SealCiphertextWrapper& arg0,
