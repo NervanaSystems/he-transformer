@@ -14,8 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "he_backend.hpp"
 #include "ngraph/ngraph.hpp"
+#include "seal/he_seal_backend.hpp"
 #include "test_util.hpp"
 #include "util/all_close.hpp"
 #include "util/ndarray.hpp"
@@ -27,6 +27,17 @@ using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
+NGRAPH_TEST(${BACKEND_NAME}, trivial) {
+  int x = 1;
+  int y = 2;
+  int z = x + y;
+  EXPECT_EQ(z, 3);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, create_backend) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, create_tensor) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
@@ -36,7 +47,7 @@ NGRAPH_TEST(${BACKEND_NAME}, create_tensor) {
 
 NGRAPH_TEST(${BACKEND_NAME}, create_cipher_tensor) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HEBackend*>(backend.get());
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   Shape shape{2, 2};
   he_backend->create_cipher_tensor(element::f32, shape);
@@ -44,7 +55,7 @@ NGRAPH_TEST(${BACKEND_NAME}, create_cipher_tensor) {
 
 NGRAPH_TEST(${BACKEND_NAME}, create_plain_tensor) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HEBackend*>(backend.get());
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   Shape shape{2, 2};
   he_backend->create_plain_tensor(element::f32, shape);

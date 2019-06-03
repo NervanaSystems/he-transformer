@@ -16,101 +16,136 @@
 
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <unordered_map>
+#include <vector>
 
-#include "he_backend.hpp"
+#include "he_plaintext.hpp"
+#include "he_tensor.hpp"
+#include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
+#include "ngraph/descriptor/layout/tensor_layout.hpp"
+#include "ngraph/function.hpp"
+#include "ngraph/graph_util.hpp"
+#include "ngraph/node.hpp"
+#include "ngraph/pass/like_replacement.hpp"
+#include "ngraph/pass/liveness.hpp"
+#include "ngraph/pass/manager.hpp"
+#include "ngraph/runtime/backend.hpp"
+#include "ngraph/runtime/backend_manager.hpp"
+#include "ngraph/runtime/host_tensor.hpp"
+#include "ngraph/runtime/performance_counter.hpp"
+#include "ngraph/runtime/tensor.hpp"
+#include "ngraph/type/element_type.hpp"
+#include "ngraph/util.hpp"
+#include "node_wrapper.hpp"
 #include "seal/he_seal_encryption_parameters.hpp"
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
 
 namespace ngraph {
+namespace runtime {
+class BackendConstructor;
+}
 namespace he {
-class HESealBackend : public HEBackend {
+class HESealCipherTensor;
+class HESealBackend : public ngraph::runtime::Backend {
  public:
+  HESealBackend();
+  HESealBackend(const ngraph::he::HESealEncryptionParameters& sp);
+  HESealBackend(const HESealBackend&) = delete;
+  HESealBackend(HESealBackend&&) = delete;
+  HESealBackend& operator=(const HESealBackend&) = delete;
+
+  ~HESealBackend(){};
+  //
+  // ngraph backend overrides
+  //
+  std::shared_ptr<runtime::Tensor> create_tensor(
+      const element::Type& element_type, const Shape& shape) override;
+
+  inline std::shared_ptr<runtime::Tensor> create_tensor(
+      const element::Type& element_type, const Shape& shape,
+      void* memory_pointer) override {
+    throw ngraph_error("create_tensor unimplemented");
+  }
+
+  std::shared_ptr<ngraph::runtime::Executable> compile(
+      std::shared_ptr<Function> func,
+      bool enable_performance_data = false) override;
+
+  void validate_he_call(std::shared_ptr<const Function> function,
+                        const std::vector<std::shared_ptr<HETensor>>& outputs,
+                        const std::vector<std::shared_ptr<HETensor>>& inputs);
+
+  //
+  // Tensor creation
+  //
+  std::shared_ptr<runtime::Tensor> create_batched_cipher_tensor(
+      const element::Type& element_type, const Shape& shape);
+
+  std::shared_ptr<runtime::Tensor> create_batched_plain_tensor(
+      const element::Type& element_type, const Shape& shape);
+
+  std::shared_ptr<runtime::Tensor> create_plain_tensor(
+      const element::Type& element_type, const Shape& shape,
+      const bool batched = false) const;
+
+  std::shared_ptr<runtime::Tensor> create_cipher_tensor(
+      const element::Type& element_type, const Shape& shape,
+      const bool batched = false) const;
+
+  /// @brief Creates ciphertext Tensor of the same value
+  /// @param value Scalar which to enrypt
+  /// @param element_type Type to encrypt
+  /// @param shape Shape of created Tensor
+  std::shared_ptr<runtime::Tensor> create_valued_cipher_tensor(
+      float value, const element::Type& element_type, const Shape& shape) const;
+
+  //
+  // Cipher/plaintext creation
+  //
+  std::shared_ptr<ngraph::he::SealCiphertextWrapper> create_valued_ciphertext(
+      float value, const element::Type& element_type,
+      size_t batch_size = 1) const;
+
+  std::shared_ptr<ngraph::he::SealCiphertextWrapper> create_empty_ciphertext()
+      const;
+
+  std::shared_ptr<ngraph::he::SealCiphertextWrapper> create_empty_ciphertext(
+      seal::parms_id_type parms_id) const;
+
+  std::shared_ptr<ngraph::he::SealCiphertextWrapper> create_empty_ciphertext(
+      const seal::MemoryPoolHandle& pool) const;
+
   /// @brief Constructs SEAL context from SEAL parameter
   /// @param sp SEAL Parameter from which to construct context
   /// @return Pointer to constructed context
-  virtual std::shared_ptr<seal::SEALContext> make_seal_context(
-      const std::shared_ptr<ngraph::he::HEEncryptionParameters> sp) = 0;
+  std::shared_ptr<seal::SEALContext> make_seal_context(
+      const std::shared_ptr<ngraph::he::HESealEncryptionParameters> sp);
 
-  virtual ~HESealBackend(){};
+  void encode(ngraph::he::SealPlaintextWrapper& destination,
+              const ngraph::he::HEPlaintext& plaintext,
+              seal::parms_id_type parms_id, double scale) const;
 
-  virtual std::shared_ptr<runtime::Tensor> create_batched_cipher_tensor(
-      const element::Type& type, const Shape& shape) override = 0;
+  void encode(ngraph::he::SealPlaintextWrapper& destination,
+              const ngraph::he::HEPlaintext& plaintext) const;
 
-  virtual std::shared_ptr<runtime::Tensor> create_batched_plain_tensor(
-      const element::Type& type, const Shape& shape) override = 0;
+  void encode(ngraph::he::HEPlaintext& output, const void* input,
+              const element::Type& type, bool complex, size_t count = 1) const;
 
-  std::shared_ptr<ngraph::he::HECiphertext> create_empty_ciphertext()
-      const override;
+  void decode(void* output, const ngraph::he::HEPlaintext& input,
+              const element::Type& type, size_t count = 1) const;
 
-  std::shared_ptr<ngraph::he::HECiphertext> create_empty_ciphertext(
-      seal::parms_id_type parms_id) const;
+  void decode(ngraph::he::HEPlaintext& output,
+              const ngraph::he::SealPlaintextWrapper& input) const;
 
-  std::shared_ptr<ngraph::he::HECiphertext> create_empty_ciphertext(
-      const seal::MemoryPoolHandle& pool) const;
+  void encrypt(std::shared_ptr<ngraph::he::SealCiphertextWrapper>& output,
+               const ngraph::he::HEPlaintext& input) const;
 
-  std::shared_ptr<ngraph::he::HEPlaintext> create_empty_plaintext()
-      const override;
-
-  std::shared_ptr<ngraph::he::HEPlaintext> create_empty_plaintext(
-      const seal::MemoryPoolHandle& pool) const;
-
-  /// @brief Creates ciphertext of unspecified value using memory pool
-  /// Alias for create_empty_ciphertext()
-  /// @return Shared pointer to created ciphertext
-  template <typename T, typename = std::enable_if_t<
-                            std::is_same<T, ngraph::he::HECiphertext>::value>>
-  std::shared_ptr<ngraph::he::HECiphertext> create_empty_hetext(
-      const seal::MemoryPoolHandle& pool) const {
-    return create_empty_ciphertext(pool);
-  };
-
-  /// @brief Creates plaintext of unspecified value using memory pool
-  /// Alias for create_empty_plaintext()
-  /// @return Shared pointer to created plaintext
-  template <typename T, typename = std::enable_if_t<
-                            std::is_same<T, ngraph::he::HEPlaintext>::value>>
-  std::shared_ptr<ngraph::he::HEPlaintext> create_empty_hetext(
-      const seal::MemoryPoolHandle& pool) const {
-    return create_empty_plaintext(pool);
-  };
-
-  virtual void encode(
-      std::shared_ptr<ngraph::he::SealPlaintextWrapper>& plaintext,
-      seal::parms_id_type parms_id, double scale, bool complex) const = 0;
-
-  virtual void encode(
-      std::shared_ptr<ngraph::he::SealPlaintextWrapper>& plaintext,
-      bool complex) const = 0;
-
-  virtual void encode(std::shared_ptr<ngraph::he::HEPlaintext>& output,
-                      const void* input, const element::Type& type,
-                      bool complex, size_t count = 1) const = 0;
-
-  virtual void decode(void* output,
-                      std::shared_ptr<ngraph::he::HEPlaintext>& input,
-                      const element::Type& type,
-                      size_t count = 1) const override = 0;
-
-  virtual void decode(
-      std::shared_ptr<ngraph::he::HEPlaintext>& input) const override = 0;
-
-  virtual void decode(std::vector<std::shared_ptr<ngraph::he::HEPlaintext>>&
-                          plaintexts) const override {
-    for (size_t i = 0; i < plaintexts.size(); ++i) {
-      decode(plaintexts[i]);
-    }
-  }
-
-  void encrypt(std::shared_ptr<ngraph::he::HECiphertext>& output,
-               std::shared_ptr<ngraph::he::HEPlaintext>& input) const override;
-
-  void decrypt(
-      std::shared_ptr<ngraph::he::HEPlaintext>& output,
-      const std::shared_ptr<ngraph::he::HECiphertext>& input) const override;
+  void decrypt(ngraph::he::HEPlaintext& output,
+               const SealCiphertextWrapper& input) const;
 
   const inline std::shared_ptr<seal::SEALContext> get_context() const noexcept {
     return m_context;
@@ -144,7 +179,25 @@ class HESealBackend : public HEBackend {
     return m_evaluator;
   }
 
- protected:
+  const ngraph::he::HESealEncryptionParameters& get_encryption_parameters()
+      const {
+    return m_encryption_params;
+  };
+
+  void set_batch_data(bool batch) { m_batch_data = batch; };
+  void set_complex_packing(bool toggle) { m_complex_packing = toggle; }
+
+  bool encrypt_data() const { return m_encrypt_data; };
+  bool batch_data() const { return m_batch_data; };
+  bool encrypt_model() const { return m_encrypt_model; };
+  bool complex_packing() const { return m_complex_packing; };
+
+ private:
+  bool m_encrypt_data{std::getenv("NGRAPH_ENCRYPT_DATA") != nullptr};
+  bool m_batch_data{std::getenv("NGRAPH_BATCH_DATA") != nullptr};
+  bool m_encrypt_model{std::getenv("NGRAPH_ENCRYPT_MODEL") != nullptr};
+  bool m_complex_packing{std::getenv("NGRAPH_COMPLEX_PACK") != nullptr};
+
   std::shared_ptr<seal::SecretKey> m_secret_key;
   std::shared_ptr<seal::PublicKey> m_public_key;
   std::shared_ptr<seal::RelinKeys> m_relin_keys;
@@ -153,14 +206,11 @@ class HESealBackend : public HEBackend {
   std::shared_ptr<seal::SEALContext> m_context;
   std::shared_ptr<seal::Evaluator> m_evaluator;
   std::shared_ptr<seal::KeyGenerator> m_keygen;
+  HESealEncryptionParameters m_encryption_params;
+  std::shared_ptr<seal::CKKSEncoder> m_ckks_encoder;
+  // Scale with which to encode new ciphertexts
+  double m_scale;
 };
 
-inline const ngraph::he::HESealBackend* cast_to_seal_backend(
-    const ngraph::he::HEBackend* he_backend) {
-  auto seal_he_backend =
-      dynamic_cast<const ngraph::he::HESealBackend*>(he_backend);
-  NGRAPH_CHECK(seal_he_backend != nullptr);
-  return seal_he_backend;
-};
 }  // namespace he
 }  // namespace ngraph

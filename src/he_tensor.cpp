@@ -15,18 +15,18 @@
 //*****************************************************************************
 
 #include "he_tensor.hpp"
-#include "he_backend.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
 #include "ngraph/descriptor/tensor.hpp"
 #include "ngraph/util.hpp"
+#include "seal/he_seal_backend.hpp"
 
 ngraph::he::HETensor::HETensor(const element::Type& element_type,
                                const Shape& shape,
-                               const ngraph::he::HEBackend* he_backend,
+                               const ngraph::he::HESealBackend* he_seal_backend,
                                const bool batched, const std::string& name)
     : ngraph::runtime::Tensor(std::make_shared<ngraph::descriptor::Tensor>(
           element_type, shape, name)),
-      m_he_backend(he_backend),
+      m_he_seal_backend(he_seal_backend),
       m_batched(batched) {
   m_descriptor->set_tensor_layout(
       std::make_shared<ngraph::descriptor::layout::DenseTensorLayout>(

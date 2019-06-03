@@ -40,6 +40,7 @@ ExternalProject_Add(
 #------------------------------------------------------------------------------
 
 ExternalProject_Get_Property(ext_json SOURCE_DIR)
+set(JSON_INCLUDE_DIR ${SOURCE_DIR}/include)
 add_library(libjson INTERFACE)
 target_include_directories(libjson SYSTEM INTERFACE ${SOURCE_DIR}/include)
 add_dependencies(libjson ext_json)

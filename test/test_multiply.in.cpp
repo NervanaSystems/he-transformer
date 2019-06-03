@@ -14,7 +14,7 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "he_backend.hpp"
+#include "seal/he_seal_backend.hpp"
 #include "ngraph/ngraph.hpp"
 #include "test_util.hpp"
 #include "util/all_close.hpp"
@@ -159,7 +159,7 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_optimized_2_3) {
 
 NGRAPH_TEST(${BACKEND_NAME}, multiply_4_3_batch) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HEBackend*>(backend.get());
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   Shape shape_a{4, 3};
   Shape shape_b{4, 3};

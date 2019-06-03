@@ -23,7 +23,7 @@ To test:
   ```bash
   cd $HE_TRANSFORMER/build
 source external/venv-tf-py3/bin/activate && cd ../examples
-NGRAPH_ENABLE_CLIENT=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_TF_BACKEND=HE_SEAL_CKKS python ax.py
+NGRAPH_ENABLE_CLIENT=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_TF_BACKEND=HE_SEAL python ax.py
   ```
 
   This will start the server, which will wait for encrypted inputs from a client.
