@@ -325,9 +325,13 @@ void ngraph::he::HESealExecutable::handle_message(
     size_t element_count = message.count();
     size_t element_size = message.element_size();
 
+    std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
+        new_relu_ciphers(element_count);
+
     NGRAPH_INFO << "Got " << element_count << " ciphertexts";
     NGRAPH_INFO << "element_size " << element_size;
 
+#pragma omp parallel for
     for (size_t element_idx = 0; element_idx < element_count; ++element_idx) {
       seal::Ciphertext cipher;
       std::stringstream cipher_stream;
@@ -342,8 +346,13 @@ void ngraph::he::HESealExecutable::handle_message(
         he_ciphertext->set_complex_packing(true);
       }
 
-      m_relu_ciphertexts.emplace_back(he_ciphertext);
+      new_relu_ciphers[element_idx] = he_ciphertext;
     }
+    m_relu_ciphertexts.reserve(m_relu_ciphertexts.size() +
+                               new_relu_ciphers.size());
+    m_relu_ciphertexts.insert(m_relu_ciphertexts.end(),
+                              new_relu_ciphers.begin(), new_relu_ciphers.end());
+
     NGRAPH_INFO << "Done loading Relu ciphertexts";
 
     // Notify condition variable
@@ -393,7 +402,6 @@ void ngraph::he::HESealExecutable::handle_message(
       if (m_he_seal_backend->complex_packing()) {
         he_ciphertext->set_complex_packing(true);
       }
-
       m_minimum_ciphertexts.emplace_back(he_ciphertext);
     }
     // Notify condition variable
