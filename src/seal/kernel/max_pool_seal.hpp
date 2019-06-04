@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "ngraph/coordinate_transform.hpp"
+#include "seal/client_util.hpp"
 
 namespace ngraph {
 namespace he {
@@ -37,8 +38,6 @@ std::vector<std::vector<size_t>> max_pool_seal(
   for (const Coordinate& out_coord : output_transform) {
     out_size++;
   }
-  NGRAPH_CHECK(out_size == shape_size(out_shape), "out size ", out_size,
-               " != shape_size(out_shape) ", join(out_shape, "x"));
 
   std::vector<std::vector<size_t>> maximize_list(shape_size(out_shape));
 
@@ -129,6 +128,9 @@ void max_pool_seal(const std::vector<HEPlaintext>& arg,
                    const Shape& out_shape, const Shape& window_shape,
                    const Strides& window_movement_strides,
                    const Shape& padding_below, const Shape& padding_above) {
+  NGRAPH_INFO << "Maxpool seal";
+  NGRAPH_INFO << "arg_shape " << join(arg_shape, "x");
+  NGRAPH_INFO << "out_shape " << join(out_shape, "x");
   // At the outermost level we will walk over every output coordinate O.
   CoordinateTransform output_transform(out_shape);
 
@@ -205,27 +207,45 @@ void max_pool_seal(const std::vector<HEPlaintext>& arg,
     //
     //   output[O] = max(output[O],arg[I])
     bool first_max = true;
-    HEPlaintext result;
+    std::vector<float> max_vals;
 
     for (const Coordinate& input_batch_coord : input_batch_transform) {
       if (input_batch_transform.has_source_coordinate(input_batch_coord)) {
         auto arg_coord_idx = input_batch_transform.index(input_batch_coord);
         if (first_max) {
           first_max = false;
-          result = arg[arg_coord_idx];
+          max_vals = arg[arg_coord_idx].get_values();
+          NGRAPH_INFO << "first max";
         } else {
-          // Get element-wise maximum
-          std::vector<float> max_vals{};
-          const std::vector<float>& current_max_values = result.get_values();
+          NGRAPH_INFO << "setting max values";
+          // Get element-wise maximump
+          NGRAPH_INFO << "current max";
+          for (const auto& elem : max_vals) {
+            NGRAPH_INFO << elem;
+          }
           const std::vector<float>& arg_values =
               arg[arg_coord_idx].get_values();
-          std::transform(current_max_values.begin(), current_max_values.end(),
-                         arg_values.begin(), std::back_inserter(max_vals),
-                         std::greater<float>{});
-          result.set_values(max_vals);
+          NGRAPH_INFO << "arg values";
+          for (const auto& elem : arg_values) {
+            NGRAPH_INFO << elem;
+          }
+          NGRAPH_CHECK(arg_values.size() == max_vals.size(), "arg values size ",
+                       arg_values.size(), " doesn't match max_vals.size() ",
+                       max_vals.size());
+          for (size_t value_idx = 0; value_idx < arg_values.size();
+               ++value_idx) {
+            max_vals[value_idx] =
+                std::max(max_vals[value_idx], arg_values[value_idx]);
+          }
+
+          NGRAPH_INFO << "max_vals";
+          for (const auto& elem : max_vals) {
+            NGRAPH_INFO << elem;
+          }
         }
       }
     }
+    HEPlaintext result(max_vals);
     out[output_transform.index(out_coord)] = result;
   }
 }

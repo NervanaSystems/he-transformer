@@ -46,6 +46,7 @@ set(MULTI_TEST_SRC
     test_layers.in.cpp
     test_convolution.in.cpp
     test_dot.in.cpp
+    test_maxpool.in.cpp
     test_multiply.in.cpp
     test_negate.in.cpp
     test_pad.in.cpp
