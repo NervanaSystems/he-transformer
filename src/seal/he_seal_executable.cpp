@@ -1101,13 +1101,18 @@ void ngraph::he::HESealExecutable::generate_calls(
     }
     case OP_TYPEID::Minimum: {
       NGRAPH_INFO << "Minimum op";
+      NGRAPH_INFO << "Skipping minimum op";
+
+      if (arg0_cipher != nullptr) {
+        out0_cipher->set_elements(arg0_cipher->get_elements());
+        break;
+      } else if (arg0_plain != nullptr) {
+        out0_plain->set_elements(arg0_plain->get_elements());
+        break;
+      }
 
       NGRAPH_CHECK(arg0_cipher != nullptr,
                    "Minimum supports only arg0 == cipher");
-
-      out0_cipher->set_elements(arg0_cipher->get_elements());
-      NGRAPH_INFO << "Skipping minimum op";
-      break;
 
       if (!m_enable_client) {
         throw ngraph_error(
