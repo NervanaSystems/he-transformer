@@ -48,6 +48,10 @@ def mlp_model(x, mode):
         y = tf.reshape(y, [-1, 6 * 6 * 5])
         W_fc1 = get_variable('W_fc1', [6 * 6 * 5, 100], mode)
         y = tf.matmul(y, W_fc1)
+        W_bias1 = get_variable('W_b1', [100], mode)
+        W_scale1 = get_variable('W_s1', [100], mode)
+        y = y * W_scale1
+        y = y + W_bias1
         y = tf.nn.relu(y)
 
     with tf.name_scope('fc2'):

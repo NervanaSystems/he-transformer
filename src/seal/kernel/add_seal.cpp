@@ -24,7 +24,9 @@ void ngraph::he::scalar_add_seal(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type, const HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
-  if (arg0.is_zero()) {
+  if (arg0.is_zero() && arg0.is_zero()) {
+    out->set_zero(true);
+  } else if (arg0.is_zero()) {
     out = std::make_shared<ngraph::he::SealCiphertextWrapper>(arg1);
   } else if (arg1.is_zero()) {
     out = std::make_shared<ngraph::he::SealCiphertextWrapper>(arg0);
@@ -56,8 +58,9 @@ void ngraph::he::scalar_add_seal(
   if (add_zero) {
     out = std::make_shared<ngraph::he::SealCiphertextWrapper>(arg0);
   } else {
-    NGRAPH_CHECK(arg1.complex_packing() == arg0.complex_packing(),
-                 "cipher/plain complex packing args differ");
+    // TODO: clean up complex packing!
+    // NGRAPH_CHECK(arg1.complex_packing() == arg0.complex_packing(),
+    //             "cipher/plain complex packing args differ");
 
     if (arg1.is_single_value()) {
       float value = arg1.get_values()[0];

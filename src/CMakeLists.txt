@@ -67,7 +67,7 @@ message("NGRAPH_TF_VENV_LIB_DIR ${NGRAPH_TF_VENV_LIB_DIR}")
 
 message("Installing he_seal_Backend to ${EXTERNAL_INSTALL_LIB_DIR}")
 
-message("NGRAPH_TF_LIB_DIR" ${NGRAPH_TF_LIB_DIR})
+message("NGRAPH_TF_LIB_DIR ${NGRAPH_TF_LIB_DIR}")
 
 # Install he-transformer (the HE libraries are installed separately) at `make install`
 install(TARGETS he_seal_backend DESTINATION ${EXTERNAL_INSTALL_LIB_DIR})

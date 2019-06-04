@@ -74,7 +74,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
         });
   }
 
-  void do_write(const TCPMessage& message) {
+  void do_write(const TCPMessage&& message) {
     auto self(shared_from_this());
     boost::asio::async_write(
         m_socket,

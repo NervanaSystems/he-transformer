@@ -22,6 +22,7 @@
 #include <condition_variable>
 #include <memory>
 #include <mutex>
+#include <set>
 #include <thread>
 #include <vector>
 
@@ -108,6 +109,8 @@ class HESealExecutable : public runtime::Executable {
       m_max_ciphertexts;
   std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
       m_minimum_ciphertexts;
+
+  std::set<std::string> m_silent_ops{"Slice", "Broadcast", "Reshape"};
 
   std::shared_ptr<seal::SEALContext>
       m_context;  // TODO: move to he_seal_executable.hpp

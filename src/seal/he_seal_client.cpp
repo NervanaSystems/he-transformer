@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+#include "ngraph/log.hpp"
 #include "seal/he_seal_client.hpp"
 #include "seal/seal.h"
 #include "seal/seal_util.hpp"
@@ -74,8 +75,8 @@ void ngraph::he::HESealClient::handle_message(
     const ngraph::he::TCPMessage& message) {
   ngraph::he::MessageType msg_type = message.message_type();
 
-  // std::cout << "Client received message type: "
-  //          << message_type_to_string(msg_type).c_str() << std::endl;
+  // NGRAPH_INFO << "Client received message type: "
+  //          << message_type_to_string(msg_type).c_str() ;
 
   auto decode_to_real_vec = [this](const seal::Plaintext& plain,
                                    std::vector<double>& output, bool complex) {
@@ -98,28 +99,28 @@ void ngraph::he::HESealClient::handle_message(
     size_t parameter_size;
     std::memcpy(&parameter_size, message.data_ptr(), message.data_size());
 
-    std::cout << "Parameter size " << parameter_size << std::endl;
-    std::cout << "Client batch size " << m_batch_size << std::endl;
+    NGRAPH_INFO << "Parameter size " << parameter_size;
+    NGRAPH_INFO << "Client batch size " << m_batch_size;
     if (complex_packing()) {
-      std::cout << "Client complex packing? " << complex_packing() << std::endl;
+      NGRAPH_INFO << "Client complex packing? " << complex_packing();
     }
 
-    // TODO: support odd batch sizes
-    assert(m_batch_size % 2 == 0);
-
-    std::vector<seal::Ciphertext> ciphers;
     if (complex_packing()) {
+      // TODO: support odd batch sizes
+      assert(m_batch_size % 2 == 0);
+
       if (m_inputs.size() != parameter_size * m_batch_size * 2) {
-        std::cout << "m_inputs.size() " << m_inputs.size() << std::endl;
-        std::cout << "parameter_size " << parameter_size << std::endl;
-        std::cout << "m_batch_size " << m_batch_size << std::endl;
+        NGRAPH_INFO << "m_inputs.size() " << m_inputs.size();
+        NGRAPH_INFO << "parameter_size " << parameter_size;
+        NGRAPH_INFO << "m_batch_size " << m_batch_size;
       }
       assert(m_inputs.size() == parameter_size * m_batch_size * 2);
     } else {
       assert(m_inputs.size() == parameter_size * m_batch_size);
     }
 
-    std::stringstream cipher_stream;
+    std::vector<seal::Ciphertext> ciphers(parameter_size);
+#pragma omp parallel for
     for (size_t data_idx = 0; data_idx < parameter_size; ++data_idx) {
       seal::Plaintext plain;
 
@@ -130,7 +131,6 @@ void ngraph::he::HESealClient::handle_message(
 
       std::vector<double> real_vals{m_inputs.begin() + batch_start_idx,
                                     m_inputs.begin() + batch_end_idx};
-
       if (complex_packing()) {
         std::vector<std::complex<double>> complex_vals;
         real_vec_to_complex_vec(complex_vals, real_vals);
@@ -138,22 +138,19 @@ void ngraph::he::HESealClient::handle_message(
       } else {
         m_ckks_encoder->encode(real_vals, m_scale, plain);
       }
-      seal::Ciphertext cipher;
-      m_encryptor->encrypt(plain, cipher);
-      cipher.save(cipher_stream);
+      m_encryptor->encrypt(plain, ciphers[data_idx]);
     }
-
-    auto execute_message = TCPMessage(ngraph::he::MessageType::execute,
-                                      parameter_size, cipher_stream);
-    std::cout << "Sending execute message with " << parameter_size
-              << " ciphertexts" << std::endl;
-
-    write_message(execute_message);
+    NGRAPH_INFO << "Creating execute message";
+    auto execute_message =
+        TCPMessage(ngraph::he::MessageType::execute, ciphers);
+    NGRAPH_INFO << "Sending execute message with " << parameter_size
+                << " ciphertexts";
+    write_message(std::move(execute_message));
   } else if (msg_type == ngraph::he::MessageType::result) {
     size_t result_count = message.count();
     size_t element_size = message.element_size();
 
-    std::cout << "Client got " << result_count << " results " << std::endl;
+    NGRAPH_INFO << "Client got " << result_count << " results ";
 
     std::vector<seal::Ciphertext> result;
     m_results.reserve(result_count * m_batch_size);
@@ -172,7 +169,7 @@ void ngraph::he::HESealClient::handle_message(
       decode_to_real_vec(plain, outputs, complex_packing());
       m_results.insert(m_results.end(), outputs.begin(), outputs.end());
     }
-    std::cout << "Results size " << m_results.size() << std::endl;
+    NGRAPH_INFO << "Results size " << m_results.size();
 
     close_connection();
   } else if (msg_type == ngraph::he::MessageType::none) {
@@ -181,31 +178,42 @@ void ngraph::he::HESealClient::handle_message(
     std::stringstream param_stream;
     param_stream.write(message.data_ptr(), message.element_size());
     m_encryption_params = seal::EncryptionParameters::Load(param_stream);
-    std::cout << "Loaded encryption parmeters" << std::endl;
+    NGRAPH_INFO << "Loaded encryption parmeters";
 
     set_seal_context();
 
     // Send public key
     std::stringstream pk_stream;
     m_public_key->save(pk_stream);
-    auto pk_message =
-        TCPMessage(ngraph::he::MessageType::public_key, 1, pk_stream);
-    std::cout << "Sending public key" << std::endl;
-    write_message(pk_message);
+    auto pk_message = TCPMessage(ngraph::he::MessageType::public_key, 1,
+                                 std::move(pk_stream));
+    NGRAPH_INFO << "Sending public key";
+    write_message(std::move(pk_message));
 
     // Send evaluation key
     std::stringstream evk_stream;
     m_relin_keys->save(evk_stream);
     auto evk_message =
-        TCPMessage(ngraph::he::MessageType::eval_key, 1, evk_stream);
-    std::cout << "Sending evaluation key" << std::endl;
-    write_message(evk_message);
+        TCPMessage(ngraph::he::MessageType::eval_key, 1, std::move(evk_stream));
+    NGRAPH_INFO << "Sending evaluation key";
+    write_message(std::move(evk_message));
   } else if (msg_type == ngraph::he::MessageType::relu_request) {
+    NGRAPH_INFO << "Received Relu request";
     auto relu = [](double d) { return d > 0 ? d : 0; };
+    auto relu6 = [](double d) {
+      if (d < 0) {
+        return 0.0;
+      }
+      if (d > 6) {
+        return 6.0;
+      }
+      return d;
+    };
     size_t result_count = message.count();
     size_t element_size = message.element_size();
+    NGRAPH_INFO << "Received Relu request with " << result_count << " elements"
+                << " of size " << element_size;
 
-    std::stringstream post_relu_stream;
     std::vector<seal::Ciphertext> post_relu_ciphers(result_count);
 #pragma omp parallel for
     for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
@@ -224,28 +232,37 @@ void ngraph::he::HESealClient::handle_message(
       std::vector<double> relu_vals;
       decode_to_real_vec(relu_plain, relu_vals, complex_packing());
 
-      // Perform relu
-      std::transform(relu_vals.begin(), relu_vals.end(), relu_vals.begin(),
+      // Perform relu6
+      // TODO: do relu instead of relu 6
+      std::vector<double> post_relu_vals(relu_vals.size());
+      std::transform(relu_vals.begin(), relu_vals.end(), post_relu_vals.begin(),
                      relu);
 
+      // TODO: more special cases for all 0's, and all 6's
+      /*if (post_relu_vals == relu_vals) {
+        NGRAPH_INFO << "skipping relu 6 encoding";
+        if (relu_plain.scale() != m_scale) {
+          NGRAPH_INFO << " manually setting scale!";
+          relu_plain.scale() = m_scale;
+        }
+      } else */
       if (complex_packing()) {
         std::vector<std::complex<double>> complex_relu_vals;
-        real_vec_to_complex_vec(complex_relu_vals, relu_vals);
+        real_vec_to_complex_vec(complex_relu_vals, post_relu_vals);
         m_ckks_encoder->encode(complex_relu_vals, m_scale, relu_plain);
       } else {
-        m_ckks_encoder->encode(relu_vals, m_scale, relu_plain);
+        m_ckks_encoder->encode(post_relu_vals, m_scale, relu_plain);
       }
       m_encryptor->encrypt(relu_plain, post_relu_ciphers[result_idx]);
     }
-    for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
-      post_relu_ciphers[result_idx].save(post_relu_stream);
-    }
-    std::cout << "Writing relu_result message with " << result_count
-              << " ciphertexts" << std::endl;
+    NGRAPH_INFO << "performed relu; creating relu message";
 
-    auto relu_result_msg = TCPMessage(ngraph::he::MessageType::relu_result,
-                                      result_count, post_relu_stream);
-    write_message(relu_result_msg);
+    auto relu_result_msg =
+        TCPMessage(ngraph::he::MessageType::relu_result, post_relu_ciphers);
+    NGRAPH_INFO << "Writing relu_result message with " << result_count
+                << " ciphertexts";
+
+    write_message(std::move(relu_result_msg));
   } else if (msg_type == ngraph::he::MessageType::max_request) {
     size_t complex_scale_factor = complex_packing() ? 2 : 1;
     size_t cipher_count = message.count();
@@ -303,9 +320,9 @@ void ngraph::he::HESealClient::handle_message(
     }
     m_encryptor->encrypt(plain_max, cipher_max);
     cipher_max.save(max_stream);
-    auto max_result_msg =
-        TCPMessage(ngraph::he::MessageType::max_result, 1, max_stream);
-    write_message(max_result_msg);
+    auto max_result_msg = TCPMessage(ngraph::he::MessageType::max_result, 1,
+                                     std::move(max_stream));
+    write_message(std::move(max_result_msg));
   } else if (msg_type == ngraph::he::MessageType::minimum_request) {
     // Stores (c_1a, c_1b, c_2a, c_b, ..., c_na, c_nb)
     // prints messsge (min(c_1a, c_1b), min(c_2a, c_2b), ..., min(c_na, c_nb))
@@ -343,7 +360,7 @@ void ngraph::he::HESealClient::handle_message(
       }
     }
 
-    // Get minimum of eachstd::vector of values
+    // Get minimum of each vector of values
     std::stringstream minimum_stream;
     for (size_t cipher_idx = 0; cipher_idx < cipher_count; cipher_idx += 2) {
       for (size_t batch_idx = 0; batch_idx < m_batch_size; ++batch_idx) {
@@ -361,25 +378,16 @@ void ngraph::he::HESealClient::handle_message(
 
     auto minimum_result_msg =
         TCPMessage(ngraph::he::MessageType::minimum_result, cipher_count / 2,
-                   minimum_stream);
-    write_message(minimum_result_msg);
+                   std::move(minimum_stream));
+    write_message(std::move(minimum_result_msg));
   } else {
-    std::cout << "Unsupported message type: "
-              << message_type_to_string(msg_type).c_str() << std::endl;
+    NGRAPH_INFO << "Unsupported message type: "
+                << message_type_to_string(msg_type).c_str();
   }
 }
 
-void ngraph::he::HESealClient::write_message(
-    const ngraph::he::TCPMessage& message) {
-  m_tcp_client->write_message(message);
-}
-
-bool ngraph::he::HESealClient::is_done() { return m_is_done; }
-
-std::vector<float> ngraph::he::HESealClient::get_results() { return m_results; }
-
 void ngraph::he::HESealClient::close_connection() {
-  std::cout << "Closing connection" << std::endl;
+  NGRAPH_INFO << "Closing connection";
   m_tcp_client->close();
   m_is_done = true;
 }

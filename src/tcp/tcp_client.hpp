@@ -48,9 +48,9 @@ class TCPClient {
     boost::asio::post(m_io_context, [this]() { m_socket.close(); });
   }
 
-  void write_message(const ngraph::he::TCPMessage& message) {
+  void write_message(ngraph::he::TCPMessage&& message) {
     bool write_in_progress = !m_message_queue.empty();
-    m_message_queue.push_back(message);
+    m_message_queue.emplace_back(std::move(message));
     if (!write_in_progress) {
       boost::asio::post(m_io_context, [this]() { do_write(); });
     }

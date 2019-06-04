@@ -39,6 +39,5 @@ void broadcast_seal(const std::vector<T>& arg, std::vector<T>& out,
         arg[input_transform.index(input_coord)];
   }
 };
-
 }  // namespace he
 }  // namespace ngraph

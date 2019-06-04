@@ -5,7 +5,7 @@ Once you have installed he-transformer (i.e. run `make install`),
 ```bash
 cd $HE_TRANSFORMER/build
 source external/venv-tf-py3/bin/activate
-make python_wheel
+make install python_wheel
 ```
 This will create `python/dist/he_seal_client-*.whl`. Install it using
 ```bash

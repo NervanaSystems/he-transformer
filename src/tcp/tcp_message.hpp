@@ -25,6 +25,14 @@
 #include <sstream>
 #include <string>
 
+// TODO: better way to include log
+#define PROJECT_ROOT_DIR "test_root_macro"
+
+#include "ngraph/check.hpp"
+#include "ngraph/log.hpp"
+#include "seal/seal.h"
+#include "seal/seal_ciphertext_wrapper.hpp"
+
 namespace ngraph {
 namespace he {
 enum class MessageType {
@@ -107,7 +115,7 @@ inline std::string message_type_to_string(const MessageType& type) {
 class TCPMessage {
  public:
   enum { header_length = 15 };
-  enum { max_body_length = 800000000UL };
+  enum { max_body_length = 14000000000UL };
   enum { message_type_length = sizeof(MessageType) };
   enum { message_count_length = sizeof(size_t) };
 
@@ -124,6 +132,7 @@ class TCPMessage {
       throw std::invalid_argument("Request type not valid");
     }
     check_arguments();
+    // TODO: use malloc
     m_data = new char[header_length + max_body_length];
     encode_header();
     encode_message_type();
@@ -133,25 +142,62 @@ class TCPMessage {
   TCPMessage() : TCPMessage(MessageType::none) {}
 
   // Encodes message of count elements using data in stream
-  TCPMessage(const MessageType type, size_t count,
-             const std::stringstream& stream)
+  TCPMessage(const MessageType type, size_t count, std::stringstream&& stream)
       : m_type(type), m_count(count) {
-    const std::string& pk_str = stream.str();
-    const char* pk_cstr = pk_str.c_str();
-    m_data_size = pk_str.size();
+    stream.seekp(0, std::ios::end);
+    m_data_size = stream.tellp();
 
     check_arguments();
+    // TODO: use malloc
     m_data = new char[header_length + body_length()];
     encode_header();
     encode_message_type();
     encode_count();
-    encode_data(pk_cstr);
+    encode_data(std::move(stream));
+  }
+
+  TCPMessage(const MessageType type,
+             const std::vector<seal::Ciphertext>& ciphers)
+      : m_type(type), m_count(ciphers.size()) {
+    NGRAPH_INFO << "Creating message from " << ciphers.size()
+                << " seal ciphertexts";
+
+    // TODO: get size without saving!
+    std::stringstream first;
+    ciphers[0].save(first);
+    first.seekp(0, std::ios::end);
+    size_t first_cipher_size = first.tellp();
+
+    m_data_size = first_cipher_size * m_count;
+
+    check_arguments();
+    // TODO: use malloc
+    m_data = new char[header_length + body_length()];
+    encode_header();
+    encode_message_type();
+    encode_count();
+
+#pragma omp parallel for
+    for (size_t i = 0; i < ciphers.size(); ++i) {
+      size_t offset = i * first_cipher_size;
+      std::stringstream ss;
+      // TODO: save directly to buffer
+      ciphers[i].save(ss);
+      ss.seekp(0, std::ios::end);
+      size_t cipher_size = ss.tellp();
+      NGRAPH_CHECK(cipher_size == first_cipher_size, "cipher size ",
+                   cipher_size, "doesn't match first", first_cipher_size);
+
+      std::stringbuf* pbuf = ss.rdbuf();
+      pbuf->sgetn(data_ptr() + offset, first_cipher_size);
+    }
   }
 
   TCPMessage(const MessageType type, const size_t count, const size_t size,
              const char* data)
       : m_type(type), m_count(count), m_data_size(size) {
     check_arguments();
+    // TODO: use malloc
     m_data = new char[header_length + body_length()];
     encode_header();
     encode_message_type();
@@ -161,40 +207,42 @@ class TCPMessage {
 
   TCPMessage& operator=(TCPMessage&& other) {
     if (this != &other) {
-      delete[] m_data;
-      m_data = other.header_ptr();
+      m_data = other.m_data;
       m_type = other.m_type;
       m_count = other.m_count;
       m_data_size = other.m_data_size;
       other.m_data = nullptr;
+      other.m_data_size = 0;
+      other.m_count = 0;
+      other.m_type = MessageType::none;
     }
     return *this;
   };
 
-  TCPMessage(const TCPMessage& other) {
-    m_type = other.m_type;
-    m_count = other.m_count;
-    m_data_size = other.m_data_size;
-    m_data = new char[header_length + body_length()];
+  TCPMessage(TCPMessage&& other)
+      : m_data(other.m_data),
+        m_type(other.m_type),
+        m_count(other.m_count),
+        m_data_size(other.m_data_size) {
+    other.m_data = nullptr;
+  };
 
-    std::memcpy(m_data, other.m_data, num_bytes());
+  TCPMessage& operator=(const TCPMessage&) = delete;
+  TCPMessage(const TCPMessage& other) = delete;
+
+  ~TCPMessage() {
+    if (m_data != nullptr) {
+      delete[] m_data;
+    }
   }
-
-  // TODO: implement as needed
-  TCPMessage(TCPMessage&& other) = delete;
-
-  // TODO: implement as needed
-  TCPMessage& operator=(const TCPMessage& other) = delete;
-
-  ~TCPMessage() { delete[] m_data; }
 
   void check_arguments() {
     if (m_count < 0) {
       throw std::invalid_argument("m_count must be non-negative");
     }
     if (m_count != 0 && m_data_size % m_count != 0) {
-      std::cout << "Error: size " << m_data_size << " not a multiple of count "
-                << m_count << std::endl;
+      NGRAPH_INFO << "Error: size " << m_data_size
+                  << " not a multiple of count " << m_count;
       throw std::invalid_argument("Size must be a multiple of count");
     }
 
@@ -214,7 +262,7 @@ class TCPMessage {
     if (m_data_size % m_count != 0) {
       std::stringstream ss;
       ss << "m_count " << m_count << " does not divide m_data_size "
-         << m_data_size << std::endl;
+         << m_data_size;
       throw std::invalid_argument(ss.str());
     }
     return m_data_size / m_count;
@@ -227,7 +275,7 @@ class TCPMessage {
     if (m_data_size % m_count != 0) {
       std::stringstream ss;
       ss << "m_count " << m_count << " does not divide m_data_size "
-         << m_data_size << std::endl;
+         << m_data_size;
       throw std::invalid_argument(ss.str());
     }
     return m_data_size / m_count;
@@ -277,7 +325,7 @@ class TCPMessage {
     size_t body_length;
     sstream >> body_length;
     if (body_length > max_body_length) {
-      std::cout << "Body length " << body_length << " too large" << std::endl;
+      NGRAPH_INFO << "Body length " << body_length << " too large";
       throw std::invalid_argument("Cannot decode header");
     }
     m_data_size = body_length - message_type_length - message_count_length;
@@ -302,6 +350,11 @@ class TCPMessage {
 
   void encode_data(const char* data) {
     std::memcpy(data_ptr(), data, m_data_size);
+  }
+
+  void encode_data(const std::stringstream&& data) {
+    std::stringbuf* pbuf = data.rdbuf();
+    pbuf->sgetn(data_ptr(), m_data_size);
   }
 
   bool decode_body() {
