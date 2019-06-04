@@ -134,7 +134,6 @@ class TCPClient {
   TCPMessage m_read_message;
   tcp::socket m_socket;
 
-  TCPMessage m_message;
   std::deque<ngraph::he::TCPMessage> m_message_queue;
 
   // How to handle the message

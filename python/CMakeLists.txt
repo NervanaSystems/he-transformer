@@ -16,8 +16,6 @@
 
 cmake_minimum_required (VERSION 3.1)
 
-#project (py_he_seal_client)
-
 include(ExternalProject)
 
 ExternalProject_Add(

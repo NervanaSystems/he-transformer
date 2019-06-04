@@ -236,7 +236,7 @@ void ngraph::he::HESealClient::handle_message(
       // TODO: do relu instead of relu 6
       std::vector<double> post_relu_vals(relu_vals.size());
       std::transform(relu_vals.begin(), relu_vals.end(), post_relu_vals.begin(),
-                     relu6);
+                     relu);
 
       // TODO: more special cases for all 0's, and all 6's
       if (post_relu_vals == relu_vals) {

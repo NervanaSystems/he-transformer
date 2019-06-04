@@ -23,7 +23,6 @@
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/shape_util.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
-#include "seal/seal_plaintext_wrapper.hpp"
 
 namespace ngraph {
 namespace he {
@@ -40,6 +39,5 @@ void broadcast_seal(const std::vector<T>& arg, std::vector<T>& out,
         arg[input_transform.index(input_coord)];
   }
 };
-
 }  // namespace he
 }  // namespace ngraph

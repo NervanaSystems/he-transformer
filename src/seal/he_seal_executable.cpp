@@ -15,6 +15,7 @@
 //*****************************************************************************
 
 #include <functional>
+#include <limits>
 
 #include "client_util.hpp"
 #include "he_plain_tensor.hpp"
@@ -1332,7 +1333,7 @@ void ngraph::he::HESealExecutable::generate_calls(
       }
 
       // TODO: infinity
-      size_t smallest_chain_ind = 9999999;
+      size_t smallest_chain_ind = std::numeric_limits<size_t>::max();
       size_t smallest_relu_ind = 0;
       for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
         auto& cipher = arg0_cipher->get_element(relu_idx);
@@ -1345,7 +1346,7 @@ void ngraph::he::HESealExecutable::generate_calls(
           }
         }
       }
-      NGRAPH_CHECK(smallest_chain_ind != 9999999);
+      NGRAPH_CHECK(smallest_chain_ind != std::numeric_limits<size_t>::max());
       NGRAPH_INFO << "Smallest chain ind " << smallest_chain_ind << " at "
                   << smallest_relu_ind;
       auto smallest_cipher = arg0_cipher->get_element(smallest_relu_ind);
