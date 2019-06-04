@@ -215,20 +215,10 @@ void max_pool_seal(const std::vector<HEPlaintext>& arg,
         if (first_max) {
           first_max = false;
           max_vals = arg[arg_coord_idx].get_values();
-          NGRAPH_INFO << "first max";
         } else {
-          NGRAPH_INFO << "setting max values";
           // Get element-wise maximump
-          NGRAPH_INFO << "current max";
-          for (const auto& elem : max_vals) {
-            NGRAPH_INFO << elem;
-          }
           const std::vector<float>& arg_values =
               arg[arg_coord_idx].get_values();
-          NGRAPH_INFO << "arg values";
-          for (const auto& elem : arg_values) {
-            NGRAPH_INFO << elem;
-          }
           NGRAPH_CHECK(arg_values.size() == max_vals.size(), "arg values size ",
                        arg_values.size(), " doesn't match max_vals.size() ",
                        max_vals.size());
@@ -236,11 +226,6 @@ void max_pool_seal(const std::vector<HEPlaintext>& arg,
                ++value_idx) {
             max_vals[value_idx] =
                 std::max(max_vals[value_idx], arg_values[value_idx]);
-          }
-
-          NGRAPH_INFO << "max_vals";
-          for (const auto& elem : max_vals) {
-            NGRAPH_INFO << elem;
           }
         }
       }
