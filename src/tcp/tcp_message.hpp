@@ -360,15 +360,6 @@ class TCPMessage {
   }
 
   void encode_data(const std::stringstream&& data) {
-    NGRAPH_INFO << "Encoding data from stream size " << m_data_size;
-    std::stringbuf* pbuf = data.rdbuf();
-    pbuf->sgetn(data_ptr(), m_data_size);
-    // const void* data_buf = (const void*)(data.rdbuf()->data());
-    // std::memcpy(data_ptr(), data_buf, m_data_size);
-    NGRAPH_INFO << "done with memcpy ";
-  }
-
-  void encode_data(const std::stringstream&& data) {
     std::stringbuf* pbuf = data.rdbuf();
     pbuf->sgetn(data_ptr(), m_data_size);
   }
