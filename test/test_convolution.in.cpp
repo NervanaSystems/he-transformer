@@ -14,7 +14,6 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "seal/he_seal_backend.hpp"
 #include "ngraph/ngraph.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "test_util.hpp"

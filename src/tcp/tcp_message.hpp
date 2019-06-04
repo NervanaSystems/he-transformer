@@ -146,7 +146,6 @@ class TCPMessage {
       : m_type(type), m_count(count) {
     stream.seekp(0, std::ios::end);
     m_data_size = stream.tellp();
-    NGRAPH_INFO << "m_data_size stream " << m_data_size;
 
     check_arguments();
     // TODO: use malloc
@@ -168,10 +167,8 @@ class TCPMessage {
     ciphers[0].save(first);
     first.seekp(0, std::ios::end);
     size_t first_cipher_size = first.tellp();
-    NGRAPH_INFO << "first_cipher_size " << first_cipher_size;
 
     m_data_size = first_cipher_size * m_count;
-    NGRAPH_INFO << "m_data_size " << m_data_size;
 
     check_arguments();
     // TODO: use malloc
@@ -194,7 +191,6 @@ class TCPMessage {
       std::stringbuf* pbuf = ss.rdbuf();
       pbuf->sgetn(data_ptr() + offset, first_cipher_size);
     }
-    NGRAPH_INFO << "first_cipher_size " << first_cipher_size;
   }
 
   TCPMessage(const MessageType type, const size_t count, const size_t size,
@@ -203,7 +199,6 @@ class TCPMessage {
     check_arguments();
     // TODO: use malloc
     m_data = new char[header_length + body_length()];
-    NGRAPH_INFO << "TCPMessage from pointer";
     encode_header();
     encode_message_type();
     encode_count();
@@ -354,18 +349,12 @@ class TCPMessage {
   }
 
   void encode_data(const char* data) {
-    NGRAPH_INFO << "Encoding data from char* size " << m_data_size;
     std::memcpy(data_ptr(), data, m_data_size);
-    NGRAPH_INFO << "done with memcpy ";
   }
 
   void encode_data(const std::stringstream&& data) {
-    NGRAPH_INFO << "Encoding data from stream size " << m_data_size;
     std::stringbuf* pbuf = data.rdbuf();
     pbuf->sgetn(data_ptr(), m_data_size);
-    // const void* data_buf = (const void*)(data.rdbuf()->data());
-    // std::memcpy(data_ptr(), data_buf, m_data_size);
-    NGRAPH_INFO << "done with memcpy ";
   }
 
   bool decode_body() {
