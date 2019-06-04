@@ -191,13 +191,13 @@ void ngraph::he::HESealExecutable::handle_message(
   if (msg_type == MessageType::execute) {
     // Get Ciphertexts from message
     size_t count = message.count();
-    std::vector<seal::Ciphertext> ciphertexts(count);
     size_t ciphertext_size = message.element_size();
 
     NGRAPH_CHECK(m_context != nullptr);
     print_seal_context(*m_context);
 
-    NGRAPH_INFO << "Loading " << count << " ciphertexts";
+    NGRAPH_INFO << "Loading " << count
+                << std::vector<seal::Ciphertext> ciphertexts(count);
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i) {
       seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::ThreadLocal();
@@ -209,11 +209,12 @@ void ngraph::he::HESealExecutable::handle_message(
     }
     NGRAPH_INFO << "Done loading " << count << " ciphertexts";
     std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
-        he_cipher_inputs;
-    for (const auto cipher : ciphertexts) {
-      auto wrapper =
-          std::make_shared<ngraph::he::SealCiphertextWrapper>(cipher);
-      he_cipher_inputs.emplace_back(wrapper);
+        he_cipher_inputs(ciphertexts.size());
+#pragma omp parallel for
+    for (size_t cipher_idx = 0; cipher_idx < ciphertexts.size(); ++cipher_idx) {
+      auto wrapper = std::make_shared<ngraph::he::SealCiphertextWrapper>(
+          ciphertexts[cipher_idx]);
+      he_cipher_inputs[cipher_idx] = wrapper;
     }
 
     // only support parameter size 1 for now
@@ -1363,7 +1364,8 @@ void ngraph::he::HESealExecutable::generate_calls(
       NGRAPH_INFO << "Matched moduli for relu";
       m_relu_ciphertexts.clear();
       std::stringstream cipher_stream;
-      const size_t max_relu_message_cnt = 97;
+      // TODO: tune
+      const size_t max_relu_message_cnt = 10000;
       size_t num_relu_batches = element_count / max_relu_message_cnt;
       if (element_count % max_relu_message_cnt != 0) {
         num_relu_batches++;

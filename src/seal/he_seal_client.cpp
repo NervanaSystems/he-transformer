@@ -214,8 +214,6 @@ void ngraph::he::HESealClient::handle_message(
     NGRAPH_INFO << "Received Relu request with " << result_count << " elements"
                 << " of size " << element_size;
 
-    // TODO: reserve for efficiency
-    std::stringstream post_relu_stream;
     std::vector<seal::Ciphertext> post_relu_ciphers(result_count);
 #pragma omp parallel for
     for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
@@ -248,16 +246,13 @@ void ngraph::he::HESealClient::handle_message(
       }
       m_encryptor->encrypt(relu_plain, post_relu_ciphers[result_idx]);
     }
-    NGRAPH_INFO << "Performed relu, saving ciphers to stream ";
-    for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
-      post_relu_ciphers[result_idx].save(post_relu_stream);
-    }
+    NGRAPH_INFO << "performed relu; creating relu message";
+
+    auto relu_result_msg =
+        TCPMessage(ngraph::he::MessageType::relu_result, post_relu_ciphers);
     NGRAPH_INFO << "Writing relu_result message with " << result_count
                 << " ciphertexts";
 
-    auto relu_result_msg =
-        TCPMessage(ngraph::he::MessageType::relu_result, result_count,
-                   std::move(post_relu_stream));
     write_message(std::move(relu_result_msg));
   } else if (msg_type == ngraph::he::MessageType::max_request) {
     size_t complex_scale_factor = complex_packing() ? 2 : 1;
