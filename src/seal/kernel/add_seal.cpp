@@ -24,7 +24,7 @@ void ngraph::he::scalar_add_seal(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type, const HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
-  if (arg0.is_zero() && arg0.is_zero()) {
+  if (arg0.is_zero() && arg1.is_zero()) {
     out->set_zero(true);
   } else if (arg0.is_zero()) {
     out = std::make_shared<ngraph::he::SealCiphertextWrapper>(arg1);
@@ -37,6 +37,7 @@ void ngraph::he::scalar_add_seal(
     he_seal_backend->get_evaluator()->add(arg0.ciphertext(), arg1.ciphertext(),
                                           out->ciphertext());
     out->set_complex_packing(arg1.complex_packing());
+    out->set_zero(false);
   }
 }
 
@@ -49,6 +50,7 @@ void ngraph::he::scalar_add_seal(
 
   if (arg0.is_zero()) {
     he_seal_backend->encrypt(out, arg1);
+    out->set_zero(false);
     return;
   }
 
@@ -58,6 +60,7 @@ void ngraph::he::scalar_add_seal(
   if (add_zero) {
     out = std::make_shared<ngraph::he::SealCiphertextWrapper>(arg0);
   } else {
+    // TODO: cleanup complex batching
     // NGRAPH_CHECK(arg1.complex_packing() == arg0.complex_packing(),
     //             "cipher/plain complex packing args differ");
 
@@ -80,6 +83,7 @@ void ngraph::he::scalar_add_seal(
       out->set_complex_packing(arg0.complex_packing());
     }
   }
+  out->set_zero(false);
 }
 
 void ngraph::he::scalar_add_seal(
@@ -101,7 +105,20 @@ void ngraph::he::scalar_add_seal(const HEPlaintext& arg0,
   const std::vector<float>& arg1_vals = arg1.get_values();
   std::vector<float> out_vals(arg0.num_values());
 
-  std::transform(arg0_vals.begin(), arg0_vals.end(), arg1_vals.begin(),
-                 out_vals.begin(), std::plus<float>());
+  if (arg0_vals.size() == 1) {
+    std::transform(
+        arg1_vals.begin(), arg1_vals.end(), out_vals.begin(),
+        std::bind(std::plus<float>(), std::placeholders::_1, arg0_vals[0]));
+  } else if (arg1_vals.size() == 1) {
+    std::transform(
+        arg0_vals.begin(), arg0_vals.end(), out_vals.begin(),
+        std::bind(std::plus<float>(), std::placeholders::_1, arg1_vals[0]));
+  } else {
+    NGRAPH_CHECK(arg0.num_values() == arg1.num_values(), "arg0 num values ",
+                 arg0.num_values(), " != arg1 num values ", arg1.num_values(),
+                 " in plain-plain add");
+    std::transform(arg0_vals.begin(), arg0_vals.end(), arg1_vals.begin(),
+                   out_vals.begin(), std::plus<float>());
+  }
   out.set_values(out_vals);
 }

@@ -368,6 +368,11 @@ class TCPMessage {
     NGRAPH_INFO << "done with memcpy ";
   }
 
+  void encode_data(const std::stringstream&& data) {
+    std::stringbuf* pbuf = data.rdbuf();
+    pbuf->sgetn(data_ptr(), m_data_size);
+  }
+
   bool decode_body() {
     decode_message_type();
     decode_count();

@@ -19,26 +19,29 @@
 #include <memory>
 #include <vector>
 
-#include "he_plaintext.hpp"
-#include "ngraph/coordinate_transform.hpp"
-#include "ngraph/shape_util.hpp"
+#include "ngraph/type/element_type.hpp"
+#include "seal/he_seal_backend.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
 
 namespace ngraph {
 namespace he {
-template <typename T>
-void broadcast_seal(const std::vector<T>& arg, std::vector<T>& out,
-                    const Shape& in_shape, const Shape& out_shape,
-                    const AxisSet& broadcast_axes) {
-  CoordinateTransform input_transform(in_shape);
-  CoordinateTransform output_transform(out_shape);
-  for (const Coordinate& output_coord : output_transform) {
-    Coordinate input_coord = reduce(output_coord, broadcast_axes);
+inline void scalar_relu_seal(const HEPlaintext& arg, HEPlaintext& out) {
+  const std::vector<float>& arg_vals = arg.get_values();
+  std::vector<float> out_vals(arg.num_values());
 
-    out[output_transform.index(output_coord)] =
-        arg[input_transform.index(input_coord)];
+  auto relu = [](float f) { return f > 0 ? f : 0.f; };
+
+  std::transform(arg_vals.begin(), arg_vals.end(), out_vals.begin(), relu);
+  out.set_values(out_vals);
+}
+
+inline void relu_seal(const std::vector<HEPlaintext>& arg,
+                      std::vector<HEPlaintext>& out, size_t count) {
+  for (size_t i = 0; i < count; ++i) {
+    scalar_relu_seal(arg[i], out[i]);
   }
-};
+}
+
 }  // namespace he
 }  // namespace ngraph

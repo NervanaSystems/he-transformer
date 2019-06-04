@@ -23,7 +23,6 @@ void ngraph::he::scalar_negate_seal(
   NGRAPH_CHECK(element_type == element::f32);
 
   if (arg.is_zero()) {
-    NGRAPH_INFO << "Arg is 0 in negate(C)";
     out->set_zero(true);
     return;
   }
@@ -32,7 +31,6 @@ void ngraph::he::scalar_negate_seal(
 
 void ngraph::he::scalar_negate_seal(const HEPlaintext& arg, HEPlaintext& out,
                                     const element::Type& element_type) {
-  NGRAPH_INFO << "Scalar negate plains";
   const std::vector<float>& arg_vals = arg.get_values();
   std::vector<float> out_vals(arg.num_values());
 

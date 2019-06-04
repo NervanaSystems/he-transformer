@@ -117,11 +117,6 @@ if __name__ == '__main__':
         type=bool,
         default=False,
         help='Whether or not to save the test image and label.')
-    parser.add_argument(
-        '--report_accuracy',
-        type=bool,
-        default=True,
-        help='Whether or not to save the compute the test accuracy.')
 
     FLAGS, unparsed = parser.parse_known_args()
     tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
