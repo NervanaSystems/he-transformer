@@ -1,4 +1,1 @@
 mult_layer_cipher_plain # Lazy rescaling means rescaling doesn't happen after multiply...
-
-batch_norm_fusion_he
-batch_norm_fusion_he_batch
