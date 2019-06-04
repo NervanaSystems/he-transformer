@@ -46,11 +46,13 @@ set(MULTI_TEST_SRC
     test_layers.in.cpp
     test_convolution.in.cpp
     test_dot.in.cpp
+    test_maxpool.in.cpp
     test_multiply.in.cpp
     test_negate.in.cpp
     test_pad.in.cpp
     test_perf.in.cpp
     test_read_write.in.cpp
+    test_relu.in.cpp
     test_reshape.in.cpp
     test_reverse.in.cpp
     test_slice.in.cpp

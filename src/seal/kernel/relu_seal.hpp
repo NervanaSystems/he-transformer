@@ -14,27 +14,34 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "seal/kernel/negate_seal.hpp"
+#pragma once
 
-void ngraph::he::scalar_negate_seal(
-    const ngraph::he::SealCiphertextWrapper& arg,
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
-    const element::Type& element_type, const HESealBackend* he_seal_backend) {
-  NGRAPH_CHECK(element_type == element::f32);
+#include <memory>
+#include <vector>
 
-  if (arg.is_zero()) {
-    out->set_zero(true);
-    return;
-  }
-  he_seal_backend->get_evaluator()->negate(arg.ciphertext(), out->ciphertext());
-}
+#include "ngraph/type/element_type.hpp"
+#include "seal/he_seal_backend.hpp"
+#include "seal/seal_ciphertext_wrapper.hpp"
+#include "seal/seal_plaintext_wrapper.hpp"
 
-void ngraph::he::scalar_negate_seal(const HEPlaintext& arg, HEPlaintext& out,
-                                    const element::Type& element_type) {
+namespace ngraph {
+namespace he {
+inline void scalar_relu_seal(const HEPlaintext& arg, HEPlaintext& out) {
   const std::vector<float>& arg_vals = arg.get_values();
   std::vector<float> out_vals(arg.num_values());
 
-  std::transform(arg_vals.begin(), arg_vals.end(), out_vals.begin(),
-                 std::negate<float>());
+  auto relu = [](float f) { return f > 0 ? f : 0.f; };
+
+  std::transform(arg_vals.begin(), arg_vals.end(), out_vals.begin(), relu);
   out.set_values(out_vals);
 }
+
+inline void relu_seal(const std::vector<HEPlaintext>& arg,
+                      std::vector<HEPlaintext>& out, size_t count) {
+  for (size_t i = 0; i < count; ++i) {
+    scalar_relu_seal(arg[i], out[i]);
+  }
+}
+
+}  // namespace he
+}  // namespace ngraph

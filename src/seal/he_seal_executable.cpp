@@ -33,6 +33,7 @@
 #include "kernel/multiply_seal.hpp"
 #include "kernel/negate_seal.hpp"
 #include "kernel/pad_seal.hpp"
+#include "kernel/relu_seal.hpp"
 #include "kernel/reshape_seal.hpp"
 #include "kernel/result_seal.hpp"
 #include "kernel/reverse_seal.hpp"
@@ -1022,6 +1023,17 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::MaxPool: {
+      const op::MaxPool* max_pool = static_cast<const op::MaxPool*>(&node);
+      if (arg0_plain != nullptr && out0_plain != nullptr) {
+        ngraph::he::max_pool_seal(
+            arg0_plain->get_elements(), out0_plain->get_elements(),
+            node.get_input_shape(0), out0_plain->get_batched_shape(),
+            max_pool->get_window_shape(),
+            max_pool->get_window_movement_strides(),
+            max_pool->get_padding_below(), max_pool->get_padding_above());
+        break;
+      }
+
       if (!m_enable_client) {
         throw ngraph_error(
             "MaxPool op unsupported unless client is enabled. Try setting "
@@ -1036,7 +1048,6 @@ void ngraph::he::HESealExecutable::generate_calls(
       NGRAPH_INFO << "MaxPool shape " << join(node.get_output_shape(0), "x");
       NGRAPH_INFO << "m_batch_size " << m_batch_size;
 
-      const op::MaxPool* max_pool = static_cast<const op::MaxPool*>(&node);
       // TODO: cleanup
       Shape arg0_shape = node.get_inputs().at(0).get_shape();
       arg0_shape[0] /= m_batch_size;
@@ -1272,7 +1283,6 @@ void ngraph::he::HESealExecutable::generate_calls(
     }
     case OP_TYPEID::Reshape: {
       const op::Reshape* reshape = static_cast<const op::Reshape*>(&node);
-
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
         ngraph::he::reshape_seal(
             arg0_cipher->get_elements(), out0_cipher->get_elements(),
@@ -1318,6 +1328,17 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Relu: {
+      if (arg0_plain != nullptr && out0_plain != nullptr) {
+        size_t output_size = arg0_plain->get_batched_element_count();
+        NGRAPH_CHECK(output_size == arg0_plain->num_plaintexts(),
+                     "output size ", output_size,
+                     " doesn't match number of elements",
+                     out0_plain->num_plaintexts());
+        ngraph::he::relu_seal(arg0_plain->get_elements(),
+                              out0_plain->get_elements(), output_size);
+        break;
+      }
+
       if (!m_enable_client) {
         throw ngraph_error(
             "Relu op unsupported unless client is enabled. Try setting "
