@@ -150,6 +150,10 @@ void ngraph::he::scalar_multiply_seal(const ngraph::he::HEPlaintext& arg0,
                    std::bind(std::multiplies<float>(), std::placeholders::_1,
                              arg1_vals[0]));
   } else {
+    NGRAPH_CHECK(arg0.num_values() == arg1.num_values(), "arg0 num values ",
+                 arg0.num_values(), " != arg1 num values ", arg1.num_values(),
+                 " in plain-plain multiply");
+
     std::transform(arg0_vals.begin(), arg0_vals.end(), arg1_vals.begin(),
                    out_vals.begin(), std::multiplies<float>());
   }
