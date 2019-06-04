@@ -105,7 +105,20 @@ void ngraph::he::scalar_add_seal(const HEPlaintext& arg0,
   const std::vector<float>& arg1_vals = arg1.get_values();
   std::vector<float> out_vals(arg0.num_values());
 
-  std::transform(arg0_vals.begin(), arg0_vals.end(), arg1_vals.begin(),
-                 out_vals.begin(), std::plus<float>());
+  if (arg0_vals.size() == 1) {
+    std::transform(
+        arg1_vals.begin(), arg1_vals.end(), out_vals.begin(),
+        std::bind(std::plus<float>(), std::placeholders::_1, arg0_vals[0]));
+  } else if (arg1_vals.size() == 1) {
+    std::transform(
+        arg0_vals.begin(), arg0_vals.end(), out_vals.begin(),
+        std::bind(std::plus<float>(), std::placeholders::_1, arg1_vals[0]));
+  } else {
+    NGRAPH_CHECK(arg0.num_values() == arg1.num_values(), "arg0 num values ",
+                 arg0.num_values(), " != arg1 num values ", arg1.num_values(),
+                 " in plain-plain add");
+    std::transform(arg0_vals.begin(), arg0_vals.end(), arg1_vals.begin(),
+                   out_vals.begin(), std::plus<float>());
+  }
   out.set_values(out_vals);
 }
