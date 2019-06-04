@@ -48,7 +48,6 @@ def get_imagenet_labels():
         'https://storage.googleapis.com/download.tensorflow.org/data/ImageNetLabels.txt'
     )
     imagenet_labels = np.array(open(labels_path).read().splitlines())
-
     return imagenet_labels
 
 
@@ -66,6 +65,16 @@ def main():
         time.sleep(1)
     results = client.get_results()
     print('results', results)
+
+    imagenet_labels = get_imagenet_labels()
+
+    correct_label = np.where(imagenet_labels == 'military uniform')
+
+    top100 = results.argsort()[-100:][::-1]
+
+    print('top100', top100)
+    preds = imagenet_labels[top100]
+    print(preds)
 
 
 if __name__ == '__main__':

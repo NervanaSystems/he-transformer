@@ -196,8 +196,8 @@ void ngraph::he::HESealExecutable::handle_message(
     NGRAPH_CHECK(m_context != nullptr);
     print_seal_context(*m_context);
 
-    NGRAPH_INFO << "Loading " << count
-                << std::vector<seal::Ciphertext> ciphertexts(count);
+    NGRAPH_INFO << "Loading " << count << "ciphertexts";
+    std::vector<seal::Ciphertext> ciphertexts(count);
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i) {
       seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::ThreadLocal();
