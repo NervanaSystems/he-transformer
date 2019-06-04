@@ -184,6 +184,7 @@ void ngraph::he::HESealBackend::encrypt(
   // No need to encrypt zero
   if (input.is_single_value() && input.get_values()[0] == 0) {
     output->set_zero(true);
+    NGRAPH_INFO << "Encrypting 0";
 
     // TODO: enable below?
     // output->ciphertext() = seal::Ciphertext(m_context);

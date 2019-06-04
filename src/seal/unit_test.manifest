@@ -12,5 +12,3 @@ sum_matrix_to_scalar_zero_by_zero
 
 batch_norm_fusion_he
 batch_norm_fusion_he_batch
-
-sub_from_zero_2_3
