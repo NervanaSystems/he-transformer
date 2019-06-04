@@ -1372,7 +1372,6 @@ void ngraph::he::HESealExecutable::generate_calls(
         num_relu_batches++;
       }
       std::vector<seal::Ciphertext> relu_ciphers(max_relu_message_cnt);
-      size_t stream_count = 0;
       NGRAPH_INFO << "element_count " << element_count;
       NGRAPH_INFO << "num_relu_batches " << num_relu_batches;
       for (size_t relu_batch = 0; relu_batch < num_relu_batches; ++relu_batch) {

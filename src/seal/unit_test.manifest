@@ -1,16 +1,1 @@
-reshape_6d # Slow
-convolution_2d_1item_padded_1_1x1_1 # Needs larger parameters => slow
-# convolution_2d_1image_2outputs # Needs larger parameters => slow
-convolution_2d_1item_padded_2_3x4_5 # Needs larger parameters => slow
-
 mult_layer_cipher_plain # Lazy rescaling means rescaling doesn't happen after multiply...
-
-sum_matrix_rows_zero
-sum_matrix_cols_zero
-sum_matrix_vector_zero
-sum_matrix_to_scalar_zero_by_zero
-
-batch_norm_fusion_he
-batch_norm_fusion_he_batch
-
-sub_from_zero_2_3

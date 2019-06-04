@@ -59,8 +59,10 @@ inline void sum_seal(std::vector<HEPlaintext>& arg,
                      const ngraph::he::HESealBackend* he_seal_backend) {
   CoordinateTransform output_transform(out_shape);
 
-  bool complex_packing = arg[0].complex_packing();
-
+  bool complex_packing = false;
+  if (arg.size() > 0) {
+    complex_packing = arg[0].complex_packing();
+  }
   for (const Coordinate& output_coord : output_transform) {
     out[output_transform.index(output_coord)] =
         HEPlaintext(0.f, complex_packing);
@@ -70,7 +72,6 @@ inline void sum_seal(std::vector<HEPlaintext>& arg,
 
   for (const Coordinate& input_coord : input_transform) {
     Coordinate output_coord = reduce(input_coord, reduction_axes);
-
     auto& input = arg[input_transform.index(input_coord)];
     auto& output = out[output_transform.index(output_coord)];
 

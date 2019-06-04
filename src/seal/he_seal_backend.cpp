@@ -199,7 +199,6 @@ void ngraph::he::HESealBackend::decrypt(
     ngraph::he::HEPlaintext& output,
     const ngraph::he::SealCiphertextWrapper& input) const {
   if (input.is_zero()) {
-    NGRAPH_INFO << "decrypting 0";
     // TOOD: refine?
     const size_t slots =
         m_context->context_data()->parms().poly_modulus_degree() / 2;
