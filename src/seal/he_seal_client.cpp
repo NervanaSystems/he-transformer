@@ -234,15 +234,23 @@ void ngraph::he::HESealClient::handle_message(
 
       // Perform relu6
       // TODO: do relu instead of relu 6
-      std::transform(relu_vals.begin(), relu_vals.end(), relu_vals.begin(),
+      std::vector<double> post_relu_vals(relu_vals.size());
+      std::transform(relu_vals.begin(), relu_vals.end(), post_relu_vals.begin(),
                      relu6);
 
-      if (complex_packing()) {
+      // TODO: more special cases for all 0's, and all 6's
+      if (post_relu_vals == relu_vals) {
+        NGRAPH_INFO << "skipping relu 6 encoding";
+        if (relu_plain.scale() != m_scale) {
+          NGRAPH_INFO << " manually setting scale!";
+          relu_plain.scale() = m_scale;
+        }
+      } else if (complex_packing()) {
         std::vector<std::complex<double>> complex_relu_vals;
-        real_vec_to_complex_vec(complex_relu_vals, relu_vals);
+        real_vec_to_complex_vec(complex_relu_vals, post_relu_vals);
         m_ckks_encoder->encode(complex_relu_vals, m_scale, relu_plain);
       } else {
-        m_ckks_encoder->encode(relu_vals, m_scale, relu_plain);
+        m_ckks_encoder->encode(post_relu_vals, m_scale, relu_plain);
       }
       m_encryptor->encrypt(relu_plain, post_relu_ciphers[result_idx]);
     }

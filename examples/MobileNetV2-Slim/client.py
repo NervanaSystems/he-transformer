@@ -68,13 +68,14 @@ def main():
 
     imagenet_labels = get_imagenet_labels()
 
-    correct_label = np.where(imagenet_labels == 'military uniform')
+    correct_label = np.where(imagenet_labels == 'military uniform')  # 653
+    results = np.array(results)
 
-    top100 = results.argsort()[-100:][::-1]
+    top1000 = results.argsort()[-1000:][::-1]
 
-    print('top100', top100)
-    preds = imagenet_labels[top100]
-    print(preds)
+    preds = imagenet_labels[top1000]
+    print('top100', preds[0:100])
+    print('index of military uniform', np.where(preds == 'military uniform'))
 
 
 if __name__ == '__main__':
