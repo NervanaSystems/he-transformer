@@ -24,7 +24,7 @@ void ngraph::he::scalar_add_seal(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type, const HESealBackend* he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
-  if (arg0.is_zero() && arg0.is_zero()) {
+  if (arg0.is_zero() && arg1.is_zero()) {
     out->set_zero(true);
   } else if (arg0.is_zero()) {
     out = std::make_shared<ngraph::he::SealCiphertextWrapper>(arg1);
@@ -37,6 +37,7 @@ void ngraph::he::scalar_add_seal(
     he_seal_backend->get_evaluator()->add(arg0.ciphertext(), arg1.ciphertext(),
                                           out->ciphertext());
     out->set_complex_packing(arg1.complex_packing());
+    out->set_zero(false);
   }
 }
 
@@ -49,6 +50,7 @@ void ngraph::he::scalar_add_seal(
 
   if (arg0.is_zero()) {
     he_seal_backend->encrypt(out, arg1);
+    out->set_zero(false);
     return;
   }
 
@@ -81,6 +83,7 @@ void ngraph::he::scalar_add_seal(
       out->set_complex_packing(arg0.complex_packing());
     }
   }
+  out->set_zero(false);
 }
 
 void ngraph::he::scalar_add_seal(

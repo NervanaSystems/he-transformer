@@ -28,6 +28,7 @@ void ngraph::he::scalar_multiply_seal(
   if (arg0.is_zero() || arg1.is_zero()) {
     out->set_zero(true);
   } else {
+    out->set_zero(false);
     match_modulus_and_scale_inplace(arg0, arg1, he_seal_backend, pool);
     // match_scale(arg0, arg1, he_seal_backend);
     size_t chain_ind0 = get_chain_index(arg0, he_seal_backend);
@@ -80,6 +81,7 @@ void ngraph::he::scalar_multiply_seal(
     // out = std::dynamic_pointer_cast<ngraph::he::SealCiphertextWrapper>(
     //    he_seal_backend->create_valued_ciphertext(0, element_type));
   } else {
+    out->set_zero(false);
     if (arg1.is_single_value()) {
       float value = arg1.get_values()[0];
       double double_val = double(value);
