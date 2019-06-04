@@ -163,6 +163,7 @@ class TCPMessage {
     NGRAPH_INFO << "Creating message from " << ciphers.size()
                 << " seal ciphertexts";
 
+    // TODO: get size without saving!
     std::stringstream first;
     ciphers[0].save(first);
     first.seekp(0, std::ios::end);

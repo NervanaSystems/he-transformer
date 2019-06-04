@@ -1363,7 +1363,7 @@ void ngraph::he::HESealExecutable::generate_calls(
       NGRAPH_INFO << "Matched moduli for relu";
       m_relu_ciphertexts.clear();
       std::stringstream cipher_stream;
-      const size_t max_relu_message_cnt = 10000;
+      const size_t max_relu_message_cnt = 97;
       size_t num_relu_batches = element_count / max_relu_message_cnt;
       if (element_count % max_relu_message_cnt != 0) {
         num_relu_batches++;
@@ -1389,14 +1389,16 @@ void ngraph::he::HESealExecutable::generate_calls(
           // relu(0) = 0
           if (cipher->is_zero()) {
             // TODO: parallelize with 0s removed
+            NGRAPH_INFO << "Skipping relu(0) at index " << relu_idx;
             throw ngraph_error("relu(0) not allowed");
-            // NGRAPH_INFO << "Skipping relu(0) at index " << relu_idx;
             // m_relu_ciphertexts.emplace_back(cipher);
           } else {
-            relu_ciphers[relu_idx] = cipher->ciphertext();
+            relu_ciphers[relu_idx - relu_start_idx] = cipher->ciphertext();
           }
         }
+        NGRAPH_INFO << "Creating relu message";
         auto relu_message = TCPMessage(MessageType::relu_request, relu_ciphers);
+        NGRAPH_INFO << "Writing relu message";
         m_session->do_write(std::move(relu_message));
 
         // Acquire lock
