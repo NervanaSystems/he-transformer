@@ -27,7 +27,6 @@
 namespace ngraph {
 namespace he {
 inline void scalar_relu_seal(const HEPlaintext& arg, HEPlaintext& out) {
-  NGRAPH_INFO << "Scalar relu plains";
   const std::vector<float>& arg_vals = arg.get_values();
   std::vector<float> out_vals(arg.num_values());
 

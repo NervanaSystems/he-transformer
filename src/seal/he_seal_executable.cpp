@@ -1023,6 +1023,17 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::MaxPool: {
+      const op::MaxPool* max_pool = static_cast<const op::MaxPool*>(&node);
+      if (arg0_plain != nullptr && out0_plain != nullptr) {
+        ngraph::he::max_pool_seal(
+            arg0_plain->get_elements(), out0_plain->get_elements(),
+            node.get_input_shape(0), out0_plain->get_batched_shape(),
+            max_pool->get_window_shape(),
+            max_pool->get_window_movement_strides(),
+            max_pool->get_padding_below(), max_pool->get_padding_above());
+        break;
+      }
+
       if (!m_enable_client) {
         throw ngraph_error(
             "MaxPool op unsupported unless client is enabled. Try setting "
@@ -1037,7 +1048,6 @@ void ngraph::he::HESealExecutable::generate_calls(
       NGRAPH_INFO << "MaxPool shape " << join(node.get_output_shape(0), "x");
       NGRAPH_INFO << "m_batch_size " << m_batch_size;
 
-      const op::MaxPool* max_pool = static_cast<const op::MaxPool*>(&node);
       // TODO: cleanup
       Shape arg0_shape = node.get_inputs().at(0).get_shape();
       arg0_shape[0] /= m_batch_size;
