@@ -33,6 +33,7 @@
 #include "kernel/multiply_seal.hpp"
 #include "kernel/negate_seal.hpp"
 #include "kernel/pad_seal.hpp"
+#include "kernel/relu_seal.hpp"
 #include "kernel/reshape_seal.hpp"
 #include "kernel/result_seal.hpp"
 #include "kernel/reverse_seal.hpp"
@@ -1272,7 +1273,6 @@ void ngraph::he::HESealExecutable::generate_calls(
     }
     case OP_TYPEID::Reshape: {
       const op::Reshape* reshape = static_cast<const op::Reshape*>(&node);
-
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
         ngraph::he::reshape_seal(
             arg0_cipher->get_elements(), out0_cipher->get_elements(),
@@ -1318,6 +1318,17 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Relu: {
+      if (arg0_plain != nullptr && out0_plain != nullptr) {
+        size_t output_size = arg0_plain->get_batched_element_count();
+        NGRAPH_CHECK(output_size == arg0_plain->num_plaintexts(),
+                     "output size ", output_size,
+                     " doesn't match number of elements",
+                     out0_plain->num_plaintexts());
+        ngraph::he::relu_seal(arg0_plain->get_elements(),
+                              out0_plain->get_elements(), output_size);
+        break;
+      }
+
       if (!m_enable_client) {
         throw ngraph_error(
             "Relu op unsupported unless client is enabled. Try setting "
