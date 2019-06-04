@@ -55,29 +55,6 @@ NGRAPH_TEST(tcp_message, encode_request) {
   EXPECT_EQ(m.data_size(), m2.data_size());
 }
 
-/*NGRAPH_TEST(tcp_message, copy) {
-  size_t count = 3;
-  size_t element_size = 10;
-  size_t size = count * element_size;
-  void* data = malloc(size);
-  std::memset(data, 7, size);  // Set data to have value 7
-  assert(data != nullptr);
-
-  auto m = ngraph::he::TCPMessage(ngraph::he::MessageType::eval_key, count,
-                                   size, (char*)data);
-  ngraph::he::TCPMessage m2{m};
-
-  EXPECT_EQ(m.message_type(), m2.message_type());
-  EXPECT_EQ(m.count(), m2.count());
-  EXPECT_EQ(m.num_bytes(), m2.num_bytes());
-  EXPECT_EQ(m.data_size(), m2.data_size());
-
-  EXPECT_EQ(std::memcmp(m.header_ptr(), m2.header_ptr(),
-                        ngraph::he::TCPMessage::header_length),
-            0);
-  EXPECT_EQ(std::memcmp(m.header_ptr(), m2.header_ptr(), m2.num_bytes()), 0);
-} */
-
 NGRAPH_TEST(tcp_message, encode) {
   size_t count = 3;
   size_t element_size = 10;
