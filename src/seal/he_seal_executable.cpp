@@ -68,6 +68,7 @@
 #include "ngraph/pass/visualize_tree.hpp"
 #include "ngraph/runtime/backend.hpp"
 #include "ngraph/util.hpp"
+#include "pass/he_fusion.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_executable.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
@@ -95,12 +96,13 @@ ngraph::he::HESealExecutable::HESealExecutable(
   m_context = he_seal_backend->get_context();
 
   m_is_compiled = true;
-  pass::Manager pass_manager;
-  pass_manager.register_pass<pass::LikeReplacement>();
-  pass_manager.register_pass<pass::AssignLayout<DenseTensorLayout>>();
-  pass_manager.register_pass<pass::CoreFusion>();
-  pass_manager.register_pass<pass::ConstantFolding>();
-  pass_manager.register_pass<pass::Liveness>();
+  ngraph::pass::Manager pass_manager;
+  pass_manager.register_pass<ngraph::pass::LikeReplacement>();
+  pass_manager.register_pass<ngraph::pass::AssignLayout<DenseTensorLayout>>();
+  pass_manager.register_pass<ngraph::pass::CoreFusion>();
+  pass_manager.register_pass<ngraph::pass::ConstantFolding>();
+  pass_manager.register_pass<ngraph::pass::Liveness>();
+  pass_manager.register_pass<ngraph::he::pass::HEFusion>();
   pass_manager.run_passes(function);
 
   for (const std::shared_ptr<Node>& node : function->get_ordered_ops()) {
