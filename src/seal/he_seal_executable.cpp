@@ -1432,7 +1432,6 @@ void ngraph::he::HESealExecutable::generate_calls(
       }
 
       handle_server_relu_op(arg0_cipher, out0_cipher, node_wrapper);
-
       break;
     }
     case OP_TYPEID::Reverse: {
