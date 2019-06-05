@@ -94,295 +94,267 @@ void ngraph::he::HESealClient::handle_message(
     }
   };
 
-  if (msg_type == ngraph::he::MessageType::parameter_size) {
-    // Number of (packed) ciphertexts to perform inference on
-    size_t parameter_size;
-    std::memcpy(&parameter_size, message.data_ptr(), message.data_size());
+  switch (msg_type) {
+    case ngraph::he::MessageType::parameter_size: {
+      // Number of (packed) ciphertexts to perform inference on
+      size_t parameter_size;
+      std::memcpy(&parameter_size, message.data_ptr(), message.data_size());
 
-    NGRAPH_INFO << "Parameter size " << parameter_size;
-    NGRAPH_INFO << "Client batch size " << m_batch_size;
-    if (complex_packing()) {
-      NGRAPH_INFO << "Client complex packing? " << complex_packing();
-    }
-
-    if (complex_packing()) {
-      // TODO: support odd batch sizes
-      assert(m_batch_size % 2 == 0);
-
-      if (m_inputs.size() != parameter_size * m_batch_size * 2) {
-        NGRAPH_INFO << "m_inputs.size() " << m_inputs.size();
-        NGRAPH_INFO << "parameter_size " << parameter_size;
-        NGRAPH_INFO << "m_batch_size " << m_batch_size;
-      }
-      assert(m_inputs.size() == parameter_size * m_batch_size * 2);
-    } else {
-      assert(m_inputs.size() == parameter_size * m_batch_size);
-    }
-
-    std::vector<seal::Ciphertext> ciphers(parameter_size);
-#pragma omp parallel for
-    for (size_t data_idx = 0; data_idx < parameter_size; ++data_idx) {
-      seal::Plaintext plain;
-
-      size_t complex_scale_factor = complex_packing() ? 2 : 1;
-      size_t batch_start_idx = data_idx * m_batch_size * complex_scale_factor;
-      size_t batch_end_idx =
-          batch_start_idx + m_batch_size * complex_scale_factor;
-
-      std::vector<double> real_vals{m_inputs.begin() + batch_start_idx,
-                                    m_inputs.begin() + batch_end_idx};
+      NGRAPH_INFO << "Parameter size " << parameter_size;
+      NGRAPH_INFO << "Client batch size " << m_batch_size;
       if (complex_packing()) {
-        std::vector<std::complex<double>> complex_vals;
-        real_vec_to_complex_vec(complex_vals, real_vals);
-        m_ckks_encoder->encode(complex_vals, m_scale, plain);
-      } else {
-        m_ckks_encoder->encode(real_vals, m_scale, plain);
+        NGRAPH_INFO << "Client complex packing? " << complex_packing();
       }
-      m_encryptor->encrypt(plain, ciphers[data_idx]);
-    }
-    NGRAPH_INFO << "Creating execute message";
-    auto execute_message =
-        TCPMessage(ngraph::he::MessageType::execute, ciphers);
-    NGRAPH_INFO << "Sending execute message with " << parameter_size
-                << " ciphertexts";
-    write_message(std::move(execute_message));
-  } else if (msg_type == ngraph::he::MessageType::result) {
-    size_t result_count = message.count();
-    size_t element_size = message.element_size();
 
-    NGRAPH_INFO << "Client got " << result_count << " results ";
+      if (complex_packing()) {
+        // TODO: support odd batch sizes
+        assert(m_batch_size % 2 == 0);
 
-    std::vector<seal::Ciphertext> result;
-    m_results.reserve(result_count * m_batch_size);
-    for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
-      seal::Ciphertext cipher;
-      std::stringstream cipher_stream;
-      cipher_stream.write(message.data_ptr() + result_idx * element_size,
-                          element_size);
-      cipher.load(m_context, cipher_stream);
-
-      result.push_back(cipher);
-      seal::Plaintext plain;
-      m_decryptor->decrypt(cipher, plain);
-
-      std::vector<double> outputs;
-      decode_to_real_vec(plain, outputs, complex_packing());
-      m_results.insert(m_results.end(), outputs.begin(), outputs.end());
-    }
-    NGRAPH_INFO << "Results size " << m_results.size();
-
-    close_connection();
-  } else if (msg_type == ngraph::he::MessageType::none) {
-    close_connection();
-  } else if (msg_type == ngraph::he::MessageType::encryption_parameters) {
-    std::stringstream param_stream;
-    param_stream.write(message.data_ptr(), message.element_size());
-    m_encryption_params = seal::EncryptionParameters::Load(param_stream);
-    NGRAPH_INFO << "Loaded encryption parmeters";
-
-    set_seal_context();
-
-    // Send public key
-    std::stringstream pk_stream;
-    m_public_key->save(pk_stream);
-    auto pk_message = TCPMessage(ngraph::he::MessageType::public_key, 1,
-                                 std::move(pk_stream));
-    NGRAPH_INFO << "Sending public key";
-    write_message(std::move(pk_message));
-
-    // Send evaluation key
-    std::stringstream evk_stream;
-    m_relin_keys->save(evk_stream);
-    auto evk_message =
-        TCPMessage(ngraph::he::MessageType::eval_key, 1, std::move(evk_stream));
-    NGRAPH_INFO << "Sending evaluation key";
-    write_message(std::move(evk_message));
-  } else if (msg_type == ngraph::he::MessageType::relu_request) {
-    NGRAPH_INFO << "Received Relu request";
-    auto relu = [](double d) { return d > 0 ? d : 0; };
-    auto relu6 = [](double d) {
-      if (d < 0) {
-        return 0.0;
-      }
-      if (d > 6) {
-        return 6.0;
-      }
-      return d;
-    };
-    size_t result_count = message.count();
-    size_t element_size = message.element_size();
-    NGRAPH_INFO << "Received Relu request with " << result_count << " elements"
-                << " of size " << element_size;
-
-    std::vector<seal::Ciphertext> post_relu_ciphers(result_count);
-#pragma omp parallel for
-    for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
-      seal::Ciphertext pre_relu_cipher;
-      seal::Plaintext relu_plain;
-
-      // Load cipher from stream
-      std::stringstream pre_relu_cipher_stream;
-      pre_relu_cipher_stream.write(
-          message.data_ptr() + result_idx * element_size, element_size);
-      pre_relu_cipher.load(m_context, pre_relu_cipher_stream);
-
-      // Decrypt cipher
-      m_decryptor->decrypt(pre_relu_cipher, relu_plain);
-
-      std::vector<double> relu_vals;
-      decode_to_real_vec(relu_plain, relu_vals, complex_packing());
-
-      // Perform relu6
-      // TODO: do relu instead of relu 6
-      std::vector<double> post_relu_vals(relu_vals.size());
-      std::transform(relu_vals.begin(), relu_vals.end(), post_relu_vals.begin(),
-                     relu);
-
-      // TODO: more special cases for all 0's, and all 6's
-      /*if (post_relu_vals == relu_vals) {
-        NGRAPH_INFO << "skipping relu 6 encoding";
-        if (relu_plain.scale() != m_scale) {
-          NGRAPH_INFO << " manually setting scale!";
-          relu_plain.scale() = m_scale;
+        if (m_inputs.size() != parameter_size * m_batch_size * 2) {
+          NGRAPH_INFO << "m_inputs.size() " << m_inputs.size();
+          NGRAPH_INFO << "parameter_size " << parameter_size;
+          NGRAPH_INFO << "m_batch_size " << m_batch_size;
         }
-      } else */
-      if (complex_packing()) {
-        std::vector<std::complex<double>> complex_relu_vals;
-        real_vec_to_complex_vec(complex_relu_vals, post_relu_vals);
-        m_ckks_encoder->encode(complex_relu_vals, m_scale, relu_plain);
+        assert(m_inputs.size() == parameter_size * m_batch_size * 2);
       } else {
-        m_ckks_encoder->encode(post_relu_vals, m_scale, relu_plain);
+        assert(m_inputs.size() == parameter_size * m_batch_size);
       }
-      m_encryptor->encrypt(relu_plain, post_relu_ciphers[result_idx]);
+
+      std::vector<seal::Ciphertext> ciphers(parameter_size);
+#pragma omp parallel for
+      for (size_t data_idx = 0; data_idx < parameter_size; ++data_idx) {
+        seal::Plaintext plain;
+
+        size_t complex_scale_factor = complex_packing() ? 2 : 1;
+        size_t batch_start_idx = data_idx * m_batch_size * complex_scale_factor;
+        size_t batch_end_idx =
+            batch_start_idx + m_batch_size * complex_scale_factor;
+
+        std::vector<double> real_vals{m_inputs.begin() + batch_start_idx,
+                                      m_inputs.begin() + batch_end_idx};
+        if (complex_packing()) {
+          std::vector<std::complex<double>> complex_vals;
+          real_vec_to_complex_vec(complex_vals, real_vals);
+          m_ckks_encoder->encode(complex_vals, m_scale, plain);
+        } else {
+          m_ckks_encoder->encode(real_vals, m_scale, plain);
+        }
+        m_encryptor->encrypt(plain, ciphers[data_idx]);
+      }
+      NGRAPH_INFO << "Creating execute message";
+      auto execute_message =
+          TCPMessage(ngraph::he::MessageType::execute, ciphers);
+      NGRAPH_INFO << "Sending execute message with " << parameter_size
+                  << " ciphertexts";
+      write_message(std::move(execute_message));
+      break;
     }
-    NGRAPH_INFO << "performed relu; creating relu message";
 
-    auto relu_result_msg =
-        TCPMessage(ngraph::he::MessageType::relu_result, post_relu_ciphers);
-    NGRAPH_INFO << "Writing relu_result message with " << result_count
-                << " ciphertexts";
+    case ngraph::he::MessageType::result: {
+      size_t result_count = message.count();
+      size_t element_size = message.element_size();
 
-    write_message(std::move(relu_result_msg));
-  } else if (msg_type == ngraph::he::MessageType::max_request) {
-    size_t complex_scale_factor = complex_packing() ? 2 : 1;
-    size_t cipher_count = message.count();
-    size_t element_size = message.element_size();
+      NGRAPH_INFO << "Client got " << result_count << " results ";
 
-    std::vector<std::vector<double>> input_cipher_values(
-        m_batch_size * complex_scale_factor,
-        std::vector<double>(cipher_count, 0));
+      std::vector<seal::Ciphertext> result;
+      m_results.reserve(result_count * m_batch_size);
+      for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
+        seal::Ciphertext cipher;
+        std::stringstream cipher_stream;
+        cipher_stream.write(message.data_ptr() + result_idx * element_size,
+                            element_size);
+        cipher.load(m_context, cipher_stream);
 
-    std::vector<double> max_values(m_batch_size * complex_scale_factor,
-                                   std::numeric_limits<double>::lowest());
+        result.push_back(cipher);
+        seal::Plaintext plain;
+        m_decryptor->decrypt(cipher, plain);
+
+        std::vector<double> outputs;
+        decode_to_real_vec(plain, outputs, complex_packing());
+        m_results.insert(m_results.end(), outputs.begin(), outputs.end());
+      }
+      NGRAPH_INFO << "Results size " << m_results.size();
+
+      close_connection();
+      break;
+    }
+
+    case ngraph::he::MessageType::none: {
+      close_connection();
+      break;
+    }
+
+    case ngraph::he::MessageType::encryption_parameters: {
+      std::stringstream param_stream;
+      param_stream.write(message.data_ptr(), message.element_size());
+      m_encryption_params = seal::EncryptionParameters::Load(param_stream);
+      NGRAPH_INFO << "Loaded encryption parmeters";
+
+      set_seal_context();
+
+      // Send public key
+      std::stringstream pk_stream;
+      m_public_key->save(pk_stream);
+      auto pk_message = TCPMessage(ngraph::he::MessageType::public_key, 1,
+                                   std::move(pk_stream));
+      NGRAPH_INFO << "Sending public key";
+      write_message(std::move(pk_message));
+
+      // Send evaluation key
+      std::stringstream evk_stream;
+      m_relin_keys->save(evk_stream);
+      auto evk_message = TCPMessage(ngraph::he::MessageType::eval_key, 1,
+                                    std::move(evk_stream));
+      NGRAPH_INFO << "Sending evaluation key";
+      write_message(std::move(evk_message));
+
+      break;
+    }
+    case ngraph::he::MessageType::relu_request: {
+      NGRAPH_INFO << "Received Relu request";
+      auto relu = [](double d) { return d > 0 ? d : 0; };
+      auto relu6 = [](double d) {
+        if (d < 0) {
+          return 0.0;
+        }
+        if (d > 6) {
+          return 6.0;
+        }
+        return d;
+      };
+      size_t result_count = message.count();
+      size_t element_size = message.element_size();
+      NGRAPH_INFO << "Received Relu request with " << result_count
+                  << " elements"
+                  << " of size " << element_size;
+
+      std::vector<seal::Ciphertext> post_relu_ciphers(result_count);
+#pragma omp parallel for
+      for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
+        seal::Ciphertext pre_relu_cipher;
+        seal::Plaintext relu_plain;
+
+        // Load cipher from stream
+        std::stringstream pre_relu_cipher_stream;
+        pre_relu_cipher_stream.write(
+            message.data_ptr() + result_idx * element_size, element_size);
+        pre_relu_cipher.load(m_context, pre_relu_cipher_stream);
+
+        // Decrypt cipher
+        m_decryptor->decrypt(pre_relu_cipher, relu_plain);
+
+        std::vector<double> relu_vals;
+        decode_to_real_vec(relu_plain, relu_vals, complex_packing());
+
+        // Perform relu6
+        // TODO: do relu instead of relu 6
+        std::vector<double> post_relu_vals(relu_vals.size());
+        std::transform(relu_vals.begin(), relu_vals.end(),
+                       post_relu_vals.begin(), relu);
+
+        // TODO: more special cases for all 0's, and all 6's
+        /*if (post_relu_vals == relu_vals) {
+          NGRAPH_INFO << "skipping relu 6 encoding";
+          if (relu_plain.scale() != m_scale) {
+            NGRAPH_INFO << " manually setting scale!";
+            relu_plain.scale() = m_scale;
+          }
+        } else */
+        if (complex_packing()) {
+          std::vector<std::complex<double>> complex_relu_vals;
+          real_vec_to_complex_vec(complex_relu_vals, post_relu_vals);
+          m_ckks_encoder->encode(complex_relu_vals, m_scale, relu_plain);
+        } else {
+          m_ckks_encoder->encode(post_relu_vals, m_scale, relu_plain);
+        }
+        m_encryptor->encrypt(relu_plain, post_relu_ciphers[result_idx]);
+      }
+      NGRAPH_INFO << "performed relu; creating relu message";
+
+      auto relu_result_msg =
+          TCPMessage(ngraph::he::MessageType::relu_result, post_relu_ciphers);
+      NGRAPH_INFO << "Writing relu_result message with " << result_count
+                  << " ciphertexts";
+
+      write_message(std::move(relu_result_msg));
+      break;
+    }
+
+    case ngraph::he::MessageType::max_request: {
+      size_t complex_scale_factor = complex_packing() ? 2 : 1;
+      size_t cipher_count = message.count();
+      size_t element_size = message.element_size();
+
+      std::vector<std::vector<double>> input_cipher_values(
+          m_batch_size * complex_scale_factor,
+          std::vector<double>(cipher_count, 0));
+
+      std::vector<double> max_values(m_batch_size * complex_scale_factor,
+                                     std::numeric_limits<double>::lowest());
 
 #pragma omp parallel for
-    for (size_t cipher_idx = 0; cipher_idx < cipher_count; ++cipher_idx) {
-      seal::Ciphertext pre_sort_cipher;
-      seal::Plaintext pre_sort_plain;
+      for (size_t cipher_idx = 0; cipher_idx < cipher_count; ++cipher_idx) {
+        seal::Ciphertext pre_sort_cipher;
+        seal::Plaintext pre_sort_plain;
 
-      // Load cipher from stream
-      std::stringstream pre_sort_cipher_stream;
-      pre_sort_cipher_stream.write(
-          message.data_ptr() + cipher_idx * element_size, element_size);
-      pre_sort_cipher.load(m_context, pre_sort_cipher_stream);
+        // Load cipher from stream
+        std::stringstream pre_sort_cipher_stream;
+        pre_sort_cipher_stream.write(
+            message.data_ptr() + cipher_idx * element_size, element_size);
+        pre_sort_cipher.load(m_context, pre_sort_cipher_stream);
 
-      // Decrypt cipher
-      m_decryptor->decrypt(pre_sort_cipher, pre_sort_plain);
-      std::vector<double> pre_max_value;
-      decode_to_real_vec(pre_sort_plain, pre_max_value, complex_packing());
+        // Decrypt cipher
+        m_decryptor->decrypt(pre_sort_cipher, pre_sort_plain);
+        std::vector<double> pre_max_value;
+        decode_to_real_vec(pre_sort_plain, pre_max_value, complex_packing());
 
+        for (size_t batch_idx = 0;
+             batch_idx < m_batch_size * complex_scale_factor; ++batch_idx) {
+          input_cipher_values[batch_idx][cipher_idx] = pre_max_value[batch_idx];
+        }
+      }
+
+      // Get max of eachstd::vector of values
       for (size_t batch_idx = 0;
            batch_idx < m_batch_size * complex_scale_factor; ++batch_idx) {
-        input_cipher_values[batch_idx][cipher_idx] = pre_max_value[batch_idx];
+        max_values[batch_idx] =
+            *std::max_element(input_cipher_values[batch_idx].begin(),
+                              input_cipher_values[batch_idx].end());
       }
-    }
 
-    // Get max of eachstd::vector of values
-    for (size_t batch_idx = 0; batch_idx < m_batch_size * complex_scale_factor;
-         ++batch_idx) {
-      max_values[batch_idx] =
-          *std::max_element(input_cipher_values[batch_idx].begin(),
-                            input_cipher_values[batch_idx].end());
-    }
+      // Encrypt maximum values
+      seal::Ciphertext cipher_max;
+      seal::Plaintext plain_max;
+      std::stringstream max_stream;
 
-    // Encrypt maximum values
-    seal::Ciphertext cipher_max;
-    seal::Plaintext plain_max;
-    std::stringstream max_stream;
-
-    if (complex_packing()) {
-      assert(max_values.size() % 2 == 0);
-      std::vector<std::complex<double>> max_complex_vals;
-      real_vec_to_complex_vec(max_complex_vals, max_values);
-      m_ckks_encoder->encode(max_complex_vals, m_scale, plain_max);
-    } else {
-      m_ckks_encoder->encode(max_values, m_scale, plain_max);
-    }
-    m_encryptor->encrypt(plain_max, cipher_max);
-    cipher_max.save(max_stream);
-    auto max_result_msg = TCPMessage(ngraph::he::MessageType::max_result, 1,
-                                     std::move(max_stream));
-    write_message(std::move(max_result_msg));
-  } else if (msg_type == ngraph::he::MessageType::minimum_request) {
-    // Stores (c_1a, c_1b, c_2a, c_b, ..., c_na, c_nb)
-    // prints messsge (min(c_1a, c_1b), min(c_2a, c_2b), ..., min(c_na, c_nb))
-    size_t cipher_count = message.count();
-    assert(cipher_count % 2 == 0);
-    size_t element_size = message.element_size();
-
-    std::vector<std::vector<double>> input_cipher_values(
-        cipher_count, std::vector<double>(m_batch_size, 0));
-
-    std::vector<double> min_values(m_batch_size,
-                                   std::numeric_limits<double>::max());
-
-#pragma omp parallel for
-    for (size_t cipher_idx = 0; cipher_idx < cipher_count; ++cipher_idx) {
-      seal::Ciphertext pre_sort_cipher;
-      seal::Plaintext pre_sort_plain;
-
-      // Load cipher from stream
-      std::stringstream pre_sort_cipher_stream;
-      pre_sort_cipher_stream.write(
-          message.data_ptr() + cipher_idx * element_size, element_size);
-      pre_sort_cipher.load(m_context, pre_sort_cipher_stream);
-
-      // Decrypt cipher
-      m_decryptor->decrypt(pre_sort_cipher, pre_sort_plain);
-      std::vector<double> pre_sort_value;
-      m_ckks_encoder->decode(pre_sort_plain, pre_sort_value);
-
-      // Discard extra values
-      pre_sort_value.resize(m_batch_size);
-
-      for (size_t batch_idx = 0; batch_idx < m_batch_size; ++batch_idx) {
-        input_cipher_values[cipher_idx][batch_idx] = pre_sort_value[batch_idx];
+      if (complex_packing()) {
+        assert(max_values.size() % 2 == 0);
+        std::vector<std::complex<double>> max_complex_vals;
+        real_vec_to_complex_vec(max_complex_vals, max_values);
+        m_ckks_encoder->encode(max_complex_vals, m_scale, plain_max);
+      } else {
+        m_ckks_encoder->encode(max_values, m_scale, plain_max);
       }
-    }
+      m_encryptor->encrypt(plain_max, cipher_max);
+      cipher_max.save(max_stream);
+      auto max_result_msg = TCPMessage(ngraph::he::MessageType::max_result, 1,
+                                       std::move(max_stream));
+      write_message(std::move(max_result_msg));
 
-    // Get minimum of each vector of values
-    std::stringstream minimum_stream;
-    for (size_t cipher_idx = 0; cipher_idx < cipher_count; cipher_idx += 2) {
-      for (size_t batch_idx = 0; batch_idx < m_batch_size; ++batch_idx) {
-        min_values[batch_idx] =
-            std::min(input_cipher_values[cipher_idx][batch_idx],
-                     input_cipher_values[cipher_idx + 1][batch_idx]);
-      }
-      // Encrypt minimum values
-      seal::Ciphertext cipher_minimum;
-      seal::Plaintext plain_minimum;
-      m_ckks_encoder->encode(min_values, m_scale, plain_minimum);
-      m_encryptor->encrypt(plain_minimum, cipher_minimum);
-      cipher_minimum.save(minimum_stream);
+      break;
     }
-
-    auto minimum_result_msg =
-        TCPMessage(ngraph::he::MessageType::minimum_result, cipher_count / 2,
-                   std::move(minimum_stream));
-    write_message(std::move(minimum_result_msg));
-  } else {
-    NGRAPH_INFO << "Unsupported message type: "
-                << message_type_to_string(msg_type).c_str();
+    case ngraph::he::MessageType::execute:
+    case ngraph::he::MessageType::max_result:
+    case ngraph::he::MessageType::minimum_request:
+    case ngraph::he::MessageType::minimum_result:
+    case ngraph::he::MessageType::parameter_shape_request:
+    case ngraph::he::MessageType::public_key:
+    case ngraph::he::MessageType::relu6_request:
+    case ngraph::he::MessageType::relu_result:
+    case ngraph::he::MessageType::result_request:
+    default:
+      NGRAPH_INFO << "Unsupported message type: "
+                  << message_type_to_string(msg_type).c_str();
   }
 }
 

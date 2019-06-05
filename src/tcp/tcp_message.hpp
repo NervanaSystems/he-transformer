@@ -48,6 +48,7 @@ enum class MessageType {
   parameter_size,
   public_key,
   relu_request,
+  relu6_request,
   relu_result,
   result,
   result_request
