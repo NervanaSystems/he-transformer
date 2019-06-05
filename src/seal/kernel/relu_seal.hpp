@@ -50,7 +50,17 @@ inline void scalar_relu_seal(const SealCiphertextWrapper& arg,
   const std::vector<float>& arg_vals = plain.get_values();
   std::vector<float> out_vals(plain.num_values());
   auto relu = [](float f) { return f > 0 ? f : 0.f; };
-  std::transform(arg_vals.begin(), arg_vals.end(), out_vals.begin(), relu);
+  auto relu6 = [](double d) {
+    if (d < 0) {
+      return 0.0;
+    }
+    if (d > 6) {
+      return 6.0;
+    }
+    return d;
+  };
+  // TODO: use relu!
+  std::transform(arg_vals.begin(), arg_vals.end(), out_vals.begin(), relu6);
 
   plain.set_values(out_vals);
   he_seal_backend->encrypt(out, plain);
