@@ -1034,12 +1034,28 @@ void ngraph::he::HESealExecutable::generate_calls(
             max_pool->get_padding_below(), max_pool->get_padding_above());
         break;
       }
+      if (arg0_cipher == nullptr || out0_cipher == nullptr) {
+        throw ngraph_error("Relu types not supported");
+      }
 
       if (!m_enable_client) {
-        throw ngraph_error(
-            "MaxPool op unsupported unless client is enabled. Try setting "
-            "NGRAPH_ENABLE_CLIENT=1");
+        NGRAPH_WARN
+            << "Performing MaxPool without client is not privacy-preserving";
+        size_t output_size = arg0_cipher->get_batched_element_count();
+        NGRAPH_CHECK(output_size == arg0_cipher->num_ciphertexts(),
+                     "output size ", output_size,
+                     " doesn't match number of elements",
+                     out0_cipher->num_ciphertexts());
+        ngraph::he::max_pool_seal(
+            arg0_cipher->get_elements(), out0_cipher->get_elements(),
+            node.get_input_shape(0), out0_cipher->get_batched_shape(),
+            max_pool->get_window_shape(),
+            max_pool->get_window_movement_strides(),
+            max_pool->get_padding_below(), max_pool->get_padding_above(),
+            m_he_seal_backend);
+        break;
       }
+
       if (arg0_cipher == nullptr || out0_cipher == nullptr) {
         NGRAPH_INFO << "MaxPool types not supported ";
         throw ngraph_error("MaxPool supports only Cipher, Cipher");
@@ -1348,10 +1364,22 @@ void ngraph::he::HESealExecutable::generate_calls(
         break;
       }
 
+      if (arg0_cipher == nullptr || out0_cipher == nullptr) {
+        throw ngraph_error("Relu types not supported");
+      }
+
       if (!m_enable_client) {
-        throw ngraph_error(
-            "Relu op unsupported unless client is enabled. Try setting "
-            "NGRAPH_ENABLE_CLIENT=1");
+        NGRAPH_WARN
+            << "Performing Relu without client is not privacy-preserving";
+        size_t output_size = arg0_cipher->get_batched_element_count();
+        NGRAPH_CHECK(output_size == arg0_cipher->num_ciphertexts(),
+                     "output size ", output_size,
+                     " doesn't match number of elements",
+                     out0_cipher->num_ciphertexts());
+        ngraph::he::relu_seal(arg0_cipher->get_elements(),
+                              out0_cipher->get_elements(), output_size,
+                              m_he_seal_backend);
+        break;
       }
 
       size_t element_count =
