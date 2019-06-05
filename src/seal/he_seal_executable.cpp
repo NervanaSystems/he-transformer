@@ -59,6 +59,8 @@
 #include "ngraph/op/slice.hpp"
 #include "ngraph/op/sum.hpp"
 #include "ngraph/pass/assign_layout.hpp"
+#include "ngraph/pass/constant_folding.hpp"
+#include "ngraph/pass/core_fusion.hpp"
 #include "ngraph/pass/like_replacement.hpp"
 #include "ngraph/pass/liveness.hpp"
 #include "ngraph/pass/manager.hpp"
@@ -96,6 +98,8 @@ ngraph::he::HESealExecutable::HESealExecutable(
   pass::Manager pass_manager;
   pass_manager.register_pass<pass::LikeReplacement>();
   pass_manager.register_pass<pass::AssignLayout<DenseTensorLayout>>();
+  pass_manager.register_pass<pass::CoreFusion>();
+  pass_manager.register_pass<pass::ConstantFolding>();
   pass_manager.register_pass<pass::Liveness>();
   pass_manager.run_passes(function);
 
