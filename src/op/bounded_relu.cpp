@@ -23,7 +23,6 @@ op::BoundedRelu::BoundedRelu(shared_ptr<Node> arg, float alpha)
     : UnaryElementwiseArithmetic("BoundedRelu", {arg}), m_alpha(alpha) {
   constructor_validate_and_infer_types();
   set_output_type(0, arg->get_element_type(), arg->get_shape());
-  NGRAPH_INFO << "Created bounded relu with alpha " << alpha;
 }
 
 shared_ptr<Node> op::BoundedRelu::copy_with_new_args(
