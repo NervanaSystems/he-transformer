@@ -2,6 +2,9 @@
 
 # MobileNet V2 example
 
+See here: https://github.com/tensorflow/models/tree/master/research/slim/nets/mobilenet
+for a description. We use mobilenet_v2_0.35_96.
+
 Make sure python env is active.
 
 To get model and optimize for inference, call `./get_model.sh`
@@ -23,4 +26,11 @@ python client.py
 For debugging purposes, run the model in plaintext with
 ```
 NGRAPH_TF_BACKEND=HE_SEAL python test.py
+```
+
+# To download data
+- First, create an account at imagenet.org
+```bash
+cd data
+./download_and_convert_imagenet.sh ./
 ```

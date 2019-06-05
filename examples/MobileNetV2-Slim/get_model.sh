@@ -1,3 +1,6 @@
+# See here: https://github.com/tensorflow/models/tree/master/research/slim/nets/mobilenet
+# for a description. We use mobilenet_v2_0.35_96.
+
 mkdir -p model
 cd model
 wget https://storage.googleapis.com/mobilenet_v2/checkpoints/mobilenet_v2_0.35_96.tgz
