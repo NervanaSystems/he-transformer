@@ -908,39 +908,8 @@ void ngraph::he::HESealExecutable::generate_calls(
 
         size_t smallest_ind = ngraph::he::match_to_smallest_chain_index(
             arg0_cipher->get_elements(), m_he_seal_backend);
-        NGRAPH_INFO << "Matched moduli for relu to chain ind " << smallest_ind;
-        /*
+        NGRAPH_INFO << "Matched moduli to chain ind " << smallest_ind;
 
-        size_t smallest_chain_ind = std::numeric_limits<size_t>::max();
-        size_t smallest_relu_ind = 0;
-        for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
-          auto& cipher = arg0_cipher->get_element(relu_idx);
-          if (!cipher->is_zero()) {
-            size_t chain_ind =
-                ngraph::he::get_chain_index(*cipher, m_he_seal_backend);
-            if (chain_ind < smallest_chain_ind) {
-              smallest_chain_ind = chain_ind;
-              smallest_relu_ind = relu_idx;
-            }
-          }
-        }
-        NGRAPH_CHECK(smallest_chain_ind != std::numeric_limits<size_t>::max());
-        NGRAPH_INFO << "Smallest chain ind " << smallest_chain_ind << " at "
-                    << smallest_relu_ind;
-        auto smallest_cipher = arg0_cipher->get_element(smallest_relu_ind);
-#pragma omp parallel for
-        for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
-          auto& cipher = arg0_cipher->get_element(relu_idx);
-          if (!cipher->is_zero() && relu_idx != smallest_relu_ind) {
-            match_modulus_and_scale_inplace(*smallest_cipher, *cipher,
-                                            m_he_seal_backend);
-            size_t chain_ind =
-                ngraph::he::get_chain_index(*cipher, m_he_seal_backend);
-            NGRAPH_CHECK(chain_ind == smallest_chain_ind, "chain_ind",
-                         chain_ind, " does not match smallest ",
-                         smallest_chain_ind);
-          }
-        }*/
         m_relu_ciphertexts.clear();
         std::stringstream cipher_stream;
         // TODO: tune
@@ -950,8 +919,6 @@ void ngraph::he::HESealExecutable::generate_calls(
           num_relu_batches++;
         }
         std::vector<seal::Ciphertext> relu_ciphers(max_relu_message_cnt);
-        NGRAPH_INFO << "element_count " << element_count;
-        NGRAPH_INFO << "num_relu_batches " << num_relu_batches;
         for (size_t relu_batch = 0; relu_batch < num_relu_batches;
              ++relu_batch) {
           size_t relu_start_idx = relu_batch * max_relu_message_cnt;
@@ -960,9 +927,6 @@ void ngraph::he::HESealExecutable::generate_calls(
             relu_end_idx = element_count;
           }
           relu_ciphers.resize(relu_end_idx - relu_start_idx);
-          NGRAPH_INFO << "relu cipher size " << relu_ciphers.size();
-          NGRAPH_INFO << "relu_start_idx " << relu_start_idx;
-          NGRAPH_INFO << "relu_end_idx " << relu_end_idx;
 #pragma omp parallel for
           for (size_t relu_idx = relu_start_idx; relu_idx < relu_end_idx;
                ++relu_idx) {
@@ -1535,37 +1499,11 @@ void ngraph::he::HESealExecutable::generate_calls(
         throw ngraph_error("Relu types not supported.");
       }
 
-      size_t smallest_chain_ind = std::numeric_limits<size_t>::max();
-      size_t smallest_relu_ind = 0;
-      for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
-        auto& cipher = arg0_cipher->get_element(relu_idx);
-        if (!cipher->is_zero()) {
-          size_t chain_ind =
-              ngraph::he::get_chain_index(*cipher, m_he_seal_backend);
-          if (chain_ind < smallest_chain_ind) {
-            smallest_chain_ind = chain_ind;
-            smallest_relu_ind = relu_idx;
-          }
-        }
-      }
-      NGRAPH_CHECK(smallest_chain_ind != std::numeric_limits<size_t>::max());
-      NGRAPH_INFO << "Smallest chain ind " << smallest_chain_ind << " at "
-                  << smallest_relu_ind;
-      auto smallest_cipher = arg0_cipher->get_element(smallest_relu_ind);
-#pragma omp parallel for
-      for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
-        auto& cipher = arg0_cipher->get_element(relu_idx);
-        if (!cipher->is_zero() && relu_idx != smallest_relu_ind) {
-          match_modulus_and_scale_inplace(*smallest_cipher, *cipher,
-                                          m_he_seal_backend);
-          size_t chain_ind =
-              ngraph::he::get_chain_index(*cipher, m_he_seal_backend);
-          NGRAPH_CHECK(chain_ind == smallest_chain_ind, "chain_ind", chain_ind,
-                       " does not match smallest ", smallest_chain_ind);
-        }
-      }
-      NGRAPH_INFO << "Matched moduli for relu";
+      size_t smallest_ind = ngraph::he::match_to_smallest_chain_index(
+          arg0_cipher->get_elements(), m_he_seal_backend);
+      NGRAPH_INFO << "Matched moduli to chain ind " << smallest_ind;
       m_relu_ciphertexts.clear();
+
       std::stringstream cipher_stream;
       // TODO: tune
       const size_t max_relu_message_cnt = 10000;
@@ -1574,8 +1512,6 @@ void ngraph::he::HESealExecutable::generate_calls(
         num_relu_batches++;
       }
       std::vector<seal::Ciphertext> relu_ciphers(max_relu_message_cnt);
-      NGRAPH_INFO << "element_count " << element_count;
-      NGRAPH_INFO << "num_relu_batches " << num_relu_batches;
       for (size_t relu_batch = 0; relu_batch < num_relu_batches; ++relu_batch) {
         size_t relu_start_idx = relu_batch * max_relu_message_cnt;
         size_t relu_end_idx = (relu_batch + 1) * max_relu_message_cnt;
@@ -1583,9 +1519,6 @@ void ngraph::he::HESealExecutable::generate_calls(
           relu_end_idx = element_count;
         }
         relu_ciphers.resize(relu_end_idx - relu_start_idx);
-        NGRAPH_INFO << "relu cipher size " << relu_ciphers.size();
-        NGRAPH_INFO << "relu_start_idx " << relu_start_idx;
-        NGRAPH_INFO << "relu_end_idx " << relu_end_idx;
 #pragma omp parallel for
         for (size_t relu_idx = relu_start_idx; relu_idx < relu_end_idx;
              ++relu_idx) {
@@ -1599,6 +1532,7 @@ void ngraph::he::HESealExecutable::generate_calls(
             relu_ciphers[relu_idx - relu_start_idx] = cipher->ciphertext();
           }
         }
+
         NGRAPH_INFO << "Creating relu request message";
         auto relu_message = TCPMessage(MessageType::relu_request, relu_ciphers);
         NGRAPH_INFO << "Writing relu message";
