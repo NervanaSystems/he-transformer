@@ -30,6 +30,7 @@
 #include "kernel/convolution_seal.hpp"
 #include "kernel/dot_seal.hpp"
 #include "kernel/max_pool_seal.hpp"
+#include "kernel/minimum_seal.hpp"
 #include "kernel/multiply_seal.hpp"
 #include "kernel/negate_seal.hpp"
 #include "kernel/pad_seal.hpp"
@@ -1101,6 +1102,14 @@ void ngraph::he::HESealExecutable::generate_calls(
     }
     case OP_TYPEID::Minimum: {
       NGRAPH_INFO << "Minimum op";
+      if (arg0_plain != nullptr && arg1_plain != nullptr &&
+          out0_plain != nullptr) {
+        ngraph::he::minimum_seal(arg0_plain->get_elements(),
+                                 arg1_plain->get_elements(),
+                                 out0_plain->get_elements(),
+                                 out0_plain->get_batched_element_count());
+        break;
+      }
 
       NGRAPH_CHECK(arg0_cipher != nullptr,
                    "Minimum supports only arg0 == cipher");
