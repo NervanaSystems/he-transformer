@@ -95,6 +95,9 @@ inline std::string message_type_to_string(const MessageType& type) {
     case MessageType::relu_request:
       return "relu_request";
       break;
+    case MessageType::relu6_request:
+      return "relu6_request";
+      break;
     case MessageType::result:
       return "result";
       break;
