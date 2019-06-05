@@ -16,7 +16,6 @@ In one terminal, run
 NGRAPH_ENABLE_CLIENT=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_BATCH_DATA=1 NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N13_L4.json NGRAPH_TF_BACKEND=HE_SEAL python test.py
 ```
 
-
 In a second terminal on the same server, run
 ```
 python client.py
@@ -33,4 +32,10 @@ NGRAPH_TF_BACKEND=HE_SEAL python test.py
 ```bash
 cd data
 ./download_and_convert_imagenet.sh ./
+```
+
+## Smaller parameters
+For faster runtime (need to check accuracy), try
+```
+NGRAPH_ENABLE_CLIENT=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_BATCH_DATA=1 NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4_27bits.json NGRAPH_TF_BACKEND=HE_SEAL python test.py
 ```

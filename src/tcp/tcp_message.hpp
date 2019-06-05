@@ -197,7 +197,6 @@ class TCPMessage {
       std::stringbuf* pbuf = ss.rdbuf();
       pbuf->sgetn(data_ptr() + offset, first_cipher_size);
     }
-    NGRAPH_INFO << "first_cipher_size " << first_cipher_size;
   }
 
   TCPMessage(const MessageType type, const size_t count, const size_t size,
@@ -206,7 +205,6 @@ class TCPMessage {
     check_arguments();
     // TODO: use malloc
     m_data = new char[header_length + body_length()];
-    NGRAPH_INFO << "TCPMessage from pointer";
     encode_header();
     encode_message_type();
     encode_count();
