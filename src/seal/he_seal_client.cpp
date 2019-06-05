@@ -323,63 +323,6 @@ void ngraph::he::HESealClient::handle_message(
     auto max_result_msg = TCPMessage(ngraph::he::MessageType::max_result, 1,
                                      std::move(max_stream));
     write_message(std::move(max_result_msg));
-  } else if (msg_type == ngraph::he::MessageType::minimum_request) {
-    // Stores (c_1a, c_1b, c_2a, c_b, ..., c_na, c_nb)
-    // prints messsge (min(c_1a, c_1b), min(c_2a, c_2b), ..., min(c_na, c_nb))
-    size_t cipher_count = message.count();
-    assert(cipher_count % 2 == 0);
-    size_t element_size = message.element_size();
-
-    std::vector<std::vector<double>> input_cipher_values(
-        cipher_count, std::vector<double>(m_batch_size, 0));
-
-    std::vector<double> min_values(m_batch_size,
-                                   std::numeric_limits<double>::max());
-
-#pragma omp parallel for
-    for (size_t cipher_idx = 0; cipher_idx < cipher_count; ++cipher_idx) {
-      seal::Ciphertext pre_sort_cipher;
-      seal::Plaintext pre_sort_plain;
-
-      // Load cipher from stream
-      std::stringstream pre_sort_cipher_stream;
-      pre_sort_cipher_stream.write(
-          message.data_ptr() + cipher_idx * element_size, element_size);
-      pre_sort_cipher.load(m_context, pre_sort_cipher_stream);
-
-      // Decrypt cipher
-      m_decryptor->decrypt(pre_sort_cipher, pre_sort_plain);
-      std::vector<double> pre_sort_value;
-      m_ckks_encoder->decode(pre_sort_plain, pre_sort_value);
-
-      // Discard extra values
-      pre_sort_value.resize(m_batch_size);
-
-      for (size_t batch_idx = 0; batch_idx < m_batch_size; ++batch_idx) {
-        input_cipher_values[cipher_idx][batch_idx] = pre_sort_value[batch_idx];
-      }
-    }
-
-    // Get minimum of each vector of values
-    std::stringstream minimum_stream;
-    for (size_t cipher_idx = 0; cipher_idx < cipher_count; cipher_idx += 2) {
-      for (size_t batch_idx = 0; batch_idx < m_batch_size; ++batch_idx) {
-        min_values[batch_idx] =
-            std::min(input_cipher_values[cipher_idx][batch_idx],
-                     input_cipher_values[cipher_idx + 1][batch_idx]);
-      }
-      // Encrypt minimum values
-      seal::Ciphertext cipher_minimum;
-      seal::Plaintext plain_minimum;
-      m_ckks_encoder->encode(min_values, m_scale, plain_minimum);
-      m_encryptor->encrypt(plain_minimum, cipher_minimum);
-      cipher_minimum.save(minimum_stream);
-    }
-
-    auto minimum_result_msg =
-        TCPMessage(ngraph::he::MessageType::minimum_result, cipher_count / 2,
-                   std::move(minimum_stream));
-    write_message(std::move(minimum_result_msg));
   } else {
     NGRAPH_INFO << "Unsupported message type: "
                 << message_type_to_string(msg_type).c_str();
