@@ -61,6 +61,7 @@ inline void relu_seal(
     const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out, size_t count,
     const HESealBackend* he_seal_backend) {
+#pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
     scalar_relu_seal(*arg[i], out[i], he_seal_backend);
   }
