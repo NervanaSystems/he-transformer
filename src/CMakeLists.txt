@@ -22,6 +22,12 @@ set (HE_SRC
     he_tensor.cpp
     node_wrapper.cpp
 
+    # pass
+    pass/he_fusion.cpp
+
+    # op
+    op/bounded_relu.cpp
+
     # seal kernels
     seal/kernel/constant_seal.cpp
     seal/kernel/pad_seal.cpp
