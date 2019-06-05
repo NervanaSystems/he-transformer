@@ -74,6 +74,8 @@ class HESealCipherTensor : public HETensor {
     return m_ciphertexts[i];
   }
 
+  inline size_t num_ciphertexts() { return m_ciphertexts.size(); }
+
  private:
   std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>> m_ciphertexts;
   size_t m_num_elements;

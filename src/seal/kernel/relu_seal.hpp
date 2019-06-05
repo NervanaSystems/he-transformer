@@ -43,5 +43,29 @@ inline void relu_seal(const std::vector<HEPlaintext>& arg,
   }
 }
 
+inline void scalar_relu_seal(const SealCiphertextWrapper& arg,
+                             std::shared_ptr<SealCiphertextWrapper>& out,
+                             const HESealBackend* he_seal_backend) {
+  HEPlaintext plain;
+  he_seal_backend->decrypt(plain, arg);
+  const std::vector<float>& arg_vals = plain.get_values();
+  std::vector<float> out_vals(plain.num_values());
+  auto relu = [](float f) { return f > 0 ? f : 0.f; };
+  std::transform(arg_vals.begin(), arg_vals.end(), out_vals.begin(), relu);
+
+  plain.set_values(out_vals);
+  he_seal_backend->encrypt(out, plain);
+}
+
+inline void relu_seal(
+    const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
+    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out, size_t count,
+    const HESealBackend* he_seal_backend) {
+#pragma omp parallel for
+  for (size_t i = 0; i < count; ++i) {
+    scalar_relu_seal(*arg[i], out[i], he_seal_backend);
+  }
+}
+
 }  // namespace he
 }  // namespace ngraph
