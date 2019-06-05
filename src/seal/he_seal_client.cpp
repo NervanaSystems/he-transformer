@@ -16,6 +16,7 @@
 
 #include <algorithm>
 #include <boost/asio.hpp>
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <numeric>
@@ -77,22 +78,6 @@ void ngraph::he::HESealClient::handle_message(
 
   // NGRAPH_INFO << "Client received message type: "
   //          << message_type_to_string(msg_type).c_str() ;
-
-  auto decode_to_real_vec = [this](const seal::Plaintext& plain,
-                                   std::vector<double>& output, bool complex) {
-    assert(output.size() == 0);
-    if (complex) {
-      std::vector<std::complex<double>> complex_outputs;
-      m_ckks_encoder->decode(plain, complex_outputs);
-      assert(complex_outputs.size() >= m_batch_size);
-      complex_outputs.resize(m_batch_size);
-      complex_vec_to_real_vec(output, complex_outputs);
-    } else {
-      m_ckks_encoder->decode(plain, output);
-      assert(m_batch_size <= output.size());
-      output.resize(m_batch_size);
-    }
-  };
 
   switch (msg_type) {
     case ngraph::he::MessageType::parameter_size: {
@@ -210,70 +195,14 @@ void ngraph::he::HESealClient::handle_message(
 
       break;
     }
+    case ngraph::he::MessageType::relu6_request: {
+      NGRAPH_INFO << "Received Relu6 request";
+      handle_relu_request(message);
+      break;
+    }
     case ngraph::he::MessageType::relu_request: {
       NGRAPH_INFO << "Received Relu request";
-      auto relu = [](double d) { return d > 0 ? d : 0; };
-      auto relu6 = [](double d) {
-        if (d < 0) {
-          return 0.0;
-        }
-        if (d > 6) {
-          return 6.0;
-        }
-        return d;
-      };
-      size_t result_count = message.count();
-      size_t element_size = message.element_size();
-      NGRAPH_INFO << "Received Relu request with " << result_count
-                  << " elements"
-                  << " of size " << element_size;
-
-      std::vector<seal::Ciphertext> post_relu_ciphers(result_count);
-#pragma omp parallel for
-      for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
-        seal::Ciphertext pre_relu_cipher;
-        seal::Plaintext relu_plain;
-
-        // Load cipher from stream
-        std::stringstream pre_relu_cipher_stream;
-        pre_relu_cipher_stream.write(
-            message.data_ptr() + result_idx * element_size, element_size);
-        pre_relu_cipher.load(m_context, pre_relu_cipher_stream);
-
-        // Decrypt cipher
-        m_decryptor->decrypt(pre_relu_cipher, relu_plain);
-
-        std::vector<double> relu_vals;
-        decode_to_real_vec(relu_plain, relu_vals, complex_packing());
-
-        std::vector<double> post_relu_vals(relu_vals.size());
-        std::transform(relu_vals.begin(), relu_vals.end(),
-                       post_relu_vals.begin(), relu);
-
-        // TODO: more special cases for all 0's, and all 6's
-        /*if (post_relu_vals == relu_vals) {
-          if (relu_plain.scale() != m_scale) {
-            NGRAPH_INFO << " manually setting scale!";
-            relu_plain.scale() = m_scale;
-          }
-        } else */
-        if (complex_packing()) {
-          std::vector<std::complex<double>> complex_relu_vals;
-          real_vec_to_complex_vec(complex_relu_vals, post_relu_vals);
-          m_ckks_encoder->encode(complex_relu_vals, m_scale, relu_plain);
-        } else {
-          m_ckks_encoder->encode(post_relu_vals, m_scale, relu_plain);
-        }
-        m_encryptor->encrypt(relu_plain, post_relu_ciphers[result_idx]);
-      }
-      NGRAPH_INFO << "performed relu; creating relu message";
-
-      auto relu_result_msg =
-          TCPMessage(ngraph::he::MessageType::relu_result, post_relu_ciphers);
-      NGRAPH_INFO << "Writing relu_result message with " << result_count
-                  << " ciphertexts";
-
-      write_message(std::move(relu_result_msg));
+      handle_relu_request(message);
       break;
     }
 
@@ -346,7 +275,6 @@ void ngraph::he::HESealClient::handle_message(
     case ngraph::he::MessageType::minimum_result:
     case ngraph::he::MessageType::parameter_shape_request:
     case ngraph::he::MessageType::public_key:
-    case ngraph::he::MessageType::relu6_request:
     case ngraph::he::MessageType::relu_result:
     case ngraph::he::MessageType::result_request:
     default:
@@ -359,4 +287,84 @@ void ngraph::he::HESealClient::close_connection() {
   NGRAPH_INFO << "Closing connection";
   m_tcp_client->close();
   m_is_done = true;
+}
+
+void ngraph::he::HESealClient::handle_relu_request(
+    const ngraph::he::TCPMessage& message) {
+  NGRAPH_INFO << "Received Relu request";
+  auto relu = [=](double d) { return d > 0 ? d : 0; };
+  auto relu6 = [=](double d) { return d > 6.0 ? 6.0 : (d > 0) ? d : 0.; };
+
+  std::function<double(double)> activation;
+
+  if (message.message_type() == ngraph::he::MessageType::relu6_request) {
+    activation = relu6;
+  } else if (message.message_type() == ngraph::he::MessageType::relu_request) {
+    activation = relu;
+  } else {
+    throw ngraph_error("Non-relu message type in handle_relu_request");
+  }
+
+  size_t result_count = message.count();
+  size_t element_size = message.element_size();
+  NGRAPH_INFO << "Received Relu request with " << result_count << " elements"
+              << " of size " << element_size;
+
+  std::vector<seal::Ciphertext> post_relu_ciphers(result_count);
+#pragma omp parallel for
+  for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
+    seal::Ciphertext pre_relu_cipher;
+    seal::Plaintext relu_plain;
+
+    // Load cipher from stream
+    std::stringstream pre_relu_cipher_stream;
+    pre_relu_cipher_stream.write(message.data_ptr() + result_idx * element_size,
+                                 element_size);
+    pre_relu_cipher.load(m_context, pre_relu_cipher_stream);
+
+    // Decrypt cipher
+    m_decryptor->decrypt(pre_relu_cipher, relu_plain);
+
+    std::vector<double> relu_vals;
+    decode_to_real_vec(relu_plain, relu_vals, complex_packing());
+
+    std::vector<double> post_relu_vals(relu_vals.size());
+    std::transform(relu_vals.begin(), relu_vals.end(), post_relu_vals.begin(),
+                   activation);
+
+    if (complex_packing()) {
+      std::vector<std::complex<double>> complex_relu_vals;
+      real_vec_to_complex_vec(complex_relu_vals, post_relu_vals);
+      m_ckks_encoder->encode(complex_relu_vals, m_scale, relu_plain);
+    } else {
+      m_ckks_encoder->encode(post_relu_vals, m_scale, relu_plain);
+    }
+    m_encryptor->encrypt(relu_plain, post_relu_ciphers[result_idx]);
+  }
+  NGRAPH_INFO << "performed relu; creating relu message";
+
+  auto relu_result_msg =
+      TCPMessage(ngraph::he::MessageType::relu_result, post_relu_ciphers);
+  NGRAPH_INFO << "Writing relu_result message with " << result_count
+              << " ciphertexts";
+
+  write_message(std::move(relu_result_msg));
+  return;
+}
+
+void ngraph::he::HESealClient::decode_to_real_vec(const seal::Plaintext& plain,
+                                                  std::vector<double>& output,
+                                                  bool complex) {
+  assert(output.size() == 0);
+  if (complex) {
+    std::vector<std::complex<double>> complex_outputs;
+    m_ckks_encoder->decode(plain, complex_outputs);
+    assert(complex_outputs.size() >= m_batch_size);
+    complex_outputs.resize(m_batch_size);
+    complex_vec_to_real_vec(output, complex_outputs);
+  } else {
+    m_ckks_encoder->decode(plain, output);
+    assert(m_batch_size <= output.size());
+    output.resize(m_batch_size);
+  }
 }

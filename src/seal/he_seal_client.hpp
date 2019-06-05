@@ -40,6 +40,8 @@ class HESealClient {
 
   void handle_message(const ngraph::he::TCPMessage& message);
 
+  void handle_relu_request(const ngraph::he::TCPMessage& message);
+
   inline void write_message(ngraph::he::TCPMessage&& message) {
     m_tcp_client->write_message(std::move(message));
   }
@@ -51,6 +53,9 @@ class HESealClient {
   void close_connection();
 
   bool complex_packing() const { return m_complex_packing; }
+
+  void decode_to_real_vec(const seal::Plaintext& plain,
+                          std::vector<double>& output, bool complex);
 
  private:
   std::shared_ptr<TCPClient> m_tcp_client;

@@ -4,8 +4,6 @@ import numpy as np
 import sys
 import os
 
-np.set_printoptions(threshold=sys.maxsize)
-
 from tensorflow.examples.tutorials.mnist import input_data
 import he_seal_client
 

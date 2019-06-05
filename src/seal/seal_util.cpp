@@ -15,9 +15,15 @@
 
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
-#include "seal/seal_util.hpp"
-#include "ngraph/runtime/tensor.hpp"
 
+#include <limits>
+#include <utility>
+
+#include "ngraph/runtime/tensor.hpp"
+#include "seal/seal_util.hpp"
+
+#include "seal/he_seal_backend.hpp"
+#include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/util/polyarithsmallmod.h"
 
 // Matches the modulus chain for the two elements in-place
@@ -355,4 +361,38 @@ void ngraph::he::multiply_plain_inplace(seal::Ciphertext& encrypted,
     throw ngraph_error("result ciphertext is transparent");
   }
 #endif
+}
+
+size_t ngraph::he::match_to_smallest_chain_index(
+    std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>& ciphers,
+    const ngraph::he::HESealBackend* he_seal_backend) {
+  size_t num_elements = ciphers.size();
+
+  // (cipher_ind, chain_ind)
+  std::pair<size_t, size_t> smallest_chain_ind{
+      0, std::numeric_limits<size_t>::max()};
+  for (size_t cipher_idx = 0; cipher_idx < num_elements; ++cipher_idx) {
+    auto& cipher = *ciphers[cipher_idx];
+    if (!cipher.is_zero()) {
+      size_t chain_ind = ngraph::he::get_chain_index(cipher, he_seal_backend);
+      if (chain_ind < smallest_chain_ind.second) {
+        smallest_chain_ind = std::make_pair(cipher_idx, chain_ind);
+      }
+    }
+  }
+  NGRAPH_CHECK(smallest_chain_ind.second != std::numeric_limits<size_t>::max());
+
+  auto smallest_cipher = *ciphers[smallest_chain_ind.first];
+#pragma omp parallel for
+  for (size_t cipher_idx = 0; cipher_idx < num_elements; ++cipher_idx) {
+    auto& cipher = *ciphers[cipher_idx];
+    if (!cipher.is_zero() && cipher_idx != smallest_chain_ind.second) {
+      match_modulus_and_scale_inplace(smallest_cipher, cipher, he_seal_backend);
+      size_t chain_ind = ngraph::he::get_chain_index(cipher, he_seal_backend);
+      NGRAPH_CHECK(chain_ind == smallest_chain_ind.second, "chain_ind",
+                   chain_ind, " does not match smallest ",
+                   smallest_chain_ind.second);
+    }
+  }
+  return smallest_chain_ind.second;
 }
