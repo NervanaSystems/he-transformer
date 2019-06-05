@@ -114,11 +114,14 @@ void ngraph::he::HESealClient::handle_message(
         NGRAPH_INFO << "parameter_size " << parameter_size;
         NGRAPH_INFO << "m_batch_size " << m_batch_size;
       }
-      assert(m_inputs.size() == parameter_size * m_batch_size * 2);
     } else {
+      if (m_inputs.size() != parameter_size * m_batch_size) {
+        NGRAPH_INFO << "m_inputs.size() " << m_inputs.size();
+        NGRAPH_INFO << "parameter_size " << parameter_size;
+        NGRAPH_INFO << "m_batch_size " << m_batch_size;
+      }
       assert(m_inputs.size() == parameter_size * m_batch_size);
     }
-
     std::vector<seal::Ciphertext> ciphers(parameter_size);
 #pragma omp parallel for
     for (size_t data_idx = 0; data_idx < parameter_size; ++data_idx) {
@@ -131,6 +134,8 @@ void ngraph::he::HESealClient::handle_message(
 
       std::vector<double> real_vals{m_inputs.begin() + batch_start_idx,
                                     m_inputs.begin() + batch_end_idx};
+      NGRAPH_INFO << "data idx " << data_idx << " val " << real_vals[0];
+
       if (complex_packing()) {
         std::vector<std::complex<double>> complex_vals;
         real_vec_to_complex_vec(complex_vals, real_vals);

@@ -511,6 +511,11 @@ bool ngraph::he::HESealExecutable::call(
           // Enable complex batching!
           plain_input->get_element(i).set_complex_packing(
               m_he_seal_backend->complex_packing());
+
+          NGRAPH_INFO << "encrypting index " << i;
+          for (const auto& elem : plain_input->get_element(i).get_values()) {
+            NGRAPH_INFO << elem;
+          }
           m_he_seal_backend->encrypt(cipher_input->get_element(i),
                                      plain_input->get_element(i));
         }

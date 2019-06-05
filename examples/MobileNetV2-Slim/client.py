@@ -34,12 +34,12 @@ def get_test_image():
     # https://www.tensorflow.org/tutorials/images/hub_with_keras
     # https://storage.googleapis.com/download.tensorflow.org/example_images/grace_hopper.jpg
     filename = './images/grace_hopper.jpg'
-    grace_hopper = Image.open(filename).resize((84, 84))
-    grace_hopper = np.array(grace_hopper) / 255.0
-    print(grace_hopper.shape)
-
-    grace_hopper = np.expand_dims(grace_hopper, axis=0)
-    return grace_hopper
+    # Width x Height
+    im = Image.open(filename).resize((84, 84))
+    im = np.array(im) / 255.0
+    # Add batch axis in front
+    im = np.expand_dims(im, axis=0)
+    return im
 
 
 def get_imagenet_labels():
@@ -53,13 +53,31 @@ def get_imagenet_labels():
 
 def main():
     x_test = get_test_image()
-    x_test = x_test.flatten('F')
+    # print('x_test', x_test)
+    print('x_test[0][1]', x_test[0][1])
+    print('x_test[0][1].shape', x_test[0][1].shape)
+
+    (batch_size, width, height, channels) = x_test.shape
+    print('batch_size', batch_size)
+    print('width', width)
+    print('height', height)
+    print('channels', channels)
+
+    # Reshape to expected layer
+    # TODO: more efficient
+    x_test_flat = []
+    for width_idx in range(width):
+        for height_idx in range(height):
+            for channel_idx in range(channels):
+                x_test_flat.append(
+                    x_test[0][width_idx][height_idx][channel_idx])
 
     hostname = 'localhost'
     port = 34000
     batch_size = 1
 
-    client = he_seal_client.HESealClient(hostname, port, batch_size, x_test)
+    client = he_seal_client.HESealClient(hostname, port, batch_size,
+                                         x_test_flat)
 
     while not client.is_done():
         time.sleep(1)

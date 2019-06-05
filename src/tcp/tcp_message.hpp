@@ -146,7 +146,6 @@ class TCPMessage {
       : m_type(type), m_count(count) {
     stream.seekp(0, std::ios::end);
     m_data_size = stream.tellp();
-    NGRAPH_INFO << "m_data_size stream " << m_data_size;
 
     check_arguments();
     // TODO: use malloc
@@ -212,10 +211,10 @@ class TCPMessage {
 
   TCPMessage& operator=(TCPMessage&& other) {
     if (this != &other) {
-      m_data = other.m_data;
       m_type = other.m_type;
       m_count = other.m_count;
       m_data_size = other.m_data_size;
+      m_data = other.m_data;
       other.m_data = nullptr;
       other.m_data_size = 0;
       other.m_count = 0;
@@ -225,10 +224,10 @@ class TCPMessage {
   };
 
   TCPMessage(TCPMessage&& other)
-      : m_data(other.m_data),
-        m_type(other.m_type),
+      : m_type(other.m_type),
         m_count(other.m_count),
-        m_data_size(other.m_data_size) {
+        m_data_size(other.m_data_size),
+        m_data(other.m_data) {
     other.m_data = nullptr;
   };
 
