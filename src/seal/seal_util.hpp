@@ -43,6 +43,11 @@ inline size_t get_chain_index(const SealPlaintextWrapper& plain,
   return chain_ind;
 }
 
+// Returns the smallest chain index
+size_t match_to_smallest_chain_index(
+    std::vector<std::shared_ptr<SealCiphertextWrapper>>& ciphers,
+    const HESealBackend* he_seal_backend);
+
 template <typename S, typename T>
 bool within_rescale_tolerance(const S& arg0, const T& arg1,
                               double factor = 1.02) {

@@ -59,13 +59,13 @@ class HETensor : public runtime::Tensor {
   /// @brief Returns the shape of the expanded (batched) tensor.
   const Shape& get_expanded_shape() const { return get_shape(); };
 
-  inline size_t get_batch_size() noexcept { return m_batch_size; }
+  inline size_t get_batch_size() { return m_batch_size; }
 
   inline size_t get_batched_element_count() {
     return get_element_count() / get_batch_size();
   }
 
-  inline bool is_batched() noexcept { return m_batched; }
+  inline bool is_batched() { return m_batched; }
 
  protected:
   void check_io_bounds(const void* p, size_t tensor_offset, size_t n) const;

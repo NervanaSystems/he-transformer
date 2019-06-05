@@ -24,6 +24,7 @@
 #include "kernel/add_seal.hpp"
 #include "kernel/avg_pool_seal.hpp"
 #include "kernel/batch_norm_inference_seal.hpp"
+#include "kernel/bounded_relu_seal.hpp"
 #include "kernel/broadcast_seal.hpp"
 #include "kernel/concat_seal.hpp"
 #include "kernel/constant_seal.hpp"
@@ -59,6 +60,8 @@
 #include "ngraph/op/slice.hpp"
 #include "ngraph/op/sum.hpp"
 #include "ngraph/pass/assign_layout.hpp"
+#include "ngraph/pass/constant_folding.hpp"
+#include "ngraph/pass/core_fusion.hpp"
 #include "ngraph/pass/like_replacement.hpp"
 #include "ngraph/pass/liveness.hpp"
 #include "ngraph/pass/manager.hpp"
@@ -66,6 +69,8 @@
 #include "ngraph/pass/visualize_tree.hpp"
 #include "ngraph/runtime/backend.hpp"
 #include "ngraph/util.hpp"
+#include "op/bounded_relu.hpp"
+#include "pass/he_fusion.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_executable.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
@@ -93,10 +98,13 @@ ngraph::he::HESealExecutable::HESealExecutable(
   m_context = he_seal_backend->get_context();
 
   m_is_compiled = true;
-  pass::Manager pass_manager;
-  pass_manager.register_pass<pass::LikeReplacement>();
-  pass_manager.register_pass<pass::AssignLayout<DenseTensorLayout>>();
-  pass_manager.register_pass<pass::Liveness>();
+  ngraph::pass::Manager pass_manager;
+  pass_manager.register_pass<ngraph::pass::LikeReplacement>();
+  pass_manager.register_pass<ngraph::pass::AssignLayout<DenseTensorLayout>>();
+  pass_manager.register_pass<ngraph::pass::CoreFusion>();
+  pass_manager.register_pass<ngraph::pass::ConstantFolding>();
+  pass_manager.register_pass<ngraph::pass::Liveness>();
+  pass_manager.register_pass<ngraph::he::pass::HEFusion>();
   pass_manager.run_passes(function);
 
   for (const std::shared_ptr<Node>& node : function->get_ordered_ops()) {
@@ -858,6 +866,47 @@ void ngraph::he::HESealExecutable::generate_calls(
           m_he_seal_backend);
       break;
     }
+    case OP_TYPEID::BoundedRelu: {
+      const op::BoundedRelu* bounded_relu =
+          static_cast<const op::BoundedRelu*>(&node);
+      float alpha = bounded_relu->get_alpha();
+
+      if (arg0_plain != nullptr && out0_plain != nullptr) {
+        size_t output_size = arg0_plain->get_batched_element_count();
+        NGRAPH_CHECK(output_size == arg0_plain->num_plaintexts(),
+                     "output size ", output_size,
+                     " doesn't match number of elements",
+                     out0_plain->num_plaintexts());
+        ngraph::he::bounded_relu_seal(arg0_plain->get_elements(),
+                                      out0_plain->get_elements(), output_size,
+                                      alpha);
+        break;
+      }
+
+      if (arg0_cipher == nullptr || out0_cipher == nullptr) {
+        throw ngraph_error("Relu types not supported");
+      }
+
+      if (!m_enable_client) {
+        NGRAPH_WARN << "Performing BoundedRelu without client is not "
+                       "privacy-preserving";
+        size_t output_size = arg0_cipher->get_batched_element_count();
+        NGRAPH_CHECK(output_size == arg0_cipher->num_ciphertexts(),
+                     "output size ", output_size,
+                     " doesn't match number of elements",
+                     out0_cipher->num_ciphertexts());
+        ngraph::he::bounded_relu_seal(arg0_cipher->get_elements(),
+                                      out0_cipher->get_elements(), output_size,
+                                      alpha, m_he_seal_backend);
+        break;
+      }
+      NGRAPH_CHECK(alpha == 6.0f,
+                   "Client supports BoundeRelu(6) only; got BoundedRelu(",
+                   alpha, ")");
+      handle_server_relu_op(arg0_cipher, out0_cipher, node_wrapper);
+
+      break;
+    }
     case OP_TYPEID::Broadcast: {
       const op::Broadcast* broadcast = static_cast<const op::Broadcast*>(&node);
       AxisSet broadcast_axes = broadcast->get_broadcast_axes();
@@ -1387,96 +1436,7 @@ void ngraph::he::HESealExecutable::generate_calls(
         break;
       }
 
-      size_t element_count =
-          shape_size(node.get_output_shape(0)) / m_batch_size;
-
-      if (arg0_cipher == nullptr || out0_cipher == nullptr) {
-        NGRAPH_INFO << "Relu types not supported ";
-        throw ngraph_error("Relu types not supported.");
-      }
-
-      size_t smallest_chain_ind = std::numeric_limits<size_t>::max();
-      size_t smallest_relu_ind = 0;
-      for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
-        auto& cipher = arg0_cipher->get_element(relu_idx);
-        if (!cipher->is_zero()) {
-          size_t chain_ind =
-              ngraph::he::get_chain_index(*cipher, m_he_seal_backend);
-          if (chain_ind < smallest_chain_ind) {
-            smallest_chain_ind = chain_ind;
-            smallest_relu_ind = relu_idx;
-          }
-        }
-      }
-      NGRAPH_CHECK(smallest_chain_ind != std::numeric_limits<size_t>::max());
-      NGRAPH_INFO << "Smallest chain ind " << smallest_chain_ind << " at "
-                  << smallest_relu_ind;
-      auto smallest_cipher = arg0_cipher->get_element(smallest_relu_ind);
-#pragma omp parallel for
-      for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
-        auto& cipher = arg0_cipher->get_element(relu_idx);
-        if (!cipher->is_zero() && relu_idx != smallest_relu_ind) {
-          match_modulus_and_scale_inplace(*smallest_cipher, *cipher,
-                                          m_he_seal_backend);
-          size_t chain_ind =
-              ngraph::he::get_chain_index(*cipher, m_he_seal_backend);
-          NGRAPH_CHECK(chain_ind == smallest_chain_ind, "chain_ind", chain_ind,
-                       " does not match smallest ", smallest_chain_ind);
-        }
-      }
-      NGRAPH_INFO << "Matched moduli for relu";
-      m_relu_ciphertexts.clear();
-      std::stringstream cipher_stream;
-      // TODO: tune
-      const size_t max_relu_message_cnt = 10000;
-      size_t num_relu_batches = element_count / max_relu_message_cnt;
-      if (element_count % max_relu_message_cnt != 0) {
-        num_relu_batches++;
-      }
-      std::vector<seal::Ciphertext> relu_ciphers(max_relu_message_cnt);
-      NGRAPH_INFO << "element_count " << element_count;
-      NGRAPH_INFO << "num_relu_batches " << num_relu_batches;
-      for (size_t relu_batch = 0; relu_batch < num_relu_batches; ++relu_batch) {
-        size_t relu_start_idx = relu_batch * max_relu_message_cnt;
-        size_t relu_end_idx = (relu_batch + 1) * max_relu_message_cnt;
-        if (relu_end_idx > element_count) {
-          relu_end_idx = element_count;
-        }
-        relu_ciphers.resize(relu_end_idx - relu_start_idx);
-        NGRAPH_INFO << "relu cipher size " << relu_ciphers.size();
-        NGRAPH_INFO << "relu_start_idx " << relu_start_idx;
-        NGRAPH_INFO << "relu_end_idx " << relu_end_idx;
-#pragma omp parallel for
-        for (size_t relu_idx = relu_start_idx; relu_idx < relu_end_idx;
-             ++relu_idx) {
-          auto& cipher = arg0_cipher->get_element(relu_idx);
-          // relu(0) = 0
-          if (cipher->is_zero()) {
-            // TODO: parallelize with 0s removed
-            NGRAPH_INFO << "Skipping relu(0) at index " << relu_idx;
-            throw ngraph_error("relu(0) not allowed");
-            // m_relu_ciphertexts.emplace_back(cipher);
-          } else {
-            relu_ciphers[relu_idx - relu_start_idx] = cipher->ciphertext();
-          }
-        }
-        NGRAPH_INFO << "Creating relu message";
-        auto relu_message = TCPMessage(MessageType::relu_request, relu_ciphers);
-        NGRAPH_INFO << "Writing relu message";
-        m_session->do_write(std::move(relu_message));
-
-        // Acquire lock
-        std::unique_lock<std::mutex> mlock(m_relu_mutex);
-
-        // Wait until Relu is done
-        m_relu_cond.wait(mlock, std::bind(&HESealExecutable::relu_done, this));
-        NGRAPH_INFO << "Relu is done";
-
-        // Reset for next Relu call
-        m_relu_done = false;
-      }
-
-      out0_cipher->set_elements(m_relu_ciphertexts);
+      handle_server_relu_op(arg0_cipher, out0_cipher, node_wrapper);
       break;
     }
     case OP_TYPEID::Reverse: {
@@ -1651,4 +1611,92 @@ void ngraph::he::HESealExecutable::generate_calls(
       throw unsupported_op("Unsupported op '" + node.description() + "'");
 #pragma GCC diagnostic pop
   }
+}
+
+void ngraph::he::HESealExecutable::handle_server_relu_op(
+    std::shared_ptr<HESealCipherTensor>& arg_cipher,
+    std::shared_ptr<HESealCipherTensor>& out_cipher,
+    const NodeWrapper& node_wrapper) {
+  const Node& node = *node_wrapper.get_node();
+  size_t element_count = shape_size(node.get_output_shape(0)) / m_batch_size;
+
+  if (arg_cipher == nullptr || out_cipher == nullptr) {
+    NGRAPH_INFO << "Relu types not supported ";
+    throw ngraph_error("Relu types not supported.");
+  }
+
+  size_t smallest_ind = ngraph::he::match_to_smallest_chain_index(
+      arg_cipher->get_elements(), m_he_seal_backend);
+  NGRAPH_INFO << "Matched moduli to chain ind " << smallest_ind;
+  m_relu_ciphertexts.clear();
+
+  std::stringstream cipher_stream;
+  // TODO: tune
+  const size_t max_relu_message_cnt = 10000;
+  size_t num_relu_batches = element_count / max_relu_message_cnt;
+  if (element_count % max_relu_message_cnt != 0) {
+    num_relu_batches++;
+  }
+  std::vector<seal::Ciphertext> relu_ciphers(max_relu_message_cnt);
+  for (size_t relu_batch = 0; relu_batch < num_relu_batches; ++relu_batch) {
+    size_t relu_start_idx = relu_batch * max_relu_message_cnt;
+    size_t relu_end_idx = (relu_batch + 1) * max_relu_message_cnt;
+    if (relu_end_idx > element_count) {
+      relu_end_idx = element_count;
+    }
+    relu_ciphers.resize(relu_end_idx - relu_start_idx);
+#pragma omp parallel for
+    for (size_t relu_idx = relu_start_idx; relu_idx < relu_end_idx;
+         ++relu_idx) {
+      auto& cipher = arg_cipher->get_element(relu_idx);
+      // relu(0) = 0
+      if (cipher->is_zero()) {
+        // TODO: parallelize with 0s removed
+        NGRAPH_INFO << "Got relu(0) at index " << relu_idx;
+        throw ngraph_error("relu(0) not allowed");
+      } else {
+        relu_ciphers[relu_idx - relu_start_idx] = cipher->ciphertext();
+      }
+    }
+
+    auto message_type = MessageType::none;
+    switch (node_wrapper.get_typeid()) {
+      case OP_TYPEID::BoundedRelu: {
+        message_type = MessageType::relu6_request;
+
+        const op::BoundedRelu* bounded_relu =
+            static_cast<const op::BoundedRelu*>(&node);
+        float alpha = bounded_relu->get_alpha();
+        NGRAPH_CHECK(alpha == 6.0f, "BoundedRelu supports only value 6.0f, got",
+                     alpha);
+        break;
+      }
+      case OP_TYPEID::Relu: {
+        message_type = MessageType::relu_request;
+        break;
+      }
+      default:
+        break;
+    }
+    NGRAPH_INFO << "Creating "
+                << ngraph::he::message_type_to_string(message_type)
+                << " message";
+    auto relu_message = TCPMessage(message_type, relu_ciphers);
+
+    NGRAPH_INFO << "Writing "
+                << ngraph::he::message_type_to_string(message_type)
+                << " message";
+    m_session->do_write(std::move(relu_message));
+
+    // Acquire lock
+    std::unique_lock<std::mutex> mlock(m_relu_mutex);
+
+    // Wait until Relu is done
+    m_relu_cond.wait(mlock, std::bind(&HESealExecutable::relu_done, this));
+    NGRAPH_INFO << "Relu is done";
+
+    // Reset for next Relu call
+    m_relu_done = false;
+  }
+  out_cipher->set_elements(m_relu_ciphertexts);
 }

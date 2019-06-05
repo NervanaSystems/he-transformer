@@ -79,6 +79,10 @@ class HESealExecutable : public runtime::Executable {
 
   void handle_message(const TCPMessage& message);
 
+  void handle_server_relu_op(std::shared_ptr<HESealCipherTensor>& arg0_cipher,
+                             std::shared_ptr<HESealCipherTensor>& out_cipher,
+                             const NodeWrapper& node_wrapper);
+
  private:
   const HESealBackend* m_he_seal_backend;  // TODO: replace with context
   bool m_encrypt_data;

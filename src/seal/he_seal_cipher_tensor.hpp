@@ -65,7 +65,7 @@ class HESealCipherTensor : public HETensor {
   }
 
   inline std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>&
-  get_elements() noexcept {
+  get_elements() {
     return m_ciphertexts;
   }
 
