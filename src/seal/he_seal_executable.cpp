@@ -1348,10 +1348,20 @@ void ngraph::he::HESealExecutable::generate_calls(
         break;
       }
 
+      if (arg0_cipher == nullptr || out0_cipher == nullptr) {
+        throw ngraph_error("Relu types not supported");
+      }
+
       if (!m_enable_client) {
-        throw ngraph_error(
-            "Relu op unsupported unless client is enabled. Try setting "
-            "NGRAPH_ENABLE_CLIENT=1");
+        size_t output_size = arg0_cipher->get_batched_element_count();
+        NGRAPH_CHECK(output_size == arg0_cipher->num_ciphertexts(),
+                     "output size ", output_size,
+                     " doesn't match number of elements",
+                     out0_cipher->num_ciphertexts());
+        ngraph::he::relu_seal(arg0_cipher->get_elements(),
+                              out0_cipher->get_elements(), output_size,
+                              m_he_seal_backend);
+        break;
       }
 
       size_t element_count =
