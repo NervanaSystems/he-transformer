@@ -1110,6 +1110,10 @@ void ngraph::he::HESealExecutable::generate_calls(
                                  out0_plain->get_batched_element_count());
         break;
       }
+      NGRAPH_INFO << "Skipping minimum op";
+      out0_cipher->set_elements(arg0_cipher->get_elements());
+      // TODO: remove
+      break;
 
       NGRAPH_CHECK(arg0_cipher != nullptr,
                    "Minimum supports only arg0 == cipher");

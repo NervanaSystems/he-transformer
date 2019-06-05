@@ -72,6 +72,7 @@ def main():
 
     y_test = sess.run(output_tensor, {input_tensor: x_test})
     y_test = np.squeeze(y_test)
+    # print(y_test)
     print(y_test.shape)
 
     top5 = y_test.argsort()[-5:][::-1]
