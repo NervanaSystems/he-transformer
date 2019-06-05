@@ -27,7 +27,7 @@ ngraph::he::NodeWrapper::NodeWrapper(
 #define NGRAPH_OP(a, b) {#a, ngraph::he::OP_TYPEID::a},
   static std::unordered_map<std::string, ngraph::he::OP_TYPEID> typeid_map{
 #include "ngraph/op/op_tbl.hpp"
-  };
+      NGRAPH_OP(BoundedRelu, ngraph::op)};
 #undef NGRAPH_OP
   auto it = typeid_map.find(m_node->description());
   if (it != typeid_map.end()) {

@@ -24,6 +24,7 @@
 #include "kernel/add_seal.hpp"
 #include "kernel/avg_pool_seal.hpp"
 #include "kernel/batch_norm_inference_seal.hpp"
+#include "kernel/bounded_relu_seal.hpp"
 #include "kernel/broadcast_seal.hpp"
 #include "kernel/concat_seal.hpp"
 #include "kernel/constant_seal.hpp"
@@ -68,6 +69,7 @@
 #include "ngraph/pass/visualize_tree.hpp"
 #include "ngraph/runtime/backend.hpp"
 #include "ngraph/util.hpp"
+#include "op/bounded_relu.hpp"
 #include "pass/he_fusion.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_executable.hpp"
@@ -858,6 +860,45 @@ void ngraph::he::HESealExecutable::generate_calls(
           out0_cipher->get_elements(), arg_shapes[2], m_batch_size,
           m_he_seal_backend);
       break;
+    }
+    case OP_TYPEID::BoundedRelu: {
+      NGRAPH_INFO << "BoundedRelu op";
+      const op::BoundedRelu* bounded_relu =
+          static_cast<const op::BoundedRelu*>(&node);
+      float alpha = bounded_relu->get_alpha();
+      NGRAPH_INFO << "with alpha " << alpha;
+
+      if (arg0_plain != nullptr && out0_plain != nullptr) {
+        size_t output_size = arg0_plain->get_batched_element_count();
+        NGRAPH_CHECK(output_size == arg0_plain->num_plaintexts(),
+                     "output size ", output_size,
+                     " doesn't match number of elements",
+                     out0_plain->num_plaintexts());
+        ngraph::he::bounded_relu_seal(arg0_plain->get_elements(),
+                                      out0_plain->get_elements(), output_size,
+                                      alpha);
+        break;
+      }
+
+      if (arg0_cipher == nullptr || out0_cipher == nullptr) {
+        throw ngraph_error("Relu types not supported");
+      }
+
+      if (!m_enable_client) {
+        NGRAPH_WARN
+            << "Performing Relu without client is not privacy-preserving";
+        size_t output_size = arg0_cipher->get_batched_element_count();
+        NGRAPH_CHECK(output_size == arg0_cipher->num_ciphertexts(),
+                     "output size ", output_size,
+                     " doesn't match number of elements",
+                     out0_cipher->num_ciphertexts());
+        ngraph::he::bounded_relu_seal(arg0_cipher->get_elements(),
+                                      out0_cipher->get_elements(), output_size,
+                                      alpha, m_he_seal_backend);
+        break;
+      } else {
+        throw ngraph_error("BoundedRelu not supported in client");
+      }
     }
     case OP_TYPEID::Broadcast: {
       const op::Broadcast* broadcast = static_cast<const op::Broadcast*>(&node);

@@ -66,9 +66,9 @@ static void check_bounded_relu(Shape param_shape, float constant_val) {
   he_handle->call_with_validate({he_result}, {he_a});
 
   auto int_backend = runtime::Backend::create("INTERPRETER");
-  auto int_handle = he_backend->compile(int_f);
-  auto int_a = he_backend->create_plain_tensor(element::f32, param_shape);
-  auto int_result = he_backend->create_plain_tensor(element::f32, param_shape);
+  auto int_handle = int_backend->compile(int_f);
+  auto int_a = int_backend->create_tensor(element::f32, param_shape);
+  auto int_result = int_backend->create_tensor(element::f32, param_shape);
   copy_data(int_a, args[0]);
   int_handle->call_with_validate({int_result}, {int_a});
 
@@ -77,7 +77,7 @@ static void check_bounded_relu(Shape param_shape, float constant_val) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, bounded_relu_fusion) {
-  check_bounded_relu(Shape{4, 3, 2, 2}, 6.0f);
+  check_bounded_relu(Shape{4, 3, 2, 2}, 8.0f);
   check_bounded_relu(Shape{4, 3}, 4.0f);
   check_bounded_relu(Shape{4, 3, 2}, 2.0f);
 }

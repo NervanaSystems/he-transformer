@@ -32,7 +32,6 @@ void ngraph::he::pass::HEFusion::construct_bounded_relu() {
   auto broadcast_pred = [](std::shared_ptr<Node> n) {
     return (std::dynamic_pointer_cast<ngraph::op::Broadcast>(n) != nullptr);
   };
-  NGRAPH_INFO << "starting Boudned relu pass";
   auto skip_broadcast =
       std::make_shared<pattern::op::Skip>(alpha, broadcast_pred);
   auto min = std::make_shared<ngraph::op::Minimum>(relu, skip_broadcast);
@@ -74,7 +73,6 @@ void ngraph::he::pass::HEFusion::construct_bounded_relu() {
         new ngraph::op::BoundedRelu(pattern_map[relu_input], alpha_val));
     ngraph::replace_node(m.get_match_root(), cg);
     return true;
-    NGRAPH_INFO << "Boudned relu returns true!";
   };
 
   auto m = std::make_shared<pattern::Matcher>(min, callback, "BoundedRelu");
