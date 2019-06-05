@@ -906,6 +906,11 @@ void ngraph::he::HESealExecutable::generate_calls(
           throw ngraph_error("Relu types not supported.");
         }
 
+        size_t smallest_ind = ngraph::he::match_to_smallest_chain_index(
+            arg0_cipher->get_elements(), m_he_seal_backend);
+        NGRAPH_INFO << "Matched moduli for relu to chain ind " << smallest_ind;
+        /*
+
         size_t smallest_chain_ind = std::numeric_limits<size_t>::max();
         size_t smallest_relu_ind = 0;
         for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
@@ -935,8 +940,7 @@ void ngraph::he::HESealExecutable::generate_calls(
                          chain_ind, " does not match smallest ",
                          smallest_chain_ind);
           }
-        }
-        NGRAPH_INFO << "Matched moduli for relu";
+        }*/
         m_relu_ciphertexts.clear();
         std::stringstream cipher_stream;
         // TODO: tune

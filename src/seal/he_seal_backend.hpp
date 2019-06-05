@@ -147,22 +147,19 @@ class HESealBackend : public ngraph::runtime::Backend {
   void decrypt(ngraph::he::HEPlaintext& output,
                const SealCiphertextWrapper& input) const;
 
-  const inline std::shared_ptr<seal::SEALContext> get_context() const noexcept {
+  const inline std::shared_ptr<seal::SEALContext> get_context() const {
     return m_context;
   }
 
-  const inline std::shared_ptr<seal::SecretKey> get_secret_key() const
-      noexcept {
+  const inline std::shared_ptr<seal::SecretKey> get_secret_key() const {
     return m_secret_key;
   }
 
-  const inline std::shared_ptr<seal::PublicKey> get_public_key() const
-      noexcept {
+  const inline std::shared_ptr<seal::PublicKey> get_public_key() const {
     return m_public_key;
   }
 
-  const inline std::shared_ptr<seal::RelinKeys> get_relin_keys() const
-      noexcept {
+  const inline std::shared_ptr<seal::RelinKeys> get_relin_keys() const {
     return m_relin_keys;
   }
 
@@ -175,7 +172,7 @@ class HESealBackend : public ngraph::runtime::Backend {
     m_encryptor = std::make_shared<seal::Encryptor>(m_context, *m_public_key);
   }
 
-  const inline std::shared_ptr<seal::Evaluator> get_evaluator() const noexcept {
+  const inline std::shared_ptr<seal::Evaluator> get_evaluator() const {
     return m_evaluator;
   }
 
