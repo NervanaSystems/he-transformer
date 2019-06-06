@@ -182,7 +182,11 @@ void ngraph::he::HESealBackend::encrypt(
 
   NGRAPH_CHECK(input.num_values() > 0, "Input has no values");
 
-  encode(plaintext, input);
+  if (complex_packing) {
+    NGRAPH_INFO << "Encrypting complex";
+  }
+
+  encode(plaintext, input, complex_packing);
   // No need to encrypt zero
   if (input.is_single_value() && input.values()[0] == 0) {
     output->is_zero() = true;

@@ -128,11 +128,11 @@ NGRAPH_TEST(${BACKEND_NAME}, add_2_3_plain_complex) {
   auto t_b = he_backend->create_plain_tensor(element::f32, shape);
   auto t_result = he_backend->create_plain_tensor(element::f32, shape);
 
-  copy_data(t_a, vector<float>{1, 2, 3, 4, 5, 6});
-  copy_data(t_b, vector<float>{7, 8, 9, 10, 11, 12});
+  copy_data(t_a, vector<float>{-2, -1, 0, 0, 1, 2});
+  copy_data(t_b, vector<float>{1, 2, 3, 0, -3, 0});
   auto handle = backend->compile(f);
   handle->call_with_validate({t_result}, {t_a, t_b});
-  EXPECT_TRUE(all_close((vector<float>{8, 10, 12, 14, 16, 18}),
+  EXPECT_TRUE(all_close((vector<float>{-1, 1, 3, 0, -2, 2}),
                         read_vector<float>(t_result), 1e-3f));
 }
 

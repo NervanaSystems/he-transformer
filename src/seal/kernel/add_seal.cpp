@@ -67,7 +67,6 @@ void ngraph::he::scalar_add_seal(
 
     // TODO: optimize for adding single complex number
     if (arg1.is_single_value() && !complex_packing) {
-      NGRAPH_INFO << "Adding single value";
       float value = arg1.values()[0];
       double double_val = double(value);
       add_plain(arg0.ciphertext(), double_val, out->ciphertext(),
