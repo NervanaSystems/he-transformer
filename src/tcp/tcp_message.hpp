@@ -161,6 +161,42 @@ class TCPMessage {
   }
 
   TCPMessage(const MessageType type,
+             const std::vector<std::shared_ptr<SealCiphertextWrapper>>& ciphers)
+      : m_type(type), m_count(ciphers.size()) {
+    NGRAPH_INFO << "Creating message from " << ciphers.size()
+                << " seal ciphertexts";
+
+    // TODO: get size without saving!
+    std::stringstream first;
+    ciphers[0]->save(first);
+    first.seekp(0, std::ios::end);
+    size_t first_cipher_size = first.tellp();
+    m_data_size = first_cipher_size * m_count;
+
+    check_arguments();
+    // TODO: use malloc
+    m_data = new char[header_length + body_length()];
+    encode_header();
+    encode_message_type();
+    encode_count();
+
+#pragma omp parallel for
+    for (size_t i = 0; i < ciphers.size(); ++i) {
+      size_t offset = i * first_cipher_size;
+      std::stringstream ss;
+      // TODO: save directly to buffer
+      ciphers[i]->save(ss);
+      ss.seekp(0, std::ios::end);
+      size_t cipher_size = ss.tellp();
+      NGRAPH_CHECK(cipher_size == first_cipher_size, "cipher size ",
+                   cipher_size, "doesn't match first", first_cipher_size);
+
+      std::stringbuf* pbuf = ss.rdbuf();
+      pbuf->sgetn(data_ptr() + offset, first_cipher_size);
+    }
+  }
+
+  TCPMessage(const MessageType type,
              const std::vector<seal::Ciphertext>& ciphers)
       : m_type(type), m_count(ciphers.size()) {
     NGRAPH_INFO << "Creating message from " << ciphers.size()

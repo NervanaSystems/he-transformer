@@ -146,8 +146,6 @@ class HESealExecutable : public runtime::Executable {
   std::condition_variable m_client_inputs_cond;
   bool m_client_inputs_received;
 
-  TCPMessage m_result_message;
-
   void generate_calls(const element::Type& type, const NodeWrapper& op,
                       const std::vector<std::shared_ptr<HETensor>>& outputs,
                       const std::vector<std::shared_ptr<HETensor>>& inputs);
