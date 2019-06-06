@@ -111,6 +111,31 @@ NGRAPH_TEST(${BACKEND_NAME}, add_2_3) {
   }
 }
 
+NGRAPH_TEST(${BACKEND_NAME}, add_2_3_plain_complex) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->complex_packing() = true;
+
+  Shape shape{2, 3};
+  auto a = make_shared<op::Parameter>(element::f32, shape);
+  auto b = make_shared<op::Parameter>(element::f32, shape);
+  auto t = make_shared<op::Add>(a, b);
+
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
+
+  // Create some tensors for input/output
+  auto t_a = he_backend->create_plain_tensor(element::f32, shape);
+  auto t_b = he_backend->create_plain_tensor(element::f32, shape);
+  auto t_result = he_backend->create_plain_tensor(element::f32, shape);
+
+  copy_data(t_a, vector<float>{1, 2, 3, 4, 5, 6});
+  copy_data(t_b, vector<float>{7, 8, 9, 10, 11, 12});
+  auto handle = backend->compile(f);
+  handle->call_with_validate({t_result}, {t_a, t_b});
+  EXPECT_TRUE(all_close((vector<float>{8, 10, 12, 14, 16, 18}),
+                        read_vector<float>(t_result), 1e-3f));
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, add_zero_2_3) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
@@ -146,6 +171,35 @@ NGRAPH_TEST(${BACKEND_NAME}, add_zero_2_3) {
 NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_cipher) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+
+  Shape shape_a{4, 3};
+  Shape shape_b{4, 3};
+  Shape shape_r{4, 3};
+  auto a = make_shared<op::Parameter>(element::f32, shape_a);
+  auto b = make_shared<op::Parameter>(element::f32, shape_b);
+  auto t = make_shared<op::Add>(a, b);
+
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
+
+  // Create some tensors for input/output
+  auto t_a = he_backend->create_batched_cipher_tensor(element::f32, shape_a);
+  auto t_b = he_backend->create_batched_cipher_tensor(element::f32, shape_b);
+  auto t_result =
+      he_backend->create_batched_cipher_tensor(element::f32, shape_r);
+
+  copy_data(t_a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
+  copy_data(t_b, vector<float>{13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24});
+  auto handle = backend->compile(f);
+  handle->call_with_validate({t_result}, {t_a, t_b});
+  EXPECT_TRUE(
+      all_close((vector<float>{14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36}),
+                read_vector<float>(t_result), 1e-3f));
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_cipher_complex) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->complex_packing() = true;
 
   Shape shape_a{4, 3};
   Shape shape_b{4, 3};
