@@ -45,7 +45,8 @@ class HESealExecutable : public runtime::Executable {
   HESealExecutable(const std::shared_ptr<Function>& function,
                    bool enable_performance_collection,
                    ngraph::he::HESealBackend& he_seal_backend,
-                   bool encrypt_data, bool encrypt_model, bool batch_data);
+                   bool encrypt_data, bool encrypt_model, bool batch_data,
+                   bool complex_packing);
 
   ~HESealExecutable() {
     if (m_enable_client) {
@@ -89,6 +90,7 @@ class HESealExecutable : public runtime::Executable {
   bool m_encrypt_model;
   bool m_batch_data;
   bool m_is_compiled;
+  bool m_complex_packing;
 
   bool m_enable_client;
   size_t m_batch_size;

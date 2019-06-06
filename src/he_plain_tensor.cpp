@@ -51,11 +51,11 @@ void ngraph::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
         float val = *(float*)(src);
         values[j] = val;
       }
-      m_plaintexts[dst_idx].set_values(values);
+      m_plaintexts[dst_idx].values() = values;
 
     } else {
       float f = *(float*)(src_with_offset);
-      m_plaintexts[dst_idx].set_values({f});
+      m_plaintexts[dst_idx].values() = {f};
     }
   } else {
 #pragma omp parallel for
@@ -74,11 +74,11 @@ void ngraph::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
           float val = *(float*)(src);
           values[j] = val;
         }
-        m_plaintexts[dst_idx].set_values(values);
+        m_plaintexts[dst_idx].values() = values;
 
       } else {
         float f = *(float*)(src_with_offset);
-        m_plaintexts[dst_idx].set_values({f});
+        m_plaintexts[dst_idx].values() = {f};
       }
     }
   }
@@ -99,13 +99,13 @@ void ngraph::he::HEPlainTensor::read(void* target, size_t tensor_offset,
   if (num_elements_to_read == 1) {
     void* dst_with_offset = (void*)((char*)target);
     size_t src_idx = src_start_idx;
-    std::vector<float> values = m_plaintexts[src_idx].get_values();
+    const std::vector<float>& values = m_plaintexts[src_idx].values();
     memcpy(dst_with_offset, &values[0], type_byte_size * m_batch_size);
   } else {
 #pragma omp parallel for
     for (size_t i = 0; i < num_elements_to_read; ++i) {
       size_t src_idx = src_start_idx + i;
-      std::vector<float> values = m_plaintexts[src_idx].get_values();
+      const std::vector<float>& values = m_plaintexts[src_idx].values();
       NGRAPH_CHECK(values.size() >= m_batch_size, "values size ", values.size(),
                    " is smaller than batch size ", m_batch_size);
 

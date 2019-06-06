@@ -77,17 +77,15 @@ void ngraph::he::scalar_multiply_seal(
   // square. For instance, if we are computing c1*p(1) + c2 *p(2), the latter
   // sum will have larger scale than the former
 
-  const auto& values = arg1.get_values();
+  const auto& values = arg1.values();
   // TODO: check multiplying by small numbers behavior more thoroughly
   if (std::all_of(values.begin(), values.end(),
                   [](float f) { return std::abs(f) < 1e-5f; })) {
     out->is_zero() = true;
-    // out = std::dynamic_pointer_cast<ngraph::he::SealCiphertextWrapper>(
-    //    he_seal_backend.create_valued_ciphertext(0, element_type));
   } else {
     out->is_zero() = false;
     if (arg1.is_single_value()) {
-      float value = arg1.get_values()[0];
+      float value = arg1.values()[0];
       double double_val = double(value);
       multiply_plain(arg0.ciphertext(), double_val, out->ciphertext(),
                      he_seal_backend, pool);
@@ -110,8 +108,8 @@ void ngraph::he::scalar_multiply_seal(
             arg0.ciphertext(), p.plaintext(), out->ciphertext(), pool);
       } catch (const std::exception& e) {
         NGRAPH_INFO << "Error multiplying plain " << e.what();
-        NGRAPH_INFO << "arg1->get_values().size() " << arg1.num_values();
-        for (const auto& elem : arg1.get_values()) {
+        NGRAPH_INFO << "arg1->values().size() " << arg1.num_values();
+        for (const auto& elem : arg1.values()) {
           NGRAPH_INFO << elem;
         }
       }
@@ -138,8 +136,8 @@ void ngraph::he::scalar_multiply_seal(const ngraph::he::HEPlaintext& arg0,
                                       const seal::MemoryPoolHandle& pool) {
   NGRAPH_CHECK(element_type == element::f32);
 
-  std::vector<float> arg0_vals = arg0.get_values();
-  std::vector<float> arg1_vals = arg1.get_values();
+  std::vector<float> arg0_vals = arg0.values();
+  std::vector<float> arg1_vals = arg1.values();
   std::vector<float> out_vals(arg0.num_values());
 
   NGRAPH_CHECK(arg0_vals.size() > 0, "Multiplying plaintext arg0 has 0 values");
@@ -161,5 +159,5 @@ void ngraph::he::scalar_multiply_seal(const ngraph::he::HEPlaintext& arg0,
     std::transform(arg0_vals.begin(), arg0_vals.end(), arg1_vals.begin(),
                    out_vals.begin(), std::multiplies<float>());
   }
-  out.set_values(out_vals);
+  out.values() = out_vals;
 }

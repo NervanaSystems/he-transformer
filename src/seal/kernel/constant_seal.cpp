@@ -31,7 +31,7 @@ void ngraph::he::constant_seal(std::vector<ngraph::he::HEPlaintext>& out,
   for (size_t i = 0; i < count; ++i) {
     const void* src_with_offset = (void*)((char*)data_ptr + i * type_byte_size);
     float f = *(float*)src_with_offset;
-    out[i].set_values({f});
+    out[i].values() = {f};
     // Avoid encoding here (just-in-time encoding)
   }
 }

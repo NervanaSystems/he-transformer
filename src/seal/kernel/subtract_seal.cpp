@@ -77,11 +77,11 @@ void ngraph::he::scalar_subtract_seal(const HEPlaintext& arg0,
                                       const HESealBackend& he_seal_backend) {
   NGRAPH_CHECK(element_type == element::f32);
 
-  const std::vector<float>& arg0_vals = arg0.get_values();
-  const std::vector<float>& arg1_vals = arg1.get_values();
+  const std::vector<float>& arg0_vals = arg0.values();
+  const std::vector<float>& arg1_vals = arg1.values();
   std::vector<float> out_vals(arg0.num_values());
 
   std::transform(arg0_vals.begin(), arg0_vals.end(), arg1_vals.begin(),
                  out_vals.begin(), std::minus<float>());
-  out.set_values(out_vals);
+  out.values() = out_vals;
 }

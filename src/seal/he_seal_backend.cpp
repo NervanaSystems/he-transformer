@@ -138,7 +138,7 @@ std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
     std::shared_ptr<Function> function, bool enable_performance_collection) {
   return std::make_shared<HESealExecutable>(
       function, enable_performance_collection, *this, m_encrypt_data,
-      m_encrypt_model, m_batch_data);
+      m_encrypt_model, m_batch_data, m_complex_packing);
 }
 
 std::shared_ptr<ngraph::he::SealCiphertextWrapper>
@@ -150,7 +150,7 @@ ngraph::he::HESealBackend::create_valued_ciphertext(
     throw ngraph_error(
         "HESealBackend::create_valued_ciphertext only supports batch size 1");
   }
-  auto plaintext = HEPlaintext({value}, complex_packing());
+  auto plaintext = HEPlaintext({value});
   auto ciphertext = create_empty_ciphertext();
 
   encrypt(ciphertext, plaintext);
@@ -177,12 +177,14 @@ ngraph::he::HESealBackend::create_empty_ciphertext(
 
 void ngraph::he::HESealBackend::encrypt(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& output,
-    const ngraph::he::HEPlaintext& input) const {
-  auto plaintext = SealPlaintextWrapper(input.complex_packing());
+    const ngraph::he::HEPlaintext& input, bool complex_packing) const {
+  auto plaintext = SealPlaintextWrapper(complex_packing);
+
+  NGRAPH_CHECK(input.num_values() > 0, "Input has no values");
 
   encode(plaintext, input);
   // No need to encrypt zero
-  if (input.is_single_value() && input.get_values()[0] == 0) {
+  if (input.is_single_value() && input.values()[0] == 0) {
     output->is_zero() = true;
 
     // TODO: enable below?
@@ -191,8 +193,7 @@ void ngraph::he::HESealBackend::encrypt(
   } else {
     m_encryptor->encrypt(plaintext.plaintext(), output->ciphertext());
   }
-  output->complex_packing() = input.complex_packing();
-  NGRAPH_CHECK(output->complex_packing() == input.complex_packing());
+  output->complex_packing() = complex_packing;
 }
 
 void ngraph::he::HESealBackend::decrypt(
@@ -202,14 +203,12 @@ void ngraph::he::HESealBackend::decrypt(
     // TOOD: refine?
     const size_t slots =
         m_context->context_data()->parms().poly_modulus_degree() / 2;
-    output.set_values(std::vector<float>(slots, 0));
+    output.values() = std::vector<float>(slots, 0);
   } else {
     auto plaintext_wrapper = SealPlaintextWrapper(input.complex_packing());
     m_decryptor->decrypt(input.ciphertext(), plaintext_wrapper.plaintext());
     decode(output, plaintext_wrapper);
   }
-  output.complex_packing() = input.complex_packing();
-  NGRAPH_CHECK(output.complex_packing() == input.complex_packing());
 }
 
 void ngraph::he::HESealBackend::decode(void* output,
@@ -220,8 +219,9 @@ void ngraph::he::HESealBackend::decode(void* output,
   NGRAPH_CHECK(type == element::f32,
                "CKKS encode supports only float encoding, received type ",
                type);
-  std::vector<float> xs_float = input.get_values();
+  NGRAPH_CHECK(input.num_values() > 0, "Input has no values");
 
+  const std::vector<float>& xs_float = input.values();
   NGRAPH_CHECK(xs_float.size() >= count);
   std::memcpy(output, &xs_float[0], type.size() * count);
 }
@@ -238,19 +238,20 @@ void ngraph::he::HESealBackend::decode(
     m_ckks_encoder->decode(input.plaintext(), real_vals);
   }
   std::vector<float> float_vals{real_vals.begin(), real_vals.end()};
-  output.set_values(float_vals);
-  output.complex_packing() = input.complex_packing();
+  output.values() = float_vals;
 }
 
 void ngraph::he::HESealBackend::encode(
     ngraph::he::SealPlaintextWrapper& destination,
     const ngraph::he::HEPlaintext& plaintext, seal::parms_id_type parms_id,
-    double scale) const {
-  std::vector<double> double_vals(plaintext.get_values().begin(),
-                                  plaintext.get_values().end());
+    double scale, bool complex_packing) const {
+  std::vector<double> double_vals(plaintext.values().begin(),
+                                  plaintext.values().end());
   const size_t slots =
       m_context->context_data()->parms().poly_modulus_degree() / 2;
-  if (plaintext.complex_packing()) {
+
+  if (complex_packing) {
+    NGRAPH_INFO << "Encoding complex ";
     std::vector<std::complex<double>> complex_vals;
     if (double_vals.size() == 1) {
       std::complex<double> val(double_vals[0], double_vals[0]);
@@ -274,27 +275,26 @@ void ngraph::he::HESealBackend::encode(
                              destination.plaintext());
     }
   }
-  destination.complex_packing() = plaintext.complex_packing();
+  destination.complex_packing() = complex_packing;
 }
 
 void ngraph::he::HESealBackend::encode(
     ngraph::he::SealPlaintextWrapper& destination,
-    const ngraph::he::HEPlaintext& plaintext) const {
+    const ngraph::he::HEPlaintext& plaintext, bool complex_packing) const {
   double scale = m_scale;
   auto parms_id = m_context->first_parms_id();
 
-  encode(destination, plaintext, parms_id, scale);
+  encode(destination, plaintext, parms_id, scale, complex_packing);
 }
 
 void ngraph::he::HESealBackend::encode(ngraph::he::HEPlaintext& output,
                                        const void* input,
-                                       const element::Type& type, bool complex,
+                                       const element::Type& type,
                                        size_t count) const {
   NGRAPH_CHECK(type == element::f32,
                "CKKS encode supports only float encoding, received type ",
                type);
 
   std::vector<float> values{(float*)input, (float*)input + count};
-  output.set_values(values);
-  output.complex_packing() = complex;
+  output.values() = values;
 }

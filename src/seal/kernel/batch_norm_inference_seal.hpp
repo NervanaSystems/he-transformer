@@ -59,10 +59,10 @@ void batch_norm_inference_seal(
 
     auto input_index = input_transform.index(input_coord);
 
-    std::vector<float> channel_gamma_vals = channel_gamma.get_values();
-    std::vector<float> channel_beta_vals = channel_beta.get_values();
-    std::vector<float> channel_mean_vals = channel_mean.get_values();
-    std::vector<float> channel_var_vals = channel_var.get_values();
+    std::vector<float> channel_gamma_vals = channel_gamma.values();
+    std::vector<float> channel_beta_vals = channel_beta.values();
+    std::vector<float> channel_mean_vals = channel_mean.values();
+    std::vector<float> channel_var_vals = channel_var.values();
 
     NGRAPH_CHECK(channel_gamma_vals.size() == 1);
     NGRAPH_CHECK(channel_beta_vals.size() == 1);
@@ -77,9 +77,8 @@ void batch_norm_inference_seal(
     std::vector<float> scale_vec(batch_size, scale);
     std::vector<float> bias_vec(batch_size, bias);
 
-    // TODO: enable complex packing?
-    auto plain_scale = HEPlaintext(scale_vec, false);
-    auto plain_bias = HEPlaintext(bias_vec, false);
+    auto plain_scale = HEPlaintext(scale_vec);
+    auto plain_bias = HEPlaintext(bias_vec);
 
     auto output = he_seal_backend.create_empty_ciphertext();
 

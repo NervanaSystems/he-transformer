@@ -58,18 +58,17 @@ void ngraph::he::scalar_add_seal(
   }
 
   // TODO: handle case where arg1 = {0, 0, 0, 0, ...}
-  bool add_zero = arg1.is_single_value() && (arg1.get_values()[0] == 0.0f);
+  bool add_zero = arg1.is_single_value() && (arg1.values()[0] == 0.0f);
 
   if (add_zero) {
     out = std::make_shared<ngraph::he::SealCiphertextWrapper>(arg0);
   } else {
     bool complex_packing = arg0.complex_packing();
-    // TODO: cleanup complex batching
 
     // TODO: optimize for adding single complex number
     if (arg1.is_single_value() && !complex_packing) {
       NGRAPH_INFO << "Adding single value";
-      float value = arg1.get_values()[0];
+      float value = arg1.values()[0];
       double double_val = double(value);
       add_plain(arg0.ciphertext(), double_val, out->ciphertext(),
                 he_seal_backend);
@@ -105,8 +104,8 @@ void ngraph::he::scalar_add_seal(const HEPlaintext& arg0,
                                  const seal::MemoryPoolHandle& pool) {
   NGRAPH_CHECK(element_type == element::f32);
 
-  const std::vector<float>& arg0_vals = arg0.get_values();
-  const std::vector<float>& arg1_vals = arg1.get_values();
+  const std::vector<float>& arg0_vals = arg0.values();
+  const std::vector<float>& arg1_vals = arg1.values();
   std::vector<float> out_vals(arg0.num_values());
 
   if (arg0_vals.size() == 1) {
@@ -124,5 +123,5 @@ void ngraph::he::scalar_add_seal(const HEPlaintext& arg0,
     std::transform(arg0_vals.begin(), arg0_vals.end(), arg1_vals.begin(),
                    out_vals.begin(), std::plus<float>());
   }
-  out.set_values(out_vals);
+  out.values() = out_vals;
 }

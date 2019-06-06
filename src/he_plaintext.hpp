@@ -26,30 +26,20 @@ namespace ngraph {
 namespace he {
 class HEPlaintext {
  public:
-  HEPlaintext(const std::vector<float> values = std::vector<float>{},
-              bool complex_packing = false)
-      : m_values(values), m_complex_packing(complex_packing){};
-  HEPlaintext(const float value, bool complex_packing = false)
-      : m_values{std::vector<float>{value}},
-        m_complex_packing(complex_packing){};
+  HEPlaintext(const std::vector<float> values = std::vector<float>{})
+      : m_values(values){};
+  HEPlaintext(const float value) : m_values{std::vector<float>{value}} {};
 
-  HEPlaintext(bool complex_packing)
-      : m_values(std::vector<float>{}), m_complex_packing(complex_packing){};
   virtual ~HEPlaintext(){};
 
-  void set_values(const std::vector<float>& values) { m_values = values; }
-  const std::vector<float>& get_values() const { return m_values; }
+  std::vector<float>& values() { return m_values; }
+  const std::vector<float>& values() const { return m_values; }
 
   bool is_single_value() const { return num_values() == 1; }
   size_t num_values() const { return m_values.size(); }
 
-  bool complex_packing() const { return m_complex_packing; }
-  bool& complex_packing() { return m_complex_packing; }
-
- protected:
+ private:
   std::vector<float> m_values;
-  // TODO: move to plain tensor
-  bool m_complex_packing;
 };
 }  // namespace he
 }  // namespace ngraph
