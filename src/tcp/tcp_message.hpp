@@ -166,12 +166,10 @@ class TCPMessage {
     NGRAPH_INFO << "Creating message from " << ciphers.size()
                 << " seal ciphertexts";
 
-    // TODO: get size without saving!
-    std::stringstream first;
-    ciphers[0]->save(first);
-    first.seekp(0, std::ios::end);
-    size_t first_cipher_size = first.tellp();
-    m_data_size = first_cipher_size * m_count;
+    NGRAPH_CHECK(ciphers.size() > 0, "No ciphertexts in TCPMessage");
+    size_t cipher_size = ciphertext_size(ciphers[0]->ciphertext());
+    m_data_size = cipher_size * m_count;
+    NGRAPH_INFO << "cipher_size " << cipher_size;
 
     check_arguments();
     // TODO: use malloc
@@ -182,17 +180,15 @@ class TCPMessage {
 
 #pragma omp parallel for
     for (size_t i = 0; i < ciphers.size(); ++i) {
-      size_t offset = i * first_cipher_size;
+      size_t offset = i * cipher_size;
       std::stringstream ss;
       // TODO: save directly to buffer
       ciphers[i]->save(ss);
-      ss.seekp(0, std::ios::end);
-      size_t cipher_size = ss.tellp();
-      NGRAPH_CHECK(cipher_size == first_cipher_size, "cipher size ",
-                   cipher_size, "doesn't match first", first_cipher_size);
+      NGRAPH_CHECK(ciphertext_size(ciphers[i]->ciphertext()) == cipher_size,
+                   "Cipher sizes don't match");
 
       std::stringbuf* pbuf = ss.rdbuf();
-      pbuf->sgetn(data_ptr() + offset, first_cipher_size);
+      pbuf->sgetn(data_ptr() + offset, cipher_size);
     }
   }
 
@@ -202,12 +198,10 @@ class TCPMessage {
     NGRAPH_INFO << "Creating message from " << ciphers.size()
                 << " seal ciphertexts";
 
-    // TODO: get size without saving!
-    std::stringstream first;
-    ciphers[0].save(first);
-    first.seekp(0, std::ios::end);
-    size_t first_cipher_size = first.tellp();
-    m_data_size = first_cipher_size * m_count;
+    NGRAPH_CHECK(ciphers.size() > 0, "No ciphertexts in TCPMessage");
+    size_t cipher_size = ciphertext_size(ciphers[0]);
+    m_data_size = cipher_size * m_count;
+    NGRAPH_INFO << "cipher_size " << cipher_size;
 
     check_arguments();
     // TODO: use malloc
@@ -218,17 +212,15 @@ class TCPMessage {
 
 #pragma omp parallel for
     for (size_t i = 0; i < ciphers.size(); ++i) {
-      size_t offset = i * first_cipher_size;
+      size_t offset = i * cipher_size;
       std::stringstream ss;
       // TODO: save directly to buffer
       ciphers[i].save(ss);
-      ss.seekp(0, std::ios::end);
-      size_t cipher_size = ss.tellp();
-      NGRAPH_CHECK(cipher_size == first_cipher_size, "cipher size ",
-                   cipher_size, "doesn't match first", first_cipher_size);
+      NGRAPH_CHECK(ciphertext_size(ciphers[i]) == cipher_size,
+                   "Cipher sizes don't match");
 
       std::stringbuf* pbuf = ss.rdbuf();
-      pbuf->sgetn(data_ptr() + offset, first_cipher_size);
+      pbuf->sgetn(data_ptr() + offset, cipher_size);
     }
   }
 

@@ -54,5 +54,19 @@ class SealCiphertextWrapper {
   seal::Ciphertext m_ciphertext;
 };
 
+inline size_t ciphertext_size(const seal::Ciphertext& cipher) {
+  // TODO: figure out why the extra 8 bytes
+  size_t expected_size = 8;
+  expected_size += sizeof(seal::parms_id_type);
+  expected_size += sizeof(seal::SEAL_BYTE);
+  // size64, poly_modulus_degere, coeff_mod_count
+  expected_size += 3 * sizeof(uint64_t);
+  // scale
+  expected_size += sizeof(double);
+  // data
+  expected_size += 8 * cipher.uint64_count();
+  return expected_size;
+}
+
 }  // namespace he
 }  // namespace ngraph
