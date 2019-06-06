@@ -14,6 +14,9 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include <memory>
+#include <vector>
+
 #include "seal/kernel/constant_seal.hpp"
 
 void ngraph::he::constant_seal(std::vector<ngraph::he::HEPlaintext>& out,
@@ -32,7 +35,6 @@ void ngraph::he::constant_seal(std::vector<ngraph::he::HEPlaintext>& out,
     const void* src_with_offset = (void*)((char*)data_ptr + i * type_byte_size);
     float f = *(float*)src_with_offset;
     out[i].values() = {f};
-    // Avoid encoding here (just-in-time encoding)
   }
 }
 
@@ -49,8 +51,9 @@ void ngraph::he::constant_seal(
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
     const void* src_with_offset = (void*)((char*)data_ptr + i * type_byte_size);
-    auto plaintext = HEPlaintext();
-    he_seal_backend.encode(plaintext, src_with_offset, element_type, false);
+
+    std::vector<float> values{*(float*)src_with_offset};
+    auto plaintext = HEPlaintext(values);
     he_seal_backend.encrypt(out[i], plaintext,
                             he_seal_backend.complex_packing());
   }

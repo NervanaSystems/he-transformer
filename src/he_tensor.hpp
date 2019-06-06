@@ -68,7 +68,7 @@ class HETensor : public runtime::Tensor {
   inline bool is_batched() { return m_batched; }
 
  protected:
-  void check_io_bounds(const void* p, size_t tensor_offset, size_t n) const;
+  void check_io_bounds(const void* p, size_t n) const;
 
   const HESealBackend& m_he_seal_backend;
   bool m_batched;  // Whether or not the tensor is batched, i.e. stores more

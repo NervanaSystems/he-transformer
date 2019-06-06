@@ -134,9 +134,6 @@ class HESealBackend : public ngraph::runtime::Backend {
               const ngraph::he::HEPlaintext& plaintext,
               bool complex_packing = false) const;
 
-  void encode(ngraph::he::HEPlaintext& output, const void* input,
-              const element::Type& type, size_t count = 1) const;
-
   void decode(void* output, const ngraph::he::HEPlaintext& input,
               const element::Type& type, size_t count = 1) const;
 

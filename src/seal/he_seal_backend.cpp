@@ -70,6 +70,9 @@ ngraph::he::HESealBackend::HESealBackend(
 
   // Encoder
   m_ckks_encoder = std::make_shared<seal::CKKSEncoder>(m_context);
+
+  NGRAPH_CHECK(!(m_encrypt_model && m_complex_packing),
+               "NGRAPH_ENCRYPT_MODEL is incompatible with NGRAPH_COMPLEX_PACK");
 }
 
 std::shared_ptr<ngraph::runtime::Tensor>
@@ -180,7 +183,7 @@ void ngraph::he::HESealBackend::encrypt(
     const ngraph::he::HEPlaintext& input, bool complex_packing) const {
   auto plaintext = SealPlaintextWrapper(complex_packing);
 
-  NGRAPH_CHECK(input.num_values() > 0, "Input has no values");
+  NGRAPH_CHECK(input.num_values() > 0, "Input has no values in encrypt");
 
   encode(plaintext, input, complex_packing);
   // No need to encrypt zero
@@ -284,16 +287,4 @@ void ngraph::he::HESealBackend::encode(
   auto parms_id = m_context->first_parms_id();
 
   encode(destination, plaintext, parms_id, scale, complex_packing);
-}
-
-void ngraph::he::HESealBackend::encode(ngraph::he::HEPlaintext& output,
-                                       const void* input,
-                                       const element::Type& type,
-                                       size_t count) const {
-  NGRAPH_CHECK(type == element::f32,
-               "CKKS encode supports only float encoding, received type ",
-               type);
-
-  std::vector<float> values{(float*)input, (float*)input + count};
-  output.values() = values;
 }

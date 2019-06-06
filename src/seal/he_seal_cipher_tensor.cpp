@@ -38,33 +38,30 @@ ngraph::he::HESealCipherTensor::HESealCipherTensor(
 
 void ngraph::he::HESealCipherTensor::write(const void* source,
                                            size_t tensor_offset, size_t n) {
-  check_io_bounds(source, tensor_offset, n / m_batch_size);
+  const bool complex_packing = m_he_seal_backend.complex_packing();
+
+  NGRAPH_CHECK(tensor_offset == 0, "Tensor offset is not zero in Cipher write");
+
+  check_io_bounds(source, n / m_batch_size);
   const element::Type& element_type = get_tensor_layout()->get_element_type();
   NGRAPH_CHECK(element_type == element::f32,
                "CipherTensor supports float32 only");
 
   size_t type_byte_size = element_type.size();
-  size_t dst_start_idx = tensor_offset / type_byte_size;
   size_t num_elements_to_write = n / (type_byte_size * m_batch_size);
-
-  const bool complex_packing = m_he_seal_backend.complex_packing();
-  NGRAPH_INFO << "CipherTensor::write complex_packing? " << complex_packing;
 
   if (num_elements_to_write == 1) {
     const void* src_with_offset = (void*)((char*)source);
-    size_t dst_idx = dst_start_idx;
 
     std::vector<float> values{(float*)src_with_offset,
                               (float*)src_with_offset + m_batch_size};
     auto plaintext = HEPlaintext(values);
-    m_he_seal_backend.encrypt(m_ciphertexts[dst_idx], plaintext,
-                              complex_packing);
+    m_he_seal_backend.encrypt(m_ciphertexts[0], plaintext, complex_packing);
   } else {
 #pragma omp parallel for
     for (size_t i = 0; i < num_elements_to_write; ++i) {
       const void* src_with_offset =
           (void*)((char*)source + i * type_byte_size * m_batch_size);
-      size_t dst_idx = dst_start_idx + i;
 
       auto plaintext = HEPlaintext();
       if (m_batch_size > 1) {
@@ -83,33 +80,29 @@ void ngraph::he::HESealCipherTensor::write(const void* source,
         std::vector<float> values{(float*)batch_src,
                                   (float*)batch_src + m_batch_size};
         plaintext.values() = values;
-        m_he_seal_backend.encode(plaintext, batch_src, element_type,
-                                 m_batch_size);
         free((void*)batch_src);
       } else {
         std::vector<float> values{(float*)src_with_offset,
                                   (float*)src_with_offset + m_batch_size};
         plaintext.values() = values;
       }
-      m_he_seal_backend.encrypt(m_ciphertexts[dst_idx], plaintext,
-                                complex_packing);
+      m_he_seal_backend.encrypt(m_ciphertexts[i], plaintext, complex_packing);
     }
   }
 }
 
 void ngraph::he::HESealCipherTensor::read(void* target, size_t tensor_offset,
                                           size_t n) const {
-  check_io_bounds(target, tensor_offset, n / m_batch_size);
+  NGRAPH_CHECK(tensor_offset == 0, "Tensor offset is not zero in Cipher read");
+  check_io_bounds(target, n / m_batch_size);
   const element::Type& element_type = get_tensor_layout()->get_element_type();
   size_t type_byte_size = element_type.size();
-  size_t src_start_idx = tensor_offset / type_byte_size;
   size_t num_elements_to_read = n / (type_byte_size * m_batch_size);
 
   if (num_elements_to_read == 1) {
     void* dst_with_offset = (void*)((char*)target);
-    size_t src_idx = src_start_idx;
     auto p = HEPlaintext();
-    auto cipher = m_ciphertexts[src_idx];
+    auto cipher = m_ciphertexts[0];
     m_he_seal_backend.decrypt(p, *cipher);
     m_he_seal_backend.decode(dst_with_offset, p, element_type, m_batch_size);
   } else {
@@ -119,13 +112,7 @@ void ngraph::he::HESealCipherTensor::read(void* target, size_t tensor_offset,
       if (!dst) {
         throw ngraph_error("Error allocating HE Cipher Tensor memory");
       }
-
-      size_t src_idx = src_start_idx + i;
-
-      auto cipher = m_ciphertexts[src_idx];
-
-      NGRAPH_INFO << "CipherTensor::read complex_packing? "
-                  << cipher->complex_packing();
+      auto cipher = m_ciphertexts[i];
       auto p = HEPlaintext();
       m_he_seal_backend.decrypt(p, *cipher);
       m_he_seal_backend.decode(dst, p, element_type, m_batch_size);
