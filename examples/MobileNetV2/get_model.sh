@@ -9,8 +9,6 @@ tar -zxvf mobilenet_v2_0.35_96.tgz
 
 cd -
 
-# transform mode
-# Maybe MobilenetV1/Logits/Conv2d_1c_1x1/BiasAdd instead
 transform_graph --in_graph=model/mobilenet_v2_0.35_96_frozen.pb \
                 --out_graph=model/opt1.pb \
                 --inputs="Placeholder" \
