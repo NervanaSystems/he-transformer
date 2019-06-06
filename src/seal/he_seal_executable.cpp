@@ -81,11 +81,13 @@ using ngraph::descriptor::layout::DenseTensorLayout;
 ngraph::he::HESealExecutable::HESealExecutable(
     const std::shared_ptr<Function>& function,
     bool enable_performance_collection, HESealBackend& he_seal_backend,
-    bool encrypt_data, bool encrypt_model, bool batch_data)
+    bool encrypt_data, bool encrypt_model, bool batch_data,
+    bool complex_packing)
     : m_he_seal_backend(he_seal_backend),
       m_encrypt_data(encrypt_data),
       m_encrypt_model(encrypt_model),
       m_batch_data(batch_data),
+      m_complex_packing(complex_packing),
       m_enable_client(std::getenv("NGRAPH_ENABLE_CLIENT") != nullptr),
       m_batch_size(1),
       m_port(34000),
@@ -267,7 +269,7 @@ void ngraph::he::HESealExecutable::handle_message(
 
       input_tensor->set_elements(cipher_elements);
       for (auto& cipher_elem : cipher_elements) {
-        cipher_elem->set_complex_packing(true);
+        cipher_elem->complex_packing() = true;
       }
       m_client_inputs.emplace_back(input_tensor);
       parameter_size_index += param_size;
@@ -344,14 +346,9 @@ void ngraph::he::HESealExecutable::handle_message(
                           element_size);
       cipher.load(m_context, cipher_stream);
 
-      auto wrapper = std::make_shared<SealCiphertextWrapper>(cipher);
-      auto he_ciphertext =
-          std::dynamic_pointer_cast<ngraph::he::SealCiphertextWrapper>(wrapper);
-      if (m_he_seal_backend.complex_packing()) {
-        he_ciphertext->set_complex_packing(true);
-      }
-
-      new_relu_ciphers[element_idx] = he_ciphertext;
+      new_relu_ciphers[element_idx] =
+          std::make_shared<ngraph::he::SealCiphertextWrapper>(
+              cipher, m_complex_packing);
     }
     m_relu_ciphertexts.reserve(m_relu_ciphertexts.size() +
                                new_relu_ciphers.size());
@@ -375,13 +372,8 @@ void ngraph::he::HESealExecutable::handle_message(
       cipher_stream.write(message.data_ptr() + element_idx * element_size,
                           element_size);
       cipher.load(m_context, cipher_stream);
-
-      auto wrapper = std::make_shared<SealCiphertextWrapper>(cipher);
-      auto he_ciphertext =
-          std::dynamic_pointer_cast<ngraph::he::SealCiphertextWrapper>(wrapper);
-      if (m_he_seal_backend.complex_packing()) {
-        he_ciphertext->set_complex_packing(true);
-      }
+      auto he_ciphertext = std::make_shared<ngraph::he::SealCiphertextWrapper>(
+          cipher, m_complex_packing);
 
       m_max_ciphertexts.emplace_back(he_ciphertext);
     }
@@ -401,12 +393,8 @@ void ngraph::he::HESealExecutable::handle_message(
                           element_size);
       cipher.load(m_context, cipher_stream);
 
-      auto wrapper = std::make_shared<SealCiphertextWrapper>(cipher);
-      auto he_ciphertext =
-          std::static_pointer_cast<ngraph::he::SealCiphertextWrapper>(wrapper);
-      if (m_he_seal_backend.complex_packing()) {
-        he_ciphertext->set_complex_packing(true);
-      }
+      auto he_ciphertext = std::make_shared<ngraph::he::SealCiphertextWrapper>(
+          cipher, m_complex_packing);
       m_minimum_ciphertexts.emplace_back(he_ciphertext);
     }
     // Notify condition variable
@@ -461,7 +449,7 @@ bool ngraph::he::HESealExecutable::call(
   if (m_encrypt_model) {
     NGRAPH_INFO << "Encrypting model";
   }
-  if (m_he_seal_backend.complex_packing()) {
+  if (m_complex_packing) {
     NGRAPH_INFO << "Complex packing";
   }
 
@@ -509,12 +497,9 @@ bool ngraph::he::HESealExecutable::call(
 
 #pragma omp parallel for
         for (size_t i = 0; i < plain_input->get_batched_element_count(); ++i) {
-          // Enable complex batching!
-          plain_input->get_element(i).set_complex_packing(
-              m_he_seal_backend.complex_packing());
-
           m_he_seal_backend.encrypt(cipher_input->get_element(i),
-                                    plain_input->get_element(i));
+                                    plain_input->get_element(i),
+                                    m_complex_packing);
         }
         tensor_map.insert({tv, cipher_input});
         input_count++;

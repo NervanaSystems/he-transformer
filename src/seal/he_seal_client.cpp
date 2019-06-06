@@ -85,35 +85,31 @@ void ngraph::he::HESealClient::handle_message(
       size_t parameter_size;
       std::memcpy(&parameter_size, message.data_ptr(), message.data_size());
 
+      const size_t complex_pack_factor = complex_packing() ? 2 : 1;
+
       NGRAPH_INFO << "Parameter size " << parameter_size;
       NGRAPH_INFO << "Client batch size " << m_batch_size;
       if (complex_packing()) {
-        NGRAPH_INFO << "Client complex packing? " << complex_packing();
-      }
-
-      if (complex_packing()) {
+        NGRAPH_INFO << "Client complex packing";
         // TODO: support odd batch sizes
         assert(m_batch_size % 2 == 0);
-
-        if (m_inputs.size() != parameter_size * m_batch_size * 2) {
-          NGRAPH_INFO << "m_inputs.size() " << m_inputs.size();
-          NGRAPH_INFO << "parameter_size " << parameter_size;
-          NGRAPH_INFO << "m_batch_size " << m_batch_size;
-        }
-        assert(m_inputs.size() == parameter_size * m_batch_size * 2);
-      } else {
-        assert(m_inputs.size() == parameter_size * m_batch_size);
       }
+
+      // TODO: check smaller sizes!
+      NGRAPH_CHECK(m_inputs.size() ==
+                       parameter_size * m_batch_size * complex_pack_factor,
+                   "m_inputs.size()", m_inputs.size(), "parameter_size",
+                   parameter_size, "m_batch_size", m_batch_size,
+                   "complex_pack_factor", complex_pack_factor);
 
       std::vector<seal::Ciphertext> ciphers(parameter_size);
 #pragma omp parallel for
       for (size_t data_idx = 0; data_idx < parameter_size; ++data_idx) {
         seal::Plaintext plain;
 
-        size_t complex_scale_factor = complex_packing() ? 2 : 1;
-        size_t batch_start_idx = data_idx * m_batch_size * complex_scale_factor;
+        size_t batch_start_idx = data_idx * m_batch_size * complex_pack_factor;
         size_t batch_end_idx =
-            batch_start_idx + m_batch_size * complex_scale_factor;
+            batch_start_idx + m_batch_size * complex_pack_factor;
 
         std::vector<double> real_vals{m_inputs.begin() + batch_start_idx,
                                       m_inputs.begin() + batch_end_idx};
@@ -206,15 +202,15 @@ void ngraph::he::HESealClient::handle_message(
     }
 
     case ngraph::he::MessageType::max_request: {
-      size_t complex_scale_factor = complex_packing() ? 2 : 1;
+      size_t complex_pack_factor = complex_packing() ? 2 : 1;
       size_t cipher_count = message.count();
       size_t element_size = message.element_size();
 
       std::vector<std::vector<double>> input_cipher_values(
-          m_batch_size * complex_scale_factor,
+          m_batch_size * complex_pack_factor,
           std::vector<double>(cipher_count, 0));
 
-      std::vector<double> max_values(m_batch_size * complex_scale_factor,
+      std::vector<double> max_values(m_batch_size * complex_pack_factor,
                                      std::numeric_limits<double>::lowest());
 
 #pragma omp parallel for
@@ -234,14 +230,14 @@ void ngraph::he::HESealClient::handle_message(
         decode_to_real_vec(pre_sort_plain, pre_max_value, complex_packing());
 
         for (size_t batch_idx = 0;
-             batch_idx < m_batch_size * complex_scale_factor; ++batch_idx) {
+             batch_idx < m_batch_size * complex_pack_factor; ++batch_idx) {
           input_cipher_values[batch_idx][cipher_idx] = pre_max_value[batch_idx];
         }
       }
 
       // Get max of eachstd::vector of values
-      for (size_t batch_idx = 0;
-           batch_idx < m_batch_size * complex_scale_factor; ++batch_idx) {
+      for (size_t batch_idx = 0; batch_idx < m_batch_size * complex_pack_factor;
+           ++batch_idx) {
         max_values[batch_idx] =
             *std::max_element(input_cipher_values[batch_idx].begin(),
                               input_cipher_values[batch_idx].end());

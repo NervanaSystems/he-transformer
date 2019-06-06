@@ -31,16 +31,15 @@ void ngraph::he::pad_seal(
     const CoordinateDiff& padding_below, const CoordinateDiff& padding_above,
     op::PadMode pad_mode, size_t batch_size,
     const ngraph::he::HESealBackend& he_seal_backend) {
-  if (arg1.size() != 1) {
-    throw ngraph_error("Padding element must be scalar");
-  }
+  NGRAPH_CHECK(arg1.size() == 1, "Padding element must be scalar");
+  NGRAPH_CHECK(arg1[0].num_values() == 1, "Padding value must be scalar");
 
   auto arg1_encrypted = he_seal_backend.create_empty_ciphertext();
 
   bool is_pad_value_zero =
-      arg1[0].is_single_value() && arg1[0].get_values()[0] == 0.;
+      arg1[0].is_single_value() && arg1[0].values()[0] == 0.;
   NGRAPH_CHECK(is_pad_value_zero, "Non-zero pad values not supported");
-  arg1_encrypted->set_zero(true);
+  arg1_encrypted->is_zero() = true;
 
   std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
       arg1_encrypted_vector{arg1_encrypted};

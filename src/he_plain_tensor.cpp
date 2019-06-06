@@ -32,15 +32,16 @@ ngraph::he::HEPlainTensor::HEPlainTensor(const element::Type& element_type,
 
 void ngraph::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
                                       size_t n) {
-  check_io_bounds(source, tensor_offset, n / m_batch_size);
+  NGRAPH_CHECK(tensor_offset == 0,
+               "Only support writing to beginning of tensor");
+
+  check_io_bounds(source, n / m_batch_size);
   const element::Type& element_type = get_tensor_layout()->get_element_type();
   size_t type_byte_size = element_type.size();
-  size_t dst_start_idx = tensor_offset / type_byte_size;
   size_t num_elements_to_write = n / (type_byte_size * m_batch_size);
 
   if (num_elements_to_write == 1) {
     const void* src_with_offset = (void*)((char*)source);
-    size_t dst_idx = dst_start_idx;
     if (m_batch_size > 1 && is_batched()) {
       std::vector<float> values(m_batch_size);
 
@@ -51,18 +52,16 @@ void ngraph::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
         float val = *(float*)(src);
         values[j] = val;
       }
-      m_plaintexts[dst_idx].set_values(values);
+      m_plaintexts[0].values() = values;
 
     } else {
       float f = *(float*)(src_with_offset);
-      m_plaintexts[dst_idx].set_values({f});
+      m_plaintexts[0].values() = {f};
     }
   } else {
 #pragma omp parallel for
     for (size_t i = 0; i < num_elements_to_write; ++i) {
       const void* src_with_offset = (void*)((char*)source + i * type_byte_size);
-      size_t dst_idx = dst_start_idx + i;
-
       if (m_batch_size > 1) {
         std::vector<float> values(m_batch_size);
 
@@ -74,11 +73,10 @@ void ngraph::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
           float val = *(float*)(src);
           values[j] = val;
         }
-        m_plaintexts[dst_idx].set_values(values);
-
+        m_plaintexts[i].values() = values;
       } else {
         float f = *(float*)(src_with_offset);
-        m_plaintexts[dst_idx].set_values({f});
+        m_plaintexts[i].values() = {f};
       }
     }
   }
@@ -89,23 +87,21 @@ void ngraph::he::HEPlainTensor::read(void* target, size_t tensor_offset,
   NGRAPH_CHECK(tensor_offset == 0,
                "Only support reading from beginning of tensor");
 
-  check_io_bounds(target, tensor_offset, n);
+  check_io_bounds(target, n);
   const element::Type& element_type = get_tensor_layout()->get_element_type();
   NGRAPH_CHECK(element_type == element::f32, "Only support float32");
   size_t type_byte_size = element_type.size();
-  size_t src_start_idx = tensor_offset / type_byte_size;
   size_t num_elements_to_read = n / (type_byte_size * m_batch_size);
 
   if (num_elements_to_read == 1) {
     void* dst_with_offset = (void*)((char*)target);
-    size_t src_idx = src_start_idx;
-    std::vector<float> values = m_plaintexts[src_idx].get_values();
+    const std::vector<float>& values = m_plaintexts[0].values();
+    NGRAPH_CHECK(values.size() > 0, "Cannot read from empty plaintext");
     memcpy(dst_with_offset, &values[0], type_byte_size * m_batch_size);
   } else {
 #pragma omp parallel for
     for (size_t i = 0; i < num_elements_to_read; ++i) {
-      size_t src_idx = src_start_idx + i;
-      std::vector<float> values = m_plaintexts[src_idx].get_values();
+      const std::vector<float>& values = m_plaintexts[i].values();
       NGRAPH_CHECK(values.size() >= m_batch_size, "values size ", values.size(),
                    " is smaller than batch size ", m_batch_size);
 

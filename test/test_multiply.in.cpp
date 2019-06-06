@@ -14,8 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "seal/he_seal_backend.hpp"
 #include "ngraph/ngraph.hpp"
+#include "seal/he_seal_backend.hpp"
 #include "test_util.hpp"
 #include "util/all_close.hpp"
 #include "util/ndarray.hpp"
@@ -183,4 +183,80 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_4_3_batch) {
   EXPECT_TRUE(all_close(
       (vector<float>{13, 28, 45, 64, 85, 108, 133, 160, 189, 220, 253, 288}),
       read_vector<float>(t_result), 1e-3f));
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, multiply_2_3_plain_complex) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->complex_packing() = true;
+
+  Shape shape{2, 3};
+  auto a = make_shared<op::Parameter>(element::f32, shape);
+  auto b = make_shared<op::Parameter>(element::f32, shape);
+  auto t = make_shared<op::Multiply>(a, b);
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
+
+  // Create some tensors for input/output
+  auto t_a = he_backend->create_plain_tensor(element::f32, shape);
+  auto t_b = he_backend->create_plain_tensor(element::f32, shape);
+  auto t_result = he_backend->create_plain_tensor(element::f32, shape);
+
+  copy_data(t_a, vector<float>{1, 2, 3, 4, 5, 6});
+  copy_data(t_b, vector<float>{7, 8, 9, 10, 11, 12});
+  auto handle = backend->compile(f);
+  handle->call_with_validate({t_result}, {t_a, t_b});
+  EXPECT_TRUE(all_close((vector<float>{7, 16, 27, 40, 55, 72}),
+                        read_vector<float>(t_result), 1e-3f));
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, multiply_2_3_cipher_plain_complex) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->complex_packing() = true;
+
+  Shape shape{2, 3};
+  auto a = make_shared<op::Parameter>(element::f32, shape);
+  auto b = make_shared<op::Parameter>(element::f32, shape);
+  auto t = make_shared<op::Multiply>(a, b);
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
+
+  // Create some tensors for input/output
+  auto t_a = he_backend->create_cipher_tensor(element::f32, shape);
+  auto t_b = he_backend->create_plain_tensor(element::f32, shape);
+  auto t_result = he_backend->create_cipher_tensor(element::f32, shape);
+
+  copy_data(t_a, vector<float>{-2, -1, 0, 1, 2, 3});
+  copy_data(t_b, vector<float>{3, -2, 5, 3, 2, -5});
+  auto handle = backend->compile(f);
+  handle->call_with_validate({t_result}, {t_a, t_b});
+  EXPECT_TRUE(all_close((vector<float>{-6, 2, 0, 3, 4, -15}),
+                        read_vector<float>(t_result), 1e-3f));
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, multiply_2_3_cipher_cipher_complex) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->complex_packing() = true;
+
+  Shape shape{2, 3};
+  auto a = make_shared<op::Parameter>(element::f32, shape);
+  auto b = make_shared<op::Parameter>(element::f32, shape);
+  auto t = make_shared<op::Multiply>(a, b);
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
+
+  // Create some tensors for input/output
+  auto t_a = he_backend->create_cipher_tensor(element::f32, shape);
+  auto t_b = he_backend->create_cipher_tensor(element::f32, shape);
+  auto t_result = he_backend->create_cipher_tensor(element::f32, shape);
+
+  copy_data(t_a, vector<float>{-2, -1, 0, 1, 2, 3});
+  copy_data(t_b, vector<float>{3, -2, 5, 3, 2, -5});
+  auto handle = he_backend->compile(f);
+
+  // Can't multiply two ciphertexts in complex form
+  EXPECT_THROW(
+      {
+        handle->call_with_validate({t_result}, {t_a, t_b});
+      },
+      CheckFailure);
 }

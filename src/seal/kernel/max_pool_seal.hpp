@@ -212,7 +212,7 @@ void max_pool_seal(const std::vector<HEPlaintext>& arg,
       if (input_batch_transform.has_source_coordinate(input_batch_coord)) {
         auto arg_coord_idx = input_batch_transform.index(input_batch_coord);
 
-        const std::vector<float>& arg_vals = arg[arg_coord_idx].get_values();
+        const std::vector<float>& arg_vals = arg[arg_coord_idx].values();
 
         if (first_max) {
           first_max = false;
@@ -304,7 +304,7 @@ void max_pool_seal(
         auto arg_coord_idx = input_batch_transform.index(input_batch_coord);
         HEPlaintext plain;
         he_seal_backend.decrypt(plain, *arg[arg_coord_idx]);
-        const std::vector<float>& arg_vals = plain.get_values();
+        const std::vector<float>& arg_vals = plain.values();
         if (first_max) {
           first_max = false;
           max_vals = arg_vals;
@@ -322,7 +322,7 @@ void max_pool_seal(
     }
     HEPlaintext result(max_vals);
     auto cipher = he_seal_backend.create_empty_ciphertext();
-    he_seal_backend.encrypt(cipher, result);
+    he_seal_backend.encrypt(cipher, result, he_seal_backend.complex_packing());
     out[output_transform.index(out_coord)] = cipher;
   }
 }

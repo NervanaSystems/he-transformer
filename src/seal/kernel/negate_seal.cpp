@@ -23,7 +23,7 @@ void ngraph::he::scalar_negate_seal(
   NGRAPH_CHECK(element_type == element::f32);
 
   if (arg.is_zero()) {
-    out->set_zero(true);
+    out->is_zero() = true;
     return;
   }
   he_seal_backend.get_evaluator()->negate(arg.ciphertext(), out->ciphertext());
@@ -31,10 +31,10 @@ void ngraph::he::scalar_negate_seal(
 
 void ngraph::he::scalar_negate_seal(const HEPlaintext& arg, HEPlaintext& out,
                                     const element::Type& element_type) {
-  const std::vector<float>& arg_vals = arg.get_values();
+  const std::vector<float>& arg_vals = arg.values();
   std::vector<float> out_vals(arg.num_values());
 
   std::transform(arg_vals.begin(), arg_vals.end(), out_vals.begin(),
                  std::negate<float>());
-  out.set_values(out_vals);
+  out.values() = out_vals;
 }

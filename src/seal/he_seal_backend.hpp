@@ -127,13 +127,12 @@ class HESealBackend : public ngraph::runtime::Backend {
 
   void encode(ngraph::he::SealPlaintextWrapper& destination,
               const ngraph::he::HEPlaintext& plaintext,
-              seal::parms_id_type parms_id, double scale) const;
+              seal::parms_id_type parms_id, double scale,
+              bool complex_packing = false) const;
 
   void encode(ngraph::he::SealPlaintextWrapper& destination,
-              const ngraph::he::HEPlaintext& plaintext) const;
-
-  void encode(ngraph::he::HEPlaintext& output, const void* input,
-              const element::Type& type, bool complex, size_t count = 1) const;
+              const ngraph::he::HEPlaintext& plaintext,
+              bool complex_packing = false) const;
 
   void decode(void* output, const ngraph::he::HEPlaintext& input,
               const element::Type& type, size_t count = 1) const;
@@ -142,7 +141,8 @@ class HESealBackend : public ngraph::runtime::Backend {
               const ngraph::he::SealPlaintextWrapper& input) const;
 
   void encrypt(std::shared_ptr<ngraph::he::SealCiphertextWrapper>& output,
-               const ngraph::he::HEPlaintext& input) const;
+               const ngraph::he::HEPlaintext& input,
+               bool complex_packing = false) const;
 
   void decrypt(ngraph::he::HEPlaintext& output,
                const SealCiphertextWrapper& input) const;
@@ -182,12 +182,13 @@ class HESealBackend : public ngraph::runtime::Backend {
   };
 
   void set_batch_data(bool batch) { m_batch_data = batch; };
-  void set_complex_packing(bool toggle) { m_complex_packing = toggle; }
+
+  bool complex_packing() const { return m_complex_packing; }
+  bool& complex_packing() { return m_complex_packing; }
 
   bool encrypt_data() const { return m_encrypt_data; };
   bool batch_data() const { return m_batch_data; };
   bool encrypt_model() const { return m_encrypt_model; };
-  bool complex_packing() const { return m_complex_packing; };
 
  private:
   bool m_encrypt_data{std::getenv("NGRAPH_ENCRYPT_DATA") != nullptr};
