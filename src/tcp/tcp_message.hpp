@@ -30,6 +30,7 @@
 
 #include "ngraph/check.hpp"
 #include "ngraph/log.hpp"
+#include "ngraph/util.hpp"
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 
@@ -136,8 +137,7 @@ class TCPMessage {
       throw std::invalid_argument("Request type not valid");
     }
     check_arguments();
-    // TODO: use malloc
-    m_data = new char[header_length + max_body_length];
+    m_data = (char*)ngraph_malloc(header_length + max_body_length);
     encode_header();
     encode_message_type();
     encode_count();
@@ -152,8 +152,7 @@ class TCPMessage {
     m_data_size = stream.tellp();
 
     check_arguments();
-    // TODO: use malloc
-    m_data = new char[header_length + body_length()];
+    m_data = (char*)ngraph_malloc(header_length + body_length());
     encode_header();
     encode_message_type();
     encode_count();
@@ -172,8 +171,7 @@ class TCPMessage {
     NGRAPH_INFO << "cipher_size " << cipher_size;
 
     check_arguments();
-    // TODO: use malloc
-    m_data = new char[header_length + body_length()];
+    m_data = (char*)ngraph_malloc(header_length + body_length());
     encode_header();
     encode_message_type();
     encode_count();
@@ -204,8 +202,7 @@ class TCPMessage {
     NGRAPH_INFO << "cipher_size " << cipher_size;
 
     check_arguments();
-    // TODO: use malloc
-    m_data = new char[header_length + body_length()];
+    m_data = (char*)ngraph_malloc(header_length + body_length());
     encode_header();
     encode_message_type();
     encode_count();
@@ -228,8 +225,7 @@ class TCPMessage {
              const char* data)
       : m_type(type), m_count(count), m_data_size(size) {
     check_arguments();
-    // TODO: use malloc
-    m_data = new char[header_length + body_length()];
+    m_data = (char*)ngraph_malloc(header_length + body_length());
     encode_header();
     encode_message_type();
     encode_count();
@@ -261,11 +257,7 @@ class TCPMessage {
   TCPMessage& operator=(const TCPMessage&) = delete;
   TCPMessage(const TCPMessage& other) = delete;
 
-  ~TCPMessage() {
-    if (m_data != nullptr) {
-      delete[] m_data;
-    }
-  }
+  ~TCPMessage() { ngraph_free(m_data); }
 
   void check_arguments() {
     if (m_count < 0) {
