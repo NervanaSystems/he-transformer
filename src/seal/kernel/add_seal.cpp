@@ -31,7 +31,10 @@ void ngraph::he::scalar_add_seal(
   } else if (arg1.is_zero()) {
     out = std::make_shared<ngraph::he::SealCiphertextWrapper>(arg0);
   } else {
-    NGRAPH_CHECK(arg0.complex_packing() == arg1.complex_packing());
+    NGRAPH_CHECK(arg0.complex_packing() == arg1.complex_packing(),
+                 "arg0.complex_packing() (", arg0.complex_packing(),
+                 ") does not match arg1.complex_packing() (",
+                 arg1.complex_packing(), ")");
 
     match_modulus_and_scale_inplace(arg0, arg1, he_seal_backend, pool);
     he_seal_backend.get_evaluator()->add(arg0.ciphertext(), arg1.ciphertext(),
@@ -62,10 +65,6 @@ void ngraph::he::scalar_add_seal(
   } else {
     bool complex_packing = arg0.complex_packing();
     // TODO: cleanup complex batching
-    /* NGRAPH_CHECK(arg0.complex_packing() == arg1.complex_packing(),
-                 "arg0.complex_packing() (", arg0.complex_packing(),
-                 ") does not match arg1.complex_packing() (",
-                 arg1.complex_packing(), ")"); */
 
     // TODO: optimize for adding single complex number
     if (arg1.is_single_value() && !complex_packing) {

@@ -28,9 +28,13 @@ void ngraph::he::scalar_multiply_seal(
   if (arg0.is_zero() || arg1.is_zero()) {
     out->is_zero() = true;
   } else {
+    NGRAPH_CHECK(arg0.complex_packing() == false,
+                 "cannot multiply ciphertexts in complex form");
+    NGRAPH_CHECK(arg1.complex_packing() == false,
+                 "cannot multiply ciphertexts in complex form");
     out->is_zero() = false;
+
     match_modulus_and_scale_inplace(arg0, arg1, he_seal_backend, pool);
-    // match_scale(arg0, arg1, he_seal_backend);
     size_t chain_ind0 = get_chain_index(arg0, he_seal_backend);
     size_t chain_ind1 = get_chain_index(arg1, he_seal_backend);
 
@@ -41,7 +45,7 @@ void ngraph::he::scalar_multiply_seal(
 
     if (&arg0 == &arg1) {
       he_seal_backend.get_evaluator()->square(arg0.ciphertext(),
-                                               out->ciphertext(), pool);
+                                              out->ciphertext(), pool);
     } else {
       he_seal_backend.get_evaluator()->multiply(
           arg0.ciphertext(), arg1.ciphertext(), out->ciphertext(), pool);
@@ -52,7 +56,7 @@ void ngraph::he::scalar_multiply_seal(
 
     // TODO: lazy rescaling if before dot
     he_seal_backend.get_evaluator()->rescale_to_next_inplace(out->ciphertext(),
-                                                              pool);
+                                                             pool);
   }
 }
 
@@ -91,7 +95,7 @@ void ngraph::he::scalar_multiply_seal(
       // Never complex-pack for multiplication
       auto p = SealPlaintextWrapper(false);
       he_seal_backend.encode(p, arg1, arg0.ciphertext().parms_id(),
-                              arg0.ciphertext().scale());
+                             arg0.ciphertext().scale());
 
       size_t chain_ind0 = get_chain_index(arg0, he_seal_backend);
       size_t chain_ind1 = get_chain_index(p.plaintext(), he_seal_backend);
