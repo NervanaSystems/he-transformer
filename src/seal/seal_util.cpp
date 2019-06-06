@@ -48,10 +48,10 @@ void ngraph::he::match_modulus_and_scale_inplace(
   if (chain_ind0 > chain_ind1) {
     auto arg1_parms_id = arg1.ciphertext().parms_id();
     if (rescale) {
-      he_seal_backend->get_evaluator()->rescale_to_inplace(arg0.ciphertext(),
+      he_seal_backend.get_evaluator()->rescale_to_inplace(arg0.ciphertext(),
                                                            arg1_parms_id);
     } else {
-      he_seal_backend->get_evaluator()->mod_switch_to_inplace(arg0.ciphertext(),
+      he_seal_backend.get_evaluator()->mod_switch_to_inplace(arg0.ciphertext(),
                                                               arg1_parms_id);
     }
     chain_ind0 = ngraph::he::get_chain_index(arg0, he_seal_backend);
@@ -68,7 +68,7 @@ void ngraph::he::encode(double value, double scale,
                         const HESealBackend& he_seal_backend,
                         seal::MemoryPoolHandle pool) {
   // Verify parameters.
-  auto context = he_seal_backend->get_context();
+  auto context = he_seal_backend.get_context();
   auto context_data_ptr = context->context_data(parms_id);
   if (!context_data_ptr) {
     throw ngraph_error("parms_id is not valid for encryption parameters");
@@ -240,7 +240,7 @@ void ngraph::he::encode(double value, double scale,
 void ngraph::he::add_plain_inplace(seal::Ciphertext& encrypted, double value,
                                    const HESealBackend& he_seal_backend) {
   // Verify parameters.
-  auto context = he_seal_backend->get_context();
+  auto context = he_seal_backend.get_context();
   if (!encrypted.is_metadata_valid_for(context)) {
     throw ngraph_error("encrypted is not valid for encryption parameters");
   }
@@ -295,7 +295,7 @@ void ngraph::he::multiply_plain_inplace(seal::Ciphertext& encrypted,
                                         const HESealBackend& he_seal_backend,
                                         seal::MemoryPoolHandle pool) {
   // Verify parameters.
-  auto context = he_seal_backend->get_context();
+  auto context = he_seal_backend.get_context();
   if (!encrypted.is_metadata_valid_for(context)) {
     throw ngraph_error("encrypted is not valid for encryption parameters");
   }

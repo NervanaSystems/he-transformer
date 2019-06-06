@@ -29,7 +29,7 @@ namespace ngraph {
 namespace he {
 inline size_t get_chain_index(const SealCiphertextWrapper& cipher,
                               const HESealBackend& he_seal_backend) {
-  size_t chain_ind = he_seal_backend->get_context()
+  size_t chain_ind = he_seal_backend.get_context()
                          ->context_data(cipher.ciphertext().parms_id())
                          ->chain_index();
   return chain_ind;
@@ -37,7 +37,7 @@ inline size_t get_chain_index(const SealCiphertextWrapper& cipher,
 
 inline size_t get_chain_index(const SealPlaintextWrapper& plain,
                               const HESealBackend& he_seal_backend) {
-  size_t chain_ind = he_seal_backend->get_context()
+  size_t chain_ind = he_seal_backend.get_context()
                          ->context_data(plain.plaintext().parms_id())
                          ->chain_index();
   return chain_ind;

@@ -32,7 +32,7 @@ ngraph::he::HESealCipherTensor::HESealCipherTensor(
   m_ciphertexts.resize(m_num_elements);
 #pragma omp parallel for
   for (size_t i = 0; i < m_num_elements; ++i) {
-    m_ciphertexts[i] = he_seal_backend->create_empty_ciphertext();
+    m_ciphertexts[i] = he_seal_backend.create_empty_ciphertext();
   }
 }
 
@@ -44,7 +44,7 @@ void ngraph::he::HESealCipherTensor::write(const void* source,
   size_t dst_start_idx = tensor_offset / type_byte_size;
   size_t num_elements_to_write = n / (type_byte_size * m_batch_size);
 
-  const bool complex_batching = m_he_seal_backend->complex_packing();
+  const bool complex_batching = m_he_seal_backend.complex_packing();
 
   if (num_elements_to_write == 1) {
     const void* src_with_offset = (void*)((char*)source);
@@ -52,9 +52,9 @@ void ngraph::he::HESealCipherTensor::write(const void* source,
 
     auto plaintext = HEPlaintext();
 
-    m_he_seal_backend->encode(plaintext, src_with_offset, element_type,
+    m_he_seal_backend.encode(plaintext, src_with_offset, element_type,
                               complex_batching, m_batch_size);
-    m_he_seal_backend->encrypt(m_ciphertexts[dst_idx], plaintext);
+    m_he_seal_backend.encrypt(m_ciphertexts[dst_idx], plaintext);
   } else {
 #pragma omp parallel for
     for (size_t i = 0; i < num_elements_to_write; ++i) {
@@ -76,14 +76,14 @@ void ngraph::he::HESealCipherTensor::write(const void* source,
                       type_byte_size * (i + j * num_elements_to_write));
           memcpy(destination, src, type_byte_size);
         }
-        m_he_seal_backend->encode(plaintext, batch_src, element_type,
+        m_he_seal_backend.encode(plaintext, batch_src, element_type,
                                   complex_batching, m_batch_size);
         free((void*)batch_src);
       } else {
-        m_he_seal_backend->encode(plaintext, src_with_offset, element_type,
+        m_he_seal_backend.encode(plaintext, src_with_offset, element_type,
                                   complex_batching, m_batch_size);
       }
-      m_he_seal_backend->encrypt(m_ciphertexts[dst_idx], plaintext);
+      m_he_seal_backend.encrypt(m_ciphertexts[dst_idx], plaintext);
     }
   }
 }
@@ -100,8 +100,8 @@ void ngraph::he::HESealCipherTensor::read(void* target, size_t tensor_offset,
     void* dst_with_offset = (void*)((char*)target);
     size_t src_idx = src_start_idx;
     auto p = HEPlaintext(m_ciphertexts[src_idx]->complex_packing());
-    m_he_seal_backend->decrypt(p, *m_ciphertexts[src_idx]);
-    m_he_seal_backend->decode(dst_with_offset, p, element_type, m_batch_size);
+    m_he_seal_backend.decrypt(p, *m_ciphertexts[src_idx]);
+    m_he_seal_backend.decode(dst_with_offset, p, element_type, m_batch_size);
   } else {
 #pragma omp parallel for
     for (size_t i = 0; i < num_elements_to_read; ++i) {
@@ -112,8 +112,8 @@ void ngraph::he::HESealCipherTensor::read(void* target, size_t tensor_offset,
 
       size_t src_idx = src_start_idx + i;
       auto p = HEPlaintext(m_ciphertexts[src_idx]->complex_packing());
-      m_he_seal_backend->decrypt(p, *m_ciphertexts[src_idx]);
-      m_he_seal_backend->decode(dst, p, element_type, m_batch_size);
+      m_he_seal_backend.decrypt(p, *m_ciphertexts[src_idx]);
+      m_he_seal_backend.decode(dst, p, element_type, m_batch_size);
 
       for (size_t j = 0; j < m_batch_size; ++j) {
         void* dst_with_offset =
