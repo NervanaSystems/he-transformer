@@ -45,7 +45,11 @@ pip install pillow
     ```bash
     python client.py
     ```
-Upon successful termination, the client will output the top5 categories for an image of Grace Hopper in a military uniform.
+Upon successful completion, the client will output the top5 categories for an image of Grace Hopper in a military uniform:
+```
+top5 [922 458 721 653 835]
+['book jacket' 'bow tie' 'pill bottle' 'military uniform' 'suit']
+```
 
 # Debugging
 1. For debugging purposes, run the model in plaintext with
