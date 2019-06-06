@@ -44,7 +44,8 @@ void ngraph::he::HESealCipherTensor::write(const void* source,
   size_t dst_start_idx = tensor_offset / type_byte_size;
   size_t num_elements_to_write = n / (type_byte_size * m_batch_size);
 
-  const bool complex_batching = m_he_seal_backend.complex_packing();
+  const bool complex_packing = m_he_seal_backend.complex_packing();
+  NGRAPH_INFO << "CipherTensor::write complex_packing? " << complex_packing;
 
   if (num_elements_to_write == 1) {
     const void* src_with_offset = (void*)((char*)source);
@@ -53,7 +54,7 @@ void ngraph::he::HESealCipherTensor::write(const void* source,
     auto plaintext = HEPlaintext();
 
     m_he_seal_backend.encode(plaintext, src_with_offset, element_type,
-                              complex_batching, m_batch_size);
+                             complex_packing, m_batch_size);
     m_he_seal_backend.encrypt(m_ciphertexts[dst_idx], plaintext);
   } else {
 #pragma omp parallel for
@@ -77,11 +78,11 @@ void ngraph::he::HESealCipherTensor::write(const void* source,
           memcpy(destination, src, type_byte_size);
         }
         m_he_seal_backend.encode(plaintext, batch_src, element_type,
-                                  complex_batching, m_batch_size);
+                                 complex_packing, m_batch_size);
         free((void*)batch_src);
       } else {
         m_he_seal_backend.encode(plaintext, src_with_offset, element_type,
-                                  complex_batching, m_batch_size);
+                                 complex_packing, m_batch_size);
       }
       m_he_seal_backend.encrypt(m_ciphertexts[dst_idx], plaintext);
     }
@@ -111,6 +112,9 @@ void ngraph::he::HESealCipherTensor::read(void* target, size_t tensor_offset,
       }
 
       size_t src_idx = src_start_idx + i;
+
+      NGRAPH_INFO << "CipherTensor::read complex_packing? "
+                  << m_ciphertexts[src_idx]->complex_packing();
       auto p = HEPlaintext(m_ciphertexts[src_idx]->complex_packing());
       m_he_seal_backend.decrypt(p, *m_ciphertexts[src_idx]);
       m_he_seal_backend.decode(dst, p, element_type, m_batch_size);
