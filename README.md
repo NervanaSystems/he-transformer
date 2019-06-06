@@ -8,10 +8,10 @@ This project is meant as a proof-of-concept to demonstrate the feasibility of HE
 
 Currently, we support the [CKKS](https://eprint.iacr.org/2018/931.pdf) encryption scheme, implemented by the [Simple Encrypted Arithmetic Library (SEAL)](https://github.com/Microsoft/SEAL) from Microsoft Research.
 
-Additionally, we integrate with the [**Intel® nGraph™ Compiler and runtime engine for TensorFlow**](https://github.com/NervanaSystems/ngraph-tf) to allow users to run inference on trained neural networks through Tensorflow.
+Additionally, we integrate with the [**Intel® nGraph™ Compiler and runtime engine for TensorFlow**](https://github.com/tensorflow/ngraph-bridge) to allow users to run inference on trained neural networks through Tensorflow.
 
 ## Examples
-The [examples](https://github.com/NervanaSystems/he-transformer/tree/master/examples) directory contains a deep learning example which depends on the [**Intel® nGraph™ Compiler and runtime engine for TensorFlow**](https://github.com/NervanaSystems/ngraph-tf).
+The [examples](https://github.com/NervanaSystems/he-transformer/tree/master/examples) directory contains a deep learning example which depends on the [**Intel® nGraph™ Compiler and runtime engine for TensorFlow**](https://github.com/tensorflow/ngraph-bridge).
 
 ## Building HE Transformer
 
@@ -65,7 +65,7 @@ cmake .. -DUSE_PREBUILT_TF=ON [-DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc
 To build an experimental client-server model with python bindings, see the `python` folder.
 
 ### 2. Run C++ unit-tests
-Ensure the virtual environment is active, i.e. run `source $HE_TRANSFORMER/external/venv-tf-py3/bin/activate`
+Ensure the virtual environment is active, i.e. run `source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate`
 ```bash
 cd $HE_TRANSFORMER/build
 # To run single HE_SEAL unit-test
@@ -75,7 +75,7 @@ cd $HE_TRANSFORMER/build
 ```
 
 ### 3. Run Simple python example
-Ensure the virtual environment is active, i.e. run `source $HE_TRANSFORMER/external/venv-tf-py3/bin/activate`
+Ensure the virtual environment is active, i.e. run `source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate`
 ```bash
 cd $HE_TRANSFORMER/examples
 # Run with CPU
@@ -84,7 +84,7 @@ python axpy.py
 NGRAPH_TF_BACKEND=HE_SEAL python axpy.py
 ```
 
-For a deep learning example, see [examples/cryptonets/](https://github.com/NervanaSystems/he-transformer/tree/master/examples/cryptonets).
+For a deep learning example, see [examples/cryptonets/](https://github.com/NervanaSystems/he-transformer/tree/master/examples/MNIST-Cryptonets).
 
 ## Code formatting
 Please run `maint/apply-code-format.sh` before submitting a pull request.
