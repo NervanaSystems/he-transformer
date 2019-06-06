@@ -80,7 +80,7 @@ using ngraph::descriptor::layout::DenseTensorLayout;
 
 ngraph::he::HESealExecutable::HESealExecutable(
     const std::shared_ptr<Function>& function,
-    bool enable_performance_collection, const HESealBackend& he_seal_backend,
+    bool enable_performance_collection, HESealBackend& he_seal_backend,
     bool encrypt_data, bool encrypt_model, bool batch_data)
     : m_he_seal_backend(he_seal_backend),
       m_encrypt_data(encrypt_data),
@@ -287,9 +287,7 @@ void ngraph::he::HESealExecutable::handle_message(
     key_stream.write(message.data_ptr(), message.element_size());
     key.load(m_context, key_stream);
 
-    // TODO: move set_public_key to HESealBackend
-    auto he_seal_backend = (ngraph::he::HESealBackend&)m_he_seal_backend;
-    he_seal_backend.set_public_key(key);
+    m_he_seal_backend.set_public_key(key);
 
     NGRAPH_INFO << "Server set public key";
 
@@ -299,9 +297,7 @@ void ngraph::he::HESealExecutable::handle_message(
     key_stream.write(message.data_ptr(), message.element_size());
     keys.load(m_context, key_stream);
 
-    // TODO: move set_relin_keys to HESealBackend
-    auto he_seal_backend = (ngraph::he::HESealBackend&)m_he_seal_backend;
-    he_seal_backend.set_relin_keys(keys);
+    m_he_seal_backend.set_relin_keys(keys);
 
     // Send inference parameter shape
     const ParameterVector& input_parameters = get_parameters();

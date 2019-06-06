@@ -87,7 +87,7 @@ ngraph::he::HESealBackend::create_plain_tensor(
     const element::Type& element_type, const Shape& shape,
     const bool batched) const {
   auto rc = std::make_shared<ngraph::he::HEPlainTensor>(element_type, shape,
-                                                        this, batched);
+                                                        *this, batched);
   return std::static_pointer_cast<ngraph::runtime::Tensor>(rc);
 }
 
@@ -96,7 +96,7 @@ ngraph::he::HESealBackend::create_cipher_tensor(
     const element::Type& element_type, const Shape& shape,
     const bool batched) const {
   auto rc = std::make_shared<ngraph::he::HESealCipherTensor>(
-      element_type, shape, this, batched);
+      element_type, shape, *this, batched);
   return std::static_pointer_cast<ngraph::runtime::Tensor>(rc);
 }
 
@@ -118,8 +118,8 @@ std::shared_ptr<ngraph::runtime::Tensor>
 ngraph::he::HESealBackend::create_batched_cipher_tensor(
     const element::Type& type, const Shape& shape) {
   NGRAPH_INFO << "Creating batched cipher tensor with shape " << join(shape);
-  auto rc =
-      std::make_shared<ngraph::he::HESealCipherTensor>(type, shape, this, true);
+  auto rc = std::make_shared<ngraph::he::HESealCipherTensor>(type, shape, *this,
+                                                             true);
   set_batch_data(true);
   return std::static_pointer_cast<ngraph::runtime::Tensor>(rc);
 }
@@ -129,7 +129,7 @@ ngraph::he::HESealBackend::create_batched_plain_tensor(
     const element::Type& type, const Shape& shape) {
   NGRAPH_INFO << "Creating batched plain tensor with shape " << join(shape);
   auto rc =
-      std::make_shared<ngraph::he::HEPlainTensor>(type, shape, this, true);
+      std::make_shared<ngraph::he::HEPlainTensor>(type, shape, *this, true);
   set_batch_data(true);
   return std::static_pointer_cast<ngraph::runtime::Tensor>(rc);
 }
@@ -137,7 +137,7 @@ ngraph::he::HESealBackend::create_batched_plain_tensor(
 std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
     std::shared_ptr<Function> function, bool enable_performance_collection) {
   return std::make_shared<HESealExecutable>(
-      function, enable_performance_collection, this, m_encrypt_data,
+      function, enable_performance_collection, *this, m_encrypt_data,
       m_encrypt_model, m_batch_data);
 }
 
