@@ -29,7 +29,7 @@ static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_1image_plain) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend = static_cast<ngraph::he::HESealBackend&>(backend.get());
 
   Shape shape_a{1, 1, 14};
   Shape window_shape{3};
@@ -55,7 +55,7 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_1image_plain) {
 
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_1image_cipher) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend = static_cast<ngraph::he::HESealBackend&>(backend.get());
 
   Shape shape_a{1, 1, 14};
   Shape window_shape{3};
@@ -81,7 +81,7 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_1image_cipher) {
 
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_2image_plain) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend = static_cast<ngraph::he::HESealBackend&>(backend.get());
 
   Shape shape_a{2, 1, 14};
   Shape window_shape{3};
@@ -109,7 +109,7 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_2image_plain) {
 
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_2image_plain_batched) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend = static_cast<ngraph::he::HESealBackend&>(backend.get());
 
   Shape shape_a{2, 1, 14};
   Shape window_shape{3};
@@ -137,7 +137,7 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_2image_plain_batched) {
 
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_2image_cipher) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend = static_cast<ngraph::he::HESealBackend&>(backend.get());
 
   Shape shape_a{2, 1, 14};
   Shape window_shape{3};
@@ -165,7 +165,7 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_2image_cipher) {
 
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_2image_cipher_batched) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend = static_cast<ngraph::he::HESealBackend&>(backend.get());
 
   Shape shape_a{2, 1, 14};
   Shape window_shape{3};
@@ -193,7 +193,7 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_2image_cipher_batched) {
 
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_2channel_2image_plain) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend = static_cast<ngraph::he::HESealBackend&>(backend.get());
 
   Shape shape_a{2, 2, 14};
   Shape window_shape{3};
@@ -228,7 +228,7 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_2channel_2image_plain) {
 
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_2channel_2image_cipher) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend = static_cast<ngraph::he::HESealBackend&>(backend.get());
 
   Shape shape_a{2, 2, 14};
   Shape window_shape{3};
@@ -263,7 +263,7 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_2channel_2image_cipher) {
 
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_2d_2channel_2image_plain) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend = static_cast<ngraph::he::HESealBackend&>(backend.get());
 
   Shape shape_a{2, 2, 5, 5};
   Shape window_shape{2, 3};
@@ -327,7 +327,7 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_2d_2channel_2image_plain) {
 
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_2d_2channel_2image_cipher) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend = static_cast<ngraph::he::HESealBackend&>(backend.get());
 
   Shape shape_a{2, 2, 5, 5};
   Shape window_shape{2, 3};

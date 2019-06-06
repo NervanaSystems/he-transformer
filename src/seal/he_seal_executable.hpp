@@ -44,7 +44,7 @@ class HESealExecutable : public runtime::Executable {
  public:
   HESealExecutable(const std::shared_ptr<Function>& function,
                    bool enable_performance_collection,
-                   const ngraph::he::HESealBackend* he_seal_backend,
+                   const ngraph::he::HESealBackend& he_seal_backend,
                    bool encrypt_data, bool encrypt_model, bool batch_data);
 
   ~HESealExecutable() {

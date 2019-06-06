@@ -288,7 +288,7 @@ void ngraph::he::HESealExecutable::handle_message(
     key.load(m_context, key_stream);
 
     // TODO: move set_public_key to HESealBackend
-    auto he_seal_backend = (ngraph::he::HESealBackend*)m_he_seal_backend;
+    auto he_seal_backend = (ngraph::he::HESealBackend&)m_he_seal_backend;
     he_seal_backend.set_public_key(key);
 
     NGRAPH_INFO << "Server set public key";
@@ -300,7 +300,7 @@ void ngraph::he::HESealExecutable::handle_message(
     keys.load(m_context, key_stream);
 
     // TODO: move set_relin_keys to HESealBackend
-    auto he_seal_backend = (ngraph::he::HESealBackend*)m_he_seal_backend;
+    auto he_seal_backend = (ngraph::he::HESealBackend&)m_he_seal_backend;
     he_seal_backend.set_relin_keys(keys);
 
     // Send inference parameter shape

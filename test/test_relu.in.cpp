@@ -29,7 +29,7 @@ static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, relu_plain_2_3) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend = static_cast<ngraph::he::HESealBackend&>(backend.get());
 
   Shape shape{2, 3};
   auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -49,7 +49,7 @@ NGRAPH_TEST(${BACKEND_NAME}, relu_plain_2_3) {
 
 NGRAPH_TEST(${BACKEND_NAME}, relu_cipher_2_3) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend = static_cast<ngraph::he::HESealBackend&>(backend.get());
 
   Shape shape{2, 3};
   auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -69,7 +69,7 @@ NGRAPH_TEST(${BACKEND_NAME}, relu_cipher_2_3) {
 
 NGRAPH_TEST(${BACKEND_NAME}, relu_batched_plain_2_3) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend = static_cast<ngraph::he::HESealBackend&>(backend.get());
 
   Shape shape{2, 3};
   auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -89,7 +89,7 @@ NGRAPH_TEST(${BACKEND_NAME}, relu_batched_plain_2_3) {
 
 NGRAPH_TEST(${BACKEND_NAME}, relu_batched_cipher_2_3) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend = static_cast<ngraph::he::HESealBackend&>(backend.get());
 
   Shape shape{2, 3};
   auto a = make_shared<op::Parameter>(element::f32, shape);

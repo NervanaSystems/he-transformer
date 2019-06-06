@@ -101,7 +101,7 @@ generate_plain_cipher_tensors(const std::vector<std::shared_ptr<Node>>& output,
                               const ngraph::runtime::Backend* backend,
                               const bool consistent_type,
                               const bool skip_plain_plain) {
-  auto he_backend = static_cast<const ngraph::he::HESealBackend*>(backend);
+  auto he_backend = static_cast<const ngraph::he::HESealBackend&>(backend);
 
   using TupleOfInputOutputs = std::vector<
       std::tuple<std::vector<std::shared_ptr<ngraph::runtime::Tensor>>,

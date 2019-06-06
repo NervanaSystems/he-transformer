@@ -364,7 +364,7 @@ void ngraph::he::multiply_plain_inplace(seal::Ciphertext& encrypted,
 
 size_t ngraph::he::match_to_smallest_chain_index(
     std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>& ciphers,
-    const ngraph::he::HESealBackend* he_seal_backend) {
+    const ngraph::he::HESealBackend& he_seal_backend) {
   size_t num_elements = ciphers.size();
 
   // (cipher_ind, chain_ind)

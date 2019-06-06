@@ -24,7 +24,7 @@
 
 ngraph::he::HESealCipherTensor::HESealCipherTensor(
     const element::Type& element_type, const Shape& shape,
-    const ngraph::he::HESealBackend* he_seal_backend, const bool batched,
+    const ngraph::he::HESealBackend& he_seal_backend, const bool batched,
     const std::string& name)
     : ngraph::he::HETensor(element_type, shape, he_seal_backend, batched,
                            name) {

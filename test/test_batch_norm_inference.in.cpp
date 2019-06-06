@@ -194,7 +194,7 @@ class BatchNormInferenceTesterNonZeroEpsilon
 NGRAPH_TEST(${BACKEND_NAME}, batch_norm_inference_0eps_f32) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   std::unique_ptr<ngraph::he::HESealBackend> he_backend;
-  auto he_backend_tmp = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend_tmp = static_cast<ngraph::he::HESealBackend&>(backend.get());
   backend.release();
   he_backend.reset(he_backend_tmp);
 
@@ -208,7 +208,7 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_inference_0eps_f32) {
 NGRAPH_TEST(${BACKEND_NAME}, batch_norm_inference_f32) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   std::unique_ptr<ngraph::he::HESealBackend> he_backend;
-  auto he_backend_tmp = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend_tmp = static_cast<ngraph::he::HESealBackend&>(backend.get());
   backend.release();
   he_backend.reset(he_backend_tmp);
 
@@ -296,7 +296,7 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion) {
 NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   std::unique_ptr<ngraph::he::HESealBackend> he_backend;
-  auto he_backend_tmp = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend_tmp = static_cast<ngraph::he::HESealBackend&>(backend.get());
   backend.release();
   he_backend.reset(he_backend_tmp);
 
@@ -377,7 +377,7 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he) {
 NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he_batch) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   std::unique_ptr<ngraph::he::HESealBackend> he_backend;
-  auto he_backend_tmp = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend_tmp = static_cast<ngraph::he::HESealBackend&>(backend.get());
   backend.release();
   he_backend.reset(he_backend_tmp);
 
