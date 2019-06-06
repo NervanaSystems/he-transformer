@@ -72,7 +72,7 @@ install(DIRECTORY ${CMAKE_INSTALL_PREFIX}/
 
 add_library(he_seal_client SHARED ${CMAKE_SOURCE_DIR}/src/seal/he_seal_client.cpp
                                   ${CMAKE_SOURCE_DIR}/src/tcp/tcp_message.hpp)
-# TODO: remove he_seal_backend dependencty?
+# TODO: remove he_seal_backend dependency?
 add_dependencies(he_seal_client ext_seal he_seal_backend)
 target_link_libraries(he_seal_client seal libjson libboost ngraph)
 install(TARGETS he_seal_client DESTINATION ${HE_INSTALL_LIB_DIR})

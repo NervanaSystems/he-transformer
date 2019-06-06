@@ -171,7 +171,6 @@ class TCPMessage {
     ciphers[0].save(first);
     first.seekp(0, std::ios::end);
     size_t first_cipher_size = first.tellp();
-
     m_data_size = first_cipher_size * m_count;
 
     check_arguments();
@@ -211,10 +210,10 @@ class TCPMessage {
 
   TCPMessage& operator=(TCPMessage&& other) {
     if (this != &other) {
-      m_data = other.m_data;
       m_type = other.m_type;
       m_count = other.m_count;
       m_data_size = other.m_data_size;
+      m_data = other.m_data;
       other.m_data = nullptr;
       other.m_data_size = 0;
       other.m_count = 0;
@@ -224,10 +223,10 @@ class TCPMessage {
   };
 
   TCPMessage(TCPMessage&& other)
-      : m_data(other.m_data),
-        m_type(other.m_type),
+      : m_type(other.m_type),
         m_count(other.m_count),
-        m_data_size(other.m_data_size) {
+        m_data_size(other.m_data_size),
+        m_data(other.m_data) {
     other.m_data = nullptr;
   };
 

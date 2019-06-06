@@ -31,7 +31,6 @@ inline void scalar_relu_seal(const HEPlaintext& arg, HEPlaintext& out) {
   std::vector<float> out_vals(arg.num_values());
 
   auto relu = [](float f) { return f > 0 ? f : 0.f; };
-
   std::transform(arg_vals.begin(), arg_vals.end(), out_vals.begin(), relu);
   out.set_values(out_vals);
 }

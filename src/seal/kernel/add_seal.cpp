@@ -60,7 +60,7 @@ void ngraph::he::scalar_add_seal(
   if (add_zero) {
     out = std::make_shared<ngraph::he::SealCiphertextWrapper>(arg0);
   } else {
-    // TODO: clean up complex packing!
+    // TODO: cleanup complex batching
     // NGRAPH_CHECK(arg1.complex_packing() == arg0.complex_packing(),
     //             "cipher/plain complex packing args differ");
 

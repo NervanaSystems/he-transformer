@@ -39,12 +39,12 @@ NGRAPH_TEST(${BACKEND_NAME}, relu_plain_2_3) {
   auto t_a = he_backend->create_plain_tensor(element::f32, shape);
   auto t_result = he_backend->create_plain_tensor(element::f32, shape);
 
-  copy_data(t_a, vector<float>{-1, -0.5, 0., 0.5, 1, 1.5});
+  copy_data(t_a, vector<float>{-1, -0.5, 0., 0.5, 1, 8});
 
   auto handle = backend->compile(f);
   handle->call_with_validate({t_result}, {t_a});
   EXPECT_TRUE(all_close(read_vector<float>(t_result),
-                        vector<float>{0, 0, 0, 0.5, 1, 1.5}, 1e-3f));
+                        vector<float>{0, 0, 0, 0.5, 1, 8}, 1e-3f));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, relu_cipher_2_3) {
@@ -79,12 +79,12 @@ NGRAPH_TEST(${BACKEND_NAME}, relu_batched_plain_2_3) {
   auto t_a = he_backend->create_batched_plain_tensor(element::f32, shape);
   auto t_result = he_backend->create_batched_plain_tensor(element::f32, shape);
 
-  copy_data(t_a, vector<float>{-1, -0.5, 0., 0.5, 1, 1.5});
+  copy_data(t_a, vector<float>{-1, -0.5, 0., 0.5, 1, 8});
 
   auto handle = backend->compile(f);
   handle->call_with_validate({t_result}, {t_a});
   EXPECT_TRUE(all_close(read_vector<float>(t_result),
-                        vector<float>{0, 0, 0, 0.5, 1, 1.5}, 1e-3f));
+                        vector<float>{0, 0, 0, 0.5, 1, 8}, 1e-3f));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, relu_batched_cipher_2_3) {
