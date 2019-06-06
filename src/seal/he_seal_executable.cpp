@@ -80,7 +80,7 @@ using ngraph::descriptor::layout::DenseTensorLayout;
 
 ngraph::he::HESealExecutable::HESealExecutable(
     const std::shared_ptr<Function>& function,
-    bool enable_performance_collection, const HESealBackend* he_seal_backend,
+    bool enable_performance_collection, const HESealBackend& he_seal_backend,
     bool encrypt_data, bool encrypt_model, bool batch_data)
     : m_he_seal_backend(he_seal_backend),
       m_encrypt_data(encrypt_data),

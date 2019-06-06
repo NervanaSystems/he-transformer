@@ -27,7 +27,7 @@ class HESealBackend;
 class HETensor : public runtime::Tensor {
  public:
   HETensor(const element::Type& element_type, const Shape& shape,
-           const HESealBackend* he_seal_backend, const bool batched = false,
+           const HESealBackend& he_seal_backend, const bool batched = false,
            const std::string& name = "external");
   virtual ~HETensor(){};
 
@@ -75,7 +75,7 @@ class HETensor : public runtime::Tensor {
   size_t m_batch_size;  // If m_batched, corresponds to first shape dimesion.
   Shape m_batched_shape;
 
-  const HESealBackend* m_he_seal_backend;
+  const HESealBackend& m_he_seal_backend;
 };
 }  // namespace he
 }  // namespace ngraph

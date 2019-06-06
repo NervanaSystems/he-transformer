@@ -84,7 +84,7 @@ class HESealExecutable : public runtime::Executable {
                              const NodeWrapper& node_wrapper);
 
  private:
-  const HESealBackend* m_he_seal_backend;  // TODO: replace with context
+  const HESealBackend& m_he_seal_backend;  // TODO: replace with context
   bool m_encrypt_data;
   bool m_encrypt_model;
   bool m_batch_data;

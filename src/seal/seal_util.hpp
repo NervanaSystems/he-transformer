@@ -28,7 +28,7 @@
 namespace ngraph {
 namespace he {
 inline size_t get_chain_index(const SealCiphertextWrapper& cipher,
-                              const HESealBackend* he_seal_backend) {
+                              const HESealBackend& he_seal_backend) {
   size_t chain_ind = he_seal_backend->get_context()
                          ->context_data(cipher.ciphertext().parms_id())
                          ->chain_index();
@@ -36,7 +36,7 @@ inline size_t get_chain_index(const SealCiphertextWrapper& cipher,
 }
 
 inline size_t get_chain_index(const SealPlaintextWrapper& plain,
-                              const HESealBackend* he_seal_backend) {
+                              const HESealBackend& he_seal_backend) {
   size_t chain_ind = he_seal_backend->get_context()
                          ->context_data(plain.plaintext().parms_id())
                          ->chain_index();
@@ -46,7 +46,7 @@ inline size_t get_chain_index(const SealPlaintextWrapper& plain,
 // Returns the smallest chain index
 size_t match_to_smallest_chain_index(
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& ciphers,
-    const HESealBackend* he_seal_backend);
+    const HESealBackend& he_seal_backend);
 
 template <typename S, typename T>
 bool within_rescale_tolerance(const S& arg0, const T& arg1,
@@ -60,7 +60,7 @@ bool within_rescale_tolerance(const S& arg0, const T& arg1,
 }
 
 template <typename S, typename T>
-void match_scale(S& arg0, T& arg1, const HESealBackend* he_seal_backend) {
+void match_scale(S& arg0, T& arg1, const HESealBackend& he_seal_backend) {
   auto scale0 = arg0.scale();
   auto scale1 = arg1.scale();
   bool scale_ok = within_rescale_tolerance(arg0, arg1);
@@ -71,20 +71,20 @@ void match_scale(S& arg0, T& arg1, const HESealBackend* he_seal_backend) {
 
 void match_modulus_and_scale_inplace(
     SealCiphertextWrapper& arg0, SealCiphertextWrapper& arg1,
-    const HESealBackend* he_seal_backend,
+    const HESealBackend& he_seal_backend,
     seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool());
 
 void encode(double value, double scale, seal::parms_id_type parms_id,
             std::vector<std::uint64_t>& destination,
-            const HESealBackend* he_seal_backend,
+            const HESealBackend& he_seal_backend,
             seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool());
 
 void add_plain_inplace(seal::Ciphertext& encrypted, double value,
-                       const HESealBackend* he_seal_backend);
+                       const HESealBackend& he_seal_backend);
 
 inline void add_plain(const seal::Ciphertext& encrypted, double value,
                       seal::Ciphertext& destination,
-                      const HESealBackend* he_seal_backend) {
+                      const HESealBackend& he_seal_backend) {
   destination = encrypted;
   ngraph::he::add_plain_inplace(destination, value, he_seal_backend);
 }
@@ -129,12 +129,12 @@ inline void add_poly_scalar_coeffmod(const std::uint64_t* poly,
 
 void multiply_plain_inplace(
     seal::Ciphertext& encrypted, double value,
-    const HESealBackend* he_seal_backend,
+    const HESealBackend& he_seal_backend,
     seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool());
 
 inline void multiply_plain(
     const seal::Ciphertext& encrypted, double value,
-    seal::Ciphertext& destination, const HESealBackend* he_seal_backend,
+    seal::Ciphertext& destination, const HESealBackend& he_seal_backend,
     seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool()) {
   destination = encrypted;
   ngraph::he::multiply_plain_inplace(destination, value, he_seal_backend,
