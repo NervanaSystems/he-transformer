@@ -1,4 +1,21 @@
+# ******************************************************************************
+# Copyright 2018-2019 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# *****************************************************************************
+
 import tensorflow as tf
+
 from tensorflow.python.platform import gfile
 
 import ngraph_bridge
@@ -53,9 +70,6 @@ def get_imagenet_labels():
 
 def main():
     x_test = get_test_image()
-    # print('x_test', x_test)
-    print('x_test[0][1]', x_test[0][1])
-    print('x_test[0][1].shape', x_test[0][1].shape)
 
     (batch_size, width, height, channels) = x_test.shape
     print('batch_size', batch_size)
@@ -63,7 +77,7 @@ def main():
     print('height', height)
     print('channels', channels)
 
-    # Reshape to expected layer
+    # Reshape to expected format
     # TODO: more efficient
     x_test_flat = []
     for width_idx in range(width):
@@ -85,15 +99,11 @@ def main():
     print('results', results)
 
     imagenet_labels = get_imagenet_labels()
-
-    correct_label = np.where(imagenet_labels == 'military uniform')  # 653
     results = np.array(results)
+    top5 = results.argsort()[-5:][::-1]
 
-    top1000 = results.argsort()[-1000:][::-1]
-
-    preds = imagenet_labels[top1000]
-    print('top100', preds[0:100])
-    print('index of military uniform', np.where(preds == 'military uniform'))
+    preds = imagenet_labels[top5]
+    print('top5', preds)
 
 
 if __name__ == '__main__':
