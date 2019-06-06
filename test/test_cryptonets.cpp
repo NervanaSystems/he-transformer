@@ -155,34 +155,28 @@ static void run_cryptonets_benchmark(std::string backend_name,
   NGRAPH_INFO << "sw_global: " << sw_global.get_milliseconds() << "ms";
 };
 
-NGRAPH_TEST(Cryptonets, 1) { run_cryptonets_benchmark("HE_SEAL_CKKS", 1); }
+NGRAPH_TEST(Cryptonets, 1) { run_cryptonets_benchmark("HE_SEAL", 1); }
 
-NGRAPH_TEST(Cryptonets, 2) { run_cryptonets_benchmark("HE_SEAL_CKKS", 2); }
+NGRAPH_TEST(Cryptonets, 2) { run_cryptonets_benchmark("HE_SEAL", 2); }
 
-NGRAPH_TEST(Cryptonets, 4) { run_cryptonets_benchmark("HE_SEAL_CKKS", 4); }
+NGRAPH_TEST(Cryptonets, 4) { run_cryptonets_benchmark("HE_SEAL", 4); }
 
-NGRAPH_TEST(Cryptonets, 8) { run_cryptonets_benchmark("HE_SEAL_CKKS", 8); }
+NGRAPH_TEST(Cryptonets, 8) { run_cryptonets_benchmark("HE_SEAL", 8); }
 
-NGRAPH_TEST(Cryptonets, 16) { run_cryptonets_benchmark("HE_SEAL_CKKS", 16); }
+NGRAPH_TEST(Cryptonets, 16) { run_cryptonets_benchmark("HE_SEAL", 16); }
 
-NGRAPH_TEST(Cryptonets, 32) { run_cryptonets_benchmark("HE_SEAL_CKKS", 32); }
+NGRAPH_TEST(Cryptonets, 32) { run_cryptonets_benchmark("HE_SEAL", 32); }
 
-NGRAPH_TEST(Cryptonets, 64) { run_cryptonets_benchmark("HE_SEAL_CKKS", 64); }
+NGRAPH_TEST(Cryptonets, 64) { run_cryptonets_benchmark("HE_SEAL", 64); }
 
-NGRAPH_TEST(Cryptonets, 128) { run_cryptonets_benchmark("HE_SEAL_CKKS", 128); }
+NGRAPH_TEST(Cryptonets, 128) { run_cryptonets_benchmark("HE_SEAL", 128); }
 
-NGRAPH_TEST(Cryptonets, 256) { run_cryptonets_benchmark("HE_SEAL_CKKS", 256); }
+NGRAPH_TEST(Cryptonets, 256) { run_cryptonets_benchmark("HE_SEAL", 256); }
 
-NGRAPH_TEST(Cryptonets, 512) { run_cryptonets_benchmark("HE_SEAL_CKKS", 512); }
+NGRAPH_TEST(Cryptonets, 512) { run_cryptonets_benchmark("HE_SEAL", 512); }
 
-NGRAPH_TEST(Cryptonets, 1024) {
-  run_cryptonets_benchmark("HE_SEAL_CKKS", 1024);
-}
+NGRAPH_TEST(Cryptonets, 1024) { run_cryptonets_benchmark("HE_SEAL", 1024); }
 
-NGRAPH_TEST(Cryptonets, 2048) {
-  run_cryptonets_benchmark("HE_SEAL_CKKS", 2048);
-}
+NGRAPH_TEST(Cryptonets, 2048) { run_cryptonets_benchmark("HE_SEAL", 2048); }
 
-NGRAPH_TEST(Cryptonets, 4096) {
-  run_cryptonets_benchmark("HE_SEAL_CKKS", 4096);
-}
+NGRAPH_TEST(Cryptonets, 4096) { run_cryptonets_benchmark("HE_SEAL", 4096); }
