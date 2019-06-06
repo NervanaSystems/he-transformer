@@ -41,7 +41,7 @@ inline void convolution_seal(
     size_t input_channel_axis_filters, size_t output_channel_axis_filters,
     size_t batch_axis_result, size_t output_channel_axis_result,
     bool rotate_filter, const element::Type& element_type, size_t batch_size,
-    const ngraph::he::HESealBackend* he_seal_backend) {
+    const ngraph::he::HESealBackend& he_seal_backend) {
   // Comments throughout assume without loss of generality that:
   //
   // * batch axes for both input data and output data are 0
@@ -246,7 +246,7 @@ inline void convolution_seal(
     size_t input_channel_axis_filters, size_t output_channel_axis_filters,
     size_t batch_axis_result, size_t output_channel_axis_result,
     bool rotate_filter, const element::Type& element_type, size_t batch_size,
-    const ngraph::he::HESealBackend* he_seal_backend) {
+    const ngraph::he::HESealBackend& he_seal_backend) {
   CoordinateTransform output_transform(out_shape);
 
   // Store output coordinates for parallelization
@@ -394,7 +394,7 @@ inline void convolution_seal(
     size_t input_channel_axis_filters, size_t output_channel_axis_filters,
     size_t batch_axis_result, size_t output_channel_axis_result,
     bool rotate_filter, const element::Type& element_type, size_t batch_size,
-    const ngraph::he::HESealBackend* he_seal_backend) {
+    const ngraph::he::HESealBackend& he_seal_backend) {
   CoordinateTransform output_transform(out_shape);
 
   // Store output coordinates for parallelization
@@ -542,7 +542,7 @@ inline void convolution_seal(
     size_t input_channel_axis_filters, size_t output_channel_axis_filters,
     size_t batch_axis_result, size_t output_channel_axis_result,
     bool rotate_filter, const element::Type& element_type, size_t batch_size,
-    const ngraph::he::HESealBackend* he_seal_backend) {
+    const ngraph::he::HESealBackend& he_seal_backend) {
   CoordinateTransform output_transform(out_shape);
 
   // Store output coordinates for parallelization

@@ -19,7 +19,7 @@
 void ngraph::he::result_seal(
     const std::vector<HEPlaintext>& arg,
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out, size_t count,
-    const HESealBackend* he_seal_backend) {
+    const HESealBackend& he_seal_backend) {
   NGRAPH_CHECK(out.size() == arg.size(), "Result output size ", out.size(),
                " does not match result input size ", arg.size());
   for (size_t i = 0; i < count; ++i) {
@@ -30,7 +30,7 @@ void ngraph::he::result_seal(
 void ngraph::he::result_seal(
     const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
     std::vector<HEPlaintext>& out, size_t count,
-    const HESealBackend* he_seal_backend) {
+    const HESealBackend& he_seal_backend) {
   NGRAPH_CHECK(out.size() == arg.size(), "Result output size ", out.size(),
                " does not match result input size ", arg.size());
   for (size_t i = 0; i < count; ++i) {

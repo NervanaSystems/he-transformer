@@ -19,7 +19,7 @@
 void ngraph::he::scalar_negate_seal(
     const ngraph::he::SealCiphertextWrapper& arg,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
-    const element::Type& element_type, const HESealBackend* he_seal_backend) {
+    const element::Type& element_type, const HESealBackend& he_seal_backend) {
   NGRAPH_CHECK(element_type == element::f32);
 
   if (arg.is_zero()) {

@@ -239,7 +239,7 @@ void max_pool_seal(
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
     const Shape& arg_shape, const Shape& out_shape, const Shape& window_shape,
     const Strides& window_movement_strides, const Shape& padding_below,
-    const Shape& padding_above, const HESealBackend* he_seal_backend) {
+    const Shape& padding_above, const HESealBackend& he_seal_backend) {
   // At the outermost level we will walk over every output coordinate O.
   CoordinateTransform output_transform(out_shape);
 

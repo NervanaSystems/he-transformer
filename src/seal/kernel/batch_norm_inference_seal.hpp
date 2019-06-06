@@ -37,7 +37,7 @@ void batch_norm_inference_seal(
     std::vector<HEPlaintext>& mean, std::vector<HEPlaintext>& variance,
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& normed_input,
     const Shape& input_shape, const size_t batch_size,
-    const HESealBackend* he_seal_backend) {
+    const HESealBackend& he_seal_backend) {
   CoordinateTransform input_transform(input_shape);
 
   // Store input coordinates for parallelization

@@ -48,10 +48,10 @@ inline void result_seal(const std::vector<HEPlaintext>& arg,
 
 void result_seal(const std::vector<HEPlaintext>& arg,
                  std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
-                 size_t count, const HESealBackend* he_seal_backend);
+                 size_t count, const HESealBackend& he_seal_backend);
 
 void result_seal(const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
                  std::vector<HEPlaintext>& out, size_t count,
-                 const HESealBackend* he_seal_backend);
+                 const HESealBackend& he_seal_backend);
 }  // namespace he
 }  // namespace ngraph

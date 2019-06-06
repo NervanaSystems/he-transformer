@@ -22,7 +22,7 @@ void ngraph::he::scalar_add_seal(
     ngraph::he::SealCiphertextWrapper& arg0,
     ngraph::he::SealCiphertextWrapper& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
-    const element::Type& element_type, const HESealBackend* he_seal_backend,
+    const element::Type& element_type, const HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
   if (arg0.is_zero() && arg1.is_zero()) {
     out->set_zero(true);
@@ -44,7 +44,7 @@ void ngraph::he::scalar_add_seal(
 void ngraph::he::scalar_add_seal(
     ngraph::he::SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
-    const element::Type& element_type, const HESealBackend* he_seal_backend,
+    const element::Type& element_type, const HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
   NGRAPH_CHECK(element_type == element::f32);
 
@@ -89,7 +89,7 @@ void ngraph::he::scalar_add_seal(
 void ngraph::he::scalar_add_seal(
     const HEPlaintext& arg0, ngraph::he::SealCiphertextWrapper& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
-    const element::Type& element_type, const HESealBackend* he_seal_backend,
+    const element::Type& element_type, const HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
   ngraph::he::scalar_add_seal(arg1, arg0, out, element_type, he_seal_backend);
 }
@@ -97,7 +97,7 @@ void ngraph::he::scalar_add_seal(
 void ngraph::he::scalar_add_seal(const HEPlaintext& arg0,
                                  const HEPlaintext& arg1, HEPlaintext& out,
                                  const element::Type& element_type,
-                                 const HESealBackend* he_seal_backend,
+                                 const HESealBackend& he_seal_backend,
                                  const seal::MemoryPoolHandle& pool) {
   NGRAPH_CHECK(element_type == element::f32);
 
