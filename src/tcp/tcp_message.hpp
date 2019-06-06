@@ -171,10 +171,7 @@ class TCPMessage {
     ciphers[0].save(first);
     first.seekp(0, std::ios::end);
     size_t first_cipher_size = first.tellp();
-    NGRAPH_INFO << "first_cipher_size " << first_cipher_size;
-
     m_data_size = first_cipher_size * m_count;
-    NGRAPH_INFO << "m_data_size " << m_data_size;
 
     check_arguments();
     // TODO: use malloc
@@ -355,9 +352,7 @@ class TCPMessage {
   }
 
   void encode_data(const char* data) {
-    NGRAPH_INFO << "Encoding data from char* size " << m_data_size;
     std::memcpy(data_ptr(), data, m_data_size);
-    NGRAPH_INFO << "done with memcpy ";
   }
 
   void encode_data(const std::stringstream&& data) {

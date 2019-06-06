@@ -556,8 +556,6 @@ inline void convolution_seal(
 #pragma omp parallel for
   for (size_t out_coord_idx = 0; out_coord_idx < out_transform_size;
        ++out_coord_idx) {
-    // Init thread-local memory pool for each thread
-
     const Coordinate& out_coord = out_coords[out_coord_idx];
 
     size_t batch_index = out_coord[batch_axis_result];
