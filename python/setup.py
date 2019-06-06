@@ -218,6 +218,7 @@ class BuildExt(build_ext):
                                         ext.extra_compile_args)
             self._add_extra_compile_arg('-flto', ext.extra_compile_args)
             self._add_extra_compile_arg('-fPIC', ext.extra_compile_args)
+            self._add_extra_compile_arg('-fopenmp', ext.extra_compile_args)
             add_platform_specific_link_args(ext.extra_link_args)
 
             ext.extra_compile_args += ['-Wformat', '-Wformat-security']

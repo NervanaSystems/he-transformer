@@ -286,7 +286,6 @@ void ngraph::he::HESealClient::close_connection() {
 
 void ngraph::he::HESealClient::handle_relu_request(
     const ngraph::he::TCPMessage& message) {
-  NGRAPH_INFO << "Received Relu request";
   auto relu = [=](double d) { return d > 0 ? d : 0; };
   auto relu6 = [=](double d) { return d > 6.0 ? 6.0 : (d > 0) ? d : 0.; };
 
