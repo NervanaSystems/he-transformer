@@ -40,18 +40,18 @@ void ngraph::he::scalar_multiply_seal(
     }
 
     if (&arg0 == &arg1) {
-      he_seal_backend->get_evaluator()->square(arg0.ciphertext(),
+      he_seal_backend.get_evaluator()->square(arg0.ciphertext(),
                                                out->ciphertext(), pool);
     } else {
-      he_seal_backend->get_evaluator()->multiply(
+      he_seal_backend.get_evaluator()->multiply(
           arg0.ciphertext(), arg1.ciphertext(), out->ciphertext(), pool);
     }
 
-    he_seal_backend->get_evaluator()->relinearize_inplace(
-        out->ciphertext(), *(he_seal_backend->get_relin_keys()), pool);
+    he_seal_backend.get_evaluator()->relinearize_inplace(
+        out->ciphertext(), *(he_seal_backend.get_relin_keys()), pool);
 
     // TODO: lazy rescaling if before dot
-    he_seal_backend->get_evaluator()->rescale_to_next_inplace(out->ciphertext(),
+    he_seal_backend.get_evaluator()->rescale_to_next_inplace(out->ciphertext(),
                                                               pool);
   }
 }
@@ -79,7 +79,7 @@ void ngraph::he::scalar_multiply_seal(
                   [](float f) { return std::abs(f) < 1e-5f; })) {
     out->set_zero(true);
     // out = std::dynamic_pointer_cast<ngraph::he::SealCiphertextWrapper>(
-    //    he_seal_backend->create_valued_ciphertext(0, element_type));
+    //    he_seal_backend.create_valued_ciphertext(0, element_type));
   } else {
     out->set_zero(false);
     if (arg1.is_single_value()) {
@@ -90,7 +90,7 @@ void ngraph::he::scalar_multiply_seal(
     } else {
       // Never complex-pack for multiplication
       auto p = SealPlaintextWrapper(false);
-      he_seal_backend->encode(p, arg1, arg0.ciphertext().parms_id(),
+      he_seal_backend.encode(p, arg1, arg0.ciphertext().parms_id(),
                               arg0.ciphertext().scale());
 
       size_t chain_ind0 = get_chain_index(arg0, he_seal_backend);
@@ -102,7 +102,7 @@ void ngraph::he::scalar_multiply_seal(
       NGRAPH_CHECK(chain_ind1 > 0, "Multiplicative depth exceeded for arg1");
 
       try {
-        he_seal_backend->get_evaluator()->multiply_plain(
+        he_seal_backend.get_evaluator()->multiply_plain(
             arg0.ciphertext(), p.plaintext(), out->ciphertext(), pool);
       } catch (const std::exception& e) {
         NGRAPH_INFO << "Error multiplying plain " << e.what();

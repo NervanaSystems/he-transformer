@@ -51,7 +51,7 @@ void ngraph::he::constant_seal(
     const void* src_with_offset = (void*)((char*)data_ptr + i * type_byte_size);
     auto plaintext = HEPlaintext();
     // TODO: complex batching?
-    he_seal_backend->encode(plaintext, src_with_offset, element_type, false);
-    he_seal_backend->encrypt(out[i], plaintext);
+    he_seal_backend.encode(plaintext, src_with_offset, element_type, false);
+    he_seal_backend.encrypt(out[i], plaintext);
   }
 }

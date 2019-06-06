@@ -53,7 +53,7 @@ inline void scalar_bounded_relu_seal(
     std::shared_ptr<SealCiphertextWrapper>& out, float alpha,
     const HESealBackend& he_seal_backend) {
   HEPlaintext plain;
-  he_seal_backend->decrypt(plain, arg);
+  he_seal_backend.decrypt(plain, arg);
   const std::vector<float>& arg_vals = plain.get_values();
   std::vector<float> out_vals(plain.num_values());
 
@@ -65,7 +65,7 @@ inline void scalar_bounded_relu_seal(
                  bounded_relu);
 
   plain.set_values(out_vals);
-  he_seal_backend->encrypt(out, plain);
+  he_seal_backend.encrypt(out, plain);
 }
 
 inline void bounded_relu_seal(

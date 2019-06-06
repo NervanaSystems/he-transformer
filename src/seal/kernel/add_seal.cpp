@@ -34,7 +34,7 @@ void ngraph::he::scalar_add_seal(
     NGRAPH_CHECK(arg0.complex_packing() == arg1.complex_packing());
 
     match_modulus_and_scale_inplace(arg0, arg1, he_seal_backend, pool);
-    he_seal_backend->get_evaluator()->add(arg0.ciphertext(), arg1.ciphertext(),
+    he_seal_backend.get_evaluator()->add(arg0.ciphertext(), arg1.ciphertext(),
                                           out->ciphertext());
     out->set_complex_packing(arg1.complex_packing());
     out->set_zero(false);
@@ -49,7 +49,7 @@ void ngraph::he::scalar_add_seal(
   NGRAPH_CHECK(element_type == element::f32);
 
   if (arg0.is_zero()) {
-    he_seal_backend->encrypt(out, arg1);
+    he_seal_backend.encrypt(out, arg1);
     out->set_zero(false);
     return;
   }
@@ -71,14 +71,14 @@ void ngraph::he::scalar_add_seal(
                 he_seal_backend);
     } else {
       auto p = SealPlaintextWrapper(arg1.complex_packing());
-      he_seal_backend->encode(p, arg1, arg0.ciphertext().parms_id(),
+      he_seal_backend.encode(p, arg1, arg0.ciphertext().parms_id(),
                               arg0.ciphertext().scale());
       size_t chain_ind0 = get_chain_index(arg0, he_seal_backend);
       size_t chain_ind1 = get_chain_index(p.plaintext(), he_seal_backend);
       NGRAPH_CHECK(chain_ind0 == chain_ind1, "Chain inds ", chain_ind0, ",  ",
                    chain_ind1, " don't match");
 
-      he_seal_backend->get_evaluator()->add_plain(
+      he_seal_backend.get_evaluator()->add_plain(
           arg0.ciphertext(), p.plaintext(), out->ciphertext());
       out->set_complex_packing(arg0.complex_packing());
     }

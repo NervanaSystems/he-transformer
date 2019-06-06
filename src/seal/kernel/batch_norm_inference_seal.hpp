@@ -81,7 +81,7 @@ void batch_norm_inference_seal(
     auto plain_scale = HEPlaintext(scale_vec, false);
     auto plain_bias = HEPlaintext(bias_vec, false);
 
-    auto output = he_seal_backend->create_empty_ciphertext();
+    auto output = he_seal_backend.create_empty_ciphertext();
 
     ngraph::he::scalar_multiply_seal(*input[input_index], plain_scale, output,
                                      element::f32, he_seal_backend);

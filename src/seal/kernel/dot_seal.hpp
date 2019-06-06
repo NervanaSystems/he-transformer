@@ -118,7 +118,7 @@ inline void dot_seal(
     auto arg0_it = std::copy(arg0_projected_coord.begin(),
                              arg0_projected_coord.end(), arg0_coord.begin());
 
-    auto sum = he_seal_backend->create_empty_ciphertext();
+    auto sum = he_seal_backend.create_empty_ciphertext();
     bool first_add = true;
 
     for (const Coordinate& dot_axis_positions : dot_axes_transform) {
@@ -135,7 +135,7 @@ inline void dot_seal(
       // Multiply and add to the summands.
       auto mult_arg0 = *arg0[arg0_transform.index(arg0_coord)];
       auto mult_arg1 = *arg1[arg1_transform.index(arg1_coord)];
-      auto prod = he_seal_backend->create_empty_ciphertext();
+      auto prod = he_seal_backend.create_empty_ciphertext();
       scalar_multiply_seal(mult_arg0, mult_arg1, prod, element_type,
                            he_seal_backend, pool);
       if (first_add) {
@@ -242,7 +242,7 @@ inline void dot_seal(
     auto arg0_it = std::copy(arg0_projected_coord.begin(),
                              arg0_projected_coord.end(), arg0_coord.begin());
 
-    auto sum = he_seal_backend->create_empty_ciphertext();
+    auto sum = he_seal_backend.create_empty_ciphertext();
     bool first_add = true;
 
     for (const Coordinate& dot_axis_positions : dot_axes_transform) {
@@ -259,7 +259,7 @@ inline void dot_seal(
       // Multiply and add to the summands.
       auto mult_arg0 = arg0[arg0_transform.index(arg0_coord)];
       auto mult_arg1 = arg1[arg1_transform.index(arg1_coord)];
-      auto prod = he_seal_backend->create_empty_ciphertext();
+      auto prod = he_seal_backend.create_empty_ciphertext();
       scalar_multiply_seal(mult_arg0, *mult_arg1, prod, element_type,
                            he_seal_backend, pool);
       if (first_add) {
@@ -364,7 +364,7 @@ inline void dot_seal(
     auto arg0_it = std::copy(arg0_projected_coord.begin(),
                              arg0_projected_coord.end(), arg0_coord.begin());
 
-    auto sum = he_seal_backend->create_empty_ciphertext();
+    auto sum = he_seal_backend.create_empty_ciphertext();
     bool first_add = true;
 
     for (const Coordinate& dot_axis_positions : dot_axes_transform) {
@@ -381,7 +381,7 @@ inline void dot_seal(
       // Multiply and add to the summands.
       auto mult_arg0 = arg0[arg0_transform.index(arg0_coord)];
       auto mult_arg1 = arg1[arg1_transform.index(arg1_coord)];
-      auto prod = he_seal_backend->create_empty_ciphertext();
+      auto prod = he_seal_backend.create_empty_ciphertext();
       scalar_multiply_seal(*mult_arg0, mult_arg1, prod, element_type,
                            he_seal_backend, pool);
       if (first_add) {

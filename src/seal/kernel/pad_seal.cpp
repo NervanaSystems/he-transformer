@@ -35,7 +35,7 @@ void ngraph::he::pad_seal(
     throw ngraph_error("Padding element must be scalar");
   }
 
-  auto arg1_encrypted = he_seal_backend->create_empty_ciphertext();
+  auto arg1_encrypted = he_seal_backend.create_empty_ciphertext();
 
   bool is_pad_value_zero =
       arg1[0].is_single_value() && arg1[0].get_values()[0] == 0.;
