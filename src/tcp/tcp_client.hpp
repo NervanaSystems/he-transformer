@@ -133,7 +133,7 @@ class TCPClient {
   boost::asio::io_context& m_io_context;
   tcp::socket m_socket;
 
-  TCPMessage m_message;
+  TCPMessage m_read_message;
   std::deque<ngraph::he::TCPMessage> m_message_queue;
 
   // How to handle the message
