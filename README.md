@@ -68,8 +68,8 @@ To build an experimental client-server model with python bindings, see the `pyth
 Ensure the virtual environment is active, i.e. run `source $HE_TRANSFORMER/external/venv-tf-py3/bin/activate`
 ```bash
 cd $HE_TRANSFORMER/build
-# To run CKKS unit-test
-./test/unit-test --gtest_filter="HE_SEAL_CKKS.*abc*"
+# To run single HE_SEAL unit-test
+./test/unit-test --gtest_filter="HE_SEAL.add_2_3"
 # To run all C++ unit-tests
 ./test/unit-test
 ```
@@ -81,7 +81,7 @@ cd $HE_TRANSFORMER/examples
 # Run with CPU
 python axpy.py
 # To run CKKS unit-test
-NGRAPH_TF_BACKEND=HE_SEAL_CKKS python axpy.py
+NGRAPH_TF_BACKEND=HE_SEAL python axpy.py
 ```
 
 For a deep learning example, see [examples/cryptonets/](https://github.com/NervanaSystems/he-transformer/tree/master/examples/cryptonets).

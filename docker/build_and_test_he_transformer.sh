@@ -50,11 +50,10 @@ python_integration()
     echo 'Running python examples'
     cd examples
     python axpy.py
-    NGRAPH_TF_BACKEND=HE_SEAL_CKKS python axpy.py
-    NGRAPH_TF_BACKEND=HE_SEAL_BFV python axpy.py
+    NGRAPH_TF_BACKEND=HE_SEAL python axpy.py
     cd MNIST-Cryptonets
     NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N13_L7.json \
-        NGRAPH_TF_BACKEND=HE_SEAL_CKKS \
+        NGRAPH_TF_BACKEND=HE_SEAL \
         NGRAPH_BATCH_DATA=1 \
         NGRAPH_ENCRYPT_DATA=1 \
         python test.py --batch_size=128
