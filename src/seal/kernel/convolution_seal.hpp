@@ -41,7 +41,7 @@ inline void convolution_seal(
     size_t input_channel_axis_filters, size_t output_channel_axis_filters,
     size_t batch_axis_result, size_t output_channel_axis_result,
     bool rotate_filter, const element::Type& element_type, size_t batch_size,
-    const ngraph::he::HESealBackend* he_seal_backend) {
+    const ngraph::he::HESealBackend& he_seal_backend) {
   // Comments throughout assume without loss of generality that:
   //
   // * batch axes for both input data and output data are 0
@@ -184,7 +184,7 @@ inline void convolution_seal(
     CoordinateTransform::Iterator input_end = input_batch_transform.end();
     CoordinateTransform::Iterator filter_end = filter_transform.end();
 
-    auto sum = he_seal_backend->create_empty_ciphertext(pool);
+    auto sum = he_seal_backend.create_empty_ciphertext(pool);
     bool first_add = true;
 
     while (input_it != input_end && filter_it != filter_end) {
@@ -205,7 +205,7 @@ inline void convolution_seal(
         auto mult_arg0 = arg0[input_batch_transform.index(input_batch_coord)];
 
         auto mult_arg1 = arg1[filter_transform.index(filter_coord)];
-        auto prod = he_seal_backend->create_empty_ciphertext(pool);
+        auto prod = he_seal_backend.create_empty_ciphertext(pool);
 
         ngraph::he::scalar_multiply_seal(*mult_arg0, *mult_arg1, prod,
                                          element_type, he_seal_backend, pool);
@@ -222,7 +222,7 @@ inline void convolution_seal(
     }
     if (first_add) {
       out[out_coord_idx] =
-          he_seal_backend->create_valued_ciphertext(0.f, element_type);
+          he_seal_backend.create_valued_ciphertext(0.f, element_type);
     } else {
       // Write the sum back.
       out[out_coord_idx] = sum;
@@ -246,7 +246,7 @@ inline void convolution_seal(
     size_t input_channel_axis_filters, size_t output_channel_axis_filters,
     size_t batch_axis_result, size_t output_channel_axis_result,
     bool rotate_filter, const element::Type& element_type, size_t batch_size,
-    const ngraph::he::HESealBackend* he_seal_backend) {
+    const ngraph::he::HESealBackend& he_seal_backend) {
   CoordinateTransform output_transform(out_shape);
 
   // Store output coordinates for parallelization
@@ -336,7 +336,7 @@ inline void convolution_seal(
     CoordinateTransform::Iterator input_end = input_batch_transform.end();
     CoordinateTransform::Iterator filter_end = filter_transform.end();
 
-    auto sum = he_seal_backend->create_empty_ciphertext(pool);
+    auto sum = he_seal_backend.create_empty_ciphertext(pool);
     bool first_add = true;
 
     while (input_it != input_end && filter_it != filter_end) {
@@ -353,7 +353,7 @@ inline void convolution_seal(
       if (input_batch_transform.has_source_coordinate(input_batch_coord)) {
         auto mult_arg0 = arg0[input_batch_transform.index(input_batch_coord)];
         auto mult_arg1 = arg1[filter_transform.index(filter_coord)];
-        auto prod = he_seal_backend->create_empty_ciphertext(pool);
+        auto prod = he_seal_backend.create_empty_ciphertext(pool);
 
         ngraph::he::scalar_multiply_seal(*mult_arg0, mult_arg1, prod,
                                          element_type, he_seal_backend, pool);
@@ -370,7 +370,7 @@ inline void convolution_seal(
     }
     if (first_add) {
       out[out_coord_idx] =
-          he_seal_backend->create_valued_ciphertext(0.f, element_type);
+          he_seal_backend.create_valued_ciphertext(0.f, element_type);
     } else {
       // Write the sum back.
       out[out_coord_idx] = sum;
@@ -394,7 +394,7 @@ inline void convolution_seal(
     size_t input_channel_axis_filters, size_t output_channel_axis_filters,
     size_t batch_axis_result, size_t output_channel_axis_result,
     bool rotate_filter, const element::Type& element_type, size_t batch_size,
-    const ngraph::he::HESealBackend* he_seal_backend) {
+    const ngraph::he::HESealBackend& he_seal_backend) {
   CoordinateTransform output_transform(out_shape);
 
   // Store output coordinates for parallelization
@@ -484,7 +484,7 @@ inline void convolution_seal(
     CoordinateTransform::Iterator input_end = input_batch_transform.end();
     CoordinateTransform::Iterator filter_end = filter_transform.end();
 
-    auto sum = he_seal_backend->create_empty_ciphertext(pool);
+    auto sum = he_seal_backend.create_empty_ciphertext(pool);
     bool first_add = true;
 
     while (input_it != input_end && filter_it != filter_end) {
@@ -502,7 +502,7 @@ inline void convolution_seal(
         auto mult_arg0 = arg0[input_batch_transform.index(input_batch_coord)];
 
         auto mult_arg1 = arg1[filter_transform.index(filter_coord)];
-        auto prod = he_seal_backend->create_empty_ciphertext(pool);
+        auto prod = he_seal_backend.create_empty_ciphertext(pool);
 
         ngraph::he::scalar_multiply_seal(mult_arg0, *mult_arg1, prod,
                                          element_type, he_seal_backend, pool);
@@ -519,7 +519,7 @@ inline void convolution_seal(
     }
     if (first_add) {
       out[out_coord_idx] =
-          he_seal_backend->create_valued_ciphertext(0.f, element_type);
+          he_seal_backend.create_valued_ciphertext(0.f, element_type);
     } else {
       // Write the sum back.
       out[out_coord_idx] = sum;
@@ -542,7 +542,7 @@ inline void convolution_seal(
     size_t input_channel_axis_filters, size_t output_channel_axis_filters,
     size_t batch_axis_result, size_t output_channel_axis_result,
     bool rotate_filter, const element::Type& element_type, size_t batch_size,
-    const ngraph::he::HESealBackend* he_seal_backend) {
+    const ngraph::he::HESealBackend& he_seal_backend) {
   CoordinateTransform output_transform(out_shape);
 
   // Store output coordinates for parallelization

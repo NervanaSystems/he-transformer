@@ -51,9 +51,9 @@ inline void bounded_relu_seal(const std::vector<HEPlaintext>& arg,
 inline void scalar_bounded_relu_seal(
     const SealCiphertextWrapper& arg,
     std::shared_ptr<SealCiphertextWrapper>& out, float alpha,
-    const HESealBackend* he_seal_backend) {
+    const HESealBackend& he_seal_backend) {
   HEPlaintext plain;
-  he_seal_backend->decrypt(plain, arg);
+  he_seal_backend.decrypt(plain, arg);
   const std::vector<float>& arg_vals = plain.get_values();
   std::vector<float> out_vals(plain.num_values());
 
@@ -65,13 +65,13 @@ inline void scalar_bounded_relu_seal(
                  bounded_relu);
 
   plain.set_values(out_vals);
-  he_seal_backend->encrypt(out, plain);
+  he_seal_backend.encrypt(out, plain);
 }
 
 inline void bounded_relu_seal(
     const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out, size_t count,
-    float alpha, const HESealBackend* he_seal_backend) {
+    float alpha, const HESealBackend& he_seal_backend) {
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
     scalar_bounded_relu_seal(*arg[i], out[i], alpha, he_seal_backend);

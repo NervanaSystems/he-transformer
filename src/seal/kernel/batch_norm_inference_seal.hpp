@@ -37,7 +37,7 @@ void batch_norm_inference_seal(
     std::vector<HEPlaintext>& mean, std::vector<HEPlaintext>& variance,
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& normed_input,
     const Shape& input_shape, const size_t batch_size,
-    const HESealBackend* he_seal_backend) {
+    const HESealBackend& he_seal_backend) {
   CoordinateTransform input_transform(input_shape);
 
   // Store input coordinates for parallelization
@@ -81,7 +81,7 @@ void batch_norm_inference_seal(
     auto plain_scale = HEPlaintext(scale_vec, false);
     auto plain_bias = HEPlaintext(bias_vec, false);
 
-    auto output = he_seal_backend->create_empty_ciphertext();
+    auto output = he_seal_backend.create_empty_ciphertext();
 
     ngraph::he::scalar_multiply_seal(*input[input_index], plain_scale, output,
                                      element::f32, he_seal_backend);

@@ -30,8 +30,7 @@
 // The elements are modified if necessary
 void ngraph::he::match_modulus_and_scale_inplace(
     SealCiphertextWrapper& arg0, SealCiphertextWrapper& arg1,
-    const HESealBackend* he_seal_backend, seal::MemoryPoolHandle pool) {
-  NGRAPH_CHECK(he_seal_backend != nullptr);
+    const HESealBackend& he_seal_backend, seal::MemoryPoolHandle pool) {
   size_t chain_ind0 = ngraph::he::get_chain_index(arg0, he_seal_backend);
   size_t chain_ind1 = ngraph::he::get_chain_index(arg1, he_seal_backend);
 
@@ -48,11 +47,11 @@ void ngraph::he::match_modulus_and_scale_inplace(
   if (chain_ind0 > chain_ind1) {
     auto arg1_parms_id = arg1.ciphertext().parms_id();
     if (rescale) {
-      he_seal_backend->get_evaluator()->rescale_to_inplace(arg0.ciphertext(),
-                                                           arg1_parms_id);
+      he_seal_backend.get_evaluator()->rescale_to_inplace(arg0.ciphertext(),
+                                                          arg1_parms_id);
     } else {
-      he_seal_backend->get_evaluator()->mod_switch_to_inplace(arg0.ciphertext(),
-                                                              arg1_parms_id);
+      he_seal_backend.get_evaluator()->mod_switch_to_inplace(arg0.ciphertext(),
+                                                             arg1_parms_id);
     }
     chain_ind0 = ngraph::he::get_chain_index(arg0, he_seal_backend);
     NGRAPH_CHECK(chain_ind0 == chain_ind1);
@@ -65,10 +64,10 @@ void ngraph::he::match_modulus_and_scale_inplace(
 void ngraph::he::encode(double value, double scale,
                         seal::parms_id_type parms_id,
                         std::vector<std::uint64_t>& destination,
-                        const HESealBackend* he_seal_backend,
+                        const HESealBackend& he_seal_backend,
                         seal::MemoryPoolHandle pool) {
   // Verify parameters.
-  auto context = he_seal_backend->get_context();
+  auto context = he_seal_backend.get_context();
   auto context_data_ptr = context->context_data(parms_id);
   if (!context_data_ptr) {
     throw ngraph_error("parms_id is not valid for encryption parameters");
@@ -238,9 +237,9 @@ void ngraph::he::encode(double value, double scale,
 }
 
 void ngraph::he::add_plain_inplace(seal::Ciphertext& encrypted, double value,
-                                   const HESealBackend* he_seal_backend) {
+                                   const HESealBackend& he_seal_backend) {
   // Verify parameters.
-  auto context = he_seal_backend->get_context();
+  auto context = he_seal_backend.get_context();
   if (!encrypted.is_metadata_valid_for(context)) {
     throw ngraph_error("encrypted is not valid for encryption parameters");
   }
@@ -292,10 +291,10 @@ void ngraph::he::add_plain_inplace(seal::Ciphertext& encrypted, double value,
 
 void ngraph::he::multiply_plain_inplace(seal::Ciphertext& encrypted,
                                         double value,
-                                        const HESealBackend* he_seal_backend,
+                                        const HESealBackend& he_seal_backend,
                                         seal::MemoryPoolHandle pool) {
   // Verify parameters.
-  auto context = he_seal_backend->get_context();
+  auto context = he_seal_backend.get_context();
   if (!encrypted.is_metadata_valid_for(context)) {
     throw ngraph_error("encrypted is not valid for encryption parameters");
   }
@@ -365,7 +364,7 @@ void ngraph::he::multiply_plain_inplace(seal::Ciphertext& encrypted,
 
 size_t ngraph::he::match_to_smallest_chain_index(
     std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>& ciphers,
-    const ngraph::he::HESealBackend* he_seal_backend) {
+    const ngraph::he::HESealBackend& he_seal_backend) {
   size_t num_elements = ciphers.size();
 
   // (cipher_ind, chain_ind)

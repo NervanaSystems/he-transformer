@@ -32,7 +32,7 @@ void pad_seal(std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg0,
               const Shape& arg0_shape, const Shape& out_shape,
               const CoordinateDiff& padding_below,
               const CoordinateDiff& padding_above, op::PadMode pad_mode,
-              size_t batch_size, const HESealBackend* he_seal_backend);
+              size_t batch_size, const HESealBackend& he_seal_backend);
 
 template <typename S>
 void pad_seal(std::vector<S>& arg0,
@@ -40,7 +40,7 @@ void pad_seal(std::vector<S>& arg0,
               std::vector<S>& out, const Shape& arg0_shape,
               const Shape& out_shape, const CoordinateDiff& padding_below,
               const CoordinateDiff& padding_above, op::PadMode pad_mode,
-              size_t batch_size, const HESealBackend* he_seal_backend) {
+              size_t batch_size, const HESealBackend& he_seal_backend) {
   if (arg1.size() != 1) {
     throw ngraph_error("Padding element must be scalar");
   }

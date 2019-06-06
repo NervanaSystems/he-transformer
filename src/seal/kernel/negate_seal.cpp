@@ -19,14 +19,14 @@
 void ngraph::he::scalar_negate_seal(
     const ngraph::he::SealCiphertextWrapper& arg,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
-    const element::Type& element_type, const HESealBackend* he_seal_backend) {
+    const element::Type& element_type, const HESealBackend& he_seal_backend) {
   NGRAPH_CHECK(element_type == element::f32);
 
   if (arg.is_zero()) {
     out->set_zero(true);
     return;
   }
-  he_seal_backend->get_evaluator()->negate(arg.ciphertext(), out->ciphertext());
+  he_seal_backend.get_evaluator()->negate(arg.ciphertext(), out->ciphertext());
 }
 
 void ngraph::he::scalar_negate_seal(const HEPlaintext& arg, HEPlaintext& out,

@@ -22,19 +22,19 @@ void ngraph::he::scalar_subtract_seal(
     ngraph::he::SealCiphertextWrapper& arg0,
     ngraph::he::SealCiphertextWrapper& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
-    const element::Type& element_type, const HESealBackend* he_seal_backend) {
+    const element::Type& element_type, const HESealBackend& he_seal_backend) {
   if (arg0.is_zero() && arg1.is_zero()) {
     out->set_zero(true);
   } else if (arg0.is_zero()) {
-    he_seal_backend->get_evaluator()->negate(arg1.ciphertext(),
-                                             out->ciphertext());
+    he_seal_backend.get_evaluator()->negate(arg1.ciphertext(),
+                                            out->ciphertext());
     out->set_zero(false);
   } else if (arg1.is_zero()) {
     out = std::make_shared<ngraph::he::SealCiphertextWrapper>(arg0);
     out->set_zero(false);
   } else {
-    he_seal_backend->get_evaluator()->sub(arg0.ciphertext(), arg1.ciphertext(),
-                                          out->ciphertext());
+    he_seal_backend.get_evaluator()->sub(arg0.ciphertext(), arg1.ciphertext(),
+                                         out->ciphertext());
     out->set_zero(false);
   }
 }
@@ -42,17 +42,17 @@ void ngraph::he::scalar_subtract_seal(
 void ngraph::he::scalar_subtract_seal(
     ngraph::he::SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
-    const element::Type& element_type, const HESealBackend* he_seal_backend) {
+    const element::Type& element_type, const HESealBackend& he_seal_backend) {
   if (arg0.is_zero()) {
     HEPlaintext tmp(arg0.complex_packing());
     ngraph::he::scalar_negate_seal(arg1, tmp, element_type);
-    he_seal_backend->encrypt(out, tmp);
+    he_seal_backend.encrypt(out, tmp);
   } else {
     auto p = SealPlaintextWrapper(arg0.complex_packing());
-    he_seal_backend->encode(p, arg1, arg0.ciphertext().parms_id(),
-                            arg0.ciphertext().scale());
-    he_seal_backend->get_evaluator()->sub_plain(
-        arg0.ciphertext(), p.plaintext(), out->ciphertext());
+    he_seal_backend.encode(p, arg1, arg0.ciphertext().parms_id(),
+                           arg0.ciphertext().scale());
+    he_seal_backend.get_evaluator()->sub_plain(arg0.ciphertext(), p.plaintext(),
+                                               out->ciphertext());
   }
   out->set_zero(false);
 }
@@ -60,9 +60,9 @@ void ngraph::he::scalar_subtract_seal(
 void ngraph::he::scalar_subtract_seal(
     const HEPlaintext& arg0, SealCiphertextWrapper& arg1,
     std::shared_ptr<SealCiphertextWrapper>& out, const element::Type& type,
-    const ngraph::he::HESealBackend* he_seal_backend) {
+    const ngraph::he::HESealBackend& he_seal_backend) {
   if (arg1.is_zero()) {
-    he_seal_backend->encrypt(out, arg0);
+    he_seal_backend.encrypt(out, arg0);
   } else {
     auto tmp = std::make_shared<ngraph::he::SealCiphertextWrapper>();
     ngraph::he::scalar_negate_seal(arg1, tmp, type, he_seal_backend);
@@ -74,7 +74,7 @@ void ngraph::he::scalar_subtract_seal(
 void ngraph::he::scalar_subtract_seal(const HEPlaintext& arg0,
                                       const HEPlaintext& arg1, HEPlaintext& out,
                                       const element::Type& element_type,
-                                      const HESealBackend* he_seal_backend) {
+                                      const HESealBackend& he_seal_backend) {
   NGRAPH_CHECK(element_type == element::f32);
 
   const std::vector<float>& arg0_vals = arg0.get_values();

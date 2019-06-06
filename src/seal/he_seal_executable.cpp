@@ -80,7 +80,7 @@ using ngraph::descriptor::layout::DenseTensorLayout;
 
 ngraph::he::HESealExecutable::HESealExecutable(
     const std::shared_ptr<Function>& function,
-    bool enable_performance_collection, const HESealBackend* he_seal_backend,
+    bool enable_performance_collection, HESealBackend& he_seal_backend,
     bool encrypt_data, bool encrypt_model, bool batch_data)
     : m_he_seal_backend(he_seal_backend),
       m_encrypt_data(encrypt_data),
@@ -92,10 +92,7 @@ ngraph::he::HESealExecutable::HESealExecutable(
       m_relu_done(false),
       m_session_started(false),
       m_client_inputs_received(false) {
-  NGRAPH_CHECK(he_seal_backend != nullptr, "he_seal_backend == nullptr");
-  // TODO: move get_context to HESealBackend
-
-  m_context = he_seal_backend->get_context();
+  m_context = he_seal_backend.get_context();
 
   m_is_compiled = true;
   ngraph::pass::Manager pass_manager;
@@ -146,7 +143,7 @@ ngraph::he::HESealExecutable::HESealExecutable(
     // Send encryption parameters
     std::stringstream param_stream;
 
-    he_seal_backend->get_encryption_parameters().save(param_stream);
+    he_seal_backend.get_encryption_parameters().save(param_stream);
     auto parms_message = TCPMessage(MessageType::encryption_parameters, 1,
                                     std::move(param_stream));
 
@@ -257,7 +254,7 @@ void ngraph::he::HESealExecutable::handle_message(
       auto element_type = input_param->get_element_type();
       auto input_tensor =
           std::dynamic_pointer_cast<ngraph::he::HESealCipherTensor>(
-              m_he_seal_backend->create_cipher_tensor(
+              m_he_seal_backend.create_cipher_tensor(
                   element_type, input_param->get_shape(), m_batch_data));
 
       std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
@@ -290,9 +287,7 @@ void ngraph::he::HESealExecutable::handle_message(
     key_stream.write(message.data_ptr(), message.element_size());
     key.load(m_context, key_stream);
 
-    // TODO: move set_public_key to HESealBackend
-    auto he_seal_backend = (ngraph::he::HESealBackend*)m_he_seal_backend;
-    he_seal_backend->set_public_key(key);
+    m_he_seal_backend.set_public_key(key);
 
     NGRAPH_INFO << "Server set public key";
 
@@ -302,9 +297,7 @@ void ngraph::he::HESealExecutable::handle_message(
     key_stream.write(message.data_ptr(), message.element_size());
     keys.load(m_context, key_stream);
 
-    // TODO: move set_relin_keys to HESealBackend
-    auto he_seal_backend = (ngraph::he::HESealBackend*)m_he_seal_backend;
-    he_seal_backend->set_relin_keys(keys);
+    m_he_seal_backend.set_relin_keys(keys);
 
     // Send inference parameter shape
     const ParameterVector& input_parameters = get_parameters();
@@ -354,7 +347,7 @@ void ngraph::he::HESealExecutable::handle_message(
       auto wrapper = std::make_shared<SealCiphertextWrapper>(cipher);
       auto he_ciphertext =
           std::dynamic_pointer_cast<ngraph::he::SealCiphertextWrapper>(wrapper);
-      if (m_he_seal_backend->complex_packing()) {
+      if (m_he_seal_backend.complex_packing()) {
         he_ciphertext->set_complex_packing(true);
       }
 
@@ -386,7 +379,7 @@ void ngraph::he::HESealExecutable::handle_message(
       auto wrapper = std::make_shared<SealCiphertextWrapper>(cipher);
       auto he_ciphertext =
           std::dynamic_pointer_cast<ngraph::he::SealCiphertextWrapper>(wrapper);
-      if (m_he_seal_backend->complex_packing()) {
+      if (m_he_seal_backend.complex_packing()) {
         he_ciphertext->set_complex_packing(true);
       }
 
@@ -411,7 +404,7 @@ void ngraph::he::HESealExecutable::handle_message(
       auto wrapper = std::make_shared<SealCiphertextWrapper>(cipher);
       auto he_ciphertext =
           std::static_pointer_cast<ngraph::he::SealCiphertextWrapper>(wrapper);
-      if (m_he_seal_backend->complex_packing()) {
+      if (m_he_seal_backend.complex_packing()) {
         he_ciphertext->set_complex_packing(true);
       }
       m_minimum_ciphertexts.emplace_back(he_ciphertext);
@@ -468,7 +461,7 @@ bool ngraph::he::HESealExecutable::call(
   if (m_encrypt_model) {
     NGRAPH_INFO << "Encrypting model";
   }
-  if (m_he_seal_backend->complex_packing()) {
+  if (m_he_seal_backend.complex_packing()) {
     NGRAPH_INFO << "Complex packing";
   }
 
@@ -510,7 +503,7 @@ bool ngraph::he::HESealExecutable::call(
             he_inputs[input_count]);
         NGRAPH_CHECK(plain_input != nullptr, "Input is not plain tensor");
         auto cipher_input = std::dynamic_pointer_cast<HESealCipherTensor>(
-            m_he_seal_backend->create_cipher_tensor(
+            m_he_seal_backend.create_cipher_tensor(
                 plain_input->get_element_type(), plain_input->get_shape(),
                 m_batch_data));
 
@@ -518,10 +511,10 @@ bool ngraph::he::HESealExecutable::call(
         for (size_t i = 0; i < plain_input->get_batched_element_count(); ++i) {
           // Enable complex batching!
           plain_input->get_element(i).set_complex_packing(
-              m_he_seal_backend->complex_packing());
+              m_he_seal_backend.complex_packing());
 
-          m_he_seal_backend->encrypt(cipher_input->get_element(i),
-                                     plain_input->get_element(i));
+          m_he_seal_backend.encrypt(cipher_input->get_element(i),
+                                    plain_input->get_element(i));
         }
         tensor_map.insert({tv, cipher_input});
         input_count++;
@@ -700,7 +693,7 @@ void ngraph::he::HESealExecutable::generate_calls(
     for (size_t i = 0; i < cipher_tensor->get_elements().size(); ++i) {
       auto cipher = cipher_tensor->get_element(i);
       if (!cipher->is_zero()) {
-        m_he_seal_backend->get_evaluator()->rescale_to_next_inplace(
+        m_he_seal_backend.get_evaluator()->rescale_to_next_inplace(
             cipher->ciphertext());
       }
     }

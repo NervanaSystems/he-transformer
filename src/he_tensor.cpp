@@ -22,7 +22,7 @@
 
 ngraph::he::HETensor::HETensor(const element::Type& element_type,
                                const Shape& shape,
-                               const ngraph::he::HESealBackend* he_seal_backend,
+                               const ngraph::he::HESealBackend& he_seal_backend,
                                const bool batched, const std::string& name)
     : ngraph::runtime::Tensor(std::make_shared<ngraph::descriptor::Tensor>(
           element_type, shape, name)),

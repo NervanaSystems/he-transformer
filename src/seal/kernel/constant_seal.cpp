@@ -19,7 +19,7 @@
 void ngraph::he::constant_seal(std::vector<ngraph::he::HEPlaintext>& out,
                                const element::Type& element_type,
                                const void* data_ptr,
-                               const ngraph::he::HESealBackend* he_seal_backend,
+                               const ngraph::he::HESealBackend& he_seal_backend,
                                size_t count) {
   NGRAPH_CHECK(element_type == element::f32, "Constant supports only f32 type");
   size_t type_byte_size = element_type.size();
@@ -39,7 +39,7 @@ void ngraph::he::constant_seal(std::vector<ngraph::he::HEPlaintext>& out,
 void ngraph::he::constant_seal(
     std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>& out,
     const element::Type& element_type, const void* data_ptr,
-    const ngraph::he::HESealBackend* he_seal_backend, size_t count) {
+    const ngraph::he::HESealBackend& he_seal_backend, size_t count) {
   NGRAPH_CHECK(element_type == element::f32, "Constant supports only f32 type");
   size_t type_byte_size = element_type.size();
   if (out.size() != count) {
@@ -51,7 +51,7 @@ void ngraph::he::constant_seal(
     const void* src_with_offset = (void*)((char*)data_ptr + i * type_byte_size);
     auto plaintext = HEPlaintext();
     // TODO: complex batching?
-    he_seal_backend->encode(plaintext, src_with_offset, element_type, false);
-    he_seal_backend->encrypt(out[i], plaintext);
+    he_seal_backend.encode(plaintext, src_with_offset, element_type, false);
+    he_seal_backend.encrypt(out[i], plaintext);
   }
 }

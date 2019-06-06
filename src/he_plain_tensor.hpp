@@ -29,7 +29,7 @@ namespace he {
 class HEPlainTensor : public HETensor {
  public:
   HEPlainTensor(const element::Type& element_type, const Shape& shape,
-                const HESealBackend* he_seal_backend,
+                const HESealBackend& he_seal_backend,
                 const bool batched = false,
                 const std::string& name = "external");
 

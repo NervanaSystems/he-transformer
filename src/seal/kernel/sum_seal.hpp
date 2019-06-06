@@ -32,12 +32,12 @@ inline void sum_seal(std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
                      const Shape& in_shape, const Shape& out_shape,
                      const AxisSet& reduction_axes,
                      const element::Type& element_type,
-                     const ngraph::he::HESealBackend* he_seal_backend) {
+                     const ngraph::he::HESealBackend& he_seal_backend) {
   CoordinateTransform output_transform(out_shape);
 
   for (const Coordinate& output_coord : output_transform) {
     out[output_transform.index(output_coord)] =
-        he_seal_backend->create_valued_ciphertext(0.f, element_type);
+        he_seal_backend.create_valued_ciphertext(0.f, element_type);
   }
 
   CoordinateTransform input_transform(in_shape);
@@ -56,7 +56,7 @@ inline void sum_seal(std::vector<HEPlaintext>& arg,
                      std::vector<HEPlaintext>& out, const Shape& in_shape,
                      const Shape& out_shape, const AxisSet& reduction_axes,
                      const element::Type& element_type,
-                     const ngraph::he::HESealBackend* he_seal_backend) {
+                     const ngraph::he::HESealBackend& he_seal_backend) {
   CoordinateTransform output_transform(out_shape);
 
   bool complex_packing = false;

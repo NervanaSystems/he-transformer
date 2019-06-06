@@ -31,31 +31,31 @@ namespace he {
 void scalar_add_seal(
     SealCiphertextWrapper& arg0, SealCiphertextWrapper& arg1,
     std::shared_ptr<SealCiphertextWrapper>& out,
-    const element::Type& element_type, const HESealBackend* he_seal_backend,
+    const element::Type& element_type, const HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
 void scalar_add_seal(
     SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
     std::shared_ptr<SealCiphertextWrapper>& out,
-    const element::Type& element_type, const HESealBackend* he_seal_backend,
+    const element::Type& element_type, const HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
 void scalar_add_seal(
     const HEPlaintext& arg0, SealCiphertextWrapper& arg1,
     std::shared_ptr<SealCiphertextWrapper>& out,
-    const element::Type& element_type, const HESealBackend* he_seal_backend,
+    const element::Type& element_type, const HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
 void scalar_add_seal(
     const HEPlaintext& arg0, const HEPlaintext& arg1, HEPlaintext& out,
-    const element::Type& element_type, const HESealBackend* he_seal_backend,
+    const element::Type& element_type, const HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
 inline void add_seal(
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg0,
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg1,
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
-    const element::Type& element_type, const HESealBackend* he_seal_backend,
+    const element::Type& element_type, const HESealBackend& he_seal_backend,
     size_t count,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool()) {
 #pragma omp parallel for
@@ -68,7 +68,7 @@ inline void add_seal(
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg0,
     const std::vector<HEPlaintext>& arg1,
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
-    const element::Type& element_type, const HESealBackend* he_seal_backend,
+    const element::Type& element_type, const HESealBackend& he_seal_backend,
     size_t count,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool()) {
 #pragma omp parallel for
@@ -82,7 +82,7 @@ inline void add_seal(
     const std::vector<HEPlaintext>& arg0,
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg1,
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
-    const element::Type& element_type, const HESealBackend* he_seal_backend,
+    const element::Type& element_type, const HESealBackend& he_seal_backend,
     size_t count,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool()) {
   add_seal(arg1, arg0, out, element_type, he_seal_backend, count, pool);
@@ -91,7 +91,7 @@ inline void add_seal(
 inline void add_seal(
     std::vector<HEPlaintext>& arg0, std::vector<HEPlaintext>& arg1,
     std::vector<HEPlaintext>& out, const element::Type& element_type,
-    const HESealBackend* he_seal_backend, size_t count,
+    const HESealBackend& he_seal_backend, size_t count,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool()) {
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {

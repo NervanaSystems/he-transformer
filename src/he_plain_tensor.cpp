@@ -21,7 +21,7 @@
 
 ngraph::he::HEPlainTensor::HEPlainTensor(const element::Type& element_type,
                                          const Shape& shape,
-                                         const HESealBackend* he_seal_backend,
+                                         const HESealBackend& he_seal_backend,
                                          const bool batched,
                                          const std::string& name)
     : ngraph::he::HETensor(element_type, shape, he_seal_backend, batched,
