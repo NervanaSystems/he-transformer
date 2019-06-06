@@ -153,7 +153,7 @@ ngraph::he::HESealBackend::create_valued_ciphertext(
   auto plaintext = HEPlaintext({value});
   auto ciphertext = create_empty_ciphertext();
 
-  encrypt(ciphertext, plaintext);
+  encrypt(ciphertext, plaintext, complex_packing());
   return ciphertext;
 }
 
@@ -181,10 +181,6 @@ void ngraph::he::HESealBackend::encrypt(
   auto plaintext = SealPlaintextWrapper(complex_packing);
 
   NGRAPH_CHECK(input.num_values() > 0, "Input has no values");
-
-  if (complex_packing) {
-    NGRAPH_INFO << "Encrypting complex";
-  }
 
   encode(plaintext, input, complex_packing);
   // No need to encrypt zero
@@ -255,7 +251,6 @@ void ngraph::he::HESealBackend::encode(
       m_context->context_data()->parms().poly_modulus_degree() / 2;
 
   if (complex_packing) {
-    NGRAPH_INFO << "Encoding complex ";
     std::vector<std::complex<double>> complex_vals;
     if (double_vals.size() == 1) {
       std::complex<double> val(double_vals[0], double_vals[0]);

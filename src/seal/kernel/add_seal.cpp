@@ -52,7 +52,7 @@ void ngraph::he::scalar_add_seal(
   NGRAPH_CHECK(element_type == element::f32);
 
   if (arg0.is_zero()) {
-    he_seal_backend.encrypt(out, arg1);
+    he_seal_backend.encrypt(out, arg1, he_seal_backend.complex_packing());
     out->is_zero() = false;
     return;
   }
