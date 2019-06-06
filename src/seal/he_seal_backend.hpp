@@ -182,12 +182,13 @@ class HESealBackend : public ngraph::runtime::Backend {
   };
 
   void set_batch_data(bool batch) { m_batch_data = batch; };
-  void set_complex_packing(bool toggle) { m_complex_packing = toggle; }
+
+  bool complex_packing() const  {return m_complex_packing;}
+  bool& complex_packing()  {return m_complex_packing;}
 
   bool encrypt_data() const { return m_encrypt_data; };
   bool batch_data() const { return m_batch_data; };
   bool encrypt_model() const { return m_encrypt_model; };
-  bool complex_packing() const { return m_complex_packing; };
 
  private:
   bool m_encrypt_data{std::getenv("NGRAPH_ENCRYPT_DATA") != nullptr};

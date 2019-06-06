@@ -183,7 +183,7 @@ void ngraph::he::HESealBackend::encrypt(
   encode(plaintext, input);
   // No need to encrypt zero
   if (input.is_single_value() && input.get_values()[0] == 0) {
-    output->set_zero(true);
+    output->is_zero() = true;
 
     // TODO: enable below?
     // output->ciphertext() = seal::Ciphertext(m_context);
@@ -191,7 +191,7 @@ void ngraph::he::HESealBackend::encrypt(
   } else {
     m_encryptor->encrypt(plaintext.plaintext(), output->ciphertext());
   }
-  output->set_complex_packing(input.complex_packing());
+  output->complex_packing() = input.complex_packing();
   NGRAPH_CHECK(output->complex_packing() == input.complex_packing());
 }
 
@@ -208,7 +208,7 @@ void ngraph::he::HESealBackend::decrypt(
     m_decryptor->decrypt(input.ciphertext(), plaintext_wrapper.plaintext());
     decode(output, plaintext_wrapper);
   }
-  output.set_complex_packing(input.complex_packing());
+  output.complex_packing() = input.complex_packing();
   NGRAPH_CHECK(output.complex_packing() == input.complex_packing());
 }
 
@@ -239,7 +239,7 @@ void ngraph::he::HESealBackend::decode(
   }
   std::vector<float> float_vals{real_vals.begin(), real_vals.end()};
   output.set_values(float_vals);
-  output.set_complex_packing(input.complex_packing());
+  output.complex_packing() = input.complex_packing();
 }
 
 void ngraph::he::HESealBackend::encode(
@@ -296,5 +296,5 @@ void ngraph::he::HESealBackend::encode(ngraph::he::HEPlaintext& output,
 
   std::vector<float> values{(float*)input, (float*)input + count};
   output.set_values(values);
-  output.set_complex_packing(complex);
+  output.complex_packing() = complex;
 }

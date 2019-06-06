@@ -23,7 +23,7 @@ void ngraph::he::scalar_negate_seal(
   NGRAPH_CHECK(element_type == element::f32);
 
   if (arg.is_zero()) {
-    out->set_zero(true);
+    out->is_zero() = true;
     return;
   }
   he_seal_backend.get_evaluator()->negate(arg.ciphertext(), out->ciphertext());

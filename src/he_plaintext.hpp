@@ -44,7 +44,7 @@ class HEPlaintext {
   size_t num_values() const { return m_values.size(); }
 
   bool complex_packing() const { return m_complex_packing; }
-  void set_complex_packing(bool toggle) { m_complex_packing = toggle; }
+  bool& complex_packing() { return m_complex_packing; }
 
  protected:
   std::vector<float> m_values;

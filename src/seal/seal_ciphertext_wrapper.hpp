@@ -24,15 +24,10 @@ namespace ngraph {
 namespace he {
 class SealCiphertextWrapper {
  public:
-  SealCiphertextWrapper() {
-    set_complex_packing(false);
-    set_zero(false);
-  }
+  SealCiphertextWrapper() : m_complex_packing(false), m_is_zero(false) {}
 
-  SealCiphertextWrapper(const seal::Ciphertext& cipher) : m_ciphertext(cipher) {
-    set_complex_packing(false);
-    set_zero(false);
-  }
+  SealCiphertextWrapper(const seal::Ciphertext& cipher)
+      : m_ciphertext(cipher), m_complex_packing(false), m_is_zero(false) {}
 
   seal::Ciphertext& ciphertext() { return m_ciphertext; }
   const seal::Ciphertext& ciphertext() const { return m_ciphertext; }
@@ -42,13 +37,13 @@ class SealCiphertextWrapper {
   size_t size() const { return m_ciphertext.size(); }
 
   bool is_zero() const { return m_is_zero; }
-  void set_zero(bool toggle) { m_is_zero = toggle; }
+  bool& is_zero() { return m_is_zero; }
 
   double& scale() { return m_ciphertext.scale(); }
   const double scale() const { return m_ciphertext.scale(); }
 
   bool complex_packing() const { return m_complex_packing; }
-  void set_complex_packing(bool toggle) { m_complex_packing = toggle; }
+  bool& complex_packing() { return m_complex_packing; }
 
  private:
   bool m_complex_packing;

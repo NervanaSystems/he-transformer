@@ -46,7 +46,7 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_scalar) {
 NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_scalar_complex) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_complex_packing(true);
+  he_backend->complex_packing() = true;
 
   Shape shape{};
   auto a = he_backend->create_cipher_tensor(element::f32, shape);
@@ -66,7 +66,7 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_2) {
 NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_2_complex) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_complex_packing(true);
+  he_backend->complex_packing() = true;
 
   Shape shape{2};
   auto a = he_backend->create_cipher_tensor(element::f32, shape);

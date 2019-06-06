@@ -267,7 +267,7 @@ void ngraph::he::HESealExecutable::handle_message(
 
       input_tensor->set_elements(cipher_elements);
       for (auto& cipher_elem : cipher_elements) {
-        cipher_elem->set_complex_packing(true);
+        cipher_elem->complex_packing() = true;
       }
       m_client_inputs.emplace_back(input_tensor);
       parameter_size_index += param_size;
@@ -348,7 +348,7 @@ void ngraph::he::HESealExecutable::handle_message(
       auto he_ciphertext =
           std::dynamic_pointer_cast<ngraph::he::SealCiphertextWrapper>(wrapper);
       if (m_he_seal_backend.complex_packing()) {
-        he_ciphertext->set_complex_packing(true);
+        he_ciphertext->complex_packing() = true;
       }
 
       new_relu_ciphers[element_idx] = he_ciphertext;
@@ -380,7 +380,7 @@ void ngraph::he::HESealExecutable::handle_message(
       auto he_ciphertext =
           std::dynamic_pointer_cast<ngraph::he::SealCiphertextWrapper>(wrapper);
       if (m_he_seal_backend.complex_packing()) {
-        he_ciphertext->set_complex_packing(true);
+        he_ciphertext->complex_packing() = true;
       }
 
       m_max_ciphertexts.emplace_back(he_ciphertext);
@@ -405,7 +405,7 @@ void ngraph::he::HESealExecutable::handle_message(
       auto he_ciphertext =
           std::static_pointer_cast<ngraph::he::SealCiphertextWrapper>(wrapper);
       if (m_he_seal_backend.complex_packing()) {
-        he_ciphertext->set_complex_packing(true);
+        he_ciphertext->complex_packing() =true;
       }
       m_minimum_ciphertexts.emplace_back(he_ciphertext);
     }
@@ -510,8 +510,8 @@ bool ngraph::he::HESealExecutable::call(
 #pragma omp parallel for
         for (size_t i = 0; i < plain_input->get_batched_element_count(); ++i) {
           // Enable complex batching!
-          plain_input->get_element(i).set_complex_packing(
-              m_he_seal_backend.complex_packing());
+          plain_input->get_element(i).complex_packing() =
+              m_he_seal_backend.complex_packing();
 
           m_he_seal_backend.encrypt(cipher_input->get_element(i),
                                     plain_input->get_element(i));

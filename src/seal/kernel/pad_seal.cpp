@@ -40,7 +40,7 @@ void ngraph::he::pad_seal(
   bool is_pad_value_zero =
       arg1[0].is_single_value() && arg1[0].get_values()[0] == 0.;
   NGRAPH_CHECK(is_pad_value_zero, "Non-zero pad values not supported");
-  arg1_encrypted->set_zero(true);
+  arg1_encrypted->is_zero() = true;
 
   std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
       arg1_encrypted_vector{arg1_encrypted};

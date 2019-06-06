@@ -24,18 +24,18 @@ void ngraph::he::scalar_subtract_seal(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type, const HESealBackend& he_seal_backend) {
   if (arg0.is_zero() && arg1.is_zero()) {
-    out->set_zero(true);
+    out->is_zero() = true;
   } else if (arg0.is_zero()) {
     he_seal_backend.get_evaluator()->negate(arg1.ciphertext(),
                                             out->ciphertext());
-    out->set_zero(false);
+    out->is_zero() = false;
   } else if (arg1.is_zero()) {
     out = std::make_shared<ngraph::he::SealCiphertextWrapper>(arg0);
-    out->set_zero(false);
+    out->is_zero() = false;
   } else {
     he_seal_backend.get_evaluator()->sub(arg0.ciphertext(), arg1.ciphertext(),
                                          out->ciphertext());
-    out->set_zero(false);
+    out->is_zero() = false;
   }
 }
 
@@ -54,7 +54,7 @@ void ngraph::he::scalar_subtract_seal(
     he_seal_backend.get_evaluator()->sub_plain(arg0.ciphertext(), p.plaintext(),
                                                out->ciphertext());
   }
-  out->set_zero(false);
+  out->is_zero() = false;
 }
 
 void ngraph::he::scalar_subtract_seal(
@@ -68,7 +68,7 @@ void ngraph::he::scalar_subtract_seal(
     ngraph::he::scalar_negate_seal(arg1, tmp, type, he_seal_backend);
     ngraph::he::scalar_add_seal(arg0, *tmp, out, type, he_seal_backend);
   }
-  out->set_zero(false);
+  out->is_zero() = false;
 }
 
 void ngraph::he::scalar_subtract_seal(const HEPlaintext& arg0,

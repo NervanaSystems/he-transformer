@@ -26,9 +26,9 @@ void ngraph::he::scalar_multiply_seal(
     const element::Type& element_type, const HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
   if (arg0.is_zero() || arg1.is_zero()) {
-    out->set_zero(true);
+    out->is_zero() = true;
   } else {
-    out->set_zero(false);
+    out->is_zero() = false;
     match_modulus_and_scale_inplace(arg0, arg1, he_seal_backend, pool);
     // match_scale(arg0, arg1, he_seal_backend);
     size_t chain_ind0 = get_chain_index(arg0, he_seal_backend);
@@ -65,7 +65,7 @@ void ngraph::he::scalar_multiply_seal(
   NGRAPH_CHECK(element_type == element::f32, "Element type ", element_type,
                " is not float");
   if (arg0.is_zero()) {
-    out->set_zero(true);
+    out->is_zero() = true;
     return;
   }
   // We can't do the scalar +/-1 optimizations, unless all the weights
@@ -77,11 +77,11 @@ void ngraph::he::scalar_multiply_seal(
   // TODO: check multiplying by small numbers behavior more thoroughly
   if (std::all_of(values.begin(), values.end(),
                   [](float f) { return std::abs(f) < 1e-5f; })) {
-    out->set_zero(true);
+    out->is_zero() = true;
     // out = std::dynamic_pointer_cast<ngraph::he::SealCiphertextWrapper>(
     //    he_seal_backend.create_valued_ciphertext(0, element_type));
   } else {
-    out->set_zero(false);
+    out->is_zero() = false;
     if (arg1.is_single_value()) {
       float value = arg1.get_values()[0];
       double double_val = double(value);
@@ -112,7 +112,7 @@ void ngraph::he::scalar_multiply_seal(
         }
       }
     }
-    out->set_complex_packing(arg0.complex_packing());
+    out->complex_packing() = arg0.complex_packing();
   }
 }
 
