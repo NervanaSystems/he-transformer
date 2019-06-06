@@ -159,7 +159,7 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_optimized_2_3) {
 
 NGRAPH_TEST(${BACKEND_NAME}, multiply_4_3_batch) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend&>(backend.get());
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   Shape shape_a{4, 3};
   Shape shape_b{4, 3};

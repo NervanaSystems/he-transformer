@@ -84,7 +84,7 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_5_5) {
 
 NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_scalar) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend&>(backend.get());
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   Shape shape{};
   auto a = he_backend->create_plain_tensor(element::f32, shape);
@@ -94,7 +94,7 @@ NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_scalar) {
 
 NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend&>(backend.get());
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   Shape shape{2};
   auto a = he_backend->create_plain_tensor(element::f32, shape);
@@ -104,7 +104,7 @@ NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2) {
 
 NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2_3) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend&>(backend.get());
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   Shape shape{2, 3};
   auto a = he_backend->create_plain_tensor(element::f32, shape);
@@ -116,7 +116,7 @@ NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2_3) {
 
 NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_batch_write_read_2_3) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend&>(backend.get());
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   Shape shape{2, 3};
   auto a = he_backend->create_batched_cipher_tensor(element::f32, shape);
@@ -129,7 +129,7 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_batch_write_read_2_3) {
 
 NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_batch_write_read_2_1) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend&>(backend.get());
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   Shape shape{2, 1};
   auto a = he_backend->create_batched_cipher_tensor(element::f32, shape);
@@ -141,7 +141,7 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_batch_write_read_2_1) {
 
 NGRAPH_TEST(${BACKEND_NAME}, plain_tv_batch_write_read_2_3) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend&>(backend.get());
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   Shape shape{2, 3};
   auto a = he_backend->create_batched_plain_tensor(element::f32, shape);

@@ -56,7 +56,7 @@ static void check_bounded_relu(Shape param_shape, float constant_val) {
 
   auto he_backend_orig = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend =
-      static_cast<ngraph::he::HESealBackend&>(he_backend_orig.get());
+      static_cast<ngraph::he::HESealBackend*>(he_backend_orig.get());
   auto he_handle = he_backend->compile(he_f);
   EXPECT_EQ(1, count_ops_of_type<op::BoundedRelu>(he_f));
 
