@@ -31,7 +31,6 @@
 void ngraph::he::match_modulus_and_scale_inplace(
     SealCiphertextWrapper& arg0, SealCiphertextWrapper& arg1,
     const HESealBackend& he_seal_backend, seal::MemoryPoolHandle pool) {
-  NGRAPH_CHECK(he_seal_backend != nullptr);
   size_t chain_ind0 = ngraph::he::get_chain_index(arg0, he_seal_backend);
   size_t chain_ind1 = ngraph::he::get_chain_index(arg1, he_seal_backend);
 
@@ -49,10 +48,10 @@ void ngraph::he::match_modulus_and_scale_inplace(
     auto arg1_parms_id = arg1.ciphertext().parms_id();
     if (rescale) {
       he_seal_backend.get_evaluator()->rescale_to_inplace(arg0.ciphertext(),
-                                                           arg1_parms_id);
+                                                          arg1_parms_id);
     } else {
       he_seal_backend.get_evaluator()->mod_switch_to_inplace(arg0.ciphertext(),
-                                                              arg1_parms_id);
+                                                             arg1_parms_id);
     }
     chain_ind0 = ngraph::he::get_chain_index(arg0, he_seal_backend);
     NGRAPH_CHECK(chain_ind0 == chain_ind1);

@@ -92,9 +92,6 @@ ngraph::he::HESealExecutable::HESealExecutable(
       m_relu_done(false),
       m_session_started(false),
       m_client_inputs_received(false) {
-  NGRAPH_CHECK(he_seal_backend != nullptr, "he_seal_backend == nullptr");
-  // TODO: move get_context to HESealBackend
-
   m_context = he_seal_backend.get_context();
 
   m_is_compiled = true;
@@ -521,7 +518,7 @@ bool ngraph::he::HESealExecutable::call(
               m_he_seal_backend.complex_packing());
 
           m_he_seal_backend.encrypt(cipher_input->get_element(i),
-                                     plain_input->get_element(i));
+                                    plain_input->get_element(i));
         }
         tensor_map.insert({tv, cipher_input});
         input_count++;
