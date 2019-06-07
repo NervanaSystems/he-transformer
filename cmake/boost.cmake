@@ -68,9 +68,3 @@ message("BOOST_HEADERS_PATH ${BOOST_HEADERS_PATH}")
 
 include_directories(${BOOST_HEADERS_PATH})
 add_library(boost INTERFACE)
-
-
-
-#target_include_directories(libboost SYSTEM INTERFACE ${SOURCE_DIR}/include)
-#add_dependencies(libboost ext_boost)
-# boost/src/ext_boost/libs

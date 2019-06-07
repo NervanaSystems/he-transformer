@@ -70,9 +70,6 @@ endif()
 set(HE_SEAL_BACKEND_LIB_NAME "libhe_seal_backend${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
 message("NGRAPH_TF_VENV_LIB_DIR ${NGRAPH_TF_VENV_LIB_DIR}")
-
-message("Installing he_seal_Backend to ${EXTERNAL_INSTALL_LIB_DIR}")
-
 message("NGRAPH_TF_LIB_DIR ${NGRAPH_TF_LIB_DIR}")
 
 # Install he-transformer (the HE libraries are installed separately) at `make install`
@@ -84,7 +81,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
         PATTERN "*.hpp"
         PATTERN "*.h")
 
-message("Installing TF fiels from ${NGRAPH_TF_INCLUDE_DIR} to ${HE_INSTALL_INCLUDE_DIR}")
+message("Installing TF files from ${NGRAPH_TF_INCLUDE_DIR} to ${HE_INSTALL_INCLUDE_DIR}")
 install(DIRECTORY ${NGRAPH_TF_INCLUDE_DIR}/
         DESTINATION ${HE_INSTALL_INCLUDE_DIR}
         FILES_MATCHING
@@ -92,7 +89,7 @@ install(DIRECTORY ${NGRAPH_TF_INCLUDE_DIR}/
         PATTERN "*.h")
 
 # TODO: cleanup
-message("Install json files from ${JSON_INCLUDE_DIR} to ${HE_INSTALL_INCLUDE_DIR}")
+message("Installing json files from ${JSON_INCLUDE_DIR} to ${HE_INSTALL_INCLUDE_DIR}")
 install(DIRECTORY ${JSON_INCLUDE_DIR}/
         DESTINATION ${HE_INSTALL_INCLUDE_DIR}
         FILES_MATCHING
