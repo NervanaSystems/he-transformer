@@ -66,5 +66,7 @@ endforeach()
 
 message("BOOST_HEADERS_PATH ${BOOST_HEADERS_PATH}")
 
-include_directories(${BOOST_HEADERS_PATH})
-add_library(boost INTERFACE)
+#include_directories(${BOOST_HEADERS_PATH})
+add_library(libboost INTERFACE)
+target_include_directories(libboost SYSTEM INTERFACE ${BOOST_HEADERS_PATH})
+
