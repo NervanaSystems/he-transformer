@@ -23,7 +23,7 @@ SET(BOOST_REPO_URL https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1
 ExternalProject_Add(
     ext_boost
     PREFIX boost
-    URL ${BOOST_REPO_URL}
+    GIT_REPOSITORY ${BOOST_REPO_URL}
     #GIT_REPOSITORY ${BOOST_REPO_URL}
     #GIT_TAG ${BOOST_GIT_LABEL}
     # Disable install step
