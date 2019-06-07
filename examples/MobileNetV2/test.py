@@ -21,18 +21,19 @@ import ngraph_bridge
 import json
 import argparse
 import os
+import time
 from PIL import Image
 
 
 def print_nodes(filename):
-    graph_def = read_pb_file(filename)
+    graph_def = load_model(filename)
     nodes = [n.name for n in graph_def.node]
     print('nodes', len(nodes))
     for node in sorted(nodes):
         print(node)
 
 
-def read_pb_file(filename):
+def load_model(filename):
     print("loading graph", filename)
     sess = tf.Session()
     with gfile.GFile(filename, 'rb') as f:
@@ -117,14 +118,16 @@ def get_validation_images(FLAGS, crop=False):
     print('getting validation images')
     data_dir = FLAGS.data_dir
 
-    crop_size = 84
-    IMAGE_SIZE = 84
+    crop_size = 96
+    IMAGE_SIZE = 96
 
     images = np.empty((FLAGS.batch_size, IMAGE_SIZE, IMAGE_SIZE, 3))
 
     for i in range(FLAGS.batch_size):
         image_num_str = str(i + 1).zfill(8)
-        image_name = 'validation_images/ILSVRC2012_val_' + image_num_str + '.JPEG'
+        image_prefix = 'validation_images/ILSVRC2012_val_' + image_num_str
+        image_suffix = '.JPEG'
+        image_name = image_prefix + image_suffix
 
         filename = os.path.join(data_dir, image_name)
         if not os.path.isfile(filename):
@@ -136,7 +139,14 @@ def get_validation_images(FLAGS, crop=False):
         im = im.resize((IMAGE_SIZE, IMAGE_SIZE))
         assert (im.size == (IMAGE_SIZE, IMAGE_SIZE))
 
-        im = np.array(im) / 128. - 1
+        crop_filename = os.path.join(data_dir, image_prefix + '_crop' + '.png')
+        im.save(crop_filename, "PNG")
+
+        im = np.array(im)
+        print('image', im)
+        # Standardize to [-1,1]
+        im = im / 128. - 1
+        print('std image', im)
 
         if im.shape == (IMAGE_SIZE, IMAGE_SIZE):
             im = np.expand_dims(im, axis=3)
@@ -184,7 +194,7 @@ def main(FLAGS):
     validation_labels = imagenet_inference_labels[validation_nums]
 
     sess = tf.Session()
-    graph_def = read_pb_file('./model/opt1.pb')
+    graph_def = load_model(FLAGS.model)
     tf.import_graph_def(graph_def, name='')
 
     input_tensor = sess.graph.get_tensor_by_name('input:0')
@@ -192,8 +202,13 @@ def main(FLAGS):
         'MobilenetV2/Logits/Conv2d_1c_1x1/BiasAdd:0')
 
     print('performing inference')
+    start_time = time.time()
     y_pred = sess.run(output_tensor, {input_tensor: x_test})
-    print('performed inference')
+    end_time = time.time()
+    runtime = end_time - start_time
+    per_image_runtime = runtime / float(FLAGS.batch_size)
+    print('performed inference, runtime (s): ', np.round(runtime, 2))
+    print('runtime per image (s)', np.round(per_image_runtime, 2))
     y_pred = np.squeeze(y_pred)
     # print(y_pred.shape)
 
@@ -213,6 +228,13 @@ if __name__ == '__main__':
         '--data_dir',
         type=str,
         default=None,
+        help=
+        'Directory where cropped ImageNet data and ground truth labels are stored'
+    )
+    parser.add_argument(
+        '--model',
+        type=str,
+        default='mobilenet_v2_0.35_96_opt.pb',
         help=
         'Directory where cropped ImageNet data and ground truth labels are stored'
     )
