@@ -66,7 +66,6 @@ NGRAPH_TF_BACKEND=HE_SEAL \
 python test.py
 ```
 
-
 ## Smaller parameters
 For faster runtime, try
 ```bash
@@ -77,3 +76,20 @@ NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4_27bits.json \
 NGRAPH_TF_BACKEND=HE_SEAL \
 python test.py
 ```
+
+# Image-Net evaluation
+
+
+1. First, sign up for an account at image-net.org
+2. Download the 2012 test_images (all tasks)) 13GB MD5: fe64ceb247e473635708aed23ab6d839
+
+3. ```bash
+tar -xf ILSVRC2012_img_test.tar
+```
+
+4. To crop images to 84x84
+```bash
+for i in $(ls *.JPEG); do convert -define jpeg:size=84x84 $i -thumbnail 84x84^ -gravity center -extent 84x84x "${i}_crop.jpeg"; done
+```
+
+3. Download development kit (Task 1 & 2) and extract validation_ground_truth.txt

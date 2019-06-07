@@ -19,6 +19,8 @@ from tensorflow.python.platform import gfile
 import numpy as np
 import ngraph_bridge
 import json
+import argparse
+import os
 from PIL import Image
 
 
@@ -64,7 +66,30 @@ def get_imagenet_labels():
     return imagenet_labels
 
 
-def main():
+def get_images(FLAGS):
+    data_dir = FLAGS.data_dir
+    ground_truth_filename = 'ILSVRC2012_validation_ground_truth.txt'
+
+    truth_file = os.path.join(data_dir, ground_truth_filename)
+    if not os.path.isfile(truth_file):
+        print('Cannot find ', ground_truth_filename, ' in ', data_dir)
+        print('File ', truth_file, ' does not exist')
+        exit(1)
+
+    truth_labels = np.loadtxt(truth_file, dtype=np.int32)
+    print(truth_labels.shape)
+
+    assert (truth_labels.shape == (50000, ))
+
+    print('loaded truth_labels')
+
+
+def main(FLAGS):
+
+    get_images(FLAGS)
+
+    exit(1)
+
     sess = tf.Session()
     graph_def = read_pb_file('./model/opt1.pb')
     imagenet_labels = get_imagenet_labels()
@@ -97,4 +122,15 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--data_dir',
+        type=str,
+        default=None,
+        help=
+        'Directory where cropped ImageNet data and ground truth labels are stored'
+    )
+    parser.add_argument('--batch_size', type=int, default=1, help='Batch size')
+
+    FLAGS, unparsed = parser.parse_known_args()
+    main(FLAGS)
