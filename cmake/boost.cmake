@@ -19,8 +19,6 @@ include(ExternalProject)
 SET(BOOST_REPO_URL https://github.com/boostorg/boost)
 SET(BOOST_GIT_LABEL boost-1.69.0)
 
-add_library(libboost INTERFACE)
-
 ExternalProject_Add(
     ext_boost
     PREFIX boost
@@ -33,8 +31,6 @@ ExternalProject_Add(
     UPDATE_COMMAND ""
     EXCLUDE_FROM_ALL TRUE
     )
-
-
 
 ExternalProject_Get_Property(ext_boost SOURCE_DIR)
 message("boost SOURCE_DIR ${SOURCE_DIR}")
@@ -68,5 +64,6 @@ message("BOOST_HEADERS_PATH ${BOOST_HEADERS_PATH}")
 
 #include_directories(${BOOST_HEADERS_PATH})
 add_library(libboost INTERFACE)
+add_dependencies(libboost ext_boost)
 target_include_directories(libboost SYSTEM INTERFACE ${BOOST_HEADERS_PATH})
 
