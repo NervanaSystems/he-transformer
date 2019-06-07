@@ -16,14 +16,16 @@
 
 include(ExternalProject)
 
-SET(BOOST_REPO_URL https://github.com/boostorg/boost)
-SET(BOOST_GIT_LABEL boost-1.69.0)
+#SET(BOOST_REPO_URL https://github.com/boostorg/boost)
+#SET(BOOST_GIT_LABEL boost-1.69.0)
+SET(BOOST_REPO_URL https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.tar.gz)
 
 ExternalProject_Add(
     ext_boost
     PREFIX boost
-    GIT_REPOSITORY ${BOOST_REPO_URL}
-    GIT_TAG ${BOOST_GIT_LABEL}
+    URL ${BOOST_REPO_URL}
+    #GIT_REPOSITORY ${BOOST_REPO_URL}
+    #GIT_TAG ${BOOST_GIT_LABEL}
     # Disable install step
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
@@ -37,24 +39,24 @@ message("boost SOURCE_DIR ${SOURCE_DIR}")
 set(BOOST_LIB_DIR ${SOURCE_DIR}/libs)
 
 set(BOOST_LIBS
-asio
-system
-config
-throw_exception
-detail
 assert
-date_time
-smart_ptr
-core
-predef
-utility
-type_traits
-static_assert
-mpl
-preprocessor
-numeric_conversion
+asio
 bind
-regex)
+config
+core
+date_time
+detail
+mpl
+numeric
+preprocessor
+predef
+regex
+smart_ptr
+static_assert
+system
+throw_exception
+type_traits
+utility)
 
 foreach(BOOST_LIB ${BOOST_LIBS})
     set(BOOST_HEADERS_PATH ${BOOST_HEADERS_PATH} ${BOOST_LIB_DIR}/${BOOST_LIB}/include)
