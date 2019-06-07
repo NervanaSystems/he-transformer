@@ -38,32 +38,8 @@ ExternalProject_Add(
 
 ExternalProject_Get_Property(ext_boost SOURCE_DIR)
 message("boost SOURCE_DIR ${SOURCE_DIR}")
-set(BOOST_LIB_DIR ${SOURCE_DIR}/libs)
 
-set(BOOST_LIBS
-assert
-asio
-bind
-config
-core
-date_time
-detail
-mpl
-numeric
-preprocessor
-predef
-regex
-smart_ptr
-static_assert
-system
-throw_exception
-type_traits
-utility)
-
-foreach(BOOST_LIB ${BOOST_LIBS})
-    set(BOOST_HEADERS_PATH ${BOOST_HEADERS_PATH} ${BOOST_LIB_DIR}/${BOOST_LIB}/include)
-endforeach()
-
+set(BOOST_HEADERS_PATH ${SOURCE_DIR}/boost)
 message("BOOST_HEADERS_PATH ${BOOST_HEADERS_PATH}")
 
 #include_directories(${BOOST_HEADERS_PATH})
