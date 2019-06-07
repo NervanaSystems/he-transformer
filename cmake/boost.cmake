@@ -16,17 +16,15 @@
 
 include(ExternalProject)
 
-SET(BOOST_ASIO_REPO_URL https://github.com/boostorg/asio)
-SET(BOOST_SYSTEM_REPO_URL https://github.com/boostorg/system)
-SET(BOOST_CONFIG_REPO_URL https://github.com/boostorg/config)
+SET(BOOST_REPO_URL https://github.com/boostorg/boost)
 SET(BOOST_GIT_LABEL boost-1.69.0)
 
 add_library(libboost INTERFACE)
 
 ExternalProject_Add(
-    ext_boost_asio
+    ext_boost
     PREFIX boost
-    GIT_REPOSITORY ${BOOST_ASIO_REPO_URL}
+    GIT_REPOSITORY ${BOOST_REPO_URL}
     GIT_TAG ${BOOST_GIT_LABEL}
     # Disable install step
     CONFIGURE_COMMAND ""
@@ -36,47 +34,43 @@ ExternalProject_Add(
     EXCLUDE_FROM_ALL TRUE
     )
 
-ExternalProject_Get_Property(ext_boost_asio SOURCE_DIR)
-message("boost asio SOURCE_DIR ${SOURCE_DIR}")
-target_include_directories(libboost SYSTEM INTERFACE ${SOURCE_DIR}/include)
-set(BOOST_HEADERS_PATH ${BOOST_HEADERS_PATH} ${SOURCE_DIR})
 
-ExternalProject_Add(
-    ext_boost_system
-    PREFIX boost
-    GIT_REPOSITORY ${BOOST_SYSTEM_REPO_URL}
-    GIT_TAG ${BOOST_GIT_LABEL}
-    # Disable install step
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND ""
-    INSTALL_COMMAND ""
-    UPDATE_COMMAND ""
-    EXCLUDE_FROM_ALL TRUE
-    BUILDE_IN_SOURCE 1
-    )
-ExternalProject_Get_Property(ext_boost_system SOURCE_DIR)
-message("boost system SOURCE_DIR ${SOURCE_DIR}")
-target_include_directories(libboost SYSTEM INTERFACE ${SOURCE_DIR}/include)
-set(BOOST_HEADERS_PATH ${BOOST_HEADERS_PATH} ${SOURCE_DIR})
 
-ExternalProject_Add(
-    ext_boost_config
-    PREFIX boost
-    GIT_REPOSITORY ${BOOST_CONFIG_REPO_URL}
-    GIT_TAG ${BOOST_GIT_LABEL}
-    # Disable install step
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND ""
-    INSTALL_COMMAND ""
-    UPDATE_COMMAND ""
-    EXCLUDE_FROM_ALL TRUE
-    )
-ExternalProject_Get_Property(ext_boost_config SOURCE_DIR)
-message("boost config SOURCE_DIR ${SOURCE_DIR}")
-target_include_directories(libboost SYSTEM INTERFACE ${SOURCE_DIR}/include)
+ExternalProject_Get_Property(ext_boost SOURCE_DIR)
+message("boost SOURCE_DIR ${SOURCE_DIR}")
+set(BOOST_LIB_DIR ${SOURCE_DIR}/libs)
 
-set(BOOST_HEADERS_PATH ${BOOST_HEADERS_PATH} ${SOURCE_DIR})
+set(BOOST_LIBS
+asio
+system
+config
+throw_exception
+detail
+assert
+date_time
+smart_ptr
+core
+predef
+utility
+type_traits
+static_assert
+mpl
+preprocessor
+numeric_conversion
+bind
+regex)
+
+foreach(BOOST_LIB ${BOOST_LIBS})
+    set(BOOST_HEADERS_PATH ${BOOST_HEADERS_PATH} ${BOOST_LIB_DIR}/${BOOST_LIB}/include)
+endforeach()
 
 message("BOOST_HEADERS_PATH ${BOOST_HEADERS_PATH}")
 
-add_dependencies(libboost ext_boost_asio ext_boost_system ext_boost_config)
+include_directories(${BOOST_HEADERS_PATH})
+add_library(boost INTERFACE)
+
+
+
+#target_include_directories(libboost SYSTEM INTERFACE ${SOURCE_DIR}/include)
+#add_dependencies(libboost ext_boost)
+# boost/src/ext_boost/libs
