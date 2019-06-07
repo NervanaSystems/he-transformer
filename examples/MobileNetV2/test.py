@@ -33,14 +33,14 @@ def print_nodes(filename):
 
 
 def read_pb_file(filename):
+    print("loading graph", filename)
     sess = tf.Session()
-    print("load graph", filename)
     with gfile.GFile(filename, 'rb') as f:
         graph_def = tf.GraphDef()
     graph_def.ParseFromString(f.read())
     sess.graph.as_default()
     tf.import_graph_def(graph_def, name='')
-
+    print('loaded graph')
     return graph_def
 
 
@@ -56,17 +56,32 @@ def get_test_image():
     return grace_hopper
 
 
-def get_imagenet_labels():
+def get_imagenet_training_labels():
+    print('getting training labels')
+
     labels_path = tf.keras.utils.get_file(
         'ImageNetLabels.txt',
         'https://storage.googleapis.com/download.tensorflow.org/data/ImageNetLabels.txt'
     )
     imagenet_labels = np.array(open(labels_path).read().splitlines())
-
+    print('got training labels')
     return imagenet_labels
 
 
-def get_images(FLAGS):
+def get_imagenet_inference_labels():
+    print('getting inference labels')
+    filename = "https://gist.githubusercontent.com/aaronpolhamus/964a4411c0906315deb9f4a3723aac57/raw/aa66dd9dbf6b56649fa3fab83659b2acbf3cbfd1/map_clsloc.txt"
+
+    labels_path = tf.keras.utils.get_file('map_clsloc.txt', filename)
+    labels = open(labels_path).read().splitlines()
+    labels = ['background'] + [label.split()[2] for label in labels]
+    labels = np.array(labels)
+    print('got inference labels')
+    return labels
+
+
+def get_validation_labels(FLAGS):
+    print('getting validation labels')
     data_dir = FLAGS.data_dir
     ground_truth_filename = 'ILSVRC2012_validation_ground_truth.txt'
 
@@ -80,45 +95,116 @@ def get_images(FLAGS):
     print(truth_labels.shape)
 
     assert (truth_labels.shape == (50000, ))
+    print('got validation labels')
 
-    print('loaded truth_labels')
+    return truth_labels[0:FLAGS.batch_size]
+
+
+def center_crop(im, new_size):
+    # Center-crop image
+    width, height = im.size  # Get dimensions
+    #print('original size', im.size)
+
+    left = (width - new_size) / 2
+    top = (height - new_size) / 2
+    right = (width + new_size) / 2
+    bottom = (height + new_size) / 2
+    im = im.crop((left, top, right, bottom))
+    return im
+
+
+def get_validation_images(FLAGS, crop=False):
+    print('getting validation images')
+    data_dir = FLAGS.data_dir
+
+    crop_size = 84
+    IMAGE_SIZE = 84
+
+    images = np.empty((FLAGS.batch_size, IMAGE_SIZE, IMAGE_SIZE, 3))
+
+    for i in range(FLAGS.batch_size):
+        image_num_str = str(i + 1).zfill(8)
+        image_name = 'validation_images/ILSVRC2012_val_' + image_num_str + '.JPEG'
+
+        filename = os.path.join(data_dir, image_name)
+        if not os.path.isfile(filename):
+            print('Cannot find image ', filename)
+            exit(1)
+
+        im = Image.open(filename)
+        im = center_crop(im, crop_size)
+        im = im.resize((IMAGE_SIZE, IMAGE_SIZE))
+        assert (im.size == (IMAGE_SIZE, IMAGE_SIZE))
+
+        im = np.array(im) / 128. - 1
+
+        if im.shape == (IMAGE_SIZE, IMAGE_SIZE):
+            im = np.expand_dims(im, axis=3)
+            im = np.repeat(im, 3, axis=2)
+        assert (im.shape == (IMAGE_SIZE, IMAGE_SIZE, 3))
+
+        im = np.expand_dims(im, axis=0)
+        images[i] = im
+
+    print('got validation images')
+    return images
+
+
+def accuracy(preds, truth):
+    print('getting accuracy')
+
+    num_preds = truth.shape[0]
+    print('num_preds', num_preds)
+
+    top1_cnt = 0
+    top5_cnt = 0
+    for i in range(num_preds):
+        if preds[i][0] == truth[i]:
+            top1_cnt += 1
+        if truth[i] in preds[i]:
+            top5_cnt += 1
+
+    top5_acc = top5_cnt / float(num_preds)
+    top1_acc = top1_cnt / float(num_preds)
+    #top1_acc = np.mean(preds[:, 0] == truth)
+
+    print('top1_acc', top1_acc)
+    print('top5_acc', top5_acc)
+
+    #top5_count = np.count()
+    #top5_acc = np.mean(preds)
 
 
 def main(FLAGS):
+    imagenet_inference_labels = get_imagenet_inference_labels()
+    imagenet_training_labels = get_imagenet_training_labels()
 
-    get_images(FLAGS)
-
-    exit(1)
+    validation_nums = get_validation_labels(FLAGS)
+    x_test = get_validation_images(FLAGS)
+    validation_labels = imagenet_inference_labels[validation_nums]
 
     sess = tf.Session()
     graph_def = read_pb_file('./model/opt1.pb')
-    imagenet_labels = get_imagenet_labels()
-
-    #print_nodes('./model/opt1.pb')
-
     tf.import_graph_def(graph_def, name='')
 
     input_tensor = sess.graph.get_tensor_by_name('input:0')
     output_tensor = sess.graph.get_tensor_by_name(
         'MobilenetV2/Logits/Conv2d_1c_1x1/BiasAdd:0')
 
-    print('input_tensor', input_tensor)
-    print('output_tensor', output_tensor)
+    print('performing inference')
+    y_pred = sess.run(output_tensor, {input_tensor: x_test})
+    print('performed inference')
+    y_pred = np.squeeze(y_pred)
+    # print(y_pred.shape)
 
-    x_test = get_test_image()
-    print(x_test.shape)
+    top5 = np.flip(y_pred.argsort()[:, -5:], axis=1)
+    #print('top5', top5)
 
-    y_test = sess.run(output_tensor, {input_tensor: x_test})
-    y_test = np.squeeze(y_test)
-    # print(y_test)
-    print(y_test.shape)
+    #print('validation_labels', validation_labels)
+    preds = imagenet_training_labels[top5]
+    #print('preds', preds)
 
-    top5 = y_test.argsort()[-5:][::-1]
-
-    print('top5', top5)
-
-    preds = imagenet_labels[top5]
-    print(preds)
+    accuracy(preds, validation_labels)
 
 
 if __name__ == '__main__':
