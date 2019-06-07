@@ -29,8 +29,8 @@ class SealCiphertextWrapper {
   SealCiphertextWrapper(const seal::Ciphertext& cipher,
                         bool complex_packing = false, bool is_zero = false)
       : m_ciphertext(cipher),
-        m_is_zero(is_zero),
-        m_complex_packing(complex_packing) {}
+        m_complex_packing(complex_packing),
+        m_is_zero(is_zero) {}
 
   seal::Ciphertext& ciphertext() { return m_ciphertext; }
   const seal::Ciphertext& ciphertext() const { return m_ciphertext; }
@@ -49,9 +49,9 @@ class SealCiphertextWrapper {
   bool& complex_packing() { return m_complex_packing; }
 
  private:
+  seal::Ciphertext m_ciphertext;
   bool m_complex_packing;
   bool m_is_zero;
-  seal::Ciphertext m_ciphertext;
 };
 
 inline size_t ciphertext_size(const seal::Ciphertext& cipher) {
