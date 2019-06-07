@@ -54,9 +54,9 @@ def find_pybind_headers_dir():
 def find_boost_headers_dir():
     """Return location of boost headers."""
     if os.environ.get('BOOST_HEADERS_PATH'):
-        boost_headers_dirs = os.environ.get('BOOST_HEADERS_PATH')
+        boost_headers_dir = os.environ.get('BOOST_HEADERS_PATH')
     else:
-        boost_headers_dirs = [os.path.join(BOOST_ROOT_DIR)]
+        boost_headers_dir = [os.path.join(BOOST_ROOT_DIR)]
 
     found = os.path.exists(os.path.join(boost_headers_dir, 'boost/asio'))
 
@@ -64,8 +64,8 @@ def find_boost_headers_dir():
         print('Cannot find boost library in {} make sure that '
               'BOOST_HEADERS_PATH is set correctly'.format(boost_headers_dir))
 
-    print('boost library found in {}'.format(boost_headers_dirs))
-    return boost_headers_dirs
+    print('boost library found in {}'.format(boost_headers_dir))
+    return boost_headers_dir
 
 
 def find_cxx_compiler():
