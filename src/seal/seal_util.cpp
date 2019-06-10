@@ -16,11 +16,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
+#include <chrono>
 #include <limits>
 #include <utility>
 
 #include "ngraph/runtime/tensor.hpp"
 #include "seal/seal_util.hpp"
+#include "seal/util/uintarith.h"
 
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
@@ -336,16 +338,27 @@ void ngraph::he::multiply_plain_inplace(seal::Ciphertext& encrypted,
     throw ngraph_error("scale out of bounds");
   }
 
+  auto& barrett64_ratio_map = he_seal_backend.barrett64_ratio_map();
+
   for (size_t i = 0; i < encrypted_ntt_size; i++) {
     for (size_t j = 0; j < coeff_mod_count; j++) {
       // Multiply by scalar instead of doing dyadic product
-      seal::util::multiply_poly_scalar_coeffmod(
-          encrypted.data(i) + (j * coeff_count), coeff_count, plaintext_vals[j],
-          coeff_modulus[j], encrypted.data(i) + (j * coeff_count));
-      // dyadic_product_coeffmod(encrypted.data(i) + (j * coeff_count),
-      //                        plain_ntt.data() + (j * coeff_count),
-      //                        coeff_count, coeff_modulus[j],
-      //                       encrypted.data(i) + (j * coeff_count));
+      if (coeff_modulus[i].value() < (1 << 30)) {
+        const std::uint64_t modulus_value = coeff_modulus[j].value();
+        auto iter = barrett64_ratio_map.find(modulus_value);
+        NGRAPH_CHECK(iter != barrett64_ratio_map.end(), "Modulus value ",
+                     modulus_value, "not in Barrett64 ratio map");
+        const std::uint64_t barrett_ratio = iter->second;
+        ngraph::he::multiply_poly_scalar_coeffmod64(
+            encrypted.data(i) + (j * coeff_count), coeff_count,
+            plaintext_vals[j], modulus_value, barrett_ratio,
+            encrypted.data(i) + (j * coeff_count));
+      } else {
+        seal::util::multiply_poly_scalar_coeffmod(
+            encrypted.data(i) + (j * coeff_count), coeff_count,
+            plaintext_vals[j], coeff_modulus[j],
+            encrypted.data(i) + (j * coeff_count));
+      }
     }
   }
 
@@ -360,6 +373,28 @@ void ngraph::he::multiply_plain_inplace(seal::Ciphertext& encrypted,
     throw ngraph_error("result ciphertext is transparent");
   }
 #endif
+}
+
+void ngraph::he::multiply_poly_scalar_coeffmod64(
+    const uint64_t* poly, size_t coeff_count, uint64_t scalar,
+    const std::uint64_t modulus_value, const std::uint64_t const_ratio,
+    uint64_t* result) {
+  for (; coeff_count--; poly++, result++) {
+    // Multiplication
+    unsigned long long z = *poly * scalar;
+
+    // Barrett base 2^64 reduction
+    unsigned long long carry;
+    // Carry will store the result modulo 2^64
+    seal::util::multiply_uint64_hw64(z, const_ratio, &carry);
+    // Barrett subtraction
+    carry = z - carry * modulus_value;
+    // Possible correction term
+    *result =
+        carry -
+        (modulus_value &
+         static_cast<uint64_t>(-static_cast<int64_t>(carry >= modulus_value)));
+  }
 }
 
 size_t ngraph::he::match_to_smallest_chain_index(

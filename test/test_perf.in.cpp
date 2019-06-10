@@ -106,3 +106,37 @@ NGRAPH_TEST(${BACKEND_NAME}, perf_square) {
     handle->call_with_validate({t_result}, {t_a, t_b});
   }
 }
+
+NGRAPH_TEST(${BACKEND_NAME}, perf_mult_plain) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+
+  size_t N{10000};
+
+  Shape shape{N};
+  auto a = make_shared<op::Parameter>(element::f32, shape);
+  auto b = make_shared<op::Parameter>(element::f32, shape);
+  auto t = make_shared<op::Multiply>(a, b);
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
+
+  vector<float> vec_a(N, 0);
+  vector<float> vec_b(N, 0);
+  vector<float> vec_result(N, 0);
+
+  for (size_t i = 0; i < N; ++i) {
+    vec_a[i] = (i + 1) % 20 + 1;
+    vec_b[i] = (i + 2) % 20 + 1;
+    vec_result[i] = vec_a[i] * vec_b[i];
+  }
+
+  auto t_a = he_backend->create_cipher_tensor(element::f32, shape);
+  auto t_b = he_backend->create_plain_tensor(element::f32, shape);
+  auto t_result = he_backend->create_cipher_tensor(element::f32, shape);
+
+  copy_data(t_a, vec_a);
+  copy_data(t_b, vec_b);
+
+  auto handle = backend->compile(f);
+  handle->call_with_validate({t_result}, {t_a, t_b});
+  EXPECT_TRUE(all_close(read_vector<float>(t_result), vec_result, 1e-3f));
+}

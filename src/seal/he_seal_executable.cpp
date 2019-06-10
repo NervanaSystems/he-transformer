@@ -671,7 +671,9 @@ void ngraph::he::HESealExecutable::generate_calls(
 
   // TODO: move to static function
   auto lazy_rescaling = [this](auto& cipher_tensor) {
-  // NGRAPH_INFO << "Lazy rescaling";
+    NGRAPH_INFO << "Lazy rescaling";
+    typedef std::chrono::high_resolution_clock Clock;
+    auto t1 = Clock::now();
 #pragma omp parallel for
     for (size_t i = 0; i < cipher_tensor->get_elements().size(); ++i) {
       auto cipher = cipher_tensor->get_element(i);
@@ -680,6 +682,12 @@ void ngraph::he::HESealExecutable::generate_calls(
             cipher->ciphertext());
       }
     }
+    auto t2 = Clock::now();
+    NGRAPH_INFO << "rescale time "
+                << std::chrono::duration_cast<std::chrono::microseconds>(t2 -
+                                                                         t1)
+                       .count()
+                << " us";
   };
 
   std::vector<Shape> arg_shapes{};
