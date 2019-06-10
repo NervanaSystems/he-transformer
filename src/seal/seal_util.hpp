@@ -89,6 +89,14 @@ inline void add_plain(const seal::Ciphertext& encrypted, double value,
   ngraph::he::add_plain_inplace(destination, value, he_seal_backend);
 }
 
+// Like seal's multiply_poly_scalar_coeffmod, except assuming scalar, modulus
+// and poly are all < 30 bits
+void multiply_poly_scalar_coeffmod64(const uint64_t* poly, size_t coeff_count,
+                                     uint64_t scalar,
+                                     const std::uint64_t modulus_value,
+                                     const std::uint64_t const_ratio,
+                                     uint64_t* result);
+
 // Like add_poly_poly_coeffmod, but with a scalar for operand2
 inline void add_poly_scalar_coeffmod(const std::uint64_t* poly,
                                      std::size_t coeff_count,

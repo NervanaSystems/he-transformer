@@ -16,11 +16,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
+#include <chrono>
 #include <limits>
 #include <utility>
 
 #include "ngraph/runtime/tensor.hpp"
 #include "seal/seal_util.hpp"
+#include "seal/util/uintarith.h"
 
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
@@ -293,6 +295,9 @@ void ngraph::he::multiply_plain_inplace(seal::Ciphertext& encrypted,
                                         double value,
                                         const HESealBackend& he_seal_backend,
                                         seal::MemoryPoolHandle pool) {
+  typedef std::chrono::high_resolution_clock Clock;
+  auto t1 = Clock::now();
+
   // Verify parameters.
   auto context = he_seal_backend.get_context();
   if (!encrypted.is_metadata_valid_for(context)) {
@@ -336,16 +341,28 @@ void ngraph::he::multiply_plain_inplace(seal::Ciphertext& encrypted,
     throw ngraph_error("scale out of bounds");
   }
 
+  auto& barrett64_ratio_map = he_seal_backend.barrett64_ratio_map();
+
   for (size_t i = 0; i < encrypted_ntt_size; i++) {
     for (size_t j = 0; j < coeff_mod_count; j++) {
       // Multiply by scalar instead of doing dyadic product
-      seal::util::multiply_poly_scalar_coeffmod(
-          encrypted.data(i) + (j * coeff_count), coeff_count, plaintext_vals[j],
-          coeff_modulus[j], encrypted.data(i) + (j * coeff_count));
-      // dyadic_product_coeffmod(encrypted.data(i) + (j * coeff_count),
-      //                        plain_ntt.data() + (j * coeff_count),
-      //                        coeff_count, coeff_modulus[j],
-      //                       encrypted.data(i) + (j * coeff_count));
+      if (coeff_modulus[i].value() < (1 << 30)) {
+        const std::uint64_t modulus_value = coeff_modulus[j].value();
+        auto iter = barrett64_ratio_map.find(modulus_value);
+        NGRAPH_CHECK(iter != barrett64_ratio_map.end(), "Modulus value ",
+                     modulus_value, "not in Barrett64 ratio map");
+        const std::uint64_t barrett_ratio = iter->second;
+        ngraph::he::multiply_poly_scalar_coeffmod64(
+            encrypted.data(i) + (j * coeff_count), coeff_count,
+            plaintext_vals[j], modulus_value,
+            barrett_ratio,  // coeff_modulus[j],
+            encrypted.data(i) + (j * coeff_count));
+      } else {
+        seal::util::multiply_poly_scalar_coeffmod(
+            encrypted.data(i) + (j * coeff_count), coeff_count,
+            plaintext_vals[j], coeff_modulus[j],
+            encrypted.data(i) + (j * coeff_count));
+      }
     }
   }
 
@@ -360,6 +377,61 @@ void ngraph::he::multiply_plain_inplace(seal::Ciphertext& encrypted,
     throw ngraph_error("result ciphertext is transparent");
   }
 #endif
+
+  auto t4 = Clock::now();
+
+  /* NGRAPH_INFO
+       << "encode time "
+       << std::chrono::duration_cast<std::chrono::microseconds>(t3 - t2).count()
+       << " us"; */
+  NGRAPH_INFO
+      << "multiply plain time "
+      << std::chrono::duration_cast<std::chrono::microseconds>(t4 - t1).count()
+      << " us";
+}
+
+void ngraph::he::multiply_poly_scalar_coeffmod64(
+    const uint64_t* poly, size_t coeff_count, uint64_t scalar,
+    const std::uint64_t modulus_value, const std::uint64_t const_ratio,
+    uint64_t* result) {
+  // const std::uint64_t modulus_value = modulus.value();
+  // typedef std::chrono::high_resolution_clock Clock;
+  // auto t1 = Clock::now();
+
+  // [low bits, medium bits, high bits]
+  // {0, 1, 0} => 2^64 Barrewtt reduction
+  // std::uint64_t numerator[3]{0, 1};
+  // std::uint64_t quotient[3]{0, 0};
+  // seal::util::divide_uint128_uint64_inplace(numerator, modulus_value,
+  // quotient); std::uint64_t const_ratio = quotient[0];
+
+  // auto t2 = Clock::now();
+  for (; coeff_count--; poly++, result++) {
+    // Barrett 64
+    // TODO: check poly / modulus_value < 2^30.
+    unsigned long long z = *poly * scalar;
+    unsigned long long carry;
+
+    // Carry will store the result modulo 2^64
+    seal::util::multiply_uint64_hw64(z, const_ratio, &carry);
+
+    // Barrett subtraction
+    carry = z - carry * modulus_value;
+    // Possible correction term
+    *result =
+        carry -
+        (modulus_value &
+         static_cast<uint64_t>(-static_cast<int64_t>(carry >= modulus_value)));
+  }
+  // auto t3 = Clock::now();
+  /*NGRAPH_INFO
+      << "multiply_poly_scalar_coeffmod64 "
+      << std::chrono::duration_cast<std::chrono::nanoseconds>(t3 - t1).count()
+      << " nanos"; */
+  /* NGRAPH_INFO
+      << "divide_uint128_uint64_inplace "
+      << std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count()
+      << " nanos"; */
 }
 
 size_t ngraph::he::match_to_smallest_chain_index(
