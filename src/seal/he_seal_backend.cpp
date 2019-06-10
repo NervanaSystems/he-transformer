@@ -71,7 +71,6 @@ ngraph::he::HESealBackend::HESealBackend(
   // Encoder
   m_ckks_encoder = std::make_shared<seal::CKKSEncoder>(m_context);
 
-  // Set s_barrett64_ratio_map
   for (const seal::SmallModulus& modulus :
        context_data->parms().coeff_modulus()) {
     const std::uint64_t modulus_value = modulus.value();
@@ -83,8 +82,6 @@ ngraph::he::HESealBackend::HESealBackend(
       std::uint64_t const_ratio = quotient[0];
 
       NGRAPH_CHECK(quotient[1] == 0, "Quotient[1] != 0 for modulus");
-
-      NGRAPH_INFO << "Const ratio" << const_ratio;
       m_barrett64_ratio_map[modulus_value] = const_ratio;
     }
   }

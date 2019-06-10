@@ -295,9 +295,6 @@ void ngraph::he::multiply_plain_inplace(seal::Ciphertext& encrypted,
                                         double value,
                                         const HESealBackend& he_seal_backend,
                                         seal::MemoryPoolHandle pool) {
-  typedef std::chrono::high_resolution_clock Clock;
-  auto t1 = Clock::now();
-
   // Verify parameters.
   auto context = he_seal_backend.get_context();
   if (!encrypted.is_metadata_valid_for(context)) {
@@ -376,17 +373,6 @@ void ngraph::he::multiply_plain_inplace(seal::Ciphertext& encrypted,
     throw ngraph_error("result ciphertext is transparent");
   }
 #endif
-
-  auto t4 = Clock::now();
-
-  /* NGRAPH_INFO
-       << "encode time "
-       << std::chrono::duration_cast<std::chrono::microseconds>(t3 - t2).count()
-       << " us"; */
-  NGRAPH_INFO
-      << "multiply plain time "
-      << std::chrono::duration_cast<std::chrono::microseconds>(t4 - t1).count()
-      << " us";
 }
 
 void ngraph::he::multiply_poly_scalar_coeffmod64(
