@@ -354,8 +354,7 @@ void ngraph::he::multiply_plain_inplace(seal::Ciphertext& encrypted,
         const std::uint64_t barrett_ratio = iter->second;
         ngraph::he::multiply_poly_scalar_coeffmod64(
             encrypted.data(i) + (j * coeff_count), coeff_count,
-            plaintext_vals[j], modulus_value,
-            barrett_ratio,  // coeff_modulus[j],
+            plaintext_vals[j], modulus_value, barrett_ratio,
             encrypted.data(i) + (j * coeff_count));
       } else {
         seal::util::multiply_poly_scalar_coeffmod(
@@ -394,27 +393,14 @@ void ngraph::he::multiply_poly_scalar_coeffmod64(
     const uint64_t* poly, size_t coeff_count, uint64_t scalar,
     const std::uint64_t modulus_value, const std::uint64_t const_ratio,
     uint64_t* result) {
-  // const std::uint64_t modulus_value = modulus.value();
-  // typedef std::chrono::high_resolution_clock Clock;
-  // auto t1 = Clock::now();
-
-  // [low bits, medium bits, high bits]
-  // {0, 1, 0} => 2^64 Barrewtt reduction
-  // std::uint64_t numerator[3]{0, 1};
-  // std::uint64_t quotient[3]{0, 0};
-  // seal::util::divide_uint128_uint64_inplace(numerator, modulus_value,
-  // quotient); std::uint64_t const_ratio = quotient[0];
-
-  // auto t2 = Clock::now();
   for (; coeff_count--; poly++, result++) {
-    // Barrett 64
-    // TODO: check poly / modulus_value < 2^30.
+    // Multiplication
     unsigned long long z = *poly * scalar;
-    unsigned long long carry;
 
+    // Barrett base 2^64 reduction
+    unsigned long long carry;
     // Carry will store the result modulo 2^64
     seal::util::multiply_uint64_hw64(z, const_ratio, &carry);
-
     // Barrett subtraction
     carry = z - carry * modulus_value;
     // Possible correction term
@@ -423,15 +409,6 @@ void ngraph::he::multiply_poly_scalar_coeffmod64(
         (modulus_value &
          static_cast<uint64_t>(-static_cast<int64_t>(carry >= modulus_value)));
   }
-  // auto t3 = Clock::now();
-  /*NGRAPH_INFO
-      << "multiply_poly_scalar_coeffmod64 "
-      << std::chrono::duration_cast<std::chrono::nanoseconds>(t3 - t1).count()
-      << " nanos"; */
-  /* NGRAPH_INFO
-      << "divide_uint128_uint64_inplace "
-      << std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count()
-      << " nanos"; */
 }
 
 size_t ngraph::he::match_to_smallest_chain_index(
