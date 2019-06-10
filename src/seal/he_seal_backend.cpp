@@ -71,6 +71,21 @@ ngraph::he::HESealBackend::HESealBackend(
   // Encoder
   m_ckks_encoder = std::make_shared<seal::CKKSEncoder>(m_context);
 
+  for (const seal::SmallModulus& modulus :
+       context_data->parms().coeff_modulus()) {
+    const std::uint64_t modulus_value = modulus.value();
+    if (modulus_value < (1 << 30)) {
+      std::uint64_t numerator[3]{0, 1};
+      std::uint64_t quotient[3]{0, 0};
+      seal::util::divide_uint128_uint64_inplace(numerator, modulus_value,
+                                                quotient);
+      std::uint64_t const_ratio = quotient[0];
+
+      NGRAPH_CHECK(quotient[1] == 0, "Quotient[1] != 0 for modulus");
+      m_barrett64_ratio_map[modulus_value] = const_ratio;
+    }
+  }
+
   NGRAPH_CHECK(!(m_encrypt_model && m_complex_packing),
                "NGRAPH_ENCRYPT_MODEL is incompatible with NGRAPH_COMPLEX_PACK");
 }

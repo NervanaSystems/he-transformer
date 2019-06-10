@@ -2,14 +2,8 @@ This example demonstrates a simple example of a small matrix multiplication and 
 
 To run on the CKKS backend,
 ```bash
-NGRAPH_TF_BACKEND=HE_SEAL_CKKS python axpy.py
+NGRAPH_TF_BACKEND=HE_SEAL python axpy.py
 ```
-To run on the BFV backend,
-```bash
-NGRAPH_TF_BACKEND=HE_SEAL_BFV python axpy.py
-```
-
-Note, the BFV encryption scheme suports only integers. For floating-point support, use the CKKS encryption scheme.
 
 #  Client-server model
 In pratice, the public key and secret key will not reside on the same object.
@@ -18,7 +12,7 @@ Instead, a client will provide the server with encrypted data.
 The client uses python bindings. See the `python` folder for instructions to build he-transformer with python bindings.
 
 For a simple demonstration of a server-client approach, run
-`NGRAPH_ENABLE_CLIENT=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_TF_BACKEND=HE_SEAL_CKKS python ax.py`
+`NGRAPH_ENABLE_CLIENT=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_TF_BACKEND=HE_SEAL python ax.py`
 
 This will discard the Tensorflow inputs and instead wait for a client to connect and provide encrypted inputs.
 

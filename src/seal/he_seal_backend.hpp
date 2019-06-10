@@ -181,6 +181,11 @@ class HESealBackend : public ngraph::runtime::Backend {
     return m_encryption_params;
   };
 
+  const std::unordered_map<std::uint64_t, std::uint64_t>& barrett64_ratio_map()
+      const {
+    return m_barrett64_ratio_map;
+  }
+
   void set_batch_data(bool batch) { m_batch_data = batch; };
 
   bool complex_packing() const { return m_complex_packing; }
@@ -208,6 +213,9 @@ class HESealBackend : public ngraph::runtime::Backend {
   std::shared_ptr<seal::CKKSEncoder> m_ckks_encoder;
   // Scale with which to encode new ciphertexts
   double m_scale;
+
+  // Stores Barrett64 ratios for moduli under 30 bits
+  std::unordered_map<std::uint64_t, std::uint64_t> m_barrett64_ratio_map;
 };
 
 }  // namespace he
