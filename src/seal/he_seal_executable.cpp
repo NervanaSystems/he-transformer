@@ -683,11 +683,11 @@ void ngraph::he::HESealExecutable::generate_calls(
       }
     }
     auto t2 = Clock::now();
-    NGRAPH_INFO << "rescale time "
-                << std::chrono::duration_cast<std::chrono::microseconds>(t2 -
+    NGRAPH_INFO << "Rescale_xxx took "
+                << std::chrono::duration_cast<std::chrono::milliseconds>(t2 -
                                                                          t1)
                        .count()
-                << " us";
+                << "ms";
   };
 
   std::vector<Shape> arg_shapes{};
