@@ -671,7 +671,6 @@ void ngraph::he::HESealExecutable::generate_calls(
 
   // TODO: move to static function
   auto lazy_rescaling = [this](auto& cipher_tensor) {
-    NGRAPH_INFO << "Lazy rescaling";
     typedef std::chrono::high_resolution_clock Clock;
     auto t1 = Clock::now();
 #pragma omp parallel for
@@ -751,6 +750,7 @@ void ngraph::he::HESealExecutable::generate_calls(
     } else if (out0_plain != nullptr) {
       ss << "Plain";
     }
+    NGRAPH_INFO << ss.str();
   }
 
 // We want to check that every OP_TYPEID enumeration is included in the list.
