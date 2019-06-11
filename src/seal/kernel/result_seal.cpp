@@ -22,6 +22,7 @@ void ngraph::he::result_seal(
     const HESealBackend& he_seal_backend) {
   NGRAPH_CHECK(out.size() == arg.size(), "Result output size ", out.size(),
                " does not match result input size ", arg.size());
+#pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
     he_seal_backend.encrypt(out[i], arg[i], he_seal_backend.complex_packing());
   }
@@ -33,6 +34,7 @@ void ngraph::he::result_seal(
     const HESealBackend& he_seal_backend) {
   NGRAPH_CHECK(out.size() == arg.size(), "Result output size ", out.size(),
                " does not match result input size ", arg.size());
+#pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
     he_seal_backend.decrypt(out[i], *arg[i]);
   }
