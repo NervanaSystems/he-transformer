@@ -32,6 +32,7 @@ inline void result_seal(
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out, size_t count) {
   NGRAPH_CHECK(out.size() == arg.size(), "Result output size ", out.size(),
                " does not match result input size ", arg.size());
+#pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
     out[i] = arg[i];
   }
@@ -41,6 +42,7 @@ inline void result_seal(const std::vector<HEPlaintext>& arg,
                         std::vector<HEPlaintext>& out, size_t count) {
   NGRAPH_CHECK(out.size() == arg.size(), "Result output size ", out.size(),
                " does not match result input size ", arg.size());
+#pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
     out[i] = arg[i];
   }

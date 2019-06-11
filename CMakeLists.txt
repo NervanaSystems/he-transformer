@@ -26,6 +26,7 @@ if(DEFINED CMAKE_CXX_CLAGS)
 else()
     set(CMAKE_CXX_FLAGS "-std=c++1z -std=gnu++1z -Wall")
 endif()
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
 
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS} -g")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -O0 -g")
