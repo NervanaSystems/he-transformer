@@ -5,7 +5,7 @@ import setuptools
 import os
 
 # TODO: get from environment
-__version__ = '0.0.0-dev'
+__version__ = '0.0.0.dev'
 
 PYNGRAPH_ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
 BOOST_ROOT_DIR = os.path.abspath(os.path.dirname(__file__))

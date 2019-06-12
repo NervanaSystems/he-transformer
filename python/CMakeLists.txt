@@ -60,10 +60,10 @@ set(PROJECT_ROOT_DIR "test_root_dir")
 SET(PYTHON_LIB_DIR ${CMAKE_BINARY_DIR}/python/_install${CMAKE_INSTALL_PREFIX})
 message("PYTHON_LIB_DIR ${PYTHON_LIB_DIR}")
 
-message("Copying files from ${CMAKE_INSTALL_PREFIX} to ${PYTHON_LIB_DIR}")
+message("Copying files from ${NGRAPH_TF_ARTIFACTS_DIR} to ${PYTHON_LIB_DIR}")
 
-install(DIRECTORY ${CMAKE_INSTALL_PREFIX}/
-        DESTINATION ${PYTHON_LIB_DIR}
+install(DIRECTORY ${NGRAPH_TF_LIB_DIR}/
+        DESTINATION ${PYTHON_LIB_DIR}/lib
         FILES_MATCHING
         PATTERN "*.so"
         PATTERN "*.so.*"

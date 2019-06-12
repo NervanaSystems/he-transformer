@@ -269,7 +269,7 @@ void ngraph::he::HESealExecutable::handle_message(
 
       input_tensor->set_elements(cipher_elements);
       for (auto& cipher_elem : cipher_elements) {
-        cipher_elem->complex_packing() = true;
+        cipher_elem->complex_packing() = m_complex_packing;
       }
       m_client_inputs.emplace_back(input_tensor);
       parameter_size_index += param_size;
