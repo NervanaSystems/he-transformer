@@ -3,6 +3,8 @@ The architecture uses MaxPool and ReLU activations.
 
 Since it is impossible to perform ReLU using homomorphic encryption, this model will only run when `NGRAPH_ENABLE_CLIENT=1`. The client will send encrypted data to the server. To perform the ReLU/Maxpool layer, the encrypted data is sent to the client, which decrypts, performs the ReLU/Maxpool, re-encrypts and sends the post-ReLU/Maxpool ciphertexts back to the server.
 
+***Note***: the client is an experimental feature and currently uses a large amount of memory. For a better experience, see the `Debugging` section below.
+
 This example depends on the [**Intel® nGraph™ Compiler and runtime engine for TensorFlow**](https://github.com/NervanaSystems/ngraph-tf). Make sure the python environment with ngraph-tf bridge is active, i.e. run `source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate`. Also ensure the `he_seal_client` wheel has been installed (see `python` folder for instructions).
 
 # Train the network
@@ -23,7 +25,7 @@ cd $HE_TRANSFORMER/examples/MNIST-MLP
 NGRAPH_ENABLE_CLIENT=1 \
 NGRAPH_ENCRYPT_DATA=1 \
 NGRAPH_BATCH_DATA=1 \
-NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N13_L4.json \
+NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
 NGRAPH_TF_BACKEND=HE_SEAL \
 python test.py --batch_size=2048
 ```
@@ -47,7 +49,23 @@ This will perform non-linear layers on the server, which stores the public and s
 ```bash
 NGRAPH_ENCRYPT_DATA=1 \
 NGRAPH_BATCH_DATA=1 \
-NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N13_L4.json \
+NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
 NGRAPH_TF_BACKEND=HE_SEAL \
 python test.py --batch_size=2048
+```
+
+# Complex packing
+For models with no ciphertext-ciphertext multiplication, use the NGRAPH_COMPLEX_PACK=1 flag to double the capacity.
+As a rough guideline, the NGRAPH_COMPLEX_PACK flag is suitable when the model does not contain polynomial activations,
+and when either the model or data remains unencrypted.
+
+Using the NGRAPH_COMPLEX_PACK flag, we double the capacity to 4096, doubling the throughput.
+
+```bash
+NGRAPH_COMPLEX_PACK=1 \
+NGRAPH_ENCRYPT_DATA=1 \
+NGRAPH_BATCH_DATA=1 \
+NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
+NGRAPH_TF_BACKEND=HE_SEAL \
+python test.py --batch_size=4096
 ```

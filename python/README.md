@@ -1,5 +1,8 @@
 This directory contains python bindings for an experimental client.
 
+***Note***: The client is experimental, and currently uses a large amout of memory.
+For a better experience, just omit the NGRAPH_ENABLE_CLIENT=1 flag in any examples. Then, the server will run the model without sending messages to the client.
+
 # Building python bindings
 Once you have installed he-transformer (i.e. run `make install`),
 ```bash
@@ -36,4 +39,4 @@ NGRAPH_ENABLE_CLIENT=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_TF_BACKEND=HE_SEAL python ax
 
   This will provide encrypted inputs to the HEBackend. Once the computation is complete, the output will be returned to the client and decrypted. As expected, the output from the server (on `ax.py`) will be nonsense.
 
-  The server-client approach currently works only for functions with one input parameter tensor.
+  The server-client approach currently works only for functions with one input parameter tensor and one result tensor.
