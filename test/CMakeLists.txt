@@ -85,6 +85,7 @@ include_directories(SYSTEM
     ${HE_TRANSFORMER_SOURCE_DIR}
     ${EXTERNAL_INSTALL_INCLUDE_DIR}
     ${NGRAPH_TEST_UTIL_INCLUDE_DIR}
+    ${NGRAPH_TF_INCLUDE_DIR}
 )
 
 link_directories(
