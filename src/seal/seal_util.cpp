@@ -39,14 +39,19 @@ void ngraph::he::match_modulus_and_scale_inplace(
   if (chain_ind0 == chain_ind1) {
     return;
   }
-
-  if (chain_ind0 < chain_ind1) {
-    match_modulus_and_scale_inplace(arg1, arg0, he_seal_backend, pool);
-  }
-
   bool rescale = !ngraph::he::within_rescale_tolerance(arg0, arg1);
 
-  if (chain_ind0 > chain_ind1) {
+  if (chain_ind0 < chain_ind1) {
+    auto arg0_parms_id = arg0.ciphertext().parms_id();
+    if (rescale) {
+      he_seal_backend.get_evaluator()->rescale_to_inplace(arg1.ciphertext(),
+                                                          arg0_parms_id);
+    } else {
+      he_seal_backend.get_evaluator()->mod_switch_to_inplace(arg1.ciphertext(),
+                                                             arg0_parms_id);
+    }
+    chain_ind1 = ngraph::he::get_chain_index(arg1, he_seal_backend);
+  } else {  // chain_ind0 > chain_ind1
     auto arg1_parms_id = arg1.ciphertext().parms_id();
     if (rescale) {
       he_seal_backend.get_evaluator()->rescale_to_inplace(arg0.ciphertext(),
@@ -56,10 +61,9 @@ void ngraph::he::match_modulus_and_scale_inplace(
                                                              arg1_parms_id);
     }
     chain_ind0 = ngraph::he::get_chain_index(arg0, he_seal_backend);
-    NGRAPH_CHECK(chain_ind0 == chain_ind1);
-
-    ngraph::he::match_scale(arg0, arg1, he_seal_backend);
   }
+  NGRAPH_CHECK(chain_ind0 == chain_ind1);
+  ngraph::he::match_scale(arg0, arg1, he_seal_backend);
 }
 
 // Encode value into vector of coefficients
@@ -129,15 +133,10 @@ void ngraph::he::encode(double value, double scale,
       for (size_t j = 0; j < coeff_mod_count; j++) {
         destination[j] = seal::util::negate_uint_mod(
             coeffu % coeff_modulus[j].value(), coeff_modulus[j]);
-        // fill_n(destination.data() + (j * coeff_count), coeff_count,
-        //       negate_uint_mod(coeffu % coeff_modulus[j].value(),
-        //                       coeff_modulus[j]));
       }
     } else {
       for (size_t j = 0; j < coeff_mod_count; j++) {
         destination[j] = coeffu % coeff_modulus[j].value();
-        // fill_n(destination.data() + (j * coeff_count), coeff_count,
-        //       coeffu % coeff_modulus[j].value());
       }
     }
   } else if (coeff_bit_count <= 128) {
@@ -149,16 +148,11 @@ void ngraph::he::encode(double value, double scale,
         destination[j] = seal::util::negate_uint_mod(
             seal::util::barrett_reduce_128(coeffu, coeff_modulus[j]),
             coeff_modulus[j]);
-        // fill_n(destination.data() + (j * coeff_count), coeff_count,
-        //       negate_uint_mod(barrett_reduce_128(coeffu, coeff_modulus[j]),
-        //                       coeff_modulus[j]));
       }
     } else {
       for (size_t j = 0; j < coeff_mod_count; j++) {
         destination[j] =
             seal::util::barrett_reduce_128(coeffu, coeff_modulus[j]);
-        // fill_n(destination.data() + (j * coeff_count), coeff_count,
-        //        barrett_reduce_128(coeffu, coeff_modulus[j]));
       }
     }
   } else {
@@ -188,9 +182,6 @@ void ngraph::he::encode(double value, double scale,
 
           auto value_copy(seal::util::allocate_uint(coeff_mod_count, pool));
           for (std::size_t j = 0; j < coeff_mod_count; j++) {
-            // destination[j] = util::modulo_uint(
-            //    value, coeff_mod_count, coeff_modulus_[j], pool);
-
             // Manually inlined for efficiency
             // Make a fresh copy of value
             seal::util::set_uint_uint(value, coeff_mod_count, value_copy.get());
@@ -225,14 +216,10 @@ void ngraph::he::encode(double value, double scale,
       for (size_t j = 0; j < coeff_mod_count; j++) {
         destination[j] =
             seal::util::negate_uint_mod(decomp_coeffu[j], coeff_modulus[j]);
-        // fill_n(destination.data() + (j * coeff_count), coeff_count,
-        //       negate_uint_mod(decomp_coeffu[j], coeff_modulus[j]));
       }
     } else {
       for (size_t j = 0; j < coeff_mod_count; j++) {
         destination[j] = decomp_coeffu[j];
-        // fill_n(destination.data() + (j * coeff_count), coeff_count,
-        //       decomp_coeffu[j]);
       }
     }
   }
@@ -277,10 +264,6 @@ void ngraph::he::add_plain_inplace(seal::Ciphertext& encrypted, double value,
     ngraph::he::add_poly_scalar_coeffmod(
         encrypted.data() + (j * coeff_count), coeff_count, plaintext_vals[j],
         coeff_modulus[j], encrypted.data() + (j * coeff_count));
-    // seal::util::add_poly_poly_coeffmod(
-    //     encrypted.data() + (j * coeff_count),
-    //     plain.data() + (j * coeff_count), coeff_count, coeff_modulus[j],
-    //     encrypted.data() + (j * coeff_count));
   }
 
 #ifndef SEAL_ALLOW_TRANSPARENT_CIPHERTEXT

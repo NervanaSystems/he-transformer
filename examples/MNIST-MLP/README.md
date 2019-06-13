@@ -7,45 +7,47 @@ This example depends on the [**Intel® nGraph™ Compiler and runtime engine for
 
 # Train the network
 First, train the network using
-```
+```bash
 python train.py
 ```
 This trains the network briefly and stores the network weights.
 
 # Test the network
-## Python
 To test the network, in one terminal run
-```
+```bash
 source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate
 cd $HE_TRANSFORMER/examples/MNIST-MLP
-NGRAPH_ENABLE_CLIENT=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_BATCH_DATA=1 NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N13_L4.json NGRAPH_TF_BACKEND=HE_SEAL python test.py --batch_size=2048
+```
+
+```bash
+NGRAPH_ENABLE_CLIENT=1 \
+NGRAPH_ENCRYPT_DATA=1 \
+NGRAPH_BATCH_DATA=1 \
+NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N13_L4.json \
+NGRAPH_TF_BACKEND=HE_SEAL \
+python test.py --batch_size=2048
 ```
 This runs inference on the Cryptonets network using the SEAL CKKS backend.
 The `he_seal_ckks_config_N13_L4.json` file specifies the parameters which to run the model on. Note: the batch size must be beweteen 1 and 2048 = 2^(12)/2.
 
 In another terminal, run
-```
+```bash
 source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate
 cd $HE_TRANSFORMER/examples
+```
+
+```bash
 python pyclient_mnist.py --batch_size=2048
 ```
 
-# Custom coefficient moduli
-For improved performance at the cost of lower precision, you may select custom coefficient moduli smaller than 30 bits. This enables the selection of a smaller polynomial modulus degree N=2^11 reducing the maximum batch size to N/2=1024
+# Debugging
+For debugging purposes, you can omit the use of the client.
+This will perform non-linear layers on the server, which stores the public and secret keys. Note, this is not a valid security model, and is used only for debugging.
 
-For an example of this, in one terminal run
+```bash
+NGRAPH_ENCRYPT_DATA=1 \
+NGRAPH_BATCH_DATA=1 \
+NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N13_L4.json \
+NGRAPH_TF_BACKEND=HE_SEAL \
+python test.py --batch_size=2048
 ```
-source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate
-cd $HE_TRANSFORMER/examples/MNIST-MLP
-NGRAPH_ENABLE_CLIENT=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_BATCH_DATA=1 NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N11_L3_18bits.json NGRAPH_TF_BACKEND=HE_SEAL python test.py --batch_size=1024
-```
-
-In another terminal, run
-```
-source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate
-cd $HE_TRANSFORMER/examples
-python pyclient_mnist.py --batch_size=1024
-```
-
-Note: `src/get_coefficient_moduli.py` can be used to generate custom coefficient moduli
-

@@ -64,7 +64,7 @@ void match_scale(S& arg0, T& arg1, const HESealBackend& he_seal_backend) {
   auto scale0 = arg0.scale();
   auto scale1 = arg1.scale();
   bool scale_ok = within_rescale_tolerance(arg0, arg1);
-  NGRAPH_CHECK(scale_ok, "Scale ", scale0, "does not match scale ", scale1,
+  NGRAPH_CHECK(scale_ok, "Scale ", scale0, " does not match scale ", scale1,
                " in scalar add");
   arg0.scale() = arg1.scale();
 }
