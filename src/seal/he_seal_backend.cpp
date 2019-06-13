@@ -47,8 +47,6 @@ ngraph::he::HESealBackend::HESealBackend()
 ngraph::he::HESealBackend::HESealBackend(
     const ngraph::he::HESealEncryptionParameters& parms)
     : m_encryption_params(parms) {
-  // TODO: enfore security level!
-
   seal::sec_level_type sec_level = seal::sec_level_type::none;
   if (parms.security_level() == 128) {
     sec_level = seal::sec_level_type::tc128;

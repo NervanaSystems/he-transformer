@@ -34,23 +34,21 @@ class HESealEncryptionParameters {
   HESealEncryptionParameters(const std::string& scheme_name,
                              std::uint64_t poly_modulus_degree,
                              std::uint64_t security_level,
-                             std::vector<std::uint64_t> coeff_modulus)
+                             std::vector<int> coeff_modulus_bits)
       : m_scheme_name(scheme_name),
         m_poly_modulus_degree(poly_modulus_degree),
         m_security_level(security_level),
-        m_coeff_modulus(coeff_modulus) {
+        m_coeff_modulus_bits(coeff_modulus_bits) {
     NGRAPH_CHECK(scheme_name == "HE_SEAL", "Invalid scheme name ", scheme_name);
     m_seal_encryption_parameters =
         seal::EncryptionParameters(seal::scheme_type::CKKS);
 
     m_seal_encryption_parameters.set_poly_modulus_degree(poly_modulus_degree);
 
-    std::vector<seal::SmallModulus> seal_coeff_modulus;
-    for (const auto& value : coeff_modulus) {
-      NGRAPH_INFO << "Setting coeff mod " << value;
-      seal_coeff_modulus.emplace_back(seal::SmallModulus(value));
-    }
-    m_seal_encryption_parameters.set_coeff_modulus(seal_coeff_modulus);
+    m_coeff_modulus =
+        seal::CoeffModulus::Create(poly_modulus_degree, coeff_modulus_bits);
+
+    m_seal_encryption_parameters.set_coeff_modulus(m_coeff_modulus);
   }
 
   void save(std::ostream& stream) const {
@@ -72,7 +70,11 @@ class HESealEncryptionParameters {
 
   inline std::uint64_t security_level() const { return m_security_level; }
 
-  inline const std::vector<std::uint64_t>& coeff_modulus() const {
+  inline const std::vector<int>& coeff_modulus_bits() const {
+    return m_coeff_modulus_bits;
+  }
+
+  inline const std::vector<seal::SmallModulus>& coeff_modulus() const {
     return m_coeff_modulus;
   }
 
@@ -82,24 +84,17 @@ class HESealEncryptionParameters {
   std::string m_scheme_name;
   std::uint64_t m_poly_modulus_degree;
   std::uint64_t m_security_level;
-  std::vector<std::uint64_t> m_coeff_modulus;
+  std::vector<int> m_coeff_modulus_bits;
+  std::vector<seal::SmallModulus> m_coeff_modulus;
 };
 
 inline ngraph::he::HESealEncryptionParameters default_ckks_parameters() {
-  std::vector<std::uint64_t> coeff_modulus;
-
   size_t poly_modulus_degree = 1024;
   size_t security_level = 0;  // No enforced security level
-
-  std::vector<seal::SmallModulus> small_mods =
-      seal::CoeffModulus::Create(poly_modulus_degree, {30, 30, 30, 30});
-
-  for (const auto& small_mod : small_mods) {
-    coeff_modulus.emplace_back(small_mod.value());
-  }
+  std::vector<int> coeff_modulus_bits = {30, 30, 30, 30};
 
   auto params = ngraph::he::HESealEncryptionParameters(
-      "HE_SEAL", poly_modulus_degree, security_level, coeff_modulus);
+      "HE_SEAL", poly_modulus_degree, security_level, coeff_modulus_bits);
   return params;
 }
 
@@ -146,15 +141,16 @@ inline ngraph::he::HESealEncryptionParameters parse_config_or_use_default(
       throw ngraph_error("security_level must be 0, 128, 192, 256");
     }
 
-    std::vector<std::uint64_t> coeff_mods = js["coeff_modulus"];
+    std::vector<int> coeff_mod_bits = js["coeff_modulus"];
 
-    for (const auto& coeff_mod : coeff_mods) {
-      if (coeff_mod > (2 << 60) || coeff_mod < 1) {
+    for (const auto& coeff_bit : coeff_mod_bits) {
+      if (coeff_bit > 60 || coeff_bit < 1) {
+        NGRAPH_INFO << "coeff_bit " << coeff_bit;
         throw ngraph_error("Invalid coeff modulus");
       }
     }
     auto params = ngraph::he::HESealEncryptionParameters(
-        scheme_name, poly_modulus_degree, security_level, coeff_mods);
+        scheme_name, poly_modulus_degree, security_level, coeff_mod_bits);
 
     return params;
 
