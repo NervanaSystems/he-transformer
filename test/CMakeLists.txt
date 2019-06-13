@@ -113,29 +113,3 @@ target_link_libraries(unit-test ngraph_test_util ${CMAKE_DL_LIBS})
 target_link_libraries(unit-test he_seal_backend seal pthread )
 
 add_dependencies(unit-test he_seal_backend ext_seal ext_ngraph_tf ext_gtest)
-
-# Cryptonets
-set (CRYPTONETS_SRC test_cryptonets.cpp test_util.cpp main_cryptonets.cpp)
-add_executable(cryptonets_benchmark ${CRYPTONETS_SRC})
-
-include_directories(SYSTEM
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${HE_TRANSFORMER_SOURCE_DIR}
-    ${EXTERNAL_INSTALL_INCLUDE_DIR}
-    ${NGRAPH_TF_INCLUDE_DIR}
-    ${NGRAPH_TEST_UTIL_INCLUDE_DIR}
-)
-
-message("Linking with NGRAPH_TF_LIB_DIR ${NGRAPH_TF_LIB_DIR}")
-
-link_directories(
-    ${NGRAPH_LIB_DIR}
-    ${EXTERNAL_INSTALL_LIB_DIR}
-    ${NGRAPH_TF_LIB_DIR}
-)
-
-target_include_directories(cryptonets_benchmark PRIVATE ".")
-
-target_link_libraries(cryptonets_benchmark libgtest ngraph ngraph_test_util)
-target_link_libraries(cryptonets_benchmark he_seal_backend seal pthread ${CMAKE_DL_LIBS})
-add_dependencies(cryptonets_benchmark he_seal_backend ext_seal ext_ngraph_tf ext_gtest)

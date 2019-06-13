@@ -91,7 +91,7 @@ class HESealEncryptionParameters {
 inline ngraph::he::HESealEncryptionParameters default_ckks_parameters() {
   size_t poly_modulus_degree = 1024;
   size_t security_level = 0;  // No enforced security level
-  std::vector<int> coeff_modulus_bits = {30, 30, 30, 30};
+  std::vector<int> coeff_modulus_bits = {30, 30, 30, 30, 30};
 
   auto params = ngraph::he::HESealEncryptionParameters(
       "HE_SEAL", poly_modulus_degree, security_level, coeff_modulus_bits);
