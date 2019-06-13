@@ -673,14 +673,18 @@ void ngraph::he::HESealExecutable::generate_calls(
   auto lazy_rescaling = [this](auto& cipher_tensor) {
     typedef std::chrono::high_resolution_clock Clock;
     auto t1 = Clock::now();
+
 #pragma omp parallel for
-    for (size_t i = 0; i < cipher_tensor->get_elements().size(); ++i) {
+    for (size_t i = 0; i < cipher_tensor->num_ciphertexts(); ++i) {
       auto cipher = cipher_tensor->get_element(i);
       if (!cipher->is_zero()) {
         m_he_seal_backend.get_evaluator()->rescale_to_next_inplace(
             cipher->ciphertext());
       }
     }
+    NGRAPH_INFO << "New chain_index "
+                << get_chain_index(cipher_tensor->get_element(0)->ciphertext(),
+                                   m_he_seal_backend);
     auto t2 = Clock::now();
     NGRAPH_INFO << "Rescale_xxx took "
                 << std::chrono::duration_cast<std::chrono::milliseconds>(t2 -

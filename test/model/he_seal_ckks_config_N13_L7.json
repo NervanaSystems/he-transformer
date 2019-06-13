@@ -2,14 +2,14 @@
     "scheme_name": "HE_SEAL",
     "poly_modulus_degree": 8192,
     "security_level": 128,
-    "evaluation_decomposition_bit_count": 60,
     "coeff_modulus": [
-        30,
-        30,
-        30,
-        30,
-        30,
-        30,
-        30
+        26,
+        26,
+        26,
+        26,
+        26,
+        26,
+        26,
+        26
     ]
 }
