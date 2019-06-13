@@ -48,7 +48,8 @@ ExternalProject_Add(
    -DSEAL_USE_CXX17=${SEAL_USE_CXX17}
 )
 
-add_custom_target(libseal ALL DEPENDS ext_seal ext_ngraph_tf
-        COMMAND ${CMAKE_COMMAND} -E create_symlink
-   ${EXTERNAL_INSTALL_LIB_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}seal${CMAKE_STATIC_LIBRARY_SUFFIX}
-            ${NGRAPH_TF_VENV_LIB_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}seal${CMAKE_STATIC_LIBRARY_SUFFIX})
+ExternalProject_Get_Property(ext_seal SOURCE_DIR)
+message("SOURCE_DIR ${SOURCE_DIR}")
+add_library(libseal INTERFACE)
+target_include_directories(libseal SYSTEM INTERFACE ${SOURCE_DIR}/include)
+add_dependencies(libseal ext_seal)

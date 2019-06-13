@@ -50,18 +50,12 @@ target_include_directories(he_seal_backend PRIVATE
     ${HE_TRANSFORMER_SOURCE_DIR}
     ${EXTERNAL_INSTALL_INCLUDE_DIR}
     ${NGRAPH_TF_INCLUDE_DIR})
-target_link_libraries(he_seal_backend PUBLIC libjson libboost)
+target_link_libraries(he_seal_backend PUBLIC libjson libboost libseal)
 
 
 message("HE_TRANSFORMER_SOURCE_DIR ${HE_TRANSFORMER_SOURCE_DIR}")
 message("EXTERNAL_INSTALL_INCLUDE_DIR ${EXTERNAL_INSTALL_INCLUDE_DIR}")
 
-#link_directories(
-#    ${EXTERNAL_INSTALL_LIB_DIR}
-#    ${NGRAPH_TF_LIB_DIR}
-#)
-
-message("Linking directories: ${NGRAPH_TF_LIB_DIR}, ${EXTERNAL_INSTALL_LIB_DIR}")
 
 # add_dependencies(he_seal_backend ext_ngraph_tf ext_seal)
 
