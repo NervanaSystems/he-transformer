@@ -55,6 +55,7 @@ inline void print_seal_context(const seal::SEALContext& context) {
   }
   std::cout << coeff_modulus.back().bit_count();
   std::cout << ") bits" << std::endl;
+  std::cout << "\\" << std::endl;
 }
 
 // Packs elements of input into real values

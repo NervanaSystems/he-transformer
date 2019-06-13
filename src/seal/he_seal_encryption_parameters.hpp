@@ -89,7 +89,7 @@ inline ngraph::he::HESealEncryptionParameters default_ckks_parameters() {
   std::vector<std::uint64_t> coeff_modulus;
 
   size_t poly_modulus_degree = 1024;
-  size_t security_level = 128;
+  size_t security_level = 0;  // No enforced security level
 
   std::vector<seal::SmallModulus> small_mods =
       seal::CoeffModulus::Create(poly_modulus_degree, {30, 30, 30, 30});
