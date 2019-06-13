@@ -18,7 +18,7 @@
 cmake_minimum_required (VERSION 3.10)
 
 # Global project name
-project (he-transformer LANGUAGES CXX C)
+project (he_transformer LANGUAGES CXX C)
 
 # CXX flags
 if(DEFINED CMAKE_CXX_CLAGS)

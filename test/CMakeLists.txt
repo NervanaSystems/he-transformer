@@ -19,11 +19,9 @@ include_directories(SYSTEM
     ${NGRAPH_INCLUDE_DIR}
     ${NGRAPH_TEST_DIR}
     ${HE_TRANSFORMER_SOURCE_DIR}
-    ${EXTERNAL_INSTALL_INCLUDE_DIR}
 )
 link_directories(
     ${NGRAPH_LIB_DIR}
-    ${EXTERNAL_INSTALL_LIB_DIR}
 )
 
 set (SRC
@@ -83,14 +81,12 @@ add_executable(unit-test ${SRC})
 include_directories(SYSTEM
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${HE_TRANSFORMER_SOURCE_DIR}
-    ${EXTERNAL_INSTALL_INCLUDE_DIR}
     ${NGRAPH_TEST_UTIL_INCLUDE_DIR}
     ${NGRAPH_TF_INCLUDE_DIR}
 )
 
 link_directories(
     ${NGRAPH_LIB_DIR}
-    ${EXTERNAL_INSTALL_LIB_DIR}
     ${NGRAPH_TF_LIB_DIR}
 )
 

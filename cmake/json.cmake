@@ -22,7 +22,7 @@ include(ExternalProject)
 #------------------------------------------------------------------------------
 
 SET(JSON_GIT_REPO_URL https://github.com/nlohmann/json)
-SET(JSON_GIT_LABEL v3.4.0)
+SET(JSON_GIT_LABEL v3.5.0)
 
 ExternalProject_Add(
     ext_json
@@ -40,14 +40,6 @@ ExternalProject_Add(
 #------------------------------------------------------------------------------
 
 ExternalProject_Get_Property(ext_json SOURCE_DIR)
-set(JSON_INCLUDE_DIR ${SOURCE_DIR}/include)
 add_library(libjson INTERFACE)
 target_include_directories(libjson SYSTEM INTERFACE ${SOURCE_DIR}/include)
 add_dependencies(libjson ext_json)
-
-message("Installing json files from ${JSON_INCLUDE_DIR} to ${EXTERNAL_INSTALL_INCLUDE_DIR}")
-install(DIRECTORY ${JSON_INCLUDE_DIR}/
-        DESTINATION ${EXTERNAL_INSTALL_INCLUDE_DIR}
-        FILES_MATCHING
-        PATTERN "*.hpp"
-        PATTERN "*.h")
