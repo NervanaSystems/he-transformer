@@ -673,6 +673,22 @@ void ngraph::he::HESealExecutable::generate_calls(
   auto lazy_rescaling = [this](auto& cipher_tensor) {
     typedef std::chrono::high_resolution_clock Clock;
     auto t1 = Clock::now();
+    size_t new_chain_index = std::numeric_limits<size_t>::max();
+    if (cipher_tensor->num_ciphertexts() > 0) {
+      if (!cipher_tensor->get_element(0)->is_zero()) {
+        new_chain_index =
+            get_chain_index(cipher_tensor->get_element(0)->ciphertext(),
+                            m_he_seal_backend) -
+            1;
+      }
+    }
+    if (new_chain_index == 0) {
+      NGRAPH_INFO << "Skipping rescaling to chain index 0";
+      return;
+    }
+    if (new_chain_index != std::numeric_limits<size_t>::max()) {
+      NGRAPH_INFO << "New chain index " << new_chain_index;
+    }
 
 #pragma omp parallel for
     for (size_t i = 0; i < cipher_tensor->num_ciphertexts(); ++i) {
@@ -682,16 +698,7 @@ void ngraph::he::HESealExecutable::generate_calls(
             cipher->ciphertext());
       }
     }
-    NGRAPH_INFO << "cipher_tensor->num_ciphertexts()"
-                << cipher_tensor->num_ciphertexts();
-    if (cipher_tensor->num_ciphertexts() > 0) {
-      if (!cipher_tensor->get_element(0)->is_zero()) {
-        NGRAPH_INFO << "New chain_index "
-                    << get_chain_index(
-                           cipher_tensor->get_element(0)->ciphertext(),
-                           m_he_seal_backend);
-      }
-    }
+
     auto t2 = Clock::now();
     NGRAPH_INFO << "Rescale_xxx took "
                 << std::chrono::duration_cast<std::chrono::milliseconds>(t2 -

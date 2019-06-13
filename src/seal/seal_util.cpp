@@ -106,7 +106,8 @@ void ngraph::he::encode(double value, double scale,
   if (coeff_bit_count >= context_data.total_coeff_modulus_bit_count()) {
 #pragma omp critical
     {
-      NGRAPH_INFO << "Failed to encode " << value << " at scale " << scale;
+      NGRAPH_INFO << "Failed to encode " << value / scale << " at scale "
+                  << scale;
       NGRAPH_INFO << "coeff_bit_count " << coeff_bit_count;
       NGRAPH_INFO << "coeff_mod_count " << coeff_mod_count;
       NGRAPH_INFO << "total coeff modulus bit count "
@@ -326,7 +327,7 @@ void ngraph::he::multiply_plain_inplace(seal::Ciphertext& encrypted,
   for (size_t i = 0; i < encrypted_ntt_size; i++) {
     for (size_t j = 0; j < coeff_mod_count; j++) {
       // Multiply by scalar instead of doing dyadic product
-      if (coeff_modulus[i].value() < (1 << 30)) {
+      if (coeff_modulus[i].value() < (1 << 31)) {
         const std::uint64_t modulus_value = coeff_modulus[j].value();
         auto iter = barrett64_ratio_map.find(modulus_value);
         NGRAPH_CHECK(iter != barrett64_ratio_map.end(), "Modulus value ",

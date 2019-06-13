@@ -4,8 +4,8 @@
   "security_level": 128,
   "coeff_modulus": [
     30,
-    24,
-    24,
+    22,
+    22,
     30
   ]
 }
