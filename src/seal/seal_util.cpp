@@ -70,7 +70,7 @@ void ngraph::he::encode(double value, double scale,
                         seal::MemoryPoolHandle pool) {
   // Verify parameters.
   auto context = he_seal_backend.get_context();
-  auto context_data_ptr = context->context_data(parms_id);
+  auto context_data_ptr = context->get_context_data(parms_id);
   if (!context_data_ptr) {
     throw ngraph_error("parms_id is not valid for encryption parameters");
   }
@@ -242,10 +242,10 @@ void ngraph::he::add_plain_inplace(seal::Ciphertext& encrypted, double value,
                                    const HESealBackend& he_seal_backend) {
   // Verify parameters.
   auto context = he_seal_backend.get_context();
-  if (!encrypted.is_metadata_valid_for(context)) {
+  if (!seal::is_metadata_valid_for(encrypted, context)) {
     throw ngraph_error("encrypted is not valid for encryption parameters");
   }
-  auto& context_data = *context->context_data(encrypted.parms_id());
+  auto& context_data = *context->get_context_data(encrypted.parms_id());
   auto& parms = context_data.parms();
 
   NGRAPH_CHECK(parms.scheme() == seal::scheme_type::CKKS,
@@ -269,7 +269,7 @@ void ngraph::he::add_plain_inplace(seal::Ciphertext& encrypted, double value,
   // Encode
   std::vector<std::uint64_t> plaintext_vals(coeff_mod_count, 0);
   double scale = encrypted.scale();
-  ngraph::he::encode(value, scale, parms.parms_id(), plaintext_vals,
+  ngraph::he::encode(value, scale, encrypted.parms_id(), plaintext_vals,
                      he_seal_backend);
 
   for (size_t j = 0; j < coeff_mod_count; j++) {
@@ -297,10 +297,10 @@ void ngraph::he::multiply_plain_inplace(seal::Ciphertext& encrypted,
                                         seal::MemoryPoolHandle pool) {
   // Verify parameters.
   auto context = he_seal_backend.get_context();
-  if (!encrypted.is_metadata_valid_for(context)) {
+  if (!seal::is_metadata_valid_for(encrypted, context)) {
     throw ngraph_error("encrypted is not valid for encryption parameters");
   }
-  if (!context->context_data(encrypted.parms_id())) {
+  if (!context->get_context_data(encrypted.parms_id())) {
     throw ngraph_error("encrypted is not valid for encryption parameters");
   }
   if (!encrypted.is_ntt_form()) {
@@ -311,7 +311,7 @@ void ngraph::he::multiply_plain_inplace(seal::Ciphertext& encrypted,
   }
 
   // Extract encryption parameters.
-  auto& context_data = *context->context_data(encrypted.parms_id());
+  auto& context_data = *context->get_context_data(encrypted.parms_id());
   auto& parms = context_data.parms();
   auto& coeff_modulus = parms.coeff_modulus();
   size_t coeff_count = parms.poly_modulus_degree();
@@ -328,7 +328,7 @@ void ngraph::he::multiply_plain_inplace(seal::Ciphertext& encrypted,
   // TODO: explore using different scales! Smaller scales might reduce # of
   // rescalings
   double scale = encrypted.scale();
-  ngraph::he::encode(value, scale, parms.parms_id(), plaintext_vals,
+  ngraph::he::encode(value, scale, encrypted.parms_id(), plaintext_vals,
                      he_seal_backend);
 
   double new_scale = scale * scale;

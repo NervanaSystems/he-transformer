@@ -21,7 +21,7 @@ include(ExternalProject)
 set(SEAL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ext_seal)
 set(SEAL_SRC_DIR ${SEAL_PREFIX}/src/ext_seal/native/src)
 SET(SEAL_REPO_URL https://github.com/Microsoft/SEAL.git)
-SET(SEAL_GIT_TAG origin/3.2.0)
+SET(SEAL_GIT_TAG origin/3.3.0)
 
 set(SEAL_USE_CXX17 ON)
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")

@@ -55,7 +55,7 @@ void ngraph::he::HESealClient::set_seal_context() {
   print_seal_context(*m_context);
 
   m_keygen = std::make_shared<seal::KeyGenerator>(m_context);
-  m_relin_keys = std::make_shared<seal::RelinKeys>(m_keygen->relin_keys(60));
+  m_relin_keys = std::make_shared<seal::RelinKeys>(m_keygen->relin_keys());
   m_public_key = std::make_shared<seal::PublicKey>(m_keygen->public_key());
   m_secret_key = std::make_shared<seal::SecretKey>(m_keygen->secret_key());
   m_encryptor = std::make_shared<seal::Encryptor>(m_context, *m_public_key);
@@ -67,9 +67,9 @@ void ngraph::he::HESealClient::set_seal_context() {
   // Encoder
   m_ckks_encoder = std::make_shared<seal::CKKSEncoder>(m_context);
 
-  auto m_context_data = m_context->context_data();
-  m_scale = static_cast<double>(
-      m_context_data->parms().coeff_modulus().back().value());
+  // TODO: pick better scale?
+  m_scale =
+      static_cast<double>(m_encryption_params.coeff_modulus().back().value());
 }
 
 void ngraph::he::HESealClient::handle_message(

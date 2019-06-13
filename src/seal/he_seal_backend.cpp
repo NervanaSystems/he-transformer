@@ -47,16 +47,32 @@ ngraph::he::HESealBackend::HESealBackend()
 ngraph::he::HESealBackend::HESealBackend(
     const ngraph::he::HESealEncryptionParameters& parms)
     : m_encryption_params(parms) {
-  m_context = seal::SEALContext::Create(parms.seal_encryption_parameters());
+  // TODO: enfore security level!
+
+  seal::sec_level_type sec_level = seal::sec_level_type::none;
+  if (parms.security_level() == 128) {
+    sec_level = seal::sec_level_type::tc128;
+  } else if (parms.security_level() == 192) {
+    sec_level = seal::sec_level_type::tc192;
+  } else if (parms.security_level() == 256) {
+    sec_level = seal::sec_level_type::tc256;
+  } else if (parms.security_level() == 0) {
+    NGRAPH_WARN
+        << "Parameter selection does not enforce minimum security level";
+  } else {
+    throw ngraph_error("Invalid security level");
+  }
+
+  m_context = seal::SEALContext::Create(parms.seal_encryption_parameters(),
+                                        true, sec_level);
 
   print_seal_context(*m_context);
 
-  auto context_data = m_context->context_data();
+  auto context_data = m_context->key_context_data();
 
   // Keygen, encryptor and decryptor
   m_keygen = std::make_shared<seal::KeyGenerator>(m_context);
-  m_relin_keys = std::make_shared<seal::RelinKeys>(m_keygen->relin_keys(
-      m_encryption_params.evaluation_decomposition_bit_count()));
+  m_relin_keys = std::make_shared<seal::RelinKeys>(m_keygen->relin_keys());
   m_public_key = std::make_shared<seal::PublicKey>(m_keygen->public_key());
   m_secret_key = std::make_shared<seal::SecretKey>(m_keygen->secret_key());
   m_encryptor = std::make_shared<seal::Encryptor>(m_context, *m_public_key);
@@ -65,6 +81,7 @@ ngraph::he::HESealBackend::HESealBackend(
   // Evaluator
   m_evaluator = std::make_shared<seal::Evaluator>(m_context);
 
+  // TODO: pick smaller scale!
   m_scale =
       static_cast<double>(context_data->parms().coeff_modulus().back().value());
 
@@ -218,10 +235,8 @@ void ngraph::he::HESealBackend::decrypt(
     ngraph::he::HEPlaintext& output,
     const ngraph::he::SealCiphertextWrapper& input) const {
   if (input.is_zero()) {
-    // TOOD: refine?
-    const size_t slots =
-        m_context->context_data()->parms().poly_modulus_degree() / 2;
-    output.values() = std::vector<float>(slots, 0);
+    const size_t slot_count = m_ckks_encoder->slot_count();
+    output.values() = std::vector<float>(slot_count, 0);
   } else {
     auto plaintext_wrapper = SealPlaintextWrapper(input.complex_packing());
     m_decryptor->decrypt(input.ciphertext(), plaintext_wrapper.plaintext());
@@ -265,19 +280,19 @@ void ngraph::he::HESealBackend::encode(
     double scale, bool complex_packing) const {
   std::vector<double> double_vals(plaintext.values().begin(),
                                   plaintext.values().end());
-  const size_t slots =
-      m_context->context_data()->parms().poly_modulus_degree() / 2;
+  const size_t slot_count = m_ckks_encoder->slot_count();
 
   if (complex_packing) {
     std::vector<std::complex<double>> complex_vals;
     if (double_vals.size() == 1) {
       std::complex<double> val(double_vals[0], double_vals[0]);
-      complex_vals = std::vector<std::complex<double>>(slots, val);
+      complex_vals = std::vector<std::complex<double>>(slot_count, val);
     } else {
       real_vec_to_complex_vec(complex_vals, double_vals);
     }
-    NGRAPH_CHECK(complex_vals.size() <= slots, "Cannot encode ",
-                 complex_vals.size(), " elements, maximum size is ", slots);
+    NGRAPH_CHECK(complex_vals.size() <= slot_count, "Cannot encode ",
+                 complex_vals.size(), " elements, maximum size is ",
+                 slot_count);
     m_ckks_encoder->encode(complex_vals, parms_id, scale,
                            destination.plaintext());
   } else {
@@ -286,8 +301,9 @@ void ngraph::he::HESealBackend::encode(
       m_ckks_encoder->encode(double_vals[0], parms_id, scale,
                              destination.plaintext());
     } else {
-      NGRAPH_CHECK(double_vals.size() <= slots, "Cannot encode ",
-                   double_vals.size(), " elements, maximum size is ", slots);
+      NGRAPH_CHECK(double_vals.size() <= slot_count, "Cannot encode ",
+                   double_vals.size(), " elements, maximum size is ",
+                   slot_count);
       m_ckks_encoder->encode(double_vals, parms_id, scale,
                              destination.plaintext());
     }
