@@ -81,12 +81,7 @@ ngraph::he::HESealBackend::HESealBackend(
 
   // TODO: pick smaller scale!
   auto coeff_moduli = context_data->parms().coeff_modulus();
-  if (coeff_moduli.size() > 1) {
-    m_scale =
-        static_cast<double>(coeff_moduli[coeff_moduli.size() - 2].value());
-  } else {
-    m_scale = static_cast<double>(coeff_moduli.back().value());
-  }
+  m_scale = ngraph::he::choose_scale(coeff_moduli);
   NGRAPH_INFO << "Scale " << m_scale;
 
   // Encoder

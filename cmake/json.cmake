@@ -44,3 +44,10 @@ set(JSON_INCLUDE_DIR ${SOURCE_DIR}/include)
 add_library(libjson INTERFACE)
 target_include_directories(libjson SYSTEM INTERFACE ${SOURCE_DIR}/include)
 add_dependencies(libjson ext_json)
+
+message("Installing json files from ${JSON_INCLUDE_DIR} to ${EXTERNAL_INSTALL_INCLUDE_DIR}")
+install(DIRECTORY ${JSON_INCLUDE_DIR}/
+        DESTINATION ${EXTERNAL_INSTALL_INCLUDE_DIR}
+        FILES_MATCHING
+        PATTERN "*.hpp"
+        PATTERN "*.h")

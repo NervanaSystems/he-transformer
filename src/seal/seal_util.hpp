@@ -27,6 +27,15 @@
 
 namespace ngraph {
 namespace he {
+inline double choose_scale(
+    const std::vector<seal::SmallModulus>& coeff_moduli) {
+  if (coeff_moduli.size() > 1) {
+    return static_cast<double>(coeff_moduli[coeff_moduli.size() - 2].value());
+  } else {
+    return static_cast<double>(coeff_moduli.back().value());
+  }
+}
+
 inline size_t get_chain_index(const SealCiphertextWrapper& cipher,
                               const HESealBackend& he_seal_backend) {
   size_t chain_ind = he_seal_backend.get_context()

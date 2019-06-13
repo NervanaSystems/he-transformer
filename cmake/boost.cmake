@@ -22,6 +22,7 @@ ExternalProject_Add(
     ext_boost
     PREFIX boost
     URL ${BOOST_REPO_URL}
+    URL_HASH SHA256=9a2c2819310839ea373f42d69e733c339b4e9a19deab6bfec448281554aa4dbb
     # Disable install step
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""

@@ -34,6 +34,9 @@ SET(NGRAPH_TF_LIB_DIR ${NGRAPH_TF_ARTIFACTS_DIR}/lib)
 
 SET(NGRAPH_TEST_UTIL_INCLUDE_DIR ${NGRAPH_TF_BUILD_DIR}/ngraph/test)
 
+message("NGRAPH_TF_VENV_LIB_DIR ${NGRAPH_TF_VENV_LIB_DIR}")
+message("NGRAPH_TF_LIB_DIR ${NGRAPH_TF_LIB_DIR}")
+
 if (USE_PREBUILT_TF)
     message(STATUS "Using prebuilt TF")
     ExternalProject_Add(
@@ -63,3 +66,18 @@ else()
         INSTALL_COMMAND ln -fs ${NGRAPH_TF_VENV_DIR} ${EXTERNAL_INSTALL_DIR}
 )
 endif()
+
+message("Copying files from ${NGRAPH_TF_LIB_DIR} to ${EXTERNAL_INSTALL_LIB_DIR}")
+install(DIRECTORY ${NGRAPH_TF_LIB_DIR}/
+        DESTINATION ${EXTERNAL_INSTALL_LIB_DIR}
+        FILES_MATCHING
+        PATTERN "*.so"
+        PATTERN "*.so.*"
+        PATTERN "*.a")
+
+message("Copying TF files from ${NGRAPH_TF_INCLUDE_DIR} to ${EXTERNAL_INSTALL_INCLUDE_DIR}")
+install(DIRECTORY ${NGRAPH_TF_INCLUDE_DIR}/
+        DESTINATION ${EXTERNAL_INSTALL_INCLUDE_DIR}
+        FILES_MATCHING
+        PATTERN "*.h"
+        PATTERN "*.hpp")

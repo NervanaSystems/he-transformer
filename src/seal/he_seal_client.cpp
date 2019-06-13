@@ -68,8 +68,8 @@ void ngraph::he::HESealClient::set_seal_context() {
   m_ckks_encoder = std::make_shared<seal::CKKSEncoder>(m_context);
 
   // TODO: pick better scale?
-  m_scale =
-      static_cast<double>(m_encryption_params.coeff_modulus().back().value());
+  m_scale = ngraph::he::choose_scale(m_encryption_params.coeff_modulus());
+  NGRAPH_INFO << "Client scale " << m_scale;
 }
 
 void ngraph::he::HESealClient::handle_message(

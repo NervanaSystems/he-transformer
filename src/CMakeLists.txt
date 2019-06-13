@@ -76,22 +76,7 @@ message("NGRAPH_TF_LIB_DIR ${NGRAPH_TF_LIB_DIR}")
 install(TARGETS he_seal_backend DESTINATION ${EXTERNAL_INSTALL_LIB_DIR})
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-        DESTINATION ${HE_INSTALL_INCLUDE_DIR}
-        FILES_MATCHING
-        PATTERN "*.hpp"
-        PATTERN "*.h")
-
-message("Installing TF files from ${NGRAPH_TF_INCLUDE_DIR} to ${HE_INSTALL_INCLUDE_DIR}")
-install(DIRECTORY ${NGRAPH_TF_INCLUDE_DIR}/
-        DESTINATION ${HE_INSTALL_INCLUDE_DIR}
-        FILES_MATCHING
-        PATTERN "*.hpp"
-        PATTERN "*.h")
-
-# TODO: cleanup
-message("Installing json files from ${JSON_INCLUDE_DIR} to ${HE_INSTALL_INCLUDE_DIR}")
-install(DIRECTORY ${JSON_INCLUDE_DIR}/
-        DESTINATION ${HE_INSTALL_INCLUDE_DIR}
+        DESTINATION ${EXTERNAL_INSTALL_INCLUDE_DIR}
         FILES_MATCHING
         PATTERN "*.hpp"
         PATTERN "*.h")
