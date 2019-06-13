@@ -43,10 +43,11 @@ def read_pb_file(filename):
 
 
 def get_test_image():
-    # https://www.tensorflow.org/tutorials/images/hub_with_keras
-    # https://storage.googleapis.com/download.tensorflow.org/example_images/grace_hopper.jpg
-    filename = './images/grace_hopper.jpg'
-    grace_hopper = Image.open(filename).resize((96, 96))
+    grace_hopper = tf.keras.utils.get_file(
+        'grace_hopper.jpg',
+        'https://storage.googleapis.com/download.tensorflow.org/example_images/grace_hopper.jpg'
+    )
+    grace_hopper = Image.open(grace_hopper).resize((96, 96))
     grace_hopper = np.array(grace_hopper) / 255.0
     print(grace_hopper.shape)
 
