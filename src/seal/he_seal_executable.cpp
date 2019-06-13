@@ -682,9 +682,16 @@ void ngraph::he::HESealExecutable::generate_calls(
             cipher->ciphertext());
       }
     }
-    NGRAPH_INFO << "New chain_index "
-                << get_chain_index(cipher_tensor->get_element(0)->ciphertext(),
-                                   m_he_seal_backend);
+    NGRAPH_INFO << "cipher_tensor->num_ciphertexts()"
+                << cipher_tensor->num_ciphertexts();
+    if (cipher_tensor->num_ciphertexts() > 0) {
+      if (!cipher_tensor->get_element(0)->is_zero()) {
+        NGRAPH_INFO << "New chain_index "
+                    << get_chain_index(
+                           cipher_tensor->get_element(0)->ciphertext(),
+                           m_he_seal_backend);
+      }
+    }
     auto t2 = Clock::now();
     NGRAPH_INFO << "Rescale_xxx took "
                 << std::chrono::duration_cast<std::chrono::milliseconds>(t2 -
