@@ -33,6 +33,14 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -O0 -g")
 
 set(CMAKE_INSTALL_MESSAGE LAZY)
 
+if (CMAKE_BUILD_TYPE)
+    set(RELEASE_TYPES Debug Release RelWithDebInfo MinSizeRel)
+    list(FIND RELEASE_TYPES ${CMAKE_BUILD_TYPE} INDEX_FOUND)
+    if (${INDEX_FOUND} EQUAL -1)
+        message(FATAL_ERROR "CMAKE_BUILD_TYPE must be one of Debug, Release, RelWithDebInfo, or MinSizeRel")
+    endif()
+endif()
+
 include(cmake/sdl.cmake)
 
 # These variables are undocumented but useful.
