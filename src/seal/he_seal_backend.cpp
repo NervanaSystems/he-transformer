@@ -80,14 +80,20 @@ ngraph::he::HESealBackend::HESealBackend(
   m_evaluator = std::make_shared<seal::Evaluator>(m_context);
 
   // TODO: pick smaller scale!
-  m_scale =
-      static_cast<double>(context_data->parms().coeff_modulus().back().value());
+  auto coeff_moduli = context_data->parms().coeff_modulus();
+  if (coeff_moduli.size() > 1) {
+    m_scale =
+        static_cast<double>(coeff_moduli[coeff_moduli.size() - 2].value());
+  } else {
+    m_scale = static_cast<double>(coeff_moduli.back().value());
+  }
+  NGRAPH_INFO << "Scale " << m_scale;
 
   // Encoder
   m_ckks_encoder = std::make_shared<seal::CKKSEncoder>(m_context);
 
-  for (const seal::SmallModulus& modulus :
-       context_data->parms().coeff_modulus()) {
+  // Set barrett ratio map
+  for (const seal::SmallModulus& modulus : coeff_moduli) {
     const std::uint64_t modulus_value = modulus.value();
     if (modulus_value < (1 << 30)) {
       std::uint64_t numerator[3]{0, 1};
