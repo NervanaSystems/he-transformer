@@ -607,6 +607,7 @@ bool ngraph::he::HESealExecutable::call(
     const std::string op_name = op->description();
 
     // delete any obsolete tensors
+    // TODO: investigate HE_SEAL.bounded_relu_fusion AddressSanitizer complaint
     for (const descriptor::Tensor* t : op->liveness_free_list) {
       for (auto it = tensor_map.begin(); it != tensor_map.end(); ++it) {
         if (it->second->get_name() == t->get_name()) {
