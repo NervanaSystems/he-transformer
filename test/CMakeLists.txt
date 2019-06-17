@@ -14,15 +14,15 @@
 # limitations under the License.
 # ******************************************************************************
 
-include_directories(SYSTEM
-    ${GTEST_INCLUDE_DIR}
-    ${NGRAPH_INCLUDE_DIR}
-    ${NGRAPH_TEST_DIR}
-    ${HE_TRANSFORMER_SOURCE_DIR}
-)
-link_directories(
-    ${NGRAPH_LIB_DIR}
-)
+#include_directories(SYSTEM
+#    ${GTEST_INCLUDE_DIR}
+#    ${NGRAPH_INCLUDE_DIR}
+#    ${NGRAPH_TEST_DIR}
+#    ${HE_TRANSFORMER_SOURCE_DIR}
+#)
+#link_directories(
+#    ${NGRAPH_LIB_DIR}
+#)
 
 set (SRC
     main.cpp
@@ -98,7 +98,6 @@ get_property(includes
         TARGET ngraph_test_util
         PROPERTY INCLUDE_DIRECTORIES
         )
-
 message(STATUS "Included directories for target ${target_name}")
 foreach (dir ${includes})
     message(STATUS "  - ${dir}")

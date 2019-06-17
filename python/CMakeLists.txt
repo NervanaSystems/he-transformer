@@ -48,21 +48,20 @@ get_directory_property( DirDefs DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITION
 message("DirDefs ${DirDefs}")
 message("PROJECT_ROOT_DIR ${PROJECT_ROOT_DIR}")
 
-# Hack to install files for python
-message("Hack install to EXTERNAL_INSTALL_INCLUDE_DIR ${EXTERNAL_INSTALL_INCLUDE_DIR}")
+# Hack to install files for python wheel
+# When specifying DESTDIR in custom command, this will change the destination
+# to DESTDIR, rather than EXTERNAL_INSTALL_INCLUDE_DIR
 install(DIRECTORY ${EXTERNAL_INSTALL_INCLUDE_DIR}/
         DESTINATION ${EXTERNAL_INSTALL_INCLUDE_DIR}
         FILES_MATCHING
         PATTERN "*.hpp"
         PATTERN "*.h")
-
 add_custom_command(
         OUTPUT ${CMAKE_BINARY_DIR}/python/dist/
         POST_BUILD
         DEPENDS he_seal_backend
         #WORKING_DIR ${CMAKE_CURRENT_BINARY_DIR}
         COMMAND VERBOSE=1 make -C ../ DESTDIR=python/_install install && bash build_wheel.sh
-        #COMMAND bash build_wheel.sh
 )
 
 add_custom_target(python_wheel DEPENDS he_seal_backend

@@ -50,7 +50,8 @@ ngraph::he::HESealClient::HESealClient(const std::string& hostname,
 }
 
 void ngraph::he::HESealClient::set_seal_context() {
-  m_context = seal::SEALContext::Create(m_encryption_params);
+  m_context = seal::SEALContext::Create(m_encryption_params, true,
+                                        seal::sec_level_type::none);
 
   print_seal_context(*m_context);
 
