@@ -71,6 +71,12 @@ message("NGRAPH_TF_LIB_DIR ${NGRAPH_TF_LIB_DIR}")
 # Install he-transformer (the HE libraries are installed separately) at `make install`
 install(TARGETS he_seal_backend DESTINATION ${EXTERNAL_INSTALL_LIB_DIR})
 
+message("Copying CMAKE_CURRENT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} to ${EXTERNAL_INSTALL_INCLUDE_DIR}")
+
+message("PROJECT_ROOT_DIR ${PROJECT_ROOT_DIR}")
+message("COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}")
+
+
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
         DESTINATION ${EXTERNAL_INSTALL_INCLUDE_DIR}
         FILES_MATCHING

@@ -47,7 +47,10 @@ include(cmake/sdl.cmake)
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
-add_definitions(-DPROJECT_ROOT_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+# For ngraph/log
+set(PROJECT_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+
+add_compile_definitions(PROJECT_ROOT_DIR="${PROJECT_ROOT_DIR}")
 
 # This allows libhe_backend.so to find libraries in the same directory
 set(CMAKE_INSTALL_RPATH "\$ORIGIN")
@@ -94,6 +97,7 @@ set_target_properties(ngraph PROPERTIES INCLUDE_DIRECTORIES ${NGRAPH_TF_INCLUDE_
 # HE transformer source and test directories
 add_subdirectory(src)
 add_subdirectory(test)
+
 
 # For python bindings
 add_subdirectory(python)

@@ -5,7 +5,7 @@ import setuptools
 import os
 
 # TODO: get from environment
-__version__ = '0.0.0.dev'
+__version__ = '0.0.0.dev0'
 
 PYNGRAPH_ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
 BOOST_ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -20,7 +20,7 @@ def find_he_transformer_dist_dir():
         print('Must set NGRAPH_HE_BUILD_PATH')
         sys.exit(1)
 
-    found = os.path.exists(os.path.join(ngraph_he_dist_dir, 'include'))
+    found = True  #os.path.exists(os.path.join(ngraph_he_dist_dir, 'include'))
 
     if not found:
         print(
@@ -86,6 +86,15 @@ def find_c_compiler():
         return 'CC'
 
 
+def find_project_root_dir():
+    """Returns PROJECT_ROOT_DIR"""
+    if os.environ.get("PROJECT_ROOT_DIR"):
+        return os.environ.get("PROJECT_ROOT_DIR")
+    else:
+        print('Cannot find PROJECT_ROOT_DIR')
+        sys.exit(1)
+
+
 os.environ["CXX"] = find_cxx_compiler()
 os.environ["CC"] = find_c_compiler()
 
@@ -94,11 +103,13 @@ NGRAPH_HE_DIST_DIR = find_he_transformer_dist_dir()
 NGRAPH_HE_INCLUDE_DIR = os.path.join(NGRAPH_HE_DIST_DIR, 'include')
 NGRAPH_HE_LIB_DIR = os.path.join(NGRAPH_HE_DIST_DIR, 'lib')
 BOOST_INCLUDE_DIR = find_boost_headers_dir()
+PROJECT_ROOT_DIR = find_project_root_dir()
 
 print('NGRAPH_HE_DIST_DIR', NGRAPH_HE_DIST_DIR)
 print('NGRAPH_HE_LIB_DIR ', NGRAPH_HE_LIB_DIR)
 print('NGRAPH_HE_INCLUDE_DIR', NGRAPH_HE_INCLUDE_DIR)
 print('BOOST_INCLUDE_DIR', BOOST_INCLUDE_DIR)
+print('PROJECT_ROOT_DIR', PROJECT_ROOT_DIR)
 
 include_dirs = [
     PYNGRAPH_ROOT_DIR, NGRAPH_HE_INCLUDE_DIR, PYBIND11_INCLUDE_DIR,
@@ -201,6 +212,9 @@ class BuildExt(build_ext):
             self._add_extra_compile_arg('-flto', ext.extra_compile_args)
             self._add_extra_compile_arg('-fPIC', ext.extra_compile_args)
             self._add_extra_compile_arg('-fopenmp', ext.extra_compile_args)
+            self._add_extra_compile_arg(
+                '-DPROJECT_ROOT_DIR="' + PROJECT_ROOT_DIR + '"',
+                ext.extra_compile_args)
             add_platform_specific_link_args(ext.extra_link_args)
 
             ext.extra_compile_args += ['-Wformat', '-Wformat-security']
