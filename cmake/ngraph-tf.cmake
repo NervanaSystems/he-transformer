@@ -37,35 +37,30 @@ SET(NGRAPH_TEST_UTIL_INCLUDE_DIR ${NGRAPH_TF_BUILD_DIR}/ngraph/test)
 message("NGRAPH_TF_VENV_LIB_DIR ${NGRAPH_TF_VENV_LIB_DIR}")
 message("NGRAPH_TF_LIB_DIR ${NGRAPH_TF_LIB_DIR}")
 
+SET(ng_tf_build_flags "")
 if (USE_PREBUILT_TF)
-    message(STATUS "Using prebuilt TF")
-    ExternalProject_Add(
+        message(STATUS "Using prebuilt TF")
+        set(ng_tf_build_flags "--use_prebuilt_tensorflow")
+else ()
+        message(STATUS "Building TF")
+endif()
+
+ExternalProject_Add(
         ext_ngraph_tf
         GIT_REPOSITORY ${NGRAPH_TF_REPO_URL}
         GIT_TAG ${NGRAPH_TF_GIT_LABEL}
         PREFIX ${NGRAPH_TF_CMAKE_PREFIX}
-        UPDATE_COMMAND ""
         CONFIGURE_COMMAND ""
         BUILD_IN_SOURCE 1
         BUILD_BYPRODUCTS ${NGRAPH_TF_CMAKE_PREFIX}
         BUILD_COMMAND python3 ${NGRAPH_TF_SRC_DIR}/build_ngtf.py --use_prebuilt_tensorflow
         INSTALL_COMMAND ln -fs ${NGRAPH_TF_VENV_DIR} ${EXTERNAL_INSTALL_DIR}
-)
-else()
-    message(STATUS "Rebuilding TF")
-    ExternalProject_Add(
-        ext_ngraph_tf
-        GIT_REPOSITORY ${NGRAPH_TF_REPO_URL}
-        GIT_TAG ${NGRAPH_TF_GIT_LABEL}
-        PREFIX ${NGRAPH_TF_CMAKE_PREFIX}
         UPDATE_COMMAND ""
-        CONFIGURE_COMMAND ""
-        BUILD_IN_SOURCE 1
-        BUILD_BYPRODUCTS ${NGRAPH_TF_CMAKE_PREFIX}
-        BUILD_COMMAND python3 ${NGRAPH_TF_SRC_DIR}/build_ngtf.py
-        INSTALL_COMMAND ln -fs ${NGRAPH_TF_VENV_DIR} ${EXTERNAL_INSTALL_DIR}
 )
-endif()
+
+ExternalProject_Get_Property(ext_ngraph_tf SOURCE_DIR)
+add_library(libngraph_tf INTERFACE)
+add_dependencies(libngraph_tf ext_ngraph_tf)
 
 message("Copying files from ${NGRAPH_TF_LIB_DIR} to ${EXTERNAL_INSTALL_LIB_DIR}")
 install(DIRECTORY ${NGRAPH_TF_LIB_DIR}/

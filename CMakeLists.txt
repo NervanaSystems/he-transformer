@@ -75,6 +75,12 @@ endif()
 message("PYTHON_VENV_VERSION ${PYTHON_VENV_VERSION}")
 
 OPTION(USE_PREBUILT_TF "Skip re-compilation of Tensorflow" OFF)
+OPTION(NGRAPH_HE_SANITIZE_ADDRESS "Enable address sanitizer" OFF)
+
+if(NGRAPH_HE_SANITIZE_ADDRESS)
+    message(STATUS "NGRAPH_HE_SANITIZE_ADDRESS")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fsanitize=address -fno-omit-frame-pointer")
+endif()
 
 include(cmake/ngraph-tf.cmake)
 include(cmake/gtest.cmake)

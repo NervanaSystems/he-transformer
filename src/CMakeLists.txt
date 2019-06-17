@@ -51,16 +51,14 @@ target_include_directories(he_seal_backend PUBLIC
     ${HE_TRANSFORMER_SOURCE_DIR}
     ${EXTERNAL_INSTALL_INCLUDE_DIR}
     ${NGRAPH_TF_INCLUDE_DIR})
-target_link_libraries(he_seal_backend PUBLIC libjson libboost libseal ngraph)
+target_link_libraries(he_seal_backend PUBLIC libjson
+                                             libboost
+                                             libseal
+                                             libngraph_tf
+                                             ngraph)
 
 message("HE_TRANSFORMER_SOURCE_DIR ${HE_TRANSFORMER_SOURCE_DIR}")
 message("EXTERNAL_INSTALL_INCLUDE_DIR ${EXTERNAL_INSTALL_INCLUDE_DIR}")
-
-if(NGRAPH_HE_SANITIZE_ADDRESS)
-    message(STATUS "Enable Address Sanitizer")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fsanitize=address -fno-omit-frame-pointer")
-endif()
-
 # Get library names
 set(HE_SEAL_BACKEND_LIB_NAME "libhe_seal_backend${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
