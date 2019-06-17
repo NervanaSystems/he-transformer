@@ -42,11 +42,12 @@ set (HE_SRC
     seal/he_seal_cipher_tensor.cpp
     seal/he_seal_executable.cpp
     seal/he_seal_backend.cpp
+    seal/he_seal_client.cpp
 )
 
 # Target library
 add_library(he_seal_backend SHARED ${HE_SRC})
-target_include_directories(he_seal_backend PRIVATE
+target_include_directories(he_seal_backend PUBLIC
     ${HE_TRANSFORMER_SOURCE_DIR}
     ${EXTERNAL_INSTALL_INCLUDE_DIR}
     ${NGRAPH_TF_INCLUDE_DIR})

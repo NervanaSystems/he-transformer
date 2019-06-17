@@ -46,10 +46,11 @@ ExternalProject_Add(
    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
    -DCMAKE_INSTALL_MESSAGE=LAZY
    -DSEAL_USE_CXX17=${SEAL_USE_CXX17}
+   # Skip updates
+   UPDATE_COMMAND ""
 )
 
 ExternalProject_Get_Property(ext_seal SOURCE_DIR)
-message("SOURCE_DIR ${SOURCE_DIR}")
-add_library(libseal INTERFACE)
-target_include_directories(libseal SYSTEM INTERFACE ${SOURCE_DIR}/include)
+add_library(libseal SHARED IMPORTED)
+set_target_properties(libseal PROPERTIES IMPORTED_LOCATION ${EXTERNAL_INSTALL_LIB_DIR}/libseal.a)
 add_dependencies(libseal ext_seal)

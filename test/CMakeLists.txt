@@ -78,18 +78,6 @@ endforeach()
 
 add_executable(unit-test ${SRC})
 
-include_directories(SYSTEM
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${HE_TRANSFORMER_SOURCE_DIR}
-    ${NGRAPH_TEST_UTIL_INCLUDE_DIR}
-    ${NGRAPH_TF_INCLUDE_DIR}
-)
-
-link_directories(
-    ${NGRAPH_LIB_DIR}
-    ${NGRAPH_TF_LIB_DIR}
-)
-
 target_include_directories(unit-test PRIVATE ".")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHE_SERIALIZED_ZOO=\\\"${CMAKE_CURRENT_SOURCE_DIR}/model\\\"")
@@ -104,9 +92,24 @@ set_target_properties(
     PROPERTIES IMPORTED_LOCATION
     ${NGRAPH_TF_LIB_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}ngraph_test_util${CMAKE_STATIC_LIBRARY_SUFFIX}
 )
+target_include_directories(ngraph_test_util SYSTEM INTERFACE ${NGRAPH_TF_BUILD_DIR}/ngraph/test/)
 
-target_link_libraries(unit-test libgtest ngraph)
-target_link_libraries(unit-test ngraph_test_util ${CMAKE_DL_LIBS})
-target_link_libraries(unit-test he_seal_backend seal pthread )
+get_property(includes
+        TARGET ngraph_test_util
+        PROPERTY INCLUDE_DIRECTORIES
+        )
 
-add_dependencies(unit-test he_seal_backend ext_seal ext_ngraph_tf ext_gtest)
+message(STATUS "Included directories for target ${target_name}")
+foreach (dir ${includes})
+    message(STATUS "  - ${dir}")
+endforeach()
+
+
+message("NGRAPH_TF_BUILD_DIR ${NGRAPH_TF_BUILD_DIR}")
+
+target_link_libraries(unit-test PRIVATE ngraph_test_util)
+target_link_libraries(unit-test PRIVATE ngraph libgtest)
+target_link_libraries(unit-test PRIVATE ${CMAKE_DL_LIBS})
+target_link_libraries(unit-test PRIVATE he_seal_backend libseal pthread )
+
+#add_dependencies(unit-test he_seal_backend ext_seal ext_ngraph_tf ext_gtest)

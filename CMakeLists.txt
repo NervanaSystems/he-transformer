@@ -60,12 +60,6 @@ set(EXTERNAL_INSTALL_DIR ${CMAKE_BINARY_DIR}/external)
 set(EXTERNAL_INSTALL_LIB_DIR ${EXTERNAL_INSTALL_DIR}/lib)
 set(EXTERNAL_INSTALL_INCLUDE_DIR ${EXTERNAL_INSTALL_DIR}/include)
 
-# Install for he-transformer
-#set(HE_INSTALL_DIR ${CMAKE_INSTALL_PREFIX})
-#message("HE_INSTALL_DIR ${HE_INSTALL_DIR}")
-#set(HE_INSTALL_INCLUDE_DIR "${HE_INSTALL_DIR}/include")
-#set(HE_INSTALL_LIB_DIR "${HE_INSTALL_DIR}/lib")
-
 if(NOT DEFINED EXTERNAL_PROJECTS_ROOT)
     set(EXTERNAL_PROJECTS_ROOT ${CMAKE_CURRENT_BINARY_DIR})
 endif()
@@ -86,6 +80,8 @@ include(cmake/openmp.cmake)
 include(cmake/seal.cmake)
 include(cmake/boost.cmake)
 
+message("ngraph NGRAPH_TF_INCLUDE_DIR ${NGRAPH_TF_INCLUDE_DIR}")
+
 # Add ngraph library
 add_library(ngraph SHARED IMPORTED)
 set_target_properties(
@@ -93,6 +89,7 @@ set_target_properties(
     PROPERTIES IMPORTED_LOCATION
     ${NGRAPH_TF_LIB_DIR}/libngraph.so
 )
+set_target_properties(ngraph PROPERTIES INCLUDE_DIRECTORIES ${NGRAPH_TF_INCLUDE_DIR})
 
 # HE transformer source and test directories
 add_subdirectory(src)
