@@ -44,8 +44,6 @@ message("PYTHON_ARTIFACTS_DIR ${PYTHON_ARTIFACTS_DIR}")
 set(PYTHON_LIB_DIR ${PYTHON_ARTIFACTS_DIR}/lib)
 set(PYTHON_INCLUDE_DIR ${PYTHON_ARTIFACTS_DIR}/include)
 
-get_directory_property( DirDefs DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS )
-message("DirDefs ${DirDefs}")
 message("PROJECT_ROOT_DIR ${PROJECT_ROOT_DIR}")
 
 # Hack to install files for python wheel

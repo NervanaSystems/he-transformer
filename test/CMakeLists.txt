@@ -82,6 +82,9 @@ set_target_properties(
     PROPERTIES IMPORTED_LOCATION
     ${NGRAPH_TF_LIB_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}ngraph_test_util${CMAKE_STATIC_LIBRARY_SUFFIX}
 )
+add_dependencies(ngraph_test_util ext_ngraph_tf)
+# This directory doesn't exist until ngraph-tf builds, so create it here
+file(MAKE_DIRECTORY ${NGRAPH_TF_BUILD_DIR}/ngraph/test/)
 target_include_directories(ngraph_test_util SYSTEM INTERFACE ${NGRAPH_TF_BUILD_DIR}/ngraph/test/)
 
 target_link_libraries(unit-test PRIVATE ngraph_test_util)
