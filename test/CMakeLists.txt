@@ -14,16 +14,6 @@
 # limitations under the License.
 # ******************************************************************************
 
-#include_directories(SYSTEM
-#    ${GTEST_INCLUDE_DIR}
-#    ${NGRAPH_INCLUDE_DIR}
-#    ${NGRAPH_TEST_DIR}
-#    ${HE_TRANSFORMER_SOURCE_DIR}
-#)
-#link_directories(
-#    ${NGRAPH_LIB_DIR}
-#)
-
 set (SRC
     main.cpp
     test_seal.cpp
@@ -94,21 +84,7 @@ set_target_properties(
 )
 target_include_directories(ngraph_test_util SYSTEM INTERFACE ${NGRAPH_TF_BUILD_DIR}/ngraph/test/)
 
-get_property(includes
-        TARGET ngraph_test_util
-        PROPERTY INCLUDE_DIRECTORIES
-        )
-message(STATUS "Included directories for target ${target_name}")
-foreach (dir ${includes})
-    message(STATUS "  - ${dir}")
-endforeach()
-
-
-message("NGRAPH_TF_BUILD_DIR ${NGRAPH_TF_BUILD_DIR}")
-
 target_link_libraries(unit-test PRIVATE ngraph_test_util)
 target_link_libraries(unit-test PRIVATE ngraph libgtest)
 target_link_libraries(unit-test PRIVATE ${CMAKE_DL_LIBS})
-target_link_libraries(unit-test PRIVATE he_seal_backend libseal pthread )
-
-#add_dependencies(unit-test he_seal_backend ext_seal ext_ngraph_tf ext_gtest)
+target_link_libraries(unit-test PRIVATE he_seal_backend libseal pthread)
