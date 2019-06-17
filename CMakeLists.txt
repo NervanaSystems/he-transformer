@@ -98,6 +98,5 @@ set_target_properties(ngraph PROPERTIES INCLUDE_DIRECTORIES ${NGRAPH_TF_INCLUDE_
 add_subdirectory(src)
 add_subdirectory(test)
 
-
 # For python bindings
 add_subdirectory(python)

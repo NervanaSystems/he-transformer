@@ -53,7 +53,6 @@ target_include_directories(he_seal_backend PUBLIC
     ${NGRAPH_TF_INCLUDE_DIR})
 target_link_libraries(he_seal_backend PUBLIC libjson libboost libseal ngraph)
 
-
 message("HE_TRANSFORMER_SOURCE_DIR ${HE_TRANSFORMER_SOURCE_DIR}")
 message("EXTERNAL_INSTALL_INCLUDE_DIR ${EXTERNAL_INSTALL_INCLUDE_DIR}")
 
