@@ -118,7 +118,7 @@ include_dirs = [
 
 library_dirs = [NGRAPH_HE_LIB_DIR]
 
-libraries = ['he_seal_client']
+libraries = ['he_seal_backend']
 
 data_files = [('lib', [(NGRAPH_HE_LIB_DIR + '/' + library)
                        for library in os.listdir(NGRAPH_HE_LIB_DIR)])]
