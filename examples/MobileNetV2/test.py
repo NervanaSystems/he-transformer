@@ -17,7 +17,7 @@
 import tensorflow as tf
 from tensorflow.python.platform import gfile
 import numpy as np
-import ngraph_bridge
+#import ngraph_bridge
 import json
 import argparse
 import os
@@ -144,8 +144,7 @@ def get_validation_images(FLAGS, crop=False):
 
         crop_filename = os.path.join(data_dir, image_prefix + '_crop' + '.png')
         im.save(crop_filename, "PNG")
-
-        im = np.array(im)
+        im = np.array(im, dtype=np.float)
         #print('image', im)
         # Standardize to [-1,1]
         im = im / 128. - 1
@@ -197,13 +196,10 @@ def main(FLAGS):
     config = tf.ConfigProto()
     config.intra_op_parallelism_threads = 44
     config.inter_op_parallelism_threads = 44
-    config_ngraph_enabled = ngraph_bridge.update_config(config)
-    sess = tf.Session(config=config_ngraph_enabled)
+    #config = ngraph_bridge.update_config(config)
+    sess = tf.Session(config=config)
     graph_def = load_model(FLAGS.model)
     tf.import_graph_def(graph_def, name='')
-
-    print('get_currently_set_backend_name',
-          ngraph_bridge.get_currently_set_backend_name())
 
     input_tensor = sess.graph.get_tensor_by_name('input:0')
     output_tensor = sess.graph.get_tensor_by_name(
