@@ -607,10 +607,18 @@ bool ngraph::he::HESealExecutable::call(
     const std::string op_name = op->description();
 
     // delete any obsolete tensors
-    // TODO: investigate HE_SEAL.bounded_relu_fusion AddressSanitizer complaint
     for (const descriptor::Tensor* t : op->liveness_free_list) {
       for (auto it = tensor_map.begin(); it != tensor_map.end(); ++it) {
-        if (it->second->get_name() == t->get_name()) {
+        // Work-around for t->get_name() address-use after free in
+        // HE_SEAL.bounded_relu_fusion test
+        // TODO: remove once ngraph commit #2967 has been integrated?
+        const std::string& it_name = it->second->get_name();
+        if (it_name == "external") {
+          break;
+        } else if (it_name.substr(0, 11) == "BoundedRelu") {
+          tensor_map.erase(it);
+          break;
+        } else if (it_name == t->get_name()) {
           tensor_map.erase(it);
           break;
         }

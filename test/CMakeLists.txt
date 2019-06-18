@@ -18,7 +18,6 @@ set (SRC
     main.cpp
     test_seal.cpp
     test_util.cpp
-    test_tcp_message.cpp
 )
 
 set(ACTIVE_BACKEND_LIST HE_SEAL)
