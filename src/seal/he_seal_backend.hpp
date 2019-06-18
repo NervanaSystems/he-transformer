@@ -58,7 +58,6 @@ class HESealBackend : public ngraph::runtime::Backend {
   HESealBackend(HESealBackend&&) = delete;
   HESealBackend& operator=(const HESealBackend&) = delete;
 
-  ~HESealBackend(){};
   //
   // ngraph backend overrides
   //

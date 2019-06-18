@@ -27,12 +27,14 @@ TEST(seal_example, trivial) {
   EXPECT_EQ(3, a + b);
 }
 
-TEST(seal_example, seal_ckks_basics_i) {
+TEST(seal_example, seal_ckks_basics) {
   using namespace seal;
 
   EncryptionParameters parms(scheme_type::CKKS);
-  parms.set_poly_modulus_degree(8192);
-  parms.set_coeff_modulus(DefaultParams::coeff_modulus_128(8192));
+  size_t poly_modulus_degree = 8192;
+  parms.set_poly_modulus_degree(poly_modulus_degree);
+  parms.set_coeff_modulus(
+      CoeffModulus::Create(poly_modulus_degree, {60, 40, 40, 60}));
 
   auto context = SEALContext::Create(parms);
   // print_parameters(context);
@@ -40,7 +42,7 @@ TEST(seal_example, seal_ckks_basics_i) {
   KeyGenerator keygen(context);
   auto public_key = keygen.public_key();
   auto secret_key = keygen.secret_key();
-  auto relin_keys = keygen.relin_keys(60);
+  auto relin_keys = keygen.relin_keys();
 
   Encryptor encryptor(context, public_key);
   Evaluator evaluator(context);
@@ -50,7 +52,7 @@ TEST(seal_example, seal_ckks_basics_i) {
   vector<double> input{0.0, 1.1, 2.2, 3.3};
 
   Plaintext plain;
-  double scale = pow(2.0, 60);
+  double scale = pow(2.0, 40);
   encoder.encode(input, scale, plain);
 
   Ciphertext encrypted;

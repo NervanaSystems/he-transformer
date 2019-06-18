@@ -37,21 +37,25 @@ std::string join(const T& v, const std::string& sep = ", ") {
 }
 
 inline void print_seal_context(const seal::SEALContext& context) {
-  auto context_data = context.context_data();
-  auto scheme_parms = context_data->parms();
+  auto& context_data = *context.key_context_data();
 
-  assert(scheme_parms.scheme() == seal::scheme_type::CKKS);
+  assert(context_data.parms().scheme() == seal::scheme_type::CKKS);
 
-  std::cout << "/ Encryption parameters:" << std::endl
-            << "| scheme: CKKS" << std::endl
-            << "| poly_modulus: " << scheme_parms.poly_modulus_degree()
-            << std::endl
-            // Print the size of the true (product) coefficient modulus
-            << "| coeff_modulus size: "
-            << context_data->total_coeff_modulus_bit_count() << " bits"
-            << std::endl
-            << "\\ noise_standard_deviation: "
-            << scheme_parms.noise_standard_deviation() << std::endl;
+  std::cout << "/" << std::endl;
+  std::cout << "| Encryption parameters :" << std::endl;
+  std::cout << "|   scheme: CKKS" << std::endl;
+  std::cout << "|   poly_modulus_degree: "
+            << context_data.parms().poly_modulus_degree() << std::endl;
+  std::cout << "|   coeff_modulus size: ";
+  std::cout << context_data.total_coeff_modulus_bit_count() << " (";
+  auto coeff_modulus = context_data.parms().coeff_modulus();
+  std::size_t coeff_mod_count = coeff_modulus.size();
+  for (std::size_t i = 0; i < coeff_mod_count - 1; i++) {
+    std::cout << coeff_modulus[i].bit_count() << " + ";
+  }
+  std::cout << coeff_modulus.back().bit_count();
+  std::cout << ") bits" << std::endl;
+  std::cout << "\\" << std::endl;
 }
 
 // Packs elements of input into real values

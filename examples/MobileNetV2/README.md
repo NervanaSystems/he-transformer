@@ -36,7 +36,7 @@ pip install pillow
       NGRAPH_ENABLE_CLIENT=1 \
       NGRAPH_ENCRYPT_DATA=1 \
       NGRAPH_BATCH_DATA=1 \
-      NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N13_L4.json \
+      NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
       NGRAPH_TF_BACKEND=HE_SEAL \
       python test.py
       ```
@@ -61,18 +61,18 @@ NGRAPH_TF_BACKEND=HE_SEAL python test.py
 ```bash
 NGRAPH_ENCRYPT_DATA=1 \
 NGRAPH_BATCH_DATA=1 \
-NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N13_L4.json \
+NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
 NGRAPH_TF_BACKEND=HE_SEAL \
 python test.py
 ```
 
-## Smaller parameters
+# Fastest
 For faster runtime, try
 ```bash
-NGRAPH_ENABLE_CLIENT=1 \
+OMP_NUM_THREADS=56 \
 NGRAPH_ENCRYPT_DATA=1 \
 NGRAPH_BATCH_DATA=1 \
-NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4_27bits.json \
+NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
 NGRAPH_TF_BACKEND=HE_SEAL \
 python test.py
 ```

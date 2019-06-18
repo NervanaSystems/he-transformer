@@ -26,7 +26,7 @@ The [examples](https://github.com/NervanaSystems/he-transformer/tree/master/exam
 #### The following dependencies are built automatically
 - [nGraph](https://github.com/NervanaSystems/ngraph) - v0.19.1
 - [nGraph-tf](https://github.com/tensorflow/ngraph-bridge) - v0.14.0
-- [SEAL](https://github.com/Microsoft/SEAL) - v3.2
+- [SEAL](https://github.com/Microsoft/SEAL) - v3.3
 - [TensorFlow](https://github.com/tensorflow/tensorflow) - v1.13.1
 - Boost 1.69
 
@@ -50,19 +50,19 @@ cd he-transformer
 export HE_TRANSFORMER=$(pwd)
 mkdir build
 cd $HE_TRANSFORMER/build
-cmake .. [-DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7]
+cmake .. -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7
 make install
 source external/venv-tf-py3/bin/activate
 ```
-where `[ ]` indicate optional arguments.
 
 The first build will compile Tensorflow. To speed up subsequent builds, you can avoid compiling Tensorflow by calling
 ```bash
-cmake .. -DUSE_PREBUILT_TF=ON [-DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7]
+cmake .. -DUSE_PREBUILT_TF=ON -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7
 ```
 
 #### 1.b Python bindings for client
 To build an experimental client-server model with python bindings, see the `python` folder.
+***Note***:
 
 ### 2. Run C++ unit-tests
 Ensure the virtual environment is active, i.e. run `source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate`

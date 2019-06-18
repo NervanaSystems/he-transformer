@@ -16,12 +16,13 @@
 
 include(ExternalProject)
 
-SET(BOOST_REPO_URL https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.tar.gz)
+set(BOOST_REPO_URL https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.tar.gz)
 
 ExternalProject_Add(
     ext_boost
     PREFIX boost
     URL ${BOOST_REPO_URL}
+    URL_HASH SHA256=9a2c2819310839ea373f42d69e733c339b4e9a19deab6bfec448281554aa4dbb
     # Disable install step
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
@@ -31,10 +32,9 @@ ExternalProject_Add(
     )
 
 ExternalProject_Get_Property(ext_boost SOURCE_DIR)
-message("boost SOURCE_DIR ${SOURCE_DIR}")
 
 set(BOOST_HEADERS_PATH ${SOURCE_DIR})
-message("BOOST_HEADERS_PATH ${BOOST_HEADERS_PATH}")
+message(STATUS "BOOST_HEADERS_PATH ${BOOST_HEADERS_PATH}")
 
 add_library(libboost INTERFACE)
 add_dependencies(libboost ext_boost)

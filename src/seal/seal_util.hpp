@@ -27,10 +27,19 @@
 
 namespace ngraph {
 namespace he {
+inline double choose_scale(
+    const std::vector<seal::SmallModulus>& coeff_moduli) {
+  if (coeff_moduli.size() > 1) {
+    return static_cast<double>(coeff_moduli[coeff_moduli.size() - 2].value());
+  } else {
+    return static_cast<double>(coeff_moduli.back().value());
+  }
+}
+
 inline size_t get_chain_index(const SealCiphertextWrapper& cipher,
                               const HESealBackend& he_seal_backend) {
   size_t chain_ind = he_seal_backend.get_context()
-                         ->context_data(cipher.ciphertext().parms_id())
+                         ->get_context_data(cipher.ciphertext().parms_id())
                          ->chain_index();
   return chain_ind;
 }
@@ -38,7 +47,7 @@ inline size_t get_chain_index(const SealCiphertextWrapper& cipher,
 inline size_t get_chain_index(const SealPlaintextWrapper& plain,
                               const HESealBackend& he_seal_backend) {
   size_t chain_ind = he_seal_backend.get_context()
-                         ->context_data(plain.plaintext().parms_id())
+                         ->get_context_data(plain.plaintext().parms_id())
                          ->chain_index();
   return chain_ind;
 }
@@ -64,7 +73,7 @@ void match_scale(S& arg0, T& arg1, const HESealBackend& he_seal_backend) {
   auto scale0 = arg0.scale();
   auto scale1 = arg1.scale();
   bool scale_ok = within_rescale_tolerance(arg0, arg1);
-  NGRAPH_CHECK(scale_ok, "Scale ", scale0, "does not match scale ", scale1,
+  NGRAPH_CHECK(scale_ok, "Scale ", scale0, " does not match scale ", scale1,
                " in scalar add");
   arg0.scale() = arg1.scale();
 }

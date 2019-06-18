@@ -1,9 +1,0 @@
-{
-    "scheme_name": "HE_SEAL",
-    "poly_modulus_degree": 4096,
-    "security_level": 128,
-    "evaluation_decomposition_bit_count": 60,
-    "coeff_modulus": {
-        "small_mods_40bit": 2
-    }
-}

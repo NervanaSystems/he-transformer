@@ -18,7 +18,7 @@
 cmake_minimum_required (VERSION 3.10)
 
 # Global project name
-project (he-transformer LANGUAGES CXX C)
+project (he_transformer LANGUAGES CXX C)
 
 # CXX flags
 if(DEFINED CMAKE_CXX_CLAGS)
@@ -33,13 +33,24 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -O0 -g")
 
 set(CMAKE_INSTALL_MESSAGE LAZY)
 
+if (CMAKE_BUILD_TYPE)
+    set(RELEASE_TYPES Debug Release RelWithDebInfo MinSizeRel)
+    list(FIND RELEASE_TYPES ${CMAKE_BUILD_TYPE} INDEX_FOUND)
+    if (${INDEX_FOUND} EQUAL -1)
+        message(FATAL_ERROR "CMAKE_BUILD_TYPE must be one of Debug, Release, RelWithDebInfo, or MinSizeRel")
+    endif()
+endif()
+
 include(cmake/sdl.cmake)
 
 # These variables are undocumented but useful.
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
-add_definitions(-DPROJECT_ROOT_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+# For ngraph/log
+set(PROJECT_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+
+add_compile_definitions(PROJECT_ROOT_DIR="${PROJECT_ROOT_DIR}")
 
 # This allows libhe_backend.so to find libraries in the same directory
 set(CMAKE_INSTALL_RPATH "\$ORIGIN")
@@ -51,12 +62,6 @@ set(HE_TRANSFORMER_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(EXTERNAL_INSTALL_DIR ${CMAKE_BINARY_DIR}/external)
 set(EXTERNAL_INSTALL_LIB_DIR ${EXTERNAL_INSTALL_DIR}/lib)
 set(EXTERNAL_INSTALL_INCLUDE_DIR ${EXTERNAL_INSTALL_DIR}/include)
-
-# Install for he-transformer
-set(HE_INSTALL_DIR ${CMAKE_INSTALL_PREFIX})
-message("HE_INSTALL_DIR ${HE_INSTALL_DIR}")
-set(HE_INSTALL_INCLUDE_DIR "${HE_INSTALL_DIR}/include")
-set(HE_INSTALL_LIB_DIR "${HE_INSTALL_DIR}/lib")
 
 if(NOT DEFINED EXTERNAL_PROJECTS_ROOT)
     set(EXTERNAL_PROJECTS_ROOT ${CMAKE_CURRENT_BINARY_DIR})
@@ -70,6 +75,12 @@ endif()
 message("PYTHON_VENV_VERSION ${PYTHON_VENV_VERSION}")
 
 OPTION(USE_PREBUILT_TF "Skip re-compilation of Tensorflow" OFF)
+OPTION(NGRAPH_HE_SANITIZE_ADDRESS "Enable address sanitizer" OFF)
+
+if(NGRAPH_HE_SANITIZE_ADDRESS)
+    message(STATUS "NGRAPH_HE_SANITIZE_ADDRESS")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fsanitize=address -fno-omit-frame-pointer")
+endif()
 
 include(cmake/ngraph-tf.cmake)
 include(cmake/gtest.cmake)
@@ -78,6 +89,8 @@ include(cmake/openmp.cmake)
 include(cmake/seal.cmake)
 include(cmake/boost.cmake)
 
+message("ngraph NGRAPH_TF_INCLUDE_DIR ${NGRAPH_TF_INCLUDE_DIR}")
+
 # Add ngraph library
 add_library(ngraph SHARED IMPORTED)
 set_target_properties(
@@ -85,16 +98,11 @@ set_target_properties(
     PROPERTIES IMPORTED_LOCATION
     ${NGRAPH_TF_LIB_DIR}/libngraph.so
 )
+set_target_properties(ngraph PROPERTIES INCLUDE_DIRECTORIES ${NGRAPH_TF_INCLUDE_DIR})
 
 # HE transformer source and test directories
 add_subdirectory(src)
 add_subdirectory(test)
-
-install(DIRECTORY ${EXTERNAL_INSTALL_INCLUDE_DIR}/
-   DESTINATION ${HE_INSTALL_INCLUDE_DIR}
-   FILES_MATCHING
-   PATTERN "*.hpp"
-   PATTERN "*.h")
 
 # For python bindings
 add_subdirectory(python)

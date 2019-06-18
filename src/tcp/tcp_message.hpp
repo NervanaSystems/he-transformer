@@ -25,9 +25,6 @@
 #include <sstream>
 #include <string>
 
-// TODO: better way to include log
-#define PROJECT_ROOT_DIR "test_root_macro"
-
 #include "ngraph/check.hpp"
 #include "ngraph/log.hpp"
 #include "ngraph/util.hpp"

@@ -25,6 +25,7 @@ import time
 import numpy as np
 
 from PIL import Image
+from test import get_test_image
 
 
 def print_nodes(filename):
@@ -45,18 +46,6 @@ def read_pb_file(filename):
     tf.import_graph_def(graph_def, name='')
 
     return graph_def
-
-
-def get_test_image():
-    # https://www.tensorflow.org/tutorials/images/hub_with_keras
-    # https://storage.googleapis.com/download.tensorflow.org/example_images/grace_hopper.jpg
-    filename = './images/grace_hopper.jpg'
-    # Width x Height
-    im = Image.open(filename).resize((84, 84))
-    im = np.array(im) / 255.0
-    # Add batch axis in front
-    im = np.expand_dims(im, axis=0)
-    return im
 
 
 def get_imagenet_labels():
