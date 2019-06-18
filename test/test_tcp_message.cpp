@@ -83,6 +83,8 @@ NGRAPH_TEST(tcp_message, encode) {
   EXPECT_EQ(m.count(), m2.count());
   EXPECT_EQ(m.num_bytes(), m2.num_bytes());
   EXPECT_EQ(m.data_size(), m2.data_size());
+
+  free(data);
 }
 
 NGRAPH_TEST(tcp_message, encode_large) {
