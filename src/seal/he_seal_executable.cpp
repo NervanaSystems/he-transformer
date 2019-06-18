@@ -1160,11 +1160,8 @@ void ngraph::he::HESealExecutable::generate_calls(
         NGRAPH_INFO << "Sending " << cipher_count
                     << " Maxpool ciphertexts (size "
                     << cipher_stream.str().size() << ") to client";
-        auto max_message =
-            TCPMessage(MessageType::max_request, maximize_list[lind_ind]);
-
-        // auto max_message = TCPMessage(MessageType::max_request, cipher_count,
-        //                              std::move(cipher_stream));
+        auto max_message = TCPMessage(MessageType::max_request, cipher_count,
+                                      std::move(cipher_stream));
 
         m_session->do_write(std::move(max_message));
 
