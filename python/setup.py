@@ -123,14 +123,9 @@ libraries = ['he_seal_backend']
 
 data_files = [('lib', [(NGRAPH_HE_LIB_DIR + '/' + library)
                        for library in os.listdir(NGRAPH_HE_LIB_DIR)])]
-print('data files', data_files)
-print('NGRAPH_HE_LIB_DIR', NGRAPH_HE_LIB_DIR)
 
 sources = ['py_he_seal_client/he_seal_client.cpp']
-
 sources = [PYNGRAPH_ROOT_DIR + '/' + source for source in sources]
-
-print('sources', sources)
 
 ext_modules = [
     Extension(

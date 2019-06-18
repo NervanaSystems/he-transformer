@@ -1141,25 +1141,30 @@ void ngraph::he::HESealExecutable::generate_calls(
       NGRAPH_CHECK(maximize_list.size() > 0);
       NGRAPH_CHECK(maximize_list[0].size() > 0);
       auto he_ciphertext = arg0_cipher->get_element(maximize_list[0][0]);
-      he_ciphertext->save(first_cipher);
-      const size_t first_cipher_size = first_cipher.str().size();
-      NGRAPH_INFO << "first_cipher_size " << first_cipher_size;
 
       for (size_t list_ind = 0; list_ind < maximize_list.size(); list_ind++) {
         std::stringstream cipher_stream;
         size_t cipher_count = 0;
 
         for (const size_t max_ind : maximize_list[list_ind]) {
-          auto he_ciphertext = arg0_cipher->get_element(max_ind);
-          he_ciphertext->save(cipher_stream);
+          auto& cipher = arg0_cipher->get_element(max_ind);
+          if (cipher->is_zero()) {
+            // TODO: parallelize with 0s removed
+            NGRAPH_INFO << "Got max(0) at index " << max_ind;
+            throw ngraph_error("max(0) not allowed");
+          }
+          cipher->save(cipher_stream);
           cipher_count++;
         }
         // Send list of ciphertexts to maximize over to client
         NGRAPH_INFO << "Sending " << cipher_count
                     << " Maxpool ciphertexts (size "
                     << cipher_stream.str().size() << ") to client";
-        auto max_message = TCPMessage(MessageType::max_request, cipher_count,
-                                      std::move(cipher_stream));
+        auto max_message =
+            TCPMessage(MessageType::max_request, maximize_list[lind_ind]);
+
+        // auto max_message = TCPMessage(MessageType::max_request, cipher_count,
+        //                              std::move(cipher_stream));
 
         m_session->do_write(std::move(max_message));
 
@@ -1564,7 +1569,6 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
     for (size_t relu_idx = relu_start_idx; relu_idx < relu_end_idx;
          ++relu_idx) {
       auto& cipher = arg_cipher->get_element(relu_idx);
-      // relu(0) = 0
       if (cipher->is_zero()) {
         // TODO: parallelize with 0s removed
         NGRAPH_INFO << "Got relu(0) at index " << relu_idx;
