@@ -667,10 +667,6 @@ inline void convolution_seal(
       // Write the sum back.
       out[out_coord_idx] = sum;
     }
-
-    if (out_coord_idx % 1000 == 0) {
-      NGRAPH_INFO << "Finished out coord " << out_coord_idx;
-    }
   }
 }
 

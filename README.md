@@ -26,7 +26,7 @@ The [examples](https://github.com/NervanaSystems/he-transformer/tree/master/exam
 #### The following dependencies are built automatically
 - [nGraph](https://github.com/NervanaSystems/ngraph) - v0.19.1
 - [nGraph-tf](https://github.com/tensorflow/ngraph-bridge) - v0.14.0
-- [SEAL](https://github.com/Microsoft/SEAL) - v3.2
+- [SEAL](https://github.com/Microsoft/SEAL) - v3.3
 - [TensorFlow](https://github.com/tensorflow/tensorflow) - v1.13.1
 - Boost 1.69
 
