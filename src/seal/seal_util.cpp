@@ -327,7 +327,7 @@ void ngraph::he::multiply_plain_inplace(seal::Ciphertext& encrypted,
   for (size_t i = 0; i < encrypted_ntt_size; i++) {
     for (size_t j = 0; j < coeff_mod_count; j++) {
       // Multiply by scalar instead of doing dyadic product
-      if (coeff_modulus[i].value() < (1 << 31)) {
+      if (coeff_modulus[i].value() < (1UL << 31)) {
         const std::uint64_t modulus_value = coeff_modulus[j].value();
         auto iter = barrett64_ratio_map.find(modulus_value);
         NGRAPH_CHECK(iter != barrett64_ratio_map.end(), "Modulus value ",

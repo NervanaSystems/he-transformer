@@ -62,7 +62,6 @@ ExternalProject_Get_Property(ext_ngraph_tf SOURCE_DIR)
 add_library(libngraph_tf INTERFACE)
 add_dependencies(libngraph_tf ext_ngraph_tf)
 
-message("Copying files from ${NGRAPH_TF_LIB_DIR} to ${EXTERNAL_INSTALL_LIB_DIR}")
 install(DIRECTORY ${NGRAPH_TF_LIB_DIR}/
         DESTINATION ${EXTERNAL_INSTALL_LIB_DIR}
         FILES_MATCHING
@@ -70,7 +69,6 @@ install(DIRECTORY ${NGRAPH_TF_LIB_DIR}/
         PATTERN "*.so.*"
         PATTERN "*.a")
 
-message("Copying TF files from ${NGRAPH_TF_INCLUDE_DIR} to ${EXTERNAL_INSTALL_INCLUDE_DIR}")
 install(DIRECTORY ${NGRAPH_TF_INCLUDE_DIR}/
         DESTINATION ${EXTERNAL_INSTALL_INCLUDE_DIR}
         FILES_MATCHING

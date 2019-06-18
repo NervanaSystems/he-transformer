@@ -79,7 +79,7 @@ ngraph::he::HESealBackend::HESealBackend(
   // Evaluator
   m_evaluator = std::make_shared<seal::Evaluator>(m_context);
 
-  // TODO: pick smaller scale!
+  // TODO: pick smaller scale?
   auto coeff_moduli = context_data->parms().coeff_modulus();
   m_scale = ngraph::he::choose_scale(coeff_moduli);
   NGRAPH_INFO << "Scale " << m_scale;
