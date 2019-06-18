@@ -77,7 +77,9 @@ def get_imagenet_inference_labels():
     labels_path = tf.keras.utils.get_file('map_clsloc.txt', filename)
     labels = open(labels_path).read().splitlines()
     labels = ['background'] + [label.split()[2] for label in labels]
+    labels = [label.replace('_', ' ') for label in labels]
     labels = np.array(labels)
+    print('labels', labels)
     print('got inference labels')
     return labels
 
@@ -118,11 +120,9 @@ def center_crop(im, new_size):
 def get_validation_images(FLAGS, crop=False):
     print('getting validation images')
     data_dir = FLAGS.data_dir
-
-    crop_size = 96
-    IMAGE_SIZE = 96
-
-    images = np.empty((FLAGS.batch_size, IMAGE_SIZE, IMAGE_SIZE, 3))
+    crop_size = FLAGS.image_size
+    images = np.empty((FLAGS.batch_size, FLAGS.image_size, FLAGS.image_size,
+                       3))
 
     for i in range(FLAGS.batch_size):
         image_num_str = str(i + 1).zfill(8)
@@ -131,28 +131,30 @@ def get_validation_images(FLAGS, crop=False):
         image_name = image_prefix + image_suffix
 
         filename = os.path.join(data_dir, image_name)
+        print('opening image at', filename)
         if not os.path.isfile(filename):
             print('Cannot find image ', filename)
             exit(1)
 
         im = Image.open(filename)
         im = center_crop(im, crop_size)
-        im = im.resize((IMAGE_SIZE, IMAGE_SIZE))
-        assert (im.size == (IMAGE_SIZE, IMAGE_SIZE))
+        im = im.resize((FLAGS.image_size, FLAGS.image_size))
+        assert (im.size == (FLAGS.image_size, FLAGS.image_size))
 
         crop_filename = os.path.join(data_dir, image_prefix + '_crop' + '.png')
         im.save(crop_filename, "PNG")
 
         im = np.array(im)
-        print('image', im)
+        #print('image', im)
         # Standardize to [-1,1]
         im = im / 128. - 1
-        print('std image', im)
+        # print('std image', im)
 
-        if im.shape == (IMAGE_SIZE, IMAGE_SIZE):
+        # Fix grey images
+        if im.shape == (FLAGS.image_size, FLAGS.image_size):
             im = np.expand_dims(im, axis=3)
             im = np.repeat(im, 3, axis=2)
-        assert (im.shape == (IMAGE_SIZE, IMAGE_SIZE, 3))
+        assert (im.shape == (FLAGS.image_size, FLAGS.image_size, 3))
 
         im = np.expand_dims(im, axis=0)
         images[i] = im
@@ -162,28 +164,25 @@ def get_validation_images(FLAGS, crop=False):
 
 
 def accuracy(preds, truth):
-    print('getting accuracy')
-
     num_preds = truth.shape[0]
-    print('num_preds', num_preds)
 
-    top1_cnt = 0
-    top5_cnt = 0
-    for i in range(num_preds):
-        if preds[i][0] == truth[i]:
-            top1_cnt += 1
-        if truth[i] in preds[i]:
-            top5_cnt += 1
+    if num_preds == 1:
+        top1_cnt = int(truth[0] == preds[0])
+        top5_cnt = int(truth[0] in preds)
+    else:
+        top1_cnt = 0
+        top5_cnt = 0
+        for i in range(num_preds):
+            if preds[i][0] == truth[i]:
+                top1_cnt += 1
+            if truth[i] in preds[i]:
+                top5_cnt += 1
 
     top5_acc = top5_cnt / float(num_preds)
     top1_acc = top1_cnt / float(num_preds)
-    #top1_acc = np.mean(preds[:, 0] == truth)
 
     print('top1_acc', top1_acc)
     print('top5_acc', top5_acc)
-
-    #top5_count = np.count()
-    #top5_acc = np.mean(preds)
 
 
 def main(FLAGS):
@@ -213,12 +212,16 @@ def main(FLAGS):
     y_pred = np.squeeze(y_pred)
     # print(y_pred.shape)
 
-    top5 = np.flip(y_pred.argsort()[:, -5:], axis=1)
+    if (FLAGS.batch_size == 1):
+        print('y_pred.shape', y_pred.shape)
+        top5 = y_pred.argsort()[-5:]
+    else:
+        top5 = np.flip(y_pred.argsort()[:, -5:], axis=1)
     #print('top5', top5)
 
-    #print('validation_labels', validation_labels)
+    print('validation_labels', validation_labels)
     preds = imagenet_training_labels[top5]
-    #print('preds', preds)
+    print('preds', preds)
 
     accuracy(preds, validation_labels)
 
@@ -235,10 +238,12 @@ if __name__ == '__main__':
     parser.add_argument(
         '--model',
         type=str,
-        default='mobilenet_v2_0.35_96_opt.pb',
+        default='./model/mobilenet_v2_0.35_96_opt.pb',
         help=
         'Directory where cropped ImageNet data and ground truth labels are stored'
     )
+    parser.add_argument(
+        '--image_size', type=int, default=96, help='image size')
     parser.add_argument('--batch_size', type=int, default=1, help='Batch size')
 
     FLAGS, unparsed = parser.parse_known_args()

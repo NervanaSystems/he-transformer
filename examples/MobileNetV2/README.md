@@ -22,7 +22,7 @@ export PATH=$HE_TRANSFORMER/build/ext_ngraph_tf/src/ext_ngraph_tf/build_cmake/te
 
 2. To download the model and optimize for inference, call
 ```bash
-./get_model.sh
+python get_models.py
 ```
 
 3. To enable image processing, run
