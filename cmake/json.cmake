@@ -21,8 +21,8 @@ include(ExternalProject)
 # Download json
 #------------------------------------------------------------------------------
 
-SET(JSON_GIT_REPO_URL https://github.com/nlohmann/json)
-SET(JSON_GIT_LABEL v3.5.0)
+set(JSON_GIT_REPO_URL https://github.com/nlohmann/json)
+set(JSON_GIT_LABEL v3.5.0)
 
 ExternalProject_Add(
     ext_json

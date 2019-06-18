@@ -19,25 +19,25 @@ include(ExternalProject)
 set(EXTERNAL_NGRAPH_INSTALL_DIR ${EXTERNAL_INSTALL_DIR})
 set(NGRAPH_TF_CMAKE_PREFIX ext_ngraph_tf)
 
-SET(NGRAPH_TF_REPO_URL https://github.com/tensorflow/ngraph-bridge.git)
-SET(NGRAPH_TF_GIT_LABEL v0.14.0)
+set(NGRAPH_TF_REPO_URL https://github.com/tensorflow/ngraph-bridge.git)
+set(NGRAPH_TF_GIT_LABEL v0.14.0)
 
-SET(NGRAPH_TF_SRC_DIR ${CMAKE_BINARY_DIR}/${NGRAPH_TF_CMAKE_PREFIX}/src/${NGRAPH_TF_CMAKE_PREFIX})
-SET(NGRAPH_TF_BUILD_DIR ${NGRAPH_TF_SRC_DIR}/build_cmake)
-SET(NGRAPH_TF_ARTIFACTS_DIR ${NGRAPH_TF_BUILD_DIR}/artifacts)
+set(NGRAPH_TF_SRC_DIR ${CMAKE_BINARY_DIR}/${NGRAPH_TF_CMAKE_PREFIX}/src/${NGRAPH_TF_CMAKE_PREFIX})
+set(NGRAPH_TF_BUILD_DIR ${NGRAPH_TF_SRC_DIR}/build_cmake)
+set(NGRAPH_TF_ARTIFACTS_DIR ${NGRAPH_TF_BUILD_DIR}/artifacts)
 
-SET(NGRAPH_TF_VENV_DIR ${NGRAPH_TF_BUILD_DIR}/venv-tf-py3)
-SET(NGRAPH_TF_VENV_LIB_DIR ${NGRAPH_TF_VENV_DIR}/lib/${PYTHON_VENV_VERSION}/site-packages/ngraph_bridge)
+set(NGRAPH_TF_VENV_DIR ${NGRAPH_TF_BUILD_DIR}/venv-tf-py3)
+set(NGRAPH_TF_VENV_LIB_DIR ${NGRAPH_TF_VENV_DIR}/lib/${PYTHON_VENV_VERSION}/site-packages/ngraph_bridge)
 
-SET(NGRAPH_TF_INCLUDE_DIR ${NGRAPH_TF_ARTIFACTS_DIR}/include)
-SET(NGRAPH_TF_LIB_DIR ${NGRAPH_TF_ARTIFACTS_DIR}/lib)
+set(NGRAPH_TF_INCLUDE_DIR ${NGRAPH_TF_ARTIFACTS_DIR}/include)
+set(NGRAPH_TF_LIB_DIR ${NGRAPH_TF_ARTIFACTS_DIR}/lib)
 
-SET(NGRAPH_TEST_UTIL_INCLUDE_DIR ${NGRAPH_TF_BUILD_DIR}/ngraph/test)
+set(NGRAPH_TEST_UTIL_INCLUDE_DIR ${NGRAPH_TF_BUILD_DIR}/ngraph/test)
 
 message("NGRAPH_TF_VENV_LIB_DIR ${NGRAPH_TF_VENV_LIB_DIR}")
 message("NGRAPH_TF_LIB_DIR ${NGRAPH_TF_LIB_DIR}")
 
-SET(ng_tf_build_flags "")
+set(ng_tf_build_flags "")
 if (USE_PREBUILT_TF)
         message(STATUS "Using prebuilt TF")
         set(ng_tf_build_flags "--use_prebuilt_tensorflow")
@@ -53,7 +53,7 @@ ExternalProject_Add(
         CONFIGURE_COMMAND ""
         BUILD_IN_SOURCE 1
         BUILD_BYPRODUCTS ${NGRAPH_TF_CMAKE_PREFIX}
-        BUILD_COMMAND python3 ${NGRAPH_TF_SRC_DIR}/build_ngtf.py --use_prebuilt_tensorflow
+        BUILD_COMMAND python3 ${NGRAPH_TF_SRC_DIR}/build_ngtf.py ${ng_tf_build_flags}
         INSTALL_COMMAND ln -fs ${NGRAPH_TF_VENV_DIR} ${EXTERNAL_INSTALL_DIR}
         UPDATE_COMMAND ""
 )
