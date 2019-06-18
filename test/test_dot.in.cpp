@@ -113,7 +113,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_matrix_vector) {
     auto handle = backend->compile(f);
     handle->call_with_validate({t_result}, {t_a, t_b});
     EXPECT_TRUE(all_close(read_vector<float>(t_result),
-                          (vector<float>{190, 486, 782, 1078}), 1e-3f));
+                          (vector<float>{190, 486, 782, 1078}), 1e-2f));
   }
 }
 

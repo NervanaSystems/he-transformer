@@ -136,7 +136,7 @@ NGRAPH_TEST(${BACKEND_NAME}, perf_mult_plain) {
   copy_data(t_a, vec_a);
   copy_data(t_b, vec_b);
 
-  auto handle = backend->compile(f);
+  auto handle = he_backend->compile(f);
   handle->call_with_validate({t_result}, {t_a, t_b});
   EXPECT_TRUE(all_close(read_vector<float>(t_result), vec_result, 1e-3f));
 }

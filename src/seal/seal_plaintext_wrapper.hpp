@@ -41,8 +41,8 @@ class SealPlaintextWrapper {
   const double scale() const { return m_plaintext.scale(); }
 
  private:
-  bool m_complex_packing;
   seal::Plaintext m_plaintext;
+  bool m_complex_packing;
 };
 }  // namespace he
 }  // namespace ngraph

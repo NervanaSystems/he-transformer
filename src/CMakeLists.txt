@@ -42,30 +42,23 @@ set (HE_SRC
     seal/he_seal_cipher_tensor.cpp
     seal/he_seal_executable.cpp
     seal/he_seal_backend.cpp
+    seal/he_seal_client.cpp
 )
-include_directories(
-    SYSTEM
-    ${HE_TRANSFORMER_SOURCE_DIR}
-    ${EXTERNAL_INSTALL_INCLUDE_DIR}
-    ${NGRAPH_TF_INCLUDE_DIR}
-)
-link_directories(
-    ${EXTERNAL_INSTALL_LIB_DIR}
-    ${NGRAPH_TF_LIB_DIR}
-)
-
-message("Linking directories: ${NGRAPH_TF_LIB_DIR}, ${EXTERNAL_INSTALL_LIB_DIR}")
 
 # Target library
 add_library(he_seal_backend SHARED ${HE_SRC})
-add_dependencies(he_seal_backend ext_ngraph_tf ext_seal)
-target_link_libraries(he_seal_backend seal libjson ngraph libboost)
+target_include_directories(he_seal_backend PUBLIC
+    ${HE_TRANSFORMER_SOURCE_DIR}
+    ${EXTERNAL_INSTALL_INCLUDE_DIR}
+    ${NGRAPH_TF_INCLUDE_DIR})
+target_link_libraries(he_seal_backend PUBLIC libjson
+                                             libboost
+                                             libseal
+                                             libngraph_tf
+                                             ngraph)
 
-if(NGRAPH_HE_SANITIZE_ADDRESS)
-    message(STATUS "Enable Address Sanitizer")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fsanitize=address -fno-omit-frame-pointer")
-endif()
-
+message("HE_TRANSFORMER_SOURCE_DIR ${HE_TRANSFORMER_SOURCE_DIR}")
+message("EXTERNAL_INSTALL_INCLUDE_DIR ${EXTERNAL_INSTALL_INCLUDE_DIR}")
 # Get library names
 set(HE_SEAL_BACKEND_LIB_NAME "libhe_seal_backend${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
@@ -75,23 +68,11 @@ message("NGRAPH_TF_LIB_DIR ${NGRAPH_TF_LIB_DIR}")
 # Install he-transformer (the HE libraries are installed separately) at `make install`
 install(TARGETS he_seal_backend DESTINATION ${EXTERNAL_INSTALL_LIB_DIR})
 
+message("Copying CMAKE_CURRENT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} to ${EXTERNAL_INSTALL_INCLUDE_DIR}")
+message("PROJECT_ROOT_DIR ${PROJECT_ROOT_DIR}")
+
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-        DESTINATION ${HE_INSTALL_INCLUDE_DIR}
-        FILES_MATCHING
-        PATTERN "*.hpp"
-        PATTERN "*.h")
-
-message("Installing TF files from ${NGRAPH_TF_INCLUDE_DIR} to ${HE_INSTALL_INCLUDE_DIR}")
-install(DIRECTORY ${NGRAPH_TF_INCLUDE_DIR}/
-        DESTINATION ${HE_INSTALL_INCLUDE_DIR}
-        FILES_MATCHING
-        PATTERN "*.hpp"
-        PATTERN "*.h")
-
-# TODO: cleanup
-message("Installing json files from ${JSON_INCLUDE_DIR} to ${HE_INSTALL_INCLUDE_DIR}")
-install(DIRECTORY ${JSON_INCLUDE_DIR}/
-        DESTINATION ${HE_INSTALL_INCLUDE_DIR}
+        DESTINATION ${EXTERNAL_INSTALL_INCLUDE_DIR}
         FILES_MATCHING
         PATTERN "*.hpp"
         PATTERN "*.h")

@@ -55,7 +55,7 @@ def test_mnist_mlp(FLAGS):
         # Run model
         y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
         elasped_time = time.time() - start_time
-        print("total time(s)", elasped_time)
+        print("total time(s)", np.round(elasped_time, 2))
         print('result', np.round(y_conv_val, 2))
 
     x_test_batch = mnist.test.images[:FLAGS.batch_size]

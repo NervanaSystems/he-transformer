@@ -609,7 +609,16 @@ bool ngraph::he::HESealExecutable::call(
     // delete any obsolete tensors
     for (const descriptor::Tensor* t : op->liveness_free_list) {
       for (auto it = tensor_map.begin(); it != tensor_map.end(); ++it) {
-        if (it->second->get_name() == t->get_name()) {
+        // Work-around for t->get_name() address-use after free in
+        // HE_SEAL.bounded_relu_fusion test
+        // TODO: remove once ngraph commit #2967 has been integrated?
+        const std::string& it_name = it->second->get_name();
+        if (it_name == "external") {
+          break;
+        } else if (it_name.substr(0, 11) == "BoundedRelu") {
+          tensor_map.erase(it);
+          break;
+        } else if (it_name == t->get_name()) {
           tensor_map.erase(it);
           break;
         }
@@ -673,14 +682,32 @@ void ngraph::he::HESealExecutable::generate_calls(
   auto lazy_rescaling = [this](auto& cipher_tensor) {
     typedef std::chrono::high_resolution_clock Clock;
     auto t1 = Clock::now();
+    size_t new_chain_index = std::numeric_limits<size_t>::max();
+    if (cipher_tensor->num_ciphertexts() > 0) {
+      if (!cipher_tensor->get_element(0)->is_zero()) {
+        new_chain_index =
+            get_chain_index(cipher_tensor->get_element(0)->ciphertext(),
+                            m_he_seal_backend) -
+            1;
+      }
+    }
+    if (new_chain_index == 0) {
+      NGRAPH_INFO << "Skipping rescaling to chain index 0";
+      return;
+    }
+    if (new_chain_index != std::numeric_limits<size_t>::max()) {
+      NGRAPH_INFO << "New chain index " << new_chain_index;
+    }
+
 #pragma omp parallel for
-    for (size_t i = 0; i < cipher_tensor->get_elements().size(); ++i) {
+    for (size_t i = 0; i < cipher_tensor->num_ciphertexts(); ++i) {
       auto cipher = cipher_tensor->get_element(i);
       if (!cipher->is_zero()) {
         m_he_seal_backend.get_evaluator()->rescale_to_next_inplace(
             cipher->ciphertext());
       }
     }
+
     auto t2 = Clock::now();
     NGRAPH_INFO << "Rescale_xxx took "
                 << std::chrono::duration_cast<std::chrono::milliseconds>(t2 -
@@ -1114,25 +1141,30 @@ void ngraph::he::HESealExecutable::generate_calls(
       NGRAPH_CHECK(maximize_list.size() > 0);
       NGRAPH_CHECK(maximize_list[0].size() > 0);
       auto he_ciphertext = arg0_cipher->get_element(maximize_list[0][0]);
-      he_ciphertext->save(first_cipher);
-      const size_t first_cipher_size = first_cipher.str().size();
-      NGRAPH_INFO << "first_cipher_size " << first_cipher_size;
 
       for (size_t list_ind = 0; list_ind < maximize_list.size(); list_ind++) {
         std::stringstream cipher_stream;
         size_t cipher_count = 0;
 
         for (const size_t max_ind : maximize_list[list_ind]) {
-          auto he_ciphertext = arg0_cipher->get_element(max_ind);
-          he_ciphertext->save(cipher_stream);
+          auto& cipher = arg0_cipher->get_element(max_ind);
+          if (cipher->is_zero()) {
+            // TODO: parallelize with 0s removed
+            NGRAPH_INFO << "Got max(0) at index " << max_ind;
+            throw ngraph_error("max(0) not allowed");
+          }
+          cipher->save(cipher_stream);
           cipher_count++;
         }
         // Send list of ciphertexts to maximize over to client
         NGRAPH_INFO << "Sending " << cipher_count
                     << " Maxpool ciphertexts (size "
                     << cipher_stream.str().size() << ") to client";
-        auto max_message = TCPMessage(MessageType::max_request, cipher_count,
-                                      std::move(cipher_stream));
+        auto max_message =
+            TCPMessage(MessageType::max_request, maximize_list[lind_ind]);
+
+        // auto max_message = TCPMessage(MessageType::max_request, cipher_count,
+        //                              std::move(cipher_stream));
 
         m_session->do_write(std::move(max_message));
 
@@ -1537,7 +1569,6 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
     for (size_t relu_idx = relu_start_idx; relu_idx < relu_end_idx;
          ++relu_idx) {
       auto& cipher = arg_cipher->get_element(relu_idx);
-      // relu(0) = 0
       if (cipher->is_zero()) {
         // TODO: parallelize with 0s removed
         NGRAPH_INFO << "Got relu(0) at index " << relu_idx;

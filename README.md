@@ -50,19 +50,19 @@ cd he-transformer
 export HE_TRANSFORMER=$(pwd)
 mkdir build
 cd $HE_TRANSFORMER/build
-cmake .. [-DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7]
+cmake .. -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7
 make install
 source external/venv-tf-py3/bin/activate
 ```
-where `[ ]` indicate optional arguments.
 
 The first build will compile Tensorflow. To speed up subsequent builds, you can avoid compiling Tensorflow by calling
 ```bash
-cmake .. -DUSE_PREBUILT_TF=ON [-DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7]
+cmake .. -DUSE_PREBUILT_TF=ON -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7
 ```
 
 #### 1.b Python bindings for client
 To build an experimental client-server model with python bindings, see the `python` folder.
+***Note***:
 
 ### 2. Run C++ unit-tests
 Ensure the virtual environment is active, i.e. run `source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate`

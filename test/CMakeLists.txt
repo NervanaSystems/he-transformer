@@ -14,23 +14,10 @@
 # limitations under the License.
 # ******************************************************************************
 
-include_directories(SYSTEM
-    ${GTEST_INCLUDE_DIR}
-    ${NGRAPH_INCLUDE_DIR}
-    ${NGRAPH_TEST_DIR}
-    ${HE_TRANSFORMER_SOURCE_DIR}
-    ${EXTERNAL_INSTALL_INCLUDE_DIR}
-)
-link_directories(
-    ${NGRAPH_LIB_DIR}
-    ${EXTERNAL_INSTALL_LIB_DIR}
-)
-
 set (SRC
     main.cpp
     test_seal.cpp
     test_util.cpp
-    test_tcp_message.cpp
 )
 
 set(ACTIVE_BACKEND_LIST HE_SEAL)
@@ -80,25 +67,10 @@ endforeach()
 
 add_executable(unit-test ${SRC})
 
-include_directories(SYSTEM
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${HE_TRANSFORMER_SOURCE_DIR}
-    ${EXTERNAL_INSTALL_INCLUDE_DIR}
-    ${NGRAPH_TEST_UTIL_INCLUDE_DIR}
-)
-
-link_directories(
-    ${NGRAPH_LIB_DIR}
-    ${EXTERNAL_INSTALL_LIB_DIR}
-    ${NGRAPH_TF_LIB_DIR}
-)
-
 target_include_directories(unit-test PRIVATE ".")
 
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHE_SERIALIZED_ZOO=\\\"${CMAKE_CURRENT_SOURCE_DIR}/model\\\"")
-if(NGRAPH_HE_SANITIZE_ADDRESS)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fsanitize=address -fno-omit-frame-pointer")
-endif()
 
 # Add ngraph test utils library
 add_library(ngraph_test_util STATIC IMPORTED)
@@ -107,35 +79,16 @@ set_target_properties(
     PROPERTIES IMPORTED_LOCATION
     ${NGRAPH_TF_LIB_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}ngraph_test_util${CMAKE_STATIC_LIBRARY_SUFFIX}
 )
+add_dependencies(ngraph_test_util ext_ngraph_tf)
+# Set the test_utils include folder manually.
+# The ${NGRAPH_TF_BUILD_DIR}/ngraph/test/ folder doesn't exist until ngraph-tf
+# builds, so we cannot set
+# target_include_directories(ngraph_test_util SYSTEM INTERFACE ${NGRAPH_TF_BUILD_DIR}/ngraph/test/)
+# (Note, the work-around file(MAKE_DIRECTORY ${NGRAPH_TF_BUILD_DIR}/ngraph/test/)) doesn't
+# work either, as ngraph-tf will complain about the ngraph folder already existing.
+target_include_directories(unit-test PRIVATE ${NGRAPH_TF_BUILD_DIR}/ngraph/test/)
 
-target_link_libraries(unit-test libgtest ngraph)
-target_link_libraries(unit-test ngraph_test_util ${CMAKE_DL_LIBS})
-target_link_libraries(unit-test he_seal_backend seal pthread )
-
-add_dependencies(unit-test he_seal_backend ext_seal ext_ngraph_tf ext_gtest)
-
-# Cryptonets
-set (CRYPTONETS_SRC test_cryptonets.cpp test_util.cpp main_cryptonets.cpp)
-add_executable(cryptonets_benchmark ${CRYPTONETS_SRC})
-
-include_directories(SYSTEM
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${HE_TRANSFORMER_SOURCE_DIR}
-    ${EXTERNAL_INSTALL_INCLUDE_DIR}
-    ${NGRAPH_TF_INCLUDE_DIR}
-    ${NGRAPH_TEST_UTIL_INCLUDE_DIR}
-)
-
-message("Linking with NGRAPH_TF_LIB_DIR ${NGRAPH_TF_LIB_DIR}")
-
-link_directories(
-    ${NGRAPH_LIB_DIR}
-    ${EXTERNAL_INSTALL_LIB_DIR}
-    ${NGRAPH_TF_LIB_DIR}
-)
-
-target_include_directories(cryptonets_benchmark PRIVATE ".")
-
-target_link_libraries(cryptonets_benchmark libgtest ngraph ngraph_test_util)
-target_link_libraries(cryptonets_benchmark he_seal_backend seal pthread ${CMAKE_DL_LIBS})
-add_dependencies(cryptonets_benchmark he_seal_backend ext_seal ext_ngraph_tf ext_gtest)
+target_link_libraries(unit-test PRIVATE ngraph_test_util)
+target_link_libraries(unit-test PRIVATE ngraph libgtest)
+target_link_libraries(unit-test PRIVATE ${CMAKE_DL_LIBS})
+target_link_libraries(unit-test PRIVATE he_seal_backend libseal pthread)

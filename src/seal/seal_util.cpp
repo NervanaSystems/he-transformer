@@ -39,14 +39,19 @@ void ngraph::he::match_modulus_and_scale_inplace(
   if (chain_ind0 == chain_ind1) {
     return;
   }
-
-  if (chain_ind0 < chain_ind1) {
-    match_modulus_and_scale_inplace(arg1, arg0, he_seal_backend, pool);
-  }
-
   bool rescale = !ngraph::he::within_rescale_tolerance(arg0, arg1);
 
-  if (chain_ind0 > chain_ind1) {
+  if (chain_ind0 < chain_ind1) {
+    auto arg0_parms_id = arg0.ciphertext().parms_id();
+    if (rescale) {
+      he_seal_backend.get_evaluator()->rescale_to_inplace(arg1.ciphertext(),
+                                                          arg0_parms_id);
+    } else {
+      he_seal_backend.get_evaluator()->mod_switch_to_inplace(arg1.ciphertext(),
+                                                             arg0_parms_id);
+    }
+    chain_ind1 = ngraph::he::get_chain_index(arg1, he_seal_backend);
+  } else {  // chain_ind0 > chain_ind1
     auto arg1_parms_id = arg1.ciphertext().parms_id();
     if (rescale) {
       he_seal_backend.get_evaluator()->rescale_to_inplace(arg0.ciphertext(),
@@ -56,10 +61,9 @@ void ngraph::he::match_modulus_and_scale_inplace(
                                                              arg1_parms_id);
     }
     chain_ind0 = ngraph::he::get_chain_index(arg0, he_seal_backend);
-    NGRAPH_CHECK(chain_ind0 == chain_ind1);
-
-    ngraph::he::match_scale(arg0, arg1, he_seal_backend);
   }
+  NGRAPH_CHECK(chain_ind0 == chain_ind1);
+  ngraph::he::match_scale(arg0, arg1, he_seal_backend);
 }
 
 // Encode value into vector of coefficients
@@ -70,7 +74,7 @@ void ngraph::he::encode(double value, double scale,
                         seal::MemoryPoolHandle pool) {
   // Verify parameters.
   auto context = he_seal_backend.get_context();
-  auto context_data_ptr = context->context_data(parms_id);
+  auto context_data_ptr = context->get_context_data(parms_id);
   if (!context_data_ptr) {
     throw ngraph_error("parms_id is not valid for encryption parameters");
   }
@@ -102,7 +106,8 @@ void ngraph::he::encode(double value, double scale,
   if (coeff_bit_count >= context_data.total_coeff_modulus_bit_count()) {
 #pragma omp critical
     {
-      NGRAPH_INFO << "Failed to encode " << value << " at scale " << scale;
+      NGRAPH_INFO << "Failed to encode " << value / scale << " at scale "
+                  << scale;
       NGRAPH_INFO << "coeff_bit_count " << coeff_bit_count;
       NGRAPH_INFO << "coeff_mod_count " << coeff_mod_count;
       NGRAPH_INFO << "total coeff modulus bit count "
@@ -129,15 +134,10 @@ void ngraph::he::encode(double value, double scale,
       for (size_t j = 0; j < coeff_mod_count; j++) {
         destination[j] = seal::util::negate_uint_mod(
             coeffu % coeff_modulus[j].value(), coeff_modulus[j]);
-        // fill_n(destination.data() + (j * coeff_count), coeff_count,
-        //       negate_uint_mod(coeffu % coeff_modulus[j].value(),
-        //                       coeff_modulus[j]));
       }
     } else {
       for (size_t j = 0; j < coeff_mod_count; j++) {
         destination[j] = coeffu % coeff_modulus[j].value();
-        // fill_n(destination.data() + (j * coeff_count), coeff_count,
-        //       coeffu % coeff_modulus[j].value());
       }
     }
   } else if (coeff_bit_count <= 128) {
@@ -149,16 +149,11 @@ void ngraph::he::encode(double value, double scale,
         destination[j] = seal::util::negate_uint_mod(
             seal::util::barrett_reduce_128(coeffu, coeff_modulus[j]),
             coeff_modulus[j]);
-        // fill_n(destination.data() + (j * coeff_count), coeff_count,
-        //       negate_uint_mod(barrett_reduce_128(coeffu, coeff_modulus[j]),
-        //                       coeff_modulus[j]));
       }
     } else {
       for (size_t j = 0; j < coeff_mod_count; j++) {
         destination[j] =
             seal::util::barrett_reduce_128(coeffu, coeff_modulus[j]);
-        // fill_n(destination.data() + (j * coeff_count), coeff_count,
-        //        barrett_reduce_128(coeffu, coeff_modulus[j]));
       }
     }
   } else {
@@ -188,9 +183,6 @@ void ngraph::he::encode(double value, double scale,
 
           auto value_copy(seal::util::allocate_uint(coeff_mod_count, pool));
           for (std::size_t j = 0; j < coeff_mod_count; j++) {
-            // destination[j] = util::modulo_uint(
-            //    value, coeff_mod_count, coeff_modulus_[j], pool);
-
             // Manually inlined for efficiency
             // Make a fresh copy of value
             seal::util::set_uint_uint(value, coeff_mod_count, value_copy.get());
@@ -225,14 +217,10 @@ void ngraph::he::encode(double value, double scale,
       for (size_t j = 0; j < coeff_mod_count; j++) {
         destination[j] =
             seal::util::negate_uint_mod(decomp_coeffu[j], coeff_modulus[j]);
-        // fill_n(destination.data() + (j * coeff_count), coeff_count,
-        //       negate_uint_mod(decomp_coeffu[j], coeff_modulus[j]));
       }
     } else {
       for (size_t j = 0; j < coeff_mod_count; j++) {
         destination[j] = decomp_coeffu[j];
-        // fill_n(destination.data() + (j * coeff_count), coeff_count,
-        //       decomp_coeffu[j]);
       }
     }
   }
@@ -242,10 +230,10 @@ void ngraph::he::add_plain_inplace(seal::Ciphertext& encrypted, double value,
                                    const HESealBackend& he_seal_backend) {
   // Verify parameters.
   auto context = he_seal_backend.get_context();
-  if (!encrypted.is_metadata_valid_for(context)) {
+  if (!seal::is_metadata_valid_for(encrypted, context)) {
     throw ngraph_error("encrypted is not valid for encryption parameters");
   }
-  auto& context_data = *context->context_data(encrypted.parms_id());
+  auto& context_data = *context->get_context_data(encrypted.parms_id());
   auto& parms = context_data.parms();
 
   NGRAPH_CHECK(parms.scheme() == seal::scheme_type::CKKS,
@@ -269,7 +257,7 @@ void ngraph::he::add_plain_inplace(seal::Ciphertext& encrypted, double value,
   // Encode
   std::vector<std::uint64_t> plaintext_vals(coeff_mod_count, 0);
   double scale = encrypted.scale();
-  ngraph::he::encode(value, scale, parms.parms_id(), plaintext_vals,
+  ngraph::he::encode(value, scale, encrypted.parms_id(), plaintext_vals,
                      he_seal_backend);
 
   for (size_t j = 0; j < coeff_mod_count; j++) {
@@ -277,10 +265,6 @@ void ngraph::he::add_plain_inplace(seal::Ciphertext& encrypted, double value,
     ngraph::he::add_poly_scalar_coeffmod(
         encrypted.data() + (j * coeff_count), coeff_count, plaintext_vals[j],
         coeff_modulus[j], encrypted.data() + (j * coeff_count));
-    // seal::util::add_poly_poly_coeffmod(
-    //     encrypted.data() + (j * coeff_count),
-    //     plain.data() + (j * coeff_count), coeff_count, coeff_modulus[j],
-    //     encrypted.data() + (j * coeff_count));
   }
 
 #ifndef SEAL_ALLOW_TRANSPARENT_CIPHERTEXT
@@ -297,10 +281,10 @@ void ngraph::he::multiply_plain_inplace(seal::Ciphertext& encrypted,
                                         seal::MemoryPoolHandle pool) {
   // Verify parameters.
   auto context = he_seal_backend.get_context();
-  if (!encrypted.is_metadata_valid_for(context)) {
+  if (!seal::is_metadata_valid_for(encrypted, context)) {
     throw ngraph_error("encrypted is not valid for encryption parameters");
   }
-  if (!context->context_data(encrypted.parms_id())) {
+  if (!context->get_context_data(encrypted.parms_id())) {
     throw ngraph_error("encrypted is not valid for encryption parameters");
   }
   if (!encrypted.is_ntt_form()) {
@@ -311,7 +295,7 @@ void ngraph::he::multiply_plain_inplace(seal::Ciphertext& encrypted,
   }
 
   // Extract encryption parameters.
-  auto& context_data = *context->context_data(encrypted.parms_id());
+  auto& context_data = *context->get_context_data(encrypted.parms_id());
   auto& parms = context_data.parms();
   auto& coeff_modulus = parms.coeff_modulus();
   size_t coeff_count = parms.poly_modulus_degree();
@@ -328,7 +312,7 @@ void ngraph::he::multiply_plain_inplace(seal::Ciphertext& encrypted,
   // TODO: explore using different scales! Smaller scales might reduce # of
   // rescalings
   double scale = encrypted.scale();
-  ngraph::he::encode(value, scale, parms.parms_id(), plaintext_vals,
+  ngraph::he::encode(value, scale, encrypted.parms_id(), plaintext_vals,
                      he_seal_backend);
 
   double new_scale = scale * scale;
@@ -343,7 +327,7 @@ void ngraph::he::multiply_plain_inplace(seal::Ciphertext& encrypted,
   for (size_t i = 0; i < encrypted_ntt_size; i++) {
     for (size_t j = 0; j < coeff_mod_count; j++) {
       // Multiply by scalar instead of doing dyadic product
-      if (coeff_modulus[i].value() < (1 << 30)) {
+      if (coeff_modulus[i].value() < (1UL << 31)) {
         const std::uint64_t modulus_value = coeff_modulus[j].value();
         auto iter = barrett64_ratio_map.find(modulus_value);
         NGRAPH_CHECK(iter != barrett64_ratio_map.end(), "Modulus value ",
