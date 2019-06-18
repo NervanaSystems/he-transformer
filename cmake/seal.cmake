@@ -30,10 +30,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
    endif()
 endif()
 
-message("SEAL_USE_CXX17 ${SEAL_USE_CXX17}")
-message("SEAL CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS}")
-message("BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS}")
-message("EXTERNAL_INSTALL_LIB_DIR ${EXTERNAL_INSTALL_LIB_DIR}")
+message(STATUS "SEAL_USE_CXX17 ${SEAL_USE_CXX17}")
 
 # Without these, SEAL's globals.cpp will be deallocated twice, once by
 # he_seal_backend, which loads libseal.a, and once by the global destructor.

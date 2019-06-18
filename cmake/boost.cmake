@@ -32,10 +32,9 @@ ExternalProject_Add(
     )
 
 ExternalProject_Get_Property(ext_boost SOURCE_DIR)
-message("boost SOURCE_DIR ${SOURCE_DIR}")
 
 set(BOOST_HEADERS_PATH ${SOURCE_DIR})
-message("BOOST_HEADERS_PATH ${BOOST_HEADERS_PATH}")
+message(STATUS "BOOST_HEADERS_PATH ${BOOST_HEADERS_PATH}")
 
 add_library(libboost INTERFACE)
 add_dependencies(libboost ext_boost)
