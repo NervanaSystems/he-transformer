@@ -131,7 +131,8 @@ def get_validation_images(FLAGS, crop=False):
         image_name = image_prefix + image_suffix
 
         filename = os.path.join(data_dir, image_name)
-        print('opening image at', filename)
+        if FLAGS.batch_size < 10:
+            print('opening image at', filename)
         if not os.path.isfile(filename):
             print('Cannot find image ', filename)
             exit(1)
@@ -193,9 +194,16 @@ def main(FLAGS):
     x_test = get_validation_images(FLAGS)
     validation_labels = imagenet_inference_labels[validation_nums]
 
-    sess = tf.Session()
+    config = tf.ConfigProto()
+    config.intra_op_parallelism_threads = 44
+    config.inter_op_parallelism_threads = 44
+    config_ngraph_enabled = ngraph_bridge.update_config(config)
+    sess = tf.Session(config=config_ngraph_enabled)
     graph_def = load_model(FLAGS.model)
     tf.import_graph_def(graph_def, name='')
+
+    print('get_currently_set_backend_name',
+          ngraph_bridge.get_currently_set_backend_name())
 
     input_tensor = sess.graph.get_tensor_by_name('input:0')
     output_tensor = sess.graph.get_tensor_by_name(
@@ -203,6 +211,8 @@ def main(FLAGS):
 
     print('performing inference')
     start_time = time.time()
+    print('performing inference??')
+
     y_pred = sess.run(output_tensor, {input_tensor: x_test})
     end_time = time.time()
     runtime = end_time - start_time
@@ -219,9 +229,11 @@ def main(FLAGS):
         top5 = np.flip(y_pred.argsort()[:, -5:], axis=1)
     #print('top5', top5)
 
-    print('validation_labels', validation_labels)
     preds = imagenet_training_labels[top5]
-    print('preds', preds)
+
+    if FLAGS.batch_size < 10:
+        print('validation_labels', validation_labels)
+        print('preds', preds)
 
     accuracy(preds, validation_labels)
 
