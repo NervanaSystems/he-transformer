@@ -23,6 +23,7 @@ import os
 import time
 import PIL
 from PIL import Image
+import multiprocessing as mp
 
 
 def print_nodes(filename):
@@ -117,62 +118,65 @@ def center_crop2(im, new_size):
     return im
 
 
-def get_validation_images(FLAGS, crop=False):
-    print('getting validation images')
+def get_validation_image(i):
+    print('getting image ', i)
+    image_num_str = str(i + 1).zfill(8)
     data_dir = FLAGS.data_dir
     crop_size = FLAGS.crop_size
+
+    image_prefix = 'validation_images/ILSVRC2012_val_' + image_num_str
+    image_suffix = '.JPEG'
+    image_name = image_prefix + image_suffix
+
+    crop_filename = os.path.join(data_dir, image_prefix + '_crop' + '.png')
+
+    filename = os.path.join(data_dir, image_name)
+    if FLAGS.batch_size < 10:
+        print('opening image at', filename)
+    if not os.path.isfile(filename):
+        print('Cannot find image ', filename)
+        exit(1)
+
+    if FLAGS.load_cropped_images:
+        im = Image.open(crop_filename)
+    else:
+        im = Image.open(filename)
+        im = center_crop2(im, crop_size)
+        im = im.resize((FLAGS.image_size, FLAGS.image_size), PIL.Image.LANCZOS)
+
+    # Fix grey images
+    if im.mode != "RGB":
+        im = im.convert(mode="RGB")
+    assert (im.size == (FLAGS.image_size, FLAGS.image_size))
+
+    if FLAGS.save_images:
+        im.save(crop_filename, "PNG")
+    im = np.array(im, dtype=np.float)
+
+    assert (im.shape == (FLAGS.image_size, FLAGS.image_size, 3))
+
+    # Standardize to [-1,1]
+    if FLAGS.standardize:
+        im = im / 255.
+        means = [0.485, 0.456, 0.406]
+        stds = [0.229, 0.224, 0.225]
+        # Subtract mean, then scale such that result is in (-1, 1)
+        for channel in range(3):
+            im[:, :, channel] = (im[:, :, channel] - means[channel]) * (
+                1. / means[channel])
+    else:
+        im = im / 128. - 1
+    im = np.expand_dims(im, axis=0)
+    return im
+
+
+def get_validation_images(FLAGS, crop=False):
+    print('getting validation images')
     images = np.empty((FLAGS.batch_size, FLAGS.image_size, FLAGS.image_size,
                        3))
-
-    for i in range(FLAGS.batch_size):
-        image_num_str = str(i + 1).zfill(8)
-        image_prefix = 'validation_images/ILSVRC2012_val_' + image_num_str
-        image_suffix = '.JPEG'
-        image_name = image_prefix + image_suffix
-
-        crop_filename = os.path.join(data_dir, image_prefix + '_crop' + '.png')
-
-        filename = os.path.join(data_dir, image_name)
-        if FLAGS.batch_size < 10:
-            print('opening image at', filename)
-        if not os.path.isfile(filename):
-            print('Cannot find image ', filename)
-            exit(1)
-
-        if FLAGS.load_cropped_images:
-            im = Image.open(crop_filename)
-        else:
-            im = Image.open(filename)
-            im = center_crop2(im, crop_size)
-            im = im.resize((FLAGS.image_size, FLAGS.image_size),
-                           PIL.Image.LANCZOS)
-
-        # Fix grey images
-        if im.mode != "RGB":
-            im = im.convert(mode="RGB")
-        assert (im.size == (FLAGS.image_size, FLAGS.image_size))
-
-        if FLAGS.save_images:
-            im.save(crop_filename, "PNG")
-        im = np.array(im, dtype=np.float)
-
-        assert (im.shape == (FLAGS.image_size, FLAGS.image_size, 3))
-
-        # Standardize to [-1,1]
-        if FLAGS.standardize:
-            im = im / 255.
-            means = [0.485, 0.456, 0.406]
-            stds = [0.229, 0.224, 0.225]
-            # Subtract mean, then scale such that result is in (-1, 1)
-            for channel in range(3):
-                im[:, :, channel] = (im[:, :, channel] - means[channel]) * (
-                    1. / means[channel])
-        else:
-            im = im / 128. - 1
-
-        im = np.expand_dims(im, axis=0)
-        images[i] = im
-
+    pool = mp.Pool()
+    images[:] = pool.map(get_validation_image, range(FLAGS.batch_size))
+    pool.close()
     print('got validation images')
     return images
 
