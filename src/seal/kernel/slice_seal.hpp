@@ -52,6 +52,10 @@ void slice_seal(const std::vector<HEPlaintext>& arg,
                 const Strides& strides, const Shape& out_shape) {
   NGRAPH_INFO << "Slice shape " << join(arg_shape, "x") << "=> "
               << join(out_shape, "x");
+  NGRAPH_INFO << "lower bounds " << lower_bounds;
+  NGRAPH_INFO << "upper_bounds " << upper_bounds;
+  NGRAPH_INFO << "strides " << strides;
+
   CoordinateTransform input_transform(arg_shape, lower_bounds, upper_bounds,
                                       strides);
   CoordinateTransform output_transform(out_shape);

@@ -1394,18 +1394,23 @@ void ngraph::he::HESealExecutable::generate_calls(
       const op::Slice* slice = static_cast<const op::Slice*>(&node);
       // Shape in_shape = node.get_input_shape(0);
       // Shape out_shape = node.get_output_shape(0);
-      Shape in_shape = unpacked_arg_shapes[0];
+      Shape in_shape = packed_arg_shapes[0];
+
+      const Coordinate& lower_bounds =
+          ngraph::he::HETensor::pack_shape(slice->get_lower_bounds());
+      const Coordinate& upper_bounds =
+          ngraph::he::HETensor::pack_shape(slice->get_upper_bounds());
 
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
-        ngraph::he::slice_seal(
-            arg0_cipher->get_elements(), out0_cipher->get_elements(), in_shape,
-            slice->get_lower_bounds(), slice->get_upper_bounds(),
-            slice->get_strides(), unpacked_out_shape);
+        ngraph::he::slice_seal(arg0_cipher->get_elements(),
+                               out0_cipher->get_elements(), in_shape,
+                               lower_bounds, upper_bounds, slice->get_strides(),
+                               unpacked_out_shape);
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
-        ngraph::he::slice_seal(
-            arg0_plain->get_elements(), out0_plain->get_elements(), in_shape,
-            slice->get_lower_bounds(), slice->get_upper_bounds(),
-            slice->get_strides(), unpacked_out_shape);
+        ngraph::he::slice_seal(arg0_plain->get_elements(),
+                               out0_plain->get_elements(), in_shape,
+                               lower_bounds, upper_bounds, slice->get_strides(),
+                               unpacked_out_shape);
       } else {
         throw ngraph_error("Slice types not supported.");
       }
