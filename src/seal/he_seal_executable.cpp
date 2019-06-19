@@ -1245,30 +1245,29 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     case OP_TYPEID::Pad: {
       const op::Pad* pad = static_cast<const op::Pad*>(&node);
-      const Shape arg0_shape = unpacked_arg_shapes[0];
+      const Shape arg0_shape = packed_arg_shapes[0];
 
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
         ngraph::he::pad_seal(
             arg0_cipher->get_elements(), arg1_cipher->get_elements(),
-            out0_cipher->get_elements(), arg0_shape, out_shape,
+            out0_cipher->get_elements(), arg0_shape, packed_out_shape,
             pad->get_padding_below(), pad->get_padding_above(),
             pad->get_pad_mode(), m_batch_size, m_he_seal_backend);
       } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                  out0_cipher != nullptr) {
         ngraph::he::pad_seal(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
-            out0_cipher->get_elements(), arg0_shape, out_shape,
+            out0_cipher->get_elements(), arg0_shape, packed_out_shape,
             pad->get_padding_below(), pad->get_padding_above(),
             pad->get_pad_mode(), m_batch_size, m_he_seal_backend);
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
         ngraph::he::pad_seal(
             arg0_plain->get_elements(), arg1_plain->get_elements(),
-            out0_plain->get_elements(), arg0_shape,
-            out0_plain->get_packed_shape(), pad->get_padding_below(),
-            pad->get_padding_above(), pad->get_pad_mode(), m_batch_size,
-            m_he_seal_backend);
+            out0_plain->get_elements(), arg0_shape, packed_out_shape,
+            pad->get_padding_below(), pad->get_padding_above(),
+            pad->get_pad_mode(), m_batch_size, m_he_seal_backend);
       } else {
         throw ngraph_error("Pad cipher vs. plain types not supported.");
       }
