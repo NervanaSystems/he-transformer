@@ -230,7 +230,7 @@ inline void convolution_seal(
       out[out_coord_idx] = sum;
     }
 
-    if (verbose && out_coord_idx % 1000 == 0) {
+    if (verbose && out_coord_idx % 1000 == 0 && out_coord_idx != 0) {
       NGRAPH_INFO << "Finished out coord " << out_coord_idx;
     }
   }
@@ -380,7 +380,7 @@ inline void convolution_seal(
       out[out_coord_idx] = sum;
     }
 
-    if (verbose && out_coord_idx % 1000 == 0) {
+    if (verbose && out_coord_idx % 1000 == 0 && out_coord_idx != 0) {
       NGRAPH_INFO << "Finished out coord " << out_coord_idx;
     }
   }
@@ -531,7 +531,7 @@ inline void convolution_seal(
       out[out_coord_idx] = sum;
     }
 
-    if (verbose && out_coord_idx % 1000 == 0) {
+    if (verbose && out_coord_idx % 1000 == 0 && out_coord_idx != 0) {
       NGRAPH_INFO << "Finished out coord " << out_coord_idx;
     }
   }
