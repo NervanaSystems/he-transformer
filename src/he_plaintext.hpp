@@ -27,7 +27,7 @@ namespace he {
 class HEPlaintext {
  public:
   HEPlaintext(const std::vector<float>& values) : m_values(values) {}
-  HEPlaintext() = default;
+  HEPlaintext() { m_values.reserve(1); };
   HEPlaintext(const float value) : m_values{std::vector<float>{value}} {};
 
   std::vector<float>& values() { return m_values; }

@@ -79,52 +79,56 @@ python test.py
 
 # Image-Net evaluation
 1. First, sign up for an account at image-net.org
-2. Download the 2012 test_images (all tasks)) 13GB MD5: fe64ceb247e473635708aed23ab6d839
+2. Download the 2012 test_images (all tasks)) 13GB MD5: `e64ceb247e473635708aed23ab6d839` file on image-net.org
 
-3. ```bash
+Extract the validation images:
+```bash
 tar -xf ILSVRC2012_img_test.tar
 ```
+3. Download development kit (Task 1 & 2) and extract `validation_ground_truth.txt`
 
-4. To crop images to 84x84
-```bash
-for i in $(ls *.JPEG); do convert -define jpeg:size=84x84 $i -thumbnail 84x84^ -gravity center -extent 84x84x "${i}_crop.jpeg"; done
+The directory setup should be:
+```
+DATA_DIR/validation_images/ILSVRC2012_val_00000001.JPEG
+DATA_DIR/validation_images/ILSVRC2012_val_00000002.JPEG
+...
+DATA_DIR/validation_images/ILSVRC2012_val_00050000.JPEG
+DATA_DIR/ILSVRC2012_validation_ground_truth.txt
+```
+for some `DATA_DIR` folder.
+
+For the remaining instructions, run```bash
+export DATA_DIR=path_to_your_data_dir
 ```
 
-5. Download development kit (Task 1 & 2) and extract validation_ground_truth.txt
-
-6. To run inference, call
+4. To run inference using TensorFlow on unencrypted data, call
 ```bash
 python test.py \
---data_dir=path_to_data \
---model=./model/mobilenet_v2_1.0_96_opt.pb \
---image_size=96 \
---crop_size=224 \
---batch_size=1000 \
---load_cropped_images=0 \
---save_images=0
-```
-Note, this will load each image before cropping and resizing,which takes a few seconds. To avoid this overhead each time you run inference, you can first pre-process the images.
-
-6. To pre-process images (warning, this takes ~5 minutes), call
-```bash
-python test.py \
---data_dir=path_to_data \
---model=./model/mobilenet_v2_1.0_96_opt.pb \
---image_size=96 \
---crop_size=224 \
---batch_size=1000 \
---load_cropped_images=0 \
---save_images=1
+  --data_dir=$DATA_DIR
+  --batch_size=300
 ```
 
-7. Now, this should run faster
+5. To call inference using HE_SEAL's plaintext operations (for debugging), call
 ```bash
+NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
+NGRAPH_TF_BACKEND=HE_SEAL \
+NGRAPH_BATCH_DATA=1 \
 python test.py \
---data_dir=path_to_data \
---model=./model/mobilenet_v2_1.0_96_opt.pb \
---image_size=96 \
---crop_size=224 \
---batch_size=1000 \
---load_cropped_images=1 \
---save_images=0
+--data_dir=$DATA_DIR
+--ngraph=true \
+--batch_size=300
+```
+Note: this will result in many outputs. To suppress these, pass the `NGRAPH_SILENCE_OPS=1` flag
+
+6. To call inference using encrypted data, run the below command. ***Warning***: this will take ~210GB memory.
+```bash
+OMP_NUM_THREADS=56 \
+NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
+NGRAPH_TF_BACKEND=HE_SEAL \
+NGRAPH_BATCH_DATA=1 \
+NGRAPH_ENCRYPT_DATA=1 \
+python test.py \
+--data_dir=$DATA_DIR
+--ngraph=true \
+--batch_size=2048
 ```

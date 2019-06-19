@@ -99,6 +99,7 @@ ngraph::he::HESealExecutable::HESealExecutable(
 
   m_is_compiled = true;
   ngraph::pass::Manager pass_manager;
+  NGRAPH_INFO << "Registering optimization passes";
   pass_manager.register_pass<ngraph::pass::LikeReplacement>();
   pass_manager.register_pass<ngraph::pass::AssignLayout<DenseTensorLayout>>();
   pass_manager.register_pass<ngraph::pass::CoreFusion>();
