@@ -26,11 +26,9 @@ namespace ngraph {
 namespace he {
 class HEPlaintext {
  public:
-  HEPlaintext(const std::vector<float> values = std::vector<float>{})
-      : m_values(values){};
+  HEPlaintext(const std::vector<float>& values) : m_values(values) {}
+  HEPlaintext() = default;
   HEPlaintext(const float value) : m_values{std::vector<float>{value}} {};
-
-  virtual ~HEPlaintext(){};
 
   std::vector<float>& values() { return m_values; }
   const std::vector<float>& values() const { return m_values; }

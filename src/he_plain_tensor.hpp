@@ -55,6 +55,8 @@ class HEPlainTensor : public HETensor {
     return m_plaintexts[i];
   }
 
+  inline void reset() { m_plaintexts.clear(); }
+
   inline size_t num_plaintexts() { return m_plaintexts.size(); }
 
   void set_elements(const std::vector<ngraph::he::HEPlaintext>& elements);

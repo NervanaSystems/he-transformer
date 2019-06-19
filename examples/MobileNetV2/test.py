@@ -119,7 +119,6 @@ def center_crop2(im, new_size):
 
 
 def get_validation_image(i):
-    print('getting image ', i)
     image_num_str = str(i + 1).zfill(8)
     data_dir = FLAGS.data_dir
     crop_size = FLAGS.crop_size
@@ -218,8 +217,9 @@ def main(FLAGS):
         import ngraph_bridge
 
     config = tf.ConfigProto()
-    config.intra_op_parallelism_threads = 44
-    config.inter_op_parallelism_threads = 44
+    #config.intra_op_parallelism_threads = 44
+    #config.inter_op_parallelism_threads = 44
+    # TODO: figure out why this is slow with ngraph enabled
     #config = ngraph_bridge.update_config(config)
     sess = tf.Session(config=config)
     graph_def = load_model(FLAGS.model)
@@ -241,7 +241,6 @@ def main(FLAGS):
     # print(y_pred.shape)
 
     if (FLAGS.batch_size == 1):
-        print('y_pred.shape', y_pred.shape)
         top5 = y_pred.argsort()[-5:]
     else:
         top5 = np.flip(y_pred.argsort()[:, -5:], axis=1)

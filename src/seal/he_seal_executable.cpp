@@ -104,8 +104,14 @@ ngraph::he::HESealExecutable::HESealExecutable(
   pass_manager.register_pass<ngraph::pass::CoreFusion>();
   pass_manager.register_pass<ngraph::pass::ConstantFolding>();
   pass_manager.register_pass<ngraph::pass::Liveness>();
-  pass_manager.register_pass<ngraph::he::pass::HEFusion>();
+  NGRAPH_INFO << "Running general optimization passes";
   pass_manager.run_passes(function);
+
+  ngraph::pass::Manager pass_manager_he;
+  pass_manager_he.register_pass<ngraph::he::pass::HEFusion>();
+  NGRAPH_INFO << "Running HE optimization passes";
+  pass_manager_he.run_passes(function);
+  NGRAPH_INFO << "Done running optimization passes";
 
   for (const std::shared_ptr<Node>& node : function->get_ordered_ops()) {
     m_wrapped_nodes.emplace_back(node);
@@ -502,6 +508,7 @@ bool ngraph::he::HESealExecutable::call(
                                     plain_input->get_element(i),
                                     m_complex_packing);
         }
+        plain_input->reset();
         tensor_map.insert({tv, cipher_input});
         input_count++;
       } else {
@@ -1385,12 +1392,17 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     case OP_TYPEID::Slice: {
       const op::Slice* slice = static_cast<const op::Slice*>(&node);
-      const Shape& in_shape = packed_arg_shapes[0];
+      Shape& in_shape = packed_arg_shapes[0];
+      Coordinate lower_bounds = slice->get_lower_bounds();
+      Coordinate upper_bounds = slice->get_upper_bounds();
 
-      const Coordinate& lower_bounds =
-          ngraph::he::HETensor::pack_shape(slice->get_lower_bounds());
-      const Coordinate& upper_bounds =
-          ngraph::he::HETensor::pack_shape(slice->get_upper_bounds());
+      if (m_batch_data) {
+        in_shape = unpacked_arg_shapes[0];
+        lower_bounds =
+            ngraph::he::HETensor::pack_shape(slice->get_lower_bounds());
+        upper_bounds =
+            ngraph::he::HETensor::pack_shape(slice->get_upper_bounds());
+      }
 
       const Strides& strides = slice->get_strides();
 
