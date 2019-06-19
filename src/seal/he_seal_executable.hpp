@@ -84,7 +84,7 @@ class HESealExecutable : public runtime::Executable {
                              std::shared_ptr<HESealCipherTensor>& out_cipher,
                              const NodeWrapper& node_wrapper);
 
-  bool op_verbose(const ngraph::Node& op) {
+  bool verbose_op(const ngraph::Node& op) {
     return !m_silence_all_ops &&
            m_silent_ops.find(op.description()) == m_silent_ops.end();
   };

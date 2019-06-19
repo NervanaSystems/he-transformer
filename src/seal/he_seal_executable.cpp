@@ -526,7 +526,7 @@ bool ngraph::he::HESealExecutable::call(
     auto op = wrapped.get_node();
     auto type_id = wrapped.get_typeid();
 
-    if (op_verbose(*op)) {
+    if (verbose_op(*op)) {
       NGRAPH_INFO << "\033[1;32m"
                   << "[ " << op->get_name() << " ]"
                   << "\033[0m";
@@ -624,7 +624,7 @@ bool ngraph::he::HESealExecutable::call(
         }
       }
     }
-    if (op_verbose(*op)) {
+    if (verbose_op(*op)) {
       NGRAPH_INFO << "\033[1;31m" << op->get_name() << " took "
                   << m_timer_map[op].get_milliseconds() << "ms"
                   << "\033[0m";
@@ -757,7 +757,7 @@ void ngraph::he::HESealExecutable::generate_calls(
                  "arg1 is both cipher and plain?");
   }
 
-  if (op_verbose(node)) {
+  if (verbose_op(node)) {
     std::stringstream ss;
     ss << "Inputs: ";
     if (arg0_cipher != nullptr) {
@@ -1002,7 +1002,7 @@ void ngraph::he::HESealExecutable::generate_calls(
       Shape in_shape0 = packed_arg_shapes[0];
       Shape in_shape1 = unpacked_arg_shapes[1];
 
-      bool verbose = op_verbose(node);
+      bool verbose = verbose_op(node);
 
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
@@ -1052,7 +1052,11 @@ void ngraph::he::HESealExecutable::generate_calls(
       Shape in_shape0 = packed_arg_shapes[0];
       Shape in_shape1 = unpacked_arg_shapes[1];
 
-      NGRAPH_INFO << join(in_shape0, "x") << " dot " << join(in_shape1, "x");
+      bool verbose = verbose_op(node);
+
+      if (verbose) {
+        NGRAPH_INFO << join(in_shape0, "x") << " dot " << join(in_shape1, "x");
+      }
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
         ngraph::he::dot_seal(
@@ -1066,14 +1070,14 @@ void ngraph::he::HESealExecutable::generate_calls(
             out0_cipher->get_elements(), in_shape0, in_shape1, packed_out_shape,
             dot->get_reduction_axes_count(), type, m_he_seal_backend);
 
-        lazy_rescaling(out0_cipher);
+        lazy_rescaling(out0_cipher, verbose);
       } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
                  out0_cipher != nullptr) {
         ngraph::he::dot_seal(
             arg0_plain->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), in_shape0, in_shape1, packed_out_shape,
             dot->get_reduction_axes_count(), type, m_he_seal_backend);
-        lazy_rescaling(out0_cipher);
+        lazy_rescaling(out0_cipher, verbose);
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
         ngraph::he::dot_seal(
