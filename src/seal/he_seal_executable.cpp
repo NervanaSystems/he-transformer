@@ -950,10 +950,10 @@ void ngraph::he::HESealExecutable::generate_calls(
             throw ngraph_error("Concat type not consistent");
           }
           in_args.push_back(arg_cipher->get_elements());
-          in_shapes.push_back(arg_cipher->get_shape());
+          in_shapes.push_back(arg_cipher->get_packed_shape());
         }
         ngraph::he::concat_seal(in_args, out0_cipher->get_elements(), in_shapes,
-                                node.get_output_shape(0),
+                                packed_out_shape,
                                 concat->get_concatenation_axis());
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
         std::vector<Shape> in_shapes;
@@ -965,10 +965,10 @@ void ngraph::he::HESealExecutable::generate_calls(
             throw ngraph_error("Concat type not consistent");
           }
           in_args.emplace_back(arg_plain->get_elements());
-          in_shapes.push_back(arg_plain->get_shape());
+          in_shapes.push_back(arg_plain->get_packed_shape());
         }
         ngraph::he::concat_seal(in_args, out0_plain->get_elements(), in_shapes,
-                                node.get_output_shape(0),
+                                packed_out_shape,
                                 concat->get_concatenation_axis());
       } else {
         throw ngraph_error("Concat types not supported.");
@@ -1413,8 +1413,6 @@ void ngraph::he::HESealExecutable::generate_calls(
         ngraph::he::slice_seal(
             arg0_plain->get_elements(), out0_plain->get_elements(), in_shape,
             lower_bounds, upper_bounds, strides, packed_out_shape);
-        NGRAPH_INFO << "out0_plain->num_plaintexts() "
-                    << out0_plain->num_plaintexts();
         for (size_t elem_idx = 0; elem_idx < out0_plain->num_plaintexts();
              ++elem_idx) {
           const auto elem = out0_plain->get_element(elem_idx);
