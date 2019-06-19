@@ -23,34 +23,34 @@
 ngraph::he::HETensor::HETensor(const element::Type& element_type,
                                const Shape& shape,
                                const ngraph::he::HESealBackend& he_seal_backend,
-                               const bool batched, const std::string& name)
+                               const bool packed, const std::string& name)
     : ngraph::runtime::Tensor(std::make_shared<ngraph::descriptor::Tensor>(
           element_type, shape, name)),
       m_he_seal_backend(he_seal_backend),
-      m_batched(batched) {
+      m_packed(packed) {
   m_descriptor->set_tensor_layout(
       std::make_shared<ngraph::descriptor::layout::DenseTensorLayout>(
           *m_descriptor));
 
-  if (batched) {
+  if (packed) {
     m_batch_size = shape[0];
-    m_batched_shape = batch_shape(shape, 0);
+    m_packed_shape = pack_shape(shape, 0);
   } else {
     m_batch_size = 1;
-    m_batched_shape = shape;
+    m_packed_shape = shape;
   }
 }
 
-ngraph::Shape ngraph::he::HETensor::batch_shape(const ngraph::Shape& shape,
-                                                size_t batch_axis) {
+ngraph::Shape ngraph::he::HETensor::pack_shape(const ngraph::Shape& shape,
+                                               size_t batch_axis) {
   if (batch_axis != 0) {
-    throw ngraph::ngraph_error("Batching only supported along axis 0");
+    throw ngraph::ngraph_error("Packing only supported along axis 0");
   }
-  ngraph::Shape batched_shape(shape);
+  ngraph::Shape packed_shape(shape);
   if (shape.size() > 0) {
-    batched_shape[0] = 1;
+    packed_shape[0] = 1;
   }
-  return batched_shape;
+  return packed_shape;
 }
 
 void ngraph::he::HETensor::check_io_bounds(const void* source, size_t n) const {

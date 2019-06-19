@@ -715,26 +715,28 @@ void ngraph::he::HESealExecutable::generate_calls(
                 << "ms";
   };
 
-  std::vector<Shape> arg_shapes{};
-  std::vector<Shape> unbatched_arg_shapes{};
+  std::vector<Shape> packed_arg_shapes{};
+  std::vector<Shape> unpacked_arg_shapes{};
   for (size_t arg_idx = 0; arg_idx < args.size(); ++arg_idx) {
     Shape arg_shape = node.get_input_shape(arg_idx);
-    unbatched_arg_shapes.emplace_back(arg_shape);
+    unpacked_arg_shapes.emplace_back(arg_shape);
     if (m_batch_data) {
-      arg_shape = ngraph::he::HETensor::batch_shape(arg_shape);
+      arg_shape = ngraph::he::HETensor::pack_shape(arg_shape);
     }
-    arg_shapes.emplace_back(arg_shape);
+    packed_arg_shapes.emplace_back(arg_shape);
   }
 
   Shape out_shape{};
-  Shape unbatched_out_shape{};
+  Shape unpacked_out_shape{};
   if (node.get_output_size() > 0) {
     NGRAPH_CHECK(node.get_output_size() == 1,
                  "Only support single-output functions");
     out_shape = node.get_output_shape(0);
-    unbatched_out_shape = out_shape;
+    unpacked_out_shape = out_shape;
     if (m_batch_data) {
-      out_shape = ngraph::he::HETensor::batch_shape(out_shape);
+      NGRAPH_INFO << "before batchign " << join(out_shape, "x");
+      unpacked_out_shape = ngraph::he::HETensor::pack_shape(unpacked_out_shape);
+      NGRAPH_INFO << "after batching " << join(unpacked_out_shape, "x");
     }
   }
 
@@ -818,11 +820,11 @@ void ngraph::he::HESealExecutable::generate_calls(
     }
     case OP_TYPEID::AvgPool: {
       const op::AvgPool* avg_pool = static_cast<const op::AvgPool*>(&node);
-      Shape in_shape = arg_shapes[0];
+      Shape in_shape = unpacked_arg_shapes[0];
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
         ngraph::he::avg_pool_seal(
             arg0_cipher->get_elements(), out0_cipher->get_elements(), in_shape,
-            out_shape, avg_pool->get_window_shape(),
+            unpacked_out_shape, avg_pool->get_window_shape(),
             avg_pool->get_window_movement_strides(),
             avg_pool->get_padding_below(), avg_pool->get_padding_above(),
             avg_pool->get_include_padding_in_avg_computation(),
@@ -832,7 +834,7 @@ void ngraph::he::HESealExecutable::generate_calls(
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
         ngraph::he::avg_pool_seal(
             arg0_plain->get_elements(), out0_plain->get_elements(), in_shape,
-            out_shape, avg_pool->get_window_shape(),
+            unpacked_out_shape, avg_pool->get_window_shape(),
             avg_pool->get_window_movement_strides(),
             avg_pool->get_padding_below(), avg_pool->get_padding_above(),
             avg_pool->get_include_padding_in_avg_computation(),
@@ -868,7 +870,7 @@ void ngraph::he::HESealExecutable::generate_calls(
       ngraph::he::batch_norm_inference_seal(
           eps, gamma->get_elements(), beta->get_elements(),
           input->get_elements(), mean->get_elements(), variance->get_elements(),
-          out0_cipher->get_elements(), arg_shapes[2], m_batch_size,
+          out0_cipher->get_elements(), packed_arg_shapes[2], m_batch_size,
           m_he_seal_backend);
       break;
     }
@@ -916,7 +918,7 @@ void ngraph::he::HESealExecutable::generate_calls(
       const op::Broadcast* broadcast = static_cast<const op::Broadcast*>(&node);
       AxisSet broadcast_axes = broadcast->get_broadcast_axes();
 
-      Shape in_shape = arg_shapes[0];
+      Shape in_shape = unpacked_arg_shapes[0];
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
         ngraph::he::broadcast_seal(arg0_cipher->get_elements(),
                                    out0_cipher->get_elements(), in_shape,
@@ -997,25 +999,32 @@ void ngraph::he::HESealExecutable::generate_calls(
       auto padding_above = c->get_padding_above();
       auto data_dilation_strides = c->get_data_dilation_strides();
 
-      Shape in_shape0 = arg_shapes[0];
-      Shape in_shape1 = unbatched_arg_shapes[1];
+      Shape in_shape0 = packed_arg_shapes[0];
+      Shape in_shape1 = unpacked_arg_shapes[1];
+
+      NGRAPH_INFO << "Conv shapes";
+      NGRAPH_INFO << "in_shape0 " << join(in_shape0, "x");
+      NGRAPH_INFO << "in_shape1 " << join(in_shape1, "x");
+      NGRAPH_INFO << "unpacked_out_shape " << join(unpacked_out_shape, "x");
 
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
         ngraph::he::convolution_seal(
             arg0_cipher->get_elements(), arg1_cipher->get_elements(),
-            out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
-            window_movement_strides, window_dilation_strides, padding_below,
-            padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
-            m_batch_size, m_he_seal_backend);
+            out0_cipher->get_elements(), in_shape0, in_shape1,
+            unpacked_out_shape, window_movement_strides,
+            window_dilation_strides, padding_below, padding_above,
+            data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type, m_batch_size,
+            m_he_seal_backend);
       } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                  out0_cipher != nullptr) {
         ngraph::he::convolution_seal(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
-            out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
-            window_movement_strides, window_dilation_strides, padding_below,
-            padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
-            m_batch_size, m_he_seal_backend);
+            out0_cipher->get_elements(), in_shape0, in_shape1,
+            unpacked_out_shape, window_movement_strides,
+            window_dilation_strides, padding_below, padding_above,
+            data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type, m_batch_size,
+            m_he_seal_backend);
 
         lazy_rescaling(out0_cipher);
 
@@ -1023,10 +1032,11 @@ void ngraph::he::HESealExecutable::generate_calls(
                  out0_cipher != nullptr) {
         ngraph::he::convolution_seal(
             arg0_plain->get_elements(), arg1_cipher->get_elements(),
-            out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
-            window_movement_strides, window_dilation_strides, padding_below,
-            padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
-            m_batch_size, m_he_seal_backend);
+            out0_cipher->get_elements(), in_shape0, in_shape1,
+            unpacked_out_shape, window_movement_strides,
+            window_dilation_strides, padding_below, padding_above,
+            data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type, m_batch_size,
+            m_he_seal_backend);
 
         lazy_rescaling(out0_cipher);
 
@@ -1034,10 +1044,11 @@ void ngraph::he::HESealExecutable::generate_calls(
                  out0_plain != nullptr) {
         ngraph::he::convolution_seal(
             arg0_plain->get_elements(), arg1_plain->get_elements(),
-            out0_plain->get_elements(), in_shape0, in_shape1, out_shape,
-            window_movement_strides, window_dilation_strides, padding_below,
-            padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
-            m_batch_size, m_he_seal_backend);
+            out0_plain->get_elements(), in_shape0, in_shape1,
+            unpacked_out_shape, window_movement_strides,
+            window_dilation_strides, padding_below, padding_above,
+            data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type, m_batch_size,
+            m_he_seal_backend);
       } else {
         throw ngraph_error("Convolution types not supported.");
       }
@@ -1045,37 +1056,40 @@ void ngraph::he::HESealExecutable::generate_calls(
     }
     case OP_TYPEID::Dot: {
       const op::Dot* dot = static_cast<const op::Dot*>(&node);
-      Shape in_shape0 = arg_shapes[0];
-      Shape in_shape1 = unbatched_arg_shapes[1];
+      Shape in_shape0 = packed_arg_shapes[0];
+      Shape in_shape1 = unpacked_arg_shapes[1];
 
       NGRAPH_INFO << join(in_shape0, "x") << " dot " << join(in_shape1, "x");
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
         ngraph::he::dot_seal(
             arg0_cipher->get_elements(), arg1_cipher->get_elements(),
-            out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
-            dot->get_reduction_axes_count(), type, m_he_seal_backend);
+            out0_cipher->get_elements(), in_shape0, in_shape1,
+            unpacked_out_shape, dot->get_reduction_axes_count(), type,
+            m_he_seal_backend);
       } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                  out0_cipher != nullptr) {
         ngraph::he::dot_seal(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
-            out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
-            dot->get_reduction_axes_count(), type, m_he_seal_backend);
+            out0_cipher->get_elements(), in_shape0, in_shape1,
+            unpacked_out_shape, dot->get_reduction_axes_count(), type,
+            m_he_seal_backend);
 
         lazy_rescaling(out0_cipher);
       } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
                  out0_cipher != nullptr) {
         ngraph::he::dot_seal(
             arg0_plain->get_elements(), arg1_cipher->get_elements(),
-            out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
-            dot->get_reduction_axes_count(), type, m_he_seal_backend);
+            out0_cipher->get_elements(), in_shape0, in_shape1,
+            unpacked_out_shape, dot->get_reduction_axes_count(), type,
+            m_he_seal_backend);
         lazy_rescaling(out0_cipher);
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
         ngraph::he::dot_seal(
             arg0_plain->get_elements(), arg1_plain->get_elements(),
             out0_plain->get_elements(), in_shape0, in_shape1,
-            out0_plain->get_batched_shape(), dot->get_reduction_axes_count(),
+            out0_plain->get_packed_shape(), dot->get_reduction_axes_count(),
             type, m_he_seal_backend);
       } else {
         throw ngraph_error("Dot types not supported.");
@@ -1087,7 +1101,7 @@ void ngraph::he::HESealExecutable::generate_calls(
       if (arg0_plain != nullptr && out0_plain != nullptr) {
         ngraph::he::max_pool_seal(
             arg0_plain->get_elements(), out0_plain->get_elements(),
-            node.get_input_shape(0), out0_plain->get_batched_shape(),
+            node.get_input_shape(0), out0_plain->get_packed_shape(),
             max_pool->get_window_shape(),
             max_pool->get_window_movement_strides(),
             max_pool->get_padding_below(), max_pool->get_padding_above());
@@ -1107,7 +1121,7 @@ void ngraph::he::HESealExecutable::generate_calls(
                      out0_cipher->num_ciphertexts());
         ngraph::he::max_pool_seal(
             arg0_cipher->get_elements(), out0_cipher->get_elements(),
-            node.get_input_shape(0), out0_cipher->get_batched_shape(),
+            node.get_input_shape(0), out0_cipher->get_packed_shape(),
             max_pool->get_window_shape(),
             max_pool->get_window_movement_strides(),
             max_pool->get_padding_below(), max_pool->get_padding_above(),
@@ -1241,7 +1255,7 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     case OP_TYPEID::Pad: {
       const op::Pad* pad = static_cast<const op::Pad*>(&node);
-      const Shape arg0_shape = arg_shapes[0];
+      const Shape arg0_shape = unpacked_arg_shapes[0];
 
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
@@ -1262,7 +1276,7 @@ void ngraph::he::HESealExecutable::generate_calls(
         ngraph::he::pad_seal(
             arg0_plain->get_elements(), arg1_plain->get_elements(),
             out0_plain->get_elements(), arg0_shape,
-            out0_plain->get_batched_shape(), pad->get_padding_below(),
+            out0_plain->get_packed_shape(), pad->get_padding_below(),
             pad->get_padding_above(), pad->get_pad_mode(), m_batch_size,
             m_he_seal_backend);
       } else {
@@ -1275,52 +1289,6 @@ void ngraph::he::HESealExecutable::generate_calls(
           static_cast<const op::Passthrough*>(&node);
       throw unsupported_op{"Unsupported operation language: " +
                            passthrough->language()};
-    }
-    case OP_TYPEID::Reshape: {
-      const op::Reshape* reshape = static_cast<const op::Reshape*>(&node);
-      if (arg0_cipher != nullptr && out0_cipher != nullptr) {
-        ngraph::he::reshape_seal(
-            arg0_cipher->get_elements(), out0_cipher->get_elements(),
-            arg0_cipher->get_batched_shape(), reshape->get_input_order(),
-            unbatched_out_shape);
-      } else if (arg0_plain != nullptr && out0_plain != nullptr) {
-        ngraph::he::reshape_seal(
-            arg0_plain->get_elements(), out0_plain->get_elements(),
-            arg0_plain->get_batched_shape(), reshape->get_input_order(),
-            unbatched_out_shape);
-      } else {
-        throw ngraph_error("Reshape types not supported.");
-      }
-      break;
-    }
-    case OP_TYPEID::Result: {
-      size_t output_size;
-      if (arg0_plain != nullptr) {
-        output_size = arg0_plain->get_batched_element_count();
-      } else if (arg0_cipher != nullptr) {
-        output_size = arg0_cipher->get_batched_element_count();
-      } else {
-        throw ngraph_error(
-            "Input argument is neither plaintext nor ciphertext");
-      }
-      if (arg0_cipher != nullptr && out0_cipher != nullptr) {
-        ngraph::he::result_seal(arg0_cipher->get_elements(),
-                                out0_cipher->get_elements(), output_size);
-      } else if (arg0_plain != nullptr && out0_cipher != nullptr) {
-        ngraph::he::result_seal(arg0_plain->get_elements(),
-                                out0_cipher->get_elements(), output_size,
-                                m_he_seal_backend);
-      } else if (arg0_cipher != nullptr && out0_plain != nullptr) {
-        ngraph::he::result_seal(arg0_cipher->get_elements(),
-                                out0_plain->get_elements(), output_size,
-                                m_he_seal_backend);
-      } else if (arg0_plain != nullptr && out0_plain != nullptr) {
-        ngraph::he::result_seal(arg0_plain->get_elements(),
-                                out0_plain->get_elements(), output_size);
-      } else {
-        throw ngraph_error("Result types not supported.");
-      }
-      break;
     }
     case OP_TYPEID::Relu: {
       if (arg0_plain != nullptr && out0_plain != nullptr) {
@@ -1355,6 +1323,53 @@ void ngraph::he::HESealExecutable::generate_calls(
       handle_server_relu_op(arg0_cipher, out0_cipher, node_wrapper);
       break;
     }
+    case OP_TYPEID::Reshape: {
+      const op::Reshape* reshape = static_cast<const op::Reshape*>(&node);
+      if (arg0_cipher != nullptr && out0_cipher != nullptr) {
+        ngraph::he::reshape_seal(
+            arg0_cipher->get_elements(), out0_cipher->get_elements(),
+            arg0_cipher->get_packed_shape(), reshape->get_input_order(),
+            unpacked_out_shape);
+      } else if (arg0_plain != nullptr && out0_plain != nullptr) {
+        ngraph::he::reshape_seal(
+            arg0_plain->get_elements(), out0_plain->get_elements(),
+            arg0_plain->get_packed_shape(), reshape->get_input_order(),
+            unpacked_out_shape);
+      } else {
+        throw ngraph_error("Reshape types not supported.");
+      }
+      break;
+    }
+    case OP_TYPEID::Result: {
+      size_t output_size;
+      if (arg0_plain != nullptr) {
+        output_size = arg0_plain->get_batched_element_count();
+      } else if (arg0_cipher != nullptr) {
+        output_size = arg0_cipher->get_batched_element_count();
+      } else {
+        throw ngraph_error(
+            "Input argument is neither plaintext nor ciphertext");
+      }
+      if (arg0_cipher != nullptr && out0_cipher != nullptr) {
+        ngraph::he::result_seal(arg0_cipher->get_elements(),
+                                out0_cipher->get_elements(), output_size);
+      } else if (arg0_plain != nullptr && out0_cipher != nullptr) {
+        ngraph::he::result_seal(arg0_plain->get_elements(),
+                                out0_cipher->get_elements(), output_size,
+                                m_he_seal_backend);
+      } else if (arg0_cipher != nullptr && out0_plain != nullptr) {
+        ngraph::he::result_seal(arg0_cipher->get_elements(),
+                                out0_plain->get_elements(), output_size,
+                                m_he_seal_backend);
+      } else if (arg0_plain != nullptr && out0_plain != nullptr) {
+        ngraph::he::result_seal(arg0_plain->get_elements(),
+                                out0_plain->get_elements(), output_size);
+      } else {
+        throw ngraph_error("Result types not supported.");
+      }
+      break;
+    }
+
     case OP_TYPEID::Reverse: {
       const op::Reverse* reverse = static_cast<const op::Reverse*>(&node);
       Shape in_shape = node.get_input_shape(0);
@@ -1377,21 +1392,20 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     case OP_TYPEID::Slice: {
       const op::Slice* slice = static_cast<const op::Slice*>(&node);
-      Shape in_shape = node.get_input_shape(0);
-      Shape out_shape = node.get_output_shape(0);
-
-      out_shape[0] /= m_batch_size;
+      // Shape in_shape = node.get_input_shape(0);
+      // Shape out_shape = node.get_output_shape(0);
+      Shape in_shape = unpacked_arg_shapes[0];
 
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
         ngraph::he::slice_seal(
             arg0_cipher->get_elements(), out0_cipher->get_elements(), in_shape,
             slice->get_lower_bounds(), slice->get_upper_bounds(),
-            slice->get_strides(), out_shape);
+            slice->get_strides(), unpacked_out_shape);
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
         ngraph::he::slice_seal(
             arg0_plain->get_elements(), out0_plain->get_elements(), in_shape,
             slice->get_lower_bounds(), slice->get_upper_bounds(),
-            slice->get_strides(), out_shape);
+            slice->get_strides(), unpacked_out_shape);
       } else {
         throw ngraph_error("Slice types not supported.");
       }
