@@ -22,6 +22,7 @@ import json
 import argparse
 import os
 import time
+import PIL
 from PIL import Image
 
 
@@ -41,7 +42,6 @@ def load_model(filename):
     graph_def.ParseFromString(f.read())
     sess.graph.as_default()
     tf.import_graph_def(graph_def, name='')
-    print('loaded graph')
     return graph_def
 
 
@@ -50,7 +50,8 @@ def get_test_image():
         'grace_hopper.jpg',
         'https://storage.googleapis.com/download.tensorflow.org/example_images/grace_hopper.jpg'
     )
-    grace_hopper = Image.open(grace_hopper).resize((96, 96))
+    grace_hopper = Image.open(grace_hopper).resize((FLAGS.image_size,
+                                                    FLAGS.image_size))
     grace_hopper = np.array(grace_hopper) / 255.0
     print(grace_hopper.shape)
 
@@ -59,19 +60,15 @@ def get_test_image():
 
 
 def get_imagenet_training_labels():
-    print('getting training labels')
-
     labels_path = tf.keras.utils.get_file(
         'ImageNetLabels.txt',
         'https://storage.googleapis.com/download.tensorflow.org/data/ImageNetLabels.txt'
     )
     imagenet_labels = np.array(open(labels_path).read().splitlines())
-    print('got training labels')
     return imagenet_labels
 
 
 def get_imagenet_inference_labels():
-    print('getting inference labels')
     filename = "https://gist.githubusercontent.com/aaronpolhamus/964a4411c0906315deb9f4a3723aac57/raw/aa66dd9dbf6b56649fa3fab83659b2acbf3cbfd1/map_clsloc.txt"
 
     labels_path = tf.keras.utils.get_file('map_clsloc.txt', filename)
@@ -79,13 +76,10 @@ def get_imagenet_inference_labels():
     labels = ['background'] + [label.split()[2] for label in labels]
     labels = [label.replace('_', ' ') for label in labels]
     labels = np.array(labels)
-    print('labels', labels)
-    print('got inference labels')
     return labels
 
 
 def get_validation_labels(FLAGS):
-    print('getting validation labels')
     data_dir = FLAGS.data_dir
     ground_truth_filename = 'ILSVRC2012_validation_ground_truth.txt'
 
@@ -96,31 +90,38 @@ def get_validation_labels(FLAGS):
         exit(1)
 
     truth_labels = np.loadtxt(truth_file, dtype=np.int32)
-    print(truth_labels.shape)
-
     assert (truth_labels.shape == (50000, ))
-    print('got validation labels')
-
     return truth_labels[0:FLAGS.batch_size]
 
 
 def center_crop(im, new_size):
     # Center-crop image
-    width, height = im.size  # Get dimensions
-    #print('original size', im.size)
-
+    width, height = im.size
     left = (width - new_size) / 2
     top = (height - new_size) / 2
     right = (width + new_size) / 2
     bottom = (height + new_size) / 2
     im = im.crop((left, top, right, bottom))
+    assert (im.size == (new_size, new_size))
+    return im
+
+
+def center_crop2(im, new_size):
+    # Resize such that shortest side has new_size
+    width, height = im.size
+    ratio = min(width / new_size, height / new_size)
+    im = im.resize((int(width / ratio), int(height / ratio)),
+                   resample=Image.BICUBIC)
+
+    # Center crop to new_size x new_size
+    im = center_crop(im, new_size)
     return im
 
 
 def get_validation_images(FLAGS, crop=False):
     print('getting validation images')
     data_dir = FLAGS.data_dir
-    crop_size = FLAGS.image_size
+    crop_size = FLAGS.crop_size
     images = np.empty((FLAGS.batch_size, FLAGS.image_size, FLAGS.image_size,
                        3))
 
@@ -130,6 +131,8 @@ def get_validation_images(FLAGS, crop=False):
         image_suffix = '.JPEG'
         image_name = image_prefix + image_suffix
 
+        crop_filename = os.path.join(data_dir, image_prefix + '_crop' + '.png')
+
         filename = os.path.join(data_dir, image_name)
         if FLAGS.batch_size < 10:
             print('opening image at', filename)
@@ -137,24 +140,35 @@ def get_validation_images(FLAGS, crop=False):
             print('Cannot find image ', filename)
             exit(1)
 
-        im = Image.open(filename)
-        im = center_crop(im, crop_size)
-        im = im.resize((FLAGS.image_size, FLAGS.image_size))
-        assert (im.size == (FLAGS.image_size, FLAGS.image_size))
-
-        crop_filename = os.path.join(data_dir, image_prefix + '_crop' + '.png')
-        im.save(crop_filename, "PNG")
-        im = np.array(im, dtype=np.float)
-        #print('image', im)
-        # Standardize to [-1,1]
-        im = im / 128. - 1
-        # print('std image', im)
+        if FLAGS.load_cropped_images:
+            im = Image.open(crop_filename)
+        else:
+            im = Image.open(filename)
+            im = center_crop2(im, crop_size)
+            im = im.resize((FLAGS.image_size, FLAGS.image_size),
+                           PIL.Image.LANCZOS)
 
         # Fix grey images
-        if im.shape == (FLAGS.image_size, FLAGS.image_size):
-            im = np.expand_dims(im, axis=3)
-            im = np.repeat(im, 3, axis=2)
+        if im.mode != "RGB":
+            im = im.convert(mode="RGB")
+        assert (im.size == (FLAGS.image_size, FLAGS.image_size))
+
+        if FLAGS.save_images:
+            im.save(crop_filename, "PNG")
+        im = np.array(im, dtype=np.float)
+
         assert (im.shape == (FLAGS.image_size, FLAGS.image_size, 3))
+
+        # Standardize to [-1,1]
+        #im = im / 128. - 1
+        im = im / 255.
+        means = [0.485, 0.456, 0.406]
+        stds = [0.229, 0.224, 0.225]
+        for channel in range(3):
+            im[:, :, channel] = (
+                im[:, :, channel] - means[channel])  #ß / stds[channel]
+
+        # print(np.mean(im), np.std(im))
 
         im = np.expand_dims(im, axis=0)
         images[i] = im
@@ -178,16 +192,19 @@ def accuracy(preds, truth):
             if truth[i] in preds[i]:
                 top5_cnt += 1
 
-    top5_acc = top5_cnt / float(num_preds)
-    top1_acc = top1_cnt / float(num_preds)
+    top5_acc = top5_cnt / float(num_preds) * 100.
+    top1_acc = top1_cnt / float(num_preds) * 100.
 
-    print('top1_acc', top1_acc)
-    print('top5_acc', top5_acc)
+    print('top1_acc', np.round(top1_acc, 3))
+    print('top5_acc', np.round(top5_acc, 3))
 
 
 def main(FLAGS):
     imagenet_inference_labels = get_imagenet_inference_labels()
     imagenet_training_labels = get_imagenet_training_labels()
+
+    assert (
+        sorted(imagenet_training_labels) == sorted(imagenet_inference_labels))
 
     validation_nums = get_validation_labels(FLAGS)
     x_test = get_validation_images(FLAGS)
@@ -207,8 +224,6 @@ def main(FLAGS):
 
     print('performing inference')
     start_time = time.time()
-    print('performing inference??')
-
     y_pred = sess.run(output_tensor, {input_tensor: x_test})
     end_time = time.time()
     runtime = end_time - start_time
@@ -234,6 +249,17 @@ def main(FLAGS):
     accuracy(preds, validation_labels)
 
 
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -252,7 +278,24 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--image_size', type=int, default=96, help='image size')
+    parser.add_argument(
+        '--save_images',
+        type=str2bool,
+        default=False,
+        help='save cropped images')
+    parser.add_argument(
+        '--load_cropped_images',
+        type=str2bool,
+        default=False,
+        help='load saved cropped images')
+    parser.add_argument(
+        '--crop_size',
+        type=int,
+        default=224,
+        help='crop to this size before resizing to image_size')
     parser.add_argument('--batch_size', type=int, default=1, help='Batch size')
 
     FLAGS, unparsed = parser.parse_known_args()
+
+    print(FLAGS)
     main(FLAGS)

@@ -20,7 +20,7 @@ Also be sure the `he_seal_client` wheel has been installed
 export PATH=$HE_TRANSFORMER/build/ext_ngraph_tf/src/ext_ngraph_tf/build_cmake/tensorflow/bazel-bin/tensorflow/tools/graph_transforms:$PATH
 ```
 
-2. To download the model and optimize for inference, call
+2. To download the models and optimize for inference, call
 ```bash
 python get_models.py
 ```
@@ -78,8 +78,6 @@ python test.py
 ```
 
 # Image-Net evaluation
-
-
 1. First, sign up for an account at image-net.org
 2. Download the 2012 test_images (all tasks)) 13GB MD5: fe64ceb247e473635708aed23ab6d839
 
@@ -92,4 +90,41 @@ tar -xf ILSVRC2012_img_test.tar
 for i in $(ls *.JPEG); do convert -define jpeg:size=84x84 $i -thumbnail 84x84^ -gravity center -extent 84x84x "${i}_crop.jpeg"; done
 ```
 
-3. Download development kit (Task 1 & 2) and extract validation_ground_truth.txt
+5. Download development kit (Task 1 & 2) and extract validation_ground_truth.txt
+
+6. To run inference, call
+```bash
+python test.py \
+--data_dir=path_to_data \
+--model=./model/mobilenet_v2_1.0_96_opt.pb \
+--image_size=96 \
+--crop_size=224 \
+--batch_size=1000 \
+--load_cropped_images=0 \
+--save_images=0
+```
+Note, this will load each image before cropping and resizing,which takes a few seconds. To avoid this overhead each time you run inference, you can first pre-process the images.
+
+6. To pre-process images (warning, this takes ~5 minutes), call
+```bash
+python test.py \
+--data_dir=path_to_data \
+--model=./model/mobilenet_v2_1.0_96_opt.pb \
+--image_size=96 \
+--crop_size=224 \
+--batch_size=1000 \
+--load_cropped_images=0 \
+--save_images=1
+```
+
+7. Now, this should run faster
+```bash
+python test.py \
+--data_dir=path_to_data \
+--model=./model/mobilenet_v2_1.0_96_opt.pb \
+--image_size=96 \
+--crop_size=224 \
+--batch_size=1000 \
+--load_cropped_images=1 \
+--save_images=0
+```
