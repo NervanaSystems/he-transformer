@@ -51,10 +51,10 @@ class HETensor : public runtime::Tensor {
   /// @param batch_dim Axis along which to batch
   /// @param batched Whether or not batching is enabled
   /// @return Shape after batching along batch axis
-  static Shape batch_shape(const Shape& shape, size_t batch_axis = 0);
+  static Shape pack_shape(const Shape& shape, size_t batch_axis = 0);
 
-  /// @brief Returns the shape of the un-expanded (batched) tensor.
-  const Shape& get_batched_shape() const { return m_batched_shape; };
+  /// @brief Returns the shape of the un-expanded (i.e. packed) tensor.
+  const Shape& get_packed_shape() const { return m_packed_shape; };
 
   /// @brief Returns the shape of the expanded (batched) tensor.
   const Shape& get_expanded_shape() const { return get_shape(); };
@@ -65,16 +65,16 @@ class HETensor : public runtime::Tensor {
     return get_element_count() / get_batch_size();
   }
 
-  inline bool is_batched() { return m_batched; }
+  inline bool is_batched() { return m_packed; }
 
  protected:
   void check_io_bounds(const void* p, size_t n) const;
 
   const HESealBackend& m_he_seal_backend;
-  bool m_batched;  // Whether or not the tensor is batched, i.e. stores more
-                   // than one scalar per element.
-  size_t m_batch_size;  // If m_batched, corresponds to first shape dimesion.
-  Shape m_batched_shape;
+  bool m_packed;        // Whether or not the tensor is packed, i.e. stores more
+                        // than one scalar per element.
+  size_t m_batch_size;  // If m_packed, corresponds to first shape dimesion.
+  Shape m_packed_shape;
 };
 }  // namespace he
 }  // namespace ngraph

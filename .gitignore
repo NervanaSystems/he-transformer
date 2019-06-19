@@ -30,3 +30,12 @@ examples/cpu_codegen/
 data/
 log/
 weights/
+
+# Tensorflow models
+*.tgz
+*.pb
+*.pbtxt
+*.tflite
+*.data-*-of*
+*ckpt.index
+*ckpt.meta

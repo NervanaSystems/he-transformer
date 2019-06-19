@@ -20,9 +20,9 @@ Also be sure the `he_seal_client` wheel has been installed
 export PATH=$HE_TRANSFORMER/build/ext_ngraph_tf/src/ext_ngraph_tf/build_cmake/tensorflow/bazel-bin/tensorflow/tools/graph_transforms:$PATH
 ```
 
-2. To download the model and optimize for inference, call
+2. To download the models and optimize for inference, call
 ```bash
-./get_model.sh
+python get_models.py
 ```
 
 3. To enable image processing, run
@@ -66,8 +66,7 @@ NGRAPH_TF_BACKEND=HE_SEAL \
 python test.py
 ```
 
-
-## Fastest
+# Fastest
 For faster runtime, try
 ```bash
 OMP_NUM_THREADS=56 \
@@ -76,4 +75,60 @@ NGRAPH_BATCH_DATA=1 \
 NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
 NGRAPH_TF_BACKEND=HE_SEAL \
 python test.py
+```
+
+# Image-Net evaluation
+1. First, sign up for an account at image-net.org
+2. Download the 2012 test_images (all tasks)) 13GB MD5: `e64ceb247e473635708aed23ab6d839` file on image-net.org
+
+Extract the validation images:
+```bash
+tar -xf ILSVRC2012_img_test.tar
+```
+3. Download development kit (Task 1 & 2) and extract `validation_ground_truth.txt`
+
+The directory setup should be:
+```
+DATA_DIR/validation_images/ILSVRC2012_val_00000001.JPEG
+DATA_DIR/validation_images/ILSVRC2012_val_00000002.JPEG
+...
+DATA_DIR/validation_images/ILSVRC2012_val_00050000.JPEG
+DATA_DIR/ILSVRC2012_validation_ground_truth.txt
+```
+for some `DATA_DIR` folder.
+
+For the remaining instructions, run```bash
+export DATA_DIR=path_to_your_data_dir
+```
+
+4. To run inference using TensorFlow on unencrypted data, call
+```bash
+python test.py \
+  --data_dir=$DATA_DIR
+  --batch_size=300
+```
+
+5. To call inference using HE_SEAL's plaintext operations (for debugging), call
+```bash
+NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
+NGRAPH_TF_BACKEND=HE_SEAL \
+NGRAPH_BATCH_DATA=1 \
+python test.py \
+--data_dir=$DATA_DIR
+--ngraph=true \
+--batch_size=300
+```
+Note: this will result in many outputs. To suppress these, pass the `NGRAPH_SILENCE_OPS=1` flag
+
+6. To call inference using encrypted data, run the below command. ***Warning***: this will take ~210GB memory.
+```bash
+OMP_NUM_THREADS=56 \
+NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
+NGRAPH_TF_BACKEND=HE_SEAL \
+NGRAPH_BATCH_DATA=1 \
+NGRAPH_ENCRYPT_DATA=1 \
+python test.py \
+--data_dir=$DATA_DIR
+--ngraph=true \
+--batch_size=2048
 ```

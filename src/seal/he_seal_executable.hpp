@@ -46,7 +46,7 @@ class HESealExecutable : public runtime::Executable {
                    bool enable_performance_collection,
                    ngraph::he::HESealBackend& he_seal_backend,
                    bool encrypt_data, bool encrypt_model, bool batch_data,
-                   bool complex_packing);
+                   bool complex_packing, bool silence_all_ops);
 
   ~HESealExecutable() {
     if (m_enable_client) {
@@ -84,6 +84,11 @@ class HESealExecutable : public runtime::Executable {
                              std::shared_ptr<HESealCipherTensor>& out_cipher,
                              const NodeWrapper& node_wrapper);
 
+  bool verbose_op(const ngraph::Node& op) {
+    return !m_silence_all_ops &&
+           m_silent_ops.find(op.description()) == m_silent_ops.end();
+  };
+
  private:
   HESealBackend& m_he_seal_backend;
   bool m_encrypt_data;
@@ -91,6 +96,7 @@ class HESealExecutable : public runtime::Executable {
   bool m_batch_data;
   bool m_is_compiled;
   bool m_complex_packing;
+  bool m_silence_all_ops;
 
   bool m_enable_client;
   size_t m_batch_size;
@@ -118,8 +124,7 @@ class HESealExecutable : public runtime::Executable {
 
   std::set<std::string> m_silent_ops{"Slice", "Broadcast", "Reshape"};
 
-  std::shared_ptr<seal::SEALContext>
-      m_context;  // TODO: move to he_seal_executable.hpp
+  std::shared_ptr<seal::SEALContext> m_context;
 
   // To trigger when relu is done
   std::mutex m_relu_mutex;

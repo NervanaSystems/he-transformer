@@ -41,7 +41,7 @@ inline void convolution_seal(
     size_t input_channel_axis_filters, size_t output_channel_axis_filters,
     size_t batch_axis_result, size_t output_channel_axis_result,
     bool rotate_filter, const element::Type& element_type, size_t batch_size,
-    const ngraph::he::HESealBackend& he_seal_backend) {
+    const ngraph::he::HESealBackend& he_seal_backend, bool verbose = true) {
   // Comments throughout assume without loss of generality that:
   //
   // * batch axes for both input data and output data are 0
@@ -59,7 +59,9 @@ inline void convolution_seal(
     out_coords.emplace_back(out_coord);
   }
   size_t out_transform_size = out_coords.size();
-  NGRAPH_INFO << "Convolution output size " << out_transform_size;
+  if (verbose) {
+    NGRAPH_INFO << "Convolution output size " << out_transform_size;
+  }
 
   // TODO: don't create new thread for every loop index, only one per thread
 #pragma omp parallel for
@@ -228,7 +230,7 @@ inline void convolution_seal(
       out[out_coord_idx] = sum;
     }
 
-    if (out_coord_idx % 1000 == 0) {
+    if (verbose && out_coord_idx % 1000 == 0 && out_coord_idx != 0) {
       NGRAPH_INFO << "Finished out coord " << out_coord_idx;
     }
   }
@@ -246,7 +248,7 @@ inline void convolution_seal(
     size_t input_channel_axis_filters, size_t output_channel_axis_filters,
     size_t batch_axis_result, size_t output_channel_axis_result,
     bool rotate_filter, const element::Type& element_type, size_t batch_size,
-    const ngraph::he::HESealBackend& he_seal_backend) {
+    const ngraph::he::HESealBackend& he_seal_backend, bool verbose = true) {
   CoordinateTransform output_transform(out_shape);
 
   // Store output coordinates for parallelization
@@ -255,7 +257,9 @@ inline void convolution_seal(
     out_coords.emplace_back(out_coord);
   }
   size_t out_transform_size = out_coords.size();
-  NGRAPH_INFO << "Convolution output size " << out_transform_size;
+  if (verbose) {
+    NGRAPH_INFO << "Convolution output size " << out_transform_size;
+  }
 
   // TODO: don't create new thread for every loop index, only one per thread
 #pragma omp parallel for
@@ -376,7 +380,7 @@ inline void convolution_seal(
       out[out_coord_idx] = sum;
     }
 
-    if (out_coord_idx % 1000 == 0) {
+    if (verbose && out_coord_idx % 1000 == 0 && out_coord_idx != 0) {
       NGRAPH_INFO << "Finished out coord " << out_coord_idx;
     }
   }
@@ -394,7 +398,7 @@ inline void convolution_seal(
     size_t input_channel_axis_filters, size_t output_channel_axis_filters,
     size_t batch_axis_result, size_t output_channel_axis_result,
     bool rotate_filter, const element::Type& element_type, size_t batch_size,
-    const ngraph::he::HESealBackend& he_seal_backend) {
+    const ngraph::he::HESealBackend& he_seal_backend, bool verbose = true) {
   CoordinateTransform output_transform(out_shape);
 
   // Store output coordinates for parallelization
@@ -403,7 +407,9 @@ inline void convolution_seal(
     out_coords.emplace_back(out_coord);
   }
   size_t out_transform_size = out_coords.size();
-  NGRAPH_INFO << "Convolution output size " << out_transform_size;
+  if (verbose) {
+    NGRAPH_INFO << "Convolution output size " << out_transform_size;
+  }
 
   // TODO: don't create new thread for every loop index, only one per thread
 #pragma omp parallel for
@@ -525,7 +531,7 @@ inline void convolution_seal(
       out[out_coord_idx] = sum;
     }
 
-    if (out_coord_idx % 1000 == 0) {
+    if (verbose && out_coord_idx % 1000 == 0 && out_coord_idx != 0) {
       NGRAPH_INFO << "Finished out coord " << out_coord_idx;
     }
   }
@@ -542,7 +548,7 @@ inline void convolution_seal(
     size_t input_channel_axis_filters, size_t output_channel_axis_filters,
     size_t batch_axis_result, size_t output_channel_axis_result,
     bool rotate_filter, const element::Type& element_type, size_t batch_size,
-    const ngraph::he::HESealBackend& he_seal_backend) {
+    const ngraph::he::HESealBackend& he_seal_backend, bool verbose = true) {
   CoordinateTransform output_transform(out_shape);
 
   // Store output coordinates for parallelization
@@ -551,7 +557,9 @@ inline void convolution_seal(
     out_coords.emplace_back(out_coord);
   }
   size_t out_transform_size = out_coords.size();
-  NGRAPH_INFO << "Convolution output size " << out_transform_size;
+  if (verbose) {
+    NGRAPH_INFO << "Convolution output size " << out_transform_size;
+  }
 
 #pragma omp parallel for
   for (size_t out_coord_idx = 0; out_coord_idx < out_transform_size;
