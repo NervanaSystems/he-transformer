@@ -707,7 +707,6 @@ void ngraph::he::HESealExecutable::generate_calls(
             cipher->ciphertext());
       }
     }
-
     auto t2 = Clock::now();
     NGRAPH_INFO << "Rescale_xxx took "
                 << std::chrono::duration_cast<std::chrono::milliseconds>(t2 -
@@ -1380,6 +1379,8 @@ void ngraph::he::HESealExecutable::generate_calls(
       const op::Slice* slice = static_cast<const op::Slice*>(&node);
       Shape in_shape = node.get_input_shape(0);
       Shape out_shape = node.get_output_shape(0);
+
+      out_shape[0] /= m_batch_size;
 
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
         ngraph::he::slice_seal(

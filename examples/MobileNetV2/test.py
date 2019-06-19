@@ -299,7 +299,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--crop_size',
         type=int,
-        default=224,
+        default=256,
         help='crop to this size before resizing to image_size')
     parser.add_argument(
         '--ngraph', type=str2bool, default=False, help='use ngraph backend')

@@ -43,6 +43,8 @@ inline void scalar_bounded_relu_seal(const HEPlaintext& arg, HEPlaintext& out,
 inline void bounded_relu_seal(const std::vector<HEPlaintext>& arg,
                               std::vector<HEPlaintext>& out, size_t count,
                               float alpha) {
+  NGRAPH_CHECK(count <= arg.size(), "arg too small in BoundedRelu");
+  NGRAPH_CHECK(count <= out.size(), "out too small in BoundedRelu");
   for (size_t i = 0; i < count; ++i) {
     scalar_bounded_relu_seal(arg[i], out[i], alpha);
   }
