@@ -82,12 +82,13 @@ ngraph::he::HESealExecutable::HESealExecutable(
     const std::shared_ptr<Function>& function,
     bool enable_performance_collection, HESealBackend& he_seal_backend,
     bool encrypt_data, bool encrypt_model, bool batch_data,
-    bool complex_packing)
+    bool complex_packing, bool silence_all_ops)
     : m_he_seal_backend(he_seal_backend),
       m_encrypt_data(encrypt_data),
       m_encrypt_model(encrypt_model),
       m_batch_data(batch_data),
       m_complex_packing(complex_packing),
+      m_silence_all_ops(silence_all_ops),
       m_enable_client(std::getenv("NGRAPH_ENABLE_CLIENT") != nullptr),
       m_batch_size(1),
       m_port(34000),
@@ -525,19 +526,18 @@ bool ngraph::he::HESealExecutable::call(
     auto op = wrapped.get_node();
     auto type_id = wrapped.get_typeid();
 
-    if (m_silent_ops.find(op->description()) == m_silent_ops.end()) {
+    if (op_verbose(*op)) {
       NGRAPH_INFO << "\033[1;32m"
                   << "[ " << op->get_name() << " ]"
                   << "\033[0m";
+      if (type_id == OP_TYPEID::Constant) {
+        NGRAPH_INFO << "Constant shape {" << join(op->get_shape()) << "}";
+      }
     }
 
     if (type_id == OP_TYPEID::Parameter) {
       NGRAPH_INFO << "Parameter shape {" << join(op->get_shape()) << "}";
       continue;
-    }
-
-    if (type_id == OP_TYPEID::Constant) {
-      NGRAPH_INFO << "Constant shape {" << join(op->get_shape()) << "}";
     }
 
     // get op inputs from map
@@ -624,7 +624,7 @@ bool ngraph::he::HESealExecutable::call(
         }
       }
     }
-    if (m_silent_ops.find(op->description()) == m_silent_ops.end()) {
+    if (op_verbose(*op)) {
       NGRAPH_INFO << "\033[1;31m" << op->get_name() << " took "
                   << m_timer_map[op].get_milliseconds() << "ms"
                   << "\033[0m";
@@ -679,7 +679,7 @@ void ngraph::he::HESealExecutable::generate_calls(
   auto out0_plain = std::dynamic_pointer_cast<HEPlainTensor>(out[0]);
 
   // TODO: move to static function
-  auto lazy_rescaling = [this](auto& cipher_tensor) {
+  auto lazy_rescaling = [this](auto& cipher_tensor, bool verbose = true) {
     typedef std::chrono::high_resolution_clock Clock;
     auto t1 = Clock::now();
     size_t new_chain_index = std::numeric_limits<size_t>::max();
@@ -691,11 +691,11 @@ void ngraph::he::HESealExecutable::generate_calls(
             1;
       }
     }
-    if (new_chain_index == 0) {
+    if (verbose && new_chain_index == 0) {
       NGRAPH_INFO << "Skipping rescaling to chain index 0";
       return;
     }
-    if (new_chain_index != std::numeric_limits<size_t>::max()) {
+    if (verbose && new_chain_index != std::numeric_limits<size_t>::max()) {
       NGRAPH_INFO << "New chain index " << new_chain_index;
     }
 
@@ -707,12 +707,14 @@ void ngraph::he::HESealExecutable::generate_calls(
             cipher->ciphertext());
       }
     }
-    auto t2 = Clock::now();
-    NGRAPH_INFO << "Rescale_xxx took "
-                << std::chrono::duration_cast<std::chrono::milliseconds>(t2 -
-                                                                         t1)
-                       .count()
-                << "ms";
+    if (verbose) {
+      auto t2 = Clock::now();
+      NGRAPH_INFO << "Rescale_xxx took "
+                  << std::chrono::duration_cast<std::chrono::milliseconds>(t2 -
+                                                                           t1)
+                         .count()
+                  << "ms";
+    }
   };
 
   std::vector<Shape> packed_arg_shapes{};
@@ -734,9 +736,7 @@ void ngraph::he::HESealExecutable::generate_calls(
     out_shape = node.get_output_shape(0);
     packed_out_shape = out_shape;
     if (m_batch_data) {
-      NGRAPH_INFO << "before batchign " << join(out_shape, "x");
       packed_out_shape = ngraph::he::HETensor::pack_shape(packed_out_shape);
-      NGRAPH_INFO << "after batching " << join(packed_out_shape, "x");
     }
   }
 
@@ -757,7 +757,7 @@ void ngraph::he::HESealExecutable::generate_calls(
                  "arg1 is both cipher and plain?");
   }
 
-  if (m_silent_ops.find(node.description()) == m_silent_ops.end()) {
+  if (op_verbose(node)) {
     std::stringstream ss;
     ss << "Inputs: ";
     if (arg0_cipher != nullptr) {
@@ -1002,10 +1002,7 @@ void ngraph::he::HESealExecutable::generate_calls(
       Shape in_shape0 = packed_arg_shapes[0];
       Shape in_shape1 = unpacked_arg_shapes[1];
 
-      NGRAPH_INFO << "Conv shapes";
-      NGRAPH_INFO << "in_shape0 " << join(in_shape0, "x");
-      NGRAPH_INFO << "in_shape1 " << join(in_shape1, "x");
-      NGRAPH_INFO << "packed_out_shape " << join(packed_out_shape, "x");
+      bool verbose = op_verbose(node);
 
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
@@ -1014,7 +1011,7 @@ void ngraph::he::HESealExecutable::generate_calls(
             out0_cipher->get_elements(), in_shape0, in_shape1, packed_out_shape,
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
-            m_batch_size, m_he_seal_backend);
+            m_batch_size, m_he_seal_backend, verbose);
       } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                  out0_cipher != nullptr) {
         ngraph::he::convolution_seal(
@@ -1022,9 +1019,9 @@ void ngraph::he::HESealExecutable::generate_calls(
             out0_cipher->get_elements(), in_shape0, in_shape1, packed_out_shape,
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
-            m_batch_size, m_he_seal_backend);
+            m_batch_size, m_he_seal_backend, verbose);
 
-        lazy_rescaling(out0_cipher);
+        lazy_rescaling(out0_cipher, verbose);
 
       } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
                  out0_cipher != nullptr) {
@@ -1033,9 +1030,9 @@ void ngraph::he::HESealExecutable::generate_calls(
             out0_cipher->get_elements(), in_shape0, in_shape1, packed_out_shape,
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
-            m_batch_size, m_he_seal_backend);
+            m_batch_size, m_he_seal_backend, verbose);
 
-        lazy_rescaling(out0_cipher);
+        lazy_rescaling(out0_cipher, verbose);
 
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
@@ -1044,7 +1041,7 @@ void ngraph::he::HESealExecutable::generate_calls(
             out0_plain->get_elements(), in_shape0, in_shape1, packed_out_shape,
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
-            m_batch_size, m_he_seal_backend);
+            m_batch_size, m_he_seal_backend, verbose);
       } else {
         throw ngraph_error("Convolution types not supported.");
       }
@@ -1385,18 +1382,12 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     case OP_TYPEID::Slice: {
       const op::Slice* slice = static_cast<const op::Slice*>(&node);
-      // Shape in_shape = node.get_input_shape(0);
       const Shape& in_shape = packed_arg_shapes[0];
-      // Shape out_shape = node.get_output_shape(0);
-      // Shape in_shape = inshape[0];
-
-      // const Coordinate& lower_bounds = slice->get_lower_bounds();
 
       const Coordinate& lower_bounds =
           ngraph::he::HETensor::pack_shape(slice->get_lower_bounds());
       const Coordinate& upper_bounds =
           ngraph::he::HETensor::pack_shape(slice->get_upper_bounds());
-      // const Coordinate& upper_bounds = slice->get_upper_bounds();
 
       const Strides& strides = slice->get_strides();
 
@@ -1413,14 +1404,6 @@ void ngraph::he::HESealExecutable::generate_calls(
         ngraph::he::slice_seal(
             arg0_plain->get_elements(), out0_plain->get_elements(), in_shape,
             lower_bounds, upper_bounds, strides, packed_out_shape);
-        for (size_t elem_idx = 0; elem_idx < out0_plain->num_plaintexts();
-             ++elem_idx) {
-          const auto elem = out0_plain->get_element(elem_idx);
-          if (elem.num_values() == 0) {
-            NGRAPH_INFO << "elem " << elem_idx << " has 0 vals";
-            throw ngraph_error("Slice output has 0 values");
-          }
-        }
       } else {
         throw ngraph_error("Slice types not supported.");
       }

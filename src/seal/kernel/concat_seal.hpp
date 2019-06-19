@@ -81,12 +81,6 @@ void concat_seal(const std::vector<std::vector<HEPlaintext>>& args,
                  std::vector<HEPlaintext>& out,
                  const std::vector<Shape>& in_shapes, const Shape& out_shape,
                  size_t concatenation_axis) {
-  NGRAPH_INFO << "Concat";
-  for (const auto& shape : in_shapes) {
-    NGRAPH_INFO << join(shape, "x") << ", ";
-  }
-  NGRAPH_INFO << " => " << join(out_shape, "x");
-
   // We will copy the inputs to the output one at a time. As we go, we will move
   // out along the concatenation axis, starting at 0.
   size_t concatenation_pos = 0;

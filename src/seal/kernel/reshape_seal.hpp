@@ -61,8 +61,6 @@ inline void reshape_seal(const std::vector<HEPlaintext>& arg,
                          std::vector<HEPlaintext>& out, const Shape& in_shape,
                          const AxisVector& in_axis_order,
                          const Shape& out_shape) {
-  NGRAPH_INFO << "reshape " << join(in_shape, "x") << " => "
-              << join(out_shape, "x");
   // Unfortunately we don't yet have a constructor for CoordinateTransform that
   // lets us pass only source_space_shape and source_axis_order so we have to
   // construct the defaults here.

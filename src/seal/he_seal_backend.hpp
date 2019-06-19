@@ -193,12 +193,14 @@ class HESealBackend : public ngraph::runtime::Backend {
   bool encrypt_data() const { return m_encrypt_data; };
   bool batch_data() const { return m_batch_data; };
   bool encrypt_model() const { return m_encrypt_model; };
+  bool silence_all_ops() const { return m_silence_all_ops; }
 
  private:
   bool m_encrypt_data{std::getenv("NGRAPH_ENCRYPT_DATA") != nullptr};
   bool m_batch_data{std::getenv("NGRAPH_BATCH_DATA") != nullptr};
   bool m_encrypt_model{std::getenv("NGRAPH_ENCRYPT_MODEL") != nullptr};
   bool m_complex_packing{std::getenv("NGRAPH_COMPLEX_PACK") != nullptr};
+  bool m_silence_all_ops{std::getenv("NGRAPH_SILENCE_OPS") != nullptr};
 
   std::shared_ptr<seal::SecretKey> m_secret_key;
   std::shared_ptr<seal::PublicKey> m_public_key;
