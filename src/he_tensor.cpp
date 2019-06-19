@@ -47,7 +47,7 @@ ngraph::Shape ngraph::he::HETensor::pack_shape(const ngraph::Shape& shape,
     throw ngraph::ngraph_error("Packing only supported along axis 0");
   }
   ngraph::Shape packed_shape(shape);
-  if (shape.size() > 0) {
+  if (shape.size() > 0 && shape[0] != 0) {
     packed_shape[0] = 1;
   }
   return packed_shape;

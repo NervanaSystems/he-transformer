@@ -65,6 +65,8 @@ void slice_seal(const std::vector<HEPlaintext>& arg,
   for (const Coordinate& in_coord : input_transform) {
     const Coordinate& out_coord = *output_it;
 
+    NGRAPH_INFO << "in coord" << in_coord << " out coord " << out_coord;
+
     out[output_transform.index(out_coord)] =
         arg[input_transform.index(in_coord)];
 
