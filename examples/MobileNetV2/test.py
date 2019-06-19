@@ -17,7 +17,6 @@
 import tensorflow as tf
 from tensorflow.python.platform import gfile
 import numpy as np
-#import ngraph_bridge
 import json
 import argparse
 import os
@@ -111,7 +110,7 @@ def center_crop2(im, new_size):
     width, height = im.size
     ratio = min(width / new_size, height / new_size)
     im = im.resize((int(width / ratio), int(height / ratio)),
-                   resample=Image.BICUBIC)
+                   resample=Image.LANCZOS)
 
     # Center crop to new_size x new_size
     im = center_crop(im, new_size)
@@ -160,15 +159,16 @@ def get_validation_images(FLAGS, crop=False):
         assert (im.shape == (FLAGS.image_size, FLAGS.image_size, 3))
 
         # Standardize to [-1,1]
-        #im = im / 128. - 1
-        im = im / 255.
-        means = [0.485, 0.456, 0.406]
-        stds = [0.229, 0.224, 0.225]
-        for channel in range(3):
-            im[:, :, channel] = (
-                im[:, :, channel] - means[channel])  #ß / stds[channel]
-
-        # print(np.mean(im), np.std(im))
+        if FLAGS.standardize:
+            im = im / 255.
+            means = [0.485, 0.456, 0.406]
+            stds = [0.229, 0.224, 0.225]
+            # Subtract mean, then scale such that result is in (-1, 1)
+            for channel in range(3):
+                im[:, :, channel] = (im[:, :, channel] - means[channel]) * (
+                    1. / means[channel])
+        else:
+            im = im / 128. - 1
 
         im = np.expand_dims(im, axis=0)
         images[i] = im
@@ -209,6 +209,9 @@ def main(FLAGS):
     validation_nums = get_validation_labels(FLAGS)
     x_test = get_validation_images(FLAGS)
     validation_labels = imagenet_inference_labels[validation_nums]
+
+    if FLAGS.ngraph:
+        import ngraph_bridge
 
     config = tf.ConfigProto()
     config.intra_op_parallelism_threads = 44
@@ -289,10 +292,17 @@ if __name__ == '__main__':
         default=False,
         help='load saved cropped images')
     parser.add_argument(
+        '--standardize',
+        type=str2bool,
+        default=False,
+        help='subtract training set mean from each image')
+    parser.add_argument(
         '--crop_size',
         type=int,
         default=224,
         help='crop to this size before resizing to image_size')
+    parser.add_argument(
+        '--ngraph', type=str2bool, default=False, help='use ngraph backend')
     parser.add_argument('--batch_size', type=int, default=1, help='Batch size')
 
     FLAGS, unparsed = parser.parse_known_args()

@@ -116,10 +116,10 @@ class HESealExecutable : public runtime::Executable {
   std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
       m_minimum_ciphertexts;
 
-  std::set<std::string> m_silent_ops{"Slice", "Broadcast", "Reshape"};
+  std::set<std::string> m_silent_ops{"Slice", "Broadcast", "Reshape",
+                                     "Constant"};
 
-  std::shared_ptr<seal::SEALContext>
-      m_context;  // TODO: move to he_seal_executable.hpp
+  std::shared_ptr<seal::SEALContext> m_context;
 
   // To trigger when relu is done
   std::mutex m_relu_mutex;
