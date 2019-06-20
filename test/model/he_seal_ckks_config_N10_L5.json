@@ -1,0 +1,12 @@
+{
+  "scheme_name": "HE_SEAL",
+  "poly_modulus_degree": 1024,
+  "security_level": 0,
+  "coeff_modulus": [
+    30,
+    30,
+    30,
+    30,
+    30
+  ]
+}

@@ -211,6 +211,9 @@ def main(FLAGS):
 
     validation_nums = get_validation_labels(FLAGS)
     x_test = get_validation_images(FLAGS)
+
+    # TODO: remove this!
+    x_test[1] = x_test[0]
     validation_labels = imagenet_inference_labels[validation_nums]
 
     if FLAGS.ngraph:

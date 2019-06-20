@@ -854,7 +854,7 @@ void ngraph::he::HESealExecutable::generate_calls(
             avg_pool->get_padding_below(), avg_pool->get_padding_above(),
             avg_pool->get_include_padding_in_avg_computation(),
             m_he_seal_backend);
-        lazy_rescaling(out0_cipher);
+        lazy_rescaling(out0_cipher, verbose_op(node));
 
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
         ngraph::he::avg_pool_seal(
@@ -1224,6 +1224,7 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Multiply: {
+      bool verbose = verbose_op(node);
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
         ngraph::he::multiply_seal(
@@ -1236,14 +1237,14 @@ void ngraph::he::HESealExecutable::generate_calls(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
             out0_cipher->get_elements(), type, m_he_seal_backend,
             out0_cipher->get_batched_element_count());
-        lazy_rescaling(out0_cipher);
+        lazy_rescaling(out0_cipher, verbose);
       } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
                  out0_cipher != nullptr) {
         ngraph::he::multiply_seal(
             arg0_plain->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), type, m_he_seal_backend,
             out0_cipher->get_batched_element_count());
-        lazy_rescaling(out0_cipher);
+        lazy_rescaling(out0_cipher, verbose);
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
         ngraph::he::multiply_seal(
@@ -1579,6 +1580,17 @@ void ngraph::he::HESealExecutable::generate_calls(
     default:
       throw unsupported_op("Unsupported op '" + node.description() + "'");
 #pragma GCC diagnostic pop
+  }
+
+  if (out0_cipher != nullptr) {
+    NGRAPH_CHECK(
+        out0_cipher->is_packed() == m_he_seal_backend.complex_packing(),
+        "Output cipher complex packing is incorrect");
+    for (const auto& cipher : out0_cipher->get_elements()) {
+      NGRAPH_CHECK(
+          cipher->complex_packing() == m_he_seal_backend.complex_packing(),
+          "Output cipher element complex packing is incorrect");
+    }
   }
 }
 

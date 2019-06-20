@@ -54,10 +54,12 @@ void ngraph::he::pass::HEFusion::construct_bounded_relu() {
     // we wont fuse if the alpha and the Relu output element type are not same
     if (pattern_map[alpha]->get_element_type() !=
         pattern_map[relu_input]->get_element_type()) {
+      NGRAPH_DEBUG << "Element types do not match";
       return false;
     }
     if (pattern_map[alpha]->get_shape() !=
         pattern_map[relu_input]->get_shape()) {
+      NGRAPH_DEBUG << "Element shapes do not match";
       return false;
     }
 

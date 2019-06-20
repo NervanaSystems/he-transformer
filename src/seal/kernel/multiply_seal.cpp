@@ -27,6 +27,7 @@ void ngraph::he::scalar_multiply_seal(
     const seal::MemoryPoolHandle& pool) {
   if (arg0.is_zero() || arg1.is_zero()) {
     out->is_zero() = true;
+    out->complex_packing() = arg0.complex_packing();
   } else {
     NGRAPH_CHECK(arg0.complex_packing() == false,
                  "cannot multiply ciphertexts in complex form");
@@ -70,6 +71,7 @@ void ngraph::he::scalar_multiply_seal(
                " is not float");
   if (arg0.is_zero()) {
     out->is_zero() = true;
+    out->complex_packing() = arg0.complex_packing();
     return;
   }
   // We can't do the scalar +/-1 optimizations, unless all the weights
@@ -114,8 +116,10 @@ void ngraph::he::scalar_multiply_seal(
         }
       }
     }
-    out->complex_packing() = arg0.complex_packing();
   }
+  out->complex_packing() = arg0.complex_packing();
+  NGRAPH_CHECK(out->complex_packing() == he_seal_backend.complex_packing(),
+               "mult out is not he_seal_backend.complex_packing()");
 }
 
 void ngraph::he::scalar_multiply_seal(

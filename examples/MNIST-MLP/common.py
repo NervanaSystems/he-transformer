@@ -41,7 +41,7 @@ def mlp_model(x, mode):
         #y = tf.pad(y, paddings)
         y = tf.nn.relu(y)
         y = tf.math.minimum(y, 6)  # Use ReLU6 op
-        y = tf.nn.max_pool(
+        y = tf.nn.avg_pool(
             y, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
     with tf.name_scope('fc1'):
@@ -53,6 +53,7 @@ def mlp_model(x, mode):
         y = y * W_scale1
         y = y + W_bias1
         y = tf.nn.relu(y)
+        y = tf.math.minimum(y, 6)  # Use ReLU6 op
 
     with tf.name_scope('fc2'):
         W_fc2 = get_variable('W_fc2', [100, 10], mode)
