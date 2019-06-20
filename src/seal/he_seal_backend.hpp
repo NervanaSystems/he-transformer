@@ -205,7 +205,7 @@ class HESealBackend : public ngraph::runtime::Backend {
 
  private:
   bool m_encrypt_data{std::getenv("NGRAPH_ENCRYPT_DATA") != nullptr};
-  bool m_batch_data{std::getenv("NGRAPH_BATCH_DATA") != nullptr};
+  bool m_batch_data{true};
   bool m_encrypt_model{std::getenv("NGRAPH_ENCRYPT_MODEL") != nullptr};
   bool m_complex_packing{std::getenv("NGRAPH_COMPLEX_PACK") != nullptr};
 

@@ -115,7 +115,6 @@ ngraph::he::HESealExecutable::HESealExecutable(
 
   m_is_compiled = true;
   ngraph::pass::Manager pass_manager;
-  NGRAPH_INFO << "Registering optimization passes";
   pass_manager.register_pass<ngraph::pass::LikeReplacement>();
   pass_manager.register_pass<ngraph::pass::AssignLayout<DenseTensorLayout>>();
   pass_manager.register_pass<ngraph::pass::CoreFusion>();
@@ -123,14 +122,11 @@ ngraph::he::HESealExecutable::HESealExecutable(
     pass_manager.register_pass<ngraph::pass::ConstantFolding>();
   }
   pass_manager.register_pass<ngraph::pass::Liveness>();
-  NGRAPH_INFO << "Running general optimization passes";
   pass_manager.run_passes(function);
 
   ngraph::pass::Manager pass_manager_he;
   pass_manager_he.register_pass<ngraph::he::pass::HEFusion>();
-  NGRAPH_INFO << "Running HE optimization passes";
   pass_manager_he.run_passes(function);
-  NGRAPH_INFO << "Done running optimization passes";
 
   for (const std::shared_ptr<Node>& node : function->get_ordered_ops()) {
     m_wrapped_nodes.emplace_back(node);
@@ -144,8 +140,6 @@ ngraph::he::HESealExecutable::HESealExecutable(
       m_batch_size = shape[0];
     }
   }
-
-  NGRAPH_INFO << "Setting batch_size " << m_batch_size;
 
   if (m_enable_client) {
     NGRAPH_INFO << "Enable client";
@@ -470,7 +464,7 @@ bool ngraph::he::HESealExecutable::call(
     NGRAPH_INFO << "Encrypting data";
   }
   if (m_batch_data) {
-    NGRAPH_INFO << "Batching data";
+    NGRAPH_INFO << "Batching data with batch size " << m_batch_size;
   }
   if (m_encrypt_model) {
     NGRAPH_INFO << "Encrypting model";

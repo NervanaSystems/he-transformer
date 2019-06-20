@@ -112,6 +112,7 @@ python test.py \
 ```bash
 NGRAPH_TF_BACKEND=HE_SEAL \
 NGRAPH_BATCH_DATA=1 \
+STOP_CONST_FOLD=1 \
 python test.py \
 --data_dir=$DATA_DIR \
 --ngraph=true \
@@ -122,6 +123,7 @@ Note: this will result in many outputs. To suppress these, pass the `NGRAPH_SILE
 6. To call inference using encrypted data, run the below command. ***Warning***: this will take ~210GB memory.
 ```bash
 OMP_NUM_THREADS=56 \
+STOP_CONST_FOLD=1 \
 NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
 NGRAPH_TF_BACKEND=HE_SEAL \
 NGRAPH_BATCH_DATA=1 \
