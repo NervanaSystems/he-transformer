@@ -67,7 +67,6 @@ inline void scalar_bounded_relu_seal(
                  bounded_relu);
 
   plain.values() = out_vals;
-
   he_seal_backend.encrypt(out, plain, he_seal_backend.complex_packing());
 }
 
