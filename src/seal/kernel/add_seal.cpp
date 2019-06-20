@@ -58,6 +58,7 @@ void ngraph::he::scalar_add_seal(
 
   if (arg0.is_zero()) {
     he_seal_backend.encrypt(out, arg1, he_seal_backend.complex_packing());
+    out->complex_packing() = arg0.complex_packing();
     out->is_zero() = false;
     return;
   }
@@ -79,7 +80,7 @@ void ngraph::he::scalar_add_seal(
     } else {
       auto p = SealPlaintextWrapper(complex_packing);
       he_seal_backend.encode(p, arg1, arg0.ciphertext().parms_id(),
-                             arg0.ciphertext().scale());
+                             arg0.ciphertext().scale(), complex_packing);
       size_t chain_ind0 = get_chain_index(arg0, he_seal_backend);
       size_t chain_ind1 = get_chain_index(p.plaintext(), he_seal_backend);
       NGRAPH_CHECK(chain_ind0 == chain_ind1, "Chain inds ", chain_ind0, ",  ",

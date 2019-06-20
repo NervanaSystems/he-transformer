@@ -50,7 +50,7 @@ void ngraph::he::scalar_subtract_seal(
   } else {
     auto p = SealPlaintextWrapper(arg0.complex_packing());
     he_seal_backend.encode(p, arg1, arg0.ciphertext().parms_id(),
-                           arg0.ciphertext().scale());
+                           arg0.ciphertext().scale(), arg0.complex_packing());
     he_seal_backend.get_evaluator()->sub_plain(arg0.ciphertext(), p.plaintext(),
                                                out->ciphertext());
   }

@@ -95,7 +95,7 @@ void ngraph::he::scalar_multiply_seal(
       // Never complex-pack for multiplication
       auto p = SealPlaintextWrapper(false);
       he_seal_backend.encode(p, arg1, arg0.ciphertext().parms_id(),
-                             arg0.ciphertext().scale());
+                             arg0.ciphertext().scale(), false);
 
       size_t chain_ind0 = get_chain_index(arg0, he_seal_backend);
       size_t chain_ind1 = get_chain_index(p.plaintext(), he_seal_backend);

@@ -59,9 +59,6 @@ inline void scalar_bounded_relu_seal(
   const std::vector<float>& arg_vals = plain.values();
   std::vector<float> out_vals(plain.num_values());
 
-  std::cout << ": " << arg_vals[0] << ", " << arg_vals[1] << std::endl;
-  NGRAPH_INFO << "relu6 out complex packed? " << out->complex_packing();
-
   auto bounded_relu = [alpha](float f) {
     return f > alpha ? alpha : (f > 0) ? f : 0.f;
   };
@@ -71,12 +68,6 @@ inline void scalar_bounded_relu_seal(
 
   plain.values() = out_vals;
 
-  // TODO: remove
-  // NGRAPH_INFO << "Relu6 vals";
-  // for (const auto& elem : out_vals) {
-
-  //}
-
   he_seal_backend.encrypt(out, plain, he_seal_backend.complex_packing());
 }
 
@@ -84,13 +75,10 @@ inline void bounded_relu_seal(
     const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out, size_t count,
     float alpha, const HESealBackend& he_seal_backend) {
-  //#pragma omp parallel for
-  NGRAPH_INFO << "Relu6 on " << count << " elements";
-  for (size_t i = 0; i < count; ++i) {  // TODO: replace with count
-    std::cout << "Relu6 index " << i;
+#pragma omp parallel for
+  for (size_t i = 0; i < count; ++i) {
     scalar_bounded_relu_seal(*arg[i], out[i], alpha, he_seal_backend);
   }
-  // throw ngraph_error("Done with relu6");
 }
 
 }  // namespace he

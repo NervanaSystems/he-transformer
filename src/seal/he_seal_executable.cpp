@@ -928,16 +928,6 @@ void ngraph::he::HESealExecutable::generate_calls(
                      "output size ", output_size,
                      " doesn't match number of elements",
                      out0_cipher->num_ciphertexts());
-
-        if (out0_cipher != nullptr) {
-          NGRAPH_INFO << "checking " << arg0_cipher->num_ciphertexts()
-                      << "for complex packing";
-          for (const auto& cipher : out0_cipher->get_elements()) {
-            NGRAPH_CHECK(cipher->complex_packing() ==
-                             m_he_seal_backend.complex_packing(),
-                         "input cipher element complex packing is incorrect");
-          }
-        }
         ngraph::he::bounded_relu_seal(arg0_cipher->get_elements(),
                                       out0_cipher->get_elements(), output_size,
                                       alpha, m_he_seal_backend);
@@ -1590,16 +1580,6 @@ void ngraph::he::HESealExecutable::generate_calls(
     default:
       throw unsupported_op("Unsupported op '" + node.description() + "'");
 #pragma GCC diagnostic pop
-  }
-
-  if (out0_cipher != nullptr) {
-    NGRAPH_INFO << "checking " << out0_cipher->num_ciphertexts()
-                << "for complex packing";
-    for (const auto& cipher : out0_cipher->get_elements()) {
-      NGRAPH_CHECK(
-          cipher->complex_packing() == m_he_seal_backend.complex_packing(),
-          "Output cipher element complex packing is incorrect");
-    }
   }
 }
 
