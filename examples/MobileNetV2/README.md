@@ -35,7 +35,6 @@ pip install pillow
       ```bash
       NGRAPH_ENABLE_CLIENT=1 \
       NGRAPH_ENCRYPT_DATA=1 \
-      NGRAPH_BATCH_DATA=1 \
       NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
       NGRAPH_TF_BACKEND=HE_SEAL \
       python test.py
@@ -60,7 +59,6 @@ NGRAPH_TF_BACKEND=HE_SEAL python test.py
 2. To run the model without the client, (encryption and decryption will occur locally, so this isn't privacy-preserving):
 ```bash
 NGRAPH_ENCRYPT_DATA=1 \
-NGRAPH_BATCH_DATA=1 \
 NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
 NGRAPH_TF_BACKEND=HE_SEAL \
 python test.py
@@ -71,7 +69,6 @@ For faster runtime, try
 ```bash
 OMP_NUM_THREADS=56 \
 NGRAPH_ENCRYPT_DATA=1 \
-NGRAPH_BATCH_DATA=1 \
 NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
 NGRAPH_TF_BACKEND=HE_SEAL \
 python test.py
@@ -111,7 +108,6 @@ python test.py \
 5. To call inference using HE_SEAL's plaintext operations (for debugging), call
 ```bash
 NGRAPH_TF_BACKEND=HE_SEAL \
-NGRAPH_BATCH_DATA=1 \
 STOP_CONST_FOLD=1 \
 python test.py \
 --data_dir=$DATA_DIR \
@@ -126,7 +122,6 @@ OMP_NUM_THREADS=56 \
 STOP_CONST_FOLD=1 \
 NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
 NGRAPH_TF_BACKEND=HE_SEAL \
-NGRAPH_BATCH_DATA=1 \
 NGRAPH_ENCRYPT_DATA=1 \
 python test.py \
 --data_dir=$DATA_DIR \

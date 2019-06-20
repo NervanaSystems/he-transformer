@@ -521,6 +521,7 @@ bool ngraph::he::HESealExecutable::call(
                                     plain_input->get_element(i),
                                     m_complex_packing);
         }
+        NGRAPH_INFO << "Done encrypting paramter";
         plain_input->reset();
         tensor_map.insert({tv, cipher_input});
         input_count++;

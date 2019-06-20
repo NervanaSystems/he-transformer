@@ -27,7 +27,6 @@ For a deep learning example using the client-server model, see the `MNIST-MLP` f
 # List of command-line flags
   * `NGRAPH_ENCRYPT_DATA`. Set to 1 to encrypt data
   * `NGRAPH_ENCRYPT_MODEL`. Set to 1 to encrypt model
-  * `NGRAPH_BATCH_DATA`. Set to 1 to use SIMD packing to increase throughput. Note, this option should always be set for deep learning examples on batch sizes > 1. ***Warning*** if this
   * `NGRAPH_VERBOSE_OPS`. Set to `all` to print information about every operation performed. Set to a comma-separated list to print information about those ops; for example `NGRAPH_VERBOSE_OPS=add,multiply,convolution`
   * `STOP_CONST_FOLD`. Set to 1 to stop constant folding optimization. Note, this speeds up the graph compilation time for large batch sizes.
   * `NGRAPH_TF_BACKEND`. Set to `HE_SEAL` to use the HE backend. Set to `CPU` for inference on un-encrypted data

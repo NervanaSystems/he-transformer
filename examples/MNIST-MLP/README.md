@@ -24,7 +24,6 @@ cd $HE_TRANSFORMER/examples/MNIST-MLP
 ```bash
 NGRAPH_ENABLE_CLIENT=1 \
 NGRAPH_ENCRYPT_DATA=1 \
-NGRAPH_BATCH_DATA=1 \
 NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
 NGRAPH_TF_BACKEND=HE_SEAL \
 python test.py --batch_size=2048
@@ -48,7 +47,6 @@ This will perform non-linear layers on the server, which stores the public and s
 
 ```bash
 NGRAPH_ENCRYPT_DATA=1 \
-NGRAPH_BATCH_DATA=1 \
 NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
 NGRAPH_TF_BACKEND=HE_SEAL \
 python test.py --batch_size=2048
@@ -64,7 +62,6 @@ Using the NGRAPH_COMPLEX_PACK flag, we double the capacity to 4096, doubling the
 ```bash
 NGRAPH_COMPLEX_PACK=1 \
 NGRAPH_ENCRYPT_DATA=1 \
-NGRAPH_BATCH_DATA=1 \
 NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
 NGRAPH_TF_BACKEND=HE_SEAL \
 python test.py --batch_size=4096
