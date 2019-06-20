@@ -205,7 +205,6 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_inference_f32) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
   he_backend->set_batch_data(false);
-  ;
 
   BatchNormInferenceTesterNonZeroEpsilon<float> bnt(he_backend, element::f32);
   EXPECT_TRUE(bnt.test_gamma()) << "Gamma test";

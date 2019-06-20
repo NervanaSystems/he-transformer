@@ -217,10 +217,9 @@ def main(FLAGS):
         import ngraph_bridge
 
     config = tf.ConfigProto()
-    #config.intra_op_parallelism_threads = 44
-    #config.inter_op_parallelism_threads = 44
-    # TODO: figure out why this is slow with ngraph enabled
-    #config = ngraph_bridge.update_config(config)
+    config.intra_op_parallelism_threads = 44
+    config.inter_op_parallelism_threads = 44
+    config = ngraph_bridge.update_config(config)
     sess = tf.Session(config=config)
     graph_def = load_model(FLAGS.model)
     tf.import_graph_def(graph_def, name='')

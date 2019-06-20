@@ -521,7 +521,7 @@ bool ngraph::he::HESealExecutable::call(
                                     plain_input->get_element(i),
                                     m_complex_packing);
         }
-        NGRAPH_INFO << "Done encrypting paramter";
+        NGRAPH_INFO << "Done encrypting parameter";
         plain_input->reset();
         tensor_map.insert({tv, cipher_input});
         input_count++;
@@ -940,16 +940,20 @@ void ngraph::he::HESealExecutable::generate_calls(
     case OP_TYPEID::Broadcast: {
       const op::Broadcast* broadcast = static_cast<const op::Broadcast*>(&node);
       AxisSet broadcast_axes = broadcast->get_broadcast_axes();
-
       Shape in_shape = unpacked_arg_shapes[0];
+      Shape broadcast_out_shape = out_shape;
+      if (out_shape[0] == m_batch_size) {
+        broadcast_out_shape = packed_out_shape;
+      }
+
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
         ngraph::he::broadcast_seal(arg0_cipher->get_elements(),
                                    out0_cipher->get_elements(), in_shape,
-                                   out_shape, broadcast_axes);
+                                   broadcast_out_shape, broadcast_axes);
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
         ngraph::he::broadcast_seal(arg0_plain->get_elements(),
                                    out0_plain->get_elements(), in_shape,
-                                   out_shape, broadcast_axes);
+                                   broadcast_out_shape, broadcast_axes);
       } else {
         throw ngraph_error("Broadcast types not supported.");
       }

@@ -128,3 +128,16 @@ python test.py \
 --ngraph=true \
 --batch_size=2048
 ```
+
+7. To double the throughput using complex packing, run:
+```bash
+OMP_NUM_THREADS=56 \
+STOP_CONST_FOLD=1 \
+NGRAPH_COMPLEX_PACK=1 \
+NGRAPH_TF_BACKEND=HE_SEAL \
+NGRAPH_ENCRYPT_DATA=1 \
+NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json NGRAPH_BATCH_DATA=1 \
+python test.py \
+--data_dir=$DATA_DIR \
+--ngraph=true \
+--batch_size=4096
