@@ -88,7 +88,7 @@ ngraph::he::HESealExecutable::HESealExecutable(
       m_encrypt_model(encrypt_model),
       m_batch_data(batch_data),
       m_complex_packing(complex_packing),
-      m_silence_all_ops(false),
+      m_verbose_all_ops(false),
       m_enable_client(std::getenv("NGRAPH_ENABLE_CLIENT") != nullptr),
       m_batch_size(1),
       m_port(34000),
@@ -97,18 +97,19 @@ ngraph::he::HESealExecutable::HESealExecutable(
       m_client_inputs_received(false) {
   m_context = he_seal_backend.get_context();
 
-  if (std::getenv("NGRAPH_SILENT_OPS") != nullptr) {
-    std::string silent_ops_str(std::getenv("NGRAPH_SILENT_OPS"));
-    silent_ops_str = ngraph::to_lower(silent_ops_str);
-    if (silent_ops_str == "all") {
-      m_silence_all_ops = true;
+  if (std::getenv("NGRAPH_VERBOSE_OPS") != nullptr) {
+    std::string verbose_ops_str(std::getenv("NGRAPH_VERBOSE_OPS"));
+    verbose_ops_str = ngraph::to_lower(verbose_ops_str);
+    if (verbose_ops_str == "all") {
+      m_verbose_all_ops = true;
     }
-    std::vector<std::string> silent_ops_vec = split(silent_ops_str, ',', true);
-    m_silent_ops =
-        std::set<std::string>{silent_ops_vec.begin(), silent_ops_vec.end()};
+    std::vector<std::string> verbose_ops_vec =
+        split(verbose_ops_str, ',', true);
+    m_verbose_ops =
+        std::set<std::string>{verbose_ops_vec.begin(), verbose_ops_vec.end()};
 
-    if (m_silent_ops.find("all") != m_silent_ops.end()) {
-      m_silence_all_ops = true;
+    if (m_verbose_ops.find("all") != m_verbose_ops.end()) {
+      m_verbose_all_ops = true;
     }
   }
 
@@ -561,7 +562,9 @@ bool ngraph::he::HESealExecutable::call(
     }
 
     if (type_id == OP_TYPEID::Parameter) {
-      NGRAPH_INFO << "Parameter shape {" << join(op->get_shape()) << "}";
+      if (verbose_op(*op)) {
+        NGRAPH_INFO << "Parameter shape {" << join(op->get_shape()) << "}";
+      }
       continue;
     }
 
@@ -683,8 +686,8 @@ bool ngraph::he::HESealExecutable::call(
     auto result_message =
         TCPMessage(MessageType::result, output_cipher_tensor->get_elements());
 
-    std::cout << "Writing Result message with " << output_shape_size
-              << " ciphertexts " << std::endl;
+    NGRAPH_INFO << "Writing Result message with " << output_shape_size
+                << " ciphertexts ";
     m_session->do_write(std::move(result_message));
   }
   return true;

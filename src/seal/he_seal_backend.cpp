@@ -36,7 +36,6 @@ extern "C" ngraph::runtime::Backend* new_backend(const char* config) {
 
   NGRAPH_CHECK(configuration_string == "HE_SEAL",
                "Invalid configuration string ", configuration_string);
-  NGRAPH_INFO << "Creating new backend";
   return new ngraph::he::HESealBackend();
 }
 
