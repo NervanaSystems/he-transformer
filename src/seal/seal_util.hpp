@@ -58,7 +58,7 @@ size_t match_to_smallest_chain_index(
     const HESealBackend& he_seal_backend);
 
 template <typename S, typename T>
-bool within_rescale_tolerance(const S& arg0, const T& arg1,
+inline bool within_rescale_tolerance(const S& arg0, const T& arg1,
                               double factor = 1.02) {
   const auto scale0 = arg0.scale();
   const auto scale1 = arg1.scale();
@@ -69,7 +69,7 @@ bool within_rescale_tolerance(const S& arg0, const T& arg1,
 }
 
 template <typename S, typename T>
-void match_scale(S& arg0, T& arg1, const HESealBackend& he_seal_backend) {
+inline void match_scale(S& arg0, T& arg1, const HESealBackend& he_seal_backend) {
   auto scale0 = arg0.scale();
   auto scale1 = arg1.scale();
   bool scale_ok = within_rescale_tolerance(arg0, arg1);

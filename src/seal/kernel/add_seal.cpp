@@ -35,6 +35,10 @@ void ngraph::he::scalar_add_seal(
                  "arg0.complex_packing() (", arg0.complex_packing(),
                  ") does not match arg1.complex_packing() (",
                  arg1.complex_packing(), ")");
+    NGRAPH_CHECK(arg0.complex_packing() == he_seal_backend.complex_packing(),
+                 "Add arg0 is not he_seal_backend.complex_packing()");
+    NGRAPH_CHECK(arg1.complex_packing() == he_seal_backend.complex_packing(),
+                 "Add arg1 is not he_seal_backend.complex_packing()");
 
     match_modulus_and_scale_inplace(arg0, arg1, he_seal_backend, pool);
     he_seal_backend.get_evaluator()->add(arg0.ciphertext(), arg1.ciphertext(),

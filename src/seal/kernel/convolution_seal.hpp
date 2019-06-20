@@ -652,8 +652,10 @@ inline void convolution_seal(
 
       if (input_batch_transform.has_source_coordinate(input_batch_coord)) {
         auto mult_arg0 = arg0[input_batch_transform.index(input_batch_coord)];
-
         auto mult_arg1 = arg1[filter_transform.index(filter_coord)];
+
+        NGRAPH_CHECK(mult_arg0.num_values() > 0, "mult arg0 has 0 values");
+        NGRAPH_CHECK(mult_arg1.num_values() > 0, "mult arg1 has 0 values");
         auto prod = HEPlaintext();
 
         ngraph::he::scalar_multiply_seal(mult_arg0, mult_arg1, prod,

@@ -164,28 +164,8 @@ inline void avg_pool_seal(std::vector<HEPlaintext>& arg,
   CoordinateTransform output_transform(out_shape);
 
   for (const Coordinate& out_coord : output_transform) {
-    // Our output coordinate O will have the form:
-    //
-    //   (N,chan,i_1,...,i_n)
-
     size_t batch_index = out_coord[0];
     size_t channel = out_coord[1];
-
-    // For the input data we need to iterate the coordinate:
-    //
-    //   I:
-    //
-    // over the range (noninclusive on the right):
-    //
-    //   (N,chan,s_1*i_1,s_2*i_2,...,s_n*i_n) ->
-    //
-    //     (N+1,chan+1,s_1*i_1 + window_shape_1,...,s_n*i_n + window_shape_n)
-    //
-    // with unit stride.
-    //
-    // We iterate this over the *padded* data, so below we will need to check
-    // for coordinates that fall in the padding area.
-
     size_t n_spatial_dimensions = arg_shape.size() - 2;
 
     Coordinate input_batch_transform_start(2 + n_spatial_dimensions);
@@ -229,14 +209,6 @@ inline void avg_pool_seal(std::vector<HEPlaintext>& arg,
         input_batch_transform_padding_below,
         input_batch_transform_padding_above);
 
-    // As we go, we compute the sum value:
-    //
-    //   output[O] := output[O] + arg[I]
-    //
-    // and the number of elements:
-    //
-    //   n_elements := n_elements + 1
-
     // T result = 0;
     HEPlaintext sum;
     bool first_add = true;
@@ -250,7 +222,6 @@ inline void avg_pool_seal(std::vector<HEPlaintext>& arg,
       if (in_bounds || include_padding_in_avg_computation) {
         // T v = in_bounds ?: 0;
         // result += v;
-
         if (first_add) {
           sum = arg[input_batch_transform.index(input_batch_coord)];
           first_add = false;

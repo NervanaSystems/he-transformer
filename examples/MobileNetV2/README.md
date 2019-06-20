@@ -110,11 +110,10 @@ python test.py \
 
 5. To call inference using HE_SEAL's plaintext operations (for debugging), call
 ```bash
-NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
 NGRAPH_TF_BACKEND=HE_SEAL \
 NGRAPH_BATCH_DATA=1 \
 python test.py \
---data_dir=$DATA_DIR
+--data_dir=$DATA_DIR \
 --ngraph=true \
 --batch_size=300
 ```
@@ -128,7 +127,7 @@ NGRAPH_TF_BACKEND=HE_SEAL \
 NGRAPH_BATCH_DATA=1 \
 NGRAPH_ENCRYPT_DATA=1 \
 python test.py \
---data_dir=$DATA_DIR
+--data_dir=$DATA_DIR \
 --ngraph=true \
 --batch_size=2048
 ```
