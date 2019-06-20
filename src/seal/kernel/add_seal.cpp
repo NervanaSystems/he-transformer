@@ -70,9 +70,8 @@ void ngraph::he::scalar_add_seal(
     out = std::make_shared<ngraph::he::SealCiphertextWrapper>(arg0);
   } else {
     bool complex_packing = arg0.complex_packing();
-
     // TODO: optimize for adding single complex number
-    if (arg1.is_single_value() && !complex_packing) {
+    if (arg1.is_single_value()) {
       float value = arg1.values()[0];
       double double_val = double(value);
       add_plain(arg0.ciphertext(), double_val, out->ciphertext(),
