@@ -117,36 +117,17 @@ ngraph::he::HESealExecutable::HESealExecutable(
   }
 
   m_is_compiled = true;
-  ngraph::pass::Manager pass_manager1;
-  ngraph::pass::Manager pass_manager2;
-  ngraph::pass::Manager pass_manager3;
-  ngraph::pass::Manager pass_manager4;
-  ngraph::pass::Manager pass_manager5;
+  ngraph::pass::Manager pass_manager;
   NGRAPH_INFO << "Registering optimization passes";
-  pass_manager1.register_pass<ngraph::pass::LikeReplacement>();
-  pass_manager2.register_pass<ngraph::pass::AssignLayout<DenseTensorLayout>>();
-  pass_manager3.register_pass<ngraph::pass::CoreFusion>();
-  pass_manager4.register_pass<ngraph::pass::ConstantFolding>();
-  pass_manager5.register_pass<ngraph::pass::Liveness>();
-  NGRAPH_INFO << "Running optimization pass 1";
-  pass_manager1.run_passes(function);
-
-  NGRAPH_INFO << "Running optimization pass 2";
-  pass_manager2.run_passes(function);
-
-  NGRAPH_INFO << "Running optimization pass 3";
-  pass_manager3.run_passes(function);
-
+  pass_manager.register_pass<ngraph::pass::LikeReplacement>();
+  pass_manager.register_pass<ngraph::pass::AssignLayout<DenseTensorLayout>>();
+  pass_manager.register_pass<ngraph::pass::CoreFusion>();
   if (std::getenv("CONST_FOLD") != nullptr) {
-    NGRAPH_INFO << "Running optimization pass 4";
-    pass_manager4.run_passes(function);
+    pass_manager.register_pass<ngraph::pass::ConstantFolding>();
   }
-
-  NGRAPH_INFO << "Running optimization pass 5";
-  pass_manager5.run_passes(function);
-
-  // NGRAPH_INFO << "Running general optimization passes";
-  // pass_manager.run_passes(function);
+  pass_manager.register_pass<ngraph::pass::Liveness>();
+  NGRAPH_INFO << "Running general optimization passes";
+  pass_manager.run_passes(function);
 
   ngraph::pass::Manager pass_manager_he;
   pass_manager_he.register_pass<ngraph::he::pass::HEFusion>();
