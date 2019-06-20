@@ -118,7 +118,7 @@ ngraph::he::HESealExecutable::HESealExecutable(
   pass_manager.register_pass<ngraph::pass::LikeReplacement>();
   pass_manager.register_pass<ngraph::pass::AssignLayout<DenseTensorLayout>>();
   pass_manager.register_pass<ngraph::pass::CoreFusion>();
-  if (std::getenv("CONST_FOLD") != nullptr) {
+  if (std::getenv("STOP_CONST_FOLD") == nullptr) {
     pass_manager.register_pass<ngraph::pass::ConstantFolding>();
   }
   pass_manager.register_pass<ngraph::pass::Liveness>();
@@ -957,6 +957,7 @@ void ngraph::he::HESealExecutable::generate_calls(
       }
       break;
     }
+
     case OP_TYPEID::BroadcastLike:
       break;
     case OP_TYPEID::Concat: {
