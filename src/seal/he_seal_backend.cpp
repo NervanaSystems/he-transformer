@@ -172,7 +172,7 @@ std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
     std::shared_ptr<Function> function, bool enable_performance_collection) {
   return std::make_shared<HESealExecutable>(
       function, enable_performance_collection, *this, m_encrypt_data,
-      m_encrypt_model, m_batch_data, m_complex_packing, m_silence_all_ops);
+      m_encrypt_model, m_batch_data, m_complex_packing);
 }
 
 std::shared_ptr<ngraph::he::SealCiphertextWrapper>

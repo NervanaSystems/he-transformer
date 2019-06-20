@@ -14,8 +14,12 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include <algorithm>
 #include <functional>
 #include <limits>
+#include <locale>
+#include <regex>
+#include <string>
 
 #include "client_util.hpp"
 #include "he_plain_tensor.hpp"
@@ -82,13 +86,13 @@ ngraph::he::HESealExecutable::HESealExecutable(
     const std::shared_ptr<Function>& function,
     bool enable_performance_collection, HESealBackend& he_seal_backend,
     bool encrypt_data, bool encrypt_model, bool batch_data,
-    bool complex_packing, bool silence_all_ops)
+    bool complex_packing)
     : m_he_seal_backend(he_seal_backend),
       m_encrypt_data(encrypt_data),
       m_encrypt_model(encrypt_model),
       m_batch_data(batch_data),
       m_complex_packing(complex_packing),
-      m_silence_all_ops(silence_all_ops),
+      m_silence_all_ops(false),
       m_enable_client(std::getenv("NGRAPH_ENABLE_CLIENT") != nullptr),
       m_batch_size(1),
       m_port(34000),
@@ -96,6 +100,21 @@ ngraph::he::HESealExecutable::HESealExecutable(
       m_session_started(false),
       m_client_inputs_received(false) {
   m_context = he_seal_backend.get_context();
+
+  if (std::getenv("NGRAPH_SILENT_OPS") != nullptr) {
+    std::string silent_ops_str(std::getenv("NGRAPH_SILENT_OPS"));
+    silent_ops_str = ngraph::to_lower(silent_ops_str);
+    if (silent_ops_str == "all") {
+      m_silence_all_ops = true;
+    }
+    std::vector<std::string> silent_ops_vec = split(silent_ops_str, ',', true);
+    m_silent_ops =
+        std::set<std::string>{silent_ops_vec.begin(), silent_ops_vec.end()};
+
+    if (m_silent_ops.find("all") != m_silent_ops.end()) {
+      m_silence_all_ops = true;
+    }
+  }
 
   m_is_compiled = true;
   ngraph::pass::Manager pass_manager1;
@@ -763,7 +782,6 @@ void ngraph::he::HESealExecutable::generate_calls(
     NGRAPH_CHECK(node.get_output_size() == 1,
                  "Only support single-output functions");
     out_shape = node.get_output_shape(0);
-    NGRAPH_INFO << "out shape " << join(out_shape, "x");
     packed_out_shape = out_shape;
     if (m_batch_data) {
       packed_out_shape = ngraph::he::HETensor::pack_shape(packed_out_shape);
