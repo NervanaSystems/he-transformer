@@ -14,12 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include <algorithm>
 #include <functional>
 #include <limits>
-#include <locale>
-#include <regex>
-#include <string>
 
 #include "client_util.hpp"
 #include "he_plain_tensor.hpp"
