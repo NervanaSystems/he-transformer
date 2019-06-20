@@ -59,6 +59,8 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_t2v_012) {
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_t2s_012) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   Shape shape_a{1, 1, 1};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -86,6 +88,8 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_t2s_012) {
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_t2s_120) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   Shape shape_a{1, 1, 1};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -170,6 +174,8 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_v2m_col) {
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_v2m_row) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   Shape shape_a{3};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -196,6 +202,8 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_v2m_row) {
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_v2t_middle) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   Shape shape_a{3};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);

@@ -308,6 +308,9 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int, default=1, help='Batch size')
 
     FLAGS, unparsed = parser.parse_known_args()
+    if FLAGS.data_dir == None:
+        print('data_dir must be specified')
+        exit(1)
 
     print(FLAGS)
     main(FLAGS)

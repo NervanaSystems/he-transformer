@@ -562,6 +562,7 @@ bool ngraph::he::HESealExecutable::call(
       }
       continue;
     }
+    m_timer_map[op].start();
 
     // get op inputs from map
     std::vector<std::shared_ptr<ngraph::he::HETensor>> op_inputs;
@@ -602,6 +603,12 @@ bool ngraph::he::HESealExecutable::call(
                         [](std::shared_ptr<ngraph::he::HETensor> he_tensor) {
                           return he_tensor->is_packed();
                         });
+        // TODO: figure out better condition
+        if (shape[0] == m_batch_size && op->description() == "Broadcast") {
+          NGRAPH_INFO << "broadcast => packed out true";
+          packed_out = true;
+        }
+
         if (plain_out) {
           auto out_tensor = std::make_shared<ngraph::he::HEPlainTensor>(
               element_type, shape, m_he_seal_backend, packed_out, name);
@@ -623,7 +630,6 @@ bool ngraph::he::HESealExecutable::call(
       base_type = op->get_inputs().at(0).get_tensor().get_element_type();
     }
 
-    m_timer_map[op].start();
     generate_calls(base_type, wrapped, op_outputs, op_inputs);
     m_timer_map[op].stop();
 
