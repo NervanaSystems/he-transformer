@@ -42,7 +42,7 @@ void ngraph::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
 
   if (num_elements_to_write == 1) {
     const void* src_with_offset = (void*)((char*)source);
-    if (m_batch_size > 1 && is_batched()) {
+    if (m_batch_size > 1 && is_packed()) {
       std::vector<float> values(m_batch_size);
 
       for (size_t j = 0; j < m_batch_size; ++j) {

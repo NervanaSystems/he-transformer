@@ -118,8 +118,10 @@ ngraph::he::HESealExecutable::HESealExecutable(
   NGRAPH_INFO << "Running optimization pass 3";
   pass_manager3.run_passes(function);
 
-  // NGRAPH_INFO << "Running optimization pass 4";
-  // pass_manager4.run_passes(function);
+  if (std::getenv("CONST_FOLD") != nullptr) {
+    NGRAPH_INFO << "Running optimization pass 4";
+    pass_manager4.run_passes(function);
+  }
 
   NGRAPH_INFO << "Running optimization pass 5";
   pass_manager5.run_passes(function);
@@ -604,7 +606,7 @@ bool ngraph::he::HESealExecutable::call(
         bool batched_out =
             std::any_of(op_inputs.begin(), op_inputs.end(),
                         [](std::shared_ptr<ngraph::he::HETensor> he_tensor) {
-                          return he_tensor->is_batched();
+                          return he_tensor->is_packed();
                         });
         if (plain_out) {
           auto out_tensor = std::make_shared<ngraph::he::HEPlainTensor>(
@@ -761,6 +763,7 @@ void ngraph::he::HESealExecutable::generate_calls(
     NGRAPH_CHECK(node.get_output_size() == 1,
                  "Only support single-output functions");
     out_shape = node.get_output_shape(0);
+    NGRAPH_INFO << "out shape " << join(out_shape, "x");
     packed_out_shape = out_shape;
     if (m_batch_data) {
       packed_out_shape = ngraph::he::HETensor::pack_shape(packed_out_shape);
@@ -1351,10 +1354,16 @@ void ngraph::he::HESealExecutable::generate_calls(
                                  arg0_cipher->get_packed_shape(),
                                  reshape->get_input_order(), packed_out_shape);
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
+        const Shape& in_shape = arg0_plain->is_packed()
+                                    ? arg0_plain->get_packed_shape()
+                                    : arg0_plain->get_shape();
+        const Shape& reshape_out_shape = arg0_plain->is_packed()
+                                             ? packed_out_shape
+                                             : out0_plain->get_shape();
+
         ngraph::he::reshape_seal(arg0_plain->get_elements(),
-                                 out0_plain->get_elements(),
-                                 arg0_plain->get_packed_shape(),
-                                 reshape->get_input_order(), packed_out_shape);
+                                 out0_plain->get_elements(), in_shape,
+                                 reshape->get_input_order(), reshape_out_shape);
       } else {
         throw ngraph_error("Reshape types not supported.");
       }
