@@ -599,18 +599,18 @@ bool ngraph::he::HESealExecutable::call(
         if (op->is_constant()) {
           plain_out = !m_encrypt_model;
         }
-        bool batched_out =
+        bool packed_out =
             std::any_of(op_inputs.begin(), op_inputs.end(),
                         [](std::shared_ptr<ngraph::he::HETensor> he_tensor) {
                           return he_tensor->is_packed();
                         });
         if (plain_out) {
           auto out_tensor = std::make_shared<ngraph::he::HEPlainTensor>(
-              element_type, shape, m_he_seal_backend, batched_out, name);
+              element_type, shape, m_he_seal_backend, packed_out, name);
           tensor_map.insert({tensor, out_tensor});
         } else {
           auto out_tensor = std::make_shared<ngraph::he::HESealCipherTensor>(
-              element_type, shape, m_he_seal_backend, batched_out, name);
+              element_type, shape, m_he_seal_backend, packed_out, name);
           tensor_map.insert({tensor, out_tensor});
         }
       }
@@ -928,6 +928,16 @@ void ngraph::he::HESealExecutable::generate_calls(
                      "output size ", output_size,
                      " doesn't match number of elements",
                      out0_cipher->num_ciphertexts());
+
+        if (out0_cipher != nullptr) {
+          NGRAPH_INFO << "checking " << arg0_cipher->num_ciphertexts()
+                      << "for complex packing";
+          for (const auto& cipher : out0_cipher->get_elements()) {
+            NGRAPH_CHECK(cipher->complex_packing() ==
+                             m_he_seal_backend.complex_packing(),
+                         "input cipher element complex packing is incorrect");
+          }
+        }
         ngraph::he::bounded_relu_seal(arg0_cipher->get_elements(),
                                       out0_cipher->get_elements(), output_size,
                                       alpha, m_he_seal_backend);
@@ -1583,9 +1593,8 @@ void ngraph::he::HESealExecutable::generate_calls(
   }
 
   if (out0_cipher != nullptr) {
-    NGRAPH_CHECK(
-        out0_cipher->is_packed() == m_he_seal_backend.complex_packing(),
-        "Output cipher complex packing is incorrect");
+    NGRAPH_INFO << "checking " << out0_cipher->num_ciphertexts()
+                << "for complex packing";
     for (const auto& cipher : out0_cipher->get_elements()) {
       NGRAPH_CHECK(
           cipher->complex_packing() == m_he_seal_backend.complex_packing(),

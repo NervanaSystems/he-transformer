@@ -191,24 +191,6 @@ ngraph::he::HESealBackend::create_valued_ciphertext(
   return ciphertext;
 }
 
-std::shared_ptr<ngraph::he::SealCiphertextWrapper>
-ngraph::he::HESealBackend::create_empty_ciphertext() const {
-  return std::make_shared<ngraph::he::SealCiphertextWrapper>();
-}
-
-std::shared_ptr<ngraph::he::SealCiphertextWrapper>
-ngraph::he::HESealBackend::create_empty_ciphertext(
-    seal::parms_id_type parms_id) const {
-  return std::make_shared<ngraph::he::SealCiphertextWrapper>(
-      seal::Ciphertext(m_context, parms_id));
-}
-
-std::shared_ptr<ngraph::he::SealCiphertextWrapper>
-ngraph::he::HESealBackend::create_empty_ciphertext(
-    const seal::MemoryPoolHandle& pool) const {
-  return std::make_shared<ngraph::he::SealCiphertextWrapper>(pool);
-}
-
 void ngraph::he::HESealBackend::encrypt(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& output,
     const ngraph::he::HEPlaintext& input, bool complex_packing) const {

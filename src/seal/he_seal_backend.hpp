@@ -109,14 +109,23 @@ class HESealBackend : public ngraph::runtime::Backend {
       float value, const element::Type& element_type,
       size_t batch_size = 1) const;
 
-  std::shared_ptr<ngraph::he::SealCiphertextWrapper> create_empty_ciphertext()
-      const;
+  inline std::shared_ptr<ngraph::he::SealCiphertextWrapper>
+  create_empty_ciphertext() const {
+    return std::make_shared<ngraph::he::SealCiphertextWrapper>(
+        m_complex_packing);
+  }
 
-  std::shared_ptr<ngraph::he::SealCiphertextWrapper> create_empty_ciphertext(
-      seal::parms_id_type parms_id) const;
+  inline std::shared_ptr<ngraph::he::SealCiphertextWrapper>
+  create_empty_ciphertext(seal::parms_id_type parms_id) const {
+    return std::make_shared<ngraph::he::SealCiphertextWrapper>(
+        seal::Ciphertext(m_context, parms_id), m_complex_packing);
+  }
 
-  std::shared_ptr<ngraph::he::SealCiphertextWrapper> create_empty_ciphertext(
-      const seal::MemoryPoolHandle& pool) const;
+  inline std::shared_ptr<ngraph::he::SealCiphertextWrapper>
+  create_empty_ciphertext(const seal::MemoryPoolHandle& pool) const {
+    return std::make_shared<ngraph::he::SealCiphertextWrapper>(
+        pool, m_complex_packing);
+  }
 
   /// @brief Constructs SEAL context from SEAL parameter
   /// @param sp SEAL Parameter from which to construct context
