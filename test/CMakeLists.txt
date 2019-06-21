@@ -17,6 +17,7 @@
 set (SRC
     main.cpp
     test_seal.cpp
+    test_perf_micro.cpp
     test_util.cpp
 )
 
