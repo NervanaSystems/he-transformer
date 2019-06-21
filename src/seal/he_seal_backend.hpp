@@ -203,11 +203,16 @@ class HESealBackend : public ngraph::runtime::Backend {
   bool batch_data() const { return m_batch_data; };
   bool encrypt_model() const { return m_encrypt_model; };
 
+  // TODO: remove once performance impact is understood
+  bool naive_rescaling() const { return m_naive_rescaling; }
+  bool& naive_rescaling() { return m_naive_rescaling; }
+
  private:
   bool m_encrypt_data{std::getenv("NGRAPH_ENCRYPT_DATA") != nullptr};
   bool m_batch_data{true};
   bool m_encrypt_model{std::getenv("NGRAPH_ENCRYPT_MODEL") != nullptr};
   bool m_complex_packing{std::getenv("NGRAPH_COMPLEX_PACK") != nullptr};
+  bool m_naive_rescaling{std::getenv("NAIVE_RESCALING") != nullptr};
 
   std::shared_ptr<seal::SecretKey> m_secret_key;
   std::shared_ptr<seal::PublicKey> m_public_key;
