@@ -31,10 +31,13 @@ using namespace seal;
 static string s_manifest = "${MANIFEST}";
 
 TEST(perf_micro, encode) {
-  int test_count = 100;
+  auto perf_test = [](size_t poly_modulus_degree,
+                      const std::vector<int>& coeff_modulus_bits) {
+    int add_test_cnt = 1000;
+    int mult_test_cnt = 1000;
+    int encode_test_cnt = 1000;
+    int max_test_count = max(max(add_test_cnt, mult_test_cnt), encode_test_cnt);
 
-  auto perf_test = [&test_count](size_t poly_modulus_degree,
-                                 const std::vector<int>& coeff_modulus_bits) {
     chrono::high_resolution_clock::time_point time_start, time_end;
     chrono::nanoseconds time_seal_encode_sum(0);
     chrono::nanoseconds time_he_encode_sum(0);
@@ -66,7 +69,7 @@ TEST(perf_micro, encode) {
                                                128, coeff_modulus_bits);
     auto he_seal_backend = HESealBackend(he_parms);
 
-    for (int test_run = 0; test_run < test_count; ++test_run) {
+    for (int test_run = 0; test_run < max_test_count; ++test_run) {
       auto seal_capacity =
           poly_modulus_degree * (coeff_modulus_bits.size() - 1);
       seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool();
@@ -78,7 +81,7 @@ TEST(perf_micro, encode) {
       auto parms_id = context->first_parms_id();
 
       // [Encoding]
-      {
+      if (test_run < encode_test_cnt) {
         // SEAL encoder
         time_start = chrono::high_resolution_clock::now();
         encoder.encode(input, scale, plain, pool);
@@ -104,55 +107,62 @@ TEST(perf_micro, encode) {
       }
 
       // Plaintext multiplication
-      if (coeff_modulus_bits.size() > 2) {
+      if (test_run < mult_test_cnt) {
+        if (coeff_modulus_bits.size() > 2) {
+          Ciphertext encrypted(context);
+          encryptor.encrypt(plain, encrypted);
+
+          // SEAL
+          time_start = chrono::high_resolution_clock::now();
+          evaluator.multiply_plain_inplace(encrypted, plain, pool);
+          time_end = chrono::high_resolution_clock::now();
+          time_seal_multiply_plain_sum +=
+              chrono::duration_cast<chrono::microseconds>(time_end -
+                                                          time_start);
+
+          // HE
+          time_start = chrono::high_resolution_clock::now();
+          multiply_plain_inplace(encrypted, input, he_seal_backend, pool);
+          time_end = chrono::high_resolution_clock::now();
+          time_he_multiply_plain_sum +=
+              chrono::duration_cast<chrono::microseconds>(time_end -
+                                                          time_start);
+        }
+      }
+
+      // Plaintext addition
+      if (test_run < add_test_cnt) {
         Ciphertext encrypted(context);
         encryptor.encrypt(plain, encrypted);
 
         // SEAL
         time_start = chrono::high_resolution_clock::now();
-        evaluator.multiply_plain_inplace(encrypted, plain, pool);
+        evaluator.add_plain_inplace(encrypted, plain);
         time_end = chrono::high_resolution_clock::now();
-        time_seal_multiply_plain_sum +=
+        time_seal_add_plain_sum +=
             chrono::duration_cast<chrono::microseconds>(time_end - time_start);
 
         // HE
         time_start = chrono::high_resolution_clock::now();
-        multiply_plain_inplace(encrypted, input, he_seal_backend, pool);
+        add_plain_inplace(encrypted, input, he_seal_backend);
         time_end = chrono::high_resolution_clock::now();
-        time_he_multiply_plain_sum +=
+        time_he_add_plain_sum +=
             chrono::duration_cast<chrono::microseconds>(time_end - time_start);
       }
-
-      // Plaintext addition
-      Ciphertext encrypted(context);
-      encryptor.encrypt(plain, encrypted);
-
-      // SEAL
-      time_start = chrono::high_resolution_clock::now();
-      evaluator.add_plain_inplace(encrypted, plain);
-      time_end = chrono::high_resolution_clock::now();
-      time_seal_add_plain_sum +=
-          chrono::duration_cast<chrono::microseconds>(time_end - time_start);
-
-      // HE
-      time_start = chrono::high_resolution_clock::now();
-      add_plain_inplace(encrypted, input, he_seal_backend);
-      time_end = chrono::high_resolution_clock::now();
-      time_he_add_plain_sum +=
-          chrono::duration_cast<chrono::microseconds>(time_end - time_start);
     }
 
-    auto time_seal_encode_avg = time_seal_encode_sum.count() / test_count;
-    auto time_he_encode_avg = time_he_encode_sum.count() / test_count;
+    auto time_seal_encode_avg = time_seal_encode_sum.count() / encode_test_cnt;
+    auto time_he_encode_avg = time_he_encode_sum.count() / encode_test_cnt;
 
     auto time_seal_multiply_plain_avg =
-        time_seal_multiply_plain_sum.count() / test_count;
+        time_seal_multiply_plain_sum.count() / mult_test_cnt;
     auto time_he_multiply_plain_avg =
-        time_he_multiply_plain_sum.count() / test_count - time_he_encode_avg;
+        time_he_multiply_plain_sum.count() / mult_test_cnt - time_he_encode_avg;
 
-    auto time_seal_add_plain_avg = time_seal_add_plain_sum.count() / test_count;
+    auto time_seal_add_plain_avg =
+        time_seal_add_plain_sum.count() / add_test_cnt;
     auto time_he_add_plain_avg =
-        time_he_add_plain_sum.count() / test_count - time_he_encode_avg;
+        time_he_add_plain_sum.count() / add_test_cnt - time_he_encode_avg;
 
     NGRAPH_INFO << "time_seal_encode_avg (ns) " << time_seal_encode_avg;
     NGRAPH_INFO << "time_he_encode_avg (ns) " << time_he_encode_avg;
