@@ -91,6 +91,11 @@ void ngraph::he::scalar_multiply_seal(
       double double_val = double(value);
       multiply_plain(arg0.ciphertext(), double_val, out->ciphertext(),
                      he_seal_backend, pool);
+
+      if (he_seal_backend.naive_rescaling()) {
+        he_seal_backend.get_evaluator()->rescale_to_next_inplace(
+            out->ciphertext(), pool);
+      }
     } else {
       // Never complex-pack for multiplication
       auto p = SealPlaintextWrapper(false);

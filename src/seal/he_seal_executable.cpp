@@ -711,6 +711,9 @@ void ngraph::he::HESealExecutable::generate_calls(
 
   // TODO: move to static function
   auto lazy_rescaling = [this](auto& cipher_tensor, bool verbose = true) {
+    if (m_he_seal_backend.naive_rescaling()) {
+      return;
+    }
     typedef std::chrono::high_resolution_clock Clock;
     auto t1 = Clock::now();
     size_t new_chain_index = std::numeric_limits<size_t>::max();
