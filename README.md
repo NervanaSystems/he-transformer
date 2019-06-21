@@ -62,7 +62,7 @@ cmake .. -DUSE_PREBUILT_TF=ON -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-
 
 #### 1.b Python bindings for client
 To build an experimental client-server model with python bindings, see the `python` folder.
-***Note***:
+***Note***: This feature is experimental. For best experience, you should skip this step.
 
 ### 2. Run C++ unit-tests
 Ensure the virtual environment is active, i.e. run `source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate`

@@ -1,16 +1,2 @@
-mult_layer_cipher_plain # Lazy rescaling means rescaling doesn't happen after multiply...
-
 # Need to check why EXPECT_THROW doesn't catch it
 multiply_2_3_cipher_cipher_complex
-
-# TODO: investigate
-mult_layer_cipher_cipher
-sum_to_scalar
-sum_matrix_vector_zero
-sum_matrix_to_scalar_zero_by_zero
-
-slice_scalar
-reverse_0d
-reshape_t2s_012
-reshape_t2s_120
-dot1d

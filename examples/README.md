@@ -1,4 +1,4 @@
-This example demonstrates a simple example of a small matrix multiplication and addition. This example depends on the [**Intel® nGraph™ Compiler and runtime engine for TensorFlow**](https://github.com/NervanaSystems/ngraph-tf). Make sure the python environment with the ngraph-tf bridge is active, i.e. run `source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate`.
+This example demonstrates a simple example of a small matrix multiplication and addition. This example depends on the [**Intel® nGraph™ Compiler and runtime engine for TensorFlow**](https://github.com/tensorflow/ngraph-bridge). Make sure the python environment with the ngraph-tf bridge is active, i.e. run `source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate`.
 
 To run on the CKKS backend,
 ```bash
@@ -27,7 +27,7 @@ For a deep learning example using the client-server model, see the `MNIST-MLP` f
 # List of command-line flags
   * `NGRAPH_ENCRYPT_DATA`. Set to 1 to encrypt data
   * `NGRAPH_ENCRYPT_MODEL`. Set to 1 to encrypt model
-  * `NGRAPH_VERBOSE_OPS`. Set to `all` to print information about every operation performed. Set to a comma-separated list to print information about those ops; for example `NGRAPH_VERBOSE_OPS=add,multiply,convolution`
+  * `NGRAPH_VOPS`. Set to `all` to print information about every operation performed. Set to a comma-separated list to print information about those ops; for example `NGRAPH_VOPS=add,multiply,convolution`
   * `STOP_CONST_FOLD`. Set to 1 to stop constant folding optimization. Note, this speeds up the graph compilation time for large batch sizes.
   * `NGRAPH_TF_BACKEND`. Set to `HE_SEAL` to use the HE backend. Set to `CPU` for inference on un-encrypted data
   * `NGRAPH_COMPLEX_PACK`. Set to 1 to enable complex packing. For models with no ciphertext-ciphertext multiplication, this will double the capacity from `N/2` to `N`. As a rough guideline, this flag is suitable when the model does not contain polynomial activations, and when either the model or data remains unencrypted

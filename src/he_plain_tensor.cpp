@@ -25,11 +25,8 @@ ngraph::he::HEPlainTensor::HEPlainTensor(const element::Type& element_type,
                                          const bool packed,
                                          const std::string& name)
     : ngraph::he::HETensor(element_type, shape, he_seal_backend, packed, name) {
-  NGRAPH_INFO << "Creating " << (packed ? "packed" : "")
-              << "Plain tensor shape " << join(shape, "x");
   m_num_elements = m_descriptor->get_tensor_layout()->get_size() / m_batch_size;
   m_plaintexts.resize(m_num_elements);
-  NGRAPH_INFO << "num elements " << m_num_elements;
 }
 
 void ngraph::he::HEPlainTensor::write(const void* source, size_t tensor_offset,

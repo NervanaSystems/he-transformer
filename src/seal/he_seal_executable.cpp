@@ -97,8 +97,8 @@ ngraph::he::HESealExecutable::HESealExecutable(
       m_client_inputs_received(false) {
   m_context = he_seal_backend.get_context();
 
-  if (std::getenv("NGRAPH_VERBOSE_OPS") != nullptr) {
-    std::string verbose_ops_str(std::getenv("NGRAPH_VERBOSE_OPS"));
+  if (std::getenv("NGRAPH_VOPS") != nullptr) {
+    std::string verbose_ops_str(std::getenv("NGRAPH_VOPS"));
     verbose_ops_str = ngraph::to_lower(verbose_ops_str);
     if (verbose_ops_str == "all") {
       m_verbose_all_ops = true;
@@ -603,8 +603,11 @@ bool ngraph::he::HESealExecutable::call(
                         [](std::shared_ptr<ngraph::he::HETensor> he_tensor) {
                           return he_tensor->is_packed();
                         });
-        // TODO: figure out better condition
-        if (shape[0] == m_batch_size && op->description() == "Broadcast") {
+        // Avoid broadcasting from constant to output with batch size first
+        // dimension This happens because not every constant is packed, for
+        // examples convolution kernels.
+        if (m_batch_data && shape.size() > 0 && shape[0] == m_batch_size &&
+            op->description() == "Broadcast") {
           NGRAPH_INFO << "broadcast => packed out true";
           packed_out = true;
         }
@@ -875,8 +878,6 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::BatchNormInference: {
-      // TODO: enable
-
       const ngraph::op::BatchNormInference* bn =
           static_cast<const ngraph::op::BatchNormInference*>(&node);
       double eps = bn->get_eps_value();
