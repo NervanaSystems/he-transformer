@@ -35,7 +35,6 @@ pip install pillow
       ```bash
       NGRAPH_ENABLE_CLIENT=1 \
       NGRAPH_ENCRYPT_DATA=1 \
-      NGRAPH_BATCH_DATA=1 \
       NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
       NGRAPH_TF_BACKEND=HE_SEAL \
       python test.py
@@ -60,7 +59,6 @@ NGRAPH_TF_BACKEND=HE_SEAL python test.py
 2. To run the model without the client, (encryption and decryption will occur locally, so this isn't privacy-preserving):
 ```bash
 NGRAPH_ENCRYPT_DATA=1 \
-NGRAPH_BATCH_DATA=1 \
 NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
 NGRAPH_TF_BACKEND=HE_SEAL \
 python test.py
@@ -71,7 +69,6 @@ For faster runtime, try
 ```bash
 OMP_NUM_THREADS=56 \
 NGRAPH_ENCRYPT_DATA=1 \
-NGRAPH_BATCH_DATA=1 \
 NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
 NGRAPH_TF_BACKEND=HE_SEAL \
 python test.py
@@ -110,25 +107,38 @@ python test.py \
 
 5. To call inference using HE_SEAL's plaintext operations (for debugging), call
 ```bash
-NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
 NGRAPH_TF_BACKEND=HE_SEAL \
-NGRAPH_BATCH_DATA=1 \
+STOP_CONST_FOLD=1 \
 python test.py \
---data_dir=$DATA_DIR
+--data_dir=$DATA_DIR \
 --ngraph=true \
 --batch_size=300
 ```
-Note: this will result in many outputs. To suppress these, pass the `NGRAPH_SILENCE_OPS=1` flag
+Note, the `STOP_CONST_FOLD` flag will prevent the constant folding graph optimization.
+For large batch sizes, this incurs significant overhead during graph compilation, and doesn't result in much runtime speedup.
 
-6. To call inference using encrypted data, run the below command. ***Warning***: this will take ~210GB memory.
+6. To call inference using encrypted data, run the below command. ***Warning***: this will take ~150GB memory.
 ```bash
 OMP_NUM_THREADS=56 \
+STOP_CONST_FOLD=1 \
 NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
 NGRAPH_TF_BACKEND=HE_SEAL \
-NGRAPH_BATCH_DATA=1 \
 NGRAPH_ENCRYPT_DATA=1 \
 python test.py \
---data_dir=$DATA_DIR
+--data_dir=$DATA_DIR \
 --ngraph=true \
 --batch_size=2048
 ```
+
+7. To double the throughput using complex packing, run:
+```bash
+OMP_NUM_THREADS=56 \
+STOP_CONST_FOLD=1 \
+NGRAPH_COMPLEX_PACK=1 \
+NGRAPH_TF_BACKEND=HE_SEAL \
+NGRAPH_ENCRYPT_DATA=1 \
+NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json NGRAPH_BATCH_DATA=1 \
+python test.py \
+--data_dir=$DATA_DIR \
+--ngraph=true \
+--batch_size=4096

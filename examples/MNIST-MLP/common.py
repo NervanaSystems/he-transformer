@@ -51,8 +51,10 @@ def mlp_model(x, mode):
         W_bias1 = get_variable('W_b1', [100], mode)
         W_scale1 = get_variable('W_s1', [100], mode)
         y = y * W_scale1
+        y = tf.nn.relu(y)
         y = y + W_bias1
         y = tf.nn.relu(y)
+        y = tf.math.minimum(y, 6)  # Use ReLU6 op
 
     with tf.name_scope('fc2'):
         W_fc2 = get_variable('W_fc2', [100, 10], mode)

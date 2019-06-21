@@ -14,8 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "seal/he_seal_backend.hpp"
 #include "ngraph/ngraph.hpp"
+#include "seal/he_seal_backend.hpp"
 #include "test_util.hpp"
 #include "util/all_close.hpp"
 #include "util/ndarray.hpp"
@@ -29,6 +29,7 @@ static string s_manifest = "${MANIFEST}";
 NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_1d_plain) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   Shape shape_a{6};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -71,6 +72,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_1d) {
 
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   // Create some tensors for input/output
   auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
@@ -102,6 +104,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_negative_exterior_1d) {
 
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   // Create some tensors for input/output
   auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
@@ -132,6 +135,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_negative_exterior_1d_check_limits) {
 
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   // Create some tensors for input/output
   auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
@@ -162,6 +166,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_edge_1d) {
 
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   // Create some tensors for input/output
   auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
@@ -192,6 +197,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_edge_1d_top_neg) {
 
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   // Create some tensors for input/output
   auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
@@ -221,6 +227,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_edge_1d_top_neg_bigger_than_tensor) {
 
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   // Create some tensors for input/output
   auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
@@ -250,6 +257,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_edge_1d_bottom_neg) {
 
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   // Create some tensors for input/output
   auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
@@ -280,6 +288,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_edge_1d_bottom_neg_bigger_than_tensor) {
 
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   // Create some tensors for input/output
   auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
@@ -309,6 +318,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_edge_2d) {
 
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   // Create some tensors for input/output
   auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
@@ -347,6 +357,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_edge_2d_with_neg) {
 
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   // Create some tensors for input/output
   auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
@@ -384,6 +395,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_reflect_1d) {
 
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   // Create some tensors for input/output
   auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
@@ -414,6 +426,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_reflect_1d_top_neg) {
 
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   // Create some tensors for input/output
   auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
@@ -443,6 +456,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_reflect_1d_top_neg_bigger_than_tensor) {
 
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   // Create some tensors for input/output
   auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
@@ -472,6 +486,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_reflect_1d_bottom_neg) {
 
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   // Create some tensors for input/output
   auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
@@ -502,6 +517,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_reflect_1d_bottom_neg_bigger_than_tensor) {
 
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   // Create some tensors for input/output
   auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
@@ -531,6 +547,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_reflect_1d_multi_reflect) {
 
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   // Create some tensors for input/output
   auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
@@ -563,6 +580,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_reflect_2d) {
 
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   // Create some tensors for input/output
   auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
@@ -601,6 +619,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_reflect_2d_with_neg) {
 
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   // Create some tensors for input/output
   auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
@@ -638,6 +657,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_negative_exterior_2d) {
 
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   // Create some tensors for input/output
   auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
@@ -668,6 +688,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_negative_exterior_2d_all_negative) {
 
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   // Create some tensors for input/output
   auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
@@ -698,6 +719,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_0x0) {
 
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   // Create some tensors for input/output
   auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
@@ -732,6 +754,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_0x3) {
 
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   // Create some tensors for input/output
   auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
@@ -766,6 +789,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_3x0) {
 
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   // Create some tensors for input/output
   auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
@@ -800,6 +824,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_4d_1x2x2x2) {
 
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   // Create some tensors for input/output
   auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
@@ -862,6 +887,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_negative_exterior_4d) {
 
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   // Create some tensors for input/output
   auto a = he_backend->create_cipher_tensor(element::f32, shape_a);
@@ -925,6 +951,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_2channel_2image_asym) {
 
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   // Create some tensors for input/output
   auto a = he_backend->create_cipher_tensor(element::f32, shape_a);

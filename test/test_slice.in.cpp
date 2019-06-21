@@ -29,6 +29,8 @@ static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, slice_scalar) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   Shape shape_a{};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -54,6 +56,8 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_scalar) {
 
 NGRAPH_TEST(${BACKEND_NAME}, slice_matrix) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   Shape shape_a{4, 4};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -81,6 +85,8 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_matrix) {
 
 NGRAPH_TEST(${BACKEND_NAME}, slice_vector) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   Shape shape_a{16};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -109,6 +115,8 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_vector) {
 
 NGRAPH_TEST(${BACKEND_NAME}, slice_matrix_strided) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   Shape shape_a{4, 4};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -137,6 +145,8 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_matrix_strided) {
 
 NGRAPH_TEST(${BACKEND_NAME}, slice_3d) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   Shape shape_a{4, 4, 4};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -168,6 +178,8 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_3d) {
 
 NGRAPH_TEST(${BACKEND_NAME}, slice_3d_strided) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   Shape shape_a{4, 4, 4};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -200,6 +212,8 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_3d_strided) {
 
 NGRAPH_TEST(${BACKEND_NAME}, slice_3d_strided_different_strides) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   Shape shape_a{4, 4, 4};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);

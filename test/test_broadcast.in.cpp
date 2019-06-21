@@ -14,8 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "seal/he_seal_backend.hpp"
 #include "ngraph/ngraph.hpp"
+#include "seal/he_seal_backend.hpp"
 #include "test_util.hpp"
 #include "util/all_close.hpp"
 #include "util/ndarray.hpp"
@@ -29,6 +29,9 @@ static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
+
   Shape shape_a{};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{4};
@@ -68,6 +71,9 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_to_non_existent_axis) {
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
+
   Shape shape_a{};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{2, 2};
@@ -95,6 +101,9 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix) {
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_tensor) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
+
   Shape shape_a{};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{2, 2, 2};
@@ -122,6 +131,9 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_tensor) {
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_trivial) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
+
   Shape shape{2, 2, 2};
   auto A = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Broadcast>(A, shape, AxisSet{});
@@ -148,6 +160,8 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_trivial) {
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_colwise) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   Shape shape_a{3};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -204,6 +218,8 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_rowwise) {
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_0) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   Shape shape_a{2, 2};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -231,6 +247,8 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_0) {
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_1) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   Shape shape_a{2, 2};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -258,6 +276,8 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_1) {
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_2) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   Shape shape_a{2, 2};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);

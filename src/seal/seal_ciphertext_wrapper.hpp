@@ -26,6 +26,9 @@ class SealCiphertextWrapper {
  public:
   SealCiphertextWrapper() : m_complex_packing(false), m_is_zero(false) {}
 
+  SealCiphertextWrapper(bool complex_packing)
+      : m_complex_packing(complex_packing), m_is_zero(false) {}
+
   SealCiphertextWrapper(const seal::Ciphertext& cipher,
                         bool complex_packing = false, bool is_zero = false)
       : m_ciphertext(cipher),

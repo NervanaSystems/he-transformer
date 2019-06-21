@@ -36,7 +36,6 @@ extern "C" ngraph::runtime::Backend* new_backend(const char* config) {
 
   NGRAPH_CHECK(configuration_string == "HE_SEAL",
                "Invalid configuration string ", configuration_string);
-  NGRAPH_INFO << "Creating new backend";
   return new ngraph::he::HESealBackend();
 }
 
@@ -151,7 +150,6 @@ ngraph::he::HESealBackend::create_valued_cipher_tensor(
 std::shared_ptr<ngraph::runtime::Tensor>
 ngraph::he::HESealBackend::create_batched_cipher_tensor(
     const element::Type& type, const Shape& shape) {
-  NGRAPH_INFO << "Creating batched cipher tensor with shape " << join(shape);
   auto rc = std::make_shared<ngraph::he::HESealCipherTensor>(type, shape, *this,
                                                              true);
   set_batch_data(true);
@@ -161,7 +159,6 @@ ngraph::he::HESealBackend::create_batched_cipher_tensor(
 std::shared_ptr<ngraph::runtime::Tensor>
 ngraph::he::HESealBackend::create_batched_plain_tensor(
     const element::Type& type, const Shape& shape) {
-  NGRAPH_INFO << "Creating batched plain tensor with shape " << join(shape);
   auto rc =
       std::make_shared<ngraph::he::HEPlainTensor>(type, shape, *this, true);
   set_batch_data(true);
@@ -172,7 +169,7 @@ std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
     std::shared_ptr<Function> function, bool enable_performance_collection) {
   return std::make_shared<HESealExecutable>(
       function, enable_performance_collection, *this, m_encrypt_data,
-      m_encrypt_model, m_batch_data, m_complex_packing, m_silence_all_ops);
+      m_encrypt_model, m_batch_data, m_complex_packing);
 }
 
 std::shared_ptr<ngraph::he::SealCiphertextWrapper>
@@ -189,24 +186,6 @@ ngraph::he::HESealBackend::create_valued_ciphertext(
 
   encrypt(ciphertext, plaintext, complex_packing());
   return ciphertext;
-}
-
-std::shared_ptr<ngraph::he::SealCiphertextWrapper>
-ngraph::he::HESealBackend::create_empty_ciphertext() const {
-  return std::make_shared<ngraph::he::SealCiphertextWrapper>();
-}
-
-std::shared_ptr<ngraph::he::SealCiphertextWrapper>
-ngraph::he::HESealBackend::create_empty_ciphertext(
-    seal::parms_id_type parms_id) const {
-  return std::make_shared<ngraph::he::SealCiphertextWrapper>(
-      seal::Ciphertext(m_context, parms_id));
-}
-
-std::shared_ptr<ngraph::he::SealCiphertextWrapper>
-ngraph::he::HESealBackend::create_empty_ciphertext(
-    const seal::MemoryPoolHandle& pool) const {
-  return std::make_shared<ngraph::he::SealCiphertextWrapper>(pool);
 }
 
 void ngraph::he::HESealBackend::encrypt(

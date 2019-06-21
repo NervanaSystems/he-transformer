@@ -31,7 +31,7 @@ class HESealCipherTensor : public HETensor {
  public:
   HESealCipherTensor(const element::Type& element_type, const Shape& shape,
                      const HESealBackend& he_seal_backend,
-                     const bool batched = false,
+                     const bool packed = false,
                      const std::string& name = "external");
 
   /// @brief Write bytes directly into the tensor after encoding and encrypting

@@ -22,10 +22,9 @@
 ngraph::he::HEPlainTensor::HEPlainTensor(const element::Type& element_type,
                                          const Shape& shape,
                                          const HESealBackend& he_seal_backend,
-                                         const bool batched,
+                                         const bool packed,
                                          const std::string& name)
-    : ngraph::he::HETensor(element_type, shape, he_seal_backend, batched,
-                           name) {
+    : ngraph::he::HETensor(element_type, shape, he_seal_backend, packed, name) {
   m_num_elements = m_descriptor->get_tensor_layout()->get_size() / m_batch_size;
   m_plaintexts.resize(m_num_elements);
 }
@@ -42,7 +41,7 @@ void ngraph::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
 
   if (num_elements_to_write == 1) {
     const void* src_with_offset = (void*)((char*)source);
-    if (m_batch_size > 1 && is_batched()) {
+    if (m_batch_size > 1 && is_packed()) {
       std::vector<float> values(m_batch_size);
 
       for (size_t j = 0; j < m_batch_size; ++j) {

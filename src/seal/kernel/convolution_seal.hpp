@@ -652,7 +652,6 @@ inline void convolution_seal(
 
       if (input_batch_transform.has_source_coordinate(input_batch_coord)) {
         auto mult_arg0 = arg0[input_batch_transform.index(input_batch_coord)];
-
         auto mult_arg1 = arg1[filter_transform.index(filter_coord)];
         auto prod = HEPlaintext();
 

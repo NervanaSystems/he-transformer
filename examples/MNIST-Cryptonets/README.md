@@ -1,6 +1,6 @@
 This example demonstrates the [Cryptonets](https://www.microsoft.com/en-us/research/publication/cryptonets-applying-neural-networks-to-encrypted-data-with-high-throughput-and-accuracy/) network, which achieves ~99% accuracy on MNIST.
 
-This example depends on the [**Intel® nGraph™ Compiler and runtime engine for TensorFlow**](https://github.com/NervanaSystems/ngraph-tf). Make sure the python environment with ngraph-tf bridge is active, i.e. run `source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate`.
+This example depends on the [**Intel® nGraph™ Compiler and runtime engine for TensorFlow**](https://github.com/tensorflow/ngraph-bridge). Make sure the python environment with ngraph-tf bridge is active, i.e. run `source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate`.
 
 # Train the network
 First, train the network using
@@ -15,7 +15,6 @@ To test the network, with
   * encrypted data,
 ```
 NGRAPH_ENCRYPT_DATA=1 \
-NGRAPH_BATCH_DATA=1 \
 NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N13_L7.json \
 NGRAPH_TF_BACKEND=HE_SEAL \
 python test.py --batch_size=4096
@@ -23,7 +22,6 @@ python test.py --batch_size=4096
  * encrypted model,
  ```
 NGRAPH_ENCRYPT_MODEL=1 \
-NGRAPH_BATCH_DATA=1 \
 NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N13_L7.json \
 NGRAPH_TF_BACKEND=HE_SEAL \
 python test.py --batch_size=4096
@@ -32,7 +30,6 @@ python test.py --batch_size=4096
 ```
 NGRAPH_ENCRYPT_MODEL=1 \
 NGRAPH_ENCRYPT_DATA=1 \
-NGRAPH_BATCH_DATA=1 \
 NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N13_L7.json \
 NGRAPH_TF_BACKEND=HE_SEAL \
 python test.py --batch_size=4096

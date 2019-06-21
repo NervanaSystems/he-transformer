@@ -198,6 +198,7 @@ def accuracy(preds, truth):
     top5_acc = top5_cnt / float(num_preds) * 100.
     top1_acc = top1_cnt / float(num_preds) * 100.
 
+    print('Accuracy on ', num_preds, ' predictions:')
     print('top1_acc', np.round(top1_acc, 3))
     print('top5_acc', np.round(top5_acc, 3))
 
@@ -217,10 +218,9 @@ def main(FLAGS):
         import ngraph_bridge
 
     config = tf.ConfigProto()
-    #config.intra_op_parallelism_threads = 44
-    #config.inter_op_parallelism_threads = 44
-    # TODO: figure out why this is slow with ngraph enabled
-    #config = ngraph_bridge.update_config(config)
+    config.intra_op_parallelism_threads = 44
+    config.inter_op_parallelism_threads = 44
+    config = ngraph_bridge.update_config(config)
     sess = tf.Session(config=config)
     graph_def = load_model(FLAGS.model)
     tf.import_graph_def(graph_def, name='')
@@ -309,6 +309,9 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int, default=1, help='Batch size')
 
     FLAGS, unparsed = parser.parse_known_args()
+    if FLAGS.data_dir == None:
+        print('data_dir must be specified')
+        exit(1)
 
     print(FLAGS)
     main(FLAGS)

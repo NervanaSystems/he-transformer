@@ -27,8 +27,36 @@ using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
+NGRAPH_TEST(${BACKEND_NAME}, dot1d_plain_plain) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
+
+  Shape shape{4};
+  Shape shape_r{};
+  auto a = make_shared<op::Parameter>(element::f32, shape);
+  auto b = make_shared<op::Parameter>(element::f32, shape);
+  auto t = make_shared<op::Dot>(a, b);
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
+
+  // Create some tensors for input/output
+  auto t_a = he_backend->create_plain_tensor(element::f32, shape);
+  auto t_b = he_backend->create_plain_tensor(element::f32, shape);
+  auto t_result = he_backend->create_plain_tensor(element::f32, shape_r);
+
+  copy_data(t_a, vector<float>{2, 2, 3, 4});
+  copy_data(t_b, vector<float>{5, 6, 7, 8});
+  auto handle = backend->compile(f);
+  handle->call_with_validate({t_result}, {t_a, t_b});
+
+  EXPECT_TRUE(
+      all_close(read_vector<float>(t_result), vector<float>{75}, 1e-3f));
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, dot1d) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   Shape shape{4};
   auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -87,6 +115,8 @@ NGRAPH_TEST(${BACKEND_NAME}, dot1d_optimized) {
 
 NGRAPH_TEST(${BACKEND_NAME}, dot_matrix_vector) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   Shape shape_a{4, 4};
   Shape shape_b{4};
@@ -119,6 +149,8 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_matrix_vector) {
 
 NGRAPH_TEST(${BACKEND_NAME}, dot_scalar) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   Shape shape{};
 

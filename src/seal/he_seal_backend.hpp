@@ -109,14 +109,23 @@ class HESealBackend : public ngraph::runtime::Backend {
       float value, const element::Type& element_type,
       size_t batch_size = 1) const;
 
-  std::shared_ptr<ngraph::he::SealCiphertextWrapper> create_empty_ciphertext()
-      const;
+  inline std::shared_ptr<ngraph::he::SealCiphertextWrapper>
+  create_empty_ciphertext() const {
+    return std::make_shared<ngraph::he::SealCiphertextWrapper>(
+        m_complex_packing);
+  }
 
-  std::shared_ptr<ngraph::he::SealCiphertextWrapper> create_empty_ciphertext(
-      seal::parms_id_type parms_id) const;
+  inline std::shared_ptr<ngraph::he::SealCiphertextWrapper>
+  create_empty_ciphertext(seal::parms_id_type parms_id) const {
+    return std::make_shared<ngraph::he::SealCiphertextWrapper>(
+        seal::Ciphertext(m_context, parms_id), m_complex_packing);
+  }
 
-  std::shared_ptr<ngraph::he::SealCiphertextWrapper> create_empty_ciphertext(
-      const seal::MemoryPoolHandle& pool) const;
+  inline std::shared_ptr<ngraph::he::SealCiphertextWrapper>
+  create_empty_ciphertext(const seal::MemoryPoolHandle& pool) const {
+    return std::make_shared<ngraph::he::SealCiphertextWrapper>(
+        pool, m_complex_packing);
+  }
 
   /// @brief Constructs SEAL context from SEAL parameter
   /// @param sp SEAL Parameter from which to construct context
@@ -193,14 +202,12 @@ class HESealBackend : public ngraph::runtime::Backend {
   bool encrypt_data() const { return m_encrypt_data; };
   bool batch_data() const { return m_batch_data; };
   bool encrypt_model() const { return m_encrypt_model; };
-  bool silence_all_ops() const { return m_silence_all_ops; }
 
  private:
   bool m_encrypt_data{std::getenv("NGRAPH_ENCRYPT_DATA") != nullptr};
-  bool m_batch_data{std::getenv("NGRAPH_BATCH_DATA") != nullptr};
+  bool m_batch_data{true};
   bool m_encrypt_model{std::getenv("NGRAPH_ENCRYPT_MODEL") != nullptr};
   bool m_complex_packing{std::getenv("NGRAPH_COMPLEX_PACK") != nullptr};
-  bool m_silence_all_ops{std::getenv("NGRAPH_SILENCE_OPS") != nullptr};
 
   std::shared_ptr<seal::SecretKey> m_secret_key;
   std::shared_ptr<seal::PublicKey> m_public_key;

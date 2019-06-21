@@ -29,6 +29,8 @@ static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, constant) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
   Shape shape{2, 2};
   auto A = op::Constant::create(element::f32, shape, {0.1, 0.2, 0.3, 0.4});
   auto f = make_shared<Function>(A, ParameterVector{});

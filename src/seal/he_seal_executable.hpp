@@ -46,7 +46,7 @@ class HESealExecutable : public runtime::Executable {
                    bool enable_performance_collection,
                    ngraph::he::HESealBackend& he_seal_backend,
                    bool encrypt_data, bool encrypt_model, bool batch_data,
-                   bool complex_packing, bool silence_all_ops);
+                   bool complex_packing);
 
   ~HESealExecutable() {
     if (m_enable_client) {
@@ -85,8 +85,9 @@ class HESealExecutable : public runtime::Executable {
                              const NodeWrapper& node_wrapper);
 
   bool verbose_op(const ngraph::Node& op) {
-    return !m_silence_all_ops &&
-           m_silent_ops.find(op.description()) == m_silent_ops.end();
+    return m_verbose_all_ops ||
+           m_verbose_ops.find(ngraph::to_lower(op.description())) !=
+               m_verbose_ops.end();
   };
 
  private:
@@ -96,7 +97,7 @@ class HESealExecutable : public runtime::Executable {
   bool m_batch_data;
   bool m_is_compiled;
   bool m_complex_packing;
-  bool m_silence_all_ops;
+  bool m_verbose_all_ops;
 
   bool m_enable_client;
   size_t m_batch_size;
@@ -122,7 +123,7 @@ class HESealExecutable : public runtime::Executable {
   std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
       m_minimum_ciphertexts;
 
-  std::set<std::string> m_silent_ops{"Slice", "Broadcast", "Reshape"};
+  std::set<std::string> m_verbose_ops;
 
   std::shared_ptr<seal::SEALContext> m_context;
 

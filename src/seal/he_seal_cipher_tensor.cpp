@@ -24,10 +24,9 @@
 
 ngraph::he::HESealCipherTensor::HESealCipherTensor(
     const element::Type& element_type, const Shape& shape,
-    const ngraph::he::HESealBackend& he_seal_backend, const bool batched,
+    const ngraph::he::HESealBackend& he_seal_backend, const bool packed,
     const std::string& name)
-    : ngraph::he::HETensor(element_type, shape, he_seal_backend, batched,
-                           name) {
+    : ngraph::he::HETensor(element_type, shape, he_seal_backend, packed, name) {
   m_num_elements = m_descriptor->get_tensor_layout()->get_size() / m_batch_size;
   m_ciphertexts.resize(m_num_elements);
 #pragma omp parallel for

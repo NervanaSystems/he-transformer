@@ -33,9 +33,9 @@ static string s_manifest = "${MANIFEST}";
 template <typename T>
 class BatchNormInferenceTester {
  public:
-  BatchNormInferenceTester(
-      const std::unique_ptr<ngraph::he::HESealBackend>& backend,
-      const Shape& input_shape, element::Type etype, double epsilon)
+  BatchNormInferenceTester(ngraph::he::HESealBackend* backend,
+                           const Shape& input_shape, element::Type etype,
+                           double epsilon)
       : m_he_backend(backend) {
     Shape channel_shape{input_shape.at(1)};
 
@@ -74,7 +74,7 @@ class BatchNormInferenceTester {
   }
 
  protected:
-  const std::unique_ptr<ngraph::he::HESealBackend>& m_he_backend;
+  ngraph::he::HESealBackend* m_he_backend;
   std::shared_ptr<Function> m_function;
   std::shared_ptr<ngraph::runtime::Tensor> m_input;
   std::shared_ptr<ngraph::runtime::Tensor> m_gamma;
@@ -95,9 +95,8 @@ class BatchNormInferenceTesterZeroEpsilon : public BatchNormInferenceTester<T> {
   using Variance = test::NDArray<T, 1>;
   using NormedInput = test::NDArray<T, 2>;
 
-  BatchNormInferenceTesterZeroEpsilon(
-      const std::unique_ptr<ngraph::he::HESealBackend>& backend,
-      element::Type etype)
+  BatchNormInferenceTesterZeroEpsilon(ngraph::he::HESealBackend* backend,
+                                      element::Type etype)
       : BatchNormInferenceTester<T>(backend, Shape{2, 3}, etype, 0.0) {}
 
   bool test(const Input& input, const Gamma& gamma, const Beta& beta,
@@ -149,9 +148,8 @@ class BatchNormInferenceTesterNonZeroEpsilon
   using Variance = test::NDArray<T, 1>;
   using NormedInput = test::NDArray<T, 2>;
 
-  BatchNormInferenceTesterNonZeroEpsilon(
-      const std::unique_ptr<ngraph::he::HESealBackend>& backend,
-      element::Type etype)
+  BatchNormInferenceTesterNonZeroEpsilon(ngraph::he::HESealBackend* backend,
+                                         element::Type etype)
       : BatchNormInferenceTester<T>(backend, Shape{2, 3}, etype, 0.25) {}
 
   bool test(const Input& input, const Gamma& gamma, const Beta& beta,
@@ -193,10 +191,8 @@ class BatchNormInferenceTesterNonZeroEpsilon
 
 NGRAPH_TEST(${BACKEND_NAME}, batch_norm_inference_0eps_f32) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  std::unique_ptr<ngraph::he::HESealBackend> he_backend;
-  auto he_backend_tmp = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  backend.release();
-  he_backend.reset(he_backend_tmp);
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   BatchNormInferenceTesterZeroEpsilon<float> bnt(he_backend, element::f32);
   EXPECT_TRUE(bnt.test_gamma()) << "Gamma test";
@@ -207,10 +203,8 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_inference_0eps_f32) {
 
 NGRAPH_TEST(${BACKEND_NAME}, batch_norm_inference_f32) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  std::unique_ptr<ngraph::he::HESealBackend> he_backend;
-  auto he_backend_tmp = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  backend.release();
-  he_backend.reset(he_backend_tmp);
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   BatchNormInferenceTesterNonZeroEpsilon<float> bnt(he_backend, element::f32);
   EXPECT_TRUE(bnt.test_gamma()) << "Gamma test";
@@ -295,10 +289,8 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion) {
 
 NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  std::unique_ptr<ngraph::he::HESealBackend> he_backend;
-  auto he_backend_tmp = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  backend.release();
-  he_backend.reset(he_backend_tmp);
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   Shape shape_input{1, 8, 3, 3};
   Shape shape_weights{2, 8, 1, 1};
@@ -376,10 +368,8 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he) {
 
 NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he_batch) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  std::unique_ptr<ngraph::he::HESealBackend> he_backend;
-  auto he_backend_tmp = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  backend.release();
-  he_backend.reset(he_backend_tmp);
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->set_batch_data(false);
 
   size_t batch_size = 1;
 

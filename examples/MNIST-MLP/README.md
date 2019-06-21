@@ -5,7 +5,7 @@ Since it is impossible to perform ReLU using homomorphic encryption, this model 
 
 ***Note***: the client is an experimental feature and currently uses a large amount of memory. For a better experience, see the `Debugging` section below.
 
-This example depends on the [**Intel® nGraph™ Compiler and runtime engine for TensorFlow**](https://github.com/NervanaSystems/ngraph-tf). Make sure the python environment with ngraph-tf bridge is active, i.e. run `source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate`. Also ensure the `he_seal_client` wheel has been installed (see `python` folder for instructions).
+This example depends on the [**Intel® nGraph™ Compiler and runtime engine for TensorFlow**](https://github.com/tensorflow/ngraph-bridge). Make sure the python environment with ngraph-tf bridge is active, i.e. run `source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate`. Also ensure the `he_seal_client` wheel has been installed (see `python` folder for instructions).
 
 # Train the network
 First, train the network using
@@ -24,13 +24,12 @@ cd $HE_TRANSFORMER/examples/MNIST-MLP
 ```bash
 NGRAPH_ENABLE_CLIENT=1 \
 NGRAPH_ENCRYPT_DATA=1 \
-NGRAPH_BATCH_DATA=1 \
 NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
 NGRAPH_TF_BACKEND=HE_SEAL \
 python test.py --batch_size=2048
 ```
 This runs inference on the Cryptonets network using the SEAL CKKS backend.
-The `he_seal_ckks_config_N13_L4.json` file specifies the parameters which to run the model on. Note: the batch size must be beweteen 1 and 2048 = 2^(12)/2.
+The `he_seal_ckks_config_N12_L4.json` file specifies the parameters which to run the model on. Note: the batch size must be between 1 and 2048 = 2^(12)/2.
 
 In another terminal, run
 ```bash
@@ -48,7 +47,6 @@ This will perform non-linear layers on the server, which stores the public and s
 
 ```bash
 NGRAPH_ENCRYPT_DATA=1 \
-NGRAPH_BATCH_DATA=1 \
 NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
 NGRAPH_TF_BACKEND=HE_SEAL \
 python test.py --batch_size=2048
@@ -64,7 +62,6 @@ Using the NGRAPH_COMPLEX_PACK flag, we double the capacity to 4096, doubling the
 ```bash
 NGRAPH_COMPLEX_PACK=1 \
 NGRAPH_ENCRYPT_DATA=1 \
-NGRAPH_BATCH_DATA=1 \
 NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
 NGRAPH_TF_BACKEND=HE_SEAL \
 python test.py --batch_size=4096

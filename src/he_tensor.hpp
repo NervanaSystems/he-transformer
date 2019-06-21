@@ -27,7 +27,7 @@ class HESealBackend;
 class HETensor : public runtime::Tensor {
  public:
   HETensor(const element::Type& element_type, const Shape& shape,
-           const HESealBackend& he_seal_backend, const bool batched = false,
+           const HESealBackend& he_seal_backend, const bool packed = false,
            const std::string& name = "external");
   virtual ~HETensor(){};
 
@@ -65,7 +65,7 @@ class HETensor : public runtime::Tensor {
     return get_element_count() / get_batch_size();
   }
 
-  inline bool is_batched() { return m_packed; }
+  inline bool is_packed() { return m_packed; }
 
  protected:
   void check_io_bounds(const void* p, size_t n) const;
