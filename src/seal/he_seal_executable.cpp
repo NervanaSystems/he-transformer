@@ -608,7 +608,6 @@ bool ngraph::he::HESealExecutable::call(
         // examples convolution kernels.
         if (m_batch_data && shape.size() > 0 && shape[0] == m_batch_size &&
             op->description() == "Broadcast") {
-          NGRAPH_INFO << "broadcast => packed out true";
           packed_out = true;
         }
 

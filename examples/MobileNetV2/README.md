@@ -114,9 +114,10 @@ python test.py \
 --ngraph=true \
 --batch_size=300
 ```
-Note: this will result in many outputs. To suppress these, pass the `NGRAPH_SILENCE_OPS=1` flag
+Note, the `STOP_CONST_FOLD` flag will prevent the constant folding graph optimization.
+For large batch sizes, this incurs significant overhead during graph compilation, and doesn't result in much runtime speedup.
 
-6. To call inference using encrypted data, run the below command. ***Warning***: this will take ~210GB memory.
+6. To call inference using encrypted data, run the below command. ***Warning***: this will take ~150GB memory.
 ```bash
 OMP_NUM_THREADS=56 \
 STOP_CONST_FOLD=1 \
