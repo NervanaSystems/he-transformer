@@ -143,12 +143,11 @@ def test_mnist_cnn(FLAGS, network):
         y_conv = cryptonets_test_squashed(x)
 
     with tf.Session() as sess:
-        start_time = time.time()
         x_test = mnist.test.images[:FLAGS.batch_size]
         y_test = mnist.test.labels[:FLAGS.batch_size]
-        # Run model
+        start_time = time.time()
         y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
-        elasped_time = time.time() - start_time
+        elasped_time = (time.time() - start_time)
         print("total time(s)", np.round(elasped_time, 3))
 
     x_test_batch = mnist.test.images[:FLAGS.batch_size]
