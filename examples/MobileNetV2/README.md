@@ -101,7 +101,7 @@ export DATA_DIR=path_to_your_data_dir
 4. To run inference using TensorFlow on unencrypted data, call
 ```bash
 python test.py \
-  --data_dir=$DATA_DIR
+  --data_dir=$DATA_DIR \
   --batch_size=300
 ```
 

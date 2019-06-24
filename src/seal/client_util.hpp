@@ -64,6 +64,7 @@ auto complex_vec_to_real_vec =
     [](std::vector<double>& output,
        const std::vector<std::complex<double>>& input) {
       assert(output.size() == 0);
+      output.reserve(input.size() * 2);
       for (const std::complex<double>& value : input) {
         output.emplace_back(value.real());
         output.emplace_back(value.imag());
@@ -76,6 +77,7 @@ auto complex_vec_to_real_vec =
 auto real_vec_to_complex_vec = [](std::vector<std::complex<double>>& output,
                                   const std::vector<double>& input) {
   assert(output.size() == 0);
+  output.reserve(input.size() / 2);
   std::vector<double> complex_parts(2, 0);
   for (size_t i = 0; i < input.size(); ++i) {
     complex_parts[i % 2] = input[i];
