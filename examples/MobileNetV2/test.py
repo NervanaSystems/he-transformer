@@ -220,7 +220,8 @@ def main(FLAGS):
     config = tf.ConfigProto()
     config.intra_op_parallelism_threads = 44
     config.inter_op_parallelism_threads = 44
-    config = ngraph_bridge.update_config(config)
+    if FLAGS.ngraph:
+        config = ngraph_bridge.update_config(config)
     sess = tf.Session(config=config)
     graph_def = load_model(FLAGS.model)
     tf.import_graph_def(graph_def, name='')
