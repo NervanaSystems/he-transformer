@@ -96,6 +96,9 @@ void ngraph::he::encode(double value, double scale,
   // Check that scale is positive and not too large
   if (scale <= 0 || (static_cast<int>(log2(scale)) >=
                      context_data.total_coeff_modulus_bit_count())) {
+    NGRAPH_INFO << "scale " << scale;
+    NGRAPH_INFO << "context_data.total_coeff_modulus_bit_count"
+                << context_data.total_coeff_modulus_bit_count();
     throw ngraph_error("scale out of bounds");
   }
 
@@ -319,6 +322,10 @@ void ngraph::he::multiply_plain_inplace(seal::Ciphertext& encrypted,
   // Check that scale is positive and not too large
   if (new_scale <= 0 || (static_cast<int>(log2(new_scale)) >=
                          context_data.total_coeff_modulus_bit_count())) {
+    NGRAPH_INFO << "new_scale " << new_scale << " ("
+                << static_cast<int>(log2(new_scale)) << " bits) out of bounds";
+    NGRAPH_INFO << "Coeff mod bit count "
+                << context_data.total_coeff_modulus_bit_count();
     throw ngraph_error("scale out of bounds");
   }
 
@@ -327,7 +334,7 @@ void ngraph::he::multiply_plain_inplace(seal::Ciphertext& encrypted,
   for (size_t i = 0; i < encrypted_ntt_size; i++) {
     for (size_t j = 0; j < coeff_mod_count; j++) {
       // Multiply by scalar instead of doing dyadic product
-      if (coeff_modulus[i].value() < (1UL << 31)) {
+      if (coeff_modulus[j].value() < (1UL << 31)) {
         const std::uint64_t modulus_value = coeff_modulus[j].value();
         auto iter = barrett64_ratio_map.find(modulus_value);
         NGRAPH_CHECK(iter != barrett64_ratio_map.end(), "Modulus value ",
@@ -345,18 +352,8 @@ void ngraph::he::multiply_plain_inplace(seal::Ciphertext& encrypted,
       }
     }
   }
-
   // Set the scale
   encrypted.scale() = new_scale;
-
-#ifndef SEAL_ALLOW_TRANSPARENT_CIPHERTEXT
-  // Transparent ciphertext output is not allowed.
-  if (encrypted.is_transparent()) {
-    NGRAPH_INFO << "encrypted.uint64_count() " << encrypted.uint64_count();
-    NGRAPH_INFO << "size " << encrypted.size();
-    throw ngraph_error("result ciphertext is transparent");
-  }
-#endif
 }
 
 void ngraph::he::multiply_poly_scalar_coeffmod64(

@@ -710,19 +710,30 @@ void ngraph::he::HESealExecutable::generate_calls(
     typedef std::chrono::high_resolution_clock Clock;
     auto t1 = Clock::now();
     size_t new_chain_index = std::numeric_limits<size_t>::max();
-    if (cipher_tensor->num_ciphertexts() > 0) {
-      if (!cipher_tensor->get_element(0)->is_zero()) {
-        new_chain_index =
-            get_chain_index(cipher_tensor->get_element(0)->ciphertext(),
-                            m_he_seal_backend) -
-            1;
+
+    for (size_t cipher_idx = 0; cipher_idx < cipher_tensor->num_ciphertexts();
+         ++cipher_idx) {
+      auto& cipher = cipher_tensor->get_element(cipher_idx);
+      if (!cipher->is_zero()) {
+        size_t curr_chain_index =
+            get_chain_index(cipher->ciphertext(), m_he_seal_backend);
+        if (curr_chain_index == 0) {
+          new_chain_index = 0;
+        } else {
+          new_chain_index = curr_chain_index - 1;
+        }
+        break;
       }
     }
-    if (verbose && new_chain_index == 0) {
-      NGRAPH_INFO << "Skipping rescaling to chain index 0";
+    NGRAPH_CHECK(new_chain_index != std::numeric_limits<size_t>::max(),
+                 "Lazy rescaling called on cipher tensor of all 0s");
+    if (new_chain_index == 0) {
+      if (verbose) {
+        NGRAPH_INFO << "Skipping rescaling to chain index 0";
+      }
       return;
     }
-    if (verbose && new_chain_index != std::numeric_limits<size_t>::max()) {
+    if (verbose) {
       NGRAPH_INFO << "New chain index " << new_chain_index;
     }
 
@@ -1051,6 +1062,8 @@ void ngraph::he::HESealExecutable::generate_calls(
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
             m_batch_size, m_he_seal_backend, verbose);
 
+        NGRAPH_INFO << "Done with conv; lazy rescaling";
+
         lazy_rescaling(out0_cipher, verbose);
 
       } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
@@ -1061,6 +1074,8 @@ void ngraph::he::HESealExecutable::generate_calls(
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
             m_batch_size, m_he_seal_backend, verbose);
+
+        NGRAPH_INFO << "Done with conv; lazy rescaling";
 
         lazy_rescaling(out0_cipher, verbose);
 
