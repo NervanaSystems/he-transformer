@@ -17,6 +17,7 @@
 #pragma once
 
 #include <assert.h>
+#include <cmath>
 #include <complex>
 #include <string>
 #include <vector>
@@ -29,10 +30,13 @@ namespace ngraph {
 namespace he {
 inline double choose_scale(
     const std::vector<seal::SmallModulus>& coeff_moduli) {
-  if (coeff_moduli.size() > 1) {
+  if (coeff_moduli.size() > 2) {
     return static_cast<double>(coeff_moduli[coeff_moduli.size() - 2].value());
+  } else if (coeff_moduli.size() > 1) {
+    return static_cast<double>(coeff_moduli.back().value()) / 4096.0;
   } else {
-    return static_cast<double>(coeff_moduli.back().value());
+    // Enable a single multiply
+    return sqrt(static_cast<double>(coeff_moduli.back().value() / 32.0));
   }
 }
 
@@ -59,7 +63,7 @@ size_t match_to_smallest_chain_index(
 
 template <typename S, typename T>
 inline bool within_rescale_tolerance(const S& arg0, const T& arg1,
-                              double factor = 1.02) {
+                                     double factor = 1.02) {
   const auto scale0 = arg0.scale();
   const auto scale1 = arg1.scale();
 
@@ -69,7 +73,8 @@ inline bool within_rescale_tolerance(const S& arg0, const T& arg1,
 }
 
 template <typename S, typename T>
-inline void match_scale(S& arg0, T& arg1, const HESealBackend& he_seal_backend) {
+inline void match_scale(S& arg0, T& arg1,
+                        const HESealBackend& he_seal_backend) {
   auto scale0 = arg0.scale();
   auto scale1 = arg1.scale();
   bool scale_ok = within_rescale_tolerance(arg0, arg1);

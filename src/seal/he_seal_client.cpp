@@ -96,7 +96,15 @@ void ngraph::he::HESealClient::handle_message(
         assert(m_batch_size % 2 == 0);
       }
 
-      // TODO: check smaller sizes!
+      // TODO: allow smaller sizes!
+      if (m_inputs.size() !=
+          parameter_size * m_batch_size * complex_pack_factor) {
+        NGRAPH_INFO << "m_inputs.size() " << m_inputs.size()
+                    << " != paramter_size ( " << parameter_size
+                    << ") * m_batch_size (" << m_batch_size
+                    << ") * complex_pack_factor (" << complex_pack_factor
+                    << ")";
+      }
       NGRAPH_CHECK(m_inputs.size() ==
                        parameter_size * m_batch_size * complex_pack_factor,
                    "m_inputs.size()", m_inputs.size(), "parameter_size",
@@ -236,7 +244,7 @@ void ngraph::he::HESealClient::handle_message(
         }
       }
 
-      // Get max of eachstd::vector of values
+      // Get max of each vector of values
       for (size_t batch_idx = 0; batch_idx < m_batch_size * complex_pack_factor;
            ++batch_idx) {
         max_values[batch_idx] =
@@ -259,6 +267,7 @@ void ngraph::he::HESealClient::handle_message(
       }
       m_encryptor->encrypt(plain_max, cipher_max);
       cipher_max.save(max_stream);
+
       auto max_result_msg = TCPMessage(ngraph::he::MessageType::max_result, 1,
                                        std::move(max_stream));
       write_message(std::move(max_result_msg));

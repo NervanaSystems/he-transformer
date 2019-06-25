@@ -92,6 +92,11 @@ void ngraph::he::scalar_multiply_seal(
       multiply_plain(arg0.ciphertext(), double_val, out->ciphertext(),
                      he_seal_backend, pool);
 
+      if (arg0.ciphertext().is_transparent()) {
+        NGRAPH_WARN << "Result ciphertext is transparent";
+        arg0.is_zero() = true;
+      }
+
       if (he_seal_backend.naive_rescaling()) {
         he_seal_backend.get_evaluator()->rescale_to_next_inplace(
             out->ciphertext(), pool);
