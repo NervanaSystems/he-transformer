@@ -312,7 +312,7 @@ void ngraph::he::HESealExecutable::handle_message(
 
     m_he_seal_backend.set_public_key(key);
 
-    NGRAPH_INFO << "Server set public key";
+    // NGRAPH_INFO << "Server set public key";
 
   } else if (msg_type == MessageType::eval_key) {
     seal::RelinKeys keys;
@@ -328,24 +328,24 @@ void ngraph::he::HESealExecutable::handle_message(
     for (const auto& param : input_parameters) {
       auto& shape = param->get_shape();
       num_param_elements += shape_size(shape);
-      NGRAPH_INFO << "Parameter shape " << join(shape, "x");
+      // NGRAPH_INFO << "Parameter shape " << join(shape, "x");
     }
 
     if (m_batch_data) {
-      NGRAPH_INFO << "num_param_elements before batch size divide "
-                  << num_param_elements;
+      // NGRAPH_INFO << "num_param_elements before batch size divide "
+      //            << num_param_elements;
       num_param_elements /= m_batch_size;
-      NGRAPH_INFO << "num_param_elements after batch size divide "
-                  << num_param_elements;
+      // NGRAPH_INFO << "num_param_elements after batch size divide "
+      //            << num_param_elements;
     }
 
-    NGRAPH_INFO << "Requesting total of " << num_param_elements
-                << " parameter elements";
+    // NGRAPH_INFO << "Requesting total of " << num_param_elements
+    //            << " parameter elements";
     ngraph::he::TCPMessage parameter_message{MessageType::parameter_size, 1,
                                              sizeof(num_param_elements),
                                              (char*)&num_param_elements};
 
-    NGRAPH_INFO << "Server sending message of type: parameter_size";
+    // NGRAPH_INFO << "Server sending message of type: parameter_size";
     m_session->do_write(std::move(parameter_message));
   } else if (msg_type == MessageType::relu_result) {
     std::lock_guard<std::mutex> guard(m_relu_mutex);
@@ -455,27 +455,27 @@ bool ngraph::he::HESealExecutable::call(
   }
 
   if (m_encrypt_data) {
-    NGRAPH_INFO << "Encrypting data";
+    // NGRAPH_INFO << "Encrypting data";
   }
   if (m_batch_data) {
-    NGRAPH_INFO << "Batching data with batch size " << m_batch_size;
+    // NGRAPH_INFO << "Batching data with batch size " << m_batch_size;
   }
   if (m_encrypt_model) {
-    NGRAPH_INFO << "Encrypting model";
+    // NGRAPH_INFO << "Encrypting model";
   }
   if (m_complex_packing) {
-    NGRAPH_INFO << "Complex packing";
+    // NGRAPH_INFO << "Complex packing";
   }
 
   // convert inputs to HETensor
   std::vector<std::shared_ptr<ngraph::he::HETensor>> he_inputs;
   if (m_enable_client) {
-    NGRAPH_INFO << "Processing client inputs";
+    // NGRAPH_INFO << "Processing client inputs";
     for (auto& tv : m_client_inputs) {
       he_inputs.push_back(std::static_pointer_cast<ngraph::he::HETensor>(tv));
     }
   } else {
-    NGRAPH_INFO << "Processing server inputs";
+    // NGRAPH_INFO << "Processing server inputs";
     for (auto& tv : server_inputs) {
       auto he_input = std::dynamic_pointer_cast<ngraph::he::HETensor>(tv);
       NGRAPH_CHECK(he_input != nullptr, "server input is not he tensor");
@@ -500,7 +500,7 @@ bool ngraph::he::HESealExecutable::call(
       descriptor::Tensor* tv = param->get_output_tensor_ptr(i).get();
 
       if (!m_enable_client && m_encrypt_data) {
-        NGRAPH_INFO << "Encrypting parameter " << i;
+        // NGRAPH_INFO << "Encrypting parameter " << i;
         auto plain_input = std::dynamic_pointer_cast<ngraph::he::HEPlainTensor>(
             he_inputs[input_count]);
         NGRAPH_CHECK(plain_input != nullptr, "Input is not plain tensor");
@@ -515,7 +515,7 @@ bool ngraph::he::HESealExecutable::call(
                                     plain_input->get_element(i),
                                     m_complex_packing);
         }
-        NGRAPH_INFO << "Done encrypting parameter";
+        // NGRAPH_INFO << "Done encrypting parameter";
         plain_input->reset();
         tensor_map.insert({tv, cipher_input});
         input_count++;
@@ -1278,7 +1278,7 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Parameter:
-      NGRAPH_INFO << "Skipping parameter";
+      // NGRAPH_INFO << "Skipping parameter";
       break;
     case OP_TYPEID::Pad: {
       const op::Pad* pad = static_cast<const op::Pad*>(&node);
