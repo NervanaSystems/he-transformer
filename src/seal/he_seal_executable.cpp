@@ -93,6 +93,7 @@ ngraph::he::HESealExecutable::HESealExecutable(
       m_batch_size(1),
       m_port(34000),
       m_relu_done(false),
+      m_max_done(false),
       m_session_started(false),
       m_client_inputs_received(false) {
   m_context = he_seal_backend.get_context();
@@ -355,9 +356,6 @@ void ngraph::he::HESealExecutable::handle_message(
     std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
         new_relu_ciphers(element_count);
 
-    NGRAPH_INFO << "Got " << element_count << " ciphertexts";
-    NGRAPH_INFO << "element_size " << element_size;
-
 #pragma omp parallel for
     for (size_t element_idx = 0; element_idx < element_count; ++element_idx) {
       seal::Ciphertext cipher;
@@ -374,8 +372,6 @@ void ngraph::he::HESealExecutable::handle_message(
                                new_relu_ciphers.size());
     m_relu_ciphertexts.insert(m_relu_ciphertexts.end(),
                               new_relu_ciphers.begin(), new_relu_ciphers.end());
-
-    NGRAPH_INFO << "Done loading Relu ciphertexts";
 
     // Notify condition variable
     m_relu_done = true;
@@ -399,7 +395,7 @@ void ngraph::he::HESealExecutable::handle_message(
     }
     // Notify condition variable
     m_max_done = true;
-    m_max_cond.notify_all();
+    m_max_cond.notify_one();
   } else if (msg_type == MessageType::minimum_result) {
     std::lock_guard<std::mutex> guard(m_minimum_mutex);
 
@@ -445,8 +441,8 @@ bool ngraph::he::HESealExecutable::call(
   validate(outputs, server_inputs);
 
   if (m_enable_client) {
-    NGRAPH_INFO << "Waiting until m_client_inputs.size() "
-                << m_client_inputs.size() << " == " << server_inputs.size();
+    NGRAPH_INFO << "Waiting until m_client_inputs.size() == "
+                << server_inputs.size();
 
     std::unique_lock<std::mutex> mlock(m_client_inputs_mutex);
     m_client_inputs_cond.wait(
@@ -456,8 +452,6 @@ bool ngraph::he::HESealExecutable::call(
     NGRAPH_CHECK(m_client_inputs.size() == server_inputs.size(),
                  "Recieved incorrect number of inputs from client (got ",
                  m_client_inputs.size(), ", expectd ", server_inputs.size());
-
-    NGRAPH_INFO << "Done waiting for m_client_inputs";
   }
 
   if (m_encrypt_data) {
@@ -677,7 +671,6 @@ bool ngraph::he::HESealExecutable::call(
     std::vector<seal::Ciphertext> seal_output;
 
     const Shape& output_shape = get_results()[0]->get_shape();
-    NGRAPH_INFO << "output shape size " << join(output_shape, "x");
     size_t output_shape_size = shape_size(output_shape) / m_batch_size;
 
     auto output_cipher_tensor =
@@ -717,19 +710,30 @@ void ngraph::he::HESealExecutable::generate_calls(
     typedef std::chrono::high_resolution_clock Clock;
     auto t1 = Clock::now();
     size_t new_chain_index = std::numeric_limits<size_t>::max();
-    if (cipher_tensor->num_ciphertexts() > 0) {
-      if (!cipher_tensor->get_element(0)->is_zero()) {
-        new_chain_index =
-            get_chain_index(cipher_tensor->get_element(0)->ciphertext(),
-                            m_he_seal_backend) -
-            1;
+
+    for (size_t cipher_idx = 0; cipher_idx < cipher_tensor->num_ciphertexts();
+         ++cipher_idx) {
+      auto& cipher = cipher_tensor->get_element(cipher_idx);
+      if (!cipher->is_zero()) {
+        size_t curr_chain_index =
+            get_chain_index(cipher->ciphertext(), m_he_seal_backend);
+        if (curr_chain_index == 0) {
+          new_chain_index = 0;
+        } else {
+          new_chain_index = curr_chain_index - 1;
+        }
+        break;
       }
     }
-    if (verbose && new_chain_index == 0) {
-      NGRAPH_INFO << "Skipping rescaling to chain index 0";
+    NGRAPH_CHECK(new_chain_index != std::numeric_limits<size_t>::max(),
+                 "Lazy rescaling called on cipher tensor of all 0s");
+    if (new_chain_index == 0) {
+      if (verbose) {
+        NGRAPH_INFO << "Skipping rescaling to chain index 0";
+      }
       return;
     }
-    if (verbose && new_chain_index != std::numeric_limits<size_t>::max()) {
+    if (verbose) {
       NGRAPH_INFO << "New chain index " << new_chain_index;
     }
 
@@ -1165,30 +1169,19 @@ void ngraph::he::HESealExecutable::generate_calls(
         throw ngraph_error("MaxPool supports only Cipher, Cipher");
       }
       m_max_ciphertexts.clear();
-
-      NGRAPH_INFO << "MaxPool shape " << join(node.get_output_shape(0), "x");
-      NGRAPH_INFO << "m_batch_size " << m_batch_size;
-
-      // TODO: cleanup
-      Shape arg0_shape = node.get_inputs().at(0).get_shape();
-      arg0_shape[0] /= m_batch_size;
-      Shape out_shape = node.get_output_shape(0);
-      out_shape[0] /= m_batch_size;
+      m_max_done = false;
 
       std::vector<std::vector<size_t>> maximize_list =
-          ngraph::he::max_pool_seal(
-              arg0_shape, out_shape, max_pool->get_window_shape(),
-              max_pool->get_window_movement_strides(),
-              max_pool->get_padding_below(), max_pool->get_padding_above());
+          ngraph::he::max_pool_seal(packed_arg_shapes[0], packed_out_shape,
+                                    max_pool->get_window_shape(),
+                                    max_pool->get_window_movement_strides(),
+                                    max_pool->get_padding_below(),
+                                    max_pool->get_padding_above());
 
-      std::stringstream first_cipher;
-      NGRAPH_CHECK(maximize_list.size() > 0);
-      NGRAPH_CHECK(maximize_list[0].size() > 0);
-      auto he_ciphertext = arg0_cipher->get_element(maximize_list[0][0]);
-
+      size_t window_shape = ngraph::shape_size(max_pool->get_window_shape());
+      std::vector<seal::Ciphertext> maxpool_ciphers(window_shape);
       for (size_t list_ind = 0; list_ind < maximize_list.size(); list_ind++) {
-        std::stringstream cipher_stream;
-        size_t cipher_count = 0;
+        size_t cipher_cnt = 0;
 
         for (const size_t max_ind : maximize_list[list_ind]) {
           auto& cipher = arg0_cipher->get_element(max_ind);
@@ -1197,15 +1190,17 @@ void ngraph::he::HESealExecutable::generate_calls(
             NGRAPH_INFO << "Got max(0) at index " << max_ind;
             throw ngraph_error("max(0) not allowed");
           }
-          cipher->save(cipher_stream);
-          cipher_count++;
+          maxpool_ciphers[cipher_cnt] = cipher->ciphertext();
+          cipher_cnt++;
         }
+
         // Send list of ciphertexts to maximize over to client
-        NGRAPH_INFO << "Sending " << cipher_count
-                    << " Maxpool ciphertexts (size "
-                    << cipher_stream.str().size() << ") to client";
-        auto max_message = TCPMessage(MessageType::max_request, cipher_count,
-                                      std::move(cipher_stream));
+        if (verbose_op(node)) {
+          NGRAPH_INFO << "Sending " << cipher_cnt
+                      << " Maxpool ciphertexts to client";
+        }
+        auto max_message =
+            TCPMessage(MessageType::max_request, maxpool_ciphers);
 
         m_session->do_write(std::move(max_message));
 
@@ -1609,7 +1604,10 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
 
   size_t smallest_ind = ngraph::he::match_to_smallest_chain_index(
       arg_cipher->get_elements(), m_he_seal_backend);
-  NGRAPH_INFO << "Matched moduli to chain ind " << smallest_ind;
+
+  if (verbose_op(node)) {
+    NGRAPH_INFO << "Matched moduli to chain ind " << smallest_ind;
+  }
   m_relu_ciphertexts.clear();
 
   std::stringstream cipher_stream;
@@ -1659,14 +1657,8 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
       default:
         break;
     }
-    NGRAPH_INFO << "Creating "
-                << ngraph::he::message_type_to_string(message_type)
-                << " message";
-    auto relu_message = TCPMessage(message_type, relu_ciphers);
 
-    NGRAPH_INFO << "Writing "
-                << ngraph::he::message_type_to_string(message_type)
-                << " message";
+    auto relu_message = TCPMessage(message_type, relu_ciphers);
     m_session->do_write(std::move(relu_message));
 
     // Acquire lock
@@ -1674,7 +1666,6 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
 
     // Wait until Relu is done
     m_relu_cond.wait(mlock, std::bind(&HESealExecutable::relu_done, this));
-    NGRAPH_INFO << "Relu is done";
 
     // Reset for next Relu call
     m_relu_done = false;
