@@ -6,10 +6,9 @@ cd ../../examples/MNIST-Cryptonets/
 
 echo $pwd
 
-
+ # Best performance
 for i in {1..10}
 do
-  # Best performance
   OMP_NUM_THREADS=56 \
   NGRAPH_ENCRYPT_DATA=1 \
   NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N13_L7.json \
