@@ -36,7 +36,7 @@ inline double choose_scale(
     return static_cast<double>(coeff_moduli.back().value()) / 4096.0;
   } else {
     // Enable a single multiply
-    return sqrt(static_cast<double>(coeff_moduli.back().value()));
+    return sqrt(static_cast<double>(coeff_moduli.back().value() / 32.0));
   }
 }
 

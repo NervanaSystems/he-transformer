@@ -96,7 +96,15 @@ void ngraph::he::HESealClient::handle_message(
         assert(m_batch_size % 2 == 0);
       }
 
-      // TODO: check smaller sizes!
+      // TODO: allow smaller sizes!
+      if (m_inputs.size() !=
+          parameter_size * m_batch_size * complex_pack_factor) {
+        NGRAPH_INFO << "m_inputs.size() " << m_inputs.size()
+                    << " != paramter_size ( " << parameter_size
+                    << ") * m_batch_size (" << m_batch_size
+                    << ") * complex_pack_factor (" << complex_pack_factor
+                    << ")";
+      }
       NGRAPH_CHECK(m_inputs.size() ==
                        parameter_size * m_batch_size * complex_pack_factor,
                    "m_inputs.size()", m_inputs.size(), "parameter_size",

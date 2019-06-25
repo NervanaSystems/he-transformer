@@ -24,12 +24,12 @@ cd $HE_TRANSFORMER/examples/MNIST-MLP
 ```bash
 NGRAPH_ENABLE_CLIENT=1 \
 NGRAPH_ENCRYPT_DATA=1 \
-NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
+NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N11_L1.json \
 NGRAPH_TF_BACKEND=HE_SEAL \
-python test.py --batch_size=2048
+python test.py --batch_size=1024
 ```
 This runs inference on the Cryptonets network using the SEAL CKKS backend.
-The `he_seal_ckks_config_N12_L4.json` file specifies the parameters which to run the model on. Note: the batch size must be between 1 and 2048 = 2^(12)/2.
+The `he_seal_ckks_config_N11_L1.json` file specifies the parameters which to run the model on. Note: the batch size must be between 1 and 1024 = 2^(11)/2.
 
 In another terminal, run
 ```bash
@@ -38,7 +38,7 @@ cd $HE_TRANSFORMER/examples
 ```
 
 ```bash
-python pyclient_mnist.py --batch_size=2048
+python pyclient_mnist.py --batch_size=1024
 ```
 
 # Debugging
@@ -47,9 +47,9 @@ This will perform non-linear layers on the server, which stores the public and s
 
 ```bash
 NGRAPH_ENCRYPT_DATA=1 \
-NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
+NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N11_L1.json \
 NGRAPH_TF_BACKEND=HE_SEAL \
-python test.py --batch_size=2048
+python test.py --batch_size=1024
 ```
 
 # Complex packing
@@ -62,7 +62,7 @@ Using the NGRAPH_COMPLEX_PACK flag, we double the capacity to 4096, doubling the
 ```bash
 NGRAPH_COMPLEX_PACK=1 \
 NGRAPH_ENCRYPT_DATA=1 \
-NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
+NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N11_L1.json \
 NGRAPH_TF_BACKEND=HE_SEAL \
 python test.py --batch_size=4096
 ```
