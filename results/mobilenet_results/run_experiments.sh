@@ -20,15 +20,17 @@ do
   NGRAPH_ENABLE_CLIENT=1 \
   NGRAPH_ENCRYPT_DATA=1 \
   NGRAPH_TF_BACKEND=HE_SEAL \
+  NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
   python test.py \
-  --batch_size=3  \
-  --data_dir=$DATA_DIR &) >> $outfile
+  --batch_size=2  \
+  --data_dir=$DATA_DIR \
+  --ngraph=true &) >> $outfile
 
   # Let server start
   sleep 5s
   OMP_NUM_THREADS=56 \
   python client.py \
-  --batch_size=3 \
+  --batch_size=2 \
   --data_dir=$DATA_DIR >> $outfile
 
 

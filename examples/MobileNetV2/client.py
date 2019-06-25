@@ -33,6 +33,7 @@ from util import get_imagenet_inference_labels, \
                  get_validation_labels, \
                  str2bool
 import util
+import numpy as np
 
 FLAGS = None
 
@@ -79,6 +80,14 @@ def main(FLAGS):
     validation_labels = imagenet_inference_labels[validation_nums]
     print('validation_labels', validation_labels)
 
+    preds = np.array([['water snake', 'dogsled'], ['beaver', 'bighorn'],
+                      ['platypus', 'alp'], ['leatherback turtle', 'ski'],
+                      ['sea snake', 'snowplow']])
+    print('preds', preds)
+    preds = preds.T
+
+    util.accuracy(preds, validation_labels)
+
     (batch_size, width, height, channels) = x_test.shape
     print('batch_size', batch_size)
     print('width', width)
@@ -89,17 +98,17 @@ def main(FLAGS):
     # TODO: more efficient
     print('flattening x_test')
     x_test_flat = []
-    for image_idx in range(batch_size):
-        for width_idx in range(width):
-            for height_idx in range(height):
-                for channel_idx in range(channels):
+    for width_idx in range(width):
+        for height_idx in range(height):
+            for channel_idx in range(channels):
+                for image_idx in range(batch_size):
+                    # TODO: use image_idx
                     x_test_flat.append(
                         x_test[image_idx][width_idx][height_idx][channel_idx])
     print('done flattening x_test')
 
     hostname = 'localhost'
     port = 34000
-    # batch_size = 1
 
     client = he_seal_client.HESealClient(hostname, port, batch_size,
                                          x_test_flat)
@@ -114,10 +123,30 @@ def main(FLAGS):
     if (FLAGS.batch_size == 1):
         top5 = results.argsort()[-5:]
     else:
-        top5 = np.flip(results.argsort()[:, -5:], axis=1)
+        print('results shape', results.shape)
+        results = np.reshape(results, (
+            1001,
+            FLAGS.batch_size,
+        ))
+        print('results.shape', results.shape)
 
+        try:
+            res_sort = results.argsort(axis=0)
+            res_top5 = res_sort[-5:, :]
+            top5x = np.flip(res_top5, axis=0)
+            top5 = top5x
+            top5 = top5.T
+            print('top5.shape', top5.shape)
+        except e:
+            print('e', e)
     preds = imagenet_labels[top5]
+    print('validation_labels', validation_labels)
     print('top5', preds)
+
+    preds = np.array([['water snake', 'dogsled'], ['beaver', 'bighorn'],
+                      ['platypus', 'alp'], ['leatherback turtle', 'ski'],
+                      ['sea snake', 'snowplow']])
+    print('preds', preds)
 
     util.accuracy(preds, validation_labels)
 

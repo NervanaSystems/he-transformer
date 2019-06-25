@@ -15,9 +15,12 @@
 //*****************************************************************************
 
 #pragma once
+
 #include <boost/asio.hpp>
 #include <functional>
 #include <memory>
+#include <mutex>
+
 #include "tcp/tcp_message.hpp"
 
 using boost::asio::ip::tcp;
@@ -29,7 +32,8 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
   TCPSession(tcp::socket socket,
              std::function<void(const ngraph::he::TCPMessage&)> message_handler)
       : m_socket(std::move(socket)),
-        m_message_callback(std::bind(message_handler, std::placeholders::_1)) {}
+        m_message_callback(std::bind(message_handler, std::placeholders::_1)),
+        m_writing(false) {}
 
   void start() { do_read_header(); }
 
@@ -75,7 +79,9 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
   }
 
   void do_write(const TCPMessage&& message) {
+    std::lock_guard<std::mutex> lock(m_write_mtx);
     auto self(shared_from_this());
+    m_writing = true;
     boost::asio::async_write(
         m_socket,
         boost::asio::buffer(message.header_ptr(), message.num_bytes()),
@@ -83,12 +89,18 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
           if (ec) {
             std::cout << "Error writing message in session: " << ec.message()
                       << std::endl;
+          } else {
+            m_writing = false;
           }
         });
   }
 
+  bool is_writing() const { return m_writing; }
+
   TCPMessage m_message;
   tcp::socket m_socket;
+  bool m_writing;
+  std::mutex m_write_mtx;
 
   // Called after message is received
   std::function<void(const ngraph::he::TCPMessage&)> m_message_callback;
