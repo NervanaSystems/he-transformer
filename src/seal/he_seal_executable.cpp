@@ -679,8 +679,13 @@ bool ngraph::he::HESealExecutable::call(
     NGRAPH_CHECK(output_cipher_tensor != nullptr,
                  "Client outputs are not HESealCipherTensor");
 
-    auto result_message =
-        TCPMessage(MessageType::result, output_cipher_tensor->get_elements());
+    std::stringstream cipher_stream;
+    output_cipher_tensor->save_elements(cipher_stream);
+    auto result_message = TCPMessage(MessageType::result, output_shape_size,
+                                     std::move(cipher_stream));
+
+    // auto result_message =
+    //    TCPMessage(MessageType::result, output_cipher_tensor->get_elements());
 
     NGRAPH_INFO << "Writing Result message with " << output_shape_size
                 << " ciphertexts ";
