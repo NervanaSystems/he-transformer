@@ -1062,8 +1062,6 @@ void ngraph::he::HESealExecutable::generate_calls(
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
             m_batch_size, m_he_seal_backend, verbose);
 
-        NGRAPH_INFO << "Done with conv; lazy rescaling";
-
         lazy_rescaling(out0_cipher, verbose);
 
       } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
@@ -1074,8 +1072,6 @@ void ngraph::he::HESealExecutable::generate_calls(
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
             m_batch_size, m_he_seal_backend, verbose);
-
-        NGRAPH_INFO << "Done with conv; lazy rescaling";
 
         lazy_rescaling(out0_cipher, verbose);
 
