@@ -74,7 +74,6 @@ void ngraph::he::scalar_add_seal(
     if (arg1.is_single_value() && !complex_packing) {
       float value = arg1.values()[0];
       double double_val = double(value);
-      NGRAPH_INFO << "Adding plain";
       add_plain(arg0.ciphertext(), double_val, out->ciphertext(),
                 he_seal_backend);
     } else {
