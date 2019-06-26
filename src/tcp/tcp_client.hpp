@@ -44,6 +44,11 @@ class TCPClient {
         m_first_connect(true),
         m_message_callback(std::bind(message_handler, std::placeholders::_1)) {
     NGRAPH_INFO << "Client starting async connection";
+
+    m_socket.open();
+    m_socket.set_option(boost::asio::ip::tcp::no_delay(true));
+    m_socket.set_option(boost::asio::socket_base::reuse_address(true));
+
     do_connect(endpoints);
   }
 
@@ -68,6 +73,7 @@ class TCPClient {
         [this, &endpoints](boost::system::error_code ec, tcp::endpoint) {
           if (!ec) {
             NGRAPH_INFO << "Connected to server";
+
             do_read_header();
           } else {
             if (true || m_first_connect) {
@@ -92,9 +98,7 @@ class TCPClient {
             do_read_body();
           } else {
             NGRAPH_INFO << "Client error reading header: " << ec.message();
-            NGRAPH_INFO << "Closing socket";
-            m_socket.close();
-            NGRAPH_INFO << "Closed socket";
+            // m_socket.close();
           }
         });
   }
@@ -111,9 +115,7 @@ class TCPClient {
             do_read_header();
           } else {
             NGRAPH_INFO << "Client error reading body; " << ec.message();
-            NGRAPH_INFO << "Closing socket";
-            m_socket.close();
-            NGRAPH_INFO << "Closed socket";
+            // m_socket.close();
           }
         });
   }
@@ -131,9 +133,7 @@ class TCPClient {
             }
           } else {
             NGRAPH_INFO << "Client error writing message: " << ec.message();
-            NGRAPH_INFO << "Closing socket";
-            m_socket.close();
-            NGRAPH_INFO << "Closed socket";
+            // m_socket.close();
           }
         });
   }

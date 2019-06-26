@@ -223,7 +223,7 @@ void ngraph::he::HESealExecutable::accept_connection() {
       m_session_cond.notify_one();
       NGRAPH_INFO << "done Notifying that session has started";
     } else {
-      NGRAPH_INFO << "error " << ec.message();
+      NGRAPH_INFO << "error accepting connection " << ec.message();
       // accept_connection();
     }
   });
@@ -232,10 +232,15 @@ void ngraph::he::HESealExecutable::accept_connection() {
 void ngraph::he::HESealExecutable::start_server() {
   tcp::resolver resolver(m_io_context);
   tcp::endpoint server_endpoints(tcp::v4(), m_port);
-  m_acceptor = std::make_shared<tcp::acceptor>(m_io_context, server_endpoints);
+  m_acceptor = std::make_unique<tcp::acceptor>(m_io_context, server_endpoints);
+  boost::asio::socket_base::reuse_address option(true);
+  m_acceptor->set_option(option);
 
   accept_connection();
-  m_thread = std::thread([this]() { m_io_context.run(); });
+  // Create thread-local variable to prevent passing "this"
+  // TODO: pass "this" instead?
+  auto& m_io_context2 = m_io_context;
+  m_thread = std::thread([&m_io_context2]() { m_io_context2.run(); });
 }
 
 void ngraph::he::HESealExecutable::handle_message(

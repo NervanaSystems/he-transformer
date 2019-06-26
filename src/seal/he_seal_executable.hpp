@@ -50,12 +50,15 @@ class HESealExecutable : public runtime::Executable {
 
   ~HESealExecutable() {
     if (m_enable_client) {
-      // TODO: why is this needed to prevent m_acceptor from double-freeing?
-      m_acceptor = nullptr;
-      m_session = nullptr;
-
       // Wait until thread finishes with m_io_context
       m_thread.join();
+
+      // TODO: why is this needed to prevent m_acceptor from double-freeing?
+
+      // m_acceptor and m_io_context both free the socket? so avoid double-free
+      m_acceptor->close();
+      m_acceptor = nullptr;
+      m_session = nullptr;
     }
   }
 
@@ -118,7 +121,9 @@ class HESealExecutable : public runtime::Executable {
   std::unordered_map<std::shared_ptr<const Node>, stopwatch> m_timer_map;
   std::vector<NodeWrapper> m_wrapped_nodes;
 
-  std::shared_ptr<tcp::acceptor> m_acceptor;
+  std::unique_ptr<tcp::acceptor> m_acceptor;
+
+  // Must be shared, since TCPSession uses enable_shared_from_this()
   std::shared_ptr<TCPSession> m_session;
   std::thread m_thread;
   boost::asio::io_context m_io_context;
