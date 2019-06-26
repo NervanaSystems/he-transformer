@@ -52,6 +52,7 @@ class HESealExecutable : public runtime::Executable {
     if (m_enable_client) {
       // TODO: why is this needed to prevent m_acceptor from double-freeing?
       m_acceptor = nullptr;
+      m_session = nullptr;
 
       // Wait until thread finishes with m_io_context
       m_thread.join();

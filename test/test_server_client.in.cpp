@@ -87,6 +87,5 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_create) {
   for (const auto& elem : results) {
     NGRAPH_INFO << elem;
   }
-
   EXPECT_TRUE(all_close(results, vector<float>{1.1, 2.2, 3.3}, 1e-3f));
 }
