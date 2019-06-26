@@ -78,6 +78,7 @@ void ngraph::he::scalar_add_seal(
                 he_seal_backend);
     } else {
       auto p = SealPlaintextWrapper(complex_packing);
+      NGRAPH_INFO << "Complex encoding for add";
       he_seal_backend.encode(p, arg1, arg0.ciphertext().parms_id(),
                              arg0.ciphertext().scale(), complex_packing);
       size_t chain_ind0 = get_chain_index(arg0, he_seal_backend);
