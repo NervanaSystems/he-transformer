@@ -85,12 +85,19 @@ TEST(perf_micro, encode) {
         // SEAL encoder
         time_start = chrono::high_resolution_clock::now();
         encoder.encode(input, scale, plain, pool);
+        encoder.encode(input, scale, plain, pool);
+        encoder.encode(input, scale, plain, pool);
         time_end = chrono::high_resolution_clock::now();
         time_seal_encode_sum +=
-            chrono::duration_cast<chrono::nanoseconds>(time_end - time_start);
+            chrono::duration_cast<chrono::nanoseconds>(time_end - time_start) /
+            3;
 
         // HE encoder
         time_start = chrono::high_resolution_clock::now();
+        ngraph::he::encode(input, scale, parms_id, he_plain, he_seal_backend,
+                           pool);
+        ngraph::he::encode(input, scale, parms_id, he_plain, he_seal_backend,
+                           pool);
         ngraph::he::encode(input, scale, parms_id, he_plain, he_seal_backend,
                            pool);
         time_end = chrono::high_resolution_clock::now();
@@ -98,11 +105,12 @@ TEST(perf_micro, encode) {
             chrono::duration_cast<chrono::nanoseconds>(time_end - time_start);
 
         if (test_run == 0) {
-          NGRAPH_INFO << "seal::Plaintext capacity " << plain.capacity();
+          auto seal_plain_capacity = plain.capacity() * sizeof(std::uint64_t);
+          NGRAPH_INFO << "seal::Plaintext capacity " << seal_plain_capacity;
           auto he_capacity = sizeof(std::uint64_t) * he_plain.size();
           NGRAPH_INFO << "he plaintext capacity " << he_capacity;
           NGRAPH_INFO << "Memmory improvement: "
-                      << plain.capacity() / float(he_capacity) << "\n";
+                      << seal_plain_capacity / float(he_capacity) << "\n";
         }
       }
 
@@ -117,16 +125,14 @@ TEST(perf_micro, encode) {
           evaluator.multiply_plain_inplace(encrypted, plain, pool);
           time_end = chrono::high_resolution_clock::now();
           time_seal_multiply_plain_sum +=
-              chrono::duration_cast<chrono::microseconds>(time_end -
-                                                          time_start);
+              chrono::duration_cast<chrono::nanoseconds>(time_end - time_start);
 
           // HE
           time_start = chrono::high_resolution_clock::now();
           multiply_plain_inplace(encrypted, input, he_seal_backend, pool);
           time_end = chrono::high_resolution_clock::now();
           time_he_multiply_plain_sum +=
-              chrono::duration_cast<chrono::microseconds>(time_end -
-                                                          time_start);
+              chrono::duration_cast<chrono::nanoseconds>(time_end - time_start);
         }
       }
 
@@ -138,16 +144,22 @@ TEST(perf_micro, encode) {
         // SEAL
         time_start = chrono::high_resolution_clock::now();
         evaluator.add_plain_inplace(encrypted, plain);
+        evaluator.add_plain_inplace(encrypted, plain);
+        evaluator.add_plain_inplace(encrypted, plain);
         time_end = chrono::high_resolution_clock::now();
         time_seal_add_plain_sum +=
-            chrono::duration_cast<chrono::microseconds>(time_end - time_start);
+            chrono::duration_cast<chrono::nanoseconds>(time_end - time_start) /
+            3;
 
         // HE
         time_start = chrono::high_resolution_clock::now();
         add_plain_inplace(encrypted, input, he_seal_backend);
+        add_plain_inplace(encrypted, input, he_seal_backend);
+        add_plain_inplace(encrypted, input, he_seal_backend);
         time_end = chrono::high_resolution_clock::now();
         time_he_add_plain_sum +=
-            chrono::duration_cast<chrono::microseconds>(time_end - time_start);
+            chrono::duration_cast<chrono::nanoseconds>(time_end - time_start) /
+            3;
       }
     }
 
@@ -156,33 +168,36 @@ TEST(perf_micro, encode) {
 
     auto time_seal_multiply_plain_avg =
         time_seal_multiply_plain_sum.count() / mult_test_cnt;
-    auto time_he_multiply_plain_avg =
-        time_he_multiply_plain_sum.count() / mult_test_cnt - time_he_encode_avg;
+    auto time_he_multiply_plain_avg = time_he_multiply_plain_sum.count() /
+                                      mult_test_cnt;  //- time_he_encode_avg;
 
     auto time_seal_add_plain_avg =
         time_seal_add_plain_sum.count() / add_test_cnt;
     auto time_he_add_plain_avg =
-        time_he_add_plain_sum.count() / add_test_cnt - time_he_encode_avg;
+        time_he_add_plain_sum.count() / add_test_cnt;  // - time_he_encode_avg;
 
-    NGRAPH_INFO << "time_seal_encode_avg (ns) " << time_seal_encode_avg;
-    NGRAPH_INFO << "time_he_encode_avg (ns) " << time_he_encode_avg;
-    NGRAPH_INFO << "Runtime improvement: "
-                << (time_seal_encode_avg / float(time_he_encode_avg)) << "\n";
+    std::cout << "time_seal_encode_avg (ns) " << time_seal_encode_avg
+              << std::endl;
+    std::cout << "time_he_encode_avg (ns) " << time_he_encode_avg << std::endl;
+    std::cout << "Runtime improvement: "
+              << (time_seal_encode_avg / float(time_he_encode_avg)) << "\n";
 
-    NGRAPH_INFO << "time_seal_multiply_plain_avg (ns) "
-                << time_seal_multiply_plain_avg;
-    NGRAPH_INFO << "time_he_multiply_plain_avg (ns) "
-                << time_he_multiply_plain_avg;
-    NGRAPH_INFO << "Runtime improvement: "
-                << (time_seal_multiply_plain_avg /
-                    float(time_he_multiply_plain_avg))
-                << "\n";
+    std::cout << "time_seal_multiply_plain_avg (ns) "
+              << time_seal_multiply_plain_avg << std::endl;
+    std::cout << "time_he_multiply_plain_avg (ns) "
+              << time_he_multiply_plain_avg << std::endl;
+    std::cout << "Runtime improvement: "
+              << (time_seal_multiply_plain_avg /
+                  float(time_he_multiply_plain_avg))
+              << "\n";
 
-    NGRAPH_INFO << "time_seal_add_plain_avg (ns) " << time_seal_add_plain_avg;
-    NGRAPH_INFO << "time_he_add_plain_avg (ns) " << time_he_add_plain_avg;
-    NGRAPH_INFO << "Runtime improvement: "
-                << (time_seal_add_plain_avg / float(time_he_add_plain_avg))
-                << "\n";
+    std::cout << "time_seal_add_plain_avg (ns) " << time_seal_add_plain_avg
+              << std::endl;
+    std::cout << "time_he_add_plain_avg (ns) " << time_he_add_plain_avg
+              << std::endl;
+    std::cout << "Runtime improvement: "
+              << (time_seal_add_plain_avg / float(time_he_add_plain_avg))
+              << "\n";
   };
 
   std::vector<size_t> poly_modulus_degrees{4096, 8192, 16384};

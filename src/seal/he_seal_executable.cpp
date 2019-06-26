@@ -94,6 +94,7 @@ ngraph::he::HESealExecutable::HESealExecutable(
       m_port(34000),
       m_relu_done(false),
       m_max_done(false),
+      m_result_done(false),
       m_session_started(false),
       m_client_inputs_received(false) {
   m_context = he_seal_backend.get_context();
@@ -679,12 +680,23 @@ bool ngraph::he::HESealExecutable::call(
     NGRAPH_CHECK(output_cipher_tensor != nullptr,
                  "Client outputs are not HESealCipherTensor");
 
-    auto result_message =
-        TCPMessage(MessageType::result, output_cipher_tensor->get_elements());
+    std::stringstream cipher_stream;
+    output_cipher_tensor->save_elements(cipher_stream);
+    auto result_message = TCPMessage(MessageType::result, output_shape_size,
+                                     std::move(cipher_stream));
+
+    // auto result_message =
+    //    TCPMessage(MessageType::result, output_cipher_tensor->get_elements());
 
     NGRAPH_INFO << "Writing Result message with " << output_shape_size
                 << " ciphertexts ";
     m_session->do_write(std::move(result_message));
+
+    // TODO: more sophisticated way of doing this
+    while (m_session->is_writing()) {
+      NGRAPH_INFO << "m_is_writing";
+      sleep(1);
+    }
   }
   return true;
 }

@@ -200,12 +200,10 @@ void ngraph::he::HESealClient::handle_message(
       break;
     }
     case ngraph::he::MessageType::relu6_request: {
-      NGRAPH_INFO << "Received Relu6 request";
       handle_relu_request(message);
       break;
     }
     case ngraph::he::MessageType::relu_request: {
-      NGRAPH_INFO << "Received Relu request";
       handle_relu_request(message);
       break;
     }
@@ -311,8 +309,8 @@ void ngraph::he::HESealClient::handle_relu_request(
 
   size_t result_count = message.count();
   size_t element_size = message.element_size();
-  NGRAPH_INFO << "Received Relu request with " << result_count << " elements"
-              << " of size " << element_size;
+  // NGRAPH_INFO << "Received Relu request with " << result_count << " elements"
+  //            << " of size " << element_size;
 
   std::vector<seal::Ciphertext> post_relu_ciphers(result_count);
 #pragma omp parallel for
@@ -345,12 +343,10 @@ void ngraph::he::HESealClient::handle_relu_request(
     }
     m_encryptor->encrypt(relu_plain, post_relu_ciphers[result_idx]);
   }
-  NGRAPH_INFO << "performed relu; creating relu message";
-
   auto relu_result_msg =
       TCPMessage(ngraph::he::MessageType::relu_result, post_relu_ciphers);
-  NGRAPH_INFO << "Writing relu_result message with " << result_count
-              << " ciphertexts";
+  // NGRAPH_INFO << "Writing relu_result message with " << result_count
+  //            << " ciphertexts";
 
   write_message(std::move(relu_result_msg));
   return;

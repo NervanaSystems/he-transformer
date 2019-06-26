@@ -18,10 +18,10 @@ import ngraph_bridge
 import numpy as np
 import tensorflow as tf
 
-a = tf.constant(np.array([[1, 2], [3, 4]]), dtype=np.float32)
-b = tf.placeholder(tf.float32, shape=(2, 2))
+a = tf.constant(np.array([[1, 2]]), dtype=np.float32)
+b = tf.placeholder(tf.float32, shape=(1, 2))
 f = (a + b) * a * b
 
 with tf.Session() as sess:
-    f_val = sess.run(f, feed_dict={b: np.ones((2, 2))})
+    f_val = sess.run(f, feed_dict={b: np.ones((1, 2))})
     print("Result: ", f_val)
