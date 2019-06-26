@@ -52,9 +52,13 @@ class HESealExecutable : public runtime::Executable {
     if (m_enable_client) {
       // TODO: why is this needed to prevent m_acceptor from double-freeing?
       m_acceptor = nullptr;
+
+      // Wait until thread finishes with m_io_context
       m_thread.join();
     }
   }
+
+  void client_setup();
 
   void start_server();
 
@@ -78,6 +82,8 @@ class HESealExecutable : public runtime::Executable {
 
   void accept_connection();
 
+  void check_client_supports_function();
+
   void handle_message(const TCPMessage& message);
 
   void handle_server_relu_op(std::shared_ptr<HESealCipherTensor>& arg0_cipher,
@@ -89,6 +95,11 @@ class HESealExecutable : public runtime::Executable {
            m_verbose_ops.find(ngraph::to_lower(op.description())) !=
                m_verbose_ops.end();
   };
+
+  void enable_client() {
+    m_enable_client = true;
+    client_setup();
+  }
 
  private:
   HESealBackend& m_he_seal_backend;

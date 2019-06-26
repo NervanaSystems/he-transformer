@@ -63,18 +63,18 @@ def main(FLAGS):
     else:
         print('Not using client')
 
-    if using_client:
-        util.VAL_IMAGE_FLAGS = FLAGS
-        imagenet_inference_labels = get_imagenet_inference_labels()
-        imagenet_training_labels = get_imagenet_training_labels()
+    imagenet_inference_labels = get_imagenet_inference_labels()
+    imagenet_training_labels = get_imagenet_training_labels()
 
-        assert (sorted(imagenet_training_labels) == sorted(
-            imagenet_inference_labels))
+    util.VAL_IMAGE_FLAGS = FLAGS
 
+    assert (
+        sorted(imagenet_training_labels) == sorted(imagenet_inference_labels))
+
+    if not using_client:
         validation_nums = get_validation_labels(FLAGS)
         x_test = get_validation_images(FLAGS)
         validation_labels = imagenet_inference_labels[validation_nums]
-
     else:
         x_test = np.random.rand(FLAGS.batch_size, 96, 96, 3)
 
@@ -111,13 +111,14 @@ def main(FLAGS):
         top5 = np.flip(y_pred.argsort()[:, -5:], axis=1)
     #print('top5', top5)
 
-    preds = imagenet_training_labels[top5]
+    if not using_client:
+        preds = imagenet_training_labels[top5]
 
-    if FLAGS.batch_size < 10:
-        print('validation_labels', validation_labels)
-        print('preds', preds)
+        if FLAGS.batch_size < 10:
+            print('validation_labels', validation_labels)
+            print('preds', preds)
 
-    util.accuracy(preds, validation_labels)
+        util.accuracy(preds, validation_labels)
 
 
 if __name__ == '__main__':

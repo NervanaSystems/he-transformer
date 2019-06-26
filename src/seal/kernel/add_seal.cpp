@@ -58,6 +58,7 @@ void ngraph::he::scalar_add_seal(
 
   if (arg0.is_zero()) {
     he_seal_backend.encrypt(out, arg1, he_seal_backend.complex_packing());
+    NGRAPH_INFO << "Adding C(0) + P";
     out->complex_packing() = arg0.complex_packing();
     out->is_zero() = false;
     return;
@@ -67,6 +68,7 @@ void ngraph::he::scalar_add_seal(
   bool add_zero = arg1.is_single_value() && (arg1.values()[0] == 0.0f);
 
   if (add_zero) {
+    NGRAPH_INFO << "Adding C + P(0)";
     out = std::make_shared<ngraph::he::SealCiphertextWrapper>(arg0);
   } else {
     bool complex_packing = arg0.complex_packing();
@@ -91,6 +93,9 @@ void ngraph::he::scalar_add_seal(
   }
   out->complex_packing() = arg0.complex_packing();
   out->is_zero() = false;
+
+  NGRAPH_INFO << "Add out scale " << out->ciphertext().scale() << " chain ind "
+              << ngraph::he::get_chain_index(*out, he_seal_backend);
 }
 
 void ngraph::he::scalar_add_seal(

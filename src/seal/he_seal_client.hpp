@@ -46,7 +46,10 @@ class HESealClient {
     m_tcp_client->write_message(std::move(message));
   }
 
-  inline bool is_done() { return m_is_done; }
+  inline bool is_done() {
+    NGRAPH_INFO << "is_done? " << m_is_done;
+    return m_is_done;
+  }
 
   inline std::vector<float> get_results() { return m_results; }
 

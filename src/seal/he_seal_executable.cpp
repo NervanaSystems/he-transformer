@@ -133,7 +133,10 @@ ngraph::he::HESealExecutable::HESealExecutable(
   for (const std::shared_ptr<Node>& node : function->get_ordered_ops()) {
     m_wrapped_nodes.emplace_back(node);
   }
+
+  NGRAPH_INFO << "Setting parameters and results";
   set_parameters_and_results(*function);
+  NGRAPH_INFO << "Parameters size " << get_parameters().size();
 
   // Constant, for example, cannot be batched
   if (get_parameters().size() > 0) {
@@ -144,40 +147,59 @@ ngraph::he::HESealExecutable::HESealExecutable(
   }
 
   if (m_enable_client) {
+    NGRAPH_INFO << "Setting up client in constructor!";
+    client_setup();
+  }
+}
+
+void ngraph::he::HESealExecutable::check_client_supports_function() {
+  NGRAPH_INFO << "check_client_supports_function";
+  NGRAPH_INFO << "get_parameters " << get_parameters().size();
+  NGRAPH_INFO << "Gettting parameters";
+
+  NGRAPH_CHECK(get_parameters().size() == 1,
+               "HESealExecutable only supports parameter size 1 (got ",
+               get_parameters().size(), ")");
+
+  NGRAPH_INFO << "Gettting results";
+  // only support function output size 1 for now
+  NGRAPH_CHECK(get_results().size() == 1,
+               "HESealExecutable only supports output size 1 (got ",
+               get_results().size(), "");
+}
+
+void ngraph::he::HESealExecutable::client_setup() {
+  static bool first_setup = true;
+
+  if (first_setup) {
     NGRAPH_INFO << "Enable client";
 
-    // only support parameter size 1 for now
-    NGRAPH_CHECK(get_parameters().size() == 1,
-                 "HESealExecutable only supports parameter size 1 (got ",
-                 get_parameters().size(), ")");
-    // only support function output size 1 for now
-    NGRAPH_CHECK(get_results().size() == 1,
-                 "HESealExecutable only supports output size 1 (got ",
-                 get_results().size(), "");
+    check_client_supports_function();
 
     // Start server
     NGRAPH_INFO << "Starting server";
     start_server();
-
-    // only support parameter size 1 for now
-    NGRAPH_CHECK(get_parameters().size() == 1,
-                 "HESealExecutable only supports parameter size 1 (got ",
-                 get_parameters().size(), ")");
+    NGRAPH_INFO << "Done with start server function";
 
     // Send encryption parameters
     std::stringstream param_stream;
 
-    he_seal_backend.get_encryption_parameters().save(param_stream);
+    m_he_seal_backend.get_encryption_parameters().save(param_stream);
     auto parms_message = TCPMessage(MessageType::encryption_parameters, 1,
                                     std::move(param_stream));
 
     std::unique_lock<std::mutex> mlock(m_session_mutex);
-    NGRAPH_INFO << "Waiting until client is connected";
+    // m_session_cond.wait(mlock, [this] { return m_session_started; });
     m_session_cond.wait(mlock,
                         std::bind(&HESealExecutable::session_started, this));
-    NGRAPH_INFO << "Session started";
-
+    NGRAPH_INFO << "Got notification that session started";
     m_session->do_write(std::move(parms_message));
+
+    first_setup = false;
+
+    NGRAPH_INFO << "Done with client setup";
+  } else {
+    NGRAPH_INFO << "Client already setup";
   }
 }
 
@@ -193,10 +215,13 @@ void ngraph::he::HESealExecutable::accept_connection() {
       m_session =
           std::make_shared<TCPSession>(std::move(socket), server_callback);
       m_session->start();
+      NGRAPH_INFO << "Session started";
 
       std::lock_guard<std::mutex> guard(m_session_mutex);
       m_session_started = true;
-      m_session_cond.notify_all();
+      NGRAPH_INFO << "Notifying that session has started";
+      m_session_cond.notify_one();
+      NGRAPH_INFO << "done Notifying that session has started";
     } else {
       NGRAPH_INFO << "error " << ec.message();
       // accept_connection();
@@ -301,9 +326,11 @@ void ngraph::he::HESealExecutable::handle_message(
                  "Client inputs size ", m_client_inputs.size(), "; expected ",
                  get_parameters().size());
 
+    NGRAPH_INFO << "Locking m_client_inputs_mutex";
     std::lock_guard<std::mutex> guard(m_client_inputs_mutex);
     m_client_inputs_received = true;
     m_client_inputs_cond.notify_all();
+    NGRAPH_INFO << "Notified m_client_inpuds received";
 
   } else if (msg_type == MessageType::public_key) {
     seal::PublicKey key;
@@ -439,7 +466,9 @@ ngraph::he::HESealExecutable::get_performance_data() const {
 bool ngraph::he::HESealExecutable::call(
     const std::vector<std::shared_ptr<runtime::Tensor>>& outputs,
     const std::vector<std::shared_ptr<runtime::Tensor>>& server_inputs) {
+  NGRAPH_INFO << "Perfoming call";
   validate(outputs, server_inputs);
+  NGRAPH_INFO << "Done validating against server inputs";
 
   if (m_enable_client) {
     NGRAPH_INFO << "Waiting until m_client_inputs.size() == "
@@ -573,6 +602,7 @@ bool ngraph::he::HESealExecutable::call(
     }
 
     // get op outputs from map or create
+    NGRAPH_INFO << "Getting op outputs from map";
     std::vector<std::shared_ptr<ngraph::he::HETensor>> op_outputs;
     for (size_t i = 0; i < op->get_output_size(); ++i) {
       auto tensor = &op->output(i).get_tensor();
@@ -611,6 +641,8 @@ bool ngraph::he::HESealExecutable::call(
               element_type, shape, m_he_seal_backend, packed_out, name);
           tensor_map.insert({tensor, out_tensor});
         } else {
+          NGRAPH_INFO << "Creating cipher tensor shape " << join(shape, "x");
+          NGRAPH_INFO << "packed_out " << packed_out;
           auto out_tensor = std::make_shared<ngraph::he::HESealCipherTensor>(
               element_type, shape, m_he_seal_backend, packed_out, name);
           tensor_map.insert({tensor, out_tensor});
@@ -627,10 +659,10 @@ bool ngraph::he::HESealExecutable::call(
       base_type = op->get_inputs().at(0).get_tensor().get_element_type();
     }
 
+    NGRAPH_INFO << "Generating call";
     generate_calls(base_type, wrapped, op_outputs, op_inputs);
     m_timer_map[op].stop();
-
-    const std::string op_name = op->description();
+    NGRAPH_INFO << "Done generating call";
 
     // delete any obsolete tensors
     for (const descriptor::Tensor* t : op->liveness_free_list) {
@@ -665,6 +697,7 @@ bool ngraph::he::HESealExecutable::call(
 
   // Send outputs to client.
   if (m_enable_client) {
+    NGRAPH_INFO << "Sending outputs to client";
     NGRAPH_CHECK(m_client_outputs.size() == 1,
                  "HESealExecutable only supports output size 1 (got ",
                  get_results().size(), "");
@@ -1395,6 +1428,7 @@ void ngraph::he::HESealExecutable::generate_calls(
             "Input argument is neither plaintext nor ciphertext");
       }
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
+        NGRAPH_INFO << "Calling result on " << output_size << " elements";
         ngraph::he::result_seal(arg0_cipher->get_elements(),
                                 out0_cipher->get_elements(), output_size);
       } else if (arg0_plain != nullptr && out0_cipher != nullptr) {
