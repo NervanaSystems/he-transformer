@@ -177,9 +177,6 @@ def accuracy(preds, truth):
         preds = preds.T
     assert (preds.shape[0] == num_preds)
 
-    print('preds', preds)
-    print('truth', truth)
-
     if num_preds == 1:
         top1_cnt = int(truth[0] == preds[0])
         top5_cnt = int(truth[0] in preds)
@@ -187,8 +184,6 @@ def accuracy(preds, truth):
         top1_cnt = 0
         top5_cnt = 0
         for i in range(num_preds):
-            print('truth[', i, ']', truth[i])
-            print('preds[i]', preds[i])
             if preds[i][0] == truth[i]:
                 top1_cnt += 1
             if truth[i] in preds[i]:
