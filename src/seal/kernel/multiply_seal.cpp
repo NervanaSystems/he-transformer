@@ -22,16 +22,16 @@
 void ngraph::he::scalar_multiply_seal(
     ngraph::he::SealCiphertextWrapper& arg0,
     ngraph::he::SealCiphertextWrapper& arg1,
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper> out,
     const element::Type& element_type, const HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
   if (arg0.known_value() && arg1.known_value()) {
-    NGRAPH_INFO << "C(known) * C(known)";
+    NGRAPH_INFO << "C(" << arg0.value() << ") * C(" << arg1.value() << ")";
     out->known_value() = true;
     out->value() = arg0.value() * arg1.value();
     out->complex_packing() = arg0.complex_packing();
   } else if (arg0.known_value()) {
-    NGRAPH_INFO << "C(known) * C";
+    NGRAPH_INFO << "C(" << arg0.value() << ") * C";
     NGRAPH_CHECK(arg0.complex_packing() == false,
                  "cannot multiply ciphertexts in complex form");
     NGRAPH_CHECK(arg1.complex_packing() == false,
@@ -41,7 +41,7 @@ void ngraph::he::scalar_multiply_seal(
     HEPlaintext p(arg0.value());
     scalar_multiply_seal(arg0, p, out, element_type, he_seal_backend, pool);
   } else if (arg1.known_value()) {
-    NGRAPH_INFO << "C * C(known)";
+    NGRAPH_INFO << "C * C(" << arg1.value() << ")";
     NGRAPH_CHECK(arg0.complex_packing() == false,
                  "cannot multiply ciphertexts in complex form");
     NGRAPH_CHECK(arg1.complex_packing() == false,
@@ -82,13 +82,14 @@ void ngraph::he::scalar_multiply_seal(
 void ngraph::he::scalar_multiply_seal(
     ngraph::he::SealCiphertextWrapper& arg0,
     const ngraph::he::HEPlaintext& arg1,
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper> out,
     const element::Type& element_type, const HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
   NGRAPH_CHECK(element_type == element::f32, "Element type ", element_type,
                " is not float");
-  NGRAPH_INFO << "C(known) * P";
+
   if (arg0.known_value()) {
+    NGRAPH_INFO << "C(" << arg0.value() << ") * P";
     NGRAPH_CHECK(arg1.is_single_value(), "arg1 is not single value");
     out->known_value() = true;
     out->value() = arg0.value() * arg1.values()[0];
@@ -159,7 +160,7 @@ void ngraph::he::scalar_multiply_seal(
 void ngraph::he::scalar_multiply_seal(
     const ngraph::he::HEPlaintext& arg0,
     ngraph::he::SealCiphertextWrapper& arg1,
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper> out,
     const element::Type& element_type, const HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
   ngraph::he::scalar_multiply_seal(arg1, arg0, out, element_type,

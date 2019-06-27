@@ -21,20 +21,20 @@
 void ngraph::he::scalar_add_seal(
     ngraph::he::SealCiphertextWrapper& arg0,
     ngraph::he::SealCiphertextWrapper& arg1,
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper> out,
     const element::Type& element_type, const HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
   if (arg0.known_value() && arg1.known_value()) {
-    NGRAPH_INFO << "C(known)+C(known)";
+    NGRAPH_INFO << "C(" << arg0.value() << ") + C(" << arg1.value() << ")";
     out->known_value() = true;
     out->value() = arg0.value() + arg1.value();
   } else if (arg0.known_value()) {
-    NGRAPH_INFO << "C(known)+C";
+    NGRAPH_INFO << "C(" << arg0.value() << ") + C";
     HEPlaintext p(arg0.value());
     scalar_add_seal(p, arg1, out, element_type, he_seal_backend, pool);
     out->known_value() = false;
   } else if (arg1.known_value()) {
-    NGRAPH_INFO << "C+C(known)";
+    NGRAPH_INFO << "C + C(" << arg1.value() << ")";
     HEPlaintext p(arg1.value());
     scalar_add_seal(p, arg0, out, element_type, he_seal_backend, pool);
     out->known_value() = false;
@@ -59,7 +59,7 @@ void ngraph::he::scalar_add_seal(
 
 void ngraph::he::scalar_add_seal(
     ngraph::he::SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper> out,
     const element::Type& element_type, const HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
   NGRAPH_CHECK(element_type == element::f32);
@@ -72,7 +72,7 @@ void ngraph::he::scalar_add_seal(
 
     // he_seal_backend.encrypt(out, arg1, he_seal_backend.complex_packing());
     // out->is_zero() = false;
-    NGRAPH_INFO << "Adding C(0) + P";
+    NGRAPH_INFO << "C(" << arg0.value() << ") + P";
     out->complex_packing() = arg0.complex_packing();
     return;
   }
@@ -107,13 +107,14 @@ void ngraph::he::scalar_add_seal(
   out->complex_packing() = arg0.complex_packing();
   out->known_value() = false;
 
-  NGRAPH_INFO << "Add out scale " << out->ciphertext().scale() << " chain ind "
-              << ngraph::he::get_chain_index(*out, he_seal_backend);
+  // NGRAPH_INFO << "Add out scale " << out->ciphertext().scale() << " chain ind
+  // "
+  //            << ngraph::he::get_chain_index(*out, he_seal_backend);
 }
 
 void ngraph::he::scalar_add_seal(
     const HEPlaintext& arg0, ngraph::he::SealCiphertextWrapper& arg1,
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper> out,
     const element::Type& element_type, const HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
   ngraph::he::scalar_add_seal(arg1, arg0, out, element_type, he_seal_backend);

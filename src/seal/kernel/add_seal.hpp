@@ -30,19 +30,19 @@ namespace ngraph {
 namespace he {
 void scalar_add_seal(
     SealCiphertextWrapper& arg0, SealCiphertextWrapper& arg1,
-    std::shared_ptr<SealCiphertextWrapper>& out,
+    std::shared_ptr<SealCiphertextWrapper> out,
     const element::Type& element_type, const HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
 void scalar_add_seal(
     SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
-    std::shared_ptr<SealCiphertextWrapper>& out,
+    std::shared_ptr<SealCiphertextWrapper> out,
     const element::Type& element_type, const HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
 void scalar_add_seal(
     const HEPlaintext& arg0, SealCiphertextWrapper& arg1,
-    std::shared_ptr<SealCiphertextWrapper>& out,
+    std::shared_ptr<SealCiphertextWrapper> out,
     const element::Type& element_type, const HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
