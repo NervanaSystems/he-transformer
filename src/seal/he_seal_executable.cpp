@@ -607,7 +607,7 @@ bool ngraph::he::HESealExecutable::call(
     }
 
     // get op outputs from map or create
-    NGRAPH_INFO << "Getting op outputs from map";
+    NGRAPH_DEBUG << "Getting op outputs from map";
     std::vector<std::shared_ptr<ngraph::he::HETensor>> op_outputs;
     for (size_t i = 0; i < op->get_output_size(); ++i) {
       auto tensor = &op->output(i).get_tensor();
@@ -646,8 +646,6 @@ bool ngraph::he::HESealExecutable::call(
               element_type, shape, m_he_seal_backend, packed_out, name);
           tensor_map.insert({tensor, out_tensor});
         } else {
-          NGRAPH_INFO << "Creating cipher tensor shape " << join(shape, "x");
-          NGRAPH_INFO << "packed_out " << packed_out;
           auto out_tensor = std::make_shared<ngraph::he::HESealCipherTensor>(
               element_type, shape, m_he_seal_backend, packed_out, name);
           tensor_map.insert({tensor, out_tensor});
@@ -664,10 +662,8 @@ bool ngraph::he::HESealExecutable::call(
       base_type = op->get_inputs().at(0).get_tensor().get_element_type();
     }
 
-    NGRAPH_INFO << "Generating call";
     generate_calls(base_type, wrapped, op_outputs, op_inputs);
     m_timer_map[op].stop();
-    NGRAPH_INFO << "Done generating call";
 
     // delete any obsolete tensors
     for (const descriptor::Tensor* t : op->liveness_free_list) {

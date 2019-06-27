@@ -205,7 +205,7 @@ void ngraph::he::HESealBackend::decrypt(
     ngraph::he::HEPlaintext& output,
     const ngraph::he::SealCiphertextWrapper& input) const {
   if (input.known_value()) {
-    NGRAPH_INFO << "Decrypting known value " << input.value();
+    NGRAPH_DEBUG << "Decrypting known value " << input.value();
     const size_t slot_count = m_ckks_encoder->slot_count();
     output.values() = std::vector<float>(slot_count, input.value());
   } else {

@@ -25,16 +25,13 @@ void ngraph::he::scalar_add_seal(
     const element::Type& element_type, const HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
   if (arg0.known_value() && arg1.known_value()) {
-    NGRAPH_INFO << "C(" << arg0.value() << ") + C(" << arg1.value() << ")";
     out->known_value() = true;
     out->value() = arg0.value() + arg1.value();
   } else if (arg0.known_value()) {
-    NGRAPH_INFO << "C(" << arg0.value() << ") + C";
     HEPlaintext p(arg0.value());
     scalar_add_seal(p, arg1, out, element_type, he_seal_backend, pool);
     out->known_value() = false;
   } else if (arg1.known_value()) {
-    NGRAPH_INFO << "C + C(" << arg1.value() << ")";
     HEPlaintext p(arg1.value());
     scalar_add_seal(p, arg0, out, element_type, he_seal_backend, pool);
     out->known_value() = false;
@@ -66,8 +63,6 @@ void ngraph::he::scalar_add_seal(
 
   if (arg0.known_value()) {
     NGRAPH_CHECK(arg1.is_single_value(), "arg1 is not single value");
-    NGRAPH_INFO << "C(" << arg0.value() << ") + P";
-
     out->known_value() = true;
     out->value() = arg0.value() + arg1.values()[0];
     out->complex_packing() = arg0.complex_packing();
@@ -78,7 +73,6 @@ void ngraph::he::scalar_add_seal(
   bool add_zero = arg1.is_single_value() && (arg1.values()[0] == 0.0f);
 
   if (add_zero) {
-    NGRAPH_INFO << "Adding C + P(0)";
     SealCiphertextWrapper tmp(arg0);
     NGRAPH_CHECK(tmp.complex_packing() == arg0.complex_packing());
     out = std::make_shared<ngraph::he::SealCiphertextWrapper>(tmp);
