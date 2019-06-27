@@ -749,10 +749,16 @@ void ngraph::he::HESealExecutable::generate_calls(
     if (m_he_seal_backend.naive_rescaling()) {
       return;
     }
+    if (verbose) {
+      NGRAPH_INFO << "Rescaling " << cipher_tensor->num_ciphertexts()
+                  << " ciphertexts";
+    }
+
     typedef std::chrono::high_resolution_clock Clock;
     auto t1 = Clock::now();
     size_t new_chain_index = std::numeric_limits<size_t>::max();
 
+    bool all_known_values = true;
     for (size_t cipher_idx = 0; cipher_idx < cipher_tensor->num_ciphertexts();
          ++cipher_idx) {
       auto& cipher = cipher_tensor->get_element(cipher_idx);
@@ -764,9 +770,18 @@ void ngraph::he::HESealExecutable::generate_calls(
         } else {
           new_chain_index = curr_chain_index - 1;
         }
+        all_known_values = false;
         break;
       }
     }
+
+    if (all_known_values) {
+      if (verbose) {
+        NGRAPH_INFO << "Skipping rescaling because all values are known";
+      }
+      return;
+    }
+
     NGRAPH_CHECK(new_chain_index != std::numeric_limits<size_t>::max(),
                  "Lazy rescaling called on cipher tensor of all known values");
     if (new_chain_index == 0) {
@@ -1680,12 +1695,9 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
     //#pragma omp parallel for
     for (size_t relu_idx = relu_start_idx; relu_idx < relu_end_idx;
          ++relu_idx) {
-      NGRAPH_INFO << "relu idx " << relu_idx;
       auto& cipher = arg_cipher->get_element(relu_idx);
       if (cipher->known_value()) {
         auto value = cipher->value();
-        NGRAPH_INFO << "Relu( " << value << ")";
-
         auto relu = [](float f) { return f > 0 ? f : 0.f; };
         auto relu_val = relu(value);
 
@@ -1694,9 +1706,7 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
         cipher->value() = relu_val;
         m_relu_ciphertexts[relu_idx] = cipher;
       } else {
-        NGRAPH_INFO << "emplacing back m_unknown_relu_idx";
         m_unknown_relu_idx.emplace_back(relu_idx);
-        NGRAPH_INFO << "emplacing back cipher";
         relu_ciphers.emplace_back(cipher->ciphertext());
       }
     }
