@@ -37,8 +37,8 @@ void ngraph::he::scalar_multiply_seal(
     NGRAPH_CHECK(arg1.complex_packing() == false,
                  "cannot multiply ciphertexts in complex form");
     out->known_value() = false;
-
     HEPlaintext p(arg0.value());
+
     scalar_multiply_seal(arg0, p, out, element_type, he_seal_backend, pool);
   } else if (arg1.known_value()) {
     NGRAPH_INFO << "C * C(" << arg1.value() << ")";

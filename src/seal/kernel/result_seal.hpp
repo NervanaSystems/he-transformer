@@ -37,9 +37,7 @@ inline void result_seal(
 
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
-    NGRAPH_INFO << "arg.knwon_value ? " << arg[i]->known_value();
     out[i] = arg[i];
-    NGRAPH_INFO << "out.knwon_value ? " << out[i]->known_value();
   }
 }
 

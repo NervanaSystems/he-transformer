@@ -524,8 +524,9 @@ inline void convolution_seal(
       ++filter_it;
     }
     if (first_add) {
-      out[out_coord_idx] =
-          he_seal_backend.create_valued_ciphertext(0.f, element_type);
+      out[out_coord_idx] = std::make_shared<SealCiphertextWrapper>();
+      out[out_coord_idx]->known_value() = true;
+      out[out_coord_idx]->value() = 0;
     } else {
       // Write the sum back.
       out[out_coord_idx] = sum;
