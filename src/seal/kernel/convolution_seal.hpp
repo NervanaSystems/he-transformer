@@ -341,7 +341,8 @@ inline void convolution_seal(
     CoordinateTransform::Iterator input_end = input_batch_transform.end();
     CoordinateTransform::Iterator filter_end = filter_transform.end();
 
-    auto sum = he_seal_backend.create_empty_ciphertext(pool);
+    std::shared_ptr<SealCiphertextWrapper> sum;
+    // = he_seal_backend.create_empty_ciphertext(pool);
     bool first_add = true;
 
     while (input_it != input_end && filter_it != filter_end) {
@@ -362,6 +363,7 @@ inline void convolution_seal(
 
         ngraph::he::scalar_multiply_seal(*mult_arg0, mult_arg1, prod,
                                          element_type, he_seal_backend, pool);
+        // NGRAPH_INFO << "prod use count " << prod.use_count();
         if (first_add) {
           sum = prod;
           first_add = false;

@@ -34,6 +34,13 @@ class HESealCipherTensor : public HETensor {
                      const bool packed = false,
                      const std::string& name = "external");
 
+  ~HESealCipherTensor() {
+    NGRAPH_INFO << "Freeing cipher tensor with " << m_num_elements
+                << " elements, each sized "
+                << ngraph::he::ciphertext_size(m_ciphertexts[0]->ciphertext())
+                << " with " << m_ciphertexts[0].use_count() << " use count";
+  }
+
   /// @brief Write bytes directly into the tensor after encoding and encrypting
   /// @param p Pointer to source of data
   /// @param tensor_offset Offset (bytes) into tensor storage to begin writing.
