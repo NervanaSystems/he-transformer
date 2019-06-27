@@ -169,9 +169,13 @@ def get_validation_images(FLAGS, crop=False):
 
 
 def accuracy(preds, truth):
-    num_preds = truth.shape[0]
+    truth = truth.flatten()
+    num_preds = truth.size
     print('num_preds', num_preds)
-    #assert (preds.shape[0] == truth.shape[0])
+
+    if (preds.shape[0] != num_preds):
+        preds = preds.T
+    assert (preds.shape[0] == num_preds)
 
     print('preds', preds)
     print('truth', truth)

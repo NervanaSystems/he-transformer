@@ -78,15 +78,18 @@ def main(FLAGS):
     validation_nums = get_validation_labels(FLAGS)
     x_test = get_validation_images(FLAGS)
     validation_labels = imagenet_inference_labels[validation_nums]
-    print('validation_labels', validation_labels)
 
-    #preds = np.array([['water snake', 'dogsled'], ['beaver', 'bighorn'],
+    if FLAGS.batch_size < 10:
+        print('validation_labels', validation_labels)
+
+    # preds = np.array([['water snake', 'dogsled'], ['beaver', 'bighorn'],
     #                  ['platypus', 'alp'], ['leatherback turtle', 'ski'],
-    #                  ['sea snake', 'snowplow']])
+    #                 ['sea snake', 'snowplow']])
     #print('preds', preds)
     #preds = preds.T
     #
     #util.accuracy(preds, validation_labels)
+    #xit(1)
 
     (batch_size, width, height, channels) = x_test.shape
     print('batch_size', batch_size)
@@ -148,7 +151,7 @@ def main(FLAGS):
     #                  ['sea snake', 'snowplow']])
     #print('preds', preds)#
 
-    #util.accuracy(preds, validation_labels)
+    util.accuracy(preds, validation_labels)
 
 
 if __name__ == '__main__':
