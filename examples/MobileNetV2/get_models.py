@@ -28,7 +28,8 @@ def main():
     url_prefix = 'https://storage.googleapis.com/mobilenet_v2/checkpoints/'
     filename_suffix = '.tgz'
     filename_prefixes = [
-        'mobilenet_v2_0.35_96', 'mobilenet_v2_1.0_96', 'mobilenet_v2_1.4_224'
+        'mobilenet_v2_0.35_96', 'mobilenet_v2_1.0_96', 'mobilenet_v2_1.4_224',
+        'mobilenet_v2_0.35_128'
     ]
     pb_suffix = '_frozen.pb'
     opt_suffix = '_opt.pb'

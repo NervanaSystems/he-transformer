@@ -116,7 +116,9 @@ def main(FLAGS):
 
         if FLAGS.batch_size < 10:
             print('validation_labels', validation_labels)
+            print('validation_labels shape', validation_labels.shape)
             print('preds', preds)
+            print('preds shape', preds.shape)
 
         util.accuracy(preds, validation_labels)
 
@@ -134,9 +136,7 @@ if __name__ == '__main__':
         '--model',
         type=str,
         default='./model/mobilenet_v2_0.35_96_opt.pb',
-        help=
-        'Directory where cropped ImageNet data and ground truth labels are stored'
-    )
+        help='Directory where model is stored')
     parser.add_argument(
         '--image_size', type=int, default=96, help='image size')
     parser.add_argument(
