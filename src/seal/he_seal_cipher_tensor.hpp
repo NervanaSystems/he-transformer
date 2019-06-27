@@ -59,7 +59,8 @@ class HESealCipherTensor : public HETensor {
     for (auto& ciphertext : m_ciphertexts) {
       NGRAPH_CHECK(cipher_size == ciphertext->size(), "Cipher size ",
                    ciphertext->size(), " doesn't match expected ", cipher_size);
-      NGRAPH_CHECK(!ciphertext->is_zero(), "can't save 0 ciphgertext");
+      NGRAPH_CHECK(!ciphertext->known_value(),
+                   "can't save known-valued ciphertext");
       ciphertext->save(stream);
     }
   }

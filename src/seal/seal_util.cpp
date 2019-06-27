@@ -388,7 +388,7 @@ size_t ngraph::he::match_to_smallest_chain_index(
       0, std::numeric_limits<size_t>::max()};
   for (size_t cipher_idx = 0; cipher_idx < num_elements; ++cipher_idx) {
     auto& cipher = *ciphers[cipher_idx];
-    if (!cipher.is_zero()) {
+    if (!cipher.known_value()) {
       size_t chain_ind = ngraph::he::get_chain_index(cipher, he_seal_backend);
       if (chain_ind < smallest_chain_ind.second) {
         smallest_chain_ind = std::make_pair(cipher_idx, chain_ind);
@@ -403,7 +403,7 @@ size_t ngraph::he::match_to_smallest_chain_index(
 #pragma omp parallel for
   for (size_t cipher_idx = 0; cipher_idx < num_elements; ++cipher_idx) {
     auto& cipher = *ciphers[cipher_idx];
-    if (!cipher.is_zero() && cipher_idx != smallest_chain_ind.second) {
+    if (!cipher.known_value() && cipher_idx != smallest_chain_ind.second) {
       match_modulus_and_scale_inplace(smallest_cipher, cipher, he_seal_backend);
       size_t chain_ind = ngraph::he::get_chain_index(cipher, he_seal_backend);
       NGRAPH_CHECK(chain_ind == smallest_chain_ind.second, "chain_ind",

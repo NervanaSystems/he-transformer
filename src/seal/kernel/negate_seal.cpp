@@ -22,8 +22,9 @@ void ngraph::he::scalar_negate_seal(
     const element::Type& element_type, const HESealBackend& he_seal_backend) {
   NGRAPH_CHECK(element_type == element::f32);
 
-  if (arg.is_zero()) {
-    out->is_zero() = true;
+  if (arg.known_value()) {
+    out->known_value() = true;
+    out->value() = -arg.value();
     return;
   }
   he_seal_backend.get_evaluator()->negate(arg.ciphertext(), out->ciphertext());

@@ -764,7 +764,7 @@ void ngraph::he::HESealExecutable::generate_calls(
     for (size_t cipher_idx = 0; cipher_idx < cipher_tensor->num_ciphertexts();
          ++cipher_idx) {
       auto& cipher = cipher_tensor->get_element(cipher_idx);
-      if (!cipher->is_zero()) {
+      if (!cipher->known_value()) {
         size_t curr_chain_index =
             get_chain_index(cipher->ciphertext(), m_he_seal_backend);
         if (curr_chain_index == 0) {
@@ -790,7 +790,7 @@ void ngraph::he::HESealExecutable::generate_calls(
 #pragma omp parallel for
     for (size_t i = 0; i < cipher_tensor->num_ciphertexts(); ++i) {
       auto cipher = cipher_tensor->get_element(i);
-      if (!cipher->is_zero()) {
+      if (!cipher->known_value()) {
         m_he_seal_backend.get_evaluator()->rescale_to_next_inplace(
             cipher->ciphertext());
       }
@@ -1235,10 +1235,10 @@ void ngraph::he::HESealExecutable::generate_calls(
 
         for (const size_t max_ind : maximize_list[list_ind]) {
           auto& cipher = arg0_cipher->get_element(max_ind);
-          if (cipher->is_zero()) {
+          if (cipher->known_value()) {
             // TODO: parallelize with 0s removed
-            NGRAPH_INFO << "Got max(0) at index " << max_ind;
-            throw ngraph_error("max(0) not allowed");
+            NGRAPH_INFO << "Got max(known_value) at index " << max_ind;
+            throw ngraph_error("max(known_value) not allowed");
           }
           maxpool_ciphers[cipher_cnt] = cipher->ciphertext();
           cipher_cnt++;
@@ -1680,10 +1680,10 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
     for (size_t relu_idx = relu_start_idx; relu_idx < relu_end_idx;
          ++relu_idx) {
       auto& cipher = arg_cipher->get_element(relu_idx);
-      if (cipher->is_zero()) {
-        // TODO: parallelize with 0s removed
-        NGRAPH_INFO << "Got relu(0) at index " << relu_idx;
-        throw ngraph_error("relu(0) not allowed");
+      if (cipher->known_value()) {
+        // TODO: parallelize with known values removed
+        NGRAPH_INFO << "Got relu(known_value) at index " << relu_idx;
+        throw ngraph_error("relu(known_value) not allowed");
       } else {
         relu_ciphers[relu_idx - relu_start_idx] = cipher->ciphertext();
       }

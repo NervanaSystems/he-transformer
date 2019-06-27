@@ -24,16 +24,16 @@ namespace ngraph {
 namespace he {
 class SealCiphertextWrapper {
  public:
-  SealCiphertextWrapper() : m_complex_packing(false), m_is_zero(false) {}
+  SealCiphertextWrapper() : m_complex_packing(false), m_known_value(false) {}
 
   SealCiphertextWrapper(bool complex_packing)
-      : m_complex_packing(complex_packing), m_is_zero(false) {}
+      : m_complex_packing(complex_packing), m_known_value(false) {}
 
   SealCiphertextWrapper(const seal::Ciphertext& cipher,
-                        bool complex_packing = false, bool is_zero = false)
+                        bool complex_packing = false, bool known_value = false)
       : m_ciphertext(cipher),
         m_complex_packing(complex_packing),
-        m_is_zero(is_zero) {}
+        m_known_value(known_value) {}
 
   seal::Ciphertext& ciphertext() { return m_ciphertext; }
   const seal::Ciphertext& ciphertext() const { return m_ciphertext; }
@@ -42,8 +42,11 @@ class SealCiphertextWrapper {
 
   size_t size() const { return m_ciphertext.size(); }
 
-  bool is_zero() const { return m_is_zero; }
-  bool& is_zero() { return m_is_zero; }
+  bool known_value() const { return m_known_value; }
+  bool& known_value() { return m_known_value; }
+
+  double value() const { return m_value; }
+  double& value() { return m_value; }
 
   double& scale() { return m_ciphertext.scale(); }
   const double scale() const { return m_ciphertext.scale(); }
@@ -54,7 +57,8 @@ class SealCiphertextWrapper {
  private:
   seal::Ciphertext m_ciphertext;
   bool m_complex_packing;
-  bool m_is_zero;
+  bool m_known_value;
+  double m_value;
 };
 
 inline size_t ciphertext_size(const seal::Ciphertext& cipher) {

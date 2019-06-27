@@ -45,9 +45,8 @@ class TCPClient {
         m_message_callback(std::bind(message_handler, std::placeholders::_1)) {
     NGRAPH_INFO << "Client starting async connection";
 
-    m_socket.open();
-    m_socket.set_option(boost::asio::ip::tcp::no_delay(true));
-    m_socket.set_option(boost::asio::socket_base::reuse_address(true));
+    // m_socket.set_option(boost::asio::ip::tcp::no_delay(true));
+    // m_socket.set_option(boost::asio::socket_base::reuse_address(true));
 
     do_connect(endpoints);
   }

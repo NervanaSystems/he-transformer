@@ -24,12 +24,20 @@ void ngraph::he::scalar_add_seal(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type, const HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
-  if (arg0.is_zero() && arg1.is_zero()) {
-    out->is_zero() = true;
-  } else if (arg0.is_zero()) {
-    out = std::make_shared<ngraph::he::SealCiphertextWrapper>(arg1);
-  } else if (arg1.is_zero()) {
-    out = std::make_shared<ngraph::he::SealCiphertextWrapper>(arg0);
+  if (arg0.known_value() && arg1.known_value()) {
+    NGRAPH_INFO << "C(known)+C(known)";
+    out->known_value() = true;
+    out->value() = arg0.value() + arg1.value();
+  } else if (arg0.known_value()) {
+    NGRAPH_INFO << "C(known)+C";
+    HEPlaintext p(arg0.value());
+    scalar_add_seal(p, arg1, out, element_type, he_seal_backend, pool);
+    out->known_value() = false;
+  } else if (arg1.known_value()) {
+    NGRAPH_INFO << "C+C(known)";
+    HEPlaintext p(arg1.value());
+    scalar_add_seal(p, arg0, out, element_type, he_seal_backend, pool);
+    out->known_value() = false;
   } else {
     NGRAPH_CHECK(arg0.complex_packing() == arg1.complex_packing(),
                  "arg0.complex_packing() (", arg0.complex_packing(),
@@ -44,7 +52,7 @@ void ngraph::he::scalar_add_seal(
     he_seal_backend.get_evaluator()->add(arg0.ciphertext(), arg1.ciphertext(),
                                          out->ciphertext());
 
-    out->is_zero() = false;
+    out->known_value() = false;
   }
   out->complex_packing() = he_seal_backend.complex_packing();
 }
@@ -56,11 +64,16 @@ void ngraph::he::scalar_add_seal(
     const seal::MemoryPoolHandle& pool) {
   NGRAPH_CHECK(element_type == element::f32);
 
-  if (arg0.is_zero()) {
-    he_seal_backend.encrypt(out, arg1, he_seal_backend.complex_packing());
+  if (arg0.known_value()) {
+    NGRAPH_CHECK(arg1.is_single_value(), "arg1 is not single value");
+
+    out->known_value() = true;
+    out->value() = arg0.value() + arg1.values()[0];
+
+    // he_seal_backend.encrypt(out, arg1, he_seal_backend.complex_packing());
+    // out->is_zero() = false;
     NGRAPH_INFO << "Adding C(0) + P";
     out->complex_packing() = arg0.complex_packing();
-    out->is_zero() = false;
     return;
   }
 
@@ -92,7 +105,7 @@ void ngraph::he::scalar_add_seal(
     }
   }
   out->complex_packing() = arg0.complex_packing();
-  out->is_zero() = false;
+  out->known_value() = false;
 
   NGRAPH_INFO << "Add out scale " << out->ciphertext().scale() << " chain ind "
               << ngraph::he::get_chain_index(*out, he_seal_backend);
