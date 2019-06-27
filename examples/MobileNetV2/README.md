@@ -99,7 +99,7 @@ python test.py \
 --batch_size=2048
 ```
 
-  6a. To try on a lagrer model, call:
+6a. To try on a larger model, call:
   ```bash
   STOP_CONST_FOLD=1 \
   OMP_NUM_THREADS=56 \
