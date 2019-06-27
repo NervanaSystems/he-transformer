@@ -45,8 +45,8 @@ class SealCiphertextWrapper {
   bool known_value() const { return m_known_value; }
   bool& known_value() { return m_known_value; }
 
-  double value() const { return m_value; }
-  double& value() { return m_value; }
+  float value() const { return m_value; }
+  float& value() { return m_value; }
 
   double& scale() { return m_ciphertext.scale(); }
   const double scale() const { return m_ciphertext.scale(); }
@@ -58,7 +58,7 @@ class SealCiphertextWrapper {
   seal::Ciphertext m_ciphertext;
   bool m_complex_packing;
   bool m_known_value;
-  double m_value;
+  float m_value;
 };
 
 inline size_t ciphertext_size(const seal::Ciphertext& cipher) {

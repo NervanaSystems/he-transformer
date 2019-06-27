@@ -148,6 +148,7 @@ class HESealExecutable : public runtime::Executable {
   std::mutex m_relu_mutex;
   std::condition_variable m_relu_cond;
   bool m_relu_done;
+  std::vector<size_t> m_unknown_relu_idx;
 
   // To trigger when maxpool is done
   std::mutex m_max_mutex;

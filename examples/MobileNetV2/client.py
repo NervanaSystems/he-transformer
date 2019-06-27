@@ -80,13 +80,13 @@ def main(FLAGS):
     validation_labels = imagenet_inference_labels[validation_nums]
     print('validation_labels', validation_labels)
 
-    preds = np.array([['water snake', 'dogsled'], ['beaver', 'bighorn'],
-                      ['platypus', 'alp'], ['leatherback turtle', 'ski'],
-                      ['sea snake', 'snowplow']])
-    print('preds', preds)
-    preds = preds.T
-
-    util.accuracy(preds, validation_labels)
+    #preds = np.array([['water snake', 'dogsled'], ['beaver', 'bighorn'],
+    #                  ['platypus', 'alp'], ['leatherback turtle', 'ski'],
+    #                  ['sea snake', 'snowplow']])
+    #print('preds', preds)
+    #preds = preds.T
+    #
+    #util.accuracy(preds, validation_labels)
 
     (batch_size, width, height, channels) = x_test.shape
     print('batch_size', batch_size)
@@ -143,12 +143,12 @@ def main(FLAGS):
     print('validation_labels', validation_labels)
     print('top5', preds)
 
-    preds = np.array([['water snake', 'dogsled'], ['beaver', 'bighorn'],
-                      ['platypus', 'alp'], ['leatherback turtle', 'ski'],
-                      ['sea snake', 'snowplow']])
-    print('preds', preds)
+    #preds = np.array([['water snake', 'dogsled'], ['beaver', 'bighorn'],
+    #                  ['platypus', 'alp'], ['leatherback turtle', 'ski'],
+    #                  ['sea snake', 'snowplow']])
+    #print('preds', preds)#
 
-    util.accuracy(preds, validation_labels)
+    #util.accuracy(preds, validation_labels)
 
 
 if __name__ == '__main__':

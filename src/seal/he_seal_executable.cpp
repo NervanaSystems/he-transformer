@@ -170,16 +170,13 @@ void ngraph::he::HESealExecutable::check_client_supports_function() {
 
 void ngraph::he::HESealExecutable::client_setup() {
   static bool first_setup = true;
-
   if (first_setup) {
     NGRAPH_INFO << "Enable client";
-
     check_client_supports_function();
 
     // Start server
     NGRAPH_INFO << "Starting server";
     start_server();
-    NGRAPH_INFO << "Done with start server function";
 
     // Send encryption parameters
     std::stringstream param_stream;
@@ -192,12 +189,10 @@ void ngraph::he::HESealExecutable::client_setup() {
     // m_session_cond.wait(mlock, [this] { return m_session_started; });
     m_session_cond.wait(mlock,
                         std::bind(&HESealExecutable::session_started, this));
-    NGRAPH_INFO << "Got notification that session started";
     m_session->do_write(std::move(parms_message));
 
     first_setup = false;
 
-    NGRAPH_INFO << "Done with client setup";
   } else {
     NGRAPH_INFO << "Client already setup";
   }
@@ -386,8 +381,8 @@ void ngraph::he::HESealExecutable::handle_message(
     size_t element_count = message.count();
     size_t element_size = message.element_size();
 
-    std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
-        new_relu_ciphers(element_count);
+    // std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
+    //     new_relu_ciphers(element_count);
 
 #pragma omp parallel for
     for (size_t element_idx = 0; element_idx < element_count; ++element_idx) {
@@ -397,14 +392,15 @@ void ngraph::he::HESealExecutable::handle_message(
                           element_size);
       cipher.load(m_context, cipher_stream);
 
-      new_relu_ciphers[element_idx] =
-          std::make_shared<ngraph::he::SealCiphertextWrapper>(
-              cipher, m_complex_packing);
+      auto new_cipher = std::make_shared<ngraph::he::SealCiphertextWrapper>(
+          cipher, m_complex_packing);
+
+      m_relu_ciphertexts[m_unknown_relu_idx[element_idx]] = new_cipher;
     }
-    m_relu_ciphertexts.reserve(m_relu_ciphertexts.size() +
-                               new_relu_ciphers.size());
-    m_relu_ciphertexts.insert(m_relu_ciphertexts.end(),
-                              new_relu_ciphers.begin(), new_relu_ciphers.end());
+
+    // m_relu_ciphertexts.insert(m_relu_ciphertexts.end(),
+    //                           new_relu_ciphers.begin(),
+    //                           new_relu_ciphers.end());
 
     // Notify condition variable
     m_relu_done = true;
@@ -772,7 +768,7 @@ void ngraph::he::HESealExecutable::generate_calls(
       }
     }
     NGRAPH_CHECK(new_chain_index != std::numeric_limits<size_t>::max(),
-                 "Lazy rescaling called on cipher tensor of all 0s");
+                 "Lazy rescaling called on cipher tensor of all known values");
     if (new_chain_index == 0) {
       if (verbose) {
         NGRAPH_INFO << "Skipping rescaling to chain index 0";
@@ -1644,6 +1640,8 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
   const Node& node = *node_wrapper.get_node();
   size_t element_count = shape_size(node.get_output_shape(0)) / m_batch_size;
 
+  bool verbose = verbose_op(node);
+
   if (arg_cipher == nullptr || out_cipher == nullptr) {
     NGRAPH_INFO << "Relu types not supported ";
     throw ngraph_error("Relu types not supported.");
@@ -1652,37 +1650,59 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
   size_t smallest_ind = ngraph::he::match_to_smallest_chain_index(
       arg_cipher->get_elements(), m_he_seal_backend);
 
-  if (verbose_op(node)) {
+  if (verbose) {
     NGRAPH_INFO << "Matched moduli to chain ind " << smallest_ind;
   }
   m_relu_ciphertexts.clear();
+  m_relu_ciphertexts.resize(element_count);
 
-  std::stringstream cipher_stream;
   // TODO: tune
   const size_t max_relu_message_cnt = 10000;
+
+  m_unknown_relu_idx.clear();
+  m_unknown_relu_idx.reserve(max_relu_message_cnt);
+
   size_t num_relu_batches = element_count / max_relu_message_cnt;
   if (element_count % max_relu_message_cnt != 0) {
     num_relu_batches++;
   }
-  std::vector<seal::Ciphertext> relu_ciphers(max_relu_message_cnt);
+  std::vector<seal::Ciphertext> relu_ciphers;
+  relu_ciphers.reserve(max_relu_message_cnt);
   for (size_t relu_batch = 0; relu_batch < num_relu_batches; ++relu_batch) {
+    relu_ciphers.clear();
+    m_unknown_relu_idx.clear();
+
     size_t relu_start_idx = relu_batch * max_relu_message_cnt;
     size_t relu_end_idx = (relu_batch + 1) * max_relu_message_cnt;
     if (relu_end_idx > element_count) {
       relu_end_idx = element_count;
     }
-    relu_ciphers.resize(relu_end_idx - relu_start_idx);
-#pragma omp parallel for
+    //#pragma omp parallel for
     for (size_t relu_idx = relu_start_idx; relu_idx < relu_end_idx;
          ++relu_idx) {
+      NGRAPH_INFO << "relu idx " << relu_idx;
       auto& cipher = arg_cipher->get_element(relu_idx);
       if (cipher->known_value()) {
-        // TODO: parallelize with known values removed
-        NGRAPH_INFO << "Got relu(known_value) at index " << relu_idx;
-        throw ngraph_error("relu(known_value) not allowed");
+        auto value = cipher->value();
+        NGRAPH_INFO << "Relu( " << value << ")";
+
+        auto relu = [](float f) { return f > 0 ? f : 0.f; };
+        auto relu_val = relu(value);
+
+        auto cipher = std::make_shared<SealCiphertextWrapper>();
+        cipher->known_value() = true;
+        cipher->value() = relu_val;
+        m_relu_ciphertexts[relu_idx] = cipher;
       } else {
-        relu_ciphers[relu_idx - relu_start_idx] = cipher->ciphertext();
+        NGRAPH_INFO << "emplacing back m_unknown_relu_idx";
+        m_unknown_relu_idx.emplace_back(relu_idx);
+        NGRAPH_INFO << "emplacing back cipher";
+        relu_ciphers.emplace_back(cipher->ciphertext());
       }
+    }
+    // All relu values known
+    if (relu_ciphers.size() == 0) {
+      continue;
     }
 
     auto message_type = MessageType::none;
@@ -1703,6 +1723,10 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
       }
       default:
         break;
+    }
+
+    if (verbose) {
+      NGRAPH_INFO << "Sending relu request size " << relu_ciphers.size();
     }
 
     auto relu_message = TCPMessage(message_type, relu_ciphers);
