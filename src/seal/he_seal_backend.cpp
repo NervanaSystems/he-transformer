@@ -198,21 +198,23 @@ void ngraph::he::HESealBackend::encrypt(
   encode(plaintext, input, complex_packing);
   // No need to encrypt single zero value.
   // TODO: encrypt 0 value!
-  if (input.is_single_value() && input.values()[0] == 0) {
+  /* if (input.is_single_value() && input.values()[0] == 0) {
     NGRAPH_INFO << "Skipping encrypting 0 value";
     output->known_value() = true;
     output->value() = 0;
 
-  } else {
-    m_encryptor->encrypt(plaintext.plaintext(), output->ciphertext());
-  }
+  } else { */
+  m_encryptor->encrypt(plaintext.plaintext(), output->ciphertext());
+  //}
   output->complex_packing() = complex_packing;
+  output->known_value() = false;
 }
 
 void ngraph::he::HESealBackend::decrypt(
     ngraph::he::HEPlaintext& output,
     const ngraph::he::SealCiphertextWrapper& input) const {
   if (input.known_value()) {
+    NGRAPH_INFO << "Decrypting known value " << input.value();
     const size_t slot_count = m_ckks_encoder->slot_count();
     output.values() = std::vector<float>(slot_count, input.value());
   } else {
