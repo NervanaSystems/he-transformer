@@ -73,6 +73,19 @@ python test.py \
 Note, the `STOP_CONST_FOLD` flag will prevent the constant folding graph optimization.
 For large batch sizes, this incurs significant overhead during graph compilation, and doesn't result in much runtime speedup.
 
+  5.a To try on a larger model, call:
+  ```bash
+  STOP_CONST_FOLD=1 \
+  NGRAPH_VOPS=all \
+  NGRAPH_TF_BACKEND=HE_SEAL \
+  python test.py \
+  --image_size=128 \
+  --data_dir=$DATA_DIR \
+  --batch_size=30 \
+  --model=./model/mobilenet_v2_0.35_128_opt.pb \
+  --ngraph=true
+  ```
+
 6. To call inference using encrypted data, run the below command. ***Warning***: this will take ~150GB memory.
 ```bash
 OMP_NUM_THREADS=56 \
@@ -85,6 +98,23 @@ python test.py \
 --ngraph=true \
 --batch_size=2048
 ```
+
+  6a. To try on a lagrer model, call:
+  ```bash
+  STOP_CONST_FOLD=1 \
+  OMP_NUM_THREADS=56 \
+  NGRAPH_VOPS=all \
+  NGRAPH_TF_BACKEND=HE_SEAL \
+  NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
+  NGRAPH_ENCRYPT_DATA=1 \
+  python test.py \
+  --image_size=128 \
+  --data_dir=$DATA_DIR \
+  --ngraph=true \
+  --model=./model/mobilenet_v2_0.35_128_opt.pb \
+  --batch_size=30
+  ```
+
 
 7. To double the throughput using complex packing, run:
 ```bash
