@@ -16,6 +16,7 @@
 
 #include <functional>
 #include <limits>
+#include <unordered_set>
 
 #include "client_util.hpp"
 #include "he_plain_tensor.hpp"
@@ -71,6 +72,7 @@
 #include "ngraph/util.hpp"
 #include "op/bounded_relu.hpp"
 #include "pass/he_fusion.hpp"
+#include "pass/he_liveness.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_executable.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
@@ -123,7 +125,8 @@ ngraph::he::HESealExecutable::HESealExecutable(
   if (std::getenv("STOP_CONST_FOLD") == nullptr) {
     pass_manager.register_pass<ngraph::pass::ConstantFolding>();
   }
-  pass_manager.register_pass<ngraph::pass::Liveness>();
+  // pass_manager.register_pass<ngraph::pass::Liveness>();
+  pass_manager.register_pass<ngraph::he::pass::HELiveness>();
   pass_manager.run_passes(function);
 
   ngraph::pass::Manager pass_manager_he;
@@ -536,10 +539,13 @@ bool ngraph::he::HESealExecutable::call(
         auto plain_input = std::dynamic_pointer_cast<ngraph::he::HEPlainTensor>(
             he_inputs[input_count]);
         NGRAPH_CHECK(plain_input != nullptr, "Input is not plain tensor");
+        std::string name = tv->get_name();
+        NGRAPH_INFO << "Parameter name " << name;
+
         auto cipher_input = std::dynamic_pointer_cast<HESealCipherTensor>(
             m_he_seal_backend.create_cipher_tensor(
                 plain_input->get_element_type(), plain_input->get_shape(),
-                m_batch_data, "server_parameter"));
+                m_batch_data, name));
 
 #pragma omp parallel for
         for (size_t i = 0; i < plain_input->get_batched_element_count(); ++i) {
@@ -664,22 +670,71 @@ bool ngraph::he::HESealExecutable::call(
 
     // delete any obsolete tensors
     for (const descriptor::Tensor* t : op->liveness_free_list) {
+      bool erased = false;
       for (auto it = tensor_map.begin(); it != tensor_map.end(); ++it) {
         // Work-around for t->get_name() address-use after free in
         // HE_SEAL.bounded_relu_fusion test
         // TODO: remove once ngraph commit #2967 has been integrated?
         const std::string& it_name = it->second->get_name();
-        if (it_name == "external") {
+        /* if (it_name == "external") {
+          NGRAPH_INFO << "Skip erasing " << it_name << " from tensor map";
           break;
-        } else if (it_name.substr(0, 11) == "BoundedRelu") {
+        } else */
+        if (it_name.substr(0, 11) == "BoundedRelu") {
+          NGRAPH_INFO << "erasing " << it_name << " from tensor map";
           tensor_map.erase(it);
+          erased = true;
           break;
         } else if (it_name == t->get_name()) {
+          NGRAPH_INFO << "Erasing " << it_name << " from tensor map";
           tensor_map.erase(it);
+          erased = true;
           break;
         }
       }
+      if (!erased) {
+        NGRAPH_INFO << "Failed to erase " << t->get_name()
+                    << " from tensor map";
+      }
     }
+
+    ////// TODO: don't merge below //////
+    // After the add op, clear all tensors in map except results
+    // and add node outputs
+    if (m_mobilenet_hack) {
+      if (ngraph::to_lower(op->description()) == "add") {
+        NGRAPH_INFO << "clearing add inputs";
+
+        /*
+        std::unordered_set<ngraph::descriptor::Tensor*> keep_tensors;
+
+        NGRAPH_CHECK(get_results().size() == 1, "get_results().size() ",
+                     get_results().size(), " != 1");
+
+        auto output = get_results()[0];
+        if (!std::dynamic_pointer_cast<op::Result>(output)) {
+          throw ngraph_error("One of function's outputs isn't op::Result");
+        }
+        ngraph::descriptor::Tensor* result_tensor =
+            output->get_output_tensor_ptr(0).get();
+
+        keep_tensors.insert(result_tensor);
+
+        for (size_t i = 0; i < op->get_output_size(); ++i) {
+          auto tensor = &op->output(i).get_tensor();
+          keep_tensors.insert(tensor);
+        }
+        for (auto it = tensor_map.begin(); it != tensor_map.end(); ++it) {
+          if (keep_tensors.find(it->first) == keep_tensors.end()) {
+            const std::string& it_name = it->second->get_name();
+            NGRAPH_INFO << "erasing " << it_name;
+            tensor_map.erase(it);
+          }
+        } */
+      }
+    }
+    //////// Don't merge above ///////
+
     if (verbose_op(*op)) {
       NGRAPH_INFO << "\033[1;31m" << op->get_name() << " took "
                   << m_timer_map[op].get_milliseconds() << "ms"
@@ -993,6 +1048,7 @@ void ngraph::he::HESealExecutable::generate_calls(
         NGRAPH_WARN << "Performing BoundedRelu without client is not "
                        "privacy-preserving";
         size_t output_size = arg0_cipher->get_batched_element_count();
+
         NGRAPH_CHECK(output_size == arg0_cipher->num_ciphertexts(),
                      "output size ", output_size,
                      " doesn't match number of elements",
