@@ -125,13 +125,18 @@ ngraph::he::HESealExecutable::HESealExecutable(
   if (std::getenv("STOP_CONST_FOLD") == nullptr) {
     pass_manager.register_pass<ngraph::pass::ConstantFolding>();
   }
-  // pass_manager.register_pass<ngraph::pass::Liveness>();
-  pass_manager.register_pass<ngraph::he::pass::HELiveness>();
   pass_manager.run_passes(function);
 
   ngraph::pass::Manager pass_manager_he;
   pass_manager_he.register_pass<ngraph::he::pass::HEFusion>();
+  // Run liveness pass after all other passes (otherwise BoundedRelu nodes won't
+  // have liveness_free_list set)
+  pass_manager_he.register_pass<ngraph::he::pass::HELiveness>();
   pass_manager_he.run_passes(function);
+
+  // HELiveness is a very aggressive optimization pass, removing constant and
+  // parameter node outputs To avoid this, just use the regular Liveness pass
+  // below pass_manager.register_pass<ngraph::pass::Liveness>();
 
   for (const std::shared_ptr<Node>& node : function->get_ordered_ops()) {
     m_wrapped_nodes.emplace_back(node);
@@ -672,20 +677,8 @@ bool ngraph::he::HESealExecutable::call(
     for (const descriptor::Tensor* t : op->liveness_free_list) {
       bool erased = false;
       for (auto it = tensor_map.begin(); it != tensor_map.end(); ++it) {
-        // Work-around for t->get_name() address-use after free in
-        // HE_SEAL.bounded_relu_fusion test
-        // TODO: remove once ngraph commit #2967 has been integrated?
         const std::string& it_name = it->second->get_name();
-        /* if (it_name == "external") {
-          NGRAPH_INFO << "Skip erasing " << it_name << " from tensor map";
-          break;
-        } else */
-        if (it_name.substr(0, 11) == "BoundedRelu") {
-          NGRAPH_INFO << "erasing " << it_name << " from tensor map";
-          tensor_map.erase(it);
-          erased = true;
-          break;
-        } else if (it_name == t->get_name()) {
+        if (it_name == t->get_name()) {
           NGRAPH_INFO << "Erasing " << it_name << " from tensor map";
           tensor_map.erase(it);
           erased = true;
@@ -697,44 +690,6 @@ bool ngraph::he::HESealExecutable::call(
                     << " from tensor map";
       }
     }
-
-    ////// TODO: don't merge below //////
-    // After the add op, clear all tensors in map except results
-    // and add node outputs
-    if (m_mobilenet_hack) {
-      if (ngraph::to_lower(op->description()) == "add") {
-        NGRAPH_INFO << "clearing add inputs";
-
-        /*
-        std::unordered_set<ngraph::descriptor::Tensor*> keep_tensors;
-
-        NGRAPH_CHECK(get_results().size() == 1, "get_results().size() ",
-                     get_results().size(), " != 1");
-
-        auto output = get_results()[0];
-        if (!std::dynamic_pointer_cast<op::Result>(output)) {
-          throw ngraph_error("One of function's outputs isn't op::Result");
-        }
-        ngraph::descriptor::Tensor* result_tensor =
-            output->get_output_tensor_ptr(0).get();
-
-        keep_tensors.insert(result_tensor);
-
-        for (size_t i = 0; i < op->get_output_size(); ++i) {
-          auto tensor = &op->output(i).get_tensor();
-          keep_tensors.insert(tensor);
-        }
-        for (auto it = tensor_map.begin(); it != tensor_map.end(); ++it) {
-          if (keep_tensors.find(it->first) == keep_tensors.end()) {
-            const std::string& it_name = it->second->get_name();
-            NGRAPH_INFO << "erasing " << it_name;
-            tensor_map.erase(it);
-          }
-        } */
-      }
-    }
-    //////// Don't merge above ///////
-
     if (verbose_op(*op)) {
       NGRAPH_INFO << "\033[1;31m" << op->get_name() << " took "
                   << m_timer_map[op].get_milliseconds() << "ms"
