@@ -71,6 +71,7 @@
 #include "ngraph/util.hpp"
 #include "op/bounded_relu.hpp"
 #include "pass/he_fusion.hpp"
+#include "pass/he_liveness.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_executable.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
@@ -123,7 +124,9 @@ ngraph::he::HESealExecutable::HESealExecutable(
   if (std::getenv("STOP_CONST_FOLD") == nullptr) {
     pass_manager.register_pass<ngraph::pass::ConstantFolding>();
   }
-  pass_manager.register_pass<ngraph::pass::Liveness>();
+
+  pass_manager.register_pass<ngraph::he::pass::HELiveness>();
+  // pass_manager.register_pass<ngraph::pass::Liveness>();
   pass_manager.run_passes(function);
 
   ngraph::pass::Manager pass_manager_he;
@@ -659,7 +662,44 @@ bool ngraph::he::HESealExecutable::call(
       base_type = op->get_inputs().at(0).get_tensor().get_element_type();
     }
 
+    // TODO: remove
+    for (const auto& he_tensor : op_inputs) {
+      if (auto input_cipher_tensor =
+              std::dynamic_pointer_cast<HESealCipherTensor>(he_tensor)) {
+        NGRAPH_INFO << "Op input " << input_cipher_tensor->get_name()
+                    << " with " << input_cipher_tensor->num_ciphertexts()
+                    << " elements";
+        if (input_cipher_tensor->num_ciphertexts() > 0) {
+          NGRAPH_INFO << "size "
+                      << ciphertext_size(
+                             input_cipher_tensor->get_element(0)->ciphertext());
+          NGRAPH_INFO << "use count "
+                      << input_cipher_tensor->get_element(0).use_count();
+        }
+      }
+    }
+
     generate_calls(base_type, wrapped, op_outputs, op_inputs);
+
+    // TODO: remove
+    for (const auto& he_tensor : op_outputs) {
+      if (auto output_cipher_tensor =
+              std::dynamic_pointer_cast<HESealCipherTensor>(he_tensor)) {
+        NGRAPH_INFO << "Op output " << output_cipher_tensor->get_name()
+                    << " with " << output_cipher_tensor->num_ciphertexts()
+                    << " elements";
+        if (output_cipher_tensor->num_ciphertexts() > 0) {
+          NGRAPH_INFO << "size "
+                      << ciphertext_size(output_cipher_tensor->get_element(0)
+                                             ->ciphertext());
+          NGRAPH_INFO << "use count "
+                      << output_cipher_tensor->get_element(0).use_count();
+        }
+      }
+    }
+
+    // TODO: remove
+    // std::this_thread::sleep_for(std::chrono::seconds(3));
     m_timer_map[op].stop();
 
     // delete any obsolete tensors
