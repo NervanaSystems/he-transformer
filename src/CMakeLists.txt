@@ -24,7 +24,6 @@ set (HE_SRC
 
     # pass
     pass/he_fusion.cpp
-    pass/he_liveness.cpp
 
     # op
     op/bounded_relu.cpp
