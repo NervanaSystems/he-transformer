@@ -113,7 +113,6 @@ class HESealExecutable : public runtime::Executable {
   bool m_is_compiled;
   bool m_complex_packing;
   bool m_verbose_all_ops;
-  bool m_mobilenet_hack{std::getenv("MOBILENET_HACK") != nullptr};
 
   bool m_enable_client;
   size_t m_batch_size;
