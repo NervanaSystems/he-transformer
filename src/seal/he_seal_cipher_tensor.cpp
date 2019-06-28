@@ -36,8 +36,8 @@ ngraph::he::HESealCipherTensor::HESealCipherTensor(
   }
 
   if (m_num_elements > 0) {
-    NGRAPH_INFO << "Created cipher tensor with " << m_num_elements
-                << " elements, each sized "
+    NGRAPH_INFO << "Created cipher tensor " << name << " with "
+                << m_num_elements << " elements, each sized "
                 << ngraph::he::ciphertext_size(m_ciphertexts[0]->ciphertext());
   }
 }

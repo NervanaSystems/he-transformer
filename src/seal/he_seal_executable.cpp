@@ -304,7 +304,8 @@ void ngraph::he::HESealExecutable::handle_message(
       auto input_tensor =
           std::dynamic_pointer_cast<ngraph::he::HESealCipherTensor>(
               m_he_seal_backend.create_cipher_tensor(
-                  element_type, input_param->get_shape(), m_batch_data));
+                  element_type, input_param->get_shape(), m_batch_data,
+                  "client_parameter"));
 
       std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
           cipher_elements{
@@ -538,7 +539,7 @@ bool ngraph::he::HESealExecutable::call(
         auto cipher_input = std::dynamic_pointer_cast<HESealCipherTensor>(
             m_he_seal_backend.create_cipher_tensor(
                 plain_input->get_element_type(), plain_input->get_shape(),
-                m_batch_data));
+                m_batch_data, "server_parameter"));
 
 #pragma omp parallel for
         for (size_t i = 0; i < plain_input->get_batched_element_count(); ++i) {

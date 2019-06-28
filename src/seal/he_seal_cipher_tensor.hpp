@@ -36,8 +36,8 @@ class HESealCipherTensor : public HETensor {
 
   ~HESealCipherTensor() {
     if (m_num_elements > 0) {
-      NGRAPH_INFO << "Freeing cipher tensor with " << m_num_elements
-                  << " elements, each sized "
+      NGRAPH_INFO << "Freeing cipher tensor " << get_name() << " with "
+                  << m_num_elements << " elements, each sized "
                   << ngraph::he::ciphertext_size(m_ciphertexts[0]->ciphertext())
                   << " with " << m_ciphertexts[0].use_count() << " use count";
     }
