@@ -157,16 +157,6 @@ void ngraph::he::scalar_multiply_seal(
                "mult out is not he_seal_backend.complex_packing()");
 }
 
-void ngraph::he::scalar_multiply_seal(
-    const ngraph::he::HEPlaintext& arg0,
-    ngraph::he::SealCiphertextWrapper& arg1,
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper> out,
-    const element::Type& element_type, const HESealBackend& he_seal_backend,
-    const seal::MemoryPoolHandle& pool) {
-  ngraph::he::scalar_multiply_seal(arg1, arg0, out, element_type,
-                                   he_seal_backend, pool);
-}
-
 void ngraph::he::scalar_multiply_seal(const ngraph::he::HEPlaintext& arg0,
                                       const ngraph::he::HEPlaintext& arg1,
                                       ngraph::he::HEPlaintext& out,

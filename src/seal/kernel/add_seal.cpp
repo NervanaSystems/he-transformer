@@ -107,14 +107,6 @@ void ngraph::he::scalar_add_seal(
   //            << ngraph::he::get_chain_index(*out, he_seal_backend);
 }
 
-void ngraph::he::scalar_add_seal(
-    const HEPlaintext& arg0, ngraph::he::SealCiphertextWrapper& arg1,
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
-    const element::Type& element_type, const HESealBackend& he_seal_backend,
-    const seal::MemoryPoolHandle& pool) {
-  ngraph::he::scalar_add_seal(arg1, arg0, out, element_type, he_seal_backend);
-}
-
 void ngraph::he::scalar_add_seal(const HEPlaintext& arg0,
                                  const HEPlaintext& arg1, HEPlaintext& out,
                                  const element::Type& element_type,

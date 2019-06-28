@@ -40,11 +40,13 @@ void scalar_multiply_seal(
     const element::Type& element_type, const HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
-void scalar_multiply_seal(
+inline void scalar_multiply_seal(
     const HEPlaintext& arg0, SealCiphertextWrapper& arg1,
     std::shared_ptr<SealCiphertextWrapper> out,
     const element::Type& element_type, const HESealBackend& he_seal_backend,
-    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
+    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool()) {
+  scalar_multiply_seal(arg1, arg0, out, element_type, he_seal_backend, pool);
+}
 
 void scalar_multiply_seal(
     const HEPlaintext& arg0, const HEPlaintext& arg1, HEPlaintext& out,
