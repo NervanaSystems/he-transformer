@@ -703,6 +703,12 @@ bool ngraph::he::HESealExecutable::call(
   NGRAPH_INFO << "\033[1;32m"
               << "Total time " << total_time << " (ms) \033[0m";
 
+  NGRAPH_INFO << "Tensor map remnants";
+  for (auto it = tensor_map.begin(); it != tensor_map.end(); ++it) {
+    const std::string& it_name = it->second->get_name();
+    NGRAPH_INFO << "it_name";
+  }
+
   // Send outputs to client.
   if (m_enable_client) {
     NGRAPH_INFO << "Sending outputs to client";
@@ -1003,7 +1009,6 @@ void ngraph::he::HESealExecutable::generate_calls(
         NGRAPH_WARN << "Performing BoundedRelu without client is not "
                        "privacy-preserving";
         size_t output_size = arg0_cipher->get_batched_element_count();
-
         NGRAPH_CHECK(output_size == arg0_cipher->num_ciphertexts(),
                      "output size ", output_size,
                      " doesn't match number of elements",
