@@ -37,11 +37,9 @@ bool ngraph::he::pass::HELiveness::run_on_function(
     shared_ptr<Function> function) {
   list<shared_ptr<Node>> ops = function->get_ordered_ops();
 
-  NGRAPH_INFO << "Running HELiveness pass";
-
   unordered_set<descriptor::Tensor*> persistent_tensors;
   unordered_set<descriptor::Tensor*> output_tensors;
-  // Don't make parameter node persistent?
+  // Don't make parameter node persistent!
   /* for (const shared_ptr<op::Parameter>& node : function->get_parameters()) {
     for (auto& output : node->outputs()) {
       descriptor::Tensor& tensor = output.get_tensor();
@@ -55,7 +53,7 @@ bool ngraph::he::pass::HELiveness::run_on_function(
       output_tensors.insert(&tensor);
     }
   }
-  // Don't make constant nodes persistent?
+  // Don't make constant nodes persistent!
   /*for (const shared_ptr<Node>& node : ops) {
     if (auto constant_node = dynamic_pointer_cast<op::Constant>(node)) {
       for (auto& output : constant_node->outputs()) {
@@ -114,22 +112,5 @@ bool ngraph::he::pass::HELiveness::run_on_function(
     node->liveness_free_list = free_tensor_decls;
     node->liveness_new_list = new_tensor_decls;
   }
-
-  for (auto it = ops.begin(); it != ops.end(); it++) {
-    const shared_ptr<Node>& node = *it;
-
-    std::cout << "node " << node->get_name() << std::endl;
-    std::cout << "\tliveness new list:";
-    for (const auto& elem : node->liveness_new_list) {
-      std::cout << elem->get_name() << " ";
-    }
-    std::cout << std::endl;
-    std::cout << "\tliveness free list:";
-    for (const auto& elem : node->liveness_free_list) {
-      std::cout << elem->get_name() << " ";
-    }
-    std::cout << std::endl;
-  }
-
   return false;
 }

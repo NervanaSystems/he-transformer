@@ -22,6 +22,8 @@ namespace ngraph {
 namespace he {
 namespace pass {
 
+// An aggressive version of Liveness which will delete the parameter node and
+// any constant nodes
 class HELiveness : public ngraph::pass::FunctionPass {
  public:
   bool run_on_function(std::shared_ptr<ngraph::Function>) override;

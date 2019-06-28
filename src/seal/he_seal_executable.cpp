@@ -679,7 +679,7 @@ bool ngraph::he::HESealExecutable::call(
       for (auto it = tensor_map.begin(); it != tensor_map.end(); ++it) {
         const std::string& it_name = it->second->get_name();
         if (it_name == t->get_name()) {
-          NGRAPH_INFO << "Erasing " << it_name << " from tensor map";
+          // NGRAPH_INFO << "Erasing " << it_name << " from tensor map";
           tensor_map.erase(it);
           erased = true;
           break;
@@ -702,12 +702,6 @@ bool ngraph::he::HESealExecutable::call(
   }
   NGRAPH_INFO << "\033[1;32m"
               << "Total time " << total_time << " (ms) \033[0m";
-
-  NGRAPH_INFO << "Tensor map remnants";
-  for (auto it = tensor_map.begin(); it != tensor_map.end(); ++it) {
-    const std::string& it_name = it->second->get_name();
-    NGRAPH_INFO << "it_name";
-  }
 
   // Send outputs to client.
   if (m_enable_client) {
