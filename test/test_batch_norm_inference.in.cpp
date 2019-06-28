@@ -431,12 +431,12 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he_batch) {
   auto orig_ops = orig_f->get_ordered_ops();
   auto new_ops = opt_f->get_ordered_ops();
 
-  auto t_orig_result = he_backend->create_batched_cipher_tensor(
+  auto t_orig_result = he_backend->create_packed_cipher_tensor(
       element::f32, {batch_size, 2, 3, 3});
-  auto t_opt_result = he_backend->create_batched_cipher_tensor(
+  auto t_opt_result = he_backend->create_packed_cipher_tensor(
       element::f32, {batch_size, 2, 3, 3});
   auto t_input =
-      he_backend->create_batched_cipher_tensor(element::f32, shape_input);
+      he_backend->create_packed_cipher_tensor(element::f32, shape_input);
 
   copy_data(t_input, input);
 

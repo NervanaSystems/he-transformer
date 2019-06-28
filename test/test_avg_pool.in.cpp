@@ -124,9 +124,9 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image_batched) {
   auto f = make_shared<Function>(t, ParameterVector{A});
 
   // Create some tensors for input/output
-  auto t_a = he_backend->create_batched_cipher_tensor(element::f32, shape_a);
+  auto t_a = he_backend->create_packed_cipher_tensor(element::f32, shape_a);
   auto t_result =
-      he_backend->create_batched_cipher_tensor(element::f32, shape_r);
+      he_backend->create_packed_cipher_tensor(element::f32, shape_r);
 
   copy_data(t_a, test::NDArray<float, 3>(
                      {{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},

@@ -81,26 +81,19 @@ class HESealBackend : public ngraph::runtime::Backend {
   //
   // Tensor creation
   //
-  std::shared_ptr<runtime::Tensor> create_batched_cipher_tensor(
+  std::shared_ptr<runtime::Tensor> create_packed_cipher_tensor(
       const element::Type& element_type, const Shape& shape);
 
-  std::shared_ptr<runtime::Tensor> create_batched_plain_tensor(
+  std::shared_ptr<runtime::Tensor> create_packed_plain_tensor(
       const element::Type& element_type, const Shape& shape);
 
   std::shared_ptr<runtime::Tensor> create_plain_tensor(
       const element::Type& element_type, const Shape& shape,
-      const bool batched = false) const;
+      const bool packed = false) const;
 
   std::shared_ptr<runtime::Tensor> create_cipher_tensor(
       const element::Type& element_type, const Shape& shape,
-      const bool batched = false) const;
-
-  /// @brief Creates ciphertext Tensor of the same value
-  /// @param value Scalar which to enrypt
-  /// @param element_type Type to encrypt
-  /// @param shape Shape of created Tensor
-  std::shared_ptr<runtime::Tensor> create_valued_cipher_tensor(
-      float value, const element::Type& element_type, const Shape& shape) const;
+      const bool packed = false, const std::string& name = "external") const;
 
   //
   // Cipher/plaintext creation

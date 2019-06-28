@@ -193,10 +193,9 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_batch) {
   auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
-  auto t_a = he_backend->create_batched_plain_tensor(element::f32, shape_a);
+  auto t_a = he_backend->create_packed_plain_tensor(element::f32, shape_a);
   auto t_b = he_backend->create_plain_tensor(element::f32, shape_b);
-  auto t_result =
-      he_backend->create_batched_plain_tensor(element::f32, shape_r);
+  auto t_result = he_backend->create_packed_plain_tensor(element::f32, shape_r);
 
   copy_data(t_a, vector<float>{1, 2, 3});
   copy_data(t_b, vector<float>{4});

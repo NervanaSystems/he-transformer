@@ -109,7 +109,7 @@ std::shared_ptr<ngraph::runtime::Tensor>
 ngraph::he::HESealBackend::create_tensor(const element::Type& element_type,
                                          const Shape& shape) {
   if (batch_data()) {
-    return create_batched_plain_tensor(element_type, shape);
+    return create_packed_plain_tensor(element_type, shape);
   } else {
     return create_plain_tensor(element_type, shape);
   }
@@ -118,37 +118,23 @@ ngraph::he::HESealBackend::create_tensor(const element::Type& element_type,
 std::shared_ptr<ngraph::runtime::Tensor>
 ngraph::he::HESealBackend::create_plain_tensor(
     const element::Type& element_type, const Shape& shape,
-    const bool batched) const {
+    const bool packed) const {
   auto rc = std::make_shared<ngraph::he::HEPlainTensor>(element_type, shape,
-                                                        *this, batched);
+                                                        *this, packed);
   return std::static_pointer_cast<ngraph::runtime::Tensor>(rc);
 }
 
 std::shared_ptr<ngraph::runtime::Tensor>
 ngraph::he::HESealBackend::create_cipher_tensor(
-    const element::Type& element_type, const Shape& shape,
-    const bool batched) const {
+    const element::Type& element_type, const Shape& shape, const bool packed,
+    const std::string& name) const {
   auto rc = std::make_shared<ngraph::he::HESealCipherTensor>(
-      element_type, shape, *this, batched);
+      element_type, shape, *this, packed, name);
   return std::static_pointer_cast<ngraph::runtime::Tensor>(rc);
 }
 
 std::shared_ptr<ngraph::runtime::Tensor>
-ngraph::he::HESealBackend::create_valued_cipher_tensor(
-    float value, const element::Type& element_type, const Shape& shape) const {
-  auto tensor = std::static_pointer_cast<HESealCipherTensor>(
-      create_cipher_tensor(element_type, shape));
-  std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>&
-      cipher_texts = tensor->get_elements();
-#pragma omp parallel for
-  for (size_t i = 0; i < cipher_texts.size(); ++i) {
-    cipher_texts[i] = create_valued_ciphertext(value, element_type);
-  }
-  return tensor;
-}
-
-std::shared_ptr<ngraph::runtime::Tensor>
-ngraph::he::HESealBackend::create_batched_cipher_tensor(
+ngraph::he::HESealBackend::create_packed_cipher_tensor(
     const element::Type& type, const Shape& shape) {
   auto rc = std::make_shared<ngraph::he::HESealCipherTensor>(type, shape, *this,
                                                              true);
@@ -157,8 +143,8 @@ ngraph::he::HESealBackend::create_batched_cipher_tensor(
 }
 
 std::shared_ptr<ngraph::runtime::Tensor>
-ngraph::he::HESealBackend::create_batched_plain_tensor(
-    const element::Type& type, const Shape& shape) {
+ngraph::he::HESealBackend::create_packed_plain_tensor(const element::Type& type,
+                                                      const Shape& shape) {
   auto rc =
       std::make_shared<ngraph::he::HEPlainTensor>(type, shape, *this, true);
   set_batch_data(true);

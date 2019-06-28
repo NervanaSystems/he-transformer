@@ -119,12 +119,12 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_2image_plain_batched) {
                                  ParameterVector{A});
 
   // Create some tensors for input/output
-  auto a = he_backend->create_batched_plain_tensor(element::f32, shape_a);
+  auto a = he_backend->create_packed_plain_tensor(element::f32, shape_a);
   copy_data(
       a, test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
                                   {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
              .get_vector());
-  auto result = he_backend->create_batched_plain_tensor(element::f32, shape_r);
+  auto result = he_backend->create_packed_plain_tensor(element::f32, shape_r);
 
   auto handle = backend->compile(f);
   handle->call_with_validate({result}, {a});
@@ -175,12 +175,12 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_2image_cipher_batched) {
                                  ParameterVector{A});
 
   // Create some tensors for input/output
-  auto a = he_backend->create_batched_cipher_tensor(element::f32, shape_a);
+  auto a = he_backend->create_packed_cipher_tensor(element::f32, shape_a);
   copy_data(
       a, test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
                                   {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
              .get_vector());
-  auto result = he_backend->create_batched_cipher_tensor(element::f32, shape_r);
+  auto result = he_backend->create_packed_cipher_tensor(element::f32, shape_r);
 
   auto handle = backend->compile(f);
   handle->call_with_validate({result}, {a});

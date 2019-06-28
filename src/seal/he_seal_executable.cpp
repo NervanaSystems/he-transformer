@@ -138,7 +138,7 @@ ngraph::he::HESealExecutable::HESealExecutable(
   set_parameters_and_results(*function);
   NGRAPH_INFO << "Parameters size " << get_parameters().size();
 
-  // Constant, for example, cannot be batched
+  // Constant, for example, cannot be packed
   if (get_parameters().size() > 0) {
     const Shape& shape = (get_parameters()[0])->get_shape();
     if (m_batch_data) {
