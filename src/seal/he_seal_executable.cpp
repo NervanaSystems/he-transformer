@@ -132,11 +132,8 @@ ngraph::he::HESealExecutable::HESealExecutable(
   // Run liveness pass after all other passes (otherwise BoundedRelu nodes won't
   // have liveness_free_list set)
   pass_manager_he.register_pass<ngraph::he::pass::HELiveness>();
+  // pass_manager_he.register_pass<ngraph::pass::Liveness>();
   pass_manager_he.run_passes(function);
-
-  // HELiveness is a very aggressive optimization pass, removing constant and
-  // parameter node outputs To avoid this, just use the regular Liveness pass
-  // below pass_manager.register_pass<ngraph::pass::Liveness>();
 
   for (const std::shared_ptr<Node>& node : function->get_ordered_ops()) {
     m_wrapped_nodes.emplace_back(node);
@@ -545,7 +542,6 @@ bool ngraph::he::HESealExecutable::call(
             he_inputs[input_count]);
         NGRAPH_CHECK(plain_input != nullptr, "Input is not plain tensor");
         std::string name = tv->get_name();
-        NGRAPH_INFO << "Parameter name " << name;
 
         auto cipher_input = std::dynamic_pointer_cast<HESealCipherTensor>(
             m_he_seal_backend.create_cipher_tensor(
