@@ -34,8 +34,11 @@ ngraph::he::HESealCipherTensor::HESealCipherTensor(
   for (size_t i = 0; i < m_num_elements; ++i) {
     m_ciphertexts[i] = he_seal_backend.create_empty_ciphertext();
   }
-  NGRAPH_INFO << "Each element is size "
-              << ngraph::he::ciphertext_size(m_ciphertexts[0]->ciphertext());
+
+  if (m_num_elements > 0) {
+    NGRAPH_INFO << "Each element is size "
+                << ngraph::he::ciphertext_size(m_ciphertexts[0]->ciphertext());
+  }
 }
 
 void ngraph::he::HESealCipherTensor::write(const void* source,

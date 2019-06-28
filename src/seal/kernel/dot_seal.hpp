@@ -118,7 +118,7 @@ inline void dot_seal(
     auto arg0_it = std::copy(arg0_projected_coord.begin(),
                              arg0_projected_coord.end(), arg0_coord.begin());
 
-    auto sum = he_seal_backend.create_empty_ciphertext();
+    std::shared_ptr<SealCiphertextWrapper> sum;
     bool first_add = true;
 
     for (const Coordinate& dot_axis_positions : dot_axes_transform) {
@@ -139,7 +139,6 @@ inline void dot_seal(
       scalar_multiply_seal(mult_arg0, mult_arg1, prod, element_type,
                            he_seal_backend, pool);
       if (first_add) {
-        // TODO: std::move(prod)?
         sum = prod;
         first_add = false;
       } else {
@@ -147,7 +146,13 @@ inline void dot_seal(
       }
     }
     // Write the sum back.
-    out[out_index] = sum;
+    if (first_add) {
+      out[out_index] = std::make_shared<SealCiphertextWrapper>();
+      out[out_index]->known_value() = true;
+      out[out_index]->value() = 0;
+    } else {
+      out[out_index] = sum;
+    }
   }
 }
 // End CCC
@@ -242,7 +247,7 @@ inline void dot_seal(
     auto arg0_it = std::copy(arg0_projected_coord.begin(),
                              arg0_projected_coord.end(), arg0_coord.begin());
 
-    auto sum = he_seal_backend.create_empty_ciphertext();
+    std::shared_ptr<SealCiphertextWrapper> sum;
     bool first_add = true;
 
     for (const Coordinate& dot_axis_positions : dot_axes_transform) {
@@ -271,7 +276,13 @@ inline void dot_seal(
       }
     }
     // Write the sum back.
-    out[out_index] = sum;
+    if (first_add) {
+      out[out_index] = std::make_shared<SealCiphertextWrapper>();
+      out[out_index]->known_value() = true;
+      out[out_index]->value() = 0;
+    } else {
+      out[out_index] = sum;
+    }
   }
 }
 
@@ -364,7 +375,7 @@ inline void dot_seal(
     auto arg0_it = std::copy(arg0_projected_coord.begin(),
                              arg0_projected_coord.end(), arg0_coord.begin());
 
-    auto sum = he_seal_backend.create_empty_ciphertext();
+    std::shared_ptr<SealCiphertextWrapper> sum;
     bool first_add = true;
 
     for (const Coordinate& dot_axis_positions : dot_axes_transform) {
@@ -393,7 +404,13 @@ inline void dot_seal(
       }
     }
     // Write the sum back.
-    out[out_index] = sum;
+    if (first_add) {
+      out[out_index] = std::make_shared<SealCiphertextWrapper>();
+      out[out_index]->known_value() = true;
+      out[out_index]->value() = 0;
+    } else {
+      out[out_index] = sum;
+    }
   }
 }
 

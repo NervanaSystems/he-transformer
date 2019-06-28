@@ -342,7 +342,6 @@ inline void convolution_seal(
     CoordinateTransform::Iterator filter_end = filter_transform.end();
 
     std::shared_ptr<SealCiphertextWrapper> sum;
-    // = he_seal_backend.create_empty_ciphertext(pool);
     bool first_add = true;
 
     while (input_it != input_end && filter_it != filter_end) {
