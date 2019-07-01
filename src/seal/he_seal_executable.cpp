@@ -152,7 +152,7 @@ ngraph::he::HESealExecutable::HESealExecutable(
   }
 
   if (m_enable_client) {
-    NGRAPH_INFO << "Setting up client in constructor!";
+    NGRAPH_INFO << "Setting up client in constructor";
     client_setup();
   }
 }

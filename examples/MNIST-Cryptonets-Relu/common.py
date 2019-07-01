@@ -32,18 +32,18 @@ def cryptonets_relu_model(x, mode):
 
     with tf.name_scope('reshape'):
         x_image = tf.reshape(x, [-1, 28, 28, 1])
+        paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]],
+                               name='pad_const')
+        x_image = tf.pad(x_image, paddings)
 
     with tf.name_scope('conv1'):
         W_conv1 = get_variable('W_conv1', [5, 5, 1, 5], mode)
         y = conv2d_stride_2_valid(x_image, W_conv1)
-        # paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]],
-        #                        name='pad_const')
-        #y = tf.pad(y, paddings)
         y = tf.nn.relu(y)
 
     with tf.name_scope('fc1'):
-        y = tf.reshape(y, [-1, 12 * 12 * 5])
-        W_fc1 = get_variable('W_fc1', [12 * 12 * 5, 100], mode)
+        y = tf.reshape(y, [-1, 13 * 13 * 5])
+        W_fc1 = get_variable('W_fc1', [13 * 13 * 5, 100], mode)
         y = tf.matmul(y, W_fc1)
         y = tf.nn.relu(y)
 
