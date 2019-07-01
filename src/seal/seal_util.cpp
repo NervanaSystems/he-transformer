@@ -317,7 +317,6 @@ void ngraph::he::multiply_plain_inplace(seal::Ciphertext& encrypted,
   double scale = encrypted.scale();
   ngraph::he::encode(value, scale, encrypted.parms_id(), plaintext_vals,
                      he_seal_backend);
-
   double new_scale = scale * scale;
   // Check that scale is positive and not too large
   if (new_scale <= 0 || (static_cast<int>(log2(new_scale)) >=

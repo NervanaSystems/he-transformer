@@ -215,7 +215,7 @@ inline void convolution_seal(
           sum = prod;
           first_add = false;
         } else {
-          ngraph::he::scalar_add_seal(*sum, *prod, sum, element_type,
+          ngraph::he::scalar_add_seal(*prod, *sum, sum, element_type,
                                       he_seal_backend, pool);
         }
       }
@@ -362,12 +362,11 @@ inline void convolution_seal(
 
         ngraph::he::scalar_multiply_seal(*mult_arg0, mult_arg1, prod,
                                          element_type, he_seal_backend, pool);
-        // NGRAPH_INFO << "prod use count " << prod.use_count();
         if (first_add) {
           sum = prod;
           first_add = false;
         } else {
-          ngraph::he::scalar_add_seal(*sum, *prod, sum, element_type,
+          ngraph::he::scalar_add_seal(*prod, *sum, sum, element_type,
                                       he_seal_backend, pool);
         }
       }
@@ -513,13 +512,13 @@ inline void convolution_seal(
         auto mult_arg1 = arg1[filter_transform.index(filter_coord)];
         auto prod = he_seal_backend.create_empty_ciphertext(pool);
 
-        ngraph::he::scalar_multiply_seal(mult_arg0, *mult_arg1, prod,
+        ngraph::he::scalar_multiply_seal(*mult_arg1, mult_arg0, prod,
                                          element_type, he_seal_backend, pool);
         if (first_add) {
           sum = prod;
           first_add = false;
         } else {
-          ngraph::he::scalar_add_seal(*sum, *prod, sum, element_type,
+          ngraph::he::scalar_add_seal(*prod, *sum, sum, element_type,
                                       he_seal_backend, pool);
         }
       }
@@ -665,7 +664,7 @@ inline void convolution_seal(
           sum = prod;
           first_add = false;
         } else {
-          ngraph::he::scalar_add_seal(sum, prod, sum, element_type,
+          ngraph::he::scalar_add_seal(prod, sum, sum, element_type,
                                       he_seal_backend);
         }
       }

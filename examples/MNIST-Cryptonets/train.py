@@ -92,6 +92,9 @@ def cryptonets_train(x):
     # are grayscale -- it would be 3 for an RGB image, 4 for RGBA, etc.
     with tf.name_scope('reshape'):
         x_image = tf.reshape(x, [-1, 28, 28, 1])
+        paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]],
+                               name='pad_const')
+        x_image = tf.pad(x_image, paddings)
 
     # First conv layer
     # CryptoNets's output of the first conv layer has feature map size 13 x 13,
@@ -162,7 +165,7 @@ def main(_):
     y_ = tf.placeholder(tf.float32, [None, 10])
 
     # Build the graph for the deep net
-    y_conv = cryptonets_train(x)
+    y_conv = common.cryptonets_model(x, 'train')
 
     with tf.name_scope('loss'):
         cross_entropy = tf.nn.softmax_cross_entropy_with_logits(

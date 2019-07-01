@@ -142,7 +142,7 @@ inline void dot_seal(
         sum = prod;
         first_add = false;
       } else {
-        scalar_add_seal(*sum, *prod, sum, element_type, he_seal_backend, pool);
+        scalar_add_seal(*prod, *sum, sum, element_type, he_seal_backend, pool);
       }
     }
     // Write the sum back.
@@ -400,7 +400,7 @@ inline void dot_seal(
         sum = prod;
         first_add = false;
       } else {
-        scalar_add_seal(*sum, *prod, sum, element_type, he_seal_backend, pool);
+        scalar_add_seal(*prod, *sum, sum, element_type, he_seal_backend, pool);
       }
     }
     // Write the sum back.
@@ -529,7 +529,7 @@ inline void dot_seal(const std::vector<HEPlaintext>& arg0,
         sum = prod;
         first_add = false;
       } else {
-        scalar_add_seal(sum, prod, sum, element_type, he_seal_backend, pool);
+        scalar_add_seal(prod, sum, sum, element_type, he_seal_backend, pool);
       }
     }
     // Write the sum back.

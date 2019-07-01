@@ -108,49 +108,48 @@ void ngraph::he::scalar_multiply_seal(
                   [](float f) { return std::abs(f) < 1e-5f; })) {
     out->known_value() = true;
     out->value() = 0;
+  } else if (arg1.is_single_value()) {
+    float value = arg1.values()[0];
+    double double_val = double(value);
+
+    multiply_plain(arg0.ciphertext(), double_val, out->ciphertext(),
+                   he_seal_backend, pool);
+
+    if (out->ciphertext().is_transparent()) {
+      NGRAPH_WARN << "Result ciphertext is transparent";
+      out->value() = 0;
+    }
+    out->known_value() = out->ciphertext().is_transparent();
+
+    if (he_seal_backend.naive_rescaling()) {
+      he_seal_backend.get_evaluator()->rescale_to_next_inplace(
+          out->ciphertext(), pool);
+    }
   } else {
-    out->known_value() = false;
-    if (arg1.is_single_value()) {
-      float value = arg1.values()[0];
-      double double_val = double(value);
-      multiply_plain(arg0.ciphertext(), double_val, out->ciphertext(),
-                     he_seal_backend, pool);
+    // Never complex-pack for multiplication
+    auto p = SealPlaintextWrapper(false);
+    he_seal_backend.encode(p, arg1, arg0.ciphertext().parms_id(),
+                           arg0.ciphertext().scale(), false);
 
-      if (out->ciphertext().is_transparent()) {
-        NGRAPH_WARN << "Result ciphertext is transparent";
-        out->known_value() = true;
-        out->value() = 0;
-      }
+    size_t chain_ind0 = get_chain_index(arg0, he_seal_backend);
+    size_t chain_ind1 = get_chain_index(p.plaintext(), he_seal_backend);
 
-      if (he_seal_backend.naive_rescaling()) {
-        he_seal_backend.get_evaluator()->rescale_to_next_inplace(
-            out->ciphertext(), pool);
-      }
-    } else {
-      // Never complex-pack for multiplication
-      auto p = SealPlaintextWrapper(false);
-      he_seal_backend.encode(p, arg1, arg0.ciphertext().parms_id(),
-                             arg0.ciphertext().scale(), false);
+    NGRAPH_CHECK(chain_ind0 == chain_ind1, "Chain_ind0 ", chain_ind0,
+                 " != chain_ind1 ", chain_ind1);
+    NGRAPH_CHECK(chain_ind0 > 0, "Multiplicative depth exceeded for arg0");
+    NGRAPH_CHECK(chain_ind1 > 0, "Multiplicative depth exceeded for arg1");
 
-      size_t chain_ind0 = get_chain_index(arg0, he_seal_backend);
-      size_t chain_ind1 = get_chain_index(p.plaintext(), he_seal_backend);
-
-      NGRAPH_CHECK(chain_ind0 == chain_ind1, "Chain_ind0 ", chain_ind0,
-                   " != chain_ind1 ", chain_ind1);
-      NGRAPH_CHECK(chain_ind0 > 0, "Multiplicative depth exceeded for arg0");
-      NGRAPH_CHECK(chain_ind1 > 0, "Multiplicative depth exceeded for arg1");
-
-      try {
-        he_seal_backend.get_evaluator()->multiply_plain(
-            arg0.ciphertext(), p.plaintext(), out->ciphertext(), pool);
-      } catch (const std::exception& e) {
-        NGRAPH_INFO << "Error multiplying plain " << e.what();
-        NGRAPH_INFO << "arg1->values().size() " << arg1.num_values();
-        for (const auto& elem : arg1.values()) {
-          NGRAPH_INFO << elem;
-        }
+    try {
+      he_seal_backend.get_evaluator()->multiply_plain(
+          arg0.ciphertext(), p.plaintext(), out->ciphertext(), pool);
+    } catch (const std::exception& e) {
+      NGRAPH_INFO << "Error multiplying plain " << e.what();
+      NGRAPH_INFO << "arg1->values().size() " << arg1.num_values();
+      for (const auto& elem : arg1.values()) {
+        NGRAPH_INFO << elem;
       }
     }
+    out->known_value() = false;
   }
   out->complex_packing() = arg0.complex_packing();
   NGRAPH_CHECK(out->complex_packing() == he_seal_backend.complex_packing(),
