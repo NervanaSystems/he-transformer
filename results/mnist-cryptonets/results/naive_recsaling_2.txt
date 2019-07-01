@@ -4,17 +4,21 @@
 |   poly_modulus_degree: 8192
 |   coeff_modulus size: 180 (30 + 24 + 24 + 24 + 24 + 24 + 30) bits
 \
-[INFO] 2019-06-24T22:26:37z src/seal/he_seal_backend.cpp 84	Scale 1.67608e+07
-[INFO] 2019-06-24T22:26:37z src/seal/he_seal_executable.cpp 464	Encrypting data
-[INFO] 2019-06-24T22:26:37z src/seal/he_seal_executable.cpp 467	Batching data with batch size 4096
-[INFO] 2019-06-24T22:26:37z src/seal/he_seal_executable.cpp 484	Processing server inputs
-[INFO] 2019-06-24T22:26:37z src/seal/he_seal_executable.cpp 509	Encrypting parameter 0
-[INFO] 2019-06-24T22:26:44z src/seal/he_seal_executable.cpp 524	Done encrypting parameter
-[INFO] 2019-06-24T22:30:44z src/seal/he_seal_executable.cpp 668	[1;32mTotal time 239907 (ms) [0m
 Extracting /tmp/tensorflow/mnist/input_data/train-images-idx3-ubyte.gz
 Extracting /tmp/tensorflow/mnist/input_data/train-labels-idx1-ubyte.gz
 Extracting /tmp/tensorflow/mnist/input_data/t10k-images-idx3-ubyte.gz
 Extracting /tmp/tensorflow/mnist/input_data/t10k-labels-idx1-ubyte.gz
-total time(s) 247.026
-Error count 109 of 4096 elements.
-Accuracy with squash: 0.973389 
+total time(s) 286.489
+Error count: 57 of 4096 elements.
+Accuracy:  0.986083984375
+[INFO] 2019-07-01T19:13:03z src/seal/he_seal_backend.cpp 84	Scale 1.67608e+07
+[INFO] 2019-07-01T19:13:03z src/seal/he_seal_executable.cpp 142	Setting parameters and results
+[INFO] 2019-07-01T19:13:03z src/seal/he_seal_executable.cpp 144	Parameters size 1
+[INFO] 2019-07-01T19:13:03z src/seal/he_seal_executable.cpp 476	Perfoming call
+[INFO] 2019-07-01T19:13:03z src/seal/he_seal_executable.cpp 478	Done validating against server inputs
+[INFO] 2019-07-01T19:13:03z src/seal/he_seal_executable.cpp 495	Encrypting data
+[INFO] 2019-07-01T19:13:03z src/seal/he_seal_executable.cpp 498	Batching data with batch size 4096
+[INFO] 2019-07-01T19:13:03z src/seal/he_seal_executable.cpp 515	Processing server inputs
+[INFO] 2019-07-01T19:13:03z src/seal/he_seal_executable.cpp 540	Encrypting parameter 0
+[INFO] 2019-07-01T19:13:09z src/seal/he_seal_executable.cpp 557	Done encrypting parameter
+[INFO] 2019-07-01T19:17:49z src/seal/he_seal_executable.cpp 699	[1;32mTotal time 280294 (ms) [0m
