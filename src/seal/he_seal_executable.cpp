@@ -387,9 +387,6 @@ void ngraph::he::HESealExecutable::handle_message(
     size_t element_count = message.count();
     size_t element_size = message.element_size();
 
-    // std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
-    //     new_relu_ciphers(element_count);
-
 #pragma omp parallel for
     for (size_t element_idx = 0; element_idx < element_count; ++element_idx) {
       seal::Ciphertext cipher;
@@ -403,10 +400,6 @@ void ngraph::he::HESealExecutable::handle_message(
 
       m_relu_ciphertexts[m_unknown_relu_idx[element_idx]] = new_cipher;
     }
-
-    // m_relu_ciphertexts.insert(m_relu_ciphertexts.end(),
-    //                           new_relu_ciphers.begin(),
-    //                           new_relu_ciphers.end());
 
     // Notify condition variable
     m_relu_done = true;
