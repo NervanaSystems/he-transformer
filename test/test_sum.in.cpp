@@ -47,11 +47,11 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_trivial) {
     auto t_a = inputs[0];
     auto t_result = results[0];
 
-    copy_data(t_a, vector<float>{1, 2, 3, 4});
+    copy_data(t_a, vector<float>{1.f, 2.f, 3.f, 4.f});
     auto handle = backend->compile(f);
     handle->call_with_validate({t_result}, {t_a});
-    EXPECT_TRUE(
-        all_close((vector<float>{1, 2, 3, 4}), read_vector<float>(t_result)));
+    EXPECT_TRUE(all_close((vector<float>{1.f, 2.f, 3.f, 4.f}),
+                          read_vector<float>(t_result)));
   }
 }
 
@@ -75,9 +75,9 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_trivial_5d) {
     auto t_a = inputs[0];
     auto t_result = results[0];
 
-    copy_data(t_a,
-              vector<float>{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1});
+    copy_data(
+        t_a, vector<float>{1.f, 1.f, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                           1.f, 1,   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1});
     auto handle = backend->compile(f);
     handle->call_with_validate({t_result}, {t_a});
     EXPECT_TRUE(all_close(
