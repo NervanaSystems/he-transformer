@@ -17,43 +17,12 @@
 import tensorflow as tf
 import numpy as np
 
+#from ..mnist_util import get_variable
 
-def load_mnist_data():
-    """Returns MNIST data in one-hot form"""
-    mnist = tf.keras.datasets.mnist
-    (x_train, y_train), (x_test, y_test) = mnist.load_data()
-
-    with tf.compat.v1.Session() as sess:
-        y_test = tf.one_hot(y_test, 10).eval()
-        y_train = tf.one_hot(y_train, 10).eval()
-
-    x_train = np.expand_dims(x_train, axis=-1)
-    x_test = np.expand_dims(x_test, axis=-1)
-
-    return (x_train, y_train, x_test, y_test)
-
-
-def conv2d_stride_2_valid(x, W, name=None):
-    """returns a 2d convolution layer with stride 2, valid pooling"""
-    return tf.nn.conv2d(x, W, strides=[1, 2, 2, 1], padding='VALID')
-
-
-def avg_pool_3x3_same_size(x):
-    """3x3 avg_pool using same padding, keeping original feature map size"""
-    return tf.nn.avg_pool2d(
-        x, ksize=[1, 3, 3, 1], strides=[1, 1, 1, 1], padding='SAME')
-
-
-def get_variable(name, shape, mode):
-    if mode not in set(['train', 'test']):
-        print('mode should be train or test')
-        raise Exception()
-
-    if mode == 'train':
-        return tf.compat.v1.get_variable(name, shape)
-    else:
-        return tf.constant(
-            np.loadtxt(name + '.txt', dtype=np.float32).reshape(shape))
+#from mnist_util import \
+#    conv2d_stride_2_valid, \
+#    avg_pool_3x3_same_size, \
+#    get_variable
 
 
 def cryptonets_model(x, mode):

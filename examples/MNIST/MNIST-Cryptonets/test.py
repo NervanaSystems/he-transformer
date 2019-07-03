@@ -30,6 +30,8 @@ import tensorflow as tf
 import common
 import ngraph_bridge
 
+from MNIST import mnist_util
+
 import os
 FLAGS = None
 
@@ -40,20 +42,20 @@ def cryptonets_test_squashed(x):
     paddings = [[0, 0], [0, 1], [0, 1], [0, 0]]
     x = tf.pad(x, paddings)
 
-    W_conv1 = common.get_variable('W_conv1', [5, 5, 1, 5], 'test')
-    y = common.conv2d_stride_2_valid(x, W_conv1)
+    W_conv1 = get_variable('W_conv1', [5, 5, 1, 5], 'test')
+    y = conv2d_stride_2_valid(x, W_conv1)
     y = tf.square(y)
-    W_squash = common.get_variable('W_squash', [5 * 13 * 13, 100], 'test')
+    W_squash = get_variable('W_squash', [5 * 13 * 13, 100], 'test')
     y = tf.reshape(y, [-1, 5 * 13 * 13])
     y = tf.matmul(y, W_squash)
     y = tf.square(y)
-    W_fc2 = common.get_variable('W_fc2', [100, 10], 'test')
+    W_fc2 = get_variable('W_fc2', [100, 10], 'test')
     y = tf.matmul(y, W_fc2)
     return y
 
 
 def test_mnist_cnn(FLAGS):
-    (x_train, y_train, x_test, y_test) = common.load_mnist_data()
+    (x_train, y_train, x_test, y_test) = load_mnist_data()
 
     x = tf.compat.v1.placeholder(tf.float32, [None, 28, 28, 1])
     y_ = tf.compat.v1.placeholder(tf.float32, [None, 10])
