@@ -22,7 +22,7 @@
 void ngraph::he::scalar_multiply_seal(
     ngraph::he::SealCiphertextWrapper& arg0,
     ngraph::he::SealCiphertextWrapper& arg1,
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper> out,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type, const HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
   if (arg0.known_value() && arg1.known_value()) {
@@ -82,7 +82,7 @@ void ngraph::he::scalar_multiply_seal(
 void ngraph::he::scalar_multiply_seal(
     ngraph::he::SealCiphertextWrapper& arg0,
     const ngraph::he::HEPlaintext& arg1,
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper> out,
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type, const HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
   NGRAPH_CHECK(element_type == element::f32, "Element type ", element_type,
