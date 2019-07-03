@@ -158,15 +158,10 @@ ngraph::he::HESealExecutable::HESealExecutable(
 }
 
 void ngraph::he::HESealExecutable::check_client_supports_function() {
-  NGRAPH_INFO << "check_client_supports_function";
-  NGRAPH_INFO << "get_parameters " << get_parameters().size();
-  NGRAPH_INFO << "Gettting parameters";
-
   NGRAPH_CHECK(get_parameters().size() == 1,
                "HESealExecutable only supports parameter size 1 (got ",
                get_parameters().size(), ")");
 
-  NGRAPH_INFO << "Gettting results";
   // only support function output size 1 for now
   NGRAPH_CHECK(get_results().size() == 1,
                "HESealExecutable only supports output size 1 (got ",
@@ -191,7 +186,6 @@ void ngraph::he::HESealExecutable::client_setup() {
                                     std::move(param_stream));
 
     std::unique_lock<std::mutex> mlock(m_session_mutex);
-    // m_session_cond.wait(mlock, [this] { return m_session_started; });
     m_session_cond.wait(mlock,
                         std::bind(&HESealExecutable::session_started, this));
     m_session->do_write(std::move(parms_message));
@@ -219,9 +213,7 @@ void ngraph::he::HESealExecutable::accept_connection() {
 
       std::lock_guard<std::mutex> guard(m_session_mutex);
       m_session_started = true;
-      NGRAPH_INFO << "Notifying that session has started";
       m_session_cond.notify_one();
-      NGRAPH_INFO << "done Notifying that session has started";
     } else {
       NGRAPH_INFO << "error accepting connection " << ec.message();
       // accept_connection();
@@ -332,11 +324,9 @@ void ngraph::he::HESealExecutable::handle_message(
                  "Client inputs size ", m_client_inputs.size(), "; expected ",
                  get_parameters().size());
 
-    NGRAPH_INFO << "Locking m_client_inputs_mutex";
     std::lock_guard<std::mutex> guard(m_client_inputs_mutex);
     m_client_inputs_received = true;
     m_client_inputs_cond.notify_all();
-    NGRAPH_INFO << "Notified m_client_inpuds received";
 
   } else if (msg_type == MessageType::public_key) {
     seal::PublicKey key;
@@ -466,9 +456,7 @@ ngraph::he::HESealExecutable::get_performance_data() const {
 bool ngraph::he::HESealExecutable::call(
     const std::vector<std::shared_ptr<runtime::Tensor>>& outputs,
     const std::vector<std::shared_ptr<runtime::Tensor>>& server_inputs) {
-  NGRAPH_INFO << "Perfoming call";
   validate(outputs, server_inputs);
-  NGRAPH_INFO << "Done validating against server inputs";
 
   if (m_enable_client) {
     NGRAPH_INFO << "Waiting until m_client_inputs.size() == "
@@ -604,7 +592,6 @@ bool ngraph::he::HESealExecutable::call(
     }
 
     // get op outputs from map or create
-    NGRAPH_DEBUG << "Getting op outputs from map";
     std::vector<std::shared_ptr<ngraph::he::HETensor>> op_outputs;
     for (size_t i = 0; i < op->get_output_size(); ++i) {
       auto tensor = &op->output(i).get_tensor();
@@ -724,7 +711,7 @@ bool ngraph::he::HESealExecutable::call(
 
     // TODO: more sophisticated way of doing this
     while (m_session->is_writing()) {
-      NGRAPH_INFO << "m_is_writing";
+      NGRAPH_INFO << "Waiting until results are written to client";
       sleep(1);
     }
   }
