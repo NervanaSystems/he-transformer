@@ -25,7 +25,6 @@ def get_variable(name, shape, mode):
             np.loadtxt(name + '.txt', dtype=np.float32).reshape(shape))
 
 
-# 98.04% accuracy
 def cryptonets_relu_model(x, mode):
     if mode not in set(['train', 'test']):
         print('mode should be train or test')
