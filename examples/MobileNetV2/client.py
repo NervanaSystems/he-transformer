@@ -54,7 +54,6 @@ def read_pb_file(filename):
     graph_def.ParseFromString(f.read())
     sess.graph.as_default()
     tf.import_graph_def(graph_def, name='')
-
     return graph_def
 
 
@@ -78,15 +77,9 @@ def main(FLAGS):
     validation_nums = get_validation_labels(FLAGS)
     x_test = get_validation_images(FLAGS)
     validation_labels = imagenet_inference_labels[validation_nums]
-    print('validation_labels', validation_labels)
 
-    preds = np.array([['water snake', 'dogsled'], ['beaver', 'bighorn'],
-                      ['platypus', 'alp'], ['leatherback turtle', 'ski'],
-                      ['sea snake', 'snowplow']])
-    print('preds', preds)
-    preds = preds.T
-
-    util.accuracy(preds, validation_labels)
+    if FLAGS.batch_size < 10:
+        print('validation_labels', validation_labels)
 
     (batch_size, width, height, channels) = x_test.shape
     print('batch_size', batch_size)
@@ -94,22 +87,11 @@ def main(FLAGS):
     print('height', height)
     print('channels', channels)
 
-    # Reshape to expected format
-    # TODO: more efficient
-    print('flattening x_test')
-    x_test_flat = []
-    for width_idx in range(width):
-        for height_idx in range(height):
-            for channel_idx in range(channels):
-                for image_idx in range(batch_size):
-                    # TODO: use image_idx
-                    x_test_flat.append(
-                        x_test[image_idx][width_idx][height_idx][channel_idx])
-    print('done flattening x_test')
-
+    # Reshape to expected format (batch axies innermost)
+    x_test = np.moveaxis(x_test, 0, -1)
+    x_test_flat = x_test.flatten(order='C"')
     hostname = 'localhost'
     port = 34000
-
     client = he_seal_client.HESealClient(hostname, port, batch_size,
                                          x_test_flat)
 
@@ -142,11 +124,6 @@ def main(FLAGS):
     preds = imagenet_labels[top5]
     print('validation_labels', validation_labels)
     print('top5', preds)
-
-    preds = np.array([['water snake', 'dogsled'], ['beaver', 'bighorn'],
-                      ['platypus', 'alp'], ['leatherback turtle', 'ski'],
-                      ['sea snake', 'snowplow']])
-    print('preds', preds)
 
     util.accuracy(preds, validation_labels)
 

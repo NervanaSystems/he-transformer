@@ -215,7 +215,7 @@ inline void convolution_seal(
           sum = prod;
           first_add = false;
         } else {
-          ngraph::he::scalar_add_seal(*sum, *prod, sum, element_type,
+          ngraph::he::scalar_add_seal(*prod, *sum, sum, element_type,
                                       he_seal_backend, pool);
         }
       }
@@ -223,8 +223,9 @@ inline void convolution_seal(
       ++filter_it;
     }
     if (first_add) {
-      out[out_coord_idx] =
-          he_seal_backend.create_valued_ciphertext(0.f, element_type);
+      out[out_coord_idx] = std::make_shared<SealCiphertextWrapper>();
+      out[out_coord_idx]->known_value() = true;
+      out[out_coord_idx]->value() = 0;
     } else {
       // Write the sum back.
       out[out_coord_idx] = sum;
@@ -340,7 +341,7 @@ inline void convolution_seal(
     CoordinateTransform::Iterator input_end = input_batch_transform.end();
     CoordinateTransform::Iterator filter_end = filter_transform.end();
 
-    auto sum = he_seal_backend.create_empty_ciphertext(pool);
+    std::shared_ptr<SealCiphertextWrapper> sum;
     bool first_add = true;
 
     while (input_it != input_end && filter_it != filter_end) {
@@ -365,7 +366,7 @@ inline void convolution_seal(
           sum = prod;
           first_add = false;
         } else {
-          ngraph::he::scalar_add_seal(*sum, *prod, sum, element_type,
+          ngraph::he::scalar_add_seal(*prod, *sum, sum, element_type,
                                       he_seal_backend, pool);
         }
       }
@@ -373,8 +374,9 @@ inline void convolution_seal(
       ++filter_it;
     }
     if (first_add) {
-      out[out_coord_idx] =
-          he_seal_backend.create_valued_ciphertext(0.f, element_type);
+      out[out_coord_idx] = std::make_shared<SealCiphertextWrapper>();
+      out[out_coord_idx]->known_value() = true;
+      out[out_coord_idx]->value() = 0;
     } else {
       // Write the sum back.
       out[out_coord_idx] = sum;
@@ -510,13 +512,13 @@ inline void convolution_seal(
         auto mult_arg1 = arg1[filter_transform.index(filter_coord)];
         auto prod = he_seal_backend.create_empty_ciphertext(pool);
 
-        ngraph::he::scalar_multiply_seal(mult_arg0, *mult_arg1, prod,
+        ngraph::he::scalar_multiply_seal(*mult_arg1, mult_arg0, prod,
                                          element_type, he_seal_backend, pool);
         if (first_add) {
           sum = prod;
           first_add = false;
         } else {
-          ngraph::he::scalar_add_seal(*sum, *prod, sum, element_type,
+          ngraph::he::scalar_add_seal(*prod, *sum, sum, element_type,
                                       he_seal_backend, pool);
         }
       }
@@ -524,8 +526,9 @@ inline void convolution_seal(
       ++filter_it;
     }
     if (first_add) {
-      out[out_coord_idx] =
-          he_seal_backend.create_valued_ciphertext(0.f, element_type);
+      out[out_coord_idx] = std::make_shared<SealCiphertextWrapper>();
+      out[out_coord_idx]->known_value() = true;
+      out[out_coord_idx]->value() = 0;
     } else {
       // Write the sum back.
       out[out_coord_idx] = sum;
@@ -661,7 +664,7 @@ inline void convolution_seal(
           sum = prod;
           first_add = false;
         } else {
-          ngraph::he::scalar_add_seal(sum, prod, sum, element_type,
+          ngraph::he::scalar_add_seal(prod, sum, sum, element_type,
                                       he_seal_backend);
         }
       }

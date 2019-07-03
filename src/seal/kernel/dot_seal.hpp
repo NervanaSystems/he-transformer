@@ -118,7 +118,7 @@ inline void dot_seal(
     auto arg0_it = std::copy(arg0_projected_coord.begin(),
                              arg0_projected_coord.end(), arg0_coord.begin());
 
-    auto sum = he_seal_backend.create_empty_ciphertext();
+    std::shared_ptr<SealCiphertextWrapper> sum;
     bool first_add = true;
 
     for (const Coordinate& dot_axis_positions : dot_axes_transform) {
@@ -139,15 +139,20 @@ inline void dot_seal(
       scalar_multiply_seal(mult_arg0, mult_arg1, prod, element_type,
                            he_seal_backend, pool);
       if (first_add) {
-        // TODO: std::move(prod)?
         sum = prod;
         first_add = false;
       } else {
-        scalar_add_seal(*sum, *prod, sum, element_type, he_seal_backend, pool);
+        scalar_add_seal(*prod, *sum, sum, element_type, he_seal_backend, pool);
       }
     }
     // Write the sum back.
-    out[out_index] = sum;
+    if (first_add) {
+      out[out_index] = std::make_shared<SealCiphertextWrapper>();
+      out[out_index]->known_value() = true;
+      out[out_index]->value() = 0;
+    } else {
+      out[out_index] = sum;
+    }
   }
 }
 // End CCC
@@ -242,7 +247,7 @@ inline void dot_seal(
     auto arg0_it = std::copy(arg0_projected_coord.begin(),
                              arg0_projected_coord.end(), arg0_coord.begin());
 
-    auto sum = he_seal_backend.create_empty_ciphertext();
+    std::shared_ptr<SealCiphertextWrapper> sum;
     bool first_add = true;
 
     for (const Coordinate& dot_axis_positions : dot_axes_transform) {
@@ -271,7 +276,13 @@ inline void dot_seal(
       }
     }
     // Write the sum back.
-    out[out_index] = sum;
+    if (first_add) {
+      out[out_index] = std::make_shared<SealCiphertextWrapper>();
+      out[out_index]->known_value() = true;
+      out[out_index]->value() = 0;
+    } else {
+      out[out_index] = sum;
+    }
   }
 }
 
@@ -364,7 +375,7 @@ inline void dot_seal(
     auto arg0_it = std::copy(arg0_projected_coord.begin(),
                              arg0_projected_coord.end(), arg0_coord.begin());
 
-    auto sum = he_seal_backend.create_empty_ciphertext();
+    std::shared_ptr<SealCiphertextWrapper> sum;
     bool first_add = true;
 
     for (const Coordinate& dot_axis_positions : dot_axes_transform) {
@@ -389,11 +400,17 @@ inline void dot_seal(
         sum = prod;
         first_add = false;
       } else {
-        scalar_add_seal(*sum, *prod, sum, element_type, he_seal_backend, pool);
+        scalar_add_seal(*prod, *sum, sum, element_type, he_seal_backend, pool);
       }
     }
     // Write the sum back.
-    out[out_index] = sum;
+    if (first_add) {
+      out[out_index] = std::make_shared<SealCiphertextWrapper>();
+      out[out_index]->known_value() = true;
+      out[out_index]->value() = 0;
+    } else {
+      out[out_index] = sum;
+    }
   }
 }
 
@@ -506,13 +523,12 @@ inline void dot_seal(const std::vector<HEPlaintext>& arg0,
       auto mult_arg1 = arg1[arg1_transform.index(arg1_coord)];
       auto prod = HEPlaintext();
       scalar_multiply_seal(mult_arg0, mult_arg1, prod, element_type,
-                           he_seal_backend, pool);
+                           he_seal_backend);
       if (first_add) {
-        // TODO: std::move(prod)?
         sum = prod;
         first_add = false;
       } else {
-        scalar_add_seal(sum, prod, sum, element_type, he_seal_backend, pool);
+        scalar_add_seal(prod, sum, sum, element_type, he_seal_backend);
       }
     }
     // Write the sum back.

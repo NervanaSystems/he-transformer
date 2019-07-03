@@ -68,7 +68,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_1image) {
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_batch_data(false);
+  he_backend->set_pack_data(false);
 
   Shape shape_a{2, 1, 14};
   Shape window_shape{3};
@@ -124,9 +124,9 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image_batched) {
   auto f = make_shared<Function>(t, ParameterVector{A});
 
   // Create some tensors for input/output
-  auto t_a = he_backend->create_batched_cipher_tensor(element::f32, shape_a);
+  auto t_a = he_backend->create_packed_cipher_tensor(element::f32, shape_a);
   auto t_result =
-      he_backend->create_batched_cipher_tensor(element::f32, shape_r);
+      he_backend->create_packed_cipher_tensor(element::f32, shape_r);
 
   copy_data(t_a, test::NDArray<float, 3>(
                      {{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
@@ -149,7 +149,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image_batched) {
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_2channel_2image) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_batch_data(false);
+  he_backend->set_pack_data(false);
 
   Shape shape_a{2, 2, 14};
   Shape window_shape{3};
@@ -204,7 +204,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_2channel_2image) {
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_batch_data(false);
+  he_backend->set_pack_data(false);
 
   Shape shape_a{2, 2, 5, 5};
   Shape window_shape{2, 3};

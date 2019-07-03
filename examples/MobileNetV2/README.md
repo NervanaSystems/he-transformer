@@ -7,7 +7,7 @@ Runtime will be very slow without many cores.
 See here: https://github.com/tensorflow/models/tree/master/research/slim/nets/mobilenet
 for a description. We use mobilenet_v2_0.35_96 and resize images to `84x84x3`
 
-# To peform inference
+# Setup
 1. Make sure python env is active, i.e. run
 ```bash
 cd $HE_TRANSFORMER/build
@@ -28,50 +28,6 @@ python get_models.py
 3. To enable image processing, run
 ```bash
 pip install pillow
-```
-
-4. To perform inference
-    1. In one terminal, run
-      ```bash
-      NGRAPH_ENABLE_CLIENT=1 \
-      NGRAPH_ENCRYPT_DATA=1 \
-      NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
-      NGRAPH_TF_BACKEND=HE_SEAL \
-      python test.py
-      ```
-
-    2. In a second terminal on the same server (with the python env active), run
-    ```bash
-    python client.py
-    ```
-Upon successful completion, the client will output the top5 categories for an image of Grace Hopper in a military uniform:
-```
-top5 [922 458 721 653 835]
-['book jacket' 'bow tie' 'pill bottle' 'military uniform' 'suit']
-```
-
-# Debugging
-1. For debugging purposes, run the model in plaintext with
-```bash
-NGRAPH_TF_BACKEND=HE_SEAL python test.py
-```
-
-2. To run the model without the client, (encryption and decryption will occur locally, so this isn't privacy-preserving):
-```bash
-NGRAPH_ENCRYPT_DATA=1 \
-NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
-NGRAPH_TF_BACKEND=HE_SEAL \
-python test.py
-```
-
-# Fastest
-For faster runtime, try
-```bash
-OMP_NUM_THREADS=56 \
-NGRAPH_ENCRYPT_DATA=1 \
-NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
-NGRAPH_TF_BACKEND=HE_SEAL \
-python test.py
 ```
 
 # Image-Net evaluation
@@ -117,6 +73,19 @@ python test.py \
 Note, the `STOP_CONST_FOLD` flag will prevent the constant folding graph optimization.
 For large batch sizes, this incurs significant overhead during graph compilation, and doesn't result in much runtime speedup.
 
+  5.a To try on a larger model, call:
+  ```bash
+  STOP_CONST_FOLD=1 \
+  NGRAPH_VOPS=all \
+  NGRAPH_TF_BACKEND=HE_SEAL \
+  python test.py \
+  --image_size=128 \
+  --data_dir=$DATA_DIR \
+  --batch_size=30 \
+  --model=./model/mobilenet_v2_0.35_128_opt.pb \
+  --ngraph=true
+  ```
+
 6. To call inference using encrypted data, run the below command. ***Warning***: this will take ~150GB memory.
 ```bash
 OMP_NUM_THREADS=56 \
@@ -129,6 +98,23 @@ python test.py \
 --ngraph=true \
 --batch_size=2048
 ```
+
+6a. To try on a larger model, call:
+  ```bash
+  STOP_CONST_FOLD=1 \
+  OMP_NUM_THREADS=56 \
+  NGRAPH_VOPS=all \
+  NGRAPH_TF_BACKEND=HE_SEAL \
+  NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
+  NGRAPH_ENCRYPT_DATA=1 \
+  python test.py \
+  --image_size=128 \
+  --data_dir=$DATA_DIR \
+  --ngraph=true \
+  --model=./model/mobilenet_v2_0.35_128_opt.pb \
+  --batch_size=30
+  ```
+
 
 7. To double the throughput using complex packing, run:
 ```bash

@@ -29,6 +29,7 @@ ngraph::he::HESealCipherTensor::HESealCipherTensor(
     : ngraph::he::HETensor(element_type, shape, he_seal_backend, packed, name) {
   m_num_elements = m_descriptor->get_tensor_layout()->get_size() / m_batch_size;
   m_ciphertexts.resize(m_num_elements);
+
 #pragma omp parallel for
   for (size_t i = 0; i < m_num_elements; ++i) {
     m_ciphertexts[i] = he_seal_backend.create_empty_ciphertext();

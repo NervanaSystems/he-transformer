@@ -40,16 +40,17 @@ void scalar_add_seal(
     const element::Type& element_type, const HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
-void scalar_add_seal(
+inline void scalar_add_seal(
     const HEPlaintext& arg0, SealCiphertextWrapper& arg1,
     std::shared_ptr<SealCiphertextWrapper>& out,
     const element::Type& element_type, const HESealBackend& he_seal_backend,
-    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
+    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool()) {
+  ngraph::he::scalar_add_seal(arg1, arg0, out, element_type, he_seal_backend);
+}
 
-void scalar_add_seal(
-    const HEPlaintext& arg0, const HEPlaintext& arg1, HEPlaintext& out,
-    const element::Type& element_type, const HESealBackend& he_seal_backend,
-    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
+void scalar_add_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
+                     HEPlaintext& out, const element::Type& element_type,
+                     const HESealBackend& he_seal_backend);
 
 inline void add_seal(
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg0,
@@ -88,15 +89,14 @@ inline void add_seal(
   add_seal(arg1, arg0, out, element_type, he_seal_backend, count, pool);
 }
 
-inline void add_seal(
-    std::vector<HEPlaintext>& arg0, std::vector<HEPlaintext>& arg1,
-    std::vector<HEPlaintext>& out, const element::Type& element_type,
-    const HESealBackend& he_seal_backend, size_t count,
-    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool()) {
+inline void add_seal(std::vector<HEPlaintext>& arg0,
+                     std::vector<HEPlaintext>& arg1,
+                     std::vector<HEPlaintext>& out,
+                     const element::Type& element_type,
+                     const HESealBackend& he_seal_backend, size_t count) {
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
-    scalar_add_seal(arg0[i], arg1[i], out[i], element_type, he_seal_backend,
-                    pool);
+    scalar_add_seal(arg0[i], arg1[i], out[i], element_type, he_seal_backend);
   }
 }
 }  // namespace he

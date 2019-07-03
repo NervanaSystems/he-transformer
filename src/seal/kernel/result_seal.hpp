@@ -30,8 +30,11 @@ namespace he {
 inline void result_seal(
     const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out, size_t count) {
-  NGRAPH_CHECK(out.size() == arg.size(), "Result output size ", out.size(),
-               " does not match result input size ", arg.size());
+  NGRAPH_CHECK(arg.size() >= count, "Result arg size ", arg.size(),
+               " smaller than count ", count);
+  NGRAPH_CHECK(out.size() >= count, "Result out size ", out.size(),
+               " smaller than count ", count);
+
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
     out[i] = arg[i];

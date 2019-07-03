@@ -61,11 +61,11 @@ NGRAPH_TEST(${BACKEND_NAME}, minimum_plain_batched) {
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   // Create some tensors for input/output
-  auto a = he_backend->create_batched_plain_tensor(element::f32, shape);
+  auto a = he_backend->create_packed_plain_tensor(element::f32, shape);
   copy_data(a, vector<float>{1, 8, -8, 17, -0.5, 0.5, 2, 1});
-  auto b = he_backend->create_batched_plain_tensor(element::f32, shape);
+  auto b = he_backend->create_packed_plain_tensor(element::f32, shape);
   copy_data(b, vector<float>{1, 2, 4, 8, 0, 0, 1, 1.5});
-  auto result = he_backend->create_batched_plain_tensor(element::f32, shape);
+  auto result = he_backend->create_packed_plain_tensor(element::f32, shape);
 
   auto handle = he_backend->compile(f);
   handle->call_with_validate({result}, {a, b});

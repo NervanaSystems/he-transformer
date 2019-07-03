@@ -50,11 +50,19 @@ class HESealExecutable : public runtime::Executable {
 
   ~HESealExecutable() {
     if (m_enable_client) {
-      // TODO: why is this needed to prevent m_acceptor from double-freeing?
-      m_acceptor = nullptr;
+      // Wait until thread finishes with m_io_context
       m_thread.join();
+
+      // TODO: why is this needed to prevent m_acceptor from double-freeing?
+
+      // m_acceptor and m_io_context both free the socket? so avoid double-free
+      m_acceptor->close();
+      m_acceptor = nullptr;
+      m_session = nullptr;
     }
   }
+
+  void client_setup();
 
   void start_server();
 
@@ -78,6 +86,8 @@ class HESealExecutable : public runtime::Executable {
 
   void accept_connection();
 
+  void check_client_supports_function();
+
   void handle_message(const TCPMessage& message);
 
   void handle_server_relu_op(std::shared_ptr<HESealCipherTensor>& arg0_cipher,
@@ -89,6 +99,11 @@ class HESealExecutable : public runtime::Executable {
            m_verbose_ops.find(ngraph::to_lower(op.description())) !=
                m_verbose_ops.end();
   };
+
+  void enable_client() {
+    m_enable_client = true;
+    client_setup();
+  }
 
  private:
   HESealBackend& m_he_seal_backend;
@@ -106,7 +121,9 @@ class HESealExecutable : public runtime::Executable {
   std::unordered_map<std::shared_ptr<const Node>, stopwatch> m_timer_map;
   std::vector<NodeWrapper> m_wrapped_nodes;
 
-  std::shared_ptr<tcp::acceptor> m_acceptor;
+  std::unique_ptr<tcp::acceptor> m_acceptor;
+
+  // Must be shared, since TCPSession uses enable_shared_from_this()
   std::shared_ptr<TCPSession> m_session;
   std::thread m_thread;
   boost::asio::io_context m_io_context;
@@ -131,6 +148,7 @@ class HESealExecutable : public runtime::Executable {
   std::mutex m_relu_mutex;
   std::condition_variable m_relu_cond;
   bool m_relu_done;
+  std::vector<size_t> m_unknown_relu_idx;
 
   // To trigger when maxpool is done
   std::mutex m_max_mutex;

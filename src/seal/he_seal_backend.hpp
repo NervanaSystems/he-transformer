@@ -81,26 +81,19 @@ class HESealBackend : public ngraph::runtime::Backend {
   //
   // Tensor creation
   //
-  std::shared_ptr<runtime::Tensor> create_batched_cipher_tensor(
+  std::shared_ptr<runtime::Tensor> create_packed_cipher_tensor(
       const element::Type& element_type, const Shape& shape);
 
-  std::shared_ptr<runtime::Tensor> create_batched_plain_tensor(
+  std::shared_ptr<runtime::Tensor> create_packed_plain_tensor(
       const element::Type& element_type, const Shape& shape);
 
   std::shared_ptr<runtime::Tensor> create_plain_tensor(
       const element::Type& element_type, const Shape& shape,
-      const bool batched = false) const;
+      const bool packed = false) const;
 
   std::shared_ptr<runtime::Tensor> create_cipher_tensor(
       const element::Type& element_type, const Shape& shape,
-      const bool batched = false) const;
-
-  /// @brief Creates ciphertext Tensor of the same value
-  /// @param value Scalar which to enrypt
-  /// @param element_type Type to encrypt
-  /// @param shape Shape of created Tensor
-  std::shared_ptr<runtime::Tensor> create_valued_cipher_tensor(
-      float value, const element::Type& element_type, const Shape& shape) const;
+      const bool packed = false, const std::string& name = "external") const;
 
   //
   // Cipher/plaintext creation
@@ -194,13 +187,13 @@ class HESealBackend : public ngraph::runtime::Backend {
     return m_barrett64_ratio_map;
   }
 
-  void set_batch_data(bool batch) { m_batch_data = batch; };
+  void set_pack_data(bool pack) { m_pack_data = pack; };
 
   bool complex_packing() const { return m_complex_packing; }
   bool& complex_packing() { return m_complex_packing; }
 
   bool encrypt_data() const { return m_encrypt_data; };
-  bool batch_data() const { return m_batch_data; };
+  bool pack_data() const { return m_pack_data; };
   bool encrypt_model() const { return m_encrypt_model; };
 
   // TODO: remove once performance impact is understood
@@ -209,7 +202,7 @@ class HESealBackend : public ngraph::runtime::Backend {
 
  private:
   bool m_encrypt_data{std::getenv("NGRAPH_ENCRYPT_DATA") != nullptr};
-  bool m_batch_data{true};
+  bool m_pack_data{std::getenv("NGRAPH_UNPACK_DATA") == nullptr};
   bool m_encrypt_model{std::getenv("NGRAPH_ENCRYPT_MODEL") != nullptr};
   bool m_complex_packing{std::getenv("NGRAPH_COMPLEX_PACK") != nullptr};
   bool m_naive_rescaling{std::getenv("NAIVE_RESCALING") != nullptr};

@@ -17,10 +17,14 @@
 #pragma once
 
 #include <boost/asio.hpp>
+#include <chrono>
 #include <deque>
 #include <iostream>
 #include <memory>
 #include <string>
+#include <thread>
+
+#include "ngraph/log.hpp"
 
 #include "tcp/tcp_message.hpp"
 
@@ -37,13 +41,18 @@ class TCPClient {
             std::function<void(const ngraph::he::TCPMessage&)> message_handler)
       : m_io_context(io_context),
         m_socket(io_context),
+        m_first_connect(true),
         m_message_callback(std::bind(message_handler, std::placeholders::_1)) {
-    std::cout << "Client starting async connection" << std::endl;
+    NGRAPH_INFO << "Client starting async connection";
+
+    // m_socket.set_option(boost::asio::ip::tcp::no_delay(true));
+    // m_socket.set_option(boost::asio::socket_base::reuse_address(true));
+
     do_connect(endpoints);
   }
 
   void close() {
-    std::cout << "Closing socket" << std::endl;
+    NGRAPH_INFO << "Closing socket";
     m_socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
     boost::asio::post(m_io_context, [this]() { m_socket.close(); });
   }
@@ -60,13 +69,20 @@ class TCPClient {
   void do_connect(const tcp::resolver::results_type& endpoints) {
     boost::asio::async_connect(
         m_socket, endpoints,
-        [this](boost::system::error_code ec, tcp::endpoint) {
+        [this, &endpoints](boost::system::error_code ec, tcp::endpoint) {
           if (!ec) {
-            std::cout << "Connected to server" << std::endl;
+            NGRAPH_INFO << "Connected to server";
+
             do_read_header();
           } else {
-            std::cout << "error connecting to server: " << ec.message()
-                      << std::endl;
+            if (true || m_first_connect) {
+              NGRAPH_INFO << "error connecting to server: " << ec.message();
+              NGRAPH_INFO << "Trying again every 1s";
+              m_first_connect = false;
+            }
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            NGRAPH_INFO << "Trying to connect again";
+            do_connect(std::move(endpoints));
           }
         });
   }
@@ -80,11 +96,8 @@ class TCPClient {
           if (!ec && m_read_message.decode_header()) {
             do_read_body();
           } else {
-            std::cout << "Client error reading header: " << ec.message()
-                      << std::endl;
-            std::cout << "Closing socket" << std::endl;
-            m_socket.close();
-            std::cout << "Closed socket" << std::endl;
+            NGRAPH_INFO << "Client error reading header: " << ec.message();
+            // m_socket.close();
           }
         });
   }
@@ -100,11 +113,8 @@ class TCPClient {
             m_message_callback(m_read_message);
             do_read_header();
           } else {
-            std::cout << "Client error reading body; " << ec.message()
-                      << std::endl;
-            std::cout << "Closing socket" << std::endl;
-            m_socket.close();
-            std::cout << "Closed socket" << std::endl;
+            NGRAPH_INFO << "Client error reading body; " << ec.message();
+            // m_socket.close();
           }
         });
   }
@@ -121,11 +131,8 @@ class TCPClient {
               do_write();
             }
           } else {
-            std::cout << "Client error writing message: " << ec.message()
-                      << std::endl;
-            std::cout << "Closing socket" << std::endl;
-            m_socket.close();
-            std::cout << "Closed socket" << std::endl;
+            NGRAPH_INFO << "Client error writing message: " << ec.message();
+            // m_socket.close();
           }
         });
   }
@@ -135,6 +142,8 @@ class TCPClient {
 
   TCPMessage m_read_message;
   std::deque<ngraph::he::TCPMessage> m_message_queue;
+
+  bool m_first_connect;
 
   // How to handle the message
   std::function<void(const ngraph::he::TCPMessage&)> m_message_callback;

@@ -36,8 +36,10 @@ inline void sum_seal(std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
   CoordinateTransform output_transform(out_shape);
 
   for (const Coordinate& output_coord : output_transform) {
-    out[output_transform.index(output_coord)] =
-        he_seal_backend.create_valued_ciphertext(0.f, element_type);
+    const auto out_coord_idx = output_transform.index(output_coord);
+    out[out_coord_idx] = std::make_shared<SealCiphertextWrapper>();
+    out[out_coord_idx]->known_value() = true;
+    out[out_coord_idx]->value() = 0;
   }
 
   CoordinateTransform input_transform(in_shape);

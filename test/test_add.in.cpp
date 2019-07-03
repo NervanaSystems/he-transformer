@@ -182,10 +182,10 @@ NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_cipher) {
   auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
-  auto t_a = he_backend->create_batched_cipher_tensor(element::f32, shape_a);
-  auto t_b = he_backend->create_batched_cipher_tensor(element::f32, shape_b);
+  auto t_a = he_backend->create_packed_cipher_tensor(element::f32, shape_a);
+  auto t_b = he_backend->create_packed_cipher_tensor(element::f32, shape_b);
   auto t_result =
-      he_backend->create_batched_cipher_tensor(element::f32, shape_r);
+      he_backend->create_packed_cipher_tensor(element::f32, shape_r);
 
   copy_data(t_a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
   copy_data(t_b, vector<float>{13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24});
@@ -211,10 +211,10 @@ NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_cipher_complex) {
   auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
-  auto t_a = he_backend->create_batched_cipher_tensor(element::f32, shape_a);
-  auto t_b = he_backend->create_batched_cipher_tensor(element::f32, shape_b);
+  auto t_a = he_backend->create_packed_cipher_tensor(element::f32, shape_a);
+  auto t_b = he_backend->create_packed_cipher_tensor(element::f32, shape_b);
   auto t_result =
-      he_backend->create_batched_cipher_tensor(element::f32, shape_r);
+      he_backend->create_packed_cipher_tensor(element::f32, shape_r);
 
   copy_data(t_a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
   copy_data(t_b, vector<float>{13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24});
@@ -239,10 +239,9 @@ NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_plain) {
   auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
-  auto t_a = he_backend->create_batched_plain_tensor(element::f32, shape_a);
-  auto t_b = he_backend->create_batched_plain_tensor(element::f32, shape_b);
-  auto t_result =
-      he_backend->create_batched_plain_tensor(element::f32, shape_r);
+  auto t_a = he_backend->create_packed_plain_tensor(element::f32, shape_a);
+  auto t_b = he_backend->create_packed_plain_tensor(element::f32, shape_b);
+  auto t_result = he_backend->create_packed_plain_tensor(element::f32, shape_r);
 
   copy_data(t_a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
   copy_data(t_b, vector<float>{13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24});

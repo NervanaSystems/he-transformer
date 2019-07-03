@@ -239,7 +239,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5) {
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_batch_data(false);
+  he_backend->set_pack_data(false);
 
   Shape shape_a{2, 1, 3, 5};
   Shape shape_b{2, 1, 2, 2};
@@ -284,7 +284,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items) {
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_strided_padded) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_batch_data(false);
+  he_backend->set_pack_data(false);
 
   Shape shape_a{2, 1, 3, 5};
   Shape shape_b{2, 1, 2, 2};

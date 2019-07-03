@@ -118,8 +118,8 @@ NGRAPH_TEST(${BACKEND_NAME}, relu_batched_plain_2_3) {
   auto t = make_shared<op::Relu>(a);
   auto f = make_shared<Function>(t, ParameterVector{a});
 
-  auto t_a = he_backend->create_batched_plain_tensor(element::f32, shape);
-  auto t_result = he_backend->create_batched_plain_tensor(element::f32, shape);
+  auto t_a = he_backend->create_packed_plain_tensor(element::f32, shape);
+  auto t_result = he_backend->create_packed_plain_tensor(element::f32, shape);
 
   copy_data(t_a, vector<float>{-1, -0.5, 0., 0.5, 1, 8});
 
@@ -138,8 +138,8 @@ NGRAPH_TEST(${BACKEND_NAME}, relu_batched_cipher_2_3) {
   auto t = make_shared<op::Relu>(a);
   auto f = make_shared<Function>(t, ParameterVector{a});
 
-  auto t_a = he_backend->create_batched_cipher_tensor(element::f32, shape);
-  auto t_result = he_backend->create_batched_cipher_tensor(element::f32, shape);
+  auto t_a = he_backend->create_packed_cipher_tensor(element::f32, shape);
+  auto t_result = he_backend->create_packed_cipher_tensor(element::f32, shape);
 
   copy_data(t_a, vector<float>{-1, -0.5, 0., 0.5, 1, 1.5});
 

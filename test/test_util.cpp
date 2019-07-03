@@ -171,7 +171,6 @@ generate_plain_cipher_tensors(const std::vector<std::shared_ptr<Node>>& output,
   };
 
   if (he_backend != nullptr) {
-    ret.push_back(cipher_cipher());
     if (!skip_plain_plain) {
       ret.push_back(plain_plain());
     }
@@ -181,6 +180,7 @@ generate_plain_cipher_tensors(const std::vector<std::shared_ptr<Node>>& output,
     if (input.size() >= 2 && !consistent_type) {
       ret.push_back(cipher_plain_cipher());
     }
+    ret.push_back(cipher_cipher());
   }
   return ret;
 }
