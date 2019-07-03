@@ -20,7 +20,7 @@ set(EXTERNAL_NGRAPH_INSTALL_DIR ${EXTERNAL_INSTALL_DIR})
 set(NGRAPH_TF_CMAKE_PREFIX ext_ngraph_tf)
 
 set(NGRAPH_TF_REPO_URL https://github.com/tensorflow/ngraph-bridge.git)
-set(NGRAPH_TF_GIT_LABEL v0.14.0)
+set(NGRAPH_TF_GIT_LABEL v0.16.0-rc1)
 
 set(NGRAPH_TF_SRC_DIR ${CMAKE_BINARY_DIR}/${NGRAPH_TF_CMAKE_PREFIX}/src/${NGRAPH_TF_CMAKE_PREFIX})
 set(NGRAPH_TF_BUILD_DIR ${NGRAPH_TF_SRC_DIR}/build_cmake)
@@ -38,14 +38,12 @@ message("NGRAPH_TF_VENV_LIB_DIR ${NGRAPH_TF_VENV_LIB_DIR}")
 message("NGRAPH_TF_LIB_DIR ${NGRAPH_TF_LIB_DIR}")
 
 set(ng_tf_build_flags "")
-if (USE_PREBUILT_TF)
-        message(STATUS "Using prebuilt TF")
-        set(ng_tf_build_flags "--use_prebuilt_tensorflow")
-else ()
-        message(STATUS "Building TF")
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        message("Using debug build for ng-tf")
+        set(ng_tf_build_flags "--debug_build")
 endif()
 
-message("CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE}")
+message("ng_tf_build_flags:${ng_tf_build_flags}")
 
 ExternalProject_Add(
         ext_ngraph_tf

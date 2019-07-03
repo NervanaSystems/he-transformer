@@ -22,12 +22,12 @@ The [examples](https://github.com/NervanaSystems/he-transformer/tree/master/exam
 - OpenMP is strongly suggested, though not strictly necessary. You may experience slow runtimes without OpenMP
 - python3.5 and pip3
 - virtualenv v16.1.0
-- bazel v0.21.0
+- bazel v0.24.0
 #### The following dependencies are built automatically
-- [nGraph](https://github.com/NervanaSystems/ngraph) - v0.19.1
-- [nGraph-tf](https://github.com/tensorflow/ngraph-bridge) - v0.14.0
+- [nGraph](https://github.com/NervanaSystems/ngraph) - v0.23.0-rc.3
+- [nGraph-tf](https://github.com/tensorflow/ngraph-bridge) - v0.16.0-rc1
 - [SEAL](https://github.com/Microsoft/SEAL) - v3.3
-- [TensorFlow](https://github.com/tensorflow/tensorflow) - v1.13.1
+- [TensorFlow](https://github.com/tensorflow/tensorflow) - v1.14.0
 - Boost 1.69
 
 ### To install bazel
