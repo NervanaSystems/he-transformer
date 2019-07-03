@@ -36,11 +36,8 @@ ngraph::he::HESealCipherTensor::HESealCipherTensor(
   }
 }
 
-void ngraph::he::HESealCipherTensor::write(const void* source,
-                                           size_t tensor_offset, size_t n) {
+void ngraph::he::HESealCipherTensor::write(const void* source, size_t n) {
   const bool complex_packing = m_he_seal_backend.complex_packing();
-
-  NGRAPH_CHECK(tensor_offset == 0, "Tensor offset is not zero in Cipher write");
 
   check_io_bounds(source, n / m_batch_size);
   const element::Type& element_type = get_tensor_layout()->get_element_type();
@@ -91,9 +88,7 @@ void ngraph::he::HESealCipherTensor::write(const void* source,
   }
 }
 
-void ngraph::he::HESealCipherTensor::read(void* target, size_t tensor_offset,
-                                          size_t n) const {
-  NGRAPH_CHECK(tensor_offset == 0, "Tensor offset is not zero in Cipher read");
+void ngraph::he::HESealCipherTensor::read(void* target, size_t n) const {
   check_io_bounds(target, n / m_batch_size);
   const element::Type& element_type = get_tensor_layout()->get_element_type();
   size_t type_byte_size = element_type.size();

@@ -35,17 +35,13 @@ class HEPlainTensor : public HETensor {
 
   /// @brief Write bytes directly into the tensor after encoding
   /// @param p Pointer to source of data
-  /// @param tensor_offset Offset (bytes) into tensor storage to begin writing.
-  ///        Must be element-aligned.
   /// @param n Number of bytes to write, must be integral number of elements.
-  void write(const void* source, size_t tensor_offset, size_t n) override;
+  void write(const void* source, size_t n) override;
 
   /// @brief Read bytes directly from the tensor after decoding
   /// @param p Pointer to destination for data
-  /// @param tensor_offset Offset (bytes) into tensor storage to begin reading.
-  ///        Must be element-aligned.
   /// @param n Number of bytes to read, must be integral number of elements.
-  void read(void* target, size_t tensor_offset, size_t n) const override;
+  void read(void* target, size_t n) const override;
 
   inline std::vector<ngraph::he::HEPlaintext>& get_elements() {
     return m_plaintexts;

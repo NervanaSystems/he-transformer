@@ -1611,9 +1611,14 @@ void ngraph::he::HESealExecutable::generate_calls(
     case OP_TYPEID::QuantizedDot:
     case OP_TYPEID::QuantizedDotBias:
     case OP_TYPEID::QuantizedMaxPool:
+    case OP_TYPEID::Send:
+    case OP_TYPEID::Recv:
+    case OP_TYPEID::Range:
     case OP_TYPEID::ReluBackprop:
     case OP_TYPEID::ReplaceSlice:
     case OP_TYPEID::ReverseSequence:
+    case OP_TYPEID::ScatterAdd:
+    case OP_TYPEID::ScatterNDAdd:
     case OP_TYPEID::Select:
     case OP_TYPEID::ShapeOf:
     case OP_TYPEID::Sigmoid:
@@ -1626,6 +1631,7 @@ void ngraph::he::HESealExecutable::generate_calls(
     case OP_TYPEID::StopGradient:
     case OP_TYPEID::Tan:
     case OP_TYPEID::Tanh:
+    case OP_TYPEID::Tile:
     case OP_TYPEID::TopK:
     case OP_TYPEID::Transpose:
     default:
