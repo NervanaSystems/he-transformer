@@ -163,20 +163,23 @@ void ngraph::he::scalar_multiply_seal(const ngraph::he::HEPlaintext& arg0,
                                       const HESealBackend& he_seal_backend,
                                       const seal::MemoryPoolHandle& pool) {
   NGRAPH_CHECK(element_type == element::f32);
+  NGRAPH_CHECK(arg0.num_values() > 0,
+               "Multiplying plaintext arg0 has 0 values");
+  NGRAPH_CHECK(arg1.num_values() > 0,
+               "Multiplying plaintext arg1 has 0 values");
 
   std::vector<float> arg0_vals = arg0.values();
   std::vector<float> arg1_vals = arg1.values();
-  std::vector<float> out_vals(arg0.num_values());
-
-  NGRAPH_CHECK(arg0_vals.size() > 0, "Multiplying plaintext arg0 has 0 values");
-  NGRAPH_CHECK(arg1_vals.size() > 0, "Multiplying plaintext arg1 has 0 values");
+  std::vector<float> out_vals;
 
   if (arg0_vals.size() == 1) {
-    std::transform(arg1_vals.begin(), arg1_vals.end(), out_vals.begin(),
+    std::transform(arg1_vals.begin(), arg1_vals.end(),
+                   std::back_inserter(out_vals),
                    std::bind(std::multiplies<float>(), std::placeholders::_1,
                              arg0_vals[0]));
   } else if (arg1_vals.size() == 1) {
-    std::transform(arg0_vals.begin(), arg0_vals.end(), out_vals.begin(),
+    std::transform(arg0_vals.begin(), arg0_vals.end(),
+                   std::back_inserter(out_vals),
                    std::bind(std::multiplies<float>(), std::placeholders::_1,
                              arg1_vals[0]));
   } else {
@@ -185,7 +188,7 @@ void ngraph::he::scalar_multiply_seal(const ngraph::he::HEPlaintext& arg0,
                  " in plain-plain multiply");
 
     std::transform(arg0_vals.begin(), arg0_vals.end(), arg1_vals.begin(),
-                   out_vals.begin(), std::multiplies<float>());
+                   std::back_inserter(out_vals), std::multiplies<float>());
   }
   out.values() = out_vals;
 }

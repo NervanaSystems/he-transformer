@@ -131,8 +131,8 @@ ngraph::he::HESealExecutable::HESealExecutable(
   pass_manager_he.register_pass<ngraph::he::pass::HEFusion>();
   // Run liveness pass after all other passes (otherwise BoundedRelu nodes won't
   // have liveness_free_list set)
-  pass_manager_he.register_pass<ngraph::he::pass::HELiveness>();
-  // pass_manager_he.register_pass<ngraph::pass::Liveness>();
+  // pass_manager_he.register_pass<ngraph::he::pass::HELiveness>();
+  pass_manager_he.register_pass<ngraph::pass::Liveness>();
   pass_manager_he.run_passes(function);
 
   for (const std::shared_ptr<Node>& node : function->get_ordered_ops()) {

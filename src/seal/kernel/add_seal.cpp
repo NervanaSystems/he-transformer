@@ -110,8 +110,7 @@ void ngraph::he::scalar_add_seal(
 void ngraph::he::scalar_add_seal(const HEPlaintext& arg0,
                                  const HEPlaintext& arg1, HEPlaintext& out,
                                  const element::Type& element_type,
-                                 const HESealBackend& he_seal_backend,
-                                 const seal::MemoryPoolHandle& pool) {
+                                 const HESealBackend& he_seal_backend) {
   NGRAPH_CHECK(element_type == element::f32);
 
   const std::vector<float>& arg0_vals = arg0.values();

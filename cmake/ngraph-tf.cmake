@@ -45,6 +45,8 @@ else ()
         message(STATUS "Building TF")
 endif()
 
+message("CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE}")
+
 ExternalProject_Add(
         ext_ngraph_tf
         GIT_REPOSITORY ${NGRAPH_TF_REPO_URL}
