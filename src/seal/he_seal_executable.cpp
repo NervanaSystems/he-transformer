@@ -131,8 +131,8 @@ ngraph::he::HESealExecutable::HESealExecutable(
   pass_manager_he.register_pass<ngraph::he::pass::HEFusion>();
   // Run liveness pass after all other passes (otherwise BoundedRelu nodes won't
   // have liveness_free_list set)
-  // pass_manager_he.register_pass<ngraph::he::pass::HELiveness>();
-  pass_manager_he.register_pass<ngraph::pass::Liveness>();
+  pass_manager_he.register_pass<ngraph::he::pass::HELiveness>();
+  // pass_manager_he.register_pass<ngraph::pass::Liveness>();
   pass_manager_he.run_passes(function);
 
   for (const std::shared_ptr<Node>& node : function->get_ordered_ops()) {
@@ -655,15 +655,14 @@ bool ngraph::he::HESealExecutable::call(
       for (auto it = tensor_map.begin(); it != tensor_map.end(); ++it) {
         const std::string& it_name = it->second->get_name();
         if (it_name == t->get_name()) {
-          // NGRAPH_INFO << "Erasing " << it_name << " from tensor map";
           tensor_map.erase(it);
           erased = true;
           break;
         }
       }
       if (!erased) {
-        NGRAPH_INFO << "Failed to erase " << t->get_name()
-                    << " from tensor map";
+        NGRAPH_DEBUG << "Failed to erase " << t->get_name()
+                     << " from tensor map";
       }
     }
     if (verbose_op(*op)) {

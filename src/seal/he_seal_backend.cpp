@@ -138,7 +138,6 @@ ngraph::he::HESealBackend::create_packed_cipher_tensor(
     const element::Type& type, const Shape& shape) {
   auto rc = std::make_shared<ngraph::he::HESealCipherTensor>(type, shape, *this,
                                                              true);
-  // set_pack_data(true);
   return std::static_pointer_cast<ngraph::runtime::Tensor>(rc);
 }
 
@@ -147,7 +146,6 @@ ngraph::he::HESealBackend::create_packed_plain_tensor(const element::Type& type,
                                                       const Shape& shape) {
   auto rc =
       std::make_shared<ngraph::he::HEPlainTensor>(type, shape, *this, true);
-  // set_pack_data(true);
   return std::static_pointer_cast<ngraph::runtime::Tensor>(rc);
 }
 
