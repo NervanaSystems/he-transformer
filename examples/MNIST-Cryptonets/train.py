@@ -57,7 +57,7 @@ def squash_layers():
     h_pool2_flat = tf.reshape(h_pool2, [-1, 5 * 5 * 50])
     pre_square = tf.matmul(h_pool2_flat, W_fc1)
 
-    with tf.Session() as sess:
+    with tf.compat.v1.Session() as sess:
         x_in = np.eye(13 * 13 * 5)
         x_in = x_in.reshape([13 * 13 * 5, 13, 13, 5])
         W = (sess.run([pre_square], feed_dict={x: x_in}))[0]
@@ -90,10 +90,8 @@ def cryptonets_train(x):
     # Last dimension is for "features" - there is only one here, since images
     # are grayscale -- it would be 3 for an RGB image, 4 for RGBA, etc.
     with tf.name_scope('reshape'):
-        x_image = tf.reshape(x, [-1, 28, 28, 1])
-        paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]],
-                               name='pad_const')
-        x_image = tf.pad(x_image, paddings)
+        paddings = [[0, 0], [0, 1], [0, 1], [0, 0]]
+        x = tf.pad(x, paddings)
 
     # First conv layer
     # CryptoNets's output of the first conv layer has feature map size 13 x 13,
@@ -104,8 +102,7 @@ def cryptonets_train(x):
     # Output after padding: N x 13 x 13 x 5
     with tf.name_scope('conv1'):
         W_conv1 = tf.get_variable("W_conv1", [5, 5, 1, 5])
-        h_conv1_no_pad = tf.square(
-            common.conv2d_stride_2_valid(x_image, W_conv1))
+        h_conv1_no_pad = tf.square(common.conv2d_stride_2_valid(x, W_conv1))
         paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]],
                                name='pad_const')
         h_conv1 = tf.pad(h_conv1_no_pad, paddings)
@@ -183,7 +180,7 @@ def main(_):
     y_conv = common.cryptonets_model(x, 'train')
 
     with tf.name_scope('loss'):
-        cross_entropy = tf.nn.softmax_cross_entropy_with_logits(
+        cross_entropy = tf.nn.softmax_cross_entropy_with_logits_v2(
             labels=y_, logits=y_conv)
     cross_entropy = tf.reduce_mean(cross_entropy)
 
@@ -197,7 +194,7 @@ def main(_):
     accuracy = tf.reduce_mean(correct_prediction)
 
     with tf.compat.v1.Session() as sess:
-        sess.run(tf.global_variables_initializer())
+        sess.run(tf.compat.v1.global_variables_initializer())
         loss_values = []
         for i in range(FLAGS.train_loop_count):
             x_batch, y_batch = get_train_batch(i, FLAGS.batch_size, x_train,

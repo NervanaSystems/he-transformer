@@ -40,7 +40,7 @@ def conv2d_stride_2_valid(x, W, name=None):
 
 def avg_pool_3x3_same_size(x):
     """3x3 avg_pool using same padding, keeping original feature map size"""
-    return tf.nn.avg_pool(
+    return tf.nn.avg_pool2d(
         x, ksize=[1, 3, 3, 1], strides=[1, 1, 1, 1], padding='SAME')
 
 

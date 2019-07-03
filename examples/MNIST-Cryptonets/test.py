@@ -37,16 +37,11 @@ FLAGS = None
 def cryptonets_test_squashed(x):
     """Constructs test network for Cryptonets using saved weights.
        Assumes linear layers have been squashed."""
-
-    # Reshape to use within a convolutional neural net.
-    # Last dimension is for "features" - there is only one here, since images are
-    # grayscale -- it would be 3 for an RGB image, 4 for RGBA, etc.
-    x_image = tf.reshape(x, [-1, 28, 28, 1])
-    paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]], name='pad_const')
-    x_image = tf.pad(x_image, paddings)
+    paddings = [[0, 0], [0, 1], [0, 1], [0, 0]]
+    x = tf.pad(x, paddings)
 
     W_conv1 = common.get_variable('W_conv1', [5, 5, 1, 5], 'test')
-    y = common.conv2d_stride_2_valid(x_image, W_conv1)
+    y = common.conv2d_stride_2_valid(x, W_conv1)
     y = tf.square(y)
     W_squash = common.get_variable('W_squash', [5 * 13 * 13, 100], 'test')
     y = tf.reshape(y, [-1, 5 * 13 * 13])
@@ -74,11 +69,11 @@ def test_mnist_cnn(FLAGS):
         elasped_time = (time.time() - start_time)
         print("total time(s)", np.round(elasped_time, 3))
 
-    x_test_batch = x_test[:FLAGS.batch_size]
     y_test_batch = y_test[:FLAGS.batch_size]
     y_label_batch = np.argmax(y_test_batch, 1)
 
     if FLAGS.save_batch:
+        x_test_batch = x_test[:FLAGS.batch_size]
         x_test_batch.tofile("x_test_" + str(FLAGS.batch_size) + ".bin")
         y_label_batch.astype('float32').tofile("y_label_" +
                                                str(FLAGS.batch_size) + ".bin")
