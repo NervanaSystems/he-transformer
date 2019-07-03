@@ -45,15 +45,6 @@ get_backend_constructor_pointer() {
   return s_backend_constructor.get();
 }
 
-// TODO: replace with new backend constructor once switching to new ngraph
-/* extern "C" ngraph::runtime::Backend* new_backend(const char* config) {
-  std::string configuration_string = std::string(config);
-
-  NGRAPH_CHECK(configuration_string == "HE_SEAL",
-               "Invalid configuration string ", configuration_string);
-  return new ngraph::he::HESealBackend();
-}*/
-
 ngraph::he::HESealBackend::HESealBackend()
     : ngraph::he::HESealBackend(
           ngraph::he::parse_config_or_use_default("HE_SEAL")) {}
@@ -78,8 +69,6 @@ ngraph::he::HESealBackend::HESealBackend(
   m_context = seal::SEALContext::Create(parms.seal_encryption_parameters(),
                                         true, sec_level);
 
-  print_seal_context(*m_context);
-
   auto context_data = m_context->key_context_data();
 
   // Keygen, encryptor and decryptor
@@ -96,7 +85,11 @@ ngraph::he::HESealBackend::HESealBackend(
   // TODO: pick smaller scale?
   auto coeff_moduli = context_data->parms().coeff_modulus();
   m_scale = ngraph::he::choose_scale(coeff_moduli);
-  NGRAPH_INFO << "Scale " << m_scale;
+
+  if (m_encrypt_data) {
+    print_seal_context(*m_context);
+    NGRAPH_INFO << "Scale " << m_scale;
+  }
 
   // Encoder
   m_ckks_encoder = std::make_shared<seal::CKKSEncoder>(m_context);

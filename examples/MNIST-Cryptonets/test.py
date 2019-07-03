@@ -58,31 +58,24 @@ def cryptonets_test_squashed(x):
 
 
 def test_mnist_cnn(FLAGS):
+    (x_train, y_train, x_test, y_test) = common.load_mnist_data()
 
-    # Import data
-    mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=True)
+    x = tf.compat.v1.placeholder(tf.float32, [None, 28, 28, 1])
+    y_ = tf.compat.v1.placeholder(tf.float32, [None, 10])
 
     # Create the model
-    x = tf.placeholder(tf.float32, [None, 784])
-
-    # Define loss and optimizer
-    y_ = tf.placeholder(tf.float32, [None, 10])
-
     y_conv = cryptonets_test_squashed(x)
 
-    with tf.Session() as sess:
-        x_test = mnist.test.images[:FLAGS.batch_size]
-        y_test = mnist.test.labels[:FLAGS.batch_size]
+    with tf.compat.v1.Session() as sess:
+        x_test = x_test[:FLAGS.batch_size]
+        y_test = y_test[:FLAGS.batch_size]
         start_time = time.time()
         y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
         elasped_time = (time.time() - start_time)
         print("total time(s)", np.round(elasped_time, 3))
 
-    x_test_batch = mnist.test.images[:FLAGS.batch_size]
-    y_test_batch = mnist.test.labels[:FLAGS.batch_size]
-    x_test = mnist.test.images
-    y_test = mnist.test.labels
-
+    x_test_batch = x_test[:FLAGS.batch_size]
+    y_test_batch = y_test[:FLAGS.batch_size]
     y_label_batch = np.argmax(y_test_batch, 1)
 
     if FLAGS.save_batch:
@@ -110,14 +103,6 @@ def test_mnist_cnn(FLAGS):
         print("Renaming serialized graph not successful")
 
 
-def main(_):
-    # Disable mnist dataset deprecation warning
-    tf.logging.set_verbosity(tf.logging.ERROR)
-
-    # Test using squashed graph
-    test_mnist_cnn(FLAGS)
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -138,4 +123,4 @@ if __name__ == '__main__':
         help='Whether or not to save the test image and label.')
 
     FLAGS, unparsed = parser.parse_known_args()
-    tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
+    test_mnist_cnn(FLAGS)
