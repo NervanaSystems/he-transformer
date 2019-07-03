@@ -395,8 +395,8 @@ size_t ngraph::he::match_to_smallest_chain_index(
     }
   }
   NGRAPH_CHECK(smallest_chain_ind.second != std::numeric_limits<size_t>::max());
-  NGRAPH_INFO << "Matching to smallest chain index "
-              << smallest_chain_ind.second;
+  NGRAPH_DEBUG << "Matching to smallest chain index "
+               << smallest_chain_ind.second;
 
   auto smallest_cipher = *ciphers[smallest_chain_ind.first];
 #pragma omp parallel for

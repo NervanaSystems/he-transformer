@@ -73,8 +73,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_cipher_plain) {
   client_thread.join();
   EXPECT_TRUE(all_close(results, vector<float>{1.1, 2.2, 3.3}, 1e-3f));
 }
-// TODO: enable once network issues are solved
-/*
+
 NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu_cipher_plain) {
   std::this_thread::sleep_for(std::chrono::seconds(10));
 
@@ -117,4 +116,3 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu_cipher_plain) {
   client_thread.join();
   EXPECT_TRUE(all_close(results, vector<float>{0, 0, 3.3}, 1e-3f));
 }
-*/

@@ -78,9 +78,6 @@ inline void match_scale(S& arg0, T& arg1,
   auto scale0 = arg0.scale();
   auto scale1 = arg1.scale();
   bool scale_ok = within_rescale_tolerance(arg0, arg1);
-  if (!scale_ok) {
-    NGRAPH_INFO << "Scales " << scale0 << ",  " << scale1 << " don't match";
-  }
   NGRAPH_CHECK(scale_ok, "Scale ", scale0, " does not match scale ", scale1);
   arg0.scale() = arg1.scale();
 }

@@ -24,16 +24,16 @@ void ngraph::he::scalar_subtract_seal(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type, const HESealBackend& he_seal_backend) {
   if (arg0.known_value() && arg1.known_value()) {
-    NGRAPH_INFO << "C(" << arg0.value() << ") - C(" << arg1.value() << ")";
+    NGRAPH_DEBUG << "C(" << arg0.value() << ") - C(" << arg1.value() << ")";
     out->known_value() = true;
     out->value() = arg0.value() - arg1.value();
   } else if (arg0.known_value()) {
-    NGRAPH_INFO << "C(" << arg0.value() << ") - C";
+    NGRAPH_DEBUG << "C(" << arg0.value() << ") - C";
     HEPlaintext p(arg0.value());
     scalar_subtract_seal(p, arg1, out, element_type, he_seal_backend);
     out->known_value() = false;
   } else if (arg1.known_value()) {
-    NGRAPH_INFO << "C - C(" << arg1.value() << ")";
+    NGRAPH_DEBUG << "C - C(" << arg1.value() << ")";
     HEPlaintext p(arg1.value());
     scalar_subtract_seal(arg0, p, out, element_type, he_seal_backend);
     out->known_value() = false;
