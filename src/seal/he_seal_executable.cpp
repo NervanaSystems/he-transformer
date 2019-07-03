@@ -138,10 +138,7 @@ ngraph::he::HESealExecutable::HESealExecutable(
   for (const std::shared_ptr<Node>& node : function->get_ordered_ops()) {
     m_wrapped_nodes.emplace_back(node);
   }
-
-  NGRAPH_INFO << "Setting parameters and results";
   set_parameters_and_results(*function);
-  NGRAPH_INFO << "Parameters size " << get_parameters().size();
 
   // Constant, for example, cannot be packed
   if (get_parameters().size() > 0) {

@@ -60,8 +60,10 @@ ngraph::he::HESealBackend::HESealBackend(
   } else if (parms.security_level() == 256) {
     sec_level = seal::sec_level_type::tc256;
   } else if (parms.security_level() == 0) {
-    NGRAPH_WARN
-        << "Parameter selection does not enforce minimum security level";
+    if (m_encrypt_data) {
+      NGRAPH_WARN
+          << "Parameter selection does not enforce minimum security level";
+    }
   } else {
     throw ngraph_error("Invalid security level");
   }
