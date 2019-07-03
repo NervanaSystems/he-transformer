@@ -19,9 +19,9 @@ import numpy as np
 import tensorflow as tf
 
 a = tf.constant(np.array([[1, 2]]), dtype=np.float32)
-b = tf.placeholder(tf.float32, shape=(1, 2))
+b = tf.compat.v1.placeholder(tf.float32, shape=(1, 2))
 f = (a + b) * a * b
 
-with tf.Session() as sess:
+with tf.compat.v1.Session() as sess:
     f_val = sess.run(f, feed_dict={b: np.ones((1, 2))})
     print("Result: ", f_val)

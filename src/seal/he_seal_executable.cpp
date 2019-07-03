@@ -672,8 +672,11 @@ bool ngraph::he::HESealExecutable::call(
   for (const auto& elem : m_timer_map) {
     total_time += elem.second.get_milliseconds();
   }
-  NGRAPH_INFO << "\033[1;32m"
-              << "Total time " << total_time << " (ms) \033[0m";
+
+  if (verbose_op("total")) {
+    NGRAPH_INFO << "\033[1;32m"
+                << "Total time " << total_time << " (ms) \033[0m";
+  }
 
   // Send outputs to client.
   if (m_enable_client) {
