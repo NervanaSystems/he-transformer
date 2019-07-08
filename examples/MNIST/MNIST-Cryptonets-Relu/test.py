@@ -24,49 +24,40 @@ import time
 import numpy as np
 import itertools
 import glob
-
-from tensorflow.examples.tutorials.mnist import input_data
 import tensorflow as tf
-import common
+import model
 import ngraph_bridge
-
 import os
+
+# Add parent directory to path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from mnist_util import load_mnist_data, get_variable, conv2d_stride_2_valid
+
 FLAGS = None
 
 
 def test_cryptonets_relu(FLAGS):
+    (x_train, y_train, x_test, y_test) = load_mnist_data()
 
-    # Import data
-    mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=True)
+    x = tf.compat.v1.placeholder(tf.float32, [None, 28, 28, 1])
+    y_ = tf.compat.v1.placeholder(tf.float32, [None, 10])
 
     # Create the model
-    x = tf.placeholder(tf.float32, [None, 784])
+    y_conv = model.cryptonets_relu_model(x, 'test')
 
-    # Define loss and optimizer
-    y_ = tf.placeholder(tf.float32, [None, 10])
-
-    y_conv = common.cryptonets_relu_model(x, 'test')
-
-    with tf.Session() as sess:
+    with tf.compat.v1.Session() as sess:
+        x_test = x_test[:FLAGS.batch_size]
+        y_test = y_test[:FLAGS.batch_size]
         start_time = time.time()
-        x_test = mnist.test.images[:FLAGS.batch_size]
-        y_test = mnist.test.labels[:FLAGS.batch_size]
-
-        # Run model
         y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
-        elasped_time = time.time() - start_time
-        print("total time(s)", np.round(elasped_time, 2))
-        print('result')
-        print(np.round(y_conv_val, 2))
+        elasped_time = (time.time() - start_time)
+        print("total time(s)", np.round(elasped_time, 3))
 
-    x_test_batch = mnist.test.images[:FLAGS.batch_size]
-    y_test_batch = mnist.test.labels[:FLAGS.batch_size]
-    x_test = mnist.test.images
-    y_test = mnist.test.labels
-
+    y_test_batch = y_test[:FLAGS.batch_size]
     y_label_batch = np.argmax(y_test_batch, 1)
 
     if FLAGS.save_batch:
+        x_test_batch = x_test[:FLAGS.batch_size]
         x_test_batch.tofile("x_test_" + str(FLAGS.batch_size) + ".bin")
         y_label_batch.astype('float32').tofile("y_label_" +
                                                str(FLAGS.batch_size) + ".bin")
@@ -93,13 +84,6 @@ def test_cryptonets_relu(FLAGS):
         print("Renaming serialized graph not successful")
 
 
-def main(_):
-    # Disable mnist dataset deprecation warning
-    tf.logging.set_verbosity(tf.logging.ERROR)
-
-    test_cryptonets_relu(FLAGS)
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -120,4 +104,4 @@ if __name__ == '__main__':
         help='Whether or not to save the test image and label.')
 
     FLAGS, unparsed = parser.parse_known_args()
-    tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
+    test_cryptonets_relu(FLAGS)

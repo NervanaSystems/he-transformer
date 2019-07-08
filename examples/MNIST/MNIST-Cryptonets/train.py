@@ -32,7 +32,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from mnist_util import load_mnist_data, \
     get_variable, \
     conv2d_stride_2_valid, \
-    avg_pool_3x3_same_size
+    avg_pool_3x3_same_size, \
+    get_train_batch
 
 FLAGS = None
 
@@ -153,33 +154,8 @@ def cryptonets_train(x):
     return y_conv
 
 
-def get_train_batch(train_iter, batch_size, x_train, y_train):
-    start_index = train_iter * batch_size
-    end_index = start_index + batch_size
-
-    data_count = x_train.shape[0]
-
-    if start_index > data_count and end_index > data_count:
-        start_index %= data_count
-        end_index %= data_count
-        x_batch = x_train[start_index:end_index]
-        y_batch = y_train[start_index:end_index]
-    elif end_index > data_count:
-        end_index %= data_count
-        x_batch = np.concatenate((x_train[start_index:], x_train[0:end_index]))
-        y_batch = np.concatenate((y_train[start_index:], y_train[0:end_index]))
-    else:
-        x_batch = x_train[start_index:end_index]
-        y_batch = y_train[start_index:end_index]
-
-    return x_batch, y_batch
-
-
 def main(_):
     (x_train, y_train, x_test, y_test) = load_mnist_data()
-
-    print('x_train', x_train.shape)
-    print('x-test', x_test.shape)
 
     x = tf.compat.v1.placeholder(tf.float32, [None, 28, 28, 1])
     y_ = tf.compat.v1.placeholder(tf.float32, [None, 10])
@@ -256,10 +232,5 @@ if __name__ == '__main__':
         help='Number of training iterations')
     parser.add_argument(
         '--batch_size', type=int, default=50, help='Batch Size')
-    parser.add_argument(
-        '--test_image_count',
-        type=int,
-        default=None,
-        help="Number of test images to evaluate on")
     FLAGS, unparsed = parser.parse_known_args()
     tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)

@@ -722,6 +722,7 @@ void ngraph::he::HESealExecutable::generate_calls(
     const std::vector<std::shared_ptr<HETensor>>& out,
     const std::vector<std::shared_ptr<HETensor>>& args) {
   const Node& node = *node_wrapper.get_node();
+  bool verbose = verbose_op(node);
   std::string node_op = node.description();
   std::shared_ptr<HESealCipherTensor> arg0_cipher = nullptr;
   std::shared_ptr<HEPlainTensor> arg0_plain = nullptr;
@@ -1086,8 +1087,6 @@ void ngraph::he::HESealExecutable::generate_calls(
       Shape in_shape0 = packed_arg_shapes[0];
       Shape in_shape1 = unpacked_arg_shapes[1];
 
-      bool verbose = verbose_op(node);
-
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
         ngraph::he::convolution_seal(
@@ -1135,8 +1134,6 @@ void ngraph::he::HESealExecutable::generate_calls(
       const op::Dot* dot = static_cast<const op::Dot*>(&node);
       Shape in_shape0 = packed_arg_shapes[0];
       Shape in_shape1 = unpacked_arg_shapes[1];
-
-      bool verbose = verbose_op(node);
 
       if (verbose) {
         NGRAPH_INFO << join(in_shape0, "x") << " dot " << join(in_shape1, "x");
@@ -1274,7 +1271,6 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Multiply: {
-      bool verbose = verbose_op(node);
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
         ngraph::he::multiply_seal(
@@ -1326,6 +1322,8 @@ void ngraph::he::HESealExecutable::generate_calls(
     case OP_TYPEID::Pad: {
       const op::Pad* pad = static_cast<const op::Pad*>(&node);
       const Shape arg0_shape = packed_arg_shapes[0];
+
+      NGRAPH_INFO << "PAd";
 
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
@@ -1394,22 +1392,32 @@ void ngraph::he::HESealExecutable::generate_calls(
     }
     case OP_TYPEID::Reshape: {
       const op::Reshape* reshape = static_cast<const op::Reshape*>(&node);
+      Shape in_shape;
+      Shape out_shape;
+
+      if (arg0_cipher != nullptr && out0_cipher != nullptr) {
+        in_shape = arg0_cipher->get_packed_shape();
+        out_shape = packed_out_shape;
+      } else if (arg0_plain != nullptr && out0_plain != nullptr) {
+        in_shape = arg0_plain->is_packed() ? arg0_plain->get_packed_shape()
+                                           : arg0_plain->get_shape();
+        out_shape = arg0_plain->is_packed() ? packed_out_shape
+                                            : out0_plain->get_shape();
+      }
+
+      if (verbose) {
+        NGRAPH_INFO << join(in_shape, "x") << " reshape "
+                    << join(out_shape, "x");
+      }
+
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
         ngraph::he::reshape_seal(arg0_cipher->get_elements(),
-                                 out0_cipher->get_elements(),
-                                 arg0_cipher->get_packed_shape(),
-                                 reshape->get_input_order(), packed_out_shape);
+                                 out0_cipher->get_elements(), in_shape,
+                                 reshape->get_input_order(), out_shape);
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
-        const Shape& in_shape = arg0_plain->is_packed()
-                                    ? arg0_plain->get_packed_shape()
-                                    : arg0_plain->get_shape();
-        const Shape& reshape_out_shape = arg0_plain->is_packed()
-                                             ? packed_out_shape
-                                             : out0_plain->get_shape();
-
         ngraph::he::reshape_seal(arg0_plain->get_elements(),
                                  out0_plain->get_elements(), in_shape,
-                                 reshape->get_input_order(), reshape_out_shape);
+                                 reshape->get_input_order(), out_shape);
       } else {
         throw ngraph_error("Reshape types not supported.");
       }
@@ -1644,9 +1652,8 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
     std::shared_ptr<HESealCipherTensor>& out_cipher,
     const NodeWrapper& node_wrapper) {
   const Node& node = *node_wrapper.get_node();
-  size_t element_count = shape_size(node.get_output_shape(0)) / m_batch_size;
-
   bool verbose = verbose_op(node);
+  size_t element_count = shape_size(node.get_output_shape(0)) / m_batch_size;
 
   if (arg_cipher == nullptr || out_cipher == nullptr) {
     NGRAPH_INFO << "Relu types not supported ";

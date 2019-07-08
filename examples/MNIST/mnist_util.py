@@ -35,6 +35,29 @@ def load_mnist_data():
     return (x_train, y_train, x_test, y_test)
 
 
+def get_train_batch(train_iter, batch_size, x_train, y_train):
+    """Returns training batch from dataset"""
+    start_index = train_iter * batch_size
+    end_index = start_index + batch_size
+
+    data_count = x_train.shape[0]
+
+    if start_index > data_count and end_index > data_count:
+        start_index %= data_count
+        end_index %= data_count
+        x_batch = x_train[start_index:end_index]
+        y_batch = y_train[start_index:end_index]
+    elif end_index > data_count:
+        end_index %= data_count
+        x_batch = np.concatenate((x_train[start_index:], x_train[0:end_index]))
+        y_batch = np.concatenate((y_train[start_index:], y_train[0:end_index]))
+    else:
+        x_batch = x_train[start_index:end_index]
+        y_batch = y_train[start_index:end_index]
+
+    return x_batch, y_batch
+
+
 def conv2d_stride_2_valid(x, W, name=None):
     """returns a 2d convolution layer with stride 2, valid pooling"""
     return tf.nn.conv2d(x, W, strides=[1, 2, 2, 1], padding='VALID')
