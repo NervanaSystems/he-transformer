@@ -176,7 +176,9 @@ class TCPMessage {
       // TODO: save directly to buffer
       ciphers[i]->save(ss);
       NGRAPH_CHECK(ciphertext_size(ciphers[i]->ciphertext()) == cipher_size,
-                   "Cipher sizes don't match");
+                   "Cipher sizes don't match. Got size ",
+                   ciphertext_size(ciphers[i]->ciphertext()), ", expected ",
+                   cipher_size);
 
       std::stringbuf* pbuf = ss.rdbuf();
       pbuf->sgetn(data_ptr() + offset, cipher_size);
@@ -196,6 +198,8 @@ class TCPMessage {
     encode_message_type();
     encode_count();
 
+    NGRAPH_INFO << "Crteated message from " << m_count << "ciphers";
+
 #pragma omp parallel for
     for (size_t i = 0; i < ciphers.size(); ++i) {
       size_t offset = i * cipher_size;
@@ -203,7 +207,9 @@ class TCPMessage {
       // TODO: save directly to buffer
       ciphers[i].save(ss);
       NGRAPH_CHECK(ciphertext_size(ciphers[i]) == cipher_size,
-                   "Cipher sizes don't match");
+                   "Cipher sizes don't match. Got size ",
+                   ciphertext_size(ciphers[i]), " at index ", i, " expected ",
+                   cipher_size);
 
       std::stringbuf* pbuf = ss.rdbuf();
       pbuf->sgetn(data_ptr() + offset, cipher_size);

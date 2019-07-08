@@ -44,14 +44,21 @@ def cryptonets_relu_test_squashed(x):
 
     W_conv1 = get_variable('W_conv1', [5, 5, 1, 5], 'test')
     y = conv2d_stride_2_valid(x, W_conv1)
+    W_bc1 = get_variable('W_conv1_bias', [1, 13, 13, 5], 'test')
     y = tf.nn.relu(y)
 
     W_squash = get_variable('W_squash', [5 * 13 * 13, 100], 'test')
     y = tf.reshape(y, [-1, 5 * 13 * 13])
     y = tf.matmul(y, W_squash)
+    W_b1 = get_variable('W_fc1_bias', [100], 'test')
+    y = y + W_b1
+
     y = tf.nn.relu(y)
     W_fc2 = get_variable('W_fc2', [100, 10], 'test')
     y = tf.matmul(y, W_fc2)
+
+    W_b2 = get_variable('W_fc2_bias', [10], 'test')
+    y = y + W_b2
 
     return y
 
@@ -76,12 +83,6 @@ def test_cryptonets_relu(FLAGS):
     y_test_batch = y_test[:FLAGS.batch_size]
     y_label_batch = np.argmax(y_test_batch, 1)
 
-    if FLAGS.save_batch:
-        x_test_batch = x_test[:FLAGS.batch_size]
-        x_test_batch.tofile("x_test_" + str(FLAGS.batch_size) + ".bin")
-        y_label_batch.astype('float32').tofile("y_label_" +
-                                               str(FLAGS.batch_size) + ".bin")
-
     y_pred = np.argmax(y_conv_val, 1)
     print('y_pred', y_pred)
     correct_prediction = np.equal(y_pred, y_label_batch)
@@ -91,37 +92,10 @@ def test_cryptonets_relu(FLAGS):
     print('Error count', error_count, 'of', FLAGS.batch_size, 'elements.')
     print('Accuracy: %g ' % test_accuracy)
 
-    # Rename serialized graph
-    try:
-        serialized_graphs = glob.glob("tf_function_ngraph*.json")
-        if os.environ.get('NGRAPH_ENABLE_SERIALIZE',
-                          '') == "1" and len(serialized_graphs) == 1:
-            src_path = serialized_graphs[0]
-            dst_path = "mnist_mlp_batch_%s.json" % (FLAGS.batch_size, )
-            print("Moving", src_path, "to", dst_path)
-            os.rename(src_path, dst_path)
-    except:
-        print("Renaming serialized graph not successful")
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '--data_dir',
-        type=str,
-        default='/tmp/tensorflow/mnist/input_data',
-        help='Directory where input data is stored')
     parser.add_argument('--batch_size', type=int, default=1, help='Batch size')
-    parser.add_argument(
-        '--test_image_count',
-        type=int,
-        default=None,
-        help="Number of test images to evaluate on")
-    parser.add_argument(
-        '--save_batch',
-        type=bool,
-        default=False,
-        help='Whether or not to save the test image and label.')
 
     FLAGS, unparsed = parser.parse_known_args()
     test_cryptonets_relu(FLAGS)

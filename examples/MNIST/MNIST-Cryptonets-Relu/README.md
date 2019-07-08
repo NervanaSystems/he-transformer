@@ -24,7 +24,7 @@ cd $HE_TRANSFORMER/examples/MNIST-MLP
 ```bash
 NGRAPH_ENABLE_CLIENT=1 \
 NGRAPH_ENCRYPT_DATA=1 \
-NGRAPH_HE_SEAL_CONFIG=../../../configs/he_seal_ckks_config_N11_L1.json \\
+NGRAPH_HE_SEAL_CONFIG=../../../configs/he_seal_ckks_config_N11_L1.json \
 NGRAPH_TF_BACKEND=HE_SEAL \
 python test.py --batch_size=1024
 ```
@@ -57,12 +57,12 @@ For models with no ciphertext-ciphertext multiplication, use the NGRAPH_COMPLEX_
 As a rough guideline, the NGRAPH_COMPLEX_PACK flag is suitable when the model does not contain polynomial activations,
 and when either the model or data remains unencrypted.
 
-Using the NGRAPH_COMPLEX_PACK flag, we double the capacity to 4096, doubling the throughput.
+Using the `NGRAPH_COMPLEX_PACK` flag, we double the capacity to 2048, doubling the throughput.
 
 ```bash
 NGRAPH_COMPLEX_PACK=1 \
 NGRAPH_ENCRYPT_DATA=1 \
-NGRAPH_HE_SEAL_CONFIG=../../../configs/he_seal_ckks_config_N11_L1.json \\
+NGRAPH_HE_SEAL_CONFIG=../../../configs/he_seal_ckks_config_N11_L1.json \
 NGRAPH_TF_BACKEND=HE_SEAL \
-python test.py --batch_size=4096
+python test.py --batch_size=2048
 ```

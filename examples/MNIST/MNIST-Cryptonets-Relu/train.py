@@ -104,7 +104,6 @@ def main(_):
 
     with tf.compat.v1.Session() as sess:
         sess.run(tf.compat.v1.global_variables_initializer())
-        loss_values = []
         for i in range(FLAGS.train_loop_count):
             x_batch, y_batch = get_train_batch(i, FLAGS.batch_size, x_train,
                                                y_train)
@@ -122,7 +121,6 @@ def main(_):
                                    x: x_batch,
                                    y_: y_batch
                                })
-            loss_values.append(loss)
 
             if i % 1000 == 999 or i == FLAGS.train_loop_count - 1:
                 test_accuracy = accuracy.eval(feed_dict={
@@ -147,11 +145,6 @@ def main(_):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '--data_dir',
-        type=str,
-        default='/tmp/tensorflow/mnist/input_data',
-        help='Directory where input data is stored')
     parser.add_argument(
         '--train_loop_count',
         type=int,

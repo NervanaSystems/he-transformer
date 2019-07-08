@@ -68,6 +68,8 @@ class HESealCipherTensor : public HETensor {
 
   inline std::shared_ptr<ngraph::he::SealCiphertextWrapper>& get_element(
       size_t i) {
+    NGRAPH_CHECK(i >= 0 && i < m_ciphertexts.size(), "Index ", i,
+                 " out of bounds for vector of size ", m_ciphertexts.size());
     return m_ciphertexts[i];
   }
 

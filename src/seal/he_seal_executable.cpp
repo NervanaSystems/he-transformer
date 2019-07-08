@@ -392,6 +392,7 @@ void ngraph::he::HESealExecutable::handle_message(
     m_relu_done = true;
     m_relu_cond.notify_all();
   } else if (msg_type == MessageType::max_result) {
+    NGRAPH_INFO << "Received max result mesage";
     std::lock_guard<std::mutex> guard(m_max_mutex);
 
     size_t element_count = message.count();
@@ -403,10 +404,10 @@ void ngraph::he::HESealExecutable::handle_message(
       cipher_stream.write(message.data_ptr() + element_idx * element_size,
                           element_size);
       cipher.load(m_context, cipher_stream);
-      auto he_ciphertext = std::make_shared<ngraph::he::SealCiphertextWrapper>(
+      auto new_cipher = std::make_shared<ngraph::he::SealCiphertextWrapper>(
           cipher, m_complex_packing);
 
-      m_max_ciphertexts.emplace_back(he_ciphertext);
+      m_max_ciphertexts.emplace_back(new_cipher);
     }
     // Notify condition variable
     m_max_done = true;
@@ -1226,8 +1227,13 @@ void ngraph::he::HESealExecutable::generate_calls(
         NGRAPH_INFO << "MaxPool types not supported ";
         throw ngraph_error("MaxPool supports only Cipher, Cipher");
       }
+
       m_max_ciphertexts.clear();
       m_max_done = false;
+
+      NGRAPH_INFO << "MaxPool seal arg shape"
+                  << join(packed_arg_shapes[0], "x");
+      NGRAPH_INFO << "out shape " << join(packed_out_shape, "x");
 
       std::vector<std::vector<size_t>> maximize_list =
           ngraph::he::max_pool_seal(packed_arg_shapes[0], packed_out_shape,
@@ -1237,10 +1243,12 @@ void ngraph::he::HESealExecutable::generate_calls(
                                     max_pool->get_padding_above());
 
       size_t window_shape = ngraph::shape_size(max_pool->get_window_shape());
-      std::vector<seal::Ciphertext> maxpool_ciphers(window_shape);
-      for (size_t list_ind = 0; list_ind < maximize_list.size(); list_ind++) {
-        size_t cipher_cnt = 0;
 
+      std::vector<seal::Ciphertext> maxpool_ciphers;
+      maxpool_ciphers.reserve(window_shape);
+      for (size_t list_ind = 0; list_ind < maximize_list.size(); list_ind++) {
+        NGRAPH_INFO << "max_list[" << list_ind << "]";
+        size_t cipher_cnt = 0;
         for (const size_t max_ind : maximize_list[list_ind]) {
           auto& cipher = arg0_cipher->get_element(max_ind);
           if (cipher->known_value()) {
@@ -1248,7 +1256,11 @@ void ngraph::he::HESealExecutable::generate_calls(
             NGRAPH_INFO << "Got max(known_value) at index " << max_ind;
             throw ngraph_error("max(known_value) not allowed");
           }
-          maxpool_ciphers[cipher_cnt] = cipher->ciphertext();
+          maxpool_ciphers.emplace_back(cipher->ciphertext());
+
+          NGRAPH_INFO << max_ind << " cipher size "
+                      << ngraph::he::ciphertext_size(cipher->ciphertext());
+
           cipher_cnt++;
         }
 
@@ -1260,6 +1272,8 @@ void ngraph::he::HESealExecutable::generate_calls(
         auto max_message =
             TCPMessage(MessageType::max_request, maxpool_ciphers);
 
+        NGRAPH_INFO << "Writing message";
+
         m_session->do_write(std::move(max_message));
 
         // Acquire lock
@@ -1268,9 +1282,15 @@ void ngraph::he::HESealExecutable::generate_calls(
         // Wait until max is done
         m_max_cond.wait(mlock, std::bind(&HESealExecutable::max_done, this));
 
+        NGRAPH_INFO << "Max is done";
+
         // Reset for next max call
         m_max_done = false;
+        maxpool_ciphers.clear();
       }
+
+      NGRAPH_INFO << "m_max_ciphertexts " << m_max_ciphertexts.size();
+      NGRAPH_INFO << "out0_cipher.size " << out0_cipher->get_elements().size();
 
       out0_cipher->set_elements(m_max_ciphertexts);
       break;

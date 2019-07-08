@@ -87,37 +87,10 @@ def test_mnist_cnn(FLAGS):
     print('Error count:', error_count, 'of', FLAGS.batch_size, 'elements.')
     print('Accuracy: ', test_accuracy)
 
-    # Rename serialized graph
-    try:
-        serialized_graphs = glob.glob("tf_function_ngraph*.json")
-        if os.environ.get('NGRAPH_ENABLE_SERIALIZE',
-                          '') == "1" and len(serialized_graphs) == 1:
-            src_path = serialized_graphs[0]
-            dst_path = "mnist_cryptonets_batch_%s.json" % (FLAGS.batch_size, )
-            print("Moving", src_path, "to", dst_path)
-            os.rename(src_path, dst_path)
-    except:
-        print("Renaming serialized graph not successful")
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '--data_dir',
-        type=str,
-        default='/tmp/tensorflow/mnist/input_data',
-        help='Directory where input data is stored')
     parser.add_argument('--batch_size', type=int, default=1, help='Batch size')
-    parser.add_argument(
-        '--test_image_count',
-        type=int,
-        default=None,
-        help="Number of test images to evaluate on")
-    parser.add_argument(
-        '--save_batch',
-        type=bool,
-        default=False,
-        help='Whether or not to save the test image and label.')
 
     FLAGS, unparsed = parser.parse_known_args()
     test_mnist_cnn(FLAGS)
