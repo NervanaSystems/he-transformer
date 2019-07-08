@@ -74,12 +74,6 @@ def test_mnist_cnn(FLAGS):
     y_test_batch = y_test[:FLAGS.batch_size]
     y_label_batch = np.argmax(y_test_batch, 1)
 
-    if FLAGS.save_batch:
-        x_test_batch = x_test[:FLAGS.batch_size]
-        x_test_batch.tofile("x_test_" + str(FLAGS.batch_size) + ".bin")
-        y_label_batch.astype('float32').tofile("y_label_" +
-                                               str(FLAGS.batch_size) + ".bin")
-
     correct_prediction = np.equal(np.argmax(y_conv_val, 1), y_label_batch)
     error_count = np.size(correct_prediction) - np.sum(correct_prediction)
     test_accuracy = np.mean(correct_prediction)
