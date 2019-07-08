@@ -24,7 +24,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from mnist_util import load_mnist_data, \
     get_variable, \
     conv2d_stride_2_valid, \
-    avg_pool_3x3_same_size
+    avg_pool_3x3_same_size, \
+    max_pool_3x3_same_size
 
 
 def cryptonets_relu_model(x, mode):
@@ -42,10 +43,10 @@ def cryptonets_relu_model(x, mode):
     y = y + W_bc1
     y = tf.nn.relu(y)
 
-    y = avg_pool_3x3_same_size(y)
+    y = max_pool_3x3_same_size(y)
     W_conv2 = get_variable('W_conv2', [5, 5, 5, 50], mode)
     y = conv2d_stride_2_valid(y, W_conv2)
-    y = avg_pool_3x3_same_size(y)
+    y = max_pool_3x3_same_size(y)
 
     y = tf.reshape(y, [-1, 5 * 5 * 50])
     W_fc1 = get_variable('W_fc1', [5 * 5 * 50, 100], mode)

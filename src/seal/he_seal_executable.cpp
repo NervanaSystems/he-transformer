@@ -826,7 +826,7 @@ void ngraph::he::HESealExecutable::generate_calls(
     arg0_cipher = std::dynamic_pointer_cast<HESealCipherTensor>(args[0]);
     arg0_plain = std::dynamic_pointer_cast<HEPlainTensor>(args[0]);
     NGRAPH_CHECK(arg0_cipher == nullptr || arg0_plain == nullptr,
-                 "arg0 is netiher cipher nor plain");
+                 "arg0 is neither cipher nor plain");
     NGRAPH_CHECK(!(arg0_cipher != nullptr && arg0_plain != nullptr),
                  "arg0 is both cipher and plain?");
   }
@@ -852,6 +852,17 @@ void ngraph::he::HESealExecutable::generate_calls(
     } else if (arg1_plain != nullptr) {
       ss << ", Plain";
     }
+    for (size_t arg_ind = 2; arg_ind < args.size(); ++arg_ind) {
+      auto arg = args[arg_ind];
+      if (std::dynamic_pointer_cast<HESealCipherTensor>(arg) != nullptr) {
+        ss << ", Cipher";
+      } else if (std::dynamic_pointer_cast<HEPlainTensor>(arg) != nullptr) {
+        ss << ", Plain";
+      } else {
+        throw ngraph_error("argument is neither plain nor cipher tensor");
+      }
+    }
+
     NGRAPH_INFO << ss.str();
     ss.str("");
     ss << "Outputs: ";
@@ -903,10 +914,17 @@ void ngraph::he::HESealExecutable::generate_calls(
     case OP_TYPEID::AvgPool: {
       const op::AvgPool* avg_pool = static_cast<const op::AvgPool*>(&node);
       Shape in_shape = unpacked_arg_shapes[0];
+      Shape out_shape = packed_out_shape;
+
+      if (verbose) {
+        NGRAPH_INFO << "AvgPool " << join(in_shape, "x") << " => "
+                    << join(out_shape, "x");
+      }
+
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
         ngraph::he::avg_pool_seal(
             arg0_cipher->get_elements(), out0_cipher->get_elements(), in_shape,
-            packed_out_shape, avg_pool->get_window_shape(),
+            out_shape, avg_pool->get_window_shape(),
             avg_pool->get_window_movement_strides(),
             avg_pool->get_padding_below(), avg_pool->get_padding_above(),
             avg_pool->get_include_padding_in_avg_computation(),
@@ -916,7 +934,7 @@ void ngraph::he::HESealExecutable::generate_calls(
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
         ngraph::he::avg_pool_seal(
             arg0_plain->get_elements(), out0_plain->get_elements(), in_shape,
-            packed_out_shape, avg_pool->get_window_shape(),
+            out_shape, avg_pool->get_window_shape(),
             avg_pool->get_window_movement_strides(),
             avg_pool->get_padding_below(), avg_pool->get_padding_above(),
             avg_pool->get_include_padding_in_avg_computation(),
@@ -1322,8 +1340,6 @@ void ngraph::he::HESealExecutable::generate_calls(
     case OP_TYPEID::Pad: {
       const op::Pad* pad = static_cast<const op::Pad*>(&node);
       const Shape arg0_shape = packed_arg_shapes[0];
-
-      NGRAPH_INFO << "PAd";
 
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {

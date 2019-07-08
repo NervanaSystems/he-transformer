@@ -109,11 +109,10 @@ void ngraph::he::scalar_multiply_seal(
     out->known_value() = true;
     out->value() = 0;
   } else if (arg1.is_single_value()) {
-    float value = arg1.values()[0];
-    double double_val = double(value);
+    double value = static_cast<double>(arg1.values()[0]);
 
-    multiply_plain(arg0.ciphertext(), double_val, out->ciphertext(),
-                   he_seal_backend, pool);
+    multiply_plain(arg0.ciphertext(), value, out->ciphertext(), he_seal_backend,
+                   pool);
 
     if (out->ciphertext().is_transparent()) {
       NGRAPH_WARN << "Result ciphertext is transparent";

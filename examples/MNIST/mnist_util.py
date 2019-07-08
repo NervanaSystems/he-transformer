@@ -69,6 +69,12 @@ def avg_pool_3x3_same_size(x):
         x, ksize=[1, 3, 3, 1], strides=[1, 1, 1, 1], padding='SAME')
 
 
+def max_pool_3x3_same_size(x):
+    """3x3 avg_pool using same padding, keeping original feature map size"""
+    return tf.nn.max_pool2d(
+        x, ksize=[1, 3, 3, 1], strides=[1, 1, 1, 1], padding='SAME')
+
+
 def get_variable(name, shape, mode):
     if mode not in set(['train', 'test']):
         print('mode should be train or test')
