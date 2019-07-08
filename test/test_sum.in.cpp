@@ -76,8 +76,8 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_trivial_5d) {
     auto t_result = results[0];
 
     copy_data(t_a,
-              vector<float>{1, 1.f, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                            1, 1,   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1});
+              vector<float>{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1});
     auto handle = backend->compile(f);
     handle->call_with_validate({t_result}, {t_a});
     EXPECT_TRUE(all_close(

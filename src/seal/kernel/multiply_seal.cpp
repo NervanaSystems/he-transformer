@@ -14,8 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "seal/kernel/multiply_seal.hpp"
 #include "seal/he_seal_backend.hpp"
+#include "seal/kernel/multiply_seal.hpp"
 #include "seal/kernel/negate_seal.hpp"
 #include "seal/seal_util.hpp"
 
