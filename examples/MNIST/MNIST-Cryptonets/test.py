@@ -24,15 +24,15 @@ import time
 import numpy as np
 import itertools
 import glob
-
-from tensorflow.examples.tutorials.mnist import input_data
 import tensorflow as tf
 import common
 import ngraph_bridge
-
-from MNIST import mnist_util
-
 import os
+
+# Add parent directory to path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from mnist_util import load_mnist_data, get_variable, conv2d_stride_2_valid
+
 FLAGS = None
 
 

@@ -16,13 +16,15 @@
 
 import tensorflow as tf
 import numpy as np
+import os
+import sys
 
-#from ..mnist_util import get_variable
-
-#from mnist_util import \
-#    conv2d_stride_2_valid, \
-#    avg_pool_3x3_same_size, \
-#    get_variable
+# Add parent directory to path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from mnist_util import load_mnist_data, \
+    get_variable, \
+    conv2d_stride_2_valid, \
+    avg_pool_3x3_same_size
 
 
 def cryptonets_model(x, mode):

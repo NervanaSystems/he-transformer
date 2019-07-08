@@ -23,10 +23,16 @@ import sys
 import time
 import numpy as np
 import itertools
-
-from tensorflow.examples.tutorials.mnist import input_data
 import tensorflow as tf
-import common
+import model
+import os
+
+# Add parent directory to path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from mnist_util import load_mnist_data, \
+    get_variable, \
+    conv2d_stride_2_valid, \
+    avg_pool_3x3_same_size
 
 FLAGS = None
 
@@ -39,15 +45,15 @@ def squash_layers():
     x = tf.compat.v1.placeholder(tf.float32, [None, 13, 13, 5])
 
     # Pooling layer
-    h_pool1 = common.avg_pool_3x3_same_size(x)  # To N x 13 x 13 x 5
+    h_pool1 = avg_pool_3x3_same_size(x)  # To N x 13 x 13 x 5
 
     # Second convolution
     W_conv2 = np.loadtxt(
         'W_conv2.txt', dtype=np.float32).reshape([5, 5, 5, 50])
-    h_conv2 = common.conv2d_stride_2_valid(h_pool1, W_conv2)
+    h_conv2 = conv2d_stride_2_valid(h_pool1, W_conv2)
 
     # Second pooling layer.
-    h_pool2 = common.avg_pool_3x3_same_size(h_conv2)
+    h_pool2 = avg_pool_3x3_same_size(h_conv2)
 
     # Fully connected layer 1
     # Input: N x 5 x 5 x 50
@@ -102,7 +108,7 @@ def cryptonets_train(x):
     # Output after padding: N x 13 x 13 x 5
     with tf.name_scope('conv1'):
         W_conv1 = tf.get_variable("W_conv1", [5, 5, 1, 5])
-        h_conv1_no_pad = tf.square(common.conv2d_stride_2_valid(x, W_conv1))
+        h_conv1_no_pad = tf.square(conv2d_stride_2_valid(x, W_conv1))
         paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]],
                                name='pad_const')
         h_conv1 = tf.pad(h_conv1_no_pad, paddings)
@@ -111,7 +117,7 @@ def cryptonets_train(x):
     # Input: N x 13 x 13 x 5
     # Output: N x 13 x 13 x 5
     with tf.name_scope('pool1'):
-        h_pool1 = common.avg_pool_3x3_same_size(h_conv1)
+        h_pool1 = avg_pool_3x3_same_size(h_conv1)
 
     # Second convolution
     # Input: N x 13 x 13 x 5
@@ -119,13 +125,13 @@ def cryptonets_train(x):
     # Output: N x 5 x 5 x 50
     with tf.name_scope('conv2'):
         W_conv2 = tf.get_variable("W_conv2", [5, 5, 5, 50])
-        h_conv2 = common.conv2d_stride_2_valid(h_pool1, W_conv2)
+        h_conv2 = conv2d_stride_2_valid(h_pool1, W_conv2)
 
     # Second pooling layer
     # Input: N x 5 x 5 x 50
     # Output: N x 5 x 5 x 50
     with tf.name_scope('pool2'):
-        h_pool2 = common.avg_pool_3x3_same_size(h_conv2)
+        h_pool2 = avg_pool_3x3_same_size(h_conv2)
 
     # Fully connected layer 1
     # Input: N x 5 x 5 x 50
@@ -170,14 +176,14 @@ def get_train_batch(train_iter, batch_size, x_train, y_train):
 
 
 def main(_):
-    (x_train, y_train, x_test, y_test) = common.load_mnist_data()
+    (x_train, y_train, x_test, y_test) = load_mnist_data()
 
     print('x_train', x_train.shape)
     print('x-test', x_test.shape)
 
     x = tf.compat.v1.placeholder(tf.float32, [None, 28, 28, 1])
     y_ = tf.compat.v1.placeholder(tf.float32, [None, 10])
-    y_conv = common.cryptonets_model(x, 'train')
+    y_conv = model.cryptonets_model(x, 'train')
 
     with tf.name_scope('loss'):
         cross_entropy = tf.nn.softmax_cross_entropy_with_logits_v2(
