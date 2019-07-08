@@ -36,6 +36,26 @@ from mnist_util import load_mnist_data, get_variable, conv2d_stride_2_valid
 FLAGS = None
 
 
+def cryptonets_relu_test_squashed(x):
+    """Constructs test network for Cryptonets Relu using saved weights.
+       Assumes linear layers have been squashed."""
+    paddings = [[0, 0], [0, 1], [0, 1], [0, 0]]
+    x = tf.pad(x, paddings)
+
+    W_conv1 = get_variable('W_conv1', [5, 5, 1, 5], 'test')
+    y = conv2d_stride_2_valid(x, W_conv1)
+    y = tf.nn.relu(y)
+
+    W_squash = get_variable('W_squash', [5 * 13 * 13, 100], 'test')
+    y = tf.reshape(y, [-1, 5 * 13 * 13])
+    y = tf.matmul(y, W_squash)
+    y = tf.nn.relu(y)
+    W_fc2 = get_variable('W_fc2', [100, 10], 'test')
+    y = tf.matmul(y, W_fc2)
+
+    return y
+
+
 def test_cryptonets_relu(FLAGS):
     (x_train, y_train, x_test, y_test) = load_mnist_data()
 
@@ -43,7 +63,7 @@ def test_cryptonets_relu(FLAGS):
     y_ = tf.compat.v1.placeholder(tf.float32, [None, 10])
 
     # Create the model
-    y_conv = model.cryptonets_relu_model(x, 'test')
+    y_conv = cryptonets_relu_test_squashed(x)
 
     with tf.compat.v1.Session() as sess:
         x_test = x_test[:FLAGS.batch_size]

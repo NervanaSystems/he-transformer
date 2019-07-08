@@ -38,6 +38,49 @@ from mnist_util import load_mnist_data, \
 FLAGS = None
 
 
+def squash_layers():
+    print("Squashing layers")
+    tf.compat.v1.reset_default_graph()
+
+    # Input from h_conv1 squaring
+    x = tf.compat.v1.placeholder(tf.float32, [None, 13, 13, 5])
+
+    # Pooling layer
+    h_pool1 = avg_pool_3x3_same_size(x)  # To N x 13 x 13 x 5
+
+    # Second convolution
+    W_conv2 = np.loadtxt(
+        'W_conv2.txt', dtype=np.float32).reshape([5, 5, 5, 50])
+    h_conv2 = conv2d_stride_2_valid(h_pool1, W_conv2)
+
+    # Second pooling layer.
+    h_pool2 = avg_pool_3x3_same_size(h_conv2)
+
+    # Fully connected layer 1
+    # Input: N x 5 x 5 x 50
+    # Output: N x 100
+    W_fc1 = np.loadtxt(
+        'W_fc1.txt', dtype=np.float32).reshape([5 * 5 * 50, 100])
+    h_pool2_flat = tf.reshape(h_pool2, [-1, 5 * 5 * 50])
+    pre_square = tf.matmul(h_pool2_flat, W_fc1)
+
+    with tf.compat.v1.Session() as sess:
+        x_in = np.eye(13 * 13 * 5)
+        x_in = x_in.reshape([13 * 13 * 5, 13, 13, 5])
+        W = (sess.run([pre_square], feed_dict={x: x_in}))[0]
+        squashed_file_name = "W_squash.txt"
+        np.savetxt(squashed_file_name, W)
+        print("Saved to", squashed_file_name)
+
+        # Sanity check
+        x_in = np.random.rand(100, 13, 13, 5)
+        network_out = (sess.run([pre_square], feed_dict={x: x_in}))[0]
+        linear_out = x_in.reshape(100, 13 * 13 * 5).dot(W)
+        assert (np.max(np.abs(linear_out - network_out)) < 1e-5)
+
+    print("Squashed layers")
+
+
 def main(_):
     (x_train, y_train, x_test, y_test) = load_mnist_data()
 
@@ -97,6 +140,9 @@ def main(_):
 
             print("saving", filename)
             np.savetxt(str(filename), weight)
+
+    # Squash weights and save as W_squash.txt
+    squash_layers()
 
 
 if __name__ == '__main__':
