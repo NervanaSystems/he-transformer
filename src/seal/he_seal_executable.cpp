@@ -117,6 +117,8 @@ ngraph::he::HESealExecutable::HESealExecutable(
     }
   }
 
+  NGRAPH_INFO << "Running executable passes";
+
   m_is_compiled = true;
   ngraph::pass::Manager pass_manager;
   pass_manager.register_pass<ngraph::pass::LikeReplacement>();

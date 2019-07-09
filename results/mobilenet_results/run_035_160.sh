@@ -28,9 +28,9 @@ do
   NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
   python test.py \
   --batch_size=4096  \
-  --image_size=128 \
+  --image_size=160 \
   --ngraph=true \
-  --model=./model/mobilenet_v2_0.35_128_opt.pb \
+  --model=./model/mobilenet_v2_0.35_160_opt.pb \
   --data_dir=$DATA_DIR \
   --ngraph=true &) >> $outfile
 

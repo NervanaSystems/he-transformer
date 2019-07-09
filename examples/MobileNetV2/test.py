@@ -76,10 +76,12 @@ def main(FLAGS):
         x_test = get_validation_images(FLAGS)
         validation_labels = imagenet_inference_labels[validation_nums]
     else:
-        x_test = np.random.rand(FLAGS.batch_size, 96, 96, 3)
+        x_test = np.random.rand(FLAGS.batch_size, FLAGS.image_size,
+                                FLAGS.image_size, 3)
 
     if FLAGS.ngraph:
         import ngraph_bridge
+        print(ngraph_bridge.__version__)
 
     config = tf.ConfigProto()
     config.intra_op_parallelism_threads = 44

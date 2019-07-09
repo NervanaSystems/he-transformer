@@ -27,7 +27,7 @@ do
   NGRAPH_TF_BACKEND=HE_SEAL \
   NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json \
   python test.py \
-  --batch_size=4096  \
+  --batch_size=10  \
   --image_size=128 \
   --ngraph=true \
   --model=./model/mobilenet_v2_0.35_128_opt.pb \
@@ -39,7 +39,7 @@ do
   OMP_NUM_THREADS=56 \
   NGRAPH_COMPLEX_PACK=1 \
   python client.py \
-  --batch_size=4096 \
+  --batch_size=10 \
   --data_dir=$DATA_DIR >> $outfile
 
 done
