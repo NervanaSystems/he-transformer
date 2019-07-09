@@ -14,8 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "seal/kernel/add_seal.hpp"
 #include "seal/he_seal_backend.hpp"
+#include "seal/kernel/add_seal.hpp"
 #include "seal/seal_util.hpp"
 
 void ngraph::he::scalar_add_seal(
@@ -101,10 +101,6 @@ void ngraph::he::scalar_add_seal(
     out->complex_packing() = arg0.complex_packing();
   }
   out->known_value() = false;
-
-  // NGRAPH_INFO << "Add out scale " << out->ciphertext().scale() << " chain ind
-  // "
-  //            << ngraph::he::get_chain_index(*out, he_seal_backend);
 }
 
 void ngraph::he::scalar_add_seal(const HEPlaintext& arg0,
@@ -115,22 +111,22 @@ void ngraph::he::scalar_add_seal(const HEPlaintext& arg0,
 
   const std::vector<float>& arg0_vals = arg0.values();
   const std::vector<float>& arg1_vals = arg1.values();
-  std::vector<float> out_vals(arg0.num_values());
+  std::vector<float> out_vals;
 
   if (arg0_vals.size() == 1) {
     std::transform(
-        arg1_vals.begin(), arg1_vals.end(), out_vals.begin(),
+        arg1_vals.begin(), arg1_vals.end(), std::back_inserter(out_vals),
         std::bind(std::plus<float>(), std::placeholders::_1, arg0_vals[0]));
   } else if (arg1_vals.size() == 1) {
     std::transform(
-        arg0_vals.begin(), arg0_vals.end(), out_vals.begin(),
+        arg0_vals.begin(), arg0_vals.end(), std::back_inserter(out_vals),
         std::bind(std::plus<float>(), std::placeholders::_1, arg1_vals[0]));
   } else {
     NGRAPH_CHECK(arg0.num_values() == arg1.num_values(), "arg0 num values ",
                  arg0.num_values(), " != arg1 num values ", arg1.num_values(),
                  " in plain-plain add");
     std::transform(arg0_vals.begin(), arg0_vals.end(), arg1_vals.begin(),
-                   out_vals.begin(), std::plus<float>());
+                   std::back_inserter(out_vals), std::plus<float>());
   }
   out.values() = out_vals;
 }

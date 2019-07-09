@@ -107,7 +107,6 @@ inline ngraph::he::HESealEncryptionParameters parse_config_or_use_default(
 
   const char* config_path = getenv("NGRAPH_HE_SEAL_CONFIG");
   if (config_path == nullptr) {
-    NGRAPH_INFO << "Using default SEAL CKKS parameters" << config_path;
     return default_ckks_parameters();
   }
 

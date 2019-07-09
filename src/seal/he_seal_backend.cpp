@@ -54,16 +54,16 @@ ngraph::he::HESealBackend::HESealBackend(
   } else if (parms.security_level() == 256) {
     sec_level = seal::sec_level_type::tc256;
   } else if (parms.security_level() == 0) {
-    NGRAPH_WARN
-        << "Parameter selection does not enforce minimum security level";
+    if (m_encrypt_data || m_encrypt_model) {
+      NGRAPH_WARN
+          << "Parameter selection does not enforce minimum security level";
+    }
   } else {
     throw ngraph_error("Invalid security level");
   }
 
   m_context = seal::SEALContext::Create(parms.seal_encryption_parameters(),
                                         true, sec_level);
-
-  print_seal_context(*m_context);
 
   auto context_data = m_context->key_context_data();
 
@@ -81,7 +81,10 @@ ngraph::he::HESealBackend::HESealBackend(
   // TODO: pick smaller scale?
   auto coeff_moduli = context_data->parms().coeff_modulus();
   m_scale = ngraph::he::choose_scale(coeff_moduli);
-  NGRAPH_INFO << "Scale " << m_scale;
+  if (m_encrypt_data) {
+    print_seal_context(*m_context);
+    NGRAPH_INFO << "Scale " << m_scale;
+  }
 
   // Encoder
   m_ckks_encoder = std::make_shared<seal::CKKSEncoder>(m_context);

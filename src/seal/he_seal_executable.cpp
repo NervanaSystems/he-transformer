@@ -139,9 +139,7 @@ ngraph::he::HESealExecutable::HESealExecutable(
     m_wrapped_nodes.emplace_back(node);
   }
 
-  NGRAPH_INFO << "Setting parameters and results";
   set_parameters_and_results(*function);
-  NGRAPH_INFO << "Parameters size " << get_parameters().size();
 
   // Constant, for example, cannot be packed
   if (get_parameters().size() > 0) {
@@ -675,8 +673,10 @@ bool ngraph::he::HESealExecutable::call(
   for (const auto& elem : m_timer_map) {
     total_time += elem.second.get_milliseconds();
   }
-  NGRAPH_INFO << "\033[1;32m"
-              << "Total time " << total_time << " (ms) \033[0m";
+  if (verbose_op("total")) {
+    NGRAPH_INFO << "\033[1;32m"
+                << "Total time " << total_time << " (ms) \033[0m";
+  }
 
   // Send outputs to client.
   if (m_enable_client) {
