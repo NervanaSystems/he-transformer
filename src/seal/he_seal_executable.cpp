@@ -139,9 +139,7 @@ ngraph::he::HESealExecutable::HESealExecutable(
     m_wrapped_nodes.emplace_back(node);
   }
 
-  NGRAPH_INFO << "Setting parameters and results";
   set_parameters_and_results(*function);
-  NGRAPH_INFO << "Parameters size " << get_parameters().size();
 
   // Constant, for example, cannot be packed
   if (get_parameters().size() > 0) {
@@ -675,8 +673,10 @@ bool ngraph::he::HESealExecutable::call(
   for (const auto& elem : m_timer_map) {
     total_time += elem.second.get_milliseconds();
   }
-  NGRAPH_INFO << "\033[1;32m"
-              << "Total time " << total_time << " (ms) \033[0m";
+  if (verbose_op("total")) {
+    NGRAPH_INFO << "\033[1;32m"
+                << "Total time " << total_time << " (ms) \033[0m";
+  }
 
   // Send outputs to client.
   if (m_enable_client) {
@@ -1426,7 +1426,6 @@ void ngraph::he::HESealExecutable::generate_calls(
             "Input argument is neither plaintext nor ciphertext");
       }
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
-        NGRAPH_INFO << "Calling result on " << output_size << " elements";
         ngraph::he::result_seal(arg0_cipher->get_elements(),
                                 out0_cipher->get_elements(), output_size);
       } else if (arg0_plain != nullptr && out0_cipher != nullptr) {

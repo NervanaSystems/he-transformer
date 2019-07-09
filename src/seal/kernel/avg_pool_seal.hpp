@@ -129,7 +129,8 @@ inline void avg_pool_seal(
         // result += v;
 
         if (first_add) {
-          sum = arg[input_batch_transform.index(input_batch_coord)];
+          sum = std::make_shared<SealCiphertextWrapper>(
+              *arg[input_batch_transform.index(input_batch_coord)]);
           first_add = false;
         } else {
           ngraph::he::scalar_add_seal(

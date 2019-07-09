@@ -28,7 +28,6 @@ using namespace ngraph;
 static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, backend_init) {
-  NGRAPH_INFO << "Initializing backend ${BACKEND_NAME}";
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   EXPECT_EQ(1, 1);
 }

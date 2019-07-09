@@ -100,6 +100,12 @@ class HESealExecutable : public runtime::Executable {
                m_verbose_ops.end();
   };
 
+  bool verbose_op(const std::string& description) {
+    return m_verbose_all_ops ||
+           m_verbose_ops.find(ngraph::to_lower(description)) !=
+               m_verbose_ops.end();
+  };
+
   void enable_client() {
     m_enable_client = true;
     client_setup();
