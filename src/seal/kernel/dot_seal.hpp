@@ -469,13 +469,9 @@ inline void dot_seal(const std::vector<HEPlaintext>& arg0,
   size_t arg1_projected_size = arg1_projected_coords.size();
   size_t global_projected_size = arg0_projected_size * arg1_projected_size;
 
-// TODO: don't create new thread for every loop index, only one per thread
 #pragma omp parallel for
   for (size_t global_projected_idx = 0;
        global_projected_idx < global_projected_size; ++global_projected_idx) {
-    // Init thread-local memory pool for each thread
-    seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::ThreadLocal();
-
     // Compute outer and inner index
     size_t arg0_projected_idx = global_projected_idx / arg1_projected_size;
     size_t arg1_projected_idx = global_projected_idx % arg1_projected_size;
@@ -523,13 +519,12 @@ inline void dot_seal(const std::vector<HEPlaintext>& arg0,
       auto mult_arg1 = arg1[arg1_transform.index(arg1_coord)];
       auto prod = HEPlaintext();
       scalar_multiply_seal(mult_arg0, mult_arg1, prod, element_type,
-                           he_seal_backend, pool);
+                           he_seal_backend);
       if (first_add) {
-        // TODO: std::move(prod)?
         sum = prod;
         first_add = false;
       } else {
-        scalar_add_seal(prod, sum, sum, element_type, he_seal_backend, pool);
+        scalar_add_seal(prod, sum, sum, element_type, he_seal_backend);
       }
     }
     // Write the sum back.

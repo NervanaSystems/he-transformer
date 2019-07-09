@@ -54,16 +54,16 @@ ngraph::he::HESealBackend::HESealBackend(
   } else if (parms.security_level() == 256) {
     sec_level = seal::sec_level_type::tc256;
   } else if (parms.security_level() == 0) {
-    NGRAPH_WARN
-        << "Parameter selection does not enforce minimum security level";
+    if (m_encrypt_data || m_encrypt_model) {
+      NGRAPH_WARN
+          << "Parameter selection does not enforce minimum security level";
+    }
   } else {
     throw ngraph_error("Invalid security level");
   }
 
   m_context = seal::SEALContext::Create(parms.seal_encryption_parameters(),
                                         true, sec_level);
-
-  print_seal_context(*m_context);
 
   auto context_data = m_context->key_context_data();
 
@@ -81,7 +81,10 @@ ngraph::he::HESealBackend::HESealBackend(
   // TODO: pick smaller scale?
   auto coeff_moduli = context_data->parms().coeff_modulus();
   m_scale = ngraph::he::choose_scale(coeff_moduli);
-  NGRAPH_INFO << "Scale " << m_scale;
+  if (m_encrypt_data) {
+    print_seal_context(*m_context);
+    NGRAPH_INFO << "Scale " << m_scale;
+  }
 
   // Encoder
   m_ckks_encoder = std::make_shared<seal::CKKSEncoder>(m_context);
@@ -108,7 +111,7 @@ ngraph::he::HESealBackend::HESealBackend(
 std::shared_ptr<ngraph::runtime::Tensor>
 ngraph::he::HESealBackend::create_tensor(const element::Type& element_type,
                                          const Shape& shape) {
-  if (batch_data()) {
+  if (pack_data()) {
     return create_packed_plain_tensor(element_type, shape);
   } else {
     return create_plain_tensor(element_type, shape);
@@ -138,7 +141,6 @@ ngraph::he::HESealBackend::create_packed_cipher_tensor(
     const element::Type& type, const Shape& shape) {
   auto rc = std::make_shared<ngraph::he::HESealCipherTensor>(type, shape, *this,
                                                              true);
-  set_batch_data(true);
   return std::static_pointer_cast<ngraph::runtime::Tensor>(rc);
 }
 
@@ -147,7 +149,6 @@ ngraph::he::HESealBackend::create_packed_plain_tensor(const element::Type& type,
                                                       const Shape& shape) {
   auto rc =
       std::make_shared<ngraph::he::HEPlainTensor>(type, shape, *this, true);
-  set_batch_data(true);
   return std::static_pointer_cast<ngraph::runtime::Tensor>(rc);
 }
 
@@ -155,7 +156,7 @@ std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
     std::shared_ptr<Function> function, bool enable_performance_collection) {
   return std::make_shared<HESealExecutable>(
       function, enable_performance_collection, *this, m_encrypt_data,
-      m_encrypt_model, m_batch_data, m_complex_packing);
+      m_encrypt_model, pack_data(), m_complex_packing);
 }
 
 std::shared_ptr<ngraph::he::SealCiphertextWrapper>

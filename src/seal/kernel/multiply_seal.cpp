@@ -14,8 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "seal/kernel/multiply_seal.hpp"
 #include "seal/he_seal_backend.hpp"
+#include "seal/kernel/multiply_seal.hpp"
 #include "seal/kernel/negate_seal.hpp"
 #include "seal/seal_util.hpp"
 
@@ -109,11 +109,10 @@ void ngraph::he::scalar_multiply_seal(
     out->known_value() = true;
     out->value() = 0;
   } else if (arg1.is_single_value()) {
-    float value = arg1.values()[0];
-    double double_val = double(value);
+    double value = static_cast<double>(arg1.values()[0]);
 
-    multiply_plain(arg0.ciphertext(), double_val, out->ciphertext(),
-                   he_seal_backend, pool);
+    multiply_plain(arg0.ciphertext(), value, out->ciphertext(), he_seal_backend,
+                   pool);
 
     if (out->ciphertext().is_transparent()) {
       NGRAPH_WARN << "Result ciphertext is transparent";
@@ -163,20 +162,23 @@ void ngraph::he::scalar_multiply_seal(const ngraph::he::HEPlaintext& arg0,
                                       const HESealBackend& he_seal_backend,
                                       const seal::MemoryPoolHandle& pool) {
   NGRAPH_CHECK(element_type == element::f32);
+  NGRAPH_CHECK(arg0.num_values() > 0,
+               "Multiplying plaintext arg0 has 0 values");
+  NGRAPH_CHECK(arg1.num_values() > 0,
+               "Multiplying plaintext arg1 has 0 values");
 
   std::vector<float> arg0_vals = arg0.values();
   std::vector<float> arg1_vals = arg1.values();
-  std::vector<float> out_vals(arg0.num_values());
-
-  NGRAPH_CHECK(arg0_vals.size() > 0, "Multiplying plaintext arg0 has 0 values");
-  NGRAPH_CHECK(arg1_vals.size() > 0, "Multiplying plaintext arg1 has 0 values");
+  std::vector<float> out_vals;
 
   if (arg0_vals.size() == 1) {
-    std::transform(arg1_vals.begin(), arg1_vals.end(), out_vals.begin(),
+    std::transform(arg1_vals.begin(), arg1_vals.end(),
+                   std::back_inserter(out_vals),
                    std::bind(std::multiplies<float>(), std::placeholders::_1,
                              arg0_vals[0]));
   } else if (arg1_vals.size() == 1) {
-    std::transform(arg0_vals.begin(), arg0_vals.end(), out_vals.begin(),
+    std::transform(arg0_vals.begin(), arg0_vals.end(),
+                   std::back_inserter(out_vals),
                    std::bind(std::multiplies<float>(), std::placeholders::_1,
                              arg1_vals[0]));
   } else {
@@ -185,7 +187,7 @@ void ngraph::he::scalar_multiply_seal(const ngraph::he::HEPlaintext& arg0,
                  " in plain-plain multiply");
 
     std::transform(arg0_vals.begin(), arg0_vals.end(), arg1_vals.begin(),
-                   out_vals.begin(), std::multiplies<float>());
+                   std::back_inserter(out_vals), std::multiplies<float>());
   }
   out.values() = out_vals;
 }

@@ -91,11 +91,11 @@ inline void multiply_seal(
   multiply_seal(arg1, arg0, out, element_type, he_seal_backend, count, pool);
 }
 
-inline void multiply_seal(
-    const std::vector<HEPlaintext>& arg0, const std::vector<HEPlaintext>& arg1,
-    std::vector<HEPlaintext>& out, const element::Type& element_type,
-    const HESealBackend& he_seal_backend, size_t count,
-    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool()) {
+inline void multiply_seal(const std::vector<HEPlaintext>& arg0,
+                          const std::vector<HEPlaintext>& arg1,
+                          std::vector<HEPlaintext>& out,
+                          const element::Type& element_type,
+                          const HESealBackend& he_seal_backend, size_t count) {
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
     scalar_multiply_seal(arg0[i], arg1[i], out[i], element_type,

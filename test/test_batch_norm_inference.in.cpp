@@ -192,7 +192,7 @@ class BatchNormInferenceTesterNonZeroEpsilon
 NGRAPH_TEST(${BACKEND_NAME}, batch_norm_inference_0eps_f32) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_batch_data(false);
+  he_backend->set_pack_data(false);
 
   BatchNormInferenceTesterZeroEpsilon<float> bnt(he_backend, element::f32);
   EXPECT_TRUE(bnt.test_gamma()) << "Gamma test";
@@ -204,7 +204,7 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_inference_0eps_f32) {
 NGRAPH_TEST(${BACKEND_NAME}, batch_norm_inference_f32) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_batch_data(false);
+  he_backend->set_pack_data(false);
 
   BatchNormInferenceTesterNonZeroEpsilon<float> bnt(he_backend, element::f32);
   EXPECT_TRUE(bnt.test_gamma()) << "Gamma test";
@@ -290,7 +290,7 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion) {
 NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_batch_data(false);
+  he_backend->set_pack_data(false);
 
   Shape shape_input{1, 8, 3, 3};
   Shape shape_weights{2, 8, 1, 1};
@@ -369,7 +369,7 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he) {
 NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he_batch) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_batch_data(false);
+  he_backend->set_pack_data(false);
 
   size_t batch_size = 1;
 

@@ -30,7 +30,7 @@ static string s_manifest = "${MANIFEST}";
 NGRAPH_TEST(${BACKEND_NAME}, dot1d_plain_plain) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_batch_data(false);
+  he_backend->set_pack_data(false);
 
   Shape shape{4};
   Shape shape_r{};
@@ -56,7 +56,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot1d_plain_plain) {
 NGRAPH_TEST(${BACKEND_NAME}, dot1d) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_batch_data(false);
+  he_backend->set_pack_data(false);
 
   Shape shape{4};
   auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -116,7 +116,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot1d_optimized) {
 NGRAPH_TEST(${BACKEND_NAME}, dot_matrix_vector) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_batch_data(false);
+  he_backend->set_pack_data(false);
 
   Shape shape_a{4, 4};
   Shape shape_b{4};
@@ -150,7 +150,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_matrix_vector) {
 NGRAPH_TEST(${BACKEND_NAME}, dot_scalar) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_batch_data(false);
+  he_backend->set_pack_data(false);
 
   Shape shape{};
 

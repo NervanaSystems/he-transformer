@@ -139,7 +139,10 @@ ngraph::he::HESealExecutable::HESealExecutable(
     m_wrapped_nodes.emplace_back(node);
   }
 
+<<<<<<< HEAD
   NGRAPH_INFO << "Setting parameters and results";
+=======
+>>>>>>> origin/master
   set_parameters_and_results(*function);
   NGRAPH_INFO << "Parameters size " << get_parameters().size();
 
@@ -655,15 +658,23 @@ bool ngraph::he::HESealExecutable::call(
       for (auto it = tensor_map.begin(); it != tensor_map.end(); ++it) {
         const std::string& it_name = it->second->get_name();
         if (it_name == t->get_name()) {
+<<<<<<< HEAD
           // NGRAPH_INFO << "Erasing " << it_name << " from tensor map";
+=======
+>>>>>>> origin/master
           tensor_map.erase(it);
           erased = true;
           break;
         }
       }
       if (!erased) {
+<<<<<<< HEAD
         NGRAPH_INFO << "Failed to erase " << t->get_name()
                     << " from tensor map";
+=======
+        NGRAPH_DEBUG << "Failed to erase " << t->get_name()
+                     << " from tensor map";
+>>>>>>> origin/master
       }
     }
     if (verbose_op(*op)) {
@@ -676,8 +687,10 @@ bool ngraph::he::HESealExecutable::call(
   for (const auto& elem : m_timer_map) {
     total_time += elem.second.get_milliseconds();
   }
-  NGRAPH_INFO << "\033[1;32m"
-              << "Total time " << total_time << " (ms) \033[0m";
+  if (verbose_op("total")) {
+    NGRAPH_INFO << "\033[1;32m"
+                << "Total time " << total_time << " (ms) \033[0m";
+  }
 
   // Send outputs to client.
   if (m_enable_client) {
