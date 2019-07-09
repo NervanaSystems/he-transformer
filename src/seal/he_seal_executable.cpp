@@ -139,10 +139,6 @@ ngraph::he::HESealExecutable::HESealExecutable(
     m_wrapped_nodes.emplace_back(node);
   }
 
-<<<<<<< HEAD
-  NGRAPH_INFO << "Setting parameters and results";
-=======
->>>>>>> origin/master
   set_parameters_and_results(*function);
   NGRAPH_INFO << "Parameters size " << get_parameters().size();
 
@@ -459,7 +455,7 @@ ngraph::he::HESealExecutable::get_performance_data() const {
 bool ngraph::he::HESealExecutable::call(
     const std::vector<std::shared_ptr<runtime::Tensor>>& outputs,
     const std::vector<std::shared_ptr<runtime::Tensor>>& server_inputs) {
-  validate(outputs, server_inputs);
+  // validate(outputs, server_inputs);
 
   if (m_enable_client) {
     NGRAPH_INFO << "Waiting until m_client_inputs.size() == "
@@ -658,23 +654,14 @@ bool ngraph::he::HESealExecutable::call(
       for (auto it = tensor_map.begin(); it != tensor_map.end(); ++it) {
         const std::string& it_name = it->second->get_name();
         if (it_name == t->get_name()) {
-<<<<<<< HEAD
-          // NGRAPH_INFO << "Erasing " << it_name << " from tensor map";
-=======
->>>>>>> origin/master
           tensor_map.erase(it);
           erased = true;
           break;
         }
       }
       if (!erased) {
-<<<<<<< HEAD
-        NGRAPH_INFO << "Failed to erase " << t->get_name()
-                    << " from tensor map";
-=======
         NGRAPH_DEBUG << "Failed to erase " << t->get_name()
                      << " from tensor map";
->>>>>>> origin/master
       }
     }
     if (verbose_op(*op)) {
