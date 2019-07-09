@@ -1426,7 +1426,6 @@ void ngraph::he::HESealExecutable::generate_calls(
             "Input argument is neither plaintext nor ciphertext");
       }
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
-        NGRAPH_INFO << "Calling result on " << output_size << " elements";
         ngraph::he::result_seal(arg0_cipher->get_elements(),
                                 out0_cipher->get_elements(), output_size);
       } else if (arg0_plain != nullptr && out0_cipher != nullptr) {
