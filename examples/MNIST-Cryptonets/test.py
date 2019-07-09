@@ -37,10 +37,6 @@ FLAGS = None
 def cryptonets_test_squashed(x):
     """Constructs test network for Cryptonets using saved weights.
        Assumes linear layers have been squashed."""
-
-    # Reshape to use within a convolutional neural net.
-    # Last dimension is for "features" - there is only one here, since images are
-    # grayscale -- it would be 3 for an RGB image, 4 for RGBA, etc.
     x_image = tf.reshape(x, [-1, 28, 28, 1])
     paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]], name='pad_const')
     x_image = tf.pad(x_image, paddings)

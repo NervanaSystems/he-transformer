@@ -31,12 +31,12 @@ def cryptonets_relu_model(x, mode):
         print('mode should be train or test')
         raise Exception()
 
-    x_image = tf.reshape(x, [-1, 28, 28, 1])
+    x = tf.reshape(x, [-1, 28, 28, 1])
     paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]], name='pad_const')
-    x_image = tf.pad(x_image, paddings)
+    x = tf.pad(x, paddings)
 
     W_conv1 = get_variable('W_conv1', [5, 5, 1, 5], mode)
-    y = conv2d_stride_2_valid(x_image, W_conv1)
+    y = conv2d_stride_2_valid(x, W_conv1)
     W_bc1 = get_variable('W_conv1_bias', [1, 13, 13, 5], mode)
     y = y + W_bc1
     y = tf.nn.relu(y)
@@ -56,5 +56,5 @@ def cryptonets_relu_model(x, mode):
     W_fc2 = get_variable('W_fc2', [100, 10], mode)
     W_b2 = get_variable('W_fc2_bias', [10], mode)
     y = tf.matmul(y, W_fc2)
-    y + y + W_b2
+    y = y + W_b2
     return y
