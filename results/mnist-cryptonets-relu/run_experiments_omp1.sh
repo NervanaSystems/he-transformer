@@ -20,6 +20,7 @@ do
 
   (OMP_NUM_THREADS=1 \
   NGRAPH_ENABLE_CLIENT=1 \
+  NGRAPH_VOPS=total \
   NGRAPH_ENCRYPT_DATA=1 \
   NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N11_L1.json \
   NGRAPH_TF_BACKEND=HE_SEAL \

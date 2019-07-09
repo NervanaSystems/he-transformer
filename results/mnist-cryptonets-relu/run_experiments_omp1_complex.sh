@@ -19,6 +19,7 @@ do
   touch $outfile
 
   (OMP_NUM_THREADS=1 \
+  NGRAPH_VOPS=total \
   NGRAPH_COMPLEX_PACK=1 \
   NGRAPH_ENABLE_CLIENT=1 \
   NGRAPH_ENCRYPT_DATA=1 \
