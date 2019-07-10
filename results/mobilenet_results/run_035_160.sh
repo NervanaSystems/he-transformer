@@ -13,7 +13,7 @@ cd ../../examples/MobileNetV2
 # Best performance
 for i in {1..1}
 do
-  outfile=$curr_dir/results/035_128_${i}.txt
+  outfile=$curr_dir/results/035_160_${i}.txt
   echo "Trial ${i}"
   rm -rf $outfile
   touch $outfile
