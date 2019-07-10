@@ -15,16 +15,13 @@
 # *****************************************************************************
 
 import tensorflow as tf
-
 from tensorflow.python.platform import gfile
-
-import ngraph_bridge
 import json
 import he_seal_client
 import time
 import numpy as np
 import argparse
-
+import os
 from PIL import Image
 from util import get_imagenet_inference_labels, \
                  get_imagenet_training_labels, \
@@ -92,7 +89,16 @@ def main(FLAGS):
     x_test_flat = x_test.flatten(order='C"')
     hostname = 'localhost'
     port = 34000
-    client = he_seal_client.HESealClient(hostname, port, batch_size,
+
+    complex_scale_factor = 1
+    if ('NGRAPH_COMPLEX_PACK' in os.environ):
+        complex_scale_factor = 2
+    print('complex_scale_factor', complex_scale_factor)
+
+    # TODO: support even batch sizes
+    assert (batch_size % complex_scale_factor == 0)
+    new_batch_size = batch_size // complex_scale_factor
+    client = he_seal_client.HESealClient(hostname, port, new_batch_size,
                                          x_test_flat)
 
     while not client.is_done():
@@ -138,13 +144,6 @@ if __name__ == '__main__':
         'Directory where cropped ImageNet data and ground truth labels are stored'
     )
     parser.add_argument(
-        '--model',
-        type=str,
-        default='./model/mobilenet_v2_0.35_96_opt.pb',
-        help=
-        'Directory where cropped ImageNet data and ground truth labels are stored'
-    )
-    parser.add_argument(
         '--image_size', type=int, default=96, help='image size')
     parser.add_argument(
         '--save_images',
@@ -166,8 +165,6 @@ if __name__ == '__main__':
         type=int,
         default=256,
         help='crop to this size before resizing to image_size')
-    parser.add_argument(
-        '--ngraph', type=str2bool, default=False, help='use ngraph backend')
     parser.add_argument('--batch_size', type=int, default=1, help='Batch size')
 
     FLAGS, unparsed = parser.parse_known_args()

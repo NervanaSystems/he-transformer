@@ -35,10 +35,14 @@ def main():
         'mobilenet_v2_0.35_224',
         'mobilenet_v2_0.5_96',
         'mobilenet_v2_0.5_128',
+        'mobilenet_v2_0.5_160',
+        'mobilenet_v2_0.5_192',
+        'mobilenet_v2_0.5_224',
         'mobilenet_v2_0.75_96',
         'mobilenet_v2_0.75_128',
         'mobilenet_v2_0.75_160',
         'mobilenet_v2_0.75_192',
+        'mobilenet_v2_0.75_224',
         'mobilenet_v2_1.0_96',
         'mobilenet_v2_1.4_224',  # To test accuracy
     ]

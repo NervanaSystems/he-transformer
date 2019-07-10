@@ -8,6 +8,17 @@ echo $curr_dir
 
 cd ../../examples/MobileNetV2
 
+# For top1 / top5 accuracy:
+: '
+python test.py \
+  --batch_size=50000  \
+  --image_size=128 \
+  --model=./model/mobilenet_v2_0.35_128_opt.pb \
+  --data_dir=$DATA_DIR
+  yields
+  top1_acc 50.032
+  top5_acc 74.382
+'
 
 
 # Best performance
@@ -40,6 +51,7 @@ do
   NGRAPH_COMPLEX_PACK=1 \
   python client.py \
   --batch_size=4096 \
+  --image_size=128 \
   --data_dir=$DATA_DIR >> $outfile
 
 done
