@@ -1,0 +1,377 @@
+/
+| Encryption parameters :
+|   scheme: CKKS
+|   poly_modulus_degree: 4096
+|   coeff_modulus size: 104 (30 + 22 + 22 + 30) bits
+\
+Namespace(batch_size=2048, crop_size=256, data_dir='/nfs/site/home/fboemer/repos/data/ImageNet', image_size=96, load_cropped_images=False, model='./model/mobilenet_v2_0.35_96_opt.pb', ngraph=False, save_images=False, standardize=False)
+getting validation images
+FLAGS Namespace(batch_size=2048, crop_size=256, data_dir='/nfs/site/home/fboemer/repos/data/ImageNet', image_size=96, load_cropped_images=False, model='./model/mobilenet_v2_0.35_96_opt.pb', ngraph=False, save_images=False, standardize=False)
+[INFO] 2019-06-27T19:20:40z src/tcp/tcp_client.hpp 46	Client starting async connection
+[INFO] 2019-06-27T19:20:40z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:20:40z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:20:41z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:20:41z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:20:41z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:20:42z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:20:42z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:20:42z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:20:43z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:20:43z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:20:43z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:20:44z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:20:44z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:20:44z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:20:45z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:20:45z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:20:45z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:20:46z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:20:46z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:20:46z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:20:47z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:20:47z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:20:47z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:20:48z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:20:48z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:20:48z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:20:49z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:20:49z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:20:49z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:20:50z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:20:50z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:20:50z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:20:51z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:20:51z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:20:51z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:20:52z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:20:52z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:20:52z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:20:53z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:20:53z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:20:53z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:20:54z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:20:54z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:20:54z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:20:55z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:20:55z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:20:55z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:20:56z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:20:56z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:20:56z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:20:57z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:20:57z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:20:57z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:20:58z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:20:58z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:20:58z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:20:59z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:20:59z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:20:59z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:00z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:00z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:00z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:01z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:01z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:01z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:02z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:02z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:02z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:03z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:03z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:03z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:04z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:04z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:04z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:05z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:05z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:05z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:06z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:06z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:06z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:07z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:07z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:07z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:08z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:08z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:08z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:09z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:09z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:09z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:10z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:10z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:10z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:11z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:11z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:11z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:12z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:12z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:12z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:13z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:13z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:13z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:14z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:14z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:14z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:15z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:15z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:15z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:16z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:16z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:16z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:17z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:17z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:17z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:18z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:18z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:18z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:19z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:19z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:19z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:20z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:20z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:20z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:21z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:21z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:21z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:22z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:22z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:22z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:23z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:23z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:23z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:24z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:24z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:24z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:25z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:25z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:25z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:26z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:26z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:26z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:27z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:27z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:27z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:28z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:28z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:28z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:29z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:29z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:29z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:30z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:30z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:30z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:31z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:31z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:31z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:32z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:32z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:32z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:33z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:33z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:33z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:34z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:34z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:34z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:35z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:35z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:35z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:36z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:36z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:36z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:37z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:37z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:37z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:38z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:38z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:38z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:39z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:39z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:39z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:40z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:40z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:40z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:41z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:41z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-06-27T19:21:41z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-06-27T19:21:42z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-06-27T19:21:42z src/tcp/tcp_client.hpp 74	Connected to server
+[INFO] 2019-06-27T19:21:42z src/seal/he_seal_client.cpp 180	Loaded encryption parmeters
+/
+| Encryption parameters :
+|   scheme: CKKS
+|   poly_modulus_degree: 4096
+|   coeff_modulus size: 104 (30 + 22 + 22 + 30) bits
+\
+[INFO] 2019-06-27T19:20:33z src/seal/he_seal_backend.cpp 84	Scale 4.16973e+06
+[INFO] 2019-06-27T19:21:41z src/seal/he_seal_executable.cpp 137	Setting parameters and results
+[INFO] 2019-06-27T19:21:41z src/seal/he_seal_executable.cpp 139	Parameters size 1
+[INFO] 2019-06-27T19:21:41z src/seal/he_seal_executable.cpp 150	Setting up client in constructor!
+[INFO] 2019-06-27T19:21:41z src/seal/he_seal_executable.cpp 174	Enable client
+[INFO] 2019-06-27T19:21:41z src/seal/he_seal_executable.cpp 156	check_client_supports_function
+[INFO] 2019-06-27T19:21:41z src/seal/he_seal_executable.cpp 157	get_parameters 1
+[INFO] 2019-06-27T19:21:41z src/seal/he_seal_executable.cpp 158	Gettting parameters
+[INFO] 2019-06-27T19:21:41z src/seal/he_seal_executable.cpp 164	Gettting results
+[INFO] 2019-06-27T19:21:41z src/seal/he_seal_executable.cpp 178	Starting server
+[INFO] 2019-06-27T19:21:41z src/seal/he_seal_executable.cpp 202	Server accepting connections
+[INFO] 2019-06-27T19:21:42z src/seal/he_seal_executable.cpp 209	Connection accepted
+[INFO] 2019-06-27T19:21:42z src/seal/he_seal_executable.cpp 213	Session started
+[INFO] 2019-06-27T19:21:42z src/seal/he_seal_executable.cpp 217	Notifying that session has started
+[INFO] 2019-06-27T19:21:42z src/seal/he_seal_executable.cpp 219	done Notifying that session has started
+[INFO] 2019-06-27T19:21:42z src/seal/he_seal_executable.cpp 343	Server set public key
+[INFO] 2019-06-27T19:21:42z src/seal/he_seal_executable.cpp 359	Parameter shape 2048x96x96x3
+[INFO] 2019-06-27T19:21:42z src/seal/he_seal_executable.cpp 363	num_param_elements before batch size divide 56623104
+[INFO] 2019-06-27T19:21:42z src/seal/he_seal_executable.cpp 366	num_param_elements after batch size divide 27648
+[INFO] 2019-06-27T19:21:42z src/seal/he_seal_executable.cpp 370	Requesting total of 27648 parameter elements
+[INFO] 2019-06-27T19:21:42z src/seal/he_seal_executable.cpp 376	Server sending message of type: parameter_size
+[INFO] 2019-06-27T19:21:42z src/seal/he_seal_executable.cpp 470	Perfoming call
+[INFO] 2019-06-27T19:21:42z src/seal/he_seal_executable.cpp 472	Done validating against server inputs
+[INFO] 2019-06-27T19:21:42z src/seal/he_seal_executable.cpp 475	Waiting until m_client_inputs.size() == 1
+/
+| Encryption parameters :
+|   scheme: CKKS
+|   poly_modulus_degree: 4096
+|   coeff_modulus size: 104 (30 + 22 + 22 + 30) bits
+\
+got validation images
+batch_size 2048
+width 96
+height 96
+channels 3
+results shape (2050048,)
+results.shape (1001, 2048)
+top5.shape (2048, 5)
+validation_labels ['sea snake' 'alp' 'Shetland sheepdog' ... 'radio telescope'
+ 'coral fungus' 'hamster']
+top5 [['water snake' 'beaver' 'platypus' 'leatherback turtle' 'sea snake']
+ ['dogsled' 'alp' 'bighorn' 'ski' 'shovel']
+ ['Shetland sheepdog' 'collie' 'borzoi' 'papillon' 'Cardigan']
+ ...
+ ['radio telescope' 'planetarium' 'mountain tent' 'golf ball' 'alp']
+ ['coral fungus' 'carbonara' 'gyromitra' 'fig' 'king crab']
+ ['hamster' 'Norwegian elkhound' 'Pekinese' 'malamute' 'Siberian husky']]
+num_preds 2048
+Accuracy on  2048  predictions:
+top1_acc 41.748
+top5_acc 66.895
+[INFO] 2019-06-27T19:21:42z src/seal/he_seal_client.cpp 73	Client scale 4.16973e+06
+[INFO] 2019-06-27T19:21:42z src/seal/he_seal_client.cpp 189	Sending public key
+[INFO] 2019-06-27T19:21:42z src/seal/he_seal_client.cpp 197	Sending evaluation key
+[INFO] 2019-06-27T19:21:42z src/seal/he_seal_client.cpp 91	Parameter size 27648
+[INFO] 2019-06-27T19:21:42z src/seal/he_seal_client.cpp 92	Client batch size 2048
+[INFO] 2019-06-27T19:21:44z src/seal/he_seal_client.cpp 134	Creating execute message
+[INFO] 2019-06-27T19:21:45z src/seal/he_seal_client.cpp 137	Sending execute message with 27648 ciphertexts
+[INFO] 2019-06-27T19:25:35z src/seal/he_seal_client.cpp 146	Client got 1001 results 
+[INFO] 2019-06-27T19:25:36z src/seal/he_seal_client.cpp 165	Results size 2050048
+[INFO] 2019-06-27T19:25:36z src/seal/he_seal_client.cpp 290	Closing connection
+[INFO] 2019-06-27T19:25:36z src/tcp/tcp_client.hpp 55	Closing socket
+[INFO] 2019-06-27T19:25:36z src/tcp/tcp_client.hpp 99	Client error reading header: End of file
+[INFO] 2019-06-27T19:25:36z build/python/_install//nfs/site/home/fboemer/repos/he-transformer/build/external/include/seal/he_seal_client.hpp 50	is_done? 1
+Namespace(batch_size=2048, crop_size=256, data_dir='/nfs/site/home/fboemer/repos/data/ImageNet', image_size=96, load_cropped_images=False, model='./model/mobilenet_v2_0.35_96_opt.pb', ngraph=True, save_images=False, standardize=False)
+Using client
+loading graph ./model/mobilenet_v2_0.35_96_opt.pb
+performing inference
+performed inference, runtime (s):  303.87
+runtime per image (s) 0.15
+[INFO] 2019-06-27T19:21:48z src/seal/he_seal_executable.cpp 256	Loading 27648 ciphertexts
+[INFO] 2019-06-27T19:21:50z src/seal/he_seal_executable.cpp 267	Done loading 27648 ciphertexts
+[INFO] 2019-06-27T19:21:50z src/seal/he_seal_executable.cpp 298	Setting m_client_inputs
+[INFO] 2019-06-27T19:21:50z src/seal/he_seal_executable.cpp 329	Locking m_client_inputs_mutex
+[INFO] 2019-06-27T19:21:50z src/seal/he_seal_executable.cpp 333	Notified m_client_inpuds received
+[INFO] 2019-06-27T19:21:50z src/seal/he_seal_executable.cpp 481	client_inputs_received
+[INFO] 2019-06-27T19:21:50z src/seal/he_seal_executable.cpp 489	Encrypting data
+[INFO] 2019-06-27T19:21:50z src/seal/he_seal_executable.cpp 492	Batching data with batch size 2048
+[INFO] 2019-06-27T19:21:50z src/seal/he_seal_executable.cpp 504	Processing client inputs
+[INFO] 2019-06-27T19:21:56z src/seal/kernel/add_seal.hpp 74	Adding 36864 C+P elements
+[INFO] 2019-06-27T19:21:56z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:22:10z src/seal/kernel/add_seal.hpp 74	Adding 36864 C+P elements
+[INFO] 2019-06-27T19:22:10z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:22:22z src/seal/kernel/add_seal.hpp 74	Adding 18432 C+P elements
+[INFO] 2019-06-27T19:22:26z src/seal/kernel/add_seal.hpp 74	Adding 110592 C+P elements
+[INFO] 2019-06-27T19:22:27z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:23:05z src/seal/kernel/add_seal.hpp 74	Adding 27648 C+P elements
+[INFO] 2019-06-27T19:23:06z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:23:15z src/seal/kernel/add_seal.hpp 74	Adding 4608 C+P elements
+[INFO] 2019-06-27T19:23:16z src/seal/kernel/add_seal.hpp 74	Adding 27648 C+P elements
+[INFO] 2019-06-27T19:23:16z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:23:27z src/seal/kernel/add_seal.hpp 74	Adding 27648 C+P elements
+[INFO] 2019-06-27T19:23:27z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:23:36z src/seal/kernel/add_seal.hpp 74	Adding 4608 C+P elements
+[INFO] 2019-06-27T19:23:37z src/seal/kernel/add_seal.hpp 74	Adding 27648 C+P elements
+[INFO] 2019-06-27T19:23:37z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:23:47z src/seal/kernel/add_seal.hpp 74	Adding 6912 C+P elements
+[INFO] 2019-06-27T19:23:47z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:23:49z src/seal/kernel/add_seal.hpp 74	Adding 2304 C+P elements
+[INFO] 2019-06-27T19:23:50z src/seal/kernel/add_seal.hpp 74	Adding 13824 C+P elements
+[INFO] 2019-06-27T19:23:50z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:23:56z src/seal/kernel/add_seal.hpp 74	Adding 13824 C+P elements
+[INFO] 2019-06-27T19:23:56z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:24:01z src/seal/kernel/add_seal.hpp 74	Adding 2304 C+P elements
+[INFO] 2019-06-27T19:24:02z src/seal/kernel/add_seal.hpp 74	Adding 13824 C+P elements
+[INFO] 2019-06-27T19:24:02z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:24:08z src/seal/kernel/add_seal.hpp 74	Adding 13824 C+P elements
+[INFO] 2019-06-27T19:24:08z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:24:13z src/seal/kernel/add_seal.hpp 74	Adding 2304 C+P elements
+[INFO] 2019-06-27T19:24:15z src/seal/kernel/add_seal.hpp 74	Adding 13824 C+P elements
+[INFO] 2019-06-27T19:24:15z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:24:20z src/seal/kernel/add_seal.hpp 74	Adding 3456 C+P elements
+[INFO] 2019-06-27T19:24:20z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:24:22z src/seal/kernel/add_seal.hpp 74	Adding 864 C+P elements
+[INFO] 2019-06-27T19:24:22z src/seal/kernel/add_seal.hpp 74	Adding 5184 C+P elements
+[INFO] 2019-06-27T19:24:23z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:24:25z src/seal/kernel/add_seal.hpp 74	Adding 5184 C+P elements
+[INFO] 2019-06-27T19:24:25z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:24:28z src/seal/kernel/add_seal.hpp 74	Adding 864 C+P elements
+[INFO] 2019-06-27T19:24:29z src/seal/kernel/add_seal.hpp 74	Adding 5184 C+P elements
+[INFO] 2019-06-27T19:24:29z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:24:31z src/seal/kernel/add_seal.hpp 74	Adding 5184 C+P elements
+[INFO] 2019-06-27T19:24:31z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:24:33z src/seal/kernel/add_seal.hpp 74	Adding 864 C+P elements
+[INFO] 2019-06-27T19:24:34z src/seal/kernel/add_seal.hpp 74	Adding 5184 C+P elements
+[INFO] 2019-06-27T19:24:34z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:24:36z src/seal/kernel/add_seal.hpp 74	Adding 5184 C+P elements
+[INFO] 2019-06-27T19:24:36z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:24:38z src/seal/kernel/add_seal.hpp 74	Adding 864 C+P elements
+[INFO] 2019-06-27T19:24:38z src/seal/kernel/add_seal.hpp 74	Adding 5184 C+P elements
+[INFO] 2019-06-27T19:24:38z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:24:41z src/seal/kernel/add_seal.hpp 74	Adding 5184 C+P elements
+[INFO] 2019-06-27T19:24:41z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:24:43z src/seal/kernel/add_seal.hpp 74	Adding 1152 C+P elements
+[INFO] 2019-06-27T19:24:44z src/seal/kernel/add_seal.hpp 74	Adding 6912 C+P elements
+[INFO] 2019-06-27T19:24:44z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:24:47z src/seal/kernel/add_seal.hpp 74	Adding 6912 C+P elements
+[INFO] 2019-06-27T19:24:47z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:24:50z src/seal/kernel/add_seal.hpp 74	Adding 1152 C+P elements
+[INFO] 2019-06-27T19:24:51z src/seal/kernel/add_seal.hpp 74	Adding 6912 C+P elements
+[INFO] 2019-06-27T19:24:51z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:24:54z src/seal/kernel/add_seal.hpp 74	Adding 6912 C+P elements
+[INFO] 2019-06-27T19:24:54z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:24:57z src/seal/kernel/add_seal.hpp 74	Adding 1152 C+P elements
+[INFO] 2019-06-27T19:24:57z src/seal/kernel/add_seal.hpp 74	Adding 6912 C+P elements
+[INFO] 2019-06-27T19:24:57z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:25:00z src/seal/kernel/add_seal.hpp 74	Adding 1728 C+P elements
+[INFO] 2019-06-27T19:25:00z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:25:01z src/seal/kernel/add_seal.hpp 74	Adding 504 C+P elements
+[INFO] 2019-06-27T19:25:02z src/seal/kernel/add_seal.hpp 74	Adding 3024 C+P elements
+[INFO] 2019-06-27T19:25:02z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:25:04z src/seal/kernel/add_seal.hpp 74	Adding 3024 C+P elements
+[INFO] 2019-06-27T19:25:04z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:25:06z src/seal/kernel/add_seal.hpp 74	Adding 504 C+P elements
+[INFO] 2019-06-27T19:25:07z src/seal/kernel/add_seal.hpp 74	Adding 3024 C+P elements
+[INFO] 2019-06-27T19:25:07z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:25:09z src/seal/kernel/add_seal.hpp 74	Adding 3024 C+P elements
+[INFO] 2019-06-27T19:25:09z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:25:11z src/seal/kernel/add_seal.hpp 74	Adding 504 C+P elements
+[INFO] 2019-06-27T19:25:12z src/seal/kernel/add_seal.hpp 74	Adding 3024 C+P elements
+[INFO] 2019-06-27T19:25:12z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:25:14z src/seal/kernel/add_seal.hpp 74	Adding 3024 C+P elements
+[INFO] 2019-06-27T19:25:14z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:25:17z src/seal/kernel/add_seal.hpp 74	Adding 1008 C+P elements
+[INFO] 2019-06-27T19:25:24z src/seal/kernel/add_seal.hpp 74	Adding 11520 C+P elements
+[INFO] 2019-06-27T19:25:24z src/seal/seal_util.cpp 399	Matching to smallest chain index 1
+[INFO] 2019-06-27T19:25:35z src/seal/kernel/add_seal.hpp 74	Adding 1001 C+P elements
+[INFO] 2019-06-27T19:25:35z src/seal/he_seal_executable.cpp 601	Setting client outputs
+[INFO] 2019-06-27T19:25:35z src/seal/he_seal_executable.cpp 692	[1;32mTotal time 222308 (ms) [0m
+[INFO] 2019-06-27T19:25:35z src/seal/he_seal_executable.cpp 697	Sending outputs to client
+[INFO] 2019-06-27T19:25:35z src/seal/he_seal_executable.cpp 721	Writing Result message with 1001 ciphertexts 
+[INFO] 2019-06-27T19:25:35z src/seal/he_seal_executable.cpp 727	m_is_writing
+[INFO] 2019-06-27T19:25:36z src/tcp/tcp_session.hpp 53	Server error reading message: End of file

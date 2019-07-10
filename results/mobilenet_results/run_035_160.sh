@@ -8,18 +8,6 @@ echo $curr_dir
 
 cd ../../examples/MobileNetV2
 
-# For top1 / top5 accuracy:
-: '
-python test.py \
-  --batch_size=50000  \
-  --image_size=160 \
-  --model=./model/mobilenet_v2_0.35_160_opt.pb \
-  --data_dir=$DATA_DIR
-  yields
-  top1_acc 56.202
-  top5_acc 79.73
-'
-
 # Best performance
 for i in {1..1}
 do
