@@ -1,0 +1,7 @@
+Namespace(batch_size=50000, crop_size=256, data_dir='/nfs/site/home/fboemer/repos/data/ImageNet', image_size=224, load_cropped_images=False, model='./model/mobilenet_v2_0.75_224_opt.pb', ngraph=False, save_images=False, standardize=False)
+Not using client
+getting validation images
+FLAGS Namespace(batch_size=50000, crop_size=256, data_dir='/nfs/site/home/fboemer/repos/data/ImageNet', image_size=224, load_cropped_images=False, model='./model/mobilenet_v2_0.75_224_opt.pb', ngraph=False, save_images=False, standardize=False)
+got validation images
+loading graph ./model/mobilenet_v2_0.75_224_opt.pb
+performing inference

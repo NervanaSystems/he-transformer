@@ -1,0 +1,13 @@
+Namespace(batch_size=50000, crop_size=256, data_dir='/nfs/site/home/fboemer/repos/data/ImageNet', image_size=192, load_cropped_images=False, model='./model/mobilenet_v2_0.75_192_opt.pb', ngraph=False, save_images=False, standardize=False)
+Not using client
+getting validation images
+FLAGS Namespace(batch_size=50000, crop_size=256, data_dir='/nfs/site/home/fboemer/repos/data/ImageNet', image_size=192, load_cropped_images=False, model='./model/mobilenet_v2_0.75_192_opt.pb', ngraph=False, save_images=False, standardize=False)
+got validation images
+loading graph ./model/mobilenet_v2_0.75_192_opt.pb
+performing inference
+performed inference, runtime (s):  223.72
+runtime per image (s) 0.0
+num_preds 50000
+Accuracy on  50000  predictions:
+top1_acc 68.73
+top5_acc 88.662

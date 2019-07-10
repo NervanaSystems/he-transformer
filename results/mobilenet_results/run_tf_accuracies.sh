@@ -102,12 +102,11 @@ python test.py \
   --model=./model/mobilenet_v2_0.75_192_opt.pb \
   --data_dir=$DATA_DIR > $curr_dir/results/acc_075_192.txt
 
-python test.py \
-  --batch_size=50000  \
-  --image_size=224 \
-  --model=./model/mobilenet_v2_0.75_224_opt.pb \
-  --data_dir=$DATA_DIR > $curr_dir/results/acc_075_224.txt
-
-
+# 0.75 / 224 runs out of memory
+#python test.py \
+#  --batch_size=50000  \
+#  --image_size=224 \
+#  --model=./model/mobilenet_v2_0.75_224_opt.pb \
+#  --data_dir=$DATA_DIR > $curr_dir/results/acc_075_224.txt
 
 cd -
