@@ -87,7 +87,6 @@ def main(FLAGS):
     # Reshape to expected format (batch axies innermost)
     x_test = np.moveaxis(x_test, 0, -1)
     x_test_flat = x_test.flatten(order='C"')
-    hostname = 'localhost'
     port = 34000
 
     complex_scale_factor = 1
@@ -98,7 +97,7 @@ def main(FLAGS):
     # TODO: support even batch sizes
     assert (batch_size % complex_scale_factor == 0)
     new_batch_size = batch_size // complex_scale_factor
-    client = he_seal_client.HESealClient(hostname, port, new_batch_size,
+    client = he_seal_client.HESealClient(FLAGS.hostname, port, new_batch_size,
                                          x_test_flat)
 
     while not client.is_done():
@@ -166,6 +165,8 @@ if __name__ == '__main__':
         default=256,
         help='crop to this size before resizing to image_size')
     parser.add_argument('--batch_size', type=int, default=1, help='Batch size')
+    parser.add_argument(
+        '--hostname', type=str, default='localhost', help='server hostname')
 
     FLAGS, unparsed = parser.parse_known_args()
     if FLAGS.data_dir == None:
