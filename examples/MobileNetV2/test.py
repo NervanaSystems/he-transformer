@@ -164,6 +164,8 @@ if __name__ == '__main__':
     parser.add_argument(
         '--ngraph', type=str2bool, default=False, help='use ngraph backend')
     parser.add_argument('--batch_size', type=int, default=1, help='Batch size')
+    parser.add_argument(
+        '--start_batch', type=int, default=0, help='Test data start index')
 
     FLAGS, unparsed = parser.parse_known_args()
     if FLAGS.data_dir == None:

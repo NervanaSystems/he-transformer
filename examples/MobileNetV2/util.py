@@ -69,7 +69,7 @@ def get_validation_labels(FLAGS):
 
     truth_labels = np.loadtxt(truth_file, dtype=np.int32)
     assert (truth_labels.shape == (50000, ))
-    return truth_labels[0:FLAGS.batch_size]
+    return truth_labels[FLAGS.start_batch:FLAGS.start_batch + FLAGS.batch_size]
 
 
 def center_crop(im, new_size):
@@ -161,8 +161,10 @@ def get_validation_images(FLAGS, crop=False):
     images = np.empty((FLAGS.batch_size, FLAGS.image_size, FLAGS.image_size,
                        3))
     pool = mp.Pool()
+    end_idx = min(FLAGS.start_batch + FLAGS.batch_size, 50000)
 
-    images[:] = pool.map(get_validation_image, range(FLAGS.batch_size))
+    images[:] = pool.map(get_validation_image, range(FLAGS.start_batch,
+                                                     end_idx))
     pool.close()
     print('got validation images')
     return images
