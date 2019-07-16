@@ -43,7 +43,6 @@ do
     python client.py \
     --batch_size=4096 \
     --image_size=224 \
-    --start_batch=$start_batch \
     --data_dir=$DATA_DIR \
     --hostname=skx114 >> $outfile;
 EOF

@@ -1,0 +1,206 @@
+/
+| Encryption parameters :
+|   scheme: CKKS
+|   poly_modulus_degree: 4096
+|   coeff_modulus size: 104 (30 + 22 + 22 + 30) bits
+\
+, load_cropped_images=False, save_images=False, standardize=False, start_batch=0)
+getting validation images
+FLAGS Namespace(batch_size=4096, crop_size=256, data_dir='/nfs/site/home/fboemer/repos/data/ImageNet', hostname='skx114', image_size=224, load_cropped_images=False, save_images=False, standardize=False, start_batch=0)
+[INFO] 2019-07-15T23:26:28z src/tcp/tcp_client.hpp 46	Client starting async connection
+[INFO] 2019-07-15T23:26:28z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:26:28z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:26:29z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:26:29z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:26:29z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:26:30z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:26:30z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:26:30z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:26:31z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:26:31z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:26:31z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:26:32z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:26:32z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:26:32z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:26:33z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:26:33z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:26:33z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:26:34z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:26:34z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:26:34z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:26:35z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:26:35z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:26:35z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:26:36z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:26:36z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:26:36z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:26:37z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:26:37z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:26:37z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:26:38z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:26:38z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:26:38z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:26:39z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:26:39z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:26:39z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:26:40z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:26:40z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:26:40z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:26:41z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:26:41z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:26:41z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:26:42z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:26:42z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:26:42z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:26:43z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:26:43z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:26:43z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:26:44z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:26:44z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:26:44z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:26:45z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:26:45z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:26:45z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:26:46z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:26:46z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:26:46z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:26:47z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:26:47z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:26:47z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:26:48z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:26:48z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:26:48z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:26:49z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:26:49z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:26:49z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:26:50z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:26:50z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:26:50z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:26:51z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:26:51z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:26:51z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:26:52z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:26:52z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:26:52z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:26:53z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:26:53z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:26:53z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:26:54z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:26:54z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:26:54z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:26:55z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:26:55z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:26:55z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:26:56z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:26:56z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:26:56z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:26:57z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:26:57z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:26:57z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:26:58z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:26:58z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:26:58z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:26:59z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:26:59z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:26:59z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:27:00z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:27:00z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:27:00z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:27:01z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:27:01z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:27:01z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:27:02z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:27:02z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:27:02z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:27:03z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:27:03z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:27:03z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:27:04z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:27:04z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:27:04z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:27:05z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:27:05z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:27:05z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:27:06z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:27:06z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:27:06z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:27:07z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:27:07z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:27:07z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:27:08z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:27:08z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:27:08z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:27:09z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:27:09z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:27:09z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:27:10z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:27:10z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:27:10z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:27:11z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:27:11z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:27:11z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:27:12z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:27:12z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:27:12z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:27:13z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:27:13z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:27:13z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:27:14z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:27:14z src/tcp/tcp_client.hpp 79	error connecting to server: Connection refused
+[INFO] 2019-07-15T23:27:14z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-15T23:27:15z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-15T23:27:15z src/tcp/tcp_client.hpp 74	Connected to server
+[INFO] 2019-07-15T23:27:15z src/seal/he_seal_client.cpp 180	Loaded encryption parmeters
+/
+| Encryption parameters :
+|   scheme: CKKS
+|   poly_modulus_degree: 4096
+|   coeff_modulus size: 104 (30 + 22 + 22 + 30) bits
+\
+Namespace(batch_size=4096, crop_size=256, data_dir='/nfs/site/home/fboemer/repos/data/ImageNet', image_size=224, load_cropped_images=False, model='./model/mobilenet_v2_0.35_224_opt.pb', ngraph=True, save_images=False, standardize=False, start_batch=0)
+Using client
+nGraph bridge version: b'0.14.0'
+nGraph version used for this build: b'0.19.1+1cbad22'
+TensorFlow version used for this build: v1.13.1-0-g6612da8951
+CXX11_ABI flag used for this build: 1
+nGraph bridge built with Grappler: False
+nGraph bridge built with Variables and Optimizers Enablement: False
+loading graph ./model/mobilenet_v2_0.35_224_opt.pb
+performing inference
+[INFO] 2019-07-15T23:25:47z src/seal/he_seal_backend.cpp 86	Scale 4.16973e+06
+got validation images
+batch_size 4096
+width 224
+height 224
+channels 3
+complex_scale_factor 2
+results shape (4100096,)
+results.shape (1001, 4096)
+top5.shape (4096, 5)
+validation_labels ['sea snake' 'alp' 'Shetland sheepdog' ... 'bannister' 'tick' 'syringe']
+top5 [['leatherback turtle' 'African crocodile' 'American alligator'
+  'Komodo dragon' 'loggerhead']
+ ['ski' 'alp' 'shovel' 'dogsled' 'snowmobile']
+ ['Shetland sheepdog' 'collie' 'papillon' 'Border collie' 'borzoi']
+ ...
+ ['guillotine' 'folding chair' 'dining table' 'crutch' 'grand piano']
+ ['black and gold garden spider' 'garden spider' 'monarch'
+  'long-horned beetle' 'barn spider']
+ ['seat belt' 'brassiere' 'bikini' 'syringe' 'maillot']]
+num_preds 4096
+Accuracy on  4096  predictions:
+top1_acc 60.376
+top5_acc 83.008
+[INFO] 2019-07-15T23:27:15z src/seal/he_seal_client.cpp 73	Client scale 4.16973e+06
+[INFO] 2019-07-15T23:27:15z src/seal/he_seal_client.cpp 189	Sending public key
+[INFO] 2019-07-15T23:27:15z src/seal/he_seal_client.cpp 197	Sending evaluation key
+[INFO] 2019-07-15T23:27:15z src/seal/he_seal_client.cpp 91	Parameter size 150528
+[INFO] 2019-07-15T23:27:15z src/seal/he_seal_client.cpp 92	Client batch size 2048
+[INFO] 2019-07-15T23:27:15z src/seal/he_seal_client.cpp 94	Client complex packing
+[INFO] 2019-07-15T23:27:25z src/seal/he_seal_client.cpp 134	Creating execute message
+[INFO] 2019-07-15T23:27:27z src/seal/he_seal_client.cpp 137	Sending execute message with 150528 ciphertexts
+[INFO] 2019-07-15T23:53:35z src/seal/he_seal_client.cpp 146	Client got 1001 results 
+[INFO] 2019-07-15T23:53:36z src/seal/he_seal_client.cpp 165	Results size 4100096
+[INFO] 2019-07-15T23:53:36z src/seal/he_seal_client.cpp 290	Closing connection
+[INFO] 2019-07-15T23:53:36z src/tcp/tcp_client.hpp 55	Closing socket
+[INFO] 2019-07-15T23:53:36z src/tcp/tcp_client.hpp 99	Client error reading header: End of file
