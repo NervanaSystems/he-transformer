@@ -1,0 +1,59 @@
+/
+| Encryption parameters :
+|   scheme: CKKS
+|   poly_modulus_degree: 2048
+|   coeff_modulus size: 54 (54) bits
+\
+[INFO] 2019-07-17T14:54:53z src/seal/he_seal_backend.cpp 86	Scale 2.37266e+07
+[INFO] 2019-07-17T14:54:53z src/seal/he_seal_backend.cpp 157	Compiling funcntion
+[INFO] 2019-07-17T14:54:53z src/seal/he_seal_executable.cpp 120	Running executable passes
+[INFO] 2019-07-17T14:54:54z src/seal/he_seal_executable.cpp 145	Parameters size 1
+[INFO] 2019-07-17T14:54:54z src/seal/he_seal_executable.cpp 156	Setting up client in constructor
+[INFO] 2019-07-17T14:54:54z src/seal/he_seal_executable.cpp 175	Enable client
+[INFO] 2019-07-17T14:54:54z src/seal/he_seal_executable.cpp 179	Starting server
+[INFO] 2019-07-17T14:54:54z src/seal/he_seal_executable.cpp 202	Server accepting connections
+[INFO] 2019-07-17T14:54:56z src/seal/he_seal_executable.cpp 209	Connection accepted
+[INFO] 2019-07-17T14:54:56z src/seal/he_seal_executable.cpp 213	Session started
+[INFO] 2019-07-17T14:54:56z src/seal/he_seal_executable.cpp 340	Server set public key
+[INFO] 2019-07-17T14:54:56z src/seal/he_seal_executable.cpp 356	Parameter shape 2048x784
+[INFO] 2019-07-17T14:54:56z src/seal/he_seal_executable.cpp 360	num_param_elements before batch size divide 1605632
+[INFO] 2019-07-17T14:54:56z src/seal/he_seal_executable.cpp 363	num_param_elements after batch size divide 784
+[INFO] 2019-07-17T14:54:56z src/seal/he_seal_executable.cpp 367	Requesting total of 784 parameter elements
+[INFO] 2019-07-17T14:54:56z src/seal/he_seal_executable.cpp 373	Server sending message of type: parameter_size
+[INFO] 2019-07-17T14:54:56z src/seal/he_seal_executable.cpp 463	Waiting until m_client_inputs.size() == 1
+/
+| Encryption parameters :
+|   scheme: CKKS
+|   poly_modulus_degree: 2048
+|   coeff_modulus size: 54 (54) bits
+\
+Extracting /tmp/tensorflow/mnist/input_data/train-images-idx3-ubyte.gz
+Extracting /tmp/tensorflow/mnist/input_data/train-labels-idx1-ubyte.gz
+Extracting /tmp/tensorflow/mnist/input_data/t10k-images-idx3-ubyte.gz
+Extracting /tmp/tensorflow/mnist/input_data/t10k-labels-idx1-ubyte.gz
+total time(s) 4.96
+result
+[[ 327.93  145.56  207.63 ...  188.58  383.07 -244.26]
+ [-292.97 -760.06 -373.14 ...   26.47    2.25  -83.25]
+ [   3.3    -2.38    1.15 ...  -62.55 -193.67 -212.45]
+ ...
+ [ 547.5  -139.67  102.71 ...  247.3   190.31   58.83]
+ [-401.01  235.08 -408.09 ...  -72.67  692.44  265.68]
+ [-252.45  330.     -2.99 ...  -36.22 -110.75  268.91]]
+y_pred [6 7 3 ... 0 8 3]
+Error count 1844 of 2048 elements.
+Accuracy: 0.0996094 
+[INFO] 2019-07-17T14:54:56z src/seal/he_seal_executable.cpp 254	Loading 784 ciphertexts
+[INFO] 2019-07-17T14:54:56z src/seal/he_seal_executable.cpp 265	Done loading 784 ciphertexts
+[INFO] 2019-07-17T14:54:56z src/seal/he_seal_executable.cpp 296	Setting m_client_inputs
+[INFO] 2019-07-17T14:54:56z src/seal/he_seal_executable.cpp 469	client_inputs_received
+[INFO] 2019-07-17T14:54:56z src/seal/he_seal_executable.cpp 477	Encrypting data
+[INFO] 2019-07-17T14:54:56z src/seal/he_seal_executable.cpp 480	Batching data with batch size 2048
+[INFO] 2019-07-17T14:54:56z src/seal/he_seal_executable.cpp 486	Complex packing
+[INFO] 2019-07-17T14:54:56z src/seal/he_seal_executable.cpp 492	Processing client inputs
+[INFO] 2019-07-17T14:54:57z src/seal/he_seal_executable.cpp 591	Setting client outputs
+[INFO] 2019-07-17T14:54:57z src/seal/he_seal_executable.cpp 680	[1;32mTotal time 623 (ms) [0m
+[INFO] 2019-07-17T14:54:57z src/seal/he_seal_executable.cpp 686	Sending outputs to client
+[INFO] 2019-07-17T14:54:57z src/seal/he_seal_executable.cpp 710	Writing Result message with 10 ciphertexts 
+[INFO] 2019-07-17T14:54:57z src/seal/he_seal_executable.cpp 716	Waiting until results are written to client
+[INFO] 2019-07-17T14:54:57z src/tcp/tcp_session.hpp 53	Server error reading message: End of file

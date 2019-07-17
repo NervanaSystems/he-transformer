@@ -28,13 +28,13 @@ def test_mnist_cnn(FLAGS):
     # TODO: support even batch sizes
     assert (batch_size % complex_scale_factor == 0)
 
-    hostname = 'localhost'
     port = 34000
 
     new_batch_size = batch_size // complex_scale_factor
     print('new_batch_size', new_batch_size)
 
-    client = he_seal_client.HESealClient(hostname, port, new_batch_size, data)
+    client = he_seal_client.HESealClient(FLAGS.hostname, port, new_batch_size,
+                                         data)
 
     print('Sleeping until client is done')
     while not client.is_done():
@@ -66,6 +66,8 @@ if __name__ == '__main__':
         default='/tmp/tensorflow/mnist/input_data',
         help='Directory where input data is stored')
     parser.add_argument('--batch_size', type=int, default=1, help='Batch size')
+    parser.add_argument(
+        '--hostname', type=str, default='localhost', help='server hostname')
 
     FLAGS, unparsed = parser.parse_known_args()
 
