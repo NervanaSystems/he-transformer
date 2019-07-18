@@ -2,7 +2,7 @@ This example demonstrates a simple example of a small matrix multiplication and 
 
 To run on the CKKS backend,
 ```bash
-NGRAPH_TF_BACKEND=HE_SEAL python axpy.py
+NGRAPH_TF_BACKEND=HE_SEAL python ax.py
 ```
 
 #  Client-server model
