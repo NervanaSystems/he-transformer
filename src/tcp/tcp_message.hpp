@@ -176,7 +176,9 @@ class TCPMessage {
       // TODO: save directly to buffer
       ciphers[i]->save(ss);
       NGRAPH_CHECK(ciphertext_size(ciphers[i]->ciphertext()) == cipher_size,
-                   "Cipher sizes don't match");
+                   "Cipher sizes don't match. Got size ",
+                   ciphertext_size(ciphers[i]->ciphertext()), ", expected ",
+                   cipher_size);
 
       std::stringbuf* pbuf = ss.rdbuf();
       pbuf->sgetn(data_ptr() + offset, cipher_size);
@@ -203,7 +205,9 @@ class TCPMessage {
       // TODO: save directly to buffer
       ciphers[i].save(ss);
       NGRAPH_CHECK(ciphertext_size(ciphers[i]) == cipher_size,
-                   "Cipher sizes don't match");
+                   "Cipher sizes don't match. Got size ",
+                   ciphertext_size(ciphers[i]), " at index ", i, " expected ",
+                   cipher_size);
 
       std::stringbuf* pbuf = ss.rdbuf();
       pbuf->sgetn(data_ptr() + offset, cipher_size);

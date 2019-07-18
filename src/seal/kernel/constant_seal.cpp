@@ -24,7 +24,6 @@ void ngraph::he::constant_seal(std::vector<ngraph::he::HEPlaintext>& out,
                                const void* data_ptr,
                                const ngraph::he::HESealBackend& he_seal_backend,
                                size_t count) {
-  NGRAPH_CHECK(element_type == element::f32, "Constant supports only f32 type");
   size_t type_byte_size = element_type.size();
   if (out.size() != count) {
     throw ngraph_error("out.size() != count for constant op");
