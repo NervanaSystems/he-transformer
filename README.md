@@ -24,9 +24,9 @@ The [examples](https://github.com/NervanaSystems/he-transformer/tree/master/exam
 - virtualenv v16.1.0
 - bazel v0.24.0
 #### The following dependencies are built automatically
-- [nGraph](https://github.com/NervanaSystems/ngraph) - v0.23.0-rc.3
-- [nGraph-tf](https://github.com/tensorflow/ngraph-bridge) - v0.16.0-rc1
-- [SEAL](https://github.com/Microsoft/SEAL) - v3.3
+- [nGraph](https://github.com/NervanaSystems/ngraph) - v0.23.0-rc.6
+- [nGraph-tf](https://github.com/tensorflow/ngraph-bridge) - v0.16.0-rc3
+- [SEAL](https://github.com/Microsoft/SEAL) - v3.3.1
 - [TensorFlow](https://github.com/tensorflow/tensorflow) - v1.14.0
 - Boost 1.69
 
