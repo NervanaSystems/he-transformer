@@ -28,7 +28,7 @@ For a deep learning example using the client-server model, see the `MNIST-MLP` f
   * `NGRAPH_ENCRYPT_DATA`. Set to 1 to encrypt data
   * `NGRAPH_ENCRYPT_MODEL`. Set to 1 to encrypt model
   * `NGRAPH_VOPS`. Set to `all` to print information about every operation performed. Set to a comma-separated list to print information about those ops; for example `NGRAPH_VOPS=add,multiply,convolution`
-  * `NGRAPH_UNPACK_DATA`. Set to 1 to prevent SIMD packing along batch axis. ***Note***: For arbitrary computation that isn't packed along the batc axis, use `NGRAPH_UNPACK_DATA=1`.
+  * `NGRAPH_UNPACK_DATA`. Set to 1 to prevent SIMD packing along batch axis. ***Note***: For arbitrary computation that isn't packed along the batch axis, use `NGRAPH_UNPACK_DATA=1`.
   * `STOP_CONST_FOLD`. Set to 1 to stop constant folding optimization. Note, this speeds up the graph compilation time for large batch sizes.
   * `NGRAPH_TF_BACKEND`. Set to `HE_SEAL` to use the HE backend. Set to `CPU` for inference on un-encrypted data
   * `NGRAPH_COMPLEX_PACK`. Set to 1 to enable complex packing. For models with no ciphertext-ciphertext multiplication, this will double the capacity from `N/2` to `N`. As a rough guideline, this flag is suitable when the model does not contain polynomial activations, and when either the model or data remains unencrypted
