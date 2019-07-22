@@ -60,7 +60,7 @@ ngraph::he::HESealBackend::HESealBackend(
   } else if (parms.security_level() == 256) {
     sec_level = seal::sec_level_type::tc256;
   } else if (parms.security_level() == 0) {
-    if (m_encrypt_data) {
+    if (m_encrypt_data || m_encrypt_model) {
       NGRAPH_WARN
           << "Parameter selection does not enforce minimum security level";
     }
@@ -87,7 +87,6 @@ ngraph::he::HESealBackend::HESealBackend(
   // TODO: pick smaller scale?
   auto coeff_moduli = context_data->parms().coeff_modulus();
   m_scale = ngraph::he::choose_scale(coeff_moduli);
-
   if (m_encrypt_data) {
     print_seal_context(*m_context);
     NGRAPH_INFO << "Scale " << m_scale;

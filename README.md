@@ -16,7 +16,7 @@ The [examples](https://github.com/NervanaSystems/he-transformer/tree/master/exam
 ## Building HE Transformer
 
 ### Dependencies
-- We currently only support Ubuntu 16.04
+- We currently only support Ubuntu 16.04. See below for possible ways to compile on Ubuntu 18.04
 - CMake >= 3.10, although different versions may work
 - GCC version 7, although different versions may work
 - OpenMP is strongly suggested, though not strictly necessary. You may experience slow runtimes without OpenMP
@@ -55,6 +55,8 @@ make install
 source external/venv-tf-py3/bin/activate
 ```
 
+For Ubuntu 18.04, you may try adding `-DPYTHON_VENV_VERSION=python3.6` to the cmake command above.
+
 The first build will compile Tensorflow. To speed up subsequent builds, you can avoid compiling Tensorflow by calling
 ```bash
 cmake .. -DUSE_PREBUILT_TF=ON -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7
@@ -79,9 +81,9 @@ Ensure the virtual environment is active, i.e. run `source $HE_TRANSFORMER/build
 ```bash
 cd $HE_TRANSFORMER/examples
 # Run with CPU
-python axpy.py
+python ax.py
 # To run CKKS unit-test
-NGRAPH_TF_BACKEND=HE_SEAL python axpy.py
+NGRAPH_TF_BACKEND=HE_SEAL python ax.py
 ```
 
 For a deep learning example, see [examples/cryptonets/](https://github.com/NervanaSystems/he-transformer/tree/master/examples/MNIST-Cryptonets).
