@@ -4,17 +4,18 @@ import numpy as np
 import sys
 import os
 
-from tensorflow.examples.tutorials.mnist import input_data
+from mnist_util import load_mnist_data
 import he_seal_client
 
 FLAGS = None
 
 
 def test_mnist_cnn(FLAGS):
-    mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=True)
+    (x_train, y_train, x_test, y_test) = load_mnist_data()
+
     batch_size = FLAGS.batch_size
-    x_test_batch = mnist.test.images[:batch_size]
-    y_test_batch = mnist.test.labels[:batch_size]
+    x_test_batch = x_test[:batch_size]
+    y_test_batch = y_test[:FLAGS.batch_size]
 
     data = x_test_batch.flatten('F')
     print('Client batch size from FLAG: ', batch_size)
@@ -60,11 +61,6 @@ def test_mnist_cnn(FLAGS):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '--data_dir',
-        type=str,
-        default='/tmp/tensorflow/mnist/input_data',
-        help='Directory where input data is stored')
     parser.add_argument('--batch_size', type=int, default=1, help='Batch size')
 
     FLAGS, unparsed = parser.parse_known_args()
