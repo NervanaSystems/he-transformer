@@ -24,19 +24,19 @@ This should run without errors.
 To test:
   1. In one terminal, run
   ```bash
-cd $HE_TRANSFORMER/build
-source external/venv-tf-py3/bin/activate && cd ../examples
+source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate
+cd $HE_TRANSFORMER/examples
 NGRAPH_ENABLE_CLIENT=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_TF_BACKEND=HE_SEAL python ax.py
   ```
 
   This will start the server, which will wait for encrypted inputs from a client.
 
-  2. In another terminal run
+  2. In another terminal, run
   ```bash
-  cd $HE_TRANSFORMER/examples
-  python pyclient.py
+source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate
+python $HE_TRANSFORMER/examples/pyclient.py
   ```
 
-  This will provide encrypted inputs to the HEBackend. Once the computation is complete, the output will be returned to the client and decrypted. As expected, the output from the server (on `ax.py`) will be inaccurate, since they are decrypted with the wrong secret key.
+  This will provide encrypted inputs to the HEBackend. Once the computation is complete, the output will be returned to the client and decrypted. As expected, the outputs from the server (on `ax.py`) will be inaccurate, since they are decrypted with the wrong secret key.
 
   The server-client approach currently works only for functions with one input parameter tensor and one result tensor.

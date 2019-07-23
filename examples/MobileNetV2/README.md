@@ -103,7 +103,7 @@ python test.py \
   STOP_CONST_FOLD=1 \
   OMP_NUM_THREADS=56 \
   NGRAPH_TF_BACKEND=HE_SEAL \
-  NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/config/he_seal_ckks_config_N12_L4.json \
+  NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/configs/he_seal_ckks_config_N12_L4.json \
   NGRAPH_ENCRYPT_DATA=1 \
   python test.py \
   --image_size=128 \
@@ -121,8 +121,39 @@ STOP_CONST_FOLD=1 \
 NGRAPH_COMPLEX_PACK=1 \
 NGRAPH_TF_BACKEND=HE_SEAL \
 NGRAPH_ENCRYPT_DATA=1 \
-NGRAPH_HE_SEAL_CONFIG=../../test/model/he_seal_ckks_config_N12_L4.json NGRAPH_BATCH_DATA=1 \
+NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/configs/he_seal_ckks_config_N12_L4.json \
 python test.py \
 --data_dir=$DATA_DIR \
 --ngraph=true \
 --batch_size=4096
+
+8. To enable the client, in one terminal, run:
+```bash
+NGRAPH_ENABLE_CLIENT=1 \
+  OMP_NUM_THREADS=56 \
+  STOP_CONST_FOLD=1 \
+  NGRAPH_COMPLEX_PACK=1 \
+  NGRAPH_ENCRYPT_DATA=1 \
+  NGRAPH_TF_BACKEND=HE_SEAL \
+  NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/configs/he_seal_ckks_config_N12_L4.json \
+  python test.py \
+  --batch_size=4096  \
+  --image_size=128 \
+  --ngraph=true \
+  --model=./model/mobilenet_v2_0.35_128_opt.pb \
+  --data_dir=$DATA_DIR \
+  --ngraph=true
+```
+Since this will take a while to run, you may want to add verbosity, e.g.
+the `NGRAPH_VOPS=all` flag, to the above command.
+
+In another terminal (with the python environment active), run
+```bash
+  OMP_NUM_THREADS=56 \
+  NGRAPH_COMPLEX_PACK=1 \
+  python client.py \
+    --batch_size=4096 \
+    --image_size=128 \
+    --data_dir=$DATA_DIR
+```
+

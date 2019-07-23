@@ -171,6 +171,8 @@ if __name__ == '__main__':
     parser.add_argument(
         '--hostname', type=str, default='localhost', help='server hostname')
     parser.add_argument('--batch_size', type=int, default=1, help='Batch size')
+    parser.add_argument(
+        '--start_batch', type=int, default=0, help='Test data start index')
 
     FLAGS, unparsed = parser.parse_known_args()
     if FLAGS.data_dir == None:
