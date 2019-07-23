@@ -22,7 +22,7 @@ Once the computation is complete, the output will be returned to the client and 
 
 The server-client approach currently works only for functions with one input parameter tensor.
 
-For a deep learning example using the client-server model, see the `MNIST-MLP` folder.
+For a deep learning example using the client-server model, see the `MNIST/MLP` folder.
 
 # List of command-line flags
   * `NGRAPH_ENCRYPT_DATA`. Set to 1 to encrypt data
