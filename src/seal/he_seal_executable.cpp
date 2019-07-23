@@ -240,12 +240,10 @@ void ngraph::he::HESealExecutable::handle_message(
   //           << message_type_to_string(msg_type);
 
   if (msg_type == MessageType::execute) {
-    // Get Ciphertexts from message
     size_t count = message.count();
     size_t ciphertext_size = message.element_size();
 
     NGRAPH_CHECK(m_context != nullptr);
-    print_seal_context(*m_context);
 
     NGRAPH_INFO << "Loading " << count << " ciphertexts";
     std::vector<seal::Ciphertext> ciphertexts(count);
@@ -392,7 +390,6 @@ void ngraph::he::HESealExecutable::handle_message(
     m_relu_done = true;
     m_relu_cond.notify_all();
   } else if (msg_type == MessageType::max_result) {
-    NGRAPH_INFO << "Received max result mesage";
     std::lock_guard<std::mutex> guard(m_max_mutex);
 
     size_t element_count = message.count();
@@ -1271,10 +1268,6 @@ void ngraph::he::HESealExecutable::generate_calls(
         m_max_done = false;
         maxpool_ciphers.clear();
       }
-
-      NGRAPH_INFO << "m_max_ciphertexts " << m_max_ciphertexts.size();
-      NGRAPH_INFO << "out0_cipher.size " << out0_cipher->get_elements().size();
-
       out0_cipher->set_elements(m_max_ciphertexts);
       break;
     }
