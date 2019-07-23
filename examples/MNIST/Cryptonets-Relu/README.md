@@ -18,7 +18,7 @@ This trains the network briefly and stores the network weights.
 To test the network, in one terminal run
 ```bash
 source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate
-cd $HE_TRANSFORMER/examples/MNIST-MLP
+cd $HE_TRANSFORMER/examples/MNIST/MLP
 ```
 
 ```bash

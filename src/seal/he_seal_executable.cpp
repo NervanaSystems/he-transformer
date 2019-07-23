@@ -84,14 +84,14 @@ ngraph::he::HESealExecutable::HESealExecutable(
     const std::shared_ptr<Function>& function,
     bool enable_performance_collection, HESealBackend& he_seal_backend,
     bool encrypt_data, bool encrypt_model, bool batch_data,
-    bool complex_packing)
+    bool complex_packing, bool enable_client)
     : m_he_seal_backend(he_seal_backend),
       m_encrypt_data(encrypt_data),
       m_encrypt_model(encrypt_model),
       m_batch_data(batch_data),
       m_complex_packing(complex_packing),
       m_verbose_all_ops(false),
-      m_enable_client(std::getenv("NGRAPH_ENABLE_CLIENT") != nullptr),
+      m_enable_client(enable_client),
       m_batch_size(1),
       m_port(34000),
       m_relu_done(false),
@@ -1248,10 +1248,6 @@ void ngraph::he::HESealExecutable::generate_calls(
             throw ngraph_error("max(known_value) not allowed");
           }
           maxpool_ciphers.emplace_back(cipher->ciphertext());
-
-          NGRAPH_INFO << max_ind << " cipher size "
-                      << ngraph::he::ciphertext_size(cipher->ciphertext());
-
           cipher_cnt++;
         }
 

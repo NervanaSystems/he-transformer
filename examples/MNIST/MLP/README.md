@@ -10,7 +10,7 @@ This trains the network briefly and stores the network weights.
 To test the network, in one terminal run
 ```bash
 source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate
-cd $HE_TRANSFORMER/examples/MNIST/MNIST-MLP
+cd $HE_TRANSFORMER/examples/MNIST/MLP
 NGRAPH_ENABLE_CLIENT=1 \
 NGRAPH_ENCRYPT_DATA=1 \
 NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/configs/he_seal_ckks_config_N11_L1.json \
