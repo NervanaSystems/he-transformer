@@ -46,9 +46,9 @@ def print_nodes(filename):
 
 def load_model(filename):
     print("loading graph", filename)
-    sess = tf.Session()
+    sess = tf.compat.v1.Session()
     with gfile.GFile(filename, 'rb') as f:
-        graph_def = tf.GraphDef()
+        graph_def = tf.compat.v1.GraphDef()
     graph_def.ParseFromString(f.read())
     sess.graph.as_default()
     tf.import_graph_def(graph_def, name='')
@@ -76,17 +76,19 @@ def main(FLAGS):
         x_test = get_validation_images(FLAGS)
         validation_labels = imagenet_inference_labels[validation_nums]
     else:
-        x_test = np.random.rand(FLAGS.batch_size, 96, 96, 3)
+        x_test = np.random.rand(FLAGS.batch_size, FLAGS.image_size,
+                                FLAGS.image_size, 3)
 
     if FLAGS.ngraph:
         import ngraph_bridge
+        print(ngraph_bridge.__version__)
 
-    config = tf.ConfigProto()
+    config = tf.compat.v1.ConfigProto()
     config.intra_op_parallelism_threads = 44
     config.inter_op_parallelism_threads = 44
     if FLAGS.ngraph:
         config = ngraph_bridge.update_config(config)
-    sess = tf.Session(config=config)
+    sess = tf.compat.v1.Session(config=config)
     graph_def = load_model(FLAGS.model)
     tf.import_graph_def(graph_def, name='')
 
@@ -100,16 +102,14 @@ def main(FLAGS):
     end_time = time.time()
     runtime = end_time - start_time
     per_image_runtime = runtime / float(FLAGS.batch_size)
-    print('performed inference, runtime (s): ', np.round(runtime, 2))
+    print('performed inference, runtime (s):', np.round(runtime, 2))
     print('runtime per image (s)', np.round(per_image_runtime, 2))
     y_pred = np.squeeze(y_pred)
-    # print(y_pred.shape)
 
     if (FLAGS.batch_size == 1):
         top5 = y_pred.argsort()[-5:]
     else:
         top5 = np.flip(y_pred.argsort()[:, -5:], axis=1)
-    #print('top5', top5)
 
     if not using_client:
         preds = imagenet_training_labels[top5]
@@ -136,7 +136,7 @@ if __name__ == '__main__':
         '--model',
         type=str,
         default='./model/mobilenet_v2_0.35_96_opt.pb',
-        help='Directory where model is stored')
+        help='Model to run inference with')
     parser.add_argument(
         '--image_size', type=int, default=96, help='image size')
     parser.add_argument(
@@ -162,6 +162,8 @@ if __name__ == '__main__':
     parser.add_argument(
         '--ngraph', type=str2bool, default=False, help='use ngraph backend')
     parser.add_argument('--batch_size', type=int, default=1, help='Batch size')
+    parser.add_argument(
+        '--start_batch', type=int, default=0, help='Test data start index')
 
     FLAGS, unparsed = parser.parse_known_args()
     if FLAGS.data_dir == None:

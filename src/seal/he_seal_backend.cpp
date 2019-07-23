@@ -30,13 +30,19 @@ extern "C" const char* get_ngraph_version_string() {
   return "DUMMY_VERSION";  // TODO: move to CMakeList
 }
 
-// TODO: replace with new backend constructor once switching to new ngraph
-extern "C" ngraph::runtime::Backend* new_backend(const char* config) {
-  std::string configuration_string = std::string(config);
+extern "C" ngraph::runtime::BackendConstructor*
+get_backend_constructor_pointer() {
+  class HESealBackendConstructor : public ngraph::runtime::BackendConstructor {
+   public:
+    std::shared_ptr<ngraph::runtime::Backend> create(
+        const std::string& config) override {
+      return std::make_shared<ngraph::he::HESealBackend>();
+    }
+  };
 
-  NGRAPH_CHECK(configuration_string == "HE_SEAL",
-               "Invalid configuration string ", configuration_string);
-  return new ngraph::he::HESealBackend();
+  static std::unique_ptr<ngraph::runtime::BackendConstructor>
+      s_backend_constructor(new HESealBackendConstructor());
+  return s_backend_constructor.get();
 }
 
 ngraph::he::HESealBackend::HESealBackend()
@@ -156,7 +162,7 @@ std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
     std::shared_ptr<Function> function, bool enable_performance_collection) {
   return std::make_shared<HESealExecutable>(
       function, enable_performance_collection, *this, m_encrypt_data,
-      m_encrypt_model, pack_data(), m_complex_packing);
+      m_encrypt_model, pack_data(), m_complex_packing, m_enable_client);
 }
 
 std::shared_ptr<ngraph::he::SealCiphertextWrapper>

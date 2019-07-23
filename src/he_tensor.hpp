@@ -33,18 +33,16 @@ class HETensor : public runtime::Tensor {
 
   /// @brief Write bytes directly into the tensor
   /// @param p Pointer to source of data
-  /// @param tensor_offset Offset into tensor storage to begin writing. Must be
   /// element-aligned.
   /// @param n Number of bytes to write, must be integral number of elements.
-  virtual void write(const void* p, size_t tensor_offset,
+  virtual void write(const void* p,
                      size_t n) override = 0;
 
   /// @brief Read bytes directly from the tensor
   /// @param p Pointer to destination for data
-  /// @param tensor_offset Offset into tensor storage to begin reading. Must be
   /// element-aligned.
   /// @param n Number of bytes to read, must be integral number of elements.
-  virtual void read(void* p, size_t tensor_offset, size_t n) const override = 0;
+  virtual void read(void* p, size_t n) const override = 0;
 
   /// @brief Reduces shape along batch axis
   /// @param shape Input shape to batch

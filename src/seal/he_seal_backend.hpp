@@ -200,12 +200,31 @@ class HESealBackend : public ngraph::runtime::Backend {
   bool naive_rescaling() const { return m_naive_rescaling; }
   bool& naive_rescaling() { return m_naive_rescaling; }
 
+  static bool flag_to_bool(const char* flag, bool default_value = false) {
+    if (flag == nullptr) {
+      return default_value;
+    }
+
+    static std::unordered_set<std::string> on_map{"1", "y", "yes"};
+    static std::unordered_set<std::string> off_map{"0", "n", "no"};
+    std::string flag_str = ngraph::to_lower(std::string(flag));
+
+    if (on_map.find(flag_str) != on_map.end()) {
+      return true;
+    } else if (off_map.find(flag_str) != off_map.end()) {
+      return true;
+    } else {
+      throw ngraph_error("Unknown flag value " + std::string(flag));
+    }
+  }
+
  private:
-  bool m_encrypt_data{std::getenv("NGRAPH_ENCRYPT_DATA") != nullptr};
-  bool m_pack_data{std::getenv("NGRAPH_UNPACK_DATA") == nullptr};
-  bool m_encrypt_model{std::getenv("NGRAPH_ENCRYPT_MODEL") != nullptr};
-  bool m_complex_packing{std::getenv("NGRAPH_COMPLEX_PACK") != nullptr};
-  bool m_naive_rescaling{std::getenv("NAIVE_RESCALING") != nullptr};
+  bool m_encrypt_data{flag_to_bool(std::getenv("NGRAPH_ENCRYPT_DATA"))};
+  bool m_pack_data{!flag_to_bool(std::getenv("NGRAPH_UNPACK_DATA"))};
+  bool m_encrypt_model{flag_to_bool(std::getenv("NGRAPH_ENCRYPT_MODEL"))};
+  bool m_complex_packing{flag_to_bool(std::getenv("NGRAPH_COMPLEX_PACK"))};
+  bool m_naive_rescaling{flag_to_bool(std::getenv("NAIVE_RESCALING"))};
+  bool m_enable_client{flag_to_bool(std::getenv("NGRAPH_ENABLE_CLIENT"))};
 
   std::shared_ptr<seal::SecretKey> m_secret_key;
   std::shared_ptr<seal::PublicKey> m_public_key;

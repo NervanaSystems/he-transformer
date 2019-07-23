@@ -22,19 +22,18 @@ The [examples](https://github.com/NervanaSystems/he-transformer/tree/master/exam
 - OpenMP is strongly suggested, though not strictly necessary. You may experience slow runtimes without OpenMP
 - python3.5 and pip3
 - virtualenv v16.1.0
-- bazel v0.21.0
+- bazel v0.25.2
 #### The following dependencies are built automatically
-- [nGraph](https://github.com/NervanaSystems/ngraph) - v0.19.1
-- [nGraph-tf](https://github.com/tensorflow/ngraph-bridge) - v0.14.0
-- [SEAL](https://github.com/Microsoft/SEAL) - v3.3
-- [TensorFlow](https://github.com/tensorflow/tensorflow) - v1.13.1
+- [nGraph](https://github.com/NervanaSystems/ngraph) - v0.23.0-rc.6
+- [nGraph-tf](https://github.com/tensorflow/ngraph-bridge) - v0.16.0-rc3
+- [SEAL](https://github.com/Microsoft/SEAL) - v3.3.1
+- [TensorFlow](https://github.com/tensorflow/tensorflow) - v1.14.0
 - Boost 1.69
 
 ### To install bazel
 ```bash
- wget https://github.com/bazelbuild/bazel/releases/download/0.21.0/bazel-0.21.0-installer-linux-x86_64.sh
- chmod +x bazel-0.21.0-installer-linux-x86_64.sh
- ./bazel-0.21.0-installer-linux-x86_64.sh --user
+    wget https://github.com/bazelbuild/bazel/releases/download/0.25.2/bazel-0.25.2-installer-linux-x86_64.sh
+    bash bazel-0.25.2-installer-linux-x86_64.sh --user
  ```
  Make sure to add and source the bin path to your `~/.bashrc` file in order to be able to call bazel from the user's installation we set up:
 ```bash

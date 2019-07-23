@@ -77,6 +77,6 @@ void ngraph::he::pass::HEFusion::construct_bounded_relu() {
     return true;
   };
 
-  auto m = std::make_shared<pattern::Matcher>(min, callback, "BoundedRelu");
-  this->add_matcher(m);
+  auto m = std::make_shared<pattern::Matcher>(min, "BoundedRelu");
+  this->add_matcher(m, callback);
 }

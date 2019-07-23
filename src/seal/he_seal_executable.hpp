@@ -46,7 +46,7 @@ class HESealExecutable : public runtime::Executable {
                    bool enable_performance_collection,
                    ngraph::he::HESealBackend& he_seal_backend,
                    bool encrypt_data, bool encrypt_model, bool batch_data,
-                   bool complex_packing);
+                   bool complex_packing, bool enable_client);
 
   ~HESealExecutable() {
     if (m_enable_client) {

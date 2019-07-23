@@ -24,6 +24,7 @@ import he_seal_client
 import time
 import numpy as np
 import argparse
+import os
 
 from PIL import Image
 from util import get_imagenet_inference_labels, \
@@ -47,10 +48,10 @@ def print_nodes(filename):
 
 
 def read_pb_file(filename):
-    sess = tf.Session()
+    sess = tf.compat.v1.Session()
     print("load graph", filename)
     with gfile.GFile(filename, 'rb') as f:
-        graph_def = tf.GraphDef()
+        graph_def = tf.compat.v1.GraphDef()
     graph_def.ParseFromString(f.read())
     sess.graph.as_default()
     tf.import_graph_def(graph_def, name='')
@@ -67,7 +68,6 @@ def get_imagenet_labels():
 
 
 def main(FLAGS):
-    #x_test = get_test_image
     util.VAL_IMAGE_FLAGS = FLAGS
 
     imagenet_inference_labels = get_imagenet_inference_labels()
@@ -87,12 +87,21 @@ def main(FLAGS):
     print('height', height)
     print('channels', channels)
 
-    # Reshape to expected format (batch axies innermost)
+    # Reshape to expected format (batch axes innermost)
     x_test = np.moveaxis(x_test, 0, -1)
     x_test_flat = x_test.flatten(order='C"')
     hostname = 'localhost'
     port = 34000
-    client = he_seal_client.HESealClient(hostname, port, batch_size,
+
+    complex_scale_factor = 1
+    if ('NGRAPH_COMPLEX_PACK' in os.environ):
+        complex_scale_factor = 2
+    print('complex_scale_factor', complex_scale_factor)
+
+    # TODO: support even batch sizes
+    assert (batch_size % complex_scale_factor == 0)
+    new_batch_size = batch_size // complex_scale_factor
+    client = he_seal_client.HESealClient(FLAGS.hostname, port, new_batch_size,
                                          x_test_flat)
 
     while not client.is_done():
@@ -138,13 +147,6 @@ if __name__ == '__main__':
         'Directory where cropped ImageNet data and ground truth labels are stored'
     )
     parser.add_argument(
-        '--model',
-        type=str,
-        default='./model/mobilenet_v2_0.35_96_opt.pb',
-        help=
-        'Directory where cropped ImageNet data and ground truth labels are stored'
-    )
-    parser.add_argument(
         '--image_size', type=int, default=96, help='image size')
     parser.add_argument(
         '--save_images',
@@ -167,8 +169,10 @@ if __name__ == '__main__':
         default=256,
         help='crop to this size before resizing to image_size')
     parser.add_argument(
-        '--ngraph', type=str2bool, default=False, help='use ngraph backend')
+        '--hostname', type=str, default='localhost', help='server hostname')
     parser.add_argument('--batch_size', type=int, default=1, help='Batch size')
+    parser.add_argument(
+        '--start_batch', type=int, default=0, help='Test data start index')
 
     FLAGS, unparsed = parser.parse_known_args()
     if FLAGS.data_dir == None:

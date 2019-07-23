@@ -117,13 +117,12 @@ inline std::string message_type_to_string(const MessageType& type) {
 class TCPMessage {
  public:
   enum { header_length = 15 };
-  enum { max_body_length = 14000000000UL };
+  enum { max_body_length = 39900000000UL };
+  enum { default_body_length = 400000000UL };
   enum { message_type_length = sizeof(MessageType) };
   enum { message_count_length = sizeof(size_t) };
 
-  // Creates message with data buffer large enough to store max_body_length
-  // Note: this requires a lot of memory and should be avoided where possible
-  // TODO: more scalable solution
+  // Creates message with data buffer large enough to store default_body_length
   TCPMessage(const MessageType type)
       : m_type(type), m_count(0), m_data_size(0) {
     std::set<MessageType> request_types{
@@ -134,7 +133,9 @@ class TCPMessage {
       throw std::invalid_argument("Request type not valid");
     }
     check_arguments();
-    m_data = (char*)ngraph_malloc(header_length + max_body_length);
+    size_t body_malloc_size =
+        std::max(body_length(), (size_t)default_body_length);
+    m_data = (char*)ngraph_malloc(header_length + body_malloc_size);
     encode_header();
     encode_message_type();
     encode_count();
@@ -149,7 +150,9 @@ class TCPMessage {
     m_data_size = stream.tellp();
 
     check_arguments();
-    m_data = (char*)ngraph_malloc(header_length + body_length());
+    size_t body_malloc_size =
+        std::max(body_length(), (size_t)default_body_length);
+    m_data = (char*)ngraph_malloc(header_length + body_malloc_size);
     encode_header();
     encode_message_type();
     encode_count();
@@ -164,7 +167,9 @@ class TCPMessage {
     m_data_size = cipher_size * m_count;
 
     check_arguments();
-    m_data = (char*)ngraph_malloc(header_length + body_length());
+    size_t body_malloc_size =
+        std::max(body_length(), (size_t)default_body_length);
+    m_data = (char*)ngraph_malloc(header_length + body_malloc_size);
     encode_header();
     encode_message_type();
     encode_count();
@@ -193,7 +198,9 @@ class TCPMessage {
     m_data_size = cipher_size * m_count;
 
     check_arguments();
-    m_data = (char*)ngraph_malloc(header_length + body_length());
+    size_t body_malloc_size =
+        std::max(body_length(), (size_t)default_body_length);
+    m_data = (char*)ngraph_malloc(header_length + body_malloc_size);
     encode_header();
     encode_message_type();
     encode_count();
@@ -218,7 +225,9 @@ class TCPMessage {
              const char* data)
       : m_type(type), m_count(count), m_data_size(size) {
     check_arguments();
-    m_data = (char*)ngraph_malloc(header_length + body_length());
+    size_t body_malloc_size =
+        std::max(body_length(), (size_t)default_body_length);
+    m_data = (char*)ngraph_malloc(header_length + body_malloc_size);
     encode_header();
     encode_message_type();
     encode_count();
@@ -345,6 +354,14 @@ class TCPMessage {
       throw std::invalid_argument("Cannot decode header");
     }
     m_data_size = body_length - message_type_length - message_count_length;
+
+    // Resize to fit message
+    if (body_length > default_body_length) {
+      ngraph_free(m_data);
+      m_data = (char*)ngraph_malloc(header_length + body_length);
+      encode_header();
+    }
+
     return true;
   }
 

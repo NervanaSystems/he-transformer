@@ -16,37 +16,22 @@
 
 import tensorflow as tf
 import numpy as np
+import os
+import sys
 
-
-def conv2d_stride_2_valid(x, W, name=None):
-    """returns a 2d convolution layer with stride 2, valid pooling"""
-    return tf.nn.conv2d(x, W, strides=[1, 2, 2, 1], padding='VALID')
-
-
-def avg_pool_3x3_same_size(x):
-    """3x3 avg_pool using same padding, keeping original feature map size"""
-    return tf.nn.avg_pool(
-        x, ksize=[1, 3, 3, 1], strides=[1, 1, 1, 1], padding='SAME')
-
-
-def get_variable(name, shape, mode):
-    if mode not in set(['train', 'test']):
-        print('mode should be train or test')
-        raise Exception()
-
-    if mode == 'train':
-        return tf.get_variable(name, shape)
-    else:
-        return tf.constant(
-            np.loadtxt(name + '.txt', dtype=np.float32).reshape(shape))
+# Add parent directory to path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from mnist_util import load_mnist_data, \
+    get_variable, \
+    conv2d_stride_2_valid, \
+    avg_pool_3x3_same_size
 
 
 def cryptonets_model(x, mode):
     """Builds the graph for classifying digits based on Cryptonets
 
     Args:
-        x: an input tensor with the dimensions (N_examples, 784), where 784 is
-        the number of pixels in a standard MNIST image.
+        x: an input tensor with the dimensions (N_examples, 28, 28)
 
     Returns:
         A tuple (y, a scalar placeholder). y is a tensor of shape
@@ -63,10 +48,10 @@ def cryptonets_model(x, mode):
     # CryptoNets's output of the first conv layer has feature map size 13 x 13,
     # therefore, we manually add paddings.
     with tf.name_scope('reshape'):
-        x_image = tf.reshape(x, [-1, 28, 28, 1])
-        paddings = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]],
-                               name='pad_const')
-        x_image = tf.pad(x_image, paddings)
+        print('padding')
+        paddings = [[0, 0], [0, 1], [0, 1], [0, 0]]
+        x = tf.pad(x, paddings)
+        print('padded')
 
     # First conv layer
     # Input: N x 28 x 28 x 1
@@ -74,7 +59,7 @@ def cryptonets_model(x, mode):
     # Output: N x 13 x 13 x 5
     with tf.name_scope('conv1'):
         W_conv1 = get_variable("W_conv1", [5, 5, 1, 5], mode)
-        h_conv1 = tf.square(conv2d_stride_2_valid(x_image, W_conv1))
+        h_conv1 = tf.square(conv2d_stride_2_valid(x, W_conv1))
 
     # Pooling layer
     # Input: N x 13 x 13 x 5

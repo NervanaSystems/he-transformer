@@ -69,7 +69,7 @@ def get_validation_labels(FLAGS):
 
     truth_labels = np.loadtxt(truth_file, dtype=np.int32)
     assert (truth_labels.shape == (50000, ))
-    return truth_labels[0:FLAGS.batch_size]
+    return truth_labels[FLAGS.start_batch:FLAGS.start_batch + FLAGS.batch_size]
 
 
 def center_crop(im, new_size):
@@ -156,13 +156,14 @@ def get_validation_image(i):
 
 def get_validation_images(FLAGS, crop=False):
     print('getting validation images')
-    print('FLAGS', FLAGS)
     VAL_IMAGE_FLAGS = FLAGS
     images = np.empty((FLAGS.batch_size, FLAGS.image_size, FLAGS.image_size,
                        3))
     pool = mp.Pool()
+    end_idx = min(FLAGS.start_batch + FLAGS.batch_size, 50000)
 
-    images[:] = pool.map(get_validation_image, range(FLAGS.batch_size))
+    images[:] = pool.map(get_validation_image, range(FLAGS.start_batch,
+                                                     end_idx))
     pool.close()
     print('got validation images')
     return images
@@ -171,7 +172,6 @@ def get_validation_images(FLAGS, crop=False):
 def accuracy(preds, truth):
     truth = truth.flatten()
     num_preds = truth.size
-    print('num_preds', num_preds)
 
     if (preds.shape[0] != num_preds):
         preds = preds.T
@@ -192,6 +192,6 @@ def accuracy(preds, truth):
     top5_acc = top5_cnt / float(num_preds) * 100.
     top1_acc = top1_cnt / float(num_preds) * 100.
 
-    print('Accuracy on ', num_preds, ' predictions:')
+    print('Accuracy on', num_preds, 'predictions:')
     print('top1_acc', np.round(top1_acc, 3))
     print('top5_acc', np.round(top5_acc, 3))

@@ -29,11 +29,7 @@ ngraph::he::HEPlainTensor::HEPlainTensor(const element::Type& element_type,
   m_plaintexts.resize(m_num_elements);
 }
 
-void ngraph::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
-                                      size_t n) {
-  NGRAPH_CHECK(tensor_offset == 0,
-               "Only support writing to beginning of tensor");
-
+void ngraph::he::HEPlainTensor::write(const void* source, size_t n) {
   check_io_bounds(source, n / m_batch_size);
   const element::Type& element_type = get_tensor_layout()->get_element_type();
   size_t type_byte_size = element_type.size();
@@ -81,11 +77,7 @@ void ngraph::he::HEPlainTensor::write(const void* source, size_t tensor_offset,
   }
 }
 
-void ngraph::he::HEPlainTensor::read(void* target, size_t tensor_offset,
-                                     size_t n) const {
-  NGRAPH_CHECK(tensor_offset == 0,
-               "Only support reading from beginning of tensor");
-
+void ngraph::he::HEPlainTensor::read(void* target, size_t n) const {
   check_io_bounds(target, n);
   const element::Type& element_type = get_tensor_layout()->get_element_type();
   NGRAPH_CHECK(element_type == element::f32, "Only support float32");

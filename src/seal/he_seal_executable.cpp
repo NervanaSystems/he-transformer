@@ -84,14 +84,14 @@ ngraph::he::HESealExecutable::HESealExecutable(
     const std::shared_ptr<Function>& function,
     bool enable_performance_collection, HESealBackend& he_seal_backend,
     bool encrypt_data, bool encrypt_model, bool batch_data,
-    bool complex_packing)
+    bool complex_packing, bool enable_client)
     : m_he_seal_backend(he_seal_backend),
       m_encrypt_data(encrypt_data),
       m_encrypt_model(encrypt_model),
       m_batch_data(batch_data),
       m_complex_packing(complex_packing),
       m_verbose_all_ops(false),
-      m_enable_client(std::getenv("NGRAPH_ENABLE_CLIENT") != nullptr),
+      m_enable_client(enable_client),
       m_batch_size(1),
       m_port(34000),
       m_relu_done(false),
@@ -138,7 +138,6 @@ ngraph::he::HESealExecutable::HESealExecutable(
   for (const std::shared_ptr<Node>& node : function->get_ordered_ops()) {
     m_wrapped_nodes.emplace_back(node);
   }
-
   set_parameters_and_results(*function);
 
   // Constant, for example, cannot be packed
@@ -241,12 +240,10 @@ void ngraph::he::HESealExecutable::handle_message(
   //           << message_type_to_string(msg_type);
 
   if (msg_type == MessageType::execute) {
-    // Get Ciphertexts from message
     size_t count = message.count();
     size_t ciphertext_size = message.element_size();
 
     NGRAPH_CHECK(m_context != nullptr);
-    print_seal_context(*m_context);
 
     NGRAPH_INFO << "Loading " << count << " ciphertexts";
     std::vector<seal::Ciphertext> ciphertexts(count);
@@ -354,20 +351,20 @@ void ngraph::he::HESealExecutable::handle_message(
     }
 
     if (m_batch_data) {
-      NGRAPH_INFO << "num_param_elements before batch size divide "
-                  << num_param_elements;
+      NGRAPH_DEBUG << "num_param_elements before batch size divide "
+                   << num_param_elements;
       num_param_elements /= m_batch_size;
-      NGRAPH_INFO << "num_param_elements after batch size divide "
-                  << num_param_elements;
+      NGRAPH_DEBUG << "num_param_elements after batch size divide "
+                   << num_param_elements;
     }
 
-    NGRAPH_INFO << "Requesting total of " << num_param_elements
-                << " parameter elements";
+    NGRAPH_DEBUG << "Requesting total of " << num_param_elements
+                 << " parameter elements";
     ngraph::he::TCPMessage parameter_message{MessageType::parameter_size, 1,
                                              sizeof(num_param_elements),
                                              (char*)&num_param_elements};
 
-    NGRAPH_INFO << "Server sending message of type: parameter_size";
+    NGRAPH_DEBUG << "Server sending message of type: parameter_size";
     m_session->do_write(std::move(parameter_message));
   } else if (msg_type == MessageType::relu_result) {
     std::lock_guard<std::mutex> guard(m_relu_mutex);
@@ -404,10 +401,10 @@ void ngraph::he::HESealExecutable::handle_message(
       cipher_stream.write(message.data_ptr() + element_idx * element_size,
                           element_size);
       cipher.load(m_context, cipher_stream);
-      auto he_ciphertext = std::make_shared<ngraph::he::SealCiphertextWrapper>(
+      auto new_cipher = std::make_shared<ngraph::he::SealCiphertextWrapper>(
           cipher, m_complex_packing);
 
-      m_max_ciphertexts.emplace_back(he_ciphertext);
+      m_max_ciphertexts.emplace_back(new_cipher);
     }
     // Notify condition variable
     m_max_done = true;
@@ -486,12 +483,12 @@ bool ngraph::he::HESealExecutable::call(
   // convert inputs to HETensor
   std::vector<std::shared_ptr<ngraph::he::HETensor>> he_inputs;
   if (m_enable_client) {
-    NGRAPH_INFO << "Processing client inputs";
+    NGRAPH_DEBUG << "Processing client inputs";
     for (auto& tv : m_client_inputs) {
       he_inputs.push_back(std::static_pointer_cast<ngraph::he::HETensor>(tv));
     }
   } else {
-    NGRAPH_INFO << "Processing server inputs";
+    NGRAPH_DEBUG << "Processing server inputs";
     for (auto& tv : server_inputs) {
       auto he_input = std::dynamic_pointer_cast<ngraph::he::HETensor>(tv);
       NGRAPH_CHECK(he_input != nullptr, "server input is not he tensor");
@@ -516,7 +513,7 @@ bool ngraph::he::HESealExecutable::call(
       descriptor::Tensor* tv = param->get_output_tensor_ptr(i).get();
 
       if (!m_enable_client && m_encrypt_data) {
-        NGRAPH_INFO << "Encrypting parameter " << i;
+        NGRAPH_DEBUG << "Encrypting parameter " << i;
         auto plain_input = std::dynamic_pointer_cast<ngraph::he::HEPlainTensor>(
             he_inputs[input_count]);
         NGRAPH_CHECK(plain_input != nullptr, "Input is not plain tensor");
@@ -533,7 +530,7 @@ bool ngraph::he::HESealExecutable::call(
                                     plain_input->get_element(i),
                                     m_complex_packing);
         }
-        NGRAPH_INFO << "Done encrypting parameter";
+        NGRAPH_DEBUG << "Done encrypting parameter";
         plain_input->reset();
         tensor_map.insert({tv, cipher_input});
         input_count++;
@@ -722,6 +719,7 @@ void ngraph::he::HESealExecutable::generate_calls(
     const std::vector<std::shared_ptr<HETensor>>& out,
     const std::vector<std::shared_ptr<HETensor>>& args) {
   const Node& node = *node_wrapper.get_node();
+  bool verbose = verbose_op(node);
   std::string node_op = node.description();
   std::shared_ptr<HESealCipherTensor> arg0_cipher = nullptr;
   std::shared_ptr<HEPlainTensor> arg0_plain = nullptr;
@@ -825,7 +823,7 @@ void ngraph::he::HESealExecutable::generate_calls(
     arg0_cipher = std::dynamic_pointer_cast<HESealCipherTensor>(args[0]);
     arg0_plain = std::dynamic_pointer_cast<HEPlainTensor>(args[0]);
     NGRAPH_CHECK(arg0_cipher == nullptr || arg0_plain == nullptr,
-                 "arg0 is netiher cipher nor plain");
+                 "arg0 is neither cipher nor plain");
     NGRAPH_CHECK(!(arg0_cipher != nullptr && arg0_plain != nullptr),
                  "arg0 is both cipher and plain?");
   }
@@ -851,6 +849,17 @@ void ngraph::he::HESealExecutable::generate_calls(
     } else if (arg1_plain != nullptr) {
       ss << ", Plain";
     }
+    for (size_t arg_ind = 2; arg_ind < args.size(); ++arg_ind) {
+      auto arg = args[arg_ind];
+      if (std::dynamic_pointer_cast<HESealCipherTensor>(arg) != nullptr) {
+        ss << ", Cipher";
+      } else if (std::dynamic_pointer_cast<HEPlainTensor>(arg) != nullptr) {
+        ss << ", Plain";
+      } else {
+        throw ngraph_error("argument is neither plain nor cipher tensor");
+      }
+    }
+
     NGRAPH_INFO << ss.str();
     ss.str("");
     ss << "Outputs: ";
@@ -902,10 +911,17 @@ void ngraph::he::HESealExecutable::generate_calls(
     case OP_TYPEID::AvgPool: {
       const op::AvgPool* avg_pool = static_cast<const op::AvgPool*>(&node);
       Shape in_shape = unpacked_arg_shapes[0];
+      Shape out_shape = packed_out_shape;
+
+      if (verbose) {
+        NGRAPH_INFO << "AvgPool " << join(in_shape, "x") << " => "
+                    << join(out_shape, "x");
+      }
+
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
         ngraph::he::avg_pool_seal(
             arg0_cipher->get_elements(), out0_cipher->get_elements(), in_shape,
-            packed_out_shape, avg_pool->get_window_shape(),
+            out_shape, avg_pool->get_window_shape(),
             avg_pool->get_window_movement_strides(),
             avg_pool->get_padding_below(), avg_pool->get_padding_above(),
             avg_pool->get_include_padding_in_avg_computation(),
@@ -915,7 +931,7 @@ void ngraph::he::HESealExecutable::generate_calls(
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
         ngraph::he::avg_pool_seal(
             arg0_plain->get_elements(), out0_plain->get_elements(), in_shape,
-            packed_out_shape, avg_pool->get_window_shape(),
+            out_shape, avg_pool->get_window_shape(),
             avg_pool->get_window_movement_strides(),
             avg_pool->get_padding_below(), avg_pool->get_padding_above(),
             avg_pool->get_include_padding_in_avg_computation(),
@@ -1086,8 +1102,6 @@ void ngraph::he::HESealExecutable::generate_calls(
       Shape in_shape0 = packed_arg_shapes[0];
       Shape in_shape1 = unpacked_arg_shapes[1];
 
-      bool verbose = verbose_op(node);
-
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
         ngraph::he::convolution_seal(
@@ -1096,6 +1110,7 @@ void ngraph::he::HESealExecutable::generate_calls(
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
             m_batch_size, m_he_seal_backend, verbose);
+        lazy_rescaling(out0_cipher, verbose);
       } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                  out0_cipher != nullptr) {
         ngraph::he::convolution_seal(
@@ -1104,9 +1119,7 @@ void ngraph::he::HESealExecutable::generate_calls(
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
             m_batch_size, m_he_seal_backend, verbose);
-
         lazy_rescaling(out0_cipher, verbose);
-
       } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
                  out0_cipher != nullptr) {
         ngraph::he::convolution_seal(
@@ -1115,9 +1128,7 @@ void ngraph::he::HESealExecutable::generate_calls(
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
             m_batch_size, m_he_seal_backend, verbose);
-
         lazy_rescaling(out0_cipher, verbose);
-
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
         ngraph::he::convolution_seal(
@@ -1136,8 +1147,6 @@ void ngraph::he::HESealExecutable::generate_calls(
       Shape in_shape0 = packed_arg_shapes[0];
       Shape in_shape1 = unpacked_arg_shapes[1];
 
-      bool verbose = verbose_op(node);
-
       if (verbose) {
         NGRAPH_INFO << join(in_shape0, "x") << " dot " << join(in_shape1, "x");
       }
@@ -1147,13 +1156,13 @@ void ngraph::he::HESealExecutable::generate_calls(
             arg0_cipher->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), in_shape0, in_shape1, packed_out_shape,
             dot->get_reduction_axes_count(), type, m_he_seal_backend);
+        lazy_rescaling(out0_cipher, verbose);
       } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                  out0_cipher != nullptr) {
         ngraph::he::dot_seal(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
             out0_cipher->get_elements(), in_shape0, in_shape1, packed_out_shape,
             dot->get_reduction_axes_count(), type, m_he_seal_backend);
-
         lazy_rescaling(out0_cipher, verbose);
       } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
                  out0_cipher != nullptr) {
@@ -1211,6 +1220,7 @@ void ngraph::he::HESealExecutable::generate_calls(
         NGRAPH_INFO << "MaxPool types not supported ";
         throw ngraph_error("MaxPool supports only Cipher, Cipher");
       }
+
       m_max_ciphertexts.clear();
       m_max_done = false;
 
@@ -1222,10 +1232,11 @@ void ngraph::he::HESealExecutable::generate_calls(
                                     max_pool->get_padding_above());
 
       size_t window_shape = ngraph::shape_size(max_pool->get_window_shape());
-      std::vector<seal::Ciphertext> maxpool_ciphers(window_shape);
+
+      std::vector<seal::Ciphertext> maxpool_ciphers;
+      maxpool_ciphers.reserve(window_shape);
       for (size_t list_ind = 0; list_ind < maximize_list.size(); list_ind++) {
         size_t cipher_cnt = 0;
-
         for (const size_t max_ind : maximize_list[list_ind]) {
           auto& cipher = arg0_cipher->get_element(max_ind);
           if (cipher->known_value()) {
@@ -1233,7 +1244,7 @@ void ngraph::he::HESealExecutable::generate_calls(
             NGRAPH_INFO << "Got max(known_value) at index " << max_ind;
             throw ngraph_error("max(known_value) not allowed");
           }
-          maxpool_ciphers[cipher_cnt] = cipher->ciphertext();
+          maxpool_ciphers.emplace_back(cipher->ciphertext());
           cipher_cnt++;
         }
 
@@ -1255,8 +1266,8 @@ void ngraph::he::HESealExecutable::generate_calls(
 
         // Reset for next max call
         m_max_done = false;
+        maxpool_ciphers.clear();
       }
-
       out0_cipher->set_elements(m_max_ciphertexts);
       break;
     }
@@ -1274,13 +1285,13 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Multiply: {
-      bool verbose = verbose_op(node);
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
         ngraph::he::multiply_seal(
             arg0_cipher->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), type, m_he_seal_backend,
             out0_cipher->get_batched_element_count());
+        lazy_rescaling(out0_cipher, verbose);
       } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                  out0_cipher != nullptr) {
         ngraph::he::multiply_seal(
@@ -1394,22 +1405,32 @@ void ngraph::he::HESealExecutable::generate_calls(
     }
     case OP_TYPEID::Reshape: {
       const op::Reshape* reshape = static_cast<const op::Reshape*>(&node);
+      Shape in_shape;
+      Shape out_shape;
+
+      if (arg0_cipher != nullptr && out0_cipher != nullptr) {
+        in_shape = arg0_cipher->get_packed_shape();
+        out_shape = packed_out_shape;
+      } else if (arg0_plain != nullptr && out0_plain != nullptr) {
+        in_shape = arg0_plain->is_packed() ? arg0_plain->get_packed_shape()
+                                           : arg0_plain->get_shape();
+        out_shape = arg0_plain->is_packed() ? packed_out_shape
+                                            : out0_plain->get_shape();
+      }
+
+      if (verbose) {
+        NGRAPH_INFO << join(in_shape, "x") << " reshape "
+                    << join(out_shape, "x");
+      }
+
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
         ngraph::he::reshape_seal(arg0_cipher->get_elements(),
-                                 out0_cipher->get_elements(),
-                                 arg0_cipher->get_packed_shape(),
-                                 reshape->get_input_order(), packed_out_shape);
+                                 out0_cipher->get_elements(), in_shape,
+                                 reshape->get_input_order(), out_shape);
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
-        const Shape& in_shape = arg0_plain->is_packed()
-                                    ? arg0_plain->get_packed_shape()
-                                    : arg0_plain->get_shape();
-        const Shape& reshape_out_shape = arg0_plain->is_packed()
-                                             ? packed_out_shape
-                                             : out0_plain->get_shape();
-
         ngraph::he::reshape_seal(arg0_plain->get_elements(),
                                  out0_plain->get_elements(), in_shape,
-                                 reshape->get_input_order(), reshape_out_shape);
+                                 reshape->get_input_order(), out_shape);
       } else {
         throw ngraph_error("Reshape types not supported.");
       }
@@ -1610,9 +1631,14 @@ void ngraph::he::HESealExecutable::generate_calls(
     case OP_TYPEID::QuantizedDot:
     case OP_TYPEID::QuantizedDotBias:
     case OP_TYPEID::QuantizedMaxPool:
+    case OP_TYPEID::Send:
+    case OP_TYPEID::Recv:
+    case OP_TYPEID::Range:
     case OP_TYPEID::ReluBackprop:
     case OP_TYPEID::ReplaceSlice:
     case OP_TYPEID::ReverseSequence:
+    case OP_TYPEID::ScatterAdd:
+    case OP_TYPEID::ScatterNDAdd:
     case OP_TYPEID::Select:
     case OP_TYPEID::ShapeOf:
     case OP_TYPEID::Sigmoid:
@@ -1625,6 +1651,7 @@ void ngraph::he::HESealExecutable::generate_calls(
     case OP_TYPEID::StopGradient:
     case OP_TYPEID::Tan:
     case OP_TYPEID::Tanh:
+    case OP_TYPEID::Tile:
     case OP_TYPEID::TopK:
     case OP_TYPEID::Transpose:
     default:
@@ -1638,9 +1665,8 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
     std::shared_ptr<HESealCipherTensor>& out_cipher,
     const NodeWrapper& node_wrapper) {
   const Node& node = *node_wrapper.get_node();
-  size_t element_count = shape_size(node.get_output_shape(0)) / m_batch_size;
-
   bool verbose = verbose_op(node);
+  size_t element_count = shape_size(node.get_output_shape(0)) / m_batch_size;
 
   if (arg_cipher == nullptr || out_cipher == nullptr) {
     NGRAPH_INFO << "Relu types not supported ";

@@ -36,17 +36,13 @@ class HESealCipherTensor : public HETensor {
 
   /// @brief Write bytes directly into the tensor after encoding and encrypting
   /// @param p Pointer to source of data
-  /// @param tensor_offset Offset (bytes) into tensor storage to begin writing.
-  ///        Must be element-aligned.
   /// @param n Number of bytes to write, must be integral number of elements.
-  void write(const void* p, size_t tensor_offset, size_t n) override;
+  void write(const void* p, size_t n) override;
 
   /// @brief Read bytes directly from the tensor after decrypting and decoding
   /// @param p Pointer to destination for data
-  /// @param tensor_offset Offset (bytes) into tensor storage to begin reading.
-  ///        Must be element-aligned.
   /// @param n Number of bytes to read, must be integral number of elements.
-  void read(void* target, size_t tensor_offset, size_t n) const override;
+  void read(void* target, size_t n) const override;
 
   void set_elements(
       const std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>&
@@ -72,6 +68,8 @@ class HESealCipherTensor : public HETensor {
 
   inline std::shared_ptr<ngraph::he::SealCiphertextWrapper>& get_element(
       size_t i) {
+    NGRAPH_CHECK(i >= 0 && i < m_ciphertexts.size(), "Index ", i,
+                 " out of bounds for vector of size ", m_ciphertexts.size());
     return m_ciphertexts[i];
   }
 
