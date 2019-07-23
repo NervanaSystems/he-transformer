@@ -113,8 +113,7 @@ python test.py \
   --batch_size=30
   ```
 
-
-7. To double the throughput using complex packing, run:
+7. To double the throughput using complex packing, run the below command.  ***Warning***: this will take ~120GB memory.
 ```bash
 OMP_NUM_THREADS=56 \
 STOP_CONST_FOLD=1 \
@@ -130,13 +129,13 @@ python test.py \
 8. To enable the client, in one terminal, run:
 ```bash
 NGRAPH_ENABLE_CLIENT=1 \
-  OMP_NUM_THREADS=56 \
-  STOP_CONST_FOLD=1 \
-  NGRAPH_COMPLEX_PACK=1 \
-  NGRAPH_ENCRYPT_DATA=1 \
-  NGRAPH_TF_BACKEND=HE_SEAL \
-  NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/configs/he_seal_ckks_config_N12_L4.json \
-  python test.py \
+OMP_NUM_THREADS=56 \
+STOP_CONST_FOLD=1 \
+NGRAPH_COMPLEX_PACK=1 \
+NGRAPH_ENCRYPT_DATA=1 \
+NGRAPH_TF_BACKEND=HE_SEAL \
+NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/configs/he_seal_ckks_config_N12_L4.json \
+python test.py \
   --batch_size=4096  \
   --image_size=128 \
   --ngraph=true \
@@ -149,11 +148,10 @@ the `NGRAPH_VOPS=all` flag, to the above command.
 
 In another terminal (with the python environment active), run
 ```bash
-  OMP_NUM_THREADS=56 \
-  NGRAPH_COMPLEX_PACK=1 \
-  python client.py \
-    --batch_size=4096 \
-    --image_size=128 \
-    --data_dir=$DATA_DIR
+OMP_NUM_THREADS=56 \
+NGRAPH_COMPLEX_PACK=1 \
+python client.py \
+  --batch_size=4096 \
+  --image_size=128 \
+  --data_dir=$DATA_DIR
 ```
-

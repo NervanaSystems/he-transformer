@@ -122,9 +122,7 @@ class TCPMessage {
   enum { message_type_length = sizeof(MessageType) };
   enum { message_count_length = sizeof(size_t) };
 
-  // Creates message with data buffer large enough to store max_body_length
-  // Note: this requires a lot of memory and should be avoided where possible
-  // TODO: more scalable solution
+  // Creates message with data buffer large enough to store default_body_length
   TCPMessage(const MessageType type)
       : m_type(type), m_count(0), m_data_size(0) {
     std::set<MessageType> request_types{
