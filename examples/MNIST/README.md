@@ -7,7 +7,6 @@ This folder demonstrates several examples of simple CNNs on the MNIST dataset:
 
 It is impossible to perform ReLU and Maxpool using homomorphic encryption. We support these functions in two ways:
 
-
   1) A client-server model, enabled with `NGRAPH_ENABLE_CLIENT=1`. The client will send encrypted data to the server. To perform the ReLU/Maxpool layer, the encrypted data is sent to the client, which decrypts, performs the ReLU/Maxpool, re-encrypts and sends the post-ReLU/Maxpool ciphertexts back to the server.
 
 ***Note***: the client is an experimental feature and currently uses a large amount of memory. For a better experience, see the `Debugging` section below.

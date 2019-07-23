@@ -33,7 +33,6 @@ The `he_seal_ckks_config_N11_L1.json` file specifies the parameters which to run
 
 In another terminal, run
 ```bash
-cd $HE_TRANSFORMER
 source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate
 cd $HE_TRANSFORMER/examples/MNIST
 ```
