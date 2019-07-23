@@ -17,7 +17,7 @@ def test_mnist_cnn(FLAGS):
     x_test_batch = x_test[:batch_size]
     y_test_batch = y_test[:FLAGS.batch_size]
 
-    data = x_test_batch.flatten('F')
+    data = x_test_batch.swapaxes(1, 2).flatten('F')
     print('Client batch size from FLAG: ', batch_size)
 
     complex_scale_factor = 1

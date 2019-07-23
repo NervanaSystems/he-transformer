@@ -70,17 +70,20 @@ def test_mnist_mlp(FLAGS):
         elasped_time = (time.time() - start_time)
         print("total time(s)", np.round(elasped_time, 3))
 
-    y_test_batch = y_test[:FLAGS.batch_size]
-    y_label_batch = np.argmax(y_test_batch, 1)
+    using_client = (os.environ.get('NGRAPH_ENABLE_CLIENT') is not None)
 
-    y_pred = np.argmax(y_conv_val, 1)
-    print('y_pred', y_pred)
-    correct_prediction = np.equal(y_pred, y_label_batch)
-    error_count = np.size(correct_prediction) - np.sum(correct_prediction)
-    test_accuracy = np.mean(correct_prediction)
+    if not using_client:
+        y_test_batch = y_test[:FLAGS.batch_size]
+        y_label_batch = np.argmax(y_test_batch, 1)
 
-    print('Error count', error_count, 'of', FLAGS.batch_size, 'elements.')
-    print('Accuracy: %g ' % test_accuracy)
+        y_pred = np.argmax(y_conv_val, 1)
+        print('y_pred', y_pred)
+        correct_prediction = np.equal(y_pred, y_label_batch)
+        error_count = np.size(correct_prediction) - np.sum(correct_prediction)
+        test_accuracy = np.mean(correct_prediction)
+
+        print('Error count', error_count, 'of', FLAGS.batch_size, 'elements.')
+        print('Accuracy: %g ' % test_accuracy)
 
 
 if __name__ == '__main__':

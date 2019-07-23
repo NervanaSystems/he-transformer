@@ -49,10 +49,8 @@ inline void reshape_seal(
 
   for (const Coordinate& input_coord : input_transform) {
     const Coordinate& output_coord = *output_it;
-
     out[output_transform.index(output_coord)] =
         arg[input_transform.index(input_coord)];
-
     ++output_it;
   }
 }
