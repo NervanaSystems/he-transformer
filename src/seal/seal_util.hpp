@@ -63,7 +63,7 @@ size_t match_to_smallest_chain_index(
 
 template <typename S, typename T>
 inline bool within_rescale_tolerance(const S& arg0, const T& arg1,
-                                     double factor = 1.02) {
+                                     double factor = 1.05) {
   const auto scale0 = arg0.scale();
   const auto scale1 = arg1.scale();
 

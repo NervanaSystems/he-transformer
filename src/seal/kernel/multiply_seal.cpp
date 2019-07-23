@@ -14,8 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "seal/he_seal_backend.hpp"
 #include "seal/kernel/multiply_seal.hpp"
+#include "seal/he_seal_backend.hpp"
 #include "seal/kernel/negate_seal.hpp"
 #include "seal/seal_util.hpp"
 
@@ -26,12 +26,10 @@ void ngraph::he::scalar_multiply_seal(
     const element::Type& element_type, const HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
   if (arg0.known_value() && arg1.known_value()) {
-    // NGRAPH_INFO << "C(" << arg0.value() << ") * C(" << arg1.value() << ")";
     out->known_value() = true;
     out->value() = arg0.value() * arg1.value();
     out->complex_packing() = arg0.complex_packing();
   } else if (arg0.known_value()) {
-    // NGRAPH_INFO << "C(" << arg0.value() << ") * C";
     NGRAPH_CHECK(arg0.complex_packing() == false,
                  "cannot multiply ciphertexts in complex form");
     NGRAPH_CHECK(arg1.complex_packing() == false,
@@ -41,7 +39,6 @@ void ngraph::he::scalar_multiply_seal(
 
     scalar_multiply_seal(arg0, p, out, element_type, he_seal_backend, pool);
   } else if (arg1.known_value()) {
-    // NGRAPH_INFO << "C * C(" << arg1.value() << ")";
     NGRAPH_CHECK(arg0.complex_packing() == false,
                  "cannot multiply ciphertexts in complex form");
     NGRAPH_CHECK(arg1.complex_packing() == false,
@@ -72,9 +69,6 @@ void ngraph::he::scalar_multiply_seal(
     he_seal_backend.get_evaluator()->relinearize_inplace(
         out->ciphertext(), *(he_seal_backend.get_relin_keys()), pool);
 
-    // TODO: lazy rescaling if before dot
-    he_seal_backend.get_evaluator()->rescale_to_next_inplace(out->ciphertext(),
-                                                             pool);
     out->known_value() = false;
   }
 }

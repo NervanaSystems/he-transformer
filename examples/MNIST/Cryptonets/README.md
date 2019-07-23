@@ -20,5 +20,13 @@ NGRAPH_TF_BACKEND=HE_SEAL \
 python test.py --batch_size=4096
 ```
 
+  * encrypted model,
+```
+NGRAPH_ENCRYPT_MODEL=1 \
+NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/configs/he_seal_ckks_config_N13_L7.json \
+NGRAPH_TF_BACKEND=HE_SEAL \
+python test.py --batch_size=4096
+```
+
 This runs inference on the Cryptonets network using the SEAL CKKS backend.
 The `he_seal_ckks_config_N13_L7.json` file specifies the parameters which to run the model on. Note: the batch size must be beweteen 1 and 4096.

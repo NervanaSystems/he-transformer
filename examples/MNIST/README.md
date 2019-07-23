@@ -14,5 +14,4 @@ It is impossible to perform ReLU and Maxpool using homomorphic encryption. We su
   2) A debugging interface (active by default). This runs ReLu/Maxpool locally.
   ***Warning***: This is not privacy-preserving, and should be used for debugging only.
 
-
 These examples depends on the [**Intel® nGraph™ Compiler and runtime engine for TensorFlow**](https://github.com/tensorflow/ngraph-bridge). Make sure the python environment with ngraph-tf bridge is active, i.e. run `source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate`. Also ensure the `he_seal_client` wheel has been installed (see `python` folder for instructions).

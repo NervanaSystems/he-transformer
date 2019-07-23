@@ -50,6 +50,5 @@ For a deep learning example using the client-server model, see the `MNIST-MLP` f
     - `scheme_name` should always be "HE_SEAL".
     - `poly_modulus_degree` should be a power of two in {1024, 2048, 4096, 8192, 16384}.
     - `security_level` should be in {0, 128, 192, 256}. Note: a security level of 0 indicates the HE backend will *not* enforce a minimum security level. This means the encryption is not secure against attacks.
-    - `coeff_modulus` should be a list of integers in [1,60]. This indicates the bit-widths of the coefficient moduli used.
+    - `coeff_modulus` should be a list of integers in [1,60]. This indicates the bit-widths of the coefficient moduli used. ***Note***: The number of coefficient moduli should be at least the multiplicative depth of your model between non-polynomial layers.
   * `NAIVE_RESCALING`. For comparison purposes only. No need to enable.
-
