@@ -1,0 +1,35 @@
+/
+| Encryption parameters :
+|   scheme: CKKS
+|   poly_modulus_degree: 2048
+|   coeff_modulus size: 54 (54) bits
+\
+Extracting /tmp/tensorflow/mnist/input_data/train-images-idx3-ubyte.gz
+Extracting /tmp/tensorflow/mnist/input_data/train-labels-idx1-ubyte.gz
+Extracting /tmp/tensorflow/mnist/input_data/t10k-images-idx3-ubyte.gz
+Extracting /tmp/tensorflow/mnist/input_data/t10k-labels-idx1-ubyte.gz
+total time(s) 1.55
+result
+[[-13.    -8.51  -3.64 ...  11.33  -5.32   1.44]
+ [ -9.36   4.22  20.26 ...  -4.41  -1.51 -19.45]
+ [ -4.83   7.29  -6.72 ...  -7.56  -6.96  -7.11]
+ ...
+ [-30.7   -7.49 -15.39 ... -10.34  -0.17  -9.05]
+ [-17.53  -7.24  -8.54 ...  -3.44  -6.19   1.81]
+ [ -4.57 -20.98  -8.39 ... -16.65  -9.42  -4.22]]
+y_pred [7 2 1 ... 3 4 6]
+Error count 47 of 2048 elements.
+Accuracy: 0.977051 
+[INFO] 2019-07-24T15:18:32z src/seal/he_seal_backend.cpp 86	Scale 2.37266e+07
+[INFO] 2019-07-24T15:18:32z src/seal/he_seal_backend.cpp 157	Compiling funcntion
+[INFO] 2019-07-24T15:18:32z src/seal/he_seal_executable.cpp 120	Running executable passes
+[INFO] 2019-07-24T15:18:32z src/seal/he_seal_executable.cpp 145	Parameters size 1
+[INFO] 2019-07-24T15:18:32z src/seal/he_seal_executable.cpp 477	Encrypting data
+[INFO] 2019-07-24T15:18:32z src/seal/he_seal_executable.cpp 480	Batching data with batch size 2048
+[INFO] 2019-07-24T15:18:32z src/seal/he_seal_executable.cpp 486	Complex packing
+[INFO] 2019-07-24T15:18:32z src/seal/he_seal_executable.cpp 497	Processing server inputs
+[INFO] 2019-07-24T15:18:32z src/seal/he_seal_executable.cpp 522	Encrypting parameter 0
+[INFO] 2019-07-24T15:18:32z src/seal/he_seal_executable.cpp 539	Done encrypting parameter
+[WARN] 2019-07-24T15:18:33z src/seal/he_seal_executable.cpp 1382	Performing Relu without client is not privacy-preserving
+[WARN] 2019-07-24T15:18:33z src/seal/he_seal_executable.cpp 1382	Performing Relu without client is not privacy-preserving
+[INFO] 2019-07-24T15:18:33z src/seal/he_seal_executable.cpp 680	[1;32mTotal time 521 (ms) [0m

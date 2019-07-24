@@ -1,0 +1,10 @@
+Namespace(batch_size=4096, crop_size=256, data_dir='/nfs/site/home/fboemer/repos/data/ImageNet', image_size=192, load_cropped_images=False, model='./model/mobilenet_v2_0.35_192_opt.pb', ngraph=True, save_images=False, standardize=False, start_batch=0)
+Not using client
+getting validation images
+FLAGS Namespace(batch_size=4096, crop_size=256, data_dir='/nfs/site/home/fboemer/repos/data/ImageNet', image_size=192, load_cropped_images=False, model='./model/mobilenet_v2_0.35_192_opt.pb', ngraph=True, save_images=False, standardize=False, start_batch=0)
+/
+| Encryption parameters :
+|   scheme: CKKS
+|   poly_modulus_degree: 4096
+|   coeff_modulus size: 104 (30 + 22 + 22 + 30) bits
+\

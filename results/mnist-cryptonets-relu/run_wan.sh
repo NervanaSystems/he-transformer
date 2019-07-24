@@ -17,7 +17,7 @@ do
   touch $outfile
 
   (NGRAPH_ENABLE_CLIENT=1 \
-  OMP_NUM_THREADS=32 \
+  OMP_NUM_THREADS=24 \
   NGRAPH_VOPS=total \
   NGRAPH_COMPLEX_PACK=1 \
   NGRAPH_ENCRYPT_DATA=1 \
@@ -34,7 +34,7 @@ do
     source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate;
     outfile=$HE_TRANSFORMER/results/mnist-cryptonets-relu/results/cryptonets_relu_client_wan.txt;
     cd $HE_TRANSFORMER/examples/MNIST-Cryptonets-Relu/;
-    OMP_NUM_THREADS=32 \
+    OMP_NUM_THREADS=24 \
     NGRAPH_COMPLEX_PACK=1 \
     python ../pyclient_mnist.py \
     --batch_size=2048 \

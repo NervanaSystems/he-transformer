@@ -195,5 +195,5 @@ def accuracy(preds, truth):
     top1_acc = top1_cnt / float(num_preds) * 100.
 
     print('Accuracy on ', num_preds, ' predictions:')
-    print('top1_acc', np.round(top1_acc, 3))
-    print('top5_acc', np.round(top5_acc, 3))
+    print('top1_acc', top1_acc)  #np.round(top1_acc, 3))
+    print('top5_acc', top5_acc)  #np.round(top5_acc, 3))

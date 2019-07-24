@@ -4,23 +4,23 @@
 |   poly_modulus_degree: 2048
 |   coeff_modulus size: 54 (54) bits
 \
-[INFO] 2019-07-17T14:53:12z src/seal/he_seal_backend.cpp 86	Scale 2.37266e+07
-[INFO] 2019-07-17T14:53:12z src/seal/he_seal_backend.cpp 157	Compiling funcntion
-[INFO] 2019-07-17T14:53:12z src/seal/he_seal_executable.cpp 120	Running executable passes
-[INFO] 2019-07-17T14:53:13z src/seal/he_seal_executable.cpp 145	Parameters size 1
-[INFO] 2019-07-17T14:53:13z src/seal/he_seal_executable.cpp 156	Setting up client in constructor
-[INFO] 2019-07-17T14:53:13z src/seal/he_seal_executable.cpp 175	Enable client
-[INFO] 2019-07-17T14:53:13z src/seal/he_seal_executable.cpp 179	Starting server
-[INFO] 2019-07-17T14:53:13z src/seal/he_seal_executable.cpp 202	Server accepting connections
-[INFO] 2019-07-17T14:53:15z src/seal/he_seal_executable.cpp 209	Connection accepted
-[INFO] 2019-07-17T14:53:15z src/seal/he_seal_executable.cpp 213	Session started
-[INFO] 2019-07-17T14:53:15z src/seal/he_seal_executable.cpp 340	Server set public key
-[INFO] 2019-07-17T14:53:15z src/seal/he_seal_executable.cpp 356	Parameter shape 2048x784
-[INFO] 2019-07-17T14:53:15z src/seal/he_seal_executable.cpp 360	num_param_elements before batch size divide 1605632
-[INFO] 2019-07-17T14:53:15z src/seal/he_seal_executable.cpp 363	num_param_elements after batch size divide 784
-[INFO] 2019-07-17T14:53:15z src/seal/he_seal_executable.cpp 367	Requesting total of 784 parameter elements
-[INFO] 2019-07-17T14:53:15z src/seal/he_seal_executable.cpp 373	Server sending message of type: parameter_size
-[INFO] 2019-07-17T14:53:15z src/seal/he_seal_executable.cpp 463	Waiting until m_client_inputs.size() == 1
+[INFO] 2019-07-24T15:12:21z src/seal/he_seal_backend.cpp 86	Scale 2.37266e+07
+[INFO] 2019-07-24T15:12:21z src/seal/he_seal_backend.cpp 157	Compiling funcntion
+[INFO] 2019-07-24T15:12:21z src/seal/he_seal_executable.cpp 120	Running executable passes
+[INFO] 2019-07-24T15:12:22z src/seal/he_seal_executable.cpp 145	Parameters size 1
+[INFO] 2019-07-24T15:12:22z src/seal/he_seal_executable.cpp 156	Setting up client in constructor
+[INFO] 2019-07-24T15:12:22z src/seal/he_seal_executable.cpp 175	Enable client
+[INFO] 2019-07-24T15:12:22z src/seal/he_seal_executable.cpp 179	Starting server
+[INFO] 2019-07-24T15:12:22z src/seal/he_seal_executable.cpp 202	Server accepting connections
+[INFO] 2019-07-24T15:12:24z src/seal/he_seal_executable.cpp 209	Connection accepted
+[INFO] 2019-07-24T15:12:24z src/seal/he_seal_executable.cpp 213	Session started
+[INFO] 2019-07-24T15:12:24z src/seal/he_seal_executable.cpp 340	Server set public key
+[INFO] 2019-07-24T15:12:24z src/seal/he_seal_executable.cpp 356	Parameter shape 2048x784
+[INFO] 2019-07-24T15:12:24z src/seal/he_seal_executable.cpp 360	num_param_elements before batch size divide 1605632
+[INFO] 2019-07-24T15:12:24z src/seal/he_seal_executable.cpp 363	num_param_elements after batch size divide 784
+[INFO] 2019-07-24T15:12:24z src/seal/he_seal_executable.cpp 367	Requesting total of 784 parameter elements
+[INFO] 2019-07-24T15:12:24z src/seal/he_seal_executable.cpp 373	Server sending message of type: parameter_size
+[INFO] 2019-07-24T15:12:24z src/seal/he_seal_executable.cpp 463	Waiting until m_client_inputs.size() == 1
 /
 | Encryption parameters :
 |   scheme: CKKS
@@ -31,35 +31,29 @@ Extracting /tmp/tensorflow/mnist/input_data/train-images-idx3-ubyte.gz
 Extracting /tmp/tensorflow/mnist/input_data/train-labels-idx1-ubyte.gz
 Extracting /tmp/tensorflow/mnist/input_data/t10k-images-idx3-ubyte.gz
 Extracting /tmp/tensorflow/mnist/input_data/t10k-labels-idx1-ubyte.gz
-total time(s) 4.91
+total time(s) 5.02
 result
-[[ 1.59080e+02  8.91000e+00  4.36840e+02 ...  2.60010e+02 -3.30500e+01
-   1.60950e+02]
- [ 3.11600e+02 -9.60700e+01  1.27200e+01 ...  6.31600e+01  1.05529e+03
-  -1.50000e-01]
- [ 2.74320e+02 -1.79210e+02  5.20390e+02 ...  4.67580e+02  5.30600e+01
-  -1.04310e+02]
+[[ 340.35  207.67 -199.52 ... -509.07 -308.95   14.85]
+ [-224.1   151.2   515.57 ...   47.27 -172.44  509.72]
+ [ 288.44  -84.44 -131.65 ...  -64.13 -200.6  -162.03]
  ...
- [-2.41500e+01 -2.43090e+02  2.26610e+02 ...  3.40400e+02 -9.89000e+01
-   2.93940e+02]
- [-2.90550e+02  5.18570e+02  5.63600e+01 ...  4.47200e+02 -5.73070e+02
-   5.48500e+01]
- [ 1.62550e+02  5.19930e+02 -6.40500e+01 ...  1.07220e+02 -1.03490e+02
-  -3.77120e+02]]
-y_pred [3 8 2 ... 5 1 5]
-Error count 1847 of 2048 elements.
-Accuracy: 0.0981445 
-[INFO] 2019-07-17T14:53:15z src/seal/he_seal_executable.cpp 254	Loading 784 ciphertexts
-[INFO] 2019-07-17T14:53:15z src/seal/he_seal_executable.cpp 265	Done loading 784 ciphertexts
-[INFO] 2019-07-17T14:53:15z src/seal/he_seal_executable.cpp 296	Setting m_client_inputs
-[INFO] 2019-07-17T14:53:15z src/seal/he_seal_executable.cpp 469	client_inputs_received
-[INFO] 2019-07-17T14:53:15z src/seal/he_seal_executable.cpp 477	Encrypting data
-[INFO] 2019-07-17T14:53:15z src/seal/he_seal_executable.cpp 480	Batching data with batch size 2048
-[INFO] 2019-07-17T14:53:15z src/seal/he_seal_executable.cpp 486	Complex packing
-[INFO] 2019-07-17T14:53:15z src/seal/he_seal_executable.cpp 492	Processing client inputs
-[INFO] 2019-07-17T14:53:16z src/seal/he_seal_executable.cpp 591	Setting client outputs
-[INFO] 2019-07-17T14:53:16z src/seal/he_seal_executable.cpp 680	[1;32mTotal time 602 (ms) [0m
-[INFO] 2019-07-17T14:53:16z src/seal/he_seal_executable.cpp 686	Sending outputs to client
-[INFO] 2019-07-17T14:53:16z src/seal/he_seal_executable.cpp 710	Writing Result message with 10 ciphertexts 
-[INFO] 2019-07-17T14:53:16z src/seal/he_seal_executable.cpp 716	Waiting until results are written to client
-[INFO] 2019-07-17T14:53:16z src/tcp/tcp_session.hpp 53	Server error reading message: End of file
+ [ 344.37  -14.65   72.03 ...  251.29   77.2  -367.59]
+ [ 160.46 -171.49  110.59 ...  188.94  217.94  166.7 ]
+ [-210.76  182.27  -66.45 ...  -54.88  161.42   71.11]]
+y_pred [0 2 5 ... 3 8 1]
+Error count 1836 of 2048 elements.
+Accuracy: 0.103516 
+[INFO] 2019-07-24T15:12:24z src/seal/he_seal_executable.cpp 254	Loading 784 ciphertexts
+[INFO] 2019-07-24T15:12:24z src/seal/he_seal_executable.cpp 265	Done loading 784 ciphertexts
+[INFO] 2019-07-24T15:12:24z src/seal/he_seal_executable.cpp 296	Setting m_client_inputs
+[INFO] 2019-07-24T15:12:24z src/seal/he_seal_executable.cpp 469	client_inputs_received
+[INFO] 2019-07-24T15:12:24z src/seal/he_seal_executable.cpp 477	Encrypting data
+[INFO] 2019-07-24T15:12:24z src/seal/he_seal_executable.cpp 480	Batching data with batch size 2048
+[INFO] 2019-07-24T15:12:24z src/seal/he_seal_executable.cpp 486	Complex packing
+[INFO] 2019-07-24T15:12:24z src/seal/he_seal_executable.cpp 492	Processing client inputs
+[INFO] 2019-07-24T15:12:25z src/seal/he_seal_executable.cpp 591	Setting client outputs
+[INFO] 2019-07-24T15:12:25z src/seal/he_seal_executable.cpp 680	[1;32mTotal time 661 (ms) [0m
+[INFO] 2019-07-24T15:12:25z src/seal/he_seal_executable.cpp 686	Sending outputs to client
+[INFO] 2019-07-24T15:12:25z src/seal/he_seal_executable.cpp 710	Writing Result message with 10 ciphertexts 
+[INFO] 2019-07-24T15:12:25z src/seal/he_seal_executable.cpp 716	Waiting until results are written to client
+[INFO] 2019-07-24T15:12:25z src/tcp/tcp_session.hpp 53	Server error reading message: End of file

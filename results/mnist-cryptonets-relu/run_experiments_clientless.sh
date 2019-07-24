@@ -11,12 +11,12 @@ cd ../../examples/MNIST-Cryptonets-Relu/
 # Best performance
 for i in {1..10}
 do
-  outfile=$curr_dir/results/clientless_nt32_${i}.txt
+  outfile=$curr_dir/results/clientless_nt24_${i}.txt
   echo "Trial ${i}"
   rm -rf $outfile
   touch $outfile
 
-  (OMP_NUM_THREADS=32 \
+  (OMP_NUM_THREADS=24 \
   NGRAPH_COMPLEX_PACK=1 \
   NGRAPH_VOPS=total \
   NGRAPH_ENCRYPT_DATA=1 \

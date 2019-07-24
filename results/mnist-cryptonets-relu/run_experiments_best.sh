@@ -16,7 +16,7 @@ do
   rm -rf $outfile
   touch $outfile
 
-  (OMP_NUM_THREADS=32 \
+  (OMP_NUM_THREADS=24 \
   NGRAPH_COMPLEX_PACK=1 \
   NGRAPH_VOPS=total \
   NGRAPH_ENABLE_CLIENT=1 \
@@ -28,7 +28,7 @@ do
   # Let server start
   sleep 3s
   NGRAPH_COMPLEX_PACK=1 \
-  OMP_NUM_THREADS=32 \
+  OMP_NUM_THREADS=24 \
   python ../pyclient_mnist.py --batch_size=2048 >> $outfile
 
   # Wait to finish

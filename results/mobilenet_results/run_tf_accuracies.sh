@@ -47,60 +47,60 @@ python test.py \
   --data_dir=$DATA_DIR > $curr_dir/results/acc_035_224.txt
 
 # 0.50 results
-python test.py \
-  --batch_size=50000  \
-  --image_size=96 \
-  --model=./model/mobilenet_v2_0.5_96_opt.pb \
-  --data_dir=$DATA_DIR > $curr_dir/results/acc_050_96.txt
+#python test.py \
+#  --batch_size=50000  \
+#  --image_size=96 \
+#  --model=./model/mobilenet_v2_0.5_96_opt.pb \
+#  --data_dir=$DATA_DIR > $curr_dir/results/acc_050_96.txt
 
-python test.py \
-  --batch_size=50000  \
-  --image_size=128 \
-  --model=./model/mobilenet_v2_0.5_128_opt.pb \
-  --data_dir=$DATA_DIR > $curr_dir/results/acc_050_128.txt
+#python test.py \
+#  --batch_size=50000  \
+#  --image_size=128 \
+#  --model=./model/mobilenet_v2_0.5_128_opt.pb \
+#  --data_dir=$DATA_DIR > $curr_dir/results/acc_050_128.txt
 
-python test.py \
-  --batch_size=50000  \
-  --image_size=160 \
-  --model=./model/mobilenet_v2_0.5_160_opt.pb \
-  --data_dir=$DATA_DIR > $curr_dir/results/acc_050_160.txt
+#python test.py \
+#  --batch_size=50000  \
+#  --image_size=160 \
+#  --model=./model/mobilenet_v2_0.5_160_opt.pb \
+#  --data_dir=$DATA_DIR > $curr_dir/results/acc_050_160.txt
 
-python test.py \
-  --batch_size=50000  \
-  --image_size=192 \
-  --model=./model/mobilenet_v2_0.5_192_opt.pb \
-  --data_dir=$DATA_DIR > $curr_dir/results/acc_050_192.txt
+#python test.py \
+#  --batch_size=50000  \
+#  --image_size=192 \
+#  --model=./model/mobilenet_v2_0.5_192_opt.pb \
+#  --data_dir=$DATA_DIR > $curr_dir/results/acc_050_192.txt
 
-python test.py \
-  --batch_size=50000  \
-  --image_size=224 \
-  --model=./model/mobilenet_v2_0.5_224_opt.pb \
-  --data_dir=$DATA_DIR > $curr_dir/results/acc_050_224.txt
+#python test.py \
+#  --batch_size=50000  \
+#  --image_size=224 \
+#  --model=./model/mobilenet_v2_0.5_224_opt.pb \
+#  --data_dir=$DATA_DIR > $curr_dir/results/acc_050_224.txt
 
 # 0.75 results
-python test.py \
-  --batch_size=50000  \
-  --image_size=96 \
-  --model=./model/mobilenet_v2_0.75_96_opt.pb \
-  --data_dir=$DATA_DIR > $curr_dir/results/acc_075_96.txt
+#python test.py \
+#  --batch_size=50000  \
+#  --image_size=96 \
+#  --model=./model/mobilenet_v2_0.75_96_opt.pb \
+#  --data_dir=$DATA_DIR > $curr_dir/results/acc_075_96.txt
 
-python test.py \
-  --batch_size=50000  \
-  --image_size=128 \
-  --model=./model/mobilenet_v2_0.75_128_opt.pb \
-  --data_dir=$DATA_DIR > $curr_dir/results/acc_075_128.txt
+#python test.py \
+#  --batch_size=50000  \
+#  --image_size=128 \
+#  --model=./model/mobilenet_v2_0.75_128_opt.pb \
+#  --data_dir=$DATA_DIR > $curr_dir/results/acc_075_128.txt
 
-python test.py \
-  --batch_size=50000  \
-  --image_size=160 \
-  --model=./model/mobilenet_v2_0.75_160_opt.pb \
-  --data_dir=$DATA_DIR > $curr_dir/results/acc_075_160.txt
+#python test.py \
+#  --batch_size=50000  \
+#  --image_size=160 \
+#  --model=./model/mobilenet_v2_0.75_160_opt.pb \
+#  --data_dir=$DATA_DIR > $curr_dir/results/acc_075_160.txt
 
-python test.py \
-  --batch_size=50000  \
-  --image_size=192 \
-  --model=./model/mobilenet_v2_0.75_192_opt.pb \
-  --data_dir=$DATA_DIR > $curr_dir/results/acc_075_192.txt
+#python test.py \
+#  --batch_size=50000  \
+#  --image_size=192 \
+#  --model=./model/mobilenet_v2_0.75_192_opt.pb \
+#  --data_dir=$DATA_DIR > $curr_dir/results/acc_075_192.txt
 
 # 0.75 / 224 runs out of memory
 #python test.py \
