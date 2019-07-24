@@ -1,0 +1,23 @@
+/
+| Encryption parameters :
+|   scheme: CKKS
+|   poly_modulus_degree: 8192
+|   coeff_modulus size: 180 (30 + 24 + 24 + 24 + 24 + 24 + 30) bits
+\
+Extracting /tmp/tensorflow/mnist/input_data/train-images-idx3-ubyte.gz
+Extracting /tmp/tensorflow/mnist/input_data/train-labels-idx1-ubyte.gz
+Extracting /tmp/tensorflow/mnist/input_data/t10k-images-idx3-ubyte.gz
+Extracting /tmp/tensorflow/mnist/input_data/t10k-labels-idx1-ubyte.gz
+total time(s) 3.164
+Error count: 3886 of 4096 elements.
+Accuracy:  0.05126953125
+[INFO] 2019-07-23T21:17:03z src/seal/he_seal_backend.cpp 86	Scale 1.67608e+07
+[INFO] 2019-07-23T21:17:03z src/seal/he_seal_backend.cpp 157	Compiling funcntion
+[INFO] 2019-07-23T21:17:03z src/seal/he_seal_executable.cpp 120	Running executable passes
+[INFO] 2019-07-23T21:17:03z src/seal/he_seal_executable.cpp 145	Parameters size 1
+[INFO] 2019-07-23T21:17:03z src/seal/he_seal_executable.cpp 477	Encrypting data
+[INFO] 2019-07-23T21:17:03z src/seal/he_seal_executable.cpp 480	Batching data with batch size 4096
+[INFO] 2019-07-23T21:17:03z src/seal/he_seal_executable.cpp 497	Processing server inputs
+[INFO] 2019-07-23T21:17:03z src/seal/he_seal_executable.cpp 522	Encrypting parameter 0
+[INFO] 2019-07-23T21:17:04z src/seal/he_seal_executable.cpp 539	Done encrypting parameter
+[INFO] 2019-07-23T21:17:06z src/seal/he_seal_executable.cpp 680	[1;32mTotal time 2346 (ms) [0m
