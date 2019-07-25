@@ -110,7 +110,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image) {
   }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image_batched) {
+NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image_packed) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
   Shape shape_a{2, 1, 14};
@@ -146,7 +146,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image_batched) {
       read_vector<float>(t_result)));
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image_batched_complex) {
+NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image_packed_complex) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
   he_backend->complex_packing() = true;
@@ -181,6 +181,52 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image_batched_complex) {
              3 / denom}}})
           .get_vector(),
       read_vector<float>(t_result)));
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_many_image_packed_complex) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->complex_packing() = true;
+
+  auto slot_count =
+      he_backend->get_encryption_parameters().poly_modulus_degree();
+
+  Shape shape_a{slot_count, 1, 14};
+  Shape window_shape{3};
+  auto A = make_shared<op::Parameter>(element::f32, shape_a);
+  Shape shape_r{slot_count, 1, 12};
+
+  float denom = 3.0;
+
+  auto t = make_shared<op::AvgPool>(A, window_shape);
+  auto f = make_shared<Function>(t, ParameterVector{A});
+
+  // Create some tensors for input/output
+  auto t_a = he_backend->create_packed_cipher_tensor(element::f32, shape_a);
+  auto t_result =
+      he_backend->create_packed_cipher_tensor(element::f32, shape_r);
+
+  vector<float> vec_a;
+  vector<float> vec_result;
+  vec_a.reserve(shape_size(shape_a));
+  vec_result.reserve(shape_size(shape_r));
+  for (size_t i = 0; i < slot_count; ++i) {
+    vector<float> data{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0};
+    for (const auto& elem : data) {
+      vec_a.push_back(elem * i);
+    }
+    vector<float> result{1 / denom, 3 / denom, 3 / denom, 3 / denom,
+                         4 / denom, 5 / denom, 5 / denom, 2 / denom,
+                         2 / denom, 2 / denom, 2 / denom, 0 / denom};
+    for (const auto& elem : result) {
+      vec_result.push_back(elem * i);
+    }
+  }
+  copy_data(t_a, vec_a);
+
+  auto handle = backend->compile(f);
+  handle->call_with_validate({t_result}, {t_a});
+  EXPECT_TRUE(all_close(vec_result, read_vector<float>(t_result)));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_2channel_2image) {
