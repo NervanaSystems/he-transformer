@@ -24,11 +24,10 @@ namespace ngraph {
 namespace he {
 class SealPlaintextWrapper {
  public:
-  SealPlaintextWrapper(const seal::Plaintext& plain,
-                       bool complex_packing = false)
+  SealPlaintextWrapper(const seal::Plaintext& plain, bool complex_packing)
       : m_plaintext(plain), m_complex_packing(complex_packing) {}
 
-  SealPlaintextWrapper(bool complex_packing = false)
+  SealPlaintextWrapper(bool complex_packing)
       : m_complex_packing(complex_packing) {}
 
   bool complex_packing() const { return m_complex_packing; }
