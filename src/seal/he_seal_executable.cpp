@@ -268,7 +268,7 @@ void ngraph::he::HESealExecutable::handle_message(
 #pragma omp parallel for
     for (size_t cipher_idx = 0; cipher_idx < ciphertexts.size(); ++cipher_idx) {
       auto wrapper = std::make_shared<ngraph::he::SealCiphertextWrapper>(
-          ciphertexts[cipher_idx]);
+          ciphertexts[cipher_idx], m_complex_packing, false);
       he_cipher_inputs[cipher_idx] = wrapper;
     }
 
@@ -387,7 +387,7 @@ void ngraph::he::HESealExecutable::handle_message(
       cipher.load(m_context, cipher_stream);
 
       auto new_cipher = std::make_shared<ngraph::he::SealCiphertextWrapper>(
-          cipher, m_complex_packing);
+          cipher, m_complex_packing, false);
 
       m_relu_ciphertexts[m_unknown_relu_idx[element_idx]] = new_cipher;
     }
@@ -408,7 +408,7 @@ void ngraph::he::HESealExecutable::handle_message(
                           element_size);
       cipher.load(m_context, cipher_stream);
       auto he_ciphertext = std::make_shared<ngraph::he::SealCiphertextWrapper>(
-          cipher, m_complex_packing);
+          cipher, m_complex_packing, false);
 
       m_max_ciphertexts.emplace_back(he_ciphertext);
     }
@@ -429,7 +429,7 @@ void ngraph::he::HESealExecutable::handle_message(
       cipher.load(m_context, cipher_stream);
 
       auto he_ciphertext = std::make_shared<ngraph::he::SealCiphertextWrapper>(
-          cipher, m_complex_packing);
+          cipher, m_complex_packing, false);
       m_minimum_ciphertexts.emplace_back(he_ciphertext);
     }
     // Notify condition variable
@@ -752,8 +752,7 @@ void ngraph::he::HESealExecutable::generate_calls(
          ++cipher_idx) {
       auto& cipher = cipher_tensor->get_element(cipher_idx);
       if (!cipher->known_value()) {
-        size_t curr_chain_index =
-            get_chain_index(cipher->ciphertext(), m_he_seal_backend);
+        size_t curr_chain_index = get_chain_index(*cipher, m_he_seal_backend);
         if (curr_chain_index == 0) {
           new_chain_index = 0;
         } else {

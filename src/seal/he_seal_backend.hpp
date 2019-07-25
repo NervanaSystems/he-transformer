@@ -111,13 +111,13 @@ class HESealBackend : public ngraph::runtime::Backend {
   inline std::shared_ptr<ngraph::he::SealCiphertextWrapper>
   create_empty_ciphertext(seal::parms_id_type parms_id) const {
     return std::make_shared<ngraph::he::SealCiphertextWrapper>(
-        seal::Ciphertext(m_context, parms_id), m_complex_packing);
+        seal::Ciphertext(m_context, parms_id), m_complex_packing, false);
   }
 
   inline std::shared_ptr<ngraph::he::SealCiphertextWrapper>
   create_empty_ciphertext(const seal::MemoryPoolHandle& pool) const {
     return std::make_shared<ngraph::he::SealCiphertextWrapper>(
-        pool, m_complex_packing);
+        pool, m_complex_packing, false);
   }
 
   /// @brief Constructs SEAL context from SEAL parameter
@@ -129,11 +129,11 @@ class HESealBackend : public ngraph::runtime::Backend {
   void encode(ngraph::he::SealPlaintextWrapper& destination,
               const ngraph::he::HEPlaintext& plaintext,
               seal::parms_id_type parms_id, double scale,
-              bool complex_packing = false) const;
+              bool complex_packing) const;
 
   void encode(ngraph::he::SealPlaintextWrapper& destination,
               const ngraph::he::HEPlaintext& plaintext,
-              bool complex_packing = false) const;
+              bool complex_packing) const;
 
   void decode(void* output, const ngraph::he::HEPlaintext& input,
               const element::Type& type, size_t count = 1) const;
@@ -143,7 +143,7 @@ class HESealBackend : public ngraph::runtime::Backend {
 
   void encrypt(std::shared_ptr<ngraph::he::SealCiphertextWrapper>& output,
                const ngraph::he::HEPlaintext& input,
-               bool complex_packing = false) const;
+               bool complex_packing) const;
 
   void decrypt(ngraph::he::HEPlaintext& output,
                const SealCiphertextWrapper& input) const;
