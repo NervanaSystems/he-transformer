@@ -171,6 +171,8 @@ def get_validation_images(FLAGS, crop=False):
 
 
 def accuracy(preds, truth):
+    print('accuracy on ', preds.shape, truth.shape)
+
     truth = truth.flatten()
     num_preds = truth.size
     print('num_preds', num_preds)
@@ -190,6 +192,7 @@ def accuracy(preds, truth):
                 top1_cnt += 1
             if truth[i] in preds[i]:
                 top5_cnt += 1
+                print(i, truth[i], preds[i])
 
     top5_acc = top5_cnt / float(num_preds) * 100.
     top1_acc = top1_cnt / float(num_preds) * 100.

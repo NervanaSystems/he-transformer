@@ -61,6 +61,51 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image) {
   }
 }
 
+NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_many_images_complex) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->complex_packing() = true;
+
+  auto slot_count =
+      he_backend->get_encryption_parameters().poly_modulus_degree();
+
+  auto shape_a = Shape{slot_count, 1, 5, 5};
+  auto shape_b = Shape{1, 1, 3, 3};
+  auto shape_result = Shape{slot_count, 1, 3, 3};
+
+  auto a = make_shared<op::Parameter>(element::f32, shape_a);
+
+  auto b = make_shared<op::Parameter>(element::f32, shape_b);
+  auto t = make_shared<op::Convolution>(a, b, Strides{1, 1}, Strides{1, 1});
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
+
+  auto t_a = he_backend->create_packed_cipher_tensor(element::f32, shape_a);
+  auto t_b = he_backend->create_plain_tensor(element::f32, shape_b);
+  auto t_result =
+      he_backend->create_packed_cipher_tensor(element::f32, shape_result);
+
+  vector<float> vec_b(shape_size(shape_b), 0.5);
+  vector<float> vec_a(shape_size(shape_a));
+  vector<float> vec_result(shape_size(shape_result));
+  for (int i = 0; i < slot_count; ++i) {
+    int conv_size = shape_size(shape_a) / slot_count;
+    for (int j = 0; j < conv_size; j++) {
+      vec_a[i * conv_size + j] = i;
+    }
+    int filter_size = shape_size(shape_b);
+    int result_size = shape_size(shape_result) / slot_count;
+    for (int j = 0; j < result_size; j++) {
+      vec_result[i * result_size + j] = 0.5 * i * filter_size;
+    }
+  }
+  copy_data(t_a, vec_a);
+  copy_data(t_b, vec_b);
+
+  auto handle = backend->compile(f);
+  handle->call_with_validate({t_result}, {t_a, t_b});
+  EXPECT_TRUE(all_close(read_vector<float>(t_result), vec_result));
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_2outputs) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
 

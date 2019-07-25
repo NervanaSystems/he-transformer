@@ -225,6 +225,45 @@ NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_cipher_complex) {
                 read_vector<float>(t_result), 1e-3f));
 }
 
+NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_cipher_complex_slot_count) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->complex_packing() = true;
+
+  auto slot_count =
+      he_backend->get_encryption_parameters().poly_modulus_degree();
+
+  Shape shape_a{slot_count, 3};
+  Shape shape_b{slot_count, 3};
+  Shape shape_r{slot_count, 3};
+  auto a = make_shared<op::Parameter>(element::f32, shape_a);
+  auto b = make_shared<op::Parameter>(element::f32, shape_b);
+  auto t = make_shared<op::Add>(a, b);
+
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
+
+  // Create some tensors for input/output
+  auto t_a = he_backend->create_packed_cipher_tensor(element::f32, shape_a);
+  auto t_b = he_backend->create_packed_cipher_tensor(element::f32, shape_b);
+  auto t_result =
+      he_backend->create_packed_cipher_tensor(element::f32, shape_r);
+
+  vector<float> vec_a(3 * slot_count);
+  vector<float> vec_b(3 * slot_count);
+  vector<float> vec_res(3 * slot_count);
+  for (int i = 0; i < 3 * slot_count; ++i) {
+    vec_a[i] = i;
+    vec_b[i] = i * ((2 * (i % 2)) - 1) + 1;
+    vec_res[i] = vec_a[i] + vec_b[i];
+  }
+
+  copy_data(t_a, vec_a);
+  copy_data(t_b, vec_b);
+  auto handle = backend->compile(f);
+  handle->call_with_validate({t_result}, {t_a, t_b});
+  EXPECT_TRUE(all_close(vec_res, read_vector<float>(t_result), 1e-3f));
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_plain) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());

@@ -29,8 +29,7 @@ namespace he {
 class HEPlainTensor : public HETensor {
  public:
   HEPlainTensor(const element::Type& element_type, const Shape& shape,
-                const HESealBackend& he_seal_backend,
-                const bool batched = false,
+                const HESealBackend& he_seal_backend, const bool packed = false,
                 const std::string& name = "external");
 
   /// @brief Write bytes directly into the tensor after encoding

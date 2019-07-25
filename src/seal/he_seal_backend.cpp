@@ -114,7 +114,7 @@ ngraph::he::HESealBackend::create_tensor(const element::Type& element_type,
   if (pack_data()) {
     return create_packed_plain_tensor(element_type, shape);
   } else {
-    return create_plain_tensor(element_type, shape);
+    return create_plain_tensor(element_type, shape, false);
   }
 }
 
