@@ -32,7 +32,7 @@ RUN apt-get update && apt-get install -y \
         wget patch diffutils zlib1g-dev libtinfo-dev
 
 RUN apt-get clean autoclean && \
-    apt-get autoremove -y
+        apt-get autoremove -y
 
 # For ngraph-tf integration testing
 RUN pip3 install --upgrade pip setuptools virtualenv==16.1.0
@@ -42,8 +42,8 @@ RUN pip3 install cmake --upgrade
 
 # Get g++-7
 RUN add-apt-repository ppa:ubuntu-toolchain-r/test \
-       && apt update \
-       && apt install g++-7 -y
+        && apt update \
+        && apt install g++-7 -y
 
 # Set g++-7 to default
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 50
