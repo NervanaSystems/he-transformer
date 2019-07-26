@@ -53,5 +53,6 @@ RUN update-alternatives --set gcc /usr/bin/gcc-7
 
 # Get bazel
 RUN wget https://github.com/bazelbuild/bazel/releases/download/0.25.2/bazel-0.25.2-installer-linux-x86_64.sh
-RUN bash bazel-0.25.2-installer-linux-x86_64.sh --user
+RUN chmod +x ./bazel-0.25.2-installer-linux-x86_64.sh
+RUN bash ./bazel-0.25.2-installer-linux-x86_64.sh
 WORKDIR /home

@@ -44,10 +44,10 @@ if [ -z ${BUILD_SUBDIR} ] ; then
 fi
 
 # Set up the environment
-export NGRAPH_REPO=/home/dockuser/he-transformer-test
+export HE_TRANSFORMER_REPO=/home/dockuser/he-transformer-test
 
 if [ -z ${OUTPUT_DIR} ]; then
-    OUTPUT_DIR="${NGRAPH_REPO}/${BUILD_SUBDIR}"
+    OUTPUT_DIR="${HE_TRANSFORMER_REPO}/${BUILD_SUBDIR}"
 fi
 
 # Remove old OUTPUT_DIR directory if present for build_* targets
@@ -66,11 +66,11 @@ echo 'Environment:'
 export
 echo ' '
 
-cd $NGRAPH_REPO
+cd $HE_TRANSFORMER_REPO
 
 export CMAKE_OPTIONS_COMMON="-DCMAKE_BUILD_TYPE=RelWithDebInfo ${CMAKE_OPTIONS_EXTRA}"
-export CMAKE_OPTIONS_GCC="${CMAKE_OPTIONS_COMMON} -DNGRAPH_INSTALL_PREFIX=${NGRAPH_REPO}/BUILD-GCC/ngraph_dist"
-export CMAKE_OPTIONS_CLANG="$CMAKE_OPTIONS_COMMON -DNGRAPH_INSTALL_PREFIX=${NGRAPH_REPO}/BUILD-CLANG/ngraph_dist -DCMAKE_CXX_COMPILER=clang++-3.9 -DCMAKE_C_COMPILER=clang-3.9 -DNGRAPH_WARNINGS_AS_ERRORS=ON"
+export CMAKE_OPTIONS_GCC="${CMAKE_OPTIONS_COMMON}"
+export CMAKE_OPTIONS_CLANG="$CMAKE_OPTIONS_COMMON -DCMAKE_CXX_COMPILER=clang++-3.9 -DCMAKE_C_COMPILER=clang-3.9 -DNGRAPH_WARNINGS_AS_ERRORS=ON"
 
 echo "CMD_TO_RUN=${CMD_TO_RUN}"
 
@@ -88,14 +88,14 @@ if [ -z ${CMAKE_OPTIONS} ] ; then
 fi
 
 # build and test
-export BUILD_DIR="${NGRAPH_REPO}/${BUILD_SUBDIR}"
+export BUILD_DIR="${HE_TRANSFORMER_REPO}/${BUILD_SUBDIR}"
 export GTEST_OUTPUT="xml:${BUILD_DIR}/unit-test-results.xml"
 mkdir -p ${BUILD_DIR}
 chmod ug+rwx ${BUILD_DIR}
 cd ${BUILD_DIR}
 
 echo "Build and test for ${CMD_TO_RUN} in `pwd` with specific parameters:"
-echo "    NGRAPH_REPO=${NGRAPH_REPO}"
+echo "    HE_TRANSFORMER_REPO=${HE_TRANSFORMER_REPO}"
 echo "    CMAKE_OPTIONS=${CMAKE_OPTIONS}"
 echo "    GTEST_OUTPUT=${GTEST_OUTPUT}"
 
