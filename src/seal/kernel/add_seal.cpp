@@ -36,8 +36,6 @@ void ngraph::he::scalar_add_seal(
     scalar_add_seal(p, arg0, out, element_type, he_seal_backend, pool);
     out->known_value() = false;
   } else {
-    NGRAPH_INFO << "arg0 Complex packing " << arg0.complex_packing();
-    NGRAPH_INFO << "arg1 Complex packing " << arg1.complex_packing();
     NGRAPH_CHECK(arg0.complex_packing() == arg1.complex_packing(),
                  "arg0.complex_packing() (", arg0.complex_packing(),
                  ") does not match arg1.complex_packing() (",

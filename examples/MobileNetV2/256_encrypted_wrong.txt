@@ -1,0 +1,20 @@
+y_pred[256] [ 0.10892809 -0.06733055  0.29899585 ... -0.21370049 -0.13970792
+ -1.5765051 ]
+preds[256] ['lotion' 'sunscreen' 'combination lock' 'lighter' 'digital watch']
+validation_labels[256] cellular telephone
+accuracy on  (257, 5) (257,)
+
+
+# TF
+y_pred[256] [ 0.06542516  0.49071944  0.9702955  ... -0.7949394  -1.1929497
+ -0.32989424]
+preds[256] ['cellular telephone' 'hand-held computer' 'cassette player' 'tape player'
+ 'remote control']
+validation_labels[256] cellular telephone
+
+# HE without encrypting
+y_pred[256] [ 0.06542552  0.49071842  0.9702936  ... -0.7949387  -1.1929464
+ -0.3298924 ]
+preds[256] ['cellular telephone' 'hand-held computer' 'cassette player' 'tape player'
+ 'remote control']
+validation_labels[256] cellular telephone

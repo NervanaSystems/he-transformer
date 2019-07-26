@@ -61,7 +61,6 @@ inline void add_seal(
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool()) {
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
-    NGRAPH_INFO << "Adding seal " << i << " of " << count;
     scalar_add_seal(*arg0[i], *arg1[i], out[i], element_type, he_seal_backend);
   }
 }

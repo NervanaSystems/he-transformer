@@ -75,6 +75,28 @@ def main(FLAGS):
         validation_nums = get_validation_labels(FLAGS)
         x_test = get_validation_images(FLAGS)
         validation_labels = imagenet_inference_labels[validation_nums]
+
+        if FLAGS.image_size == 128:
+            # First 256 images to all 0
+            if FLAGS.batch_size > 256:
+                x_test[0:256, :, :] = np.zeros((256, 128, 128, 3))
+            # image 257 to all 0
+            if FLAGS.batch_size > 258:
+                x_test[257, :, :] = np.zeros((1, 128, 128, 3))
+
+        #if FLAGS.image_size == 128:
+        #    if FLAGS.batch_size > 2048:
+        #        assert (FLAGS.batch_size == 4096)
+        #        # TODO: this tests copying data past bs=2048
+        #        x_test[2048:4096, :, :, :] = x_test[0:2048, :, :, :]
+        #        validation_labels[2048:4096] = validation_labels[0:2048]
+        #        for i in range(2048):
+        #            assert (
+        #                validation_labels[i] == validation_labels[i + 2048])
+        #            assert (x_test[i, 0, 0, 0] == x_test[i + 2048, 0, 0, 0])
+
+        print(x_test.shape)
+        print('validation_labels', validation_labels.shape)
     else:
         x_test = np.random.rand(FLAGS.batch_size, FLAGS.image_size,
                                 FLAGS.image_size, 3)
@@ -121,6 +143,20 @@ def main(FLAGS):
             print('validation_labels shape', validation_labels.shape)
             print('preds', preds)
             print('preds shape', preds.shape)
+
+        if FLAGS.image_size == 128 and FLAGS.batch_size > 256:
+            print('y_pred[0]', y_pred[0])
+            print('preds[0]', preds[0])
+            print('validation_labels[0]', validation_labels[0])
+
+            print('y_pred[256]', y_pred[256])
+            print('preds[256]', preds[256])
+            print('validation_labels[256]', validation_labels[256])
+
+            if FLAGS.batch_size > 258:
+                print('y_pred[256]', y_pred[256])
+                print('preds[256]', preds[256])
+                print('validation_labels[256]', validation_labels[256])
 
         util.accuracy(preds, validation_labels)
 

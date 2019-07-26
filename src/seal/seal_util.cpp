@@ -33,19 +33,14 @@
 void ngraph::he::match_modulus_and_scale_inplace(
     SealCiphertextWrapper& arg0, SealCiphertextWrapper& arg1,
     const HESealBackend& he_seal_backend, seal::MemoryPoolHandle pool) {
-  NGRAPH_INFO << "Matching mod and scale";
-
   size_t chain_ind0 = ngraph::he::get_chain_index(arg0, he_seal_backend);
-  NGRAPH_INFO << "chain_ind0" << chain_ind0;
   size_t chain_ind1 = ngraph::he::get_chain_index(arg1, he_seal_backend);
-  NGRAPH_INFO << "chain_ind1" << chain_ind1;
 
   if (chain_ind0 == chain_ind1) {
     return;
   }
 
   bool rescale = !ngraph::he::within_rescale_tolerance(arg0, arg1);
-  NGRAPH_INFO << "rescale? " << rescale;
 
   if (chain_ind0 < chain_ind1) {
     auto arg0_parms_id = arg0.ciphertext().parms_id();
@@ -69,9 +64,7 @@ void ngraph::he::match_modulus_and_scale_inplace(
     chain_ind0 = ngraph::he::get_chain_index(arg0, he_seal_backend);
   }
   NGRAPH_CHECK(chain_ind0 == chain_ind1);
-  NGRAPH_INFO << "matching scales";
   ngraph::he::match_scale(arg0, arg1, he_seal_backend);
-  NGRAPH_INFO << "Done";
 }
 
 // Encode value into vector of coefficients

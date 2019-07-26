@@ -1,0 +1,781 @@
+OMP_NUM_THREADS=56 \
+  NGRAPH_COMPLEX_PACK=1 \
+  python client.py \
+  --batch_size=4096 \
+  --image_size=128 \
+  --data_dir=$DATA_DIR
+Namespace(batch_size=4096, crop_size=256, data_dir='/nfs/site/home/fboemer/repos/data/ImageNet', hostname='localhost', image_size=128, load_cropped_images=False, save_images=False, standardize=False, start_batch=0)
+getting validation images
+FLAGS Namespace(batch_size=4096, crop_size=256, data_dir='/nfs/site/home/fboemer/repos/data/ImageNet', hostname='localhost', image_size=128, load_cropped_images=False, save_images=False, standardize=False, start_batch=0)
+got validation images
+batch_size 4096
+width 128
+height 128
+channels 3
+complex_scale_factor 2
+[INFO] 2019-07-25T22:27:17z src/tcp/tcp_client.hpp 46	Client starting async connection
+[INFO] 2019-07-25T22:27:17z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:17z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:18z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:18z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:18z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:19z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:19z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:19z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:20z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:20z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:20z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:21z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:21z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:21z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:22z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:22z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:22z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:23z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:23z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:23z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:24z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:24z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:24z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:25z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:25z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:25z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:26z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:26z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:26z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:27z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:27z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:27z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:28z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:28z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:28z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:29z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:29z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:29z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:30z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:30z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:30z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:31z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:31z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:31z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:32z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:32z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:32z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:33z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:33z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:33z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:34z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:34z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:34z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:35z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:35z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:35z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:36z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:36z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:36z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:37z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:37z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:37z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:38z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:38z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:38z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:39z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:39z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:39z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:40z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:40z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:40z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:41z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:41z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:41z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:42z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:42z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:42z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:43z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:43z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:43z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:44z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:44z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:44z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:45z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:45z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:45z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:46z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:46z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:46z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:47z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:47z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:47z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:48z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:48z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:48z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:49z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:49z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:49z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:50z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:50z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:50z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:51z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:51z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:51z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:52z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:52z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:52z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:53z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:53z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:53z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:54z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:54z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:54z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:55z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:55z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:55z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:56z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:56z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:56z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:57z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:57z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:57z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:58z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:58z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:58z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:27:59z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:27:59z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:27:59z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:00z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:00z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:00z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:01z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:01z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:01z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:02z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:02z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:02z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:03z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:03z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:03z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:04z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:04z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:04z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:05z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:05z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:05z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:06z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:06z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:06z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:07z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:07z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:07z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:08z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:08z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:08z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:09z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:09z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:09z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:10z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:10z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:10z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:11z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:11z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:11z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:12z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:12z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:12z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:13z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:13z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:13z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:14z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:14z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:14z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:15z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:15z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:15z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:16z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:16z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:16z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:17z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:17z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:17z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:18z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:18z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:18z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:19z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:19z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:19z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:20z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:20z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:20z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:21z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:21z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:21z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:22z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:22z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:22z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:23z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:23z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:23z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:24z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:24z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:24z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:25z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:25z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:25z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:26z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:26z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:26z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:27z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:27z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:27z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:28z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:28z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:28z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:29z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:29z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:29z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:30z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:30z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:30z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:31z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:31z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:31z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:32z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:32z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:32z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:33z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:33z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:33z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:34z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:34z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:34z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:35z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:35z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:35z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:36z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:36z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:36z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:37z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:37z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:37z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:38z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:38z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:38z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:39z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:39z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:39z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:40z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:40z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:40z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:41z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:41z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:41z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:42z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:42z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:42z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:43z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:43z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:43z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:44z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:44z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:44z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:45z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:45z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:45z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:46z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:46z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:46z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:47z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:47z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:47z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:48z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:48z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:48z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:49z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:49z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:49z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:50z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:50z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:50z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:51z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:51z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:51z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:52z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:52z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:52z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:53z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:53z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:53z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:54z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:54z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:54z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:55z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:55z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:55z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:56z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:56z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:56z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:57z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:57z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:57z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:58z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:58z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:58z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:28:59z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:28:59z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:28:59z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:00z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:00z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:00z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:01z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:01z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:01z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:02z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:02z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:02z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:03z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:03z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:03z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:04z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:04z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:04z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:05z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:05z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:05z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:06z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:06z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:06z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:07z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:07z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:07z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:08z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:08z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:08z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:09z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:09z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:09z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:10z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:10z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:10z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:11z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:11z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:11z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:12z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:12z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:12z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:13z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:13z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:13z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:14z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:14z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:14z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:15z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:15z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:15z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:16z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:16z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:16z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:17z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:17z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:17z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:18z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:18z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:18z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:19z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:19z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:19z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:20z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:20z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:20z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:21z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:21z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:21z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:22z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:22z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:22z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:23z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:23z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:23z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:24z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:24z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:24z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:25z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:25z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:25z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:26z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:26z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:26z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:27z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:27z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:27z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:28z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:28z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:28z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:29z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:29z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:29z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:30z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:30z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:30z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:31z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:31z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:31z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:32z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:32z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:32z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:33z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:33z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:33z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:34z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:34z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:34z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:35z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:35z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:35z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:36z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:36z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:36z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:37z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:37z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:37z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:38z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:38z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:38z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:39z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:39z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:39z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:40z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:40z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:40z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:41z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:41z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:41z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:42z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:42z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:42z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:43z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:43z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:43z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:44z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:44z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:44z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:45z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:45z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:45z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:46z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:46z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:46z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:47z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:47z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:47z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:48z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:48z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:48z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:49z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:49z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:49z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:50z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:50z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:50z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:51z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:51z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:51z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:52z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:52z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:52z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:53z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:53z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:53z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:54z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:54z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:54z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:55z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:55z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:55z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:56z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:56z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:56z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:57z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:57z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:57z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:58z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:58z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:58z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:29:59z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:29:59z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:29:59z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:00z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:00z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:00z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:01z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:01z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:01z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:02z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:02z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:02z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:03z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:03z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:03z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:04z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:04z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:04z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:05z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:05z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:05z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:06z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:06z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:06z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:07z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:07z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:07z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:08z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:08z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:08z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:09z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:09z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:09z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:10z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:10z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:10z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:11z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:11z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:11z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:12z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:12z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:12z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:13z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:13z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:13z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:14z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:14z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:14z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:15z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:15z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:15z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:16z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:16z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:16z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:17z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:17z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:17z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:18z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:18z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:18z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:19z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:19z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:19z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:20z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:20z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:20z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:21z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:21z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:21z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:22z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:22z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:22z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:23z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:23z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:23z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:24z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:24z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:24z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:25z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:25z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:25z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:26z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:26z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:26z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:27z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:27z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:27z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:28z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:28z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:28z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:29z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:29z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:29z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:30z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:30z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:30z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:31z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:31z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:31z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:32z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:32z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:32z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:33z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:33z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:33z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:34z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:34z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:34z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:35z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:35z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:35z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:36z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:36z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:36z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:37z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:37z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:37z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:38z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:38z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:38z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:39z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:39z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:39z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:40z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:40z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:40z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:41z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:41z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:41z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:42z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:42z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:42z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:43z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:43z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:43z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:44z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:44z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:44z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:45z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:45z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:45z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:46z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:46z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:46z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:47z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:47z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:47z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:48z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:48z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:48z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:49z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:49z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:49z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:50z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:50z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:50z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:51z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:51z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:51z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:52z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:52z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:52z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:53z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:53z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:53z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:54z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:54z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:54z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:55z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:55z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:55z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:56z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:56z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:56z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:57z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:57z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:57z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:58z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:58z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:58z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:30:59z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:30:59z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:30:59z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:31:00z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:31:00z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:31:00z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:31:01z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:31:01z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:31:01z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:31:02z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:31:02z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:31:02z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:31:03z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:31:03z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:31:03z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:31:04z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:31:04z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:31:04z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:31:05z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:31:05z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:31:05z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:31:06z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:31:06z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:31:06z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:31:07z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:31:07z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:31:07z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:31:08z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:31:08z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:31:08z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:31:09z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:31:09z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:31:09z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:31:10z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:31:10z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:31:10z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:31:11z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:31:11z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:31:11z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:31:12z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:31:12z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:31:12z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:31:13z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:31:13z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:31:13z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:31:14z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:31:14z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:31:14z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:31:15z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:31:15z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:31:15z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:31:16z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:31:16z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:31:16z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:31:17z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:31:17z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:31:17z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:31:18z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:31:18z src/tcp/tcp_client.hpp 79	error connecting to server: Cannot assign requested address
+[INFO] 2019-07-25T22:31:18z src/tcp/tcp_client.hpp 80	Trying again every 1s
+[INFO] 2019-07-25T22:31:19z src/tcp/tcp_client.hpp 84	Trying to connect again
+[INFO] 2019-07-25T22:31:19z src/tcp/tcp_client.hpp 74	Connected to server
+[INFO] 2019-07-25T22:31:19z src/seal/he_seal_client.cpp 180	Loaded encryption parmeters
+/
+| Encryption parameters :
+|   scheme: CKKS
+|   poly_modulus_degree: 4096
+|   coeff_modulus size: 104 (30 + 22 + 22 + 30) bits
+\
+[INFO] 2019-07-25T22:31:19z src/seal/he_seal_client.cpp 73	Client scale 4.16973e+06
+[INFO] 2019-07-25T22:31:19z src/seal/he_seal_client.cpp 189	Sending public key
+[INFO] 2019-07-25T22:31:19z src/seal/he_seal_client.cpp 197	Sending evaluation key
+[INFO] 2019-07-25T22:31:19z src/seal/he_seal_client.cpp 91	Parameter size 49152
+[INFO] 2019-07-25T22:31:19z src/seal/he_seal_client.cpp 92	Client batch size 2048
+[INFO] 2019-07-25T22:31:19z src/seal/he_seal_client.cpp 94	Client complex packing
+[INFO] 2019-07-25T22:31:23z src/seal/he_seal_client.cpp 134	Creating execute message
+[INFO] 2019-07-25T22:31:24z src/seal/he_seal_client.cpp 137	Sending execute message with 49152 ciphertexts
+[INFO] 2019-07-25T22:38:44z src/seal/he_seal_client.cpp 146	Client got 1001 results
+[INFO] 2019-07-25T22:38:45z src/seal/he_seal_client.cpp 165	Results size 4100096
+[INFO] 2019-07-25T22:38:45z src/seal/he_seal_client.cpp 290	Closing connection
+[INFO] 2019-07-25T22:38:45z src/tcp/tcp_client.hpp 55	Closing socket
+[INFO] 2019-07-25T22:38:45z src/tcp/tcp_client.hpp 99	Client error reading header: End of file
+results shape (4100096,)
+results.shape (1001, 4096)
+top5.shape (4096, 5)
+validation_labels ['sea snake' 'alp' 'Shetland sheepdog' ... 'bannister' 'tick' 'syringe']
+top5 [['leatherback turtle' 'loggerhead' 'African crocodile'
+  'American alligator' 'beaver']
+ ['ski' 'shovel' 'dogsled' 'alp' 'king penguin']
+ ['collie' 'Shetland sheepdog' 'borzoi' 'chow' 'Blenheim spaniel']
+ ...
+ ['dining table' 'folding chair' 'bannister' 'guillotine' 'barber chair']
+ ['black and gold garden spider' 'garden spider' 'long-horned beetle'
+  'black widow' 'barn spider']
+ ['syringe' 'seat belt' 'diaper' 'iron' 'bikini']]
+accuracy on  (4096, 5) (4096,)
+num_preds 4096
+Accuracy on  4096  predictions:
+top1_acc 50.390625
+top5_acc 74.267578125

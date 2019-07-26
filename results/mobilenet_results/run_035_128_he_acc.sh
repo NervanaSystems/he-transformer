@@ -9,7 +9,7 @@ echo $curr_dir
 cd ../../examples/MobileNetV2
 
 # Best performance
-for i in {1..13}
+for i in {1..1}
 do
   outfile=$curr_dir/results/035_128_he_acc_${i}.txt
   echo "Trial ${i}"

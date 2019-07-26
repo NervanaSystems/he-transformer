@@ -127,11 +127,11 @@ inline ngraph::he::HESealEncryptionParameters parse_config_or_use_default(
 
     uint64_t poly_modulus_degree = js["poly_modulus_degree"];
     uint64_t security_level = js["security_level"];
-    std::unordered_set<uint64_t> valid_poly_modulus{1024, 2048,  4096,
+    std::unordered_set<uint64_t> valid_poly_modulus{512,  1024,  2048, 4096,
                                                     8192, 16384, 32768};
     if (valid_poly_modulus.count(poly_modulus_degree) == 0) {
       throw ngraph_error(
-          "poly_modulus_degree must be 1024, 2048, 4096, 8192, 16384, "
+          "poly_modulus_degree must be 512, 1024, 2048, 4096, 8192, 16384, "
           "32768");
     }
 

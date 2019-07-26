@@ -619,10 +619,11 @@ bool ngraph::he::HESealExecutable::call(
                           return he_tensor->is_packed();
                         });
         // Avoid broadcasting from constant to output with batch size first
-        // dimension This happens because not every constant is packed, for
-        // examples convolution kernels.
+        // dimension. This happens because not every constant is packed, for
+        // example convolution kernels.
         if (m_batch_data && shape.size() > 0 && shape[0] == m_batch_size &&
             op->description() == "Broadcast") {
+          NGRAPH_INFO << "Avoid brodcast shape " << ngraph::join(shape, "x");
           packed_out = true;
         }
 
@@ -1001,6 +1002,8 @@ void ngraph::he::HESealExecutable::generate_calls(
       Shape in_shape = unpacked_arg_shapes[0];
       Shape broadcast_out_shape = out_shape;
       if (out_shape[0] == m_batch_size) {
+        NGRAPH_INFO << "broadcast out shape packed "
+                    << ngraph::join(packed_out_shape, "x");
         broadcast_out_shape = packed_out_shape;
       }
 
