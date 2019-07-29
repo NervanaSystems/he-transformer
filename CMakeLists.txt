@@ -15,7 +15,8 @@
 # *****************************************************************************
 
 # SEAL requires >= 3.10
-cmake_minimum_required (VERSION 3.10)
+# Find Python3 requires >= 3.12
+cmake_minimum_required (VERSION 3.12)
 
 # Global project name
 project (he_transformer LANGUAGES CXX C)
