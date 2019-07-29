@@ -22,14 +22,14 @@
 FROM fedora:27
 
 RUN dnf -y update && \
-    dnf -y install \
-    gcc gcc-c++ \
-    cmake3 make \
-    git python3 python3-pip \
-    python-setuptools \
-    wget unzip \
-    which redhat-rpm-config \
-    python3-devel
+        dnf -y install \
+        gcc gcc-c++ \
+        cmake3 make \
+        git python3 python3-pip \
+        python-setuptools \
+        wget unzip \
+        which redhat-rpm-config \
+        python3-devel
 
 # For ngraph-tf integration testing
 RUN pip install virtualenv
