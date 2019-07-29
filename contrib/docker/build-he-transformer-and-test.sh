@@ -70,7 +70,7 @@ cd $HE_TRANSFORMER_REPO
 
 export CMAKE_OPTIONS_COMMON="-DCMAKE_BUILD_TYPE=RelWithDebInfo ${CMAKE_OPTIONS_EXTRA}"
 export CMAKE_OPTIONS_GCC="${CMAKE_OPTIONS_COMMON}"
-export CMAKE_OPTIONS_CLANG="$CMAKE_OPTIONS_COMMON -DCMAKE_CXX_COMPILER=clang++-3.9 -DCMAKE_C_COMPILER=clang-3.9 -DNGRAPH_WARNINGS_AS_ERRORS=ON"
+export CMAKE_OPTIONS_CLANG="$CMAKE_OPTIONS_COMMON -DCMAKE_CXX_COMPILER=clang++-3.9 -DCMAKE_C_COMPILER=clang-3.9 -Werror"
 
 echo "CMD_TO_RUN=${CMD_TO_RUN}"
 
@@ -112,21 +112,13 @@ else
     MAKE_CMD_TO_RUN=`echo ${CMD_TO_RUN} | sed 's/_.*//g'`
     COMPILER=`echo ${CMD_TO_RUN} | sed 's/.*_//g'`
 
-    if [ "${MAKE_CMD_TO_RUN}" == "unit-test-check" ]; then
-    # check style before running unit tests
-        if [ -f "/usr/bin/clang-3.9" ]; then
-            echo "Running make style-check"
-            env VERBOSE=1 make -j style-check 2>&1 | tee ${OUTPUT_DIR}/make_style_check_${CMD_TO_RUN}.log
-        fi
-    fi
-
     echo "Running make ${MAKE_CMD_TO_RUN}"
     env VERBOSE=1 make ${MAKE_CMD_TO_RUN} 2>&1 | tee ${OUTPUT_DIR}/make_${CMD_TO_RUN}.log
 
     if [ "${MAKE_CMD_TO_RUN}" == "install" ] ; then
-        echo "Building ngraph_dist_${COMPILER}.tgz"
-        tar czf ngraph_dist_${COMPILER}.tgz ngraph_dist 2>&1 | tee make_tarball_${COMPILER}.log
-        ls -l ngraph_dist_*.tgz
+        echo "Building he_transformer_dist_${COMPILER}.tgz"
+        tar czf he_transformer_dist_${COMPILER}.tgz he_transformer_dist_ 2>&1 | tee make_tarball_${COMPILER}.log
+        ls -l he_transformer_dist_*.tgz
     fi
 fi
 

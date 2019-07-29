@@ -91,10 +91,8 @@ CALLER_GID := $(shell id -g)
 # line
 PYTHON_VERSION = 2
 
-# Some targets are DEPRECATED and will be removed at a later date: check_cpu build_ngraph_cpu
-# These DEPRECATED targets are currently included for Jenkins job compatibility with older dev branches
 # Please see comments for individual targets for more details
-.PHONY: clean build_docker_image build_gcc check_gcc build_clang check_clang install_gcc install_clang shell check_cpu build_all build_ngraph_cpu
+.PHONY: clean build_docker_image build_gcc check_gcc build_clang check_clang shell build_all
 
 DOCKER_BUILD=docker build --rm=true
 
@@ -238,46 +236,6 @@ unit_test_check_clang: build_clang
 	    sh -c "cd ${DOCKUSER_HOME}; ${RUN_AS_USER_SCRIPT}"
 
 style_check_clang: build_clang
-
-# Install
-
-install_all: install_gcc install_clang
-
-# install targets do not depend on GPU dependencies
-# no unit tests are executed
-# build prerequisites include GPU dependencies in the docker image automatically
-install_gcc: build_gcc
-	docker run --rm --tty \
-            ${VOLUME} \
-	    ${DOCKER_RUN_ENV} \
-	    --env BUILD_SUBDIR=BUILD-GCC \
-	    --env CMAKE_OPTIONS_EXTRA="${CMAKE_OPTIONS_EXTRA}" \
-	    --env PARALLEL=${PARALLEL} \
-	    --env THIRD_PARTY_CACHE_DIR=${THIRD_PARTY_CACHE_DIR} \
-	    --env CMD_TO_RUN=install_gcc \
-            --env RUN_UID="$(shell id -u)" \
-            --env RUN_CMD="${DOCKUSER_HOME}/he-transformer-test/contrib/docker/build-he-transformer-and-test.sh" \
-            "build_he_transformer_${OS}:${DBUILD_VERSION}" \
-	    sh -c "cd ${DOCKUSER_HOME}; ${RUN_AS_USER_SCRIPT}"
-
-# install targets do not depend on GPU dependencies
-# no unit tests are executed
-# build prerequisites include GPU dependencies in the docker image automatically
-install_clang: build_clang
-	docker run --rm --tty \
-            ${VOLUME} \
-	    ${DOCKER_RUN_ENV} \
-	    --env BUILD_SUBDIR=BUILD-CLANG \
-	    --env CMAKE_OPTIONS_EXTRA="${CMAKE_OPTIONS_EXTRA}" \
-	    --env PARALLEL=${PARALLEL} \
-	    --env THIRD_PARTY_CACHE_DIR=${THIRD_PARTY_CACHE_DIR} \
-	    --env CMD_TO_RUN=install_clang \
-            --env RUN_UID="$(shell id -u)" \
-            --env RUN_CMD="${DOCKUSER_HOME}/he-transformer-test/contrib/docker/build-he-transformer-and-test.sh" \
-            "build_he_transformer_${OS}:${DBUILD_VERSION}" \
-	    sh -c "cd ${DOCKUSER_HOME}; ${RUN_AS_USER_SCRIPT}"
-
-# Interactive shell
 
 # Always use the platform-specific docker command for the interactive shell
 shell: build_docker_image

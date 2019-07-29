@@ -49,8 +49,7 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
 # For ngraph/log
 set(PROJECT_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
-
-add_compile_definitions(PROJECT_ROOT_DIR="${PROJECT_ROOT_DIR}")
+add_definitions(-DPROJECT_ROOT_DIR="${PROJECT_ROOT_DIR}")
 
 # This allows libhe_backend.so to find libraries in the same directory
 set(CMAKE_INSTALL_RPATH "\$ORIGIN")
@@ -69,8 +68,15 @@ endif()
 
 # Build options
 # python version used in virtual environment
+find_package (Python3 COMPONENTS Interpreter)
+if (Python3_FOUND)
+    message("Python3_VERSION" ${Python3_VERSION})
+elseif()
+    message(FATAL_ERROR "Python3 not found.")
+endif()
+
 if(NOT DEFINED PYTHON_VENV_VERSION)
-    set(PYTHON_VENV_VERSION "python3.5")
+    set(PYTHON_VENV_VERSION "python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}")
 endif()
 message("PYTHON_VENV_VERSION ${PYTHON_VENV_VERSION}")
 

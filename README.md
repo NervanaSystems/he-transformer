@@ -56,11 +56,6 @@ source external/venv-tf-py3/bin/activate
 
 For Ubuntu 18.04, you may try adding `-DPYTHON_VENV_VERSION=python3.6` to the cmake command above.
 
-The first build will compile Tensorflow. To speed up subsequent builds, you can avoid compiling Tensorflow by calling
-```bash
-cmake .. -DUSE_PREBUILT_TF=ON -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7
-```
-
 #### 1.b Python bindings for client
 To build an experimental client-server model with python bindings, see the `python` folder.
 ***Note***: This feature is experimental. For best experience, you should skip this step.
