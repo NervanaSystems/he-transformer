@@ -27,6 +27,7 @@ set(SEAL_USE_CXX17 ON)
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0)
       set(SEAL_USE_CXX17 OFF)
+      message("turning SEAL_USE_CXX17 off")
    endif()
 endif()
 
@@ -50,7 +51,7 @@ ExternalProject_Add(
    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
    -DSEAL_USE_CXX17=${SEAL_USE_CXX17}
    # Skip updates
-   UPDATE_COMMAND ""
+   # UPDATE_COMMAND ""
 )
 
 ExternalProject_Get_Property(ext_seal SOURCE_DIR)

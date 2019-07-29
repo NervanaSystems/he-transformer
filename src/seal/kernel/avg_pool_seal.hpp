@@ -144,7 +144,7 @@ inline void avg_pool_seal(
     if (n_elements == 0) {
       throw std::runtime_error("AvgPool elements == 0, must be non-zero");
     }
-    auto inv_n_elements = HEPlaintext({1.f / n_elements});
+    auto inv_n_elements = HEPlaintext(1.f / n_elements);
 
     ngraph::he::scalar_multiply_seal(*sum, inv_n_elements, sum, element::f32,
                                      he_seal_backend);
@@ -238,7 +238,7 @@ inline void avg_pool_seal(std::vector<HEPlaintext>& arg,
     if (n_elements == 0) {
       throw std::runtime_error("AvgPool elements == 0, must be non-zero");
     }
-    auto inv_n_elements = HEPlaintext({1.f / n_elements});
+    auto inv_n_elements = HEPlaintext(1.f / n_elements);
 
     ngraph::he::scalar_multiply_seal(sum, inv_n_elements, sum, element::f32,
                                      he_seal_backend);

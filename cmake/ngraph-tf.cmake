@@ -30,20 +30,22 @@ set(NGRAPH_TF_VENV_DIR ${NGRAPH_TF_BUILD_DIR}/venv-tf-py3)
 
 # From ngraph-bridge
 if(NOT APPLE)
-    # FIXME: Doesn't work for Ubuntu
-    execute_process(COMMAND cat /etc/os-release
+        # FIXME: Doesn't work for Ubuntu
+        execute_process(COMMAND cat /etc/os-release
         OUTPUT_VARIABLE LSB_RELEASE_ID_SHORT
         OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-    string(REGEX MATCH "ID=\"([a-z])+\"" OS_VERSION "${LSB_RELEASE_ID_SHORT}")
-    string(REGEX MATCH "\"([a-z])+\"" OS_VERSION "${OS_VERSION}")
-    message("OS version is ${OS_VERSION}")
+        )
+        string(REPLACE "\"" "" LSB_RELEASE_ID_SHORT ${LSB_RELEASE_ID_SHORT})
+
+        string(REGEX MATCH "ID=\([a-z])+" OS_VERSION "${LSB_RELEASE_ID_SHORT}")
+        string(REGEX MATCH "([a-z])+" OS_VERSION "${OS_VERSION}")
+        message("OS version is ${OS_VERSION}")
 else()
     # Handle the case for MacOS
     # TBD
 endif()
 
-if(OS_VERSION STREQUAL "\"centos\"")
+if(OS_VERSION STREQUAL "centos")
         set(NGRAPH_TF_LIB_DIR ${NGRAPH_TF_ARTIFACTS_DIR}/lib64)
 else()
         set(NGRAPH_TF_LIB_DIR ${NGRAPH_TF_ARTIFACTS_DIR}/lib)
