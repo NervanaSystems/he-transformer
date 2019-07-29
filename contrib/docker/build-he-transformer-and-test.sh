@@ -104,8 +104,8 @@ if [ "$(echo ${CMD_TO_RUN} | grep build | wc -l)" != "0" ] ; then
     # always run cmake/make steps
     echo "Running cmake"
     cmake ${CMAKE_OPTIONS} .. 2>&1 | tee ${OUTPUT_DIR}/cmake_${CMD_TO_RUN}.log
-    echo "Running make"
-    env VERBOSE=1 make -j ${PARALLEL} 2>&1 | tee ${OUTPUT_DIR}/make_${CMD_TO_RUN}.log
+    echo "Running make install"
+    env VERBOSE=1 make -j ${PARALLEL} install 2>&1 | tee ${OUTPUT_DIR}/make_${CMD_TO_RUN}.log
     echo "CMD_TO_RUN=${CMD_TO_RUN} finished - cmake/make steps completed"
 else
     # strip off _* from CMD_TO_RUN to pass to the ngraph make targets
@@ -114,10 +114,4 @@ else
 
     echo "Running make ${MAKE_CMD_TO_RUN}"
     env VERBOSE=1 make ${MAKE_CMD_TO_RUN} 2>&1 | tee ${OUTPUT_DIR}/make_${CMD_TO_RUN}.log
-
-    if [ "${MAKE_CMD_TO_RUN}" == "install" ] ; then
-        echo "Building he_transformer_dist_${COMPILER}.tgz"
-        tar czf he_transformer_dist_${COMPILER}.tgz he_transformer_dist_ 2>&1 | tee make_tarball_${COMPILER}.log
-        ls -l he_transformer_dist_*.tgz
-    fi
 fi
