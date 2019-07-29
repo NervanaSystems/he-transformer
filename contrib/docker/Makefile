@@ -69,13 +69,17 @@ DBUILD_DIR = ${DIR}/contrib/docker/.build-${DBUILD_VERSION}_${OS}
 ifeq ("$(shell echo ${OS} | grep centos)","centos74")
     RUN_AS_USER_SCRIPT=${DOCKUSER_HOME}/he-transformer-test/contrib/docker/run_as_centos_user.sh
     DOCKERFILE=Dockerfile.he_transformer.centos74
-else
-    DOCKERFILE=Dockerfile.he_transformer.ubuntu1604
+else ifeq ("$(shell echo ${OS} | grep fedora)","fedora27")
+    RUN_AS_USER_SCRIPT=${DOCKUSER_HOME}/he-transformer-test/contrib/docker/run_as_centos_user.sh
+    DOCKERFILE=Dockerfile.he_transformer.fedora27
     RUN_AS_USER_SCRIPT=${DOCKUSER_HOME}/he-transformer-test/contrib/docker/run_as_ubuntu_user.sh
-    # CMAKE_OPTIONS_EXTRA+=-DNGRAPH_USE_PREBUILT_LLVM=TRUE
+else ifeq ("$(shell echo ${OS} | grep ubuntu)","ubuntu1804"
+		DOCKERFILE=Dockerfile.he_transformer.ubuntu1804
+else
+		DOCKERFILE=Dockerfile.he_transformer.ubuntu1604
 endif
 
-DOCKER_CMD_MESG=Building for CPU backend support only.
+DOCKER_CMD_MESG=Building for CPU support only.
 DOCKER_CMD=docker
 
 # For gcc builds, we do NOT regard warnings as errors
@@ -152,7 +156,6 @@ build_gcc: build_docker_image
 
 # Build targets ALWAYS clean build directories (BUILD-GCC, BUILD-CLANG) prior to building
 # Always use docker command to build docker images
-# nvidia-docker command is not appropriate
 build_clang: build_docker_image
 	@echo ""
 	@echo "${DOCKER_CMD_MESG}"
@@ -249,7 +252,6 @@ shell: build_docker_image
 	    sh -c "cd ${DOCKUSER_HOME}; ${RUN_AS_USER_SCRIPT}"
 
 # Clean
-
 clean:
 	rm -f "${DIR}"/contrib/docker/.build-*/Dockerfile.* || echo "keep going if files are not present"
 	rmdir "${DIR}"/contrib/docker/.build-* || echo "keep going if directory is not present"
