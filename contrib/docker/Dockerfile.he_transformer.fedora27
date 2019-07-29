@@ -14,45 +14,41 @@
 # limitations under the License.
 # ******************************************************************************
 
-# Environment to build and unit-test he-transformer
+# Environment to build and unit-test he-transformer on fedora27
+# with g++ 7.3.1
+# with python 3.6.6
+# with cmake 3.11.2
 
 FROM fedora:27
 
-RUN yum -y update && \
-    yum -y install \
+RUN dnf -y update && \
+    dnf -y install \
     gcc gcc-c++ \
     cmake3 make \
-    git
+    git python3 python3-pip \
+    python-setuptools \
+    wget unzip \
+    which redhat-rpm-config \
+    python3-devel
+
+# For ngraph-tf integration testing
+RUN pip install virtualenv
+RUN pip3 install --upgrade pip setuptools virtualenv==16.0.0
 
 RUN cmake --version
 RUN make --version
 RUN gcc --version
 RUN c++ --version
-
-RUN easy_install pip
-RUN pip install virtualenv
-
-
-
-# For ngraph-tf integration testing
-RUN pip3 install --upgrade pip setuptools virtualenv==16.1.0
-
-# SEAL requires newer version of CMake
-RUN pip3 install cmake --upgrade
-
-# Get g++-7
-RUN add-apt-repository ppa:ubuntu-toolchain-r/test \
-        && apt update \
-        && apt install g++-7 -y
-
-# Set g++-7 to default
-RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 50
-RUN update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 50
-RUN update-alternatives --set g++ /usr/bin/g++-7
-RUN update-alternatives --set gcc /usr/bin/gcc-7
+RUN python3 --version
+RUN virtualenv --version
 
 # Get bazel
 RUN wget https://github.com/bazelbuild/bazel/releases/download/0.25.2/bazel-0.25.2-installer-linux-x86_64.sh
 RUN chmod +x ./bazel-0.25.2-installer-linux-x86_64.sh
 RUN bash ./bazel-0.25.2-installer-linux-x86_64.sh
+
+RUN pip install python-config
 WORKDIR /home
+
+RUN which python3
+RUN which python

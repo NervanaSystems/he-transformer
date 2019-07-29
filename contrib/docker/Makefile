@@ -69,13 +69,20 @@ DBUILD_DIR = ${DIR}/contrib/docker/.build-${DBUILD_VERSION}_${OS}
 ifeq ("$(shell echo ${OS} | grep centos)","centos74")
     RUN_AS_USER_SCRIPT=${DOCKUSER_HOME}/he-transformer-test/contrib/docker/run_as_centos_user.sh
     DOCKERFILE=Dockerfile.he_transformer.centos74
-else ifeq ("$(shell echo ${OS} | grep fedora)","fedora27")
-    RUN_AS_USER_SCRIPT=${DOCKUSER_HOME}/he-transformer-test/contrib/docker/run_as_centos_user.sh
+endif
+
+ifeq ("$(shell echo ${OS} | grep fedora)","fedora27")
+    RUN_AS_USER_SCRIPT=${DOCKUSER_HOME}/he-transformer-test/contrib/docker/run_as_fedora_user.sh
     DOCKERFILE=Dockerfile.he_transformer.fedora27
+endif
+
+ifeq ("$(shell echo ${OS} | grep ubuntu)","ubuntu1804")
     RUN_AS_USER_SCRIPT=${DOCKUSER_HOME}/he-transformer-test/contrib/docker/run_as_ubuntu_user.sh
-else ifeq ("$(shell echo ${OS} | grep ubuntu)","ubuntu1804"
 		DOCKERFILE=Dockerfile.he_transformer.ubuntu1804
-else
+endif
+
+ifeq ("$(shell echo ${OS} | grep ubuntu)","ubuntu1604")
+    RUN_AS_USER_SCRIPT=${DOCKUSER_HOME}/he-transformer-test/contrib/docker/run_as_ubuntu_user.sh
 		DOCKERFILE=Dockerfile.he_transformer.ubuntu1604
 endif
 
