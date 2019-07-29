@@ -17,7 +17,7 @@ The [examples](https://github.com/NervanaSystems/he-transformer/tree/master/exam
 
 ### Dependencies
 - We currently only support Ubuntu 16.04. See below for possible ways to compile on Ubuntu 18.04
-- CMake >= 3.10, although different versions may work
+- CMake >= 3.12, although different versions may work
 - GCC version 7, although different versions may work
 - OpenMP is strongly suggested, though not strictly necessary. You may experience slow runtimes without OpenMP
 - python3.5 and pip3
