@@ -56,7 +56,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_cipher_plain) {
 
   vector<float> inputs{1, 2, 3};
   vector<float> results;
-  auto client_thread = std::thread([this, &inputs, &results, &batch_size]() {
+  auto client_thread = std::thread([&inputs, &results, &batch_size]() {
     auto he_client =
         ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
 
@@ -99,7 +99,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu_cipher_plain) {
 
   vector<float> inputs{-1, -0.2, 3};
   vector<float> results;
-  auto client_thread = std::thread([this, &inputs, &results, &batch_size]() {
+  auto client_thread = std::thread([&inputs, &results, &batch_size]() {
     auto he_client =
         ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
 

@@ -161,12 +161,10 @@ generate_plain_cipher_tensors(const std::vector<std::shared_ptr<Node>>& output,
     }
     return std::make_tuple(result, argument);
   };
-  auto plain_cipher_cipher = [&output, &input, &he_backend,
-                              &alternate_cipher]() {
+  auto plain_cipher_cipher = [&alternate_cipher]() {
     return alternate_cipher(0);
   };
-  auto cipher_plain_cipher = [&output, &input, &he_backend,
-                              &alternate_cipher]() {
+  auto cipher_plain_cipher = [&output, &alternate_cipher]() {
     return alternate_cipher(1);
   };
 
