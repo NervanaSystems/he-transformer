@@ -164,7 +164,7 @@ generate_plain_cipher_tensors(const std::vector<std::shared_ptr<Node>>& output,
   auto plain_cipher_cipher = [&alternate_cipher]() {
     return alternate_cipher(0);
   };
-  auto cipher_plain_cipher = [&output, &alternate_cipher]() {
+  auto cipher_plain_cipher = [&alternate_cipher]() {
     return alternate_cipher(1);
   };
 

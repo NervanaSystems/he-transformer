@@ -33,9 +33,9 @@ static string s_manifest = "${MANIFEST}";
 TEST(perf_micro, encode) {
   auto perf_test = [](size_t poly_modulus_degree,
                       const std::vector<int>& coeff_modulus_bits) {
-    int add_test_cnt = 1000;
-    int mult_test_cnt = 300;
-    int encode_test_cnt = 1000;
+    int add_test_cnt = 100;
+    int mult_test_cnt = 30;
+    int encode_test_cnt = 100;
     int max_test_count = max(max(add_test_cnt, mult_test_cnt), encode_test_cnt);
 
     chrono::high_resolution_clock::time_point time_start, time_end;
