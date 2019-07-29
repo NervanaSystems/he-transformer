@@ -27,7 +27,6 @@ set(SEAL_USE_CXX17 ON)
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0)
       set(SEAL_USE_CXX17 OFF)
-      message("turning SEAL_USE_CXX17 off")
    endif()
 endif()
 
