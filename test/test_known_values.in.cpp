@@ -34,7 +34,7 @@ using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
-NGRAPH_TEST(${BACKEND_NAME}, known_value_cipher_cipher_add) {
+NGRAPH_TEST(${BACKEND_NAME}, known_cipher_known_cipher_add) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
   size_t count = 10;
@@ -56,6 +56,71 @@ NGRAPH_TEST(${BACKEND_NAME}, known_value_cipher_cipher_add) {
     arg2[i]->value() = i * 1.23;
 
     exp_out[i] = arg1[i]->value() + arg2[i]->value();
+  }
+  ngraph::he::add_seal(arg1, arg2, out, ngraph::element::f32, *he_backend,
+                       count);
+
+  for (size_t i = 0; i < count; ++i) {
+    auto c_out = out[i];
+    EXPECT_TRUE(c_out->known_value());
+    EXPECT_EQ(c_out->value(), exp_out[i]);
+  }
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, known_cipher_cipher_add) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  size_t count = 10;
+
+  vector<shared_ptr<ngraph::he::SealCiphertextWrapper>> arg1;
+  vector<shared_ptr<ngraph::he::SealCiphertextWrapper>> arg2;
+  vector<shared_ptr<ngraph::he::SealCiphertextWrapper>> out;
+  vector<float> exp_out(count);
+
+  for (size_t i = 0; i < count; i++) {
+    arg1.emplace_back(make_shared<ngraph::he::SealCiphertextWrapper>());
+    arg2.emplace_back(make_shared<ngraph::he::SealCiphertextWrapper>());
+    out.emplace_back(make_shared<ngraph::he::SealCiphertextWrapper>());
+
+    he_backend->encrypt(arg1[i], ngraph::he::HEPlaintext(i), false);
+    arg1[i]->known_value() = false;
+
+    arg2[i]->known_value() = true;
+    arg2[i]->value() = i * 1.23;
+
+    exp_out[i] = i + arg2[i]->value();
+  }
+  ngraph::he::add_seal(arg1, arg2, out, ngraph::element::f32, *he_backend,
+                       count);
+
+  for (size_t i = 0; i < count; ++i) {
+    EXPECT_FALSE(out[i]->known_value());
+    ngraph::he::HEPlaintext p;
+    he_backend->decrypt(p, *out[i]);
+    EXPECT_NEAR(p.values()[0], exp_out[i], 1e-3f);
+  }
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, known_cipher_plain_add) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  size_t count = 10;
+
+  vector<shared_ptr<ngraph::he::SealCiphertextWrapper>> arg1;
+  vector<ngraph::he::HEPlaintext> arg2;
+  vector<shared_ptr<ngraph::he::SealCiphertextWrapper>> out;
+  vector<float> exp_out(count);
+
+  for (size_t i = 0; i < count; i++) {
+    float arg2_val = i * 1.23f;
+    arg1.emplace_back(make_shared<ngraph::he::SealCiphertextWrapper>());
+    arg2.emplace_back(ngraph::he::HEPlaintext(arg2_val));
+    out.emplace_back(make_shared<ngraph::he::SealCiphertextWrapper>());
+
+    arg1[i]->known_value() = true;
+    arg1[i]->value() = i;
+
+    exp_out[i] = arg1[i]->value() + arg2_val;
   }
   ngraph::he::add_seal(arg1, arg2, out, ngraph::element::f32, *he_backend,
                        count);
