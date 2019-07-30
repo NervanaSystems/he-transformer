@@ -35,7 +35,7 @@ RUN apt-get update && apt-get install -y \
         git \
         wget patch diffutils zlib1g-dev libtinfo-dev
 
-
+# Install clang-6
 RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
 RUN apt-add-repository "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-6.0 main"
 RUN apt-get update && apt install -y clang-6.0
@@ -52,7 +52,7 @@ RUN pip3 install cmake --upgrade
 RUN cmake --version
 RUN make --version
 RUN gcc --version
-RUN clang++ --version
+RUN clang++-6.0 --version
 RUN c++ --version
 RUN python3 --version
 RUN virtualenv --version
