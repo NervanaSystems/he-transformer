@@ -40,11 +40,6 @@ RUN yum -y install centos-release-scl && \
 RUN easy_install pip
 RUN pip install --upgrade pip setuptools virtualenv==16.0.0
 
-# Get bazel
-RUN wget https://github.com/bazelbuild/bazel/releases/download/0.25.2/bazel-0.25.2-installer-linux-x86_64.sh
-RUN chmod +x ./bazel-0.25.2-installer-linux-x86_64.sh
-RUN bash ./bazel-0.25.2-installer-linux-x86_64.sh
-
 SHELL [ "/usr/bin/scl", "enable", "devtoolset-7", "llvm-toolset-7"]
 
 RUN ln -s /usr/bin/cmake3 /usr/bin/cmake
@@ -57,5 +52,10 @@ RUN clang --version
 RUN clang++ --version
 RUN python3 --version
 RUN virtualenv --version
+
+# Get bazel
+RUN wget https://github.com/bazelbuild/bazel/releases/download/0.25.2/bazel-0.25.2-installer-linux-x86_64.sh
+RUN chmod +x ./bazel-0.25.2-installer-linux-x86_64.sh
+RUN bash ./bazel-0.25.2-installer-linux-x86_64.sh
 
 WORKDIR /home

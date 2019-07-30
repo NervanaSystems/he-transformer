@@ -104,17 +104,15 @@ A helper script to run as a normal user within a CentOS 7.4 docker container.
 ```
 Dockerfile: Dockerfile.he-transformer.ubuntu1604
 Reference-OS: Ubuntu 16.04
-GPU Support: No
-BUILD-GCC: gcc 7.3
-BUILD-CLANG: clang 3.9
+BUILD-GCC: gcc 7.4.0
+BUILD-CLANG: clang 6.0.1
 ```
 
-#### CentOS 7.4
+#### Ubuntu 18.04
 
 ```
-Dockerfile: Dockerfile.he-transformer.centos74_gpu
-Reference-OS: Centos 7.4.1708
-BUILD-GCC: gcc 7.3
-BUILD-CLANG: not supported
-pre-built cmake3
+Dockerfile: Dockerfile.he-transformer.ubuntu1804
+Reference-OS: Ubuntu 18.04
+BUILD-GCC: gcc 7.4.0
+BUILD-CLANG: clang 6.0.1
 ```
