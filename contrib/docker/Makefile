@@ -71,9 +71,9 @@ ifeq ("$(shell echo ${OS} | grep centos)","centos74")
     DOCKERFILE=Dockerfile.he_transformer.centos74
 endif
 
-ifeq ("$(shell echo ${OS} | grep fedora)","fedora27")
+ifeq ("$(shell echo ${OS} | grep fedora)","fedora28")
     RUN_AS_USER_SCRIPT=${DOCKUSER_HOME}/he-transformer-test/contrib/docker/run_as_fedora_user.sh
-    DOCKERFILE=Dockerfile.he_transformer.fedora27
+    DOCKERFILE=Dockerfile.he_transformer.fedora28
 endif
 
 ifeq ("$(shell echo ${OS} | grep ubuntu)","ubuntu1804")

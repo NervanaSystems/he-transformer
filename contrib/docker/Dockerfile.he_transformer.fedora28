@@ -19,7 +19,7 @@
 # with python 3.6.6
 # with cmake 3.11.2
 
-FROM fedora:27
+FROM fedora:28
 
 RUN dnf -y update && \
         dnf -y install \
@@ -52,3 +52,6 @@ WORKDIR /home
 
 RUN which python3
 RUN which python
+
+RUN dnf install -y clang
+RUN clang --version
