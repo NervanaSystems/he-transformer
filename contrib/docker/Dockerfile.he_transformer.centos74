@@ -15,8 +15,8 @@
 # ******************************************************************************
 
 # Environment to build and unit-test he-transformer on fedora27
-# with gcc 7.3.1
-# with cmake 3.13.3
+# with gcc 6.3.1
+# with cmake 3.13.5
 
 FROM centos:7
 
@@ -35,8 +35,8 @@ RUN easy_install pip
 RUN pip install --upgrade pip setuptools virtualenv==16.0.0
 
 RUN yum -y install centos-release-scl && \
-    yum install -y devtoolset-6
-SHELL [ "/usr/bin/scl", "enable", "devtoolset-6"]
+    yum install -y devtoolset-6 llvm-toolset-7
+SHELL [ "/usr/bin/scl", "enable", "devtoolset-6", "llvm-toolset-7"]
 
 RUN ln -s /usr/bin/cmake3 /usr/bin/cmake
 
@@ -44,7 +44,7 @@ RUN cmake --version
 RUN make --version
 RUN gcc --version
 RUN c++ --version
-RUN clang++-6.0 --version
+RUN clang --version
 RUN python3 --version
 RUN virtualenv --version
 
