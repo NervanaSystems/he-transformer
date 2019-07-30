@@ -51,6 +51,13 @@ RUN update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 50
 RUN update-alternatives --set g++ /usr/bin/g++-7
 RUN update-alternatives --set gcc /usr/bin/gcc-7
 
+RUN cmake --version
+RUN make --version
+RUN gcc --version
+RUN c++ --version
+RUN python3 --version
+RUN virtualenv --version
+
 # Get bazel
 RUN wget https://github.com/bazelbuild/bazel/releases/download/0.25.2/bazel-0.25.2-installer-linux-x86_64.sh
 RUN chmod +x ./bazel-0.25.2-installer-linux-x86_64.sh
