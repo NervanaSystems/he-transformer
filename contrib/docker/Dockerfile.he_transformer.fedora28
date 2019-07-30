@@ -1,0 +1,55 @@
+# ******************************************************************************
+# Copyright 2018-2019 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ******************************************************************************
+
+# Environment to build and unit-test he-transformer on fedora27
+# with g++ 8.3.1
+# with python 3.6.8
+# with cmake 3.14.4
+# with clang 6.0.1
+
+FROM fedora:28
+
+RUN dnf -y update && \
+        dnf -y install \
+        gcc gcc-c++ \
+        cmake3 make \
+        git python3 python3-pip \
+        python-setuptools \
+        wget unzip \
+        which redhat-rpm-config \
+        python3-devel \
+        patch
+
+# For ngraph-tf integration testing
+RUN pip install virtualenv
+RUN pip3 install --upgrade pip setuptools virtualenv==16.0.0
+RUN dnf install -y clang
+
+RUN cmake --version
+RUN make --version
+RUN gcc --version
+RUN c++ --version
+RUN clang --version
+RUN python3 --version
+RUN virtualenv --version
+
+# Get bazel
+RUN wget https://github.com/bazelbuild/bazel/releases/download/0.25.2/bazel-0.25.2-installer-linux-x86_64.sh
+RUN chmod +x ./bazel-0.25.2-installer-linux-x86_64.sh
+RUN bash ./bazel-0.25.2-installer-linux-x86_64.sh
+
+RUN pip install python-config
+WORKDIR /home

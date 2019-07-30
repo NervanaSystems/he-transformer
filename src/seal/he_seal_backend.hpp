@@ -54,9 +54,6 @@ class HESealBackend : public ngraph::runtime::Backend {
  public:
   HESealBackend();
   HESealBackend(const ngraph::he::HESealEncryptionParameters& sp);
-  HESealBackend(const HESealBackend&) = delete;
-  HESealBackend(HESealBackend&&) = delete;
-  HESealBackend& operator=(const HESealBackend&) = delete;
 
   //
   // ngraph backend overrides

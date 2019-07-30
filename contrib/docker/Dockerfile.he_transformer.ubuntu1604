@@ -17,6 +17,10 @@
 # Environment to build and unit-test he-transformer
 
 FROM ubuntu:16.04
+# with g++ 7.4.0
+# with clang++ 6.0.1
+# with python 3.5.2
+# with cmake 3.14.4
 
 RUN apt-get update && apt-get install -y \
         python3-pip virtualenv \
@@ -31,8 +35,14 @@ RUN apt-get update && apt-get install -y \
         git \
         wget patch diffutils zlib1g-dev libtinfo-dev
 
+# Install clang-6
+RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+RUN apt-add-repository "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-6.0 main"
+RUN apt-get update
+RUN apt-get install -y clang-6.0
+
 RUN apt-get clean autoclean && \
-    apt-get autoremove -y
+        apt-get autoremove -y
 
 # For ngraph-tf integration testing
 RUN pip3 install --upgrade pip setuptools virtualenv==16.1.0
@@ -42,8 +52,8 @@ RUN pip3 install cmake --upgrade
 
 # Get g++-7
 RUN add-apt-repository ppa:ubuntu-toolchain-r/test \
-       && apt update \
-       && apt install g++-7 -y
+        && apt update \
+        && apt install g++-7 -y
 
 # Set g++-7 to default
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 50
@@ -51,8 +61,17 @@ RUN update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 50
 RUN update-alternatives --set g++ /usr/bin/g++-7
 RUN update-alternatives --set gcc /usr/bin/gcc-7
 
-# Get bazel
-RUN wget --no-verbose -c https://github.com/bazelbuild/bazel/releases/download/0.21.0/bazel_0.21.0-linux-x86_64.deb
-RUN dpkg -i bazel_0.21.0-linux-x86_64.deb || true
 
+RUN cmake --version
+RUN make --version
+RUN gcc --version
+RUN c++ --version
+RUN clang++-6.0 --version
+RUN python3 --version
+RUN virtualenv --version
+
+# Get bazel
+RUN wget https://github.com/bazelbuild/bazel/releases/download/0.25.2/bazel-0.25.2-installer-linux-x86_64.sh
+RUN chmod +x ./bazel-0.25.2-installer-linux-x86_64.sh
+RUN bash ./bazel-0.25.2-installer-linux-x86_64.sh
 WORKDIR /home

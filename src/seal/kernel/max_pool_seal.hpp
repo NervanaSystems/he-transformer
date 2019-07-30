@@ -36,6 +36,7 @@ std::vector<std::vector<size_t>> max_pool_seal(
 
   size_t out_size = 0;
   for (const Coordinate& out_coord : output_transform) {
+    (void)out_coord;  // Avoid unused-variable warning
     out_size++;
   }
   NGRAPH_CHECK(out_size == shape_size(out_shape), "out size ", out_size,

@@ -16,11 +16,11 @@ The [examples](https://github.com/NervanaSystems/he-transformer/tree/master/exam
 ## Building HE Transformer
 
 ### Dependencies
-- We currently only support Ubuntu 16.04. See below for possible ways to compile on Ubuntu 18.04
-- CMake >= 3.10, although different versions may work
-- GCC version 7, although different versions may work
+- Operating system: Ubuntu 16.04, Ubuntu 18.04.
+- CMake >= 3.10
+- Compiler: g++ version >= 6.0, clang >= 5.0
 - OpenMP is strongly suggested, though not strictly necessary. You may experience slow runtimes without OpenMP
-- python3.5 and pip3
+- python3 and pip3
 - virtualenv v16.1.0
 - bazel v0.25.2
 #### The following dependencies are built automatically
@@ -35,7 +35,7 @@ The [examples](https://github.com/NervanaSystems/he-transformer/tree/master/exam
     wget https://github.com/bazelbuild/bazel/releases/download/0.25.2/bazel-0.25.2-installer-linux-x86_64.sh
     bash bazel-0.25.2-installer-linux-x86_64.sh --user
  ```
- Make sure to add and source the bin path to your `~/.bashrc` file in order to be able to call bazel from the user's installation we set up:
+ Add and source the bin path to your `~/.bashrc` file to call bazel
 ```bash
  export PATH=$PATH:~/bin
  source ~/.bashrc
@@ -52,13 +52,6 @@ cd $HE_TRANSFORMER/build
 cmake .. -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7
 make install
 source external/venv-tf-py3/bin/activate
-```
-
-For Ubuntu 18.04, you may try adding `-DPYTHON_VENV_VERSION=python3.6` to the cmake command above.
-
-The first build will compile Tensorflow. To speed up subsequent builds, you can avoid compiling Tensorflow by calling
-```bash
-cmake .. -DUSE_PREBUILT_TF=ON -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7
 ```
 
 #### 1.b Python bindings for client
