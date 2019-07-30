@@ -39,27 +39,30 @@ NGRAPH_TEST(${BACKEND_NAME}, known_value_cipher_cipher_add) {
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
   size_t count = 10;
 
-  vector<ngraph::he::SealCiphertextWrapper> arg1(count);
-  vector<ngraph::he::SealCiphertextWrapper> arg2(count);
+  vector<shared_ptr<ngraph::he::SealCiphertextWrapper>> arg1;
+  vector<shared_ptr<ngraph::he::SealCiphertextWrapper>> arg2;
   vector<shared_ptr<ngraph::he::SealCiphertextWrapper>> out;
   vector<float> exp_out(count);
 
-  for (size_t idx = 0; idx < count; idx++) {
-    arg1[i].known_value() = true;
-    arg1[i].value() = i;
-
-    arg2[i].known_value() = true;
-    arg2[i].value() = i * 1.23;
-
-    exp_out[i] = arg1[i].value() + arg2[i].value();
-
+  for (size_t i = 0; i < count; i++) {
+    arg1.emplace_back(make_shared<ngraph::he::SealCiphertextWrapper>());
+    arg2.emplace_back(make_shared<ngraph::he::SealCiphertextWrapper>());
     out.emplace_back(make_shared<ngraph::he::SealCiphertextWrapper>());
-  }
-  ngraph::he::scalar_add_seal(arg1, arg2, out, element_type::f32, he_backend);
 
-  for (size_t idx = 0; idx < count; ++idx) {
+    arg1[i]->known_value() = true;
+    arg1[i]->value() = i;
+
+    arg2[i]->known_value() = true;
+    arg2[i]->value() = i * 1.23;
+
+    exp_out[i] = arg1[i]->value() + arg2[i]->value();
+  }
+  ngraph::he::add_seal(arg1, arg2, out, ngraph::element::f32, *he_backend,
+                       count);
+
+  for (size_t i = 0; i < count; ++i) {
     auto c_out = out[i];
-    EXPECT_TRUE(c_out.known_value());
-    EXPECT_EQ(c_out.value(), exp_out[i]);
+    EXPECT_TRUE(c_out->known_value());
+    EXPECT_EQ(c_out->value(), exp_out[i]);
   }
 }
