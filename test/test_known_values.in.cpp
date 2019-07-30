@@ -14,6 +14,9 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include <memory>
+#include <vector>
+
 #include "ngraph/ngraph.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "test_util.hpp"
@@ -22,26 +25,41 @@
 #include "util/test_control.hpp"
 #include "util/test_tools.hpp"
 
+#include "seal/kernel/add_seal.hpp"
+#include "seal/kernel/multiply_seal.hpp"
+#include "seal/kernel/negate_seal.hpp"
+
 using namespace std;
 using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
-NGRAPH_TEST(${BACKEND_NAME}, known_value_add) {
+NGRAPH_TEST(${BACKEND_NAME}, known_value_cipher_cipher_add) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  size_t count = 10;
 
-  ngraph::he::SealCiphertextWrapper a;
-  a.known_value() = true;
-  a.value() = 1.23;
+  vector<ngraph::he::SealCiphertextWrapper> arg1(count);
+  vector<ngraph::he::SealCiphertextWrapper> arg2(count);
+  vector<shared_ptr<ngraph::he::SealCiphertextWrapper>> out;
+  vector<float> exp_out(count);
 
-  ngraph::he::SealCiphertextWrapper b;
-  b.known_value() = true;
-  b.value() = 4.56;
+  for (size_t idx = 0; idx < count; idx++) {
+    arg1[i].known_value() = true;
+    arg1[i].value() = i;
 
-  auto out = std::make_shared<ngraph::he::SealCiphertextWrapper>();
+    arg2[i].known_value() = true;
+    arg2[i].value() = i * 1.23;
 
-  ngraph::he::scalar_add_seal(a, b, out, element_type::f32, he_backend);
-  EXPECT_TRUE(out.known_value());
-  EXPECT_TRUE(out.value() == 5.79);
+    exp_out[i] = arg1[i].value() + arg2[i].value();
+
+    out.emplace_back(make_shared<ngraph::he::SealCiphertextWrapper>());
+  }
+  ngraph::he::scalar_add_seal(arg1, arg2, out, element_type::f32, he_backend);
+
+  for (size_t idx = 0; idx < count; ++idx) {
+    auto c_out = out[i];
+    EXPECT_TRUE(c_out.known_value());
+    EXPECT_EQ(c_out.value(), exp_out[i]);
+  }
 }
