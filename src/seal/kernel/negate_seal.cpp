@@ -27,7 +27,6 @@ void ngraph::he::scalar_negate_seal(
     out->value() = -arg.value();
     return;
   }
-  NGRAPH_DEBUG << "-C";
   he_seal_backend.get_evaluator()->negate(arg.ciphertext(), out->ciphertext());
 }
 

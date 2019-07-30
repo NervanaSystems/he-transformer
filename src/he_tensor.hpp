@@ -35,8 +35,7 @@ class HETensor : public runtime::Tensor {
   /// @param p Pointer to source of data
   /// element-aligned.
   /// @param n Number of bytes to write, must be integral number of elements.
-  virtual void write(const void* p,
-                     size_t n) override = 0;
+  virtual void write(const void* p, size_t n) override = 0;
 
   /// @brief Read bytes directly from the tensor
   /// @param p Pointer to destination for data

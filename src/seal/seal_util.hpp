@@ -133,8 +133,8 @@ inline void add_poly_scalar_coeffmod(const std::uint64_t* poly,
 #endif
 
   for (; coeff_count--; result++, poly++) {
-    // Explicit inline
-    // result[i] = add_uint_uint_mod(poly[i], scalar, modulus);
+// Explicit inline
+// result[i] = add_uint_uint_mod(poly[i], scalar, modulus);
 #ifdef SEAL_DEBUG
     if (*poly >= modulus_value) {
       throw ngraph_error("poly > modulus_value");

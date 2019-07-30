@@ -37,7 +37,7 @@ void ngraph::he::scalar_multiply_seal(
     out->known_value() = false;
     HEPlaintext p(arg0.value());
 
-    scalar_multiply_seal(arg0, p, out, element_type, he_seal_backend, pool);
+    scalar_multiply_seal(arg1, p, out, element_type, he_seal_backend, pool);
   } else if (arg1.known_value()) {
     NGRAPH_CHECK(arg0.complex_packing() == false,
                  "cannot multiply ciphertexts in complex form");
@@ -46,7 +46,7 @@ void ngraph::he::scalar_multiply_seal(
     out->known_value() = false;
 
     HEPlaintext p(arg1.value());
-    scalar_multiply_seal(arg1, p, out, element_type, he_seal_backend, pool);
+    scalar_multiply_seal(arg0, p, out, element_type, he_seal_backend, pool);
 
   } else {
     match_modulus_and_scale_inplace(arg0, arg1, he_seal_backend, pool);
@@ -81,9 +81,7 @@ void ngraph::he::scalar_multiply_seal(
     const seal::MemoryPoolHandle& pool) {
   NGRAPH_CHECK(element_type == element::f32, "Element type ", element_type,
                " is not float");
-
   if (arg0.known_value()) {
-    // NGRAPH_INFO << "C(" << arg0.value() << ") * P";
     NGRAPH_CHECK(arg1.is_single_value(), "arg1 is not single value");
     out->known_value() = true;
     out->value() = arg0.value() * arg1.values()[0];
@@ -102,6 +100,7 @@ void ngraph::he::scalar_multiply_seal(
                   [](float f) { return std::abs(f) < 1e-5f; })) {
     out->known_value() = true;
     out->value() = 0;
+
   } else if (arg1.is_single_value()) {
     double value = static_cast<double>(arg1.values()[0]);
 
@@ -113,7 +112,6 @@ void ngraph::he::scalar_multiply_seal(
       out->value() = 0;
     }
     out->known_value() = out->ciphertext().is_transparent();
-
     if (he_seal_backend.naive_rescaling()) {
       he_seal_backend.get_evaluator()->rescale_to_next_inplace(
           out->ciphertext(), pool);

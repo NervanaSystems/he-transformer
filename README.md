@@ -78,7 +78,7 @@ python ax.py
 NGRAPH_TF_BACKEND=HE_SEAL python ax.py
 ```
 
-For a deep learning example, see [examples/cryptonets/](https://github.com/NervanaSystems/he-transformer/tree/master/examples/MNIST-Cryptonets).
+For a deep learning example, see [examples/MNIST/Cryptonets/](https://github.com/NervanaSystems/he-transformer/tree/master/examples/MNIST/Cryptonets).
 
 ## Code formatting
 Please run `maint/apply-code-format.sh` before submitting a pull request.
