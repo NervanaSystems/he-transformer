@@ -34,6 +34,8 @@ RUN yum -y update && \
 RUN easy_install pip
 RUN pip install --upgrade pip setuptools virtualenv==16.0.0
 
+RUN ln -s /usr/bin/cmake3 /usr/bin/cmake
+
 RUN cmake --version
 RUN make --version
 RUN gcc --version

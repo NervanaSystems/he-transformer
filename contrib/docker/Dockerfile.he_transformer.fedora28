@@ -18,6 +18,7 @@
 # with g++ 8.3.1
 # with python 3.6.8
 # with cmake 3.14.4
+# with clang 6.0.1
 
 FROM fedora:28
 
@@ -29,16 +30,19 @@ RUN dnf -y update && \
         python-setuptools \
         wget unzip \
         which redhat-rpm-config \
-        python3-devel
+        python3-devel \
+        patch
 
 # For ngraph-tf integration testing
 RUN pip install virtualenv
 RUN pip3 install --upgrade pip setuptools virtualenv==16.0.0
+RUN dnf install -y clang
 
 RUN cmake --version
 RUN make --version
 RUN gcc --version
 RUN c++ --version
+RUN clang --version
 RUN python3 --version
 RUN virtualenv --version
 
@@ -49,9 +53,3 @@ RUN bash ./bazel-0.25.2-installer-linux-x86_64.sh
 
 RUN pip install python-config
 WORKDIR /home
-
-RUN which python3
-RUN which python
-
-RUN dnf install -y clang
-RUN clang --version
