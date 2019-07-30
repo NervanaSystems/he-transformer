@@ -17,6 +17,10 @@
 # Environment to build and unit-test he-transformer
 
 FROM ubuntu:16.04
+# with g++ 7.4.0
+# with clang++
+# with python 3.5.2
+# with cmake 3.14.4
 
 RUN apt-get update && apt-get install -y \
         python3-pip virtualenv \
@@ -30,6 +34,11 @@ RUN apt-get update && apt-get install -y \
         clang-3.9 clang-format-3.9 \
         git \
         wget patch diffutils zlib1g-dev libtinfo-dev
+
+# Install clang-6
+RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+RUN apt-add-repository "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-6.0 main"
+RUN apt-get update && apt install -y clang-6.0
 
 RUN apt-get clean autoclean && \
         apt-get autoremove -y
@@ -51,10 +60,12 @@ RUN update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 50
 RUN update-alternatives --set g++ /usr/bin/g++-7
 RUN update-alternatives --set gcc /usr/bin/gcc-7
 
+
 RUN cmake --version
 RUN make --version
 RUN gcc --version
 RUN c++ --version
+RUN clang++ --version
 RUN python3 --version
 RUN virtualenv --version
 
