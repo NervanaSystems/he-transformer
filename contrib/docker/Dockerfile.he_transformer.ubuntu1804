@@ -15,6 +15,10 @@
 # ******************************************************************************
 
 # Environment to build and unit-test he-transformer
+# with g++ 7.4.0
+# with clang++
+# with python 3.6.8
+# with cmake 3.14.4
 
 FROM ubuntu:18.04
 
@@ -48,6 +52,7 @@ RUN pip3 install cmake --upgrade
 RUN cmake --version
 RUN make --version
 RUN gcc --version
+RUN clang++ --version
 RUN c++ --version
 RUN python3 --version
 RUN virtualenv --version
