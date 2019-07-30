@@ -66,7 +66,7 @@ RUN cmake --version
 RUN make --version
 RUN gcc --version
 RUN c++ --version
-RUN clang++ --version
+RUN clang++-6.0 --version
 RUN python3 --version
 RUN virtualenv --version
 
