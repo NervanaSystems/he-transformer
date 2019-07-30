@@ -143,7 +143,6 @@ build_all: build_gcc build_clang
 
 # Build targets ALWAYS clean build directories (BUILD-GCC, BUILD-CLANG) prior to building
 # Always use docker command to build docker images
-# nvidia-docker command is not appropriate
 build_gcc: build_docker_image
 	@echo ""
 	@echo "${DOCKER_CMD_MESG}"
@@ -184,13 +183,14 @@ build_clang: build_docker_image
 check_all: check_gcc check_clang
 
 # Always use the platform-specific docker command to run unit tests
-# ngraph make check target executes unit-test-check and style-check
+# ngraph make check target executes unit-test-check
 check_gcc: build_gcc
 	${DOCKER_CMD} run --rm --tty \
             ${VOLUME} \
 	    ${DOCKER_RUN_ENV} \
 	    --env BUILD_SUBDIR=BUILD-GCC \
 	    --env CMAKE_OPTIONS_EXTRA="${CMAKE_OPTIONS_EXTRA}" \
+			--env OS="${OS}" \
 	    --env PARALLEL=${PARALLEL} \
 	    --env THIRD_PARTY_CACHE_DIR=${THIRD_PARTY_CACHE_DIR} \
 	    --env CMD_TO_RUN=check_gcc \
@@ -200,13 +200,14 @@ check_gcc: build_gcc
 	    sh -c "cd ${DOCKUSER_HOME}; ${RUN_AS_USER_SCRIPT}"
 
 # Always use the platform-specific docker command to run unit tests
-# ngraph make check target executes unit-test-check and style-check
+# ngraph make check target executes unit-test-check
 check_clang: build_clang
 	${DOCKER_CMD} run --rm --tty \
             ${VOLUME} \
 	    ${DOCKER_RUN_ENV} \
 	    --env BUILD_SUBDIR=BUILD-CLANG \
 	    --env CMAKE_OPTIONS_EXTRA="${CMAKE_OPTIONS_EXTRA}" \
+			--env OS="${OS}" \
 	    --env PARALLEL=${PARALLEL} \
 	    --env THIRD_PARTY_CACHE_DIR=${THIRD_PARTY_CACHE_DIR} \
 	    --env CMD_TO_RUN=check_clang \
@@ -215,37 +216,6 @@ check_clang: build_clang
             "build_he_transformer_${OS}:${DBUILD_VERSION}" \
 	    sh -c "cd ${DOCKUSER_HOME}; ${RUN_AS_USER_SCRIPT}"
 
-# Always use the platform-specific docker command to run unit tests
-unit_test_check_gcc: build_gcc
-	${DOCKER_CMD} run --rm --tty \
-            ${VOLUME} \
-	    ${DOCKER_RUN_ENV} \
-	    --env BUILD_SUBDIR=BUILD-GCC \
-	    --env CMAKE_OPTIONS_EXTRA="${CMAKE_OPTIONS_EXTRA}" \
-	    --env PARALLEL=${PARALLEL} \
-	    --env THIRD_PARTY_CACHE_DIR=${THIRD_PARTY_CACHE_DIR} \
-	    --env CMD_TO_RUN='unit-test-check_gcc' \
-            --env RUN_UID="$(shell id -u)" \
-            --env RUN_CMD="${DOCKUSER_HOME}/he-transformer-test/contrib/docker/build-he-transformer-and-test.sh" \
-            "build_he_transformer_${OS}:${DBUILD_VERSION}" \
-	    sh -c "cd ${DOCKUSER_HOME}; ${RUN_AS_USER_SCRIPT}"
-
-# Always use the platform-specific docker command to run unit tests
-unit_test_check_clang: build_clang
-	${DOCKER_CMD} run --rm --tty \
-            ${VOLUME} \
-	    ${DOCKER_RUN_ENV} \
-	    --env BUILD_SUBDIR=BUILD-CLANG \
-	    --env CMAKE_OPTIONS_EXTRA="${CMAKE_OPTIONS_EXTRA}" \
-	    --env PARALLEL=${PARALLEL} \
-	    --env THIRD_PARTY_CACHE_DIR=${THIRD_PARTY_CACHE_DIR} \
-	    --env CMD_TO_RUN='unit-test-check_clang' \
-            --env RUN_UID="$(shell id -u)" \
-            --env RUN_CMD="${DOCKUSER_HOME}/he-transformer-test/contrib/docker/build-he-transformer-and-test.sh" \
-            "build_he_transformer_${OS}:${DBUILD_VERSION}" \
-	    sh -c "cd ${DOCKUSER_HOME}; ${RUN_AS_USER_SCRIPT}"
-
-style_check_clang: build_clang
 
 # Always use the platform-specific docker command for the interactive shell
 shell: build_docker_image
