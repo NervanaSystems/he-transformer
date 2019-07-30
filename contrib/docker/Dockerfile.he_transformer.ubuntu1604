@@ -18,7 +18,7 @@
 
 FROM ubuntu:16.04
 # with g++ 7.4.0
-# with clang++6.0.1
+# with clang++ 6.0.1
 # with python 3.5.2
 # with cmake 3.14.4
 

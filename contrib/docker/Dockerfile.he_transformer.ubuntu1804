@@ -16,7 +16,7 @@
 
 # Environment to build and unit-test he-transformer
 # with g++ 7.4.0
-# with clang++
+# with clang++ 6.0
 # with python 3.6.8
 # with cmake 3.14.4
 
