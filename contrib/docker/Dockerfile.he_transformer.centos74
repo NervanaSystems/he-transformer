@@ -37,8 +37,8 @@ RUN easy_install pip
 RUN pip install --upgrade pip setuptools virtualenv==16.0.0
 
 RUN yum -y install centos-release-scl && \
-    yum install -y devtoolset-7 llvm-toolset-6.0
-SHELL [ "/usr/bin/scl", "enable", "devtoolset-7", "llvm-toolset-6.0"]
+    yum install -y devtoolset-7 llvm-toolset-7
+SHELL [ "/usr/bin/scl", "enable", "devtoolset-7", "llvm-toolset-7"]
 
 RUN ln -s /usr/bin/cmake3 /usr/bin/cmake
 
