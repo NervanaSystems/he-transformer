@@ -41,8 +41,6 @@ RUN easy_install pip
 RUN pip install --upgrade pip setuptools virtualenv==16.0.0
 
 SHELL [ "/usr/bin/scl", "enable", "devtoolset-7", "llvm-toolset-7"]
-#RUN mkdir -p /home/dockeruser
-#RUN echo 'source scl_source enable devtoolset-7 llvm-toolset-7' >> /home/dockeruser/.bashrc
 
 RUN ln -s /usr/bin/cmake3 /usr/bin/cmake
 
