@@ -15,6 +15,8 @@
 # ******************************************************************************
 
 # Environment to build and unit-test he-transformer on fedora27
+# with gcc
+# with
 
 FROM centos:7
 
@@ -29,8 +31,8 @@ RUN yum -y update && \
 
 
 # For ngraph-tf integration testing
-RUN easy_install pip3
-RUN pip3 install --upgrade pip setuptools virtualenv==16.0.0
+RUN easy_install pip
+RUN pip install --upgrade pip setuptools virtualenv==16.0.0
 
 RUN cmake --version
 RUN make --version
