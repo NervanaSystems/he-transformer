@@ -72,10 +72,10 @@ export CMAKE_OPTIONS_COMMON="-DCMAKE_BUILD_TYPE=RelWithDebInfo ${CMAKE_OPTIONS_E
 export CMAKE_OPTIONS_GCC="${CMAKE_OPTIONS_COMMON}"
 # Centos 7.4 doesn't have clang6.0 yet
 # https://www.centos.org/forums/viewtopic.php?t=70149
-if [ "${OS}" == "centos" ]; then
-    export CMAKE_OPTIONS_CLANG="$CMAKE_OPTIONS_COMMON -DCMAKE_CXX_COMPILER=clang++-5.0 -DCMAKE_C_COMPILER=clang-5.0 -Werror"
+if [ "${OS}" == "centos74" ]; then
+    export CMAKE_OPTIONS_CLANG="$CMAKE_OPTIONS_COMMON -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -Werror"
 else
-    export CMAKE_OPTIONS_CLANG="$CMAKE_OPTIONS_COMMON -DCMAKE_CXX_COMPILER=clang++-6.0 -DCMAKE_C_COMPILER=clang-5.0 -Werror"
+    export CMAKE_OPTIONS_CLANG="$CMAKE_OPTIONS_COMMON -DCMAKE_CXX_COMPILER=clang++-6.0 -DCMAKE_C_COMPILER=clang-6.0 -Werror"
 fi
 
 echo "CMD_TO_RUN=${CMD_TO_RUN}"

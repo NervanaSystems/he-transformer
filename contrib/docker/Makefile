@@ -152,6 +152,7 @@ build_gcc: build_docker_image
 	    ${DOCKER_RUN_ENV} \
 	    --env BUILD_SUBDIR=BUILD-GCC \
 	    --env CMAKE_OPTIONS_EXTRA="${CMAKE_OPTIONS_EXTRA}" \
+			--env OS="${OS}" \
 	    --env PARALLEL=${PARALLEL} \
 	    --env THIRD_PARTY_CACHE_DIR=${THIRD_PARTY_CACHE_DIR} \
 	    --env CMD_TO_RUN='build_gcc' \
@@ -171,6 +172,7 @@ build_clang: build_docker_image
 	    ${DOCKER_RUN_ENV} \
 	    --env BUILD_SUBDIR=BUILD-CLANG \
 	    --env CMAKE_OPTIONS_EXTRA="${CMAKE_OPTIONS_EXTRA}" \
+			--env OS="${OS}" \
 	    --env PARALLEL=${PARALLEL} \
 	    --env THIRD_PARTY_CACHE_DIR=${THIRD_PARTY_CACHE_DIR} \
 	    --env CMD_TO_RUN='build_clang' \
