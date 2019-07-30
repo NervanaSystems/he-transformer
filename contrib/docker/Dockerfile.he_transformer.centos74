@@ -30,9 +30,7 @@ RUN yum -y update && \
     git \
     wget patch diffutils zlib-devel ncurses-devel libtinfo-dev \
     python python-devel python-setuptools \
-    python3 python3-devel python3-setuptools \
-
-
+    python3 python3-devel python3-setuptools
 
 # For ngraph-tf integration testing
 RUN easy_install pip
