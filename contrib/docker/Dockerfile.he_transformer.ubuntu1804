@@ -33,9 +33,8 @@ RUN apt-get update && apt-get install -y \
 
 
 RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-RUN apt-add-repository "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-5.0 main"
-RUN apt-get update && apt install -y clang-5.0
-
+RUN apt-add-repository "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-6.0 main"
+RUN apt-get update && apt install -y clang-6.0
 
 RUN apt-get clean autoclean && \
         apt-get autoremove -y
@@ -45,6 +44,13 @@ RUN pip3 install --upgrade pip setuptools virtualenv==16.1.0
 
 # SEAL requires newer version of CMake
 RUN pip3 install cmake --upgrade
+
+RUN cmake --version
+RUN make --version
+RUN gcc --version
+RUN c++ --version
+RUN python3 --version
+RUN virtualenv --version
 
 # Get bazel
 RUN wget https://github.com/bazelbuild/bazel/releases/download/0.25.2/bazel-0.25.2-installer-linux-x86_64.sh
