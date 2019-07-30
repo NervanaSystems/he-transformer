@@ -14,17 +14,25 @@ source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate
 ```
 Also be sure the `he_seal_client` wheel has been installed
 
-2. Add TensorFlow graph transforms to your path, i.e. run
+2. Build Tensorflow graph transforms and add them to your path:
+
+To build run:
+```bash
+cd $HE_TRANSFORMER/build/ext_ngraph_tf/src/ext_ngraph_tf/build_cmake/tensorflow 
+bazel build tensorflow/tools/graph_transforms:transform_graph
+```
+
+To add to path run:
 ```bash
 export PATH=$HE_TRANSFORMER/build/ext_ngraph_tf/src/ext_ngraph_tf/build_cmake/tensorflow/bazel-bin/tensorflow/tools/graph_transforms:$PATH
 ```
 
-2. To download the models and optimize for inference, call
+3. To download the models and optimize for inference, call
 ```bash
 python get_models.py
 ```
 
-3. To enable image processing, run
+4. To enable image processing, run
 ```bash
 pip install pillow
 ```
