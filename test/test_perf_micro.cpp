@@ -186,8 +186,9 @@ TEST(perf_micro, encode) {
               << time_seal_multiply_plain_avg << std::endl;
     std::cout << "time_he_multiply_plain_avg (ns) "
               << time_he_multiply_plain_avg << std::endl;
-    std::cout << "Runtime improvement: " << (time_seal_multiply_plain_avg /
-                                             float(time_he_multiply_plain_avg))
+    std::cout << "Runtime improvement: "
+              << (time_seal_multiply_plain_avg /
+                  float(time_he_multiply_plain_avg))
               << "\n";
 
     std::cout << "time_seal_add_plain_avg (ns) " << time_seal_add_plain_avg

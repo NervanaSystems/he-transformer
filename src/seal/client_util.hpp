@@ -60,16 +60,16 @@ inline void print_seal_context(const seal::SEALContext& context) {
 
 // Packs elements of input into real values
 // (a+bi, c+di) => (a,b,c,d)
-auto complex_vec_to_real_vec = [](
-    std::vector<double>& output,
-    const std::vector<std::complex<double>>& input) {
-  assert(output.size() == 0);
-  output.reserve(input.size() * 2);
-  for (const std::complex<double>& value : input) {
-    output.emplace_back(value.real());
-    output.emplace_back(value.imag());
-  }
-};
+auto complex_vec_to_real_vec =
+    [](std::vector<double>& output,
+       const std::vector<std::complex<double>>& input) {
+      assert(output.size() == 0);
+      output.reserve(input.size() * 2);
+      for (const std::complex<double>& value : input) {
+        output.emplace_back(value.real());
+        output.emplace_back(value.imag());
+      }
+    };
 
 // Packs elements of input into complex values
 // (a,b,c,d) => (a+bi, c+di)

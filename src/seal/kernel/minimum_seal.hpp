@@ -32,9 +32,9 @@ inline void scalar_minimum_seal(const HEPlaintext& arg0,
   const std::vector<float>& arg1_vals = arg1.values();
   std::vector<float> out_vals(arg0.num_values());
 
-  NGRAPH_CHECK(arg0.num_values() == arg1.num_values(), "arg0.num_values() = ",
-               arg0.num_values(), " does not match arg1.num_values()",
-               arg1.num_values());
+  NGRAPH_CHECK(arg0.num_values() == arg1.num_values(),
+               "arg0.num_values() = ", arg0.num_values(),
+               " does not match arg1.num_values()", arg1.num_values());
 
   for (size_t i = 0; i < arg0.num_values(); ++i) {
     out_vals[i] = arg0_vals[i] < arg1_vals[i] ? arg0_vals[i] : arg1_vals[i];
