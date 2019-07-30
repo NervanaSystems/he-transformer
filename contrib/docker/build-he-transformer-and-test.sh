@@ -115,7 +115,7 @@ if [ "$(echo ${CMD_TO_RUN} | grep build | wc -l)" != "0" ] ; then
     env VERBOSE=1 make -j ${PARALLEL} install 2>&1 | tee ${OUTPUT_DIR}/make_${CMD_TO_RUN}.log
     echo "CMD_TO_RUN=${CMD_TO_RUN} finished - cmake/make steps completed"
 else
-    # strip off _* from CMD_TO_RUN to pass to the ngraph make targets
+    # strip off _* from CMD_TO_RUN to pass to the he-transformer make targets
     MAKE_CMD_TO_RUN=`echo ${CMD_TO_RUN} | sed 's/_.*//g'`
     COMPILER=`echo ${CMD_TO_RUN} | sed 's/.*_//g'`
 

@@ -32,6 +32,8 @@ RUN yum -y update && \
     python python-devel python-setuptools \
     python3 python36-devel python3-setuptools \
     which unzip \
+RUN yum -y install centos-release-scl && \
+    yum install -y devtoolset-7 llvm-toolset-7
 
 # For ngraph-tf integration testing
 RUN easy_install pip
@@ -42,8 +44,6 @@ RUN wget https://github.com/bazelbuild/bazel/releases/download/0.25.2/bazel-0.25
 RUN chmod +x ./bazel-0.25.2-installer-linux-x86_64.sh
 RUN bash ./bazel-0.25.2-installer-linux-x86_64.sh
 
-RUN yum -y install centos-release-scl && \
-    yum install -y devtoolset-7 llvm-toolset-7
 SHELL [ "/usr/bin/scl", "enable", "devtoolset-7", "llvm-toolset-7"]
 
 RUN ln -s /usr/bin/cmake3 /usr/bin/cmake
