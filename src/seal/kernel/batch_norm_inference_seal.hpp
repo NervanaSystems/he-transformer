@@ -70,9 +70,9 @@ void batch_norm_inference_seal(
     NGRAPH_CHECK(channel_var_vals.size() == 1);
 
     float scale = channel_gamma_vals[0] / std::sqrt(channel_var_vals[0] + eps);
-    float bias =
-        channel_beta_vals[0] - (channel_gamma_vals[0] * channel_mean_vals[0]) /
-                                   std::sqrt(channel_var_vals[0] + eps);
+    float bias = channel_beta_vals[0] -
+                 (channel_gamma_vals[0] * channel_mean_vals[0]) /
+                     std::sqrt(channel_var_vals[0] + eps);
 
     std::vector<float> scale_vec(batch_size, scale);
     std::vector<float> bias_vec(batch_size, bias);

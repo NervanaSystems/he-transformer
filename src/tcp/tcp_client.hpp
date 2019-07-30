@@ -89,9 +89,8 @@ class TCPClient {
 
   void do_read_header() {
     boost::asio::async_read(
-        m_socket,
-        boost::asio::buffer(m_read_message.header_ptr(),
-                            ngraph::he::TCPMessage::header_length),
+        m_socket, boost::asio::buffer(m_read_message.header_ptr(),
+                                      ngraph::he::TCPMessage::header_length),
         [this](boost::system::error_code ec, std::size_t length) {
           if (!ec && m_read_message.decode_header()) {
             do_read_body();
@@ -104,9 +103,8 @@ class TCPClient {
 
   void do_read_body() {
     boost::asio::async_read(
-        m_socket,
-        boost::asio::buffer(m_read_message.body_ptr(),
-                            m_read_message.body_length()),
+        m_socket, boost::asio::buffer(m_read_message.body_ptr(),
+                                      m_read_message.body_length()),
         [this](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
             m_read_message.decode_body();
@@ -121,9 +119,8 @@ class TCPClient {
 
   void do_write() {
     boost::asio::async_write(
-        m_socket,
-        boost::asio::buffer(m_message_queue.front().header_ptr(),
-                            m_message_queue.front().num_bytes()),
+        m_socket, boost::asio::buffer(m_message_queue.front().header_ptr(),
+                                      m_message_queue.front().num_bytes()),
         [this](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
             m_message_queue.pop_front();
