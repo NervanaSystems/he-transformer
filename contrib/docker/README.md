@@ -41,25 +41,25 @@ Note that all operations performed inside the docker image are run as a regular 
 
 ## Examples/Hints
 
-* To build an Ubuntu 16.04 docker container, compile with gcc 7.3, and run unit tests:
+* To build an Ubuntu 16.04 docker container, compile with gcc 7.4, and run unit tests:
 
 ```
 cd contrib/docker
 make check_gcc
 ```
 
-* To build an Ubuntu 16.04 docker container, compile with clang 3.9, and run unit tests:
+* To build an Ubuntu 16.04 docker container, compile with clang 6.0 , and run unit tests:
 
 ```
 cd contrib/docker
 make check_clang
 ```
 
-* To build a CentOS 7.4 docker container, compile with gcc 7, and run unit tests:
+* To build a Ubuntu 18.04 docker container, compile with gcc 7, and run unit tests:
 
 ```
 cd contrib/docker
-make check_gcc OS=centos74
+make check_gcc OS=ubuntu1804
 ```
 
 ## Helper Scripts

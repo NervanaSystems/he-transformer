@@ -31,7 +31,6 @@ set(NGRAPH_TF_VENV_DIR ${NGRAPH_TF_BUILD_DIR}/venv-tf-py3)
 
 # From ngraph-bridge
 if(NOT APPLE)
-  # FIXME: Doesn't work for Ubuntu
   execute_process(COMMAND cat /etc/os-release
                   OUTPUT_VARIABLE LSB_RELEASE_ID_SHORT
                   OUTPUT_STRIP_TRAILING_WHITESPACE)
