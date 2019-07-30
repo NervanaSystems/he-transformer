@@ -70,7 +70,13 @@ cd $HE_TRANSFORMER_REPO
 
 export CMAKE_OPTIONS_COMMON="-DCMAKE_BUILD_TYPE=RelWithDebInfo ${CMAKE_OPTIONS_EXTRA}"
 export CMAKE_OPTIONS_GCC="${CMAKE_OPTIONS_COMMON}"
-export CMAKE_OPTIONS_CLANG="$CMAKE_OPTIONS_COMMON -DCMAKE_CXX_COMPILER=clang++-6.0 -DCMAKE_C_COMPILER=clang-6.0 -Werror"
+# Centos 7.4 doesn't have clang6.0 yet
+# https://www.centos.org/forums/viewtopic.php?t=70149
+if [ "${OS}" == "centos"]; then
+    export CMAKE_OPTIONS_CLANG="$CMAKE_OPTIONS_COMMON -DCMAKE_CXX_COMPILER=clang++-5.0 -DCMAKE_C_COMPILER=clang-5.0 -Werror"
+else
+    export CMAKE_OPTIONS_CLANG="$CMAKE_OPTIONS_COMMON -DCMAKE_CXX_COMPILER=clang++-6.0 -DCMAKE_C_COMPILER=clang-5.0 -Werror"
+fi
 
 echo "CMD_TO_RUN=${CMD_TO_RUN}"
 
@@ -98,6 +104,7 @@ echo "Build and test for ${CMD_TO_RUN} in `pwd` with specific parameters:"
 echo "    HE_TRANSFORMER_REPO=${HE_TRANSFORMER_REPO}"
 echo "    CMAKE_OPTIONS=${CMAKE_OPTIONS}"
 echo "    GTEST_OUTPUT=${GTEST_OUTPUT}"
+echo "    OS=${OS}"
 
 # only run cmake/make steps for build_* make targets
 if [ "$(echo ${CMD_TO_RUN} | grep build | wc -l)" != "0" ] ; then
