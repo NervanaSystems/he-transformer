@@ -240,7 +240,8 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed) {
       vector<float> inputs(shape_size(shape));
       vector<float> exp_results(shape_size(shape));
       for (size_t i = 0; i < shape_size(shape); ++i) {
-        inputs[i] = (int)i - int(shape_size(shape)) / 2;
+        inputs[i] =
+            static_cast<int>(i) - static_cast<int>(shape_size(shape)) / 2;
         exp_results[i] = inputs[i] > 0 ? inputs[i] : 0;
       }
 

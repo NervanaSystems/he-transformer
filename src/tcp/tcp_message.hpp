@@ -267,9 +267,6 @@ class TCPMessage {
   ~TCPMessage() { ngraph_free(m_data); }
 
   void check_arguments() {
-    if (m_count < 0) {
-      throw std::invalid_argument("m_count must be non-negative");
-    }
     if (m_count != 0 && m_data_size % m_count != 0) {
       NGRAPH_INFO << "Error: size " << m_data_size
                   << " not a multiple of count " << m_count;
@@ -322,7 +319,7 @@ class TCPMessage {
   }
 
   MessageType message_type() { return m_type; }
-  const MessageType message_type() const { return m_type; }
+  MessageType message_type() const { return m_type; }
 
   char* header_ptr() { return m_data; }
   const char* header_ptr() const { return m_data; }
@@ -341,7 +338,7 @@ class TCPMessage {
     char header[header_length + 1] = "";
     size_t to_encode = body_length();
     int ret = std::snprintf(header, sizeof(header), "%zu", to_encode);
-    if (ret < 0 || (size_t)ret > sizeof(header)) {
+    if (ret < 0 || static_cast<size_t>(ret) > sizeof(header)) {
       throw std::invalid_argument("Error encoding header");
     }
     std::memcpy(m_data, header, header_length);

@@ -29,8 +29,6 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_cipher_tensor.hpp"
 
-using namespace ngraph;
-
 std::vector<float> read_binary_constant(const std::string filename,
                                         size_t num_elements);
 std::vector<float> read_constant(const std::string filename);
@@ -72,10 +70,10 @@ bool all_close(const std::vector<T>& a, const std::vector<T>& b,
   return close;
 }
 
-std::vector<std::tuple<std::vector<std::shared_ptr<runtime::Tensor>>,
-                       std::vector<std::shared_ptr<runtime::Tensor>>>>
-generate_plain_cipher_tensors(const std::vector<std::shared_ptr<Node>>& output,
-                              const std::vector<std::shared_ptr<Node>>& input,
-                              const runtime::Backend* backend,
-                              const bool consistent_type = false,
-                              const bool skip_plain_plain = false);
+std::vector<std::tuple<std::vector<std::shared_ptr<ngraph::runtime::Tensor>>,
+                       std::vector<std::shared_ptr<ngraph::runtime::Tensor>>>>
+generate_plain_cipher_tensors(
+    const std::vector<std::shared_ptr<ngraph::Node>>& output,
+    const std::vector<std::shared_ptr<ngraph::Node>>& input,
+    const ngraph::runtime::Backend* backend, const bool consistent_type = false,
+    const bool skip_plain_plain = false);

@@ -262,6 +262,7 @@ void ngraph::he::HESealClient::handle_message(
       break;
     }
     case ngraph::he::MessageType::execute:
+    case ngraph::he::MessageType::eval_key:
     case ngraph::he::MessageType::max_result:
     case ngraph::he::MessageType::minimum_request:
     case ngraph::he::MessageType::minimum_result:
