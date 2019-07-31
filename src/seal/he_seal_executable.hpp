@@ -168,7 +168,6 @@ class HESealExecutable : public runtime::Executable {
   // To trigger when result message has been written
   std::mutex m_result_mutex;
   std::condition_variable m_result_cond;
-  bool m_result_done;
 
   // To trigger when session has started
   std::mutex m_session_mutex;

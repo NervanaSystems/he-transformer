@@ -143,8 +143,6 @@ void ngraph::he::HESealClient::handle_message(
       size_t result_count = message.count();
       size_t element_size = message.element_size();
 
-      NGRAPH_INFO << "Client got " << result_count << " results ";
-
       std::vector<seal::Ciphertext> result;
       m_results.reserve(result_count * m_batch_size);
       for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
@@ -162,8 +160,6 @@ void ngraph::he::HESealClient::handle_message(
         decode_to_real_vec(plain, outputs, complex_packing());
         m_results.insert(m_results.end(), outputs.begin(), outputs.end());
       }
-      NGRAPH_INFO << "Results size " << m_results.size();
-
       close_connection();
       break;
     }
@@ -345,8 +341,6 @@ void ngraph::he::HESealClient::handle_relu_request(
   }
   auto relu_result_msg =
       TCPMessage(ngraph::he::MessageType::relu_result, post_relu_ciphers);
-  // NGRAPH_INFO << "Writing relu_result message with " << result_count
-  //            << " ciphertexts";
 
   write_message(std::move(relu_result_msg));
   return;

@@ -97,7 +97,6 @@ ngraph::he::HESealExecutable::HESealExecutable(
       m_port(34000),
       m_relu_done(false),
       m_max_done(false),
-      m_result_done(false),
       m_session_started(false),
       m_client_inputs_received(false) {
   m_context = he_seal_backend.get_context();
@@ -701,11 +700,12 @@ bool ngraph::he::HESealExecutable::call(
                 << " ciphertexts ";
     m_session->do_write(std::move(result_message));
 
-    // TODO: more sophisticated way of doing this
-    while (m_session->is_writing()) {
-      NGRAPH_INFO << "Waiting until results are written to client";
-      sleep(1);
-    }
+    std::unique_lock<std::mutex> mlock(m_result_mutex);
+
+    // Wait until message is written
+    std::condition_variable& writing_cond = m_session->is_writing_cond();
+    // const std::shared_ptr<TCPSession> const_m_session = m_session;
+    writing_cond.wait(mlock, [this] { return !m_session->is_writing(); });
   }
   return true;
 }

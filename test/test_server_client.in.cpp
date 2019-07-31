@@ -61,7 +61,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_cipher_plain) {
         ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
 
     while (!he_client.is_done()) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
     results = he_client.get_results();
   });
@@ -102,7 +102,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu_cipher_plain) {
         ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
 
     while (!he_client.is_done()) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
     results = he_client.get_results();
   });
@@ -111,6 +111,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu_cipher_plain) {
       he_backend->compile(f));
   handle->enable_client();
   handle->call_with_validate({t_result}, {t_dummy});
+
   client_thread.join();
   EXPECT_TRUE(all_close(results, vector<float>{0, 0, 3.3}, 1e-3f));
 }

@@ -34,8 +34,6 @@ class HESealClient {
   HESealClient(const std::string& hostname, const size_t port,
                const size_t batch_size, const std::vector<float>& inputs);
 
-  ~HESealClient() = default;
-
   void set_seal_context();
 
   void handle_message(const ngraph::he::TCPMessage& message);
@@ -76,6 +74,6 @@ class HESealClient {
   std::vector<float> m_results;  // Function outputs
 
   bool m_complex_packing{std::getenv("NGRAPH_COMPLEX_PACK") != nullptr};
-};
+};  // namespace he
 }  // namespace he
 }  // namespace ngraph
