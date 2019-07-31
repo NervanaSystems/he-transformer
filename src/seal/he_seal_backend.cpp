@@ -17,7 +17,6 @@
 #include <limits>
 #include <memory>
 
-#include "client_util.hpp"
 #include "he_plain_tensor.hpp"
 #include "he_seal_cipher_tensor.hpp"
 #include "ngraph/runtime/backend_manager.hpp"
@@ -25,10 +24,6 @@
 #include "seal/he_seal_executable.hpp"
 #include "seal/seal.h"
 #include "seal/seal_util.hpp"
-
-extern "C" const char* get_ngraph_version_string() {
-  return "DUMMY_VERSION";  // TODO: move to CMakeList
-}
 
 extern "C" ngraph::runtime::BackendConstructor*
 get_backend_constructor_pointer() {
