@@ -117,9 +117,8 @@ void ngraph::he::HESealClient::handle_message(
         size_t batch_start_idx = data_idx * m_batch_size;
         size_t batch_end_idx = batch_start_idx + m_batch_size;
 
-        NGRAPH_INFO << "data_idx " << data_idx;
-        NGRAPH_INFO << "batch_start_idx " << batch_start_idx;
-        NGRAPH_INFO << "batch_end_idx " << batch_end_idx;
+        NGRAPH_INFO << "data_idx " << data_idx << ", batch_start_idx "
+                    << batch_start_idx << ", batch_end_idx " << batch_end_idx;
 
         std::vector<double> real_vals{m_inputs.begin() + batch_start_idx,
                                       m_inputs.begin() + batch_end_idx};
@@ -162,7 +161,11 @@ void ngraph::he::HESealClient::handle_message(
 
         std::vector<double> outputs;
         decode_to_real_vec(plain, outputs, complex_packing());
-        m_results.insert(m_results.end(), outputs.begin(), outputs.end());
+        NGRAPH_CHECK(outputs.size() >= m_batch_size, "outputs.size() ",
+                     outputs.size(), " < m_batch_size ", m_batch_size);
+        NGRAPH_INFO << "outputs.zize() " << outputs.size();
+        m_results.insert(m_results.end(), outputs.begin(),
+                         outputs.begin() + m_batch_size);
       }
       close_connection();
       break;
@@ -330,6 +333,9 @@ void ngraph::he::HESealClient::handle_relu_request(
     std::vector<double> relu_vals;
     decode_to_real_vec(relu_plain, relu_vals, complex_packing());
     NGRAPH_INFO << "relu_vals.size() " << relu_vals.size();
+    for (size_t i = 0; i < m_batch_size; ++i) {
+      NGRAPH_INFO << "relu_vals[" << i << "] => " << relu_vals[i];
+    }
 
     std::vector<double> post_relu_vals(relu_vals.size());
     std::transform(relu_vals.begin(), relu_vals.end(), post_relu_vals.begin(),

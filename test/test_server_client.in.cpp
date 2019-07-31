@@ -295,5 +295,8 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed_2_complex) {
   handle->call_with_validate({t_result}, {t_dummy});
 
   client_thread.join();
+  NGRAPH_INFO << "exp_results.size() " << exp_results.size();
+  NGRAPH_INFO << "results.size() " << results.size();
+
   EXPECT_TRUE(all_close(results, exp_results));
 }
