@@ -81,8 +81,8 @@ void ngraph::he::HESealClient::handle_message(
     const ngraph::he::TCPMessage& message) {
   ngraph::he::MessageType msg_type = message.message_type();
 
-  // NGRAPH_INFO << "Client received message type: "
-  //          << message_type_to_string(msg_type).c_str() ;
+  NGRAPH_INFO << "Client received message type: "
+              << message_type_to_string(msg_type).c_str();
 
   switch (msg_type) {
     case ngraph::he::MessageType::parameter_size: {
@@ -103,7 +103,7 @@ void ngraph::he::HESealClient::handle_message(
       }
 
       std::vector<seal::Ciphertext> ciphers(parameter_size);
-      //#pragma omp parallel for
+#pragma omp parallel for
       for (size_t data_idx = 0; data_idx < parameter_size; ++data_idx) {
         seal::Plaintext plain;
 

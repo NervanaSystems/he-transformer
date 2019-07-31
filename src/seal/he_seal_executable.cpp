@@ -231,8 +231,8 @@ void ngraph::he::HESealExecutable::handle_message(
     const ngraph::he::TCPMessage& message) {
   MessageType msg_type = message.message_type();
 
-  // NGRAPH_INFO << "Server received message type: "
-  //           << message_type_to_string(msg_type);
+  NGRAPH_INFO << "Server received message type: "
+              << message_type_to_string(msg_type);
 
   if (msg_type == MessageType::execute) {
     size_t count = message.count();
@@ -260,6 +260,7 @@ void ngraph::he::HESealExecutable::handle_message(
           ciphertexts[cipher_idx]);
       he_cipher_inputs[cipher_idx] = wrapper;
     }
+    NGRAPH_INFO << "Set he inputs";
 
     // only support parameter size 1 for now
     NGRAPH_CHECK(get_parameters().size() == 1,
@@ -309,14 +310,19 @@ void ngraph::he::HESealExecutable::handle_message(
       m_client_inputs.emplace_back(input_tensor);
       parameter_size_index += param_size;
     }
+    NGRAPH_INFO << "Done setting client inputs";
 
     NGRAPH_CHECK(m_client_inputs.size() == get_parameters().size(),
                  "Client inputs size ", m_client_inputs.size(), "; expected ",
                  get_parameters().size());
 
+    NGRAPH_INFO << "check passed";
+
     std::lock_guard<std::mutex> guard(m_client_inputs_mutex);
+    NGRAPH_INFO << "got m_client_inputs_mutex";
     m_client_inputs_received = true;
     m_client_inputs_cond.notify_all();
+    NGRAPH_INFO << "Notified all";
 
   } else if (msg_type == MessageType::public_key) {
     seal::PublicKey key;
@@ -446,7 +452,9 @@ ngraph::he::HESealExecutable::get_performance_data() const {
 bool ngraph::he::HESealExecutable::call(
     const std::vector<std::shared_ptr<runtime::Tensor>>& outputs,
     const std::vector<std::shared_ptr<runtime::Tensor>>& server_inputs) {
+  NGRAPH_INFO << "validating fcn";
   validate(outputs, server_inputs);
+  NGRAPH_INFO << "done validating fcn";
 
   if (m_enable_client) {
     NGRAPH_INFO << "Waiting until m_client_inputs.size() == "

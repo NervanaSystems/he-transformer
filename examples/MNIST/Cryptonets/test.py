@@ -25,7 +25,6 @@ import numpy as np
 import itertools
 import glob
 import tensorflow as tf
-import common
 import ngraph_bridge
 import os
 
