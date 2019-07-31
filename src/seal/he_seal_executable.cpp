@@ -92,6 +92,7 @@ ngraph::he::HESealExecutable::HESealExecutable(
       m_complex_packing(complex_packing),
       m_verbose_all_ops(false),
       m_enable_client(enable_client),
+      m_client_setup(false),
       m_batch_size(1),
       m_port(34000),
       m_relu_done(false),
@@ -166,8 +167,7 @@ void ngraph::he::HESealExecutable::check_client_supports_function() {
 }
 
 void ngraph::he::HESealExecutable::client_setup() {
-  static bool first_setup = true;
-  if (first_setup) {
+  if (!m_client_setup) {
     NGRAPH_INFO << "Enable client";
     check_client_supports_function();
 
@@ -187,8 +187,7 @@ void ngraph::he::HESealExecutable::client_setup() {
                         std::bind(&HESealExecutable::session_started, this));
     m_session->do_write(std::move(parms_message));
 
-    first_setup = false;
-
+    m_client_setup = true;
   } else {
     NGRAPH_INFO << "Client already setup";
   }
@@ -226,10 +225,7 @@ void ngraph::he::HESealExecutable::start_server() {
   m_acceptor->set_option(option);
 
   accept_connection();
-  // Create thread-local variable to prevent passing "this"
-  // TODO: pass "this" instead?
-  auto& m_io_context2 = m_io_context;
-  m_thread = std::thread([&m_io_context2]() { m_io_context2.run(); });
+  m_thread = std::thread([this]() { m_io_context.run(); });
 }
 
 void ngraph::he::HESealExecutable::handle_message(

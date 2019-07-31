@@ -53,8 +53,6 @@ class HESealExecutable : public runtime::Executable {
       // Wait until thread finishes with m_io_context
       m_thread.join();
 
-      // TODO: why is this needed to prevent m_acceptor from double-freeing?
-
       // m_acceptor and m_io_context both free the socket? so avoid double-free
       m_acceptor->close();
       m_acceptor = nullptr;
@@ -121,6 +119,7 @@ class HESealExecutable : public runtime::Executable {
   bool m_verbose_all_ops;
 
   bool m_enable_client;
+  bool m_client_setup;
   size_t m_batch_size;
   size_t m_port;  // Which port the server is hosted at
 
