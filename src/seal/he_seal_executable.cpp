@@ -452,9 +452,7 @@ ngraph::he::HESealExecutable::get_performance_data() const {
 bool ngraph::he::HESealExecutable::call(
     const std::vector<std::shared_ptr<runtime::Tensor>>& outputs,
     const std::vector<std::shared_ptr<runtime::Tensor>>& server_inputs) {
-  NGRAPH_INFO << "validating fcn";
   validate(outputs, server_inputs);
-  NGRAPH_INFO << "done validating fcn";
 
   if (m_enable_client) {
     NGRAPH_INFO << "Waiting until m_client_inputs.size() == "

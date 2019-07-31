@@ -173,8 +173,7 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_relu) {
   float DUMMY_FLOAT = 99;
   copy_data(t_dummy, vector<float>{DUMMY_FLOAT, DUMMY_FLOAT, DUMMY_FLOAT});
 
-  auto handle = dynamic_pointer_cast<ngraph::he::HESealExecutable>(
-      he_backend->compile(f));
+  auto handle = he_backend->compile(f);
   NGRAPH_INFO << "Calling with validate";
   handle->call_with_validate({t_result}, {t_dummy});
 
