@@ -478,12 +478,12 @@ bool ngraph::he::HESealExecutable::call(
   // convert inputs to HETensor
   std::vector<std::shared_ptr<ngraph::he::HETensor>> he_inputs;
   if (m_enable_client) {
-    NGRAPH_INFO << "Processing client inputs";
+    NGRAPH_DEBUG << "Processing client inputs";
     for (auto& tv : m_client_inputs) {
       he_inputs.push_back(std::static_pointer_cast<ngraph::he::HETensor>(tv));
     }
   } else {
-    NGRAPH_INFO << "Processing server inputs";
+    NGRAPH_DEBUG << "Processing server inputs";
     for (auto& tv : server_inputs) {
       auto he_input = std::dynamic_pointer_cast<ngraph::he::HETensor>(tv);
       NGRAPH_CHECK(he_input != nullptr, "server input is not he tensor");
