@@ -1,2 +1,5 @@
 # Need to check why EXPECT_THROW doesn't catch it
 multiply_2_3_cipher_cipher_complex
+
+# Can't send known-valued ciphertexts
+server_client_pad_relu

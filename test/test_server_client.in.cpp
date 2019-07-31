@@ -163,17 +163,18 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_pad_relu) {
   size_t batch_size = 1;
 
   Shape shape{batch_size, 3};
+  Shape result_shape{batch_size, 5};
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto b = op::Constant::create(element::f32, Shape{}, vector<float>({0}));
-  CoordinateDiff padding_below{1, 4};
-  CoordinateDiff padding_above{1, 5};
+  CoordinateDiff padding_below{0, 1};
+  CoordinateDiff padding_above{0, 1};
   auto c = make_shared<op::Pad>(a, b, padding_below, padding_above);
   auto relu = make_shared<op::Relu>(c);
   auto f = make_shared<Function>(relu, ParameterVector{a});
 
   // Server inputs which are not used
   auto t_dummy = he_backend->create_plain_tensor(element::f32, shape);
-  auto t_result = he_backend->create_cipher_tensor(element::f32, shape);
+  auto t_result = he_backend->create_cipher_tensor(element::f32, result_shape);
 
   // Used for dummy server inputs
   float DUMMY_FLOAT = 99;
