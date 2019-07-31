@@ -97,7 +97,7 @@ def find_project_root_dir():
 
 
 os.environ["CXX"] = find_cxx_compiler()
-os.environ["CC"] = find_c_compiler()
+os.environ["CC"] = find_cxx_compiler()
 
 PYBIND11_INCLUDE_DIR = find_pybind_headers_dir() + '/include'
 NGRAPH_HE_DIST_DIR = find_he_transformer_dist_dir()

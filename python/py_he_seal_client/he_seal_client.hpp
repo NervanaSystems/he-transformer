@@ -34,8 +34,7 @@ PYBIND11_MODULE(he_seal_client, m) {
   he_seal_client.doc() = "he_seal_client wraps ngraph::he::HESealClient";
 
   he_seal_client.def(py::init<const std::string&, const std::size_t,
-                              const size_t, const std::vector<float>&>(),
-                     bool);
+                              const size_t, const std::vector<float>&, bool>());
 
   he_seal_client.def("set_seal_context",
                      &ngraph::he::HESealClient::set_seal_context);
