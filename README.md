@@ -11,7 +11,7 @@ Currently, we support the [CKKS](https://eprint.iacr.org/2018/931.pdf) encryptio
 Additionally, we integrate with the [**Intel® nGraph™ Compiler and runtime engine for TensorFlow**](https://github.com/tensorflow/ngraph-bridge) to allow users to run inference on trained neural networks through Tensorflow.
 
 ## Examples
-The [examples](https://github.com/NervanaSystems/he-transformer/tree/master/examples) directory contains a deep learning example which depends on the [**Intel® nGraph™ Compiler and runtime engine for TensorFlow**](https://github.com/tensorflow/ngraph-bridge).
+The [examples](https://github.com/NervanaSystems/he-transformer/tree/master/examples) folder contains a deep learning example which depends on the [**Intel® nGraph™ Compiler and runtime engine for TensorFlow**](https://github.com/tensorflow/ngraph-bridge).
 
 ## Building HE Transformer
 
@@ -55,7 +55,7 @@ source external/venv-tf-py3/bin/activate
 ```
 
 #### 1.b Python bindings for client
-To build an experimental client-server model with python bindings, see the `python` folder.
+To build an experimental client-server model with python bindings, see the [python](https://github.com/NervanaSystems/he-transformer/tree/master/python) folder.
 ***Note***: This feature is experimental. For best experience, you should skip this step.
 
 ### 2. Run C++ unit-tests

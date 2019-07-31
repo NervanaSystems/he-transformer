@@ -61,11 +61,12 @@ class TCPClient {
   }
 
  private:
-  void do_connect(const tcp::resolver::results_type& endpoints) {
+  void do_connect(const tcp::resolver::results_type& endpoints,
+                  size_t delay_ms = 10) {
     boost::asio::async_connect(
         m_socket, endpoints,
-        [this, &endpoints](boost::system::error_code ec, tcp::endpoint) {
-          size_t delay_ms = 10;
+        [this, delay_ms, &endpoints](boost::system::error_code ec,
+                                     tcp::endpoint) {
           if (!ec) {
             NGRAPH_INFO << "Connected to server";
             do_read_header();
@@ -75,11 +76,12 @@ class TCPClient {
               m_first_connect = false;
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(delay_ms));
-            if (delay_ms < 1000) {
-              delay_ms *= 2;
+            size_t new_delay_ms = delay_ms;
+            if (new_delay_ms < 1000) {
+              new_delay_ms *= 2;
             }
             NGRAPH_INFO << "Trying to connect again";
-            do_connect(std::move(endpoints));
+            do_connect(std::move(endpoints), new_delay_ms);
           }
         });
   }
