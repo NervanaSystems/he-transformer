@@ -22,8 +22,8 @@
 #include <string>
 #include <vector>
 
-#include "client_util.hpp"
 #include "seal/seal.h"
+#include "seal/util.hpp"
 #include "tcp/tcp_client.hpp"
 #include "tcp/tcp_message.hpp"
 
@@ -31,8 +31,10 @@ namespace ngraph {
 namespace he {
 class HESealClient {
  public:
-  HESealClient(const std::string& hostname, const size_t port,
-               const size_t batch_size, const std::vector<float>& inputs);
+  HESealClient(
+      const std::string& hostname, const size_t port, const size_t batch_size,
+      const std::vector<float>& inputs,
+      bool complex_packing = flag_to_bool(std::getenv("NGRAPH_ENCRYPT_DATA")));
 
   void set_seal_context();
 
@@ -51,6 +53,7 @@ class HESealClient {
   void close_connection();
 
   bool complex_packing() const { return m_complex_packing; }
+  bool& complex_packing() { return m_complex_packing; }
 
   void decode_to_real_vec(const seal::Plaintext& plain,
                           std::vector<double>& output, bool complex);
@@ -73,7 +76,7 @@ class HESealClient {
   std::vector<float> m_inputs;   // Function inputs
   std::vector<float> m_results;  // Function outputs
 
-  bool m_complex_packing{std::getenv("NGRAPH_COMPLEX_PACK") != nullptr};
+  bool m_complex_packing;
 };  // namespace he
 }  // namespace he
 }  // namespace ngraph

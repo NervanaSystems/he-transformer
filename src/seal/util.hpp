@@ -16,27 +16,19 @@
 
 #pragma once
 
-#include <assert.h>
 #include <complex>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
+#include "ngraph/check.hpp"
+#include "ngraph/except.hpp"
+#include "ngraph/util.hpp"
 #include "seal/seal.h"
 
-template <typename T>
-std::string join(const T& v, const std::string& sep = ", ") {
-  std::ostringstream ss;
-  size_t count = 0;
-  for (const auto& x : v) {
-    if (count++ > 0) {
-      ss << sep;
-    }
-    ss << x;
-  }
-  return ss.str();
-}
-
-inline void print_seal_context(const seal::SEALContext& context) {
+namespace ngraph {
+namespace he {
+static inline void print_seal_context(const seal::SEALContext& context) {
   auto& context_data = *context.key_context_data();
 
   assert(context_data.parms().scheme() == seal::scheme_type::CKKS);
@@ -60,23 +52,24 @@ inline void print_seal_context(const seal::SEALContext& context) {
 
 // Packs elements of input into real values
 // (a+bi, c+di) => (a,b,c,d)
-auto complex_vec_to_real_vec =
-    [](std::vector<double>& output,
-       const std::vector<std::complex<double>>& input) {
-      assert(output.size() == 0);
-      output.reserve(input.size() * 2);
-      for (const std::complex<double>& value : input) {
-        output.emplace_back(value.real());
-        output.emplace_back(value.imag());
-      }
-    };
+static inline void complex_vec_to_real_vec(
+    std::vector<double>& output,
+    const std::vector<std::complex<double>>& input) {
+  NGRAPH_CHECK(output.size() == 0);
+  output.reserve(input.size() * 2);
+  for (const std::complex<double>& value : input) {
+    output.emplace_back(value.real());
+    output.emplace_back(value.imag());
+  }
+}
 
 // Packs elements of input into complex values
 // (a,b,c,d) => (a+bi, c+di)
 // (a,b,c) => (a+bi, c+0i)
-auto real_vec_to_complex_vec = [](std::vector<std::complex<double>>& output,
-                                  const std::vector<double>& input) {
-  assert(output.size() == 0);
+static inline void real_vec_to_complex_vec(
+    std::vector<std::complex<double>>& output,
+    const std::vector<double>& input) {
+  NGRAPH_CHECK(output.size() == 0);
   output.reserve(input.size() / 2);
   std::vector<double> complex_parts(2, 0);
   for (size_t i = 0; i < input.size(); ++i) {
@@ -88,4 +81,23 @@ auto real_vec_to_complex_vec = [](std::vector<std::complex<double>>& output,
       complex_parts = {0, 0};
     }
   }
-};
+}
+
+static inline bool flag_to_bool(const char* flag, bool default_value = false) {
+  if (flag == nullptr) {
+    return default_value;
+  }
+  static std::unordered_set<std::string> on_map{"1", "y", "yes"};
+  static std::unordered_set<std::string> off_map{"0", "n", "no"};
+  std::string flag_str = ngraph::to_lower(std::string(flag));
+
+  if (on_map.find(flag_str) != on_map.end()) {
+    return true;
+  } else if (off_map.find(flag_str) != off_map.end()) {
+    return true;
+  } else {
+    throw ngraph_error("Unknown flag value " + std::string(flag));
+  }
+}
+}  // namespace he
+}  // namespace ngraph
