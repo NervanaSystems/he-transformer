@@ -31,7 +31,8 @@ namespace he {
 static inline void print_seal_context(const seal::SEALContext& context) {
   auto& context_data = *context.key_context_data();
 
-  assert(context_data.parms().scheme() == seal::scheme_type::CKKS);
+  NGRAPH_CHECK(context_data.parms().scheme() == seal::scheme_type::CKKS,
+               "Only CKKS scheme supported");
 
   std::cout << "/" << std::endl;
   std::cout << "| Encryption parameters :" << std::endl;
