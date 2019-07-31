@@ -134,8 +134,9 @@ class TCPMessage {
     }
     check_arguments();
     size_t body_malloc_size =
-        std::max(body_length(), (size_t)default_body_length);
-    m_data = (char*)ngraph_malloc(header_length + body_malloc_size);
+        std::max(body_length(), static_cast<size_t>(default_body_length));
+    m_data =
+        static_cast<char*>(ngraph_malloc(header_length + body_malloc_size));
     encode_header();
     encode_message_type();
     encode_count();
@@ -151,8 +152,9 @@ class TCPMessage {
 
     check_arguments();
     size_t body_malloc_size =
-        std::max(body_length(), (size_t)default_body_length);
-    m_data = (char*)ngraph_malloc(header_length + body_malloc_size);
+        std::max(body_length(), static_cast<size_t>(default_body_length));
+    m_data =
+        static_cast<char*>(ngraph_malloc(header_length + body_malloc_size));
     encode_header();
     encode_message_type();
     encode_count();
@@ -168,8 +170,9 @@ class TCPMessage {
 
     check_arguments();
     size_t body_malloc_size =
-        std::max(body_length(), (size_t)default_body_length);
-    m_data = (char*)ngraph_malloc(header_length + body_malloc_size);
+        std::max(body_length(), static_cast<size_t>(default_body_length));
+    m_data =
+        static_cast<char*>(ngraph_malloc(header_length + body_malloc_size));
     encode_header();
     encode_message_type();
     encode_count();
@@ -199,8 +202,9 @@ class TCPMessage {
 
     check_arguments();
     size_t body_malloc_size =
-        std::max(body_length(), (size_t)default_body_length);
-    m_data = (char*)ngraph_malloc(header_length + body_malloc_size);
+        std::max(body_length(), static_cast<size_t>(default_body_length));
+    m_data =
+        static_cast<char*>(ngraph_malloc(header_length + body_malloc_size));
     encode_header();
     encode_message_type();
     encode_count();
@@ -226,8 +230,9 @@ class TCPMessage {
       : m_type(type), m_count(count), m_data_size(size) {
     check_arguments();
     size_t body_malloc_size =
-        std::max(body_length(), (size_t)default_body_length);
-    m_data = (char*)ngraph_malloc(header_length + body_malloc_size);
+        std::max(body_length(), static_cast<size_t>(default_body_length));
+    m_data =
+        static_cast<char*>(ngraph_malloc(header_length + body_malloc_size));
     encode_header();
     encode_message_type();
     encode_count();
@@ -246,7 +251,7 @@ class TCPMessage {
       other.m_type = MessageType::none;
     }
     return *this;
-  };
+  }
 
   TCPMessage(TCPMessage&& other)
       : m_type(other.m_type),
@@ -254,7 +259,7 @@ class TCPMessage {
         m_data_size(other.m_data_size),
         m_data(other.m_data) {
     other.m_data = nullptr;
-  };
+  }
 
   TCPMessage& operator=(const TCPMessage&) = delete;
   TCPMessage(const TCPMessage& other) = delete;
@@ -278,7 +283,7 @@ class TCPMessage {
   }
 
   size_t count() { return m_count; }
-  const size_t count() const { return m_count; }
+  size_t count() const { return m_count; }
 
   size_t element_size() {
     if (m_count == 0) {
@@ -293,7 +298,7 @@ class TCPMessage {
     return m_data_size / m_count;
   }
 
-  const size_t element_size() const {
+  size_t element_size() const {
     if (m_count == 0) {
       throw std::invalid_argument("m_count == 0");
     }
@@ -307,10 +312,10 @@ class TCPMessage {
   }
 
   size_t num_bytes() { return header_length + body_length(); }
-  const size_t num_bytes() const { return header_length + body_length(); }
+  size_t num_bytes() const { return header_length + body_length(); }
 
   size_t data_size() { return m_data_size; }
-  const size_t data_size() const { return m_data_size; }
+  size_t data_size() const { return m_data_size; }
 
   size_t body_length() const {
     return message_type_length + message_count_length + m_data_size;
@@ -358,7 +363,7 @@ class TCPMessage {
     // Resize to fit message
     if (body_length > default_body_length) {
       ngraph_free(m_data);
-      m_data = (char*)ngraph_malloc(header_length + body_length);
+      m_data = static_cast<char*>(ngraph_malloc(header_length + body_length));
       encode_header();
     }
 

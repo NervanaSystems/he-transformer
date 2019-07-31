@@ -178,21 +178,21 @@ class HESealBackend : public ngraph::runtime::Backend {
   const ngraph::he::HESealEncryptionParameters& get_encryption_parameters()
       const {
     return m_encryption_params;
-  };
+  }
 
   const std::unordered_map<std::uint64_t, std::uint64_t>& barrett64_ratio_map()
       const {
     return m_barrett64_ratio_map;
   }
 
-  void set_pack_data(bool pack) { m_pack_data = pack; };
+  void set_pack_data(bool pack) { m_pack_data = pack; }
 
   bool complex_packing() const { return m_complex_packing; }
   bool& complex_packing() { return m_complex_packing; }
 
-  bool encrypt_data() const { return m_encrypt_data; };
-  bool pack_data() const { return m_pack_data; };
-  bool encrypt_model() const { return m_encrypt_model; };
+  bool encrypt_data() const { return m_encrypt_data; }
+  bool pack_data() const { return m_pack_data; }
+  bool encrypt_model() const { return m_encrypt_model; }
 
   // TODO: remove once performance impact is understood
   bool naive_rescaling() const { return m_naive_rescaling; }

@@ -31,6 +31,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS} -g")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -O0 -g")
 
+if("${CMAKE_CXX_COMPILER_ID}" MATCHES "^(Apple)?Clang$")
+  message(STATUS "Setting clang flags...")
+  include(cmake/clang_flags.cmake)
+endif()
+
 set(CMAKE_INSTALL_MESSAGE LAZY)
 
 if(CMAKE_BUILD_TYPE)

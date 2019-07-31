@@ -81,8 +81,8 @@ void ngraph::he::HESealClient::handle_message(
     const ngraph::he::TCPMessage& message) {
   ngraph::he::MessageType msg_type = message.message_type();
 
-  NGRAPH_INFO << "Client received message type: "
-              << message_type_to_string(msg_type).c_str();
+  NGRAPH_DEBUG << "Client received message type: "
+               << message_type_to_string(msg_type).c_str();
 
   switch (msg_type) {
     case ngraph::he::MessageType::parameter_size: {

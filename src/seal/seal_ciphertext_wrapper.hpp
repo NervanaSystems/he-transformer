@@ -49,7 +49,7 @@ class SealCiphertextWrapper {
   float& value() { return m_value; }
 
   double& scale() { return m_ciphertext.scale(); }
-  const double scale() const { return m_ciphertext.scale(); }
+  double scale() const { return m_ciphertext.scale(); }
 
   bool complex_packing() const { return m_complex_packing; }
   bool& complex_packing() { return m_complex_packing; }

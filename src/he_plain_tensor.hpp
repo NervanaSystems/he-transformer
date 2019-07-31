@@ -34,12 +34,12 @@ class HEPlainTensor : public HETensor {
                 const std::string& name = "external");
 
   /// @brief Write bytes directly into the tensor after encoding
-  /// @param p Pointer to source of data
+  /// @param source Pointer to source of data
   /// @param n Number of bytes to write, must be integral number of elements.
   void write(const void* source, size_t n) override;
 
   /// @brief Read bytes directly from the tensor after decoding
-  /// @param p Pointer to destination for data
+  /// @param target Pointer to destination for data
   /// @param n Number of bytes to read, must be integral number of elements.
   void read(void* target, size_t n) const override;
 

@@ -231,8 +231,8 @@ void ngraph::he::HESealExecutable::handle_message(
     const ngraph::he::TCPMessage& message) {
   MessageType msg_type = message.message_type();
 
-  NGRAPH_INFO << "Server received message type: "
-              << message_type_to_string(msg_type);
+  NGRAPH_DEBUG << "Server received message type: "
+               << message_type_to_string(msg_type);
 
   if (msg_type == MessageType::execute) {
     size_t count = message.count();
