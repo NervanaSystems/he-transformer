@@ -237,6 +237,12 @@ void ngraph::he::HESealClient::handle_message(
         max_values[batch_idx] =
             *std::max_element(input_cipher_values[batch_idx].begin(),
                               input_cipher_values[batch_idx].end());
+
+        NGRAPH_INFO << "Getting max of ";
+        for (const auto& elem : input_cipher_values[batch_idx]) {
+          NGRAPH_INFO << elem;
+        }
+        NGRAPH_INFO << "=> " << max_values[batch_idx];
       }
 
       // Encrypt maximum values
