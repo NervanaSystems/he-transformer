@@ -33,8 +33,12 @@
 ngraph::he::HESealClient::HESealClient(const std::string& hostname,
                                        const size_t port,
                                        const size_t batch_size,
-                                       const std::vector<float>& inputs)
-    : m_batch_size{batch_size}, m_is_done(false), m_inputs{inputs} {
+                                       const std::vector<float>& inputs,
+                                       bool complex_packing)
+    : m_batch_size{batch_size},
+      m_is_done(false),
+      m_inputs{inputs},
+      m_complex_packing(complex_packing) {
   boost::asio::io_context io_context;
   tcp::resolver resolver(io_context);
   auto endpoints = resolver.resolve(hostname, std::to_string(port));
@@ -77,8 +81,8 @@ void ngraph::he::HESealClient::handle_message(
     const ngraph::he::TCPMessage& message) {
   ngraph::he::MessageType msg_type = message.message_type();
 
-  // NGRAPH_INFO << "Client received message type: "
-  //          << message_type_to_string(msg_type).c_str() ;
+  NGRAPH_DEBUG << "Client received message type: "
+               << message_type_to_string(msg_type).c_str();
 
   switch (msg_type) {
     case ngraph::he::MessageType::parameter_size: {
@@ -86,39 +90,25 @@ void ngraph::he::HESealClient::handle_message(
       size_t parameter_size;
       std::memcpy(&parameter_size, message.data_ptr(), message.data_size());
 
-      const size_t complex_pack_factor = complex_packing() ? 2 : 1;
-
       NGRAPH_INFO << "Parameter size " << parameter_size;
       NGRAPH_INFO << "Client batch size " << m_batch_size;
       if (complex_packing()) {
         NGRAPH_INFO << "Client complex packing";
-        // TODO: support odd batch sizes
-        assert(m_batch_size % 2 == 0);
       }
 
-      // TODO: allow smaller sizes!
-      if (m_inputs.size() !=
-          parameter_size * m_batch_size * complex_pack_factor) {
+      if (m_inputs.size() > parameter_size * m_batch_size) {
         NGRAPH_INFO << "m_inputs.size() " << m_inputs.size()
-                    << " != paramter_size ( " << parameter_size
-                    << ") * m_batch_size (" << m_batch_size
-                    << ") * complex_pack_factor (" << complex_pack_factor
-                    << ")";
+                    << " > paramter_size ( " << parameter_size
+                    << ") * m_batch_size (" << m_batch_size << ")";
       }
-      NGRAPH_CHECK(m_inputs.size() ==
-                       parameter_size * m_batch_size * complex_pack_factor,
-                   "m_inputs.size()", m_inputs.size(), "parameter_size",
-                   parameter_size, "m_batch_size", m_batch_size,
-                   "complex_pack_factor", complex_pack_factor);
 
       std::vector<seal::Ciphertext> ciphers(parameter_size);
 #pragma omp parallel for
       for (size_t data_idx = 0; data_idx < parameter_size; ++data_idx) {
         seal::Plaintext plain;
 
-        size_t batch_start_idx = data_idx * m_batch_size * complex_pack_factor;
-        size_t batch_end_idx =
-            batch_start_idx + m_batch_size * complex_pack_factor;
+        size_t batch_start_idx = data_idx * m_batch_size;
+        size_t batch_end_idx = batch_start_idx + m_batch_size;
 
         std::vector<double> real_vals{m_inputs.begin() + batch_start_idx,
                                       m_inputs.begin() + batch_end_idx};
@@ -143,8 +133,6 @@ void ngraph::he::HESealClient::handle_message(
       size_t result_count = message.count();
       size_t element_size = message.element_size();
 
-      NGRAPH_INFO << "Client got " << result_count << " results ";
-
       std::vector<seal::Ciphertext> result;
       m_results.reserve(result_count * m_batch_size);
       for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
@@ -160,10 +148,11 @@ void ngraph::he::HESealClient::handle_message(
 
         std::vector<double> outputs;
         decode_to_real_vec(plain, outputs, complex_packing());
-        m_results.insert(m_results.end(), outputs.begin(), outputs.end());
+        NGRAPH_CHECK(outputs.size() >= m_batch_size, "outputs.size() ",
+                     outputs.size(), " < m_batch_size ", m_batch_size);
+        m_results.insert(m_results.end(), outputs.begin(),
+                         outputs.begin() + m_batch_size);
       }
-      NGRAPH_INFO << "Results size " << m_results.size();
-
       close_connection();
       break;
     }
@@ -273,6 +262,7 @@ void ngraph::he::HESealClient::handle_message(
       break;
     }
     case ngraph::he::MessageType::execute:
+    case ngraph::he::MessageType::eval_key:
     case ngraph::he::MessageType::max_result:
     case ngraph::he::MessageType::minimum_request:
     case ngraph::he::MessageType::minimum_result:
@@ -309,8 +299,8 @@ void ngraph::he::HESealClient::handle_relu_request(
 
   size_t result_count = message.count();
   size_t element_size = message.element_size();
-  // NGRAPH_INFO << "Received Relu request with " << result_count << " elements"
-  //            << " of size " << element_size;
+  NGRAPH_INFO << "Received Relu request with " << result_count << " elements"
+              << " of size " << element_size;
 
   std::vector<seal::Ciphertext> post_relu_ciphers(result_count);
 #pragma omp parallel for
@@ -329,7 +319,6 @@ void ngraph::he::HESealClient::handle_relu_request(
 
     std::vector<double> relu_vals;
     decode_to_real_vec(relu_plain, relu_vals, complex_packing());
-
     std::vector<double> post_relu_vals(relu_vals.size());
     std::transform(relu_vals.begin(), relu_vals.end(), post_relu_vals.begin(),
                    activation);
@@ -345,8 +334,6 @@ void ngraph::he::HESealClient::handle_relu_request(
   }
   auto relu_result_msg =
       TCPMessage(ngraph::he::MessageType::relu_result, post_relu_ciphers);
-  // NGRAPH_INFO << "Writing relu_result message with " << result_count
-  //            << " ciphertexts";
 
   write_message(std::move(relu_result_msg));
   return;
@@ -355,16 +342,14 @@ void ngraph::he::HESealClient::handle_relu_request(
 void ngraph::he::HESealClient::decode_to_real_vec(const seal::Plaintext& plain,
                                                   std::vector<double>& output,
                                                   bool complex) {
-  assert(output.size() == 0);
+  NGRAPH_CHECK(output.size() == 0);
   if (complex) {
     std::vector<std::complex<double>> complex_outputs;
     m_ckks_encoder->decode(plain, complex_outputs);
-    assert(complex_outputs.size() >= m_batch_size);
-    complex_outputs.resize(m_batch_size);
     complex_vec_to_real_vec(output, complex_outputs);
   } else {
     m_ckks_encoder->decode(plain, output);
-    assert(m_batch_size <= output.size());
+    NGRAPH_CHECK(m_batch_size <= output.size());
     output.resize(m_batch_size);
   }
 }

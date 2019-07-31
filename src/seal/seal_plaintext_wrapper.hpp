@@ -38,7 +38,7 @@ class SealPlaintextWrapper {
   const seal::Plaintext& plaintext() const { return m_plaintext; }
 
   double& scale() { return m_plaintext.scale(); }
-  const double scale() const { return m_plaintext.scale(); }
+  double scale() const { return m_plaintext.scale(); }
 
  private:
   seal::Plaintext m_plaintext;

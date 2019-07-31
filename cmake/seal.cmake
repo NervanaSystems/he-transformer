@@ -36,6 +36,16 @@ message(STATUS "SEAL_USE_CXX17 ${SEAL_USE_CXX17}")
 # he_seal_backend, which loads libseal.a, and once by the global destructor.
 set(SEAL_CXX_FLAGS
     "${CMAKE_CXX_FLAGS} -fvisibility=hidden -fvisibility-inlines-hidden")
+if("${CMAKE_CXX_COMPILER_ID}" MATCHES "^(Apple)?Clang$")
+  add_compile_options(-Wno-undef)
+  add_compile_options(-Wno-newline-eof)
+  add_compile_options(-Wno-reserved-id-macro)
+  add_compile_options(-Wno-documentation)
+  add_compile_options(-Wno-documentation-unknown-command)
+  add_compile_options(-Wno-inconsistent-missing-destructor-override)
+  add_compile_options(-Wno-extra-semi)
+endif()
+message("SEAL_CXX_FLAGS ${SEAL_CXX_FLAGS}")
 
 ExternalProject_Add(
   ext_seal
@@ -51,7 +61,8 @@ ExternalProject_Add(
                     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                     -DSEAL_USE_CXX17=${SEAL_USE_CXX17}
                     # Skip updates
-  UPDATE_COMMAND "")
+                    # UPDATE_COMMAND ""
+  )
 
 ExternalProject_Get_Property(ext_seal SOURCE_DIR)
 add_library(libseal STATIC IMPORTED)

@@ -1,14 +1,14 @@
 This directory contains python bindings for an experimental client.
 
-***Note***: The client is experimental, and currently uses a large amout of memory.
-For a better experience, just omit the NGRAPH_ENABLE_CLIENT=1 flag in any examples. Then, the server will run the model without sending messages to the client.
+***Note***: The client is experimental, and currently uses a large amount of memory.
+For a better experience, just omit the `NGRAPH_ENABLE_CLIENT=1` flag in any examples. Then, the server will run the model without sending messages to the client.
 
 # Building python bindings
 Once you have installed he-transformer (i.e. run `make install`),
 ```bash
 cd $HE_TRANSFORMER/build
 source external/venv-tf-py3/bin/activate
-make install python_wheel
+make install python_client
 ```
 This will create `python/dist/he_seal_client-*.whl`. Install it using
 ```bash

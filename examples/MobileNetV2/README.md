@@ -18,7 +18,7 @@ Also be sure the `he_seal_client` wheel has been installed
 
 To build run:
 ```bash
-cd $HE_TRANSFORMER/build/ext_ngraph_tf/src/ext_ngraph_tf/build_cmake/tensorflow 
+cd $HE_TRANSFORMER/build/ext_ngraph_tf/src/ext_ngraph_tf/build_cmake/tensorflow
 bazel build tensorflow/tools/graph_transforms:transform_graph
 ```
 

@@ -148,3 +148,36 @@ NGRAPH_TEST(${BACKEND_NAME}, relu_batched_cipher_2_3) {
   EXPECT_TRUE(all_close(read_vector<float>(t_result),
                         vector<float>{0, 0, 0, 0.5, 1, 1.5}, 1e-3f));
 }
+
+NGRAPH_TEST(${BACKEND_NAME}, pad_relu) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+
+  size_t batch_size = 1;
+
+  Shape shape{batch_size, 3};
+  Shape result_shape{batch_size, 5};
+  auto a = make_shared<op::Parameter>(element::f32, shape);
+  auto b = op::Constant::create(element::f32, Shape{}, vector<float>({0}));
+  CoordinateDiff padding_below{0, 1};
+  CoordinateDiff padding_above{0, 1};
+  auto c = make_shared<op::Pad>(a, b, padding_below, padding_above);
+  auto relu = make_shared<op::Relu>(c);
+  auto f = make_shared<Function>(relu, ParameterVector{a});
+
+  // Server inputs which are not used
+  auto t_dummy = he_backend->create_cipher_tensor(element::f32, shape);
+  auto t_result = he_backend->create_cipher_tensor(element::f32, result_shape);
+
+  // Used for dummy server inputs
+  float DUMMY_FLOAT = 99;
+  copy_data(t_dummy, vector<float>{DUMMY_FLOAT, DUMMY_FLOAT, DUMMY_FLOAT});
+
+  auto handle = he_backend->compile(f);
+  NGRAPH_INFO << "Calling with validate";
+  handle->call_with_validate({t_result}, {t_dummy});
+
+  EXPECT_TRUE(all_close(
+      read_vector<float>(t_result),
+      vector<float>{0, DUMMY_FLOAT, DUMMY_FLOAT, DUMMY_FLOAT, 0}, 1e-3f));
+}

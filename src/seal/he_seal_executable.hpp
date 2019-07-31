@@ -48,12 +48,10 @@ class HESealExecutable : public runtime::Executable {
                    bool encrypt_data, bool encrypt_model, bool batch_data,
                    bool complex_packing, bool enable_client);
 
-  ~HESealExecutable() {
+  ~HESealExecutable() override {
     if (m_enable_client) {
       // Wait until thread finishes with m_io_context
       m_thread.join();
-
-      // TODO: why is this needed to prevent m_acceptor from double-freeing?
 
       // m_acceptor and m_io_context both free the socket? so avoid double-free
       m_acceptor->close();
@@ -73,16 +71,16 @@ class HESealExecutable : public runtime::Executable {
   std::vector<runtime::PerformanceCounter> get_performance_data()
       const override;
 
-  size_t get_port() const { return m_port; };
+  size_t get_port() const { return m_port; }
 
   // TODO: merge _done() methods
-  bool relu_done() const { return m_relu_done; };
-  bool max_done() const { return m_max_done; };
-  bool minimum_done() const { return m_minimum_done; };
+  bool relu_done() const { return m_relu_done; }
+  bool max_done() const { return m_max_done; }
+  bool minimum_done() const { return m_minimum_done; }
 
-  bool session_started() const { return m_session_started; };
+  bool session_started() const { return m_session_started; }
 
-  bool client_inputs_received() const { return m_client_inputs_received; };
+  bool client_inputs_received() const { return m_client_inputs_received; }
 
   void accept_connection();
 
@@ -98,13 +96,13 @@ class HESealExecutable : public runtime::Executable {
     return m_verbose_all_ops ||
            m_verbose_ops.find(ngraph::to_lower(op.description())) !=
                m_verbose_ops.end();
-  };
+  }
 
   bool verbose_op(const std::string& description) {
     return m_verbose_all_ops ||
            m_verbose_ops.find(ngraph::to_lower(description)) !=
                m_verbose_ops.end();
-  };
+  }
 
   void enable_client() {
     m_enable_client = true;
@@ -121,6 +119,7 @@ class HESealExecutable : public runtime::Executable {
   bool m_verbose_all_ops;
 
   bool m_enable_client;
+  bool m_client_setup;
   size_t m_batch_size;
   size_t m_port;  // Which port the server is hosted at
 
@@ -169,7 +168,6 @@ class HESealExecutable : public runtime::Executable {
   // To trigger when result message has been written
   std::mutex m_result_mutex;
   std::condition_variable m_result_cond;
-  bool m_result_done;
 
   // To trigger when session has started
   std::mutex m_session_mutex;

@@ -50,8 +50,10 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
             do_read_body();
           } else {
             if (ec) {
-              NGRAPH_INFO << "Server error reading message: " << ec.message();
-              // throw std::runtime_error(ss.str());
+              // End of file is expected on teardown
+              if (ec.message() != "End of file") {
+                NGRAPH_INFO << "Server error reading body: " << ec.message();
+              }
             }
           }
         });
@@ -87,15 +89,21 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
 
           } else {
             m_writing = false;
+            m_is_writing.notify_all();
           }
         });
   }
 
   bool is_writing() const { return m_writing; }
 
+  std::condition_variable& is_writing_cond() { return m_is_writing; }
+
+ private:
   TCPMessage m_message;
   tcp::socket m_socket;
+
   bool m_writing;
+  std::condition_variable m_is_writing;
   std::mutex m_write_mtx;
 
   // Called after message is received

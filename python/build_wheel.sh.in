@@ -21,7 +21,6 @@ export PYBIND_HEADERS_PATH=@CMAKE_BINARY_DIR@/pybind11
 export NGRAPH_HE_BUILD_PATH=@CMAKE_BINARY_DIR@/python/_install/@EXTERNAL_INSTALL_DIR@
 export BOOST_HEADERS_PATH=@BOOST_HEADERS_PATH@
 export CXX_COMPILER=@CMAKE_CXX_COMPILER@
-export C_COMPILER=@CMAKE_C_COMPILER@
 export PROJECT_ROOT_DIR=@PROJECT_ROOT_DIR@
 
 SOURCE_DIR=@CMAKE_SOURCE_DIR@/python
@@ -31,17 +30,6 @@ BUILD_DIR=@CMAKE_BINARY_DIR@/python
 ! PYTHON3_DETECTED=$(($(python3 -c 'import sys; print(sys.version_info.major)' 2> /dev/null) == 3))
 
 mkdir -p build
-
-if [ "${PYTHON2_DETECTED}" == 1 ]; then
-    echo "Building wheel for Python 2"
-    python --version
-    cd ${BUILD_DIR}
-    virtualenv -p "$(command -v python)" build/venv2
-    source build/venv2/bin/activate
-    pip install --upgrade setuptools pip wheel
-    python ${SOURCE_DIR}/setup.py bdist_wheel
-    deactivate
-fi
 
 if [ "${PYTHON3_DETECTED}" == 1  ]; then
     echo "Building wheel for Python 3"
@@ -53,4 +41,6 @@ if [ "${PYTHON3_DETECTED}" == 1  ]; then
     python ${SOURCE_DIR}/setup.py bdist_wheel
     python ${SOURCE_DIR}/setup.py sdist
     deactivate
+else
+    echo "Error. Python3 not detected."
 fi

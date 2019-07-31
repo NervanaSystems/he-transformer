@@ -29,7 +29,7 @@ class HETensor : public runtime::Tensor {
   HETensor(const element::Type& element_type, const Shape& shape,
            const HESealBackend& he_seal_backend, const bool packed = false,
            const std::string& name = "external");
-  virtual ~HETensor(){};
+  virtual ~HETensor() override {}
 
   /// @brief Write bytes directly into the tensor
   /// @param p Pointer to source of data
@@ -45,16 +45,15 @@ class HETensor : public runtime::Tensor {
 
   /// @brief Reduces shape along batch axis
   /// @param shape Input shape to batch
-  /// @param batch_dim Axis along which to batch
-  /// @param batched Whether or not batching is enabled
+  /// @param batch_axis Axis along which to batch
   /// @return Shape after batching along batch axis
   static Shape pack_shape(const Shape& shape, size_t batch_axis = 0);
 
   /// @brief Returns the shape of the un-expanded (i.e. packed) tensor.
-  const Shape& get_packed_shape() const { return m_packed_shape; };
+  const Shape& get_packed_shape() const { return m_packed_shape; }
 
   /// @brief Returns the shape of the expanded (batched) tensor.
-  const Shape& get_expanded_shape() const { return get_shape(); };
+  const Shape& get_expanded_shape() const { return get_shape(); }
 
   inline size_t get_batch_size() { return m_batch_size; }
 

@@ -43,11 +43,6 @@ class TCPClient {
         m_socket(io_context),
         m_first_connect(true),
         m_message_callback(std::bind(message_handler, std::placeholders::_1)) {
-    NGRAPH_INFO << "Client starting async connection";
-
-    // m_socket.set_option(boost::asio::ip::tcp::no_delay(true));
-    // m_socket.set_option(boost::asio::socket_base::reuse_address(true));
-
     do_connect(endpoints);
   }
 
@@ -66,23 +61,27 @@ class TCPClient {
   }
 
  private:
-  void do_connect(const tcp::resolver::results_type& endpoints) {
+  void do_connect(const tcp::resolver::results_type& endpoints,
+                  size_t delay_ms = 10) {
     boost::asio::async_connect(
         m_socket, endpoints,
-        [this, &endpoints](boost::system::error_code ec, tcp::endpoint) {
+        [this, delay_ms, &endpoints](boost::system::error_code ec,
+                                     tcp::endpoint) {
           if (!ec) {
             NGRAPH_INFO << "Connected to server";
-
             do_read_header();
           } else {
             if (true || m_first_connect) {
               NGRAPH_INFO << "error connecting to server: " << ec.message();
-              NGRAPH_INFO << "Trying again every 1s";
               m_first_connect = false;
             }
-            std::this_thread::sleep_for(std::chrono::seconds(1));
+            std::this_thread::sleep_for(std::chrono::milliseconds(delay_ms));
+            size_t new_delay_ms = delay_ms;
+            if (new_delay_ms < 1000) {
+              new_delay_ms *= 2;
+            }
             NGRAPH_INFO << "Trying to connect again";
-            do_connect(std::move(endpoints));
+            do_connect(std::move(endpoints), new_delay_ms);
           }
         });
   }
@@ -96,8 +95,10 @@ class TCPClient {
           if (!ec && m_read_message.decode_header()) {
             do_read_body();
           } else {
-            NGRAPH_INFO << "Client error reading header: " << ec.message();
-            // m_socket.close();
+            // End of file is expected on teardown
+            if (ec.message() != "End of file") {
+              NGRAPH_INFO << "Client error reading header: " << ec.message();
+            }
           }
         });
   }
@@ -113,8 +114,10 @@ class TCPClient {
             m_message_callback(m_read_message);
             do_read_header();
           } else {
-            NGRAPH_INFO << "Client error reading body; " << ec.message();
-            // m_socket.close();
+            // End of file is expected on teardown
+            if (ec.message() != "End of file") {
+              NGRAPH_INFO << "Client error reading body: " << ec.message();
+            }
           }
         });
   }
@@ -132,7 +135,6 @@ class TCPClient {
             }
           } else {
             NGRAPH_INFO << "Client error writing message: " << ec.message();
-            // m_socket.close();
           }
         });
   }

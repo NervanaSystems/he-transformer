@@ -15,7 +15,7 @@ NGRAPH_ENABLE_CLIENT=1 \
 NGRAPH_ENCRYPT_DATA=1 \
 NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/configs/he_seal_ckks_config_N11_L1.json \
 NGRAPH_TF_BACKEND=HE_SEAL \
-python test.py --batch_size=1024
+python test.py
 ```
 This runs inference on the Cryptonets network using the SEAL CKKS backend.
 The `he_seal_ckks_config_N11_L1.json` file specifies the parameters which to run the model on. Note: the batch size must be between 1 and 1024 = 2^(11)/2.
@@ -29,9 +29,10 @@ python pyclient_mnist.py --batch_size=1024
 
 # Debugging
 For debugging purposes, you can omit the use of the client.
-This will perform non-linear layers on the server, which stores the public and secret keys. Note, this is not a valid security model, and is used only for debugging.
+This will perform non-linear layers on the server, which stores the public and secret keys. Note, this is not a valid security model, and is used only for debugging. The `NGRAPH_VOPS=all` flag will print out additional information about each operation.
 
 ```bash
+NGRAPH_VOPS=all \
 NGRAPH_ENCRYPT_DATA=1 \
 NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/configs/he_seal_ckks_config_N11_L1.json \
 NGRAPH_TF_BACKEND=HE_SEAL \
