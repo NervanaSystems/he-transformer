@@ -25,10 +25,6 @@
 #include "seal/seal.h"
 #include "seal/seal_util.hpp"
 
-extern "C" const char* get_ngraph_version_string() {
-  return "DUMMY_VERSION";  // TODO: move to CMakeList
-}
-
 extern "C" ngraph::runtime::BackendConstructor*
 get_backend_constructor_pointer() {
   class HESealBackendConstructor : public ngraph::runtime::BackendConstructor {
