@@ -179,11 +179,11 @@ ngraph::he::HESealBackend::create_valued_ciphertext(
 void ngraph::he::HESealBackend::encrypt(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& output,
     const ngraph::he::HEPlaintext& input, bool complex_packing) const {
-  auto plaintext = SealPlaintextWrapper(complex_packing);
-
   NGRAPH_CHECK(input.num_values() > 0, "Input has no values in encrypt");
 
-  encode(plaintext, input, complex_packing);
+  auto plaintext = SealPlaintextWrapper(complex_packing);
+  encode(plaintext, input, *m_ckks_encoder, m_context->first_parms_id(),
+         m_scale, complex_packing);
   m_encryptor->encrypt(plaintext.plaintext(), output->ciphertext());
   output->complex_packing() = complex_packing;
   output->known_value() = false;
@@ -231,50 +231,4 @@ void ngraph::he::HESealBackend::decode(
   }
   std::vector<float> float_vals{real_vals.begin(), real_vals.end()};
   output.values() = float_vals;
-}
-
-void ngraph::he::HESealBackend::encode(
-    ngraph::he::SealPlaintextWrapper& destination,
-    const ngraph::he::HEPlaintext& plaintext, seal::parms_id_type parms_id,
-    double scale, bool complex_packing) const {
-  std::vector<double> double_vals(plaintext.values().begin(),
-                                  plaintext.values().end());
-  const size_t slot_count = m_ckks_encoder->slot_count();
-
-  if (complex_packing) {
-    std::vector<std::complex<double>> complex_vals;
-    if (double_vals.size() == 1) {
-      std::complex<double> val(double_vals[0], double_vals[0]);
-      complex_vals = std::vector<std::complex<double>>(slot_count, val);
-    } else {
-      real_vec_to_complex_vec(complex_vals, double_vals);
-    }
-    NGRAPH_CHECK(complex_vals.size() <= slot_count, "Cannot encode ",
-                 complex_vals.size(), " elements, maximum size is ",
-                 slot_count);
-    m_ckks_encoder->encode(complex_vals, parms_id, scale,
-                           destination.plaintext());
-  } else {
-    // TODO: why different cases?
-    if (double_vals.size() == 1) {
-      m_ckks_encoder->encode(double_vals[0], parms_id, scale,
-                             destination.plaintext());
-    } else {
-      NGRAPH_CHECK(double_vals.size() <= slot_count, "Cannot encode ",
-                   double_vals.size(), " elements, maximum size is ",
-                   slot_count);
-      m_ckks_encoder->encode(double_vals, parms_id, scale,
-                             destination.plaintext());
-    }
-  }
-  destination.complex_packing() = complex_packing;
-}
-
-void ngraph::he::HESealBackend::encode(
-    ngraph::he::SealPlaintextWrapper& destination,
-    const ngraph::he::HEPlaintext& plaintext, bool complex_packing) const {
-  double scale = m_scale;
-  auto parms_id = m_context->first_parms_id();
-
-  encode(destination, plaintext, parms_id, scale, complex_packing);
 }

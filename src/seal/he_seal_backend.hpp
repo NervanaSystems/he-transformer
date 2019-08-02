@@ -124,14 +124,14 @@ class HESealBackend : public ngraph::runtime::Backend {
   std::shared_ptr<seal::SEALContext> make_seal_context(
       const std::shared_ptr<ngraph::he::HESealEncryptionParameters> sp);
 
-  void encode(ngraph::he::SealPlaintextWrapper& destination,
+  /* void encode(ngraph::he::SealPlaintextWrapper& destination,
               const ngraph::he::HEPlaintext& plaintext,
               seal::parms_id_type parms_id, double scale,
               bool complex_packing = false) const;
 
   void encode(ngraph::he::SealPlaintextWrapper& destination,
               const ngraph::he::HEPlaintext& plaintext,
-              bool complex_packing = false) const;
+              bool complex_packing = false) const; */
 
   void decode(void* output, const ngraph::he::HEPlaintext& input,
               const element::Type& type, size_t count = 1) const;
@@ -178,6 +178,10 @@ class HESealBackend : public ngraph::runtime::Backend {
   const ngraph::he::HESealEncryptionParameters& get_encryption_parameters()
       const {
     return m_encryption_params;
+  }
+
+  const std::shared_ptr<seal::CKKSEncoder> get_ckks_encoder() const {
+    return m_ckks_encoder;
   }
 
   const std::unordered_map<std::uint64_t, std::uint64_t>& barrett64_ratio_map()

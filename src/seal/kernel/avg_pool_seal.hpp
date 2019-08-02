@@ -36,7 +36,7 @@ inline void avg_pool_seal(
     const Shape& arg_shape, const Shape& out_shape, const Shape& window_shape,
     const Strides& window_movement_strides, const Shape& padding_below,
     const Shape& padding_above, bool include_padding_in_avg_computation,
-    const HESealBackend& he_seal_backend) {
+    HESealBackend& he_seal_backend) {
   // At the outermost level we will walk over every output coordinate O.
   CoordinateTransform output_transform(out_shape);
 
@@ -160,7 +160,7 @@ inline void avg_pool_seal(std::vector<HEPlaintext>& arg,
                           const Shape& padding_below,
                           const Shape& padding_above,
                           bool include_padding_in_avg_computation,
-                          const HESealBackend& he_seal_backend) {
+                          HESealBackend& he_seal_backend) {
   // At the outermost level we will walk over every output coordinate O.
   CoordinateTransform output_transform(out_shape);
 

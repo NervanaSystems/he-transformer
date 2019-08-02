@@ -35,7 +35,7 @@ inline void dot_seal(
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
     const Shape& arg0_shape, const Shape& arg1_shape, const Shape& out_shape,
     size_t reduction_axes_count, const element::Type& element_type,
-    const HESealBackend& he_seal_backend) {
+    HESealBackend& he_seal_backend) {
   // Get the sizes of the dot axes. It's easiest to pull them from arg1
   // because they're right up front.
   Shape dot_axis_sizes(reduction_axes_count);
@@ -164,7 +164,7 @@ inline void dot_seal(
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
     const Shape& arg0_shape, const Shape& arg1_shape, const Shape& out_shape,
     size_t reduction_axes_count, const element::Type& element_type,
-    const HESealBackend& he_seal_backend) {
+    HESealBackend& he_seal_backend) {
   // Get the sizes of the dot axes. It's easiest to pull them from arg1
   // because they're right up front.
   Shape dot_axis_sizes(reduction_axes_count);
@@ -292,7 +292,7 @@ inline void dot_seal(
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
     const Shape& arg0_shape, const Shape& arg1_shape, const Shape& out_shape,
     size_t reduction_axes_count, const element::Type& element_type,
-    const HESealBackend& he_seal_backend) {
+    HESealBackend& he_seal_backend) {
   // Get the sizes of the dot axes. It's easiest to pull them from arg1
   // because they're right up front.
   Shape dot_axis_sizes(reduction_axes_count);
@@ -421,7 +421,7 @@ inline void dot_seal(const std::vector<HEPlaintext>& arg0,
                      const Shape& arg1_shape, const Shape& out_shape,
                      size_t reduction_axes_count,
                      const element::Type& element_type,
-                     const HESealBackend& he_seal_backend) {
+                     HESealBackend& he_seal_backend) {
   // Get the sizes of the dot axes. It's easiest to pull them from arg1
   // because they're right up front.
   Shape dot_axis_sizes(reduction_axes_count);

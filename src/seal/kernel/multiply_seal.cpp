@@ -23,7 +23,7 @@ void ngraph::he::scalar_multiply_seal(
     ngraph::he::SealCiphertextWrapper& arg0,
     ngraph::he::SealCiphertextWrapper& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
-    const element::Type& element_type, const HESealBackend& he_seal_backend,
+    const element::Type& element_type, HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
   if (arg0.known_value() && arg1.known_value()) {
     out->known_value() = true;
@@ -77,7 +77,7 @@ void ngraph::he::scalar_multiply_seal(
     ngraph::he::SealCiphertextWrapper& arg0,
     const ngraph::he::HEPlaintext& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
-    const element::Type& element_type, const HESealBackend& he_seal_backend,
+    const element::Type& element_type, HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
   NGRAPH_CHECK(element_type == element::f32, "Element type ", element_type,
                " is not float");
@@ -119,8 +119,9 @@ void ngraph::he::scalar_multiply_seal(
   } else {
     // Never complex-pack for multiplication
     auto p = SealPlaintextWrapper(false);
-    he_seal_backend.encode(p, arg1, arg0.ciphertext().parms_id(),
-                           arg0.ciphertext().scale(), false);
+    ngraph::he::encode(p, arg1, *he_seal_backend.get_ckks_encoder(),
+                       arg0.ciphertext().parms_id(), arg0.ciphertext().scale(),
+                       false);
 
     size_t chain_ind0 = get_chain_index(arg0, he_seal_backend);
     size_t chain_ind1 = get_chain_index(p.plaintext(), he_seal_backend);
@@ -151,7 +152,7 @@ void ngraph::he::scalar_multiply_seal(const ngraph::he::HEPlaintext& arg0,
                                       const ngraph::he::HEPlaintext& arg1,
                                       ngraph::he::HEPlaintext& out,
                                       const element::Type& element_type,
-                                      const HESealBackend& he_seal_backend,
+                                      HESealBackend& he_seal_backend,
                                       const seal::MemoryPoolHandle& pool) {
   NGRAPH_CHECK(element_type == element::f32);
   NGRAPH_CHECK(arg0.num_values() > 0,

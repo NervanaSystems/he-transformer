@@ -17,12 +17,13 @@
 #include "seal/kernel/subtract_seal.hpp"
 #include "seal/kernel/add_seal.hpp"
 #include "seal/kernel/negate_seal.hpp"
+#include "seal/seal_util.hpp"
 
 void ngraph::he::scalar_subtract_seal(
     ngraph::he::SealCiphertextWrapper& arg0,
     ngraph::he::SealCiphertextWrapper& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
-    const element::Type& element_type, const HESealBackend& he_seal_backend) {
+    const element::Type& element_type, HESealBackend& he_seal_backend) {
   if (arg0.known_value() && arg1.known_value()) {
     NGRAPH_DEBUG << "C(" << arg0.value() << ") - C(" << arg1.value() << ")";
     out->known_value() = true;
@@ -47,7 +48,7 @@ void ngraph::he::scalar_subtract_seal(
 void ngraph::he::scalar_subtract_seal(
     ngraph::he::SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
-    const element::Type& element_type, const HESealBackend& he_seal_backend) {
+    const element::Type& element_type, HESealBackend& he_seal_backend) {
   if (arg0.known_value()) {
     NGRAPH_CHECK(arg1.is_single_value(), "arg1 is not single value");
     out->known_value() = true;
@@ -55,8 +56,9 @@ void ngraph::he::scalar_subtract_seal(
     out->complex_packing() = arg0.complex_packing();
   } else {
     auto p = SealPlaintextWrapper(arg0.complex_packing());
-    he_seal_backend.encode(p, arg1, arg0.ciphertext().parms_id(),
-                           arg0.ciphertext().scale(), arg0.complex_packing());
+    ngraph::he::encode(p, arg1, *he_seal_backend.get_ckks_encoder(),
+                       arg0.ciphertext().parms_id(), arg0.ciphertext().scale(),
+                       arg0.complex_packing());
     he_seal_backend.get_evaluator()->sub_plain(arg0.ciphertext(), p.plaintext(),
                                                out->ciphertext());
     out->known_value() = false;
@@ -66,7 +68,7 @@ void ngraph::he::scalar_subtract_seal(
 void ngraph::he::scalar_subtract_seal(
     const HEPlaintext& arg0, SealCiphertextWrapper& arg1,
     std::shared_ptr<SealCiphertextWrapper>& out, const element::Type& type,
-    const ngraph::he::HESealBackend& he_seal_backend) {
+    HESealBackend& he_seal_backend) {
   if (arg1.known_value()) {
     NGRAPH_CHECK(arg0.is_single_value(), "arg0 is not single value");
     out->known_value() = true;
@@ -83,7 +85,7 @@ void ngraph::he::scalar_subtract_seal(
 void ngraph::he::scalar_subtract_seal(const HEPlaintext& arg0,
                                       const HEPlaintext& arg1, HEPlaintext& out,
                                       const element::Type& element_type,
-                                      const HESealBackend& he_seal_backend) {
+                                      HESealBackend& he_seal_backend) {
   NGRAPH_CHECK(element_type == element::f32);
 
   const std::vector<float>& arg0_vals = arg0.values();
