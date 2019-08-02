@@ -111,26 +111,44 @@ void ngraph::he::HESealCipherTensor::write(
 
 void ngraph::he::HESealCipherTensor::read(void* target, size_t n) const {
   check_io_bounds(target, n / m_batch_size);
-  const element::Type& element_type = get_tensor_layout()->get_element_type();
+  ngraph::he::HESealCipherTensor::read(
+      target, m_ciphertexts, n, m_batch_size,
+      get_tensor_layout()->get_element_type(),
+      m_he_seal_backend.get_context()->first_parms_id(),
+      m_he_seal_backend.get_scale(), *m_he_seal_backend.get_ckks_encoder(),
+      *m_he_seal_backend.get_decryptor(), m_he_seal_backend.complex_packing());
+}
+
+void ngraph::he::HESealCipherTensor::read(
+    void* target,
+    const std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>&
+        ciphertexts,
+    size_t n, size_t batch_size, const element::Type& element_type,
+    seal::parms_id_type parms_id, double scale, seal::CKKSEncoder& ckks_encoder,
+    seal::Decryptor& decryptor, bool complex_packing) {
   size_t type_byte_size = element_type.size();
-  size_t num_elements_to_read = n / (type_byte_size * m_batch_size);
+  size_t num_elements_to_read = n / (type_byte_size * batch_size);
+
+  NGRAPH_CHECK(ciphertexts.size() >= num_elements_to_read,
+               "Reading too many elements ", num_elements_to_read,
+               " from ciphertext size ", ciphertexts.size());
 
   if (num_elements_to_read == 1) {
     void* dst_with_offset = target;
     auto p = HEPlaintext();
-    auto cipher = m_ciphertexts[0];
-    m_he_seal_backend.decrypt(p, *cipher);
-    m_he_seal_backend.decode(dst_with_offset, p, element_type, m_batch_size);
+    auto cipher = ciphertexts[0];
+    ngraph::he::decrypt(p, *cipher, decryptor, ckks_encoder);
+    ngraph::he::decode(dst_with_offset, p, element_type, batch_size);
   } else {
 #pragma omp parallel for
     for (size_t i = 0; i < num_elements_to_read; ++i) {
-      void* dst = ngraph::ngraph_malloc(type_byte_size * m_batch_size);
-      auto cipher = m_ciphertexts[i];
+      void* dst = ngraph::ngraph_malloc(type_byte_size * batch_size);
+      auto cipher = ciphertexts[i];
       auto p = HEPlaintext();
-      m_he_seal_backend.decrypt(p, *cipher);
-      m_he_seal_backend.decode(dst, p, element_type, m_batch_size);
+      ngraph::he::decrypt(p, *cipher, decryptor, ckks_encoder);
+      ngraph::he::decode(dst, p, element_type, batch_size);
 
-      for (size_t j = 0; j < m_batch_size; ++j) {
+      for (size_t j = 0; j < batch_size; ++j) {
         void* dst_with_offset =
             static_cast<void*>(static_cast<char*>(target) +
                                type_byte_size * (i + j * num_elements_to_read));

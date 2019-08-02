@@ -39,17 +39,26 @@ class HESealCipherTensor : public HETensor {
   /// @param n Number of bytes to write, must be integral number of elements.
   void write(const void* p, size_t n) override;
 
-  /// @brief Read bytes directly from the tensor after decrypting and decoding
-  /// @param p Pointer to destination for data
-  /// @param n Number of bytes to read, must be integral number of elements.
-  void read(void* target, size_t n) const override;
-
   static void write(
       std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>&
           destination,
       const void* source, size_t n, size_t batch_size,
       const element::Type& element_type, seal::parms_id_type parms_id,
       double scale, seal::CKKSEncoder& ckks_encoder, seal::Encryptor& encryptor,
+      bool complex_packing);
+
+  /// @brief Read bytes directly from the tensor after decrypting and decoding
+  /// @param p Pointer to destination for data
+  /// @param n Number of bytes to read, must be integral number of elements.
+  void read(void* target, size_t n) const override;
+
+  static void read(
+      void* target,
+      const std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>&
+          ciphertexts,
+      size_t n, size_t batch_size, const element::Type& element_type,
+      seal::parms_id_type parms_id, double scale,
+      seal::CKKSEncoder& ckks_encoder, seal::Decryptor& decryptor,
       bool complex_packing);
 
   void set_elements(

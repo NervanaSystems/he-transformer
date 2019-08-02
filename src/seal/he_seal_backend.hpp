@@ -157,6 +157,10 @@ class HESealBackend : public ngraph::runtime::Backend {
     return m_encryptor;
   }
 
+  const inline std::shared_ptr<seal::Decryptor> get_decryptor() const {
+    return m_decryptor;
+  }
+
   void set_relin_keys(const seal::RelinKeys& keys) {
     m_relin_keys = std::make_shared<seal::RelinKeys>(keys);
   }

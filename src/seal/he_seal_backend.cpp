@@ -189,43 +189,11 @@ void ngraph::he::HESealBackend::encrypt(
 void ngraph::he::HESealBackend::decrypt(
     ngraph::he::HEPlaintext& output,
     const ngraph::he::SealCiphertextWrapper& input) const {
-  if (input.known_value()) {
-    NGRAPH_DEBUG << "Decrypting known value " << input.value();
-    const size_t slot_count = m_ckks_encoder->slot_count();
-    output.values() = std::vector<float>(slot_count, input.value());
-  } else {
-    auto plaintext_wrapper = SealPlaintextWrapper(input.complex_packing());
-    m_decryptor->decrypt(input.ciphertext(), plaintext_wrapper.plaintext());
-    decode(output, plaintext_wrapper);
-  }
-}
-
-void ngraph::he::HESealBackend::decode(void* output,
-                                       const ngraph::he::HEPlaintext& input,
-                                       const element::Type& type,
-                                       size_t count) const {
-  NGRAPH_CHECK(count != 0, "Decode called on 0 elements");
-  NGRAPH_CHECK(type == element::f32,
-               "CKKS encode supports only float encoding, received type ",
-               type);
-  NGRAPH_CHECK(input.num_values() > 0, "Input has no values");
-
-  const std::vector<float>& xs_float = input.values();
-  NGRAPH_CHECK(xs_float.size() >= count);
-  std::memcpy(output, &xs_float[0], type.size() * count);
+  ngraph::he::decrypt(output, input, *m_decryptor, *m_ckks_encoder);
 }
 
 void ngraph::he::HESealBackend::decode(
     ngraph::he::HEPlaintext& output,
     const ngraph::he::SealPlaintextWrapper& input) const {
-  std::vector<double> real_vals;
-  if (input.complex_packing()) {
-    std::vector<std::complex<double>> complex_vals;
-    m_ckks_encoder->decode(input.plaintext(), complex_vals);
-    complex_vec_to_real_vec(real_vals, complex_vals);
-  } else {
-    m_ckks_encoder->decode(input.plaintext(), real_vals);
-  }
-  std::vector<float> float_vals{real_vals.begin(), real_vals.end()};
-  output.values() = float_vals;
+  ngraph::he::decode(output, input, *m_ckks_encoder);
 }
