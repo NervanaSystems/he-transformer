@@ -38,8 +38,8 @@ enum class MessageType {
   encryption_parameters,
   eval_key,
   execute,
-  max_request,
-  max_result,
+  maxpool_request,
+  maxpool_result,
   minimum_request,
   minimum_result,
   parameter_shape_request,
@@ -75,11 +75,11 @@ inline std::string message_type_to_string(const MessageType& type) {
     case MessageType::minimum_result:
       return "minimum_result";
       break;
-    case MessageType::max_request:
-      return "max_request";
+    case MessageType::maxpool_request:
+      return "maxpool_request";
       break;
-    case MessageType::max_result:
-      return "max_result";
+    case MessageType::maxpool_result:
+      return "maxpool_result";
       break;
     case MessageType::parameter_size:
       return "parameter_size";

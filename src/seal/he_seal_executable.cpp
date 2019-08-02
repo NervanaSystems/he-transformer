@@ -95,7 +95,7 @@ ngraph::he::HESealExecutable::HESealExecutable(
       m_batch_size(1),
       m_port(34000),
       m_relu_done(false),
-      m_max_done(false),
+      m_maxpool_done(false),
       m_session_started(false),
       m_client_inputs_received(false) {
   m_context = he_seal_backend.get_context();
@@ -382,8 +382,8 @@ void ngraph::he::HESealExecutable::handle_message(
     // Notify condition variable
     m_relu_done = true;
     m_relu_cond.notify_all();
-  } else if (msg_type == MessageType::max_result) {
-    std::lock_guard<std::mutex> guard(m_max_mutex);
+  } else if (msg_type == MessageType::maxpool_result) {
+    std::lock_guard<std::mutex> guard(m_maxpool_mutex);
 
     size_t element_count = message.count();
     size_t element_size = message.element_size();
@@ -397,11 +397,11 @@ void ngraph::he::HESealExecutable::handle_message(
       auto new_cipher = std::make_shared<ngraph::he::SealCiphertextWrapper>(
           cipher, m_complex_packing);
 
-      m_max_ciphertexts.emplace_back(new_cipher);
+      m_maxpool_ciphertexts.emplace_back(new_cipher);
     }
     // Notify condition variable
-    m_max_done = true;
-    m_max_cond.notify_one();
+    m_maxpool_done = true;
+    m_maxpool_cond.notify_one();
   } else if (msg_type == MessageType::minimum_result) {
     std::lock_guard<std::mutex> guard(m_minimum_mutex);
 
@@ -1222,8 +1222,8 @@ void ngraph::he::HESealExecutable::generate_calls(
         throw ngraph_error("MaxPool supports only Cipher, Cipher");
       }
 
-      m_max_ciphertexts.clear();
-      m_max_done = false;
+      m_maxpool_ciphertexts.clear();
+      m_maxpool_done = false;
 
       std::vector<std::vector<size_t>> maximize_list =
           ngraph::he::max_pool_seal(packed_arg_shapes[0], packed_out_shape,
@@ -1254,22 +1254,23 @@ void ngraph::he::HESealExecutable::generate_calls(
           NGRAPH_INFO << "Sending " << cipher_cnt
                       << " Maxpool ciphertexts to client";
         }
-        auto max_message =
-            TCPMessage(MessageType::max_request, maxpool_ciphers);
+        auto maxpool_message =
+            TCPMessage(MessageType::maxpool_request, maxpool_ciphers);
 
-        m_session->do_write(std::move(max_message));
+        m_session->do_write(std::move(maxpool_message));
 
         // Acquire lock
-        std::unique_lock<std::mutex> mlock(m_max_mutex);
+        std::unique_lock<std::mutex> mlock(m_maxpool_mutex);
 
         // Wait until max is done
-        m_max_cond.wait(mlock, std::bind(&HESealExecutable::max_done, this));
+        m_maxpool_cond.wait(mlock,
+                            std::bind(&HESealExecutable::maxpool_done, this));
 
-        // Reset for next max call
-        m_max_done = false;
+        // Reset for next maxpool call
+        m_maxpool_done = false;
         maxpool_ciphers.clear();
       }
-      out0_cipher->set_elements(m_max_ciphertexts);
+      out0_cipher->set_elements(m_maxpool_ciphertexts);
       break;
     }
     case OP_TYPEID::Minimum: {

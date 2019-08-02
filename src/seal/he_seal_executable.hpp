@@ -75,7 +75,7 @@ class HESealExecutable : public runtime::Executable {
 
   // TODO: merge _done() methods
   bool relu_done() const { return m_relu_done; }
-  bool max_done() const { return m_max_done; }
+  bool maxpool_done() const { return m_maxpool_done; }
   bool minimum_done() const { return m_minimum_done; }
 
   bool session_started() const { return m_session_started; }
@@ -141,7 +141,7 @@ class HESealExecutable : public runtime::Executable {
   std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
       m_relu_ciphertexts;
   std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
-      m_max_ciphertexts;
+      m_maxpool_ciphertexts;
   std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
       m_minimum_ciphertexts;
 
@@ -156,9 +156,9 @@ class HESealExecutable : public runtime::Executable {
   std::vector<size_t> m_unknown_relu_idx;
 
   // To trigger when maxpool is done
-  std::mutex m_max_mutex;
-  std::condition_variable m_max_cond;
-  bool m_max_done;
+  std::mutex m_maxpool_mutex;
+  std::condition_variable m_maxpool_cond;
+  bool m_maxpool_done;
 
   // To trigger when minimum is done
   std::mutex m_minimum_mutex;

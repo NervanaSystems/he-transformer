@@ -111,8 +111,6 @@ void ngraph::he::HESealClient::handle_message(
       }
       // TODO: support int
       size_t n = parameter_size * sizeof(float) * m_batch_size;
-      NGRAPH_INFO << "parameter_size" << parameter_size;
-      NGRAPH_INFO << "n " << n;
       ngraph::he::HESealCipherTensor::write(
           ciphers, m_inputs.data(), n, m_batch_size, element::f32,
           m_context->first_parms_id(), m_scale, *m_ckks_encoder, *m_encryptor,
@@ -193,7 +191,7 @@ void ngraph::he::HESealClient::handle_message(
       break;
     }
 
-    case ngraph::he::MessageType::max_request: {
+    case ngraph::he::MessageType::maxpool_request: {
       size_t complex_pack_factor = complex_packing() ? 2 : 1;
       size_t cipher_count = message.count();
       size_t element_size = message.element_size();
@@ -246,15 +244,15 @@ void ngraph::he::HESealClient::handle_message(
           m_context->first_parms_id(), m_scale, *m_ckks_encoder, *m_encryptor,
           complex_packing());
 
-      auto max_result_msg =
-          TCPMessage(ngraph::he::MessageType::max_result, ciphers);
-      write_message(std::move(max_result_msg));
+      auto maxpool_result_msg =
+          TCPMessage(ngraph::he::MessageType::maxpool_result, ciphers);
+      write_message(std::move(maxpool_result_msg));
 
       break;
     }
     case ngraph::he::MessageType::execute:
     case ngraph::he::MessageType::eval_key:
-    case ngraph::he::MessageType::max_result:
+    case ngraph::he::MessageType::maxpool_result:
     case ngraph::he::MessageType::minimum_request:
     case ngraph::he::MessageType::minimum_result:
     case ngraph::he::MessageType::parameter_shape_request:
