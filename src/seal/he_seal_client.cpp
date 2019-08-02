@@ -102,6 +102,8 @@ void ngraph::he::HESealClient::handle_message(
                     << ") * m_batch_size (" << m_batch_size << ")";
       }
 
+      // TODO: replace with CipherTensor's write function?
+
       std::vector<seal::Ciphertext> ciphers(parameter_size);
 #pragma omp parallel for
       for (size_t data_idx = 0; data_idx < parameter_size; ++data_idx) {

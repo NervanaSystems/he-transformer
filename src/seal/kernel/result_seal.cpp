@@ -24,7 +24,10 @@ void ngraph::he::result_seal(
                " does not match result input size ", arg.size());
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
-    he_seal_backend.encrypt(out[i], arg[i], he_seal_backend.complex_packing());
+    encrypt(out[i], arg[i], he_seal_backend.get_context()->first_parms_id(),
+            he_seal_backend.get_scale(), *he_seal_backend.get_ckks_encoder(),
+            *he_seal_backend.get_encryptor(),
+            he_seal_backend.complex_packing());
   }
 }
 

@@ -44,6 +44,14 @@ class HESealCipherTensor : public HETensor {
   /// @param n Number of bytes to read, must be integral number of elements.
   void read(void* target, size_t n) const override;
 
+  static void write(
+      std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>&
+          destination,
+      const void* source, size_t n, size_t batch_size,
+      const element::Type& element_type, seal::parms_id_type parms_id,
+      double scale, seal::CKKSEncoder& ckks_encoder, seal::Encryptor& encryptor,
+      bool complex_packing);
+
   void set_elements(
       const std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>&
           elements);

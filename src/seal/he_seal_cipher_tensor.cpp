@@ -21,6 +21,7 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_cipher_tensor.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
+#include "seal/seal_util.hpp"
 
 ngraph::he::HESealCipherTensor::HESealCipherTensor(
     const element::Type& element_type, const Shape& shape,
@@ -37,33 +38,50 @@ ngraph::he::HESealCipherTensor::HESealCipherTensor(
 }
 
 void ngraph::he::HESealCipherTensor::write(const void* source, size_t n) {
-  const bool complex_packing = m_he_seal_backend.complex_packing();
-
   check_io_bounds(source, n / m_batch_size);
-  const element::Type& element_type = get_tensor_layout()->get_element_type();
+  ngraph::he::HESealCipherTensor::write(
+      m_ciphertexts, source, n, m_batch_size,
+      get_tensor_layout()->get_element_type(),
+      m_he_seal_backend.get_context()->first_parms_id(),
+      m_he_seal_backend.get_scale(), *m_he_seal_backend.get_ckks_encoder(),
+      *m_he_seal_backend.get_encryptor(), m_he_seal_backend.complex_packing());
+}
+
+void ngraph::he::HESealCipherTensor::write(
+    std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>&
+        destination,
+    const void* source, size_t n, size_t batch_size,
+    const element::Type& element_type, seal::parms_id_type parms_id,
+    double scale, seal::CKKSEncoder& ckks_encoder, seal::Encryptor& encryptor,
+    bool complex_packing) {
   NGRAPH_CHECK(element_type == element::f32,
                "CipherTensor supports float32 only");
 
   size_t type_byte_size = element_type.size();
-  size_t num_elements_to_write = n / (type_byte_size * m_batch_size);
+  size_t num_elements_to_write = n / (type_byte_size * batch_size);
+
+  NGRAPH_CHECK(destination.size() >= num_elements_to_write,
+               "Writing too many ciphertexts ", num_elements_to_write,
+               " to destination size ", destination.size());
 
   if (num_elements_to_write == 1) {
     const float* src_with_offset = static_cast<const float*>(source);
 
-    std::vector<float> values{src_with_offset, src_with_offset + m_batch_size};
+    std::vector<float> values{src_with_offset, src_with_offset + batch_size};
     auto plaintext = HEPlaintext(values);
-    m_he_seal_backend.encrypt(m_ciphertexts[0], plaintext, complex_packing);
+    encrypt(destination[0], plaintext, parms_id, scale, ckks_encoder, encryptor,
+            complex_packing);
   } else {
 #pragma omp parallel for
     for (size_t i = 0; i < num_elements_to_write; ++i) {
       const void* src_with_offset = static_cast<const void*>(
-          static_cast<const char*>(source) + i * type_byte_size * m_batch_size);
+          static_cast<const char*>(source) + i * type_byte_size * batch_size);
 
       auto plaintext = HEPlaintext();
-      if (m_batch_size > 1) {
-        size_t allocation_size = type_byte_size * m_batch_size;
+      if (batch_size > 1) {
+        size_t allocation_size = type_byte_size * batch_size;
         void* batch_src = ngraph::ngraph_malloc(allocation_size);
-        for (size_t j = 0; j < m_batch_size; ++j) {
+        for (size_t j = 0; j < batch_size; ++j) {
           void* destination = static_cast<void*>(static_cast<char*>(batch_src) +
                                                  j * type_byte_size);
           const void* src = static_cast<const void*>(
@@ -71,18 +89,18 @@ void ngraph::he::HESealCipherTensor::write(const void* source, size_t n) {
               type_byte_size * (i + j * num_elements_to_write));
           memcpy(destination, src, type_byte_size);
         }
-        std::vector<float> values{
-            static_cast<float*>(batch_src),
-            static_cast<float*>(batch_src) + m_batch_size};
+        std::vector<float> values{static_cast<float*>(batch_src),
+                                  static_cast<float*>(batch_src) + batch_size};
         plaintext.values() = values;
         ngraph_free(batch_src);
       } else {
         std::vector<float> values{
             static_cast<const float*>(src_with_offset),
-            static_cast<const float*>(src_with_offset) + m_batch_size};
+            static_cast<const float*>(src_with_offset) + batch_size};
         plaintext.values() = values;
       }
-      m_he_seal_backend.encrypt(m_ciphertexts[i], plaintext, complex_packing);
+      encrypt(destination[i], plaintext, parms_id, scale, ckks_encoder,
+              encryptor, complex_packing);
     }
   }
 }

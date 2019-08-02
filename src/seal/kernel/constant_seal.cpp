@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "seal/kernel/constant_seal.hpp"
+#include "seal/seal_util.hpp"
 
 void ngraph::he::constant_seal(std::vector<ngraph::he::HEPlaintext>& out,
                                const element::Type& element_type,
@@ -53,7 +54,10 @@ void ngraph::he::constant_seal(
 
     std::vector<float> values{*(float*)src_with_offset};
     auto plaintext = HEPlaintext(values);
-    he_seal_backend.encrypt(out[i], plaintext,
-                            he_seal_backend.complex_packing());
+
+    encrypt(out[i], plaintext, he_seal_backend.get_context()->first_parms_id(),
+            he_seal_backend.get_scale(), *he_seal_backend.get_ckks_encoder(),
+            *he_seal_backend.get_encryptor(),
+            he_seal_backend.complex_packing());
   }
 }

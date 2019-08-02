@@ -522,9 +522,12 @@ bool ngraph::he::HESealExecutable::call(
         for (size_t plain_idx = 0;
              plain_idx < plain_input->get_batched_element_count();
              ++plain_idx) {
-          m_he_seal_backend.encrypt(cipher_input->get_element(plain_idx),
-                                    plain_input->get_element(plain_idx),
-                                    m_complex_packing);
+          encrypt(cipher_input->get_element(plain_idx),
+                  plain_input->get_element(plain_idx),
+                  m_he_seal_backend.get_context()->first_parms_id(),
+                  m_he_seal_backend.get_scale(),
+                  *m_he_seal_backend.get_ckks_encoder(),
+                  *m_he_seal_backend.get_encryptor(), m_complex_packing);
         }
         NGRAPH_DEBUG << "Done encrypting parameter";
         plain_input->reset();
