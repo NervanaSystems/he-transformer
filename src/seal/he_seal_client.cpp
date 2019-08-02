@@ -23,9 +23,11 @@
 #include <string>
 #include <vector>
 
+#include "he_seal_cipher_tensor.hpp"
 #include "ngraph/log.hpp"
 #include "seal/he_seal_client.hpp"
 #include "seal/seal.h"
+#include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_util.hpp"
 #include "tcp/tcp_client.hpp"
 #include "tcp/tcp_message.hpp"
@@ -104,25 +106,40 @@ void ngraph::he::HESealClient::handle_message(
 
       // TODO: replace with CipherTensor's write function?
 
-      std::vector<seal::Ciphertext> ciphers(parameter_size);
-#pragma omp parallel for
+      std::vector<std::shared_ptr<SealCiphertextWrapper>> ciphers(
+          parameter_size);
       for (size_t data_idx = 0; data_idx < parameter_size; ++data_idx) {
-        seal::Plaintext plain;
-
-        size_t batch_start_idx = data_idx * m_batch_size;
-        size_t batch_end_idx = batch_start_idx + m_batch_size;
-
-        std::vector<double> real_vals{m_inputs.begin() + batch_start_idx,
-                                      m_inputs.begin() + batch_end_idx};
-        if (complex_packing()) {
-          std::vector<std::complex<double>> complex_vals;
-          real_vec_to_complex_vec(complex_vals, real_vals);
-          m_ckks_encoder->encode(complex_vals, m_scale, plain);
-        } else {
-          m_ckks_encoder->encode(real_vals, m_scale, plain);
-        }
-        m_encryptor->encrypt(plain, ciphers[data_idx]);
+        ciphers[data_idx] = std::make_shared<SealCiphertextWrapper>();
       }
+      // TODO: support int
+      size_t n = parameter_size * sizeof(float) * m_batch_size;
+      NGRAPH_INFO << "parameter_size" << parameter_size;
+      NGRAPH_INFO << "n " << n;
+      ngraph::he::HESealCipherTensor::write(
+          ciphers, m_inputs.data(), n, m_batch_size, element::f32,
+          m_context->first_parms_id(), m_scale, *m_ckks_encoder, *m_encryptor,
+          complex_packing());
+      /*
+
+  std::vector<seal::Ciphertext> ciphers(parameter_size);
+#pragma omp parallel for
+  for (size_t data_idx = 0; data_idx < parameter_size; ++data_idx) {
+    seal::Plaintext plain;
+
+    size_t batch_start_idx = data_idx * m_batch_size;
+    size_t batch_end_idx = batch_start_idx + m_batch_size;
+
+    std::vector<double> real_vals{m_inputs.begin() + batch_start_idx,
+                                  m_inputs.begin() + batch_end_idx};
+    if (complex_packing()) {
+      std::vector<std::complex<double>> complex_vals;
+      real_vec_to_complex_vec(complex_vals, real_vals);
+      m_ckks_encoder->encode(complex_vals, m_scale, plain);
+    } else {
+      m_ckks_encoder->encode(real_vals, m_scale, plain);
+    }
+    m_encryptor->encrypt(plain, ciphers[data_idx]);
+  } */
       NGRAPH_INFO << "Creating execute message";
       auto execute_message =
           TCPMessage(ngraph::he::MessageType::execute, ciphers);
@@ -154,6 +171,11 @@ void ngraph::he::HESealClient::handle_message(
                      outputs.size(), " < m_batch_size ", m_batch_size);
         m_results.insert(m_results.end(), outputs.begin(),
                          outputs.begin() + m_batch_size);
+      }
+
+      NGRAPH_INFO << "m_results";
+      for (const auto& elem : m_results) {
+        NGRAPH_INFO << "elem " << elem;
       }
       close_connection();
       break;
@@ -208,8 +230,9 @@ void ngraph::he::HESealClient::handle_message(
           m_batch_size * complex_pack_factor,
           std::vector<double>(cipher_count, 0));
 
-      std::vector<double> max_values(m_batch_size * complex_pack_factor,
-                                     std::numeric_limits<double>::lowest());
+      // We currently support only float values
+      std::vector<float> max_values(m_batch_size * complex_pack_factor,
+                                    std::numeric_limits<float>::lowest());
 
 #pragma omp parallel for
       for (size_t cipher_idx = 0; cipher_idx < cipher_count; ++cipher_idx) {
@@ -236,35 +259,58 @@ void ngraph::he::HESealClient::handle_message(
       // Get max of each vector of values
       for (size_t batch_idx = 0; batch_idx < m_batch_size * complex_pack_factor;
            ++batch_idx) {
-        max_values[batch_idx] =
+        max_values[batch_idx] = static_cast<float>(
             *std::max_element(input_cipher_values[batch_idx].begin(),
-                              input_cipher_values[batch_idx].end());
+                              input_cipher_values[batch_idx].end()));
 
         NGRAPH_INFO << "Getting max of ";
         for (const auto& elem : input_cipher_values[batch_idx]) {
-          NGRAPH_INFO << elem;
+          std::cout << elem << " ";
         }
         NGRAPH_INFO << "=> " << max_values[batch_idx];
       }
 
-      // Encrypt maximum values
-      seal::Ciphertext cipher_max;
-      seal::Plaintext plain_max;
-      std::stringstream max_stream;
-
-      if (complex_packing()) {
-        assert(max_values.size() % 2 == 0);
-        std::vector<std::complex<double>> max_complex_vals;
-        real_vec_to_complex_vec(max_complex_vals, max_values);
-        m_ckks_encoder->encode(max_complex_vals, m_scale, plain_max);
-      } else {
-        m_ckks_encoder->encode(max_values, m_scale, plain_max);
+      // TODO: support more than 1 ciphertext in max
+      size_t n = 1 * sizeof(float) * m_batch_size;
+      NGRAPH_INFO << "parameter_size" << 1;
+      NGRAPH_INFO << "sizeof(float) " << sizeof(float);
+      NGRAPH_INFO << "element::f32 " << element::f32.size();
+      NGRAPH_INFO << "m_batch_size " << m_batch_size;
+      NGRAPH_INFO << "n " << n;
+      NGRAPH_INFO << "m_scale " << m_scale;
+      NGRAPH_INFO << "max_values.size() " << max_values.size();
+      for (const auto& elem : max_values) {
+        NGRAPH_INFO << elem;
       }
-      m_encryptor->encrypt(plain_max, cipher_max);
-      cipher_max.save(max_stream);
+      std::vector<std::shared_ptr<SealCiphertextWrapper>> ciphers(1);
+      ciphers[0] = std::make_shared<SealCiphertextWrapper>();
 
-      auto max_result_msg = TCPMessage(ngraph::he::MessageType::max_result, 1,
-                                       std::move(max_stream));
+      ngraph::he::HESealCipherTensor::write(
+          ciphers, max_values.data(), n, m_batch_size, element::f32,
+          m_context->first_parms_id(), m_scale, *m_ckks_encoder, *m_encryptor,
+          complex_packing());
+
+      // Encrypt maximum values
+      /* seal::Ciphertext cipher_max;
+       seal::Plaintext plain_max;
+       std::stringstream max_stream;
+
+       if (complex_packing()) {
+         assert(max_values.size() % 2 == 0);
+         std::vector<std::complex<double>> max_complex_vals;
+         real_vec_to_complex_vec(max_complex_vals, max_values);
+         m_ckks_encoder->encode(max_complex_vals, m_scale, plain_max);
+       } else {
+         m_ckks_encoder->encode(max_values, m_scale, plain_max);
+       }
+       m_encryptor->encrypt(plain_max, cipher_max);
+       cipher_max.save(max_stream); */
+
+      // auto max_result_msg = TCPMessage(ngraph::he::MessageType::max_result,
+      // 1,
+      //                                 std::move(max_stream));
+      auto max_result_msg =
+          TCPMessage(ngraph::he::MessageType::max_result, ciphers);
       write_message(std::move(max_result_msg));
 
       break;

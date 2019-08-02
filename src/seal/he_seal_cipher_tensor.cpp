@@ -59,15 +59,19 @@ void ngraph::he::HESealCipherTensor::write(
 
   size_t type_byte_size = element_type.size();
   size_t num_elements_to_write = n / (type_byte_size * batch_size);
+  NGRAPH_INFO << "num_elements_to_write " << num_elements_to_write;
 
   NGRAPH_CHECK(destination.size() >= num_elements_to_write,
                "Writing too many ciphertexts ", num_elements_to_write,
                " to destination size ", destination.size());
 
   if (num_elements_to_write == 1) {
-    const float* src_with_offset = static_cast<const float*>(source);
-
-    std::vector<float> values{src_with_offset, src_with_offset + batch_size};
+    const float* float_src = static_cast<const float*>(source);
+    std::vector<float> values{float_src, float_src + batch_size};
+    NGRAPH_INFO << "writing";
+    for (const auto& elem : values) {
+      NGRAPH_INFO << elem;
+    }
     auto plaintext = HEPlaintext(values);
     encrypt(destination[0], plaintext, parms_id, scale, ckks_encoder, encryptor,
             complex_packing);
