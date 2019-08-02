@@ -36,13 +36,3 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
     add_compile_options(-Wno-zero-as-null-pointer-constant)
   endif()
 endif()
-
-# should remove these
-add_compile_options(-Wno-float-conversion)
-add_compile_options(-Wno-sign-conversion)
-add_compile_options(-Wno-padded)
-add_compile_options(-Wno-sign-compare)
-add_compile_options(-Wno-unused-parameter)
-add_compile_options(-Wno-conversion)
-add_compile_options(-Wno-double-promotion)
-add_compile_options(-Wno-undefined-func-template)

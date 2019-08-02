@@ -133,6 +133,9 @@ void ngraph::he::HESealCipherTensor::read(
                "Reading too many elements ", num_elements_to_read,
                " from ciphertext size ", ciphertexts.size());
 
+  NGRAPH_INFO << "Reading " << num_elements_to_read << " elements";
+  NGRAPH_INFO << "batch_size " << batch_size;
+
   if (num_elements_to_read == 1) {
     void* dst_with_offset = target;
     auto p = HEPlaintext();

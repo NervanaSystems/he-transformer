@@ -104,8 +104,6 @@ void ngraph::he::HESealClient::handle_message(
                     << ") * m_batch_size (" << m_batch_size << ")";
       }
 
-      // TODO: replace with CipherTensor's write function?
-
       std::vector<std::shared_ptr<SealCiphertextWrapper>> ciphers(
           parameter_size);
       for (size_t data_idx = 0; data_idx < parameter_size; ++data_idx) {
@@ -119,27 +117,7 @@ void ngraph::he::HESealClient::handle_message(
           ciphers, m_inputs.data(), n, m_batch_size, element::f32,
           m_context->first_parms_id(), m_scale, *m_ckks_encoder, *m_encryptor,
           complex_packing());
-      /*
 
-  std::vector<seal::Ciphertext> ciphers(parameter_size);
-#pragma omp parallel for
-  for (size_t data_idx = 0; data_idx < parameter_size; ++data_idx) {
-    seal::Plaintext plain;
-
-    size_t batch_start_idx = data_idx * m_batch_size;
-    size_t batch_end_idx = batch_start_idx + m_batch_size;
-
-    std::vector<double> real_vals{m_inputs.begin() + batch_start_idx,
-                                  m_inputs.begin() + batch_end_idx};
-    if (complex_packing()) {
-      std::vector<std::complex<double>> complex_vals;
-      real_vec_to_complex_vec(complex_vals, real_vals);
-      m_ckks_encoder->encode(complex_vals, m_scale, plain);
-    } else {
-      m_ckks_encoder->encode(real_vals, m_scale, plain);
-    }
-    m_encryptor->encrypt(plain, ciphers[data_idx]);
-  } */
       NGRAPH_INFO << "Creating execute message";
       auto execute_message =
           TCPMessage(ngraph::he::MessageType::execute, ciphers);
@@ -151,27 +129,30 @@ void ngraph::he::HESealClient::handle_message(
     case ngraph::he::MessageType::result: {
       size_t result_count = message.count();
       size_t element_size = message.element_size();
+      NGRAPH_INFO << "Got result message";
+      NGRAPH_INFO << "result count " << result_count;
 
-      std::vector<seal::Ciphertext> result;
-      m_results.reserve(result_count * m_batch_size);
+      m_results.resize(result_count * m_batch_size);
+      std::vector<std::shared_ptr<SealCiphertextWrapper>> result_ciphers(
+          result_count);
+#pragma omp parallel for
       for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
-        seal::Ciphertext cipher;
         std::stringstream cipher_stream;
         cipher_stream.write(message.data_ptr() + result_idx * element_size,
                             element_size);
-        cipher.load(m_context, cipher_stream);
-
-        result.push_back(cipher);
-        seal::Plaintext plain;
-        m_decryptor->decrypt(cipher, plain);
-
-        std::vector<double> outputs;
-        decode_to_real_vec(plain, outputs, complex_packing());
-        NGRAPH_CHECK(outputs.size() >= m_batch_size, "outputs.size() ",
-                     outputs.size(), " < m_batch_size ", m_batch_size);
-        m_results.insert(m_results.end(), outputs.begin(),
-                         outputs.begin() + m_batch_size);
+        seal::Ciphertext c;
+        c.load(m_context, cipher_stream);
+        result_ciphers[result_idx] =
+            std::make_shared<SealCiphertextWrapper>(c, complex_packing());
+        NGRAPH_INFO << "complex? "
+                    << result_ciphers[result_idx]->complex_packing();
       }
+
+      size_t n = result_count * sizeof(float) * m_batch_size;
+      ngraph::he::HESealCipherTensor::read(
+          m_results.data(), result_ciphers, n, m_batch_size, element::f32,
+          m_context->first_parms_id(), m_scale, *m_ckks_encoder, *m_decryptor,
+          complex_packing());
 
       NGRAPH_INFO << "m_results";
       for (const auto& elem : m_results) {
