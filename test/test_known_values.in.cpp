@@ -194,7 +194,7 @@ NGRAPH_TEST(${BACKEND_NAME}, known_cipher_cipher_mult) {
                             count);
 
   for (size_t i = 0; i < count; ++i) {
-    EXPECT_EQ(out[i]->known_value(), exp_out[i] == 0);
+    EXPECT_EQ(out[i]->known_value(), i == 0);
     ngraph::he::HEPlaintext p;
     he_backend->decrypt(p, *out[i]);
     EXPECT_NEAR(p.values()[0], exp_out[i], 1e-3f);
@@ -261,7 +261,7 @@ NGRAPH_TEST(${BACKEND_NAME}, known_cipher_cipher_sub) {
                             count);
 
   for (size_t i = 0; i < count; ++i) {
-    EXPECT_EQ(out[i]->known_value(), exp_out[i] == 0);
+    EXPECT_EQ(out[i]->known_value(), false);
     ngraph::he::HEPlaintext p;
     he_backend->decrypt(p, *out[i]);
     EXPECT_NEAR(p.values()[0], exp_out[i], 1e-3f);

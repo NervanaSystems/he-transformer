@@ -31,9 +31,9 @@ void ngraph::he::constant_seal(std::vector<ngraph::he::HEPlaintext>& out,
 
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
-    const void* src_with_offset = (void*)((char*)data_ptr + i * type_byte_size);
-    float f = *(float*)src_with_offset;
-    out[i].values() = {f};
+    const float* f = reinterpret_cast<const float*>(
+        static_cast<const char*>(data_ptr) + i * type_byte_size);
+    out[i].values() = {*f};
   }
 }
 
@@ -49,10 +49,9 @@ void ngraph::he::constant_seal(
 
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
-    const void* src_with_offset = (void*)((char*)data_ptr + i * type_byte_size);
-
-    std::vector<float> values{*(float*)src_with_offset};
-    auto plaintext = HEPlaintext(values);
+    const float* f = reinterpret_cast<const float*>(
+        static_cast<const char*>(data_ptr) + i * type_byte_size);
+    auto plaintext = HEPlaintext(*f);
     he_seal_backend.encrypt(out[i], plaintext,
                             he_seal_backend.complex_packing());
   }

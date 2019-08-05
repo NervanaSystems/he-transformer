@@ -243,7 +243,7 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion) {
 
   auto make_function = [shape_input, shape_weights, shape_norm, gamma_vals,
                         weight_vals, beta_vals, mean_vals, var_vals, et]() {
-    auto input = std::make_shared<op::Parameter>(et, shape_input);
+    auto input_parm = std::make_shared<op::Parameter>(et, shape_input);
     auto weights =
         std::make_shared<op::Constant>(et, shape_weights, weight_vals);
     double eps = 0.001;
@@ -251,11 +251,11 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion) {
     auto beta = std::make_shared<op::Constant>(et, shape_norm, beta_vals);
     auto mean = std::make_shared<op::Constant>(et, shape_norm, mean_vals);
     auto var = std::make_shared<op::Constant>(et, shape_norm, var_vals);
-    auto conv = std::make_shared<op::Convolution>(input, weights, Strides{1, 1},
-                                                  Strides{1, 1});
+    auto conv = std::make_shared<op::Convolution>(input_parm, weights,
+                                                  Strides{1, 1}, Strides{1, 1});
     auto bn = std::make_shared<op::BatchNormInference>(conv, gamma, beta, mean,
                                                        var, eps);
-    auto f = make_shared<Function>(NodeVector{bn}, ParameterVector{input});
+    auto f = make_shared<Function>(NodeVector{bn}, ParameterVector{input_parm});
     return f;
   };
 
@@ -319,7 +319,7 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he) {
 
   auto make_function = [shape_input, shape_weights, shape_norm, gamma_vals,
                         weight_vals, beta_vals, mean_vals, var_vals, et]() {
-    auto input = std::make_shared<op::Parameter>(et, shape_input);
+    auto input_parm = std::make_shared<op::Parameter>(et, shape_input);
     auto weights =
         std::make_shared<op::Constant>(et, shape_weights, weight_vals);
     double eps = 0.001;
@@ -327,11 +327,11 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he) {
     auto beta = std::make_shared<op::Constant>(et, shape_norm, beta_vals);
     auto mean = std::make_shared<op::Constant>(et, shape_norm, mean_vals);
     auto var = std::make_shared<op::Constant>(et, shape_norm, var_vals);
-    auto conv = std::make_shared<op::Convolution>(input, weights, Strides{1, 1},
-                                                  Strides{1, 1});
+    auto conv = std::make_shared<op::Convolution>(input_parm, weights,
+                                                  Strides{1, 1}, Strides{1, 1});
     auto bn = std::make_shared<op::BatchNormInference>(conv, gamma, beta, mean,
                                                        var, eps);
-    auto f = make_shared<Function>(NodeVector{bn}, ParameterVector{input});
+    auto f = make_shared<Function>(NodeVector{bn}, ParameterVector{input_parm});
     return f;
   };
 
@@ -403,7 +403,7 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he_batch) {
 
   auto make_function = [shape_input, shape_weights, shape_norm, gamma_vals,
                         weight_vals, beta_vals, mean_vals, var_vals, et]() {
-    auto input = std::make_shared<op::Parameter>(et, shape_input);
+    auto input_parm = std::make_shared<op::Parameter>(et, shape_input);
     auto weights =
         std::make_shared<op::Constant>(et, shape_weights, weight_vals);
     double eps = 0.001;
@@ -411,11 +411,11 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he_batch) {
     auto beta = std::make_shared<op::Constant>(et, shape_norm, beta_vals);
     auto mean = std::make_shared<op::Constant>(et, shape_norm, mean_vals);
     auto var = std::make_shared<op::Constant>(et, shape_norm, var_vals);
-    auto conv = std::make_shared<op::Convolution>(input, weights, Strides{1, 1},
-                                                  Strides{1, 1});
+    auto conv = std::make_shared<op::Convolution>(input_parm, weights,
+                                                  Strides{1, 1}, Strides{1, 1});
     auto bn = std::make_shared<op::BatchNormInference>(conv, gamma, beta, mean,
                                                        var, eps);
-    auto f = make_shared<Function>(NodeVector{bn}, ParameterVector{input});
+    auto f = make_shared<Function>(NodeVector{bn}, ParameterVector{input_parm});
     return f;
   };
 
