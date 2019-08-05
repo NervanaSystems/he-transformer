@@ -22,7 +22,7 @@
 #include <vector>
 
 #include "ngraph/coordinate_transform.hpp"
-#include "seal/client_util.hpp"
+#include "seal/seal_util.hpp"
 
 namespace ngraph {
 namespace he {
