@@ -454,13 +454,22 @@ void ngraph::he::encrypt(
     const ngraph::he::HEPlaintext& input, seal::parms_id_type parms_id,
     double scale, seal::CKKSEncoder& ckks_encoder, seal::Encryptor& encryptor,
     bool complex_packing) {
+  ngraph::he::encrypt(output->ciphertext(), input, parms_id, scale,
+                      ckks_encoder, encryptor, complex_packing);
+  output->complex_packing() = complex_packing;
+  output->known_value() = false;
+}
+
+void ngraph::he::encrypt(seal::Ciphertext& output,
+                         const ngraph::he::HEPlaintext& input,
+                         seal::parms_id_type parms_id, double scale,
+                         seal::CKKSEncoder& ckks_encoder,
+                         seal::Encryptor& encryptor, bool complex_packing) {
   NGRAPH_CHECK(input.num_values() > 0, "Input has no values in encrypt");
 
   auto plaintext = SealPlaintextWrapper(complex_packing);
   encode(plaintext, input, ckks_encoder, parms_id, scale, complex_packing);
-  encryptor.encrypt(plaintext.plaintext(), output->ciphertext());
-  output->complex_packing() = complex_packing;
-  output->known_value() = false;
+  encryptor.encrypt(plaintext.plaintext(), output);
 }
 
 void ngraph::he::decode(ngraph::he::HEPlaintext& output,

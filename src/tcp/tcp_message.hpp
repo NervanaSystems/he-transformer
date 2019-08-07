@@ -161,6 +161,9 @@ class TCPMessage {
     encode_data(std::move(stream));
   }
 
+  TCPMessage(const MessageType type, const seal::Ciphertext& cipher)
+      : TCPMessage(type, std::vector<seal::Ciphertext>{cipher}) {}
+
   TCPMessage(const MessageType type,
              const std::vector<std::shared_ptr<SealCiphertextWrapper>>& ciphers)
       : m_type(type), m_count(ciphers.size()) {
@@ -180,16 +183,11 @@ class TCPMessage {
 #pragma omp parallel for
     for (size_t i = 0; i < ciphers.size(); ++i) {
       size_t offset = i * cipher_size;
-      std::stringstream ss;
-      // TODO: save directly to buffer
-      ciphers[i]->save(ss);
+      save_cipher_to_message(ciphers[i]->ciphertext(), offset);
       NGRAPH_CHECK(ciphertext_size(ciphers[i]->ciphertext()) == cipher_size,
                    "Cipher sizes don't match. Got size ",
                    ciphertext_size(ciphers[i]->ciphertext()), ", expected ",
                    cipher_size);
-
-      std::stringbuf* pbuf = ss.rdbuf();
-      pbuf->sgetn(data_ptr() + offset, cipher_size);
     }
   }
 
@@ -212,16 +210,10 @@ class TCPMessage {
 #pragma omp parallel for
     for (size_t i = 0; i < ciphers.size(); ++i) {
       size_t offset = i * cipher_size;
-      std::stringstream ss;
-      // TODO: save directly to buffer
-      ciphers[i].save(ss);
+      save_cipher_to_message(ciphers[i], offset);
       NGRAPH_CHECK(ciphertext_size(ciphers[i]) == cipher_size,
                    "Cipher sizes don't match. Got size ",
-                   ciphertext_size(ciphers[i]), " at index ", i, " expected ",
-                   cipher_size);
-
-      std::stringbuf* pbuf = ss.rdbuf();
-      pbuf->sgetn(data_ptr() + offset, cipher_size);
+                   ciphertext_size(ciphers[i]), ", expected ", cipher_size);
     }
   }
 
@@ -403,6 +395,15 @@ class TCPMessage {
   size_t m_count;      // Number of datatype in message
   size_t m_data_size;  // Nubmer of bytes in data part of message
   char* m_data;
+
+  inline void save_cipher_to_message(const seal::Ciphertext& cipher,
+                                     size_t offset) {
+    // TODO: save directly to buffer
+    std::stringstream ss;
+    cipher.save(ss);
+    std::stringbuf* pbuf = ss.rdbuf();
+    pbuf->sgetn(data_ptr() + offset, ciphertext_size(cipher));
+  }
 };
 }  // namespace he
 }  // namespace ngraph

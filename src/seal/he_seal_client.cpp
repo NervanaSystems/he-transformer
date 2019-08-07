@@ -238,19 +238,13 @@ void ngraph::he::HESealClient::handle_message(
             *std::max_element(input_cipher_values[batch_idx].begin(),
                               input_cipher_values[batch_idx].end()));
       }
-
-      // TODO: support more than 1 ciphertext in max
-      size_t n = 1 * sizeof(float) * m_batch_size;
-      std::vector<std::shared_ptr<SealCiphertextWrapper>> ciphers(1);
-      ciphers[0] = std::make_shared<SealCiphertextWrapper>();
-
-      ngraph::he::HESealCipherTensor::write(
-          ciphers, max_values.data(), n, m_batch_size, element::f32,
-          m_context->first_parms_id(), m_scale, *m_ckks_encoder, *m_encryptor,
-          complex_packing());
+      seal::Ciphertext max_cipher;
+      ngraph::he::encrypt(max_cipher, HEPlaintext(max_values),
+                          m_context->first_parms_id(), m_scale, *m_ckks_encoder,
+                          *m_encryptor, complex_packing());
 
       auto maxpool_result_msg =
-          TCPMessage(ngraph::he::MessageType::maxpool_result, ciphers);
+          TCPMessage(ngraph::he::MessageType::maxpool_result, max_cipher);
       write_message(std::move(maxpool_result_msg));
 
       break;
