@@ -33,7 +33,7 @@ def test_mnist_cnn(FLAGS):
     x_test_batch = x_test[:batch_size]
     y_test_batch = y_test[:FLAGS.batch_size]
 
-    data = x_test_batch.swapaxes(1, 2).flatten('F')
+    data = x_test_batch.flatten('C')
     print('Client batch size from FLAG: ', batch_size)
 
     complex_packing = False
@@ -55,11 +55,11 @@ def test_mnist_cnn(FLAGS):
     results = client.get_results()
     results = np.round(results, 2)
 
-    y_pred_reshape = np.array(results).reshape(10, batch_size)
+    y_pred_reshape = np.array(results).reshape(batch_size, 10)
     with np.printoptions(precision=3, suppress=True):
-        print(y_pred_reshape.T)
+        print(y_pred_reshape)
 
-    y_pred = y_pred_reshape.argmax(axis=0)
+    y_pred = y_pred_reshape.argmax(axis=1)
     print('y_pred', y_pred)
     y_true = y_test_batch.argmax(axis=1)
 

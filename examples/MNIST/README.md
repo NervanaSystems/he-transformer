@@ -1,5 +1,6 @@
 This folder demonstrates several examples of simple CNNs on the MNIST dataset:
   * The CryptoNets folder implements the [Cryptonets](https://www.microsoft.com/en-us/research/publication/cryptonets-applying-neural-networks-to-encrypted-data-with-high-throughput-and-accuracy/) network, which achieves ~99% accuracy on MNIST.
+
   * The Cryptonets-Relu folder adapts the CryptoNets network to use Relu activations instead of `x^2` activations
 
   * The MLP folder demonstrates saving/loading TensorFlow models.
