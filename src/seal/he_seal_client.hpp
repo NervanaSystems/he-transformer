@@ -55,9 +55,6 @@ class HESealClient {
   bool complex_packing() const { return m_complex_packing; }
   bool& complex_packing() { return m_complex_packing; }
 
-  void decode_to_real_vec(const seal::Plaintext& plain,
-                          std::vector<double>& output, bool complex);
-
  private:
   std::shared_ptr<TCPClient> m_tcp_client;
   seal::EncryptionParameters m_encryption_params{seal::scheme_type::CKKS};

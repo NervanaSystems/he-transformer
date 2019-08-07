@@ -318,19 +318,3 @@ void ngraph::he::HESealClient::handle_relu_request(
   write_message(std::move(relu_result_msg));
   return;
 }
-
-// TODO: remove
-void ngraph::he::HESealClient::decode_to_real_vec(const seal::Plaintext& plain,
-                                                  std::vector<double>& output,
-                                                  bool complex) {
-  NGRAPH_CHECK(output.size() == 0);
-  if (complex) {
-    std::vector<std::complex<double>> complex_outputs;
-    m_ckks_encoder->decode(plain, complex_outputs);
-    complex_vec_to_real_vec(output, complex_outputs);
-  } else {
-    m_ckks_encoder->decode(plain, output);
-    NGRAPH_CHECK(m_batch_size <= output.size());
-    output.resize(m_batch_size);
-  }
-}
