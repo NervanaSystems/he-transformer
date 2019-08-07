@@ -435,7 +435,6 @@ void ngraph::he::encode(ngraph::he::SealPlaintextWrapper& destination,
                  slot_count);
     ckks_encoder.encode(complex_vals, parms_id, scale, destination.plaintext());
   } else {
-    // TODO: why different cases?
     if (double_vals.size() == 1) {
       ckks_encoder.encode(double_vals[0], parms_id, scale,
                           destination.plaintext());
@@ -501,8 +500,16 @@ void ngraph::he::decrypt(ngraph::he::HEPlaintext& output,
     const size_t slot_count = ckks_encoder.slot_count();
     output.values() = std::vector<float>(slot_count, input.value());
   } else {
-    auto plaintext_wrapper = SealPlaintextWrapper(input.complex_packing());
-    decryptor.decrypt(input.ciphertext(), plaintext_wrapper.plaintext());
-    decode(output, plaintext_wrapper, ckks_encoder);
+    ngraph::he::decrypt(output, input.ciphertext(), input.complex_packing(),
+                        decryptor, ckks_encoder);
   }
+}
+
+void ngraph::he::decrypt(ngraph::he::HEPlaintext& output,
+                         const seal::Ciphertext& input, bool complex_packing,
+                         seal::Decryptor& decryptor,
+                         seal::CKKSEncoder& ckks_encoder) {
+  auto plaintext_wrapper = SealPlaintextWrapper(complex_packing);
+  decryptor.decrypt(input, plaintext_wrapper.plaintext());
+  decode(output, plaintext_wrapper, ckks_encoder);
 }

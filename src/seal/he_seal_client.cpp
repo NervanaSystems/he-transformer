@@ -109,12 +109,13 @@ void ngraph::he::HESealClient::handle_message(
       for (size_t data_idx = 0; data_idx < parameter_size; ++data_idx) {
         ciphers[data_idx] = std::make_shared<SealCiphertextWrapper>();
       }
-      // TODO: support int
 
-      NGRAPH_INFO << "inputs";
+      /* NGRAPH_INFO << "inputs";
       for (const auto& elem : m_inputs) {
         NGRAPH_INFO << elem;
-      }
+      } */
+
+      // TODO: support int
       size_t n = parameter_size * sizeof(float) * m_batch_size;
       ngraph::he::HESealCipherTensor::write(
           ciphers, m_inputs.data(), n, m_batch_size, element::f32,
@@ -201,9 +202,9 @@ void ngraph::he::HESealClient::handle_message(
       size_t cipher_count = message.count();
       size_t element_size = message.element_size();
 
-      std::vector<std::vector<double>> input_cipher_values(
+      std::vector<std::vector<float>> input_cipher_values(
           m_batch_size * complex_pack_factor,
-          std::vector<double>(cipher_count, 0));
+          std::vector<float>(cipher_count, 0));
 
       // We currently support only float values
       std::vector<float> max_values(m_batch_size * complex_pack_factor,
@@ -212,7 +213,7 @@ void ngraph::he::HESealClient::handle_message(
 #pragma omp parallel for
       for (size_t cipher_idx = 0; cipher_idx < cipher_count; ++cipher_idx) {
         seal::Ciphertext pre_sort_cipher;
-        seal::Plaintext pre_sort_plain;
+        ngraph::he::HEPlaintext pre_sort_plain;
 
         // Load cipher from stream
         std::stringstream pre_sort_cipher_stream;
@@ -220,14 +221,13 @@ void ngraph::he::HESealClient::handle_message(
             message.data_ptr() + cipher_idx * element_size, element_size);
         pre_sort_cipher.load(m_context, pre_sort_cipher_stream);
 
-        // Decrypt cipher
-        m_decryptor->decrypt(pre_sort_cipher, pre_sort_plain);
-        std::vector<double> pre_max_value;
-        decode_to_real_vec(pre_sort_plain, pre_max_value, complex_packing());
+        ngraph::he::decrypt(pre_sort_plain, pre_sort_cipher, complex_packing(),
+                            *m_decryptor, *m_ckks_encoder);
 
         for (size_t batch_idx = 0;
              batch_idx < m_batch_size * complex_pack_factor; ++batch_idx) {
-          input_cipher_values[batch_idx][cipher_idx] = pre_max_value[batch_idx];
+          input_cipher_values[batch_idx][cipher_idx] =
+              pre_sort_plain.values()[batch_idx];
         }
       }
 
@@ -333,6 +333,7 @@ void ngraph::he::HESealClient::handle_relu_request(
   return;
 }
 
+// TODO: remove
 void ngraph::he::HESealClient::decode_to_real_vec(const seal::Plaintext& plain,
                                                   std::vector<double>& output,
                                                   bool complex) {
