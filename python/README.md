@@ -25,8 +25,7 @@ To test:
   1. In one terminal, run
   ```bash
 source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate
-cd $HE_TRANSFORMER/examples
-NGRAPH_ENABLE_CLIENT=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_TF_BACKEND=HE_SEAL python ax.py
+NGRAPH_ENABLE_CLIENT=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_TF_BACKEND=HE_SEAL python $HE_TRANSFORMER/examples/ax.py
   ```
 
   This will start the server, which will wait for encrypted inputs from a client.

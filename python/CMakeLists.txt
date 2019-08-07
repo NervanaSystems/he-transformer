@@ -52,7 +52,6 @@ install(DIRECTORY ${EXTERNAL_INSTALL_INCLUDE_DIR}/
 add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/python/dist/
                    POST_BUILD
                    DEPENDS he_seal_backend
-                           # WORKING_DIR ${CMAKE_CURRENT_BINARY_DIR}
                    COMMAND VERBOSE=1
                            make
                            -C
