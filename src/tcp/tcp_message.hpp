@@ -359,35 +359,44 @@ class TCPMessage {
     return true;
   }
 
-  void encode_message_type() {
+  inline void encode_message_type() {
     std::memcpy(body_ptr(), &m_type, message_type_length);
   }
 
-  void decode_message_type() {
+  inline void decode_message_type() {
     std::memcpy(&m_type, body_ptr(), message_type_length);
   }
 
-  void encode_count() {
+  inline void encode_count() {
     std::memcpy(count_ptr(), &m_count, message_count_length);
   }
 
-  void decode_count() {
+  inline void decode_count() {
     std::memcpy(&m_count, count_ptr(), message_count_length);
   }
 
-  void encode_data(const char* data) {
+  inline void encode_data(const char* data) {
     std::memcpy(data_ptr(), data, m_data_size);
   }
 
-  void encode_data(const std::stringstream&& data) {
+  inline void encode_data(const std::stringstream&& data) {
     std::stringbuf* pbuf = data.rdbuf();
     pbuf->sgetn(data_ptr(), m_data_size);
   }
 
-  bool decode_body() {
+  inline bool decode_body() {
     decode_message_type();
     decode_count();
     return true;
+  }
+
+  inline void load_cipher(seal::Ciphertext& cipher, size_t index,
+                          std::shared_ptr<seal::SEALContext> context) const {
+    NGRAPH_CHECK(index < count(), "Index too large");
+    std::stringstream ss;
+    ss.write(data_ptr() + index * element_size(), element_size());
+    // TODO: load directly from buffer
+    cipher.load(context, ss);
   }
 
  private:

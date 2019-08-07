@@ -132,17 +132,13 @@ void ngraph::he::HESealClient::handle_message(
     }
     case ngraph::he::MessageType::result: {
       size_t result_count = message.count();
-      size_t element_size = message.element_size();
       m_results.resize(result_count * m_batch_size);
       std::vector<std::shared_ptr<SealCiphertextWrapper>> result_ciphers(
           result_count);
 #pragma omp parallel for
       for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
-        std::stringstream cipher_stream;
-        cipher_stream.write(message.data_ptr() + result_idx * element_size,
-                            element_size);
         seal::Ciphertext c;
-        c.load(m_context, cipher_stream);
+        message.load_cipher(c, result_idx, m_context);
         result_ciphers[result_idx] =
             std::make_shared<SealCiphertextWrapper>(c, complex_packing());
       }
@@ -170,7 +166,6 @@ void ngraph::he::HESealClient::handle_message(
 
       set_seal_context();
 
-      // Send public key
       std::stringstream pk_stream;
       m_public_key->save(pk_stream);
       auto pk_message = TCPMessage(ngraph::he::MessageType::public_key, 1,
@@ -178,7 +173,6 @@ void ngraph::he::HESealClient::handle_message(
       NGRAPH_INFO << "Sending public key";
       write_message(std::move(pk_message));
 
-      // Send evaluation key
       std::stringstream evk_stream;
       m_relin_keys->save(evk_stream);
       auto evk_message = TCPMessage(ngraph::he::MessageType::eval_key, 1,
@@ -215,12 +209,7 @@ void ngraph::he::HESealClient::handle_message(
         seal::Ciphertext pre_sort_cipher;
         ngraph::he::HEPlaintext pre_sort_plain;
 
-        // Load cipher from stream
-        std::stringstream pre_sort_cipher_stream;
-        pre_sort_cipher_stream.write(
-            message.data_ptr() + cipher_idx * element_size, element_size);
-        pre_sort_cipher.load(m_context, pre_sort_cipher_stream);
-
+        message.load_cipher(pre_sort_cipher, cipher_idx, m_context);
         ngraph::he::decrypt(pre_sort_plain, pre_sort_cipher, complex_packing(),
                             *m_decryptor, *m_ckks_encoder);
 
@@ -296,12 +285,7 @@ void ngraph::he::HESealClient::handle_relu_request(
     seal::Ciphertext pre_relu_cipher;
     ngraph::he::HEPlaintext relu_plain;
 
-    // Load cipher from stream
-    std::stringstream pre_relu_cipher_stream;
-    pre_relu_cipher_stream.write(message.data_ptr() + result_idx * element_size,
-                                 element_size);
-    pre_relu_cipher.load(m_context, pre_relu_cipher_stream);
-
+    message.load_cipher(pre_relu_cipher, result_idx, m_context);
     ngraph::he::decrypt(relu_plain, pre_relu_cipher, complex_packing(),
                         *m_decryptor, *m_ckks_encoder);
 
