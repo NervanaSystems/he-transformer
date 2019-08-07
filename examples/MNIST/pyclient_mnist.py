@@ -34,7 +34,7 @@ def test_mnist_cnn(FLAGS):
     y_test_batch = y_test[:FLAGS.batch_size]
 
     data = x_test_batch.flatten('C')
-    print('Client batch size from FLAG: ', batch_size)
+    print('Client batch size from FLAG:', batch_size)
 
     complex_packing = False
     if ('NGRAPH_COMPLEX_PACK' in os.environ):

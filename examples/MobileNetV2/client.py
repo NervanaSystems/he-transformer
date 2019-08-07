@@ -87,22 +87,49 @@ def main(FLAGS):
     print('height', height)
     print('channels', channels)
 
+    for image in (0, 1):
+        pixels = [(0, 0, 0), (0, 0, 1), (0, 0, 2)]
+        pixels += [(0, 1, 0), (0, 1, 1), (0, 2, 1)]
+
+        for pixel in pixels:
+            p1, p2, p3 = pixel
+            print('image', image, 'pixel', pixel, x_test[image][p1][p2][p3])
+
+    #exit(1)
+    #print(x_test.shape)
+
+    #x_test[1, :, :, :] = x_test[0, :, :, :]
+
+    # TODO: more efficient
+    print('flattening x_test')
+    x_test_flat = []
+    for image_idx in range(batch_size):
+        for width_idx in range(width):
+            for height_idx in range(height):
+                for channel_idx in range(channels):
+                    # TODO: use image_idx
+                    x_test_flat.append(
+                        x_test[image_idx][width_idx][height_idx][channel_idx])
+    print('done flattening x_test')
+
     # Reshape to expected format (batch axes innermost)
-    x_test = np.moveaxis(x_test, 0, -1)
-    x_test_flat = x_test.flatten(order='C"')
+    #x_test = np.moveaxis(x_test, 0, -1)
+    #x_test_flat = x_test.flatten(order='C')
     hostname = 'localhost'
     port = 34000
 
-    complex_scale_factor = 1
-    if ('NGRAPH_COMPLEX_PACK' in os.environ):
-        complex_scale_factor = 2
-    print('complex_scale_factor', complex_scale_factor)
+    #for i in range(10):
+    #    print(i, x_test_flat[i])
 
-    # TODO: support even batch sizes
-    assert (batch_size % complex_scale_factor == 0)
-    new_batch_size = batch_size // complex_scale_factor
-    client = he_seal_client.HESealClient(FLAGS.hostname, port, new_batch_size,
-                                         x_test_flat)
+    #exit(1)
+
+    if 'NGRAPH_COMPLEX_PACK' in os.environ:
+        complex_packing = str2bool(os.environ['NGRAPH_COMPLEX_PACK'])
+    else:
+        complex_packing = False
+
+    client = he_seal_client.HESealClient(FLAGS.hostname, port, batch_size,
+                                         x_test_flat, complex_packing)
 
     while not client.is_done():
         time.sleep(1)

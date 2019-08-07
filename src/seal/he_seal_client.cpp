@@ -110,12 +110,11 @@ void ngraph::he::HESealClient::handle_message(
         ciphers[data_idx] = std::make_shared<SealCiphertextWrapper>();
       }
 
-      /* NGRAPH_INFO << "inputs";
+      NGRAPH_INFO << "inputs";
       for (const auto& elem : m_inputs) {
         NGRAPH_INFO << elem;
-      } */
+      }
 
-      // TODO: support int
       size_t n = parameter_size * sizeof(float) * m_batch_size;
       ngraph::he::HESealCipherTensor::write(
           ciphers, m_inputs.data(), n, m_batch_size, element::f32,
@@ -200,7 +199,6 @@ void ngraph::he::HESealClient::handle_message(
           m_batch_size * complex_pack_factor,
           std::vector<float>(cipher_count, 0));
 
-      // We currently support only float values
       std::vector<float> max_values(m_batch_size * complex_pack_factor,
                                     std::numeric_limits<float>::lowest());
 
