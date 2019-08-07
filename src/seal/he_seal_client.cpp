@@ -294,7 +294,7 @@ void ngraph::he::HESealClient::handle_relu_request(
 #pragma omp parallel for
   for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
     seal::Ciphertext pre_relu_cipher;
-    seal::Plaintext relu_plain;
+    ngraph::he::HEPlaintext relu_plain;
 
     // Load cipher from stream
     std::stringstream pre_relu_cipher_stream;
@@ -302,23 +302,15 @@ void ngraph::he::HESealClient::handle_relu_request(
                                  element_size);
     pre_relu_cipher.load(m_context, pre_relu_cipher_stream);
 
-    // Decrypt cipher
-    m_decryptor->decrypt(pre_relu_cipher, relu_plain);
+    ngraph::he::decrypt(relu_plain, pre_relu_cipher, complex_packing(),
+                        *m_decryptor, *m_ckks_encoder);
 
-    std::vector<double> relu_vals;
-    decode_to_real_vec(relu_plain, relu_vals, complex_packing());
-    std::vector<double> post_relu_vals(relu_vals.size());
-    std::transform(relu_vals.begin(), relu_vals.end(), post_relu_vals.begin(),
-                   activation);
+    std::transform(relu_plain.values().begin(), relu_plain.values().end(),
+                   relu_plain.values().begin(), activation);
 
-    if (complex_packing()) {
-      std::vector<std::complex<double>> complex_relu_vals;
-      real_vec_to_complex_vec(complex_relu_vals, post_relu_vals);
-      m_ckks_encoder->encode(complex_relu_vals, m_scale, relu_plain);
-    } else {
-      m_ckks_encoder->encode(post_relu_vals, m_scale, relu_plain);
-    }
-    m_encryptor->encrypt(relu_plain, post_relu_ciphers[result_idx]);
+    ngraph::he::encrypt(post_relu_ciphers[result_idx], relu_plain,
+                        m_context->first_parms_id(), m_scale, *m_ckks_encoder,
+                        *m_encryptor, complex_packing());
   }
   auto relu_result_msg =
       TCPMessage(ngraph::he::MessageType::relu_result, post_relu_ciphers);
