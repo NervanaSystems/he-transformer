@@ -32,8 +32,19 @@ void broadcast_seal(const std::vector<T>& arg, std::vector<T>& out,
                     const AxisSet& broadcast_axes) {
   CoordinateTransform input_transform(in_shape);
   CoordinateTransform output_transform(out_shape);
+  NGRAPH_INFO << "Input shape " << join(in_shape, "x");
+  NGRAPH_INFO << "out_shape " << join(out_shape, "x");
+  NGRAPH_INFO << "broadcast_axes " << broadcast_axes;
+
   for (const Coordinate& output_coord : output_transform) {
     Coordinate input_coord = reduce(output_coord, broadcast_axes);
+
+    NGRAPH_INFO << "input coord " << input_coord;
+    NGRAPH_INFO << "input index " << input_transform.index(input_coord);
+    NGRAPH_INFO << "output_coord " << output_coord;
+    NGRAPH_INFO << "output index " << output_transform.index(output_coord);
+    NGRAPH_INFO << "out.size() " << out.size();
+    NGRAPH_INFO << "arg.size() " << arg.size();
 
     out[output_transform.index(output_coord)] =
         arg[input_transform.index(input_coord)];

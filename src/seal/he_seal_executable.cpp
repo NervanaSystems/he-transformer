@@ -62,6 +62,7 @@
 #include "ngraph/pass/assign_layout.hpp"
 #include "ngraph/pass/constant_folding.hpp"
 #include "ngraph/pass/core_fusion.hpp"
+#include "ngraph/pass/implicit_broadcast_elimination.hpp"
 #include "ngraph/pass/like_replacement.hpp"
 #include "ngraph/pass/liveness.hpp"
 #include "ngraph/pass/manager.hpp"
@@ -128,10 +129,8 @@ ngraph::he::HESealExecutable::HESealExecutable(
 
   ngraph::pass::Manager pass_manager_he;
   pass_manager_he.register_pass<ngraph::he::pass::HEFusion>();
-  // Run liveness pass after all other passes (otherwise BoundedRelu nodes won't
-  // have liveness_free_list set)
+  pass_manager.register_pass<ngraph::pass::ImplicitBroadcastElimination>();
   pass_manager_he.register_pass<ngraph::he::pass::HELiveness>();
-  // pass_manager_he.register_pass<ngraph::pass::Liveness>();
   pass_manager_he.run_passes(function);
 
   for (const std::shared_ptr<Node>& node : function->get_ordered_ops()) {
@@ -632,6 +631,7 @@ bool ngraph::he::HESealExecutable::call(
         // examples convolution kernels.
         if (m_batch_data && shape.size() > 0 && shape[0] == m_batch_size &&
             op->description() == "Broadcast") {
+          NGRAPH_INFO << "Avoiding broadcast";
           packed_out = true;
         }
 
@@ -1031,8 +1031,14 @@ void ngraph::he::HESealExecutable::generate_calls(
       AxisSet broadcast_axes = broadcast->get_broadcast_axes();
       Shape in_shape = unpacked_arg_shapes[0];
       Shape broadcast_out_shape = out_shape;
+
       if (out_shape[0] == m_batch_size) {
         broadcast_out_shape = packed_out_shape;
+      }
+
+      if (verbose) {
+        NGRAPH_INFO << join(in_shape, "x") << " broadcast "
+                    << join(broadcast_out_shape, "x");
       }
 
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
@@ -1040,9 +1046,9 @@ void ngraph::he::HESealExecutable::generate_calls(
                                    out0_cipher->get_elements(), in_shape,
                                    broadcast_out_shape, broadcast_axes);
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
-        ngraph::he::broadcast_seal(arg0_plain->get_elements(),
-                                   out0_plain->get_elements(), in_shape,
-                                   broadcast_out_shape, broadcast_axes);
+        ngraph::he::broadcast_seal(
+            arg0_plain->get_elements(), out0_plain->get_elements(),
+            node.get_input_shape(0), node.get_output_shape(0), broadcast_axes);
       } else {
         throw ngraph_error("Broadcast types not supported.");
       }
