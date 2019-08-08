@@ -66,170 +66,6 @@ void ngraph::he::match_modulus_and_scale_inplace(
   ngraph::he::match_scale(arg0, arg1, he_seal_backend);
 }
 
-// Encode value into vector of coefficients
-void ngraph::he::encode(double value, double scale,
-                        seal::parms_id_type parms_id,
-                        std::vector<std::uint64_t>& destination,
-                        const HESealBackend& he_seal_backend,
-                        seal::MemoryPoolHandle pool) {
-  // Verify parameters.
-  auto context = he_seal_backend.get_context();
-  auto context_data_ptr = context->get_context_data(parms_id);
-  if (!context_data_ptr) {
-    throw ngraph_error("parms_id is not valid for encryption parameters");
-  }
-  if (!pool) {
-    throw ngraph_error("pool is uninitialized");
-  }
-
-  auto& context_data = *context_data_ptr;
-  auto& parms = context_data.parms();
-  auto& coeff_modulus = parms.coeff_modulus();
-  size_t coeff_mod_count = coeff_modulus.size();
-  size_t coeff_count = parms.poly_modulus_degree();
-
-  // Quick sanity check
-  if (!seal::util::product_fits_in(coeff_mod_count, coeff_count)) {
-    throw ngraph_error("invalid parameters");
-  }
-
-  // Check that scale is positive and not too large
-  if (scale <= 0 || (static_cast<int>(log2(scale)) >=
-                     context_data.total_coeff_modulus_bit_count())) {
-    NGRAPH_INFO << "scale " << scale;
-    NGRAPH_INFO << "context_data.total_coeff_modulus_bit_count"
-                << context_data.total_coeff_modulus_bit_count();
-    throw ngraph_error("scale out of bounds");
-  }
-
-  // Compute the scaled value
-  value *= scale;
-
-  int coeff_bit_count = static_cast<int>(log2(fabs(value))) + 2;
-  if (coeff_bit_count >= context_data.total_coeff_modulus_bit_count()) {
-#pragma omp critical
-    {
-      NGRAPH_INFO << "Failed to encode " << value / scale << " at scale "
-                  << scale;
-      NGRAPH_INFO << "coeff_bit_count " << coeff_bit_count;
-      NGRAPH_INFO << "coeff_mod_count " << coeff_mod_count;
-      NGRAPH_INFO << "total coeff modulus bit count "
-                  << context_data.total_coeff_modulus_bit_count();
-      throw ngraph_error("encoded value is too large");
-    }
-  }
-
-  double two_pow_64 = pow(2.0, 64);
-
-  // Resize destination to appropriate size
-  // TODO: use reserve?
-  destination.resize(coeff_mod_count);
-
-  double coeffd = round(value);
-  bool is_negative = std::signbit(coeffd);
-  coeffd = fabs(coeffd);
-
-  // Use faster decomposition methods when possible
-  if (coeff_bit_count <= 64) {
-    uint64_t coeffu = static_cast<uint64_t>(fabs(coeffd));
-
-    if (is_negative) {
-      for (size_t j = 0; j < coeff_mod_count; j++) {
-        destination[j] = seal::util::negate_uint_mod(
-            coeffu % coeff_modulus[j].value(), coeff_modulus[j]);
-      }
-    } else {
-      for (size_t j = 0; j < coeff_mod_count; j++) {
-        destination[j] = coeffu % coeff_modulus[j].value();
-      }
-    }
-  } else if (coeff_bit_count <= 128) {
-    uint64_t coeffu[2]{static_cast<uint64_t>(fmod(coeffd, two_pow_64)),
-                       static_cast<uint64_t>(coeffd / two_pow_64)};
-
-    if (is_negative) {
-      for (size_t j = 0; j < coeff_mod_count; j++) {
-        destination[j] = seal::util::negate_uint_mod(
-            seal::util::barrett_reduce_128(coeffu, coeff_modulus[j]),
-            coeff_modulus[j]);
-      }
-    } else {
-      for (size_t j = 0; j < coeff_mod_count; j++) {
-        destination[j] =
-            seal::util::barrett_reduce_128(coeffu, coeff_modulus[j]);
-      }
-    }
-  } else {
-    // From evaluator.h
-    auto decompose_single_coeff =
-        [](const seal::SEALContext::ContextData& context_data_,
-           const std::uint64_t* value_, std::uint64_t* destination_,
-           seal::util::MemoryPool& pool_) {
-          auto& parms_ = context_data_.parms();
-          auto& coeff_modulus_ = parms_.coeff_modulus();
-          std::size_t coeff_mod_count_ = coeff_modulus_.size();
-#ifdef SEAL_DEBUG
-          if (value_ == nullptr) {
-            throw ngraph_error("value_ cannot be null");
-          }
-          if (destination_ == nullptr) {
-            throw ngraph_error("destination_ cannot be null");
-          }
-          if (destination_ == value_) {
-            throw ngraph_error("value_ cannot be the same as destination_");
-          }
-#endif
-          if (coeff_mod_count_ == 1) {
-            seal::util::set_uint_uint(value_, coeff_mod_count_, destination_);
-            return;
-          }
-
-          auto value_copy(seal::util::allocate_uint(coeff_mod_count_, pool_));
-          for (std::size_t j = 0; j < coeff_mod_count_; j++) {
-            // Manually inlined for efficiency
-            // Make a fresh copy of value
-            seal::util::set_uint_uint(value_, coeff_mod_count_,
-                                      value_copy.get());
-
-            // Starting from the top, reduce always 128-bit blocks
-            for (std::size_t k = coeff_mod_count_ - 1; k--;) {
-              value_copy[k] = seal::util::barrett_reduce_128(
-                  value_copy.get() + k, coeff_modulus_[j]);
-            }
-            destination_[j] = value_copy[0];
-          }
-        };
-
-    // Slow case
-    auto coeffu(seal::util::allocate_uint(coeff_mod_count, pool));
-    auto decomp_coeffu(seal::util::allocate_uint(coeff_mod_count, pool));
-
-    // We are at this point guaranteed to fit in the allocated space
-    seal::util::set_zero_uint(coeff_mod_count, coeffu.get());
-    auto coeffu_ptr = coeffu.get();
-    while (coeffd >= 1) {
-      *coeffu_ptr++ = static_cast<uint64_t>(fmod(coeffd, two_pow_64));
-      coeffd /= two_pow_64;
-    }
-
-    // Next decompose this coefficient
-    decompose_single_coeff(context_data, coeffu.get(), decomp_coeffu.get(),
-                           pool);
-
-    // Finally replace the sign if necessary
-    if (is_negative) {
-      for (size_t j = 0; j < coeff_mod_count; j++) {
-        destination[j] =
-            seal::util::negate_uint_mod(decomp_coeffu[j], coeff_modulus[j]);
-      }
-    } else {
-      for (size_t j = 0; j < coeff_mod_count; j++) {
-        destination[j] = decomp_coeffu[j];
-      }
-    }
-  }
-}
-
 void ngraph::he::add_plain_inplace(seal::Ciphertext& encrypted, double value,
                                    const HESealBackend& he_seal_backend) {
   // Verify parameters.
@@ -412,4 +248,277 @@ size_t ngraph::he::match_to_smallest_chain_index(
     }
   }
   return smallest_chain_ind.second;
+}
+
+void ngraph::he::encode(double value, double scale,
+                        seal::parms_id_type parms_id,
+                        std::vector<std::uint64_t>& destination,
+                        const HESealBackend& he_seal_backend,
+                        seal::MemoryPoolHandle pool) {
+  // Verify parameters.
+  auto context = he_seal_backend.get_context();
+  auto context_data_ptr = context->get_context_data(parms_id);
+  if (!context_data_ptr) {
+    throw ngraph_error("parms_id is not valid for encryption parameters");
+  }
+  if (!pool) {
+    throw ngraph_error("pool is uninitialized");
+  }
+
+  auto& context_data = *context_data_ptr;
+  auto& parms = context_data.parms();
+  auto& coeff_modulus = parms.coeff_modulus();
+  size_t coeff_mod_count = coeff_modulus.size();
+  size_t coeff_count = parms.poly_modulus_degree();
+
+  // Quick sanity check
+  if (!seal::util::product_fits_in(coeff_mod_count, coeff_count)) {
+    throw ngraph_error("invalid parameters");
+  }
+
+  // Check that scale is positive and not too large
+  if (scale <= 0 || (static_cast<int>(log2(scale)) >=
+                     context_data.total_coeff_modulus_bit_count())) {
+    NGRAPH_INFO << "scale " << scale;
+    NGRAPH_INFO << "context_data.total_coeff_modulus_bit_count"
+                << context_data.total_coeff_modulus_bit_count();
+    throw ngraph_error("scale out of bounds");
+  }
+
+  // Compute the scaled value
+  value *= scale;
+
+  int coeff_bit_count = static_cast<int>(log2(fabs(value))) + 2;
+  if (coeff_bit_count >= context_data.total_coeff_modulus_bit_count()) {
+#pragma omp critical
+    {
+      NGRAPH_INFO << "Failed to encode " << value / scale << " at scale "
+                  << scale;
+      NGRAPH_INFO << "coeff_bit_count " << coeff_bit_count;
+      NGRAPH_INFO << "coeff_mod_count " << coeff_mod_count;
+      NGRAPH_INFO << "total coeff modulus bit count "
+                  << context_data.total_coeff_modulus_bit_count();
+      throw ngraph_error("encoded value is too large");
+    }
+  }
+
+  double two_pow_64 = pow(2.0, 64);
+
+  // Resize destination to appropriate size
+  // TODO: use reserve?
+  destination.resize(coeff_mod_count);
+
+  double coeffd = round(value);
+  bool is_negative = std::signbit(coeffd);
+  coeffd = fabs(coeffd);
+
+  // Use faster decomposition methods when possible
+  if (coeff_bit_count <= 64) {
+    uint64_t coeffu = static_cast<uint64_t>(fabs(coeffd));
+
+    if (is_negative) {
+      for (size_t j = 0; j < coeff_mod_count; j++) {
+        destination[j] = seal::util::negate_uint_mod(
+            coeffu % coeff_modulus[j].value(), coeff_modulus[j]);
+      }
+    } else {
+      for (size_t j = 0; j < coeff_mod_count; j++) {
+        destination[j] = coeffu % coeff_modulus[j].value();
+      }
+    }
+  } else if (coeff_bit_count <= 128) {
+    uint64_t coeffu[2]{static_cast<uint64_t>(fmod(coeffd, two_pow_64)),
+                       static_cast<uint64_t>(coeffd / two_pow_64)};
+
+    if (is_negative) {
+      for (size_t j = 0; j < coeff_mod_count; j++) {
+        destination[j] = seal::util::negate_uint_mod(
+            seal::util::barrett_reduce_128(coeffu, coeff_modulus[j]),
+            coeff_modulus[j]);
+      }
+    } else {
+      for (size_t j = 0; j < coeff_mod_count; j++) {
+        destination[j] =
+            seal::util::barrett_reduce_128(coeffu, coeff_modulus[j]);
+      }
+    }
+  } else {
+    // From evaluator.h
+    auto decompose_single_coeff =
+        [](const seal::SEALContext::ContextData& context_data_,
+           const std::uint64_t* value_, std::uint64_t* destination_,
+           seal::util::MemoryPool& pool_) {
+          auto& parms_ = context_data_.parms();
+          auto& coeff_modulus_ = parms_.coeff_modulus();
+          std::size_t coeff_mod_count_ = coeff_modulus_.size();
+#ifdef SEAL_DEBUG
+          if (value_ == nullptr) {
+            throw ngraph_error("value_ cannot be null");
+          }
+          if (destination_ == nullptr) {
+            throw ngraph_error("destination_ cannot be null");
+          }
+          if (destination_ == value_) {
+            throw ngraph_error("value_ cannot be the same as destination_");
+          }
+#endif
+          if (coeff_mod_count_ == 1) {
+            seal::util::set_uint_uint(value_, coeff_mod_count_, destination_);
+            return;
+          }
+
+          auto value_copy(seal::util::allocate_uint(coeff_mod_count_, pool_));
+          for (std::size_t j = 0; j < coeff_mod_count_; j++) {
+            // Manually inlined for efficiency
+            // Make a fresh copy of value
+            seal::util::set_uint_uint(value_, coeff_mod_count_,
+                                      value_copy.get());
+
+            // Starting from the top, reduce always 128-bit blocks
+            for (std::size_t k = coeff_mod_count_ - 1; k--;) {
+              value_copy[k] = seal::util::barrett_reduce_128(
+                  value_copy.get() + k, coeff_modulus_[j]);
+            }
+            destination_[j] = value_copy[0];
+          }
+        };
+
+    // Slow case
+    auto coeffu(seal::util::allocate_uint(coeff_mod_count, pool));
+    auto decomp_coeffu(seal::util::allocate_uint(coeff_mod_count, pool));
+
+    // We are at this point guaranteed to fit in the allocated space
+    seal::util::set_zero_uint(coeff_mod_count, coeffu.get());
+    auto coeffu_ptr = coeffu.get();
+    while (coeffd >= 1) {
+      *coeffu_ptr++ = static_cast<uint64_t>(fmod(coeffd, two_pow_64));
+      coeffd /= two_pow_64;
+    }
+
+    // Next decompose this coefficient
+    decompose_single_coeff(context_data, coeffu.get(), decomp_coeffu.get(),
+                           pool);
+
+    // Finally replace the sign if necessary
+    if (is_negative) {
+      for (size_t j = 0; j < coeff_mod_count; j++) {
+        destination[j] =
+            seal::util::negate_uint_mod(decomp_coeffu[j], coeff_modulus[j]);
+      }
+    } else {
+      for (size_t j = 0; j < coeff_mod_count; j++) {
+        destination[j] = decomp_coeffu[j];
+      }
+    }
+  }
+}
+
+void ngraph::he::encode(ngraph::he::SealPlaintextWrapper& destination,
+                        const ngraph::he::HEPlaintext& plaintext,
+                        seal::CKKSEncoder& ckks_encoder,
+                        seal::parms_id_type parms_id, double scale,
+                        bool complex_packing) {
+  std::vector<double> double_vals(plaintext.values().begin(),
+                                  plaintext.values().end());
+  const size_t slot_count = ckks_encoder.slot_count();
+
+  if (complex_packing) {
+    std::vector<std::complex<double>> complex_vals;
+    if (double_vals.size() == 1) {
+      std::complex<double> val(double_vals[0], double_vals[0]);
+      complex_vals = std::vector<std::complex<double>>(slot_count, val);
+    } else {
+      real_vec_to_complex_vec(complex_vals, double_vals);
+    }
+    NGRAPH_CHECK(complex_vals.size() <= slot_count, "Cannot encode ",
+                 complex_vals.size(), " elements, maximum size is ",
+                 slot_count);
+    ckks_encoder.encode(complex_vals, parms_id, scale, destination.plaintext());
+  } else {
+    if (double_vals.size() == 1) {
+      ckks_encoder.encode(double_vals[0], parms_id, scale,
+                          destination.plaintext());
+    } else {
+      NGRAPH_CHECK(double_vals.size() <= slot_count, "Cannot encode ",
+                   double_vals.size(), " elements, maximum size is ",
+                   slot_count);
+      ckks_encoder.encode(double_vals, parms_id, scale,
+                          destination.plaintext());
+    }
+  }
+  destination.complex_packing() = complex_packing;
+}
+
+void ngraph::he::encrypt(
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& output,
+    const ngraph::he::HEPlaintext& input, seal::parms_id_type parms_id,
+    double scale, seal::CKKSEncoder& ckks_encoder, seal::Encryptor& encryptor,
+    bool complex_packing) {
+  ngraph::he::encrypt(output->ciphertext(), input, parms_id, scale,
+                      ckks_encoder, encryptor, complex_packing);
+  output->complex_packing() = complex_packing;
+  output->known_value() = false;
+}
+
+void ngraph::he::encrypt(seal::Ciphertext& output,
+                         const ngraph::he::HEPlaintext& input,
+                         seal::parms_id_type parms_id, double scale,
+                         seal::CKKSEncoder& ckks_encoder,
+                         seal::Encryptor& encryptor, bool complex_packing) {
+  NGRAPH_CHECK(input.num_values() > 0, "Input has no values in encrypt");
+
+  auto plaintext = SealPlaintextWrapper(complex_packing);
+  encode(plaintext, input, ckks_encoder, parms_id, scale, complex_packing);
+  encryptor.encrypt(plaintext.plaintext(), output);
+}
+
+void ngraph::he::decode(ngraph::he::HEPlaintext& output,
+                        const ngraph::he::SealPlaintextWrapper& input,
+                        seal::CKKSEncoder& ckks_encoder) {
+  std::vector<double> real_vals;
+  if (input.complex_packing()) {
+    std::vector<std::complex<double>> complex_vals;
+    ckks_encoder.decode(input.plaintext(), complex_vals);
+    complex_vec_to_real_vec(real_vals, complex_vals);
+  } else {
+    ckks_encoder.decode(input.plaintext(), real_vals);
+  }
+  std::vector<float> float_vals{real_vals.begin(), real_vals.end()};
+  output.values() = float_vals;
+}
+
+void ngraph::he::decode(void* output, const ngraph::he::HEPlaintext& input,
+                        const element::Type& type, size_t count) {
+  NGRAPH_CHECK(count != 0, "Decode called on 0 elements");
+  NGRAPH_CHECK(type == element::f32,
+               "CKKS encode supports only float encoding, received type ",
+               type);
+  NGRAPH_CHECK(input.num_values() > 0, "Input has no values");
+
+  const std::vector<float>& xs_float = input.values();
+  NGRAPH_CHECK(xs_float.size() >= count);
+  std::memcpy(output, &xs_float[0], type.size() * count);
+}
+
+void ngraph::he::decrypt(ngraph::he::HEPlaintext& output,
+                         const ngraph::he::SealCiphertextWrapper& input,
+                         seal::Decryptor& decryptor,
+                         seal::CKKSEncoder& ckks_encoder) {
+  if (input.known_value()) {
+    NGRAPH_DEBUG << "Decrypting known value " << input.value();
+    const size_t slot_count = ckks_encoder.slot_count();
+    output.values() = std::vector<float>(slot_count, input.value());
+  } else {
+    ngraph::he::decrypt(output, input.ciphertext(), input.complex_packing(),
+                        decryptor, ckks_encoder);
+  }
+}
+
+void ngraph::he::decrypt(ngraph::he::HEPlaintext& output,
+                         const seal::Ciphertext& input, bool complex_packing,
+                         seal::Decryptor& decryptor,
+                         seal::CKKSEncoder& ckks_encoder) {
+  auto plaintext_wrapper = SealPlaintextWrapper(complex_packing);
+  decryptor.decrypt(input, plaintext_wrapper.plaintext());
+  decode(output, plaintext_wrapper, ckks_encoder);
 }

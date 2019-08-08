@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "seal/kernel/constant_seal.hpp"
+#include "seal/seal_util.hpp"
 
 void ngraph::he::constant_seal(std::vector<ngraph::he::HEPlaintext>& out,
                                const element::Type& element_type,
@@ -31,9 +32,9 @@ void ngraph::he::constant_seal(std::vector<ngraph::he::HEPlaintext>& out,
 
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
-    const float* f = reinterpret_cast<const float*>(
+    const float value = *reinterpret_cast<const float*>(
         static_cast<const char*>(data_ptr) + i * type_byte_size);
-    out[i].values() = {*f};
+    out[i].values() = {value};
   }
 }
 

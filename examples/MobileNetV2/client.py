@@ -87,22 +87,17 @@ def main(FLAGS):
     print('height', height)
     print('channels', channels)
 
-    # Reshape to expected format (batch axes innermost)
-    x_test = np.moveaxis(x_test, 0, -1)
-    x_test_flat = x_test.flatten(order='C"')
+    x_test_flat = x_test.flatten(order='C')
     hostname = 'localhost'
     port = 34000
 
-    complex_scale_factor = 1
-    if ('NGRAPH_COMPLEX_PACK' in os.environ):
-        complex_scale_factor = 2
-    print('complex_scale_factor', complex_scale_factor)
+    if 'NGRAPH_COMPLEX_PACK' in os.environ:
+        complex_packing = str2bool(os.environ['NGRAPH_COMPLEX_PACK'])
+    else:
+        complex_packing = False
 
-    # TODO: support even batch sizes
-    assert (batch_size % complex_scale_factor == 0)
-    new_batch_size = batch_size // complex_scale_factor
-    client = he_seal_client.HESealClient(FLAGS.hostname, port, new_batch_size,
-                                         x_test_flat)
+    client = he_seal_client.HESealClient(FLAGS.hostname, port, batch_size,
+                                         x_test_flat, complex_packing)
 
     while not client.is_done():
         time.sleep(1)
@@ -114,22 +109,9 @@ def main(FLAGS):
     if (FLAGS.batch_size == 1):
         top5 = results.argsort()[-5:]
     else:
-        print('results shape', results.shape)
-        results = np.reshape(results, (
-            1001,
-            FLAGS.batch_size,
-        ))
-        print('results.shape', results.shape)
+        results = np.reshape(results, (FLAGS.batch_size, 1001))
+        top5 = np.flip(results.argsort()[:, -5:], axis=1)
 
-        try:
-            res_sort = results.argsort(axis=0)
-            res_top5 = res_sort[-5:, :]
-            top5x = np.flip(res_top5, axis=0)
-            top5 = top5x
-            top5 = top5.T
-            print('top5.shape', top5.shape)
-        except e:
-            print('e', e)
     preds = imagenet_labels[top5]
     print('validation_labels', validation_labels)
     print('top5', preds)

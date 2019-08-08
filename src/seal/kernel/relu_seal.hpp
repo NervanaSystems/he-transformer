@@ -53,7 +53,9 @@ inline void scalar_relu_seal(const SealCiphertextWrapper& arg,
   std::transform(arg_vals.begin(), arg_vals.end(), out_vals.begin(), relu);
 
   plain.values() = out_vals;
-  he_seal_backend.encrypt(out, plain, he_seal_backend.complex_packing());
+  encrypt(out, plain, he_seal_backend.get_context()->first_parms_id(),
+          he_seal_backend.get_scale(), *he_seal_backend.get_ckks_encoder(),
+          *he_seal_backend.get_encryptor(), he_seal_backend.complex_packing());
 }
 
 inline void relu_seal(

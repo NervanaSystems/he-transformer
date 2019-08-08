@@ -87,11 +87,6 @@ void match_modulus_and_scale_inplace(
     const HESealBackend& he_seal_backend,
     seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool());
 
-void encode(double value, double scale, seal::parms_id_type parms_id,
-            std::vector<std::uint64_t>& destination,
-            const HESealBackend& he_seal_backend,
-            seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool());
-
 void add_plain_inplace(seal::Ciphertext& encrypted, double value,
                        const HESealBackend& he_seal_backend);
 
@@ -161,5 +156,42 @@ inline void multiply_plain(
   ngraph::he::multiply_plain_inplace(destination, value, he_seal_backend,
                                      std::move(pool));
 }
+
+// Encode value into vector of coefficients
+void encode(double value, double scale, seal::parms_id_type parms_id,
+            std::vector<std::uint64_t>& destination,
+            const HESealBackend& he_seal_backend,
+            seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool());
+
+void encode(ngraph::he::SealPlaintextWrapper& destination,
+            const ngraph::he::HEPlaintext& plaintext,
+            seal::CKKSEncoder& ckks_encoder, seal::parms_id_type parms_id,
+            double scale, bool complex_packing);
+
+void encrypt(std::shared_ptr<ngraph::he::SealCiphertextWrapper>& output,
+             const ngraph::he::HEPlaintext& input, seal::parms_id_type parms_id,
+             double scale, seal::CKKSEncoder& ckks_encoder,
+             seal::Encryptor& encryptor, bool complex_packing);
+
+void encrypt(seal::Ciphertext& output, const ngraph::he::HEPlaintext& input,
+             seal::parms_id_type parms_id, double scale,
+             seal::CKKSEncoder& ckks_encoder, seal::Encryptor& encryptor,
+             bool complex_packing);
+
+void decode(ngraph::he::HEPlaintext& output,
+            const ngraph::he::SealPlaintextWrapper& input,
+            seal::CKKSEncoder& ckks_encoder);
+
+void decode(void* output, const ngraph::he::HEPlaintext& input,
+            const element::Type& type, size_t count);
+
+void decrypt(ngraph::he::HEPlaintext& output,
+             const ngraph::he::SealCiphertextWrapper& input,
+             seal::Decryptor& decryptor, seal::CKKSEncoder& ckks_encoder);
+
+void decrypt(ngraph::he::HEPlaintext& output, const seal::Ciphertext& input,
+             bool complex_packing, seal::Decryptor& decryptor,
+             seal::CKKSEncoder& ckks_encoder);
+
 }  // namespace he
 }  // namespace ngraph

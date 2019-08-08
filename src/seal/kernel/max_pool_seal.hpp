@@ -323,7 +323,10 @@ void max_pool_seal(
     }
     HEPlaintext result(max_vals);
     auto cipher = he_seal_backend.create_empty_ciphertext();
-    he_seal_backend.encrypt(cipher, result, he_seal_backend.complex_packing());
+    encrypt(cipher, result, he_seal_backend.get_context()->first_parms_id(),
+            he_seal_backend.get_scale(), *he_seal_backend.get_ckks_encoder(),
+            *he_seal_backend.get_encryptor(),
+            he_seal_backend.complex_packing());
     out[output_transform.index(out_coord)] = cipher;
   }
 }

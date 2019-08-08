@@ -182,99 +182,18 @@ void ngraph::he::HESealBackend::encrypt(
   auto plaintext = SealPlaintextWrapper(complex_packing);
 
   NGRAPH_CHECK(input.num_values() > 0, "Input has no values in encrypt");
-
-  encode(plaintext, input, complex_packing);
-  m_encryptor->encrypt(plaintext.plaintext(), output->ciphertext());
-  output->complex_packing() = complex_packing;
-  output->known_value() = false;
+  ngraph::he::encrypt(output, input, m_context->first_parms_id(), m_scale,
+                      *m_ckks_encoder, *m_encryptor, complex_packing);
 }
 
 void ngraph::he::HESealBackend::decrypt(
     ngraph::he::HEPlaintext& output,
     const ngraph::he::SealCiphertextWrapper& input) const {
-  if (input.known_value()) {
-    NGRAPH_DEBUG << "Decrypting known value " << input.value();
-    const size_t slot_count = m_ckks_encoder->slot_count();
-    output.values() = std::vector<float>(slot_count, input.value());
-  } else {
-    auto plaintext_wrapper = SealPlaintextWrapper(input.complex_packing());
-    m_decryptor->decrypt(input.ciphertext(), plaintext_wrapper.plaintext());
-    decode(output, plaintext_wrapper);
-  }
-}
-
-void ngraph::he::HESealBackend::decode(void* output,
-                                       const ngraph::he::HEPlaintext& input,
-                                       const element::Type& type,
-                                       size_t count) const {
-  NGRAPH_CHECK(count != 0, "Decode called on 0 elements");
-  NGRAPH_CHECK(type == element::f32,
-               "CKKS encode supports only float encoding, received type ",
-               type);
-  NGRAPH_CHECK(input.num_values() > 0, "Input has no values");
-
-  const std::vector<float>& xs_float = input.values();
-  NGRAPH_CHECK(xs_float.size() >= count);
-  std::memcpy(output, &xs_float[0], type.size() * count);
+  ngraph::he::decrypt(output, input, *m_decryptor, *m_ckks_encoder);
 }
 
 void ngraph::he::HESealBackend::decode(
     ngraph::he::HEPlaintext& output,
     const ngraph::he::SealPlaintextWrapper& input) const {
-  std::vector<double> real_vals;
-  if (input.complex_packing()) {
-    std::vector<std::complex<double>> complex_vals;
-    m_ckks_encoder->decode(input.plaintext(), complex_vals);
-    complex_vec_to_real_vec(real_vals, complex_vals);
-  } else {
-    m_ckks_encoder->decode(input.plaintext(), real_vals);
-  }
-  std::vector<float> float_vals{real_vals.begin(), real_vals.end()};
-  output.values() = float_vals;
-}
-
-void ngraph::he::HESealBackend::encode(
-    ngraph::he::SealPlaintextWrapper& destination,
-    const ngraph::he::HEPlaintext& plaintext, seal::parms_id_type parms_id,
-    double scale, bool complex_packing) const {
-  std::vector<double> double_vals(plaintext.values().begin(),
-                                  plaintext.values().end());
-  const size_t slot_count = m_ckks_encoder->slot_count();
-
-  if (complex_packing) {
-    std::vector<std::complex<double>> complex_vals;
-    if (double_vals.size() == 1) {
-      std::complex<double> val(double_vals[0], double_vals[0]);
-      complex_vals = std::vector<std::complex<double>>(slot_count, val);
-    } else {
-      real_vec_to_complex_vec(complex_vals, double_vals);
-    }
-    NGRAPH_CHECK(complex_vals.size() <= slot_count, "Cannot encode ",
-                 complex_vals.size(), " elements, maximum size is ",
-                 slot_count);
-    m_ckks_encoder->encode(complex_vals, parms_id, scale,
-                           destination.plaintext());
-  } else {
-    // TODO: why different cases?
-    if (double_vals.size() == 1) {
-      m_ckks_encoder->encode(double_vals[0], parms_id, scale,
-                             destination.plaintext());
-    } else {
-      NGRAPH_CHECK(double_vals.size() <= slot_count, "Cannot encode ",
-                   double_vals.size(), " elements, maximum size is ",
-                   slot_count);
-      m_ckks_encoder->encode(double_vals, parms_id, scale,
-                             destination.plaintext());
-    }
-  }
-  destination.complex_packing() = complex_packing;
-}
-
-void ngraph::he::HESealBackend::encode(
-    ngraph::he::SealPlaintextWrapper& destination,
-    const ngraph::he::HEPlaintext& plaintext, bool complex_packing) const {
-  double scale = m_scale;
-  auto parms_id = m_context->first_parms_id();
-
-  encode(destination, plaintext, parms_id, scale, complex_packing);
+  ngraph::he::decode(output, input, *m_ckks_encoder);
 }

@@ -139,15 +139,16 @@ python test.py \
 NGRAPH_ENABLE_CLIENT=1 \
 OMP_NUM_THREADS=56 \
 STOP_CONST_FOLD=1 \
+NGRAPH_VOPS=BoundedRelu \
 NGRAPH_COMPLEX_PACK=1 \
 NGRAPH_ENCRYPT_DATA=1 \
 NGRAPH_TF_BACKEND=HE_SEAL \
 NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/configs/he_seal_ckks_config_N12_L4.json \
 python test.py \
   --batch_size=4096  \
-  --image_size=128 \
+  --image_size=96 \
   --ngraph=true \
-  --model=./model/mobilenet_v2_0.35_128_opt.pb \
+  --model=./model/mobilenet_v2_0.35_96_opt.pb \
   --data_dir=$DATA_DIR \
   --ngraph=true
 ```
@@ -160,6 +161,6 @@ OMP_NUM_THREADS=56 \
 NGRAPH_COMPLEX_PACK=1 \
 python client.py \
   --batch_size=4096 \
-  --image_size=128 \
+  --image_size=96 \
   --data_dir=$DATA_DIR
 ```

@@ -23,6 +23,7 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
+#include "seal/seal_util.hpp"
 
 namespace ngraph {
 namespace he {
@@ -53,7 +54,7 @@ inline void bounded_relu_seal(const std::vector<HEPlaintext>& arg,
 inline void scalar_bounded_relu_seal(
     const SealCiphertextWrapper& arg,
     std::shared_ptr<SealCiphertextWrapper>& out, float alpha,
-    const HESealBackend& he_seal_backend) {
+    HESealBackend& he_seal_backend) {
   HEPlaintext plain;
   he_seal_backend.decrypt(plain, arg);
   const std::vector<float>& arg_vals = plain.values();
@@ -67,13 +68,15 @@ inline void scalar_bounded_relu_seal(
                  bounded_relu);
 
   plain.values() = out_vals;
-  he_seal_backend.encrypt(out, plain, he_seal_backend.complex_packing());
+  encrypt(out, plain, he_seal_backend.get_context()->first_parms_id(),
+          he_seal_backend.get_scale(), *he_seal_backend.get_ckks_encoder(),
+          *he_seal_backend.get_encryptor(), he_seal_backend.complex_packing());
 }
 
 inline void bounded_relu_seal(
     const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out, size_t count,
-    float alpha, const HESealBackend& he_seal_backend) {
+    float alpha, HESealBackend& he_seal_backend) {
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
     scalar_bounded_relu_seal(*arg[i], out[i], alpha, he_seal_backend);
