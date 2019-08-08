@@ -16,6 +16,8 @@
 
 #include "ngraph/ngraph.hpp"
 #include "seal/he_seal_backend.hpp"
+#include "seal/kernel/multiply_seal.hpp"
+#include "seal/seal_ciphertext_wrapper.hpp"
 #include "test_util.hpp"
 #include "util/all_close.hpp"
 #include "util/ndarray.hpp"
@@ -260,25 +262,23 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_2_3_cipher_cipher_complex) {
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
   he_backend->complex_packing() = true;
 
-  Shape shape{2, 3};
-  auto a = make_shared<op::Parameter>(element::f32, shape);
-  auto b = make_shared<op::Parameter>(element::f32, shape);
-  auto t = make_shared<op::Multiply>(a, b);
-  auto f = make_shared<Function>(t, ParameterVector{a, b});
+  auto a = std::make_shared<ngraph::he::SealCiphertextWrapper>();
+  auto b = std::make_shared<ngraph::he::SealCiphertextWrapper>();
+  auto c = std::make_shared<ngraph::he::SealCiphertextWrapper>();
+  auto out = std::make_shared<ngraph::he::SealCiphertextWrapper>();
+  a->complex_packing() = true;
+  b->complex_packing() = true;
 
-  // Create some tensors for input/output
-  auto t_a = he_backend->create_cipher_tensor(element::f32, shape);
-  auto t_b = he_backend->create_cipher_tensor(element::f32, shape);
-  auto t_result = he_backend->create_cipher_tensor(element::f32, shape);
-
-  copy_data(t_a, vector<float>{-2, -1, 0, 1, 2, 3});
-  copy_data(t_b, vector<float>{3, -2, 5, 3, 2, -5});
-  auto handle = he_backend->compile(f);
-
-  // Can't multiply two ciphertexts in complex form
+  // arg1 complex packing
   EXPECT_THROW(
-      {
-        handle->call_with_validate({t_result}, {t_a, t_b});
-      },
+      { scalar_multiply_seal(*a, *c, out, element::f32, *he_backend); },
+      CheckFailure);
+  // arg2 complex packing
+  EXPECT_THROW(
+      { scalar_multiply_seal(*c, *a, out, element::f32, *he_backend); },
+      CheckFailure);
+  // both args complex packing
+  EXPECT_THROW(
+      { scalar_multiply_seal(*a, *b, out, element::f32, *he_backend); },
       CheckFailure);
 }

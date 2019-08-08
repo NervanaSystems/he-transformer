@@ -14,8 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "seal/kernel/add_seal.hpp"
 #include "seal/he_seal_backend.hpp"
+#include "seal/kernel/add_seal.hpp"
 #include "seal/seal_util.hpp"
 
 void ngraph::he::scalar_add_seal(

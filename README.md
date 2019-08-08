@@ -30,6 +30,8 @@ The [examples](https://github.com/NervanaSystems/he-transformer/tree/master/exam
 - [TensorFlow](https://github.com/tensorflow/tensorflow) - v1.14.0
 - Boost 1.69
 
+We also offer [docker containers](https://github.com/NervanaSystems/he-transformer/tree/master/contrib/docker) and builds of he-transformer on a reference OS.
+
 ### To install bazel
 ```bash
     wget https://github.com/bazelbuild/bazel/releases/download/0.25.2/bazel-0.25.2-installer-linux-x86_64.sh

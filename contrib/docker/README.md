@@ -35,9 +35,11 @@ Most _make_ targets are structured in the form `<action>_<compiler>`.  The `<act
 
 * Running the command **`make build_docker_image`** is also available, if you simply want to build the docker image.  This target does work properly when your working directory is in an NFS filesystem.
 
-* Finally, **`make clean`** is available to clean up the BUILD-* and docker build directories.
+* **`make clean`** is available to clean up the BUILD-* and docker build directories.
 
 Note that all operations performed inside the docker image are run as a regular user, using the `run-as-user.sh` script.  This is done to avoid writing root-owned files in mounted filesystems.
+
+* Additionally, the `RM_CONTAINER` flag (default is False) may be used to persist the docker containers. By default `RM_CONTAINER=true`, and the docker containers are removed after building. Setting `RM_CONTAINER=false` will keep the containers, enabling an easy way to build he-transformer without installing the required software dependencies.
 
 ## Examples/Hints
 
@@ -61,6 +63,19 @@ make check_clang
 cd contrib/docker
 make check_gcc OS=ubuntu1804
 ```
+
+* To build an Ubuntu 16.04 docker container with persistent builds, compile with gcc 7.4, and run unit tests:
+
+```
+cd contrib/docker
+make build_gcc RM_CONTAINER=false
+```
+
+To launch the shell with the persistent docker image, run
+```bash
+make shell
+```
+Then, `/home/dockuser/he-transformer-test` will contain the he-transformer repository with the build files.
 
 ## Helper Scripts
 

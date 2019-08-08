@@ -58,15 +58,21 @@ ifndef THIRD_PARTY_CACHE_DIR
 endif
 
 # OS_ID set to 'ubuntu1604' by default
-# can be overridden on the command line with 'make <target> OS_ID=centOS_ID74"
+# can be overridden on the command line with 'make <target> OS_ID=centOS74'
 ifndef OS_ID
     OS_ID="ubuntu1604"
+endif
+
+# RM_CONTAINER=true by default
+# can be overridden on the command line with 'make <taget> RM_CONTAINER=true'
+ifndef RM_CONTAINER
+    RM_CONTAINER=true
 endif
 
 DBUILD_DIR = ${DIR}/contrib/docker/.build-${DBUILD_VERSION}_${OS_ID}
 
 # Configuration for specific reference OS_ID in Dockerfiles
-ifeq ("$(shell echo ${OS_ID} | grep centOS_ID)","centOS_ID74")
+ifeq ("$(shell echo ${OS_ID} | grep centos)","centos74")
     RUN_AS_USER_SCRIPT=${DOCKUSER_HOME}/he-transformer-test/contrib/docker/run_as_centOS_ID_user.sh
     DOCKERFILE=Dockerfile.he_transformer.centOS_ID74
 endif
@@ -105,7 +111,7 @@ PYTHON_VERSION = 2
 # Please see comments for individual targets for more details
 .PHONY: clean build_docker_image build_gcc check_gcc build_clang check_clang shell build_all
 
-DOCKER_BUILD=docker build --rm=true
+DOCKER_BUILD=docker build --rm=${RM_CONTAINER}
 
 ifdef http_proxy
 DOCKER_BUILD+=--build-arg http_proxy=$(http_proxy)
@@ -126,6 +132,7 @@ expand_dockerfile_templates:
 	@echo "OS_ID=${OS_ID}"
 	@echo "DOCKERFILE=${DOCKERFILE}"
 	@echo "RUN_AS_USER_SCRIPT=${RUN_AS_USER_SCRIPT}"
+	@echo "RM_CONTAINER=${RM_CONTAINER}"
 	cd "${DIR}"/contrib/docker
 	mkdir "${DBUILD_DIR}" || true
 	sed -e 's/\(FROM he_transformer.*\)/\1:${DBUILD_VERSION}/' ${DOCKERFILE} > "${DBUILD_DIR}/Dockerfile.build_he_transformer_${OS_ID}"
@@ -147,7 +154,7 @@ build_gcc: build_docker_image
 	@echo ""
 	@echo "${DOCKER_CMD_MESG}"
 	@echo ""
-	docker run --rm --tty \
+	docker run --rm=${RM_CONTAINER} --tty \
             ${VOLUME} \
 	    ${DOCKER_RUN_ENV} \
 	    --env BUILD_SUBDIR=BUILD-GCC \
@@ -167,7 +174,7 @@ build_clang: build_docker_image
 	@echo ""
 	@echo "${DOCKER_CMD_MESG}"
 	@echo ""
-	docker run --rm --tty \
+	docker run --rm=${RM_CONTAINER} --tty \
             ${VOLUME} \
 	    ${DOCKER_RUN_ENV} \
 	    --env BUILD_SUBDIR=BUILD-CLANG \
@@ -187,7 +194,7 @@ check_all: check_gcc check_clang
 # Always use the platform-specific docker command to run unit tests
 # ngraph make check target executes unit-test-check
 check_gcc: build_gcc
-	${DOCKER_CMD} run --rm --tty \
+	${DOCKER_CMD} run --rm=${RM_CONTAINER} --tty \
             ${VOLUME} \
 	    ${DOCKER_RUN_ENV} \
 	    --env BUILD_SUBDIR=BUILD-GCC \
@@ -204,7 +211,7 @@ check_gcc: build_gcc
 # Always use the platform-specific docker command to run unit tests
 # ngraph make check target executes unit-test-check
 check_clang: build_clang
-	${DOCKER_CMD} run --rm --tty \
+	${DOCKER_CMD} run --rm=${RM_CONTAINER} --tty \
             ${VOLUME} \
 	    ${DOCKER_RUN_ENV} \
 	    --env BUILD_SUBDIR=BUILD-CLANG \
@@ -223,7 +230,7 @@ check_clang: build_clang
 shell: build_docker_image
 	# "make shell" runs an interactive shell in the docker image, for debugging
 	@echo "${DOCKER_CMD_MESG}"
-	${DOCKER_CMD} run --rm --tty --interactive \
+	${DOCKER_CMD} run --rm=${RM_CONTAINER} --tty --interactive \
             ${VOLUME} \
 	    ${DOCKER_RUN_ENV} \
             --env RUN_UID="$(shell id -u)" \
