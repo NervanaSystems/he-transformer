@@ -69,6 +69,7 @@ make check_gcc OS=ubuntu1804
 ```
 cd contrib/docker
 make build_gcc RM_CONTAINER=false
+make shell
 ```
 
 ## Helper Scripts
