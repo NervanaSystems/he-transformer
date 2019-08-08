@@ -82,12 +82,12 @@ using ngraph::descriptor::layout::DenseTensorLayout;
 ngraph::he::HESealExecutable::HESealExecutable(
     const std::shared_ptr<Function>& function,
     bool enable_performance_collection, HESealBackend& he_seal_backend,
-    bool encrypt_data, bool encrypt_model, bool batch_data,
-    bool complex_packing, bool enable_client)
+    bool encrypt_data, bool encrypt_model, bool pack_data, bool complex_packing,
+    bool enable_client)
     : m_he_seal_backend(he_seal_backend),
       m_encrypt_data(encrypt_data),
       m_encrypt_model(encrypt_model),
-      m_batch_data(batch_data),
+      m_pack_data(pack_data),
       m_complex_packing(complex_packing),
       m_verbose_all_ops(false),
       m_enable_client(enable_client),
@@ -140,10 +140,21 @@ ngraph::he::HESealExecutable::HESealExecutable(
   set_parameters_and_results(*function);
 
   // Constant, for example, cannot be packed
-  if (get_parameters().size() > 0) {
-    const Shape& shape = (get_parameters()[0])->get_shape();
-    if (m_batch_data) {
+  if (m_pack_data) {
+    if (get_parameters().size() > 0) {
+      const Shape& shape = (get_parameters()[0])->get_shape();
+      NGRAPH_CHECK(shape.size() > 0, "Parameter shape empty");
+
       m_batch_size = shape[0];
+      for (auto& parameter : get_parameters()) {
+        const Shape& param_shape = parameter->get_shape();
+        NGRAPH_CHECK(param_shape.size() > 0, "Parameter shape empty");
+        size_t new_batch_size = param_shape[0];
+        NGRAPH_CHECK(
+            new_batch_size == m_batch_size, "Function contains ",
+            get_parameters().size(),
+            " parameters, which do not all imply the same batch size.");
+      }
 
       size_t max_batch_size =
           m_he_seal_backend.get_ckks_encoder()->slot_count();
@@ -298,7 +309,7 @@ void ngraph::he::HESealExecutable::handle_message(
       auto input_tensor =
           std::dynamic_pointer_cast<ngraph::he::HESealCipherTensor>(
               m_he_seal_backend.create_cipher_tensor(
-                  element_type, input_param->get_shape(), m_batch_data,
+                  element_type, input_param->get_shape(), m_pack_data,
                   "client_parameter"));
 
       std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
@@ -351,7 +362,7 @@ void ngraph::he::HESealExecutable::handle_message(
       NGRAPH_INFO << "Parameter shape " << join(shape, "x");
     }
 
-    if (m_batch_data) {
+    if (m_pack_data) {
       NGRAPH_DEBUG << "num_param_elements before batch size divide "
                    << num_param_elements;
       num_param_elements /= m_batch_size;
@@ -471,7 +482,7 @@ bool ngraph::he::HESealExecutable::call(
   if (m_encrypt_data) {
     NGRAPH_INFO << "Encrypting data";
   }
-  if (m_batch_data) {
+  if (m_pack_data) {
     NGRAPH_INFO << "Batching data with batch size " << m_batch_size;
   }
   if (m_encrypt_model) {
@@ -531,7 +542,7 @@ bool ngraph::he::HESealExecutable::call(
         auto cipher_input = std::dynamic_pointer_cast<HESealCipherTensor>(
             m_he_seal_backend.create_cipher_tensor(
                 plain_input->get_element_type(), plain_input->get_shape(),
-                m_batch_data, name));
+                m_pack_data, name));
 
 #pragma omp parallel for
         for (size_t plain_idx = 0;
@@ -630,7 +641,7 @@ bool ngraph::he::HESealExecutable::call(
         // Avoid broadcasting from constant to output with batch size first
         // dimension This happens because not every constant is packed, for
         // examples convolution kernels.
-        if (m_batch_data && shape.size() > 0 && shape[0] == m_batch_size &&
+        if (m_pack_data && shape.size() > 0 && shape[0] == m_batch_size &&
             op->description() == "Broadcast") {
           packed_out = true;
         }
@@ -818,7 +829,7 @@ void ngraph::he::HESealExecutable::generate_calls(
   for (size_t arg_idx = 0; arg_idx < args.size(); ++arg_idx) {
     Shape arg_shape = node.get_input_shape(arg_idx);
     unpacked_arg_shapes.emplace_back(arg_shape);
-    if (m_batch_data) {
+    if (m_pack_data) {
       arg_shape = ngraph::he::HETensor::pack_shape(arg_shape);
     }
     packed_arg_shapes.emplace_back(arg_shape);
@@ -831,7 +842,7 @@ void ngraph::he::HESealExecutable::generate_calls(
                  "Only support single-output functions");
     out_shape = node.get_output_shape(0);
     packed_out_shape = out_shape;
-    if (m_batch_data) {
+    if (m_pack_data) {
       packed_out_shape = ngraph::he::HETensor::pack_shape(packed_out_shape);
     }
   }
@@ -1507,7 +1518,7 @@ void ngraph::he::HESealExecutable::generate_calls(
       Coordinate lower_bounds = slice->get_lower_bounds();
       Coordinate upper_bounds = slice->get_upper_bounds();
 
-      if (m_batch_data) {
+      if (m_pack_data) {
         in_shape = unpacked_arg_shapes[0];
         lower_bounds =
             ngraph::he::HETensor::pack_shape(slice->get_lower_bounds());

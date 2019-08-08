@@ -187,20 +187,18 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_batch) {
   Shape shape_b{1};
   Shape shape_r{3};
   auto a = make_shared<op::Parameter>(element::f32, shape_a);
-  auto b = make_shared<op::Parameter>(element::f32, shape_b);
+  auto b = op::Constant::create(element::f32, shape_b, {4});
   auto t = make_shared<op::Dot>(a, b);
 
-  auto f = make_shared<Function>(t, ParameterVector{a, b});
+  auto f = make_shared<Function>(t, ParameterVector{a});
 
   // Create some tensors for input/output
   auto t_a = he_backend->create_packed_plain_tensor(element::f32, shape_a);
-  auto t_b = he_backend->create_plain_tensor(element::f32, shape_b);
   auto t_result = he_backend->create_packed_plain_tensor(element::f32, shape_r);
 
   copy_data(t_a, vector<float>{1, 2, 3});
-  copy_data(t_b, vector<float>{4});
   auto handle = backend->compile(f);
-  handle->call_with_validate({t_result}, {t_a, t_b});
+  handle->call_with_validate({t_result}, {t_a});
   EXPECT_TRUE(all_close((vector<float>{4, 8, 12}), read_vector<float>(t_result),
                         1e-3f));
 }

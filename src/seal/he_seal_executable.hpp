@@ -45,7 +45,7 @@ class HESealExecutable : public runtime::Executable {
   HESealExecutable(const std::shared_ptr<Function>& function,
                    bool enable_performance_collection,
                    ngraph::he::HESealBackend& he_seal_backend,
-                   bool encrypt_data, bool encrypt_model, bool batch_data,
+                   bool encrypt_data, bool encrypt_model, bool pack_data,
                    bool complex_packing, bool enable_client);
 
   ~HESealExecutable() override {
@@ -113,7 +113,7 @@ class HESealExecutable : public runtime::Executable {
   HESealBackend& m_he_seal_backend;
   bool m_encrypt_data;
   bool m_encrypt_model;
-  bool m_batch_data;
+  bool m_pack_data;
   bool m_is_compiled;
   bool m_complex_packing;
   bool m_verbose_all_ops;
