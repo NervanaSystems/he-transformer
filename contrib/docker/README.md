@@ -69,8 +69,13 @@ make check_gcc OS=ubuntu1804
 ```
 cd contrib/docker
 make build_gcc RM_CONTAINER=false
+```
+
+To launch the shell with the persistent docker image, run
+```bash
 make shell
 ```
+Then, `/home/dockuser/he-transformer-test` will contain the he-transformer repository with the build files.
 
 ## Helper Scripts
 

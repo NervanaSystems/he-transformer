@@ -66,9 +66,8 @@ endif
 # RM_CONTAINER=true by default
 # can be overridden on the command line with 'make <taget> RM_CONTAINER=true'
 ifndef RM_CONTAINER
-		RM_CONTAINER=true
+    RM_CONTAINER=true
 endif
-
 
 DBUILD_DIR = ${DIR}/contrib/docker/.build-${DBUILD_VERSION}_${OS_ID}
 
