@@ -87,41 +87,9 @@ def main(FLAGS):
     print('height', height)
     print('channels', channels)
 
-    for image in (0, 1):
-        pixels = [(0, 0, 0), (0, 0, 1), (0, 0, 2)]
-        pixels += [(0, 1, 0), (0, 1, 1), (0, 2, 1)]
-
-        for pixel in pixels:
-            p1, p2, p3 = pixel
-            print('image', image, 'pixel', pixel, x_test[image][p1][p2][p3])
-
-    #exit(1)
-    #print(x_test.shape)
-
-    #x_test[1, :, :, :] = x_test[0, :, :, :]
-
-    # TODO: more efficient
-    print('flattening x_test')
-    x_test_flat = []
-    for image_idx in range(batch_size):
-        for width_idx in range(width):
-            for height_idx in range(height):
-                for channel_idx in range(channels):
-                    # TODO: use image_idx
-                    x_test_flat.append(
-                        x_test[image_idx][width_idx][height_idx][channel_idx])
-    print('done flattening x_test')
-
-    # Reshape to expected format (batch axes innermost)
-    #x_test = np.moveaxis(x_test, 0, -1)
-    #x_test_flat = x_test.flatten(order='C')
+    x_test_flat = x_test.flatten(order='C')
     hostname = 'localhost'
     port = 34000
-
-    #for i in range(10):
-    #    print(i, x_test_flat[i])
-
-    #exit(1)
 
     if 'NGRAPH_COMPLEX_PACK' in os.environ:
         complex_packing = str2bool(os.environ['NGRAPH_COMPLEX_PACK'])
@@ -141,22 +109,9 @@ def main(FLAGS):
     if (FLAGS.batch_size == 1):
         top5 = results.argsort()[-5:]
     else:
-        print('results shape', results.shape)
-        results = np.reshape(results, (
-            1001,
-            FLAGS.batch_size,
-        ))
-        print('results.shape', results.shape)
+        results = np.reshape(results, (FLAGS.batch_size, 1001))
+        top5 = np.flip(results.argsort()[:, -5:], axis=1)
 
-        try:
-            res_sort = results.argsort(axis=0)
-            res_top5 = res_sort[-5:, :]
-            top5x = np.flip(res_top5, axis=0)
-            top5 = top5x
-            top5 = top5.T
-            print('top5.shape', top5.shape)
-        except e:
-            print('e', e)
     preds = imagenet_labels[top5]
     print('validation_labels', validation_labels)
     print('top5', preds)

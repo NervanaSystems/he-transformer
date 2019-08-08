@@ -91,15 +91,6 @@ void ngraph::he::HESealCipherTensor::write(
         std::vector<float> values{static_cast<float*>(batch_src),
                                   static_cast<float*>(batch_src) + batch_size};
         plaintext.values() = values;
-        if (i < 300) {
-#pragma omp critical
-          {
-            NGRAPH_INFO << "i " << i;
-            for (const auto& elem : values) {
-              NGRAPH_INFO << elem;
-            }
-          }
-        }
         ngraph_free(batch_src);
       } else {
         std::vector<float> values{
