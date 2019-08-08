@@ -30,7 +30,7 @@ static string s_manifest = "${MANIFEST}";
 NGRAPH_TEST(${BACKEND_NAME}, perf_add) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
-  size_t N{10000};
+  size_t N{512};
 
   Shape shape{N};
   auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -70,7 +70,7 @@ NGRAPH_TEST(${BACKEND_NAME}, perf_add) {
 NGRAPH_TEST(${BACKEND_NAME}, perf_square) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
-  size_t N{10000};
+  size_t N{512};
 
   Shape shape{N};
   auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -111,7 +111,7 @@ NGRAPH_TEST(${BACKEND_NAME}, perf_mult_plain) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
-  size_t N{10000};
+  size_t N{512};
 
   Shape shape{N};
   auto a = make_shared<op::Parameter>(element::f32, shape);

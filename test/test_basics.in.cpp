@@ -175,3 +175,20 @@ NGRAPH_TEST(${BACKEND_NAME}, validate_call_output_shape) {
 
   EXPECT_ANY_THROW(handle->call_with_validate({a}, {c, b}));
 }
+
+NGRAPH_TEST(${BACKEND_NAME}, validate_batch_size) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+
+  Shape shape{10000, 1};
+
+  auto A = make_shared<op::Parameter>(element::f32, shape);
+  auto B = make_shared<op::Parameter>(element::f32, shape);
+  auto f =
+      make_shared<Function>(make_shared<op::Add>(A, B), ParameterVector{A, B});
+
+  auto a = backend->create_tensor(element::f32, {2, 3});
+  auto b = backend->create_tensor(element::f32, shape);
+  auto c = backend->create_tensor(element::f32, shape);
+
+  EXPECT_THROW({ backend->compile(f); }, ngraph::CheckFailure);
+}
