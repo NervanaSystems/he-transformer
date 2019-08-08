@@ -110,6 +110,13 @@ inline ngraph::he::HESealEncryptionParameters parse_config_or_use_default(
     return default_ckks_parameters();
   }
 
+  auto file_exists = [](const char* filename) {
+    std::ifstream f(filename);
+    return f.good();
+  };
+  NGRAPH_CHECK(file_exists(config_path), "Config path ", config_path,
+               " does not exist");
+
   try {
     // Read file to string
     std::ifstream f(config_path);
