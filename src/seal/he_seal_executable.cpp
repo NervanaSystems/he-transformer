@@ -144,6 +144,14 @@ ngraph::he::HESealExecutable::HESealExecutable(
     const Shape& shape = (get_parameters()[0])->get_shape();
     if (m_batch_data) {
       m_batch_size = shape[0];
+
+      size_t max_batch_size =
+          m_he_seal_backend.get_ckks_encoder()->slot_count();
+      if (m_complex_packing) {
+        max_batch_size *= 2;
+      }
+      NGRAPH_CHECK(m_batch_size <= max_batch_size, "Batch size ", m_batch_size,
+                   " too large (maximum ", max_batch_size, ")");
     }
   }
 
