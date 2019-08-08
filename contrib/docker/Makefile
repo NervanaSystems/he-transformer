@@ -57,31 +57,31 @@ ifndef THIRD_PARTY_CACHE_DIR
     THIRD_PARTY_CACHE_DIR=
 endif
 
-# OS set to 'ubuntu1604' by default
-# can be overridden on the command line with 'make <target> OS=centos74"
-ifndef OS
-    OS="ubuntu1604"
+# OS_ID set to 'ubuntu1604' by default
+# can be overridden on the command line with 'make <target> OS_ID=centOS_ID74"
+ifndef OS_ID
+    OS_ID="ubuntu1604"
 endif
 
-DBUILD_DIR = ${DIR}/contrib/docker/.build-${DBUILD_VERSION}_${OS}
+DBUILD_DIR = ${DIR}/contrib/docker/.build-${DBUILD_VERSION}_${OS_ID}
 
-# Configuration for specific reference OS in Dockerfiles
-ifeq ("$(shell echo ${OS} | grep centos)","centos74")
-    RUN_AS_USER_SCRIPT=${DOCKUSER_HOME}/he-transformer-test/contrib/docker/run_as_centos_user.sh
-    DOCKERFILE=Dockerfile.he_transformer.centos74
+# Configuration for specific reference OS_ID in Dockerfiles
+ifeq ("$(shell echo ${OS_ID} | grep centOS_ID)","centOS_ID74")
+    RUN_AS_USER_SCRIPT=${DOCKUSER_HOME}/he-transformer-test/contrib/docker/run_as_centOS_ID_user.sh
+    DOCKERFILE=Dockerfile.he_transformer.centOS_ID74
 endif
 
-ifeq ("$(shell echo ${OS} | grep fedora)","fedora28")
+ifeq ("$(shell echo ${OS_ID} | grep fedora)","fedora28")
     RUN_AS_USER_SCRIPT=${DOCKUSER_HOME}/he-transformer-test/contrib/docker/run_as_fedora_user.sh
     DOCKERFILE=Dockerfile.he_transformer.fedora28
 endif
 
-ifeq ("$(shell echo ${OS} | grep ubuntu)","ubuntu1804")
+ifeq ("$(shell echo ${OS_ID} | grep ubuntu)","ubuntu1804")
     RUN_AS_USER_SCRIPT=${DOCKUSER_HOME}/he-transformer-test/contrib/docker/run_as_ubuntu_user.sh
 		DOCKERFILE=Dockerfile.he_transformer.ubuntu1804
 endif
 
-ifeq ("$(shell echo ${OS} | grep ubuntu)","ubuntu1604")
+ifeq ("$(shell echo ${OS_ID} | grep ubuntu)","ubuntu1604")
     RUN_AS_USER_SCRIPT=${DOCKUSER_HOME}/he-transformer-test/contrib/docker/run_as_ubuntu_user.sh
 		DOCKERFILE=Dockerfile.he_transformer.ubuntu1604
 endif
@@ -123,18 +123,18 @@ all: check_gcc check_clang
 
 # Isolate specific dockerfiles in a .build_* subdirectory
 expand_dockerfile_templates:
-	@echo "OS=${OS}"
+	@echo "OS_ID=${OS_ID}"
 	@echo "DOCKERFILE=${DOCKERFILE}"
 	@echo "RUN_AS_USER_SCRIPT=${RUN_AS_USER_SCRIPT}"
 	cd "${DIR}"/contrib/docker
 	mkdir "${DBUILD_DIR}" || true
-	sed -e 's/\(FROM he_transformer.*\)/\1:${DBUILD_VERSION}/' ${DOCKERFILE} > "${DBUILD_DIR}/Dockerfile.build_he_transformer_${OS}"
+	sed -e 's/\(FROM he_transformer.*\)/\1:${DBUILD_VERSION}/' ${DOCKERFILE} > "${DBUILD_DIR}/Dockerfile.build_he_transformer_${OS_ID}"
 
 build_docker_image: expand_dockerfile_templates
-	@echo "OS=${OS}"
+	@echo "OS_ID=${OS_ID}"
 	@echo ${DBUILD_DIR}
-	export CONTEXTDIR=${DBUILD_DIR};export DOCKER_TAG=build_he_transformer_${OS};./make-dimage.sh
-	docker tag build_he_transformer_${OS}:latest build_he_transformer_${OS}:${DBUILD_VERSION}
+	export CONTEXTDIR=${DBUILD_DIR};export DOCKER_TAG=build_he_transformer_${OS_ID};./make-dimage.sh
+	docker tag build_he_transformer_${OS_ID}:latest build_he_transformer_${OS_ID}:${DBUILD_VERSION}
 
 build_docker: build_docker_image
 
@@ -152,13 +152,13 @@ build_gcc: build_docker_image
 	    ${DOCKER_RUN_ENV} \
 	    --env BUILD_SUBDIR=BUILD-GCC \
 	    --env CMAKE_OPTIONS_EXTRA="${CMAKE_OPTIONS_EXTRA}" \
-			--env OS="${OS}" \
+			--env OS_ID="${OS_ID}" \
 	    --env PARALLEL=${PARALLEL} \
 	    --env THIRD_PARTY_CACHE_DIR=${THIRD_PARTY_CACHE_DIR} \
 	    --env CMD_TO_RUN='build_gcc' \
             --env RUN_UID="$(shell id -u)" \
             --env RUN_CMD="${DOCKUSER_HOME}/he-transformer-test/contrib/docker/build-he-transformer-and-test.sh" \
-            "build_he_transformer_${OS}:${DBUILD_VERSION}" \
+            "build_he_transformer_${OS_ID}:${DBUILD_VERSION}" \
 	    sh -c "cd ${DOCKUSER_HOME}; ${RUN_AS_USER_SCRIPT}"
 
 # Build targets ALWAYS clean build directories (BUILD-GCC, BUILD-CLANG) prior to building
@@ -172,13 +172,13 @@ build_clang: build_docker_image
 	    ${DOCKER_RUN_ENV} \
 	    --env BUILD_SUBDIR=BUILD-CLANG \
 	    --env CMAKE_OPTIONS_EXTRA="${CMAKE_OPTIONS_EXTRA}" \
-			--env OS="${OS}" \
+			--env OS_ID="${OS_ID}" \
 	    --env PARALLEL=${PARALLEL} \
 	    --env THIRD_PARTY_CACHE_DIR=${THIRD_PARTY_CACHE_DIR} \
 	    --env CMD_TO_RUN='build_clang' \
             --env RUN_UID="$(shell id -u)" \
             --env RUN_CMD="${DOCKUSER_HOME}/he-transformer-test/contrib/docker/build-he-transformer-and-test.sh" \
-            "build_he_transformer_${OS}:${DBUILD_VERSION}" \
+            "build_he_transformer_${OS_ID}:${DBUILD_VERSION}" \
 	    sh -c "cd ${DOCKUSER_HOME}; ${RUN_AS_USER_SCRIPT}"
 
 # Check (run unit-tests)
@@ -192,13 +192,13 @@ check_gcc: build_gcc
 	    ${DOCKER_RUN_ENV} \
 	    --env BUILD_SUBDIR=BUILD-GCC \
 	    --env CMAKE_OPTIONS_EXTRA="${CMAKE_OPTIONS_EXTRA}" \
-			--env OS="${OS}" \
+			--env OS_ID="${OS_ID}" \
 	    --env PARALLEL=${PARALLEL} \
 	    --env THIRD_PARTY_CACHE_DIR=${THIRD_PARTY_CACHE_DIR} \
 	    --env CMD_TO_RUN=check_gcc \
             --env RUN_UID="$(shell id -u)" \
             --env RUN_CMD="${DOCKUSER_HOME}/he-transformer-test/contrib/docker/build-he-transformer-and-test.sh" \
-            "build_he_transformer_${OS}:${DBUILD_VERSION}" \
+            "build_he_transformer_${OS_ID}:${DBUILD_VERSION}" \
 	    sh -c "cd ${DOCKUSER_HOME}; ${RUN_AS_USER_SCRIPT}"
 
 # Always use the platform-specific docker command to run unit tests
@@ -209,13 +209,13 @@ check_clang: build_clang
 	    ${DOCKER_RUN_ENV} \
 	    --env BUILD_SUBDIR=BUILD-CLANG \
 	    --env CMAKE_OPTIONS_EXTRA="${CMAKE_OPTIONS_EXTRA}" \
-			--env OS="${OS}" \
+			--env OS_ID="${OS_ID}" \
 	    --env PARALLEL=${PARALLEL} \
 	    --env THIRD_PARTY_CACHE_DIR=${THIRD_PARTY_CACHE_DIR} \
 	    --env CMD_TO_RUN=check_clang \
             --env RUN_UID="$(shell id -u)" \
             --env RUN_CMD="${DOCKUSER_HOME}/he-transformer-test/contrib/docker/build-he-transformer-and-test.sh" \
-            "build_he_transformer_${OS}:${DBUILD_VERSION}" \
+            "build_he_transformer_${OS_ID}:${DBUILD_VERSION}" \
 	    sh -c "cd ${DOCKUSER_HOME}; ${RUN_AS_USER_SCRIPT}"
 
 
@@ -227,7 +227,7 @@ shell: build_docker_image
             ${VOLUME} \
 	    ${DOCKER_RUN_ENV} \
             --env RUN_UID="$(shell id -u)" \
-            "build_he_transformer_${OS}:${DBUILD_VERSION}" \
+            "build_he_transformer_${OS_ID}:${DBUILD_VERSION}" \
 	    sh -c "cd ${DOCKUSER_HOME}; ${RUN_AS_USER_SCRIPT}"
 
 # Clean

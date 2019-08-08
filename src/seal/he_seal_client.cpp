@@ -188,7 +188,6 @@ void ngraph::he::HESealClient::handle_message(
     case ngraph::he::MessageType::maxpool_request: {
       size_t complex_pack_factor = complex_packing() ? 2 : 1;
       size_t cipher_count = message.count();
-      size_t element_size = message.element_size();
 
       std::vector<std::vector<float>> input_cipher_values(
           m_batch_size * complex_pack_factor,

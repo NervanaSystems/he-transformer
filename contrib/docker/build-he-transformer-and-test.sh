@@ -7,7 +7,7 @@ set -o pipefail
 # Enable job control to allow scl enable command
 set -m
 
-# Debugging to verify builds on CentOS 7.4 and Ubuntu 16.04
+# Debugging to verify builds on Centos 7.4 and Ubuntu 16.04
 if [ -f "/etc/centos-release" ]; then
     cat /etc/centos-release
 fi
@@ -75,7 +75,7 @@ export CMAKE_OPTIONS_COMMON="-DCMAKE_BUILD_TYPE=RelWithDebInfo ${CMAKE_OPTIONS_E
 export CMAKE_OPTIONS_GCC="${CMAKE_OPTIONS_COMMON}"
 # Centos 7.4 doesn't have clang6.0 yet
 # https://www.centos.org/forums/viewtopic.php?t=70149
-if [ "${OS}" == "centos74" ]; then
+if [ "${OS_ID}" == "centos74" ]; then
     #
     set +e
     source scl_source enable devtoolset-7 llvm-toolset-7
@@ -111,7 +111,7 @@ echo "Build and test for ${CMD_TO_RUN} in `pwd` with specific parameters:"
 echo "    HE_TRANSFORMER_REPO=${HE_TRANSFORMER_REPO}"
 echo "    CMAKE_OPTIONS=${CMAKE_OPTIONS}"
 echo "    GTEST_OUTPUT=${GTEST_OUTPUT}"
-echo "    OS=${OS}"
+echo "    OS_ID=${OS_ID}"
 
 # only run cmake/make steps for build_* make targets
 if [ "$(echo ${CMD_TO_RUN} | grep build | wc -l)" != "0" ] ; then

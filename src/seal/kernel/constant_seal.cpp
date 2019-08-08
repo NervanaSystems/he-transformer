@@ -50,14 +50,10 @@ void ngraph::he::constant_seal(
 
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
-    const float value = *reinterpret_cast<const float*>(
+    const float* f = reinterpret_cast<const float*>(
         static_cast<const char*>(data_ptr) + i * type_byte_size);
-
-    auto plaintext = HEPlaintext(value);
-
-    encrypt(out[i], plaintext, he_seal_backend.get_context()->first_parms_id(),
-            he_seal_backend.get_scale(), *he_seal_backend.get_ckks_encoder(),
-            *he_seal_backend.get_encryptor(),
-            he_seal_backend.complex_packing());
+    auto plaintext = HEPlaintext(*f);
+    he_seal_backend.encrypt(out[i], plaintext,
+                            he_seal_backend.complex_packing());
   }
 }
