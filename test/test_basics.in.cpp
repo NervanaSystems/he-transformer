@@ -186,9 +186,27 @@ NGRAPH_TEST(${BACKEND_NAME}, validate_batch_size) {
   auto f =
       make_shared<Function>(make_shared<op::Add>(A, B), ParameterVector{A, B});
 
-  auto a = backend->create_tensor(element::f32, {2, 3});
-  auto b = backend->create_tensor(element::f32, shape);
-  auto c = backend->create_tensor(element::f32, shape);
-
   EXPECT_THROW({ backend->compile(f); }, ngraph::CheckFailure);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, validate_packing_batch_size) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+
+  Shape shape_a{1, 1, 3, 5};
+  Shape shape_b{2, 1, 2, 2};
+  auto a = make_shared<op::Parameter>(element::f32, shape_a);
+  auto b = make_shared<op::Parameter>(element::f32, shape_b);
+  auto t = make_shared<op::Convolution>(a, b, Strides{1, 1},  // move_strides
+                                        Strides{1, 1},        // filter_dilation
+                                        CoordinateDiff{0, 0},  // below_pads
+                                        CoordinateDiff{0, 0},  // above_pads
+                                        Strides{1, 1});        // data_dilation
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
+
+  he_backend->set_pack_data(true);
+  EXPECT_THROW({ backend->compile(f); }, ngraph::CheckFailure);
+
+  he_backend->set_pack_data(false);
+  EXPECT_NO_THROW({ backend->compile(f); });
 }
