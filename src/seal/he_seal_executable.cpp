@@ -72,6 +72,7 @@
 #include "op/bounded_relu.hpp"
 #include "pass/he_fusion.hpp"
 #include "pass/he_liveness.hpp"
+#include "pass/supported_ops.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_executable.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
@@ -125,13 +126,13 @@ ngraph::he::HESealExecutable::HESealExecutable(
     pass_manager.register_pass<ngraph::pass::ConstantFolding>();
   }
   pass_manager.run_passes(function);
-
   ngraph::pass::Manager pass_manager_he;
   pass_manager_he.register_pass<ngraph::he::pass::HEFusion>();
-  // Run liveness pass after all other passes (otherwise BoundedRelu nodes won't
-  // have liveness_free_list set)
   pass_manager_he.register_pass<ngraph::he::pass::HELiveness>();
-  // pass_manager_he.register_pass<ngraph::pass::Liveness>();
+  pass_manager_he.register_pass<ngraph::he::pass::SupportedOps>(
+      [this](const ngraph::Node& op) {
+        return m_he_seal_backend.is_supported(op);
+      });
   pass_manager_he.run_passes(function);
 
   for (const std::shared_ptr<Node>& node : function->get_ordered_ops()) {
