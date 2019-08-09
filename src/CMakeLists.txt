@@ -19,7 +19,7 @@ set(HE_SRC
     # main
     he_plain_tensor.cpp he_tensor.cpp node_wrapper.cpp
     # pass
-    pass/he_fusion.cpp pass/he_liveness.cpp
+    pass/he_fusion.cpp pass/he_liveness.cpp pass/supported_ops.cpp
     # op
     op/bounded_relu.cpp
     # seal kernels

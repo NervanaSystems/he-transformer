@@ -160,6 +160,11 @@ std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
       m_encrypt_model, pack_data(), m_complex_packing, m_enable_client);
 }
 
+bool ngraph::he::HESealBackend::is_supported(const ngraph::Node& node) const {
+  return m_unsupported_op_name_list.find(node.description()) ==
+         m_unsupported_op_name_list.end();
+}
+
 std::shared_ptr<ngraph::he::SealCiphertextWrapper>
 ngraph::he::HESealBackend::create_valued_ciphertext(
     float value, const element::Type& element_type, size_t batch_size) const {

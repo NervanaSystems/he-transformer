@@ -210,3 +210,13 @@ NGRAPH_TEST(${BACKEND_NAME}, validate_packing_batch_size) {
   he_backend->set_pack_data(false);
   EXPECT_NO_THROW({ backend->compile(f); });
 }
+
+NGRAPH_TEST(${BACKEND_NAME}, unsupported_op) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+
+  Shape shape{11};
+  auto A = make_shared<op::Parameter>(element::f32, shape);
+  auto f = make_shared<Function>(make_shared<op::Cos>(A), ParameterVector{A});
+
+  EXPECT_THROW({ backend->compile(f); }, ngraph::CheckFailure);
+}
