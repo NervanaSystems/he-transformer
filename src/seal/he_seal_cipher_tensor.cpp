@@ -81,9 +81,6 @@ void ngraph::he::HESealCipherTensor::write(
   } else {
 #pragma omp parallel for
     for (size_t i = 0; i < num_elements_to_write; ++i) {
-      const void* src_with_offset = static_cast<const void*>(
-          static_cast<const char*>(source) + i * type_byte_size * batch_size);
-
       auto plaintext = HEPlaintext();
       if (batch_size > 1) {
         size_t allocation_size = type_byte_size * batch_size;
@@ -101,14 +98,32 @@ void ngraph::he::HESealCipherTensor::write(
         std::vector<double> values{
             static_cast<double*>(batch_src),
             static_cast<double*>(batch_src) + batch_size};
+        NGRAPH_INFO << "Writing values";
+        for (const auto& elem : values) {
+          NGRAPH_INFO << elem;
+        }
+
         plaintext.set_values(values);
         ngraph_free(batch_src);
       } else {
-        std::vector<double> values{
-            static_cast<const double*>(src_with_offset),
-            static_cast<const double*>(src_with_offset) + batch_size};
+        std::vector<double> values(batch_size);
+
+        char* src_with_offset = const_cast<char*>(
+            static_cast<const char*>(source) + i * type_byte_size * batch_size);
+
+        for (size_t batch_idx = 0; batch_idx < batch_size; batch_idx++) {
+          values[batch_idx] = ngraph::he::type_to_double(
+              static_cast<void*>(src_with_offset), element_type);
+          src_with_offset += type_byte_size;
+        }
+
+        NGRAPH_INFO << "Writing values";
+        for (const auto& elem : values) {
+          NGRAPH_INFO << elem;
+        }
         plaintext.set_values(values);
       }
+
       encrypt(destination[i], plaintext, parms_id, scale, ckks_encoder,
               encryptor, complex_packing);
     }
