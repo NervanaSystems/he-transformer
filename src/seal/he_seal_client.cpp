@@ -35,7 +35,7 @@
 ngraph::he::HESealClient::HESealClient(const std::string& hostname,
                                        const size_t port,
                                        const size_t batch_size,
-                                       const std::vector<float>& inputs,
+                                       const std::vector<double>& inputs,
                                        bool complex_packing)
     : m_batch_size{batch_size},
       m_is_done(false),
@@ -44,16 +44,22 @@ ngraph::he::HESealClient::HESealClient(const std::string& hostname,
   boost::asio::io_context io_context;
   tcp::resolver resolver(io_context);
   auto endpoints = resolver.resolve(hostname, std::to_string(port));
-
   auto client_callback = [this](const ngraph::he::TCPMessage& message) {
     return handle_message(message);
   };
-
   m_tcp_client = std::make_shared<ngraph::he::TCPClient>(io_context, endpoints,
                                                          client_callback);
-
   io_context.run();
 }
+
+ngraph::he::HESealClient::HESealClient(const std::string& hostname,
+                                       const size_t port,
+                                       const size_t batch_size,
+                                       const std::vector<float>& inputs,
+                                       bool complex_packing)
+    : HESealClient(hostname, port, batch_size,
+                   std::vector<double>(inputs.begin(), inputs.end()),
+                   complex_packing) {}
 
 void ngraph::he::HESealClient::set_seal_context() {
   m_context = seal::SEALContext::Create(m_encryption_params, true,
@@ -110,7 +116,7 @@ void ngraph::he::HESealClient::handle_message(
         ciphers[data_idx] = std::make_shared<SealCiphertextWrapper>();
       }
 
-      size_t n = parameter_size * sizeof(float) * m_batch_size;
+      size_t n = parameter_size * sizeof(double) * m_batch_size;
       ngraph::he::HESealCipherTensor::write(
           ciphers, m_inputs.data(), n, m_batch_size, element::f32,
           m_context->first_parms_id(), m_scale, *m_ckks_encoder, *m_encryptor,
@@ -137,9 +143,9 @@ void ngraph::he::HESealClient::handle_message(
             std::make_shared<SealCiphertextWrapper>(c, complex_packing());
       }
 
-      size_t n = result_count * sizeof(float) * m_batch_size;
+      size_t n = result_count * sizeof(double) * m_batch_size;
       ngraph::he::HESealCipherTensor::read(
-          m_results.data(), result_ciphers, n, m_batch_size, element::f32,
+          m_results.data(), result_ciphers, n, m_batch_size, element::f64,
           m_context->first_parms_id(), m_scale, *m_ckks_encoder, *m_decryptor,
           complex_packing());
 
@@ -189,12 +195,12 @@ void ngraph::he::HESealClient::handle_message(
       size_t complex_pack_factor = complex_packing() ? 2 : 1;
       size_t cipher_count = message.count();
 
-      std::vector<std::vector<float>> input_cipher_values(
+      std::vector<std::vector<double>> input_cipher_values(
           m_batch_size * complex_pack_factor,
-          std::vector<float>(cipher_count, 0));
+          std::vector<double>(cipher_count, 0));
 
-      std::vector<float> max_values(m_batch_size * complex_pack_factor,
-                                    std::numeric_limits<float>::lowest());
+      std::vector<double> max_values(m_batch_size * complex_pack_factor,
+                                     std::numeric_limits<double>::lowest());
 
 #pragma omp parallel for
       for (size_t cipher_idx = 0; cipher_idx < cipher_count; ++cipher_idx) {
@@ -215,7 +221,7 @@ void ngraph::he::HESealClient::handle_message(
       // Get max of each vector of values
       for (size_t batch_idx = 0; batch_idx < m_batch_size * complex_pack_factor;
            ++batch_idx) {
-        max_values[batch_idx] = static_cast<float>(
+        max_values[batch_idx] = static_cast<double>(
             *std::max_element(input_cipher_values[batch_idx].begin(),
                               input_cipher_values[batch_idx].end()));
       }
@@ -281,8 +287,10 @@ void ngraph::he::HESealClient::handle_relu_request(
     ngraph::he::decrypt(relu_plain, pre_relu_cipher, complex_packing(),
                         *m_decryptor, *m_ckks_encoder);
 
-    std::transform(relu_plain.values().begin(), relu_plain.values().end(),
-                   relu_plain.values().begin(), activation);
+    std::vector<double> relu_values = relu_plain.values();
+    std::transform(relu_values.begin(), relu_values.end(), relu_values.begin(),
+                   activation);
+    relu_plain.set_values(relu_values);
 
     ngraph::he::encrypt(post_relu_ciphers[result_idx], relu_plain,
                         m_context->first_parms_id(), m_scale, *m_ckks_encoder,

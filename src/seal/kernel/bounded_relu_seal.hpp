@@ -29,16 +29,16 @@ namespace ngraph {
 namespace he {
 inline void scalar_bounded_relu_seal(const HEPlaintext& arg, HEPlaintext& out,
                                      float alpha) {
-  const std::vector<float>& arg_vals = arg.values();
-  std::vector<float> out_vals(arg.num_values());
+  const std::vector<double>& arg_vals = arg.values();
+  std::vector<double> out_vals(arg.num_values());
 
-  auto bounded_relu = [alpha](float f) {
+  auto bounded_relu = [alpha](double f) {
     return f > alpha ? alpha : (f > 0) ? f : 0.f;
   };
 
   std::transform(arg_vals.begin(), arg_vals.end(), out_vals.begin(),
                  bounded_relu);
-  out.values() = out_vals;
+  out.set_values(out_vals);
 }
 
 inline void bounded_relu_seal(const std::vector<HEPlaintext>& arg,
@@ -57,17 +57,17 @@ inline void scalar_bounded_relu_seal(
     HESealBackend& he_seal_backend) {
   HEPlaintext plain;
   he_seal_backend.decrypt(plain, arg);
-  const std::vector<float>& arg_vals = plain.values();
-  std::vector<float> out_vals(plain.num_values());
+  const std::vector<double>& arg_vals = plain.values();
+  std::vector<double> out_vals(plain.num_values());
 
-  auto bounded_relu = [alpha](float f) {
+  auto bounded_relu = [alpha](double f) {
     return f > alpha ? alpha : (f > 0) ? f : 0.f;
   };
 
   std::transform(arg_vals.begin(), arg_vals.end(), out_vals.begin(),
                  bounded_relu);
 
-  plain.values() = out_vals;
+  plain.set_values(out_vals);
   encrypt(out, plain, he_seal_backend.get_context()->first_parms_id(),
           he_seal_backend.get_scale(), *he_seal_backend.get_ckks_encoder(),
           *he_seal_backend.get_encryptor(), he_seal_backend.complex_packing());

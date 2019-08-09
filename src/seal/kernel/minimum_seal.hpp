@@ -28,9 +28,9 @@ namespace ngraph {
 namespace he {
 inline void scalar_minimum_seal(const HEPlaintext& arg0,
                                 const HEPlaintext& arg1, HEPlaintext& out) {
-  const std::vector<float>& arg0_vals = arg0.values();
-  const std::vector<float>& arg1_vals = arg1.values();
-  std::vector<float> out_vals(arg0.num_values());
+  const std::vector<double>& arg0_vals = arg0.values();
+  const std::vector<double>& arg1_vals = arg1.values();
+  std::vector<double> out_vals(arg0.num_values());
 
   NGRAPH_CHECK(arg0.num_values() == arg1.num_values(),
                "arg0.num_values() = ", arg0.num_values(),
@@ -40,7 +40,7 @@ inline void scalar_minimum_seal(const HEPlaintext& arg0,
     out_vals[i] = arg0_vals[i] < arg1_vals[i] ? arg0_vals[i] : arg1_vals[i];
   }
 
-  out.values() = out_vals;
+  out.set_values(out_vals);
 }
 
 inline void minimum_seal(const std::vector<HEPlaintext>& arg0,

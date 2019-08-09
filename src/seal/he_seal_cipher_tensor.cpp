@@ -65,8 +65,8 @@ void ngraph::he::HESealCipherTensor::write(
                " to destination size ", destination.size());
 
   if (num_elements_to_write == 1) {
-    const float* float_src = static_cast<const float*>(source);
-    std::vector<float> values{float_src, float_src + batch_size};
+    const double* double_src = static_cast<const double*>(source);
+    std::vector<double> values{double_src, double_src + batch_size};
     auto plaintext = HEPlaintext(values);
     encrypt(destination[0], plaintext, parms_id, scale, ckks_encoder, encryptor,
             complex_packing);
@@ -88,15 +88,16 @@ void ngraph::he::HESealCipherTensor::write(
               type_byte_size * (i + j * num_elements_to_write));
           memcpy(destination, src, type_byte_size);
         }
-        std::vector<float> values{static_cast<float*>(batch_src),
-                                  static_cast<float*>(batch_src) + batch_size};
-        plaintext.values() = values;
+        std::vector<double> values{
+            static_cast<double*>(batch_src),
+            static_cast<double*>(batch_src) + batch_size};
+        plaintext.set_values(values);
         ngraph_free(batch_src);
       } else {
-        std::vector<float> values{
-            static_cast<const float*>(src_with_offset),
-            static_cast<const float*>(src_with_offset) + batch_size};
-        plaintext.values() = values;
+        std::vector<double> values{
+            static_cast<const double*>(src_with_offset),
+            static_cast<const double*>(src_with_offset) + batch_size};
+        plaintext.set_values(values);
       }
       encrypt(destination[i], plaintext, parms_id, scale, ckks_encoder,
               encryptor, complex_packing);

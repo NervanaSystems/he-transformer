@@ -483,8 +483,7 @@ void ngraph::he::decode(ngraph::he::HEPlaintext& output,
   } else {
     ckks_encoder.decode(input.plaintext(), real_vals);
   }
-  std::vector<float> float_vals{real_vals.begin(), real_vals.end()};
-  output.values() = float_vals;
+  output.set_values(real_vals);
 }
 
 void ngraph::he::decode(void* output, const ngraph::he::HEPlaintext& input,
@@ -495,7 +494,8 @@ void ngraph::he::decode(void* output, const ngraph::he::HEPlaintext& input,
                type);
   NGRAPH_CHECK(input.num_values() > 0, "Input has no values");
 
-  const std::vector<float>& xs_float = input.values();
+  // TODO: decode based on type
+  const std::vector<double>& xs_float = input.values();
   NGRAPH_CHECK(xs_float.size() >= count);
   std::memcpy(output, &xs_float[0], type.size() * count);
 }
@@ -507,7 +507,7 @@ void ngraph::he::decrypt(ngraph::he::HEPlaintext& output,
   if (input.known_value()) {
     NGRAPH_DEBUG << "Decrypting known value " << input.value();
     const size_t slot_count = ckks_encoder.slot_count();
-    output.values() = std::vector<float>(slot_count, input.value());
+    output.set_values(std::vector<double>(slot_count, input.value()));
   } else {
     ngraph::he::decrypt(output, input.ciphertext(), input.complex_packing(),
                         decryptor, ckks_encoder);
