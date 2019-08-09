@@ -118,7 +118,7 @@ void ngraph::he::HESealClient::handle_message(
 
       size_t n = parameter_size * sizeof(double) * m_batch_size;
       ngraph::he::HESealCipherTensor::write(
-          ciphers, m_inputs.data(), n, m_batch_size, element::f32,
+          ciphers, m_inputs.data(), n, m_batch_size, element::f64,
           m_context->first_parms_id(), m_scale, *m_ckks_encoder, *m_encryptor,
           complex_packing());
 

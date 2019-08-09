@@ -70,7 +70,6 @@ void ngraph::he::HESealCipherTensor::write(
           static_cast<void*>(src_with_offset), element_type);
       src_with_offset += type_byte_size;
     }
-
     NGRAPH_INFO << "Writing values";
     for (const auto& elem : values) {
       NGRAPH_INFO << elem;
@@ -94,7 +93,6 @@ void ngraph::he::HESealCipherTensor::write(
         for (const auto& elem : values) {
           NGRAPH_INFO << elem;
         }
-
         plaintext.set_values(values);
       } else {
         std::vector<double> values(batch_size);
@@ -111,7 +109,6 @@ void ngraph::he::HESealCipherTensor::write(
         }
         plaintext.set_values(values);
       }
-
       encrypt(destination[i], plaintext, parms_id, scale, ckks_encoder,
               encryptor, complex_packing);
     }
