@@ -28,7 +28,8 @@ bool ngraph::he::pass::SupportedOps::run_on_function(
   std::list<std::shared_ptr<ngraph::Node>> ops = function->get_ordered_ops();
 
   for (const auto& op : ops) {
-    NGRAPH_CHECK(is_supported(*op), "Unsupported op ", op->description());
+    NGRAPH_CHECK(is_supported(*op), "Unsupported op ", op->description(),
+                 " with type ", op->get_element_type());
   }
   return true;
 }
