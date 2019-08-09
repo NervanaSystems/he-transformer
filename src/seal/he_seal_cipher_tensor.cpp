@@ -83,40 +83,28 @@ void ngraph::he::HESealCipherTensor::write(
     for (size_t i = 0; i < num_elements_to_write; ++i) {
       auto plaintext = HEPlaintext();
       if (batch_size > 1) {
-        size_t allocation_size = type_byte_size * batch_size;
-        void* batch_src = ngraph::ngraph_malloc(allocation_size);
+        std::vector<double> values(batch_size);
+        char* src_with_offset = const_cast<char*>(
+            static_cast<const char*>(source) + i * type_byte_size);
         for (size_t j = 0; j < batch_size; ++j) {
-          void* batch_dst = static_cast<void*>(static_cast<char*>(batch_src) +
-                                               j * type_byte_size);
-          const void* src = static_cast<const void*>(
-              static_cast<const char*>(source) +
-              type_byte_size * (i + j * num_elements_to_write));
-          memcpy(batch_dst, src, type_byte_size);
+          values[j] = ngraph::he::type_to_double(src_with_offset, element_type);
+          src_with_offset += type_byte_size * num_elements_to_write;
         }
-
-        // TODO: fix for other types
-        std::vector<double> values{
-            static_cast<double*>(batch_src),
-            static_cast<double*>(batch_src) + batch_size};
         NGRAPH_INFO << "Writing values";
         for (const auto& elem : values) {
           NGRAPH_INFO << elem;
         }
 
         plaintext.set_values(values);
-        ngraph_free(batch_src);
       } else {
         std::vector<double> values(batch_size);
-
         char* src_with_offset = const_cast<char*>(
             static_cast<const char*>(source) + i * type_byte_size * batch_size);
-
         for (size_t batch_idx = 0; batch_idx < batch_size; batch_idx++) {
           values[batch_idx] = ngraph::he::type_to_double(
               static_cast<void*>(src_with_offset), element_type);
           src_with_offset += type_byte_size;
         }
-
         NGRAPH_INFO << "Writing values";
         for (const auto& elem : values) {
           NGRAPH_INFO << elem;
