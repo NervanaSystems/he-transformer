@@ -32,7 +32,6 @@ NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_scalar) {
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   Shape shape{};
-
   {
     auto a = he_backend->create_plain_tensor(element::f32, shape);
     copy_data(a, vector<float>{5});

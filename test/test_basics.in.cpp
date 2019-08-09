@@ -221,3 +221,15 @@ NGRAPH_TEST(${BACKEND_NAME}, unsupported_op) {
 
   EXPECT_THROW({ backend->compile(f); }, ngraph::CheckFailure);
 }
+
+NGRAPH_TEST(${BACKEND_NAME}, unsupported_op_type) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+
+  Shape shape{11};
+  auto A = make_shared<op::Parameter>(element::i8, shape);
+  auto B = make_shared<op::Parameter>(element::i8, shape);
+  auto f =
+      make_shared<Function>(make_shared<op::Add>(A, B), ParameterVector{A, B});
+
+  EXPECT_THROW({ backend->compile(f); }, ngraph::CheckFailure);
+}

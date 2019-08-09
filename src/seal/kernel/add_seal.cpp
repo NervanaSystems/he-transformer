@@ -59,8 +59,6 @@ void ngraph::he::scalar_add_seal(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type, HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
-  NGRAPH_CHECK(element_type == element::f32);
-
   if (arg0.known_value()) {
     NGRAPH_CHECK(arg1.is_single_value(), "arg1 is not single value");
     out->known_value() = true;
@@ -68,9 +66,8 @@ void ngraph::he::scalar_add_seal(
     out->complex_packing() = arg0.complex_packing();
     return;
   }
-
   // TODO: handle case where arg1 = {0, 0, 0, 0, ...}
-  bool add_zero = arg1.is_single_value() && (arg1.first_value() == 0.0f);
+  bool add_zero = arg1.is_single_value() && (arg1.first_value() == 0.0);
 
   if (add_zero) {
     SealCiphertextWrapper tmp(arg0);
@@ -106,7 +103,7 @@ void ngraph::he::scalar_add_seal(const HEPlaintext& arg0,
                                  const HEPlaintext& arg1, HEPlaintext& out,
                                  const element::Type& element_type,
                                  HESealBackend& he_seal_backend) {
-  NGRAPH_CHECK(element_type == element::f32);
+  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type));
 
   const std::vector<double>& arg0_vals = arg0.values();
   const std::vector<double>& arg1_vals = arg1.values();
