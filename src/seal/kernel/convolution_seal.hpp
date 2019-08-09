@@ -42,6 +42,8 @@ inline void convolution_seal(
     size_t batch_axis_result, size_t output_channel_axis_result,
     bool rotate_filter, const element::Type& element_type, size_t batch_size,
     HESealBackend& he_seal_backend, bool verbose = true) {
+  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
+               "Unsupported type ", element_type);
   // Comments throughout assume without loss of generality that:
   //
   // * batch axes for both input data and output data are 0
@@ -250,6 +252,8 @@ inline void convolution_seal(
     size_t batch_axis_result, size_t output_channel_axis_result,
     bool rotate_filter, const element::Type& element_type, size_t batch_size,
     HESealBackend& he_seal_backend, bool verbose = true) {
+  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
+               "Unsupported type", element_type);
   CoordinateTransform output_transform(out_shape);
 
   // Store output coordinates for parallelization

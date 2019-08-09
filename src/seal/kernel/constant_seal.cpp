@@ -27,7 +27,7 @@ void ngraph::he::constant_seal(std::vector<ngraph::he::HEPlaintext>& out,
                                const ngraph::he::HESealBackend& he_seal_backend,
                                size_t count) {
   NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
-               "Unsupported type", element_type);
+               "Unsupported type ", element_type);
 
   size_t type_byte_size = element_type.size();
   if (out.size() != count) {
@@ -47,7 +47,7 @@ void ngraph::he::constant_seal(
     const element::Type& element_type, const void* data_ptr,
     const ngraph::he::HESealBackend& he_seal_backend, size_t count) {
   NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
-               "Unsupported type", element_type);
+               "Unsupported type ", element_type);
 
   size_t type_byte_size = element_type.size();
   if (out.size() != count) {
