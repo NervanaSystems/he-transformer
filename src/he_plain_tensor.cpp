@@ -33,7 +33,7 @@ void ngraph::he::HEPlainTensor::write(const void* source, size_t n) {
   check_io_bounds(source, n / m_batch_size);
   const element::Type& element_type = get_tensor_layout()->get_element_type();
   size_t type_byte_size = element_type.size();
-  size_t num_elements_to_write = n / (type_byte_size * m_batch_size);
+  size_t num_elements_to_write = n / (element_type.size() * m_batch_size);
 
   if (num_elements_to_write == 1) {
     const void* src_with_offset = source;
@@ -45,13 +45,13 @@ void ngraph::he::HEPlainTensor::write(const void* source, size_t n) {
             static_cast<const char*>(source) +
             type_byte_size * (j * num_elements_to_write));
 
-        const double val = *static_cast<const double*>(src);
-        values[j] = val;
+        values[j] = type_to_double(src, element_type);
       }
       m_plaintexts[0].set_values(values);
 
     } else {
-      const double d = *static_cast<const double*>(src_with_offset);
+      const double d = type_to_double(src_with_offset, element_type);
+      NGRAPH_INFO << "writing value " << d;
       m_plaintexts[0].set_value(d);
     }
   } else {
@@ -67,12 +67,12 @@ void ngraph::he::HEPlainTensor::write(const void* source, size_t n) {
               static_cast<const char*>(source) +
               type_byte_size * (i + j * num_elements_to_write));
 
-          const double val = *static_cast<const double*>(src);
-          values[j] = val;
+          values[j] = type_to_double(src, element_type);
         }
         m_plaintexts[i].set_values(values);
       } else {
-        const double d = *static_cast<const double*>(src_with_offset);
+        const double d = type_to_double(src_with_offset, element_type);
+        NGRAPH_INFO << "writing value " << d;
         m_plaintexts[i].set_value(d);
       }
     }
@@ -82,7 +82,7 @@ void ngraph::he::HEPlainTensor::write(const void* source, size_t n) {
 void ngraph::he::HEPlainTensor::read(void* target, size_t n) const {
   check_io_bounds(target, n);
   const element::Type& element_type = get_tensor_layout()->get_element_type();
-  NGRAPH_CHECK(element_type == element::f32, "Only support float32");
+
   size_t type_byte_size = element_type.size();
   size_t num_elements_to_read = n / (type_byte_size * m_batch_size);
 
@@ -90,7 +90,50 @@ void ngraph::he::HEPlainTensor::read(void* target, size_t n) const {
     void* dst_with_offset = target;
     const std::vector<double>& values = m_plaintexts[0].values();
     NGRAPH_CHECK(values.size() > 0, "Cannot read from empty plaintext");
-    memcpy(dst_with_offset, &values[0], type_byte_size * m_batch_size);
+
+    NGRAPH_INFO << "Reading value " << values[0];
+
+    void* type_values_src;
+
+#if defined(__GNUC__) && !(__GNUC__ == 4 && __GNUC_MINOR__ == 8)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic error "-Wswitch"
+#pragma GCC diagnostic error "-Wswitch-enum"
+#endif
+    switch (element_type.get_type_enum()) {
+      case element::Type_t::f32: {
+        std::vector<float> float_values{values.begin(), values.end()};
+        NGRAPH_INFO << "float values" << float_values[0];
+        type_values_src =
+            static_cast<void*>(const_cast<float*>(float_values.data()));
+        break;
+      }
+      case element::Type_t::f64: {
+        type_values_src =
+            static_cast<void*>(const_cast<double*>(values.data()));
+        break;
+      }
+      case element::Type_t::i8:
+      case element::Type_t::i16:
+      case element::Type_t::i32:
+      case element::Type_t::i64:
+      case element::Type_t::u8:
+      case element::Type_t::u16:
+      case element::Type_t::u32:
+      case element::Type_t::u64:
+      case element::Type_t::dynamic:
+      case element::Type_t::undefined:
+      case element::Type_t::bf16:
+      case element::Type_t::f16:
+      case element::Type_t::boolean:
+        NGRAPH_CHECK(false, "Unsupported element type", element_type);
+        break;
+    }
+#if defined(__GNUC__) && !(__GNUC__ == 4 && __GNUC_MINOR__ == 8)
+#pragma GCC diagnostic pop
+#endif
+
+    memcpy(dst_with_offset, type_values_src, type_byte_size * m_batch_size);
   } else {
 #pragma omp parallel for
     for (size_t i = 0; i < num_elements_to_read; ++i) {
@@ -98,11 +141,14 @@ void ngraph::he::HEPlainTensor::read(void* target, size_t n) const {
       NGRAPH_CHECK(values.size() >= m_batch_size, "values size ", values.size(),
                    " is smaller than batch size ", m_batch_size);
 
+      // TODO: edit based on type
+      std::vector<float> type_values{values.begin(), values.end()};
+
       for (size_t j = 0; j < m_batch_size; ++j) {
         void* dst_with_offset =
             static_cast<void*>(static_cast<char*>(target) +
                                type_byte_size * (i + j * num_elements_to_read));
-        const void* src = static_cast<const void*>(&values[j]);
+        const void* src = static_cast<const void*>(&type_values[j]);
         memcpy(dst_with_offset, src, type_byte_size);
       }
     }

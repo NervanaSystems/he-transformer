@@ -29,7 +29,7 @@ class HEPlaintext {
   HEPlaintext() = default;
 
   HEPlaintext(const std::vector<double>& values) : m_values(values) {
-    if (values.size() > 1) {
+    if (values.size() > 0) {
       m_first_val = values[0];
     }
   }
@@ -42,7 +42,7 @@ class HEPlaintext {
 
   void set_value(const double value) {
     m_first_val = value;
-    m_values = std::vector<double>(value);
+    m_values = std::vector<double>{value};
   }
 
   void set_values(const std::vector<double>& values) {
@@ -54,6 +54,8 @@ class HEPlaintext {
 
   bool is_single_value() const { return num_values() == 1; }
   size_t num_values() const { return m_values.size(); }
+
+  static constexpr size_t type_byte_size = sizeof(double);
 
  private:
   double m_first_val;

@@ -36,6 +36,7 @@ NGRAPH_TEST(${BACKEND_NAME}, trivial) {
 
 NGRAPH_TEST(${BACKEND_NAME}, create_backend) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  EXPECT_EQ(1, 1);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, create_tensor) {
