@@ -32,29 +32,45 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector) {
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
   he_backend->set_pack_data(false);
 
-  Shape shape_a{};
-  auto A = make_shared<op::Parameter>(element::f32, shape_a);
-  Shape shape_r{4};
-  auto t = make_shared<op::Broadcast>(A, shape_r, AxisSet{0});
-  auto f = make_shared<Function>(t, ParameterVector{A});
-
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({t}, {A}, backend.get(), true);
-
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
-
-    auto a = inputs[0];
-    auto result = results[0];
-
-    copy_data(a, vector<float>{6});
-
-    auto handle = backend->compile(f);
-    handle->call_with_validate({result}, {a});
-    EXPECT_TRUE(
-        all_close((vector<float>{6, 6, 6, 6}), read_vector<float>(result)));
+  {
+    Shape shape_a{};
+    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    Shape shape_r{4};
+    auto t = make_shared<op::Broadcast>(A, shape_r, AxisSet{0});
+    auto f = make_shared<Function>(t, ParameterVector{A});
+    auto tensors_list =
+        generate_plain_cipher_tensors({t}, {A}, backend.get(), true);
+    for (auto tensors : tensors_list) {
+      auto results = get<0>(tensors);
+      auto inputs = get<1>(tensors);
+      auto a = inputs[0];
+      auto result = results[0];
+      copy_data(a, vector<float>{6});
+      auto handle = backend->compile(f);
+      handle->call_with_validate({result}, {a});
+      EXPECT_TRUE(
+          all_close((vector<float>{6, 6, 6, 6}), read_vector<float>(result)));
+    }
+  }
+  {
+    Shape shape_a{};
+    auto A = make_shared<op::Parameter>(element::f64, shape_a);
+    Shape shape_r{4};
+    auto t = make_shared<op::Broadcast>(A, shape_r, AxisSet{0});
+    auto f = make_shared<Function>(t, ParameterVector{A});
+    auto tensors_list =
+        generate_plain_cipher_tensors({t}, {A}, backend.get(), true);
+    for (auto tensors : tensors_list) {
+      auto results = get<0>(tensors);
+      auto inputs = get<1>(tensors);
+      auto a = inputs[0];
+      auto result = results[0];
+      copy_data(a, vector<double>{6});
+      auto handle = backend->compile(f);
+      handle->call_with_validate({result}, {a});
+      EXPECT_TRUE(
+          all_close((vector<double>{6, 6, 6, 6}), read_vector<double>(result)));
+    }
   }
 }
 
