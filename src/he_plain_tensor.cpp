@@ -136,22 +136,63 @@ void ngraph::he::HEPlainTensor::read(void* target, size_t n) const {
 #endif
 
   } else {
+    auto copy_batch_values_to_src = [&](size_t element_idx, void* target,
+                                        const void* type_values_src) {
+      char* src = static_cast<char*>(const_cast<void*>(type_values_src));
+      for (size_t j = 0; j < m_batch_size; ++j) {
+        void* dst_with_offset = static_cast<void*>(
+            static_cast<char*>(target) +
+            type_byte_size * (element_idx + j * num_elements_to_read));
+
+        memcpy(dst_with_offset, src, type_byte_size);
+        src += type_byte_size;
+      }
+    };
+
 #pragma omp parallel for
     for (size_t i = 0; i < num_elements_to_read; ++i) {
       const std::vector<double>& values = m_plaintexts[i].values();
       NGRAPH_CHECK(values.size() >= m_batch_size, "values size ", values.size(),
                    " is smaller than batch size ", m_batch_size);
 
-      // TODO: edit based on type
-      std::vector<float> type_values{values.begin(), values.end()};
-
-      for (size_t j = 0; j < m_batch_size; ++j) {
-        void* dst_with_offset =
-            static_cast<void*>(static_cast<char*>(target) +
-                               type_byte_size * (i + j * num_elements_to_read));
-        const void* src = static_cast<const void*>(&type_values[j]);
-        memcpy(dst_with_offset, src, type_byte_size);
+#if defined(__GNUC__) && !(__GNUC__ == 4 && __GNUC_MINOR__ == 8)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic error "-Wswitch"
+#pragma GCC diagnostic error "-Wswitch-enum"
+#endif
+      switch (element_type.get_type_enum()) {
+        case element::Type_t::f32: {
+          std::vector<float> float_values{values.begin(), values.end()};
+          void* type_values_src =
+              static_cast<void*>(const_cast<float*>(float_values.data()));
+          copy_batch_values_to_src(i, target, type_values_src);
+          break;
+        }
+        case element::Type_t::f64: {
+          void* type_values_src =
+              static_cast<void*>(const_cast<double*>(values.data()));
+          copy_batch_values_to_src(i, target, type_values_src);
+          break;
+        }
+        case element::Type_t::i8:
+        case element::Type_t::i16:
+        case element::Type_t::i32:
+        case element::Type_t::i64:
+        case element::Type_t::u8:
+        case element::Type_t::u16:
+        case element::Type_t::u32:
+        case element::Type_t::u64:
+        case element::Type_t::dynamic:
+        case element::Type_t::undefined:
+        case element::Type_t::bf16:
+        case element::Type_t::f16:
+        case element::Type_t::boolean:
+          NGRAPH_CHECK(false, "Unsupported element type", element_type);
+          break;
       }
+#if defined(__GNUC__) && !(__GNUC__ == 4 && __GNUC_MINOR__ == 8)
+#pragma GCC diagnostic pop
+#endif
     }
   }
 }

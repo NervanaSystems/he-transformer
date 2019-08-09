@@ -57,6 +57,16 @@ NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2) {
   EXPECT_TRUE(all_close(read_vector<float>(a), (vector<float>{5, 6})));
 }
 
+NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2_double) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+
+  Shape shape{2};
+  auto a = he_backend->create_plain_tensor(element::f64, shape);
+  copy_data(a, vector<double>{5, 6});
+  EXPECT_TRUE(all_close(read_vector<double>(a), (vector<double>{5, 6})));
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2_3) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
@@ -67,6 +77,44 @@ NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2_3) {
   EXPECT_TRUE(all_close(
       read_vector<float>(a),
       test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector()));
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2_3_double) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+
+  Shape shape{2, 3};
+  auto a = he_backend->create_plain_tensor(element::f64, shape);
+  copy_data(a, test::NDArray<double, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector());
+  EXPECT_TRUE(all_close(
+      read_vector<double>(a),
+      test::NDArray<double, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector()));
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, plain_tv_batch_write_read_2_3) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+
+  Shape shape{2, 3};
+  auto a = he_backend->create_packed_plain_tensor(element::f32, shape);
+  copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector());
+
+  EXPECT_TRUE(all_close(
+      read_vector<float>(a),
+      (test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector()));
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, plain_tv_batch_write_read_2_3_double) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+
+  Shape shape{2, 3};
+  auto a = he_backend->create_packed_plain_tensor(element::f64, shape);
+  copy_data(a, test::NDArray<double, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector());
+
+  EXPECT_TRUE(all_close(
+      read_vector<double>(a),
+      (test::NDArray<double, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector()));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_scalar) {
@@ -155,17 +203,4 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_batch_write_read_2_1) {
 
   EXPECT_TRUE(all_close(read_vector<float>(a),
                         (test::NDArray<float, 2>({{1, 2}})).get_vector()));
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, plain_tv_batch_write_read_2_3) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-
-  Shape shape{2, 3};
-  auto a = he_backend->create_packed_plain_tensor(element::f32, shape);
-  copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector());
-
-  EXPECT_TRUE(all_close(
-      read_vector<float>(a),
-      (test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector()));
 }
