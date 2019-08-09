@@ -51,52 +51,6 @@ class HEPlainTensor : public HETensor {
     return m_plaintexts[i];
   }
 
-  static inline std::vector<double> type_vec_to_double_vec(
-      const void* src, const element::Type& element_type, size_t n) {
-    std::vector<double> ret(n);
-    char* src_with_offset = static_cast<char*>(const_cast<void*>(src));
-    for (size_t i = 0; i < n; ++i) {
-      ret[i] = type_to_double(src_with_offset, element_type);
-      ++src_with_offset;
-    }
-    return ret;
-  }
-
-  static inline double type_to_double(const void* src,
-                                      const element::Type& element_type) {
-#if defined(__GNUC__) && !(__GNUC__ == 4 && __GNUC_MINOR__ == 8)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic error "-Wswitch"
-#pragma GCC diagnostic error "-Wswitch-enum"
-#endif
-    switch (element_type.get_type_enum()) {
-      case element::Type_t::f32:
-        return static_cast<double>(*static_cast<const float*>(src));
-        break;
-      case element::Type_t::f64:
-        return static_cast<double>(*static_cast<const double*>(src));
-        break;
-      case element::Type_t::i8:
-      case element::Type_t::i16:
-      case element::Type_t::i32:
-      case element::Type_t::i64:
-      case element::Type_t::u8:
-      case element::Type_t::u16:
-      case element::Type_t::u32:
-      case element::Type_t::u64:
-      case element::Type_t::dynamic:
-      case element::Type_t::undefined:
-      case element::Type_t::bf16:
-      case element::Type_t::f16:
-      case element::Type_t::boolean:
-        NGRAPH_CHECK(false, "Unsupported element type", element_type);
-        break;
-    }
-#if defined(__GNUC__) && !(__GNUC__ == 4 && __GNUC_MINOR__ == 8)
-#pragma GCC diagnostic pop
-#endif
-  }
-
   static constexpr size_t internal_type_byte_size = HEPlaintext::type_byte_size;
 
   inline void reset() { m_plaintexts.clear(); }

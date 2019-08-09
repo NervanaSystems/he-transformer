@@ -127,6 +127,16 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_scalar) {
   EXPECT_TRUE(all_close(read_vector<float>(a), (vector<float>{5})));
 }
 
+NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_scalar_double) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+
+  Shape shape{};
+  auto a = he_backend->create_cipher_tensor(element::f64, shape);
+  copy_data(a, vector<double>{5});
+  EXPECT_TRUE(all_close(read_vector<double>(a), (vector<double>{5})));
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_2) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());

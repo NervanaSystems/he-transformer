@@ -22,6 +22,7 @@
 #include "seal/he_seal_cipher_tensor.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_util.hpp"
+#include "seal/util.hpp"
 
 ngraph::he::HESealCipherTensor::HESealCipherTensor(
     const element::Type& element_type, const Shape& shape,
@@ -54,9 +55,6 @@ void ngraph::he::HESealCipherTensor::write(
     const element::Type& element_type, seal::parms_id_type parms_id,
     double scale, seal::CKKSEncoder& ckks_encoder, seal::Encryptor& encryptor,
     bool complex_packing) {
-  NGRAPH_CHECK(element_type == element::f32,
-               "CipherTensor supports float32 only");
-
   size_t type_byte_size = element_type.size();
   size_t num_elements_to_write = n / (type_byte_size * batch_size);
 
@@ -65,8 +63,18 @@ void ngraph::he::HESealCipherTensor::write(
                " to destination size ", destination.size());
 
   if (num_elements_to_write == 1) {
-    const double* double_src = static_cast<const double*>(source);
-    std::vector<double> values{double_src, double_src + batch_size};
+    std::vector<double> values(batch_size);
+    char* src_with_offset = static_cast<char*>(const_cast<void*>(source));
+    for (size_t batch_idx = 0; batch_idx < batch_size; batch_idx++) {
+      values[batch_idx] = ngraph::he::type_to_double(
+          static_cast<void*>(src_with_offset), element_type);
+      src_with_offset += type_byte_size;
+    }
+
+    NGRAPH_INFO << "Writing values";
+    for (const auto& elem : values) {
+      NGRAPH_INFO << elem;
+    }
     auto plaintext = HEPlaintext(values);
     encrypt(destination[0], plaintext, parms_id, scale, ckks_encoder, encryptor,
             complex_packing);
@@ -88,6 +96,8 @@ void ngraph::he::HESealCipherTensor::write(
               type_byte_size * (i + j * num_elements_to_write));
           memcpy(batch_dst, src, type_byte_size);
         }
+
+        // TODO: fix for other types
         std::vector<double> values{
             static_cast<double*>(batch_src),
             static_cast<double*>(batch_src) + batch_size};

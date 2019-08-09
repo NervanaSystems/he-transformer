@@ -18,6 +18,7 @@
 
 #include "he_plain_tensor.hpp"
 #include "seal/he_seal_backend.hpp"
+#include "seal/util.hpp"
 
 ngraph::he::HEPlainTensor::HEPlainTensor(const element::Type& element_type,
                                          const Shape& shape,
@@ -96,11 +97,6 @@ void ngraph::he::HEPlainTensor::read(void* target, size_t n) const {
     NGRAPH_CHECK(values.size() > 0, "Cannot read from empty plaintext");
     void* type_values_src;
 
-#if defined(__GNUC__) && !(__GNUC__ == 4 && __GNUC_MINOR__ == 8)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic error "-Wswitch"
-#pragma GCC diagnostic error "-Wswitch-enum"
-#endif
     switch (element_type.get_type_enum()) {
       case element::Type_t::f32: {
         std::vector<float> float_values{values.begin(), values.end()};
@@ -131,9 +127,6 @@ void ngraph::he::HEPlainTensor::read(void* target, size_t n) const {
         NGRAPH_CHECK(false, "Unsupported element type", element_type);
         break;
     }
-#if defined(__GNUC__) && !(__GNUC__ == 4 && __GNUC_MINOR__ == 8)
-#pragma GCC diagnostic pop
-#endif
 
   } else {
     auto copy_batch_values_to_src = [&](size_t element_idx, void* target,
@@ -155,11 +148,6 @@ void ngraph::he::HEPlainTensor::read(void* target, size_t n) const {
       NGRAPH_CHECK(values.size() >= m_batch_size, "values size ", values.size(),
                    " is smaller than batch size ", m_batch_size);
 
-#if defined(__GNUC__) && !(__GNUC__ == 4 && __GNUC_MINOR__ == 8)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic error "-Wswitch"
-#pragma GCC diagnostic error "-Wswitch-enum"
-#endif
       switch (element_type.get_type_enum()) {
         case element::Type_t::f32: {
           std::vector<float> float_values{values.begin(), values.end()};
@@ -190,9 +178,6 @@ void ngraph::he::HEPlainTensor::read(void* target, size_t n) const {
           NGRAPH_CHECK(false, "Unsupported element type", element_type);
           break;
       }
-#if defined(__GNUC__) && !(__GNUC__ == 4 && __GNUC_MINOR__ == 8)
-#pragma GCC diagnostic pop
-#endif
     }
   }
 }

@@ -489,15 +489,46 @@ void ngraph::he::decode(ngraph::he::HEPlaintext& output,
 void ngraph::he::decode(void* output, const ngraph::he::HEPlaintext& input,
                         const element::Type& type, size_t count) {
   NGRAPH_CHECK(count != 0, "Decode called on 0 elements");
-  NGRAPH_CHECK(type == element::f32,
-               "CKKS encode supports only float encoding, received type ",
-               type);
   NGRAPH_CHECK(input.num_values() > 0, "Input has no values");
 
+  size_t type_byte_size = type.size();
+
+  NGRAPH_INFO << "Decoding type " << type;
+
   // TODO: decode based on type
-  const std::vector<double>& xs_float = input.values();
-  NGRAPH_CHECK(xs_float.size() >= count);
-  std::memcpy(output, &xs_float[0], type.size() * count);
+  const std::vector<double>& values = input.values();
+  NGRAPH_CHECK(values.size() >= count);
+
+  switch (type.get_type_enum()) {
+    case element::Type_t::f32: {
+      std::vector<float> float_values{values.begin(), values.end()};
+      void* type_values_src =
+          static_cast<void*>(const_cast<float*>(float_values.data()));
+      std::memcpy(output, type_values_src, type_byte_size * count);
+      break;
+    }
+    case element::Type_t::f64: {
+      void* type_values_src =
+          static_cast<void*>(const_cast<double*>(values.data()));
+      std::memcpy(output, type_values_src, type_byte_size * count);
+      break;
+    }
+    case element::Type_t::i8:
+    case element::Type_t::i16:
+    case element::Type_t::i32:
+    case element::Type_t::i64:
+    case element::Type_t::u8:
+    case element::Type_t::u16:
+    case element::Type_t::u32:
+    case element::Type_t::u64:
+    case element::Type_t::dynamic:
+    case element::Type_t::undefined:
+    case element::Type_t::bf16:
+    case element::Type_t::f16:
+    case element::Type_t::boolean:
+      NGRAPH_CHECK(false, "Unsupported element type", type);
+      break;
+  }
 }
 
 void ngraph::he::decrypt(ngraph::he::HEPlaintext& output,
