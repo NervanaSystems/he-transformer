@@ -86,13 +86,14 @@ void ngraph::he::HEPlainTensor::read(void* target, size_t n) const {
   size_t type_byte_size = element_type.size();
   size_t num_elements_to_read = n / (type_byte_size * m_batch_size);
 
+  NGRAPH_INFO << "num_elements_to_read " << num_elements_to_read;
+
   if (num_elements_to_read == 1) {
     void* dst_with_offset = target;
+    NGRAPH_CHECK(m_plaintexts.size() > 0,
+                 "Cannot read from empty plain tensor");
     const std::vector<double>& values = m_plaintexts[0].values();
     NGRAPH_CHECK(values.size() > 0, "Cannot read from empty plaintext");
-
-    NGRAPH_INFO << "Reading value " << values[0];
-
     void* type_values_src;
 
 #if defined(__GNUC__) && !(__GNUC__ == 4 && __GNUC_MINOR__ == 8)
@@ -103,14 +104,15 @@ void ngraph::he::HEPlainTensor::read(void* target, size_t n) const {
     switch (element_type.get_type_enum()) {
       case element::Type_t::f32: {
         std::vector<float> float_values{values.begin(), values.end()};
-        NGRAPH_INFO << "float values" << float_values[0];
         type_values_src =
             static_cast<void*>(const_cast<float*>(float_values.data()));
+        memcpy(dst_with_offset, type_values_src, type_byte_size * m_batch_size);
         break;
       }
       case element::Type_t::f64: {
         type_values_src =
             static_cast<void*>(const_cast<double*>(values.data()));
+        memcpy(dst_with_offset, type_values_src, type_byte_size * m_batch_size);
         break;
       }
       case element::Type_t::i8:
@@ -133,7 +135,6 @@ void ngraph::he::HEPlainTensor::read(void* target, size_t n) const {
 #pragma GCC diagnostic pop
 #endif
 
-    memcpy(dst_with_offset, type_values_src, type_byte_size * m_batch_size);
   } else {
 #pragma omp parallel for
     for (size_t i = 0; i < num_elements_to_read; ++i) {

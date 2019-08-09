@@ -81,12 +81,12 @@ void ngraph::he::HESealCipherTensor::write(
         size_t allocation_size = type_byte_size * batch_size;
         void* batch_src = ngraph::ngraph_malloc(allocation_size);
         for (size_t j = 0; j < batch_size; ++j) {
-          void* destination = static_cast<void*>(static_cast<char*>(batch_src) +
-                                                 j * type_byte_size);
+          void* batch_dst = static_cast<void*>(static_cast<char*>(batch_src) +
+                                               j * type_byte_size);
           const void* src = static_cast<const void*>(
               static_cast<const char*>(source) +
               type_byte_size * (i + j * num_elements_to_write));
-          memcpy(destination, src, type_byte_size);
+          memcpy(batch_dst, src, type_byte_size);
         }
         std::vector<double> values{
             static_cast<double*>(batch_src),
