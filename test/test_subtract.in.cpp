@@ -29,98 +29,167 @@ static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, sub_2_3) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-
   Shape shape{2, 3};
-  auto a = make_shared<op::Parameter>(element::f32, shape);
-  auto b = make_shared<op::Parameter>(element::f32, shape);
-  auto t = make_shared<op::Subtract>(a, b);
-  auto f = make_shared<Function>(t, ParameterVector{a, b});
-
-  // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend.get());
-
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
-
-    auto t_a = inputs[0];
-    auto t_b = inputs[1];
-    auto t_result = results[0];
-
-    copy_data(t_a,
-              test::NDArray<float, 2>({{1, 2, 3}, {10, 11, 12}}).get_vector());
-    copy_data(t_b,
-              test::NDArray<float, 2>({{7, 8, 9}, {4, 5, 6}}).get_vector());
-    auto handle = backend->compile(f);
-    handle->call_with_validate({t_result}, {t_a, t_b});
-    EXPECT_TRUE(all_close(
-        read_vector<float>(t_result),
-        (test::NDArray<float, 2>({{-6, -6, -6}, {6, 6, 6}})).get_vector(),
-        1e-3f));
+  {
+    auto a = make_shared<op::Parameter>(element::f32, shape);
+    auto b = make_shared<op::Parameter>(element::f32, shape);
+    auto t = make_shared<op::Subtract>(a, b);
+    auto f = make_shared<Function>(t, ParameterVector{a, b});
+    auto tensors_list =
+        generate_plain_cipher_tensors({t}, {a, b}, backend.get());
+    for (auto tensors : tensors_list) {
+      auto results = get<0>(tensors);
+      auto inputs = get<1>(tensors);
+      auto t_a = inputs[0];
+      auto t_b = inputs[1];
+      auto t_result = results[0];
+      copy_data(
+          t_a, test::NDArray<float, 2>({{1, 2, 3}, {10, 11, 12}}).get_vector());
+      copy_data(t_b,
+                test::NDArray<float, 2>({{7, 8, 9}, {4, 5, 6}}).get_vector());
+      auto handle = backend->compile(f);
+      handle->call_with_validate({t_result}, {t_a, t_b});
+      EXPECT_TRUE(all_close(
+          read_vector<float>(t_result),
+          (test::NDArray<float, 2>({{-6, -6, -6}, {6, 6, 6}})).get_vector(),
+          1e-3f));
+    }
+  }
+  {
+    auto a = make_shared<op::Parameter>(element::f64, shape);
+    auto b = make_shared<op::Parameter>(element::f64, shape);
+    auto t = make_shared<op::Subtract>(a, b);
+    auto f = make_shared<Function>(t, ParameterVector{a, b});
+    auto tensors_list =
+        generate_plain_cipher_tensors({t}, {a, b}, backend.get());
+    for (auto tensors : tensors_list) {
+      auto results = get<0>(tensors);
+      auto inputs = get<1>(tensors);
+      auto t_a = inputs[0];
+      auto t_b = inputs[1];
+      auto t_result = results[0];
+      copy_data(
+          t_a,
+          test::NDArray<double, 2>({{1, 2, 3}, {10, 11, 12}}).get_vector());
+      copy_data(t_b,
+                test::NDArray<double, 2>({{7, 8, 9}, {4, 5, 6}}).get_vector());
+      auto handle = backend->compile(f);
+      handle->call_with_validate({t_result}, {t_a, t_b});
+      EXPECT_TRUE(all_close(
+          read_vector<double>(t_result),
+          (test::NDArray<double, 2>({{-6, -6, -6}, {6, 6, 6}})).get_vector(),
+          1e-3));
+    }
   }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sub_zero_2_3) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-
   Shape shape{2, 3};
-  auto a = make_shared<op::Parameter>(element::f32, shape);
-  auto b = make_shared<op::Parameter>(element::f32, shape);
-  auto t = make_shared<op::Subtract>(a, b);
-  auto f = make_shared<Function>(t, ParameterVector{a, b});
-
-  // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend.get());
-
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
-
-    auto t_a = inputs[0];
-    auto t_b = inputs[1];
-    auto t_result = results[0];
-
-    copy_data(t_a,
-              test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector());
-    copy_data(t_b,
-              test::NDArray<float, 2>({{0, 0, 0}, {0, 0, 0}}).get_vector());
-    auto handle = backend->compile(f);
-    handle->call_with_validate({t_result}, {t_a, t_b});
-    EXPECT_TRUE(all_close(
-        read_vector<float>(t_result),
-        (test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}})).get_vector(), 1e-3f));
+  {
+    auto a = make_shared<op::Parameter>(element::f32, shape);
+    auto b = make_shared<op::Parameter>(element::f32, shape);
+    auto t = make_shared<op::Subtract>(a, b);
+    auto f = make_shared<Function>(t, ParameterVector{a, b});
+    auto tensors_list =
+        generate_plain_cipher_tensors({t}, {a, b}, backend.get());
+    for (auto tensors : tensors_list) {
+      auto results = get<0>(tensors);
+      auto inputs = get<1>(tensors);
+      auto t_a = inputs[0];
+      auto t_b = inputs[1];
+      auto t_result = results[0];
+      copy_data(t_a,
+                test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector());
+      copy_data(t_b,
+                test::NDArray<float, 2>({{0, 0, 0}, {0, 0, 0}}).get_vector());
+      auto handle = backend->compile(f);
+      handle->call_with_validate({t_result}, {t_a, t_b});
+      EXPECT_TRUE(all_close(
+          read_vector<float>(t_result),
+          (test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}})).get_vector(),
+          1e-3f));
+    }
+  }
+  {
+    auto a = make_shared<op::Parameter>(element::f64, shape);
+    auto b = make_shared<op::Parameter>(element::f64, shape);
+    auto t = make_shared<op::Subtract>(a, b);
+    auto f = make_shared<Function>(t, ParameterVector{a, b});
+    auto tensors_list =
+        generate_plain_cipher_tensors({t}, {a, b}, backend.get());
+    for (auto tensors : tensors_list) {
+      auto results = get<0>(tensors);
+      auto inputs = get<1>(tensors);
+      auto t_a = inputs[0];
+      auto t_b = inputs[1];
+      auto t_result = results[0];
+      copy_data(t_a,
+                test::NDArray<double, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector());
+      copy_data(t_b,
+                test::NDArray<double, 2>({{0, 0, 0}, {0, 0, 0}}).get_vector());
+      auto handle = backend->compile(f);
+      handle->call_with_validate({t_result}, {t_a, t_b});
+      EXPECT_TRUE(all_close(
+          read_vector<double>(t_result),
+          (test::NDArray<double, 2>({{1, 2, 3}, {4, 5, 6}})).get_vector(),
+          1e-3));
+    }
   }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sub_from_zero_2_3) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-
   Shape shape{2, 3};
-  auto a = make_shared<op::Parameter>(element::f32, shape);
-  auto b = make_shared<op::Parameter>(element::f32, shape);
-  auto t = make_shared<op::Subtract>(a, b);
-  auto f = make_shared<Function>(t, ParameterVector{a, b});
-
-  // Create some tensors for input/output
-  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend.get());
-
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
-
-    auto t_a = inputs[0];
-    auto t_b = inputs[1];
-    auto t_result = results[0];
-
-    copy_data(t_a,
-              test::NDArray<float, 2>({{0, 0, 0}, {0, 0, 0}}).get_vector());
-    copy_data(t_b,
-              test::NDArray<float, 2>({{1, 2, 3}, {-1, -2, -3}}).get_vector());
-    auto handle = backend->compile(f);
-    handle->call_with_validate({t_result}, {t_a, t_b});
-    EXPECT_TRUE(all_close(
-        read_vector<float>(t_result),
-        (test::NDArray<float, 2>({{-1, -2, -3}, {1, 2, 3}})).get_vector(),
-        1e-3f));
+  {
+    auto a = make_shared<op::Parameter>(element::f32, shape);
+    auto b = make_shared<op::Parameter>(element::f32, shape);
+    auto t = make_shared<op::Subtract>(a, b);
+    auto f = make_shared<Function>(t, ParameterVector{a, b});
+    auto tensors_list =
+        generate_plain_cipher_tensors({t}, {a, b}, backend.get());
+    for (auto tensors : tensors_list) {
+      auto results = get<0>(tensors);
+      auto inputs = get<1>(tensors);
+      auto t_a = inputs[0];
+      auto t_b = inputs[1];
+      auto t_result = results[0];
+      copy_data(t_a,
+                test::NDArray<float, 2>({{0, 0, 0}, {0, 0, 0}}).get_vector());
+      copy_data(
+          t_b, test::NDArray<float, 2>({{1, 2, 3}, {-1, -2, -3}}).get_vector());
+      auto handle = backend->compile(f);
+      handle->call_with_validate({t_result}, {t_a, t_b});
+      EXPECT_TRUE(all_close(
+          read_vector<float>(t_result),
+          (test::NDArray<float, 2>({{-1, -2, -3}, {1, 2, 3}})).get_vector(),
+          1e-3f));
+    }
+  }
+  {
+    auto a = make_shared<op::Parameter>(element::f64, shape);
+    auto b = make_shared<op::Parameter>(element::f64, shape);
+    auto t = make_shared<op::Subtract>(a, b);
+    auto f = make_shared<Function>(t, ParameterVector{a, b});
+    auto tensors_list =
+        generate_plain_cipher_tensors({t}, {a, b}, backend.get());
+    for (auto tensors : tensors_list) {
+      auto results = get<0>(tensors);
+      auto inputs = get<1>(tensors);
+      auto t_a = inputs[0];
+      auto t_b = inputs[1];
+      auto t_result = results[0];
+      copy_data(t_a,
+                test::NDArray<double, 2>({{0, 0, 0}, {0, 0, 0}}).get_vector());
+      copy_data(
+          t_b,
+          test::NDArray<double, 2>({{1, 2, 3}, {-1, -2, -3}}).get_vector());
+      auto handle = backend->compile(f);
+      handle->call_with_validate({t_result}, {t_a, t_b});
+      EXPECT_TRUE(all_close(
+          read_vector<double>(t_result),
+          (test::NDArray<double, 2>({{-1, -2, -3}, {1, 2, 3}})).get_vector(),
+          1e-3));
+    }
   }
 }
