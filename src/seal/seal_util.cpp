@@ -453,8 +453,10 @@ void ngraph::he::encode(ngraph::he::SealPlaintextWrapper& destination,
                               destination.plaintext());
         }
       }
+      break;
     }
     case element::Type_t::i64: {
+      /*
       std::vector<int64_t> int64_values(plaintext.num_values());
       double_vec_to_type_vec(int64_values.data(), element_type,
                              plaintext.values());
@@ -482,7 +484,8 @@ void ngraph::he::encode(ngraph::he::SealPlaintextWrapper& destination,
                        slot_count);
           ckks_encoder.encode(int64_values, parms_id, destination.plaintext());
         }
-      }
+      */
+      break;
     }
     case element::Type_t::i8:
     case element::Type_t::i16:
