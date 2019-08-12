@@ -71,4 +71,25 @@ NGRAPH_TEST(${BACKEND_NAME}, negate_2_3) {
           (test::NDArray<double, 2>({{3, 2, 1}, {0, -1, -2}})).get_vector()));
     }
   }
+  {
+    auto a = make_shared<op::Parameter>(element::i64, shape);
+    auto t = make_shared<op::Negative>(a);
+    auto f = make_shared<Function>(t, ParameterVector{a});
+    auto tensors_list =
+        generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
+    for (auto tensors : tensors_list) {
+      auto results = get<0>(tensors);
+      auto inputs = get<1>(tensors);
+      auto t_a = inputs[0];
+      auto t_result = results[0];
+      copy_data(
+          t_a,
+          test::NDArray<int64_t, 2>({{-3, -2, -1}, {0, 1, 2}}).get_vector());
+      auto handle = backend->compile(f);
+      handle->call_with_validate({t_result}, {t_a});
+      EXPECT_TRUE(all_close(
+          read_vector<int64_t>(t_result),
+          (test::NDArray<int64_t, 2>({{3, 2, 1}, {0, -1, -2}})).get_vector()));
+    }
+  }
 }
