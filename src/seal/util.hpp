@@ -29,7 +29,7 @@
 
 namespace ngraph {
 namespace he {
-static inline void print_seal_context(const seal::SEALContext& context) {
+inline void print_seal_context(const seal::SEALContext& context) {
   auto& context_data = *context.key_context_data();
 
   NGRAPH_CHECK(context_data.parms().scheme() == seal::scheme_type::CKKS,
@@ -55,8 +55,8 @@ static inline void print_seal_context(const seal::SEALContext& context) {
 // Packs elements of input into real values
 // (a+bi, c+di) => (a,b,c,d)
 template <typename T>
-static inline void complex_vec_to_real_vec(
-    std::vector<T>& output, const std::vector<std::complex<T>>& input) {
+inline void complex_vec_to_real_vec(std::vector<T>& output,
+                                    const std::vector<std::complex<T>>& input) {
   NGRAPH_CHECK(output.size() == 0);
   output.reserve(input.size() * 2);
   for (const std::complex<T>& value : input) {
@@ -69,8 +69,8 @@ static inline void complex_vec_to_real_vec(
 // (a,b,c,d) => (a+bi, c+di)
 // (a,b,c) => (a+bi, c+0i)
 template <typename T>
-static inline void real_vec_to_complex_vec(std::vector<std::complex<T>>& output,
-                                           const std::vector<T>& input) {
+inline void real_vec_to_complex_vec(std::vector<std::complex<T>>& output,
+                                    const std::vector<T>& input) {
   NGRAPH_CHECK(output.size() == 0);
   output.reserve(input.size() / 2);
   std::vector<T> complex_parts(2, 0);
@@ -84,7 +84,7 @@ static inline void real_vec_to_complex_vec(std::vector<std::complex<T>>& output,
   }
 }
 
-static inline bool flag_to_bool(const char* flag, bool default_value = false) {
+inline bool flag_to_bool(const char* flag, bool default_value = false) {
   if (flag == nullptr) {
     return default_value;
   }
@@ -101,8 +101,8 @@ static inline bool flag_to_bool(const char* flag, bool default_value = false) {
   }
 }
 
-static inline double type_to_double(const void* src,
-                                    const element::Type& element_type) {
+inline double type_to_double(const void* src,
+                             const element::Type& element_type) {
   switch (element_type.get_type_enum()) {
     case element::Type_t::f32:
       return static_cast<double>(*static_cast<const float*>(src));
@@ -132,7 +132,7 @@ static inline double type_to_double(const void* src,
   return 0.0;
 }
 
-static inline std::vector<double> type_vec_to_double_vec(
+inline std::vector<double> type_vec_to_double_vec(
     const void* src, const element::Type& element_type, size_t n) {
   std::vector<double> ret(n);
   char* src_with_offset = static_cast<char*>(const_cast<void*>(src));
@@ -143,7 +143,7 @@ static inline std::vector<double> type_vec_to_double_vec(
   return ret;
 }
 
-static void double_vec_to_type_vec(void* target,
+inline void double_vec_to_type_vec(void* target,
                                    const element::Type& element_type,
                                    const std::vector<double>& input) {
   NGRAPH_CHECK(input.size() > 0, "Input has no values");
@@ -279,28 +279,58 @@ inline void load(seal::Ciphertext& cipher, void* src) {
   cipher.scale() = scale;
   cipher.parms_id() = parms_id;
 
+  NGRAPH_INFO << "cipher.scale() " << cipher.scale();
+  NGRAPH_INFO << "cipher.poly_modulus_degree() "
+              << cipher.poly_modulus_degree();
+
+  NGRAPH_INFO << "cipher.parms_id() " << cipher.parms_id()[0] << ", "
+              << cipher.parms_id()[1] << ", " << cipher.parms_id()[2] << ", "
+              << cipher.parms_id()[3];
+
   // TODO: load/ verify context?
   seal::EncryptionParameters parms(seal::scheme_type::CKKS);
   parms.set_poly_modulus_degree(poly_modulus_degree);
   // parms.set_coeff_modulus();
   auto context = seal::SEALContext::Create(parms);
 
-  cipher.reserve(size64);
-  cipher.resize(size64);
+  seal::Ciphertext new_cipher(context);
 
-  NGRAPH_INFO << "cipher size " << cipher.size();
+  new_cipher.reserve(size64);
+  new_cipher.resize(size64);
+
+  NGRAPH_INFO << "cipher size " << new_cipher.size();
   NGRAPH_INFO << "Copying to new data";
   NGRAPH_INFO << "data_count " << data_count;
   NGRAPH_INFO << "sizeof(seal::Ciphertext::ct_coeff_type) "
               << sizeof(seal::Ciphertext::ct_coeff_type);
-  std::memcpy(static_cast<void*>(new_data.begin()),
-              static_cast<void*>(char_src + offsets[5]),
-              sizeof(seal::Ciphertext::ct_coeff_type) * data_count);
-  NGRAPH_INFO << "copying to new_data.data() is fine";
+  // std::memcpy(static_cast<void*>(new_data.begin()),
+  //            static_cast<void*>(char_src + offsets[5]),
+  //           sizeof(seal::Ciphertext::ct_coeff_type) * data_count);
+  // NGRAPH_INFO << "copying to new_data.data() is fine";
 
-  std::memcpy(static_cast<void*>(cipher.data()),
-              static_cast<void*>(char_src + offsets[5]),
-              sizeof(seal::Ciphertext::ct_coeff_type) * data_count);
+  new_cipher[0] = 123;
+  NGRAPH_INFO << "cipher[0] is fine";
+
+  for (size_t i = 0; i < data_count; ++i) {
+    NGRAPH_INFO << "copying " << i;
+    void* src_with_offset = static_cast<void*>(
+        char_src + offsets[5] + i * sizeof(seal::Ciphertext::ct_coeff_type));
+    // std::memcpy(static_cast<void*>(new_data.begin()), src_with_offset,
+    //            sizeof(seal::Ciphertext::ct_coeff_type) * data_count);
+    // NGRAPH_INFO << "copying " << i << " to new data is ok";
+
+    // std::uint64_t new_val;
+    // std::memcpy(&new_val, src_with_offset, sizeof(std::uint64_t));
+    // NGRAPH_INFO << "new val" << new_val;
+
+    new_cipher[i] = 123;
+
+    /* std::memcpy(static_cast<void*>(cipher.data(i)), src_with_offset,
+                 sizeof(seal::Ciphertext::ct_coeff_type)); */
+    NGRAPH_INFO << "copied new val";
+  }
+
+  cipher = std::move(new_cipher);
 
   // std::memcpy(destination, (void*)cipher.data()), 8 *
   // cipher.uint64_count());
