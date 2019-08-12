@@ -12,11 +12,16 @@ Instead, a client will provide the server with encrypted data.
 The client uses python bindings. See the `python` folder for instructions to build he-transformer with python bindings.
 
 For a simple demonstration of a server-client approach, run
-`NGRAPH_ENABLE_CLIENT=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_TF_BACKEND=HE_SEAL python ax.py`
+```bash
+NGRAPH_ENABLE_CLIENT=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_TF_BACKEND=HE_SEAL python ax.py
+```
 
 This will discard the Tensorflow inputs and instead wait for a client to connect and provide encrypted inputs.
 
-To start the client, in a separate terminal on the same host, run `python pyclient.py`.
+To start the client, in a separate terminal on the same host, run
+```bash
+python pyclient.py
+```
 
 Once the computation is complete, the output will be returned to the client and decrypted. The server will attempt decrypt the output as well; however, since it does not have the client's secret key, the output will be meaningless.
 
