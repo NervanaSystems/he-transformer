@@ -126,7 +126,6 @@ data_files = [('lib', [(NGRAPH_HE_LIB_DIR + '/' + library)
 
 sources = ['pyhe_client/he_seal_client.cpp', 'pyhe_client/pyhe_client.cpp']
 sources = [PYNGRAPH_ROOT_DIR + '/' + source for source in sources]
-print('sources', sources)
 
 ext_modules = [
     Extension(
