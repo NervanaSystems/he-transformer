@@ -552,6 +552,7 @@ bool ngraph::he::HESealExecutable::call(
           encrypt(cipher_input->get_element(plain_idx),
                   plain_input->get_element(plain_idx),
                   m_he_seal_backend.get_context()->first_parms_id(),
+                  plain_input->get_element_type(),
                   m_he_seal_backend.get_scale(),
                   *m_he_seal_backend.get_ckks_encoder(),
                   *m_he_seal_backend.get_encryptor(), m_complex_packing);

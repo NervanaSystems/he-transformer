@@ -94,12 +94,12 @@ TEST(perf_micro, encode) {
 
         // HE encoder
         time_start = chrono::high_resolution_clock::now();
-        ngraph::he::encode(input, scale, parms_id, he_plain, he_seal_backend,
-                           pool);
-        ngraph::he::encode(input, scale, parms_id, he_plain, he_seal_backend,
-                           pool);
-        ngraph::he::encode(input, scale, parms_id, he_plain, he_seal_backend,
-                           pool);
+        ngraph::he::encode(input, ngraph::element::f32, scale, parms_id,
+                           he_plain, he_seal_backend, pool);
+        ngraph::he::encode(input, ngraph::element::f32, scale, parms_id,
+                           he_plain, he_seal_backend, pool);
+        ngraph::he::encode(input, ngraph::element::f32, scale, parms_id,
+                           he_plain, he_seal_backend, pool);
         time_end = chrono::high_resolution_clock::now();
         time_he_encode_sum +=
             chrono::duration_cast<chrono::nanoseconds>(time_end - time_start);

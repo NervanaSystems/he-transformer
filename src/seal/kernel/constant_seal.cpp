@@ -59,7 +59,7 @@ void ngraph::he::constant_seal(
   for (size_t i = 0; i < count; ++i) {
     const void* src = static_cast<const char*>(data_ptr) + i * type_byte_size;
     auto plaintext = HEPlaintext(ngraph::he::type_to_double(src, element_type));
-    he_seal_backend.encrypt(out[i], plaintext,
+    he_seal_backend.encrypt(out[i], plaintext, element_type,
                             he_seal_backend.complex_packing());
   }
 }

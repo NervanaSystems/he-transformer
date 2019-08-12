@@ -82,7 +82,8 @@ NGRAPH_TEST(${BACKEND_NAME}, known_cipher_cipher_add) {
     arg1.emplace_back(make_shared<ngraph::he::SealCiphertextWrapper>());
     out.emplace_back(make_shared<ngraph::he::SealCiphertextWrapper>());
 
-    he_backend->encrypt(arg0[i], ngraph::he::HEPlaintext(i), false);
+    he_backend->encrypt(arg0[i], ngraph::he::HEPlaintext(i),
+                        ngraph::element::f32, false);
     arg0[i]->known_value() = false;
 
     arg1[i]->known_value() = true;
@@ -182,7 +183,8 @@ NGRAPH_TEST(${BACKEND_NAME}, known_cipher_cipher_mult) {
     arg1.emplace_back(make_shared<ngraph::he::SealCiphertextWrapper>());
     out.emplace_back(make_shared<ngraph::he::SealCiphertextWrapper>());
 
-    he_backend->encrypt(arg0[i], ngraph::he::HEPlaintext(arg0_val), false);
+    he_backend->encrypt(arg0[i], ngraph::he::HEPlaintext(arg0_val),
+                        ngraph::element::f32, false);
     arg0[i]->known_value() = false;
 
     arg1[i]->known_value() = true;
@@ -249,7 +251,8 @@ NGRAPH_TEST(${BACKEND_NAME}, known_cipher_cipher_sub) {
     arg1.emplace_back(make_shared<ngraph::he::SealCiphertextWrapper>());
     out.emplace_back(make_shared<ngraph::he::SealCiphertextWrapper>());
 
-    he_backend->encrypt(arg0[i], ngraph::he::HEPlaintext(arg0_val), false);
+    he_backend->encrypt(arg0[i], ngraph::he::HEPlaintext(arg0_val),
+                        ngraph::element::f32, false);
     arg0[i]->known_value() = false;
 
     arg1[i]->known_value() = true;

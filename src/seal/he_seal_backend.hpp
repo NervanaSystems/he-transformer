@@ -136,6 +136,7 @@ class HESealBackend : public ngraph::runtime::Backend {
 
   void encrypt(std::shared_ptr<ngraph::he::SealCiphertextWrapper>& output,
                const ngraph::he::HEPlaintext& input,
+               const element::Type& element_type,
                bool complex_packing = false) const;
 
   void decrypt(ngraph::he::HEPlaintext& output,

@@ -53,12 +53,12 @@ static inline void print_seal_context(const seal::SEALContext& context) {
 
 // Packs elements of input into real values
 // (a+bi, c+di) => (a,b,c,d)
+template <typename T>
 static inline void complex_vec_to_real_vec(
-    std::vector<double>& output,
-    const std::vector<std::complex<double>>& input) {
+    std::vector<T>& output, const std::vector<std::complex<T>>& input) {
   NGRAPH_CHECK(output.size() == 0);
   output.reserve(input.size() * 2);
-  for (const std::complex<double>& value : input) {
+  for (const std::complex<T>& value : input) {
     output.emplace_back(value.real());
     output.emplace_back(value.imag());
   }
@@ -67,19 +67,18 @@ static inline void complex_vec_to_real_vec(
 // Packs elements of input into complex values
 // (a,b,c,d) => (a+bi, c+di)
 // (a,b,c) => (a+bi, c+0i)
-static inline void real_vec_to_complex_vec(
-    std::vector<std::complex<double>>& output,
-    const std::vector<double>& input) {
+template <typename T>
+static inline void real_vec_to_complex_vec(std::vector<std::complex<T>>& output,
+                                           const std::vector<T>& input) {
   NGRAPH_CHECK(output.size() == 0);
   output.reserve(input.size() / 2);
-  std::vector<double> complex_parts(2, 0);
+  std::vector<T> complex_parts(2, 0);
   for (size_t i = 0; i < input.size(); ++i) {
     complex_parts[i % 2] = input[i];
 
     if (i % 2 == 1 || i == input.size() - 1) {
-      output.emplace_back(
-          std::complex<double>(complex_parts[0], complex_parts[1]));
-      complex_parts = {0, 0};
+      output.emplace_back(std::complex<T>(complex_parts[0], complex_parts[1]));
+      complex_parts = {T(0), T(0)};
     }
   }
 }
@@ -110,12 +109,12 @@ static inline double type_to_double(const void* src,
     case element::Type_t::f64:
       return static_cast<double>(*static_cast<const double*>(src));
       break;
-    case element::Type_t::i8:
-    case element::Type_t::i16:
-    case element::Type_t::i32:
     case element::Type_t::i64:
       return *reinterpret_cast<double*>(const_cast<void*>(src));
       break;
+    case element::Type_t::i8:
+    case element::Type_t::i16:
+    case element::Type_t::i32:
     case element::Type_t::u8:
     case element::Type_t::u16:
     case element::Type_t::u32:
@@ -141,6 +140,56 @@ static inline std::vector<double> type_vec_to_double_vec(
     ++src_with_offset;
   }
   return ret;
+}
+
+static void double_vec_to_type_vec(void* target,
+                                   const element::Type& element_type,
+                                   const std::vector<double>& input) {
+  NGRAPH_CHECK(input.size() > 0, "Input has no values");
+  size_t count = input.size();
+  size_t type_byte_size = element_type.size();
+
+  switch (element_type.get_type_enum()) {
+    case element::Type_t::f32: {
+      std::vector<float> float_values{input.begin(), input.end()};
+      void* type_values_src =
+          static_cast<void*>(const_cast<float*>(float_values.data()));
+      std::memcpy(target, type_values_src, type_byte_size * count);
+      break;
+    }
+    case element::Type_t::f64: {
+      void* type_values_src =
+          static_cast<void*>(const_cast<double*>(input.data()));
+      std::memcpy(target, type_values_src, type_byte_size * count);
+      break;
+    }
+    case element::Type_t::i64: {
+      std::vector<int64_t> int64_values(input.size());
+      for (size_t i = 0; i < input.size(); ++i) {
+        int64_t* values_src =
+            reinterpret_cast<int64_t*>(const_cast<double*>(&input[i]));
+        int64_values[i] = *values_src;
+      }
+      void* type_values_src =
+          static_cast<void*>(const_cast<int64_t*>(int64_values.data()));
+      std::memcpy(target, type_values_src, type_byte_size * count);
+      break;
+    }
+    case element::Type_t::i8:
+    case element::Type_t::i16:
+    case element::Type_t::i32:
+    case element::Type_t::u8:
+    case element::Type_t::u16:
+    case element::Type_t::u32:
+    case element::Type_t::u64:
+    case element::Type_t::dynamic:
+    case element::Type_t::undefined:
+    case element::Type_t::bf16:
+    case element::Type_t::f16:
+    case element::Type_t::boolean:
+      NGRAPH_CHECK(false, "Unsupported element type ", element_type);
+      break;
+  }
 }
 
 }  // namespace he

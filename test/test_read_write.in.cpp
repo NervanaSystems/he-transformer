@@ -177,6 +177,11 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_scalar) {
     copy_data(a, vector<double>{5});
     EXPECT_TRUE(all_close(read_vector<double>(a), (vector<double>{5})));
   }
+  {
+    auto a = he_backend->create_cipher_tensor(element::i64, shape);
+    copy_data(a, vector<int64_t>{5});
+    EXPECT_TRUE(all_close(read_vector<int64_t>(a), (vector<int64_t>{5})));
+  }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_2) {

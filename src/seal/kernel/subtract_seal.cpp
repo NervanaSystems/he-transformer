@@ -58,8 +58,8 @@ void ngraph::he::scalar_subtract_seal(
   } else {
     auto p = SealPlaintextWrapper(arg0.complex_packing());
     ngraph::he::encode(p, arg1, *he_seal_backend.get_ckks_encoder(),
-                       arg0.ciphertext().parms_id(), arg0.ciphertext().scale(),
-                       arg0.complex_packing());
+                       arg0.ciphertext().parms_id(), element_type,
+                       arg0.ciphertext().scale(), arg0.complex_packing());
     he_seal_backend.get_evaluator()->sub_plain(arg0.ciphertext(), p.plaintext(),
                                                out->ciphertext());
     out->known_value() = false;

@@ -97,8 +97,8 @@ void ngraph::he::add_plain_inplace(seal::Ciphertext& encrypted, double value,
   // Encode
   std::vector<std::uint64_t> plaintext_vals(coeff_mod_count, 0);
   double scale = encrypted.scale();
-  ngraph::he::encode(value, scale, encrypted.parms_id(), plaintext_vals,
-                     he_seal_backend);
+  ngraph::he::encode(value, ngraph::element::f32, scale, encrypted.parms_id(),
+                     plaintext_vals, he_seal_backend);
 
   for (size_t j = 0; j < coeff_mod_count; j++) {
     // Add poly scalar instead of poly poly
@@ -152,8 +152,8 @@ void ngraph::he::multiply_plain_inplace(seal::Ciphertext& encrypted,
   // TODO: explore using different scales! Smaller scales might reduce # of
   // rescalings
   double scale = encrypted.scale();
-  ngraph::he::encode(value, scale, encrypted.parms_id(), plaintext_vals,
-                     he_seal_backend);
+  ngraph::he::encode(value, ngraph::element::f32, scale, encrypted.parms_id(),
+                     plaintext_vals, he_seal_backend);
   double new_scale = scale * scale;
   // Check that scale is positive and not too large
   if (new_scale <= 0 || (static_cast<int>(log2(new_scale)) >=
@@ -250,8 +250,8 @@ size_t ngraph::he::match_to_smallest_chain_index(
   return smallest_chain_ind.second;
 }
 
-void ngraph::he::encode(double value, double scale,
-                        seal::parms_id_type parms_id,
+void ngraph::he::encode(double value, const ngraph::element::Type& element_type,
+                        double scale, seal::parms_id_type parms_id,
                         std::vector<std::uint64_t>& destination,
                         const HESealBackend& he_seal_backend,
                         seal::MemoryPoolHandle pool) {
@@ -416,59 +416,116 @@ void ngraph::he::encode(double value, double scale,
 void ngraph::he::encode(ngraph::he::SealPlaintextWrapper& destination,
                         const ngraph::he::HEPlaintext& plaintext,
                         seal::CKKSEncoder& ckks_encoder,
-                        seal::parms_id_type parms_id, double scale,
+                        seal::parms_id_type parms_id,
+                        const ngraph::element::Type& element_type, double scale,
                         bool complex_packing) {
-  std::vector<double> double_vals(plaintext.values().begin(),
-                                  plaintext.values().end());
   const size_t slot_count = ckks_encoder.slot_count();
 
-  if (complex_packing) {
-    std::vector<std::complex<double>> complex_vals;
-    if (double_vals.size() == 1) {
-      std::complex<double> val(double_vals[0], double_vals[0]);
-      complex_vals = std::vector<std::complex<double>>(slot_count, val);
-    } else {
-      real_vec_to_complex_vec(complex_vals, double_vals);
+  switch (element_type.get_type_enum()) {
+    case element::Type_t::f32:
+    case element::Type_t::f64: {
+      std::vector<double> double_vals(plaintext.values().begin(),
+                                      plaintext.values().end());
+      NGRAPH_INFO << "Encoding " << double_vals[0];
+
+      if (complex_packing) {
+        std::vector<std::complex<double>> complex_vals;
+        if (double_vals.size() == 1) {
+          std::complex<double> val(double_vals[0], double_vals[0]);
+          complex_vals = std::vector<std::complex<double>>(slot_count, val);
+        } else {
+          real_vec_to_complex_vec(complex_vals, double_vals);
+        }
+        NGRAPH_CHECK(complex_vals.size() <= slot_count, "Cannot encode ",
+                     complex_vals.size(), " elements, maximum size is ",
+                     slot_count);
+        ckks_encoder.encode(complex_vals, parms_id, scale,
+                            destination.plaintext());
+      } else {
+        if (double_vals.size() == 1) {
+          ckks_encoder.encode(double_vals[0], parms_id, scale,
+                              destination.plaintext());
+        } else {
+          NGRAPH_CHECK(double_vals.size() <= slot_count, "Cannot encode ",
+                       double_vals.size(), " elements, maximum size is ",
+                       slot_count);
+          ckks_encoder.encode(double_vals, parms_id, scale,
+                              destination.plaintext());
+        }
+      }
     }
-    NGRAPH_CHECK(complex_vals.size() <= slot_count, "Cannot encode ",
-                 complex_vals.size(), " elements, maximum size is ",
-                 slot_count);
-    ckks_encoder.encode(complex_vals, parms_id, scale, destination.plaintext());
-  } else {
-    if (double_vals.size() == 1) {
-      ckks_encoder.encode(double_vals[0], parms_id, scale,
-                          destination.plaintext());
-    } else {
-      NGRAPH_CHECK(double_vals.size() <= slot_count, "Cannot encode ",
-                   double_vals.size(), " elements, maximum size is ",
-                   slot_count);
-      ckks_encoder.encode(double_vals, parms_id, scale,
-                          destination.plaintext());
+    case element::Type_t::i64: {
+      std::vector<int64_t> int64_values(plaintext.num_values());
+      double_vec_to_type_vec(int64_values.data(), element_type,
+                             plaintext.values());
+
+      NGRAPH_INFO << "Encoding " << int64_values[0];
+      if (complex_packing) {
+        std::vector<std::complex<int64_t>> complex_vals;
+        if (int64_values.size() == 1) {
+          std::complex<int64_t> val(int64_values[0], int64_values[0]);
+          complex_vals = std::vector<std::complex<int64_t>>(slot_count, val);
+        } else {
+          real_vec_to_complex_vec(complex_vals, int64_values);
+        }
+        NGRAPH_CHECK(complex_vals.size() <= slot_count, "Cannot encode ",
+                     complex_vals.size(), " elements, maximum size is ",
+                     slot_count);
+        ckks_encoder.encode(complex_vals, parms_id, destination.plaintext());
+      } else {
+        if (int64_values.size() == 1) {
+          ckks_encoder.encode(int64_values[0], parms_id,
+                              destination.plaintext());
+        } else {
+          NGRAPH_CHECK(int64_values.size() <= slot_count, "Cannot encode ",
+                       int64_values.size(), " elements, maximum size is ",
+                       slot_count);
+          ckks_encoder.encode(int64_values, parms_id, destination.plaintext());
+        }
+      }
     }
+    case element::Type_t::i8:
+    case element::Type_t::i16:
+    case element::Type_t::i32:
+    case element::Type_t::u8:
+    case element::Type_t::u16:
+    case element::Type_t::u32:
+    case element::Type_t::u64:
+    case element::Type_t::dynamic:
+    case element::Type_t::undefined:
+    case element::Type_t::bf16:
+    case element::Type_t::f16:
+    case element::Type_t::boolean:
+      NGRAPH_CHECK(false, "Unsupported element type ", element_type);
+      break;
   }
+
   destination.complex_packing() = complex_packing;
 }
 
 void ngraph::he::encrypt(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& output,
     const ngraph::he::HEPlaintext& input, seal::parms_id_type parms_id,
-    double scale, seal::CKKSEncoder& ckks_encoder, seal::Encryptor& encryptor,
+    const ngraph::element::Type& element_type, double scale,
+    seal::CKKSEncoder& ckks_encoder, seal::Encryptor& encryptor,
     bool complex_packing) {
-  ngraph::he::encrypt(output->ciphertext(), input, parms_id, scale,
-                      ckks_encoder, encryptor, complex_packing);
+  ngraph::he::encrypt(output->ciphertext(), input, parms_id, element_type,
+                      scale, ckks_encoder, encryptor, complex_packing);
   output->complex_packing() = complex_packing;
   output->known_value() = false;
 }
 
 void ngraph::he::encrypt(seal::Ciphertext& output,
                          const ngraph::he::HEPlaintext& input,
-                         seal::parms_id_type parms_id, double scale,
-                         seal::CKKSEncoder& ckks_encoder,
+                         seal::parms_id_type parms_id,
+                         const ngraph::element::Type& element_type,
+                         double scale, seal::CKKSEncoder& ckks_encoder,
                          seal::Encryptor& encryptor, bool complex_packing) {
   NGRAPH_CHECK(input.num_values() > 0, "Input has no values in encrypt");
 
   auto plaintext = SealPlaintextWrapper(complex_packing);
-  encode(plaintext, input, ckks_encoder, parms_id, scale, complex_packing);
+  encode(plaintext, input, ckks_encoder, parms_id, element_type, scale,
+         complex_packing);
   encryptor.encrypt(plaintext.plaintext(), output);
 }
 
@@ -487,43 +544,17 @@ void ngraph::he::decode(ngraph::he::HEPlaintext& output,
 }
 
 void ngraph::he::decode(void* output, const ngraph::he::HEPlaintext& input,
-                        const element::Type& type, size_t count) {
+                        const element::Type& element_type, size_t count) {
   NGRAPH_CHECK(count != 0, "Decode called on 0 elements");
   NGRAPH_CHECK(input.num_values() > 0, "Input has no values");
 
-  size_t type_byte_size = type.size();
   const std::vector<double>& values = input.values();
   NGRAPH_CHECK(values.size() >= count);
-
-  switch (type.get_type_enum()) {
-    case element::Type_t::f32: {
-      std::vector<float> float_values{values.begin(), values.end()};
-      void* type_values_src =
-          static_cast<void*>(const_cast<float*>(float_values.data()));
-      std::memcpy(output, type_values_src, type_byte_size * count);
-      break;
-    }
-    case element::Type_t::f64: {
-      void* type_values_src =
-          static_cast<void*>(const_cast<double*>(values.data()));
-      std::memcpy(output, type_values_src, type_byte_size * count);
-      break;
-    }
-    case element::Type_t::i8:
-    case element::Type_t::i16:
-    case element::Type_t::i32:
-    case element::Type_t::i64:
-    case element::Type_t::u8:
-    case element::Type_t::u16:
-    case element::Type_t::u32:
-    case element::Type_t::u64:
-    case element::Type_t::dynamic:
-    case element::Type_t::undefined:
-    case element::Type_t::bf16:
-    case element::Type_t::f16:
-    case element::Type_t::boolean:
-      NGRAPH_CHECK(false, "Unsupported element type ", type);
-      break;
+  if (values.size() > count) {
+    std::vector<double> resized_values{values.begin(), values.begin() + count};
+    ngraph::he::double_vec_to_type_vec(output, element_type, resized_values);
+  } else {
+    ngraph::he::double_vec_to_type_vec(output, element_type, values);
   }
 }
 
