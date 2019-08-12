@@ -112,7 +112,6 @@ void ngraph::he::HEPlainTensor::read(void* target, size_t n) const {
       }
       case element::Type_t::i64: {
         std::vector<int64_t> int64_values{values.begin(), values.end()};
-        NGRAPH_INFO << "Reading " << int64_values[0];
         type_values_src =
             static_cast<void*>(const_cast<int64_t*>(int64_values.data()));
         std::memcpy(dst_with_offset, type_values_src,
@@ -170,7 +169,6 @@ void ngraph::he::HEPlainTensor::read(void* target, size_t n) const {
         }
         case element::Type_t::i64: {
           std::vector<int64_t> int64_values{values.begin(), values.end()};
-          NGRAPH_INFO << "Plain tensor values " << int64_values[0];
           void* type_values_src =
               static_cast<void*>(const_cast<int64_t*>(int64_values.data()));
           copy_batch_values_to_src(i, target, type_values_src);

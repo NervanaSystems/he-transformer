@@ -427,7 +427,6 @@ void ngraph::he::encode(ngraph::he::SealPlaintextWrapper& destination,
     case element::Type_t::f64: {
       std::vector<double> double_vals(plaintext.values().begin(),
                                       plaintext.values().end());
-      NGRAPH_INFO << "Encoding " << double_vals[0];
       if (complex_packing) {
         std::vector<std::complex<double>> complex_vals;
         if (double_vals.size() == 1) {
