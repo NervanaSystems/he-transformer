@@ -52,6 +52,7 @@ void ngraph::he::HEPlainTensor::write(const void* source, size_t n) {
 
     } else {
       const double d = type_to_double(src_with_offset, element_type);
+      NGRAPH_INFO << "writing value " << d;
       m_plaintexts[0].set_value(d);
     }
   } else {
@@ -110,7 +111,18 @@ void ngraph::he::HEPlainTensor::read(void* target, size_t n) const {
       case element::Type_t::i8:
       case element::Type_t::i16:
       case element::Type_t::i32:
-      case element::Type_t::i64:
+      case element::Type_t::i64: {
+        std::vector<int64_t> int64_values(values.size());
+        for (size_t i = 0; i < values.size(); ++i) {
+          int64_t* values_src =
+              reinterpret_cast<int64_t*>(const_cast<double*>(&values[i]));
+          int64_values[i] = *values_src;
+        }
+        type_values_src =
+            static_cast<void*>(const_cast<int64_t*>(int64_values.data()));
+        memcpy(dst_with_offset, type_values_src, type_byte_size * m_batch_size);
+        break;
+      }
       case element::Type_t::u8:
       case element::Type_t::u16:
       case element::Type_t::u32:
@@ -161,7 +173,18 @@ void ngraph::he::HEPlainTensor::read(void* target, size_t n) const {
         case element::Type_t::i8:
         case element::Type_t::i16:
         case element::Type_t::i32:
-        case element::Type_t::i64:
+        case element::Type_t::i64: {
+          std::vector<int64_t> int64_values(values.size());
+          for (size_t i = 0; i < values.size(); ++i) {
+            int64_t* values_src =
+                reinterpret_cast<int64_t*>(const_cast<double*>(&values[i]));
+            int64_values[i] = *values_src;
+          }
+          void* type_values_src =
+              static_cast<void*>(const_cast<int64_t*>(int64_values.data()));
+          copy_batch_values_to_src(i, target, type_values_src);
+          break;
+        }
         case element::Type_t::u8:
         case element::Type_t::u16:
         case element::Type_t::u32:
