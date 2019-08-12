@@ -25,7 +25,8 @@ void ngraph::he::result_seal(
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
     encrypt(out[i], arg[i], he_seal_backend.get_context()->first_parms_id(),
-            he_seal_backend.get_scale(), *he_seal_backend.get_ckks_encoder(),
+            ngraph::element::f32, he_seal_backend.get_scale(),
+            *he_seal_backend.get_ckks_encoder(),
             *he_seal_backend.get_encryptor(),
             he_seal_backend.complex_packing());
   }

@@ -136,6 +136,7 @@ class HESealBackend : public ngraph::runtime::Backend {
 
   void encrypt(std::shared_ptr<ngraph::he::SealCiphertextWrapper>& output,
                const ngraph::he::HEPlaintext& input,
+               const element::Type& element_type,
                bool complex_packing = false) const;
 
   void decrypt(ngraph::he::HEPlaintext& output,
@@ -236,8 +237,8 @@ class HESealBackend : public ngraph::runtime::Backend {
   // Stores Barrett64 ratios for moduli under 30 bits
   std::unordered_map<std::uint64_t, std::uint64_t> m_barrett64_ratio_map;
 
-  std::unordered_set<size_t> m_supported_element_types{element::f32.hash(),
-                                                       element::f64.hash()};
+  std::unordered_set<size_t> m_supported_element_types{
+      element::f32.hash(), element::i64.hash(), element::f64.hash()};
 
   std::unordered_set<std::string> m_unsupported_op_name_list{
       "Abs",

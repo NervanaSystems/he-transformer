@@ -34,36 +34,54 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_1image_plain) {
   Shape window_shape{3};
   Shape shape_r{1, 1, 12};
   {
-  auto A = make_shared<op::Parameter>(element::f32, shape_a);
-  auto f = make_shared<Function>(make_shared<op::MaxPool>(A, window_shape),
-                                 ParameterVector{A});
-  auto a = he_backend->create_plain_tensor(element::f32, shape_a);
-  copy_data(
-      a, test::NDArray<float, 3>{{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}}}
-             .get_vector());
-  auto result = he_backend->create_plain_tensor(element::f32, shape_r);
-  auto handle = backend->compile(f);
-  handle->call_with_validate({result}, {a});
-  EXPECT_TRUE(all_close(
-      (test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}}})
-           .get_vector()),
-      read_vector<float>(result), 1e-3f));
+    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto f = make_shared<Function>(make_shared<op::MaxPool>(A, window_shape),
+                                   ParameterVector{A});
+    auto a = he_backend->create_plain_tensor(element::f32, shape_a);
+    copy_data(
+        a, test::NDArray<float, 3>{{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}}}
+               .get_vector());
+    auto result = he_backend->create_plain_tensor(element::f32, shape_r);
+    auto handle = backend->compile(f);
+    handle->call_with_validate({result}, {a});
+    EXPECT_TRUE(all_close(
+        (test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}}})
+             .get_vector()),
+        read_vector<float>(result), 1e-3f));
   }
   {
-  auto A = make_shared<op::Parameter>(element::f64, shape_a);
-  auto f = make_shared<Function>(make_shared<op::MaxPool>(A, window_shape),
-                                 ParameterVector{A});
-  auto a = he_backend->create_plain_tensor(element::f64, shape_a);
-  copy_data(
-      a, test::NDArray<double, 3>{{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}}}
-             .get_vector());
-  auto result = he_backend->create_plain_tensor(element::f64, shape_r);
-  auto handle = backend->compile(f);
-  handle->call_with_validate({result}, {a});
-  EXPECT_TRUE(all_close(
-      (test::NDArray<double, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}}})
-           .get_vector()),
-      read_vector<double>(result), 1e-3));
+    auto A = make_shared<op::Parameter>(element::f64, shape_a);
+    auto f = make_shared<Function>(make_shared<op::MaxPool>(A, window_shape),
+                                   ParameterVector{A});
+    auto a = he_backend->create_plain_tensor(element::f64, shape_a);
+    copy_data(
+        a,
+        test::NDArray<double, 3>{{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}}}
+            .get_vector());
+    auto result = he_backend->create_plain_tensor(element::f64, shape_r);
+    auto handle = backend->compile(f);
+    handle->call_with_validate({result}, {a});
+    EXPECT_TRUE(all_close(
+        (test::NDArray<double, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}}})
+             .get_vector()),
+        read_vector<double>(result), 1e-3));
+  }
+  {
+    auto A = make_shared<op::Parameter>(element::i64, shape_a);
+    auto f = make_shared<Function>(make_shared<op::MaxPool>(A, window_shape),
+                                   ParameterVector{A});
+    auto a = he_backend->create_plain_tensor(element::i64, shape_a);
+    copy_data(
+        a,
+        test::NDArray<int64_t, 3>{{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}}}
+            .get_vector());
+    auto result = he_backend->create_plain_tensor(element::i64, shape_r);
+    auto handle = backend->compile(f);
+    handle->call_with_validate({result}, {a});
+    EXPECT_TRUE(all_close(
+        (test::NDArray<int64_t, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}}})
+             .get_vector()),
+        read_vector<int64_t>(result), 0L));
   }
 }
 

@@ -227,8 +227,9 @@ void ngraph::he::HESealClient::handle_message(
       }
       seal::Ciphertext max_cipher;
       ngraph::he::encrypt(max_cipher, HEPlaintext(max_values),
-                          m_context->first_parms_id(), m_scale, *m_ckks_encoder,
-                          *m_encryptor, complex_packing());
+                          m_context->first_parms_id(), ngraph::element::f32,
+                          m_scale, *m_ckks_encoder, *m_encryptor,
+                          complex_packing());
 
       auto maxpool_result_msg =
           TCPMessage(ngraph::he::MessageType::maxpool_result, max_cipher);
@@ -293,8 +294,9 @@ void ngraph::he::HESealClient::handle_relu_request(
     relu_plain.set_values(relu_values);
 
     ngraph::he::encrypt(post_relu_ciphers[result_idx], relu_plain,
-                        m_context->first_parms_id(), m_scale, *m_ckks_encoder,
-                        *m_encryptor, complex_packing());
+                        m_context->first_parms_id(), ngraph::element::f32,
+                        m_scale, *m_ckks_encoder, *m_encryptor,
+                        complex_packing());
   }
   auto relu_result_msg =
       TCPMessage(ngraph::he::MessageType::relu_result, post_relu_ciphers);

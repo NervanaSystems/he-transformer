@@ -158,7 +158,8 @@ inline void multiply_plain(
 }
 
 // Encode value into vector of coefficients
-void encode(double value, double scale, seal::parms_id_type parms_id,
+void encode(double value, const ngraph::element::Type& element_type,
+            double scale, seal::parms_id_type parms_id,
             std::vector<std::uint64_t>& destination,
             const HESealBackend& he_seal_backend,
             seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool());
@@ -166,15 +167,18 @@ void encode(double value, double scale, seal::parms_id_type parms_id,
 void encode(ngraph::he::SealPlaintextWrapper& destination,
             const ngraph::he::HEPlaintext& plaintext,
             seal::CKKSEncoder& ckks_encoder, seal::parms_id_type parms_id,
-            double scale, bool complex_packing);
+            const ngraph::element::Type& element_type, double scale,
+            bool complex_packing);
 
 void encrypt(std::shared_ptr<ngraph::he::SealCiphertextWrapper>& output,
              const ngraph::he::HEPlaintext& input, seal::parms_id_type parms_id,
-             double scale, seal::CKKSEncoder& ckks_encoder,
-             seal::Encryptor& encryptor, bool complex_packing);
+             const ngraph::element::Type& element_type, double scale,
+             seal::CKKSEncoder& ckks_encoder, seal::Encryptor& encryptor,
+             bool complex_packing);
 
 void encrypt(seal::Ciphertext& output, const ngraph::he::HEPlaintext& input,
-             seal::parms_id_type parms_id, double scale,
+             seal::parms_id_type parms_id,
+             const ngraph::element::Type& element_type, double scale,
              seal::CKKSEncoder& ckks_encoder, seal::Encryptor& encryptor,
              bool complex_packing);
 

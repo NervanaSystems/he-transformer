@@ -161,11 +161,9 @@ std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
 }
 
 bool ngraph::he::HESealBackend::is_supported(const ngraph::Node& node) const {
-  // TODO: remove "Constant" exception
   return m_unsupported_op_name_list.find(node.description()) ==
              m_unsupported_op_name_list.end() &&
-         (is_supported_type(node.get_element_type()) ||
-          node.description() == "Constant");
+         is_supported_type(node.get_element_type());
 }
 
 std::shared_ptr<ngraph::he::SealCiphertextWrapper>
@@ -180,18 +178,19 @@ ngraph::he::HESealBackend::create_valued_ciphertext(
   auto plaintext = HEPlaintext(value);
   auto ciphertext = create_empty_ciphertext();
 
-  encrypt(ciphertext, plaintext, complex_packing());
+  encrypt(ciphertext, plaintext, element_type, complex_packing());
   return ciphertext;
 }
 
 void ngraph::he::HESealBackend::encrypt(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& output,
-    const ngraph::he::HEPlaintext& input, bool complex_packing) const {
+    const ngraph::he::HEPlaintext& input, const element::Type& element_type,
+    bool complex_packing) const {
   auto plaintext = SealPlaintextWrapper(complex_packing);
 
   NGRAPH_CHECK(input.num_values() > 0, "Input has no values in encrypt");
-  ngraph::he::encrypt(output, input, m_context->first_parms_id(), m_scale,
-                      *m_ckks_encoder, *m_encryptor, complex_packing);
+  ngraph::he::encrypt(output, input, m_context->first_parms_id(), element_type,
+                      m_scale, *m_ckks_encoder, *m_encryptor, complex_packing);
 }
 
 void ngraph::he::HESealBackend::decrypt(

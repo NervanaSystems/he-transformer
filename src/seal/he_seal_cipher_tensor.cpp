@@ -71,8 +71,8 @@ void ngraph::he::HESealCipherTensor::write(
       src_with_offset += type_byte_size;
     }
     auto plaintext = HEPlaintext(values);
-    encrypt(destination[0], plaintext, parms_id, scale, ckks_encoder, encryptor,
-            complex_packing);
+    encrypt(destination[0], plaintext, parms_id, element_type, scale,
+            ckks_encoder, encryptor, complex_packing);
   } else {
 #pragma omp parallel for
     for (size_t i = 0; i < num_elements_to_write; ++i) {
@@ -97,8 +97,8 @@ void ngraph::he::HESealCipherTensor::write(
         }
         plaintext.set_values(values);
       }
-      encrypt(destination[i], plaintext, parms_id, scale, ckks_encoder,
-              encryptor, complex_packing);
+      encrypt(destination[i], plaintext, parms_id, element_type, scale,
+              ckks_encoder, encryptor, complex_packing);
     }
   }
 }

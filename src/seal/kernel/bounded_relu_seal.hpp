@@ -69,8 +69,9 @@ inline void scalar_bounded_relu_seal(
 
   plain.set_values(out_vals);
   encrypt(out, plain, he_seal_backend.get_context()->first_parms_id(),
-          he_seal_backend.get_scale(), *he_seal_backend.get_ckks_encoder(),
-          *he_seal_backend.get_encryptor(), he_seal_backend.complex_packing());
+          ngraph::element::f32, he_seal_backend.get_scale(),
+          *he_seal_backend.get_ckks_encoder(), *he_seal_backend.get_encryptor(),
+          he_seal_backend.complex_packing());
 }
 
 inline void bounded_relu_seal(
