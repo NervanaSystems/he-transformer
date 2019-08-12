@@ -448,7 +448,7 @@ NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_cipher) {
     auto t_a = he_backend->create_packed_cipher_tensor(element::i64, shape_a);
     auto t_b = he_backend->create_packed_cipher_tensor(element::i64, shape_b);
     auto t_result =
-        he_backend->create_packed_cipher_tensor(element::f64, shape_r);
+        he_backend->create_packed_cipher_tensor(element::i64, shape_r);
 
     copy_data(t_a, vector<int64_t>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
     copy_data(t_b,
@@ -515,7 +515,7 @@ NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_cipher_complex) {
     auto t_a = he_backend->create_packed_cipher_tensor(element::i64, shape_a);
     auto t_b = he_backend->create_packed_cipher_tensor(element::i64, shape_b);
     auto t_result =
-        he_backend->create_packed_cipher_tensor(element::f64, shape_r);
+        he_backend->create_packed_cipher_tensor(element::i64, shape_r);
     copy_data(t_a, vector<int64_t>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
     copy_data(t_b,
               vector<int64_t>{13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24});
@@ -580,7 +580,7 @@ NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_plain) {
     auto t_a = he_backend->create_packed_plain_tensor(element::i64, shape_a);
     auto t_b = he_backend->create_packed_plain_tensor(element::i64, shape_b);
     auto t_result =
-        he_backend->create_packed_plain_tensor(element::f64, shape_r);
+        he_backend->create_packed_plain_tensor(element::i64, shape_r);
     copy_data(t_a, vector<int64_t>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
     copy_data(t_b,
               vector<int64_t>{13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24});
