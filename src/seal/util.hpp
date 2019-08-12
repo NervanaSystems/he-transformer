@@ -103,11 +103,6 @@ static inline bool flag_to_bool(const char* flag, bool default_value = false) {
 
 static inline double type_to_double(const void* src,
                                     const element::Type& element_type) {
-#if defined(__GNUC__) && !(__GNUC__ == 4 && __GNUC_MINOR__ == 8)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic error "-Wswitch"
-#pragma GCC diagnostic error "-Wswitch-enum"
-#endif
   switch (element_type.get_type_enum()) {
     case element::Type_t::f32:
       return static_cast<double>(*static_cast<const float*>(src));
@@ -121,6 +116,7 @@ static inline double type_to_double(const void* src,
     case element::Type_t::i64:
       // TODO: reinterpret cast
       return static_cast<double>(*static_cast<const int64_t*>(src));
+      break;
     case element::Type_t::u8:
     case element::Type_t::u16:
     case element::Type_t::u32:
@@ -130,12 +126,11 @@ static inline double type_to_double(const void* src,
     case element::Type_t::bf16:
     case element::Type_t::f16:
     case element::Type_t::boolean:
-      NGRAPH_CHECK(false, "Unsupported element type", element_type);
+      NGRAPH_CHECK(false, "Unsupported element type ", element_type);
       break;
   }
-#if defined(__GNUC__) && !(__GNUC__ == 4 && __GNUC_MINOR__ == 8)
-#pragma GCC diagnostic pop
-#endif
+  NGRAPH_CHECK(false, "Unsupported element type ", element_type);
+  return 0.0;
 }
 
 static inline std::vector<double> type_vec_to_double_vec(

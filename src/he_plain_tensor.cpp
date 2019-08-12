@@ -120,7 +120,7 @@ void ngraph::he::HEPlainTensor::read(void* target, size_t n) const {
       case element::Type_t::bf16:
       case element::Type_t::f16:
       case element::Type_t::boolean:
-        NGRAPH_CHECK(false, "Unsupported element type", element_type);
+        NGRAPH_CHECK(false, "Unsupported element type ", element_type);
         break;
     }
 
@@ -171,7 +171,7 @@ void ngraph::he::HEPlainTensor::read(void* target, size_t n) const {
         case element::Type_t::bf16:
         case element::Type_t::f16:
         case element::Type_t::boolean:
-          NGRAPH_CHECK(false, "Unsupported element type", element_type);
+          NGRAPH_CHECK(false, "Unsupported element type ", element_type);
           break;
       }
     }

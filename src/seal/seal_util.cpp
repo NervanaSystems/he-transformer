@@ -522,7 +522,7 @@ void ngraph::he::decode(void* output, const ngraph::he::HEPlaintext& input,
     case element::Type_t::bf16:
     case element::Type_t::f16:
     case element::Type_t::boolean:
-      NGRAPH_CHECK(false, "Unsupported element type", type);
+      NGRAPH_CHECK(false, "Unsupported element type ", type);
       break;
   }
 }
