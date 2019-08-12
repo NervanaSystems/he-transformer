@@ -18,6 +18,7 @@ set(SRC
     main.cpp
     test_seal.cpp
     test_perf_micro.cpp
+    test_message.cpp
     test_util.cpp)
 
 set(ACTIVE_BACKEND_LIST HE_SEAL)
