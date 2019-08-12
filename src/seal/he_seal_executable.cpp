@@ -531,12 +531,6 @@ bool ngraph::he::HESealExecutable::call(
         auto plain_input = std::dynamic_pointer_cast<ngraph::he::HEPlainTensor>(
             he_inputs[input_count]);
 
-        for (const auto& elem : plain_input->get_elements()) {
-          for (const auto& value : elem.values()) {
-            NGRAPH_INFO << value;
-          }
-        }
-
         NGRAPH_CHECK(plain_input != nullptr, "Input is not plain tensor");
         std::string name = tv->get_name();
 
