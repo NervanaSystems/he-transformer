@@ -492,10 +492,6 @@ void ngraph::he::decode(void* output, const ngraph::he::HEPlaintext& input,
   NGRAPH_CHECK(input.num_values() > 0, "Input has no values");
 
   size_t type_byte_size = type.size();
-
-  NGRAPH_INFO << "Decoding type " << type;
-
-  // TODO: decode based on type
   const std::vector<double>& values = input.values();
   NGRAPH_CHECK(values.size() >= count);
 

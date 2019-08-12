@@ -1,5 +1,5 @@
 //*****************************************************************************
-// Copyright 2017-2019 Intel Corporation
+// Copyright 2018-2019 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,22 +14,17 @@
 // limitations under the License.
 //*****************************************************************************
 
-#pragma once
-
-#include <iterator>
-#include <sstream>
-#include <string>
-
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <boost/asio.hpp>
 
-#include "he_seal_client.hpp"
+#include <string>
+
+#include "pyhe_client/he_seal_client.hpp"
 #include "seal/he_seal_client.hpp"
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(he_seal_client, m) {
+void regclass_pyhe_client(py::module m) {
   py::class_<ngraph::he::HESealClient> he_seal_client(m, "HESealClient");
   he_seal_client.doc() = "he_seal_client wraps ngraph::he::HESealClient";
 

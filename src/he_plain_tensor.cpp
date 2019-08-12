@@ -52,7 +52,6 @@ void ngraph::he::HEPlainTensor::write(const void* source, size_t n) {
 
     } else {
       const double d = type_to_double(src_with_offset, element_type);
-      NGRAPH_INFO << "writing value " << d;
       m_plaintexts[0].set_value(d);
     }
   } else {
@@ -73,7 +72,6 @@ void ngraph::he::HEPlainTensor::write(const void* source, size_t n) {
         m_plaintexts[i].set_values(values);
       } else {
         const double d = type_to_double(src_with_offset, element_type);
-        NGRAPH_INFO << "writing value " << d;
         m_plaintexts[i].set_value(d);
       }
     }
@@ -86,8 +84,6 @@ void ngraph::he::HEPlainTensor::read(void* target, size_t n) const {
 
   size_t type_byte_size = element_type.size();
   size_t num_elements_to_read = n / (type_byte_size * m_batch_size);
-
-  NGRAPH_INFO << "num_elements_to_read " << num_elements_to_read;
 
   if (num_elements_to_read == 1) {
     void* dst_with_offset = target;
@@ -129,12 +125,12 @@ void ngraph::he::HEPlainTensor::read(void* target, size_t n) const {
     }
 
   } else {
-    auto copy_batch_values_to_src = [&](size_t element_idx, void* target,
+    auto copy_batch_values_to_src = [&](size_t element_idx, void* copy_target,
                                         const void* type_values_src) {
       char* src = static_cast<char*>(const_cast<void*>(type_values_src));
       for (size_t j = 0; j < m_batch_size; ++j) {
         void* dst_with_offset = static_cast<void*>(
-            static_cast<char*>(target) +
+            static_cast<char*>(copy_target) +
             type_byte_size * (element_idx + j * num_elements_to_read));
 
         memcpy(dst_with_offset, src, type_byte_size);

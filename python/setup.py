@@ -124,12 +124,13 @@ libraries = ['he_seal_backend']
 data_files = [('lib', [(NGRAPH_HE_LIB_DIR + '/' + library)
                        for library in os.listdir(NGRAPH_HE_LIB_DIR)])]
 
-sources = ['py_he_seal_client/he_seal_client.cpp']
+sources = ['pyhe_client/he_seal_client.cpp', 'pyhe_client/pyhe_client.cpp']
 sources = [PYNGRAPH_ROOT_DIR + '/' + source for source in sources]
+print('sources', sources)
 
 ext_modules = [
     Extension(
-        'he_seal_client',
+        'pyhe_client',
         sources=sources,
         include_dirs=include_dirs,
         library_dirs=library_dirs,
@@ -215,11 +216,12 @@ class BuildExt(build_ext):
 
             ext.extra_compile_args += ['-Wformat', '-Wformat-security']
             ext.extra_compile_args += ['-O2', '-D_FORTIFY_SOURCE=2']
+            ext.extra_compile_args += ['-v']
         build_ext.build_extensions(self)
 
 
 setup(
-    name='he_seal_client',
+    name='pyhe_client',
     version=__version__,
     author='Intel Corporation',
     url='https://github.com/NervanaSystems/he-transformer',

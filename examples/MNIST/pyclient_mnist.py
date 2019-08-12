@@ -21,7 +21,7 @@ import sys
 import os
 
 from mnist_util import load_mnist_data, str2bool
-import he_seal_client
+import pyhe_client
 
 FLAGS = None
 
@@ -45,8 +45,8 @@ def test_mnist_cnn(FLAGS):
 
     print('complex_packing?', complex_packing)
 
-    client = he_seal_client.HESealClient(hostname, port, batch_size, data,
-                                         complex_packing)
+    client = pyhe_client.HESealClient(hostname, port, batch_size, data,
+                                      complex_packing)
 
     print('Sleeping until client is done')
     while not client.is_done():
