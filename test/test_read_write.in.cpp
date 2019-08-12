@@ -83,10 +83,6 @@ NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2) {
     auto a = he_backend->create_plain_tensor(element::i64, shape);
     copy_data(a, vector<int64_t>{5, 6});
     EXPECT_TRUE(all_close(read_vector<int64_t>(a), (vector<int64_t>{5, 6})));
-
-    copy_data(a, vector<int64_t>{LLONG_MIN, LLONG_MAX});
-    EXPECT_TRUE(all_close(read_vector<int64_t>(a),
-                          (vector<int64_t>{LLONG_MIN, LLONG_MAX})));
   }
 }
 
@@ -118,15 +114,6 @@ NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2_3) {
     EXPECT_TRUE(all_close(
         read_vector<int64_t>(a),
         test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector()));
-
-    copy_data(a, test::NDArray<int64_t, 2>(
-                     {{1, LLONG_MIN}, {LLONG_MAX, LLONG_MIN}, {LLONG_MAX, 6}})
-                     .get_vector());
-    EXPECT_TRUE(
-        all_close(read_vector<int64_t>(a),
-                  test::NDArray<int64_t, 2>(
-                      {{1, LLONG_MIN}, {LLONG_MAX, LLONG_MIN}, {LLONG_MAX, 6}})
-                      .get_vector()));
   }
 }
 
@@ -150,15 +137,6 @@ NGRAPH_TEST(${BACKEND_NAME}, plain_tv_batch_write_read_2_3) {
     EXPECT_TRUE(all_close(
         read_vector<double>(a),
         (test::NDArray<double, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector()));
-
-    copy_data(a, test::NDArray<int64_t, 2>(
-                     {{1, LLONG_MIN}, {LLONG_MAX, LLONG_MIN}, {LLONG_MAX, 6}})
-                     .get_vector());
-    EXPECT_TRUE(
-        all_close(read_vector<int64_t>(a),
-                  test::NDArray<int64_t, 2>(
-                      {{1, LLONG_MIN}, {LLONG_MAX, LLONG_MIN}, {LLONG_MAX, 6}})
-                      .get_vector()));
   }
 }
 
@@ -198,6 +176,11 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_2) {
     copy_data(a, vector<double>{5, 6});
     EXPECT_TRUE(all_close(read_vector<double>(a), (vector<double>{5, 6})));
   }
+  {
+    auto a = he_backend->create_cipher_tensor(element::i64, shape);
+    copy_data(a, vector<int64_t>{5, 6});
+    EXPECT_TRUE(all_close(read_vector<int64_t>(a), (vector<int64_t>{5, 6})));
+  }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_2_complex) {
@@ -215,6 +198,11 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_2_complex) {
     auto a = he_backend->create_cipher_tensor(element::f64, shape);
     copy_data(a, vector<double>{5, 6});
     EXPECT_TRUE(all_close(read_vector<double>(a), (vector<double>{5, 6})));
+  }
+  {
+    auto a = he_backend->create_cipher_tensor(element::i64, shape);
+    copy_data(a, vector<int64_t>{5, 6});
+    EXPECT_TRUE(all_close(read_vector<int64_t>(a), (vector<int64_t>{5, 6})));
   }
 }
 
@@ -238,6 +226,14 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_2_3) {
     EXPECT_TRUE(all_close(
         read_vector<double>(a),
         (test::NDArray<double, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector()));
+  }
+  {
+    auto a = he_backend->create_cipher_tensor(element::i64, shape);
+    copy_data(a,
+              test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector());
+    EXPECT_TRUE(all_close(
+        read_vector<int64_t>(a),
+        (test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector()));
   }
 }
 
@@ -278,6 +274,22 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_5_5) {
                                                      {21, 22, 23, 24, 25}}))
                               .get_vector()));
   }
+  {
+    auto a = he_backend->create_cipher_tensor(element::i64, shape);
+    copy_data(a, test::NDArray<int64_t, 2>({{1, 2, 3, 4, 5},
+                                            {6, 7, 8, 9, 10},
+                                            {11, 12, 13, 14, 15},
+                                            {16, 17, 18, 19, 20},
+                                            {21, 22, 23, 24, 25}})
+                     .get_vector());
+    EXPECT_TRUE(all_close(read_vector<int64_t>(a),
+                          (test::NDArray<int64_t, 2>({{1, 2, 3, 4, 5},
+                                                      {6, 7, 8, 9, 10},
+                                                      {11, 12, 13, 14, 15},
+                                                      {16, 17, 18, 19, 20},
+                                                      {21, 22, 23, 24, 25}}))
+                              .get_vector()));
+  }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_batch_write_read_2_3) {
@@ -301,6 +313,14 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_batch_write_read_2_3) {
         read_vector<double>(a),
         (test::NDArray<double, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector()));
   }
+  {
+    auto a = he_backend->create_packed_cipher_tensor(element::i64, shape);
+    copy_data(a,
+              test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector());
+    EXPECT_TRUE(all_close(
+        read_vector<int64_t>(a),
+        (test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector()));
+  }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_batch_write_read_2_1) {
@@ -319,5 +339,11 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_batch_write_read_2_1) {
     copy_data(a, test::NDArray<double, 2>({{1, 2}}).get_vector());
     EXPECT_TRUE(all_close(read_vector<double>(a),
                           (test::NDArray<double, 2>({{1, 2}})).get_vector()));
+  }
+  {
+    auto a = he_backend->create_packed_cipher_tensor(element::i64, shape);
+    copy_data(a, test::NDArray<int64_t, 2>({{1, 2}}).get_vector());
+    EXPECT_TRUE(all_close(read_vector<int64_t>(a),
+                          (test::NDArray<int64_t, 2>({{1, 2}})).get_vector()));
   }
 }

@@ -422,12 +422,12 @@ void ngraph::he::encode(ngraph::he::SealPlaintextWrapper& destination,
   const size_t slot_count = ckks_encoder.slot_count();
 
   switch (element_type.get_type_enum()) {
+    case element::Type_t::i64:
     case element::Type_t::f32:
     case element::Type_t::f64: {
       std::vector<double> double_vals(plaintext.values().begin(),
                                       plaintext.values().end());
       NGRAPH_INFO << "Encoding " << double_vals[0];
-
       if (complex_packing) {
         std::vector<std::complex<double>> complex_vals;
         if (double_vals.size() == 1) {
@@ -453,38 +453,6 @@ void ngraph::he::encode(ngraph::he::SealPlaintextWrapper& destination,
                               destination.plaintext());
         }
       }
-      break;
-    }
-    case element::Type_t::i64: {
-      /*
-      std::vector<int64_t> int64_values(plaintext.num_values());
-      double_vec_to_type_vec(int64_values.data(), element_type,
-                             plaintext.values());
-
-      NGRAPH_INFO << "Encoding " << int64_values[0];
-      if (complex_packing) {
-        std::vector<std::complex<int64_t>> complex_vals;
-        if (int64_values.size() == 1) {
-          std::complex<int64_t> val(int64_values[0], int64_values[0]);
-          complex_vals = std::vector<std::complex<int64_t>>(slot_count, val);
-        } else {
-          real_vec_to_complex_vec(complex_vals, int64_values);
-        }
-        NGRAPH_CHECK(complex_vals.size() <= slot_count, "Cannot encode ",
-                     complex_vals.size(), " elements, maximum size is ",
-                     slot_count);
-        ckks_encoder.encode(complex_vals, parms_id, destination.plaintext());
-      } else {
-        if (int64_values.size() == 1) {
-          ckks_encoder.encode(int64_values[0], parms_id,
-                              destination.plaintext());
-        } else {
-          NGRAPH_CHECK(int64_values.size() <= slot_count, "Cannot encode ",
-                       int64_values.size(), " elements, maximum size is ",
-                       slot_count);
-          ckks_encoder.encode(int64_values, parms_id, destination.plaintext());
-        }
-      */
       break;
     }
     case element::Type_t::i8:

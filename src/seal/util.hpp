@@ -110,7 +110,7 @@ static inline double type_to_double(const void* src,
       return static_cast<double>(*static_cast<const double*>(src));
       break;
     case element::Type_t::i64:
-      return *reinterpret_cast<double*>(const_cast<void*>(src));
+      return static_cast<double>(*static_cast<const int64_t*>(src));
       break;
     case element::Type_t::i8:
     case element::Type_t::i16:
@@ -166,9 +166,7 @@ static void double_vec_to_type_vec(void* target,
     case element::Type_t::i64: {
       std::vector<int64_t> int64_values(input.size());
       for (size_t i = 0; i < input.size(); ++i) {
-        int64_t* values_src =
-            reinterpret_cast<int64_t*>(const_cast<double*>(&input[i]));
-        int64_values[i] = *values_src;
+        int64_values[i] = std::round(input[i]);
       }
       void* type_values_src =
           static_cast<void*>(const_cast<int64_t*>(int64_values.data()));
@@ -191,6 +189,5 @@ static void double_vec_to_type_vec(void* target,
       break;
   }
 }
-
 }  // namespace he
 }  // namespace ngraph
