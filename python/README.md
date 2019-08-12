@@ -10,13 +10,13 @@ cd $HE_TRANSFORMER/build
 source external/venv-tf-py3/bin/activate
 make install python_client
 ```
-This will create `python/dist/he_seal_client-*.whl`. Install it using
+This will create `python/dist/pyhe_client-0.0.0.dev0-*.whl`. Install it using
 ```bash
-pip install python/dist/he_seal_client-*whl
+pip install python/dist/pyhe_client-0.0.0.dev0-*.whl
 ```
 To check the installation worked correctly, run
 ```bash
-python -c "import he_seal_client"
+python -c "import pyhe_client"
 ```
 This should run without errors.
 

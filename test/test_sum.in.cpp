@@ -29,29 +29,44 @@ static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_trivial) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-
   Shape shape{2, 2};
-  auto a = make_shared<op::Parameter>(element::f32, shape);
-  auto b = make_shared<op::Parameter>(element::f32, shape);
-  auto t = make_shared<op::Sum>(a, AxisSet{});
-  auto f = make_shared<Function>(t, ParameterVector{a});
-
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
-
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
-
-    auto t_a = inputs[0];
-    auto t_result = results[0];
-
-    copy_data(t_a, vector<float>{1, 2, 3, 4});
-    auto handle = backend->compile(f);
-    handle->call_with_validate({t_result}, {t_a});
-    EXPECT_TRUE(
-        all_close((vector<float>{1, 2, 3, 4}), read_vector<float>(t_result)));
+  {
+    auto a = make_shared<op::Parameter>(element::f32, shape);
+    auto b = make_shared<op::Parameter>(element::f32, shape);
+    auto t = make_shared<op::Sum>(a, AxisSet{});
+    auto f = make_shared<Function>(t, ParameterVector{a});
+    auto tensors_list =
+        generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
+    for (auto tensors : tensors_list) {
+      auto results = get<0>(tensors);
+      auto inputs = get<1>(tensors);
+      auto t_a = inputs[0];
+      auto t_result = results[0];
+      copy_data(t_a, vector<float>{1, 2, 3, 4});
+      auto handle = backend->compile(f);
+      handle->call_with_validate({t_result}, {t_a});
+      EXPECT_TRUE(
+          all_close((vector<float>{1, 2, 3, 4}), read_vector<float>(t_result)));
+    }
+  }
+  {
+    auto a = make_shared<op::Parameter>(element::f64, shape);
+    auto b = make_shared<op::Parameter>(element::f64, shape);
+    auto t = make_shared<op::Sum>(a, AxisSet{});
+    auto f = make_shared<Function>(t, ParameterVector{a});
+    auto tensors_list =
+        generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
+    for (auto tensors : tensors_list) {
+      auto results = get<0>(tensors);
+      auto inputs = get<1>(tensors);
+      auto t_a = inputs[0];
+      auto t_result = results[0];
+      copy_data(t_a, vector<double>{1, 2, 3, 4});
+      auto handle = backend->compile(f);
+      handle->call_with_validate({t_result}, {t_a});
+      EXPECT_TRUE(all_close((vector<double>{1, 2, 3, 4}),
+                            read_vector<double>(t_result)));
+    }
   }
 }
 

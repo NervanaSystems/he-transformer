@@ -53,6 +53,8 @@ inline void subtract_seal(
     const element::Type& element_type, HESealBackend& he_seal_backend,
     size_t count,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool()) {
+  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
+               "Unsupported type ", element_type);
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
     scalar_subtract_seal(*arg0[i], *arg1[i], out[i], element_type,
@@ -66,6 +68,8 @@ inline void subtract_seal(
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
     const element::Type& element_type, HESealBackend& he_seal_backend,
     size_t count) {
+  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
+               "Unsupported type ", element_type);
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
     scalar_subtract_seal(*arg0[i], arg1[i], out[i], element_type,
@@ -79,6 +83,8 @@ inline void subtract_seal(
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
     const element::Type& element_type, HESealBackend& he_seal_backend,
     size_t count) {
+  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
+               "Unsupported type ", element_type);
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
     scalar_subtract_seal(arg0[i], *arg1[i], out[i], element_type,
@@ -91,6 +97,8 @@ inline void subtract_seal(std::vector<HEPlaintext>& arg0,
                           std::vector<HEPlaintext>& out,
                           const element::Type& element_type,
                           HESealBackend& he_seal_backend, size_t count) {
+  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
+               "Unsupported type ", element_type);
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
     scalar_subtract_seal(arg0[i], arg1[i], out[i], element_type,

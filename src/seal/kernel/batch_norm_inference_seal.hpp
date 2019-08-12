@@ -59,23 +59,23 @@ void batch_norm_inference_seal(
 
     auto input_index = input_transform.index(input_coord);
 
-    std::vector<float> channel_gamma_vals = channel_gamma.values();
-    std::vector<float> channel_beta_vals = channel_beta.values();
-    std::vector<float> channel_mean_vals = channel_mean.values();
-    std::vector<float> channel_var_vals = channel_var.values();
+    std::vector<double> channel_gamma_vals = channel_gamma.values();
+    std::vector<double> channel_beta_vals = channel_beta.values();
+    std::vector<double> channel_mean_vals = channel_mean.values();
+    std::vector<double> channel_var_vals = channel_var.values();
 
     NGRAPH_CHECK(channel_gamma_vals.size() == 1);
     NGRAPH_CHECK(channel_beta_vals.size() == 1);
     NGRAPH_CHECK(channel_mean_vals.size() == 1);
     NGRAPH_CHECK(channel_var_vals.size() == 1);
 
-    float scale = channel_gamma_vals[0] / std::sqrt(channel_var_vals[0] + eps);
-    float bias =
+    double scale = channel_gamma_vals[0] / std::sqrt(channel_var_vals[0] + eps);
+    double bias =
         channel_beta_vals[0] - (channel_gamma_vals[0] * channel_mean_vals[0]) /
                                    std::sqrt(channel_var_vals[0] + eps);
 
-    std::vector<float> scale_vec(batch_size, scale);
-    std::vector<float> bias_vec(batch_size, bias);
+    std::vector<double> scale_vec(batch_size, scale);
+    std::vector<double> bias_vec(batch_size, bias);
 
     auto plain_scale = HEPlaintext(scale_vec);
     auto plain_bias = HEPlaintext(bias_vec);

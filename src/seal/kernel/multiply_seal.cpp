@@ -14,8 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "seal/he_seal_backend.hpp"
 #include "seal/kernel/multiply_seal.hpp"
+#include "seal/he_seal_backend.hpp"
 #include "seal/kernel/negate_seal.hpp"
 #include "seal/seal_util.hpp"
 
@@ -25,6 +25,8 @@ void ngraph::he::scalar_multiply_seal(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type, HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
+  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
+               "Unsupported type ", element_type);
   if (arg0.known_value() && arg1.known_value()) {
     out->known_value() = true;
     out->value() = arg0.value() * arg1.value();
@@ -37,7 +39,6 @@ void ngraph::he::scalar_multiply_seal(
     out->known_value() = false;
     HEPlaintext p(arg1.value());
     scalar_multiply_seal(arg0, p, out, element_type, he_seal_backend, pool);
-
   } else {
     NGRAPH_CHECK(arg0.complex_packing() == false,
                  "cannot multiply ciphertexts in complex form");
@@ -73,12 +74,12 @@ void ngraph::he::scalar_multiply_seal(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
     const element::Type& element_type, HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool) {
-  NGRAPH_CHECK(element_type == element::f32, "Element type ", element_type,
-               " is not float");
+  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
+               "Unsupported type ", element_type);
   if (arg0.known_value()) {
     NGRAPH_CHECK(arg1.is_single_value(), "arg1 is not single value");
     out->known_value() = true;
-    out->value() = arg0.value() * arg1.values()[0];
+    out->value() = arg0.value() * arg1.first_value();
     out->complex_packing() = arg0.complex_packing();
     return;
   }
@@ -91,12 +92,12 @@ void ngraph::he::scalar_multiply_seal(
   // TODO: check multiplying by small numbers behavior more thoroughly
   // TODO: check if abs(values) < scale?
   if (std::all_of(values.begin(), values.end(),
-                  [](float f) { return std::abs(f) < 1e-5f; })) {
+                  [](double f) { return std::abs(f) < 1e-5f; })) {
     out->known_value() = true;
     out->value() = 0;
 
   } else if (arg1.is_single_value()) {
-    double value = static_cast<double>(arg1.values()[0]);
+    double value = arg1.first_value();
 
     multiply_plain(arg0.ciphertext(), value, out->ciphertext(), he_seal_backend,
                    pool);
@@ -148,25 +149,26 @@ void ngraph::he::scalar_multiply_seal(const ngraph::he::HEPlaintext& arg0,
                                       const element::Type& element_type,
                                       HESealBackend& he_seal_backend,
                                       const seal::MemoryPoolHandle& pool) {
-  NGRAPH_CHECK(element_type == element::f32);
+  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
+               "Unsupported type ", element_type);
   NGRAPH_CHECK(arg0.num_values() > 0,
                "Multiplying plaintext arg0 has 0 values");
   NGRAPH_CHECK(arg1.num_values() > 0,
                "Multiplying plaintext arg1 has 0 values");
 
-  std::vector<float> arg0_vals = arg0.values();
-  std::vector<float> arg1_vals = arg1.values();
-  std::vector<float> out_vals;
+  std::vector<double> arg0_vals = arg0.values();
+  std::vector<double> arg1_vals = arg1.values();
+  std::vector<double> out_vals;
 
   if (arg0_vals.size() == 1) {
     std::transform(arg1_vals.begin(), arg1_vals.end(),
                    std::back_inserter(out_vals),
-                   std::bind(std::multiplies<float>(), std::placeholders::_1,
+                   std::bind(std::multiplies<double>(), std::placeholders::_1,
                              arg0_vals[0]));
   } else if (arg1_vals.size() == 1) {
     std::transform(arg0_vals.begin(), arg0_vals.end(),
                    std::back_inserter(out_vals),
-                   std::bind(std::multiplies<float>(), std::placeholders::_1,
+                   std::bind(std::multiplies<double>(), std::placeholders::_1,
                              arg1_vals[0]));
   } else {
     NGRAPH_CHECK(arg0.num_values() == arg1.num_values(), "arg0 num values ",
@@ -174,7 +176,7 @@ void ngraph::he::scalar_multiply_seal(const ngraph::he::HEPlaintext& arg0,
                  " in plain-plain multiply");
 
     std::transform(arg0_vals.begin(), arg0_vals.end(), arg1_vals.begin(),
-                   std::back_inserter(out_vals), std::multiplies<float>());
+                   std::back_inserter(out_vals), std::multiplies<double>());
   }
-  out.values() = out_vals;
+  out.set_values(out_vals);
 }

@@ -12,7 +12,7 @@ for a description.
 ```bash
 source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate
 ```
-Also be sure the `he_seal_client` wheel has been installed
+Also be sure the `pyhe_client` wheel has been installed
 
 2. Build Tensorflow graph transforms and add them to your path:
 

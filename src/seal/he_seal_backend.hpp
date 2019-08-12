@@ -74,6 +74,11 @@ class HESealBackend : public ngraph::runtime::Backend {
 
   bool is_supported(const Node& node) const override;
 
+  inline bool is_supported_type(const ngraph::element::Type& type) const {
+    return m_supported_element_types.find(type.hash()) !=
+           m_supported_element_types.end();
+  }
+
   void validate_he_call(std::shared_ptr<const Function> function,
                         const std::vector<std::shared_ptr<HETensor>>& outputs,
                         const std::vector<std::shared_ptr<HETensor>>& inputs);
@@ -120,9 +125,6 @@ class HESealBackend : public ngraph::runtime::Backend {
         pool, m_complex_packing);
   }
 
-  /// @brief Constructs SEAL context from SEAL parameter
-  /// @param sp SEAL Parameter from which to construct context
-  /// @return Pointer to constructed context
   std::shared_ptr<seal::SEALContext> make_seal_context(
       const std::shared_ptr<ngraph::he::HESealEncryptionParameters> sp);
 
@@ -229,11 +231,13 @@ class HESealBackend : public ngraph::runtime::Backend {
   std::shared_ptr<seal::KeyGenerator> m_keygen;
   HESealEncryptionParameters m_encryption_params;
   std::shared_ptr<seal::CKKSEncoder> m_ckks_encoder;
-  // Scale with which to encode new ciphertexts
   double m_scale;
 
   // Stores Barrett64 ratios for moduli under 30 bits
   std::unordered_map<std::uint64_t, std::uint64_t> m_barrett64_ratio_map;
+
+  std::unordered_set<size_t> m_supported_element_types{element::f32.hash(),
+                                                       element::f64.hash()};
 
   std::unordered_set<std::string> m_unsupported_op_name_list{
       "Abs",

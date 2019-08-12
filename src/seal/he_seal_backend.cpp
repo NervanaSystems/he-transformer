@@ -161,8 +161,11 @@ std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
 }
 
 bool ngraph::he::HESealBackend::is_supported(const ngraph::Node& node) const {
+  // TODO: remove "Constant" exception
   return m_unsupported_op_name_list.find(node.description()) ==
-         m_unsupported_op_name_list.end();
+             m_unsupported_op_name_list.end() &&
+         (is_supported_type(node.get_element_type()) ||
+          node.description() == "Constant");
 }
 
 std::shared_ptr<ngraph::he::SealCiphertextWrapper>

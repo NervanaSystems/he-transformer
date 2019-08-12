@@ -19,12 +19,16 @@
 
 #include "seal/kernel/constant_seal.hpp"
 #include "seal/seal_util.hpp"
+#include "seal/util.hpp"
 
 void ngraph::he::constant_seal(std::vector<ngraph::he::HEPlaintext>& out,
                                const element::Type& element_type,
                                const void* data_ptr,
                                const ngraph::he::HESealBackend& he_seal_backend,
                                size_t count) {
+  // TODO: enable once int is supported
+  // NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
+  //             "Unsupported type ", element_type);
   size_t type_byte_size = element_type.size();
   if (out.size() != count) {
     throw ngraph_error("out.size() != count for constant op");
@@ -32,9 +36,9 @@ void ngraph::he::constant_seal(std::vector<ngraph::he::HEPlaintext>& out,
 
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
-    const float value = *reinterpret_cast<const float*>(
-        static_cast<const char*>(data_ptr) + i * type_byte_size);
-    out[i].values() = {value};
+    const void* src = static_cast<const char*>(data_ptr) + i * type_byte_size;
+    double value = ngraph::he::type_to_double(src, element_type);
+    out[i].set_value(value);
   }
 }
 
@@ -42,7 +46,10 @@ void ngraph::he::constant_seal(
     std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>& out,
     const element::Type& element_type, const void* data_ptr,
     const ngraph::he::HESealBackend& he_seal_backend, size_t count) {
-  NGRAPH_CHECK(element_type == element::f32, "Constant supports only f32 type");
+  // TODO: enable once int is supported
+  // NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
+  //             "Unsupported type ", element_type);
+
   size_t type_byte_size = element_type.size();
   if (out.size() != count) {
     throw ngraph_error("out.size() != count for constant op");
@@ -50,9 +57,8 @@ void ngraph::he::constant_seal(
 
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
-    const float* f = reinterpret_cast<const float*>(
-        static_cast<const char*>(data_ptr) + i * type_byte_size);
-    auto plaintext = HEPlaintext(*f);
+    const void* src = static_cast<const char*>(data_ptr) + i * type_byte_size;
+    auto plaintext = HEPlaintext(ngraph::he::type_to_double(src, element_type));
     he_seal_backend.encrypt(out[i], plaintext,
                             he_seal_backend.complex_packing());
   }

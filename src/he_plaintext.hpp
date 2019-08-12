@@ -26,18 +26,40 @@ namespace ngraph {
 namespace he {
 class HEPlaintext {
  public:
-  HEPlaintext(const std::vector<float>& values) : m_values(values) {}
-  HEPlaintext() { m_values.reserve(1); }
-  HEPlaintext(const float value) : m_values{std::vector<float>{value}} {}
+  HEPlaintext() = default;
 
-  std::vector<float>& values() { return m_values; }
-  const std::vector<float>& values() const { return m_values; }
+  HEPlaintext(const std::vector<double>& values) : m_values(values) {
+    if (values.size() > 0) {
+      m_first_val = values[0];
+    }
+  }
+  HEPlaintext(const double value)
+      : m_first_val(value), m_values{std::vector<double>{value}} {}
+
+  const std::vector<double>& values() const { return m_values; }
+
+  double first_value() const { return m_first_val; }
+
+  void set_value(const double value) {
+    m_first_val = value;
+    m_values = std::vector<double>{value};
+  }
+
+  void set_values(const std::vector<double>& values) {
+    m_values = values;
+    if (values.size() > 0) {
+      m_first_val = m_values[0];
+    }
+  }
 
   bool is_single_value() const { return num_values() == 1; }
   size_t num_values() const { return m_values.size(); }
 
+  static constexpr size_t type_byte_size = sizeof(double);
+
  private:
-  std::vector<float> m_values;
+  double m_first_val;
+  std::vector<double> m_values;
 };
 }  // namespace he
 }  // namespace ngraph

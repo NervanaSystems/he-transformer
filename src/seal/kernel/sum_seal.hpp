@@ -33,6 +33,8 @@ inline void sum_seal(std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
                      const AxisSet& reduction_axes,
                      const element::Type& element_type,
                      ngraph::he::HESealBackend& he_seal_backend) {
+  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
+               "Unsupported type ", element_type);
   CoordinateTransform output_transform(out_shape);
 
   for (const Coordinate& output_coord : output_transform) {
@@ -59,6 +61,8 @@ inline void sum_seal(std::vector<HEPlaintext>& arg,
                      const Shape& out_shape, const AxisSet& reduction_axes,
                      const element::Type& element_type,
                      ngraph::he::HESealBackend& he_seal_backend) {
+  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
+               "Unsupported type", element_type);
   CoordinateTransform output_transform(out_shape);
 
   for (const Coordinate& output_coord : output_transform) {

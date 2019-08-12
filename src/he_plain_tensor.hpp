@@ -51,6 +51,8 @@ class HEPlainTensor : public HETensor {
     return m_plaintexts[i];
   }
 
+  static constexpr size_t internal_type_byte_size = HEPlaintext::type_byte_size;
+
   inline void reset() { m_plaintexts.clear(); }
 
   inline size_t num_plaintexts() { return m_plaintexts.size(); }

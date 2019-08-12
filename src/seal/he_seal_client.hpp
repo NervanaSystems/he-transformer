@@ -33,6 +33,11 @@ class HESealClient {
  public:
   HESealClient(
       const std::string& hostname, const size_t port, const size_t batch_size,
+      const std::vector<double>& inputs,
+      bool complex_packing = flag_to_bool(std::getenv("NGRAPH_ENCRYPT_DATA")));
+
+  HESealClient(
+      const std::string& hostname, const size_t port, const size_t batch_size,
       const std::vector<float>& inputs,
       bool complex_packing = flag_to_bool(std::getenv("NGRAPH_ENCRYPT_DATA")));
 
@@ -48,7 +53,7 @@ class HESealClient {
 
   inline bool is_done() { return m_is_done; }
 
-  inline std::vector<float> get_results() { return m_results; }
+  std::vector<double> get_results() { return m_results; }
 
   void close_connection();
 
@@ -70,8 +75,8 @@ class HESealClient {
   double m_scale;
   size_t m_batch_size;
   bool m_is_done;
-  std::vector<float> m_inputs;   // Function inputs
-  std::vector<float> m_results;  // Function outputs
+  std::vector<double> m_inputs;   // Function inputs
+  std::vector<double> m_results;  // Function outputs
 
   bool m_complex_packing;
 };  // namespace he

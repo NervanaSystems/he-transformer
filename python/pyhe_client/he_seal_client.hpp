@@ -14,22 +14,10 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "pass/supported_ops.hpp"
-#include "ngraph/check.hpp"
-#include "ngraph/function.hpp"
-#include "ngraph/graph_util.hpp"
-#include "ngraph/node.hpp"
-#include "ngraph/util.hpp"
+#pragma once
 
-using namespace ngraph;
+#include <pybind11/pybind11.h>
 
-bool ngraph::he::pass::SupportedOps::run_on_function(
-    std::shared_ptr<ngraph::Function> function) {
-  std::list<std::shared_ptr<ngraph::Node>> ops = function->get_ordered_ops();
+namespace py = pybind11;
 
-  for (const auto& op : ops) {
-    NGRAPH_CHECK(is_supported(*op), "Unsupported op ", op->description(),
-                 " with type ", op->get_element_type());
-  }
-  return true;
-}
+void regclass_pyhe_client(py::module m);

@@ -63,7 +63,8 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3) {
     while (!he_client.is_done()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    results = he_client.get_results();
+    auto double_results = he_client.get_results();
+    results = std::vector<float>(double_results.begin(), double_results.end());
   });
 
   auto handle = dynamic_pointer_cast<ngraph::he::HESealExecutable>(
@@ -104,7 +105,8 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu) {
     while (!he_client.is_done()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    results = he_client.get_results();
+    auto double_results = he_client.get_results();
+    results = std::vector<float>(double_results.begin(), double_results.end());
   });
 
   auto handle = dynamic_pointer_cast<ngraph::he::HESealExecutable>(
@@ -114,6 +116,49 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu) {
 
   client_thread.join();
   EXPECT_TRUE(all_close(results, vector<float>{0, 0, 3.3}, 1e-3f));
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu_double) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+
+  size_t batch_size = 1;
+
+  Shape shape{batch_size, 3};
+  auto a = op::Constant::create(element::f64, shape, {0.1, 0.2, 0.3});
+  auto b = make_shared<op::Parameter>(element::f64, shape);
+  auto t = make_shared<op::Add>(a, b);
+  auto relu = make_shared<op::Relu>(t);
+  auto f = make_shared<Function>(relu, ParameterVector{b});
+
+  // Server inputs which are not used
+  auto t_dummy = he_backend->create_plain_tensor(element::f64, shape);
+  auto t_result = he_backend->create_cipher_tensor(element::f64, shape);
+
+  // Used for dummy server inputs
+  double DUMMY_FLOAT = 99;
+  copy_data(t_dummy, vector<double>{DUMMY_FLOAT, DUMMY_FLOAT, DUMMY_FLOAT});
+
+  vector<double> inputs{-1, -0.2, 3};
+  vector<double> results;
+  auto client_thread = std::thread([&inputs, &results, &batch_size]() {
+    auto he_client =
+        ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
+
+    while (!he_client.is_done()) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+    auto double_results = he_client.get_results();
+    results = std::vector<double>(double_results.begin(), double_results.end());
+  });
+
+  auto handle = dynamic_pointer_cast<ngraph::he::HESealExecutable>(
+      he_backend->compile(f));
+  handle->enable_client();
+  handle->call_with_validate({t_result}, {t_dummy});
+
+  client_thread.join();
+  EXPECT_TRUE(all_close(results, vector<double>{0, 0, 3.3}, 1e-3));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, server_client_relu) {
@@ -144,7 +189,8 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_relu) {
     while (!he_client.is_done()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    results = he_client.get_results();
+    auto double_results = he_client.get_results();
+    results = std::vector<float>(double_results.begin(), double_results.end());
   });
 
   auto handle = dynamic_pointer_cast<ngraph::he::HESealExecutable>(
@@ -189,7 +235,8 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_pad_relu) {
     while (!he_client.is_done()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    results = he_client.get_results();
+    auto double_results = he_client.get_results();
+    results = std::vector<float>(double_results.begin(), double_results.end());
   });
 
   auto handle = dynamic_pointer_cast<ngraph::he::HESealExecutable>(
@@ -253,7 +300,9 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed) {
         while (!he_client.is_done()) {
           std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
-        results = he_client.get_results();
+        auto double_results = he_client.get_results();
+        results =
+            std::vector<float>(double_results.begin(), double_results.end());
       });
 
       auto handle = dynamic_pointer_cast<ngraph::he::HESealExecutable>(
@@ -297,7 +346,8 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_max_pool_1d_1channel_1image_plain) {
     while (!he_client.is_done()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    results = he_client.get_results();
+    auto double_results = he_client.get_results();
+    results = std::vector<float>(double_results.begin(), double_results.end());
   });
 
   auto handle = dynamic_pointer_cast<ngraph::he::HESealExecutable>(
@@ -348,7 +398,8 @@ NGRAPH_TEST(${BACKEND_NAME},
     while (!he_client.is_done()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    results = he_client.get_results();
+    auto double_results = he_client.get_results();
+    results = std::vector<float>(double_results.begin(), double_results.end());
   });
 
   auto handle = dynamic_pointer_cast<ngraph::he::HESealExecutable>(
@@ -402,7 +453,8 @@ NGRAPH_TEST(${BACKEND_NAME},
     while (!he_client.is_done()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    results = he_client.get_results();
+    auto double_results = he_client.get_results();
+    results = std::vector<float>(double_results.begin(), double_results.end());
   });
 
   auto handle = dynamic_pointer_cast<ngraph::he::HESealExecutable>(
@@ -447,29 +499,29 @@ NGRAPH_TEST(${BACKEND_NAME},
 
   vector<float> inputs =
       test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
-                                          {0, 3, 2, 0, 0},
-                                          {2, 0, 0, 0, 1},
-                                          {2, 0, 1, 1, 2},
-                                          {0, 2, 1, 0, 0}},
+                                 {0, 3, 2, 0, 0},
+                                 {2, 0, 0, 0, 1},
+                                 {2, 0, 1, 1, 2},
+                                 {0, 2, 1, 0, 0}},
 
-                                         {{0, 0, 0, 2, 0},  // img 0 chan 1
-                                          {0, 2, 3, 0, 1},
-                                          {2, 0, 1, 0, 2},
-                                          {3, 1, 0, 0, 0},
-                                          {2, 0, 0, 0, 0}}},
+                                {{0, 0, 0, 2, 0},  // img 0 chan 1
+                                 {0, 2, 3, 0, 1},
+                                 {2, 0, 1, 0, 2},
+                                 {3, 1, 0, 0, 0},
+                                 {2, 0, 0, 0, 0}}},
 
-                                        {{{0, 2, 1, 1, 0},  // img 1 chan 0
-                                          {0, 0, 2, 0, 1},
-                                          {0, 0, 1, 2, 3},
-                                          {2, 0, 0, 3, 0},
-                                          {0, 0, 0, 0, 0}},
+                               {{{0, 2, 1, 1, 0},  // img 1 chan 0
+                                 {0, 0, 2, 0, 1},
+                                 {0, 0, 1, 2, 3},
+                                 {2, 0, 0, 3, 0},
+                                 {0, 0, 0, 0, 0}},
 
-                                         {{2, 1, 0, 0, 1},  // img 1 chan 1
-                                          {0, 2, 0, 0, 0},
-                                          {1, 1, 2, 0, 2},
-                                          {1, 1, 1, 0, 1},
-                                          {1, 0, 0, 0, 2}}}})
-                   .get_vector();
+                                {{2, 1, 0, 0, 1},  // img 1 chan 1
+                                 {0, 2, 0, 0, 0},
+                                 {1, 1, 2, 0, 2},
+                                 {1, 1, 1, 0, 1},
+                                 {1, 0, 0, 0, 2}}}})
+          .get_vector();
   vector<float> results;
   auto client_thread = std::thread([&inputs, &results, &batch_size]() {
     auto he_client =
@@ -478,7 +530,8 @@ NGRAPH_TEST(${BACKEND_NAME},
     while (!he_client.is_done()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    results = he_client.get_results();
+    auto double_results = he_client.get_results();
+    results = std::vector<float>(double_results.begin(), double_results.end());
   });
 
   auto handle = dynamic_pointer_cast<ngraph::he::HESealExecutable>(
@@ -487,9 +540,8 @@ NGRAPH_TEST(${BACKEND_NAME},
   handle->call_with_validate({t_result}, {t_dummy});
 
   client_thread.join();
-  EXPECT_TRUE(all_close(
-      results,
-      (test::NDArray<float, 4>({{{{3, 3, 2},  // img 0 chan 0
+  EXPECT_TRUE(all_close(results,
+                        (test::NDArray<float, 4>({{{{3, 3, 2},  // img 0 chan 0
                                                     {3, 3, 2},
                                                     {2, 1, 2},
                                                     {2, 2, 2}},
@@ -509,5 +561,5 @@ NGRAPH_TEST(${BACKEND_NAME},
                                                     {2, 2, 2},
                                                     {1, 1, 2}}}})
                              .get_vector()),
-      1e-3f));
+                        1e-3f));
 }

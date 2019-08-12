@@ -20,7 +20,7 @@ from tensorflow.python.platform import gfile
 
 import ngraph_bridge
 import json
-import he_seal_client
+import pyhe_client
 import time
 import numpy as np
 import argparse
@@ -96,8 +96,8 @@ def main(FLAGS):
     else:
         complex_packing = False
 
-    client = he_seal_client.HESealClient(FLAGS.hostname, port, batch_size,
-                                         x_test_flat, complex_packing)
+    client = pyhe_client.HESealClient(FLAGS.hostname, port, batch_size,
+                                      x_test_flat, complex_packing)
 
     while not client.is_done():
         time.sleep(1)
