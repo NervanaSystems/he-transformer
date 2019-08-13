@@ -89,8 +89,7 @@ void ngraph::he::HESealClient::handle_message(
     const ngraph::he::TCPMessage& message) {
   ngraph::he::MessageType msg_type = message.message_type();
 
-  NGRAPH_DEBUG << "Client received message type: "
-               << message_type_to_string(msg_type).c_str();
+  NGRAPH_DEBUG << "Client received message type: " << msg_type;
 
   switch (msg_type) {
     case ngraph::he::MessageType::parameter_size: {
@@ -247,8 +246,7 @@ void ngraph::he::HESealClient::handle_message(
     case ngraph::he::MessageType::relu_result:
     case ngraph::he::MessageType::result_request:
     default:
-      NGRAPH_INFO << "Unsupported message type: "
-                  << message_type_to_string(msg_type).c_str();
+      NGRAPH_INFO << "Unsupported message type: " << msg_type;
   }
 }
 

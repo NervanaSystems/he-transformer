@@ -250,8 +250,7 @@ void ngraph::he::HESealExecutable::handle_message(
     const ngraph::he::TCPMessage& message) {
   MessageType msg_type = message.message_type();
 
-  NGRAPH_DEBUG << "Server received message type: "
-               << message_type_to_string(msg_type);
+  NGRAPH_DEBUG << "Server received message type: " << msg_type;
 
   if (msg_type == MessageType::execute) {
     size_t count = message.count();
@@ -449,8 +448,7 @@ void ngraph::he::HESealExecutable::handle_message(
     m_minimum_cond.notify_all();
   } else {
     std::stringstream ss;
-    ss << "Unsupported message type in server:  "
-       << message_type_to_string(msg_type);
+    ss << "Unsupported message type in server: " << msg_type;
     throw ngraph_error(ss.str());
   }
 }
@@ -716,15 +714,8 @@ bool ngraph::he::HESealExecutable::call(
 
     auto output_cipher_tensor =
         std::dynamic_pointer_cast<HESealCipherTensor>(m_client_outputs[0]);
-
     NGRAPH_CHECK(output_cipher_tensor != nullptr,
                  "Client outputs are not HESealCipherTensor");
-
-    // std::stringstream cipher_stream;
-    // output_cipher_tensor->save_elements(cipher_stream);
-    // auto result_message = TCPMessage(MessageType::result, output_shape_size,
-    //                                 std::move(cipher_stream));
-
     auto result_message =
         TCPMessage(MessageType::result, output_cipher_tensor->get_elements());
 
