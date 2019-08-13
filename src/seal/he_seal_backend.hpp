@@ -113,6 +113,11 @@ class HESealBackend : public ngraph::runtime::Backend {
         m_complex_packing);
   }
 
+  static inline std::shared_ptr<ngraph::he::SealCiphertextWrapper>
+  create_empty_ciphertext(bool complex_packing) {
+    return std::make_shared<ngraph::he::SealCiphertextWrapper>(complex_packing);
+  }
+
   inline std::shared_ptr<ngraph::he::SealCiphertextWrapper>
   create_empty_ciphertext(seal::parms_id_type parms_id) const {
     return std::make_shared<ngraph::he::SealCiphertextWrapper>(

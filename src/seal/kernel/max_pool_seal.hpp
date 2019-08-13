@@ -240,7 +240,9 @@ void max_pool_seal(
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
     const Shape& arg_shape, const Shape& out_shape, const Shape& window_shape,
     const Strides& window_movement_strides, const Shape& padding_below,
-    const Shape& padding_above, const HESealBackend& he_seal_backend) {
+    const Shape& padding_above, const seal::parms_id_type& parms_id,
+    double scale, seal::CKKSEncoder& ckks_encoder, seal::Encryptor& encryptor,
+    seal::Decryptor& decryptor, bool complex_packing) {
   // At the outermost level we will walk over every output coordinate O.
   CoordinateTransform output_transform(out_shape);
 
@@ -304,7 +306,9 @@ void max_pool_seal(
       if (input_batch_transform.has_source_coordinate(input_batch_coord)) {
         auto arg_coord_idx = input_batch_transform.index(input_batch_coord);
         HEPlaintext plain;
-        he_seal_backend.decrypt(plain, *arg[arg_coord_idx]);
+
+        ngraph::he::decrypt(plain, *arg[arg_coord_idx], decryptor,
+                            ckks_encoder);
         const std::vector<double>& arg_vals = plain.values();
         if (first_max) {
           first_max = false;
@@ -322,14 +326,26 @@ void max_pool_seal(
       }
     }
     HEPlaintext result(max_vals);
-    auto cipher = he_seal_backend.create_empty_ciphertext();
-    encrypt(cipher, result, he_seal_backend.get_context()->first_parms_id(),
-            ngraph::element::f32, he_seal_backend.get_scale(),
-            *he_seal_backend.get_ckks_encoder(),
-            *he_seal_backend.get_encryptor(),
-            he_seal_backend.complex_packing());
+    auto cipher = HESealBackend::create_empty_ciphertext(complex_packing);
+    ngraph::he::encrypt(cipher, result, parms_id, ngraph::element::f32, scale,
+                        ckks_encoder, encryptor, complex_packing);
     out[output_transform.index(out_coord)] = cipher;
   }
+}
+
+void max_pool_seal(
+    const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
+    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
+    const Shape& arg_shape, const Shape& out_shape, const Shape& window_shape,
+    const Strides& window_movement_strides, const Shape& padding_below,
+    const Shape& padding_above, const HESealBackend& he_seal_backend) {
+  max_pool_seal(
+      arg, out, arg_shape, out_shape, window_shape, window_movement_strides,
+      padding_below, padding_above,
+      he_seal_backend.get_context()->first_parms_id(),
+      he_seal_backend.get_scale(), *he_seal_backend.get_ckks_encoder(),
+      *he_seal_backend.get_encryptor(), *he_seal_backend.get_decryptor(),
+      he_seal_backend.complex_packing());
 }
 
 }  // namespace he
