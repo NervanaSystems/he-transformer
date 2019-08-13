@@ -14,6 +14,7 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include <chrono>
 #include <memory>
 
 #include "gtest/gtest.h"
@@ -69,9 +70,20 @@ TEST(tcp_message, save_cipher) {
   EXPECT_EQ(message.count(), n);
 
   for (size_t i = 0; i < n; ++i) {
+    NGRAPH_INFO << "Loading cipher " << i;
     seal::Ciphertext cipher;
     ngraph::he::HEPlaintext plain;
+
+    auto t1 = std::chrono::high_resolution_clock::now();
     message.load_cipher(cipher, i, context);
+    auto t2 = std::chrono::high_resolution_clock::now();
+    NGRAPH_INFO << "load time "
+                << std::chrono::duration_cast<std::chrono::microseconds>(t2 -
+                                                                         t1)
+                       .count()
+                << "us";
+
+    NGRAPH_INFO << "Decrypting";
     ngraph::he::decrypt(plain, cipher, false, decryptor, ckks_encoder);
 
     auto out_vals = plain.values();
@@ -111,12 +123,24 @@ TEST(seal_util, save) {
 
   Ciphertext cipher;
   encryptor.encrypt(plain, cipher);
+  Ciphertext cipher_load;
 
   void* buffer = ngraph::ngraph_malloc(ngraph::he::ciphertext_size(cipher));
-  ngraph::he::save(cipher, buffer);
 
-  Ciphertext cipher_load;
+  auto t1 = std::chrono::high_resolution_clock::now();
+  ngraph::he::save(cipher, buffer);
+  auto t2 = std::chrono::high_resolution_clock::now();
   ngraph::he::load(cipher_load, context, buffer);
+  auto t3 = std::chrono::high_resolution_clock::now();
+
+  NGRAPH_INFO
+      << "save time "
+      << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
+      << "us";
+  NGRAPH_INFO
+      << "load time "
+      << std::chrono::duration_cast<std::chrono::microseconds>(t3 - t2).count()
+      << "us";
 
   EXPECT_EQ(cipher_load.parms_id(), cipher.parms_id());
   EXPECT_EQ(cipher_load.is_ntt_form(), cipher.is_ntt_form());

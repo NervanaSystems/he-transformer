@@ -18,6 +18,7 @@
 
 #include <assert.h>
 #include <algorithm>
+#include <chrono>
 #include <cstring>
 #include <iostream>
 #include <memory>
@@ -30,6 +31,7 @@
 #include "ngraph/util.hpp"
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
+#include "seal/util.hpp"
 
 namespace ngraph {
 namespace he {
@@ -393,6 +395,11 @@ class TCPMessage {
   inline void load_cipher(seal::Ciphertext& cipher, size_t index,
                           std::shared_ptr<seal::SEALContext> context) const {
     NGRAPH_CHECK(index < count(), "Index too large");
+
+    // ngraph::he::load(cipher, context,
+    //                 static_cast<void*>(const_cast<char*>(
+    //                     data_ptr() + index * element_size())));
+
     std::stringstream ss;
     ss.write(data_ptr() + index * element_size(), element_size());
     // TODO: load directly from buffer
@@ -407,11 +414,20 @@ class TCPMessage {
 
   inline void save_cipher_to_message(const seal::Ciphertext& cipher,
                                      size_t offset) {
+    auto t1 = std::chrono::high_resolution_clock::now();
+
     // TODO: save directly to buffer
     std::stringstream ss;
     cipher.save(ss);
     std::stringbuf* pbuf = ss.rdbuf();
     pbuf->sgetn(data_ptr() + offset, ciphertext_size(cipher));
+
+    auto t2 = std::chrono::high_resolution_clock::now();
+    NGRAPH_INFO << "save time "
+                << std::chrono::duration_cast<std::chrono::microseconds>(t2 -
+                                                                         t1)
+                       .count()
+                << "us";
   }
 };
 }  // namespace he

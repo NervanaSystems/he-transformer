@@ -229,12 +229,8 @@ inline void save(const seal::Ciphertext& cipher, void* destination) {
 
 inline void load(seal::Ciphertext& cipher,
                  std::shared_ptr<seal::SEALContext> context, void* src) {
-  seal::parms_id_type parms_id{};
   seal::SEAL_BYTE is_ntt_form_byte;
   uint64_t size64 = 0;
-  uint64_t poly_modulus_degree = 0;
-  uint64_t coeff_mod_count = 0;
-  double scale = 0;
 
   static constexpr std::array<size_t, 6> offsets = {
       sizeof(seal::parms_id_type),
@@ -248,27 +244,20 @@ inline void load(seal::Ciphertext& cipher,
           3 * sizeof(uint64_t) + sizeof(double),
   };
 
-  char* char_src = static_cast<char*>(src);
+  seal::Ciphertext new_cipher(context);
 
-  std::memcpy(&parms_id, src, sizeof(seal::parms_id_type));
+  char* char_src = static_cast<char*>(src);
+  std::memcpy(&new_cipher.parms_id(), src, sizeof(seal::parms_id_type));
   std::memcpy(&is_ntt_form_byte, static_cast<void*>(char_src + offsets[0]),
               sizeof(seal::SEAL_BYTE));
   std::memcpy(&size64, static_cast<void*>(char_src + offsets[1]),
               sizeof(uint64_t));
-  std::memcpy(&poly_modulus_degree, static_cast<void*>(char_src + offsets[2]),
-              sizeof(uint64_t));
-  std::memcpy(&coeff_mod_count, static_cast<void*>(char_src + offsets[3]),
-              sizeof(uint64_t));
-  std::memcpy(&scale, static_cast<void*>(char_src + offsets[4]),
+  std::memcpy(&new_cipher.scale(), static_cast<void*>(char_src + offsets[4]),
               sizeof(double));
   bool ntt_form = (is_ntt_form_byte == seal::SEAL_BYTE(0)) ? false : true;
 
-  seal::Ciphertext new_cipher(context);
   new_cipher.resize(size64);
-
   new_cipher.is_ntt_form() = ntt_form;
-  new_cipher.scale() = scale;
-  new_cipher.parms_id() = parms_id;
   void* data_src = static_cast<void*>(char_src + offsets[5]);
   std::memcpy(&new_cipher[0], data_src,
               new_cipher.uint64_count() * sizeof(std::uint64_t));
