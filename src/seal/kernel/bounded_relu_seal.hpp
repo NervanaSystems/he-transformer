@@ -54,39 +54,24 @@ inline void bounded_relu_seal(const std::vector<HEPlaintext>& arg,
 inline void scalar_bounded_relu_seal(
     const SealCiphertextWrapper& arg,
     std::shared_ptr<SealCiphertextWrapper>& out, float alpha,
-    const seal::parms_id_type& parms_id, double scale,
-    seal::CKKSEncoder& ckks_encoder, seal::Encryptor& encryptor,
-    seal::Decryptor& decryptor) {
+    HESealBackend& he_seal_backend) {
+  HEPlaintext plain;
+  he_seal_backend.decrypt(plain, arg);
+  const std::vector<double>& arg_vals = plain.values();
+  std::vector<double> out_vals(plain.num_values());
+
   auto bounded_relu = [alpha](double f) {
     return f > alpha ? alpha : (f > 0) ? f : 0.f;
   };
 
-  if (arg.known_value()) {
-    out->known_value() = true;
-    out->value() = bounded_relu(arg.value());
-  } else {
-    HEPlaintext plain;
-    ngraph::he::decrypt(plain, arg, decryptor, ckks_encoder);
-    const std::vector<double>& arg_vals = plain.values();
-    std::vector<double> out_vals(plain.num_values());
+  std::transform(arg_vals.begin(), arg_vals.end(), out_vals.begin(),
+                 bounded_relu);
 
-    std::transform(arg_vals.begin(), arg_vals.end(), out_vals.begin(),
-                   bounded_relu);
-
-    plain.set_values(out_vals);
-    ngraph::he::encrypt(out, plain, parms_id, ngraph::element::f32, scale,
-                        ckks_encoder, encryptor, arg.complex_packing());
-  }
-}
-
-inline void scalar_bounded_relu_seal(
-    const SealCiphertextWrapper& arg,
-    std::shared_ptr<SealCiphertextWrapper>& out, float alpha,
-    HESealBackend& he_seal_backend) {
-  scalar_bounded_relu_seal(
-      arg, out, alpha, he_seal_backend.get_context()->first_parms_id(),
-      he_seal_backend.get_scale(), *he_seal_backend.get_ckks_encoder(),
-      *he_seal_backend.get_encryptor(), *he_seal_backend.get_decryptor());
+  plain.set_values(out_vals);
+  encrypt(out, plain, he_seal_backend.get_context()->first_parms_id(),
+          ngraph::element::f32, he_seal_backend.get_scale(),
+          *he_seal_backend.get_ckks_encoder(), *he_seal_backend.get_encryptor(),
+          he_seal_backend.complex_packing());
 }
 
 inline void bounded_relu_seal(

@@ -450,8 +450,6 @@ void ngraph::he::encode(ngraph::he::SealPlaintextWrapper& destination,
     case element::Type_t::f64: {
       std::vector<double> double_vals(plaintext.values().begin(),
                                       plaintext.values().end());
-
-      NGRAPH_INFO << "Encoding";
       if (complex_packing) {
         std::vector<std::complex<double>> complex_vals;
         if (double_vals.size() == 1) {
@@ -477,7 +475,6 @@ void ngraph::he::encode(ngraph::he::SealPlaintextWrapper& destination,
                               destination.plaintext());
         }
       }
-      NGRAPH_INFO << "Done encoding";
       break;
     }
     case element::Type_t::i8:
@@ -522,13 +519,7 @@ void ngraph::he::encrypt(seal::Ciphertext& output,
   auto plaintext = SealPlaintextWrapper(complex_packing);
   encode(plaintext, input, ckks_encoder, parms_id, element_type, scale,
          complex_packing);
-  NGRAPH_INFO << "Encryptign";
-  auto he_p = plaintext.plaintext();
-  NGRAPH_INFO << "plaintext ok";
-  auto tmp = output;
-  NGRAPH_INFO << "out ok";
   encryptor.encrypt(plaintext.plaintext(), output);
-  NGRAPH_INFO << "Done encrypting";
 }
 
 void ngraph::he::decode(ngraph::he::HEPlaintext& output,

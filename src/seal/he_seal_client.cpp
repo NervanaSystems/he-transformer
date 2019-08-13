@@ -26,8 +26,6 @@
 #include "he_seal_cipher_tensor.hpp"
 #include "ngraph/log.hpp"
 #include "seal/he_seal_client.hpp"
-#include "seal/kernel/bounded_relu_seal.hpp"
-#include "seal/kernel/relu_seal.hpp"
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_util.hpp"
@@ -193,8 +191,6 @@ void ngraph::he::HESealClient::handle_message(
     }
 
     case ngraph::he::MessageType::maxpool_request: {
-      // TODO: call max_pool_seal
-
       size_t complex_pack_factor = complex_packing() ? 2 : 1;
       size_t cipher_count = message.count();
 
@@ -280,37 +276,13 @@ void ngraph::he::HESealClient::handle_relu_request(
   NGRAPH_INFO << "Received Relu request with " << result_count << " elements"
               << " of size " << element_size;
 
-  std::vector<std::shared_ptr<SealCiphertextWrapper>> post_relu_ciphers(
-      result_count);
+  std::vector<seal::Ciphertext> post_relu_ciphers(result_count);
 #pragma omp parallel for
   for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
     seal::Ciphertext pre_relu_cipher;
     ngraph::he::HEPlaintext relu_plain;
 
     message.load_cipher(pre_relu_cipher, result_idx, m_context);
-
-    /*
-    SealCiphertextWrapper wrapped_cipher(pre_relu_cipher, complex_packing());
-
-    if (message.message_type() == ngraph::he::MessageType::relu6_request) {
-      NGRAPH_INFO << "Scalar bounded relu seal";
-      ngraph::he::scalar_bounded_relu_seal(
-          wrapped_cipher, post_relu_ciphers[result_idx], 6.0f,
-          m_context->first_parms_id(), m_scale, *m_ckks_encoder, *m_encryptor,
-          *m_decryptor);
-      NGRAPH_INFO << "Done with scalar bounded relu seal";
-    } else if (message.message_type() ==
-               ngraph::he::MessageType::relu_request) {
-      NGRAPH_INFO << "scalar_relu_seal";
-      NGRAPH_INFO << "input coeff_mod_count " <<
-    wrapped_cipher.ciphertext().coeff_mod_count();
-      ngraph::he::scalar_relu_seal(wrapped_cipher,
-                                   post_relu_ciphers[result_idx],
-                                   m_context->first_parms_id(), m_scale,
-                                   *m_ckks_encoder, *m_encryptor, *m_decryptor);
-      NGRAPH_INFO << "Done with scalar_relu_seal";
-    } */
-
     ngraph::he::decrypt(relu_plain, pre_relu_cipher, complex_packing(),
                         *m_decryptor, *m_ckks_encoder);
 
@@ -322,18 +294,12 @@ void ngraph::he::HESealClient::handle_relu_request(
 
     std::transform(post_relu_values.begin(), post_relu_values.end(),
                    post_relu_values.begin(), activation);
-    NGRAPH_INFO << "post reluv vals";
-    for (const auto& elem : post_relu_values) {
-      NGRAPH_INFO << elem;
-    }
-
     relu_plain.set_values(post_relu_values);
 
     ngraph::he::encrypt(post_relu_ciphers[result_idx], relu_plain,
                         m_context->first_parms_id(), ngraph::element::f32,
                         m_scale, *m_ckks_encoder, *m_encryptor,
                         complex_packing());
-    NGRAPH_INFO << "Done encryptgin;"
   }
   auto relu_result_msg =
       TCPMessage(ngraph::he::MessageType::relu_result, post_relu_ciphers);

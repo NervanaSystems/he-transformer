@@ -20,7 +20,6 @@
 #include "ngraph/ngraph.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/kernel/add_seal.hpp"
-#include "seal/kernel/bounded_relu_seal.hpp"
 #include "seal/kernel/multiply_seal.hpp"
 #include "seal/kernel/negate_seal.hpp"
 #include "seal/kernel/relu_seal.hpp"
@@ -386,40 +385,6 @@ NGRAPH_TEST(${BACKEND_NAME}, known_cipher_relu) {
     exp_out[i] = relu(arg0_val);
   }
   ngraph::he::relu_seal(arg0, out, count, *he_backend);
-
-  for (int i = 0; i < count; ++i) {
-    EXPECT_TRUE(out[i]->known_value());
-    ngraph::he::HEPlaintext p;
-    he_backend->decrypt(p, *out[i]);
-    EXPECT_NEAR(p.values()[0], exp_out[i], 1e-3f);
-  }
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, known_cipher_bounded_relu) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  int count = 10;
-
-  vector<shared_ptr<ngraph::he::SealCiphertextWrapper>> arg0;
-  vector<shared_ptr<ngraph::he::SealCiphertextWrapper>> out;
-  vector<float> exp_out(count);
-
-  float alpha = 6.0f;
-  auto bounded_relu = [alpha](double f) {
-    return f > alpha ? alpha : (f > 0) ? f : 0.f;
-  };
-
-  for (int i = 0; i < count; i++) {
-    float arg0_val = i - count / 2;
-    arg0.emplace_back(make_shared<ngraph::he::SealCiphertextWrapper>());
-    out.emplace_back(make_shared<ngraph::he::SealCiphertextWrapper>());
-
-    arg0[i]->known_value() = true;
-    arg0[i]->value() = arg0_val;
-
-    exp_out[i] = bounded_relu(arg0_val);
-  }
-  ngraph::he::bounded_relu_seal(arg0, out, count, alpha, *he_backend);
 
   for (int i = 0; i < count; ++i) {
     EXPECT_TRUE(out[i]->known_value());
