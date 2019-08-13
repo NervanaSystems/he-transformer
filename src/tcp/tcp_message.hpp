@@ -366,9 +366,7 @@ class TCPMessage {
   }
 
   inline void encode_data(const char* data) {
-    NGRAPH_INFO << "Encoding data";
     std::memcpy(data_ptr(), data, m_data_size);
-    NGRAPH_INFO << "Done encoding data";
   }
 
   inline void encode_data(const std::stringstream&& data) {
@@ -392,7 +390,6 @@ class TCPMessage {
 
   inline void save_cipher_to_message(const seal::Ciphertext& cipher,
                                      size_t offset) {
-    NGRAPH_INFO << "Saving cipher to message";
     ngraph::he::save(cipher, data_ptr() + offset);
   }
 

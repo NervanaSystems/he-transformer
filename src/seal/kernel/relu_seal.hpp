@@ -43,14 +43,22 @@ inline void relu_seal(const std::vector<HEPlaintext>& arg,
   }
 }
 
+inline void scalar_relu_seal_known_value(
+    const SealCiphertextWrapper& arg,
+    std::shared_ptr<SealCiphertextWrapper>& out) {
+  auto relu = [](double f) { return f > 0 ? f : 0.f; };
+  NGRAPH_CHECK(arg.known_value());
+  out->known_value() = true;
+  out->value() = relu(arg.value());
+}
+
 inline void scalar_relu_seal(const SealCiphertextWrapper& arg,
                              std::shared_ptr<SealCiphertextWrapper>& out,
                              const HESealBackend& he_seal_backend) {
   auto relu = [](double f) { return f > 0 ? f : 0.f; };
 
   if (arg.known_value()) {
-    out->known_value() = true;
-    out->value() = relu(arg.value());
+    scalar_relu_seal_known_value(arg, out);
   } else {
     HEPlaintext plain;
     he_seal_backend.decrypt(plain, arg);

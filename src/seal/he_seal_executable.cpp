@@ -387,13 +387,10 @@ void ngraph::he::HESealExecutable::handle_message(
       auto new_cipher = std::make_shared<ngraph::he::SealCiphertextWrapper>(
           cipher, m_complex_packing);
 
-      m_relu_ciphertexts[m_unknown_relu_idx[element_idx + m_relu_idx_offset]] =
+      m_relu_ciphertexts[m_unknown_relu_idx[element_idx + m_relu_done_count]] =
           new_cipher;
     }
-    m_relu_idx_offset += message.count();
-
-    // Notify condition variable
-    m_relu_done_count++;
+    m_relu_done_count += message.count();
     m_relu_cond.notify_all();
 
   } else if (msg_type == MessageType::maxpool_result) {
@@ -1692,9 +1689,16 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
     num_relu_batches++;
   }
 
+  float alpha = 6.0f;
+
   auto message_type = MessageType::none;
   if (node_wrapper.get_typeid() == OP_TYPEID::BoundedRelu) {
     message_type = MessageType::relu6_request;
+    const op::BoundedRelu* bounded_relu =
+        static_cast<const op::BoundedRelu*>(&node);
+    NGRAPH_CHECK(bounded_relu->get_alpha() == 6.0f,
+                 "BoundedRelu supports only value 6.0f, got",
+                 bounded_relu->get_alpha());
   } else if (node_wrapper.get_typeid() == OP_TYPEID::Relu) {
     message_type = MessageType::relu_request;
   } else {
@@ -1704,41 +1708,31 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
   auto process_relu_ciphers_batch =
       [&](const std::vector<seal::Ciphertext>& cipher_batch,
           const ngraph::he::MessageType& message_type) {
-        if (message_type == MessageType::relu6_request) {
-          const op::BoundedRelu* bounded_relu =
-              static_cast<const op::BoundedRelu*>(&node);
-          float alpha = bounded_relu->get_alpha();
-          NGRAPH_CHECK(alpha == 6.0f,
-                       "BoundedRelu supports only value 6.0f, got", alpha);
-        }
-
         if (verbose) {
           NGRAPH_INFO << "Sending relu request size " << cipher_batch.size();
         }
-
         auto relu_message = TCPMessage(message_type, cipher_batch);
         NGRAPH_INFO << "Writing relu message";
         m_session->write_message(std::move(relu_message));
       };
-
-  // First, process all known values
+  // Process known values
   for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
-    auto& cipher = arg_cipher->get_element(relu_idx);
-    if (cipher->known_value()) {
-      // TODO: call (bounded) seal relu
-      auto value = cipher->value();
-      auto relu = [](float f) { return f > 0 ? f : 0.f; };
-      auto relu_val = relu(value);
-
-      auto known_cipher = std::make_shared<SealCiphertextWrapper>();
-      known_cipher->known_value() = true;
-      known_cipher->value() = relu_val;
-      m_relu_ciphertexts[relu_idx] = known_cipher;
+    auto& cipher = *arg_cipher->get_element(relu_idx);
+    if (cipher.known_value()) {
+      if (message_type == MessageType::relu6_request) {
+        ngraph::he::scalar_bounded_relu_seal_known_value(
+            cipher, m_relu_ciphertexts[relu_idx], alpha);
+      } else {
+        NGRAPH_CHECK(message_type == MessageType::relu_request);
+        ngraph::he::scalar_relu_seal_known_value(cipher,
+                                                 m_relu_ciphertexts[relu_idx]);
+      }
     } else {
       m_unknown_relu_idx.emplace_back(relu_idx);
     }
   }
 
+  // Process unknown values
   std::vector<seal::Ciphertext> relu_ciphers_batch;
   relu_ciphers_batch.reserve(max_relu_message_cnt);
 
@@ -1757,12 +1751,9 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
 
   // Wait until all batches have been processed
   std::unique_lock<std::mutex> mlock(m_relu_mutex);
-  NGRAPH_INFO << "Waiting until relu done with " << num_relu_batches
-              << " batches";
-  m_relu_cond.wait(mlock,
-                   [=]() { return m_relu_done_count == num_relu_batches; });
+  NGRAPH_INFO << "Waiting until relu done with " << element_count << " ciphers";
+  m_relu_cond.wait(mlock, [=]() { return m_relu_done_count == element_count; });
   m_relu_done_count = 0;
-  m_relu_idx_offset = 0;
 
   NGRAPH_INFO << "Setting m_relu_ciophetexts size "
               << m_relu_ciphertexts.size();
