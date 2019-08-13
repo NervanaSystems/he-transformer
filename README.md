@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="images/nGraph_mask_blue-100.jpg">
+  <img src="images/nGraph_mask_1-1.png">
 </p>
 
 # HE Transformer for nGraph
