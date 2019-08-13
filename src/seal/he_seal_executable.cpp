@@ -254,8 +254,6 @@ void ngraph::he::HESealExecutable::handle_message(
 
   if (msg_type == MessageType::execute) {
     size_t count = message.count();
-    // size_t ciphertext_size = message.element_size();
-
     NGRAPH_CHECK(m_context != nullptr);
 
     NGRAPH_INFO << "Loading " << count << " ciphertexts";
@@ -264,11 +262,7 @@ void ngraph::he::HESealExecutable::handle_message(
     for (size_t i = 0; i < count; ++i) {
       seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::ThreadLocal();
       seal::Ciphertext c(pool);
-      // std::stringstream stream;
-      // stream.write(message.data_ptr() + i * ciphertext_size,
-      // ciphertext_size);
       message.load_cipher(c, i, m_context);
-      // c.load(m_context, stream);
       ciphertexts[i] = c;
     }
     NGRAPH_INFO << "Done loading " << count << " ciphertexts";
