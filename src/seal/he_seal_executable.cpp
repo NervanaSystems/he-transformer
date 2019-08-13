@@ -250,13 +250,10 @@ void ngraph::he::HESealExecutable::handle_message(
     const ngraph::he::TCPMessage& message) {
   MessageType msg_type = message.message_type();
 
-  NGRAPH_DEBUG << "Server received message type: "
-               << message_type_to_string(msg_type);
+  NGRAPH_DEBUG << "Server received message type: " << msg_type;
 
   if (msg_type == MessageType::execute) {
     size_t count = message.count();
-    size_t ciphertext_size = message.element_size();
-
     NGRAPH_CHECK(m_context != nullptr);
 
     NGRAPH_INFO << "Loading " << count << " ciphertexts";
@@ -264,10 +261,8 @@ void ngraph::he::HESealExecutable::handle_message(
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i) {
       seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::ThreadLocal();
-      std::stringstream stream;
-      stream.write(message.data_ptr() + i * ciphertext_size, ciphertext_size);
       seal::Ciphertext c(pool);
-      c.load(m_context, stream);
+      message.load_cipher(c, i, m_context);
       ciphertexts[i] = c;
     }
     NGRAPH_INFO << "Done loading " << count << " ciphertexts";
@@ -382,17 +377,10 @@ void ngraph::he::HESealExecutable::handle_message(
   } else if (msg_type == MessageType::relu_result) {
     std::lock_guard<std::mutex> guard(m_relu_mutex);
 
-    size_t element_count = message.count();
-    size_t element_size = message.element_size();
-
 #pragma omp parallel for
-    for (size_t element_idx = 0; element_idx < element_count; ++element_idx) {
+    for (size_t element_idx = 0; element_idx < message.count(); ++element_idx) {
       seal::Ciphertext cipher;
-      std::stringstream cipher_stream;
-      cipher_stream.write(message.data_ptr() + element_idx * element_size,
-                          element_size);
-      cipher.load(m_context, cipher_stream);
-
+      message.load_cipher(cipher, element_idx, m_context);
       auto new_cipher = std::make_shared<ngraph::he::SealCiphertextWrapper>(
           cipher, m_complex_packing);
 
@@ -405,15 +393,9 @@ void ngraph::he::HESealExecutable::handle_message(
   } else if (msg_type == MessageType::maxpool_result) {
     std::lock_guard<std::mutex> guard(m_maxpool_mutex);
 
-    size_t element_count = message.count();
-    size_t element_size = message.element_size();
-
-    for (size_t element_idx = 0; element_idx < element_count; ++element_idx) {
+    for (size_t element_idx = 0; element_idx < message.count(); ++element_idx) {
       seal::Ciphertext cipher;
-      std::stringstream cipher_stream;
-      cipher_stream.write(message.data_ptr() + element_idx * element_size,
-                          element_size);
-      cipher.load(m_context, cipher_stream);
+      message.load_cipher(cipher, element_idx, m_context);
       auto new_cipher = std::make_shared<ngraph::he::SealCiphertextWrapper>(
           cipher, m_complex_packing);
 
@@ -425,15 +407,9 @@ void ngraph::he::HESealExecutable::handle_message(
   } else if (msg_type == MessageType::minimum_result) {
     std::lock_guard<std::mutex> guard(m_minimum_mutex);
 
-    size_t element_count = message.count();
-    size_t element_size = message.element_size();
-
-    for (size_t element_idx = 0; element_idx < element_count; ++element_idx) {
+    for (size_t element_idx = 0; element_idx < message.count(); ++element_idx) {
       seal::Ciphertext cipher;
-      std::stringstream cipher_stream;
-      cipher_stream.write(message.data_ptr() + element_idx * element_size,
-                          element_size);
-      cipher.load(m_context, cipher_stream);
+      message.load_cipher(cipher, element_idx, m_context);
 
       auto he_ciphertext = std::make_shared<ngraph::he::SealCiphertextWrapper>(
           cipher, m_complex_packing);
@@ -444,8 +420,7 @@ void ngraph::he::HESealExecutable::handle_message(
     m_minimum_cond.notify_all();
   } else {
     std::stringstream ss;
-    ss << "Unsupported message type in server:  "
-       << message_type_to_string(msg_type);
+    ss << "Unsupported message type in server: " << msg_type;
     throw ngraph_error(ss.str());
   }
 }
@@ -711,17 +686,10 @@ bool ngraph::he::HESealExecutable::call(
 
     auto output_cipher_tensor =
         std::dynamic_pointer_cast<HESealCipherTensor>(m_client_outputs[0]);
-
     NGRAPH_CHECK(output_cipher_tensor != nullptr,
                  "Client outputs are not HESealCipherTensor");
-
-    std::stringstream cipher_stream;
-    output_cipher_tensor->save_elements(cipher_stream);
-    auto result_message = TCPMessage(MessageType::result, output_shape_size,
-                                     std::move(cipher_stream));
-
-    // auto result_message =
-    //    TCPMessage(MessageType::result, output_cipher_tensor->get_elements());
+    auto result_message =
+        TCPMessage(MessageType::result, output_cipher_tensor->get_elements());
 
     NGRAPH_INFO << "Writing Result message with " << output_shape_size
                 << " ciphertexts ";
@@ -731,7 +699,6 @@ bool ngraph::he::HESealExecutable::call(
 
     // Wait until message is written
     std::condition_variable& writing_cond = m_session->is_writing_cond();
-    // const std::shared_ptr<TCPSession> const_m_session = m_session;
     writing_cond.wait(mlock, [this] { return !m_session->is_writing(); });
   }
   return true;

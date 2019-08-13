@@ -89,8 +89,7 @@ void ngraph::he::HESealClient::handle_message(
     const ngraph::he::TCPMessage& message) {
   ngraph::he::MessageType msg_type = message.message_type();
 
-  NGRAPH_DEBUG << "Client received message type: "
-               << message_type_to_string(msg_type).c_str();
+  NGRAPH_DEBUG << "Client received message type: " << msg_type;
 
   switch (msg_type) {
     case ngraph::he::MessageType::parameter_size: {
@@ -247,8 +246,7 @@ void ngraph::he::HESealClient::handle_message(
     case ngraph::he::MessageType::relu_result:
     case ngraph::he::MessageType::result_request:
     default:
-      NGRAPH_INFO << "Unsupported message type: "
-                  << message_type_to_string(msg_type).c_str();
+      NGRAPH_INFO << "Unsupported message type: " << msg_type;
   }
 }
 
@@ -288,10 +286,15 @@ void ngraph::he::HESealClient::handle_relu_request(
     ngraph::he::decrypt(relu_plain, pre_relu_cipher, complex_packing(),
                         *m_decryptor, *m_ckks_encoder);
 
-    std::vector<double> relu_values = relu_plain.values();
-    std::transform(relu_values.begin(), relu_values.end(), relu_values.begin(),
-                   activation);
-    relu_plain.set_values(relu_values);
+    const std::vector<double>& relu_values = relu_plain.values();
+    NGRAPH_CHECK(relu_values.size() >= m_batch_size,
+                 "Not enough relu values in plaintext");
+    std::vector<double> post_relu_values(relu_values.begin(),
+                                         relu_values.begin() + m_batch_size);
+
+    std::transform(post_relu_values.begin(), post_relu_values.end(),
+                   post_relu_values.begin(), activation);
+    relu_plain.set_values(post_relu_values);
 
     ngraph::he::encrypt(post_relu_ciphers[result_idx], relu_plain,
                         m_context->first_parms_id(), ngraph::element::f32,

@@ -22,7 +22,7 @@
 #include "seal/he_seal_cipher_tensor.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_util.hpp"
-#include "seal/util.hpp"
+#include "util.hpp"
 
 ngraph::he::HESealCipherTensor::HESealCipherTensor(
     const element::Type& element_type, const Shape& shape,
