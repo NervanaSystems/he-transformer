@@ -1691,11 +1691,41 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
   if (element_count % max_relu_message_cnt != 0) {
     num_relu_batches++;
   }
-  std::vector<seal::Ciphertext> relu_ciphers(element_count);
 
+  auto message_type = MessageType::none;
+  if (node_wrapper.get_typeid() == OP_TYPEID::BoundedRelu) {
+    message_type = MessageType::relu6_request;
+  } else if (node_wrapper.get_typeid() == OP_TYPEID::Relu) {
+    message_type = MessageType::relu_request;
+  } else {
+    NGRAPH_CHECK(false, "Unknown node type");
+  }
+
+  auto process_relu_ciphers_batch =
+      [&](const std::vector<seal::Ciphertext>& cipher_batch,
+          const ngraph::he::MessageType& message_type) {
+        if (message_type == MessageType::relu6_request) {
+          const op::BoundedRelu* bounded_relu =
+              static_cast<const op::BoundedRelu*>(&node);
+          float alpha = bounded_relu->get_alpha();
+          NGRAPH_CHECK(alpha == 6.0f,
+                       "BoundedRelu supports only value 6.0f, got", alpha);
+        }
+
+        if (verbose) {
+          NGRAPH_INFO << "Sending relu request size " << cipher_batch.size();
+        }
+
+        auto relu_message = TCPMessage(message_type, cipher_batch);
+        NGRAPH_INFO << "Writing relu message";
+        m_session->write_message(std::move(relu_message));
+      };
+
+  // First, process all known values
   for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
     auto& cipher = arg_cipher->get_element(relu_idx);
     if (cipher->known_value()) {
+      // TODO: call (bounded) seal relu
       auto value = cipher->value();
       auto relu = [](float f) { return f > 0 ? f : 0.f; };
       auto relu_val = relu(value);
@@ -1706,63 +1736,23 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
       m_relu_ciphertexts[relu_idx] = known_cipher;
     } else {
       m_unknown_relu_idx.emplace_back(relu_idx);
-      relu_ciphers.emplace_back(cipher->ciphertext());
     }
   }
 
-  relu_ciphers.reserve(max_relu_message_cnt);
-  for (size_t relu_batch = 0; relu_batch < num_relu_batches; ++relu_batch) {
-    relu_ciphers.clear();
-    m_unknown_relu_idx.clear();
+  std::vector<seal::Ciphertext> relu_ciphers_batch;
+  relu_ciphers_batch.reserve(max_relu_message_cnt);
 
-    size_t relu_start_idx = relu_batch * max_relu_message_cnt;
-    size_t relu_end_idx = (relu_batch + 1) * max_relu_message_cnt;
-    if (relu_end_idx > element_count) {
-      relu_end_idx = element_count;
+  for (const auto& unknown_relu_idx : m_unknown_relu_idx) {
+    auto& cipher = arg_cipher->get_element(unknown_relu_idx)->ciphertext();
+    relu_ciphers_batch.emplace_back(cipher);
+    if (relu_ciphers_batch.size() == max_relu_message_cnt) {
+      process_relu_ciphers_batch(relu_ciphers_batch, message_type);
+      relu_ciphers_batch.clear();
     }
-
-    for (size_t relu_idx = relu_start_idx; relu_idx < relu_end_idx;
-         ++relu_idx) {
-      auto& cipher = arg_cipher->get_element(relu_idx);
-      if (cipher->known_value()) {
-        auto value = cipher->value();
-        auto relu = [](float f) { return f > 0 ? f : 0.f; };
-        auto relu_val = relu(value);
-
-        auto known_cipher = std::make_shared<SealCiphertextWrapper>();
-        known_cipher->known_value() = true;
-        known_cipher->value() = relu_val;
-        m_relu_ciphertexts[relu_idx] = known_cipher;
-      } else {
-        m_unknown_relu_idx.emplace_back(relu_idx);
-        relu_ciphers.emplace_back(cipher->ciphertext());
-      }
-    }
-    // All relu values known
-    if (relu_ciphers.size() == 0) {
-      continue;
-    }
-
-    auto message_type = MessageType::none;
-
-    if (node_wrapper.get_typeid() == OP_TYPEID::BoundedRelu) {
-      message_type = MessageType::relu6_request;
-      const op::BoundedRelu* bounded_relu =
-          static_cast<const op::BoundedRelu*>(&node);
-      float alpha = bounded_relu->get_alpha();
-      NGRAPH_CHECK(alpha == 6.0f, "BoundedRelu supports only value 6.0f, got",
-                   alpha);
-    } else if (node_wrapper.get_typeid() == OP_TYPEID::Relu) {
-      message_type = MessageType::relu_request;
-    }
-
-    if (verbose) {
-      NGRAPH_INFO << "Sending relu request size " << relu_ciphers.size();
-    }
-
-    auto relu_message = TCPMessage(message_type, relu_ciphers);
-    NGRAPH_INFO << "Writing relu message";
-    m_session->write_message(std::move(relu_message));
+  }
+  if (relu_ciphers_batch.size() != 0) {
+    process_relu_ciphers_batch(relu_ciphers_batch, message_type);
+    relu_ciphers_batch.clear();
   }
 
   // Wait until all batches have been processed
