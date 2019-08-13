@@ -126,7 +126,7 @@ TEST(seal_util, save) {
   NGRAPH_INFO << "Encrypted";
   print_cipher(cipher);
 
-  ngraph::he::load(cipher_load, buffer);
+  ngraph::he::load(cipher_load, context, buffer);
 
   NGRAPH_INFO << "Loaded";
   print_cipher(cipher_load);
