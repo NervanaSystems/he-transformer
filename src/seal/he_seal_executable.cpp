@@ -1756,15 +1756,11 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
   }
 
   // Wait until all batches have been processed
-  // num_relu_batches
-
   std::unique_lock<std::mutex> mlock(m_relu_mutex);
   NGRAPH_INFO << "Waiting until relu done with " << num_relu_batches
               << " batches";
   m_relu_cond.wait(mlock,
                    [=]() { return m_relu_done_count == num_relu_batches; });
-  NGRAPH_INFO << "done waiting until relu done";
-  NGRAPH_INFO << "m_relu_done_count " << m_relu_done_count;
   m_relu_done_count = 0;
   m_relu_idx_offset = 0;
 
