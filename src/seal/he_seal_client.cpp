@@ -27,6 +27,7 @@
 #include "ngraph/log.hpp"
 #include "seal/he_seal_client.hpp"
 #include "seal/kernel/bounded_relu_seal.hpp"
+#include "seal/kernel/max_pool_seal.hpp"
 #include "seal/kernel/relu_seal.hpp"
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
@@ -196,44 +197,78 @@ void ngraph::he::HESealClient::handle_message(
       size_t complex_pack_factor = complex_packing() ? 2 : 1;
       size_t cipher_count = message.count();
 
-      std::vector<std::vector<double>> input_cipher_values(
-          m_batch_size * complex_pack_factor,
-          std::vector<double>(cipher_count, 0));
-
-      std::vector<double> max_values(m_batch_size * complex_pack_factor,
-                                     std::numeric_limits<double>::lowest());
+      std::vector<std::shared_ptr<SealCiphertextWrapper>> maxpool_ciphers(
+          cipher_count);
+      std::vector<std::shared_ptr<SealCiphertextWrapper>> post_max_cipher(1);
+      post_max_cipher[0] = std::make_shared<SealCiphertextWrapper>();
 
 #pragma omp parallel for
       for (size_t cipher_idx = 0; cipher_idx < cipher_count; ++cipher_idx) {
-        seal::Ciphertext pre_sort_cipher;
-        ngraph::he::HEPlaintext pre_sort_plain;
+        maxpool_ciphers[cipher_idx] = std::make_shared<SealCiphertextWrapper>();
 
-        message.load_cipher(pre_sort_cipher, cipher_idx, m_context);
-        ngraph::he::decrypt(pre_sort_plain, pre_sort_cipher, complex_packing(),
-                            *m_decryptor, *m_ckks_encoder);
-
-        for (size_t batch_idx = 0;
-             batch_idx < m_batch_size * complex_pack_factor; ++batch_idx) {
-          input_cipher_values[batch_idx][cipher_idx] =
-              pre_sort_plain.values()[batch_idx];
-        }
+        message.load_cipher(maxpool_ciphers[cipher_idx]->ciphertext(),
+                            cipher_idx, m_context);
+        maxpool_ciphers[cipher_idx]->complex_packing() = complex_packing();
       }
 
-      // Get max of each vector of values
-      for (size_t batch_idx = 0; batch_idx < m_batch_size * complex_pack_factor;
-           ++batch_idx) {
-        max_values[batch_idx] = static_cast<double>(
-            *std::max_element(input_cipher_values[batch_idx].begin(),
-                              input_cipher_values[batch_idx].end()));
-      }
-      seal::Ciphertext max_cipher;
-      ngraph::he::encrypt(max_cipher, HEPlaintext(max_values),
-                          m_context->first_parms_id(), ngraph::element::f32,
-                          m_scale, *m_ckks_encoder, *m_encryptor,
-                          complex_packing());
+      /*
+      const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
+    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
+    const Shape& arg_shape, const Shape& out_shape, const Shape& window_shape,
+    const Strides& window_movement_strides, const Shape& padding_below,
+    const Shape& padding_above, const seal::parms_id_type& parms_id,
+    double scale, seal::CKKSEncoder& ckks_encoder, seal::Encryptor& encryptor,
+    seal::Decryptor& decryptor, bool complex_packing)
+    */
+      ngraph::he::max_pool_seal(
+          maxpool_ciphers, post_max_cipher, Shape{cipher_count}, Shape{1},
+          Shape{cipher_count}, ngraph::Strides{1}, Shape{}, Shape{},
+          m_context->first_parms_id(), m_scale, *m_ckks_encoder, *m_encryptor,
+          *m_decryptor, complex_packing());
+
+      /*
+                SealCiphertextWrapper wrapped_cipher(pre_relu_cipher,
+                                                     complex_packing());
+
+            std::vector<std::vector<double>> input_cipher_values(
+                m_batch_size * complex_pack_factor,
+                std::vector<double>(cipher_count, 0));
+
+            std::vector<double> max_values(m_batch_size * complex_pack_factor,
+                                           std::numeric_limits<double>::lowest());
+
+      #pragma omp parallel for
+            for (size_t cipher_idx = 0; cipher_idx < cipher_count; ++cipher_idx)
+      { seal::Ciphertext pre_sort_cipher; ngraph::he::HEPlaintext
+      pre_sort_plain;
+
+              message.load_cipher(pre_sort_cipher, cipher_idx, m_context);
+              ngraph::he::decrypt(pre_sort_plain, pre_sort_cipher,
+      complex_packing(), *m_decryptor, *m_ckks_encoder);
+
+              for (size_t batch_idx = 0;
+                   batch_idx < m_batch_size * complex_pack_factor; ++batch_idx)
+      { input_cipher_values[batch_idx][cipher_idx] =
+                    pre_sort_plain.values()[batch_idx];
+              }
+            }
+
+            // Get max of each vector of values
+            for (size_t batch_idx = 0; batch_idx < m_batch_size *
+      complex_pack_factor;
+                 ++batch_idx) {
+              max_values[batch_idx] = static_cast<double>(
+                  *std::max_element(input_cipher_values[batch_idx].begin(),
+                                    input_cipher_values[batch_idx].end()));
+            }
+            seal::Ciphertext max_cipher;
+            ngraph::he::encrypt(max_cipher, HEPlaintext(max_values),
+                                m_context->first_parms_id(),
+      ngraph::element::f32, m_scale, *m_ckks_encoder, *m_encryptor,
+                                complex_packing());*/
 
       auto maxpool_result_msg =
-          TCPMessage(ngraph::he::MessageType::maxpool_result, max_cipher);
+          TCPMessage(ngraph::he::MessageType::maxpool_result, post_max_cipher);
       write_message(std::move(maxpool_result_msg));
 
       break;
