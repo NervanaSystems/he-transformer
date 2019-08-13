@@ -384,7 +384,7 @@ void ngraph::he::HESealExecutable::handle_message(
     std::lock_guard<std::mutex> guard(m_relu_mutex);
 
     size_t element_count = message.count();
-    size_t element_size = message.element_size();
+    //  size_t element_size = message.element_size();
 
 #pragma omp parallel for
     for (size_t element_idx = 0; element_idx < element_count; ++element_idx) {
@@ -408,7 +408,7 @@ void ngraph::he::HESealExecutable::handle_message(
     std::lock_guard<std::mutex> guard(m_maxpool_mutex);
 
     size_t element_count = message.count();
-    size_t element_size = message.element_size();
+    // size_t element_size = message.element_size();
 
     for (size_t element_idx = 0; element_idx < element_count; ++element_idx) {
       seal::Ciphertext cipher;
@@ -429,7 +429,7 @@ void ngraph::he::HESealExecutable::handle_message(
     std::lock_guard<std::mutex> guard(m_minimum_mutex);
 
     size_t element_count = message.count();
-    size_t element_size = message.element_size();
+    // size_t element_size = message.element_size();
 
     for (size_t element_idx = 0; element_idx < element_count; ++element_idx) {
       seal::Ciphertext cipher;
@@ -727,7 +727,6 @@ bool ngraph::he::HESealExecutable::call(
 
     // Wait until message is written
     std::condition_variable& writing_cond = m_session->is_writing_cond();
-    // const std::shared_ptr<TCPSession> const_m_session = m_session;
     writing_cond.wait(mlock, [this] { return !m_session->is_writing(); });
   }
   return true;

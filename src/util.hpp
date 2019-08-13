@@ -25,32 +25,9 @@
 #include "ngraph/check.hpp"
 #include "ngraph/except.hpp"
 #include "ngraph/util.hpp"
-#include "seal/seal.h"
 
 namespace ngraph {
 namespace he {
-inline void print_seal_context(const seal::SEALContext& context) {
-  auto& context_data = *context.key_context_data();
-
-  NGRAPH_CHECK(context_data.parms().scheme() == seal::scheme_type::CKKS,
-               "Only CKKS scheme supported");
-
-  std::cout << "/" << std::endl;
-  std::cout << "| Encryption parameters :" << std::endl;
-  std::cout << "|   scheme: CKKS" << std::endl;
-  std::cout << "|   poly_modulus_degree: "
-            << context_data.parms().poly_modulus_degree() << std::endl;
-  std::cout << "|   coeff_modulus size: ";
-  std::cout << context_data.total_coeff_modulus_bit_count() << " (";
-  auto coeff_modulus = context_data.parms().coeff_modulus();
-  std::size_t coeff_mod_count = coeff_modulus.size();
-  for (std::size_t i = 0; i < coeff_mod_count - 1; i++) {
-    std::cout << coeff_modulus[i].bit_count() << " + ";
-  }
-  std::cout << coeff_modulus.back().bit_count();
-  std::cout << ") bits" << std::endl;
-  std::cout << "\\" << std::endl;
-}
 
 // Packs elements of input into real values
 // (a+bi, c+di) => (a,b,c,d)
@@ -189,79 +166,6 @@ inline void double_vec_to_type_vec(void* target,
       NGRAPH_CHECK(false, "Unsupported element type ", element_type);
       break;
   }
-}
-
-inline void save(const seal::Ciphertext& cipher, void* destination) {
-  static constexpr std::array<size_t, 6> offsets = {
-      sizeof(seal::parms_id_type),
-      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE),
-      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) + sizeof(uint64_t),
-      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
-          2 * sizeof(uint64_t),
-      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
-          3 * sizeof(uint64_t),
-      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
-          3 * sizeof(uint64_t) + sizeof(double),
-  };
-
-  char* dst_char = static_cast<char*>(destination);
-
-  bool is_ntt_form = cipher.is_ntt_form();
-  uint64_t size = cipher.size();
-  uint64_t polynomial_modulus_degree = cipher.poly_modulus_degree();
-  uint64_t coeff_mod_count = cipher.coeff_mod_count();
-
-  std::memcpy(destination, (void*)&cipher.parms_id(),
-              sizeof(seal::parms_id_type));
-  std::memcpy(static_cast<void*>(dst_char + offsets[0]), (void*)&is_ntt_form,
-              sizeof(seal::SEAL_BYTE));
-  std::memcpy(static_cast<void*>(dst_char + offsets[1]), (void*)&size,
-              sizeof(uint64_t));
-  std::memcpy(static_cast<void*>(dst_char + offsets[2]),
-              (void*)&polynomial_modulus_degree, sizeof(uint64_t));
-  std::memcpy(static_cast<void*>(dst_char + offsets[3]),
-              (void*)&coeff_mod_count, sizeof(uint64_t));
-  std::memcpy(static_cast<void*>(dst_char + offsets[4]), (void*)&cipher.scale(),
-              sizeof(double));
-  std::memcpy(static_cast<void*>(dst_char + offsets[5]), (void*)cipher.data(),
-              8 * cipher.uint64_count());
-}
-
-inline void load(seal::Ciphertext& cipher,
-                 std::shared_ptr<seal::SEALContext> context, void* src) {
-  seal::SEAL_BYTE is_ntt_form_byte;
-  uint64_t size64 = 0;
-
-  static constexpr std::array<size_t, 6> offsets = {
-      sizeof(seal::parms_id_type),
-      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE),
-      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) + sizeof(uint64_t),
-      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
-          2 * sizeof(uint64_t),
-      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
-          3 * sizeof(uint64_t),
-      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
-          3 * sizeof(uint64_t) + sizeof(double),
-  };
-
-  seal::Ciphertext new_cipher(context);
-
-  char* char_src = static_cast<char*>(src);
-  std::memcpy(&new_cipher.parms_id(), src, sizeof(seal::parms_id_type));
-  std::memcpy(&is_ntt_form_byte, static_cast<void*>(char_src + offsets[0]),
-              sizeof(seal::SEAL_BYTE));
-  std::memcpy(&size64, static_cast<void*>(char_src + offsets[1]),
-              sizeof(uint64_t));
-  std::memcpy(&new_cipher.scale(), static_cast<void*>(char_src + offsets[4]),
-              sizeof(double));
-  bool ntt_form = (is_ntt_form_byte == seal::SEAL_BYTE(0)) ? false : true;
-
-  new_cipher.resize(size64);
-  new_cipher.is_ntt_form() = ntt_form;
-  void* data_src = static_cast<void*>(char_src + offsets[5]);
-  std::memcpy(&new_cipher[0], data_src,
-              new_cipher.uint64_count() * sizeof(std::uint64_t));
-  cipher = std::move(new_cipher);
 }
 
 }  // namespace he

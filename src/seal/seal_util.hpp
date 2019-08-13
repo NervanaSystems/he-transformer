@@ -28,6 +28,9 @@
 
 namespace ngraph {
 namespace he {
+void print_seal_context(const seal::SEALContext& context);
+
+
 inline double choose_scale(
     const std::vector<seal::SmallModulus>& coeff_moduli) {
   if (coeff_moduli.size() > 2) {
@@ -196,6 +199,11 @@ void decrypt(ngraph::he::HEPlaintext& output,
 void decrypt(ngraph::he::HEPlaintext& output, const seal::Ciphertext& input,
              bool complex_packing, seal::Decryptor& decryptor,
              seal::CKKSEncoder& ckks_encoder);
+
+void save(const seal::Ciphertext& cipher, void* destination);
+
+void load(seal::Ciphertext& cipher, std::shared_ptr<seal::SEALContext> context,
+          void* src);
 
 }  // namespace he
 }  // namespace ngraph

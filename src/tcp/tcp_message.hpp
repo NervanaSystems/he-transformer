@@ -31,7 +31,7 @@
 #include "ngraph/util.hpp"
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
-#include "seal/util.hpp"
+#include "seal/seal_util.hpp"
 
 namespace ngraph {
 namespace he {

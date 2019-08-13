@@ -141,6 +141,7 @@ void ngraph::he::HESealClient::handle_message(
         result_ciphers[result_idx] =
             std::make_shared<SealCiphertextWrapper>(c, complex_packing());
       }
+      NGRAPH_INFO << "Loaded results; reading to m_results";
 
       size_t n = result_count * sizeof(double) * m_batch_size;
       ngraph::he::HESealCipherTensor::read(

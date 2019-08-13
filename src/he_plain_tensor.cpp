@@ -18,7 +18,7 @@
 
 #include "he_plain_tensor.hpp"
 #include "seal/he_seal_backend.hpp"
-#include "seal/util.hpp"
+#include "util.hpp"
 
 ngraph::he::HEPlainTensor::HEPlainTensor(const element::Type& element_type,
                                          const Shape& shape,
