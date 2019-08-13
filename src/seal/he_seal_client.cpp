@@ -295,10 +295,6 @@ void ngraph::he::HESealClient::handle_relu_request(
                  "Not enough relu values in plaintext");
     std::vector<double> post_relu_values(relu_values.begin(),
                                          relu_values.begin() + m_batch_size);
-    NGRAPH_INFO << "Relu[ " << result_idx << " ] values ";
-    for (const auto& elem : post_relu_values) {
-      NGRAPH_INFO << elem;
-    }
 
     std::transform(post_relu_values.begin(), post_relu_values.end(),
                    post_relu_values.begin(), activation);

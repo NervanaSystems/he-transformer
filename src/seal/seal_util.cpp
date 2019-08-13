@@ -570,10 +570,7 @@ void ngraph::he::decrypt(ngraph::he::HEPlaintext& output,
                          seal::Decryptor& decryptor,
                          seal::CKKSEncoder& ckks_encoder) {
   auto plaintext_wrapper = SealPlaintextWrapper(complex_packing);
-  NGRAPH_INFO << "Decrypting";
-  NGRAPH_INFO << "input.size() " << input.size();
   decryptor.decrypt(input, plaintext_wrapper.plaintext());
-  NGRAPH_INFO << "Decrypted";
   decode(output, plaintext_wrapper, ckks_encoder);
 }
 
@@ -596,10 +593,6 @@ void ngraph::he::save(const seal::Ciphertext& cipher, void* destination) {
     uint64_t size = cipher.size();
     uint64_t polynomial_modulus_degree = cipher.poly_modulus_degree();
     uint64_t coeff_mod_count = cipher.coeff_mod_count();
-    NGRAPH_INFO << "Saving cipher with size " << size;
-    NGRAPH_INFO << "Saving cipher with coeff_mod_count " << coeff_mod_count;
-    NGRAPH_INFO << "Saving cipher with uin64_count " << cipher.uint64_count();
-    NGRAPH_INFO << "parms_id.size " << cipher.parms_id().size();
 
     char* dst_char = static_cast<char*>(destination);
     std::memcpy(destination, (void*)&cipher.parms_id(),
@@ -623,12 +616,7 @@ void ngraph::he::load(seal::Ciphertext& cipher,
                       std::shared_ptr<seal::SEALContext> context, void* src) {
   seal::SEAL_BYTE is_ntt_form_byte;
   uint64_t size64 = 0;
-  uint64_t coeff_mod_count = 0;
-
   seal::parms_id_type parms_id{};
-
-  print_seal_context(*context);
-  NGRAPH_INFO << "!context " << bool(!context);
 
   static constexpr std::array<size_t, 6> offsets = {
       sizeof(seal::parms_id_type),
@@ -645,67 +633,23 @@ void ngraph::he::load(seal::Ciphertext& cipher,
   char* char_src = static_cast<char*>(src);
   std::memcpy(&parms_id, src, sizeof(seal::parms_id_type));
 
-  NGRAPH_INFO << "Creating new cipher";
   seal::Ciphertext new_cipher(context, parms_id);
-  NGRAPH_INFO << "Created new cipher";
 
   std::memcpy(&is_ntt_form_byte, static_cast<void*>(char_src + offsets[0]),
               sizeof(seal::SEAL_BYTE));
   std::memcpy(&size64, static_cast<void*>(char_src + offsets[1]),
               sizeof(uint64_t));
-  std::memcpy(&coeff_mod_count, static_cast<void*>(char_src + offsets[3]),
-              sizeof(uint64_t));
   std::memcpy(&new_cipher.scale(), static_cast<void*>(char_src + offsets[4]),
               sizeof(double));
   bool ntt_form = (is_ntt_form_byte == seal::SEAL_BYTE(0)) ? false : true;
 
-  NGRAPH_INFO << "size64 " << size64;
-  NGRAPH_INFO << "loaded coeff_mod_count " << coeff_mod_count;
-
   new_cipher.resize(context, parms_id, size64);
-
-  NGRAPH_INFO << "new_cipher.uint64_count " << new_cipher.uint64_count();
 
   new_cipher.is_ntt_form() = ntt_form;
   void* data_src = static_cast<void*>(char_src + offsets[5]);
   std::memcpy(&new_cipher[0], data_src,
               new_cipher.uint64_count() * sizeof(std::uint64_t));
   cipher = std::move(new_cipher);
-  NGRAPH_INFO << "Moved cipher";
-
-  NGRAPH_INFO << "is_metadata_valid_for "
-              << seal::is_metadata_valid_for(cipher, context);
-
-  NGRAPH_INFO << "!context " << bool(!context);
-  NGRAPH_INFO << "!!context->parameters_set() "
-              << bool(!context->parameters_set());
-
-  auto context_data_ptr = context->get_context_data(cipher.parms_id());
-  NGRAPH_INFO << "!context-data_ptr " << !context_data_ptr;
-  NGRAPH_INFO << "context_data_ptr->chain_index() "
-              << context_data_ptr->chain_index();
-  NGRAPH_INFO << "context->first_context_data()->chain_index()) "
-              << context->first_context_data()->chain_index();
-
-  if (!context_data_ptr || context_data_ptr->chain_index() >
-                               context->first_context_data()->chain_index()) {
-    throw std::invalid_argument("chain or ctx data invalid");
-  }
-
-  auto& coeff_modulus = context_data_ptr->parms().coeff_modulus();
-  size_t poly_modulus_degree = context_data_ptr->parms().poly_modulus_degree();
-  NGRAPH_INFO << "coeff_modulus.size() " << coeff_modulus.size();
-  NGRAPH_INFO << "cipher.coeff_mod_count() " << cipher.coeff_mod_count();
-  NGRAPH_INFO << "cipher.poly_modulus_degree" << cipher.poly_modulus_degree();
-  NGRAPH_INFO << "poly_modulus_degree " << poly_modulus_degree;
-
-  if ((coeff_modulus.size() != cipher.coeff_mod_count()) ||
-      (poly_modulus_degree != cipher.poly_modulus_degree())) {
-    throw std::invalid_argument("poly or coeff bad");
-  }
-
-  auto size = cipher.size();
-  NGRAPH_INFO << "size " << size;
 
   if (!seal::is_valid_for(cipher, context)) {
     throw std::invalid_argument("ciphertext data is invalid");
