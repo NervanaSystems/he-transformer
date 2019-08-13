@@ -192,8 +192,10 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu_int64_t) {
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
     auto double_results = he_client.get_results();
-    results =
-        std::vector<int64_t>(double_results.begin(), double_results.end());
+    results.resize(double_results.size());
+    for (size_t i = 0; i < results.size(); ++i) {
+      results[i] = std::round(double_results[i]);
+    }
   });
 
   auto handle = dynamic_pointer_cast<ngraph::he::HESealExecutable>(

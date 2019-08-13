@@ -331,7 +331,7 @@ void ngraph::he::encode(double value, const ngraph::element::Type& element_type,
   // TODO: use reserve?
   destination.resize(coeff_mod_count);
 
-  double coeffd = round(value);
+  double coeffd = std::round(value);
   bool is_negative = std::signbit(coeffd);
   coeffd = fabs(coeffd);
 
