@@ -23,6 +23,7 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
+#include "seal/seal_util.hpp"
 
 namespace ngraph {
 namespace he {
@@ -45,18 +46,26 @@ inline void relu_seal(const std::vector<HEPlaintext>& arg,
 inline void scalar_relu_seal(const SealCiphertextWrapper& arg,
                              std::shared_ptr<SealCiphertextWrapper>& out,
                              const HESealBackend& he_seal_backend) {
-  HEPlaintext plain;
-  he_seal_backend.decrypt(plain, arg);
-  const std::vector<double>& arg_vals = plain.values();
-  std::vector<double> out_vals(plain.num_values());
   auto relu = [](double f) { return f > 0 ? f : 0.f; };
-  std::transform(arg_vals.begin(), arg_vals.end(), out_vals.begin(), relu);
 
-  plain.set_values(out_vals);
-  encrypt(out, plain, he_seal_backend.get_context()->first_parms_id(),
-          ngraph::element::f32, he_seal_backend.get_scale(),
-          *he_seal_backend.get_ckks_encoder(), *he_seal_backend.get_encryptor(),
-          he_seal_backend.complex_packing());
+  if (arg.known_value()) {
+    out->known_value() = true;
+    out->value() = relu(arg.value());
+  } else {
+    HEPlaintext plain;
+    he_seal_backend.decrypt(plain, arg);
+    const std::vector<double>& arg_vals = plain.values();
+    std::vector<double> out_vals(plain.num_values());
+
+    std::transform(arg_vals.begin(), arg_vals.end(), out_vals.begin(), relu);
+
+    plain.set_values(out_vals);
+    ngraph::he::encrypt(
+        out, plain, he_seal_backend.get_context()->first_parms_id(),
+        ngraph::element::f32, he_seal_backend.get_scale(),
+        *he_seal_backend.get_ckks_encoder(), *he_seal_backend.get_encryptor(),
+        he_seal_backend.complex_packing());
+  }
 }
 
 inline void relu_seal(

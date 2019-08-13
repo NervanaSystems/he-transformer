@@ -78,6 +78,8 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
   }
 
   void write_message(ngraph::he::TCPMessage&& message) {
+    NGRAPH_INFO << "Server called write message type "
+                << message.message_type();
     bool write_in_progress = is_writing();
     m_message_queue.emplace_back(std::move(message));
     if (!write_in_progress) {
@@ -92,6 +94,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
  private:
   void do_write() {
     std::lock_guard<std::mutex> lock(m_write_mtx);
+    NGRAPH_INFO << "Notifying m_is_writing " << is_writing();
     m_is_writing.notify_all();
     auto self(shared_from_this());
 
@@ -105,10 +108,11 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
         [this, self](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
             m_message_queue.pop_front();
-            m_is_writing.notify_all();
-
             if (!m_message_queue.empty()) {
               do_write();
+            } else {
+              NGRAPH_INFO << "Notifying m_is_writing " << is_writing();
+              m_is_writing.notify_all();
             }
           } else {
             NGRAPH_INFO << "Server error writing message: " << ec.message();

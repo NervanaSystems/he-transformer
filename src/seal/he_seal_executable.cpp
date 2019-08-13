@@ -387,8 +387,10 @@ void ngraph::he::HESealExecutable::handle_message(
       auto new_cipher = std::make_shared<ngraph::he::SealCiphertextWrapper>(
           cipher, m_complex_packing);
 
-      m_relu_ciphertexts[m_unknown_relu_idx[element_idx]] = new_cipher;
+      m_relu_ciphertexts[m_unknown_relu_idx[element_idx + m_relu_idx_offset]] =
+          new_cipher;
     }
+    m_relu_idx_offset += message.count();
 
     // Notify condition variable
     m_relu_done_count++;
@@ -688,10 +690,14 @@ bool ngraph::he::HESealExecutable::call(
     const Shape& output_shape = get_results()[0]->get_shape();
     size_t output_shape_size = shape_size(output_shape) / m_batch_size;
 
+    NGRAPH_INFO << "So far so good";
+
     auto output_cipher_tensor =
         std::dynamic_pointer_cast<HESealCipherTensor>(m_client_outputs[0]);
     NGRAPH_CHECK(output_cipher_tensor != nullptr,
                  "Client outputs are not HESealCipherTensor");
+
+    NGRAPH_INFO << "creating result mssage";
     auto result_message =
         TCPMessage(MessageType::result, output_cipher_tensor->get_elements());
 
@@ -1676,16 +1682,34 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
   m_relu_ciphertexts.resize(element_count);
 
   // TODO: tune
-  const size_t max_relu_message_cnt = 10000;
+  const size_t max_relu_message_cnt = 3;
 
   m_unknown_relu_idx.clear();
-  m_unknown_relu_idx.reserve(max_relu_message_cnt);
+  m_unknown_relu_idx.reserve(element_count);
 
   size_t num_relu_batches = element_count / max_relu_message_cnt;
   if (element_count % max_relu_message_cnt != 0) {
     num_relu_batches++;
   }
-  std::vector<seal::Ciphertext> relu_ciphers;
+  std::vector<seal::Ciphertext> relu_ciphers(element_count);
+
+  for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
+    auto& cipher = arg_cipher->get_element(relu_idx);
+    if (cipher->known_value()) {
+      auto value = cipher->value();
+      auto relu = [](float f) { return f > 0 ? f : 0.f; };
+      auto relu_val = relu(value);
+
+      auto known_cipher = std::make_shared<SealCiphertextWrapper>();
+      known_cipher->known_value() = true;
+      known_cipher->value() = relu_val;
+      m_relu_ciphertexts[relu_idx] = known_cipher;
+    } else {
+      m_unknown_relu_idx.emplace_back(relu_idx);
+      relu_ciphers.emplace_back(cipher->ciphertext());
+    }
+  }
+
   relu_ciphers.reserve(max_relu_message_cnt);
   for (size_t relu_batch = 0; relu_batch < num_relu_batches; ++relu_batch) {
     relu_ciphers.clear();
@@ -1752,6 +1776,10 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
   NGRAPH_INFO << "done waiting until relu done";
   NGRAPH_INFO << "m_relu_done_count " << m_relu_done_count;
   m_relu_done_count = 0;
+  m_relu_idx_offset = 0;
+
+  NGRAPH_INFO << "Setting m_relu_ciophetexts size "
+              << m_relu_ciphertexts.size();
 
   out_cipher->set_elements(m_relu_ciphertexts);
 }
