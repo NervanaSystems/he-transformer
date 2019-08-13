@@ -57,7 +57,7 @@ TEST(tcp_message, save_cipher) {
   Ciphertext encrypted;
   encryptor.encrypt(plain, encrypted);
 
-  size_t n = 100;
+  size_t n = 1;
   std::vector<seal::Ciphertext> seal_ciphers(n);
   for (size_t i = 0; i < n; ++i) {
     seal_ciphers[i] = encrypted;
@@ -92,7 +92,6 @@ TEST(seal_util, save) {
       CoeffModulus::Create(poly_modulus_degree, {60, 40, 40, 60}));
 
   auto context = SEALContext::Create(parms);
-  // print_parameters(context);
 
   KeyGenerator keygen(context);
   auto public_key = keygen.public_key();
@@ -117,19 +116,7 @@ TEST(seal_util, save) {
   ngraph::he::save(cipher, buffer);
 
   Ciphertext cipher_load;
-
-  auto print_cipher = [](seal::Ciphertext& cipher) {
-    NGRAPH_INFO << "ntt_form " << cipher.is_ntt_form();
-    NGRAPH_INFO << "scale " << cipher.scale();
-  };
-
-  NGRAPH_INFO << "Encrypted";
-  print_cipher(cipher);
-
   ngraph::he::load(cipher_load, context, buffer);
-
-  NGRAPH_INFO << "Loaded";
-  print_cipher(cipher_load);
 
   EXPECT_EQ(cipher_load.parms_id(), cipher.parms_id());
   EXPECT_EQ(cipher_load.is_ntt_form(), cipher.is_ntt_form());
@@ -139,6 +126,10 @@ TEST(seal_util, save) {
   EXPECT_EQ(cipher_load.scale(), cipher.scale());
   EXPECT_EQ(cipher_load.uint64_count(), cipher.uint64_count());
   EXPECT_EQ(cipher_load.is_transparent(), cipher.is_transparent());
+
+  for (size_t i = 0; i < cipher.uint64_count(); ++i) {
+    EXPECT_EQ(cipher_load[i], cipher[i]);
+  }
 
   ngraph::ngraph_free(buffer);
 }

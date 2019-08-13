@@ -264,90 +264,15 @@ inline void load(seal::Ciphertext& cipher,
   bool ntt_form = (is_ntt_form_byte == seal::SEAL_BYTE(0)) ? false : true;
 
   seal::Ciphertext new_cipher(context);
-
-  NGRAPH_INFO << "Loaded nttform " << ntt_form;
-  NGRAPH_INFO << "loaded size64 " << size64;
-  NGRAPH_INFO << "Loaded poly_modulus_degree " << poly_modulus_degree;
-  NGRAPH_INFO << "Loaded coeff_mod_count " << coeff_mod_count;
-  NGRAPH_INFO << "Loaded scale " << scale;
-
-  size_t data_count = poly_modulus_degree * coeff_mod_count;
-
-  seal::IntArray<seal::Ciphertext::ct_coeff_type> new_data(data_count,
-                                                           cipher.pool());
+  new_cipher.resize(size64);
 
   new_cipher.is_ntt_form() = ntt_form;
   new_cipher.scale() = scale;
   new_cipher.parms_id() = parms_id;
-
-  NGRAPH_INFO << "cipher.scale() " << new_cipher.scale();
-  NGRAPH_INFO << "cipher.poly_modulus_degree() "
-              << new_cipher.poly_modulus_degree();
-
-  NGRAPH_INFO << "cipher.parms_id() " << new_cipher.parms_id()[0] << ", "
-              << new_cipher.parms_id()[1] << ", " << new_cipher.parms_id()[2]
-              << ", " << new_cipher.parms_id()[3];
-
-  new_cipher.reserve(size64);
-  new_cipher.resize(size64);
-
-  NGRAPH_INFO << "cipher size " << new_cipher.size();
-  NGRAPH_INFO << "Copying to new data";
-  NGRAPH_INFO << "data_count " << data_count;
-  NGRAPH_INFO << "sizeof(seal::Ciphertext::ct_coeff_type) "
-              << sizeof(seal::Ciphertext::ct_coeff_type);
-  // std::memcpy(static_cast<void*>(new_data.begin()),
-  //            static_cast<void*>(char_src + offsets[5]),
-  //           sizeof(seal::Ciphertext::ct_coeff_type) * data_count);
-  // NGRAPH_INFO << "copying to new_data.data() is fine";
-  NGRAPH_INFO << "uint64_count " << new_cipher.uint64_count();
-
-  new_cipher[0] = 123;
-  NGRAPH_INFO << "cipher[0] is fine";
-
-  for (size_t i = 0; i < new_cipher.uint64_count(); ++i) {
-    // NGRAPH_INFO << "copying " << i;
-    void* src_with_offset = static_cast<void*>(
-        char_src + offsets[5] + i * sizeof(seal::Ciphertext::ct_coeff_type));
-    // std::memcpy(static_cast<void*>(new_data.begin()), src_with_offset,
-    //            sizeof(seal::Ciphertext::ct_coeff_type) * data_count);
-    // NGRAPH_INFO << "copying " << i << " to new data is ok";
-
-    std::uint64_t new_val;
-    std::memcpy(&new_val, src_with_offset, sizeof(std::uint64_t));
-
-    new_cipher[i] = new_val;
-
-    if (i < 10) {
-      NGRAPH_INFO << "i " << i;
-      NGRAPH_INFO << "new val " << new_val;
-      NGRAPH_INFO << "new_cipher[i] " << new_cipher[i];
-    }
-
-    // std::memcpy(static_cast<void*>(cipher.data(i)), src_with_offset,
-    //            sizeof(seal::Ciphertext::ct_coeff_type));
-    // NGRAPH_INFO << "copied new val";
-  }
-  NGRAPH_INFO << "new_cipher.data(1) " << new_cipher.data(1);
-  NGRAPH_INFO << "new_cipher.data(1) " << *new_cipher.data(1);
-
-  NGRAPH_INFO << "new_cipher.is_transparent() " << new_cipher.is_transparent();
-
+  void* data_src = static_cast<void*>(char_src + offsets[5]);
+  std::memcpy(&new_cipher[0], data_src,
+              new_cipher.uint64_count() * sizeof(std::uint64_t));
   cipher = std::move(new_cipher);
-
-  NGRAPH_INFO << "cipher.data[1] " << *cipher.data(1);
-
-  NGRAPH_INFO << "!cipher.uint64_count() " << !(cipher.uint64_count());
-  NGRAPH_INFO << "cipher.uint64_count " << cipher.uint64_count();
-  NGRAPH_INFO << "cipher[3] " << cipher[3];
-  NGRAPH_INFO << "cipher.is_transparent() " << cipher.is_transparent();
-  NGRAPH_INFO << "cipher.size() " << cipher.size();
-  NGRAPH_INFO << "is_zero "
-              << seal::util::is_zero<seal::Ciphertext::ct_coeff_type>(
-                     *cipher.data(1));
-
-  // std::memcpy(destination, (void*)cipher.data()), 8 *
-  // cipher.uint64_count());
 }
 
 }  // namespace he
