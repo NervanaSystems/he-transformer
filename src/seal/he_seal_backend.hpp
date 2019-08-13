@@ -43,7 +43,7 @@
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
-#include "seal/util.hpp"
+#include "util.hpp"
 
 namespace ngraph {
 namespace runtime {

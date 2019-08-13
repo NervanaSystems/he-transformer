@@ -19,7 +19,7 @@
 
 #include "seal/kernel/constant_seal.hpp"
 #include "seal/seal_util.hpp"
-#include "seal/util.hpp"
+#include "util.hpp"
 
 void ngraph::he::constant_seal(std::vector<ngraph::he::HEPlaintext>& out,
                                const element::Type& element_type,

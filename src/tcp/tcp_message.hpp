@@ -18,6 +18,7 @@
 
 #include <assert.h>
 #include <algorithm>
+#include <chrono>
 #include <cstring>
 #include <iostream>
 #include <memory>
@@ -30,6 +31,7 @@
 #include "ngraph/util.hpp"
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
+#include "seal/seal_util.hpp"
 
 namespace ngraph {
 namespace he {
@@ -52,59 +54,60 @@ enum class MessageType {
   result_request
 };
 
-inline std::string message_type_to_string(const MessageType& type) {
+inline std::ostream& operator<<(std::ostream& os, const MessageType& type) {
   switch (type) {
     case MessageType::none:
-      return "none";
+      os << "none";
       break;
     case MessageType::encryption_parameters:
-      return "encryption_parameters";
+      os << "encryption_parameters";
       break;
     case MessageType::eval_key:
-      return "eval_key";
+      os << "eval_key";
       break;
     case MessageType::public_key:
-      return "public_key";
+      os << "public_key";
       break;
     case MessageType::execute:
-      return "execute";
+      os << "execute";
       break;
     case MessageType::minimum_request:
-      return "minimum_request";
+      os << "minimum_request";
       break;
     case MessageType::minimum_result:
-      return "minimum_result";
+      os << "minimum_result";
       break;
     case MessageType::maxpool_request:
-      return "maxpool_request";
+      os << "maxpool_request";
       break;
     case MessageType::maxpool_result:
-      return "maxpool_result";
+      os << "maxpool_result";
       break;
     case MessageType::parameter_size:
-      return "parameter_size";
+      os << "parameter_size";
       break;
     case MessageType::parameter_shape_request:
-      return "parameter_shape_request";
+      os << "parameter_shape_request";
       break;
     case MessageType::relu_result:
-      return "relu_result";
+      os << "relu_result";
       break;
     case MessageType::relu_request:
-      return "relu_request";
+      os << "relu_request";
       break;
     case MessageType::relu6_request:
-      return "relu6_request";
+      os << "relu6_request";
       break;
     case MessageType::result:
-      return "result";
+      os << "result";
       break;
     case MessageType::result_request:
-      return "result_request";
+      os << "result_request";
       break;
     default:
-      return "Unknown message type";
+      os << "Unknown message type";
   }
+  return os;
 }
 
 // @brief Describes TCP messages of the form:
@@ -271,21 +274,7 @@ class TCPMessage {
     }
   }
 
-  size_t count() { return m_count; }
   size_t count() const { return m_count; }
-
-  size_t element_size() {
-    if (m_count == 0) {
-      throw std::invalid_argument("m_count == 0");
-    }
-    if (m_data_size % m_count != 0) {
-      std::stringstream ss;
-      ss << "m_count " << m_count << " does not divide m_data_size "
-         << m_data_size;
-      throw std::invalid_argument(ss.str());
-    }
-    return m_data_size / m_count;
-  }
 
   size_t element_size() const {
     if (m_count == 0) {
@@ -300,17 +289,14 @@ class TCPMessage {
     return m_data_size / m_count;
   }
 
-  size_t num_bytes() { return header_length + body_length(); }
   size_t num_bytes() const { return header_length + body_length(); }
 
-  size_t data_size() { return m_data_size; }
   size_t data_size() const { return m_data_size; }
 
   size_t body_length() const {
     return message_type_length + message_count_length + m_data_size;
   }
 
-  MessageType message_type() { return m_type; }
   MessageType message_type() const { return m_type; }
 
   char* header_ptr() { return m_data; }
@@ -325,7 +311,6 @@ class TCPMessage {
   char* data_ptr() { return count_ptr() + message_count_length; }
   const char* data_ptr() const { return count_ptr() + message_count_length; }
 
-  // Given
   void encode_header() {
     char header[header_length + 1] = "";
     size_t to_encode = body_length();
@@ -355,7 +340,6 @@ class TCPMessage {
       m_data = static_cast<char*>(ngraph_malloc(header_length + body_length));
       encode_header();
     }
-
     return true;
   }
 
@@ -393,10 +377,14 @@ class TCPMessage {
   inline void load_cipher(seal::Ciphertext& cipher, size_t index,
                           std::shared_ptr<seal::SEALContext> context) const {
     NGRAPH_CHECK(index < count(), "Index too large");
-    std::stringstream ss;
-    ss.write(data_ptr() + index * element_size(), element_size());
-    // TODO: load directly from buffer
-    cipher.load(context, ss);
+    ngraph::he::load(cipher, context,
+                     static_cast<void*>(const_cast<char*>(
+                         data_ptr() + index * element_size())));
+  }
+
+  inline void save_cipher_to_message(const seal::Ciphertext& cipher,
+                                     size_t offset) {
+    ngraph::he::save(cipher, data_ptr() + offset);
   }
 
  private:
@@ -404,15 +392,6 @@ class TCPMessage {
   size_t m_count;      // Number of datatype in message
   size_t m_data_size;  // Nubmer of bytes in data part of message
   char* m_data;
-
-  inline void save_cipher_to_message(const seal::Ciphertext& cipher,
-                                     size_t offset) {
-    // TODO: save directly to buffer
-    std::stringstream ss;
-    cipher.save(ss);
-    std::stringbuf* pbuf = ss.rdbuf();
-    pbuf->sgetn(data_ptr() + offset, ciphertext_size(cipher));
-  }
 };
 }  // namespace he
 }  // namespace ngraph

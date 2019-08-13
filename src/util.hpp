@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <array>
 #include <complex>
 #include <string>
 #include <unordered_set>
@@ -24,38 +25,15 @@
 #include "ngraph/check.hpp"
 #include "ngraph/except.hpp"
 #include "ngraph/util.hpp"
-#include "seal/seal.h"
 
 namespace ngraph {
 namespace he {
-static inline void print_seal_context(const seal::SEALContext& context) {
-  auto& context_data = *context.key_context_data();
-
-  NGRAPH_CHECK(context_data.parms().scheme() == seal::scheme_type::CKKS,
-               "Only CKKS scheme supported");
-
-  std::cout << "/" << std::endl;
-  std::cout << "| Encryption parameters :" << std::endl;
-  std::cout << "|   scheme: CKKS" << std::endl;
-  std::cout << "|   poly_modulus_degree: "
-            << context_data.parms().poly_modulus_degree() << std::endl;
-  std::cout << "|   coeff_modulus size: ";
-  std::cout << context_data.total_coeff_modulus_bit_count() << " (";
-  auto coeff_modulus = context_data.parms().coeff_modulus();
-  std::size_t coeff_mod_count = coeff_modulus.size();
-  for (std::size_t i = 0; i < coeff_mod_count - 1; i++) {
-    std::cout << coeff_modulus[i].bit_count() << " + ";
-  }
-  std::cout << coeff_modulus.back().bit_count();
-  std::cout << ") bits" << std::endl;
-  std::cout << "\\" << std::endl;
-}
 
 // Packs elements of input into real values
 // (a+bi, c+di) => (a,b,c,d)
 template <typename T>
-static inline void complex_vec_to_real_vec(
-    std::vector<T>& output, const std::vector<std::complex<T>>& input) {
+inline void complex_vec_to_real_vec(std::vector<T>& output,
+                                    const std::vector<std::complex<T>>& input) {
   NGRAPH_CHECK(output.size() == 0);
   output.reserve(input.size() * 2);
   for (const std::complex<T>& value : input) {
@@ -68,8 +46,8 @@ static inline void complex_vec_to_real_vec(
 // (a,b,c,d) => (a+bi, c+di)
 // (a,b,c) => (a+bi, c+0i)
 template <typename T>
-static inline void real_vec_to_complex_vec(std::vector<std::complex<T>>& output,
-                                           const std::vector<T>& input) {
+inline void real_vec_to_complex_vec(std::vector<std::complex<T>>& output,
+                                    const std::vector<T>& input) {
   NGRAPH_CHECK(output.size() == 0);
   output.reserve(input.size() / 2);
   std::vector<T> complex_parts(2, 0);
@@ -83,7 +61,7 @@ static inline void real_vec_to_complex_vec(std::vector<std::complex<T>>& output,
   }
 }
 
-static inline bool flag_to_bool(const char* flag, bool default_value = false) {
+inline bool flag_to_bool(const char* flag, bool default_value = false) {
   if (flag == nullptr) {
     return default_value;
   }
@@ -100,8 +78,8 @@ static inline bool flag_to_bool(const char* flag, bool default_value = false) {
   }
 }
 
-static inline double type_to_double(const void* src,
-                                    const element::Type& element_type) {
+inline double type_to_double(const void* src,
+                             const element::Type& element_type) {
   switch (element_type.get_type_enum()) {
     case element::Type_t::f32:
       return static_cast<double>(*static_cast<const float*>(src));
@@ -131,7 +109,7 @@ static inline double type_to_double(const void* src,
   return 0.0;
 }
 
-static inline std::vector<double> type_vec_to_double_vec(
+inline std::vector<double> type_vec_to_double_vec(
     const void* src, const element::Type& element_type, size_t n) {
   std::vector<double> ret(n);
   char* src_with_offset = static_cast<char*>(const_cast<void*>(src));
@@ -142,7 +120,7 @@ static inline std::vector<double> type_vec_to_double_vec(
   return ret;
 }
 
-static void double_vec_to_type_vec(void* target,
+inline void double_vec_to_type_vec(void* target,
                                    const element::Type& element_type,
                                    const std::vector<double>& input) {
   NGRAPH_CHECK(input.size() > 0, "Input has no values");
@@ -189,5 +167,6 @@ static void double_vec_to_type_vec(void* target,
       break;
   }
 }
+
 }  // namespace he
 }  // namespace ngraph

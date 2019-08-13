@@ -23,9 +23,9 @@
 #include <vector>
 
 #include "seal/seal.h"
-#include "seal/util.hpp"
 #include "tcp/tcp_client.hpp"
 #include "tcp/tcp_message.hpp"
+#include "util.hpp"
 
 namespace ngraph {
 namespace he {

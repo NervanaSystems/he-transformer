@@ -18,7 +18,7 @@
 
 #include "he_plain_tensor.hpp"
 #include "seal/he_seal_backend.hpp"
-#include "seal/util.hpp"
+#include "util.hpp"
 
 ngraph::he::HEPlainTensor::HEPlainTensor(const element::Type& element_type,
                                          const Shape& shape,
@@ -52,7 +52,6 @@ void ngraph::he::HEPlainTensor::write(const void* source, size_t n) {
 
     } else {
       const double d = type_to_double(src_with_offset, element_type);
-      NGRAPH_INFO << "writing value " << d;
       m_plaintexts[0].set_value(d);
     }
   } else {
