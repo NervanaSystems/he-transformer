@@ -123,6 +123,8 @@ class TCPClient {
   }
 
   void do_write() {
+    NGRAPH_INFO << "Client writing message type "
+                << m_message_queue.front().message_type();
     boost::asio::async_write(
         m_socket,
         boost::asio::buffer(m_message_queue.front().header_ptr(),

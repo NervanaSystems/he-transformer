@@ -95,7 +95,7 @@ ngraph::he::HESealExecutable::HESealExecutable(
       m_client_setup(false),
       m_batch_size(1),
       m_port(34000),
-      m_relu_done(false),
+      m_relu_done_count(0),
       m_maxpool_done(false),
       m_session_started(false),
       m_client_inputs_received(false) {
@@ -203,7 +203,8 @@ void ngraph::he::HESealExecutable::client_setup() {
     std::unique_lock<std::mutex> mlock(m_session_mutex);
     m_session_cond.wait(mlock,
                         std::bind(&HESealExecutable::session_started, this));
-    m_session->do_write(std::move(parms_message));
+    NGRAPH_INFO << "Writing parms message";
+    m_session->write_message(std::move(parms_message));
 
     m_client_setup = true;
   } else {
@@ -331,6 +332,7 @@ void ngraph::he::HESealExecutable::handle_message(
     std::lock_guard<std::mutex> guard(m_client_inputs_mutex);
     m_client_inputs_received = true;
     m_client_inputs_cond.notify_all();
+
   } else if (msg_type == MessageType::public_key) {
     seal::PublicKey key;
     std::stringstream key_stream;
@@ -373,7 +375,8 @@ void ngraph::he::HESealExecutable::handle_message(
         reinterpret_cast<char*>(&num_param_elements)};
 
     NGRAPH_DEBUG << "Server sending message of type: parameter_size";
-    m_session->do_write(std::move(parameter_message));
+    m_session->write_message(std::move(parameter_message));
+
   } else if (msg_type == MessageType::relu_result) {
     std::lock_guard<std::mutex> guard(m_relu_mutex);
 
@@ -388,8 +391,9 @@ void ngraph::he::HESealExecutable::handle_message(
     }
 
     // Notify condition variable
-    m_relu_done = true;
+    m_relu_done_count++;
     m_relu_cond.notify_all();
+
   } else if (msg_type == MessageType::maxpool_result) {
     std::lock_guard<std::mutex> guard(m_maxpool_mutex);
 
@@ -693,7 +697,7 @@ bool ngraph::he::HESealExecutable::call(
 
     NGRAPH_INFO << "Writing Result message with " << output_shape_size
                 << " ciphertexts ";
-    m_session->do_write(std::move(result_message));
+    m_session->write_message(std::move(result_message));
 
     std::unique_lock<std::mutex> mlock(m_result_mutex);
 
@@ -1247,7 +1251,7 @@ void ngraph::he::HESealExecutable::generate_calls(
         auto maxpool_message =
             TCPMessage(MessageType::maxpool_request, maxpool_ciphers);
 
-        m_session->do_write(std::move(maxpool_message));
+        m_session->write_message(std::move(maxpool_message));
 
         // Acquire lock
         std::unique_lock<std::mutex> mlock(m_maxpool_mutex);
@@ -1733,16 +1737,21 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
     }
 
     auto relu_message = TCPMessage(message_type, relu_ciphers);
-    m_session->do_write(std::move(relu_message));
-
-    // Acquire lock
-    std::unique_lock<std::mutex> mlock(m_relu_mutex);
-
-    // Wait until Relu is done
-    m_relu_cond.wait(mlock, std::bind(&HESealExecutable::relu_done, this));
-
-    // Reset for next Relu call
-    m_relu_done = false;
+    NGRAPH_INFO << "Writing relu message";
+    m_session->write_message(std::move(relu_message));
   }
+
+  // Wait until all batches have been processed
+  // num_relu_batches
+
+  std::unique_lock<std::mutex> mlock(m_relu_mutex);
+  NGRAPH_INFO << "Waiting until relu done with " << num_relu_batches
+              << " batches";
+  m_relu_cond.wait(mlock,
+                   [=]() { return m_relu_done_count == num_relu_batches; });
+  NGRAPH_INFO << "done waiting until relu done";
+  NGRAPH_INFO << "m_relu_done_count " << m_relu_done_count;
+  m_relu_done_count = 0;
+
   out_cipher->set_elements(m_relu_ciphertexts);
 }
