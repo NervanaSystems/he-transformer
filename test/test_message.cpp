@@ -70,7 +70,6 @@ TEST(tcp_message, save_cipher) {
   EXPECT_EQ(message.count(), n);
 
   for (size_t i = 0; i < n; ++i) {
-    NGRAPH_INFO << "Loading cipher " << i;
     seal::Ciphertext cipher;
     ngraph::he::HEPlaintext plain;
 
@@ -83,7 +82,6 @@ TEST(tcp_message, save_cipher) {
                        .count()
                 << "us";
 
-    NGRAPH_INFO << "Decrypting";
     ngraph::he::decrypt(plain, cipher, false, decryptor, ckks_encoder);
 
     auto out_vals = plain.values();
