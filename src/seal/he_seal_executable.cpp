@@ -1682,7 +1682,7 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
   m_relu_ciphertexts.resize(element_count);
 
   // TODO: tune
-  const size_t max_relu_message_cnt = 3;
+  const size_t max_relu_message_cnt = 15;
 
   m_unknown_relu_idx.clear();
   m_unknown_relu_idx.reserve(element_count);
@@ -1767,6 +1767,9 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
 
   // Wait until all batches have been processed
   // num_relu_batches
+
+  using namespace std::chrono_literals;
+  std::this_thread::sleep_for(10s);
 
   std::unique_lock<std::mutex> mlock(m_relu_mutex);
   NGRAPH_INFO << "Waiting until relu done with " << num_relu_batches
