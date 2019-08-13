@@ -183,9 +183,6 @@ class TCPMessage {
     encode_message_type();
     encode_count();
 
-    NGRAPH_INFO << "Creating mesage " << type << " from " << ciphers.size()
-                << " ciphers";
-
 #pragma omp parallel for
     for (size_t i = 0; i < ciphers.size(); ++i) {
       size_t offset = i * cipher_size;

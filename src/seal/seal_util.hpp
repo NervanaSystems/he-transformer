@@ -30,7 +30,6 @@ namespace ngraph {
 namespace he {
 void print_seal_context(const seal::SEALContext& context);
 
-
 inline double choose_scale(
     const std::vector<seal::SmallModulus>& coeff_moduli) {
   if (coeff_moduli.size() > 2) {
@@ -45,18 +44,16 @@ inline double choose_scale(
 
 inline size_t get_chain_index(const SealCiphertextWrapper& cipher,
                               const HESealBackend& he_seal_backend) {
-  size_t chain_ind = he_seal_backend.get_context()
-                         ->get_context_data(cipher.ciphertext().parms_id())
-                         ->chain_index();
-  return chain_ind;
+  return he_seal_backend.get_context()
+      ->get_context_data(cipher.ciphertext().parms_id())
+      ->chain_index();
 }
 
 inline size_t get_chain_index(const SealPlaintextWrapper& plain,
                               const HESealBackend& he_seal_backend) {
-  size_t chain_ind = he_seal_backend.get_context()
-                         ->get_context_data(plain.plaintext().parms_id())
-                         ->chain_index();
-  return chain_ind;
+  return he_seal_backend.get_context()
+      ->get_context_data(plain.plaintext().parms_id())
+      ->chain_index();
 }
 
 // Returns the smallest chain index

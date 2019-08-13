@@ -383,18 +383,10 @@ void ngraph::he::HESealExecutable::handle_message(
   } else if (msg_type == MessageType::relu_result) {
     std::lock_guard<std::mutex> guard(m_relu_mutex);
 
-    size_t element_count = message.count();
-    //  size_t element_size = message.element_size();
-
 #pragma omp parallel for
-    for (size_t element_idx = 0; element_idx < element_count; ++element_idx) {
+    for (size_t element_idx = 0; element_idx < message.count(); ++element_idx) {
       seal::Ciphertext cipher;
       message.load_cipher(cipher, element_idx, m_context);
-      // std::stringstream cipher_stream;
-      // cipher_stream.write(message.data_ptr() + element_idx * element_size,
-      //                    element_size);
-      // cipher.load(m_context, cipher_stream);
-
       auto new_cipher = std::make_shared<ngraph::he::SealCiphertextWrapper>(
           cipher, m_complex_packing);
 
@@ -407,16 +399,9 @@ void ngraph::he::HESealExecutable::handle_message(
   } else if (msg_type == MessageType::maxpool_result) {
     std::lock_guard<std::mutex> guard(m_maxpool_mutex);
 
-    size_t element_count = message.count();
-    // size_t element_size = message.element_size();
-
-    for (size_t element_idx = 0; element_idx < element_count; ++element_idx) {
+    for (size_t element_idx = 0; element_idx < message.count(); ++element_idx) {
       seal::Ciphertext cipher;
       message.load_cipher(cipher, element_idx, m_context);
-      // std::stringstream cipher_stream;
-      // cipher_stream.write(message.data_ptr() + element_idx * element_size,
-      //                    element_size);
-      // cipher.load(m_context, cipher_stream);
       auto new_cipher = std::make_shared<ngraph::he::SealCiphertextWrapper>(
           cipher, m_complex_packing);
 
@@ -428,16 +413,9 @@ void ngraph::he::HESealExecutable::handle_message(
   } else if (msg_type == MessageType::minimum_result) {
     std::lock_guard<std::mutex> guard(m_minimum_mutex);
 
-    size_t element_count = message.count();
-    // size_t element_size = message.element_size();
-
-    for (size_t element_idx = 0; element_idx < element_count; ++element_idx) {
+    for (size_t element_idx = 0; element_idx < message.count(); ++element_idx) {
       seal::Ciphertext cipher;
       message.load_cipher(cipher, element_idx, m_context);
-      // std::stringstream cipher_stream;
-      // cipher_stream.write(message.data_ptr() + element_idx * element_size,
-      //                    element_size);
-      // cipher.load(m_context, cipher_stream);
 
       auto he_ciphertext = std::make_shared<ngraph::he::SealCiphertextWrapper>(
           cipher, m_complex_packing);
