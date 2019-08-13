@@ -54,26 +54,40 @@ inline void scalar_relu_seal_known_value(
 
 inline void scalar_relu_seal(const SealCiphertextWrapper& arg,
                              std::shared_ptr<SealCiphertextWrapper>& out,
-                             const HESealBackend& he_seal_backend) {
+                             const seal::parms_id_type& parms_id, double scale,
+                             seal::CKKSEncoder& ckks_encoder,
+                             seal::Encryptor& encryptor,
+                             seal::Decryptor& decryptor) {
   auto relu = [](double f) { return f > 0 ? f : 0.f; };
 
   if (arg.known_value()) {
     scalar_relu_seal_known_value(arg, out);
   } else {
     HEPlaintext plain;
-    he_seal_backend.decrypt(plain, arg);
+    NGRAPH_INFO << "Decrypting";
+    ngraph::he::decrypt(plain, arg, decryptor, ckks_encoder);
     const std::vector<double>& arg_vals = plain.values();
     std::vector<double> out_vals(plain.num_values());
 
-    std::transform(arg_vals.begin(), arg_vals.end(), out_vals.begin(), relu);
+    NGRAPH_INFO << "performing relu";
 
+    std::transform(arg_vals.begin(), arg_vals.end(), out_vals.begin(), relu);
     plain.set_values(out_vals);
-    ngraph::he::encrypt(
-        out, plain, he_seal_backend.get_context()->first_parms_id(),
-        ngraph::element::f32, he_seal_backend.get_scale(),
-        *he_seal_backend.get_ckks_encoder(), *he_seal_backend.get_encryptor(),
-        he_seal_backend.complex_packing());
+
+    NGRAPH_INFO << "Encrypting";
+    ngraph::he::encrypt(out, plain, parms_id, ngraph::element::f32, scale,
+                        ckks_encoder, encryptor, arg.complex_packing());
+    NGRAPH_INFO << "Done encrypting";
   }
+}
+
+inline void scalar_relu_seal(const SealCiphertextWrapper& arg,
+                             std::shared_ptr<SealCiphertextWrapper>& out,
+                             const HESealBackend& he_seal_backend) {
+  scalar_relu_seal(
+      arg, out, he_seal_backend.get_context()->first_parms_id(),
+      he_seal_backend.get_scale(), *he_seal_backend.get_ckks_encoder(),
+      *he_seal_backend.get_encryptor(), *he_seal_backend.get_decryptor());
 }
 
 inline void relu_seal(
