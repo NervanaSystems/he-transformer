@@ -255,7 +255,7 @@ void ngraph::he::HESealExecutable::handle_message(
 
   if (msg_type == MessageType::execute) {
     size_t count = message.count();
-    size_t ciphertext_size = message.element_size();
+    // size_t ciphertext_size = message.element_size();
 
     NGRAPH_CHECK(m_context != nullptr);
 
@@ -264,10 +264,12 @@ void ngraph::he::HESealExecutable::handle_message(
 #pragma omp parallel for
     for (size_t i = 0; i < count; ++i) {
       seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::ThreadLocal();
-      std::stringstream stream;
-      stream.write(message.data_ptr() + i * ciphertext_size, ciphertext_size);
       seal::Ciphertext c(pool);
-      c.load(m_context, stream);
+      // std::stringstream stream;
+      // stream.write(message.data_ptr() + i * ciphertext_size,
+      // ciphertext_size);
+      message.load_cipher(c, i, m_context);
+      // c.load(m_context, stream);
       ciphertexts[i] = c;
     }
     NGRAPH_INFO << "Done loading " << count << " ciphertexts";
@@ -388,10 +390,11 @@ void ngraph::he::HESealExecutable::handle_message(
 #pragma omp parallel for
     for (size_t element_idx = 0; element_idx < element_count; ++element_idx) {
       seal::Ciphertext cipher;
-      std::stringstream cipher_stream;
-      cipher_stream.write(message.data_ptr() + element_idx * element_size,
-                          element_size);
-      cipher.load(m_context, cipher_stream);
+      message.load_cipher(cipher, element_idx, m_context);
+      // std::stringstream cipher_stream;
+      // cipher_stream.write(message.data_ptr() + element_idx * element_size,
+      //                    element_size);
+      // cipher.load(m_context, cipher_stream);
 
       auto new_cipher = std::make_shared<ngraph::he::SealCiphertextWrapper>(
           cipher, m_complex_packing);
@@ -410,10 +413,11 @@ void ngraph::he::HESealExecutable::handle_message(
 
     for (size_t element_idx = 0; element_idx < element_count; ++element_idx) {
       seal::Ciphertext cipher;
-      std::stringstream cipher_stream;
-      cipher_stream.write(message.data_ptr() + element_idx * element_size,
-                          element_size);
-      cipher.load(m_context, cipher_stream);
+      message.load_cipher(cipher, element_idx, m_context);
+      // std::stringstream cipher_stream;
+      // cipher_stream.write(message.data_ptr() + element_idx * element_size,
+      //                    element_size);
+      // cipher.load(m_context, cipher_stream);
       auto new_cipher = std::make_shared<ngraph::he::SealCiphertextWrapper>(
           cipher, m_complex_packing);
 
@@ -430,10 +434,11 @@ void ngraph::he::HESealExecutable::handle_message(
 
     for (size_t element_idx = 0; element_idx < element_count; ++element_idx) {
       seal::Ciphertext cipher;
-      std::stringstream cipher_stream;
-      cipher_stream.write(message.data_ptr() + element_idx * element_size,
-                          element_size);
-      cipher.load(m_context, cipher_stream);
+      message.load_cipher(cipher, element_idx, m_context);
+      // std::stringstream cipher_stream;
+      // cipher_stream.write(message.data_ptr() + element_idx * element_size,
+      //                    element_size);
+      // cipher.load(m_context, cipher_stream);
 
       auto he_ciphertext = std::make_shared<ngraph::he::SealCiphertextWrapper>(
           cipher, m_complex_packing);
@@ -715,13 +720,13 @@ bool ngraph::he::HESealExecutable::call(
     NGRAPH_CHECK(output_cipher_tensor != nullptr,
                  "Client outputs are not HESealCipherTensor");
 
-    std::stringstream cipher_stream;
-    output_cipher_tensor->save_elements(cipher_stream);
-    auto result_message = TCPMessage(MessageType::result, output_shape_size,
-                                     std::move(cipher_stream));
+    // std::stringstream cipher_stream;
+    // output_cipher_tensor->save_elements(cipher_stream);
+    // auto result_message = TCPMessage(MessageType::result, output_shape_size,
+    //                                 std::move(cipher_stream));
 
-    // auto result_message =
-    //    TCPMessage(MessageType::result, output_cipher_tensor->get_elements());
+    auto result_message =
+        TCPMessage(MessageType::result, output_cipher_tensor->get_elements());
 
     NGRAPH_INFO << "Writing Result message with " << output_shape_size
                 << " ciphertexts ";

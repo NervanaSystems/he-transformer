@@ -395,15 +395,18 @@ class TCPMessage {
   inline void load_cipher(seal::Ciphertext& cipher, size_t index,
                           std::shared_ptr<seal::SEALContext> context) const {
     NGRAPH_CHECK(index < count(), "Index too large");
+    NGRAPH_INFO << "efficient_load? " << efficient_save;
 
-    // ngraph::he::load(cipher, context,
-    //                 static_cast<void*>(const_cast<char*>(
-    //                     data_ptr() + index * element_size())));
-
-    std::stringstream ss;
-    ss.write(data_ptr() + index * element_size(), element_size());
-    // TODO: load directly from buffer
-    cipher.load(context, ss);
+    if (efficient_save) {
+      ngraph::he::load(cipher, context,
+                       static_cast<void*>(const_cast<char*>(
+                           data_ptr() + index * element_size())));
+    } else {
+      // TODO: load directly from buffer
+      std::stringstream ss;
+      ss.write(data_ptr() + index * element_size(), element_size());
+      cipher.load(context, ss);
+    }
   }
 
  private:
@@ -411,16 +414,22 @@ class TCPMessage {
   size_t m_count;      // Number of datatype in message
   size_t m_data_size;  // Nubmer of bytes in data part of message
   char* m_data;
+  bool efficient_save{std::getenv("SAVE") != nullptr};
 
   inline void save_cipher_to_message(const seal::Ciphertext& cipher,
                                      size_t offset) {
+    NGRAPH_INFO << "efficient_save? " << efficient_save;
     auto t1 = std::chrono::high_resolution_clock::now();
 
-    // TODO: save directly to buffer
-    std::stringstream ss;
-    cipher.save(ss);
-    std::stringbuf* pbuf = ss.rdbuf();
-    pbuf->sgetn(data_ptr() + offset, ciphertext_size(cipher));
+    if (efficient_save) {
+      ngraph::he::save(cipher, data_ptr() + offset);
+    } else {
+      // TODO: save directly to buffer
+      std::stringstream ss;
+      cipher.save(ss);
+      std::stringbuf* pbuf = ss.rdbuf();
+      pbuf->sgetn(data_ptr() + offset, ciphertext_size(cipher));
+    }
 
     auto t2 = std::chrono::high_resolution_clock::now();
     NGRAPH_INFO << "save time "
