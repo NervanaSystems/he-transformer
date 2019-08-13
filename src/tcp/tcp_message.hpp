@@ -382,10 +382,14 @@ class TCPMessage {
     NGRAPH_CHECK(index < count(), "Index too large");
     NGRAPH_INFO << "efficient_load? " << efficient_save;
 
+    print_seal_context(*context);
+    NGRAPH_INFO << "!context " << bool(!context);
+
     if (efficient_save) {
       ngraph::he::load(cipher, context,
                        static_cast<void*>(const_cast<char*>(
                            data_ptr() + index * element_size())));
+
     } else {
       // TODO: load directly from buffer
       std::stringstream ss;
