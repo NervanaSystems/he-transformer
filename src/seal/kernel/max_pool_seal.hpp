@@ -298,9 +298,13 @@ inline void max_pool_seal(
       input_batch_transform_source_axis_order[i] = i;
     }
 
-    NGRAPH_INFO << "input_batch_transform_end " << input_batch_transform_end;
     NGRAPH_INFO << "input_batch_transform_start "
                 << input_batch_transform_start;
+    NGRAPH_INFO << "input_batch_transform_end " << input_batch_transform_end;
+    NGRAPH_INFO << "input_batch_transform_source_strides "
+                << input_batch_transform_source_strides;
+    NGRAPH_INFO << "input_batch_transform_source_axis_order "
+                << input_batch_transform_source_axis_order;
 
     CoordinateTransform input_batch_transform(
         arg_shape, input_batch_transform_start, input_batch_transform_end,

@@ -194,7 +194,7 @@ void ngraph::he::HESealClient::handle_message(
     }
 
     case ngraph::he::MessageType::maxpool_request: {
-      size_t complex_pack_factor = complex_packing() ? 2 : 1;
+      // size_t complex_pack_factor = complex_packing() ? 2 : 1;
       size_t cipher_count = message.count();
 
       std::vector<std::shared_ptr<SealCiphertextWrapper>> maxpool_ciphers(
@@ -221,10 +221,10 @@ void ngraph::he::HESealClient::handle_message(
     seal::Decryptor& decryptor, bool complex_packing)
     */
       ngraph::he::max_pool_seal(
-          maxpool_ciphers, post_max_cipher, Shape{cipher_count}, Shape{1},
-          Shape{cipher_count}, ngraph::Strides{1}, Shape{}, Shape{},
-          m_context->first_parms_id(), m_scale, *m_ckks_encoder, *m_encryptor,
-          *m_decryptor, complex_packing());
+          maxpool_ciphers, post_max_cipher, Shape{1, 1, cipher_count},
+          Shape{1, 1, 1}, Shape{cipher_count}, ngraph::Strides{1}, Shape{0},
+          Shape{0}, m_context->first_parms_id(), m_scale, *m_ckks_encoder,
+          *m_encryptor, *m_decryptor, complex_packing());
 
       /*
                 SealCiphertextWrapper wrapped_cipher(pre_relu_cipher,
