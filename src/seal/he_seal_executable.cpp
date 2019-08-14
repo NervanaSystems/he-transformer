@@ -1701,16 +1701,6 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
     NGRAPH_CHECK(false, "Unknown node type");
   }
 
-  auto process_relu_ciphers_batch =
-      [&](const std::vector<seal::Ciphertext>& cipher_batch,
-          const ngraph::he::MessageType& message_type) {
-        if (verbose) {
-          NGRAPH_INFO << "Sending relu request size " << cipher_batch.size();
-        }
-        auto relu_message = TCPMessage(message_type, cipher_batch);
-        NGRAPH_INFO << "Writing relu message";
-        m_session->write_message(std::move(relu_message));
-      };
   // Process known values
   for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
     auto& cipher = *arg_cipher->get_element(relu_idx);
@@ -1727,6 +1717,16 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
       m_unknown_relu_idx.emplace_back(relu_idx);
     }
   }
+
+  auto process_relu_ciphers_batch =
+      [&](const std::vector<seal::Ciphertext>& cipher_batch,
+          const ngraph::he::MessageType& message_type) {
+        if (verbose) {
+          NGRAPH_INFO << "Sending relu request size " << cipher_batch.size();
+        }
+        auto relu_message = TCPMessage(message_type, cipher_batch);
+        m_session->write_message(std::move(relu_message));
+      };
 
   // Process unknown values
   std::vector<seal::Ciphertext> relu_ciphers_batch;

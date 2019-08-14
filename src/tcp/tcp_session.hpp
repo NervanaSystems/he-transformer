@@ -78,8 +78,6 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
   }
 
   void write_message(ngraph::he::TCPMessage&& message) {
-    NGRAPH_INFO << "Server called write message type "
-                << message.message_type();
     bool write_in_progress = is_writing();
     m_message_queue.emplace_back(std::move(message));
     if (!write_in_progress) {

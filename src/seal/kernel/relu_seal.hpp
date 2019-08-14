@@ -64,20 +64,15 @@ inline void scalar_relu_seal(const SealCiphertextWrapper& arg,
     scalar_relu_seal_known_value(arg, out);
   } else {
     HEPlaintext plain;
-    NGRAPH_INFO << "Decrypting";
     ngraph::he::decrypt(plain, arg, decryptor, ckks_encoder);
     const std::vector<double>& arg_vals = plain.values();
     std::vector<double> out_vals(plain.num_values());
 
-    NGRAPH_INFO << "performing relu";
-
     std::transform(arg_vals.begin(), arg_vals.end(), out_vals.begin(), relu);
     plain.set_values(out_vals);
 
-    NGRAPH_INFO << "Encrypting";
     ngraph::he::encrypt(out, plain, parms_id, ngraph::element::f32, scale,
                         ckks_encoder, encryptor, arg.complex_packing());
-    NGRAPH_INFO << "Done encrypting";
   }
 }
 
