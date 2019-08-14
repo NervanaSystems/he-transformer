@@ -244,13 +244,6 @@ inline void max_pool_seal(
     const Shape& padding_above, const seal::parms_id_type& parms_id,
     double scale, seal::CKKSEncoder& ckks_encoder, seal::Encryptor& encryptor,
     seal::Decryptor& decryptor, bool complex_packing) {
-  NGRAPH_INFO << "Max pool seal";
-  NGRAPH_INFO << "strides " << window_movement_strides;
-  NGRAPH_INFO << "arg_shape " << arg_shape;
-  NGRAPH_INFO << "out_shape " << out_shape;
-  NGRAPH_INFO << "window_shape " << window_shape;
-  NGRAPH_INFO << "padding_below " << padding_below;
-  NGRAPH_INFO << "padding_above " << padding_above;
   // At the outermost level we will walk over every output coordinate O.
   CoordinateTransform output_transform(out_shape);
 
@@ -258,7 +251,6 @@ inline void max_pool_seal(
 
   for (const Coordinate& out_coord : output_transform) {
     out_coord_idx++;
-    NGRAPH_INFO << "out_coord " << out_coord;
 
     size_t batch_index = out_coord[0];
     size_t channel = out_coord[1];
@@ -298,14 +290,6 @@ inline void max_pool_seal(
       input_batch_transform_source_axis_order[i] = i;
     }
 
-    NGRAPH_INFO << "input_batch_transform_start "
-                << input_batch_transform_start;
-    NGRAPH_INFO << "input_batch_transform_end " << input_batch_transform_end;
-    NGRAPH_INFO << "input_batch_transform_source_strides "
-                << input_batch_transform_source_strides;
-    NGRAPH_INFO << "input_batch_transform_source_axis_order "
-                << input_batch_transform_source_axis_order;
-
     CoordinateTransform input_batch_transform(
         arg_shape, input_batch_transform_start, input_batch_transform_end,
         input_batch_transform_source_strides,
@@ -320,7 +304,6 @@ inline void max_pool_seal(
     std::vector<double> max_vals;
 
     for (const Coordinate& input_batch_coord : input_batch_transform) {
-      NGRAPH_INFO << "input_batch_coord " << input_batch_coord;
       if (input_batch_transform.has_source_coordinate(input_batch_coord)) {
         auto arg_coord_idx = input_batch_transform.index(input_batch_coord);
         HEPlaintext plain;
@@ -337,11 +320,8 @@ inline void max_pool_seal(
                        arg_vals.size(), " doesn't match max_vals.size() ",
                        max_vals.size());
           for (size_t value_idx = 0; value_idx < arg_vals.size(); ++value_idx) {
-            NGRAPH_INFO << "max at index " << value_idx << " "
-                        << max_vals[value_idx] << ",  " << arg_vals[value_idx];
             max_vals[value_idx] =
                 std::max(max_vals[value_idx], arg_vals[value_idx]);
-            NGRAPH_INFO << "=> " << max_vals[value_idx];
           }
         }
       }
@@ -352,8 +332,6 @@ inline void max_pool_seal(
                         ckks_encoder, encryptor, complex_packing);
     out[output_transform.index(out_coord)] = cipher;
   }
-
-  NGRAPH_INFO << "Done with maxpool seal";
 }
 
 inline void max_pool_seal(
