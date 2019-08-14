@@ -94,12 +94,8 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
  private:
   void do_write() {
     std::lock_guard<std::mutex> lock(m_write_mtx);
-    NGRAPH_INFO << "Notifying m_is_writing " << is_writing();
     m_is_writing.notify_all();
     auto self(shared_from_this());
-
-    NGRAPH_INFO << "Server writing message type "
-                << m_message_queue.front().message_type();
 
     boost::asio::async_write(
         m_socket,
@@ -111,7 +107,6 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
             if (!m_message_queue.empty()) {
               do_write();
             } else {
-              NGRAPH_INFO << "Notifying m_is_writing " << is_writing();
               m_is_writing.notify_all();
             }
           } else {

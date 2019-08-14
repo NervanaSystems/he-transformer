@@ -170,15 +170,9 @@ class TCPMessage {
   TCPMessage(const MessageType type,
              const std::vector<std::shared_ptr<SealCiphertextWrapper>>& ciphers)
       : m_type(type), m_count(ciphers.size()) {
-    NGRAPH_INFO << "Creating message from ciphertext wartppers";
-    NGRAPH_INFO << "Cipher size " << ciphers.size();
     NGRAPH_CHECK(ciphers.size() > 0, "No ciphertexts in TCPMessage");
-    auto tmp = ciphers[0]->ciphertext();
-    NGRAPH_INFO << "Got tmp ";
     size_t cipher_size = ciphertext_size(ciphers[0]->ciphertext());
     m_data_size = cipher_size * m_count;
-
-    NGRAPH_INFO << "cipher_size " << cipher_size;
 
     check_arguments();
     size_t body_malloc_size =

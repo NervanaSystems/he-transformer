@@ -203,7 +203,6 @@ void ngraph::he::HESealExecutable::client_setup() {
     std::unique_lock<std::mutex> mlock(m_session_mutex);
     m_session_cond.wait(mlock,
                         std::bind(&HESealExecutable::session_started, this));
-    NGRAPH_INFO << "Writing parms message";
     m_session->write_message(std::move(parms_message));
 
     m_client_setup = true;
@@ -687,14 +686,11 @@ bool ngraph::he::HESealExecutable::call(
     const Shape& output_shape = get_results()[0]->get_shape();
     size_t output_shape_size = shape_size(output_shape) / m_batch_size;
 
-    NGRAPH_INFO << "So far so good";
-
     auto output_cipher_tensor =
         std::dynamic_pointer_cast<HESealCipherTensor>(m_client_outputs[0]);
     NGRAPH_CHECK(output_cipher_tensor != nullptr,
                  "Client outputs are not HESealCipherTensor");
 
-    NGRAPH_INFO << "creating result mssage";
     auto result_message =
         TCPMessage(MessageType::result, output_cipher_tensor->get_elements());
 
@@ -1751,12 +1747,8 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
 
   // Wait until all batches have been processed
   std::unique_lock<std::mutex> mlock(m_relu_mutex);
-  NGRAPH_INFO << "Waiting until relu done with " << element_count << " ciphers";
   m_relu_cond.wait(mlock, [=]() { return m_relu_done_count == element_count; });
   m_relu_done_count = 0;
-
-  NGRAPH_INFO << "Setting m_relu_ciophetexts size "
-              << m_relu_ciphertexts.size();
 
   out_cipher->set_elements(m_relu_ciphertexts);
 }
