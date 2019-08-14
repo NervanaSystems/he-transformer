@@ -26,6 +26,9 @@
 #include "he_seal_cipher_tensor.hpp"
 #include "ngraph/log.hpp"
 #include "seal/he_seal_client.hpp"
+#include "seal/kernel/bounded_relu_seal.hpp"
+#include "seal/kernel/max_pool_seal.hpp"
+#include "seal/kernel/relu_seal.hpp"
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_util.hpp"
@@ -191,47 +194,31 @@ void ngraph::he::HESealClient::handle_message(
     }
 
     case ngraph::he::MessageType::maxpool_request: {
-      size_t complex_pack_factor = complex_packing() ? 2 : 1;
       size_t cipher_count = message.count();
 
-      std::vector<std::vector<double>> input_cipher_values(
-          m_batch_size * complex_pack_factor,
-          std::vector<double>(cipher_count, 0));
-
-      std::vector<double> max_values(m_batch_size * complex_pack_factor,
-                                     std::numeric_limits<double>::lowest());
+      std::vector<std::shared_ptr<SealCiphertextWrapper>> maxpool_ciphers(
+          cipher_count);
+      std::vector<std::shared_ptr<SealCiphertextWrapper>> post_max_cipher(1);
+      post_max_cipher[0] = std::make_shared<SealCiphertextWrapper>();
 
 #pragma omp parallel for
       for (size_t cipher_idx = 0; cipher_idx < cipher_count; ++cipher_idx) {
-        seal::Ciphertext pre_sort_cipher;
-        ngraph::he::HEPlaintext pre_sort_plain;
+        maxpool_ciphers[cipher_idx] = std::make_shared<SealCiphertextWrapper>();
 
-        message.load_cipher(pre_sort_cipher, cipher_idx, m_context);
-        ngraph::he::decrypt(pre_sort_plain, pre_sort_cipher, complex_packing(),
-                            *m_decryptor, *m_ckks_encoder);
-
-        for (size_t batch_idx = 0;
-             batch_idx < m_batch_size * complex_pack_factor; ++batch_idx) {
-          input_cipher_values[batch_idx][cipher_idx] =
-              pre_sort_plain.values()[batch_idx];
-        }
+        message.load_cipher(maxpool_ciphers[cipher_idx]->ciphertext(),
+                            cipher_idx, m_context);
+        maxpool_ciphers[cipher_idx]->complex_packing() = complex_packing();
       }
 
-      // Get max of each vector of values
-      for (size_t batch_idx = 0; batch_idx < m_batch_size * complex_pack_factor;
-           ++batch_idx) {
-        max_values[batch_idx] = static_cast<double>(
-            *std::max_element(input_cipher_values[batch_idx].begin(),
-                              input_cipher_values[batch_idx].end()));
-      }
-      seal::Ciphertext max_cipher;
-      ngraph::he::encrypt(max_cipher, HEPlaintext(max_values),
-                          m_context->first_parms_id(), ngraph::element::f32,
-                          m_scale, *m_ckks_encoder, *m_encryptor,
-                          complex_packing());
+      // We currently just support maxpool with single output
+      ngraph::he::max_pool_seal(
+          maxpool_ciphers, post_max_cipher, Shape{1, 1, cipher_count},
+          Shape{1, 1, 1}, Shape{cipher_count}, ngraph::Strides{1}, Shape{0},
+          Shape{0}, m_context->first_parms_id(), m_scale, *m_ckks_encoder,
+          *m_encryptor, *m_decryptor, complex_packing());
 
       auto maxpool_result_msg =
-          TCPMessage(ngraph::he::MessageType::maxpool_result, max_cipher);
+          TCPMessage(ngraph::he::MessageType::maxpool_result, post_max_cipher);
       write_message(std::move(maxpool_result_msg));
 
       break;
@@ -258,48 +245,31 @@ void ngraph::he::HESealClient::close_connection() {
 
 void ngraph::he::HESealClient::handle_relu_request(
     const ngraph::he::TCPMessage& message) {
-  auto relu = [=](double d) { return d > 0 ? d : 0; };
-  auto relu6 = [=](double d) { return d > 6.0 ? 6.0 : (d > 0) ? d : 0.; };
-
-  std::function<double(double)> activation;
-
-  if (message.message_type() == ngraph::he::MessageType::relu6_request) {
-    activation = relu6;
-  } else if (message.message_type() == ngraph::he::MessageType::relu_request) {
-    activation = relu;
-  } else {
-    throw ngraph_error("Non-relu message type in handle_relu_request");
-  }
-
   size_t result_count = message.count();
-  size_t element_size = message.element_size();
-  NGRAPH_INFO << "Received Relu request with " << result_count << " elements"
-              << " of size " << element_size;
-
-  std::vector<seal::Ciphertext> post_relu_ciphers(result_count);
+  std::vector<std::shared_ptr<SealCiphertextWrapper>> post_relu_ciphers(
+      result_count);
 #pragma omp parallel for
   for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
+    post_relu_ciphers[result_idx] = std::make_shared<SealCiphertextWrapper>();
+
     seal::Ciphertext pre_relu_cipher;
-    ngraph::he::HEPlaintext relu_plain;
-
     message.load_cipher(pre_relu_cipher, result_idx, m_context);
-    ngraph::he::decrypt(relu_plain, pre_relu_cipher, complex_packing(),
-                        *m_decryptor, *m_ckks_encoder);
+    SealCiphertextWrapper wrapped_cipher(pre_relu_cipher, complex_packing());
 
-    const std::vector<double>& relu_values = relu_plain.values();
-    NGRAPH_CHECK(relu_values.size() >= m_batch_size,
-                 "Not enough relu values in plaintext");
-    std::vector<double> post_relu_values(relu_values.begin(),
-                                         relu_values.begin() + m_batch_size);
-
-    std::transform(post_relu_values.begin(), post_relu_values.end(),
-                   post_relu_values.begin(), activation);
-    relu_plain.set_values(post_relu_values);
-
-    ngraph::he::encrypt(post_relu_ciphers[result_idx], relu_plain,
-                        m_context->first_parms_id(), ngraph::element::f32,
-                        m_scale, *m_ckks_encoder, *m_encryptor,
-                        complex_packing());
+    if (message.message_type() == ngraph::he::MessageType::relu6_request) {
+      ngraph::he::scalar_bounded_relu_seal(
+          wrapped_cipher, post_relu_ciphers[result_idx], 6.0f,
+          m_context->first_parms_id(), m_scale, *m_ckks_encoder, *m_encryptor,
+          *m_decryptor);
+    } else if (message.message_type() ==
+               ngraph::he::MessageType::relu_request) {
+      ngraph::he::scalar_relu_seal(wrapped_cipher,
+                                   post_relu_ciphers[result_idx],
+                                   m_context->first_parms_id(), m_scale,
+                                   *m_ckks_encoder, *m_encryptor, *m_decryptor);
+    } else {
+      throw ngraph_error("Non-relu message type in handle_relu_request");
+    }
   }
   auto relu_result_msg =
       TCPMessage(ngraph::he::MessageType::relu_result, post_relu_ciphers);

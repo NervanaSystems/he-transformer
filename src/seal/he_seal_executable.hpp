@@ -74,7 +74,6 @@ class HESealExecutable : public runtime::Executable {
   size_t get_port() const { return m_port; }
 
   // TODO: merge _done() methods
-  bool relu_done() const { return m_relu_done; }
   bool maxpool_done() const { return m_maxpool_done; }
   bool minimum_done() const { return m_minimum_done; }
 
@@ -152,7 +151,8 @@ class HESealExecutable : public runtime::Executable {
   // To trigger when relu is done
   std::mutex m_relu_mutex;
   std::condition_variable m_relu_cond;
-  bool m_relu_done;
+  size_t m_relu_done_count;
+  size_t m_relu_idx_offset{0};
   std::vector<size_t> m_unknown_relu_idx;
 
   // To trigger when maxpool is done

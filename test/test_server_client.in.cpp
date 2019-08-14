@@ -213,7 +213,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_relu) {
 
   size_t batch_size = 1;
 
-  Shape shape{batch_size, 3};
+  Shape shape{batch_size, 10};
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto relu = make_shared<op::Relu>(a);
   auto f = make_shared<Function>(relu, ParameterVector{a});
@@ -224,9 +224,9 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_relu) {
 
   // Used for dummy server inputs
   float DUMMY_FLOAT = 99;
-  copy_data(t_dummy, vector<float>{DUMMY_FLOAT, DUMMY_FLOAT, DUMMY_FLOAT});
+  copy_data(t_dummy, vector<float>(10, DUMMY_FLOAT));
 
-  vector<float> inputs{-1, -0.2, 3};
+  vector<float> inputs{1, -2, 3, -4, 5, -6, 7, -8, 9, -10};
   vector<float> results;
   auto client_thread = std::thread([&inputs, &results, &batch_size]() {
     auto he_client =
@@ -245,7 +245,8 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_relu) {
   handle->call_with_validate({t_result}, {t_dummy});
 
   client_thread.join();
-  EXPECT_TRUE(all_close(results, vector<float>{0, 0, 3}, 1e-3f));
+  EXPECT_TRUE(
+      all_close(results, vector<float>{1, 0, 3, 0, 5, 0, 7, 0, 9, 0}, 1e-3f));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, server_client_pad_relu) {

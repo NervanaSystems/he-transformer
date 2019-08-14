@@ -39,13 +39,10 @@ def test_mnist_cnn(FLAGS):
     complex_packing = False
     if ('NGRAPH_COMPLEX_PACK' in os.environ):
         complex_packing = str2bool(os.environ['NGRAPH_COMPLEX_PACK'])
-
-    hostname = 'localhost'
-    port = 34000
-
     print('complex_packing?', complex_packing)
 
-    client = pyhe_client.HESealClient(hostname, port, batch_size, data,
+    port = 34000
+    client = pyhe_client.HESealClient(FLAGS.hostname, port, batch_size, data,
                                       complex_packing)
 
     print('Sleeping until client is done')
@@ -73,7 +70,11 @@ def test_mnist_cnn(FLAGS):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch_size', type=int, default=1, help='Batch size')
+    parser.add_argument(
+        '--hostname', type=str, default='localhost', help='Hostname of server')
 
     FLAGS, unparsed = parser.parse_known_args()
+
+    print(FLAGS)
 
     test_mnist_cnn(FLAGS)

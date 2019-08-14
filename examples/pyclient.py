@@ -16,18 +16,32 @@
 
 import pyhe_client
 import time
+import argparse
 
-data = (1, 2, 3, 4)
 
-hostname = 'localhost'
-port = 34000
-batch_size = 1
+def main(FLAGS):
+    data = (1, 2, 3, 4)
 
-client = pyhe_client.HESealClient(hostname, port, batch_size, data, False)
+    port = 34000
+    batch_size = 1
 
-while not client.is_done():
-    time.sleep(1)
+    client = pyhe_client.HESealClient(FLAGS.hostname, port, batch_size, data,
+                                      False)
 
-results = client.get_results()
+    while not client.is_done():
+        time.sleep(1)
 
-print('results', results)
+    results = client.get_results()
+
+    print('results', results)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--hostname', type=str, default='localhost', help='Hostname of server')
+
+    FLAGS, unparsed = parser.parse_known_args()
+
+    print(FLAGS)
+    main(FLAGS)

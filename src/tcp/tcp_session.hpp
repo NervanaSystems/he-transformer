@@ -43,10 +43,10 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
     auto self(shared_from_this());
     boost::asio::async_read(
         m_socket,
-        boost::asio::buffer(m_message.header_ptr(),
+        boost::asio::buffer(m_read_message.header_ptr(),
                             ngraph::he::TCPMessage::header_length),
         [this, self](boost::system::error_code ec, std::size_t length) {
-          if (!ec & m_message.decode_header()) {
+          if (!ec & m_read_message.decode_header()) {
             do_read_body();
           } else {
             if (ec) {
@@ -63,11 +63,12 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
     auto self(shared_from_this());
     boost::asio::async_read(
         m_socket,
-        boost::asio::buffer(m_message.body_ptr(), m_message.body_length()),
+        boost::asio::buffer(m_read_message.body_ptr(),
+                            m_read_message.body_length()),
         [this, self](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
-            m_message.decode_body();
-            m_message_callback(m_message);
+            m_read_message.decode_body();
+            m_message_callback(m_read_message);
             do_read_header();
           } else {
             NGRAPH_INFO << "Server error reading message: " << ec.message();
@@ -76,30 +77,45 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
         });
   }
 
-  void do_write(const TCPMessage&& message) {
-    std::lock_guard<std::mutex> lock(m_write_mtx);
-    auto self(shared_from_this());
-    m_writing = true;
-    boost::asio::async_write(
-        m_socket,
-        boost::asio::buffer(message.header_ptr(), message.num_bytes()),
-        [this, self](boost::system::error_code ec, std::size_t length) {
-          if (ec) {
-            NGRAPH_INFO << "Error writing message in session: " << ec.message();
-
-          } else {
-            m_writing = false;
-            m_is_writing.notify_all();
-          }
-        });
+  void write_message(ngraph::he::TCPMessage&& message) {
+    bool write_in_progress = is_writing();
+    m_message_queue.emplace_back(std::move(message));
+    if (!write_in_progress) {
+      do_write();
+    }
   }
 
-  bool is_writing() const { return m_writing; }
+  bool is_writing() const { return !m_message_queue.empty(); }
 
   std::condition_variable& is_writing_cond() { return m_is_writing; }
 
  private:
-  TCPMessage m_message;
+  void do_write() {
+    std::lock_guard<std::mutex> lock(m_write_mtx);
+    m_is_writing.notify_all();
+    auto self(shared_from_this());
+
+    boost::asio::async_write(
+        m_socket,
+        boost::asio::buffer(m_message_queue.front().header_ptr(),
+                            m_message_queue.front().num_bytes()),
+        [this, self](boost::system::error_code ec, std::size_t length) {
+          if (!ec) {
+            m_message_queue.pop_front();
+            if (!m_message_queue.empty()) {
+              do_write();
+            } else {
+              m_is_writing.notify_all();
+            }
+          } else {
+            NGRAPH_INFO << "Server error writing message: " << ec.message();
+          }
+        });
+  }
+
+ private:
+  std::deque<ngraph::he::TCPMessage> m_message_queue;
+  TCPMessage m_read_message;
   tcp::socket m_socket;
 
   bool m_writing;
