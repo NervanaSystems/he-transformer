@@ -1684,11 +1684,6 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
   m_unknown_relu_idx.clear();
   m_unknown_relu_idx.reserve(element_count);
 
-  size_t num_relu_batches = element_count / max_relu_message_cnt;
-  if (element_count % max_relu_message_cnt != 0) {
-    num_relu_batches++;
-  }
-
   float alpha = 6.0f;
 
   auto message_type = MessageType::none;
