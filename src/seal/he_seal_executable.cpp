@@ -378,9 +378,11 @@ void ngraph::he::HESealExecutable::handle_message(
 
   } else if (msg_type == MessageType::relu_result) {
     std::lock_guard<std::mutex> guard(m_relu_mutex);
+    size_t message_count = message.count();
+    NGRAPH_INFO << "Got relu result size " << message_count;
 
 #pragma omp parallel for
-    for (size_t element_idx = 0; element_idx < message.count(); ++element_idx) {
+    for (size_t element_idx = 0; element_idx < message_count; ++element_idx) {
       seal::Ciphertext cipher;
       message.load_cipher(cipher, element_idx, m_context);
       auto new_cipher = std::make_shared<ngraph::he::SealCiphertextWrapper>(
@@ -389,7 +391,8 @@ void ngraph::he::HESealExecutable::handle_message(
       m_relu_ciphertexts[m_unknown_relu_idx[element_idx + m_relu_done_count]] =
           new_cipher;
     }
-    m_relu_done_count += message.count();
+    m_relu_done_count += message_count;
+    NGRAPH_INFO << "Notifying done count " << m_relu_done_count;
     m_relu_cond.notify_all();
 
   } else if (msg_type == MessageType::maxpool_result) {
@@ -1673,6 +1676,9 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
   }
   m_relu_ciphertexts.clear();
   m_relu_ciphertexts.resize(element_count);
+  for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
+    m_relu_ciphertexts[relu_idx] = std::make_shared<SealCiphertextWrapper>();
+  }
 
   // TODO: tune
   const size_t max_relu_message_cnt = 1000;
@@ -1717,7 +1723,6 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
       m_unknown_relu_idx.emplace_back(relu_idx);
     }
   }
-
   auto process_relu_ciphers_batch =
       [&](const std::vector<seal::Ciphertext>& cipher_batch,
           const ngraph::he::MessageType& message_type) {
@@ -1747,7 +1752,8 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
 
   // Wait until all batches have been processed
   std::unique_lock<std::mutex> mlock(m_relu_mutex);
-  m_relu_cond.wait(mlock, [=]() { return m_relu_done_count == element_count; });
+  m_relu_cond.wait(
+      mlock, [=]() { return m_relu_done_count == m_unknown_relu_idx.size(); });
   m_relu_done_count = 0;
 
   out_cipher->set_elements(m_relu_ciphertexts);
