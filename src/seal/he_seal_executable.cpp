@@ -379,7 +379,6 @@ void ngraph::he::HESealExecutable::handle_message(
   } else if (msg_type == MessageType::relu_result) {
     std::lock_guard<std::mutex> guard(m_relu_mutex);
     size_t message_count = message.count();
-    NGRAPH_INFO << "Got relu result size " << message_count;
 
 #pragma omp parallel for
     for (size_t element_idx = 0; element_idx < message_count; ++element_idx) {
@@ -392,7 +391,6 @@ void ngraph::he::HESealExecutable::handle_message(
           new_cipher;
     }
     m_relu_done_count += message_count;
-    NGRAPH_INFO << "Notifying done count " << m_relu_done_count;
     m_relu_cond.notify_all();
 
   } else if (msg_type == MessageType::maxpool_result) {
