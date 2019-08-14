@@ -1675,7 +1675,7 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
   m_relu_ciphertexts.resize(element_count);
 
   // TODO: tune
-  const size_t max_relu_message_cnt = 3;
+  const size_t max_relu_message_cnt = 1000;
 
   m_unknown_relu_idx.clear();
   m_unknown_relu_idx.reserve(element_count);

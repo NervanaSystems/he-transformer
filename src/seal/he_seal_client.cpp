@@ -246,9 +246,6 @@ void ngraph::he::HESealClient::close_connection() {
 void ngraph::he::HESealClient::handle_relu_request(
     const ngraph::he::TCPMessage& message) {
   size_t result_count = message.count();
-  NGRAPH_INFO << "Received Relu request with " << result_count << " elements"
-              << " of size " << message.element_size();
-
   std::vector<std::shared_ptr<SealCiphertextWrapper>> post_relu_ciphers(
       result_count);
 #pragma omp parallel for

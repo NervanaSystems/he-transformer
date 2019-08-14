@@ -88,7 +88,6 @@ def main(FLAGS):
     print('channels', channels)
 
     x_test_flat = x_test.flatten(order='C')
-    hostname = 'localhost'
     port = 34000
 
     if 'NGRAPH_COMPLEX_PACK' in os.environ:
