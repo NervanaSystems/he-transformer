@@ -1679,7 +1679,7 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
   }
 
   // TODO: tune
-  const size_t max_relu_message_cnt = 1000;
+  const size_t max_relu_message_cnt = 10000;
 
   m_unknown_relu_idx.clear();
   m_unknown_relu_idx.reserve(element_count);
