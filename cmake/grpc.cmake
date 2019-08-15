@@ -48,12 +48,38 @@ add_dependencies(libgrpc libprotobuf)
 
 message(STATUS "protibuf include dirs ${SOURCE_DIR}/third_party/protobuf/src")
 
+# Add libgrpc++
+add_library(libgrpc++ STATIC IMPORTED)
+set_target_properties(libgrpc++
+                      PROPERTIES IMPORTED_LOCATION ${BINARY_DIR}/libgrpc++.a)
+add_dependencies(libgrpc libgrpc++)
+
+# Add libgpr
+add_library(libgpr STATIC IMPORTED)
+set_target_properties(libgpr
+                      PROPERTIES IMPORTED_LOCATION ${BINARY_DIR}/libgpr.a)
+add_dependencies(libgrpc libgpr)
+
+# Add libaddress_sorting
+add_library(libaddress_sorting STATIC IMPORTED)
+set_target_properties(libaddress_sorting
+                      PROPERTIES IMPORTED_LOCATION
+                                 ${BINARY_DIR}/libaddress_sorting.a)
+add_dependencies(libgrpc libaddress_sorting)
+
 # Add libgrpc++_unsecure
 add_library(libgrpc++_unsecure STATIC IMPORTED)
 set_target_properties(libgrpc++_unsecure
                       PROPERTIES IMPORTED_LOCATION
                                  ${BINARY_DIR}/libgrpc++_unsecure.a)
 add_dependencies(libgrpc libgrpc++_unsecure)
+
+# Add libgrpc++_reflection
+add_library(libgrpc++_reflection STATIC IMPORTED)
+set_target_properties(libgrpc++_reflection
+                      PROPERTIES IMPORTED_LOCATION
+                                 ${BINARY_DIR}/libgrpc++_reflection.a)
+add_dependencies(libgrpc libgrpc++_reflection)
 
 # Add protoc exectuable
 add_executable(protoc IMPORTED)
