@@ -33,7 +33,6 @@ message("grpc SOURCE_DIR ${SOURCE_DIR}")
 message("grpc BINARY_DIR ${BINARY_DIR}")
 set_target_properties(libgrpc
                       PROPERTIES IMPORTED_LOCATION ${BINARY_DIR}/libgrpc.a)
-
 target_include_directories(libgrpc SYSTEM INTERFACE ${SOURCE_DIR}/include)
 add_dependencies(libgrpc ext_grpc)
 
@@ -49,7 +48,14 @@ add_dependencies(libgrpc libprotobuf)
 
 message(STATUS "protibuf include dirs ${SOURCE_DIR}/third_party/protobuf/src")
 
-# Add protoc
+# Add libgrpc++_unsecure
+add_library(libgrpc++_unsecure STATIC IMPORTED)
+set_target_properties(libgrpc++_unsecure
+                      PROPERTIES IMPORTED_LOCATION
+                                 ${BINARY_DIR}/libgrpc++_unsecure.a)
+add_dependencies(libgrpc libgrpc++_unsecure)
+
+# Add protoc exectuable
 add_executable(protoc IMPORTED)
 set_target_properties(protoc
                       PROPERTIES IMPORTED_LOCATION
