@@ -39,6 +39,15 @@ set(HE_SRC
     # protobuf files
     ${hw_proto_srcs} ${hw_grpc_srcs})
 
+set_source_files_properties(${hw_grpc_srcs}
+                            PROPERTIES
+                            GENERATED
+                            TRUE)
+set_source_files_properties(${hw_proto_srcs}
+                            PROPERTIES
+                            GENERATED
+                            TRUE)
+
 # Target library
 add_library(he_seal_backend SHARED ${HE_SRC})
 target_include_directories(he_seal_backend

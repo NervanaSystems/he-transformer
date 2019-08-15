@@ -80,6 +80,34 @@
 
 using ngraph::descriptor::layout::DenseTensorLayout;
 
+ngraph::he::HESealExecutable::HESealExecutable()) {
+  // Start server
+  std::cout << "Setting up grpc server" << std::endl;
+  std::string server_address("0.0.0.0:50051");
+  GreeterServiceImpl service;
+
+  ServerBuilder builder;
+  // Listen on the given address without any authentication mechanism.
+  builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
+  // Register "service" as the instance through which we'll communicate
+  // with clients. In this case it corresponds to an *synchronous*
+  // service.
+  builder.RegisterService(&service);
+
+  // Finally assemble the server.
+  std::unique_ptr<Server> server(builder.BuildAndStart());
+  std::cout << "Server listening on " << server_address << std::endl;
+
+  // std::this_thread::sleep_for(std::chrono::milliseconds(30000));
+
+  //    NGRAPH_INFO << "shutting down server";
+
+  // Wait for the server to shutdown. Note that some other thread must be
+  // responsible for shutting down the server for this call to ever
+  // return.
+  server->Wait();
+}
+
 ngraph::he::HESealExecutable::HESealExecutable(
     const std::shared_ptr<Function>& function,
     bool enable_performance_collection, HESealBackend& he_seal_backend,
@@ -97,8 +125,39 @@ ngraph::he::HESealExecutable::HESealExecutable(
       m_port(34000),
       m_relu_done_count(0),
       m_maxpool_done(false),
-      m_session_started(false),
+      // m_session_started(false),
       m_client_inputs_received(false) {
+  // Start server
+  std::cout << "Setting up grpc server" << std::endl;
+  std::string server_address("0.0.0.0:50051");
+  GreeterServiceImpl service;
+
+  ServerBuilder builder;
+  // Listen on the given address without any authentication mechanism.
+  builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
+  // Register "service" as the instance through which we'll communicate
+  // with clients. In this case it corresponds to an *synchronous*
+  // service.
+  builder.RegisterService(&service);
+
+  // Finally assemble the server.
+  std::unique_ptr<Server> server(builder.BuildAndStart());
+  std::cout << "Server listening on " << server_address << std::endl;
+
+  // std::this_thread::sleep_for(std::chrono::milliseconds(30000));
+
+  //    NGRAPH_INFO << "shutting down server";
+
+  // Wait for the server to shutdown. Note that some other thread must be
+  // responsible for shutting down the server for this call to ever
+  // return.
+  server->Wait();
+
+  // NGRAPH_INFO << "Starting server";
+  // start_server();
+  // NGRAPH_INFO << "Done starting server";
+  // return;
+
   m_context = he_seal_backend.get_context();
 
   if (std::getenv("NGRAPH_VOPS") != nullptr) {
@@ -168,7 +227,7 @@ ngraph::he::HESealExecutable::HESealExecutable(
   }
 
   if (m_enable_client) {
-    NGRAPH_INFO << "Setting up client in constructor";
+    NGRAPH_INFO << "Setting up server in constructor";
     client_setup();
   }
 }
@@ -187,11 +246,12 @@ void ngraph::he::HESealExecutable::check_client_supports_function() {
 void ngraph::he::HESealExecutable::client_setup() {
   if (!m_client_setup) {
     NGRAPH_INFO << "Enable client";
-    check_client_supports_function();
+    // check_client_supports_function();
 
     // Start server
     NGRAPH_INFO << "Starting server";
     start_server();
+    NGRAPH_INFO << "Done starting server";
 
     // Send encryption parameters
     std::stringstream param_stream;
@@ -200,10 +260,10 @@ void ngraph::he::HESealExecutable::client_setup() {
     auto parms_message = TCPMessage(MessageType::encryption_parameters, 1,
                                     std::move(param_stream));
 
-    std::unique_lock<std::mutex> mlock(m_session_mutex);
-    m_session_cond.wait(mlock,
-                        std::bind(&HESealExecutable::session_started, this));
-    m_session->write_message(std::move(parms_message));
+    // std::unique_lock<std::mutex> mlock(  // m_session_mutex);
+    //                                     // m_session_cond.wait(mlock,
+    //    std::bind(&HESealExecutable::session_started, this));
+    // m_session->write_message(std::move(parms_message));
 
     m_client_setup = true;
   } else {
@@ -213,6 +273,7 @@ void ngraph::he::HESealExecutable::client_setup() {
 
 void ngraph::he::HESealExecutable::accept_connection() {
   NGRAPH_INFO << "Server accepting connections";
+  /*
   auto server_callback = bind(&ngraph::he::HESealExecutable::handle_message,
                               this, std::placeholders::_1);
 
@@ -220,22 +281,56 @@ void ngraph::he::HESealExecutable::accept_connection() {
                                                    tcp::socket socket) {
     if (!ec) {
       NGRAPH_INFO << "Connection accepted";
-      m_session =
-          std::make_shared<TCPSession>(std::move(socket), server_callback);
-      m_session->start();
+      // m_session =
+      std::make_shared<TCPSession>(std::move(socket), server_callback);
+      // m_session->start();
       NGRAPH_INFO << "Session started";
 
-      std::lock_guard<std::mutex> guard(m_session_mutex);
-      m_session_started = true;
-      m_session_cond.notify_one();
+      std::lock_guard<std::mutex> guard(//m_session_mutex);
+      // m_session_started = true;
+      // m_session_cond.notify_one();
     } else {
       NGRAPH_INFO << "error accepting connection " << ec.message();
       // accept_connection();
     }
   });
+  */
 }
 
 void ngraph::he::HESealExecutable::start_server() {
+  std::cout << "Setting up grpc server" << std::endl;
+  std::string server_address("0.0.0.0:50051");
+  GreeterServiceImpl service;
+
+  ServerBuilder builder;
+  // Listen on the given address without any authentication mechanism.
+  builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
+  // Register "service" as the instance through which we'll communicate
+  // with clients. In this case it corresponds to an *synchronous*
+  // service.
+  builder.RegisterService(&service);
+
+  // Finally assemble the server.
+  std::unique_ptr<Server> server(builder.BuildAndStart());
+  std::cout << "Server listening on " << server_address << std::endl;
+
+  // std::this_thread::sleep_for(std::chrono::milliseconds(30000));
+
+  //    NGRAPH_INFO << "shutting down server";
+
+  // Wait for the server to shutdown. Note that some other thread must be
+  // responsible for shutting down the server for this call to ever
+  // return.
+  server->Wait();
+
+  // std::thread server_thread(RunServer);
+
+  NGRAPH_INFO << "Done starting server";
+
+  // m_thread = std::thread([=]() { RunServer(); });
+
+  /*
+
   tcp::resolver resolver(m_io_context);
   tcp::endpoint server_endpoints(tcp::v4(), m_port);
   m_acceptor = std::make_unique<tcp::acceptor>(m_io_context, server_endpoints);
@@ -243,7 +338,7 @@ void ngraph::he::HESealExecutable::start_server() {
   m_acceptor->set_option(option);
 
   accept_connection();
-  m_thread = std::thread([this]() { m_io_context.run(); });
+  m_thread = std::thread([this]() { m_io_context.run(); }); */
 }
 
 void ngraph::he::HESealExecutable::handle_message(
@@ -374,7 +469,7 @@ void ngraph::he::HESealExecutable::handle_message(
         reinterpret_cast<char*>(&num_param_elements)};
 
     NGRAPH_DEBUG << "Server sending message of type: parameter_size";
-    m_session->write_message(std::move(parameter_message));
+    // m_session->write_message(std::move(parameter_message));
 
   } else if (msg_type == MessageType::relu_result) {
     std::lock_guard<std::mutex> guard(m_relu_mutex);
@@ -697,13 +792,14 @@ bool ngraph::he::HESealExecutable::call(
 
     NGRAPH_INFO << "Writing Result message with " << output_shape_size
                 << " ciphertexts ";
-    m_session->write_message(std::move(result_message));
+    // m_session->write_message(std::move(result_message));
 
     std::unique_lock<std::mutex> mlock(m_result_mutex);
 
     // Wait until message is written
-    std::condition_variable& writing_cond = m_session->is_writing_cond();
-    writing_cond.wait(mlock, [this] { return !m_session->is_writing(); });
+    // std::condition_variable& writing_cond = //m_session->is_writing_cond();
+    // writing_cond.wait(mlock, [this] {
+    //  return !  // m_session->is_writing(); });
   }
   return true;
 }
@@ -1251,7 +1347,7 @@ void ngraph::he::HESealExecutable::generate_calls(
         auto maxpool_message =
             TCPMessage(MessageType::maxpool_request, maxpool_ciphers);
 
-        m_session->write_message(std::move(maxpool_message));
+        // m_session->write_message(std::move(maxpool_message));
 
         // Acquire lock
         std::unique_lock<std::mutex> mlock(m_maxpool_mutex);
@@ -1723,7 +1819,7 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
           NGRAPH_INFO << "Sending relu request size " << cipher_batch.size();
         }
         auto relu_message = TCPMessage(message_type, cipher_batch);
-        m_session->write_message(std::move(relu_message));
+        // m_session->write_message(std::move(relu_message));
       };
 
   // Process unknown values

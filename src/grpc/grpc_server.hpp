@@ -20,6 +20,9 @@ using helloworld::Greeter;
 using helloworld::HelloReply;
 using helloworld::HelloRequest;
 
+namespace ngraph {
+namespace he {
+
 // Logic and data behind the server's behavior.
 class GreeterServiceImpl final : public Greeter::Service {
   Status SayHello(ServerContext* context, const HelloRequest* request,
@@ -54,3 +57,6 @@ class GreeterServiceImpl final : public Greeter::Service {
     return Status::OK;
   }
 };
+
+}  // namespace he
+}  // namespace ngraph

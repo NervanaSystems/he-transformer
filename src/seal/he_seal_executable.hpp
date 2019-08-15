@@ -39,11 +39,52 @@
 #include "grpc/grpc_server.hpp"
 
 using boost::asio::ip::tcp;
+using grpc::Channel;
+using grpc::ClientContext;
+using grpc::Server;
+using grpc::ServerBuilder;
+using grpc::ServerContext;
+using grpc::Status;
+using helloworld::Greeter;
+using helloworld::HelloReply;
+using helloworld::HelloRequest;
 
 namespace ngraph {
 namespace he {
+class TestServer {
+ public:
+  TestServer() {
+    std::cout << "Setting up grpc server" << std::endl;
+    std::string server_address("0.0.0.0:50051");
+    GreeterServiceImpl service;
+
+    ServerBuilder builder;
+    // Listen on the given address without any authentication mechanism.
+    builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
+    // Register "service" as the instance through which we'll communicate
+    // with clients. In this case it corresponds to an *synchronous*
+    // service.
+    builder.RegisterService(&service);
+
+    // Finally assemble the server.
+    std::unique_ptr<Server> server(builder.BuildAndStart());
+    std::cout << "Server listening on " << server_address << std::endl;
+
+    // std::this_thread::sleep_for(std::chrono::milliseconds(30000));
+
+    //    NGRAPH_INFO << "shutting down server";
+
+    // Wait for the server to shutdown. Note that some other thread must be
+    // responsible for shutting down the server for this call to ever
+    // return.
+    server->Wait();
+  }
+};
+
 class HESealExecutable : public runtime::Executable {
  public:
+  HESealExecutable();
+
   HESealExecutable(const std::shared_ptr<Function>& function,
                    bool enable_performance_collection,
                    ngraph::he::HESealBackend& he_seal_backend,
@@ -53,12 +94,12 @@ class HESealExecutable : public runtime::Executable {
   ~HESealExecutable() override {
     if (m_enable_client) {
       // Wait until thread finishes with m_io_context
-      m_thread.join();
+      // m_thread.join();
 
       // m_acceptor and m_io_context both free the socket? so avoid double-free
-      m_acceptor->close();
-      m_acceptor = nullptr;
-      m_session = nullptr;
+      // m_acceptor->close();
+      // m_acceptor = nullptr;
+      // m_session = nullptr;
     }
   }
 
@@ -111,7 +152,7 @@ class HESealExecutable : public runtime::Executable {
   }
 
  private:
-  HESealBackend& m_he_seal_backend;
+  HESealBackend m_he_seal_backend;
   bool m_encrypt_data;
   bool m_encrypt_model;
   bool m_pack_data;
@@ -127,12 +168,12 @@ class HESealExecutable : public runtime::Executable {
   std::unordered_map<std::shared_ptr<const Node>, stopwatch> m_timer_map;
   std::vector<NodeWrapper> m_wrapped_nodes;
 
-  std::unique_ptr<tcp::acceptor> m_acceptor;
+  // std::unique_ptr<tcp::acceptor> m_acceptor;
 
   // Must be shared, since TCPSession uses enable_shared_from_this()
-  std::shared_ptr<TCPSession> m_session;
-  std::thread m_thread;
-  boost::asio::io_context m_io_context;
+  // std::shared_ptr<TCPSession> m_session;
+  // std::thread m_thread;
+  // boost::asio::io_context m_io_context;
 
   // (Encrypted) inputs to compiled function
   std::vector<std::shared_ptr<ngraph::he::HETensor>> m_client_inputs;

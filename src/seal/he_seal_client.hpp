@@ -63,7 +63,7 @@ class HESealClient {
   bool& complex_packing() { return m_complex_packing; }
 
  private:
-  std::shared_ptr<TCPClient> m_tcp_client;
+  std::shared_ptr<TCPClient> m_tcp_client{nullptr};
   seal::EncryptionParameters m_encryption_params{seal::scheme_type::CKKS};
   std::shared_ptr<seal::PublicKey> m_public_key;
   std::shared_ptr<seal::SecretKey> m_secret_key;

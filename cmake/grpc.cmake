@@ -122,13 +122,11 @@ message(STATUS "hw_proto_path ${hw_proto_path}")
 message(STATUS "_GRPC_CPP_PLUGIN_EXECUTABLE ${_GRPC_CPP_PLUGIN_EXECUTABLE}")
 message(STATUS "hw_proto ${hw_proto}")
 
-add_custom_target(generate_protos)
 add_custom_command(
-  TARGET generate_protos
-  # OUTPUT "${hw_proto_srcs}"
-  # "${hw_proto_hdrs}"
-  # "${hw_grpc_srcs}"
-  # "${hw_grpc_hdrs}"
+  OUTPUT "${hw_proto_srcs}"
+         "${hw_proto_hdrs}"
+         "${hw_grpc_srcs}"
+         "${hw_grpc_hdrs}"
   COMMAND ${_PROTOBUF_PROTOC}
           ARGS
           --grpc_out

@@ -24,6 +24,15 @@ set(SRC
     ${hw_proto_srcs}
     ${hw_grpc_srcs})
 
+set_source_files_properties(${hw_grpc_srcs}
+                            PROPERTIES
+                            GENERATED
+                            TRUE)
+set_source_files_properties(${hw_proto_srcs}
+                            PROPERTIES
+                            GENERATED
+                            TRUE)
+
 set(ACTIVE_BACKEND_LIST HE_SEAL)
 
 set(MULTI_TEST_SRC

@@ -148,16 +148,20 @@ TEST(grpc, greeter_client) {
     server->Shutdown();
   };
 
+  auto RunClient = []() {
+    // Client code
+    CustomHeaderClient greeter(grpc::CreateChannel(
+        "localhost:50051", grpc::InsecureChannelCredentials()));
+    std::string user("world");
+    std::string reply = greeter.SayHello(user);
+    std::cout << "Client received message: " << reply << std::endl;
+  };
+
+  // RunServer();
+
   // Server code
   std::thread server_thread(RunServer);
 
-  // Client code
-  CustomHeaderClient greeter(grpc::CreateChannel(
-      "localhost:50051", grpc::InsecureChannelCredentials()));
-  std::string user("world");
-  std::string reply = greeter.SayHello(user);
-  std::cout << "Client received message: " << reply << std::endl;
-
-  grpc::Server Shutdown();
+  RunClient();
   server_thread.join();
 }

@@ -16,11 +16,13 @@
 
 #include <algorithm>
 #include <boost/asio.hpp>
+#include <chrono>
 #include <functional>
 #include <iostream>
 #include <memory>
 #include <numeric>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "he_seal_cipher_tensor.hpp"
@@ -44,6 +46,18 @@ ngraph::he::HESealClient::HESealClient(const std::string& hostname,
       m_is_done(false),
       m_inputs{inputs},
       m_complex_packing(complex_packing) {
+  std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+  NGRAPH_INFO << "Creating client";
+
+  CustomHeaderClient greeter(grpc::CreateChannel(
+      "localhost:50051", grpc::InsecureChannelCredentials()));
+  std::string user("world");
+  NGRAPH_INFO << "client creating reply";
+  std::string reply = greeter.SayHello(user);
+  std::cout << "Client received message: " << reply << std::endl;
+
+  /*
+
   boost::asio::io_context io_context;
   tcp::resolver resolver(io_context);
   auto endpoints = resolver.resolve(hostname, std::to_string(port));
@@ -52,7 +66,7 @@ ngraph::he::HESealClient::HESealClient(const std::string& hostname,
   };
   m_tcp_client = std::make_shared<ngraph::he::TCPClient>(io_context, endpoints,
                                                          client_callback);
-  io_context.run();
+  io_context.run(); */
 }
 
 ngraph::he::HESealClient::HESealClient(const std::string& hostname,
