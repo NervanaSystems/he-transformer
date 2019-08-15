@@ -116,6 +116,7 @@ target_link_libraries(unit-test
                               libaddress_sorting
                               libgpr
                               libcares
+                              libz
                               libprotobuf)
 
 add_custom_target(check
