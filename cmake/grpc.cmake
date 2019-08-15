@@ -46,6 +46,14 @@ set_target_properties(
              ${SOURCE_DIR}/third_party/protobuf/src)
 add_dependencies(libgrpc libprotobuf)
 
+# Add cares
+add_library(libcares STATIC IMPORTED)
+set_target_properties(
+  libcares
+  PROPERTIES IMPORTED_LOCATION
+             ${BINARY_DIR}/third_party/cares/cares/lib/libcares.a)
+add_dependencies(libgrpc libcares)
+
 message(STATUS "protibuf include dirs ${SOURCE_DIR}/third_party/protobuf/src")
 
 # Add libgrpc++
