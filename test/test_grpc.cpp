@@ -15,9 +15,11 @@
 //*****************************************************************************
 
 #include <grpcpp/grpcpp.h>
+#include <chrono>
 #include <iostream>
 #include <memory>
 #include <string>
+#include <thread>
 #include "helloworld.grpc.pb.h"
 
 // TODO: better soluton
@@ -142,14 +144,16 @@ TEST(grpc, greeter_client) {
     std::unique_ptr<Server> server(builder.BuildAndStart());
     std::cout << "Server listening on " << server_address << std::endl;
 
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
+
     // Wait for the server to shutdown. Note that some other thread must be
     // responsible for shutting down the server for this call to ever
     // return.
-    server->Wait();
+    server->Shutdown();
   };
 
   // Server code
-  RunServer();
+  std::thread server_thread(RunServer);
 
   // Client code
   CustomHeaderClient greeter(grpc::CreateChannel(
@@ -157,4 +161,7 @@ TEST(grpc, greeter_client) {
   std::string user("world");
   std::string reply = greeter.SayHello(user);
   std::cout << "Client received message: " << reply << std::endl;
+
+  grpc::Server Shutdown();
+  server_thread.join();
 }
