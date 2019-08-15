@@ -633,8 +633,18 @@ NGRAPH_TEST(${BACKEND_NAME}, shared_ptr_executable_init2) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, server_client_init2) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  // auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  // auto backend = runtime::Backend::create("HE_SEAL");
+
+  auto backend = ngraph::he::HESealBackend();
+
+  NGRAPH_INFO << "Creating top-level exectuable after he seal backend";
+
+  std::shared_ptr<ngraph::runtime::Executable> tmp =
+      std::make_shared<ngraph::he::HESealExecutable>();
+
+  // auto he_backend = dynamic_pointer_cast<ngraph::he::HESealBackend>(backend);
+  // auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   size_t batch_size = 1;
 
@@ -664,7 +674,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_init2) {
     double_results.end());
     }); */
 
-  auto handle = he_backend->compile(f);
+  // auto handle = he_backend->compile(f);
 
   std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 

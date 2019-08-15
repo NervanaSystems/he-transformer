@@ -80,8 +80,9 @@
 
 using ngraph::descriptor::layout::DenseTensorLayout;
 
-ngraph::he::HESealExecutable::HESealExecutable()) {
+ngraph::he::HESealExecutable::HESealExecutable() {
   // Start server
+  NGRAPH_INFO << "Default exectuable";
   std::cout << "Setting up grpc server" << std::endl;
   std::string server_address("0.0.0.0:50051");
   GreeterServiceImpl service;
@@ -128,6 +129,8 @@ ngraph::he::HESealExecutable::HESealExecutable(
       // m_session_started(false),
       m_client_inputs_received(false) {
   // Start server
+  NGRAPH_INFO << "SealExectable with inputs";
+
   std::cout << "Setting up grpc server" << std::endl;
   std::string server_address("0.0.0.0:50051");
   GreeterServiceImpl service;

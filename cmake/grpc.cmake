@@ -139,6 +139,12 @@ add_custom_command(
           "${hw_proto}"
   DEPENDS "${hw_proto}" libprotobuf)
 
+add_custom_target(protobuf_files ALL
+                  DEPENDS ${hw_proto_srcs}
+                          ${hw_proto_hdrs}
+                          ${hw_grpc_srcs}
+                          ${hw_grpc_hdrs})
+
 # Include generated *.pb.h files
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
@@ -153,3 +159,4 @@ target_link_libraries(libgrpc
                                 libcares
                                 libz
                                 libprotobuf)
+add_dependencies(libgrpc protobuf_files)

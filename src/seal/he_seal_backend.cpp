@@ -63,6 +63,9 @@ ngraph::he::HESealBackend::HESealBackend(
     throw ngraph_error("Invalid security level");
   }
 
+  NGRAPH_INFO << "Creating HESealBackend with security level "
+              << parms.security_level();
+
   m_context = seal::SEALContext::Create(parms.seal_encryption_parameters(),
                                         true, sec_level);
 
@@ -156,6 +159,8 @@ ngraph::he::HESealBackend::create_packed_plain_tensor(const element::Type& type,
 std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
     std::shared_ptr<Function> function, bool enable_performance_collection) {
   // TODO: remove
+  NGRAPH_INFO << "Compiling backend to exectuable";
+
   HESealExecutable s();
 
   return std::make_shared<HESealExecutable>();
