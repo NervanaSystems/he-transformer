@@ -108,16 +108,7 @@ target_link_libraries(unit-test PRIVATE ngraph_test_util)
 target_link_libraries(unit-test PRIVATE ngraph libgtest)
 target_link_libraries(unit-test PRIVATE ${CMAKE_DL_LIBS})
 target_link_libraries(unit-test PRIVATE he_seal_backend libseal pthread)
-target_link_libraries(unit-test
-                      PRIVATE libgrpc++_unsecure
-                              libgrpc++
-                              libgrpc
-                              libgrpc++_reflection
-                              libaddress_sorting
-                              libgpr
-                              libcares
-                              libz
-                              libprotobuf)
+target_link_libraries(unit-test PRIVATE libgrpc)
 
 add_custom_target(check
                   COMMAND ${PROJECT_BINARY_DIR}/test/unit-test \${ARGS}
