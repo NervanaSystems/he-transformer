@@ -20,7 +20,9 @@ set(SRC
     test_perf_micro.cpp
     test_message.cpp
     test_grpc.cpp
-    test_util.cpp)
+    test_util.cpp
+    ${hw_proto_srcs}
+    ${hw_grpc_srcs})
 
 set(ACTIVE_BACKEND_LIST HE_SEAL)
 

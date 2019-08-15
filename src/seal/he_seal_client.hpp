@@ -27,6 +27,8 @@
 #include "tcp/tcp_message.hpp"
 #include "util.hpp"
 
+#include "grpc/custom_header_client.hpp"
+
 namespace ngraph {
 namespace he {
 class HESealClient {

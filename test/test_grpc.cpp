@@ -22,10 +22,6 @@
 #include <thread>
 #include "helloworld.grpc.pb.h"
 
-// TODO: better soluton
-#include "helloworld.grpc.pb.cc"
-#include "helloworld.pb.cc"
-
 #include "gtest/gtest.h"
 
 using grpc::Channel;

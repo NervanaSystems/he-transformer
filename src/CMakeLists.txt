@@ -35,7 +35,9 @@ set(HE_SRC
     seal/he_seal_cipher_tensor.cpp
     seal/he_seal_executable.cpp
     seal/he_seal_backend.cpp
-    seal/he_seal_client.cpp)
+    seal/he_seal_client.cpp
+    # protobuf files
+    ${hw_proto_srcs} ${hw_grpc_srcs})
 
 # Target library
 add_library(he_seal_backend SHARED ${HE_SRC})
@@ -48,6 +50,7 @@ target_link_libraries(he_seal_backend
                              libboost
                              libseal
                              libngraph_tf
+                             libgrpc
                              ngraph)
 
 message("HE_TRANSFORMER_SOURCE_DIR ${HE_TRANSFORMER_SOURCE_DIR}")

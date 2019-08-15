@@ -36,6 +36,8 @@
 #include "tcp/tcp_message.hpp"
 #include "tcp/tcp_session.hpp"
 
+#include "grpc/grpc_server.hpp"
+
 using boost::asio::ip::tcp;
 
 namespace ngraph {
