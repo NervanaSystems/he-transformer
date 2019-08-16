@@ -10,7 +10,7 @@
 
 #include "gtest/gtest.h"
 
-using grpc::Channel;
+/* using grpc::Channel;
 using grpc::ClientContext;
 using grpc::Server;
 using grpc::ServerBuilder;
@@ -18,26 +18,26 @@ using grpc::ServerContext;
 using grpc::Status;
 using helloworld::Greeter;
 using helloworld::HelloReply;
-using helloworld::HelloRequest;
+using helloworld::HelloRequest; */
 
 class CustomHeaderClient {
  public:
-  CustomHeaderClient(std::shared_ptr<Channel> channel)
-      : stub_(Greeter::NewStub(channel)) {}
+  CustomHeaderClient(std::shared_ptr<grpc::Channel> channel)
+      : stub_(helloworld::Greeter::NewStub(channel)) {}
 
   // Assembles the client's payload, sends it and presents the response back
   // from the server.
   std::string SayHello(const std::string& user) {
     // Data we are sending to the server.
-    HelloRequest request;
+    helloworld::HelloRequest request;
     request.set_name(user);
 
     // Container for the data we expect from the server.
-    HelloReply reply;
+    helloworld::HelloReply reply;
 
     // Context for the client. It could be used to convey extra information to
     // the server and/or tweak certain RPC behaviors.
-    ClientContext context;
+    grpc::ClientContext context;
 
     // Setting custom metadata to be sent to the server
     context.AddMetadata("custom-header", "Custom Value");
@@ -47,7 +47,7 @@ class CustomHeaderClient {
     context.AddMetadata("custom-bin", grpc::string(bytes, 8));
 
     // The actual RPC.
-    Status status = stub_->SayHello(&context, request, &reply);
+    grpc::Status status = stub_->SayHello(&context, request, &reply);
 
     // Act upon its status.
     if (status.ok()) {
@@ -70,5 +70,5 @@ class CustomHeaderClient {
   }
 
  private:
-  std::unique_ptr<Greeter::Stub> stub_;
+  std::unique_ptr<helloworld::Greeter::Stub> stub_;
 };

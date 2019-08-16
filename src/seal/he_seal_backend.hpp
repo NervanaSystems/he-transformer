@@ -21,8 +21,31 @@
 #include <unordered_map>
 #include <vector>
 
-#include "he_plaintext.hpp"
+/* #include "he_plaintext.hpp"
 #include "he_tensor.hpp"
+#include "node_wrapper.hpp"
+#include "seal/he_seal_encryption_parameters.hpp"
+#include "seal/seal.h"
+#include "seal/seal_ciphertext_wrapper.hpp"
+#include "seal/seal_plaintext_wrapper.hpp"
+#include "util.hpp" */
+
+#include <grpcpp/grpcpp.h>
+#include <atomic>
+#include <boost/asio.hpp>
+#include <chrono>
+#include <condition_variable>
+#include <iostream>
+#include <memory>
+#include <mutex>
+#include <set>
+#include <string>
+#include <thread>
+#include <vector>
+#include "helloworld.grpc.pb.h"
+
+#include "grpc/grpc_server.hpp"
+
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
 #include "ngraph/descriptor/layout/tensor_layout.hpp"
 #include "ngraph/function.hpp"
@@ -38,29 +61,54 @@
 #include "ngraph/runtime/tensor.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "ngraph/util.hpp"
-#include "node_wrapper.hpp"
-#include "seal/he_seal_encryption_parameters.hpp"
-#include "seal/seal.h"
-#include "seal/seal_ciphertext_wrapper.hpp"
-#include "seal/seal_plaintext_wrapper.hpp"
-#include "util.hpp"
 
 namespace ngraph {
 namespace runtime {
 class BackendConstructor;
 }
+/* extern "C" ngraph::runtime::BackendConstructor*
+get_he_seal_backend_constructor_pointer(); */
+
+extern "C" ngraph::runtime::BackendConstructor*
+get_backend_constructor_pointer();
+
 namespace he {
 class HESealCipherTensor;
 class HESealBackend : public ngraph::runtime::Backend {
  public:
-  HESealBackend();
-  HESealBackend(const ngraph::he::HESealEncryptionParameters& sp);
+  HESealBackend() {
+    std::cout << "Setting up grpc server" << std::endl;
+    std::string server_address("0.0.0.0:50051");
+    GreeterServiceImpl service;
+
+    grpc::ServerBuilder builder;
+    // Listen on the given address without any authentication mechanism.
+    builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
+    // Register "service" as the instance through which we'll communicate
+    // with clients. In this case it corresponds to an *synchronous*
+    // service.
+    builder.RegisterService(&service);
+
+    // Finally assemble the server.
+    std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
+    std::cout << "Server listening on " << server_address << std::endl;
+
+    // std::this_thread::sleep_for(std::chrono::milliseconds(30000));
+
+    //    NGRAPH_INFO << "shutting down server";
+
+    // Wait for the server to shutdown. Note that some other thread must be
+    // responsible for shutting down the server for this call to ever
+    // return.
+    server->Wait();
+  }
+  // HESealBackend(const ngraph::he::HESealEncryptionParameters& sp);
 
   //
   // ngraph backend overrides
   //
   std::shared_ptr<runtime::Tensor> create_tensor(
-      const element::Type& element_type, const Shape& shape) override;
+      const element::Type& element_type, const Shape& shape) override {}
 
   inline std::shared_ptr<runtime::Tensor> create_tensor(
       const element::Type& element_type, const Shape& shape,
@@ -70,23 +118,26 @@ class HESealBackend : public ngraph::runtime::Backend {
 
   std::shared_ptr<ngraph::runtime::Executable> compile(
       std::shared_ptr<Function> func,
-      bool enable_performance_data = false) override;
-
-  bool is_supported(const Node& node) const override;
-
-  inline bool is_supported_type(const ngraph::element::Type& type) const {
-    return m_supported_element_types.find(type.hash()) !=
-           m_supported_element_types.end();
+      bool enable_performance_data = false) override {
+    throw ngraph_error("compile unimplemented");
   }
 
-  void validate_he_call(std::shared_ptr<const Function> function,
-                        const std::vector<std::shared_ptr<HETensor>>& outputs,
-                        const std::vector<std::shared_ptr<HETensor>>& inputs);
+  // bool is_supported(const Node& node) const override {}
+
+  /*  inline bool is_supported_type(const ngraph::element::Type& type) const {
+     return m_supported_element_types.find(type.hash()) !=
+            m_supported_element_types.end();
+   }
+
+   void validate_he_call(std::shared_ptr<const Function> function,
+                         const std::vector<std::shared_ptr<HETensor>>&
+   outputs, const std::vector<std::shared_ptr<HETensor>>& inputs);
+ */
 
   //
   // Tensor creation
   //
-  std::shared_ptr<runtime::Tensor> create_packed_cipher_tensor(
+  /* std::shared_ptr<runtime::Tensor> create_packed_cipher_tensor(
       const element::Type& element_type, const Shape& shape);
 
   std::shared_ptr<runtime::Tensor> create_packed_plain_tensor(
@@ -115,7 +166,8 @@ class HESealBackend : public ngraph::runtime::Backend {
 
   static inline std::shared_ptr<ngraph::he::SealCiphertextWrapper>
   create_empty_ciphertext(bool complex_packing) {
-    return std::make_shared<ngraph::he::SealCiphertextWrapper>(complex_packing);
+    return
+ std::make_shared<ngraph::he::SealCiphertextWrapper>(complex_packing);
   }
 
   inline std::shared_ptr<ngraph::he::SealCiphertextWrapper>
@@ -193,9 +245,8 @@ class HESealBackend : public ngraph::runtime::Backend {
     return m_ckks_encoder;
   }
 
-  const std::unordered_map<std::uint64_t, std::uint64_t>& barrett64_ratio_map()
-      const {
-    return m_barrett64_ratio_map;
+  const std::unordered_map<std::uint64_t, std::uint64_t>&
+ barrett64_ratio_map() const { return m_barrett64_ratio_map;
   }
 
   inline double get_scale() const { return m_scale; }
@@ -330,7 +381,7 @@ class HESealBackend : public ngraph::runtime::Backend {
       "Tanh",
       "Tile",
       "TopK",
-      "Transpose"};
+      "Transpose"}; */
 };
 
 }  // namespace he

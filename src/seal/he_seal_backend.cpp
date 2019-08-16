@@ -17,13 +17,13 @@
 #include <limits>
 #include <memory>
 
-#include "he_plain_tensor.hpp"
-#include "he_seal_cipher_tensor.hpp"
+/* #include "he_plain_tensor.hpp"
+#include "he_seal_cipher_tensor.hpp" */
 #include "ngraph/runtime/backend_manager.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_executable.hpp"
-#include "seal/seal.h"
-#include "seal/seal_util.hpp"
+// #include "seal/seal.h"
+// #include "seal/seal_util.hpp"
 
 extern "C" ngraph::runtime::BackendConstructor*
 get_backend_constructor_pointer() {
@@ -40,11 +40,26 @@ get_backend_constructor_pointer() {
   return s_backend_constructor.get();
 }
 
-ngraph::he::HESealBackend::HESealBackend()
-    : ngraph::he::HESealBackend(
-          ngraph::he::parse_config_or_use_default("HE_SEAL")) {}
+/* extern "C" ngraph::runtime::BackendConstructor*
+get_he_seal_backend_constructor_pointer() {
+  class HESealBackendConstructor : public ngraph::runtime::BackendConstructor {
+   public:
+    std::shared_ptr<ngraph::runtime::Backend> create(
+        const std::string& config) override {
+      return std::make_shared<ngraph::he::HESealBackend>();
+    }
+  };
 
-ngraph::he::HESealBackend::HESealBackend(
+  static std::unique_ptr<ngraph::runtime::BackendConstructor>
+      s_backend_constructor(new HESealBackendConstructor());
+  return s_backend_constructor.get();
+} */
+
+// ngraph::he::HESealBackend::HESealBackend() {}
+//    : ngraph::he::HESealBackend(
+//          ngraph::he::parse_config_or_use_default("HE_SEAL")) {}
+
+/* ngraph::he::HESealBackend::HESealBackend(
     const ngraph::he::HESealEncryptionParameters& parms)
     : m_encryption_params(parms) {
   seal::sec_level_type sec_level = seal::sec_level_type::none;
@@ -214,3 +229,4 @@ void ngraph::he::HESealBackend::decode(
     const ngraph::he::SealPlaintextWrapper& input) const {
   ngraph::he::decode(output, input, *m_ckks_encoder);
 }
+*/

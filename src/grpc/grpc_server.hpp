@@ -10,7 +10,7 @@
 
 #include "gtest/gtest.h"
 
-using grpc::Channel;
+/*using grpc::Channel;
 using grpc::ClientContext;
 using grpc::Server;
 using grpc::ServerBuilder;
@@ -18,15 +18,16 @@ using grpc::ServerContext;
 using grpc::Status;
 using helloworld::Greeter;
 using helloworld::HelloReply;
-using helloworld::HelloRequest;
+using helloworld::HelloRequest; */
 
 namespace ngraph {
 namespace he {
 
 // Logic and data behind the server's behavior.
-class GreeterServiceImpl final : public Greeter::Service {
-  Status SayHello(ServerContext* context, const HelloRequest* request,
-                  HelloReply* reply) override {
+class GreeterServiceImpl final : public helloworld::Greeter::Service {
+  grpc::Status SayHello(grpc::ServerContext* context,
+                        const helloworld::HelloRequest* request,
+                        helloworld::HelloReply* reply) override {
     std::string prefix("Hello ");
 
     // Get the client's initial metadata
@@ -54,7 +55,7 @@ class GreeterServiceImpl final : public Greeter::Service {
     context->AddTrailingMetadata("custom-trailing-metadata",
                                  "trailing metadata value");
     reply->set_message(prefix + request->name());
-    return Status::OK;
+    return grpc::Status::OK;
   }
 };
 

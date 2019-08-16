@@ -18,7 +18,7 @@
 #include <limits>
 #include <unordered_set>
 
-#include "he_plain_tensor.hpp"
+/* #include "he_plain_tensor.hpp"
 #include "he_seal_cipher_tensor.hpp"
 #include "he_tensor.hpp"
 #include "kernel/add_seal.hpp"
@@ -73,12 +73,13 @@
 #include "pass/he_fusion.hpp"
 #include "pass/he_liveness.hpp"
 #include "pass/supported_ops.hpp"
+#include "seal/seal_ciphertext_wrapper.hpp"
+#include "seal/seal_util.hpp" */
+
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_executable.hpp"
-#include "seal/seal_ciphertext_wrapper.hpp"
-#include "seal/seal_util.hpp"
 
-using ngraph::descriptor::layout::DenseTensorLayout;
+// using ngraph::descriptor::layout::DenseTensorLayout;
 
 ngraph::he::HESealExecutable::HESealExecutable() {
   // Start server
@@ -87,7 +88,7 @@ ngraph::he::HESealExecutable::HESealExecutable() {
   std::string server_address("0.0.0.0:50051");
   GreeterServiceImpl service;
 
-  ServerBuilder builder;
+  grpc::ServerBuilder builder;
   // Listen on the given address without any authentication mechanism.
   builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
   // Register "service" as the instance through which we'll communicate
@@ -96,7 +97,7 @@ ngraph::he::HESealExecutable::HESealExecutable() {
   builder.RegisterService(&service);
 
   // Finally assemble the server.
-  std::unique_ptr<Server> server(builder.BuildAndStart());
+  std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
   std::cout << "Server listening on " << server_address << std::endl;
 
   // std::this_thread::sleep_for(std::chrono::milliseconds(30000));
@@ -107,8 +108,17 @@ ngraph::he::HESealExecutable::HESealExecutable() {
   // responsible for shutting down the server for this call to ever
   // return.
   server->Wait();
-}
 
+  // std::this_thread::sleep_for(std::chrono::milliseconds(30000));
+
+  //    NGRAPH_INFO << "shutting down server";
+
+  // Wait for the server to shutdown. Note that some other thread must be
+  // responsible for shutting down the server for this call to ever
+  // return.
+  server->Wait();
+}
+/*
 ngraph::he::HESealExecutable::HESealExecutable(
     const std::shared_ptr<Function>& function,
     bool enable_performance_collection, HESealBackend& he_seal_backend,
@@ -139,7 +149,7 @@ ngraph::he::HESealExecutable::HESealExecutable(
   // Listen on the given address without any authentication mechanism.
   builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
   // Register "service" as the instance through which we'll communicate
-  // with clients. In this case it corresponds to an *synchronous*
+  // with clients. In this case it corresponds to an synchronous
   // service.
   builder.RegisterService(&service);
 
@@ -276,7 +286,7 @@ void ngraph::he::HESealExecutable::client_setup() {
 
 void ngraph::he::HESealExecutable::accept_connection() {
   NGRAPH_INFO << "Server accepting connections";
-  /*
+
   auto server_callback = bind(&ngraph::he::HESealExecutable::handle_message,
                               this, std::placeholders::_1);
 
@@ -297,7 +307,7 @@ void ngraph::he::HESealExecutable::accept_connection() {
       // accept_connection();
     }
   });
-  */
+
 }
 
 void ngraph::he::HESealExecutable::start_server() {
@@ -332,7 +342,7 @@ void ngraph::he::HESealExecutable::start_server() {
 
   // m_thread = std::thread([=]() { RunServer(); });
 
-  /*
+
 
   tcp::resolver resolver(m_io_context);
   tcp::endpoint server_endpoints(tcp::v4(), m_port);
@@ -341,7 +351,7 @@ void ngraph::he::HESealExecutable::start_server() {
   m_acceptor->set_option(option);
 
   accept_connection();
-  m_thread = std::thread([this]() { m_io_context.run(); }); */
+  m_thread = std::thread([this]() { m_io_context.run(); });
 }
 
 void ngraph::he::HESealExecutable::handle_message(
@@ -1852,3 +1862,4 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
 
   out_cipher->set_elements(m_relu_ciphertexts);
 }
+*/
