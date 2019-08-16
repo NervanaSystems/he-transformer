@@ -81,7 +81,7 @@ endif()
 # Build options python version used in virtual environment
 find_package(PythonInterp 3)
 if(PYTHONINTERP_FOUND)
-  message("PYTHON_VERSION_STRING " ${PYTHON_VERSION_STRING})
+  message(STATUS "PYTHON_VERSION_STRING " ${PYTHON_VERSION_STRING})
 elseif()
   message(FATAL_ERROR "Python3 not found.")
 endif()
@@ -90,7 +90,7 @@ if(NOT DEFINED PYTHON_VENV_VERSION)
   set(PYTHON_VENV_VERSION
       "python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
 endif()
-message("PYTHON_VENV_VERSION ${PYTHON_VENV_VERSION}")
+message(STATUS "PYTHON_VENV_VERSION ${PYTHON_VENV_VERSION}")
 
 option(NGRAPH_HE_SANITIZE_ADDRESS "Enable address sanitizer" OFF)
 

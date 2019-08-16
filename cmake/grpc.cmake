@@ -44,7 +44,7 @@ set_target_properties(
              ${BINARY_DIR}/third_party/protobuf/libprotobuf.a
              INTERFACE_INCLUDE_DIRECTORIES
              ${SOURCE_DIR}/third_party/protobuf/src)
-add_dependencies(libgrpc_orig libprotobuf)
+add_dependencies(libprotobuf libgrpc_orig)
 
 # Add cares
 add_library(libcares STATIC IMPORTED)
@@ -52,14 +52,14 @@ set_target_properties(
   libcares
   PROPERTIES IMPORTED_LOCATION
              ${BINARY_DIR}/third_party/cares/cares/lib/libcares.a)
-add_dependencies(libgrpc_orig libcares)
+add_dependencies(libcares libgrpc_orig)
 
 # Add zlib
 add_library(libz STATIC IMPORTED)
 set_target_properties(libz
                       PROPERTIES IMPORTED_LOCATION
                                  ${BINARY_DIR}/third_party/zlib/libz.a)
-add_dependencies(libgrpc_orig libz)
+add_dependencies(libz libgrpc_orig)
 
 message(STATUS "protibuf include dirs ${SOURCE_DIR}/third_party/protobuf/src")
 
@@ -67,34 +67,34 @@ message(STATUS "protibuf include dirs ${SOURCE_DIR}/third_party/protobuf/src")
 add_library(libgrpc++ STATIC IMPORTED)
 set_target_properties(libgrpc++
                       PROPERTIES IMPORTED_LOCATION ${BINARY_DIR}/libgrpc++.a)
-add_dependencies(libgrpc_orig libgrpc++)
+add_dependencies(libgrpc++ libgrpc_orig)
 
 # Add libgpr
 add_library(libgpr STATIC IMPORTED)
 set_target_properties(libgpr
                       PROPERTIES IMPORTED_LOCATION ${BINARY_DIR}/libgpr.a)
-add_dependencies(libgrpc_orig libgpr)
+add_dependencies(libgpr libgrpc_orig)
 
 # Add libaddress_sorting
 add_library(libaddress_sorting STATIC IMPORTED)
 set_target_properties(libaddress_sorting
                       PROPERTIES IMPORTED_LOCATION
                                  ${BINARY_DIR}/libaddress_sorting.a)
-add_dependencies(libgrpc_orig libaddress_sorting)
+add_dependencies(libaddress_sorting libgrpc_orig)
 
 # Add libgrpc++_unsecure
 add_library(libgrpc++_unsecure STATIC IMPORTED)
 set_target_properties(libgrpc++_unsecure
                       PROPERTIES IMPORTED_LOCATION
                                  ${BINARY_DIR}/libgrpc++_unsecure.a)
-add_dependencies(libgrpc_orig libgrpc++_unsecure)
+add_dependencies(libgrpc++_unsecure libgrpc_orig)
 
 # Add libgrpc++_reflection
 add_library(libgrpc++_reflection STATIC IMPORTED)
 set_target_properties(libgrpc++_reflection
                       PROPERTIES IMPORTED_LOCATION
                                  ${BINARY_DIR}/libgrpc++_reflection.a)
-add_dependencies(libgrpc_orig libgrpc++_reflection)
+add_dependencies(libgrpc++_reflection libgrpc_orig)
 
 # Add protoc exectuable
 add_executable(protoc IMPORTED)
@@ -159,4 +159,12 @@ target_link_libraries(libgrpc
                                 libcares
                                 libz
                                 libprotobuf)
-add_dependencies(libgrpc protobuf_files)
+add_dependencies(libgrpc
+                 protobuf_files
+                 libz
+                 licares
+                 libgpr
+                 libaddress_sorting
+                 libgrpc_orig
+                 libgrpc++
+                 libgrpc++_unsecure)

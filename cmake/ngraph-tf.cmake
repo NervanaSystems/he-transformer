@@ -47,7 +47,7 @@ if(NOT APPLE)
                "([a-z])+"
                OS_VERSION
                "${OS_VERSION}")
-  message("OS version is: ${OS_VERSION}")
+  message(STATUS "OS version is: ${OS_VERSION}")
 else()
   # Handle the case for MacOS TBD
 endif()

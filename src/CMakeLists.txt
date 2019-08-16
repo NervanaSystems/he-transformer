@@ -86,7 +86,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
         PATTERN "*.h")
 
 # Create symbolic links for he_seal_backend, to allow ngraph and ngraph-tf to
-# recognize find it.
+# find it.
 add_custom_target(
   he_seal_backend_soft_link ALL
   DEPENDS he_seal_backend
