@@ -83,13 +83,22 @@ class HESealBackend : public ngraph::runtime::Backend {
 
     grpc::ServerBuilder builder;
     // Listen on the given address without any authentication mechanism.
-    builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
+    int selected_port{1};
+
+    builder.AddListeningPort(server_address, grpc::InsecureServerCredentials(),
+                             &selected_port);
+
     // Register "service" as the instance through which we'll communicate
     // with clients. In this case it corresponds to an *synchronous*
     // service.
     builder.RegisterService(&service);
 
+    NGRAPH_INFO << "service reigstered";
+
     auto build_and_start = builder.BuildAndStart();
+
+    NGRAPH_INFO << "build_and_start";
+    NGRAPH_INFO << "selected_port " << selected_port;
 
     // Finally assemble the server.
     std::unique_ptr<grpc::Server> server(std::move(build_and_start));
