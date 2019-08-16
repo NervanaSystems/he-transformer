@@ -652,7 +652,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_init_seal) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, server_client_init_seal2) {
-  auto backend = runtime::Backend::create("HE_SEAL_TEST");
+  auto backend = runtime::Backend::create("HE_SEAL");
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, server_client_init_seal3) {
@@ -663,12 +663,15 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_init_seal3) {
 
 /* NGRAPH_TEST(${BACKEND_NAME}, server_client_init_seal4) {
   auto backend =
-      get_he_seal_backend_constructor_pointer()->create("HE_SEAL_TEST");
+      get_he_seal_backend_constructor_pointer()->create("HE_SEAL");
 } */
 
 // These both work
 NGRAPH_TEST(${BACKEND_NAME}, server_client_init_seal5) {
-  auto backend = get_backend_constructor_pointer()->create("HE_SEAL_TEST");
+  void* fcn_addr = (void*&)get_backend_constructor_pointer;
+  NGRAPH_INFO << "correct fcn address " << fcn_addr;
+
+  auto backend = get_backend_constructor_pointer()->create("HE_SEAL");
 }
 
 #include <dlfcn.h>
@@ -723,23 +726,23 @@ DL_HANDLE open_shared_library(string type) {
 
 NGRAPH_TEST(${BACKEND_NAME}, server_client_init_seal10) {
   // auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  // auto backend = runtime::BackendManager::create_backend("HE_SEAL_TEST");
+  // auto backend = runtime::BackendManager::create_backend("HE_SEAL");
 
   shared_ptr<runtime::Backend> backend;
 
-  std::string config("HE_SEAL_TEST");
-  std::string type("HE_SEAL_TEST");
+  std::string config("HE_SEAL");
+  std::string type("HE_SEAL");
 
   // registory
 
   unordered_map<string, ngraph::runtime::BackendConstructor*> registry;
 
-  DL_HANDLE handle = open_shared_library("HE_SEAL_TEST");
+  DL_HANDLE handle = open_shared_library("HE_SEAL");
 
   if (!handle) {
     stringstream ss;
     ss << "Backend '"
-       << "HE_SEAL_TEST"
+       << "HE_SEAL"
        << "' not registered. Error:";
     ss << DLERROR();
     throw runtime_error(ss.str());
@@ -750,6 +753,10 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_init_seal10) {
           DLSYM(handle, "get_backend_constructor_pointer"));
   if (get_backend_constructor_pointer) {
     NGRAPH_INFO << "Registering backend";
+
+    void* bad_fcn_addr = (void*&)get_backend_constructor_pointer;
+    NGRAPH_INFO << "bad_fcn_addr " << bad_fcn_addr;
+
     backend = get_backend_constructor_pointer()->create(config);
     // Register backend
     // registry[type] = get_backend_constructor_pointer();

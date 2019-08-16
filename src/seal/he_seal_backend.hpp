@@ -77,8 +77,8 @@ class HESealCipherTensor;
 class HESealBackend : public ngraph::runtime::Backend {
  public:
   HESealBackend() {
-    std::cout << "Setting up grpc server" << std::endl;
-    std::string server_address("0.0.0.0:50051");
+    NGRAPH_INFO << "Setting up grpc server" << std::endl;
+    std::string server_address("0.0.0.0:30001");
     GreeterServiceImpl service;
 
     grpc::ServerBuilder builder;
@@ -89,8 +89,10 @@ class HESealBackend : public ngraph::runtime::Backend {
     // service.
     builder.RegisterService(&service);
 
+    auto build_and_start = builder.BuildAndStart();
+
     // Finally assemble the server.
-    std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
+    std::unique_ptr<grpc::Server> server(std::move(build_and_start));
     std::cout << "Server listening on " << server_address << std::endl;
 
     // std::this_thread::sleep_for(std::chrono::milliseconds(30000));

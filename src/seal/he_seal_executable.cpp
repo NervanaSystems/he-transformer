@@ -84,7 +84,7 @@
 ngraph::he::HESealExecutable::HESealExecutable() {
   // Start server
   NGRAPH_INFO << "Default exectuable";
-  std::cout << "Setting up grpc server" << std::endl;
+  NGRAPH_INFO << "Setting up grpc server" << std::endl;
   std::string server_address("0.0.0.0:50051");
   GreeterServiceImpl service;
 
@@ -141,7 +141,7 @@ ngraph::he::HESealExecutable::HESealExecutable(
   // Start server
   NGRAPH_INFO << "SealExectable with inputs";
 
-  std::cout << "Setting up grpc server" << std::endl;
+  NGRAPH_INFO << "Setting up grpc server" << std::endl;
   std::string server_address("0.0.0.0:50051");
   GreeterServiceImpl service;
 
@@ -311,7 +311,7 @@ void ngraph::he::HESealExecutable::accept_connection() {
 }
 
 void ngraph::he::HESealExecutable::start_server() {
-  std::cout << "Setting up grpc server" << std::endl;
+  NGRAPH_INFO << "Setting up grpc server" << std::endl;
   std::string server_address("0.0.0.0:50051");
   GreeterServiceImpl service;
 

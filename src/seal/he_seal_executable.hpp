@@ -58,7 +58,7 @@ namespace he {
 class TestServer {
  public:
   TestServer() {
-    std::cout << "Setting up grpc server" << std::endl;
+    NGRAPH_INFO << "Setting up grpc server";
     std::string server_address("0.0.0.0:50051");
     ngraph::he::GreeterServiceImpl service;
 
