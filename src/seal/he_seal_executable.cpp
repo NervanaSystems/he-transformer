@@ -1589,6 +1589,7 @@ void ngraph::he::HESealExecutable::generate_calls(
     case OP_TYPEID::DynPad:
     case OP_TYPEID::DynReshape:
     case OP_TYPEID::DynSlice:
+    case OP_TYPEID::DynReplaceSlice:
     case OP_TYPEID::EmbeddingLookup:
     case OP_TYPEID::Equal:
     case OP_TYPEID::Erf:
@@ -1647,6 +1648,7 @@ void ngraph::he::HESealExecutable::generate_calls(
     case OP_TYPEID::Tile:
     case OP_TYPEID::TopK:
     case OP_TYPEID::Transpose:
+    case OP_TYPEID::Xor:
     default:
       throw unsupported_op("Unsupported op '" + node.description() + "'");
 #pragma GCC diagnostic pop
