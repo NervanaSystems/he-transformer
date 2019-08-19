@@ -43,16 +43,21 @@ ngraph::he::HESealClient::HESealClient(const std::string& hostname,
     : m_batch_size{batch_size},
       m_is_done(false),
       m_inputs{inputs},
-      m_complex_packing(complex_packing) {
-  boost::asio::io_context io_context;
-  tcp::resolver resolver(io_context);
-  auto endpoints = resolver.resolve(hostname, std::to_string(port));
-  auto client_callback = [this](const ngraph::he::TCPMessage& message) {
-    return handle_message(message);
-  };
-  m_tcp_client = std::make_shared<ngraph::he::TCPClient>(io_context, endpoints,
-                                                         client_callback);
-  io_context.run();
+      m_complex_packing(complex_packing),
+      m_client{hostname, port, [this](const std::string& message, bool& exit) {
+                 return handle_message(message, exit);
+               }} {
+  NGRAPH_INFO << "Creating seal client";
+
+  /* boost::asio::io_context io_context;
+   tcp::resolver resolver(io_context);
+   auto endpoints = resolver.resolve(hostname, std::to_string(port));
+   auto client_callback = [this](const ngraph::he::TCPMessage& message) {
+     return handle_message(message);
+   };
+   m_tcp_client = std::make_shared<ngraph::he::TCPClient>(io_context, endpoints,
+                                                          client_callback);
+   io_context.run(); */
 }
 
 ngraph::he::HESealClient::HESealClient(const std::string& hostname,
@@ -86,6 +91,12 @@ void ngraph::he::HESealClient::set_seal_context() {
   // TODO: pick better scale?
   m_scale = ngraph::he::choose_scale(m_encryption_params.coeff_modulus());
   NGRAPH_INFO << "Client scale " << m_scale;
+}
+
+void ngraph::he::HESealClient::handle_message(const std::string& message,
+                                              bool& exit) {
+  NGRAPH_INFO << "Client got message " << message;
+  exit = false;
 }
 
 void ngraph::he::HESealClient::handle_message(

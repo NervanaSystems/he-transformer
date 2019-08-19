@@ -613,7 +613,8 @@ NGRAPH_TEST(${BACKEND_NAME},
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, test_client) {
-  auto client = ngraph::he::TestClient("localhost", 30001);
+  auto client = ngraph::he::TestClient("localhost", 30001,
+                                       [](const std::string&, bool&) {});
 
   EXPECT_EQ(1, 1);
 }
@@ -625,8 +626,10 @@ NGRAPH_TEST(${BACKEND_NAME}, test_server) {
 }
 
 NGRAPH_TEST(new_tcp, init_server_client) {
-  auto client_thread = std::thread(
-      []() { auto client = ngraph::he::TestClient("localhost", 30001); });
+  auto client_thread = std::thread([]() {
+    auto client = ngraph::he::TestClient("localhost", 30001,
+                                         [](const std::string&, bool&) {});
+  });
 
   auto server = ngraph::he::TestServer(30001);
 

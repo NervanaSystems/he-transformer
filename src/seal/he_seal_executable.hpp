@@ -33,6 +33,7 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
+#include "tcp/new_tcp.hpp"
 #include "tcp/tcp_message.hpp"
 #include "tcp/tcp_session.hpp"
 
@@ -127,7 +128,7 @@ class HESealExecutable : public runtime::Executable {
 
   std::unique_ptr<tcp::acceptor> m_acceptor;
 
-  TestServer m_server;
+  std::unique_ptr<TestServer> m_server;
 
   // Must be shared, since TCPSession uses enable_shared_from_this()
   std::shared_ptr<TCPSession> m_session;

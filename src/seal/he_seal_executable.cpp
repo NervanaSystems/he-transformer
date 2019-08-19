@@ -77,6 +77,7 @@
 #include "seal/he_seal_executable.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_util.hpp"
+#include "tcp/new_tcp.hpp"
 
 using ngraph::descriptor::layout::DenseTensorLayout;
 
@@ -200,10 +201,12 @@ void ngraph::he::HESealExecutable::client_setup() {
     auto parms_message = TCPMessage(MessageType::encryption_parameters, 1,
                                     std::move(param_stream));
 
-    std::unique_lock<std::mutex> mlock(m_session_mutex);
-    m_session_cond.wait(mlock,
-                        std::bind(&HESealExecutable::session_started, this));
-    m_session->write_message(std::move(parms_message));
+    m_server->write(param_stream);
+
+    // std::unique_lock<std::mutex> mlock(m_session_mutex);
+    // m_session_cond.wait(mlock,
+    //                    std::bind(&HESealExecutable::session_started, this));
+    // m_session->write_message(std::move(parms_message));
 
     m_client_setup = true;
   } else {
@@ -245,7 +248,11 @@ void ngraph::he::HESealExecutable::start_server() {
    accept_connection();
    m_thread = std::thread([this]() { m_io_context.run(); }); */
 
-  m_server = TestServer(m_port);
+  NGRAPH_INFO << "Creating TestServer";
+
+  m_thread = std::thread(
+      [this]() { m_server = std::make_unique<TestServer>(m_port); });
+  NGRAPH_INFO << "Created TestServer";
 }
 
 void ngraph::he::HESealExecutable::handle_message(

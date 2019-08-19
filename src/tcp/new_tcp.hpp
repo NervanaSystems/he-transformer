@@ -19,6 +19,7 @@
 #include <boost/asio.hpp>
 #include <chrono>
 #include <deque>
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -34,24 +35,48 @@ namespace ngraph {
 namespace he {
 class TestClient {
  public:
-  TestClient(std::string hostname, size_t port)
+  TestClient(
+      std::string hostname, size_t port,
+      std::function<void(const std::string&, bool& exit)> message_handler)
       : m_stream(hostname, std::to_string(port)) {
     NGRAPH_INFO << "Created client";
 
-    std::string line;
-    std::getline(m_stream, line);
-    std::cout << "Client got message " << line << std::endl;
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    while (true) {
+    }
+
     NGRAPH_INFO << "Closing client";
+  }
+
+  void write(const std::ostream& stream) { m_stream << stream; }
+
+  void read_message() {
+    bool exit{false};
+    if (std::getline(m_stream, line)) {
+      NGRAPH_INFO << "Client got message " << line;
+
+      message_handler(line, exit);
+      if (exit) {
+        NGARPH_INFO << "Client got exit message";
+        break;
+      }
+    } else {
+      NGRAPH_INFO << "Error getting stream in client";
+    }
+
+    read_message();
   }
 
  private:
   tcp::iostream m_stream;
+  std::string m_message;
 };
 
 class TestServer {
  public:
-  TestServer(size_t port) : m_port(port) {
+  TestServer(
+      size_t port,
+      std::function<void(const std::string&, bool& exit)> message_handler)
+      : m_port(port) {
     tcp::resolver resolver(m_io_context);
     tcp::endpoint server_endpoints(tcp::v4(), m_port);
     m_acceptor =
@@ -59,15 +84,26 @@ class TestServer {
     NGRAPH_INFO << "Created acceptor";
 
     boost::system::error_code ec;
+    while (true) {
+      m_acceptor->accept(m_stream.socket(), ec);
 
-    m_acceptor->accept(m_stream.socket(), ec);
+      if (ec) {
+        NGRAPH_INFO << "error accepting connection " << ec.message()
+                    << ". Trying again";
+        continue;
+      }
 
-    if (ec) {
-      NGRAPH_INFO << "error accepting connection " << ec.message();
-    } else {
       NGRAPH_INFO << "Connection accepted";
       NGRAPH_INFO << "Session started";
 
+      m_thread()
+    }
+
+    if (ec) {
+      NGRAPH_INFO << "error accepting connection " << ec.message()
+                  << ". Trying again";
+      m_acceptor->accept(m_stream.socket(), ec);
+    } else {
       m_stream << "test message";
       m_stream << std::endl;
       m_stream.flush();
@@ -79,6 +115,7 @@ class TestServer {
   boost::asio::io_context m_io_context;
   tcp::iostream m_stream;
   size_t m_port;
+  std::thread m_thread;
 };
 }  // namespace he
 }  // namespace ngraph

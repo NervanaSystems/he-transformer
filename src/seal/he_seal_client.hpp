@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "seal/seal.h"
+#include "tcp/new_tcp.hpp"
 #include "tcp/tcp_client.hpp"
 #include "tcp/tcp_message.hpp"
 #include "util.hpp"
@@ -44,6 +45,8 @@ class HESealClient {
   void set_seal_context();
 
   void handle_message(const ngraph::he::TCPMessage& message);
+
+  void handle_message(const std::string& message, bool& exit);
 
   void handle_relu_request(const ngraph::he::TCPMessage& message);
 
@@ -79,6 +82,8 @@ class HESealClient {
   std::vector<double> m_results;  // Function outputs
 
   bool m_complex_packing;
+
+  TestClient m_client;
 };  // namespace he
 }  // namespace he
 }  // namespace ngraph
