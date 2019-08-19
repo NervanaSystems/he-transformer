@@ -47,7 +47,10 @@ class TestClient {
     NGRAPH_INFO << "Closing client";
   }
 
-  void write(const std::ostream& stream) { m_stream << stream; }
+  void write(const std::stringstream& stream) {
+    m_stream << stream;
+    m_stream.flush();
+  }
 
   void read_message() {
     bool exit{false};
@@ -108,6 +111,11 @@ class TestServer {
       m_stream << std::endl;
       m_stream.flush();
     }
+  }
+
+  void write(const std::stringstream& stream) {
+    m_stream << stream;
+    m_stream.flush();
   }
 
  private:
