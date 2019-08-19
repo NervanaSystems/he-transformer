@@ -23,6 +23,7 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_client.hpp"
 #include "seal/he_seal_executable.hpp"
+#include "tcp/new_tcp.hpp"
 #include "test_util.hpp"
 #include "util/all_close.hpp"
 #include "util/ndarray.hpp"
@@ -609,4 +610,28 @@ NGRAPH_TEST(${BACKEND_NAME},
                                                     {1, 1, 2}}}})
                              .get_vector()),
                         1e-3f));
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, test_client) {
+  auto client = ngraph::he::TestClient("localhost", 30001);
+
+  EXPECT_EQ(1, 1);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, test_server) {
+  auto server = ngraph::he::TestServer(30001);
+
+  EXPECT_EQ(1, 1);
+}
+
+NGRAPH_TEST(new_tcp, init_server_client) {
+  auto client_thread = std::thread(
+      []() { auto client = ngraph::he::TestClient("localhost", 30001); });
+
+  auto server = ngraph::he::TestServer(30001);
+
+  client_thread.join();
+  NGRAPH_INFO << "Client thread joined";
+
+  EXPECT_EQ(1, 1);
 }

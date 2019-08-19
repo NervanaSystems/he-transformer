@@ -127,6 +127,8 @@ class HESealExecutable : public runtime::Executable {
 
   std::unique_ptr<tcp::acceptor> m_acceptor;
 
+  TestServer m_server;
+
   // Must be shared, since TCPSession uses enable_shared_from_this()
   std::shared_ptr<TCPSession> m_session;
   std::thread m_thread;
