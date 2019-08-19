@@ -666,14 +666,6 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_init_seal3) {
       get_he_seal_backend_constructor_pointer()->create("HE_SEAL");
 } */
 
-// These both work
-NGRAPH_TEST(${BACKEND_NAME}, server_client_init_seal5) {
-  void* fcn_addr = (void*&)get_backend_constructor_pointer;
-  NGRAPH_INFO << "correct fcn address " << fcn_addr;
-
-  auto backend = get_backend_constructor_pointer()->create("HE_SEAL");
-}
-
 #include <dlfcn.h>
 #include "ngraph/file_util.hpp"
 #include "ngraph/runtime/backend.hpp"
@@ -757,7 +749,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_init_seal10) {
     void* bad_fcn_addr = (void*&)get_backend_constructor_pointer;
     NGRAPH_INFO << "bad_fcn_addr " << bad_fcn_addr;
 
-    backend = get_backend_constructor_pointer()->create(config);
+    backend = get_backend_constructor_pointer()->create("HE_SEAL");
     // Register backend
     // registry[type] = get_backend_constructor_pointer();
     // register_backend(type, get_backend_constructor_pointer());
@@ -771,4 +763,12 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_init_seal10) {
         "library.\nError='" +
         error + "'");
   }
+}
+
+// These both work
+NGRAPH_TEST(${BACKEND_NAME}, server_client_init_seal5) {
+  void* fcn_addr = (void*&)get_backend_constructor_pointer;
+  NGRAPH_INFO << "correct fcn address " << fcn_addr;
+
+  auto backend = get_backend_constructor_pointer()->create("HE_SEAL");
 }

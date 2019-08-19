@@ -158,6 +158,15 @@ target_link_libraries(libgrpc
                                 libgpr
                                 libcares
                                 libz
+                                libprotobuf
+                                libgrpc++_unsecure
+                                libgrpc++
+                                libgrpc_orig
+                                libgrpc++_reflection
+                                libaddress_sorting
+                                libgpr
+                                libcares
+                                libz
                                 libprotobuf)
 add_dependencies(libgrpc
                  protobuf_files
