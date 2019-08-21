@@ -56,6 +56,7 @@ target_link_libraries(he_seal_backend
                              libseal
                              libngraph_tf
                              libprotobuf
+                             libprotobuf_orig
                              ngraph)
 
 message("HE_TRANSFORMER_SOURCE_DIR ${HE_TRANSFORMER_SOURCE_DIR}")
