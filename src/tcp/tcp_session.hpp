@@ -85,7 +85,16 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
     }
   }
 
+  void write_message(ngraph::he::NewTCPMessage&& message) {
+    bool write_in_progress = is_new_writing();
+    m_new_message_queue.emplace_back(std::move(message));
+    if (!write_in_progress) {
+      do_new_write();
+    }
+  }
+
   bool is_writing() const { return !m_message_queue.empty(); }
+  bool is_new_writing() const { return !m_new_message_queue.empty(); }
 
   std::condition_variable& is_writing_cond() { return m_is_writing; }
 
@@ -113,8 +122,34 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
         });
   }
 
+  void do_new_write() {
+    NGRAPH_INFO << "WRiting TCP parms message";
+    std::lock_guard<std::mutex> lock(m_write_mtx);
+    m_is_writing.notify_all();
+    auto self(shared_from_this());
+
+    boost::asio::async_write(
+        m_socket,
+        boost::asio::buffer(m_message_queue.front().header_ptr(),
+                            m_message_queue.front().num_bytes()),
+        [this, self](boost::system::error_code ec, std::size_t length) {
+          if (!ec) {
+            m_message_queue.pop_front();
+            if (!m_message_queue.empty()) {
+              do_write();
+            } else {
+              m_is_writing.notify_all();
+            }
+          } else {
+            NGRAPH_INFO << "Server error writing message: " << ec.message();
+          }
+        });
+  }
+
  private:
   std::deque<ngraph::he::TCPMessage> m_message_queue;
+  std::deque<ngraph::he::NewTCPMessage> m_new_message_queue;
+
   TCPMessage m_read_message;
   tcp::socket m_socket;
 

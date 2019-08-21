@@ -19,7 +19,6 @@
 #include <unordered_set>
 
 #include "he_plain_tensor.hpp"
-#include "message.pb.h"
 #include "he_seal_cipher_tensor.hpp"
 #include "he_tensor.hpp"
 #include "kernel/add_seal.hpp"
@@ -43,6 +42,7 @@
 #include "kernel/slice_seal.hpp"
 #include "kernel/subtract_seal.hpp"
 #include "kernel/sum_seal.hpp"
+#include "message.pb.h"
 #include "ngraph/assertion.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
 #include "ngraph/op/avg_pool.hpp"
@@ -194,23 +194,29 @@ void ngraph::he::HESealExecutable::client_setup() {
     NGRAPH_INFO << "Starting server";
     start_server();
 
-    NGRAPH_INFO << "Creatign parms message";
+    NGRAPH_INFO << "Creatign new parms message";
 
-    /* he_proto::TCPMessage message;
-    message.set_mutable
-    he_proto::encryption_parameters parms;
-    parms.set_encryption_parameters(param_stream.str());)
-    *message.mutable_encryption_parameters() = parms;
-    auto parms_message = TCPMessage */
+    std::stringstream param_stream;
+    m_he_seal_backend.get_encryption_parameters().save(param_stream);
 
+    he_proto::EncryptionParameters proto_parms;
+    *proto_parms.mutable_encryption_parameters() = param_stream.str();
+    proto_parms.set_type(he_proto::EncryptionParameters_Type_REQUEST);
+
+    he_proto::TCPMessage proto_msg;
+    *proto_msg.mutable_encryption_parameters() = proto_parms;
+
+    ngraph::he::NewTCPMessage parms_message(proto_msg);
+    NGRAPH_INFO << "Created PB parms message";
 
     // Send encryption parameters
+    /*
     std::stringstream param_stream;
 
     m_he_seal_backend.get_encryption_parameters().save(param_stream);
     auto parms_message = TCPMessage(MessageType::encryption_parameters, 1,
                                     std::move(param_stream));
-
+    */
     std::unique_lock<std::mutex> mlock(m_session_mutex);
     m_session_cond.wait(mlock,
                         std::bind(&HESealExecutable::session_started, this));

@@ -13,14 +13,32 @@ message TCPMessage {
 
 message EncryptionParameters {
   bytes encryption_parameters = 1;
+  enum Type {
+    UNKNOWN = 0;
+    REQUEST = 1;
+    RESPONSE = 2;
+  }
+  Type type = 2;
 }
 
 message EvaluationKey {
   bytes eval_key = 1;
+  enum Type {
+    UNKNOWN = 0;
+    REQUEST = 1;
+    RESPONSE = 2;
+  }
+  Type type = 2;
 }
 
 message PublicKey {
   bytes public_key = 1;
+  enum Type {
+    UNKNOWN = 0;
+    REQUEST = 1;
+    RESPONSE = 2;
+  }
+  Type type = 2;
 }
 
 message Function {
