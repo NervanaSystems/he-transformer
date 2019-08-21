@@ -53,7 +53,8 @@ set_target_properties(protoc
 set(_PROTOBUF_PROTOC ${BINARY_DIR}/src/protoc)
 
 # Generate protobuf headers
-get_filename_component(hw_proto ${PROJECT_SOURCE_DIR}/protos/helloworld.proto
+get_filename_component(hw_proto
+                       ${PROJECT_SOURCE_DIR}/src/protos/helloworld.proto
                        ABSOLUTE)
 get_filename_component(hw_proto_path "${hw_proto}" PATH)
 

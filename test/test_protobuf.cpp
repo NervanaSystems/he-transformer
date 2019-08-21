@@ -17,7 +17,7 @@
 #include <memory>
 
 #include "gtest/gtest.h"
-#include "helloworld.grpc.pb.h"
+#include "helloworld.pb.h"
 
 using namespace std;
 
