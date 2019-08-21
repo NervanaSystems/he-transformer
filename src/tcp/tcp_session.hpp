@@ -40,6 +40,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
 
  public:
   void do_read_header() {
+    NGRAPH_INFO << "server do_read_header";
     auto self(shared_from_this());
     boost::asio::async_read(
         m_socket,
@@ -60,6 +61,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
   }
 
   void do_read_body() {
+    NGRAPH_INFO << "server do_read_body";
     auto self(shared_from_this());
     boost::asio::async_read(
         m_socket,
@@ -86,6 +88,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
   }
 
   void write_message(ngraph::he::NewTCPMessage& message) {
+    NGRAPH_INFO << "server write new message";
     bool write_in_progress = is_new_writing();
     m_new_message_queue.emplace_back(message);
     if (!write_in_progress) {
@@ -123,7 +126,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
   }
 
   void do_new_write() {
-    NGRAPH_INFO << "WRiting TCP parms message";
+    NGRAPH_INFO << "server do_new_write";
     std::lock_guard<std::mutex> lock(m_write_mtx);
     m_is_writing.notify_all();
     auto self(shared_from_this());
@@ -135,8 +138,8 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
         m_socket, send_streambuf,
         [this, self](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
-            m_message_queue.pop_front();
-            if (!m_message_queue.empty()) {
+            m_new_message_queue.pop_front();
+            if (!m_new_message_queue.empty()) {
               do_write();
             } else {
               m_is_writing.notify_all();

@@ -97,6 +97,7 @@ class TCPClient {
   }
 
   void do_read_header() {
+    NGRAPH_INFO << "Client do read header";
     boost::asio::async_read(
         m_socket,
         boost::asio::buffer(m_new_read_message.size_ptr(),
@@ -114,6 +115,7 @@ class TCPClient {
   }
 
   void do_read_body() {
+    NGRAPH_INFO << "Client do read body";
     boost::asio::streambuf receive_streambuf;
     boost::asio::async_read(
         m_socket, receive_streambuf,
@@ -133,6 +135,7 @@ class TCPClient {
   }
 
   void do_write() {
+    NGRAPH_INFO << "Client do_write";
     boost::asio::async_write(
         m_socket,
         boost::asio::buffer(m_message_queue.front().header_ptr(),
@@ -150,6 +153,7 @@ class TCPClient {
   }
 
   void do_new_write() {
+    NGRAPH_INFO << "Client do_new_write";
     boost::asio::streambuf send_streambuf;
     m_new_message_queue.front().write_to_buffer(send_streambuf);
 
