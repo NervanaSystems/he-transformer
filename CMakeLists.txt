@@ -106,6 +106,7 @@ include(cmake/json.cmake)
 include(cmake/openmp.cmake)
 include(cmake/seal.cmake)
 include(cmake/boost.cmake)
+include(cmake/protobuf.cmake)
 
 message("ngraph NGRAPH_TF_INCLUDE_DIR ${NGRAPH_TF_INCLUDE_DIR}")
 
