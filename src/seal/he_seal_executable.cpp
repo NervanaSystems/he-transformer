@@ -19,6 +19,7 @@
 #include <unordered_set>
 
 #include "he_plain_tensor.hpp"
+#include "message.pb.h"
 #include "he_seal_cipher_tensor.hpp"
 #include "he_tensor.hpp"
 #include "kernel/add_seal.hpp"
@@ -192,6 +193,16 @@ void ngraph::he::HESealExecutable::client_setup() {
     // Start server
     NGRAPH_INFO << "Starting server";
     start_server();
+
+    NGRAPH_INFO << "Creatign parms message";
+
+    /* he_proto::TCPMessage message;
+    message.set_mutable
+    he_proto::encryption_parameters parms;
+    parms.set_encryption_parameters(param_stream.str());)
+    *message.mutable_encryption_parameters() = parms;
+    auto parms_message = TCPMessage */
+
 
     // Send encryption parameters
     std::stringstream param_stream;

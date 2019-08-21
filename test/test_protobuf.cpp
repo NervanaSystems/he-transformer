@@ -14,11 +14,12 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include <google/protobuf/util/message_differencer.h>
 #include <memory>
 
 #include "gtest/gtest.h"
 #include "helloworld.pb.h"
-
+#include "tcp/tcp_message.hpp"
 #include "message.pb.h"
 
 using namespace std;
@@ -39,19 +40,31 @@ TEST(protobuf, serialize) {
   EXPECT_EQ(deserialize.name(), request.name());
 }
 
-TEST(protobuf, serialize) {
-  ngraph_he::TCPMessage message;
+TEST(protobuf, serialize_cipher) {
+  he_proto::TCPMessage message;
 
-  ngraph_he::Function f;
+  he_proto::Function f;
   f.set_function("123");
-
-  message.set_function(f);
+  *message.mutable_function() = f;
 
   std::stringstream s;
-  request.SerializeToOstream(&s);
+  message.SerializeToOstream(&s);
 
-  helloworld::HelloRequest deserialize;
+  he_proto::TCPMessage deserialize;
   deserialize.ParseFromIstream(&s);
 
-  EXPECT_EQ(deserialize.name(), request.name());
+  EXPECT_TRUE(
+      google::protobuf::util::MessageDifferencer::Equals(deserialize, message));
+}
+
+TEST(new_tcp_message, create) {
+  he_proto::TCPMessage proto_msg;
+  he_proto::Function f;
+  f.set_function("123");
+  *proto_msg.mutable_function() = f;
+  std::stringstream s;
+  proto_msg.SerializeToOstream(&s);
+
+  ngraph::he::NewTCPMessage tcp_message(proto_msg);
+
 }

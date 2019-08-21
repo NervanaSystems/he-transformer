@@ -26,6 +26,7 @@
 #include <sstream>
 #include <string>
 
+#include "message.pb.h"
 #include "ngraph/check.hpp"
 #include "ngraph/log.hpp"
 #include "ngraph/util.hpp"
@@ -35,6 +36,16 @@
 
 namespace ngraph {
 namespace he {
+
+class NewTCPMessage {
+  public:
+  enum { header_length = 15 };
+
+  NewTCPMessage(he_proto::TCPMessage& proto_message) :m_proto_message(proto_message) {}
+
+  he_proto::TCPMessage m_proto_message;
+};
+
 enum class MessageType {
   none,
   encryption_parameters,
