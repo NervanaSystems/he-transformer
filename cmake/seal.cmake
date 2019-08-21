@@ -45,7 +45,7 @@ if("${CMAKE_CXX_COMPILER_ID}" MATCHES "^(Apple)?Clang$")
   add_compile_options(-Wno-inconsistent-missing-destructor-override)
   add_compile_options(-Wno-extra-semi)
 endif()
-message("SEAL_CXX_FLAGS ${SEAL_CXX_FLAGS}")
+message(STATUS "SEAL_CXX_FLAGS ${SEAL_CXX_FLAGS}")
 
 ExternalProject_Add(
   ext_seal

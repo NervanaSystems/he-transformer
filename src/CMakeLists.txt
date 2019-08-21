@@ -49,7 +49,7 @@ set_source_files_properties(${hw_proto_srcs}
                             TRUE)
 
 # Target library
-add_library(he_seal_backend STATIC ${HE_SRC})
+add_library(he_seal_backend SHARED ${HE_SRC})
 target_include_directories(he_seal_backend
                            PUBLIC ${HE_TRANSFORMER_SOURCE_DIR}
                                   ${EXTERNAL_INSTALL_INCLUDE_DIR}
@@ -61,14 +61,6 @@ target_link_libraries(he_seal_backend
                              libngraph_tf
                              libgrpc
                              ngraph)
-
-message("HE_TRANSFORMER_SOURCE_DIR ${HE_TRANSFORMER_SOURCE_DIR}")
-message("EXTERNAL_INSTALL_INCLUDE_DIR ${EXTERNAL_INSTALL_INCLUDE_DIR}")
-# Get library names
-set(HE_SEAL_BACKEND_LIB_NAME "libhe_seal_backend${CMAKE_SHARED_LIBRARY_SUFFIX}")
-
-message("NGRAPH_TF_VENV_LIB_DIR ${NGRAPH_TF_VENV_LIB_DIR}")
-message("NGRAPH_TF_LIB_DIR ${NGRAPH_TF_LIB_DIR}")
 
 # Install he-transformer (the HE libraries are installed separately) at `make
 # install`
@@ -87,18 +79,18 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
 
 # Create symbolic links for he_seal_backend, to allow ngraph and ngraph-tf to
 # find it.
+set(HE_SEAL_BACKEND_LIB_NAME "libhe_seal_backend${CMAKE_SHARED_LIBRARY_SUFFIX}")
+
 add_custom_target(
   he_seal_backend_soft_link ALL
   DEPENDS he_seal_backend
-  COMMAND
-    ${CMAKE_COMMAND}
-    -E
-    create_symlink
-    ${EXTERNAL_INSTALL_LIB_DIR}/libhe_seal_backend${CMAKE_SHARED_LIBRARY_SUFFIX}
-    ${NGRAPH_TF_VENV_LIB_DIR}/libhe_seal_backend${CMAKE_SHARED_LIBRARY_SUFFIX}
-  COMMAND
-    ${CMAKE_COMMAND}
-    -E
-    create_symlink
-    ${EXTERNAL_INSTALL_LIB_DIR}/libhe_seal_backend${CMAKE_SHARED_LIBRARY_SUFFIX}
-    ${NGRAPH_TF_LIB_DIR}/libhe_seal_backend${CMAKE_SHARED_LIBRARY_SUFFIX})
+  COMMAND ${CMAKE_COMMAND}
+          -E
+          create_symlink
+          ${EXTERNAL_INSTALL_LIB_DIR}/${HE_SEAL_BACKEND_LIB_NAME}
+          ${NGRAPH_TF_VENV_LIB_DIR}/${HE_SEAL_BACKEND_LIB_NAME}
+  COMMAND ${CMAKE_COMMAND}
+          -E
+          create_symlink
+          ${EXTERNAL_INSTALL_LIB_DIR}/${HE_SEAL_BACKEND_LIB_NAME}
+          ${NGRAPH_TF_LIB_DIR}/${HE_SEAL_BACKEND_LIB_NAME})

@@ -25,8 +25,8 @@
 #include "seal/seal.h"
 #include "seal/seal_util.hpp"
 
-ngraph::runtime::BackendConstructor*
-ngraph::runtime::he::get_backend_constructor_pointer() {
+extern "C" ngraph::runtime::BackendConstructor*
+get_backend_constructor_pointer() {
   class HESealBackendConstructor : public ngraph::runtime::BackendConstructor {
    public:
     std::shared_ptr<ngraph::runtime::Backend> create(

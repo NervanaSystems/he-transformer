@@ -633,6 +633,14 @@ NGRAPH_TEST(${BACKEND_NAME}, shared_ptr_executable_init2) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, server_client_init2) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, int_init) {
+  auto backend = runtime::Backend::create("INTERPRETER");
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_init3) {
   // auto backend = runtime::Backend::create("${BACKEND_NAME}");
   // auto backend = runtime::Backend::create("HE_SEAL");
 
