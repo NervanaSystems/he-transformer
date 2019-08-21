@@ -63,7 +63,7 @@ class NewTCPMessage {
 
   void write_to_buffer(boost::asio::streambuf& buffer) {
     std::iostream os(&buffer);
-    NGRAPH_INFO << "Encoding message size " << body_length();
+    NGRAPH_INFO << "Encoding body size " << body_length();
     os << body_length();
     os << m_serialized_msg;
   }

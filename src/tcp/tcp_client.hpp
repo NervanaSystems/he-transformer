@@ -98,12 +98,15 @@ class TCPClient {
 
   void do_read_header() {
     NGRAPH_INFO << "Client do read header";
+    NGRAPH_INFO << "ngraph::he::NewTCPMessage::header_length "
+                << ngraph::he::NewTCPMessage::header_length;
     boost::asio::async_read(
         m_socket,
         boost::asio::buffer(m_new_read_message.size_ptr(),
-                            ngraph::he::TCPMessage::header_length),
+                            ngraph::he::NewTCPMessage::header_length),
         [this](boost::system::error_code ec, std::size_t length) {
           if (!ec && m_new_read_message.decode_header()) {
+            NGRAPH_INFO << "Client read header size " << length << " bits";
             do_read_body();
           } else {
             // End of file is expected on teardown
