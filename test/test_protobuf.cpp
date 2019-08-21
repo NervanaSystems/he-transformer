@@ -23,11 +23,16 @@ using namespace std;
 
 TEST(protobuf, trivial) { EXPECT_EQ(1, 1); }
 
-TEST(protobuf, create) {
+TEST(protobuf, serialize) {
   helloworld::HelloRequest request;
   request.set_name("name");
-
   EXPECT_EQ(request.name(), "name");
 
-  EXPECT_EQ(1, 1);
+  std::stringstream s;
+  request.SerializeToOstream(&s);
+
+  helloworld::HelloRequest deserialize;
+  deserialize.ParseFromIstream(&s);
+
+  EXPECT_EQ(deserialize.name(), request.name());
 }
