@@ -38,12 +38,26 @@ namespace ngraph {
 namespace he {
 
 class NewTCPMessage {
-  public:
+ public:
   enum { header_length = 15 };
 
-  NewTCPMessage(he_proto::TCPMessage& proto_message) :m_proto_message(proto_message) {}
+  NewTCPMessage(he_proto::TCPMessage& proto_message)
+      : m_proto_message(proto_message) {
+    // TODO: don't serialize until we need to?
+    proto_message.SerializeToOstream(&m_serialized_msg);
+  }
+
+  void* header_ptr() { return &m_serialized_msg; }
+  size_t num_bytes() { return header_length + body_length(); }
+  size_t body_length() {
+    m_serialized_msg.seekg(0, std::ios::end);
+    int size = m_serialized_msg.tellg();
+    m_serialized_msg.seekg(0, std::ios::beg);
+    return size;
+  }
 
   he_proto::TCPMessage m_proto_message;
+  std::stringstream m_serialized_msg;
 };
 
 enum class MessageType {
@@ -136,7 +150,8 @@ class TCPMessage {
   enum { message_type_length = sizeof(MessageType) };
   enum { message_count_length = sizeof(size_t) };
 
-  // Creates message with data buffer large enough to store default_body_length
+  // Creates message with data buffer large enough to store
+  // default_body_length
   TCPMessage(const MessageType type)
       : m_type(type), m_count(0), m_data_size(0) {
     std::set<MessageType> request_types{

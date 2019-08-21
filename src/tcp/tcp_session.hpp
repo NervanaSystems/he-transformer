@@ -130,8 +130,8 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
 
     boost::asio::async_write(
         m_socket,
-        boost::asio::buffer(m_message_queue.front().header_ptr(),
-                            m_message_queue.front().num_bytes()),
+        boost::asio::buffer(m_new_message_queue.front().header_ptr(),
+                            m_new_message_queue.front().num_bytes()),
         [this, self](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
             m_message_queue.pop_front();

@@ -44,6 +44,9 @@ class HESealClient {
   void set_seal_context();
 
   void handle_message(const ngraph::he::TCPMessage& message);
+  void handle_new_message(const ngraph::he::NewTCPMessage& message);
+
+
 
   void handle_relu_request(const ngraph::he::TCPMessage& message);
 

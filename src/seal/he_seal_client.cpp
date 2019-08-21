@@ -47,8 +47,8 @@ ngraph::he::HESealClient::HESealClient(const std::string& hostname,
   boost::asio::io_context io_context;
   tcp::resolver resolver(io_context);
   auto endpoints = resolver.resolve(hostname, std::to_string(port));
-  auto client_callback = [this](const ngraph::he::TCPMessage& message) {
-    return handle_message(message);
+  auto client_callback = [this](const ngraph::he::NewTCPMessage& message) {
+    return handle_new_message(message);
   };
   m_tcp_client = std::make_shared<ngraph::he::TCPClient>(io_context, endpoints,
                                                          client_callback);
@@ -86,6 +86,11 @@ void ngraph::he::HESealClient::set_seal_context() {
   // TODO: pick better scale?
   m_scale = ngraph::he::choose_scale(m_encryption_params.coeff_modulus());
   NGRAPH_INFO << "Client scale " << m_scale;
+}
+
+void ngraph::he::HESealClient::handle_new_message(
+    const ngraph::he::NewTCPMessage& message) {
+  NGRAPH_INFO << "Got new message";
 }
 
 void ngraph::he::HESealClient::handle_message(
