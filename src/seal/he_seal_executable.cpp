@@ -208,6 +208,10 @@ void ngraph::he::HESealExecutable::client_setup() {
 
     ngraph::he::NewTCPMessage parms_message(proto_msg);
     NGRAPH_INFO << "Created PB parms message";
+    std::unique_lock<std::mutex> mlock(m_session_mutex);
+    m_session_cond.wait(mlock,
+                        std::bind(&HESealExecutable::session_started, this));
+    m_session->write_message(parms_message);
 
     // Send encryption parameters
     /*
@@ -217,10 +221,10 @@ void ngraph::he::HESealExecutable::client_setup() {
     auto parms_message = TCPMessage(MessageType::encryption_parameters, 1,
                                     std::move(param_stream));
     */
-    std::unique_lock<std::mutex> mlock(m_session_mutex);
-    m_session_cond.wait(mlock,
-                        std::bind(&HESealExecutable::session_started, this));
-    m_session->write_message(std::move(parms_message));
+    /*  std::unique_lock<std::mutex> mlock(m_session_mutex);
+     m_session_cond.wait(mlock,
+                         std::bind(&HESealExecutable::session_started, this));
+     m_session->write_message(std::move(parms_message)); */
 
     m_client_setup = true;
   } else {

@@ -18,6 +18,7 @@
 
 #include <assert.h>
 #include <algorithm>
+#include <boost/asio.hpp>
 #include <chrono>
 #include <cstring>
 #include <iostream>
@@ -39,25 +40,44 @@ namespace he {
 
 class NewTCPMessage {
  public:
-  enum { header_length = 15 };
+  enum { header_length = sizeof(size_t) };
+
+  NewTCPMessage() = default;
 
   NewTCPMessage(he_proto::TCPMessage& proto_message)
       : m_proto_message(proto_message) {
     // TODO: don't serialize until we need to?
-    proto_message.SerializeToOstream(&m_serialized_msg);
+    proto_message.SerializeToString(&m_serialized_msg);
   }
 
-  void* header_ptr() { return &m_serialized_msg; }
+  void* size_ptr() { return &size; }
   size_t num_bytes() { return header_length + body_length(); }
-  size_t body_length() {
-    m_serialized_msg.seekg(0, std::ios::end);
-    int size = m_serialized_msg.tellg();
-    m_serialized_msg.seekg(0, std::ios::beg);
-    return size;
+  size_t body_length() { return m_serialized_msg.size(); }
+
+  bool decode_header() {
+    NGRAPH_INFO << "Header size is " << size;
+    return true;
   }
 
+  void decode_body() { m_proto_message.ParseFromString(m_serialized_msg); }
+
+  void write_to_buffer(boost::asio::streambuf& buffer) {
+    std::iostream os(&buffer);
+    NGRAPH_INFO << "Encoding message size " << body_length();
+    os << body_length();
+    os << m_serialized_msg;
+  }
+
+  void read_from_buffer(boost::asio::streambuf& buffer) {
+    std::string s((std::istreambuf_iterator<char>(&buffer)),
+                  std::istreambuf_iterator<char>());
+
+    m_proto_message.ParseFromString(s);
+  }
+
+  size_t size;
   he_proto::TCPMessage m_proto_message;
-  std::stringstream m_serialized_msg;
+  std::string m_serialized_msg;
 };
 
 enum class MessageType {

@@ -61,6 +61,15 @@ class TCPClient {
     }
   }
 
+  // TODO: send copy or rvalue
+  void write_message(ngraph::he::NewTCPMessage message) {
+    bool write_in_progress = !m_new_message_queue.empty();
+    m_new_message_queue.push_back(message);
+    if (!write_in_progress) {
+      boost::asio::post(m_io_context, [this]() { do_new_write(); });
+    }
+  }
+
  private:
   void do_connect(const tcp::resolver::results_type& endpoints,
                   size_t delay_ms = 10) {
@@ -90,7 +99,7 @@ class TCPClient {
   void do_read_header() {
     boost::asio::async_read(
         m_socket,
-        boost::asio::buffer(m_new_read_message.header_ptr(),
+        boost::asio::buffer(m_new_read_message.size_ptr(),
                             ngraph::he::TCPMessage::header_length),
         [this](boost::system::error_code ec, std::size_t length) {
           if (!ec && m_new_read_message.decode_header()) {
@@ -105,13 +114,13 @@ class TCPClient {
   }
 
   void do_read_body() {
+    boost::asio::streambuf receive_streambuf;
     boost::asio::async_read(
-        m_socket,
-        boost::asio::buffer(m_new_read_message.body_ptr(),
-                            m_new_read_message.body_length()),
-        [this](boost::system::error_code ec, std::size_t length) {
+        m_socket, receive_streambuf,
+        [this, &receive_streambuf](boost::system::error_code ec,
+                                   std::size_t length) {
           if (!ec) {
-            m_new_read_message.decode_body();
+            m_new_read_message.read_from_buffer(receive_streambuf);
             m_message_callback(m_new_read_message);
             do_read_header();
           } else {
@@ -140,11 +149,31 @@ class TCPClient {
         });
   }
 
+  void do_new_write() {
+    boost::asio::streambuf send_streambuf;
+    m_new_message_queue.front().write_to_buffer(send_streambuf);
+
+    boost::asio::async_write(
+        m_socket, send_streambuf,
+        [this](boost::system::error_code ec, std::size_t length) {
+          if (!ec) {
+            m_new_message_queue.pop_front();
+            if (!m_new_message_queue.empty()) {
+              do_new_write();
+            }
+          } else {
+            NGRAPH_INFO << "Client error writing message: " << ec.message();
+          }
+        });
+  }
+
   boost::asio::io_context& m_io_context;
   tcp::socket m_socket;
 
   NewTCPMessage m_new_read_message;
+  TCPMessage m_read_message;
   std::deque<ngraph::he::TCPMessage> m_message_queue;
+  std::deque<ngraph::he::NewTCPMessage> m_new_message_queue;
 
   bool m_first_connect;
 

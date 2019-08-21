@@ -85,9 +85,9 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
     }
   }
 
-  void write_message(ngraph::he::NewTCPMessage&& message) {
+  void write_message(ngraph::he::NewTCPMessage& message) {
     bool write_in_progress = is_new_writing();
-    m_new_message_queue.emplace_back(std::move(message));
+    m_new_message_queue.emplace_back(message);
     if (!write_in_progress) {
       do_new_write();
     }
@@ -128,10 +128,11 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
     m_is_writing.notify_all();
     auto self(shared_from_this());
 
+    boost::asio::streambuf send_streambuf;
+    m_new_message_queue.front().write_to_buffer(send_streambuf);
+
     boost::asio::async_write(
-        m_socket,
-        boost::asio::buffer(m_new_message_queue.front().header_ptr(),
-                            m_new_message_queue.front().num_bytes()),
+        m_socket, send_streambuf,
         [this, self](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
             m_message_queue.pop_front();
