@@ -15,10 +15,14 @@
 # ******************************************************************************
 
 set(SRC
-    main.cpp # test_seal.cpp test_perf_micro.cpp test_message.cpp
+    main.cpp
+    test_seal.cpp
+    test_perf_micro.cpp
+    test_message.cpp
     test_grpc.cpp
-    # test_util.cpp
-    ${hw_proto_srcs} ${hw_grpc_srcs})
+    test_util.cpp
+    ${hw_proto_srcs}
+    ${hw_grpc_srcs})
 
 set_source_files_properties(${hw_grpc_srcs}
                             PROPERTIES
@@ -32,33 +36,32 @@ set_source_files_properties(${hw_proto_srcs}
 set(ACTIVE_BACKEND_LIST HE_SEAL)
 
 set(MULTI_TEST_SRC
-    # test_add.in.cpp
-    # test_avg_pool.in.cpp
-    # test_batch_norm_inference.in.cpp
-    # test_basics.in.cpp
-    # test_broadcast.in.cpp
-    # test_concat.in.cpp
-    # test_constant.in.cpp
-    # test_convolution.in.cpp
-    # test_dot.in.cpp
-    # test_he_fusion.in.cpp
-    # test_known_values.in.cpp
-    # test_layers.in.cpp
-    # test_maxpool.in.cpp
-    # test_minimum.in.cpp
-    # test_multiply.in.cpp
-    # test_negate.in.cpp
-    # test_pad.in.cpp
-    # test_perf.in.cpp
-    # test_read_write.in.cpp
-    # test_relu.in.cpp
-    # test_reshape.in.cpp
-    # test_reverse.in.cpp
+    test_add.in.cpp
+    test_avg_pool.in.cpp
+    test_batch_norm_inference.in.cpp
+    test_basics.in.cpp
+    test_broadcast.in.cpp
+    test_concat.in.cpp
+    test_constant.in.cpp
+    test_convolution.in.cpp
+    test_dot.in.cpp
+    test_he_fusion.in.cpp
+    test_known_values.in.cpp
+    test_layers.in.cpp
+    test_maxpool.in.cpp
+    test_minimum.in.cpp
+    test_multiply.in.cpp
+    test_negate.in.cpp
+    test_pad.in.cpp
+    test_perf.in.cpp
+    test_read_write.in.cpp
+    test_relu.in.cpp
+    test_reshape.in.cpp
+    test_reverse.in.cpp
     test_server_client.in.cpp
-    # test_slice.in.cpp
-    # test_subtract.in.cpp
-    # test_sum.in.cpp
-    )
+    test_slice.in.cpp
+    test_subtract.in.cpp
+    test_sum.in.cpp)
 
 foreach(BACKEND_NAME ${ACTIVE_BACKEND_LIST})
   string(REPLACE "HE_"

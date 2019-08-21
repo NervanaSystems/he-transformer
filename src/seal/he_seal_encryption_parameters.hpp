@@ -30,9 +30,7 @@ namespace ngraph {
 namespace he {
 class HESealEncryptionParameters {
  public:
-  HESealEncryptionParameters()
-      : HESealEncryptionParameters("HE_SEAL", 1024, 0, {30, 30, 30, 30, 30}) {}
-
+  HESealEncryptionParameters() = delete;
   HESealEncryptionParameters(const std::string& scheme_name,
                              std::uint64_t poly_modulus_degree,
                              std::uint64_t security_level,

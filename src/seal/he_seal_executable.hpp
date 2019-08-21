@@ -16,21 +16,17 @@
 
 #pragma once
 
-#include <grpcpp/grpcpp.h>
 #include <atomic>
 #include <boost/asio.hpp>
 #include <chrono>
 #include <condition_variable>
-#include <iostream>
 #include <memory>
 #include <mutex>
 #include <set>
-#include <string>
 #include <thread>
 #include <vector>
-#include "helloworld.grpc.pb.h"
 
-/* #include "he_tensor.hpp"
+#include "he_tensor.hpp"
 #include "ngraph/runtime/backend.hpp"
 #include "ngraph/util.hpp"
 #include "node_wrapper.hpp"
@@ -38,12 +34,12 @@
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "tcp/tcp_message.hpp"
-#include "tcp/tcp_session.hpp" */
+#include "tcp/tcp_session.hpp"
 
 #include "grpc/grpc_server.hpp"
 
-// using boost::asio::ip::tcp;
-/*using grpc::Channel;
+using boost::asio::ip::tcp;
+using grpc::Channel;
 using grpc::ClientContext;
 using grpc::Server;
 using grpc::ServerBuilder;
@@ -51,18 +47,18 @@ using grpc::ServerContext;
 using grpc::Status;
 using helloworld::Greeter;
 using helloworld::HelloReply;
-using helloworld::HelloRequest; */
+using helloworld::HelloRequest;
 
 namespace ngraph {
 namespace he {
 class TestServer {
  public:
   TestServer() {
-    NGRAPH_INFO << "Setting up grpc server";
+    std::cout << "Setting up grpc server" << std::endl;
     std::string server_address("0.0.0.0:50051");
-    ngraph::he::GreeterServiceImpl service;
+    GreeterServiceImpl service;
 
-    grpc::ServerBuilder builder;
+    ServerBuilder builder;
     // Listen on the given address without any authentication mechanism.
     builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
     // Register "service" as the instance through which we'll communicate
@@ -71,7 +67,7 @@ class TestServer {
     builder.RegisterService(&service);
 
     // Finally assemble the server.
-    std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
+    std::unique_ptr<Server> server(builder.BuildAndStart());
     std::cout << "Server listening on " << server_address << std::endl;
 
     // std::this_thread::sleep_for(std::chrono::milliseconds(30000));
@@ -89,7 +85,7 @@ class HESealExecutable : public runtime::Executable {
  public:
   HESealExecutable();
 
-  /* HESealExecutable(const std::shared_ptr<Function>& function,
+  HESealExecutable(const std::shared_ptr<Function>& function,
                    bool enable_performance_collection,
                    ngraph::he::HESealBackend& he_seal_backend,
                    bool encrypt_data, bool encrypt_model, bool pack_data,
@@ -109,15 +105,13 @@ class HESealExecutable : public runtime::Executable {
 
   void client_setup();
 
-  void start_server(); */
+  void start_server();
 
   bool call(
       const std::vector<std::shared_ptr<runtime::Tensor>>& outputs,
-      const std::vector<std::shared_ptr<runtime::Tensor>>& inputs) override {
-    throw ngraph_error("call unimpelented");
-  }
+      const std::vector<std::shared_ptr<runtime::Tensor>>& inputs) override;
 
-  /* std::vector<runtime::PerformanceCounter> get_performance_data()
+  std::vector<runtime::PerformanceCounter> get_performance_data()
       const override;
 
   size_t get_port() const { return m_port; }
@@ -230,7 +224,7 @@ class HESealExecutable : public runtime::Executable {
 
   void generate_calls(const element::Type& type, const NodeWrapper& op,
                       const std::vector<std::shared_ptr<HETensor>>& outputs,
-                      const std::vector<std::shared_ptr<HETensor>>& inputs); */
+                      const std::vector<std::shared_ptr<HETensor>>& inputs);
 };
 }  // namespace he
 }  // namespace ngraph

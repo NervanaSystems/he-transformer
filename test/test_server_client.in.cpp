@@ -15,32 +15,26 @@
 //*****************************************************************************
 
 #include <chrono>
-#include <functional>
-#include <map>
 #include <memory>
-#include <string>
 #include <thread>
-#include <unordered_map>
 #include <vector>
 
 #include "ngraph/ngraph.hpp"
 #include "seal/he_seal_backend.hpp"
-//#include "seal/he_seal_client.hpp"
+#include "seal/he_seal_client.hpp"
 #include "seal/he_seal_executable.hpp"
-// #include "test_util.hpp"
+#include "test_util.hpp"
 #include "util/all_close.hpp"
 #include "util/ndarray.hpp"
 #include "util/test_control.hpp"
 #include "util/test_tools.hpp"
-
-#include "ngraph/runtime/backend_manager.hpp"
 
 using namespace std;
 using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
-/* NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3) {
+NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
@@ -619,7 +613,7 @@ NGRAPH_TEST(${BACKEND_NAME},
                                                     {1, 1, 2}}}})
                              .get_vector()),
                         1e-3f));
-} */
+}
 
 NGRAPH_TEST(${BACKEND_NAME}, server_init) {
   auto test_server = ngraph::he::TestServer();
@@ -638,147 +632,58 @@ NGRAPH_TEST(${BACKEND_NAME}, shared_ptr_executable_init2) {
       std::make_shared<ngraph::he::HESealExecutable>();
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, server_client_init_nop) {
-  auto backend = runtime::Backend::create("NOP");
+NGRAPH_TEST(${BACKEND_NAME}, server_client_init2) {
+  // auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  // auto backend = runtime::Backend::create("HE_SEAL");
 
-  NGRAPH_INFO << "Creating top-level exectuable after he NOP backend";
+  auto backend = ngraph::he::HESealBackend();
+
+  NGRAPH_INFO << "Creating top-level exectuable after he seal backend";
 
   std::shared_ptr<ngraph::runtime::Executable> tmp =
       std::make_shared<ngraph::he::HESealExecutable>();
-}
 
-NGRAPH_TEST(${BACKEND_NAME}, server_client_init_seal) {
-  auto backend = ngraph::he::HESealBackend();
-}
+  // auto he_backend = dynamic_pointer_cast<ngraph::he::HESealBackend>(backend);
+  // auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
-NGRAPH_TEST(${BACKEND_NAME}, server_client_init_seal2) {
-  auto backend = runtime::Backend::create("HE_SEAL");
-}
+  size_t batch_size = 1;
 
-NGRAPH_TEST(${BACKEND_NAME}, server_client_init_seal3) {
-  auto backend = std::make_shared<ngraph::he::HESealBackend>();
-}
+  Shape shape{batch_size, 3};
+  auto a = op::Constant::create(element::f32, shape, {0.1, 0.2, 0.3});
+  auto b = make_shared<op::Parameter>(element::f32, shape);
+  auto t = make_shared<op::Add>(a, b);
+  auto f = make_shared<Function>(t, ParameterVector{b});
 
-// These both work
+  // Server inputs which are not used
+  // auto t_dummy = he_backend->create_plain_tensor(element::f32, shape);
+  // auto t_result = he_backend->create_cipher_tensor(element::f32, shape);
 
-/* NGRAPH_TEST(${BACKEND_NAME}, server_client_init_seal4) {
-  auto backend =
-      get_he_seal_backend_constructor_pointer()->create("HE_SEAL");
-} */
+  // Used for dummy server inputs
+  // float DUMMY_FLOAT = 99;
+  // copy_data(t_dummy, vector<float>{DUMMY_FLOAT, DUMMY_FLOAT, DUMMY_FLOAT});
 
-#include <dlfcn.h>
-#include "ngraph/file_util.hpp"
-#include "ngraph/runtime/backend.hpp"
-#include "ngraph/runtime/backend_manager.hpp"
-#include "ngraph/runtime/cpu/static_initialize.hpp"
-#include "ngraph/runtime/interpreter/static_initialize.hpp"
-#include "ngraph/util.hpp"
+  // vector<float> inputs{1, 2, 3};
+  /*    auto he_client =
+          ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
 
-using namespace ngraph;
-using namespace ngraph::he;
-using namespace ngraph::runtime;
-using namespace std;
-#define DL_HANDLE void*
-#define DLERROR() dlerror()
-#define DLSYM(a, b) dlsym(a, b)
-#define CLOSE_LIBRARY(a) dlclose(a)
+      while (!he_client.is_done()) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+      }
+      auto double_results = he_client.get_results();
+      results = std::vector<float>(double_results.begin(),
+    double_results.end());
+    }); */
 
-DL_HANDLE open_shared_library(string type) {
-  string lib_prefix = "lib";
-  string lib_suffix = ".so";
+  // auto handle = he_backend->compile(f);
 
-  DL_HANDLE handle = nullptr;
+  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-  // strip off attributes, IE:CPU becomes IE
-  auto colon = type.find(":");
-  if (colon != type.npos) {
-    type = type.substr(0, colon);
-  }
+  NGRAPH_INFO << "Exiting";
 
-  string library_name = lib_prefix + to_lower(type) + "_backend" + lib_suffix;
-  string my_directory = file_util::get_directory(
-      ngraph::runtime::Backend::get_backend_shared_library_search_directory());
-  string library_path = file_util::path_join(my_directory, library_name);
-  NGRAPH_INFO << "library_path " << library_path;
-  string error;
-
-  DLERROR();  // Clear any pending errors
-  handle = dlopen(library_path.c_str(), RTLD_LAZY | RTLD_GLOBAL);
-  const char* err = DLERROR();
-  error = (err ? err : "");
-  NGRAPH_INFO << "error? " << error;
-  if (!handle) {
-    stringstream ss;
-    ss << "Unable to find backend '" << type << "' as file '" << library_path
-       << "'";
-    ss << "\nOpen error message '" << error << "'";
-    throw runtime_error(ss.str());
-  }
-  return handle;
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, server_client_init_seal10) {
-  // ngraph::he::static_initialize();
-
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-
-  /*
-
-  shared_ptr<runtime::Backend> backend;
-
-  std::string config("HE_SEAL");
-  std::string type("HE_SEAL");
-
-  // registory
-
-  unordered_map<string, ngraph::runtime::BackendConstructor*> registry;
-
-  DL_HANDLE handle = open_shared_library("HE_SEAL");
-
-  if (!handle) {
-    stringstream ss;
-    ss << "Backend '"
-       << "HE_SEAL"
-       << "' not registered. Error:";
-    ss << DLERROR();
-    throw runtime_error(ss.str());
-  }
-  NGRAPH_INFO << "Creating before casting";
-  void* fcn_addr = (void*&)get_backend_constructor_pointer;
-  NGRAPH_INFO << "correct fcn address " << fcn_addr;
-  backend = get_backend_constructor_pointer()->create("HE_SEAL");
-
-  DLERROR();  // Clear any pending errors
-  function<runtime::BackendConstructor*()> get_backend_constructor_pointer =
-      reinterpret_cast<runtime::BackendConstructor* (*)()>(
-          DLSYM(handle, "get_backend_constructor_pointer"));
-  if (get_backend_constructor_pointer) {
-    NGRAPH_INFO << "Registering backend";
-
-    void* bad_fcn_addr = (void*&)get_backend_constructor_pointer;
-    NGRAPH_INFO << "bad_fcn_addr " << bad_fcn_addr;
-
-    backend = get_backend_constructor_pointer()->create("HE_SEAL");
-    // Register backend
-    // registry[type] = get_backend_constructor_pointer();
-    // register_backend(type, get_backend_constructor_pointer());
-  } else {
-    string error;
-    const char* err = DLERROR();
-    error = (err ? err : "");
-    CLOSE_LIBRARY(handle);
-    throw runtime_error(
-        "Failed to find symbol 'get_backend_constructor_pointer' in backend "
-        "library.\nError='" +
-        error + "'");
-  }
-  */
-}
-
-// These both work
-NGRAPH_TEST(${BACKEND_NAME}, server_client_init_seal5) {
-  /* void* fcn_addr = (void*&)get_backend_constructor_pointer;
-  NGRAPH_INFO << "correct fcn address " << fcn_addr;
-
-  auto backend = get_backend_constructor_pointer()->create("HE_SEAL"); */
+  // auto handle2 =
+  // dynamic_pointer_cast<ngraph::he::HESealExecutable>(handle);
+  // handle->client_setup();
+  // handle->call_with_validate({t_result}, {t_dummy});
+  // client_thread.join();
+  // EXPECT_TRUE(all_close(results, vector<float>{1.1, 2.2, 3.3}, 1e-3f));
 }
