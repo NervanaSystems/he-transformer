@@ -703,9 +703,10 @@ DL_HANDLE open_shared_library(string type) {
   string error;
 
   DLERROR();  // Clear any pending errors
-  handle = dlopen(library_path.c_str(), RTLD_NOW | RTLD_GLOBAL);
+  handle = dlopen(library_path.c_str(), RTLD_LAZY | RTLD_GLOBAL);
   const char* err = DLERROR();
   error = (err ? err : "");
+  NGRAPH_INFO << "error? " << error;
   if (!handle) {
     stringstream ss;
     ss << "Unable to find backend '" << type << "' as file '" << library_path
@@ -717,8 +718,11 @@ DL_HANDLE open_shared_library(string type) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, server_client_init_seal10) {
-  // auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  // auto backend = runtime::BackendManager::create_backend("HE_SEAL");
+  // ngraph::he::static_initialize();
+
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+
+  /*
 
   shared_ptr<runtime::Backend> backend;
 
@@ -739,6 +743,11 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_init_seal10) {
     ss << DLERROR();
     throw runtime_error(ss.str());
   }
+  NGRAPH_INFO << "Creating before casting";
+  void* fcn_addr = (void*&)get_backend_constructor_pointer;
+  NGRAPH_INFO << "correct fcn address " << fcn_addr;
+  backend = get_backend_constructor_pointer()->create("HE_SEAL");
+
   DLERROR();  // Clear any pending errors
   function<runtime::BackendConstructor*()> get_backend_constructor_pointer =
       reinterpret_cast<runtime::BackendConstructor* (*)()>(
@@ -763,12 +772,13 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_init_seal10) {
         "library.\nError='" +
         error + "'");
   }
+  */
 }
 
 // These both work
 NGRAPH_TEST(${BACKEND_NAME}, server_client_init_seal5) {
-  void* fcn_addr = (void*&)get_backend_constructor_pointer;
+  /* void* fcn_addr = (void*&)get_backend_constructor_pointer;
   NGRAPH_INFO << "correct fcn address " << fcn_addr;
 
-  auto backend = get_backend_constructor_pointer()->create("HE_SEAL");
+  auto backend = get_backend_constructor_pointer()->create("HE_SEAL"); */
 }

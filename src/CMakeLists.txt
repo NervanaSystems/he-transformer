@@ -48,7 +48,12 @@ set_source_files_properties(${hw_proto_srcs}
                             TRUE)
 
 # Target library
-add_library(he_seal_backend SHARED ${HE_SRC})
+set(LIBRARY_TYPE STATIC)
+
+add_library(he_seal_backend ${LIBRARY_TYPE} ${HE_SRC})
+target_compile_definitions(he_seal_backend PUBLIC
+                           NGRAPH_HE_SEAL_STATIC_LIB_ENABLE)
+
 target_include_directories(he_seal_backend
                            PUBLIC ${HE_TRANSFORMER_SOURCE_DIR}
                                   ${EXTERNAL_INSTALL_INCLUDE_DIR}

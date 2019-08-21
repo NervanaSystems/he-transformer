@@ -64,22 +64,27 @@
 
 namespace ngraph {
 namespace runtime {
-class BackendConstructor;
-}
+namespace he {
+BackendConstructor* get_backend_constructor_pointer();
+
+}  // namespace he
+}  // namespace runtime
+}  // namespace ngraph
+
+namespace ngraph {
+namespace he {
+void static_initialize();
+
 /* extern "C" ngraph::runtime::BackendConstructor*
 get_he_seal_backend_constructor_pointer(); */
 
-extern "C" ngraph::runtime::BackendConstructor*
-get_backend_constructor_pointer();
-
-namespace he {
 class HESealCipherTensor;
 class HESealBackend : public ngraph::runtime::Backend {
  public:
   HESealBackend() {
     NGRAPH_INFO << "Setting up grpc server" << std::endl;
     std::string server_address("0.0.0.0:30001");
-    GreeterServiceImpl service;
+    ngraph::he::GreeterServiceImpl service;
 
     grpc::ServerBuilder builder;
     // Listen on the given address without any authentication mechanism.

@@ -25,8 +25,8 @@
 // #include "seal/seal.h"
 // #include "seal/seal_util.hpp"
 
-extern "C" ngraph::runtime::BackendConstructor*
-get_backend_constructor_pointer() {
+ngraph::runtime::BackendConstructor*
+ngraph::runtime::he::get_backend_constructor_pointer() {
   class HESealBackendConstructor : public ngraph::runtime::BackendConstructor {
    public:
     std::shared_ptr<ngraph::runtime::Backend> create(
@@ -39,6 +39,22 @@ get_backend_constructor_pointer() {
       s_backend_constructor(new HESealBackendConstructor());
   return s_backend_constructor.get();
 }
+
+//#ifndef NGRAPH_HE_SEAL_STATIC_LIB_ENABLE
+/* extern "C" ngraph::runtime::BackendConstructor*
+get_backend_constructor_pointer() {
+  return ngraph::runtime::he::get_backend_constructor_pointer();
+} */
+//#endif
+
+/* void ngraph::he::static_initialize() {
+  static bool s_is_initialized = false;
+  if (!s_is_initialized) {
+    s_is_initialized = true;
+    ngraph::runtime::BackendManager::register_backend(
+        "HE_SEAL", ngraph::runtime::he::get_backend_constructor_pointer());
+  }
+} */
 
 /* extern "C" ngraph::runtime::BackendConstructor*
 get_he_seal_backend_constructor_pointer() {
