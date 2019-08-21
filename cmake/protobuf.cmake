@@ -55,20 +55,13 @@ set_target_properties(protoc
 
 set(_PROTOBUF_PROTOC ${BINARY_DIR}/src/protoc)
 
-# Generate protobuf headers
+# Generate protobuf headers for hello world
 get_filename_component(hw_proto
                        ${PROJECT_SOURCE_DIR}/src/protos/helloworld.proto
                        ABSOLUTE)
 get_filename_component(hw_proto_path "${hw_proto}" PATH)
-
-set(hw_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/helloworld.pb.cc")
+set(hw_proto_srcs ${CMAKE_CURRENT_BINARY_DIR}/helloworld.pb.cc)
 set(hw_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/helloworld.pb.h")
-
-message(STATUS "_PROTOBUF_PROTOC ${_PROTOBUF_PROTOC}")
-message(STATUS "CMAKE_CURRENT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}")
-message(STATUS "hw_proto_path ${hw_proto_path}")
-message(STATUS "hw_proto ${hw_proto}")
-
 add_custom_command(OUTPUT "${hw_proto_srcs}" "${hw_proto_hdrs}"
                    COMMAND ${_PROTOBUF_PROTOC}
                            ARGS
@@ -79,7 +72,30 @@ add_custom_command(OUTPUT "${hw_proto_srcs}" "${hw_proto_hdrs}"
                            "${hw_proto}"
                    DEPENDS "${hw_proto}" libprotobuf_orig)
 
-add_custom_target(protobuf_files ALL DEPENDS ${hw_proto_srcs} ${hw_proto_hdrs})
+# Generate protobuf headers for message
+get_filename_component(message_proto
+                       ${PROJECT_SOURCE_DIR}/src/protos/message.proto ABSOLUTE)
+get_filename_component(message_proto_path "${message_proto}" PATH)
+set(message_proto_srcs ${CMAKE_CURRENT_BINARY_DIR}/message.pb.cc)
+set(message_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/message.pb.h")
+message("message_proto_srcs ${message_proto_srcs}")
+message("message_proto ${message_proto}")
+
+add_custom_command(OUTPUT "${message_proto_srcs}" "${message_proto_hdrs}"
+                   COMMAND ${_PROTOBUF_PROTOC}
+                           ARGS
+                           --cpp_out
+                           "${CMAKE_CURRENT_BINARY_DIR}"
+                           -I
+                           "${message_proto_path}"
+                           "${message_proto}"
+                   DEPENDS "${message_proto}" libprotobuf_orig)
+
+add_custom_target(protobuf_files ALL
+                  DEPENDS ${hw_proto_srcs}
+                          ${hw_proto_hdrs}
+                          ${message_proto_srcs}
+                          ${message_proto_hdrs})
 
 add_library(libprotobuf INTERFACE)
 # Include generated *.pb.h files

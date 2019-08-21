@@ -37,9 +37,10 @@ set(HE_SRC
     seal/he_seal_backend.cpp
     seal/he_seal_client.cpp
     # protobuf files
-    ${hw_proto_srcs})
+    ${hw_proto_srcs} ${message_proto_srcs})
 
 set_source_files_properties(${hw_proto_srcs}
+                            ${message_proto_srcs}
                             PROPERTIES
                             GENERATED
                             TRUE)

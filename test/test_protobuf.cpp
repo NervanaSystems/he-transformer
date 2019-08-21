@@ -19,6 +19,8 @@
 #include "gtest/gtest.h"
 #include "helloworld.pb.h"
 
+#include "message.pb.h"
+
 using namespace std;
 
 TEST(protobuf, trivial) { EXPECT_EQ(1, 1); }
@@ -27,6 +29,23 @@ TEST(protobuf, serialize) {
   helloworld::HelloRequest request;
   request.set_name("name");
   EXPECT_EQ(request.name(), "name");
+
+  std::stringstream s;
+  request.SerializeToOstream(&s);
+
+  helloworld::HelloRequest deserialize;
+  deserialize.ParseFromIstream(&s);
+
+  EXPECT_EQ(deserialize.name(), request.name());
+}
+
+TEST(protobuf, serialize) {
+  ngraph_he::TCPMessage message;
+
+  ngraph_he::Function f;
+  f.set_function("123");
+
+  message.set_function(f);
 
   std::stringstream s;
   request.SerializeToOstream(&s);
