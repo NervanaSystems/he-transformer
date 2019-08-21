@@ -138,7 +138,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
         m_socket, send_streambuf,
         [this, self](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
-            NGRAPH_INFO << "Server write message size " << length;
+            NGRAPH_INFO << "Server wrote message size " << length;
             m_new_message_queue.pop_front();
             if (!m_new_message_queue.empty()) {
               do_write();
