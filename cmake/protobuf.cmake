@@ -31,8 +31,8 @@ ExternalProject_Add(
     SHA256=29a1db3b9bebcf054c540f13400563120ff29fbdd849b2c7a097ffe9d3d508eb
   CONFIGURE_COMMAND ${PROTOBUF_SRC_DIR}/configure
                     --prefix=${EXTERNAL_INSTALL_DIR}
-  INSTALL_DIR ${EXTERNAL_INSTALL_DIR}
-  UPDATE_COMMAND ""
+  INSTALL_COMMAND make install
+                  # UPDATE_COMMAND ""
   EXCLUDE_FROM_ALL TRUE)
 
 ExternalProject_Get_Property(ext_protobuf SOURCE_DIR)
@@ -41,9 +41,12 @@ ExternalProject_Get_Property(ext_protobuf BINARY_DIR)
 message(STATUS "protoc SOURCE_DIR ${SOURCE_DIR}")
 message(STATUS "protoc BINARY_DIR ${BINARY_DIR}")
 
-add_library(libprotobuf_orig INTERFACE)
-target_include_directories(libprotobuf_orig SYSTEM
-                           INTERFACE ${SOURCE_DIR}/include)
+add_library(libprotobuf_orig STATIC IMPORTED)
+set_target_properties(libprotobuf_orig
+                      PROPERTIES IMPORTED_LOCATION
+                                 ${EXTERNAL_INSTALL_DIR}/lib/libprotobuf.a)
+target_include_directories(libprotobuf_orig
+                           INTERFACE ${EXTERNAL_INSTALL_DIR}/include)
 add_dependencies(libprotobuf_orig ext_protobuf)
 
 add_executable(protoc IMPORTED)
@@ -78,9 +81,10 @@ add_custom_command(OUTPUT "${hw_proto_srcs}" "${hw_proto_hdrs}"
 
 add_custom_target(protobuf_files ALL DEPENDS ${hw_proto_srcs} ${hw_proto_hdrs})
 
-# Include generated *.pb.h files
-include_directories("${CMAKE_CURRENT_BINARY_DIR}")
-
 add_library(libprotobuf INTERFACE)
+# Include generated *.pb.h files
+target_include_directories(libprotobuf
+                           INTERFACE ${CMAKE_CURRENT_BINARY_DIR}
+                                     ${EXTERNAL_INSTALL_DIR} ${SOURCE_DIR}/src)
 target_link_libraries(libprotobuf INTERFACE libprotobuf_orig)
-add_dependencies(libprotobuf protobuf_files)
+add_dependencies(libprotobuf libprotobuf_orig protobuf_files)
