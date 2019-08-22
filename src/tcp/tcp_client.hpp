@@ -116,7 +116,7 @@ class TCPClient {
         [this](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
             size_t msg_len = m_new_read_message.decode_header(m_read_buffer);
-            NGRAPH_INFO << "msglen " << msg_len;
+            NGRAPH_INFO << "client read header " << msg_len;
             do_read_body(msg_len);
 
           } else {
@@ -126,7 +126,6 @@ class TCPClient {
             }
           }
         });
-    NGRAPH_INFO << "Done with read header call";
   }
 
   void do_read_body(size_t body_length = 0) {
@@ -161,7 +160,7 @@ class TCPClient {
 
     boost::asio::async_write(
         m_socket, boost::asio::buffer(write_buf),
-        [this](boost::system::error_code ec, std::size_t length) {
+        [this, &write_buf](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
             m_new_message_queue.pop_front();
             if (!m_new_message_queue.empty()) {

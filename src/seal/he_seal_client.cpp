@@ -179,6 +179,10 @@ void ngraph::he::HESealClient::handle_inference_request(
     ciphers[data_idx] = std::make_shared<SealCiphertextWrapper>();
   }
 
+  for (const auto& elem : m_inputs) {
+    NGRAPH_INFO << "input " << elem;
+  }
+
   // TODO: add element type to function message
   size_t num_bytes = parameter_size * sizeof(double) * m_batch_size;
   ngraph::he::HESealCipherTensor::write(
@@ -246,10 +250,14 @@ void ngraph::he::HESealClient::handle_relu_request(
   *proto_relu.mutable_function() = proto_msg.function();
 
   size_t result_count = proto_msg.ciphers_size();
+
+  NGRAPH_INFO << "result_count " << result_count;
   //#pragma omp parallel for
   for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
-    std::shared_ptr<SealCiphertextWrapper> post_relu_cipher =
-        std::make_shared<SealCiphertextWrapper>();
+    NGRAPH_CHECK(!proto_msg.ciphers(result_idx).known_value(),
+                 "Client should not receive known-valued relu values");
+
+    auto post_relu_cipher = std::make_shared<SealCiphertextWrapper>();
 
     seal::Ciphertext pre_relu_cipher;
     // TODO: load from string directly
@@ -258,9 +266,6 @@ void ngraph::he::HESealClient::handle_relu_request(
     ss.str(cipher_str);
     pre_relu_cipher.load(m_context, ss);
     SealCiphertextWrapper wrapped_cipher(pre_relu_cipher, complex_packing());
-
-    NGRAPH_CHECK(!proto_msg.ciphers(result_idx).known_value(),
-                 "Client should not receive known-valued relu values");
 
     ngraph::he::scalar_relu_seal(wrapped_cipher, post_relu_cipher,
                                  m_context->first_parms_id(), m_scale,

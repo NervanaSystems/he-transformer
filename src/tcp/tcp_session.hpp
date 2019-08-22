@@ -106,30 +106,24 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
     m_is_writing.notify_all();
     auto self(shared_from_this());
 
-    NGRAPH_INFO << "m_new_message_queu.size() " << m_new_message_queue.size();
+    NGRAPH_INFO << "m_new_message_queue.size() " << m_new_message_queue.size();
 
     auto message = m_new_message_queue.front();
     data_buffer write_buf;
     message.pack(write_buf);
 
-    boost::asio::async_write(
-        m_socket, boost::asio::buffer(write_buf),
-        [this, self](boost::system::error_code ec, std::size_t length) {
-          if (!ec) {
-            NGRAPH_INFO << "Server wrote message size " << length;
-            m_new_message_queue.pop_front();
+    NGRAPH_INFO << "Buffer size " << write_buf.size();
 
-            if (!m_new_message_queue.empty()) {
-              NGRAPH_INFO << "Message queue not empty; do_new_write()";
-              do_new_write();
-            } else {
-              NGRAPH_INFO << "Notifying done writing";
-              m_is_writing.notify_all();
-            }
-          } else {
-            NGRAPH_INFO << "Server error writing message: " << ec.message();
-          }
-        });
+    boost::asio::write(m_socket, boost::asio::buffer(write_buf));
+    m_new_message_queue.pop_front();
+
+    if (!m_new_message_queue.empty()) {
+      NGRAPH_INFO << "Message queue not empty; do_new_write()";
+      do_new_write();
+    } else {
+      NGRAPH_INFO << "Notifying done writing";
+      m_is_writing.notify_all();
+    }
   }
 
  private:
@@ -148,6 +142,6 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
   // Called after message is received
   std::function<void(const ngraph::he::TCPMessage&)> m_message_callback;
   std::function<void(const ngraph::he::NewTCPMessage&)> m_new_message_callback;
-};
+};  // namespace he
 }  // namespace he
 }  // namespace ngraph
