@@ -135,9 +135,7 @@ void ngraph::he::HESealClient::handle_encryption_parameters_response(
 
   const std::string& enc_parms_str =
       proto_msg.encryption_parameters().encryption_parameters();
-
   std::stringstream param_stream(enc_parms_str);
-
   m_encryption_params = seal::EncryptionParameters::Load(param_stream);
 
   NGRAPH_INFO << "Loaded enc parms";
@@ -166,13 +164,6 @@ void ngraph::he::HESealClient::handle_new_message(
     case he_proto::TCPMessage_Type_UNKNOWN:
     default:
       NGRAPH_CHECK(false, "Unknonwn TCPMesage type");
-  }
-
-  if (proto_msg->type() == he_proto::TCPMessage_Type_RESPONSE) {
-    NGRAPH_INFO << "Got type request";
-
-  } else {
-    NGRAPH_CHECK(false, "proto type not request");
   }
 }
 

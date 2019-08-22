@@ -267,9 +267,64 @@ void ngraph::he::HESealExecutable::start_server() {
   m_thread = std::thread([this]() { m_io_context.run(); });
 }
 
+void ngraph::he::HESealExecutable::load_public_key(
+    const he_proto::TCPMessage& proto_msg) {
+  NGRAPH_INFO << "Loading public key";
+  NGRAPH_CHECK(proto_msg.has_public_key(), "proto_msg doesn't have public key");
+
+  seal::PublicKey key;
+  const std::string& pk_str = proto_msg.public_key().public_key();
+  std::stringstream key_stream(pk_str);
+  key.load(m_context, key_stream);
+  m_he_seal_backend.set_public_key(key);
+
+  NGRAPH_INFO << "Server set public key";
+
+  m_client_public_key_set = true;
+}
+
+void ngraph::he::HESealExecutable::load_eval_key(
+    const he_proto::TCPMessage& proto_msg) {
+  NGRAPH_CHECK(proto_msg.has_eval_key(), "proto_msg doesn't have eval key");
+  NGRAPH_INFO << "Loading eval key";
+
+  seal::RelinKeys keys;
+  const std::string& evk_str = proto_msg.eval_key().eval_key();
+  std::stringstream key_stream(evk_str);
+  keys.load(m_context, key_stream);
+  m_he_seal_backend.set_relin_keys(keys);
+
+  NGRAPH_INFO << "Server set eval key";
+
+  m_client_eval_key_set = true;
+}
+
 void ngraph::he::HESealExecutable::handle_new_message(
     const ngraph::he::NewTCPMessage& message) {
   NGRAPH_INFO << "Server got new mesage";
+
+  std::shared_ptr<he_proto::TCPMessage> proto_msg = message.proto_message();
+
+  switch (proto_msg->type()) {
+    case he_proto::TCPMessage_Type_RESPONSE: {
+      if (proto_msg->has_public_key()) {
+        load_public_key(*proto_msg);
+      }
+      if (proto_msg->has_eval_key()) {
+        load_eval_key(*proto_msg);
+      }
+      if (m_client_public_key_set && m_client_eval_key_set) {
+        NGRAPH_INFO << "Next step: send inference shape";
+      }
+      break;
+    }
+    case he_proto::TCPMessage_Type_REQUEST: {
+      break;
+    }
+    case he_proto::TCPMessage_Type_UNKNOWN:
+    default:
+      NGRAPH_CHECK(false, "Unknonwn TCPMesage type");
+  }
 }
 
 void ngraph::he::HESealExecutable::handle_message(

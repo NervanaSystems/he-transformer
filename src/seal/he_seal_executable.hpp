@@ -88,6 +88,9 @@ class HESealExecutable : public runtime::Executable {
   void handle_message(const TCPMessage& message);
   void handle_new_message(const NewTCPMessage& message);
 
+  void load_public_key(const he_proto::TCPMessage& proto_msg);
+  void load_eval_key(const he_proto::TCPMessage& proto_msg);
+
   void handle_server_relu_op(std::shared_ptr<HESealCipherTensor>& arg0_cipher,
                              std::shared_ptr<HESealCipherTensor>& out_cipher,
                              const NodeWrapper& node_wrapper);
@@ -117,6 +120,9 @@ class HESealExecutable : public runtime::Executable {
   bool m_is_compiled;
   bool m_complex_packing;
   bool m_verbose_all_ops;
+
+  bool m_client_public_key_set{false};
+  bool m_client_eval_key_set{false};
 
   bool m_enable_client;
   bool m_client_setup;
