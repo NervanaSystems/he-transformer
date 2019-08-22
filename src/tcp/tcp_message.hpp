@@ -65,36 +65,28 @@ class NewTCPMessage {
     return m_proto_message->SerializeToArray(&buffer[header_length], msg_size);
   }
 
-  void encode_header(data_buffer& buffer, size_t size) const {
+  static void encode_header(data_buffer& buffer, size_t size) {
     NGRAPH_CHECK(buffer.size() >= header_length, "Buffer too small");
 
     NGRAPH_INFO << "Encoding header " << size;
 
-    char header[header_length + 1] = "";
-    size_t to_encode = size;
-    int ret = std::snprintf(header, sizeof(header), "%zu", to_encode);
-    if (ret < 0 || static_cast<size_t>(ret) > sizeof(header)) {
-      throw std::invalid_argument("Error encoding header");
-    }
+    std::memcpy(&buffer[0], &size, header_length);
 
     // TOOD: check bounds
     for (size_t i = 0; i < header_length; ++i) {
-      buffer[i] = header[i];
+      NGRAPH_INFO << "buffer " << i << " = " << buffer[i];
     }
+
+    size_t decoded_size = decode_header(buffer);
+    NGRAPH_INFO << "Decoded " << decoded_size;
   }
 
-  size_t decode_header(const data_buffer& buffer) const {
+  static size_t decode_header(const data_buffer& buffer) {
     if (buffer.size() < header_length) {
       return 0;
     }
-    size_t msg_size = 0;
-
-    char header[header_length + 1] = "";
-    std::strncat(header, &buffer[header_length], header_length);
-    std::string header_str(header);
-    std::stringstream sstream(header_str);
-    size_t body_length;
-    sstream >> body_length;
+    size_t body_length = 0;
+    std::memcpy(&body_length, &buffer[0], header_length);
 
     NGRAPH_INFO << "Decoded header body length " << body_length;
     return body_length;

@@ -19,9 +19,9 @@
 
 #include "gtest/gtest.h"
 #include "helloworld.pb.h"
-#include "tcp/tcp_message.hpp"
 #include "message.pb.h"
 #include "seal/seal.h"
+#include "tcp/tcp_message.hpp"
 
 using namespace std;
 
@@ -69,21 +69,15 @@ TEST(new_tcp_message, create) {
   ngraph::he::NewTCPMessage tcp_message(proto_msg);
 }
 
-TEST(new_tcp_message, from_parms) {
-  seal::EncryptionParameters parms(seal::scheme_type::CKKS);
-  size_t poly_modulus_degree = 8192;
-  parms.set_poly_modulus_degree(poly_modulus_degree);
-  parms.set_coeff_modulus(
-      seal::CoeffModulus::Create(poly_modulus_degree, {60, 40, 40, 60}));
+TEST(new_tcp_message, encode_decode) {
+  using data_buffer = std::vector<char>;
 
-  std::stringstream param_stream;
-  seal::EncryptionParameters::Save(parms,param_stream);
+  data_buffer buffer;
+  buffer.resize(20);
 
-  he_proto::EncryptionParameters proto_parms;
-  *proto_parms.mutable_encryption_parameters() = param_stream.str();
+  size_t encode_size = 10;
+  ngraph::he::NewTCPMessage::encode_header(buffer, encode_size);
+  size_t decoded_size = ngraph::he::NewTCPMessage::decode_header(buffer);
 
-  he_proto::TCPMessage proto_msg;
-  *proto_msg.mutable_encryption_parameters() = proto_parms;
-
-  ngraph::he::NewTCPMessage tcp_message(proto_msg);
+  EXPECT_EQ(decoded_size, encode_size);
 }
