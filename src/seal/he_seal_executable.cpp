@@ -347,12 +347,106 @@ void ngraph::he::HESealExecutable::handle_new_message(
       break;
     }
     case he_proto::TCPMessage_Type_REQUEST: {
+      if (proto_msg->ciphers_size() > 0) {
+        NGRAPH_INFO << "Got input ciphers";
+        handle_client_ciphers(*proto_msg);
+      }
       break;
     }
     case he_proto::TCPMessage_Type_UNKNOWN:
     default:
       NGRAPH_CHECK(false, "Unknonwn TCPMesage type");
   }
+}
+
+void ngraph::he::HESealExecutable::handle_client_ciphers(
+    const he_proto::TCPMessage& proto_msg) {
+  NGRAPH_INFO << "Handling client ciphers";
+
+  size_t count = proto_msg.ciphers_size();
+  NGRAPH_INFO << "Loading " << count << " ciphertexts";
+
+  std::vector<seal::Ciphertext> ciphertexts(count);
+#pragma omp parallel for
+  for (size_t i = 0; i < count; ++i) {
+    seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::ThreadLocal();
+    seal::Ciphertext c(pool);
+
+    // TODO: load from string directly
+    const std::string& cipher_str = proto_msg.ciphers(i).ciphertext();
+    std::stringstream ss;
+    ss.str(cipher_str);
+    c.load(m_context, ss);
+    ciphertexts[i] = c;
+  }
+  NGRAPH_INFO << "Done loading " << count << " ciphertexts";
+  std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
+      he_cipher_inputs(ciphertexts.size());
+#pragma omp parallel for
+  for (size_t cipher_idx = 0; cipher_idx < ciphertexts.size(); ++cipher_idx) {
+    auto wrapper = std::make_shared<ngraph::he::SealCiphertextWrapper>(
+        ciphertexts[cipher_idx]);
+    he_cipher_inputs[cipher_idx] = wrapper;
+  }
+
+  // only support parameter size 1 for now
+  NGRAPH_CHECK(get_parameters().size() == 1,
+               "HESealExecutable only supports parameter size 1 (got ",
+               get_parameters().size(), ")");
+
+  // only support function output size 1 for now
+  NGRAPH_CHECK(get_results().size() == 1,
+               "HESealExecutable only supports output size 1 (got ",
+               get_results().size(), "");
+
+  // Load function with parameters
+  size_t num_param_elements = 0;
+  const ParameterVector& input_parameters = get_parameters();
+  for (auto input_param : input_parameters) {
+    num_param_elements += shape_size(input_param->get_shape());
+  }
+  num_param_elements /= m_batch_size;
+  NGRAPH_CHECK(count == num_param_elements, "Count ", count,
+               " does not match number of parameter elements ( ",
+               num_param_elements, ")");
+
+  NGRAPH_INFO << "Setting m_client_inputs";
+  size_t parameter_size_index = 0;
+  for (auto input_param : input_parameters) {
+    const auto& shape = input_param->get_shape();
+    size_t param_size = shape_size(shape) / m_batch_size;
+    auto element_type = input_param->get_element_type();
+    auto input_tensor =
+        std::dynamic_pointer_cast<ngraph::he::HESealCipherTensor>(
+            m_he_seal_backend.create_cipher_tensor(
+                element_type, input_param->get_shape(), m_pack_data,
+                "client_parameter"));
+
+    std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
+        cipher_elements{
+            he_cipher_inputs.begin() + parameter_size_index,
+            he_cipher_inputs.begin() + parameter_size_index + param_size};
+
+    NGRAPH_CHECK(cipher_elements.size() == param_size,
+                 "Incorrect number of elements for parameter");
+
+    input_tensor->set_elements(cipher_elements);
+    for (auto& cipher_elem : cipher_elements) {
+      cipher_elem->complex_packing() = m_complex_packing;
+    }
+    m_client_inputs.emplace_back(input_tensor);
+    parameter_size_index += param_size;
+  }
+
+  NGRAPH_CHECK(m_client_inputs.size() == get_parameters().size(),
+               "Client inputs size ", m_client_inputs.size(), "; expected ",
+               get_parameters().size());
+
+  NGRAPH_INFO << "Notifiyng client inputs received";
+
+  std::lock_guard<std::mutex> guard(m_client_inputs_mutex);
+  m_client_inputs_received = true;
+  m_client_inputs_cond.notify_all();
 }
 
 void ngraph::he::HESealExecutable::handle_message(
@@ -786,35 +880,53 @@ bool ngraph::he::HESealExecutable::call(
 
   // Send outputs to client.
   if (m_enable_client) {
-    NGRAPH_INFO << "Sending outputs to client";
-    NGRAPH_CHECK(m_client_outputs.size() == 1,
-                 "HESealExecutable only supports output size 1 (got ",
-                 get_results().size(), "");
-
-    std::vector<seal::Ciphertext> seal_output;
-
-    const Shape& output_shape = get_results()[0]->get_shape();
-    size_t output_shape_size = shape_size(output_shape) / m_batch_size;
-
-    auto output_cipher_tensor =
-        std::dynamic_pointer_cast<HESealCipherTensor>(m_client_outputs[0]);
-    NGRAPH_CHECK(output_cipher_tensor != nullptr,
-                 "Client outputs are not HESealCipherTensor");
-
-    auto result_message =
-        TCPMessage(MessageType::result, output_cipher_tensor->get_elements());
-
-    NGRAPH_INFO << "Writing Result message with " << output_shape_size
-                << " ciphertexts ";
-    m_session->write_message(std::move(result_message));
-
-    std::unique_lock<std::mutex> mlock(m_result_mutex);
-
-    // Wait until message is written
-    std::condition_variable& writing_cond = m_session->is_writing_cond();
-    writing_cond.wait(mlock, [this] { return !m_session->is_writing(); });
+    send_client_results();
   }
   return true;
+}
+
+void ngraph::he::HESealExecutable::send_client_results() {
+  NGRAPH_INFO << "Sending outputs to client";
+  NGRAPH_CHECK(m_client_outputs.size() == 1,
+               "HESealExecutable only supports output size 1 (got ",
+               get_results().size(), "");
+
+  he_proto::TCPMessage proto_msg;
+  proto_msg.set_type(he_proto::TCPMessage_Type_RESPONSE);
+
+  std::vector<seal::Ciphertext> seal_output;
+
+  auto output_cipher_tensor =
+      std::dynamic_pointer_cast<HESealCipherTensor>(m_client_outputs[0]);
+  NGRAPH_CHECK(output_cipher_tensor != nullptr,
+               "Client outputs are not HESealCipherTensor");
+
+  for (const auto& ciphertext_wrapper : output_cipher_tensor->get_elements()) {
+    he_proto::SealCiphertextWrapper* proto_cipher_wrapper =
+        proto_msg.add_ciphers();
+    proto_cipher_wrapper->set_known_value(ciphertext_wrapper->known_value());
+
+    if (ciphertext_wrapper->known_value()) {
+      proto_cipher_wrapper->set_value(ciphertext_wrapper->value());
+    }
+    // TODO: save directly to protobuf
+    std::stringstream s;
+    ciphertext_wrapper->ciphertext().save(s);
+    proto_cipher_wrapper->set_ciphertext(s.str());
+  }
+
+  NGRAPH_INFO << "Writing Result message with " << proto_msg.ciphers_size()
+              << " ciphertexts ";
+
+  ngraph::he::NewTCPMessage result_msg(proto_msg);
+
+  m_session->write_new_message(result_msg);
+
+  std::unique_lock<std::mutex> mlock(m_result_mutex);
+
+  // Wait until message is written
+  std::condition_variable& writing_cond = m_session->is_writing_cond();
+  writing_cond.wait(mlock, [this] { return !m_session->is_writing(); });
 }
 
 void ngraph::he::HESealExecutable::generate_calls(

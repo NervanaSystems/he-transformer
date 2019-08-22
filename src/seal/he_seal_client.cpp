@@ -177,11 +177,11 @@ void ngraph::he::HESealClient::handle_inference_request(
   for (size_t data_idx = 0; data_idx < parameter_size; ++data_idx) {
     ciphers[data_idx] = std::make_shared<SealCiphertextWrapper>();
   }
-  size_t n = parameter_size * sizeof(double) * m_batch_size;
 
   // TODO: add element type to function message
+  size_t num_bytes = parameter_size * sizeof(double) * m_batch_size;
   ngraph::he::HESealCipherTensor::write(
-      ciphers, m_inputs.data(), n, m_batch_size, element::f64,
+      ciphers, m_inputs.data(), num_bytes, m_batch_size, element::f64,
       m_context->first_parms_id(), m_scale, *m_ckks_encoder, *m_encryptor,
       complex_packing());
 
@@ -191,22 +191,15 @@ void ngraph::he::HESealClient::handle_inference_request(
   for (size_t data_idx = 0; data_idx < parameter_size; ++data_idx) {
     he_proto::SealCiphertextWrapper* proto_cipher =
         encrypted_inputs_msg.add_ciphers();
-
     proto_cipher->set_known_value(false);
+    // TODO: save directly to protobuf
     std::stringstream s;
-
     ciphers[data_idx]->ciphertext().save(s);
     proto_cipher->set_ciphertext(s.str());
   }
 
   NGRAPH_INFO << "Creating execute message";
   write_new_message(encrypted_inputs_msg);
-
-  /*auto execute_message = TCPMessage(ngraph::he::MessageType::execute,
-  ciphers); NGRAPH_INFO << "Sending execute message with " << parameter_size
-              << " ciphertexts";
-  write_message(std::move(execute_message));
-  */
 }
 
 void ngraph::he::HESealClient::handle_new_message(
