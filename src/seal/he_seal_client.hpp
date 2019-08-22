@@ -51,6 +51,8 @@ class HESealClient {
 
   void handle_relu_request(const ngraph::he::TCPMessage& message);
 
+  void handle_inference_request(const he_proto::TCPMessage& message);
+
   void send_public_and_relin_keys();
 
   inline void write_message(ngraph::he::TCPMessage&& message) {

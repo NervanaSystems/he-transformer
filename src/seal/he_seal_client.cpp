@@ -25,6 +25,7 @@
 
 #include "he_seal_cipher_tensor.hpp"
 #include "ngraph/log.hpp"
+#include "nlohmann/json.hpp"
 #include "seal/he_seal_client.hpp"
 #include "seal/kernel/bounded_relu_seal.hpp"
 #include "seal/kernel/max_pool_seal.hpp"
@@ -34,6 +35,8 @@
 #include "seal/seal_util.hpp"
 #include "tcp/tcp_client.hpp"
 #include "tcp/tcp_message.hpp"
+
+using json = nlohmann::json;
 
 ngraph::he::HESealClient::HESealClient(const std::string& hostname,
                                        const size_t port,
@@ -144,6 +147,68 @@ void ngraph::he::HESealClient::handle_encryption_parameters_response(
   send_public_and_relin_keys();
 }
 
+void ngraph::he::HESealClient::handle_inference_request(
+    const he_proto::TCPMessage& proto_msg) {
+  NGRAPH_INFO << "handle_inference_request";
+  NGRAPH_CHECK(proto_msg.has_function(), "Proto msg doesn't have funtion");
+
+  const std::string& inference_shape = proto_msg.function().function();
+  json js = json::parse(inference_shape);
+  std::vector<size_t> shape_dims = js.at("shape");
+  ngraph::Shape shape{shape_dims};
+
+  NGRAPH_INFO << join(shape, "x");
+
+  size_t parameter_size = ngraph::shape_size(shape);
+
+  NGRAPH_INFO << "Parameter size " << parameter_size;
+  NGRAPH_INFO << "Client batch size " << m_batch_size;
+  if (complex_packing()) {
+    NGRAPH_INFO << "Client complex packing";
+  }
+
+  if (m_inputs.size() > parameter_size * m_batch_size) {
+    NGRAPH_INFO << "m_inputs.size() " << m_inputs.size()
+                << " > paramter_size ( " << parameter_size
+                << ") * m_batch_size (" << m_batch_size << ")";
+  }
+
+  std::vector<std::shared_ptr<SealCiphertextWrapper>> ciphers(parameter_size);
+  for (size_t data_idx = 0; data_idx < parameter_size; ++data_idx) {
+    ciphers[data_idx] = std::make_shared<SealCiphertextWrapper>();
+  }
+  size_t n = parameter_size * sizeof(double) * m_batch_size;
+
+  // TODO: add element type to function message
+  ngraph::he::HESealCipherTensor::write(
+      ciphers, m_inputs.data(), n, m_batch_size, element::f64,
+      m_context->first_parms_id(), m_scale, *m_ckks_encoder, *m_encryptor,
+      complex_packing());
+
+  he_proto::TCPMessage encrypted_inputs_msg;
+  encrypted_inputs_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
+
+  for (size_t data_idx = 0; data_idx < parameter_size; ++data_idx) {
+    he_proto::SealCiphertextWrapper* proto_cipher =
+        encrypted_inputs_msg.add_ciphers();
+
+    proto_cipher->set_known_value(false);
+    std::stringstream s;
+
+    ciphers[data_idx]->ciphertext().save(s);
+    proto_cipher->set_ciphertext(s.str());
+  }
+
+  NGRAPH_INFO << "Creating execute message";
+  write_new_message(encrypted_inputs_msg);
+
+  /*auto execute_message = TCPMessage(ngraph::he::MessageType::execute,
+  ciphers); NGRAPH_INFO << "Sending execute message with " << parameter_size
+              << " ciphertexts";
+  write_message(std::move(execute_message));
+  */
+}
+
 void ngraph::he::HESealClient::handle_new_message(
     const ngraph::he::NewTCPMessage& message) {
   // TODO: try overwriting message?
@@ -161,6 +226,10 @@ void ngraph::he::HESealClient::handle_new_message(
     }
     case he_proto::TCPMessage_Type_REQUEST: {
       NGRAPH_INFO << "Got REQUEST";
+
+      if (proto_msg->has_function()) {
+        handle_inference_request(*proto_msg);
+      }
 
       break;
     }
