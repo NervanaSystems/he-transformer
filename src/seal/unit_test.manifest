@@ -1,5 +1,2 @@
-# Can't send known-valued ciphertexts in result
-# server_client_pad_relu
-
 # Use of static cast to double means we don't support > 52-bit integers
 plain_tv_write_read_large_scalar_int64

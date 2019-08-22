@@ -309,7 +309,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_3) {
   float DUMMY_FLOAT = 99;
   copy_data(t_dummy, vector<float>(3, DUMMY_FLOAT));
 
-  vector<float> inputs{2.0, 3.0, 4.0};
+  vector<float> inputs{-0.5, 0.0, 1.0};
   vector<float> results;
   auto client_thread = std::thread([&inputs, &results, &batch_size]() {
     auto he_client =
