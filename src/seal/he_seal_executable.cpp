@@ -331,27 +331,21 @@ void ngraph::he::HESealExecutable::send_inference_shape() {
 
 void ngraph::he::HESealExecutable::handle_relu_result(
     const he_proto::TCPMessage& proto_msg) {
-  NGRAPH_INFO << "handle_relu_result";
   std::lock_guard<std::mutex> guard(m_relu_mutex);
   size_t message_count = proto_msg.ciphers_size();
-
-  NGRAPH_INFO << "message_count " << message_count;
+  NGRAPH_INFO << "handle_relu_result with count " << message_count;
 
 #pragma omp parallel for
   for (size_t element_idx = 0; element_idx < message_count; ++element_idx) {
     seal::Ciphertext cipher;
-    NGRAPH_INFO << "loading cipher " << element_idx;
     // TODO: load from string directly
     const std::string& cipher_str = proto_msg.ciphers(element_idx).ciphertext();
-    NGRAPH_INFO << "Cipher size " << cipher_str.size();
     std::stringstream ss;
     ss.str(cipher_str);
     cipher.load(m_context, ss);
 
     auto new_cipher = std::make_shared<ngraph::he::SealCiphertextWrapper>(
         cipher, m_complex_packing);
-
-    NGRAPH_INFO << "done loading cipher " << element_idx;
 
     m_relu_ciphertexts[m_unknown_relu_idx[element_idx + m_relu_done_count]] =
         new_cipher;
