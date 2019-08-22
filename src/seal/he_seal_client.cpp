@@ -153,12 +153,15 @@ void ngraph::he::HESealClient::handle_new_message(
 
   switch (proto_msg->type()) {
     case he_proto::TCPMessage_Type_RESPONSE: {
+      NGRAPH_INFO << "Got REQUEST";
       if (proto_msg->has_encryption_parameters()) {
         handle_encryption_parameters_response(*proto_msg);
       }
       break;
     }
     case he_proto::TCPMessage_Type_REQUEST: {
+      NGRAPH_INFO << "Got REQUEST";
+
       break;
     }
     case he_proto::TCPMessage_Type_UNKNOWN:

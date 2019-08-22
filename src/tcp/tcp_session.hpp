@@ -99,7 +99,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
     }
   }
 
-  void write_message(ngraph::he::NewTCPMessage& message) {
+  void write_new_message(ngraph::he::NewTCPMessage& message) {
     NGRAPH_INFO << "server write new message";
     bool write_in_progress = is_new_writing();
     m_new_message_queue.emplace_back(message);

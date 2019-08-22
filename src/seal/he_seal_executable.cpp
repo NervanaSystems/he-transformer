@@ -69,7 +69,9 @@
 #include "ngraph/pass/memory_layout.hpp"
 #include "ngraph/pass/visualize_tree.hpp"
 #include "ngraph/runtime/backend.hpp"
+#include "ngraph/serializer.hpp"
 #include "ngraph/util.hpp"
+#include "nlohmann/json.hpp"
 #include "op/bounded_relu.hpp"
 #include "pass/he_fusion.hpp"
 #include "pass/he_liveness.hpp"
@@ -80,6 +82,7 @@
 #include "seal/seal_util.hpp"
 
 using ngraph::descriptor::layout::DenseTensorLayout;
+using json = nlohmann::json;
 
 ngraph::he::HESealExecutable::HESealExecutable(
     const std::shared_ptr<Function>& function,
@@ -211,7 +214,7 @@ void ngraph::he::HESealExecutable::client_setup() {
     std::unique_lock<std::mutex> mlock(m_session_mutex);
     m_session_cond.wait(mlock,
                         std::bind(&HESealExecutable::session_started, this));
-    m_session->write_message(parms_message);
+    m_session->write_new_message(parms_message);
 
     // Send encryption parameters
     /*
@@ -299,6 +302,31 @@ void ngraph::he::HESealExecutable::load_eval_key(
   m_client_eval_key_set = true;
 }
 
+void ngraph::he::HESealExecutable::send_inference_shape() {
+  NGRAPH_INFO << "Sending inference shape";
+
+  const ParameterVector& input_parameters = get_parameters();
+
+  // TODO: support > 1 input parameter
+  NGRAPH_CHECK(input_parameters.size() == 1,
+               "Only support input parameters size 1");
+  json json_parm;
+  auto& param = input_parameters[0];
+  json_parm["shape"] = param->get_shape();
+
+  he_proto::TCPMessage proto_msg;
+  proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
+
+  he_proto::Function f;
+  f.set_function(json_parm.dump());
+  *proto_msg.mutable_function() = f;
+
+  NGRAPH_INFO << "Sending inference shape " << json_parm.dump();
+
+  ngraph::he::NewTCPMessage execute_msg(proto_msg);
+  m_session->write_new_message(execute_msg);
+}
+
 void ngraph::he::HESealExecutable::handle_new_message(
     const ngraph::he::NewTCPMessage& message) {
   NGRAPH_INFO << "Server got new mesage";
@@ -314,7 +342,7 @@ void ngraph::he::HESealExecutable::handle_new_message(
         load_eval_key(*proto_msg);
       }
       if (m_client_public_key_set && m_client_eval_key_set) {
-        NGRAPH_INFO << "Next step: send inference shape";
+        send_inference_shape();
       }
       break;
     }

@@ -88,6 +88,7 @@ class HESealExecutable : public runtime::Executable {
   void handle_message(const TCPMessage& message);
   void handle_new_message(const NewTCPMessage& message);
 
+  void send_inference_shape();
   void load_public_key(const he_proto::TCPMessage& proto_msg);
   void load_eval_key(const he_proto::TCPMessage& proto_msg);
 
