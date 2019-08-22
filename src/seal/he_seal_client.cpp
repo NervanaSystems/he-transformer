@@ -111,6 +111,7 @@ void ngraph::he::HESealClient::send_public_and_relin_keys() {
   eval_key.set_eval_key(evk_stream.str());
   *proto_msg.mutable_eval_key() = eval_key;
 
+  NGRAPH_INFO << "Sending pk / evk";
   write_new_message(proto_msg);
 
   /*
@@ -235,16 +236,70 @@ void ngraph::he::HESealClient::handle_result(
   close_connection();
 }
 
+void ngraph::he::HESealClient::handle_relu_request(
+    const he_proto::TCPMessage& proto_msg) {
+  NGRAPH_INFO << "Handling relu request";
+  NGRAPH_CHECK(proto_msg.has_function(), "Proto message doesn't have function");
+
+  he_proto::TCPMessage proto_relu;
+  proto_relu.set_type(he_proto::TCPMessage_Type_RESPONSE);
+  *proto_relu.mutable_function() = proto_msg.function();
+
+  size_t result_count = proto_msg.ciphers_size();
+#pragma omp parallel for
+  for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
+    std::shared_ptr<SealCiphertextWrapper> post_relu_cipher =
+        std::make_shared<SealCiphertextWrapper>();
+
+    seal::Ciphertext pre_relu_cipher;
+    // TODO: load from string directly
+    const std::string& cipher_str = proto_msg.ciphers(result_idx).ciphertext();
+    std::stringstream ss;
+    ss.str(cipher_str);
+    pre_relu_cipher.load(m_context, ss);
+    SealCiphertextWrapper wrapped_cipher(pre_relu_cipher, complex_packing());
+
+    NGRAPH_CHECK(!proto_msg.ciphers(result_idx).known_value(),
+                 "Client should not receive known-valued relu values");
+
+    ngraph::he::scalar_relu_seal(wrapped_cipher, post_relu_cipher,
+                                 m_context->first_parms_id(), m_scale,
+                                 *m_ckks_encoder, *m_encryptor, *m_decryptor);
+
+    he_proto::SealCiphertextWrapper* proto_cipher = proto_relu.add_ciphers();
+    proto_cipher->set_known_value(false);
+    // TODO: save directly to protobuf
+    std::stringstream s;
+    post_relu_cipher->ciphertext().save(s);
+    proto_cipher->set_ciphertext(s.str());
+  }
+
+  ngraph::he::NewTCPMessage relu_result_msg(proto_relu);
+
+  NGRAPH_INFO << "Writing relu result";
+  write_new_message(relu_result_msg);
+  return;
+}
+
+void ngraph::he::HESealClient::handle_bounded_relu_request(
+    const he_proto::TCPMessage& proto_msg) {
+  NGRAPH_INFO << "Handling bounded_relu request";
+
+  /* ngraph::he::scalar_bounded_relu_seal(
+      wrapped_cipher, post_relu_ciphers[result_idx], 6.0f,
+      m_context->first_parms_id(), m_scale, *m_ckks_encoder, *m_encryptor,
+      *m_decryptor); */
+}
+
 void ngraph::he::HESealClient::handle_new_message(
     const ngraph::he::NewTCPMessage& message) {
   // TODO: try overwriting message?
-  NGRAPH_INFO << "Got new message";
 
   std::shared_ptr<he_proto::TCPMessage> proto_msg = message.proto_message();
 
   switch (proto_msg->type()) {
     case he_proto::TCPMessage_Type_RESPONSE: {
-      NGRAPH_INFO << "Got REQUEST";
+      NGRAPH_INFO << "Client got message RESPONSE";
       if (proto_msg->has_encryption_parameters()) {
         handle_encryption_parameters_response(*proto_msg);
       } else if (proto_msg->ciphers_size() > 1) {
@@ -253,10 +308,24 @@ void ngraph::he::HESealClient::handle_new_message(
       break;
     }
     case he_proto::TCPMessage_Type_REQUEST: {
-      NGRAPH_INFO << "Got REQUEST";
+      NGRAPH_INFO << "Client got message REQUEST";
 
       if (proto_msg->has_function()) {
-        handle_inference_request(*proto_msg);
+        const std::string& function = proto_msg->function().function();
+        json js = json::parse(function);
+
+        auto name = js.at("function");
+        if (name == "Parameter") {
+          handle_inference_request(*proto_msg);
+        } else if (name == "Relu") {
+          handle_relu_request(*proto_msg);
+        } else if (name == "Bounded_Relu") {
+          handle_bounded_relu_request(*proto_msg);
+        } else {
+          NGRAPH_INFO << "Unknown name " << name;
+        }
+      } else {
+        NGRAPH_CHECK(false, "Unknown REQUEST type");
       }
 
       break;

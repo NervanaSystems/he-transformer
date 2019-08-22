@@ -304,49 +304,92 @@ void ngraph::he::HESealExecutable::load_eval_key(
 
 void ngraph::he::HESealExecutable::send_inference_shape() {
   NGRAPH_INFO << "Sending inference shape";
+  m_sent_inference_shape = true;
 
   const ParameterVector& input_parameters = get_parameters();
 
   // TODO: support > 1 input parameter
   NGRAPH_CHECK(input_parameters.size() == 1,
                "Only support input parameters size 1");
-  json json_parm;
+  json js;
   auto& param = input_parameters[0];
-  json_parm["shape"] = param->get_shape();
+  js["shape"] = param->get_shape();
+  js["function"] = "Parameter";
 
   he_proto::TCPMessage proto_msg;
   proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
 
   he_proto::Function f;
-  f.set_function(json_parm.dump());
+  f.set_function(js.dump());
   *proto_msg.mutable_function() = f;
 
-  NGRAPH_INFO << "Sending inference shape " << json_parm.dump();
+  NGRAPH_INFO << "Sending inference shape " << js.dump();
 
   ngraph::he::NewTCPMessage execute_msg(proto_msg);
   m_session->write_new_message(execute_msg);
 }
 
+void ngraph::he::HESealExecutable::handle_relu_result(
+    const he_proto::TCPMessage& proto_msg) {
+  NGRAPH_INFO << "handle_relu_result";
+  std::lock_guard<std::mutex> guard(m_relu_mutex);
+  size_t message_count = proto_msg.ciphers_size();
+
+#pragma omp parallel for
+  for (size_t element_idx = 0; element_idx < message_count; ++element_idx) {
+    seal::Ciphertext cipher;
+    // TODO: load from string directly
+    const std::string& cipher_str = proto_msg.ciphers(element_idx).ciphertext();
+    std::stringstream ss;
+    ss.str(cipher_str);
+    cipher.load(m_context, ss);
+
+    auto new_cipher = std::make_shared<ngraph::he::SealCiphertextWrapper>(
+        cipher, m_complex_packing);
+
+    m_relu_ciphertexts[m_unknown_relu_idx[element_idx + m_relu_done_count]] =
+        new_cipher;
+  }
+  m_relu_done_count += message_count;
+  m_relu_cond.notify_all();
+}
+
 void ngraph::he::HESealExecutable::handle_new_message(
     const ngraph::he::NewTCPMessage& message) {
-  NGRAPH_INFO << "Server got new mesage";
-
   std::shared_ptr<he_proto::TCPMessage> proto_msg = message.proto_message();
 
   switch (proto_msg->type()) {
     case he_proto::TCPMessage_Type_RESPONSE: {
+      NGRAPH_INFO << "Server got new message RESPONSE";
       if (proto_msg->has_public_key()) {
         load_public_key(*proto_msg);
       }
       if (proto_msg->has_eval_key()) {
         load_eval_key(*proto_msg);
       }
-      if (m_client_public_key_set && m_client_eval_key_set) {
+      if (!m_sent_inference_shape && m_client_public_key_set &&
+          m_client_eval_key_set) {
         send_inference_shape();
+      }
+
+      if (proto_msg->has_function()) {
+        const std::string& function = proto_msg->function().function();
+        json js = json::parse(function);
+
+        auto name = js.at("function");
+        if (name == "Relu") {
+          handle_relu_result(*proto_msg);
+        } else if (name == "Bounded_Relu") {
+          NGRAPH_INFO << "Unknown name " << name;
+          // handle_bounded_relu_request(*proto_msg);
+        } else {
+          NGRAPH_INFO << "Unknown name " << name;
+        }
       }
       break;
     }
     case he_proto::TCPMessage_Type_REQUEST: {
+      NGRAPH_INFO << "Server got new message REQUEST";
       if (proto_msg->ciphers_size() > 0) {
         NGRAPH_INFO << "Got input ciphers";
         handle_client_ciphers(*proto_msg);
@@ -1939,14 +1982,37 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
       m_unknown_relu_idx.emplace_back(relu_idx);
     }
   }
-  auto process_relu_ciphers_batch =
+  auto process_unknown_relu_ciphers_batch =
       [&](const std::vector<seal::Ciphertext>& cipher_batch,
           const ngraph::he::MessageType& message_type) {
         if (verbose) {
           NGRAPH_INFO << "Sending relu request size " << cipher_batch.size();
         }
-        auto relu_message = TCPMessage(message_type, cipher_batch);
-        m_session->write_message(std::move(relu_message));
+
+        he_proto::TCPMessage proto_msg;
+        proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
+
+        json js;
+        js["function"] = node.description();
+        NGRAPH_INFO << "Description " << js["function"];
+
+        he_proto::Function f;
+        f.set_function(js.dump());
+        *proto_msg.mutable_function() = f;
+
+        for (size_t cipher_idx = 0; cipher_idx < cipher_batch.size();
+             ++cipher_idx) {
+          he_proto::SealCiphertextWrapper* proto_cipher =
+              proto_msg.add_ciphers();
+          proto_cipher->set_known_value(false);
+          // TODO: save directly to protobuf
+          std::stringstream s;
+          cipher_batch[cipher_idx].save(s);
+          proto_cipher->set_ciphertext(s.str());
+        }
+
+        ngraph::he::NewTCPMessage relu_message{proto_msg};
+        m_session->write_new_message(relu_message);
       };
 
   // Process unknown values
@@ -1957,12 +2023,12 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
     auto& cipher = arg_cipher->get_element(unknown_relu_idx)->ciphertext();
     relu_ciphers_batch.emplace_back(cipher);
     if (relu_ciphers_batch.size() == max_relu_message_cnt) {
-      process_relu_ciphers_batch(relu_ciphers_batch, message_type);
+      process_unknown_relu_ciphers_batch(relu_ciphers_batch, message_type);
       relu_ciphers_batch.clear();
     }
   }
   if (relu_ciphers_batch.size() != 0) {
-    process_relu_ciphers_batch(relu_ciphers_batch, message_type);
+    process_unknown_relu_ciphers_batch(relu_ciphers_batch, message_type);
     relu_ciphers_batch.clear();
   }
 

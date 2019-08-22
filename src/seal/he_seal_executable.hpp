@@ -89,6 +89,7 @@ class HESealExecutable : public runtime::Executable {
   void handle_new_message(const NewTCPMessage& message);
 
   void handle_client_ciphers(const he_proto::TCPMessage& proto_msg);
+  void handle_relu_result(const he_proto::TCPMessage& proto_msg);
 
   void send_client_results();
 
@@ -126,6 +127,7 @@ class HESealExecutable : public runtime::Executable {
   bool m_complex_packing;
   bool m_verbose_all_ops;
 
+  bool m_sent_inference_shape{false};
   bool m_client_public_key_set{false};
   bool m_client_eval_key_set{false};
 

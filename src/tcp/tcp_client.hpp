@@ -73,6 +73,14 @@ class TCPClient {
     }
   }
 
+  void write_message(const ngraph::he::NewTCPMessage&& message) {
+    bool write_in_progress = !m_new_message_queue.empty();
+    m_new_message_queue.emplace_back(std::move(message));
+    if (!write_in_progress) {
+      boost::asio::post(m_io_context, [this]() { do_write(); });
+    }
+  }
+
  private:
   void do_connect(const tcp::resolver::results_type& endpoints,
                   size_t delay_ms = 10) {
@@ -100,7 +108,7 @@ class TCPClient {
   }
 
   void do_read_header() {
-    NGRAPH_INFO << "Client do read header";
+    NGRAPH_INFO << "Client reading header";
     m_read_buffer.resize(header_length);
 
     boost::asio::async_read(
@@ -122,7 +130,7 @@ class TCPClient {
   }
 
   void do_read_body(size_t body_length = 0) {
-    NGRAPH_INFO << "Client do read body size " << body_length;
+    NGRAPH_INFO << "Client reading body size " << body_length;
 
     m_read_buffer.resize(header_length + body_length);
 
@@ -145,7 +153,7 @@ class TCPClient {
   }
 
   void do_write() {
-    NGRAPH_INFO << "Client do_new_write";
+    NGRAPH_INFO << "Client writing message";
 
     auto message = m_new_message_queue.front();
     data_buffer write_buf;

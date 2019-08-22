@@ -51,6 +51,9 @@ class HESealClient {
 
   void handle_relu_request(const ngraph::he::TCPMessage& message);
 
+  void handle_relu_request(const he_proto::TCPMessage& message);
+  void handle_bounded_relu_request(const he_proto::TCPMessage& message);
+
   void handle_result(const he_proto::TCPMessage& message);
 
   void handle_inference_request(const he_proto::TCPMessage& message);
@@ -58,11 +61,16 @@ class HESealClient {
   void send_public_and_relin_keys();
 
   inline void write_message(ngraph::he::TCPMessage&& message) {
+    NGRAPH_CHECK(false, "Writing old message");
     m_tcp_client->write_message(std::move(message));
   }
 
   inline void write_new_message(const ngraph::he::NewTCPMessage& message) {
     m_tcp_client->write_message(message);
+  }
+
+  inline void write_new_message(const ngraph::he::NewTCPMessage&& message) {
+    m_tcp_client->write_message(std::move(message));
   }
 
   inline bool is_done() { return m_is_done; }

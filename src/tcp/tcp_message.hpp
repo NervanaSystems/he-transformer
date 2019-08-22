@@ -61,14 +61,9 @@ class NewTCPMessage {
 
   static void encode_header(data_buffer& buffer, size_t size) {
     NGRAPH_CHECK(buffer.size() >= header_length, "Buffer too small");
-
     NGRAPH_INFO << "Encoding header " << size;
 
     std::memcpy(&buffer[0], &size, header_length);
-
-    // TODO: remove
-    size_t decoded_size = decode_header(buffer);
-    NGRAPH_INFO << "Decoded " << decoded_size;
   }
 
   static size_t decode_header(const data_buffer& buffer) {
