@@ -50,8 +50,8 @@ ngraph::he::HESealClient::HESealClient(const std::string& hostname,
   boost::asio::io_context io_context;
   tcp::resolver resolver(io_context);
   auto endpoints = resolver.resolve(hostname, std::to_string(port));
-  auto client_callback = [this](const ngraph::he::NewTCPMessage& message) {
-    return handle_new_message(message);
+  auto client_callback = [this](const ngraph::he::TCPMessage& message) {
+    return handle_message(message);
   };
   m_tcp_client = std::make_shared<ngraph::he::TCPClient>(io_context, endpoints,
                                                          client_callback);
@@ -112,7 +112,7 @@ void ngraph::he::HESealClient::send_public_and_relin_keys() {
   *proto_msg.mutable_eval_key() = eval_key;
 
   NGRAPH_INFO << "Sending pk / evk";
-  write_new_message(proto_msg);
+  write_message(proto_msg);
 }
 
 void ngraph::he::HESealClient::handle_encryption_parameters_response(
@@ -190,7 +190,7 @@ void ngraph::he::HESealClient::handle_inference_request(
   }
 
   NGRAPH_INFO << "Creating execute message";
-  write_new_message(encrypted_inputs_msg);
+  write_message(encrypted_inputs_msg);
 }
 
 void ngraph::he::HESealClient::handle_result(
@@ -279,10 +279,10 @@ void ngraph::he::HESealClient::handle_relu_request(
     proto_cipher->set_ciphertext(s.str());
   }
 
-  ngraph::he::NewTCPMessage relu_result_msg(proto_relu);
+  ngraph::he::TCPMessage relu_result_msg(proto_relu);
 
   NGRAPH_INFO << "Writing relu result";
-  write_new_message(relu_result_msg);
+  write_message(relu_result_msg);
   return;
 }
 
@@ -296,8 +296,8 @@ void ngraph::he::HESealClient::handle_bounded_relu_request(
       *m_decryptor); */
 }
 
-void ngraph::he::HESealClient::handle_new_message(
-    const ngraph::he::NewTCPMessage& message) {
+void ngraph::he::HESealClient::handle_message(
+    const ngraph::he::TCPMessage& message) {
   // TODO: try overwriting message?
 
   std::shared_ptr<he_proto::TCPMessage> proto_msg = message.proto_message();

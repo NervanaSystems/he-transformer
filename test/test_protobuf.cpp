@@ -58,32 +58,32 @@ TEST(protobuf, serialize_cipher) {
       google::protobuf::util::MessageDifferencer::Equals(deserialize, message));
 }
 
-TEST(new_tcp_message, create) {
+TEST(tcp_message, create) {
   he_proto::TCPMessage proto_msg;
   he_proto::Function f;
   f.set_function("123");
   *proto_msg.mutable_function() = f;
   std::stringstream s;
   proto_msg.SerializeToOstream(&s);
-  ngraph::he::NewTCPMessage tcp_message(proto_msg);
+  ngraph::he::TCPMessage tcp_message(proto_msg);
 
   EXPECT_EQ(1, 1);
 }
 
-TEST(new_tcp_message, encode_decode) {
+TEST(tcp_message, encode_decode) {
   using data_buffer = std::vector<char>;
 
   data_buffer buffer;
   buffer.resize(20);
 
   size_t encode_size = 10;
-  ngraph::he::NewTCPMessage::encode_header(buffer, encode_size);
-  size_t decoded_size = ngraph::he::NewTCPMessage::decode_header(buffer);
+  ngraph::he::TCPMessage::encode_header(buffer, encode_size);
+  size_t decoded_size = ngraph::he::TCPMessage::decode_header(buffer);
 
   EXPECT_EQ(decoded_size, encode_size);
 }
 
-TEST(new_tcp_message, pack_unpack) {
+TEST(tcp_message, pack_unpack) {
   using data_buffer = std::vector<char>;
 
   he_proto::TCPMessage proto_msg;
@@ -92,12 +92,12 @@ TEST(new_tcp_message, pack_unpack) {
   *proto_msg.mutable_function() = f;
   std::stringstream s;
   proto_msg.SerializeToOstream(&s);
-  ngraph::he::NewTCPMessage message1(proto_msg);
+  ngraph::he::TCPMessage message1(proto_msg);
 
   data_buffer buffer;
   message1.pack(buffer);
 
-  ngraph::he::NewTCPMessage message2;
+  ngraph::he::TCPMessage message2;
   message2.unpack(buffer);
 
   EXPECT_TRUE(google::protobuf::util::MessageDifferencer::Equals(

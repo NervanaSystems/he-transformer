@@ -209,12 +209,12 @@ void ngraph::he::HESealExecutable::client_setup() {
     *proto_msg.mutable_encryption_parameters() = proto_parms;
     proto_msg.set_type(he_proto::TCPMessage_Type_RESPONSE);
 
-    ngraph::he::NewTCPMessage parms_message(proto_msg);
+    ngraph::he::TCPMessage parms_message(proto_msg);
     NGRAPH_INFO << "Created PB parms message";
     std::unique_lock<std::mutex> mlock(m_session_mutex);
     m_session_cond.wait(mlock,
                         std::bind(&HESealExecutable::session_started, this));
-    m_session->write_new_message(std::move(parms_message));
+    m_session->write_message(std::move(parms_message));
 
     m_client_setup = true;
   } else {
@@ -224,7 +224,7 @@ void ngraph::he::HESealExecutable::client_setup() {
 
 void ngraph::he::HESealExecutable::accept_connection() {
   NGRAPH_INFO << "Server accepting connections";
-  auto server_callback = bind(&ngraph::he::HESealExecutable::handle_new_message,
+  auto server_callback = bind(&ngraph::he::HESealExecutable::handle_message,
                               this, std::placeholders::_1);
 
   m_acceptor->async_accept([this, server_callback](boost::system::error_code ec,
@@ -312,8 +312,8 @@ void ngraph::he::HESealExecutable::send_inference_shape() {
 
   NGRAPH_INFO << "Sending inference shape " << js.dump();
 
-  ngraph::he::NewTCPMessage execute_msg(proto_msg);
-  m_session->write_new_message(std::move(execute_msg));
+  ngraph::he::TCPMessage execute_msg(proto_msg);
+  m_session->write_message(std::move(execute_msg));
 }
 
 void ngraph::he::HESealExecutable::handle_relu_result(
@@ -341,8 +341,8 @@ void ngraph::he::HESealExecutable::handle_relu_result(
   m_relu_cond.notify_all();
 }
 
-void ngraph::he::HESealExecutable::handle_new_message(
-    const ngraph::he::NewTCPMessage& message) {
+void ngraph::he::HESealExecutable::handle_message(
+    const ngraph::he::TCPMessage& message) {
   std::shared_ptr<he_proto::TCPMessage> proto_msg = message.proto_message();
 
   switch (proto_msg->type()) {
@@ -765,15 +765,15 @@ void ngraph::he::HESealExecutable::send_client_results() {
   NGRAPH_INFO << "Writing Result message with " << proto_msg.ciphers_size()
               << " ciphertexts ";
 
-  ngraph::he::NewTCPMessage result_msg(proto_msg);
+  ngraph::he::TCPMessage result_msg(proto_msg);
 
-  m_session->write_new_message(std::move(result_msg));
+  m_session->write_message(std::move(result_msg));
 
   std::unique_lock<std::mutex> mlock(m_result_mutex);
 
   // Wait until message is written
   std::condition_variable& writing_cond = m_session->is_writing_cond();
-  writing_cond.wait(mlock, [this] { return !m_session->is_new_writing(); });
+  writing_cond.wait(mlock, [this] { return !m_session->is_writing(); });
 }
 
 void ngraph::he::HESealExecutable::generate_calls(
@@ -1312,9 +1312,11 @@ void ngraph::he::HESealExecutable::generate_calls(
           NGRAPH_INFO << "Sending " << cipher_cnt
                       << " Maxpool ciphertexts to client";
         }
-        auto maxpool_message =
-            TCPMessage(MessageType::maxpool_request, maxpool_ciphers);
 
+        NGRAPH_CHECK(false, "Maxpool not supported yet");
+
+        // auto maxpool_message =
+        //    TCPMessage(MessageType::maxpool_request, maxpool_ciphers);
         // m_session->write_message(std::move(maxpool_message));
 
         // Acquire lock
@@ -1795,8 +1797,8 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
           NGRAPH_INFO << "Saved cipher " << cipher_idx;
         }
 
-        ngraph::he::NewTCPMessage relu_message(proto_msg);
-        m_session->write_new_message(std::move(relu_message));
+        ngraph::he::TCPMessage relu_message(proto_msg);
+        m_session->write_message(std::move(relu_message));
       };
 
   // Process unknown values

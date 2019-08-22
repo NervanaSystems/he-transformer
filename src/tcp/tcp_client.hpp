@@ -35,17 +35,17 @@ namespace he {
 class TCPClient {
  public:
   using data_buffer = std::vector<char>;
-  size_t header_length = ngraph::he::NewTCPMessage::header_length;
+  size_t header_length = ngraph::he::TCPMessage::header_length;
   // Connects client to hostname:port and reads message
   // message_handler will handle responses from the server
   TCPClient(
       boost::asio::io_context& io_context,
       const tcp::resolver::results_type& endpoints,
-      std::function<void(const ngraph::he::NewTCPMessage&)> message_handler)
+      std::function<void(const ngraph::he::TCPMessage&)> message_handler)
       : m_io_context(io_context),
         m_socket(io_context),
         m_first_connect(true),
-        m_new_message_callback(
+        m_message_callback(
             std::bind(message_handler, std::placeholders::_1)) {
     do_connect(endpoints);
   }
@@ -65,17 +65,17 @@ class TCPClient {
     }
   }
 
-  void write_message(const ngraph::he::NewTCPMessage& message) {
-    bool write_in_progress = !m_new_message_queue.empty();
-    m_new_message_queue.push_back(message);
+  void write_message(const ngraph::he::TCPMessage& message) {
+    bool write_in_progress = !m_message_queue.empty();
+    m_message_queue.push_back(message);
     if (!write_in_progress) {
       boost::asio::post(m_io_context, [this]() { do_write(); });
     }
   }
 
-  void write_message(const ngraph::he::NewTCPMessage&& message) {
-    bool write_in_progress = !m_new_message_queue.empty();
-    m_new_message_queue.emplace_back(std::move(message));
+  void write_message(const ngraph::he::TCPMessage&& message) {
+    bool write_in_progress = !m_message_queue.empty();
+    m_message_queue.emplace_back(std::move(message));
     if (!write_in_progress) {
       boost::asio::post(m_io_context, [this]() { do_write(); });
     }
@@ -115,7 +115,7 @@ class TCPClient {
         m_socket, boost::asio::buffer(m_read_buffer),
         [this](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
-            size_t msg_len = m_new_read_message.decode_header(m_read_buffer);
+            size_t msg_len = m_read_message.decode_header(m_read_buffer);
             NGRAPH_INFO << "client read header " << msg_len;
             do_read_body(msg_len);
 
@@ -139,8 +139,8 @@ class TCPClient {
         [this](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
             NGRAPH_INFO << "Client read body size " << length << " bytes";
-            m_new_read_message.unpack(m_read_buffer);
-            m_new_message_callback(m_new_read_message);
+            m_read_message.unpack(m_read_buffer);
+            m_message_callback(m_read_message);
             do_read_header();
           } else {
             // End of file is expected on teardown
@@ -154,14 +154,14 @@ class TCPClient {
   void do_write() {
     NGRAPH_INFO << "Client writing message";
 
-    auto message = m_new_message_queue.front();
+    auto message = m_message_queue.front();
     data_buffer write_buf;
     message.pack(write_buf);
 
     boost::asio::write(m_socket, boost::asio::buffer(write_buf));
 
-    m_new_message_queue.pop_front();
-    if (!m_new_message_queue.empty()) {
+    m_message_queue.pop_front();
+    if (!m_message_queue.empty()) {
       NGRAPH_INFO << "client writing queue not empty; writing again";
       do_write();
     }
@@ -171,9 +171,6 @@ class TCPClient {
   tcp::socket m_socket;
 
   data_buffer m_read_buffer;
-  NewTCPMessage m_new_read_message;
-  std::deque<ngraph::he::NewTCPMessage> m_new_message_queue;
-
   TCPMessage m_read_message;
   std::deque<ngraph::he::TCPMessage> m_message_queue;
 
@@ -181,7 +178,6 @@ class TCPClient {
 
   // How to handle the message
   std::function<void(const ngraph::he::TCPMessage&)> m_message_callback;
-  std::function<void(const ngraph::he::NewTCPMessage&)> m_new_message_callback;
 };
 }  // namespace he
 }  // namespace ngraph
