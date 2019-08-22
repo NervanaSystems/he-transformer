@@ -433,7 +433,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed) {
       static_cast<ngraph::he::HESealBackend*>(tmp_backend.get());
   vector<size_t> batch_sizes{
       1, 2, 3,
-      tmp_he_backend->get_encryption_parameters().poly_modulus_degree()};
+      tmp_he_backend->get_encryption_parameters().poly_modulus_degree() / 2};
 
   for (const auto batch_size : batch_sizes) {
     for (const auto complex_packing : vector<bool>{true, false}) {
@@ -450,10 +450,10 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed) {
         new_batch_size *= 2;
       }
 
-      NGRAPH_INFO << "Batch size " << batch_size;
+      NGRAPH_INFO << "Batch size " << new_batch_size;
       NGRAPH_INFO << "complex_packing? " << complex_packing;
 
-      Shape shape{batch_size, 3};
+      Shape shape{new_batch_size, 3};
       auto a = make_shared<op::Parameter>(element::f32, shape);
       auto relu = make_shared<op::Relu>(a);
       auto f = make_shared<Function>(relu, ParameterVector{a});

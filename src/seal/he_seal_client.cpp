@@ -164,6 +164,7 @@ void ngraph::he::HESealClient::handle_inference_request(
 
   NGRAPH_INFO << "Parameter size " << parameter_size;
   NGRAPH_INFO << "Client batch size " << m_batch_size;
+  NGRAPH_INFO << "m_inputs.size() " << m_inputs.size();
   if (complex_packing()) {
     NGRAPH_INFO << "Client complex packing";
   }
@@ -174,8 +175,9 @@ void ngraph::he::HESealClient::handle_inference_request(
                 << ") * m_batch_size (" << m_batch_size << ")";
   }
 
-  std::vector<std::shared_ptr<SealCiphertextWrapper>> ciphers(parameter_size);
-  for (size_t data_idx = 0; data_idx < parameter_size; ++data_idx) {
+  std::vector<std::shared_ptr<SealCiphertextWrapper>> ciphers(parameter_size /
+                                                              m_batch_size);
+  for (size_t data_idx = 0; data_idx < ciphers.size(); ++data_idx) {
     ciphers[data_idx] = std::make_shared<SealCiphertextWrapper>();
   }
 
@@ -184,7 +186,7 @@ void ngraph::he::HESealClient::handle_inference_request(
   }
 
   // TODO: add element type to function message
-  size_t num_bytes = parameter_size * sizeof(double) * m_batch_size;
+  size_t num_bytes = parameter_size * sizeof(double);
   ngraph::he::HESealCipherTensor::write(
       ciphers, m_inputs.data(), num_bytes, m_batch_size, element::f64,
       m_context->first_parms_id(), m_scale, *m_ckks_encoder, *m_encryptor,
@@ -193,7 +195,7 @@ void ngraph::he::HESealClient::handle_inference_request(
   he_proto::TCPMessage encrypted_inputs_msg;
   encrypted_inputs_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
 
-  for (size_t data_idx = 0; data_idx < parameter_size; ++data_idx) {
+  for (size_t data_idx = 0; data_idx < ciphers.size(); ++data_idx) {
     he_proto::SealCiphertextWrapper* proto_cipher =
         encrypted_inputs_msg.add_ciphers();
     proto_cipher->set_known_value(false);

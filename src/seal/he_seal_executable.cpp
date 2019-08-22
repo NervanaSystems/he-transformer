@@ -449,8 +449,10 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
   size_t num_param_elements = 0;
   const ParameterVector& input_parameters = get_parameters();
   for (auto input_param : input_parameters) {
+    NGRAPH_INFO << "param shape " << join(input_param->get_shape(), "x");
     num_param_elements += shape_size(input_param->get_shape());
   }
+
   num_param_elements /= m_batch_size;
   NGRAPH_CHECK(count == num_param_elements, "Count ", count,
                " does not match number of parameter elements ( ",
@@ -694,6 +696,19 @@ bool ngraph::he::HESealExecutable::call(
     const std::vector<std::shared_ptr<runtime::Tensor>>& server_inputs) {
   validate(outputs, server_inputs);
 
+  if (m_encrypt_data) {
+    NGRAPH_INFO << "Encrypting data";
+  }
+  if (m_pack_data) {
+    NGRAPH_INFO << "Batching data with batch size " << m_batch_size;
+  }
+  if (m_encrypt_model) {
+    NGRAPH_INFO << "Encrypting model";
+  }
+  if (m_complex_packing) {
+    NGRAPH_INFO << "Complex packing";
+  }
+
   if (m_enable_client) {
     NGRAPH_INFO << "Waiting until m_client_inputs.size() == "
                 << server_inputs.size();
@@ -706,19 +721,6 @@ bool ngraph::he::HESealExecutable::call(
     NGRAPH_CHECK(m_client_inputs.size() == server_inputs.size(),
                  "Recieved incorrect number of inputs from client (got ",
                  m_client_inputs.size(), ", expectd ", server_inputs.size());
-  }
-
-  if (m_encrypt_data) {
-    NGRAPH_INFO << "Encrypting data";
-  }
-  if (m_pack_data) {
-    NGRAPH_INFO << "Batching data with batch size " << m_batch_size;
-  }
-  if (m_encrypt_model) {
-    NGRAPH_INFO << "Encrypting model";
-  }
-  if (m_complex_packing) {
-    NGRAPH_INFO << "Complex packing";
   }
 
   // convert inputs to HETensor
