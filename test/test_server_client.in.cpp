@@ -435,17 +435,23 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed) {
       1, 2, 3,
       tmp_he_backend->get_encryption_parameters().poly_modulus_degree()};
 
-  for (auto batch_size : batch_sizes) {
-    for (auto complex_packing : vector<bool>{true, false}) {
+  for (const auto batch_size : batch_sizes) {
+    for (const auto complex_packing : vector<bool>{true, false}) {
       auto backend = runtime::Backend::create("${BACKEND_NAME}");
       auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
       he_backend->complex_packing() = complex_packing;
 
+      size_t new_batch_size{batch_size};
+
       if (complex_packing &&
           batch_size ==
-              he_backend->get_encryption_parameters().poly_modulus_degree()) {
-        batch_size /= 2;
+              he_backend->get_encryption_parameters().poly_modulus_degree() /
+                  2) {
+        new_batch_size *= 2;
       }
+
+      NGRAPH_INFO << "Batch size " << batch_size;
+      NGRAPH_INFO << "complex_packing? " << complex_packing;
 
       Shape shape{batch_size, 3};
       auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -473,7 +479,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed) {
       vector<float> results;
       auto client_thread = std::thread([&]() {
         auto he_client = ngraph::he::HESealClient(
-            "localhost", 34000, batch_size, inputs, complex_packing);
+            "localhost", 34000, new_batch_size, inputs, complex_packing);
 
         while (!he_client.is_done()) {
           std::this_thread::sleep_for(std::chrono::milliseconds(10));
