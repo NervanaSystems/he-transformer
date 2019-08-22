@@ -56,17 +56,6 @@ class NewTCPMessage {
     return m_proto_message;
   }
 
-  bool pack(data_buffer& buffer) {
-    NGRAPH_CHECK(m_proto_message != nullptr, "Can't pack empy proto message");
-
-    size_t msg_size = m_proto_message->ByteSize();
-    NGRAPH_INFO << "Packing buffer with msg_size " << msg_size;
-
-    buffer.resize(header_length + msg_size);
-    encode_header(buffer, msg_size);
-    return m_proto_message->SerializeToArray(&buffer[header_length], msg_size);
-  }
-
   static void encode_header(data_buffer& buffer, size_t size) {
     NGRAPH_CHECK(buffer.size() >= header_length, "Buffer too small");
 
@@ -92,6 +81,17 @@ class NewTCPMessage {
 
     NGRAPH_INFO << "Decoded header body length " << body_length;
     return body_length;
+  }
+
+  bool pack(data_buffer& buffer) {
+    NGRAPH_CHECK(m_proto_message != nullptr, "Can't pack empy proto message");
+
+    size_t msg_size = m_proto_message->ByteSize();
+    NGRAPH_INFO << "Packing buffer with msg_size " << msg_size;
+
+    buffer.resize(header_length + msg_size);
+    encode_header(buffer, msg_size);
+    return m_proto_message->SerializeToArray(&buffer[header_length], msg_size);
   }
 
   // buffer => storing proto message

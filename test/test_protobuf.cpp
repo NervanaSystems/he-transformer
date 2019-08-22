@@ -65,8 +65,9 @@ TEST(new_tcp_message, create) {
   *proto_msg.mutable_function() = f;
   std::stringstream s;
   proto_msg.SerializeToOstream(&s);
-
   ngraph::he::NewTCPMessage tcp_message(proto_msg);
+
+  EXPECT_EQ(1, 1);
 }
 
 TEST(new_tcp_message, encode_decode) {
@@ -80,4 +81,25 @@ TEST(new_tcp_message, encode_decode) {
   size_t decoded_size = ngraph::he::NewTCPMessage::decode_header(buffer);
 
   EXPECT_EQ(decoded_size, encode_size);
+}
+
+TEST(new_tcp_message, pack_unpack) {
+  using data_buffer = std::vector<char>;
+
+  he_proto::TCPMessage proto_msg;
+  he_proto::Function f;
+  f.set_function("123");
+  *proto_msg.mutable_function() = f;
+  std::stringstream s;
+  proto_msg.SerializeToOstream(&s);
+  ngraph::he::NewTCPMessage message1(proto_msg);
+
+  data_buffer buffer;
+  message1.pack(buffer);
+
+  ngraph::he::NewTCPMessage message2;
+  message2.unpack(buffer);
+
+  EXPECT_TRUE(google::protobuf::util::MessageDifferencer::Equals(
+      *message1.proto_message(), *message2.proto_message()));
 }
