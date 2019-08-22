@@ -123,7 +123,7 @@ class TCPClient {
   }
 
   void do_read_body(size_t body_length = 0) {
-    NGRAPH_INFO << "Client do read body";
+    NGRAPH_INFO << "Client do read body size " << body_length;
 
     m_read_buffer.resize(header_length + body_length);
 

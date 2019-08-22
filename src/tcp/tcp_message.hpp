@@ -60,6 +60,8 @@ class NewTCPMessage {
     NGRAPH_CHECK(m_proto_message != nullptr, "Can't pack empy proto message");
 
     size_t msg_size = m_proto_message->ByteSize();
+    NGRAPH_INFO << "Packing buffer with msg_size " << msg_size;
+
     buffer.resize(header_length + msg_size);
     encode_header(buffer, msg_size);
     return m_proto_message->SerializeToArray(&buffer[header_length], msg_size);
@@ -94,8 +96,18 @@ class NewTCPMessage {
 
   // buffer => storing proto message
   bool unpack(const data_buffer& buffer) {
-    return m_proto_message->ParseFromArray(&buffer[header_length],
-                                           buffer.size() - header_length);
+    if (!m_proto_message) {
+      m_proto_message = std::make_shared<he_proto::TCPMessage>();
+    }
+
+    NGRAPH_INFO << "Unpacking from buffer sized " << buffer.size();
+
+    NGRAPH_CHECK(m_proto_message != nullptr, "Can't unpack empty proot");
+
+    bool status = m_proto_message->ParseFromArray(
+        &buffer[header_length], buffer.size() - header_length);
+    NGRAPH_INFO << "Unpacked";
+    return status;
   }
 
  private:
