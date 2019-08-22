@@ -492,6 +492,7 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
   m_client_inputs_cond.notify_all();
 }
 
+/*
 void ngraph::he::HESealExecutable::handle_message(
     const ngraph::he::TCPMessage& message) {
   MessageType msg_type = message.message_type();
@@ -673,7 +674,7 @@ void ngraph::he::HESealExecutable::handle_message(
     throw ngraph_error(ss.str());
   }
 }
-
+*/
 std::vector<ngraph::runtime::PerformanceCounter>
 ngraph::he::HESealExecutable::get_performance_data() const {
   std::vector<runtime::PerformanceCounter> rc;
@@ -969,7 +970,7 @@ void ngraph::he::HESealExecutable::send_client_results() {
 
   // Wait until message is written
   std::condition_variable& writing_cond = m_session->is_writing_cond();
-  writing_cond.wait(mlock, [this] { return !m_session->is_writing(); });
+  writing_cond.wait(mlock, [this] { return !m_session->is_new_writing(); });
 }
 
 void ngraph::he::HESealExecutable::generate_calls(
@@ -1454,7 +1455,7 @@ void ngraph::he::HESealExecutable::generate_calls(
         break;
       }
       if (arg0_cipher == nullptr || out0_cipher == nullptr) {
-        throw ngraph_error("Relu types not supported");
+        throw ngraph_error("MaxPool supports only Cipher, Cipher");
       }
 
       if (!m_enable_client) {
@@ -1474,11 +1475,7 @@ void ngraph::he::HESealExecutable::generate_calls(
             m_he_seal_backend);
         break;
       }
-
-      if (arg0_cipher == nullptr || out0_cipher == nullptr) {
-        NGRAPH_INFO << "MaxPool types not supported ";
-        throw ngraph_error("MaxPool supports only Cipher, Cipher");
-      }
+      NGRAPH_CHECK(false, "Maxpool not supported yet");
 
       m_maxpool_ciphertexts.clear();
       m_maxpool_done = false;
@@ -1515,7 +1512,7 @@ void ngraph::he::HESealExecutable::generate_calls(
         auto maxpool_message =
             TCPMessage(MessageType::maxpool_request, maxpool_ciphers);
 
-        m_session->write_message(std::move(maxpool_message));
+        // m_session->write_message(std::move(maxpool_message));
 
         // Acquire lock
         std::unique_lock<std::mutex> mlock(m_maxpool_mutex);

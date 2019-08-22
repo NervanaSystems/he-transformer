@@ -246,7 +246,7 @@ void ngraph::he::HESealClient::handle_relu_request(
   *proto_relu.mutable_function() = proto_msg.function();
 
   size_t result_count = proto_msg.ciphers_size();
-#pragma omp parallel for
+  //#pragma omp parallel for
   for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
     std::shared_ptr<SealCiphertextWrapper> post_relu_cipher =
         std::make_shared<SealCiphertextWrapper>();
@@ -336,6 +336,7 @@ void ngraph::he::HESealClient::handle_new_message(
   }
 }
 
+/*
 void ngraph::he::HESealClient::handle_message(
     const ngraph::he::TCPMessage& message) {
   ngraph::he::MessageType msg_type = message.message_type();
@@ -484,13 +485,13 @@ void ngraph::he::HESealClient::handle_message(
       NGRAPH_INFO << "Unsupported message type: " << msg_type;
   }
 }
-
+*/
 void ngraph::he::HESealClient::close_connection() {
   NGRAPH_INFO << "Closing connection";
   m_tcp_client->close();
   m_is_done = true;
 }
-
+/*
 void ngraph::he::HESealClient::handle_relu_request(
     const ngraph::he::TCPMessage& message) {
   size_t result_count = message.count();
@@ -525,3 +526,4 @@ void ngraph::he::HESealClient::handle_relu_request(
   write_message(std::move(relu_result_msg));
   return;
 }
+*/

@@ -89,15 +89,15 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
         });
   }
 
-  void write_message(ngraph::he::TCPMessage&& message) {
-    NGRAPH_CHECK(false, "server write old message");
-    NGRAPH_INFO << "server write old message";
-    bool write_in_progress = is_writing();
-    m_message_queue.emplace_back(std::move(message));
-    if (!write_in_progress) {
-      do_write();
-    }
-  }
+  /*  void write_message(ngraph::he::TCPMessage&& message) {
+     NGRAPH_CHECK(false, "server write old message");
+     NGRAPH_INFO << "server write old message";
+     bool write_in_progress = is_writing();
+     m_message_queue.emplace_back(std::move(message));
+     if (!write_in_progress) {
+       do_write();
+     }
+   } */
 
   void write_new_message(ngraph::he::NewTCPMessage& message) {
     NGRAPH_INFO << "server write new message";
@@ -108,13 +108,13 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
     }
   }
 
-  bool is_writing() const { return !m_message_queue.empty(); }
+  // bool is_writing() const { return !m_message_queue.empty(); }
   bool is_new_writing() const { return !m_new_message_queue.empty(); }
 
   std::condition_variable& is_writing_cond() { return m_is_writing; }
 
  private:
-  void do_write() {
+  /* void do_write() {
     NGRAPH_CHECK(false, "server write old message");
     std::lock_guard<std::mutex> lock(m_write_mtx);
     m_is_writing.notify_all();
@@ -136,7 +136,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
             NGRAPH_INFO << "Server error writing message: " << ec.message();
           }
         });
-  }
+  } */
 
   void do_new_write() {
     NGRAPH_INFO << "server do_new_write";
@@ -156,7 +156,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
             m_new_message_queue.pop_front();
 
             if (!m_new_message_queue.empty()) {
-              do_write();
+              do_new_write();
             } else {
               m_is_writing.notify_all();
             }
@@ -167,7 +167,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
   }
 
  private:
-  std::deque<ngraph::he::TCPMessage> m_message_queue;
+  //  std::deque<ngraph::he::TCPMessage> m_message_queue;
   std::deque<ngraph::he::NewTCPMessage> m_new_message_queue;
 
   data_buffer m_read_buffer;

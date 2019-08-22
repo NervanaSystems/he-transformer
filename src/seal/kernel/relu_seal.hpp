@@ -71,6 +71,8 @@ inline void scalar_relu_seal(const SealCiphertextWrapper& arg,
     std::transform(arg_vals.begin(), arg_vals.end(), out_vals.begin(), relu);
     plain.set_values(out_vals);
 
+    NGRAPH_INFO << "Relu " << arg_vals[0] << " => " << out_vals[0];
+
     ngraph::he::encrypt(out, plain, parms_id, ngraph::element::f32, scale,
                         ckks_encoder, encryptor, arg.complex_packing());
   }
