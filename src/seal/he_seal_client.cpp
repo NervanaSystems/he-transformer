@@ -302,8 +302,10 @@ void ngraph::he::HESealClient::handle_new_message(
       NGRAPH_INFO << "Client got message RESPONSE";
       if (proto_msg->has_encryption_parameters()) {
         handle_encryption_parameters_response(*proto_msg);
-      } else if (proto_msg->ciphers_size() > 1) {
+      } else if (proto_msg->ciphers_size() > 0) {
         handle_result(*proto_msg);
+      } else {
+        NGRAPH_CHECK(false, "Unknown RESPONSE type");
       }
       break;
     }

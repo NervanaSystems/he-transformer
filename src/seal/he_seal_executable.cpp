@@ -214,7 +214,7 @@ void ngraph::he::HESealExecutable::client_setup() {
     std::unique_lock<std::mutex> mlock(m_session_mutex);
     m_session_cond.wait(mlock,
                         std::bind(&HESealExecutable::session_started, this));
-    m_session->write_new_message(parms_message);
+    m_session->write_new_message(std::move(parms_message));
 
     // Send encryption parameters
     /*
@@ -326,7 +326,7 @@ void ngraph::he::HESealExecutable::send_inference_shape() {
   NGRAPH_INFO << "Sending inference shape " << js.dump();
 
   ngraph::he::NewTCPMessage execute_msg(proto_msg);
-  m_session->write_new_message(execute_msg);
+  m_session->write_new_message(std::move(execute_msg));
 }
 
 void ngraph::he::HESealExecutable::handle_relu_result(
@@ -964,7 +964,7 @@ void ngraph::he::HESealExecutable::send_client_results() {
 
   ngraph::he::NewTCPMessage result_msg(proto_msg);
 
-  m_session->write_new_message(result_msg);
+  m_session->write_new_message(std::move(result_msg));
 
   std::unique_lock<std::mutex> mlock(m_result_mutex);
 
@@ -2009,7 +2009,7 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
         }
 
         ngraph::he::NewTCPMessage relu_message{proto_msg};
-        m_session->write_new_message(relu_message);
+        m_session->write_new_message(std::move(relu_message));
       };
 
   // Process unknown values

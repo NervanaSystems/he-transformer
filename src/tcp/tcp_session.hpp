@@ -76,11 +76,8 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
         boost::asio::buffer(&m_read_buffer[header_length], body_length),
         [this, self](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
-            NGRAPH_INFO << "Unpacking new read message";
             m_new_read_message.unpack(m_read_buffer);
-            NGRAPH_INFO << "Done unpacking new read message; calling callback";
             m_new_message_callback(m_new_read_message);
-            NGRAPH_INFO << "Done with callback";
             do_read_header();
           } else {
             NGRAPH_INFO << "Server error reading message: " << ec.message();
@@ -89,60 +86,27 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
         });
   }
 
-  /*  void write_message(ngraph::he::TCPMessage&& message) {
-     NGRAPH_CHECK(false, "server write old message");
-     NGRAPH_INFO << "server write old message";
-     bool write_in_progress = is_writing();
-     m_message_queue.emplace_back(std::move(message));
-     if (!write_in_progress) {
-       do_write();
-     }
-   } */
-
-  void write_new_message(ngraph::he::NewTCPMessage& message) {
+  void write_new_message(ngraph::he::NewTCPMessage&& message) {
     NGRAPH_INFO << "server write new message";
     bool write_in_progress = is_new_writing();
-    m_new_message_queue.emplace_back(message);
+    m_new_message_queue.emplace_back(std::move(message));
     if (!write_in_progress) {
       do_new_write();
     }
   }
 
-  // bool is_writing() const { return !m_message_queue.empty(); }
   bool is_new_writing() const { return !m_new_message_queue.empty(); }
 
   std::condition_variable& is_writing_cond() { return m_is_writing; }
 
  private:
-  /* void do_write() {
-    NGRAPH_CHECK(false, "server write old message");
-    std::lock_guard<std::mutex> lock(m_write_mtx);
-    m_is_writing.notify_all();
-    auto self(shared_from_this());
-
-    boost::asio::async_write(
-        m_socket,
-        boost::asio::buffer(m_message_queue.front().header_ptr(),
-                            m_message_queue.front().num_bytes()),
-        [this, self](boost::system::error_code ec, std::size_t length) {
-          if (!ec) {
-            m_message_queue.pop_front();
-            if (!m_message_queue.empty()) {
-              do_write();
-            } else {
-              m_is_writing.notify_all();
-            }
-          } else {
-            NGRAPH_INFO << "Server error writing message: " << ec.message();
-          }
-        });
-  } */
-
   void do_new_write() {
     NGRAPH_INFO << "server do_new_write";
     std::lock_guard<std::mutex> lock(m_write_mtx);
     m_is_writing.notify_all();
     auto self(shared_from_this());
+
+    NGRAPH_INFO << "m_new_message_queu.size() " << m_new_message_queue.size();
 
     auto message = m_new_message_queue.front();
     data_buffer write_buf;
@@ -156,8 +120,10 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
             m_new_message_queue.pop_front();
 
             if (!m_new_message_queue.empty()) {
+              NGRAPH_INFO << "Message queue not empty; do_new_write()";
               do_new_write();
             } else {
+              NGRAPH_INFO << "Notifying done writing";
               m_is_writing.notify_all();
             }
           } else {
@@ -167,7 +133,6 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
   }
 
  private:
-  //  std::deque<ngraph::he::TCPMessage> m_message_queue;
   std::deque<ngraph::he::NewTCPMessage> m_new_message_queue;
 
   data_buffer m_read_buffer;

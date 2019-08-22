@@ -165,6 +165,7 @@ class TCPClient {
           if (!ec) {
             m_new_message_queue.pop_front();
             if (!m_new_message_queue.empty()) {
+              NGRAPH_INFO << "client writing queue not empty; writing again";
               do_write();
             }
           } else {
