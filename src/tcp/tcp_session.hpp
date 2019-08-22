@@ -29,6 +29,9 @@ using boost::asio::ip::tcp;
 namespace ngraph {
 namespace he {
 class TCPSession : public std::enable_shared_from_this<TCPSession> {
+  using data_buffer = std::vector<char>;
+  size_t header_length = ngraph::he::NewTCPMessage::header_length;
+
  public:
   TCPSession(tcp::socket socket,
              std::function<void(const ngraph::he::TCPMessage&)> message_handler)
@@ -40,15 +43,16 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
 
  public:
   void do_read_header() {
-    NGRAPH_INFO << "server do_read_header";
+    NGRAPH_INFO << "server do_read_new_header";
+    m_read_buffer.resize(header_length);
     auto self(shared_from_this());
     boost::asio::async_read(
-        m_socket,
-        boost::asio::buffer(m_read_message.header_ptr(),
-                            ngraph::he::TCPMessage::header_length),
+        m_socket, boost::asio::buffer(m_read_buffer),
         [this, self](boost::system::error_code ec, std::size_t length) {
-          if (!ec & m_read_message.decode_header()) {
-            do_read_body();
+          if (!ec) {
+            size_t msg_len = m_new_read_message.decode_header(m_read_buffer);
+            NGRAPH_INFO << "msglen " << msg_len;
+            do_read_body(msg_len);
           } else {
             if (ec) {
               // End of file is expected on teardown
@@ -60,17 +64,17 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
         });
   }
 
-  void do_read_body() {
-    NGRAPH_INFO << "server do_read_body";
+  void do_read_body(size_t body_length = 0) {
+    m_read_buffer.resize(header_length + body_length);
+
     auto self(shared_from_this());
     boost::asio::async_read(
         m_socket,
-        boost::asio::buffer(m_read_message.body_ptr(),
-                            m_read_message.body_length()),
+        boost::asio::buffer(&m_read_buffer[header_length], body_length),
         [this, self](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
-            m_read_message.decode_body();
-            m_message_callback(m_read_message);
+            m_new_read_message.unpack(m_read_buffer);
+            m_new_message_callback(m_new_read_message);
             do_read_header();
           } else {
             NGRAPH_INFO << "Server error reading message: " << ec.message();
@@ -80,6 +84,8 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
   }
 
   void write_message(ngraph::he::TCPMessage&& message) {
+    NGRAPH_CHECK(false, "server write old message");
+    NGRAPH_INFO << "server write old message";
     bool write_in_progress = is_writing();
     m_message_queue.emplace_back(std::move(message));
     if (!write_in_progress) {
@@ -103,6 +109,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
 
  private:
   void do_write() {
+    NGRAPH_CHECK(false, "server write old message");
     std::lock_guard<std::mutex> lock(m_write_mtx);
     m_is_writing.notify_all();
     auto self(shared_from_this());
@@ -131,15 +138,17 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
     m_is_writing.notify_all();
     auto self(shared_from_this());
 
-    boost::asio::streambuf send_streambuf;
-    m_new_message_queue.front().write_to_buffer(send_streambuf);
+    auto message = m_new_message_queue.front();
+    data_buffer write_buf;
+    message.pack(write_buf);
 
     boost::asio::async_write(
-        m_socket, send_streambuf,
+        m_socket, boost::asio::buffer(write_buf),
         [this, self](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
             NGRAPH_INFO << "Server wrote message size " << length;
             m_new_message_queue.pop_front();
+
             if (!m_new_message_queue.empty()) {
               do_write();
             } else {
@@ -155,6 +164,9 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
   std::deque<ngraph::he::TCPMessage> m_message_queue;
   std::deque<ngraph::he::NewTCPMessage> m_new_message_queue;
 
+  data_buffer m_read_buffer;
+  NewTCPMessage m_new_read_message;
+
   TCPMessage m_read_message;
   tcp::socket m_socket;
 
@@ -164,6 +176,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
 
   // Called after message is received
   std::function<void(const ngraph::he::TCPMessage&)> m_message_callback;
+  std::function<void(const ngraph::he::NewTCPMessage&)> m_new_message_callback;
 };
 }  // namespace he
 }  // namespace ngraph

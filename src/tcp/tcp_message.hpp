@@ -41,43 +41,73 @@ namespace he {
 class NewTCPMessage {
  public:
   enum { header_length = sizeof(size_t) };
+  using data_buffer = std::vector<char>;
 
   NewTCPMessage() = default;
 
   NewTCPMessage(he_proto::TCPMessage& proto_message)
-      : m_proto_message(proto_message) {
-    // TODO: don't serialize until we need to?
-    proto_message.SerializeToString(&m_serialized_msg);
+      : m_proto_message(std::make_shared<he_proto::TCPMessage>(proto_message)) {
   }
 
-  void* size_ptr() { return &size; }
-  size_t num_bytes() { return header_length + body_length(); }
-  size_t body_length() { return m_serialized_msg.size(); }
+  NewTCPMessage(std::shared_ptr<he_proto::TCPMessage> proto_message)
+      : m_proto_message(proto_message) {}
 
-  bool decode_header() {
-    NGRAPH_INFO << "Header size is " << size;
-    return true;
+  std::shared_ptr<he_proto::TCPMessage> proto_message() {
+    return m_proto_message;
   }
 
-  void decode_body() { m_proto_message.ParseFromString(m_serialized_msg); }
+  bool pack(data_buffer& buffer) {
+    NGRAPH_CHECK(m_proto_message != nullptr, "Can't pack empy proto message");
 
-  void write_to_buffer(boost::asio::streambuf& buffer) {
-    std::iostream os(&buffer);
-    NGRAPH_INFO << "Encoding body size " << body_length();
-    os << body_length();
-    os << m_serialized_msg;
+    size_t msg_size = m_proto_message->ByteSize();
+    buffer.resize(header_length + msg_size);
+    encode_header(buffer, msg_size);
+    return m_proto_message->SerializeToArray(&buffer[header_length], msg_size);
   }
 
-  void read_from_buffer(boost::asio::streambuf& buffer) {
-    std::string s((std::istreambuf_iterator<char>(&buffer)),
-                  std::istreambuf_iterator<char>());
+  void encode_header(data_buffer& buffer, size_t size) const {
+    NGRAPH_CHECK(buffer.size() >= header_length, "Buffer too small");
 
-    m_proto_message.ParseFromString(s);
+    NGRAPH_INFO << "Encoding header " << size;
+
+    char header[header_length + 1] = "";
+    size_t to_encode = size;
+    int ret = std::snprintf(header, sizeof(header), "%zu", to_encode);
+    if (ret < 0 || static_cast<size_t>(ret) > sizeof(header)) {
+      throw std::invalid_argument("Error encoding header");
+    }
+
+    // TOOD: check bounds
+    for (size_t i = 0; i < header_length; ++i) {
+      buffer[i] = header[i];
+    }
   }
 
-  size_t size;
-  he_proto::TCPMessage m_proto_message;
-  std::string m_serialized_msg;
+  size_t decode_header(const data_buffer& buffer) const {
+    if (buffer.size() < header_length) {
+      return 0;
+    }
+    size_t msg_size = 0;
+
+    char header[header_length + 1] = "";
+    std::strncat(header, &buffer[header_length], header_length);
+    std::string header_str(header);
+    std::stringstream sstream(header_str);
+    size_t body_length;
+    sstream >> body_length;
+
+    NGRAPH_INFO << "Decoded header body length " << body_length;
+    return body_length;
+  }
+
+  // buffer => storing proto message
+  bool unpack(const data_buffer& buffer) {
+    return m_proto_message->ParseFromArray(&buffer[header_length],
+                                           buffer.size() - header_length);
+  }
+
+ private:
+  std::shared_ptr<he_proto::TCPMessage> m_proto_message;
 };
 
 enum class MessageType {
