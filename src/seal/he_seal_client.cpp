@@ -202,6 +202,39 @@ void ngraph::he::HESealClient::handle_inference_request(
   write_new_message(encrypted_inputs_msg);
 }
 
+void ngraph::he::HESealClient::handle_result(
+    const he_proto::TCPMessage& proto_msg) {
+  NGRAPH_INFO << "handling result";
+
+  size_t result_count = proto_msg.ciphers_size();
+  m_results.resize(result_count * m_batch_size);
+  std::vector<std::shared_ptr<SealCiphertextWrapper>> result_ciphers(
+      result_count);
+#pragma omp parallel for
+  for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
+    seal::Ciphertext c;
+
+    // TODO: load from string directly
+    const std::string& cipher_str = proto_msg.ciphers(result_idx).ciphertext();
+    std::stringstream ss;
+    ss.str(cipher_str);
+    c.load(m_context, ss);
+
+    result_ciphers[result_idx] =
+        std::make_shared<SealCiphertextWrapper>(c, complex_packing());
+  }
+
+  size_t n = result_count * sizeof(double) * m_batch_size;
+  ngraph::he::HESealCipherTensor::read(
+      m_results.data(), result_ciphers, n, m_batch_size, element::f64,
+      m_context->first_parms_id(), m_scale, *m_ckks_encoder, *m_decryptor,
+      complex_packing());
+
+  NGRAPH_INFO << "done handling result";
+
+  close_connection();
+}
+
 void ngraph::he::HESealClient::handle_new_message(
     const ngraph::he::NewTCPMessage& message) {
   // TODO: try overwriting message?
@@ -214,6 +247,8 @@ void ngraph::he::HESealClient::handle_new_message(
       NGRAPH_INFO << "Got REQUEST";
       if (proto_msg->has_encryption_parameters()) {
         handle_encryption_parameters_response(*proto_msg);
+      } else if (proto_msg->ciphers_size() > 1) {
+        handle_result(*proto_msg);
       }
       break;
     }
