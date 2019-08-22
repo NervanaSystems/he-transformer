@@ -201,10 +201,10 @@ void ngraph::he::HESealExecutable::client_setup() {
 
     he_proto::EncryptionParameters proto_parms;
     *proto_parms.mutable_encryption_parameters() = param_stream.str();
-    proto_parms.set_type(he_proto::EncryptionParameters_Type_REQUEST);
 
     he_proto::TCPMessage proto_msg;
     *proto_msg.mutable_encryption_parameters() = proto_parms;
+    proto_msg.set_type(he_proto::TCPMessage_Type_RESPONSE);
 
     ngraph::he::NewTCPMessage parms_message(proto_msg);
     NGRAPH_INFO << "Created PB parms message";
@@ -234,7 +234,7 @@ void ngraph::he::HESealExecutable::client_setup() {
 
 void ngraph::he::HESealExecutable::accept_connection() {
   NGRAPH_INFO << "Server accepting connections";
-  auto server_callback = bind(&ngraph::he::HESealExecutable::handle_message,
+  auto server_callback = bind(&ngraph::he::HESealExecutable::handle_new_message,
                               this, std::placeholders::_1);
 
   m_acceptor->async_accept([this, server_callback](boost::system::error_code ec,
@@ -265,6 +265,11 @@ void ngraph::he::HESealExecutable::start_server() {
 
   accept_connection();
   m_thread = std::thread([this]() { m_io_context.run(); });
+}
+
+void ngraph::he::HESealExecutable::handle_new_message(
+    const ngraph::he::NewTCPMessage& message) {
+  NGRAPH_INFO << "Server got new mesage";
 }
 
 void ngraph::he::HESealExecutable::handle_message(

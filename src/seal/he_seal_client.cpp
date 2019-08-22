@@ -88,9 +88,92 @@ void ngraph::he::HESealClient::set_seal_context() {
   NGRAPH_INFO << "Client scale " << m_scale;
 }
 
+void ngraph::he::HESealClient::send_public_and_relin_keys() {
+  NGRAPH_INFO << "SEnding public and relin keys";
+
+  he_proto::TCPMessage proto_msg;
+  proto_msg.set_type(he_proto::TCPMessage_Type_RESPONSE);
+
+  // Set public key
+  std::stringstream pk_stream;
+  m_public_key->save(pk_stream);
+  he_proto::PublicKey public_key;
+  public_key.set_public_key(pk_stream.str());
+  *proto_msg.mutable_public_key() = public_key;
+
+  // Set relinearization keys
+  std::stringstream evk_stream;
+  m_relin_keys->save(evk_stream);
+  he_proto::EvaluationKey eval_key;
+  eval_key.set_eval_key(evk_stream.str());
+  *proto_msg.mutable_eval_key() = eval_key;
+
+  write_new_message(proto_msg);
+
+  /*
+
+   auto pk_message =
+       TCPMessage(ngraph::he::MessageType::public_key, 1, std::move(pk_stream));
+   NGRAPH_INFO << "Sending public key";
+   write_message(std::move(pk_message)); */
+
+  /*
+  std::stringstream evk_stream;
+  m_relin_keys->save(evk_stream);
+  auto evk_message =
+      TCPMessage(ngraph::he::MessageType::eval_key, 1, std::move(evk_stream));
+  NGRAPH_INFO << "Sending evaluation key";
+  write_message(std::move(evk_message));
+  */
+}
+
+void ngraph::he::HESealClient::handle_encryption_parameters_response(
+    const he_proto::TCPMessage& proto_msg) {
+  NGRAPH_INFO << "Got enc parms request";
+  NGRAPH_CHECK(proto_msg.has_encryption_parameters(),
+               "proto_msg does not have encryption_parameters");
+
+  const std::string& enc_parms_str =
+      proto_msg.encryption_parameters().encryption_parameters();
+
+  std::stringstream param_stream(enc_parms_str);
+
+  m_encryption_params = seal::EncryptionParameters::Load(param_stream);
+
+  NGRAPH_INFO << "Loaded enc parms";
+
+  set_seal_context();
+  send_public_and_relin_keys();
+}
+
 void ngraph::he::HESealClient::handle_new_message(
     const ngraph::he::NewTCPMessage& message) {
+  // TODO: try overwriting message?
   NGRAPH_INFO << "Got new message";
+
+  std::shared_ptr<he_proto::TCPMessage> proto_msg = message.proto_message();
+
+  switch (proto_msg->type()) {
+    case he_proto::TCPMessage_Type_RESPONSE: {
+      if (proto_msg->has_encryption_parameters()) {
+        handle_encryption_parameters_response(*proto_msg);
+      }
+      break;
+    }
+    case he_proto::TCPMessage_Type_REQUEST: {
+      break;
+    }
+    case he_proto::TCPMessage_Type_UNKNOWN:
+    default:
+      NGRAPH_CHECK(false, "Unknonwn TCPMesage type");
+  }
+
+  if (proto_msg->type() == he_proto::TCPMessage_Type_RESPONSE) {
+    NGRAPH_INFO << "Got type request";
+
+  } else {
+    NGRAPH_CHECK(false, "proto type not request");
+  }
 }
 
 void ngraph::he::HESealClient::handle_message(

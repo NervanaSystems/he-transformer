@@ -46,12 +46,19 @@ class HESealClient {
   void handle_message(const ngraph::he::TCPMessage& message);
   void handle_new_message(const ngraph::he::NewTCPMessage& message);
 
-
+  void handle_encryption_parameters_response(
+      const he_proto::TCPMessage& message);
 
   void handle_relu_request(const ngraph::he::TCPMessage& message);
 
+  void send_public_and_relin_keys();
+
   inline void write_message(ngraph::he::TCPMessage&& message) {
     m_tcp_client->write_message(std::move(message));
+  }
+
+  inline void write_new_message(const ngraph::he::NewTCPMessage& message) {
+    m_tcp_client->write_message(message);
   }
 
   inline bool is_done() { return m_is_done; }

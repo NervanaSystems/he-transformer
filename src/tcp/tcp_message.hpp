@@ -55,6 +55,9 @@ class NewTCPMessage {
   std::shared_ptr<he_proto::TCPMessage> proto_message() {
     return m_proto_message;
   }
+  std::shared_ptr<he_proto::TCPMessage> proto_message() const {
+    return m_proto_message;
+  }
 
   static void encode_header(data_buffer& buffer, size_t size) {
     NGRAPH_CHECK(buffer.size() >= header_length, "Buffer too small");
@@ -63,11 +66,7 @@ class NewTCPMessage {
 
     std::memcpy(&buffer[0], &size, header_length);
 
-    // TOOD: check bounds
-    for (size_t i = 0; i < header_length; ++i) {
-      NGRAPH_INFO << "buffer " << i << " = " << buffer[i];
-    }
-
+    // TODO: remove
     size_t decoded_size = decode_header(buffer);
     NGRAPH_INFO << "Decoded " << decoded_size;
   }

@@ -86,6 +86,7 @@ class HESealExecutable : public runtime::Executable {
   void check_client_supports_function();
 
   void handle_message(const TCPMessage& message);
+  void handle_new_message(const NewTCPMessage& message);
 
   void handle_server_relu_op(std::shared_ptr<HESealCipherTensor>& arg0_cipher,
                              std::shared_ptr<HESealCipherTensor>& out_cipher,

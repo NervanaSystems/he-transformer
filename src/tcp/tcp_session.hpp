@@ -33,11 +33,13 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
   size_t header_length = ngraph::he::NewTCPMessage::header_length;
 
  public:
-  TCPSession(tcp::socket socket,
-             std::function<void(const ngraph::he::TCPMessage&)> message_handler)
+  TCPSession(
+      tcp::socket socket,
+      std::function<void(const ngraph::he::NewTCPMessage&)> message_handler)
       : m_socket(std::move(socket)),
         m_writing(false),
-        m_message_callback(std::bind(message_handler, std::placeholders::_1)) {}
+        m_new_message_callback(
+            std::bind(message_handler, std::placeholders::_1)) {}
 
   void start() { do_read_header(); }
 
@@ -51,7 +53,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
         [this, self](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
             size_t msg_len = m_new_read_message.decode_header(m_read_buffer);
-            NGRAPH_INFO << "msglen " << msg_len;
+            NGRAPH_INFO << "server read hader for msg len " << msg_len;
             do_read_body(msg_len);
           } else {
             if (ec) {
@@ -65,6 +67,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
   }
 
   void do_read_body(size_t body_length = 0) {
+    NGRAPH_INFO << "server reading body size " << body_length;
     m_read_buffer.resize(header_length + body_length);
 
     auto self(shared_from_this());
@@ -73,8 +76,11 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
         boost::asio::buffer(&m_read_buffer[header_length], body_length),
         [this, self](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
+            NGRAPH_INFO << "Unpacking new read message";
             m_new_read_message.unpack(m_read_buffer);
+            NGRAPH_INFO << "Done unpacking new read message; calling callback";
             m_new_message_callback(m_new_read_message);
+            NGRAPH_INFO << "Done with callback";
             do_read_header();
           } else {
             NGRAPH_INFO << "Server error reading message: " << ec.message();

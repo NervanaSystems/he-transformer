@@ -65,8 +65,7 @@ class TCPClient {
     }
   }
 
-  // TODO: send copy or rvalue
-  void write_message(ngraph::he::NewTCPMessage& message) {
+  void write_message(const ngraph::he::NewTCPMessage& message) {
     bool write_in_progress = !m_new_message_queue.empty();
     m_new_message_queue.push_back(message);
     if (!write_in_progress) {
