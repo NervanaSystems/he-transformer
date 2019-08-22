@@ -375,7 +375,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_pad_relu) {
   handle->call_with_validate({t_result}, {t_dummy});
 
   client_thread.join();
-  EXPECT_TRUE(all_close(results, vector<float>{0, 0, 3}, 1e-3f));
+  EXPECT_TRUE(all_close(results, vector<float>{0, 0, 0, 3, 0}, 1e-3f));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed) {

@@ -1997,10 +1997,6 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
 
         ngraph::he::NewTCPMessage relu_message(proto_msg);
         m_session->write_new_message(std::move(relu_message));
-
-        NGRAPH_INFO << "Sleeping until relu message written";
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-        NGRAPH_INFO << "Done sleeping for relu message";
       };
 
   // Process unknown values

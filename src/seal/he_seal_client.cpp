@@ -217,16 +217,30 @@ void ngraph::he::HESealClient::handle_result(
       result_count);
 #pragma omp parallel for
   for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
-    seal::Ciphertext c;
+    auto proto_cipher = proto_msg.ciphers(result_idx);
 
-    // TODO: load from string directly
-    const std::string& cipher_str = proto_msg.ciphers(result_idx).ciphertext();
-    std::stringstream ss;
-    ss.str(cipher_str);
-    c.load(m_context, ss);
+    if (proto_cipher.known_value()) {
+      NGRAPH_INFO << "Loading known-valued cipher in result with value "
+                  << proto_cipher.value();
 
-    result_ciphers[result_idx] =
-        std::make_shared<SealCiphertextWrapper>(c, complex_packing());
+      auto cipher_wrapper = std::make_shared<SealCiphertextWrapper>();
+      cipher_wrapper->known_value() = true;
+      cipher_wrapper->value() = proto_cipher.value();
+
+      result_ciphers[result_idx] = cipher_wrapper;
+
+    } else {
+      seal::Ciphertext c;
+      // TODO: load from string directly
+      const std::string& cipher_str =
+          proto_msg.ciphers(result_idx).ciphertext();
+      std::stringstream ss;
+      ss.str(cipher_str);
+      c.load(m_context, ss);
+
+      result_ciphers[result_idx] =
+          std::make_shared<SealCiphertextWrapper>(c, complex_packing());
+    }
   }
 
   size_t n = result_count * sizeof(double) * m_batch_size;

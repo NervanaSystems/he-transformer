@@ -158,19 +158,13 @@ class TCPClient {
     data_buffer write_buf;
     message.pack(write_buf);
 
-    boost::asio::async_write(
-        m_socket, boost::asio::buffer(write_buf),
-        [this, &write_buf](boost::system::error_code ec, std::size_t length) {
-          if (!ec) {
-            m_new_message_queue.pop_front();
-            if (!m_new_message_queue.empty()) {
-              NGRAPH_INFO << "client writing queue not empty; writing again";
-              do_write();
-            }
-          } else {
-            NGRAPH_INFO << "Client error writing message: " << ec.message();
-          }
-        });
+    boost::asio::write(m_socket, boost::asio::buffer(write_buf));
+
+    m_new_message_queue.pop_front();
+    if (!m_new_message_queue.empty()) {
+      NGRAPH_INFO << "client writing queue not empty; writing again";
+      do_write();
+    }
   }
 
   boost::asio::io_context& m_io_context;
