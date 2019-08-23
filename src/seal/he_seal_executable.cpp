@@ -1692,8 +1692,6 @@ void ngraph::he::HESealExecutable::handle_server_max_pool_op(
       max_pool->get_window_movement_strides(), max_pool->get_padding_below(),
       max_pool->get_padding_above());
 
-  size_t window_shape = ngraph::shape_size(max_pool->get_window_shape());
-
   for (size_t list_ind = 0; list_ind < maximize_list.size(); list_ind++) {
     he_proto::TCPMessage proto_msg;
     proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);

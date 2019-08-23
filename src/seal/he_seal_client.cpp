@@ -296,6 +296,64 @@ void ngraph::he::HESealClient::handle_bounded_relu_request(
       *m_decryptor); */
 }
 
+void ngraph::he::HESealClient::handle_max_pool_request(
+    const he_proto::TCPMessage& proto_msg) {
+  NGRAPH_INFO << "Handling maxpool request";
+  NGRAPH_CHECK(proto_msg.has_function(), "Proto message doesn't have function");
+
+  size_t cipher_count = proto_msg.ciphers_size();
+  std::vector<std::shared_ptr<SealCiphertextWrapper>> maxpool_ciphers(
+      cipher_count);
+  std::vector<std::shared_ptr<SealCiphertextWrapper>> post_max_cipher(1);
+  post_max_cipher[0] = std::make_shared<SealCiphertextWrapper>();
+
+#pragma omp parallel for
+  for (size_t cipher_idx = 0; cipher_idx < cipher_count; ++cipher_idx) {
+    seal::Ciphertext pre_max_pool_cipher;
+    maxpool_ciphers[cipher_idx] = std::make_shared<SealCiphertextWrapper>();
+
+    // TODO: load from string directly
+    const std::string& cipher_str = proto_msg.ciphers(cipher_idx).ciphertext();
+    std::stringstream ss;
+    ss.str(cipher_str);
+    pre_max_pool_cipher.load(m_context, ss);
+
+    maxpool_ciphers[cipher_idx]->ciphertext() = pre_max_pool_cipher;
+    maxpool_ciphers[cipher_idx]->complex_packing() = complex_packing();
+  }
+
+  // We currently just support maxpool with single output
+  ngraph::he::max_pool_seal(
+      maxpool_ciphers, post_max_cipher, Shape{1, 1, cipher_count},
+      Shape{1, 1, 1}, Shape{cipher_count}, ngraph::Strides{1}, Shape{0},
+      Shape{0}, m_context->first_parms_id(), m_scale, *m_ckks_encoder,
+      *m_encryptor, *m_decryptor, complex_packing());
+
+  // Create maxpool result message
+  he_proto::TCPMessage proto_max_pool;
+  proto_max_pool.set_type(he_proto::TCPMessage_Type_RESPONSE);
+  *proto_max_pool.mutable_function() = proto_msg.function();
+
+  // TODO: replace with function
+  auto result_cipher_wrapper = post_max_cipher[0];
+  he_proto::SealCiphertextWrapper* proto_cipher = proto_max_pool.add_ciphers();
+  proto_cipher->set_known_value(result_cipher_wrapper->known_value());
+  if (result_cipher_wrapper->known_value()) {
+    proto_cipher->set_value(result_cipher_wrapper->value());
+  } else {
+    // TODO: write directly to ciphertext
+    std::stringstream ss;
+    result_cipher_wrapper->ciphertext().save(ss);
+    proto_cipher->set_ciphertext(ss.str());
+  }
+
+  ngraph::he::TCPMessage max_pool_result_msg(proto_max_pool);
+
+  NGRAPH_INFO << "Writing maxpool result";
+  write_message(max_pool_result_msg);
+  return;
+}
+
 void ngraph::he::HESealClient::handle_message(
     const ngraph::he::TCPMessage& message) {
   // TODO: try overwriting message?
@@ -330,23 +388,23 @@ void ngraph::he::HESealClient::handle_message(
           handle_bounded_relu_request(*proto_msg);
         } else if (name == "MaxPool") {
           handle_max_pool_request(*proto_msg);
-          else {
-            NGRAPH_INFO << "Unknown name " << name;
-          }
         } else {
-          NGRAPH_CHECK(false, "Unknown REQUEST type");
+          NGRAPH_INFO << "Unknown name " << name;
         }
-
-        break;
+      } else {
+        NGRAPH_CHECK(false, "Unknown REQUEST type");
       }
-      case he_proto::TCPMessage_Type_UNKNOWN:
-      default:
-        NGRAPH_CHECK(false, "Unknonwn TCPMesage type");
-    }
-  }
 
-  void ngraph::he::HESealClient::close_connection() {
-    NGRAPH_INFO << "Closing connection";
-    m_tcp_client->close();
-    m_is_done = true;
+      break;
+    }
+    case he_proto::TCPMessage_Type_UNKNOWN:
+    default:
+      NGRAPH_CHECK(false, "Unknonwn TCPMesage type");
   }
+}
+
+void ngraph::he::HESealClient::close_connection() {
+  NGRAPH_INFO << "Closing connection";
+  m_tcp_client->close();
+  m_is_done = true;
+}
