@@ -34,8 +34,9 @@ namespace ngraph {
 namespace he {
 class TCPClient {
  public:
-  using data_buffer = std::vector<char>;
+  using data_buffer = ngraph::he::TCPMessage::data_buffer;
   size_t header_length = ngraph::he::TCPMessage::header_length;
+
   // Connects client to hostname:port and reads message
   // message_handler will handle responses from the server
   TCPClient(boost::asio::io_context& io_context,
@@ -54,26 +55,9 @@ class TCPClient {
     boost::asio::post(m_io_context, [this]() { m_socket.close(); });
   }
 
-  void write_message(ngraph::he::TCPMessage&& message) {
-    NGRAPH_CHECK(false, "client Writing old message");
-    bool write_in_progress = !m_message_queue.empty();
-    m_message_queue.emplace_back(std::move(message));
-    if (!write_in_progress) {
-      boost::asio::post(m_io_context, [this]() { do_write(); });
-    }
-  }
-
   void write_message(const ngraph::he::TCPMessage& message) {
     bool write_in_progress = !m_message_queue.empty();
     m_message_queue.push_back(message);
-    if (!write_in_progress) {
-      boost::asio::post(m_io_context, [this]() { do_write(); });
-    }
-  }
-
-  void write_message(const ngraph::he::TCPMessage&& message) {
-    bool write_in_progress = !m_message_queue.empty();
-    m_message_queue.emplace_back(std::move(message));
     if (!write_in_progress) {
       boost::asio::post(m_io_context, [this]() { do_write(); });
     }

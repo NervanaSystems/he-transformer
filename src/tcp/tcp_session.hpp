@@ -29,7 +29,7 @@ using boost::asio::ip::tcp;
 namespace ngraph {
 namespace he {
 class TCPSession : public std::enable_shared_from_this<TCPSession> {
-  using data_buffer = std::vector<char>;
+  using data_buffer = ngraph::he::TCPMessage::data_buffer;
   size_t header_length = ngraph::he::TCPMessage::header_length;
 
  public:
@@ -55,8 +55,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
             do_read_body(msg_len);
           } else {
             if (ec) {
-              // End of file is expected on teardown
-              if (ec.message() != "End of file") {
+              if (ec.message() != s_expected_teardown_message.c_str()) {
                 NGRAPH_INFO << "Server error reading body: " << ec.message();
               }
             }
@@ -139,7 +138,8 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
   std::condition_variable m_is_writing;
   std::mutex m_write_mtx;
 
-  // Called after message is received
+  inline static std::string s_expected_teardown_message{"End of file"};
+
   std::function<void(const ngraph::he::TCPMessage&)> m_message_callback;
 };
 }  // namespace he
