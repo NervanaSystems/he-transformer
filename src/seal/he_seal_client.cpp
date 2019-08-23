@@ -179,8 +179,8 @@ void ngraph::he::HESealClient::handle_inference_request(
   he_proto::TCPMessage encrypted_inputs_msg;
   encrypted_inputs_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
 
-  for (size_t data_idx = 0; data_idx < ciphers.size(); ++data_idx) {
-    ciphers[data_idx]->save(*encrypted_inputs_msg.add_ciphers());
+  for (const auto& cipher : ciphers) {
+    cipher->save(*encrypted_inputs_msg.add_ciphers());
   }
 
   NGRAPH_INFO << "Creating execute message";
@@ -198,34 +198,14 @@ void ngraph::he::HESealClient::handle_result(
 #pragma omp parallel for
   for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
     auto proto_cipher = proto_msg.ciphers(result_idx);
-
-    if (proto_cipher.known_value()) {
-      NGRAPH_INFO << "Loading known-valued cipher in result with value "
-                  << proto_cipher.value();
-
-      auto cipher_wrapper = std::make_shared<SealCiphertextWrapper>();
-      cipher_wrapper->known_value() = true;
-      cipher_wrapper->value() = proto_cipher.value();
-
-      result_ciphers[result_idx] = cipher_wrapper;
-
-    } else {
-      seal::Ciphertext c;
-      // TODO: load from string directly
-      const std::string& cipher_str =
-          proto_msg.ciphers(result_idx).ciphertext();
-      std::stringstream ss;
-      ss.str(cipher_str);
-      c.load(m_context, ss);
-
-      result_ciphers[result_idx] =
-          std::make_shared<SealCiphertextWrapper>(c, complex_packing());
-    }
+    ngraph::he::SealCiphertextWrapper::load(result_ciphers[result_idx],
+                                            proto_cipher, m_context);
+    result_ciphers[result_idx]->complex_packing() = complex_packing();
   }
 
-  size_t n = result_count * sizeof(double) * m_batch_size;
+  size_t num_bytes = result_count * sizeof(double) * m_batch_size;
   ngraph::he::HESealCipherTensor::read(
-      m_results.data(), result_ciphers, n, m_batch_size, element::f64,
+      m_results.data(), result_ciphers, num_bytes, m_batch_size, element::f64,
       m_context->first_parms_id(), m_scale, *m_ckks_encoder, *m_decryptor,
       complex_packing());
 
