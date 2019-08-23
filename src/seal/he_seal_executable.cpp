@@ -324,15 +324,10 @@ void ngraph::he::HESealExecutable::handle_relu_result(
 
 #pragma omp parallel for
   for (size_t element_idx = 0; element_idx < message_count; ++element_idx) {
-    seal::Ciphertext cipher;
-    // TODO: load from string directly
-    const std::string& cipher_str = proto_msg.ciphers(element_idx).ciphertext();
-    std::stringstream ss;
-    ss.str(cipher_str);
-    cipher.load(m_context, ss);
-
-    auto new_cipher = std::make_shared<ngraph::he::SealCiphertextWrapper>(
-        cipher, m_complex_packing);
+    std::shared_ptr<ngraph::he::SealCiphertextWrapper> new_cipher;
+    ngraph::he::SealCiphertextWrapper::load(
+        new_cipher, proto_msg.ciphers(element_idx), m_context);
+    new_cipher->complex_packing() = m_complex_packing;
 
     m_relu_ciphertexts[m_unknown_relu_idx[element_idx + m_relu_done_count]] =
         new_cipher;
@@ -415,26 +410,13 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
   size_t count = proto_msg.ciphers_size();
   NGRAPH_INFO << "Loading " << count << " ciphertexts";
 
-  std::vector<seal::Ciphertext> ciphertexts(count);
-#pragma omp parallel for
-  for (size_t i = 0; i < count; ++i) {
-    seal::MemoryPoolHandle pool = seal::MemoryPoolHandle::ThreadLocal();
-    seal::Ciphertext c(pool);
-
-    // TODO: load from string directly
-    const std::string& cipher_str = proto_msg.ciphers(i).ciphertext();
-    std::stringstream ss;
-    ss.str(cipher_str);
-    c.load(m_context, ss);
-    ciphertexts[i] = c;
-  }
   std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
-      he_cipher_inputs(ciphertexts.size());
+      he_cipher_inputs(count);
 #pragma omp parallel for
-  for (size_t cipher_idx = 0; cipher_idx < ciphertexts.size(); ++cipher_idx) {
-    auto wrapper = std::make_shared<ngraph::he::SealCiphertextWrapper>(
-        ciphertexts[cipher_idx]);
-    he_cipher_inputs[cipher_idx] = wrapper;
+  for (size_t cipher_idx = 0; cipher_idx < count; ++cipher_idx) {
+    ngraph::he::SealCiphertextWrapper::load(
+        he_cipher_inputs[cipher_idx], proto_msg.ciphers(cipher_idx), m_context);
+    he_cipher_inputs[cipher_idx]->complex_packing() = m_complex_packing;
   }
 
   // only support parameter size 1 for now
