@@ -118,8 +118,7 @@ class TCPClient {
             do_read_body(msg_len);
 
           } else {
-            // End of file is expected on teardown
-            if (ec.message() != "End of file") {
+            if (ec.message() != s_expected_teardown_message.c_str()) {
               NGRAPH_INFO << "Client error reading header: " << ec.message();
             }
           }
@@ -128,7 +127,6 @@ class TCPClient {
 
   void do_read_body(size_t body_length = 0) {
     NGRAPH_INFO << "Client reading body size " << body_length;
-
     m_read_buffer.resize(header_length + body_length);
 
     boost::asio::async_read(
@@ -141,8 +139,7 @@ class TCPClient {
             m_message_callback(m_read_message);
             do_read_header();
           } else {
-            // End of file is expected on teardown
-            if (ec.message() != "End of file") {
+            if (ec.message() != s_expected_teardown_message.c_str()) {
               NGRAPH_INFO << "Client error reading body: " << ec.message();
             }
           }
@@ -176,9 +173,9 @@ class TCPClient {
   TCPMessage m_read_message;
   std::deque<ngraph::he::TCPMessage> m_message_queue;
 
-  bool m_first_connect;
+  inline static std::string s_expected_teardown_message{"End of file"};
 
-  // How to handle the message
+  bool m_first_connect;
   std::function<void(const ngraph::he::TCPMessage&)> m_message_callback;
 };
 }  // namespace he
