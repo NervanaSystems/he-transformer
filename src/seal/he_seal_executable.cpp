@@ -100,7 +100,7 @@ ngraph::he::HESealExecutable::HESealExecutable(
       m_batch_size(1),
       m_port(34000),
       m_relu_done_count(0),
-      m_maxpool_done(false),
+      m_max_pool_done(false),
       m_session_started(false),
       m_client_inputs_received(false) {
   m_context = he_seal_backend.get_context();
@@ -341,6 +341,31 @@ void ngraph::he::HESealExecutable::handle_relu_result(
   m_relu_cond.notify_all();
 }
 
+void ngraph::he::HESealExecutable::handle_max_pool_result(
+    const he_proto::TCPMessage& proto_msg) {
+  std::lock_guard<std::mutex> guard(m_max_pool_mutex);
+  size_t message_count = proto_msg.ciphers_size();
+  NGRAPH_INFO << "handle_max_pool_result with count " << message_count;
+
+#pragma omp parallel for
+  for (size_t element_idx = 0; element_idx < message_count; ++element_idx) {
+    seal::Ciphertext cipher;
+    // TODO: load from string directly
+    const std::string& cipher_str = proto_msg.ciphers(element_idx).ciphertext();
+    std::stringstream ss;
+    ss.str(cipher_str);
+    cipher.load(m_context, ss);
+
+    auto new_cipher = std::make_shared<ngraph::he::SealCiphertextWrapper>(
+        cipher, m_complex_packing);
+
+    m_relu_ciphertexts[m_unknown_relu_idx[element_idx + m_relu_done_count]] =
+        new_cipher;
+  }
+  m_relu_done_count += message_count;
+  m_relu_cond.notify_all();
+}
+
 void ngraph::he::HESealExecutable::handle_message(
     const ngraph::he::TCPMessage& message) {
   std::shared_ptr<he_proto::TCPMessage> proto_msg = message.proto_message();
@@ -369,6 +394,8 @@ void ngraph::he::HESealExecutable::handle_message(
         } else if (name == "Bounded_Relu") {
           NGRAPH_INFO << "Unknown name " << name;
           // handle_bounded_relu_request(*proto_msg);
+        } else if (name == "MaxPool") {
+          handle_max_pool_result(*proto_msg);
         } else {
           NGRAPH_INFO << "Unknown name " << name;
         }
@@ -1680,8 +1707,8 @@ void ngraph::he::HESealExecutable::handle_server_max_pool_op(
   bool verbose = verbose_op(node);
   const op::MaxPool* max_pool = static_cast<const op::MaxPool*>(&node);
 
-  m_maxpool_ciphertexts.clear();
-  m_maxpool_done = false;
+  m_max_pool_ciphertexts.clear();
+  m_max_pool_done = false;
 
   Shape packed_out_shape = node.get_output_shape(0);
   Shape packed_arg_shape =
@@ -1729,16 +1756,16 @@ void ngraph::he::HESealExecutable::handle_server_max_pool_op(
     m_session->write_message(std::move(max_pool_message));
 
     // Acquire lock
-    std::unique_lock<std::mutex> mlock(m_maxpool_mutex);
+    std::unique_lock<std::mutex> mlock(m_max_pool_mutex);
 
     // Wait until max is done
-    m_maxpool_cond.wait(mlock,
-                        std::bind(&HESealExecutable::maxpool_done, this));
+    m_max_pool_cond.wait(mlock,
+                         std::bind(&HESealExecutable::max_pool_done, this));
 
-    // Reset for next maxpool call
-    m_maxpool_done = false;
+    // Reset for next max_pool call
+    m_max_pool_done = false;
   }
-  out_cipher->set_elements(m_maxpool_ciphertexts);
+  out_cipher->set_elements(m_max_pool_ciphertexts);
 }
 
 void ngraph::he::HESealExecutable::handle_server_relu_op(
