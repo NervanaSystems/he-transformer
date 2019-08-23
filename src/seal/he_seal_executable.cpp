@@ -752,9 +752,7 @@ void ngraph::he::HESealExecutable::send_client_results() {
                "Client outputs are not HESealCipherTensor");
 
   for (const auto& ciphertext_wrapper : output_cipher_tensor->get_elements()) {
-    he_proto::SealCiphertextWrapper* proto_cipher_wrapper =
-        proto_msg.add_ciphers();
-    ciphertext_wrapper->save(*proto_cipher_wrapper);
+    ciphertext_wrapper->save(*proto_msg.add_ciphers());
   }
 
   NGRAPH_INFO << "Writing Result message with " << proto_msg.ciphers_size()
@@ -1710,9 +1708,7 @@ void ngraph::he::HESealExecutable::handle_server_max_pool_op(
     *proto_msg.mutable_function() = f;
 
     for (const size_t max_ind : maximize_list[list_ind]) {
-      NGRAPH_INFO << "Max ind " << max_ind;
-      he_proto::SealCiphertextWrapper* proto_cipher = proto_msg.add_ciphers();
-      arg0_cipher->get_element(max_ind)->save(*proto_cipher);
+      arg0_cipher->get_element(max_ind)->save(*proto_msg.add_ciphers());
     }
 
     // Send list of ciphertexts to maximize over to client
@@ -1804,12 +1800,8 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
         f.set_function(js.dump());
         *proto_msg.mutable_function() = f;
 
-        for (size_t cipher_idx = 0; cipher_idx < cipher_batch.size();
-             ++cipher_idx) {
-          he_proto::SealCiphertextWrapper* proto_cipher =
-              proto_msg.add_ciphers();
-
-          cipher_batch[cipher_idx]->save(*proto_cipher);
+        for (const auto& cipher : cipher_batch) {
+          cipher->save(*proto_msg.add_ciphers());
         }
 
         ngraph::he::TCPMessage relu_message(proto_msg);

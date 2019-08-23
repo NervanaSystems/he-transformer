@@ -180,13 +180,7 @@ void ngraph::he::HESealClient::handle_inference_request(
   encrypted_inputs_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
 
   for (size_t data_idx = 0; data_idx < ciphers.size(); ++data_idx) {
-    he_proto::SealCiphertextWrapper* proto_cipher =
-        encrypted_inputs_msg.add_ciphers();
-    proto_cipher->set_known_value(false);
-    // TODO: save directly to protobuf
-    std::stringstream s;
-    ciphers[data_idx]->ciphertext().save(s);
-    proto_cipher->set_ciphertext(s.str());
+    ciphers[data_idx]->save(*encrypted_inputs_msg.add_ciphers());
   }
 
   NGRAPH_INFO << "Creating execute message";
@@ -271,12 +265,7 @@ void ngraph::he::HESealClient::handle_relu_request(
                                  m_context->first_parms_id(), m_scale,
                                  *m_ckks_encoder, *m_encryptor, *m_decryptor);
 
-    he_proto::SealCiphertextWrapper* proto_cipher = proto_relu.add_ciphers();
-    proto_cipher->set_known_value(false);
-    // TODO: save directly to protobuf
-    std::stringstream s;
-    post_relu_cipher->ciphertext().save(s);
-    proto_cipher->set_ciphertext(s.str());
+    post_relu_cipher->save(*proto_relu.add_ciphers());
   }
 
   ngraph::he::TCPMessage relu_result_msg(proto_relu);
