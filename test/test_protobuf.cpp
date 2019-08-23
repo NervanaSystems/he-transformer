@@ -18,28 +18,13 @@
 #include <memory>
 
 #include "gtest/gtest.h"
-#include "helloworld.pb.h"
-#include "message.pb.h"
+#include "protos/message.pb.h"
 #include "seal/seal.h"
 #include "tcp/tcp_message.hpp"
 
 using namespace std;
 
 TEST(protobuf, trivial) { EXPECT_EQ(1, 1); }
-
-TEST(protobuf, serialize) {
-  helloworld::HelloRequest request;
-  request.set_name("name");
-  EXPECT_EQ(request.name(), "name");
-
-  std::stringstream s;
-  request.SerializeToOstream(&s);
-
-  helloworld::HelloRequest deserialize;
-  deserialize.ParseFromIstream(&s);
-
-  EXPECT_EQ(deserialize.name(), request.name());
-}
 
 TEST(protobuf, serialize_cipher) {
   he_proto::TCPMessage message;

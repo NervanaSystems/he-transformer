@@ -123,6 +123,7 @@ libraries = ['he_seal_backend']
 
 data_files = [('lib', [(NGRAPH_HE_LIB_DIR + '/' + library)
                        for library in os.listdir(NGRAPH_HE_LIB_DIR)])]
+print('data_files', data_files)
 
 sources = ['pyhe_client/he_seal_client.cpp', 'pyhe_client/pyhe_client.cpp']
 sources = [PYNGRAPH_ROOT_DIR + '/' + source for source in sources]

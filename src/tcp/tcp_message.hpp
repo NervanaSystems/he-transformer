@@ -27,10 +27,10 @@
 #include <sstream>
 #include <string>
 
-#include "message.pb.h"
 #include "ngraph/check.hpp"
 #include "ngraph/log.hpp"
 #include "ngraph/util.hpp"
+#include "protos/message.pb.h"
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_util.hpp"
