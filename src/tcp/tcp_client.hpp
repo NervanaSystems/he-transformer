@@ -38,15 +38,13 @@ class TCPClient {
   size_t header_length = ngraph::he::TCPMessage::header_length;
   // Connects client to hostname:port and reads message
   // message_handler will handle responses from the server
-  TCPClient(
-      boost::asio::io_context& io_context,
-      const tcp::resolver::results_type& endpoints,
-      std::function<void(const ngraph::he::TCPMessage&)> message_handler)
+  TCPClient(boost::asio::io_context& io_context,
+            const tcp::resolver::results_type& endpoints,
+            std::function<void(const ngraph::he::TCPMessage&)> message_handler)
       : m_io_context(io_context),
         m_socket(io_context),
         m_first_connect(true),
-        m_message_callback(
-            std::bind(message_handler, std::placeholders::_1)) {
+        m_message_callback(std::bind(message_handler, std::placeholders::_1)) {
     do_connect(endpoints);
   }
 
@@ -153,24 +151,28 @@ class TCPClient {
 
   void do_write() {
     NGRAPH_INFO << "Client writing message";
-
     auto message = m_message_queue.front();
-    data_buffer write_buf;
-    message.pack(write_buf);
+    message.pack(m_write_buffer);
 
-    boost::asio::write(m_socket, boost::asio::buffer(write_buf));
-
-    m_message_queue.pop_front();
-    if (!m_message_queue.empty()) {
-      NGRAPH_INFO << "client writing queue not empty; writing again";
-      do_write();
-    }
+    boost::asio::async_write(
+        m_socket, boost::asio::buffer(m_write_buffer),
+        [this](boost::system::error_code ec, std::size_t length) {
+          if (!ec) {
+            m_message_queue.pop_front();
+            if (!m_message_queue.empty()) {
+              do_write();
+            }
+          } else {
+            NGRAPH_INFO << "Client error writing message: " << ec.message();
+          }
+        });
   }
 
   boost::asio::io_context& m_io_context;
   tcp::socket m_socket;
 
   data_buffer m_read_buffer;
+  data_buffer m_write_buffer;
   TCPMessage m_read_message;
   std::deque<ngraph::he::TCPMessage> m_message_queue;
 
