@@ -23,7 +23,7 @@ set(
   https://github.com/protocolbuffers/protobuf/releases/download/v3.9.1/protobuf-cpp-3.9.1.tar.gz
   )
 
-message("Extnerali nstall dir ${EXTERNAL_INSTALL_DIR}")
+message("Extneral install dir ${EXTERNAL_INSTALL_DIR}")
 
 ExternalProject_Add(
   ext_protobuf
@@ -83,8 +83,6 @@ add_custom_target(protobuf_files ALL
 
 add_library(libprotobuf INTERFACE)
 # Include generated *.pb.h files
-target_include_directories(libprotobuf
-                           INTERFACE ${CMAKE_CURRENT_BINARY_DIR}
-                                     ${EXTERNAL_INSTALL_DIR} ${SOURCE_DIR}/src)
+target_include_directories(libprotobuf INTERFACE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(libprotobuf INTERFACE libprotobuf_orig)
 add_dependencies(libprotobuf libprotobuf_orig protobuf_files)

@@ -107,27 +107,33 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
     NGRAPH_INFO << "m_message_queue.size() " << m_message_queue.size();
 
     auto message = m_message_queue.front();
-    data_buffer write_buf;
-    message.pack(write_buf);
 
-    NGRAPH_INFO << "Buffer size " << write_buf.size();
+    message.pack(m_write_buffer);
 
-    boost::asio::write(m_socket, boost::asio::buffer(write_buf));
-    m_message_queue.pop_front();
+    NGRAPH_INFO << "Buffer size " << m_write_buffer.size();
 
-    if (!m_message_queue.empty()) {
-      NGRAPH_INFO << "Message queue not empty; do_write()";
-      do_write();
-    } else {
-      NGRAPH_INFO << "Notifying done writing";
-      m_is_writing.notify_all();
-    }
+    boost::asio::async_write(
+        m_socket, boost::asio::buffer(m_write_buffer),
+        [this, self](boost::system::error_code ec, std::size_t length) {
+          if (!ec) {
+            m_message_queue.pop_front();
+            if (!m_message_queue.empty()) {
+              do_write();
+            } else {
+              m_is_writing.notify_all();
+            }
+          } else {
+            NGRAPH_INFO << "Server error writing message: " << ec.message();
+          }
+        });
   }
 
  private:
   std::deque<ngraph::he::TCPMessage> m_message_queue;
-  data_buffer m_read_buffer;
   TCPMessage m_read_message;
+
+  data_buffer m_read_buffer;
+  data_buffer m_write_buffer;
   tcp::socket m_socket;
   bool m_writing;
   std::condition_variable m_is_writing;
