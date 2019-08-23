@@ -328,23 +328,25 @@ void ngraph::he::HESealClient::handle_message(
           handle_relu_request(*proto_msg);
         } else if (name == "Bounded_Relu") {
           handle_bounded_relu_request(*proto_msg);
+        } else if (name == "MaxPool") {
+          handle_max_pool_request(*proto_msg);
+          else {
+            NGRAPH_INFO << "Unknown name " << name;
+          }
         } else {
-          NGRAPH_INFO << "Unknown name " << name;
+          NGRAPH_CHECK(false, "Unknown REQUEST type");
         }
-      } else {
-        NGRAPH_CHECK(false, "Unknown REQUEST type");
+
+        break;
       }
-
-      break;
+      case he_proto::TCPMessage_Type_UNKNOWN:
+      default:
+        NGRAPH_CHECK(false, "Unknonwn TCPMesage type");
     }
-    case he_proto::TCPMessage_Type_UNKNOWN:
-    default:
-      NGRAPH_CHECK(false, "Unknonwn TCPMesage type");
   }
-}
 
-void ngraph::he::HESealClient::close_connection() {
-  NGRAPH_INFO << "Closing connection";
-  m_tcp_client->close();
-  m_is_done = true;
-}
+  void ngraph::he::HESealClient::close_connection() {
+    NGRAPH_INFO << "Closing connection";
+    m_tcp_client->close();
+    m_is_done = true;
+  }
