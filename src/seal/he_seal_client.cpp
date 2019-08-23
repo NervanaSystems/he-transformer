@@ -386,7 +386,7 @@ void ngraph::he::HESealClient::handle_message(
           handle_relu_request(*proto_msg);
         } else if (name == "Bounded_Relu") {
           handle_bounded_relu_request(*proto_msg);
-        } else if (name == "max_pool") {
+        } else if (name == "MaxPool") {
           handle_max_pool_request(*proto_msg);
         } else {
           NGRAPH_INFO << "Unknown name " << name;

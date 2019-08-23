@@ -347,23 +347,22 @@ void ngraph::he::HESealExecutable::handle_max_pool_result(
   size_t message_count = proto_msg.ciphers_size();
   NGRAPH_INFO << "handle_max_pool_result with count " << message_count;
 
-#pragma omp parallel for
-  for (size_t element_idx = 0; element_idx < message_count; ++element_idx) {
-    seal::Ciphertext cipher;
-    // TODO: load from string directly
-    const std::string& cipher_str = proto_msg.ciphers(element_idx).ciphertext();
-    std::stringstream ss;
-    ss.str(cipher_str);
-    cipher.load(m_context, ss);
+  NGRAPH_CHECK(message_count == 1,
+               "Maxpool only supports message count 1, got ", message_count);
 
-    auto new_cipher = std::make_shared<ngraph::he::SealCiphertextWrapper>(
-        cipher, m_complex_packing);
+  seal::Ciphertext cipher;
+  // TODO: load from string directly
+  const std::string& cipher_str = proto_msg.ciphers(0).ciphertext();
+  std::stringstream ss;
+  ss.str(cipher_str);
+  cipher.load(m_context, ss);
 
-    m_relu_ciphertexts[m_unknown_relu_idx[element_idx + m_relu_done_count]] =
-        new_cipher;
-  }
-  m_relu_done_count += message_count;
-  m_relu_cond.notify_all();
+  auto new_cipher = std::make_shared<ngraph::he::SealCiphertextWrapper>(
+      cipher, m_complex_packing);
+
+  m_max_pool_ciphertexts.emplace_back(new_cipher);
+  m_max_pool_done = true;
+  m_max_pool_cond.notify_all();
 }
 
 void ngraph::he::HESealExecutable::handle_message(
@@ -1707,7 +1706,6 @@ void ngraph::he::HESealExecutable::handle_server_max_pool_op(
   bool verbose = verbose_op(node);
   const op::MaxPool* max_pool = static_cast<const op::MaxPool*>(&node);
 
-  m_max_pool_ciphertexts.clear();
   m_max_pool_done = false;
 
   Shape packed_out_shape = node.get_output_shape(0);
@@ -1718,6 +1716,8 @@ void ngraph::he::HESealExecutable::handle_server_max_pool_op(
       packed_arg_shape, packed_out_shape, max_pool->get_window_shape(),
       max_pool->get_window_movement_strides(), max_pool->get_padding_below(),
       max_pool->get_padding_above());
+
+  m_max_pool_ciphertexts.clear();
 
   for (size_t list_ind = 0; list_ind < maximize_list.size(); list_ind++) {
     he_proto::TCPMessage proto_msg;
@@ -1765,7 +1765,9 @@ void ngraph::he::HESealExecutable::handle_server_max_pool_op(
     // Reset for next max_pool call
     m_max_pool_done = false;
   }
+  NGRAPH_INFO << "Done with maxpool calling; setting elements";
   out_cipher->set_elements(m_max_pool_ciphertexts);
+  NGRAPH_INFO << "Done setting maxpool elements";
 }
 
 void ngraph::he::HESealExecutable::handle_server_relu_op(
@@ -1790,6 +1792,7 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
   if (verbose) {
     NGRAPH_INFO << "Matched moduli to chain ind " << smallest_ind;
   }
+
   m_relu_ciphertexts.clear();
   m_relu_ciphertexts.resize(element_count);
   for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
