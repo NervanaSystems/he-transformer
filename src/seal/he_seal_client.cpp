@@ -271,16 +271,8 @@ void ngraph::he::HESealClient::handle_max_pool_request(
 
 #pragma omp parallel for
   for (size_t cipher_idx = 0; cipher_idx < cipher_count; ++cipher_idx) {
-    seal::Ciphertext pre_max_pool_cipher;
-    max_pool_ciphers[cipher_idx] = std::make_shared<SealCiphertextWrapper>();
-
-    // TODO: load from string directly
-    const std::string& cipher_str = proto_msg.ciphers(cipher_idx).ciphertext();
-    std::stringstream ss;
-    ss.str(cipher_str);
-    pre_max_pool_cipher.load(m_context, ss);
-
-    max_pool_ciphers[cipher_idx]->ciphertext() = pre_max_pool_cipher;
+    ngraph::he::SealCiphertextWrapper::load(
+        max_pool_ciphers[cipher_idx], proto_msg.ciphers(cipher_idx), m_context);
     max_pool_ciphers[cipher_idx]->complex_packing() = complex_packing();
   }
 
@@ -296,19 +288,7 @@ void ngraph::he::HESealClient::handle_max_pool_request(
   proto_max_pool.set_type(he_proto::TCPMessage_Type_RESPONSE);
   *proto_max_pool.mutable_function() = proto_msg.function();
 
-  // TODO: replace with function
-  auto result_cipher_wrapper = post_max_pool_ciphers[0];
-  he_proto::SealCiphertextWrapper* proto_cipher = proto_max_pool.add_ciphers();
-  proto_cipher->set_known_value(result_cipher_wrapper->known_value());
-  if (result_cipher_wrapper->known_value()) {
-    proto_cipher->set_value(result_cipher_wrapper->value());
-  } else {
-    // TODO: write directly to ciphertext
-    std::stringstream ss;
-    result_cipher_wrapper->ciphertext().save(ss);
-    proto_cipher->set_ciphertext(ss.str());
-  }
-
+  post_max_pool_ciphers[0]->save(*proto_max_pool.add_ciphers());
   ngraph::he::TCPMessage max_pool_result_msg(proto_max_pool);
 
   NGRAPH_INFO << "Writing max_pool result";
