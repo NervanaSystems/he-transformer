@@ -1706,22 +1706,31 @@ void ngraph::he::HESealExecutable::handle_server_max_pool_op(
   bool verbose = verbose_op(node);
   const op::MaxPool* max_pool = static_cast<const op::MaxPool*>(&node);
 
+  NGRAPH_INFO << "Handling server maxpool op";
+
   m_max_pool_done = false;
 
-  Shape packed_out_shape = node.get_output_shape(0);
-  Shape packed_arg_shape =
-      ngraph::he::HETensor::pack_shape(node.get_input_shape(0));
+  Shape unpacked_arg_shape = node.get_input_shape(0);
+  Shape packed_out_shape =
+      ngraph::he::HETensor::pack_shape(node.get_output_shape(0));
+
+  NGRAPH_INFO << "unpacked_arg_shape " << join(unpacked_arg_shape, "x");
+  NGRAPH_INFO << "packed_out_shape " << join(packed_out_shape, "x");
 
   std::vector<std::vector<size_t>> maximize_list = ngraph::he::max_pool_seal(
-      packed_arg_shape, packed_out_shape, max_pool->get_window_shape(),
+      unpacked_arg_shape, packed_out_shape, max_pool->get_window_shape(),
       max_pool->get_window_movement_strides(), max_pool->get_padding_below(),
       max_pool->get_padding_above());
+
+  NGRAPH_INFO << "maximize_list.size " << maximize_list.size();
 
   m_max_pool_ciphertexts.clear();
 
   for (size_t list_ind = 0; list_ind < maximize_list.size(); list_ind++) {
     he_proto::TCPMessage proto_msg;
     proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
+
+    NGRAPH_INFO << "List in " << list_ind;
 
     json js;
     js["function"] = node.description();
@@ -1732,6 +1741,7 @@ void ngraph::he::HESealExecutable::handle_server_max_pool_op(
     *proto_msg.mutable_function() = f;
 
     for (const size_t max_ind : maximize_list[list_ind]) {
+      NGRAPH_INFO << "Max ind " << max_ind;
       auto& cipher = arg0_cipher->get_element(max_ind);
       he_proto::SealCiphertextWrapper* proto_cipher = proto_msg.add_ciphers();
       proto_cipher->set_known_value(cipher->known_value());
