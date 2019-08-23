@@ -67,6 +67,24 @@ class SealCiphertextWrapper {
     proto_cipher.set_ciphertext(s.str());
   }
 
+  static inline void load(
+      std::shared_ptr<ngraph::he::SealCiphertextWrapper>& dst,
+      const he_proto::SealCiphertextWrapper& src,
+      std::shared_ptr<seal::SEALContext> context) {
+    dst = std::make_shared<ngraph::he::SealCiphertextWrapper>();
+
+    if (src.known_value()) {
+      dst->known_value() = true;
+      dst->value() = src.value();
+    } else {
+      // TODO: load from string directly
+      const std::string& cipher_str = src.ciphertext();
+      std::stringstream ss;
+      ss.str(cipher_str);
+      dst->ciphertext().load(context, ss);
+    }
+  }
+
  private:
   seal::Ciphertext m_ciphertext;
   bool m_complex_packing;

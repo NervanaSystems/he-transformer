@@ -350,15 +350,10 @@ void ngraph::he::HESealExecutable::handle_max_pool_result(
   NGRAPH_CHECK(message_count == 1,
                "Maxpool only supports message count 1, got ", message_count);
 
-  seal::Ciphertext cipher;
-  // TODO: load from string directly
-  const std::string& cipher_str = proto_msg.ciphers(0).ciphertext();
-  std::stringstream ss;
-  ss.str(cipher_str);
-  cipher.load(m_context, ss);
-
-  auto new_cipher = std::make_shared<ngraph::he::SealCiphertextWrapper>(
-      cipher, m_complex_packing);
+  std::shared_ptr<ngraph::he::SealCiphertextWrapper> new_cipher;
+  ngraph::he::SealCiphertextWrapper::load(new_cipher, proto_msg.ciphers(0),
+                                          m_context);
+  new_cipher->complex_packing() = m_complex_packing;
 
   m_max_pool_ciphertexts.emplace_back(new_cipher);
   m_max_pool_done = true;
