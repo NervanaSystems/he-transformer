@@ -1247,6 +1247,8 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::MaxPool: {
+      NGRAPH_INFO << "max pool op";
+
       const op::MaxPool* max_pool = static_cast<const op::MaxPool*>(&node);
       if (arg0_plain != nullptr && out0_plain != nullptr) {
         ngraph::he::max_pool_seal(
@@ -1278,59 +1280,8 @@ void ngraph::he::HESealExecutable::generate_calls(
             m_he_seal_backend);
         break;
       }
-      NGRAPH_CHECK(false, "Maxpool not supported yet");
 
-      m_maxpool_ciphertexts.clear();
-      m_maxpool_done = false;
-
-      std::vector<std::vector<size_t>> maximize_list =
-          ngraph::he::max_pool_seal(packed_arg_shapes[0], packed_out_shape,
-                                    max_pool->get_window_shape(),
-                                    max_pool->get_window_movement_strides(),
-                                    max_pool->get_padding_below(),
-                                    max_pool->get_padding_above());
-
-      size_t window_shape = ngraph::shape_size(max_pool->get_window_shape());
-
-      std::vector<seal::Ciphertext> maxpool_ciphers;
-      maxpool_ciphers.reserve(window_shape);
-      for (size_t list_ind = 0; list_ind < maximize_list.size(); list_ind++) {
-        size_t cipher_cnt = 0;
-        for (const size_t max_ind : maximize_list[list_ind]) {
-          auto& cipher = arg0_cipher->get_element(max_ind);
-          if (cipher->known_value()) {
-            // TODO: parallelize with 0s removed
-            NGRAPH_INFO << "Got max(known_value) at index " << max_ind;
-            throw ngraph_error("max(known_value) not allowed");
-          }
-          maxpool_ciphers.emplace_back(cipher->ciphertext());
-          cipher_cnt++;
-        }
-
-        // Send list of ciphertexts to maximize over to client
-        if (verbose) {
-          NGRAPH_INFO << "Sending " << cipher_cnt
-                      << " Maxpool ciphertexts to client";
-        }
-
-        NGRAPH_CHECK(false, "Maxpool not supported yet");
-
-        // auto maxpool_message =
-        //    TCPMessage(MessageType::maxpool_request, maxpool_ciphers);
-        // m_session->write_message(std::move(maxpool_message));
-
-        // Acquire lock
-        std::unique_lock<std::mutex> mlock(m_maxpool_mutex);
-
-        // Wait until max is done
-        m_maxpool_cond.wait(mlock,
-                            std::bind(&HESealExecutable::maxpool_done, this));
-
-        // Reset for next maxpool call
-        m_maxpool_done = false;
-        maxpool_ciphers.clear();
-      }
-      out0_cipher->set_elements(m_maxpool_ciphertexts);
+      handle_server_max_pool_op(arg0_cipher, out0_cipher, node_wrapper);
       break;
     }
     case OP_TYPEID::Minimum: {
@@ -1721,11 +1672,81 @@ void ngraph::he::HESealExecutable::generate_calls(
   }
 }
 
+void ngraph::he::HESealExecutable::handle_server_max_pool_op(
+    std::shared_ptr<HESealCipherTensor>& arg0_cipher,
+    std::shared_ptr<HESealCipherTensor>& out_cipher,
+    const NodeWrapper& node_wrapper) {
+  const Node& node = *node_wrapper.get_node();
+  bool verbose = verbose_op(node);
+  const op::MaxPool* max_pool = static_cast<const op::MaxPool*>(&node);
+
+  m_maxpool_ciphertexts.clear();
+  m_maxpool_done = false;
+
+  Shape packed_out_shape = node.get_output_shape(0);
+  Shape packed_arg_shape =
+      ngraph::he::HETensor::pack_shape(node.get_input_shape(0));
+
+  std::vector<std::vector<size_t>> maximize_list = ngraph::he::max_pool_seal(
+      packed_arg_shape, packed_out_shape, max_pool->get_window_shape(),
+      max_pool->get_window_movement_strides(), max_pool->get_padding_below(),
+      max_pool->get_padding_above());
+
+  size_t window_shape = ngraph::shape_size(max_pool->get_window_shape());
+
+  for (size_t list_ind = 0; list_ind < maximize_list.size(); list_ind++) {
+    he_proto::TCPMessage proto_msg;
+    proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
+
+    json js;
+    js["function"] = node.description();
+    NGRAPH_INFO << "Description " << js["function"];
+
+    he_proto::Function f;
+    f.set_function(js.dump());
+    *proto_msg.mutable_function() = f;
+
+    for (const size_t max_ind : maximize_list[list_ind]) {
+      auto& cipher = arg0_cipher->get_element(max_ind);
+      he_proto::SealCiphertextWrapper* proto_cipher = proto_msg.add_ciphers();
+      proto_cipher->set_known_value(cipher->known_value());
+      if (cipher->known_value()) {
+        proto_cipher->set_value(cipher->value());
+      } else {
+        // TODO: save directly to protobuf
+        std::stringstream s;
+        cipher->ciphertext().save(s);
+        proto_cipher->set_ciphertext(s.str());
+        NGRAPH_INFO << "Saved cipher " << max_ind;
+      }
+    }
+
+    // Send list of ciphertexts to maximize over to client
+    if (verbose) {
+      NGRAPH_INFO << "Sending " << proto_msg.ciphers_size()
+                  << " Maxpool ciphertexts to client";
+    }
+
+    ngraph::he::TCPMessage max_pool_message(proto_msg);
+    m_session->write_message(std::move(max_pool_message));
+
+    // Acquire lock
+    std::unique_lock<std::mutex> mlock(m_maxpool_mutex);
+
+    // Wait until max is done
+    m_maxpool_cond.wait(mlock,
+                        std::bind(&HESealExecutable::maxpool_done, this));
+
+    // Reset for next maxpool call
+    m_maxpool_done = false;
+  }
+  out_cipher->set_elements(m_maxpool_ciphertexts);
+}
+
 void ngraph::he::HESealExecutable::handle_server_relu_op(
     std::shared_ptr<HESealCipherTensor>& arg_cipher,
     std::shared_ptr<HESealCipherTensor>& out_cipher,
     const NodeWrapper& node_wrapper) {
-  NGRAPH_INFO << "Handle server relu op";
   NGRAPH_CHECK(node_wrapper.get_typeid() == OP_TYPEID::Relu,
                "only support relu for now");
 

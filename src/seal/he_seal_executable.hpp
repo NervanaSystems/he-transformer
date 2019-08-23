@@ -99,6 +99,10 @@ class HESealExecutable : public runtime::Executable {
   void handle_server_relu_op(std::shared_ptr<HESealCipherTensor>& arg0_cipher,
                              std::shared_ptr<HESealCipherTensor>& out_cipher,
                              const NodeWrapper& node_wrapper);
+  void handle_server_max_pool_op(
+      std::shared_ptr<HESealCipherTensor>& arg0_cipher,
+      std::shared_ptr<HESealCipherTensor>& out_cipher,
+      const NodeWrapper& node_wrapper);
 
   bool verbose_op(const ngraph::Node& op) {
     return m_verbose_all_ops ||
