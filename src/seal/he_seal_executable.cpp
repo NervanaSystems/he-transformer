@@ -777,15 +777,7 @@ void ngraph::he::HESealExecutable::send_client_results() {
   for (const auto& ciphertext_wrapper : output_cipher_tensor->get_elements()) {
     he_proto::SealCiphertextWrapper* proto_cipher_wrapper =
         proto_msg.add_ciphers();
-    proto_cipher_wrapper->set_known_value(ciphertext_wrapper->known_value());
-
-    if (ciphertext_wrapper->known_value()) {
-      proto_cipher_wrapper->set_value(ciphertext_wrapper->value());
-    }
-    // TODO: save directly to protobuf
-    std::stringstream s;
-    ciphertext_wrapper->ciphertext().save(s);
-    proto_cipher_wrapper->set_ciphertext(s.str());
+    ciphertext_wrapper->save(*proto_cipher_wrapper);
   }
 
   NGRAPH_INFO << "Writing Result message with " << proto_msg.ciphers_size()
@@ -1742,18 +1734,8 @@ void ngraph::he::HESealExecutable::handle_server_max_pool_op(
 
     for (const size_t max_ind : maximize_list[list_ind]) {
       NGRAPH_INFO << "Max ind " << max_ind;
-      auto& cipher = arg0_cipher->get_element(max_ind);
       he_proto::SealCiphertextWrapper* proto_cipher = proto_msg.add_ciphers();
-      proto_cipher->set_known_value(cipher->known_value());
-      if (cipher->known_value()) {
-        proto_cipher->set_value(cipher->value());
-      } else {
-        // TODO: save directly to protobuf
-        std::stringstream s;
-        cipher->ciphertext().save(s);
-        proto_cipher->set_ciphertext(s.str());
-        NGRAPH_INFO << "Saved cipher " << max_ind;
-      }
+      arg0_cipher->get_element(max_ind)->save(*proto_cipher);
     }
 
     // Send list of ciphertexts to maximize over to client
@@ -1828,7 +1810,8 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
     }
   }
   auto process_unknown_relu_ciphers_batch =
-      [&](const std::vector<seal::Ciphertext>& cipher_batch) {
+      [&](const std::vector<std::shared_ptr<SealCiphertextWrapper>>&
+              cipher_batch) {
         if (verbose) {
           NGRAPH_INFO << "Sending relu request size " << cipher_batch.size();
         }
@@ -1848,12 +1831,8 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
              ++cipher_idx) {
           he_proto::SealCiphertextWrapper* proto_cipher =
               proto_msg.add_ciphers();
-          proto_cipher->set_known_value(false);
-          // TODO: save directly to protobuf
-          std::stringstream s;
-          cipher_batch[cipher_idx].save(s);
-          proto_cipher->set_ciphertext(s.str());
-          NGRAPH_INFO << "Saved cipher " << cipher_idx;
+
+          cipher_batch[cipher_idx]->save(*proto_cipher);
         }
 
         ngraph::he::TCPMessage relu_message(proto_msg);
@@ -1861,11 +1840,11 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
       };
 
   // Process unknown values
-  std::vector<seal::Ciphertext> relu_ciphers_batch;
+  std::vector<std::shared_ptr<SealCiphertextWrapper>> relu_ciphers_batch;
   relu_ciphers_batch.reserve(max_relu_message_cnt);
 
   for (const auto& unknown_relu_idx : m_unknown_relu_idx) {
-    auto& cipher = arg_cipher->get_element(unknown_relu_idx)->ciphertext();
+    auto& cipher = arg_cipher->get_element(unknown_relu_idx);
     relu_ciphers_batch.emplace_back(cipher);
     if (relu_ciphers_batch.size() == max_relu_message_cnt) {
       process_unknown_relu_ciphers_batch(relu_ciphers_batch);

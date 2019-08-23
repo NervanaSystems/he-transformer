@@ -18,6 +18,7 @@
 
 #include <memory>
 
+#include "protos/message.pb.h"
 #include "seal/seal.h"
 
 namespace ngraph {
@@ -53,6 +54,18 @@ class SealCiphertextWrapper {
 
   bool complex_packing() const { return m_complex_packing; }
   bool& complex_packing() { return m_complex_packing; }
+
+  inline void save(he_proto::SealCiphertextWrapper& proto_cipher) {
+    proto_cipher.set_known_value(known_value());
+    if (known_value()) {
+      proto_cipher.set_value(value());
+    }
+
+    // TODO: save directly to protobuf
+    std::stringstream s;
+    m_ciphertext.save(s);
+    proto_cipher.set_ciphertext(s.str());
+  }
 
  private:
   seal::Ciphertext m_ciphertext;
