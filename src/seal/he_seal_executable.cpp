@@ -334,6 +334,10 @@ void ngraph::he::HESealExecutable::handle_relu_result(
   m_relu_done_count += message_count;
   m_relu_cond.notify_all();
 }
+void ngraph::he::HESealExecutable::handle_bounded_relu_result(
+    const he_proto::TCPMessage& proto_msg) {
+  handle_relu_result(proto_msg);
+}
 
 void ngraph::he::HESealExecutable::handle_max_pool_result(
     const he_proto::TCPMessage& proto_msg) {
@@ -378,9 +382,8 @@ void ngraph::he::HESealExecutable::handle_message(
         auto name = js.at("function");
         if (name == "Relu") {
           handle_relu_result(*proto_msg);
-        } else if (name == "Bounded_Relu") {
-          NGRAPH_INFO << "Unknown name " << name;
-          // handle_bounded_relu_request(*proto_msg);
+        } else if (name == "BoundedRelu") {
+          handle_bounded_relu_result(*proto_msg);
         } else if (name == "MaxPool") {
           handle_max_pool_result(*proto_msg);
         } else {
@@ -1736,8 +1739,9 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
     std::shared_ptr<HESealCipherTensor>& arg_cipher,
     std::shared_ptr<HESealCipherTensor>& out_cipher,
     const NodeWrapper& node_wrapper) {
-  NGRAPH_CHECK(node_wrapper.get_typeid() == OP_TYPEID::Relu,
-               "only support relu for now");
+  auto type_id = node_wrapper.get_typeid();
+  NGRAPH_CHECK(type_id == OP_TYPEID::Relu || type_id == OP_TYPEID::BoundedRelu,
+               "only support relu / bounded relu");
 
   const Node& node = *node_wrapper.get_node();
   bool verbose = verbose_op(node);
@@ -1767,14 +1771,20 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
   m_unknown_relu_idx.clear();
   m_unknown_relu_idx.reserve(element_count);
 
+  // TODO: don't just use 6
   float alpha = 6.0f;
 
   // Process known values
   for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
     auto& cipher = *arg_cipher->get_element(relu_idx);
     if (cipher.known_value()) {
-      ngraph::he::scalar_relu_seal_known_value(cipher,
-                                               m_relu_ciphertexts[relu_idx]);
+      if (type_id == OP_TYPEID::Relu) {
+        ngraph::he::scalar_relu_seal_known_value(cipher,
+                                                 m_relu_ciphertexts[relu_idx]);
+      } else {
+        ngraph::he::scalar_bounded_relu_seal_known_value(
+            cipher, m_relu_ciphertexts[relu_idx], alpha);
+      }
     } else {
       m_unknown_relu_idx.emplace_back(relu_idx);
     }

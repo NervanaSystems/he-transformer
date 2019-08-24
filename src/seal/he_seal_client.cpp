@@ -249,11 +249,36 @@ void ngraph::he::HESealClient::handle_relu_request(
 void ngraph::he::HESealClient::handle_bounded_relu_request(
     const he_proto::TCPMessage& proto_msg) {
   NGRAPH_INFO << "Handling bounded_relu request";
+  NGRAPH_CHECK(proto_msg.has_function(), "Proto message doesn't have function");
 
-  /* ngraph::he::scalar_bounded_relu_seal(
-      wrapped_cipher, post_relu_ciphers[result_idx], 6.0f,
-      m_context->first_parms_id(), m_scale, *m_ckks_encoder, *m_encryptor,
-      *m_decryptor); */
+  he_proto::TCPMessage proto_relu;
+  proto_relu.set_type(he_proto::TCPMessage_Type_RESPONSE);
+  *proto_relu.mutable_function() = proto_msg.function();
+
+  size_t result_count = proto_msg.ciphers_size();
+  NGRAPH_INFO << "result_count " << result_count;
+
+  // TODO: parallelize
+  for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
+    NGRAPH_CHECK(!proto_msg.ciphers(result_idx).known_value(),
+                 "Client should not receive known-valued relu values");
+
+    auto post_bounded_relu_cipher = std::make_shared<SealCiphertextWrapper>();
+    ngraph::he::SealCiphertextWrapper::load(
+        post_bounded_relu_cipher, proto_msg.ciphers(result_idx), m_context);
+
+    ngraph::he::scalar_bounded_relu_seal(
+        *post_bounded_relu_cipher, post_bounded_relu_cipher, 6.0f,
+        m_context->first_parms_id(), m_scale, *m_ckks_encoder, *m_encryptor,
+        *m_decryptor);
+    post_bounded_relu_cipher->save(*proto_relu.add_ciphers());
+  }
+
+  ngraph::he::TCPMessage bounded_relu_result_msg(proto_relu);
+
+  NGRAPH_INFO << "Writing bounded relu result";
+  write_message(bounded_relu_result_msg);
+  return;
 }
 
 void ngraph::he::HESealClient::handle_max_pool_request(
@@ -323,7 +348,7 @@ void ngraph::he::HESealClient::handle_message(
           handle_inference_request(*proto_msg);
         } else if (name == "Relu") {
           handle_relu_request(*proto_msg);
-        } else if (name == "Bounded_Relu") {
+        } else if (name == "BoundedRelu") {
           handle_bounded_relu_request(*proto_msg);
         } else if (name == "MaxPool") {
           handle_max_pool_request(*proto_msg);
@@ -333,7 +358,6 @@ void ngraph::he::HESealClient::handle_message(
       } else {
         NGRAPH_CHECK(false, "Unknown REQUEST type");
       }
-
       break;
     }
     case he_proto::TCPMessage_Type_UNKNOWN:

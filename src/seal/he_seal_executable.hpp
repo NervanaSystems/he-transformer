@@ -89,6 +89,7 @@ class HESealExecutable : public runtime::Executable {
 
   void handle_client_ciphers(const he_proto::TCPMessage& proto_msg);
   void handle_relu_result(const he_proto::TCPMessage& proto_msg);
+  void handle_bounded_relu_result(const he_proto::TCPMessage& proto_msg);
   void handle_max_pool_result(const he_proto::TCPMessage& proto_msg);
 
   void send_client_results();
