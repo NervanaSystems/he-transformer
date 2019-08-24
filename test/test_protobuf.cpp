@@ -131,11 +131,13 @@ TEST(seal_cipher_wrapper, load_save) {
   auto t1 = Clock::now();
   cipher.save(proto_cipher);
   auto t2 = Clock::now();
+  NGRAPH_INFO << "save ok";
 
   std::shared_ptr<ngraph::he::SealCiphertextWrapper> cipher_load;
   auto t3 = Clock::now();
   ngraph::he::SealCiphertextWrapper::load(cipher_load, proto_cipher, context);
   auto t4 = Clock::now();
+  NGRAPH_INFO << "load ok";
 
   std::stringstream ss_load;
   cipher_load->ciphertext().save(ss_load);
@@ -146,10 +148,10 @@ TEST(seal_cipher_wrapper, load_save) {
 
   NGRAPH_INFO
       << "Save time "
-      << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count()
-      << "ms";
+      << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
+      << "us";
   NGRAPH_INFO
       << "Load time "
-      << std::chrono::duration_cast<std::chrono::milliseconds>(t4 - t3).count()
-      << "ms";
+      << std::chrono::duration_cast<std::chrono::microseconds>(t4 - t3).count()
+      << "us";
 }

@@ -28,6 +28,10 @@
 
 namespace ngraph {
 namespace he {
+class SealCiphertextWrapper;
+class SealPlaintextWrapper;
+class HESealBackend;
+
 void print_seal_context(const seal::SEALContext& context);
 
 inline double choose_scale(
@@ -42,19 +46,11 @@ inline double choose_scale(
   }
 }
 
-inline size_t get_chain_index(const SealCiphertextWrapper& cipher,
-                              const HESealBackend& he_seal_backend) {
-  return he_seal_backend.get_context()
-      ->get_context_data(cipher.ciphertext().parms_id())
-      ->chain_index();
-}
+size_t get_chain_index(const SealCiphertextWrapper& cipher,
+                       const HESealBackend& he_seal_backend);
 
-inline size_t get_chain_index(const SealPlaintextWrapper& plain,
-                              const HESealBackend& he_seal_backend) {
-  return he_seal_backend.get_context()
-      ->get_context_data(plain.plaintext().parms_id())
-      ->chain_index();
-}
+size_t get_chain_index(const SealPlaintextWrapper& plain,
+                       const HESealBackend& he_seal_backend);
 
 // Returns the smallest chain index
 size_t match_to_smallest_chain_index(
@@ -73,8 +69,7 @@ inline bool within_rescale_tolerance(const S& arg0, const T& arg1,
 }
 
 template <typename S, typename T>
-inline void match_scale(S& arg0, T& arg1,
-                        const HESealBackend& he_seal_backend) {
+inline void match_scale(S& arg0, T& arg1) {
   auto scale0 = arg0.scale();
   auto scale1 = arg1.scale();
   bool scale_ok = within_rescale_tolerance(arg0, arg1);
@@ -197,10 +192,6 @@ void decrypt(ngraph::he::HEPlaintext& output, const seal::Ciphertext& input,
              bool complex_packing, seal::Decryptor& decryptor,
              seal::CKKSEncoder& ckks_encoder);
 
-void save(const seal::Ciphertext& cipher, void* destination);
-
-void load(seal::Ciphertext& cipher, std::shared_ptr<seal::SEALContext> context,
-          void* src);
 
 }  // namespace he
 }  // namespace ngraph
