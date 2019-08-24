@@ -60,6 +60,7 @@ class SealCiphertextWrapper {
     if (known_value()) {
       proto_cipher.set_value(value());
     }
+    proto_cipher.set_complex_packing(complex_packing());
 
     // TODO: save directly to protobuf
     std::stringstream s;
@@ -72,6 +73,7 @@ class SealCiphertextWrapper {
       const he_proto::SealCiphertextWrapper& src,
       std::shared_ptr<seal::SEALContext> context) {
     dst = std::make_shared<ngraph::he::SealCiphertextWrapper>();
+    dst->complex_packing() = src.complex_packing();
 
     if (src.known_value()) {
       dst->known_value() = true;

@@ -34,7 +34,8 @@ message Function {
 }
 
 message SealCiphertextWrapper {
-  bool known_value = 1;
-  float value = 2;
-  bytes ciphertext = 3;
+  bool complex_packing = 1;
+  bool known_value = 2;
+  float value = 3;
+  bytes ciphertext = 4;
 }

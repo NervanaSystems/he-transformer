@@ -88,3 +88,51 @@ TEST(tcp_message, pack_unpack) {
   EXPECT_TRUE(google::protobuf::util::MessageDifferencer::Equals(
       *message1.proto_message(), *message2.proto_message()));
 }
+
+TEST(seal_cipher_wrapper, load_save) {
+  using namespace seal;
+  EncryptionParameters parms(scheme_type::CKKS);
+  size_t poly_modulus_degree = 8192;
+  parms.set_poly_modulus_degree(poly_modulus_degree);
+  parms.set_coeff_modulus(
+      CoeffModulus::Create(poly_modulus_degree, {60, 40, 40, 60}));
+
+  auto context = SEALContext::Create(parms);
+
+  KeyGenerator keygen(context);
+  auto public_key = keygen.public_key();
+  auto secret_key = keygen.secret_key();
+  auto relin_keys = keygen.relin_keys();
+
+  Encryptor encryptor(context, public_key);
+  Evaluator evaluator(context);
+  Decryptor decryptor(context, secret_key);
+  CKKSEncoder encoder(context);
+
+  vector<double> input{0.0, 1.1, 2.2, 3.3};
+
+  Plaintext plain;
+  double scale = pow(2.0, 40);
+  encoder.encode(input, scale, plain);
+  seal::Ciphertext c;
+  encryptor.encrypt(plain, c);
+  std::stringstream ss_save;
+  c.save(ss_save);
+
+  he_proto::SealCiphertextWrapper proto_cipher;
+
+  ngraph::he::SealCiphertextWrapper cipher;
+  cipher.ciphertext() = c;
+  cipher.complex_packing() = true;
+  cipher.known_value() = false;
+  cipher.save(proto_cipher);
+
+  std::shared_ptr<ngraph::he::SealCiphertextWrapper> cipher_load;
+  ngraph::he::SealCiphertextWrapper::load(cipher_load, proto_cipher, context);
+  std::stringstream ss_load;
+  cipher_load->ciphertext().save(ss_load);
+
+  EXPECT_EQ(cipher.complex_packing(), cipher_load->complex_packing());
+  EXPECT_EQ(cipher.known_value(), cipher_load->known_value());
+  EXPECT_EQ(ss_save.str(), ss_load.str());
+}

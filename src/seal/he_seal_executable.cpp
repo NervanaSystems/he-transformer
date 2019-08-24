@@ -327,7 +327,6 @@ void ngraph::he::HESealExecutable::handle_relu_result(
     std::shared_ptr<ngraph::he::SealCiphertextWrapper> new_cipher;
     ngraph::he::SealCiphertextWrapper::load(
         new_cipher, proto_msg.ciphers(element_idx), m_context);
-    new_cipher->complex_packing() = m_complex_packing;
 
     m_relu_ciphertexts[m_unknown_relu_idx[element_idx + m_relu_done_count]] =
         new_cipher;
@@ -348,7 +347,6 @@ void ngraph::he::HESealExecutable::handle_max_pool_result(
   std::shared_ptr<ngraph::he::SealCiphertextWrapper> new_cipher;
   ngraph::he::SealCiphertextWrapper::load(new_cipher, proto_msg.ciphers(0),
                                           m_context);
-  new_cipher->complex_packing() = m_complex_packing;
 
   m_max_pool_ciphertexts.emplace_back(new_cipher);
   m_max_pool_done = true;
@@ -416,7 +414,6 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
   for (size_t cipher_idx = 0; cipher_idx < count; ++cipher_idx) {
     ngraph::he::SealCiphertextWrapper::load(
         he_cipher_inputs[cipher_idx], proto_msg.ciphers(cipher_idx), m_context);
-    he_cipher_inputs[cipher_idx]->complex_packing() = m_complex_packing;
   }
 
   // only support parameter size 1 for now

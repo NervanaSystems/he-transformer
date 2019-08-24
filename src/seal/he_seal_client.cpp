@@ -199,7 +199,6 @@ void ngraph::he::HESealClient::handle_result(
   for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
     ngraph::he::SealCiphertextWrapper::load(
         result_ciphers[result_idx], proto_msg.ciphers(result_idx), m_context);
-    result_ciphers[result_idx]->complex_packing() = complex_packing();
   }
 
   size_t num_bytes = result_count * sizeof(double) * m_batch_size;
@@ -233,7 +232,6 @@ void ngraph::he::HESealClient::handle_relu_request(
     auto post_relu_cipher = std::make_shared<SealCiphertextWrapper>();
     ngraph::he::SealCiphertextWrapper::load(
         post_relu_cipher, proto_msg.ciphers(result_idx), m_context);
-    post_relu_cipher->complex_packing() = complex_packing();
 
     ngraph::he::scalar_relu_seal(*post_relu_cipher, post_relu_cipher,
                                  m_context->first_parms_id(), m_scale,
@@ -273,7 +271,6 @@ void ngraph::he::HESealClient::handle_max_pool_request(
   for (size_t cipher_idx = 0; cipher_idx < cipher_count; ++cipher_idx) {
     ngraph::he::SealCiphertextWrapper::load(
         max_pool_ciphers[cipher_idx], proto_msg.ciphers(cipher_idx), m_context);
-    max_pool_ciphers[cipher_idx]->complex_packing() = complex_packing();
   }
 
   // We currently just support max_pool with single output
