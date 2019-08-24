@@ -201,6 +201,7 @@ class SealCiphertextWrapper {
 inline void save_to_proto(
     const std::vector<std::shared_ptr<SealCiphertextWrapper>>& ciphers,
     he_proto::TCPMessage& proto_msg) {
+  proto_msg.mutable_ciphers()->Reserve(ciphers.size());
   for (size_t cipher_idx = 0; cipher_idx < ciphers.size(); ++cipher_idx) {
     proto_msg.add_ciphers();
   }
