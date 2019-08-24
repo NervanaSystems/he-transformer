@@ -165,10 +165,6 @@ void ngraph::he::HESealClient::handle_inference_request(
     ciphers[data_idx] = std::make_shared<SealCiphertextWrapper>();
   }
 
-  for (const auto& elem : m_inputs) {
-    NGRAPH_INFO << "input " << elem;
-  }
-
   // TODO: add element type to function message
   size_t num_bytes = parameter_size * sizeof(double);
   ngraph::he::HESealCipherTensor::write(

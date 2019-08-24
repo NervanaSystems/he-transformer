@@ -43,7 +43,6 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
 
  public:
   void do_read_header() {
-    NGRAPH_INFO << "server do_read_header";
     m_read_buffer.resize(header_length);
     auto self(shared_from_this());
     boost::asio::async_read(
@@ -51,7 +50,6 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
         [this, self](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
             size_t msg_len = m_read_message.decode_header(m_read_buffer);
-            NGRAPH_INFO << "server read hader for msg len " << msg_len;
             do_read_body(msg_len);
           } else {
             if (ec) {
@@ -98,18 +96,11 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
 
  private:
   void do_write() {
-    NGRAPH_INFO << "server do_write";
     std::lock_guard<std::mutex> lock(m_write_mtx);
     m_is_writing.notify_all();
     auto self(shared_from_this());
-
-    NGRAPH_INFO << "m_message_queue.size() " << m_message_queue.size();
-
     auto message = m_message_queue.front();
-
     message.pack(m_write_buffer);
-
-    NGRAPH_INFO << "Buffer size " << m_write_buffer.size();
 
     boost::asio::async_write(
         m_socket, boost::asio::buffer(m_write_buffer),
