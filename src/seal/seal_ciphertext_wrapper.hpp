@@ -68,23 +68,29 @@ class SealCiphertextWrapper {
     proto_cipher.set_ciphertext(s.str());
   }
 
-  static inline void load(
-      std::shared_ptr<ngraph::he::SealCiphertextWrapper>& dst,
-      const he_proto::SealCiphertextWrapper& src,
-      std::shared_ptr<seal::SEALContext> context) {
-    dst = std::make_shared<ngraph::he::SealCiphertextWrapper>();
-    dst->complex_packing() = src.complex_packing();
+  static inline void load(ngraph::he::SealCiphertextWrapper& dst,
+                          const he_proto::SealCiphertextWrapper& src,
+                          std::shared_ptr<seal::SEALContext> context) {
+    dst.complex_packing() = src.complex_packing();
 
     if (src.known_value()) {
-      dst->known_value() = true;
-      dst->value() = src.value();
+      dst.known_value() = true;
+      dst.value() = src.value();
     } else {
       // TODO: load from string directly
       const std::string& cipher_str = src.ciphertext();
       std::stringstream ss;
       ss.str(cipher_str);
-      dst->ciphertext().load(context, ss);
+      dst.ciphertext().load(context, ss);
     }
+  }
+
+  static inline void load(
+      std::shared_ptr<ngraph::he::SealCiphertextWrapper>& dst,
+      const he_proto::SealCiphertextWrapper& src,
+      std::shared_ptr<seal::SEALContext> context) {
+    dst = std::make_shared<ngraph::he::SealCiphertextWrapper>();
+    load(*dst, src, context);
   }
 
  private:
