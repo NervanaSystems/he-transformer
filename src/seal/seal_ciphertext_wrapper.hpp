@@ -160,21 +160,11 @@ class SealCiphertextWrapper {
     proto_cipher.set_complex_packing(complex_packing());
 
     // TODO: save directly to protobuf
-    std::stringstream s;
-    m_ciphertext.save(s);
-
     size_t stream_size = ngraph::he::ciphertext_size(m_ciphertext);
-
     std::string cipher_str;
-    cipher_str.reserve(stream_size);
+    cipher_str.resize(stream_size);
     ngraph::he::save(m_ciphertext, cipher_str.data());
-
-    NGRAPH_INFO << "Stream size " << stream_size;
-
-    // proto_cipher.set_ciphertext(std::move(s.str()));
-
     proto_cipher.set_ciphertext(std::move(cipher_str));
-    NGRAPH_INFO << "save ok";
   }
 
   static inline void load(ngraph::he::SealCiphertextWrapper& dst,
@@ -188,9 +178,9 @@ class SealCiphertextWrapper {
     } else {
       // TODO: load from string directly
       const std::string& cipher_str = src.ciphertext();
-      std::stringstream ss;
-      ss.str(cipher_str);
-      dst.ciphertext().load(context, ss);
+      ngraph::he::load(
+          dst.ciphertext(), context,
+          static_cast<void*>(const_cast<char*>(cipher_str.data())));
     }
   }
 
