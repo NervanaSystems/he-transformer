@@ -52,10 +52,8 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
             size_t msg_len = m_read_message.decode_header(m_read_buffer);
             do_read_body(msg_len);
           } else {
-            if (ec) {
-              if (ec.message() != s_expected_teardown_message.c_str()) {
-                NGRAPH_INFO << "Server error reading body: " << ec.message();
-              }
+            if (ec.message() != s_expected_teardown_message.c_str()) {
+              NGRAPH_INFO << "Server error reading body: " << ec.message();
             }
           }
         });
@@ -130,6 +128,6 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
   inline static std::string s_expected_teardown_message{"End of file"};
 
   std::function<void(const ngraph::he::TCPMessage&)> m_message_callback;
-};
+};  // namespace he
 }  // namespace he
 }  // namespace ngraph

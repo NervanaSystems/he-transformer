@@ -97,7 +97,6 @@ class TCPClient {
           if (!ec) {
             size_t msg_len = m_read_message.decode_header(m_read_buffer);
             do_read_body(msg_len);
-
           } else {
             if (ec.message() != s_expected_teardown_message.c_str()) {
               NGRAPH_INFO << "Client error reading header: " << ec.message();
