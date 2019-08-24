@@ -1806,8 +1806,15 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
         f.set_function(js.dump());
         *proto_msg.mutable_function() = f;
 
-        for (const auto& cipher : cipher_batch) {
-          cipher->save(*proto_msg.add_ciphers());
+        for (size_t cipher_idx = 0; cipher_idx < cipher_batch.size();
+             ++cipher_idx) {
+          proto_msg.add_ciphers();
+        }
+#pragma omp parallel for
+        for (size_t cipher_idx = 0; cipher_idx < cipher_batch.size();
+             ++cipher_idx) {
+          cipher_batch[cipher_idx]->save(
+              *proto_msg.mutable_ciphers(cipher_idx));
         }
 
         ngraph::he::TCPMessage relu_message(proto_msg);
