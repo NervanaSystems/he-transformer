@@ -210,7 +210,6 @@ void ngraph::he::HESealClient::handle_result(
 
 void ngraph::he::HESealClient::handle_relu_request(
     const he_proto::TCPMessage& proto_msg) {
-  NGRAPH_INFO << "Handling relu request";
   NGRAPH_CHECK(proto_msg.has_function(), "Proto message doesn't have function");
 
   he_proto::TCPMessage proto_relu;
@@ -218,7 +217,6 @@ void ngraph::he::HESealClient::handle_relu_request(
   *proto_relu.mutable_function() = proto_msg.function();
 
   size_t result_count = proto_msg.ciphers_size();
-  NGRAPH_INFO << "result_count " << result_count;
 
   // TODO: parallelize
   for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
@@ -237,14 +235,12 @@ void ngraph::he::HESealClient::handle_relu_request(
 
   ngraph::he::TCPMessage relu_result_msg(proto_relu);
 
-  NGRAPH_INFO << "Writing relu result";
   write_message(relu_result_msg);
   return;
 }
 
 void ngraph::he::HESealClient::handle_bounded_relu_request(
     const he_proto::TCPMessage& proto_msg) {
-  NGRAPH_INFO << "Handling bounded_relu request";
   NGRAPH_CHECK(proto_msg.has_function(), "Proto message doesn't have function");
 
   he_proto::TCPMessage proto_relu;
@@ -252,7 +248,6 @@ void ngraph::he::HESealClient::handle_bounded_relu_request(
   *proto_relu.mutable_function() = proto_msg.function();
 
   size_t result_count = proto_msg.ciphers_size();
-  NGRAPH_INFO << "result_count " << result_count;
 
   // TODO: parallelize
   for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {

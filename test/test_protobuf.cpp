@@ -15,6 +15,7 @@
 //*****************************************************************************
 
 #include <google/protobuf/util/message_differencer.h>
+#include <chrono>
 #include <memory>
 
 #include "gtest/gtest.h"
@@ -125,14 +126,30 @@ TEST(seal_cipher_wrapper, load_save) {
   cipher.ciphertext() = c;
   cipher.complex_packing() = true;
   cipher.known_value() = false;
+
+  typedef std::chrono::high_resolution_clock Clock;
+  auto t1 = Clock::now();
   cipher.save(proto_cipher);
+  auto t2 = Clock::now();
 
   std::shared_ptr<ngraph::he::SealCiphertextWrapper> cipher_load;
+  auto t3 = Clock::now();
   ngraph::he::SealCiphertextWrapper::load(cipher_load, proto_cipher, context);
+  auto t4 = Clock::now();
+
   std::stringstream ss_load;
   cipher_load->ciphertext().save(ss_load);
 
   EXPECT_EQ(cipher.complex_packing(), cipher_load->complex_packing());
   EXPECT_EQ(cipher.known_value(), cipher_load->known_value());
   EXPECT_EQ(ss_save.str(), ss_load.str());
+
+  NGRAPH_INFO
+      << "Save time "
+      << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count()
+      << "ms";
+  NGRAPH_INFO
+      << "Load time "
+      << std::chrono::duration_cast<std::chrono::milliseconds>(t4 - t3).count()
+      << "ms";
 }

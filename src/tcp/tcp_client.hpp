@@ -90,15 +90,12 @@ class TCPClient {
   }
 
   void do_read_header() {
-    NGRAPH_INFO << "Client reading header";
     m_read_buffer.resize(header_length);
-
     boost::asio::async_read(
         m_socket, boost::asio::buffer(m_read_buffer),
         [this](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
             size_t msg_len = m_read_message.decode_header(m_read_buffer);
-            NGRAPH_INFO << "client read header " << msg_len;
             do_read_body(msg_len);
 
           } else {

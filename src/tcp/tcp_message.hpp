@@ -60,7 +60,6 @@ class TCPMessage {
 
   static void encode_header(data_buffer& buffer, size_t size) {
     NGRAPH_CHECK(buffer.size() >= header_length, "Buffer too small");
-    NGRAPH_INFO << "Encoding header " << size;
     std::memcpy(&buffer[0], &size, header_length);
   }
 
@@ -70,7 +69,6 @@ class TCPMessage {
     }
     size_t body_length = 0;
     std::memcpy(&body_length, &buffer[0], header_length);
-    NGRAPH_INFO << "Decoded header body length " << body_length;
     return body_length;
   }
 

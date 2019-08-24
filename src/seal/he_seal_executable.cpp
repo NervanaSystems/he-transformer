@@ -320,7 +320,6 @@ void ngraph::he::HESealExecutable::handle_relu_result(
     const he_proto::TCPMessage& proto_msg) {
   std::lock_guard<std::mutex> guard(m_relu_mutex);
   size_t message_count = proto_msg.ciphers_size();
-  NGRAPH_INFO << "handle_relu_result with count " << message_count;
 
 #pragma omp parallel for
   for (size_t element_idx = 0; element_idx < message_count; ++element_idx) {
