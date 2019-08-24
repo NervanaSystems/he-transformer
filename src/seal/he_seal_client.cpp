@@ -218,7 +218,11 @@ void ngraph::he::HESealClient::handle_relu_request(
 
   size_t result_count = proto_msg.ciphers_size();
 
-  // TODO: parallelize
+  for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
+    proto_relu.add_ciphers();
+  }
+
+#pragma omp parallel for
   for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
     NGRAPH_CHECK(!proto_msg.ciphers(result_idx).known_value(),
                  "Client should not receive known-valued relu values");
@@ -230,7 +234,7 @@ void ngraph::he::HESealClient::handle_relu_request(
     ngraph::he::scalar_relu_seal(*post_relu_cipher, post_relu_cipher,
                                  m_context->first_parms_id(), m_scale,
                                  *m_ckks_encoder, *m_encryptor, *m_decryptor);
-    post_relu_cipher->save(*proto_relu.add_ciphers());
+    post_relu_cipher->save(*proto_relu.mutable_ciphers(result_idx));
   }
 
   ngraph::he::TCPMessage relu_result_msg(proto_relu);
