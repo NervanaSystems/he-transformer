@@ -153,11 +153,11 @@ class SealCiphertextWrapper {
   bool& complex_packing() { return m_complex_packing; }
 
   inline void save(he_proto::SealCiphertextWrapper& proto_cipher) {
+    proto_cipher.set_complex_packing(complex_packing());
     proto_cipher.set_known_value(known_value());
     if (known_value()) {
       proto_cipher.set_value(value());
     }
-    proto_cipher.set_complex_packing(complex_packing());
 
     // TODO: save directly to protobuf
     size_t stream_size = ngraph::he::ciphertext_size(m_ciphertext);
@@ -171,7 +171,6 @@ class SealCiphertextWrapper {
                           const he_proto::SealCiphertextWrapper& src,
                           std::shared_ptr<seal::SEALContext> context) {
     dst.complex_packing() = src.complex_packing();
-
     if (src.known_value()) {
       dst.known_value() = true;
       dst.value() = src.value();
