@@ -362,7 +362,6 @@ void ngraph::he::HESealExecutable::handle_message(
 
   switch (proto_msg->type()) {
     case he_proto::TCPMessage_Type_RESPONSE: {
-      NGRAPH_INFO << "Server got new message RESPONSE";
       if (proto_msg->has_public_key()) {
         load_public_key(*proto_msg);
       }
@@ -392,9 +391,7 @@ void ngraph::he::HESealExecutable::handle_message(
       break;
     }
     case he_proto::TCPMessage_Type_REQUEST: {
-      NGRAPH_INFO << "Server got new message REQUEST";
       if (proto_msg->ciphers_size() > 0) {
-        NGRAPH_INFO << "Got input ciphers";
         handle_client_ciphers(*proto_msg);
       }
       break;

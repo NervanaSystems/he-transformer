@@ -330,8 +330,6 @@ void ngraph::he::HESealClient::handle_message(
       break;
     }
     case he_proto::TCPMessage_Type_REQUEST: {
-      NGRAPH_INFO << "Client got message REQUEST";
-
       if (proto_msg->has_function()) {
         const std::string& function = proto_msg->function().function();
         json js = json::parse(function);

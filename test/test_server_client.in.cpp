@@ -355,6 +355,10 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_10000) {
   test_server_client_relu_size(10000);
 }
 
+NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_30000) {
+  test_server_client_relu_size(30000);
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, server_client_pad_relu) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());

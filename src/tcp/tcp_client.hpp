@@ -106,7 +106,7 @@ class TCPClient {
         });
   }
 
-  void do_read_body(size_t body_length = 0) {
+  void do_read_body(size_t body_length) {
     NGRAPH_INFO << "Client reading body size " << body_length;
     m_read_buffer.resize(header_length + body_length);
 
@@ -115,7 +115,6 @@ class TCPClient {
         boost::asio::buffer(&m_read_buffer[header_length], body_length),
         [this](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
-            NGRAPH_INFO << "Client read body size " << length << " bytes";
             m_read_message.unpack(m_read_buffer);
             m_message_callback(m_read_message);
             do_read_header();
@@ -128,7 +127,6 @@ class TCPClient {
   }
 
   void do_write() {
-    NGRAPH_INFO << "Client writing message";
     auto message = m_message_queue.front();
     message.pack(m_write_buffer);
 
