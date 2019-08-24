@@ -107,7 +107,6 @@ class TCPClient {
   }
 
   void do_read_body(size_t body_length) {
-    NGRAPH_INFO << "Client reading body size " << body_length;
     m_read_buffer.resize(header_length + body_length);
 
     boost::asio::async_read(

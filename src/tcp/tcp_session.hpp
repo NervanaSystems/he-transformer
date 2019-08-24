@@ -62,7 +62,6 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
   }
 
   void do_read_body(size_t body_length = 0) {
-    NGRAPH_INFO << "server reading body size " << body_length;
     m_read_buffer.resize(header_length + body_length);
 
     auto self(shared_from_this());

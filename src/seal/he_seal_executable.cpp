@@ -1795,7 +1795,6 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
 
         json js;
         js["function"] = node.description();
-        NGRAPH_INFO << "Description " << js["function"];
 
         he_proto::Function f;
         f.set_function(js.dump());
