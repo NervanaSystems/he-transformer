@@ -750,9 +750,7 @@ void ngraph::he::HESealExecutable::send_client_results() {
   NGRAPH_CHECK(output_cipher_tensor != nullptr,
                "Client outputs are not HESealCipherTensor");
 
-  for (const auto& ciphertext_wrapper : output_cipher_tensor->get_elements()) {
-    ciphertext_wrapper->save(*proto_msg.add_ciphers());
-  }
+  ngraph::he::save_to_proto(output_cipher_tensor->get_elements(), proto_msg);
 
   NGRAPH_INFO << "Writing Result message with " << proto_msg.ciphers_size()
               << " ciphertexts ";
@@ -1806,16 +1804,7 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
         f.set_function(js.dump());
         *proto_msg.mutable_function() = f;
 
-        for (size_t cipher_idx = 0; cipher_idx < cipher_batch.size();
-             ++cipher_idx) {
-          proto_msg.add_ciphers();
-        }
-#pragma omp parallel for
-        for (size_t cipher_idx = 0; cipher_idx < cipher_batch.size();
-             ++cipher_idx) {
-          cipher_batch[cipher_idx]->save(
-              *proto_msg.mutable_ciphers(cipher_idx));
-        }
+        ngraph::he::save_to_proto(cipher_batch, proto_msg);
 
         ngraph::he::TCPMessage relu_message(proto_msg);
         m_session->write_message(std::move(relu_message));

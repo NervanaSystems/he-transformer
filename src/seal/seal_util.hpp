@@ -192,6 +192,5 @@ void decrypt(ngraph::he::HEPlaintext& output, const seal::Ciphertext& input,
              bool complex_packing, seal::Decryptor& decryptor,
              seal::CKKSEncoder& ckks_encoder);
 
-
 }  // namespace he
 }  // namespace ngraph

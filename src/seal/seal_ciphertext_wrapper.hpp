@@ -199,5 +199,17 @@ class SealCiphertextWrapper {
   float m_value;
 };
 
+inline void save_to_proto(
+    const std::vector<std::shared_ptr<SealCiphertextWrapper>>& ciphers,
+    he_proto::TCPMessage& proto_msg) {
+  for (size_t cipher_idx = 0; cipher_idx < ciphers.size(); ++cipher_idx) {
+    proto_msg.add_ciphers();
+  }
+#pragma omp parallel for
+  for (size_t cipher_idx = 0; cipher_idx < ciphers.size(); ++cipher_idx) {
+    ciphers[cipher_idx]->save(*proto_msg.mutable_ciphers(cipher_idx));
+  }
+}
+
 }  // namespace he
 }  // namespace ngraph

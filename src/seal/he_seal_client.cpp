@@ -175,9 +175,7 @@ void ngraph::he::HESealClient::handle_inference_request(
   he_proto::TCPMessage encrypted_inputs_msg;
   encrypted_inputs_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
 
-  for (const auto& cipher : ciphers) {
-    cipher->save(*encrypted_inputs_msg.add_ciphers());
-  }
+  ngraph::he::save_to_proto(ciphers, encrypted_inputs_msg);
 
   NGRAPH_INFO << "Creating execute message";
   write_message(encrypted_inputs_msg);
