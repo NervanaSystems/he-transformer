@@ -345,8 +345,8 @@ void ngraph::he::HESealClient::handle_relu_request(
   }
   auto relu_result_msg =
       TCPMessage(ngraph::he::MessageType::relu_result, post_relu_ciphers);
-  // NGRAPH_INFO << "Writing relu_result message with " << result_count
-  //            << " ciphertexts";
+  NGRAPH_INFO << "Writing relu_result message with " << result_count
+              << " ciphertexts";
 
   write_message(std::move(relu_result_msg));
   return;

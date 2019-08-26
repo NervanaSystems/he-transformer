@@ -120,6 +120,8 @@ class TCPClient {
   }
 
   void do_write() {
+    NGRAPH_INFO << "Client writing message size "
+                << m_message_queue.front().num_bytes();
     boost::asio::async_write(
         m_socket,
         boost::asio::buffer(m_message_queue.front().header_ptr(),

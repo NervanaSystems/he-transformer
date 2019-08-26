@@ -76,6 +76,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
 
   void do_write(const TCPMessage&& message) {
     std::lock_guard<std::mutex> lock(m_write_mtx);
+    NGRAPH_INFO << "Server writing message size " << message.num_bytes();
     auto self(shared_from_this());
     m_writing = true;
     boost::asio::async_write(

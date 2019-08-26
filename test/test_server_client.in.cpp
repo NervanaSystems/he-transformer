@@ -57,10 +57,13 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_cipher_plain) {
   vector<float> inputs{1, 2, 3};
   vector<float> results;
   auto client_thread = std::thread([this, &inputs, &results, &batch_size]() {
+    NGRAPH_INFO << "Creating client";
     auto he_client =
         ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
+    NGRAPH_INFO << "Created client";
 
     while (!he_client.is_done()) {
+      NGRAPH_INFO << "Waiting until client is done";
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
     results = he_client.get_results();
@@ -68,8 +71,10 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_cipher_plain) {
 
   auto handle = dynamic_pointer_cast<ngraph::he::HESealExecutable>(
       he_backend->compile(f));
+  NGRAPH_INFO << "Enabling client";
   handle->enable_client();
   handle->call_with_validate({t_result}, {t_dummy});
+  NGRAPH_INFO << "Waiting for thread";
   client_thread.join();
   EXPECT_TRUE(all_close(results, vector<float>{1.1, 2.2, 3.3}, 1e-3f));
 }

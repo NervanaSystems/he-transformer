@@ -9,7 +9,7 @@ echo $curr_dir
 cd ../../examples/MNIST-Cryptonets-Relu/
 
 # Best performance
-for i in {1..10}
+for i in {11} #..10}
 do
   outfile=$curr_dir/results/nt_32_${i}.txt
   echo "Trial ${i}"

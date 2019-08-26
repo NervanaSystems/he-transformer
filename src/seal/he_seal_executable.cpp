@@ -223,17 +223,21 @@ void ngraph::he::HESealExecutable::accept_connection() {
 }
 
 void ngraph::he::HESealExecutable::start_server() {
+  NGRAPH_INFO << "Creating resolver";
   tcp::resolver resolver(m_io_context);
+  NGRAPH_INFO << "Creating endpoints at port " << m_port;
   tcp::endpoint server_endpoints(tcp::v4(), m_port);
+  NGRAPH_INFO << "Creating acceptor";
   m_acceptor = std::make_unique<tcp::acceptor>(m_io_context, server_endpoints);
+  NGRAPH_INFO << "Setting reuse option";
   boost::asio::socket_base::reuse_address option(true);
   m_acceptor->set_option(option);
 
+  NGRAPH_INFO << "Accepting connection";
   accept_connection();
   // Create thread-local variable to prevent passing "this"
   // TODO: pass "this" instead?
-  auto& m_io_context2 = m_io_context;
-  m_thread = std::thread([&m_io_context2]() { m_io_context2.run(); });
+  m_thread = std::thread([this]() { m_io_context.run(); });
 }
 
 void ngraph::he::HESealExecutable::handle_message(
