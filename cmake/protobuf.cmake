@@ -23,7 +23,7 @@ set(
   https://github.com/protocolbuffers/protobuf/releases/download/v3.9.1/protobuf-cpp-3.9.1.tar.gz
   )
 
-message("Extneral install dir ${EXTERNAL_INSTALL_DIR}")
+message(STATUS "Installing protobuf to ${EXTERNAL_INSTALL_DIR}")
 
 ExternalProject_Add(
   ext_protobuf

@@ -109,3 +109,12 @@ add_custom_target(
     create_symlink
     ${EXTERNAL_INSTALL_LIB_DIR}/libhe_seal_backend${CMAKE_SHARED_LIBRARY_SUFFIX}
     ${NGRAPH_TF_LIB_DIR}/libhe_seal_backend${CMAKE_SHARED_LIBRARY_SUFFIX})
+
+# Create symbolic links for protobuf to allow pyhe_client to find it
+add_custom_target(libprotobuf_soft_link ALL
+                  DEPENDS he_seal_backend
+                  COMMAND ${CMAKE_COMMAND}
+                          -E
+                          copy
+                          ${EXTERNAL_INSTALL_DIR}/lib/libprotobuf.so*
+                          ${NGRAPH_TF_LIB_DIR})
