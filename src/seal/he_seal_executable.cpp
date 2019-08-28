@@ -327,6 +327,8 @@ void ngraph::he::HESealExecutable::handle_relu_result(
     ngraph::he::SealCiphertextWrapper::load(
         new_cipher, proto_msg.ciphers(element_idx), m_context);
 
+    // TODO: free proto_message cipher.
+
     m_relu_ciphertexts[m_unknown_relu_idx[element_idx + m_relu_done_count]] =
         new_cipher;
   }

@@ -82,6 +82,15 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
         PATTERN "*.hpp"
         PATTERN "*.h")
 
+install(DIRECTORY ${CMAKE_BINARY_DIR}/protos
+        DESTINATION ${EXTERNAL_INSTALL_INCLUDE_DIR}
+        FILES_MATCHING
+        PATTERN "*.hpp"
+        PATTERN "*.h")
+
+message(STATUS "CMAKE_CURRENT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}")
+message(STATUS "CMAKE_BINARY_DIR ${CMAKE_BINARY_DIR}")
+
 # Create symbolic links for he_seal_backend, to allow ngraph and ngraph-tf to
 # recognize find it.
 add_custom_target(
