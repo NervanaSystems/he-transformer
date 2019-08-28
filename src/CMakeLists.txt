@@ -82,6 +82,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
         PATTERN "*.hpp"
         PATTERN "*.h")
 
+# Install protobuf files
 install(DIRECTORY ${CMAKE_BINARY_DIR}/protos
         DESTINATION ${EXTERNAL_INSTALL_INCLUDE_DIR}
         FILES_MATCHING

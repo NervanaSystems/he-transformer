@@ -24,22 +24,22 @@ ExternalProject_Add(pybind11
                     INSTALL_COMMAND ""
                     UPDATE_COMMAND "")
 
-message("python CMAKE_SOURCE_DIR ${CMAKE_SOURCE_DIR}")
-message("python CMAKE_BINARY_DIR ${CMAKE_BINARY_DIR}")
-message("python CMAKE_CURRENT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}")
+message(STATUS "python CMAKE_SOURCE_DIR ${CMAKE_SOURCE_DIR}")
+message(STATUS "python CMAKE_BINARY_DIR ${CMAKE_BINARY_DIR}")
+message(STATUS "python CMAKE_CURRENT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}")
 
 set(BUILD_SH_IN "${CMAKE_SOURCE_DIR}/python/build_wheel.sh.in")
 set(BUILD_SH "${CMAKE_BINARY_DIR}/python/build_wheel.sh")
 configure_file(${BUILD_SH_IN} ${BUILD_SH} @ONLY)
 
-message("EXTERNAL_INSTALL_LIB_DIR ${EXTERNAL_INSTALL_LIB_DIR}")
+message(STATUS "EXTERNAL_INSTALL_LIB_DIR ${EXTERNAL_INSTALL_LIB_DIR}")
 
 set(PYTHON_ARTIFACTS_DIR ${CMAKE_BINARY_DIR}/python/_install)
-message("PYTHON_ARTIFACTS_DIR ${PYTHON_ARTIFACTS_DIR}")
+message(STATUS "PYTHON_ARTIFACTS_DIR ${PYTHON_ARTIFACTS_DIR}")
 set(PYTHON_LIB_DIR ${PYTHON_ARTIFACTS_DIR}/lib)
 set(PYTHON_INCLUDE_DIR ${PYTHON_ARTIFACTS_DIR}/include)
 
-message("PROJECT_ROOT_DIR ${PROJECT_ROOT_DIR}")
+message(STATUS "PROJECT_ROOT_DIR ${PROJECT_ROOT_DIR}")
 
 # Hack to install files for python wheel When specifying DESTDIR in custom
 # command, this will change the destination to DESTDIR, rather than
@@ -48,7 +48,9 @@ install(DIRECTORY ${EXTERNAL_INSTALL_INCLUDE_DIR}/
         DESTINATION ${EXTERNAL_INSTALL_INCLUDE_DIR}
         FILES_MATCHING
         PATTERN "*.hpp"
-        PATTERN "*.h")
+        PATTERN "*.h"
+        PATTERN "*.inc" # For port_def.inc in protobuf
+        )
 add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/python/dist/
                    POST_BUILD
                    DEPENDS he_seal_backend
