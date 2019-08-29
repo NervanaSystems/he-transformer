@@ -16,7 +16,6 @@
 
 #pragma once
 
-#include <assert.h>
 #include <algorithm>
 #include <boost/asio.hpp>
 #include <chrono>
