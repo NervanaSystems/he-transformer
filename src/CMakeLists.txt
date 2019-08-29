@@ -92,6 +92,16 @@ install(DIRECTORY ${CMAKE_BINARY_DIR}/protos
 message(STATUS "CMAKE_CURRENT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}")
 message(STATUS "CMAKE_BINARY_DIR ${CMAKE_BINARY_DIR}")
 
+# Create symbolic links for protobuf to allow pyhe_client to find it
+add_custom_target(libprotobuf_soft_link ALL
+                  DEPENDS he_seal_backend
+                  COMMAND ${CMAKE_COMMAND}
+                          -E
+                          copy
+                          ${EXTERNAL_INSTALL_DIR}/lib/libprotobuf.so*
+                          ${NGRAPH_TF_LIB_DIR})
+
+
 # Create symbolic links for he_seal_backend, to allow ngraph and ngraph-tf to
 # recognize find it.
 add_custom_target(
@@ -109,12 +119,3 @@ add_custom_target(
     create_symlink
     ${EXTERNAL_INSTALL_LIB_DIR}/libhe_seal_backend${CMAKE_SHARED_LIBRARY_SUFFIX}
     ${NGRAPH_TF_LIB_DIR}/libhe_seal_backend${CMAKE_SHARED_LIBRARY_SUFFIX})
-
-# Create symbolic links for protobuf to allow pyhe_client to find it
-add_custom_target(libprotobuf_soft_link ALL
-                  DEPENDS he_seal_backend
-                  COMMAND ${CMAKE_COMMAND}
-                          -E
-                          copy
-                          ${EXTERNAL_INSTALL_DIR}/lib/libprotobuf.so*
-                          ${NGRAPH_TF_LIB_DIR})

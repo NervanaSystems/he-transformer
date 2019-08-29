@@ -20,7 +20,7 @@ set(EXTERNAL_NGRAPH_INSTALL_DIR ${EXTERNAL_INSTALL_DIR})
 set(NGRAPH_TF_CMAKE_PREFIX ext_ngraph_tf)
 
 set(NGRAPH_TF_REPO_URL https://github.com/tensorflow/ngraph-bridge.git)
-set(NGRAPH_TF_GIT_LABEL v0.18.0)
+set(NGRAPH_TF_GIT_LABEL fboemer/debug_he_backend)
 
 set(NGRAPH_TF_SRC_DIR
     ${CMAKE_BINARY_DIR}/${NGRAPH_TF_CMAKE_PREFIX}/src/${NGRAPH_TF_CMAKE_PREFIX})
@@ -72,7 +72,8 @@ ExternalProject_Add(ext_ngraph_tf
                                     -fs
                                     ${NGRAPH_TF_VENV_DIR}
                                     ${EXTERNAL_INSTALL_DIR}
-                    UPDATE_COMMAND "")
+                    UPDATE_COMMAND ""
+                    )
 
 ExternalProject_Get_Property(ext_ngraph_tf SOURCE_DIR)
 add_library(libngraph_tf INTERFACE)
