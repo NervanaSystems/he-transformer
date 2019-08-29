@@ -73,7 +73,7 @@ class HESealExecutable : public runtime::Executable {
 
   size_t get_port() const { return m_port; }
 
-  // TODO: merge _done() methods
+  // TODO: merge_done() methods
   bool max_pool_done() const { return m_max_pool_done; }
   bool minimum_done() const { return m_minimum_done; }
 
