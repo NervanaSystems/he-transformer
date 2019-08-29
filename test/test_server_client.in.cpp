@@ -614,7 +614,7 @@ NGRAPH_TEST(${BACKEND_NAME},
   float DUMMY_FLOAT = 99;
   copy_data(t_dummy, vector<float>(shape_size(shape_a), DUMMY_FLOAT));
 
-  vector<float> inputs{1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0};
+  vector<float> inputs{-1, -1, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0};
   vector<float> results;
   auto client_thread = std::thread([&inputs, &results, &batch_size]() {
     auto he_client =
@@ -635,7 +635,7 @@ NGRAPH_TEST(${BACKEND_NAME},
   client_thread.join();
   EXPECT_TRUE(all_close(
       results,
-      test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}}})
+      test::NDArray<float, 3>({{{0, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}}})
           .get_vector(),
       1e-3f));
 }
