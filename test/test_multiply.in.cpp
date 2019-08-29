@@ -590,9 +590,10 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_2_3_cipher_cipher_complex_noerror) {
     auto b = make_shared<op::Parameter>(element::f32, shape);
     auto t = make_shared<op::Multiply>(a, b);
     auto f = make_shared<Function>(t, ParameterVector{a, b});
-    auto t_a = he_backend->create_cipher_tensor(element::f32, shape);
-    auto t_b = he_backend->create_cipher_tensor(element::f32, shape);
-    auto t_result = he_backend->create_cipher_tensor(element::f32, shape);
+    auto t_a = he_backend->create_packed_cipher_tensor(element::f32, shape);
+    auto t_b = he_backend->create_packed_cipher_tensor(element::f32, shape);
+    auto t_result =
+        he_backend->create_packed_cipher_tensor(element::f32, shape);
     copy_data(t_a, vector<float>{-2, -1, 0, 1, 2, 3});
     copy_data(t_b, vector<float>{3, -2, 5, 3, 2, -5});
     auto handle = backend->compile(f);

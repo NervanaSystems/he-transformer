@@ -323,6 +323,38 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_batch_write_read_2_3) {
   }
 }
 
+NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_batch_write_read_2_3_complex) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->complex_packing() = true;
+
+  Shape shape{2, 3};
+  {
+    auto a = he_backend->create_packed_cipher_tensor(element::f32, shape);
+    copy_data(a,
+              test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector());
+    EXPECT_TRUE(all_close(
+        read_vector<float>(a),
+        (test::NDArray<float, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector()));
+  }
+  {
+    auto a = he_backend->create_packed_cipher_tensor(element::f64, shape);
+    copy_data(a,
+              test::NDArray<double, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector());
+    EXPECT_TRUE(all_close(
+        read_vector<double>(a),
+        (test::NDArray<double, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector()));
+  }
+  {
+    auto a = he_backend->create_packed_cipher_tensor(element::i64, shape);
+    copy_data(a,
+              test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}}).get_vector());
+    EXPECT_TRUE(all_close(
+        read_vector<int64_t>(a),
+        (test::NDArray<int64_t, 2>({{1, 2}, {3, 4}, {5, 6}})).get_vector()));
+  }
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_batch_write_read_2_1) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());

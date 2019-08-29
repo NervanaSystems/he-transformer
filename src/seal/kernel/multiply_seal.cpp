@@ -58,7 +58,8 @@ void ngraph::he::scalar_multiply_seal(
       he_seal_backend.get_evaluator()->complex_conjugate(
           c1, *he_seal_backend.get_galois_keys(), c1_conj);
 
-      out->ciphertext() = c0_conj;
+      out->ciphertext() = c0;
+      NGRAPH_INFO << "Returning";
       return;  // TODO: remove
 
       NGRAPH_INFO << "Complex conj ok";
