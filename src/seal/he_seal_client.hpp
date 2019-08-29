@@ -50,9 +50,9 @@ class HESealClient {
 
   void handle_relu_request(const ngraph::he::TCPMessage& message);
 
-  void handle_relu_request(const he_proto::TCPMessage& message);
+  void handle_relu_request(he_proto::TCPMessage&& message);
   void handle_max_pool_request(const he_proto::TCPMessage& message);
-  void handle_bounded_relu_request(const he_proto::TCPMessage& message);
+  void handle_bounded_relu_request(he_proto::TCPMessage&& message);
 
   void handle_result(const he_proto::TCPMessage& message);
 
