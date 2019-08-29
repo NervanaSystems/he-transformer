@@ -71,6 +71,7 @@ ngraph::he::HESealBackend::HESealBackend(
   // Keygen, encryptor and decryptor
   m_keygen = std::make_shared<seal::KeyGenerator>(m_context);
   m_relin_keys = std::make_shared<seal::RelinKeys>(m_keygen->relin_keys());
+  m_galois_keys = std::make_shared<seal::GaloisKeys>(m_keygen->galois_keys());
   m_public_key = std::make_shared<seal::PublicKey>(m_keygen->public_key());
   m_secret_key = std::make_shared<seal::SecretKey>(m_keygen->secret_key());
   m_encryptor = std::make_shared<seal::Encryptor>(m_context, *m_public_key);
