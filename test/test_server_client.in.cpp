@@ -589,6 +589,57 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed) {
   }
 }
 
+NGRAPH_TEST(${BACKEND_NAME},
+            server_client_pad_max_pool_1d_1channel_1image_plain) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  size_t batch_size = 1;
+
+  Shape shape_a{1, 1, 12};
+  Shape window_shape{3};
+  auto A = make_shared<op::Parameter>(element::f32, shape_a);
+  auto B = op::Constant::create(element::f32, Shape{}, vector<float>({0}));
+  CoordinateDiff padding_below{0, 0, 1};
+  CoordinateDiff padding_above{0, 0, 1};
+  auto C = make_shared<op::Pad>(A, B, padding_below, padding_above);
+  Shape shape_r{1, 1, 12};
+  auto f = make_shared<Function>(make_shared<op::MaxPool>(C, window_shape),
+                                 ParameterVector{A});
+
+  // Server inputs which are not used
+  auto t_dummy = he_backend->create_plain_tensor(element::f32, shape_a);
+  auto t_result = he_backend->create_cipher_tensor(element::f32, shape_r);
+
+  // Used for dummy server inputs
+  float DUMMY_FLOAT = 99;
+  copy_data(t_dummy, vector<float>(shape_size(shape_a), DUMMY_FLOAT));
+
+  vector<float> inputs{1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0};
+  vector<float> results;
+  auto client_thread = std::thread([&inputs, &results, &batch_size]() {
+    auto he_client =
+        ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
+
+    while (!he_client.is_done()) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+    auto double_results = he_client.get_results();
+    results = std::vector<float>(double_results.begin(), double_results.end());
+  });
+
+  auto handle = dynamic_pointer_cast<ngraph::he::HESealExecutable>(
+      he_backend->compile(f));
+  handle->enable_client();
+  handle->call_with_validate({t_result}, {t_dummy});
+
+  client_thread.join();
+  EXPECT_TRUE(all_close(
+      results,
+      test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}}})
+          .get_vector(),
+      1e-3f));
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, server_client_max_pool_1d_1channel_1image_plain) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());

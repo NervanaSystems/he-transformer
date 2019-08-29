@@ -1693,7 +1693,7 @@ void ngraph::he::HESealExecutable::handle_server_max_pool_op(
     he_proto::TCPMessage proto_msg;
     proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
 
-    NGRAPH_INFO << "List in " << list_ind;
+    NGRAPH_INFO << "List ind " << list_ind;
 
     json js;
     js["function"] = node.description();
