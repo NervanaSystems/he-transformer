@@ -86,3 +86,12 @@ add_library(libprotobuf INTERFACE)
 target_include_directories(libprotobuf INTERFACE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(libprotobuf INTERFACE libprotobuf_orig)
 add_dependencies(libprotobuf libprotobuf_orig protobuf_files)
+
+# Create symbolic links for protobuf to allow pyhe_client to find it
+add_custom_target(libprotobuf_soft_link ALL
+                  DEPENDS libprotobuf
+                  COMMAND ${CMAKE_COMMAND}
+                          -E
+                          copy
+                          ${EXTERNAL_INSTALL_LIB_DIR}/libprotobuf.so*
+                          ${NGRAPH_TF_LIB_DIR})
