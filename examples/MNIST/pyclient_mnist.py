@@ -48,10 +48,8 @@ def test_mnist_cnn(FLAGS):
     print('Sleeping until client is done')
     while not client.is_done():
         time.sleep(1)
-    print('client.is._done()?', client.is_done())
 
     results = client.get_results()
-    print('get results', results)
     results = np.round(results, 2)
 
     y_pred_reshape = np.array(results).reshape(batch_size, 10)
