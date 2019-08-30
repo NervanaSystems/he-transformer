@@ -55,14 +55,8 @@ void ngraph::he::scalar_multiply_seal(
     out->known_value() = false;
 
     if (arg0.complex_packing()) {
-      NGRAPH_INFO << "Both complex packing";
-
       seal::Ciphertext& c0 = arg0.ciphertext();
       seal::Ciphertext& c1 = arg1.ciphertext();
-
-      NGRAPH_INFO << "c0 scale " << c0.scale();
-      NGRAPH_INFO << "c1 scale " << c1.scale();
-
       seal::Ciphertext c0_conj;
       seal::Ciphertext c1_conj;
 
@@ -71,11 +65,6 @@ void ngraph::he::scalar_multiply_seal(
           c0, *he_seal_backend.get_galois_keys(), c0_conj);
       he_seal_backend.get_evaluator()->complex_conjugate(
           c1, *he_seal_backend.get_galois_keys(), c1_conj);
-
-      NGRAPH_INFO << "c0_conj scale " << c0_conj.scale();
-      NGRAPH_INFO << "c1_conj scale " << c1_conj.scale();
-
-      NGRAPH_INFO << "Complex conj ok";
 
       seal::Ciphertext c0_re;
       seal::Ciphertext c0_im;
@@ -108,7 +97,6 @@ void ngraph::he::scalar_multiply_seal(
       auto ckks_encoder = he_seal_backend.get_ckks_encoder();
       const size_t slot_count = ckks_encoder->slot_count();
       std::vector<std::complex<double>> complex_vals(slot_count, {0, -1});
-      NGRAPH_INFO << complex_vals[0];
       seal::Plaintext neg_i;
       ckks_encoder->encode(complex_vals, prod_im.parms_id(), encode_scale,
                            neg_i);
@@ -116,19 +104,14 @@ void ngraph::he::scalar_multiply_seal(
       he_seal_backend.get_evaluator()->multiply_plain_inplace(prod_im, neg_i);
 
       std::vector<std::complex<double>> new_complex_vals(slot_count, {1, 0});
-      NGRAPH_INFO << new_complex_vals[0];
       seal::Plaintext fudge_re;
       ckks_encoder->encode(new_complex_vals, prod_re.parms_id(), encode_scale,
                            fudge_re);
 
       he_seal_backend.get_evaluator()->multiply_plain_inplace(prod_re,
                                                               fudge_re);
-      NGRAPH_INFO << "prod_im scale " << prod_im.scale();
-      NGRAPH_INFO << "prod_re scale " << prod_re.scale();
-
       he_seal_backend.get_evaluator()->add(prod_re, prod_im, out->ciphertext());
 
-      NGRAPH_INFO << "Rescaling to next";
       he_seal_backend.get_evaluator()->rescale_to_next_inplace(
           out->ciphertext(), pool);
 

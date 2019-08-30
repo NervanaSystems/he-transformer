@@ -530,10 +530,6 @@ void ngraph::he::decode(ngraph::he::HEPlaintext& output,
   if (input.complex_packing()) {
     std::vector<std::complex<double>> complex_vals;
     ckks_encoder.decode(input.plaintext(), complex_vals);
-    NGRAPH_INFO << "Decoded complex";
-    for (size_t i = 0; i < 3; ++i) {
-      NGRAPH_INFO << complex_vals[i];
-    }
     complex_vec_to_real_vec(real_vals, complex_vals);
   } else {
     ckks_encoder.decode(input.plaintext(), real_vals);

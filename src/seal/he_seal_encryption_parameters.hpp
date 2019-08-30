@@ -114,6 +114,9 @@ inline ngraph::he::HESealEncryptionParameters parse_config_or_use_default(
     std::ifstream f(filename);
     return f.good();
   };
+  if (!file_exists(config_path)) {
+    NGRAPH_INFO << "Config path" << config_path << " does not exist";
+  }
   NGRAPH_CHECK(file_exists(config_path), "Config path ", config_path,
                " does not exist");
 
@@ -128,6 +131,8 @@ inline ngraph::he::HESealEncryptionParameters parse_config_or_use_default(
     nlohmann::json js = nlohmann::json::parse(s);
     std::string parsed_scheme_name = js["scheme_name"];
     if (parsed_scheme_name != scheme_name) {
+      NGRAPH_INFO << "Parsed scheme name " << parsed_scheme_name
+                  << " doesn't match scheme name " << scheme_name;
       throw ngraph_error("Parsed scheme name " + parsed_scheme_name +
                          " doesn't match scheme name " + scheme_name);
     }
@@ -155,14 +160,17 @@ inline ngraph::he::HESealEncryptionParameters parse_config_or_use_default(
         throw ngraph_error("Invalid coeff modulus");
       }
     }
+    NGRAPH_INFO << "Creating parms";
     auto params = ngraph::he::HESealEncryptionParameters(
         scheme_name, poly_modulus_degree, security_level, coeff_mod_bits);
+    NGRAPH_INFO << "returning parms";
 
     return params;
 
   } catch (const std::exception& e) {
     std::stringstream ss;
     ss << "Error parsing NGRAPH_HE_SEAL_CONFIG: " << e.what();
+    NGRAPH_ERR << ss.str();
     throw ngraph_error(ss.str());
   }
 }
