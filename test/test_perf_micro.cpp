@@ -66,7 +66,7 @@ TEST(perf_micro, encode) {
 
     // he-transformer setup
     auto he_parms = HESealEncryptionParameters("HE_SEAL", poly_modulus_degree,
-                                               128, coeff_modulus_bits);
+                                               128, 0, coeff_modulus_bits);
     auto he_seal_backend = HESealBackend(he_parms);
 
     for (int test_run = 0; test_run < max_test_count; ++test_run) {
