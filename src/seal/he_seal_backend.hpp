@@ -163,6 +163,10 @@ class HESealBackend : public ngraph::runtime::Backend {
     return m_relin_keys;
   }
 
+  const inline std::shared_ptr<seal::GaloisKeys> get_galois_keys() const {
+    return m_galois_keys;
+  }
+
   const inline std::shared_ptr<seal::Encryptor> get_encryptor() const {
     return m_encryptor;
   }
@@ -235,6 +239,7 @@ class HESealBackend : public ngraph::runtime::Backend {
   std::shared_ptr<seal::SEALContext> m_context;
   std::shared_ptr<seal::Evaluator> m_evaluator;
   std::shared_ptr<seal::KeyGenerator> m_keygen;
+  std::shared_ptr<seal::GaloisKeys> m_galois_keys;
   HESealEncryptionParameters m_encryption_params;
   std::shared_ptr<seal::CKKSEncoder> m_ckks_encoder;
   double m_scale;

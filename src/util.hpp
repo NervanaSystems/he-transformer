@@ -72,7 +72,7 @@ inline bool flag_to_bool(const char* flag, bool default_value = false) {
   if (on_map.find(flag_str) != on_map.end()) {
     return true;
   } else if (off_map.find(flag_str) != off_map.end()) {
-    return true;
+    return false;
   } else {
     throw ngraph_error("Unknown flag value " + std::string(flag));
   }

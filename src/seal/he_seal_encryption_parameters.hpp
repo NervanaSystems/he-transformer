@@ -162,7 +162,6 @@ inline ngraph::he::HESealEncryptionParameters parse_config_or_use_default(
 
   } catch (const std::exception& e) {
     std::stringstream ss;
-    ss << "Error parsing NGRAPH_HE_SEAL_CONFIG: " << e.what();
     throw ngraph_error(ss.str());
   }
 }
