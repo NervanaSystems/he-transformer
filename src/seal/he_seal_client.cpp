@@ -159,8 +159,7 @@ void ngraph::he::HESealClient::handle_inference_request(
                 << ") * m_batch_size (" << m_batch_size << ")";
   }
 
-  std::vector<std::shared_ptr<SealCiphertextWrapper>> ciphers(parameter_size /
-                                                              m_batch_size);
+  std::vector<std::shared_ptr<SealCiphertextWrapper>> ciphers(parameter_size);
   for (size_t data_idx = 0; data_idx < ciphers.size(); ++data_idx) {
     ciphers[data_idx] = std::make_shared<SealCiphertextWrapper>();
   }
@@ -183,10 +182,10 @@ void ngraph::he::HESealClient::handle_inference_request(
 
 void ngraph::he::HESealClient::handle_result(
     const he_proto::TCPMessage& proto_msg) {
-  NGRAPH_INFO << "handling result";
-
   size_t result_count = proto_msg.ciphers_size();
+  NGRAPH_INFO << "handling result count " << result_count;
   m_results.resize(result_count * m_batch_size);
+  NGRAPH_INFO << "m_results size " << m_results.size();
   std::vector<std::shared_ptr<SealCiphertextWrapper>> result_ciphers(
       result_count);
 #pragma omp parallel for

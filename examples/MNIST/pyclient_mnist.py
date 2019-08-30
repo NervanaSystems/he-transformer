@@ -48,6 +48,7 @@ def test_mnist_cnn(FLAGS):
     print('Sleeping until client is done')
     while not client.is_done():
         time.sleep(1)
+    print('client.is._done()?', client.is_done())
 
     results = client.get_results()
     results = np.round(results, 2)
