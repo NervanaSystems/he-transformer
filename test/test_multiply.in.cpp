@@ -543,47 +543,6 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_2_3_cipher_cipher_complex) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
   he_backend->complex_packing() = true;
-
-  auto a = std::make_shared<ngraph::he::SealCiphertextWrapper>();
-  auto b = std::make_shared<ngraph::he::SealCiphertextWrapper>();
-  auto c = std::make_shared<ngraph::he::SealCiphertextWrapper>();
-  auto out = std::make_shared<ngraph::he::SealCiphertextWrapper>();
-  a->complex_packing() = true;
-  b->complex_packing() = true;
-  {
-    // arg1 complex packing
-    EXPECT_THROW(
-        { scalar_multiply_seal(*a, *c, out, element::f32, *he_backend); },
-        CheckFailure);
-    // arg2 complex packing
-    EXPECT_THROW(
-        { scalar_multiply_seal(*c, *a, out, element::f32, *he_backend); },
-        CheckFailure);
-    // both args complex packing
-    EXPECT_THROW(
-        { scalar_multiply_seal(*a, *b, out, element::f32, *he_backend); },
-        CheckFailure);
-  }
-  {
-    // arg1 complex packing
-    EXPECT_THROW(
-        { scalar_multiply_seal(*a, *c, out, element::f64, *he_backend); },
-        CheckFailure);
-    // arg2 complex packing
-    EXPECT_THROW(
-        { scalar_multiply_seal(*c, *a, out, element::f64, *he_backend); },
-        CheckFailure);
-    // both args complex packing
-    EXPECT_THROW(
-        { scalar_multiply_seal(*a, *b, out, element::f64, *he_backend); },
-        CheckFailure);
-  }
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, multiply_2_3_cipher_cipher_complex_noerror) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->complex_packing() = true;
   Shape shape{2, 3};
   {
     auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -603,7 +562,7 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_2_3_cipher_cipher_complex_noerror) {
   }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, multiply_2_1_cipher_cipher_complex_noerror) {
+NGRAPH_TEST(${BACKEND_NAME}, multiply_2_1_cipher_cipher_complex) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
   he_backend->complex_packing() = true;
