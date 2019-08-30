@@ -453,7 +453,6 @@ void ngraph::he::encode(ngraph::he::SealPlaintextWrapper& destination,
       if (complex_packing) {
         std::vector<std::complex<double>> complex_vals;
         if (double_vals.size() == 1) {
-          NGRAPH_INFO << "doubles.size() == 1";
           std::complex<double> val(double_vals[0], double_vals[0]);
           complex_vals = std::vector<std::complex<double>>(slot_count, val);
         } else {
@@ -462,10 +461,6 @@ void ngraph::he::encode(ngraph::he::SealPlaintextWrapper& destination,
         NGRAPH_CHECK(complex_vals.size() <= slot_count, "Cannot encode ",
                      complex_vals.size(), " elements, maximum size is ",
                      slot_count);
-        NGRAPH_INFO << "Encoding complex vals";
-        for (const auto& elem : complex_vals) {
-          NGRAPH_INFO << elem;
-        }
 
         ckks_encoder.encode(complex_vals, parms_id, scale,
                             destination.plaintext());

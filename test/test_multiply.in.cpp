@@ -599,6 +599,29 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_2_3_cipher_cipher_complex_noerror) {
     auto handle = backend->compile(f);
     handle->call_with_validate({t_result}, {t_a, t_b});
     EXPECT_TRUE(all_close((vector<float>{-6, 2, 0, 3, 4, -15}),
-                          read_vector<float>(t_result), 1e-3f));
+                          read_vector<float>(t_result), 1e-2f));
+  }
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, multiply_2_1_cipher_cipher_complex_noerror) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->complex_packing() = true;
+  Shape shape{2, 1};
+  {
+    auto a = make_shared<op::Parameter>(element::f32, shape);
+    auto b = make_shared<op::Parameter>(element::f32, shape);
+    auto t = make_shared<op::Multiply>(a, b);
+    auto f = make_shared<Function>(t, ParameterVector{a, b});
+    auto t_a = he_backend->create_packed_cipher_tensor(element::f32, shape);
+    auto t_b = he_backend->create_packed_cipher_tensor(element::f32, shape);
+    auto t_result =
+        he_backend->create_packed_cipher_tensor(element::f32, shape);
+    copy_data(t_a, vector<float>{-2, -1});
+    copy_data(t_b, vector<float>{3, -2});
+    auto handle = backend->compile(f);
+    handle->call_with_validate({t_result}, {t_a, t_b});
+    EXPECT_TRUE(
+        all_close((vector<float>{-6, 2}), read_vector<float>(t_result), 1e-2f));
   }
 }
