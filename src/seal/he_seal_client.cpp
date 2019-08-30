@@ -53,7 +53,7 @@ ngraph::he::HESealClient::HESealClient(const std::string& hostname,
   auto client_callback = [this](const ngraph::he::TCPMessage& message) {
     return handle_message(message);
   };
-  m_tcp_client = std::make_shared<ngraph::he::TCPClient>(io_context, endpoints,
+  m_tcp_client = std::make_unique<ngraph::he::TCPClient>(io_context, endpoints,
                                                          client_callback);
   io_context.run();
 }

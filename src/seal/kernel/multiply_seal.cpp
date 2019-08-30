@@ -40,10 +40,9 @@ void ngraph::he::scalar_multiply_seal(
     HEPlaintext p(arg1.value());
     scalar_multiply_seal(arg0, p, out, element_type, he_seal_backend, pool);
   } else {
-    NGRAPH_CHECK(arg0.complex_packing() == false,
-                 "cannot multiply ciphertexts in complex form");
-    NGRAPH_CHECK(arg1.complex_packing() == false,
-                 "cannot multiply ciphertexts in complex form");
+    NGRAPH_CHECK(arg0.complex_packing() == arg1.complex_packing(),
+                 "ciphertexts must match complex form");
+
     match_modulus_and_scale_inplace(arg0, arg1, he_seal_backend, pool);
     size_t chain_ind0 = get_chain_index(arg0, he_seal_backend);
     size_t chain_ind1 = get_chain_index(arg1, he_seal_backend);
@@ -53,18 +52,93 @@ void ngraph::he::scalar_multiply_seal(
       exit(1);
     }
 
-    if (&arg0 == &arg1) {
-      he_seal_backend.get_evaluator()->square(arg0.ciphertext(),
-                                              out->ciphertext(), pool);
-    } else {
-      he_seal_backend.get_evaluator()->multiply(
-          arg0.ciphertext(), arg1.ciphertext(), out->ciphertext(), pool);
-    }
-
-    he_seal_backend.get_evaluator()->relinearize_inplace(
-        out->ciphertext(), *(he_seal_backend.get_relin_keys()), pool);
-
     out->known_value() = false;
+
+    if (arg0.complex_packing()) {
+      // Compute c0 x c1 == ((c0 - c0*)(c1 - c1*) + (-i)(c0 + c0*)(c1 + c1*))/4
+
+      seal::Ciphertext& c0 = arg0.ciphertext();
+      seal::Ciphertext& c1 = arg1.ciphertext();
+      seal::Ciphertext c0_conj;
+      seal::Ciphertext c1_conj;
+
+      out->complex_packing() = true;
+      he_seal_backend.get_evaluator()->complex_conjugate(
+          c0, *he_seal_backend.get_galois_keys(), c0_conj);
+      he_seal_backend.get_evaluator()->complex_conjugate(
+          c1, *he_seal_backend.get_galois_keys(), c1_conj);
+
+      seal::Ciphertext c0_re;
+      seal::Ciphertext c0_im;
+      seal::Ciphertext c1_re;
+      seal::Ciphertext c1_im;
+
+      he_seal_backend.get_evaluator()->add(c0, c0_conj, c0_re);
+      he_seal_backend.get_evaluator()->sub(c0, c0_conj, c0_im);
+      he_seal_backend.get_evaluator()->add(c1, c1_conj, c1_re);
+      he_seal_backend.get_evaluator()->sub(c1, c1_conj, c1_im);
+
+      // Divide by two, since (a+bi) + (a+bi)* = 2a, etc.
+      c0_re.scale() *= 2;
+      c1_re.scale() *= 2;
+      c0_im.scale() *= 2;
+      c1_im.scale() *= 2;
+
+      seal::Ciphertext prod_re;
+      seal::Ciphertext prod_im;
+
+      he_seal_backend.get_evaluator()->multiply(c0_re, c1_re, prod_re);
+      he_seal_backend.get_evaluator()->multiply(c0_im, c1_im, prod_im);
+
+      he_seal_backend.get_evaluator()->relinearize_inplace(
+          prod_re, *(he_seal_backend.get_relin_keys()), pool);
+      he_seal_backend.get_evaluator()->relinearize_inplace(
+          prod_im, *(he_seal_backend.get_relin_keys()), pool);
+
+      const double encode_scale = he_seal_backend.get_scale();
+
+      auto ckks_encoder = he_seal_backend.get_ckks_encoder();
+      const size_t slot_count = ckks_encoder->slot_count();
+      std::vector<std::complex<double>> complex_vals(slot_count, {0, -1});
+      seal::Plaintext neg_i;
+      ckks_encoder->encode(complex_vals, prod_im.parms_id(), encode_scale,
+                           neg_i);
+
+      he_seal_backend.get_evaluator()->multiply_plain_inplace(prod_im, neg_i);
+
+      std::vector<std::complex<double>> new_complex_vals(slot_count, {1, 0});
+      seal::Plaintext fudge_re;
+      ckks_encoder->encode(new_complex_vals, prod_re.parms_id(), encode_scale,
+                           fudge_re);
+
+      he_seal_backend.get_evaluator()->multiply_plain_inplace(prod_re,
+                                                              fudge_re);
+      he_seal_backend.get_evaluator()->add(prod_re, prod_im, out->ciphertext());
+
+      he_seal_backend.get_evaluator()->rescale_to_next_inplace(
+          out->ciphertext(), pool);
+
+      out->known_value() = false;
+
+    } else {
+      NGRAPH_CHECK(arg0.complex_packing() == false,
+                   "cannot multiply ciphertexts in complex form");
+      NGRAPH_CHECK(arg1.complex_packing() == false,
+                   "cannot multiply ciphertexts in complex form");
+
+      if (&arg0 == &arg1) {
+        he_seal_backend.get_evaluator()->square(arg0.ciphertext(),
+                                                out->ciphertext(), pool);
+      } else {
+        he_seal_backend.get_evaluator()->multiply(
+            arg0.ciphertext(), arg1.ciphertext(), out->ciphertext(), pool);
+      }
+
+      he_seal_backend.get_evaluator()->relinearize_inplace(
+          out->ciphertext(), *(he_seal_backend.get_relin_keys()), pool);
+
+      out->known_value() = false;
+    }
   }
 }
 

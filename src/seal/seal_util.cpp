@@ -475,6 +475,7 @@ void ngraph::he::encode(ngraph::he::SealPlaintextWrapper& destination,
         NGRAPH_CHECK(complex_vals.size() <= slot_count, "Cannot encode ",
                      complex_vals.size(), " elements, maximum size is ",
                      slot_count);
+
         ckks_encoder.encode(complex_vals, parms_id, scale,
                             destination.plaintext());
       } else {

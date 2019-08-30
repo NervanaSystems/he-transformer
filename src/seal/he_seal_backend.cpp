@@ -68,27 +68,27 @@ ngraph::he::HESealBackend::HESealBackend(
 
   auto context_data = m_context->key_context_data();
 
-  // Keygen, encryptor and decryptor
   m_keygen = std::make_shared<seal::KeyGenerator>(m_context);
   m_relin_keys = std::make_shared<seal::RelinKeys>(m_keygen->relin_keys());
+  m_galois_keys = std::make_shared<seal::GaloisKeys>(m_keygen->galois_keys());
   m_public_key = std::make_shared<seal::PublicKey>(m_keygen->public_key());
   m_secret_key = std::make_shared<seal::SecretKey>(m_keygen->secret_key());
   m_encryptor = std::make_shared<seal::Encryptor>(m_context, *m_public_key);
   m_decryptor = std::make_shared<seal::Decryptor>(m_context, *m_secret_key);
-
-  // Evaluator
   m_evaluator = std::make_shared<seal::Evaluator>(m_context);
+  m_ckks_encoder = std::make_shared<seal::CKKSEncoder>(m_context);
 
-  // TODO: pick smaller scale?
   auto coeff_moduli = context_data->parms().coeff_modulus();
-  m_scale = ngraph::he::choose_scale(coeff_moduli);
+  if (parms.scale() == 0) {
+    m_scale = ngraph::he::choose_scale(coeff_moduli);
+  } else {
+    m_scale = parms.scale();
+  }
+
   if (m_encrypt_data) {
     print_seal_context(*m_context);
     NGRAPH_INFO << "Scale " << m_scale;
   }
-
-  // Encoder
-  m_ckks_encoder = std::make_shared<seal::CKKSEncoder>(m_context);
 
   // Set barrett ratio map
   for (const seal::SmallModulus& modulus : coeff_moduli) {

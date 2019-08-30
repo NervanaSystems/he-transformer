@@ -543,39 +543,44 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_2_3_cipher_cipher_complex) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
   he_backend->complex_packing() = true;
-
-  auto a = std::make_shared<ngraph::he::SealCiphertextWrapper>();
-  auto b = std::make_shared<ngraph::he::SealCiphertextWrapper>();
-  auto c = std::make_shared<ngraph::he::SealCiphertextWrapper>();
-  auto out = std::make_shared<ngraph::he::SealCiphertextWrapper>();
-  a->complex_packing() = true;
-  b->complex_packing() = true;
+  Shape shape{2, 3};
   {
-    // arg1 complex packing
-    EXPECT_THROW(
-        { scalar_multiply_seal(*a, *c, out, element::f32, *he_backend); },
-        CheckFailure);
-    // arg2 complex packing
-    EXPECT_THROW(
-        { scalar_multiply_seal(*c, *a, out, element::f32, *he_backend); },
-        CheckFailure);
-    // both args complex packing
-    EXPECT_THROW(
-        { scalar_multiply_seal(*a, *b, out, element::f32, *he_backend); },
-        CheckFailure);
+    auto a = make_shared<op::Parameter>(element::f32, shape);
+    auto b = make_shared<op::Parameter>(element::f32, shape);
+    auto t = make_shared<op::Multiply>(a, b);
+    auto f = make_shared<Function>(t, ParameterVector{a, b});
+    auto t_a = he_backend->create_packed_cipher_tensor(element::f32, shape);
+    auto t_b = he_backend->create_packed_cipher_tensor(element::f32, shape);
+    auto t_result =
+        he_backend->create_packed_cipher_tensor(element::f32, shape);
+    copy_data(t_a, vector<float>{-2, -1, 0, 1, 2, 3});
+    copy_data(t_b, vector<float>{3, -2, 5, 3, 2, -5});
+    auto handle = backend->compile(f);
+    handle->call_with_validate({t_result}, {t_a, t_b});
+    EXPECT_TRUE(all_close((vector<float>{-6, 2, 0, 3, 4, -15}),
+                          read_vector<float>(t_result), 1e-2f));
   }
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, multiply_2_1_cipher_cipher_complex) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->complex_packing() = true;
+  Shape shape{2, 1};
   {
-    // arg1 complex packing
-    EXPECT_THROW(
-        { scalar_multiply_seal(*a, *c, out, element::f64, *he_backend); },
-        CheckFailure);
-    // arg2 complex packing
-    EXPECT_THROW(
-        { scalar_multiply_seal(*c, *a, out, element::f64, *he_backend); },
-        CheckFailure);
-    // both args complex packing
-    EXPECT_THROW(
-        { scalar_multiply_seal(*a, *b, out, element::f64, *he_backend); },
-        CheckFailure);
+    auto a = make_shared<op::Parameter>(element::f32, shape);
+    auto b = make_shared<op::Parameter>(element::f32, shape);
+    auto t = make_shared<op::Multiply>(a, b);
+    auto f = make_shared<Function>(t, ParameterVector{a, b});
+    auto t_a = he_backend->create_packed_cipher_tensor(element::f32, shape);
+    auto t_b = he_backend->create_packed_cipher_tensor(element::f32, shape);
+    auto t_result =
+        he_backend->create_packed_cipher_tensor(element::f32, shape);
+    copy_data(t_a, vector<float>{-2, -1});
+    copy_data(t_b, vector<float>{3, -2});
+    auto handle = backend->compile(f);
+    handle->call_with_validate({t_result}, {t_a, t_b});
+    EXPECT_TRUE(
+        all_close((vector<float>{-6, 2}), read_vector<float>(t_result), 1e-2f));
   }
 }

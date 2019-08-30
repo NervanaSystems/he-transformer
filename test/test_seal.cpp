@@ -80,6 +80,48 @@ TEST(seal_example, seal_ckks_basics) {
   encoder.decode(plain, input);
 }
 
+TEST(seal_example, seal_ckks_complex_conjugate) {
+  using namespace seal;
+
+  EncryptionParameters parms(scheme_type::CKKS);
+  size_t poly_modulus_degree = 8192;
+  parms.set_poly_modulus_degree(poly_modulus_degree);
+  parms.set_coeff_modulus(
+      CoeffModulus::Create(poly_modulus_degree, {60, 40, 40, 60}));
+
+  auto context = SEALContext::Create(parms);
+  // print_parameters(context);
+
+  KeyGenerator keygen(context);
+  auto public_key = keygen.public_key();
+  auto secret_key = keygen.secret_key();
+  auto relin_keys = keygen.relin_keys();
+  auto galois_keys = keygen.galois_keys();
+
+  Encryptor encryptor(context, public_key);
+  Evaluator evaluator(context);
+  Decryptor decryptor(context, secret_key);
+  CKKSEncoder encoder(context);
+
+  vector<complex<double>> input{{0.0, 1.1}, {2.2, 3.3}};
+  vector<complex<double>> exp_output{{0.0, -1.1}, {2.2, -3.3}};
+  vector<complex<double>> output;
+
+  Plaintext plain;
+  double scale = pow(2.0, 40);
+  encoder.encode(input, scale, plain);
+
+  Ciphertext encrypted;
+  encryptor.encrypt(plain, encrypted);
+  evaluator.complex_conjugate_inplace(encrypted, galois_keys);
+
+  decryptor.decrypt(encrypted, plain);
+  encoder.decode(plain, output);
+
+  EXPECT_TRUE(std::abs(exp_output[0] - output[0]) < 0.1);
+  EXPECT_TRUE(std::abs(exp_output[1] - output[1]) < 0.1);
+}
+
 TEST(seal_util, save) {
   using namespace seal;
 

@@ -33,11 +33,12 @@ class HESealEncryptionParameters {
   HESealEncryptionParameters() = delete;
   HESealEncryptionParameters(const std::string& scheme_name,
                              std::uint64_t poly_modulus_degree,
-                             std::uint64_t security_level,
+                             std::uint64_t security_level, double scale,
                              std::vector<int> coeff_modulus_bits)
       : m_scheme_name(scheme_name),
         m_poly_modulus_degree(poly_modulus_degree),
         m_security_level(security_level),
+        m_scale(scale),
         m_coeff_modulus_bits(coeff_modulus_bits) {
     NGRAPH_CHECK(scheme_name == "HE_SEAL", "Invalid scheme name ", scheme_name);
     m_seal_encryption_parameters =
@@ -68,6 +69,8 @@ class HESealEncryptionParameters {
     return m_poly_modulus_degree;
   }
 
+  inline double scale() const { return m_scale; }
+
   inline std::uint64_t security_level() const { return m_security_level; }
 
   inline const std::vector<int>& coeff_modulus_bits() const {
@@ -84,6 +87,7 @@ class HESealEncryptionParameters {
   std::string m_scheme_name;
   std::uint64_t m_poly_modulus_degree;
   std::uint64_t m_security_level;
+  double m_scale;
   std::vector<int> m_coeff_modulus_bits;
   std::vector<seal::SmallModulus> m_coeff_modulus;
 };
@@ -92,9 +96,11 @@ inline ngraph::he::HESealEncryptionParameters default_ckks_parameters() {
   size_t poly_modulus_degree = 1024;
   size_t security_level = 0;  // No enforced security level
   std::vector<int> coeff_modulus_bits = {30, 30, 30, 30, 30};
+  double default_scale = 0;  // Use default scale
 
   auto params = ngraph::he::HESealEncryptionParameters(
-      "HE_SEAL", poly_modulus_degree, security_level, coeff_modulus_bits);
+      "HE_SEAL", poly_modulus_degree, security_level, default_scale,
+      coeff_modulus_bits);
   return params;
 }
 
@@ -134,6 +140,7 @@ inline ngraph::he::HESealEncryptionParameters parse_config_or_use_default(
 
     uint64_t poly_modulus_degree = js["poly_modulus_degree"];
     uint64_t security_level = js["security_level"];
+
     std::unordered_set<uint64_t> valid_poly_modulus{1024, 2048,  4096,
                                                     8192, 16384, 32768};
     if (valid_poly_modulus.count(poly_modulus_degree) == 0) {
@@ -147,22 +154,27 @@ inline ngraph::he::HESealEncryptionParameters parse_config_or_use_default(
       throw ngraph_error("security_level must be 0, 128, 192, 256");
     }
 
-    std::vector<int> coeff_mod_bits = js["coeff_modulus"];
+    double scale = 0;  // Use default scale
+    if (js.find("scale") != js.end()) {
+      scale = js["scale"];
+    }
 
+    std::vector<int> coeff_mod_bits = js["coeff_modulus"];
     for (const auto& coeff_bit : coeff_mod_bits) {
       if (coeff_bit > 60 || coeff_bit < 1) {
         NGRAPH_INFO << "coeff_bit " << coeff_bit;
         throw ngraph_error("Invalid coeff modulus");
       }
     }
+
     auto params = ngraph::he::HESealEncryptionParameters(
-        scheme_name, poly_modulus_degree, security_level, coeff_mod_bits);
+        scheme_name, poly_modulus_degree, security_level, scale,
+        coeff_mod_bits);
 
     return params;
 
   } catch (const std::exception& e) {
     std::stringstream ss;
-    ss << "Error parsing NGRAPH_HE_SEAL_CONFIG: " << e.what();
     throw ngraph_error(ss.str());
   }
 }
