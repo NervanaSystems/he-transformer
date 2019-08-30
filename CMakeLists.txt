@@ -64,7 +64,7 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(PROJECT_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 add_definitions(-DPROJECT_ROOT_DIR="${PROJECT_ROOT_DIR}")
 
-# This allows libhe_backend.so to find libraries in the same directory
+# This allows libhe_seal_backend.so to find libraries in the same directory
 set(CMAKE_INSTALL_RPATH "\$ORIGIN")
 
 # he-transformer headers
@@ -135,7 +135,7 @@ include(cmake/protobuf.cmake)
 add_library(ngraph SHARED IMPORTED)
 set_target_properties(ngraph
                       PROPERTIES IMPORTED_LOCATION
-                                 ${NGRAPH_TF_LIB_DIR}/libngraph.so)
+                                 ${EXTERNAL_INSTALL_LIB_DIR}/libngraph.so)
 set_target_properties(ngraph
                       PROPERTIES INCLUDE_DIRECTORIES ${NGRAPH_TF_INCLUDE_DIR})
 

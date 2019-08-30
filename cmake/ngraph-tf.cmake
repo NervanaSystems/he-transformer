@@ -72,8 +72,7 @@ ExternalProject_Add(ext_ngraph_tf
                                     -fs
                                     ${NGRAPH_TF_VENV_DIR}
                                     ${EXTERNAL_INSTALL_DIR}
-                    UPDATE_COMMAND ""
-                    )
+                    UPDATE_COMMAND "")
 
 ExternalProject_Get_Property(ext_ngraph_tf SOURCE_DIR)
 add_library(libngraph_tf INTERFACE)

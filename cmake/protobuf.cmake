@@ -46,7 +46,7 @@ message(STATUS "protoc BINARY_DIR ${BINARY_DIR}")
 add_library(libprotobuf_orig SHARED IMPORTED)
 set_target_properties(libprotobuf_orig
                       PROPERTIES IMPORTED_LOCATION
-                                 ${EXTERNAL_INSTALL_DIR}/lib/libprotobuf.so)
+                                 ${EXTERNAL_INSTALL_LIB_DIR}/libprotobuf.so)
 target_include_directories(libprotobuf_orig
                            INTERFACE ${EXTERNAL_INSTALL_DIR}/include)
 add_dependencies(libprotobuf_orig ext_protobuf)
