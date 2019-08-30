@@ -16,7 +16,6 @@
 
 #pragma once
 
-#include <assert.h>
 #include <cmath>
 #include <complex>
 #include <string>
