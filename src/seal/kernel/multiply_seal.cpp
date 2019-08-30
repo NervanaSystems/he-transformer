@@ -55,6 +55,8 @@ void ngraph::he::scalar_multiply_seal(
     out->known_value() = false;
 
     if (arg0.complex_packing()) {
+      // Compute c0 x c1 == ((c0 - c0*)(c1 - c1*) + (-i)(c0 + c0*)(c1 + c1*))/4
+
       seal::Ciphertext& c0 = arg0.ciphertext();
       seal::Ciphertext& c1 = arg1.ciphertext();
       seal::Ciphertext c0_conj;
@@ -76,6 +78,7 @@ void ngraph::he::scalar_multiply_seal(
       he_seal_backend.get_evaluator()->add(c1, c1_conj, c1_re);
       he_seal_backend.get_evaluator()->sub(c1, c1_conj, c1_im);
 
+      // Divide by two, since (a+bi) + (a+bi)* = 2a, etc.
       c0_re.scale() *= 2;
       c1_re.scale() *= 2;
       c0_im.scale() *= 2;
