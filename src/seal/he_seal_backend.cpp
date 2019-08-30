@@ -78,10 +78,13 @@ ngraph::he::HESealBackend::HESealBackend(
   m_evaluator = std::make_shared<seal::Evaluator>(m_context);
   m_ckks_encoder = std::make_shared<seal::CKKSEncoder>(m_context);
 
-  // TODO: pick smaller scale?
   auto coeff_moduli = context_data->parms().coeff_modulus();
-  m_scale = ngraph::he::choose_scale(coeff_moduli);
-  NGRAPH_INFO << "chose scale " << m_scale;
+  if (parms.scale() == 0) {
+    m_scale = ngraph::he::choose_scale(coeff_moduli);
+  } else {
+    m_scale = parms.scale();
+  }
+
   if (m_encrypt_data) {
     print_seal_context(*m_context);
     NGRAPH_INFO << "Scale " << m_scale;
