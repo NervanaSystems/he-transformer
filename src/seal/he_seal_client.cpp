@@ -201,6 +201,10 @@ void ngraph::he::HESealClient::handle_result(
       complex_packing());
 
   NGRAPH_INFO << "done handling result";
+  for (const auto& elem : m_results) {
+    NGRAPH_INFO << elem;
+  }
+  NGRAPH_INFO << "Done print resl";
 
   close_connection();
 }
@@ -350,4 +354,5 @@ void ngraph::he::HESealClient::close_connection() {
   NGRAPH_INFO << "Closing connection";
   m_tcp_client->close();
   m_is_done = true;
+  NGRAPH_INFO << "Setting is done true";
 }

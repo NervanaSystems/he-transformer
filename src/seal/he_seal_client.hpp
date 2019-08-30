@@ -70,7 +70,10 @@ class HESealClient {
 
   inline bool is_done() { return m_is_done; }
 
-  std::vector<double> get_results() { return m_results; }
+  std::vector<double> get_results() {
+    NGRAPH_INFO << "Getting result size " << m_results.size();
+    return m_results;
+  }
 
   void close_connection();
 
