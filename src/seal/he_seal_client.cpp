@@ -266,7 +266,6 @@ void ngraph::he::HESealClient::handle_bounded_relu_request(
 
 void ngraph::he::HESealClient::handle_max_pool_request(
     const he_proto::TCPMessage& proto_msg) {
-  NGRAPH_INFO << "Handling max_pool request";
   NGRAPH_CHECK(proto_msg.has_function(), "Proto message doesn't have function");
 
   size_t cipher_count = proto_msg.ciphers_size();

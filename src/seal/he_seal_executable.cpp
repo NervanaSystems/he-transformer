@@ -221,7 +221,8 @@ void ngraph::he::HESealExecutable::client_setup() {
       m_client_load_idx.clear();
       const ParameterVector& input_parameters = get_parameters();
       for (auto input_param : input_parameters) {
-        NGRAPH_INFO << "param shape " << join(input_param->get_shape(), "x");
+        NGRAPH_INFO << "parameter shape "
+                    << join(input_param->get_shape(), "x");
         auto element_type = input_param->get_element_type();
 
         auto input_tensor =
@@ -354,7 +355,6 @@ void ngraph::he::HESealExecutable::handle_max_pool_result(
     const he_proto::TCPMessage& proto_msg) {
   std::lock_guard<std::mutex> guard(m_max_pool_mutex);
   size_t message_count = proto_msg.ciphers_size();
-  NGRAPH_INFO << "handle_max_pool_result with count " << message_count;
 
   NGRAPH_CHECK(message_count == 1,
                "Maxpool only supports message count 1, got ", message_count);
@@ -1682,7 +1682,6 @@ void ngraph::he::HESealExecutable::handle_server_max_pool_op(
 
     json js;
     js["function"] = node.description();
-    NGRAPH_INFO << "Description " << js["function"];
 
     he_proto::Function f;
     f.set_function(js.dump());
