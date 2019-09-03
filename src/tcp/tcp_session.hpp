@@ -29,6 +29,9 @@ using boost::asio::ip::tcp;
 namespace ngraph {
 namespace he {
 class TCPSession : public std::enable_shared_from_this<TCPSession> {
+  using data_buffer = ngraph::he::TCPMessage::data_buffer;
+  size_t header_length = ngraph::he::TCPMessage::header_length;
+
  public:
   TCPSession(tcp::socket socket,
              std::function<void(const ngraph::he::TCPMessage&)> message_handler)
@@ -40,34 +43,34 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
 
  public:
   void do_read_header() {
+    if (m_read_buffer.size() < header_length) {
+      m_read_buffer.resize(header_length);
+    }
     auto self(shared_from_this());
     boost::asio::async_read(
-        m_socket,
-        boost::asio::buffer(m_read_message.header_ptr(),
-                            ngraph::he::TCPMessage::header_length),
+        m_socket, boost::asio::buffer(&m_read_buffer[0], header_length),
         [this, self](boost::system::error_code ec, std::size_t length) {
-          if (!ec & m_read_message.decode_header()) {
-            do_read_body();
+          if (!ec) {
+            size_t msg_len = m_read_message.decode_header(m_read_buffer);
+            do_read_body(msg_len);
           } else {
-            if (ec) {
-              // End of file is expected on teardown
-              if (ec.message() != "End of file") {
-                NGRAPH_INFO << "Server error reading body: " << ec.message();
-              }
+            if (ec.message() != s_expected_teardown_message.c_str()) {
+              NGRAPH_INFO << "Server error reading body: " << ec.message();
             }
           }
         });
   }
 
-  void do_read_body() {
+  void do_read_body(size_t body_length) {
+    m_read_buffer.resize(header_length + body_length);
+
     auto self(shared_from_this());
     boost::asio::async_read(
         m_socket,
-        boost::asio::buffer(m_read_message.body_ptr(),
-                            m_read_message.body_length()),
+        boost::asio::buffer(&m_read_buffer[header_length], body_length),
         [this, self](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
-            m_read_message.decode_body();
+            m_read_message.unpack(m_read_buffer);
             m_message_callback(m_read_message);
             do_read_header();
           } else {
@@ -94,11 +97,11 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
     std::lock_guard<std::mutex> lock(m_write_mtx);
     m_is_writing.notify_all();
     auto self(shared_from_this());
+    auto message = m_message_queue.front();
+    message.pack(m_write_buffer);
 
     boost::asio::async_write(
-        m_socket,
-        boost::asio::buffer(m_message_queue.front().header_ptr(),
-                            m_message_queue.front().num_bytes()),
+        m_socket, boost::asio::buffer(m_write_buffer),
         [this, self](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
             m_message_queue.pop_front();
@@ -116,13 +119,16 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
  private:
   std::deque<ngraph::he::TCPMessage> m_message_queue;
   TCPMessage m_read_message;
-  tcp::socket m_socket;
 
+  data_buffer m_read_buffer;
+  data_buffer m_write_buffer;
+  tcp::socket m_socket;
   bool m_writing;
   std::condition_variable m_is_writing;
   std::mutex m_write_mtx;
 
-  // Called after message is received
+  inline static std::string s_expected_teardown_message{"End of file"};
+
   std::function<void(const ngraph::he::TCPMessage&)> m_message_callback;
 };
 }  // namespace he

@@ -20,7 +20,7 @@ set(EXTERNAL_NGRAPH_INSTALL_DIR ${EXTERNAL_INSTALL_DIR})
 set(NGRAPH_TF_CMAKE_PREFIX ext_ngraph_tf)
 
 set(NGRAPH_TF_REPO_URL https://github.com/tensorflow/ngraph-bridge.git)
-set(NGRAPH_TF_GIT_LABEL v0.18.0)
+set(NGRAPH_TF_GIT_LABEL v0.18.1)
 
 set(NGRAPH_TF_SRC_DIR
     ${CMAKE_BINARY_DIR}/${NGRAPH_TF_CMAKE_PREFIX}/src/${NGRAPH_TF_CMAKE_PREFIX})
@@ -28,29 +28,6 @@ set(NGRAPH_TF_BUILD_DIR ${NGRAPH_TF_SRC_DIR}/build_cmake)
 set(NGRAPH_TF_ARTIFACTS_DIR ${NGRAPH_TF_BUILD_DIR}/artifacts)
 
 set(NGRAPH_TF_VENV_DIR ${NGRAPH_TF_BUILD_DIR}/venv-tf-py3)
-
-# From ngraph-bridge
-if(NOT APPLE)
-  execute_process(COMMAND cat /etc/os-release
-                  OUTPUT_VARIABLE LSB_RELEASE_ID_SHORT
-                  OUTPUT_STRIP_TRAILING_WHITESPACE)
-  string(REPLACE "\""
-                 ""
-                 LSB_RELEASE_ID_SHORT
-                 ${LSB_RELEASE_ID_SHORT})
-
-  string(REGEX MATCH
-               "ID=\([a-z])+"
-               OS_VERSION
-               "${LSB_RELEASE_ID_SHORT}")
-  string(REGEX MATCH
-               "([a-z])+"
-               OS_VERSION
-               "${OS_VERSION}")
-  message("OS version is: ${OS_VERSION}")
-else()
-  # Handle the case for MacOS TBD
-endif()
 
 if(OS_VERSION STREQUAL "centos")
   set(NGRAPH_TF_LIB_DIR ${NGRAPH_TF_ARTIFACTS_DIR}/lib64)
@@ -65,16 +42,13 @@ set(NGRAPH_TF_INCLUDE_DIR ${NGRAPH_TF_ARTIFACTS_DIR}/include)
 
 set(NGRAPH_TEST_UTIL_INCLUDE_DIR ${NGRAPH_TF_BUILD_DIR}/ngraph/test)
 
-message("NGRAPH_TF_VENV_LIB_DIR ${NGRAPH_TF_VENV_LIB_DIR}")
-message("NGRAPH_TF_LIB_DIR ${NGRAPH_TF_LIB_DIR}")
-
 set(ng_tf_build_flags "")
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  message("Using debug build for ng-tf")
+  message(STATUS "Using debug build for ng-tf")
   set(ng_tf_build_flags "--debug_build")
 endif()
 if(${USE_PREBUILT_TF})
-  message("Using prebuilt TF")
+  message(STATUS "Using prebuilt TF")
   set(
     ng_tf_build_flags
 
@@ -100,6 +74,14 @@ ExternalProject_Add(ext_ngraph_tf
 ExternalProject_Get_Property(ext_ngraph_tf SOURCE_DIR)
 add_library(libngraph_tf INTERFACE)
 add_dependencies(libngraph_tf ext_ngraph_tf)
+
+# Add ngraph library
+add_library(ngraph SHARED IMPORTED)
+set_target_properties(ngraph
+                      PROPERTIES IMPORTED_LOCATION
+                                 ${NGRAPH_TF_LIB_DIR}/libngraph.so)
+set_target_properties(ngraph
+                      PROPERTIES INCLUDE_DIRECTORIES ${NGRAPH_TF_INCLUDE_DIR})
 
 install(DIRECTORY ${NGRAPH_TF_LIB_DIR}/
         DESTINATION ${EXTERNAL_INSTALL_LIB_DIR}

@@ -1,0 +1,41 @@
+
+syntax = "proto3";
+
+package he_proto;
+
+message TCPMessage {
+  enum Type {
+    UNKNOWN = 0;
+    REQUEST = 1;
+    RESPONSE = 2;
+  }
+  Type type = 1;
+  Function function = 2;
+  EncryptionParameters encryption_parameters = 3;
+  EvaluationKey eval_key = 4;
+  PublicKey public_key = 5;
+  repeated SealCiphertextWrapper ciphers = 6;
+}
+
+message EncryptionParameters {
+  bytes encryption_parameters = 1;
+}
+
+message EvaluationKey {
+  bytes eval_key = 1;
+}
+
+message PublicKey {
+  bytes public_key = 1;
+}
+
+message Function {
+  string function = 1;
+}
+
+message SealCiphertextWrapper {
+  bool complex_packing = 1;
+  bool known_value = 2;
+  float value = 3;
+  bytes ciphertext = 4;
+}

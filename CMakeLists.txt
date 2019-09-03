@@ -26,7 +26,8 @@ if(DEFINED CMAKE_CXX_CLAGS)
 else()
   set(CMAKE_CXX_FLAGS "-std=c++1z -std=gnu++1z -Wall")
 endif()
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+set(CMAKE_CXX_FLAGS
+    "${CMAKE_CXX_FLAGS} -march=native -Wno-deprecated-declarations")
 
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS} -g")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -O0 -g")
@@ -63,7 +64,7 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(PROJECT_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 add_definitions(-DPROJECT_ROOT_DIR="${PROJECT_ROOT_DIR}")
 
-# This allows libhe_backend.so to find libraries in the same directory
+# This allows libhe_seal_backend.so to find libraries in the same directory
 set(CMAKE_INSTALL_RPATH "\$ORIGIN")
 
 # he-transformer headers
@@ -81,7 +82,7 @@ endif()
 # Build options python version used in virtual environment
 find_package(PythonInterp 3)
 if(PYTHONINTERP_FOUND)
-  message("PYTHON_VERSION_STRING " ${PYTHON_VERSION_STRING})
+  message(STATUS "PYTHON_VERSION_STRING " ${PYTHON_VERSION_STRING})
 elseif()
   message(FATAL_ERROR "Python3 not found.")
 endif()
@@ -90,7 +91,7 @@ if(NOT DEFINED PYTHON_VENV_VERSION)
   set(PYTHON_VENV_VERSION
       "python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
 endif()
-message("PYTHON_VENV_VERSION ${PYTHON_VENV_VERSION}")
+message(STATUS "PYTHON_VENV_VERSION ${PYTHON_VENV_VERSION}")
 
 option(NGRAPH_HE_SANITIZE_ADDRESS "Enable address sanitizer" OFF)
 
@@ -100,22 +101,35 @@ if(NGRAPH_HE_SANITIZE_ADDRESS)
       "${CMAKE_CXX_FLAGS} -g -fsanitize=address -fno-omit-frame-pointer")
 endif()
 
+# Get OS version
+if(NOT APPLE)
+  execute_process(COMMAND cat /etc/os-release
+                  OUTPUT_VARIABLE LSB_RELEASE_ID_SHORT
+                  OUTPUT_STRIP_TRAILING_WHITESPACE)
+  string(REPLACE "\""
+                 ""
+                 LSB_RELEASE_ID_SHORT
+                 ${LSB_RELEASE_ID_SHORT})
+  string(REGEX MATCH
+               "ID=\([a-z])+"
+               OS_VERSION
+               "${LSB_RELEASE_ID_SHORT}")
+  string(REGEX MATCH
+               "([a-z])+"
+               OS_VERSION
+               "${OS_VERSION}")
+  message(STATUS "OS version: ${OS_VERSION}")
+else()
+  # Handle the case for MacOS TBD
+endif()
+
 include(cmake/ngraph-tf.cmake)
 include(cmake/gtest.cmake)
 include(cmake/json.cmake)
 include(cmake/openmp.cmake)
 include(cmake/seal.cmake)
 include(cmake/boost.cmake)
-
-message("ngraph NGRAPH_TF_INCLUDE_DIR ${NGRAPH_TF_INCLUDE_DIR}")
-
-# Add ngraph library
-add_library(ngraph SHARED IMPORTED)
-set_target_properties(ngraph
-                      PROPERTIES IMPORTED_LOCATION
-                                 ${NGRAPH_TF_LIB_DIR}/libngraph.so)
-set_target_properties(ngraph
-                      PROPERTIES INCLUDE_DIRECTORIES ${NGRAPH_TF_INCLUDE_DIR})
+include(cmake/protobuf.cmake)
 
 # HE transformer source and test directories
 add_subdirectory(src)

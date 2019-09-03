@@ -35,7 +35,14 @@ set(HE_SRC
     seal/he_seal_cipher_tensor.cpp
     seal/he_seal_executable.cpp
     seal/he_seal_backend.cpp
-    seal/he_seal_client.cpp)
+    seal/he_seal_client.cpp
+    # protobuf files
+    ${message_proto_srcs})
+
+set_source_files_properties(${message_proto_srcs}
+                            PROPERTIES
+                            GENERATED
+                            TRUE)
 
 # Target library
 add_library(he_seal_backend SHARED ${HE_SRC})
@@ -48,6 +55,8 @@ target_link_libraries(he_seal_backend
                              libboost
                              libseal
                              libngraph_tf
+                             libprotobuf
+                             libprotobuf_orig
                              ngraph)
 
 message("HE_TRANSFORMER_SOURCE_DIR ${HE_TRANSFORMER_SOURCE_DIR}")
@@ -72,6 +81,16 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
         FILES_MATCHING
         PATTERN "*.hpp"
         PATTERN "*.h")
+
+# Install protobuf files
+install(DIRECTORY ${CMAKE_BINARY_DIR}/protos
+        DESTINATION ${EXTERNAL_INSTALL_INCLUDE_DIR}
+        FILES_MATCHING
+        PATTERN "*.hpp"
+        PATTERN "*.h")
+
+message(STATUS "CMAKE_CURRENT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}")
+message(STATUS "CMAKE_BINARY_DIR ${CMAKE_BINARY_DIR}")
 
 # Create symbolic links for he_seal_backend, to allow ngraph and ngraph-tf to
 # recognize find it.

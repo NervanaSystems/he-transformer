@@ -54,8 +54,8 @@ inline void bounded_relu_seal(const std::vector<HEPlaintext>& arg,
 inline void scalar_bounded_relu_seal_known_value(
     const SealCiphertextWrapper& arg,
     std::shared_ptr<SealCiphertextWrapper>& out, float alpha) {
-  auto bounded_relu = [alpha](double f) {
-    return f > alpha ? alpha : (f > 0) ? f : 0.f;
+  auto bounded_relu = [alpha](double d) {
+    return d > alpha ? alpha : (d > 0) ? d : 0.;
   };
   NGRAPH_CHECK(arg.known_value());
   out->known_value() = true;
@@ -68,8 +68,8 @@ inline void scalar_bounded_relu_seal(
     const seal::parms_id_type& parms_id, double scale,
     seal::CKKSEncoder& ckks_encoder, seal::Encryptor& encryptor,
     seal::Decryptor& decryptor) {
-  auto bounded_relu = [alpha](double f) {
-    return f > alpha ? alpha : (f > 0) ? f : 0.f;
+  auto bounded_relu = [alpha](double d) {
+    return d > alpha ? alpha : (d > 0) ? d : 0.;
   };
 
   if (arg.known_value()) {

@@ -34,6 +34,9 @@ namespace ngraph {
 namespace he {
 class TCPClient {
  public:
+  using data_buffer = ngraph::he::TCPMessage::data_buffer;
+  size_t header_length = ngraph::he::TCPMessage::header_length;
+
   // Connects client to hostname:port and reads message
   // message_handler will handle responses from the server
   TCPClient(boost::asio::io_context& io_context,
@@ -52,9 +55,9 @@ class TCPClient {
     boost::asio::post(m_io_context, [this]() { m_socket.close(); });
   }
 
-  void write_message(ngraph::he::TCPMessage&& message) {
+  void write_message(const ngraph::he::TCPMessage&& message) {
     bool write_in_progress = !m_message_queue.empty();
-    m_message_queue.emplace_back(std::move(message));
+    m_message_queue.push_back(std::move(message));
     if (!write_in_progress) {
       boost::asio::post(m_io_context, [this]() { do_write(); });
     }
@@ -87,35 +90,35 @@ class TCPClient {
   }
 
   void do_read_header() {
+    if (m_read_buffer.size() < header_length) {
+      m_read_buffer.resize(header_length);
+    }
     boost::asio::async_read(
-        m_socket,
-        boost::asio::buffer(m_read_message.header_ptr(),
-                            ngraph::he::TCPMessage::header_length),
+        m_socket, boost::asio::buffer(&m_read_buffer[0], header_length),
         [this](boost::system::error_code ec, std::size_t length) {
-          if (!ec && m_read_message.decode_header()) {
-            do_read_body();
+          if (!ec) {
+            size_t msg_len = m_read_message.decode_header(m_read_buffer);
+            do_read_body(msg_len);
           } else {
-            // End of file is expected on teardown
-            if (ec.message() != "End of file") {
+            if (ec.message() != s_expected_teardown_message.c_str()) {
               NGRAPH_INFO << "Client error reading header: " << ec.message();
             }
           }
         });
   }
 
-  void do_read_body() {
+  void do_read_body(size_t body_length) {
+    m_read_buffer.resize(header_length + body_length);
     boost::asio::async_read(
         m_socket,
-        boost::asio::buffer(m_read_message.body_ptr(),
-                            m_read_message.body_length()),
+        boost::asio::buffer(&m_read_buffer[header_length], body_length),
         [this](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
-            m_read_message.decode_body();
+            m_read_message.unpack(m_read_buffer);
             m_message_callback(m_read_message);
             do_read_header();
           } else {
-            // End of file is expected on teardown
-            if (ec.message() != "End of file") {
+            if (ec.message() != s_expected_teardown_message.c_str()) {
               NGRAPH_INFO << "Client error reading body: " << ec.message();
             }
           }
@@ -123,10 +126,11 @@ class TCPClient {
   }
 
   void do_write() {
+    auto message = m_message_queue.front();
+    message.pack(m_write_buffer);
+
     boost::asio::async_write(
-        m_socket,
-        boost::asio::buffer(m_message_queue.front().header_ptr(),
-                            m_message_queue.front().num_bytes()),
+        m_socket, boost::asio::buffer(m_write_buffer),
         [this](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
             m_message_queue.pop_front();
@@ -142,12 +146,14 @@ class TCPClient {
   boost::asio::io_context& m_io_context;
   tcp::socket m_socket;
 
+  data_buffer m_read_buffer;
+  data_buffer m_write_buffer;
   TCPMessage m_read_message;
   std::deque<ngraph::he::TCPMessage> m_message_queue;
 
-  bool m_first_connect;
+  inline static std::string s_expected_teardown_message{"End of file"};
 
-  // How to handle the message
+  bool m_first_connect;
   std::function<void(const ngraph::he::TCPMessage&)> m_message_callback;
 };
 }  // namespace he

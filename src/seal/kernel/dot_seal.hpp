@@ -272,7 +272,6 @@ inline void dot_seal(
       scalar_multiply_seal(mult_arg0, *mult_arg1, prod, element_type,
                            he_seal_backend, pool);
       if (first_add) {
-        // TODO: std::move(prod)?
         sum = prod;
         first_add = false;
       } else {
@@ -402,7 +401,6 @@ inline void dot_seal(
       scalar_multiply_seal(*mult_arg0, mult_arg1, prod, element_type,
                            he_seal_backend, pool);
       if (first_add) {
-        // TODO: std::move(prod)?
         sum = prod;
         first_add = false;
       } else {

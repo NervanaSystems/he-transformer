@@ -31,6 +31,7 @@ ExternalProject_Add(ext_json
                                   ${JSON_SRC_DIR}/single_include/nlohmann
                                   ${EXTERNAL_INSTALL_DIR}/include/
                     INSTALL_COMMAND ""
+                    UPDATE_COMMAND ""
                     EXCLUDE_FROM_ALL TRUE)
 
 ExternalProject_Get_Property(ext_json SOURCE_DIR)

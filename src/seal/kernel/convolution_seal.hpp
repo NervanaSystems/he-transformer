@@ -65,7 +65,6 @@ inline void convolution_seal(
     NGRAPH_INFO << "Convolution output size " << out_transform_size;
   }
 
-// TODO: don't create new thread for every loop index, only one per thread
 #pragma omp parallel for
   for (size_t out_coord_idx = 0; out_coord_idx < out_transform_size;
        ++out_coord_idx) {
@@ -266,7 +265,6 @@ inline void convolution_seal(
     NGRAPH_INFO << "Convolution output size " << out_transform_size;
   }
 
-// TODO: don't create new thread for every loop index, only one per thread
 #pragma omp parallel for
   for (size_t out_coord_idx = 0; out_coord_idx < out_transform_size;
        ++out_coord_idx) {
@@ -417,7 +415,6 @@ inline void convolution_seal(
     NGRAPH_INFO << "Convolution output size " << out_transform_size;
   }
 
-// TODO: don't create new thread for every loop index, only one per thread
 #pragma omp parallel for
   for (size_t out_coord_idx = 0; out_coord_idx < out_transform_size;
        ++out_coord_idx) {

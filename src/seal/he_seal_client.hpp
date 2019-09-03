@@ -45,15 +45,31 @@ class HESealClient {
 
   void handle_message(const ngraph::he::TCPMessage& message);
 
+  void handle_encryption_parameters_response(
+      const he_proto::TCPMessage& message);
+
   void handle_relu_request(const ngraph::he::TCPMessage& message);
 
-  inline void write_message(ngraph::he::TCPMessage&& message) {
+  void handle_relu_request(he_proto::TCPMessage&& message);
+  void handle_max_pool_request(const he_proto::TCPMessage& message);
+  void handle_bounded_relu_request(he_proto::TCPMessage&& message);
+
+  void handle_result(const he_proto::TCPMessage& message);
+
+  void handle_inference_request(const he_proto::TCPMessage& message);
+
+  void send_public_and_relin_keys();
+
+  inline void write_message(const ngraph::he::TCPMessage&& message) {
     m_tcp_client->write_message(std::move(message));
   }
 
   inline bool is_done() { return m_is_done; }
 
-  std::vector<double> get_results() { return m_results; }
+  std::vector<double> get_results() {
+    NGRAPH_INFO << "Getting result size " << m_results.size();
+    return m_results;
+  }
 
   void close_connection();
 

@@ -51,6 +51,7 @@ class BackendConstructor;
 }
 namespace he {
 class HESealCipherTensor;
+class SealCiphertextWrapper;
 class HESealBackend : public ngraph::runtime::Backend {
  public:
   HESealBackend();
