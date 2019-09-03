@@ -450,7 +450,6 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
   const ParameterVector& input_parameters = get_parameters();
 
   // Write ciphers to client inputs
-  bool done_loading = false;
   size_t parm_idx = 0;
   for (size_t cipher_idx = 0; cipher_idx < count; ++cipher_idx) {
     auto input_param = input_parameters[parm_idx];
@@ -473,8 +472,12 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
     m_client_load_idx[parm_idx]++;
     if (m_client_load_idx[parm_idx] == param_size) {
       parm_idx++;
-      NGRAPH_CHECK(parm_idx < input_parameters.size(),
-                   "Too many client inputs");
+      NGRAPH_INFO << "parm_idx " << parm_idx;
+      NGRAPH_INFO << "cipher_idx " << cipher_idx;
+      NGRAPH_INFO << "Count " << count;
+      NGRAPH_CHECK(
+          parm_idx < input_parameters.size() || cipher_idx == count - 1,
+          "Too many client inputs");
     }
   }
 
@@ -549,6 +552,9 @@ bool ngraph::he::HESealExecutable::call(
         mlock, std::bind(&HESealExecutable::client_inputs_received, this));
     NGRAPH_INFO << "client_inputs_received";
 
+    NGRAPH_INFO << "m_client_inputs " << m_client_inputs.size();
+    NGRAPH_INFO << "server_inputs " << server_inputs.size();
+
     NGRAPH_CHECK(m_client_inputs.size() == server_inputs.size(),
                  "Recieved incorrect number of inputs from client (got ",
                  m_client_inputs.size(), ", expectd ", server_inputs.size());
@@ -557,12 +563,12 @@ bool ngraph::he::HESealExecutable::call(
   // convert inputs to HETensor
   std::vector<std::shared_ptr<ngraph::he::HETensor>> he_inputs;
   if (m_enable_client) {
-    NGRAPH_DEBUG << "Processing client inputs";
+    NGRAPH_INFO << "Processing client inputs";
     for (auto& tv : m_client_inputs) {
       he_inputs.push_back(std::static_pointer_cast<ngraph::he::HETensor>(tv));
     }
   } else {
-    NGRAPH_DEBUG << "Processing server inputs";
+    NGRAPH_INFO << "Processing server inputs";
     for (auto& tv : server_inputs) {
       auto he_input = std::dynamic_pointer_cast<ngraph::he::HETensor>(tv);
       NGRAPH_CHECK(he_input != nullptr, "server input is not he tensor");
@@ -579,7 +585,6 @@ bool ngraph::he::HESealExecutable::call(
   std::unordered_map<ngraph::descriptor::Tensor*,
                      std::shared_ptr<ngraph::he::HETensor>>
       tensor_map;
-
   // map function params -> HETensor
   size_t input_count = 0;
   for (auto param : get_parameters()) {
@@ -657,6 +662,7 @@ bool ngraph::he::HESealExecutable::call(
     m_timer_map[op].start();
 
     // get op inputs from map
+    NGRAPH_INFO << "Getting op inputs from map";
     std::vector<std::shared_ptr<ngraph::he::HETensor>> op_inputs;
     for (auto input : op->inputs()) {
       descriptor::Tensor* tensor = &input.get_tensor();
@@ -670,6 +676,7 @@ bool ngraph::he::HESealExecutable::call(
     }
 
     // get op outputs from map or create
+    NGRAPH_INFO << "Getting op outputs from map";
     std::vector<std::shared_ptr<ngraph::he::HETensor>> op_outputs;
     for (size_t i = 0; i < op->get_output_size(); ++i) {
       auto tensor = &op->output(i).get_tensor();
@@ -724,6 +731,7 @@ bool ngraph::he::HESealExecutable::call(
       base_type = op->get_inputs().at(0).get_tensor().get_element_type();
     }
 
+    NGRAPH_INFO << "Getting op calls";
     generate_calls(base_type, wrapped, op_outputs, op_inputs);
     m_timer_map[op].stop();
 
@@ -810,6 +818,8 @@ void ngraph::he::HESealExecutable::generate_calls(
   std::shared_ptr<HEPlainTensor> arg1_plain = nullptr;
   auto out0_cipher = std::dynamic_pointer_cast<HESealCipherTensor>(out[0]);
   auto out0_plain = std::dynamic_pointer_cast<HEPlainTensor>(out[0]);
+
+  NGRAPH_INFO << "Generating calls";
 
   // TODO: move to static function
   auto lazy_rescaling = [this](auto& cipher_tensor,
@@ -919,6 +929,7 @@ void ngraph::he::HESealExecutable::generate_calls(
     NGRAPH_CHECK(!(arg1_cipher != nullptr && arg1_plain != nullptr),
                  "arg1 is both cipher and plain?");
   }
+  NGRAPH_INFO << "Inputs are ok";
 
   if (verbose) {
     std::stringstream ss;
@@ -1413,15 +1424,23 @@ void ngraph::he::HESealExecutable::generate_calls(
                               out0_plain->get_elements(), output_size);
         break;
       }
+      NGRAPH_INFO << "arg0_cipher == nullptr? " << (arg0_cipher == nullptr);
+      NGRAPH_INFO << "out0_cipher == nullptr? " << (out0_cipher == nullptr);
 
       if (arg0_cipher == nullptr || out0_cipher == nullptr) {
         throw ngraph_error("Relu types not supported");
       }
+      NGRAPH_INFO << "arg0_cipher->num_ciphertexts "
+                  << arg0_cipher->num_ciphertexts();
+      size_t output_size = arg0_cipher->get_batched_element_count();
+      NGRAPH_INFO << "output_size" << output_size;
 
       if (!m_enable_client) {
         NGRAPH_WARN
             << "Performing Relu without client is not privacy-preserving";
         size_t output_size = arg0_cipher->get_batched_element_count();
+        NGRAPH_INFO << "output_size" << output_size;
+
         NGRAPH_CHECK(output_size == arg0_cipher->num_ciphertexts(),
                      "output size ", output_size,
                      " doesn't match number of elements",
@@ -1767,6 +1786,7 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
     std::shared_ptr<HESealCipherTensor>& arg_cipher,
     std::shared_ptr<HESealCipherTensor>& out_cipher,
     const NodeWrapper& node_wrapper) {
+  NGRAPH_INFO << "Handle server relu op";
   auto type_id = node_wrapper.get_typeid();
   NGRAPH_CHECK(type_id == OP_TYPEID::Relu || type_id == OP_TYPEID::BoundedRelu,
                "only support relu / bounded relu");
@@ -1779,6 +1799,7 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
     NGRAPH_INFO << "Relu types not supported ";
     throw ngraph_error("Relu types not supported.");
   }
+  NGRAPH_INFO << "Matchign to smallest chain ind";
 
   size_t smallest_ind = ngraph::he::match_to_smallest_chain_index(
       arg_cipher->get_elements(), m_he_seal_backend);
@@ -1787,7 +1808,8 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
     NGRAPH_INFO << "Matched moduli to chain ind " << smallest_ind;
   }
 
-  m_relu_ciphertexts.clear();
+  NGRAPH_INFO << "element_count " << element_count;
+
   m_relu_ciphertexts.resize(element_count);
   for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
     m_relu_ciphertexts[relu_idx] = std::make_shared<SealCiphertextWrapper>();

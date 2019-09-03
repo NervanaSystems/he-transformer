@@ -268,7 +268,8 @@ size_t ngraph::he::match_to_smallest_chain_index(
       }
     }
   }
-  NGRAPH_CHECK(smallest_chain_ind.second != std::numeric_limits<size_t>::max());
+  NGRAPH_CHECK(smallest_chain_ind.second != std::numeric_limits<size_t>::max(),
+               "Can't match to modulus of all known values");
   NGRAPH_DEBUG << "Matching to smallest chain index "
                << smallest_chain_ind.second;
 

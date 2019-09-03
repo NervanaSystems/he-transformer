@@ -171,9 +171,6 @@ void ngraph::he::HESealClient::handle_inference_request(
       m_context->first_parms_id(), m_scale, *m_ckks_encoder, *m_encryptor,
       complex_packing());
 
-  he_proto::TCPMessage encrypted_inputs_msg;
-  encrypted_inputs_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
-
   NGRAPH_INFO << "Saving to proto";
 
   const size_t maximum_message_cnt = 100;
@@ -189,10 +186,11 @@ void ngraph::he::HESealClient::handle_inference_request(
     NGRAPH_INFO << "Creating execute message from " << parm_idx << " to "
                 << end_idx;
 
+    he_proto::TCPMessage encrypted_inputs_msg;
+    encrypted_inputs_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
     ngraph::he::save_to_proto(ciphers.begin() + parm_idx,
                               ciphers.begin() + end_idx, encrypted_inputs_msg);
     NGRAPH_INFO << "Writing message";
-
     write_message(encrypted_inputs_msg);
   }
 }

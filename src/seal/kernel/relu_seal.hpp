@@ -31,7 +31,7 @@ inline void scalar_relu_seal(const HEPlaintext& arg, HEPlaintext& out) {
   const std::vector<double>& arg_vals = arg.values();
   std::vector<double> out_vals(arg.num_values());
 
-  auto relu = [](double f) { return f > 0 ? f : 0.f; };
+  auto relu = [](double d) { return d > 0 ? d : 0.; };
   std::transform(arg_vals.begin(), arg_vals.end(), out_vals.begin(), relu);
   out.set_values(out_vals);
 }
@@ -46,7 +46,8 @@ inline void relu_seal(const std::vector<HEPlaintext>& arg,
 inline void scalar_relu_seal_known_value(
     const SealCiphertextWrapper& arg,
     std::shared_ptr<SealCiphertextWrapper>& out) {
-  auto relu = [](double f) { return f > 0 ? f : 0.f; };
+  NGRAPH_INFO << "Known valued relu";
+  auto relu = [](double d) { return d > 0 ? d : 0.; };
   NGRAPH_CHECK(arg.known_value());
   out->known_value() = true;
   out->value() = relu(arg.value());
@@ -58,18 +59,20 @@ inline void scalar_relu_seal(const SealCiphertextWrapper& arg,
                              seal::CKKSEncoder& ckks_encoder,
                              seal::Encryptor& encryptor,
                              seal::Decryptor& decryptor) {
-  auto relu = [](double f) { return f > 0 ? f : 0.f; };
+  auto relu = [](double d) { return d > 0 ? d : 0.; };
 
   if (arg.known_value()) {
     scalar_relu_seal_known_value(arg, out);
   } else {
     HEPlaintext plain;
+    NGRAPH_INFO << "Decryping";
     ngraph::he::decrypt(plain, arg, decryptor, ckks_encoder);
     const std::vector<double>& arg_vals = plain.values();
     std::vector<double> out_vals(plain.num_values());
     std::transform(arg_vals.begin(), arg_vals.end(), out_vals.begin(), relu);
     plain.set_values(out_vals);
 
+    NGRAPH_INFO << "Encrypting";
     ngraph::he::encrypt(out, plain, parms_id, ngraph::element::f32, scale,
                         ckks_encoder, encryptor, arg.complex_packing());
   }
@@ -90,6 +93,7 @@ inline void relu_seal(
     const HESealBackend& he_seal_backend) {
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
+    NGRAPH_INFO << "Relu seal ind " << i;
     scalar_relu_seal(*arg[i], out[i], he_seal_backend);
   }
 }
