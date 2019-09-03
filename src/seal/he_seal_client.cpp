@@ -172,8 +172,6 @@ void ngraph::he::HESealClient::handle_inference_request(
       m_context->first_parms_id(), m_scale, *m_ckks_encoder, *m_encryptor,
       complex_packing());
 
-  NGRAPH_INFO << "Saving to proto";
-
   const size_t maximum_message_cnt = 100;
   for (size_t parm_idx = 0; parm_idx < parameter_size;
        parm_idx += maximum_message_cnt) {
@@ -184,14 +182,10 @@ void ngraph::he::HESealClient::handle_inference_request(
     if (parm_idx == end_idx) {
       break;
     }
-    NGRAPH_INFO << "Creating execute message from " << parm_idx << " to "
-                << end_idx;
-
     he_proto::TCPMessage encrypted_inputs_msg;
     encrypted_inputs_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
     ngraph::he::save_to_proto(ciphers.begin() + parm_idx,
                               ciphers.begin() + end_idx, encrypted_inputs_msg);
-    NGRAPH_INFO << "Writing message";
     write_message(encrypted_inputs_msg);
   }
 }
@@ -199,9 +193,7 @@ void ngraph::he::HESealClient::handle_inference_request(
 void ngraph::he::HESealClient::handle_result(
     const he_proto::TCPMessage& proto_msg) {
   size_t result_count = proto_msg.ciphers_size();
-  NGRAPH_INFO << "handling result count " << result_count;
   m_results.resize(result_count * m_batch_size);
-  NGRAPH_INFO << "m_results size " << m_results.size();
   std::vector<std::shared_ptr<SealCiphertextWrapper>> result_ciphers(
       result_count);
 #pragma omp parallel for

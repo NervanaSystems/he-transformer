@@ -68,7 +68,6 @@ inline void scalar_bounded_relu_seal(
     const seal::parms_id_type& parms_id, double scale,
     seal::CKKSEncoder& ckks_encoder, seal::Encryptor& encryptor,
     seal::Decryptor& decryptor) {
-  NGRAPH_INFO << "Bounded relu with bound " << alpha;
   auto bounded_relu = [alpha](double d) {
     return d > alpha ? alpha : (d > 0) ? d : 0.;
   };

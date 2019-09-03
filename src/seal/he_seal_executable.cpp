@@ -663,7 +663,6 @@ bool ngraph::he::HESealExecutable::call(
     m_timer_map[op].start();
 
     // get op inputs from map
-    NGRAPH_INFO << "Getting op inputs from map";
     std::vector<std::shared_ptr<ngraph::he::HETensor>> op_inputs;
     for (auto input : op->inputs()) {
       descriptor::Tensor* tensor = &input.get_tensor();
@@ -677,7 +676,6 @@ bool ngraph::he::HESealExecutable::call(
     }
 
     // get op outputs from map or create
-    NGRAPH_INFO << "Getting op outputs from map";
     std::vector<std::shared_ptr<ngraph::he::HETensor>> op_outputs;
     for (size_t i = 0; i < op->get_output_size(); ++i) {
       auto tensor = &op->output(i).get_tensor();
@@ -732,7 +730,6 @@ bool ngraph::he::HESealExecutable::call(
       base_type = op->get_inputs().at(0).get_tensor().get_element_type();
     }
 
-    NGRAPH_INFO << "Getting op calls";
     generate_calls(base_type, wrapped, op_outputs, op_inputs);
     m_timer_map[op].stop();
 
@@ -930,7 +927,6 @@ void ngraph::he::HESealExecutable::generate_calls(
     NGRAPH_CHECK(!(arg1_cipher != nullptr && arg1_plain != nullptr),
                  "arg1 is both cipher and plain?");
   }
-  NGRAPH_INFO << "Inputs are ok";
 
   if (verbose) {
     std::stringstream ss;
