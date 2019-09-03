@@ -197,8 +197,6 @@ void ngraph::he::HESealExecutable::client_setup() {
     NGRAPH_INFO << "Starting server";
     start_server();
 
-    NGRAPH_INFO << "Creatign new parms message";
-
     std::stringstream param_stream;
     m_he_seal_backend.get_encryption_parameters().save(param_stream);
 
@@ -210,7 +208,6 @@ void ngraph::he::HESealExecutable::client_setup() {
     proto_msg.set_type(he_proto::TCPMessage_Type_RESPONSE);
 
     ngraph::he::TCPMessage parms_message(proto_msg);
-    NGRAPH_INFO << "Created PB parms message";
     std::unique_lock<std::mutex> mlock(m_session_mutex);
     m_session_cond.wait(mlock,
                         std::bind(&HESealExecutable::session_started, this));
@@ -461,11 +458,7 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
     auto& client_input_tensor = dynamic_cast<ngraph::he::HESealCipherTensor&>(
         *m_client_inputs[parm_idx]);
 
-    NGRAPH_INFO << "Current param size "
-                << client_input_tensor.get_elements().size();
     size_t current_load_idx = m_client_load_idx[parm_idx];
-    NGRAPH_INFO << "Current load idx " << current_load_idx;
-
     NGRAPH_CHECK(current_load_idx < param_size, "current load index too large");
 
     client_input_tensor.get_element(current_load_idx) =
@@ -473,9 +466,6 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
     m_client_load_idx[parm_idx]++;
     if (m_client_load_idx[parm_idx] == param_size) {
       parm_idx++;
-      NGRAPH_INFO << "parm_idx " << parm_idx;
-      NGRAPH_INFO << "cipher_idx " << cipher_idx;
-      NGRAPH_INFO << "Count " << count;
       NGRAPH_CHECK(
           parm_idx < input_parameters.size() || cipher_idx == count - 1,
           "Too many client inputs");
@@ -498,8 +488,6 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
   };
 
   if (done_loading()) {
-    NGRAPH_INFO << "Done loading";
-
     NGRAPH_CHECK(m_client_inputs.size() == get_parameters().size(),
                  "Client inputs size ", m_client_inputs.size(), "; expected ",
                  get_parameters().size());
@@ -509,9 +497,6 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
     std::lock_guard<std::mutex> guard(m_client_inputs_mutex);
     m_client_inputs_received = true;
     m_client_inputs_cond.notify_all();
-
-  } else {
-    NGRAPH_INFO << "Not done loading";
   }
 }
 
@@ -1093,7 +1078,6 @@ void ngraph::he::HESealExecutable::generate_calls(
                                       alpha, m_he_seal_backend);
         break;
       }
-      NGRAPH_INFO << "Got alpha value " << alpha;
       handle_server_relu_op(arg0_cipher, out0_cipher, node_wrapper);
       break;
     }
@@ -1792,7 +1776,6 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
     NGRAPH_INFO << "Relu types not supported ";
     throw ngraph_error("Relu types not supported.");
   }
-  NGRAPH_INFO << "Matchign to smallest chain ind";
 
   size_t smallest_ind = ngraph::he::match_to_smallest_chain_index(
       arg_cipher->get_elements(), m_he_seal_backend);
@@ -1800,8 +1783,6 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
   if (verbose) {
     NGRAPH_INFO << "Matched moduli to chain ind " << smallest_ind;
   }
-
-  NGRAPH_INFO << "element_count " << element_count;
 
   m_relu_ciphertexts.resize(element_count);
   for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {

@@ -92,8 +92,6 @@ void ngraph::he::HESealClient::set_seal_context() {
 }
 
 void ngraph::he::HESealClient::send_public_and_relin_keys() {
-  NGRAPH_INFO << "SEnding public and relin keys";
-
   he_proto::TCPMessage proto_msg;
   proto_msg.set_type(he_proto::TCPMessage_Type_RESPONSE);
 
@@ -111,13 +109,11 @@ void ngraph::he::HESealClient::send_public_and_relin_keys() {
   eval_key.set_eval_key(evk_stream.str());
   *proto_msg.mutable_eval_key() = eval_key;
 
-  NGRAPH_INFO << "Sending pk / evk";
   write_message(proto_msg);
 }
 
 void ngraph::he::HESealClient::handle_encryption_parameters_response(
     const he_proto::TCPMessage& proto_msg) {
-  NGRAPH_INFO << "Got enc parms request";
   NGRAPH_CHECK(proto_msg.has_encryption_parameters(),
                "proto_msg does not have encryption_parameters");
 
@@ -126,15 +122,12 @@ void ngraph::he::HESealClient::handle_encryption_parameters_response(
   std::stringstream param_stream(enc_parms_str);
   m_encryption_params = seal::EncryptionParameters::Load(param_stream);
 
-  NGRAPH_INFO << "Loaded enc parms";
-
   set_seal_context();
   send_public_and_relin_keys();
 }
 
 void ngraph::he::HESealClient::handle_inference_request(
     const he_proto::TCPMessage& proto_msg) {
-  NGRAPH_INFO << "handle_inference_request";
   NGRAPH_CHECK(proto_msg.has_function(), "Proto msg doesn't have funtion");
 
   const std::string& inference_shape = proto_msg.function().function();
@@ -267,7 +260,6 @@ void ngraph::he::HESealClient::handle_bounded_relu_request(
   }
 
   ngraph::he::TCPMessage bounded_relu_result_msg(proto_msg);
-  NGRAPH_INFO << "Writing bounded relu result";
   write_message(bounded_relu_result_msg);
   return;
 }
@@ -304,7 +296,6 @@ void ngraph::he::HESealClient::handle_max_pool_request(
   post_max_pool_ciphers[0]->save(*proto_max_pool.add_ciphers());
   ngraph::he::TCPMessage max_pool_result_msg(proto_max_pool);
 
-  NGRAPH_INFO << "Writing max_pool result";
   write_message(max_pool_result_msg);
   return;
 }
