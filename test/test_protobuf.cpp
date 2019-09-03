@@ -152,3 +152,43 @@ TEST(seal_cipher_wrapper, load_save) {
   EXPECT_EQ(cipher.known_value(), cipher_load->known_value());
   EXPECT_EQ(ss_save.str(), ss_load.str());
 }
+
+TEST(seal_cipher_wrapper, load_save_known_value) {
+  using namespace seal;
+  EncryptionParameters parms(scheme_type::CKKS);
+  size_t poly_modulus_degree = 8192;
+  parms.set_poly_modulus_degree(poly_modulus_degree);
+  parms.set_coeff_modulus(
+      CoeffModulus::Create(poly_modulus_degree, {60, 40, 40, 60}));
+  auto context = SEALContext::Create(parms);
+
+  he_proto::SealCiphertextWrapper proto_cipher;
+
+  ngraph::he::SealCiphertextWrapper cipher;
+  cipher.ciphertext() = seal::Ciphertext();
+  cipher.complex_packing() = false;
+  cipher.known_value() = true;
+  cipher.value() = 1.23;
+
+  typedef std::chrono::high_resolution_clock Clock;
+  auto t1 = Clock::now();
+  cipher.save(proto_cipher);
+  auto t2 = Clock::now();
+  NGRAPH_INFO
+      << "Save time "
+      << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
+      << "us";
+
+  std::shared_ptr<ngraph::he::SealCiphertextWrapper> cipher_load;
+  auto t3 = Clock::now();
+  ngraph::he::SealCiphertextWrapper::load(cipher_load, proto_cipher, context);
+  auto t4 = Clock::now();
+  NGRAPH_INFO
+      << "Load time "
+      << std::chrono::duration_cast<std::chrono::microseconds>(t4 - t3).count()
+      << "us";
+
+  EXPECT_EQ(cipher.complex_packing(), cipher_load->complex_packing());
+  EXPECT_EQ(cipher.known_value(), cipher_load->known_value());
+  EXPECT_EQ(cipher.value(), cipher_load->value());
+}
