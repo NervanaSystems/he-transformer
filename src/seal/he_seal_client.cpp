@@ -340,7 +340,7 @@ void ngraph::he::HESealClient::handle_message(
     }
     case he_proto::TCPMessage_Type_UNKNOWN:
     default:
-      NGRAPH_CHECK(false, "Unknonwn TCPMesage type");
+      NGRAPH_CHECK(false, "Unknonwn TCPMessage type");
   }
 }
 
