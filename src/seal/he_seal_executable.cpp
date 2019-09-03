@@ -457,7 +457,7 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
     size_t param_size = shape_size(shape) / m_batch_size;
     auto element_type = input_param->get_element_type();
 
-    auto client_input_tensor = dynamic_cast<ngraph::he::HESealCipherTensor&>(
+    auto& client_input_tensor = dynamic_cast<ngraph::he::HESealCipherTensor&>(
         *m_client_inputs[parm_idx]);
 
     NGRAPH_INFO << "Current param size "
