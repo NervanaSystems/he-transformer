@@ -90,9 +90,11 @@ class TCPClient {
   }
 
   void do_read_header() {
-    m_read_buffer.resize(header_length);
+    if (m_read_buffer.size() < header_length) {
+      m_read_buffer.resize(header_length);
+    }
     boost::asio::async_read(
-        m_socket, boost::asio::buffer(m_read_buffer),
+        m_socket, boost::asio::buffer(&m_read_buffer[0], header_length),
         [this](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
             size_t msg_len = m_read_message.decode_header(m_read_buffer);
@@ -107,7 +109,6 @@ class TCPClient {
 
   void do_read_body(size_t body_length) {
     m_read_buffer.resize(header_length + body_length);
-
     boost::asio::async_read(
         m_socket,
         boost::asio::buffer(&m_read_buffer[header_length], body_length),

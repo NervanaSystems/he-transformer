@@ -74,7 +74,7 @@ class TCPMessage {
   }
 
   bool pack(data_buffer& buffer) {
-    NGRAPH_CHECK(m_proto_message != nullptr, "Can't pack empy proto message");
+    NGRAPH_CHECK(m_proto_message != nullptr, "Can't pack empty proto message");
     size_t msg_size = m_proto_message->ByteSize();
     buffer.resize(header_length + msg_size);
     encode_header(buffer, msg_size);

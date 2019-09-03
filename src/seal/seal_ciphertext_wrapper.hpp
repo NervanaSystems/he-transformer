@@ -115,9 +115,8 @@ inline void load(seal::Ciphertext& cipher,
               new_cipher.uint64_count() * sizeof(std::uint64_t));
   cipher = std::move(new_cipher);
 
-  if (!seal::is_valid_for(cipher, context)) {
-    throw std::invalid_argument("ciphertext data is invalid");
-  }
+  NGRAPH_CHECK(seal::is_valid_for(cipher, context),
+               "ciphertext data is invalid");
 }
 
 class SealCiphertextWrapper {
