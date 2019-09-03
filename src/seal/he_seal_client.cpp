@@ -348,5 +348,4 @@ void ngraph::he::HESealClient::close_connection() {
   NGRAPH_INFO << "Closing connection";
   m_tcp_client->close();
   m_is_done = true;
-  NGRAPH_INFO << "Setting is done true";
 }

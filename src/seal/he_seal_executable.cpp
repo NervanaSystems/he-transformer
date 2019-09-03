@@ -276,7 +276,6 @@ void ngraph::he::HESealExecutable::start_server() {
 
 void ngraph::he::HESealExecutable::load_public_key(
     const he_proto::TCPMessage& proto_msg) {
-  NGRAPH_INFO << "Loading public key";
   NGRAPH_CHECK(proto_msg.has_public_key(), "proto_msg doesn't have public key");
 
   seal::PublicKey key;
@@ -285,15 +284,12 @@ void ngraph::he::HESealExecutable::load_public_key(
   key.load(m_context, key_stream);
   m_he_seal_backend.set_public_key(key);
 
-  NGRAPH_INFO << "Server set public key";
-
   m_client_public_key_set = true;
 }
 
 void ngraph::he::HESealExecutable::load_eval_key(
     const he_proto::TCPMessage& proto_msg) {
   NGRAPH_CHECK(proto_msg.has_eval_key(), "proto_msg doesn't have eval key");
-  NGRAPH_INFO << "Loading eval key";
 
   seal::RelinKeys keys;
   const std::string& evk_str = proto_msg.eval_key().eval_key();
@@ -301,13 +297,10 @@ void ngraph::he::HESealExecutable::load_eval_key(
   keys.load(m_context, key_stream);
   m_he_seal_backend.set_relin_keys(keys);
 
-  NGRAPH_INFO << "Server set eval key";
-
   m_client_eval_key_set = true;
 }
 
 void ngraph::he::HESealExecutable::send_inference_shape() {
-  NGRAPH_INFO << "Sending inference shape";
   m_sent_inference_shape = true;
 
   const ParameterVector& input_parameters = get_parameters();
@@ -769,10 +762,6 @@ void ngraph::he::HESealExecutable::send_client_results() {
                "Client outputs are not HESealCipherTensor");
 
   ngraph::he::save_to_proto(output_cipher_tensor->get_elements(), proto_msg);
-
-  NGRAPH_INFO << "Writing Result message with " << proto_msg.ciphers_size()
-              << " ciphertexts ";
-
   ngraph::he::TCPMessage result_msg(std::move(proto_msg));
   m_session->write_message(std::move(result_msg));
 
@@ -1251,8 +1240,6 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::MaxPool: {
-      NGRAPH_INFO << "max pool op";
-
       const op::MaxPool* max_pool = static_cast<const op::MaxPool*>(&node);
       if (arg0_plain != nullptr && out0_plain != nullptr) {
         ngraph::he::max_pool_seal(
@@ -1404,8 +1391,6 @@ void ngraph::he::HESealExecutable::generate_calls(
         NGRAPH_WARN
             << "Performing Relu without client is not privacy-preserving";
         size_t output_size = arg0_cipher->get_batched_element_count();
-        NGRAPH_INFO << "output_size" << output_size;
-
         NGRAPH_CHECK(output_size == arg0_cipher->num_ciphertexts(),
                      "output size ", output_size,
                      " doesn't match number of elements",
@@ -1684,31 +1669,22 @@ void ngraph::he::HESealExecutable::handle_server_max_pool_op(
   bool verbose = verbose_op(node);
   const op::MaxPool* max_pool = static_cast<const op::MaxPool*>(&node);
 
-  NGRAPH_INFO << "Handling server maxpool op";
-
   m_max_pool_done = false;
 
   Shape unpacked_arg_shape = node.get_input_shape(0);
   Shape packed_out_shape =
       ngraph::he::HETensor::pack_shape(node.get_output_shape(0));
 
-  NGRAPH_INFO << "unpacked_arg_shape " << join(unpacked_arg_shape, "x");
-  NGRAPH_INFO << "packed_out_shape " << join(packed_out_shape, "x");
-
   std::vector<std::vector<size_t>> maximize_list = ngraph::he::max_pool_seal(
       unpacked_arg_shape, packed_out_shape, max_pool->get_window_shape(),
       max_pool->get_window_movement_strides(), max_pool->get_padding_below(),
       max_pool->get_padding_above());
-
-  NGRAPH_INFO << "maximize_list.size " << maximize_list.size();
 
   m_max_pool_ciphertexts.clear();
 
   for (size_t list_ind = 0; list_ind < maximize_list.size(); list_ind++) {
     he_proto::TCPMessage proto_msg;
     proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
-
-    NGRAPH_INFO << "List ind " << list_ind;
 
     json js;
     js["function"] = node.description();
@@ -1741,16 +1717,13 @@ void ngraph::he::HESealExecutable::handle_server_max_pool_op(
     // Reset for next max_pool call
     m_max_pool_done = false;
   }
-  NGRAPH_INFO << "Done with maxpool calling; setting elements";
   out_cipher->set_elements(m_max_pool_ciphertexts);
-  NGRAPH_INFO << "Done setting maxpool elements";
 }
 
 void ngraph::he::HESealExecutable::handle_server_relu_op(
     std::shared_ptr<HESealCipherTensor>& arg_cipher,
     std::shared_ptr<HESealCipherTensor>& out_cipher,
     const NodeWrapper& node_wrapper) {
-  NGRAPH_INFO << "Handle server relu op";
   auto type_id = node_wrapper.get_typeid();
   NGRAPH_CHECK(type_id == OP_TYPEID::Relu || type_id == OP_TYPEID::BoundedRelu,
                "only support relu / bounded relu");
@@ -1760,7 +1733,6 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
   size_t element_count = shape_size(node.get_output_shape(0)) / m_batch_size;
 
   if (arg_cipher == nullptr || out_cipher == nullptr) {
-    NGRAPH_INFO << "Relu types not supported ";
     throw ngraph_error("Relu types not supported.");
   }
 
