@@ -43,9 +43,11 @@ class TCPMessage {
 
   TCPMessage() = default;
 
-  TCPMessage(he_proto::TCPMessage& proto_message)
-      : m_proto_message(std::make_shared<he_proto::TCPMessage>(proto_message)) {
-  }
+  TCPMessage(he_proto::TCPMessage& proto_message) = delete;
+
+  TCPMessage(he_proto::TCPMessage&& proto_message)
+      : m_proto_message(
+            std::make_shared<he_proto::TCPMessage>(std::move(proto_message))) {}
 
   TCPMessage(std::shared_ptr<he_proto::TCPMessage> proto_message)
       : m_proto_message(proto_message) {}

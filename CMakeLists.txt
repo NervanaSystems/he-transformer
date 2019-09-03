@@ -131,14 +131,6 @@ include(cmake/seal.cmake)
 include(cmake/boost.cmake)
 include(cmake/protobuf.cmake)
 
-# Add ngraph library
-add_library(ngraph SHARED IMPORTED)
-set_target_properties(ngraph
-                      PROPERTIES IMPORTED_LOCATION
-                                 ${EXTERNAL_INSTALL_LIB_DIR}/libngraph.so)
-set_target_properties(ngraph
-                      PROPERTIES INCLUDE_DIRECTORIES ${NGRAPH_TF_INCLUDE_DIR})
-
 # HE transformer source and test directories
 add_subdirectory(src)
 add_subdirectory(test)

@@ -109,7 +109,7 @@ void ngraph::he::HESealClient::send_public_and_relin_keys() {
   eval_key.set_eval_key(evk_stream.str());
   *proto_msg.mutable_eval_key() = eval_key;
 
-  write_message(proto_msg);
+  write_message(std::move(proto_msg));
 }
 
 void ngraph::he::HESealClient::handle_encryption_parameters_response(
@@ -179,7 +179,7 @@ void ngraph::he::HESealClient::handle_inference_request(
     encrypted_inputs_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
     ngraph::he::save_to_proto(ciphers.begin() + parm_idx,
                               ciphers.begin() + end_idx, encrypted_inputs_msg);
-    write_message(encrypted_inputs_msg);
+    write_message(std::move(encrypted_inputs_msg));
   }
 }
 
@@ -226,8 +226,8 @@ void ngraph::he::HESealClient::handle_relu_request(
     post_relu_cipher->save(*proto_msg.mutable_ciphers(result_idx));
   }
 
-  ngraph::he::TCPMessage relu_result_msg(proto_msg);
-  write_message(relu_result_msg);
+  ngraph::he::TCPMessage relu_result_msg(std::move(proto_msg));
+  write_message(std::move(relu_result_msg));
   return;
 }
 
@@ -259,8 +259,8 @@ void ngraph::he::HESealClient::handle_bounded_relu_request(
     post_bounded_relu_cipher->save(*proto_msg.mutable_ciphers(result_idx));
   }
 
-  ngraph::he::TCPMessage bounded_relu_result_msg(proto_msg);
-  write_message(bounded_relu_result_msg);
+  ngraph::he::TCPMessage bounded_relu_result_msg(std::move(proto_msg));
+  write_message(std::move(bounded_relu_result_msg));
   return;
 }
 
@@ -294,9 +294,8 @@ void ngraph::he::HESealClient::handle_max_pool_request(
   *proto_max_pool.mutable_function() = proto_msg.function();
 
   post_max_pool_ciphers[0]->save(*proto_max_pool.add_ciphers());
-  ngraph::he::TCPMessage max_pool_result_msg(proto_max_pool);
-
-  write_message(max_pool_result_msg);
+  ngraph::he::TCPMessage max_pool_result_msg(std::move(proto_max_pool));
+  write_message(std::move(max_pool_result_msg));
   return;
 }
 

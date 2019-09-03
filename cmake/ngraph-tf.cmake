@@ -78,6 +78,14 @@ ExternalProject_Get_Property(ext_ngraph_tf SOURCE_DIR)
 add_library(libngraph_tf INTERFACE)
 add_dependencies(libngraph_tf ext_ngraph_tf)
 
+# Add ngraph library
+add_library(ngraph SHARED IMPORTED)
+set_target_properties(ngraph
+                      PROPERTIES IMPORTED_LOCATION
+                                 ${EXTERNAL_INSTALL_LIB_DIR}/libngraph.so)
+set_target_properties(ngraph
+                      PROPERTIES INCLUDE_DIRECTORIES ${NGRAPH_TF_INCLUDE_DIR})
+
 install(DIRECTORY ${NGRAPH_TF_LIB_DIR}/
         DESTINATION ${EXTERNAL_INSTALL_LIB_DIR}
         FILES_MATCHING

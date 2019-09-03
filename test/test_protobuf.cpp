@@ -51,21 +51,18 @@ TEST(tcp_message, create) {
   *proto_msg.mutable_function() = f;
   std::stringstream s;
   proto_msg.SerializeToOstream(&s);
-  ngraph::he::TCPMessage tcp_message(proto_msg);
-
+  ngraph::he::TCPMessage tcp_message(std::move(proto_msg));
   EXPECT_EQ(1, 1);
 }
 
 TEST(tcp_message, encode_decode) {
   using data_buffer = std::vector<char>;
-
   data_buffer buffer;
   buffer.resize(20);
 
   size_t encode_size = 10;
   ngraph::he::TCPMessage::encode_header(buffer, encode_size);
   size_t decoded_size = ngraph::he::TCPMessage::decode_header(buffer);
-
   EXPECT_EQ(decoded_size, encode_size);
 }
 
@@ -78,7 +75,7 @@ TEST(tcp_message, pack_unpack) {
   *proto_msg.mutable_function() = f;
   std::stringstream s;
   proto_msg.SerializeToOstream(&s);
-  ngraph::he::TCPMessage message1(proto_msg);
+  ngraph::he::TCPMessage message1(std::move(proto_msg));
 
   data_buffer buffer;
   message1.pack(buffer);

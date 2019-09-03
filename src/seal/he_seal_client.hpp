@@ -60,10 +60,6 @@ class HESealClient {
 
   void send_public_and_relin_keys();
 
-  inline void write_message(const ngraph::he::TCPMessage& message) {
-    m_tcp_client->write_message(message);
-  }
-
   inline void write_message(const ngraph::he::TCPMessage&& message) {
     m_tcp_client->write_message(std::move(message));
   }

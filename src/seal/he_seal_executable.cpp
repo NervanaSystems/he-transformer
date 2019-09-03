@@ -207,7 +207,7 @@ void ngraph::he::HESealExecutable::client_setup() {
     *proto_msg.mutable_encryption_parameters() = proto_parms;
     proto_msg.set_type(he_proto::TCPMessage_Type_RESPONSE);
 
-    ngraph::he::TCPMessage parms_message(proto_msg);
+    ngraph::he::TCPMessage parms_message(std::move(proto_msg));
     std::unique_lock<std::mutex> mlock(m_session_mutex);
     m_session_cond.wait(mlock,
                         std::bind(&HESealExecutable::session_started, this));
@@ -329,7 +329,7 @@ void ngraph::he::HESealExecutable::send_inference_shape() {
 
   NGRAPH_INFO << "Sending inference shape " << js.dump();
 
-  ngraph::he::TCPMessage execute_msg(proto_msg);
+  ngraph::he::TCPMessage execute_msg(std::move(proto_msg));
   m_session->write_message(std::move(execute_msg));
 }
 
@@ -773,8 +773,7 @@ void ngraph::he::HESealExecutable::send_client_results() {
   NGRAPH_INFO << "Writing Result message with " << proto_msg.ciphers_size()
               << " ciphertexts ";
 
-  ngraph::he::TCPMessage result_msg(proto_msg);
-
+  ngraph::he::TCPMessage result_msg(std::move(proto_msg));
   m_session->write_message(std::move(result_msg));
 
   std::unique_lock<std::mutex> mlock(m_result_mutex);
@@ -1737,7 +1736,7 @@ void ngraph::he::HESealExecutable::handle_server_max_pool_op(
                   << " Maxpool ciphertexts to client";
     }
 
-    ngraph::he::TCPMessage max_pool_message(proto_msg);
+    ngraph::he::TCPMessage max_pool_message(std::move(proto_msg));
     m_session->write_message(std::move(max_pool_message));
 
     // Acquire lock
@@ -1786,7 +1785,7 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
   }
 
   // TODO: tune
-  const size_t max_relu_message_cnt = 100;
+  const size_t max_relu_message_cnt = 1000;
 
   m_unknown_relu_idx.clear();
   m_unknown_relu_idx.reserve(element_count);
@@ -1835,7 +1834,7 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
 
         ngraph::he::save_to_proto(cipher_batch, proto_msg);
 
-        ngraph::he::TCPMessage relu_message(proto_msg);
+        ngraph::he::TCPMessage relu_message(std::move(proto_msg));
         m_session->write_message(std::move(relu_message));
       };
 
