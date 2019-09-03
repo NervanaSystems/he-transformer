@@ -516,77 +516,92 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_pad_relu) {
   EXPECT_TRUE(all_close(results, vector<float>{0, 0, 0, 3, 0}, 1e-3f));
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed) {
-  auto tmp_backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto tmp_he_backend =
-      static_cast<ngraph::he::HESealBackend*>(tmp_backend.get());
-  vector<size_t> batch_sizes{
-      1, 2, 3,
-      tmp_he_backend->get_encryption_parameters().poly_modulus_degree() / 2};
+auto server_client_relu_packed_test = [](size_t batch_size,
+                                         bool complex_packing) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  he_backend->complex_packing() = complex_packing;
 
-  for (const auto batch_size : batch_sizes) {
-    for (const auto complex_packing : vector<bool>{true, false}) {
-      auto backend = runtime::Backend::create("${BACKEND_NAME}");
-      auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-      he_backend->complex_packing() = complex_packing;
+  NGRAPH_INFO << "Batch size " << batch_size;
+  NGRAPH_INFO << "complex_packing? " << complex_packing;
 
-      size_t new_batch_size{batch_size};
+  Shape shape{batch_size, 3};
+  auto a = make_shared<op::Parameter>(element::f32, shape);
+  auto relu = make_shared<op::Relu>(a);
+  auto f = make_shared<Function>(relu, ParameterVector{a});
 
-      if (complex_packing &&
-          batch_size ==
-              he_backend->get_encryption_parameters().poly_modulus_degree() /
-                  2) {
-        new_batch_size *= 2;
-      }
+  // Server inputs which are not used
+  auto t_dummy = he_backend->create_packed_plain_tensor(element::f32, shape);
+  auto t_result = he_backend->create_packed_cipher_tensor(element::f32, shape);
 
-      NGRAPH_INFO << "Batch size " << new_batch_size;
-      NGRAPH_INFO << "complex_packing? " << complex_packing;
+  // Used for dummy server inputs
+  float DUMMY_FLOAT = 99;
+  copy_data(t_dummy, vector<float>(shape_size(shape), DUMMY_FLOAT));
 
-      Shape shape{new_batch_size, 3};
-      auto a = make_shared<op::Parameter>(element::f32, shape);
-      auto relu = make_shared<op::Relu>(a);
-      auto f = make_shared<Function>(relu, ParameterVector{a});
-
-      // Server inputs which are not used
-      auto t_dummy =
-          he_backend->create_packed_plain_tensor(element::f32, shape);
-      auto t_result =
-          he_backend->create_packed_cipher_tensor(element::f32, shape);
-
-      // Used for dummy server inputs
-      float DUMMY_FLOAT = 99;
-      copy_data(t_dummy, vector<float>(shape_size(shape), DUMMY_FLOAT));
-
-      vector<float> inputs(shape_size(shape));
-      vector<float> exp_results(shape_size(shape));
-      for (size_t i = 0; i < shape_size(shape); ++i) {
-        inputs[i] =
-            static_cast<int>(i) - static_cast<int>(shape_size(shape)) / 2;
-        exp_results[i] = inputs[i] > 0 ? inputs[i] : 0;
-      }
-
-      vector<float> results;
-      auto client_thread = std::thread([&]() {
-        auto he_client = ngraph::he::HESealClient(
-            "localhost", 34000, new_batch_size, inputs, complex_packing);
-
-        while (!he_client.is_done()) {
-          std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        }
-        auto double_results = he_client.get_results();
-        results =
-            std::vector<float>(double_results.begin(), double_results.end());
-      });
-
-      auto handle = dynamic_pointer_cast<ngraph::he::HESealExecutable>(
-          he_backend->compile(f));
-      handle->enable_client();
-      handle->call_with_validate({t_result}, {t_dummy});
-
-      client_thread.join();
-      EXPECT_TRUE(all_close(results, exp_results));
-    }
+  vector<float> inputs(shape_size(shape));
+  vector<float> exp_results(shape_size(shape));
+  for (size_t i = 0; i < shape_size(shape); ++i) {
+    inputs[i] = static_cast<int>(i) - static_cast<int>(shape_size(shape)) / 2;
+    exp_results[i] = inputs[i] > 0 ? inputs[i] : 0;
   }
+
+  vector<float> results;
+  auto client_thread = std::thread([&]() {
+    auto he_client = ngraph::he::HESealClient("localhost", 34000, batch_size,
+                                              inputs, complex_packing);
+
+    while (!he_client.is_done()) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+    auto double_results = he_client.get_results();
+    results = std::vector<float>(double_results.begin(), double_results.end());
+  });
+
+  auto handle = dynamic_pointer_cast<ngraph::he::HESealExecutable>(
+      he_backend->compile(f));
+  handle->enable_client();
+  handle->call_with_validate({t_result}, {t_dummy});
+
+  client_thread.join();
+  EXPECT_TRUE(all_close(results, exp_results));
+};
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed_1_complex) {
+  server_client_relu_packed_test(1, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed_1) {
+  server_client_relu_packed_test(1, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed_2_complex) {
+  server_client_relu_packed_test(2, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed_2) {
+  server_client_relu_packed_test(2, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed_3_complex) {
+  server_client_relu_packed_test(3, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed_3) {
+  server_client_relu_packed_test(3, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed_all_slots_complex) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  size_t slot_count = he_backend->get_ckks_encoder()->slot_count() * 2;
+  server_client_relu_packed_test(slot_count, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed_all_slots) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  size_t slot_count = he_backend->get_ckks_encoder()->slot_count();
+  server_client_relu_packed_test(slot_count, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME},
