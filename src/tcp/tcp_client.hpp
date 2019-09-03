@@ -132,10 +132,8 @@ class TCPClient {
         m_socket, boost::asio::buffer(m_write_buffer),
         [this](boost::system::error_code ec, std::size_t length) {
           if (!ec) {
-            NGRAPH_INFO << "Done writing message";
             m_message_queue.pop_front();
             if (!m_message_queue.empty()) {
-              NGRAPH_INFO << "Message queue not empty";
               do_write();
             }
           } else {

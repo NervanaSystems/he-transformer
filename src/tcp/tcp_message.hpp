@@ -74,40 +74,21 @@ class TCPMessage {
   }
 
   bool pack(data_buffer& buffer) {
-    auto t1 = std::chrono::high_resolution_clock::now();
-
-    NGRAPH_CHECK(m_proto_message != nullptr, "Can't pack empty proto message");
+    NGRAPH_CHECK(m_proto_message != nullptr, "Can't pack empy proto message");
     size_t msg_size = m_proto_message->ByteSize();
     buffer.resize(header_length + msg_size);
     encode_header(buffer, msg_size);
-    bool ret =
-        m_proto_message->SerializeToArray(&buffer[header_length], msg_size);
-
-    auto t2 = std::chrono::high_resolution_clock::now();
-    NGRAPH_INFO << "pack time "
-                << std::chrono::duration_cast<std::chrono::microseconds>(t2 -
-                                                                         t1)
-                       .count()
-                << "us";
-    return ret;
+    return m_proto_message->SerializeToArray(&buffer[header_length], msg_size);
   }
 
   // buffer => storing proto message
   bool unpack(const data_buffer& buffer) {
-    auto t1 = std::chrono::high_resolution_clock::now();
     if (!m_proto_message) {
       m_proto_message = std::make_shared<he_proto::TCPMessage>();
     }
     NGRAPH_CHECK(m_proto_message != nullptr, "Can't unpack empty proot");
-    bool ret = m_proto_message->ParseFromArray(&buffer[header_length],
-                                               buffer.size() - header_length);
-    auto t2 = std::chrono::high_resolution_clock::now();
-    NGRAPH_INFO << "unpack time "
-                << std::chrono::duration_cast<std::chrono::microseconds>(t2 -
-                                                                         t1)
-                       .count()
-                << "us";
-    return ret;
+    return m_proto_message->ParseFromArray(&buffer[header_length],
+                                           buffer.size() - header_length);
   }
 
  private:

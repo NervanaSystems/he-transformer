@@ -233,7 +233,6 @@ void ngraph::he::HESealClient::handle_relu_request(
 
 void ngraph::he::HESealClient::handle_bounded_relu_request(
     he_proto::TCPMessage&& proto_msg) {
-  NGRAPH_INFO << "handling bounded relu rqst";
   NGRAPH_CHECK(proto_msg.has_function(), "Proto message doesn't have function");
 
   const std::string& function = proto_msg.function().function();
@@ -260,7 +259,6 @@ void ngraph::he::HESealClient::handle_bounded_relu_request(
     post_bounded_relu_cipher->save(*proto_msg.mutable_ciphers(result_idx));
   }
 
-  NGRAPH_INFO << "done handling bounded relu rqst";
   ngraph::he::TCPMessage bounded_relu_result_msg(std::move(proto_msg));
   write_message(std::move(bounded_relu_result_msg));
   return;
@@ -309,6 +307,7 @@ void ngraph::he::HESealClient::handle_message(
 
   switch (proto_msg->type()) {
     case he_proto::TCPMessage_Type_RESPONSE: {
+      NGRAPH_INFO << "Client got message RESPONSE";
       if (proto_msg->has_encryption_parameters()) {
         handle_encryption_parameters_response(*proto_msg);
       } else if (proto_msg->ciphers_size() > 0) {
