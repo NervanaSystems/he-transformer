@@ -446,6 +446,7 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
     ngraph::he::SealCiphertextWrapper::load(
         he_cipher_inputs[cipher_idx], proto_msg.ciphers(cipher_idx), m_context);
   }
+  NGRAPH_INFO << "Done loading cipher";
 
   const ParameterVector& input_parameters = get_parameters();
 

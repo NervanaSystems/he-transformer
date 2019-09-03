@@ -144,7 +144,8 @@ void ngraph::he::HESealClient::handle_inference_request(
 
   NGRAPH_INFO << join(shape, "x");
 
-  size_t parameter_size = ngraph::shape_size(shape);
+  size_t parameter_size =
+      ngraph::shape_size(ngraph::he::HETensor::pack_shape(shape));
 
   NGRAPH_INFO << "Parameter size " << parameter_size;
   NGRAPH_INFO << "Client batch size " << m_batch_size;
