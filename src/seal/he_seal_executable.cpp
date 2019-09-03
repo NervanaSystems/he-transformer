@@ -1396,17 +1396,10 @@ void ngraph::he::HESealExecutable::generate_calls(
                               out0_plain->get_elements(), output_size);
         break;
       }
-      NGRAPH_INFO << "arg0_cipher == nullptr? " << (arg0_cipher == nullptr);
-      NGRAPH_INFO << "out0_cipher == nullptr? " << (out0_cipher == nullptr);
 
       if (arg0_cipher == nullptr || out0_cipher == nullptr) {
         throw ngraph_error("Relu types not supported");
       }
-      NGRAPH_INFO << "arg0_cipher->num_ciphertexts "
-                  << arg0_cipher->num_ciphertexts();
-      size_t output_size = arg0_cipher->get_batched_element_count();
-      NGRAPH_INFO << "output_size" << output_size;
-
       if (!m_enable_client) {
         NGRAPH_WARN
             << "Performing Relu without client is not privacy-preserving";
@@ -1422,7 +1415,6 @@ void ngraph::he::HESealExecutable::generate_calls(
                               m_he_seal_backend);
         break;
       }
-
       handle_server_relu_op(arg0_cipher, out0_cipher, node_wrapper);
       break;
     }
