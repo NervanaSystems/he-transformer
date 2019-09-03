@@ -32,7 +32,8 @@ The [examples](https://github.com/NervanaSystems/he-transformer/tree/master/exam
 - [nGraph-tf](https://github.com/tensorflow/ngraph-bridge) - v0.18.1
 - [SEAL](https://github.com/Microsoft/SEAL) - v3.3.1
 - [TensorFlow](https://github.com/tensorflow/tensorflow) - v1.14.0
-- Boost 1.69
+- [Boost](https://github.com/boostorg) v1.69
+- [Google protobuf](https://github.com/protocolbuffers/protobuf) v3.9.1
 
 We also offer [docker containers](https://github.com/NervanaSystems/he-transformer/tree/master/contrib/docker) and builds of he-transformer on a reference OS.
 
