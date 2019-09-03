@@ -207,13 +207,6 @@ void ngraph::he::HESealClient::handle_result(
       m_results.data(), result_ciphers, num_bytes, m_batch_size, element::f64,
       m_context->first_parms_id(), m_scale, *m_ckks_encoder, *m_decryptor,
       complex_packing());
-
-  NGRAPH_INFO << "done handling result";
-  for (const auto& elem : m_results) {
-    NGRAPH_INFO << elem;
-  }
-  NGRAPH_INFO << "Done print resl";
-
   close_connection();
 }
 

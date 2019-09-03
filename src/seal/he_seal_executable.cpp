@@ -817,8 +817,6 @@ void ngraph::he::HESealExecutable::generate_calls(
   auto out0_cipher = std::dynamic_pointer_cast<HESealCipherTensor>(out[0]);
   auto out0_plain = std::dynamic_pointer_cast<HEPlainTensor>(out[0]);
 
-  NGRAPH_INFO << "Generating calls";
-
   // TODO: move to static function
   auto lazy_rescaling = [this](auto& cipher_tensor,
                                bool verbose_rescaling = true) {
