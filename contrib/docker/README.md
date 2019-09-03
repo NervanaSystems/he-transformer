@@ -39,7 +39,7 @@ Most _make_ targets are structured in the form `<action>_<compiler>`.  The `<act
 
 Note that all operations performed inside the docker image are run as a regular user, using the `run-as-user.sh` script.  This is done to avoid writing root-owned files in mounted filesystems.
 
-* Additionally, the `RM_CONTAINER` flag (default is False) may be used to persist the docker containers. By default `RM_CONTAINER=true`, and the docker containers are removed after building. Setting `RM_CONTAINER=false` will keep the containers, enabling an easy way to build he-transformer without installing the required software dependencies.
+* Additionally, the `RM_CONTAINER` flag may be used to persist the docker containers. By default `RM_CONTAINER=true`, and the docker containers are removed after building. Setting `RM_CONTAINER=false` will keep the containers, enabling an easy way to build he-transformer without installing the required software dependencies.
 
 ## Examples/Hints
 

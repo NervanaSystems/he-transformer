@@ -434,8 +434,6 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
                get_results().size(), "");
 
   size_t count = proto_msg.ciphers_size();
-  NGRAPH_INFO << "Loading " << count << " ciphertexts";
-
   std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
       he_cipher_inputs(count);
 #pragma omp parallel for
@@ -443,8 +441,6 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
     ngraph::he::SealCiphertextWrapper::load(
         he_cipher_inputs[cipher_idx], proto_msg.ciphers(cipher_idx), m_context);
   }
-  NGRAPH_INFO << "Done loading cipher";
-
   const ParameterVector& input_parameters = get_parameters();
 
   // Write ciphers to client inputs
