@@ -481,8 +481,6 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
                  "Client inputs size ", m_client_inputs.size(), "; expected ",
                  get_parameters().size());
 
-    NGRAPH_INFO << "Notifiyng client inputs received";
-
     std::lock_guard<std::mutex> guard(m_client_inputs_mutex);
     m_client_inputs_received = true;
     m_client_inputs_cond.notify_all();
@@ -525,11 +523,7 @@ bool ngraph::he::HESealExecutable::call(
     std::unique_lock<std::mutex> mlock(m_client_inputs_mutex);
     m_client_inputs_cond.wait(
         mlock, std::bind(&HESealExecutable::client_inputs_received, this));
-    NGRAPH_INFO << "client_inputs_received";
-
-    NGRAPH_INFO << "m_client_inputs " << m_client_inputs.size();
-    NGRAPH_INFO << "server_inputs " << server_inputs.size();
-
+    NGRAPH_INFO << "Client inputs_received";
     NGRAPH_CHECK(m_client_inputs.size() == server_inputs.size(),
                  "Recieved incorrect number of inputs from client (got ",
                  m_client_inputs.size(), ", expectd ", server_inputs.size());
