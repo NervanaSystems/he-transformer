@@ -318,15 +318,15 @@ auto server_client_relu_packed_test = [](size_t element_count,
   std::shared_ptr<ngraph::Function> f;
   if (bounded) {
     auto bounded_relu_op = make_shared<op::BoundedRelu>(a, bound_value);
-    auto f = make_shared<Function>(bounded_relu_op, ParameterVector{a});
+    f = make_shared<Function>(bounded_relu_op, ParameterVector{a});
   } else {
     auto relu_op = make_shared<op::Relu>(a);
-    auto f = make_shared<Function>(relu_op, ParameterVector{a});
+    f = make_shared<Function>(relu_op, ParameterVector{a});
   }
 
   auto relu = [](double d) { return d > 0 ? d : 0.; };
-  auto bounded_relu = [bound_value](double f) {
-    return f > bound_value ? bound_value : (f > 0) ? f : 0.f;
+  auto bounded_relu = [bound_value](double d) {
+    return d > bound_value ? bound_value : (d > 0) ? d : 0.;
   };
 
   // Server inputs which are not used

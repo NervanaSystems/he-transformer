@@ -1099,9 +1099,7 @@ void ngraph::he::HESealExecutable::generate_calls(
                                       alpha, m_he_seal_backend);
         break;
       }
-      NGRAPH_CHECK(alpha == 6.0f,
-                   "Client supports BoundeRelu(6) only; got BoundedRelu(",
-                   alpha, ")");
+      NGRAPH_INFO << "Got alpha value " << alpha;
       handle_server_relu_op(arg0_cipher, out0_cipher, node_wrapper);
       break;
     }
@@ -1822,9 +1820,6 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
   m_unknown_relu_idx.clear();
   m_unknown_relu_idx.reserve(element_count);
 
-  // TODO: don't just use 6
-  float alpha = 6.0f;
-
   // Process known values
   for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
     auto& cipher = *arg_cipher->get_element(relu_idx);
@@ -1833,6 +1828,9 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
         ngraph::he::scalar_relu_seal_known_value(cipher,
                                                  m_relu_ciphertexts[relu_idx]);
       } else {
+        const op::BoundedRelu* bounded_relu =
+            static_cast<const op::BoundedRelu*>(&node);
+        float alpha = bounded_relu->get_alpha();
         ngraph::he::scalar_bounded_relu_seal_known_value(
             cipher, m_relu_ciphertexts[relu_idx], alpha);
       }
@@ -1850,8 +1848,15 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
         he_proto::TCPMessage proto_msg;
         proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
 
+        // TODO: factor out serializing the function
         json js;
         js["function"] = node.description();
+        if (type_id == OP_TYPEID::BoundedRelu) {
+          const op::BoundedRelu* bounded_relu =
+              static_cast<const op::BoundedRelu*>(&node);
+          float alpha = bounded_relu->get_alpha();
+          js["bound"] = alpha;
+        }
 
         he_proto::Function f;
         f.set_function(js.dump());

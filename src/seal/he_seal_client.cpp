@@ -257,6 +257,10 @@ void ngraph::he::HESealClient::handle_bounded_relu_request(
     he_proto::TCPMessage&& proto_msg) {
   NGRAPH_CHECK(proto_msg.has_function(), "Proto message doesn't have function");
 
+  const std::string& function = proto_msg.function().function();
+  json js = json::parse(function);
+  double bound = js.at("bound");
+
   proto_msg.set_type(he_proto::TCPMessage_Type_RESPONSE);
 
   size_t result_count = proto_msg.ciphers_size();
@@ -271,7 +275,7 @@ void ngraph::he::HESealClient::handle_bounded_relu_request(
         post_bounded_relu_cipher, proto_msg.ciphers(result_idx), m_context);
 
     ngraph::he::scalar_bounded_relu_seal(
-        *post_bounded_relu_cipher, post_bounded_relu_cipher, 6.0f,
+        *post_bounded_relu_cipher, post_bounded_relu_cipher, bound,
         m_context->first_parms_id(), m_scale, *m_ckks_encoder, *m_encryptor,
         *m_decryptor);
     post_bounded_relu_cipher->save(*proto_msg.mutable_ciphers(result_idx));
@@ -342,8 +346,8 @@ void ngraph::he::HESealClient::handle_message(
       if (proto_msg->has_function()) {
         const std::string& function = proto_msg->function().function();
         json js = json::parse(function);
-
         auto name = js.at("function");
+
         if (name == "Parameter") {
           handle_inference_request(*proto_msg);
         } else if (name == "Relu") {
