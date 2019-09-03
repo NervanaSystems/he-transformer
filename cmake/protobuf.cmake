@@ -63,8 +63,6 @@ get_filename_component(message_proto
 get_filename_component(message_proto_path "${message_proto}" PATH)
 set(message_proto_srcs ${CMAKE_CURRENT_BINARY_DIR}/protos/message.pb.cc)
 set(message_proto_hdrs ${CMAKE_CURRENT_BINARY_DIR}/protos/message.pb.h)
-message("message_proto_srcs ${message_proto_srcs}")
-message("message_proto ${message_proto}")
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/protos)
 

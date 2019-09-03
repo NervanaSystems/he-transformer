@@ -42,16 +42,13 @@ set(NGRAPH_TF_INCLUDE_DIR ${NGRAPH_TF_ARTIFACTS_DIR}/include)
 
 set(NGRAPH_TEST_UTIL_INCLUDE_DIR ${NGRAPH_TF_BUILD_DIR}/ngraph/test)
 
-message("NGRAPH_TF_VENV_LIB_DIR ${NGRAPH_TF_VENV_LIB_DIR}")
-message("NGRAPH_TF_LIB_DIR ${NGRAPH_TF_LIB_DIR}")
-
 set(ng_tf_build_flags "")
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  message("Using debug build for ng-tf")
+  message(STATUS "Using debug build for ng-tf")
   set(ng_tf_build_flags "--debug_build")
 endif()
 if(${USE_PREBUILT_TF})
-  message("Using prebuilt TF")
+  message(STATUS "Using prebuilt TF")
   set(
     ng_tf_build_flags
 
