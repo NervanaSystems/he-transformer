@@ -128,6 +128,6 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
   inline static std::string s_expected_teardown_message{"End of file"};
 
   std::function<void(const ngraph::he::TCPMessage&)> m_message_callback;
-};  // namespace he
+};
 }  // namespace he
 }  // namespace ngraph

@@ -57,8 +57,6 @@ void ngraph::he::HESealCipherTensor::write(
     bool complex_packing) {
   size_t type_byte_size = element_type.size();
   size_t num_elements_to_write = n / (type_byte_size * batch_size);
-  NGRAPH_INFO << "Writing " << num_elements_to_write << " elements";
-
   NGRAPH_CHECK(destination.size() >= num_elements_to_write,
                "Writing too many ciphertexts ", num_elements_to_write,
                " to destination size ", destination.size());
@@ -102,7 +100,6 @@ void ngraph::he::HESealCipherTensor::write(
               ckks_encoder, encryptor, complex_packing);
     }
   }
-  NGRAPH_INFO << "Done writing " << num_elements_to_write << " elements";
 }
 
 void ngraph::he::HESealCipherTensor::read(void* target, size_t n) const {
