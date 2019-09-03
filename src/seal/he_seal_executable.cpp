@@ -217,6 +217,26 @@ void ngraph::he::HESealExecutable::client_setup() {
     m_session->write_message(std::move(parms_message));
 
     m_client_setup = true;
+
+    // Set client inputs
+    if (m_is_compiled) {
+      m_client_inputs.clear();
+      m_client_load_idx.clear();
+      const ParameterVector& input_parameters = get_parameters();
+      for (auto input_param : input_parameters) {
+        NGRAPH_INFO << "param shape " << join(input_param->get_shape(), "x");
+        auto element_type = input_param->get_element_type();
+
+        auto input_tensor =
+            std::dynamic_pointer_cast<ngraph::he::HESealCipherTensor>(
+                m_he_seal_backend.create_cipher_tensor(
+                    element_type, input_param->get_shape(), m_pack_data,
+                    "client_parameter"));
+        m_client_inputs.emplace_back(input_tensor);
+        m_client_load_idx.emplace_back(0);
+      }
+    }
+
   } else {
     NGRAPH_INFO << "Client already setup";
   }
@@ -406,6 +426,16 @@ void ngraph::he::HESealExecutable::handle_message(
 
 void ngraph::he::HESealExecutable::handle_client_ciphers(
     const he_proto::TCPMessage& proto_msg) {
+  // only support parameter size 1 for now
+  NGRAPH_CHECK(get_parameters().size() == 1,
+               "HESealExecutable only supports parameter size 1 (got ",
+               get_parameters().size(), ")");
+
+  // only support function output size 1 for now
+  NGRAPH_CHECK(get_results().size() == 1,
+               "HESealExecutable only supports output size 1 (got ",
+               get_results().size(), "");
+
   size_t count = proto_msg.ciphers_size();
   NGRAPH_INFO << "Loading " << count << " ciphertexts";
 
@@ -417,66 +447,68 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
         he_cipher_inputs[cipher_idx], proto_msg.ciphers(cipher_idx), m_context);
   }
 
-  // only support parameter size 1 for now
-  NGRAPH_CHECK(get_parameters().size() == 1,
-               "HESealExecutable only supports parameter size 1 (got ",
-               get_parameters().size(), ")");
-
-  // only support function output size 1 for now
-  NGRAPH_CHECK(get_results().size() == 1,
-               "HESealExecutable only supports output size 1 (got ",
-               get_results().size(), "");
-
-  // Load function with parameters
-  size_t num_param_elements = 0;
   const ParameterVector& input_parameters = get_parameters();
-  for (auto input_param : input_parameters) {
-    NGRAPH_INFO << "param shape " << join(input_param->get_shape(), "x");
-    num_param_elements += shape_size(input_param->get_shape());
-  }
 
-  num_param_elements /= m_batch_size;
-  NGRAPH_CHECK(count == num_param_elements, "Count ", count,
-               " does not match number of parameter elements ( ",
-               num_param_elements, ")");
-
-  NGRAPH_INFO << "Setting m_client_inputs";
-  size_t parameter_size_index = 0;
-  for (auto input_param : input_parameters) {
+  // Write ciphers to client inputs
+  bool done_loading = false;
+  size_t parm_idx = 0;
+  for (size_t cipher_idx = 0; cipher_idx < count; ++cipher_idx) {
+    auto input_param = input_parameters[parm_idx];
     const auto& shape = input_param->get_shape();
     size_t param_size = shape_size(shape) / m_batch_size;
     auto element_type = input_param->get_element_type();
-    auto input_tensor =
-        std::dynamic_pointer_cast<ngraph::he::HESealCipherTensor>(
-            m_he_seal_backend.create_cipher_tensor(
-                element_type, input_param->get_shape(), m_pack_data,
-                "client_parameter"));
 
-    std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
-        cipher_elements{
-            he_cipher_inputs.begin() + parameter_size_index,
-            he_cipher_inputs.begin() + parameter_size_index + param_size};
+    auto client_input_tensor = dynamic_cast<ngraph::he::HESealCipherTensor&>(
+        *m_client_inputs[parm_idx]);
 
-    NGRAPH_CHECK(cipher_elements.size() == param_size,
-                 "Incorrect number of elements for parameter");
+    NGRAPH_INFO << "Current param size "
+                << client_input_tensor.get_elements().size();
+    size_t current_load_idx = m_client_load_idx[parm_idx];
+    NGRAPH_INFO << "Current load idx " << current_load_idx;
 
-    input_tensor->set_elements(cipher_elements);
-    for (auto& cipher_elem : cipher_elements) {
-      cipher_elem->complex_packing() = m_complex_packing;
+    NGRAPH_CHECK(current_load_idx < param_size, "current load index too large");
+
+    client_input_tensor.get_element(current_load_idx) =
+        he_cipher_inputs[cipher_idx];
+    m_client_load_idx[parm_idx]++;
+    if (m_client_load_idx[parm_idx] == param_size) {
+      parm_idx++;
+      NGRAPH_CHECK(parm_idx < input_parameters.size(),
+                   "Too many client inputs");
     }
-    m_client_inputs.emplace_back(input_tensor);
-    parameter_size_index += param_size;
   }
 
-  NGRAPH_CHECK(m_client_inputs.size() == get_parameters().size(),
-               "Client inputs size ", m_client_inputs.size(), "; expected ",
-               get_parameters().size());
+  auto done_loading = [this]() {
+    const ParameterVector& input_parameters = get_parameters();
+    for (size_t parm_idx = 0; parm_idx < input_parameters.size(); ++parm_idx) {
+      auto input_param = input_parameters[parm_idx];
+      const auto& shape = input_param->get_shape();
+      size_t param_size = shape_size(shape) / m_batch_size;
+      size_t current_load_idx = m_client_load_idx[parm_idx];
 
-  NGRAPH_INFO << "Notifiyng client inputs received";
+      if (current_load_idx != param_size) {
+        return false;
+      }
+    }
+    return true;
+  };
 
-  std::lock_guard<std::mutex> guard(m_client_inputs_mutex);
-  m_client_inputs_received = true;
-  m_client_inputs_cond.notify_all();
+  if (done_loading()) {
+    NGRAPH_INFO << "Done loading";
+
+    NGRAPH_CHECK(m_client_inputs.size() == get_parameters().size(),
+                 "Client inputs size ", m_client_inputs.size(), "; expected ",
+                 get_parameters().size());
+
+    NGRAPH_INFO << "Notifiyng client inputs received";
+
+    std::lock_guard<std::mutex> guard(m_client_inputs_mutex);
+    m_client_inputs_received = true;
+    m_client_inputs_cond.notify_all();
+
+  } else {
+    NGRAPH_INFO << "Not done loading";
+  }
 }
 
 std::vector<ngraph::runtime::PerformanceCounter>

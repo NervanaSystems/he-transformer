@@ -102,6 +102,7 @@ void ngraph::he::HESealCipherTensor::write(
               ckks_encoder, encryptor, complex_packing);
     }
   }
+  NGRAPH_INFO << "Done writing " << num_elements_to_write << " elements";
 }
 
 void ngraph::he::HESealCipherTensor::read(void* target, size_t n) const {

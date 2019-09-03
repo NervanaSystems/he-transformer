@@ -152,7 +152,7 @@ class SealCiphertextWrapper {
   bool complex_packing() const { return m_complex_packing; }
   bool& complex_packing() { return m_complex_packing; }
 
-  inline void save(he_proto::SealCiphertextWrapper& proto_cipher) {
+  inline void save(he_proto::SealCiphertextWrapper& proto_cipher) const {
     proto_cipher.set_complex_packing(complex_packing());
     proto_cipher.set_known_value(known_value());
     if (known_value()) {
@@ -197,6 +197,24 @@ class SealCiphertextWrapper {
   bool m_known_value;
   float m_value;
 };
+
+inline void save_to_proto(
+    std::vector<std::shared_ptr<SealCiphertextWrapper>>::const_iterator
+        ciphers_begin,
+    std::vector<std::shared_ptr<SealCiphertextWrapper>>::const_iterator
+        ciphers_end,
+    he_proto::TCPMessage& proto_msg) {
+  size_t ciphers_size = 0;
+  for (auto it = ciphers_begin; it != ciphers_end; ++it) {
+    proto_msg.add_ciphers();
+    ciphers_size++;
+  }
+#pragma omp parallel for
+  for (size_t cipher_idx = 0; cipher_idx < ciphers_size; ++cipher_idx) {
+    auto cipher_wrapper = *(ciphers_begin + cipher_idx);
+    cipher_wrapper->save(*proto_msg.mutable_ciphers(cipher_idx));
+  }
+}
 
 inline void save_to_proto(
     const std::vector<std::shared_ptr<SealCiphertextWrapper>>& ciphers,

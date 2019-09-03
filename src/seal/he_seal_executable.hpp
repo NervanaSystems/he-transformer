@@ -153,6 +153,7 @@ class HESealExecutable : public runtime::Executable {
 
   // (Encrypted) inputs to compiled function
   std::vector<std::shared_ptr<ngraph::he::HETensor>> m_client_inputs;
+  std::vector<size_t> m_client_load_idx;
   // (Encrypted) outputs of compiled function
   std::vector<std::shared_ptr<ngraph::he::HETensor>> m_client_outputs;
 
