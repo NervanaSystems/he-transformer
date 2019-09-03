@@ -79,7 +79,7 @@ add_dependencies(libngraph_tf ext_ngraph_tf)
 add_library(ngraph SHARED IMPORTED)
 set_target_properties(ngraph
                       PROPERTIES IMPORTED_LOCATION
-                                 ${EXTERNAL_INSTALL_LIB_DIR}/libngraph.so)
+                                 ${NGRAPH_TF_LIB_DIR}/libngraph.so)
 set_target_properties(ngraph
                       PROPERTIES INCLUDE_DIRECTORIES ${NGRAPH_TF_INCLUDE_DIR})
 

@@ -90,6 +90,10 @@ add_custom_target(libprotobuf_soft_link ALL
                   DEPENDS libprotobuf
                   COMMAND ${CMAKE_COMMAND}
                           -E
+                          make_directory
+                          ${NGRAPH_TF_LIB_DIR}
+                  COMMAND ${CMAKE_COMMAND}
+                          -E
                           copy
                           ${EXTERNAL_INSTALL_LIB_DIR}/libprotobuf.so*
                           ${NGRAPH_TF_LIB_DIR})

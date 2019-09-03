@@ -39,8 +39,6 @@ message(STATUS "PYTHON_ARTIFACTS_DIR ${PYTHON_ARTIFACTS_DIR}")
 set(PYTHON_LIB_DIR ${PYTHON_ARTIFACTS_DIR}/lib)
 set(PYTHON_INCLUDE_DIR ${PYTHON_ARTIFACTS_DIR}/include)
 
-message(STATUS "PROJECT_ROOT_DIR ${PROJECT_ROOT_DIR}")
-
 # Hack to install files for python wheel When specifying DESTDIR in custom
 # command, this will change the destination to DESTDIR, rather than
 # EXTERNAL_INSTALL_INCLUDE_DIR

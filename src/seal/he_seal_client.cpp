@@ -307,7 +307,6 @@ void ngraph::he::HESealClient::handle_message(
 
   switch (proto_msg->type()) {
     case he_proto::TCPMessage_Type_RESPONSE: {
-      NGRAPH_INFO << "Client got message RESPONSE";
       if (proto_msg->has_encryption_parameters()) {
         handle_encryption_parameters_response(*proto_msg);
       } else if (proto_msg->ciphers_size() > 0) {
