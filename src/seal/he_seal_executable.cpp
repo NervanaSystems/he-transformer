@@ -651,12 +651,11 @@ bool ngraph::he::HESealExecutable::call(
         std::string name = op->output(i).get_tensor().get_name();
 
         // Plaintext output only if all inputs are plaintext
-        bool plain_out = all_of(
-            op_inputs.begin(), op_inputs.end(),
-            [](std::shared_ptr<ngraph::he::HETensor> op_input) {
-              return std::dynamic_pointer_cast<HEPlainTensor>(op_input) !=
-                     nullptr;
-            });
+        bool plain_out =
+            all_of(op_inputs.begin(), op_inputs.end(),
+                   [](std::shared_ptr<ngraph::he::HETensor> op_input) {
+                     return op_input->is_type<HEPlainTensor>();
+                   });
         if (op->is_constant()) {
           plain_out = !m_encrypt_model;
         }
@@ -787,9 +786,9 @@ void ngraph::he::HESealExecutable::generate_calls(
       ss << "Plain" << delimiter;
     }
     delimiter = ", ";
-    if (verbose) {
-      NGRAPH_INFO << ss.str();
-    }
+  }
+  if (verbose) {
+    NGRAPH_INFO << ss.str();
   }
 
   enum class UnaryOpType {
@@ -1433,6 +1432,7 @@ void ngraph::he::HESealExecutable::generate_calls(
               out0_cipher->get_elements(), arg0_shape, packed_out_shape,
               pad->get_padding_below(), pad->get_padding_above(),
               pad->get_pad_mode(), m_batch_size, m_he_seal_backend);
+          NGRAPH_INFO << "Done with pad call";
           break;
         }
         case BinaryOpType::PlainPlainToPlain: {
@@ -1444,12 +1444,11 @@ void ngraph::he::HESealExecutable::generate_calls(
           break;
         }
         case BinaryOpType::PlainCipherToCipher:
-          NGRAPH_INFO << "PlainCipherToCipher";
         case BinaryOpType::None:
-          NGRAPH_INFO << "Unsupported pad type";
           NGRAPH_CHECK(false, "Unsupported op types");
           break;
       }
+      break;
     }
     case OP_TYPEID::Passthrough: {
       const op::Passthrough* passthrough =
