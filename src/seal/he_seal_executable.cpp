@@ -563,13 +563,11 @@ bool ngraph::he::HESealExecutable::call(
 
       if (!m_enable_client && m_encrypt_data) {
         NGRAPH_DEBUG << "Encrypting parameter " << param_idx;
-        auto plain_input = std::dynamic_pointer_cast<ngraph::he::HEPlainTensor>(
+        auto plain_input = he_tensor_as_type<ngraph::he::HEPlainTensor>(
             he_inputs[input_count]);
 
-        NGRAPH_CHECK(plain_input != nullptr, "Input is not plain tensor");
         std::string name = tv->get_name();
-
-        auto cipher_input = std::dynamic_pointer_cast<HESealCipherTensor>(
+        auto cipher_input = std::static_pointer_cast<HESealCipherTensor>(
             m_he_seal_backend.create_cipher_tensor(
                 plain_input->get_element_type(), plain_input->get_shape(),
                 m_pack_data, name));
@@ -748,12 +746,8 @@ void ngraph::he::HESealExecutable::send_client_results() {
   he_proto::TCPMessage proto_msg;
   proto_msg.set_type(he_proto::TCPMessage_Type_RESPONSE);
 
-  std::vector<seal::Ciphertext> seal_output;
-
   auto output_cipher_tensor =
-      std::dynamic_pointer_cast<HESealCipherTensor>(m_client_outputs[0]);
-  NGRAPH_CHECK(output_cipher_tensor != nullptr,
-               "Client outputs are not HESealCipherTensor");
+      he_tensor_as_type<HESealCipherTensor>(m_client_outputs[0]);
 
   ngraph::he::save_to_proto(output_cipher_tensor->get_elements(), proto_msg);
   ngraph::he::TCPMessage result_msg(std::move(proto_msg));

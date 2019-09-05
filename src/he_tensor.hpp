@@ -82,5 +82,13 @@ class HETensor : public runtime::Tensor {
   size_t m_batch_size;  // If m_packed, corresponds to first shape dimesion.
   Shape m_packed_shape;
 };
+
+template <typename HETensorType>
+std::shared_ptr<HETensorType> he_tensor_as_type(
+    const std::shared_ptr<HETensor>& he_tensor) {
+  NGRAPH_CHECK(he_tensor->is_type<HETensorType>(), "incorrect tensor type");
+  return std::static_pointer_cast<HETensorType>(he_tensor);
+}
+
 }  // namespace he
 }  // namespace ngraph

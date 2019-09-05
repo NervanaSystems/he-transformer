@@ -271,7 +271,12 @@ NGRAPH_TEST(${BACKEND_NAME}, tensor_types) {
   EXPECT_TRUE(packed_cipher != nullptr);
 
   EXPECT_TRUE(plain->is_type<ngraph::he::HEPlainTensor>());
-  EXPECT_TRUE(cipher->is_type<ngraph::he::HESealCipherTensor>());
+  EXPECT_FALSE(plain->is_type<ngraph::he::HESealCipherTensor>());
   EXPECT_TRUE(packed_plain->is_type<ngraph::he::HEPlainTensor>());
+  EXPECT_FALSE(packed_plain->is_type<ngraph::he::HESealCipherTensor>());
+
+  EXPECT_TRUE(cipher->is_type<ngraph::he::HESealCipherTensor>());
+  EXPECT_FALSE(cipher->is_type<ngraph::he::HEPlainTensor>());
   EXPECT_TRUE(packed_cipher->is_type<ngraph::he::HESealCipherTensor>());
+  EXPECT_FALSE(packed_cipher->is_type<ngraph::he::HEPlainTensor>());
 }
