@@ -23,6 +23,8 @@
 
 namespace ngraph {
 namespace he {
+enum class HETensorTypeInfo { unknown = 0, cipher = 1, plain = 2 };
+
 class HESealBackend;
 class HETensor : public runtime::Tensor {
  public:
@@ -63,9 +65,17 @@ class HETensor : public runtime::Tensor {
 
   inline bool is_packed() { return m_packed; }
 
+  virtual const HETensorTypeInfo& get_type_info() const { return type_info; }
+
+  template <typename HETensorType>
+  bool is_type() const {
+    return &get_type_info() == &HETensorType::type_info;
+  }
+
+  static constexpr HETensorTypeInfo type_info{HETensorTypeInfo::unknown};
+
  protected:
   void check_io_bounds(const void* p, size_t n) const;
-
   const HESealBackend& m_he_seal_backend;
   bool m_packed;        // Whether or not the tensor is packed, i.e. stores more
                         // than one scalar per element.

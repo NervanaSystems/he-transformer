@@ -59,7 +59,13 @@ class HEPlainTensor : public HETensor {
 
   void set_elements(const std::vector<ngraph::he::HEPlaintext>& elements);
 
+  const HETensorTypeInfo& get_type_info() const override {
+    return plain_type_info;
+  }
+
  private:
+  static constexpr HETensorTypeInfo plain_type_info{HETensorTypeInfo::plain};
+
   std::vector<ngraph::he::HEPlaintext> m_plaintexts;
   size_t m_num_elements;
 };
