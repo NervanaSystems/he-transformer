@@ -540,7 +540,6 @@ bool ngraph::he::HESealExecutable::call(
     NGRAPH_INFO << "Processing server inputs";
     for (auto& tv : server_inputs) {
       he_inputs.push_back(std::static_pointer_cast<ngraph::he::HETensor>(tv));
-      he_inputs.push_back(he_input);
     }
   }
 
@@ -1098,60 +1097,73 @@ void ngraph::he::HESealExecutable::generate_calls(
         broadcast_out_shape = packed_out_shape;
       }
 
-      if (cipher_args[0] != nullptr && out0_cipher != nullptr) {
-        ngraph::he::broadcast_seal(cipher_args[0]->get_elements(),
-                                   out0_cipher->get_elements(), in_shape,
-                                   broadcast_out_shape, broadcast_axes);
-      } else if (plain_args[0] != nullptr && out0_plain != nullptr) {
-        ngraph::he::broadcast_seal(plain_args[0]->get_elements(),
-                                   out0_plain->get_elements(), in_shape,
-                                   broadcast_out_shape, broadcast_axes);
-      } else {
-        throw ngraph_error("Broadcast types not supported.");
+      switch (unary_op_type) {
+        case UnaryOpType::CipherToCipher: {
+          ngraph::he::broadcast_seal(cipher_args[0]->get_elements(),
+                                     out0_cipher->get_elements(), in_shape,
+                                     broadcast_out_shape, broadcast_axes);
+          break;
+        }
+        case UnaryOpType::PlainToPlain: {
+          ngraph::he::broadcast_seal(plain_args[0]->get_elements(),
+                                     out0_plain->get_elements(), in_shape,
+                                     broadcast_out_shape, broadcast_axes);
+          break;
+        }
+        case UnaryOpType::PlainToCipher:
+        case UnaryOpType::CipherToPlain:
+        case UnaryOpType::None:
+          NGRAPH_CHECK(false, "Unsupported op types");
       }
       break;
     }
-
     case OP_TYPEID::BroadcastLike:
       break;
     case OP_TYPEID::Concat: {
       const op::Concat* concat = static_cast<const op::Concat*>(&node);
 
-      if (cipher_args[0] != nullptr && out0_cipher != nullptr) {
-        std::vector<Shape> in_shapes;
-        std::vector<
-            std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>>
-            in_args;
+      switch (unary_op_type) {
+        case UnaryOpType::CipherToCipher: {
+          std::vector<Shape> in_shapes;
+          std::vector<
+              std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>>
+              in_args;
 
-        for (std::shared_ptr<HETensor> arg : args) {
-          std::shared_ptr<HESealCipherTensor> arg_cipher =
-              std::dynamic_pointer_cast<HESealCipherTensor>(arg);
-          if (arg_cipher == nullptr) {
-            throw ngraph_error("Concat type not consistent");
+          for (std::shared_ptr<HETensor> arg : args) {
+            std::shared_ptr<HESealCipherTensor> arg_cipher =
+                std::dynamic_pointer_cast<HESealCipherTensor>(arg);
+            if (arg_cipher == nullptr) {
+              throw ngraph_error("Concat type not consistent");
+            }
+            in_args.push_back(arg_cipher->get_elements());
+            in_shapes.push_back(arg_cipher->get_packed_shape());
           }
-          in_args.push_back(arg_cipher->get_elements());
-          in_shapes.push_back(arg_cipher->get_packed_shape());
+          ngraph::he::concat_seal(in_args, out0_cipher->get_elements(),
+                                  in_shapes, packed_out_shape,
+                                  concat->get_concatenation_axis());
+          break;
         }
-        ngraph::he::concat_seal(in_args, out0_cipher->get_elements(), in_shapes,
-                                packed_out_shape,
-                                concat->get_concatenation_axis());
-      } else if (plain_args[0] != nullptr && out0_plain != nullptr) {
-        std::vector<Shape> in_shapes;
-        std::vector<std::vector<ngraph::he::HEPlaintext>> in_args;
+        case UnaryOpType::PlainToPlain: {
+          std::vector<Shape> in_shapes;
+          std::vector<std::vector<ngraph::he::HEPlaintext>> in_args;
 
-        for (std::shared_ptr<HETensor> arg : args) {
-          auto arg_plain = std::dynamic_pointer_cast<HEPlainTensor>(arg);
-          if (arg_plain == nullptr) {
-            throw ngraph_error("Concat type not consistent");
+          for (std::shared_ptr<HETensor> arg : args) {
+            auto arg_plain = std::dynamic_pointer_cast<HEPlainTensor>(arg);
+            if (arg_plain == nullptr) {
+              throw ngraph_error("Concat type not consistent");
+            }
+            in_args.emplace_back(arg_plain->get_elements());
+            in_shapes.push_back(arg_plain->get_packed_shape());
           }
-          in_args.emplace_back(arg_plain->get_elements());
-          in_shapes.push_back(arg_plain->get_packed_shape());
+          ngraph::he::concat_seal(in_args, out0_plain->get_elements(),
+                                  in_shapes, packed_out_shape,
+                                  concat->get_concatenation_axis());
+          break;
         }
-        ngraph::he::concat_seal(in_args, out0_plain->get_elements(), in_shapes,
-                                packed_out_shape,
-                                concat->get_concatenation_axis());
-      } else {
-        throw ngraph_error("Concat types not supported.");
+        case UnaryOpType::PlainToCipher:
+        case UnaryOpType::CipherToPlain:
+        case UnaryOpType::None:
+          NGRAPH_CHECK(false, "Unsupported op types");
       }
       break;
     }
