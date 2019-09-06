@@ -843,8 +843,6 @@ void ngraph::he::HESealExecutable::generate_calls(
     }
   }
 
-  NGRAPH_INFO << "Created arg ciphers";
-
   // TODO: move to static function
   auto lazy_rescaling = [this](auto& cipher_tensor,
                                bool verbose_rescaling = true) {
