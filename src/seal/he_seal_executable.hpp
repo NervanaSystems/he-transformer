@@ -202,6 +202,9 @@ class HESealExecutable : public runtime::Executable {
   void generate_calls(const element::Type& type, const NodeWrapper& op,
                       const std::vector<std::shared_ptr<HETensor>>& outputs,
                       const std::vector<std::shared_ptr<HETensor>>& inputs);
+
+  bool m_stop_const_fold{
+      ngraph::he::flag_to_bool(std::getenv("STOP_CONST_FOLD"))};
 };
 }  // namespace he
 }  // namespace ngraph

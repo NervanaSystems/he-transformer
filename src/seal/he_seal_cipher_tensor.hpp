@@ -94,6 +94,10 @@ class HESealCipherTensor : public HETensor {
 
   inline size_t num_ciphertexts() { return m_ciphertexts.size(); }
 
+  const HETensorTypeInfo& get_type_info() const override { return type_info; }
+
+  static constexpr HETensorTypeInfo type_info{HETensorTypeInfo::cipher};
+
  private:
   std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>> m_ciphertexts;
   size_t m_num_elements;

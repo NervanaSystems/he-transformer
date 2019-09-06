@@ -14,8 +14,13 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include <memory>
+
+#include "he_plain_tensor.hpp"
+#include "he_tensor.hpp"
 #include "ngraph/ngraph.hpp"
 #include "seal/he_seal_backend.hpp"
+#include "seal/he_seal_cipher_tensor.hpp"
 #include "test_util.hpp"
 #include "util/all_close.hpp"
 #include "util/ndarray.hpp"
@@ -243,4 +248,35 @@ NGRAPH_TEST(${BACKEND_NAME}, unsupported_op_type) {
                                    ParameterVector{A, B});
     EXPECT_THROW({ backend->compile(f); }, ngraph::CheckFailure);
   }
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, tensor_types) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+
+  Shape shape{2, 2};
+  auto plain = dynamic_pointer_cast<ngraph::he::HETensor>(
+      he_backend->create_plain_tensor(element::f32, {2, 3}));
+  auto cipher = dynamic_pointer_cast<ngraph::he::HETensor>(
+      he_backend->create_cipher_tensor(element::f32, shape));
+
+  auto packed_plain = dynamic_pointer_cast<ngraph::he::HETensor>(
+      he_backend->create_packed_plain_tensor(element::f32, {2, 3}));
+  auto packed_cipher = dynamic_pointer_cast<ngraph::he::HETensor>(
+      he_backend->create_packed_cipher_tensor(element::f32, shape));
+
+  EXPECT_TRUE(plain != nullptr);
+  EXPECT_TRUE(cipher != nullptr);
+  EXPECT_TRUE(packed_plain != nullptr);
+  EXPECT_TRUE(packed_cipher != nullptr);
+
+  EXPECT_TRUE(plain->is_type<ngraph::he::HEPlainTensor>());
+  EXPECT_FALSE(plain->is_type<ngraph::he::HESealCipherTensor>());
+  EXPECT_TRUE(packed_plain->is_type<ngraph::he::HEPlainTensor>());
+  EXPECT_FALSE(packed_plain->is_type<ngraph::he::HESealCipherTensor>());
+
+  EXPECT_TRUE(cipher->is_type<ngraph::he::HESealCipherTensor>());
+  EXPECT_FALSE(cipher->is_type<ngraph::he::HEPlainTensor>());
+  EXPECT_TRUE(packed_cipher->is_type<ngraph::he::HESealCipherTensor>());
+  EXPECT_FALSE(packed_cipher->is_type<ngraph::he::HEPlainTensor>());
 }
