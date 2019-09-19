@@ -24,11 +24,8 @@ def load_mnist_data():
     """Returns MNIST data in one-hot form"""
     mnist = tf.keras.datasets.mnist
     (x_train, y_train), (x_test, y_test) = mnist.load_data()
-
-    with tf.compat.v1.Session() as sess:
-        y_test = tf.one_hot(y_test, 10).eval()
-        y_train = tf.one_hot(y_train, 10).eval()
-
+    y_train = tf.compat.v1.keras.utils.to_categorical(y_train, num_classes=10)
+    y_test = tf.compat.v1.keras.utils.to_categorical(y_test, num_classes=10)
     x_train = np.expand_dims(x_train, axis=-1)
     x_test = np.expand_dims(x_test, axis=-1)
 
