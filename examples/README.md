@@ -59,6 +59,7 @@ For a deep learning example using the client-server model, see the `MNIST/MLP` f
     - `coeff_modulus` should be a list of integers in [1,60]. This indicates the bit-widths of the coefficient moduli used. ***Note***: The number of coefficient moduli should be at least the multiplicative depth of your model between non-polynomial layers.
     - `scale` is the scale at which number are encoded; `log2(scale)` represents roughly the fixed-bit precision of the encoding. If no scale is passes, the second-to-last coeffcient modulus is used.
   * `NAIVE_RESCALING`. For comparison purposes only. No need to enable.
+  * `NGRAPH_HE_LOG_LEVEL`. Defines the verbosity of the logging. Set to 0 for minimal logging, 5 for maximum logging
 
   # Creating your own DL model
   We currently only support DL models with a single `Parameter`, as is the case for most standard DL models. During training, the weights may be TensorFlow `Variable` ops, which translate to nGraph `Parameter` ops. In this case, he-transformer will be unable to tell what tensor represents the data to encrypt. So, you will need to convert the ops representing the model weights to `Constant` ops. TensorFlow, for example, has a `freeze_graph` utility to do so. See the `MNIST/MLP` folder for an example using `freeze_graph`.

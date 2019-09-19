@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "he_tensor.hpp"
+#include "logging/ngraph_he_log.hpp"
 #include "ngraph/descriptor/layout/tensor_layout.hpp"
 #include "ngraph/file_util.hpp"
 #include "ngraph/node.hpp"
@@ -28,21 +29,6 @@
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_cipher_tensor.hpp"
-
-std::vector<float> read_binary_constant(const std::string filename,
-                                        size_t num_elements);
-std::vector<float> read_constant(const std::string filename);
-
-// ys is logits output, or one-hot encoded ground truth
-std::vector<int> batched_argmax(const std::vector<float>& ys);
-
-void write_constant(const std::vector<float>& values,
-                    const std::string filename);
-void write_binary_constant(const std::vector<float>& values,
-                           const std::string filename);
-
-float get_accuracy(const std::vector<float>& pre_sigmoid,
-                   const std::vector<float>& y);
 
 template <typename T>
 bool all_close(const std::vector<std::complex<T>>& a,

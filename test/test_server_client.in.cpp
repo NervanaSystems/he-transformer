@@ -248,7 +248,6 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_pad_bounded_relu) {
   auto handle = dynamic_pointer_cast<ngraph::he::HESealExecutable>(
       he_backend->compile(f));
   handle->enable_client();
-  NGRAPH_INFO << "Calling with validate";
   handle->call_with_validate({t_result}, {t_dummy});
 
   client_thread.join();
@@ -295,7 +294,6 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_pad_relu) {
   auto handle = dynamic_pointer_cast<ngraph::he::HESealExecutable>(
       he_backend->compile(f));
   handle->enable_client();
-  NGRAPH_INFO << "Calling with validate";
   handle->call_with_validate({t_result}, {t_dummy});
 
   client_thread.join();
@@ -309,9 +307,6 @@ auto server_client_relu_packed_test = [](size_t element_count,
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
   he_backend->complex_packing() = complex_packing;
-
-  NGRAPH_INFO << "Batch size " << batch_size;
-  NGRAPH_INFO << "complex_packing? " << complex_packing;
 
   Shape shape{batch_size, element_count};
   auto a = make_shared<op::Parameter>(element::f32, shape);
