@@ -20,13 +20,13 @@
 #include <limits>
 #include <utility>
 
+#include "logging/ngraph_he_log.hpp"
 #include "ngraph/runtime/tensor.hpp"
-#include "seal/seal_util.hpp"
-#include "seal/util/uintarith.h"
-
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
+#include "seal/seal_util.hpp"
 #include "seal/util/polyarithsmallmod.h"
+#include "seal/util/uintarith.h"
 
 void ngraph::he::print_seal_context(const seal::SEALContext& context) {
   auto& context_data = *context.key_context_data();
@@ -34,7 +34,10 @@ void ngraph::he::print_seal_context(const seal::SEALContext& context) {
   NGRAPH_CHECK(context_data.parms().scheme() == seal::scheme_type::CKKS,
                "Only CKKS scheme supported");
 
-  std::cout << "/" << std::endl;
+  NGRAPH_HE_LOG(1) << "/"
+
+      std::cout << "/"
+                   << std::endl;
   std::cout << "| Encryption parameters :" << std::endl;
   std::cout << "|   scheme: CKKS" << std::endl;
   std::cout << "|   poly_modulus_degree: "

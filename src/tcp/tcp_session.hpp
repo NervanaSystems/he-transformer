@@ -21,7 +21,7 @@
 #include <memory>
 #include <mutex>
 
-#include "ngraph/log.hpp"
+#include "logging/ngraph_he_log.hpp"
 #include "tcp/tcp_message.hpp"
 
 using boost::asio::ip::tcp;
@@ -99,6 +99,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
     auto self(shared_from_this());
     auto message = m_message_queue.front();
     message.pack(m_write_buffer);
+    NGRAPH_HE_LOG(4) << "Server writing message size " << length << " bytes";
 
     boost::asio::async_write(
         m_socket, boost::asio::buffer(m_write_buffer),
