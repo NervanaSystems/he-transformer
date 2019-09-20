@@ -105,6 +105,7 @@ ngraph::he::HESealExecutable::HESealExecutable(
       m_session_started(false),
       m_client_inputs_received(false) {
   m_context = he_seal_backend.get_context();
+  NGRAPH_HE_LOG(1) << "Creating HESealExecutable";
 
   if (std::getenv("NGRAPH_VOPS") != nullptr) {
     std::string verbose_ops_str(std::getenv("NGRAPH_VOPS"));

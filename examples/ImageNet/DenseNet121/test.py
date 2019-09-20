@@ -69,7 +69,7 @@ def main(FLAGS):
         pooling='max',
         classes=1000)
     print('loaded keras model')
-    print(model.summary())
+    #print(model.summary())
 
     imagenet_inference_labels = get_imagenet_inference_labels()
     imagenet_training_labels = get_imagenet_training_labels()
@@ -99,6 +99,8 @@ def main(FLAGS):
     preds = imagenet_training_labels[top5]
     print('preds', preds)
     util.accuracy(preds, validation_labels)
+
+    print('validation_labels', validation_labels)
 
     return
 
