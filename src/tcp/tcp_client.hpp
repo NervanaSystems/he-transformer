@@ -127,7 +127,8 @@ class TCPClient {
   void do_write() {
     auto message = m_message_queue.front();
     message.pack(m_write_buffer);
-    NGRAPH_HE_LOG(4) << "Client writing message size " << length << " bytes";
+    NGRAPH_HE_LOG(4) << "Client writing message size " << m_write_buffer.size()
+                     << " bytes";
 
     boost::asio::async_write(
         m_socket, boost::asio::buffer(m_write_buffer),

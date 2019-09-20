@@ -99,7 +99,8 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
     auto self(shared_from_this());
     auto message = m_message_queue.front();
     message.pack(m_write_buffer);
-    NGRAPH_HE_LOG(4) << "Server writing message size " << length << " bytes";
+    NGRAPH_HE_LOG(4) << "Server writing message size " << m_write_buffer.size()
+                     << " bytes";
 
     boost::asio::async_write(
         m_socket, boost::asio::buffer(m_write_buffer),

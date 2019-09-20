@@ -34,24 +34,24 @@ void ngraph::he::print_seal_context(const seal::SEALContext& context) {
   NGRAPH_CHECK(context_data.parms().scheme() == seal::scheme_type::CKKS,
                "Only CKKS scheme supported");
 
-  NGRAPH_HE_LOG(1) << "/"
+  std::stringstream param_ss;
 
-      std::cout << "/"
-                   << std::endl;
-  std::cout << "| Encryption parameters :" << std::endl;
-  std::cout << "|   scheme: CKKS" << std::endl;
-  std::cout << "|   poly_modulus_degree: "
-            << context_data.parms().poly_modulus_degree() << std::endl;
-  std::cout << "|   coeff_modulus size: ";
-  std::cout << context_data.total_coeff_modulus_bit_count() << " (";
+  param_ss << "/\n"
+           << "| Encryption parameters :\n\n"
+           << "|   scheme: CKKS\n"
+           << "|   poly_modulus_degree: "
+           << context_data.parms().poly_modulus_degree() << "\n"
+           << "|   coeff_modulus size: "
+           << context_data.total_coeff_modulus_bit_count() << " (";
   auto coeff_modulus = context_data.parms().coeff_modulus();
   std::size_t coeff_mod_count = coeff_modulus.size();
   for (std::size_t i = 0; i < coeff_mod_count - 1; i++) {
-    std::cout << coeff_modulus[i].bit_count() << " + ";
+    param_ss << coeff_modulus[i].bit_count() << " + ";
   }
-  std::cout << coeff_modulus.back().bit_count();
-  std::cout << ") bits" << std::endl;
-  std::cout << "\\" << std::endl;
+  param_ss << coeff_modulus.back().bit_count() << ") bits\n"
+           << "\\\n";
+
+  NGRAPH_HE_LOG(1) << param_ss.str();
 }
 
 size_t ngraph::he::get_chain_index(const SealCiphertextWrapper& cipher,
