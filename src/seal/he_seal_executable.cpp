@@ -42,6 +42,7 @@
 #include "kernel/slice_seal.hpp"
 #include "kernel/subtract_seal.hpp"
 #include "kernel/sum_seal.hpp"
+#include "logging/ngraph_he_log.hpp"
 #include "ngraph/assertion.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
 #include "ngraph/op/avg_pool.hpp"
@@ -172,7 +173,6 @@ ngraph::he::HESealExecutable::HESealExecutable(
   }
 
   if (m_enable_client) {
-    NGRAPH_INFO << "Setting up client in constructor";
     client_setup();
   }
 }
@@ -190,11 +190,11 @@ void ngraph::he::HESealExecutable::check_client_supports_function() {
 
 void ngraph::he::HESealExecutable::client_setup() {
   if (!m_client_setup) {
-    NGRAPH_INFO << "Enable client";
+    NGRAPH_HE_LOG(1) << "Enable client";
     check_client_supports_function();
 
     // Start server
-    NGRAPH_INFO << "Starting server";
+    NGRAPH_HE_LOG(1) << "Starting server";
     start_server();
 
     std::stringstream param_stream;
@@ -221,8 +221,8 @@ void ngraph::he::HESealExecutable::client_setup() {
       m_client_load_idx.clear();
       const ParameterVector& input_parameters = get_parameters();
       for (auto input_param : input_parameters) {
-        NGRAPH_INFO << "parameter shape "
-                    << join(input_param->get_shape(), "x");
+        NGRAPH_HE_LOG(1) << "parameter shape "
+                         << join(input_param->get_shape(), "x");
         auto element_type = input_param->get_element_type();
 
         auto input_tensor =
@@ -236,30 +236,30 @@ void ngraph::he::HESealExecutable::client_setup() {
     }
 
   } else {
-    NGRAPH_INFO << "Client already setup";
+    NGRAPH_HE_LOG(1) << "Client already setup";
   }
 }
 
 void ngraph::he::HESealExecutable::accept_connection() {
-  NGRAPH_INFO << "Server accepting connections";
+  NGRAPH_HE_LOG(1) << "Server accepting connections";
   auto server_callback = bind(&ngraph::he::HESealExecutable::handle_message,
                               this, std::placeholders::_1);
 
   m_acceptor->async_accept([this, server_callback](boost::system::error_code ec,
                                                    tcp::socket socket) {
     if (!ec) {
-      NGRAPH_INFO << "Connection accepted";
+      NGRAPH_HE_LOG(1) << "Connection accepted";
       m_session =
           std::make_shared<TCPSession>(std::move(socket), server_callback);
       m_session->start();
-      NGRAPH_INFO << "Session started";
+      NGRAPH_HE_LOG(1) << "Session started";
 
       std::lock_guard<std::mutex> guard(m_session_mutex);
       m_session_started = true;
       m_session_cond.notify_one();
     } else {
-      NGRAPH_INFO << "error accepting connection " << ec.message();
-      // accept_connection();
+      NGRAPH_ERR << "error accepting connection " << ec.message();
+      accept_connection();
     }
   });
 }
@@ -321,7 +321,7 @@ void ngraph::he::HESealExecutable::send_inference_shape() {
   f.set_function(js.dump());
   *proto_msg.mutable_function() = f;
 
-  NGRAPH_INFO << "Sending inference shape " << js.dump();
+  NGRAPH_HE_LOG(1) << "Sending inference shape " << js.dump();
 
   ngraph::he::TCPMessage execute_msg(std::move(proto_msg));
   m_session->write_message(std::move(execute_msg));
@@ -397,7 +397,7 @@ void ngraph::he::HESealExecutable::handle_message(
         } else if (name == "MaxPool") {
           handle_max_pool_result(*proto_msg);
         } else {
-          NGRAPH_INFO << "Unknown name " << name;
+          throw ngraph_error("Unknown function name");
         }
       }
       break;
@@ -504,26 +504,26 @@ bool ngraph::he::HESealExecutable::call(
   validate(outputs, server_inputs);
 
   if (m_encrypt_data) {
-    NGRAPH_INFO << "Encrypting data";
+    NGRAPH_HE_LOG(1) << "Encrypting data";
   }
   if (m_pack_data) {
-    NGRAPH_INFO << "Batching data with batch size " << m_batch_size;
+    NGRAPH_HE_LOG(1) << "Batching data with batch size " << m_batch_size;
   }
   if (m_encrypt_model) {
-    NGRAPH_INFO << "Encrypting model";
+    NGRAPH_HE_LOG(1) << "Encrypting model";
   }
   if (m_complex_packing) {
-    NGRAPH_INFO << "Complex packing";
+    NGRAPH_HE_LOG(1) << "Complex packing";
   }
 
   if (m_enable_client) {
-    NGRAPH_INFO << "Waiting until m_client_inputs.size() == "
-                << server_inputs.size();
+    NGRAPH_HE_LOG(1) << "Waiting until m_client_inputs.size() == "
+                     << server_inputs.size();
 
     std::unique_lock<std::mutex> mlock(m_client_inputs_mutex);
     m_client_inputs_cond.wait(
         mlock, std::bind(&HESealExecutable::client_inputs_received, this));
-    NGRAPH_INFO << "Client inputs_received";
+    NGRAPH_HE_LOG(1) << "Client inputs_received";
     NGRAPH_CHECK(m_client_inputs.size() == server_inputs.size(),
                  "Recieved incorrect number of inputs from client (got ",
                  m_client_inputs.size(), ", expectd ", server_inputs.size());
@@ -532,12 +532,12 @@ bool ngraph::he::HESealExecutable::call(
   // convert inputs to HETensor
   std::vector<std::shared_ptr<ngraph::he::HETensor>> he_inputs;
   if (m_enable_client) {
-    NGRAPH_INFO << "Processing client inputs";
+    NGRAPH_HE_LOG(1) << "Processing client inputs";
     for (auto& tv : m_client_inputs) {
       he_inputs.push_back(std::static_pointer_cast<ngraph::he::HETensor>(tv));
     }
   } else {
-    NGRAPH_INFO << "Processing server inputs";
+    NGRAPH_HE_LOG(1) << "Processing server inputs";
     for (auto& tv : server_inputs) {
       he_inputs.push_back(std::static_pointer_cast<ngraph::he::HETensor>(tv));
     }
@@ -610,17 +610,17 @@ bool ngraph::he::HESealExecutable::call(
     bool verbose = verbose_op(*op);
 
     if (verbose) {
-      NGRAPH_INFO << "\033[1;32m"
-                  << "[ " << op->get_name() << " ]"
-                  << "\033[0m";
+      NGRAPH_HE_LOG(3) << "\033[1;32m"
+                       << "[ " << op->get_name() << " ]"
+                       << "\033[0m";
       if (type_id == OP_TYPEID::Constant) {
-        NGRAPH_INFO << "Constant shape {" << join(op->get_shape()) << "}";
+        NGRAPH_HE_LOG(3) << "Constant shape {" << join(op->get_shape()) << "}";
       }
     }
 
     if (type_id == OP_TYPEID::Parameter) {
       if (verbose) {
-        NGRAPH_INFO << "Parameter shape {" << join(op->get_shape()) << "}";
+        NGRAPH_HE_LOG(3) << "Parameter shape {" << join(op->get_shape()) << "}";
       }
       continue;
     }
@@ -635,7 +635,7 @@ bool ngraph::he::HESealExecutable::call(
 
     if (m_enable_client && type_id == OP_TYPEID::Result) {
       // Client outputs remain ciphertexts, so don't perform result op on them
-      NGRAPH_INFO << "Setting client outputs";
+      NGRAPH_HE_LOG(3) << "Setting client outputs";
       m_client_outputs = op_inputs;
     }
 
@@ -713,9 +713,9 @@ bool ngraph::he::HESealExecutable::call(
       }
     }
     if (verbose) {
-      NGRAPH_INFO << "\033[1;31m" << op->get_name() << " took "
-                  << m_timer_map[op].get_milliseconds() << "ms"
-                  << "\033[0m";
+      NGRAPH_HE_LOG(3) << "\033[1;31m" << op->get_name() << " took "
+                       << m_timer_map[op].get_milliseconds() << "ms"
+                       << "\033[0m";
     }
   }
   size_t total_time = 0;
@@ -723,8 +723,8 @@ bool ngraph::he::HESealExecutable::call(
     total_time += elem.second.get_milliseconds();
   }
   if (verbose_op("total")) {
-    NGRAPH_INFO << "\033[1;32m"
-                << "Total time " << total_time << " (ms) \033[0m";
+    NGRAPH_HE_LOG(3) << "\033[1;32m"
+                     << "Total time " << total_time << " (ms) \033[0m";
   }
 
   // Send outputs to client.
@@ -735,7 +735,7 @@ bool ngraph::he::HESealExecutable::call(
 }
 
 void ngraph::he::HESealExecutable::send_client_results() {
-  NGRAPH_INFO << "Sending outputs to client";
+  NGRAPH_HE_LOG(3) << "Sending outputs to client";
   NGRAPH_CHECK(m_client_outputs.size() == 1,
                "HESealExecutable only supports output size 1 (got ",
                get_results().size(), "");
@@ -788,7 +788,7 @@ void ngraph::he::HESealExecutable::generate_calls(
     delimiter = ", ";
   }
   if (verbose) {
-    NGRAPH_INFO << ss.str();
+    NGRAPH_HE_LOG(3) << ss.str();
   }
 
   enum class UnaryOpType {
@@ -850,8 +850,8 @@ void ngraph::he::HESealExecutable::generate_calls(
       return;
     }
     if (verbose_rescaling) {
-      NGRAPH_INFO << "Rescaling " << cipher_tensor->num_ciphertexts()
-                  << " ciphertexts";
+      NGRAPH_HE_LOG(3) << "Rescaling " << cipher_tensor->num_ciphertexts()
+                       << " ciphertexts";
     }
 
     typedef std::chrono::high_resolution_clock Clock;
@@ -877,7 +877,7 @@ void ngraph::he::HESealExecutable::generate_calls(
 
     if (all_known_values) {
       if (verbose_rescaling) {
-        NGRAPH_INFO << "Skipping rescaling because all values are known";
+        NGRAPH_HE_LOG(3) << "Skipping rescaling because all values are known";
       }
       return;
     }
@@ -886,12 +886,12 @@ void ngraph::he::HESealExecutable::generate_calls(
                  "Lazy rescaling called on cipher tensor of all known values");
     if (new_chain_index == 0) {
       if (verbose_rescaling) {
-        NGRAPH_INFO << "Skipping rescaling to chain index 0";
+        NGRAPH_HE_LOG(3) << "Skipping rescaling to chain index 0";
       }
       return;
     }
     if (verbose_rescaling) {
-      NGRAPH_INFO << "New chain index " << new_chain_index;
+      NGRAPH_HE_LOG(3) << "New chain index " << new_chain_index;
     }
 
 #pragma omp parallel for
@@ -904,11 +904,11 @@ void ngraph::he::HESealExecutable::generate_calls(
     }
     if (verbose_rescaling) {
       auto t2 = Clock::now();
-      NGRAPH_INFO << "Rescale_xxx took "
-                  << std::chrono::duration_cast<std::chrono::milliseconds>(t2 -
-                                                                           t1)
-                         .count()
-                  << "ms";
+      NGRAPH_HE_LOG(3) << "Rescale_xxx took "
+                       << std::chrono::duration_cast<std::chrono::milliseconds>(
+                              t2 - t1)
+                              .count()
+                       << "ms";
     }
   };
 
@@ -983,8 +983,8 @@ void ngraph::he::HESealExecutable::generate_calls(
       Shape op_out_shape = packed_out_shape;
 
       if (verbose) {
-        NGRAPH_INFO << "AvgPool " << join(op_in_shape, "x") << " => "
-                    << join(op_out_shape, "x");
+        NGRAPH_HE_LOG(3) << "AvgPool " << join(op_in_shape, "x") << " => "
+                         << join(op_out_shape, "x");
       }
 
       switch (unary_op_type) {
@@ -1246,7 +1246,8 @@ void ngraph::he::HESealExecutable::generate_calls(
       Shape in_shape1 = unpacked_arg_shapes[1];
 
       if (verbose) {
-        NGRAPH_INFO << join(in_shape0, "x") << " dot " << join(in_shape1, "x");
+        NGRAPH_HE_LOG(3) << join(in_shape0, "x") << " dot "
+                         << join(in_shape1, "x");
       }
 
       switch (binary_op_type) {
@@ -1409,7 +1410,7 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Parameter:
-      NGRAPH_INFO << "Skipping parameter";
+      NGRAPH_HE_LOG(3) << "Skipping parameter";
       break;
     case OP_TYPEID::Pad: {
       const op::Pad* pad = static_cast<const op::Pad*>(&node);
@@ -1430,7 +1431,6 @@ void ngraph::he::HESealExecutable::generate_calls(
               out0_cipher->get_elements(), arg0_shape, packed_out_shape,
               pad->get_padding_below(), pad->get_padding_above(),
               pad->get_pad_mode(), m_batch_size, m_he_seal_backend);
-          NGRAPH_INFO << "Done with pad call";
           break;
         }
         case BinaryOpType::PlainPlainToPlain: {
@@ -1507,8 +1507,8 @@ void ngraph::he::HESealExecutable::generate_calls(
       }
 
       if (verbose) {
-        NGRAPH_INFO << join(op_in_shape, "x") << " reshape "
-                    << join(op_out_shape, "x");
+        NGRAPH_HE_LOG(3) << join(op_in_shape, "x") << " reshape "
+                         << join(op_out_shape, "x");
       }
       switch (unary_op_type) {
         case UnaryOpType::CipherToCipher: {
@@ -1681,9 +1681,7 @@ void ngraph::he::HESealExecutable::generate_calls(
           break;
         }
         case UnaryOpType::CipherToPlain:
-          NGRAPH_INFO << "Cipher to plain";
         case UnaryOpType::PlainToCipher:
-          NGRAPH_INFO << "plain to cipher";
         case UnaryOpType::None:
           NGRAPH_CHECK(false, "Unsupported op types");
       }
@@ -1821,8 +1819,8 @@ void ngraph::he::HESealExecutable::handle_server_max_pool_op(
 
     // Send list of ciphertexts to maximize over to client
     if (verbose) {
-      NGRAPH_INFO << "Sending " << proto_msg.ciphers_size()
-                  << " Maxpool ciphertexts to client";
+      NGRAPH_HE_LOG(3) << "Sending " << proto_msg.ciphers_size()
+                       << " Maxpool ciphertexts to client";
     }
 
     ngraph::he::TCPMessage max_pool_message(std::move(proto_msg));
@@ -1861,7 +1859,7 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
       arg_cipher->get_elements(), m_he_seal_backend);
 
   if (verbose) {
-    NGRAPH_INFO << "Matched moduli to chain ind " << smallest_ind;
+    NGRAPH_HE_LOG(3) << "Matched moduli to chain ind " << smallest_ind;
   }
 
   m_relu_ciphertexts.resize(element_count);
@@ -1897,7 +1895,8 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
       [&](const std::vector<std::shared_ptr<SealCiphertextWrapper>>&
               cipher_batch) {
         if (verbose) {
-          NGRAPH_INFO << "Sending relu request size " << cipher_batch.size();
+          NGRAPH_HE_LOG(3) << "Sending relu request size "
+                           << cipher_batch.size();
         }
 
         he_proto::TCPMessage proto_msg;

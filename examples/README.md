@@ -32,7 +32,6 @@ For a deep learning example using the client-server model, see the `MNIST/MLP` f
 # List of command-line flags
   * `NGRAPH_ENCRYPT_DATA`. Set to 1 to encrypt data
   * `NGRAPH_ENCRYPT_MODEL`. Set to 1 to encrypt model
-  * `NGRAPH_VOPS`. Set to `all` to print information about every operation performed. Set to a comma-separated list to print information about those ops; for example `NGRAPH_VOPS=add,multiply,convolution`
   * `NGRAPH_UNPACK_DATA`. Set to 1 to prevent SIMD packing along batch axis. ***Note***: For arbitrary computation that isn't packed along the batch axis, use `NGRAPH_UNPACK_DATA=1`.
   * `STOP_CONST_FOLD`. Set to 1 to stop constant folding optimization. Note, this speeds up the graph compilation time for large batch sizes.
   * `NGRAPH_TF_BACKEND`. Set to `HE_SEAL` to use the HE backend. Set to `CPU` for inference on un-encrypted data
@@ -59,6 +58,13 @@ For a deep learning example using the client-server model, see the `MNIST/MLP` f
     - `coeff_modulus` should be a list of integers in [1,60]. This indicates the bit-widths of the coefficient moduli used. ***Note***: The number of coefficient moduli should be at least the multiplicative depth of your model between non-polynomial layers.
     - `scale` is the scale at which number are encoded; `log2(scale)` represents roughly the fixed-bit precision of the encoding. If no scale is passes, the second-to-last coeffcient modulus is used.
   * `NAIVE_RESCALING`. For comparison purposes only. No need to enable.
+  * `NGRAPH_VOPS`. Set to `all` to print information about every operation performed. Set to a comma-separated list to print information about those ops; for example `NGRAPH_VOPS=add,multiply,convolution`. *Note*, `NGRAPH_HE_LOG_LEVEL` should be set to at least 3 when using `NGRAPH_VOPS`
+  * `NGRAPH_HE_LOG_LEVEL`. Defines the verbosity of the logging. Set to 0 for minimal logging, 5 for maximum logging. Roughly;
+    - `NGRAPH_HE_LOG_LEVEL=0 [default]` has debug info
+    - `NGRAPH_HE_LOG_LEVEL=1` will print encryption parameters
+    - `NGRAPH_HE_LOG_LEVEL=3` will print op information (when `NGRAPH_VOPS` is enabled)
+    - `NGRAPH_HE_LOG_LEVEL=4` will print communication information
+    - `NGARPH_HE_LOG_LEVEL=5` is the highest debug level
 
   # Creating your own DL model
   We currently only support DL models with a single `Parameter`, as is the case for most standard DL models. During training, the weights may be TensorFlow `Variable` ops, which translate to nGraph `Parameter` ops. In this case, he-transformer will be unable to tell what tensor represents the data to encrypt. So, you will need to convert the ops representing the model weights to `Constant` ops. TensorFlow, for example, has a `freeze_graph` utility to do so. See the `MNIST/MLP` folder for an example using `freeze_graph`.

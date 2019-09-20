@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "he_seal_cipher_tensor.hpp"
+#include "logging/ngraph_he_log.hpp"
 #include "ngraph/log.hpp"
 #include "nlohmann/json.hpp"
 #include "seal/he_seal_client.hpp"
@@ -88,7 +89,7 @@ void ngraph::he::HESealClient::set_seal_context() {
 
   // TODO: pick better scale?
   m_scale = ngraph::he::choose_scale(m_encryption_params.coeff_modulus());
-  NGRAPH_INFO << "Client scale " << m_scale;
+  NGRAPH_HE_LOG(5) << "Client scale " << m_scale;
 }
 
 void ngraph::he::HESealClient::send_public_and_relin_keys() {
@@ -135,22 +136,22 @@ void ngraph::he::HESealClient::handle_inference_request(
   std::vector<size_t> shape_dims = js.at("shape");
   ngraph::Shape shape{shape_dims};
 
-  NGRAPH_INFO << join(shape, "x");
+  NGRAPH_HE_LOG(5) << join(shape, "x");
 
   size_t parameter_size =
       ngraph::shape_size(ngraph::he::HETensor::pack_shape(shape));
 
-  NGRAPH_INFO << "Parameter size " << parameter_size;
-  NGRAPH_INFO << "Client batch size " << m_batch_size;
-  NGRAPH_INFO << "m_inputs.size() " << m_inputs.size();
+  NGRAPH_HE_LOG(5) << "Parameter size " << parameter_size;
+  NGRAPH_HE_LOG(5) << "Client batch size " << m_batch_size;
+  NGRAPH_HE_LOG(5) << "m_inputs.size() " << m_inputs.size();
   if (complex_packing()) {
-    NGRAPH_INFO << "Client complex packing";
+    NGRAPH_HE_LOG(5) << "Client complex packing";
   }
 
   if (m_inputs.size() > parameter_size * m_batch_size) {
-    NGRAPH_INFO << "m_inputs.size() " << m_inputs.size()
-                << " > paramter_size ( " << parameter_size
-                << ") * m_batch_size (" << m_batch_size << ")";
+    NGRAPH_HE_LOG(5) << "m_inputs.size() " << m_inputs.size()
+                     << " > paramter_size ( " << parameter_size
+                     << ") * m_batch_size (" << m_batch_size << ")";
   }
 
   std::vector<std::shared_ptr<SealCiphertextWrapper>> ciphers(parameter_size);
@@ -330,7 +331,7 @@ void ngraph::he::HESealClient::handle_message(
         } else if (name == "MaxPool") {
           handle_max_pool_request(*proto_msg);
         } else {
-          NGRAPH_INFO << "Unknown name " << name;
+          NGRAPH_HE_LOG(5) << "Unknown name " << name;
         }
       } else {
         NGRAPH_CHECK(false, "Unknown REQUEST type");
@@ -344,7 +345,7 @@ void ngraph::he::HESealClient::handle_message(
 }
 
 void ngraph::he::HESealClient::close_connection() {
-  NGRAPH_INFO << "Closing connection";
+  NGRAPH_HE_LOG(5) << "Closing connection";
   m_tcp_client->close();
   m_is_done = true;
 }

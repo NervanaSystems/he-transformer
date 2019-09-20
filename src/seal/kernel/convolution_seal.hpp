@@ -19,6 +19,7 @@
 #include <memory>
 #include <vector>
 
+#include "logging/ngraph_he_log.hpp"
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
@@ -62,7 +63,7 @@ inline void convolution_seal(
   }
   size_t out_transform_size = out_coords.size();
   if (verbose) {
-    NGRAPH_INFO << "Convolution output size " << out_transform_size;
+    NGRAPH_HE_LOG(5) << "Convolution output size " << out_transform_size;
   }
 
 #pragma omp parallel for
@@ -233,7 +234,7 @@ inline void convolution_seal(
     }
 
     if (verbose && out_coord_idx % 1000 == 0 && out_coord_idx != 0) {
-      NGRAPH_INFO << "Finished out coord " << out_coord_idx;
+      NGRAPH_HE_LOG(3) << "Finished out coord " << out_coord_idx;
     }
   }
 }
@@ -262,7 +263,7 @@ inline void convolution_seal(
   }
   size_t out_transform_size = out_coords.size();
   if (verbose) {
-    NGRAPH_INFO << "Convolution output size " << out_transform_size;
+    NGRAPH_HE_LOG(3) << "Convolution output size " << out_transform_size;
   }
 
 #pragma omp parallel for
@@ -385,7 +386,7 @@ inline void convolution_seal(
     }
 
     if (verbose && out_coord_idx % 1000 == 0 && out_coord_idx != 0) {
-      NGRAPH_INFO << "Finished out coord " << out_coord_idx;
+      NGRAPH_HE_LOG(3) << "Finished out coord " << out_coord_idx;
     }
   }
 }
@@ -412,7 +413,7 @@ inline void convolution_seal(
   }
   size_t out_transform_size = out_coords.size();
   if (verbose) {
-    NGRAPH_INFO << "Convolution output size " << out_transform_size;
+    NGRAPH_HE_LOG(3) << "Convolution output size " << out_transform_size;
   }
 
 #pragma omp parallel for
@@ -536,7 +537,7 @@ inline void convolution_seal(
     }
 
     if (verbose && out_coord_idx % 1000 == 0 && out_coord_idx != 0) {
-      NGRAPH_INFO << "Finished out coord " << out_coord_idx;
+      NGRAPH_HE_LOG(3) << "Finished out coord " << out_coord_idx;
     }
   }
 }
@@ -562,7 +563,7 @@ inline void convolution_seal(
   }
   size_t out_transform_size = out_coords.size();
   if (verbose) {
-    NGRAPH_INFO << "Convolution output size " << out_transform_size;
+    NGRAPH_HE_LOG(3) << "Convolution output size " << out_transform_size;
   }
 
 #pragma omp parallel for

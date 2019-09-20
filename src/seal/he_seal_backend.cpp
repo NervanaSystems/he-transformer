@@ -87,7 +87,7 @@ ngraph::he::HESealBackend::HESealBackend(
 
   if (m_encrypt_data) {
     print_seal_context(*m_context);
-    NGRAPH_INFO << "Scale " << m_scale;
+    NGRAPH_HE_LOG(1) << "Scale " << m_scale;
   }
 
   // Set barrett ratio map

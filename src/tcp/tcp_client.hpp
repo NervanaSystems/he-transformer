@@ -24,8 +24,7 @@
 #include <string>
 #include <thread>
 
-#include "ngraph/log.hpp"
-
+#include "logging/ngraph_he_log.hpp"
 #include "tcp/tcp_message.hpp"
 
 using boost::asio::ip::tcp;
@@ -50,7 +49,7 @@ class TCPClient {
   }
 
   void close() {
-    NGRAPH_INFO << "Closing socket";
+    NGRAPH_HE_LOG(1) << "Closing socket";
     m_socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
     boost::asio::post(m_io_context, [this]() { m_socket.close(); });
   }
@@ -71,7 +70,7 @@ class TCPClient {
         [this, delay_ms, &endpoints](boost::system::error_code ec,
                                      tcp::endpoint) {
           if (!ec) {
-            NGRAPH_INFO << "Connected to server";
+            NGRAPH_HE_LOG(1) << "Connected to server";
             do_read_header();
           } else {
             if (true || m_first_connect) {
@@ -101,7 +100,7 @@ class TCPClient {
             do_read_body(msg_len);
           } else {
             if (ec.message() != s_expected_teardown_message.c_str()) {
-              NGRAPH_INFO << "Client error reading header: " << ec.message();
+              NGRAPH_ERR << "Client error reading header: " << ec.message();
             }
           }
         });
@@ -119,7 +118,7 @@ class TCPClient {
             do_read_header();
           } else {
             if (ec.message() != s_expected_teardown_message.c_str()) {
-              NGRAPH_INFO << "Client error reading body: " << ec.message();
+              NGRAPH_ERR << "Client error reading body: " << ec.message();
             }
           }
         });
@@ -128,6 +127,8 @@ class TCPClient {
   void do_write() {
     auto message = m_message_queue.front();
     message.pack(m_write_buffer);
+    NGRAPH_HE_LOG(4) << "Client writing message size " << m_write_buffer.size()
+                     << " bytes";
 
     boost::asio::async_write(
         m_socket, boost::asio::buffer(m_write_buffer),
@@ -138,7 +139,7 @@ class TCPClient {
               do_write();
             }
           } else {
-            NGRAPH_INFO << "Client error writing message: " << ec.message();
+            NGRAPH_ERR << "Client error writing message: " << ec.message();
           }
         });
   }

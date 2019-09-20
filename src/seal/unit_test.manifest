@@ -1,2 +1,8 @@
 # Use of static cast to double means we don't support > 52-bit integers
 plain_tv_write_read_large_scalar_int64
+
+# Unsupported op Sqrt
+batch_norm_inference_0eps_f32
+batch_norm_inference_f32
+batch_norm_fusion_he
+batch_norm_fusion_he_batch

@@ -20,13 +20,13 @@
 #include <limits>
 #include <utility>
 
+#include "logging/ngraph_he_log.hpp"
 #include "ngraph/runtime/tensor.hpp"
-#include "seal/seal_util.hpp"
-#include "seal/util/uintarith.h"
-
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
+#include "seal/seal_util.hpp"
 #include "seal/util/polyarithsmallmod.h"
+#include "seal/util/uintarith.h"
 
 void ngraph::he::print_seal_context(const seal::SEALContext& context) {
   auto& context_data = *context.key_context_data();
@@ -34,21 +34,24 @@ void ngraph::he::print_seal_context(const seal::SEALContext& context) {
   NGRAPH_CHECK(context_data.parms().scheme() == seal::scheme_type::CKKS,
                "Only CKKS scheme supported");
 
-  std::cout << "/" << std::endl;
-  std::cout << "| Encryption parameters :" << std::endl;
-  std::cout << "|   scheme: CKKS" << std::endl;
-  std::cout << "|   poly_modulus_degree: "
-            << context_data.parms().poly_modulus_degree() << std::endl;
-  std::cout << "|   coeff_modulus size: ";
-  std::cout << context_data.total_coeff_modulus_bit_count() << " (";
+  std::stringstream param_ss;
+
+  param_ss << "\n/\n"
+           << "| Encryption parameters :\n"
+           << "|   scheme: CKKS\n"
+           << "|   poly_modulus_degree: "
+           << context_data.parms().poly_modulus_degree() << "\n"
+           << "|   coeff_modulus size: "
+           << context_data.total_coeff_modulus_bit_count() << " (";
   auto coeff_modulus = context_data.parms().coeff_modulus();
   std::size_t coeff_mod_count = coeff_modulus.size();
   for (std::size_t i = 0; i < coeff_mod_count - 1; i++) {
-    std::cout << coeff_modulus[i].bit_count() << " + ";
+    param_ss << coeff_modulus[i].bit_count() << " + ";
   }
-  std::cout << coeff_modulus.back().bit_count();
-  std::cout << ") bits" << std::endl;
-  std::cout << "\\" << std::endl;
+  param_ss << coeff_modulus.back().bit_count() << ") bits\n"
+           << "\\";
+
+  NGRAPH_HE_LOG(1) << param_ss.str();
 }
 
 size_t ngraph::he::get_chain_index(const SealCiphertextWrapper& cipher,
@@ -195,10 +198,10 @@ void ngraph::he::multiply_plain_inplace(seal::Ciphertext& encrypted,
   // Check that scale is positive and not too large
   if (new_scale <= 0 || (static_cast<int>(log2(new_scale)) >=
                          context_data.total_coeff_modulus_bit_count())) {
-    NGRAPH_INFO << "new_scale " << new_scale << " ("
-                << static_cast<int>(log2(new_scale)) << " bits) out of bounds";
-    NGRAPH_INFO << "Coeff mod bit count "
-                << context_data.total_coeff_modulus_bit_count();
+    NGRAPH_ERR << "new_scale " << new_scale << " ("
+               << static_cast<int>(log2(new_scale)) << " bits) out of bounds";
+    NGRAPH_ERR << "Coeff mod bit count "
+               << context_data.total_coeff_modulus_bit_count();
     throw ngraph_error("scale out of bounds");
   }
 
@@ -317,8 +320,8 @@ void ngraph::he::encode(double value, const ngraph::element::Type& element_type,
   // Check that scale is positive and not too large
   if (scale <= 0 || (static_cast<int>(log2(scale)) >=
                      context_data.total_coeff_modulus_bit_count())) {
-    NGRAPH_INFO << "scale " << scale;
-    NGRAPH_INFO << "context_data.total_coeff_modulus_bit_count"
+    NGRAPH_ERR << "scale " << scale;
+    NGRAPH_ERR << "context_data.total_coeff_modulus_bit_count"
                 << context_data.total_coeff_modulus_bit_count();
     throw ngraph_error("scale out of bounds");
   }
@@ -330,11 +333,11 @@ void ngraph::he::encode(double value, const ngraph::element::Type& element_type,
   if (coeff_bit_count >= context_data.total_coeff_modulus_bit_count()) {
 #pragma omp critical
     {
-      NGRAPH_INFO << "Failed to encode " << value / scale << " at scale "
+      NGRAPH_ERR << "Failed to encode " << value / scale << " at scale "
                   << scale;
-      NGRAPH_INFO << "coeff_bit_count " << coeff_bit_count;
-      NGRAPH_INFO << "coeff_mod_count " << coeff_mod_count;
-      NGRAPH_INFO << "total coeff modulus bit count "
+      NGRAPH_ERR << "coeff_bit_count " << coeff_bit_count;
+      NGRAPH_ERR << "coeff_mod_count " << coeff_mod_count;
+      NGRAPH_ERR << "total coeff modulus bit count "
                   << context_data.total_coeff_modulus_bit_count();
       throw ngraph_error("encoded value is too large");
     }

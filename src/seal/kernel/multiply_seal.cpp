@@ -48,8 +48,8 @@ void ngraph::he::scalar_multiply_seal(
     size_t chain_ind1 = get_chain_index(arg1, he_seal_backend);
 
     if (chain_ind0 == 0 || chain_ind1 == 0) {
-      NGRAPH_INFO << "Multiplicative depth limit reached";
-      exit(1);
+      NGRAPH_ERR << "Multiplicative depth limit reached";
+      throw ngraph_error("Multiplicative depth reached");
     }
 
     out->known_value() = false;
@@ -204,11 +204,12 @@ void ngraph::he::scalar_multiply_seal(
       he_seal_backend.get_evaluator()->multiply_plain(
           arg0.ciphertext(), p.plaintext(), out->ciphertext(), pool);
     } catch (const std::exception& e) {
-      NGRAPH_INFO << "Error multiplying plain " << e.what();
-      NGRAPH_INFO << "arg1->values().size() " << arg1.num_values();
+      NGRAPH_ERR << "Error multiplying plain " << e.what();
+      NGRAPH_ERR << "arg1->values().size() " << arg1.num_values();
       for (const auto& elem : arg1.values()) {
-        NGRAPH_INFO << elem;
+        NGRAPH_ERR << elem;
       }
+      throw ngraph_error("Error multiplying plain");
     }
     out->known_value() = false;
   }
