@@ -158,9 +158,9 @@ void ngraph::he::HESealCipherTensor::set_elements(
     const std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>&
         elements) {
   if (elements.size() != get_element_count() / m_batch_size) {
-    NGRAPH_INFO << "m_batch_size " << m_batch_size;
-    NGRAPH_INFO << "get_element_count " << get_element_count();
-    NGRAPH_INFO << "elements.size " << elements.size();
+    NGRAPH_ERR << "m_batch_size " << m_batch_size;
+    NGRAPH_ERR << "get_element_count " << get_element_count();
+    NGRAPH_ERR << "elements.size " << elements.size();
     throw ngraph_error("Wrong number of elements set");
   }
   m_ciphertexts = elements;

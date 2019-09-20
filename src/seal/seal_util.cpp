@@ -36,8 +36,8 @@ void ngraph::he::print_seal_context(const seal::SEALContext& context) {
 
   std::stringstream param_ss;
 
-  param_ss << "/\n"
-           << "| Encryption parameters :\n\n"
+  param_ss << "\n/\n"
+           << "| Encryption parameters :\n"
            << "|   scheme: CKKS\n"
            << "|   poly_modulus_degree: "
            << context_data.parms().poly_modulus_degree() << "\n"
@@ -49,7 +49,7 @@ void ngraph::he::print_seal_context(const seal::SEALContext& context) {
     param_ss << coeff_modulus[i].bit_count() << " + ";
   }
   param_ss << coeff_modulus.back().bit_count() << ") bits\n"
-           << "\\\n";
+           << "\\";
 
   NGRAPH_HE_LOG(1) << param_ss.str();
 }
@@ -198,10 +198,10 @@ void ngraph::he::multiply_plain_inplace(seal::Ciphertext& encrypted,
   // Check that scale is positive and not too large
   if (new_scale <= 0 || (static_cast<int>(log2(new_scale)) >=
                          context_data.total_coeff_modulus_bit_count())) {
-    NGRAPH_INFO << "new_scale " << new_scale << " ("
-                << static_cast<int>(log2(new_scale)) << " bits) out of bounds";
-    NGRAPH_INFO << "Coeff mod bit count "
-                << context_data.total_coeff_modulus_bit_count();
+    NGRAPH_ERR << "new_scale " << new_scale << " ("
+               << static_cast<int>(log2(new_scale)) << " bits) out of bounds";
+    NGRAPH_ERR << "Coeff mod bit count "
+               << context_data.total_coeff_modulus_bit_count();
     throw ngraph_error("scale out of bounds");
   }
 
@@ -320,8 +320,8 @@ void ngraph::he::encode(double value, const ngraph::element::Type& element_type,
   // Check that scale is positive and not too large
   if (scale <= 0 || (static_cast<int>(log2(scale)) >=
                      context_data.total_coeff_modulus_bit_count())) {
-    NGRAPH_INFO << "scale " << scale;
-    NGRAPH_INFO << "context_data.total_coeff_modulus_bit_count"
+    NGRAPH_ERR << "scale " << scale;
+    NGRAPH_ERR << "context_data.total_coeff_modulus_bit_count"
                 << context_data.total_coeff_modulus_bit_count();
     throw ngraph_error("scale out of bounds");
   }
@@ -333,11 +333,11 @@ void ngraph::he::encode(double value, const ngraph::element::Type& element_type,
   if (coeff_bit_count >= context_data.total_coeff_modulus_bit_count()) {
 #pragma omp critical
     {
-      NGRAPH_INFO << "Failed to encode " << value / scale << " at scale "
+      NGRAPH_ERR << "Failed to encode " << value / scale << " at scale "
                   << scale;
-      NGRAPH_INFO << "coeff_bit_count " << coeff_bit_count;
-      NGRAPH_INFO << "coeff_mod_count " << coeff_mod_count;
-      NGRAPH_INFO << "total coeff modulus bit count "
+      NGRAPH_ERR << "coeff_bit_count " << coeff_bit_count;
+      NGRAPH_ERR << "coeff_mod_count " << coeff_mod_count;
+      NGRAPH_ERR << "total coeff modulus bit count "
                   << context_data.total_coeff_modulus_bit_count();
       throw ngraph_error("encoded value is too large");
     }

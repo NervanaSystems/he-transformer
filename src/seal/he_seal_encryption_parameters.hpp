@@ -162,7 +162,7 @@ inline ngraph::he::HESealEncryptionParameters parse_config_or_use_default(
     std::vector<int> coeff_mod_bits = js["coeff_modulus"];
     for (const auto& coeff_bit : coeff_mod_bits) {
       if (coeff_bit > 60 || coeff_bit < 1) {
-        NGRAPH_INFO << "coeff_bit " << coeff_bit;
+        NGRAPH_ERR << "coeff_bit " << coeff_bit;
         throw ngraph_error("Invalid coeff modulus");
       }
     }

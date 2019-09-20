@@ -100,7 +100,7 @@ class TCPClient {
             do_read_body(msg_len);
           } else {
             if (ec.message() != s_expected_teardown_message.c_str()) {
-              NGRAPH_INFO << "Client error reading header: " << ec.message();
+              NGRAPH_ERR << "Client error reading header: " << ec.message();
             }
           }
         });
@@ -118,7 +118,7 @@ class TCPClient {
             do_read_header();
           } else {
             if (ec.message() != s_expected_teardown_message.c_str()) {
-              NGRAPH_INFO << "Client error reading body: " << ec.message();
+              NGRAPH_ERR << "Client error reading body: " << ec.message();
             }
           }
         });
@@ -139,7 +139,7 @@ class TCPClient {
               do_write();
             }
           } else {
-            NGRAPH_INFO << "Client error writing message: " << ec.message();
+            NGRAPH_ERR << "Client error writing message: " << ec.message();
           }
         });
   }

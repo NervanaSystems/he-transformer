@@ -55,7 +55,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
             do_read_body(msg_len);
           } else {
             if (ec.message() != s_expected_teardown_message.c_str()) {
-              NGRAPH_INFO << "Server error reading body: " << ec.message();
+              NGRAPH_ERR << "Server error reading body: " << ec.message();
             }
           }
         });
@@ -74,7 +74,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
             m_message_callback(m_read_message);
             do_read_header();
           } else {
-            NGRAPH_INFO << "Server error reading message: " << ec.message();
+            NGRAPH_ERR << "Server error reading message: " << ec.message();
             throw std::runtime_error("Server error reading message");
           }
         });
@@ -113,7 +113,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
               m_is_writing.notify_all();
             }
           } else {
-            NGRAPH_INFO << "Server error writing message: " << ec.message();
+            NGRAPH_ERR << "Server error writing message: " << ec.message();
           }
         });
   }
