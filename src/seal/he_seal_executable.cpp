@@ -135,11 +135,15 @@ ngraph::he::HESealExecutable::HESealExecutable(
   ngraph::pass::Manager pass_manager_he;
   pass_manager_he.register_pass<ngraph::he::pass::HEFusion>();
   pass_manager_he.register_pass<ngraph::he::pass::HELiveness>();
-  pass_manager_he.register_pass<ngraph::he::pass::SupportedOps>(
+  pass_manager_he.run_passes(function);
+
+  // Run supported ops after rest of passes
+  ngraph::pass::Manager pass_manager_post_he;
+  pass_manager_post_he.register_pass<ngraph::he::pass::SupportedOps>(
       [this](const ngraph::Node& op) {
         return m_he_seal_backend.is_supported(op);
       });
-  pass_manager_he.run_passes(function);
+  pass_manager_post_he.run_passes(function);
 
   for (const std::shared_ptr<Node>& node : function->get_ordered_ops()) {
     m_wrapped_nodes.emplace_back(node);
