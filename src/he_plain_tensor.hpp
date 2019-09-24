@@ -68,7 +68,7 @@ class HEPlainTensor : public HETensor {
   inline size_t num_plaintexts() { return m_plaintexts.size(); }
 
   /// \brief Sets the tensor to the given plaintexts
-  /// /throws ngraph_error if wrong number of elements are used
+  /// \throws ngraph_error if wrong number of elements are used
   /// \param[in] elements Plaintexts to set the tensor to
   void set_elements(const std::vector<ngraph::he::HEPlaintext>& elements);
 

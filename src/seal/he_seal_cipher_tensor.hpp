@@ -27,18 +27,23 @@
 
 namespace ngraph {
 namespace he {
+/// \brief Class representing a tensor of ciphertexts
 class HESealCipherTensor : public HETensor {
  public:
+  /// \brief Constructs a tensor of ciphertexts
+  /// \param[in] shape Shape of underyling cipher tensor
+  /// \param[in] he_seal_backend Backend own
   HESealCipherTensor(const element::Type& element_type, const Shape& shape,
                      const HESealBackend& he_seal_backend,
                      const bool packed = false,
                      const std::string& name = "external");
 
-  /// @brief Write bytes directly into the tensor after encoding and encrypting
-  /// @param p Pointer to source of data
-  /// @param n Number of bytes to write, must be integral number of elements.
+  /// \brief Write bytes directly into the tensor after encoding and encrypting
+  /// \param p Pointer to source of data
+  /// \param n Number of bytes to write, must be integral number of elements
   void write(const void* p, size_t n) override;
 
+  /// \brief
   static void write(
       std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>&
           destination,
@@ -47,9 +52,9 @@ class HESealCipherTensor : public HETensor {
       double scale, seal::CKKSEncoder& ckks_encoder, seal::Encryptor& encryptor,
       bool complex_packing);
 
-  /// @brief Read bytes directly from the tensor after decrypting and decoding
-  /// @param p Pointer to destination for data
-  /// @param n Number of bytes to read, must be integral number of elements.
+  /// \brief Read bytes directly from the tensor after decrypting and decoding
+  /// \param p Pointer to destination for data
+  /// \param n Number of bytes to read, must be integral number of elements
   void read(void* target, size_t n) const override;
 
   static void read(

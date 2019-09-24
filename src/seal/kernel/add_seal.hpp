@@ -30,7 +30,7 @@ namespace ngraph {
 namespace he {
 
 /// \brief Adds two ciphertexts
-/// \para[in,out] arg0 Ciphertext argument to add
+/// \param[in,out] arg0 Ciphertext argument to add
 /// \param[in,out] arg1 Ciphertext rgument to add
 /// \param[out] out Stores the sum
 /// \param[in] element_type datatype of the addition
