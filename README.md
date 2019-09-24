@@ -61,7 +61,22 @@ make install
 source external/venv-tf-py3/bin/activate
 ```
 
-#### 1.b Python bindings for client
+#### 1a. To build documentation
+First install doxygen, i.e.
+```bash
+sudo apt-get install doxygen
+```
+Then add the following CMake flag
+```bash
+cmake .. -DNGRAPH_HE_DOC_BUILD_ENABLE=ON
+```
+and call
+```bash
+make doc
+```
+to create doxygen documentation in `$HE_TRANSFORMER/build/doc/doxygen`.
+
+#### 1b. Python bindings for client
 To build an experimental client-server model with python bindings, see the [python](https://github.com/NervanaSystems/he-transformer/tree/master/python) folder.
 ***Note***: This feature is experimental. For best experience, you should skip this step.
 
