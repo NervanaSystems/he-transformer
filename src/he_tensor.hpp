@@ -23,54 +23,66 @@
 
 namespace ngraph {
 namespace he {
+/// \brief Enum represnting the runtime type of a HETensor
 enum class HETensorTypeInfo { unknown = 0, cipher = 1, plain = 2 };
 
 class HESealBackend;
+/// \brief Class representing a Tensor of either ciphertexts or plaintexts
 class HETensor : public runtime::Tensor {
  public:
+  /// \brief Constructs a generic HETensor
+  /// \param[in] element_type Datatype of underlying data
+  /// \param[in] shape Shape of tensor
+  /// \param[in] packed Whether or not to use plaintext packing
+  /// \param[in] name Name of the tensor
   HETensor(const element::Type& element_type, const Shape& shape,
            const bool packed = false, const std::string& name = "external");
+
   virtual ~HETensor() override {}
 
-  /// @brief Write bytes directly into the tensor
-  /// @param p Pointer to source of data
-  /// element-aligned.
-  /// @param n Number of bytes to write, must be integral number of elements.
+  /// \brief Write bytes directly into the tensor
+  /// \param[in] p Pointer to source of data
+  /// \param[in] n Number of bytes to write, must be integral number of elements
   virtual void write(const void* p, size_t n) override = 0;
 
-  /// @brief Read bytes directly from the tensor
-  /// @param p Pointer to destination for data
-  /// element-aligned.
-  /// @param n Number of bytes to read, must be integral number of elements.
+  /// \brief Read bytes directly from the tensor
+  /// \param[in] p Pointer to destination for data
+  /// param n Number of bytes to read, must be integral number of elements.
   virtual void read(void* p, size_t n) const override = 0;
 
-  /// @brief Reduces shape along batch axis
-  /// @param shape Input shape to batch
-  /// @param batch_axis Axis along which to batch
-  /// @return Shape after batching along batch axis
-  static Shape pack_shape(const Shape& shape, size_t batch_axis = 0);
+  /// \brief Reduces shape along pack axis
+  /// \param[in] shape Input shape to pack
+  /// \param[in] pack_axis Axis along which to pack
+  /// \return Shape after packing along pack axis
+  static Shape pack_shape(const Shape& shape, size_t pack_axis = 0);
 
-  /// @brief Returns the shape of the un-expanded (i.e. packed) tensor.
+  /// \brief Returns the shape of the un-expanded (i.e. packed) tensor.
   const Shape& get_packed_shape() const { return m_packed_shape; }
 
-  /// @brief Returns the shape of the expanded (batched) tensor.
+  /// \brief Returns the shape of the expanded tensor.
   const Shape& get_expanded_shape() const { return get_shape(); }
 
+  /// \brief Returns packing factor used in the tensor
   inline size_t get_batch_size() { return m_batch_size; }
 
+  /// \brief Returns number of ciphertext / plaintext objects in the tensor
   inline size_t get_batched_element_count() {
     return get_element_count() / get_batch_size();
   }
 
+  /// \brief Returns whether or not the tensor is packed
   inline bool is_packed() { return m_packed; }
 
+  /// \brief Returns type information of the tensor
   virtual const HETensorTypeInfo& get_type_info() const { return type_info; }
 
+  /// \brief Returns whether or not the tensor is of the template type
   template <typename HETensorType>
   bool is_type() const {
     return &get_type_info() == &HETensorType::type_info;
   }
 
+  /// \brief Represents an unknown tensor type
   static constexpr HETensorTypeInfo type_info{HETensorTypeInfo::unknown};
 
  protected:
