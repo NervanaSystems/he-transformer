@@ -36,6 +36,9 @@ void slice_seal(const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
 
   CoordinateTransform::Iterator output_it = output_transform.begin();
 
+  NGRAPH_CHECK(shape_size(input_transform.get_target_shape()) ==
+               shape_size(output_transform.get_target_shape()));
+
   for (const Coordinate& in_coord : input_transform) {
     const Coordinate& out_coord = *output_it;
 
@@ -55,6 +58,9 @@ void slice_seal(const std::vector<HEPlaintext>& arg,
   CoordinateTransform output_transform(out_shape);
 
   CoordinateTransform::Iterator output_it = output_transform.begin();
+
+  NGRAPH_CHECK(shape_size(input_transform.get_target_shape()) ==
+               shape_size(output_transform.get_target_shape()));
 
   for (const Coordinate& in_coord : input_transform) {
     const Coordinate& out_coord = *output_it;

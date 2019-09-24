@@ -68,8 +68,8 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3) {
     results = std::vector<float>(double_results.begin(), double_results.end());
   });
 
-  auto handle = dynamic_pointer_cast<ngraph::he::HESealExecutable>(
-      he_backend->compile(f));
+  auto handle =
+      static_pointer_cast<ngraph::he::HESealExecutable>(he_backend->compile(f));
   handle->enable_client();
   handle->call_with_validate({t_result}, {t_dummy});
   client_thread.join();
@@ -110,8 +110,8 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu) {
     results = std::vector<float>(double_results.begin(), double_results.end());
   });
 
-  auto handle = dynamic_pointer_cast<ngraph::he::HESealExecutable>(
-      he_backend->compile(f));
+  auto handle =
+      static_pointer_cast<ngraph::he::HESealExecutable>(he_backend->compile(f));
   handle->enable_client();
   handle->call_with_validate({t_result}, {t_dummy});
 
@@ -153,8 +153,8 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu_double) {
     results = std::vector<double>(double_results.begin(), double_results.end());
   });
 
-  auto handle = dynamic_pointer_cast<ngraph::he::HESealExecutable>(
-      he_backend->compile(f));
+  auto handle =
+      static_pointer_cast<ngraph::he::HESealExecutable>(he_backend->compile(f));
   handle->enable_client();
   handle->call_with_validate({t_result}, {t_dummy});
 
@@ -199,8 +199,8 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu_int64_t) {
     }
   });
 
-  auto handle = dynamic_pointer_cast<ngraph::he::HESealExecutable>(
-      he_backend->compile(f));
+  auto handle =
+      static_pointer_cast<ngraph::he::HESealExecutable>(he_backend->compile(f));
   handle->enable_client();
   handle->call_with_validate({t_result}, {t_dummy});
 
@@ -245,8 +245,8 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_pad_bounded_relu) {
     results = std::vector<float>(double_results.begin(), double_results.end());
   });
 
-  auto handle = dynamic_pointer_cast<ngraph::he::HESealExecutable>(
-      he_backend->compile(f));
+  auto handle =
+      static_pointer_cast<ngraph::he::HESealExecutable>(he_backend->compile(f));
   handle->enable_client();
   handle->call_with_validate({t_result}, {t_dummy});
 
@@ -291,8 +291,8 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_pad_relu) {
     results = std::vector<float>(double_results.begin(), double_results.end());
   });
 
-  auto handle = dynamic_pointer_cast<ngraph::he::HESealExecutable>(
-      he_backend->compile(f));
+  auto handle =
+      static_pointer_cast<ngraph::he::HESealExecutable>(he_backend->compile(f));
   handle->enable_client();
   handle->call_with_validate({t_result}, {t_dummy});
 
@@ -356,8 +356,8 @@ auto server_client_relu_packed_test = [](size_t element_count,
     results = std::vector<float>(double_results.begin(), double_results.end());
   });
 
-  auto handle = dynamic_pointer_cast<ngraph::he::HESealExecutable>(
-      he_backend->compile(f));
+  auto handle =
+      static_pointer_cast<ngraph::he::HESealExecutable>(he_backend->compile(f));
   handle->enable_client();
   handle->call_with_validate({t_result}, {t_dummy});
 
@@ -496,8 +496,8 @@ NGRAPH_TEST(${BACKEND_NAME},
     results = std::vector<float>(double_results.begin(), double_results.end());
   });
 
-  auto handle = dynamic_pointer_cast<ngraph::he::HESealExecutable>(
-      he_backend->compile(f));
+  auto handle =
+      static_pointer_cast<ngraph::he::HESealExecutable>(he_backend->compile(f));
   handle->enable_client();
   handle->call_with_validate({t_result}, {t_dummy});
 
@@ -543,8 +543,8 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_max_pool_1d_1channel_1image_plain) {
     results = std::vector<float>(double_results.begin(), double_results.end());
   });
 
-  auto handle = dynamic_pointer_cast<ngraph::he::HESealExecutable>(
-      he_backend->compile(f));
+  auto handle =
+      static_pointer_cast<ngraph::he::HESealExecutable>(he_backend->compile(f));
   handle->enable_client();
   handle->call_with_validate({t_result}, {t_dummy});
 
@@ -595,8 +595,8 @@ NGRAPH_TEST(${BACKEND_NAME},
     results = std::vector<float>(double_results.begin(), double_results.end());
   });
 
-  auto handle = dynamic_pointer_cast<ngraph::he::HESealExecutable>(
-      he_backend->compile(f));
+  auto handle =
+      static_pointer_cast<ngraph::he::HESealExecutable>(he_backend->compile(f));
   handle->enable_client();
   handle->call_with_validate({t_result}, {t_dummy});
 
@@ -650,8 +650,8 @@ NGRAPH_TEST(${BACKEND_NAME},
     results = std::vector<float>(double_results.begin(), double_results.end());
   });
 
-  auto handle = dynamic_pointer_cast<ngraph::he::HESealExecutable>(
-      he_backend->compile(f));
+  auto handle =
+      static_pointer_cast<ngraph::he::HESealExecutable>(he_backend->compile(f));
   handle->enable_client();
   handle->call_with_validate({t_result}, {t_dummy});
 
@@ -727,8 +727,8 @@ NGRAPH_TEST(${BACKEND_NAME},
     results = std::vector<float>(double_results.begin(), double_results.end());
   });
 
-  auto handle = dynamic_pointer_cast<ngraph::he::HESealExecutable>(
-      he_backend->compile(f));
+  auto handle =
+      static_pointer_cast<ngraph::he::HESealExecutable>(he_backend->compile(f));
   handle->enable_client();
   handle->call_with_validate({t_result}, {t_dummy});
 

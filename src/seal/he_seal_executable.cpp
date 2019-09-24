@@ -825,7 +825,7 @@ void ngraph::he::HESealExecutable::generate_calls(
       NGRAPH_CHECK(false, "Unknown unary op");
     }
   }
-  if (args.size() > 1) {
+  if (args.size() == 2) {
     if (cipher_args[0] != nullptr && cipher_args[1] != nullptr &&
         out0_cipher != nullptr) {
       binary_op_type = BinaryOpType::CipherCipherToCipher;

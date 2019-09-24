@@ -386,9 +386,6 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion_he_batch) {
       8.25f,  1.25f,  -1.25f, -1.25f, 2.25f,  3.25f,  2.25f, -4.25f, -4.25f,
       -1.25f, -2.25f, 4.25f,  2.25f,  4.25f,  4.25f,  0.f,   0.f,    1.f,
       0.f,    -2.f,   2.f,    0.f,    0.f,    0.f,    0.f,   -2.f,   -2.f};
-  for (size_t i = 1; i < batch_size; ++i) {
-    copy(input.begin(), input.end(), std::back_inserter(input));
-  }
 
   std::vector<float> weight_vals{1.25f, 2.25f,  5.25f, 6.25f, -1.25f, -1.25f,
                                  3.25f, -4.25f, 7.25f, 8.25f, -1.25f, 0.f,
