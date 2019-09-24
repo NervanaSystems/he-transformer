@@ -26,15 +26,18 @@ namespace he {
 class SealPlaintextWrapper {
  public:
   /// \brief Constructs a SealPlaintextWrapper from a given plaintet and complex
-  /// packing argument \param[in] plain Plaintext value \param[in] \param[in]
-  /// complex_packing Whether or not the plaintext uses complex packing
+  /// packing argument
+  /// \param[in] plain Plaintext value
+  /// \param[in] complex_packing Whether or not the plaintext uses complex
+  /// packing
   SealPlaintextWrapper(const seal::Plaintext& plain,
                        bool complex_packing = false)
       : m_plaintext(plain), m_complex_packing(complex_packing) {}
 
   /// \brief Constructs an empty plaintext wrapper using complex packing
   /// argument
-  /// \brief param[in]
+  /// \param[in] complex_packing Whether or not the plaintext uses complex
+  /// packing
   SealPlaintextWrapper(bool complex_packing = false)
       : m_complex_packing(complex_packing) {}
 
