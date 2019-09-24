@@ -31,13 +31,16 @@ using boost::asio::ip::tcp;
 
 namespace ngraph {
 namespace he {
+/// \brief Class representing a Client over a TCP connection
 class TCPClient {
  public:
   using data_buffer = ngraph::he::TCPMessage::data_buffer;
   size_t header_length = ngraph::he::TCPMessage::header_length;
 
-  // Connects client to hostname:port and reads message
-  // message_handler will handle responses from the server
+  /// \brief Connects client to hostname:port and reads message
+  /// \param[in] io_context Boost context for I/O functionality
+  /// \param[in] endpoints Socket to connect to
+  /// \param[in] message_handler Function to handle responses from the server
   TCPClient(boost::asio::io_context& io_context,
             const tcp::resolver::results_type& endpoints,
             std::function<void(const ngraph::he::TCPMessage&)> message_handler)
@@ -48,12 +51,15 @@ class TCPClient {
     do_connect(endpoints);
   }
 
+  /// \brief Closes the socket
   void close() {
     NGRAPH_HE_LOG(1) << "Closing socket";
     m_socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
     boost::asio::post(m_io_context, [this]() { m_socket.close(); });
   }
 
+  /// \brief Asynchronously writes the message
+  /// \param[in,out] message Message to write
   void write_message(const ngraph::he::TCPMessage&& message) {
     bool write_in_progress = !m_message_queue.empty();
     m_message_queue.push_back(std::move(message));
