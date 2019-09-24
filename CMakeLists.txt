@@ -75,6 +75,8 @@ set(EXTERNAL_INSTALL_DIR ${CMAKE_BINARY_DIR}/external)
 set(EXTERNAL_INSTALL_LIB_DIR ${EXTERNAL_INSTALL_DIR}/lib)
 set(EXTERNAL_INSTALL_INCLUDE_DIR ${EXTERNAL_INSTALL_DIR}/include)
 
+set(NGRAPH_HE_INSTALL_DOC ${CMAKE_BINARY_DIR}/doc)
+
 if(NOT DEFINED EXTERNAL_PROJECTS_ROOT)
   set(EXTERNAL_PROJECTS_ROOT ${CMAKE_CURRENT_BINARY_DIR})
 endif()
@@ -94,6 +96,9 @@ endif()
 message(STATUS "PYTHON_VENV_VERSION ${PYTHON_VENV_VERSION}")
 
 option(NGRAPH_HE_SANITIZE_ADDRESS "Enable address sanitizer" OFF)
+option(NGRAPH_HE_DOC_BUILD_ENABLE "Enable building of documentation" OFF)
+
+message(STATUS "NGRAPH_HE_DOC_BUILD_ENABLE: ${NGRAPH_HE_DOC_BUILD_ENABLE}")
 
 if(NGRAPH_HE_SANITIZE_ADDRESS)
   message(STATUS "NGRAPH_HE_SANITIZE_ADDRESS")
@@ -134,6 +139,10 @@ include(cmake/protobuf.cmake)
 # HE transformer source and test directories
 add_subdirectory(src)
 add_subdirectory(test)
+
+if(NGRAPH_HE_DOC_BUILD_ENABLE)
+  add_subdirectory(doc)
+endif()
 
 # For python bindings
 add_subdirectory(python)
