@@ -194,7 +194,7 @@ class SealCiphertextWrapper {
   seal::Ciphertext m_ciphertext;
   bool m_complex_packing;
   bool m_known_value;
-  float m_value;
+  float m_value{0.0f};
 };
 
 inline void save_to_proto(

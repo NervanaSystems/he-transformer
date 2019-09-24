@@ -85,7 +85,7 @@ class HESealClient {
   std::shared_ptr<seal::Evaluator> m_evaluator;
   std::shared_ptr<seal::KeyGenerator> m_keygen;
   std::shared_ptr<seal::RelinKeys> m_relin_keys;
-  double m_scale;
+  double m_scale{0.0};
   size_t m_batch_size;
   bool m_is_done;
   std::vector<double> m_inputs;   // Function inputs

@@ -58,7 +58,7 @@ class HEPlaintext {
   static constexpr size_t type_byte_size = sizeof(double);
 
  private:
-  double m_first_val;
+  double m_first_val{0.0};
   std::vector<double> m_values;
 };
 }  // namespace he
