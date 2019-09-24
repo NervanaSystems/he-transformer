@@ -36,34 +36,51 @@
 
 namespace ngraph {
 namespace he {
+/// \brief Represents a message. A wrapper around he_proto::TCPMessage
 class TCPMessage {
  public:
   enum { header_length = sizeof(size_t) };
   using data_buffer = std::vector<char>;
 
+  /// \brief Creates empty message
   TCPMessage() = default;
 
+  /// \brief Creates message from given protobuf message
+  /// \param[in] proto_message Protobuf message to populate TCPMessage
   TCPMessage(he_proto::TCPMessage& proto_message) = delete;
 
+  /// \brief Creates message from given protobuf message
+  /// \param[in,out] proto_message Protobuf message to populate TCPMessage
   TCPMessage(he_proto::TCPMessage&& proto_message)
       : m_proto_message(
             std::make_shared<he_proto::TCPMessage>(std::move(proto_message))) {}
 
+  /// \brief Creates message from given protobuf message
+  /// \param[in,out] proto_message Protobuf message to populate TCPMessage
   TCPMessage(std::shared_ptr<he_proto::TCPMessage> proto_message)
       : m_proto_message(proto_message) {}
 
+  /// \brief Returns pointer to udnerlying protobuf message
   std::shared_ptr<he_proto::TCPMessage> proto_message() {
     return m_proto_message;
   }
+
+  /// \brief Returns pointer to udnerlying protobuf message
   std::shared_ptr<he_proto::TCPMessage> proto_message() const {
     return m_proto_message;
   }
 
+  /// \brief Stores a size in the buffer header
+  /// \param[in,out] buffer Buffer to write size to
+  /// \param[in] size Size to write into buffer
   static void encode_header(data_buffer& buffer, size_t size) {
     NGRAPH_CHECK(buffer.size() >= header_length, "Buffer too small");
     std::memcpy(&buffer[0], &size, header_length);
   }
 
+  /// \brief Given a buffer storing a message with the length in the first
+  /// header_length bytes, returns the size of the stored buffer \param[in]
+  /// buffer Buffer storing a message \returns size of message stored in buffer
   static size_t decode_header(const data_buffer& buffer) {
     if (buffer.size() < header_length) {
       return 0;
@@ -73,6 +90,10 @@ class TCPMessage {
     return body_length;
   }
 
+  /// \brief Writes the message to a buffer
+  /// \param[in,out] buffer Buffer to write the message to
+  /// \throws ngraph_error if message is empty
+  /// \returns Whether or not the operation was successful
   bool pack(data_buffer& buffer) {
     NGRAPH_CHECK(m_proto_message != nullptr, "Can't pack empty proto message");
     size_t msg_size = m_proto_message->ByteSize();
@@ -81,12 +102,13 @@ class TCPMessage {
     return m_proto_message->SerializeToArray(&buffer[header_length], msg_size);
   }
 
-  // buffer => storing proto message
+  /// \brief Writes a given buffer to the message
+  /// \param[in] buffer Buffer to read the message from
+  /// \returns Whether or not the operation was successful
   bool unpack(const data_buffer& buffer) {
     if (!m_proto_message) {
       m_proto_message = std::make_shared<he_proto::TCPMessage>();
     }
-    NGRAPH_CHECK(m_proto_message != nullptr, "Can't unpack empty proot");
     return m_proto_message->ParseFromArray(&buffer[header_length],
                                            buffer.size() - header_length);
   }
