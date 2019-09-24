@@ -28,6 +28,14 @@
 
 namespace ngraph {
 namespace he {
+
+/// \brief Adds two ciphertexts
+/// \para[in,out] arg0 Ciphertext argument to add
+/// \param[in,out] arg1 Ciphertext rgument to add
+/// \param[out] out Stores the sum
+/// \param[in] element_type datatype of the addition
+/// \param[in] he_seal_backend Backend with which to perform addition
+/// \param[in] pool Memory pool with which to perform addition
 void scalar_add_seal(
     SealCiphertextWrapper& arg0, SealCiphertextWrapper& arg1,
     std::shared_ptr<SealCiphertextWrapper>& out,

@@ -26,46 +26,62 @@
 
 namespace ngraph {
 namespace he {
+/// \brief Class representing a tensor of plaintext values
 class HEPlainTensor : public HETensor {
  public:
+  /// \brief Construct a plain tensor
+  /// \param[in] element_type Data type of elements in the tensor
+  /// \param[in] shape Shape of the tensor
+  /// \param[in] he_seal_backend Backend. TODO: remove
+  /// \param[in] packed Whether or not to use plaintext packing
+  /// \param[in] name Name of the tensor
   HEPlainTensor(const element::Type& element_type, const Shape& shape,
-                const HESealBackend& he_seal_backend,
-                const bool batched = false,
+                const HESealBackend& he_seal_backend, const bool packed = false,
                 const std::string& name = "external");
 
-  /// @brief Write bytes directly into the tensor after encoding
-  /// @param source Pointer to source of data
-  /// @param n Number of bytes to write, must be integral number of elements.
+  /// \brief Write bytes directly into the tensor after encoding
+  /// \param[in] source Pointer to source of data
+  /// \param[in] n Number of bytes to write, must be integral number of
+  /// elements.
   void write(const void* source, size_t n) override;
 
-  /// @brief Read bytes directly from the tensor after decoding
-  /// @param target Pointer to destination for data
-  /// @param n Number of bytes to read, must be integral number of elements.
+  /// \brief Read bytes directly from the tensor after decoding
+  /// \param[in] target Pointer to destination for data
+  /// \param[in] n Number of bytes to read, must be integral number of elements.
   void read(void* target, size_t n) const override;
 
+  /// \brief Returns the plaintexts in the tensor
   inline std::vector<ngraph::he::HEPlaintext>& get_elements() {
     return m_plaintexts;
   }
 
-  inline ngraph::he::HEPlaintext& get_element(size_t i) {
-    return m_plaintexts[i];
+  /// \brief Returns the plaintext at a given index
+  /// \param[in] index Index from which to return the plaintext
+  inline ngraph::he::HEPlaintext& get_element(size_t index) {
+    return m_plaintexts[index];
   }
 
-  static constexpr size_t internal_type_byte_size = HEPlaintext::type_byte_size;
-
+  /// \brief Clears the plaintexts
   inline void reset() { m_plaintexts.clear(); }
 
+  /// \brief Returns the number of plaintexts in the tensor
   inline size_t num_plaintexts() { return m_plaintexts.size(); }
 
+  /// \brief Sets the tensor to the given plaintexts
+  /// /throws ngraph_error if wrong number of elements are used
+  /// \param[in] elements Plaintexts to set the tensor to
   void set_elements(const std::vector<ngraph::he::HEPlaintext>& elements);
 
+  /// \brief Returns type information about the tensor
+  /// /returns a reference to a HETensorTypeInfo object
   const HETensorTypeInfo& get_type_info() const override { return type_info; }
 
+  /// \brief Represents a HEPlainTensor type
   static constexpr HETensorTypeInfo type_info{HETensorTypeInfo::plain};
 
  private:
   std::vector<ngraph::he::HEPlaintext> m_plaintexts;
-  size_t m_num_elements;
+  size_t m_num_elements;  // TODO: remove if unused
 };
 }  // namespace he
 }  // namespace ngraph

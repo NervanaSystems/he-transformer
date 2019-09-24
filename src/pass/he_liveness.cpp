@@ -39,13 +39,8 @@ bool ngraph::he::pass::HELiveness::run_on_function(
 
   unordered_set<descriptor::Tensor*> persistent_tensors;
   unordered_set<descriptor::Tensor*> output_tensors;
-  // Don't make parameter node persistent!
-  /* for (const shared_ptr<op::Parameter>& node : function->get_parameters()) {
-    for (auto& output : node->outputs()) {
-      descriptor::Tensor& tensor = output.get_tensor();
-      persistent_tensors.insert(&tensor);
-    }
-  } */
+
+  // Only result nodes are persistent
   for (const shared_ptr<op::Result>& node : function->get_results()) {
     for (auto& output : node->outputs()) {
       descriptor::Tensor& tensor = output.get_tensor();
@@ -53,15 +48,6 @@ bool ngraph::he::pass::HELiveness::run_on_function(
       output_tensors.insert(&tensor);
     }
   }
-  // Don't make constant nodes persistent!
-  /*for (const shared_ptr<Node>& node : ops) {
-    if (auto constant_node = dynamic_pointer_cast<op::Constant>(node)) {
-      for (auto& output : constant_node->outputs()) {
-        descriptor::Tensor& tensor = output.get_tensor();
-        persistent_tensors.insert(&tensor);
-      }
-    }
-  }*/
 
   unordered_set<descriptor::Tensor*> currently_live;
   for (auto it = ops.rbegin(); it != ops.rend(); it++) {

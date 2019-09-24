@@ -29,8 +29,7 @@ class HESealBackend;
 class HETensor : public runtime::Tensor {
  public:
   HETensor(const element::Type& element_type, const Shape& shape,
-           const HESealBackend& he_seal_backend, const bool packed = false,
-           const std::string& name = "external");
+           const bool packed = false, const std::string& name = "external");
   virtual ~HETensor() override {}
 
   /// @brief Write bytes directly into the tensor
