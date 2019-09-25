@@ -174,19 +174,33 @@ class SealCiphertextWrapper {
   /// \brief Returns the size of the underlying ciphertext
   size_t size() const { return m_ciphertext.size(); }
 
-  /// \brief Returns whrt
+  /// \brief Returns whether or not ciphertext represents a known value
   bool known_value() const { return m_known_value; }
+
+  /// \brief Returns whether or not ciphertext represents a known value
   bool& known_value() { return m_known_value; }
 
+  /// \brief Returns known value
   float value() const { return m_value; }
+
+  /// \brief Returns known value
   float& value() { return m_value; }
 
+  /// \brief Returns scale of the ciphertext
   double& scale() { return m_ciphertext.scale(); }
+
+  /// \brief Returns scale of the ciphertext
   double scale() const { return m_ciphertext.scale(); }
 
+  /// \brief Returns whether or not the ciphertext uses complex packing
   bool complex_packing() const { return m_complex_packing; }
+
+  /// \brief Returns whether or not the ciphertext uses complex packing
   bool& complex_packing() { return m_complex_packing; }
 
+  /// \brief Saves the cihertext to a protobuf ciphertext wrapper
+  /// \param[out] proto_cipher Protobuf ciphertext wrapper to store the
+  /// ciphertext
   inline void save(he_proto::SealCiphertextWrapper& proto_cipher) const {
     proto_cipher.set_complex_packing(complex_packing());
     proto_cipher.set_known_value(known_value());
@@ -202,6 +216,10 @@ class SealCiphertextWrapper {
     proto_cipher.set_ciphertext(std::move(cipher_str));
   }
 
+  /// \brief Loads a ciphertext from a buffer to a SealCiphertextWrapper
+  /// \param[out] dst Destination to load ciphertext wrapper to
+  /// \param[in] src Source to load ciphertext wrapper from
+  /// \param[in] context TODO
   static inline void load(ngraph::he::SealCiphertextWrapper& dst,
                           const he_proto::SealCiphertextWrapper& src,
                           std::shared_ptr<seal::SEALContext> context) {
@@ -218,6 +236,10 @@ class SealCiphertextWrapper {
     }
   }
 
+  /// \brief Loads a ciphertext from a buffer to a SealCiphertextWrapper
+  /// \param[out] dst Destination to load ciphertext wrapper to
+  /// \param[in] src Source to load ciphertext wrapper from
+  /// \param[in] context TODO
   static inline void load(
       std::shared_ptr<ngraph::he::SealCiphertextWrapper>& dst,
       const he_proto::SealCiphertextWrapper& src,
@@ -233,6 +255,10 @@ class SealCiphertextWrapper {
   float m_value{0.0f};
 };
 
+/// \brief Saves a list of ciphertexts to a protobuf message
+/// \param[in] ciphers_begin Iterator at beginning of ciphertext wrapper list
+/// \param[in] ciphers_end Iterator at end of ciphertext wrapper list
+/// \param[out] proto_msg Protobuf message to save ciphertexts to
 inline void save_to_proto(
     std::vector<std::shared_ptr<SealCiphertextWrapper>>::const_iterator
         ciphers_begin,
@@ -251,6 +277,9 @@ inline void save_to_proto(
   }
 }
 
+/// \brief Saves a vector of ciphertexts to a protobuf message
+/// \param[in] ciphers Vector of ciphertext wrappers to save
+/// \param[out] proto_msg Protobuf message to save ciphertexts to
 inline void save_to_proto(
     const std::vector<std::shared_ptr<SealCiphertextWrapper>>& ciphers,
     he_proto::TCPMessage& proto_msg) {
