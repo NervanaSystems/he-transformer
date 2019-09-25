@@ -72,7 +72,7 @@ class HESealExecutable : public runtime::Executable {
   }
 
   /// \brief TODO
-  void client_setup();
+  void server_setup();
 
   /// \brief TODO
   void start_server();
@@ -192,7 +192,7 @@ class HESealExecutable : public runtime::Executable {
   /// TODO: remove
   void enable_client() {
     m_enable_client = true;
-    client_setup();
+    server_setup();
   }
 
  private:
@@ -209,7 +209,7 @@ class HESealExecutable : public runtime::Executable {
   bool m_client_eval_key_set{false};
 
   bool m_enable_client;
-  bool m_client_setup;
+  bool m_server_setup;
   size_t m_batch_size;
   size_t m_port;  // Which port the server is hosted at
 
