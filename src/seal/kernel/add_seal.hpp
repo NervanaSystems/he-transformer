@@ -48,12 +48,10 @@ void scalar_add_seal(
 /// \param[out] out Stores the encrypted sum
 /// \param[in] element_type datatype of the addition
 /// \param[in] he_seal_backend Backend with which to perform addition
-/// \param[in] pool Memory pool used for new memory allocation
-void scalar_add_seal(
-    SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
-    std::shared_ptr<SealCiphertextWrapper>& out,
-    const element::Type& element_type, HESealBackend& he_seal_backend,
-    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
+void scalar_add_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
+                     std::shared_ptr<SealCiphertextWrapper>& out,
+                     const element::Type& element_type,
+                     HESealBackend& he_seal_backend);
 
 /// \brief Adds a plaintext with a ciphertext
 /// \param[in] arg0 Plaintext argument to add
@@ -61,12 +59,11 @@ void scalar_add_seal(
 /// \param[out] out Stores the encrypted sum
 /// \param[in] element_type datatype of the addition
 /// \param[in] he_seal_backend Backend with which to perform addition
-/// \param[in] pool Memory pool used for new memory allocation
-inline void scalar_add_seal(
-    const HEPlaintext& arg0, SealCiphertextWrapper& arg1,
-    std::shared_ptr<SealCiphertextWrapper>& out,
-    const element::Type& element_type, HESealBackend& he_seal_backend,
-    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool()) {
+inline void scalar_add_seal(const HEPlaintext& arg0,
+                            SealCiphertextWrapper& arg1,
+                            std::shared_ptr<SealCiphertextWrapper>& out,
+                            const element::Type& element_type,
+                            HESealBackend& he_seal_backend) {
   ngraph::he::scalar_add_seal(arg1, arg0, out, element_type, he_seal_backend);
 }
 
@@ -87,14 +84,11 @@ void scalar_add_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
 /// \param[in] element_type datatype of the addition
 /// \param[in] he_seal_backend Backend with which to perform addition
 /// \param[in] count Number of elements to add. TODO: remove
-/// \param[in] pool Memory pool used for new memory allocation
-inline void add_seal(
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg0,
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg1,
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
-    const element::Type& element_type, HESealBackend& he_seal_backend,
-    size_t count,
-    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool()) {
+inline void add_seal(std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg0,
+                     std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg1,
+                     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
+                     const element::Type& element_type,
+                     HESealBackend& he_seal_backend, size_t count) {
   NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
                "Unsupported type ", element_type);
 #pragma omp parallel for
@@ -111,20 +105,16 @@ inline void add_seal(
 /// \param[in] element_type datatype of the addition
 /// \param[in] he_seal_backend Backend with which to perform addition
 /// \param[in] count Number of elements to add. TODO: remove
-/// \param[in] pool Memory pool used for new memory allocation
-inline void add_seal(
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg0,
-    const std::vector<HEPlaintext>& arg1,
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
-    const element::Type& element_type, HESealBackend& he_seal_backend,
-    size_t count,
-    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool()) {
+inline void add_seal(std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg0,
+                     const std::vector<HEPlaintext>& arg1,
+                     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
+                     const element::Type& element_type,
+                     HESealBackend& he_seal_backend, size_t count) {
   NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
                "Unsupported type ", element_type);
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
-    scalar_add_seal(*arg0[i], arg1[i], out[i], element_type, he_seal_backend,
-                    pool);
+    scalar_add_seal(*arg0[i], arg1[i], out[i], element_type, he_seal_backend);
   }
 }
 
@@ -136,15 +126,12 @@ inline void add_seal(
 /// \param[in] element_type datatype of the addition
 /// \param[in] he_seal_backend Backend with which to perform addition
 /// \param[in] count Number of elements to add. TODO: remove
-/// \param[in] pool Memory pool used for new memory allocation
-inline void add_seal(
-    const std::vector<HEPlaintext>& arg0,
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg1,
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
-    const element::Type& element_type, HESealBackend& he_seal_backend,
-    size_t count,
-    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool()) {
-  add_seal(arg1, arg0, out, element_type, he_seal_backend, count, pool);
+inline void add_seal(const std::vector<HEPlaintext>& arg0,
+                     std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg1,
+                     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
+                     const element::Type& element_type,
+                     HESealBackend& he_seal_backend, size_t count) {
+  add_seal(arg1, arg0, out, element_type, he_seal_backend, count);
 }
 
 /// \brief Adds vectors of plaintexts element-wise

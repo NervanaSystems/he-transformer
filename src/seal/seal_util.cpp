@@ -83,20 +83,20 @@ void ngraph::he::match_modulus_and_scale_inplace(
     auto arg0_parms_id = arg0.ciphertext().parms_id();
     if (rescale) {
       he_seal_backend.get_evaluator()->rescale_to_inplace(arg1.ciphertext(),
-                                                          arg0_parms_id);
+                                                          arg0_parms_id, pool);
     } else {
-      he_seal_backend.get_evaluator()->mod_switch_to_inplace(arg1.ciphertext(),
-                                                             arg0_parms_id);
+      he_seal_backend.get_evaluator()->mod_switch_to_inplace(
+          arg1.ciphertext(), arg0_parms_id, pool);
     }
     chain_ind1 = ngraph::he::get_chain_index(arg1, he_seal_backend);
   } else {  // chain_ind0 > chain_ind1
     auto arg1_parms_id = arg1.ciphertext().parms_id();
     if (rescale) {
       he_seal_backend.get_evaluator()->rescale_to_inplace(arg0.ciphertext(),
-                                                          arg1_parms_id);
+                                                          arg1_parms_id, pool);
     } else {
-      he_seal_backend.get_evaluator()->mod_switch_to_inplace(arg0.ciphertext(),
-                                                             arg1_parms_id);
+      he_seal_backend.get_evaluator()->mod_switch_to_inplace(
+          arg0.ciphertext(), arg1_parms_id, pool);
     }
     chain_ind0 = ngraph::he::get_chain_index(arg0, he_seal_backend);
   }

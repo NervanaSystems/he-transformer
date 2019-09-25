@@ -87,10 +87,8 @@ class HETensor : public runtime::Tensor {
 
  protected:
   void check_io_bounds(const void* p, size_t n) const;
-  const HESealBackend& m_he_seal_backend;
-  bool m_packed;        // Whether or not the tensor is packed, i.e. stores more
-                        // than one scalar per element.
-  size_t m_batch_size;  // If m_packed, corresponds to first shape dimesion.
+  bool m_packed;
+  size_t m_batch_size;
   Shape m_packed_shape;
 };
 

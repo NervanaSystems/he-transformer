@@ -32,11 +32,10 @@ class HEPlainTensor : public HETensor {
   /// \brief Construct a plain tensor
   /// \param[in] element_type Data type of elements in the tensor
   /// \param[in] shape Shape of the tensor
-  /// \param[in] he_seal_backend Backend. TODO: remove
   /// \param[in] packed Whether or not to use plaintext packing
   /// \param[in] name Name of the tensor
   HEPlainTensor(const element::Type& element_type, const Shape& shape,
-                const HESealBackend& he_seal_backend, const bool packed = false,
+                const bool packed = false,
                 const std::string& name = "external");
 
   /// \brief Write bytes directly into the tensor after encoding

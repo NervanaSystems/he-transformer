@@ -143,6 +143,7 @@ class HESealCipherTensor : public HETensor {
  private:
   std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>> m_ciphertexts;
   size_t m_num_elements;
+  const HESealBackend& m_he_seal_backend;
 };
 }  // namespace he
 }  // namespace ngraph
