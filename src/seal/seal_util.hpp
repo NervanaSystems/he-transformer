@@ -252,13 +252,6 @@ void encrypt(std::shared_ptr<ngraph::he::SealCiphertextWrapper>& output,
              seal::CKKSEncoder& ckks_encoder, seal::Encryptor& encryptor,
              bool complex_packing);
 
-/// TODO: remove
-void encrypt(seal::Ciphertext& output, const ngraph::he::HEPlaintext& input,
-             seal::parms_id_type parms_id,
-             const ngraph::element::Type& element_type, double scale,
-             seal::CKKSEncoder& ckks_encoder, seal::Encryptor& encryptor,
-             bool complex_packing);
-
 /// \brief Decode SEAL plaintext into plaintext values
 /// \param[out] output Decoded values
 /// \param[in] input Plaintext to decode
