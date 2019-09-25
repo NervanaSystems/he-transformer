@@ -107,7 +107,7 @@ inline void add_seal(
 /// \param[in,out] arg0 Vector of ciphertext arguments to add. Ciphertexts may
 /// be rescaled
 /// \param[in] arg1 Vector of plaintext arguments to add
-/// \param[out]out Vector of the ciphertext sum
+/// \param[out] out Vector of the ciphertext sum
 /// \param[in] element_type datatype of the addition
 /// \param[in] he_seal_backend Backend with which to perform addition
 /// \param[in] count Number of elements to add. TODO: remove

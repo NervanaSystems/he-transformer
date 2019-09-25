@@ -40,8 +40,20 @@ using boost::asio::ip::tcp;
 
 namespace ngraph {
 namespace he {
+/// \brief Class representing a function to execute
 class HESealExecutable : public runtime::Executable {
  public:
+  /// \brief Constructs an exectuable object
+  /// \param[in] function Function in the executable
+  /// \param[in] enable_performance_collection Unused: TODO use
+  /// \param[in] he_seal_backend Backend storing encryption context
+  /// \param[in] encrypt_data Whether or not to encrypt the data
+  /// \param[in] encrypt_model Whether or not to encrypt the model
+  /// \param[in] pack_data Whether or not to pack the data using plaintext
+  /// packing
+  /// \param[in] complex_packing Whether or not to use complex packing
+  /// \param[in] enable_client Whether or not to rely on a client to store the
+  /// secret key
   HESealExecutable(const std::shared_ptr<Function>& function,
                    bool enable_performance_collection,
                    ngraph::he::HESealBackend& he_seal_backend,
@@ -50,7 +62,6 @@ class HESealExecutable : public runtime::Executable {
 
   ~HESealExecutable() override {
     if (m_enable_client) {
-      // Wait until thread finishes with m_io_context
       m_thread.join();
 
       // m_acceptor and m_io_context both free the socket? so avoid double-free
@@ -60,64 +71,124 @@ class HESealExecutable : public runtime::Executable {
     }
   }
 
+  /// \brief TODO
   void client_setup();
 
+  /// \brief TODO
   void start_server();
 
+  /// \brief Calls the executable on the given input tensors.
+  /// If the client is enabled, the inputs are dummy values and ignored.
+  /// Instead, the inputs will be provided by the client
+  /// \param[in] inputs Input tensor arguments to the function.
+  /// \param[out] outptus Output tensors storing the result of the function
   bool call(
       const std::vector<std::shared_ptr<runtime::Tensor>>& outputs,
       const std::vector<std::shared_ptr<runtime::Tensor>>& inputs) override;
 
+  // TOOD
   std::vector<runtime::PerformanceCounter> get_performance_data()
       const override;
 
+  // \brief Returns the port at which the server is expecting a connection
   size_t get_port() const { return m_port; }
 
-  // TODO: merge_done() methods
+  // TODO: merge _done() methods
+
+  /// \brief Returns whether or not the maxpool op has completed
   bool max_pool_done() const { return m_max_pool_done; }
+
+  /// \brief Returns whether or not the minimum op has completed
   bool minimum_done() const { return m_minimum_done; }
 
+  /// \brief Returns whether or not the session has started
   bool session_started() const { return m_session_started; }
 
+  /// \brief Returns whether or not the client has provided input data to call
+  /// the function
   bool client_inputs_received() const { return m_client_inputs_received; }
 
   void accept_connection();
 
+  /// \brief Checks whether or not the server supports the function
+  /// \throws ngraph_error if function is unsupported
+  /// Currently, we only support functions with a single parameter
+  /// TODO: rename; return bool
   void check_client_supports_function();
 
+  /// \brief Processes a message from the client
+  /// \param[in] message Message to process
   void handle_message(const TCPMessage& message);
 
+  /// \brief Processes a client message with ciphertexts to call the function
+  /// \param[in] proto_msg Message to process
   void handle_client_ciphers(const he_proto::TCPMessage& proto_msg);
+
+  /// \brief Processes a client message with ciphertextss after a ReLU function
+  /// \param[in] proto_msg Message to process
   void handle_relu_result(const he_proto::TCPMessage& proto_msg);
+
+  /// \brief Processes a client message with ciphertextss after a BoundedReLU
+  /// function
+  /// \param[in] proto_msg Message to process
   void handle_bounded_relu_result(const he_proto::TCPMessage& proto_msg);
+
+  /// \brief Processes a client message with ciphertextss after a MaxPool
+  /// function
+  /// \param[in] proto_msg Message to process
   void handle_max_pool_result(const he_proto::TCPMessage& proto_msg);
 
+  /// \brief Sends results to the client
   void send_client_results();
 
+  /// \brief Sends function's parameter shape to the client
   void send_inference_shape();
+
+  /// \brief Loads the public key from the message
+  /// \param[in] proto_message from which to load the public key
   void load_public_key(const he_proto::TCPMessage& proto_msg);
+
+  /// \brief Loads the evaluation key from the message
+  /// \param[in] proto_message from which to load the evluation key
   void load_eval_key(const he_proto::TCPMessage& proto_msg);
 
+  /// \brief Processes the ReLU operation if the client is enabled
+  /// \param[in] arg0_cipher Encrypted tensor argumnet
+  /// \param[out] arg0_cipher Encrypted tensor result
+  /// \param[in] node_wrapper Wrapper around operation to perform
+  // TODO: rename
   void handle_server_relu_op(std::shared_ptr<HESealCipherTensor>& arg0_cipher,
                              std::shared_ptr<HESealCipherTensor>& out_cipher,
                              const NodeWrapper& node_wrapper);
+
+  /// \brief Processes the MaxPool operation if the client is enabled
+  /// \param[in] arg0_cipher Encrypted tensor argumnet
+  /// \param[out] arg0_cipher Encrypted tensor result
+  /// \param[in] node_wrapper Wrapper around operation to perform
+  // TODO: rename
   void handle_server_max_pool_op(
       std::shared_ptr<HESealCipherTensor>& arg0_cipher,
       std::shared_ptr<HESealCipherTensor>& out_cipher,
       const NodeWrapper& node_wrapper);
 
+  /// \brief Returns whether or not a node's verbosity is on or off
+  /// \param[in] op Operation to determine verbosity of
   bool verbose_op(const ngraph::Node& op) {
     return m_verbose_all_ops ||
            m_verbose_ops.find(ngraph::to_lower(op.description())) !=
                m_verbose_ops.end();
   }
 
+  /// \brief Returns whether or not a node dessccription verbosity is on or off
+  /// \param[in] description Node description determine verbosity of
   bool verbose_op(const std::string& description) {
     return m_verbose_all_ops ||
            m_verbose_ops.find(ngraph::to_lower(description)) !=
                m_verbose_ops.end();
   }
 
+  /// \brief Sets up the client
+  /// TODO: remove
   void enable_client() {
     m_enable_client = true;
     client_setup();

@@ -128,7 +128,7 @@ void add_plain_inplace(seal::Ciphertext& encrypted, double value,
                        const HESealBackend& he_seal_backend);
 
 /// \brief Adds a ciphertext with a scalar in every slot
-/// \param[in,] encrypted Ciphertext to add to.
+/// \param[in] encrypted Ciphertext to add to.
 /// \param[in] value Value which is added to the ciphertext
 /// \param[out] destination Ciphertext storing the result
 /// \param[in] he_seal_backend Backend whose context is used for encoding and
@@ -159,7 +159,7 @@ void multiply_poly_scalar_coeffmod64(const uint64_t* poly, size_t coeff_count,
 /// \param[in] poly Polynomial to be multiplied
 /// \param[in] coeff_count Number of terms in the polynomial
 /// \param[in] scalar Value with which to add
-/// \param[in] modulus_value modulus with which to reduce each addition
+/// \param[in] modulus modulus with which to reduce each addition
 /// \param[out] result Will store the result of the multiplication
 inline void add_poly_scalar_coeffmod(const std::uint64_t* poly,
                                      std::size_t coeff_count,
