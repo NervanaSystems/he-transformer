@@ -563,16 +563,8 @@ void ngraph::he::decrypt(ngraph::he::HEPlaintext& output,
     const size_t slot_count = ckks_encoder.slot_count();
     output.set_values(std::vector<double>(slot_count, input.value()));
   } else {
-    ngraph::he::decrypt(output, input.ciphertext(), input.complex_packing(),
-                        decryptor, ckks_encoder);
+    auto plaintext_wrapper = SealPlaintextWrapper(input.complex_packing());
+    decryptor.decrypt(input.ciphertext(), plaintext_wrapper.plaintext());
+    decode(output, plaintext_wrapper, ckks_encoder);
   }
-}
-
-void ngraph::he::decrypt(ngraph::he::HEPlaintext& output,
-                         const seal::Ciphertext& input, bool complex_packing,
-                         seal::Decryptor& decryptor,
-                         seal::CKKSEncoder& ckks_encoder) {
-  auto plaintext_wrapper = SealPlaintextWrapper(complex_packing);
-  decryptor.decrypt(input, plaintext_wrapper.plaintext());
-  decode(output, plaintext_wrapper, ckks_encoder);
 }
