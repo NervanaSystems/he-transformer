@@ -39,11 +39,22 @@ class HESealCipherTensor : public HETensor {
                      const std::string& name = "external");
 
   /// \brief Write bytes directly into the tensor after encoding and encrypting
-  /// \param p Pointer to source of data
-  /// \param n Number of bytes to write, must be integral number of elements
+  /// \param[in] p Pointer to source of data
+  /// \param[in] n Number of bytes to write, must be integral number of elements
   void write(const void* p, size_t n) override;
 
-  /// \brief
+  /// \brief Write bytes into a vector of ciphertexts after encoding and
+  /// encrypting
+  /// \param[out] destination Ciphertexts to write to \param[in]
+  /// source Pointer to source of data \param[in] n Number of bytes to write
+  /// \param[in] batch_size Packing factor to use
+  /// \param[in] element_type Datatype of source data
+  /// \param[in] parms_id Seal parameter id to use in encryption
+  /// \param[in] scale Scale at which to encode ciphertexts
+  /// \param[in] ckks_encoder Encoder used for encoding
+  /// \param[in] encryptor Encryptor used for encryption
+  /// \param[in] complex_packing Whether or not to encode elements using complex
+  /// packing
   static void write(
       std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>&
           destination,
@@ -53,10 +64,20 @@ class HESealCipherTensor : public HETensor {
       bool complex_packing);
 
   /// \brief Read bytes directly from the tensor after decrypting and decoding
-  /// \param p Pointer to destination for data
-  /// \param n Number of bytes to read, must be integral number of elements
+  /// \param[in] target Pointer to destination for data
+  /// \param[in] n Number of bytes to read, must be a multiple of batch size
   void read(void* target, size_t n) const override;
 
+  /// \brief Read bytes from a vector of ciphertexts after decrpyting and
+  /// decoding \param[out] target Pointer to destination for data \param[in]
+  /// ciphertexts Ciphertexts to decrypt and decode \param[in] n Number of bytes
+  /// to read, must be a multiple of the batch size \param[in] batch_size
+  /// Packing factor to use \param[in] element_type Datatype of source data
+  /// \param[in] parms_id TODO: remove
+  /// \param[in] scale TODO: remove
+  /// \param[in] ckks_encoder Encoder used for decoding
+  /// \param[in] decryptor Decryptor used for decrpytion
+  /// \param[in] complex_packing TODO: check if used
   static void read(
       void* target,
       const std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>&
@@ -66,10 +87,15 @@ class HESealCipherTensor : public HETensor {
       seal::CKKSEncoder& ckks_encoder, seal::Decryptor& decryptor,
       bool complex_packing);
 
+  /// \brief Replaces the ciphertexts in the tensor
+  /// \param[in] elements Ciphertexts to store in the tensor
+  /// \throws ngraph_error if incorrect number of ciphertexts is used
   void set_elements(
       const std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>&
           elements);
 
+  /// \brief Writes the encrypted ciphertexts to a stream
+  /// \param[in,out] stream Stream to which ciphertexts are written
   void save_elements(std::ostream& stream) const {
     NGRAPH_CHECK(m_ciphertexts.size() > 0, "Cannot save 0 ciphertexts");
 
@@ -85,22 +111,30 @@ class HESealCipherTensor : public HETensor {
     }
   }
 
+  /// \brief Returns the ciphertexts stored in the tensor
   inline std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>&
   get_elements() {
     return m_ciphertexts;
   }
 
+  /// \brief Returns the ciphertext stored at a specific index in the tensor
+  /// \param[in] index Index at which to return the ciphertext
+  /// \throws ngraph_error if index is out of bounds
   inline std::shared_ptr<ngraph::he::SealCiphertextWrapper>& get_element(
-      size_t i) {
-    NGRAPH_CHECK(i < m_ciphertexts.size(), "Index ", i,
+      size_t index) {
+    NGRAPH_CHECK(index < m_ciphertexts.size(), "Index ", index,
                  " out of bounds for vector of size ", m_ciphertexts.size());
-    return m_ciphertexts[i];
+    return m_ciphertexts[index];
   }
 
+  /// \brief Returns the number of cipphertexts in the tensor
   inline size_t num_ciphertexts() { return m_ciphertexts.size(); }
 
+  /// \brief Returns type information about the tensor
+  /// /returns a reference to a HETensorTypeInfo object
   const HETensorTypeInfo& get_type_info() const override { return type_info; }
 
+  /// \brief Represents a HESealCipherTensor type
   static constexpr HETensorTypeInfo type_info{HETensorTypeInfo::cipher};
 
  private:

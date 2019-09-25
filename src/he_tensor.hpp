@@ -46,8 +46,8 @@ class HETensor : public runtime::Tensor {
   virtual void write(const void* p, size_t n) override = 0;
 
   /// \brief Read bytes directly from the tensor
-  /// \param[in] p Pointer to destination for data
-  /// param n Number of bytes to read, must be integral number of elements.
+  /// \param[out] p Pointer to destination for data
+  /// \param[in] n Number of bytes to read, must be integral number of elements.
   virtual void read(void* p, size_t n) const override = 0;
 
   /// \brief Reduces shape along pack axis
