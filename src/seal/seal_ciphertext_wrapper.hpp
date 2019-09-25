@@ -24,8 +24,8 @@
 
 namespace ngraph {
 namespace he {
-  /// \brief Returns the size in bytes required to serialize a ciphertext
-  /// \param[in] cipher Ciphertext to measure size of
+/// \brief Returns the size in bytes required to serialize a ciphertext
+/// \param[in] cipher Ciphertext to measure size of
 inline size_t ciphertext_size(const seal::Ciphertext& cipher) {
   // TODO: figure out why the extra 8 bytes
   size_t expected_size = 8;
@@ -40,9 +40,9 @@ inline size_t ciphertext_size(const seal::Ciphertext& cipher) {
   return expected_size;
 }
 
-  /// \brief Serializes the ciphertext and writes to a destination
-  /// \param[in] cipher Ciphertext to write
-  /// \param[out] destination Where to save ciphertext to
+/// \brief Serializes the ciphertext and writes to a destination
+/// \param[in] cipher Ciphertext to write
+/// \param[out] destination Where to save ciphertext to
 inline void save(const seal::Ciphertext& cipher, void* destination) {
   {
     static constexpr std::array<size_t, 6> offsets = {
@@ -128,27 +128,53 @@ inline void load(seal::Ciphertext& cipher,
                "ciphertext data is invalid");
 }
 
-/
+/// \brief Class representing a lightweight wrapper around a SEAL ciphertext.
+/// The wrapper contains two attributes in addition to the SEAL ciphertext.
+/// First, whether or not the ciphertext stores values using complex packing
+/// Second, whether or not the ciphertext represents a publicly-known value.
+/// Typically, a ciphertext represents encrypted data, which is not known unless
+/// decryption has been performed. However, two special cases result in a
+/// "known-valued" ciphertext. First, multiplying a ciphertext with a plaintext
+/// zero results in a "known-valued" ciphertext ith known value 0. Second, the
+/// "Pad" operation may pad a known plaintext value to HESealCipherTensor. The
+/// padded value itself is public, so the resulting ciphertext will be this
+/// known value. This is a design choice which allows HESealCipherTensors to
+/// store a vector of SealCiphertextWrappers.
 class SealCiphertextWrapper {
  public:
+  /// \brief Create an empty unknown-valued ciphertext without complex packing
   SealCiphertextWrapper() : m_complex_packing(false), m_known_value(false) {}
 
+  /// \brief Create an unknown-valued ciphertext
+  /// \param[in] complex_packign Whether or not to use complex packing
   SealCiphertextWrapper(bool complex_packing)
       : m_complex_packing(complex_packing), m_known_value(false) {}
 
+  /// \brief Create ciphertext wrapper from ciphertext
+  /// \param[in] cipher Ciphertext to store
+  /// \param[in] complex_packing Whther or not ciphertext uses complex packing
+  /// \param[in] known_value TODO: remove
+  /// TODO: add move constructor
   SealCiphertextWrapper(const seal::Ciphertext& cipher,
                         bool complex_packing = false, bool known_value = false)
       : m_ciphertext(cipher),
         m_complex_packing(complex_packing),
         m_known_value(known_value) {}
 
+  /// \brief Returns the underyling SEAL ciphertext
   seal::Ciphertext& ciphertext() { return m_ciphertext; }
+
+  /// \brief Returns the underyling SEAL ciphertext
   const seal::Ciphertext& ciphertext() const { return m_ciphertext; }
 
+  /// \brief Serializes the ciphertext to a stream
+  /// \param[out] Stream to serialize the ciphertext to
   void save(std::ostream& stream) const { m_ciphertext.save(stream); }
 
+  /// \brief Returns the size of the underlying ciphertext
   size_t size() const { return m_ciphertext.size(); }
 
+  /// \brief Returns whrt
   bool known_value() const { return m_known_value; }
   bool& known_value() { return m_known_value; }
 
