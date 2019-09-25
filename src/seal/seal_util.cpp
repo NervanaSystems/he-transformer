@@ -54,25 +54,11 @@ void ngraph::he::print_seal_context(const seal::SEALContext& context) {
   NGRAPH_HE_LOG(1) << param_ss.str();
 }
 
-size_t ngraph::he::get_chain_index(const SealCiphertextWrapper& cipher,
-                                   const HESealBackend& he_seal_backend) {
-  return he_seal_backend.get_context()
-      ->get_context_data(cipher.ciphertext().parms_id())
-      ->chain_index();
-}
-
-size_t ngraph::he::get_chain_index(const SealPlaintextWrapper& plain,
-                                   const HESealBackend& he_seal_backend) {
-  return he_seal_backend.get_context()
-      ->get_context_data(plain.plaintext().parms_id())
-      ->chain_index();
-}
-
 void ngraph::he::match_modulus_and_scale_inplace(
     SealCiphertextWrapper& arg0, SealCiphertextWrapper& arg1,
     const HESealBackend& he_seal_backend, seal::MemoryPoolHandle pool) {
-  size_t chain_ind0 = ngraph::he::get_chain_index(arg0, he_seal_backend);
-  size_t chain_ind1 = ngraph::he::get_chain_index(arg1, he_seal_backend);
+  size_t chain_ind0 = he_seal_backend.get_chain_index(arg0);
+  size_t chain_ind1 = he_seal_backend.get_chain_index(arg1);
 
   if (chain_ind0 == chain_ind1) {
     return;
@@ -88,7 +74,7 @@ void ngraph::he::match_modulus_and_scale_inplace(
       he_seal_backend.get_evaluator()->mod_switch_to_inplace(
           arg1.ciphertext(), arg0_parms_id, pool);
     }
-    chain_ind1 = ngraph::he::get_chain_index(arg1, he_seal_backend);
+    chain_ind1 = he_seal_backend.get_chain_index(arg1);
   } else {  // chain_ind0 > chain_ind1
     auto arg1_parms_id = arg1.ciphertext().parms_id();
     if (rescale) {
@@ -98,7 +84,7 @@ void ngraph::he::match_modulus_and_scale_inplace(
       he_seal_backend.get_evaluator()->mod_switch_to_inplace(
           arg0.ciphertext(), arg1_parms_id, pool);
     }
-    chain_ind0 = ngraph::he::get_chain_index(arg0, he_seal_backend);
+    chain_ind0 = he_seal_backend.get_chain_index(arg0);
   }
   NGRAPH_CHECK(chain_ind0 == chain_ind1);
   ngraph::he::match_scale(arg0, arg1);
@@ -263,7 +249,7 @@ size_t ngraph::he::match_to_smallest_chain_index(
   for (size_t cipher_idx = 0; cipher_idx < num_elements; ++cipher_idx) {
     auto& cipher = *ciphers[cipher_idx];
     if (!cipher.known_value()) {
-      size_t chain_ind = ngraph::he::get_chain_index(cipher, he_seal_backend);
+      size_t chain_ind = he_seal_backend.get_chain_index(cipher);
       if (chain_ind < smallest_chain_ind.second) {
         smallest_chain_ind = std::make_pair(cipher_idx, chain_ind);
       }
@@ -280,7 +266,7 @@ size_t ngraph::he::match_to_smallest_chain_index(
     auto& cipher = *ciphers[cipher_idx];
     if (!cipher.known_value() && cipher_idx != smallest_chain_ind.second) {
       match_modulus_and_scale_inplace(smallest_cipher, cipher, he_seal_backend);
-      size_t chain_ind = ngraph::he::get_chain_index(cipher, he_seal_backend);
+      size_t chain_ind = he_seal_backend.get_chain_index(cipher);
       NGRAPH_CHECK(chain_ind == smallest_chain_ind.second, "chain_ind",
                    chain_ind, " does not match smallest ",
                    smallest_chain_ind.second);
@@ -519,24 +505,12 @@ void ngraph::he::encrypt(
     const ngraph::element::Type& element_type, double scale,
     seal::CKKSEncoder& ckks_encoder, seal::Encryptor& encryptor,
     bool complex_packing) {
-  ngraph::he::encrypt(output->ciphertext(), input, parms_id, element_type,
-                      scale, ckks_encoder, encryptor, complex_packing);
-  output->complex_packing() = complex_packing;
-  output->known_value() = false;
-}
-
-void ngraph::he::encrypt(seal::Ciphertext& output,
-                         const ngraph::he::HEPlaintext& input,
-                         seal::parms_id_type parms_id,
-                         const ngraph::element::Type& element_type,
-                         double scale, seal::CKKSEncoder& ckks_encoder,
-                         seal::Encryptor& encryptor, bool complex_packing) {
-  NGRAPH_CHECK(input.num_values() > 0, "Input has no values in encrypt");
-
   auto plaintext = SealPlaintextWrapper(complex_packing);
   encode(plaintext, input, ckks_encoder, parms_id, element_type, scale,
          complex_packing);
-  encryptor.encrypt(plaintext.plaintext(), output);
+  encryptor.encrypt(plaintext.plaintext(), output->ciphertext());
+  output->complex_packing() = complex_packing;
+  output->known_value() = false;
 }
 
 void ngraph::he::decode(ngraph::he::HEPlaintext& output,
@@ -577,16 +551,8 @@ void ngraph::he::decrypt(ngraph::he::HEPlaintext& output,
     const size_t slot_count = ckks_encoder.slot_count();
     output.set_values(std::vector<double>(slot_count, input.value()));
   } else {
-    ngraph::he::decrypt(output, input.ciphertext(), input.complex_packing(),
-                        decryptor, ckks_encoder);
+    auto plaintext_wrapper = SealPlaintextWrapper(input.complex_packing());
+    decryptor.decrypt(input.ciphertext(), plaintext_wrapper.plaintext());
+    decode(output, plaintext_wrapper, ckks_encoder);
   }
-}
-
-void ngraph::he::decrypt(ngraph::he::HEPlaintext& output,
-                         const seal::Ciphertext& input, bool complex_packing,
-                         seal::Decryptor& decryptor,
-                         seal::CKKSEncoder& ckks_encoder) {
-  auto plaintext_wrapper = SealPlaintextWrapper(complex_packing);
-  decryptor.decrypt(input, plaintext_wrapper.plaintext());
-  decode(output, plaintext_wrapper, ckks_encoder);
 }

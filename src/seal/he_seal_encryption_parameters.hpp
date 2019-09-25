@@ -128,15 +128,14 @@ inline ngraph::he::HESealEncryptionParameters default_ckks_parameters() {
   return params;
 }
 
-/// \brief TODO
+/// \brief Returns encryption parameters at given path if possible, or use
+/// default parameters
+/// \param[in] config_path filename where configuration is
+/// stored. If empty, uses default configuration
+/// \throws ngraph_error if config_path is specified but does not exist
+/// \throws ngraph_error if encryption parameters are not valid
 inline ngraph::he::HESealEncryptionParameters parse_config_or_use_default(
-    const std::string& scheme_name) {
-  std::unordered_set<std::string> valid_scheme_names{"HE_SEAL"};
-  if (valid_scheme_names.find(scheme_name) == valid_scheme_names.end()) {
-    throw ngraph_error("Invalid scheme name " + scheme_name);
-  }
-
-  const char* config_path = getenv("NGRAPH_HE_SEAL_CONFIG");
+    const char* config_path) {
   if (config_path == nullptr) {
     return default_ckks_parameters();
   }
@@ -158,23 +157,23 @@ inline ngraph::he::HESealEncryptionParameters parse_config_or_use_default(
     // Parse json
     nlohmann::json js = nlohmann::json::parse(s);
     std::string parsed_scheme_name = js["scheme_name"];
-    if (parsed_scheme_name != scheme_name) {
+    if (parsed_scheme_name != "HE_SEAL") {
       throw ngraph_error("Parsed scheme name " + parsed_scheme_name +
-                         " doesn't match scheme name " + scheme_name);
+                         " is not HE_SEAL");
     }
 
     uint64_t poly_modulus_degree = js["poly_modulus_degree"];
     uint64_t security_level = js["security_level"];
 
-    std::unordered_set<uint64_t> valid_poly_modulus{1024, 2048,  4096,
-                                                    8192, 16384, 32768};
+    static std::unordered_set<uint64_t> valid_poly_modulus{1024, 2048,  4096,
+                                                           8192, 16384, 32768};
     if (valid_poly_modulus.count(poly_modulus_degree) == 0) {
       throw ngraph_error(
           "poly_modulus_degree must be 1024, 2048, 4096, 8192, 16384, "
           "32768");
     }
 
-    std::unordered_set<uint64_t> valid_security_level{0, 128, 192, 256};
+    static std::unordered_set<uint64_t> valid_security_level{0, 128, 192, 256};
     if (valid_security_level.count(security_level) == 0) {
       throw ngraph_error("security_level must be 0, 128, 192, 256");
     }
@@ -193,8 +192,7 @@ inline ngraph::he::HESealEncryptionParameters parse_config_or_use_default(
     }
 
     auto params = ngraph::he::HESealEncryptionParameters(
-        scheme_name, poly_modulus_degree, security_level, scale,
-        coeff_mod_bits);
+        "HE_SEAL", poly_modulus_degree, security_level, scale, coeff_mod_bits);
 
     return params;
 

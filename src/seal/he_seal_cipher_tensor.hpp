@@ -48,8 +48,9 @@ class HESealCipherTensor : public HETensor {
 
   /// \brief Write bytes into a vector of ciphertexts after encoding and
   /// encrypting
-  /// \param[out] destination Ciphertexts to write to \param[in]
-  /// source Pointer to source of data \param[in] n Number of bytes to write
+  /// \param[out] destination Ciphertexts to write to
+  /// \param[in] source Pointer to source of dat
+  /// \param[in] num_bytes Number of bytes to write
   /// \param[in] batch_size Packing factor to use
   /// \param[in] element_type Datatype of source data
   /// \param[in] parms_id Seal parameter id to use in encryption
@@ -61,34 +62,33 @@ class HESealCipherTensor : public HETensor {
   static void write(
       std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>&
           destination,
-      const void* source, size_t n, size_t batch_size,
+      const void* source, size_t num_bytes, size_t batch_size,
       const element::Type& element_type, seal::parms_id_type parms_id,
       double scale, seal::CKKSEncoder& ckks_encoder, seal::Encryptor& encryptor,
       bool complex_packing);
 
   /// \brief Read bytes directly from the tensor after decrypting and decoding
   /// \param[in] target Pointer to destination for data
-  /// \param[in] n Number of bytes to read, must be a multiple of batch size
-  void read(void* target, size_t n) const override;
+  /// \param[in] num_bytes Number of bytes to read, must be a multiple of batch
+  /// size
+  void read(void* target, size_t num_bytes) const override;
 
   /// \brief Read bytes from a vector of ciphertexts after decrpyting and
-  /// decoding \param[out] target Pointer to destination for data \param[in]
-  /// ciphertexts Ciphertexts to decrypt and decode \param[in] n Number of bytes
-  /// to read, must be a multiple of the batch size \param[in] batch_size
-  /// Packing factor to use \param[in] element_type Datatype of source data
-  /// \param[in] parms_id TODO: remove
-  /// \param[in] scale TODO: remove
+  /// decoding
+  /// \param[out] target Pointer to destination for data
+  /// \param[in] /// ciphertexts Ciphertexts to decrypt and decode
+  /// \param[in] num_bytes Number of bytes to read, must be a multiple of the
+  /// batch size
+  /// \param[in] batch_size Packing factor to use
+  /// \param[in] element_type Datatype of source data
   /// \param[in] ckks_encoder Encoder used for decoding
   /// \param[in] decryptor Decryptor used for decrpytion
-  /// \param[in] complex_packing TODO: check if used
   static void read(
       void* target,
       const std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>&
           ciphertexts,
-      size_t n, size_t batch_size, const element::Type& element_type,
-      seal::parms_id_type parms_id, double scale,
-      seal::CKKSEncoder& ckks_encoder, seal::Decryptor& decryptor,
-      bool complex_packing);
+      size_t num_bytes, size_t batch_size, const element::Type& element_type,
+      seal::CKKSEncoder& ckks_encoder, seal::Decryptor& decryptor);
 
   /// \brief Replaces the ciphertexts in the tensor
   /// \param[in] elements Ciphertexts to store in the tensor

@@ -197,10 +197,9 @@ void ngraph::he::HESealClient::handle_result(
   }
 
   size_t num_bytes = result_count * sizeof(double) * m_batch_size;
-  ngraph::he::HESealCipherTensor::read(
-      m_results.data(), result_ciphers, num_bytes, m_batch_size, element::f64,
-      m_context->first_parms_id(), m_scale, *m_ckks_encoder, *m_decryptor,
-      complex_packing());
+  ngraph::he::HESealCipherTensor::read(m_results.data(), result_ciphers,
+                                       num_bytes, m_batch_size, element::f64,
+                                       *m_ckks_encoder, *m_decryptor);
   close_connection();
 }
 

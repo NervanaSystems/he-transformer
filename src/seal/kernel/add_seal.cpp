@@ -92,8 +92,8 @@ void ngraph::he::scalar_add_seal(SealCiphertextWrapper& arg0,
       encode(p, arg1, *he_seal_backend.get_ckks_encoder(),
              arg0.ciphertext().parms_id(), element_type,
              arg0.ciphertext().scale(), complex_packing);
-      size_t chain_ind0 = get_chain_index(arg0, he_seal_backend);
-      size_t chain_ind1 = get_chain_index(p.plaintext(), he_seal_backend);
+      size_t chain_ind0 = he_seal_backend.get_chain_index(arg0);
+      size_t chain_ind1 = he_seal_backend.get_chain_index(p.plaintext());
       NGRAPH_CHECK(chain_ind0 == chain_ind1, "Chain inds ", chain_ind0, ",  ",
                    chain_ind1, " don't match");
 

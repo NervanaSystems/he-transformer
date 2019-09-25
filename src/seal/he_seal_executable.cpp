@@ -862,7 +862,7 @@ void ngraph::he::HESealExecutable::generate_calls(
       auto& cipher = cipher_tensor->get_element(cipher_idx);
       if (!cipher->known_value()) {
         size_t curr_chain_index =
-            get_chain_index(cipher->ciphertext(), m_he_seal_backend);
+            m_he_seal_backend.get_chain_index(cipher->ciphertext());
         if (curr_chain_index == 0) {
           new_chain_index = 0;
         } else {
