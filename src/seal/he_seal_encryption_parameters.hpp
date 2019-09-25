@@ -37,9 +37,11 @@ class HESealEncryptionParameters {
   /// \param[in] scheme_name Should be "HE_SEAL"
   /// \param[in] poly_modulus_degree Degree of the RLWE polynomial. Should be a
   /// power of 2 \param[in] security_level Bits of security. 0 indicates no
-  /// security \param[in] scale Scale at which to encode. Roughly corresponds to
-  /// the precision of the computation \param[in] coeff_modulus_bits Vector of
-  /// bit-widths of the cofficient moduli.
+  /// security
+  /// \param[in] scale Scale at which to encode. Roughly corresponds to the
+  /// precision of the computation
+  ///  \param[in] coeff_modulus_bits Vector of bit-widths of the cofficient
+  ///  moduli.
   /// \throws ngraph_error if scheme_name is not "HE_SEAL"
   HESealEncryptionParameters(const std::string& scheme_name,
                              std::uint64_t poly_modulus_degree,
@@ -67,12 +69,12 @@ class HESealEncryptionParameters {
     seal::EncryptionParameters::Save(m_seal_encryption_parameters, stream);
   }
 
-/// \brief Returns SEAL encryption parameters
+  /// \brief Returns SEAL encryption parameters
   seal::EncryptionParameters& seal_encryption_parameters() {
     return m_seal_encryption_parameters;
   }
 
-/// \brief Returns SEAL encryption parameters
+  /// \brief Returns SEAL encryption parameters
   const seal::EncryptionParameters& seal_encryption_parameters() const {
     return m_seal_encryption_parameters;
   }

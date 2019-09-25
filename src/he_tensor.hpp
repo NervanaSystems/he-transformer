@@ -23,7 +23,7 @@
 
 namespace ngraph {
 namespace he {
-/// \brief Enum represnting the runtime type of a HETensor
+/// \brief Enum representing the runtime type of a HETensor
 enum class HETensorTypeInfo { unknown = 0, cipher = 1, plain = 2 };
 
 class HESealBackend;
