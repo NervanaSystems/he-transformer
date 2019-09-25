@@ -21,6 +21,7 @@
 #include "gtest/gtest.h"
 #include "protos/message.pb.h"
 #include "seal/seal.h"
+#include "seal/seal_ciphertext_wrapper.hpp"
 #include "tcp/tcp_message.hpp"
 
 using namespace std;

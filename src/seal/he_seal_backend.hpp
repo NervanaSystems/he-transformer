@@ -305,6 +305,22 @@ class HESealBackend : public ngraph::runtime::Backend {
   /// Convolution and Dot operations. Typically, this should never be used
   bool& naive_rescaling() { return m_naive_rescaling; }
 
+  /// \brief Returns the chain index, also known as level, of the ciphertext
+  /// \param[in] cipher Ciphertext whose chain index to return
+  /// \returns The chain index of the ciphertext.
+  inline size_t get_chain_index(const SealCiphertextWrapper& cipher) const {
+    return m_context->get_context_data(cipher.ciphertext().parms_id())
+        ->chain_index();
+  }
+
+  /// \brief Returns the chain index, also known as level, of the plaintext
+  /// \param[in] plain Plaintext whose chain index to return
+  /// \returns The chain index of the ciphertext.
+  inline size_t get_chain_index(const SealPlaintextWrapper& plain) const {
+    return m_context->get_context_data(plain.plaintext().parms_id())
+        ->chain_index();
+  }
+
  private:
   bool m_encrypt_data{
       ngraph::he::flag_to_bool(std::getenv("NGRAPH_ENCRYPT_DATA"))};

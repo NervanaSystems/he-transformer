@@ -50,24 +50,6 @@ inline double choose_scale(
   }
 }
 
-/// \brief Returns the chain index, also known as level, of the ciphertext
-/// \param[in] cipher Ciphertext whose chain index to return
-/// \param[in] he_seal_backend Backend whose context is used to determine the
-/// chain index
-/// \returns The chain index of the ciphertext.
-/// TODO: move to he_seal_backend
-size_t get_chain_index(const SealCiphertextWrapper& cipher,
-                       const HESealBackend& he_seal_backend);
-
-/// \brief Returns the chain index, also known as level, of the plaintext
-/// \param[in] plain Plaintext whose chain index to return
-/// \param[in] he_seal_backend Backend whose context is used to determine the
-/// chain index
-/// \returns The chain index of the plaintext.
-/// TODO: move to he_seal_backend
-size_t get_chain_index(const SealPlaintextWrapper& plain,
-                       const HESealBackend& he_seal_backend);
-
 /// \brief Returns the smallest chain index of a vector of ciphertexts
 /// \param[in] ciphers Vector of ciphertexts
 /// \param[in] he_seal_backend Backend whose context is used to determine the
