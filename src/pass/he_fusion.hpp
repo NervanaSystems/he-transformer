@@ -22,10 +22,12 @@ namespace ngraph {
 namespace he {
 namespace pass {
 
+/// \brief performs HE-friendly fusion operations
 class HEFusion : public ngraph::pass::GraphRewrite {
  public:
   HEFusion() : GraphRewrite() { construct_bounded_relu(); }
 
+  /// \brief Fuses Min(Relu, Constant) op into BoundedRelu(Constant) op
   void construct_bounded_relu();
 };
 }  // namespace pass

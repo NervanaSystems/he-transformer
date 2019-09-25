@@ -24,6 +24,8 @@
 
 namespace ngraph {
 namespace he {
+/// \brief Returns the size in bytes required to serialize a ciphertext
+/// \param[in] cipher Ciphertext to measure size of
 inline size_t ciphertext_size(const seal::Ciphertext& cipher) {
   // TODO: figure out why the extra 8 bytes
   size_t expected_size = 8;
@@ -38,6 +40,9 @@ inline size_t ciphertext_size(const seal::Ciphertext& cipher) {
   return expected_size;
 }
 
+/// \brief Serializes the ciphertext and writes to a destination
+/// \param[in] cipher Ciphertext to write
+/// \param[out] destination Where to save ciphertext to
 inline void save(const seal::Ciphertext& cipher, void* destination) {
   {
     static constexpr std::array<size_t, 6> offsets = {
@@ -76,6 +81,10 @@ inline void save(const seal::Ciphertext& cipher, void* destination) {
   }
 }
 
+/// \brief Loads a serialized ciphertext
+/// \param[out] cipher De-serialized ciphertext
+/// \param[in] context Encryption context to verify ciphertext validity against
+/// \param[in] src Pointer to data to load from
 inline void load(seal::Ciphertext& cipher,
                  std::shared_ptr<seal::SEALContext> context, void* src) {
   seal::SEAL_BYTE is_ntt_form_byte;
@@ -119,38 +128,78 @@ inline void load(seal::Ciphertext& cipher,
                "ciphertext data is invalid");
 }
 
+/// \brief Class representing a lightweight wrapper around a SEAL ciphertext.
+/// The wrapper contains two attributes in addition to the SEAL ciphertext.
+/// First, whether or not the ciphertext stores values using complex packing
+/// Second, whether or not the ciphertext represents a publicly-known value.
+/// Typically, a ciphertext represents encrypted data, which is not known unless
+/// decryption has been performed. However, two special cases result in a
+/// "known-valued" ciphertext. First, multiplying a ciphertext with a plaintext
+/// zero results in a "known-valued" ciphertext ith known value 0. Second, the
+/// "Pad" operation may pad a known plaintext value to HESealCipherTensor. The
+/// padded value itself is public, so the resulting ciphertext will be this
+/// known value. This is a design choice which allows HESealCipherTensors to
+/// store a vector of SealCiphertextWrappers.
 class SealCiphertextWrapper {
  public:
+  /// \brief Create an empty unknown-valued ciphertext without complex packing
   SealCiphertextWrapper() : m_complex_packing(false), m_known_value(false) {}
 
+  /// \brief Create an unknown-valued ciphertext
+  /// \param[in] complex_packign Whether or not to use complex packing
   SealCiphertextWrapper(bool complex_packing)
       : m_complex_packing(complex_packing), m_known_value(false) {}
 
+  /// \brief Create ciphertext wrapper from ciphertext
+  /// \param[in] cipher Ciphertext to store
+  /// \param[in] complex_packing Whether or not ciphertext uses complex packing
+  /// TODO: add move constructor
   SealCiphertextWrapper(const seal::Ciphertext& cipher,
-                        bool complex_packing = false, bool known_value = false)
+                        bool complex_packing = false)
       : m_ciphertext(cipher),
         m_complex_packing(complex_packing),
-        m_known_value(known_value) {}
+        m_known_value(false) {}
 
+  /// \brief Returns the underyling SEAL ciphertext
   seal::Ciphertext& ciphertext() { return m_ciphertext; }
+
+  /// \brief Returns the underyling SEAL ciphertext
   const seal::Ciphertext& ciphertext() const { return m_ciphertext; }
 
+  /// \brief Serializes the ciphertext to a stream
+  /// \param[out] Stream to serialize the ciphertext to
   void save(std::ostream& stream) const { m_ciphertext.save(stream); }
 
+  /// \brief Returns the size of the underlying ciphertext
   size_t size() const { return m_ciphertext.size(); }
 
+  /// \brief Returns whether or not ciphertext represents a known value
   bool known_value() const { return m_known_value; }
+
+  /// \brief Returns whether or not ciphertext represents a known value
   bool& known_value() { return m_known_value; }
 
+  /// \brief Returns known value
   float value() const { return m_value; }
+
+  /// \brief Returns known value
   float& value() { return m_value; }
 
+  /// \brief Returns scale of the ciphertext
   double& scale() { return m_ciphertext.scale(); }
+
+  /// \brief Returns scale of the ciphertext
   double scale() const { return m_ciphertext.scale(); }
 
+  /// \brief Returns whether or not the ciphertext uses complex packing
   bool complex_packing() const { return m_complex_packing; }
+
+  /// \brief Returns whether or not the ciphertext uses complex packing
   bool& complex_packing() { return m_complex_packing; }
 
+  /// \brief Saves the cihertext to a protobuf ciphertext wrapper
+  /// \param[out] proto_cipher Protobuf ciphertext wrapper to store the
+  /// ciphertext
   inline void save(he_proto::SealCiphertextWrapper& proto_cipher) const {
     proto_cipher.set_complex_packing(complex_packing());
     proto_cipher.set_known_value(known_value());
@@ -166,6 +215,10 @@ class SealCiphertextWrapper {
     proto_cipher.set_ciphertext(std::move(cipher_str));
   }
 
+  /// \brief Loads a ciphertext from a buffer to a SealCiphertextWrapper
+  /// \param[out] dst Destination to load ciphertext wrapper to
+  /// \param[in] src Source to load ciphertext wrapper from
+  /// \param[in] context TODO
   static inline void load(ngraph::he::SealCiphertextWrapper& dst,
                           const he_proto::SealCiphertextWrapper& src,
                           std::shared_ptr<seal::SEALContext> context) {
@@ -182,6 +235,10 @@ class SealCiphertextWrapper {
     }
   }
 
+  /// \brief Loads a ciphertext from a buffer to a SealCiphertextWrapper
+  /// \param[out] dst Destination to load ciphertext wrapper to
+  /// \param[in] src Source to load ciphertext wrapper from
+  /// \param[in] context TODO
   static inline void load(
       std::shared_ptr<ngraph::he::SealCiphertextWrapper>& dst,
       const he_proto::SealCiphertextWrapper& src,
@@ -197,6 +254,10 @@ class SealCiphertextWrapper {
   float m_value{0.0f};
 };
 
+/// \brief Saves a list of ciphertexts to a protobuf message
+/// \param[in] ciphers_begin Iterator at beginning of ciphertext wrapper list
+/// \param[in] ciphers_end Iterator at end of ciphertext wrapper list
+/// \param[out] proto_msg Protobuf message to save ciphertexts to
 inline void save_to_proto(
     std::vector<std::shared_ptr<SealCiphertextWrapper>>::const_iterator
         ciphers_begin,
@@ -215,6 +276,9 @@ inline void save_to_proto(
   }
 }
 
+/// \brief Saves a vector of ciphertexts to a protobuf message
+/// \param[in] ciphers Vector of ciphertext wrappers to save
+/// \param[out] proto_msg Protobuf message to save ciphertexts to
 inline void save_to_proto(
     const std::vector<std::shared_ptr<SealCiphertextWrapper>>& ciphers,
     he_proto::TCPMessage& proto_msg) {

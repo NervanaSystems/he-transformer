@@ -3,6 +3,7 @@ syntax = "proto3";
 
 package he_proto;
 
+/// \brief Represents a message between the server and client.
 message TCPMessage {
   enum Type {
     UNKNOWN = 0;

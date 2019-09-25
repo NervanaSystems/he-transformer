@@ -29,8 +29,10 @@
 namespace ngraph {
 namespace he {
 
-// Packs elements of input into real values
-// (a+bi, c+di) => (a,b,c,d)
+/// \brief Unpacks complex values to real values
+/// (a+bi, c+di) => (a,b,c,d)
+/// \param[out] output Vector to store unpacked real values
+/// \param[in] input Vector of complex values to unpack
 template <typename T>
 inline void complex_vec_to_real_vec(std::vector<T>& output,
                                     const std::vector<std::complex<T>>& input) {
@@ -42,9 +44,11 @@ inline void complex_vec_to_real_vec(std::vector<T>& output,
   }
 }
 
-// Packs elements of input into complex values
-// (a,b,c,d) => (a+bi, c+di)
-// (a,b,c) => (a+bi, c+0i)
+/// \brief Packs elements of input into complex values
+/// (a,b,c,d) => (a+bi, c+di)
+/// (a,b,c) => (a+bi, c+0i)
+/// \param[out] output Vector to store packed complex values
+/// \param[in] input Vector of real values to unpack
 template <typename T>
 inline void real_vec_to_complex_vec(std::vector<std::complex<T>>& output,
                                     const std::vector<T>& input) {
@@ -61,6 +65,10 @@ inline void real_vec_to_complex_vec(std::vector<std::complex<T>>& output,
   }
 }
 
+/// \brief Interprets a string as a boolean value
+/// \param[in] flag Flag value
+/// \param[in] default_value Value to return if flag is not able to be parsed
+/// \returns True if flag represents a True value, False otherwise
 inline bool flag_to_bool(const char* flag, bool default_value = false) {
   if (flag == nullptr) {
     return default_value;
@@ -78,6 +86,11 @@ inline bool flag_to_bool(const char* flag, bool default_value = false) {
   }
 }
 
+/// \brief Converts a type to a double using static_cast
+/// Note, this means a reduction of range in int64 and uint64 values.
+/// \param[in] src Source from which to read
+/// \param[in] element_type Datatype to interpret source as
+/// \returns double value
 inline double type_to_double(const void* src,
                              const element::Type& element_type) {
   switch (element_type.get_type_enum()) {
@@ -109,6 +122,11 @@ inline double type_to_double(const void* src,
   return 0.0;
 }
 
+/// \brief Converts a vector of values of given type to a vector of doubles
+/// \param[in] src Pointer to beginning of input vector
+/// \param[in] element_type Datatype of input vector
+/// \param[in] n Number of elements in the input vector
+/// \returns Vector of double values
 inline std::vector<double> type_vec_to_double_vec(
     const void* src, const element::Type& element_type, size_t n) {
   std::vector<double> ret(n);
@@ -120,6 +138,11 @@ inline std::vector<double> type_vec_to_double_vec(
   return ret;
 }
 
+/// \brief Writes a vector of double values interpreted as a different datatype
+/// to a target
+/// \param[in] target Pointer to write to
+/// \param[in] element_type Datatype of interpret input as
+/// \param[in] input Vector of input values
 inline void double_vec_to_type_vec(void* target,
                                    const element::Type& element_type,
                                    const std::vector<double>& input) {

@@ -97,7 +97,7 @@ ngraph::he::HESealExecutable::HESealExecutable(
       m_complex_packing(complex_packing),
       m_verbose_all_ops(false),
       m_enable_client(enable_client),
-      m_client_setup(false),
+      m_server_setup(false),
       m_batch_size(1),
       m_port(34000),
       m_relu_done_count(0),
@@ -173,7 +173,7 @@ ngraph::he::HESealExecutable::HESealExecutable(
   }
 
   if (m_enable_client) {
-    client_setup();
+    server_setup();
   }
 }
 
@@ -182,18 +182,16 @@ void ngraph::he::HESealExecutable::check_client_supports_function() {
                "HESealExecutable only supports parameter size 1 (got ",
                get_parameters().size(), ")");
 
-  // only support function output size 1 for now
   NGRAPH_CHECK(get_results().size() == 1,
                "HESealExecutable only supports output size 1 (got ",
                get_results().size(), "");
 }
 
-void ngraph::he::HESealExecutable::client_setup() {
-  if (!m_client_setup) {
+void ngraph::he::HESealExecutable::server_setup() {
+  if (!m_server_setup) {
     NGRAPH_HE_LOG(1) << "Enable client";
     check_client_supports_function();
 
-    // Start server
     NGRAPH_HE_LOG(1) << "Starting server";
     start_server();
 
@@ -213,7 +211,7 @@ void ngraph::he::HESealExecutable::client_setup() {
                         std::bind(&HESealExecutable::session_started, this));
     m_session->write_message(std::move(parms_message));
 
-    m_client_setup = true;
+    m_server_setup = true;
 
     // Set client inputs
     if (m_is_compiled) {
@@ -674,7 +672,7 @@ bool ngraph::he::HESealExecutable::call(
 
         if (plain_out) {
           auto out_tensor = std::make_shared<ngraph::he::HEPlainTensor>(
-              element_type, shape, m_he_seal_backend, packed_out, name);
+              element_type, shape, packed_out, name);
           tensor_map.insert({tensor, out_tensor});
         } else {
           auto out_tensor = std::make_shared<ngraph::he::HESealCipherTensor>(

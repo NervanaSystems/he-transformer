@@ -68,8 +68,6 @@ size_t ngraph::he::get_chain_index(const SealPlaintextWrapper& plain,
       ->chain_index();
 }
 
-// Matches the modulus chain for the two elements in-place
-// The elements are modified if necessary
 void ngraph::he::match_modulus_and_scale_inplace(
     SealCiphertextWrapper& arg0, SealCiphertextWrapper& arg1,
     const HESealBackend& he_seal_backend, seal::MemoryPoolHandle pool) {
@@ -85,20 +83,20 @@ void ngraph::he::match_modulus_and_scale_inplace(
     auto arg0_parms_id = arg0.ciphertext().parms_id();
     if (rescale) {
       he_seal_backend.get_evaluator()->rescale_to_inplace(arg1.ciphertext(),
-                                                          arg0_parms_id);
+                                                          arg0_parms_id, pool);
     } else {
-      he_seal_backend.get_evaluator()->mod_switch_to_inplace(arg1.ciphertext(),
-                                                             arg0_parms_id);
+      he_seal_backend.get_evaluator()->mod_switch_to_inplace(
+          arg1.ciphertext(), arg0_parms_id, pool);
     }
     chain_ind1 = ngraph::he::get_chain_index(arg1, he_seal_backend);
   } else {  // chain_ind0 > chain_ind1
     auto arg1_parms_id = arg1.ciphertext().parms_id();
     if (rescale) {
       he_seal_backend.get_evaluator()->rescale_to_inplace(arg0.ciphertext(),
-                                                          arg1_parms_id);
+                                                          arg1_parms_id, pool);
     } else {
-      he_seal_backend.get_evaluator()->mod_switch_to_inplace(arg0.ciphertext(),
-                                                             arg1_parms_id);
+      he_seal_backend.get_evaluator()->mod_switch_to_inplace(
+          arg0.ciphertext(), arg1_parms_id, pool);
     }
     chain_ind0 = ngraph::he::get_chain_index(arg0, he_seal_backend);
   }
@@ -322,7 +320,7 @@ void ngraph::he::encode(double value, const ngraph::element::Type& element_type,
                      context_data.total_coeff_modulus_bit_count())) {
     NGRAPH_ERR << "scale " << scale;
     NGRAPH_ERR << "context_data.total_coeff_modulus_bit_count"
-                << context_data.total_coeff_modulus_bit_count();
+               << context_data.total_coeff_modulus_bit_count();
     throw ngraph_error("scale out of bounds");
   }
 
@@ -334,11 +332,11 @@ void ngraph::he::encode(double value, const ngraph::element::Type& element_type,
 #pragma omp critical
     {
       NGRAPH_ERR << "Failed to encode " << value / scale << " at scale "
-                  << scale;
+                 << scale;
       NGRAPH_ERR << "coeff_bit_count " << coeff_bit_count;
       NGRAPH_ERR << "coeff_mod_count " << coeff_mod_count;
       NGRAPH_ERR << "total coeff modulus bit count "
-                  << context_data.total_coeff_modulus_bit_count();
+                 << context_data.total_coeff_modulus_bit_count();
       throw ngraph_error("encoded value is too large");
     }
   }

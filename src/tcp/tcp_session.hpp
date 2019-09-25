@@ -28,20 +28,23 @@ using boost::asio::ip::tcp;
 
 namespace ngraph {
 namespace he {
+/// \brief Class representing a session over TCP
 class TCPSession : public std::enable_shared_from_this<TCPSession> {
   using data_buffer = ngraph::he::TCPMessage::data_buffer;
   size_t header_length = ngraph::he::TCPMessage::header_length;
 
  public:
+  /// \brief Constructs a session with a given message handler
   TCPSession(tcp::socket socket,
              std::function<void(const ngraph::he::TCPMessage&)> message_handler)
       : m_socket(std::move(socket)),
         m_writing(false),
         m_message_callback(std::bind(message_handler, std::placeholders::_1)) {}
 
+  /// \brief Start the session
   void start() { do_read_header(); }
 
- public:
+  /// \brief Reads a header
   void do_read_header() {
     if (m_read_buffer.size() < header_length) {
       m_read_buffer.resize(header_length);
@@ -61,6 +64,8 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
         });
   }
 
+  /// \brief Reads message body of specified length
+  /// \param[in] body_length Number of bytes to read
   void do_read_body(size_t body_length) {
     m_read_buffer.resize(header_length + body_length);
 
@@ -80,6 +85,8 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
         });
   }
 
+  /// \brief Adds a message to the message-writing queue
+  /// \param[in,out] message Message to write
   void write_message(ngraph::he::TCPMessage&& message) {
     bool write_in_progress = is_writing();
     m_message_queue.emplace_back(std::move(message));
@@ -88,8 +95,11 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
     }
   }
 
+  /// \brief Returns whether or not a message is queued to be written
   bool is_writing() const { return !m_message_queue.empty(); }
 
+  /// \brief Returns a condition variable notified when the session is done
+  /// writing a message
   std::condition_variable& is_writing_cond() { return m_is_writing; }
 
  private:

@@ -21,12 +21,10 @@
 #include "seal/he_seal_backend.hpp"
 
 ngraph::he::HETensor::HETensor(const element::Type& element_type,
-                               const Shape& shape,
-                               const ngraph::he::HESealBackend& he_seal_backend,
-                               const bool packed, const std::string& name)
+                               const Shape& shape, const bool packed,
+                               const std::string& name)
     : ngraph::runtime::Tensor(std::make_shared<ngraph::descriptor::Tensor>(
           element_type, shape, name)),
-      m_he_seal_backend(he_seal_backend),
       m_packed(packed) {
   m_descriptor->set_tensor_layout(
       std::make_shared<ngraph::descriptor::layout::DenseTensorLayout>(
