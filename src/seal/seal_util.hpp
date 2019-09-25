@@ -287,6 +287,7 @@ void decode(ngraph::he::HEPlaintext& output,
 
 /// \brief Writes plaintext to byte output
 /// \param[out] output Pointer to destination
+/// \param[out] input Plaintext to write
 /// \param[in] type Datatype to write
 /// \param[in] count Number of values to write
 void decode(void* output, const ngraph::he::HEPlaintext& input,

@@ -81,7 +81,8 @@ class HESealExecutable : public runtime::Executable {
   /// If the client is enabled, the inputs are dummy values and ignored.
   /// Instead, the inputs will be provided by the client
   /// \param[in] inputs Input tensor arguments to the function.
-  /// \param[out] outptus Output tensors storing the result of the function
+  /// \param[out] outputs Output tensors storing the result of the
+  /// function
   bool call(
       const std::vector<std::shared_ptr<runtime::Tensor>>& outputs,
       const std::vector<std::shared_ptr<runtime::Tensor>>& inputs) override;
@@ -145,16 +146,16 @@ class HESealExecutable : public runtime::Executable {
   void send_inference_shape();
 
   /// \brief Loads the public key from the message
-  /// \param[in] proto_message from which to load the public key
+  /// \param[in] proto_msg from which to load the public key
   void load_public_key(const he_proto::TCPMessage& proto_msg);
 
   /// \brief Loads the evaluation key from the message
-  /// \param[in] proto_message from which to load the evluation key
+  /// \param[in] proto_msg from which to load the evluation key
   void load_eval_key(const he_proto::TCPMessage& proto_msg);
 
   /// \brief Processes the ReLU operation if the client is enabled
   /// \param[in] arg0_cipher Encrypted tensor argumnet
-  /// \param[out] arg0_cipher Encrypted tensor result
+  /// \param[out] out_cipher Encrypted tensor result
   /// \param[in] node_wrapper Wrapper around operation to perform
   // TODO: rename
   void handle_server_relu_op(std::shared_ptr<HESealCipherTensor>& arg0_cipher,
@@ -163,7 +164,7 @@ class HESealExecutable : public runtime::Executable {
 
   /// \brief Processes the MaxPool operation if the client is enabled
   /// \param[in] arg0_cipher Encrypted tensor argumnet
-  /// \param[out] arg0_cipher Encrypted tensor result
+  /// \param[out] out_cipher Encrypted tensor result
   /// \param[in] node_wrapper Wrapper around operation to perform
   // TODO: rename
   void handle_server_max_pool_op(

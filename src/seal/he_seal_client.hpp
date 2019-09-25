@@ -29,48 +29,91 @@
 
 namespace ngraph {
 namespace he {
+/// \brief Class representing a data owner. The client provides encrypted values
+/// to a server and receives the encrypted result. The client may also aid in
+/// the computation, for example by computing activation functions the sever
+/// cannot compute using homomorphic encryption
 class HESealClient {
  public:
+  /// \brief Constructs a client object and connects to a server
+  /// \param[in] hostname Hostname of the server
+  /// \param[in] port Port of the server
+  /// \param[in] batch_size Batch size of the inference to perform
+  /// \param[in] inputs Input data
+  /// \param[in] complex_packing Whether or not to use complex packing
   HESealClient(
       const std::string& hostname, const size_t port, const size_t batch_size,
       const std::vector<double>& inputs,
       bool complex_packing = flag_to_bool(std::getenv("NGRAPH_ENCRYPT_DATA")));
 
+  /// \brief Constructs a client object and connects to a server
+  /// \param[in] hostname Hostname of the server
+  /// \param[in] port Port of the server
+  /// \param[in] batch_size Batch size of the inference to perform
+  /// \param[in] inputs Input data
+  /// \param[in] complex_packing Whether or not to use complex packing
   HESealClient(
       const std::string& hostname, const size_t port, const size_t batch_size,
       const std::vector<float>& inputs,
       bool complex_packing = flag_to_bool(std::getenv("NGRAPH_ENCRYPT_DATA")));
 
+  /// \brief Creates SEAL context
   void set_seal_context();
 
+  /// \brief Processes a message from the server
+  /// \param[in] message Message to process
   void handle_message(const ngraph::he::TCPMessage& message);
 
+  /// \brief Processes a message containing encryption parameters
+  /// \param[in] message Message to process
   void handle_encryption_parameters_response(
       const he_proto::TCPMessage& message);
 
+  /// \brief Processes a request to perform ReLU function
+  /// \param[in] message Message to process
   void handle_relu_request(const ngraph::he::TCPMessage& message);
 
+  /// \brief TODO
   void handle_relu_request(he_proto::TCPMessage&& message);
+
+  /// \brief Processes a request to perform MaxPool function
+  /// \param[in] message Message to process
   void handle_max_pool_request(const he_proto::TCPMessage& message);
+
+  /// \brief Processes a request to perform BoundedReLU function
+  /// \param[in] message Message to process
   void handle_bounded_relu_request(he_proto::TCPMessage&& message);
 
+  /// \brief Processes a message containing the result from the server
+  /// \param[in] message Message to process
   void handle_result(const he_proto::TCPMessage& message);
 
+  /// \brief Processes a message containing the inference shape
+  /// \param[in] message Message to process
   void handle_inference_request(const he_proto::TCPMessage& message);
 
+  /// \brief Sends the public key and relinearization keys to the server
   void send_public_and_relin_keys();
 
+  /// \brief Writes a mesage to the server
+  /// \param[in] message Message to write
   inline void write_message(const ngraph::he::TCPMessage&& message) {
     m_tcp_client->write_message(std::move(message));
   }
 
+  /// \brief Returns whether or not the function has completed evaluation
   inline bool is_done() { return m_is_done; }
 
+  /// \brief Returns decrypted results
   std::vector<double> get_results() { return m_results; }
 
+  /// \brief Closes conection with the server
   void close_connection();
 
+  /// \brief Returns whether or not complex packing is used
   bool complex_packing() const { return m_complex_packing; }
+
+  /// \brief Returns whether or not complex packing is used
   bool& complex_packing() { return m_complex_packing; }
 
  private:

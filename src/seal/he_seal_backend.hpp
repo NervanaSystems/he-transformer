@@ -52,170 +52,257 @@ class BackendConstructor;
 namespace he {
 class HESealCipherTensor;
 class SealCiphertextWrapper;
+/// \brief Class representing a backend using the CKKS homomorphic encryption
+/// scheme.
 class HESealBackend : public ngraph::runtime::Backend {
  public:
+  /// \brief Constructs a backend with default parameter choice
   HESealBackend();
+  /// \brief Constructs a backend with the given enryption parameters
+  /// \param[in] sp Encryption parameters
   HESealBackend(const ngraph::he::HESealEncryptionParameters& sp);
 
-  //
-  // ngraph backend overrides
-  //
+  /// \brief Constructs a plaintext tensor
+  /// \param[in] element_type Datatype to store in the tensor
+  /// \param[in] shape Shape of the tensor
   std::shared_ptr<runtime::Tensor> create_tensor(
       const element::Type& element_type, const Shape& shape) override;
 
+  /// \brief Unimplemented
   inline std::shared_ptr<runtime::Tensor> create_tensor(
       const element::Type& element_type, const Shape& shape,
       void* memory_pointer) override {
     throw ngraph_error("create_tensor unimplemented");
   }
 
+  /// \brief Compiles a function
+  /// \brief param[in] function Function to compile
+  /// \brief param[in] enable_performance_data TODO: unused
+  /// \returns An executable object
   std::shared_ptr<ngraph::runtime::Executable> compile(
-      std::shared_ptr<Function> func,
+      std::shared_ptr<Function> function,
       bool enable_performance_data = false) override;
 
+  /// \brief Returns whether or not a given operation is supported
+  /// \param[in] node Node representing an operation
   bool is_supported(const Node& node) const override;
 
+  /// \brief Returns whether or not a given datatype is supported
+  /// \param[in] type Datatype
+  /// \returns True if datatype is supported, false otherwise
   inline bool is_supported_type(const ngraph::element::Type& type) const {
     return m_supported_element_types.find(type.hash()) !=
            m_supported_element_types.end();
   }
 
-  void validate_he_call(std::shared_ptr<const Function> function,
-                        const std::vector<std::shared_ptr<HETensor>>& outputs,
-                        const std::vector<std::shared_ptr<HETensor>>& inputs);
-
-  //
-  // Tensor creation
-  //
+  /// \brief Creates a cipher tensor using plaintext packing along the batch
+  /// (i.e. first) axis
+  /// \param[in] element_type Datatype stored in the tensor
+  /// \param[in] shape Shape of the tensor
+  /// \returns Pointer to created tensor
   std::shared_ptr<runtime::Tensor> create_packed_cipher_tensor(
       const element::Type& element_type, const Shape& shape);
 
+  /// \brief Creates a plaintext tensor using plaintext packing along the batch
+  /// (i.e. first) axis
+  /// \param[in] element_type Datatype stored in the tensor
+  /// \param[in] shape Shape of the tensor
+  /// \returns Pointer to created tensor
   std::shared_ptr<runtime::Tensor> create_packed_plain_tensor(
       const element::Type& element_type, const Shape& shape);
 
+  /// \brief Creates a plaintext tensor
+  /// \param[in] element_type Datatype stored in the tensor
+  /// \param[in] shape Shape of the tensor
+  /// \param[in] packed Whether or not to use plaintext packing
+  /// \returns Pointer to created tensor
   std::shared_ptr<runtime::Tensor> create_plain_tensor(
       const element::Type& element_type, const Shape& shape,
       const bool packed = false) const;
 
+  /// \brief Creates a ciphertext tensor
+  /// \param[in] element_type Datatype stored in the tensor
+  /// \param[in] shape Shape of the tensor
+  /// \param[in] packed Whether or not to use plaintext packing
+  /// \param[in] name Name of the created tensor
+  /// \returns Pointer to created tensor
   std::shared_ptr<runtime::Tensor> create_cipher_tensor(
       const element::Type& element_type, const Shape& shape,
       const bool packed = false, const std::string& name = "external") const;
 
-  //
-  // Cipher/plaintext creation
-  //
+  /// \brief Creates ciphertext with given value
+  /// \param[in] value Value to encode and encrypt
+  /// \param[in] element_type Datatype of the values to store
+  /// \param[in] batch_size TODO: remove
+  /// \returns Pointer to created ciphertext
   std::shared_ptr<ngraph::he::SealCiphertextWrapper> create_valued_ciphertext(
       float value, const element::Type& element_type,
       size_t batch_size = 1) const;
 
+  /// \brief Creates empty ciphertext with backend's complex packing status
+  /// \returns Pointer to created ciphertext
   inline std::shared_ptr<ngraph::he::SealCiphertextWrapper>
   create_empty_ciphertext() const {
     return std::make_shared<ngraph::he::SealCiphertextWrapper>(
         m_complex_packing);
   }
 
+  /// \brief Creates empty ciphertext
+  /// \param[in] complex_packing Whether or not ciphertext uses complex packing
+  /// \returns Pointer to created ciphertext
   static inline std::shared_ptr<ngraph::he::SealCiphertextWrapper>
   create_empty_ciphertext(bool complex_packing) {
     return std::make_shared<ngraph::he::SealCiphertextWrapper>(complex_packing);
   }
 
+  /// \brief Creates empty ciphertext at given parameter choice with backend's
+  /// complex packing status
+  /// \param[in] parms_id Seal encryption parameter id
+  /// \returns Pointer to created ciphertext
   inline std::shared_ptr<ngraph::he::SealCiphertextWrapper>
   create_empty_ciphertext(seal::parms_id_type parms_id) const {
     return std::make_shared<ngraph::he::SealCiphertextWrapper>(
         seal::Ciphertext(m_context, parms_id), m_complex_packing);
   }
 
+  /// \brief Creates empty ciphertext at given parameter choice with backend's
+  /// complex packing status
+  /// \param[in] pool Memory pool used for new memory allocation
+  /// \returns Pointer to created ciphertext
   inline std::shared_ptr<ngraph::he::SealCiphertextWrapper>
   create_empty_ciphertext(const seal::MemoryPoolHandle& pool) const {
     return std::make_shared<ngraph::he::SealCiphertextWrapper>(
         pool, m_complex_packing);
   }
 
+  /// \brief Creates SEAL context from encryption parameters
+  /// \param[in] sp Pointer to encrpytion parameters
+  /// \returns pointer to created SEAL context
   std::shared_ptr<seal::SEALContext> make_seal_context(
       const std::shared_ptr<ngraph::he::HESealEncryptionParameters> sp);
 
+  /// \brief TODO
   void decode(void* output, const ngraph::he::HEPlaintext& input,
               const element::Type& type, size_t count = 1) const;
 
+  /// \brief TODO
   void decode(ngraph::he::HEPlaintext& output,
               const ngraph::he::SealPlaintextWrapper& input) const;
 
+  /// \brief TODO
   void encrypt(std::shared_ptr<ngraph::he::SealCiphertextWrapper>& output,
                const ngraph::he::HEPlaintext& input,
                const element::Type& element_type,
                bool complex_packing = false) const;
 
+  /// \brief TODO
   void decrypt(ngraph::he::HEPlaintext& output,
                const SealCiphertextWrapper& input) const;
 
+  /// \brief Returns pointer to SEAL context
   const inline std::shared_ptr<seal::SEALContext> get_context() const {
     return m_context;
   }
 
+  /// \brief Returns pointer to secret key
   const inline std::shared_ptr<seal::SecretKey> get_secret_key() const {
     return m_secret_key;
   }
 
+  /// \brief Returns pointer to public key
   const inline std::shared_ptr<seal::PublicKey> get_public_key() const {
     return m_public_key;
   }
 
+  /// \brief Returns pointer to relinearization keys
   const inline std::shared_ptr<seal::RelinKeys> get_relin_keys() const {
     return m_relin_keys;
   }
 
+  /// \brief Returns pointer to Galois keys
   const inline std::shared_ptr<seal::GaloisKeys> get_galois_keys() const {
     return m_galois_keys;
   }
 
+  /// \brief Returns pointer to encryptor
   const inline std::shared_ptr<seal::Encryptor> get_encryptor() const {
     return m_encryptor;
   }
 
+  /// \brief Returns pointer to decryptor
   const inline std::shared_ptr<seal::Decryptor> get_decryptor() const {
     return m_decryptor;
   }
 
-  void set_relin_keys(const seal::RelinKeys& keys) {
-    m_relin_keys = std::make_shared<seal::RelinKeys>(keys);
-  }
-
-  void set_public_key(const seal::PublicKey& key) {
-    m_public_key = std::make_shared<seal::PublicKey>(key);
-    m_encryptor = std::make_shared<seal::Encryptor>(m_context, *m_public_key);
-  }
-
+  /// \brief Retursn a pointer to evaluator
   const inline std::shared_ptr<seal::Evaluator> get_evaluator() const {
     return m_evaluator;
   }
 
+  /// \brief Returns the encryption parameters
   const ngraph::he::HESealEncryptionParameters& get_encryption_parameters()
       const {
     return m_encryption_params;
   }
 
+  /// \brief Returns the CKKS encoder
   const std::shared_ptr<seal::CKKSEncoder> get_ckks_encoder() const {
     return m_ckks_encoder;
   }
 
+  /// \brief Sets the relinearization keys. Note, they may not be compatible
+  /// with the other SEAL keys
+  /// \param[in] keys relinearization keys
+  void set_relin_keys(const seal::RelinKeys& keys) {
+    m_relin_keys = std::make_shared<seal::RelinKeys>(keys);
+  }
+
+  /// \brief Sets the public keys. Note, they may not be compatible
+  /// with the other SEAL keys
+  /// \param[in] key public key
+  void set_public_key(const seal::PublicKey& key) {
+    m_public_key = std::make_shared<seal::PublicKey>(key);
+    m_encryptor = std::make_shared<seal::Encryptor>(m_context, *m_public_key);
+  }
+
+  /// \brief TODO
   const std::unordered_map<std::uint64_t, std::uint64_t>& barrett64_ratio_map()
       const {
     return m_barrett64_ratio_map;
   }
 
+  /// \brief Returns the top-level scale used for encoding
   inline double get_scale() const { return m_scale; }
 
+  /// \brief Sets plaintext packing
+  /// TODO: rename to plaintext_pack_data
   void set_pack_data(bool pack) { m_pack_data = pack; }
 
+  /// \brief Returns whther or not complex packing is used
   bool complex_packing() const { return m_complex_packing; }
+
+  /// \brief Returns whther or not complex packing is used
   bool& complex_packing() { return m_complex_packing; }
 
+  /// \brief Returns whther or not data is encrypted
   bool encrypt_data() const { return m_encrypt_data; }
+
+  /// \brief Returns whether or not plaintext packing is used
   bool pack_data() const { return m_pack_data; }
+
+  /// \brief Returns whether or not the model is encrypted
   bool encrypt_model() const { return m_encrypt_model; }
 
-  // TODO: remove once performance impact is understood
+  /// \brief Returns whether or not the rescaling operation is performed after
+  /// every multiplication.
+  /// \warning Naive rescaling results in a dramatic performance penalty for
+  /// Convolution and Dot operations. Typically, this should never be used
   bool naive_rescaling() const { return m_naive_rescaling; }
+
+  /// \brief Returns whether or not the rescaling operation is performed after
+  /// every multiplication.
+  /// \warning Naive rescaling results in a dramatic performance penalty for
+  /// Convolution and Dot operations. Typically, this should never be used
   bool& naive_rescaling() { return m_naive_rescaling; }
 
  private:

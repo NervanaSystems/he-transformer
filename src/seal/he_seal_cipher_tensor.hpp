@@ -31,8 +31,11 @@ namespace he {
 class HESealCipherTensor : public HETensor {
  public:
   /// \brief Constructs a tensor of ciphertexts
-  /// \param[in] shape Shape of underyling cipher tensor
-  /// \param[in] he_seal_backend Backend own
+  /// \param[in] element_type Datatype of underlying cipher tensor
+  /// \param[in] shape Shape of underlying cipher tensor
+  /// \param[in] he_seal_backend Backend used to create the tensor
+  /// \param[in] packed Whether or not to use plaintext packing
+  /// \param[in] name Name of the tensor
   HESealCipherTensor(const element::Type& element_type, const Shape& shape,
                      const HESealBackend& he_seal_backend,
                      const bool packed = false,

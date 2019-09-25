@@ -129,7 +129,7 @@ void ngraph::he::HESealClient::handle_encryption_parameters_response(
 
 void ngraph::he::HESealClient::handle_inference_request(
     const he_proto::TCPMessage& proto_msg) {
-  NGRAPH_CHECK(proto_msg.has_function(), "Proto msg doesn't have funtion");
+  NGRAPH_CHECK(proto_msg.has_function(), "Proto msg doesn't have function");
 
   const std::string& inference_shape = proto_msg.function().function();
   json js = json::parse(inference_shape);
