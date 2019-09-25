@@ -152,14 +152,13 @@ class SealCiphertextWrapper {
 
   /// \brief Create ciphertext wrapper from ciphertext
   /// \param[in] cipher Ciphertext to store
-  /// \param[in] complex_packing Whther or not ciphertext uses complex packing
-  /// \param[in] known_value TODO: remove
+  /// \param[in] complex_packing Whether or not ciphertext uses complex packing
   /// TODO: add move constructor
   SealCiphertextWrapper(const seal::Ciphertext& cipher,
-                        bool complex_packing = false, bool known_value = false)
+                        bool complex_packing = false)
       : m_ciphertext(cipher),
         m_complex_packing(complex_packing),
-        m_known_value(known_value) {}
+        m_known_value(false) {}
 
   /// \brief Returns the underyling SEAL ciphertext
   seal::Ciphertext& ciphertext() { return m_ciphertext; }
