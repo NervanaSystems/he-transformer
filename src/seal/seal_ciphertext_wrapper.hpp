@@ -24,6 +24,8 @@
 
 namespace ngraph {
 namespace he {
+  /// \brief Returns the size in bytes required to serialize a ciphertext
+  /// \param[in] cipher Ciphertext to measure size of
 inline size_t ciphertext_size(const seal::Ciphertext& cipher) {
   // TODO: figure out why the extra 8 bytes
   size_t expected_size = 8;
@@ -38,6 +40,9 @@ inline size_t ciphertext_size(const seal::Ciphertext& cipher) {
   return expected_size;
 }
 
+  /// \brief Serializes the ciphertext and writes to a destination
+  /// \param[in] cipher Ciphertext to write
+  /// \param[out] destination Where to save ciphertext to
 inline void save(const seal::Ciphertext& cipher, void* destination) {
   {
     static constexpr std::array<size_t, 6> offsets = {
@@ -76,6 +81,10 @@ inline void save(const seal::Ciphertext& cipher, void* destination) {
   }
 }
 
+/// \brief Loads a serialized ciphertext
+/// \param[out] cipher De-serialized ciphertext
+/// \param[in] context Encryption context to verify ciphertext validity against
+/// \param[in] src Pointer to data to load from
 inline void load(seal::Ciphertext& cipher,
                  std::shared_ptr<seal::SEALContext> context, void* src) {
   seal::SEAL_BYTE is_ntt_form_byte;
@@ -119,6 +128,7 @@ inline void load(seal::Ciphertext& cipher,
                "ciphertext data is invalid");
 }
 
+/
 class SealCiphertextWrapper {
  public:
   SealCiphertextWrapper() : m_complex_packing(false), m_known_value(false) {}
