@@ -6,12 +6,11 @@
 ```
 
 * Each member function and free function should contain:
-```
+```bash
+/// \brief Brief description
 /// \param[in] param_name Description of param
 /// \param[out] param_name Description of param
 /// \param[in,out] param_name Description of param
-/// \return If not void, description of return value
+/// \returns If not void, description of return value
 ///
 ```
-
-* Comments should be capitalized and use periods only when a complete sentence.
