@@ -17,7 +17,6 @@
 import ngraph_bridge
 import numpy as np
 import tensorflow as tf
-
 from tensorflow.core.protobuf import rewriter_config_pb2
 
 a = tf.constant(np.array([[1, 2, 3, 4]]), dtype=np.float32)

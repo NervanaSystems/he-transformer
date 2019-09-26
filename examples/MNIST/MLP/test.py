@@ -31,6 +31,7 @@ import ngraph_bridge
 import os
 from tensorflow.python.tools import freeze_graph
 from tensorflow.python.tools import optimize_for_inference_lib
+from tensorflow.core.protobuf import rewriter_config_pb2
 
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -61,15 +62,34 @@ def test_mnist_mlp(FLAGS):
             "import/output:0")
         x_input = tf.compat.v1.get_default_graph().get_tensor_by_name(
             "import/Placeholder:0")
-        sess = tf.compat.v1.Session()
 
-        start_time = time.time()
-        y_conv_val = y_conv.eval(
-            session=sess, feed_dict={
-                x_input: x_test,
-            })
-        elasped_time = (time.time() - start_time)
-        print("total time(s)", np.round(elasped_time, 3))
+        # Create configuration to encrypt data
+        rewriter_options = rewriter_config_pb2.RewriterConfig()
+        rewriter_options.meta_optimizer_iterations = (
+            rewriter_config_pb2.RewriterConfig.ONE)
+        rewriter_options.min_graph_nodes = -1
+        ngraph_optimizer = rewriter_options.custom_optimizers.add()
+        ngraph_optimizer.name = "ngraph-optimizer"
+        ngraph_optimizer.parameter_map["ngraph_backend"].s = b'HE_SEAL'
+        ngraph_optimizer.parameter_map["device_id"].s = b''
+        ngraph_optimizer.parameter_map[str(x_input)].s = b'encrypt'
+
+        config = tf.compat.v1.ConfigProto()
+        config.MergeFrom(
+            tf.compat.v1.ConfigProto(
+                graph_options=tf.compat.v1.GraphOptions(
+                    rewrite_options=rewriter_options)))
+
+        print('config', config)
+
+        with tf.compat.v1.Session(config=config) as sess:
+            start_time = time.time()
+            y_conv_val = y_conv.eval(
+                session=sess, feed_dict={
+                    x_input: x_test,
+                })
+            elasped_time = (time.time() - start_time)
+            print("total time(s)", np.round(elasped_time, 3))
 
     using_client = (os.environ.get('NGRAPH_ENABLE_CLIENT') is not None)
 

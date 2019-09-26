@@ -92,8 +92,8 @@ ngraph::he::HESealExecutable::HESealExecutable(
     bool encrypt_all_params, bool encrypt_model, bool pack_data,
     bool complex_packing, bool enable_client)
     : m_he_seal_backend(he_seal_backend),
-      m_encrypt_all_params(encrypt_all_params),
       m_encrypt_param_shapes(encrypt_param_shapes),
+      m_encrypt_all_params(encrypt_all_params),
       m_encrypt_model(encrypt_model),
       m_pack_data(pack_data),
       m_complex_packing(complex_packing),
@@ -511,7 +511,7 @@ bool ngraph::he::HESealExecutable::call(
 
   for (const auto& parameter_shape :
        m_he_seal_backend.get_encryption_parameter_shapes()) {
-    NGRAPH_INFO << "Encrypting parameter shape " << parameter_shape;
+    NGRAPH_INFO << "Calling function with parameter shape " << parameter_shape;
   }
 
   if (m_encrypt_all_params) {
@@ -574,9 +574,6 @@ bool ngraph::he::HESealExecutable::call(
          ++param_idx) {
       descriptor::Tensor* tv = param->get_output_tensor_ptr(param_idx).get();
 
-      auto plain_input =
-          he_tensor_as_type<ngraph::he::HEPlainTensor>(he_inputs[input_count]);
-
       if (!m_enable_client) {
         auto encrypted_shape = [&](const ngraph::Shape& shape) {
           std::vector<std::string> shape_dims;
@@ -595,13 +592,15 @@ bool ngraph::he::HESealExecutable::call(
                 ngraph::split(encrypt_param_shape, 'x', true);
 
             NGRAPH_HE_LOG(5) << "split_encrypt_param_shape ";
-            for (const auto& dimx : split_encrypt_param_shape) {
+            for (const auto& dim : split_encrypt_param_shape) {
               NGRAPH_HE_LOG(5) << dim;
             }
 
             if (split_encrypt_param_shape.size() != shape_dims.size()) {
               continue;
             }
+            // Check shapes match (where a ? indicates a match with any
+            // dimension)
             for (size_t dim_idx = 0; dim_idx < shape_dims.size(); ++dim_idx) {
               bool same =
                   (split_encrypt_param_shape[dim_idx] == shape_dims[dim_idx]);
@@ -615,6 +614,9 @@ bool ngraph::he::HESealExecutable::call(
           }
           return false;
         };
+
+        auto plain_input = he_tensor_as_type<ngraph::he::HEPlainTensor>(
+            he_inputs[input_count]);
 
         if (m_encrypt_all_params || encrypted_shape(plain_input->get_shape())) {
           NGRAPH_HE_LOG(1) << "Encrypting parameter shape "

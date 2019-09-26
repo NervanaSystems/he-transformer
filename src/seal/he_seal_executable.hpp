@@ -59,7 +59,7 @@ class HESealExecutable : public runtime::Executable {
                    bool enable_performance_collection,
                    ngraph::he::HESealBackend& he_seal_backend,
                    std::unordered_set<std::string> encrypt_shapes,
-                   bool encryptencrypt_all_params_data, bool encrypt_model,
+                   bool encrypt_all_params_data, bool encrypt_model,
                    bool pack_data, bool complex_packing, bool enable_client);
 
   ~HESealExecutable() override {
