@@ -47,7 +47,8 @@ class HESealExecutable : public runtime::Executable {
   /// \param[in] function Function in the executable
   /// \param[in] enable_performance_collection Unused: TODO use
   /// \param[in] he_seal_backend Backend storing encryption context
-  /// \param[in] encrypt_data Whether or not to encrypt the data
+  /// \param[in] encrypt_all_params Whether or not to encrypt all the parameters
+  /// in the model
   /// \param[in] encrypt_model Whether or not to encrypt the model
   /// \param[in] pack_data Whether or not to pack the data using plaintext
   /// packing
@@ -58,8 +59,8 @@ class HESealExecutable : public runtime::Executable {
                    bool enable_performance_collection,
                    ngraph::he::HESealBackend& he_seal_backend,
                    std::unordered_set<std::string> encrypt_shapes,
-                   bool encrypt_data, bool encrypt_model, bool pack_data,
-                   bool complex_packing, bool enable_client);
+                   bool encryptencrypt_all_params_data, bool encrypt_model,
+                   bool pack_data, bool complex_packing, bool enable_client);
 
   ~HESealExecutable() override {
     if (m_enable_client) {
@@ -198,8 +199,8 @@ class HESealExecutable : public runtime::Executable {
 
  private:
   HESealBackend& m_he_seal_backend;
-  std::unordered_set<std::string> m_encrypt_shapes;
-  bool m_encrypt_data;
+  std::unordered_set<std::string> m_encrypt_param_shapes;
+  bool m_encrypt_all_params;
   bool m_encrypt_model;
   bool m_pack_data;
   bool m_is_compiled;

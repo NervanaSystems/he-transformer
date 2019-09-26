@@ -13,7 +13,7 @@ The client uses python bindings. See the `python` folder for instructions to bui
 
 For a simple demonstration of a server-client approach, run
 ```bash
-NGRAPH_ENABLE_CLIENT=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_TF_BACKEND=HE_SEAL python ax.py
+NGRAPH_ENABLE_CLIENT=1 NGRAPH_TF_BACKEND=HE_SEAL python ax.py
 ```
 
 This will discard the Tensorflow inputs and instead wait for a client to connect and provide encrypted inputs.
@@ -30,7 +30,7 @@ The server-client approach currently works only for functions with one input par
 For a deep learning example using the client-server model, see the `MNIST/MLP` folder.
 
 # List of command-line flags
-  * `NGRAPH_ENCRYPT_DATA`. Set to 1 to encrypt data
+  * `NGRAPH_ENCRYPT_ALL_PARMS`. Set to 1 to encrypt all parameters in a model
   * `NGRAPH_ENCRYPT_MODEL`. Set to 1 to encrypt model
   * `NGRAPH_UNPACK_DATA`. Set to 1 to prevent SIMD packing along batch axis. ***Note***: For arbitrary computation that isn't packed along the batch axis, use `NGRAPH_UNPACK_DATA=1`.
   * `STOP_CONST_FOLD`. Set to 1 to stop constant folding optimization. Note, this speeds up the graph compilation time for large batch sizes.

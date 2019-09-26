@@ -19,16 +19,11 @@ import numpy as np
 import tensorflow as tf
 
 from tensorflow.core.protobuf import rewriter_config_pb2
-from tensorflow.core.framework import attr_value_pb2
-from tensorflow.core.framework import tensor_pb2
-from tensorflow.python.grappler import tf_optimizer
 
 a = tf.constant(np.array([[1, 2, 3, 4]]), dtype=np.float32)
-b = tf.compat.v1.placeholder(tf.float32, shape=(1, 4), name='test_b')
+b = tf.compat.v1.placeholder(tf.float32, shape=(1, 4))
 c = tf.compat.v1.placeholder(tf.float32, shape=(1))
 f = (a + b) * a + c
-
-backend = 'HE_SEAL'
 
 rewriter_options = rewriter_config_pb2.RewriterConfig()
 rewriter_options.meta_optimizer_iterations = (
@@ -36,12 +31,11 @@ rewriter_options.meta_optimizer_iterations = (
 rewriter_options.min_graph_nodes = -1
 ngraph_optimizer = rewriter_options.custom_optimizers.add()
 ngraph_optimizer.name = "ngraph-optimizer"
-ngraph_optimizer.parameter_map["ngraph_backend"].s = backend.encode()
-ngraph_optimizer.parameter_map["device_id"].s = ''.encode()
+ngraph_optimizer.parameter_map["ngraph_backend"].s = b'HE_SEAL'
+ngraph_optimizer.parameter_map["device_id"].s = b''
 ngraph_optimizer.parameter_map[str(b)].s = b'encrypt'
 
 config = tf.compat.v1.ConfigProto()
-
 config.MergeFrom(
     tf.compat.v1.ConfigProto(
         graph_options=tf.compat.v1.GraphOptions(

@@ -290,8 +290,8 @@ class HESealBackend : public ngraph::runtime::Backend {
   /// \brief Returns whther or not complex packing is used
   bool& complex_packing() { return m_complex_packing; }
 
-  /// \brief Returns whther or not data is encrypted
-  bool encrypt_data() const { return m_encrypt_data; }
+  /// \brief Returns whther or not all parameters are encrypted
+  bool encrypt_all_params() const { return m_encrypt_all_params; }
 
   /// \brief Returns whether or not plaintext packing is used
   bool pack_data() const { return m_pack_data; }
@@ -333,8 +333,8 @@ class HESealBackend : public ngraph::runtime::Backend {
   }
 
  private:
-  bool m_encrypt_data{
-      ngraph::he::flag_to_bool(std::getenv("NGRAPH_ENCRYPT_DATA"))};
+  bool m_encrypt_all_params{
+      ngraph::he::flag_to_bool(std::getenv("NGRAPH_ENCRYPT_ALL_PARMS"))};
   bool m_pack_data{
       !ngraph::he::flag_to_bool(std::getenv("NGRAPH_UNPACK_DATA"))};
   bool m_encrypt_model{

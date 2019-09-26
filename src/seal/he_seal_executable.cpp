@@ -88,12 +88,12 @@ using json = nlohmann::json;
 ngraph::he::HESealExecutable::HESealExecutable(
     const std::shared_ptr<Function>& function,
     bool enable_performance_collection, HESealBackend& he_seal_backend,
-    std::unordered_set<std::string> encrypt_shapes, bool encrypt_data,
-    bool encrypt_model, bool pack_data, bool complex_packing,
-    bool enable_client)
+    std::unordered_set<std::string> encrypt_param_shapes,
+    bool encrypt_all_params, bool encrypt_model, bool pack_data,
+    bool complex_packing, bool enable_client)
     : m_he_seal_backend(he_seal_backend),
-      m_encrypt_shapes(encrypt_shapes),
-      m_encrypt_data(encrypt_data),
+      m_encrypt_all_params(encrypt_all_params),
+      m_encrypt_param_shapes(encrypt_param_shapes),
       m_encrypt_model(encrypt_model),
       m_pack_data(pack_data),
       m_complex_packing(complex_packing),
@@ -514,8 +514,12 @@ bool ngraph::he::HESealExecutable::call(
     NGRAPH_INFO << "Encrypting parameter shape " << parameter_shape;
   }
 
-  if (m_encrypt_data) {
-    NGRAPH_HE_LOG(1) << "Encrypting data";
+  if (m_encrypt_all_params) {
+    NGRAPH_HE_LOG(1) << "Encrypting all parameters";
+  } else {
+    for (const auto& param : m_encrypt_param_shapes) {
+      NGRAPH_HE_LOG(1) << "Encrypting parameter shape " << param;
+    }
   }
   if (m_pack_data) {
     NGRAPH_HE_LOG(1) << "Batching data with batch size " << m_batch_size;
@@ -570,12 +574,49 @@ bool ngraph::he::HESealExecutable::call(
          ++param_idx) {
       descriptor::Tensor* tv = param->get_output_tensor_ptr(param_idx).get();
 
-      if (!m_enable_client) {
-        auto plain_input = he_tensor_as_type<ngraph::he::HEPlainTensor>(
-            he_inputs[input_count]);
+      auto plain_input =
+          he_tensor_as_type<ngraph::he::HEPlainTensor>(he_inputs[input_count]);
 
-        if (m_encrypt_shapes.find(ngraph::join(
-                plain_input->get_shape(), "x")) != m_encrypt_shapes.end()) {
+      if (!m_enable_client) {
+        auto encrypted_shape = [&](const ngraph::Shape& shape) {
+          std::vector<std::string> shape_dims;
+          for (const uint64_t dim : shape) {
+            shape_dims.emplace_back(std::to_string(dim));
+          }
+          NGRAPH_HE_LOG(3) << "Checking if shape is encrypted: ";
+          for (const auto& dim : shape_dims) {
+            NGRAPH_HE_LOG(3) << dim;
+          }
+
+          // Check if any encrypt_param_shape matches shape
+          for (const auto& encrypt_param_shape : m_encrypt_param_shapes) {
+            NGRAPH_HE_LOG(5) << "encrypt_param_shape " << encrypt_param_shape;
+            std::vector<std::string> split_encrypt_param_shape =
+                ngraph::split(encrypt_param_shape, 'x', true);
+
+            NGRAPH_HE_LOG(5) << "split_encrypt_param_shape ";
+            for (const auto& dimx : split_encrypt_param_shape) {
+              NGRAPH_HE_LOG(5) << dim;
+            }
+
+            if (split_encrypt_param_shape.size() != shape_dims.size()) {
+              continue;
+            }
+            for (size_t dim_idx = 0; dim_idx < shape_dims.size(); ++dim_idx) {
+              bool same =
+                  (split_encrypt_param_shape[dim_idx] == shape_dims[dim_idx]);
+              same |= split_encrypt_param_shape[dim_idx] == "?";
+              if (!same) {
+                break;
+              } else if (dim_idx == shape_dims.size() - 1) {
+                return true;
+              }
+            }
+          }
+          return false;
+        };
+
+        if (m_encrypt_all_params || encrypted_shape(plain_input->get_shape())) {
           NGRAPH_HE_LOG(1) << "Encrypting parameter shape "
                            << ngraph::join(plain_input->get_shape(), "x");
 

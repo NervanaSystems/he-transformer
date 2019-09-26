@@ -58,7 +58,7 @@ ngraph::he::HESealBackend::HESealBackend(
   } else if (parms.security_level() == 256) {
     sec_level = seal::sec_level_type::tc256;
   } else if (parms.security_level() == 0) {
-    if (m_encrypt_data || m_encrypt_model) {
+    if (m_encrypt_all_params || m_encrypt_model) {
       NGRAPH_WARN
           << "Parameter selection does not enforce minimum security level";
     }
@@ -88,7 +88,8 @@ ngraph::he::HESealBackend::HESealBackend(
     m_scale = parms.scale();
   }
 
-  if (m_encrypt_data) {
+  if (m_encrypt_all_params || m_encrypt_parameter_shapes.size() != 0 ||
+      m_encrypt_model) {
     print_seal_context(*m_context);
     NGRAPH_HE_LOG(1) << "Scale " << m_scale;
   }
@@ -116,9 +117,10 @@ bool ngraph::he::HESealBackend::set_config(
     const std::map<std::string, std::string>& config, std::string& error) {
   /// \brief Checks if a string description contains a shape=(x,y,z) substring
   /// \param[in] description input string
-  /// \param[out] shape Resulting shape if parsed
+  /// \param[out] shape_str Resulting string description of shape if parsed
   /// \returns whether or not the string contains a shape description
-  auto parse_shape = [](const std::string& description, ngraph::Shape& shape) {
+  auto parse_shape = [](const std::string& description,
+                        std::string& shape_str) {
     if (description.substr(0, 6) == "Tensor") {
       static std::string shape_start_str{"shape=("};
       size_t shape_start = description.find(shape_start_str);
@@ -131,17 +133,12 @@ bool ngraph::he::HESealBackend::set_config(
       std::string tensor_shape_str =
           description.substr(shape_start + shape_start_str.size(),
                              shape_end - shape_start - shape_start_str.size());
-      NGRAPH_HE_LOG(5) << "tensor_shape_str " << tensor_shape_str;
 
       std::vector<std::string> dimensions_str =
           ngraph::split(tensor_shape_str, ',', true);
 
-      std::vector<uint64_t> dims =
-          ngraph::parse_string<uint64_t>(dimensions_str);
-
-      shape = ngraph::Shape{dims};
-
-      NGRAPH_HE_LOG(1) << "shape " << ngraph::join(shape, "x");
+      shape_str = ngraph::join(dimensions_str, "x");
+      NGRAPH_HE_LOG(5) << "shape_str " << shape_str;
 
       return true;
     } else {
@@ -150,10 +147,10 @@ bool ngraph::he::HESealBackend::set_config(
   };
 
   for (const auto& elem : config) {
-    ngraph::Shape shape;
+    std::string shape_str;
     if (ngraph::to_lower(elem.second) == "encrypt" &&
-        parse_shape(elem.first, shape)) {
-      m_encrypt_parameter_shapes.insert(ngraph::join(shape, "x"));
+        parse_shape(elem.first, shape_str)) {
+      m_encrypt_parameter_shapes.insert(shape_str);
     }
   }
 
@@ -210,8 +207,8 @@ std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
     std::shared_ptr<Function> function, bool enable_performance_collection) {
   return std::make_shared<HESealExecutable>(
       function, enable_performance_collection, *this,
-      m_encrypt_parameter_shapes, m_encrypt_data, m_encrypt_model, pack_data(),
-      m_complex_packing, m_enable_client);
+      m_encrypt_parameter_shapes, m_encrypt_all_params, m_encrypt_model,
+      pack_data(), m_complex_packing, m_enable_client);
 }
 
 bool ngraph::he::HESealBackend::is_supported(const ngraph::Node& node) const {

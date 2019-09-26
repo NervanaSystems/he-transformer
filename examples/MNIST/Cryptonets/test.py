@@ -28,6 +28,7 @@ import glob
 import tensorflow as tf
 import ngraph_bridge
 import os
+from tensorflow.core.protobuf import rewriter_config_pb2
 
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -63,7 +64,26 @@ def test_mnist_cnn(FLAGS):
     # Create the model
     y_conv = cryptonets_test_squashed(x)
 
-    with tf.compat.v1.Session() as sess:
+    # Create configuration to encrypt data
+    rewriter_options = rewriter_config_pb2.RewriterConfig()
+    rewriter_options.meta_optimizer_iterations = (
+        rewriter_config_pb2.RewriterConfig.ONE)
+    rewriter_options.min_graph_nodes = -1
+    ngraph_optimizer = rewriter_options.custom_optimizers.add()
+    ngraph_optimizer.name = "ngraph-optimizer"
+    ngraph_optimizer.parameter_map["ngraph_backend"].s = b'HE_SEAL'
+    ngraph_optimizer.parameter_map["device_id"].s = b''
+    ngraph_optimizer.parameter_map[str(x)].s = b'encrypt'
+
+    config = tf.compat.v1.ConfigProto()
+    config.MergeFrom(
+        tf.compat.v1.ConfigProto(
+            graph_options=tf.compat.v1.GraphOptions(
+                rewrite_options=rewriter_options)))
+
+    print('config', config)
+
+    with tf.compat.v1.Session(config=config) as sess:
         x_test = x_test[:FLAGS.batch_size]
         y_test = y_test[:FLAGS.batch_size]
         start_time = time.time()
