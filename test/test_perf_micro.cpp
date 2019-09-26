@@ -15,6 +15,8 @@
 //*****************************************************************************
 
 #include "ngraph/ngraph.hpp"
+#include "seal/he_seal_backend.hpp"
+#include "seal/he_seal_encryption_parameters.hpp"
 #include "seal/seal.h"
 #include "seal/seal_util.hpp"
 #include "test_util.hpp"
@@ -25,7 +27,7 @@
 
 using namespace std;
 using namespace ngraph;
-using namespace he;
+using namespace ngraph::he;
 using namespace seal;
 
 static string s_manifest = "${MANIFEST}";
@@ -65,8 +67,8 @@ TEST(perf_micro, encode) {
     Evaluator evaluator(context);
 
     // he-transformer setup
-    auto he_parms = HESealEncryptionParameters("HE_SEAL", poly_modulus_degree,
-                                               128, 0, coeff_modulus_bits);
+    auto he_parms = ngraph::he::HESealEncryptionParameters(
+        "HE_SEAL", poly_modulus_degree, coeff_modulus_bits, 128, 0, false);
     auto he_seal_backend = HESealBackend(he_parms);
 
     for (int test_run = 0; test_run < max_test_count; ++test_run) {

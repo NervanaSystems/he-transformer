@@ -346,8 +346,8 @@ auto server_client_relu_packed_test = [](size_t element_count,
 
   vector<float> results;
   auto client_thread = std::thread([&]() {
-    auto he_client = ngraph::he::HESealClient("localhost", 34000, batch_size,
-                                              inputs, complex_packing);
+    auto he_client =
+        ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
 
     while (!he_client.is_done()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
