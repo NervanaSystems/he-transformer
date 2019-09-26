@@ -24,6 +24,7 @@ b = tf.compat.v1.placeholder(tf.float32, shape=(1, 4))
 c = tf.compat.v1.placeholder(tf.float32, shape=(1))
 f = (a + b) * a + c
 
+# Create config to encrypt parameter b
 rewriter_options = rewriter_config_pb2.RewriterConfig()
 rewriter_options.meta_optimizer_iterations = (
     rewriter_config_pb2.RewriterConfig.ONE)
