@@ -43,8 +43,8 @@ get_backend_constructor_pointer() {
 }
 
 ngraph::he::HESealBackend::HESealBackend()
-    : ngraph::he::HESealBackend(
-          ngraph::he::parse_config_or_use_default("HE_SEAL")) {}
+    : ngraph::he::HESealBackend(ngraph::he::parse_config_or_use_default(
+          getenv("NGRAPH_HE_SEAL_CONFIG"))) {}
 
 ngraph::he::HESealBackend::HESealBackend(
     const ngraph::he::HESealEncryptionParameters& parms)

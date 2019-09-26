@@ -16,13 +16,8 @@
 
 #pragma once
 
-#include <algorithm>
-#include <boost/asio.hpp>
-#include <chrono>
 #include <cstring>
-#include <iostream>
 #include <memory>
-#include <set>
 #include <sstream>
 #include <string>
 
@@ -30,9 +25,6 @@
 #include "ngraph/log.hpp"
 #include "ngraph/util.hpp"
 #include "protos/message.pb.h"
-#include "seal/seal.h"
-#include "seal/seal_ciphertext_wrapper.hpp"
-#include "seal/seal_util.hpp"
 
 namespace ngraph {
 namespace he {

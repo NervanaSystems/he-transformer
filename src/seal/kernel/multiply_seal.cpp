@@ -44,8 +44,8 @@ void ngraph::he::scalar_multiply_seal(
                  "ciphertexts must match complex form");
 
     match_modulus_and_scale_inplace(arg0, arg1, he_seal_backend, pool);
-    size_t chain_ind0 = get_chain_index(arg0, he_seal_backend);
-    size_t chain_ind1 = get_chain_index(arg1, he_seal_backend);
+    size_t chain_ind0 = he_seal_backend.get_chain_index(arg0);
+    size_t chain_ind1 = he_seal_backend.get_chain_index(arg1);
 
     if (chain_ind0 == 0 || chain_ind1 == 0) {
       NGRAPH_ERR << "Multiplicative depth limit reached";
@@ -192,8 +192,8 @@ void ngraph::he::scalar_multiply_seal(
                        arg0.ciphertext().parms_id(), element_type,
                        arg0.ciphertext().scale(), false);
 
-    size_t chain_ind0 = get_chain_index(arg0, he_seal_backend);
-    size_t chain_ind1 = get_chain_index(p.plaintext(), he_seal_backend);
+    size_t chain_ind0 = he_seal_backend.get_chain_index(arg0);
+    size_t chain_ind1 = he_seal_backend.get_chain_index(p.plaintext());
 
     NGRAPH_CHECK(chain_ind0 == chain_ind1, "Chain_ind0 ", chain_ind0,
                  " != chain_ind1 ", chain_ind1);

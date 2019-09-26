@@ -18,9 +18,9 @@
 
 #include <memory>
 
+#include "ngraph/check.hpp"
 #include "protos/message.pb.h"
 #include "seal/seal.h"
-#include "seal/seal_util.hpp"
 
 namespace ngraph {
 namespace he {
@@ -161,41 +161,41 @@ class SealCiphertextWrapper {
         m_known_value(false) {}
 
   /// \brief Returns the underyling SEAL ciphertext
-  seal::Ciphertext& ciphertext() { return m_ciphertext; }
+  inline seal::Ciphertext& ciphertext() { return m_ciphertext; }
 
   /// \brief Returns the underyling SEAL ciphertext
-  const seal::Ciphertext& ciphertext() const { return m_ciphertext; }
+  inline const seal::Ciphertext& ciphertext() const { return m_ciphertext; }
 
   /// \brief Serializes the ciphertext to a stream
   /// \param[out] Stream to serialize the ciphertext to
-  void save(std::ostream& stream) const { m_ciphertext.save(stream); }
+  inline void save(std::ostream& stream) const { m_ciphertext.save(stream); }
 
   /// \brief Returns the size of the underlying ciphertext
-  size_t size() const { return m_ciphertext.size(); }
+  inline size_t size() const { return m_ciphertext.size(); }
 
   /// \brief Returns whether or not ciphertext represents a known value
-  bool known_value() const { return m_known_value; }
+  inline bool known_value() const { return m_known_value; }
 
   /// \brief Returns whether or not ciphertext represents a known value
-  bool& known_value() { return m_known_value; }
+  inline bool& known_value() { return m_known_value; }
 
   /// \brief Returns known value
-  float value() const { return m_value; }
+  inline float value() const { return m_value; }
 
   /// \brief Returns known value
-  float& value() { return m_value; }
+  inline float& value() { return m_value; }
 
   /// \brief Returns scale of the ciphertext
-  double& scale() { return m_ciphertext.scale(); }
+  inline double& scale() { return m_ciphertext.scale(); }
 
   /// \brief Returns scale of the ciphertext
-  double scale() const { return m_ciphertext.scale(); }
+  inline double scale() const { return m_ciphertext.scale(); }
 
   /// \brief Returns whether or not the ciphertext uses complex packing
-  bool complex_packing() const { return m_complex_packing; }
+  inline bool complex_packing() const { return m_complex_packing; }
 
   /// \brief Returns whether or not the ciphertext uses complex packing
-  bool& complex_packing() { return m_complex_packing; }
+  inline bool& complex_packing() { return m_complex_packing; }
 
   /// \brief Saves the cihertext to a protobuf ciphertext wrapper
   /// \param[out] proto_cipher Protobuf ciphertext wrapper to store the

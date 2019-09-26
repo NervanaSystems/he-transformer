@@ -50,24 +50,6 @@ inline double choose_scale(
   }
 }
 
-/// \brief Returns the chain index, also known as level, of the ciphertext
-/// \param[in] cipher Ciphertext whose chain index to return
-/// \param[in] he_seal_backend Backend whose context is used to determine the
-/// chain index
-/// \returns The chain index of the ciphertext.
-/// TODO: move to he_seal_backend
-size_t get_chain_index(const SealCiphertextWrapper& cipher,
-                       const HESealBackend& he_seal_backend);
-
-/// \brief Returns the chain index, also known as level, of the plaintext
-/// \param[in] plain Plaintext whose chain index to return
-/// \param[in] he_seal_backend Backend whose context is used to determine the
-/// chain index
-/// \returns The chain index of the plaintext.
-/// TODO: move to he_seal_backend
-size_t get_chain_index(const SealPlaintextWrapper& plain,
-                       const HESealBackend& he_seal_backend);
-
 /// \brief Returns the smallest chain index of a vector of ciphertexts
 /// \param[in] ciphers Vector of ciphertexts
 /// \param[in] he_seal_backend Backend whose context is used to determine the
@@ -270,13 +252,6 @@ void encrypt(std::shared_ptr<ngraph::he::SealCiphertextWrapper>& output,
              seal::CKKSEncoder& ckks_encoder, seal::Encryptor& encryptor,
              bool complex_packing);
 
-/// TODO: remove
-void encrypt(seal::Ciphertext& output, const ngraph::he::HEPlaintext& input,
-             seal::parms_id_type parms_id,
-             const ngraph::element::Type& element_type, double scale,
-             seal::CKKSEncoder& ckks_encoder, seal::Encryptor& encryptor,
-             bool complex_packing);
-
 /// \brief Decode SEAL plaintext into plaintext values
 /// \param[out] output Decoded values
 /// \param[in] input Plaintext to decode
@@ -301,11 +276,6 @@ void decode(void* output, const ngraph::he::HEPlaintext& input,
 void decrypt(ngraph::he::HEPlaintext& output,
              const ngraph::he::SealCiphertextWrapper& input,
              seal::Decryptor& decryptor, seal::CKKSEncoder& ckks_encoder);
-
-/// TODO: remove
-void decrypt(ngraph::he::HEPlaintext& output, const seal::Ciphertext& input,
-             bool complex_packing, seal::Decryptor& decryptor,
-             seal::CKKSEncoder& ckks_encoder);
 
 }  // namespace he
 }  // namespace ngraph

@@ -105,23 +105,20 @@ void ngraph::he::HESealCipherTensor::write(
 
 void ngraph::he::HESealCipherTensor::read(void* target, size_t n) const {
   check_io_bounds(target, n / m_batch_size);
-  ngraph::he::HESealCipherTensor::read(
-      target, m_ciphertexts, n, m_batch_size,
-      get_tensor_layout()->get_element_type(),
-      m_he_seal_backend.get_context()->first_parms_id(),
-      m_he_seal_backend.get_scale(), *m_he_seal_backend.get_ckks_encoder(),
-      *m_he_seal_backend.get_decryptor(), m_he_seal_backend.complex_packing());
+  ngraph::he::HESealCipherTensor::read(target, m_ciphertexts, n, m_batch_size,
+                                       get_tensor_layout()->get_element_type(),
+                                       *m_he_seal_backend.get_ckks_encoder(),
+                                       *m_he_seal_backend.get_decryptor());
 }
 
 void ngraph::he::HESealCipherTensor::read(
     void* target,
     const std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>&
         ciphertexts,
-    size_t n, size_t batch_size, const element::Type& element_type,
-    seal::parms_id_type parms_id, double scale, seal::CKKSEncoder& ckks_encoder,
-    seal::Decryptor& decryptor, bool complex_packing) {
+    size_t num_bytes, size_t batch_size, const element::Type& element_type,
+    seal::CKKSEncoder& ckks_encoder, seal::Decryptor& decryptor) {
   size_t type_byte_size = element_type.size();
-  size_t num_elements_to_read = n / (type_byte_size * batch_size);
+  size_t num_elements_to_read = num_bytes / (type_byte_size * batch_size);
 
   NGRAPH_CHECK(ciphertexts.size() >= num_elements_to_read,
                "Reading too many elements ", num_elements_to_read,
