@@ -548,20 +548,23 @@ bool ngraph::he::HESealExecutable::call(
   std::vector<std::shared_ptr<ngraph::he::HETensor>> he_inputs;
   if (m_enable_client) {
     NGRAPH_HE_LOG(1) << "Processing client inputs";
-    for (auto& tv : m_client_inputs) {
-      he_inputs.push_back(std::static_pointer_cast<ngraph::he::HETensor>(tv));
+    for (auto& tensor : m_client_inputs) {
+      he_inputs.push_back(
+          std::static_pointer_cast<ngraph::he::HETensor>(tensor));
     }
   } else {
     NGRAPH_HE_LOG(1) << "Processing server inputs";
-    for (auto& tv : server_inputs) {
-      he_inputs.push_back(std::static_pointer_cast<ngraph::he::HETensor>(tv));
+    for (auto& tensor : server_inputs) {
+      he_inputs.push_back(
+          std::static_pointer_cast<ngraph::he::HETensor>(tensor));
     }
   }
 
   // convert outputs to HETensor
   std::vector<std::shared_ptr<ngraph::he::HETensor>> he_outputs;
-  for (auto& tv : outputs) {
-    he_outputs.push_back(std::static_pointer_cast<ngraph::he::HETensor>(tv));
+  for (auto& tensor : outputs) {
+    he_outputs.push_back(
+        std::static_pointer_cast<ngraph::he::HETensor>(tensor));
   }
 
   std::unordered_map<ngraph::descriptor::Tensor*,
@@ -572,7 +575,8 @@ bool ngraph::he::HESealExecutable::call(
   for (auto param : get_parameters()) {
     for (size_t param_idx = 0; param_idx < param->get_output_size();
          ++param_idx) {
-      descriptor::Tensor* tv = param->get_output_tensor_ptr(param_idx).get();
+      descriptor::Tensor* tensor =
+          param->get_output_tensor_ptr(param_idx).get();
 
       if (!m_enable_client) {
         auto encrypted_shape = [&](const ngraph::Shape& shape) {
@@ -615,14 +619,16 @@ bool ngraph::he::HESealExecutable::call(
           return false;
         };
 
-        auto plain_input = he_tensor_as_type<ngraph::he::HEPlainTensor>(
-            he_inputs[input_count]);
-
-        if (m_encrypt_all_params || encrypted_shape(plain_input->get_shape())) {
+        if (m_encrypt_all_params ||
+            encrypted_shape(he_inputs[input_count]->get_shape())) {
           NGRAPH_HE_LOG(1) << "Encrypting parameter shape "
-                           << ngraph::join(plain_input->get_shape(), "x");
+                           << ngraph::join(he_inputs[input_count]->get_shape(),
+                                           "x");
 
-          std::string name = tv->get_name();
+          auto plain_input = he_tensor_as_type<ngraph::he::HEPlainTensor>(
+              he_inputs[input_count]);
+
+          std::string name = tensor->get_name();
           auto cipher_input = std::static_pointer_cast<HESealCipherTensor>(
               m_he_seal_backend.create_cipher_tensor(
                   plain_input->get_element_type(), plain_input->get_shape(),
@@ -641,13 +647,13 @@ bool ngraph::he::HESealExecutable::call(
                     *m_he_seal_backend.get_encryptor(), m_complex_packing);
           }
           plain_input->reset();
-          tensor_map.insert({tv, cipher_input});
+          tensor_map.insert({tensor, cipher_input});
           input_count++;
         } else {
-          tensor_map.insert({tv, he_inputs[input_count++]});
+          tensor_map.insert({tensor, he_inputs[input_count++]});
         }
       } else {
-        tensor_map.insert({tv, he_inputs[input_count++]});
+        tensor_map.insert({tensor, he_inputs[input_count++]});
       }
     }
   }
