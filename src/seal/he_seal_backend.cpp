@@ -116,101 +116,111 @@ bool ngraph::he::HESealBackend::set_config(
   for (const auto& elem : config) {
     NGRAPH_INFO << "HESealBackend::set_config " << elem.first << ": "
                 << elem.second;
+
+    std::string option = ngraph::to_lower(elem.first);
+
+    static std::unordered_set<std::string> bool_options{"encrypt_data", ""}
+
+    std::string setting = ngraph::he::flag_to_bool(elem.second.c_str());
+
+    NGRAPH_INFO << "option " << option << ", setting " << setting;
+
+    return true;
   }
-  return true;
-}
 
-std::shared_ptr<ngraph::runtime::Tensor>
-ngraph::he::HESealBackend::create_tensor(const element::Type& element_type,
-                                         const Shape& shape) {
-  if (pack_data()) {
-    return create_packed_plain_tensor(element_type, shape);
-  } else {
-    return create_plain_tensor(element_type, shape);
+  std::shared_ptr<ngraph::runtime::Tensor>
+  ngraph::he::HESealBackend::create_tensor(const element::Type& element_type,
+                                           const Shape& shape) {
+    if (pack_data()) {
+      return create_packed_plain_tensor(element_type, shape);
+    } else {
+      return create_plain_tensor(element_type, shape);
+    }
   }
-}
 
-std::shared_ptr<ngraph::runtime::Tensor>
-ngraph::he::HESealBackend::create_plain_tensor(
-    const element::Type& element_type, const Shape& shape,
-    const bool packed) const {
-  auto rc =
-      std::make_shared<ngraph::he::HEPlainTensor>(element_type, shape, packed);
-  return std::static_pointer_cast<ngraph::runtime::Tensor>(rc);
-}
-
-std::shared_ptr<ngraph::runtime::Tensor>
-ngraph::he::HESealBackend::create_cipher_tensor(
-    const element::Type& element_type, const Shape& shape, const bool packed,
-    const std::string& name) const {
-  auto rc = std::make_shared<ngraph::he::HESealCipherTensor>(
-      element_type, shape, *this, packed, name);
-  return std::static_pointer_cast<ngraph::runtime::Tensor>(rc);
-}
-
-std::shared_ptr<ngraph::runtime::Tensor>
-ngraph::he::HESealBackend::create_packed_cipher_tensor(
-    const element::Type& type, const Shape& shape) {
-  auto rc = std::make_shared<ngraph::he::HESealCipherTensor>(type, shape, *this,
-                                                             true);
-  return std::static_pointer_cast<ngraph::runtime::Tensor>(rc);
-}
-
-std::shared_ptr<ngraph::runtime::Tensor>
-ngraph::he::HESealBackend::create_packed_plain_tensor(const element::Type& type,
-                                                      const Shape& shape) {
-  auto rc = std::make_shared<ngraph::he::HEPlainTensor>(type, shape, true);
-  return std::static_pointer_cast<ngraph::runtime::Tensor>(rc);
-}
-
-std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
-    std::shared_ptr<Function> function, bool enable_performance_collection) {
-  return std::make_shared<HESealExecutable>(
-      function, enable_performance_collection, *this, m_encrypt_data,
-      m_encrypt_model, pack_data(), m_complex_packing, m_enable_client);
-}
-
-bool ngraph::he::HESealBackend::is_supported(const ngraph::Node& node) const {
-  return m_unsupported_op_name_list.find(node.description()) ==
-             m_unsupported_op_name_list.end() &&
-         is_supported_type(node.get_element_type());
-}
-
-std::shared_ptr<ngraph::he::SealCiphertextWrapper>
-ngraph::he::HESealBackend::create_valued_ciphertext(
-    float value, const element::Type& element_type, size_t batch_size) const {
-  NGRAPH_CHECK(element_type == element::f32, "element type ", element_type,
-               "unsupported");
-  if (batch_size != 1) {
-    throw ngraph_error(
-        "HESealBackend::create_valued_ciphertext only supports batch size 1");
+  std::shared_ptr<ngraph::runtime::Tensor>
+  ngraph::he::HESealBackend::create_plain_tensor(
+      const element::Type& element_type, const Shape& shape, const bool packed)
+      const {
+    auto rc = std::make_shared<ngraph::he::HEPlainTensor>(element_type, shape,
+                                                          packed);
+    return std::static_pointer_cast<ngraph::runtime::Tensor>(rc);
   }
-  auto plaintext = HEPlaintext(value);
-  auto ciphertext = create_empty_ciphertext();
 
-  encrypt(ciphertext, plaintext, element_type, complex_packing());
-  return ciphertext;
-}
+  std::shared_ptr<ngraph::runtime::Tensor>
+  ngraph::he::HESealBackend::create_cipher_tensor(
+      const element::Type& element_type, const Shape& shape, const bool packed,
+      const std::string& name) const {
+    auto rc = std::make_shared<ngraph::he::HESealCipherTensor>(
+        element_type, shape, *this, packed, name);
+    return std::static_pointer_cast<ngraph::runtime::Tensor>(rc);
+  }
 
-void ngraph::he::HESealBackend::encrypt(
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& output,
-    const ngraph::he::HEPlaintext& input, const element::Type& element_type,
-    bool complex_packing) const {
-  auto plaintext = SealPlaintextWrapper(complex_packing);
+  std::shared_ptr<ngraph::runtime::Tensor>
+  ngraph::he::HESealBackend::create_packed_cipher_tensor(
+      const element::Type& type, const Shape& shape) {
+    auto rc = std::make_shared<ngraph::he::HESealCipherTensor>(type, shape,
+                                                               *this, true);
+    return std::static_pointer_cast<ngraph::runtime::Tensor>(rc);
+  }
 
-  NGRAPH_CHECK(input.num_values() > 0, "Input has no values in encrypt");
-  ngraph::he::encrypt(output, input, m_context->first_parms_id(), element_type,
-                      m_scale, *m_ckks_encoder, *m_encryptor, complex_packing);
-}
+  std::shared_ptr<ngraph::runtime::Tensor>
+  ngraph::he::HESealBackend::create_packed_plain_tensor(
+      const element::Type& type, const Shape& shape) {
+    auto rc = std::make_shared<ngraph::he::HEPlainTensor>(type, shape, true);
+    return std::static_pointer_cast<ngraph::runtime::Tensor>(rc);
+  }
 
-void ngraph::he::HESealBackend::decrypt(
-    ngraph::he::HEPlaintext& output,
-    const ngraph::he::SealCiphertextWrapper& input) const {
-  ngraph::he::decrypt(output, input, *m_decryptor, *m_ckks_encoder);
-}
+  std::shared_ptr<ngraph::runtime::Executable>
+  ngraph::he::HESealBackend::compile(std::shared_ptr<Function> function,
+                                     bool enable_performance_collection) {
+    return std::make_shared<HESealExecutable>(
+        function, enable_performance_collection, *this, m_encrypt_data,
+        m_encrypt_model, pack_data(), m_complex_packing, m_enable_client);
+  }
 
-void ngraph::he::HESealBackend::decode(
-    ngraph::he::HEPlaintext& output,
-    const ngraph::he::SealPlaintextWrapper& input) const {
-  ngraph::he::decode(output, input, *m_ckks_encoder);
-}
+  bool ngraph::he::HESealBackend::is_supported(const ngraph::Node& node) const {
+    return m_unsupported_op_name_list.find(node.description()) ==
+               m_unsupported_op_name_list.end() &&
+           is_supported_type(node.get_element_type());
+  }
+
+  std::shared_ptr<ngraph::he::SealCiphertextWrapper>
+  ngraph::he::HESealBackend::create_valued_ciphertext(
+      float value, const element::Type& element_type, size_t batch_size) const {
+    NGRAPH_CHECK(element_type == element::f32, "element type ", element_type,
+                 "unsupported");
+    if (batch_size != 1) {
+      throw ngraph_error(
+          "HESealBackend::create_valued_ciphertext only supports batch size 1");
+    }
+    auto plaintext = HEPlaintext(value);
+    auto ciphertext = create_empty_ciphertext();
+
+    encrypt(ciphertext, plaintext, element_type, complex_packing());
+    return ciphertext;
+  }
+
+  void ngraph::he::HESealBackend::encrypt(
+      std::shared_ptr<ngraph::he::SealCiphertextWrapper> & output,
+      const ngraph::he::HEPlaintext& input, const element::Type& element_type,
+      bool complex_packing) const {
+    auto plaintext = SealPlaintextWrapper(complex_packing);
+
+    NGRAPH_CHECK(input.num_values() > 0, "Input has no values in encrypt");
+    ngraph::he::encrypt(output, input, m_context->first_parms_id(),
+                        element_type, m_scale, *m_ckks_encoder, *m_encryptor,
+                        complex_packing);
+  }
+
+  void ngraph::he::HESealBackend::decrypt(
+      ngraph::he::HEPlaintext & output,
+      const ngraph::he::SealCiphertextWrapper& input) const {
+    ngraph::he::decrypt(output, input, *m_decryptor, *m_ckks_encoder);
+  }
+
+  void ngraph::he::HESealBackend::decode(
+      ngraph::he::HEPlaintext & output,
+      const ngraph::he::SealPlaintextWrapper& input) const {
+    ngraph::he::decode(output, input, *m_ckks_encoder);
+  }

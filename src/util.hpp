@@ -73,8 +73,8 @@ inline bool flag_to_bool(const char* flag, bool default_value = false) {
   if (flag == nullptr) {
     return default_value;
   }
-  static std::unordered_set<std::string> on_map{"1", "y", "yes"};
-  static std::unordered_set<std::string> off_map{"0", "n", "no"};
+  static std::unordered_set<std::string> on_map{"1", "on", "y", "yes"};
+  static std::unordered_set<std::string> off_map{"0", "off", "n", "no"};
   std::string flag_str = ngraph::to_lower(std::string(flag));
 
   if (on_map.find(flag_str) != on_map.end()) {

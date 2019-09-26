@@ -36,6 +36,7 @@ rewriter_options.min_graph_nodes = -1
 ngraph_optimizer = rewriter_options.custom_optimizers.add()
 ngraph_optimizer.name = "ngraph-optimizer"
 ngraph_optimizer.parameter_map["ngraph_backend"].s = backend.encode()
+ngraph_optimizer.parameter_map["device_id"].s = ''.encode()
 ngraph_optimizer.parameter_map['ENCRYPT_DATA'].s = '1'.encode()
 ngraph_optimizer.parameter_map['_ngraph_ice_cores'].s = '1'.encode()
 ngraph_optimizer.parameter_map["max_batch_size"].s = b'64'
