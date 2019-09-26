@@ -11,9 +11,8 @@ To test the network, in one terminal run
 ```bash
 source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate
 cd $HE_TRANSFORMER/examples/MNIST/MLP
-NGRAPH_ENABLE_CLIENT=1 \
 NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/configs/he_seal_ckks_config_N11_L1.json \
-python test.py
+python test.py --enable_client=1
 ```
 This runs inference on the Cryptonets network using the SEAL CKKS backend.
 The `he_seal_ckks_config_N11_L1.json` file specifies the parameters which to run the model on. Note: the batch size must be between 1 and 1024 = 2^(11)/2.
@@ -45,5 +44,5 @@ Using the `NGRAPH_COMPLEX_PACK` flag, we double the capacity to 2048, doubling t
 ```bash
 NGRAPH_COMPLEX_PACK=1 \
 NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/configs/he_seal_ckks_config_N11_L1.json \
-python test.py --batch_size=2048
+python test.py --batch_size=2048 --complex_packing=1
 ```

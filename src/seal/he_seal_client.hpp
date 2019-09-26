@@ -41,10 +41,8 @@ class HESealClient {
   /// \param[in] batch_size Batch size of the inference to perform
   /// \param[in] inputs Input data
   /// \param[in] complex_packing Whether or not to use complex packing
-  HESealClient(
-      const std::string& hostname, const size_t port, const size_t batch_size,
-      const std::vector<double>& inputs,
-      bool complex_packing = flag_to_bool(std::getenv("NGRAPH_ENCRYPT_DATA")));
+  HESealClient(const std::string& hostname, const size_t port,
+               const size_t batch_size, const std::vector<double>& inputs);
 
   /// \brief Constructs a client object and connects to a server
   /// \param[in] hostname Hostname of the server
@@ -52,10 +50,8 @@ class HESealClient {
   /// \param[in] batch_size Batch size of the inference to perform
   /// \param[in] inputs Input data
   /// \param[in] complex_packing Whether or not to use complex packing
-  HESealClient(
-      const std::string& hostname, const size_t port, const size_t batch_size,
-      const std::vector<float>& inputs,
-      bool complex_packing = flag_to_bool(std::getenv("NGRAPH_ENCRYPT_DATA")));
+  HESealClient(const std::string& hostname, const size_t port,
+               const size_t batch_size, const std::vector<float>& inputs);
 
   /// \brief Creates SEAL context
   void set_seal_context();
@@ -134,7 +130,7 @@ class HESealClient {
   std::vector<double> m_inputs;   // Function inputs
   std::vector<double> m_results;  // Function outputs
 
-  bool m_complex_packing;
+  bool m_complex_packing{false};
 };  // namespace he
 }  // namespace he
 }  // namespace ngraph

@@ -73,6 +73,10 @@ def test_mnist_mlp(FLAGS):
         ngraph_optimizer.parameter_map["ngraph_backend"].s = b'HE_SEAL'
         ngraph_optimizer.parameter_map["device_id"].s = b''
         ngraph_optimizer.parameter_map[str(x_input)].s = b'encrypt'
+        ngraph_optimizer.parameter_map['enable_client'].s = (str(
+            FLAGS.enable_client)).encode()
+        ngraph_optimizer.parameter_map['complex_packing'].s = (str(
+            FLAGS.complex_packing)).encode()
 
         config = tf.compat.v1.ConfigProto()
         config.MergeFrom(
@@ -110,6 +114,13 @@ def test_mnist_mlp(FLAGS):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch_size', type=int, default=1, help='Batch size')
+    parser.add_argument(
+        '--enable_client', type=bool, default=False, help='Enable the client')
+    parser.add_argument(
+        '--complex_packing',
+        type=bool,
+        default=False,
+        help='Whether or not to use complex packing')
 
     FLAGS, unparsed = parser.parse_known_args()
     test_mnist_mlp(FLAGS)

@@ -85,6 +85,10 @@ def test_cryptonets_relu(FLAGS):
     ngraph_optimizer.parameter_map["device_id"].s = b''
     # Create configuration to encrypt parameter x
     ngraph_optimizer.parameter_map[str(x)].s = b'encrypt'
+    ngraph_optimizer.parameter_map['enable_client'].s = (str(
+        FLAGS.enable_client)).encode()
+    ngraph_optimizer.parameter_map['complex_packing'].s = (str(
+        FLAGS.complex_packing)).encode()
 
     config = tf.compat.v1.ConfigProto()
     config.MergeFrom(
@@ -102,8 +106,7 @@ def test_cryptonets_relu(FLAGS):
         elasped_time = (time.time() - start_time)
         print("total time(s)", np.round(elasped_time, 3))
 
-    using_client = (os.environ.get('NGRAPH_ENABLE_CLIENT') is not None)
-    if not using_client:
+    if not FLAGS.enable_client:
         y_test_batch = y_test[:FLAGS.batch_size]
         y_label_batch = np.argmax(y_test_batch, 1)
 
@@ -120,6 +123,13 @@ def test_cryptonets_relu(FLAGS):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch_size', type=int, default=1, help='Batch size')
+    parser.add_argument(
+        '--enable_client', type=bool, default=False, help='Enable the client')
+    parser.add_argument(
+        '--complex_packing',
+        type=bool,
+        default=False,
+        help='Whether or not to use complex packing')
 
     FLAGS, unparsed = parser.parse_known_args()
     test_cryptonets_relu(FLAGS)

@@ -339,12 +339,10 @@ class HESealBackend : public ngraph::runtime::Backend {
       !ngraph::he::flag_to_bool(std::getenv("NGRAPH_UNPACK_DATA"))};
   bool m_encrypt_model{
       ngraph::he::flag_to_bool(std::getenv("NGRAPH_ENCRYPT_MODEL"))};
-  bool m_complex_packing{
-      ngraph::he::flag_to_bool(std::getenv("NGRAPH_COMPLEX_PACK"))};
+  bool m_complex_packing{false};
   bool m_naive_rescaling{
       ngraph::he::flag_to_bool(std::getenv("NAIVE_RESCALING"))};
-  bool m_enable_client{
-      ngraph::he::flag_to_bool(std::getenv("NGRAPH_ENABLE_CLIENT"))};
+  bool m_enable_client{false};
 
   std::shared_ptr<seal::SecretKey> m_secret_key;
   std::shared_ptr<seal::PublicKey> m_public_key;

@@ -36,14 +36,8 @@ def test_mnist_cnn(FLAGS):
     data = x_test_batch.flatten('C')
     print('Client batch size from FLAG:', batch_size)
 
-    complex_packing = False
-    if ('NGRAPH_COMPLEX_PACK' in os.environ):
-        complex_packing = str2bool(os.environ['NGRAPH_COMPLEX_PACK'])
-    print('complex_packing?', complex_packing)
-
     port = 34000
-    client = pyhe_client.HESealClient(FLAGS.hostname, port, batch_size, data,
-                                      complex_packing)
+    client = pyhe_client.HESealClient(FLAGS.hostname, port, batch_size, data)
 
     print('Sleeping until client is done')
     while not client.is_done():

@@ -66,6 +66,7 @@ class HESealEncryptionParameters {
 
   /// \brief Saves encryption parameters to a stream
   void save(std::ostream& stream) const {
+    stream << m_scale;
     seal::EncryptionParameters::Save(m_seal_encryption_parameters, stream);
   }
 

@@ -110,7 +110,7 @@ ngraph::he::HESealBackend::HESealBackend(
   }
 
   NGRAPH_CHECK(!(m_encrypt_model && m_complex_packing),
-               "NGRAPH_ENCRYPT_MODEL is incompatible with NGRAPH_COMPLEX_PACK");
+               "Encrypting the model is incompatible with complex packing");
 }
 
 bool ngraph::he::HESealBackend::set_config(
@@ -146,11 +146,32 @@ bool ngraph::he::HESealBackend::set_config(
     }
   };
 
-  for (const auto& elem : config) {
+  for (const auto& config_opt : config) {
+    // Check for encryption of parameters
     std::string shape_str;
-    if (ngraph::to_lower(elem.second) == "encrypt" &&
-        parse_shape(elem.first, shape_str)) {
+    if (ngraph::to_lower(config_opt.second) == "encrypt" &&
+        parse_shape(config_opt.first, shape_str)) {
       m_encrypt_parameter_shapes.insert(shape_str);
+    }
+
+    // Check whether client is enabled
+    if (ngraph::to_lower(config_opt.first) == "enable_client") {
+      bool client_enabled =
+          ngraph::he::flag_to_bool(config_opt.second.c_str(), false);
+      if (client_enabled) {
+        NGRAPH_HE_LOG(3) << "Enabling client from config";
+        m_enable_client = true;
+      }
+    }
+
+    // Check whether complex packing is enabled
+    if (ngraph::to_lower(config_opt.first) == "complex_packing") {
+      bool complex_packing =
+          ngraph::he::flag_to_bool(config_opt.second.c_str(), false);
+      if (complex_packing) {
+        NGRAPH_HE_LOG(3) << "Enabling complex packing from config";
+        m_complex_packing = true;
+      }
     }
   }
 
