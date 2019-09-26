@@ -56,6 +56,9 @@ if(${USE_PREBUILT_TF})
     )
 endif()
 
+# TODO: enable other options
+set(ng_tf_build_flags "--use_grappler_optimizer")
+
 ExternalProject_Add(ext_ngraph_tf
                     GIT_REPOSITORY ${NGRAPH_TF_REPO_URL}
                     GIT_TAG ${NGRAPH_TF_GIT_LABEL}

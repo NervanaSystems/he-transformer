@@ -87,6 +87,12 @@ class HESealBackend : public ngraph::runtime::Backend {
   /// \param[in] node Node representing an operation
   bool is_supported(const Node& node) const override;
 
+  /// \brief Sets a configuration for the backend
+  /// \paran[in] config Configuration string
+  /// \param[out] error Error string
+  bool set_config(const std::map<std::string, std::string>& config,
+                  std::string& error) override;
+
   /// \brief Returns whether or not a given datatype is supported
   /// \param[in] type Datatype
   /// \returns True if datatype is supported, false otherwise

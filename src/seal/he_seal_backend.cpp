@@ -19,6 +19,7 @@
 
 #include "he_plain_tensor.hpp"
 #include "he_seal_cipher_tensor.hpp"
+#include "logging/ngraph_he_log.hpp"
 #include "ngraph/runtime/backend_manager.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_executable.hpp"
@@ -31,6 +32,7 @@ get_backend_constructor_pointer() {
    public:
     std::shared_ptr<ngraph::runtime::Backend> create(
         const std::string& config) override {
+      NGRAPH_HE_LOG(5) << "Creating backend with config string " << config;
       return std::make_shared<ngraph::he::HESealBackend>();
     }
   };
@@ -107,6 +109,15 @@ ngraph::he::HESealBackend::HESealBackend(
 
   NGRAPH_CHECK(!(m_encrypt_model && m_complex_packing),
                "NGRAPH_ENCRYPT_MODEL is incompatible with NGRAPH_COMPLEX_PACK");
+}
+
+bool ngraph::he::HESealBackend::set_config(
+    const std::map<std::string, std::string>& config, std::string& error) {
+  for (const auto& elem : config) {
+    NGRAPH_INFO << "HESealBackend::set_config " << elem.first << ": "
+                << elem.second;
+  }
+  return true;
 }
 
 std::shared_ptr<ngraph::runtime::Tensor>
