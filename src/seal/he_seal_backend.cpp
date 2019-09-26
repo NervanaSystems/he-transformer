@@ -131,7 +131,7 @@ bool ngraph::he::HESealBackend::set_config(
       std::string tensor_shape_str =
           description.substr(shape_start + shape_start_str.size(),
                              shape_end - shape_start - shape_start_str.size());
-      NGRAPH_INFO << "tensor_shape_str " << tensor_shape_str;
+      NGRAPH_HE_LOG(5) << "tensor_shape_str " << tensor_shape_str;
 
       std::vector<std::string> dimensions_str =
           ngraph::split(tensor_shape_str, ',', true);
@@ -141,7 +141,7 @@ bool ngraph::he::HESealBackend::set_config(
 
       shape = ngraph::Shape{dims};
 
-      NGRAPH_INFO << "shape " << ngraph::join(shape, "x");
+      NGRAPH_HE_LOG(1) << "shape " << ngraph::join(shape, "x");
 
       return true;
     } else {
@@ -150,10 +150,7 @@ bool ngraph::he::HESealBackend::set_config(
   };
 
   for (const auto& elem : config) {
-    NGRAPH_INFO << "HESealBackend::set_config " << elem.first << ": "
-                << elem.second;
     ngraph::Shape shape;
-
     if (ngraph::to_lower(elem.second) == "encrypt" &&
         parse_shape(elem.first, shape)) {
       m_encrypt_parameter_shapes.insert(ngraph::join(shape, "x"));
@@ -212,8 +209,9 @@ ngraph::he::HESealBackend::create_packed_plain_tensor(const element::Type& type,
 std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
     std::shared_ptr<Function> function, bool enable_performance_collection) {
   return std::make_shared<HESealExecutable>(
-      function, enable_performance_collection, *this, m_encrypt_data,
-      m_encrypt_model, pack_data(), m_complex_packing, m_enable_client);
+      function, enable_performance_collection, *this,
+      m_encrypt_parameter_shapes, m_encrypt_data, m_encrypt_model, pack_data(),
+      m_complex_packing, m_enable_client);
 }
 
 bool ngraph::he::HESealBackend::is_supported(const ngraph::Node& node) const {
