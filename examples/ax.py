@@ -24,8 +24,9 @@ from tensorflow.core.framework import tensor_pb2
 from tensorflow.python.grappler import tf_optimizer
 
 a = tf.constant(np.array([[1, 2, 3, 4]]), dtype=np.float32)
-b = tf.compat.v1.placeholder(tf.float32, shape=(1, 4))
-f = (a + b) * a * b
+b = tf.compat.v1.placeholder(tf.float32, shape=(1, 4), name='test_b')
+c = tf.compat.v1.placeholder(tf.float32, shape=(1))
+f = (a + b) * a + c
 
 backend = 'HE_SEAL'
 
@@ -38,8 +39,7 @@ ngraph_optimizer.name = "ngraph-optimizer"
 ngraph_optimizer.parameter_map["ngraph_backend"].s = backend.encode()
 ngraph_optimizer.parameter_map["device_id"].s = ''.encode()
 ngraph_optimizer.parameter_map['ENCRYPT_DATA'].s = '1'.encode()
-ngraph_optimizer.parameter_map['_ngraph_ice_cores'].s = '1'.encode()
-ngraph_optimizer.parameter_map["max_batch_size"].s = b'64'
+ngraph_optimizer.parameter_map[str(b)].s = b'encrypt'
 
 config = tf.compat.v1.ConfigProto()
 
@@ -51,5 +51,5 @@ config.MergeFrom(
 print('config', config)
 
 with tf.compat.v1.Session(config=config) as sess:
-    f_val = sess.run(f, feed_dict={b: np.ones((1, 4))})
+    f_val = sess.run(f, feed_dict={b: np.ones((1, 4)), c: np.ones((1))})
     print("Result: ", f_val)

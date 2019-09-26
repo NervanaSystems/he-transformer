@@ -327,6 +327,11 @@ class HESealBackend : public ngraph::runtime::Backend {
         ->chain_index();
   }
 
+  inline std::unordered_set<std::string> get_encryption_parameter_shapes()
+      const {
+    return m_encrypt_parameter_shapes;
+  }
+
  private:
   bool m_encrypt_data{
       ngraph::he::flag_to_bool(std::getenv("NGRAPH_ENCRYPT_DATA"))};
@@ -359,6 +364,8 @@ class HESealBackend : public ngraph::runtime::Backend {
 
   std::unordered_set<size_t> m_supported_element_types{
       element::f32.hash(), element::i64.hash(), element::f64.hash()};
+
+  std::unordered_set<std::string> m_encrypt_parameter_shapes;
 
   std::unordered_set<std::string> m_unsupported_op_name_list{
       "Abs",

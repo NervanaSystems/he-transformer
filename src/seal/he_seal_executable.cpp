@@ -106,6 +106,16 @@ ngraph::he::HESealExecutable::HESealExecutable(
       m_client_inputs_received(false) {
   m_context = he_seal_backend.get_context();
 
+  NGRAPH_HE_LOG(3) << "Creating Executable";
+  for (const auto& param : function->get_parameters()) {
+    auto annotation = param->get_op_annotations();
+    NGRAPH_HE_LOG(3) << "Param name " << param->get_name();
+    NGRAPH_HE_LOG(3) << "Param description " << param->description();
+    NGRAPH_HE_LOG(3) << "Param description " << param->get_friendly_name();
+    NGRAPH_HE_LOG(3) << "Param ostream " << param;
+    NGRAPH_HE_LOG(3) << "Param get_shape " << param->get_shape();
+  }
+
   if (std::getenv("NGRAPH_VOPS") != nullptr) {
     std::string verbose_ops_str(std::getenv("NGRAPH_VOPS"));
     verbose_ops_str = ngraph::to_lower(verbose_ops_str);
