@@ -101,7 +101,14 @@ class HESealClient {
   inline bool is_done() { return m_is_done; }
 
   /// \brief Returns decrypted results
-  std::vector<double> get_results() { return m_results; }
+  /// \warning Will sleep until results are ready
+  inline std::vector<double> get_results() {
+    NGRAPH_INFO << "Waiting for results";
+    while (!is_done()) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+    return m_results;
+  }
 
   /// \brief Closes conection with the server
   void close_connection();

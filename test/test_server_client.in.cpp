@@ -61,9 +61,6 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3) {
     auto he_client =
         ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
 
-    while (!he_client.is_done()) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
     auto double_results = he_client.get_results();
     results = std::vector<float>(double_results.begin(), double_results.end());
   });
@@ -103,9 +100,6 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu) {
     auto he_client =
         ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
 
-    while (!he_client.is_done()) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
     auto double_results = he_client.get_results();
     results = std::vector<float>(double_results.begin(), double_results.end());
   });
@@ -146,9 +140,6 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu_double) {
     auto he_client =
         ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
 
-    while (!he_client.is_done()) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
     auto double_results = he_client.get_results();
     results = std::vector<double>(double_results.begin(), double_results.end());
   });
@@ -189,9 +180,6 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu_int64_t) {
     auto he_client =
         ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
 
-    while (!he_client.is_done()) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
     auto double_results = he_client.get_results();
     results.resize(double_results.size());
     for (size_t i = 0; i < results.size(); ++i) {
@@ -238,9 +226,6 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_pad_bounded_relu) {
     auto he_client =
         ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
 
-    while (!he_client.is_done()) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
     auto double_results = he_client.get_results();
     results = std::vector<float>(double_results.begin(), double_results.end());
   });
@@ -284,9 +269,6 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_pad_relu) {
     auto he_client =
         ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
 
-    while (!he_client.is_done()) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
     auto double_results = he_client.get_results();
     results = std::vector<float>(double_results.begin(), double_results.end());
   });
@@ -349,9 +331,6 @@ auto server_client_relu_packed_test = [](size_t element_count,
     auto he_client =
         ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
 
-    while (!he_client.is_done()) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
     auto double_results = he_client.get_results();
     results = std::vector<float>(double_results.begin(), double_results.end());
   });
@@ -489,9 +468,6 @@ NGRAPH_TEST(${BACKEND_NAME},
     auto he_client =
         ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
 
-    while (!he_client.is_done()) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
     auto double_results = he_client.get_results();
     results = std::vector<float>(double_results.begin(), double_results.end());
   });
@@ -536,9 +512,6 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_max_pool_1d_1channel_1image_plain) {
     auto he_client =
         ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
 
-    while (!he_client.is_done()) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
     auto double_results = he_client.get_results();
     results = std::vector<float>(double_results.begin(), double_results.end());
   });
@@ -588,9 +561,6 @@ NGRAPH_TEST(${BACKEND_NAME},
     auto he_client =
         ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
 
-    while (!he_client.is_done()) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
     auto double_results = he_client.get_results();
     results = std::vector<float>(double_results.begin(), double_results.end());
   });
@@ -643,9 +613,6 @@ NGRAPH_TEST(${BACKEND_NAME},
     auto he_client =
         ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
 
-    while (!he_client.is_done()) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
     auto double_results = he_client.get_results();
     results = std::vector<float>(double_results.begin(), double_results.end());
   });
@@ -720,9 +687,6 @@ NGRAPH_TEST(${BACKEND_NAME},
     auto he_client =
         ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
 
-    while (!he_client.is_done()) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
     auto double_results = he_client.get_results();
     results = std::vector<float>(double_results.begin(), double_results.end());
   });
