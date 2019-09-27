@@ -321,25 +321,26 @@ void ngraph::he::HESealExecutable::send_inference_shape() {
 
   const ParameterVector& input_parameters = get_parameters();
 
-  // TODO: support > 1 input parameter
-  NGRAPH_CHECK(input_parameters.size() == 1,
-               "Only support input parameters size 1");
-  json js;
-  auto& param = input_parameters[0];
-  js["shape"] = param->get_shape();
-  js["function"] = "Parameter";
+  for (const auto& input_param : input_parameters) {
+    auto param_shape = input_param->get_shape();
+    if (encrypted_shape(param_shape)) {
+      json js;
+      js["shape"] = param_shape;
+      js["function"] = "Parameter";
 
-  he_proto::TCPMessage proto_msg;
-  proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
+      he_proto::TCPMessage proto_msg;
+      proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
 
-  he_proto::Function f;
-  f.set_function(js.dump());
-  *proto_msg.mutable_function() = f;
+      he_proto::Function f;
+      f.set_function(js.dump());
+      *proto_msg.mutable_function() = f;
 
-  NGRAPH_HE_LOG(1) << "Sending inference shape " << js.dump();
+      NGRAPH_HE_LOG(1) << "Sending inference shape " << js.dump();
 
-  ngraph::he::TCPMessage execute_msg(std::move(proto_msg));
-  m_session->write_message(std::move(execute_msg));
+      ngraph::he::TCPMessage execute_msg(std::move(proto_msg));
+      m_session->write_message(std::move(execute_msg));
+    }
+  }
 }
 
 void ngraph::he::HESealExecutable::handle_relu_result(
@@ -431,16 +432,6 @@ void ngraph::he::HESealExecutable::handle_message(
 
 void ngraph::he::HESealExecutable::handle_client_ciphers(
     const he_proto::TCPMessage& proto_msg) {
-  // only support parameter size 1 for now
-  NGRAPH_CHECK(get_parameters().size() == 1,
-               "HESealExecutable only supports parameter size 1 (got ",
-               get_parameters().size(), ")");
-
-  // only support function output size 1 for now
-  NGRAPH_CHECK(get_results().size() == 1,
-               "HESealExecutable only supports output size 1 (got ",
-               get_results().size(), "");
-
   size_t count = proto_msg.ciphers_size();
   std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
       he_cipher_inputs(count);
@@ -579,15 +570,16 @@ bool ngraph::he::HESealExecutable::call(
 
   if (m_enable_client) {
     NGRAPH_HE_LOG(1) << "Waiting until m_client_inputs.size() == "
-                     << server_inputs.size();
+                     << m_encrypt_param_shapes.size();
 
     std::unique_lock<std::mutex> mlock(m_client_inputs_mutex);
     m_client_inputs_cond.wait(
         mlock, std::bind(&HESealExecutable::client_inputs_received, this));
     NGRAPH_HE_LOG(1) << "Client inputs_received";
-    NGRAPH_CHECK(m_client_inputs.size() == server_inputs.size(),
+    NGRAPH_CHECK(m_client_inputs.size() == m_encrypt_param_shapes.size(),
                  "Recieved incorrect number of inputs from client (got ",
-                 m_client_inputs.size(), ", expectd ", server_inputs.size());
+                 m_client_inputs.size(), ", expectd ",
+                 m_encrypt_param_shapes.size());
   }
 
   // convert inputs to HETensor
