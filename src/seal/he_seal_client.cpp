@@ -65,15 +65,7 @@ ngraph::he::HESealClient::HESealClient(const std::string& hostname,
 void ngraph::he::HESealClient::set_seal_context() {
   NGRAPH_HE_LOG(5) << "Client setting seal context";
   auto security_level = m_encryption_params.security_level();
-
-  auto seal_security_level = seal::sec_level_type::none;
-  if (security_level == 256) {
-    seal_security_level = seal::sec_level_type::tc256;
-  } else if (security_level == 192) {
-    seal_security_level = seal::sec_level_type::tc192;
-  } else if (security_level == 128) {
-    seal_security_level = seal::sec_level_type::tc128;
-  }
+  auto seal_security_level = ngraph::he::seal_security_level(security_level);
 
   m_context = seal::SEALContext::Create(
       m_encryption_params.seal_encryption_parameters(), true,
@@ -87,16 +79,8 @@ void ngraph::he::HESealClient::set_seal_context() {
   m_secret_key = std::make_shared<seal::SecretKey>(m_keygen->secret_key());
   m_encryptor = std::make_shared<seal::Encryptor>(m_context, *m_public_key);
   m_decryptor = std::make_shared<seal::Decryptor>(m_context, *m_secret_key);
-
-  // Evaluator
   m_evaluator = std::make_shared<seal::Evaluator>(m_context);
-
-  // Encoder
   m_ckks_encoder = std::make_shared<seal::CKKSEncoder>(m_context);
-
-  m_scale = m_encryption_params.scale();
-
-  NGRAPH_HE_LOG(5) << "Client scale " << m_scale;
 }
 
 void ngraph::he::HESealClient::send_public_and_relin_keys() {
@@ -172,7 +156,7 @@ void ngraph::he::HESealClient::handle_inference_request(
   size_t num_bytes = parameter_size * sizeof(double) * m_batch_size;
   ngraph::he::HESealCipherTensor::write(
       ciphers, m_inputs.data(), num_bytes, m_batch_size, element::f64,
-      m_context->first_parms_id(), m_scale, *m_ckks_encoder, *m_encryptor,
+      m_context->first_parms_id(), scale(), *m_ckks_encoder, *m_encryptor,
       complex_packing());
 
   const size_t maximum_message_cnt = 100;
@@ -230,7 +214,7 @@ void ngraph::he::HESealClient::handle_relu_request(
         post_relu_cipher, proto_msg.ciphers(result_idx), m_context);
 
     ngraph::he::scalar_relu_seal(*post_relu_cipher, post_relu_cipher,
-                                 m_context->first_parms_id(), m_scale,
+                                 m_context->first_parms_id(), scale(),
                                  *m_ckks_encoder, *m_encryptor, *m_decryptor);
     post_relu_cipher->save(*proto_msg.mutable_ciphers(result_idx));
   }
@@ -263,7 +247,7 @@ void ngraph::he::HESealClient::handle_bounded_relu_request(
 
     ngraph::he::scalar_bounded_relu_seal(
         *post_bounded_relu_cipher, post_bounded_relu_cipher, bound,
-        m_context->first_parms_id(), m_scale, *m_ckks_encoder, *m_encryptor,
+        m_context->first_parms_id(), scale(), *m_ckks_encoder, *m_encryptor,
         *m_decryptor);
     post_bounded_relu_cipher->save(*proto_msg.mutable_ciphers(result_idx));
   }
@@ -293,7 +277,7 @@ void ngraph::he::HESealClient::handle_max_pool_request(
   ngraph::he::max_pool_seal(
       max_pool_ciphers, post_max_pool_ciphers, Shape{1, 1, cipher_count},
       Shape{1, 1, 1}, Shape{cipher_count}, ngraph::Strides{1}, Shape{0},
-      Shape{0}, m_context->first_parms_id(), m_scale, *m_ckks_encoder,
+      Shape{0}, m_context->first_parms_id(), scale(), *m_ckks_encoder,
       *m_encryptor, *m_decryptor, complex_packing());
 
   // Create max_pool result message

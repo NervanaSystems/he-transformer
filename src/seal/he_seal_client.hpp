@@ -113,11 +113,11 @@ class HESealClient {
   /// \brief Closes conection with the server
   void close_connection();
 
-  /// \brief Returns whether or not complex packing is used
-  bool complex_packing() const { return m_complex_packing; }
+  /// \brief Returns whether or not the encryption parameters use complex packing
+  bool complex_packing() const { return m_encryption_params.complex_packing(); }
 
-  /// \brief Returns whether or not complex packing is used
-  bool& complex_packing() { return m_complex_packing; }
+  /// \brief Returns the scale of the encryption parameters
+  double scale() const { return m_encryption_params.scale(); }
 
  private:
   std::unique_ptr<TCPClient> m_tcp_client;
@@ -131,13 +131,11 @@ class HESealClient {
   std::shared_ptr<seal::Evaluator> m_evaluator;
   std::shared_ptr<seal::KeyGenerator> m_keygen;
   std::shared_ptr<seal::RelinKeys> m_relin_keys;
-  double m_scale{0.0};
   size_t m_batch_size;
   bool m_is_done;
   std::vector<double> m_inputs;   // Function inputs
   std::vector<double> m_results;  // Function outputs
 
-  bool m_complex_packing{false};
 };  // namespace he
 }  // namespace he
 }  // namespace ngraph
