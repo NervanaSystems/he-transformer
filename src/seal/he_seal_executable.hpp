@@ -180,7 +180,7 @@ class HESealExecutable : public runtime::Executable {
 
   /// \brief Returns whether or not a node's verbosity is on or off
   /// \param[in] op Operation to determine verbosity of
-  bool verbose_op(const ngraph::Node& op) {
+  inline bool verbose_op(const ngraph::Node& op) {
     return m_verbose_all_ops ||
            m_verbose_ops.find(ngraph::to_lower(op.description())) !=
                m_verbose_ops.end();
@@ -188,7 +188,7 @@ class HESealExecutable : public runtime::Executable {
 
   /// \brief Returns whether or not a node dessccription verbosity is on or off
   /// \param[in] description Node description determine verbosity of
-  bool verbose_op(const std::string& description) {
+  inline bool verbose_op(const std::string& description) {
     return m_verbose_all_ops ||
            m_verbose_ops.find(ngraph::to_lower(description)) !=
                m_verbose_ops.end();
@@ -196,10 +196,16 @@ class HESealExecutable : public runtime::Executable {
 
   /// \brief Sets up the client
   /// TODO: remove
-  void enable_client() {
+  inline void enable_client() {
     m_enable_client = true;
     server_setup();
   }
+
+  /// \brief Returns the batch size
+  inline size_t batch_size() const { return m_batch_size; }
+
+  /// \brief Returns the batch size
+  void set_batch_size(size_t batch_size);
 
   /// \brief Returns whether or not a given parameter shape should be encrypted
   bool encrypted_shape(const ngraph::Shape& shape);

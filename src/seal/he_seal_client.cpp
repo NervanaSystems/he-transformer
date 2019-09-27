@@ -129,7 +129,8 @@ void ngraph::he::HESealClient::handle_inference_request(
   std::vector<size_t> shape_dims = js.at("shape");
   ngraph::Shape shape{shape_dims};
 
-  NGRAPH_HE_LOG(5) << join(shape, "x");
+  NGRAPH_HE_LOG(5) << "Client received inference request with shape "
+                   << join(shape, "x");
 
   size_t parameter_size =
       ngraph::shape_size(ngraph::he::HETensor::pack_shape(shape));
@@ -173,6 +174,8 @@ void ngraph::he::HESealClient::handle_inference_request(
     encrypted_inputs_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
     ngraph::he::save_to_proto(ciphers.begin() + parm_idx,
                               ciphers.begin() + end_idx, encrypted_inputs_msg);
+
+    NGRAPH_HE_LOG(3) << "Client sending encrypted inputs";
     write_message(std::move(encrypted_inputs_msg));
   }
 }

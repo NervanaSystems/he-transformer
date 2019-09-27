@@ -129,7 +129,7 @@ ngraph::he::HESealExecutable::HESealExecutable(
     }
   }
 
-  m_is_compiled = true;
+  NGRAPH_HE_LOG(3) << "Running optimization passes";
   ngraph::pass::Manager pass_manager;
   pass_manager.register_pass<ngraph::pass::LikeReplacement>();
   pass_manager.register_pass<ngraph::pass::AssignLayout<DenseTensorLayout>>();
@@ -146,42 +146,29 @@ ngraph::he::HESealExecutable::HESealExecutable(
         return m_he_seal_backend.is_supported(op);
       });
   pass_manager_he.run_passes(function);
+  m_is_compiled = true;
+  NGRAPH_HE_LOG(3) << "Done running optimization passes";
 
   for (const std::shared_ptr<Node>& node : function->get_ordered_ops()) {
     m_wrapped_nodes.emplace_back(node);
   }
+
+  NGRAPH_HE_LOG(3) << "Setting parameters and results";
   set_parameters_and_results(*function);
-
-  // Constant, for example, cannot be packed
-  if (m_pack_data) {
-    if (get_parameters().size() > 0) {
-      const Shape& shape = (get_parameters()[0])->get_shape();
-      NGRAPH_CHECK(shape.size() > 0, "Parameter shape empty");
-
-      m_batch_size = shape[0];
-      for (auto& parameter : get_parameters()) {
-        const Shape& param_shape = parameter->get_shape();
-        NGRAPH_CHECK(param_shape.size() > 0, "Parameter shape empty");
-        size_t new_batch_size = param_shape[0];
-        NGRAPH_CHECK(
-            new_batch_size == m_batch_size, "Function contains ",
-            get_parameters().size(),
-            " parameters, which do not all imply the same batch size.");
-      }
-
-      size_t max_batch_size =
-          m_he_seal_backend.get_ckks_encoder()->slot_count();
-      if (complex_packing()) {
-        max_batch_size *= 2;
-      }
-      NGRAPH_CHECK(m_batch_size <= max_batch_size, "Batch size ", m_batch_size,
-                   " too large (maximum ", max_batch_size, ")");
-    }
-  }
 
   if (m_enable_client) {
     server_setup();
   }
+}
+
+void ngraph::he::HESealExecutable::set_batch_size(size_t batch_size) {
+  size_t max_batch_size = m_he_seal_backend.get_ckks_encoder()->slot_count();
+  if (complex_packing()) {
+    max_batch_size *= 2;
+  }
+  NGRAPH_CHECK(batch_size <= max_batch_size, "Batch size ", batch_size,
+               " too large (maximum ", max_batch_size, ")");
+  m_batch_size = batch_size;
 }
 
 void ngraph::he::HESealExecutable::check_client_supports_function() {
@@ -432,6 +419,8 @@ void ngraph::he::HESealExecutable::handle_message(
 
 void ngraph::he::HESealExecutable::handle_client_ciphers(
     const he_proto::TCPMessage& proto_msg) {
+  NGRAPH_HE_LOG(3) << "Handling client ciphers";
+
   size_t count = proto_msg.ciphers_size();
   std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
       he_cipher_inputs(count);
@@ -514,14 +503,8 @@ bool ngraph::he::HESealExecutable::encrypted_shape(const ngraph::Shape& shape) {
 
   // Check if any encrypt_param_shape matches shape
   for (const auto& encrypt_param_shape : m_encrypt_param_shapes) {
-    NGRAPH_HE_LOG(5) << "encrypt_param_shape " << encrypt_param_shape;
     std::vector<std::string> split_encrypt_param_shape =
         ngraph::split(encrypt_param_shape, 'x', true);
-
-    NGRAPH_HE_LOG(5) << "split_encrypt_param_shape ";
-    for (const auto& dim : split_encrypt_param_shape) {
-      NGRAPH_HE_LOG(5) << dim;
-    }
 
     if (split_encrypt_param_shape.size() != shape_dims.size()) {
       continue;
@@ -534,10 +517,14 @@ bool ngraph::he::HESealExecutable::encrypted_shape(const ngraph::Shape& shape) {
       if (!same) {
         break;
       } else if (dim_idx == shape_dims.size() - 1) {
+        NGRAPH_HE_LOG(3) << "Shape " << ngraph::join(shape_dims, "x")
+                         << " is encrypted";
         return true;
       }
     }
   }
+  NGRAPH_HE_LOG(3) << "Shape " << ngraph::join(shape_dims, "x")
+                   << " is not encrypted";
   return false;
 }
 
