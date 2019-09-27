@@ -114,7 +114,7 @@ class HESealClient {
 
  private:
   std::unique_ptr<TCPClient> m_tcp_client;
-  seal::EncryptionParameters m_encryption_params{seal::scheme_type::CKKS};
+  HESealEncryptionParameters m_encryption_params;
   std::shared_ptr<seal::PublicKey> m_public_key;
   std::shared_ptr<seal::SecretKey> m_secret_key;
   std::shared_ptr<seal::SEALContext> m_context;

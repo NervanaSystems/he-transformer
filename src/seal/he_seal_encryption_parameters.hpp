@@ -42,21 +42,11 @@ class HESealEncryptionParameters {
   HESealEncryptionParameters(const std::string& scheme_name,
                              const seal::EncryptionParameters& parms,
                              std::uint64_t security_level, double scale,
-                             bool complex_packing)
-      : m_scheme_name(scheme_name),
-        m_seal_encryption_parameters(parms),
-        m_security_level(security_level),
-        m_scale(scale),
-        m_complex_packing(complex_packing) {
-    validate_parameters();
-  }
+                             bool complex_packing);
 
   /// \brief Returns a set of default CKKS parameters
   /// \warning Default parameters do not enforce any security level
-  HESealEncryptionParameters()
-      : HESealEncryptionParameters("HE_SEAL", 1024,
-                                   std::vector<int>{30, 30, 30, 30, 30}, 0, 0,
-                                   false) {}
+  HESealEncryptionParameters();
 
   /// \brief Constructs CKKS encryption parameters
   /// \param[in] scheme_name Should be "HE_SEAL"
@@ -74,65 +64,29 @@ class HESealEncryptionParameters {
                              std::uint64_t poly_modulus_degree,
                              std::vector<int> coeff_modulus_bits,
                              std::uint64_t security_level, double scale,
-                             bool complex_packing)
-      : m_scheme_name(scheme_name),
-        m_security_level(security_level),
-        m_scale(scale),
-        m_complex_packing(complex_packing) {
-    m_seal_encryption_parameters =
-        seal::EncryptionParameters(seal::scheme_type::CKKS);
+                             bool complex_packing);
 
-    m_seal_encryption_parameters.set_poly_modulus_degree(poly_modulus_degree);
-
-    auto coeff_modulus =
-        seal::CoeffModulus::Create(poly_modulus_degree, coeff_modulus_bits);
-
-    m_seal_encryption_parameters.set_coeff_modulus(coeff_modulus);
-
-    validate_parameters();
-  }
+  /// \brief Returns encryption parameters at given path if possible, or use
+  /// default parameters
+  /// \param[in] config_path filename where configuration is
+  /// stored. If empty, uses default configuration
+  /// \throws ngraph_error if config_path is specified but does not exist
+  /// \throws ngraph_error if encryption parameters are not valid
+  static HESealEncryptionParameters parse_config_or_use_default(
+      const char* config_path);
 
   /// \brief Checks paramters are valid
   /// \throws ngraph_error if scheme_name is not HE_SEAL
   /// \throws ngraph_error if poly_modulus_degree is not a supported power of 2
   /// \throws ngraph_error if security level is not valid security
   /// level
-  inline void validate_parameters() {
-    NGRAPH_CHECK(m_scheme_name == "HE_SEAL", "Invalid scheme name ",
-                 m_scheme_name);
-
-    static std::unordered_set<uint64_t> valid_poly_modulus{1024, 2048,  4096,
-                                                           8192, 16384, 32768};
-    NGRAPH_CHECK(valid_poly_modulus.count(poly_modulus_degree()) != 0,
-                 "poly_modulus_degree must be 1024, 2048, 4096, 8192, 16384, "
-                 "32768");
-
-    static std::unordered_set<uint64_t> valid_security_level{0, 128, 192, 256};
-
-    NGRAPH_CHECK(valid_security_level.count(security_level()) != 0,
-                 "security_level must be 0, 128, 192, 256");
-  }
+  void validate_parameters() const;
 
   /// \brief Saves encryption parameters to a stream
-  inline void save(std::ostream& stream) const {
-    stream << m_scale;
-    stream << m_complex_packing;
-    stream << m_security_level;
-    seal::EncryptionParameters::Save(m_seal_encryption_parameters, stream);
-  }
+  void save(std::ostream& stream) const;
 
-  static inline HESealEncryptionParameters load(std::istream& stream) {
-    double scale;
-    stream >> scale;
-    bool complex_packing;
-    stream >> complex_packing;
-    uint64_t security_level;
-    stream >> security_level;
-    auto seal_encryption_parameters = seal::EncryptionParameters::Load(stream);
-
-    return HESealEncryptionParameters("HE_SEAL", seal_encryption_parameters,
-                                      security_level, scale, complex_packing);
-  }
+  /// \brief Loads encryption parametrs from a stream
+  static HESealEncryptionParameters load(std::istream& stream);
 
   /// \brief Returns SEAL encryption parameters
   inline seal::EncryptionParameters& seal_encryption_parameters() {
@@ -173,66 +127,5 @@ class HESealEncryptionParameters {
   bool m_complex_packing;
 };
 
-/// \brief Returns encryption parameters at given path if possible, or use
-/// default parameters
-/// \param[in] config_path filename where configuration is
-/// stored. If empty, uses default configuration
-/// \throws ngraph_error if config_path is specified but does not exist
-/// \throws ngraph_error if encryption parameters are not valid
-static inline ngraph::he::HESealEncryptionParameters
-parse_config_or_use_default(const char* config_path) {
-  if (config_path == nullptr) {
-    return ngraph::he::HESealEncryptionParameters();
-  }
-
-  auto file_exists = [](const char* filename) {
-    std::ifstream f(filename);
-    return f.good();
-  };
-  NGRAPH_CHECK(file_exists(config_path), "Config path ", config_path,
-               " does not exist");
-
-  try {
-    // Read file to string
-    std::ifstream f(config_path);
-    std::stringstream ss;
-    ss << f.rdbuf();
-    std::string s = ss.str();
-
-    // Parse json
-    nlohmann::json js = nlohmann::json::parse(s);
-    std::string parsed_scheme_name = js["scheme_name"];
-    if (parsed_scheme_name != "HE_SEAL") {
-      throw ngraph_error("Parsed scheme name " + parsed_scheme_name +
-                         " is not HE_SEAL");
-    }
-
-    uint64_t poly_modulus_degree = js["poly_modulus_degree"];
-    uint64_t security_level = js["security_level"];
-
-    double scale = 0;  // Use default scale
-    if (js.find("scale") != js.end()) {
-      scale = js["scale"];
-    }
-
-    std::vector<int> coeff_mod_bits = js["coeff_modulus"];
-
-    bool complex_packing = false;
-    if (js.find("complex_packing") != js.end()) {
-      complex_packing = js["complex_packing"];
-    }
-
-    auto params = ngraph::he::HESealEncryptionParameters(
-        "HE_SEAL", poly_modulus_degree, coeff_mod_bits, security_level, scale,
-        complex_packing);
-
-    return params;
-
-  } catch (const std::exception& e) {
-    std::stringstream ss;
-    ss << "Error creating encryption parameters: " << e.what();
-    throw ngraph_error(ss.str());
-  }
-}
 }  // namespace he
 }  // namespace ngraph

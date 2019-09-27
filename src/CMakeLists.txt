@@ -31,11 +31,12 @@ set(HE_SRC
     seal/kernel/multiply_seal.cpp
     seal/kernel/negate_seal.cpp
     # seal backend
-    seal/seal_util.cpp
-    seal/he_seal_cipher_tensor.cpp
-    seal/he_seal_executable.cpp
     seal/he_seal_backend.cpp
+    seal/he_seal_cipher_tensor.cpp
     seal/he_seal_client.cpp
+    seal/he_seal_encryption_parameters.cpp
+    seal/he_seal_executable.cpp
+    seal/seal_util.cpp
     # protobuf files
     ${message_proto_srcs})
 

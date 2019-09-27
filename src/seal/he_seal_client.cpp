@@ -63,8 +63,21 @@ ngraph::he::HESealClient::HESealClient(const std::string& hostname,
                    std::vector<double>(inputs.begin(), inputs.end())) {}
 
 void ngraph::he::HESealClient::set_seal_context() {
-  m_context = seal::SEALContext::Create(m_encryption_params, true,
-                                        seal::sec_level_type::none);
+  NGRAPH_HE_LOG(5) << "Client setting seal context";
+  auto security_level = m_encryption_params.security_level();
+
+  auto seal_security_level = seal::sec_level_type::none;
+  if (security_level == 256) {
+    seal_security_level = seal::sec_level_type::tc256;
+  } else if (security_level == 192) {
+    seal_security_level = seal::sec_level_type::tc192;
+  } else if (security_level == 128) {
+    seal_security_level = seal::sec_level_type::tc128;
+  }
+
+  m_context = seal::SEALContext::Create(
+      m_encryption_params.seal_encryption_parameters(), true,
+      seal_security_level);
 
   print_seal_context(*m_context);
 
@@ -81,8 +94,8 @@ void ngraph::he::HESealClient::set_seal_context() {
   // Encoder
   m_ckks_encoder = std::make_shared<seal::CKKSEncoder>(m_context);
 
-  // TODO: pick better scale?
-  m_scale = ngraph::he::choose_scale(m_encryption_params.coeff_modulus());
+  m_scale = m_encryption_params.scale();
+
   NGRAPH_HE_LOG(5) << "Client scale " << m_scale;
 }
 
@@ -115,7 +128,9 @@ void ngraph::he::HESealClient::handle_encryption_parameters_response(
   const std::string& enc_parms_str =
       proto_msg.encryption_parameters().encryption_parameters();
   std::stringstream param_stream(enc_parms_str);
-  m_encryption_params = seal::EncryptionParameters::Load(param_stream);
+
+  NGRAPH_HE_LOG(3) << "Client loading encryption parameters";
+  m_encryption_params = HESealEncryptionParameters::load(param_stream);
 
   set_seal_context();
   send_public_and_relin_keys();
