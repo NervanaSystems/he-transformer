@@ -19,7 +19,9 @@
 #include <thread>
 #include <vector>
 
+#include "he_op_annotations.hpp"
 #include "ngraph/ngraph.hpp"
+#include "ngraph/op/util/op_annotations.hpp"
 #include "op/bounded_relu.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_client.hpp"
@@ -51,6 +53,10 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_multiple_parameters) {
   Shape shape_c{3, 1};
   auto a = op::Constant::create(element::f32, shape, {0.1, 0.2, 0.3});
   auto b = make_shared<op::Parameter>(element::f32, shape);
+
+  auto he_op_annotations = std::make_shared<ngraph::he::HEOpAnnotations>(true);
+  b->set_op_annotations(he_op_annotations);
+
   auto c = make_shared<op::Parameter>(element::f32, shape_c);
   auto d = make_shared<op::Reshape>(c, AxisVector{0, 1}, shape);
   auto t = make_shared<op::Add>(a, b);

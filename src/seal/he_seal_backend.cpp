@@ -26,6 +26,7 @@
 #include "seal/he_seal_executable.hpp"
 #include "seal/seal.h"
 #include "seal/seal_util.hpp"
+#include "he_op_annotations.hpp"
 
 extern "C" ngraph::runtime::BackendConstructor*
 get_backend_constructor_pointer() {
