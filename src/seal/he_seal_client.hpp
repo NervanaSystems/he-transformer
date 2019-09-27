@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+#include "seal/he_seal_encryption_parameters.hpp"
 #include "seal/seal.h"
 #include "tcp/tcp_client.hpp"
 #include "tcp/tcp_message.hpp"
@@ -123,7 +124,7 @@ class HESealClient {
 
  private:
   std::unique_ptr<TCPClient> m_tcp_client;
-  HESealEncryptionParameters m_encryption_params;
+  ngraph::he::HESealEncryptionParameters m_encryption_params;
   std::shared_ptr<seal::PublicKey> m_public_key;
   std::shared_ptr<seal::SecretKey> m_secret_key;
   std::shared_ptr<seal::SEALContext> m_context;

@@ -30,7 +30,7 @@ python pyclient.py
 
 Once the computation is complete, the output will be returned to the client and decrypted. The server will attempt decrypt the output as well; however, since it does not have the client's secret key, the output will be meaningless.
 
-The server-client approach currently works only for functions with one input parameter tensor.
+The server-client approach currently works only for functions with one result tensor.
 
 For a deep learning example using the client-server model, see the `MNIST/MLP` folder.
 
