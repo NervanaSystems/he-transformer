@@ -62,6 +62,7 @@ class HESealExecutable : public runtime::Executable {
                    bool pack_data, bool enable_client);
 
   ~HESealExecutable() override {
+    NGRAPH_HE_LOG(3) << "~HESealExecutable()";
     if (m_enable_client) {
       m_thread.join();
 

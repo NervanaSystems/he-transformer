@@ -15,7 +15,7 @@ message TCPMessage {
   EncryptionParameters encryption_parameters = 3;
   EvaluationKey eval_key = 4;
   PublicKey public_key = 5;
-  repeated SealCiphertextWrapper ciphers = 6;
+  SealCipherTensor cipher_tensor = 6;
 }
 
 message EncryptionParameters {
@@ -39,4 +39,9 @@ message SealCiphertextWrapper {
   bool known_value = 2;
   float value = 3;
   bytes ciphertext = 4;
+}
+
+message SealCipherTensor {
+  repeated string shape = 1;
+  repeated SealCiphertextWrapper ciphers = 2;
 }

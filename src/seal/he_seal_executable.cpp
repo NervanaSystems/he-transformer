@@ -479,6 +479,8 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
     std::lock_guard<std::mutex> guard(m_client_inputs_mutex);
     m_client_inputs_received = true;
     m_client_inputs_cond.notify_all();
+  } else {
+    NGRAPH_HE_LOG(3) << "Not yet done loading client ciphertexts";
   }
 }
 
