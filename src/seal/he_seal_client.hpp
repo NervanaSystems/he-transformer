@@ -102,6 +102,7 @@ class HESealClient {
 
   /// \brief Returns decrypted results
   /// \warning Will sleep until results are ready
+  /// TODO: better solution
   inline std::vector<double> get_results() {
     NGRAPH_INFO << "Waiting for results";
     while (!is_done()) {
@@ -113,7 +114,8 @@ class HESealClient {
   /// \brief Closes conection with the server
   void close_connection();
 
-  /// \brief Returns whether or not the encryption parameters use complex packing
+  /// \brief Returns whether or not the encryption parameters use complex
+  /// packing
   bool complex_packing() const { return m_encryption_params.complex_packing(); }
 
   /// \brief Returns the scale of the encryption parameters

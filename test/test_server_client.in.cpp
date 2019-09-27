@@ -288,7 +288,12 @@ auto server_client_relu_packed_test = [](size_t element_count,
                                          double bound_value = 0.) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_complex_packing(complex_packing);
+
+  if (complex_packing) {
+    he_backend->update_encryption_parameters(
+        ngraph::he::HESealEncryptionParameters::
+            default_complex_packing_parms());
+  }
 
   Shape shape{batch_size, element_count};
   auto a = make_shared<op::Parameter>(element::f32, shape);
