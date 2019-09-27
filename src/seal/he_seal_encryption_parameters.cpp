@@ -17,6 +17,7 @@
 #include "seal/he_seal_encryption_parameters.hpp"
 #include "ngraph/check.hpp"
 #include "ngraph/except.hpp"
+#include "seal/seal_util.hpp"
 
 ngraph::he::HESealEncryptionParameters::HESealEncryptionParameters(
     const std::string& scheme_name, const seal::EncryptionParameters& parms,
@@ -68,6 +69,16 @@ void ngraph::he::HESealEncryptionParameters::validate_parameters() const {
 
   NGRAPH_CHECK(valid_security_level.count(security_level()) != 0,
                "security_level must be 0, 128, 192, 256");
+
+  auto seal_sec_level = ngraph::he::seal_security_level(security_level());
+
+  auto context = seal::SEALContext::Create(m_seal_encryption_parameters, true,
+                                             seal_sec_level);
+
+  NGRAPH_CHECK(context->parameters_set(), "Invalid parameters");
+
+
+  // TODO: validate scale is reasonable
 }
 
 void ngraph::he::HESealEncryptionParameters::save(std::ostream& stream) const {

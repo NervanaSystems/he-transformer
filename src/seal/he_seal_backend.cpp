@@ -51,21 +51,8 @@ ngraph::he::HESealBackend::HESealBackend()
 ngraph::he::HESealBackend::HESealBackend(
     const ngraph::he::HESealEncryptionParameters& parms)
     : m_encryption_params(parms) {
-  seal::sec_level_type sec_level = seal::sec_level_type::none;
-  if (parms.security_level() == 128) {
-    sec_level = seal::sec_level_type::tc128;
-  } else if (parms.security_level() == 192) {
-    sec_level = seal::sec_level_type::tc192;
-  } else if (parms.security_level() == 256) {
-    sec_level = seal::sec_level_type::tc256;
-  } else if (parms.security_level() == 0) {
-    if (m_encrypt_all_params || m_encrypt_model) {
-      NGRAPH_WARN
-          << "Parameter selection does not enforce minimum security level";
-    }
-  } else {
-    throw ngraph_error("Invalid security level");
-  }
+  seal::sec_level_type sec_level =
+      ngraph::he::seal_security_level(parms.security_level());
 
   m_context = seal::SEALContext::Create(parms.seal_encryption_parameters(),
                                         true, sec_level);

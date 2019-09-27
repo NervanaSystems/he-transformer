@@ -50,6 +50,26 @@ inline double choose_scale(
   }
 }
 
+/// \brief Returns SEAL's security level type from the number of bits of
+/// security
+/// \param[in] bits Bits of security
+inline seal::sec_level_type seal_security_level(size_t bits) {
+  auto sec_level = seal::sec_level_type::none;
+  if (bits == 128) {
+    sec_level = seal::sec_level_type::tc128;
+  } else if (bits == 192) {
+    sec_level = seal::sec_level_type::tc192;
+  } else if (bits == 256) {
+    sec_level = seal::sec_level_type::tc256;
+  } else if (bits == 0) {
+    NGRAPH_WARN
+        << "Parameter selection does not enforce minimum security level";
+  } else {
+    throw ngraph_error("Invalid security level " + std::to_string(bits));
+  }
+  return sec_level;
+}
+
 /// \brief Returns the smallest chain index of a vector of ciphertexts
 /// \param[in] ciphers Vector of ciphertexts
 /// \param[in] he_seal_backend Backend whose context is used to determine the
@@ -123,7 +143,8 @@ inline void add_plain(const seal::Ciphertext& encrypted, double value,
 }
 
 /// \brief Multiples each element in a polynomial with a scalar modulo
-/// modulus_value. Assumes the scalar, poly, and modulus value are all < 30 bits
+/// modulus_value. Assumes the scalar, poly, and modulus value are all < 30
+/// bits
 /// \param[in] poly Polynomial to be multiplied
 /// \param[in] coeff_count Number of terms in the polynomial
 /// \param[in] scalar Value with which to multiply
