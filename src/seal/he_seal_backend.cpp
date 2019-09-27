@@ -75,10 +75,7 @@ void ngraph::he::HESealBackend::generate_context() {
 
   auto coeff_moduli = context_data->parms().coeff_modulus();
 
-  if (m_encrypt_all_params || m_encrypt_parameter_shapes.size() != 0 ||
-      m_encrypt_model) {
-    print_encryption_parameters(m_encryption_params, *m_context);
-  }
+  print_encryption_parameters(m_encryption_params, *m_context);
 
   // Set barrett ratio map
   for (const seal::SmallModulus& modulus : coeff_moduli) {

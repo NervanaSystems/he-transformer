@@ -583,10 +583,8 @@ bool ngraph::he::HESealExecutable::call(
           for (const uint64_t dim : shape) {
             shape_dims.emplace_back(std::to_string(dim));
           }
-          NGRAPH_HE_LOG(3) << "Checking if shape is encrypted: ";
-          for (const auto& dim : shape_dims) {
-            NGRAPH_HE_LOG(3) << dim;
-          }
+          NGRAPH_HE_LOG(3) << "Checking if shape "
+                           << ngraph::join(shape_dims, "x") << " is encrypted";
 
           // Check if any encrypt_param_shape matches shape
           for (const auto& encrypt_param_shape : m_encrypt_param_shapes) {
@@ -794,6 +792,7 @@ bool ngraph::he::HESealExecutable::call(
 
   // Send outputs to client.
   if (m_enable_client) {
+    NGRAPH_HE_LOG(1) << "Sending results to the client";
     send_client_results();
   }
   return true;

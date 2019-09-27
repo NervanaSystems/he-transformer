@@ -38,6 +38,7 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_trivial) {
     auto tensors_list =
         generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
     for (auto tensors : tensors_list) {
+      NGRAPH_INFO << "Running test with same backend";
       auto results = get<0>(tensors);
       auto inputs = get<1>(tensors);
       auto t_a = inputs[0];
