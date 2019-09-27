@@ -44,6 +44,14 @@ class HESealEncryptionParameters {
                              std::uint64_t security_level, double scale,
                              bool complex_packing);
 
+  /// \brief Returns a set of default CKKS parameters using real packing
+  /// \warning Default parameters do not enforce any security level
+  static HESealEncryptionParameters default_real_packing_parms();
+
+  /// \brief Returns a set of default CKKS parameters using complex packing
+  /// \warning Default parameters do not enforce any security level
+  static HESealEncryptionParameters default_complex_packing_parms();
+
   /// \brief Returns a set of default CKKS parameters
   /// \warning Default parameters do not enforce any security level
   HESealEncryptionParameters();
@@ -74,6 +82,22 @@ class HESealEncryptionParameters {
   /// \throws ngraph_error if encryption parameters are not valid
   static HESealEncryptionParameters parse_config_or_use_default(
       const char* config_path);
+
+  inline bool operator==(const HESealEncryptionParameters& other) {
+    return (other.m_scheme_name == m_scheme_name) &&
+           (other.m_seal_encryption_parameters ==
+            m_seal_encryption_parameters) &&
+           (other.m_security_level == m_security_level) &&
+           (other.m_scale == m_scale) &&
+           (other.m_complex_packing == m_complex_packing);
+  }
+
+  /// \brief Returns whether or not two encryption parameters differ in such a
+  /// way they can use the same SEAL context
+  /// \param[in] parms1 Encryption parameter
+  /// \param[in] parms2 Encryption parameter
+  static bool same_context(const HESealEncryptionParameters& parms1,
+                           const HESealEncryptionParameters& parms2);
 
   /// \brief Checks paramters are valid
   /// \throws ngraph_error if scheme_name is not HE_SEAL
@@ -116,6 +140,9 @@ class HESealEncryptionParameters {
   /// \brief Returns the security level
   inline std::uint64_t security_level() const { return m_security_level; }
 
+  /// \brief Returns the security level
+  inline std::uint64_t& security_level() { return m_security_level; }
+
   /// \brief Return whether or not complex packing is enabled
   inline bool complex_packing() const { return m_complex_packing; }
 
@@ -134,9 +161,8 @@ class HESealEncryptionParameters {
 /// \brief Prints the given encryption parameters
 /// \param[in] params Encryption parameters
 /// \param[in] context SEAL context associated with parameters
-void print_encryption_parameters(
-    const HESealEncryptionParameters& params,
-    const seal::SEALContext& context);
+void print_encryption_parameters(const HESealEncryptionParameters& params,
+                                 const seal::SEALContext& context);
 
 }  // namespace he
 }  // namespace ngraph

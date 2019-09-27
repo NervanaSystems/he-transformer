@@ -387,7 +387,9 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_4_3_batch) {
 NGRAPH_TEST(${BACKEND_NAME}, multiply_2_3_plain_complex) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->complex_packing() = true;
+  he_backend->update_encryption_parameters(
+      ngraph::he::HESealEncryptionParameters::default_complex_packing_parms());
+
   Shape shape{2, 3};
   {
     auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -439,7 +441,9 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_2_3_plain_complex) {
 NGRAPH_TEST(${BACKEND_NAME}, multiply_2_3_cipher_plain_complex) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->complex_packing() = true;
+  he_backend->update_encryption_parameters(
+      ngraph::he::HESealEncryptionParameters::default_complex_packing_parms());
+
   Shape shape{2, 3};
   {
     auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -542,7 +546,9 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_2_3_cipher_plain) {
 NGRAPH_TEST(${BACKEND_NAME}, multiply_2_3_cipher_cipher_complex) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->complex_packing() = true;
+  he_backend->update_encryption_parameters(
+      ngraph::he::HESealEncryptionParameters::default_complex_packing_parms());
+
   Shape shape{2, 3};
   {
     auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -565,7 +571,9 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_2_3_cipher_cipher_complex) {
 NGRAPH_TEST(${BACKEND_NAME}, multiply_2_1_cipher_cipher_complex) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->complex_packing() = true;
+  he_backend->update_encryption_parameters(
+      ngraph::he::HESealEncryptionParameters::default_complex_packing_parms());
+
   Shape shape{2, 1};
   {
     auto a = make_shared<op::Parameter>(element::f32, shape);

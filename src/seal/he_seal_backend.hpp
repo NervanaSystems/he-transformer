@@ -58,9 +58,13 @@ class HESealBackend : public ngraph::runtime::Backend {
  public:
   /// \brief Constructs a backend with default parameter choice
   HESealBackend();
-  /// \brief Constructs a backend with the given enryption parameters
-  /// \param[in] sp Encryption parameters
-  HESealBackend(const ngraph::he::HESealEncryptionParameters& sp);
+  /// \brief Constructs a backend with the given encryption parameters
+  /// \param[in] parms Encryption parameters
+  HESealBackend(const ngraph::he::HESealEncryptionParameters& parms);
+
+  /// \brief Prepares the backend with the encryption context, including
+  /// generating encryption keys, encryptor, decryptor, evaluator, and encoder
+  void generate_context();
 
   /// \brief Constructs a plaintext tensor
   /// \param[in] element_type Datatype to store in the tensor
@@ -251,6 +255,12 @@ class HESealBackend : public ngraph::runtime::Backend {
     return m_encryption_params;
   }
 
+  /// \brief Updates encryption parameters. Re-generates context and keys if
+  /// necessary
+  /// \param[in] new_parms New encryption parameters
+  void update_encryption_parameters(
+      const HESealEncryptionParameters& new_parms);
+
   /// \brief Returns the CKKS encoder
   const std::shared_ptr<seal::CKKSEncoder> get_ckks_encoder() const {
     return m_ckks_encoder;
@@ -278,19 +288,14 @@ class HESealBackend : public ngraph::runtime::Backend {
   }
 
   /// \brief Returns the top-level scale used for encoding
-  inline double get_scale() const { return m_scale; }
+  inline double get_scale() const { return m_encryption_params.scale(); }
 
   /// \brief Sets plaintext packing
   /// TODO: rename to plaintext_pack_data
-  void set_pack_data(bool pack) { m_pack_data = pack; }
+  void set_pack_data(const bool pack) { m_pack_data = pack; }
 
   /// \brief Returns whether or not complex packing is used
   bool complex_packing() const { return m_encryption_params.complex_packing(); }
-
-  /// \brief Returns whther or not complex packing is used
-  void set_complex_packing(const bool complex_packing) {
-    m_encryption_params.complex_packing() = complex_packing;
-  }
 
   /// \brief Returns whther or not all parameters are encrypted
   bool encrypt_all_params() const { return m_encrypt_all_params; }
@@ -356,7 +361,6 @@ class HESealBackend : public ngraph::runtime::Backend {
   std::shared_ptr<seal::GaloisKeys> m_galois_keys;
   HESealEncryptionParameters m_encryption_params;
   std::shared_ptr<seal::CKKSEncoder> m_ckks_encoder;
-  double m_scale;
 
   // Stores Barrett64 ratios for moduli under 30 bits
   std::unordered_map<std::uint64_t, std::uint64_t> m_barrett64_ratio_map;

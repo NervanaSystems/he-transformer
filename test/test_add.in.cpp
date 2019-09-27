@@ -97,7 +97,8 @@ NGRAPH_TEST(${BACKEND_NAME}, add_plain_cipher_2_3) {
 NGRAPH_TEST(${BACKEND_NAME}, add_plain_cipher_2_3_complex) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_complex_packing(true);
+  he_backend->update_encryption_parameters(
+      ngraph::he::HESealEncryptionParameters::default_complex_packing_parms());
 
   Shape shape{2, 3};
   {
@@ -256,7 +257,8 @@ NGRAPH_TEST(${BACKEND_NAME}, add_2_3) {
 NGRAPH_TEST(${BACKEND_NAME}, add_2_3_plain_complex) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_complex_packing(true);
+  he_backend->update_encryption_parameters(
+      ngraph::he::HESealEncryptionParameters::default_complex_packing_parms());
 
   Shape shape{2, 3};
   {
@@ -464,7 +466,9 @@ NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_cipher) {
 NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_cipher_complex) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_complex_packing(true);
+  he_backend->update_encryption_parameters(
+      ngraph::he::HESealEncryptionParameters::default_complex_packing_parms());
+
   Shape shape_a{4, 3};
   Shape shape_b{4, 3};
   Shape shape_r{4, 3};

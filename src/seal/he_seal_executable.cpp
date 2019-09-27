@@ -90,13 +90,12 @@ ngraph::he::HESealExecutable::HESealExecutable(
     bool enable_performance_collection, HESealBackend& he_seal_backend,
     std::unordered_set<std::string> encrypt_param_shapes,
     bool encrypt_all_params, bool encrypt_model, bool pack_data,
-    bool complex_packing, bool enable_client)
+    bool enable_client)
     : m_he_seal_backend(he_seal_backend),
       m_encrypt_param_shapes(encrypt_param_shapes),
       m_encrypt_all_params(encrypt_all_params),
       m_encrypt_model(encrypt_model),
       m_pack_data(pack_data),
-      m_complex_packing(complex_packing),
       m_verbose_all_ops(false),
       m_enable_client(enable_client),
       m_server_setup(false),
@@ -172,7 +171,7 @@ ngraph::he::HESealExecutable::HESealExecutable(
 
       size_t max_batch_size =
           m_he_seal_backend.get_ckks_encoder()->slot_count();
-      if (m_complex_packing) {
+      if (complex_packing()) {
         max_batch_size *= 2;
       }
       NGRAPH_CHECK(m_batch_size <= max_batch_size, "Batch size ", m_batch_size,
@@ -527,7 +526,7 @@ bool ngraph::he::HESealExecutable::call(
   if (m_encrypt_model) {
     NGRAPH_HE_LOG(1) << "Encrypting model";
   }
-  if (m_complex_packing) {
+  if (complex_packing()) {
     NGRAPH_HE_LOG(1) << "Complex packing";
   }
 
@@ -644,7 +643,7 @@ bool ngraph::he::HESealExecutable::call(
                     plain_input->get_element_type(),
                     m_he_seal_backend.get_scale(),
                     *m_he_seal_backend.get_ckks_encoder(),
-                    *m_he_seal_backend.get_encryptor(), m_complex_packing);
+                    *m_he_seal_backend.get_encryptor(), complex_packing());
           }
           plain_input->reset();
           tensor_map.insert({tensor, cipher_input});

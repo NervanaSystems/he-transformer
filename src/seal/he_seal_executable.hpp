@@ -52,7 +52,6 @@ class HESealExecutable : public runtime::Executable {
   /// \param[in] encrypt_model Whether or not to encrypt the model
   /// \param[in] pack_data Whether or not to pack the data using plaintext
   /// packing
-  /// \param[in] complex_packing Whether or not to use complex packing
   /// \param[in] enable_client Whether or not to rely on a client to store the
   /// secret key
   HESealExecutable(const std::shared_ptr<Function>& function,
@@ -60,7 +59,7 @@ class HESealExecutable : public runtime::Executable {
                    ngraph::he::HESealBackend& he_seal_backend,
                    std::unordered_set<std::string> encrypt_shapes,
                    bool encrypt_all_params_data, bool encrypt_model,
-                   bool pack_data, bool complex_packing, bool enable_client);
+                   bool pack_data, bool enable_client);
 
   ~HESealExecutable() override {
     if (m_enable_client) {
@@ -112,6 +111,11 @@ class HESealExecutable : public runtime::Executable {
   bool client_inputs_received() const { return m_client_inputs_received; }
 
   void accept_connection();
+
+  /// \brief Returns whether or not encryption parameters use complex packing
+  inline bool complex_packing() const {
+    return m_he_seal_backend.get_encryption_parameters().complex_packing();
+  }
 
   /// \brief Checks whether or not the server supports the function
   /// \throws ngraph_error if function is unsupported
@@ -204,7 +208,6 @@ class HESealExecutable : public runtime::Executable {
   bool m_encrypt_model;
   bool m_pack_data;
   bool m_is_compiled;
-  bool m_complex_packing;
   bool m_verbose_all_ops;
 
   bool m_sent_inference_shape{false};

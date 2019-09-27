@@ -51,11 +51,15 @@ ngraph::he::HESealBackend::HESealBackend()
 ngraph::he::HESealBackend::HESealBackend(
     const ngraph::he::HESealEncryptionParameters& parms)
     : m_encryption_params(parms) {
-  seal::sec_level_type sec_level =
-      ngraph::he::seal_security_level(parms.security_level());
+  generate_context();
+}
 
-  m_context = seal::SEALContext::Create(parms.seal_encryption_parameters(),
-                                        true, sec_level);
+void ngraph::he::HESealBackend::generate_context() {
+  seal::sec_level_type sec_level =
+      ngraph::he::seal_security_level(m_encryption_params.security_level());
+
+  m_context = seal::SEALContext::Create(
+      m_encryption_params.seal_encryption_parameters(), true, sec_level);
 
   auto context_data = m_context->key_context_data();
 
@@ -70,13 +74,6 @@ ngraph::he::HESealBackend::HESealBackend(
   m_ckks_encoder = std::make_shared<seal::CKKSEncoder>(m_context);
 
   auto coeff_moduli = context_data->parms().coeff_modulus();
-  if (parms.scale() == 0) {
-    m_scale = ngraph::he::choose_scale(coeff_moduli);
-  } else {
-    m_scale = parms.scale();
-  }
-
-  m_encryption_params.scale() = m_scale;
 
   if (m_encrypt_all_params || m_encrypt_parameter_shapes.size() != 0 ||
       m_encrypt_model) {
@@ -160,6 +157,17 @@ bool ngraph::he::HESealBackend::set_config(
   return true;
 }
 
+void ngraph::he::HESealBackend::update_encryption_parameters(
+    const HESealEncryptionParameters& new_parms) {
+  if (ngraph::he::HESealEncryptionParameters::same_context(m_encryption_params,
+                                                           new_parms)) {
+    m_encryption_params = new_parms;
+  } else {
+    m_encryption_params = new_parms;
+    generate_context();
+  }
+}
+
 std::shared_ptr<ngraph::runtime::Tensor>
 ngraph::he::HESealBackend::create_tensor(const element::Type& element_type,
                                          const Shape& shape) {
@@ -208,7 +216,7 @@ std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
   return std::make_shared<HESealExecutable>(
       function, enable_performance_collection, *this,
       m_encrypt_parameter_shapes, m_encrypt_all_params, m_encrypt_model,
-      pack_data(), complex_packing(), m_enable_client);
+      pack_data(), m_enable_client);
 }
 
 bool ngraph::he::HESealBackend::is_supported(const ngraph::Node& node) const {
@@ -241,7 +249,8 @@ void ngraph::he::HESealBackend::encrypt(
 
   NGRAPH_CHECK(input.num_values() > 0, "Input has no values in encrypt");
   ngraph::he::encrypt(output, input, m_context->first_parms_id(), element_type,
-                      m_scale, *m_ckks_encoder, *m_encryptor, complex_packing);
+                      get_scale(), *m_ckks_encoder, *m_encryptor,
+                      complex_packing);
 }
 
 void ngraph::he::HESealBackend::decrypt(

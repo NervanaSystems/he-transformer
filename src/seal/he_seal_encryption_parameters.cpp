@@ -20,7 +20,19 @@
 #include "ngraph/except.hpp"
 #include "seal/seal_util.hpp"
 
-ngraph::he::HESealEncryptionParameters::HESealEncryptionParameters(
+using namespace ngraph::he;
+
+HESealEncryptionParameters::HESealEncryptionParameters() {
+  auto default_parms = default_real_packing_parms();
+
+  m_scheme_name = default_parms.scheme_name();
+  m_seal_encryption_parameters = default_parms.seal_encryption_parameters();
+  m_security_level = default_parms.security_level();
+  m_scale = default_parms.scale();
+  m_complex_packing = default_parms.complex_packing();
+}
+
+HESealEncryptionParameters::HESealEncryptionParameters(
     const std::string& scheme_name, const seal::EncryptionParameters& parms,
     std::uint64_t security_level, double scale, bool complex_packing)
     : m_scheme_name(scheme_name),
@@ -31,11 +43,20 @@ ngraph::he::HESealEncryptionParameters::HESealEncryptionParameters(
   validate_parameters();
 }
 
-ngraph::he::HESealEncryptionParameters::HESealEncryptionParameters()
-    : HESealEncryptionParameters(
-          "HE_SEAL", 1024, std::vector<int>{30, 30, 30, 30, 30}, 0, 0, false) {}
+HESealEncryptionParameters
+HESealEncryptionParameters::default_real_packing_parms() {
+  return HESealEncryptionParameters(
+      "HE_SEAL", 1024, std::vector<int>{30, 30, 30, 30, 30}, 0, 0, false);
+}
 
-ngraph::he::HESealEncryptionParameters::HESealEncryptionParameters(
+HESealEncryptionParameters
+HESealEncryptionParameters::default_complex_packing_parms() {
+  auto real_parms = default_real_packing_parms();
+  real_parms.complex_packing() = true;
+  return real_parms;
+}
+
+HESealEncryptionParameters::HESealEncryptionParameters(
     const std::string& scheme_name, std::uint64_t poly_modulus_degree,
     std::vector<int> coeff_modulus_bits, std::uint64_t security_level,
     double scale, bool complex_packing)
@@ -56,7 +77,7 @@ ngraph::he::HESealEncryptionParameters::HESealEncryptionParameters(
   validate_parameters();
 }
 
-void ngraph::he::HESealEncryptionParameters::validate_parameters() const {
+void HESealEncryptionParameters::validate_parameters() const {
   NGRAPH_CHECK(m_scheme_name == "HE_SEAL", "Invalid scheme name ",
                m_scheme_name);
 
@@ -71,7 +92,7 @@ void ngraph::he::HESealEncryptionParameters::validate_parameters() const {
   NGRAPH_CHECK(valid_security_level.count(security_level()) != 0,
                "security_level must be 0, 128, 192, 256");
 
-  auto seal_sec_level = ngraph::he::seal_security_level(security_level());
+  auto seal_sec_level = seal_security_level(security_level());
 
   auto context = seal::SEALContext::Create(m_seal_encryption_parameters, true,
                                            seal_sec_level);
@@ -81,7 +102,19 @@ void ngraph::he::HESealEncryptionParameters::validate_parameters() const {
   // TODO: validate scale is reasonable
 }
 
-void ngraph::he::HESealEncryptionParameters::save(std::ostream& stream) const {
+bool HESealEncryptionParameters::same_context(
+    const HESealEncryptionParameters& parms1,
+    const HESealEncryptionParameters& parms2) {
+  auto p1 = parms1;
+  auto p2 = parms2;
+  p1.complex_packing() = p2.complex_packing();
+  p1.security_level() = p2.security_level();
+  p1.scale() = p2.scale();
+
+  return (p1 == p2);
+}
+
+void HESealEncryptionParameters::save(std::ostream& stream) const {
   stream.write(reinterpret_cast<const char*>(&m_scale), sizeof(m_scale));
   stream.write(reinterpret_cast<const char*>(&m_complex_packing),
                sizeof(m_complex_packing));
@@ -90,8 +123,8 @@ void ngraph::he::HESealEncryptionParameters::save(std::ostream& stream) const {
   seal::EncryptionParameters::Save(m_seal_encryption_parameters, stream);
 }
 
-ngraph::he::HESealEncryptionParameters
-ngraph::he::HESealEncryptionParameters::load(std::istream& stream) {
+HESealEncryptionParameters HESealEncryptionParameters::load(
+    std::istream& stream) {
   double scale;
   stream.read(reinterpret_cast<char*>(&scale), sizeof(scale));
 
@@ -108,11 +141,11 @@ ngraph::he::HESealEncryptionParameters::load(std::istream& stream) {
                                     security_level, scale, complex_packing);
 }
 
-ngraph::he::HESealEncryptionParameters
-ngraph::he::HESealEncryptionParameters::parse_config_or_use_default(
+HESealEncryptionParameters
+HESealEncryptionParameters::parse_config_or_use_default(
     const char* config_path) {
   if (config_path == nullptr) {
-    return ngraph::he::HESealEncryptionParameters();
+    return HESealEncryptionParameters();
   }
 
   auto file_exists = [](const char* filename) {
@@ -143,7 +176,7 @@ ngraph::he::HESealEncryptionParameters::parse_config_or_use_default(
 
     double scale = 0;  // Use default scale
     if (js.find("scale") == js.end()) {
-      scale = ngraph::he::choose_scale(
+      scale = choose_scale(
           seal::CoeffModulus::Create(poly_modulus_degree, coeff_mod_bits));
     } else {
       scale = js["scale"];
@@ -154,9 +187,9 @@ ngraph::he::HESealEncryptionParameters::parse_config_or_use_default(
       complex_packing = js["complex_packing"];
     }
 
-    auto params = ngraph::he::HESealEncryptionParameters(
-        "HE_SEAL", poly_modulus_degree, coeff_mod_bits, security_level, scale,
-        complex_packing);
+    auto params = HESealEncryptionParameters("HE_SEAL", poly_modulus_degree,
+                                             coeff_mod_bits, security_level,
+                                             scale, complex_packing);
 
     return params;
 
