@@ -57,6 +57,13 @@ TEST(encryption_parameters, create) {
   // No enforced security level
   EXPECT_NO_THROW(HESealEncryptionParameters(
       "HE_SEAL", seal_encryption_parameters, 0, 1.23, false));
+
+  // Attributes set properly
+  auto parms = HESealEncryptionParameters("HE_SEAL", seal_encryption_parameters,
+                                          128, 1.23, true);
+  EXPECT_EQ(parms.complex_packing(), true);
+  EXPECT_EQ(parms.scale(), 1.23);
+  EXPECT_EQ(parms.security_level(), 128);
 }
 
 TEST(encryption_parameters, save) {
@@ -80,5 +87,8 @@ TEST(encryption_parameters, save) {
 
   auto loaded_parms = HESealEncryptionParameters::load(ss);
 
-  EXPECT_EQ(loaded_parms.scale(), he_parms.scale());
+  EXPECT_EQ(he_parms.scale(), loaded_parms.scale());
+  EXPECT_EQ(he_parms.complex_packing(), loaded_parms.complex_packing());
+  EXPECT_EQ(he_parms.seal_encryption_parameters(),
+            loaded_parms.seal_encryption_parameters());
 }

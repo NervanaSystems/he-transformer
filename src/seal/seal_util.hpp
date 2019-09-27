@@ -31,13 +31,9 @@ class SealCiphertextWrapper;
 class SealPlaintextWrapper;
 class HESealBackend;
 
-/// \brief Prints the given SEAL context
-/// \param[in] context SEAL context to print
-void print_seal_context(const seal::SEALContext& context);
-
 /// \brief Chooses a default scale for the given list of coefficient moduli
 /// \param[in] coeff_moduli List of coefficient moduli
-/// \returns Scale
+/// \returns Chosen scale
 inline double choose_scale(
     const std::vector<seal::SmallModulus>& coeff_moduli) {
   if (coeff_moduli.size() > 2) {

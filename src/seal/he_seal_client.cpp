@@ -79,7 +79,7 @@ void ngraph::he::HESealClient::set_seal_context() {
       m_encryption_params.seal_encryption_parameters(), true,
       seal_security_level);
 
-  print_seal_context(*m_context);
+  print_encryption_parameters(m_encryption_params, *m_context);
 
   m_keygen = std::make_shared<seal::KeyGenerator>(m_context);
   m_relin_keys = std::make_shared<seal::RelinKeys>(m_keygen->relin_keys());

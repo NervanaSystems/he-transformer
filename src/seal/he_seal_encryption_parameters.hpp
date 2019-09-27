@@ -109,6 +109,10 @@ class HESealEncryptionParameters {
   /// \brief Returns the scale
   inline double scale() const { return m_scale; }
 
+  /// \brief Returns the scale
+  /// TODO: verify scale is valid
+  inline double& scale() { return m_scale; }
+
   /// \brief Returns the security level
   inline std::uint64_t security_level() const { return m_security_level; }
 
@@ -126,6 +130,13 @@ class HESealEncryptionParameters {
   double m_scale;
   bool m_complex_packing;
 };
+
+/// \brief Prints the given encryption parameters
+/// \param[in] params Encryption parameters
+/// \param[in] context SEAL context associated with parameters
+void print_encryption_parameters(
+    const HESealEncryptionParameters& params,
+    const seal::SEALContext& context);
 
 }  // namespace he
 }  // namespace ngraph

@@ -28,32 +28,6 @@
 #include "seal/util/polyarithsmallmod.h"
 #include "seal/util/uintarith.h"
 
-void ngraph::he::print_seal_context(const seal::SEALContext& context) {
-  auto& context_data = *context.key_context_data();
-
-  NGRAPH_CHECK(context_data.parms().scheme() == seal::scheme_type::CKKS,
-               "Only CKKS scheme supported");
-
-  std::stringstream param_ss;
-
-  param_ss << "\n/\n"
-           << "| Encryption parameters :\n"
-           << "|   scheme: CKKS\n"
-           << "|   poly_modulus_degree: "
-           << context_data.parms().poly_modulus_degree() << "\n"
-           << "|   coeff_modulus size: "
-           << context_data.total_coeff_modulus_bit_count() << " (";
-  auto coeff_modulus = context_data.parms().coeff_modulus();
-  std::size_t coeff_mod_count = coeff_modulus.size();
-  for (std::size_t i = 0; i < coeff_mod_count - 1; i++) {
-    param_ss << coeff_modulus[i].bit_count() << " + ";
-  }
-  param_ss << coeff_modulus.back().bit_count() << ") bits\n"
-           << "\\";
-
-  NGRAPH_HE_LOG(1) << param_ss.str();
-}
-
 void ngraph::he::match_modulus_and_scale_inplace(
     SealCiphertextWrapper& arg0, SealCiphertextWrapper& arg1,
     const HESealBackend& he_seal_backend, seal::MemoryPoolHandle pool) {

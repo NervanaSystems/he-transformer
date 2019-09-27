@@ -82,35 +82,26 @@ void ngraph::he::HESealEncryptionParameters::validate_parameters() const {
 }
 
 void ngraph::he::HESealEncryptionParameters::save(std::ostream& stream) const {
-  NGRAPH_HE_LOG(5) << "Saving scale " << m_scale;
   stream.write(reinterpret_cast<const char*>(&m_scale), sizeof(m_scale));
-  NGRAPH_HE_LOG(5) << "Saving complex packing " << m_complex_packing;
   stream.write(reinterpret_cast<const char*>(&m_complex_packing),
                sizeof(m_complex_packing));
-
-  NGRAPH_HE_LOG(5) << "Saving security level " << m_security_level;
   stream.write(reinterpret_cast<const char*>(&m_security_level),
                sizeof(m_security_level));
-
-  NGRAPH_HE_LOG(5) << "Saving parms";
   seal::EncryptionParameters::Save(m_seal_encryption_parameters, stream);
 }
 
 ngraph::he::HESealEncryptionParameters
 ngraph::he::HESealEncryptionParameters::load(std::istream& stream) {
-  NGRAPH_HE_LOG(5) << "Loading scale";
   double scale;
   stream.read(reinterpret_cast<char*>(&scale), sizeof(scale));
-  NGRAPH_HE_LOG(5) << "Loaded scale " << scale;
 
   bool complex_packing;
   stream.read(reinterpret_cast<char*>(&complex_packing),
               sizeof(complex_packing));
-  NGRAPH_HE_LOG(5) << "Loaded complex_packing " << complex_packing;
 
   uint64_t security_level;
   stream.read(reinterpret_cast<char*>(&security_level), sizeof(security_level));
-  NGRAPH_HE_LOG(5) << "Loaded security_level " << security_level;
+
   auto seal_encryption_parameters = seal::EncryptionParameters::Load(stream);
 
   return HESealEncryptionParameters("HE_SEAL", seal_encryption_parameters,
@@ -148,12 +139,15 @@ ngraph::he::HESealEncryptionParameters::parse_config_or_use_default(
     uint64_t poly_modulus_degree = js["poly_modulus_degree"];
     uint64_t security_level = js["security_level"];
 
+    std::vector<int> coeff_mod_bits = js["coeff_modulus"];
+
     double scale = 0;  // Use default scale
-    if (js.find("scale") != js.end()) {
+    if (js.find("scale") == js.end()) {
+      scale = ngraph::he::choose_scale(
+          seal::CoeffModulus::Create(poly_modulus_degree, coeff_mod_bits));
+    } else {
       scale = js["scale"];
     }
-
-    std::vector<int> coeff_mod_bits = js["coeff_modulus"];
 
     bool complex_packing = false;
     if (js.find("complex_packing") != js.end()) {
@@ -171,4 +165,38 @@ ngraph::he::HESealEncryptionParameters::parse_config_or_use_default(
     ss << "Error creating encryption parameters: " << e.what();
     throw ngraph::ngraph_error(ss.str());
   }
+}
+
+void ngraph::he::print_encryption_parameters(
+    const HESealEncryptionParameters& params,
+    const seal::SEALContext& context) {
+  auto& context_data = *context.key_context_data();
+
+  std::stringstream param_ss;
+
+  param_ss << "\n/\n"
+           << "| Encryption parameters :\n"
+           << "|   scheme: CKKS\n"
+           << "|   poly_modulus_degree: " << params.poly_modulus_degree()
+           << "\n"
+           << "|   coeff_modulus size: "
+           << context_data.total_coeff_modulus_bit_count() << " (";
+  auto coeff_modulus = context_data.parms().coeff_modulus();
+  std::size_t coeff_mod_count = coeff_modulus.size();
+  for (std::size_t i = 0; i < coeff_mod_count - 1; i++) {
+    param_ss << coeff_modulus[i].bit_count() << " + ";
+  }
+  param_ss << coeff_modulus.back().bit_count() << ") bits\n";
+  param_ss << "|   scale : " << params.scale() << "\n";
+
+  if (params.complex_packing()) {
+    param_ss << "|   complex_packing: True\n";
+  } else {
+    param_ss << "|   complex_packing: False\n";
+  }
+
+  param_ss << "|   security_level: " << params.security_level() << "\n"
+           << "\\";
+
+  NGRAPH_HE_LOG(1) << param_ss.str();
 }
