@@ -201,6 +201,9 @@ class HESealExecutable : public runtime::Executable {
     server_setup();
   }
 
+  /// \brief Returns whether or not a given parameter shape should be encrypted
+  bool encrypted_shape(const ngraph::Shape& shape);
+
  private:
   HESealBackend& m_he_seal_backend;
   std::unordered_set<std::string> m_encrypt_param_shapes;

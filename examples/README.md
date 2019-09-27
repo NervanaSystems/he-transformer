@@ -2,7 +2,12 @@ This example demonstrates a simple example of a small matrix multiplication and 
 
 To run on the CKKS backend,
 ```bash
-NGRAPH_TF_BACKEND=HE_SEAL python ax.py
+python ax.py --backend=HE_SEAL
+```
+
+To run on the CPU backend,
+```bash
+python ax.py --backend=CPU
 ```
 
 #  Client-server model
@@ -13,7 +18,7 @@ The client uses python bindings. See the `python` folder for instructions to bui
 
 For a simple demonstration of a server-client approach, run
 ```bash
-NGRAPH_ENABLE_CLIENT=1 NGRAPH_TF_BACKEND=HE_SEAL python ax.py
+python ax.py --enable_client
 ```
 
 This will discard the Tensorflow inputs and instead wait for a client to connect and provide encrypted inputs.

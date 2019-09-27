@@ -185,9 +185,19 @@ ngraph::he::HESealExecutable::HESealExecutable(
 }
 
 void ngraph::he::HESealExecutable::check_client_supports_function() {
-  NGRAPH_CHECK(get_parameters().size() == 1,
-               "HESealExecutable only supports parameter size 1 (got ",
-               get_parameters().size(), ")");
+  // Check if encrypted parameter shapes are unique in function
+  std::unordered_set<std::string> param_shapes;
+  for (const auto& param : get_parameters()) {
+    auto param_shape = param->get_shape();
+    auto param_shape_str = ngraph::join(param_shape, "x");
+    if (encrypted_shape(param_shape) &&
+        param_shapes.find(param_shape_str) != param_shapes.end()) {
+      NGRAPH_CHECK(false, "Encrypted parameter shape", param_shape_str,
+                   " not unique");
+    } else {
+      param_shapes.insert(param_shape_str);
+    }
+  }
 
   NGRAPH_CHECK(get_results().size() == 1,
                "HESealExecutable only supports output size 1 (got ",
@@ -503,6 +513,43 @@ ngraph::he::HESealExecutable::get_performance_data() const {
   return rc;
 }
 
+bool ngraph::he::HESealExecutable::encrypted_shape(const ngraph::Shape& shape) {
+  std::vector<std::string> shape_dims;
+  for (const uint64_t dim : shape) {
+    shape_dims.emplace_back(std::to_string(dim));
+  }
+  NGRAPH_HE_LOG(3) << "Checking if shape " << ngraph::join(shape_dims, "x")
+                   << " is encrypted";
+
+  // Check if any encrypt_param_shape matches shape
+  for (const auto& encrypt_param_shape : m_encrypt_param_shapes) {
+    NGRAPH_HE_LOG(5) << "encrypt_param_shape " << encrypt_param_shape;
+    std::vector<std::string> split_encrypt_param_shape =
+        ngraph::split(encrypt_param_shape, 'x', true);
+
+    NGRAPH_HE_LOG(5) << "split_encrypt_param_shape ";
+    for (const auto& dim : split_encrypt_param_shape) {
+      NGRAPH_HE_LOG(5) << dim;
+    }
+
+    if (split_encrypt_param_shape.size() != shape_dims.size()) {
+      continue;
+    }
+    // Check shapes match (where a ? indicates a match with any
+    // dimension)
+    for (size_t dim_idx = 0; dim_idx < shape_dims.size(); ++dim_idx) {
+      bool same = (split_encrypt_param_shape[dim_idx] == shape_dims[dim_idx]);
+      same |= split_encrypt_param_shape[dim_idx] == "?";
+      if (!same) {
+        break;
+      } else if (dim_idx == shape_dims.size() - 1) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 bool ngraph::he::HESealExecutable::call(
     const std::vector<std::shared_ptr<runtime::Tensor>>& outputs,
     const std::vector<std::shared_ptr<runtime::Tensor>>& server_inputs) {
@@ -578,44 +625,6 @@ bool ngraph::he::HESealExecutable::call(
           param->get_output_tensor_ptr(param_idx).get();
 
       if (!m_enable_client) {
-        auto encrypted_shape = [&](const ngraph::Shape& shape) {
-          std::vector<std::string> shape_dims;
-          for (const uint64_t dim : shape) {
-            shape_dims.emplace_back(std::to_string(dim));
-          }
-          NGRAPH_HE_LOG(3) << "Checking if shape "
-                           << ngraph::join(shape_dims, "x") << " is encrypted";
-
-          // Check if any encrypt_param_shape matches shape
-          for (const auto& encrypt_param_shape : m_encrypt_param_shapes) {
-            NGRAPH_HE_LOG(5) << "encrypt_param_shape " << encrypt_param_shape;
-            std::vector<std::string> split_encrypt_param_shape =
-                ngraph::split(encrypt_param_shape, 'x', true);
-
-            NGRAPH_HE_LOG(5) << "split_encrypt_param_shape ";
-            for (const auto& dim : split_encrypt_param_shape) {
-              NGRAPH_HE_LOG(5) << dim;
-            }
-
-            if (split_encrypt_param_shape.size() != shape_dims.size()) {
-              continue;
-            }
-            // Check shapes match (where a ? indicates a match with any
-            // dimension)
-            for (size_t dim_idx = 0; dim_idx < shape_dims.size(); ++dim_idx) {
-              bool same =
-                  (split_encrypt_param_shape[dim_idx] == shape_dims[dim_idx]);
-              same |= split_encrypt_param_shape[dim_idx] == "?";
-              if (!same) {
-                break;
-              } else if (dim_idx == shape_dims.size() - 1) {
-                return true;
-              }
-            }
-          }
-          return false;
-        };
-
         if (m_encrypt_all_params ||
             encrypted_shape(he_inputs[input_count]->get_shape())) {
           NGRAPH_HE_LOG(1) << "Encrypting parameter shape "
