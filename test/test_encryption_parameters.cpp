@@ -14,6 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include <sstream>
+
 #include "gtest/gtest.h"
 #include "seal/he_seal_encryption_parameters.hpp"
 #include "seal/seal.h"
@@ -23,7 +25,6 @@ using namespace ngraph::he;
 
 TEST(encryption_parameters, create) {
   size_t poly_modulus_degree{4096};
-
   auto seal_encryption_parameters =
       seal::EncryptionParameters(seal::scheme_type::CKKS);
 
@@ -47,11 +48,37 @@ TEST(encryption_parameters, create) {
       "HE_SEAL", seal_encryption_parameters, 123, 1.23, false));
 
   // Parameters violate security level
-   EXPECT_ANY_THROW(HESealEncryptionParameters(
-       "HE_SEAL", seal_encryption_parameters, 192, 1.23, false));
+  EXPECT_ANY_THROW(HESealEncryptionParameters(
+      "HE_SEAL", seal_encryption_parameters, 192, 1.23, false));
 
-   EXPECT_ANY_THROW(HESealEncryptionParameters(
-       "HE_SEAL", seal_encryption_parameters, 256, 1.23, false));
+  EXPECT_ANY_THROW(HESealEncryptionParameters(
+      "HE_SEAL", seal_encryption_parameters, 256, 1.23, false));
 
+  // No enforced security level
+  EXPECT_NO_THROW(HESealEncryptionParameters(
+      "HE_SEAL", seal_encryption_parameters, 0, 1.23, false));
 }
 
+TEST(encryption_parameters, save) {
+  size_t poly_modulus_degree{4096};
+  auto seal_encryption_parameters =
+      seal::EncryptionParameters(seal::scheme_type::CKKS);
+
+  seal_encryption_parameters.set_poly_modulus_degree(poly_modulus_degree);
+
+  auto coeff_modulus = seal::CoeffModulus::Create(poly_modulus_degree,
+                                                  std::vector<int>{30, 30, 30});
+
+  seal_encryption_parameters.set_coeff_modulus(coeff_modulus);
+
+  auto he_parms = HESealEncryptionParameters(
+      "HE_SEAL", seal_encryption_parameters, 128, 1.23, false);
+
+  std::stringstream ss;
+
+  he_parms.save(ss);
+
+  auto loaded_parms = HESealEncryptionParameters::load(ss);
+
+  EXPECT_EQ(loaded_parms.scale(), he_parms.scale());
+}

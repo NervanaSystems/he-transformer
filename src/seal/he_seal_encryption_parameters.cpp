@@ -15,6 +15,7 @@
 //*****************************************************************************
 
 #include "seal/he_seal_encryption_parameters.hpp"
+#include "logging/ngraph_he_log.hpp"
 #include "ngraph/check.hpp"
 #include "ngraph/except.hpp"
 #include "seal/seal_util.hpp"
@@ -73,29 +74,43 @@ void ngraph::he::HESealEncryptionParameters::validate_parameters() const {
   auto seal_sec_level = ngraph::he::seal_security_level(security_level());
 
   auto context = seal::SEALContext::Create(m_seal_encryption_parameters, true,
-                                             seal_sec_level);
+                                           seal_sec_level);
 
   NGRAPH_CHECK(context->parameters_set(), "Invalid parameters");
-
 
   // TODO: validate scale is reasonable
 }
 
 void ngraph::he::HESealEncryptionParameters::save(std::ostream& stream) const {
-  stream << m_scale;
-  stream << m_complex_packing;
-  stream << m_security_level;
+  NGRAPH_HE_LOG(5) << "Saving scale " << m_scale;
+  stream.write(reinterpret_cast<const char*>(&m_scale), sizeof(m_scale));
+  NGRAPH_HE_LOG(5) << "Saving complex packing " << m_complex_packing;
+  stream.write(reinterpret_cast<const char*>(&m_complex_packing),
+               sizeof(m_complex_packing));
+
+  NGRAPH_HE_LOG(5) << "Saving security level " << m_security_level;
+  stream.write(reinterpret_cast<const char*>(&m_security_level),
+               sizeof(m_security_level));
+
+  NGRAPH_HE_LOG(5) << "Saving parms";
   seal::EncryptionParameters::Save(m_seal_encryption_parameters, stream);
 }
 
 ngraph::he::HESealEncryptionParameters
 ngraph::he::HESealEncryptionParameters::load(std::istream& stream) {
+  NGRAPH_HE_LOG(5) << "Loading scale";
   double scale;
-  stream >> scale;
+  stream.read(reinterpret_cast<char*>(&scale), sizeof(scale));
+  NGRAPH_HE_LOG(5) << "Loaded scale " << scale;
+
   bool complex_packing;
-  stream >> complex_packing;
+  stream.read(reinterpret_cast<char*>(&complex_packing),
+              sizeof(complex_packing));
+  NGRAPH_HE_LOG(5) << "Loaded complex_packing " << complex_packing;
+
   uint64_t security_level;
-  stream >> security_level;
+  stream.read(reinterpret_cast<char*>(&security_level), sizeof(security_level));
+  NGRAPH_HE_LOG(5) << "Loaded security_level " << security_level;
   auto seal_encryption_parameters = seal::EncryptionParameters::Load(stream);
 
   return HESealEncryptionParameters("HE_SEAL", seal_encryption_parameters,
