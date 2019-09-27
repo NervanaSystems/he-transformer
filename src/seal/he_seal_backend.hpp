@@ -150,7 +150,7 @@ class HESealBackend : public ngraph::runtime::Backend {
   inline std::shared_ptr<ngraph::he::SealCiphertextWrapper>
   create_empty_ciphertext() const {
     return std::make_shared<ngraph::he::SealCiphertextWrapper>(
-        m_complex_packing);
+        complex_packing());
   }
 
   /// \brief Creates empty ciphertext
@@ -168,7 +168,7 @@ class HESealBackend : public ngraph::runtime::Backend {
   inline std::shared_ptr<ngraph::he::SealCiphertextWrapper>
   create_empty_ciphertext(seal::parms_id_type parms_id) const {
     return std::make_shared<ngraph::he::SealCiphertextWrapper>(
-        seal::Ciphertext(m_context, parms_id), m_complex_packing);
+        seal::Ciphertext(m_context, parms_id), complex_packing());
   }
 
   /// \brief Creates empty ciphertext at given parameter choice with backend's
@@ -178,7 +178,7 @@ class HESealBackend : public ngraph::runtime::Backend {
   inline std::shared_ptr<ngraph::he::SealCiphertextWrapper>
   create_empty_ciphertext(const seal::MemoryPoolHandle& pool) const {
     return std::make_shared<ngraph::he::SealCiphertextWrapper>(
-        pool, m_complex_packing);
+        pool, complex_packing());
   }
 
   /// \brief Creates SEAL context from encryption parameters
@@ -284,11 +284,13 @@ class HESealBackend : public ngraph::runtime::Backend {
   /// TODO: rename to plaintext_pack_data
   void set_pack_data(bool pack) { m_pack_data = pack; }
 
-  /// \brief Returns whther or not complex packing is used
-  bool complex_packing() const { return m_complex_packing; }
+  /// \brief Returns whether or not complex packing is used
+  bool complex_packing() const { return m_encryption_params.complex_packing(); }
 
   /// \brief Returns whther or not complex packing is used
-  bool& complex_packing() { return m_complex_packing; }
+  void set_complex_packing(const bool complex_packing) {
+    m_encryption_params.complex_packing() = complex_packing;
+  }
 
   /// \brief Returns whther or not all parameters are encrypted
   bool encrypt_all_params() const { return m_encrypt_all_params; }
@@ -339,7 +341,6 @@ class HESealBackend : public ngraph::runtime::Backend {
       !ngraph::he::flag_to_bool(std::getenv("NGRAPH_UNPACK_DATA"))};
   bool m_encrypt_model{
       ngraph::he::flag_to_bool(std::getenv("NGRAPH_ENCRYPT_MODEL"))};
-  bool m_complex_packing{false};
   bool m_naive_rescaling{
       ngraph::he::flag_to_bool(std::getenv("NAIVE_RESCALING"))};
   bool m_enable_client{false};

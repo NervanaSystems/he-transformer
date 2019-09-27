@@ -98,7 +98,7 @@ ngraph::he::HESealBackend::HESealBackend(
     }
   }
 
-  NGRAPH_CHECK(!(m_encrypt_model && m_complex_packing),
+  NGRAPH_CHECK(!(m_encrypt_model && complex_packing()),
                "Encrypting the model is incompatible with complex packing");
 }
 
@@ -150,16 +150,6 @@ bool ngraph::he::HESealBackend::set_config(
       if (client_enabled) {
         NGRAPH_HE_LOG(3) << "Enabling client from config";
         m_enable_client = true;
-      }
-    }
-
-    // Check whether complex packing is enabled
-    if (ngraph::to_lower(config_opt.first) == "complex_packing") {
-      bool complex_packing =
-          ngraph::he::flag_to_bool(config_opt.second.c_str(), false);
-      if (complex_packing) {
-        NGRAPH_HE_LOG(3) << "Enabling complex packing from config";
-        m_complex_packing = true;
       }
     }
   }
@@ -218,7 +208,7 @@ std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
   return std::make_shared<HESealExecutable>(
       function, enable_performance_collection, *this,
       m_encrypt_parameter_shapes, m_encrypt_all_params, m_encrypt_model,
-      pack_data(), m_complex_packing, m_enable_client);
+      pack_data(), complex_packing(), m_enable_client);
 }
 
 bool ngraph::he::HESealBackend::is_supported(const ngraph::Node& node) const {
