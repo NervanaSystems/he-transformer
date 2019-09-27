@@ -35,6 +35,50 @@ using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
+NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_multiple_parameters) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+
+  size_t batch_size = 1;
+
+  Shape shape{batch_size, 3};
+  Shape shape_c{3, 1};
+  auto a = op::Constant::create(element::f32, shape, {0.1, 0.2, 0.3});
+  auto b = make_shared<op::Parameter>(element::f32, shape);
+  auto c = make_shared<op::Parameter>(element::f32, shape_c);
+  auto d = make_shared<op::Reshape>(c, AxisVector{0, 1}, shape);
+  auto t = make_shared<op::Add>(a, b);
+  t = make_shared<op::Add>(t, d);
+  auto f = make_shared<Function>(t, ParameterVector{b, c});
+
+  auto t_c = he_backend->create_plain_tensor(element::f32, shape_c);
+  auto t_result = he_backend->create_cipher_tensor(element::f32, shape);
+  // Server inputs which are not used
+  auto t_dummy = he_backend->create_plain_tensor(element::f32, shape);
+
+  // Used for dummy server inputs
+  float DUMMY_FLOAT = 99;
+  copy_data(t_dummy, vector<float>{DUMMY_FLOAT, DUMMY_FLOAT, DUMMY_FLOAT});
+  copy_data(t_c, vector<float>{4, 5, 6});
+
+  vector<float> inputs{1, 2, 3};
+  vector<float> results;
+  auto client_thread = std::thread([&inputs, &results, &batch_size]() {
+    auto he_client =
+        ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
+
+    auto double_results = he_client.get_results();
+    results = std::vector<float>(double_results.begin(), double_results.end());
+  });
+
+  auto handle =
+      static_pointer_cast<ngraph::he::HESealExecutable>(he_backend->compile(f));
+  handle->enable_client();
+  handle->call_with_validate({t_result}, {t_dummy});
+  client_thread.join();
+  EXPECT_TRUE(all_close(results, vector<float>{1.1, 2.2, 3.3}, 1e-3f));
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());

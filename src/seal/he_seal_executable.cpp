@@ -483,9 +483,9 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
   };
 
   if (done_loading()) {
-    NGRAPH_CHECK(m_client_inputs.size() == get_parameters().size(),
+    NGRAPH_CHECK(m_client_inputs.size() == m_encrypt_param_shapes.size(),
                  "Client inputs size ", m_client_inputs.size(), "; expected ",
-                 get_parameters().size());
+                 m_encrypt_param_shapes.size());
 
     std::lock_guard<std::mutex> guard(m_client_inputs_mutex);
     m_client_inputs_received = true;
@@ -583,28 +583,34 @@ bool ngraph::he::HESealExecutable::call(
   }
 
   // convert inputs to HETensor
+  NGRAPH_HE_LOG(3) << "Converting inputs to HETensor";
   std::vector<std::shared_ptr<ngraph::he::HETensor>> he_inputs;
-  if (m_enable_client) {
-    NGRAPH_HE_LOG(1) << "Processing client inputs";
-    for (auto& tensor : m_client_inputs) {
-      he_inputs.push_back(
-          std::static_pointer_cast<ngraph::he::HETensor>(tensor));
-    }
-  } else {
-    NGRAPH_HE_LOG(1) << "Processing server inputs";
-    for (auto& tensor : server_inputs) {
-      he_inputs.push_back(
-          std::static_pointer_cast<ngraph::he::HETensor>(tensor));
+  for (size_t input_idx = 0; input_idx < server_inputs.size(); ++input_idx) {
+    auto param_shape = server_inputs[input_idx]->get_shape();
+    if (m_enable_client && encrypted_shape(param_shape)) {
+      NGRAPH_HE_LOG(1) << "Processeing parameter shape  " << param_shape
+                       << " from client";
+      he_inputs.push_back(std::static_pointer_cast<ngraph::he::HETensor>(
+          m_client_inputs[input_idx]));
+    } else {
+      NGRAPH_HE_LOG(1) << "Processeing parameter shape  " << param_shape
+                       << " from server";
+      for (auto& tensor : server_inputs) {
+        he_inputs.push_back(std::static_pointer_cast<ngraph::he::HETensor>(
+            server_inputs[input_idx]));
+      }
     }
   }
 
   // convert outputs to HETensor
+  NGRAPH_HE_LOG(3) << "Converting outputs to HETensor";
   std::vector<std::shared_ptr<ngraph::he::HETensor>> he_outputs;
   for (auto& tensor : outputs) {
     he_outputs.push_back(
         std::static_pointer_cast<ngraph::he::HETensor>(tensor));
   }
 
+  NGRAPH_HE_LOG(3) << "Mapping function parameters to HETensor";
   std::unordered_map<ngraph::descriptor::Tensor*,
                      std::shared_ptr<ngraph::he::HETensor>>
       tensor_map;
