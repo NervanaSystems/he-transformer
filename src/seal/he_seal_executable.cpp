@@ -425,9 +425,9 @@ void ngraph::he::HESealExecutable::handle_message(
 
 void ngraph::he::HESealExecutable::handle_client_ciphers(
     const he_proto::TCPMessage& proto_msg) {
-  NGRAPH_HE_LOG(3) << "Handling client ciphers";
-
   size_t count = proto_msg.ciphers_size();
+  NGRAPH_HE_LOG(3) << "Handling " << count << " client ciphers";
+
   std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
       he_cipher_inputs(count);
 #pragma omp parallel for
