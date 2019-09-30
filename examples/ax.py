@@ -64,7 +64,7 @@ if __name__ == '__main__':
         '--backend',
         type=str,
         default='HE_SEAL',
-        help='Whether or not to use complex packing')
+        help='Name of backend to use')
 
     FLAGS, unparsed = parser.parse_known_args()
     main(FLAGS)

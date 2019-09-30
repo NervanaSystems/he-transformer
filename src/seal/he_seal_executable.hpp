@@ -57,9 +57,7 @@ class HESealExecutable : public runtime::Executable {
   HESealExecutable(const std::shared_ptr<Function>& function,
                    bool enable_performance_collection,
                    ngraph::he::HESealBackend& he_seal_backend,
-                   std::unordered_set<std::string> encrypt_shapes,
-                   bool encrypt_all_params_data, bool encrypt_model,
-                   bool pack_data, bool enable_client);
+                   bool encrypt_model, bool pack_data, bool enable_client);
 
   ~HESealExecutable() override {
     NGRAPH_HE_LOG(3) << "~HESealExecutable()";
@@ -208,13 +206,22 @@ class HESealExecutable : public runtime::Executable {
   /// \brief Returns the batch size
   void set_batch_size(size_t batch_size);
 
-  /// \brief Returns whether or not a given parameter shape should be encrypted
-  bool encrypted_shape(const ngraph::Shape& shape);
+  /// \brief Returns whether or not Parameter node should be encrypted
+  /// \param[in] param Paramter node
+  inline bool encrypted(const ngraph::op::Parameter& param) {
+    auto annotation = param.get_op_annotations();
+    if (auto he_annotation =
+            std::dynamic_pointer_cast<ngraph::he::HEOpAnnotations>(
+                annotation)) {
+      NGRAPH_HE_LOG(3) << "He annotation is_encrypted? "
+                       << he_annotation->is_encrypted();
+      return he_annotation->is_encrypted();
+    }
+    return false;
+  }
 
  private:
   HESealBackend& m_he_seal_backend;
-  std::unordered_set<std::string> m_encrypt_param_shapes;
-  bool m_encrypt_all_params;
   bool m_encrypt_model;
   bool m_pack_data;
   bool m_is_compiled;

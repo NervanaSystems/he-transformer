@@ -40,13 +40,6 @@ static string s_manifest = "${MANIFEST}";
 NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_multiple_parameters) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-
-  std::string error;
-  std::map<std::string, std::string> config_map{
-      {"Tensor(shape=(1,3)", "encrypt"}};
-
-  he_backend->set_config(config_map, error);
-
   size_t batch_size = 1;
 
   Shape shape{batch_size, 3};

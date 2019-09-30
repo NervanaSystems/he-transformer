@@ -89,12 +89,8 @@ using json = nlohmann::json;
 ngraph::he::HESealExecutable::HESealExecutable(
     const std::shared_ptr<Function>& function,
     bool enable_performance_collection, HESealBackend& he_seal_backend,
-    std::unordered_set<std::string> encrypt_param_shapes,
-    bool encrypt_all_params, bool encrypt_model, bool pack_data,
-    bool enable_client)
+    bool encrypt_model, bool pack_data, bool enable_client)
     : m_he_seal_backend(he_seal_backend),
-      m_encrypt_param_shapes(encrypt_param_shapes),
-      m_encrypt_all_params(encrypt_all_params),
       m_encrypt_model(encrypt_model),
       m_pack_data(pack_data),
       m_verbose_all_ops(false),
@@ -180,17 +176,21 @@ void ngraph::he::HESealExecutable::set_batch_size(size_t batch_size) {
 }
 
 void ngraph::he::HESealExecutable::check_client_supports_function() {
-  // Check if encrypted parameter shapes are unique in function
-  std::unordered_set<std::string> param_shapes;
+  // Check if parameter batch sizes are unique
+  bool first_batch_size = true;
+  size_t batch_size = 1;
   for (const auto& param : get_parameters()) {
-    auto param_shape = param->get_shape();
-    auto param_shape_str = ngraph::join(param_shape, "x");
-    if (encrypted_shape(param_shape) &&
-        param_shapes.find(param_shape_str) != param_shapes.end()) {
-      NGRAPH_CHECK(false, "Encrypted parameter shape", param_shape_str,
-                   " not unique");
-    } else {
-      param_shapes.insert(param_shape_str);
+    if (encrypted(*param)) {
+      auto param_shape = param->get_shape();
+      if (param_shape.size() == 0) {
+        NGRAPH_CHECK(false, "Parameter shape is empty");
+      }
+      size_t new_batch_size = param_shape[0];
+      if (!first_batch_size && batch_size != new_batch_size) {
+        NGRAPH_CHECK(false,
+                     "Encrypted parameters imply different batch sizes, ",
+                     batch_size, ", and ", new_batch_size);
+      }
     }
   }
 
@@ -317,8 +317,8 @@ void ngraph::he::HESealExecutable::send_inference_shape() {
   const ParameterVector& input_parameters = get_parameters();
 
   for (const auto& input_param : input_parameters) {
-    auto param_shape = input_param->get_shape();
-    if (encrypted_shape(param_shape)) {
+    if (encrypted(*input_param)) {
+      auto param_shape = input_param->get_shape();
       json js;
       js["shape"] = param_shape;
       js["function"] = "Parameter";
@@ -480,9 +480,7 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
   };
 
   if (done_loading()) {
-    NGRAPH_CHECK(m_client_inputs.size() == m_encrypt_param_shapes.size(),
-                 "Client inputs size ", m_client_inputs.size(), "; expected ",
-                 m_encrypt_param_shapes.size());
+    // TODO: check if done loading?
 
     std::lock_guard<std::mutex> guard(m_client_inputs_mutex);
     m_client_inputs_received = true;
@@ -503,58 +501,11 @@ ngraph::he::HESealExecutable::get_performance_data() const {
   return rc;
 }
 
-bool ngraph::he::HESealExecutable::encrypted_shape(const ngraph::Shape& shape) {
-  std::vector<std::string> shape_dims;
-  for (const uint64_t dim : shape) {
-    shape_dims.emplace_back(std::to_string(dim));
-  }
-  NGRAPH_HE_LOG(3) << "Checking if shape " << ngraph::join(shape_dims, "x")
-                   << " is encrypted";
-
-  // Check if any encrypt_param_shape matches shape
-  for (const auto& encrypt_param_shape : m_encrypt_param_shapes) {
-    std::vector<std::string> split_encrypt_param_shape =
-        ngraph::split(encrypt_param_shape, 'x', true);
-
-    if (split_encrypt_param_shape.size() != shape_dims.size()) {
-      continue;
-    }
-    // Check shapes match (where a ? indicates a match with any
-    // dimension)
-    for (size_t dim_idx = 0; dim_idx < shape_dims.size(); ++dim_idx) {
-      bool same = (split_encrypt_param_shape[dim_idx] == shape_dims[dim_idx]);
-      same |= split_encrypt_param_shape[dim_idx] == "?";
-      if (!same) {
-        break;
-      } else if (dim_idx == shape_dims.size() - 1) {
-        NGRAPH_HE_LOG(3) << "Shape " << ngraph::join(shape_dims, "x")
-                         << " is encrypted";
-        return true;
-      }
-    }
-  }
-  NGRAPH_HE_LOG(3) << "Shape " << ngraph::join(shape_dims, "x")
-                   << " is not encrypted";
-  return false;
-}
-
 bool ngraph::he::HESealExecutable::call(
     const std::vector<std::shared_ptr<runtime::Tensor>>& outputs,
     const std::vector<std::shared_ptr<runtime::Tensor>>& server_inputs) {
   validate(outputs, server_inputs);
 
-  for (const auto& parameter_shape :
-       m_he_seal_backend.get_encryption_parameter_shapes()) {
-    NGRAPH_INFO << "Calling function with parameter shape " << parameter_shape;
-  }
-
-  if (m_encrypt_all_params) {
-    NGRAPH_HE_LOG(1) << "Encrypting all parameters";
-  } else {
-    for (const auto& param : m_encrypt_param_shapes) {
-      NGRAPH_HE_LOG(1) << "Encrypting parameter shape " << param;
-    }
-  }
   if (m_pack_data) {
     NGRAPH_HE_LOG(1) << "Batching data with batch size " << m_batch_size;
   }
@@ -566,17 +517,12 @@ bool ngraph::he::HESealExecutable::call(
   }
 
   if (m_enable_client) {
-    NGRAPH_HE_LOG(1) << "Waiting until m_client_inputs.size() == "
-                     << m_encrypt_param_shapes.size();
+    NGRAPH_HE_LOG(1) << "Waiting for m_client_inputs";
 
     std::unique_lock<std::mutex> mlock(m_client_inputs_mutex);
     m_client_inputs_cond.wait(
         mlock, std::bind(&HESealExecutable::client_inputs_received, this));
     NGRAPH_HE_LOG(1) << "Client inputs_received";
-    NGRAPH_CHECK(m_client_inputs.size() == m_encrypt_param_shapes.size(),
-                 "Recieved incorrect number of inputs from client (got ",
-                 m_client_inputs.size(), ", expectd ",
-                 m_encrypt_param_shapes.size());
   }
 
   // convert inputs to HETensor
@@ -584,7 +530,7 @@ bool ngraph::he::HESealExecutable::call(
   std::vector<std::shared_ptr<ngraph::he::HETensor>> he_inputs;
   for (size_t input_idx = 0; input_idx < server_inputs.size(); ++input_idx) {
     auto param_shape = server_inputs[input_idx]->get_shape();
-    if (m_enable_client && encrypted_shape(param_shape)) {
+    if (m_enable_client) {  //} && encrypted(param_shape)) {
       NGRAPH_HE_LOG(1) << "Processeing parameter shape  " << param_shape
                        << " from client";
       he_inputs.push_back(std::static_pointer_cast<ngraph::he::HETensor>(
@@ -620,8 +566,7 @@ bool ngraph::he::HESealExecutable::call(
           param->get_output_tensor_ptr(param_idx).get();
 
       if (!m_enable_client) {
-        if (m_encrypt_all_params ||
-            encrypted_shape(he_inputs[input_count]->get_shape())) {
+        if (encrypted(*param)) {
           NGRAPH_HE_LOG(1) << "Encrypting parameter shape "
                            << ngraph::join(he_inputs[input_count]->get_shape(),
                                            "x");

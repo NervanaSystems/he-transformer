@@ -298,6 +298,8 @@ void ngraph::he::HESealClient::handle_message(
     const ngraph::he::TCPMessage& message) {
   // TODO: try overwriting message?
 
+  NGRAPH_HE_LOG(3) << "Client handling message";
+
   std::shared_ptr<he_proto::TCPMessage> proto_msg = message.proto_message();
 
   switch (proto_msg->type()) {

@@ -17,6 +17,7 @@
 #include <limits>
 #include <memory>
 
+#include "he_op_annotations.hpp"
 #include "he_plain_tensor.hpp"
 #include "he_seal_cipher_tensor.hpp"
 #include "logging/ngraph_he_log.hpp"
@@ -26,7 +27,6 @@
 #include "seal/he_seal_executable.hpp"
 #include "seal/seal.h"
 #include "seal/seal_util.hpp"
-#include "he_op_annotations.hpp"
 
 extern "C" ngraph::runtime::BackendConstructor*
 get_backend_constructor_pointer() {
@@ -211,9 +211,10 @@ ngraph::he::HESealBackend::create_packed_plain_tensor(const element::Type& type,
 
 std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
     std::shared_ptr<Function> function, bool enable_performance_collection) {
+  // TODO: tag each node as encrypted or not
+
   return std::make_shared<HESealExecutable>(
-      function, enable_performance_collection, *this,
-      m_encrypt_parameter_shapes, m_encrypt_all_params, m_encrypt_model,
+      function, enable_performance_collection, *this, m_encrypt_model,
       pack_data(), m_enable_client);
 }
 
