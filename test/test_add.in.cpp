@@ -14,7 +14,6 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "he_op_annotations.hpp"
 #include "ngraph/ngraph.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "test_util.hpp"
@@ -41,8 +40,6 @@ NGRAPH_TEST(${BACKEND_NAME}, add_plain_cipher_2_3) {
     auto t = make_shared<op::Add>(a, b);
     auto f = make_shared<Function>(t, ParameterVector{a, b});
 
-    a->set_op_annotations(encrypt_annotation);
-
     auto t_a = he_backend->create_cipher_tensor(element::f32, shape);
     auto t_b = he_backend->create_plain_tensor(element::f32, shape);
     auto t_result = he_backend->create_cipher_tensor(element::f32, shape);
@@ -63,8 +60,6 @@ NGRAPH_TEST(${BACKEND_NAME}, add_plain_cipher_2_3) {
     auto t = make_shared<op::Add>(a, b);
     auto f = make_shared<Function>(t, ParameterVector{a, b});
 
-    a->set_op_annotations(encrypt_annotation);
-
     auto t_a = he_backend->create_cipher_tensor(element::f64, shape);
     auto t_b = he_backend->create_plain_tensor(element::f64, shape);
     auto t_result = he_backend->create_cipher_tensor(element::f64, shape);
@@ -84,8 +79,6 @@ NGRAPH_TEST(${BACKEND_NAME}, add_plain_cipher_2_3) {
     auto b = make_shared<op::Parameter>(element::i64, shape);
     auto t = make_shared<op::Add>(a, b);
     auto f = make_shared<Function>(t, ParameterVector{a, b});
-
-    a->set_op_annotations(encrypt_annotation);
 
     auto t_a = he_backend->create_cipher_tensor(element::i64, shape);
     auto t_b = he_backend->create_plain_tensor(element::i64, shape);

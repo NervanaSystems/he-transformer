@@ -106,15 +106,9 @@ ngraph::he::HESealExecutable::HESealExecutable(
 
   NGRAPH_HE_LOG(3) << "Creating Executable";
   for (const auto& param : function->get_parameters()) {
-    auto annotation = param->get_op_annotations();
-    NGRAPH_HE_LOG(3) << "Parameter shape " << param->get_shape();
-
-    if (auto he_annotation =
-            std::dynamic_pointer_cast<ngraph::he::HEOpAnnotations>(
-                annotation)) {
-      NGRAPH_HE_LOG(3) << "He annotation is_encrypted? "
-                       << he_annotation->is_encrypted();
-    }
+    std::string encrypted_string = encrypted(*param) ? "" : "not ";
+    NGRAPH_HE_LOG(3) << "Parameter shape {" << join(param->get_shape())
+                     << "} is " << encrypted_string << "encrypted";
   }
 
   if (std::getenv("NGRAPH_VOPS") != nullptr) {
