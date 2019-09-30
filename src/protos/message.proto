@@ -41,8 +41,17 @@ message SealCiphertextWrapper {
   bytes ciphertext = 4;
 }
 
+/// \brief Represents a cipher tensor
+/// Due to the 2GB limit in protobuf, large cipher tensors may not be able to
+/// store the entire tensor in one SealCipherTensor message. In this case, the
+/// offset argument is used to decribe how far into the cipher tensor array the
+/// current message's ciphertexts begin.  For example, if we have a cipher
+/// tensor of shape {1000,10}, and maximum size of store 100 ciphertexts per
+/// message, 100 messages with offsets 0, 100, 200, 300, ..., 9900,
+/// respectively, would be used to store the entire cipher tensor
 message SealCipherTensor {
   string name = 1;
   repeated uint64 shape = 2;
-  repeated SealCiphertextWrapper ciphertexts = 3;
+  uint64 offset = 3;
+  repeated SealCiphertextWrapper ciphertexts = 4;
 }

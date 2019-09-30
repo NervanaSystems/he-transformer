@@ -114,6 +114,24 @@ class HESealCipherTensor : public HETensor {
     }
   }
 
+  /// \brief Writes encrypted ciphertexts to vector of protobufs.
+  /// Due to 2GB limit in protobuf, the cipher tensor may be spread across
+  /// multiple protobuf messages. \param[out] protos Target to write encrypted
+  /// cipehertexts to
+  inline void save_to_proto(
+      std::vector<he_proto::SealCipherTensor>& protos) const {
+    protos.resize(1);
+    protos[0].set_name(get_name());
+    // protos[0].set_shape()
+
+    /* size_t max_ciphers_per_message =
+
+     size_t ciphertex
+
+    size_t parameter_size =
+   ngraph::shape_size(ngraph::he::HETensor::pack_shape(shape));  */
+  }
+
   /// \brief Returns the ciphertexts stored in the tensor
   inline std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>&
   get_elements() {
