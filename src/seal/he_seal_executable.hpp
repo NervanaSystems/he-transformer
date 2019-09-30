@@ -26,6 +26,7 @@
 #include <thread>
 #include <vector>
 
+#include "he_op_annotations.hpp"
 #include "he_tensor.hpp"
 #include "ngraph/runtime/backend.hpp"
 #include "ngraph/util.hpp"
