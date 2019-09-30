@@ -569,39 +569,7 @@ bool ngraph::he::HESealExecutable::call(
          ++param_out_idx) {
       descriptor::Tensor* tensor =
           param->get_output_tensor_ptr(param_out_idx).get();
-
-      /*
-      if (encrypted(*param)) {  // TODO: what about client?
-        NGRAPH_HE_LOG(1) << "Encrypting parameter " << param_idx << " shape "
-                         << ngraph::join(he_inputs[input_count]->get_shape(),
-                                         "x");
-
-        auto plain_input = he_tensor_as_type<ngraph::he::HEPlainTensor>(
-            he_inputs[input_count]);
-
-        std::string name = tensor->get_name();
-        auto cipher_input = std::static_pointer_cast<HESealCipherTensor>(
-            m_he_seal_backend.create_cipher_tensor(
-                plain_input->get_element_type(), plain_input->get_shape(),
-                m_pack_data, name));
-
-#pragma omp parallel for
-        for (size_t plain_idx = 0;
-             plain_idx < plain_input->get_batched_element_count();
-             ++plain_idx) {
-          encrypt(cipher_input->get_element(plain_idx),
-                  plain_input->get_element(plain_idx),
-                  m_he_seal_backend.get_context()->first_parms_id(),
-                  plain_input->get_element_type(),
-                  m_he_seal_backend.get_scale(),
-                  *m_he_seal_backend.get_ckks_encoder(),
-                  *m_he_seal_backend.get_encryptor(), complex_packing());
-        }
-        plain_input->reset();
-        tensor_map.insert({tensor, cipher_input});
-      } else { */
       tensor_map.insert({tensor, he_inputs[input_count++]});
-      //}
     }
   }
 
