@@ -207,8 +207,16 @@ class HESealExecutable : public runtime::Executable {
   /// \brief Returns the batch size
   void set_batch_size(size_t batch_size);
 
-  /// \brief Returns whether or not Parameter node should be encrypted
-  /// \param[in] param Paramter node
+  /// \brief Returns whether or not Parmeter node has HEOPAnnotations
+  inline bool has_he_annotatation(const ngraph::op::Parameter& param) {
+    auto annotation = param.get_op_annotations();
+    return std::dynamic_pointer_cast<ngraph::he::HEOpAnnotations>(annotation) !=
+           nullptr;
+  }
+
+  /// \brief Returns whether or not Parameter node should be encrypted. Defaults
+  /// to false if Parameter has no HEOpAnnotation
+  /// \param[in] param Parameter node
   inline bool encrypted(const ngraph::op::Parameter& param) {
     auto annotation = param.get_op_annotations();
     if (auto he_annotation =
@@ -301,6 +309,6 @@ class HESealExecutable : public runtime::Executable {
 
   bool m_stop_const_fold{
       ngraph::he::flag_to_bool(std::getenv("STOP_CONST_FOLD"))};
-};
+};  // namespace he
 }  // namespace he
 }  // namespace ngraph

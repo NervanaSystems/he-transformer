@@ -30,9 +30,6 @@ static string s_manifest = "${MANIFEST}";
 NGRAPH_TEST(${BACKEND_NAME}, add_plain_cipher_2_3) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-
-  auto encrypt_annotation = std::make_shared<ngraph::he::HEOpAnnotations>(true);
-
   Shape shape{2, 3};
   {
     auto a = make_shared<op::Parameter>(element::f32, shape);

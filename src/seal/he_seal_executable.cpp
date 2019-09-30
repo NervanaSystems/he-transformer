@@ -106,9 +106,11 @@ ngraph::he::HESealExecutable::HESealExecutable(
 
   NGRAPH_HE_LOG(3) << "Creating Executable";
   for (const auto& param : function->get_parameters()) {
-    std::string encrypted_string = encrypted(*param) ? "" : "not ";
-    NGRAPH_HE_LOG(3) << "Parameter shape {" << join(param->get_shape())
-                     << "} is " << encrypted_string << "encrypted";
+    if (has_he_annotatation(*param)) {
+      std::string encrypted_string = encrypted(*param) ? "" : "not ";
+      NGRAPH_HE_LOG(3) << "Parameter shape {" << join(param->get_shape())
+                       << "} is " << encrypted_string << "encrypted";
+    }
   }
 
   if (std::getenv("NGRAPH_VOPS") != nullptr) {
@@ -597,9 +599,11 @@ bool ngraph::he::HESealExecutable::call(
       if (verbose) {
         const auto param_op =
             std::static_pointer_cast<const ngraph::op::Parameter>(op);
-        std::string encrypted_string = encrypted(*param_op) ? "" : "not ";
-        NGRAPH_HE_LOG(3) << "Parameter shape {" << join(op->get_shape())
-                         << "} is " << encrypted_string << "encrypted";
+        if (has_he_annotatation(*param_op)) {
+          std::string encrypted_string = encrypted(*param_op) ? "" : "not ";
+          NGRAPH_HE_LOG(3) << "Parameter shape {" << join(param_op->get_shape())
+                           << "} is " << encrypted_string << "encrypted";
+        }
       }
       continue;
     }
