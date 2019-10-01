@@ -20,11 +20,16 @@
 
 #include "gtest/gtest.h"
 #include "protos/message.pb.h"
+#include "seal/he_seal_backend.hpp"
+#include "seal/he_seal_cipher_tensor.hpp"
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "tcp/tcp_message.hpp"
+#include "util/test_tools.hpp"
 
 using namespace std;
+using namespace ngraph;
+using namespace ngraph::he;
 
 TEST(protobuf, trivial) { EXPECT_EQ(1, 1); }
 
@@ -189,4 +194,26 @@ TEST(seal_cipher_wrapper, load_save_known_value) {
   EXPECT_EQ(cipher.complex_packing(), cipher_load->complex_packing());
   EXPECT_EQ(cipher.known_value(), cipher_load->known_value());
   EXPECT_EQ(cipher.value(), cipher_load->value());
+}
+
+TEST(seal_cipher_tensor, load_save) {
+  auto backend = runtime::Backend::create("HE_SEAL");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto parms =
+      ngraph::he::HESealEncryptionParameters::default_real_packing_parms();
+  he_backend->update_encryption_parameters(parms);
+
+  Shape shape{2};
+  auto a = he_backend->create_cipher_tensor(element::f32, shape);
+  copy_data(a, vector<float>{5, 6});
+
+  auto he_tensor = dynamic_pointer_cast<ngraph::he::HESealCipherTensor>(a);
+  EXPECT_TRUE(he_tensor != nullptr);
+
+  std::vector<he_proto::SealCipherTensor> protos;
+
+  he_tensor->save_to_proto(protos);
+
+  EXPECT_EQ(protos.size(), 1);
+  EXPECT_EQ(protos[0].name() == he_tensor->get_name());
 }
