@@ -39,11 +39,12 @@
 
 using json = nlohmann::json;
 
-ngraph::he::HESealClient::HESealClient(const std::string& hostname,
-                                       const size_t port,
-                                       const size_t batch_size,
-                                       const std::vector<double>& inputs)
+ngraph::he::HESealClient::HESealClient(
+    const std::string& hostname, const size_t port, const size_t batch_size,
+    const std::unordered_map<std::string, std::vector<double>>& inputs)
     : m_batch_size{batch_size}, m_is_done{false}, m_inputs{inputs} {
+  NGRAPH_CHECK(m_inputs.size() == 1, "Client supports only input parameter");
+
   boost::asio::io_context io_context;
   tcp::resolver resolver(io_context);
   auto endpoints = resolver.resolve(hostname, std::to_string(port));
@@ -55,12 +56,11 @@ ngraph::he::HESealClient::HESealClient(const std::string& hostname,
   io_context.run();
 }
 
-ngraph::he::HESealClient::HESealClient(const std::string& hostname,
-                                       const size_t port,
-                                       const size_t batch_size,
-                                       const std::vector<float>& inputs)
+ngraph::he::HESealClient::HESealClient(
+    const std::string& hostname, const size_t port, const size_t batch_size,
+    const std::unordered_map<std::string, std::vector<float>>& inputs)
     : HESealClient(hostname, port, batch_size,
-                   std::vector<double>(inputs.begin(), inputs.end())) {}
+                   ngraph::he::float_map_to_double_map(inputs)) {}
 
 void ngraph::he::HESealClient::set_seal_context() {
   NGRAPH_HE_LOG(5) << "Client setting seal context";
@@ -146,7 +146,7 @@ void ngraph::he::HESealClient::handle_inference_request(
     NGRAPH_HE_LOG(5) << "Client complex packing";
   }
 
-  if (m_inputs.size() > parameter_size * m_batch_size) {
+  if (m_inputs.begin()->second.size() > parameter_size * m_batch_size) {
     NGRAPH_HE_LOG(5) << "m_inputs.size() " << m_inputs.size()
                      << " > paramter_size ( " << parameter_size
                      << ") * m_batch_size (" << m_batch_size << ")";
@@ -157,12 +157,14 @@ void ngraph::he::HESealClient::handle_inference_request(
     ciphers[data_idx] = std::make_shared<SealCiphertextWrapper>();
   }
 
+  NGRAPH_CHECK(m_inputs.size() == 1, "Client supports only input parameter");
+
   // TODO: add element type to function message
   size_t num_bytes = parameter_size * sizeof(double) * m_batch_size;
   ngraph::he::HESealCipherTensor::write(
-      ciphers, m_inputs.data(), num_bytes, m_batch_size, element::f64,
-      m_context->first_parms_id(), scale(), *m_ckks_encoder, *m_encryptor,
-      complex_packing());
+      ciphers, m_inputs.begin()->second.data(), num_bytes, m_batch_size,
+      element::f64, m_context->first_parms_id(), scale(), *m_ckks_encoder,
+      *m_encryptor, complex_packing());
 
   std::vector<he_proto::SealCipherTensor> cipher_tensor_protos;
   ngraph::he::HESealCipherTensor::save_to_proto(cipher_tensor_protos, ciphers,
@@ -187,24 +189,29 @@ void ngraph::he::HESealClient::handle_result(
     const he_proto::TCPMessage& proto_msg) {
   NGRAPH_HE_LOG(3) << "Client handling result";
 
-  NGRAPH_CHECK(false, "Handle result unimplemented");
+  NGRAPH_CHECK(proto_msg.cipher_tensors_size() > 0,
+               "Client received result with no cipher tensors");
+  NGRAPH_CHECK(proto_msg.cipher_tensors_size() == 1,
+               "Client supports only results with one cipher tensor");
 
-  /*
-size_t result_count = proto_msg.ciphers_size();
-m_results.resize(result_count * m_batch_size);
-std::vector<std::shared_ptr<SealCiphertextWrapper>> result_ciphers(
-  result_count);
+  auto proto_tensor = proto_msg.cipher_tensors(0);
+
+  size_t result_count = proto_tensor.ciphertexts_size();
+  m_results.resize(result_count * m_batch_size);
+  std::vector<std::shared_ptr<SealCiphertextWrapper>> result_ciphers(
+      result_count);
 #pragma omp parallel for
-for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
-ngraph::he::SealCiphertextWrapper::load(
-    result_ciphers[result_idx], proto_msg.ciphers(result_idx), m_context);
-}
+  for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
+    ngraph::he::SealCiphertextWrapper::load(
+        result_ciphers[result_idx], proto_tensor.ciphertexts(result_idx),
+        m_context);
+  }
 
-size_t num_bytes = result_count * sizeof(double) * m_batch_size;
-ngraph::he::HESealCipherTensor::read(m_results.data(), result_ciphers,
-                                   num_bytes, m_batch_size, element::f64,
-                                   *m_ckks_encoder, *m_decryptor);
-close_connection(); */
+  size_t num_bytes = result_count * sizeof(double) * m_batch_size;
+  ngraph::he::HESealCipherTensor::read(m_results.data(), result_ciphers,
+                                       num_bytes, m_batch_size, element::f64,
+                                       *m_ckks_encoder, *m_decryptor);
+  close_connection();
 }
 
 void ngraph::he::HESealClient::handle_relu_request(

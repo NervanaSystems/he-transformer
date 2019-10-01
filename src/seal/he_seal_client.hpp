@@ -40,19 +40,19 @@ class HESealClient {
   /// \param[in] hostname Hostname of the server
   /// \param[in] port Port of the server
   /// \param[in] batch_size Batch size of the inference to perform
-  /// \param[in] inputs Input data
-  /// \param[in] complex_packing Whether or not to use complex packing
-  HESealClient(const std::string& hostname, const size_t port,
-               const size_t batch_size, const std::vector<double>& inputs);
+  /// \param[in] inputs Input data as a map from tensor name to inputs
+  HESealClient(
+      const std::string& hostname, const size_t port, const size_t batch_size,
+      const std::unordered_map<std::string, std::vector<double>>& inputs);
 
   /// \brief Constructs a client object and connects to a server
   /// \param[in] hostname Hostname of the server
   /// \param[in] port Port of the server
   /// \param[in] batch_size Batch size of the inference to perform
-  /// \param[in] inputs Input data
-  /// \param[in] complex_packing Whether or not to use complex packing
-  HESealClient(const std::string& hostname, const size_t port,
-               const size_t batch_size, const std::vector<float>& inputs);
+  /// \param[in] inputs Input data as a map from tensor name to inputs
+  HESealClient(
+      const std::string& hostname, const size_t port, const size_t batch_size,
+      const std::unordered_map<std::string, std::vector<float>>& inputs);
 
   /// \brief Creates SEAL context
   void set_seal_context();
@@ -136,7 +136,8 @@ class HESealClient {
   std::shared_ptr<seal::RelinKeys> m_relin_keys;
   size_t m_batch_size;
   bool m_is_done;
-  std::vector<double> m_inputs;   // Function inputs
+  // Function inputs
+  std::unordered_map<std::string, std::vector<double>> m_inputs;
   std::vector<double> m_results;  // Function outputs
 
 };  // namespace he

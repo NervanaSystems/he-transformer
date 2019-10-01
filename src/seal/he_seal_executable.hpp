@@ -63,9 +63,11 @@ class HESealExecutable : public runtime::Executable {
   ~HESealExecutable() override {
     NGRAPH_HE_LOG(3) << "~HESealExecutable()";
     if (m_enable_client) {
-      m_thread.join();
+      NGRAPH_HE_LOG(5) << "Waiting for m_message_handling_thread to join";
+      m_message_handling_thread.join();
+      NGRAPH_HE_LOG(5) << "m_message_handling_thread joined";
 
-      // m_acceptor and m_io_context both free the socket? so avoid double-free
+      // m_acceptor and m_io_context both free the socket? Avoid double-free
       m_acceptor->close();
       m_acceptor = nullptr;
       m_session = nullptr;
@@ -252,7 +254,7 @@ class HESealExecutable : public runtime::Executable {
 
   // Must be shared, since TCPSession uses enable_shared_from_this()
   std::shared_ptr<TCPSession> m_session;
-  std::thread m_thread;
+  std::thread m_message_handling_thread;
   boost::asio::io_context m_io_context;
 
   // (Encrypted) inputs to compiled function

@@ -16,9 +16,9 @@
 
 #pragma once
 
-#include <array>
 #include <complex>
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -190,6 +190,19 @@ inline void double_vec_to_type_vec(void* target,
       NGRAPH_CHECK(false, "Unsupported element type ", element_type);
       break;
   }
+}
+
+inline std::unordered_map<std::string, std::vector<double>>
+float_map_to_double_map(
+    const std::unordered_map<std::string, std::vector<float>>& inputs) {
+  std::unordered_map<std::string, std::vector<double>> double_map;
+
+  for (const auto& elem : inputs) {
+    std::vector<double> double_inputs{elem.second.begin(), elem.second.end()};
+
+    double_map.insert({elem.first, double_inputs});
+  }
+  return double_map;
 }
 
 }  // namespace he

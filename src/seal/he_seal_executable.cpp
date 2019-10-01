@@ -280,7 +280,13 @@ void ngraph::he::HESealExecutable::start_server() {
   m_acceptor->set_option(option);
 
   accept_connection();
-  m_thread = std::thread([this]() { m_io_context.run(); });
+  m_message_handling_thread = std::thread([this]() {
+    try {
+      m_io_context.run();
+    } catch (std::exception& e) {
+      NGRAPH_CHECK(false, "Server error hanndling thread: ", e.what());
+    };
+  });
 }
 
 void ngraph::he::HESealExecutable::load_public_key(
@@ -545,6 +551,7 @@ bool ngraph::he::HESealExecutable::call(
     const std::vector<std::shared_ptr<runtime::Tensor>>& server_inputs) {
   NGRAPH_HE_LOG(3) << "HESealExecutable::call";
   validate(outputs, server_inputs);
+  NGRAPH_HE_LOG(3) << "HESealExecutable::call validated inputs";
 
   if (m_pack_data) {
     NGRAPH_HE_LOG(1) << "Batching data with batch size " << m_batch_size;
@@ -752,35 +759,38 @@ bool ngraph::he::HESealExecutable::call(
 
   // Send outputs to client.
   if (m_enable_client) {
-    NGRAPH_HE_LOG(1) << "Sending results to the client";
     send_client_results();
   }
   return true;
 }
 
 void ngraph::he::HESealExecutable::send_client_results() {
-  NGRAPH_HE_LOG(3) << "Sending outputs to client";
+  NGRAPH_HE_LOG(3) << "Sending results to client";
   NGRAPH_CHECK(m_client_outputs.size() == 1,
                "HESealExecutable only supports output size 1 (got ",
                get_results().size(), "");
 
-  NGRAPH_CHECK(false, "send client result unimpleneted");
-
-  /* he_proto::TCPMessage proto_msg;
-  proto_msg.set_type(he_proto::TCPMessage_Type_RESPONSE);
+  he_proto::TCPMessage result_msg;
+  result_msg.set_type(he_proto::TCPMessage_Type_RESPONSE);
 
   auto output_cipher_tensor =
       he_tensor_as_type<HESealCipherTensor>(m_client_outputs[0]);
 
-  ngraph::he::save_to_proto(output_cipher_tensor->get_elements(), proto_msg);
-  ngraph::he::TCPMessage result_msg(std::move(proto_msg));
+  std::vector<he_proto::SealCipherTensor> cipher_tensor_proto;
+  output_cipher_tensor->save_to_proto(cipher_tensor_proto);
+
+  NGRAPH_CHECK(cipher_tensor_proto.size() == 1,
+               "Support only results which fit in single cipher tensor");
+
+  *result_msg.add_cipher_tensors() = cipher_tensor_proto[0];
+
   m_session->write_message(std::move(result_msg));
 
   std::unique_lock<std::mutex> mlock(m_result_mutex);
 
   // Wait until message is written
   std::condition_variable& writing_cond = m_session->is_writing_cond();
-  writing_cond.wait(mlock, [this] { return !m_session->is_writing(); }); */
+  writing_cond.wait(mlock, [this] { return !m_session->is_writing(); });
 }
 
 void ngraph::he::HESealExecutable::generate_calls(
