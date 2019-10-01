@@ -254,43 +254,5 @@ class SealCiphertextWrapper {
   float m_value{0.0f};
 };
 
-/// \brief Saves a list of ciphertexts to a protobuf message
-/// \param[in] ciphers_begin Iterator at beginning of ciphertext wrapper list
-/// \param[in] ciphers_end Iterator at end of ciphertext wrapper list
-/// \param[out] proto_msg Protobuf message to save ciphertexts to
-inline void save_to_proto(
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>::const_iterator
-        ciphers_begin,
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>::const_iterator
-        ciphers_end,
-    he_proto::TCPMessage& proto_msg) {
-  size_t ciphers_size = 0;
-  for (auto it = ciphers_begin; it != ciphers_end; ++it) {
-    proto_msg.add_ciphers();
-    ciphers_size++;
-  }
-#pragma omp parallel for
-  for (size_t cipher_idx = 0; cipher_idx < ciphers_size; ++cipher_idx) {
-    auto cipher_wrapper = *(ciphers_begin + cipher_idx);
-    cipher_wrapper->save(*proto_msg.mutable_ciphers(cipher_idx));
-  }
-}
-
-/// \brief Saves a vector of ciphertexts to a protobuf message
-/// \param[in] ciphers Vector of ciphertext wrappers to save
-/// \param[out] proto_msg Protobuf message to save ciphertexts to
-inline void save_to_proto(
-    const std::vector<std::shared_ptr<SealCiphertextWrapper>>& ciphers,
-    he_proto::TCPMessage& proto_msg) {
-  proto_msg.mutable_ciphers()->Reserve(ciphers.size());
-  for (size_t cipher_idx = 0; cipher_idx < ciphers.size(); ++cipher_idx) {
-    proto_msg.add_ciphers();
-  }
-#pragma omp parallel for
-  for (size_t cipher_idx = 0; cipher_idx < ciphers.size(); ++cipher_idx) {
-    ciphers[cipher_idx]->save(*proto_msg.mutable_ciphers(cipher_idx));
-  }
-}
-
 }  // namespace he
 }  // namespace ngraph

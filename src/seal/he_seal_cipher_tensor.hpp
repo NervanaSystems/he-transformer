@@ -122,14 +122,17 @@ class HESealCipherTensor : public HETensor {
       std::vector<he_proto::SealCipherTensor>& protos) const {
     protos.resize(1);
     protos[0].set_name(get_name());
-    // protos[0].set_shape()
 
-    /* size_t max_ciphers_per_message =
+    // TODO
+  }
 
-     size_t ciphertex
-
-    size_t parameter_size =
-   ngraph::shape_size(ngraph::he::HETensor::pack_shape(shape));  */
+  static inline void save_to_proto(
+      std::vector<he_proto::SealCipherTensor>& protos,
+      const std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>&
+          ciphertexts,
+      const size_t m_num_elements, const ngraph::Shape& shape,
+      const std::string& name) {
+    return;
   }
 
   /// \brief Returns the ciphertexts stored in the tensor
